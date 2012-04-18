@@ -31,59 +31,66 @@ SOURCES =   main.cpp \
             qqnxglcontext.cpp \
             qqnxglbackingstore.cpp \
             qqnxintegration.cpp \
-            qqnxnavigatoreventhandler.cpp \
-            qqnxnavigatoreventnotifier.cpp \
             qqnxscreen.cpp \
             qqnxwindow.cpp \
             qqnxrasterbackingstore.cpp \
-            qqnxvirtualkeyboard.cpp \
-            qqnxclipboard.cpp \
             qqnxrootwindow.cpp \
             qqnxscreeneventhandler.cpp \
-            qqnxabstractvirtualkeyboard.cpp \
             qqnxnativeinterface.cpp
+
+CONFIG(blackberry) {
+    SOURCES += qqnxnavigatoreventhandler.cpp \
+               qqnxnavigatoreventnotifier.cpp \
+               qqnxvirtualkeyboard.cpp \
+               qqnxclipboard.cpp \
+               qqnxabstractvirtualkeyboard.cpp
+}
 
 HEADERS =   main.h \
             qqnxbuffer.h \
             qqnxeventthread.h \
             qqnxkeytranslator.h \
             qqnxintegration.h \
-            qqnxnavigatoreventhandler.h \
-            qqnxnavigatoreventnotifier.h \
             qqnxglcontext.h \
             qqnxglbackingstore.h \
             qqnxscreen.h \
             qqnxwindow.h \
             qqnxrasterbackingstore.h \
-            qqnxvirtualkeyboard.h \
-            qqnxclipboard.h \
             qqnxrootwindow.h \
             qqnxscreeneventhandler.h \
-            qqnxabstractvirtualkeyboard.h \
             qqnxnativeinterface.h
+
+CONFIG(blackberry) {
+    HEADERS += qqnxnavigatoreventhandler.h \
+               qqnxnavigatoreventnotifier.h \
+               qqnxvirtualkeyboard.h \
+               qqnxclipboard.h \
+               qqnxabstractvirtualkeyboard.h
+}
+
 
 CONFIG(blackberry) {
     SOURCES += qqnxservices.cpp
     HEADERS += qqnxservices.h
-}
 
-CONFIG(qqnx_imf) {
-    DEFINES += QQNX_IMF
-    HEADERS += qqnxinputcontext_imf.h
-    SOURCES += qqnxinputcontext_imf.cpp
-} else {
-    HEADERS += qqnxinputcontext_noimf.h
-    SOURCES += qqnxinputcontext_noimf.cpp
+    CONFIG(qqnx_imf) {
+        DEFINES += QQNX_IMF
+        HEADERS += qqnxinputcontext_imf.h
+        SOURCES += qqnxinputcontext_imf.cpp
+    } else {
+        HEADERS += qqnxinputcontext_noimf.h
+        SOURCES += qqnxinputcontext_noimf.cpp
+    }
 }
 
 OTHER_FILES += qnx.json
 
 QMAKE_CXXFLAGS += -I./private
 
-LIBS += -lpps -lscreen -lEGL -lclipboard
+LIBS += -lscreen -lEGL
 
 CONFIG(blackberry) {
-    LIBS += -lbps
+    LIBS += -lbps -lpps -lclipboard
 }
 
 include (../../../platformsupport/eglconvenience/eglconvenience.pri)

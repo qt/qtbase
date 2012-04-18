@@ -51,15 +51,18 @@
 QT_BEGIN_NAMESPACE
 
 class QQnxEventThread;
-class QQnxInputContext;
 class QQnxNativeInterface;
+class QQnxWindow;
+class QQnxScreen;
+class QQnxScreenEventHandler;
+
+#ifdef Q_OS_BLACKBERRY
+class QQnxInputContext;
 class QQnxNavigatorEventHandler;
 class QQnxNavigatorEventNotifier;
 class QQnxAbstractVirtualKeyboard;
-class QQnxWindow;
 class QQnxServices;
-class QQnxScreen;
-class QQnxScreenEventHandler;
+#endif
 
 #ifndef QT_NO_CLIPBOARD
 class QQnxClipboard;
@@ -80,7 +83,9 @@ public:
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 
+#ifdef Q_OS_BLACKBERRY
     QPlatformInputContext *inputContext() const;
+#endif
 
     void moveToScreen(QWindow *window, int screen);
 
@@ -98,7 +103,9 @@ public:
 
     bool paintUsingOpenGL() const { return m_paintUsingOpenGL; }
 
+#ifdef Q_OS_BLACKBERRY
     QPlatformServices *services() const;
+#endif
 
     static QWindow *window(screen_window_t qnxWindow);
 
@@ -112,15 +119,17 @@ private:
 
     screen_context_t m_screenContext;
     QQnxEventThread *m_eventThread;
+#ifdef Q_OS_BLACKBERRY
     QQnxNavigatorEventHandler *m_navigatorEventHandler;
     QQnxNavigatorEventNotifier *m_navigatorEventNotifier;
     QQnxAbstractVirtualKeyboard *m_virtualKeyboard;
     QQnxInputContext *m_inputContext;
+    QQnxServices *m_services;
+#endif
     QPlatformFontDatabase *m_fontDatabase;
     bool m_paintUsingOpenGL;
     QAbstractEventDispatcher *m_eventDispatcher;
     QQnxNativeInterface *m_nativeInterface;
-    QQnxServices *m_services;
     QList<QQnxScreen*> m_screens;
     QQnxScreenEventHandler *m_screenEventHandler;
 #ifndef QT_NO_CLIPBOARD

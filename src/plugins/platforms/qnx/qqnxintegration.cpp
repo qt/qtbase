@@ -44,15 +44,17 @@
 #include "qqnxglbackingstore.h"
 #include "qqnxglcontext.h"
 #include "qqnxnativeinterface.h"
-#include "qqnxnavigatoreventhandler.h"
-#include "qqnxnavigatoreventnotifier.h"
 #include "qqnxrasterbackingstore.h"
 #include "qqnxscreen.h"
 #include "qqnxscreeneventhandler.h"
 #include "qqnxwindow.h"
+#include "qqnxglcontext.h"
+
+#ifdef Q_OS_BLACKBERRY
+#include "qqnxnavigatoreventhandler.h"
+#include "qqnxnavigatoreventnotifier.h"
 #include "qqnxvirtualkeyboard.h"
 #include "qqnxclipboard.h"
-#include "qqnxglcontext.h"
 #include "qqnxservices.h"
 
 #if defined(QQnx_IMF)
@@ -60,6 +62,7 @@
 #else
 #include "qqnxinputcontext_noimf.h"
 #endif
+#endif // Q_OS_BLACKBERRY
 
 #include "private/qgenericunixfontdatabase_p.h"
 #include "private/qgenericunixeventdispatcher_p.h"
@@ -81,15 +84,17 @@ QMutex QQnxIntegration::ms_windowMapperMutex;
 QQnxIntegration::QQnxIntegration()
     : QPlatformIntegration()
     , m_eventThread(0)
+#ifdef Q_OS_BLACKBERRY
     , m_navigatorEventHandler(new QQnxNavigatorEventHandler())
     , m_navigatorEventNotifier(0)
     , m_virtualKeyboard(0)
     , m_inputContext(0)
+    , m_services(0)
+#endif
     , m_fontDatabase(new QGenericUnixFontDatabase())
     , m_paintUsingOpenGL(false)
     , m_eventDispatcher(createUnixEventDispatcher())
     , m_nativeInterface(new QQnxNativeInterface())
-    , m_services(0)
     , m_screenEventHandler(new QQnxScreenEventHandler())
 #ifndef QT_NO_CLIPBOARD
     , m_clipboard(0)
@@ -105,12 +110,14 @@ QQnxIntegration::QQnxIntegration()
         qFatal("QQnx: failed to connect to composition manager, errno=%d", errno);
     }
 
+#ifdef Q_OS_BLACKBERRY
     // Create/start navigator event notifier
     m_navigatorEventNotifier = new QQnxNavigatorEventNotifier(m_navigatorEventHandler);
 
     // delay invocation of start() to the time the event loop is up and running
     // needed to have the QThread internals of the main thread properly initialized
     QMetaObject::invokeMethod(m_navigatorEventNotifier, "start", Qt::QueuedConnection);
+#endif
 
     // Create displays for all possible screens (which may not be attached)
     createDisplays();
@@ -122,6 +129,7 @@ QQnxIntegration::QQnxIntegration()
     m_eventThread = new QQnxEventThread(m_screenContext, m_screenEventHandler);
     m_eventThread->start();
 
+#ifdef Q_OS_BLACKBERRY
     // Create/start the keyboard class.
     m_virtualKeyboard = new QQnxVirtualKeyboard();
 
@@ -137,7 +145,6 @@ QQnxIntegration::QQnxIntegration()
     m_inputContext = new QQnxInputContext(*m_virtualKeyboard);
 
     // Create services handling class
-#ifdef Q_OS_BLACKBERRY
     m_services = new QQnxServices;
 #endif
 }
@@ -151,6 +158,7 @@ QQnxIntegration::~QQnxIntegration()
 
     delete m_nativeInterface;
 
+#ifdef Q_OS_BLACKBERRY
     // Destroy input context
     delete m_inputContext;
 
@@ -165,6 +173,7 @@ QQnxIntegration::~QQnxIntegration()
     // Stop/destroy navigator event notifier
     delete m_navigatorEventNotifier;
     delete m_navigatorEventHandler;
+#endif
 
     // Stop/destroy event thread
     delete m_eventThread;
@@ -231,6 +240,7 @@ QPlatformOpenGLContext *QQnxIntegration::createPlatformOpenGLContext(QOpenGLCont
     return new QQnxGLContext(context);
 }
 
+#ifdef Q_OS_BLACKBERRY
 QPlatformInputContext *QQnxIntegration::inputContext() const
 {
 #if defined(QQNXINTEGRATION_DEBUG)
@@ -238,6 +248,7 @@ QPlatformInputContext *QQnxIntegration::inputContext() const
 #endif
     return m_inputContext;
 }
+#endif
 
 void QQnxIntegration::moveToScreen(QWindow *window, int screen)
 {
@@ -292,10 +303,12 @@ QVariant QQnxIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
     return QPlatformIntegration::styleHint(hint);
 }
 
+#ifdef Q_OS_BLACKBERRY
 QPlatformServices * QQnxIntegration::services() const
 {
     return m_services;
 }
+#endif
 
 QWindow *QQnxIntegration::window(screen_window_t qnxWindow)
 {
@@ -361,7 +374,9 @@ void QQnxIntegration::createDisplays()
         QObject::connect(m_screenEventHandler, SIGNAL(windowClosed(void *)),
                          screen, SLOT(windowClosed(void *)));
 
+#ifdef Q_OS_BLACKBERRY
         QObject::connect(m_navigatorEventHandler, SIGNAL(rotationChanged(int)), screen, SLOT(setRotation(int)));
+#endif
     }
 }
 
