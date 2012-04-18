@@ -4574,7 +4574,17 @@ if [ "$CFG_DIRECTFB" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists directfb 2>/dev/null; then
         QMAKE_CFLAGS_DIRECTFB=`$PKG_CONFIG --cflags directfb 2>/dev/null`
         QMAKE_LIBS_DIRECTFB=`$PKG_CONFIG --libs directfb 2>/dev/null`
-        QT_CONFIG="$QT_CONFIG directfb"
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/directfb" "DirectFB" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_DIRECTFB $QMAKE_LIBS_DIRECTFB; then
+            CFG_DIRECTFB=yes
+        elif [ "$CFG_DIRECTFB" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo " DirectFB support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        else
+            CFG_DIRECTFB=no
+        fi
     else
         CFG_DIRECTFB=no
     fi
@@ -4631,7 +4641,8 @@ if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
     QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
     QMakeVar set QMAKE_DEFINES_XCB "$QMAKE_DEFINES_XCB"
 fi
-if [ -n "$QMAKE_CFLAGS_DIRECTFB" ] || [ -n "$QMAKE_LIBS_DIRECTFB" ]; then
+if [ "$CFG_DIRECTFB" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG directfb"
     QMakeVar set QMAKE_CFLAGS_DIRECTFB "$QMAKE_CFLAGS_DIRECTFB"
     QMakeVar set QMAKE_LIBS_DIRECTFB "$QMAKE_LIBS_DIRECTFB"
 fi
