@@ -3821,9 +3821,13 @@ void tst_QNetworkReply::ioPutToFileFromSocket()
 
     QFETCH(QByteArray, data);
     SocketPair socketpair;
-    socketpair.create();
-    QVERIFY(socketpair.endPoints[0] && socketpair.endPoints[1]);
+    QTRY_VERIFY(socketpair.create()); //QTRY_VERIFY as a workaround for QTBUG-24451
 
+#ifdef Q_OS_WIN
+    //128k and 2M tests regularly fail. Assumed same characteristics as ioPostToHttpFromSocket
+    if (data.size() > 1000)
+        QSKIP("unstable on windows - QTBUG-25386");
+#endif
     socketpair.endPoints[0]->write(data);
     QNetworkReplyPtr reply(manager.put(QNetworkRequest(url), socketpair.endPoints[1]));
     socketpair.endPoints[0]->close();
@@ -4109,9 +4113,13 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
     QFETCH(QByteArray, data);
     QFETCH(QUrl, url);
     QFETCH(QNetworkProxy, proxy);
+#ifdef Q_OS_WIN
+    //QTBUG-25386 hits one of the 128k tests 50% of the time, one of the 4k tests rarely (but at least 1%)
+    if (data.size() > 1000)
+        QSKIP("unstable on windows - QTBUG-25386");
+#endif
     SocketPair socketpair;
-    socketpair.create();
-    QVERIFY(socketpair.endPoints[0] && socketpair.endPoints[1]);
+    QTRY_VERIFY(socketpair.create()); //QTRY_VERIFY as a workaround for QTBUG-24451
 
     socketpair.endPoints[0]->write(data);
 
@@ -4182,8 +4190,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocketSynchronous()
     QFETCH(QByteArray, data);
 
     SocketPair socketpair;
-    QVERIFY(socketpair.create());
-    QVERIFY(socketpair.endPoints[0] && socketpair.endPoints[1]);
+    QTRY_VERIFY(socketpair.create()); //QTRY_VERIFY as a workaround for QTBUG-24451
     socketpair.endPoints[0]->write(data);
     socketpair.endPoints[0]->waitForBytesWritten(5000);
     // ### for 4.8: make the socket pair unbuffered, to not read everything in one go in QNetworkReplyImplPrivate::setup()
@@ -4301,8 +4308,7 @@ void tst_QNetworkReply::ioPostToHttpNoBufferFlag()
     QByteArray data = QByteArray("daaaaaaataaaaaaa");
     // create a sequential QIODevice by feeding the data into a local TCP server
     SocketPair socketpair;
-    socketpair.create();
-    QVERIFY(socketpair.endPoints[0] && socketpair.endPoints[1]);
+    QTRY_VERIFY(socketpair.create()); //QTRY_VERIFY as a workaround for QTBUG-24451
     socketpair.endPoints[0]->write(data);
 
     QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi";
