@@ -875,11 +875,15 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 
     clearFontUnlocked();
 
+    QFont::cleanup();
+
 #ifndef QT_NO_CURSOR
     QCursorData::cleanup();
 #endif
 
     layout_direction = Qt::LeftToRight;
+
+    cleanupThreadData();
 
     delete styleHints;
     delete inputMethod;
@@ -892,10 +896,6 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     delete platform_integration;
     platform_integration = 0;
     delete m_gammaTables.load();
-
-    QFont::cleanup();
-
-    cleanupThreadData();
 }
 
 #if 0
