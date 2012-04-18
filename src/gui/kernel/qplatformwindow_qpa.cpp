@@ -147,6 +147,7 @@ QMargins QPlatformWindow::frameMargins() const
 */
 void QPlatformWindow::setVisible(bool visible)
 {
+    Q_UNUSED(visible);
     QRect rect(QPoint(), geometry().size());
     QWindowSystemInterface::handleSynchronousExposeEvent(window(), rect);
 }
