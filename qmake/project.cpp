@@ -1690,7 +1690,6 @@ QMakeProject::doProjectTest(QString func, const QString &params,
 QMakeProject::IncludeStatus
 QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QStringList> &place)
 {
-    enum { UnknownFormat, ProFormat, JSFormat } format = UnknownFormat;
     if(flags & IncludeFlagFeature) {
         if(!file.endsWith(Option::prf_ext))
             file += Option::prf_ext;
@@ -1722,18 +1721,13 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
             }
             for(int root = start_root; root < feature_roots->size(); ++root) {
                 QString prf(feature_roots->at(root) + QLatin1Char('/') + file);
-                if(QFile::exists(prf + Option::js_ext)) {
-                    format = JSFormat;
-                    file = prf + Option::js_ext;
-                    break;
-                } else if(QFile::exists(prf)) {
-                    format = ProFormat;
+                if (QFile::exists(prf)) {
                     file = prf;
-                    break;
+                    goto foundf;
                 }
             }
-            if(format == UnknownFormat)
-                return IncludeNoExist;
+            return IncludeNoExist;
+          foundf: ;
         }
         if(place["QMAKE_INTERNAL_INCLUDED_FEATURES"].indexOf(file) != -1)
             return IncludeFeatureAlreadyLoaded;
@@ -1751,19 +1745,13 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
             testName += file;
             if(QFile::exists(testName)) {
                 file = testName;
-                break;
+                goto foundi;
             }
         }
-    }
-    if(format == UnknownFormat) {
-        if(QFile::exists(file)) {
-            if(file.endsWith(Option::js_ext))
-                format = JSFormat;
-            else
-                format = ProFormat;
-        } else {
-            return IncludeNoExist;
-        }
+        return IncludeNoExist;
+      foundi: ;
+    } else if (!QFile::exists(file)) {
+        return IncludeNoExist;
     }
     if(Option::mkfile::do_preprocess) //nice to see this first..
         fprintf(stderr, "#switching file %s(%s) - %s:%d\n", (flags & IncludeFlagFeature) ? "load" : "include",
@@ -1783,10 +1771,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
     }
     bool parsed = false;
     parser_info pi = parser;
-    if(format == JSFormat) {
-        warn_msg(WarnParser, "%s:%d: QtScript support disabled for %s.",
-                 pi.file.toLatin1().constData(), pi.line_no, orig_file.toLatin1().constData());
-    } else {
+    {
         if(flags & (IncludeFlagNewProject|IncludeFlagNewParser)) {
             // The "project's variables" are used in other places (eg. export()) so it's not
             // possible to use "place" everywhere. Instead just set variables and grab them later

@@ -54,7 +54,6 @@ QT_BEGIN_NAMESPACE
 //convenience
 const char *Option::application_argv0 = 0;
 QString Option::prf_ext;
-QString Option::js_ext;
 QString Option::prl_ext;
 QString Option::libtool_ext;
 QString Option::pkgcfg_ext;
@@ -422,7 +421,6 @@ Option::init(int argc, char **argv)
     Option::libtool_ext = ".la";
     Option::pkgcfg_ext = ".pc";
     Option::prf_ext = ".prf";
-    Option::js_ext = ".js";
     Option::ui_ext = ".ui";
     Option::h_ext << ".h" << ".hpp" << ".hh" << ".hxx";
     Option::c_ext << ".c";
