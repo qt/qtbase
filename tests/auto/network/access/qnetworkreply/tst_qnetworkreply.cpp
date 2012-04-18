@@ -4410,9 +4410,8 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
 
 
     incomingSocket->setReadBufferSize(1*1024);
-    QTestEventLoop::instance().enterLoop(2);
     // some progress should have been made
-    QVERIFY(!spy.isEmpty());
+    QTRY_VERIFY(!spy.isEmpty());
     QList<QVariant> args = spy.last();
     QVERIFY(args.at(0).toLongLong() > 0);
     // but not everything!

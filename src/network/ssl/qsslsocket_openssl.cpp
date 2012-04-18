@@ -1239,7 +1239,8 @@ bool QSslSocketBackendPrivate::startHandshake()
 
 #ifdef Q_OS_WIN
         //Skip this if not using system CAs, or if the SSL errors are configured in advance to be ignorable
-        if (s_loadRootCertsOnDemand
+        if (doVerifyPeer
+            && s_loadRootCertsOnDemand
             && allowRootCertOnDemandLoading
             && !verifyErrorsHaveBeenIgnored()) {
             //Windows desktop versions starting from vista ship with minimal set of roots
@@ -1247,11 +1248,28 @@ bool QSslSocketBackendPrivate::startHandshake()
             //trusted by MS.
             //However, this is only transparent if using WinINET - we have to trigger it
             //ourselves.
+            QSslCertificate certToFetch;
+            bool fetchCertificate = true;
             for (int i=0; i< sslErrors.count(); i++) {
-                if (sslErrors.at(i).error() == QSslError::UnableToGetLocalIssuerCertificate) {
-                    fetchCaRootForCert(sslErrors.at(i).certificate());
-                    return false;
+                switch (sslErrors.at(i).error()) {
+                case QSslError::UnableToGetLocalIssuerCertificate:
+                    certToFetch = sslErrors.at(i).certificate();
+                    break;
+                case QSslError::SelfSignedCertificate:
+                case QSslError::CertificateBlacklisted:
+                    //With these errors, we know it will be untrusted so save time by not asking windows
+                    fetchCertificate = false;
+                    break;
+                default:
+#ifdef QSSLSOCKET_DEBUG
+                    qDebug() << sslErrors.at(i).errorString();
+#endif
+                    break;
                 }
+            }
+            if (fetchCertificate && !certToFetch.isNull()) {
+                fetchCaRootForCert(certToFetch);
+                return false;
             }
         }
 #endif
