@@ -22,9 +22,6 @@ SOURCES =   main.cpp \
             qkmsdevice.cpp \
             qkmsbackingstore.cpp \
             qkmsnativeinterface.cpp \
-            qkmsudevlistener.cpp \
-            qkmsudevhandler.cpp \
-            qkmsudevdrmhandler.cpp \
             qkmsvthandler.cpp
 HEADERS =   qkmsintegration.h \
             qkmsscreen.h \
@@ -34,9 +31,6 @@ HEADERS =   qkmsintegration.h \
             qkmsdevice.h \
             qkmsbackingstore.h \
             qkmsnativeinterface.h \
-            qkmsudevlistener.h \
-            qkmsudevhandler.h \
-            qkmsudevdrmhandler.h \
             qkmsvthandler.h
 
 OTHER_FILES += \

@@ -44,17 +44,18 @@
 
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <QtPlatformSupport/private/qdevicediscovery_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QKmsScreen;
 class QKmsDevice;
-class QKmsUdevListener;
-class QKmsUdevDRMHandler;
 class QKmsVTHandler;
 
-class QKmsIntegration : public QPlatformIntegration
+class QKmsIntegration : public QObject, public QPlatformIntegration
 {
+    Q_OBJECT
+
 public:
     QKmsIntegration();
     ~QKmsIntegration();
@@ -73,6 +74,10 @@ public:
     void addScreen(QKmsScreen *screen);
     QObject *createDevice(const char *);
 
+private slots:
+    void addDevice(const QString &deviceNode);
+    void removeDevice(const QString &deviceNode);
+
 private:
     QStringList findDrmDevices();
 
@@ -81,9 +86,8 @@ private:
     QPlatformFontDatabase *m_fontDatabase;
     QAbstractEventDispatcher *m_eventDispatcher;
     QPlatformNativeInterface *m_nativeInterface;
-    QKmsUdevListener *m_udevListener;
-    QKmsUdevDRMHandler *m_drmHandler;
     QKmsVTHandler *m_vtHandler;
+    QDeviceDiscovery *m_deviceDiscovery;
 };
 
 QT_END_NAMESPACE

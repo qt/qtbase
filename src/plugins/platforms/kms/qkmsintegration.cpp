@@ -46,8 +46,6 @@
 #include "qkmsbackingstore.h"
 #include "qkmscontext.h"
 #include "qkmsnativeinterface.h"
-#include "qkmsudevlistener.h"
-#include "qkmsudevdrmhandler.h"
 #include "qkmsvthandler.h"
 
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
@@ -62,18 +60,26 @@ QKmsIntegration::QKmsIntegration()
     : QPlatformIntegration(),
       m_fontDatabase(new QGenericUnixFontDatabase()),
       m_eventDispatcher(createUnixEventDispatcher()),
-      m_nativeInterface(new QKmsNativeInterface),
-      m_udevListener(new QKmsUdevListener)
+      m_nativeInterface(new QKmsNativeInterface)
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
     setenv("EGL_PLATFORM", "drm",1);
     m_vtHandler = new QKmsVTHandler;
-    m_drmHandler = new QKmsUdevDRMHandler(this);
-    m_udevListener->addHandler(m_drmHandler);
+
+    m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_DRM, 0);
+    if (m_deviceDiscovery) {
+        QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+        foreach (QString device, devices)
+            addDevice(device);
+
+        connect(m_deviceDiscovery, SIGNAL(deviceDetected(QString)), this, SLOT(addDevice(QString)));
+        connect(m_deviceDiscovery, SIGNAL(deviceRemoved(QString)), this, SLOT(removeDevice(QString)));
+    }
 }
 
 QKmsIntegration::~QKmsIntegration()
 {
+    delete m_deviceDiscovery;
     foreach (QKmsDevice *device, m_devices) {
         delete device;
     }
@@ -81,15 +87,18 @@ QKmsIntegration::~QKmsIntegration()
         delete screen;
     }
     delete m_fontDatabase;
-    delete m_udevListener;
     delete m_vtHandler;
 }
 
-QObject *QKmsIntegration::createDevice(const char *path)
+void QKmsIntegration::addDevice(const QString &deviceNode)
 {
-    QKmsDevice *device = new QKmsDevice(path, this);
-    m_devices.append(device);
-    return device;
+    m_devices.append(new QKmsDevice(deviceNode, this));
+}
+
+void QKmsIntegration::removeDevice(const QString &deviceNode)
+{
+    // TODO: support hot-plugging some day?
+    Q_UNUSED(deviceNode);
 }
 
 bool QKmsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
