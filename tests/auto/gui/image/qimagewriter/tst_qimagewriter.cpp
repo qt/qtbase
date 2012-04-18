@@ -394,7 +394,8 @@ void tst_QImageWriter::supportsOption_data()
                          << (QIntList() << QImageIOHandler::Gamma
                               << QImageIOHandler::Description
                               << QImageIOHandler::Quality
-                              << QImageIOHandler::Size);
+                              << QImageIOHandler::Size
+                              << QImageIOHandler::ScaledSize);
 }
 
 void tst_QImageWriter::supportsOption()
