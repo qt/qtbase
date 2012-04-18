@@ -76,7 +76,7 @@ macro(expect_fail _dir)
   )
 endmacro()
 
-if(${CMAKE_VERSION} VERSION_GREATER 2.8.7)
+if(${CMAKE_VERSION} VERSION_EQUAL 2.8.7 OR ${CMAKE_VERSION} VERSION_GREATER 2.8.7)
     # Requires CMAKE_AUTOMOC function in CMake 2.8.7
     expect_pass(pass1)
 else()
