@@ -1876,12 +1876,12 @@ void HtmlGenerator::generateHeader(const QString& title,
             out() << "  <link rel=\"prev\" href=\""
                   << anchorPair.first << "\" />\n";
 
-            navigationLinks += "[Previous: <a href=\"" + anchorPair.first + "\">";
+            navigationLinks += "<a href=\"" + anchorPair.first + "\">";
             if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
                 navigationLinks += protect(anchorPair.second);
             else
                 navigationLinks += protect(linkPair.second);
-            navigationLinks += "</a>]\n";
+            navigationLinks += "</a>\n";
         }
         if (node->links().contains(Node::NextLink)) {
             linkPair = node->links()[Node::NextLink];
@@ -1894,12 +1894,12 @@ void HtmlGenerator::generateHeader(const QString& title,
             out() << "  <link rel=\"next\" href=\""
                   << anchorPair.first << "\" />\n";
 
-            navigationLinks += "[Next: <a href=\"" + anchorPair.first + "\">";
+            navigationLinks += "<a href=\"" + anchorPair.first + "\">";
             if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
                 navigationLinks += protect(anchorPair.second);
             else
                 navigationLinks += protect(linkPair.second);
-            navigationLinks += "</a>]\n";
+            navigationLinks += "</a>\n";
         }
         if (node->links().contains(Node::StartLink)) {
             linkPair = node->links()[Node::StartLink];
