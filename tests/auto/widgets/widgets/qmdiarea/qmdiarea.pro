@@ -12,4 +12,4 @@ mac {
     LIBS += -framework Security
 }
 
-!mac:CONFIG+=insignificant_test # QTBUG-25298
+!mac:!win32:CONFIG+=insignificant_test # QTBUG-25298
