@@ -530,6 +530,9 @@ void tst_QMdiArea::subWindowActivated2()
 #ifdef Q_OS_WINCE
     QSKIP("Not fixed yet. See Task 197453");
 #endif
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-25298", Abort);
+#endif
     QTRY_COMPARE(spy.count(), 1);
     QVERIFY(!mdiArea.activeSubWindow());
     QCOMPARE(mdiArea.currentSubWindow(), activeSubWindow);
@@ -1756,6 +1759,9 @@ void tst_QMdiArea::tileSubWindows()
 #ifdef Q_OS_WINCE
     QSKIP("Not fixed yet! See task 197453");
 #endif
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-25298", Abort);
+#endif
     QTRY_COMPARE(workspace.viewport()->rect().size(), expectedViewportSize);
 
     // Not enough space for all sub-windows to be visible -> provide scroll bars.
@@ -1825,6 +1831,9 @@ void tst_QMdiArea::cascadeAndTileSubWindows()
         titleBarHeight -= 4;
     const QFontMetrics fontMetrics = QFontMetrics(QApplication::font("QMdiSubWindowTitleBar"));
     const int dy = qMax(titleBarHeight - (titleBarHeight - fontMetrics.height()) / 2, 1);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-25298", Abort);
+#endif
     QCOMPARE(windows.at(2)->geometry().top() - windows.at(1)->geometry().top(), dy);
 
     for (int i = 0; i < windows.count(); ++i) {
@@ -2286,6 +2295,9 @@ void tst_QMdiArea::setActivationOrder()
     QVERIFY(verifyArrangement(&mdiArea, Tiled, expectedTileIndices));
 
     mdiArea.cascadeSubWindows();
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-25298", Abort);
+#endif
     QVERIFY(verifyArrangement(&mdiArea, Cascaded, expectedCascadeIndices));
     QTest::qWait(100);
 
@@ -2333,6 +2345,9 @@ void tst_QMdiArea::tabBetweenSubWindows()
     QCOMPARE(spy.count(), 0);
 
     // Walk through the entire list of sub windows.
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-25298", Abort);
+#endif
     QVERIFY(tabBetweenSubWindowsIn(&mdiArea));
     QCOMPARE(mdiArea.activeSubWindow(), subWindows.back());
     QCOMPARE(spy.count(), 0);
