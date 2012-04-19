@@ -3279,25 +3279,16 @@ QClipboardEvent::~QClipboardEvent()
 
 /*! \internal
  */
-QWindowStateChangeEvent::QWindowStateChangeEvent(Qt::WindowStates s)
-    : QEvent(WindowStateChange), ostate(s)
-{
-}
-
-/*! \internal
- */
 QWindowStateChangeEvent::QWindowStateChangeEvent(Qt::WindowStates s, bool isOverride)
-    : QEvent(WindowStateChange), ostate(s)
+    : QEvent(WindowStateChange), ostate(s), m_override(isOverride)
 {
-    if (isOverride)
-        d = (QEventPrivate*)(this);
 }
 
 /*! \internal
  */
 bool QWindowStateChangeEvent::isOverride() const
 {
-    return (d != 0);
+    return m_override;
 }
 
 /*! \internal
