@@ -786,6 +786,9 @@ void tst_QDateTimeEdit::selectAndScrollWithKeys()
     QTest::keyClick(testWidget, Qt::Key_Home);
 #endif
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ShiftModifier);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23674", Abort);
+#endif
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString("1"));
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ShiftModifier);
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString("11"));
@@ -889,6 +892,9 @@ void tst_QDateTimeEdit::backspaceKey()
 #endif
     QCOMPARE(testWidget->text(), QString("11/05/2004"));
     QTest::keyClick(testWidget, Qt::Key_Backspace);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23674", Abort);
+#endif
     QCOMPARE(testWidget->text(), QString("11/05/200"));
     QTest::keyClick(testWidget, Qt::Key_Backspace);
     QCOMPARE(testWidget->text(), QString("11/05/20"));
@@ -1025,6 +1031,9 @@ void tst_QDateTimeEdit::enterKey()
     QTest::keyClick(testWidget, Qt::Key_Home);
 #endif
     QTest::keyClick(testWidget, Qt::Key_Enter);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23674", Abort);
+#endif
     QVERIFY(!testWidget->lineEdit()->hasSelectedText());
 #ifdef Q_OS_MAC
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
@@ -2551,6 +2560,9 @@ void tst_QDateTimeEdit::newCase()
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
 #endif
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23674", Abort);
+#endif
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString());
     QTest::keyClick(testWidget, Qt::Key_Right);
     QTest::keyClick(testWidget, Qt::Key_Right);
@@ -2627,6 +2639,9 @@ void tst_QDateTimeEdit::cursorPos()
     QTest::keyClick(testWidget, Qt::Key_Return);
     QTest::keyClick(testWidget, Qt::Key_3);
     QTest::keyClick(testWidget, Qt::Key_1);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23674", Abort);
+#endif
     QCOMPARE(testWidget->lineEdit()->cursorPosition(), 3);
 }
 
@@ -2660,6 +2675,9 @@ void tst_QDateTimeEdit::newCase5()
     QTest::keyClick(testWidget, Qt::Key_1);
     QTest::keyClick(testWidget, Qt::Key_2);
     QTest::keyClick(testWidget, Qt::Key_4);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23674", Abort);
+#endif
     QCOMPARE(testWidget->lineEdit()->displayText(), QString("2005-10-07 17:44:13 124 ms"));
 
     QTest::keyClick(testWidget, Qt::Key_Backspace);
@@ -2769,6 +2787,9 @@ void tst_QDateTimeEdit::setSelectedSection()
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
+#endif
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
     QVERIFY(!testWidget->lineEdit()->hasSelectedText());
     testWidget->setSelectedSection(QDateTimeEdit::MinuteSection);
@@ -2886,6 +2907,9 @@ void tst_QDateTimeEdit::reverseTest()
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_End);
+#endif
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
     QCOMPARE(testWidget->currentSection(), QDateTimeEdit::DaySection);
     QTest::keyClick(testWidget, Qt::Key_Up);
@@ -3039,6 +3063,9 @@ void tst_QDateTimeEdit::ddMMMMyyyy()
     QTest::keyClick(testWidget, Qt::Key_End);
 #endif
     QTest::keyClick(testWidget, Qt::Key_Backspace);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23674", Abort);
+#endif
     QCOMPARE(testWidget->lineEdit()->text(), "01." + QDate::longMonthName(1) + ".200");
 }
 
@@ -3328,6 +3355,9 @@ void tst_QDateTimeEdit::potentialYYValueBug()
     QTest::keyClick(&edit, Qt::Key_End);
 #endif
     QTest::keyClick(&edit, Qt::Key_Backspace);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23674", Abort);
+#endif
     QCOMPARE(edit.text(), QString("14/09/5"));
 }
 
@@ -3343,6 +3373,9 @@ void tst_QDateTimeEdit::textSectionAtEnd()
     QTest::keyClick(&edit, Qt::Key_End);
 #endif
     QTest::keyClick(&edit, Qt::Key_Backspace);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23674", Abort);
+#endif
     QCOMPARE(edit.text(), QString("Januar"));
 }
 
