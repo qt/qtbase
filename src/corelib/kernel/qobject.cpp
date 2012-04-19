@@ -989,7 +989,7 @@ void QObject::setObjectName(const QString &name)
     Q_D(QObject);
     if (d->objectName != name) {
         d->objectName = name;
-        if (d->declarativeData)
+        if (d->declarativeData && d->declarativeData->objectNameChanged)
             d->declarativeData->objectNameChanged(d->declarativeData, this);
         emit objectNameChanged(d->objectName);
     }
