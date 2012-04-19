@@ -646,6 +646,10 @@ void DitaXmlGenerator::generateTree(Tree *tree)
 
     Generator::generateTree(tree);
     generateCollisionPages();
+
+    QString fileBase = project.toLower().simplified().replace(" ", "-");
+    generateIndex(fileBase, projectUrl, projectDescription);
+
     writeDitaMap(tree);
 }
 
@@ -2429,7 +2433,7 @@ void DitaXmlGenerator::writeRelatedLinks(const FakeNode* node, CodeMarker* marke
 /*!
   Returns "dita" for this subclass of class Generator.
  */
-QString DitaXmlGenerator::fileExtension(const Node * /* node */) const
+QString DitaXmlGenerator::fileExtension() const
 {
     return "dita";
 }
@@ -5690,7 +5694,7 @@ DitaXmlGenerator::generateInnerNode(InnerNode* node)
 }
 
 /*!
-  Returns true if \a format is "XML" or "HTML" .
+  Returns true if \a format is "DITAXML" or "HTML" .
  */
 bool DitaXmlGenerator::canHandleFormat(const QString& format)
 {

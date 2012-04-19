@@ -94,7 +94,6 @@ public:
     static QString protect(const QString &string, const QString &encoding = "ISO-8859-1");
     static QString cleanRef(const QString& ref);
     static QString sinceTitle(int i) { return sinceTitles[i]; }
-    static QString fullDocumentLocation(const Node *node, bool subdir = false);
 
 protected:
     virtual void startText(const Node *relative, CodeMarker *marker);
@@ -103,7 +102,7 @@ protected:
                              CodeMarker *marker);
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
     virtual void generateFakeNode(FakeNode* fake, CodeMarker* marker);
-    virtual QString fileExtension(const Node *node) const;
+    virtual QString fileExtension() const;
     virtual QString refForNode(const Node *node);
     virtual QString linkForNode(const Node *node, const Node *relative);
     virtual QString refForAtom(Atom *atom, const Node *node);

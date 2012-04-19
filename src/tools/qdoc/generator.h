@@ -90,6 +90,8 @@ public:
     virtual void terminateGenerator();
 
     static const QString& baseDir() { return baseDir_; }
+    static Generator *currentGenerator() { return currentGenerator_; }
+    static QString fullDocumentLocation(const Node *node, bool subdir = false);
     static Generator *generatorForFormat(const QString& format);
     static void initialize(const Config& config);
     static const QString& outputDir() { return outDir_; }
@@ -100,7 +102,7 @@ protected:
     virtual void endSubPage();
     virtual void endText(const Node *relative, CodeMarker *marker);
     virtual QString fileBase(const Node* node) const;
-    virtual QString fileExtension(const Node* node) const = 0;
+    virtual QString fileExtension() const = 0;
     virtual QString fullName(const Node *node,
                              const Node *relative,
                              CodeMarker *marker) const;
@@ -185,6 +187,7 @@ protected:
 
 private:
     static QString baseDir_;
+    static Generator* currentGenerator_;
     static QStringList exampleDirs;
     static QStringList exampleImgExts;
     static QMap<QString, QMap<QString, QString> > fmtLeftMaps;

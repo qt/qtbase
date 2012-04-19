@@ -60,6 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 QString Generator::baseDir_;
+Generator* Generator::currentGenerator_;
 QStringList Generator::exampleDirs;
 QStringList Generator::exampleImgExts;
 QMap<QString, QMap<QString, QString> > Generator::fmtLeftMaps;
@@ -346,7 +347,7 @@ QString Generator::fileName(const Node* node) const
 
     QString name = fileBase(node);
     name += QLatin1Char('.');
-    name += fileExtension(node);
+    name += fileExtension();
     return name;
 }
 
@@ -445,6 +446,173 @@ QMap<QString, QString>& Generator::formattingLeftMap()
 QMap<QString, QString>& Generator::formattingRightMap()
 {
     return fmtRightMaps[format()];
+}
+
+/*!
+  Returns the full document location.
+ */
+QString Generator::fullDocumentLocation(const Node *node, bool subdir)
+{
+    if (!node)
+        return "";
+    if (!node->url().isEmpty())
+        return node->url();
+
+    QString parentName;
+    QString anchorRef;
+    QString fdl = "";
+
+    /*
+      If the output is being sent to subdirectories of the
+      output directory, and if the subdir parameter is set,
+      prepend the subdirectory name + '/' to the result.
+     */
+    if (subdir) {
+        fdl = node->outputSubdirectory();
+        if (!fdl.isEmpty())
+            fdl.append(QLatin1Char('/'));
+    }
+    if (node->type() == Node::Namespace) {
+
+        // The root namespace has no name - check for this before creating
+        // an attribute containing the location of any documentation.
+
+        if (!node->fileBase().isEmpty())
+            parentName = node->fileBase() + "." + currentGenerator()->fileExtension();
+        else
+            return "";
+    }
+    else if (node->type() == Node::Fake) {
+        if ((node->subType() == Node::QmlClass) ||
+                (node->subType() == Node::QmlBasicType)) {
+            QString fb = node->fileBase();
+            if (fb.startsWith(Generator::outputPrefix(QLatin1String("QML"))))
+                return fb + "." + currentGenerator()->fileExtension();
+            else {
+                QString mq = "";
+                if (!node->qmlModuleName().isEmpty()) {
+                    mq = node->qmlModuleIdentifier().replace(QChar('.'),QChar('-'));
+                    mq = mq.toLower() + "-";
+                }
+                return fdl+ Generator::outputPrefix(QLatin1String("QML")) + mq +
+                        node->fileBase() + "." + currentGenerator()->fileExtension();
+            }
+        }
+        else
+            parentName = node->fileBase() + "." + currentGenerator()->fileExtension();
+    }
+    else if (node->fileBase().isEmpty())
+        return "";
+
+    Node *parentNode = 0;
+
+    if ((parentNode = node->relates())) {
+        parentName = fullDocumentLocation(node->relates());
+    }
+    else if ((parentNode = node->parent())) {
+        if (parentNode->subType() == Node::QmlPropertyGroup) {
+            parentNode = parentNode->parent();
+            parentName = fullDocumentLocation(parentNode);
+        }
+        else
+            parentName = fullDocumentLocation(node->parent());
+    }
+
+    switch (node->type()) {
+    case Node::Class:
+    case Node::Namespace:
+        if (parentNode && !parentNode->name().isEmpty()) {
+            parentName.remove("." + currentGenerator()->fileExtension());
+            parentName +=  QLatin1Char('-')
+                    + node->fileBase().toLower() + "." + currentGenerator()->fileExtension();
+        } else {
+            parentName = node->fileBase() + "." + currentGenerator()->fileExtension();
+        }
+        break;
+    case Node::Function:
+    {
+        /*
+                  Functions can be destructors, overloaded, or
+                  have associated properties.
+                */
+        const FunctionNode *functionNode =
+                static_cast<const FunctionNode *>(node);
+
+        if (functionNode->metaness() == FunctionNode::Dtor)
+            anchorRef = "#dtor." + functionNode->name().mid(1);
+
+        else if (functionNode->associatedProperty())
+            return fullDocumentLocation(functionNode->associatedProperty());
+
+        else if (functionNode->overloadNumber() > 1)
+            anchorRef = QLatin1Char('#') + functionNode->name()
+                    + "-" + QString::number(functionNode->overloadNumber());
+        else
+            anchorRef = QLatin1Char('#') + functionNode->name();
+    }
+
+        /*
+              Use node->name() instead of node->fileBase() as
+              the latter returns the name in lower-case. For
+              HTML anchors, we need to preserve the case.
+            */
+        break;
+    case Node::Enum:
+        anchorRef = QLatin1Char('#') + node->name() + "-enum";
+        break;
+    case Node::Typedef:
+        anchorRef = QLatin1Char('#') + node->name() + "-typedef";
+        break;
+    case Node::Property:
+        anchorRef = QLatin1Char('#') + node->name() + "-prop";
+        break;
+    case Node::QmlProperty:
+        anchorRef = QLatin1Char('#') + node->name() + "-prop";
+        break;
+    case Node::QmlSignal:
+        anchorRef = QLatin1Char('#') + node->name() + "-signal";
+        break;
+    case Node::QmlSignalHandler:
+        anchorRef = QLatin1Char('#') + node->name() + "-signal-handler";
+        break;
+    case Node::QmlMethod:
+        anchorRef = QLatin1Char('#') + node->name() + "-method";
+        break;
+    case Node::Variable:
+        anchorRef = QLatin1Char('#') + node->name() + "-var";
+        break;
+    case Node::Fake:
+    {
+        /*
+              Use node->fileBase() for fake nodes because they are represented
+              by pages whose file names are lower-case.
+            */
+        parentName = node->fileBase();
+        parentName.replace(QLatin1Char('/'), "-").replace(".", "-");
+        parentName += "." + currentGenerator()->fileExtension();
+    }
+        break;
+    default:
+        break;
+    }
+
+    // Various objects can be compat (deprecated) or obsolete.
+    if (node->type() != Node::Class && node->type() != Node::Namespace) {
+        switch (node->status()) {
+        case Node::Compat:
+            parentName.replace("." + currentGenerator()->fileExtension(),
+                               "-compat." + currentGenerator()->fileExtension());
+            break;
+        case Node::Obsolete:
+            parentName.replace("." + currentGenerator()->fileExtension(),
+                               "-obsolete." + currentGenerator()->fileExtension());
+            break;
+        default:
+            ;
+        }
+    }
+
+    return fdl + parentName.toLower() + anchorRef;
 }
 
 QString Generator::fullName(const Node *node,
@@ -1449,6 +1617,7 @@ void Generator::initialize(const Config &config)
     QList<Generator *>::ConstIterator g = generators.begin();
     while (g != generators.end()) {
         if (outputFormats.contains((*g)->format())) {
+            currentGenerator_ = (*g);
             (*g)->initializeGenerator(config);
             QStringList extraImages =
                     config.getCleanPathList(CONFIG_EXTRAIMAGES+Config::dot+(*g)->format());
