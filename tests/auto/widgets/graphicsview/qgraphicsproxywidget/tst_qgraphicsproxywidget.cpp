@@ -1498,6 +1498,9 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     // QRect(0, 0, 200, 12) is the first update, expanded (-2, -2, 2, 2)
     // QRect(0, 12, 102, 10) is the scroll update, expanded (-2, -2, 2, 2),
     // intersected with the above update.
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("", "QTBUG-24294", Abort);
+#endif
     QCOMPARE(view.paintEventRegion.rects(),
 	     QVector<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
     QCOMPARE(widget->npaints, 2);
@@ -2472,6 +2475,9 @@ void tst_QGraphicsProxyWidget::popup_basic()
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0,
 		      view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
 
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("", "QTBUG-24294", Abort);
+#endif
     QTRY_COMPARE(box->pos(), QPoint());
 
     QCOMPARE(proxy->childItems().count(), 1);
@@ -3376,6 +3382,9 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     // Update and hide.
     proxy->update();
     proxy->hide();
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("", "QTBUG-24294", Abort);
+#endif
     QTRY_COMPARE(view.npaints, 1);
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("", "QTBUG-23700", Continue);
