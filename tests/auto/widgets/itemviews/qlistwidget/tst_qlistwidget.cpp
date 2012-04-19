@@ -1667,6 +1667,8 @@ void tst_QListWidget::QTBUG14363_completerWithAnyKeyPressedEditTriggers()
 	listWidget.show();
     listWidget.setCurrentItem(item);
     QTest::qWaitForWindowShown(&listWidget);
+    listWidget.setFocus();
+    QCOMPARE(qApp->focusWidget(), &listWidget);
 
     QTest::keyClick(listWidget.viewport(), Qt::Key_C);
 
