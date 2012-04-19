@@ -70,11 +70,13 @@ MainWindow::MainWindow()
 
 //! [2]
     lineEdit = new QLineEdit;
+#ifndef QT_NO_CLIPBOARD
     QPushButton *clipboardButton = new QPushButton(tr("&To clipboard"));
 //! [2]
 
 //! [3]
     clipboard = QApplication::clipboard();
+#endif
 //! [3]
 
 //! [4]
@@ -91,7 +93,10 @@ MainWindow::MainWindow()
 //! [4] //! [5]
     connect(characterWidget, SIGNAL(characterSelected(QString)),
             this, SLOT(insertCharacter(QString)));
+
+#ifndef QT_NO_CLIPBOARD
     connect(clipboardButton, SIGNAL(clicked()), this, SLOT(updateClipboard()));
+#endif
 //! [5]
     connect(fontMerging, SIGNAL(toggled(bool)), characterWidget, SLOT(updateFontMerging(bool)));
 
@@ -110,7 +115,9 @@ MainWindow::MainWindow()
     QHBoxLayout *lineLayout = new QHBoxLayout;
     lineLayout->addWidget(lineEdit, 1);
     lineLayout->addSpacing(12);
+#ifndef QT_NO_CLIPBOARD
     lineLayout->addWidget(clipboardButton);
+#endif
 
     QVBoxLayout *centralLayout = new QVBoxLayout;
     centralLayout->addLayout(controlsLayout);
@@ -185,6 +192,7 @@ void MainWindow::insertCharacter(const QString &character)
 //! [9]
 
 //! [10]
+#ifndef QT_NO_CLIPBOARD
 void MainWindow::updateClipboard()
 {
 //! [11]
@@ -192,4 +200,5 @@ void MainWindow::updateClipboard()
 //! [11]
     clipboard->setText(lineEdit->text(), QClipboard::Selection);
 }
+#endif
 //! [10]
