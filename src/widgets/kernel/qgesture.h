@@ -310,8 +310,10 @@ public:
 #endif
 
 private:
-    QGestureEventPrivate *d_func();
-    const QGestureEventPrivate *d_func() const;
+    QList<QGesture *> m_gestures;
+    QWidget *m_widget;
+    QMap<Qt::GestureType, bool> m_accepted;
+    QMap<Qt::GestureType, QWidget *> m_targetWidgets;
 
     friend class QApplication;
     friend class QGestureManager;
