@@ -2329,6 +2329,42 @@ static inline bool prevCharJoins(const QString &string, int pos)
     return (joining == QChar::Dual || joining == QChar::Center);
 }
 
+static bool isRetainableControlCode(const QChar &c)
+{
+    return (c.unicode() == 0x202a       // LRE
+            || c.unicode() == 0x202b    // LRE
+            || c.unicode() == 0x202c    // PDF
+            || c.unicode() == 0x202d    // LRO
+            || c.unicode() == 0x202e    // RLO
+            || c.unicode() == 0x200e    // LRM
+            || c.unicode() == 0x200f);  // RLM
+}
+
+static QString stringMidRetainingBidiCC(const QString &string,
+                                        const QString &ellidePrefix,
+                                        const QString &ellideSuffix,
+                                        int subStringFrom,
+                                        int subStringTo,
+                                        int midStart,
+                                        int midLength)
+{
+    QString prefix;
+    for (int i=subStringFrom; i<midStart; ++i) {
+        QChar c = string.at(i);
+        if (isRetainableControlCode(c))
+            prefix += c;
+    }
+
+    QString suffix;
+    for (int i=midStart + midLength; i<subStringTo; ++i) {
+        QChar c = string.at(i);
+        if (isRetainableControlCode(c))
+            suffix += c;
+    }
+
+    return prefix + ellidePrefix + string.mid(midStart, midLength) + ellideSuffix + suffix;
+}
+
 QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int flags, int from, int count) const
 {
 //    qDebug() << "elidedText; available width" << width.toReal() << "text width:" << this->width(0, layoutData->string.length()).toReal();
@@ -2440,7 +2476,10 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         if (nextCharJoins(layoutData->string, pos))
             ellipsisText.prepend(QChar(0x200d) /* ZWJ */);
 
-        return layoutData->string.mid(from, pos - from) + ellipsisText;
+        return stringMidRetainingBidiCC(layoutData->string,
+                                        QString(), ellipsisText,
+                                        from, to,
+                                        from, pos - from);
     } else if (mode == Qt::ElideLeft) {
         QFixed currentWidth;
         int pos;
@@ -2460,7 +2499,10 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         if (prevCharJoins(layoutData->string, pos))
             ellipsisText.append(QChar(0x200d) /* ZWJ */);
 
-        return ellipsisText + layoutData->string.mid(pos, to - pos);
+        return stringMidRetainingBidiCC(layoutData->string,
+                                        ellipsisText, QString(),
+                                        from, to,
+                                        pos, to - pos);
     } else if (mode == Qt::ElideMiddle) {
         QFixed leftWidth;
         QFixed rightWidth;
