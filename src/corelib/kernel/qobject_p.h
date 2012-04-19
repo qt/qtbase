@@ -91,6 +91,7 @@ public:
     static void (*parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *);
     static void (*objectNameChanged)(QAbstractDeclarativeData *, QObject *);
     static void (*signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **);
+    static int  (*receivers)(QAbstractDeclarativeData *, const QObject *, int);
 };
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData

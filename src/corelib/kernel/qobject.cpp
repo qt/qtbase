@@ -184,6 +184,7 @@ void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject 
 void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
 void (*QAbstractDeclarativeData::objectNameChanged)(QAbstractDeclarativeData *, QObject *) = 0;
 void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = 0;
+int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QObject *, int) = 0;
 
 QObjectData::~QObjectData() {}
 
@@ -2182,6 +2183,11 @@ int QObject::receivers(const char *signal) const
             err_method_notfound(this, signal-1, "receivers");
 #endif
             return false;
+        }
+
+        if (d->declarativeData && QAbstractDeclarativeData::receivers) {
+            receivers += QAbstractDeclarativeData::receivers(d->declarativeData, this,
+                                                             metaObject()->indexOfMethod(signal));
         }
 
         Q_D(const QObject);
