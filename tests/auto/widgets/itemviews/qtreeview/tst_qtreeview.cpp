@@ -2999,7 +2999,10 @@ void tst_QTreeView::styleOptionViewItem()
         QItemSelection sel(model.index(0,0), model.index(0,modelColumns-1));
         QRect rect;
         view.aiv_priv()->renderToPixmap(sel.indexes(), &rect);
-        QTRY_VERIFY(delegate.count == visibleColumns);
+        if (delegate.count != visibleColumns) {
+            qDebug() << rect << view.rect() << view.isVisible();
+        }
+        QTRY_COMPARE(delegate.count, visibleColumns);
     }
 #endif
 
@@ -3024,7 +3027,10 @@ void tst_QTreeView::styleOptionViewItem()
     QItemSelection sel(model.index(0,0), model.index(0,modelColumns-1));
     QRect rect;
     view.aiv_priv()->renderToPixmap(sel.indexes(), &rect);
-    QTRY_VERIFY(delegate.count == visibleColumns);
+    if (delegate.count != visibleColumns) {
+        qDebug() << rect << view.rect() << view.isVisible();
+    }
+    QTRY_COMPARE(delegate.count, visibleColumns);
 #endif
 
     //test dynamic models
