@@ -101,7 +101,7 @@ static inline uint detectProcessorFeatures()
     return features;
 }
 
-#elif defined(__arm__) || defined(__arm) || defined(QT_HAVE_IWMMXT) || defined(QT_HAVE_NEON)
+#elif defined(Q_PROCESSOR_ARM) || defined(QT_HAVE_IWMMXT) || defined(QT_HAVE_NEON)
 static inline uint detectProcessorFeatures()
 {
     uint features = 0;
@@ -145,7 +145,7 @@ static inline uint detectProcessorFeatures()
     return features;
 }
 
-#elif defined(__i386__) || defined(_M_IX86)
+#elif defined(Q_PROCESSOR_X86_32)
 static inline uint detectProcessorFeatures()
 {
     uint features = 0;
@@ -270,7 +270,7 @@ static inline uint detectProcessorFeatures()
     return features;
 }
 
-#elif defined(__x86_64) || defined(Q_OS_WIN64)
+#elif defined(Q_PROCESSOR_X86_64) || defined(Q_OS_WIN64)
 static inline uint detectProcessorFeatures()
 {
     uint features = SSE2;
