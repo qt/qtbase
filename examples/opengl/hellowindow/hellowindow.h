@@ -92,6 +92,8 @@ public:
 
     void updateColor();
 
+    void exposeEvent(QExposeEvent *event);
+
 signals:
     void needRender(QSurface *surface, const QColor &color, const QSize &viewSize);
 

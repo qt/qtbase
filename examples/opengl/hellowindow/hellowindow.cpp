@@ -72,14 +72,19 @@ HelloWindow::HelloWindow(Renderer *renderer)
 
     create();
 
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(render()));
-    timer->start(10);
-
     connect(this, SIGNAL(needRender(QSurface *, const QColor &, const QSize &)),
             renderer, SLOT(render(QSurface *, const QColor &, const QSize &)));
 
     updateColor();
+}
+
+void HelloWindow::exposeEvent(QExposeEvent *event)
+{
+    render();
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(render()));
+    timer->start(10);
 }
 
 void HelloWindow::mousePressEvent(QMouseEvent *)
