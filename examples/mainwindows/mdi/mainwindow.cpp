@@ -117,6 +117,7 @@ void MainWindow::saveAs()
         statusBar()->showMessage(tr("File saved"), 2000);
 }
 
+#ifndef QT_NO_CLIPBOARD
 void MainWindow::cut()
 {
     if (activeMdiChild())
@@ -134,6 +135,7 @@ void MainWindow::paste()
     if (activeMdiChild())
         activeMdiChild()->paste();
 }
+#endif
 
 void MainWindow::about()
 {
@@ -147,7 +149,9 @@ void MainWindow::updateMenus()
     bool hasMdiChild = (activeMdiChild() != 0);
     saveAct->setEnabled(hasMdiChild);
     saveAsAct->setEnabled(hasMdiChild);
+#ifndef QT_NO_CLIPBOARD
     pasteAct->setEnabled(hasMdiChild);
+#endif
     closeAct->setEnabled(hasMdiChild);
     closeAllAct->setEnabled(hasMdiChild);
     tileAct->setEnabled(hasMdiChild);
@@ -156,10 +160,12 @@ void MainWindow::updateMenus()
     previousAct->setEnabled(hasMdiChild);
     separatorAct->setVisible(hasMdiChild);
 
+#ifndef QT_NO_CLIPBOARD
     bool hasSelection = (activeMdiChild() &&
                          activeMdiChild()->textCursor().hasSelection());
     cutAct->setEnabled(hasSelection);
     copyAct->setEnabled(hasSelection);
+#endif
 }
 
 void MainWindow::updateWindowMenu()
@@ -202,10 +208,12 @@ MdiChild *MainWindow::createMdiChild()
     MdiChild *child = new MdiChild;
     mdiArea->addSubWindow(child);
 
+#ifndef QT_NO_CLIPBOARD
     connect(child, SIGNAL(copyAvailable(bool)),
             cutAct, SLOT(setEnabled(bool)));
     connect(child, SIGNAL(copyAvailable(bool)),
             copyAct, SLOT(setEnabled(bool)));
+#endif
 
     return child;
 }
@@ -239,6 +247,7 @@ void MainWindow::createActions()
     connect(exitAct, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
 //! [0]
 
+#ifndef QT_NO_CLIPBOARD
     cutAct = new QAction(QIcon(":/images/cut.png"), tr("Cu&t"), this);
     cutAct->setShortcuts(QKeySequence::Cut);
     cutAct->setStatusTip(tr("Cut the current selection's contents to the "
@@ -256,6 +265,7 @@ void MainWindow::createActions()
     pasteAct->setStatusTip(tr("Paste the clipboard's contents into the current "
                               "selection"));
     connect(pasteAct, SIGNAL(triggered()), this, SLOT(paste()));
+#endif
 
     closeAct = new QAction(tr("Cl&ose"), this);
     closeAct->setStatusTip(tr("Close the active window"));
@@ -313,9 +323,11 @@ void MainWindow::createMenus()
     fileMenu->addAction(exitAct);
 
     editMenu = menuBar()->addMenu(tr("&Edit"));
+#ifndef QT_NO_CLIPBOARD
     editMenu->addAction(cutAct);
     editMenu->addAction(copyAct);
     editMenu->addAction(pasteAct);
+#endif
 
     windowMenu = menuBar()->addMenu(tr("&Window"));
     updateWindowMenu();
@@ -335,10 +347,12 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
 
+#ifndef QT_NO_CLIPBOARD
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(cutAct);
     editToolBar->addAction(copyAct);
     editToolBar->addAction(pasteAct);
+#endif
 }
 
 void MainWindow::createStatusBar()

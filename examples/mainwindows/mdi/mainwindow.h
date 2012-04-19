@@ -67,9 +67,11 @@ private slots:
     void open();
     void save();
     void saveAs();
+#ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();
     void paste();
+#endif
     void about();
     void updateMenus();
     void updateWindowMenu();
@@ -101,9 +103,11 @@ private:
     QAction *saveAct;
     QAction *saveAsAct;
     QAction *exitAct;
+#ifndef QT_NO_CLIPBOARD
     QAction *cutAct;
     QAction *copyAct;
     QAction *pasteAct;
+#endif
     QAction *closeAct;
     QAction *closeAllAct;
     QAction *tileAct;
