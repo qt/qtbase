@@ -182,7 +182,6 @@ private:
 
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = 0;
 void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
-void (*QAbstractDeclarativeData::objectNameChanged)(QAbstractDeclarativeData *, QObject *) = 0;
 void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = 0;
 int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QObject *, int) = 0;
 
@@ -989,8 +988,6 @@ void QObject::setObjectName(const QString &name)
     Q_D(QObject);
     if (d->objectName != name) {
         d->objectName = name;
-        if (d->declarativeData && d->declarativeData->objectNameChanged)
-            d->declarativeData->objectNameChanged(d->declarativeData, this);
         emit objectNameChanged(d->objectName);
     }
 }
