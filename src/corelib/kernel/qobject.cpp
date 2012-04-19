@@ -2190,6 +2190,9 @@ int QObject::receivers(const char *signal) const
                                                              metaObject()->indexOfMethod(signal));
         }
 
+        if (!d->isSignalConnected(signal_index))
+            return receivers;
+
         QMutexLocker locker(signalSlotLock(this));
         if (d->connectionLists) {
             if (signal_index < d->connectionLists->count()) {
