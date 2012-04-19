@@ -40,5 +40,3 @@
 ****************************************************************************/
 
 #include "../../linux-g++/qplatformdefs.h"
-
-#define QT_QPA_DEFAULT_PLATFORM_NAME "eglfs"
