@@ -140,6 +140,7 @@ void tst_QSizeGrip::hideAndShowOnWindowStateChange()
 #ifndef Q_OS_MAC
     QVERIFY(!sizeGrip->isVisible());
 #else
+    QEXPECT_FAIL("", "QTBUG-23681", Abort);
     QVERIFY(sizeGrip->isVisible());
 #endif
 
