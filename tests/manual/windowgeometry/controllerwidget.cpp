@@ -1,0 +1,364 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/
+**
+** This file is part of the examples of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights. These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "controllerwidget.h"
+
+#if QT_VERSION >= 0x050000
+#    include <QtWidgets>
+#    include <QWindow>
+#    include <QBackingStore>
+#    include <QPaintDevice>
+#    include <QPainter>
+#else
+#    include <QtGui>
+#endif
+
+#include <QResizeEvent>
+
+CoordinateControl::CoordinateControl(const QString &sep) : m_x(new QSpinBox), m_y(new QSpinBox)
+{
+    m_x->setMinimum(0);
+    m_x->setMaximum(2000);
+    connect(m_x, SIGNAL(valueChanged(int)), this, SLOT(spinBoxChanged()));
+    m_y->setMinimum(0);
+    m_y->setMaximum(2000);
+    connect(m_y, SIGNAL(valueChanged(int)), this, SLOT(spinBoxChanged()));
+    QHBoxLayout *l = new QHBoxLayout(this);
+    l->addWidget(m_x);
+    l->addWidget(new QLabel(sep));
+    l->addWidget(m_y);
+}
+
+void CoordinateControl::setCoordinates(int x, int y)
+{
+    m_x->blockSignals(true);
+    m_y->blockSignals(true);
+    m_x->setValue(x);
+    m_y->setValue(y);
+    m_x->blockSignals(false);
+    m_y->blockSignals(false);
+}
+
+QPair<int, int> CoordinateControl::coordinates() const
+{
+    return QPair<int, int>(m_x->value(), m_y->value());
+}
+
+void CoordinateControl::spinBoxChanged()
+{
+    const int x = m_x->value();
+    const int y = m_y->value();
+    emit pointValueChanged(QPoint(x, y));
+    emit sizeValueChanged(QSize(x, y));
+}
+
+RectControl::RectControl()
+    : m_point(new CoordinateControl(QLatin1String("+")))
+    , m_size(new CoordinateControl(QLatin1String("x")))
+{
+    QHBoxLayout *l = new QHBoxLayout(this);
+    connect(m_point, SIGNAL(pointValueChanged(QPoint)), this, SLOT(handleChanged()));
+    connect(m_point, SIGNAL(pointValueChanged(QPoint)), this, SIGNAL(positionChanged(QPoint)));
+    l->addWidget(m_point);
+    l->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
+    connect(m_size, SIGNAL(sizeValueChanged(QSize)), this, SLOT(handleChanged()));
+    connect(m_size, SIGNAL(sizeValueChanged(QSize)), this, SIGNAL(sizeChanged(QSize)));
+    l->addWidget(m_size);
+}
+
+void RectControl::setRectValue(const QRect &r)
+{
+    m_point->setPointValue(r.topLeft());
+    m_size->setSizeValue(r.size());
+}
+
+QRect RectControl::rectValue() const
+{
+    return QRect(m_point->pointValue(), m_size->sizeValue());
+}
+
+void RectControl::handleChanged()
+{
+    emit changed(rectValue());
+}
+
+BaseWindowControl::BaseWindowControl(QObject *w)
+    : m_geometry(new RectControl)
+    , m_framePosition(new CoordinateControl(QLatin1String("x")))
+    , m_moveEventLabel(new QLabel(tr("Move events")))
+    , m_resizeEventLabel(new QLabel(tr("Resize events")))
+    , m_mouseEventLabel(new QLabel(tr("Mouse events")))
+    , m_object(w)
+    , m_moveCount(0)
+    , m_resizeCount(0)
+{
+    m_object->installEventFilter(this);
+    QGridLayout *l = new QGridLayout(this);
+    m_geometry->setTitle(tr("Geometry"));
+    l->addWidget(m_geometry, 0, 0, 1, 2);
+    QGroupBox *frameGB = new QGroupBox(tr("Frame"));
+    QVBoxLayout *frameL = new QVBoxLayout(frameGB);
+    frameL->addWidget(m_framePosition);
+    l->addWidget(frameGB, 0, 2);
+    l->addWidget(m_moveEventLabel, 1, 0);
+    l->addWidget(m_resizeEventLabel, 1, 1);
+    l->addWidget(m_mouseEventLabel, 1, 2);
+
+    connect(m_geometry, SIGNAL(positionChanged(QPoint)), this, SLOT(posChanged(QPoint)));
+    connect(m_geometry, SIGNAL(sizeChanged(QSize)), this, SLOT(sizeChanged(QSize)));
+    connect(m_framePosition, SIGNAL(pointValueChanged(QPoint)), this, SLOT(framePosChanged(QPoint)));
+}
+
+bool BaseWindowControl::eventFilter(QObject *, QEvent *e)
+{
+    switch (e->type()) {
+    case QEvent::Resize: {
+        const QResizeEvent *re = static_cast<const QResizeEvent *>(e);
+        m_resizeEventLabel->setText(tr("Resize %1x%2 (#%3)")
+                                    .arg(re->size().width()).arg(re->size().height())
+                                    .arg(++m_resizeCount));
+        refresh();
+    }
+        break;
+    case QEvent::Move: {
+        const QMoveEvent *me = static_cast<const QMoveEvent *>(e);
+        m_moveEventLabel->setText(tr("Move %1,%2 (#%3)")
+                                  .arg(me->pos().x()).arg(me->pos().y())
+                                  .arg(++m_moveCount));
+        refresh();
+    }
+        break;
+    case QEvent::MouseMove: {
+        const QMouseEvent *me = static_cast<const QMouseEvent *>(e);
+        const QPoint pos = me->pos();
+        QPoint globalPos = objectMapToGlobal(m_object, pos);
+        m_mouseEventLabel->setText(tr("Mouse: %1,%2 Global: %3,%4 ").
+                                   arg(pos.x()).arg(pos.y()).arg(globalPos.x()).arg(globalPos.y()));
+    }
+        break;
+    default:
+        break;
+    }
+    return false;
+}
+
+void BaseWindowControl::posChanged(const QPoint &p)
+{
+    QRect geom = objectGeometry(m_object);
+    geom.moveTopLeft(p);
+    setObjectGeometry(m_object, geom);
+}
+
+void BaseWindowControl::sizeChanged(const QSize &s)
+{
+    QRect geom = objectGeometry(m_object);
+    geom.setSize(s);
+    setObjectGeometry(m_object, geom);
+}
+
+void BaseWindowControl::framePosChanged(const QPoint &p)
+{
+    setObjectFramePosition(m_object, p);
+}
+
+void BaseWindowControl::refresh()
+{
+    m_geometry->setRectValue(objectGeometry(m_object));
+    m_framePosition->setPointValue(objectFramePosition(m_object));
+}
+
+// A control for a QWidget
+class WidgetWindowControl : public BaseWindowControl
+{
+public:
+    explicit WidgetWindowControl(QWidget *w ) : BaseWindowControl(w)
+        { setTitle(w->windowTitle()); }
+
+private:
+    virtual QRect objectGeometry(const QObject *o) const
+        { return static_cast<const QWidget *>(o)->geometry(); }
+    virtual void setObjectGeometry(QObject *o, const QRect &r) const
+        { static_cast<QWidget *>(o)->setGeometry(r); }
+    virtual QPoint objectFramePosition(const QObject *o) const
+        { return static_cast<const QWidget *>(o)->pos(); }
+    virtual void setObjectFramePosition(QObject *o, const QPoint &p) const
+        { static_cast<QWidget *>(o)->move(p); }
+    virtual QPoint objectMapToGlobal(const QObject *o, const QPoint &p) const
+        { return static_cast<const QWidget *>(o)->mapToGlobal(p); }
+};
+
+#if QT_VERSION >= 0x050000
+
+// Test window drawing diagonal lines
+class Window : public QWindow
+{
+public:
+    explicit Window(QWindow *parent = 0)
+        : QWindow(parent)
+        , m_backingStore(new QBackingStore(this))
+    {
+        setObjectName(QStringLiteral("window"));
+        setWindowTitle(tr("TestWindow"));
+    }
+
+protected:
+    void exposeEvent(QExposeEvent *)
+        { render(); }
+
+private:
+    QBackingStore *m_backingStore;
+    void render();
+};
+
+void Window::render()
+{
+    QRect rect(QPoint(), geometry().size());
+    m_backingStore->resize(rect.size());
+    m_backingStore->beginPaint(rect);
+    if (!rect.size().isEmpty()) {
+        QPaintDevice *device = m_backingStore->paintDevice();
+        QPainter p(device);
+        p.fillRect(rect, Qt::white);
+        p.drawLine(0, 0, rect.width(), rect.height());
+        p.drawLine(0, rect.height(), rect.width(), 0);
+    }
+    m_backingStore->endPaint();
+    m_backingStore->flush(rect);
+}
+
+// A control for a QWindow
+class WindowControl : public BaseWindowControl
+{
+public:
+    explicit WindowControl(QWindow *w ) : BaseWindowControl(w)
+        { setTitle(w->windowTitle()); }
+
+private:
+    virtual QRect objectGeometry(const QObject *o) const
+        { return static_cast<const QWindow *>(o)->geometry(); }
+    virtual void setObjectGeometry(QObject *o, const QRect &r) const
+        { static_cast<QWindow *>(o)->setGeometry(r); }
+    virtual QPoint objectFramePosition(const QObject *o) const
+        { return static_cast<const QWindow *>(o)->framePos(); }
+    virtual void setObjectFramePosition(QObject *o, const QPoint &p) const
+        { static_cast<QWindow *>(o)->setFramePos(p); }
+    virtual QPoint objectMapToGlobal(const QObject *o, const QPoint &p) const
+        { return static_cast<const QWindow *>(o)->mapToGlobal(p); }
+};
+
+#endif
+
+ControllerWidget::ControllerWidget(QWidget *parent)
+    : QMainWindow(parent)
+    , m_testWidget(new QWidget)
+#if QT_VERSION >= 0x050000
+    , m_testWindow(new Window)
+#endif
+{
+    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
+    QAction *exitAction = fileMenu->addAction(tr("Exit"));
+    exitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
+    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
+
+    QString title = QLatin1String("Geometry test, (Qt ");
+    title += QLatin1String(QT_VERSION_STR);
+#if QT_VERSION >= 0x050000
+    title += QLatin1String(", ");
+    title += qApp->platformName();
+#endif
+    title += QLatin1Char(')');
+    setWindowTitle(title);
+
+    int x = 100;
+    int y = 100;
+    const QStringList args = QApplication::arguments();
+    const int offsetArgIndex = args.indexOf(QLatin1String("-offset"));
+    if (offsetArgIndex >=0 && offsetArgIndex < args.size() - 1) {
+        y += args.at(offsetArgIndex + 1).toInt();
+    } else {
+        if (QT_VERSION < 0x050000)
+            y += 400;
+    }
+
+    move(x, y);
+
+    x += 800;
+    m_testWidget->setWindowTitle(tr("TestWidget"));
+    m_testWidget->move(x, y);
+    m_testWidget->resize(200, 200);
+    m_testWidget->show();
+
+#if QT_VERSION >= 0x050000
+    x += 300;
+    m_testWindow->setFramePos(QPoint(x, y));
+    m_testWindow->resize(200, 200);
+    m_testWindow->show();
+#endif
+
+    QWidget *central = new QWidget ;
+    QVBoxLayout *l = new QVBoxLayout(central);
+
+    const QString labelText = tr(
+        "<html><head/><body><p>This example lets you control the geometry"
+        " of a QWidget and a QWindow (Qt 5) for testing out"
+        " QPA plugins.</p>"
+        "<p>It compiles with Qt 4 and Qt 5 for comparison.</p>"
+        "<p>The command line option <code>-offset &lt;value&gt;</code> specifies"
+        " a vertical offset.</p></body></html>");
+
+    l->addWidget(new QLabel(labelText));
+
+    BaseWindowControl *widgetControl = new WidgetWindowControl(m_testWidget.data());
+    widgetControl->refresh();
+    l->addWidget(widgetControl);
+
+#if QT_VERSION >= 0x050000
+    BaseWindowControl *windowControl = new WindowControl(m_testWindow.data());
+    windowControl->refresh();
+    l->addWidget(windowControl);
+#endif
+
+    setCentralWidget(central);
+}
+
+ControllerWidget::~ControllerWidget()
+{
+}
