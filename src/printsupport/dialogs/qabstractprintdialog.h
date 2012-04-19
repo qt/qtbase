@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 class QAbstractPrintDialogPrivate;
 class QPrinter;
 
-// ### Qt 5: remove this class
+// ### QtPrintNG: merge this class with QPrintDialog
 class Q_PRINTSUPPORT_EXPORT QAbstractPrintDialog : public QDialog
 {
     Q_DECLARE_PRIVATE(QAbstractPrintDialog)
