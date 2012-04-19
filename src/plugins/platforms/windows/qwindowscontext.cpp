@@ -47,7 +47,9 @@
 #include "qtwindowsglobal.h"
 #include "qwindowsmime.h"
 #include "qwindowsinputcontext.h"
+#ifndef QT_NO_ACCESSIBILITY
 #include "accessible/qwindowsaccessibility.h"
+#endif
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
 
@@ -698,7 +700,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::UnknownEvent:
         return false;
     case QtWindows::AccessibleObjectFromWindowRequest:
+#ifndef QT_NO_ACCESSIBILITY
         return QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(hwnd, wParam, lParam, result);
+#else
+        return false;
+#endif
     case QtWindows::DisplayChangedEvent:
         return d->m_screenManager.handleDisplayChange(wParam, lParam);
     default:

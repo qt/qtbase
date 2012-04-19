@@ -56,7 +56,9 @@
 #include "qwindowsdrag.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowskeymapper.h"
+#ifndef QT_NO_ACCESSIBILITY
 #include "accessible/qwindowsaccessibility.h"
+#endif
 
 #include <QtGui/QPlatformNativeInterface>
 #include <QtGui/QWindowSystemInterface>
@@ -182,7 +184,9 @@ struct QWindowsIntegrationPrivate
     QWindowsGuiEventDispatcher *m_eventDispatcher;
     QOpenGLStaticContextPtr m_staticOpenGLContext;
     QWindowsInputContext m_inputContext;
+#ifndef QT_NO_ACCESSIBILITY
     QWindowsAccessibility m_accessibility;
+#endif
     QWindowsServices m_services;
 };
 
@@ -374,10 +378,12 @@ QPlatformInputContext * QWindowsIntegration::inputContext() const
     return &d->m_inputContext;
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 QPlatformAccessibility *QWindowsIntegration::accessibility() const
 {
     return &d->m_accessibility;
 }
+#endif
 
 QWindowsIntegration *QWindowsIntegration::instance()
 {

@@ -149,6 +149,7 @@ contains(QT_CONFIG, freetype) {
 
 OTHER_FILES += windows.json
 
-include(accessible/accessible.pri)
+contains(QT_CONFIG, accessibility):include(accessible/accessible.pri)
+
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
