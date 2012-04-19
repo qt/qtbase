@@ -2182,7 +2182,7 @@ int QObject::receivers(const char *signal) const
 #ifndef QT_NO_DEBUG
             err_method_notfound(this, signal-1, "receivers");
 #endif
-            return false;
+            return 0;
         }
 
         if (d->declarativeData && QAbstractDeclarativeData::receivers) {
@@ -2190,7 +2190,6 @@ int QObject::receivers(const char *signal) const
                                                              metaObject()->indexOfMethod(signal));
         }
 
-        Q_D(const QObject);
         QMutexLocker locker(signalSlotLock(this));
         if (d->connectionLists) {
             if (signal_index < d->connectionLists->count()) {
