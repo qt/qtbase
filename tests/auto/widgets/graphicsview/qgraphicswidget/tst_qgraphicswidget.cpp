@@ -3191,7 +3191,7 @@ void tst_QGraphicsWidget::initialShow2()
     view.show();
     QTest::qWaitForWindowShown(&view);
 
-#ifndef Q_OS_MAC
+#if defined(Q_OS_WIN) || defined(UBUNTU_LUCID)
     QEXPECT_FAIL("", "QTBUG-20778", Abort);
 #endif
     QTRY_COMPARE(widget->repaints, expectedRepaintCount);
