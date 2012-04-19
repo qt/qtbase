@@ -55,32 +55,32 @@ public:
     Q_DECL_CONSTEXPR QSize();
     Q_DECL_CONSTEXPR QSize(int w, int h);
 
-    Q_DECL_CONSTEXPR bool isNull() const;
-    Q_DECL_CONSTEXPR bool isEmpty() const;
-    Q_DECL_CONSTEXPR bool isValid() const;
+    Q_DECL_CONSTEXPR inline bool isNull() const;
+    Q_DECL_CONSTEXPR inline bool isEmpty() const;
+    Q_DECL_CONSTEXPR inline bool isValid() const;
 
-    Q_DECL_CONSTEXPR int width() const;
-    Q_DECL_CONSTEXPR int height() const;
-    void setWidth(int w);
-    void setHeight(int h);
+    Q_DECL_CONSTEXPR inline int width() const;
+    Q_DECL_CONSTEXPR inline int height() const;
+    inline void setWidth(int w);
+    inline void setHeight(int h);
     void transpose();
-    Q_DECL_CONSTEXPR QSize transposed() const;
+    Q_DECL_CONSTEXPR inline QSize transposed() const;
 
-    void scale(int w, int h, Qt::AspectRatioMode mode);
-    void scale(const QSize &s, Qt::AspectRatioMode mode);
+    inline void scale(int w, int h, Qt::AspectRatioMode mode);
+    inline void scale(const QSize &s, Qt::AspectRatioMode mode);
     QSize scaled(int w, int h, Qt::AspectRatioMode mode) const;
     QSize scaled(const QSize &s, Qt::AspectRatioMode mode) const;
 
-    Q_DECL_CONSTEXPR QSize expandedTo(const QSize &) const;
-    Q_DECL_CONSTEXPR QSize boundedTo(const QSize &) const;
+    Q_DECL_CONSTEXPR inline QSize expandedTo(const QSize &) const;
+    Q_DECL_CONSTEXPR inline QSize boundedTo(const QSize &) const;
 
-    int &rwidth();
-    int &rheight();
+    inline int &rwidth();
+    inline int &rheight();
 
-    QSize &operator+=(const QSize &);
-    QSize &operator-=(const QSize &);
-    QSize &operator*=(qreal c);
-    QSize &operator/=(qreal c);
+    inline QSize &operator+=(const QSize &);
+    inline QSize &operator-=(const QSize &);
+    inline QSize &operator*=(qreal c);
+    inline QSize &operator/=(qreal c);
 
     friend inline Q_DECL_CONSTEXPR bool operator==(const QSize &, const QSize &);
     friend inline Q_DECL_CONSTEXPR bool operator!=(const QSize &, const QSize &);
@@ -215,32 +215,32 @@ public:
     Q_DECL_CONSTEXPR QSizeF(const QSize &sz);
     Q_DECL_CONSTEXPR QSizeF(qreal w, qreal h);
 
-    bool isNull() const;
-    Q_DECL_CONSTEXPR bool isEmpty() const;
-    Q_DECL_CONSTEXPR bool isValid() const;
+    inline bool isNull() const;
+    Q_DECL_CONSTEXPR inline bool isEmpty() const;
+    Q_DECL_CONSTEXPR inline bool isValid() const;
 
-    Q_DECL_CONSTEXPR qreal width() const;
-    Q_DECL_CONSTEXPR qreal height() const;
-    void setWidth(qreal w);
-    void setHeight(qreal h);
+    Q_DECL_CONSTEXPR inline qreal width() const;
+    Q_DECL_CONSTEXPR inline qreal height() const;
+    inline void setWidth(qreal w);
+    inline void setHeight(qreal h);
     void transpose();
-    Q_DECL_CONSTEXPR QSizeF transposed() const;
+    Q_DECL_CONSTEXPR inline QSizeF transposed() const;
 
-    void scale(qreal w, qreal h, Qt::AspectRatioMode mode);
-    void scale(const QSizeF &s, Qt::AspectRatioMode mode);
+    inline void scale(qreal w, qreal h, Qt::AspectRatioMode mode);
+    inline void scale(const QSizeF &s, Qt::AspectRatioMode mode);
     QSizeF scaled(qreal w, qreal h, Qt::AspectRatioMode mode) const;
     QSizeF scaled(const QSizeF &s, Qt::AspectRatioMode mode) const;
 
-    Q_DECL_CONSTEXPR QSizeF expandedTo(const QSizeF &) const;
-    Q_DECL_CONSTEXPR QSizeF boundedTo(const QSizeF &) const;
+    Q_DECL_CONSTEXPR inline QSizeF expandedTo(const QSizeF &) const;
+    Q_DECL_CONSTEXPR inline QSizeF boundedTo(const QSizeF &) const;
 
-    qreal &rwidth();
-    qreal &rheight();
+    inline qreal &rwidth();
+    inline qreal &rheight();
 
-    QSizeF &operator+=(const QSizeF &);
-    QSizeF &operator-=(const QSizeF &);
-    QSizeF &operator*=(qreal c);
-    QSizeF &operator/=(qreal c);
+    inline QSizeF &operator+=(const QSizeF &);
+    inline QSizeF &operator-=(const QSizeF &);
+    inline QSizeF &operator*=(qreal c);
+    inline QSizeF &operator/=(qreal c);
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QSizeF &, const QSizeF &);
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QSizeF &, const QSizeF &);

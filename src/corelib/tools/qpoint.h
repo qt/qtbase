@@ -55,26 +55,26 @@ public:
     Q_DECL_CONSTEXPR QPoint();
     Q_DECL_CONSTEXPR QPoint(int xpos, int ypos);
 
-    Q_DECL_CONSTEXPR bool isNull() const;
+    Q_DECL_CONSTEXPR inline bool isNull() const;
 
-    Q_DECL_CONSTEXPR int x() const;
-    Q_DECL_CONSTEXPR int y() const;
-    void setX(int x);
-    void setY(int y);
+    Q_DECL_CONSTEXPR inline int x() const;
+    Q_DECL_CONSTEXPR inline int y() const;
+    inline void setX(int x);
+    inline void setY(int y);
 
-    Q_DECL_CONSTEXPR int manhattanLength() const;
+    Q_DECL_CONSTEXPR inline int manhattanLength() const;
 
-    int &rx();
-    int &ry();
+    inline int &rx();
+    inline int &ry();
 
-    QPoint &operator+=(const QPoint &p);
-    QPoint &operator-=(const QPoint &p);
+    inline QPoint &operator+=(const QPoint &p);
+    inline QPoint &operator-=(const QPoint &p);
 
-    QPoint &operator*=(float c);
-    QPoint &operator*=(double c);
-    QPoint &operator*=(int c);
+    inline QPoint &operator*=(float c);
+    inline QPoint &operator*=(double c);
+    inline QPoint &operator*=(int c);
 
-    QPoint &operator/=(qreal c);
+    inline QPoint &operator/=(qreal c);
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QPoint &, const QPoint &);
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QPoint &, const QPoint &);
@@ -212,22 +212,22 @@ public:
     Q_DECL_CONSTEXPR QPointF(const QPoint &p);
     Q_DECL_CONSTEXPR QPointF(qreal xpos, qreal ypos);
 
-    Q_DECL_CONSTEXPR qreal manhattanLength() const;
+    Q_DECL_CONSTEXPR inline qreal manhattanLength() const;
 
-    bool isNull() const;
+    inline bool isNull() const;
 
-    Q_DECL_CONSTEXPR qreal x() const;
-    Q_DECL_CONSTEXPR qreal y() const;
-    void setX(qreal x);
-    void setY(qreal y);
+    Q_DECL_CONSTEXPR inline qreal x() const;
+    Q_DECL_CONSTEXPR inline qreal y() const;
+    inline void setX(qreal x);
+    inline void setY(qreal y);
 
-    qreal &rx();
-    qreal &ry();
+    inline qreal &rx();
+    inline qreal &ry();
 
-    QPointF &operator+=(const QPointF &p);
-    QPointF &operator-=(const QPointF &p);
-    QPointF &operator*=(qreal c);
-    QPointF &operator/=(qreal c);
+    inline QPointF &operator+=(const QPointF &p);
+    inline QPointF &operator-=(const QPointF &p);
+    inline QPointF &operator*=(qreal c);
+    inline QPointF &operator/=(qreal c);
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QPointF &, const QPointF &);
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QPointF &, const QPointF &);

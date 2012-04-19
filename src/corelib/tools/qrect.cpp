@@ -640,16 +640,6 @@ QRect QRect::normalized() const
     \sa center()
 */
 
-void QRect::moveCenter(const QPoint &p)
-{
-    int w = x2 - x1;
-    int h = y2 - y1;
-    x1 = p.x() - w/2;
-    y1 = p.y() - h/2;
-    x2 = x1 + w;
-    y2 = y1 + h;
-}
-
 /*!
     \fn void QRect::moveTo(int x, int y)
 
