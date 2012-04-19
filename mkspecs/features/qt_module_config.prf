@@ -42,6 +42,12 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_$${MODULE}.pri
 !build_pass {
 
     # Create a module .pri file
+    !isEmpty(QT_PRIVATE) {
+        contains(QT_PRIVATE, .*-private$):error("QT_PRIVATE may not contain *-private.")
+        module_privdep = "QT.$${MODULE}.private_depends = $$QT_PRIVATE"
+    } else {
+        module_privdep =
+    }
     staticlib: \
         module_build_type = "QT.$${MODULE}.module_config = staticlib"
     else:mac:!static:contains(QT_CONFIG, qt_framework): \
@@ -72,6 +78,7 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_$${MODULE}.pri
         "QT.$${MODULE}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
         "QT.$${MODULE}.imports = \$\$QT_MODULE_IMPORT_BASE" \
         "QT.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
+        $$module_privdep \
         $$module_build_type \
         $$module_config \
         "QT.$${MODULE}.DEFINES = $$MODULE_DEFINES" \ # assume sufficient quoting
@@ -109,6 +116,9 @@ if(win32|mac):!wince*:!macx-xcode {
 }
 
 linux*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
+
+QT += $$QT_PRIVATE
+unset(QT_PRIVATE)
 
 !isEmpty(DESTDIR):CONFIG += create_cmake
 

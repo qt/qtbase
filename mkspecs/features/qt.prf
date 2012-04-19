@@ -146,6 +146,7 @@ for(QTLIB, QT) {
         want_var = QT.$${QTLIBRAW}.want_private
         $$want_var = UsePrivate
         using_privates = true
+        NEWQT += $$eval(QT.$${QTLIBRAW}.private_depends)
     }
     NEWQT += $$QTLIBRAW
 }
