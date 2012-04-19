@@ -470,6 +470,7 @@ static int choosePixelFormat(HDC hdc,
         pixelFormat = 0;
     }
 
+#ifndef QT_NO_DEBUG_OUTPUT
     if (QWindowsContext::verboseGL) {
         QDebug nsp = qDebug().nospace();
         nsp << __FUNCTION__;
@@ -481,6 +482,7 @@ static int choosePixelFormat(HDC hdc,
         nsp << noshowbase << dec << "\n    obtained px #" << pixelFormat
             << " of " << numFormats << "\n    " << *obtainedPfd;
     } // Debug
+#endif
 
     return pixelFormat;
 }

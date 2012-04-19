@@ -144,6 +144,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
     const QFont::Weight weight = weightFromInteger(tm->tmWeight);
     const QFont::Stretch stretch = QFont::Unstretched;
 
+#ifndef QT_NO_DEBUG_OUTPUT
     if (QWindowsContext::verboseFonts > 2) {
         QDebug nospace = qDebug().nospace();
         nospace << __FUNCTION__ << faceName << fullName << scriptName
@@ -158,6 +159,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
                 << " Style=" << style << " Weight=" << weight
                 << " stretch=" << stretch;
     }
+#endif
 
     QString englishName;
     if (ttf && localizedName(faceName))

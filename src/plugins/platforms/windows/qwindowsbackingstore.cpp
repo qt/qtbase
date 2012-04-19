@@ -106,6 +106,7 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
 void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
 {
     if (m_image.isNull() || m_image->image().size() != size) {
+#ifndef QT_NO_DEBUG_OUTPUT
         if (QWindowsContext::verboseBackingStore) {
             QDebug nsp = qDebug().nospace();
             nsp << __FUNCTION__ << ' ' << rasterWindow()->window()
@@ -113,6 +114,7 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
             if (!m_image.isNull())
                 nsp << " from: " << m_image->image().size();
         }
+#endif
         m_image.reset(new QWindowsNativeImage(size.width(), size.height(),
                                               QWindowsNativeImage::systemFormat()));
     }

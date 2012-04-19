@@ -158,6 +158,7 @@ QVariant QWindowsInternalMimeData::retrieveData_sys(const QString &mimeType,
     if (const QWindowsMime *converter = mc.converterToMime(mimeType, pDataObj))
         result = converter->convertToMime(mimeType, pDataObj, type);
     releaseDataObject(pDataObj);
+#ifndef QT_NO_DEBUG_OUTPUT
     if (QWindowsContext::verboseOLE) {
         QDebug nospace = qDebug().nospace();
         nospace << __FUNCTION__ <<  ' '  << mimeType << ' ' << type
@@ -165,6 +166,7 @@ QVariant QWindowsInternalMimeData::retrieveData_sys(const QString &mimeType,
         if (result.type() != QVariant::ByteArray)
             nospace << ' ' << result;
     }
+#endif
     return result;
 }
 
