@@ -682,17 +682,6 @@ protected:
 };
 #endif
 
-#ifndef QT_NO_CLIPBOARD
-class Q_GUI_EXPORT QClipboardEvent : public QEvent
-{
-public:
-    explicit QClipboardEvent(QEventPrivate *data);
-    ~QClipboardEvent();
-
-    QEventPrivate *data() { return d; }
-};
-#endif
-
 class Q_GUI_EXPORT QWindowStateChangeEvent: public QEvent
 {
 public:

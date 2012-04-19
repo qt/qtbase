@@ -348,13 +348,6 @@ QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
 QGuiApplication::~QGuiApplication()
 {
     Q_D(QGuiApplication);
-    // flush clipboard contents
-#ifndef QT_NO_CLIPBOARD
-    if (QGuiApplicationPrivate::qt_clipboard) {
-        QEvent event(QEvent::Clipboard);
-        QGuiApplication::sendEvent(QGuiApplicationPrivate::qt_clipboard, &event);
-    }
-#endif
 
     d->eventDispatcher->closingDown();
     d->eventDispatcher = 0;
