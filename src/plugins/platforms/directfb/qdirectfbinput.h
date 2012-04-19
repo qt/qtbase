@@ -51,6 +51,8 @@
 
 #include "qdirectfbconvenience.h"
 
+QT_BEGIN_NAMESPACE
+
 class QDirectFbInput : public QThread
 {
     Q_OBJECT
@@ -80,5 +82,7 @@ private:
     bool m_shouldStop;
     QHash<DFBWindowID,QWindow *>m_tlwMap;
 };
+
+QT_END_NAMESPACE
 
 #endif // QDIRECTFBINPUT_H
