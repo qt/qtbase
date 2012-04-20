@@ -127,3 +127,5 @@ testReplace($$format_number(13, width=5 alwayssign), "$$spc +13", "always signed
 testReplace($$format_number(13, width=5 alwayssign zeropad), "+0013", "zero-padded always signed number format")
 testReplace($$format_number(13, width=5 padsign), " $$spc 13", "sign-padded number format")
 testReplace($$format_number(13, width=5 padsign zeropad), " 0013", "zero-padded sign-padded number format")
+
+testReplace($$clean_path("c:$${DIR_SEPARATOR}crazy//path/../trolls"), "c:/crazy/trolls", "clean_path")
