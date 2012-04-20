@@ -871,10 +871,11 @@ QRegExpValidator::~QRegExpValidator()
 
 QValidator::State QRegExpValidator::validate(QString &input, int& pos) const
 {
-    if (r.exactMatch(input)) {
+    QRegExp copy = r;
+    if (copy.exactMatch(input)) {
         return Acceptable;
     } else {
-        if (const_cast<QRegExp &>(r).matchedLength() == input.size()) {
+        if (copy.matchedLength() == input.size()) {
             return Intermediate;
         } else {
             pos = input.size();

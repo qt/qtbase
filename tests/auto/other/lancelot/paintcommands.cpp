@@ -694,7 +694,7 @@ void PaintCommands::runCommand(const QString &scriptLine)
     QString firstWord = scriptLine.section(QRegExp("\\s"), 0, 0);
     QList<int> indices = s_commandHash.values(firstWord);
     foreach(int idx, indices) {
-        const PaintCommandInfos &command = s_commandInfoTable.at(idx);
+        PaintCommandInfos command = s_commandInfoTable.at(idx);
         if (command.regExp.indexIn(scriptLine) >= 0) {
             (this->*(command.paintMethod))(command.regExp);
             return;

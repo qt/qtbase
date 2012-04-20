@@ -1281,7 +1281,7 @@ QTextCursor QTextDocument::find(const QString &subString, const QTextCursor &fro
 static bool findInBlock(const QTextBlock &block, const QRegExp &expression, int offset,
                         QTextDocument::FindFlags options, QTextCursor &cursor)
 {
-    const QRegExp expr(expression);
+    QRegExp expr(expression);
     QString text = block.text();
     text.replace(QChar::Nbsp, QLatin1Char(' '));
 
