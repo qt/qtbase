@@ -635,8 +635,6 @@ bool Option::postProcessProject(QMakeProject *project)
         Option::yacc_mod = project->first("QMAKE_MOD_YACC");
     if(!project->isEmpty("QMAKE_DIR_SEP"))
         Option::dir_sep = project->first("QMAKE_DIR_SEP");
-    if(!project->isEmpty("QMAKE_DIRLIST_SEP"))
-        Option::dirlist_sep = project->first("QMAKE_DIRLIST_SEP");
     if(!project->isEmpty("QMAKE_MOD_SYSTEM_ENV"))
         Option::sysenv_mod = project->first("QMAKE_MOD_SYSTEM_ENV");
     return true;
