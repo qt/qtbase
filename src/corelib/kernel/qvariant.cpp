@@ -1705,9 +1705,11 @@ void QVariant::load(QDataStream &s)
     d.is_null = is_null;
 
     if (!isValid()) {
+        if (s.version() < QDataStream::Qt_5_0) {
         // Since we wrote something, we should read something
-        QString x;
-        s >> x;
+            QString x;
+            s >> x;
+        }
         d.is_null = true;
         return;
     }
@@ -1769,7 +1771,8 @@ void QVariant::save(QDataStream &s) const
     }
 
     if (!isValid()) {
-        s << QString();
+        if (s.version() < QDataStream::Qt_5_0)
+            s << QString();
         return;
     }
 

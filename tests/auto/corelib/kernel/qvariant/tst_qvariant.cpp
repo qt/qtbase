@@ -2901,13 +2901,13 @@ void tst_QVariant::loadUnknownUserType()
 
 void tst_QVariant::loadBrokenUserType()
 {
-    char data[] = {0, 0, 0, 127, 0, 112 };
+    char data[] = {0, 0, 0, 127, 0 };
 
     QByteArray ba(data, sizeof(data));
     QDataStream ds(&ba, QIODevice::ReadOnly);
     QVariant var;
     var.load(ds);
-    QCOMPARE(ds.status(), QDataStream::ReadPastEnd);
+    QCOMPARE(ds.status(), QDataStream::Ok);
 }
 
 void tst_QVariant::invalidDate() const

@@ -253,9 +253,6 @@ enum {
     DefaultStreamVersion = QDataStream::Qt_5_0
 };
 
-// ### 5.0: when streaming invalid QVariants, just the type should
-// be written, no "data" after it
-
 /*!
     Constructs a data stream that has no I/O device.
 
