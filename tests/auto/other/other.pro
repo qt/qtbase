@@ -5,7 +5,7 @@ SUBDIRS=\
    collections \
    compiler \
    exceptionsafety \
-   exceptionsafety_objects \
+   # exceptionsafety_objects \    # QObjectPrivate is not safe
    gestures \
    headersclean \
    lancelot \
