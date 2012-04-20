@@ -3046,7 +3046,7 @@ QString Configure::addDefine(QString def)
 #if !defined(EVAL)
 bool Configure::copySpec(const char *name, const char *pfx, const QString &spec)
 {
-    // Copy configured mkspec to default directory, but remove the old one first, if there is any
+    // "Link" configured mkspec to default directory, but remove the old one first, if there is any
     QString defSpec = buildPath + "/mkspecs/" + name;
     QFileInfo defSpecInfo(defSpec);
     if (defSpecInfo.exists()) {
@@ -3057,10 +3057,18 @@ bool Configure::copySpec(const char *name, const char *pfx, const QString &spec)
         }
     }
 
-    QString pltSpec = sourcePath + "/mkspecs/" + spec;
-    QString includeSpec = buildPath + "/mkspecs/" + spec;
-    if (!Environment::cpdir(pltSpec, defSpec, includeSpec)) {
-        cout << "Couldn't update default " << pfx << "mkspec! Does " << qPrintable(pltSpec) << " exist?" << endl;
+    QDir::current().mkpath(defSpec);
+    QFile qfile(defSpec + "/qmake.conf");
+    if (qfile.open(QFile::WriteOnly | QFile::Text)) {
+        QTextStream fileStream;
+        fileStream.setDevice(&qfile);
+        QString srcSpec = buildPath + "/mkspecs/" + spec; // We copied it to the build dir
+        fileStream << "QMAKESPEC_ORIGINAL = " << formatPath(srcSpec) << endl;
+        fileStream << "include(" << formatPath(QDir(defSpec).relativeFilePath(srcSpec + "/qmake.conf")) << ")" << endl;
+        qfile.close();
+    }
+    if (qfile.error() != QFile::NoError) {
+        cout << "Couldn't update default " << pfx << "mkspec: " << qPrintable(qfile.errorString()) << endl;
         dictionary["DONE"] = "error";
         return false;
     }
