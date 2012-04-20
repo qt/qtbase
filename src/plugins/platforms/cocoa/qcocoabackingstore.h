@@ -63,7 +63,6 @@ public:
     bool scroll(const QRegion &area, int dx, int dy);
 
 private:
-    QCocoaWindow *m_cocoaWindow;
     QImage *m_image;
 };
 

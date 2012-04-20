@@ -50,7 +50,6 @@ QT_BEGIN_NAMESPACE
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
 {
-    m_cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     m_image = new QImage(window->geometry().size(),QImage::Format_ARGB32_Premultiplied);
 }
 
@@ -72,14 +71,19 @@ void QCocoaBackingStore::flush(QWindow *widget, const QRegion &region, const QPo
 
     QRect geo = region.boundingRect();
     NSRect rect = NSMakeRect(geo.x(), geo.y(), geo.width(), geo.height());
-    [m_cocoaWindow->m_contentView displayRect:rect];
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
+    if (cocoaWindow)
+        [cocoaWindow->m_contentView displayRect:rect];
 }
 
 void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
 {
     delete m_image;
     m_image = new QImage(size, QImage::Format_ARGB32_Premultiplied);
-    [static_cast<QNSView *>(m_cocoaWindow->m_contentView) setImage:m_image];
+
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
+    if (cocoaWindow)
+        [static_cast<QNSView *>(cocoaWindow->m_contentView) setImage:m_image];
 }
 
 bool QCocoaBackingStore::scroll(const QRegion &area, int dx, int dy)
