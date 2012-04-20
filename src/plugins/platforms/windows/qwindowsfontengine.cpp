@@ -1133,6 +1133,9 @@ QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
     if (!uniqueFamilyName.isEmpty())
         request.family = uniqueFamilyName;
     request.pixelSize = pixelSize;
+    // Disable font merging, as otherwise createEngine will return a multi-engine
+    // instance instead of the specific engine we wish to clone.
+    request.styleStrategy |= QFont::NoFontMerging;
 
     QFontEngine *fontEngine =
         QWindowsFontDatabase::createEngine(QUnicodeTables::Common, request, 0,
