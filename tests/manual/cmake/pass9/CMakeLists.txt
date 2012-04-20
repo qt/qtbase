@@ -13,6 +13,8 @@ include_directories(
 
 add_definitions(${Qt5Core_DEFINITIONS} ${Qt5DBus_DEFINITIONS})
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(my_srcs mydbusobject.cpp)
