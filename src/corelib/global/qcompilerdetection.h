@@ -369,6 +369,7 @@
 
 #elif defined(__SUNPRO_CC) || defined(__SUNPRO_C)
 #  define Q_CC_SUN
+#  define Q_COMPILER_MANGLES_RETURN_TYPE
 /* 5.0 compiler or better
     'bool' is enabled by default but can be disabled using -features=nobool
     in which case _BOOL is not defined
