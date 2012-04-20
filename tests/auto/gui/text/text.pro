@@ -31,7 +31,3 @@ win32:SUBDIRS -= qtextpiecetable
            qstatictext \
            qtextlayout \
            qtextpiecetable \
-
-mac {
-    qtextlayout.CONFIG = no_check_target # QTBUG-23050
-}

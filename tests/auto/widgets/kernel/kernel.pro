@@ -17,5 +17,3 @@ SUBDIRS=\
    qshortcut \
 
 SUBDIRS -= qsound
-
-mac: qwidget.CONFIG += no_check_target # crashes, see QTBUG-23695

@@ -5,3 +5,5 @@ HEADERS +=
 SOURCES += tst_qtextlayout.cpp 
 DEFINES += QT_COMPILES_IN_HARFBUZZ
 INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/harfbuzz/src
+
+mac:CONFIG+=insignificant_test # QTBUG-23050
