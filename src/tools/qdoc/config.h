@@ -135,6 +135,7 @@ private:
 #define CONFIG_BASEDIR                  "basedir"
 #define CONFIG_CODEINDENT               "codeindent"
 #define CONFIG_DEFINES                  "defines"
+#define CONFIG_DEPENDS                  "depends"
 #define CONFIG_DESCRIPTION              "description"
 #define CONFIG_EDITION                  "edition"
 #define CONFIG_ENDHEADER                "endheader"

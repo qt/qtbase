@@ -30,6 +30,7 @@ include(codecs/codecs.pri)
 include(statemachine/statemachine.pri)
 include(mimetypes/mimetypes.pri)
 include(xml/xml.pri)
+include(doc/doc.pri)
 
 mac|darwin {
     !ios {

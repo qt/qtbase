@@ -64,6 +64,7 @@
 #include "qmlcodeparser.h"
 #endif
 
+#include <qdatetime.h>
 #include <qdebug.h>
 
 #include "qtranslator.h"
@@ -99,6 +100,7 @@ static bool highlighting = false;
 static bool showInternal = false;
 static bool obsoleteLinks = false;
 static QStringList defines;
+static QStringList indexDirs;
 static QHash<QString, Tree *> trees;
 
 /*!
@@ -116,6 +118,8 @@ static void printHelp()
                              "Turn on syntax highlighting (makes qdoc run slower)\n"
                              "    -no-examples   "
                              "Do not generate documentation for examples\n"
+                             "    -indexdir      "
+                             "Specify a directory where QDoc should search for indices to link to\n"
                              "    -obsoletelinks "
                              "Report links from obsolete items to non-obsolete items\n"
                              "    -outputdir     "
@@ -245,6 +249,48 @@ static void processQdocconfFile(const QString &fileName)
       Read some XML indexes containing definitions from other documentation sets.
      */
     QStringList indexFiles = config.getStringList(CONFIG_INDEXES);
+
+    QStringList dependModules = config.getStringList(CONFIG_DEPENDS);
+
+    if (dependModules.size() > 0) {
+        if (indexDirs.size() > 0) {
+            for (int i = 0; i < dependModules.size(); i++) {
+                QMultiMap<uint, QFileInfo> foundIndices;
+                for (int j = 0; j < indexDirs.size(); j++) {
+                    QString fileToLookFor = indexDirs[j] + "/" + dependModules[i] +
+                            "/" + dependModules[i] + ".index";
+                    if (QFile::exists(fileToLookFor)) {
+                        QFileInfo tempFileInfo(fileToLookFor);
+                        foundIndices.insert(tempFileInfo.lastModified().toTime_t(), tempFileInfo);
+                    }
+                }
+                if (foundIndices.size() > 1) {
+                    /*
+                        QDoc should always use the last entry in the multimap when there are
+                        multiple index files for a module, since the last modified file has the
+                        highest UNIX timestamp.
+                    */
+                    qDebug() << "Multiple indices found for dependency:" << dependModules[i];
+                    qDebug() << "Using" << foundIndices.value(
+                                    foundIndices.keys()[foundIndices.size() - 1]).absoluteFilePath()
+                            << "as index for" << dependModules[i];
+                    indexFiles << foundIndices.value(
+                                      foundIndices.keys()[foundIndices.size() - 1]).absoluteFilePath();
+                }
+                else if (foundIndices.size() == 1) {
+                    indexFiles << foundIndices.value(foundIndices.keys()[0]).absoluteFilePath();
+                }
+                else {
+                    qDebug() << "No indices for" << dependModules[i] <<
+                                "could be found in the specified index directories.";
+                }
+            }
+        }
+        else {
+            qDebug() << "Dependant modules specified, but not index directories were set."
+                     << "There will probably be errors for missing links.";
+        }
+    }
     tree->readIndexes(indexFiles);
 
     QSet<QString> excludedDirs;
@@ -431,6 +477,16 @@ int main(int argc, char **argv)
         }
         else if (opt == "-no-examples") {
             Config::generateExamples = false;
+        }
+        else if (opt == "-indexdir") {
+            if (QFile::exists(argv[i])) {
+                indexDirs += argv[i];
+            }
+            else {
+                qDebug() << "Cannot find index directory" << argv[i];
+                return EXIT_FAILURE;
+            }
+            i++;
         }
         else if (opt == "-obsoletelinks") {
             obsoleteLinks = true;
