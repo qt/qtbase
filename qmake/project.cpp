@@ -2085,7 +2085,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
                 dirs.append("");
             }
 
-            const QRegExp regex(r, Qt::CaseSensitive, QRegExp::Wildcard);
+            QRegExp regex(r, Qt::CaseSensitive, QRegExp::Wildcard);
             for(int d = 0; d < dirs.count(); d++) {
                 QString dir = dirs[d];
                 if (!dir.isEmpty() && !dir.endsWith(QLatin1Char('/')))
