@@ -2017,7 +2017,8 @@ bool QFileSystemModelPrivate::passNameFilters(const QFileSystemNode *node) const
     // Check the name regularexpression filters
     if (!(node->isDir() && (filters & QDir::AllDirs))) {
         for (int i = 0; i < nameFilters.size(); ++i) {
-            if (nameFilters.at(i).exactMatch(node->fileName))
+            QRegExp copy = nameFilters.at(i);
+            if (copy.exactMatch(node->fileName))
                 return true;
         }
         return false;
