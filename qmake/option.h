@@ -91,7 +91,6 @@ struct Option
     static QString yacc_mod;
     static QString dir_sep;
     static QString dirlist_sep;
-    static QString sysenv_mod;
     static QString pro_ext;
     static QString res_ext;
     static char field_sep;

@@ -73,7 +73,6 @@ QString Option::h_moc_mod;
 QString Option::cpp_moc_mod;
 QString Option::yacc_mod;
 QString Option::lex_mod;
-QString Option::sysenv_mod;
 QString Option::res_ext;
 char Option::field_sep;
 
@@ -437,7 +436,6 @@ Option::init(int argc, char **argv)
     Option::dirlist_sep = ":";
     Option::shellPath = QStringList("sh");
 #endif
-    Option::sysenv_mod = "QMAKE_ENV_";
     Option::field_sep = ' ';
 
     if(argc && argv) {
@@ -635,8 +633,6 @@ bool Option::postProcessProject(QMakeProject *project)
         Option::yacc_mod = project->first("QMAKE_MOD_YACC");
     if(!project->isEmpty("QMAKE_DIR_SEP"))
         Option::dir_sep = project->first("QMAKE_DIR_SEP");
-    if(!project->isEmpty("QMAKE_MOD_SYSTEM_ENV"))
-        Option::sysenv_mod = project->first("QMAKE_MOD_SYSTEM_ENV");
     return true;
 }
 
