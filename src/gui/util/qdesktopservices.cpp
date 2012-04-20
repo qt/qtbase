@@ -285,9 +285,9 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
 */
 
 
-QString QDesktopServices::storageLocationImpl(StandardLocation type)
+QString QDesktopServices::storageLocationImpl(QStandardPaths::StandardLocation type)
 {
-    if (type == DataLocation) {
+    if (type == QStandardPaths::DataLocation) {
         // Preserve Qt 4 compatibility:
         // * QCoreApplication::applicationName() must default to empty
         // * Unix data location is under the "data/" subdirectory
@@ -307,7 +307,7 @@ QString QDesktopServices::storageLocationImpl(StandardLocation type)
             + compatAppName;
 #endif
     }
-    return QStandardPaths::writableLocation(static_cast<QStandardPaths::StandardLocation>(type));
+    return QStandardPaths::writableLocation(type);
 }
 
 QT_END_NAMESPACE

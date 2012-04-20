@@ -64,6 +64,7 @@ public:
     static void unsetUrlHandler(const QString &scheme);
 
 #if QT_DEPRECATED_SINCE(5, 0)
+    //Must match QStandardPaths::StandardLocation
     QT_DEPRECATED enum StandardLocation {
         DesktopLocation,
         DocumentsLocation,
@@ -79,14 +80,14 @@ public:
     };
 
     QT_DEPRECATED static QString storageLocation(StandardLocation type) {
-        return storageLocationImpl(type);
+        return storageLocationImpl(static_cast<QStandardPaths::StandardLocation>(type));
     }
     QT_DEPRECATED static QString displayName(StandardLocation type) {
         return QStandardPaths::displayName(static_cast<QStandardPaths::StandardLocation>(type));
     }
 #endif
 private:
-    static QString storageLocationImpl(StandardLocation type);
+    static QString storageLocationImpl(QStandardPaths::StandardLocation type);
 };
 
 #endif // QT_NO_DESKTOPSERVICES
