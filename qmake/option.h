@@ -93,7 +93,6 @@ struct Option
     static QString dirlist_sep;
     static QString sysenv_mod;
     static QString pro_ext;
-    static QString mmp_ext;
     static QString res_ext;
     static char field_sep;
     static const char *application_argv0;

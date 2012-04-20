@@ -1771,10 +1771,6 @@ MakefileGenerator::writeExtraTargets(QTextStream &t)
         if(!cmd.isEmpty())
             t << "\n\t" << cmd;
         t << endl << endl;
-
-		project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_TARGETS.") + (*it)) << escapeDependencyPath(targ);
-		project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_DEPS.") + (*it) + escapeDependencyPath(targ)) << deps.split(" ", QString::SkipEmptyParts);
-		project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_CMD.") + (*it) + escapeDependencyPath(targ)) << cmd;
     }
 }
 
@@ -1973,17 +1969,13 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
 
             QString cmd = replaceExtraCompilerVariables(tmp_cmd, escapeFilePaths(inputs), QStringList(tmp_out));
             t << escapeDependencyPath(tmp_out) << ":";
-            project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_TARGETS.") + (*it)) << escapeDependencyPath(tmp_out);
             // compiler.CONFIG+=explicit_dependencies means that ONLY compiler.depends gets to cause Makefile dependencies
             if(project->values((*it) + ".CONFIG").indexOf("explicit_dependencies") != -1) {
                 t << " " << valList(escapeDependencyPaths(fileFixify(tmp_dep, Option::output_dir, Option::output_dir)));
-                project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_DEPS.") + (*it) + escapeDependencyPath(tmp_out)) << tmp_dep;
             } else {
                 t << " " << valList(escapeDependencyPaths(inputs)) << " " << valList(escapeDependencyPaths(deps));
-                project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_DEPS.") + (*it) + escapeDependencyPath(tmp_out)) << inputs << deps;
             }
             t << "\n\t" << cmd << endl << endl;
-            project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_CMD.") + (*it) + escapeDependencyPath(tmp_out)) << cmd;
             continue;
         }
         for(QStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
@@ -2087,9 +2079,6 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             }
             t << escapeDependencyPath(out) << ": " << valList(escapeDependencyPaths(deps)) << "\n\t"
               << cmd << endl << endl;
-            project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_TARGETS.") + (*it)) << escapeDependencyPath(out);
-            project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_DEPS.") + (*it) + escapeDependencyPath(out)) << deps;
-            project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_CMD.") + (*it) + escapeDependencyPath(out)) << cmd;
         }
     }
     t << "compiler_clean: " << clean_targets << endl << endl;

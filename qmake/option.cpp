@@ -67,7 +67,6 @@ QString Option::obj_ext;
 QString Option::lex_ext;
 QString Option::yacc_ext;
 QString Option::pro_ext;
-QString Option::mmp_ext;
 QString Option::dir_sep;
 QString Option::dirlist_sep;
 QString Option::h_moc_mod;
@@ -436,7 +435,6 @@ Option::init(int argc, char **argv)
     Option::lex_ext = ".l";
     Option::yacc_ext = ".y";
     Option::pro_ext = ".pro";
-    Option::mmp_ext = ".mmp";
 #ifdef Q_OS_WIN
     Option::dirlist_sep = ";";
     Option::shellPath = detectShellPath();
