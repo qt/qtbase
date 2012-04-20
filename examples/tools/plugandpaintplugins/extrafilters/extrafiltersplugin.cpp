@@ -73,7 +73,7 @@ QImage ExtraFiltersPlugin::filterImage(const QString &filter,
         }
     } else if (filter == tr("Smudge...")) {
         bool ok;
-        int numIters = QInputDialog::getInteger(parent, tr("Smudge Filter"),
+        int numIters = QInputDialog::getInt(parent, tr("Smudge Filter"),
                                     tr("Enter number of iterations:"),
                                     5, 1, 20, 1, &ok);
         if (ok) {
@@ -102,7 +102,7 @@ QImage ExtraFiltersPlugin::filterImage(const QString &filter,
         }
     } else if (filter == tr("Threshold...")) {
         bool ok;
-        int threshold = QInputDialog::getInteger(parent, tr("Threshold Filter"),
+        int threshold = QInputDialog::getInt(parent, tr("Threshold Filter"),
                                                  tr("Enter threshold:"),
                                                  10, 1, 256, 1, &ok);
         if (ok) {

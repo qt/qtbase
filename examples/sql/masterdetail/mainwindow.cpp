@@ -410,7 +410,7 @@ void MainWindow::updateHeader(QModelIndex, int, int)
 void MainWindow::adjustHeader()
 {
     albumView->hideColumn(0);
-    albumView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+    albumView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     albumView->resizeColumnToContents(2);
     albumView->resizeColumnToContents(3);
 }

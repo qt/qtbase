@@ -285,9 +285,9 @@ void MainWindow::createImagesGroupBox()
     imagesTable->horizontalHeader()->setDefaultSectionSize(90);
     imagesTable->setColumnCount(3);
     imagesTable->setHorizontalHeaderLabels(labels);
-    imagesTable->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
-    imagesTable->horizontalHeader()->setResizeMode(1, QHeaderView::Fixed);
-    imagesTable->horizontalHeader()->setResizeMode(2, QHeaderView::Fixed);
+    imagesTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    imagesTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
+    imagesTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
     imagesTable->verticalHeader()->hide();
 //! [23]
 

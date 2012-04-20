@@ -52,8 +52,9 @@ ImageModel::ImageModel(QObject *parent)
 //! [1]
 void ImageModel::setImage(const QImage &image)
 {
+    beginResetModel();
     modelImage = image;
-    reset();
+    endResetModel();
 }
 //! [1]
 

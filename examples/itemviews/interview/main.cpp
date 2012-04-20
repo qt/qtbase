@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
     QTableView *table = new QTableView;
     table->setModel(data);
     table->setSelectionModel(selections);
-    table->horizontalHeader()->setMovable(true);
-    table->verticalHeader()->setMovable(true);
+    table->horizontalHeader()->setSectionsMovable(true);
+    table->verticalHeader()->setSectionsMovable(true);
     // Set StaticContents to enable minimal repaints on resizes.
     table->viewport()->setAttribute(Qt::WA_StaticContents);
     page.addWidget(table);

@@ -107,9 +107,10 @@ void FileListModel::setDirPath(const QString &path)
 {
     QDir dir(path);
 
+    beginResetModel();
     fileList = dir.entryList();
     fileCount = 0;
-    reset();
+    endResetModel();
 }
 //![0]
 

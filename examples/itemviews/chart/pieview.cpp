@@ -478,7 +478,7 @@ void PieView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFlag
         for (int column = 0; column < columns; ++column) {
             QModelIndex index = model()->index(row, column, rootIndex());
             QRegion region = itemRegion(index);
-            if (!region.intersect(contentsRect).isEmpty())
+            if (region.intersects(contentsRect))
                 indexes.append(index);
         }
     }

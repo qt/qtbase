@@ -89,7 +89,7 @@ LocationDialog::LocationDialog(QWidget *parent)
     locationsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     locationsTable->setColumnCount(2);
     locationsTable->setHorizontalHeaderLabels(labels);
-    locationsTable->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+    locationsTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     locationsTable->horizontalHeader()->resizeSection(1, 180);
 
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
