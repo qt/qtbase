@@ -51,6 +51,15 @@
 
 QT_BEGIN_NAMESPACE
 
+class QSocketNotifierPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QSocketNotifier)
+public:
+    qintptr sockfd;
+    QSocketNotifier::Type sntype;
+    bool snenabled;
+};
+
 /*!
     \class QSocketNotifier
     \brief The QSocketNotifier class provides support for monitoring
@@ -169,15 +178,15 @@ QT_BEGIN_NAMESPACE
 */
 
 QSocketNotifier::QSocketNotifier(qintptr socket, Type type, QObject *parent)
-    : QObject(parent)
+    : QObject(*new QSocketNotifierPrivate, parent)
 {
+    Q_D(QSocketNotifier);
     if (socket < 0)
         qWarning("QSocketNotifier: Invalid socket specified");
-    sockfd = socket;
-    sntype = type;
-    snenabled = true;
+    d->sockfd = socket;
+    d->sntype = type;
+    d->snenabled = true;
 
-    Q_D(QObject);
     if (!d->threadData->eventDispatcher) {
         qWarning("QSocketNotifier: Can only be used with threads started with QThread");
     } else {
@@ -208,29 +217,37 @@ QSocketNotifier::~QSocketNotifier()
 
 
 /*!
-    \fn int QSocketNotifier::socket() const
-
     Returns the socket identifier specified to the constructor.
 
     \sa type()
 */
+int QSocketNotifier::socket() const
+{
+    Q_D(const QSocketNotifier);
+    return d->sockfd;
+}
 
 /*!
-    \fn Type QSocketNotifier::type() const
-
     Returns the socket event type specified to the constructor.
 
     \sa socket()
 */
-
+QSocketNotifier::Type QSocketNotifier::type() const
+{
+    Q_D(const QSocketNotifier);
+    return d->sntype;
+}
 
 /*!
-    \fn bool QSocketNotifier::isEnabled() const
-
     Returns true if the notifier is enabled; otherwise returns false.
 
     \sa setEnabled()
 */
+bool QSocketNotifier::isEnabled() const
+{
+    Q_D(const QSocketNotifier);
+    return d->snenabled;
+}
 
 /*!
     If \a enable is true, the notifier is enabled; otherwise the notifier
@@ -249,16 +266,16 @@ QSocketNotifier::~QSocketNotifier()
 
 void QSocketNotifier::setEnabled(bool enable)
 {
-    if (sockfd < 0)
+    Q_D(QSocketNotifier);
+    if (d->sockfd < 0)
         return;
-    if (snenabled == enable)                        // no change
+    if (d->snenabled == enable)                        // no change
         return;
-    snenabled = enable;
+    d->snenabled = enable;
 
-    Q_D(QObject);
     if (!d->threadData->eventDispatcher) // perhaps application/thread is shutting down
         return;
-    if (snenabled)
+    if (d->snenabled)
         d->threadData->eventDispatcher->registerSocketNotifier(this);
     else
         d->threadData->eventDispatcher->unregisterSocketNotifier(this);
@@ -269,18 +286,19 @@ void QSocketNotifier::setEnabled(bool enable)
 */
 bool QSocketNotifier::event(QEvent *e)
 {
+    Q_D(QSocketNotifier);
     // Emits the activated() signal when a QEvent::SockAct is
     // received.
     if (e->type() == QEvent::ThreadChange) {
-        if (snenabled) {
+        if (d->snenabled) {
             QMetaObject::invokeMethod(this, "setEnabled", Qt::QueuedConnection,
-                                      Q_ARG(bool, snenabled));
+                                      Q_ARG(bool, d->snenabled));
             setEnabled(false);
         }
     }
     QObject::event(e);                        // will activate filters
     if (e->type() == QEvent::SockAct) {
-        emit activated(sockfd);
+        emit activated(d->sockfd);
         return true;
     }
     return false;

@@ -48,11 +48,11 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
+class QSocketNotifierPrivate;
 class Q_CORE_EXPORT QSocketNotifier : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QObject)
+    Q_DECLARE_PRIVATE(QSocketNotifier)
 
 public:
     enum Type { Read, Write, Exception };
@@ -60,10 +60,10 @@ public:
     QSocketNotifier(qintptr socket, Type, QObject *parent = 0);
     ~QSocketNotifier();
 
-    inline int socket() const { return sockfd; }
-    inline Type type() const { return sntype; }
+    int socket() const;
+    Type type() const;
 
-    inline bool isEnabled() const { return snenabled; }
+    bool isEnabled() const;
 
 public Q_SLOTS:
     void setEnabled(bool);
@@ -76,10 +76,6 @@ protected:
 
 private:
     Q_DISABLE_COPY(QSocketNotifier)
-
-    qintptr sockfd;
-    Type sntype;
-    bool snenabled;
 };
 
 QT_END_NAMESPACE
