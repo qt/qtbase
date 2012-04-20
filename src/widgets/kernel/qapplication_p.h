@@ -198,7 +198,7 @@ public:
     static void dispatchEnterLeave(QWidget *enter, QWidget *leave);
 
     //modality
-    Q_DECL_OVERRIDE bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const;
+    bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const Q_DECL_OVERRIDE;
     static bool isBlockedByModal(QWidget *widget);
     static bool modalState();
     static bool tryModalHelper(QWidget *widget, QWidget **rettop = 0);

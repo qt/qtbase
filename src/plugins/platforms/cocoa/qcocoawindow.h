@@ -118,7 +118,7 @@ public:
     void setCurrentContext(QCocoaGLContext *context);
     QCocoaGLContext *currentContext() const;
 
-    Q_DECL_OVERRIDE bool setWindowModified(bool modified);
+    bool setWindowModified(bool modified) Q_DECL_OVERRIDE;
 
 protected:
     // NSWindow handling. The QCocoaWindow/QNSView can either be displayed

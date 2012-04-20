@@ -50,11 +50,11 @@ public:
     QCocoaPrinterSupport();
     ~QCocoaPrinterSupport();
 
-    Q_DECL_OVERRIDE QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
-    Q_DECL_OVERRIDE QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode);
-    Q_DECL_OVERRIDE QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
+    QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode) Q_DECL_OVERRIDE;
+    QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode) Q_DECL_OVERRIDE;
+    QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const Q_DECL_OVERRIDE;
 
-    Q_DECL_OVERRIDE QList<QPrinterInfo> availablePrinters();
+    QList<QPrinterInfo> availablePrinters() Q_DECL_OVERRIDE;
 };
 
 #endif // QCOCOAPRINTERSUPPORT_H
