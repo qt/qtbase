@@ -604,7 +604,7 @@ QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format,
                                            const QString &application)
 {
 #ifndef QT_BOOTSTRAPPED
-    if (organization == QLatin1String("Trolltech"))
+    if (organization == QLatin1String("Qt"))
     {
         QString organizationDomain = QCoreApplication::organizationDomain();
         QString applicationName = QCoreApplication::applicationName();
