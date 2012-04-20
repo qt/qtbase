@@ -43,7 +43,7 @@
 
 #include "../serverobject.h"
 
-static const char serviceName[] = "com.trolltech.autotests.performance";
+static const char serviceName[] = "org.qtproject.autotests.performance";
 static const char objectPath[] = "/";
 
 int main(int argc, char *argv[])

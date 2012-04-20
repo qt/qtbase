@@ -49,7 +49,7 @@
 class ServerObject: public QObject
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "com.trolltech.autotests.Performance")
+    Q_CLASSINFO("D-Bus Interface", "org.qtproject.autotests.Performance")
 public:
     ServerObject(const QString &objectPath, QDBusConnection conn, QObject *parent = 0)
         : QObject(parent)

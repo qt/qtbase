@@ -44,7 +44,7 @@
 
 #include "./serverobject.h"
 
-static const char serviceName[] = "com.trolltech.autotests.performance";
+static const char serviceName[] = "org.qtproject.autotests.performance";
 static const int runTime = 500;
 
 class tst_QDBusPerformance: public QObject
@@ -98,11 +98,11 @@ void tst_QDBusPerformance::initTestCase()
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(con.interface()->isServiceRegistered(serviceName));
 
-    remote = new QDBusInterface(serviceName, "/", "com.trolltech.autotests.Performance", con, this);
+    remote = new QDBusInterface(serviceName, "/", "org.qtproject.autotests.Performance", con, this);
     QVERIFY(remote->isValid());
 
     new ServerObject("/", con, this);
-    local = new QDBusInterface(con.baseService(), "/", "com.trolltech.autotests.Performance", con, this);
+    local = new QDBusInterface(con.baseService(), "/", "org.qtproject.autotests.Performance", con, this);
     QVERIFY(local->isValid());
 }
 
