@@ -167,6 +167,18 @@ bool QLibraryPrivate::load_sys()
         dlFlags |= RTLD_LOCAL;
     }
 #endif
+
+    // Provide access to RTLD_NODELETE flag on Unix
+    // From GNU documentation on RTLD_NODELETE:
+    // Do not unload the library during dlclose(). Consequently, the
+    // library's specific static variables are not reinitialized if the
+    // library is reloaded with dlopen() at a later time.
+#ifdef RTLD_NODELETE
+    if (loadHints & QLibrary::PreventUnloadHint) {
+        dlFlags |= RTLD_NODELETE;
+    }
+#endif
+
 #if defined(Q_OS_AIX)	// Not sure if any other platform actually support this thing.
     if (loadHints & QLibrary::LoadArchiveMemberHint) {
         dlFlags |= RTLD_MEMBER;

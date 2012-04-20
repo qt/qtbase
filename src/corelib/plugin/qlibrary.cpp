@@ -163,6 +163,10 @@ static QBasicMutex qt_library_mutex;
     If this hint is given, the filename of the library consists of
     a path, which is a reference to an archive file, followed by
     a reference to the archive member.
+    \value PreventUnloadHint
+    Prevents the library from being unloaded from the address space if close()
+    is called. The library's static variables are not reinitialized if open()
+    is called at a later time.
 
     \sa loadHints
 */
@@ -1229,6 +1233,8 @@ QString QLibrary::errorString() const
     the archive member. For instance, the fileName \c libGL.a(shr_64.o) will refer
     to the library \c shr_64.o in the archive file named \c libGL.a. This
     is only supported on the AIX platform.
+
+    Setting PreventUnloadHint will only apply on Unix platforms.
 
     The interpretation of the load hints is platform dependent, and if
     you use it you are probably making some assumptions on which platform
