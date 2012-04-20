@@ -587,13 +587,12 @@ QStringList QMakeProject::qmakeFeaturePaths()
     foreach (const QString &path, qmakepath)
         foreach (const QString &cat, concat)
             feature_roots << (path + mkspecs_concat + cat);
-    QString *specp = host_build ? &Option::mkfile::qmakespec : &Option::mkfile::xqmakespec;
-    if (!specp->isEmpty()) {
+    if (!real_spec.isEmpty()) {
         // The spec is already platform-dependent, so no subdirs here.
-        feature_roots << *specp + base_concat;
+        feature_roots << real_spec + base_concat;
 
         // Also check directly under the root directory of the mkspecs collection
-        QFileInfo specfi(*specp);
+        QFileInfo specfi(real_spec);
         QDir specrootdir(specfi.absolutePath());
         while (!specrootdir.isRoot()) {
             const QString specrootpath = specrootdir.path();
