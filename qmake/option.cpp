@@ -613,10 +613,6 @@ bool Option::postProcessProject(QMakeProject *project)
         Option::libtool_ext = project->first("QMAKE_EXT_LIBTOOL");
     if(!project->isEmpty("QMAKE_EXT_PRL"))
         Option::prl_ext = project->first("QMAKE_EXT_PRL");
-    if(!project->isEmpty("QMAKE_EXT_PRF"))
-        Option::prf_ext = project->first("QMAKE_EXT_PRF");
-    if(!project->isEmpty("QMAKE_EXT_JS"))
-        Option::prf_ext = project->first("QMAKE_EXT_JS");
     if(!project->isEmpty("QMAKE_EXT_UI"))
         Option::ui_ext = project->first("QMAKE_EXT_UI");
     if(!project->isEmpty("QMAKE_EXT_CPP_MOC"))
