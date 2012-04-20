@@ -1,8 +1,12 @@
 QT += widgets
 
 HEADERS       = controllerwindow.h \
-                previewwindow.h
+                previewwindow.h \
+                controls.h
+
 SOURCES       = controllerwindow.cpp \
                 previewwindow.cpp \
-                main.cpp
+                main.cpp \
+                controls.cpp
+
 QT += widgets

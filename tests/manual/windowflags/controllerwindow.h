@@ -55,6 +55,10 @@ class QRadioButton;
 class QMainWindow;
 QT_END_NAMESPACE
 
+class HintControl;
+class WindowStatesControl;
+class TypeControl;
+
 //! [0]
 class ControllerWindow : public QWidget
 {
@@ -68,55 +72,24 @@ private slots:
 
 private:
     void createTypeGroupBox();
-    void createStateGroupBox();
-    void createHintsGroupBox();
     QCheckBox *createCheckBox(const QString &text);
     QRadioButton *createRadioButton(const QString &text);
 
     QMainWindow *parentWindow;
     PreviewWindow *previewWindow;
     PreviewDialog *previewDialog;
-
     QGroupBox *widgetTypeGroupBox;
-    QGroupBox *windowStateGroupBox;
     QGroupBox *additionalOptionsGroupBox;
-    QGroupBox *typeGroupBox;
-    QGroupBox *hintsGroupBox;
+    TypeControl *typeControl;
+    HintControl *hintsControl;
+    WindowStatesControl *statesControl;
+
     QPushButton *quitButton;
 
     QRadioButton *previewWidgetButton;
     QRadioButton *previewDialogButton;
     QCheckBox *modalWindowCheckBox;
     QCheckBox *fixedSizeWindowCheckBox;
-
-    QCheckBox *visibleCheckBox;
-    QRadioButton *restoreButton;
-    QRadioButton *minimizeButton;
-    QRadioButton *maximizeButton;
-    QRadioButton *fullscreenButton;
-
-    QRadioButton *windowRadioButton;
-    QRadioButton *dialogRadioButton;
-    QRadioButton *sheetRadioButton;
-    QRadioButton *drawerRadioButton;
-    QRadioButton *popupRadioButton;
-    QRadioButton *toolRadioButton;
-    QRadioButton *toolTipRadioButton;
-    QRadioButton *splashScreenRadioButton;
-
-    QCheckBox *msWindowsFixedSizeDialogCheckBox;
-    QCheckBox *x11BypassWindowManagerCheckBox;
-    QCheckBox *framelessWindowCheckBox;
-    QCheckBox *windowTitleCheckBox;
-    QCheckBox *windowSystemMenuCheckBox;
-    QCheckBox *windowMinimizeButtonCheckBox;
-    QCheckBox *windowMaximizeButtonCheckBox;
-    QCheckBox *windowCloseButtonCheckBox;
-    QCheckBox *windowContextHelpButtonCheckBox;
-    QCheckBox *windowShadeButtonCheckBox;
-    QCheckBox *windowStaysOnTopCheckBox;
-    QCheckBox *windowStaysOnBottomCheckBox;
-    QCheckBox *customizeWindowHintCheckBox;
 };
 //! [0]
 

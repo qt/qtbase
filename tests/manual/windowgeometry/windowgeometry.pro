@@ -2,7 +2,8 @@ QT       += core gui
 TARGET = windowgeometry
 TEMPLATE = app
 
-SOURCES += main.cpp controllerwidget.cpp
-HEADERS += controllerwidget.h
+INCLUDEPATH += ../windowflags
+SOURCES += main.cpp controllerwidget.cpp ../windowflags/controls.cpp
+HEADERS += controllerwidget.h ../windowflags/controls.h
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

@@ -49,7 +49,11 @@
 QT_BEGIN_NAMESPACE
 class QSpinBox;
 class QLabel;
+class QGridLayout;
 QT_END_NAMESPACE
+
+class TypeControl;
+class HintControl;
 
 // A control for editing points or sizes
 class CoordinateControl : public QWidget
@@ -112,12 +116,17 @@ protected:
 
 public:
     virtual bool eventFilter(QObject *, QEvent *);
-    void refresh();
+    virtual void refresh();
 
 private slots:
     void posChanged(const QPoint &);
     void sizeChanged(const QSize &);
     void framePosChanged(const QPoint &);
+    void windowFlagsChanged();
+
+protected:
+    QGridLayout *m_layout;
+    QObject *m_object;
 
 private:
     virtual QRect objectGeometry(const QObject *o) const = 0;
@@ -126,15 +135,18 @@ private:
     virtual QPoint objectFramePosition(const QObject *o) const = 0;
     virtual void setObjectFramePosition(QObject *o, const QPoint &) const = 0;
 
+    virtual Qt::WindowFlags objectWindowFlags(const QObject *o) const = 0;
+    virtual void setObjectWindowFlags(QObject *o, Qt::WindowFlags) = 0;
+
     virtual QPoint objectMapToGlobal(const QObject *o, const QPoint &) const = 0;
 
     RectControl *m_geometry;
     CoordinateControl *m_framePosition;
+    TypeControl *m_typeControl;
+    HintControl *m_hintControl;
     QLabel *m_moveEventLabel;
     QLabel *m_resizeEventLabel;
     QLabel *m_mouseEventLabel;
-
-    QObject *m_object;
     unsigned m_moveCount;
     unsigned m_resizeCount;
 };

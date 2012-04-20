@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "controllerwidget.h"
+#include <controls.h>
 
 #if QT_VERSION >= 0x050000
 #    include <QtWidgets>
@@ -62,6 +63,7 @@ CoordinateControl::CoordinateControl(const QString &sep) : m_x(new QSpinBox), m_
     m_y->setMaximum(2000);
     connect(m_y, SIGNAL(valueChanged(int)), this, SLOT(spinBoxChanged()));
     QHBoxLayout *l = new QHBoxLayout(this);
+    l->setSpacing(2);
     l->addWidget(m_x);
     l->addWidget(new QLabel(sep));
     l->addWidget(m_y);
@@ -95,6 +97,8 @@ RectControl::RectControl()
     , m_size(new CoordinateControl(QLatin1String("x")))
 {
     QHBoxLayout *l = new QHBoxLayout(this);
+    l->setSpacing(0);
+    l->setMargin(ControlLayoutMargin);
     connect(m_point, SIGNAL(pointValueChanged(QPoint)), this, SLOT(handleChanged()));
     connect(m_point, SIGNAL(pointValueChanged(QPoint)), this, SIGNAL(positionChanged(QPoint)));
     l->addWidget(m_point);
@@ -121,26 +125,43 @@ void RectControl::handleChanged()
 }
 
 BaseWindowControl::BaseWindowControl(QObject *w)
-    : m_geometry(new RectControl)
+    : m_layout(new QGridLayout(this))
+    , m_object(w)
+    , m_geometry(new RectControl)
     , m_framePosition(new CoordinateControl(QLatin1String("x")))
+    , m_typeControl(new TypeControl)
+    , m_hintControl(new HintControl)
     , m_moveEventLabel(new QLabel(tr("Move events")))
     , m_resizeEventLabel(new QLabel(tr("Resize events")))
     , m_mouseEventLabel(new QLabel(tr("Mouse events")))
-    , m_object(w)
     , m_moveCount(0)
     , m_resizeCount(0)
 {
     m_object->installEventFilter(this);
-    QGridLayout *l = new QGridLayout(this);
     m_geometry->setTitle(tr("Geometry"));
-    l->addWidget(m_geometry, 0, 0, 1, 2);
+    int row = 0;
+    m_layout->addWidget(m_geometry, row, 0, 1, 2);
+    m_layout->setMargin(ControlLayoutMargin);
     QGroupBox *frameGB = new QGroupBox(tr("Frame"));
     QVBoxLayout *frameL = new QVBoxLayout(frameGB);
+    frameL->setSpacing(0);
+    frameL->setMargin(ControlLayoutMargin);
     frameL->addWidget(m_framePosition);
-    l->addWidget(frameGB, 0, 2);
-    l->addWidget(m_moveEventLabel, 1, 0);
-    l->addWidget(m_resizeEventLabel, 1, 1);
-    l->addWidget(m_mouseEventLabel, 1, 2);
+    m_layout->addWidget(frameGB, row, 2);
+
+    m_layout->addWidget(m_hintControl, ++row, 0, 1, 2);
+    connect(m_hintControl, SIGNAL(changed(Qt::WindowFlags)), this, SLOT(windowFlagsChanged()));
+    m_layout->addWidget(m_typeControl, row, 2);
+    connect(m_typeControl, SIGNAL(changed(Qt::WindowFlags)), this, SLOT(windowFlagsChanged()));
+
+    QGroupBox *eventGroupBox = new QGroupBox(tr("Events"));
+    QVBoxLayout *l = new QVBoxLayout(eventGroupBox);
+    l->setSpacing(0);
+    l->setMargin(ControlLayoutMargin);
+    l->addWidget(m_moveEventLabel);
+    l->addWidget(m_resizeEventLabel);
+    l->addWidget(m_mouseEventLabel);
+    m_layout->addWidget(eventGroupBox, ++row, 2);
 
     connect(m_geometry, SIGNAL(positionChanged(QPoint)), this, SLOT(posChanged(QPoint)));
     connect(m_geometry, SIGNAL(sizeChanged(QSize)), this, SLOT(sizeChanged(QSize)));
@@ -174,6 +195,8 @@ bool BaseWindowControl::eventFilter(QObject *, QEvent *e)
                                    arg(pos.x()).arg(pos.y()).arg(globalPos.x()).arg(globalPos.y()));
     }
         break;
+    case QEvent::WindowStateChange:
+        refresh();
     default:
         break;
     }
@@ -199,18 +222,32 @@ void BaseWindowControl::framePosChanged(const QPoint &p)
     setObjectFramePosition(m_object, p);
 }
 
+void BaseWindowControl::windowFlagsChanged()
+{
+    const Qt::WindowFlags f = m_typeControl->type() | m_hintControl->hints();
+    setObjectWindowFlags(m_object, f);
+}
+
 void BaseWindowControl::refresh()
 {
     m_geometry->setRectValue(objectGeometry(m_object));
     m_framePosition->setPointValue(objectFramePosition(m_object));
+    const Qt::WindowFlags flags = objectWindowFlags(m_object);
+    m_typeControl->setType(flags);
+    m_hintControl->setHints(flags);
 }
 
 // A control for a QWidget
 class WidgetWindowControl : public BaseWindowControl
 {
+    Q_OBJECT
 public:
-    explicit WidgetWindowControl(QWidget *w ) : BaseWindowControl(w)
-        { setTitle(w->windowTitle()); }
+    explicit WidgetWindowControl(QWidget *w);
+
+    virtual void refresh();
+
+private slots:
+    void statesChanged();
 
 private:
     virtual QRect objectGeometry(const QObject *o) const
@@ -223,7 +260,45 @@ private:
         { static_cast<QWidget *>(o)->move(p); }
     virtual QPoint objectMapToGlobal(const QObject *o, const QPoint &p) const
         { return static_cast<const QWidget *>(o)->mapToGlobal(p); }
+    virtual Qt::WindowFlags objectWindowFlags(const QObject *o) const
+        { return static_cast<const QWidget *>(o)->windowFlags(); }
+    virtual void setObjectWindowFlags(QObject *o, Qt::WindowFlags f);
+
+    WindowStatesControl *m_statesControl;
 };
+
+WidgetWindowControl::WidgetWindowControl(QWidget *w )
+    : BaseWindowControl(w)
+    , m_statesControl(new WindowStatesControl(WindowStatesControl::WantVisibleCheckBox))
+{
+    setTitle(w->windowTitle());
+    m_layout->addWidget(m_statesControl, 2, 0);
+    connect(m_statesControl, SIGNAL(changed()), this, SLOT(statesChanged()));
+}
+
+void WidgetWindowControl::setObjectWindowFlags(QObject *o, Qt::WindowFlags f)
+{
+    QWidget *w = static_cast<QWidget *>(o);
+    const bool visible = w->isVisible();
+    w->setWindowFlags(f); // hides.
+    if (visible)
+        w->show();
+}
+
+void WidgetWindowControl::refresh()
+{
+    const QWidget *w = static_cast<const QWidget *>(m_object);
+    m_statesControl->setVisibleValue(w->isVisible());
+    m_statesControl->setStates(w->windowState());
+    BaseWindowControl::refresh();
+}
+
+void WidgetWindowControl::statesChanged()
+{
+    QWidget *w = static_cast<QWidget *>(m_object);
+    w->setVisible(m_statesControl->visibleValue());
+    w->setWindowState(m_statesControl->states());
+}
 
 #if QT_VERSION >= 0x050000
 
@@ -267,9 +342,14 @@ void Window::render()
 // A control for a QWindow
 class WindowControl : public BaseWindowControl
 {
+    Q_OBJECT
 public:
-    explicit WindowControl(QWindow *w ) : BaseWindowControl(w)
-        { setTitle(w->windowTitle()); }
+    explicit WindowControl(QWindow *w);
+
+    virtual void refresh();
+
+private slots:
+    void stateChanged();
 
 private:
     virtual QRect objectGeometry(const QObject *o) const
@@ -282,7 +362,40 @@ private:
         { static_cast<QWindow *>(o)->setFramePos(p); }
     virtual QPoint objectMapToGlobal(const QObject *o, const QPoint &p) const
         { return static_cast<const QWindow *>(o)->mapToGlobal(p); }
+    virtual Qt::WindowFlags objectWindowFlags(const QObject *o) const
+        { return static_cast<const QWindow *>(o)->windowFlags(); }
+    virtual void setObjectWindowFlags(QObject *o, Qt::WindowFlags f)
+        { static_cast<QWindow *>(o)->setWindowFlags(f); }
+
+    WindowStateControl *m_stateControl;
 };
+
+WindowControl::WindowControl(QWindow *w )
+    : BaseWindowControl(w)
+    , m_stateControl(new WindowStateControl(WindowStateControl::WantVisibleCheckBox | WindowStateControl::WantMinimizeRadioButton))
+{
+    setTitle(w->windowTitle());
+    QGroupBox *stateGroupBox = new QGroupBox(tr("State"));
+    QVBoxLayout *l = new QVBoxLayout(stateGroupBox);
+    l->addWidget(m_stateControl);
+    m_layout->addWidget(stateGroupBox, 2, 0);
+    connect(m_stateControl, SIGNAL(changed()), this, SLOT(stateChanged()));
+}
+
+void WindowControl::refresh()
+{
+    const QWindow *w = static_cast<const QWindow *>(m_object);
+    BaseWindowControl::refresh();
+    m_stateControl->setVisibleValue(w->isVisible());
+    m_stateControl->setState(w->windowState());
+}
+
+void WindowControl::stateChanged()
+{
+    QWindow *w = static_cast<QWindow *>(m_object);
+    w->setVisible(m_stateControl->visibleValue());
+    w->setWindowState(m_stateControl->state());
+}
 
 #endif
 
@@ -363,3 +476,5 @@ ControllerWidget::ControllerWidget(QWidget *parent)
 ControllerWidget::~ControllerWidget()
 {
 }
+
+#include "controllerwidget.moc"
