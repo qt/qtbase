@@ -2890,6 +2890,8 @@ Q_DECLARE_METATYPE( MyClass )
 void tst_QVariant::loadUnknownUserType()
 {
     qRegisterMetaType<MyClass>("MyClass");
+    QTest::ignoreMessage(QtWarningMsg, "QVariant::load: unable to load type "
+                         + QByteArray::number(qMetaTypeId<MyClass>()) +".");
     char data[] = {0, 0, QMetaType::User >> 8 , char(QMetaType::User), 0, 0, 0, 0, 8, 'M', 'y', 'C', 'l', 'a', 's', 's', 0};
 
     QByteArray ba(data, sizeof(data));
@@ -2901,6 +2903,7 @@ void tst_QVariant::loadUnknownUserType()
 
 void tst_QVariant::loadBrokenUserType()
 {
+    QTest::ignoreMessage(QtWarningMsg, "Trying to construct an instance of an invalid type, type id: 127");
     char data[] = {0, 0, 0, 127, 0 };
 
     QByteArray ba(data, sizeof(data));
