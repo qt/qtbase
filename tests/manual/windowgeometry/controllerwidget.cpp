@@ -331,6 +331,7 @@ ControllerWidget::ControllerWidget(QWidget *parent)
     m_testWindow->setFramePos(QPoint(x, y));
     m_testWindow->resize(200, 200);
     m_testWindow->show();
+    m_testWindow->setWindowTitle(tr("TestWindow"));
 #endif
 
     QWidget *central = new QWidget ;
