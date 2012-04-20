@@ -319,7 +319,7 @@ QString QAccessibleComboBox::text(QAccessible::Text t) const
         break;
 #ifndef QT_NO_SHORTCUT
     case QAccessible::Accelerator:
-        str = (QString)QKeySequence(Qt::Key_Down);
+        str = QKeySequence(Qt::Key_Down).toString(QKeySequence::NativeText);
         break;
 #endif
     default:

@@ -147,7 +147,7 @@ QString Q_WIDGETS_EXPORT qt_accHotKey(const QString &text)
 {
     int ampIndex = qt_accAmpIndex(text);
     if (ampIndex != -1)
-        return (QString)QKeySequence(Qt::ALT) + text.at(ampIndex + 1);
+        return QKeySequence(Qt::ALT).toString(QKeySequence::NativeText) + text.at(ampIndex + 1);
 
     return QString();
 }
