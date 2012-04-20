@@ -48,6 +48,7 @@
 #include <qregexp.h>
 #include <qurl.h>
 #include <private/qsystemlibrary_p.h>
+#include <qnetworkinterface.h>
 
 #include <string.h>
 #include <qt_windows.h>
@@ -191,10 +192,26 @@ static bool isBypassed(const QString &host, const QStringList &bypassList)
     QHostAddress ipAddress;
     bool isIpAddress = ipAddress.setAddress(host);
 
+    // always exclude loopback
+    if (isIpAddress && ipAddress.isLoopback())
+        return true;
+
     // does it match the list of exclusions?
     foreach (const QString &entry, bypassList) {
-        if (isSimple && entry == QLatin1String("<local>"))
-            return true;
+        if (entry == QLatin1String("<local>")) {
+            if (isSimple)
+                return true;
+            if (isIpAddress) {
+                //exclude all local subnets
+                foreach (const QNetworkInterface &iface, QNetworkInterface::allInterfaces()) {
+                    foreach (const QNetworkAddressEntry netaddr, iface.addressEntries()) {
+                        if (ipAddress.isInSubnet(netaddr.ip(), netaddr.prefixLength())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
         if (isIpAddress && ipAddress.isInSubnet(QHostAddress::parseSubnet(entry))) {
             return true;        // excluded
         } else {
