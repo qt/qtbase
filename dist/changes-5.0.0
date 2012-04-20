@@ -347,6 +347,13 @@ QtCore
   QRegularExpressionMatchIterator. They aim to replace QRegExp with a more
   powerful and flexible regular expression engine.
 
+* Certain methods in QRegExp that modified the object's internals are no longer marked
+  const. They were accidentally marked const in Qt 4 but the problem could not be
+  fixed. The following are suggestions to adapt code to this change:
+   - make sure the QRegExp object is not const in the given context
+   - create a copy of the QRegExp object before using it
+   - invert the operation and use QString. E.g., rx.indexIn(string) becomes string.indexOf(rx)
+
 * QEvent::AccessibilityPrepare, AccessibilityHelp and AccessibilityDescription removed:
   * The enum values simply didn't make sense in the first place and should simply be dropped.
 

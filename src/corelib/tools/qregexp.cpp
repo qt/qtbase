@@ -4204,7 +4204,6 @@ void QRegExp::setMinimal(bool minimal)
     priv->minimal = minimal;
 }
 
-// ### Qt 5: make non-const
 /*!
     Returns true if \a str is matched exactly by this regular
     expression; otherwise returns false. You can determine how much of
@@ -4220,12 +4219,9 @@ void QRegExp::setMinimal(bool minimal)
     bluebell, \c blutak and \c lightblue, exactMatch() returns false
     and matchedLength() will return 4, 3 and 0 respectively.
 
-    Although const, this function sets matchedLength(),
-    capturedTexts(), and pos().
-
     \sa indexIn(), lastIndexIn()
 */
-bool QRegExp::exactMatch(const QString &str) const
+bool QRegExp::exactMatch(const QString &str)
 {
     prepareEngineForMatch(priv, str);
     priv->matchState.match(str.unicode(), str.length(), 0, priv->minimal, true, 0);
@@ -4238,7 +4234,6 @@ bool QRegExp::exactMatch(const QString &str) const
     }
 }
 
-// ### Qt 5: make non-const
 /*!
     Attempts to find a match in \a str from position \a offset (0 by
     default). If \a offset is -1, the search starts at the last
@@ -4257,9 +4252,6 @@ bool QRegExp::exactMatch(const QString &str) const
     Example:
     \snippet code/src_corelib_tools_qregexp.cpp 13
 
-    Although const, this function sets matchedLength(),
-    capturedTexts() and pos().
-
     If the QRegExp is a wildcard expression (see setPatternSyntax())
     and want to test a string against the whole wildcard expression,
     use exactMatch() instead of this function.
@@ -4267,7 +4259,7 @@ bool QRegExp::exactMatch(const QString &str) const
     \sa lastIndexIn(), exactMatch()
 */
 
-int QRegExp::indexIn(const QString &str, int offset, CaretMode caretMode) const
+int QRegExp::indexIn(const QString &str, int offset, CaretMode caretMode)
 {
     prepareEngineForMatch(priv, str);
     if (offset < 0)
@@ -4277,7 +4269,6 @@ int QRegExp::indexIn(const QString &str, int offset, CaretMode caretMode) const
     return priv->matchState.captured[0];
 }
 
-// ### Qt 5: make non-const
 /*!
     Attempts to find a match backwards in \a str from position \a
     offset. If \a offset is -1 (the default), the search starts at the
@@ -4289,16 +4280,13 @@ int QRegExp::indexIn(const QString &str, int offset, CaretMode caretMode) const
     The \a caretMode parameter can be used to instruct whether \b{^}
     should match at index 0 or at \a offset.
 
-    Although const, this function sets matchedLength(),
-    capturedTexts() and pos().
-
     \warning Searching backwards is much slower than searching
     forwards.
 
     \sa indexIn(), exactMatch()
 */
 
-int QRegExp::lastIndexIn(const QString &str, int offset, CaretMode caretMode) const
+int QRegExp::lastIndexIn(const QString &str, int offset, CaretMode caretMode)
 {
     prepareEngineForMatch(priv, str);
     if (offset < 0)

@@ -93,10 +93,10 @@ public:
     bool isMinimal() const;
     void setMinimal(bool minimal);
 
-    bool exactMatch(const QString &str) const;
+    bool exactMatch(const QString &str);
 
-    int indexIn(const QString &str, int offset = 0, CaretMode caretMode = CaretAtZero) const;
-    int lastIndexIn(const QString &str, int offset = -1, CaretMode caretMode = CaretAtZero) const;
+    int indexIn(const QString &str, int offset = 0, CaretMode caretMode = CaretAtZero);
+    int lastIndexIn(const QString &str, int offset = -1, CaretMode caretMode = CaretAtZero);
     int matchedLength() const;
 #ifndef QT_NO_REGEXP_CAPTURE
     int captureCount() const;
