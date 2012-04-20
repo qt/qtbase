@@ -66,7 +66,7 @@ bool QBenchmarkValgrindUtils::haveValgrind()
     if (!process.waitForFinished(-1))
         return false;
     const QByteArray out = process.readAllStandardOutput();
-    const QRegExp rx(QLatin1String("^valgrind-([0-9]).([0-9]).[0-9]"));
+    QRegExp rx(QLatin1String("^valgrind-([0-9]).([0-9]).[0-9]"));
     if (rx.indexIn(QLatin1String(out.data())) == -1)
         return false;
     bool ok;
@@ -110,7 +110,7 @@ qint64 QBenchmarkValgrindUtils::extractResult(const QString &fileName)
 
     qint64 val = -1;
     bool valSeen = false;
-    const QRegExp rxValue(QLatin1String("^summary: (\\d+)"));
+    QRegExp rxValue(QLatin1String("^summary: (\\d+)"));
     while (!file.atEnd()) {
         const QString line(QLatin1String(file.readLine()));
         if (rxValue.indexIn(line) != -1) {
@@ -139,7 +139,7 @@ QString QBenchmarkValgrindUtils::getNewestFileName()
     int hiSuffix = -1;
     QFileInfo lastFileInfo;
     const QString pattern = QString::fromLatin1("%1.(\\d+)").arg(base);
-    const QRegExp rx(pattern);
+    QRegExp rx(pattern);
     foreach (QFileInfo fileInfo, fiList) {
         const int index = rx.indexIn(fileInfo.fileName());
         Q_ASSERT(index == 0);
