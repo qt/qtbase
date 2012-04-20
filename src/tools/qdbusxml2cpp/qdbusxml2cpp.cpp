@@ -353,7 +353,7 @@ static QByteArray qtTypeName(const QString &signature, const QDBusIntrospection:
         QString oldAnnotationName = QString::fromLatin1("com.trolltech.QtDBus.QtTypeName");
         if (paramId >= 0)
             oldAnnotationName += QString::fromLatin1(".%1%2").arg(QLatin1String(direction)).arg(paramId);
-        qttype = annotations.value(annotationName);
+        qttype = annotations.value(oldAnnotationName);
 
         if (qttype.isEmpty()) {
             fprintf(stderr, "Got unknown type `%s'\n", qPrintable(signature));
