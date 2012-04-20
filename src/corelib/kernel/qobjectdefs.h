@@ -44,6 +44,8 @@
 
 #include <QtCore/qnamespace.h>
 
+#include <QtCore/qobjectdefs_impl.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE

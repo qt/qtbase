@@ -14,6 +14,7 @@ HEADERS += \
         kernel/qobject.h \
         kernel/qobject_impl.h \
         kernel/qobjectdefs.h \
+        kernel/qobjectdefs_impl.h \
         kernel/qsignalmapper.h \
         kernel/qsocketnotifier.h \
         kernel/qtimer.h \
