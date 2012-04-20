@@ -240,6 +240,9 @@ void QQnxWindow::setVisible(bool visible)
     root->updateVisibility(root->m_visible);
 
     window()->requestActivateWindow();
+
+    if (window()->isTopLevel() && visible)
+        QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
 }
 
 void QQnxWindow::updateVisibility(bool parentVisible)
@@ -276,6 +279,11 @@ void QQnxWindow::setOpacity(qreal level)
 
     // TODO: How to handle children of this window? If we change all the visibilities, then
     //       the transparency will look wrong...
+}
+
+bool QQnxWindow::isExposed() const
+{
+    return m_visible;
 }
 
 void QQnxWindow::setBufferSize(const QSize &size)

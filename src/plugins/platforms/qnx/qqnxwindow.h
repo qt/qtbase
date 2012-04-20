@@ -73,6 +73,8 @@ public:
     void setVisible(bool visible);
     void setOpacity(qreal level);
 
+    bool isExposed() const;
+
     WId winId() const { return (WId)m_window; }
     screen_window_t nativeHandle() const { return m_window; }
 
