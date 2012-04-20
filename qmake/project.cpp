@@ -1316,10 +1316,6 @@ QMakeProject::read(uchar cmd)
   again:
     if ((cmd & ReadSetup) && base_vars.isEmpty()) {
         // hack to get the Option stuff in there
-        vars["QMAKE_EXT_CPP"] = Option::cpp_ext;
-        vars["QMAKE_EXT_C"] = Option::c_ext;
-        vars["QMAKE_EXT_H"] = Option::h_ext;
-        vars["QMAKE_SH"] = Option::shellPath;
         if(!Option::user_template_prefix.isEmpty())
             vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
 
@@ -3771,14 +3767,6 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
 #endif
         var = ".BUILTIN.HOST." + type;
         place[var] = QStringList(ret);
-    } else if (var == QLatin1String("QMAKE_DIR_SEP")) {
-        if (place[var].isEmpty())
-            return values("DIR_SEPARATOR", place);
-    } else if (var == QLatin1String("QMAKE_EXT_OBJ")) {
-        if (place[var].isEmpty()) {
-            var = ".BUILTIN." + var;
-            place[var] = QStringList(Option::obj_ext);
-        }
     } else if (var == QLatin1String("QMAKE_QMAKE")) {
         if (place[var].isEmpty())
             place[var] = QStringList(

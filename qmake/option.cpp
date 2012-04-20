@@ -376,22 +376,6 @@ Option::parseCommandLine(int argc, char **argv, int skip)
     return Option::QMAKE_CMDLINE_SUCCESS;
 }
 
-#ifdef Q_OS_WIN
-static QStringList detectShellPath()
-{
-    QStringList paths;
-    QString path = qgetenv("PATH");
-    QStringList pathlist = path.toLower().split(";");
-    for (int i = 0; i < pathlist.count(); i++) {
-        QString maybeSh = pathlist.at(i) + "/sh.exe";
-        if (QFile::exists(maybeSh)) {
-            paths.append(maybeSh);
-        }
-    }
-    return paths;
-}
-#endif
-
 int
 Option::init(int argc, char **argv)
 {
@@ -403,34 +387,12 @@ Option::init(int argc, char **argv)
     Option::host_mode = Option::HOST_WIN_MODE;
 #endif
     Option::application_argv0 = 0;
-    Option::h_moc_mod = "moc_";
-    Option::lex_mod = "_lex";
-    Option::yacc_mod = "_yacc";
-    Option::prl_ext = ".prl";
-    Option::libtool_ext = ".la";
-    Option::pkgcfg_ext = ".pc";
     Option::prf_ext = ".prf";
-    Option::ui_ext = ".ui";
-    Option::h_ext << ".h" << ".hpp" << ".hh" << ".hxx";
-    Option::c_ext << ".c";
-#ifndef Q_OS_WIN
-    Option::h_ext << ".H";
-#endif
-    Option::cpp_moc_ext = ".moc";
-    Option::cpp_ext << ".cpp" << ".cc" << ".cxx";
-#ifndef Q_OS_WIN
-    Option::cpp_ext << ".C";
-#endif
-    Option::lex_ext = ".l";
-    Option::yacc_ext = ".y";
     Option::pro_ext = ".pro";
 #ifdef Q_OS_WIN
     Option::dirlist_sep = ";";
-    Option::shellPath = detectShellPath();
-    Option::res_ext = ".res";
 #else
     Option::dirlist_sep = ":";
-    Option::shellPath = QStringList("sh");
 #endif
     Option::field_sep = ' ';
 
@@ -555,10 +517,8 @@ Option::init(int argc, char **argv)
     //defaults for globals
     if (Option::host_mode == Option::HOST_WIN_MODE) {
         Option::dir_sep = "\\";
-        Option::obj_ext = ".obj";
     } else {
         Option::dir_sep = "/";
-        Option::obj_ext = ".o";
     }
 
     return QMAKE_CMDLINE_SUCCESS;
@@ -590,41 +550,22 @@ void Option::prepareProject(const QString &pfile)
 bool Option::postProcessProject(QMakeProject *project)
 {
     Option::cpp_ext = project->variables()["QMAKE_EXT_CPP"];
-    if(cpp_ext.isEmpty())
-        cpp_ext << ".cpp"; //something must be there
     Option::h_ext = project->variables()["QMAKE_EXT_H"];
-    if(h_ext.isEmpty())
-        h_ext << ".h";
     Option::c_ext = project->variables()["QMAKE_EXT_C"];
-    if(c_ext.isEmpty())
-        c_ext << ".c"; //something must be there
-
-    if(!project->isEmpty("QMAKE_EXT_RES"))
-        Option::res_ext = project->first("QMAKE_EXT_RES");
-    if(!project->isEmpty("QMAKE_EXT_PKGCONFIG"))
-        Option::pkgcfg_ext = project->first("QMAKE_EXT_PKGCONFIG");
-    if(!project->isEmpty("QMAKE_EXT_LIBTOOL"))
-        Option::libtool_ext = project->first("QMAKE_EXT_LIBTOOL");
-    if(!project->isEmpty("QMAKE_EXT_PRL"))
-        Option::prl_ext = project->first("QMAKE_EXT_PRL");
-    if(!project->isEmpty("QMAKE_EXT_UI"))
-        Option::ui_ext = project->first("QMAKE_EXT_UI");
-    if(!project->isEmpty("QMAKE_EXT_CPP_MOC"))
-        Option::cpp_moc_ext = project->first("QMAKE_EXT_CPP_MOC");
-    if(!project->isEmpty("QMAKE_EXT_LEX"))
-        Option::lex_ext = project->first("QMAKE_EXT_LEX");
-    if(!project->isEmpty("QMAKE_EXT_YACC"))
-        Option::yacc_ext = project->first("QMAKE_EXT_YACC");
-    if(!project->isEmpty("QMAKE_EXT_OBJ"))
-        Option::obj_ext = project->first("QMAKE_EXT_OBJ");
-    if(!project->isEmpty("QMAKE_H_MOD_MOC"))
-        Option::h_moc_mod = project->first("QMAKE_H_MOD_MOC");
-    if(!project->isEmpty("QMAKE_MOD_LEX"))
-        Option::lex_mod = project->first("QMAKE_MOD_LEX");
-    if(!project->isEmpty("QMAKE_MOD_YACC"))
-        Option::yacc_mod = project->first("QMAKE_MOD_YACC");
-    if(!project->isEmpty("QMAKE_DIR_SEP"))
-        Option::dir_sep = project->first("QMAKE_DIR_SEP");
+    Option::res_ext = project->first("QMAKE_EXT_RES");
+    Option::pkgcfg_ext = project->first("QMAKE_EXT_PKGCONFIG");
+    Option::libtool_ext = project->first("QMAKE_EXT_LIBTOOL");
+    Option::prl_ext = project->first("QMAKE_EXT_PRL");
+    Option::ui_ext = project->first("QMAKE_EXT_UI");
+    Option::cpp_moc_ext = project->first("QMAKE_EXT_CPP_MOC");
+    Option::lex_ext = project->first("QMAKE_EXT_LEX");
+    Option::yacc_ext = project->first("QMAKE_EXT_YACC");
+    Option::obj_ext = project->first("QMAKE_EXT_OBJ");
+    Option::h_moc_mod = project->first("QMAKE_H_MOD_MOC");
+    Option::lex_mod = project->first("QMAKE_MOD_LEX");
+    Option::yacc_mod = project->first("QMAKE_MOD_YACC");
+    Option::dir_sep = project->first("QMAKE_DIR_SEP");
+    Option::shellPath = project->variables()["QMAKE_SH"];
     return true;
 }
 
