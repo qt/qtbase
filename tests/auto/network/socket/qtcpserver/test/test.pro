@@ -25,3 +25,5 @@ win32 {
 QT = core network testlib
 
 MOC_DIR=tmp
+
+mac:CONFIG+=insignificant_test # QTBUG-25445

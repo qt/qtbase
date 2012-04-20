@@ -36,4 +36,4 @@ linux-*:system(". /etc/lsb-release && [ $DISTRIB_CODENAME = oneiric ]"):DEFINES+
 
 requires(contains(QT_CONFIG,private_tests))
 
-win32:CONFIG += insignificant_test # QTBUG-24234
+win32|mac:CONFIG += insignificant_test # QTBUG-24234
