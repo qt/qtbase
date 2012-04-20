@@ -236,7 +236,7 @@ bool QXmlUtils::isEncName(const QString &encName)
      * replace that regexp is probably a 70 lines so I prioritize this to when
      * the dependency is considered alarming, or when the rest of the bugs
      * are fixed. */
-    const QRegExp encNameRegExp(QLatin1String("[A-Za-z][A-Za-z0-9._\\-]*"));
+    QRegExp encNameRegExp(QLatin1String("[A-Za-z][A-Za-z0-9._\\-]*"));
     Q_ASSERT(encNameRegExp.isValid());
 
     return encNameRegExp.exactMatch(encName);

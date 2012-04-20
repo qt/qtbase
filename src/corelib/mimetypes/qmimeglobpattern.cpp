@@ -135,7 +135,7 @@ bool QMimeGlobPattern::matchFileName(const QString &inputFilename) const
         return (m_pattern == filename);
 
     // Other (quite rare) patterns, like "*.anim[1-9j]": use slow but correct method
-    const QRegExp rx(m_pattern, Qt::CaseSensitive, QRegExp::WildcardUnix);
+    QRegExp rx(m_pattern, Qt::CaseSensitive, QRegExp::WildcardUnix);
     return rx.exactMatch(filename);
 }
 

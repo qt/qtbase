@@ -1654,10 +1654,11 @@ void qt_qFindChildren_helper(const QObject *parent, const QRegExp &re,
     if (!parent || !list)
         return;
     const QObjectList &children = parent->children();
+    QRegExp reCopy = re;
     QObject *obj;
     for (int i = 0; i < children.size(); ++i) {
         obj = children.at(i);
-        if (mo.cast(obj) && re.indexIn(obj->objectName()) != -1)
+        if (mo.cast(obj) && reCopy.indexIn(obj->objectName()) != -1)
             list->append(obj);
 
         if (options & Qt::FindChildrenRecursively)

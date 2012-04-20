@@ -338,7 +338,8 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
                                               end = nameRegExps.constEnd();
                 iter != end; ++iter) {
 
-            if (iter->exactMatch(fileName)) {
+            QRegExp copy = *iter;
+            if (copy.exactMatch(fileName)) {
                 matched = true;
                 break;
             }
