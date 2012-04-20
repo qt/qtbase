@@ -285,7 +285,6 @@ QPlatformOpenGLContext
  * QML2 applications. */
 
 enum FontDatabaseOption {
-    FontDatabaseAuto,
     FontDatabaseFreeType,
     FontDatabaseNative
 };
@@ -300,7 +299,7 @@ static inline FontDatabaseOption fontDatabaseOption(const QObject &nativeInterfa
         if (argument == QLatin1String("native"))
             return FontDatabaseNative;
     }
-    return FontDatabaseAuto;
+    return FontDatabaseNative;
 }
 
 QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
@@ -310,10 +309,6 @@ QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
         d->m_fontDatabase = new QWindowsFontDatabase();
 #else
         FontDatabaseOption option = fontDatabaseOption(d->m_nativeInterface);
-        if (option == FontDatabaseAuto) {
-            option = QCoreApplication::applicationName() == QStringLiteral("QtQmlViewer") ?
-                     FontDatabaseFreeType : FontDatabaseNative;
-        }
         if (option == FontDatabaseFreeType) {
             d->m_fontDatabase = new QWindowsFontDatabaseFT;
         } else {

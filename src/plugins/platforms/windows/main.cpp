@@ -59,8 +59,8 @@ QT_BEGIN_NAMESPACE
     of QGuiApplication:
 
     \list
-    \li \c fontengine=native Indicates that the freetype font
-       engine should not be used.
+    \li \c fontengine=native Indicates that native font engine should be used (default)
+    \li \c fontengine=freetype Indicates that freetype font engine should be used
     \li \c gl=gdi Indicates that ARB Open GL functionality should not be used
     \endlist
 
