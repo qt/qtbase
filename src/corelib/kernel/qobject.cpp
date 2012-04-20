@@ -2385,8 +2385,6 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     signal_index = QMetaObjectPrivate::originalClone(smeta, signal_index);
     int signalOffset, methodOffset;
     computeOffsets(smeta, &signalOffset, &methodOffset);
-    int signal_absolute_index = signal_index + methodOffset;
-    Q_UNUSED(signal_absolute_index) //only used in debug mode
     signal_index += signalOffset;
 
     QByteArray tmp_method_name;
@@ -2455,12 +2453,12 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     }
 
 #ifndef QT_NO_DEBUG
-    QMetaMethod smethod = smeta->method(signal_absolute_index);
+    QMetaMethod smethod = QMetaObjectPrivate::signal(smeta, signal_index);
     QMetaMethod rmethod = rmeta->method(method_index_relative + rmeta->methodOffset());
     check_and_warn_compat(smeta, smethod, rmeta, rmethod);
 #endif
     QMetaObject::Connection handle = QMetaObject::Connection(QMetaObjectPrivate::connect(
-        sender, signal_index, receiver, method_index_relative, rmeta ,type, types));
+        sender, signal_index, smeta, receiver, method_index_relative, rmeta ,type, types));
     if (handle)
         const_cast<QObject*>(sender)->connectNotify(signal - 1);
     return handle;
@@ -2548,7 +2546,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
     check_and_warn_compat(smeta, signal, rmeta, method);
 #endif
     QMetaObject::Connection handle = QMetaObject::Connection(QMetaObjectPrivate::connect(
-        sender, signal_index, receiver, method_index, 0, type, types));
+        sender, signal_index, signal.enclosingMetaObject(), receiver, method_index, 0, type, types));
     if (handle)
         const_cast<QObject*>(sender)->connectNotify(signalSignature.constData());
     return handle;
@@ -2707,7 +2705,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
         }
 
         if (!method) {
-            res |= QMetaObjectPrivate::disconnect(sender, signal_index, receiver, -1, 0);
+            res |= QMetaObjectPrivate::disconnect(sender, signal_index, smeta, receiver, -1, 0);
         } else {
             const QMetaObject *rmeta = receiver->metaObject();
             do {
@@ -2718,7 +2716,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
                             rmeta = rmeta->superClass();
                 if (method_index < 0)
                     break;
-                res |= QMetaObjectPrivate::disconnect(sender, signal_index, receiver, method_index, 0);
+                res |= QMetaObjectPrivate::disconnect(sender, signal_index, smeta, receiver, method_index, 0);
                 method_found = true;
             } while ((rmeta = rmeta->superClass()));
         }
@@ -2731,8 +2729,11 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
         err_method_notfound(receiver, method_arg, "disconnect");
         err_info_about_objects("disconnect", sender, receiver);
     }
-    if (res)
+    if (res) {
+        if (!signal)
+            const_cast<QObject*>(sender)->disconnectNotify(QMetaMethod());
         const_cast<QObject*>(sender)->disconnectNotify(signal ? (signal - 1) : 0);
+    }
     return res;
 }
 
@@ -2817,9 +2818,16 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
         return false;
     }
 
-    if (!QMetaObjectPrivate::disconnect(sender, signal_index, receiver, method_index, 0))
+    if (!QMetaObjectPrivate::disconnect(sender, signal_index, signal.mobj, receiver, method_index, 0))
         return false;
 
+    if (!signal.isValid()) {
+        // The signal is a wildcard, meaning all signals were disconnected.
+        // QMetaObjectPrivate::disconnect() doesn't call disconnectNotify()
+        // per connection in this case. Call it once now, with an invalid
+        // QMetaMethod as argument, as documented.
+        const_cast<QObject*>(sender)->disconnectNotify(signal);
+    }
     const_cast<QObject*>(sender)->disconnectNotify(method.mobj ? signalSignature.constData() : 0);
     return true;
 }
@@ -2850,18 +2858,30 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
 
 /*!
     \fn void QObject::connectNotify(const char *signal)
+    \obsolete
+*/
+void QObject::connectNotify(const char *)
+{
+}
+
+/*!
+    \fn void QObject::disconnectNotify(const char *signal)
+    \obsolete
+*/
+void QObject::disconnectNotify(const char *)
+{
+}
+
+/*!
+    \since 5.0
 
     This virtual function is called when something has been connected
     to \a signal in this object.
 
-    If you want to compare \a signal with a specific signal, use
-    QLatin1String and the \c SIGNAL() macro as follows:
+    If you want to compare \a signal with a specific signal, you can
+    use QMetaMethod::fromSignal() as follows:
 
     \snippet code/src_corelib_kernel_qobject.cpp 32
-
-    If the signal contains multiple parameters or parameters that
-    contain spaces, call QMetaObject::normalizedSignature() on
-    the result of the \c SIGNAL() macro.
 
     \warning This function violates the object-oriented principle of
     modularity. However, it might be useful when you need to perform
@@ -2871,18 +2891,24 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     \sa connect(), disconnectNotify()
 */
 
-void QObject::connectNotify(const char *)
+void QObject::connectNotify(const QMetaMethod &signal)
 {
+    Q_UNUSED(signal);
 }
 
 /*!
-    \fn void QObject::disconnectNotify(const char *signal)
+    \since 5.0
 
     This virtual function is called when something has been
     disconnected from \a signal in this object.
 
     See connectNotify() for an example of how to compare
     \a signal with a specific signal.
+
+    If all signals were disconnected from this object (e.g., the
+    signal argument to disconnect() was 0), disconnectNotify()
+    is only called once, and the \a signal will be an invalid
+    QMetaMethod (QMetaMethod::isValid() returns false).
 
     \warning This function violates the object-oriented principle of
     modularity. However, it might be useful for optimizing access to
@@ -2891,17 +2917,19 @@ void QObject::connectNotify(const char *)
     \sa disconnect(), connectNotify()
 */
 
-void QObject::disconnectNotify(const char *)
+void QObject::disconnectNotify(const QMetaMethod &signal)
 {
+    Q_UNUSED(signal);
 }
 
 /* \internal
     convert a signal index from the method range to the signal range
  */
-static int methodIndexToSignalIndex(const QMetaObject *metaObject, int signal_index)
+static int methodIndexToSignalIndex(const QMetaObject **base, int signal_index)
 {
     if (signal_index < 0)
         return signal_index;
+    const QMetaObject *metaObject = *base;
     while (metaObject && metaObject->methodOffset() > signal_index)
         metaObject = metaObject->superClass();
 
@@ -2912,6 +2940,7 @@ static int methodIndexToSignalIndex(const QMetaObject *metaObject, int signal_in
             signal_index = QMetaObjectPrivate::originalClone(metaObject, signal_index - methodOffset) + signalOffset;
         else
             signal_index = signal_index - methodOffset + signalOffset;
+        *base = metaObject;
     }
     return signal_index;
 }
@@ -2926,8 +2955,9 @@ static int methodIndexToSignalIndex(const QMetaObject *metaObject, int signal_in
 QMetaObject::Connection QMetaObject::connect(const QObject *sender, int signal_index,
                                           const QObject *receiver, int method_index, int type, int *types)
 {
-    signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
-    return Connection(QMetaObjectPrivate::connect(sender, signal_index,
+    const QMetaObject *smeta = sender->metaObject();
+    signal_index = methodIndexToSignalIndex(&smeta, signal_index);
+    return Connection(QMetaObjectPrivate::connect(sender, signal_index, smeta,
                                        receiver, method_index,
                                        0, //FIXME, we could speed this connection up by computing the relative index
                                        type, types));
@@ -2940,7 +2970,8 @@ QMetaObject::Connection QMetaObject::connect(const QObject *sender, int signal_i
 
     the QObjectPrivate::Connection* has a refcount of 2, so it must be passed to a QMetaObject::Connection
  */
-QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
+QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender,
+                                 int signal_index, const QMetaObject *smeta,
                                  const QObject *receiver, int method_index,
                                  const QMetaObject *rmeta, int type, int *types)
 {
@@ -2984,6 +3015,12 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender, i
     c->callFunction = callFunction;
 
     QObjectPrivate::get(s)->addConnection(signal_index, c.data());
+
+    locker.unlock();
+    QMetaMethod smethod = QMetaObjectPrivate::signal(smeta, signal_index);
+    if (smethod.isValid())
+        s->connectNotify(smethod);
+
     return c.take();
 }
 
@@ -2992,8 +3029,9 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender, i
 bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                              const QObject *receiver, int method_index)
 {
-    signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
-    return QMetaObjectPrivate::disconnect(sender, signal_index,
+    const QMetaObject *smeta = sender->metaObject();
+    signal_index = methodIndexToSignalIndex(&smeta, signal_index);
+    return QMetaObjectPrivate::disconnect(sender, signal_index, smeta,
                                           receiver, method_index, 0);
 }
 
@@ -3006,8 +3044,9 @@ one of these connections will be removed.
 bool QMetaObject::disconnectOne(const QObject *sender, int signal_index,
                                 const QObject *receiver, int method_index)
 {
-    signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
-    return QMetaObjectPrivate::disconnect(sender, signal_index,
+    const QMetaObject *smeta = sender->metaObject();
+    signal_index = methodIndexToSignalIndex(&smeta, signal_index);
+    return QMetaObjectPrivate::disconnect(sender, signal_index, smeta,
                                           receiver, method_index, 0,
                                           QMetaObjectPrivate::DisconnectOne);
 }
@@ -3056,7 +3095,8 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
 /*! \internal
     Same as the QMetaObject::disconnect, but \a signal_index must be the result of QObjectPrivate::signalIndex
  */
-bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
+bool QMetaObjectPrivate::disconnect(const QObject *sender,
+                                    int signal_index, const QMetaObject *smeta,
                                     const QObject *receiver, int method_index, void **slot,
                                     DisconnectType disconnectType)
 {
@@ -3079,9 +3119,9 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
     bool success = false;
     if (signal_index < 0) {
         // remove from all connection lists
-        for (signal_index = -1; signal_index < connectionLists->count(); ++signal_index) {
+        for (int sig_index = -1; sig_index < connectionLists->count(); ++sig_index) {
             QObjectPrivate::Connection *c =
-                (*connectionLists)[signal_index].first;
+                (*connectionLists)[sig_index].first;
             if (disconnectHelper(c, receiver, method_index, slot, senderMutex, disconnectType)) {
                 success = true;
                 connectionLists->dirty = true;
@@ -3100,6 +3140,13 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
     Q_ASSERT(connectionLists->inUse >= 0);
     if (connectionLists->orphaned && !connectionLists->inUse)
         delete connectionLists;
+
+    locker.unlock();
+    if (success) {
+        QMetaMethod smethod = QMetaObjectPrivate::signal(smeta, signal_index);
+        if (smethod.isValid())
+            s->disconnectNotify(smethod);
+    }
 
     return success;
 }
@@ -3140,7 +3187,8 @@ void QMetaObject::connectSlotsByName(QObject *o)
             int len = objName.length();
             if (!len || qstrncmp(slot + 3, objName.data(), len) || slot[len+3] != '_')
                 continue;
-            int sigIndex = co->d_func()->signalIndex(slot + len + 4);
+            const QMetaObject *smeta;
+            int sigIndex = co->d_func()->signalIndex(slot + len + 4, &smeta);
             if (sigIndex < 0) { // search for compatible signals
                 const QMetaObject *smo = co->metaObject();
                 int slotlen = qstrlen(slot + len + 4) - 1;
@@ -3150,8 +3198,9 @@ void QMetaObject::connectSlotsByName(QObject *o)
                         continue;
 
                     if (!qstrncmp(method.methodSignature().constData(), slot + len + 4, slotlen)) {
+                        smeta = method.enclosingMetaObject();
                         int signalOffset, methodOffset;
-                        computeOffsets(method.enclosingMetaObject(), &signalOffset, &methodOffset);
+                        computeOffsets(smeta, &signalOffset, &methodOffset);
                         sigIndex = k + - methodOffset + signalOffset;
                         break;
                     }
@@ -3159,7 +3208,8 @@ void QMetaObject::connectSlotsByName(QObject *o)
             }
             if (sigIndex < 0)
                 continue;
-            if (Connection(QMetaObjectPrivate::connect(co, sigIndex, o, i))) {
+
+            if (Connection(QMetaObjectPrivate::connect(co, sigIndex, smeta, o, i))) {
                 foundIt = true;
                 break;
             }
@@ -3390,8 +3440,11 @@ void QMetaObject::activate(QObject *sender, int signal_index, void **argv)
 
     It is different from QMetaObject::indexOfSignal():  indexOfSignal is the same as indexOfMethod
     while QObjectPrivate::signalIndex is smaller because it doesn't give index to slots.
+
+    If \a meta is not 0, it is set to the meta-object where the signal was found.
 */
-int QObjectPrivate::signalIndex(const char *signalName) const
+int QObjectPrivate::signalIndex(const char *signalName,
+                                const QMetaObject **meta) const
 {
     Q_Q(const QObject);
     const QMetaObject *base = q->metaObject();
@@ -3405,6 +3458,8 @@ int QObjectPrivate::signalIndex(const char *signalName) const
     relative_index = QMetaObjectPrivate::originalClone(base, relative_index);
     int signalOffset, methodOffset;
     computeOffsets(base, &signalOffset, &methodOffset);
+    if (meta)
+        *meta = base;
     return relative_index + signalOffset;
 }
 
@@ -4129,9 +4184,13 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
     QMetaObject::Connection ret(c.take());
     locker.unlock();
 
+    QMetaMethod method = QMetaObjectPrivate::signal(senderMetaObject, signal_index);
+    Q_ASSERT(method.isValid());
+    s->connectNotify(method);
+
     // reconstruct the signature to call connectNotify
     const char *sig;
-    QByteArray tmp_sig = senderMetaObject->method(signal_index - signalOffset + methodOffset).methodSignature();
+    QByteArray tmp_sig = method.methodSignature();
     sig = tmp_sig.constData();
     QVarLengthArray<char> signalSignature(qstrlen(sig) + 2);
     signalSignature.data()[0] = char(QSIGNAL_CODE + '0');
@@ -4168,6 +4227,8 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     if (c->next)
         c->next->prev = c->prev;
     c->receiver = 0;
+    // disconnectNotify() not called (the signal index is unknown).
+
     return true;
 }
 
@@ -4251,7 +4312,7 @@ bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject
         signal_index += signalOffset;
     }
 
-    return QMetaObjectPrivate::disconnect(sender, signal_index, receiver, -1, slot);
+    return QMetaObjectPrivate::disconnect(sender, signal_index, senderMetaObject, receiver, -1, slot);
 }
 
 /*! \class QMetaObject::Connection

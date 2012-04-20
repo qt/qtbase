@@ -176,7 +176,7 @@ public:
         return o->d_func();
     }
 
-    int signalIndex(const char *signalName) const;
+    int signalIndex(const char *signalName, const QMetaObject **meta = 0) const;
     inline bool isSignalConnected(uint signalIdx) const;
 
 public:

@@ -198,6 +198,7 @@ struct QMetaObjectPrivate
                              int argc, const QArgumentType *types);
     static int indexOfConstructor(const QMetaObject *m, const QByteArray &name,
                                   int argc, const QArgumentType *types);
+    static QMetaMethod signal(const QMetaObject *m, int signal_index);
     static bool checkConnectArgs(int signalArgc, const QArgumentType *signalTypes,
                                  int methodArgc, const QArgumentType *methodTypes);
     static bool checkConnectArgs(const QMetaMethodPrivate *signal,
@@ -211,10 +212,12 @@ struct QMetaObjectPrivate
     static void memberIndexes(const QObject *obj, const QMetaMethod &member,
                               int *signalIndex, int *methodIndex);
     static QObjectPrivate::Connection *connect(const QObject *sender, int signal_index,
+                        const QMetaObject *smeta,
                         const QObject *receiver, int method_index_relative,
                         const QMetaObject *rmeta = 0,
                         int type = 0, int *types = 0);
     static bool disconnect(const QObject *sender, int signal_index,
+                           const QMetaObject *smeta,
                            const QObject *receiver, int method_index, void **slot,
                            DisconnectType = DisconnectAll);
     static inline bool disconnectHelper(QObjectPrivate::Connection *c,

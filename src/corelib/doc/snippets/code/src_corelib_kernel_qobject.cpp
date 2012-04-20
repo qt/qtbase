@@ -339,8 +339,8 @@ myObject->disconnect(myReceiver);
 
 
 //! [32]
-if (QLatin1String(signal) == SIGNAL(valueChanged(int))) {
-    // signal is valueChanged(int)
+if (signal == QMetaMethod::fromSignal(&MyObject::valueChanged)) {
+    // signal is valueChanged
 }
 //! [32]
 

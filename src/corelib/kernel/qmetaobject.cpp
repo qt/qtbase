@@ -805,6 +805,35 @@ int QMetaObjectPrivate::indexOfConstructor(const QMetaObject *m, const QByteArra
     return -1;
 }
 
+/*! \internal
+    Returns the signal for the given \a metaObject at \a signal_index.
+
+    It it different from QMetaObject::method(); the index should not include
+    non-signal methods.
+
+    The index must correspond to a signal defined in \ a metaObject itself;
+    it should not be an inherited signal.
+*/
+QMetaMethod QMetaObjectPrivate::signal(const QMetaObject *metaObject, int signal_index)
+{
+    QMetaMethod result;
+    if (signal_index < 0)
+        return result;
+    Q_ASSERT(metaObject != 0);
+
+    int signalOffset = 0;
+    for (const QMetaObject *m = metaObject->d.superdata; m; m = m->d.superdata)
+        signalOffset += priv(m->d.data)->signalCount;
+
+    Q_ASSERT(signal_index >= signalOffset);
+    int signal_index_relative = signal_index - signalOffset;
+    if (signal_index_relative < priv(metaObject->d.data)->signalCount) {
+        result.mobj = metaObject;
+        result.handle = priv(metaObject->d.data)->methodData + 5*signal_index_relative;
+    }
+    return result;
+}
+
 /*!
     \internal
 

@@ -370,6 +370,9 @@ protected:
     virtual void childEvent(QChildEvent *);
     virtual void customEvent(QEvent *);
 
+    virtual void connectNotify(const QMetaMethod &signal);
+    virtual void disconnectNotify(const QMetaMethod &signal);
+    // Deprecated; to be removed before Qt 5.0
     virtual void connectNotify(const char *signal);
     virtual void disconnectNotify(const char *signal);
 
@@ -382,6 +385,7 @@ protected:
     static const QMetaObject staticQtMetaObject;
 
     friend struct QMetaObject;
+    friend struct QMetaObjectPrivate;
     friend class QMetaCallEvent;
     friend class QApplication;
     friend class QApplicationPrivate;
