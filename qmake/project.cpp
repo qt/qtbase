@@ -82,7 +82,7 @@ enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_VAL_ESCAPE, E_REPLACE,
                   E_SIZE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS, E_ENUMERATE_VARS,
-                  E_SHADOWED, E_CLEAN_PATH };
+                  E_SHADOWED, E_CLEAN_PATH, E_NATIVE_PATH };
 QHash<QString, ExpandFunc> qmake_expandFunctions()
 {
     static QHash<QString, ExpandFunc> *qmake_expand_functions = 0;
@@ -121,6 +121,7 @@ QHash<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("enumerate_vars", E_ENUMERATE_VARS);
         qmake_expand_functions->insert("shadowed", E_SHADOWED);
         qmake_expand_functions->insert("clean_path", E_CLEAN_PATH);
+        qmake_expand_functions->insert("native_path", E_NATIVE_PATH);
     }
     return *qmake_expand_functions;
 }
@@ -2583,6 +2584,13 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
                     parser.file.toLatin1().constData(), parser.line_no);
         else
             ret += QDir::cleanPath(args.at(0));
+        break;
+    case E_NATIVE_PATH:
+        if (args.count() != 1)
+            fprintf(stderr, "%s:%d native_path(path) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        else
+            ret += Option::fixPathToTargetOS(args.at(0), false);
         break;
     default: {
         fprintf(stderr, "%s:%d: Unknown replace function: %s\n",

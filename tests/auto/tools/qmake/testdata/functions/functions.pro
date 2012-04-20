@@ -129,3 +129,5 @@ testReplace($$format_number(13, width=5 padsign), " $$spc 13", "sign-padded numb
 testReplace($$format_number(13, width=5 padsign zeropad), " 0013", "zero-padded sign-padded number format")
 
 testReplace($$clean_path("c:$${DIR_SEPARATOR}crazy//path/../trolls"), "c:/crazy/trolls", "clean_path")
+
+testReplace($$native_path("/crazy/trolls"), "$${DIR_SEPARATOR}crazy$${DIR_SEPARATOR}trolls", "native_path")
