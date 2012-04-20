@@ -136,3 +136,11 @@ testReplace($$absolute_path("crazy/trolls"), "$$PWD/crazy/trolls", "absolute_pat
 testReplace($$absolute_path("crazy/trolls", "/fake/path"), "/fake/path/crazy/trolls", "absolute_path with base")
 testReplace($$relative_path($$_PRO_FILE_PWD_), $$basename($$_PRO_FILE_), "relative_path")
 testReplace($$relative_path("/fake/trolls", "/fake/path"), "../trolls", "relative_path with base")
+
+#this test is very rudimentary. the backend function is thoroughly tested in qt creator
+in = "some nasty\" path\\"
+win32: \
+    out = "\"some nasty\"\\^\"\" path\"\\"
+else: \
+    out = "'some nasty\" path\\'"
+testReplace($$shell_quote($$in), $$out, "shell_quote")

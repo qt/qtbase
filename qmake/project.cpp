@@ -82,7 +82,8 @@ enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_VAL_ESCAPE, E_REPLACE,
                   E_SIZE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS, E_ENUMERATE_VARS,
-                  E_SHADOWED, E_ABSOLUTE_PATH, E_RELATIVE_PATH, E_CLEAN_PATH, E_NATIVE_PATH };
+                  E_SHADOWED, E_ABSOLUTE_PATH, E_RELATIVE_PATH, E_CLEAN_PATH, E_NATIVE_PATH,
+                  E_SHELL_QUOTE };
 QHash<QString, ExpandFunc> qmake_expandFunctions()
 {
     static QHash<QString, ExpandFunc> *qmake_expand_functions = 0;
@@ -124,6 +125,7 @@ QHash<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("relative_path", E_RELATIVE_PATH);
         qmake_expand_functions->insert("clean_path", E_CLEAN_PATH);
         qmake_expand_functions->insert("native_path", E_NATIVE_PATH);
+        qmake_expand_functions->insert("shell_quote", E_SHELL_QUOTE);
     }
     return *qmake_expand_functions;
 }
@@ -1834,6 +1836,67 @@ subAll(QStringList *val, const QStringList &diffval)
         val->removeAll(dv);
 }
 
+inline static
+bool isSpecialChar(ushort c)
+{
+    // Chars that should be quoted (TM). This includes:
+#ifdef Q_OS_WIN
+    // - control chars & space
+    // - the shell meta chars "&()<>^|
+    // - the potential separators ,;=
+    static const uchar iqm[] = {
+        0xff, 0xff, 0xff, 0xff, 0x45, 0x13, 0x00, 0x78,
+        0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x10
+    };
+#else
+    static const uchar iqm[] = {
+        0xff, 0xff, 0xff, 0xff, 0xdf, 0x07, 0x00, 0xd8,
+        0x00, 0x00, 0x00, 0x38, 0x01, 0x00, 0x00, 0x78
+    }; // 0-32 \'"$`<>|;&(){}*?#!~[]
+#endif
+
+    return (c < sizeof(iqm) * 8) && (iqm[c / 8] & (1 << (c & 7)));
+}
+
+inline static
+bool hasSpecialChars(const QString &arg)
+{
+    for (int x = arg.length() - 1; x >= 0; --x)
+        if (isSpecialChar(arg.unicode()[x].unicode()))
+            return true;
+    return false;
+}
+
+static QString
+shellQuote(const QString &arg)
+{
+    if (!arg.length())
+        return QString::fromLatin1("\"\"");
+
+    QString ret(arg);
+    if (hasSpecialChars(ret)) {
+#ifdef Q_OS_WIN
+        // Quotes are escaped and their preceding backslashes are doubled.
+        // It's impossible to escape anything inside a quoted string on cmd
+        // level, so the outer quoting must be "suspended".
+        ret.replace(QRegExp(QLatin1String("(\\\\*)\"")), QLatin1String("\"\\1\\1\\^\"\""));
+        // The argument must not end with a \ since this would be interpreted
+        // as escaping the quote -- rather put the \ behind the quote: e.g.
+        // rather use "foo"\ than "foo\"
+        int i = ret.length();
+        while (i > 0 && ret.at(i - 1) == QLatin1Char('\\'))
+            --i;
+        ret.insert(i, QLatin1Char('"'));
+        ret.prepend(QLatin1Char('"'));
+#else // Q_OS_WIN
+        ret.replace(QLatin1Char('\''), QLatin1String("'\\''"));
+        ret.prepend(QLatin1Char('\''));
+        ret.append(QLatin1Char('\''));
+#endif // Q_OS_WIN
+    }
+    return ret;
+}
+
 static QString
 quoteValue(const QString &val)
 {
@@ -2609,6 +2672,13 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
                     parser.file.toLatin1().constData(), parser.line_no);
         else
             ret += Option::fixPathToTargetOS(args.at(0), false);
+        break;
+    case E_SHELL_QUOTE:
+        if (args.count() != 1)
+            fprintf(stderr, "%s:%d shell_quote(args) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        else
+            ret += shellQuote(args.at(0));
         break;
     default: {
         fprintf(stderr, "%s:%d: Unknown replace function: %s\n",
