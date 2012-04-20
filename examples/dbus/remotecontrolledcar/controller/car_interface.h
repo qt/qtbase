@@ -60,14 +60,14 @@
 #include <QtDBus/QtDBus>
 
 /*
- * Proxy class for interface com.trolltech.Examples.CarInterface
+ * Proxy class for interface org.example.Examples.CarInterface
  */
 class ComTrolltechExamplesCarInterfaceInterface: public QDBusAbstractInterface
 {
     Q_OBJECT
 public:
     static inline const char *staticInterfaceName()
-    { return "com.trolltech.Examples.CarInterface"; }
+    { return "org.example.Examples.CarInterface"; }
 
 public:
     ComTrolltechExamplesCarInterfaceInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);

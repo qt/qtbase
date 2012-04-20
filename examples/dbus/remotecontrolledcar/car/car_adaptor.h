@@ -64,14 +64,14 @@ class QVariant;
 QT_END_NAMESPACE
 
 /*
- * Adaptor class for interface com.trolltech.Examples.CarInterface
+ * Adaptor class for interface org.example.Examples.CarInterface
  */
 class CarInterfaceAdaptor: public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "com.trolltech.Examples.CarInterface")
+    Q_CLASSINFO("D-Bus Interface", "org.example.Examples.CarInterface")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"com.trolltech.Examples.CarInterface\">\n"
+"  <interface name=\"org.example.Examples.CarInterface\">\n"
 "    <method name=\"accelerate\"/>\n"
 "    <method name=\"decelerate\"/>\n"
 "    <method name=\"turnLeft\"/>\n"

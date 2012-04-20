@@ -47,7 +47,7 @@ Controller::Controller(QWidget *parent)
     : QWidget(parent)
 {
     ui.setupUi(this);
-    car = new com::trolltech::Examples::CarInterface("com.trolltech.CarExample", "/Car",
+    car = new com::trolltech::Examples::CarInterface("org.example.CarExample", "/Car",
                            QDBusConnection::sessionBus(), this);
     startTimer(1000);
 }

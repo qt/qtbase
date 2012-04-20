@@ -65,7 +65,7 @@ ChatMainWindow::ChatMainWindow()
     com::trolltech::chat *iface;
     iface = new com::trolltech::chat(QString(), QString(), QDBusConnection::sessionBus(), this);
     //connect(iface, SIGNAL(message(QString,QString)), this, SLOT(messageSlot(QString,QString)));
-    QDBusConnection::sessionBus().connect(QString(), QString(), "com.trolltech.chat", "message", this, SLOT(messageSlot(QString,QString)));
+    QDBusConnection::sessionBus().connect(QString(), QString(), "org.example.chat", "message", this, SLOT(messageSlot(QString,QString)));
     connect(iface, SIGNAL(action(QString,QString)), this, SLOT(actionSlot(QString,QString)));
 
     NicknameDialog dialog;
@@ -115,7 +115,7 @@ void ChatMainWindow::textChangedSlot(const QString &newText)
 void ChatMainWindow::sendClickedSlot()
 {
     //emit message(m_nickname, messageLineEdit->text());
-    QDBusMessage msg = QDBusMessage::createSignal("/", "com.trolltech.chat", "message");
+    QDBusMessage msg = QDBusMessage::createSignal("/", "org.example.chat", "message");
     msg << m_nickname << messageLineEdit->text();
     QDBusConnection::sessionBus().send(msg);
     messageLineEdit->setText(QString());

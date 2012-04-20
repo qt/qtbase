@@ -60,7 +60,7 @@ void Ping::start(const QString &name, const QString &oldValue, const QString &ne
     qstdin.open(stdin, QIODevice::ReadOnly);
 
     // find our remote
-    iface = new QDBusInterface(SERVICE_NAME, "/", "com.trolltech.QtDBus.ComplexPong.Pong",
+    iface = new QDBusInterface(SERVICE_NAME, "/", "org.example.QtDBus.ComplexPong.Pong",
                                QDBusConnection::sessionBus(), this);
     if (!iface->isValid()) {
         fprintf(stderr, "%s\n",

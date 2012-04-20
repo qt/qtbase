@@ -5,8 +5,8 @@ HEADERS += chat.h chat_adaptor.h chat_interface.h
 SOURCES += chat.cpp chat_adaptor.cpp chat_interface.cpp
 FORMS += chatmainwindow.ui chatsetnickname.ui
 
-#DBUS_ADAPTORS += com.trolltech.chat.xml
-#DBUS_INTERFACES += com.trolltech.chat.xml
+#DBUS_ADAPTORS += org.example.chat.xml
+#DBUS_INTERFACES += org.example.chat.xml
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dbus/chat

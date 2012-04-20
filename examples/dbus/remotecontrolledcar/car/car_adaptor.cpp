@@ -74,25 +74,25 @@ CarInterfaceAdaptor::~CarInterfaceAdaptor()
 
 void CarInterfaceAdaptor::accelerate()
 {
-    // handle method call com.trolltech.Examples.CarInterface.accelerate
+    // handle method call org.example.Examples.CarInterface.accelerate
     QMetaObject::invokeMethod(parent(), "accelerate");
 }
 
 void CarInterfaceAdaptor::decelerate()
 {
-    // handle method call com.trolltech.Examples.CarInterface.decelerate
+    // handle method call org.example.Examples.CarInterface.decelerate
     QMetaObject::invokeMethod(parent(), "decelerate");
 }
 
 void CarInterfaceAdaptor::turnLeft()
 {
-    // handle method call com.trolltech.Examples.CarInterface.turnLeft
+    // handle method call org.example.Examples.CarInterface.turnLeft
     QMetaObject::invokeMethod(parent(), "turnLeft");
 }
 
 void CarInterfaceAdaptor::turnRight()
 {
-    // handle method call com.trolltech.Examples.CarInterface.turnRight
+    // handle method call org.example.Examples.CarInterface.turnRight
     QMetaObject::invokeMethod(parent(), "turnRight");
 }
 
