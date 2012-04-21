@@ -1081,7 +1081,7 @@ bool QDomImplementation::isNull()
         the data.
     \value ReturnNullNode The factory function should return a null node.
 
-    \sa setInvalidDataPolicy() invalidDataPolicy()
+    \sa setInvalidDataPolicy(), invalidDataPolicy()
 */
 
 /*!
@@ -1094,7 +1094,7 @@ bool QDomImplementation::isNull()
    \value EncodingFromDocument The encoding is fetched from the document.
    \value EncodingFromTextStream The encoding is fetched from the QTextStream.
 
-   See also the overload of the save() function that takes an EncodingPolicy.
+   \sa QDomNode::save()
 */
 
 /*!
@@ -1104,7 +1104,7 @@ bool QDomImplementation::isNull()
     Returns the invalid data policy, which specifies what should be done when
     a factory function in QDomDocument is passed invalid data.
 
-    \sa setInvalidDataPolicy() InvalidDataPolicy
+    \sa setInvalidDataPolicy(), InvalidDataPolicy
 */
 
 QDomImplementation::InvalidDataPolicy QDomImplementation::invalidDataPolicy()
@@ -1122,9 +1122,9 @@ QDomImplementation::InvalidDataPolicy QDomImplementation::invalidDataPolicy()
     The \a policy is set for all instances of QDomDocument which already
     exist and which will be created in the future.
 
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 0
+    \snippet code/src_xml_dom_qdom.cpp 0
 
-    \sa invalidDataPolicy() InvalidDataPolicy
+    \sa invalidDataPolicy(), InvalidDataPolicy
 */
 
 void QDomImplementation::setInvalidDataPolicy(InvalidDataPolicy policy)
@@ -1294,7 +1294,7 @@ int QDomNodeListPrivate::length() const
     For a more general introduction of the DOM implementation see the
     QDomDocument documentation.
 
-    \sa QDomNode::childNodes() QDomDocument::elementsByTagName()
+    \sa QDomNode::childNodes(), QDomDocument::elementsByTagName()
 */
 
 /*!
@@ -1991,11 +1991,12 @@ void QDomNodePrivate::setLocation(int lineNumber, int columnNumber)
 
     The following example looks for the first element in an XML document and
     prints the names of all the elements that are its direct children.
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 1
+
+    \snippet code/src_xml_dom_qdom.cpp 1
 
     For further information about the Document Object Model see
-    \l{http://www.w3.org/TR/REC-DOM-Level-1/}{Level 1} and
-    \l{http://www.w3.org/TR/DOM-Level-2-Core/}{Level 2 Core}.
+    \l{W3C DOM Level 1}{Level 1} and
+    \l{W3C DOM Level 2}{Level 2 Core}.
     For a more general introduction of the DOM implementation see the
     QDomDocument documentation.
 */
@@ -2057,13 +2058,13 @@ QDomNode& QDomNode::operator=(const QDomNode &n)
     structure in QDomDocument. The test for equality checks if the two
     references point to the same underlying node. For example:
 
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 2
+    \snippet code/src_xml_dom_qdom.cpp 2
 
     The two nodes (QDomElement is a QDomNode subclass) both refer to
     the document's root element, and \c {element1 == element2} will
     return true. On the other hand:
 
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 3
+    \snippet code/src_xml_dom_qdom.cpp 3
 
     Even though both nodes are empty elements carrying the same name,
     \c {element3 == element4} will return false because they refer to
@@ -2147,7 +2148,7 @@ QString QDomNode::nodeName() const
     All the other subclasses do not have a node value and will return
     an empty string.
 
-    \sa setNodeValue() nodeName()
+    \sa setNodeValue(), nodeName()
 */
 QString QDomNode::nodeValue() const
 {
@@ -2192,8 +2193,8 @@ void QDomNode::setNodeValue(const QString& v)
     Returns the type of the node.
 
     \sa toAttr(), toCDATASection(), toDocumentFragment(),
-    toDocument() toDocumentType(), toElement(), toEntityReference(),
-    toText(), toEntity() toNotation(), toProcessingInstruction(),
+    toDocument(), toDocumentType(), toElement(), toEntityReference(),
+    toText(), toEntity(), toNotation(), toProcessingInstruction(),
     toCharacterData(), toComment()
 */
 QDomNode::NodeType QDomNode::nodeType() const
@@ -2220,7 +2221,9 @@ QDomNode QDomNode::parentNode() const
     Most often you will call this function on a QDomElement object.
 
     For example, if the XML document looks like this:
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 4
+
+    \snippet code/src_xml_dom_qdom.cpp 4
+
     Then the list of child nodes for the "body"-element will contain
     the node created by the &lt;h1&gt; tag and the node created by the
     &lt;p&gt; tag.
@@ -2228,7 +2231,7 @@ QDomNode QDomNode::parentNode() const
     The nodes in the list are not copied; so changing the nodes in the
     list will also change the children of this node.
 
-    \sa firstChild() lastChild()
+    \sa firstChild(), lastChild()
 */
 QDomNodeList QDomNode::childNodes() const
 {
@@ -2242,7 +2245,7 @@ QDomNodeList QDomNode::childNodes() const
     \link isNull() null node\endlink is returned. Changing the
     returned node will also change the node in the document tree.
 
-    \sa lastChild() childNodes()
+    \sa lastChild(), childNodes()
 */
 QDomNode QDomNode::firstChild() const
 {
@@ -2256,7 +2259,7 @@ QDomNode QDomNode::firstChild() const
     \link isNull() null node\endlink is returned. Changing the
     returned node will also change the node in the document tree.
 
-    \sa firstChild() childNodes()
+    \sa firstChild(), childNodes()
 */
 QDomNode QDomNode::lastChild() const
 {
@@ -2270,7 +2273,9 @@ QDomNode QDomNode::lastChild() const
     returned node will also change the node in the document tree.
 
     For example, if you have XML like this:
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 5
+
+    \snippet code/src_xml_dom_qdom.cpp 5
+
     and this QDomNode represents the &lt;p&gt; tag, previousSibling()
     will return the node representing the &lt;h1&gt; tag.
 
@@ -2288,7 +2293,9 @@ QDomNode QDomNode::previousSibling() const
     returned node will also change the node in the document tree.
 
     If you have XML like this:
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 6
+
+    \snippet code/src_xml_dom_qdom.cpp 6
+
     and this QDomNode represents the <p> tag, nextSibling() will
     return the node representing the <h2> tag.
 
@@ -2378,8 +2385,8 @@ bool QDomNode::isSupported(const QString& feature, const QString& version) const
     namespaces. A namespace URI must be specified at creation time and
     cannot be changed later.
 
-    \sa prefix() localName() QDomDocument::createElementNS()
-    QDomDocument::createAttributeNS()
+    \sa prefix(), localName(), QDomDocument::createElementNS(),
+        QDomDocument::createAttributeNS()
 */
 QString QDomNode::namespaceURI() const
 {
@@ -2406,8 +2413,9 @@ QString QDomNode::namespaceURI() const
     an empty string; but it might be an empty string if the name does
     not have a prefix.
 
-    \sa setPrefix() localName() namespaceURI()
-    QDomDocument::createElementNS() QDomDocument::createAttributeNS()
+    \sa setPrefix(), localName(), namespaceURI(),
+        QDomDocument::createElementNS(),
+        QDomDocument::createAttributeNS()
 */
 QString QDomNode::prefix() const
 {
@@ -2426,8 +2434,9 @@ QString QDomNode::prefix() const
     namespaces. A namespace prefix must have be specified at creation
     time; it is not possible to add a namespace prefix afterwards.
 
-    \sa prefix() localName() namespaceURI()
-    QDomDocument::createElementNS() QDomDocument::createAttributeNS()
+    \sa prefix(), localName(), namespaceURI(),
+        QDomDocument::createElementNS(),
+        QDomDocument::createAttributeNS()
 */
 void QDomNode::setPrefix(const QString& pre)
 {
@@ -2446,8 +2455,8 @@ void QDomNode::setPrefix(const QString& pre)
     namespaces. A namespace must have been specified at creation time;
     it is not possible to add a namespace afterwards.
 
-    \sa prefix() namespaceURI() QDomDocument::createElementNS()
-    QDomDocument::createAttributeNS()
+    \sa prefix(), namespaceURI(), QDomDocument::createElementNS(),
+        QDomDocument::createAttributeNS()
 */
 QString QDomNode::localName() const
 {
@@ -2488,7 +2497,7 @@ bool QDomNode::hasAttributes() const
     The DOM specification disallow inserting attribute nodes, but due
     to historical reasons QDom accept them nevertheless.
 
-    \sa insertAfter() replaceChild() removeChild() appendChild()
+    \sa insertAfter(), replaceChild(), removeChild(), appendChild()
 */
 QDomNode QDomNode::insertBefore(const QDomNode& newChild, const QDomNode& refChild)
 {
@@ -2517,7 +2526,7 @@ QDomNode QDomNode::insertBefore(const QDomNode& newChild, const QDomNode& refChi
     The DOM specification disallow inserting attribute nodes, but due
     to historical reasons QDom accept them nevertheless.
 
-    \sa insertBefore() replaceChild() removeChild() appendChild()
+    \sa insertBefore(), replaceChild(), removeChild(), appendChild()
 */
 QDomNode QDomNode::insertAfter(const QDomNode& newChild, const QDomNode& refChild)
 {
@@ -2540,7 +2549,7 @@ QDomNode QDomNode::insertAfter(const QDomNode& newChild, const QDomNode& refChil
     Returns a new reference to \a oldChild on success or a \link
     isNull() null node\endlink an failure.
 
-    \sa insertBefore() insertAfter() removeChild() appendChild()
+    \sa insertBefore(), insertAfter(), removeChild(), appendChild()
 */
 QDomNode QDomNode::replaceChild(const QDomNode& newChild, const QDomNode& oldChild)
 {
@@ -2556,7 +2565,7 @@ QDomNode QDomNode::replaceChild(const QDomNode& newChild, const QDomNode& oldChi
     Returns a new reference to \a oldChild on success or a \link
     isNull() null node\endlink on failure.
 
-    \sa insertBefore() insertAfter() replaceChild() appendChild()
+    \sa insertBefore(), insertAfter(), replaceChild(), appendChild()
 */
 QDomNode QDomNode::removeChild(const QDomNode& oldChild)
 {
@@ -2593,7 +2602,7 @@ QDomNode QDomNode::removeChild(const QDomNode& oldChild)
     The DOM specification disallow inserting attribute nodes, but for
     historical reasons, QDom accepts them anyway.
 
-    \sa insertBefore() insertAfter() replaceChild() removeChild()
+    \sa insertBefore(), insertAfter(), replaceChild(), removeChild()
 */
 QDomNode QDomNode::appendChild(const QDomNode& newChild)
 {
@@ -2655,14 +2664,14 @@ QDomNode QDomNode::namedItem(const QString& name) const
 
 /*!
     Writes the XML representation of the node and all its children to
-    the stream \a str. This function uses \a indent as the amount of
+    the stream \a stream. This function uses \a indent as the amount of
     space to indent the node.
 
     If the document contains invalid XML characters or characters that cannot be
     encoded in the given encoding, the result and behavior is undefined.
 
     If \a encodingPolicy is QDomNode::EncodingFromDocument and this node is a
-    document node, the encoding of text stream \a str's encoding is set by
+    document node, the encoding of text stream \a stream's encoding is set by
     treating a processing instruction by name "xml" as an XML declaration, if
     one exists, and otherwise defaults to UTF-8. XML declarations are not
     processing instructions, but this behavior exists for historical
@@ -2671,7 +2680,7 @@ QDomNode QDomNode::namedItem(const QString& name) const
 
     If \a encodingPolicy is EncodingFromTextStream and this node is a document node, this
     function behaves as save(QTextStream &str, int indent) with the exception that the encoding
-    specified in the text stream \a str is used.
+    specified in the text stream \a stream is used.
 
     If the document contains invalid XML characters or characters that cannot be
     encoded in the given encoding, the result and behavior is undefined.
@@ -2917,7 +2926,7 @@ bool QDomNode::isComment() const
     otherwise returns the first child element.  Returns a null element if no
     such child exists.
 
-    \sa lastChildElement() previousSiblingElement() nextSiblingElement()
+    \sa lastChildElement(), previousSiblingElement(), nextSiblingElement()
 */
 
 QDomElement QDomNode::firstChildElement(const QString &tagName) const
@@ -2937,7 +2946,7 @@ QDomElement QDomNode::firstChildElement(const QString &tagName) const
     otherwise returns the last child element. Returns a null element if no
     such child exists.
 
-    \sa firstChildElement() previousSiblingElement() nextSiblingElement()
+    \sa firstChildElement(), previousSiblingElement(), nextSiblingElement()
 */
 
 QDomElement QDomNode::lastChildElement(const QString &tagName) const
@@ -2957,7 +2966,7 @@ QDomElement QDomNode::lastChildElement(const QString &tagName) const
     is non-empty; otherwise returns any next sibling element.
     Returns a null element if no such sibling exists.
 
-    \sa firstChildElement() previousSiblingElement() lastChildElement()
+    \sa firstChildElement(), previousSiblingElement(), lastChildElement()
 */
 
 QDomElement QDomNode::nextSiblingElement(const QString &tagName) const
@@ -3283,7 +3292,7 @@ QDomNamedNodeMap::~QDomNamedNodeMap()
     QDomNode::isNull() null node\endlink is returned. A node's name is
     the name returned by QDomNode::nodeName().
 
-    \sa setNamedItem() namedItemNS()
+    \sa setNamedItem(), namedItemNS()
 */
 QDomNode QDomNamedNodeMap::namedItem(const QString& name) const
 {
@@ -3300,7 +3309,7 @@ QDomNode QDomNamedNodeMap::namedItem(const QString& name) const
     If the new node replaces an existing node, i.e. the map contains a
     node with the same name, the replaced node is returned.
 
-    \sa namedItem() removeNamedItem() setNamedItemNS()
+    \sa namedItem(), removeNamedItem(), setNamedItemNS()
 */
 QDomNode QDomNamedNodeMap::setNamedItem(const QDomNode& newNode)
 {
@@ -3316,7 +3325,7 @@ QDomNode QDomNamedNodeMap::setNamedItem(const QDomNode& newNode)
     QDomNode::isNull() null node\endlink if the map did not contain a
     node called \a name.
 
-    \sa setNamedItem() namedItem() removeNamedItemNS()
+    \sa setNamedItem(), namedItem(), removeNamedItemNS()
 */
 QDomNode QDomNamedNodeMap::removeNamedItem(const QString& name)
 {
@@ -3347,7 +3356,7 @@ QDomNode QDomNamedNodeMap::item(int index) const
     If the map does not contain such a node, a \link
     QDomNode::isNull() null node\endlink is returned.
 
-    \sa setNamedItemNS() namedItem()
+    \sa setNamedItemNS(), namedItem()
 */
 QDomNode QDomNamedNodeMap::namedItemNS(const QString& nsURI, const QString& localName) const
 {
@@ -3362,7 +3371,7 @@ QDomNode QDomNamedNodeMap::namedItemNS(const QString& nsURI, const QString& loca
     it is replaced by \a newNode. If the new node replaces an existing
     node, the replaced node is returned.
 
-    \sa namedItemNS() removeNamedItemNS() setNamedItem()
+    \sa namedItemNS(), removeNamedItemNS(), setNamedItem()
 */
 QDomNode QDomNamedNodeMap::setNamedItemNS(const QDomNode& newNode)
 {
@@ -3380,7 +3389,7 @@ QDomNode QDomNamedNodeMap::setNamedItemNS(const QDomNode& newNode)
     node with the local name \a localName and the namespace URI \a
     nsURI.
 
-    \sa setNamedItemNS() namedItemNS() removeNamedItem()
+    \sa setNamedItemNS(), namedItemNS(), removeNamedItem()
 */
 QDomNode QDomNamedNodeMap::removeNamedItemNS(const QString& nsURI, const QString& localName)
 {
@@ -3707,7 +3716,7 @@ QDomNamedNodeMap QDomDocumentType::notations() const
     Returns the public identifier of the external DTD subset or
     an empty string if there is no public identifier.
 
-    \sa systemId() internalSubset() QDomImplementation::createDocumentType()
+    \sa systemId(), internalSubset(), QDomImplementation::createDocumentType()
 */
 QString QDomDocumentType::publicId() const
 {
@@ -3720,7 +3729,7 @@ QString QDomDocumentType::publicId() const
     Returns the system identifier of the external DTD subset or
     an empty string if there is no system identifier.
 
-    \sa publicId() internalSubset() QDomImplementation::createDocumentType()
+    \sa publicId(), internalSubset(), QDomImplementation::createDocumentType()
 */
 QString QDomDocumentType::systemId() const
 {
@@ -3733,7 +3742,7 @@ QString QDomDocumentType::systemId() const
     Returns the internal subset of the document type or an empty
     string if there is no internal subset.
 
-    \sa publicId() systemId()
+    \sa publicId(), systemId()
 */
 QString QDomDocumentType::internalSubset() const
 {
@@ -3753,7 +3762,7 @@ QString QDomDocumentType::internalSubset() const
 
     Returns \c DocumentTypeNode.
 
-    \sa isDocumentType() QDomNode::toDocumentType()
+    \sa isDocumentType(), QDomNode::toDocumentType()
 */
 
 #undef IMPL
@@ -3855,7 +3864,7 @@ QDomDocumentFragment& QDomDocumentFragment::operator= (const QDomDocumentFragmen
 
     Returns \c DocumentFragment.
 
-    \sa isDocumentFragment() QDomNode::toDocumentFragment()
+    \sa isDocumentFragment(), QDomNode::toDocumentFragment()
 */
 
 /**************************************************************
@@ -3945,7 +3954,7 @@ void QDomCharacterDataPrivate::appendData(const QString& arg)
     The node type of the node containing this character data is
     returned by nodeType().
 
-    \sa QDomText QDomComment QDomCDATASection
+    \sa QDomText, QDomComment, QDomCDATASection
 */
 
 /*!
@@ -4250,11 +4259,11 @@ void QDomAttrPrivate::save(QTextStream& s, int, int) const
     For example, the following piece of XML produces an element with
     no children, but two attributes:
 
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 7
+    \snippet code/src_xml_dom_qdom.cpp 7
 
     You can access the attributes of an element with code like this:
 
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 8
+    \snippet code/src_xml_dom_qdom.cpp 8
 
     This example also shows that changing an attribute received from
     an element changes the attribute of the element. If you do not
@@ -4350,7 +4359,7 @@ QDomElement QDomAttr::ownerElement() const
     Returns the value of the attribute or an empty string if the
     attribute has not been specified.
 
-    \sa specified() setValue()
+    \sa specified(), setValue()
 */
 QString QDomAttr::value() const
 {
@@ -4664,12 +4673,16 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
     removeAttributeNS().
 
     If you want to access the text of a node use text(), e.g.
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 9
+
+    \snippet code/src_xml_dom_qdom.cpp 9
+
     The text() function operates recursively to find the text (since
     not all elements contain text). If you want to find all the text
     in all of a node's children, iterate over the children looking for
     QDomText nodes, e.g.
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 10
+
+    \snippet code/src_xml_dom_qdom.cpp 10
+
     Note that we attempt to convert each node to a text node and use
     text() rather than using firstChild().toText().data() or
     n.toText().data() directly on the node, because the node may not
@@ -4682,11 +4695,12 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
     To browse the elements of a dom document use firstChildElement(), lastChildElement(),
     nextSiblingElement() and previousSiblingElement(). For example, to iterate over all
     child elements called "entry" in a root element called "database", you can use:
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 11
+
+    \snippet code/src_xml_dom_qdom.cpp 11
 
     For further information about the Document Object Model see
-    \l{http://www.w3.org/TR/REC-DOM-Level-1/}{Level 1} and
-    \l{http://www.w3.org/TR/DOM-Level-2-Core/}{Level 2 Core}.
+    \l{W3C DOM Level 1}{Level 1} and
+    \l{W3C DOM Level 2}{Level 2 Core}.
     For a more general introduction of the DOM implementation see the
     QDomDocument documentation.
 */
@@ -4749,7 +4763,7 @@ void QDomElement::setTagName(const QString& name)
 /*!
     Returns the tag name of this element. For an XML element like this:
 
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 12
+    \snippet code/src_xml_dom_qdom.cpp 12
 
     the tagname would return "img".
 
@@ -4766,7 +4780,7 @@ QString QDomElement::tagName() const
 /*!
     Returns a QDomNamedNodeMap containing all this element's attributes.
 
-    \sa attribute() setAttribute() attributeNode() setAttributeNode()
+    \sa attribute(), setAttribute(), attributeNode(), setAttributeNode()
 */
 QDomNamedNodeMap QDomElement::attributes() const
 {
@@ -4779,7 +4793,7 @@ QDomNamedNodeMap QDomElement::attributes() const
     Returns the attribute called \a name. If the attribute does not
     exist \a defValue is returned.
 
-    \sa setAttribute() attributeNode() setAttributeNode() attributeNS()
+    \sa setAttribute(), attributeNode(), setAttributeNode(), attributeNS()
 */
 QString QDomElement::attribute(const QString& name, const QString& defValue) const
 {
@@ -4793,7 +4807,7 @@ QString QDomElement::attribute(const QString& name, const QString& defValue) con
     attribute with the same name exists, its value is replaced by \a
     value.
 
-    \sa attribute() setAttributeNode() setAttributeNS()
+    \sa attribute(), setAttributeNode(), setAttributeNS()
 */
 void QDomElement::setAttribute(const QString& name, const QString& value)
 {
@@ -4880,7 +4894,7 @@ void QDomElement::setAttribute(const QString& name, double value)
 /*!
     Removes the attribute called name \a name from this element.
 
-    \sa setAttribute() attribute() removeAttributeNS()
+    \sa setAttribute(), attribute(), removeAttributeNS()
 */
 void QDomElement::removeAttribute(const QString& name)
 {
@@ -4891,10 +4905,10 @@ void QDomElement::removeAttribute(const QString& name)
 
 /*!
     Returns the QDomAttr object that corresponds to the attribute
-    called \a name. If no such attribute exists a \link
-    QDomNode::isNull() null attribute\endlink is returned.
+    called \a name. If no such attribute exists a
+    \l{QDomNode::isNull()}{null attribute} is returned.
 
-    \sa setAttributeNode() attribute() setAttribute() attributeNodeNS()
+    \sa setAttributeNode(), attribute(), setAttribute(), attributeNodeNS()
 */
 QDomAttr QDomElement::attributeNode(const QString& name)
 {
@@ -4908,10 +4922,10 @@ QDomAttr QDomElement::attributeNode(const QString& name)
 
     If the element has another attribute that has the same name as \a
     newAttr, this function replaces that attribute and returns it;
-    otherwise the function returns a \link QDomNode::isNull() null
-    attribute\endlink.
+    otherwise the function returns a
+    \l{QDomNode::isNull()}{null attribute}.
 
-    \sa attributeNode() setAttribute() setAttributeNodeNS()
+    \sa attributeNode(), setAttribute(), setAttributeNodeNS()
 */
 QDomAttr QDomElement::setAttributeNode(const QDomAttr& newAttr)
 {
@@ -4923,7 +4937,7 @@ QDomAttr QDomElement::setAttributeNode(const QDomAttr& newAttr)
 /*!
     Removes the attribute \a oldAttr from the element and returns it.
 
-    \sa attributeNode() setAttributeNode()
+    \sa attributeNode(), setAttributeNode()
 */
 QDomAttr QDomElement::removeAttributeNode(const QDomAttr& oldAttr)
 {
@@ -4939,7 +4953,7 @@ QDomAttr QDomElement::removeAttributeNode(const QDomAttr& oldAttr)
   elements in the returned list is the order they are encountered
   during the preorder traversal.
 
-  \sa elementsByTagNameNS() QDomDocument::elementsByTagName()
+  \sa elementsByTagNameNS(), QDomDocument::elementsByTagName()
 */
 QDomNodeList QDomElement::elementsByTagName(const QString& tagname) const
 {
@@ -4970,7 +4984,7 @@ bool QDomElement::hasAttribute(const QString& name) const
     namespace URI \a nsURI. If the attribute does not exist \a
     defValue is returned.
 
-    \sa setAttributeNS() attributeNodeNS() setAttributeNodeNS() attribute()
+    \sa setAttributeNS(), attributeNodeNS(), setAttributeNodeNS(), attribute()
 */
 QString QDomElement::attributeNS(const QString nsURI, const QString& localName, const QString& defValue) const
 {
@@ -4989,7 +5003,7 @@ QString QDomElement::attributeNS(const QString nsURI, const QString& localName, 
     Although \a qName is the qualified name, the local name is used to
     decide if an existing attribute's value should be replaced.
 
-    \sa attributeNS() setAttributeNodeNS() setAttribute()
+    \sa attributeNS(), setAttributeNodeNS(), setAttribute()
 */
 void QDomElement::setAttributeNS(const QString nsURI, const QString& qName, const QString& value)
 {
@@ -5050,7 +5064,7 @@ void QDomElement::setAttributeNS(const QString nsURI, const QString& qName, doub
     Removes the attribute with the local name \a localName and the
     namespace URI \a nsURI from this element.
 
-    \sa setAttributeNS() attributeNS() removeAttribute()
+    \sa setAttributeNS(), attributeNS(), removeAttribute()
 */
 void QDomElement::removeAttributeNS(const QString& nsURI, const QString& localName)
 {
@@ -5068,7 +5082,7 @@ void QDomElement::removeAttributeNS(const QString& nsURI, const QString& localNa
     If no such attribute exists a \l{QDomNode::isNull()}{null
     attribute} is returned.
 
-    \sa setAttributeNode() attribute() setAttribute()
+    \sa setAttributeNode(), attribute(), setAttribute()
 */
 QDomAttr QDomElement::attributeNodeNS(const QString& nsURI, const QString& localName)
 {
@@ -5085,7 +5099,7 @@ QDomAttr QDomElement::attributeNodeNS(const QString& nsURI, const QString& local
     attribute and returns it; otherwise the function returns a \link
     QDomNode::isNull() null attribute\endlink.
 
-    \sa attributeNodeNS() setAttributeNS() setAttributeNode()
+    \sa attributeNodeNS(), setAttributeNS(), setAttributeNode()
 */
 QDomAttr QDomElement::setAttributeNodeNS(const QDomAttr& newAttr)
 {
@@ -5101,7 +5115,7 @@ QDomAttr QDomElement::setAttributeNodeNS(const QDomAttr& newAttr)
   as its root. The order of the elements in the returned list is the
   order they are encountered during the preorder traversal.
 
-  \sa elementsByTagName() QDomDocument::elementsByTagNameNS()
+  \sa elementsByTagName(), QDomDocument::elementsByTagNameNS()
 */
 QDomNodeList QDomElement::elementsByTagNameNS(const QString& nsURI, const QString& localName) const
 {
@@ -5124,12 +5138,12 @@ bool QDomElement::hasAttributeNS(const QString& nsURI, const QString& localName)
     Returns the element's text or an empty string.
 
     Example:
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 13
+    \snippet code/src_xml_dom_qdom.cpp 13
 
     The function text() of the QDomElement for the \c{<h1>} tag,
     will return the following text:
 
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 14
+    \snippet code/src_xml_dom_qdom.cpp 14
 
     Comments are ignored by this function. It only evaluates QDomText
     and QDomCDATASection objects.
@@ -5335,12 +5349,14 @@ void QDomCommentPrivate::save(QTextStream& s, int depth, int indent) const
     \ingroup xml-tools
 
     A comment in the parsed XML such as this:
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 15
+
+    \snippet code/src_xml_dom_qdom.cpp 15
+
     is represented by QDomComment objects in the parsed Dom tree.
 
     For further information about the Document Object Model see
-    \l{http://www.w3.org/TR/REC-DOM-Level-1/} and
-    \l{http://www.w3.org/TR/DOM-Level-2-Core/}.
+    \l{W3C DOM Level 1}{Level 1} and
+    \l{W3C DOM Level 2}{Level 2 Core}.
     For a more general introduction of the DOM implementation see the
     QDomDocument documentation.
 */
@@ -6102,7 +6118,7 @@ QString QDomProcessingInstruction::target() const
 /*!
     Returns the content of this processing instruction.
 
-    \sa setData() target()
+    \sa setData(), target()
 */
 QString QDomProcessingInstruction::data() const
 {
@@ -6554,13 +6570,15 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
     tag with elementsByTagName() or with elementsByTagNameNS().
 
     The QDom classes are typically used as follows:
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 16
+
+    \snippet code/src_xml_dom_qdom.cpp 16
 
     Once \c doc and \c elem go out of scope, the whole internal tree
     representing the XML document is deleted.
 
     To create a document using DOM use code like this:
-    \snippet doc/src/snippets/code/src_xml_dom_qdom.cpp 17
+
+    \snippet code/src_xml_dom_qdom.cpp 17
 
     For further information about the Document Object Model see
     the Document Object Model (DOM)
@@ -6705,8 +6723,8 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing, QSt
     \li Any unparsed entity reference is replaced with an empty string.
     \endlist
 
-    \sa QDomNode::namespaceURI() QDomNode::localName()
-    QDomNode::prefix() QString::isNull() QString::isEmpty()
+    \sa QDomNode::namespaceURI(), QDomNode::localName(),
+        QDomNode::prefix(), QString::isNull(), QString::isEmpty()
 */
 bool QDomDocument::setContent(const QByteArray &data, bool namespaceProcessing, QString *errorMsg, int *errorLine, int *errorColumn)
 {
@@ -6881,7 +6899,7 @@ QDomElement QDomDocument::documentElement() const
     If \a tagName is not a valid XML name, the behavior of this function is governed
     by QDomImplementation::InvalidDataPolicy.
 
-    \sa createElementNS() QDomNode::appendChild() QDomNode::insertBefore()
+    \sa createElementNS(), QDomNode::appendChild(), QDomNode::insertBefore(),
     QDomNode::insertAfter()
 */
 QDomElement QDomDocument::createElement(const QString& tagName)
@@ -6911,7 +6929,7 @@ QDomDocumentFragment QDomDocument::createDocumentFragment()
     data of an XML document (even in the form of character references), the
     behavior of this function is governed by QDomImplementation::InvalidDataPolicy.
 
-    \sa QDomNode::appendChild() QDomNode::insertBefore() QDomNode::insertAfter()
+    \sa QDomNode::appendChild(), QDomNode::insertBefore(), QDomNode::insertAfter()
 */
 QDomText QDomDocument::createTextNode(const QString& value)
 {
@@ -6927,7 +6945,7 @@ QDomText QDomDocument::createTextNode(const QString& value)
     If \a value contains characters which cannot be stored in an XML comment,
     the behavior of this function is governed by QDomImplementation::InvalidDataPolicy.
 
-    \sa QDomNode::appendChild() QDomNode::insertBefore() QDomNode::insertAfter()
+    \sa QDomNode::appendChild(), QDomNode::insertBefore(), QDomNode::insertAfter()
 */
 QDomComment QDomDocument::createComment(const QString& value)
 {
@@ -6944,7 +6962,7 @@ QDomComment QDomDocument::createComment(const QString& value)
     the behavior of this function is governed by
     QDomImplementation::InvalidDataPolicy.
 
-    \sa QDomNode::appendChild() QDomNode::insertBefore() QDomNode::insertAfter()
+    \sa QDomNode::appendChild(), QDomNode::insertBefore(), QDomNode::insertAfter()
 */
 QDomCDATASection QDomDocument::createCDATASection(const QString& value)
 {
@@ -6963,7 +6981,7 @@ QDomCDATASection QDomDocument::createCDATASection(const QString& value)
     appear in a processing instruction, the behavior of this function is governed by
     QDomImplementation::InvalidDataPolicy.
 
-    \sa QDomNode::appendChild() QDomNode::insertBefore() QDomNode::insertAfter()
+    \sa QDomNode::appendChild(), QDomNode::insertBefore(), QDomNode::insertAfter()
 */
 QDomProcessingInstruction QDomDocument::createProcessingInstruction(const QString& target,
                                                                     const QString& data)
@@ -6997,7 +7015,7 @@ QDomAttr QDomDocument::createAttribute(const QString& name)
     If \a name is not a valid XML name, the behavior of this function is governed by
     QDomImplementation::InvalidDataPolicy.
 
-    \sa QDomNode::appendChild() QDomNode::insertBefore() QDomNode::insertAfter()
+    \sa QDomNode::appendChild(), QDomNode::insertBefore(), QDomNode::insertAfter()
 */
 QDomEntityReference QDomDocument::createEntityReference(const QString& name)
 {
@@ -7012,7 +7030,7 @@ QDomEntityReference QDomDocument::createEntityReference(const QString& name)
     the order they are encountered in a preorder traversal of the
     element tree.
 
-    \sa elementsByTagNameNS() QDomElement::elementsByTagName()
+    \sa elementsByTagNameNS(), QDomElement::elementsByTagName()
 */
 QDomNodeList QDomDocument::elementsByTagName(const QString& tagname) const
 {
@@ -7081,8 +7099,8 @@ QDomNodeList QDomDocument::elementsByTagName(const QString& tagname) const
          \li The text is copied to the new node.
     \endtable
 
-    \sa QDomElement::setAttribute() QDomNode::insertBefore()
-        QDomNode::insertAfter() QDomNode::replaceChild() QDomNode::removeChild()
+    \sa QDomElement::setAttribute(), QDomNode::insertBefore(),
+        QDomNode::insertAfter(), QDomNode::replaceChild(), QDomNode::removeChild(),
         QDomNode::appendChild()
 */
 QDomNode QDomDocument::importNode(const QDomNode& importedNode, bool deep)
@@ -7136,7 +7154,7 @@ QDomAttr QDomDocument::createAttributeNS(const QString& nsURI, const QString& qN
     \a nsURI. The order of the node list is the order they are
     encountered in a preorder traversal of the element tree.
 
-    \sa elementsByTagName() QDomElement::elementsByTagNameNS()
+    \sa elementsByTagName(), QDomElement::elementsByTagNameNS()
 */
 QDomNodeList QDomDocument::elementsByTagNameNS(const QString& nsURI, const QString& localName)
 {

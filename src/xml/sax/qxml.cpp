@@ -1208,7 +1208,7 @@ void QXmlAttributes::clear()
     \a uri and the local name is \a localPart. The value of the
     attribute is \a value.
 
-    \sa qName() uri() localName() value()
+    \sa qName(), uri(), localName(), value()
 */
 void QXmlAttributes::append(const QString &qName, const QString &uri, const QString &localPart, const QString &value)
 {
@@ -1266,7 +1266,7 @@ void QXmlAttributes::append(const QString &qName, const QString &uri, const QStr
     raw XML file. The benefit of using the QXmlInputClass in such
     cases is that it tries to use the correct encoding.
 
-    \sa QXmlReader QXmlSimpleReader
+    \sa QXmlReader, QXmlSimpleReader
 */
 
 // the following two are guaranteed not to be a character
@@ -1315,7 +1315,7 @@ QXmlInputSource::QXmlInputSource()
     is 0 or it is not possible to read from the device, the input
     source will contain no data.
 
-    \sa setData() fetchData() QIODevice
+    \sa setData(), fetchData(), QIODevice
 */
 QXmlInputSource::QXmlInputSource(QIODevice *dev)
 {
@@ -1353,7 +1353,8 @@ supplied input is well-formed. Therefore, when reimplementing
 this function, it is important to ensure that this behavior is
 duplicated.
 
-\sa reset() fetchData() QXmlSimpleReader::parse() QXmlSimpleReader::parseContinue()
+\sa reset(), fetchData(), QXmlSimpleReader::parse(),
+    QXmlSimpleReader::parseContinue()
 */
 QChar QXmlInputSource::next()
 {
@@ -1400,7 +1401,7 @@ void QXmlInputSource::reset()
     Returns the data the input source contains or an empty string if the
     input source does not contain any data.
 
-    \sa setData() QXmlInputSource() fetchData()
+    \sa setData(), QXmlInputSource(), fetchData()
 */
 QString QXmlInputSource::data() const
 {
@@ -1456,7 +1457,7 @@ void QXmlInputSource::setData(const QByteArray& dat)
 
     You don't normally need to use this function if you use next().
 
-    \sa data() next() QXmlInputSource()
+    \sa data(), next(), QXmlInputSource()
 */
 
 void QXmlInputSource::fetchData()
@@ -2364,13 +2365,13 @@ events are reported.
     it we can use the same handler for both of the following
     reader functions:
 
-    \snippet doc/src/snippets/xml/rsslisting/rsslisting.cpp 0
+    \snippet rsslisting/rsslisting.cpp 0
 
     Since the reader will inform the handler of parsing errors, it is
     necessary to reimplement QXmlErrorHandler::fatalError() if, for
     example, we want to stop parsing when such an error occurs:
 
-    \snippet doc/src/snippets/xml/rsslisting/handler.cpp 0
+    \snippet rsslisting/handler.cpp 0
 
     The above function returns false, which tells the reader to stop
     parsing. To continue to use the same reader,
@@ -3007,7 +3008,7 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     create a reader, and define an input source to be used by the
     reader:
 
-    \snippet doc/src/snippets/xml/simpleparse/main.cpp 0
+    \snippet simpleparse/main.cpp 0
 
     A handler lets us perform actions when the reader encounters
     certain types of content, or if errors in the input are found. The
@@ -3016,7 +3017,7 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     handler by subclassing QXmlDefaultHandler, and use this to handle
     both error and content events:
 
-    \snippet doc/src/snippets/xml/simpleparse/main.cpp 1
+    \snippet simpleparse/main.cpp 1
 
     If you don't set at least the content and error handlers, the
     parser will fall back on its default behavior---and will do
@@ -3026,7 +3027,7 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     single pass using the parse() function with an argument that
     specifies the input source:
 
-    \snippet doc/src/snippets/xml/simpleparse/main.cpp 2
+    \snippet simpleparse/main.cpp 2
 
     If you can't parse the entire input in one go (for example, it is
     huge, or is being delivered over a network connection), data can
@@ -3041,7 +3042,7 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     Aspects of the parsing behavior can be adapted using setFeature()
     and setProperty().
     
-    \snippet doc/src/snippets/code/src_xml_sax_qxml.cpp 0
+    \snippet code/src_xml_sax_qxml.cpp 0
 
     QXmlSimpleReader is not reentrant. If you want to use the class
     in threaded code, lock the code using QXmlSimpleReader with a
