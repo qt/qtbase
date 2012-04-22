@@ -2236,14 +2236,17 @@ void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
 void QDBusConnectionPrivate::connectRelay(const QString &service,
                                           const QString &path, const QString &interface,
                                           QDBusAbstractInterface *receiver,
-                                          const char *signal)
+                                          const QMetaMethod &signal)
 {
     // this function is called by QDBusAbstractInterface when one of its signals is connected
     // we set up a relay from D-Bus into it
     SignalHook hook;
     QString key;
 
-    if (!prepareHook(hook, key, service, path, interface, QString(), QStringList(), receiver, signal,
+    QByteArray sig;
+    sig.append(QSIGNAL_CODE + '0');
+    sig.append(signal.methodSignature());
+    if (!prepareHook(hook, key, service, path, interface, QString(), QStringList(), receiver, sig,
                      QDBusAbstractInterface::staticMetaObject.methodCount(), true))
         return;                 // don't connect
 
@@ -2267,14 +2270,17 @@ void QDBusConnectionPrivate::connectRelay(const QString &service,
 void QDBusConnectionPrivate::disconnectRelay(const QString &service,
                                              const QString &path, const QString &interface,
                                              QDBusAbstractInterface *receiver,
-                                             const char *signal)
+                                             const QMetaMethod &signal)
 {
     // this function is called by QDBusAbstractInterface when one of its signals is disconnected
     // we remove relay from D-Bus into it
     SignalHook hook;
     QString key;
 
-    if (!prepareHook(hook, key, service, path, interface, QString(), QStringList(), receiver, signal,
+    QByteArray sig;
+    sig.append(QSIGNAL_CODE + '0');
+    sig.append(signal.methodSignature());
+    if (!prepareHook(hook, key, service, path, interface, QString(), QStringList(), receiver, sig,
                      QDBusAbstractInterface::staticMetaObject.methodCount(), true))
         return;                 // don't connect
 

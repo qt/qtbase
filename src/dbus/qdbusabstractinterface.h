@@ -146,8 +146,8 @@ protected:
                            const QDBusConnection &connection, QObject *parent);
     QDBusAbstractInterface(QDBusAbstractInterfacePrivate &, QObject *parent);
 
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant internalPropGet(const char *propname) const;
     void internalPropSet(const char *propname, const QVariant &value);
     QDBusMessage internalConstCall(QDBus::CallMode mode,

@@ -577,7 +577,7 @@ bool QDBusAbstractInterface::callWithCallback(const QString &method,
     \internal
     Catch signal connections.
 */
-void QDBusAbstractInterface::connectNotify(const char *signal)
+void QDBusAbstractInterface::connectNotify(const QMetaMethod &signal)
 {
     // someone connecting to one of our signals
     Q_D(QDBusAbstractInterface);
@@ -585,7 +585,8 @@ void QDBusAbstractInterface::connectNotify(const char *signal)
         return;
 
     // we end up recursing here, so optimize away
-    if (qstrcmp(signal + 1, "destroyed(QObject*)") == 0)
+    static const QMetaMethod destroyedSignal = QMetaMethod::fromSignal(&QDBusAbstractInterface::destroyed);
+    if (signal == destroyedSignal)
         return;
 
     QDBusConnectionPrivate *conn = d->connectionPrivate();
@@ -599,7 +600,7 @@ void QDBusAbstractInterface::connectNotify(const char *signal)
     \internal
     Catch signal disconnections.
 */
-void QDBusAbstractInterface::disconnectNotify(const char *signal)
+void QDBusAbstractInterface::disconnectNotify(const QMetaMethod &signal)
 {
     // someone disconnecting from one of our signals
     Q_D(QDBusAbstractInterface);

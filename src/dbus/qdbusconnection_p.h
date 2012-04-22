@@ -210,10 +210,10 @@ public:
     void registerObject(const ObjectTreeNode *node);
     void connectRelay(const QString &service,
                       const QString &path, const QString &interface,
-                      QDBusAbstractInterface *receiver, const char *signal);
+                      QDBusAbstractInterface *receiver, const QMetaMethod &signal);
     void disconnectRelay(const QString &service,
                          const QString &path, const QString &interface,
-                         QDBusAbstractInterface *receiver, const char *signal);
+                         QDBusAbstractInterface *receiver, const QMetaMethod &signal);
     void registerService(const QString &serviceName);
     void unregisterService(const QString &serviceName);
 

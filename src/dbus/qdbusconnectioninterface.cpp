@@ -44,6 +44,7 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QList>
 #include <QtCore/QMap>
+#include <QtCore/QMetaMethod>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
@@ -328,41 +329,53 @@ QDBusConnectionInterface::unregisterService(const QString &serviceName)
 /*!
     \internal
 */
-void QDBusConnectionInterface::connectNotify(const char *signalName)
+void QDBusConnectionInterface::connectNotify(const QMetaMethod &signal)
 {
     // translate the signal names to what we really want
     // this avoids setting hooks for signals that don't exist on the bus
-    if (qstrcmp(signalName, SIGNAL(serviceRegistered(QString))) == 0)
-        QDBusAbstractInterface::connectNotify(SIGNAL(NameAcquired(QString)));
+    static const QMetaMethod serviceRegisteredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceRegistered);
+    static const QMetaMethod serviceUnregisteredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceUnregistered);
+    static const QMetaMethod serviceOwnerChangedSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceOwnerChanged);
+    static const QMetaMethod NameAcquiredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameAcquired);
+    static const QMetaMethod NameLostSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameLost);
+    static const QMetaMethod NameOwnerChangedSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameOwnerChanged);
+    if (signal == serviceRegisteredSignal)
+        QDBusAbstractInterface::connectNotify(NameAcquiredSignal);
 
-    else if (qstrcmp(signalName, SIGNAL(serviceUnregistered(QString))) == 0)
-        QDBusAbstractInterface::connectNotify(SIGNAL(NameLost(QString)));
+    else if (signal == serviceUnregisteredSignal)
+        QDBusAbstractInterface::connectNotify(NameLostSignal);
 
-    else if (qstrcmp(signalName, SIGNAL(serviceOwnerChanged(QString,QString,QString))) == 0) {
+    else if (signal == serviceOwnerChangedSignal) {
         static bool warningPrinted = false;
         if (!warningPrinted) {
             qWarning("Connecting to deprecated signal QDBusConnectionInterface::serviceOwnerChanged(QString,QString,QString)");
             warningPrinted = true;
         }
-        QDBusAbstractInterface::connectNotify(SIGNAL(NameOwnerChanged(QString,QString,QString)));
+        QDBusAbstractInterface::connectNotify(NameOwnerChangedSignal);
     }
 }
 
 /*!
     \internal
 */
-void QDBusConnectionInterface::disconnectNotify(const char *signalName)
+void QDBusConnectionInterface::disconnectNotify(const QMetaMethod &signal)
 {
     // translate the signal names to what we really want
     // this avoids setting hooks for signals that don't exist on the bus
-    if (qstrcmp(signalName, SIGNAL(serviceRegistered(QString))) == 0)
-        QDBusAbstractInterface::disconnectNotify(SIGNAL(NameAcquired(QString)));
+    static const QMetaMethod serviceRegisteredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceRegistered);
+    static const QMetaMethod serviceUnregisteredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceUnregistered);
+    static const QMetaMethod serviceOwnerChangedSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceOwnerChanged);
+    static const QMetaMethod NameAcquiredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameAcquired);
+    static const QMetaMethod NameLostSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameLost);
+    static const QMetaMethod NameOwnerChangedSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameOwnerChanged);
+    if (signal == serviceRegisteredSignal)
+        QDBusAbstractInterface::disconnectNotify(NameAcquiredSignal);
 
-    else if (qstrcmp(signalName, SIGNAL(serviceUnregistered(QString))) == 0)
-        QDBusAbstractInterface::disconnectNotify(SIGNAL(NameLost(QString)));
+    else if (signal == serviceUnregisteredSignal)
+        QDBusAbstractInterface::disconnectNotify(NameLostSignal);
 
-    else if (qstrcmp(signalName, SIGNAL(serviceOwnerChanged(QString,QString,QString))) == 0)
-        QDBusAbstractInterface::disconnectNotify(SIGNAL(NameOwnerChanged(QString,QString,QString)));
+    else if (signal == serviceOwnerChangedSignal)
+        QDBusAbstractInterface::disconnectNotify(NameOwnerChangedSignal);
 }
 
 // signals
