@@ -45,6 +45,7 @@
 
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qthread.h>
 
 #include "qfuturewatcher_p.h"
@@ -354,13 +355,15 @@ void QFutureWatcherBase::setPendingResultsLimit(int limit)
     d->maximumPendingResultsReady = limit;
 }
 
-void QFutureWatcherBase::connectNotify(const char * signal)
+void QFutureWatcherBase::connectNotify(const QMetaMethod &signal)
 {
     Q_D(QFutureWatcherBase);
-    if (qstrcmp(signal, SIGNAL(resultReadyAt(int))) == 0)
+    static const QMetaMethod resultReadyAtSignal = QMetaMethod::fromSignal(&QFutureWatcherBase::resultReadyAt);
+    if (signal == resultReadyAtSignal)
         d->resultAtConnected.ref();
 #ifndef QT_NO_DEBUG
-    if (qstrcmp(signal, SIGNAL(finished())) == 0) {
+    static const QMetaMethod finishedSignal = QMetaMethod::fromSignal(&QFutureWatcherBase::finished);
+    if (signal == finishedSignal) {
         if (futureInterface().isRunning()) {
             //connections should be established before calling stFuture to avoid race.
             // (The future could finish before the connection is made.)
@@ -370,10 +373,11 @@ void QFutureWatcherBase::connectNotify(const char * signal)
 #endif
 }
 
-void QFutureWatcherBase::disconnectNotify(const char * signal)
+void QFutureWatcherBase::disconnectNotify(const QMetaMethod &signal)
 {
     Q_D(QFutureWatcherBase);
-    if (qstrcmp(signal, SIGNAL(resultReadyAt(int))) == 0)
+    static const QMetaMethod resultReadyAtSignal = QMetaMethod::fromSignal(&QFutureWatcherBase::resultReadyAt);
+    if (signal == resultReadyAtSignal)
         d->resultAtConnected.deref();
 }
 
