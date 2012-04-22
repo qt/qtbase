@@ -88,8 +88,8 @@ public:
 
 protected:
 #ifndef QT_NO_QOBJECT
-    void connectNotify(const char*);
-    void disconnectNotify(const char*);
+    void connectNotify(const QMetaMethod &);
+    void disconnectNotify(const QMetaMethod &);
 #endif
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);

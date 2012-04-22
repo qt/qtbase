@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qbuffer.h"
+#include <QtCore/qmetaobject.h>
 #include "private/qiodevice_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -459,9 +460,11 @@ qint64 QBuffer::writeData(const char *data, qint64 len)
     \reimp
     \internal
 */
-void QBuffer::connectNotify(const char *signal)
+void QBuffer::connectNotify(const QMetaMethod &signal)
 {
-    if (strcmp(signal + 1, "readyRead()") == 0 || strcmp(signal + 1, "bytesWritten(qint64)") == 0)
+    static const QMetaMethod readyReadSignal = QMetaMethod::fromSignal(&QBuffer::readyRead);
+    static const QMetaMethod bytesWrittenSignal = QMetaMethod::fromSignal(&QBuffer::bytesWritten);
+    if (signal == readyReadSignal || signal == bytesWrittenSignal)
         d_func()->signalConnectionCount++;
 }
 
@@ -469,10 +472,16 @@ void QBuffer::connectNotify(const char *signal)
     \reimp
     \internal
 */
-void QBuffer::disconnectNotify(const char *signal)
+void QBuffer::disconnectNotify(const QMetaMethod &signal)
 {
-    if (!signal || strcmp(signal + 1, "readyRead()") == 0 || strcmp(signal + 1, "bytesWritten(qint64)") == 0)
-        d_func()->signalConnectionCount--;
+    if (signal.isValid()) {
+        static const QMetaMethod readyReadSignal = QMetaMethod::fromSignal(&QBuffer::readyRead);
+        static const QMetaMethod bytesWrittenSignal = QMetaMethod::fromSignal(&QBuffer::bytesWritten);
+        if (signal == readyReadSignal || signal == bytesWrittenSignal)
+            d_func()->signalConnectionCount--;
+    } else {
+        d_func()->signalConnectionCount = 0;
+    }
 }
 #endif
 
