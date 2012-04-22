@@ -133,4 +133,8 @@ method.invoke(obj,
               Q_ARG(double, 9.7));
 //! [8]
 
+//! [9]
+QMetaMethod destroyedSignal = QMetaMethod::fromSignal(&QObject::destroyed);
+//! [9]
+
 }

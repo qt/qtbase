@@ -141,6 +141,20 @@ public:
 
     inline bool isValid() const { return mobj != 0; }
 
+#ifdef Q_QDOC
+    static QMetaMethod fromSignal(PointerToMemberFunction signal);
+#else
+    template <typename Func>
+    static inline QMetaMethod fromSignal(Func signal)
+    {
+        typedef QtPrivate::FunctionPointer<Func> SignalType;
+        reinterpret_cast<typename SignalType::Object *>(0)->qt_check_for_QOBJECT_macro(
+                    *reinterpret_cast<typename SignalType::Object *>(0));
+        return fromSignalImpl(&SignalType::Object::staticMetaObject,
+                              reinterpret_cast<void **>(&signal));
+    }
+#endif
+
 private:
 #if QT_DEPRECATED_SINCE(5,0)
     // signature() has been renamed to methodSignature() in Qt 5.
@@ -148,6 +162,7 @@ private:
     // you convert to char*.
     char *signature(struct renamedInQt5_warning_checkTheLifeTime * = 0) Q_DECL_EQ_DELETE;
 #endif
+    static QMetaMethod fromSignalImpl(const QMetaObject *, void **);
 
     const QMetaObject *mobj;
     uint handle;

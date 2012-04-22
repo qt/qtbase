@@ -56,6 +56,8 @@ private slots:
     void invalidMethod();
 
     void comparisonOperators();
+
+    void fromSignal();
 };
 
 struct CustomType { };
@@ -707,6 +709,31 @@ void tst_QMetaMethod::comparisonOperators()
         QVERIFY(method != constructor);
         QVERIFY(!(method == constructor));
     }
+}
+
+void tst_QMetaMethod::fromSignal()
+{
+#define FROMSIGNAL_HELPER(ObjectType, Name, Arguments)  { \
+        void (ObjectType::*signal)Arguments = &ObjectType::Name; \
+        const QMetaObject *signalMeta = &ObjectType::staticMetaObject; \
+        QCOMPARE(QMetaMethod::fromSignal(signal), \
+            signalMeta->method(signalMeta->indexOfSignal(QMetaObject::normalizedSignature(#Name #Arguments)))); \
+    }
+
+    FROMSIGNAL_HELPER(MethodTestObject, voidSignal, ())
+    FROMSIGNAL_HELPER(MethodTestObject, voidSignalQString, (const QString&))
+    FROMSIGNAL_HELPER(QObject, destroyed, (QObject*))
+    FROMSIGNAL_HELPER(QObject, objectNameChanged, (const QString &))
+
+    // Inherited from QObject
+    FROMSIGNAL_HELPER(MethodTestObject, destroyed, (QObject*))
+    FROMSIGNAL_HELPER(MethodTestObject, objectNameChanged, (const QString &))
+
+    // Methods that are not signals; fromSignal should return invalid method
+    FROMSIGNAL_HELPER(MethodTestObject, voidSlot, ())
+    FROMSIGNAL_HELPER(QObject, deleteLater, ())
+
+#undef FROMSIGNAL_HELPER
 }
 
 QTEST_MAIN(tst_QMetaMethod)

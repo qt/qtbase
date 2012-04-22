@@ -1857,6 +1857,41 @@ QMetaMethod::MethodType QMetaMethod::methodType() const
 }
 
 /*!
+    \fn QMetaMethod QMetaMethod::fromSignal(PointerToMemberFunction signal)
+    \since 5.0
+
+    Returns the meta-method that corresponds to the given \a signal, or an
+    invalid QMetaMethod if \a signal is not a signal of the class.
+
+    Example:
+
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 9
+*/
+
+/*! \internal
+
+    Implementation of the fromSignal() function.
+
+    \a metaObject is the class's meta-object
+    \a signal is a pointer to a pointer to a member signal of the class
+*/
+QMetaMethod QMetaMethod::fromSignalImpl(const QMetaObject *metaObject, void **signal)
+{
+    int i = -1;
+    void *args[] = { &i, signal };
+    QMetaMethod result;
+    for (const QMetaObject *m = metaObject; m; m = m->d.superdata) {
+        m->static_metacall(QMetaObject::IndexOfMethod, 0, args);
+        if (i >= 0) {
+            result.mobj = m;
+            result.handle = priv(m->d.data)->methodData + 5*i;
+            break;
+        }
+    }
+    return result;
+}
+
+/*!
     Invokes this method on the object \a object. Returns true if the member could be invoked.
     Returns false if there is no such member or the parameters did not match.
 
