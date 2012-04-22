@@ -58,6 +58,25 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(Q_CC_MSVC)
+Q_NORETURN
+#endif
+static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message);
+static void qt_message_print(QtMsgType, const QMessageLogContext &context, const QString &message);
+
+static bool isFatal(QtMsgType msgType)
+{
+    if (msgType == QtFatalMsg)
+        return true;
+
+    if (msgType == QtWarningMsg) {
+        static bool fatalWarnings = qEnvironmentVariableIsSet("QT_FATAL_WARNINGS");
+        return fatalWarnings;
+    }
+
+    return false;
+}
+
 /*!
     \class QMessageLogContext
     \inmodule QtCore
@@ -175,7 +194,7 @@ static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap) Q_DECL
     \internal
 */
 static void qt_message(QtMsgType msgType, const QMessageLogContext &context, const char *msg,
-                       va_list ap)
+                       va_list ap, QString &buf)
 {
 #if !defined(QT_NO_EXCEPTIONS)
     if (std::uncaught_exception()) {
@@ -183,7 +202,6 @@ static void qt_message(QtMsgType msgType, const QMessageLogContext &context, con
         return;
     }
 #endif
-    QString buf;
     if (msg) {
         QT_TRY {
             buf = QString().vsprintf(msg, ap);
@@ -195,7 +213,7 @@ static void qt_message(QtMsgType msgType, const QMessageLogContext &context, con
 #endif
         }
     }
-    qt_message_output(msgType, context, buf);
+    qt_message_print(msgType, context, buf);
 }
 
 #undef qDebug
@@ -207,10 +225,15 @@ static void qt_message(QtMsgType msgType, const QMessageLogContext &context, con
 */
 void QMessageLogger::debug(const char *msg, ...) const
 {
+    QString message;
+
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    qt_message(QtDebugMsg, context, msg, ap);
+    qt_message(QtDebugMsg, context, msg, ap, message);
     va_end(ap);
+
+    if (isFatal(QtDebugMsg))
+        qt_message_fatal(QtDebugMsg, context, message);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -251,10 +274,15 @@ QNoDebug QMessageLogger::noDebug() const Q_DECL_NOTHROW
 */
 void QMessageLogger::warning(const char *msg, ...) const
 {
+    QString message;
+
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    qt_message(QtWarningMsg, context, msg, ap);
+    qt_message(QtWarningMsg, context, msg, ap, message);
     va_end(ap);
+
+    if (isFatal(QtWarningMsg))
+        qt_message_fatal(QtWarningMsg, context, message);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -282,10 +310,15 @@ QDebug QMessageLogger::warning() const
 */
 void QMessageLogger::critical(const char *msg, ...) const
 {
+    QString message;
+
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    qt_message(QtCriticalMsg, context, msg, ap);
+    qt_message(QtCriticalMsg, context, msg, ap, message);
     va_end(ap);
+
+    if (isFatal(QtCriticalMsg))
+        qt_message_fatal(QtCriticalMsg, context, message);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -312,13 +345,14 @@ QDebug QMessageLogger::critical() const
 */
 void QMessageLogger::fatal(const char *msg, ...) const Q_DECL_NOTHROW
 {
+    QString message;
+
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    QT_TERMINATE_ON_EXCEPTION(qt_message(QtFatalMsg, context, msg, ap));
-#ifndef Q_CC_MSVC
-    Q_UNREACHABLE();
-#endif
+    QT_TERMINATE_ON_EXCEPTION(qt_message(QtFatalMsg, context, msg, ap, message));
     va_end(ap);
+
+    qt_message_fatal(QtFatalMsg, context, message);
 }
 
 /*!
@@ -726,10 +760,7 @@ static void qDefaultMsgHandler(QtMsgType type, const char *buf)
     qDefaultMessageHandler(type, emptyContext, QLatin1String(buf));
 }
 
-/*!
-    \internal
-*/
-void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
+static void qt_message_print(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
 {
     if (!msgHandler)
         msgHandler = qDefaultMsgHandler;
@@ -743,11 +774,10 @@ void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, con
     } else {
         (*msgHandler)(msgType, message.toLocal8Bit().constData());
     }
+}
 
-    if (msgType == QtFatalMsg
-            || (msgType == QtWarningMsg
-                && qEnvironmentVariableIsSet("QT_FATAL_WARNINGS")) ) {
-
+static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message)
+{
 #if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
         wchar_t contextFileL[256];
         // we probably should let the compiler do this for us, by
@@ -755,26 +785,39 @@ void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, con
         // the first place, but the #ifdefery above is very complex
         // and we wouldn't be able to change it later on...
         convert_to_wchar_t_elided(contextFileL, sizeof contextFileL / sizeof *contextFileL, context.file);
-        // get the current report mode
-        int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
-        _CrtSetReportMode(_CRT_ERROR, reportMode);
+    // get the current report mode
+    int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
+    _CrtSetReportMode(_CRT_ERROR, reportMode);
 
         int ret = _CrtDbgReportW(_CRT_ERROR, contextFileL,
-                                 context.line, _CRT_WIDE(QT_VERSION_STR),
-                                 reinterpret_cast<const wchar_t *> (
-                                     message.utf16()));
-        if (ret == 0  && reportMode & _CRTDBG_MODE_WNDW)
-            return; // ignore
-        else if (ret == 1)
-            _CrtDbgBreak();
+                             context.line, _CRT_WIDE(QT_VERSION_STR),
+                             reinterpret_cast<const wchar_t *> (
+                                 message.utf16()));
+    if (ret == 0  && reportMode & _CRTDBG_MODE_WNDW)
+        return; // ignore
+    else if (ret == 1)
+        _CrtDbgBreak();
+#else
+    Q_UNUSED(context);
+    Q_UNUSED(message);
 #endif
 
 #if (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
-        abort(); // trap; generates core dump
+    abort(); // trap; generates core dump
 #else
-        exit(1); // goodbye cruel world
+    exit(1); // goodbye cruel world
 #endif
-    }
+}
+
+
+/*!
+    \internal
+*/
+void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
+{
+    qt_message_print(msgType, context, message);
+    if (isFatal(msgType))
+        qt_message_fatal(msgType, context, message);
 }
 
 void qErrnoWarning(const char *msg, ...)
