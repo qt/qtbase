@@ -1477,6 +1477,24 @@ bool QMetaObject::invokeMethod(QObject *obj,
     invoked), otherwise returns false.
 */
 
+/*! \fn bool operator==(const QMetaMethod &m1, const QMetaMethod &m2)
+    \since 5.0
+    \relates QMetaMethod
+    \overload
+
+    Returns true if method \a m1 is equal to method \a m2,
+    otherwise returns false.
+*/
+
+/*! \fn bool operator!=(const QMetaMethod &m1, const QMetaMethod &m2)
+    \since 5.0
+    \relates QMetaMethod
+    \overload
+
+    Returns true if method \a m1 is not equal to method \a m2,
+    otherwise returns false.
+*/
+
 /*!
     \fn const QMetaObject *QMetaMethod::enclosingMetaObject() const
     \internal

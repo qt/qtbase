@@ -155,8 +155,15 @@ private:
     friend struct QMetaObject;
     friend struct QMetaObjectPrivate;
     friend class QObject;
+    friend bool operator==(const QMetaMethod &m1, const QMetaMethod &m2);
+    friend bool operator!=(const QMetaMethod &m1, const QMetaMethod &m2);
 };
 Q_DECLARE_TYPEINFO(QMetaMethod, Q_MOVABLE_TYPE);
+
+inline bool operator==(const QMetaMethod &m1, const QMetaMethod &m2)
+{ return m1.mobj == m2.mobj && m1.handle == m2.handle; }
+inline bool operator!=(const QMetaMethod &m1, const QMetaMethod &m2)
+{ return !(m1 == m2); }
 
 class Q_CORE_EXPORT QMetaEnum
 {

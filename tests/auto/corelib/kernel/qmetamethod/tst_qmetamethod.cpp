@@ -54,6 +54,8 @@ private slots:
     void method();
 
     void invalidMethod();
+
+    void comparisonOperators();
 };
 
 struct CustomType { };
@@ -670,6 +672,41 @@ void tst_QMetaMethod::invalidMethod()
 
     QMetaMethod method3 = staticMetaObject.method(-1);
     QVERIFY(!method3.isValid());
+}
+
+void tst_QMetaMethod::comparisonOperators()
+{
+    static const QMetaObject *mo = &MethodTestObject::staticMetaObject;
+    for (int x = 0; x < 2; ++x) {
+        int count = x ? mo->constructorCount() : mo->methodCount();
+        for (int i = 0; i < count; ++i) {
+            QMetaMethod method = x ? mo->constructor(i) : mo->method(i);
+            const QMetaObject *methodMo = method.enclosingMetaObject();
+            for (int j = 0; j < count; ++j) {
+                QMetaMethod other = x ? mo->constructor(j) : mo->method(j);
+                bool expectedEqual = ((methodMo == other.enclosingMetaObject())
+                                      && (i == j));
+                QCOMPARE(method == other, expectedEqual);
+                QCOMPARE(method != other, !expectedEqual);
+                QCOMPARE(other == method, expectedEqual);
+                QCOMPARE(other != method, !expectedEqual);
+            }
+
+            QVERIFY(method != QMetaMethod());
+            QVERIFY(QMetaMethod() != method);
+            QVERIFY(!(method == QMetaMethod()));
+            QVERIFY(!(QMetaMethod() == method));
+        }
+    }
+
+    // Constructors and normal methods with identical index should not
+    // compare equal
+    for (int i = 0; i < qMin(mo->methodCount(), mo->constructorCount()); ++i) {
+        QMetaMethod method = mo->method(i);
+        QMetaMethod constructor = mo->constructor(i);
+        QVERIFY(method != constructor);
+        QVERIFY(!(method == constructor));
+    }
 }
 
 QTEST_MAIN(tst_QMetaMethod)
