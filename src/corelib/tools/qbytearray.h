@@ -201,6 +201,7 @@ public:
     QByteArray &operator=(const QByteArray &);
     QByteArray &operator=(const char *str);
 #ifdef Q_COMPILER_RVALUE_REFS
+    inline QByteArray(QByteArray && other) : d(other.d) { other.d = Data::sharedNull(); }
     inline QByteArray &operator=(QByteArray &&other)
     { qSwap(d, other.d); return *this; }
 #endif

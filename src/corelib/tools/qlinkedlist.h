@@ -83,6 +83,7 @@ public:
     ~QLinkedList();
     QLinkedList<T> &operator=(const QLinkedList<T> &);
 #ifdef Q_COMPILER_RVALUE_REFS
+    inline QLinkedList(QLinkedList<T> &&other) : d(other.d) { other.d = const_cast<QLinkedListData *>(&QLinkedListData::shared_null); }
     inline QLinkedList<T> &operator=(QLinkedList<T> &&other)
     { qSwap(d, other.d); return *this; }
 #endif

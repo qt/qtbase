@@ -115,7 +115,8 @@ public:
     ~QList();
     QList<T> &operator=(const QList<T> &l);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QList &operator=(QList &&other)
+    inline QList(QList<T> &&other) : d(other.d) { other.d = const_cast<QListData::Data *>(&QListData::shared_null); }
+    inline QList &operator=(QList<T> &&other)
     { qSwap(d, other.d); return *this; }
 #endif
     inline void swap(QList<T> &other) { qSwap(d, other.d); }

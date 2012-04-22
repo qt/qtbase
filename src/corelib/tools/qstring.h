@@ -198,6 +198,7 @@ public:
     QString &operator=(const QString &);
     inline QString &operator=(const QLatin1String &);
 #ifdef Q_COMPILER_RVALUE_REFS
+    inline QString(QString && other) : d(other.d) { other.d = Data::sharedNull(); }
     inline QString &operator=(QString &&other)
     { qSwap(d, other.d); return *this; }
 #endif

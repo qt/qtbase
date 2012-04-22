@@ -287,6 +287,7 @@ public:
 
     QHash<Key, T> &operator=(const QHash<Key, T> &other);
 #ifdef Q_COMPILER_RVALUE_REFS
+    inline QHash(QHash<Key, T> &&other) : d(other.d) { other.d = const_cast<QHashData *>(&QHashData::shared_null); }
     inline QHash<Key, T> &operator=(QHash<Key, T> &&other)
     { qSwap(d, other.d); return *this; }
 #endif

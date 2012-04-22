@@ -115,6 +115,7 @@ public:
     inline ~QVector() { if (!d->ref.deref()) free(d); }
     QVector<T> &operator=(const QVector<T> &v);
 #ifdef Q_COMPILER_RVALUE_REFS
+    inline QVector(QVector<T> &&other) : d(other.d) { other.d = Data::sharedNull(); }
     inline QVector<T> operator=(QVector<T> &&other)
     { qSwap(d, other.d); return *this; }
 #endif

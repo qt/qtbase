@@ -2419,6 +2419,14 @@ bool isSharable(const Container &container)
     return !container.isDetached();
 }
 
+template <class Container> Container newInstance() {
+    Container container;
+    populate(container);
+    if (!container.isEmpty())
+        return container;
+    return Container();
+}
+
 template <class Container, class ContainerMutableIterator>
 void testContainer()
 {
@@ -2539,10 +2547,20 @@ void testContainer()
         QVERIFY(!c2.isDetached());
         QVERIFY(!c3.isDetached());
     }
+
+    /* test that the move operators work properly */
+    {
+        Container c1 = Container(newInstance<Container>());
+        QVERIFY(c1.size() == 4);
+        QVERIFY(c1 == newInstance<Container>());
+        c1 = newInstance<Container>();
+        QVERIFY(c1.size() == 4);
+        QVERIFY(c1 == newInstance<Container>());
+    }
 }
 
 #define TEST_SEQUENTIAL_CONTAINER(Container) \
-    testContainer<Q##Container<int>, QMutable##Container##Iterator<int> >()
+    testContainer<Q##Container<int>, QMutable##Container##Iterator<int> >() \
 
 #define TEST_ASSOCIATIVE_CONTAINER(Container) \
     testContainer<Q##Container<int, int>, QMutable##Container##Iterator<int, int> >()
