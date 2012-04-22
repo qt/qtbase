@@ -175,7 +175,7 @@ QSqlQueryModel::~QSqlQueryModel()
     This only affects databases that don't report back the size of a query
     (see QSqlDriver::hasFeature()).
 
-    To force fetching of the entire database, you can use the following:
+    To force fetching of the entire result set, you can use the following:
 
     \snippet doc/src/snippets/code/src_sql_models_qsqlquerymodel.cpp 0
 
