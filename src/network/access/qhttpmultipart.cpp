@@ -456,7 +456,7 @@ qint64 QHttpMultiPartIODevice::size() const
             // and 2 bytes for the "\r\n" after the content
             currentSize += boundaryCount + 4 + multiPart->parts.at(a).d->size() + 2;
         }
-        currentSize += boundaryCount + 4; // size for ending boundary and 2 beginning and ending dashes
+        currentSize += boundaryCount + 6; // size for ending boundary, 2 beginning and ending dashes and "\r\n"
         deviceSize = currentSize;
     }
     return deviceSize;
@@ -527,7 +527,7 @@ qint64 QHttpMultiPartIODevice::readData(char *data, qint64 maxSize)
     }
     // check whether we need to return the final boundary
     if (bytesRead < maxSize && index == multiPart->parts.count()) {
-        QByteArray finalBoundary = "--" + multiPart->boundary + "--";
+        QByteArray finalBoundary = "--" + multiPart->boundary + "--\r\n";
         qint64 boundaryIndex = readPointer + finalBoundary.count() - size();
         qint64 lastBoundaryBytesRead = qMin(finalBoundary.count() - boundaryIndex, maxSize - bytesRead);
         memcpy(data + bytesRead, finalBoundary.constData() + boundaryIndex, lastBoundaryBytesRead);
