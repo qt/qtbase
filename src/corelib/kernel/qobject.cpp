@@ -2385,6 +2385,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     int signalOffset, methodOffset;
     computeOffsets(smeta, &signalOffset, &methodOffset);
     int signal_absolute_index = signal_index + methodOffset;
+    Q_UNUSED(signal_absolute_index) //only used in debug mode
     signal_index += signalOffset;
 
     QByteArray tmp_method_name;
