@@ -343,7 +343,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, QObject *receiver, co
         if (msec == 0) {
             // special code shortpath for 0-timers
             const char* bracketPosition = strchr(member, '(');
-            if (!bracketPosition || !(member[0] >= '0' && member[0] <= '3')) {
+            if (!bracketPosition || !(member[0] >= '0' && member[0] <= '2')) {
                 qWarning("QTimer::singleShot: Invalid slot specification");
                 return;
             }
