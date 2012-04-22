@@ -134,8 +134,8 @@ Q_SIGNALS:
     void usagePoliciesChanged(QNetworkSession::UsagePolicies);
 
 protected:
-    virtual void connectNotify(const char *signal);
-    virtual void disconnectNotify(const char *signal);
+    virtual void connectNotify(const QMetaMethod &signal);
+    virtual void disconnectNotify(const QMetaMethod &signal);
 
 private:
     Q_DISABLE_COPY(QNetworkSession)

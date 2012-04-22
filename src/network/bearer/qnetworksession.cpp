@@ -43,6 +43,7 @@
 #include "qbearerengine_p.h"
 
 #include <QEventLoop>
+#include <QMetaMethod>
 #include <QTimer>
 #include <QThread>
 
@@ -704,7 +705,7 @@ void QNetworkSessionPrivate::setUsagePolicies(QNetworkSession &session, QNetwork
     For more details check the Forced vs ALR roaming section in the QNetworkSession 
     class description.
 */
-void QNetworkSession::connectNotify(const char *signal)
+void QNetworkSession::connectNotify(const QMetaMethod &signal)
 {
     QObject::connectNotify(signal);
 
@@ -713,7 +714,9 @@ void QNetworkSession::connectNotify(const char *signal)
 
     //check for preferredConfigurationChanged() signal connect notification
     //This is not required on all platforms
-    if (qstrcmp(signal, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool))) == 0)
+    static const QMetaMethod preferredConfigurationChangedSignal =
+            QMetaMethod::fromSignal(&QNetworkSession::preferredConfigurationChanged);
+    if (signal == preferredConfigurationChangedSignal)
         d->setALREnabled(true);
 }
 
@@ -725,7 +728,7 @@ void QNetworkSession::connectNotify(const char *signal)
 
     \sa connectNotify()
 */
-void QNetworkSession::disconnectNotify(const char *signal)
+void QNetworkSession::disconnectNotify(const QMetaMethod &signal)
 {
     QObject::disconnectNotify(signal);
 
@@ -734,7 +737,9 @@ void QNetworkSession::disconnectNotify(const char *signal)
 
     //check for preferredConfigurationChanged() signal disconnect notification
     //This is not required on all platforms
-    if (qstrcmp(signal, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool))) == 0)
+    static const QMetaMethod preferredConfigurationChangedSignal =
+            QMetaMethod::fromSignal(&QNetworkSession::preferredConfigurationChanged);
+    if (signal == preferredConfigurationChangedSignal)
         d->setALREnabled(false);
 }
 
