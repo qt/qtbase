@@ -451,7 +451,7 @@ QTestLib
 
 QtSql
 -----
-QSqlTableModel/QSqlRelationalTableModel
+QSqlQueryModel/QSqlTableModel/QSqlRelationalTableModel
 
 * The dataChanged() signal is now emitted for changes made to an inserted
 record that has not yet been committed. Previously, dataChanged() was
@@ -485,6 +485,10 @@ removed and only if there are no other changed rows.
 * QSqlQueryModel::indexInQuery() is now virtual. See
 QSqlTableModel::indexInQuery() as example of how to implement in a
 subclass.
+
+* QSqlQueryMode::setQuery() emits fewer signals. The modelAboutToBeReset()
+and modelReset() signals suffice to inform views that they must reinterrogate
+the model.
 
 * QSqlTableModel::selectRow(): This is a new method that refreshes a single
 row in the model from the database.

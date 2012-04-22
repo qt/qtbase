@@ -90,6 +90,8 @@ public:
     bool canFetchMore(const QModelIndex &parent = QModelIndex()) const;
 
 protected:
+    void beginResetModel();
+    void endResetModel();
     virtual void queryChange();
 
     virtual QModelIndex indexInQuery(const QModelIndex &item) const;

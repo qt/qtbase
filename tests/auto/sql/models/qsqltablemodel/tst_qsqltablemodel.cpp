@@ -1338,39 +1338,13 @@ void tst_QSqlTableModel::setFilter()
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
 
-    QSignalSpy rowsRemovedSpy(&model, SIGNAL(rowsRemoved(QModelIndex,int,int)));
-    QSignalSpy rowsAboutToBeRemovedSpy(&model,
-            SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
-    QSignalSpy rowsInsertedSpy(&model, SIGNAL(rowsInserted(QModelIndex,int,int)));
-    QSignalSpy rowsAboutToBeInsertedSpy(&model,
-            SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
+    QSignalSpy modelAboutToBeResetSpy(&model, SIGNAL(modelAboutToBeReset()));
+    QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
     model.setFilter("id = 2");
 
     // check the signals
-    QCOMPARE(rowsAboutToBeRemovedSpy.count(), 1);
-    QCOMPARE(rowsRemovedSpy.count(), 1);
-    QCOMPARE(rowsAboutToBeInsertedSpy.count(), 1);
-    QCOMPARE(rowsInsertedSpy.count(), 1);
-    QList<QVariant> args = rowsAboutToBeRemovedSpy.takeFirst();
-    QCOMPARE(args.count(), 3);
-    QCOMPARE(qvariant_cast<QModelIndex>(args.at(0)), QModelIndex());
-    QCOMPARE(args.at(1).toInt(), 0);
-    QCOMPARE(args.at(2).toInt(), 0);
-    args = rowsRemovedSpy.takeFirst();
-    QCOMPARE(args.count(), 3);
-    QCOMPARE(qvariant_cast<QModelIndex>(args.at(0)), QModelIndex());
-    QCOMPARE(args.at(1).toInt(), 0);
-    QCOMPARE(args.at(2).toInt(), 0);
-    args = rowsInsertedSpy.takeFirst();
-    QCOMPARE(args.count(), 3);
-    QCOMPARE(qvariant_cast<QModelIndex>(args.at(0)), QModelIndex());
-    QCOMPARE(args.at(1).toInt(), 0);
-    QCOMPARE(args.at(2).toInt(), 0);
-    args = rowsAboutToBeInsertedSpy.takeFirst();
-    QCOMPARE(args.count(), 3);
-    QCOMPARE(qvariant_cast<QModelIndex>(args.at(0)), QModelIndex());
-    QCOMPARE(args.at(1).toInt(), 0);
-    QCOMPARE(args.at(2).toInt(), 0);
+    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
+    QCOMPARE(modelResetSpy.count(), 1);
 
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 2);
@@ -1500,7 +1474,8 @@ void tst_QSqlTableModel::insertRecordsInLoop()
     record.setValue(1, "Testman");
     record.setValue(2, 1);
 
-    QSignalSpy spyRowsRemoved(&model, SIGNAL(rowsRemoved(const QModelIndex &, int, int)));
+    QSignalSpy modelAboutToBeResetSpy(&model, SIGNAL(modelAboutToBeReset()));
+    QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
     QSignalSpy spyRowsInserted(&model, SIGNAL(rowsInserted(const QModelIndex &, int, int)));
     for (int i = 0; i < 10; i++) {
         QVERIFY(model.insertRecord(model.rowCount(), record));
@@ -1509,18 +1484,9 @@ void tst_QSqlTableModel::insertRecordsInLoop()
     }
     model.submitAll(); // submitAll() calls select() which clears and repopulates the table
 
-    int firstRowIndex = 0, lastRowIndex = 12;
-    QCOMPARE(spyRowsRemoved.count(), 11);
-    // QSqlTableModel emits 10 signals for its 10 inserted rows
-    QCOMPARE(spyRowsRemoved.at(0).at(1).toInt(), lastRowIndex);
-    QCOMPARE(spyRowsRemoved.at(9).at(1).toInt(), firstRowIndex + 3);
-    // QSqlQueryModel emits 1 signal for its 3 rows
-    QCOMPARE(spyRowsRemoved.at(10).at(1).toInt(), firstRowIndex);
-    QCOMPARE(spyRowsRemoved.at(10).at(2).toInt(), firstRowIndex + 2);
-
-    QCOMPARE(spyRowsInserted.at(10).at(1).toInt(), firstRowIndex);
-    QCOMPARE(spyRowsInserted.at(10).at(2).toInt(), lastRowIndex);
-    QCOMPARE(spyRowsInserted.count(), 11);
+    // model emits reset signals
+    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
+    QCOMPARE(modelResetSpy.count(), 1);
 
     QCOMPARE(model.rowCount(), 13);
     QCOMPARE(model.columnCount(), 3);

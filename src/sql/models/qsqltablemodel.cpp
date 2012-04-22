@@ -364,18 +364,9 @@ bool QSqlTableModel::select()
     if (query.isEmpty())
         return false;
 
-    QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.end();
-    while (it != d->cache.constBegin()) {
-        --it;
-        // rows must be accounted for
-        if (it.value().insert()) {
-            beginRemoveRows(QModelIndex(), it.key(), it.key());
-            it = d->cache.erase(it);
-            endRemoveRows();
-        } else {
-            it = d->cache.erase(it);
-        }
-    }
+    beginResetModel();
+
+    d->clearCache();
 
     QSqlQuery qu(query, d->db);
     setQuery(qu);
@@ -383,8 +374,10 @@ bool QSqlTableModel::select()
     if (!qu.isActive() || lastError().isValid()) {
         // something went wrong - revert to non-select state
         d->initRecordAndPrimaryIndex();
+        endResetModel();
         return false;
     }
+    endResetModel();
     return true;
 }
 

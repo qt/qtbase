@@ -67,7 +67,7 @@ class QSqlQueryModelPrivate: public QAbstractItemModelPrivate
 {
     Q_DECLARE_PUBLIC(QSqlQueryModel)
 public:
-    QSqlQueryModelPrivate() : atEnd(false) {}
+    QSqlQueryModelPrivate() : atEnd(false), resetting(false) {}
     ~QSqlQueryModelPrivate();
     
     void prefetch(int);
@@ -80,6 +80,7 @@ public:
     uint atEnd : 1;
     QVector<QHash<int, QVariant> > headers;
     QVarLengthArray<int, 56> colOffsets; // used to calculate indexInQuery of columns
+    bool resetting;
 };
 
 // helpers for building SQL expressions

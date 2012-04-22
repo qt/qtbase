@@ -478,22 +478,23 @@ void tst_QSqlQueryModel::fetchMore()
     CHECK_DATABASE(db);
 
     QSqlQueryModel model;
-    QSignalSpy spy(&model, SIGNAL(rowsInserted(QModelIndex, int, int)));
+    QSignalSpy modelAboutToBeResetSpy(&model, SIGNAL(modelAboutToBeReset()));
+    QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
 
     model.setQuery(QSqlQuery("select * from " + qTableName("many", __FILE__), db));
     int rowCount = model.rowCount();
 
-    QCOMPARE(spy.value(0).value(1).toInt(), 0);
-    QCOMPARE(spy.value(0).value(2).toInt(), rowCount - 1);
+    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
+    QCOMPARE(modelResetSpy.count(), 1);
 
     // If the driver doesn't return the query size fetchMore() causes the
     // model to grow and new signals are emitted
+    QSignalSpy rowsInsertedSpy(&model, SIGNAL(rowsInserted(QModelIndex, int, int)));
     if (!db.driver()->hasFeature(QSqlDriver::QuerySize)) {
-        spy.clear();
         model.fetchMore();
         int newRowCount = model.rowCount();
-        QCOMPARE(spy.value(0).value(1).toInt(), rowCount);
-        QCOMPARE(spy.value(0).value(2).toInt(), newRowCount - 1);
+        QCOMPARE(rowsInsertedSpy.value(0).value(1).toInt(), rowCount);
+        QCOMPARE(rowsInsertedSpy.value(0).value(2).toInt(), newRowCount - 1);
     }
 }
 
@@ -519,7 +520,8 @@ void tst_QSqlQueryModel::withSortFilterProxyModel()
     QTableView view;
     view.setModel(&proxy);
 
-    QSignalSpy modelRowsRemovedSpy(&model, SIGNAL(rowsRemoved(const QModelIndex &, int, int)));
+    QSignalSpy modelAboutToBeResetSpy(&model, SIGNAL(modelAboutToBeReset()));
+    QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
     QSignalSpy modelRowsInsertedSpy(&model, SIGNAL(rowsInserted(const QModelIndex &, int, int)));
     model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test3", __FILE__), db));
     view.scrollToBottom();
@@ -528,19 +530,14 @@ void tst_QSqlQueryModel::withSortFilterProxyModel()
 
     QCOMPARE(proxy.rowCount(), 511);
 
-    // The second call to setQuery() clears the model by removing it's rows.
-    // Only 256 rows because that is what was cached.
-    QCOMPARE(modelRowsRemovedSpy.count(), 1);
-    QCOMPARE(modelRowsRemovedSpy.value(0).value(1).toInt(), 0);
-    QCOMPARE(modelRowsRemovedSpy.value(0).value(2).toInt(), 255);
+    // setQuery() resets the model accompanied by begin and end signals
+    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
+    QCOMPARE(modelResetSpy.count(), 1);
 
-    // The call to scrollToBottom() forces the model to fetch all rows,
-    // which will be done in two steps.
-    QCOMPARE(modelRowsInsertedSpy.count(), 2);
-    QCOMPARE(modelRowsInsertedSpy.value(0).value(1).toInt(), 0);
-    QCOMPARE(modelRowsInsertedSpy.value(0).value(2).toInt(), 255);
-    QCOMPARE(modelRowsInsertedSpy.value(1).value(1).toInt(), 256);
-    QCOMPARE(modelRowsInsertedSpy.value(1).value(2).toInt(), 510);
+    // The call to scrollToBottom() forces the model to fetch additional rows.
+    QCOMPARE(modelRowsInsertedSpy.count(), 1);
+    QCOMPARE(modelRowsInsertedSpy.value(0).value(1).toInt(), 256);
+    QCOMPARE(modelRowsInsertedSpy.value(0).value(2).toInt(), 510);
 }
 
 // For task 155402: When the model is already empty when setQuery() is called
@@ -553,22 +550,19 @@ void tst_QSqlQueryModel::setQuerySignalEmission()
     CHECK_DATABASE(db);
 
     QSqlQueryModel model;
-    QSignalSpy modelRowsAboutToBeRemovedSpy(&model, SIGNAL(rowsAboutToBeRemoved(const QModelIndex &, int, int)));
-    QSignalSpy modelRowsRemovedSpy(&model, SIGNAL(rowsRemoved(const QModelIndex &, int, int)));
+    QSignalSpy modelAboutToBeResetSpy(&model, SIGNAL(modelAboutToBeReset()));
+    QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
 
-    // First select, the model was empty and no rows had to be removed!
+    // First select, the model was empty and no rows had to be removed, but model resets anyway.
     model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test", __FILE__), db));
-    QCOMPARE(modelRowsAboutToBeRemovedSpy.count(), 0);
-    QCOMPARE(modelRowsRemovedSpy.count(), 0);
+    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
+    QCOMPARE(modelResetSpy.count(), 1);
 
     // Second select, the model wasn't empty and two rows had to be removed!
+    // setQuery() resets the model accompanied by begin and end signals
     model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test", __FILE__), db));
-    QCOMPARE(modelRowsAboutToBeRemovedSpy.count(), 1);
-    QCOMPARE(modelRowsAboutToBeRemovedSpy.value(0).value(1).toInt(), 0);
-    QCOMPARE(modelRowsAboutToBeRemovedSpy.value(0).value(2).toInt(), 1);
-    QCOMPARE(modelRowsRemovedSpy.count(), 1);
-    QCOMPARE(modelRowsRemovedSpy.value(0).value(1).toInt(), 0);
-    QCOMPARE(modelRowsRemovedSpy.value(0).value(2).toInt(), 1);
+    QCOMPARE(modelAboutToBeResetSpy.count(), 2);
+    QCOMPARE(modelResetSpy.count(), 2);
 }
 
 // For task 170783: When the query's result set is empty no rows should be inserted,

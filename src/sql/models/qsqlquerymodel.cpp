@@ -78,9 +78,11 @@ void QSqlQueryModelPrivate::prefetch(int limit)
         atEnd = true; // this is the end.
     }
     if (newBottom.row() >= 0 && newBottom.row() > bottom.row()) {
-        q->beginInsertRows(QModelIndex(), bottom.row() + 1, newBottom.row());
+        if (!resetting)
+            q->beginInsertRows(QModelIndex(), bottom.row() + 1, newBottom.row());
         bottom = newBottom;
-        q->endInsertRows();
+        if (!resetting)
+            q->endInsertRows();
     } else {
         bottom = newBottom;
     }
@@ -208,6 +210,28 @@ bool QSqlQueryModel::canFetchMore(const QModelIndex &parent) const
     return (!parent.isValid() && !d->atEnd);
 }
 
+/*! \reimp
+ */
+void QSqlQueryModel::beginResetModel()
+{
+    Q_D(QSqlQueryModel);
+    if (!d->resetting) {
+        QAbstractTableModel::beginResetModel();
+        d->resetting = true;
+    }
+}
+
+/*! \reimp
+ */
+void QSqlQueryModel::endResetModel()
+{
+    Q_D(QSqlQueryModel);
+    if (d->resetting) {
+        d->resetting = false;
+        QAbstractTableModel::endResetModel();
+    }
+}
+
 /*! \fn int QSqlQueryModel::rowCount(const QModelIndex &parent) const
     \since 4.1
 
@@ -317,60 +341,47 @@ void QSqlQueryModel::queryChange()
 void QSqlQueryModel::setQuery(const QSqlQuery &query)
 {
     Q_D(QSqlQueryModel);
+    beginResetModel();
+
     QSqlRecord newRec = query.record();
     bool columnsChanged = (newRec != d->rec);
-    bool hasQuerySize = query.driver()->hasFeature(QSqlDriver::QuerySize);
-    bool hasNewData = (newRec != QSqlRecord()) || !query.lastError().isValid();
 
     if (d->colOffsets.size() != newRec.count() || columnsChanged)
         d->initColOffsets(newRec.count());
 
-    bool mustClearModel = d->bottom.isValid();
-    if (mustClearModel) {
-        d->atEnd = true;
-        beginRemoveRows(QModelIndex(), 0, qMax(d->bottom.row(), 0));
-        d->bottom = QModelIndex();
-    }
-
+    d->bottom = QModelIndex();
     d->error = QSqlError();
     d->query = query;
     d->rec = newRec;
+    d->atEnd = true;
 
-    if (mustClearModel)
-        endRemoveRows();
-
-    d->atEnd = false;
-
-    if (columnsChanged && hasNewData)
-        reset();
-
-    if (!query.isActive() || query.isForwardOnly()) {
-        d->atEnd = true;
-        d->bottom = QModelIndex();
-        if (query.isForwardOnly())
-            d->error = QSqlError(QLatin1String("Forward-only queries "
-                                               "cannot be used in a data model"),
-                                 QString(), QSqlError::ConnectionError);
-        else
-            d->error = query.lastError();
+    if (query.isForwardOnly()) {
+        d->error = QSqlError(QLatin1String("Forward-only queries "
+                                           "cannot be used in a data model"),
+                             QString(), QSqlError::ConnectionError);
+        endResetModel();
         return;
     }
-    QModelIndex newBottom;
-    if (hasQuerySize && d->query.size() > 0) {
-        newBottom = createIndex(d->query.size() - 1, d->rec.count() - 1);
-        beginInsertRows(QModelIndex(), 0, qMax(0, newBottom.row()));
-        d->bottom = createIndex(d->query.size() - 1, columnsChanged ? 0 : d->rec.count() - 1);
-        d->atEnd = true;
-        endInsertRows();
-    } else {
-        newBottom = createIndex(-1, d->rec.count() - 1);
-    }
-    d->bottom = newBottom;
 
-    queryChange();
+    if (!query.isActive()) {
+        d->error = query.lastError();
+        endResetModel();
+        return;
+    }
+
+    if (query.driver()->hasFeature(QSqlDriver::QuerySize) && d->query.size() > 0) {
+        d->bottom = createIndex(d->query.size() - 1, d->rec.count() - 1);
+    } else {
+        d->bottom = createIndex(-1, d->rec.count() - 1);
+        d->atEnd = false;
+    }
+
 
     // fetchMore does the rowsInserted stuff for incremental models
     fetchMore();
+
+    endResetModel();
+    queryChange();
 }
 
 /*! \overload
