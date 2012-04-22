@@ -253,47 +253,60 @@ static void xgetbv(int in, uint &eax, uint &edx)
 static inline uint detectProcessorFeatures()
 {
     uint features = 0;
-    if (maxBasicCpuidSupported() < 1)
+    int cpuidLevel = maxBasicCpuidSupported();
+    if (cpuidLevel < 1)
         return 0;
 
+    uint cpuid01ECX = 0, cpuid01EDX = 0;
+    cpuidFeatures01(cpuid01ECX, cpuid01EDX);
 #if defined(Q_PROCESSOR_X86_32)
-    unsigned int feature_result = 0;
-    uint result = 0;
-    cpuidFeatures01(feature_result, result);
-
-    // result now contains the standard feature bits
-    if (result & (1u << 26))
+    // x86 might not have SSE2 support
+    if (cpuid01EDX & (1u << 26))
         features |= SSE2;
 #else
     // x86-64 or x32
     features = SSE2;
-    uint feature_result = 0, tmp;
-    cpuidFeatures01(feature_result, tmp);
 #endif
 
     // common part between 32- and 64-bit
-    if (feature_result & (1u))
+    if (cpuid01ECX & (1u))
         features |= SSE3;
-    if (feature_result & (1u << 9))
+    if (cpuid01ECX & (1u << 9))
         features |= SSSE3;
-    if (feature_result & (1u << 19))
+    if (cpuid01ECX & (1u << 19))
         features |= SSE4_1;
-    if (feature_result & (1u << 20))
+    if (cpuid01ECX & (1u << 20))
         features |= SSE4_2;
+    if (cpuid01ECX & (1u << 25))
+        features |= 0; // AES, enable if needed
+
     uint xgetbvA = 0, xgetbvD = 0;
-    if (feature_result & (1u << 27)) {
+    if (cpuid01ECX & (1u << 27)) {
         // XGETBV enabled
         xgetbv(0, xgetbvA, xgetbvD);
     }
 
+    uint cpuid0700EBX = 0;
+    if (cpuidLevel >= 7)
+        cpuidFeatures07_00(cpuid0700EBX);
+
     if ((xgetbvA & 6) == 6) {
         // support for YMM and XMM registers is enabled
-        if (feature_result & (1u << 28))
+        if (cpuid01ECX & (1u << 28))
             features |= AVX;
+
+        if (cpuid0700EBX & (1u << 5))
+            features |= AVX2;
     }
+
+    if (cpuid0700EBX & (1u << 4))
+        features |= HLE; // Hardware Lock Ellision
+    if (cpuid0700EBX & (1u << 11))
+        features |= RTM; // Restricted Transactional Memory
 
     return features;
 }
+
 
 #else
 static inline uint detectProcessorFeatures()
@@ -313,6 +326,9 @@ static inline uint detectProcessorFeatures()
  sse4.1
  sse4.2
  avx
+ avx2
+ hle
+ rtm
   */
 
 // begin generated
@@ -325,11 +341,14 @@ static const char features_string[] =
     " sse4.1\0"
     " sse4.2\0"
     " avx\0"
+    " avx2\0"
+    " hle\0"
+    " rtm\0"
     "\0";
 
 static const int features_indices[] = {
     0,    8,   14,   20,   26,   33,   41,   49,
-    -1
+   54,   60,   65,   -1
 };
 // end generated
 

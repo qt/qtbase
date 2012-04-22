@@ -129,7 +129,10 @@ enum CPUFeatures {
     SSSE3       = 0x10,
     SSE4_1      = 0x20,
     SSE4_2      = 0x40,
-    AVX         = 0x80
+    AVX         = 0x80,
+    AVX2        = 0x100,
+    HLE         = 0x200,
+    RTM         = 0x400
 };
 
 Q_CORE_EXPORT uint qDetectCPUFeatures();
