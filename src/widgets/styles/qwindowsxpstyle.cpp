@@ -1773,7 +1773,7 @@ case PE_Frame:
     case PE_IndicatorHeaderArrow:
         {
 #if 0 // XP theme engine doesn't know about this :(
-            name = QWindowsXPStylePrivate::HEADER");
+            name = QWindowsXPStylePrivate::HeaderTheme;
             partId = HP_HEADERSORTARROW;
             if (flags & State_Down)
                 stateId = HSAS_SORTEDDOWN;
