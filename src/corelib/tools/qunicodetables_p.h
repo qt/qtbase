@@ -217,7 +217,7 @@ namespace QUnicodeTables {
     };
 
 
-    Q_CORE_EXPORT QUnicodeTables::LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);
+    Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);
     inline int lineBreakClass(QChar ch)
     { return lineBreakClass(ch.unicode()); }
 
