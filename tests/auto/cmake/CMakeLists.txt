@@ -92,6 +92,9 @@ expect_fail(fail5)
 expect_pass("pass(needsquoting)6")
 expect_pass(pass7)
 expect_pass(pass8)
-if (UNIX)
+
+# If QtDBus has been installed then run the tests for its macros.
+find_package(Qt5DBus QUIET)
+if (Qt5DBus_FOUND)
     expect_pass(pass9)
 endif()
