@@ -111,8 +111,8 @@ Q_SIGNALS:
     void propertyChanged(const QString &, const QDBusVariant &value);
     void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
 
 };
@@ -155,8 +155,8 @@ public:
     QString defaultInterface();
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
 Q_SIGNALS:
     void propertyChanged(const QString &, const QDBusVariant &value);
@@ -186,8 +186,8 @@ public:
     QList <QDBusObjectPath> getOperators();
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
 Q_SIGNALS:
     void propertyChanged(const QString &, const QDBusVariant &value);
@@ -214,8 +214,8 @@ public:
     QStringList getTechnologies();
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
 };
 
@@ -241,8 +241,8 @@ public:
     QString cardIdentifier();
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
 };
 
@@ -267,8 +267,8 @@ public:
     bool setPower(bool on);
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
 };
 
@@ -297,8 +297,8 @@ public:
     bool setApn(const QString &name);
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
     bool setProp(const QString &, const QVariant &var);
 };
@@ -321,8 +321,8 @@ public:
     QString bearer();
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
 
 Q_SIGNALS:

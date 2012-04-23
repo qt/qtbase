@@ -88,9 +88,10 @@ QDBusObjectPath QOfonoManagerInterface::currentModem()
 }
 
 
-void QOfonoManagerInterface::connectNotify(const char *signal)
+void QOfonoManagerInterface::connectNotify(const QMetaMethod &signal)
 {
-if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
+    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoManagerInterface::propertyChanged);
+    if (signal == propertyChangedSignal) {
         if(!connection().connect(QLatin1String(OFONO_SERVICE),
                                QLatin1String(OFONO_MANAGER_PATH),
                                QLatin1String(OFONO_MANAGER_INTERFACE),
@@ -100,7 +101,8 @@ if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
         }
     }
 
-    if (QLatin1String(signal) == SIGNAL(propertyChangedContext(QString,QString,QDBusVariant))) {
+    static const QMetaMethod propertyChangedContextSignal = QMetaMethod::fromSignal(&QOfonoManagerInterface::propertyChangedContext);
+    if (signal == propertyChangedContextSignal) {
         QOfonoDBusHelper *helper;
         helper = new QOfonoDBusHelper(this);
 
@@ -116,9 +118,10 @@ if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
     }
 }
 
-void QOfonoManagerInterface::disconnectNotify(const char *signal)
+void QOfonoManagerInterface::disconnectNotify(const QMetaMethod &signal)
 {
-    if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QVariant))) {
+    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoManagerInterface::propertyChanged);
+    if (signal == propertyChangedSignal) {
 
     }
 }
@@ -238,9 +241,10 @@ QString QOfonoModemInterface::defaultInterface()
 }
 
 
-void QOfonoModemInterface::connectNotify(const char *signal)
+void QOfonoModemInterface::connectNotify(const QMetaMethod &signal)
 {
-    if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
+    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoModemInterface::propertyChanged);
+    if (signal == propertyChangedSignal) {
             if(!connection().connect(QLatin1String(OFONO_SERVICE),
                                    this->path(),
                                    QLatin1String(OFONO_MODEM_INTERFACE),
@@ -250,7 +254,8 @@ void QOfonoModemInterface::connectNotify(const char *signal)
             }
         }
 
-        if (QLatin1String(signal) == SIGNAL(propertyChangedContext(QString,QString,QDBusVariant))) {
+    static const QMetaMethod propertyChangedContextSignal = QMetaMethod::fromSignal(&QOfonoModemInterface::propertyChangedContext);
+        if (signal == propertyChangedContextSignal) {
             QOfonoDBusHelper *helper;
             helper = new QOfonoDBusHelper(this);
 
@@ -265,9 +270,10 @@ void QOfonoModemInterface::connectNotify(const char *signal)
                     this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
         }}
 
-void QOfonoModemInterface::disconnectNotify(const char *signal)
+void QOfonoModemInterface::disconnectNotify(const QMetaMethod &signal)
 {
-    if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QVariant))) {
+    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoModemInterface::propertyChanged);
+    if (signal == propertyChangedSignal) {
 
     }
 }
@@ -361,9 +367,10 @@ QList <QDBusObjectPath> QOfonoNetworkRegistrationInterface::getOperators()
     return qdbus_cast<QList <QDBusObjectPath> >(var);
 }
 
-void QOfonoNetworkRegistrationInterface::connectNotify(const char *signal)
+void QOfonoNetworkRegistrationInterface::connectNotify(const QMetaMethod &signal)
 {
-if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
+    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoNetworkRegistrationInterface::propertyChanged);
+    if (signal == propertyChangedSignal) {
         if(!connection().connect(QLatin1String(OFONO_SERVICE),
                                this->path(),
                                QLatin1String(OFONO_NETWORK_REGISTRATION_INTERFACE),
@@ -373,7 +380,8 @@ if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
         }
     }
 
-    if (QLatin1String(signal) == SIGNAL(propertyChangedContext(QString,QString,QDBusVariant))) {
+    static const QMetaMethod propertyChangedContextSignal = QMetaMethod::fromSignal(&QOfonoNetworkRegistrationInterface::propertyChangedContext);
+    if (signal == propertyChangedContextSignal) {
         QOfonoDBusHelper *helper;
         helper = new QOfonoDBusHelper(this);
 
@@ -389,9 +397,10 @@ if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
     }
 }
 
-void QOfonoNetworkRegistrationInterface::disconnectNotify(const char *signal)
+void QOfonoNetworkRegistrationInterface::disconnectNotify(const QMetaMethod &signal)
 {
-    if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QVariant))) {
+    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoNetworkRegistrationInterface::propertyChanged);
+    if (signal == propertyChangedSignal) {
 
     }
 }
@@ -459,39 +468,44 @@ QStringList QOfonoNetworkOperatorInterface::getTechnologies()
     return qdbus_cast<QStringList>(var);
 }
 
-void QOfonoNetworkOperatorInterface::connectNotify(const char *signal)
+void QOfonoNetworkOperatorInterface::connectNotify(const QMetaMethod &signal)
 {
-if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
-        if(!connection().connect(QLatin1String(OFONO_SERVICE),
-                               this->path(),
-                               QLatin1String(OFONO_NETWORK_OPERATOR_INTERFACE),
-                               QLatin1String("PropertyChanged"),
-                               this,SIGNAL(propertyChanged(const QString &, const QDBusVariant & )))) {
-            qWarning() << "PropertyCHanged not connected";
-        }
-    }
+    Q_UNUSED(signal);
+//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoNetworkOperatorInterface::propertyChanged);
+//    if (signal == propertyChangedSignal) {
+//        if(!connection().connect(QLatin1String(OFONO_SERVICE),
+//                               this->path(),
+//                               QLatin1String(OFONO_NETWORK_OPERATOR_INTERFACE),
+//                               QLatin1String("PropertyChanged"),
+//                               this,SIGNAL(propertyChanged(const QString &, const QDBusVariant & )))) {
+//            qWarning() << "PropertyCHanged not connected";
+//        }
+//    }
 
-    if (QLatin1String(signal) == SIGNAL(propertyChangedContext(QString,QString,QDBusVariant))) {
-        QOfonoDBusHelper *helper;
-        helper = new QOfonoDBusHelper(this);
+//    static const QMetaMethod propertyChangedContextSignal = QMetaMethod::fromSignal(&QOfonoNetworkOperatorInterface::propertyChangedContext);
+//    if (signal == propertyChangedContextSignal) {
+//        QOfonoDBusHelper *helper;
+//        helper = new QOfonoDBusHelper(this);
 
-        QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
-                               this->path(),
-                               QLatin1String(OFONO_NETWORK_OPERATOR_INTERFACE),
-                               QLatin1String("PropertyChanged"),
-                               helper,SLOT(propertyChanged(QString,QDBusVariant)));
+//        QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
+//                               this->path(),
+//                               QLatin1String(OFONO_NETWORK_OPERATOR_INTERFACE),
+//                               QLatin1String("PropertyChanged"),
+//                               helper,SLOT(propertyChanged(QString,QDBusVariant)));
 
 
-        QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
-    }
+//        QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
+//                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
+//    }
 }
 
-void QOfonoNetworkOperatorInterface::disconnectNotify(const char *signal)
+void QOfonoNetworkOperatorInterface::disconnectNotify(const QMetaMethod &signal)
 {
-    if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QVariant))) {
+    Q_UNUSED(signal);
+//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoNetworkOperatorInterface::propertyChanged);
+//    if (signal == propertyChangedSignal) {
 
-    }
+//    }
 }
 
 QVariant QOfonoNetworkOperatorInterface::getProperty(const QString &property)
@@ -562,39 +576,44 @@ QString QOfonoSimInterface::cardIdentifier()
     return qdbus_cast<QString>(var);
 }
 
-void QOfonoSimInterface::connectNotify(const char *signal)
+void QOfonoSimInterface::connectNotify(const QMetaMethod &signal)
 {
-if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
-        if(!connection().connect(QLatin1String(OFONO_SERVICE),
-                               this->path(),
-                               QLatin1String(OFONO_SIM_MANAGER_INTERFACE),
-                               QLatin1String("PropertyChanged"),
-                               this,SIGNAL(propertyChanged(const QString &, const QDBusVariant & )))) {
-            qWarning() << "PropertyCHanged not connected";
-        }
-    }
+    Q_UNUSED(signal);
+//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoSimInterface::propertyChanged);
+//    if (signal == propertyChangedSignal) {
+//        if(!connection().connect(QLatin1String(OFONO_SERVICE),
+//                               this->path(),
+//                               QLatin1String(OFONO_SIM_MANAGER_INTERFACE),
+//                               QLatin1String("PropertyChanged"),
+//                               this,SIGNAL(propertyChanged(const QString &, const QDBusVariant & )))) {
+//            qWarning() << "PropertyCHanged not connected";
+//        }
+//    }
 
-    if (QLatin1String(signal) == SIGNAL(propertyChangedContext(QString,QString,QDBusVariant))) {
-        QOfonoDBusHelper *helper;
-        helper = new QOfonoDBusHelper(this);
+//    static const QMetaMethod propertyChangedContextSignal = QMetaMethod::fromSignal(&QOfonoSimInterface::propertyChangedContext);
+//    if (signal == propertyChangedContextSignal) {
+//        QOfonoDBusHelper *helper;
+//        helper = new QOfonoDBusHelper(this);
 
-        QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
-                               this->path(),
-                               QLatin1String(OFONO_SIM_MANAGER_INTERFACE),
-                               QLatin1String("PropertyChanged"),
-                               helper,SLOT(propertyChanged(QString,QDBusVariant)));
+//        QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
+//                               this->path(),
+//                               QLatin1String(OFONO_SIM_MANAGER_INTERFACE),
+//                               QLatin1String("PropertyChanged"),
+//                               helper,SLOT(propertyChanged(QString,QDBusVariant)));
 
 
-        QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
-    }
+//        QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
+//                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
+//    }
 }
 
-void QOfonoSimInterface::disconnectNotify(const char *signal)
+void QOfonoSimInterface::disconnectNotify(const QMetaMethod &signal)
 {
-    if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QVariant))) {
+    Q_UNUSED(signal);
+//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoSimInterface::propertyChanged);
+//    if (signal == propertyChangedSignal) {
 
-    }
+//    }
 }
 
 QVariant QOfonoSimInterface::getProperty(const QString &property)
@@ -651,39 +670,44 @@ bool QOfonoDataConnectionManagerInterface::isPowered()
     return qdbus_cast<bool>(var);
 }
 
-void QOfonoDataConnectionManagerInterface::connectNotify(const char *signal)
+void QOfonoDataConnectionManagerInterface::connectNotify(const QMetaMethod &signal)
 {
-if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
-        if(!connection().connect(QLatin1String(OFONO_SERVICE),
-                               this->path(),
-                               QLatin1String(OFONO_DATA_CONNECTION_MANAGER_INTERFACE),
-                               QLatin1String("PropertyChanged"),
-                               this,SIGNAL(propertyChanged(const QString &, const QDBusVariant & )))) {
-            qWarning() << "PropertyCHanged not connected";
-        }
-    }
+    Q_UNUSED(signal);
+//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoDataConnectionManagerInterface::propertyChanged);
+//    if (signal == propertyChangedSignal) {
+//        if(!connection().connect(QLatin1String(OFONO_SERVICE),
+//                               this->path(),
+//                               QLatin1String(OFONO_DATA_CONNECTION_MANAGER_INTERFACE),
+//                               QLatin1String("PropertyChanged"),
+//                               this,SIGNAL(propertyChanged(const QString &, const QDBusVariant & )))) {
+//            qWarning() << "PropertyCHanged not connected";
+//        }
+//    }
 
-    if (QLatin1String(signal) == SIGNAL(propertyChangedContext(QString,QString,QDBusVariant))) {
-        QOfonoDBusHelper *helper;
-        helper = new QOfonoDBusHelper(this);
+//    static const QMetaMethod propertyChangedContextSignal = QMetaMethod::fromSignal(&QOfonoDataConnectionManagerInterface::propertyChangedContext);
+//    if (signal == propertyChangedContextSignal) {
+//        QOfonoDBusHelper *helper;
+//        helper = new QOfonoDBusHelper(this);
 
-        QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
-                               this->path(),
-                               QLatin1String(OFONO_DATA_CONNECTION_MANAGER_INTERFACE),
-                               QLatin1String("PropertyChanged"),
-                               helper,SLOT(propertyChanged(QString,QDBusVariant)));
+//        QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
+//                               this->path(),
+//                               QLatin1String(OFONO_DATA_CONNECTION_MANAGER_INTERFACE),
+//                               QLatin1String("PropertyChanged"),
+//                               helper,SLOT(propertyChanged(QString,QDBusVariant)));
 
 
-        QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
-    }
+//        QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
+//                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
+//    }
 }
 
-void QOfonoDataConnectionManagerInterface::disconnectNotify(const char *signal)
+void QOfonoDataConnectionManagerInterface::disconnectNotify(const QMetaMethod &signal)
 {
-    if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QVariant))) {
+    Q_UNUSED(signal);
+//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoDataConnectionManagerInterface::propertyChanged);
+//    if (signal == propertyChangedSignal) {
 
-    }
+//    }
 }
 
 QVariant QOfonoDataConnectionManagerInterface::getProperty(const QString &property)
@@ -770,39 +794,44 @@ bool QOfonoPrimaryDataContextInterface::setApn(const QString &name)
     return setProp("AccessPointName", QVariant::fromValue(name));
 }
 
-void QOfonoPrimaryDataContextInterface::connectNotify(const char *signal)
+void QOfonoPrimaryDataContextInterface::connectNotify(const QMetaMethod &signal)
 {
-if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
-        if(!connection().connect(QLatin1String(OFONO_SERVICE),
-                               this->path(),
-                               QLatin1String(OFONO_DATA_CONTEXT_INTERFACE),
-                               QLatin1String("PropertyChanged"),
-                               this,SIGNAL(propertyChanged(const QString &, const QDBusVariant & )))) {
-            qWarning() << "PropertyCHanged not connected";
-        }
-    }
+    Q_UNUSED(signal);
+//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoPrimaryDataContextInterface::propertyChanged);
+//    if (signal == propertyChangedSignal) {
+//        if(!connection().connect(QLatin1String(OFONO_SERVICE),
+//                               this->path(),
+//                               QLatin1String(OFONO_DATA_CONTEXT_INTERFACE),
+//                               QLatin1String("PropertyChanged"),
+//                               this,SIGNAL(propertyChanged(const QString &, const QDBusVariant & )))) {
+//            qWarning() << "PropertyCHanged not connected";
+//        }
+//    }
 
-    if (QLatin1String(signal) == SIGNAL(propertyChangedContext(QString,QString,QDBusVariant))) {
-        QOfonoDBusHelper *helper;
-        helper = new QOfonoDBusHelper(this);
+//    static const QMetaMethod propertyChangedContextSignal = QMetaMethod::fromSignal(&QOfonoPrimaryDataContextInterface::propertyChangedContext);
+//    if (signal == propertyChangedContextSignal) {
+//        QOfonoDBusHelper *helper;
+//        helper = new QOfonoDBusHelper(this);
 
-        QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
-                               this->path(),
-                               QLatin1String(OFONO_DATA_CONTEXT_INTERFACE),
-                               QLatin1String("PropertyChanged"),
-                               helper,SLOT(propertyChanged(QString,QDBusVariant)));
+//        QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
+//                               this->path(),
+//                               QLatin1String(OFONO_DATA_CONTEXT_INTERFACE),
+//                               QLatin1String("PropertyChanged"),
+//                               helper,SLOT(propertyChanged(QString,QDBusVariant)));
 
 
-        QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
-    }
+//        QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
+//                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
+//    }
 }
 
-void QOfonoPrimaryDataContextInterface::disconnectNotify(const char *signal)
+void QOfonoPrimaryDataContextInterface::disconnectNotify(const QMetaMethod &signal)
 {
-    if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QVariant))) {
+    Q_UNUSED(signal);
+//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoPrimaryDataContextInterface::propertyChanged);
+//    if (signal == propertyChangedSignal) {
 
-    }
+//    }
 }
 
 QVariant QOfonoPrimaryDataContextInterface::getProperty(const QString &property)
@@ -852,9 +881,10 @@ QOfonoSmsInterface::~QOfonoSmsInterface()
 {
 }
 
-void QOfonoSmsInterface::connectNotify(const char *signal)
+void QOfonoSmsInterface::connectNotify(const QMetaMethod &signal)
 {
-    if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
+    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoSmsInterface::propertyChanged);
+    if (signal == propertyChangedSignal) {
         if(!connection().connect(QLatin1String(OFONO_SERVICE),
                                  this->path(),
                                  QLatin1String(OFONO_SMS_MANAGER_INTERFACE),
@@ -864,7 +894,8 @@ void QOfonoSmsInterface::connectNotify(const char *signal)
         }
     }
 
-    if (QLatin1String(signal) == SIGNAL(propertyChangedContext(QString,QString,QDBusVariant))) {
+    static const QMetaMethod propertyChangedContextSignal = QMetaMethod::fromSignal(&QOfonoSmsInterface::propertyChangedContext);
+    if (signal == propertyChangedContextSignal) {
         QOfonoDBusHelper *helper;
         helper = new QOfonoDBusHelper(this);
 
@@ -879,7 +910,8 @@ void QOfonoSmsInterface::connectNotify(const char *signal)
                          this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)));
     }
 
-    if (QLatin1String(signal) == SIGNAL(immediateMessage(QString,QVariantMap))) {
+    static const QMetaMethod immediateMessageSignal = QMetaMethod::fromSignal(&QOfonoSmsInterface::immediateMessage);
+    if (signal == immediateMessageSignal) {
         if(!connection().connect(QLatin1String(OFONO_SERVICE),
                                  this->path(),
                                  QLatin1String(OFONO_SMS_MANAGER_INTERFACE),
@@ -889,7 +921,8 @@ void QOfonoSmsInterface::connectNotify(const char *signal)
         }
     }
 
-    if (QLatin1String(signal) == SIGNAL(incomingMessage(QString,QVariantMap))) {
+    static const QMetaMethod incomingMessageSignal = QMetaMethod::fromSignal(&QOfonoSmsInterface::incomingMessage);
+    if (signal == incomingMessageSignal) {
         if(!connection().connect(QLatin1String(OFONO_SERVICE),
                                  this->path(),
                                  QLatin1String(OFONO_SMS_MANAGER_INTERFACE),
@@ -900,9 +933,10 @@ void QOfonoSmsInterface::connectNotify(const char *signal)
     }
 }
 
-void QOfonoSmsInterface::disconnectNotify(const char *signal)
+void QOfonoSmsInterface::disconnectNotify(const QMetaMethod &signal)
 {
-    if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QVariant))) {
+    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoSmsInterface::propertyChanged);
+    if (signal == propertyChangedSignal) {
 
     }
 }

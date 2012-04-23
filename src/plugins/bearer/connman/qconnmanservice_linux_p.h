@@ -144,8 +144,8 @@ Q_SIGNALS:
     void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
 };
 
@@ -171,8 +171,8 @@ private:
     QConnmanProfileInterfacePrivate *d;
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
 };
 
@@ -233,8 +233,8 @@ Q_SIGNALS:
     void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
 };
 
@@ -257,8 +257,8 @@ Q_SIGNALS:
     void propertyChanged(const QString &, const QDBusVariant &value);
     void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
 
 };
@@ -277,8 +277,8 @@ public:
 //    dict requestInput(QDBusObjectPath &path, dict fields);
     void cancel();
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
 };
 
 class QConnmanCounterInterfacePrivate;
