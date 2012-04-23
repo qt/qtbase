@@ -79,9 +79,15 @@ public:
     enum DitaTag {
         DT_NONE,
         DT_alt,
+        DT_apiData,
+        DT_apiDef,
+        DT_apiDefItem,
         DT_apiDesc,
+        DT_apiDetail,
+        DT_apiItemName,
         DT_APIMap,
         DT_apiName,
+        DT_apiRef,
         DT_apiRelation,
         DT_audience,
         DT_author,
@@ -224,6 +230,21 @@ public:
         DT_prodname,
         DT_prolog,
         DT_publisher,
+        DT_qmlData,
+        DT_qmlDef,
+        DT_qmlDefItem,
+        DT_qmlDesc,
+        DT_qmlDetail,
+        DT_qmlItemName,
+        DT_qmlMethod,
+        DT_qmlName,
+        DT_qmlProperty,
+        DT_qmlPropertyGroup,
+        DT_qmlQualifier,
+        DT_qmlSignal,
+        DT_qmlSignalHandler,
+        DT_qmlSignature,
+        DT_qmlType,
         DT_relatedLinks,
         DT_resourceid,
         DT_revised,
@@ -377,12 +398,23 @@ private:
                          const Node* relative,
                          CodeMarker* marker,
                          bool summary);
+    void startQmlProperty(QmlPropertyNode* qpn,
+                          const InnerNode* relative,
+                          CodeMarker* marker);
+    void writeQmlRef(DitaTag tag,
+                     Node* node,
+                     const InnerNode* relative,
+                     CodeMarker* marker);
+    void writeQmlDesc(Node* node, CodeMarker* marker);
     void generateDetailedQmlMember(Node* node,
                                    const InnerNode* relative,
                                    CodeMarker* marker);
     void generateQmlInherits(const QmlClassNode* qcn, CodeMarker* marker);
+    void generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarker* marker);
     void generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(ClassNode* cn, CodeMarker* marker);
+    void generateQmlModuleDef(QmlClassNode* qcn);
+    void generateQmlSince(const Node* node);
 
     void generateSection(const NodeList& nl,
                          const Node* relative,
@@ -446,7 +478,7 @@ private:
     bool writeEndTag(DitaTag t=DT_NONE);
     DitaTag currentTag();
     void clearSectionNesting() { sectionNestingLevel = 0; }
-    int enterApiDesc(const QString& outputclass, const QString& title);
+    int enterDesc(DitaTag tag, const QString& outputclass, const QString& title);
     int enterSection(const QString& outputclass, const QString& title);
     int leaveSection();
     bool inSection() const { return (sectionNestingLevel > 0); }

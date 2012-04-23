@@ -173,6 +173,10 @@ protected:
     QString plainCode(const QString& markedCode);
     void setImageFileExtensions(const QStringList& extensions);
     void unknownAtom(const Atom *atom);
+    void appendSortedQmlNames(Text& text,
+                              const Node* base,
+                              const NodeList& subs,
+                              CodeMarker *marker);
 
     QList<NameCollisionNode*> collisionNodes;
     QMap<QString, QStringList> editionGroupMap;
@@ -222,10 +226,6 @@ private:
                            const ClassNode *classe,
                            const QList<RelatedClass> &classes,
                            CodeMarker *marker);
-    void appendSortedQmlNames(Text& text,
-                              const Node* base,
-                              const NodeList& subs,
-                              CodeMarker *marker);
     void generateReimplementedFrom(const FunctionNode *func,
                                    CodeMarker *marker);
 

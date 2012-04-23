@@ -953,8 +953,7 @@ void Generator::generateFileList(const FakeNode* fake,
         generateText(text, fake, marker);
 }
 
-void Generator::generateInheritedBy(const ClassNode *classe,
-                                    CodeMarker *marker)
+void Generator::generateInheritedBy(const ClassNode *classe, CodeMarker *marker)
 {
     if (!classe->derivedClasses().isEmpty()) {
         Text text;
@@ -1087,7 +1086,6 @@ void Generator::generateMaintainerList(const InnerNode* node, CodeMarker* marker
     }
 }
 
-#ifdef QDOC_QML
 /*!
   Output the "Inherit by" list for the QML element,
   if it is inherited by any other elements.
@@ -1107,18 +1105,14 @@ void Generator::generateQmlInheritedBy(const QmlClassNode* qcn,
         }
     }
 }
-#endif
 
-#ifdef QDOC_QML
 /*!
  */
 void Generator::generateQmlInherits(const QmlClassNode* , CodeMarker* )
 {
     // stub.
 }
-#endif
 
-#ifdef QDOC_QML
 /*!
   Extract sections of markup text surrounded by \e qmltext
   and \e endqmltext and output them.
@@ -1150,7 +1144,6 @@ bool Generator::generateQmlText(const Text& text,
     }
     return result;
 }
-#endif
 
 void Generator::generateReimplementedFrom(const FunctionNode *func,
                                           CodeMarker *marker)
