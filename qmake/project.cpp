@@ -1645,6 +1645,7 @@ QMakeProject::loadDefaults()
     vars["DIR_SEPARATOR"] << Option::dir_sep;
     vars["DIRLIST_SEPARATOR"] << Option::dirlist_sep;
     vars["QMAKE_QMAKE"] << Option::qmake_abslocation;
+    vars["_DATE_"] << QDateTime::currentDateTime().toString();
 #if defined(Q_OS_WIN32)
     vars["QMAKE_HOST.os"] << QString::fromLatin1("Windows");
 
@@ -3767,9 +3768,6 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
     } else if(var == QLatin1String("_FILE_")) { //parser file
         var = ".BUILTIN." + var;
         place[var] = QStringList(parser.file);
-    } else if(var == QLatin1String("_DATE_")) { //current date/time
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(QDateTime::currentDateTime().toString());
     }
     //qDebug("REPLACE [%s]->[%s]", qPrintable(var), qPrintable(place[var].join("::")));
     return place[var];
