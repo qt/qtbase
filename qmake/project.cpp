@@ -639,6 +639,23 @@ QStringList qmake_mkspec_paths()
     return ret;
 }
 
+static void
+setTemplate(QStringList &varlist)
+{
+    if (!Option::user_template.isEmpty()) { // Don't permit override
+        varlist = QStringList(Option::user_template);
+    } else {
+        if (varlist.isEmpty())
+            varlist << "app";
+        else
+            varlist.erase(varlist.begin() + 1, varlist.end());
+    }
+    if (!Option::user_template_prefix.isEmpty()
+        && !varlist.first().startsWith(Option::user_template_prefix)) {
+        varlist.first().prepend(Option::user_template_prefix);
+    }
+}
+
 QMakeProject::~QMakeProject()
 {
     if(own_prop)
@@ -1208,6 +1225,8 @@ QMakeProject::parse(const QString &t, QHash<QString, QStringList> &place, int nu
         }
         if(var == "REQUIRES") // special case to get communicated to backends!
             doProjectCheckReqs(vallist, place);
+        else if (var == QLatin1String("TEMPLATE"))
+            setTemplate(varlist);
     }
     return true;
 }
@@ -1504,6 +1523,7 @@ QMakeProject::read(uchar cmd)
       } else {
         vars = base_vars; // start with the base
       }
+        setupProject();
     }
 
     for (QHash<QString, QStringList>::ConstIterator it = extra_vars.constBegin();
@@ -1605,6 +1625,12 @@ QMakeProject::read(uchar cmd)
         }
     }
     return true;
+}
+
+void
+QMakeProject::setupProject()
+{
+    setTemplate(vars["TEMPLATE"]);
 }
 
 void
@@ -3751,22 +3777,6 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
     } else if(var == QLatin1String("_PRO_FILE_PWD_")) {
         var = ".BUILTIN." + var;
         place[var] = QStringList(pfile.isEmpty() ? qmake_getpwd() : QFileInfo(pfile).absolutePath());
-    } else if(var == QLatin1String("TEMPLATE")) {
-        if(!Option::user_template.isEmpty()) {
-            var = ".BUILTIN.USER." + var;
-            place[var] =  QStringList(Option::user_template);
-        } else {
-            QString orig_template, real_template;
-            if(!place[var].isEmpty())
-                orig_template = place[var].first();
-            real_template = orig_template.isEmpty() ? "app" : orig_template;
-            if(!Option::user_template_prefix.isEmpty() && !orig_template.startsWith(Option::user_template_prefix))
-                real_template.prepend(Option::user_template_prefix);
-            if(real_template != orig_template) {
-                var = ".BUILTIN." + var;
-                place[var] = QStringList(real_template);
-            }
-        }
     }
     //qDebug("REPLACE [%s]->[%s]", qPrintable(var), qPrintable(place[var].join("::")));
     return place[var];

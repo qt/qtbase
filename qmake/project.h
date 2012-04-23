@@ -115,6 +115,7 @@ class QMakeProject
     void init(QMakeProperty *);
     void cleanup();
     void loadDefaults();
+    void setupProject();
     QStringList &values(const QString &v, QHash<QString, QStringList> &place);
     QStringList qmakeFeaturePaths();
 
