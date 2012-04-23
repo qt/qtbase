@@ -393,7 +393,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
     t << "\t\t\t" << writeSettings("buildConfigurationList", keyFor("QMAKE_SUBDIR_PBX_BUILDCONFIG_LIST")) << ";" << "\n";
     t << "\t\t\t" << "projectReferences = (" << "\n";
     {
-        QStringList &qmake_subdirs = project->values("QMAKE_PBX_SUBDIRS");
+        const QStringList &qmake_subdirs = project->values("QMAKE_PBX_SUBDIRS");
         for(int i = 0; i < qmake_subdirs.count(); i++) {
             QString subdir = qmake_subdirs[i];
             t << "\t\t\t\t" << "{" << "\n"
@@ -714,16 +714,16 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             mkt << "IMAGES = " << varList("QMAKE_IMAGE_COLLECTION") << endl;
             mkt << "PARSERS =";
             if(!project->isEmpty("YACCSOURCES")) {
-                QStringList &yaccs = project->values("YACCSOURCES");
-                for(QStringList::Iterator yit = yaccs.begin(); yit != yaccs.end(); ++yit) {
+                const QStringList &yaccs = project->values("YACCSOURCES");
+                for (QStringList::ConstIterator yit = yaccs.begin(); yit != yaccs.end(); ++yit) {
                     QFileInfo fi(fileInfo((*yit)));
                     mkt << " " << fi.path() << Option::dir_sep << fi.baseName()
                         << Option::yacc_mod << Option::cpp_ext.first();
                 }
             }
             if(!project->isEmpty("LEXSOURCES")) {
-                QStringList &lexs = project->values("LEXSOURCES");
-                for(QStringList::Iterator lit = lexs.begin(); lit != lexs.end(); ++lit) {
+                const QStringList &lexs = project->values("LEXSOURCES");
+                for (QStringList::ConstIterator lit = lexs.begin(); lit != lexs.end(); ++lit) {
                     QFileInfo fi(fileInfo((*lit)));
                     mkt << " " << fi.path() << Option::dir_sep << fi.baseName()
                         << Option::lex_mod << Option::cpp_ext.first();

@@ -742,7 +742,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
 
     QStringList links;
     QString target="$(TARGET)";
-    QStringList &targets = project->values(t + ".targets");
+    const QStringList &targets = project->values(t + ".targets");
     if(!project->isEmpty("QMAKE_BUNDLE")) {
         target = project->first("QMAKE_BUNDLE");
         bundle = true;

@@ -1112,7 +1112,7 @@ void VcprojGenerator::initDeploymentTool()
 
     // Only deploy Qt libs for shared build
     if (!project->values("QMAKE_QT_DLL").isEmpty()) {
-        QStringList& arg = project->values("MSVCPROJ_LIBS");
+        const QStringList &arg = project->values("MSVCPROJ_LIBS");
         for (QStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {
             if (it->contains(project->first("QMAKE_LIBDIR"))) {
                 QString dllName = *it;
@@ -1471,8 +1471,8 @@ void VcprojGenerator::initOld()
     // $$QMAKE.. -> $$MSVCPROJ.. -------------------------------------
     project->values("MSVCPROJ_LIBS") += project->values("QMAKE_LIBS");
     project->values("MSVCPROJ_LIBS") += project->values("QMAKE_LIBS_PRIVATE");
-    QStringList &incs = project->values("INCLUDEPATH");
-    for(QStringList::Iterator incit = incs.begin(); incit != incs.end(); ++incit) {
+    const QStringList &incs = project->values("INCLUDEPATH");
+    for (QStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
         QString inc = (*incit);
         if (!inc.startsWith('"') && !inc.endsWith('"'))
             inc = QString("\"%1\"").arg(inc); // Quote all paths if not quoted already

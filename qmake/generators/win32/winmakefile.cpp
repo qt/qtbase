@@ -110,8 +110,8 @@ Win32MakefileGenerator::findLibraries(const QString &where)
     QStringList &l = project->values(where);
     QList<QMakeLocalFileName> dirs;
     {
-        QStringList &libpaths = project->values("QMAKE_LIBDIR");
-        for(QStringList::Iterator libpathit = libpaths.begin();
+        const QStringList &libpaths = project->values("QMAKE_LIBDIR");
+        for (QStringList::ConstIterator libpathit = libpaths.begin();
             libpathit != libpaths.end(); ++libpathit)
             dirs.append(QMakeLocalFileName((*libpathit)));
     }
@@ -223,8 +223,8 @@ Win32MakefileGenerator::processPrlFiles()
     QHash<QString, bool> processed;
     QList<QMakeLocalFileName> libdirs;
     {
-        QStringList &libpaths = project->values("QMAKE_LIBDIR");
-        for(QStringList::Iterator libpathit = libpaths.begin(); libpathit != libpaths.end(); ++libpathit)
+        const QStringList &libpaths = project->values("QMAKE_LIBDIR");
+        for (QStringList::ConstIterator libpathit = libpaths.begin(); libpathit != libpaths.end(); ++libpathit)
             libdirs.append(QMakeLocalFileName((*libpathit)));
     }
     for(bool ret = false; true; ret = false) {
@@ -730,8 +730,8 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     if(!project->isEmpty("TRANSLATIONS"))
         dist_files << var("TRANSLATIONS");
     if(!project->isEmpty("FORMS")) {
-        QStringList &forms = project->values("FORMS");
-        for(QStringList::Iterator formit = forms.begin(); formit != forms.end(); ++formit) {
+        const QStringList &forms = project->values("FORMS");
+        for (QStringList::ConstIterator formit = forms.begin(); formit != forms.end(); ++formit) {
             QString ui_h = fileFixify((*formit) + Option::h_ext.first());
             if(exists(ui_h))
                 dist_files << ui_h;
