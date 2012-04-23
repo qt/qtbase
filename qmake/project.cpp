@@ -3780,7 +3780,7 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
 
 bool QMakeProject::isEmpty(const QString &v)
 {
-    QHash<QString, QStringList>::ConstIterator it = vars.constFind(varMap(v));
+    QHash<QString, QStringList>::ConstIterator it = vars.constFind(v);
     return it == vars.constEnd() || it->isEmpty();
 }
 

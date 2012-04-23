@@ -164,12 +164,12 @@ public:
     bool isActiveConfig(const QString &x, bool regex=false,
                         QHash<QString, QStringList> *place=NULL);
 
-    bool isSet(const QString &v); // No compat mapping, no magic variables
-    bool isEmpty(const QString &v); // With compat mapping, but no magic variables
-    QStringList &values(const QString &v); // With compat mapping and magic variables
-    QString first(const QString &v); // ditto
-    int intValue(const QString &v, int defaultValue = 0); // ditto
-    QHash<QString, QStringList> &variables(); // No compat mapping and magic, obviously
+    bool isSet(const QString &v) { return vars.contains(v); }
+    bool isEmpty(const QString &v);
+    QStringList &values(const QString &v) { return vars[v]; }
+    QString first(const QString &v);
+    int intValue(const QString &v, int defaultValue = 0);
+    QHash<QString, QStringList> &variables() { return vars; }
 
     bool isRecursive() const { return recursive; }
     bool isHostBuild() const { return host_build; }
@@ -188,12 +188,6 @@ inline QString QMakeProject::projectFile()
         return QString("(stdin)");
     return pfile;
 }
-
-inline QStringList &QMakeProject::values(const QString &v)
-{ return values(v, vars); }
-
-inline bool QMakeProject::isSet(const QString &v)
-{ return vars.contains(v); }
 
 inline QString QMakeProject::first(const QString &v)
 {
@@ -214,9 +208,6 @@ inline int QMakeProject::intValue(const QString &v, int defaultValue)
     }
     return defaultValue;
 }
-
-inline QHash<QString, QStringList> &QMakeProject::variables()
-{ return vars; }
 
 QT_END_NAMESPACE
 
