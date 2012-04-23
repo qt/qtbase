@@ -2199,7 +2199,6 @@ inline T qNumVariantToHelper(const QVariant::Private &d,
     \b{Warning:} If the value is convertible to a \l LongLong but is too
     large to be represented in an int, the resulting arithmetic overflow will
     not be reflected in \a ok. A simple workaround is to use QString::toInt().
-    Fixing this bug has been postponed to Qt 5 in order to avoid breaking existing code.
 
     \sa canConvert(), convert()
 */
@@ -2219,7 +2218,6 @@ int QVariant::toInt(bool *ok) const
     \b{Warning:} If the value is convertible to a \l ULongLong but is too
     large to be represented in an unsigned int, the resulting arithmetic overflow will
     not be reflected in \a ok. A simple workaround is to use QString::toUInt().
-    Fixing this bug has been postponed to Qt 5 in order to avoid breaking existing code.
 
     \sa canConvert(), convert()
 */
