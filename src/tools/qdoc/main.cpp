@@ -116,10 +116,12 @@ static void printHelp()
                              "Display this information and exit\n"
                              "    -highlighting  "
                              "Turn on syntax highlighting (makes qdoc run slower)\n"
-                             "    -no-examples   "
-                             "Do not generate documentation for examples\n"
                              "    -indexdir      "
                              "Specify a directory where QDoc should search for indices to link to\n"
+                             "    -installdir    "
+                             "Specify the directory where the output will be after running \"make install\"\n"
+                             "    -no-examples   "
+                             "Do not generate documentation for examples\n"
                              "    -obsoletelinks "
                              "Report links from obsolete items to non-obsolete items\n"
                              "    -outputdir     "
@@ -486,6 +488,10 @@ int main(int argc, char **argv)
                 qDebug() << "Cannot find index directory" << argv[i];
                 return EXIT_FAILURE;
             }
+            i++;
+        }
+        else if (opt == "-installdir") {
+            Config::installDir = argv[i];
             i++;
         }
         else if (opt == "-obsoletelinks") {

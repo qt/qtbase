@@ -111,6 +111,7 @@ public:
     QT_STATIC_CONST QString dot;
 
     static bool generateExamples;
+    static QString installDir;
     static QString overrideOutputDir;
     static QSet<QString> overrideOutputFormats;
 

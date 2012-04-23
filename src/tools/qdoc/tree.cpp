@@ -967,7 +967,18 @@ void Tree::readIndexFile(const QString& path)
         file.close();
 
         QDomElement indexElement = document.documentElement();
-        QString indexUrl = indexElement.attribute("url", "");
+
+        // Generate a relative URL between the install dir and the index file
+        // when the -installdir command line option is set.
+        QString indexUrl;
+        if (Config::installDir.isEmpty()) {
+            indexUrl = indexElement.attribute("url", "");
+        }
+        else {
+            QDir installDir(Config::installDir);
+            indexUrl = installDir.relativeFilePath(path).section('/', 0, -2);
+        }
+
         priv->basesList.clear();
         priv->relatedList.clear();
 
