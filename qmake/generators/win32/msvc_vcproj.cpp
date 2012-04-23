@@ -483,16 +483,6 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         tmp_vcproj.setProjectFile(&tmp_proj);
                         Option::qmake_mode = old_mode;
                         Option::output_dir = old_output_dir;
-                        if(Option::debug_level) {
-                            debug_msg(1, "Dumping all variables:");
-                            const QHash<QString, QStringList> &vars = tmp_proj.variables();
-                            for (QHash<QString, QStringList>::ConstIterator it = vars.begin();
-                                it != vars.end(); ++it) {
-                                if(it.key().left(1) != "." && !it.value().isEmpty())
-                                    debug_msg(1, "%s: %s === %s", fn.toLatin1().constData(), it.key().toLatin1().constData(),
-                                                it.value().join(" :: ").toLatin1().constData());
-                            }
-                        }
 
                         // We assume project filename is [QMAKE_PROJECT_NAME].vcproj
                         QString vcproj = unescapeFilePath(tmp_vcproj.project->first("QMAKE_PROJECT_NAME") + project->first("VCPROJ_EXTENSION"));

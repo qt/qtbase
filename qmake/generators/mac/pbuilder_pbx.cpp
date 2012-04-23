@@ -166,16 +166,6 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                         fprintf(stderr, "Cannot find directory: %s\n", dir.toLatin1().constData());
                 }
                 if(tmp_proj.read(fn)) {
-                    if(Option::debug_level) {
-                        debug_msg(1, "Dumping all variables:");
-                        const QHash<QString, QStringList> &vars = tmp_proj.variables();
-                        for (QHash<QString, QStringList>::ConstIterator it = vars.begin();
-                            it != vars.end(); ++it) {
-                            if(it.key().left(1) != "." && !it.value().isEmpty())
-                                debug_msg(1, "%s: %s === %s", fn.toLatin1().constData(), it.key().toLatin1().constData(),
-                                          it.value().join(" :: ").toLatin1().constData());
-                        }
-                    }
                     if(tmp_proj.first("TEMPLATE") == "subdirs") {
                         QMakeProject *pp = new QMakeProject(&tmp_proj);
                         pb_subdirs += new ProjectBuilderSubDirs(pp, dir);

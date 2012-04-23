@@ -214,17 +214,6 @@ BuildsMetaMakefileGenerator::write(const QString &oldpwd)
             if(!ret)
                 Option::output.remove();
         }
-
-        // debugging
-        if(Option::debug_level) {
-            debug_msg(1, "Dumping all variables:");
-            QHash<QString, QStringList> &vars = project->variables();
-            for(QHash<QString, QStringList>::Iterator it = vars.begin(); it != vars.end(); ++it) {
-                if(!it.key().startsWith(".") && !it.value().isEmpty())
-                    debug_msg(1, "%s === %s", it.key().toLatin1().constData(),
-                              it.value().join(" :: ").toLatin1().constData());
-            }
-        }
     }
     return ret;
 }
