@@ -1629,6 +1629,9 @@ QMakeProject::setupProject()
     setTemplate(vars["TEMPLATE"]);
     if (pfile != "-")
         vars["TARGET"] << QFileInfo(pfile).baseName();
+    vars["_PRO_FILE_"] << pfile;
+    vars["_PRO_FILE_PWD_"] << (pfile.isEmpty() ? qmake_getpwd() : QFileInfo(pfile).absolutePath());
+    vars["OUT_PWD"] << Option::output_dir;
 }
 
 void
@@ -3753,11 +3756,8 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QHash<QString, QString
 QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringList> &place)
 {
     QString var = varMap(_var);
-    if (var == QLatin1String("OUT_PWD")) { //the out going dir
-        var = ".BUILTIN." + var;
-        place[var] =  QStringList(Option::output_dir);
-    } else if(var == QLatin1String("PWD") ||  //current working dir (of _FILE_)
-              var == QLatin1String("IN_PWD")) {
+    if (var == QLatin1String("PWD") ||  //current working dir (of _FILE_)
+        var == QLatin1String("IN_PWD")) {
         var = ".BUILTIN." + var;
         place[var] = QStringList(qmake_getpwd());
     } else if(var == QLatin1String("_LINE_")) { //parser line number
@@ -3769,12 +3769,6 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
     } else if(var == QLatin1String("_DATE_")) { //current date/time
         var = ".BUILTIN." + var;
         place[var] = QStringList(QDateTime::currentDateTime().toString());
-    } else if(var == QLatin1String("_PRO_FILE_")) {
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(pfile);
-    } else if(var == QLatin1String("_PRO_FILE_PWD_")) {
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(pfile.isEmpty() ? qmake_getpwd() : QFileInfo(pfile).absolutePath());
     }
     //qDebug("REPLACE [%s]->[%s]", qPrintable(var), qPrintable(place[var].join("::")));
     return place[var];
