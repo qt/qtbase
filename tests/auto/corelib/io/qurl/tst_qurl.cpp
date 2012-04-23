@@ -1017,7 +1017,11 @@ void tst_QUrl::toLocalFile_data()
 
     QTest::newRow("data0") << QString::fromLatin1("file:/a.txt") << QString::fromLatin1("/a.txt");
     QTest::newRow("data4") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("/a.txt");
+#ifdef Q_OS_WIN
     QTest::newRow("data5") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("c:/a.txt");
+#else
+    QTest::newRow("data5") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("/c:/a.txt");
+#endif
     QTest::newRow("data6") << QString::fromLatin1("file://somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
     QTest::newRow("data7") << QString::fromLatin1("file://somehost/") << QString::fromLatin1("//somehost/");
     QTest::newRow("data8") << QString::fromLatin1("file://somehost") << QString::fromLatin1("//somehost");

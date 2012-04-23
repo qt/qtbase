@@ -2510,9 +2510,11 @@ QString QUrl::toLocalFile() const
                                                ? QLatin1Char('/') + ourPath :  ourPath);
     } else {
         tmp = ourPath;
+#ifdef Q_OS_WIN
         // magic for drives on windows
         if (ourPath.length() > 2 && ourPath.at(0) == QLatin1Char('/') && ourPath.at(2) == QLatin1Char(':'))
             tmp.remove(0, 1);
+#endif
     }
 
     return tmp;
