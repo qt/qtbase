@@ -3861,12 +3861,11 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
         }
     } else if (var == QLatin1String("QMAKE_QMAKE")) {
         if (place[var].isEmpty())
-            place[var] = QStringList(Option::fixPathToTargetOS(
+            place[var] = QStringList(
                 !Option::qmake_abslocation.isEmpty()
                     ? Option::qmake_abslocation
                     : QLibraryInfo::rawLocation(QLibraryInfo::HostBinariesPath,
-                                                QLibraryInfo::EffectivePaths) + "/qmake",
-                false));
+                                                QLibraryInfo::EffectivePaths) + "/qmake");
     }
 #if defined(Q_OS_WIN32) && defined(Q_CC_MSVC)
       else if(var.startsWith(QLatin1String("QMAKE_TARGET."))) {

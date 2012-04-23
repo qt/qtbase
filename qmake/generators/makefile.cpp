@@ -856,8 +856,8 @@ MakefileGenerator::init()
     }
 
     // escape qmake command
-    QStringList &qmk = project->values("QMAKE_QMAKE");
-    qmk = escapeFilePaths(qmk);
+    project->values("QMAKE_QMAKE") =
+            escapeFilePaths(QStringList(Option::fixPathToTargetOS(Option::qmake_abslocation, false)));
 }
 
 bool
