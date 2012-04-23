@@ -70,6 +70,7 @@ private slots:
     void activateAndClose();
     void mouseEventSequence();
     void windowModality();
+    void inputReentrancy();
 
     void initTestCase()
     {
@@ -314,6 +315,8 @@ public:
             mouseSequenceSignature += 'p';
             mousePressButton = event->button();
             mousePressScreenPos = event->screenPos();
+            if (spinLoopWhenPressed)
+                QCoreApplication::processEvents();
         }
     }
     void mouseReleaseEvent(QMouseEvent *event) {
@@ -329,6 +332,7 @@ public:
         if (ignoreMouse) {
             event->ignore();
         } else {
+            ++mouseMovedCount;
             mouseMoveButton = event->button();
             mouseMoveScreenPos = event->screenPos();
         }
@@ -352,6 +356,8 @@ public:
             switch (points.at(i).state()) {
             case Qt::TouchPointPressed:
                 ++touchPressedCount;
+                if (spinLoopWhenPressed)
+                    QCoreApplication::processEvents();
                 break;
             case Qt::TouchPointReleased:
                 ++touchReleasedCount;
@@ -365,7 +371,7 @@ public:
         }
     }
     void resetCounters() {
-        mousePressedCount = mouseReleasedCount = mouseDoubleClickedCount = 0;
+        mousePressedCount = mouseReleasedCount = mouseMovedCount = mouseDoubleClickedCount = 0;
         mouseSequenceSignature = QString();
         touchPressedCount = touchReleasedCount = touchMovedCount = 0;
     }
@@ -374,18 +380,21 @@ public:
         keyPressCode = keyReleaseCode = 0;
         mousePressButton = mouseReleaseButton = mouseMoveButton = 0;
         ignoreMouse = ignoreTouch = false;
+        spinLoopWhenPressed = false;
         resetCounters();
     }
 
     int keyPressCode, keyReleaseCode;
     int mousePressButton, mouseReleaseButton, mouseMoveButton;
-    int mousePressedCount, mouseReleasedCount, mouseDoubleClickedCount;
+    int mousePressedCount, mouseReleasedCount, mouseMovedCount, mouseDoubleClickedCount;
     QString mouseSequenceSignature;
     QPointF mousePressScreenPos, mouseMoveScreenPos;
     int touchPressedCount, touchReleasedCount, touchMovedCount;
     QEvent::Type touchEventType;
 
     bool ignoreMouse, ignoreTouch;
+
+    bool spinLoopWhenPressed;
 };
 
 void tst_QWindow::testInputEvents()
@@ -837,6 +846,50 @@ void tst_QWindow::windowModality()
     window.setWindowModality(Qt::NonModal);
     QCOMPARE(window.windowModality(), Qt::NonModal);
     QCOMPARE(spy.count(), 3);
+}
+
+void tst_QWindow::inputReentrancy()
+{
+    InputTestWindow window;
+    window.spinLoopWhenPressed = true;
+
+    window.setGeometry(80, 80, 40, 40);
+    window.show();
+    QTest::qWaitForWindowShown(&window);
+
+    // Queue three events.
+    QPointF local(12, 34);
+    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::LeftButton);
+    local += QPointF(2, 2);
+    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::NoButton);
+    // Process them. However, the event handler for the press will also call
+    // processEvents() so the move and release will be delivered before returning
+    // from mousePressEvent(). The point is that no events should get lost.
+    QCoreApplication::processEvents();
+    QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
+    QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
+    QCOMPARE(window.mousePressedCount, 1);
+    QCOMPARE(window.mouseMovedCount, 1);
+    QCOMPARE(window.mouseReleasedCount, 1);
+
+    // Now the same for touch.
+    QList<QWindowSystemInterface::TouchPoint> points;
+    QWindowSystemInterface::TouchPoint tp1;
+    tp1.id = 1;
+    tp1.state = Qt::TouchPointPressed;
+    tp1.area = QRectF(10, 10, 4, 4);
+    points << tp1;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    points[0].state = Qt::TouchPointMoved;
+    points[0].area = QRectF(20, 20, 8, 8);
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    points[0].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QCOMPARE(window.touchPressedCount, 1);
+    QCOMPARE(window.touchMovedCount, 1);
+    QCOMPARE(window.touchReleasedCount, 1);
 }
 
 #include <tst_qwindow.moc>
