@@ -3758,17 +3758,14 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QHash<QString, QString
     return ret;
 }
 
-QStringList &QMakeProject::magicValues(const QString &_var, QHash<QString, QStringList> &place)
+QStringList QMakeProject::magicValues(const QString &_var, const QHash<QString, QStringList> &place) const
 {
     QString var = varMap(_var);
     if (var == QLatin1String("_LINE_")) { //parser line number
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(QString::number(parser.line_no));
+        return QStringList(QString::number(parser.line_no));
     } else if(var == QLatin1String("_FILE_")) { //parser file
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(parser.file);
+        return QStringList(parser.file);
     }
-    //qDebug("REPLACE [%s]->[%s]", qPrintable(var), qPrintable(place[var].join("::")));
     return place[var];
 }
 

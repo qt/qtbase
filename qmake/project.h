@@ -117,7 +117,7 @@ class QMakeProject
     void loadDefaults();
     void setupProject();
     QStringList &values(const QString &v, QHash<QString, QStringList> &place);
-    QStringList &magicValues(const QString &v, QHash<QString, QStringList> &place);
+    QStringList magicValues(const QString &v, const QHash<QString, QStringList> &place) const;
     QStringList qmakeFeaturePaths();
 
 public:
