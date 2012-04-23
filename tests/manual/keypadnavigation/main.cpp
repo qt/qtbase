@@ -142,7 +142,7 @@ protected slots:
                 QFontDialog::getFont(0, this);
                 break;
             case DialogQuestion:
-                QMessageBox::question(this, QLatin1String("question"), QLatin1String("¿Hola, que tal?"));
+                QMessageBox::question(this, QLatin1String("question"), QLatin1String("\xbfHola, que tal?"));
                 break;
             case DialogAboutQt:
                 QMessageBox::aboutQt(this);

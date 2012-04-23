@@ -1252,7 +1252,7 @@ void tst_QXmlStream::writeWithCodec() const
     QVERIFY(codec);
     writer.setCodec(codec);
 
-    const char *latin2 = "hé hé";
+    const char *latin2 = "h\xe9 h\xe9";
     const QString string = codec->toUnicode(latin2);
 
 
