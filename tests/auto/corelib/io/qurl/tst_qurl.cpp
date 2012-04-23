@@ -1028,6 +1028,11 @@ void tst_QUrl::toLocalFile_data()
     QTest::newRow("data9") << QString::fromLatin1("file:////somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
     QTest::newRow("data10") << QString::fromLatin1("FILE:/a.txt") << QString::fromLatin1("/a.txt");
     QTest::newRow("data11") << QString::fromLatin1("file:///Mambo <%235>.mp3") << QString::fromLatin1("/Mambo <#5>.mp3");
+    QTest::newRow("data12") << QString::fromLatin1("file:///a%25.txt") << QString::fromLatin1("/a%.txt");
+    QTest::newRow("data13") << QString::fromLatin1("file:///a%25%25.txt") << QString::fromLatin1("/a%%.txt");
+    QTest::newRow("data14") << QString::fromLatin1("file:///a%25a%25.txt") << QString::fromLatin1("/a%a%.txt");
+    QTest::newRow("data15") << QString::fromLatin1("file:///a%1f.txt") << QString::fromLatin1("/a\x1f.txt");
+    QTest::newRow("data16") << QString::fromLatin1("file:///%2580.txt") << QString::fromLatin1("/%80.txt");
 
     // and some that result in empty (i.e., not local)
     QTest::newRow("xdata0") << QString::fromLatin1("/a.txt") << QString();
@@ -1064,6 +1069,14 @@ void tst_QUrl::fromLocalFile_data()
                         << QString::fromLatin1("");
     QTest::newRow("data6") << QString::fromLatin1("//somehost/") << QString::fromLatin1("file://somehost/")
                         << QString::fromLatin1("/");
+    QTest::newRow("data7") << QString::fromLatin1("/Mambo <#5>.mp3") << QString::fromLatin1("file:///Mambo <%235>.mp3")
+                           << QString::fromLatin1("/Mambo <#5>.mp3");
+    QTest::newRow("data8") << QString::fromLatin1("/a%.txt") << QString::fromLatin1("file:///a%25.txt")
+                           << QString::fromLatin1("/a%25.txt");
+    QTest::newRow("data9") << QString::fromLatin1("/a%25.txt") << QString::fromLatin1("file:///a%2525.txt")
+                           << QString::fromLatin1("/a%2525.txt");
+    QTest::newRow("data10") << QString::fromLatin1("/%80.txt") << QString::fromLatin1("file:///%2580.txt")
+                            << QString::fromLatin1("/%2580.txt");
 }
 
 void tst_QUrl::fromLocalFile()
@@ -1074,7 +1087,7 @@ void tst_QUrl::fromLocalFile()
 
     QUrl url = QUrl::fromLocalFile(theFile);
 
-    QCOMPARE(url.toString(), theUrl);
+    QCOMPARE(url.toString(QUrl::MostDecoded), theUrl);
     QCOMPARE(url.path(), thePath);
 }
 

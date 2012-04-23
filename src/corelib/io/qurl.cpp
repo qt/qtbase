@@ -279,6 +279,12 @@ static inline char toHex(quint8 c)
     return c > 9 ? c - 10 + 'A' : c + '0';
 }
 
+static inline quint8 fromHex(quint8 c)
+{
+    c |= 0x20;
+    return c >= 'a' ? c - 'a' + 10 : c - '0';
+}
+
 static inline QString ftpScheme()
 {
     return QStringLiteral("ftp");
@@ -2495,6 +2501,9 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     returned value in the form found on SMB networks (for example,
     "//servername/path/to/file.txt").
 
+    Note: if the path component of this URL contains a non-UTF-8 binary
+    sequence (such as %80), the behaviour of this function is undefined.
+
     \sa fromLocalFile(), isLocalFile()
 */
 QString QUrl::toLocalFile() const
@@ -2519,6 +2528,20 @@ QString QUrl::toLocalFile() const
 #endif
     }
 
+    // check if we need to do one more decoding pass
+    int pct = tmp.indexOf(QLatin1Char('%'));
+    while (pct != -1) {
+        Q_ASSERT(tmp.size() >= pct + 2);
+        ushort char1 = tmp.at(pct + 1).unicode();
+        ushort char2 = tmp.at(pct + 2).unicode();
+
+        Q_ASSERT(isHex(char1) && char1 < 0x80u);
+        Q_ASSERT(isHex(char2) && char2 < 0x80u);
+        tmp.replace(pct, 3, QChar(fromHex(char1) << 4 | fromHex(char2)));
+
+        // next iteration
+        pct = tmp.indexOf(QLatin1Char('%'), pct + 1);
+    }
     return tmp;
 }
 
