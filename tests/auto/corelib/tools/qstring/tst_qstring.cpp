@@ -623,7 +623,7 @@ void tst_QString::utf8_data()
     QTest::newRow( "str0" ) << QByteArray("abcdefgh")
                           << QString("abcdefgh");
     QTest::newRow( "str1" ) << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205")
-                          << QString("\366\344\374\326\304\334\370\346\345\330\306\305") ;
+                          << QString::fromLatin1("\366\344\374\326\304\334\370\346\345\330\306\305") ;
     str += QChar( 0x05e9 );
     str += QChar( 0x05d3 );
     str += QChar( 0x05d2 );
@@ -3297,7 +3297,7 @@ void tst_QString::check_QTextIOStream()
         a="";
         QTextStream ts(&a);
         ts << "pi \261= " << 3.125;
-        QCOMPARE(a,(QString)"pi \261= 3.125");
+        QCOMPARE(a, QString::fromLatin1("pi \261= 3.125"));
     }
     {
         a="123 456";
@@ -3426,8 +3426,10 @@ void tst_QString::fromUtf8_data()
 
     QTest::newRow("str0") << QByteArray("abcdefgh") << QString("abcdefgh") << -1;
     QTest::newRow("str0-len") << QByteArray("abcdefgh") << QString("abc") << 3;
-    QTest::newRow("str1") << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205") << QString("\366\344\374\326\304\334\370\346\345\330\306\305") << -1;
-    QTest::newRow("str1-len") << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205") << QString("\366\344\374\326\304") << 10;
+    QTest::newRow("str1") << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205")
+                          << QString::fromLatin1("\366\344\374\326\304\334\370\346\345\330\306\305") << -1;
+    QTest::newRow("str1-len") << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205")
+                              << QString::fromLatin1("\366\344\374\326\304") << 10;
 
     str += QChar(0x05e9);
     str += QChar(0x05d3);
@@ -3474,9 +3476,9 @@ void tst_QString::fromUtf8_data()
     QTest::newRow("null5") << QByteArray() << QString() << 5;
     QTest::newRow("empty-1") << QByteArray("\0abcd", 5) << QString() << -1;
     QTest::newRow("empty0") << QByteArray() << QString() << 0;
-    QTest::newRow("empty5") << QByteArray("\0abcd", 5) << QString::fromAscii("\0abcd", 5) << 5;
-    QTest::newRow("other-1") << QByteArray("ab\0cd", 5) << QString::fromAscii("ab") << -1;
-    QTest::newRow("other5") << QByteArray("ab\0cd", 5) << QString::fromAscii("ab\0cd", 5) << 5;
+    QTest::newRow("empty5") << QByteArray("\0abcd", 5) << QString::fromLatin1("\0abcd", 5) << 5;
+    QTest::newRow("other-1") << QByteArray("ab\0cd", 5) << QString::fromLatin1("ab") << -1;
+    QTest::newRow("other5") << QByteArray("ab\0cd", 5) << QString::fromLatin1("ab\0cd", 5) << 5;
 
     str = "Old Italic: ";
     str += QChar(0xd800);
@@ -4390,13 +4392,13 @@ void tst_QString::localeAwareCompare_data()
         below.
     */
 #ifdef Q_OS_WIN // assume c locale to be english
-    QTest::newRow("c1") << MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT) << QString("\xe5") << QString("\xe4") << 1;
-    QTest::newRow("c2") << MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT) << QString("\xe4") << QString("\xf6") << -1;
-    QTest::newRow("c3") << MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT) << QString("\xe5") << QString("\xf6") << -1;
+    QTest::newRow("c1") << MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT) << QString::fromLatin1("\xe5") << QString::fromLatin1("\xe4") << 1;
+    QTest::newRow("c2") << MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT) << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
+    QTest::newRow("c3") << MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT) << QString::fromLatin1("\xe5") << QString::fromLatin1("\xf6") << -1;
 #else
-    QTest::newRow("c1") << QString("C") << QString("\xe5") << QString("\xe4") << 1;
-    QTest::newRow("c2") << QString("C") << QString("\xe4") << QString("\xf6") << -1;
-    QTest::newRow("c3") << QString("C") << QString("\xe5") << QString("\xf6") << -1;
+    QTest::newRow("c1") << QString("C") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xe4") << 1;
+    QTest::newRow("c2") << QString("C") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
+    QTest::newRow("c3") << QString("C") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xf6") << -1;
 #endif
 
     /*
@@ -4422,20 +4424,20 @@ void tst_QString::localeAwareCompare_data()
         all come after z.
     */
 #ifdef Q_OS_MAC
-    QTest::newRow("swedish1") << QString("sv_SE.ISO8859-1") << QString("\xe5") << QString("\xe4") << -1;
-    QTest::newRow("swedish2") << QString("sv_SE.ISO8859-1") << QString("\xe4") << QString("\xf6") << -1;
-    QTest::newRow("swedish3") << QString("sv_SE.ISO8859-1") << QString("\xe5") << QString("\xf6") << -1;
-    QTest::newRow("swedish4") << QString("sv_SE.ISO8859-1") << QString("z") << QString("\xe5") << -1;
+    QTest::newRow("swedish1") << QString("sv_SE.ISO8859-1") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xe4") << -1;
+    QTest::newRow("swedish2") << QString("sv_SE.ISO8859-1") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
+    QTest::newRow("swedish3") << QString("sv_SE.ISO8859-1") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xf6") << -1;
+    QTest::newRow("swedish4") << QString("sv_SE.ISO8859-1") << QString::fromLatin1("z") << QString::fromLatin1("\xe5") << -1;
 #elif defined(Q_OS_WIN)
-    QTest::newRow("swedish1") << MAKELCID(MAKELANGID(LANG_SWEDISH, SUBLANG_SWEDISH), SORT_DEFAULT) << QString("\xe5") << QString("\xe4") << -1;
-    QTest::newRow("swedish2") << MAKELCID(MAKELANGID(LANG_SWEDISH, SUBLANG_SWEDISH), SORT_DEFAULT) << QString("\xe4") << QString("\xf6") << -1;
-    QTest::newRow("swedish3") << MAKELCID(MAKELANGID(LANG_SWEDISH, SUBLANG_SWEDISH), SORT_DEFAULT) << QString("\xe5") << QString("\xf6") << -1;
-    QTest::newRow("swedish4") << MAKELCID(MAKELANGID(LANG_SWEDISH, SUBLANG_SWEDISH), SORT_DEFAULT) << QString("z") << QString("\xe5") << -1;
+    QTest::newRow("swedish1") << MAKELCID(MAKELANGID(LANG_SWEDISH, SUBLANG_SWEDISH), SORT_DEFAULT) << QString::fromLatin1("\xe5") << QString::fromLatin1("\xe4") << -1;
+    QTest::newRow("swedish2") << MAKELCID(MAKELANGID(LANG_SWEDISH, SUBLANG_SWEDISH), SORT_DEFAULT) << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
+    QTest::newRow("swedish3") << MAKELCID(MAKELANGID(LANG_SWEDISH, SUBLANG_SWEDISH), SORT_DEFAULT) << QString::fromLatin1("\xe5") << QString::fromLatin1("\xf6") << -1;
+    QTest::newRow("swedish4") << MAKELCID(MAKELANGID(LANG_SWEDISH, SUBLANG_SWEDISH), SORT_DEFAULT) << QString::fromLatin1("z") << QString::fromLatin1("\xe5") << -1;
 #else
-    QTest::newRow("swedish1") << QString("sv_SE") << QString("\xe5") << QString("\xe4") << -1;
-    QTest::newRow("swedish2") << QString("sv_SE") << QString("\xe4") << QString("\xf6") << -1;
-    QTest::newRow("swedish3") << QString("sv_SE") << QString("\xe5") << QString("\xf6") << -1;
-    QTest::newRow("swedish4") << QString("sv_SE") << QString("z") << QString("\xe5") << -1;
+    QTest::newRow("swedish1") << QString("sv_SE") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xe4") << -1;
+    QTest::newRow("swedish2") << QString("sv_SE") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
+    QTest::newRow("swedish3") << QString("sv_SE") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xf6") << -1;
+    QTest::newRow("swedish4") << QString("sv_SE") << QString::fromLatin1("z") << QString::fromLatin1("\xe5") << -1;
 #endif
 
 #if 0
@@ -4443,9 +4445,9 @@ void tst_QString::localeAwareCompare_data()
         In Norwegian, ae (E6) comes before o with stroke (D8), which
         comes before a with ring above (E5).
     */
-    QTest::newRow("norwegian1") << QString("no_NO") << QString("\xe6") << QString("\xd8") << -1;
-    QTest::newRow("norwegian2") << QString("no_NO") << QString("\xd8") << QString("\xe5") << -1;
-    QTest::newRow("norwegian3") << QString("no_NO") << QString("\xe6") << QString("\xe5") << -1;
+    QTest::newRow("norwegian1") << QString("no_NO") << QString::fromLatin1("\xe6") << QString::fromLatin1("\xd8") << -1;
+    QTest::newRow("norwegian2") << QString("no_NO") << QString::fromLatin1("\xd8") << QString::fromLatin1("\xe5") << -1;
+    QTest::newRow("norwegian3") << QString("no_NO") << QString::fromLatin1("\xe6") << QString::fromLatin1("\xe5") << -1;
 #endif
 
     /*
@@ -4453,17 +4455,17 @@ void tst_QString::localeAwareCompare_data()
         which comes before o diaresis (F6).
     */
 #ifdef Q_OS_MAC
-    QTest::newRow("german1") << QString("de_DE.ISO8859-1") << QString("z") << QString("\xe4") << 1;
-    QTest::newRow("german2") << QString("de_DE.ISO8859-1") << QString("\xe4") << QString("\xf6") << -1;
-    QTest::newRow("german3") << QString("de_DE.ISO8859-1") << QString("z") << QString("\xf6") << 1;
+    QTest::newRow("german1") << QString("de_DE.ISO8859-1") << QString::fromLatin1("z") << QString::fromLatin1("\xe4") << 1;
+    QTest::newRow("german2") << QString("de_DE.ISO8859-1") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
+    QTest::newRow("german3") << QString("de_DE.ISO8859-1") << QString::fromLatin1("z") << QString::fromLatin1("\xf6") << 1;
 #elif defined(Q_OS_WIN)
-    QTest::newRow("german1") << MAKELCID(MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN), SORT_DEFAULT) << QString("z") << QString("\xe4") << 1;
-    QTest::newRow("german2") << MAKELCID(MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN), SORT_DEFAULT) << QString("\xe4") << QString("\xf6") << -1;
-    QTest::newRow("german3") << MAKELCID(MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN), SORT_DEFAULT) << QString("z") << QString("\xf6") << 1;
+    QTest::newRow("german1") << MAKELCID(MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN), SORT_DEFAULT) << QString::fromLatin1("z") << QString::fromLatin1("\xe4") << 1;
+    QTest::newRow("german2") << MAKELCID(MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN), SORT_DEFAULT) << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
+    QTest::newRow("german3") << MAKELCID(MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN), SORT_DEFAULT) << QString::fromLatin1("z") << QString::fromLatin1("\xf6") << 1;
 #else
-    QTest::newRow("german1") << QString("de_DE") << QString("z") << QString("\xe4") << 1;
-    QTest::newRow("german2") << QString("de_DE") << QString("\xe4") << QString("\xf6") << -1;
-    QTest::newRow("german3") << QString("de_DE") << QString("z") << QString("\xf6") << 1;
+    QTest::newRow("german1") << QString("de_DE") << QString::fromLatin1("z") << QString::fromLatin1("\xe4") << 1;
+    QTest::newRow("german2") << QString("de_DE") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
+    QTest::newRow("german3") << QString("de_DE") << QString::fromLatin1("z") << QString::fromLatin1("\xf6") << 1;
 #endif
 }
 
