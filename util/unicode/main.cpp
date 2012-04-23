@@ -383,7 +383,7 @@ static const char *property_string =
     "        ushort lowerCaseSpecial : 1;\n"
     "        ushort upperCaseSpecial : 1;\n"
     "        ushort titleCaseSpecial : 1;\n"
-    "        ushort caseFoldSpecial  : 1; /* currently unused */\n"
+    "        ushort caseFoldSpecial  : 1;\n"
     "        signed short mirrorDiff    : 16;\n"
     "        signed short lowerCaseDiff : 16;\n"
     "        signed short upperCaseDiff : 16;\n"
@@ -785,10 +785,16 @@ static void readUnicodeData()
             int upperCase = properties[UD_UpperCase].toInt(&ok, 16);
             Q_ASSERT(ok);
             int diff = upperCase - codepoint;
-            if (qAbs(diff) >= (1<<14))
-                qWarning() << "upperCaseDiff exceeded (" << hex << codepoint << "->" << upperCase << ")";
-            data.p.upperCaseDiff = diff;
-            maxUpperCaseDiff = qMax(maxUpperCaseDiff, qAbs(diff));
+            if (qAbs(diff) >= (1<<14)) {
+                qWarning() << "upperCaseDiff exceeded (" << hex << codepoint << "->" << upperCase << "); map it for special case";
+                // if the condition below doesn't hold anymore we need to modify our special upper casing code in qchar.cpp
+                Q_ASSERT(!QChar::requiresSurrogates(codepoint) && !QChar::requiresSurrogates(upperCase));
+                data.p.upperCaseSpecial = true;
+                data.p.upperCaseDiff = appendToSpecialCaseMap(QList<int>() << upperCase);
+            } else {
+                data.p.upperCaseDiff = diff;
+                maxUpperCaseDiff = qMax(maxUpperCaseDiff, qAbs(diff));
+            }
             if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(upperCase)) {
                 // if the conditions below doesn't hold anymore we need to modify our upper casing code
                 Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(upperCase));
@@ -799,10 +805,16 @@ static void readUnicodeData()
             int lowerCase = properties[UD_LowerCase].toInt(&ok, 16);
             Q_ASSERT(ok);
             int diff = lowerCase - codepoint;
-            if (qAbs(diff) >= (1<<14))
-                qWarning() << "lowerCaseDiff exceeded (" << hex << codepoint << "->" << lowerCase << ")";
-            data.p.lowerCaseDiff = diff;
-            maxLowerCaseDiff = qMax(maxLowerCaseDiff, qAbs(diff));
+            if (qAbs(diff) >= (1<<14)) {
+                qWarning() << "lowerCaseDiff exceeded (" << hex << codepoint << "->" << lowerCase << "); map it for special case";
+                // if the condition below doesn't hold anymore we need to modify our special lower casing code in qchar.cpp
+                Q_ASSERT(!QChar::requiresSurrogates(codepoint) && !QChar::requiresSurrogates(lowerCase));
+                data.p.lowerCaseSpecial = true;
+                data.p.lowerCaseDiff = appendToSpecialCaseMap(QList<int>() << lowerCase);
+            } else {
+                data.p.lowerCaseDiff = diff;
+                maxLowerCaseDiff = qMax(maxLowerCaseDiff, qAbs(diff));
+            }
             if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(lowerCase)) {
                 // if the conditions below doesn't hold anymore we need to modify our lower casing code
                 Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(lowerCase));
@@ -816,10 +828,16 @@ static void readUnicodeData()
             int titleCase = properties[UD_TitleCase].toInt(&ok, 16);
             Q_ASSERT(ok);
             int diff = titleCase - codepoint;
-            if (qAbs(diff) >= (1<<14))
-                qWarning() << "titleCaseDiff exceeded (" << hex << codepoint << "->" << titleCase << ")";
-            data.p.titleCaseDiff = diff;
-            maxTitleCaseDiff = qMax(maxTitleCaseDiff, qAbs(diff));
+            if (qAbs(diff) >= (1<<14)) {
+                qWarning() << "titleCaseDiff exceeded (" << hex << codepoint << "->" << titleCase << "); map it for special case";
+                // if the condition below doesn't hold anymore we need to modify our special title casing code in qchar.cpp
+                Q_ASSERT(!QChar::requiresSurrogates(codepoint) && !QChar::requiresSurrogates(titleCase));
+                data.p.titleCaseSpecial = true;
+                data.p.titleCaseDiff = appendToSpecialCaseMap(QList<int>() << titleCase);
+            } else {
+                data.p.titleCaseDiff = diff;
+                maxTitleCaseDiff = qMax(maxTitleCaseDiff, qAbs(diff));
+            }
             if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(titleCase)) {
                 // if the conditions below doesn't hold anymore we need to modify our title casing code
                 Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(titleCase));
@@ -1355,10 +1373,16 @@ static void readCaseFolding()
         if (foldMap.size() == 1) {
             int caseFolded = foldMap.at(0);
             int diff = caseFolded - codepoint;
-            if (qAbs(diff) >= (1<<14))
-                qWarning() << "caseFoldDiff exceeded (" << hex << codepoint << "->" << caseFolded << ")";
-            ud.p.caseFoldDiff = diff;
-            maxCaseFoldDiff = qMax(maxCaseFoldDiff, qAbs(diff));
+            if (qAbs(diff) >= (1<<14)) {
+                qWarning() << "caseFoldDiff exceeded (" << hex << codepoint << "->" << caseFolded << "); map it for special case";
+                // if the condition below doesn't hold anymore we need to modify our special case folding code in qchar.cpp
+                Q_ASSERT(!QChar::requiresSurrogates(codepoint) && !QChar::requiresSurrogates(caseFolded));
+                ud.p.caseFoldSpecial = true;
+                ud.p.caseFoldDiff = appendToSpecialCaseMap(foldMap);
+            } else {
+                ud.p.caseFoldDiff = diff;
+                maxCaseFoldDiff = qMax(maxCaseFoldDiff, qAbs(diff));
+            }
             if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(caseFolded)) {
                 // if the conditions below doesn't hold anymore we need to modify our case folding code
                 Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(caseFolded));

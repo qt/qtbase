@@ -5263,7 +5263,20 @@ QString QString::toCaseFolded() const
                     prop = qGetProp(*p);
                 }
                 if (prop->caseFoldSpecial) {
+                    const ushort *specialCase = specialCaseMap + prop->caseFoldDiff;
+                    ushort length = *specialCase++;
+#if 0
+                    int pos = pp - s.d->data;
+                    s.resize(s.d->size + length - 1);
+                    pp = s.d->data + pos;
+                    while (length--)
+                        *pp++ = *specialCase++;
+#else
                     //### we currently don't support full case foldings
+                    Q_ASSERT(length == 1);
+                    Q_UNUSED(length)
+                    *pp++ = *specialCase;
+#endif
                 } else {
                     *pp++ = *p + prop->caseFoldDiff;
                 }

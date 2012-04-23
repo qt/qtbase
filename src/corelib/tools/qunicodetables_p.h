@@ -76,7 +76,7 @@ namespace QUnicodeTables {
         ushort lowerCaseSpecial : 1;
         ushort upperCaseSpecial : 1;
         ushort titleCaseSpecial : 1;
-        ushort caseFoldSpecial  : 1; /* currently unused */
+        ushort caseFoldSpecial  : 1;
         signed short mirrorDiff    : 16;
         signed short lowerCaseDiff : 16;
         signed short upperCaseDiff : 16;
