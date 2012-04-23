@@ -91,7 +91,7 @@ class QMakeProject
     QMakeProperty *prop;
     void reset();
     QStringList extra_configs;
-    QHash<QString, QStringList> vars, base_vars, extra_vars;
+    QHash<QString, QStringList> vars, init_vars, base_vars, extra_vars;
     bool parse(const QString &text, QHash<QString, QStringList> &place, int line_count=1);
 
     enum IncludeStatus {
@@ -114,6 +114,7 @@ class QMakeProject
     QStringList doVariableReplaceExpand(const QString &str, QHash<QString, QStringList> &place, bool *ok=0);
     void init(QMakeProperty *);
     void cleanup();
+    void loadDefaults();
     QStringList &values(const QString &v, QHash<QString, QStringList> &place);
     QStringList qmakeFeaturePaths();
 

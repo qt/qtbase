@@ -432,6 +432,14 @@ Option::init(int argc, char **argv)
         }
         if(!Option::qmake_abslocation.isNull())
             Option::qmake_abslocation = QDir::cleanPath(Option::qmake_abslocation);
+        else // This is rather unlikely to ever happen on a modern system ...
+            Option::qmake_abslocation = QLibraryInfo::rawLocation(QLibraryInfo::HostBinariesPath,
+                                                                  QLibraryInfo::EffectivePaths) +
+#ifdef Q_OS_WIN
+                    "/qmake.exe";
+#else
+                    "/qmake";
+#endif
     } else {
         Option::qmake_mode = Option::QMAKE_GENERATE_MAKEFILE;
     }
