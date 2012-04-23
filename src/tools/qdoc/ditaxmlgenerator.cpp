@@ -4480,7 +4480,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
         else {
             writeStartTag(DT_qmlPropertyGroup);
             writeStartTag(DT_apiName);
-            writeCharacters("...");
+            //writeCharacters("...");
             writeEndTag(); // </apiName>
             writeStartTag(DT_qmlDetail);
             writeQmlDesc(node, marker);
@@ -4523,7 +4523,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
              */
             writeStartTag(DT_qmlPropertyGroup);
             writeStartTag(DT_apiName);
-            writeCharacters("...");
+            //writeCharacters("...");
             writeEndTag(); // </apiName>
             writeStartTag(DT_qmlDetail);
             writeQmlDesc(node, marker);
