@@ -113,8 +113,22 @@ macx {
 CMAKE_DEBUG_TYPE =
 CMAKE_RELEASE_TYPE =
 
-debug_and_release:CONFIG(debug,debug|release):CMAKE_DEBUG_TYPE = debug
-debug_and_release|CONFIG(release,debug|release):CMAKE_RELEASE_TYPE = release
+# Requirements:
+# * If Qt is configured with -debug, we're creating debug libraries and not
+#   release libraries, regardless of whether we're on a platform where
+#   debug_and_release is true.
+# * If Qt is configured with -release, we're creating release libraries and not
+#   debug libraries, regardless of whether we're on a platform where
+#   debug_and_release is true.
+# * If Qt is configured with neither -debug nor -release, and we are on a
+#   platform where debug_and_release is true, we're creating both
+#   debug and release libraries.
+# * If Qt is configured with -debug on a platform where debug_and_release is
+#   true, and 'make release' is subsequently invoked, CMake is only aware of
+#   the debug libraries at build time.
+
+if (build_all|CONFIG(debug, debug|release)):CMAKE_DEBUG_TYPE = debug
+if (build_all|CONFIG(release, debug|release)):CMAKE_RELEASE_TYPE = release
 
 INSTALLS += cmake_qt5_module_files
 
