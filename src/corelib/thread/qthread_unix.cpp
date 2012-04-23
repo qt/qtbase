@@ -288,7 +288,7 @@ void *QThreadPrivate::start(void *arg)
     else
         createEventDispatcher(data);
 
-#if (defined(Q_OS_LINUX) || defined(Q_OS_MAC))
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_QNX))
     // sets the name of the current thread.
     QByteArray objectName = thr->objectName().toLocal8Bit();
 
@@ -299,6 +299,8 @@ void *QThreadPrivate::start(void *arg)
     prctl(PR_SET_NAME, (unsigned long)objectName.constData(), 0, 0, 0);
 #elif defined(Q_OS_MAC)
     pthread_setname_np(objectName.constData());
+#elif defined(Q_OS_QNX)
+    pthread_setname_np(thr->d_func()->thread_id, objectName.constData());
 #endif
 #endif
 
