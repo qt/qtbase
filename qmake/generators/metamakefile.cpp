@@ -104,7 +104,7 @@ BuildsMetaMakefileGenerator::init()
         return false;
     init_flag = true;
 
-    const QStringList &builds = project->variables()["BUILDS"];
+    const QStringList &builds = project->values("BUILDS");
     bool use_single_build = builds.isEmpty();
     if(builds.count() > 1 && Option::output.fileName() == "-") {
         use_single_build = true;
@@ -347,7 +347,7 @@ SubdirsMetaMakefileGenerator::init()
             qmake_setpwd(sub->input_dir);
             Option::output_dir = sub->output_dir;
             bool tmpError = !sub_proj->read(subdir.fileName());
-            if(!sub_proj->variables()["QMAKE_FAILED_REQUIREMENTS"].isEmpty()) {
+            if (!sub_proj->isEmpty("QMAKE_FAILED_REQUIREMENTS")) {
                 fprintf(stderr, "Project file(%s) not recursed because all requirements not met:\n\t%s\n",
                         subdir.fileName().toLatin1().constData(),
                         sub_proj->values("QMAKE_FAILED_REQUIREMENTS").join(" ").toLatin1().constData());

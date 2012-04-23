@@ -379,12 +379,12 @@ QUuid VcprojGenerator::increaseUUID(const QUuid &id)
 QStringList VcprojGenerator::collectSubDirs(QMakeProject *proj)
 {
     QStringList subdirs;
-    QStringList tmp_proj_subdirs = proj->variables()["SUBDIRS"];
+    QStringList tmp_proj_subdirs = proj->values("SUBDIRS");
     for(int x = 0; x < tmp_proj_subdirs.size(); ++x) {
         QString tmpdir = tmp_proj_subdirs.at(x);
         const QString tmpdirConfig = tmpdir + QStringLiteral(".CONFIG");
         if (!proj->isEmpty(tmpdirConfig)) {
-            const QStringList config = proj->variables().value(tmpdirConfig);
+            const QStringList config = proj->values(tmpdirConfig);
             if (config.contains(QStringLiteral("no_default_target")))
                 continue; // Ignore this sub-dir
         }
@@ -463,7 +463,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                 }
                 if(tmp_proj.read(fn)) {
                     // Check if all requirements are fulfilled
-                    if(!tmp_proj.variables()["QMAKE_FAILED_REQUIREMENTS"].isEmpty()) {
+                    if (!tmp_proj.isEmpty("QMAKE_FAILED_REQUIREMENTS")) {
                         fprintf(stderr, "Project file(%s) not added to Solution because all requirements not met:\n\t%s\n",
                                 fn.toLatin1().constData(), tmp_proj.values("QMAKE_FAILED_REQUIREMENTS").join(" ").toLatin1().constData());
                         continue;
@@ -536,17 +536,17 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                             newDep->target = newDep->target.left(newDep->target.length()-3) + "lib";
 
                         // All ActiveQt Server projects are dependent on idc.exe
-                        if(tmp_proj.variables()["CONFIG"].contains("qaxserver"))
+                        if (tmp_proj.values("CONFIG").contains("qaxserver"))
                             newDep->dependencies << "idc.exe";
 
                         // All extra compilers which has valid input are considered dependencies
-                        const QStringList &quc = tmp_proj.variables()["QMAKE_EXTRA_COMPILERS"];
+                        const QStringList &quc = tmp_proj.values("QMAKE_EXTRA_COMPILERS");
                         for(QStringList::ConstIterator it = quc.constBegin(); it != quc.constEnd(); ++it) {
-                            const QStringList &invar = tmp_proj.variables().value((*it) + ".input");
+                            const QStringList &invar = tmp_proj.values(*it + ".input");
                             for(QStringList::ConstIterator iit = invar.constBegin(); iit != invar.constEnd(); ++iit) {
-                                const QStringList fileList = tmp_proj.variables().value(*iit);
+                                const QStringList fileList = tmp_proj.values(*iit);
                                 if (!fileList.isEmpty()) {
-                                    const QStringList &cmdsParts = tmp_proj.variables().value((*it) + ".commands");
+                                    const QStringList &cmdsParts = tmp_proj.values(*it + ".commands");
                                     bool startOfLine = true;
                                     foreach(QString cmd, cmdsParts) {
                                         if (!startOfLine) {
@@ -575,11 +575,11 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         // Add all unknown libs to the deps
                         QStringList where = QStringList() << "QMAKE_LIBS" << "QMAKE_LIBS_PRIVATE";
                         if(!tmp_proj.isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
-                            where = tmp_proj.variables()["QMAKE_INTERNAL_PRL_LIBS"];
-                        for(QStringList::iterator wit = where.begin();
+                            where = tmp_proj.values("QMAKE_INTERNAL_PRL_LIBS");
+                        for (QStringList::ConstIterator wit = where.begin();
                             wit != where.end(); ++wit) {
-                            QStringList &l = tmp_proj.variables()[(*wit)];
-                            for(QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
+                            const QStringList &l = tmp_proj.values(*wit);
+                            for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
                                 QString opt = (*it);
                                 if(!opt.startsWith("/") &&   // Not a switch
                                     opt != newDep->target && // Not self
@@ -767,10 +767,10 @@ void VcprojGenerator::init()
     // unless the compiler is configure as a combined stage, then use the first one
     const QStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
     for(QStringList::ConstIterator it = quc.constBegin(); it != quc.constEnd(); ++it) {
-        const QStringList &invar = project->variables().value((*it) + ".input");
+        const QStringList &invar = project->values(*it + ".input");
         const QString compiler_out = project->first((*it) + ".output");
         for(QStringList::ConstIterator iit = invar.constBegin(); iit != invar.constEnd(); ++iit) {
-            QStringList fileList = project->variables().value(*iit);
+            QStringList fileList = project->values(*iit);
             if (!fileList.isEmpty()) {
                 if (project->values((*it) + ".CONFIG").indexOf("combine") != -1)
                     fileList = QStringList(fileList.first());

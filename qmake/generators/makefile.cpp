@@ -448,14 +448,14 @@ MakefileGenerator::init()
     continue_compiler_chain:
         if(jump_count > quc.size()) //just to avoid an infinite loop here
             break;
-        if(project->variables().contains(quc.at(comp_out) + ".variable_out")) {
-            const QStringList &outputs = project->variables().value(quc.at(comp_out) + ".variable_out");
+        if (v.contains(quc.at(comp_out) + ".variable_out")) {
+            const QStringList &outputs = v.value(quc.at(comp_out) + ".variable_out");
             for(int out = 0; out < outputs.size(); ++out) {
                 for(int comp_in = 0; comp_in < quc.size(); ++comp_in) {
                     if(comp_in == comp_out)
                         continue;
-                    if(project->variables().contains(quc.at(comp_in) + ".input")) {
-                        const QStringList &inputs = project->variables().value(quc.at(comp_in) + ".input");
+                    if (v.contains(quc.at(comp_in) + ".input")) {
+                        const QStringList &inputs = v.value(quc.at(comp_in) + ".input");
                         for(int in = 0; in < inputs.size(); ++in) {
                             if(inputs.at(in) == outputs.at(out) && comp_out > comp_in) {
                                 ++jump_count;
@@ -680,8 +680,8 @@ MakefileGenerator::init()
                     continue;
                 QString out = fileFixify(tmp_out, Option::output_dir, Option::output_dir);
                 bool pre_dep = (project->values((*it) + ".CONFIG").indexOf("target_predeps") != -1);
-                if(project->variables().contains((*it) + ".variable_out")) {
-                    const QStringList &var_out = project->variables().value((*it) + ".variable_out");
+                if (v.contains((*it) + ".variable_out")) {
+                    const QStringList &var_out = v.value((*it) + ".variable_out");
                     for(int i = 0; i < var_out.size(); ++i) {
                         QString v = var_out.at(i);
                         if(v == QLatin1String("SOURCES"))
@@ -703,7 +703,7 @@ MakefileGenerator::init()
                             list.append(out);
                 }
                 if(pre_dep) {
-                    QStringList &list = project->variables()["PRE_TARGETDEPS"];
+                    QStringList &list = project->values("PRE_TARGETDEPS");
                     if(!list.contains(out))
                         list.append(out);
                 }
@@ -721,8 +721,8 @@ MakefileGenerator::init()
                     QString out = replaceExtraCompilerVariables(tmp_out, (*input), QString());
                     out = fileFixify(out, Option::output_dir, Option::output_dir);
                     bool pre_dep = (project->values((*it) + ".CONFIG").indexOf("target_predeps") != -1);
-                    if(project->variables().contains((*it) + ".variable_out")) {
-                        const QStringList &var_out = project->variables().value((*it) + ".variable_out");
+                    if (v.contains((*it) + ".variable_out")) {
+                        const QStringList &var_out = project->values(*it + ".variable_out");
                         for(int i = 0; i < var_out.size(); ++i) {
                             QString v = var_out.at(i);
                             if(v == QLatin1String("SOURCES"))
@@ -744,7 +744,7 @@ MakefileGenerator::init()
                             list.append(out);
                     }
                     if(pre_dep) {
-                        QStringList &list = project->variables()["PRE_TARGETDEPS"];
+                        QStringList &list = project->values("PRE_TARGETDEPS");
                         if(!list.contains(out))
                             list.append(out);
                     }

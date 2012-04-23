@@ -557,9 +557,9 @@ void Option::prepareProject(const QString &pfile)
 
 bool Option::postProcessProject(QMakeProject *project)
 {
-    Option::cpp_ext = project->variables()["QMAKE_EXT_CPP"];
-    Option::h_ext = project->variables()["QMAKE_EXT_H"];
-    Option::c_ext = project->variables()["QMAKE_EXT_C"];
+    Option::cpp_ext = project->values("QMAKE_EXT_CPP");
+    Option::h_ext = project->values("QMAKE_EXT_H");
+    Option::c_ext = project->values("QMAKE_EXT_C");
     Option::res_ext = project->first("QMAKE_EXT_RES");
     Option::pkgcfg_ext = project->first("QMAKE_EXT_PKGCONFIG");
     Option::libtool_ext = project->first("QMAKE_EXT_LIBTOOL");
@@ -573,7 +573,7 @@ bool Option::postProcessProject(QMakeProject *project)
     Option::lex_mod = project->first("QMAKE_MOD_LEX");
     Option::yacc_mod = project->first("QMAKE_MOD_YACC");
     Option::dir_sep = project->first("QMAKE_DIR_SEP");
-    Option::shellPath = project->variables()["QMAKE_SH"];
+    Option::shellPath = project->values("QMAKE_SH");
     return true;
 }
 
