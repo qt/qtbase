@@ -3775,7 +3775,7 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
     return place[var];
 }
 
-bool QMakeProject::isEmpty(const QString &v)
+bool QMakeProject::isEmpty(const QString &v) const
 {
     QHash<QString, QStringList>::ConstIterator it = vars.constFind(v);
     return it == vars.constEnd() || it->isEmpty();

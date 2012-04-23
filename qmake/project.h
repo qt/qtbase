@@ -164,11 +164,13 @@ public:
     bool isActiveConfig(const QString &x, bool regex=false,
                         QHash<QString, QStringList> *place=NULL);
 
-    bool isSet(const QString &v) { return vars.contains(v); }
-    bool isEmpty(const QString &v);
+    bool isSet(const QString &v) const { return vars.contains(v); }
+    bool isEmpty(const QString &v) const;
+    QStringList values(const QString &v) const { return vars[v]; }
     QStringList &values(const QString &v) { return vars[v]; }
-    QString first(const QString &v);
-    int intValue(const QString &v, int defaultValue = 0);
+    QString first(const QString &v) const;
+    int intValue(const QString &v, int defaultValue = 0) const;
+    const QHash<QString, QStringList> &variables() const { return vars; }
     QHash<QString, QStringList> &variables() { return vars; }
 
     bool isRecursive() const { return recursive; }
@@ -189,7 +191,7 @@ inline QString QMakeProject::projectFile()
     return pfile;
 }
 
-inline QString QMakeProject::first(const QString &v)
+inline QString QMakeProject::first(const QString &v) const
 {
     const QStringList vals = values(v);
     if(vals.isEmpty())
@@ -197,7 +199,7 @@ inline QString QMakeProject::first(const QString &v)
     return vals.first();
 }
 
-inline int QMakeProject::intValue(const QString &v, int defaultValue)
+inline int QMakeProject::intValue(const QString &v, int defaultValue) const
 {
     const QString str = first(v);
     if (!str.isEmpty()) {
