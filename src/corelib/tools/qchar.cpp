@@ -892,27 +892,26 @@ ushort QChar::mirroredChar(ushort ucs2)
 }
 
 
+// constants for Hangul (de)composition, see UAX #15
 enum {
     Hangul_SBase = 0xac00,
     Hangul_LBase = 0x1100,
     Hangul_VBase = 0x1161,
     Hangul_TBase = 0x11a7,
-    Hangul_SCount = 11172,
     Hangul_LCount = 19,
     Hangul_VCount = 21,
     Hangul_TCount = 28,
-    Hangul_NCount = 21*28
+    Hangul_NCount = Hangul_VCount * Hangul_TCount,
+    Hangul_SCount = Hangul_LCount * Hangul_NCount
 };
 
 // buffer has to have a length of 3. It's needed for Hangul decomposition
 static const unsigned short * QT_FASTCALL decompositionHelper
     (uint ucs4, int *length, int *tag, unsigned short *buffer)
 {
-    *length = 0;
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
-        return 0;
     if (ucs4 >= Hangul_SBase && ucs4 < Hangul_SBase + Hangul_SCount) {
-        int SIndex = ucs4 - Hangul_SBase;
+        // compute Hangul syllable decomposition as per UAX #15
+        const uint SIndex = ucs4 - Hangul_SBase;
         buffer[0] = Hangul_LBase + SIndex / Hangul_NCount; // L
         buffer[1] = Hangul_VBase + (SIndex % Hangul_NCount) / Hangul_TCount; // V
         buffer[2] = Hangul_TBase + SIndex % Hangul_TCount; // T
@@ -922,8 +921,12 @@ static const unsigned short * QT_FASTCALL decompositionHelper
     }
 
     const unsigned short index = GET_DECOMPOSITION_INDEX(ucs4);
-    if (index == 0xffff)
+    if (index == 0xffff) {
+        *length = 0;
+        *tag = QChar::NoDecomposition;
         return 0;
+    }
+
     const unsigned short *decomposition = uc_decomposition_map+index;
     *tag = (*decomposition) & 0xff;
     *length = (*decomposition) >> 8;
@@ -950,7 +953,7 @@ QString QChar::decomposition(uint ucs4)
     int length;
     int tag;
     const unsigned short *d = decompositionHelper(ucs4, &length, &tag, buffer);
-    return QString::fromUtf16(d, length);
+    return QString(reinterpret_cast<const QChar *>(d), length);
 }
 
 /*!
@@ -969,8 +972,6 @@ QChar::Decomposition QChar::decompositionTag() const
 */
 QChar::Decomposition QChar::decompositionTag(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
-        return QChar::NoDecomposition;
     if (ucs4 >= Hangul_SBase && ucs4 < Hangul_SBase + Hangul_SCount)
         return QChar::Canonical;
     const unsigned short index = GET_DECOMPOSITION_INDEX(ucs4);
@@ -1400,6 +1401,8 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 
 static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion version, int from)
 {
+    int length;
+    int tag;
     unsigned short buffer[3];
 
     QString &s = *str;
@@ -1415,18 +1418,18 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
                 ucs4 = QChar::surrogateToUcs4(high, ucs4);
             }
         }
+
         const QChar::UnicodeVersion v = QChar::unicodeVersion(ucs4);
         if (v > version || v == QChar::Unicode_Unassigned)
             continue;
-        int length;
-        int tag;
+
         const unsigned short *d = decompositionHelper(ucs4, &length, &tag, buffer);
         if (!d || (canonical && tag != QChar::Canonical))
             continue;
 
         int pos = uc - utf16;
         s.replace(pos, QChar::requiresSurrogates(ucs4) ? 2 : 1, reinterpret_cast<const QChar *>(d), length);
-        // since the insert invalidates the pointers and we do decomposition recursive
+        // since the replace invalidates the pointers and we do decomposition recursive
         utf16 = reinterpret_cast<unsigned short *>(s.data());
         uc = utf16 + pos + length;
     }
@@ -1445,20 +1448,22 @@ inline bool operator<(const UCS2Pair &ligature, ushort u1)
 
 static ushort ligatureHelper(ushort u1, ushort u2)
 {
-    // hangul L-V pair
-    int LIndex = u1 - Hangul_LBase;
-    if (0 <= LIndex && LIndex < Hangul_LCount) {
-        int VIndex = u2 - Hangul_VBase;
-        if (0 <= VIndex && VIndex < Hangul_VCount)
-            return Hangul_SBase + (LIndex * Hangul_VCount + VIndex) * Hangul_TCount;
-    }
-
-    // hangul LV-T pair
-    int SIndex = u1 - Hangul_SBase;
-    if (0 <= SIndex && SIndex < Hangul_SCount && (SIndex % Hangul_TCount) == 0) {
-        int TIndex = u2 - Hangul_TBase;
-        if (0 <= TIndex && TIndex <= Hangul_TCount)
-            return u1 + TIndex;
+    if (u1 >= Hangul_LBase && u1 <= Hangul_SBase + Hangul_SCount) {
+        // compute Hangul syllable composition as per UAX #15
+        // hangul L-V pair
+        const uint LIndex = u1 - Hangul_LBase;
+        if (LIndex < Hangul_LCount) {
+            const uint VIndex = u2 - Hangul_VBase;
+            if (VIndex < Hangul_VCount)
+                return Hangul_SBase + (LIndex * Hangul_VCount + VIndex) * Hangul_TCount;
+        }
+        // hangul LV-T pair
+        const uint SIndex = u1 - Hangul_SBase;
+        if (SIndex < Hangul_SCount && (SIndex % Hangul_TCount) == 0) {
+            const uint TIndex = u2 - Hangul_TBase;
+            if (TIndex <= Hangul_TCount)
+                return u1 + TIndex;
+        }
     }
 
     const unsigned short index = GET_LIGATURE_INDEX(u2);
