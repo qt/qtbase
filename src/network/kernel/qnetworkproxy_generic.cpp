@@ -47,15 +47,49 @@
 #ifndef QT_NO_NETWORKPROXY
 
 /*
- * Construct a proxy from the environment variable http_proxy.
+ * Construct a proxy from the environment variables http_proxy and no_proxy.
  * Or no system proxy. Just return a list with NoProxy.
  */
 
 QT_BEGIN_NAMESPACE
 
-QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &)
+static bool ignoreProxyFor(const QNetworkProxyQuery &query)
+{
+    const QList<QByteArray> noProxyTokens = qgetenv("no_proxy").split(',');
+
+    foreach (const QByteArray rawToken, noProxyTokens) {
+        QByteArray token = rawToken.trimmed();
+        QString peerHostName = query.peerHostName();
+
+        // Since we use suffix matching, "*" is our 'default' behaviour
+        if (token.startsWith("*"))
+            token = token.mid(1);
+
+        // Harmonize trailing dot notation
+        if (token.endsWith('.') && !peerHostName.endsWith('.'))
+            token = token.left(token.length()-1);
+
+        // We prepend a dot to both values, so that when we do a suffix match,
+        // we don't match "donotmatch.com" with "match.com"
+        if (!token.startsWith('.'))
+            token.prepend('.');
+
+        if (!peerHostName.startsWith('.'))
+            peerHostName.prepend('.');
+
+        if (peerHostName.endsWith(QString::fromLatin1(token)))
+            return true;
+    }
+
+    return false;
+}
+
+QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &query)
 {
     QList<QNetworkProxy> proxyList;
+
+    if (ignoreProxyFor(query))
+        return proxyList << QNetworkProxy::NoProxy;
 
     QByteArray proxy_env = qgetenv("http_proxy");
     if (!proxy_env.isEmpty()) {
