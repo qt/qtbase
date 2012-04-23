@@ -238,7 +238,7 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     QTest::newRow("path-with-quotes2") << "a=b; path = \"/with\\\"Quotes\"" << cookie;
 
     cookie.setPath(QString::fromUtf8("/R\303\251sum\303\251"));
-    QTest::newRow("path-with-utf8") << "a=b;path=/R\303\251sum\303\251" << cookie;
+    QTest::newRow("path-with-utf8") << QString::fromUtf8("a=b;path=/R\303\251sum\303\251") << cookie;
     QTest::newRow("path-with-utf8-2") << "a=b;path=/R%C3%A9sum%C3%A9" << cookie;
 
     cookie.setPath(QString());
@@ -256,9 +256,9 @@ void tst_QNetworkCookie::parseSingleCookie_data()
 
     cookie.setDomain(QString::fromUtf8(".d\303\270gn\303\245pent.troll.no"));
     QTest::newRow("idn-domain1") << "a=b;domain=.xn--dgnpent-gxa2o.troll.no" << cookie;
-    QTest::newRow("idn-domain2") << "a=b;domain=.d\303\270gn\303\245pent.troll.no" << cookie;
+    QTest::newRow("idn-domain2") << QString::fromUtf8("a=b;domain=.d\303\270gn\303\245pent.troll.no") << cookie;
     QTest::newRow("idn-domain3") << "a=b;domain=.XN--DGNPENT-GXA2O.TROLL.NO" << cookie;
-    QTest::newRow("idn-domain4") << "a=b;domain=.D\303\230GN\303\205PENT.troll.NO" << cookie;
+    QTest::newRow("idn-domain4") << QString::fromUtf8("a=b;domain=.D\303\230GN\303\205PENT.troll.NO") << cookie;
 
     cookie.setDomain(".qt.nokia.com");
     cookie.setPath("/");
@@ -595,7 +595,7 @@ void tst_QNetworkCookie::parseSingleCookie()
     QFETCH(QString, cookieString);
     QFETCH(QNetworkCookie, expectedCookie);
 
-    QList<QNetworkCookie> result = QNetworkCookie::parseCookies(cookieString.toLatin1());
+    QList<QNetworkCookie> result = QNetworkCookie::parseCookies(cookieString.toUtf8());
 
     //QEXPECT_FAIL("network2", "QDateTime parsing problem: the date is beyond year 8000", Abort);
     QCOMPARE(result.count(), 1);
@@ -723,7 +723,7 @@ void tst_QNetworkCookie::parseMultipleCookies()
     QFETCH(QString, cookieString);
     QFETCH(QList<QNetworkCookie>, expectedCookies);
 
-    QList<QNetworkCookie> result = QNetworkCookie::parseCookies(cookieString.toLatin1());
+    QList<QNetworkCookie> result = QNetworkCookie::parseCookies(cookieString.toUtf8());
 
     QEXPECT_FAIL("network1", "Apparently multiple cookies set in one request (and an invalid date)", Abort);
     QCOMPARE(result, expectedCookies);
