@@ -485,8 +485,8 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         Option::output_dir = old_output_dir;
                         if(Option::debug_level) {
                             debug_msg(1, "Dumping all variables:");
-                            QHash<QString, QStringList> &vars = tmp_proj.variables();
-                            for(QHash<QString, QStringList>::Iterator it = vars.begin();
+                            const QHash<QString, QStringList> &vars = tmp_proj.variables();
+                            for (QHash<QString, QStringList>::ConstIterator it = vars.begin();
                                 it != vars.end(); ++it) {
                                 if(it.key().left(1) != "." && !it.value().isEmpty())
                                     debug_msg(1, "%s: %s === %s", fn.toLatin1().constData(), it.key().toLatin1().constData(),

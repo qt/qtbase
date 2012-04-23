@@ -317,7 +317,7 @@ QStringList
 MakefileGenerator::findFilesInVPATH(QStringList l, uchar flags, const QString &vpath_var)
 {
     QStringList vpath;
-    QHash<QString, QStringList> &v = project->variables();
+    const QHash<QString, QStringList> &v = project->variables();
     for(int val_it = 0; val_it < l.count(); ) {
         bool remove_file = false;
         QString &val = l[val_it];
