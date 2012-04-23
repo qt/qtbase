@@ -1315,10 +1315,6 @@ QMakeProject::read(uchar cmd)
 {
   again:
     if ((cmd & ReadSetup) && base_vars.isEmpty()) {
-        // hack to get the Option stuff in there
-        if(!Option::user_template_prefix.isEmpty())
-            vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
-
         QString superdir;
         QString project_root;
         QString project_build_root;
