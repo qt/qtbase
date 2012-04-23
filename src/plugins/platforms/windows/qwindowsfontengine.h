@@ -135,6 +135,7 @@ public:
 
     QSharedPointer<QWindowsFontEngineData> fontEngineData() const { return m_fontEngineData; }
     LOGFONT logfont() const { return m_logfont; }
+    void setUniqueFamilyName(const QString &newName) { uniqueFamilyName = newName; }
 
 private:
     QWindowsNativeImage *drawGDIGlyph(HFONT font, glyph_t, int margin, const QTransform &xform,

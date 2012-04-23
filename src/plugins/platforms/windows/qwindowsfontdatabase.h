@@ -87,6 +87,8 @@ public:
 
     virtual QFont defaultFont() const { return systemDefaultFont(); }
     virtual bool fontsAlwaysScalable() const;
+    void derefUniqueFont(const QString &uniqueFont);
+    void refUniqueFont(const QString &uniqueFont);
 
     static QFont systemDefaultFont();
 
@@ -112,6 +114,13 @@ private:
     };
 
     QList<WinApplicationFont> m_applicationFonts;
+
+    struct UniqueFontData {
+        HANDLE handle;
+        QAtomicInt refCount;
+    };
+
+    QMap<QString, UniqueFontData> m_uniqueFontData;
 };
 
 QT_END_NAMESPACE

@@ -326,7 +326,7 @@ QFontEngine * QWindowsFontDatabaseFT::fontEngine(const QFontDef &fontDef, QUnico
 
 QFontEngine *QWindowsFontDatabaseFT::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
 {
-    QFontEngine *fe = QPlatformFontDatabase::fontEngine(fontData, pixelSize, hintingPreference);
+    QFontEngine *fe = QBasicFontDatabase::fontEngine(fontData, pixelSize, hintingPreference);
     if (QWindowsContext::verboseFonts)
         qDebug() << __FUNCTION__ << "FONTDATA" << fontData << pixelSize << hintingPreference << fe;
     return fe;

@@ -44,6 +44,7 @@
 #define _WIN32_WINNT 0x0500
 #endif
 
+#include "qwindowsintegration.h"
 #include "qwindowsfontengine.h"
 #include "qwindowsnativeimage.h"
 #include "qwindowscontext.h"
@@ -319,6 +320,11 @@ QWindowsFontEngine::~QWindowsFontEngine()
     if (QWindowsContext::verboseFonts)
         if (QWindowsContext::verboseFonts)
             qDebug("%s: font='%s", __FUNCTION__, qPrintable(_name));
+
+    if (!uniqueFamilyName.isEmpty()) {
+        QPlatformFontDatabase *pfdb = QWindowsIntegration::instance()->fontDatabase();
+        static_cast<QWindowsFontDatabase *>(pfdb)->derefUniqueFont(uniqueFamilyName);
+    }
 }
 
 HGDIOBJ QWindowsFontEngine::selectDesignFont() const
@@ -1142,8 +1148,14 @@ QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
                                            QWindowsContext::instance()->defaultDPI(),
                                            false,
                                            QStringList(), m_fontEngineData);
-    if (fontEngine)
+    if (fontEngine) {
         fontEngine->fontDef.family = actualFontName;
+        if (!uniqueFamilyName.isEmpty()) {
+            static_cast<QWindowsFontEngine *>(fontEngine)->setUniqueFamilyName(uniqueFamilyName);
+            QPlatformFontDatabase *pfdb = QWindowsIntegration::instance()->fontDatabase();
+            static_cast<QWindowsFontDatabase *>(pfdb)->refUniqueFont(uniqueFamilyName);
+        }
+    }
     return fontEngine;
 }
 
