@@ -1027,6 +1027,7 @@ void tst_QUrl::toLocalFile_data()
     QTest::newRow("data8") << QString::fromLatin1("file://somehost") << QString::fromLatin1("//somehost");
     QTest::newRow("data9") << QString::fromLatin1("file:////somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
     QTest::newRow("data10") << QString::fromLatin1("FILE:/a.txt") << QString::fromLatin1("/a.txt");
+    QTest::newRow("data11") << QString::fromLatin1("file:///Mambo <%235>.mp3") << QString::fromLatin1("/Mambo <#5>.mp3");
 
     // and some that result in empty (i.e., not local)
     QTest::newRow("xdata0") << QString::fromLatin1("/a.txt") << QString();

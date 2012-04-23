@@ -2502,11 +2502,11 @@ QString QUrl::toLocalFile() const
         return QString();
 
     QString tmp;
-    QString ourPath = path();
+    QString ourPath = path(QUrl::MostDecoded);
 
     // magic for shared drive on windows
     if (!d->host.isEmpty()) {
-        tmp = QStringLiteral("//") + d->host + (ourPath.length() > 0 && ourPath.at(0) != QLatin1Char('/')
+        tmp = QStringLiteral("//") + host() + (ourPath.length() > 0 && ourPath.at(0) != QLatin1Char('/')
                                                ? QLatin1Char('/') + ourPath :  ourPath);
     } else {
         tmp = ourPath;
