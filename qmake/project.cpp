@@ -3683,7 +3683,7 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QHash<QString, QString
                 } else if(var_type == FUNCTION) {
                     replacement = doProjectExpand(var, args, place);
                 } else if(var_type == VAR) {
-                    replacement = values(var, place);
+                    replacement = magicValues(var, place);
                 }
                 if(!(replaced++) && start_var)
                     current = str.left(start_var);
@@ -3758,7 +3758,7 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QHash<QString, QString
     return ret;
 }
 
-QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringList> &place)
+QStringList &QMakeProject::magicValues(const QString &_var, QHash<QString, QStringList> &place)
 {
     QString var = varMap(_var);
     if (var == QLatin1String("_LINE_")) { //parser line number
@@ -3769,6 +3769,12 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
         place[var] = QStringList(parser.file);
     }
     //qDebug("REPLACE [%s]->[%s]", qPrintable(var), qPrintable(place[var].join("::")));
+    return place[var];
+}
+
+QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringList> &place)
+{
+    QString var = varMap(_var);
     return place[var];
 }
 
