@@ -943,9 +943,13 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
 
 #if defined (IPV6_V6ONLY)
     // determine if local address is dual mode
+    // On linux, these are returned as "::" (==AnyIPv6)
+    // On OSX, these are returned as "::FFFF:0.0.0.0" (==AnyIPv4)
+    // in either case, the IPV6_V6ONLY option is cleared
     int ipv6only = 0;
     socklen_t optlen = sizeof(ipv6only);
-    if (localAddress == QHostAddress::AnyIPv6
+    if (socketProtocol == QAbstractSocket::IPv6Protocol
+        && (localAddress == QHostAddress::AnyIPv4 || localAddress == QHostAddress::AnyIPv6)
         && !getsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, &optlen )) {
             if (optlen != sizeof(ipv6only))
                 qWarning("unexpected size of IPV6_V6ONLY socket option");
