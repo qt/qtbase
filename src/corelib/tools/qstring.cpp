@@ -369,6 +369,42 @@ inline char qToLower(char ch)
         return ch;
 }
 
+/*!
+   \internal
+*/
+bool qStringComparisonHelper(const QString &s1, const char *s2)
+{
+    // ### optimize me
+    return s1 == QString::fromAscii(s2);
+}
+
+/*!
+   \internal
+*/
+bool qStringComparisonHelper(const QString &s1, const QByteArray &s2)
+{
+    // ### optimize me
+    return s1 == QString::fromAscii(s2);
+}
+
+/*!
+   \internal
+*/
+bool qStringComparisonHelper(const QStringRef &s1, const char *s2)
+{
+    // ### optimize me
+    return s1 == QString::fromAscii(s2);
+}
+
+/*!
+   \internal
+*/
+bool qStringComparisonHelper(const QStringRef &s1, const QByteArray &s2)
+{
+    // ### optimize me
+    return s1 == QString::fromAscii(s2);
+}
+
 const QString::Null QString::null = { };
 
 /*!
@@ -3935,7 +3971,7 @@ QByteArray QString::toLatin1() const
 */
 QByteArray QString::toAscii() const
 {
-    return toLatin1();
+    return toUtf8();
 }
 
 #if !defined(Q_OS_MAC) && defined(Q_OS_UNIX)
@@ -4064,7 +4100,9 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
 
 QString::Data *QString::fromAscii_helper(const char *str, int size)
 {
-    return fromLatin1_helper(str, size);
+    QString s = fromUtf8(str, size);
+    s.d->ref.ref();
+    return s.d;
 }
 
 /*! \fn QString QString::fromLatin1(const char *str, int size)
