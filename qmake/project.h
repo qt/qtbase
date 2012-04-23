@@ -173,6 +173,8 @@ public:
     const QHash<QString, QStringList> &variables() const { return vars; }
     QHash<QString, QStringList> &variables() { return vars; }
 
+    void dump() const;
+
     bool isRecursive() const { return recursive; }
     bool isHostBuild() const { return host_build; }
 

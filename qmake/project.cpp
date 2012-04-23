@@ -1128,14 +1128,6 @@ QMakeProject::parse(const QString &t, QHash<QString, QStringList> &place, int nu
 
     doVariableReplace(var, place);
     var = varMap(var); //backwards compatibility
-    if(!var.isEmpty() && Option::mkfile::do_preprocess) {
-        static QString last_file("*none*");
-        if(parser.file != last_file) {
-            fprintf(stdout, "#file %s:%d\n", parser.file.toLatin1().constData(), parser.line_no);
-            last_file = parser.file;
-        }
-        fprintf(stdout, "%s %s %s\n", var.toLatin1().constData(), op.toLatin1().constData(), vals.toLatin1().constData());
-    }
 
     if(vals.contains('=') && numLines > 1)
         warn_msg(WarnParser, "Possible accidental line continuation: {%s} at %s:%d",
@@ -1850,10 +1842,6 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
     } else if (!QFile::exists(file)) {
         return IncludeNoExist;
     }
-    if(Option::mkfile::do_preprocess) //nice to see this first..
-        fprintf(stderr, "#switching file %s(%s) - %s:%d\n", (flags & IncludeFlagFeature) ? "load" : "include",
-                file.toLatin1().constData(),
-                parser.file.toLatin1().constData(), parser.line_no);
     debug_msg(1, "Project Parser: %s'ing file %s.", (flags & IncludeFlagFeature) ? "load" : "include",
               file.toLatin1().constData());
 
@@ -3779,6 +3767,23 @@ bool QMakeProject::isEmpty(const QString &v) const
 {
     QHash<QString, QStringList>::ConstIterator it = vars.constFind(v);
     return it == vars.constEnd() || it->isEmpty();
+}
+
+void
+QMakeProject::dump() const
+{
+    QStringList out;
+    for (QHash<QString, QStringList>::ConstIterator it = vars.begin(); it != vars.end(); ++it) {
+        if (!it.key().startsWith('.')) {
+            QString str = it.key() + " =";
+            foreach (const QString &v, it.value())
+                str += ' ' + quoteValue(v);
+            out << str;
+        }
+    }
+    out.sort();
+    foreach (const QString &v, out)
+        puts(qPrintable(v));
 }
 
 QT_END_NAMESPACE
