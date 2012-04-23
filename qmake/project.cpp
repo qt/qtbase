@@ -1535,10 +1535,6 @@ QMakeProject::read(uchar cmd)
         doProjectInclude("default_pre", IncludeFlagFeature, vars);
     }
 
-    //get a default
-    if(pfile != "-" && vars["TARGET"].isEmpty())
-        vars["TARGET"].append(QFileInfo(pfile).baseName());
-
     //before commandline
     if (cmd & ReadSetup) {
         parser.file = "(internal)";
@@ -1631,6 +1627,8 @@ void
 QMakeProject::setupProject()
 {
     setTemplate(vars["TEMPLATE"]);
+    if (pfile != "-")
+        vars["TARGET"] << QFileInfo(pfile).baseName();
 }
 
 void
