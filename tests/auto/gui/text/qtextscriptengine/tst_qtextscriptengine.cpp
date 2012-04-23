@@ -1173,7 +1173,7 @@ void tst_QTextScriptEngine::combiningMarks_qtbug15675()
 
     QFont font("Monaco");
     QTextLayout layout(s, font);
-    QTextEngine *e = layout.d;
+    QTextEngine *e = layout.engine();
     e->itemize();
     e->shape(0);
 
