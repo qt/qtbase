@@ -580,8 +580,8 @@ void tst_QShortcut::text_data()
        Qt::UNICODE_ACCEL + Qt::Key_K
     */
     /* see comments above on the #ifdef'ery */
-    QTest::newRow("T06 - slot1")		    << SetupAccel << TriggerSlot1 << QString("\x0C5")<< 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T07 - slot2")		    << SetupAccel << TriggerSlot2 << QString("Shift+\x0C5")<< 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T06 - slot1")                    << SetupAccel << TriggerSlot1 << QString::fromLatin1("\x0C5")<< 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T07 - slot2")                    << SetupAccel << TriggerSlot2 << QString::fromLatin1("Shift+\x0C5")<< 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
     QTest::newRow("T08 - slot2")		    << SetupAccel << TriggerSlot1 << QString("K")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
     QTest::newRow("T:Qt::Key_aring")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
     QTest::newRow("T:Qt::Key_Aring")		    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT+Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;

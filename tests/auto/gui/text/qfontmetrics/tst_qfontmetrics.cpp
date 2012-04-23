@@ -233,7 +233,7 @@ void tst_QFontMetrics::bypassShaping()
 
 template<class FontMetrics> void elidedMultiLength_helper()
 {
-    QString text1 = "Long Text 1\x9cShorter\x9csmall";
+    QString text1 = QLatin1String("Long Text 1\x9cShorter\x9csmall");
     QString text1_long = "Long Text 1";
     QString text1_short = "Shorter";
     QString text1_small = "small";

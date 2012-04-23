@@ -197,26 +197,26 @@ void tst_QKeySequence::operatorQString_data()
     QTest::addColumn<int>("keycode");
     QTest::addColumn<QString>("keystring");
 
-    QTest::newRow( "No modifier" ) << 0 << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString( "\x0c5" );
+    QTest::newRow( "No modifier" ) << 0 << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString::fromLatin1( "\x0c5" );
 
 #ifndef Q_OS_MAC
     QTest::newRow( "Ctrl+Left" ) << int(Qt::CTRL) << int(Qt::Key_Left) << QString( "Ctrl+Left" );
     QTest::newRow( "Ctrl+," ) << int(Qt::CTRL) << int(Qt::Key_Comma) << QString( "Ctrl+," );
     QTest::newRow( "Alt+Left" ) << int(Qt::ALT) << int(Qt::Key_Left) << QString( "Alt+Left" );
     QTest::newRow( "Alt+Shift+Left" ) << int(Qt::ALT | Qt::SHIFT) << int(Qt::Key_Left) << QString( "Alt+Shift+Left" );
-    QTest::newRow( "Ctrl" ) << int(Qt::CTRL) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString( "Ctrl+\x0c5" );
-    QTest::newRow( "Alt" ) << int(Qt::ALT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString( "Alt+\x0c5" );
-    QTest::newRow( "Shift" ) << int(Qt::SHIFT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString( "Shift+\x0c5" );
-    QTest::newRow( "Meta" ) << int(Qt::META) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString( "Meta+\x0c5" );
+    QTest::newRow( "Ctrl" ) << int(Qt::CTRL) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString::fromLatin1( "Ctrl+\x0c5" );
+    QTest::newRow( "Alt" ) << int(Qt::ALT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString::fromLatin1( "Alt+\x0c5" );
+    QTest::newRow( "Shift" ) << int(Qt::SHIFT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString::fromLatin1( "Shift+\x0c5" );
+    QTest::newRow( "Meta" ) << int(Qt::META) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString::fromLatin1( "Meta+\x0c5" );
 #else
     QTest::newRow( "Ctrl+Left" ) << int(Qt::CTRL) << int(Qt::Key_Left) << MacCtrl + macSymbolForQtKey(Qt::Key_Left);
     QTest::newRow( "Ctrl+," ) << int(Qt::CTRL) << int(Qt::Key_Comma) << MacCtrl + ",";
     QTest::newRow( "Alt+Left" ) << int(Qt::ALT) << int(Qt::Key_Left) << MacAlt + macSymbolForQtKey(Qt::Key_Left);
     QTest::newRow( "Alt+Shift+Left" ) << int(Qt::ALT | Qt::SHIFT) << int(Qt::Key_Left) << MacAlt + MacShift + macSymbolForQtKey(Qt::Key_Left);
-    QTest::newRow( "Ctrl" ) << int(Qt::CTRL) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << MacCtrl + "\x0c5";
-    QTest::newRow( "Alt" ) << int(Qt::ALT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << MacAlt + "\x0c5";
-    QTest::newRow( "Shift" ) << int(Qt::SHIFT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << MacShift + "\x0c5";
-    QTest::newRow( "Meta" ) << int(Qt::META) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << MacMeta + "\x0c5";
+    QTest::newRow( "Ctrl" ) << int(Qt::CTRL) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << MacCtrl + QLatin1String("\x0c5");
+    QTest::newRow( "Alt" ) << int(Qt::ALT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << MacAlt + QLatin1String("\x0c5");
+    QTest::newRow( "Shift" ) << int(Qt::SHIFT) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << MacShift + QLatin1String("\x0c5");
+    QTest::newRow( "Meta" ) << int(Qt::META) << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << MacMeta + QLatin1String("\x0c5");
 #endif
 }
 
@@ -448,10 +448,10 @@ void tst_QKeySequence::toString_data()
     QTest::newRow("Ctrl+Left") << QString("Ctrl+Left") << QString("Ctrl+Left") << QString("Ctrl+Left");
     QTest::newRow("Alt+Left") << QString("Alt+Left") << QString("Alt+Left") << QString("Alt+Left");
     QTest::newRow("Alt+Shift+Left") << QString("Alt+Shift+Left") << QString("Alt+Shift+Left") << QString("Alt+Shift+Left");
-    QTest::newRow("Ctrl") << QString("Ctrl+\x0c5") << QString("Ctrl+\x0c5") << QString("Ctrl+\x0c5");
-    QTest::newRow("Alt") << QString("Alt+\x0c5") << QString("Alt+\x0c5") << QString("Alt+\x0c5");
-    QTest::newRow("Shift") << QString("Shift+\x0c5") << QString("Shift+\x0c5") << QString("Shift+\x0c5");
-    QTest::newRow("Meta") << QString("Meta+\x0c5") << QString("Meta+\x0c5") << QString("Meta+\x0c5");
+    QTest::newRow("Ctrl") << QString::fromLatin1("Ctrl+\x0c5") << QString::fromLatin1("Ctrl+\x0c5") << QString::fromLatin1("Ctrl+\x0c5");
+    QTest::newRow("Alt") << QString::fromLatin1("Alt+\x0c5") << QString::fromLatin1("Alt+\x0c5") << QString::fromLatin1("Alt+\x0c5");
+    QTest::newRow("Shift") << QString::fromLatin1("Shift+\x0c5") << QString::fromLatin1("Shift+\x0c5") << QString::fromLatin1("Shift+\x0c5");
+    QTest::newRow("Meta") << QString::fromLatin1("Meta+\x0c5") << QString::fromLatin1("Meta+\x0c5") << QString::fromLatin1("Meta+\x0c5");
     QTest::newRow("Ctrl+Plus") << QString("Ctrl++") << QString("Ctrl++") << QString("Ctrl++");
     QTest::newRow("Ctrl+,") << QString("Ctrl+,") << QString("Ctrl+,") << QString("Ctrl+,");
     QTest::newRow("Ctrl+,,Ctrl+,") << QString("Ctrl+,,Ctrl+,") << QString("Ctrl+,, Ctrl+,") << QString("Ctrl+,, Ctrl+,");
@@ -467,10 +467,10 @@ void tst_QKeySequence::toString_data()
                                  << MacAlt + MacShift + macSymbolForQtKey(Qt::Key_Left);
                                  */
     QTest::newRow("Ctrl+Right,Left") << MacCtrl + "Right, Left" << QString("Ctrl+Right, Left") << MacCtrl + macSymbolForQtKey(Qt::Key_Right) + QString(", ") + macSymbolForQtKey(Qt::Key_Left);
-    QTest::newRow("Ctrl") << MacCtrl + "\x0c5" << QString("Ctrl+\x0c5") << MacCtrl + "\x0c5";
-    QTest::newRow("Alt") << MacAlt + "\x0c5" << QString("Alt+\x0c5") << MacAlt + "\x0c5";
-    QTest::newRow("Shift") << MacShift + "\x0c5" << QString("Shift+\x0c5") << MacShift + "\x0c5";
-    QTest::newRow("Meta") << MacMeta + "\x0c5" << QString("Meta+\x0c5") << MacMeta + "\x0c5";
+    QTest::newRow("Ctrl") << MacCtrl + QLatin1String("\x0c5") << QString::fromLatin1("Ctrl+\x0c5") << MacCtrl + QLatin1String("\x0c5");
+    QTest::newRow("Alt") << MacAlt + QLatin1String("\x0c5") << QString::fromLatin1("Alt+\x0c5") << MacAlt + QLatin1String("\x0c5");
+    QTest::newRow("Shift") << MacShift + QLatin1String("\x0c5") << QString::fromLatin1("Shift+\x0c5") << MacShift + QLatin1String("\x0c5");
+    QTest::newRow("Meta") << MacMeta + QLatin1String("\x0c5") << QString::fromLatin1("Meta+\x0c5") << MacMeta + QLatin1String("\x0c5");
     QTest::newRow("Ctrl+Plus") << MacCtrl + "+" << QString("Ctrl++") << MacCtrl + "+";
     QTest::newRow("Ctrl+,") << MacCtrl + "," << QString("Ctrl+,") << MacCtrl + ",";
     QTest::newRow("Ctrl+,,Ctrl+,") << MacCtrl + ",, " + MacCtrl + "," << QString("Ctrl+,, Ctrl+,") << MacCtrl + ",, " + MacCtrl + ",";

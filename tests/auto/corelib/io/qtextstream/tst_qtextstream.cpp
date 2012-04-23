@@ -419,28 +419,28 @@ void tst_QTextStream::generateLineData(bool for_QString)
         // one line
         QTest::newRow("utf16-BE/nothing")
             << QByteArray("\xfe\xff"
-                          "\x00\xe5\x00\x67\x00\x65", 8) << (QStringList() << "\345ge");
+                          "\x00\xe5\x00\x67\x00\x65", 8) << (QStringList() << QLatin1String("\345ge"));
         QTest::newRow("utf16-LE/nothing")
             << QByteArray("\xff\xfe"
-                          "\xe5\x00\x67\x00\x65\x00", 8) << (QStringList() << "\345ge");
+                          "\xe5\x00\x67\x00\x65\x00", 8) << (QStringList() << QLatin1String("\345ge"));
         QTest::newRow("utf16-BE/lf")
             << QByteArray("\xfe\xff"
-                          "\x00\xe5\x00\x67\x00\x65\x00\x0a", 10) << (QStringList() << "\345ge");
+                          "\x00\xe5\x00\x67\x00\x65\x00\x0a", 10) << (QStringList() << QLatin1String("\345ge"));
         QTest::newRow("utf16-LE/lf")
             << QByteArray("\xff\xfe"
-                          "\xe5\x00\x67\x00\x65\x00\x0a\x00", 10) << (QStringList() << "\345ge");
+                          "\xe5\x00\x67\x00\x65\x00\x0a\x00", 10) << (QStringList() << QLatin1String("\345ge"));
 
         // two lines
         QTest::newRow("utf16-BE/twolines")
             << QByteArray("\xfe\xff"
                           "\x00\xe5\x00\x67\x00\x65\x00\x0a"
                           "\x00\xe5\x00\x67\x00\x65\x00\x0a", 18)
-            << (QStringList() << "\345ge" << "\345ge");
+            << (QStringList() << QLatin1String("\345ge") << QLatin1String("\345ge"));
         QTest::newRow("utf16-LE/twolines")
             << QByteArray("\xff\xfe"
                           "\xe5\x00\x67\x00\x65\x00\x0a\x00"
                           "\xe5\x00\x67\x00\x65\x00\x0a\x00", 18)
-            << (QStringList() << "\345ge" << "\345ge");
+            << (QStringList() << QLatin1String("\345ge") << QLatin1String("\345ge"));
 
         // three lines
         QTest::newRow("utf16-BE/threelines")
@@ -448,32 +448,32 @@ void tst_QTextStream::generateLineData(bool for_QString)
                           "\x00\xe5\x00\x67\x00\x65\x00\x0a"
                           "\x00\xe5\x00\x67\x00\x65\x00\x0a"
                           "\x00\xe5\x00\x67\x00\x65\x00\x0a", 26)
-            << (QStringList() << "\345ge" << "\345ge" << "\345ge");
+            << (QStringList() << QLatin1String("\345ge") << QLatin1String("\345ge") << QLatin1String("\345ge"));
         QTest::newRow("utf16-LE/threelines")
             << QByteArray("\xff\xfe"
                           "\xe5\x00\x67\x00\x65\x00\x0a\x00"
                           "\xe5\x00\x67\x00\x65\x00\x0a\x00"
                           "\xe5\x00\x67\x00\x65\x00\x0a\x00", 26)
-            << (QStringList() << "\345ge" << "\345ge" << "\345ge");
+            << (QStringList() << QLatin1String("\345ge") << QLatin1String("\345ge") << QLatin1String("\345ge"));
 
         // utf-32
         QTest::newRow("utf32-BE/twolines")
             << QByteArray("\x00\x00\xfe\xff"
                           "\x00\x00\x00\xe5\x00\x00\x00\x67\x00\x00\x00\x65\x00\x00\x00\x0a"
                           "\x00\x00\x00\xe5\x00\x00\x00\x67\x00\x00\x00\x65\x00\x00\x00\x0a", 36)
-            << (QStringList() << "\345ge" << "\345ge");
+            << (QStringList() << QLatin1String("\345ge") << QLatin1String("\345ge"));
         QTest::newRow("utf32-LE/twolines")
             << QByteArray("\xff\xfe\x00\x00"
                           "\xe5\x00\x00\x00\x67\x00\x00\x00\x65\x00\x00\x00\x0a\x00\x00\x00"
                           "\xe5\x00\x00\x00\x67\x00\x00\x00\x65\x00\x00\x00\x0a\x00\x00\x00", 36)
-            << (QStringList() << "\345ge" << "\345ge");
+            << (QStringList() << QLatin1String("\345ge") << QLatin1String("\345ge"));
     }
 
     // partials
     QTest::newRow("cr") << QByteArray("\r") << (QStringList() << "");
     QTest::newRow("oneline/cr") << QByteArray("ole\r") << (QStringList() << "ole");
     if (!for_QString)
-        QTest::newRow("utf16-BE/cr") << QByteArray("\xfe\xff\x00\xe5\x00\x67\x00\x65\x00\x0d", 10) << (QStringList() << "\345ge");
+        QTest::newRow("utf16-BE/cr") << QByteArray("\xfe\xff\x00\xe5\x00\x67\x00\x65\x00\x0d", 10) << (QStringList() << QLatin1String("\345ge"));
 }
 
 // ------------------------------------------------------------------------------
@@ -702,34 +702,34 @@ void tst_QTextStream::generateAllData(bool for_QString)
         // one line
         QTest::newRow("utf16-BE/nothing")
             << QByteArray("\xfe\xff"
-                          "\x00\xe5\x00\x67\x00\x65", 8) << QString("\345ge");
+                          "\x00\xe5\x00\x67\x00\x65", 8) << QString::fromLatin1("\345ge");
         QTest::newRow("utf16-LE/nothing")
             << QByteArray("\xff\xfe"
-                          "\xe5\x00\x67\x00\x65\x00", 8) << QString("\345ge");
+                          "\xe5\x00\x67\x00\x65\x00", 8) << QString::fromLatin1("\345ge");
         QTest::newRow("utf16-BE/lf")
             << QByteArray("\xfe\xff"
-                          "\x00\xe5\x00\x67\x00\x65\x00\x0a", 10) << QString("\345ge\n");
+                          "\x00\xe5\x00\x67\x00\x65\x00\x0a", 10) << QString::fromLatin1("\345ge\n");
         QTest::newRow("utf16-LE/lf")
             << QByteArray("\xff\xfe"
-                          "\xe5\x00\x67\x00\x65\x00\x0a\x00", 10) << QString("\345ge\n");
+                          "\xe5\x00\x67\x00\x65\x00\x0a\x00", 10) << QString::fromLatin1("\345ge\n");
         QTest::newRow("utf16-BE/crlf")
             << QByteArray("\xfe\xff"
-                          "\x00\xe5\x00\x67\x00\x65\x00\x0d\x00\x0a", 12) << QString("\345ge\r\n");
+                          "\x00\xe5\x00\x67\x00\x65\x00\x0d\x00\x0a", 12) << QString::fromLatin1("\345ge\r\n");
         QTest::newRow("utf16-LE/crlf")
             << QByteArray("\xff\xfe"
-                          "\xe5\x00\x67\x00\x65\x00\x0d\x00\x0a\x00", 12) << QString("\345ge\r\n");
+                          "\xe5\x00\x67\x00\x65\x00\x0d\x00\x0a\x00", 12) << QString::fromLatin1("\345ge\r\n");
 
         // two lines
         QTest::newRow("utf16-BE/twolines")
             << QByteArray("\xfe\xff"
                           "\x00\xe5\x00\x67\x00\x65\x00\x0a"
                           "\x00\xe5\x00\x67\x00\x65\x00\x0a", 18)
-            << QString("\345ge\n\345ge\n");
+            << QString::fromLatin1("\345ge\n\345ge\n");
         QTest::newRow("utf16-LE/twolines")
             << QByteArray("\xff\xfe"
                           "\xe5\x00\x67\x00\x65\x00\x0a\x00"
                           "\xe5\x00\x67\x00\x65\x00\x0a\x00", 18)
-            << QString("\345ge\n\345ge\n");
+            << QString::fromLatin1("\345ge\n\345ge\n");
 
         // three lines
         QTest::newRow("utf16-BE/threelines")
@@ -737,13 +737,13 @@ void tst_QTextStream::generateAllData(bool for_QString)
                           "\x00\xe5\x00\x67\x00\x65\x00\x0a"
                           "\x00\xe5\x00\x67\x00\x65\x00\x0a"
                           "\x00\xe5\x00\x67\x00\x65\x00\x0a", 26)
-            << QString("\345ge\n\345ge\n\345ge\n");
+            << QString::fromLatin1("\345ge\n\345ge\n\345ge\n");
         QTest::newRow("utf16-LE/threelines")
             << QByteArray("\xff\xfe"
                           "\xe5\x00\x67\x00\x65\x00\x0a\x00"
                           "\xe5\x00\x67\x00\x65\x00\x0a\x00"
                           "\xe5\x00\x67\x00\x65\x00\x0a\x00", 26)
-            << QString("\345ge\n\345ge\n\345ge\n");
+            << QString::fromLatin1("\345ge\n\345ge\n\345ge\n");
     }
 }
 
@@ -2042,9 +2042,9 @@ void tst_QTextStream::generateStringData(bool for_QString)
 
     if (!for_QString) {
         QTest::newRow("utf16-BE (empty)") << QByteArray("\xff\xfe", 2) << QByteArray() << QString();
-        QTest::newRow("utf16-BE (corrupt)") << QByteArray("\xff", 1) << QByteArray("\xff") << QString("\xff");
+        QTest::newRow("utf16-BE (corrupt)") << QByteArray("\xff", 1) << QByteArray("\xff") << QString::fromLatin1("\xff");
         QTest::newRow("utf16-LE (empty)") << QByteArray("\xfe\xff", 2) << QByteArray() << QString();
-        QTest::newRow("utf16-LE (corrupt)") << QByteArray("\xfe", 1) << QByteArray("\xfe") << QString("\xfe");
+        QTest::newRow("utf16-LE (corrupt)") << QByteArray("\xfe", 1) << QByteArray("\xfe") << QString::fromLatin1("\xfe");
     }
 }
 

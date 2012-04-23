@@ -3419,7 +3419,7 @@ void tst_QVariant::moreCustomTypes()
         PLAY_WITH_VARIANT( qint32(17), false, "17", 17, true);
         PLAY_WITH_VARIANT(quint64(18), false, "18", 18, true);
         PLAY_WITH_VARIANT( qint64(19), false, "19", 19, true);
-        PLAY_WITH_VARIANT(  qint8(-12), false, "\xf4", -12, true);
+        PLAY_WITH_VARIANT(  qint8(-12), false, QLatin1String("\xf4"), -12, true); // qint8 is char, so it gets converted via QChar
         PLAY_WITH_VARIANT( qint16(-13), false, "-13", -13, true);
         PLAY_WITH_VARIANT( qint32(-14), false, "-14", -14, true);
         PLAY_WITH_VARIANT( qint64(-15), false, "-15", -15, true);

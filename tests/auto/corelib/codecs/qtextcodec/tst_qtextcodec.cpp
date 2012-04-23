@@ -528,8 +528,10 @@ void tst_QTextCodec::utf8Codec_data()
 
     QTest::newRow("str0") << QByteArray("abcdefgh") << QString("abcdefgh") << -1;
     QTest::newRow("str0-len") << QByteArray("abcdefgh") << QString("abc") << 3;
-    QTest::newRow("str1") << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205") << QString("\366\344\374\326\304\334\370\346\345\330\306\305") << -1;
-    QTest::newRow("str1-len") << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205") << QString("\366\344\374\326\304") << 10;
+    QTest::newRow("str1") << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205")
+                          << QString::fromLatin1("\366\344\374\326\304\334\370\346\345\330\306\305") << -1;
+    QTest::newRow("str1-len") << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205")
+                              << QString::fromLatin1("\366\344\374\326\304") << 10;
 
     str += QChar(0x05e9);
     str += QChar(0x05d3);
@@ -1565,7 +1567,7 @@ void tst_QTextCodec::utf8bom_data()
 
     QTest::newRow("nobom")
         << QByteArray("\302\240", 2)
-        << QString("\240");
+        << QString::fromLatin1("\240");
 
     {
         static const ushort data[] = { 0x201d };
