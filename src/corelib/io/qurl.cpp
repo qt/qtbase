@@ -246,24 +246,6 @@ QUrlPrivate::QUrlPrivate(const QUrlPrivate &copy)
 {
 }
 
-void QUrlPrivate::clear()
-{
-    scheme.clear();
-    userName.clear();
-    password.clear();
-    host.clear();
-    port = -1;
-    path.clear();
-    query.clear();
-    fragment.clear();
-
-    errorCode = NoError;
-    errorSupplement = 0;
-    sectionIsPresent = 0;
-    sectionHasError = 0;
-}
-
-
 // From RFC 3896, Appendix A Collected ABNF for URI
 //    URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
 //[...]

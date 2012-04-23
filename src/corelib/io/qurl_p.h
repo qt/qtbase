@@ -108,7 +108,6 @@ public:
     QUrlPrivate(const QUrlPrivate &copy);
 
     void parse(const QString &url, QUrl::ParsingMode parsingMode);
-    void clear();
     bool isEmpty() const
     { return sectionIsPresent == 0 && port == -1 && path.isEmpty(); }
 
