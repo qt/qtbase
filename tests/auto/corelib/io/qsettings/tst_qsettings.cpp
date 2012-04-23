@@ -1989,6 +1989,9 @@ void tst_QSettings::setIniCodec()
 
     QConfFile::clearCache();
 
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("", "QTBUG-25446", Abort);
+#endif
     QCOMPARE(actualContents4, expeContents4);
     QCOMPARE(actualContents5, expeContents5);
 
