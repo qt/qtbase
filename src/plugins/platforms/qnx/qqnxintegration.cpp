@@ -54,6 +54,7 @@
 #if defined(Q_OS_BLACKBERRY)
 #include "qqnxbpseventfilter.h"
 #include "qqnxnavigatorbps.h"
+#include "qqnxtheme.h"
 #include "qqnxvirtualkeyboardbps.h"
 #elif defined(QQNX_PPS)
 #include "qqnxnavigatorpps.h"
@@ -382,6 +383,23 @@ QPlatformServices * QQnxIntegration::services() const
 {
     return m_services;
 }
+
+#if defined(Q_OS_BLACKBERRY)
+QStringList QQnxIntegration::themeNames() const
+{
+    return QStringList(QQnxTheme::name());
+}
+
+QPlatformTheme *QQnxIntegration::createPlatformTheme(const QString &name) const
+{
+#if defined(QQNXINTEGRATION_DEBUG)
+    qDebug() << Q_FUNC_INFO << "name =" << name;
+#endif
+    if (name == QQnxTheme::name())
+        return new QQnxTheme(m_fontDatabase);
+    return QPlatformIntegration::createPlatformTheme(name);
+}
+#endif
 
 QWindow *QQnxIntegration::window(screen_window_t qnxWindow)
 {

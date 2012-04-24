@@ -112,6 +112,11 @@ public:
 
     QPlatformServices *services() const;
 
+#if defined(Q_OS_BLACKBERRY)
+    QStringList themeNames() const;
+    QPlatformTheme *createPlatformTheme(const QString &name) const;
+#endif
+
     static QWindow *window(screen_window_t qnxWindow);
 
 private:

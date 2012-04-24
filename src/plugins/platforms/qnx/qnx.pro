@@ -85,12 +85,16 @@ CONFIG(blackberry) {
     SOURCES += qqnxnavigatorbps.cpp \
                qqnxeventdispatcher_blackberry.cpp \
                qqnxbpseventfilter.cpp \
-               qqnxvirtualkeyboardbps.cpp
+               qqnxvirtualkeyboardbps.cpp \
+               qqnxtheme.cpp \
+               qqnxsystemsettings.cpp
 
     HEADERS += qqnxnavigatorbps.h \
                qqnxeventdispatcher_blackberry.h \
                qqnxbpseventfilter.h \
-               qqnxvirtualkeyboardbps.h
+               qqnxvirtualkeyboardbps.h  \
+               qqnxtheme.h \
+               qqnxsystemsettings.h
 
     LIBS += -lbps
 }
