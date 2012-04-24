@@ -105,9 +105,6 @@
 #ifndef QT_NO_IMAGE_HEURISTIC_MASK
 #  define QT_NO_IMAGE_HEURISTIC_MASK
 #endif
-#ifndef QT_NO_IMAGE_TEXT
-#  define QT_NO_IMAGE_TEXT
-#endif
 #ifndef QT_NO_MOVIE
 #  define QT_NO_MOVIE
 #endif

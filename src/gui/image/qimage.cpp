@@ -1127,9 +1127,7 @@ QImage QImage::copy(const QRect& r) const
         image.d->dpmy = d->dpmy;
         image.d->offset = d->offset;
         image.d->has_alpha_clut = d->has_alpha_clut;
-#ifndef QT_NO_IMAGE_TEXT
         image.d->text = d->text;
-#endif
         return image;
     }
 
@@ -1219,9 +1217,7 @@ QImage QImage::copy(const QRect& r) const
     image.d->dpmy = dotsPerMeterY();
     image.d->offset = offset();
     image.d->has_alpha_clut = d->has_alpha_clut;
-#ifndef QT_NO_IMAGE_TEXT
     image.d->text = d->text;
-#endif
     return image;
 }
 
@@ -3350,9 +3346,7 @@ QImage QImage::convertToFormat(Format format, Qt::ImageConversionFlags flags) co
         image.setDotsPerMeterY(dotsPerMeterY());
         image.setDotsPerMeterX(dotsPerMeterX());
 
-#if !defined(QT_NO_IMAGE_TEXT)
         image.d->text = d->text;
-#endif // !QT_NO_IMAGE_TEXT
 
         converter(image.d, d, flags);
         return image;
@@ -3399,14 +3393,12 @@ static QImage convertWithPalette(const QImage &src, QImage::Format format,
     QImage dest(src.size(), format);
     dest.setColorTable(clut);
 
-#if !defined(QT_NO_IMAGE_TEXT)
     QString textsKeys = src.text();
     QStringList textKeyList = textsKeys.split(QLatin1Char('\n'), QString::SkipEmptyParts);
     foreach (const QString &textKey, textKeyList) {
         QStringList textKeySplitted = textKey.split(QLatin1String(": "));
         dest.setText(textKeySplitted[0], textKeySplitted[1]);
     }
-#endif // !QT_NO_IMAGE_TEXT
 
     int h = src.height();
     int w = src.width();
@@ -3474,9 +3466,7 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
     QImage image(d->width, d->height, format);
     QIMAGE_SANITYCHECK_MEMORY(image);
 
-#if !defined(QT_NO_IMAGE_TEXT)
-        image.d->text = d->text;
-#endif // !QT_NO_IMAGE_TEXT
+    image.d->text = d->text;
 
     converter(image.d, d, flags);
     return image;
@@ -4756,7 +4746,6 @@ void QImage::setOffset(const QPoint& p)
     if (d)
         d->offset = p;
 }
-#ifndef QT_NO_IMAGE_TEXT
 
 /*!
     Returns the text keys for this image.
@@ -4878,8 +4867,6 @@ void QImage::setText(const QString &key, const QString &value)
     \l{http://www.rfc-editor.org/rfc/rfc1766.txt}{RFC 1766}) or 0.
     \endomit
 */
-
-#endif // QT_NO_IMAGE_TEXT
 
 /*
     Sets the image bits to the \a pixmap contents and returns a

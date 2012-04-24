@@ -55,11 +55,8 @@
 
 #include <QtCore/qglobal.h>
 
-#include <QVector>
-
-#ifndef QT_NO_IMAGE_TEXT
 #include <QMap>
-#endif
+#include <QVector>
 
 QT_BEGIN_NAMESPACE
 
@@ -103,9 +100,8 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     // Return false if the conversion cannot be done in-place.
     bool convertInPlace(QImage::Format newFormat, Qt::ImageConversionFlags);
 
-#ifndef QT_NO_IMAGE_TEXT
     QMap<QString, QString> text;
-#endif
+
     bool doImageIO(const QImage *image, QImageWriter* io, int quality) const;
 
     QPaintEngine *paintEngine;
@@ -152,4 +148,4 @@ inline int qt_depthForFormat(QImage::Format format)
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QIMAGE_P_H

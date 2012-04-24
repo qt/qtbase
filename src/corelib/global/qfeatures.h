@@ -118,9 +118,6 @@
 // QImage::createHeuristicMask()
 //#define QT_NO_IMAGE_HEURISTIC_MASK
 
-// Image Text
-//#define QT_NO_IMAGE_TEXT
-
 // QLCDNumber
 //#define QT_NO_LCDNUMBER
 

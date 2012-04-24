@@ -68,7 +68,6 @@ template <class T> class QVector;
 
 struct QImageData;
 class QImageDataMisc; // internal
-#ifndef QT_NO_IMAGE_TEXT
 #if QT_DEPRECATED_SINCE(5, 0)
 class QImageTextKeyLang {
 public:
@@ -86,7 +85,6 @@ public:
         { return !operator==(other); }
 };
 #endif
-#endif //QT_NO_IMAGE_TEXT
 
 typedef void (*QImageCleanupFunction)(void*);
 
@@ -267,7 +265,7 @@ public:
     void setDotsPerMeterY(int);
     QPoint offset() const;
     void setOffset(const QPoint&);
-#ifndef QT_NO_IMAGE_TEXT
+
     QStringList textKeys() const;
     QString text(const QString &key = QString()) const;
     void setText(const QString &key, const QString &value);
@@ -278,7 +276,6 @@ public:
     QT_DEPRECATED inline QStringList textLanguages() const;
     QT_DEPRECATED inline QString text(const QImageTextKeyLang&) const;
     QT_DEPRECATED inline void setText(const char* key, const char* lang, const QString&);
-#endif
 #endif
 
 #if QT_DEPRECATED_SINCE(5, 0)
@@ -314,7 +311,6 @@ inline QRgb QImage::pixel(const QPoint &pt) const { return pixel(pt.x(), pt.y())
 inline void QImage::setPixel(const QPoint &pt, uint index_or_rgb) { setPixel(pt.x(), pt.y(), index_or_rgb); }
 
 #if QT_DEPRECATED_SINCE(5, 0)
-#ifndef QT_NO_IMAGE_TEXT
 
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
 # pragma GCC diagnostic push
@@ -397,8 +393,6 @@ inline void QImage::setText(const char* key, const char* lang, const QString &s)
 # pragma GCC diagnostic pop
 #elif defined(Q_CC_MSVC)
 # pragma warning(default: 4996)
-#endif
-
 #endif
 
 inline int QImage::numColors() const

@@ -105,9 +105,6 @@
 #ifndef QT_NO_IMAGEFORMAT_XPM
 #  define QT_NO_IMAGEFORMAT_XPM
 #endif
-#ifndef QT_NO_IMAGE_TEXT
-#  define QT_NO_IMAGE_TEXT
-#endif
 #ifndef QT_NO_MOVIE
 #  define QT_NO_MOVIE
 #endif

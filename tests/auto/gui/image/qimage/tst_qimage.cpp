@@ -88,9 +88,7 @@ private slots:
     void dotsPerMeterZero();
 
     void convertToFormatPreserveDotsPrMeter();
-#ifndef QT_NO_IMAGE_TEXT
     void convertToFormatPreserveText();
-#endif
 
     void rotate_data();
     void rotate();
@@ -1143,7 +1141,6 @@ void tst_QImage::convertToFormatPreserveDotsPrMeter()
     QCOMPARE(img.dotsPerMeterY(), dpmy);
 }
 
-#ifndef QT_NO_IMAGE_TEXT
 void tst_QImage::convertToFormatPreserveText()
 {
     QImage img(100, 100, QImage::Format_ARGB32_Premultiplied);
@@ -1168,7 +1165,6 @@ void tst_QImage::convertToFormatPreserveText()
     QCOMPARE(imgResult2.text(), result);
     QCOMPARE(imgResult2.textKeys(), listResult);
 }
-#endif // QT_NO_IMAGE_TEXT
 
 void tst_QImage::setColorCount()
 {

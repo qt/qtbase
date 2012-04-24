@@ -390,7 +390,6 @@ static void CALLBACK_CALL_TYPE qt_png_warning(png_structp /*png_ptr*/, png_const
 */
 void Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngTexts(png_info *info)
 {
-#ifndef QT_NO_IMAGE_TEXT
     png_textp text_ptr;
     int num_text=0;
     png_get_text(png_ptr, info, &text_ptr, &num_text);
@@ -413,7 +412,6 @@ void Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngTexts(png_info *info)
         readTexts.append(value);
         text_ptr++;
     }
-#endif
 }
 
 
@@ -530,11 +528,9 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
     state = ReadingEnd;
     png_read_end(png_ptr, end_info);
 
-#ifndef QT_NO_IMAGE_TEXT
     readPngTexts(end_info);
     for (int i = 0; i < readTexts.size()-1; i+=2)
         outImage->setText(readTexts.at(i), readTexts.at(i+1));
-#endif
 
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
     delete [] row_pointers;
@@ -638,7 +634,6 @@ void QPNGImageWriter::setGamma(float g)
 }
 
 
-#ifndef QT_NO_IMAGE_TEXT
 static void set_text(const QImage &image, png_structp png_ptr, png_infop info_ptr,
                      const QString &description)
 {
@@ -712,7 +707,6 @@ static void set_text(const QImage &image, png_structp png_ptr, png_infop info_pt
     }
     delete [] text_ptr;
 }
-#endif
 
 bool QPNGImageWriter::writeImage(const QImage& image, int off_x, int off_y)
 {
@@ -722,10 +716,6 @@ bool QPNGImageWriter::writeImage(const QImage& image, int off_x, int off_y)
 bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image, int quality_in, const QString &description,
                                  int off_x_in, int off_y_in)
 {
-#ifdef QT_NO_IMAGE_TEXT
-    Q_UNUSED(description);
-#endif
-
     QPoint offset = image.offset();
     int off_x = off_x_in + offset.x();
     int off_y = off_y_in + offset.y();
@@ -837,9 +827,8 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image, in
                 PNG_RESOLUTION_METER);
     }
 
-#ifndef QT_NO_IMAGE_TEXT
     set_text(image, png_ptr, info_ptr, description);
-#endif
+
     png_write_info(png_ptr, info_ptr);
 
     if (image.depth() != 1)
@@ -991,7 +980,7 @@ QVariant QPngHandler::option(ImageOption option) const
                      png_get_image_height(d->png_ptr, d->info_ptr));
     else if (option == ImageFormat)
         return d->readImageFormat();
-    return 0;
+    return QVariant();
 }
 
 void QPngHandler::setOption(ImageOption option, const QVariant &value)
