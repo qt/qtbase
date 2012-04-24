@@ -244,6 +244,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return lc_messages.createSeparatedList(in.value<QStringList>());
     case LocaleChanged:
         Q_ASSERT(false);
+    case LanguageId:
+        return lc_messages.language();
     default:
         break;
     }
