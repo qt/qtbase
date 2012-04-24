@@ -56,7 +56,7 @@ class QWindowsAccessibility : public QPlatformAccessibility
 public:
     QWindowsAccessibility();
     static bool handleAccessibleObjectFromWindowRequest(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult);
-    virtual void notifyAccessibilityUpdate(const QAccessibleEvent &event);
+    virtual void notifyAccessibilityUpdate(QAccessibleEvent *event);
     /*
     virtual void setRootObject(QObject *o);
     virtual void initialize();
