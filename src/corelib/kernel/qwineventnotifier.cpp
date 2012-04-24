@@ -48,6 +48,19 @@
 
 QT_BEGIN_NAMESPACE
 
+class QWinEventNotifierPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QWinEventNotifier)
+public:
+    QWinEventNotifierPrivate()
+    : handleToEvent(0), enabled(false) {}
+    QWinEventNotifierPrivate(HANDLE h, bool e)
+    : handleToEvent(h), enabled(e) {}
+
+    HANDLE handleToEvent;
+    bool enabled;
+};
+
 /*!
     \class QWinEventNotifier
     \since 5.0
@@ -103,7 +116,7 @@ QT_BEGIN_NAMESPACE
 */
 
 QWinEventNotifier::QWinEventNotifier(QObject *parent)
-  : QObject(parent), handleToEvent(0), enabled(false)
+  : QObject(*new QWinEventNotifierPrivate, parent)
 {}
 
 /*!
@@ -118,14 +131,14 @@ QWinEventNotifier::QWinEventNotifier(QObject *parent)
 */
 
 QWinEventNotifier::QWinEventNotifier(HANDLE hEvent, QObject *parent)
- : QObject(parent), handleToEvent(hEvent), enabled(false)
+ : QObject(*new QWinEventNotifierPrivate(hEvent, false), parent)
 {
-    Q_D(QObject);
+    Q_D(QWinEventNotifier);
     QEventDispatcherWin32 *eventDispatcher = qobject_cast<QEventDispatcherWin32 *>(d->threadData->eventDispatcher);
     Q_ASSERT_X(eventDispatcher, "QWinEventNotifier::QWinEventNotifier()",
                "Cannot create a win event notifier without a QEventDispatcherWin32");
     eventDispatcher->registerEventNotifier(this);
-    enabled = true;
+    d->enabled = true;
 }
 
 /*!
@@ -149,8 +162,9 @@ QWinEventNotifier::~QWinEventNotifier()
 
 void QWinEventNotifier::setHandle(HANDLE hEvent)
 {
+    Q_D(QWinEventNotifier);
     setEnabled(false);
-    handleToEvent = hEvent;
+    d->handleToEvent = hEvent;
 }
 
 /*!
@@ -161,7 +175,8 @@ void QWinEventNotifier::setHandle(HANDLE hEvent)
 
 HANDLE  QWinEventNotifier::handle() const
 {
-    return handleToEvent;
+    Q_D(const QWinEventNotifier);
+    return d->handleToEvent;
 }
 
 /*!
@@ -172,7 +187,8 @@ HANDLE  QWinEventNotifier::handle() const
 
 bool QWinEventNotifier::isEnabled() const
 {
-    return enabled;
+    Q_D(const QWinEventNotifier);
+    return d->enabled;
 }
 
 /*!
@@ -184,16 +200,16 @@ bool QWinEventNotifier::isEnabled() const
 
 void QWinEventNotifier::setEnabled(bool enable)
 {
-    if (enabled == enable)                        // no change
+    Q_D(QWinEventNotifier);
+    if (d->enabled == enable)                        // no change
         return;
-    enabled = enable;
+    d->enabled = enable;
 
-    Q_D(QObject);
     QEventDispatcherWin32 *eventDispatcher = qobject_cast<QEventDispatcherWin32 *>(d->threadData->eventDispatcher);
     if (!eventDispatcher) // perhaps application is shutting down
         return;
 
-    if (enabled)
+    if (enable)
         eventDispatcher->registerEventNotifier(this);
     else
         eventDispatcher->unregisterEventNotifier(this);
@@ -205,16 +221,17 @@ void QWinEventNotifier::setEnabled(bool enable)
 
 bool QWinEventNotifier::event(QEvent * e)
 {
+    Q_D(QWinEventNotifier);
     if (e->type() == QEvent::ThreadChange) {
-        if (enabled) {
+        if (d->enabled) {
             QMetaObject::invokeMethod(this, "setEnabled", Qt::QueuedConnection,
-                                      Q_ARG(bool, enabled));
+                                      Q_ARG(bool, true));
             setEnabled(false);
         }
     }
     QObject::event(e);                        // will activate filters
     if (e->type() == QEvent::WinEventAct) {
-        emit activated(handleToEvent);
+        emit activated(d->handleToEvent);
         return true;
     }
     return false;

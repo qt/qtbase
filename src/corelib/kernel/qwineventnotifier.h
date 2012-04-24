@@ -54,11 +54,11 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
+class QWinEventNotifierPrivate;
 class Q_CORE_EXPORT QWinEventNotifier : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QObject)
+    Q_DECLARE_PRIVATE(QWinEventNotifier)
 
 public:
     explicit QWinEventNotifier(QObject *parent = 0);
@@ -78,10 +78,6 @@ Q_SIGNALS:
 
 protected:
     bool event(QEvent * e);
-
-private:
-    HANDLE handleToEvent;
-    bool enabled;
 };
 
 QT_END_NAMESPACE
