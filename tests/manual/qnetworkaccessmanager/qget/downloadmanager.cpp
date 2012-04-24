@@ -61,23 +61,20 @@ DownloadManager::~DownloadManager()
 
 }
 
-void DownloadManager::get(const QUrl &url, const QString &user, const QString &password)
+void DownloadManager::get(const QNetworkRequest &request, const QString &user, const QString &password)
 {
-    DownloadItem *dl = new DownloadItem(QNetworkRequest(url), user, password, nam);
+    DownloadItem *dl = new DownloadItem(request, user, password, nam);
     transfers.append(dl);
     connect(dl, SIGNAL(downloadFinished(TransferItem*)), SLOT(downloadFinished(TransferItem*)));
 }
 
-void DownloadManager::upload(const QUrl &url, const QString &user, const QString &password, const QString &filename, const QString &contentType, TransferItem::Method method)
+void DownloadManager::upload(const QNetworkRequest &request, const QString &user, const QString &password, const QString &filename, TransferItem::Method method)
 {
     QScopedPointer<QFile> file(new QFile(filename));
     if (!file->open(QFile::ReadOnly)) {
         qDebug() << "Can't open input file" << file->fileName() << file->errorString();
         return;
     }
-    QNetworkRequest request(url);
-    if (!contentType.isEmpty())
-        request.setHeader(QNetworkRequest::ContentTypeHeader, contentType);
     UploadItem *ul = new UploadItem(request, user, password, nam, file.take(), method);
     transfers.append(ul);
     connect(ul, SIGNAL(downloadFinished(TransferItem*)), SLOT(downloadFinished(TransferItem*)));

@@ -98,8 +98,8 @@ class DownloadManager : public QObject
 public:
     DownloadManager();
     ~DownloadManager();
-    void get(const QUrl &url, const QString &user, const QString &password);
-    void upload(const QUrl &url, const QString &user, const QString &password, const QString &filename, const QString &contentType, TransferItem::Method method);
+    void get(const QNetworkRequest &request, const QString &user, const QString &password);
+    void upload(const QNetworkRequest &request, const QString &user, const QString &password, const QString &filename, TransferItem::Method method);
     void setProxy(const QNetworkProxy &proxy) { nam.setProxy(proxy); }
     void setProxyUser(const QString &user) { proxyUser = user; }
     void setProxyPassword(const QString &password) { proxyPassword = password; }

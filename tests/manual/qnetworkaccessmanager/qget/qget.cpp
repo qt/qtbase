@@ -74,6 +74,7 @@ void printUsage()
              << "                   ,socks          SOCKS5 proxy" << endl
              << "                   ,ftp            FTP proxy" << endl
              << "                   ,httpcaching    HTTP caching proxy (no CONNECT method)" << endl
+             << "--headers=filename                 Set request headers from file contents" << endl
              << "--post=filename                    upload the file to the next url using HTTP POST" << endl
              << "--put=filename                     upload the file to the next url using HTTP PUT" << endl
              << "--content-type=<MIME>              set content-type header for upload" << endl
@@ -96,6 +97,7 @@ int main(int argc, char *argv[])
     QString contentType;
     QString httpUser;
     QString httpPassword;
+    QString headersFile;
     TransferItem::Method method = TransferItem::Get;
     //arguments match wget where possible
     foreach (QString str, app.arguments().mid(1)) {
@@ -161,19 +163,43 @@ int main(int argc, char *argv[])
         }
         else if (str.startsWith("--content-type="))
             contentType=str.mid(15);
+        else if (str.startsWith("--headers="))
+            headersFile=str.mid(10);
         else if (str == "--serial")
             dl.setQueueMode(DownloadManager::Serial);
         else if (str.startsWith("-"))
             qDebug() << "unsupported option" << str;
         else {
             QUrl url(QUrl::fromUserInput(str));
+            QNetworkRequest request(url);
+            //set headers
+            if (!headersFile.isEmpty()) {
+                QFile f(headersFile);
+                if (!f.open(QFile::ReadOnly | QFile::Text)) {
+                    qDebug() << "can't open headers file: " << headersFile;
+                } else {
+                    while (!f.atEnd()) {
+                        QByteArray line = f.readLine().trimmed();
+                        if (line.isEmpty()) break;
+                        int colon = line.indexOf(':');
+                        qDebug() << line;
+                        if (colon > 0 && colon < line.length() - 2) {
+                            request.setRawHeader(line.left(colon), line.mid(colon+2));
+                        }
+                    }
+                    f.close();
+                }
+            }
+            if (!contentType.isEmpty())
+                request.setHeader(QNetworkRequest::ContentTypeHeader, contentType);
+
             switch (method) {
             case TransferItem::Put:
             case TransferItem::Post:
-                dl.upload(url, httpUser, httpPassword, uploadFileName, contentType, method);
+                dl.upload(request, httpUser, httpPassword, uploadFileName, method);
                 break;
             case TransferItem::Get:
-                dl.get(url, httpUser, httpPassword);
+                dl.get(request, httpUser, httpPassword);
                 break;
             }
             method = TransferItem::Get; //default for urls without a request type before it
