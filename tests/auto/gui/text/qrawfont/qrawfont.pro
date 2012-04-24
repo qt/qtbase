@@ -9,5 +9,3 @@ SOURCES += \
 INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/harfbuzz/src
 
 TESTDATA += testfont_bold_italic.ttf  testfont.ttf
-
-win32:CONFIG += insignificant_test # QTBUG-24197
