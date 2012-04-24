@@ -126,32 +126,47 @@
     The parsing mode controls the way QUrl parses strings.
 
     \value TolerantMode QUrl will try to correct some common errors in URLs.
-                        This mode is useful when processing URLs entered by
-                        users.
+                        This mode is useful for parsing URLs coming from sources
+                        not known to be strictly standards-conforming.
 
     \value StrictMode Only valid URLs are accepted. This mode is useful for
                       general URL validation.
 
-    In TolerantMode, the parser corrects the following invalid input:
+    In TolerantMode, the parser has the following behaviour:
 
     \list
 
-    \li Spaces and "%20": If an encoded URL contains a space, this will be
-    replaced with "%20". If a decoded URL contains "%20", this will be
-    replaced with a single space before the URL is parsed.
+    \li Spaces and "%20": unencoded space characters will be accepted and will
+    be treated as equivalent to "%20".
 
     \li Single "%" characters: Any occurrences of a percent character "%" not
     followed by exactly two hexadecimal characters (e.g., "13% coverage.html")
-    will be replaced by "%25".
+    will be replaced by "%25". Note that one lone "%" character will trigger
+    the correction mode for all percent characters.
 
     \li Reserved and unreserved characters: An encoded URL should only
     contain a few characters as literals; all other characters should
     be percent-encoded. In TolerantMode, these characters will be
     automatically percent-encoded where they are not allowed:
-            space / double-quote / "<" / ">" / "[" / "\" /
-            "]" / "^" / "`" / "{" / "|" / "}"
+            space / double-quote / "<" / ">" / "\" /
+            "^" / "`" / "{" / "|" / "}"
+    Those same characters can be decoded again by passing QUrl::DecodeReserved
+    to toString() or toEncoded().
 
     \endlist
+
+    When in StrictMode, if a parsing error is found, isValid() will return \c
+    false and errorString() will return a simple message describing the error.
+    If more than one error is detected, it is undefined which error gets
+    reported.
+
+    Note that TolerantMode is not usually enough for parsing user input, which
+    often contains more errors and expectations than the parser can deal with.
+    When dealing with data coming directly from the user -- as opposed to data
+    coming from data-transfer sources, such as other programs -- it is
+    recommended to use fromUserInput().
+
+    \sa fromUserInput(), setUrl(), toString(), toEncoded(), QUrl::FormattingOptions
 */
 
 /*!
@@ -178,6 +193,62 @@
     Note that the case folding rules in \l{RFC 3491}{Nameprep}, which QUrl
     conforms to, require host names to always be converted to lower case,
     regardless of the Qt::FormattingOptions used.
+
+    The options from QUrl::ComponentFormattingOptions are also possible.
+
+    \sa QUrl::ComponentFormattingOptions
+*/
+
+/*!
+    \enum QUrl::ComponentFormattingOptions
+    \since 5.0
+
+    The component formatting options define how the components of an URL will
+    be formatted when written out as text. They can be combined with the
+    options from QUrl::FormattingOptions when used in toString() and
+    toEncoded().
+
+    \value PrettyDecoded   The component is returned in a "pretty form", with
+                           most percent-encoded characters decoded. The exact
+                           behavior of PrettyDecoded varies from component to
+                           component and may also change from Qt release to Qt
+                           release. This is the default.
+
+    \value EncodeSpaces    Leave space characters in their encoded form ("%20").
+
+    \value EncodeUnicode   Leave non-US-ASCII characters encoded in their UTF-8
+                           percent-encoded form (e.g., "%C3%A9" for the U+00E9
+                           codepoint, LATIN SMALL LETTER E WITH ACUTE).
+
+    \value EncodeDelimiters Leave certain delimiters in their encoded form, as
+                            would appear in the URL when the full URL is
+                            represented as text. The delimiters are affected
+                            by this option change from component to component.
+
+    \value EncodeReserved  Leave the US-ASCII reserved characters in their encoded
+                           forms.
+
+    \value DecodeReseved   Decode the US-ASCII reserved characters.
+
+    \value FullyEncoded    Leave all characters in their properly-encoded form,
+                           as this component would appear as part of a URL. When
+                           used with toString(), this produces a fully-compliant
+                           URL in QString form, exactly equal to the result of
+                           toEncoded()
+
+    \value MostDecoded     Attempt to decode as much as possible. For individual
+                           components of the URL, this decodes every percent
+                           encoding sequence, control characters (U+0000 to U+001F)
+                           and non-US-ASCII sequences that aren't valid UTF-8
+                           sequences.
+
+    The values of EncodeReserved and DecodeReserved should not be used together
+    in one call. The behaviour is undefined if that happens. They are provided
+    as separate values because the behaviour of the "pretty mode" with regards
+    to reserved characters is different on certain components and specially on
+    the full URL.
+
+    \sa QUrl::FormattingOptions
 */
 
 #include "qurl.h"
@@ -1373,12 +1444,17 @@ const QByteArray &QUrlPrivate::normalized() const
 
 
 /*!
-    Constructs a URL by parsing \a url. \a url is assumed to be in human
-    readable representation, with no percent encoding. QUrl will automatically
-    percent encode all characters that are not allowed in a URL.
-    The default parsing mode is TolerantMode.
+    Constructs a URL by parsing \a url. QUrl will automatically percent encode
+    all characters that are not allowed in a URL and decode the percent-encoded
+    sequences that represent a character that is allowed in a URL.
 
-    Parses the \a url using the parser mode \a parsingMode.
+    Parses the \a url using the parser mode \a parsingMode. In TolerantMode
+    (the default), QUrl will correct certain mistakes, notably the presence of
+    a percent character ('%') not followed by two hexadecimal digits, and it
+    will accept any character in any position. In StrictMode, encoding mistakes
+    will not be tolerated and QUrl will also check that certain forbidden
+    characters are not present in unencoded form. If an error is detected in
+    StrictMode, isValid() will return false.
 
     Example:
 
@@ -1457,12 +1533,18 @@ void QUrl::clear()
 }
 
 /*!
-    Parses \a url using the parsing mode \a parsingMode.
+    Parses \a url and sets this object to that value. QUrl will automatically
+    percent encode all characters that are not allowed in a URL and decode the
+    percent-encoded sequences that represent a character that is allowed in a
+    URL.
 
-    \a url is assumed to be in unicode format, with no percent
-    encoding.
-
-    Calling isValid() will tell whether or not a valid URL was constructed.
+    Parses the \a url using the parser mode \a parsingMode. In TolerantMode
+    (the default), QUrl will correct certain mistakes, notably the presence of
+    a percent character ('%') not followed by two hexadecimal digits, and it
+    will accept any character in any position. In StrictMode, encoding mistakes
+    will not be tolerated and QUrl will also check that certain forbidden
+    characters are not present in unencoded form. If an error is detected in
+    StrictMode, isValid() will return false.
 
     \sa setEncodedUrl()
 */

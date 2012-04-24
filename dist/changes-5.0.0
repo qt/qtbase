@@ -625,6 +625,26 @@ Qt for Windows CE
      cleared). Any QPointers tracking a widget will NOT be cleared before the
      QWidget destructor destroys the children for the widget being tracked.
 
+- QUrl
+
+  * QUrl has been changed to operate only on percent-encoded
+    forms. Fully-decoded forms, where the percent character stands for itself,
+    are no longer possible. For that reason, the getters and setters with
+    "encoded" in the name are deprecated, except for QUrl::toEncoded() and
+    QUrl::fromEncoded().
+
+    QUrl now operates in a mode where it decodes as much as it can of the
+    percent-encoding sequences. In addition, the setter methods possess a mode
+    in which a '%' character not part of a percent-encoding sequence will cause
+    the parser to correct the input. Therefore, most software will not require
+    changes to adapt, since the getter methods will continue returning the
+    components in their most-decoded form as they did before and the setter
+    methods will accept input as they did before..
+
+    The most notable difference is when dealing with
+    QUrl::toString(). Previously, this function would return percent characters
+    in the URL by themselves. Now, it will return "%25", like
+    QUrl::toEncoded().
 
 - QVariant
 
