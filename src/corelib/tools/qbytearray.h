@@ -120,26 +120,7 @@ class QString;
 class QDataStream;
 template <typename T> class QList;
 
-struct QByteArrayData
-{
-    // Keep in sync with QArrayData
-
-    QtPrivate::RefCount ref;
-    int size;
-    uint alloc : 31;
-    uint capacityReserved : 1;
-
-    qptrdiff offset;
-
-    inline char *data() { return reinterpret_cast<char *>(this) + offset; }
-    inline const char *data() const { return reinterpret_cast<const char *>(this) + offset; }
-};
-
-Q_STATIC_ASSERT(sizeof(QArrayData) == sizeof(QByteArrayData));
-Q_STATIC_ASSERT(offsetof(QArrayData, ref) == offsetof(QByteArrayData, ref));
-Q_STATIC_ASSERT(offsetof(QArrayData, size) == offsetof(QByteArrayData, size));
-//  Can't use offsetof on bitfield members alloc, capacityReserved
-Q_STATIC_ASSERT(offsetof(QArrayData, offset) == offsetof(QByteArrayData, offset));
+typedef QArrayData QByteArrayData;
 
 template<int N> struct QStaticByteArrayData
 {
