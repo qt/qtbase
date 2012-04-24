@@ -170,10 +170,10 @@ static const struct StaticByteArrays {
         const char string[8];
     } shiftedNotNullTerminated;
 
-} statics = {{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) }, "data"}
-            ,{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) }, "dataBAD"}
-            ,{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) + sizeof(char) }, 0, "data"}
-            ,{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) + sizeof(char) }, 0, "dataBAD"}
+} statics = {{Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(4), "data"}
+             ,{Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(4), "dataBAD"}
+             ,{Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(4, sizeof(QByteArrayData) + sizeof(char)), 0, "data"}
+             ,{Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(4, sizeof(QByteArrayData) + sizeof(char)), 0, "dataBAD"}
             };
 
 static const QByteArrayDataPtr staticStandard = { const_cast<QByteArrayData *>(&statics.standard.data) };
