@@ -186,6 +186,9 @@ void tst_Lancelot::testOpenGL_data()
 
 void tst_Lancelot::testOpenGL()
 {
+#ifdef Q_OS_MAC
+    QSKIP("QTBUG-22792: This test function crashes on Mac OS X");
+#endif
     bool ok = false;
     QGLWidget glWidget;
     if (glWidget.isValid() && glWidget.format().directRendering()
