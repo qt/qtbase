@@ -531,7 +531,7 @@ void tst_QMdiArea::subWindowActivated2()
     QSKIP("Not fixed yet. See Task 197453");
 #endif
 #ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-25298", Abort);
+    QSKIP("QTBUG-25298: This test is unstable on Mac.");
 #endif
     QTRY_COMPARE(spy.count(), 1);
     QVERIFY(!mdiArea.activeSubWindow());
