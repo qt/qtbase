@@ -4245,6 +4245,32 @@ if [ "$CFG_GLIB" != "no" ]; then
     fi
 fi
 
+# auto-detect GTK style support
+if [ "$CFG_GLIB" = "yes" -a "$CFG_QGTKSTYLE" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ]; then
+        QT_CFLAGS_QGTKSTYLE=`$PKG_CONFIG --cflags gtk+-2.0 ">=" 2.10 atk 2>/dev/null`
+        QT_LIBS_QGTKSTYLE=`$PKG_CONFIG --libs gobject-2.0 2>/dev/null`
+    fi
+    if [ -n "$QT_CFLAGS_QGTKSTYLE" ] ; then
+        CFG_QGTKSTYLE=yes
+        QT_CONFIG="$QT_CONFIG gtkstyle"
+        QMakeVar set QT_CFLAGS_QGTKSTYLE "$QT_CFLAGS_QGTKSTYLE"
+        QMakeVar set QT_LIBS_QGTKSTYLE "$QT_LIBS_QGTKSTYLE"
+    else
+        if [ "$CFG_QGTKSTYLE" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "Gtk theme support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the fin  al report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        else
+            CFG_QGTKSTYLE=no
+        fi
+    fi
+elif [ "$CFG_GLIB" = "no" ]; then
+    CFG_QGTKSTYLE=no
+fi
+
 # ### Vestige
 if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
     if [ -n "$PKG_CONFIG" ]; then

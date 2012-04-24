@@ -74,7 +74,21 @@
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QToolButton>
 
-#include <private/qt_x11_p.h>
+// X11 Includes:
+
+// the following is necessary to work around breakage in many versions
+// of XFree86's Xlib.h still in use
+// ### which versions?
+#if defined(_XLIB_H_) // crude hack, but...
+#error "cannot include <X11/Xlib.h> before this file"
+#endif
+#define XRegisterIMInstantiateCallback qt_XRegisterIMInstantiateCallback
+#define XUnregisterIMInstantiateCallback qt_XUnregisterIMInstantiateCallback
+#define XSetIMValues qt_XSetIMValues
+#include <X11/Xlib.h>
+#undef XRegisterIMInstantiateCallback
+#undef XUnregisterIMInstantiateCallback
+#undef XSetIMValues
 
 QT_BEGIN_NAMESPACE
 
@@ -982,7 +996,7 @@ QString QGtkStylePrivate::openFilename(QWidget *parent, const QString &caption, 
     QWidget modal_widget;
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
     modal_widget.setParent(parent, Qt::Window);
-    QApplicationPrivate::enterModal(&modal_widget);
+    QGuiApplicationPrivate::showModalWindow(modal_widget.windowHandle());
 
     QString filename;
     if (QGtkStylePrivate::gtk_dialog_run ((GtkDialog*)gtkFileChooser) == GTK_RESPONSE_ACCEPT) {
@@ -995,7 +1009,7 @@ QString QGtkStylePrivate::openFilename(QWidget *parent, const QString &caption, 
         }
     }
 
-    QApplicationPrivate::leaveModal(&modal_widget);
+    QApplicationPrivate::hideModalWindow(modal_widget.windowHandle());
     gtk_widget_destroy (gtkFileChooser);
     return filename;
 }
@@ -1015,7 +1029,7 @@ QString QGtkStylePrivate::openDirectory(QWidget *parent, const QString &caption,
     QWidget modal_widget;
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
     modal_widget.setParent(parent, Qt::Window);
-    QApplicationPrivate::enterModal(&modal_widget);
+    QGuiApplicationPrivate::showModalWindow(modal_widget.windowHandle());
 
     QString filename;
     if (QGtkStylePrivate::gtk_dialog_run ((GtkDialog*)gtkFileChooser) == GTK_RESPONSE_ACCEPT) {
@@ -1024,7 +1038,7 @@ QString QGtkStylePrivate::openDirectory(QWidget *parent, const QString &caption,
         g_free (gtk_filename);
     }
 
-    QApplicationPrivate::leaveModal(&modal_widget);
+    QApplicationPrivate::hideModalWindow(modal_widget.windowHandle());
     gtk_widget_destroy (gtkFileChooser);
     return filename;
 }
@@ -1047,7 +1061,7 @@ QStringList QGtkStylePrivate::openFilenames(QWidget *parent, const QString &capt
     QWidget modal_widget;
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
     modal_widget.setParent(parent, Qt::Window);
-    QApplicationPrivate::enterModal(&modal_widget);
+    QGuiApplicationPrivate::showModalWindow(modal_widget.windowHandle());
 
     if (gtk_dialog_run ((GtkDialog*)gtkFileChooser) == GTK_RESPONSE_ACCEPT) {
         GSList *gtk_file_names = QGtkStylePrivate::gtk_file_chooser_get_filenames((GtkFileChooser*)gtkFileChooser);
@@ -1060,7 +1074,7 @@ QStringList QGtkStylePrivate::openFilenames(QWidget *parent, const QString &capt
         }
     }
 
-    QApplicationPrivate::leaveModal(&modal_widget);
+    QApplicationPrivate::hideModalWindow(modal_widget.windowHandle());
     gtk_widget_destroy (gtkFileChooser);
     return filenames;
 }
@@ -1080,7 +1094,7 @@ QString QGtkStylePrivate::saveFilename(QWidget *parent, const QString &caption, 
     QWidget modal_widget;
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
     modal_widget.setParent(parent, Qt::Window);
-    QApplicationPrivate::enterModal(&modal_widget);
+    QGuiApplicationPrivate::showModalWindow(modal_widget.windowHandle());
 
     QString filename;
     if (QGtkStylePrivate::gtk_dialog_run ((GtkDialog*)gtkFileChooser) == GTK_RESPONSE_ACCEPT) {
@@ -1093,7 +1107,7 @@ QString QGtkStylePrivate::saveFilename(QWidget *parent, const QString &caption, 
         }
     }
 
-    QApplicationPrivate::leaveModal(&modal_widget);
+    QApplicationPrivate::hideModalWindow(modal_widget.windowHandle());
     gtk_widget_destroy (gtkFileChooser);
     return filename;
 }

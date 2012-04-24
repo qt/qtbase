@@ -39,7 +39,7 @@ contains( styles, all ) {
 
 !macx-*|ios:styles -= mac
 
-x11{
+contains(QT_CONFIG, gtkstyle) {
     QMAKE_CXXFLAGS += $$QT_CFLAGS_QGTKSTYLE
     LIBS_PRIVATE += $$QT_LIBS_QGTKSTYLE
     styles += gtk
