@@ -80,7 +80,7 @@ bool writeToFile(const char* text, const QString &filename)
     QDir dir(QFileInfo(file).absoluteDir());
     if (!dir.exists())
         dir.mkpath(dir.absolutePath());
-    if (!file.open(QFile::WriteOnly)) {
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
         cout << "Couldn't write to " << qPrintable(filename) << ": " << qPrintable(file.errorString())
              << endl;
         return false;
@@ -144,13 +144,14 @@ Configure::Configure(int& argc, char** argv)
 
         { //make a syncqt script(s) that can be used in the shadow
             QFile syncqt(buildPath + "/bin/syncqt");
+            // no QFile::Text, just in case the perl interpreter can't cope with them (unlikely)
             if (syncqt.open(QFile::WriteOnly)) {
                 QTextStream stream(&syncqt);
                 stream << "#!/usr/bin/perl -w" << endl
                        << "require \"" << sourcePath + "/bin/syncqt\";" << endl;
             }
             QFile syncqt_bat(buildPath + "/bin/syncqt.bat");
-            if (syncqt_bat.open(QFile::WriteOnly)) {
+            if (syncqt_bat.open(QFile::WriteOnly | QFile::Text)) {
                 QTextStream stream(&syncqt_bat);
                 stream << "@echo off" << endl
                        << "call " << fixSeparators(sourcePath) << fixSeparators("/bin/syncqt.bat -qtdir \"") << fixSeparators(buildPath) << "\" %*" << endl;
@@ -159,6 +160,7 @@ Configure::Configure(int& argc, char** argv)
         }
 
         QFile configtests(buildPath + "/bin/qtmodule-configtests");
+        // no QFile::Text, just in case the perl interpreter can't cope with them (unlikely)
         if (configtests.open(QFile::WriteOnly)) {
             QTextStream stream(&configtests);
             stream << "#!/usr/bin/perl -w" << endl
@@ -3425,7 +3427,7 @@ void Configure::generateMakefiles()
                     QDir::setCurrent(fixSeparators(dirPath));
 
                     QFile file(makefileName);
-                    if (!file.open(QFile::WriteOnly)) {
+                    if (!file.open(QFile::WriteOnly | QFile::Text)) {
                         printf("failed on dirPath=%s, makefile=%s\n",
                             qPrintable(dirPath), qPrintable(makefileName));
                         continue;
