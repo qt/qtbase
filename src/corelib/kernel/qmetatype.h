@@ -600,7 +600,7 @@ struct QMetaTypeIdQObject<T*, /* isPointerToTypeDerivedFromQObject */ true>
     {
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
         if (!metatype_id.load()) {
-            int len = strlen(T::staticMetaObject.className());
+            const int len = int(strlen(T::staticMetaObject.className()));
             QVarLengthArray<char, 16> classNameStar;
             classNameStar.append(T::staticMetaObject.className(), len);
             classNameStar.append("*\0", 2);
