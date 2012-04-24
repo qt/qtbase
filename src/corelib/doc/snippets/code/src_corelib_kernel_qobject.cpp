@@ -479,6 +479,14 @@ QObject::disconnect(lineEdit, &QLineEdit::textChanged,
                  label,  &QLabel::setText);
 //! [48]
 
+//! [49]
+if (isSignalConnected(QMethaMethod::fromSignal(&MyObject::valueChanged))) {
+    QByteArray data;
+    data = get_the_value();       // expensive operation
+    emit valueChanged(data);
+}
+//! [49]
+
 //! [meta data]
 //: This is a comment for the translator.
 //= qtn_foo_bar

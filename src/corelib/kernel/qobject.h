@@ -365,6 +365,7 @@ protected:
     QObject *sender() const;
     int senderSignalIndex() const;
     int receivers(const char* signal) const;
+    bool isSignalConnected(const QMetaMethod &signal) const;
 
     virtual void timerEvent(QTimerEvent *);
     virtual void childEvent(QChildEvent *);

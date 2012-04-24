@@ -2157,13 +2157,12 @@ int QObject::senderSignalIndex() const
 
     \snippet code/src_corelib_kernel_qobject.cpp 21
 
-    As the code snippet above illustrates, you can use this function
-    to avoid emitting a signal that nobody listens to.
-
     \warning This function violates the object-oriented principle of
     modularity. However, it might be useful when you need to perform
     expensive initialization only if something is connected to a
     signal.
+
+    \sa isSignalConnected()
 */
 
 int QObject::receivers(const char *signal) const
@@ -2207,6 +2206,60 @@ int QObject::receivers(const char *signal) const
         }
     }
     return receivers;
+}
+
+/*!
+    \since 5.0
+    Returns true if the \a signal is connected to at least one receiver,
+    otherwise returns false.
+
+    \a signal must be a signal member of this object, otherwise the behaviour
+    is undefined.
+
+    \snippet code/src_corelib_kernel_qobject.cpp 21
+
+    As the code snippet above illustrates, you can use this function
+    to avoid emitting a signal that nobody listens to.
+
+    \warning This function violates the object-oriented principle of
+    modularity. However, it might be useful when you need to perform
+    expensive initialization only if something is connected to a
+    signal.
+*/
+bool QObject::isSignalConnected(const QMetaMethod &signal) const
+{
+    Q_D(const QObject);
+    if (!signal.mobj)
+        return false;
+
+    Q_ASSERT_X(signal.mobj->cast(this) && signal.methodType() == QMetaMethod::Signal,
+               "QObject::isSignalConnected" , "the parametter must be a signal member of the object");
+    uint signalIndex = (signal.handle - QMetaObjectPrivate::get(signal.mobj)->methodData)/5;
+
+    if (signal.mobj->d.data[signal.handle + 4] & MethodCloned)
+        signalIndex = QMetaObjectPrivate::originalClone(signal.mobj, signalIndex);
+
+    int signalOffset;
+    int methodOffset;
+    computeOffsets(signal.mobj, &signalOffset, &methodOffset);
+    signalIndex += signalOffset;
+
+    if (signalIndex < sizeof(d->connectedSignals) * 8)
+        return d->isSignalConnected(signalIndex);
+
+    QMutexLocker locker(signalSlotLock(this));
+    if (d->connectionLists) {
+        if (signalIndex < uint(d->connectionLists->count())) {
+            const QObjectPrivate::Connection *c =
+                d->connectionLists->at(signalIndex).first;
+            while (c) {
+                if (c->receiver)
+                    return true;
+                c = c->nextConnectionList;
+            }
+        }
+    }
+    return false;
 }
 
 /*!

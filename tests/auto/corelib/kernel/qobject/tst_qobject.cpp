@@ -3774,6 +3774,7 @@ public:
 void tst_QObject::isSignalConnected()
 {
     ManySignals o;
+    const QMetaObject *meta = o.metaObject();
     o.rec = 0;
 #ifdef QT_BUILD_INTERNAL
     QObjectPrivate *priv = QObjectPrivate::get(&o);
@@ -3784,6 +3785,13 @@ void tst_QObject::isSignalConnected()
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig29()")));
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig60()")));
 #endif
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("destroyed()"))));
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("sig00()"))));
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("sig05()"))));
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("sig15()"))));
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("sig29()"))));
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("sig60()"))));
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("sig69()"))));
 
     QObject::connect(&o, SIGNAL(sig00()), &o, SIGNAL(sig69()));
     QObject::connect(&o, SIGNAL(sig34()), &o, SIGNAL(sig03()));
@@ -3802,6 +3810,18 @@ void tst_QObject::isSignalConnected()
     QVERIFY(priv->isSignalConnected(priv->signalIndex("sig69()")));
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig18()")));
 #endif
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("destroyed()"))));
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("destroyed(QObject*)"))));
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("sig05()"))));
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("sig15()"))));
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("sig29()"))));
+
+    QVERIFY(o.isSignalConnected(meta->method(meta->indexOfSignal("sig00()"))));
+    QVERIFY(o.isSignalConnected(meta->method(meta->indexOfSignal("sig03()"))));
+    QVERIFY(o.isSignalConnected(meta->method(meta->indexOfSignal("sig34()"))));
+    QVERIFY(o.isSignalConnected(meta->method(meta->indexOfSignal("sig69()"))));
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("sig18()"))));
+
 
     QObject::connect(&o, SIGNAL(sig18()), &o, SIGNAL(sig29()));
     QObject::connect(&o, SIGNAL(sig29()), &o, SIGNAL(sig62()));
@@ -3815,6 +3835,11 @@ void tst_QObject::isSignalConnected()
     QVERIFY(priv->isSignalConnected(priv->signalIndex("sig69()")));
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig27()")));
 #endif
+    QVERIFY(o.isSignalConnected(meta->method(meta->indexOfSignal("sig18()"))));
+    QVERIFY(o.isSignalConnected(meta->method(meta->indexOfSignal("sig62()"))));
+    QVERIFY(o.isSignalConnected(meta->method(meta->indexOfSignal("sig28()"))));
+    QVERIFY(o.isSignalConnected(meta->method(meta->indexOfSignal("sig69()"))));
+    QVERIFY(!o.isSignalConnected(meta->method(meta->indexOfSignal("sig27()"))));
 
     QCOMPARE(o.rec, 0);
     emit o.sig01();
@@ -3845,6 +3870,12 @@ void tst_QObject::isSignalConnected()
     QCOMPARE(o.rec, 2);
     emit o.sig36();
     QCOMPARE(o.rec, 2);
+
+    QObject::connect(&o, &QObject::destroyed, qt_noop);
+    QVERIFY(o.isSignalConnected(meta->method(meta->indexOfSignal("destroyed()"))));
+    QVERIFY(o.isSignalConnected(meta->method(meta->indexOfSignal("destroyed(QObject*)"))));
+
+    QVERIFY(!o.isSignalConnected(QMetaMethod()));
 }
 
 void tst_QObject::qMetaObjectConnect()
