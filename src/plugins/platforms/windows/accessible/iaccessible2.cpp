@@ -1363,15 +1363,16 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryService(REFGUID guidServic
     Q_UNUSED(guidService);
     *iface = 0;
     accessibleDebug("QWindowsIA2Accessible::QS(): %s", IIDToString(riid).constData());
-    if (riid == IID_IAccessible || riid == IID_IUnknown || riid == IID_IDispatch) {
-        *iface = static_cast<IAccessible*>(this);
-    } else if (/*guidService == IID_IAccessible && */riid == IID_IAccessible2) {
+
+    if (guidService == IID_IAccessible && riid == IID_IAccessible2) {
+        // The conditions for entering here should be ok (from _dicoveringInterfaces in IAccessible2.idl)
         *iface = static_cast<IAccessible2*>(this);
-    } else  if (riid == IID_IAccessibleApplication) {
+    } else if (guidService == IID_IAccessible && (riid == IID_IAccessible || riid == IID_IUnknown || riid == IID_IDispatch)) {
+        // The above conditions works with AccProbe and NVDA.
+        *iface = static_cast<IAccessible*>(this);
+    } else if (riid == IID_IAccessibleApplication) {
         *iface = new AccessibleApplication;
         return S_OK;
-    } else {
-        QueryInterface(riid, iface);
     }
     if (*iface) {
         AddRef();
