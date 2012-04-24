@@ -1188,7 +1188,7 @@ void QXcbWindow::requestActivateWindow()
 }
 
 #if XCB_USE_MAEMO_WINDOW_PROPERTIES
-void QXcbWindow::setOrientation(Qt::ScreenOrientation orientation)
+void QXcbWindow::handleContentOrientationChange(Qt::ScreenOrientation orientation)
 {
     int angle = 0;
     switch (orientation) {
