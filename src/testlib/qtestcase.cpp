@@ -908,7 +908,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The QTouchEventSequence class is used to simulate a sequence of touch events.
 
-    To simulate a sequence of touch events on a specific device for a widget, call
+    To simulate a sequence of touch events on a specific device for a window or widget, call
     QTest::touchEvent to create a QTouchEventSequence instance. Add touch events to
     the sequence by calling press(), move(), release() and stationary(), and let the
     instance run out of scope to commit the sequence to the event system.
@@ -920,7 +920,32 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QTest::QTouchEventSequence::~QTouchEventSequence()
 
-    Commits this sequence of touch events and frees allocated resources.
+    Commits this sequence of touch events, unless autoCommit was disabled, and frees allocated resources.
+*/
+
+/*!
+  \fn void QTest::QTouchEventSequence::commit(bool processEvents)
+
+   Commits this sequence of touch events to the event system. Normally there is no need to call this
+   function because it is called from the destructor. However, if autoCommit is disabled, the events
+   only get committed upon explicitly calling this function.
+
+   In special cases tests may want to disable the processing of the events. This can be achieved by
+   setting \a processEvents to false. This results in merely queuing the events, the event loop will
+   not be forced to process them.
+*/
+
+/*!
+    \fn QTouchEventSequence &QTest::QTouchEventSequence::press(int touchId, const QPoint &pt, QWindow *window)
+    \since 5.0
+
+    Adds a press event for touchpoint \a touchId at position \a pt to this sequence and returns
+    a reference to this QTouchEventSequence.
+
+    The position \a pt is interpreted as relative to \a window. If \a window is the null pointer, then
+    \a pt is interpreted as relative to the window provided when instantiating this QTouchEventSequence.
+
+    Simulates that the user pressed the touch screen or pad with the finger identified by \a touchId.
 */
 
 /*!
@@ -936,6 +961,19 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QTouchEventSequence &QTest::QTouchEventSequence::move(int touchId, const QPoint &pt, QWindow *window)
+    \since 5.0
+
+    Adds a move event for touchpoint \a touchId at position \a pt to this sequence and returns
+    a reference to this QTouchEventSequence.
+
+    The position \a pt is interpreted as relative to \a window. If \a widnow is the null pointer, then
+    \a pt is interpreted as relative to the window provided when instantiating this QTouchEventSequence.
+
+    Simulates that the user moved the finger identified by \a touchId.
+*/
+
+/*!
     \fn QTouchEventSequence &QTest::QTouchEventSequence::move(int touchId, const QPoint &pt, QWidget *widget)
 
     Adds a move event for touchpoint \a touchId at position \a pt to this sequence and returns
@@ -945,6 +983,19 @@ QT_BEGIN_NAMESPACE
     \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
 
     Simulates that the user moved the finger identified by \a touchId.
+*/
+
+/*!
+    \fn QTouchEventSequence &QTest::QTouchEventSequence::release(int touchId, const QPoint &pt, QWindow *window)
+    \since 5.0
+
+    Adds a release event for touchpoint \a touchId at position \a pt to this sequence and returns
+    a reference to this QTouchEventSequence.
+
+    The position \a pt is interpreted as relative to \a window. If \a window is the null pointer, then
+    \a pt is interpreted as relative to the window provided when instantiating this QTouchEventSequence.
+
+    Simulates that the user lifted the finger identified by \a touchId.
 */
 
 /*!
@@ -969,7 +1020,24 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QTouchEventSequence QTest::touchEvent(QWidget *widget, QTouchEvent::DeviceType deviceType)
+    \fn QTouchEventSequence QTest::touchEvent(QWindow *window, QTouchEvent::DeviceType deviceType, bool autoCommit)
+    \since 5.0
+
+    Creates and returns a QTouchEventSequence for the device \a deviceType to
+    simulate events for \a window.
+
+    When adding touch events to the sequence, \a window will also be used to translate
+    the position provided to screen coordinates, unless another window is provided in the
+    respective calls to press(), move() etc.
+
+    The touch events are committed to the event system when the destructor of the
+    QTouchEventSequence is called (ie when the object returned runs out of scope), unless
+    \a autoCommit is set to false. When \a autoCommit is false, commit() has to be called
+    manually.
+*/
+
+/*!
+    \fn QTouchEventSequence QTest::touchEvent(QWidget *widget, QTouchEvent::DeviceType deviceType, bool autoCommit)
 
     Creates and returns a QTouchEventSequence for the device \a deviceType to
     simulate events for \a widget.
@@ -979,7 +1047,9 @@ QT_BEGIN_NAMESPACE
     respective calls to press(), move() etc.
 
     The touch events are committed to the event system when the destructor of the
-    QTouchEventSequence is called (ie when the object returned runs out of scope).
+    QTouchEventSequence is called (ie when the object returned runs out of scope), unless
+    \a autoCommit is set to false. When \a autoCommit is false, commit() has to be called
+    manually.
 */
 
 static bool installCoverageTool(const char * appname, const char * testname)
