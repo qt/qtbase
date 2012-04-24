@@ -71,7 +71,8 @@ namespace QTest
     public:
         ~QTouchEventSequence()
         {
-            commit();
+            if (commitWhenDestroyed)
+                commit();
         }
         QTouchEventSequence& press(int touchId, const QPoint &pt, QWindow *window = 0)
         {
@@ -125,7 +126,7 @@ namespace QTest
         }
 #endif
 
-        void commit()
+        void commit(bool processEvents = true)
         {
             if (!points.isEmpty()) {
                 if (targetWindow)
@@ -139,7 +140,8 @@ namespace QTest
                 }
 #endif
             }
-            QCoreApplication::processEvents();
+            if (processEvents)
+                QCoreApplication::processEvents();
             previousPoints = points;
             points.clear();
         }
@@ -170,17 +172,17 @@ namespace QTest
 
     private:
 #ifdef QT_WIDGETS_LIB
-        QTouchEventSequence(QWidget *widget, QTouchDevice *aDevice)
-            : targetWidget(widget), targetWindow(0), device(aDevice)
+        QTouchEventSequence(QWidget *widget, QTouchDevice *aDevice, bool autoCommit)
+            : targetWidget(widget), targetWindow(0), device(aDevice), commitWhenDestroyed(autoCommit)
         {
         }
 #endif
-        QTouchEventSequence(QWindow *window, QTouchDevice *aDevice)
+        QTouchEventSequence(QWindow *window, QTouchDevice *aDevice, bool autoCommit)
             :
 #ifdef QT_WIDGETS_LIB
               targetWidget(0),
 #endif
-              targetWindow(window), device(aDevice)
+              targetWindow(window), device(aDevice), commitWhenDestroyed(autoCommit)
         {
         }
 
@@ -224,25 +226,28 @@ namespace QTest
 #endif
         QWindow *targetWindow;
         QTouchDevice *device;
+        bool commitWhenDestroyed;
 #ifdef QT_WIDGETS_LIB
-        friend QTouchEventSequence touchEvent(QWidget *, QTouchDevice*);
+        friend QTouchEventSequence touchEvent(QWidget *, QTouchDevice*, bool);
 #endif
-        friend QTouchEventSequence touchEvent(QWindow *, QTouchDevice*);
+        friend QTouchEventSequence touchEvent(QWindow *, QTouchDevice*, bool);
     };
 
 #ifdef QT_WIDGETS_LIB
     inline
     QTouchEventSequence touchEvent(QWidget *widget,
-                                   QTouchDevice *device)
+                                   QTouchDevice *device,
+                                   bool autoCommit = true)
     {
-        return QTouchEventSequence(widget, device);
+        return QTouchEventSequence(widget, device, autoCommit);
     }
 #endif
     inline
     QTouchEventSequence touchEvent(QWindow *window,
-                                   QTouchDevice *device)
+                                   QTouchDevice *device,
+                                   bool autoCommit = true)
     {
-        return QTouchEventSequence(window, device);
+        return QTouchEventSequence(window, device, autoCommit);
     }
 
 }
