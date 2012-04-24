@@ -76,13 +76,10 @@ private slots:
     void findChildren();
     void connectDisconnectNotify_data();
     void connectDisconnectNotify();
-    void connectNotifyPtr();
-    void connectDisconnectNotifyMethod_data();
-    void connectDisconnectNotifyMethod();
-    void connectDisconnectNotifyMethodPMF();
-    void disconnectNotifyMethod_receiverDestroyed();
-    void connectNotifyMethod_connectSlotsByName();
-    void connectDisconnectNotifyMethod_shadowing();
+    void connectDisconnectNotifyPMF();
+    void disconnectNotify_receiverDestroyed();
+    void connectNotify_connectSlotsByName();
+    void connectDisconnectNotify_shadowing();
     void emitInDefinedOrder();
     void customTypes();
     void streamCustomTypes();
@@ -807,20 +804,18 @@ public:
     NotifyObject() : SenderObject(), ReceiverObject()
     {}
 
-    QString org_signal;
-    QString nw_signal;
-
+    QList<QMetaMethod> connectedSignals;
+    QList<QMetaMethod> disconnectedSignals;
+    void clearNotifications()
+    {
+        connectedSignals.clear();
+        disconnectedSignals.clear();
+    }
 protected:
-    void connectNotify( const char *signal )
-    {
-        org_signal = signal;
-        nw_signal = QMetaObject::normalizedSignature(signal);
-    };
-    void disconnectNotify( const char *signal )
-    {
-        org_signal = signal;
-        nw_signal = QMetaObject::normalizedSignature(signal);
-    };
+    void connectNotify(const QMetaMethod &signal)
+    { connectedSignals.append(signal); }
+    void disconnectNotify(const QMetaMethod &signal)
+    { disconnectedSignals.append(signal); }
 };
 
 void tst_QObject::connectDisconnectNotify_data()
@@ -841,89 +836,6 @@ void tst_QObject::connectDisconnectNotify()
 {
     NotifyObject *s = new NotifyObject;
     NotifyObject *r = new NotifyObject;
-
-    QFETCH(QString, a_signal);
-    QFETCH(QString, a_slot);
-
-    // Test connectNotify
-    connect( (SenderObject*)s, a_signal.toLatin1(), (ReceiverObject*)r, a_slot.toLatin1() );
-    QCOMPARE( s->org_signal, s->nw_signal );
-    QCOMPARE( s->org_signal.toLatin1(), QMetaObject::normalizedSignature(a_signal.toLatin1().constData()) );
-
-    // Test disconnectNotify
-    QObject::disconnect( (SenderObject*)s, a_signal.toLatin1(), (ReceiverObject*)r, a_slot.toLatin1() );
-    QCOMPARE( s->org_signal, s->nw_signal );
-    QCOMPARE( s->org_signal.toLatin1(), QMetaObject::normalizedSignature(a_signal.toLatin1().constData()) );
-
-    // Reconnect
-    connect( (SenderObject*)s, a_signal.toLatin1(), (ReceiverObject*)r, a_slot.toLatin1() );
-    // Test disconnectNotify for a complete disconnect
-    ((SenderObject*)s)->disconnect((ReceiverObject*)r);
-
-    // Obtaining meta methods
-    int signalIndx = ((SenderObject*)s)->metaObject()->indexOfSignal(
-            QMetaObject::normalizedSignature(a_signal.toLatin1().constData()+1).constData());
-    int methodIndx = ((ReceiverObject*)r)->metaObject()->indexOfMethod(
-            QMetaObject::normalizedSignature(a_slot.toLatin1().constData()+1).constData());
-    QMetaMethod signal = ((SenderObject*)s)->metaObject()->method(signalIndx);
-    QMetaMethod method = ((ReceiverObject*)r)->metaObject()->method(methodIndx);
-
-    // Test connectNotify when connecting by QMetaMethod
-    connect( (SenderObject*)s, signal, (ReceiverObject*)r, method );
-    QCOMPARE( s->org_signal, s->nw_signal );
-    QCOMPARE( s->org_signal.toLatin1(), QMetaObject::normalizedSignature(a_signal.toLatin1().constData()) );
-
-    // Test disconnectNotify when disconnecting by QMetaMethod
-    QObject::disconnect( (SenderObject*)s, signal, (ReceiverObject*)r, method );
-    QCOMPARE( s->org_signal, s->nw_signal );
-    QCOMPARE( s->org_signal.toLatin1(), QMetaObject::normalizedSignature(a_signal.toLatin1().constData()) );
-
-    delete s;
-    delete r;
-}
-
-void tst_QObject::connectNotifyPtr()
-{
-    NotifyObject *s = new NotifyObject;
-    NotifyObject *r = new NotifyObject;
-
-    connect( (SenderObject*)s, &SenderObject::signal1, (ReceiverObject*)r, &ReceiverObject::slot1 );
-    QCOMPARE( s->org_signal, s->nw_signal );
-    QCOMPARE( s->org_signal.toLatin1(), QMetaObject::normalizedSignature(SIGNAL(signal1())));
-
-    delete s;
-    delete r;
-}
-
-class NotifyMethodObject : public SenderObject, public ReceiverObject
-{
-public:
-    NotifyMethodObject() : SenderObject(), ReceiverObject()
-    {}
-
-    QList<QMetaMethod> connectedSignals;
-    QList<QMetaMethod> disconnectedSignals;
-    void clearNotifications()
-    {
-        connectedSignals.clear();
-        disconnectedSignals.clear();
-    }
-protected:
-    void connectNotify(const QMetaMethod &signal)
-    { connectedSignals.append(signal); }
-    void disconnectNotify(const QMetaMethod &signal)
-    { disconnectedSignals.append(signal); }
-};
-
-void tst_QObject::connectDisconnectNotifyMethod_data()
-{
-    tst_QObject::connectDisconnectNotify_data();
-}
-
-void tst_QObject::connectDisconnectNotifyMethod()
-{
-    NotifyMethodObject *s = new NotifyMethodObject;
-    NotifyMethodObject *r = new NotifyMethodObject;
 
     QFETCH(QString, a_signal);
     QFETCH(QString, a_slot);
@@ -1005,10 +917,10 @@ void tst_QObject::connectDisconnectNotifyMethod()
 
 static void connectDisconnectNotifyTestSlot() {}
 
-void tst_QObject::connectDisconnectNotifyMethodPMF()
+void tst_QObject::connectDisconnectNotifyPMF()
 {
-    NotifyMethodObject *s = new NotifyMethodObject;
-    NotifyMethodObject *r = new NotifyMethodObject;
+    NotifyObject *s = new NotifyObject;
+    NotifyObject *r = new NotifyObject;
 
     QMetaMethod signal = QMetaMethod::fromSignal(&SenderObject::signal1);
 
@@ -1058,10 +970,10 @@ void tst_QObject::connectDisconnectNotifyMethodPMF()
     delete r;
 }
 
-void tst_QObject::disconnectNotifyMethod_receiverDestroyed()
+void tst_QObject::disconnectNotify_receiverDestroyed()
 {
-    NotifyMethodObject *s = new NotifyMethodObject;
-    NotifyMethodObject *r = new NotifyMethodObject;
+    NotifyObject *s = new NotifyObject;
+    NotifyObject *r = new NotifyObject;
 
     QVERIFY(QObject::connect((SenderObject*)s, SIGNAL(signal1()), (ReceiverObject*)r, SLOT(slot1())));
 
@@ -1115,7 +1027,7 @@ public Q_SLOTS:
     void on_baz_signal1() {}
 };
 
-void tst_QObject::connectNotifyMethod_connectSlotsByName()
+void tst_QObject::connectNotify_connectSlotsByName()
 {
     ConnectByNameNotifyReceiverObject testObject;
     QList<ConnectByNameNotifySenderObject *> senders =
@@ -1146,7 +1058,7 @@ Q_SIGNALS:
     void signal1();
 };
 
-void tst_QObject::connectDisconnectNotifyMethod_shadowing()
+void tst_QObject::connectDisconnectNotify_shadowing()
 {
     ConnectDisconnectNotifyShadowObject s;
     // Obtain QMetaMethods

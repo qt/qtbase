@@ -2509,8 +2509,6 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
 #endif
     QMetaObject::Connection handle = QMetaObject::Connection(QMetaObjectPrivate::connect(
         sender, signal_index, smeta, receiver, method_index_relative, rmeta ,type, types));
-    if (handle)
-        const_cast<QObject*>(sender)->connectNotify(signal - 1);
     return handle;
 }
 
@@ -2552,12 +2550,6 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
         return QMetaObject::Connection(0);
     }
 
-    // Reconstructing SIGNAL() macro result for signal.methodSignature() string
-    QByteArray signalSignature;
-    signalSignature.reserve(signal.methodSignature().size()+1);
-    signalSignature.append((char)(QSIGNAL_CODE + '0'));
-    signalSignature.append(signal.methodSignature());
-
     int signal_index;
     int method_index;
     {
@@ -2597,8 +2589,6 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
 #endif
     QMetaObject::Connection handle = QMetaObject::Connection(QMetaObjectPrivate::connect(
         sender, signal_index, signal.enclosingMetaObject(), receiver, method_index, 0, type, types));
-    if (handle)
-        const_cast<QObject*>(sender)->connectNotify(signalSignature.constData());
     return handle;
 }
 
@@ -2782,7 +2772,6 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     if (res) {
         if (!signal)
             const_cast<QObject*>(sender)->disconnectNotify(QMetaMethod());
-        const_cast<QObject*>(sender)->disconnectNotify(signal ? (signal - 1) : 0);
     }
     return res;
 }
@@ -2878,7 +2867,6 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
         // QMetaMethod as argument, as documented.
         const_cast<QObject*>(sender)->disconnectNotify(signal);
     }
-    const_cast<QObject*>(sender)->disconnectNotify(method.mobj ? signalSignature.constData() : 0);
     return true;
 }
 
@@ -2905,22 +2893,6 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     involved are destroyed.
 */
 
-
-/*!
-    \fn void QObject::connectNotify(const char *signal)
-    \obsolete
-*/
-void QObject::connectNotify(const char *)
-{
-}
-
-/*!
-    \fn void QObject::disconnectNotify(const char *signal)
-    \obsolete
-*/
-void QObject::disconnectNotify(const char *)
-{
-}
 
 /*!
     \since 5.0
@@ -4237,15 +4209,6 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
     QMetaMethod method = QMetaObjectPrivate::signal(senderMetaObject, signal_index);
     Q_ASSERT(method.isValid());
     s->connectNotify(method);
-
-    // reconstruct the signature to call connectNotify
-    const char *sig;
-    QByteArray tmp_sig = method.methodSignature();
-    sig = tmp_sig.constData();
-    QVarLengthArray<char> signalSignature(qstrlen(sig) + 2);
-    signalSignature.data()[0] = char(QSIGNAL_CODE + '0');
-    strcpy(signalSignature.data() + 1 , sig);
-    s->connectNotify(signalSignature.data());
 
     return ret;
 }

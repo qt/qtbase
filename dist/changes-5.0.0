@@ -12,6 +12,11 @@ information about a particular change.
 ****************************************************************************
 
 
+- QObject
+  * The signatures of the connectNotify() and disconnectNotify() functions
+    have changed. The functions now get passed a QMetaMethod that identifies
+    the signal, rather than a const char *.
+
 - QSslCertificate::subjectInfo() and QSslCertificate::issuerInfo() now
   return a QStringList instead of a QString
 

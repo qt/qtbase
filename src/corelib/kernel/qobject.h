@@ -373,9 +373,6 @@ protected:
 
     virtual void connectNotify(const QMetaMethod &signal);
     virtual void disconnectNotify(const QMetaMethod &signal);
-    // Deprecated; to be removed before Qt 5.0
-    virtual void connectNotify(const char *signal);
-    virtual void disconnectNotify(const char *signal);
 
 protected:
     QObject(QObjectPrivate &dd, QObject *parent = 0);
