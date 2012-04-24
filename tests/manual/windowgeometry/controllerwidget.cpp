@@ -441,6 +441,9 @@ ControllerWidget::ControllerWidget(QWidget *parent)
 
 #if QT_VERSION >= 0x050000
     x += 300;
+    m_testWindow->setWindowFlags(Qt::Window | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint
+                                 | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint
+                                 | Qt::WindowTitleHint);
     m_testWindow->setFramePos(QPoint(x, y));
     m_testWindow->resize(200, 200);
     m_testWindow->show();
