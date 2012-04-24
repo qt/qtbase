@@ -91,16 +91,7 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
         qFatal("QQnxScreen: failed to query display physical size, errno=%d", errno);
     }
 
-    // Peg the DPI to 96 (for now) so fonts are a reasonable size. We'll want to match
-    // everything with a QStyle later, and at that point the physical size can be used
-    // instead.
-    {
-        static const int dpi = 96;
-        int width = m_currentGeometry.width() / dpi * qreal(25.4) ;
-        int height = m_currentGeometry.height() / dpi * qreal(25.4) ;
-
-        m_currentPhysicalSize = m_initialPhysicalSize = QSize(width,height);
-    }
+    m_currentPhysicalSize = m_initialPhysicalSize = QSize(val[0], val[1]);
 
     // We only create the root window if we are the primary display.
     if (primaryScreen)
