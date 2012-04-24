@@ -129,17 +129,17 @@ extern "C" {
     Q_CORE_EXPORT int q_atomic_fetch_and_add_acquire_int(volatile int *ptr, int value);
     Q_CORE_EXPORT int q_atomic_fetch_and_add_release_int(volatile int *ptr, int value);
 
-    Q_CORE_EXPORT int q_atomic_test_and_set_ptr(volatile void *ptr, void *expected, void *newval);
+    Q_CORE_EXPORT int q_atomic_test_and_set_ptr(volatile void *ptr, const void *expected, const void *newval);
     Q_CORE_EXPORT int q_atomic_test_and_set_acquire_ptr(volatile void *ptr,
-                                                        void *expected,
-                                                        void *newval);
+                                                        const void *expected,
+                                                        const void *newval);
     Q_CORE_EXPORT int q_atomic_test_and_set_release_ptr(volatile void *ptr,
-                                                        void *expected,
-                                                        void *newval);
+                                                        const void *expected,
+                                                        const void *newval);
 
-    Q_CORE_EXPORT void *q_atomic_set_ptr(volatile void *ptr, void *newval);
-    Q_CORE_EXPORT void *q_atomic_fetch_and_store_acquire_ptr(volatile void *ptr, void *newval);
-    Q_CORE_EXPORT void *q_atomic_fetch_and_store_release_ptr(volatile void *ptr, void *newval);
+    Q_CORE_EXPORT void *q_atomic_set_ptr(volatile void *ptr, const void *newval);
+    Q_CORE_EXPORT void *q_atomic_fetch_and_store_acquire_ptr(volatile void *ptr, const void *newval);
+    Q_CORE_EXPORT void *q_atomic_fetch_and_store_release_ptr(volatile void *ptr, const void *newval);
 
     Q_CORE_EXPORT void *q_atomic_fetch_and_add_ptr(volatile void *ptr, int value);
     Q_CORE_EXPORT void *q_atomic_fetch_and_add_acquire_ptr(volatile void *ptr, int value);
