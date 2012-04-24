@@ -338,9 +338,9 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
                     } else {
                         style |= WS_THICKFRAME;
                     }
+                    if (flags & Qt::WindowTitleHint)
+                        style |= WS_CAPTION; // Contains WS_DLGFRAME
                 }
-                if (flags & Qt::WindowTitleHint)
-                    style |= WS_CAPTION;
                 if (flags & Qt::WindowSystemMenuHint)
                     style |= WS_SYSMENU;
                 if (flags & Qt::WindowMinimizeButtonHint)
