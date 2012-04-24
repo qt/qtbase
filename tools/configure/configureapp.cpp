@@ -3401,6 +3401,9 @@ void Configure::generateMakefiles()
             for (i=0; i<3; i++) {
                 for (int j=0; j<makeList[i].size(); ++j) {
                     MakeItem *it=makeList[i][j];
+                    if (it->directory == "tools/configure")
+                        continue; // don't overwrite our own Makefile
+
                     QString dirPath = fixSeparators(it->directory + "/");
                     QString projectName = it->proFile;
                     QString makefileName = buildPath + "/" + dirPath + it->target;
