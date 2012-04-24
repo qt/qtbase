@@ -244,7 +244,7 @@ static void xgetbv(int in, uint &eax, uint &edx)
     eax = result;
     edx = result >> 32;
 #elif defined(Q_CC_GNU)
-    asm ("xgetbv"
+    asm (".byte 0x0F, 0x01, 0xD0" // xgetbv instruction
         : "=a" (eax), "=d" (edx)
         : "c" (in));
 #endif
