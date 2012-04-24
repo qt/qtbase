@@ -1242,6 +1242,22 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
     d << ")";
     return d.space();
 }
+
+/*! \internal */
+QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
+{
+    if (!&ev) {
+        d << "QAccessibleEvent(null)";
+        return d;
+    }
+    d.nospace() << "QAccessibleEvent(object=" << hex << ev.object();
+    d.nospace() << dec;
+    d.nospace() << "child=" << ev.child();
+    d << " event=" << qAccessibleEventString(ev.type());
+    d.nospace() << ")";
+    return d.space();
+}
+
 #endif
 
 QT_END_NAMESPACE

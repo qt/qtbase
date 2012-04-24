@@ -621,6 +621,7 @@ Q_GUI_EXPORT const char *qAccessibleEventString(QAccessible::Event event);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface);
+Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleEvent &ev);
 #endif
 
 #endif // QT_NO_ACCESSIBILITY
