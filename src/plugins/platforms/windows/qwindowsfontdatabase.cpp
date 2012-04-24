@@ -65,101 +65,78 @@ QT_BEGIN_NAMESPACE
 // Helper classes for creating font engines directly from font data
 namespace {
 
-    template<typename T>
-    struct BigEndian
-    {
-        quint8 data[sizeof(T)];
-
-        operator T() const
-        {
-            T littleEndian = 0;
-            for (int i = 0; i < int(sizeof(T)); ++i)
-                littleEndian |= data[i] << ((sizeof(T) - i - 1) * 8);
-
-            return littleEndian;
-        }
-
-        BigEndian<T> &operator=(const T &t)
-        {
-            for (int i = 0; i < int(sizeof(T)); ++i)
-                data[i] = ((t >> (sizeof(T) - i - 1) * 8) & 0xff);
-
-            return *this;
-        }
-    };
-
 #   pragma pack(1)
 
     // Common structure for all formats of the "name" table
     struct NameTable
     {
-        BigEndian<quint16> format;
-        BigEndian<quint16> count;
-        BigEndian<quint16> stringOffset;
+        quint16 format;
+        quint16 count;
+        quint16 stringOffset;
     };
 
     struct NameRecord
     {
-        BigEndian<quint16> platformID;
-        BigEndian<quint16> encodingID;
-        BigEndian<quint16> languageID;
-        BigEndian<quint16> nameID;
-        BigEndian<quint16> length;
-        BigEndian<quint16> offset;
+        quint16 platformID;
+        quint16 encodingID;
+        quint16 languageID;
+        quint16 nameID;
+        quint16 length;
+        quint16 offset;
     };
 
     struct OffsetSubTable
     {
-        BigEndian<quint32> scalerType;
-        BigEndian<quint16> numTables;
-        BigEndian<quint16> searchRange;
-        BigEndian<quint16> entrySelector;
-        BigEndian<quint16> rangeShift;
+        quint32 scalerType;
+        quint16 numTables;
+        quint16 searchRange;
+        quint16 entrySelector;
+        quint16 rangeShift;
     };
 
     struct TableDirectory
     {
-        BigEndian<quint32> identifier;
-        BigEndian<quint32> checkSum;
-        BigEndian<quint32> offset;
-        BigEndian<quint32> length;
+        quint32 identifier;
+        quint32 checkSum;
+        quint32 offset;
+        quint32 length;
     };
 
     struct OS2Table
     {
-        BigEndian<quint16> version;
-        BigEndian<qint16>  avgCharWidth;
-        BigEndian<quint16> weightClass;
-        BigEndian<quint16> widthClass;
-        BigEndian<quint16> type;
-        BigEndian<qint16>  subscriptXSize;
-        BigEndian<qint16>  subscriptYSize;
-        BigEndian<qint16>  subscriptXOffset;
-        BigEndian<qint16>  subscriptYOffset;
-        BigEndian<qint16>  superscriptXSize;
-        BigEndian<qint16>  superscriptYSize;
-        BigEndian<qint16>  superscriptXOffset;
-        BigEndian<qint16>  superscriptYOffset;
-        BigEndian<qint16>  strikeOutSize;
-        BigEndian<qint16>  strikeOutPosition;
-        BigEndian<qint16>  familyClass;
-        quint8             panose[10];
-        BigEndian<quint32> unicodeRanges[4];
-        quint8             vendorID[4];
-        BigEndian<quint16> selection;
-        BigEndian<quint16> firstCharIndex;
-        BigEndian<quint16> lastCharIndex;
-        BigEndian<qint16>  typoAscender;
-        BigEndian<qint16>  typoDescender;
-        BigEndian<qint16>  typoLineGap;
-        BigEndian<quint16> winAscent;
-        BigEndian<quint16> winDescent;
-        BigEndian<quint32> codepageRanges[2];
-        BigEndian<qint16>  height;
-        BigEndian<qint16>  capHeight;
-        BigEndian<quint16> defaultChar;
-        BigEndian<quint16> breakChar;
-        BigEndian<quint16> maxContext;
+        quint16 version;
+        qint16  avgCharWidth;
+        quint16 weightClass;
+        quint16 widthClass;
+        quint16 type;
+        qint16  subscriptXSize;
+        qint16  subscriptYSize;
+        qint16  subscriptXOffset;
+        qint16  subscriptYOffset;
+        qint16  superscriptXSize;
+        qint16  superscriptYSize;
+        qint16  superscriptXOffset;
+        qint16  superscriptYOffset;
+        qint16  strikeOutSize;
+        qint16  strikeOutPosition;
+        qint16  familyClass;
+        quint8  panose[10];
+        quint32 unicodeRanges[4];
+        quint8  vendorID[4];
+        quint16 selection;
+        quint16 firstCharIndex;
+        quint16 lastCharIndex;
+        qint16  typoAscender;
+        qint16  typoDescender;
+        qint16  typoLineGap;
+        quint16 winAscent;
+        quint16 winDescent;
+        quint32 codepageRanges[2];
+        qint16  height;
+        qint16  capHeight;
+        quint16 defaultChar;
+        quint16 breakChar;
+        quint16 maxContext;
     };
 
 #   pragma pack()
@@ -181,16 +158,13 @@ namespace {
     TableDirectory *EmbeddedFont::tableDirectoryEntry(const QByteArray &tagName)
     {
         Q_ASSERT(tagName.size() == 4);
-
-        const BigEndian<quint32> *tagIdPtr =
-                reinterpret_cast<const BigEndian<quint32> *>(tagName.constData());
-        quint32 tagId = *tagIdPtr;
+        quint32 tagId = *(reinterpret_cast<const quint32 *>(tagName.constData()));
 
         OffsetSubTable *offsetSubTable = reinterpret_cast<OffsetSubTable *>(m_fontData.data());
         TableDirectory *tableDirectory = reinterpret_cast<TableDirectory *>(offsetSubTable + 1);
 
         TableDirectory *nameTableDirectoryEntry = 0;
-        for (int i=0; i<offsetSubTable->numTables; ++i, ++tableDirectory) {
+        for (int i = 0; i < qFromBigEndian<quint16>(offsetSubTable->numTables); ++i, ++tableDirectory) {
             if (tableDirectory->identifier == tagId) {
                 nameTableDirectoryEntry = tableDirectory;
                 break;
@@ -208,21 +182,21 @@ namespace {
             nameTableDirectoryEntry = tableDirectoryEntry("name");
 
         if (nameTableDirectoryEntry != 0) {
-            NameTable *nameTable = reinterpret_cast<NameTable *>(m_fontData.data()
-                                                                 + nameTableDirectoryEntry->offset);
+            NameTable *nameTable = reinterpret_cast<NameTable *>(
+                m_fontData.data() + qFromBigEndian<quint32>(nameTableDirectoryEntry->offset));
             NameRecord *nameRecord = reinterpret_cast<NameRecord *>(nameTable + 1);
-            for (int i = 0; i < nameTable->count; ++i, ++nameRecord) {
-                if (nameRecord->nameID == 1
-                 && nameRecord->platformID == 3 // Windows
-                 && nameRecord->languageID == 0x0409) { // US English
+            for (int i = 0; i < qFromBigEndian<quint16>(nameTable->count); ++i, ++nameRecord) {
+                if (qFromBigEndian<quint16>(nameRecord->nameID) == 1
+                 && qFromBigEndian<quint16>(nameRecord->platformID) == 3 // Windows
+                 && qFromBigEndian<quint16>(nameRecord->languageID) == 0x0409) { // US English
                     const void *ptr = reinterpret_cast<const quint8 *>(nameTable)
-                                                        + nameTable->stringOffset
-                                                        + nameRecord->offset;
+                                                        + qFromBigEndian<quint16>(nameTable->stringOffset)
+                                                        + qFromBigEndian<quint16>(nameRecord->offset);
 
-                    const BigEndian<quint16> *s = reinterpret_cast<const BigEndian<quint16> *>(ptr);
-                    const BigEndian<quint16> *e = s + nameRecord->length / sizeof(quint16);
+                    const quint16 *s = reinterpret_cast<const quint16 *>(ptr);
+                    const quint16 *e = s + qFromBigEndian<quint16>(nameRecord->length) / sizeof(quint16);
                     while (s != e)
-                        name += QChar(*s++);
+                        name += QChar( qFromBigEndian<quint16>(*s++));
                     break;
                 }
             }
@@ -256,34 +230,34 @@ namespace {
 
         {
             NameTable *nameTable = reinterpret_cast<NameTable *>(newNameTable.data());
-            nameTable->count = requiredRecordCount;
-            nameTable->stringOffset = sizeOfHeader;
+            nameTable->count = qbswap<quint16>(requiredRecordCount);
+            nameTable->stringOffset = qbswap<quint16>(sizeOfHeader);
 
             NameRecord *nameRecord = reinterpret_cast<NameRecord *>(nameTable + 1);
             for (int i = 0; i < requiredRecordCount; ++i, nameRecord++) {
-                nameRecord->nameID = nameIds[i];
-                nameRecord->encodingID = 1;
-                nameRecord->languageID = 0x0409;
-                nameRecord->platformID = 3;
-                nameRecord->length = newFamilyNameSize;
+                nameRecord->nameID = qbswap<quint16>(nameIds[i]);
+                nameRecord->encodingID = qbswap<quint16>(1);
+                nameRecord->languageID = qbswap<quint16>(0x0409);
+                nameRecord->platformID = qbswap<quint16>(3);
+                nameRecord->length = qbswap<quint16>(newFamilyNameSize);
 
                 // Special case for sub-family
                 if (nameIds[i] == 4) {
-                    nameRecord->offset = newFamilyNameSize;
-                    nameRecord->length = regularStringSize;
+                    nameRecord->offset = qbswap<quint16>(newFamilyNameSize);
+                    nameRecord->length = qbswap<quint16>(regularStringSize);
                 }
             }
 
             // nameRecord now points to string data
-            BigEndian<quint16> *stringStorage = reinterpret_cast<BigEndian<quint16> *>(nameRecord);
+            quint16 *stringStorage = reinterpret_cast<quint16 *>(nameRecord);
             const quint16 *sourceString = newFamilyName.utf16();
-            for (int i=0; i<newFamilyName.size(); ++i)
-                stringStorage[i] = sourceString[i];
+            for (int i = 0; i < newFamilyName.size(); ++i)
+                stringStorage[i] = qbswap<quint16>(sourceString[i]);
             stringStorage += newFamilyName.size();
 
             sourceString = regularString.utf16();
             for (int i = 0; i < regularString.size(); ++i)
-                stringStorage[i] = sourceString[i];
+                stringStorage[i] = qbswap<quint16>(sourceString[i]);
         }
 
         quint32 *p = reinterpret_cast<quint32 *>(newNameTable.data());
@@ -291,11 +265,11 @@ namespace {
 
         quint32 checkSum = 0;
         while (p < tableEnd)
-            checkSum += *(p++);
+            checkSum +=  qFromBigEndian<quint32>(*(p++));
 
-        nameTableDirectoryEntry->checkSum = checkSum;
-        nameTableDirectoryEntry->offset = m_fontData.size();
-        nameTableDirectoryEntry->length = fullSize;
+        nameTableDirectoryEntry->checkSum = qbswap<quint32>(checkSum);
+        nameTableDirectoryEntry->offset = qbswap<quint32>(m_fontData.size());
+        nameTableDirectoryEntry->length = qbswap<quint32>(fullSize);
 
         m_fontData.append(newNameTable);
 
@@ -1284,10 +1258,10 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
         if (os2TableEntry != 0) {
             const OS2Table *os2Table =
                     reinterpret_cast<const OS2Table *>(fontData.constData()
-                                                       + os2TableEntry->offset);
+                                                       + qFromBigEndian<quint32>(os2TableEntry->offset));
 
-            bool italic = os2Table->selection & 1;
-            bool oblique = os2Table->selection & 128;
+            bool italic = qFromBigEndian<quint16>(os2Table->selection) & 1;
+            bool oblique = qFromBigEndian<quint16>(os2Table->selection) & 128;
 
             if (italic)
                 fontEngine->fontDef.style = QFont::StyleItalic;
@@ -1296,7 +1270,7 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
             else
                 fontEngine->fontDef.style = QFont::StyleNormal;
 
-            fontEngine->fontDef.weight = weightFromInteger(os2Table->weightClass);
+            fontEngine->fontDef.weight = weightFromInteger(qFromBigEndian<quint16>(os2Table->weightClass));
         }
     }
 
