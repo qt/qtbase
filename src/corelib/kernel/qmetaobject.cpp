@@ -146,21 +146,15 @@ QT_BEGIN_NAMESPACE
 static inline const QMetaObjectPrivate *priv(const uint* data)
 { return reinterpret_cast<const QMetaObjectPrivate*>(data); }
 
-static inline const QByteArrayData &stringData(const QMetaObject *mo, int index)
+static inline const QByteArray stringData(const QMetaObject *mo, int index)
 {
     Q_ASSERT(priv(mo->d.data)->revision >= 7);
-    const QByteArrayData &data = mo->d.stringdata[index];
-    Q_ASSERT(data.ref.isStatic());
-    Q_ASSERT(data.alloc == 0);
-    Q_ASSERT(data.capacityReserved == 0);
-    Q_ASSERT(data.size >= 0);
+    const QByteArrayDataPtr data = { const_cast<QByteArrayData*>(&mo->d.stringdata[index]) };
+    Q_ASSERT(data.ptr->ref.isStatic());
+    Q_ASSERT(data.ptr->alloc == 0);
+    Q_ASSERT(data.ptr->capacityReserved == 0);
+    Q_ASSERT(data.ptr->size >= 0);
     return data;
-}
-
-static inline QByteArray toByteArray(const QByteArrayData &d)
-{
-    QByteArrayDataPtr holder = { const_cast<QByteArrayData *>(&d) };
-    return QByteArray(holder);
 }
 
 static inline const char *rawStringData(const QMetaObject *mo, int index)
@@ -170,13 +164,13 @@ static inline const char *rawStringData(const QMetaObject *mo, int index)
 
 static inline int stringSize(const QMetaObject *mo, int index)
 {
-    return stringData(mo, index).size;
+    return stringData(mo, index).size();
 }
 
 static inline QByteArray typeNameFromTypeInfo(const QMetaObject *mo, uint typeInfo)
 {
     if (typeInfo & IsUnresolvedType) {
-        return toByteArray(stringData(mo, typeInfo & TypeNameIndexMask));
+        return stringData(mo, typeInfo & TypeNameIndexMask);
     } else {
         // ### Use the QMetaType::typeName() that returns QByteArray
         const char *t = QMetaType::typeName(typeInfo);
@@ -193,7 +187,7 @@ static inline int typeFromTypeInfo(const QMetaObject *mo, uint typeInfo)
 {
     if (!(typeInfo & IsUnresolvedType))
         return typeInfo;
-    return QMetaType::type(toByteArray(stringData(mo, typeInfo & TypeNameIndexMask)));
+    return QMetaType::type(stringData(mo, typeInfo & TypeNameIndexMask));
 }
 
 class QMetaMethodPrivate : public QMetaMethod
@@ -572,7 +566,7 @@ static bool methodMatch(const QMetaObject *m, int handle,
     if (int(m->d.data[handle + 1]) != argc)
         return false;
 
-    if (toByteArray(stringData(m, m->d.data[handle])) != name)
+    if (stringData(m, m->d.data[handle]) != name)
         return false;
 
     int paramsIndex = m->d.data[handle + 2] + 1;
@@ -1522,7 +1516,7 @@ QByteArray QMetaMethodPrivate::signature() const
 QByteArray QMetaMethodPrivate::name() const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    return toByteArray(stringData(mobj, mobj->d.data[handle]));
+    return stringData(mobj, mobj->d.data[handle]);
 }
 
 int QMetaMethodPrivate::typesDataIndex() const
@@ -1599,14 +1593,14 @@ QList<QByteArray> QMetaMethodPrivate::parameterNames() const
     int argc = parameterCount();
     int namesIndex = parametersDataIndex() + argc;
     for (int i = 0; i < argc; ++i)
-        list += toByteArray(stringData(mobj, mobj->d.data[namesIndex + i]));
+        list += stringData(mobj, mobj->d.data[namesIndex + i]);
     return list;
 }
 
 QByteArray QMetaMethodPrivate::tag() const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    return toByteArray(stringData(mobj, mobj->d.data[handle + 3]));
+    return stringData(mobj, mobj->d.data[handle + 3]);
 }
 
 /*!
@@ -2391,7 +2385,7 @@ QByteArray QMetaEnum::valueToKeys(int value) const
             v = v & ~k;
             if (!keys.isEmpty())
                 keys += '|';
-            keys += toByteArray(stringData(mobj, mobj->d.data[data + 2*i]));
+            keys += stringData(mobj, mobj->d.data[data + 2*i]);
         }
     }
     return keys;
