@@ -221,21 +221,33 @@ QString DitaXmlGenerator::ditaTags[] =
     "prodname",
     "prolog",
     "publisher",
-    "qmlData",
-    "qmlDef",
-    "qmlDefItem",
-    "qmlDesc",
     "qmlDetail",
-    "qmlItemName",
+    "qmlImportModule",
+    "qmlInheritedBy",
+    "qmlInherits",
+    "qmlInstantiates",
     "qmlMethod",
+    "qmlMethodDef",
+    "qmlMethodDetail",
     "qmlName",
     "qmlProperty",
+    "qmlPropertyDef",
+    "qmlPropertyDetail",
     "qmlPropertyGroup",
+    "qmlPropertyGroupDef",
+    "qmlPropertyGroupDetail",
     "qmlQualifier",
     "qmlSignal",
+    "qmlSignalDef",
+    "qmlSignalDetail",
     "qmlSignalHandler",
+    "qmlSignalHandlerDef",
+    "qmlSignalHandlerDetail",
     "qmlSignature",
+    "qmlSince",
     "qmlType",
+    "qmlTypeDef",
+    "qmlTypeDetail",
     "related-links",
     "resourceid",
     "revised",
@@ -2203,14 +2215,14 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         generateBrief(inner, marker); // <shortdesc>
         writeProlog(inner);
 
-        writeStartTag(DT_qmlDetail);
+        writeStartTag(DT_qmlTypeDetail);
         generateQmlModuleDef(qcn);
         generateQmlInherits(qcn,marker);
         generateQmlInstantiates(qcn,marker);
         generateQmlInheritedBy(qcn, marker);
         generateQmlSince(qcn);
 
-        enterDesc(DT_qmlDesc,QString(),title);
+        enterDesc(DT_apiDesc,QString(),title);
 #if 0
         // To be removed, if really not needed.
         Text brief = qcn->doc().briefText(); // zzz
@@ -2227,7 +2239,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
             generateAlsoList(cn, marker);
         }
         leaveSection();
-        leaveSection(); // </qmlDesc>
+        leaveSection(); // </apiDesc>
         writeEndTag(); // </qmlTypeDetail>
 
         QList<Section> members = marker->qmlSections(qcn,CodeMarker::Detailed);
@@ -2485,8 +2497,8 @@ void DitaXmlGenerator::generateHeader(const Node* node,
             dtd = "dtd/qmlType.dtd";
             version = "0.1.0";
             doctype = "<!DOCTYPE " + ditaTags[mainTag] +
-                    " PUBLIC \"-//NOKIA//DTD DITA QML API Type Reference v" +
-                    version + "//EN\" \"" + dtd + "\">";
+                    " PUBLIC \"-//NOKIA//DTD DITA QML Type" +
+                    "//EN\" \"" + dtd + "\">";
             outputclass = "QML-type";
         }
         else {
@@ -4434,8 +4446,8 @@ void DitaXmlGenerator::startQmlProperty(QmlPropertyNode* qpn,
     writeCharacters(qpn->name());
     writeEndTag(); // </apiName>
     generateBrief(qpn, marker); // <shortdesc>
-    writeStartTag(DT_qmlDetail);
-    writeStartTag(DT_qmlDef);
+    writeStartTag(DT_qmlPropertyDetail);
+    writeStartTag(DT_qmlPropertyDef);
     if (!qpn->isReadOnlySet())
         qpn->setReadOnly(!qpn->isWritable(tree_));
     if (qpn->isReadOnly()) {
@@ -4453,7 +4465,7 @@ void DitaXmlGenerator::startQmlProperty(QmlPropertyNode* qpn,
     writeStartTag(DT_apiData);
     generateQmlItem(qpn, relative, marker, false);
     writeEndTag(); // </apiData>
-    writeEndTag(); // </qmlDef>
+    writeEndTag(); // </qmlPropertyDef>
 }
 
 /*!
@@ -4474,7 +4486,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
             qpn = static_cast<QmlPropertyNode*>(*p);
             startQmlProperty(qpn,relative,marker);
             writeQmlDesc(node, marker);
-            writeEndTag(); // </qmlDetail>
+            writeEndTag(); // </qmlPropertyDetail>
             writeEndTag(); // </qmlProperty>
         }
         else {
@@ -4482,14 +4494,14 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
             writeStartTag(DT_apiName);
             //writeCharacters("...");
             writeEndTag(); // </apiName>
-            writeStartTag(DT_qmlDetail);
+            writeStartTag(DT_qmlPropertyGroupDetail);
             writeQmlDesc(node, marker);
-            writeEndTag(); // </qmlDetail>
+            writeEndTag(); // </qmlPropertyGroupDetail>
             while (p != qpgn->childNodes().end()) {
                 if ((*p)->type() == Node::QmlProperty) {
                     qpn = static_cast<QmlPropertyNode*>(*p);
                     startQmlProperty(qpn,relative,marker);
-                    writeEndTag(); // </qmlDetail>
+                    writeEndTag(); // </qmlPropertyDetail>
                     writeEndTag(); // </qmlProperty>
                 }
                 ++p;
@@ -4502,7 +4514,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
         if (qpn->qmlPropNodes().isEmpty()) {
             startQmlProperty(qpn,relative,marker);
             writeQmlDesc(node, marker);
-            writeEndTag(); // </qmlDetail>
+            writeEndTag(); // </qmlPropertyDetail>
             writeEndTag(); // </qmlProperty>
         }
         else if (qpn->qmlPropNodes().size() == 1) {
@@ -4511,7 +4523,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
                 qpn = static_cast<QmlPropertyNode*>(n);
                 startQmlProperty(qpn,relative,marker);
                 writeQmlDesc(node, marker);
-                writeEndTag(); // </qmlDetail>
+                writeEndTag(); // </qmlPropertyDetail>
                 writeEndTag(); // </qmlProperty>
             }
         }
@@ -4525,15 +4537,15 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
             writeStartTag(DT_apiName);
             //writeCharacters("...");
             writeEndTag(); // </apiName>
-            writeStartTag(DT_qmlDetail);
+            writeStartTag(DT_qmlPropertyGroupDetail);
             writeQmlDesc(node, marker);
-            writeEndTag(); // </qmlDetail>
+            writeEndTag(); // </qmlPropertyGroupDetail>
             NodeList::ConstIterator p = qpn->qmlPropNodes().begin();
             while (p != qpn->qmlPropNodes().end()) {
                 if ((*p)->type() == Node::QmlProperty) {
                     QmlPropertyNode* q = static_cast<QmlPropertyNode*>(*p);
                     startQmlProperty(q,relative,marker);
-                    writeEndTag(); // </qmlDetail>
+                    writeEndTag(); // </qmlPropertyDetail>
                     writeEndTag(); // </qmlProperty>
                 }
                 ++p;
@@ -4564,50 +4576,47 @@ void DitaXmlGenerator::writeQmlRef(DitaTag tag,
     writeStartTag(DT_apiName);
     writeCharacters(n->name());
     writeEndTag(); // </apiName>
-    writeStartTag(DT_qmlDetail);
-    writeStartTag(DT_qmlDef);
+    writeStartTag((DitaTag)((int)tag+2));
+    writeStartTag((DitaTag)((int)tag+1));
     writeStartTag(DT_apiData);
     QString marked = getMarkedUpSynopsis(n, relative, marker, CodeMarker::Detailed);
     writeText(marked, marker, relative);
     writeEndTag(); // </apiData>
-    writeEndTag(); // </qmlDef>
+    writeEndTag(); // </qmlXxxDef>
     writeQmlDesc(node, marker);
-    writeEndTag(); // </qmlDetail>
+    writeEndTag(); // </qmlXxxDetail>
     writeEndTag(); // tag
 }
 
 /*!
-  Writes the <qmlDesc> tag and its contents for the \a node.
+  Writes the <apiDesc> tag and its contents for the \a node.
   The \a marker is used for markeing up the text body.
  */
 void DitaXmlGenerator::writeQmlDesc(Node* node, CodeMarker* marker)
 {
-    writeStartTag(DT_qmlDesc);
+    writeStartTag(DT_apiDesc);
     generateStatus(node, marker);
     generateBody(node, marker);
     generateThreadSafeness(node, marker);
     generateSince(node, marker);
     generateAlsoList(node, marker);
-    writeEndTag(); // </qmlDesc>
+    writeEndTag(); // </apiDesc>
 }
 
 /*!
-  This generates an <apiDef> (actually <qmlDef>) in which the
+  This generates a <qmlTypeDef> in which the
   QML module name and version number are specified.
  */
 void DitaXmlGenerator::generateQmlModuleDef(QmlClassNode* qcn)
 {
-    writeStartTag(DT_qmlDef);
-    xmlWriter().writeAttribute("outputclass","import");
-    writeStartTag(DT_qmlItemName);
-    xmlWriter().writeAttribute("outputclass","module");
+    writeStartTag(DT_qmlImportModule);
+    writeStartTag(DT_apiItemName);
     writeCharacters(qcn->qmlModuleName());
-    writeEndTag(); // </qmlItemName>
-    writeStartTag(DT_qmlData);
-    xmlWriter().writeAttribute("outputclass","version");
+    writeEndTag(); // </apiItemName>
+    writeStartTag(DT_apiData);
     writeCharacters(qcn->qmlModuleVersion());
-    writeEndTag(); // </qmlData>
-    writeEndTag(); // </qmlDef>
+    writeEndTag(); // </apiData>
+    writeEndTag(); // </qmlImportModule>
 }
 
 /*!
@@ -4620,17 +4629,18 @@ void DitaXmlGenerator::generateQmlInherits(const QmlClassNode* qcn, CodeMarker* 
         return;
     const FakeNode* base = qcn->qmlBase();
     if (base) {
-        writeStartTag(DT_qmlDef);
+        //writeStartTag(DT_qmlInherits);
+        writeStartTag(DT_qmlTypeDef);
         xmlWriter().writeAttribute("outputclass","inherits");
-        writeStartTag(DT_qmlData);
+        writeStartTag(DT_apiData);
         Text text;
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(base));
         text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
         text << Atom(Atom::String, base->name());
         text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
         generateText(text, qcn, marker);
-        writeEndTag(); // </qmlData>
-        writeEndTag(); // </qmlDef>
+        writeEndTag(); // </apiData>
+        writeEndTag(); // </qmlInherits>
     }
 }
 
@@ -4644,15 +4654,16 @@ void DitaXmlGenerator::generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarke
         NodeList subs;
         QmlClassNode::subclasses(qcn->name(),subs);
         if (!subs.isEmpty()) {
-            writeStartTag(DT_qmlDef);
+            //writeStartTag(DT_qmlInheritedBy);
+            writeStartTag(DT_qmlTypeDef);
             xmlWriter().writeAttribute("outputclass","inherited-by");
-            writeStartTag(DT_qmlData);
+            writeStartTag(DT_apiData);
             Text text;
             appendSortedQmlNames(text,qcn,subs,marker);
             text << Atom::ParaRight;
             generateText(text, qcn, marker);
-            writeEndTag(); // </qmlData>
-            writeEndTag(); // </qmlDef>
+            writeEndTag(); // </apiData>
+            writeEndTag(); // </qmlIneritedBy>
         }
     }
 }
@@ -4668,32 +4679,39 @@ void DitaXmlGenerator::generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* ma
 {
     ClassNode* cn = qcn->classNode();
     if (cn && (cn->status() != Node::Internal)) {
-        writeStartTag(DT_qmlDef);
-        xmlWriter().writeAttribute("outputclass","instantiates-cpp-class");
-        writeStartTag(DT_qmlData);
+        //writeStartTag(DT_qmlInstantiates);
+        writeStartTag(DT_qmlTypeDef);
+        xmlWriter().writeAttribute("outputclass","instantiates");
+        writeStartTag(DT_apiData);
         Text text;
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(cn));
         text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
         text << Atom(Atom::String, cn->name());
         text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
         generateText(text, qcn, marker);
-        writeEndTag(); // </qmlData>
-        writeEndTag(); // </qmlDef>
+        writeEndTag(); // </apiData>
+        writeEndTag(); // </qmlInstantiates>
     }
 }
 
 /*!
-  Generate a <qmlDef> for the "since" version string, if there is one.
+  Generate a <qmlXxxDef> for the "since" version string, if there is one.
  */
 void DitaXmlGenerator::generateQmlSince(const Node* node)
 {
     if (!node->since().isEmpty()) {
-        writeStartTag(DT_qmlDef);
+        //writeStartTag(DT_qmlSince);
+        writeStartTag(DT_qmlTypeDef);
         xmlWriter().writeAttribute("outputclass","since");
-        writeStartTag(DT_qmlData);
-        writeCharacters(node->since());
-        writeEndTag(); // </qmlData>
-        writeEndTag(); // </qmlDef>
+        writeStartTag(DT_apiItemName);
+        QStringList pieces = node->since().split(QLatin1Char(' '));
+        writeCharacters(pieces[0]);
+        writeEndTag(); // </apiItemName>
+        writeStartTag(DT_apiData);
+        if (pieces.size() > 1)
+            writeCharacters(pieces[1]);
+        writeEndTag(); // </apiData>
+        writeEndTag(); // </qmlSince>
     }
 }
 
