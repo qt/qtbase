@@ -57,6 +57,11 @@
 #define UNICODE_LITERAL_EXTRA u"s\u00f6m\u00eb l\u00eft\u00ebr\u00e4l" "EXTRA"
 #endif
 
+#ifndef P
+# error You need to define P
+# define P +
+#endif
+
 //fix for gcc4.0: if the operator+ does not exist without QT_USE_FAST_OPERATOR_PLUS
 #ifndef QT_USE_FAST_CONCATENATION
 #define Q %
