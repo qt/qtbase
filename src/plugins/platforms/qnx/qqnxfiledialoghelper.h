@@ -39,61 +39,57 @@
 **
 ****************************************************************************/
 
-#include "qqnxtheme.h"
+#ifndef QQNXFILEDIALOGHELPER_H
+#define QQNXFILEDIALOGHELPER_H
 
-#include "qqnxfiledialoghelper.h"
-#include "qqnxsystemsettings.h"
+#include <qpa/qplatformdialoghelper.h>
+
+#include <bps/dialog.h>
 
 QT_BEGIN_NAMESPACE
 
-QQnxTheme::QQnxTheme(QPlatformFontDatabase *fontDatabase,
-                     QQnxBpsEventFilter *eventFilter)
-    : m_fontDatabase(fontDatabase),
-      m_eventFilter(eventFilter)
-{
-}
+class QQnxBpsEventFilter;
 
-QQnxTheme::~QQnxTheme()
+class QQnxFileDialogHelper : public QPlatformFileDialogHelper
 {
-    qDeleteAll(m_fonts);
-}
+    Q_OBJECT
+public:
+    explicit QQnxFileDialogHelper(QQnxBpsEventFilter *eventFilter);
+    ~QQnxFileDialogHelper();
 
-bool QQnxTheme::usePlatformNativeDialog(DialogType type) const
-{
-    if (type == QPlatformTheme::FileDialog)
-        return true;
-#if !defined(QT_NO_COLORDIALOG)
-    if (type == QPlatformTheme::ColorDialog)
-        return false;
-#endif
-#if !defined(QT_NO_FONTDIALOG)
-    if (type == QPlatformTheme::FontDialog)
-        return false;
-#endif
-    return false;
-}
+    bool handleEvent(bps_event_t *event);
 
-QPlatformDialogHelper *QQnxTheme::createPlatformDialogHelper(DialogType type) const
-{
-    switch (type) {
-    case QPlatformTheme::FileDialog:
-        return new QQnxFileDialogHelper(m_eventFilter);
-#ifndef QT_NO_COLORDIALOG
-    case QPlatformTheme::ColorDialog:
-#endif
-#ifndef QT_NO_FONTDIALOG
-    case QPlatformTheme::FontDialog:
-#endif
-    default:
-        return 0;
-    }
-}
+    void exec();
 
-const QFont *QQnxTheme::font(Font type) const
-{
-    if (m_fonts.isEmpty() && m_fontDatabase)
-        m_fonts = qt_qnx_createRoleFonts(m_fontDatabase);
-    return m_fonts.value(type, 0);
-}
+    bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent);
+    void hide();
+
+    bool defaultNameFilterDisables() const;
+    void setDirectory(const QString &directory);
+    QString directory() const;
+    void selectFile(const QString &fileName);
+    QStringList selectedFiles() const;
+    void setFilter();
+    void selectNameFilter(const QString &filter);
+    QString selectedNameFilter() const;
+
+    dialog_instance_t nativeDialog() const { return m_dialog; }
+
+Q_SIGNALS:
+    void dialogClosed();
+
+private:
+    void setNameFilter(const QString &filter);
+
+    QQnxBpsEventFilter *m_eventFilter;
+    dialog_instance_t m_dialog;
+    QFileDialogOptions::AcceptMode m_acceptMode;
+    QString m_selectedFilter;
+
+    QPlatformDialogHelper::DialogCode m_result;
+    QStringList m_paths;
+};
 
 QT_END_NAMESPACE
+
+#endif // QQNXFILEDIALOGHELPER_H

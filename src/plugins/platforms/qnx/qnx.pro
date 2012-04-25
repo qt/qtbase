@@ -22,6 +22,7 @@ CONFIG(blackberry) {
 #DEFINES += QQNXBPSEVENTFILTER_DEBUG
 #DEFINES += QQNXBUFFER_DEBUG
 #DEFINES += QQNXCLIPBOARD_DEBUG
+#DEFINES += QQNXFILEDIALOGHELPER_DEBUG
 #DEFINES += QQNXGLBACKINGSTORE_DEBUG
 #DEFINES += QQNXGLCONTEXT_DEBUG
 #DEFINES += QQNXINPUTCONTEXT_DEBUG
@@ -88,14 +89,16 @@ CONFIG(blackberry) {
                qqnxbpseventfilter.cpp \
                qqnxvirtualkeyboardbps.cpp \
                qqnxtheme.cpp \
-               qqnxsystemsettings.cpp
+               qqnxsystemsettings.cpp \
+               qqnxfiledialoghelper.cpp
 
     HEADERS += qqnxnavigatorbps.h \
                qqnxeventdispatcher_blackberry.h \
                qqnxbpseventfilter.h \
                qqnxvirtualkeyboardbps.h  \
                qqnxtheme.h \
-               qqnxsystemsettings.h
+               qqnxsystemsettings.h \
+               qqnxfiledialoghelper.h
 
     LIBS += -lbps
 }

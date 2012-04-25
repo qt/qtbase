@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QQnxBpsEventFilter;
 class QQnxScreenEventThread;
+class QQnxFileDialogHelper;
 class QQnxNativeInterface;
 class QQnxWindow;
 class QQnxScreen;
@@ -115,6 +116,7 @@ public:
 #if defined(Q_OS_BLACKBERRY)
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
+    QQnxBpsEventFilter *bpsEventFilter() const { return m_bpsEventFilter; }
 #endif
 
     static QWindow *window(screen_window_t qnxWindow);

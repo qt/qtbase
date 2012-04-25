@@ -51,20 +51,26 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQnxBpsEventFilter;
+
 class QPlatformFontDatabase;
 
 class QQnxTheme : public QPlatformTheme
 {
 public:
-    QQnxTheme(QPlatformFontDatabase *fontDatabase);
+    QQnxTheme(QPlatformFontDatabase *fontDatabase, QQnxBpsEventFilter *eventFilter);
     ~QQnxTheme();
 
     static QString name() { return QStringLiteral("blackberry"); }
+
+    bool usePlatformNativeDialog(DialogType type) const;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
 
     const QFont *font(Font type = SystemFont) const;
 
 private:
     QPlatformFontDatabase *m_fontDatabase;
+    QQnxBpsEventFilter *m_eventFilter;
     mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
 };
 

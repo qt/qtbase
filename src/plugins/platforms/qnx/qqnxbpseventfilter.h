@@ -43,6 +43,9 @@
 #define QQNXBPSEVENTFILTER_H
 
 #include <QObject>
+#include <QHash>
+
+#include <bps/dialog.h>
 
 struct bps_event_t;
 
@@ -50,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
 class QAbstractEventDispatcher;
 class QQnxNavigatorEventHandler;
+class QQnxFileDialogHelper;
 class QQnxScreen;
 class QQnxScreenEventHandler;
 class QQnxVirtualKeyboardBps;
@@ -68,6 +72,9 @@ public:
     void registerForScreenEvents(QQnxScreen *screen);
     void unregisterForScreenEvents(QQnxScreen *screen);
 
+    void registerForDialogEvents(QQnxFileDialogHelper *dialog);
+    void unregisterForDialogEvents(QQnxFileDialogHelper *dialog);
+
 private:
     static bool dispatcherEventFilter(void *message);
     bool bpsEventFilter(bps_event_t *event);
@@ -78,6 +85,7 @@ private:
     QQnxNavigatorEventHandler *m_navigatorEventHandler;
     QQnxScreenEventHandler *m_screenEventHandler;
     QQnxVirtualKeyboardBps *m_virtualKeyboard;
+    QHash<dialog_instance_t, QQnxFileDialogHelper*> m_dialogMapper;
 };
 
 QT_END_NAMESPACE
