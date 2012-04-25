@@ -91,7 +91,23 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     if (ignoreProxyFor(query))
         return proxyList << QNetworkProxy::NoProxy;
 
-    QByteArray proxy_env = qgetenv("http_proxy");
+    // No need to care about casing here, QUrl lowercases values already
+    const QString queryProtocol = query.protocolTag();
+    QByteArray proxy_env;
+
+    if (queryProtocol == QLatin1String("http"))
+        proxy_env = qgetenv("http_proxy");
+    else if (queryProtocol == QLatin1String("https"))
+        proxy_env = qgetenv("https_proxy");
+    else if (queryProtocol == QLatin1String("ftp"))
+        proxy_env = qgetenv("ftp_proxy");
+    else
+        proxy_env = qgetenv("all_proxy");
+
+    // Fallback to http_proxy is no protocol specific proxy was found
+    if (proxy_env.isEmpty())
+        proxy_env = qgetenv("http_proxy");
+
     if (!proxy_env.isEmpty()) {
         QUrl url = QUrl(QString::fromLocal8Bit(proxy_env));
         if (url.scheme() == QLatin1String("socks5")) {
