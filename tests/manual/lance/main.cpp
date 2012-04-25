@@ -103,6 +103,7 @@ static void printHelp()
            "    -imagewidget    same as image, but with interacion...\n"
 #ifndef QT_NO_OPENGL
            "    -opengl         Paints the files to an OpenGL on screen\n"
+           "    -pbuffer        Paints the files to an OpenGL pbuffer\n"
 #endif
 #ifdef USE_CUSTOM_DEVICE
            "    -customdevice   Paints the files to the custom paint device\n"
@@ -117,8 +118,11 @@ static void printHelp()
            "    -grab           Paints the files to an image called filename_qps.png\n"
            "    -i              Interactive mode.\n"
            "    -v              Verbose.\n"
-           "    -bg-white       No checkers background\n"
-           "    -commands       Displays all available commands\n");
+           "    -commands       Displays all available commands\n"
+           "    -w              Width of the paintdevice\n"
+           "    -h              Height of the paintdevice\n"
+           "    -cmp            Show the reference picture\n"
+           "    -bg-white       No checkers background\n");
 }
 
 static void displayCommands()
