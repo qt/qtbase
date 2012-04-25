@@ -3006,4 +3006,12 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
         {Debugging Techniques}
 */
 
+/*!
+    \macro qMove(x)
+    \relates <QtGlobal>
+
+    It expands to "std::move" if your compiler supports that C++11 function, or to nothing
+    otherwise.
+*/
+
 QT_END_NAMESPACE

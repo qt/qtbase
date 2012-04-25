@@ -2556,6 +2556,9 @@ void testContainer()
         c1 = newInstance<Container>();
         QVERIFY(c1.size() == 4);
         QVERIFY(c1 == newInstance<Container>());
+        Container c2 = qMove(c1);
+        QVERIFY(c2.size() == 4);
+        QVERIFY(c2 == newInstance<Container>());
     }
 }
 

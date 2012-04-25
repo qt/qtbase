@@ -779,4 +779,10 @@
 #  endif
 #endif
 
+#ifdef Q_COMPILER_RVALUE_REFS
+#define qMove(x) std::move(x)
+#else
+#define qMove(x) (x)
+#endif
+
 #endif // QCOMPILERDETECTION_H
