@@ -532,7 +532,6 @@ void BaselineHandler::testPathMapping()
     item.itemChecksum = 0x0123;
 
     clientInfo.insert(PI_QtVersion, QLS("5.0.0"));
-    clientInfo.insert(PI_BuildKey, QLS("(nobuildkey)"));
     clientInfo.insert(PI_QMakeSpec, QLS("linux-g++"));
     clientInfo.insert(PI_PulseGitBranch, QLS("somebranch"));
 
