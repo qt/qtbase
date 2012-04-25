@@ -341,7 +341,16 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::role(long *ia2role)
     if (!accessible->isValid())
         return E_FAIL;
 
-    *ia2role = accessible->role();
+    long r = accessible->role();
+
+    switch (r) {
+    case QAccessible::LayeredPane: r = IA2_ROLE_LAYERED_PANE; break;
+    case QAccessible::Terminal: r = IA2_ROLE_TERMINAL; break;
+    case QAccessible::Desktop: r = IA2_ROLE_DESKTOP_PANE; break;
+    default: break;
+    }
+
+    *ia2role = r;
     return S_OK;
 }
 
