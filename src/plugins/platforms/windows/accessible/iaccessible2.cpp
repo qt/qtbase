@@ -338,9 +338,6 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_relations(long maxRelations
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::role(long *ia2role)
 {
     accessibleDebugClientCalls(accessible);
-    //### Change QAccessibleInterface::role() to return both MSAA and IA2 roles.
-    // When that is completed, we must patch the MSAA bridge not not return any
-    // IA2-specific roles from get_accRole().
     if (!accessible->isValid())
         return E_FAIL;
 

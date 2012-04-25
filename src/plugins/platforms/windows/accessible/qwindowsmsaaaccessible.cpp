@@ -998,8 +998,14 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accRole(VARIANT varID, VAR
     }
 
     if (role != QAccessible::NoRole) {
-        if (role == QAccessible::LayeredPane)
-            role = QAccessible::Pane;
+        if (role >= QAccessible::LayeredPane) {
+            // This block should hopefully only be entered if the AT client
+            // does not support IAccessible2, since it should prefer IA2::role() then.
+            if (role == QAccessible::LayeredPane)
+                role = QAccessible::Pane;
+            else
+                role = QAccessible::Client;
+        }
         (*pvarRole).vt = VT_I4;
         (*pvarRole).lVal = role;
     } else {
