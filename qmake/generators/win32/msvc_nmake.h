@@ -57,7 +57,7 @@ class NmakeMakefileGenerator : public Win32MakefileGenerator
 
 protected:
     virtual void writeSubMakeCall(QTextStream &t, const QString &callPrefix,
-                                  const QString &makeArguments, const QString &callPostfix);
+                                  const QString &makeArguments);
     virtual QString getPdbTarget();
     virtual QString defaultInstall(const QString &t);
     virtual QStringList &findDependencies(const QString &file);

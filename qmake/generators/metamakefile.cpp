@@ -422,7 +422,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "projectgenerator.h"
 #include "pbuilder_pbx.h"
 #include "msvc_nmake.h"
-#include "borland_bmake.h"
 #include "msvc_vcproj.h"
 #include "msvc_vcxproj.h"
 #include "gbuild.h"
@@ -461,8 +460,6 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
             mkfile = new VcxprojGenerator;
         else
             mkfile = new NmakeMakefileGenerator;
-    } else if(gen == "BMAKE") {
-        mkfile = new BorlandMakefileGenerator;
     } else if(gen == "GBUILD") {
         mkfile = new GBuildMakefileGenerator;
     } else {
@@ -495,6 +492,5 @@ MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &na
 }
 
 #endif // QT_QMAKE_PARSER_ONLY
-
 
 QT_END_NAMESPACE

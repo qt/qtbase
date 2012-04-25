@@ -59,7 +59,7 @@ ADDCLEAN    = vc60.pdb vc70.pdb qmake.pdb qmake.ilk
 OBJS        = project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw_make.obj \
               option.obj winmakefile.obj projectgenerator.obj property.obj meta.obj \
               makefiledeps.obj metamakefile.obj xmloutput.obj pbuilder_pbx.obj \
-              borland_bmake.obj msvc_nmake.obj msvc_vcproj.obj msvc_vcxproj.obj \
+              msvc_nmake.obj msvc_vcproj.obj msvc_vcxproj.obj \
               msvc_objectmodel.obj msbuild_objectmodel.obj registry.obj \
               gbuild.obj cesdkhandler.obj
 

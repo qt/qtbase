@@ -135,8 +135,7 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
             t << "first all clean install distclean uninstall: qmake" << endl
               << "qmake_all:" << endl;
             writeMakeQmake(t);
-            if(project->isEmpty("QMAKE_NOFORCE"))
-                t << "FORCE:" << endl << endl;
+            t << "FORCE:" << endl << endl;
             return true;
         }
         writeMingwParts(t);

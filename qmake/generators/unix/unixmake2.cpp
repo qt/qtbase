@@ -90,8 +90,7 @@ UnixMakefileGenerator::writeMakefile(QTextStream &t)
           << var("QMAKE_FAILED_REQUIREMENTS") << ") are not available.\"" << "\n\t"
           << "@echo \"Skipped.\"" << endl << endl;
         writeMakeQmake(t);
-        if(project->isEmpty("QMAKE_NOFORCE"))
-            t << "FORCE:" << endl << endl;
+        t << "FORCE:" << endl << endl;
         return true;
     }
 

@@ -132,9 +132,9 @@ protected:
     QList<MakefileGenerator::SubTarget*> findSubDirsSubTargets() const;
     void writeSubTargetCall(QTextStream &t,
             const QString &in_directory, const QString &in, const QString &out_directory, const QString &out,
-            const QString &out_directory_cdin, const QString &makefilein, const QString &out_directory_cdout);
+            const QString &out_directory_cdin, const QString &makefilein);
     virtual void writeSubMakeCall(QTextStream &t, const QString &outDirectory_cdin,
-                                  const QString &makeFileIn, const QString &outDirectory_cdout);
+                                  const QString &makeFileIn);
     void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags);
 
     //extra compiler interface

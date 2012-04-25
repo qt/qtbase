@@ -12,7 +12,7 @@ QMKSRC = $(SOURCE_PATH)/qmake
 OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
      mingw_make.o option.o winmakefile.o projectgenerator.o \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
-     borland_bmake.o msvc_vcproj.o msvc_vcxproj.o msvc_nmake.o msvc_objectmodel.o msbuild_objectmodel.o \
+     msvc_vcproj.o msvc_vcxproj.o msvc_nmake.o msvc_objectmodel.o msbuild_objectmodel.o \
      gbuild.o cesdkhandler.o
 
 #qt code
@@ -35,7 +35,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   generators/unix/unixmake.cpp generators/win32/winmakefile.cpp generators/projectgenerator.cpp \
 	   generators/mac/pbuilder_pbx.cpp generators/mac/xmloutput.cpp generators/metamakefile.cpp \
 	   generators/makefiledeps.cpp option.cpp generators/win32/mingw_make.cpp generators/makefile.cpp \
-	   generators/win32/msvc_vcproj.cpp generators/win32/msvc_vcxproj.cpp generators/win32/msvc_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp generators/win32/msvc_nmake.cpp generators/win32/borland_bmake.cpp \
+	   generators/win32/msvc_vcproj.cpp generators/win32/msvc_vcxproj.cpp generators/win32/msvc_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp generators/win32/msvc_nmake.cpp \
 	   generators/integrity/gbuild.cpp generators/win32/cesdkhandler.cpp \
 	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstring.cpp $(SOURCE_PATH)/src/corelib/io/qfile.cpp \
@@ -137,9 +137,6 @@ unixmake2.o: $(QMKSRC)/generators/unix/unixmake2.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 winmakefile.o: $(QMKSRC)/generators/win32/winmakefile.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-borland_bmake.o: $(QMKSRC)/generators/win32/borland_bmake.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 mingw_make.o: $(QMKSRC)/generators/win32/mingw_make.cpp
