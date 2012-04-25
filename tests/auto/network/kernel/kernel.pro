@@ -3,7 +3,7 @@ SUBDIRS=\
    qdnslookup \
    qdnslookup_appless \
    qhostinfo \
-#   qnetworkproxyfactory \ # Uses a hardcoded proxy configuration
+   qnetworkproxyfactory \
    qauthenticator \
    qnetworkproxy \
    qnetworkinterface \
