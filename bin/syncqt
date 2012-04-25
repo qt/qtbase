@@ -1153,7 +1153,6 @@ foreach my $lib (@modules_to_sync) {
 
         my @master_includes;
         push @master_includes, "$out_basedir/include/$lib/$lib";
-        push @master_includes, "$out_basedir/include/phonon_compat/Phonon/Phonon" if ($lib eq "phonon");
         foreach my $master_include (@master_includes) {
             #generate the "master" include file
             my @tmp = split(/;/,$modules{$lib});
@@ -1175,6 +1174,12 @@ foreach my $lib (@modules_to_sync) {
                 close MASTERINCLUDE;
                 print "$lib: created header (master) file\n" if($verbose_level);
             }
+        }
+
+        # KDE-Compat master header for Phonon
+        if ($lib eq "phonon") {
+            syncHeader($lib, "$out_basedir/include/phonon_compat/Phonon/Phonon", "$out_basedir/include/phonon/phonon", 0);
+            $pri_install_files .= fixPaths("$out_basedir/include/phonon/phonon", "$basedir/src/phonon") . " ";
         }
 
         #handle the headers.pri for each module
