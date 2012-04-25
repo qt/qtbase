@@ -62,6 +62,9 @@
 QT_BEGIN_NAMESPACE
 
 class QHttpResponseHeader;
+#ifdef Q_OS_WIN32
+class QNtlmWindowsHandles;
+#endif
 
 class Q_AUTOTEST_EXPORT QAuthenticatorPrivate
 {
@@ -77,6 +80,9 @@ public:
     Method method;
     QString realm;
     QByteArray challenge;
+#ifdef Q_OS_WIN32
+    QNtlmWindowsHandles *ntlmWindowsHandles;
+#endif
     bool hasFailed; //credentials have been tried but rejected by server.
 
     enum Phase {

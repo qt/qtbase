@@ -51,6 +51,14 @@
 #include <qstring.h>
 #include <qdatetime.h>
 
+#ifdef Q_OS_WIN32
+#include <qmutex.h>
+#include <private/qmutexpool_p.h>
+#include <rpc.h>
+#define SECURITY_WIN32 1
+#include <Security.h>
+#endif
+
 //#define NTLMV1_CLIENT
 
 QT_BEGIN_NAMESPACE
@@ -61,6 +69,10 @@ QT_BEGIN_NAMESPACE
 
 static QByteArray qNtlmPhase1();
 static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phase2data);
+#ifdef Q_OS_WIN32
+static QByteArray qNtlmPhase1_SSPI(QAuthenticatorPrivate *ctx);
+static QByteArray qNtlmPhase3_SSPI(QAuthenticatorPrivate *ctx, const QByteArray& phase2data);
+#endif
 
 /*!
   \class QAuthenticator
@@ -113,6 +125,8 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
   \section2 NTLM version 2
 
   The NTLM authentication mechanism currently supports no incoming or outgoing options.
+  On Windows, if no \a user has been set, domain\user credentials will be searched for on the
+  local system to enable Single-Sign-On functionality.
 
   \section2 Digest-MD5
 
@@ -313,11 +327,24 @@ bool QAuthenticator::isNull() const
     return !d;
 }
 
+#ifdef Q_OS_WIN32
+class QNtlmWindowsHandles
+{
+public:
+    CredHandle credHandle;
+    CtxtHandle ctxHandle;
+};
+#endif
+
+
 QAuthenticatorPrivate::QAuthenticatorPrivate()
     : method(None)
     , hasFailed(false)
     , phase(Start)
     , nonceCount(0)
+#ifdef Q_OS_WIN32
+    , ntlmWindowsHandles(0)
+#endif
 {
     cnonce = QCryptographicHash::hash(QByteArray::number(qrand(), 16) + QByteArray::number(qrand(), 16),
                                       QCryptographicHash::Md5).toHex();
@@ -326,6 +353,10 @@ QAuthenticatorPrivate::QAuthenticatorPrivate()
 
 QAuthenticatorPrivate::~QAuthenticatorPrivate()
 {
+#ifdef Q_OS_WIN32
+    if (ntlmWindowsHandles)
+        delete ntlmWindowsHandles;
+#endif
 }
 
 void QAuthenticatorPrivate::updateCredentials()
@@ -453,14 +484,36 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
     case QAuthenticatorPrivate::Ntlm:
         methodString = "NTLM ";
         if (challenge.isEmpty()) {
-            response = qNtlmPhase1().toBase64();
-            if (user.isEmpty())
-                phase = Done;
-            else
+#ifdef Q_OS_WIN32
+            QByteArray phase1Token;
+            if (user.isEmpty()) // Only pull from system if no user was specified in authenticator
+                phase1Token = qNtlmPhase1_SSPI(this);
+            if (!phase1Token.isEmpty()) {
+                response = phase1Token.toBase64();
                 phase = Phase2;
+            } else
+#endif
+            {
+                response = qNtlmPhase1().toBase64();
+                if (user.isEmpty())
+                    phase = Done;
+                else
+                    phase = Phase2;
+            }
         } else {
-            response = qNtlmPhase3(this, QByteArray::fromBase64(challenge)).toBase64();
-            phase = Done;
+#ifdef Q_OS_WIN32
+            QByteArray phase3Token;
+            if (ntlmWindowsHandles)
+                phase3Token = qNtlmPhase3_SSPI(this, QByteArray::fromBase64(challenge));
+            if (!phase3Token.isEmpty()) {
+                response = phase3Token.toBase64();
+                phase = Done;
+            } else
+#endif
+            {
+                response = qNtlmPhase3(this, QByteArray::fromBase64(challenge)).toBase64();
+                phase = Done;
+            }
         }
 
         break;
@@ -1422,6 +1475,162 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
     return rc;
 }
 
+#ifdef Q_OS_WIN32
+// See http://davenport.sourceforge.net/ntlm.html
+// and libcurl http_ntlm.c
 
+// Handle of secur32.dll
+static HMODULE securityDLLHandle = NULL;
+// Pointer to SSPI dispatch table
+static PSecurityFunctionTable pSecurityFunctionTable = NULL;
+
+
+static bool q_NTLM_SSPI_library_load()
+{
+    QMutexLocker locker(QMutexPool::globalInstanceGet((void *)&pSecurityFunctionTable));
+
+    // Initialize security interface
+    if (pSecurityFunctionTable == NULL) {
+        securityDLLHandle = LoadLibrary(L"secur32.dll");
+        if (securityDLLHandle != NULL) {
+            INIT_SECURITY_INTERFACE pInitSecurityInterface =
+            (INIT_SECURITY_INTERFACE)GetProcAddress(securityDLLHandle,
+                                                    "InitSecurityInterfaceW");
+            if (pInitSecurityInterface != NULL)
+                pSecurityFunctionTable = pInitSecurityInterface();
+        }
+    }
+
+    if (pSecurityFunctionTable == NULL)
+        return false;
+
+    return true;
+}
+
+
+// Phase 1:
+static QByteArray qNtlmPhase1_SSPI(QAuthenticatorPrivate *ctx)
+{
+    QByteArray result;
+
+    if (!q_NTLM_SSPI_library_load())
+        return result;
+
+    // 1. The client obtains a representation of the credential set
+    // for the user via the SSPI AcquireCredentialsHandle function.
+    if (!ctx->ntlmWindowsHandles)
+        ctx->ntlmWindowsHandles = new QNtlmWindowsHandles;
+    memset(&ctx->ntlmWindowsHandles->credHandle, 0, sizeof(CredHandle));
+    TimeStamp tsDummy;
+    SECURITY_STATUS secStatus = pSecurityFunctionTable->AcquireCredentialsHandle(
+        NULL, (SEC_WCHAR*)L"NTLM", SECPKG_CRED_OUTBOUND, NULL, NULL,
+        NULL, NULL, &ctx->ntlmWindowsHandles->credHandle, &tsDummy);
+    if (secStatus != SEC_E_OK) {
+        delete ctx->ntlmWindowsHandles;
+        ctx->ntlmWindowsHandles = 0;
+        return result;
+    }
+
+    // 2. The client calls the SSPI InitializeSecurityContext function
+    // to obtain an authentication request token (in our case, a Type 1 message).
+    // The client sends this token to the server.
+    SecBufferDesc desc;
+    SecBuffer buf;
+    desc.ulVersion = SECBUFFER_VERSION;
+    desc.cBuffers  = 1;
+    desc.pBuffers  = &buf;
+    buf.cbBuffer   = 0;
+    buf.BufferType = SECBUFFER_TOKEN;
+    buf.pvBuffer   = NULL;
+    ULONG attrs;
+
+    secStatus = pSecurityFunctionTable->InitializeSecurityContext(&ctx->ntlmWindowsHandles->credHandle, NULL,
+        L"" /* host */,
+        ISC_REQ_ALLOCATE_MEMORY |
+        ISC_REQ_CONFIDENTIALITY |
+        ISC_REQ_REPLAY_DETECT |
+        ISC_REQ_CONNECTION,
+        0, SECURITY_NETWORK_DREP,
+        NULL, 0,
+        &ctx->ntlmWindowsHandles->ctxHandle, &desc,
+        &attrs, &tsDummy);
+    if (secStatus == SEC_I_COMPLETE_AND_CONTINUE ||
+        secStatus == SEC_I_CONTINUE_NEEDED) {
+            pSecurityFunctionTable->CompleteAuthToken(&ctx->ntlmWindowsHandles->ctxHandle, &desc);
+    } else if (secStatus != SEC_E_OK) {
+        if ((const char*)buf.pvBuffer)
+            pSecurityFunctionTable->FreeContextBuffer(buf.pvBuffer);
+        pSecurityFunctionTable->FreeCredentialsHandle(&ctx->ntlmWindowsHandles->credHandle);
+        delete ctx->ntlmWindowsHandles;
+        ctx->ntlmWindowsHandles = 0;
+        return result;
+    }
+
+    result = QByteArray((const char*)buf.pvBuffer, buf.cbBuffer);
+    pSecurityFunctionTable->FreeContextBuffer(buf.pvBuffer);
+    return result;
+}
+
+// Phase 2:
+// 3. The server receives the token from the client, and uses it as input to the
+// AcceptSecurityContext SSPI function. This creates a local security context on
+// the server to represent the client, and yields an authentication response token
+// (the Type 2 message), which is sent to the client.
+
+// Phase 3:
+static QByteArray qNtlmPhase3_SSPI(QAuthenticatorPrivate *ctx, const QByteArray& phase2data)
+{
+    // 4. The client receives the response token from the server and calls
+    // InitializeSecurityContext again, passing the server's token as input.
+    // This provides us with another authentication request token (the Type 3 message).
+    // The return value indicates that the security context was successfully initialized;
+    // the token is sent to the server.
+
+    QByteArray result;
+
+    if (pSecurityFunctionTable == NULL)
+        return result;
+
+    SecBuffer type_2, type_3;
+    SecBufferDesc type_2_desc, type_3_desc;
+    ULONG attrs;
+    TimeStamp tsDummy; // For Windows 9x compatibility of SPPI calls
+
+    type_2_desc.ulVersion  = type_3_desc.ulVersion  = SECBUFFER_VERSION;
+    type_2_desc.cBuffers   = type_3_desc.cBuffers   = 1;
+    type_2_desc.pBuffers   = &type_2;
+    type_3_desc.pBuffers   = &type_3;
+
+    type_2.BufferType = SECBUFFER_TOKEN;
+    type_2.pvBuffer   = (PVOID)phase2data.data();
+    type_2.cbBuffer   = phase2data.length();
+    type_3.BufferType = SECBUFFER_TOKEN;
+    type_3.pvBuffer   = 0;
+    type_3.cbBuffer   = 0;
+
+    SECURITY_STATUS secStatus = pSecurityFunctionTable->InitializeSecurityContext(&ctx->ntlmWindowsHandles->credHandle,
+        &ctx->ntlmWindowsHandles->ctxHandle,
+        L"" /* host */,
+        ISC_REQ_ALLOCATE_MEMORY |
+        ISC_REQ_CONFIDENTIALITY |
+        ISC_REQ_REPLAY_DETECT |
+        ISC_REQ_CONNECTION,
+        0, SECURITY_NETWORK_DREP, &type_2_desc,
+        0, &ctx->ntlmWindowsHandles->ctxHandle, &type_3_desc,
+        &attrs, &tsDummy);
+
+    if (secStatus == SEC_E_OK && ((const char*)type_3.pvBuffer)) {
+        result = QByteArray((const char*)type_3.pvBuffer, type_3.cbBuffer);
+        pSecurityFunctionTable->FreeContextBuffer(type_3.pvBuffer);
+    }
+
+    pSecurityFunctionTable->FreeCredentialsHandle(&ctx->ntlmWindowsHandles->credHandle);
+    pSecurityFunctionTable->DeleteSecurityContext(&ctx->ntlmWindowsHandles->ctxHandle);
+    delete ctx->ntlmWindowsHandles;
+    ctx->ntlmWindowsHandles = 0;
+
+    return result;
+}
+#endif
 
 QT_END_NAMESPACE
