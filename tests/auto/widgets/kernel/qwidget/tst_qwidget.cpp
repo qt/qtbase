@@ -7769,13 +7769,13 @@ void tst_QWidget::moveRect()
 #ifdef Q_OS_WIN
 class GDIWidget : public QDialog
 {
+    Q_OBJECT
 public:
     GDIWidget() { setAttribute(Qt::WA_PaintOnScreen); }
     QPaintEngine *paintEngine() const { return 0; }
 
 
     void paintEvent(QPaintEvent *) {
-        qDebug() << __FUNCTION__;
         QPlatformNativeInterface *ni = QGuiApplication::platformNativeInterface();
         const HDC hdc = (HDC)ni->nativeResourceForWindow(QByteArrayLiteral("getDC"), windowHandle());
         if (!hdc) {
@@ -7788,15 +7788,21 @@ public:
 
         ni->nativeResourceForWindow(QByteArrayLiteral("releaseDC"), windowHandle());
 
-        const QImage im = grab(QRect(QPoint(0, 0), size())).toImage();
-        color = im.pixel(1, 1);
-        QTimer::singleShot(0, this, SLOT(accept()));
+        QTimer::singleShot(0, this, SLOT(slotTimer()));
     }
 
     QSize sizeHint() const {
         return QSize(400, 300);
     }
 
+private slots:
+    void slotTimer() {
+        const QImage im = grab(QRect(QPoint(0, 0), size())).toImage();
+        color = im.pixel(1, 1);
+        accept();
+    }
+
+public:
     QColor color;
 };
 
