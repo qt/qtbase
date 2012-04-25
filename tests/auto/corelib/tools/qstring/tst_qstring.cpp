@@ -127,6 +127,8 @@ private slots:
     void append_bytearray();
     void operator_pluseq_bytearray_data();
     void operator_pluseq_bytearray();
+    void operator_eqeq_bytearray_data();
+    void operator_eqeq_bytearray();
     void operator_eqeq_nullstring();
     void operator_smaller();
     void insert();
@@ -226,14 +228,13 @@ private slots:
     void repeated_data() const;
     void compareRef();
     void arg_locale();
-
     void toUpperLower_icu();
     void literals();
-
+    void eightBitLiterals_data();
+    void eightBitLiterals();
     void reserve();
     void toHtmlEscaped_data();
     void toHtmlEscaped();
-
     void operatorGreaterWithQLatin1String();
     void compareQLatin1Strings();
     void fromQLatin1StringWithLength();
@@ -878,6 +879,9 @@ void tst_QString::constructorQByteArray_data()
     QTest::newRow( "2" ) << ba1 << QString("abc");
 
     QTest::newRow( "3" ) << QByteArray::fromRawData("abcd", 3) << QString("abc");
+    QTest::newRow( "4" ) << QByteArray("\xc3\xa9") << QString("\xc3\xa9");
+    QTest::newRow( "4-bis" ) << QByteArray("\xc3\xa9") << QString::fromUtf8("\xc3\xa9");
+    QTest::newRow( "4-tre" ) << QByteArray("\xc3\xa9") << QString::fromLatin1("\xe9");
 }
 
 void tst_QString::constructorQByteArray()
@@ -890,6 +894,17 @@ void tst_QString::constructorQByteArray()
     QCOMPARE( str1, expected );
 
     QString strBA(src);
+    QCOMPARE( strBA, expected );
+
+    // test operator= too
+    if (src.constData()[src.length()] == '\0') {
+        str1.clear();
+        str1 = src.constData();
+        QCOMPARE( str1, expected );
+    }
+
+    strBA.clear();
+    strBA = src;
     QCOMPARE( strBA, expected );
 }
 
@@ -2025,6 +2040,10 @@ void tst_QString::append_bytearray_data()
     // empty byte array
     ba.resize( 0 );
     QTest::newRow( "emptyByteArray" ) << QString("foobar ") << ba << QString("foobar ");
+
+    // non-ascii byte array
+    QTest::newRow( "nonAsciiByteArray") << QString() << QByteArray("\xc3\xa9") << QString("\xc3\xa9");
+    QTest::newRow( "nonAsciiByteArray2") << QString() << QByteArray("\xc3\xa9") << QString::fromUtf8("\xc3\xa9");
 }
 
 void tst_QString::append_bytearray()
@@ -2043,6 +2062,14 @@ void tst_QString::append_bytearray()
 
         str.append( ba );
 
+        QTEST( str, "res" );
+    }
+
+    QFETCH( QByteArray, ba );
+    if (ba.constData()[ba.length()] == '\0') {
+        QFETCH( QString, str );
+
+        str.append(ba.constData());
         QTEST( str, "res" );
     }
 }
@@ -2069,6 +2096,33 @@ void tst_QString::operator_pluseq_bytearray()
         str += ba;
 
         QTEST( str, "res" );
+    }
+
+    QFETCH( QByteArray, ba );
+    if (ba.constData()[ba.length()] == '\0') {
+        QFETCH( QString, str );
+
+        str += ba.constData();
+        QTEST( str, "res" );
+    }
+}
+
+void tst_QString::operator_eqeq_bytearray_data()
+{
+    constructorQByteArray_data();
+}
+
+void tst_QString::operator_eqeq_bytearray()
+{
+    QFETCH(QByteArray, src);
+    QFETCH(QString, expected);
+
+    QVERIFY(expected == src);
+    QVERIFY(!(expected != src));
+
+    if (src.constData()[src.length()] == '\0') {
+        QVERIFY(expected == src.constData());
+        QVERIFY(!(expected != src.constData()));
     }
 }
 
@@ -2109,6 +2163,10 @@ void tst_QString::prepend_bytearray_data()
     // empty byte array
     ba.resize( 0 );
     QTest::newRow( "emptyByteArray" ) << QString(" foobar") << ba << QString(" foobar");
+
+    // non-ascii byte array
+    QTest::newRow( "nonAsciiByteArray") << QString() << QByteArray("\xc3\xa9") << QString("\xc3\xa9");
+    QTest::newRow( "nonAsciiByteArray2") << QString() << QByteArray("\xc3\xa9") << QString::fromUtf8("\xc3\xa9");
 }
 
 void tst_QString::prepend_bytearray()
@@ -2128,6 +2186,14 @@ void tst_QString::prepend_bytearray()
 
         str.prepend( ba );
 
+        QTEST( str, "res" );
+    }
+
+    QFETCH( QByteArray, ba );
+    if (ba.constData()[ba.length()] == '\0') {
+        QFETCH( QString, str );
+
+        str.prepend(ba.constData());
         QTEST( str, "res" );
     }
 }
@@ -3136,6 +3202,13 @@ void tst_QString::startsWith()
     QVERIFY( !a.startsWith(QLatin1Char('x')) );
     QVERIFY( !a.startsWith(QChar()) );
 
+    // this test is independent of encoding
+    a = "\xc3\xa9";
+    QVERIFY( a.startsWith("\xc3\xa9") );
+    QVERIFY( !a.startsWith("\xc3\xa1") );
+
+    // this one is dependent of encoding
+    QVERIFY( a.startsWith("\xc3\x89", Qt::CaseInsensitive) );
 }
 
 void tst_QString::endsWith()
@@ -3238,6 +3311,14 @@ void tst_QString::endsWith()
     QVERIFY( !a.endsWith(QLatin1Char(0)) );
     QVERIFY( !a.endsWith(QLatin1Char('x')) );
     QVERIFY( !a.endsWith(QChar()) );
+
+    // this test is independent of encoding
+    a = "\xc3\xa9";
+    QVERIFY( a.endsWith("\xc3\xa9") );
+    QVERIFY( !a.endsWith("\xc3\xa1") );
+
+    // this one is dependent of encoding
+    QVERIFY( a.endsWith("\xc3\x89", Qt::CaseInsensitive) );
 }
 
 void tst_QString::check_QDataStream()
@@ -4159,6 +4240,10 @@ void tst_QString::operator_smaller()
     QVERIFY( !(foo > QLatin1String("z")));
     QVERIFY( !(QLatin1String("z") < foo));
     QVERIFY( (QLatin1String("z") > foo));
+
+    // operator< is not locale-aware (or shouldn't be)
+    QVERIFY( foo < QString("\xc3\xa9") );
+    QVERIFY( foo < "\xc3\xa9" );
 }
 
 void tst_QString::integer_conversion_data()
@@ -5284,6 +5369,111 @@ void tst_QString::literals()
 #else
     QSKIP("Only tested on c++0x compliant compiler or gcc");
 #endif
+}
+
+void tst_QString::eightBitLiterals_data()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QString>("stringData");
+
+    QTest::newRow("null") << QByteArray() << QString();
+    QTest::newRow("empty") << QByteArray("") << QString("");
+    QTest::newRow("regular") << QByteArray("foo") << "foo";
+    QTest::newRow("non-ascii") << QByteArray("\xc3\xa9") << QString::fromLatin1("\xe9");
+}
+
+void tst_QString::eightBitLiterals()
+{
+    QFETCH(QByteArray, data);
+    QFETCH(QString, stringData);
+
+    {
+        QString s(data);
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s(data.constData());
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s;
+        s = data;
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s;
+        s = data.constData();
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s;
+        s.append(data);
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s;
+        s.append(data.constData());
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s;
+        s += data;
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s;
+        s += data.constData();
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s;
+        s.prepend(data);
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s;
+        s.prepend(data.constData());
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s = QString() + data;
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s = QString() + data.constData();
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s = data + QString();
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s = QString() % data;
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s = QString() % data.constData();
+        QCOMPARE(s, stringData);
+    }
+    {
+        QString s = data % QString();
+        QCOMPARE(s, stringData);
+    }
+
+    {
+        QVERIFY(stringData == data);
+        QVERIFY(stringData == data.constData());
+        QVERIFY(!(stringData != data));
+        QVERIFY(!(stringData != data.constData()));
+        QVERIFY(!(stringData < data));
+        QVERIFY(!(stringData < data.constData()));
+        QVERIFY(!(stringData > data));
+        QVERIFY(!(stringData > data.constData()));
+        QVERIFY(stringData <= data);
+        QVERIFY(stringData <= data.constData());
+        QVERIFY(stringData >= data);
+        QVERIFY(stringData >= data.constData());
+    }
 }
 
 void tst_QString::reserve()
