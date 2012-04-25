@@ -97,6 +97,7 @@ template<typename Builder>
 struct QStringBuilderBase<Builder, QString> : public QStringBuilderCommon<Builder, QString>
 {
     QByteArray toLatin1() const { return this->resolved().toLatin1(); }
+    QByteArray toUtf8() const { return this->resolved().toUtf8(); }
     QByteArray toLocal8Bit() const { return this->resolved().toLocal8Bit(); }
 };
 

@@ -100,6 +100,10 @@ QT_BEGIN_NAMESPACE
   returned byte array is undefined if the string contains non-Latin1
   characters.
  */
+/* \fn QByteArray QStringBuilder::toUtf8() const
+  Returns a UTF-8 representation of the string as a QByteArray.
+ */
+
 
 /*! \internal
  */
