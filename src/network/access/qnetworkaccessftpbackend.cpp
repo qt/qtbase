@@ -107,6 +107,9 @@ QNetworkAccessFtpBackend::QNetworkAccessFtpBackend()
 
 QNetworkAccessFtpBackend::~QNetworkAccessFtpBackend()
 {
+    //if backend destroyed while in use, then abort (this is the code path from QNetworkReply::abort)
+    if (ftp && state != Disconnecting)
+        ftp->abort();
     disconnectFromFtp();
 }
 
