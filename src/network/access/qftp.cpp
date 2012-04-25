@@ -665,7 +665,7 @@ void QFtpDTP::socketReadyRead()
         return;
     }
 
-    if (pi->abortState == QFtpPI::AbortStarted) {
+    if (pi->abortState != QFtpPI::None) {
         // discard data
         socket->readAll();
         return;
@@ -865,14 +865,25 @@ void QFtpPI::abort()
         // ABOR already sent
         return;
 
-    abortState = AbortStarted;
-#if defined(QFTPPI_DEBUG)
-    qDebug("QFtpPI send: ABOR");
-#endif
-    commandSocket.write("ABOR\r\n", 6);
+    if (currentCmd.isEmpty())
+        return; //no command in progress
 
-    if (currentCmd.startsWith(QLatin1String("STOR ")))
+    if (currentCmd.startsWith(QLatin1String("STOR "))) {
+        abortState = AbortStarted;
+#if defined(QFTPPI_DEBUG)
+        qDebug("QFtpPI send: ABOR");
+#endif
+        commandSocket.write("ABOR\r\n", 6);
+
         dtp.abortConnection();
+    } else {
+        //Deviation from RFC 959:
+        //Most FTP servers do not support ABOR, or require the telnet
+        //IP & synch sequence (TCP urgent data) which is not supported by QTcpSocket.
+        //Following what most FTP clients do, just reset the data connection and wait for 426
+        abortState = WaitForAbortToFinish;
+        dtp.abortConnection();
+    }
 }
 
 void QFtpPI::hostFound()
