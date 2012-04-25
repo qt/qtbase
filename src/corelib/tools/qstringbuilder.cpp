@@ -108,12 +108,24 @@ void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out
     if (len == -1) {
         if (!a)
             return;
-        while (*a)
+        while (*a && uchar(*a) < 0x80U)
             *out++ = QLatin1Char(*a++);
+        if (!*a)
+            return;
     } else {
-        for (int i = 0; i < len; ++i)
+        int i;
+        for (i = 0; i < len && uchar(a[i]) < 0x80U; ++i)
             *out++ = QLatin1Char(a[i]);
+        if (i == len)
+            return;
+        a += i;
+        len -= i;
     }
+
+    // we need to complement with UTF-8 appending
+    QString tmp = QString::fromUtf8(a, len);
+    memcpy(out, reinterpret_cast<const char *>(tmp.constData()), sizeof(QChar) * tmp.size());
+    out += tmp.size();
 }
 
 QT_END_NAMESPACE

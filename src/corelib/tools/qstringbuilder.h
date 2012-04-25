@@ -381,21 +381,34 @@ operator+(const A &a, const B &b)
 }
 #endif
 
+namespace QtStringBuilder {
 template <typename A, typename B>
-QByteArray &operator+=(QByteArray &a, const QStringBuilder<A, B> &b)
+QByteArray &appendToByteArray(QByteArray &a, const QStringBuilder<A, B> &b, char)
 {
-#ifndef QT_NO_CAST_TO_ASCII
-    if (sizeof(typename QConcatenable< QStringBuilder<A, B> >::ConvertTo::value_type) == sizeof(QChar)) {
-        //it is not save to optimize as in utf8 it is not possible to compute the size
-        return a += QString(b);
-    }
-#endif
+    // append 8-bit data to a byte array
     int len = a.size() + QConcatenable< QStringBuilder<A, B> >::size(b);
     a.reserve(len);
     char *it = a.data() + a.size();
     QConcatenable< QStringBuilder<A, B> >::appendTo(b, it);
     a.resize(len); //we need to resize after the appendTo for the case str+=foo+str
     return a;
+}
+
+#ifndef QT_NO_CAST_TO_ASCII
+template <typename A, typename B>
+QByteArray &appendToByteArray(QByteArray &a, const QStringBuilder<A, B> &b, QChar)
+{
+    // append UTF-16 data to the byte array
+    return a += QString(b);
+}
+#endif
+}
+
+template <typename A, typename B>
+QByteArray &operator+=(QByteArray &a, const QStringBuilder<A, B> &b)
+{
+    return QtStringBuilder::appendToByteArray(a, b,
+                                              typename QConcatenable< QStringBuilder<A, B> >::ConvertTo::value_type());
 }
 
 template <typename A, typename B>
