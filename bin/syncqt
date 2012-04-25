@@ -47,6 +47,7 @@
 # use packages -------------------------------------------------------
 use File::Basename;
 use File::Path;
+use File::Spec;
 use Cwd;
 use Cwd 'abs_path';
 use Config;
@@ -391,50 +392,20 @@ sub syncHeader {
 # Purpose: file is made relative (if possible) of dir.
 # Returns: String with the above applied conversion.
 ######################################################################
+
+sub cleanupPath {
+    my ($file) = @_;
+    normalizePath(\$file);
+    while ($file =~ s,/[^/]+/\.\./,/,) {}
+    return $file;
+}
+
 sub fixPaths {
     my ($file, $dir) = @_;
-    normalizePath(\$file);
-    normalizePath(\$dir);
 
-    #setup
-    my $ret = $file;
-    $ret =~ s,/cygdrive/([a-zA-Z])/,$1:/,g;
-    my $file_dir = dirname($file);
-    if($file_dir eq ".") {
-        $file_dir = getcwd();
-        normalizePath(\$file_dir);
-    }
-    $file_dir =~ s,/cygdrive/([a-zA-Z])/,$1:/,g;
-    if($dir eq ".") {
-        $dir = getcwd();
-        normalizePath(\$dir);
-    }
-    $dir =~ s,/cygdrive/([a-zA-Z])/,$1:/,g;
-    return basename($file) if($file_dir eq $dir);
-
-    #guts
-    while ($file_dir =~ s,/[^/]+/\.\./,/,) {}
-    while ($dir =~ s,/[^/]+/\.\./,/,) {}
-    my $match_dir = 0;
-    for(my $i = 1; $i < length($file_dir); $i++) {
-        my $slash = index($file_dir, "/", $i);
-        last if($slash == -1);
-        my $tmp = substr($file_dir, 0, $slash);
-        last unless($dir =~ m,^\Q$tmp\E/,);
-        $match_dir = $tmp;
-        $i = $slash;
-    }
-    if($match_dir) {
-        my $after = substr($dir, length($match_dir));
-        my $count = ($after =~ tr,/,,);
-        my $dots = "";
-        for(my $i = 0; $i < $count; $i++) {
-            $dots .= "../";
-        }
-        $ret =~ s,^\Q$match_dir\E,$dots,;
-    }
-    $ret =~ s,/+,/,g;
-    return $ret;
+    my $out = File::Spec->abs2rel(cleanupPath($file), cleanupPath($dir));
+    $out =~ s,\\,/,g;
+    return $out;
 }
 
 ######################################################################
