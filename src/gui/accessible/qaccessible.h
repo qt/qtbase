@@ -293,10 +293,12 @@ public:
         PageTabList    = 0x0000003C,
         Clock          = 0x0000003D,
         Splitter       = 0x0000003E,
+        // Reserved space in case MSAA roles needs to be added
+
         // Additional Qt roles where enum value does not map directly to MSAA:
-        LayeredPane    = 0x0000003F,
-        Terminal       = 0x00000040,
-        Desktop        = 0x00000041,
+        LayeredPane    = 0x00000080,
+        Terminal       = 0x00000081,
+        Desktop        = 0x00000082,
         UserRole       = 0x0000ffff
     };
 
