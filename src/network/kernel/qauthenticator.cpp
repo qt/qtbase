@@ -140,7 +140,7 @@ QAuthenticator::QAuthenticator()
 */
 QAuthenticator::~QAuthenticator()
 {
-    if (d && !d->ref.deref())
+    if (d)
         delete d;
 }
 
@@ -148,10 +148,10 @@ QAuthenticator::~QAuthenticator()
     Constructs a copy of \a other.
 */
 QAuthenticator::QAuthenticator(const QAuthenticator &other)
-    : d(other.d)
+    : d(0)
 {
-    if (d)
-        d->ref.ref();
+    if (other.d)
+        *this = other;
 }
 
 /*!
@@ -162,12 +162,23 @@ QAuthenticator &QAuthenticator::operator=(const QAuthenticator &other)
     if (d == other.d)
         return *this;
 
-    if (d && !d->ref.deref())
+    // Do not share the d since challange reponse/based changes
+    // could corrupt the internal store and different network requests
+    // can utilize different types of proxies.
+    detach();
+    if (other.d) {
+        d->user = other.d->user;
+        d->userDomain = other.d->userDomain;
+        d->workstation = other.d->workstation;
+        d->extractedUser = other.d->extractedUser;
+        d->password = other.d->password;
+        d->realm = other.d->realm;
+        d->method = other.d->method;
+        d->options = other.d->options;
+    } else {
         delete d;
-
-    d = other.d;
-    if (d)
-        d->ref.ref();
+        d = 0;
+    }
     return *this;
 }
 
@@ -209,28 +220,8 @@ QString QAuthenticator::user() const
 void QAuthenticator::setUser(const QString &user)
 {
     detach();
-    int separatorPosn = 0;
-
-    switch(d->method) {
-    case QAuthenticatorPrivate::Ntlm:
-        if((separatorPosn = user.indexOf(QLatin1String("\\"))) != -1) {
-            //domain name is present
-            d->realm.clear();
-            d->userDomain = user.left(separatorPosn);
-            d->extractedUser = user.mid(separatorPosn + 1);
-            d->user = user;
-        } else {
-            d->extractedUser = user;
-            d->user = user;
-	    d->realm.clear();
-            d->userDomain.clear();
-        }
-        break;
-    default:
-        d->user = user;
-        d->userDomain.clear();
-        break;
-    }
+    d->user = user;
+    d->updateCredentials();
 }
 
 /*!
@@ -259,11 +250,9 @@ void QAuthenticator::detach()
 {
     if (!d) {
         d = new QAuthenticatorPrivate;
-        d->ref.store(1);
         return;
     }
 
-    qAtomicDetach(d);
     d->phase = QAuthenticatorPrivate::Start;
 }
 
@@ -325,8 +314,7 @@ bool QAuthenticator::isNull() const
 }
 
 QAuthenticatorPrivate::QAuthenticatorPrivate()
-    : ref(0)
-    , method(None)
+    : method(None)
     , hasFailed(false)
     , phase(Start)
     , nonceCount(0)
@@ -334,6 +322,33 @@ QAuthenticatorPrivate::QAuthenticatorPrivate()
     cnonce = QCryptographicHash::hash(QByteArray::number(qrand(), 16) + QByteArray::number(qrand(), 16),
                                       QCryptographicHash::Md5).toHex();
     nonceCount = 0;
+}
+
+QAuthenticatorPrivate::~QAuthenticatorPrivate()
+{
+}
+
+void QAuthenticatorPrivate::updateCredentials()
+{
+    int separatorPosn = 0;
+
+    switch (method) {
+    case QAuthenticatorPrivate::Ntlm:
+        if ((separatorPosn = user.indexOf(QLatin1String("\\"))) != -1) {
+            //domain name is present
+            realm.clear();
+            userDomain = user.left(separatorPosn);
+            extractedUser = user.mid(separatorPosn + 1);
+        } else {
+            extractedUser = user;
+            realm.clear();
+            userDomain.clear();
+        }
+        break;
+    default:
+        userDomain.clear();
+        break;
+    }
 }
 
 void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray> > &values, bool isProxy)
@@ -369,6 +384,8 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
         }
     }
 
+    // Reparse credentials since we know the method now
+    updateCredentials();
     challenge = headerVal.trimmed();
     QHash<QByteArray, QByteArray> options = parseDigestAuthenticationChallenge(challenge);
 
