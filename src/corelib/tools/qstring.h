@@ -456,10 +456,14 @@ public:
     {
         return fromLocal8Bit_helper(str, (str && size == -1) ? int(strlen(str)) : size);
     }
-    static inline QString fromAscii(const QByteArray &str) { return fromAscii(str.data(), str.size()); }
-    static inline QString fromLatin1(const QByteArray &str) { return fromLatin1(str.data(), str.size()); }
-    static inline QString fromUtf8(const QByteArray &str) { return fromUtf8(str.data(), str.size()); }
-    static inline QString fromLocal8Bit(const QByteArray &str) { return fromLocal8Bit(str.data(), str.size()); }
+    static inline QString fromAscii(const QByteArray &str)
+    { return fromAscii(str.data(), qstrnlen(str.constData(), str.size())); }
+    static inline QString fromLatin1(const QByteArray &str)
+    { return fromLatin1(str.data(), qstrnlen(str.constData(), str.size())); }
+    static inline QString fromUtf8(const QByteArray &str)
+    { return fromUtf8(str.data(), qstrnlen(str.constData(), str.size())); }
+    static inline QString fromLocal8Bit(const QByteArray &str)
+    { return fromLocal8Bit(str.data(), qstrnlen(str.constData(), str.size())); }
     static QString fromUtf16(const ushort *, int size = -1);
     static QString fromUcs4(const uint *, int size = -1);
     static QString fromRawData(const QChar *, int size);
@@ -580,13 +584,13 @@ public:
     inline QT_ASCII_CAST_WARN bool operator==(const QByteArray &s) const;
     inline QT_ASCII_CAST_WARN bool operator!=(const QByteArray &s) const;
     inline QT_ASCII_CAST_WARN bool operator<(const QByteArray &s) const
-    { return *this < QString::fromAscii(s.constData(), s.size()); }
+    { return *this < QString::fromAscii(s); }
     inline QT_ASCII_CAST_WARN bool operator>(const QByteArray &s) const
-    { return *this > QString::fromAscii(s.constData(), s.size()); }
+    { return *this > QString::fromAscii(s); }
     inline QT_ASCII_CAST_WARN bool operator<=(const QByteArray &s) const
-    { return *this <= QString::fromAscii(s.constData(), s.size()); }
+    { return *this <= QString::fromAscii(s); }
     inline QT_ASCII_CAST_WARN bool operator>=(const QByteArray &s) const
-    { return *this >= QString::fromAscii(s.constData(), s.size()); }
+    { return *this >= QString::fromAscii(s); }
 #endif
 
     typedef QChar *iterator;
@@ -700,17 +704,30 @@ public:
     { return s >= *this; }
 
     inline QT_ASCII_CAST_WARN bool operator==(const char *s) const
-        { return QString::fromAscii(s, s ? int(strlen(s)) : -1) == *this; }
+    { return QString::fromAscii(s) == *this; }
     inline QT_ASCII_CAST_WARN bool operator!=(const char *s) const
-        { return QString::fromAscii(s, s ? int(strlen(s)) : -1) != *this; }
+    { return QString::fromAscii(s) != *this; }
     inline QT_ASCII_CAST_WARN bool operator<(const char *s) const
-        { return QString::fromAscii(s, s ? int(strlen(s)) : -1) > *this; }
+    { return QString::fromAscii(s) > *this; }
     inline QT_ASCII_CAST_WARN bool operator>(const char *s) const
-        { return QString::fromAscii(s, s ? int(strlen(s)) : -1) < *this; }
+    { return QString::fromAscii(s) < *this; }
     inline QT_ASCII_CAST_WARN bool operator<=(const char *s) const
-        { return QString::fromAscii(s, s ? int(strlen(s)) : -1) >= *this; }
+    { return QString::fromAscii(s) >= *this; }
     inline QT_ASCII_CAST_WARN bool operator>=(const char *s) const
-        { return QString::fromAscii(s, s ? int(strlen(s)) : -1) <= *this; }
+    { return QString::fromAscii(s) <= *this; }
+
+    inline QT_ASCII_CAST_WARN bool operator==(const QByteArray &s) const
+    { return QString::fromAscii(s) == *this; }
+    inline QT_ASCII_CAST_WARN bool operator!=(const QByteArray &s) const
+    { return QString::fromAscii(s) != *this; }
+    inline QT_ASCII_CAST_WARN bool operator<(const QByteArray &s) const
+    { return QString::fromAscii(s) > *this; }
+    inline QT_ASCII_CAST_WARN bool operator>(const QByteArray &s) const
+    { return QString::fromAscii(s) < *this; }
+    inline QT_ASCII_CAST_WARN bool operator<=(const QByteArray &s) const
+    { return QString::fromAscii(s) >= *this; }
+    inline QT_ASCII_CAST_WARN bool operator>=(const QByteArray &s) const
+    { return QString::fromAscii(s) <= *this; }
 private:
     int m_size;
     const char *m_data;
@@ -1027,14 +1044,14 @@ inline bool operator>=(const QLatin1String &s1, const QLatin1String &s2)
 
 
 inline bool QString::operator==(const QByteArray &s) const
-{ return qStringComparisonHelper(*this, s.constData()); }
+{ return qStringComparisonHelper(*this, s); }
 inline bool QString::operator!=(const QByteArray &s) const
-{ return !qStringComparisonHelper(*this, s.constData()); }
+{ return !qStringComparisonHelper(*this, s); }
 
 inline bool QByteArray::operator==(const QString &s) const
-{ return qStringComparisonHelper(s, constData()); }
+{ return qStringComparisonHelper(s, *this); }
 inline bool QByteArray::operator!=(const QString &s) const
-{ return !qStringComparisonHelper(s, constData()); }
+{ return !qStringComparisonHelper(s, *this); }
 inline bool QByteArray::operator<(const QString &s) const
 { return QString::fromAscii(constData(), size()) < s; }
 inline bool QByteArray::operator>(const QString &s) const
