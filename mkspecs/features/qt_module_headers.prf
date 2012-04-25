@@ -1,0 +1,4 @@
+#load up the headers info
+include($$MODULE_BASE_OUTDIR/include/$$TARGET/headers.pri, "", true)
+
+CONFIG += qt_install_headers

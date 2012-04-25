@@ -34,8 +34,7 @@ INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES
 INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES/$$TARGET
 INCLUDEPATH *= $$MODULE_INCLUDES $$MODULE_INCLUDES/.. #just for today to have some compat
 
-#load up the headers info
-include($$MODULE_BASE_OUTDIR/include/$$TARGET/headers.pri, "", true)
+load(qt_module_headers)
 
 #other
 TEMPLATE         = lib
@@ -115,7 +114,6 @@ aix-g++* {
 !static:PRL_EXPORT_DEFINES += QT_SHARED
 
 #install directives
-CONFIG += qt_install_headers
 load(qt_installs)
 
 unix|win32-g++* {
