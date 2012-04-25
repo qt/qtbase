@@ -830,7 +830,6 @@ our @ignore_for_include_check = ();
 our @ignore_for_qt_begin_header_check = ();
 our @ignore_for_qt_begin_namespace_check = ();
 our @ignore_for_qt_module_check = ();
-my %colliding_headers = ();
 my %inject_headers = ( "$basedir/src/corelib/global" => ( "qconfig.h" ) ); # all from build dir
 
 # load the module's sync.profile here, before we can
