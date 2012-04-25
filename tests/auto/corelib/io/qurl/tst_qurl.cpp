@@ -1621,7 +1621,7 @@ void tst_QUrl::isRelative_data()
     QTest::newRow("man: URL, is relative") << "man:mmap" << false;
     QTest::newRow("javascript: URL, is relative") << "javascript:doSomething()" << false;
     QTest::newRow("file: URL, is relative") << "file:/blah" << false;
-    QTest::newRow("/path, is relative") << "/path" << false;
+    QTest::newRow("/path, is relative") << "/path" << true;
     QTest::newRow("something, is relative") << "something" << true;
     // end kde
 }

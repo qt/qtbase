@@ -2076,14 +2076,16 @@ QUrl QUrl::resolved(const QUrl &relative) const
 }
 
 /*!
-    Returns true if the URL is relative; otherwise returns false. A
-    URL is relative if its scheme is undefined; this function is
-    therefore equivalent to calling scheme().isEmpty().
+    Returns true if the URL is relative; otherwise returns false. A URL is
+    relative reference if its scheme is undefined; this function is therefore
+    equivalent to calling scheme().isEmpty().
+
+    Relative references are defined in RFC 3986 section 4.2.
 */
 bool QUrl::isRelative() const
 {
     if (!d) return true;
-    return !d->hasScheme() && !d->path.startsWith(QLatin1Char('/'));
+    return !d->hasScheme();
 }
 
 /*!
