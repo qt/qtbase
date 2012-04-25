@@ -39,6 +39,16 @@
 **
 ****************************************************************************/
 
+#ifdef QT_NO_CAST_FROM_ASCII
+# undef QT_NO_CAST_FROM_ASCII
+#endif
+#ifdef QT_NO_CAST_TO_ASCII
+# undef QT_NO_CAST_TO_ASCII
+#endif
+#ifdef QT_ASCII_CAST_WARNINGS
+# undef QT_ASCII_CAST_WARNINGS
+#endif
+
 #include <QtTest/QtTest>
 #include <qregexp.h>
 #include <qregularexpression.h>
@@ -885,41 +895,11 @@ void tst_QString::constructorQByteArray()
 
 void tst_QString::STL()
 {
-#ifndef QT_NO_CAST_TO_ASCII
-    QString qt( "QString" );
-
     std::string stdstr( "QString" );
 
-    QString stlqt;
-
-    // constructor
-    stlqt = QString( stdstr );
-    QCOMPARE( stlqt, qt );
-
-    // assignment
-    stlqt = stdstr;
-    QCOMPARE( stlqt, qt );
-
-    std::string stdstr2 = stlqt;
-    QCOMPARE( stdstr2, stdstr );
-
-    // prepend
-    stlqt = QString();
-    stlqt.prepend( stdstr );
-    QCOMPARE( stlqt, qt );
-
-    // append
-    stlqt = QString();
-    stlqt.append( stdstr );
-    QCOMPARE( stlqt, qt );
-
-    // pathologics (null-strings not supported by many STLs, so test only empty strings)
-    stdstr = std::string();
-    stlqt = stdstr;
-    QVERIFY( stlqt.isEmpty() );
-    std::string stdstr3 = stlqt;
-    QVERIFY( !stdstr3.length() );
-#endif
+    QString stlqt = QString::fromStdString(stdstr);
+    QCOMPARE(stlqt, QString::fromLatin1(stdstr.c_str()));
+    QCOMPARE(stlqt.toStdString(), stdstr);
 
     const wchar_t arr[] = {'h', 'e', 'l', 'l', 'o', 0};
     std::wstring stlStr = arr;
