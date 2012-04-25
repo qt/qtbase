@@ -54,6 +54,7 @@ enum Target {
 };
 
 class QUuid;
+struct VcsolutionDepend;
 class VcprojGenerator : public Win32MakefileGenerator
 {
     bool init_flag;
@@ -130,7 +131,14 @@ protected:
     QList<VcprojGenerator*> mergedProjects;
 
 private:
-    QStringList collectSubDirs(QMakeProject *proj);
+    ProStringList collectDependencies(QMakeProject *proj, QHash<QString, QString> &projLookup,
+                                      QHash<QString, QString> &projGuids,
+                                      QHash<VcsolutionDepend *, QStringList> &extraSubdirs,
+                                      QHash<QString, VcsolutionDepend*> &solution_depends,
+                                      QList<VcsolutionDepend*> &solution_cleanup,
+                                      QTextStream &t,
+                                      QHash<QString, ProStringList> &subdirProjectLookup,
+                                      const ProStringList &allDependencies = ProStringList());
     QUuid increaseUUID(const QUuid &id);
     friend class VCFilter;
 };

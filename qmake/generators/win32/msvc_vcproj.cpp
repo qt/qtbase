@@ -49,6 +49,7 @@
 #include <qhash.h>
 #include <quuid.h>
 #include <stdlib.h>
+#include <qlinkedlist.h>
 
 //#define DEBUG_SOLUTION_GEN
 
@@ -382,10 +383,18 @@ QUuid VcprojGenerator::increaseUUID(const QUuid &id)
     return result;
 }
 
-QStringList VcprojGenerator::collectSubDirs(QMakeProject *proj)
+ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QString, QString> &projLookup,
+                                                   QHash<QString, QString> &projGuids,
+                                                   QHash<VcsolutionDepend *, QStringList> &extraSubdirs,
+                                                   QHash<QString, VcsolutionDepend*> &solution_depends,
+                                                   QList<VcsolutionDepend*> &solution_cleanup,
+                                                   QTextStream &t,
+                                                   QHash<QString, ProStringList> &subdirProjectLookup,
+                                                   const ProStringList &allDependencies)
 {
-    QStringList subdirs;
-    const ProStringList &tmp_proj_subdirs = proj->values("SUBDIRS");
+    QLinkedList<QPair<QString, ProStringList> > collectedSubdirs;
+    ProStringList tmp_proj_subdirs = proj->values("SUBDIRS");
+    ProStringList projectsInProject;
     for(int x = 0; x < tmp_proj_subdirs.size(); ++x) {
         ProString tmpdir = tmp_proj_subdirs.at(x);
         const ProKey tmpdirConfig(tmpdir + ".CONFIG");
@@ -404,9 +413,175 @@ QStringList VcprojGenerator::collectSubDirs(QMakeProject *proj)
         } else if (!proj->isEmpty(skey)) {
             tmpdir = proj->first(skey);
         }
-        subdirs += tmpdir.toQString();
+        projectsInProject.append(tmpdir);
+        collectedSubdirs.append(qMakePair(tmpdir.toQString(), proj->values(ProKey(tmp_proj_subdirs.at(x) + ".depends"))));
+        projLookup.insert(tmp_proj_subdirs.at(x).toQString(), tmpdir.toQString());
     }
-    return subdirs;
+    QLinkedListIterator<QPair<QString, ProStringList> > collectedIt(collectedSubdirs);
+    while (collectedIt.hasNext()) {
+        QPair<QString, ProStringList> subdir = collectedIt.next();
+        QString profile = subdir.first;
+        QFileInfo fi(fileInfo(Option::fixPathToLocalOS(profile, true)));
+        if (fi.exists()) {
+            if (fi.isDir()) {
+                if (!profile.endsWith(Option::dir_sep))
+                    profile += Option::dir_sep;
+                profile += fi.baseName() + Option::pro_ext;
+                QString profileKey = fi.absoluteFilePath();
+                fi = QFileInfo(fileInfo(Option::fixPathToLocalOS(profile, true)));
+                if (!fi.exists())
+                    continue;
+                projLookup.insert(profileKey, fi.absoluteFilePath());
+            }
+            QString oldpwd = qmake_getpwd();
+            QMakeProject tmp_proj;
+            QString dir = fi.absolutePath(), fn = fi.fileName();
+            if (!dir.isEmpty()) {
+                if (!qmake_setpwd(dir))
+                    fprintf(stderr, "Cannot find directory: %s", dir.toLatin1().constData());
+            }
+            if (tmp_proj.read(fn)) {
+                // Check if all requirements are fulfilled
+                if (!tmp_proj.isEmpty("QMAKE_FAILED_REQUIREMENTS")) {
+                    fprintf(stderr, "Project file(%s) not added to Solution because all requirements not met:\n\t%s\n",
+                        fn.toLatin1().constData(), tmp_proj.values("QMAKE_FAILED_REQUIREMENTS").join(" ").toLatin1().constData());
+                    qmake_setpwd(oldpwd);
+                    continue;
+                }
+                if (tmp_proj.first("TEMPLATE") == "vcsubdirs") {
+                    ProStringList tmpList = collectDependencies(&tmp_proj, projLookup, projGuids, extraSubdirs, solution_depends, solution_cleanup, t, subdirProjectLookup, subdir.second);
+                    subdirProjectLookup.insert(subdir.first, tmpList);
+                } else {
+                    ProStringList tmpList;
+                    tmpList += subdir.second;
+                    tmpList += allDependencies;
+                    QPair<QString, ProStringList> val = qMakePair(fi.absoluteFilePath(), tmpList);
+                    // Initialize a 'fake' project to get the correct variables
+                    // and to be able to extract all the dependencies
+                    Option::QMAKE_MODE old_mode = Option::qmake_mode;
+                    Option::qmake_mode = Option::QMAKE_GENERATE_NOTHING;
+                    QString old_output_dir = Option::output_dir;
+                    Option::output_dir = QFileInfo(fileFixify(dir, qmake_getpwd(), Option::output_dir)).canonicalFilePath();
+                    VcprojGenerator tmp_vcproj;
+                    tmp_vcproj.setNoIO(true);
+                    tmp_vcproj.setProjectFile(&tmp_proj);
+                    Option::qmake_mode = old_mode;
+                    Option::output_dir = old_output_dir;
+
+                    // We assume project filename is [QMAKE_PROJECT_NAME].vcproj
+                    QString vcproj = unescapeFilePath(tmp_vcproj.project->first("QMAKE_PROJECT_NAME") + project->first("VCPROJ_EXTENSION"));
+                    QString vcprojDir = qmake_getpwd();
+
+                    // If file doesn't exsist, then maybe the users configuration
+                    // doesn't allow it to be created. Skip to next...
+                    if (!exists(vcprojDir + Option::dir_sep + vcproj)) {
+                        // Try to find the directory which fits relative
+                        // to the output path, which represents the shadow
+                        // path in case we are shadow building
+                        QStringList list = fi.path().split(QLatin1Char('/'));
+                        QString tmpDir = QFileInfo(Option::output).path() + Option::dir_sep;
+                        bool found = false;
+                        for (int i = list.size() - 1; i >= 0; --i) {
+                            QString curr;
+                            for (int j = i; j < list.size(); ++j)
+                                curr += list.at(j) + Option::dir_sep;
+                            if (exists(tmpDir + curr + vcproj)) {
+                                vcprojDir = QDir::cleanPath(tmpDir + curr);
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            warn_msg(WarnLogic, "Ignored (not found) '%s'", QString(vcprojDir + Option::dir_sep + vcproj).toLatin1().constData());
+                            goto nextfile; // # Dirty!
+                        }
+                    }
+
+                    VcsolutionDepend *newDep = new VcsolutionDepend;
+                    newDep->vcprojFile = vcprojDir + Option::dir_sep + vcproj;
+                    newDep->orig_target = unescapeFilePath(tmp_proj.first("QMAKE_ORIG_TARGET")).toQString();
+                    newDep->target = tmp_proj.first("MSVCPROJ_TARGET").toQString().section(Option::dir_sep, -1);
+                    newDep->targetType = tmp_vcproj.projectTarget;
+                    newDep->uuid = tmp_proj.isEmpty("QMAKE_UUID") ? getProjectUUID(Option::fixPathToLocalOS(vcprojDir + QDir::separator() + vcproj)).toString().toUpper(): tmp_proj.first("QMAKE_UUID").toQString();
+                    // We want to store it as the .lib name.
+                    if (newDep->target.endsWith(".dll"))
+                        newDep->target = newDep->target.left(newDep->target.length()-3) + "lib";
+                    projGuids.insert(val.first, newDep->target);
+
+                    if (val.second.size()) {
+                        const ProStringList depends = val.second;
+                        foreach (const ProString &dep, depends) {
+                            QString depend = dep.toQString();
+                            if (!projGuids[depend].isEmpty()) {
+                                newDep->dependencies << projGuids[depend];
+                            } else if (subdirProjectLookup[projLookup[depend]].size() > 0) {
+                                ProStringList tmpLst = subdirProjectLookup[projLookup[depend]];
+                                foreach (const ProString &tDep, tmpLst) {
+                                    QString tmpDep = tDep.toQString();
+                                    newDep->dependencies << projGuids[projLookup[tmpDep]];
+                                }
+                            } else {
+                                QStringList dependencies = val.second.toQStringList();
+                                extraSubdirs.insert(newDep, dependencies);
+                                newDep->dependencies.clear();
+                                break;
+                            }
+                        }
+                    }
+
+                    // All ActiveQt Server projects are dependent on idc.exe
+                    if (tmp_proj.values("CONFIG").contains("qaxserver"))
+                        newDep->dependencies << "idc.exe";
+
+                    // Add all unknown libs to the deps
+                    QStringList where = QStringList() << "QMAKE_LIBS" << "QMAKE_LIBS_PRIVATE";
+                    if (!tmp_proj.isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
+                    where = tmp_proj.values("QMAKE_INTERNAL_PRL_LIBS").toQStringList();
+                    for (QStringList::ConstIterator wit = where.begin();
+                        wit != where.end(); ++wit) {
+                            const ProStringList &l = tmp_proj.values(ProKey(*wit));
+                            for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
+                                QString opt = (*it).toQString();
+                                if (!opt.startsWith("/") &&   // Not a switch
+                                    opt != newDep->target && // Not self
+                                    opt != "opengl32.lib" && // We don't care about these libs
+                                    opt != "glu32.lib" &&    // to make depgen alittle faster
+                                    opt != "kernel32.lib" &&
+                                    opt != "user32.lib" &&
+                                    opt != "gdi32.lib" &&
+                                    opt != "comdlg32.lib" &&
+                                    opt != "advapi32.lib" &&
+                                    opt != "shell32.lib" &&
+                                    opt != "ole32.lib" &&
+                                    opt != "oleaut32.lib" &&
+                                    opt != "uuid.lib" &&
+                                    opt != "imm32.lib" &&
+                                    opt != "winmm.lib" &&
+                                    opt != "wsock32.lib" &&
+                                    opt != "ws2_32.lib" &&
+                                    opt != "winspool.lib" &&
+                                    opt != "delayimp.lib")
+                                {
+                                    newDep->dependencies << opt.section(Option::dir_sep, -1);
+                                }
+                            }
+                    }
+#ifdef DEBUG_SOLUTION_GEN
+                    qDebug("Deps for %20s: [%s]", newDep->target.toLatin1().constData(), newDep->dependencies.join(" :: ").toLatin1().constData());
+#endif
+                    solution_cleanup.append(newDep);
+                    solution_depends.insert(newDep->target, newDep);
+                    t << _slnProjectBeg << _slnMSVCvcprojGUID << _slnProjectMid
+                        << "\"" << newDep->orig_target << "\", \"" << newDep->vcprojFile
+                        << "\", \"" << newDep->uuid << "\"";
+                    t << _slnProjectEnd;
+                }
+nextfile:
+                qmake_setpwd(oldpwd);
+            }
+        }
+    }
+    return projectsInProject;
 }
 
 void VcprojGenerator::writeSubDirs(QTextStream &t)
@@ -454,176 +629,26 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     QString old_after_vars = Option::globals->postcmds;
     Option::globals->postcmds.append("\nCONFIG+=release");
 
-    QStringList subdirs = collectSubDirs(project);
-    for(int i = 0; i < subdirs.size(); ++i) {
-        QString tmp = subdirs.at(i);
-        QFileInfo fi(fileInfo(Option::fixPathToLocalOS(tmp, true)));
-        if(fi.exists()) {
-            if(fi.isDir()) {
-                QString profile = tmp;
-                if(!profile.endsWith(Option::dir_sep))
-                    profile += Option::dir_sep;
-                profile += fi.baseName() + Option::pro_ext;
-                subdirs.append(profile);
-            } else {
-                QMakeProject tmp_proj;
-                QString dir = fi.path(), fn = fi.fileName();
-                if(!dir.isEmpty()) {
-                    if(!qmake_setpwd(dir))
-                        fprintf(stderr, "Cannot find directory: %s\n", dir.toLatin1().constData());
-                }
-                if(tmp_proj.read(fn)) {
-                    // Check if all requirements are fulfilled
-                    if (!tmp_proj.isEmpty("QMAKE_FAILED_REQUIREMENTS")) {
-                        fprintf(stderr, "Project file(%s) not added to Solution because all requirements not met:\n\t%s\n",
-                                fn.toLatin1().constData(), tmp_proj.values("QMAKE_FAILED_REQUIREMENTS").join(' ').toLatin1().constData());
-                        continue;
-                    }
-                    if(tmp_proj.first("TEMPLATE") == "vcsubdirs") {
-                        foreach(const QString &tmpdir, collectSubDirs(&tmp_proj))
-                            subdirs += fileFixify(tmpdir);
-                    } else if(tmp_proj.first("TEMPLATE") == "vcapp" || tmp_proj.first("TEMPLATE") == "vclib") {
-                        // Initialize a 'fake' project to get the correct variables
-                        // and to be able to extract all the dependencies
-                        Option::QMAKE_MODE old_mode = Option::qmake_mode;
-                        Option::qmake_mode = Option::QMAKE_GENERATE_NOTHING;
-                        QString old_output_dir = Option::output_dir;
-                        Option::output_dir = QFileInfo(fileFixify(dir, qmake_getpwd(), Option::output_dir)).canonicalFilePath();
-                        VcprojGenerator tmp_vcproj;
-                        tmp_vcproj.setNoIO(true);
-                        tmp_vcproj.setProjectFile(&tmp_proj);
-                        Option::qmake_mode = old_mode;
-                        Option::output_dir = old_output_dir;
+    QHash<QString, QString> profileLookup;
+    QHash<QString, QString> projGuids;
+    QHash<VcsolutionDepend *, QStringList> extraSubdirs;
+    QHash<QString, ProStringList> subdirProjectLookup;
+    collectDependencies(project, profileLookup, projGuids, extraSubdirs, solution_depends, solution_cleanup, t, subdirProjectLookup);
 
-                        // We assume project filename is [QMAKE_PROJECT_NAME].vcproj
-                        QString vcproj = unescapeFilePath(tmp_vcproj.project->first("QMAKE_PROJECT_NAME") + project->first("VCPROJ_EXTENSION"));
-                        QString vcprojDir = qmake_getpwd();
+    t << _slnGlobalBeg;
 
-                        // If file doesn't exsist, then maybe the users configuration
-                        // doesn't allow it to be created. Skip to next...
-                        if(!exists(vcprojDir + Option::dir_sep + vcproj)) {
-
-                            // Try to find the directory which fits relative
-                            // to the output path, which represents the shadow
-                            // path in case we are shadow building
-                            QStringList list = fi.path().split(QLatin1Char('/'));
-                            QString tmpDir = QFileInfo(Option::output).path() + Option::dir_sep;
-                            bool found = false;
-                            for (int i = list.size() - 1; i >= 0; --i) {
-                                QString curr;
-                                for (int j = i; j < list.size(); ++j)
-                                    curr += list.at(j) + Option::dir_sep;
-                                if (exists(tmpDir + curr + vcproj)) {
-                                    vcprojDir = QDir::cleanPath(tmpDir + curr);
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found) {
-                                warn_msg(WarnLogic, "Ignored (not found) '%s'", QString(vcprojDir + Option::dir_sep + vcproj).toLatin1().constData());
-                                goto nextfile; // # Dirty!
-                            }
-                        }
-
-                        VcsolutionDepend *newDep = new VcsolutionDepend;
-                        newDep->vcprojFile = vcprojDir + Option::dir_sep + vcproj;
-                        newDep->orig_target = unescapeFilePath(tmp_proj.first("QMAKE_ORIG_TARGET").toQString());
-                        newDep->target = tmp_proj.first("MSVCPROJ_TARGET").toQString().section(Option::dir_sep, -1);
-                        newDep->targetType = tmp_vcproj.projectTarget;
-                        newDep->uuid = tmp_proj.isEmpty("QMAKE_UUID") ? getProjectUUID(Option::fixPathToLocalOS(vcprojDir + QDir::separator() + vcproj)).toString().toUpper(): tmp_proj.first("QMAKE_UUID").toQString();
-
-                        // We want to store it as the .lib name.
-                        if(newDep->target.endsWith(".dll"))
-                            newDep->target = newDep->target.left(newDep->target.length()-3) + "lib";
-
-                        // All ActiveQt Server projects are dependent on idc.exe
-                        if (tmp_proj.values("CONFIG").contains("qaxserver"))
-                            newDep->dependencies << "idc.exe";
-
-                        // All extra compilers which has valid input are considered dependencies
-                        const ProStringList &quc = tmp_proj.values("QMAKE_EXTRA_COMPILERS");
-                        for (ProStringList::ConstIterator it = quc.constBegin(); it != quc.constEnd(); ++it) {
-                            const ProStringList &invar = tmp_proj.values(ProKey(*it + ".input"));
-                            for (ProStringList::ConstIterator iit = invar.constBegin(); iit != invar.constEnd(); ++iit) {
-                                const ProStringList &fileList = tmp_proj.values((*iit).toKey());
-                                if (!fileList.isEmpty()) {
-                                    const QStringList &cmdsParts = tmp_proj.values(ProKey(*it + ".commands")).toQStringList();
-                                    bool startOfLine = true;
-                                    foreach(QString cmd, cmdsParts) {
-                                        if (!startOfLine) {
-                                            if (cmd.contains("\r"))
-                                                startOfLine = true;
-                                            continue;
-                                        }
-                                        if (cmd.isEmpty())
-                                            continue;
-
-                                        startOfLine = false;
-                                        // Extra compiler commands might be defined in variables, so
-                                        // expand them (don't care about the in/out files)
-                                        cmd = tmp_vcproj.replaceExtraCompilerVariables(cmd, QStringList(), QStringList());
-                                        // Pull out command based on spaces and quoting, if the
-                                        // command starts with that
-                                        cmd = cmd.left(cmd.indexOf(cmd.at(0) == '"' ? '"' : ' ', 1));
-                                        QString dep = cmd.section('/', -1).section('\\', -1);
-                                        if (!newDep->dependencies.contains(dep))
-                                            newDep->dependencies << dep;
-                                    }
-                                }
-                            }
-                        }
-
-                        // Add all unknown libs to the deps
-                        ProStringList where = ProStringList() << "QMAKE_LIBS" << "QMAKE_LIBS_PRIVATE";
-                        if(!tmp_proj.isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
-                            where = tmp_proj.values("QMAKE_INTERNAL_PRL_LIBS");
-                        for (ProStringList::ConstIterator wit = where.begin();
-                            wit != where.end(); ++wit) {
-                            const ProStringList &l = tmp_proj.values((*wit).toKey());
-                            for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-                                QString opt = (*it).toQString();
-                                if(!opt.startsWith("/") &&   // Not a switch
-                                    opt != newDep->target && // Not self
-                                    opt != "opengl32.lib" && // We don't care about these libs
-                                    opt != "glu32.lib" &&    // to make depgen alittle faster
-                                    opt != "kernel32.lib" &&
-                                    opt != "user32.lib" &&
-                                    opt != "gdi32.lib" &&
-                                    opt != "comdlg32.lib" &&
-                                    opt != "advapi32.lib" &&
-                                    opt != "shell32.lib" &&
-                                    opt != "ole32.lib" &&
-                                    opt != "oleaut32.lib" &&
-                                    opt != "uuid.lib" &&
-                                    opt != "imm32.lib" &&
-                                    opt != "winmm.lib" &&
-                                    opt != "wsock32.lib" &&
-                                    opt != "ws2_32.lib" &&
-                                    opt != "winspool.lib" &&
-                                    opt != "delayimp.lib")
-                                {
-                                    newDep->dependencies << opt.section(Option::dir_sep, -1);
-                                }
-                            }
-                        }
-#ifdef DEBUG_SOLUTION_GEN
-                        qDebug("Deps for %20s: [%s]", newDep->target.toLatin1().constData(), newDep->dependencies.join(" :: ").toLatin1().constData());
-#endif
-                        solution_cleanup.append(newDep);
-                        solution_depends.insert(newDep->target, newDep);
-                        t << _slnProjectBeg << _slnMSVCvcprojGUID << _slnProjectMid
-                            << "\"" << newDep->orig_target << "\", \"" << newDep->vcprojFile
-                            << "\", \"" << newDep->uuid << "\"";
-                        t << _slnProjectEnd;
-                    }
-                }
-nextfile:
-                qmake_setpwd(oldpwd);
+    QHashIterator<VcsolutionDepend *, QStringList> extraIt(extraSubdirs);
+    while (extraIt.hasNext()) {
+        extraIt.next();
+        foreach (const QString &depend, extraIt.value()) {
+            if (!projGuids[depend].isEmpty()) {
+                extraIt.key()->dependencies << projGuids[depend];
+            } else if (!profileLookup[depend].isEmpty()) {
+                if (!projGuids[profileLookup[depend]].isEmpty())
+                    extraIt.key()->dependencies << projGuids[profileLookup[depend]];
             }
         }
     }
-    t << _slnGlobalBeg;
-
     QString slnConf = _slnSolutionConf;
     if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH")) {
         QString slnPlatform = QString("|") + project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
