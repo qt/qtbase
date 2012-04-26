@@ -791,6 +791,18 @@ void tst_QChar::normalization()
 void tst_QChar::normalization_manual()
 {
     {
+        QString decomposed;
+        decomposed += QChar(0x41);
+        decomposed += QChar(0x0221); // assigned in 4.0
+        decomposed += QChar(0x300);
+
+        QVERIFY(decomposed.normalized(QString::NormalizationForm_C, QChar::Unicode_3_2) == decomposed);
+
+        decomposed[1] = QChar(0x037f); // unassigned in 6.1
+
+        QVERIFY(decomposed.normalized(QString::NormalizationForm_C) == decomposed);
+    }
+    {
         QString composed;
         composed += QChar(0xc0);
         QString decomposed;

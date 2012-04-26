@@ -1446,7 +1446,17 @@ inline bool operator<(ushort u1, const UCS2Pair &ligature)
 inline bool operator<(const UCS2Pair &ligature, ushort u1)
 { return ligature.u1 < u1; }
 
-static ushort ligatureHelper(ushort u1, ushort u2)
+struct UCS2SurrogatePair {
+    UCS2Pair p1;
+    UCS2Pair p2;
+};
+
+inline bool operator<(uint u1, const UCS2SurrogatePair &ligature)
+{ return u1 < QChar::surrogateToUcs4(ligature.p1.u1, ligature.p1.u2); }
+inline bool operator<(const UCS2SurrogatePair &ligature, uint u1)
+{ return QChar::surrogateToUcs4(ligature.p1.u1, ligature.p1.u2) < u1; }
+
+static uint inline ligatureHelper(uint u1, uint u2)
 {
     if (u1 >= Hangul_LBase && u1 <= Hangul_SBase + Hangul_SCount) {
         // compute Hangul syllable composition as per UAX #15
@@ -1471,9 +1481,14 @@ static ushort ligatureHelper(ushort u1, ushort u2)
         return 0;
     const unsigned short *ligatures = uc_ligature_map+index;
     ushort length = *ligatures++;
-    {
+    if (QChar::requiresSurrogates(u1)) {
+        const UCS2SurrogatePair *data = reinterpret_cast<const UCS2SurrogatePair *>(ligatures);
+        const UCS2SurrogatePair *r = qBinaryFind(data, data + length, u1);
+        if (r != data + length)
+            return QChar::surrogateToUcs4(r->p2.u1, r->p2.u2);
+    } else {
         const UCS2Pair *data = reinterpret_cast<const UCS2Pair *>(ligatures);
-        const UCS2Pair *r = qBinaryFind(data, data + length, u1);
+        const UCS2Pair *r = qBinaryFind(data, data + length, ushort(u1));
         if (r != data + length)
             return r->u2;
     }
@@ -1485,14 +1500,17 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
 {
     QString &s = *str;
 
-    if (s.length() - from < 2)
+    if (from < 0 || s.length() - from < 2)
         return;
 
-    // the loop can partly ignore high Unicode as all ligatures are in the BMP
-    int starter = 0;
+    int starter = 0; // starter position
+    uint stcode = 0; // starter code point
+    int next = -1;
     int lastCombining = 0;
+
     int pos = from;
     while (pos < s.length()) {
+        int i = pos;
         uint uc = s.at(pos).unicode();
         if (QChar(uc).isHighSurrogate() && pos < s.length()-1) {
             ushort low = s.at(pos+1).unicode();
@@ -1501,26 +1519,43 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
                 ++pos;
             }
         }
+
         const QUnicodeTables::Properties *p = qGetProp(uc);
         if (p->unicodeVersion > version || p->unicodeVersion == QChar::Unicode_Unassigned) {
-            starter = -1; // to prevent starter == pos - 1
-            lastCombining = 0;
+            starter = -1;
+            next = -1; // to prevent i == next
+            lastCombining = 255; // to prevent combining > lastCombining
             ++pos;
             continue;
         }
+
         int combining = p->combiningClass;
-        if (starter == pos - 1 || combining > lastCombining) {
+        if (i == next || combining > lastCombining) {
+            Q_ASSERT(starter >= from);
             // allowed to form ligature with S
-            QChar ligature = ligatureHelper(s.at(starter).unicode(), uc);
-            if (ligature.unicode()) {
-                s[starter] = ligature;
-                s.remove(pos, 1);
+            uint ligature = ligatureHelper(stcode, uc);
+            if (ligature) {
+                stcode = ligature;
+                QChar *d = s.data();
+                // ligatureHelper() never changes planes
+                if (QChar::requiresSurrogates(ligature)) {
+                    d[starter] = QChar::highSurrogate(ligature);
+                    d[starter + 1] = QChar::lowSurrogate(ligature);
+                    s.remove(i, 2);
+                } else {
+                    d[starter] = ligature;
+                    s.remove(i, 1);
+                }
                 continue;
             }
         }
-        if (!combining)
-            starter = pos;
+        if (combining == 0) {
+            starter = i;
+            stcode = uc;
+            next = pos + 1;
+        }
         lastCombining = combining;
+
         ++pos;
     }
 }

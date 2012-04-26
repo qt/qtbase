@@ -714,15 +714,15 @@ static int numLigatures = 0;
 static int highestLigature = 0;
 
 struct Ligature {
-    ushort u1;
-    ushort u2;
-    ushort ligature;
+    int u1;
+    int u2;
+    int ligature;
 };
 // we need them sorted after the first component for fast lookup
 bool operator < (const Ligature &l1, const Ligature &l2)
 { return l1.u1 < l2.u1; }
 
-static QHash<ushort, QList<Ligature> > ligatureHashes;
+static QHash<int, QList<Ligature> > ligatureHashes;
 
 static QHash<int, int> combiningClassUsage;
 
@@ -1086,7 +1086,7 @@ static void readDerivedNormalizationProps()
 
             ++numLigatures;
             highestLigature = qMax(highestLigature, part1);
-            Ligature l = {(ushort)part1, (ushort)part2, (ushort)codepoint};
+            Ligature l = { part1, part2, codepoint };
             ligatureHashes[part2].append(l);
         }
     }
@@ -2522,16 +2522,27 @@ static QByteArray createLigatureInfo()
 {
     qDebug("createLigatureInfo: numLigatures=%d, highestLigature=0x%x", numLigatures, highestLigature);
 
-    QList<DecompositionBlock> blocks;
-    QList<int> blockMap;
-    QList<unsigned short> ligatures;
+    foreach (const QList<Ligature> &l, ligatureHashes) {
+        for (int j = 0; j < l.size(); ++j) {
+            // if the condition below doesn't hold anymore we need to modify our ligatureHelper code
+            Q_ASSERT(QChar::requiresSurrogates(l.at(j).u2) == QChar::requiresSurrogates(l.at(j).ligature) &&
+                     QChar::requiresSurrogates(l.at(j).u2) == QChar::requiresSurrogates(l.at(j).u1));
+        }
+    }
 
     const int BMP_BLOCKSIZE = 32;
     const int BMP_SHIFT = 5;
     const int BMP_END = 0x3100;
+    const int SMP_END = 0x12000;
+    const int SMP_BLOCKSIZE = 256;
+    const int SMP_SHIFT = 8;
 
-    if (BMP_END <= highestLigature)
+    if (SMP_END <= highestLigature)
         qFatal("end of table smaller than highest ligature character 0x%x", highestLigature);
+
+    QList<DecompositionBlock> blocks;
+    QList<int> blockMap;
+    QList<unsigned short> ligatures;
 
     int used = 0;
     int tableIndex = 0;
@@ -2569,6 +2580,38 @@ static QByteArray createLigatureInfo()
     int bmp_blocks = blocks.size();
     Q_ASSERT(blockMap.size() == BMP_END/BMP_BLOCKSIZE);
 
+    for (int block = BMP_END/SMP_BLOCKSIZE; block < SMP_END/SMP_BLOCKSIZE; ++block) {
+        DecompositionBlock b;
+        for (int i = 0; i < SMP_BLOCKSIZE; ++i) {
+            int uc = block*SMP_BLOCKSIZE + i;
+            QList<Ligature> l = ligatureHashes.value(uc);
+            if (!l.isEmpty()) {
+                Q_ASSERT(QChar::requiresSurrogates(uc));
+                qSort(l); // needed for bsearch in ligatureHelper code
+
+                ligatures.append(l.size());
+                for (int j = 0; j < l.size(); ++j) {
+                    ligatures.append(QChar::highSurrogate(l.at(j).u1));
+                    ligatures.append(QChar::lowSurrogate(l.at(j).u1));
+                    ligatures.append(QChar::highSurrogate(l.at(j).ligature));
+                    ligatures.append(QChar::lowSurrogate(l.at(j).ligature));
+                }
+                b.decompositionPositions.append(tableIndex);
+                tableIndex += 4*l.size() + 1;
+            } else {
+                b.decompositionPositions.append(0xffff);
+            }
+        }
+        int index = blocks.indexOf(b);
+        if (index == -1) {
+            index = blocks.size();
+            b.index = used;
+            used += SMP_BLOCKSIZE;
+            blocks.append(b);
+        }
+        blockMap.append(blocks.at(index).index);
+    }
+
     // if the condition below doesn't hold anymore we need to modify our composition code
     Q_ASSERT(tableIndex < 0xffff);
 
@@ -2579,8 +2622,16 @@ static QByteArray createLigatureInfo()
     qDebug("        block data uses: %d bytes", bmp_block_data);
     qDebug("        trie data uses : %d bytes", bmp_trie);
     qDebug("        memory usage: %d bytes", bmp_mem);
+
+    int smp_block_data = (blocks.size() - bmp_blocks)*SMP_BLOCKSIZE*2;
+    int smp_trie = (SMP_END-BMP_END)/SMP_BLOCKSIZE*2;
+    int smp_mem = smp_block_data + smp_trie;
+    qDebug("    %d unique blocks in SMP.", blocks.size()-bmp_blocks);
+    qDebug("        block data uses: %d bytes", smp_block_data);
+    qDebug("        trie data uses : %d bytes", smp_trie);
+
     qDebug("\n        ligature data uses : %d bytes", ligatures.size()*2);
-    qDebug("    memory usage: %d bytes", bmp_mem + ligatures.size() * 2);
+    qDebug("    memory usage: %d bytes", bmp_mem + smp_mem + ligatures.size() * 2);
 
     QByteArray out;
 
@@ -2593,6 +2644,20 @@ static QByteArray createLigatureInfo()
             if (out.endsWith(' '))
                 out.chop(1);
             if (!((i*BMP_BLOCKSIZE) % 0x1000))
+                out += "\n";
+            out += "\n    ";
+        }
+        out += QByteArray::number(blockMap.at(i) + blockMap.size());
+        out += ", ";
+    }
+    if (out.endsWith(' '))
+        out.chop(1);
+    out += "\n\n    // 0x" + QByteArray::number(BMP_END, 16) + " - 0x" + QByteArray::number(SMP_END, 16) + "\n";
+    for (int i = BMP_END/BMP_BLOCKSIZE; i < blockMap.size(); ++i) {
+        if (!(i % 8)) {
+            if (out.endsWith(' '))
+                out.chop(1);
+            if (!(i % (0x10000/SMP_BLOCKSIZE)))
                 out += "\n";
             out += "\n    ";
         }
@@ -2622,10 +2687,15 @@ static QByteArray createLigatureInfo()
         out.chop(2);
     out += "\n};\n\n"
 
-           "#define GET_LIGATURE_INDEX(u2) \\\n"
-           "       (u2 < 0x" + QByteArray::number(BMP_END, 16) + " ? "
-           "uc_ligature_trie[uc_ligature_trie[u2>>" + QByteArray::number(BMP_SHIFT) +
-           "] + (u2 & 0x" + QByteArray::number(BMP_BLOCKSIZE-1, 16)+ ")] : 0xffff);\n\n"
+           "#define GET_LIGATURE_INDEX(ucs4) \\\n"
+           "       (ucs4 < 0x" + QByteArray::number(BMP_END, 16) + " \\\n"
+           "        ? (uc_ligature_trie[uc_ligature_trie[ucs4>>" + QByteArray::number(BMP_SHIFT) +
+           "] + (ucs4 & 0x" + QByteArray::number(BMP_BLOCKSIZE-1, 16)+ ")]) \\\n"
+           "        : (ucs4 < 0x" + QByteArray::number(SMP_END, 16) + "\\\n"
+           "           ? uc_ligature_trie[uc_ligature_trie[((ucs4 - 0x" + QByteArray::number(BMP_END, 16) +
+           ")>>" + QByteArray::number(SMP_SHIFT) + ") + 0x" + QByteArray::number(BMP_END/BMP_BLOCKSIZE, 16) + "]"
+           " + (ucs4 & 0x" + QByteArray::number(SMP_BLOCKSIZE-1, 16) + ")]\\\n"
+           "           : 0xffff))\n\n"
 
            "static const unsigned short uc_ligature_map[] = {";
 
