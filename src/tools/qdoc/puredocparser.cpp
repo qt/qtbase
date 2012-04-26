@@ -57,7 +57,7 @@ PureDocParser::~PureDocParser()
 
 QStringList PureDocParser::sourceFileNameFilter()
 {
-    return QStringList("*.qdoc");
+    return QStringList() << "*.qdoc" << "*.qtx" << "*.qtt";
 }
 
 QT_END_NAMESPACE
