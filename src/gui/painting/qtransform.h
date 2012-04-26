@@ -361,34 +361,34 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QTransform &);
 /****** end stream functions *******************/
 
 // mathematical semantics
-Q_GUI_EXPORT_INLINE QPoint operator*(const QPoint &p, const QTransform &m)
+inline QPoint operator*(const QPoint &p, const QTransform &m)
 { return m.map(p); }
-Q_GUI_EXPORT_INLINE QPointF operator*(const QPointF &p, const QTransform &m)
+inline QPointF operator*(const QPointF &p, const QTransform &m)
 { return m.map(p); }
-Q_GUI_EXPORT_INLINE QLineF operator*(const QLineF &l, const QTransform &m)
+inline QLineF operator*(const QLineF &l, const QTransform &m)
 { return m.map(l); }
-Q_GUI_EXPORT_INLINE QLine operator*(const QLine &l, const QTransform &m)
+inline QLine operator*(const QLine &l, const QTransform &m)
 { return m.map(l); }
-Q_GUI_EXPORT_INLINE QPolygon operator *(const QPolygon &a, const QTransform &m)
+inline QPolygon operator *(const QPolygon &a, const QTransform &m)
 { return m.map(a); }
-Q_GUI_EXPORT_INLINE QPolygonF operator *(const QPolygonF &a, const QTransform &m)
+inline QPolygonF operator *(const QPolygonF &a, const QTransform &m)
 { return m.map(a); }
-Q_GUI_EXPORT_INLINE QRegion operator *(const QRegion &r, const QTransform &m)
+inline QRegion operator *(const QRegion &r, const QTransform &m)
 { return m.map(r); }
-Q_GUI_EXPORT_INLINE QPainterPath operator *(const QPainterPath &p, const QTransform &m)
+inline QPainterPath operator *(const QPainterPath &p, const QTransform &m)
 { return m.map(p); }
 
-Q_GUI_EXPORT_INLINE QTransform operator *(const QTransform &a, qreal n)
+inline QTransform operator *(const QTransform &a, qreal n)
 { QTransform t(a); t *= n; return t; }
-Q_GUI_EXPORT_INLINE QTransform operator /(const QTransform &a, qreal n)
+inline QTransform operator /(const QTransform &a, qreal n)
 { QTransform t(a); t /= n; return t; }
-Q_GUI_EXPORT_INLINE QTransform operator +(const QTransform &a, qreal n)
+inline QTransform operator +(const QTransform &a, qreal n)
 { QTransform t(a); t += n; return t; }
-Q_GUI_EXPORT_INLINE QTransform operator -(const QTransform &a, qreal n)
+inline QTransform operator -(const QTransform &a, qreal n)
 { QTransform t(a); t -= n; return t; }
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif
+#endif // QTRANSFORM_H

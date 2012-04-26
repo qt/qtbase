@@ -634,58 +634,6 @@ class QDataStream;
 #  endif
 #endif
 
-// Functions marked as Q_GUI_EXPORT_INLINE were exported and inlined by mistake.
-// Compilers like MinGW complain that the import attribute is ignored.
-#if defined(Q_CC_MINGW)
-#    if defined(QT_BUILD_CORE_LIB)
-#      define Q_CORE_EXPORT_INLINE Q_CORE_EXPORT inline
-#    else
-#      define Q_CORE_EXPORT_INLINE inline
-#    endif
-#    if defined(QT_BUILD_GUI_LIB)
-#      define Q_GUI_EXPORT_INLINE Q_GUI_EXPORT inline
-#    else
-#      define Q_GUI_EXPORT_INLINE inline
-#    endif
-#    if defined(QT_BUILD_WIDGETS_LIB)
-#      define Q_WIDGETS_EXPORT_INLINE Q_WIDGETS_EXPORT inline
-#    else
-#      define Q_WIDGETS_EXPORT_INLINE inline
-#    endif
-#    if defined(QT_BUILD_PLATFORMSUPPORT_LIB)
-#      define Q_PLATFORMSUPPORT_EXPORT_INLINE Q_PLATFORMSUPPORT_EXPORT inline
-#    else
-#      define Q_PLATFORMSUPPORT_EXPORT_INLINE inline
-#    endif
-#    if defined(QT_BUILD_PRINTSUPPORT_LIB)
-#      define Q_PRINTSUPPORT_EXPORT_INLINE Q_PRINTSUPPORT_EXPORT inline
-#    else
-#      define Q_PRINTSUPPORT_EXPORT_INLINE inline
-#    endif
-#    if defined(QT_BUILD_COMPAT_LIB)
-#      define Q_COMPAT_EXPORT_INLINE Q_COMPAT_EXPORT inline
-#    else
-#      define Q_COMPAT_EXPORT_INLINE inline
-#    endif
-#elif defined(Q_CC_RVCT)
-// we force RVCT not to export inlines by passing --visibility_inlines_hidden
-// so we need to just inline it, rather than exporting and inlining
-// note: this affects the contents of the DEF files (ie. these functions do not appear)
-#    define Q_CORE_EXPORT_INLINE inline
-#    define Q_GUI_EXPORT_INLINE inline
-#    define Q_WIDGETS_EXPORT_INLINE inline
-#    define Q_PLATFORMSUPPORT_EXPORT_INLINE inline
-#    define Q_PRINTSUPPORT_EXPORT_INLINE inline
-#    define Q_COMPAT_EXPORT_INLINE inline
-#else
-#    define Q_CORE_EXPORT_INLINE Q_CORE_EXPORT inline
-#    define Q_GUI_EXPORT_INLINE Q_GUI_EXPORT inline
-#    define Q_WIDGETS_EXPORT_INLINE Q_WIDGETS_EXPORT inline
-#    define Q_PLATFORMSUPPORT_EXPORT_INLINE Q_PLATFORMSUPPORT_EXPORT inline
-#    define Q_PRINTSUPPORT_EXPORT_INLINE Q_PRINTSUPPORT_EXPORT inline
-#    define Q_COMPAT_EXPORT_INLINE Q_COMPAT_EXPORT inline
-#endif
-
 /*
    No, this is not an evil backdoor. QT_BUILD_INTERNAL just exports more symbols
    for Qt's internal unit tests. If you want slower loading times and more

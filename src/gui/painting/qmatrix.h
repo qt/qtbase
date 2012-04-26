@@ -137,19 +137,19 @@ private:
 Q_DECLARE_TYPEINFO(QMatrix, Q_MOVABLE_TYPE);
 
 // mathematical semantics
-Q_GUI_EXPORT_INLINE QPoint operator*(const QPoint &p, const QMatrix &m)
+inline QPoint operator*(const QPoint &p, const QMatrix &m)
 { return m.map(p); }
-Q_GUI_EXPORT_INLINE QPointF operator*(const QPointF &p, const QMatrix &m)
+inline QPointF operator*(const QPointF &p, const QMatrix &m)
 { return m.map(p); }
-Q_GUI_EXPORT_INLINE QLineF operator*(const QLineF &l, const QMatrix &m)
+inline QLineF operator*(const QLineF &l, const QMatrix &m)
 { return m.map(l); }
-Q_GUI_EXPORT_INLINE QLine operator*(const QLine &l, const QMatrix &m)
+inline QLine operator*(const QLine &l, const QMatrix &m)
 { return m.map(l); }
-Q_GUI_EXPORT_INLINE QPolygon operator *(const QPolygon &a, const QMatrix &m)
+inline QPolygon operator *(const QPolygon &a, const QMatrix &m)
 { return m.map(a); }
-Q_GUI_EXPORT_INLINE QPolygonF operator *(const QPolygonF &a, const QMatrix &m)
+inline QPolygonF operator *(const QPolygonF &a, const QMatrix &m)
 { return m.map(a); }
-Q_GUI_EXPORT_INLINE QRegion operator *(const QRegion &r, const QMatrix &m)
+inline QRegion operator *(const QRegion &r, const QMatrix &m)
 { return m.map(r); }
 Q_GUI_EXPORT QPainterPath operator *(const QPainterPath &p, const QMatrix &m);
 

@@ -144,8 +144,8 @@ public:
     QT_DEPRECATED QRect intersect(const QRect &r) const { return intersected(r); }
 #endif
 
-    friend Q_CORE_EXPORT_INLINE Q_DECL_CONSTEXPR bool operator==(const QRect &, const QRect &);
-    friend Q_CORE_EXPORT_INLINE Q_DECL_CONSTEXPR bool operator!=(const QRect &, const QRect &);
+    friend Q_DECL_CONSTEXPR inline bool operator==(const QRect &, const QRect &);
+    friend Q_DECL_CONSTEXPR inline bool operator!=(const QRect &, const QRect &);
 
 private:
     int x1;
@@ -155,8 +155,8 @@ private:
 };
 Q_DECLARE_TYPEINFO(QRect, Q_MOVABLE_TYPE);
 
-Q_CORE_EXPORT_INLINE Q_DECL_CONSTEXPR bool operator==(const QRect &, const QRect &);
-Q_CORE_EXPORT_INLINE Q_DECL_CONSTEXPR bool operator!=(const QRect &, const QRect &);
+Q_DECL_CONSTEXPR inline bool operator==(const QRect &, const QRect &);
+Q_DECL_CONSTEXPR inline bool operator!=(const QRect &, const QRect &);
 
 
 /*****************************************************************************
@@ -544,8 +544,8 @@ public:
     QT_DEPRECATED QRectF intersect(const QRectF &r) const { return intersected(r); }
 #endif
 
-    friend Q_CORE_EXPORT_INLINE Q_DECL_CONSTEXPR bool operator==(const QRectF &, const QRectF &);
-    friend Q_CORE_EXPORT_INLINE Q_DECL_CONSTEXPR bool operator!=(const QRectF &, const QRectF &);
+    friend Q_DECL_CONSTEXPR inline bool operator==(const QRectF &, const QRectF &);
+    friend Q_DECL_CONSTEXPR inline bool operator!=(const QRectF &, const QRectF &);
 
     Q_DECL_CONSTEXPR inline QRect toRect() const;
     QRect toAlignedRect() const;
@@ -558,8 +558,8 @@ private:
 };
 Q_DECLARE_TYPEINFO(QRectF, Q_MOVABLE_TYPE);
 
-Q_CORE_EXPORT_INLINE Q_DECL_CONSTEXPR bool operator==(const QRectF &, const QRectF &);
-Q_CORE_EXPORT_INLINE Q_DECL_CONSTEXPR bool operator!=(const QRectF &, const QRectF &);
+Q_DECL_CONSTEXPR inline bool operator==(const QRectF &, const QRectF &);
+Q_DECL_CONSTEXPR inline bool operator!=(const QRectF &, const QRectF &);
 
 
 /*****************************************************************************

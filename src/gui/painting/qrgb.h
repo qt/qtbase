@@ -53,31 +53,31 @@ typedef unsigned int QRgb;                        // RGB triplet
 
 const QRgb  RGB_MASK    = 0x00ffffff;                // masks RGB values
 
-Q_GUI_EXPORT_INLINE int qRed(QRgb rgb)                // get red part of RGB
+inline int qRed(QRgb rgb)                // get red part of RGB
 { return ((rgb >> 16) & 0xff); }
 
-Q_GUI_EXPORT_INLINE int qGreen(QRgb rgb)                // get green part of RGB
+inline int qGreen(QRgb rgb)                // get green part of RGB
 { return ((rgb >> 8) & 0xff); }
 
-Q_GUI_EXPORT_INLINE int qBlue(QRgb rgb)                // get blue part of RGB
+inline int qBlue(QRgb rgb)                // get blue part of RGB
 { return (rgb & 0xff); }
 
-Q_GUI_EXPORT_INLINE int qAlpha(QRgb rgb)                // get alpha part of RGBA
+inline int qAlpha(QRgb rgb)                // get alpha part of RGBA
 { return rgb >> 24; }
 
-Q_GUI_EXPORT_INLINE QRgb qRgb(int r, int g, int b)// set RGB value
+inline QRgb qRgb(int r, int g, int b)// set RGB value
 { return (0xffu << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff); }
 
-Q_GUI_EXPORT_INLINE QRgb qRgba(int r, int g, int b, int a)// set RGBA value
+inline QRgb qRgba(int r, int g, int b, int a)// set RGBA value
 { return ((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff); }
 
-Q_GUI_EXPORT_INLINE int qGray(int r, int g, int b)// convert R,G,B to gray 0..255
+inline int qGray(int r, int g, int b)// convert R,G,B to gray 0..255
 { return (r*11+g*16+b*5)/32; }
 
-Q_GUI_EXPORT_INLINE int qGray(QRgb rgb)                // convert RGB to gray 0..255
+inline int qGray(QRgb rgb)                // convert RGB to gray 0..255
 { return qGray(qRed(rgb), qGreen(rgb), qBlue(rgb)); }
 
-Q_GUI_EXPORT_INLINE bool qIsGray(QRgb rgb)
+inline bool qIsGray(QRgb rgb)
 { return qRed(rgb) == qGreen(rgb) && qRed(rgb) == qBlue(rgb); }
 
 QT_END_NAMESPACE
