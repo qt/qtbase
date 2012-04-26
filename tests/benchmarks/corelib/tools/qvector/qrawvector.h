@@ -47,6 +47,7 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qalgorithms.h>
 #include <QtCore/qlist.h>
+#include <QtCore/private/qtools_p.h>
 
 #include <iterator>
 #include <vector>
@@ -59,7 +60,32 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
+struct QVectorData
+{
+    QtPrivate::RefCount ref;
+    int size;
+    uint alloc : 31;
+    uint capacityReserved : 1;
 
+    qptrdiff offset;
+
+    void* data() { return reinterpret_cast<char *>(this) + this->offset; }
+
+    static const QVectorData shared_null;
+    static QVectorData *allocate(int size, int alignment);
+    static QVectorData *reallocate(QVectorData *old, int newsize, int oldsize, int alignment);
+    static void free(QVectorData *data, int alignment);
+    static int grow(int sizeOfHeader, int size, int sizeOfT);
+};
+
+template <typename T>
+struct QVectorTypedData : QVectorData
+{
+    T* begin() { return reinterpret_cast<T *>(this->data()); }
+    T* end() { return begin() + this->size; }
+
+    static QVectorTypedData *sharedNull() { return static_cast<QVectorTypedData *>(const_cast<QVectorData *>(&QVectorData::shared_null)); }
+};
 
 template <typename T>
 class QRawVector

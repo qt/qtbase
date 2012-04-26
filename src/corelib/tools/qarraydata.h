@@ -179,6 +179,18 @@ struct QTypedArrayData
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return static_cast<QTypedArrayData *>(QArrayData::sharedNull());
     }
+
+    static QTypedArrayData *sharedEmpty()
+    {
+        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
+        return allocate(/* capacity */ 0);
+    }
+
+    static QTypedArrayData *unsharableEmpty()
+    {
+        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
+        return allocate(/* capacity */ 0, Unsharable);
+    }
 };
 
 template <class T, size_t N>
