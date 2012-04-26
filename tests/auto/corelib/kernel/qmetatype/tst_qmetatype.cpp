@@ -1331,6 +1331,110 @@ void tst_QMetaType::automaticTemplateRegistration()
     typedef QList<UnregisteredType> UnregisteredTypeList;
     QVERIFY(qRegisterMetaType<UnregisteredTypeList>("UnregisteredTypeList") > 0);
   }
+
+#ifdef Q_COMPILER_VARIADIC_MACROS
+
+    #define FOR_EACH_STATIC_PRIMITIVE_TYPE(F, ...) \
+        F(bool, __VA_ARGS__) \
+        F(int, __VA_ARGS__) \
+        F(uint, __VA_ARGS__) \
+        F(qlonglong, __VA_ARGS__) \
+        F(qulonglong, __VA_ARGS__) \
+        F(double, __VA_ARGS__) \
+        F(long, __VA_ARGS__) \
+        F(short, __VA_ARGS__) \
+        F(char, __VA_ARGS__) \
+        F(ulong, __VA_ARGS__) \
+        F(ushort, __VA_ARGS__) \
+        F(uchar, __VA_ARGS__) \
+        F(float, __VA_ARGS__) \
+        F(QObject*, __VA_ARGS__) \
+        F(QString, __VA_ARGS__) \
+        F(CustomMovable, __VA_ARGS__)
+
+    #define FOR_EACH_STATIC_PRIMITIVE_TYPE2(F, ...) \
+        F(bool, __VA_ARGS__) \
+        F(int, __VA_ARGS__) \
+        F(uint, __VA_ARGS__) \
+        F(qlonglong, __VA_ARGS__) \
+        F(qulonglong, __VA_ARGS__) \
+        F(double, __VA_ARGS__) \
+        F(long, __VA_ARGS__) \
+        F(short, __VA_ARGS__) \
+        F(char, __VA_ARGS__) \
+        F(ulong, __VA_ARGS__) \
+        F(ushort, __VA_ARGS__) \
+        F(uchar, __VA_ARGS__) \
+        F(float, __VA_ARGS__) \
+        F(QObject*, __VA_ARGS__) \
+        F(QString, __VA_ARGS__) \
+        F(CustomMovable, __VA_ARGS__)
+
+
+    #define CREATE_AND_VERIFY_CONTAINER(CONTAINER, ...) \
+        { \
+            CONTAINER< __VA_ARGS__ > t; \
+            const QVariant v = QVariant::fromValue(t); \
+            QByteArray tn = #CONTAINER + QByteArray("<"); \
+            const QList<QByteArray> args = QByteArray(#__VA_ARGS__).split(','); \
+            tn += args.first().trimmed(); \
+            if (args.size() > 1) { \
+              QList<QByteArray>::const_iterator it = args.constBegin() + 1; \
+              const QList<QByteArray>::const_iterator end = args.constEnd(); \
+              for (; it != end; ++it) { \
+                tn += ","; \
+                tn += it->trimmed(); \
+              } \
+            } \
+            tn += ">"; \
+            const int type = QMetaType::type(tn); \
+            const int expectedType = ::qMetaTypeId<CONTAINER< __VA_ARGS__ > >(); \
+            QCOMPARE(type, expectedType); \
+        }
+
+    #define FOR_EACH_1ARG_TEMPLATE_TYPE(F, TYPE) \
+        F(QList, TYPE) \
+        F(QVector, TYPE) \
+        F(QLinkedList, TYPE) \
+        F(QVector, TYPE) \
+        F(QVector, TYPE) \
+        F(QQueue, TYPE) \
+        F(QStack, TYPE) \
+        F(QSet, TYPE) \
+        F(QSharedPointer, TYPE)
+
+    #define PRINT_1ARG_TEMPLATE(RealName, ...) \
+        FOR_EACH_1ARG_TEMPLATE_TYPE(CREATE_AND_VERIFY_CONTAINER, RealName)
+
+    #define FOR_EACH_2ARG_TEMPLATE_TYPE(F, RealName, ...) \
+        F(QHash, __VA_ARGS__) \
+        F(QMap, __VA_ARGS__) \
+        F(QPair, __VA_ARGS__)
+
+    #define PRINT_2ARG_TEMPLATE_INTERNAL(RealName, ...) \
+        FOR_EACH_2ARG_TEMPLATE_TYPE(CREATE_AND_VERIFY_CONTAINER, 0, RealName, __VA_ARGS__)
+
+    #define PRINT_2ARG_TEMPLATE(RealName, ...) \
+        FOR_EACH_STATIC_PRIMITIVE_TYPE2(PRINT_2ARG_TEMPLATE_INTERNAL, RealName)
+
+    #define REGISTER_TYPEDEF(TYPE, ARG1, ARG2) \
+      qRegisterMetaType<TYPE <ARG1, ARG2> >(#TYPE "<" #ARG1 "," #ARG2 ">");
+
+    REGISTER_TYPEDEF(QHash, int, uint)
+    REGISTER_TYPEDEF(QMap, int, uint)
+    REGISTER_TYPEDEF(QPair, int, uint)
+
+    FOR_EACH_STATIC_PRIMITIVE_TYPE(
+      PRINT_1ARG_TEMPLATE
+    )
+    FOR_EACH_STATIC_PRIMITIVE_TYPE(
+      PRINT_2ARG_TEMPLATE
+    )
+
+    CREATE_AND_VERIFY_CONTAINER(QList, QList<QMap<int, QHash<char, QVariantList> > >)
+
+#endif // Q_COMPILER_VARIADIC_MACROS
+
 }
 
 template <typename T>
