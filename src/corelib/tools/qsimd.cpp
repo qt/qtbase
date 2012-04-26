@@ -156,12 +156,7 @@ static inline uint detectProcessorFeatures()
 
 static int maxBasicCpuidSupported()
 {
-#ifdef Q_OS_WIN
-    // Use the __cpuid function; if the CPUID instruction isn't supported, it will return 0
-    int info[4];
-    __cpuid(info, 0);
-    return info[0];
-#elif defined(Q_CC_GNU)
+#if defined(Q_CC_GNU)
     long tmp1;
 
 # ifdef Q_PROCESSOR_X86_32
@@ -190,6 +185,11 @@ static int maxBasicCpuidSupported()
         : "0" (0)
         : "ecx", "edx");
     return result;
+#elif defined(Q_OS_WIN)
+    // Use the __cpuid function; if the CPUID instruction isn't supported, it will return 0
+    int info[4];
+    __cpuid(info, 0);
+    return info[0];
 #else
     return 0;
 #endif
@@ -197,28 +197,24 @@ static int maxBasicCpuidSupported()
 
 static void cpuidFeatures01(uint &ecx, uint &edx)
 {
-#ifdef Q_OS_WIN
-    int info[4];
-    __cpuid(info, 1);
-    ecx = info[2];
-    edx = info[3];
-#elif defined(Q_CC_GNU)
+#if defined(Q_CC_GNU)
     long tmp1;
     asm ("xchg " PICreg", %2\n"
          "cpuid\n"
          "xchg " PICreg", %2\n"
         : "=&c" (ecx), "=&d" (edx), "=&r" (tmp1)
         : "a" (1));
+#elif defined(Q_OS_WIN)
+    int info[4];
+    __cpuid(info, 1);
+    ecx = info[2];
+    edx = info[3];
 #endif
 }
 
 static void cpuidFeatures07_00(uint &ebx)
 {
-#ifdef Q_OS_WIN
-    int info[4];
-    __cpuidex(info, 7, 0);
-    ebx = info[1];
-#elif defined(Q_CC_GNU)
+#if defined(Q_CC_GNU)
     unsigned long rbx; // in case it's 64-bit
     asm ("xchg " PICreg", %0\n"
          "cpuid\n"
@@ -227,6 +223,10 @@ static void cpuidFeatures07_00(uint &ebx)
         : "a" (7), "c" (0)
         : "%edx");
     ebx = rbx;
+#elif defined(Q_OS_WIN)
+    int info[4];
+    __cpuidex(info, 7, 0);
+    ebx = info[1];
 #endif
 }
 
