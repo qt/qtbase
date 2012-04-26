@@ -158,10 +158,8 @@ public:
     inline QPoint pixelDelta() const { return pixelD; }
     inline QPoint angleDelta() const { return angleD; }
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    inline QT_DEPRECATED int delta() const  { return qt4D; }
-    inline QT_DEPRECATED Qt::Orientation orientation() const { return qt4O; }
-#endif
+    inline int delta() const  { return qt4D; }
+    inline Qt::Orientation orientation() const { return qt4O; }
 
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
     inline QPoint pos() const { return p.toPoint(); }
