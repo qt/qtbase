@@ -140,6 +140,7 @@ public: // for QNSView
     QNSView *m_contentView;
     NSWindow *m_nsWindow;
     Qt::WindowFlags m_windowFlags;
+    Qt::WindowState m_synchedWindowState;
     QPointer<QWindow> m_activePopupWindow;
 
     bool m_inConstructor;

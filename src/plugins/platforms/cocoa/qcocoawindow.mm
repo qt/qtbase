@@ -97,6 +97,7 @@
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
     , m_nsWindow(0)
+    , m_synchedWindowState(Qt::WindowActive)
     , m_inConstructor(true)
     , m_glContext(0)
     , m_hasModalSession(false)
@@ -543,41 +544,30 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
     if (!m_nsWindow)
         return;
 
-    switch (newState) {
-        case Qt::WindowMinimized:
-            [m_nsWindow performMiniaturize : m_nsWindow];
-        break;
-        case Qt::WindowMaximized:
-            [m_nsWindow performZoom : m_nsWindow];
-        break;
-        case Qt::WindowFullScreen:
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-            if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-                [m_nsWindow toggleFullScreen : m_nsWindow];
-            } else {
-                qWarning("Not implemented: setWindowState WindowFullScreen");
-            }
-#endif
-        break;
-
-        default:
-            // Undo current states
-            if ([m_nsWindow isMiniaturized])
-                [m_nsWindow deminiaturize : m_nsWindow];
-
-            if ([m_nsWindow isZoomed])
-                [m_nsWindow performZoom : m_nsWindow]; // toggles
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-            if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-                if (window()->windowState() & Qt::WindowFullScreen)
-                    [m_nsWindow toggleFullScreen : m_nsWindow];
-            } else {
-                qWarning("Not implemented: setWindowState WindowFullScreen");
-            }
-#endif
-        break;
+    if ((m_synchedWindowState & Qt::WindowMaximized) != (newState & Qt::WindowMaximized)) {
+        [m_nsWindow performZoom : m_nsWindow]; // toggles
     }
+
+    if ((m_synchedWindowState & Qt::WindowMinimized) != (newState & Qt::WindowMinimized)) {
+        if (newState & Qt::WindowMinimized) {
+            [m_nsWindow performMiniaturize : m_nsWindow];
+        } else {
+            [m_nsWindow deminiaturize : m_nsWindow];
+        }
+    }
+
+    if ((m_synchedWindowState & Qt::WindowFullScreen) != (newState & Qt::WindowFullScreen)) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+        if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+            [m_nsWindow toggleFullScreen : m_nsWindow];
+        } else {
+            // TODO: "normal" fullscreen
+        }
+#endif
+    }
+
+    // New state is now the current synched state
+    m_synchedWindowState = newState;
 }
 
 bool QCocoaWindow::setWindowModified(bool modified)
