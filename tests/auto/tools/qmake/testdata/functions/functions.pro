@@ -131,3 +131,8 @@ testReplace($$format_number(13, width=5 padsign zeropad), " 0013", "zero-padded 
 testReplace($$clean_path("c:$${DIR_SEPARATOR}crazy//path/../trolls"), "c:/crazy/trolls", "clean_path")
 
 testReplace($$native_path("/crazy/trolls"), "$${DIR_SEPARATOR}crazy$${DIR_SEPARATOR}trolls", "native_path")
+
+testReplace($$absolute_path("crazy/trolls"), "$$PWD/crazy/trolls", "absolute_path")
+testReplace($$absolute_path("crazy/trolls", "/fake/path"), "/fake/path/crazy/trolls", "absolute_path with base")
+testReplace($$relative_path($$_PRO_FILE_PWD_), $$basename($$_PRO_FILE_), "relative_path")
+testReplace($$relative_path("/fake/trolls", "/fake/path"), "../trolls", "relative_path with base")
