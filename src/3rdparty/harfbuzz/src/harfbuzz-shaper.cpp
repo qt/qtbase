@@ -1302,52 +1302,30 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
         glyphs[i] = face->buffer->in_string[i].gindex;
         attributes[i] = face->tmpAttributes[face->buffer->in_string[i].cluster];
         if (i && face->buffer->in_string[i].cluster == face->buffer->in_string[i-1].cluster)
-            attributes[i].clusterStart = false; //FIXME - Shouldn't we otherwise set this to true, rather than leaving it?
+            attributes[i].clusterStart = false;
     }
     item->num_glyphs = face->buffer->in_length;
 
     if (doLogClusters && face->glyphs_substituted) {
         // we can't do this for indic, as we pass the stuf in syllables and it's easier to do it in the shaper.
-        // #### the reconstruction of the logclusters currently does not work if the original string
-        // contains surrogate pairs
-
         unsigned short *logClusters = item->log_clusters;
         int clusterStart = 0;
-        int oldIntermediateIndex = 0;
-
-        // This code makes a mapping, logClusters, between the original utf16 string (item->string) and the final
-        // set of glyphs (in_string).
-        //
-        // The code sets the value of logClusters[i] to the index of in_string containing the glyph that will render
-        // item->string[i].
-        //
-        // This is complicated slightly because in_string[i].cluster is an index to an intermediate
-        // array of glyphs - the array that we were passed as the original value of item->glyphs.
-        // To map from the original string to the intermediate array of glyphs we have tmpLogClusters.
-        //
-        // So we have three groups of indexes:
-        //
-        // i,clusterStart = index to in_length, the final set of glyphs.  Also an index to attributes
-        // intermediateIndex = index to the glyphs originally passed in.
-        // stringIndex = index to item->string, the original string.
-
-        int stringIndex = 0;
-        // Iterate over the final set of glyphs...
+        int oldCi = 0;
+        // #### the reconstruction of the logclusters currently does not work if the original string
+        // contains surrogate pairs
         for (unsigned int i = 0; i < face->buffer->in_length; ++i) {
-            // Get the index into the intermediate string for the start of the cluster of chars
-            int intermediateIndex = face->buffer->in_string[i].cluster;
-            if (intermediateIndex != oldIntermediateIndex) {
-                // We have found the end of the cluster of chars in the intermediate string
-                while (face->tmpLogClusters[stringIndex] < intermediateIndex) {
-                    logClusters[stringIndex++] = clusterStart;
-                }
+            int ci = face->buffer->in_string[i].cluster;
+            //         DEBUG("   ci[%d] = %d mark=%d, cmb=%d, cs=%d",
+            //                i, ci, glyphAttributes[i].mark, glyphAttributes[i].combiningClass, glyphAttributes[i].clusterStart);
+            if (!attributes[i].mark && attributes[i].clusterStart && ci != oldCi) {
+                for (int j = oldCi; j < ci; j++)
+                    logClusters[j] = clusterStart;
                 clusterStart = i;
-                oldIntermediateIndex = intermediateIndex;
+                oldCi = ci;
             }
         }
-        while (stringIndex < face->length) {
-            logClusters[stringIndex++] = clusterStart;
-        }
+        for (int j = oldCi; j < face->length; j++)
+            logClusters[j] = clusterStart;
     }
 
     // calulate the advances for the shaped glyphs
