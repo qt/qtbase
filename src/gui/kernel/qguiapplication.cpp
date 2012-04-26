@@ -1248,7 +1248,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     QWindow *window = e->window.data();
     modifier_buttons = e->modifiers;
     if (e->nullWindow)
-        window = QGuiApplication::activeWindow();
+        window = QGuiApplication::focusWindow();
     if (!window)
         return;
     if (window->d_func()->blockedByModalWindow) {

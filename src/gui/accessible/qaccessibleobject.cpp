@@ -243,7 +243,7 @@ QAccessibleInterface *QAccessibleApplication::child(int index) const
 /*! \reimp */
 QAccessibleInterface *QAccessibleApplication::focusChild() const
 {
-    if (QWindow *window = QGuiApplication::activeWindow())
+    if (QWindow *window = QGuiApplication::focusWindow())
         return window->accessibleRoot();
     return 0;
 }

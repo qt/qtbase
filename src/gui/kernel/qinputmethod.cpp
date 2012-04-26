@@ -112,7 +112,7 @@ void QInputMethod::setInputItem(QObject *inputItem)
 */
 QWindow *QInputMethod::inputWindow() const
 {
-    return qApp->activeWindow();
+    return qApp->focusWindow();
 }
 
 /*!

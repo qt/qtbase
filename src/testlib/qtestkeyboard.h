@@ -91,7 +91,7 @@ namespace QTest
         QTEST_ASSERT(qApp);
 
         if (!window)
-            window = QGuiApplication::activeWindow();
+            window = QGuiApplication::focusWindow();
 
         QTEST_ASSERT(window);
 
