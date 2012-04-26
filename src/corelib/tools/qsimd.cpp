@@ -183,9 +183,9 @@ static int maxBasicCpuidSupported()
 # endif
 
     int result;
-    asm ("xchg "PICreg", %1\n"
+    asm ("xchg " PICreg", %1\n"
          "cpuid\n"
-         "xchg "PICreg", %1\n"
+         "xchg " PICreg", %1\n"
         : "=&a" (result), "=&r" (tmp1)
         : "0" (0)
         : "ecx", "edx");
@@ -204,9 +204,9 @@ static void cpuidFeatures01(uint &ecx, uint &edx)
     edx = info[3];
 #elif defined(Q_CC_GNU)
     long tmp1;
-    asm ("xchg "PICreg", %2\n"
+    asm ("xchg " PICreg", %2\n"
          "cpuid\n"
-         "xchg "PICreg", %2\n"
+         "xchg " PICreg", %2\n"
         : "=&c" (ecx), "=&d" (edx), "=&r" (tmp1)
         : "a" (1));
 #endif
@@ -220,9 +220,9 @@ static void cpuidFeatures07_00(uint &ebx)
     ebx = info[1];
 #elif defined(Q_CC_GNU)
     unsigned long rbx; // in case it's 64-bit
-    asm ("xchg "PICreg", %0\n"
+    asm ("xchg " PICreg", %0\n"
          "cpuid\n"
-         "xchg "PICreg", %0\n"
+         "xchg " PICreg", %0\n"
         : "=&r" (rbx)
         : "a" (7), "c" (0)
         : "%edx");
