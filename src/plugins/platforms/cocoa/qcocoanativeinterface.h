@@ -42,8 +42,8 @@
 #ifndef QCOCOANATIVEINTERFACE_H
 #define QCOCOANATIVEINTERFACE_H
 
-#include <QtGui/QPlatformNativeInterface>
-#include <QtPrintSupport/QPlatformPrinterSupport>
+#include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformprintersupport.h>
 
 QT_BEGIN_NAMESPACE
 

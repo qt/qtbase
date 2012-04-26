@@ -42,7 +42,7 @@
 #ifndef QGRAPHICSSYSTEM_LINUXFB_H
 #define QGRAPHICSSYSTEM_LINUXFB_H
 
-#include <QPlatformIntegration>
+#include <qpa/qplatformintegration.h>
 #include "../fb_base/fb_base.h"
 
 QT_BEGIN_NAMESPACE

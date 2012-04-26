@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformfontdatabase_qpa.h"
+#include "qplatformfontdatabase.h"
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qfontengine_qpa_p.h>
 #include <QtCore/QLibraryInfo>

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformmenu_qpa.h"
+#include "qplatformmenu.h"
 
 QT_BEGIN_NAMESPACE
 

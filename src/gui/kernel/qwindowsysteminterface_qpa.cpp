@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 #include "qwindowsysteminterface_qpa.h"
-#include "qplatformwindow_qpa.h"
+#include <qpa/qplatformwindow.h>
 #include "qwindowsysteminterface_qpa_p.h"
 #include "private/qguiapplication_p.h"
 #include "private/qevent_p.h"
 #include "private/qtouchdevice_p.h"
 #include <QAbstractEventDispatcher>
-#include <QPlatformDrag>
+#include <qpa/qplatformdrag.h>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE

@@ -46,7 +46,7 @@
 #include <private/qobject_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qapplication_p.h>
-#include <qplatformnativeinterface_qpa.h>
+#include <qpa/qplatformnativeinterface.h>
 #include <private/qstylehelper_p.h>
 #include <private/qwidget_p.h>
 #include <private/qsystemlibrary_p.h>

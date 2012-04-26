@@ -44,7 +44,7 @@
 
 #include "qtwindows_additional.h"
 
-#include <QtGui/QPlatformInputContext>
+#include <qpa/qplatforminputcontext.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -47,12 +47,12 @@
 #include "private/qwidgetwindow_qpa_p.h"
 #include "private/qapplication_p.h"
 #include "QtWidgets/qdesktopwidget.h"
-#include "QtGui/qplatformwindow_qpa.h"
+#include <qpa/qplatformwindow.h>
 #include "QtGui/qsurfaceformat.h"
-#include "QtGui/qplatformopenglcontext_qpa.h"
+#include <qpa/qplatformopenglcontext.h>
 #include "QtGui/private/qwindow_p.h"
 
-#include <QtGui/QPlatformCursor>
+#include <qpa/qplatformcursor.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 

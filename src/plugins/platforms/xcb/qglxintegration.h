@@ -45,7 +45,7 @@
 #include "qxcbwindow.h"
 #include "qxcbscreen.h"
 
-#include <QtGui/QPlatformOpenGLContext>
+#include <qpa/qplatformopenglcontext.h>
 #include <QtGui/QSurfaceFormat>
 
 #include <QtCore/QMutex>

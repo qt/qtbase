@@ -42,7 +42,7 @@
 #ifndef QBASICFONTDATABASE_H
 #define QBASICFONTDATABASE_H
 
-#include <QPlatformFontDatabase>
+#include <qpa/qplatformfontdatabase.h>
 #include <QtCore/QByteArray>
 #include <QtCore/QString>
 

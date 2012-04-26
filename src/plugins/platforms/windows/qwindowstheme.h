@@ -42,7 +42,7 @@
 #ifndef QWINDOWSTHEME_H
 #define QWINDOWSTHEME_H
 
-#include <QtGui/QPlatformTheme>
+#include <qpa/qplatformtheme.h>
 #include <QtGui/QColor>
 
 #include "qtwindows_additional.h"

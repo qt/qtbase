@@ -42,7 +42,7 @@
 #ifndef QDIRECTFBEGL_HOOKS_H
 #define QDIRECTFBEGL_HOOKS_H
 
-#include "qplatformintegration_qpa.h"
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 

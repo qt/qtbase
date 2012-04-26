@@ -43,8 +43,8 @@
 #define QWINDOWSDIALOGHELPER_H
 
 #include "qtwindows_additional.h"
-#include <QtGui/QPlatformDialogHelper>
-#include <QtGui/QPlatformTheme>
+#include <qpa/qplatformdialoghelper.h>
+#include <qpa/qplatformtheme.h>
 #include <QtCore/QStringList>
 
 QT_BEGIN_NAMESPACE

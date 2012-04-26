@@ -41,7 +41,7 @@
 
 #include "qkeysequence.h"
 #include "qkeysequence_p.h"
-#include "qplatformtheme_qpa.h"
+#include <qpa/qplatformtheme.h>
 #include "private/qguiapplication_p.h"
 
 #ifndef QT_NO_SHORTCUT

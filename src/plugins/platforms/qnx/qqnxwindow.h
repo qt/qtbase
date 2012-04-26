@@ -42,7 +42,7 @@
 #ifndef QQNXWINDOW_H
 #define QQNXWINDOW_H
 
-#include <QtGui/QPlatformWindow>
+#include <qpa/qplatformwindow.h>
 
 #include "qqnxbuffer.h"
 

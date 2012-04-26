@@ -45,7 +45,7 @@
 #include "qtwindows_additional.h"
 #include "qwindowscursor.h"
 
-#include <QtGui/QPlatformWindow>
+#include <qpa/qplatformwindow.h>
 
 QT_BEGIN_NAMESPACE
 

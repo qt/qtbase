@@ -61,7 +61,7 @@
 #include "QtCore/qbasictimer.h"
 #include "private/qwidget_p.h"
 
-#include <qplatformmenu_qpa.h>
+#include <qpa/qplatformmenu.h>
 
 QT_BEGIN_NAMESPACE
 

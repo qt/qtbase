@@ -42,7 +42,7 @@
 #ifndef QKMSWINDOW_H
 #define QKMSWINDOW_H
 
-#include <QtGui/QPlatformWindow>
+#include <qpa/qplatformwindow.h>
 
 QT_BEGIN_NAMESPACE
 

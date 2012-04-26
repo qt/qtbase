@@ -42,7 +42,7 @@
 #ifndef QXCBBACKINGSTORE_H
 #define QXCBBACKINGSTORE_H
 
-#include <qplatformbackingstore_qpa.h>
+#include <qpa/qplatformbackingstore.h>
 
 #include <xcb/xcb.h>
 

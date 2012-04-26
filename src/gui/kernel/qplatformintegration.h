@@ -54,7 +54,7 @@
 //
 
 #include <QtGui/qwindowdefs.h>
-#include <QtGui/qplatformscreen_qpa.h>
+#include <qpa/qplatformscreen.h>
 #include <QtGui/qsurfaceformat.h>
 
 QT_BEGIN_HEADER

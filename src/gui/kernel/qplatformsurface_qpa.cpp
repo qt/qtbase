@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformsurface_qpa.h"
+#include "qplatformsurface.h"
 
 QT_BEGIN_NAMESPACE
 

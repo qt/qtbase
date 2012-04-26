@@ -42,7 +42,7 @@
 #ifndef QOPENWFDBACKINGSTORE_H
 #define QOPENWFDBACKINGSTORE_H
 
-#include <QtGui/QPlatformBackingStore>
+#include <qpa/qplatformbackingstore.h>
 #include <QtGui/QImage>
 
 class QOpenWFDBackingStore : public QPlatformBackingStore

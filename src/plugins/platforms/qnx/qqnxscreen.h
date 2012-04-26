@@ -42,7 +42,7 @@
 #ifndef QBBSCREEN_H
 #define QBBSCREEN_H
 
-#include <QtGui/QPlatformScreen>
+#include <qpa/qplatformscreen.h>
 
 #include "qqnxrootwindow.h"
 

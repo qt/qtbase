@@ -49,7 +49,7 @@
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/QPlatformWindow>
+#include <qpa/qplatformwindow.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -42,8 +42,8 @@
 #ifndef QXCBINTEGRATION_H
 #define QXCBINTEGRATION_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
 

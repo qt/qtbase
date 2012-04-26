@@ -42,7 +42,7 @@
 #ifndef QXCBCLIPBOARD_H
 #define QXCBCLIPBOARD_H
 
-#include <QPlatformClipboard>
+#include <qpa/qplatformclipboard.h>
 #include <qxcbobject.h>
 #include <xcb/xcb.h>
 #include <xcb/xfixes.h>

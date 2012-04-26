@@ -51,7 +51,7 @@
 #include "qcocoaservices.h"
 
 #include <QtCore/QScopedPointer>
-#include <QtGui/QPlatformIntegration>
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 

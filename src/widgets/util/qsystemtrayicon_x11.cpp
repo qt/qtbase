@@ -54,7 +54,7 @@
 #include <qguiapplication.h>
 #include <qscreen.h>
 #include <qbackingstore.h>
-#include <qplatformnativeinterface_qpa.h>
+#include <qpa/qplatformnativeinterface.h>
 #include <qdebug.h>
 
 #include <X11/Xlib.h>

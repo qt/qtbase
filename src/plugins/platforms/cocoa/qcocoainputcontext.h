@@ -42,7 +42,7 @@
 #ifndef QCOCOAINPUTCONTEXT_H
 #define QCOCOAINPUTCONTEXT_H
 
-#include <QtGui/QPlatformInputContext>
+#include <qpa/qplatforminputcontext.h>
 #include <QtCore/QPointer>
 
 QT_BEGIN_NAMESPACE

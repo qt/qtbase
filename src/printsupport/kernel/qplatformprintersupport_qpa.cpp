@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformprintersupport_qpa.h"
+#include "qplatformprintersupport.h"
 
 #include <QtPrintSupport/qprinterinfo.h>
 

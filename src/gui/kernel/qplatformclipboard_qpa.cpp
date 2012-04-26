@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qplatformclipboard_qpa.h"
+#include "qplatformclipboard.h"
 
 #ifndef QT_NO_CLIPBOARD
 

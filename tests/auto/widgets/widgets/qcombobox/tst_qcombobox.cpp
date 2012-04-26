@@ -44,7 +44,7 @@
 #include "qcombobox.h"
 #include <private/qcombobox_p.h>
 #include <private/qguiapplication_p.h>
-#include <qplatformtheme_qpa.h>
+#include <qpa/qplatformtheme.h>
 
 #include <qfontcombobox.h>
 #include <qdesktopwidget.h>

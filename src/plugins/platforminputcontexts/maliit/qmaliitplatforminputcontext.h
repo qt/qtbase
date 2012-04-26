@@ -41,7 +41,7 @@
 #ifndef QMALIITPLATFORMINPUTCONTEXT_H
 #define QMALIITPLATFORMINPUTCONTEXT_H
 
-#include <QPlatformInputContext>
+#include <qpa/qplatforminputcontext.h>
 #include <QDBusArgument>
 
 QT_BEGIN_NAMESPACE

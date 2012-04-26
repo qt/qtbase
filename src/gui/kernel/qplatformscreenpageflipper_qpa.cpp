@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformscreenpageflipper_qpa.h"
+#include "qplatformscreenpageflipper.h"
 
 QT_BEGIN_NAMESPACE
 

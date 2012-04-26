@@ -44,7 +44,7 @@
 
 #include "qwindowsinternalmimedata.h"
 
-#include <QtGui/QPlatformDrag>
+#include <qpa/qplatformdrag.h>
 #include <QtGui/QPixmap>
 
 QT_BEGIN_NAMESPACE

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformthemeplugin_qpa.h"
+#include "qplatformthemeplugin.h"
 
 QT_BEGIN_NAMESPACE
 

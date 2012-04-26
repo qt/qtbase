@@ -52,7 +52,7 @@
 #include <QtGui/private/qpixmap_blitter_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/qplatformpixmap_qpa.h>
+#include <qpa/qplatformpixmap.h>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
 #include <QtCore/QAbstractEventDispatcher>

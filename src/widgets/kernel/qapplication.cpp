@@ -72,7 +72,7 @@
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputmethod.h>
-#include <QtGui/qplatformtheme_qpa.h>
+#include <qpa/qplatformtheme.h>
 
 #include "private/qkeymapper_p.h"
 
@@ -92,7 +92,7 @@
 #include "qgesture.h"
 #include "private/qgesturemanager_p.h"
 #include "private/qguiapplication_p.h"
-#include "qplatformfontdatabase_qpa.h"
+#include <qpa/qplatformfontdatabase.h>
 #ifndef QT_NO_LIBRARY
 #include "qlibrary.h"
 #endif

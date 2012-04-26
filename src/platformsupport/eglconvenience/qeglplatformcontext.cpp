@@ -43,7 +43,7 @@
 
 #include "qeglconvenience_p.h"
 
-#include <QtGui/QPlatformWindow>
+#include <qpa/qplatformwindow.h>
 
 #include <EGL/egl.h>
 

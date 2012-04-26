@@ -45,7 +45,7 @@
 #include "qwizard_win_p.h"
 #include <private/qsystemlibrary_p.h>
 #include <private/qapplication_p.h>
-#include "qplatformnativeinterface_qpa.h"
+#include <qpa/qplatformnativeinterface.h>
 #include "qwizard.h"
 #include "qpaintengine.h"
 #include "qapplication.h"

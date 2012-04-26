@@ -55,13 +55,13 @@
 
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
 
-#include <QtGui/QPlatformOpenGLContext>
+#include <qpa/qplatformopenglcontext.h>
 
 #include <qglpixelbuffer.h>
 #include <qglframebufferobject.h>
 
 #include <private/qimage_p.h>
-#include <qplatformpixmap_qpa.h>
+#include <qpa/qplatformpixmap.h>
 #include <private/qglpixelbuffer_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include "qcolormap.h"

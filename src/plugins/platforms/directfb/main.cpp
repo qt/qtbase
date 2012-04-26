@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QPlatformIntegrationPlugin>
+#include <qpa/qplatformintegrationplugin.h>
 #include "qdirectfbintegration.h"
 #include "qdirectfb_egl.h"
 

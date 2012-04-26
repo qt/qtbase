@@ -59,8 +59,8 @@
 #include "qimagewriter.h"
 #include "qdebug.h"
 #include <ctype.h>
-#include <qplatformintegration_qpa.h>
-#include <qplatformdrag_qpa.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformdrag.h>
 
 #include <private/qguiapplication_p.h>
 

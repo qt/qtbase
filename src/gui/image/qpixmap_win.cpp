@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qpixmap.h"
-#include "qplatformpixmap_qpa.h"
+#include <qpa/qplatformpixmap.h>
 #include "qpixmap_raster_p.h"
 
 #include <qglobal.h>

@@ -43,7 +43,7 @@
 #define WINDOWSPRINTERSUPPORT_H
 
 #include <QtCore/QList>
-#include <QtPrintSupport/QPlatformPrinterSupport>
+#include <qpa/qplatformprintersupport.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE

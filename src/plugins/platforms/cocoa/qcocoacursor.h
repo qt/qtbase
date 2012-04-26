@@ -45,7 +45,7 @@
 #include <Cocoa/Cocoa.h>
 
 #include <QtCore>
-#include <QtGui/QPlatformCursor>
+#include <qpa/qplatformcursor.h>
 
 QT_BEGIN_NAMESPACE
 

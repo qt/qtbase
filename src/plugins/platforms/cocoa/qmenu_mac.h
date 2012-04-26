@@ -43,7 +43,7 @@
 #include <QtCore/qpointer.h>
 #include <QtWidgets/qmenu.h>
 #include <QtWidgets/qmenubar.h>
-#include <QtWidgets/qplatformmenu_qpa.h>
+#include <qpa/qplatformmenu.h>
 
 @class NSMenuItem;
 

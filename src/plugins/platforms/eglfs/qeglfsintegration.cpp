@@ -48,7 +48,7 @@
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 
-#include <QtGui/QPlatformWindow>
+#include <qpa/qplatformwindow.h>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>

@@ -42,8 +42,8 @@
 #include <qbackingstore.h>
 #include <qwindow.h>
 #include <qpixmap.h>
-#include <qplatformbackingstore_qpa.h>
-#include <qplatformintegration_qpa.h>
+#include <qpa/qplatformbackingstore.h>
+#include <qpa/qplatformintegration.h>
 #include <qscreen.h>
 
 #include <private/qguiapplication_p.h>

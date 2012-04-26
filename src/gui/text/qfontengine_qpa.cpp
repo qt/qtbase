@@ -48,8 +48,8 @@
 
 #include <QtGui/private/qpaintengine_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/QPlatformFontDatabase>
-#include <QtGui/QPlatformIntegration>
+#include <qpa/qplatformfontdatabase.h>
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 

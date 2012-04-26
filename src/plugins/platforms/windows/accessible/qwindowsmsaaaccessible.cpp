@@ -56,7 +56,7 @@
 #include <QtGui/qaccessible.h>
 #include <QtGui/qaccessible2.h>
 #include <QtGui/qguiapplication.h>
-#include <QtGui/qplatformnativeinterface_qpa.h>
+#include <qpa/qplatformnativeinterface.h>
 #include <QtGui/qwindow.h>
 #include <QtWidgets/qapplication.h>
 #include <QtWidgets/qgraphicsitem.h>

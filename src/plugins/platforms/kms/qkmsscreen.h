@@ -42,7 +42,7 @@
 #ifndef QKMSSCREEN_H
 #define QKMSSCREEN_H
 
-#include <QtGui/QPlatformScreen>
+#include <qpa/qplatformscreen.h>
 #include "qkmsbuffermanager.h"
 
 QT_BEGIN_NAMESPACE

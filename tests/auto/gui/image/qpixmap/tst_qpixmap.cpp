@@ -50,8 +50,8 @@
 #include <qpaintengine.h>
 #include <qsplashscreen.h>
 
-#include <qplatformpixmap_qpa.h>
-#include <qplatformintegration_qpa.h>
+#include <qpa/qplatformpixmap.h>
+#include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
 #include <private/qdrawhelper_p.h>
 

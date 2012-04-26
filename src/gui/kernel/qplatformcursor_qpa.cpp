@@ -38,13 +38,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qplatformcursor_qpa.h"
+#include "qplatformcursor.h"
 
 #include <QPainter>
 #include <QBitmap>
 #include <QGuiApplication>
 #include <QScreen>
-#include <QPlatformScreen>
+#include <qpa/qplatformscreen.h>
 #include <private/qguiapplication_p.h>
 
 #include <QDebug>

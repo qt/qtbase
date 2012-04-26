@@ -48,7 +48,7 @@
 #include <QApplication>
 #include <QPushButton>
 #include <QDialogButtonBox>
-#include <QPlatformTheme>
+#include <qpa/qplatformtheme.h>
 #include <private/qguiapplication_p.h>
 #if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>

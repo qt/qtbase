@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include <qplatforminputcontext_qpa.h>
+#include "qplatforminputcontext.h"
 #include <qguiapplication.h>
 #include <QRect>
 #include "private/qkeymapper_p.h"
-#include "private/qplatforminputcontext_qpa_p.h"
+#include <qpa/qplatforminputcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 

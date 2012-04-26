@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformintegrationplugin_qpa.h"
+#include "qplatformintegrationplugin.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QPlatformIntegrationPlugin>
+#include <qpa/qplatformintegrationplugin.h>
 #include "qlinuxfbintegration.h"
 
 QT_BEGIN_NAMESPACE

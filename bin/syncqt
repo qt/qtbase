@@ -992,7 +992,11 @@ foreach my $lib (@modules_to_sync) {
                         my $header_copies = 0;
                         #figure out if it is a public header
                         my $public_header = $header;
-                        if($allheadersprivate || $public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
+                        my $qpa_header = 0;
+                        if($public_header =~ /^qplatform/) {
+                            $public_header = 0;
+                            $qpa_header = 1;
+                        } elsif($allheadersprivate || $public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
                             $public_header = 0;
                         } else {
                             foreach (@ignore_for_master_contents) {
@@ -1040,13 +1044,20 @@ foreach my $lib (@modules_to_sync) {
                                     $header_copies++ if(syncHeader($lib, "$out_basedir/include/$lib/$explicitheaders{$lib}{basename($header)}", "$out_basedir/include/$lib/$header", 0, $ts));
                                 }
 
-                            } elsif ($create_private_headers) {
+                            } elsif ($create_private_headers && !$qpa_header) {
                                 if ($module_version) {
                                     @headers = ( "$out_basedir/include/$lib/$module_version/$lib/private/$header" );
                                 } else {
                                     @headers = ( "$out_basedir/include/$lib/private/$header" );
                                 }
+                            } elsif ($create_private_headers) {
+                                if ($module_version) {
+                                    @headers = ( "$out_basedir/include/$lib/$module_version/$lib/qpa/$header" );
+                                } else {
+                                    @headers = ( "$out_basedir/include/$lib/qpa/$header" );
+                                }
                             }
+
                             foreach(@headers) { #sync them
                                 $header_copies++ if(syncHeader($lib, $_, $iheader, $copy_headers && !$shadow, $ts));
                             }
@@ -1316,6 +1327,8 @@ if($check_includes) {
                     if($header) {
                         my $public_header = $header;
                         if($public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
+                            $public_header = 0;
+                        } elsif ($public_header =~ /^qplatform/) {
                             $public_header = 0;
                         } else {
                             foreach (@ignore_for_master_contents) {

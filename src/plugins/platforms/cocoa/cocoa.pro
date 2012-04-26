@@ -77,7 +77,7 @@ RESOURCES += qcocoaresources.qrc
 
 LIBS += -framework Cocoa -framework IOKit
 
-QT += core-private gui-private widgets-private platformsupport-private printsupport
+QT += core-private gui-private widgets-private platformsupport-private printsupport-private
 
 OTHER_FILES += cocoa.json
 target.path += $$[QT_INSTALL_PLUGINS]/platforms

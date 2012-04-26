@@ -61,7 +61,7 @@
 #include "QtGui/qregion.h"
 #include "QtGui/qwindow.h"
 #include "qwidget.h"
-#include "QtGui/qplatformnativeinterface_qpa.h"
+#include <qpa/qplatformnativeinterface.h>
 #include "QtCore/qmutex.h"
 #include "QtCore/qtranslator.h"
 #include "QtCore/qbasictimer.h"
@@ -72,7 +72,7 @@
 #include <QTime>
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
-#include "QtGui/qplatformintegration_qpa.h"
+#include <qpa/qplatformintegration.h>
 #include "private/qguiapplication_p.h"
 
 QT_BEGIN_NAMESPACE

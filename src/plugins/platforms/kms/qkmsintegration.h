@@ -42,8 +42,8 @@
 #ifndef QPLATFORMINTEGRATION_KMS_H
 #define QPLATFORMINTEGRATION_KMS_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformNativeInterface>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 

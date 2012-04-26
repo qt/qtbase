@@ -41,11 +41,11 @@
 
 #include "qwindow.h"
 
-#include "qplatformwindow_qpa.h"
-#include "qplatformintegration_qpa.h"
+#include <qpa/qplatformwindow.h>
+#include <qpa/qplatformintegration.h>
 #include "qsurfaceformat.h"
 #ifndef QT_NO_OPENGL
-#include "qplatformopenglcontext_qpa.h"
+#include <qpa/qplatformopenglcontext.h>
 #include "qopenglcontext.h"
 #endif
 #include "qscreen.h"

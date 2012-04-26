@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <qstylehints.h>
-#include <qplatformintegration_qpa.h>
+#include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE

@@ -42,7 +42,7 @@
 #ifndef QCOCOADESKTOPSERVICES_H
 #define QCOCOADESKTOPSERVICES_H
 
-#include <QtGui/qplatformservices_qpa.h>
+#include <qpa/qplatformservices.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformprintplugin_qpa.h"
+#include "qplatformprintplugin.h"
 #include "private/qfactoryloader_p.h"
 
 QT_BEGIN_NAMESPACE

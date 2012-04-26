@@ -45,7 +45,7 @@
 #include "qdirectfbconvenience.h"
 #include "qdirectfbcursor.h"
 
-#include <QtGui/QPlatformIntegration>
+#include <qpa/qplatformintegration.h>
 
 #include <directfb.h>
 

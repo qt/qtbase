@@ -41,8 +41,8 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include <QtGui/QPlatformIntegrationPlugin>
-#include <QtGui/QPlatformThemePlugin>
+#include <qpa/qplatformintegrationplugin.h>
+#include <qpa/qplatformthemeplugin.h>
 #include "qcocoaintegration.h"
 #include "qcocoatheme.h"
 

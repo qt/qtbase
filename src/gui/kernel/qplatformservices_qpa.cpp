@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformservices_qpa.h"
+#include "qplatformservices.h"
 
 #include <QtCore/QUrl>
 #include <QtCore/QString>

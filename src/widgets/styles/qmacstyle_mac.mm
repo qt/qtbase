@@ -100,7 +100,7 @@
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtWidgets/qgraphicsview.h>
 #include <private/qstylehelper_p.h>
-#include <QtGui/QPlatformFontDatabase>
+#include <qpa/qplatformfontdatabase.h>
 
 QT_BEGIN_NAMESPACE
 

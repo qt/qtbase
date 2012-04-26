@@ -44,8 +44,8 @@
 
 #include "qeglfsscreen.h"
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformscreen.h>
 
 QT_BEGIN_HEADER
 

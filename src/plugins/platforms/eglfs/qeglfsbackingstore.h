@@ -42,7 +42,7 @@
 #ifndef QEGLFSBACKINGSTORE_H
 #define QEGLFSBACKINGSTORE_H
 
-#include <QtGui/qplatformbackingstore_qpa.h>
+#include <qpa/qplatformbackingstore.h>
 
 #include <QImage>
 #include <QRegion>

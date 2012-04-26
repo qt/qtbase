@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <QtGui/QPlatformIntegrationPlugin>
+#include <qpa/qplatformintegrationplugin.h>
 #include "qminimalintegration.h"
 
 QT_BEGIN_NAMESPACE

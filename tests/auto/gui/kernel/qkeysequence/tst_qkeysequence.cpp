@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <qkeysequence.h>
-#include <qplatformtheme_qpa.h>
+#include <qpa/qplatformtheme.h>
 #include <private/qkeysequence_p.h>
 #include <private/qguiapplication_p.h>
 #include <QTranslator>

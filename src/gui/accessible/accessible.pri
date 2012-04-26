@@ -6,7 +6,7 @@ contains(QT_CONFIG, accessibility) {
         accessible/qaccessible2.h \
         accessible/qaccessibleobject.h \
         accessible/qaccessibleplugin.h \
-        accessible/qplatformaccessibility_qpa.h
+        accessible/qplatformaccessibility.h
 
     SOURCES += accessible/qaccessible.cpp \
         accessible/qaccessible2.cpp \

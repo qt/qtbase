@@ -49,7 +49,7 @@
 #include <QtCore/QTranslator>
 #include <QtCore/QTemporaryDir>
 #include <private/qthread_p.h>
-#include <QtGui/QPlatformTheme>
+#include <qpa/qplatformtheme.h>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QColorDialog>
 #include <QtWidgets/QDialogButtonBox>

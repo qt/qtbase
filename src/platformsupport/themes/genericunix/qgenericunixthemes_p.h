@@ -42,7 +42,7 @@
 #ifndef QGENERICUNIXTHEMES_H
 #define QGENERICUNIXTHEMES_H
 
-#include <QtGui/QPlatformTheme>
+#include <qpa/qplatformtheme.h>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 

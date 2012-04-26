@@ -44,7 +44,7 @@
 
 #include "../qtwindowsglobal.h"
 #include "../qwindowscontext.h"
-#include <QtGui/QPlatformAccessibility>
+#include <qpa/qplatformaccessibility.h>
 
 #include <oleacc.h>
 

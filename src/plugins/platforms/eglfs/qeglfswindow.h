@@ -45,7 +45,7 @@
 #include "qeglfsintegration.h"
 #include "qeglfsscreen.h"
 
-#include <QPlatformWindow>
+#include <qpa/qplatformwindow.h>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE

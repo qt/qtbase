@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtGui/qplatformpixmap_qpa.h>
+#include <qpa/qplatformpixmap.h>
 
 
 QT_BEGIN_NAMESPACE

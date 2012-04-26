@@ -44,7 +44,7 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include <QPlatformWindow>
+#include <qpa/qplatformwindow.h>
 #include <QRect>
 
 #include "qcocoaglcontext.h"

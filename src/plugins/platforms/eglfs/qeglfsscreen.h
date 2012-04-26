@@ -42,7 +42,7 @@
 #ifndef QEGLFSSCREEN_H
 #define QEGLFSSCREEN_H
 
-#include <QPlatformScreen>
+#include <qpa/qplatformscreen.h>
 
 #include <QtCore/QTextStream>
 

@@ -42,7 +42,7 @@ HEADERS += \
         kernel/qsoftkeymanager_common_p.h \
         kernel/qdesktopwidget_qpa_p.h \
         kernel/qwidgetwindow_qpa_p.h \
-        kernel/qplatformmenu_qpa.h
+        kernel/qplatformmenu.h
 
 SOURCES += \
 	kernel/qaction.cpp \

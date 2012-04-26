@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformdialoghelper_qpa.h"
+#include "qplatformdialoghelper.h"
 
 #include <QtCore/QVariant>
 #include <QtCore/QSharedData>

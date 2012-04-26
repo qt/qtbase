@@ -48,7 +48,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QIconEnginePlugin>
 #include <QtGui/QPixmapCache>
-#include <QtGui/QPlatformTheme>
+#include <qpa/qplatformtheme.h>
 #include <QtWidgets/QIconEngine>
 #include <QtWidgets/QStyleOption>
 #include <QtCore/QList>

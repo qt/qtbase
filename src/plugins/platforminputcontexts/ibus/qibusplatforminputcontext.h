@@ -41,7 +41,7 @@
 #ifndef QIBUSPLATFORMINPUTCONTEXT_H
 #define QIBUSPLATFORMINPUTCONTEXT_H
 
-#include <QPlatformInputContext>
+#include <qpa/qplatforminputcontext.h>
 
 QT_BEGIN_NAMESPACE
 

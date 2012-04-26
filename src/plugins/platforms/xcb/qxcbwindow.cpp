@@ -50,7 +50,7 @@
 #include "qxcbkeyboard.h"
 #include "qxcbwmsupport.h"
 
-#include <qplatformintegration_qpa.h>
+#include <qpa/qplatformintegration.h>
 
 #ifdef XCB_USE_DRI2
 #include "qdri2context.h"
@@ -87,7 +87,7 @@
 #include <private/qguiapplication_p.h>
 #include <private/qwindow_p.h>
 
-#include <QtGui/QPlatformBackingStore>
+#include <qpa/qplatformbackingstore.h>
 #include <QtGui/QWindowSystemInterface>
 
 #include <stdio.h>

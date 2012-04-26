@@ -42,7 +42,7 @@
 #ifndef QCOCOACLIPBOARD_H
 #define QCOCOACLIPBOARD_H
 
-#include <qplatformclipboard_qpa.h>
+#include <qpa/qplatformclipboard.h>
 #include "qmacclipboard.h"
 #include <QtCore/QScopedPointer>
 

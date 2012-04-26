@@ -44,7 +44,7 @@
 
 #include "qtwindows_additional.h"
 
-#include <QtGui/QPlatformBackingStore>
+#include <qpa/qplatformbackingstore.h>
 #include <QtCore/QScopedPointer>
 
 QT_BEGIN_NAMESPACE

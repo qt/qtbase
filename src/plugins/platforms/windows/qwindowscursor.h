@@ -44,7 +44,7 @@
 
 #include "qtwindows_additional.h"
 
-#include <QtGui/QPlatformCursor>
+#include <qpa/qplatformcursor.h>
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QHash>
 

@@ -43,7 +43,7 @@
 #include <qpainter.h>
 #include <qdebug.h>
 #include <qbitmap.h>
-#include <QPlatformCursor>
+#include <qpa/qplatformcursor.h>
 #include <QWindowSystemInterface>
 
 QPlatformSoftwareCursor::QPlatformSoftwareCursor(QPlatformScreen *scr)

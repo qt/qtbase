@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <QtPrintSupport/qplatformprintplugin_qpa.h>
+#include <qpa/qplatformprintplugin.h>
 #include <QtCore/QStringList>
 
 #include "qwindowsprintersupport.h"

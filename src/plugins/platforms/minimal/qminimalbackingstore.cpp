@@ -43,7 +43,7 @@
 #include "qminimalbackingstore.h"
 #include "qscreen.h"
 #include <QtCore/qdebug.h>
-#include <QtGui/QPlatformScreen>
+#include <qpa/qplatformscreen.h>
 #include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE

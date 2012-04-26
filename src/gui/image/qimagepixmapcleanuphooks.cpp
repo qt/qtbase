@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qimagepixmapcleanuphooks_p.h"
-#include "qplatformpixmap_qpa.h"
+#include <qpa/qplatformpixmap.h>
 #include "private/qimage_p.h"
 
 

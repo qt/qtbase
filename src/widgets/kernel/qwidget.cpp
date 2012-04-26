@@ -67,7 +67,7 @@
 # include "qtoolbar.h"
 # include <private/qmainwindowlayout_p.h>
 #endif
-#include "qplatformwindow_qpa.h"
+#include <qpa/qplatformwindow.h>
 #include "private/qwidgetwindow_qpa_p.h"
 #include "qpainter.h"
 #include "qtooltip.h"

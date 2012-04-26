@@ -68,9 +68,9 @@
 #include <X11/Xlib.h>
 #endif
 
-#include <private/qplatforminputcontextfactory_qpa_p.h>
+#include <qpa/qplatforminputcontextfactory_p.h>
 #include <private/qgenericunixthemes_p.h>
-#include <qplatforminputcontext_qpa.h>
+#include <qpa/qplatforminputcontext.h>
 
 #if defined(XCB_USE_GLX)
 #include "qglxintegration.h"
@@ -82,7 +82,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 #ifndef QT_NO_ACCESSIBILITY
-#include <QtGui/QPlatformAccessibility>
+#include <qpa/qplatformaccessibility.h>
 #endif
 
 QT_BEGIN_NAMESPACE

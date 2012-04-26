@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qplatformthemefactory_qpa_p.h"
-#include <QPlatformThemePlugin>
+#include <qpa/qplatformthemefactory_p.h>
+#include <qpa/qplatformthemeplugin.h>
 #include "private/qfactoryloader_p.h"
 #include "qmutex.h"
 

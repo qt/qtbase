@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qplatformintegrationfactory_qpa_p.h"
-#include <QPlatformIntegrationPlugin>
+#include <qpa/qplatformintegrationfactory_p.h>
+#include <qpa/qplatformintegrationplugin.h>
 #include "private/qfactoryloader_p.h"
 #include "qmutex.h"
 

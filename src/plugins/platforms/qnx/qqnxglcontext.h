@@ -42,7 +42,7 @@
 #ifndef QQNXGLCONTEXT_H
 #define QQNXGLCONTEXT_H
 
-#include <QtGui/QPlatformOpenGLContext>
+#include <qpa/qplatformopenglcontext.h>
 #include <QtGui/QSurfaceFormat>
 #include <QtCore/QSize>
 

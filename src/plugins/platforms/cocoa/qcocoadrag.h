@@ -44,7 +44,7 @@
 
 #include <Cocoa/Cocoa.h>
 #include <QtGui>
-#include <qplatformdrag_qpa.h>
+#include <qpa/qplatformdrag.h>
 #include <QtPlatformSupport/private/qsimpledrag_p.h>
 
 #include <QtGui/private/qdnd_p.h>

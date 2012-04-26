@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformdrag_qpa.h"
+#include "qplatformdrag.h"
 
 #include <QtGui/private/qdnd_p.h>
 #include <QtGui/QKeyEvent>

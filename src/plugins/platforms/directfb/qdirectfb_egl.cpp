@@ -45,7 +45,7 @@
 #include "qdirectfbeglhooks.h"
 
 #include <QtGui/QOpenGLContext>
-#include <QtGui/QPlatformOpenGLContext>
+#include <qpa/qplatformopenglcontext.h>
 #include <QtGui/QScreen>
 
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>

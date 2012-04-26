@@ -46,7 +46,7 @@
 #include "qpagesetupdialog.h"
 #include "qabstractpagesetupdialog_p.h"
 
-#include <QtGui/qplatformnativeinterface_qpa.h>
+#include <qpa/qplatformnativeinterface.h>
 #include <QtPrintSupport/qprintengine.h>
 
 QT_USE_NAMESPACE

@@ -55,7 +55,7 @@
 #include "qcocoainputcontext.h"
 #include "qmacmime.h"
 
-#include <QtGui/qplatformaccessibility_qpa.h>
+#include <qpa/qplatformaccessibility.h>
 #include <QtCore/qcoreapplication.h>
 
 #include <QtWidgets/QDialog>

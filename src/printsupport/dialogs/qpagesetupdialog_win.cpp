@@ -47,7 +47,7 @@
 #include "../kernel/qprintengine_win_p.h"
 #include "qabstractpagesetupdialog_p.h"
 #include "qprinter.h"
-#include <QtGui/qplatformnativeinterface_qpa.h>
+#include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 

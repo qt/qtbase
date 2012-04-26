@@ -52,8 +52,8 @@
 
 #ifndef QT_NO_PRINTER
 
-#include "qplatformprintplugin_qpa.h"
-#include <QtPrintSupport/QPlatformPrinterSupport>
+#include <qpa/qplatformprintplugin.h>
+#include <qpa/qplatformprintersupport.h>
 #include <private/qpagedpaintdevice_p.h>
 
 #if defined(Q_WS_X11)

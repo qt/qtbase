@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 #include <QGuiApplication>
-#include <QPlatformIntegration>
+#include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
 #include <QScreen>
 #include <QThread>

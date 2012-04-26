@@ -42,8 +42,8 @@
 #ifndef QBACKINGSTORE_MINIMAL_H
 #define QBACKINGSTORE_MINIMAL_H
 
-#include <QtGui/QPlatformBackingStore>
-#include <QtGui/QPlatformWindow>
+#include <qpa/qplatformbackingstore.h>
+#include <qpa/qplatformwindow.h>
 #include <QtGui/QImage>
 
 QT_BEGIN_NAMESPACE

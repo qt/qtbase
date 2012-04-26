@@ -42,7 +42,7 @@
 #ifndef QWINDOWSURFACE_DIRECTFB_H
 #define QWINDOWSURFACE_DIRECTFB_H
 
-#include <qplatformbackingstore_qpa.h>
+#include <qpa/qplatformbackingstore.h>
 #include <private/qpixmap_blitter_p.h>
 
 #include <directfb.h>

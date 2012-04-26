@@ -44,7 +44,7 @@
 
 #include "qwindowsinternalmimedata.h"
 
-#include <QtGui/QPlatformClipboard>
+#include <qpa/qplatformclipboard.h>
 
 QT_BEGIN_NAMESPACE
 

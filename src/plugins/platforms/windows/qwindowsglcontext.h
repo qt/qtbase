@@ -45,7 +45,7 @@
 #include "array.h"
 #include "qtwindows_additional.h"
 
-#include <QtGui/QPlatformOpenGLContext>
+#include <qpa/qplatformopenglcontext.h>
 #include <QtGui/QOpenGLContext>
 #include <QtCore/QSharedPointer>
 

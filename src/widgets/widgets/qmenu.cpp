@@ -49,7 +49,7 @@
 #include "qtimer.h"
 #include "qlayout.h"
 #include "qpainter.h"
-#include "qplatformtheme_qpa.h"
+#include <qpa/qplatformtheme.h>
 #include "qapplication.h"
 #include "qdesktopwidget.h"
 #ifndef QT_NO_ACCESSIBILITY
@@ -71,7 +71,7 @@
 #include <private/qaction_p.h>
 #include <private/qsoftkeymanager_p.h>
 #include <private/qguiapplication_p.h>
-#include <qplatformtheme_qpa.h>
+#include <qpa/qplatformtheme.h>
 
 QT_BEGIN_NAMESPACE
 

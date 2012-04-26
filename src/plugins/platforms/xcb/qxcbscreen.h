@@ -42,7 +42,7 @@
 #ifndef QXCBSCREEN_H
 #define QXCBSCREEN_H
 
-#include <QtGui/QPlatformScreen>
+#include <qpa/qplatformscreen.h>
 #include <QtCore/QString>
 
 #include <xcb/xcb.h>

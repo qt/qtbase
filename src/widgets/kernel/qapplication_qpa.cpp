@@ -52,15 +52,15 @@
 #include "private/qevent_p.h"
 
 #include "qgenericpluginfactory_qpa.h"
-#include "private/qplatformintegrationfactory_qpa_p.h"
+#include <qpa/qplatformintegrationfactory_p.h>
 #include <qdesktopwidget.h>
-#include <QPlatformCursor>
-#include <QPlatformTheme>
+#include <qpa/qplatformcursor.h>
+#include <qpa/qplatformtheme.h>
 
 #include <qdebug.h>
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
-#include <QPlatformIntegration>
+#include <qpa/qplatformintegration.h>
 
 #include "qdesktopwidget_qpa_p.h"
 #include "qwidgetwindow_qpa_p.h"

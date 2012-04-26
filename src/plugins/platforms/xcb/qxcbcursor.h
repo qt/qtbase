@@ -42,7 +42,7 @@
 #ifndef QXCBCURSOR_H
 #define QXCBCURSOR_H
 
-#include <QtGui/QPlatformCursor>
+#include <qpa/qplatformcursor.h>
 #include "qxcbscreen.h"
 
 QT_BEGIN_NAMESPACE

@@ -42,14 +42,14 @@
 #include "qguiapplication.h"
 
 #include "private/qguiapplication_p.h"
-#include "private/qplatformintegrationfactory_qpa_p.h"
+#include <qpa/qplatformintegrationfactory_p.h>
 #include "private/qevent_p.h"
 #include "qfont.h"
-#include "qplatformfontdatabase_qpa.h"
-#include "qplatformwindow_qpa.h"
-#include "qplatformnativeinterface_qpa.h"
-#include "qplatformtheme_qpa.h"
-#include "qplatformintegration_qpa.h"
+#include <qpa/qplatformfontdatabase.h>
+#include <qpa/qplatformwindow.h>
+#include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformtheme.h>
+#include <qpa/qplatformintegration.h>
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/QVariant>
@@ -64,14 +64,14 @@
 #include <private/qscreen_p.h>
 #include <private/qdrawhelper_p.h>
 
-#include <QtGui/QPlatformIntegration>
+#include <qpa/qplatformintegration.h>
 #include <QtGui/QGenericPluginFactory>
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputpanel.h>
 #include <QtGui/qpixmapcache.h>
-#include <QtGui/qplatformtheme_qpa.h>
-#include <QtGui/qplatforminputcontext_qpa.h>
-#include <private/qplatforminputcontext_qpa_p.h>
+#include <qpa/qplatformtheme.h>
+#include <qpa/qplatforminputcontext.h>
+#include <qpa/qplatforminputcontext_p.h>
 
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
@@ -79,11 +79,11 @@
 #include "private/qcursor_p.h"
 
 #include "private/qdnd_p.h"
-#include <private/qplatformthemefactory_qpa_p.h>
-#include "qplatformdrag_qpa.h"
+#include <qpa/qplatformthemefactory_p.h>
+#include <qpa/qplatformdrag.h>
 
 #ifndef QT_NO_CURSOR
-#include "qplatformcursor_qpa.h"
+#include <qpa/qplatformcursor.h>
 #endif
 
 #include <QtGui/QPixmap>

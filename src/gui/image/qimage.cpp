@@ -50,13 +50,13 @@
 #include "qstringlist.h"
 #include "qvariant.h"
 #include "qimagepixmapcleanuphooks_p.h"
-#include "qplatformintegration_qpa.h"
+#include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
-#include <qplatformpixmap_qpa.h>
+#include <qpa/qplatformpixmap.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qmemrotate_p.h>
 #include <private/qimagescale_p.h>

@@ -43,7 +43,7 @@
 #define QPLATFORMTHEME_COCOA_H
 
 #include <QtCore/QHash>
-#include <QtGui/QPlatformTheme>
+#include <qpa/qplatformtheme.h>
 
 QT_BEGIN_NAMESPACE
 

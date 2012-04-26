@@ -43,7 +43,7 @@
 #define QSCREEN_P_H
 
 #include <QtGui/qscreen.h>
-#include <QtGui/qplatformscreen_qpa.h>
+#include <qpa/qplatformscreen.h>
 
 #include <QtCore/private/qobject_p.h>
 

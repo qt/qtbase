@@ -42,7 +42,7 @@
 #include <qcursor.h>
 #include <qscreen.h>
 #include <private/qcursor_p.h>
-#include <qplatformcursor_qpa.h>
+#include <qpa/qplatformcursor.h>
 #include <private/qguiapplication_p.h>
 #include <qbitmap.h>
 

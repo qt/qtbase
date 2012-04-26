@@ -46,9 +46,9 @@
 
 #include <qbytearray.h>
 #include <qwindow.h>
-#include "qplatformwindow_qpa.h"
+#include <qpa/qplatformwindow.h>
 #include "qsurfaceformat.h"
-#include "qplatformopenglcontext_qpa.h"
+#include <qpa/qplatformopenglcontext.h>
 #include "qopenglcontext.h"
 #include <qdebug.h>
 

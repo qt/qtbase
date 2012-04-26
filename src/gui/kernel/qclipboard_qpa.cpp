@@ -45,8 +45,8 @@
 
 #include "qmimedata.h"
 #include "private/qguiapplication_p.h"
-#include "qplatformclipboard_qpa.h"
-#include "qplatformintegration_qpa.h"
+#include <qpa/qplatformclipboard.h>
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 

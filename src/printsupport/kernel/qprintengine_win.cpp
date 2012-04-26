@@ -54,7 +54,7 @@
 #include <qdebug.h>
 #include <qvector.h>
 #include <qpicture.h>
-#include <qplatformpixmap_qpa.h>
+#include <qpa/qplatformpixmap.h>
 #include <private/qpicture_p.h>
 #include <private/qpixmap_raster_p.h>
 

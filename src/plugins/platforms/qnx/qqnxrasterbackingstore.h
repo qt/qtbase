@@ -42,7 +42,7 @@
 #ifndef QQNXRASTERWINDOWSURFACE_H
 #define QQNXRASTERWINDOWSURFACE_H
 
-#include <QtGui/qplatformbackingstore_qpa.h>
+#include <qpa/qplatformbackingstore.h>
 
 #include <screen/screen.h>
 

@@ -42,7 +42,7 @@
 #ifndef QGENERICUNIXDESKTOPSERVICES_H
 #define QGENERICUNIXDESKTOPSERVICES_H
 
-#include <QtGui/qplatformservices_qpa.h>
+#include <qpa/qplatformservices.h>
 #include <QtCore/QString>
 
 QT_BEGIN_HEADER

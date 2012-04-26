@@ -83,8 +83,8 @@
 #ifdef Q_OS_WIN
 #  include <QtCore/qt_windows.h>
 #  include <QtGui/private/qguiapplication_p.h>
-#  include <QtGui/QPlatformNativeInterface>
-#  include <QtGui/QPlatformIntegration>
+#include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformintegration.h>
 
 static HWND winHandleOf(const QWidget *w)
 {

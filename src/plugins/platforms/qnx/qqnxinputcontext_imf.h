@@ -42,11 +42,11 @@
 #ifndef QQNXINPUTCONTEXT_H
 #define QQNXINPUTCONTEXT_H
 
-#include <QtGui/QPlatformInputContext>
+#include <qpa/qplatforminputcontext.h>
 
 #include <QtCore/QLocale>
 #include <QtCore/QMetaType>
-#include <QtGui/QPlatformIntegration>
+#include <qpa/qplatformintegration.h>
 
 #include "imf/imf_client.h"
 #include "imf/input_control.h"

@@ -2,7 +2,7 @@ TARGET = cocoaprintersupport
 load(qt_plugin)
 DESTDIR = $$QT.gui.plugins/printsupport
 
-QT += printsupport
+QT += gui-private printsupport-private
 LIBS += -framework Cocoa
 
 SOURCES += main.cpp

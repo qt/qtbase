@@ -102,7 +102,7 @@ SOURCES += \
       text/qrawfont_qpa.cpp
 
 HEADERS += \
-      text/qplatformfontdatabase_qpa.h
+      text/qplatformfontdatabase.h
 
 DEFINES += QT_NO_OPENTYPE
 INCLUDEPATH += ../3rdparty/harfbuzz/src

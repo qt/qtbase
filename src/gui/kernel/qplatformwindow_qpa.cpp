@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformwindow_qpa.h"
+#include "qplatformwindow.h"
 
 #include <QtGui/qwindowsysteminterface_qpa.h>
 #include <QtGui/qwindow.h>

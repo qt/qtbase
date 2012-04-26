@@ -45,7 +45,7 @@
 #include "qdirectfbinput.h"
 #include "qdirectfbscreen.h"
 
-#include <QtGui/QPlatformIntegration>
+#include <qpa/qplatformintegration.h>
 #include <directfb.h>
 #include <directfb_version.h>
 

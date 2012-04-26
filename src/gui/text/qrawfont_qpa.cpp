@@ -44,8 +44,8 @@
 #if !defined(QT_NO_RAWFONT)
 
 #include "qrawfont_p.h"
-#include "qplatformintegration_qpa.h"
-#include <QtGui/qplatformfontdatabase_qpa.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformfontdatabase.h>
 #include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE

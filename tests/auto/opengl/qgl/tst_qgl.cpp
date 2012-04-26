@@ -55,7 +55,7 @@
 #include <QVBoxLayout>
 
 #ifdef QT_BUILD_INTERNAL
-#include <qplatformpixmap_qpa.h>
+#include <qpa/qplatformpixmap.h>
 #include <QtOpenGL/private/qgl_p.h>
 #include <QtGui/private/qimage_p.h>
 #include <QtGui/private/qimagepixmapcleanuphooks_p.h>

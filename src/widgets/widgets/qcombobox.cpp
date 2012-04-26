@@ -43,7 +43,7 @@
 
 #ifndef QT_NO_COMBOBOX
 #include <qstylepainter.h>
-#include <qplatformtheme_qpa.h>
+#include <qpa/qplatformtheme.h>
 #include <qlineedit.h>
 #include <qapplication.h>
 #include <qdesktopwidget.h>

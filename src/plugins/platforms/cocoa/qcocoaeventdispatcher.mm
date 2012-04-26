@@ -81,8 +81,8 @@
 #include "qhash.h"
 #include "qmutex.h"
 #include "qsocketnotifier.h"
-#include <qplatformwindow_qpa.h>
-#include <qplatformnativeinterface_qpa.h>
+#include <qpa/qplatformwindow.h>
+#include <qpa/qplatformnativeinterface.h>
 #include "private/qthread_p.h"
 #include "private/qguiapplication_p.h"
 #include <qdebug.h>

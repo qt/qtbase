@@ -60,7 +60,7 @@
 #include "accessible/qwindowsaccessibility.h"
 #endif
 
-#include <QtGui/QPlatformNativeInterface>
+#include <qpa/qplatformnativeinterface.h>
 #include <QtGui/QWindowSystemInterface>
 #include <QtGui/QBackingStore>
 #include <QtGui/private/qpixmap_raster_p.h>

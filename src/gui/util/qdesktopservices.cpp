@@ -52,8 +52,8 @@
 #include <private/qguiapplication_p.h>
 #include <qurl.h>
 #include <qmutex.h>
-#include <qplatformservices_qpa.h>
-#include <qplatformintegration_qpa.h>
+#include <qpa/qplatformservices.h>
+#include <qpa/qplatformintegration.h>
 #include <qdir.h>
 
 QT_BEGIN_NAMESPACE

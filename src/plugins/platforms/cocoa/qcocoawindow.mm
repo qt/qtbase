@@ -48,7 +48,7 @@
 #include <QtCore/private/qcore_mac_p.h>
 #include <qwindow.h>
 #include <QWindowSystemInterface>
-#include <QPlatformScreen>
+#include <qpa/qplatformscreen.h>
 
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>

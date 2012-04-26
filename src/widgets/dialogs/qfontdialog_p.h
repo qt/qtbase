@@ -57,7 +57,7 @@
 #include "private/qdialog_p.h"
 #include "qfontdatabase.h"
 #include "qfontdialog.h"
-#include "qplatformdialoghelper_qpa.h"
+#include <qpa/qplatformdialoghelper.h>
 #include "qsharedpointer.h"
 
 #ifndef QT_NO_FONTDIALOG

@@ -42,7 +42,7 @@
 #ifndef QPIXMAP_BLITTER_P_H
 #define QPIXMAP_BLITTER_P_H
 
-#include <qplatformpixmap_qpa.h>
+#include <qpa/qplatformpixmap.h>
 #include <private/qpaintengine_blitter_p.h>
 
 #ifndef QT_NO_BLITTABLE

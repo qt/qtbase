@@ -42,7 +42,7 @@
 #ifndef QDIRECTFBWINDOW_H
 #define QDIRECTFBWINDOW_H
 
-#include <QPlatformWindow>
+#include <qpa/qplatformwindow.h>
 
 #include "qdirectfbconvenience.h"
 #include "qdirectfbinput.h"

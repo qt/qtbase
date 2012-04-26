@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformopenglcontext_qpa.h"
+#include "qplatformopenglcontext.h"
 
 #include <QOpenGLFunctions>
 

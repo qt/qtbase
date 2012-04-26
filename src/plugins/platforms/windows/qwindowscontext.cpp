@@ -55,7 +55,7 @@
 
 #include <QtGui/QWindow>
 #include <QtGui/QWindowSystemInterface>
-#include <QtGui/QPlatformNativeInterface>
+#include <qpa/qplatformnativeinterface.h>
 #include <QtGui/QGuiApplication>
 
 #include <QtCore/QSet>

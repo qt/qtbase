@@ -42,7 +42,7 @@
 #ifndef QDIRECTFBGLCONTEXT_H
 #define QDIRECTFBGLCONTEXT_H
 
-#include <QPlatformOpenGLContext>
+#include <qpa/qplatformopenglcontext.h>
 
 #include "qdirectfbconvenience.h"
 

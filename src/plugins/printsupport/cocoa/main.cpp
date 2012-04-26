@@ -41,8 +41,8 @@
 
 #include <QtCore/QMetaMethod>
 #include <QtGui/QGuiApplication>
-#include <QtGui/QPlatformNativeInterface>
-#include <QtPrintSupport/QPlatformPrinterSupportPlugin>
+#include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformprintplugin.h>
 
 QT_BEGIN_NAMESPACE
 

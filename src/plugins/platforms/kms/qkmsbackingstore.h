@@ -42,7 +42,7 @@
 #ifndef QBACKINGSTORE_KMS_H
 #define QBACKINGSTORE_KMS_H
 
-#include <QtGui/QPlatformBackingStore>
+#include <qpa/qplatformbackingstore.h>
 #include <QImage>
 
 QT_BEGIN_NAMESPACE

@@ -44,7 +44,7 @@
 #ifndef QT_NO_ITEMVIEWS
 #include <qabstractitemmodel.h>
 #include <qapplication.h>
-#include <qplatformintegration_qpa.h>
+#include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
 #include <qbrush.h>
 #include <qlineedit.h>

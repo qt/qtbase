@@ -42,7 +42,7 @@
 #ifndef QOPENWFDSCREEN_H
 #define QOPENWFDSCREEN_H
 
-#include <QtGui/QPlatformScreen>
+#include <qpa/qplatformscreen.h>
 
 
 #include "qopenwfdoutputbuffer.h"

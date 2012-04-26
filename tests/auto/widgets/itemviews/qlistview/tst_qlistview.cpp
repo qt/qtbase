@@ -57,7 +57,7 @@
 #if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
 #  include <windows.h>
 #  include <QtGui/QGuiApplication>
-#  include <QtGui/QPlatformNativeInterface>
+#include <qpa/qplatformnativeinterface.h>
 #endif // Q_OS_WIN
 
 #if defined(Q_OS_WIN) || defined(Q_OS_WINCE)

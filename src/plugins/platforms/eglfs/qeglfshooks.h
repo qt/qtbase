@@ -42,7 +42,7 @@
 #ifndef QEGLFSHOOKS_H
 #define QEGLFSHOOKS_H
 
-#include "qplatformintegration_qpa.h"
+#include <qpa/qplatformintegration.h>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE

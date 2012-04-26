@@ -42,7 +42,7 @@
 #ifndef QOPENWFDWINDOW_H
 #define QOPENWFDWINDOW_H
 
-#include <QtGui/QPlatformWindow>
+#include <qpa/qplatformwindow.h>
 #include <QtCore/QVarLengthArray>
 
 #include "qopenwfdport.h"

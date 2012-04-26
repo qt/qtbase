@@ -42,7 +42,7 @@
 #ifndef QDIRECTFBCURSOR_H
 #define QDIRECTFBCURSOR_H
 
-#include <QPlatformCursor>
+#include <qpa/qplatformcursor.h>
 #include <directfb.h>
 
 #include "qdirectfbconvenience.h"

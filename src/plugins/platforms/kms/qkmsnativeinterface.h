@@ -44,7 +44,7 @@
 
 #include "qkmsscreen.h"
 
-#include <QtGui/QPlatformNativeInterface>
+#include <qpa/qplatformnativeinterface.h>
 
 class QKmsNativeInterface : public QPlatformNativeInterface
 {

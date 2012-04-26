@@ -42,7 +42,7 @@
 #ifndef QWINDOWSINTEGRATION_H
 #define QWINDOWSINTEGRATION_H
 
-#include <QtGui/QPlatformIntegration>
+#include <qpa/qplatformintegration.h>
 #include <QtCore/QScopedPointer>
 
 QT_BEGIN_NAMESPACE

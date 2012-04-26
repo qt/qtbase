@@ -63,7 +63,7 @@
 #include <QtGui/qcursor.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qwindowdefs.h>
-#include <QtGui/qplatformpixmap_qpa.h>
+#include <qpa/qplatformpixmap.h>
 
 QT_BEGIN_HEADER
 

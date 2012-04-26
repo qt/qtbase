@@ -42,7 +42,7 @@
 #ifndef QOPENWFDNATIVEINTERFACE_H
 #define QOPENWFDNATIVEINTERFACE_H
 
-#include <QtGui/QPlatformNativeInterface>
+#include <qpa/qplatformnativeinterface.h>
 
 #include <WF/wfdplatform.h>
 

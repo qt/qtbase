@@ -42,7 +42,7 @@
 #ifndef QOPENWFDGLCONTEXT_H
 #define QOPENWFDGLCONTEXT_H
 
-#include <QtGui/QPlatformOpenGLContext>
+#include <qpa/qplatformopenglcontext.h>
 
 #include "qopenwfddevice.h"
 

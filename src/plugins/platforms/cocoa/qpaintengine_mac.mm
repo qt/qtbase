@@ -56,7 +56,7 @@
 #include <qcoreapplication.h>
 #include <qmath.h>
 
-#include <QtGui/qplatformpixmap_qpa.h>
+#include <qpa/qplatformpixmap.h>
 
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>

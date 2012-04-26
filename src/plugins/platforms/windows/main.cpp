@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <QtGui/QPlatformIntegrationPlugin>
+#include <qpa/qplatformintegrationplugin.h>
 #include <QtCore/QStringList>
 
 #include "qwindowsintegration.h"

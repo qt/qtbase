@@ -42,7 +42,7 @@
 #ifndef QXCBWINDOW_H
 #define QXCBWINDOW_H
 
-#include <QtGui/QPlatformWindow>
+#include <qpa/qplatformwindow.h>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>
 

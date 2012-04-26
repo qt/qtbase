@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformFontDatabase>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformfontdatabase.h>
 
 QT_BEGIN_NAMESPACE
 

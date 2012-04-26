@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qplatformaccessibility_qpa.h"
+#include "qplatformaccessibility.h"
 #include <private/qfactoryloader_p.h>
 #include "qaccessibleplugin.h"
 #include "qaccessibleobject.h"

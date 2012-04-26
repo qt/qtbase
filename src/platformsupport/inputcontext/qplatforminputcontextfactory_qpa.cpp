@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qplatforminputcontextfactory_qpa_p.h"
-#include "qplatforminputcontextplugin_qpa_p.h"
-#include <QPlatformInputContext>
+#include <qpa/qplatforminputcontextfactory_p.h>
+#include <qpa/qplatforminputcontextplugin_p.h>
+#include <qpa/qplatforminputcontext.h>
 #include "private/qfactoryloader_p.h"
 
 #include "qguiapplication.h"

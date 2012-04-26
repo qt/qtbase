@@ -42,7 +42,7 @@
 #ifndef QKMSCURSOR_H
 #define QKMSCURSOR_H
 
-#include <QtGui/QPlatformCursor>
+#include <qpa/qplatformcursor.h>
 
 #define EGL_EGLEXT_PROTOTYPES 1
 

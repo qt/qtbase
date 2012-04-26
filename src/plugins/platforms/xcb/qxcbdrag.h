@@ -42,7 +42,7 @@
 #ifndef QXCBDRAG_H
 #define QXCBDRAG_H
 
-#include <qplatformdrag_qpa.h>
+#include <qpa/qplatformdrag.h>
 #include <QtPlatformSupport/private/qsimpledrag_p.h>
 #include <qxcbobject.h>
 #include <xcb/xcb.h>

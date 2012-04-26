@@ -48,7 +48,7 @@
 #include "qvalidator.h"
 #include "qcompleter.h"
 #include "qstandarditemmodel.h"
-#include "qplatformtheme_qpa.h"
+#include <qpa/qplatformtheme.h>
 #include "qstylehints.h"
 #include <private/qguiapplication_p.h>
 

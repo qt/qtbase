@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatforminputcontextplugin_qpa_p.h"
+#include "qplatforminputcontextplugin_p.h"
 
 QT_BEGIN_NAMESPACE
 

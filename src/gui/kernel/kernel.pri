@@ -10,27 +10,27 @@ HEADERS += \
         kernel/qgenericplugin_qpa.h \
         kernel/qwindowsysteminterface_qpa.h \
         kernel/qwindowsysteminterface_qpa_p.h \
-        kernel/qplatformintegration_qpa.h \
-        kernel/qplatformdrag_qpa.h \
-        kernel/qplatformscreen_qpa.h \
-        kernel/qplatformscreen_qpa_p.h \
-        kernel/qplatforminputcontext_qpa.h \
-        kernel/qplatforminputcontext_qpa_p.h \
-        kernel/qplatformintegrationfactory_qpa_p.h \
-        kernel/qplatformintegrationplugin_qpa.h \
-        kernel/qplatformtheme_qpa.h\
-        kernel/qplatformthemefactory_qpa_p.h \
-        kernel/qplatformthemeplugin_qpa.h \
-        kernel/qplatformwindow_qpa.h \
-        kernel/qplatformcursor_qpa.h \
-        kernel/qplatformclipboard_qpa.h \
-        kernel/qplatformnativeinterface_qpa.h \
+        kernel/qplatformintegration.h \
+        kernel/qplatformdrag.h \
+        kernel/qplatformscreen.h \
+        kernel/qplatformscreen_p.h \
+        kernel/qplatforminputcontext.h \
+        kernel/qplatforminputcontext_p.h \
+        kernel/qplatformintegrationfactory_p.h \
+        kernel/qplatformintegrationplugin.h \
+        kernel/qplatformtheme.h\
+        kernel/qplatformthemefactory_p.h \
+        kernel/qplatformthemeplugin.h \
+        kernel/qplatformwindow.h \
+        kernel/qplatformcursor.h \
+        kernel/qplatformclipboard.h \
+        kernel/qplatformnativeinterface.h \
         kernel/qsurfaceformat.h \
         kernel/qguiapplication.h \
         kernel/qguiapplication_p.h \
         kernel/qwindow_p.h \
         kernel/qwindow.h \
-        kernel/qplatformsurface_qpa.h \
+        kernel/qplatformsurface.h \
         kernel/qsurface.h \
         kernel/qclipboard.h \
         kernel/qcursor.h \
@@ -55,10 +55,10 @@ HEADERS += \
         kernel/qstylehints.h \
         kernel/qtouchdevice.h \
         kernel/qtouchdevice_p.h \
-        kernel/qplatformsharedgraphicscache_qpa.h \
-        kernel/qplatformdialoghelper_qpa.h \
-        kernel/qplatformservices_qpa.h \
-        kernel/qplatformscreenpageflipper_qpa.h
+        kernel/qplatformsharedgraphicscache.h \
+        kernel/qplatformdialoghelper.h \
+        kernel/qplatformservices.h \
+        kernel/qplatformscreenpageflipper.h
 
 SOURCES += \
         kernel/qclipboard_qpa.cpp \
@@ -107,7 +107,7 @@ SOURCES += \
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
     HEADERS += \
-            kernel/qplatformopenglcontext_qpa.h \
+            kernel/qplatformopenglcontext.h \
             kernel/qopenglcontext.h \
             kernel/qopenglcontext_p.h
 

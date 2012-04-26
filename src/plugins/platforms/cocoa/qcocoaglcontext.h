@@ -43,7 +43,7 @@
 #define QCOCOAGLCONTEXT_H
 
 #include <QtCore/QWeakPointer>
-#include <QtGui/QPlatformOpenGLContext>
+#include <qpa/qplatformopenglcontext.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QWindow>
 

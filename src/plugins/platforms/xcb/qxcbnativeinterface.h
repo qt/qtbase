@@ -42,7 +42,7 @@
 #ifndef QXCBNATIVEINTERFACE_H
 #define QXCBNATIVEINTERFACE_H
 
-#include <QtGui/QPlatformNativeInterface>
+#include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 

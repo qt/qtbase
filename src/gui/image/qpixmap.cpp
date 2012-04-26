@@ -42,7 +42,7 @@
 #include <qglobal.h>
 
 #include "qpixmap.h"
-#include "qplatformpixmap_qpa.h"
+#include <qpa/qplatformpixmap.h>
 #include "qimagepixmapcleanuphooks_p.h"
 
 #include "qbitmap.h"
@@ -63,7 +63,7 @@
 #include "qthread.h"
 #include "qdebug.h"
 
-# include "qplatformintegration_qpa.h"
+#include <qpa/qplatformintegration.h>
 
 #include "qpixmap_raster_p.h"
 #include "private/qhexstring_p.h"

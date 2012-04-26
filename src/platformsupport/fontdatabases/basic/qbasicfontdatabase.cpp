@@ -42,7 +42,7 @@
 #include "qbasicfontdatabase_p.h"
 
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/QPlatformScreen>
+#include <qpa/qplatformscreen.h>
 
 #include <QtCore/QFile>
 #include <QtCore/QLibraryInfo>

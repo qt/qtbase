@@ -58,8 +58,8 @@
 #include <QtCore/qstring.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtGui/qwindow.h>
-#include <QtGui/qplatformopenglcontext_qpa.h>
-#include <QtGui/qplatformsurface_qpa.h>
+#include <qpa/qplatformopenglcontext.h>
+#include <qpa/qplatformsurface.h>
 
 QT_BEGIN_HEADER
 

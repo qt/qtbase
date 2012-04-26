@@ -42,7 +42,7 @@
 #ifndef QKMSCONTEXT_H
 #define QKMSCONTEXT_H
 
-#include <QtGui/QPlatformOpenGLContext>
+#include <qpa/qplatformopenglcontext.h>
 
 #define EGL_EGLEXT_PROTOTYPES 1
 #include <EGL/egl.h>

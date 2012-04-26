@@ -57,7 +57,7 @@
 #include <QtGui/QMouseEvent>
 #include <QtCore/QWeakPointer>
 #include <QtCore/QObject>
-#include <QtGui/QPlatformScreen>
+#include <qpa/qplatformscreen.h>
 #include <QtGui/QCursor>
 
 QT_BEGIN_HEADER

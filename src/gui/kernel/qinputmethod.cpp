@@ -43,7 +43,7 @@
 #include <private/qinputmethod_p.h>
 #include <qguiapplication.h>
 #include <qtimer.h>
-#include <private/qplatforminputcontext_qpa_p.h>
+#include <qpa/qplatforminputcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 

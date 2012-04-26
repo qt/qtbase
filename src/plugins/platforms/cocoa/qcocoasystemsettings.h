@@ -44,7 +44,7 @@
 
 #include <QtCore/qhash.h>
 #include <QtGui/qpalette.h>
-#include <QtGui/qplatformtheme_qpa.h>
+#include <qpa/qplatformtheme.h>
 
 QT_BEGIN_NAMESPACE
 

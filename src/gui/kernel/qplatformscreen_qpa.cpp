@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qplatformscreen_qpa.h"
+#include "qplatformscreen.h"
 #include <QtGui/qguiapplication.h>
-#include <QtGui/qplatformcursor_qpa.h>
+#include <qpa/qplatformcursor.h>
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/private/qplatformscreen_qpa_p.h>
-#include <QtGui/qplatformintegration_qpa.h>
+#include <qpa/qplatformscreen_p.h>
+#include <qpa/qplatformintegration.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 

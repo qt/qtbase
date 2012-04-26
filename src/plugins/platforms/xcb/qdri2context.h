@@ -42,7 +42,7 @@
 #ifndef QDRI2CONTEXT_H
 #define QDRI2CONTEXT_H
 
-#include <QtGui/QPlatformOpenGLContext>
+#include <qpa/qplatformopenglcontext.h>
 
 struct xcb_dri2_dri2_buffer_t;
 

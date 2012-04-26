@@ -43,7 +43,7 @@
 #define QWINDOW_P_H
 
 #include <QtGui/qwindow.h>
-#include <QtGui/qplatformwindow_qpa.h>
+#include <qpa/qplatformwindow.h>
 
 #include <QtCore/private/qobject_p.h>
 

@@ -42,7 +42,7 @@
 #ifndef QCOCOAPRINTERSUPPORT_H
 #define QCOCOAPRINTERSUPPORT_H
 
-#include <QtPrintSupport/QPlatformPrinterSupport>
+#include <qpa/qplatformprintersupport.h>
 
 class QCocoaPrinterSupport : public QPlatformPrinterSupport
 {

@@ -47,7 +47,7 @@
 #include "qcocoawindow.h"
 #include "qnsview.h"
 
-#include <QPlatformBackingStore>
+#include <qpa/qplatformbackingstore.h>
 
 QT_BEGIN_NAMESPACE
 

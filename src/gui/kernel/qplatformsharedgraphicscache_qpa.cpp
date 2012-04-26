@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformsharedgraphicscache_qpa.h"
+#include "qplatformsharedgraphicscache.h"
 
 QT_BEGIN_NAMESPACE
 

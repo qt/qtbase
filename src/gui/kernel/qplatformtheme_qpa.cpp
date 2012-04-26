@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformtheme_qpa.h"
+#include "qplatformtheme.h"
 
 #include <QtCore/QVariant>
 #include <QtCore/QStringList>

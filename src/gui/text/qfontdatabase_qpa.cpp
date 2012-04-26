@@ -46,7 +46,7 @@
 #include "qplatformdefs.h"
 
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/qplatformfontdatabase_qpa.h>
+#include <qpa/qplatformfontdatabase.h>
 
 #include <QtCore/qmath.h>
 

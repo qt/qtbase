@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include "qbitmap.h"
-#include "qplatformpixmap_qpa.h"
-#include "qplatformintegration_qpa.h"
+#include <qpa/qplatformpixmap.h>
+#include <qpa/qplatformintegration.h>
 #include "qimage.h"
 #include "qscreen.h"
 #include "qvariant.h"

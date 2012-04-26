@@ -47,7 +47,7 @@
 #include <QtCore/QList>
 #include <QtCore/QPair>
 #include <QtCore/QSharedPointer>
-#include <QtGui/QPlatformScreen>
+#include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
 

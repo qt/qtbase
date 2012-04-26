@@ -46,7 +46,7 @@
 #include "qabstractitemview.h"
 #include "qclipboard.h"
 #include <private/qguiapplication_p.h>
-#include <qplatformtheme_qpa.h>
+#include <qpa/qplatformtheme.h>
 #include <qstylehints.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"

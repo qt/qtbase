@@ -21,7 +21,7 @@ HEADERS += \
         image/qpixmap_blitter_p.h \
         image/qpixmapcache.h \
         image/qpixmapcache_p.h \
-        image/qplatformpixmap_qpa.h \
+        image/qplatformpixmap.h \
         image/qimagepixmapcleanuphooks_p.h \
 
 SOURCES += \

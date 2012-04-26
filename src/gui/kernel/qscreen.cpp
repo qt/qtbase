@@ -42,7 +42,7 @@
 #include "qscreen.h"
 #include "qscreen_p.h"
 #include "qpixmap.h"
-#include "qplatformscreen_qpa.h"
+#include <qpa/qplatformscreen.h>
 
 #include <QtCore/private/qobject_p.h>
 

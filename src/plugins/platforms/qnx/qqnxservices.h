@@ -42,7 +42,7 @@
 #ifndef QQNXSERVICES_H
 #define QQNXSERVICES_H
 
-#include <QtGui/QPlatformServices>
+#include <qpa/qplatformservices.h>
 
 QT_BEGIN_NAMESPACE
 

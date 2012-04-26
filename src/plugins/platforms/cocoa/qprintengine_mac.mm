@@ -43,7 +43,7 @@
 #include <qdebug.h>
 #include <qthread.h>
 #include <QtCore/qcoreapplication.h>
-#include <QtPrintSupport/QPlatformPrinterSupport>
+#include <qpa/qplatformprintersupport.h>
 
 #include "qcocoaautoreleasepool.h"
 

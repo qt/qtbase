@@ -48,8 +48,8 @@
 #include "qaccessiblebridge.h"
 #include <QtGui/QGuiApplication>
 #include <private/qguiapplication_p.h>
-#include "qplatformaccessibility_qpa.h"
-#include "qplatformintegration_qpa.h"
+#include <qpa/qplatformaccessibility.h>
+#include <qpa/qplatformintegration.h>
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qmetaobject.h>

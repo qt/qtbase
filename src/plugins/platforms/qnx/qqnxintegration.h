@@ -42,7 +42,7 @@
 #ifndef QQNXINTEGRATION_H
 #define QQNXINTEGRATION_H
 
-#include <QtGui/qplatformintegration_qpa.h>
+#include <qpa/qplatformintegration.h>
 
 #include <QtCore/qmutex.h>
 

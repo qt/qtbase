@@ -43,7 +43,7 @@
 #define QCOCOACOLORDIALOGHELPER_H
 
 #include <QObject>
-#include <qplatformdialoghelper_qpa.h>
+#include <qpa/qplatformdialoghelper.h>
 
 QT_BEGIN_NAMESPACE
 

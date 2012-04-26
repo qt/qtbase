@@ -42,7 +42,7 @@
 #include "qopengltexturecache_p.h"
 #include <private/qopenglcontext_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
-#include <qplatformpixmap_qpa.h>
+#include <qpa/qplatformpixmap.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -42,8 +42,8 @@
 #ifndef QOPENWFDINTEGRATION_H
 #define QOPENWFDINTEGRATION_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
 

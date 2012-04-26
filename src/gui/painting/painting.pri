@@ -33,7 +33,7 @@ HEADERS += \
         painting/qstroker_p.h \
         painting/qtextureglyphcache_p.h \
         painting/qtransform.h \
-        painting/qplatformbackingstore_qpa.h \
+        painting/qplatformbackingstore.h \
         painting/qpaintbuffer_p.h \
         painting/qpathsimplifier_p.h
 

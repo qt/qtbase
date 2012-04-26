@@ -53,7 +53,7 @@
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "private/qshortcutmap_p.h"
 
-#include "qplatformdrag_qpa.h"
+#include <qpa/qplatformdrag.h>
 
 QT_BEGIN_HEADER
 

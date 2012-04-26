@@ -42,8 +42,8 @@
 #ifndef QEGLPLATFORMCONTEXT_H
 #define QEGLPLATFORMCONTEXT_H
 
-#include <QtGui/QPlatformWindow>
-#include <QtGui/QPlatformOpenGLContext>
+#include <qpa/qplatformwindow.h>
+#include <qpa/qplatformopenglcontext.h>
 #include <EGL/egl.h>
 
 class QEGLPlatformContext : public QPlatformOpenGLContext

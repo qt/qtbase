@@ -46,8 +46,8 @@
 #include <private/qobject_p.h>
 #include <QtCore/QWeakPointer>
 #include <QTransform>
-#include <qplatforminputcontext_qpa.h>
-#include <qplatformintegration_qpa.h>
+#include <qpa/qplatforminputcontext.h>
+#include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
 
 QT_BEGIN_HEADER

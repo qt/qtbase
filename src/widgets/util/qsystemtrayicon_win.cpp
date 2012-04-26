@@ -52,7 +52,7 @@
 
 #include <private/qsystemlibrary_p.h>
 #include <private/qguiapplication_p.h>
-#include <QPlatformNativeInterface>
+#include <qpa/qplatformnativeinterface.h>
 #include <QSettings>
 #include <QDebug>
 #include <QHash>

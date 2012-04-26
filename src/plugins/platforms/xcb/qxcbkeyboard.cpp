@@ -49,8 +49,8 @@
 #include <private/qguiapplication_p.h>
 #include <stdio.h>
 
-#include <qplatforminputcontext_qpa.h>
-#include <qplatformintegration_qpa.h>
+#include <qpa/qplatforminputcontext.h>
+#include <qpa/qplatformintegration.h>
 
 #ifndef XK_ISO_Left_Tab
 #define XK_ISO_Left_Tab         0xFE20

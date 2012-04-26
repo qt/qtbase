@@ -42,7 +42,7 @@
 #ifndef QQNXGLBACKINGSTORE_H
 #define QQNXGLBACKINGSTORE_H
 
-#include <QtGui/qplatformbackingstore_qpa.h>
+#include <qpa/qplatformbackingstore.h>
 #include <QtOpenGL/private/qglpaintdevice_p.h>
 
 #include <screen/screen.h>

@@ -43,7 +43,7 @@
 #define QQNXCLIPBOARD_H
 
 #ifndef QT_NO_CLIPBOARD
-#include <QtGui/QPlatformClipboard>
+#include <qpa/qplatformclipboard.h>
 
 QT_BEGIN_NAMESPACE
 

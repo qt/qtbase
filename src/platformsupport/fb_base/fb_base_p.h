@@ -46,9 +46,9 @@
 #include <qimage.h>
 #include <qtimer.h>
 #include <qpainter.h>
-#include <QPlatformCursor>
-#include <QPlatformScreen>
-#include <QPlatformWindow>
+#include <qpa/qplatformcursor.h>
+#include <qpa/qplatformscreen.h>
+#include <qpa/qplatformwindow.h>
 #include <QtGui/private/qwindowsurface_p.h>
 
 class QMouseEvent;

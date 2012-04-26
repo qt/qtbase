@@ -79,7 +79,7 @@
 #include "private/qgenericunixeventdispatcher_p.h"
 #endif
 
-#include <QtGui/QPlatformWindow>
+#include <qpa/qplatformwindow.h>
 #include <QtGui/QWindowSystemInterface>
 
 #if !defined(QT_NO_OPENGL)

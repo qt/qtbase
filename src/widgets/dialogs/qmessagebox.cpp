@@ -67,7 +67,7 @@
 
 #ifdef Q_OS_WIN
 #    include <QtCore/qt_windows.h>
-#    include <QtGui/QPlatformNativeInterface>
+#include <qpa/qplatformnativeinterface.h>
 #endif
 
 QT_BEGIN_NAMESPACE

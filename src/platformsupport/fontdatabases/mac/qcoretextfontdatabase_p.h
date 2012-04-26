@@ -42,7 +42,7 @@
 #ifndef QCORETEXTFONTDATABASE_H
 #define QCORETEXTFONTDATABASE_H
 
-#include <QPlatformFontDatabase>
+#include <qpa/qplatformfontdatabase.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -46,7 +46,7 @@
 #include <private/qstylehelper_p.h>
 #include <private/qsystemlibrary_p.h>
 #include <private/qapplication_p.h>
-#include <qplatformnativeinterface_qpa.h>
+#include <qpa/qplatformnativeinterface.h>
 
 #if !defined(QT_NO_STYLE_WINDOWSVISTA) || defined(QT_PLUGIN)
 

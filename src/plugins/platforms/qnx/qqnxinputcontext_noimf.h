@@ -43,8 +43,8 @@
 #define QQNXINPUTCONTEXT_H
 
 #include <QtCore/QLocale>
-#include <QtGui/QPlatformInputContext>
-#include <QtGui/QPlatformIntegration>
+#include <qpa/qplatforminputcontext.h>
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 

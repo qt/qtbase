@@ -46,7 +46,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QSysInfo>
 #include <QtGui/QGuiApplication>
-#include <QtGui/QPlatformNativeInterface>
+#include <qpa/qplatformnativeinterface.h>
 
 #include <wingdi.h>
 #include <GL/gl.h>

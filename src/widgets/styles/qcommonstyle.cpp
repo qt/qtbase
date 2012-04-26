@@ -45,7 +45,7 @@
 #include <qfile.h>
 #include <qapplication.h>
 #include <private/qguiapplication_p.h>
-#include <qplatformtheme_qpa.h>
+#include <qpa/qplatformtheme.h>
 #include <qbitmap.h>
 #include <qcache.h>
 #include <qdockwidget.h>

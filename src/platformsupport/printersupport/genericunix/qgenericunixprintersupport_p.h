@@ -42,7 +42,7 @@
 #ifndef QGENERICUNIXPRINTINGSUPPORT_H
 #define QGENERICUNIXPRINTINGSUPPORT_H
 
-#include <QtPrintSupport/QPlatformPrinterSupport>
+#include <qpa/qplatformprintersupport.h>
 
 QT_BEGIN_NAMESPACE
 

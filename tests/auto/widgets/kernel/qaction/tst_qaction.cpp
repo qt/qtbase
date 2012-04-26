@@ -46,7 +46,7 @@
 #include <qevent.h>
 #include <qaction.h>
 #include <qmenu.h>
-#include <qplatformtheme_qpa.h>
+#include <qpa/qplatformtheme.h>
 #include <private/qguiapplication_p.h>
 
 class tst_QAction : public QObject

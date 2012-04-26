@@ -39,15 +39,15 @@
 **
 ****************************************************************************/
 
-#include "qplatformintegration_qpa.h"
+#include "qplatformintegration.h"
 
-#include <QtGui/QPlatformFontDatabase>
-#include <QtGui/QPlatformClipboard>
-#include <QtGui/QPlatformAccessibility>
-#include <QtGui/QPlatformTheme>
+#include <qpa/qplatformfontdatabase.h>
+#include <qpa/qplatformclipboard.h>
+#include <qpa/qplatformaccessibility.h>
+#include <qpa/qplatformtheme.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
-#include <QtGui/private/qplatformscreen_qpa_p.h>
+#include <qpa/qplatformscreen_p.h>
 #include <private/qdnd_p.h>
 
 QT_BEGIN_NAMESPACE

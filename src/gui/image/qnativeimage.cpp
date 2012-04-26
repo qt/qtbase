@@ -41,7 +41,7 @@
 
 #include <qdebug.h>
 #include "qnativeimage_p.h"
-#include "qplatformscreen_qpa.h"
+#include <qpa/qplatformscreen.h>
 #include "private/qguiapplication_p.h"
 #include "qscreen.h"
 

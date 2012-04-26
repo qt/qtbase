@@ -30,8 +30,8 @@
 
 #ifndef QT_NO_PRINTER
 
-#include "qplatformprintplugin_qpa.h"
-#include <QtPrintSupport/QPlatformPrinterSupport>
+#include <qpa/qplatformprintplugin.h>
+#include <qpa/qplatformprintersupport.h>
 
 QT_BEGIN_NAMESPACE
 

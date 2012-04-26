@@ -42,7 +42,7 @@
 #ifndef QSIMPLEDRAG_H
 #define QSIMPLEDRAG_H
 
-#include <qplatformdrag_qpa.h>
+#include <qpa/qplatformdrag.h>
 
 #include <QtCore/QObject>
 

@@ -45,8 +45,8 @@
 #include <QDebug>
 
 #include <private/qapplication_p.h>
-#include <QtGui/QPlatformOpenGLContext>
-#include <QtGui/QPlatformWindow>
+#include <qpa/qplatformopenglcontext.h>
+#include <qpa/qplatformwindow.h>
 #include <QtGui/QSurfaceFormat>
 
 #include "qgl.h"

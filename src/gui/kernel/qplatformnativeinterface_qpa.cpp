@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qplatformnativeinterface_qpa.h"
+#include "qplatformnativeinterface.h"
 
 QT_BEGIN_NAMESPACE
 

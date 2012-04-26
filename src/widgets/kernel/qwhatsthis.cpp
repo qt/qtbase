@@ -55,7 +55,7 @@
 #include "qcursor.h"
 #include "qbitmap.h"
 #include "qtextdocument.h"
-#include "qplatformtheme_qpa.h"
+#include <qpa/qplatformtheme.h>
 #include "private/qtextdocumentlayout_p.h"
 #include "qtoolbutton.h"
 #include "qdebug.h"

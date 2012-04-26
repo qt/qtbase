@@ -62,7 +62,7 @@
 #include <private/qtextengine_p.h>
 #include <limits.h>
 
-#include <QtGui/qplatformscreen_qpa.h>
+#include <qpa/qplatformscreen.h>
 #include <QtGui/private/qguiapplication_p.h>
 
 #include <QtCore/QMutexLocker>
