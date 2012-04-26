@@ -110,6 +110,8 @@ enum MetaDataFlags {
     TypeNameIndexMask = 0x7FFFFFFF
 };
 
+extern int qMetaTypeTypeInternal(const char *);
+
 class QArgumentType
 {
 public:
@@ -117,7 +119,7 @@ public:
         : _type(type)
     {}
     QArgumentType(const QByteArray &name)
-        : _type(QMetaType::type(name.constData())), _name(name)
+        : _type(qMetaTypeTypeInternal(name.constData())), _name(name)
     {}
     QArgumentType()
         : _type(0)

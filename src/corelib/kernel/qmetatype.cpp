@@ -606,26 +606,26 @@ bool QMetaType::isRegistered(int type)
 }
 
 /*!
-    Returns a handle to the type called \a typeName, or QMetaType::UnknownType if there is
-    no such type.
+    \internal
 
-    \sa isRegistered(), typeName(), Type
+    Implementation of QMetaType::type().
 */
-int QMetaType::type(const char *typeName)
+template <int tryNormalizedType>
+static inline int qMetaTypeTypeImpl(const char *typeName)
 {
     int length = qstrlen(typeName);
     if (!length)
-        return UnknownType;
+        return QMetaType::UnknownType;
     int type = qMetaTypeStaticType(typeName, length);
-    if (type == UnknownType) {
+    if (type == QMetaType::UnknownType) {
         QReadLocker locker(customTypesLock());
         type = qMetaTypeCustomType_unlocked(typeName, length);
 #ifndef QT_NO_QOBJECT
-        if (type == UnknownType) {
+        if ((type == QMetaType::UnknownType) && tryNormalizedType) {
             const NS(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
             type = qMetaTypeStaticType(normalizedTypeName.constData(),
                                        normalizedTypeName.size());
-            if (type == UnknownType) {
+            if (type == QMetaType::UnknownType) {
                 type = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
                                                     normalizedTypeName.size());
             }
@@ -633,6 +633,29 @@ int QMetaType::type(const char *typeName)
 #endif
     }
     return type;
+}
+
+/*!
+    Returns a handle to the type called \a typeName, or QMetaType::UnknownType if there is
+    no such type.
+
+    \sa isRegistered(), typeName(), Type
+*/
+int QMetaType::type(const char *typeName)
+{
+    return qMetaTypeTypeImpl</*tryNormalizedType=*/true>(typeName);
+}
+
+/*!
+    \a internal
+
+    Similar to QMetaType::type(); the only difference is that this function
+    doesn't attempt to normalize the type name (i.e., the lookup will fail
+    for type names in non-normalized form).
+*/
+int qMetaTypeTypeInternal(const char *typeName)
+{
+    return qMetaTypeTypeImpl</*tryNormalizedType=*/false>(typeName);
 }
 
 #ifndef QT_NO_DATASTREAM

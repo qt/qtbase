@@ -652,6 +652,7 @@ int QMetaObject::indexOfMethod(const char *method) const
 }
 
 // Parses a string of comma-separated types into QArgumentTypes.
+// No normalization of the type names is performed.
 static void argumentTypesFromString(const char *str, const char *end,
                                     QArgumentTypeArray &types)
 {
