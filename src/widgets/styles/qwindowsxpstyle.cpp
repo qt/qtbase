@@ -53,6 +53,7 @@
 #include <qpainter.h>
 #include <qpaintengine.h>
 #include <qwidget.h>
+#include <qbackingstore.>
 #include <qapplication.h>
 #include <qpixmapcache.h>
 
@@ -708,24 +709,36 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 
     bool complexXForm = painter->deviceTransform().type() > QTransform::TxTranslate;
 
-    bool translucentToplevel = false;
-    QPaintDevice *pdev = painter->device();
-    if (pdev->devType() == QInternal::Widget) {
-        QWidget *win = ((QWidget *) pdev)->window();
-        translucentToplevel = win->testAttribute(Qt::WA_TranslucentBackground);
-    }
-
-    // Draw on backing store DC only for real widgets.
     // Access paintDevice via engine since the painter may
     // return the clip device which can still be a widget device in case of grabWidget().
-    const bool useFallback = !themeData.widget
-        || painter->paintEngine()->paintDevice()->devType() != QInternal::Widget
-        || painter->opacity() != 1.0 || themeData.rotate
-        || complexXForm  || themeData.mirrorVertically
-        || (themeData.mirrorHorizontally && pDrawThemeBackgroundEx == 0)
-        || translucentToplevel;
-    const HDC dc = useFallback ? HDC(0) : hdcForWidgetBackingStore(themeData.widget);
-    if (dc && !useFallback) {
+
+    bool translucentToplevel = false;
+    const QPaintDevice *paintDevice = painter->device();
+    if (paintDevice->devType() == QInternal::Widget) {
+        const QWidget *window = static_cast<const QWidget *>(paintDevice)->window();
+        translucentToplevel = window->testAttribute(Qt::WA_TranslucentBackground);
+    }
+
+    bool canDrawDirectly = false;
+    if (themeData.widget && painter->opacity() == 1.0 && !themeData.rotate
+        && !complexXForm && !themeData.mirrorVertically
+        && (!themeData.mirrorHorizontally || pDrawThemeBackgroundEx)
+        && !translucentToplevel) {
+        // Draw on backing store DC only for real widgets or backing store images.
+        const QPaintDevice *enginePaintDevice = painter->paintEngine()->paintDevice();
+        switch (enginePaintDevice->devType()) {
+        case QInternal::Widget:
+            canDrawDirectly = true;
+            break;
+        case QInternal::Image:
+            if (QBackingStore *bs = backingStoreForWidget(themeData.widget))
+                if (bs->paintDevice() == enginePaintDevice)
+                    canDrawDirectly = true;
+        }
+    }
+
+    const HDC dc = canDrawDirectly ? hdcForWidgetBackingStore(themeData.widget) : HDC(0);
+    if (dc) {
         drawBackgroundDirectly(themeData);
     } else {
         drawBackgroundThruNativeBuffer(themeData);
@@ -1961,7 +1974,7 @@ case PE_Frame:
         break;
     }
 
-    XPThemeData theme(0, p, themeNumber, partId, stateId, rect);
+    XPThemeData theme(widget, p, themeNumber, partId, stateId, rect);
     if (!theme.isValid()) {
         QWindowsStyle::drawPrimitive(pe, option, p, widget);
         return;
