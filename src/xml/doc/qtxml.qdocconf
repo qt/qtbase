@@ -2,7 +2,7 @@ include(../../../doc/global/qt-cpp-ignore.qdocconf)
 
 project                 = QtXml
 description             = Qt XML Reference Documentation
-url                     = http://qt-project.org/doc/qt-5.0/qtcore
+url                     = http://qt-project.org/doc/qt-5.0/qtxml
 version                 = 5.0.0
 
 sourceencoding          = UTF-8

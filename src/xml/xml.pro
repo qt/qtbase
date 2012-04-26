@@ -23,5 +23,6 @@ win32-borland {
         QMAKE_CXXFLAGS_WARN_ON        += -w-use
 }
 
+include(doc/doc.pri)
 include(dom/dom.pri)
 include(sax/sax.pri)
