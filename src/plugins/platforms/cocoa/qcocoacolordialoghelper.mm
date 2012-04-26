@@ -381,9 +381,13 @@ void QCocoaColorDialogHelper::deleteNativeDialog_sys()
     mDelegate = 0;
 }
 
-bool QCocoaColorDialogHelper::show_sys(QFlags<QPlatformDialogHelper::ShowFlag>, Qt::WindowFlags, QWindow *parent)
+bool QCocoaColorDialogHelper::show_sys(Qt::WindowFlags, Qt::WindowModality windowModality, QWindow *parent)
 {
-    return showCocoaColorPanel(parent);
+    if (windowModality == Qt::WindowModal) {
+        // Cocoa's shared color panel cannot be shown as a sheet
+        return false;
+    }
+    return showCocoaColorPanel(windowModality, parent);
 }
 
 void QCocoaColorDialogHelper::hide_sys()
@@ -447,13 +451,15 @@ void QCocoaColorDialogHelper::createNSColorPanelDelegate()
     mDelegate = delegate;
 }
 
-bool QCocoaColorDialogHelper::showCocoaColorPanel(QWindow *parent)
+bool QCocoaColorDialogHelper::showCocoaColorPanel(Qt::WindowModality windowModality, QWindow *parent)
 {
     Q_UNUSED(parent);
     createNSColorPanelDelegate();
     QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate);
     [delegate->mColorPanel setShowsAlpha:options()->testOption(QColorDialogOptions::ShowAlphaChannel)];
-    [delegate showModelessPanel];
+    if (windowModality == Qt::NonModal)
+        [delegate showModelessPanel];
+    // no need to show a Qt::ApplicationModal dialog here, since it will be done in _q_platformRunNativeAppModalPanel()
     return true;
 }
 

@@ -244,18 +244,18 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     return (mReturnCode == NSOKButton) ? QT_PREPEND_NAMESPACE(QPlatformDialogHelper::Accepted) : QT_PREPEND_NAMESPACE(QPlatformDialogHelper::Rejected);
 }
 
-- (void)showWindowModalSheet:(QWindow *)docWidget
+- (void)showWindowModalSheet:(QWindow *)parent
 {
-    Q_UNUSED(docWidget);
     QFileInfo info(*mCurrentSelection);
     NSString *filename = QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.fileName());
     NSString *filepath = QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath());
     bool selectable = (mOptions->acceptMode() == QFileDialogOptions::AcceptSave)
         || [self panel:nil shouldShowFilename:filepath];
+    NSWindow *nsparent = static_cast<NSWindow *>(qGuiApp->platformNativeInterface()->nativeResourceForWindow("nswindow", parent));
     [mSavePanel
         beginSheetForDirectory:mCurrentDir
         file:selectable ? filename : nil
-        modalForWindow:nil
+        modalForWindow:nsparent
         modalDelegate:self
         didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
         contextInfo:nil];
@@ -613,7 +613,7 @@ void QCocoaFileDialogHelper::hide_sys()
     hideCocoaFilePanel();
 }
 
-bool QCocoaFileDialogHelper::show_sys(ShowFlags /* flags */, Qt::WindowFlags windowFlags, QWindow *parent)
+bool QCocoaFileDialogHelper::show_sys(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent)
 {
 //    Q_Q(QFileDialog);
     if (windowFlags & Qt::WindowStaysOnTopHint) {
@@ -624,7 +624,7 @@ bool QCocoaFileDialogHelper::show_sys(ShowFlags /* flags */, Qt::WindowFlags win
         return false;
     }
 
-    return showCocoaFilePanel(parent);
+    return showCocoaFilePanel(windowModality, parent);
 }
 
 void QCocoaFileDialogHelper::createNSOpenSavePanelDelegate()
@@ -645,15 +645,15 @@ void QCocoaFileDialogHelper::createNSOpenSavePanelDelegate()
     mDelegate = delegate;
 }
 
-bool QCocoaFileDialogHelper::showCocoaFilePanel(QWindow *parent)
+bool QCocoaFileDialogHelper::showCocoaFilePanel(Qt::WindowModality windowModality, QWindow *parent)
 {
-//    Q_Q(QFileDialog);
     createNSOpenSavePanelDelegate();
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
-    if (0 /*qt_mac_is_macsheet(qtFileDialog)*/) // ### sheet support.
-        [delegate showWindowModalSheet:parent];
-    else
+    if (windowModality == Qt::NonModal)
         [delegate showModelessPanel];
+    else if (windowModality == Qt::WindowModal && parent)
+        [delegate showWindowModalSheet:parent];
+    // no need to show a Qt::ApplicationModal dialog here, since it will be done in _q_platformRunNativeAppModalPanel()
     return true;
 }
 

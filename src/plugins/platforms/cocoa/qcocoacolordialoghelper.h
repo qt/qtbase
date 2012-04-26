@@ -56,7 +56,7 @@ public:
     void platformNativeDialogModalHelp();
     void _q_platformRunNativeAppModalPanel();
     void deleteNativeDialog_sys();
-    bool show_sys(QFlags<QPlatformDialogHelper::ShowFlag>, Qt::WindowFlags, QWindow*);
+    bool show_sys(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
     void hide_sys();
 
     DialogCode dialogResultCode_sys();
@@ -64,7 +64,7 @@ public:
     QColor currentColor_sys() const;
 
 public:
-    bool showCocoaColorPanel(QWindow *parent);
+    bool showCocoaColorPanel(Qt::WindowModality windowModality, QWindow *parent);
     bool hideCocoaColorPanel();
 
     void createNSColorPanelDelegate();

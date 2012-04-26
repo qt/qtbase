@@ -62,7 +62,7 @@ public:
     bool defaultNameFilterDisables() const;
 
     void deleteNativeDialog_sys();
-    bool show_sys(ShowFlags flags, Qt::WindowFlags windowFlags, QWindow *parent);
+    bool show_sys(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
     void hide_sys();
     QPlatformFileDialogHelper::DialogCode dialogResultCode_sys();
     void setDirectory_sys(const QString &directory);
@@ -74,7 +74,7 @@ public:
     QString selectedNameFilter_sys() const;
 
 public:
-    bool showCocoaFilePanel(QWindow *parent);
+    bool showCocoaFilePanel(Qt::WindowModality windowModality, QWindow *parent);
     bool hideCocoaFilePanel();
 
     void createNSOpenSavePanelDelegate();

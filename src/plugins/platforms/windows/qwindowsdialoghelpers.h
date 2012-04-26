@@ -69,8 +69,8 @@ public:
     virtual void platformNativeDialogModalHelp();
     virtual void _q_platformRunNativeAppModalPanel();
     virtual void deleteNativeDialog_sys();
-    virtual bool show_sys(QPlatformDialogHelper::ShowFlags flags,
-                          Qt::WindowFlags windowFlags,
+    virtual bool show_sys(Qt::WindowFlags windowFlags,
+                          Qt::WindowModality windowModality,
                           QWindow *parent);
     virtual void hide_sys();
     virtual QVariant styleHint(QPlatformDialogHelper::StyleHint) const;

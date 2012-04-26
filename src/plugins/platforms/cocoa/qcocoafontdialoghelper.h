@@ -60,7 +60,7 @@ public:
     void _q_platformRunNativeAppModalPanel();
     void deleteNativeDialog_sys();
 
-    bool show_sys(ShowFlags showFlags, Qt::WindowFlags windowFlags, QWindow *parent);
+    bool show_sys(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
     void hide_sys();
 
     QPlatformDialogHelper::DialogCode dialogResultCode_sys();
@@ -70,7 +70,7 @@ public:
 
 protected:
     void createNSFontPanelDelegate();
-    bool showCocoaFontPanel(QWindow *parent);
+    bool showCocoaFontPanel(Qt::WindowModality windowModality, QWindow *parent);
     bool hideCocoaFontPanel();
 
 private:

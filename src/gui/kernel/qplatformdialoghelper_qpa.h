@@ -84,11 +84,6 @@ public:
         SnapToDefaultButton
     };
     enum DialogCode { Rejected, Accepted };
-    enum ShowFlag {
-        ShowModal    = 0x00000001
-    };
-
-    Q_DECLARE_FLAGS(ShowFlags, ShowFlag)
 
     QPlatformDialogHelper();
     virtual ~QPlatformDialogHelper();
@@ -99,8 +94,8 @@ public:
     virtual void _q_platformRunNativeAppModalPanel() = 0;
 
     virtual void deleteNativeDialog_sys() = 0;
-    virtual bool show_sys(ShowFlags showFlags,
-                          Qt::WindowFlags windowFlags,
+    virtual bool show_sys(Qt::WindowFlags windowFlags,
+                          Qt::WindowModality windowModality,
                           QWindow *parent) = 0;
     virtual void hide_sys() = 0;
 

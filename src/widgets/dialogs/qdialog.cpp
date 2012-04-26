@@ -108,11 +108,9 @@ bool QDialogPrivate::setNativeDialogVisible(bool visible)
 {
     if (QPlatformDialogHelper *helper = platformHelper()) {
         if (visible) {
+            Q_Q(QDialog);
             helperPrepareShow(helper);
-            QPlatformDialogHelper::ShowFlags flags(0);
-            if (q_func()->isModal())
-                flags |= QPlatformDialogHelper::ShowModal;
-            nativeDialogInUse = helper->show_sys(flags, q_func()->windowFlags(), parentWindow());
+            nativeDialogInUse = helper->show_sys(q->windowFlags(), q->windowModality(), parentWindow());
         } else {
             helper->hide_sys();
         }

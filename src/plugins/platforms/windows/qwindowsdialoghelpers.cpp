@@ -486,11 +486,11 @@ void QWindowsDialogThread::run()
 }
 
 template <class BaseClass>
-bool QWindowsDialogHelperBase<BaseClass>::show_sys(QPlatformDialogHelper::ShowFlags flags,
-                                                   Qt::WindowFlags,
+bool QWindowsDialogHelperBase<BaseClass>::show_sys(Qt::WindowFlags,
+                                                   Qt::WindowModality windowModality,
                                                    QWindow *parent)
 {
-    const bool modal = flags & QPlatformDialogHelper::ShowModal;
+    const bool modal = (windowModality == Qt::ApplicationModal);
     if (parent) {
         m_ownerWindow = QWindowsWindow::handleOf(parent);
     } else {

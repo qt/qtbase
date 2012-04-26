@@ -400,9 +400,13 @@ void QCocoaFontDialogHelper::deleteNativeDialog_sys()
     mDelegate = 0;
 }
 
-bool QCocoaFontDialogHelper::show_sys(QFlags<QPlatformDialogHelper::ShowFlag>, Qt::WindowFlags, QWindow *parent)
+bool QCocoaFontDialogHelper::show_sys(Qt::WindowFlags, Qt::WindowModality windowModality, QWindow *parent)
 {
-    return showCocoaFontPanel(parent);
+    if (windowModality == Qt::WindowModal) {
+        // Cocoa's shared font panel cannot be shown as a sheet
+        return false;
+    }
+    return showCocoaFontPanel(windowModality, parent);
 }
 
 void QCocoaFontDialogHelper::hide_sys()
@@ -466,12 +470,14 @@ void QCocoaFontDialogHelper::createNSFontPanelDelegate()
     mDelegate = delegate;
 }
 
-bool QCocoaFontDialogHelper::showCocoaFontPanel(QWindow *parent)
+bool QCocoaFontDialogHelper::showCocoaFontPanel(Qt::WindowModality windowModality, QWindow *parent)
 {
     Q_UNUSED(parent);
     createNSFontPanelDelegate();
     QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate);
-    [delegate showModelessPanel];
+    if (windowModality == Qt::NonModal)
+        [delegate showModelessPanel];
+    // no need to show a Qt::ApplicationModal dialog here, since it will be done in _q_platformRunNativeAppModalPanel()
     return true;
 }
 
