@@ -257,7 +257,7 @@ void QQnxVirtualKeyboard::handleKeyboardInfoMessage()
     setLocale(locale);
 
 #ifdef QQNXVIRTUALKEYBOARD_DEBUG
-    qDebug() << "QQNX: handleKeyboardInfoMessage size=" << m_height << "locale=" << m_locale;
+    qDebug() << "QQNX: handleKeyboardInfoMessage size=" << newHeight << "locale=" << locale;
 #endif
 }
 
