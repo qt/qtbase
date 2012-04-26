@@ -1419,8 +1419,7 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
             }
         }
 
-        const QChar::UnicodeVersion v = QChar::unicodeVersion(ucs4);
-        if (v > version || v == QChar::Unicode_Unassigned)
+        if (QChar::unicodeVersion(ucs4) > version)
             continue;
 
         const unsigned short *d = decompositionHelper(ucs4, &length, &tag, buffer);
@@ -1521,7 +1520,7 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
         }
 
         const QUnicodeTables::Properties *p = qGetProp(uc);
-        if (p->unicodeVersion > version || p->unicodeVersion == QChar::Unicode_Unassigned) {
+        if (p->unicodeVersion > version) {
             starter = -1;
             next = -1; // to prevent i == next
             lastCombining = 255; // to prevent combining > lastCombining
@@ -1597,7 +1596,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
         c2 = 0;
         {
             const QUnicodeTables::Properties *p = qGetProp(u2);
-            if (p->unicodeVersion <= version && p->unicodeVersion != QChar::Unicode_Unassigned)
+            if (p->unicodeVersion <= version)
                 c2 = p->combiningClass;
         }
         if (c2 == 0) {
@@ -1607,7 +1606,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
 
         if (c1 == 0) {
             const QUnicodeTables::Properties *p = qGetProp(u1);
-            if (p->unicodeVersion <= version && p->unicodeVersion != QChar::Unicode_Unassigned)
+            if (p->unicodeVersion <= version)
                 c1 = p->combiningClass;
         }
 
