@@ -1876,7 +1876,7 @@ void HtmlGenerator::generateHeader(const QString& title,
             out() << "  <link rel=\"prev\" href=\""
                   << anchorPair.first << "\" />\n";
 
-            navigationLinks += "<a href=\"" + anchorPair.first + "\">";
+            navigationLinks += "<a class=\"prevPage\" href=\"" + anchorPair.first + "\">";
             if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
                 navigationLinks += protect(anchorPair.second);
             else
@@ -1894,7 +1894,7 @@ void HtmlGenerator::generateHeader(const QString& title,
             out() << "  <link rel=\"next\" href=\""
                   << anchorPair.first << "\" />\n";
 
-            navigationLinks += "<a href=\"" + anchorPair.first + "\">";
+            navigationLinks += "<a class=\"nextPage\" href=\"" + anchorPair.first + "\">";
             if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
                 navigationLinks += protect(anchorPair.second);
             else
