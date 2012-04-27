@@ -142,11 +142,14 @@ private:
 
 void tst_QWindow::eventOrderOnShow()
 {
-    QRect geometry(80, 80, 40, 40);
+    // Some platforms enforce minimum widths for windows, which can cause extra resize
+    // events, so set the width to suitably large value to avoid those.
+    QRect geometry(80, 80, 300, 40);
 
     Window window;
     window.setGeometry(geometry);
     window.show();
+    QCoreApplication::processEvents();
 
     QTRY_COMPARE(window.received(QEvent::Show), 1);
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
@@ -158,12 +161,15 @@ void tst_QWindow::eventOrderOnShow()
 
 void tst_QWindow::positioning()
 {
-    QRect geometry(80, 80, 40, 40);
+    // Some platforms enforce minimum widths for windows, which can cause extra resize
+    // events, so set the width to suitably large value to avoid those.
+    QRect geometry(80, 80, 300, 40);
 
     Window window;
     window.setGeometry(geometry);
     QCOMPARE(window.geometry(), geometry);
     window.show();
+    QCoreApplication::processEvents();
 
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
     QTRY_VERIFY(window.received(QEvent::Expose) > 0);
@@ -177,12 +183,11 @@ void tst_QWindow::positioning()
     QPoint originalFramePos = window.framePos();
 
     window.setWindowState(Qt::WindowFullScreen);
-#ifdef Q_OS_WIN
-    QEXPECT_FAIL("", "QTBUG-24904 - Too many resize events on setting window state", Continue);
-#endif
+    QCoreApplication::processEvents();
     QTRY_COMPARE(window.received(QEvent::Resize), 2);
 
     window.setWindowState(Qt::WindowNoState);
+    QCoreApplication::processEvents();
     QTRY_COMPARE(window.received(QEvent::Resize), 3);
 
     QTRY_COMPARE(originalPos, window.pos());
@@ -219,12 +224,14 @@ void tst_QWindow::isExposed()
     window.setGeometry(geometry);
     QCOMPARE(window.geometry(), geometry);
     window.show();
+    QCoreApplication::processEvents();
 
     QTRY_VERIFY(window.received(QEvent::Expose) > 0);
     QTRY_VERIFY(window.isExposed());
 
     window.hide();
 
+    QCoreApplication::processEvents();
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("", "This test fails on Mac OS X, see QTBUG-23059", Abort);
 #endif
@@ -236,8 +243,11 @@ void tst_QWindow::isExposed()
 void tst_QWindow::isActive()
 {
     Window window;
-    window.setGeometry(80, 80, 40, 40);
+    // Some platforms enforce minimum widths for windows, which can cause extra resize
+    // events, so set the width to suitably large value to avoid those.
+    window.setGeometry(80, 80, 300, 40);
     window.show();
+    QCoreApplication::processEvents();
 
     QTRY_VERIFY(window.isExposed());
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
@@ -257,6 +267,7 @@ void tst_QWindow::isActive()
     QVERIFY(child.isActive());
 
     // parent shouldn't receive new resize events from child being shown
+    QCoreApplication::processEvents();
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
     QTRY_COMPARE(window.received(QEvent::FocusIn), 1);
     QTRY_COMPARE(window.received(QEvent::FocusOut), 1);
@@ -267,12 +278,13 @@ void tst_QWindow::isActive()
 
     Window dialog;
     dialog.setTransientParent(&window);
-    dialog.setGeometry(110, 110, 30, 30);
+    dialog.setGeometry(110, 110, 300, 30);
     dialog.show();
 
     dialog.requestActivateWindow();
 
     QTRY_VERIFY(dialog.isExposed());
+    QCoreApplication::processEvents();
     QTRY_COMPARE(dialog.received(QEvent::Resize), 1);
     QTRY_VERIFY(QGuiApplication::focusWindow() == &dialog);
     QVERIFY(dialog.isActive());
@@ -286,6 +298,7 @@ void tst_QWindow::isActive()
     window.requestActivateWindow();
 
     QTRY_VERIFY(QGuiApplication::focusWindow() == &window);
+    QCoreApplication::processEvents();
     QTRY_COMPARE(dialog.received(QEvent::FocusOut), 1);
     QTRY_COMPARE(window.received(QEvent::FocusIn), 2);
 
