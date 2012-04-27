@@ -756,6 +756,9 @@ void QNetworkReplyHttpImplPrivate::postRequest()
 
     // Create the HTTP thread delegate
     QHttpThreadDelegate *delegate = new QHttpThreadDelegate;
+#ifndef QT_NO_BEARERMANAGEMENT
+    delegate->networkSession = managerPrivate->networkSession;
+#endif
 
     // For the synchronous HTTP, this is the normal way the delegate gets deleted
     // For the asynchronous HTTP this is a safety measure, the delegate deletes itself when HTTP is finished
