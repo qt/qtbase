@@ -586,7 +586,7 @@ void QSslSocket::setProtocol(QSsl::SslProtocol protocol)
 /*!
     \since 4.4
 
-    Returns the socket's verify mode. This mode mode decides whether
+    Returns the socket's verify mode. This mode decides whether
     QSslSocket should request a certificate from the peer (i.e., the client
     requests a certificate from the server, or a server requesting a
     certificate from the client), and whether it should require that this
