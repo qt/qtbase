@@ -83,6 +83,9 @@ public:
         { return key==other.key && lang==other.lang; }
     inline bool operator!= (const QImageTextKeyLang &other) const
         { return !operator==(other); }
+private:
+    friend class QImage;
+    QImageTextKeyLang(bool /*dummy*/) {}
 };
 #endif
 
@@ -338,7 +341,7 @@ inline QList<QImageTextKeyLang> QImage::textList() const
     for (int i = 0; i < keys.size(); ++i) {
         int index = keys.at(i).indexOf(QLatin1Char('/'));
         if (index > 0) {
-            QImageTextKeyLang tkl;
+            QImageTextKeyLang tkl(true);
             tkl.key = keys.at(i).left(index).toAscii();
             tkl.lang = keys.at(i).mid(index+1).toAscii();
             imageTextKeys += tkl;
