@@ -9,14 +9,14 @@ find_package(Qt5Widgets REQUIRED)
 
 include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Gui_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
 
-add_definitions(${Qt5Core_DEFINITIONS} ${Qt5Gui_DEFINITIONS} ${Qt5Widgets_DEFINITIONS})
+add_definitions(${Qt5Core_DEFINITIONS})
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 qt5_wrap_cpp(moc_files mywidget.h)
 qt5_wrap_ui(ui_files mywidget.ui)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
 add_executable(mywidget mywidget.cpp ${moc_files} ${ui_files})
-target_link_libraries(mywidget ${Qt5Widgets_LIBRARIES} ${Qt5Gui_LIBRARIES} ${Qt5Core_LIBRARIES})
+target_link_libraries(mywidget ${Qt5Widgets_LIBRARIES})
