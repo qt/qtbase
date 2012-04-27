@@ -589,15 +589,10 @@ QStringList qmake_feature_paths(QMakeProperty *prop, bool host_build)
     QStringList feature_roots = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEFEATURES")));
     if(prop)
         feature_roots += splitPathList(prop->value("QMAKEFEATURES"));
-    if(!Option::mkfile::cachefile.isEmpty()) {
-        QString path;
-        int last_slash = Option::mkfile::cachefile.lastIndexOf(QLatin1Char('/'));
-        if(last_slash != -1)
-            path = Option::normalizePath(Option::mkfile::cachefile.left(last_slash), false);
+    if (!project_build_root.isEmpty())
         for(QStringList::Iterator concat_it = concat.begin();
             concat_it != concat.end(); ++concat_it)
-            feature_roots << (path + (*concat_it));
-    }
+            feature_roots << (project_build_root + (*concat_it));
     QStringList qmakepath = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEPATH")));
     foreach (const QString &path, qmakepath)
         foreach (const QString &cat, concat)
