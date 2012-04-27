@@ -65,8 +65,11 @@ list(APPEND Qt5Core_LIB_DEPENDENCIES ${ZLIB_LIBRARIES})
 !!ENDIF
 
 !!IF contains(QT_CONFIG, glib)
-find_package(GTK2 REQUIRED glib-2.0 gthread-2.0)
-list(APPEND Qt5Core_LIB_DEPENDENCIES ${GTK2_LIBRARIES})
+find_library(QT_GLIB_LIBRARY NAMES glib-2.0 )
+find_library(QT_GTHREAD_LIBRARY NAMES gthread-2.0 )
+mark_as_advanced(QT_GLIB_LIBRARY)
+mark_as_advanced(QT_GTHREAD_LIBRARY)
+list(APPEND Qt5Core_LIB_DEPENDENCIES ${QT_GTHREAD_LIBRARY} ${QT_GLIB_LIBRARY})
 !!ENDIF
 
 !!IF contains(QT_CONFIG, clock-monotonic)
