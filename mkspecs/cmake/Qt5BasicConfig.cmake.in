@@ -32,6 +32,12 @@ foreach(_module_dep ${_Qt5$${CMAKE_MODULE_NAME}_MODULE_DEPENDENCIES})
     if (NOT Qt5${_module_dep}_FOUND)
         find_package(Qt5${_module_dep} ${_Qt5$${CMAKE_MODULE_NAME}_DEPENDENCIES_FIND_QUIET} ${_Qt5$${CMAKE_MODULE_NAME}_FIND_DEPENDENCIES_REQUIRED})
     endif()
+
+    if (NOT Qt5${_module_dep}_FOUND)
+        set(Qt5$${CMAKE_MODULE_NAME}_FOUND False)
+        return()
+    endif()
+
     list(APPEND Qt5$${CMAKE_MODULE_NAME}_INCLUDE_DIRS ${Qt5${_module_dep}_INCLUDE_DIRS})
     list(APPEND Qt5$${CMAKE_MODULE_NAME}_DEFINITIONS ${Qt5${_module_dep}_DEFINITIONS})
     list(APPEND Qt5$${CMAKE_MODULE_NAME}_COMPILE_DEFINITIONS ${Qt5${_module_dep}_COMPILE_DEFINITIONS})
