@@ -79,7 +79,7 @@ QT_BEGIN_NAMESPACE
 //expand functions
 enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST,
                   E_SPRINTF, E_FORMAT_NUMBER, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
-                  E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
+                  E_FIND, E_SYSTEM, E_UNIQUE, E_REVERSE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_VAL_ESCAPE, E_REPLACE,
                   E_SIZE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS, E_ENUMERATE_VARS,
                   E_SHADOWED, E_ABSOLUTE_PATH, E_RELATIVE_PATH, E_CLEAN_PATH, E_NATIVE_PATH,
@@ -107,6 +107,7 @@ QHash<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("find", E_FIND);
         qmake_expand_functions->insert("system", E_SYSTEM);
         qmake_expand_functions->insert("unique", E_UNIQUE);
+        qmake_expand_functions->insert("reverse", E_REVERSE);
         qmake_expand_functions->insert("quote", E_QUOTE);
         qmake_expand_functions->insert("escape_expand", E_ESCAPE_EXPAND);
         qmake_expand_functions->insert("upper", E_UPPER);
@@ -2466,6 +2467,17 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             }
         }
         break; }
+    case E_REVERSE:
+        if (args.count() != 1) {
+            fprintf(stderr, "%s:%d reverse(var) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        } else {
+            QStringList var = values(args.first(), place);
+            for (int i = 0; i < var.size() / 2; i++)
+                var.swap(i, var.size() - i - 1);
+            ret += var;
+        }
+        break;
     case E_QUOTE:
         ret = args;
         break;

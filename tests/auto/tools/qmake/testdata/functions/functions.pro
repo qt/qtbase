@@ -144,3 +144,5 @@ win32: \
 else: \
     out = "'some nasty\" path\\'"
 testReplace($$shell_quote($$in), $$out, "shell_quote")
+
+testReplace($$reverse($$list(one two three)), three two one, "reverse")
