@@ -424,11 +424,11 @@ static void read_image_scaled(QImage *outImage, png_structp png_ptr, png_infop i
     const quint32 oxsz = scaledSize.width();
     const quint32 ibw = 4*width;
     amp.accRow = new quint32[ibw];
-    qMemSet(amp.accRow, 0, ibw*sizeof(quint32));
+    memset(amp.accRow, 0, ibw*sizeof(quint32));
     amp.inRow = new png_byte[ibw];
-    qMemSet(amp.inRow, 0, ibw*sizeof(png_byte));
+    memset(amp.inRow, 0, ibw*sizeof(png_byte));
     amp.outRow = new uchar[ibw];
-    qMemSet(amp.outRow, 0, ibw*sizeof(uchar));
+    memset(amp.outRow, 0, ibw*sizeof(uchar));
     qint32 rval = 0;
     for (quint32 oy=0; oy<oysz; oy++) {
         // Store the rest of the previous input row, if any
