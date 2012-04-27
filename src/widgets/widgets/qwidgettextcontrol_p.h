@@ -120,7 +120,7 @@ public:
 
     virtual void ensureCursorVisible();
 
-    virtual QVariant loadResource(int type, const QUrl &name);
+    Q_INVOKABLE virtual QVariant loadResource(int type, const QUrl &name);
 #ifndef QT_NO_CONTEXTMENU
     QMenu *createStandardContextMenu(const QPointF &pos, QWidget *parent);
 #endif

@@ -52,6 +52,7 @@
 #include <qtextcodec.h>
 #include <qthread.h>
 #include <qcoreapplication.h>
+#include <qmetaobject.h>
 
 #include "qtexthtmlparser_p.h"
 #include "qpainter.h"
@@ -1896,7 +1897,8 @@ void QTextDocument::addResource(int type, const QUrl &name, const QVariant &reso
     When called by Qt, \a type is one of the values of
     QTextDocument::ResourceType.
 
-    If the QTextDocument is a child object of a QTextEdit, QTextBrowser,
+    If the QTextDocument is a child object of a QObject that has an invokable
+    loadResource method such as QTextEdit, QTextBrowser
     or a QTextDocument itself then the default implementation tries
     to retrieve the data from the parent.
 */
@@ -1905,24 +1907,15 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
     Q_D(QTextDocument);
     QVariant r;
 
-    QTextDocument *doc = qobject_cast<QTextDocument *>(parent());
-    if (doc) {
-        r = doc->loadResource(type, name);
+    QObject *p = parent();
+    if (p) {
+        const QMetaObject *me = p->metaObject();
+        int index = me->indexOfMethod("loadResource(int,QUrl)");
+        if (index >= 0) {
+            QMetaMethod loader = me->method(index);
+            loader.invoke(p, Q_RETURN_ARG(QVariant, r), Q_ARG(int, type), Q_ARG(QUrl, name));
+        }
     }
-#if 0
-    // ### Qt5: reenable
-#ifndef QT_NO_TEXTEDIT
-    else if (QTextEdit *edit = qobject_cast<QTextEdit *>(parent())) {
-        QUrl resolvedName = edit->d_func()->resolveUrl(name);
-        r = edit->loadResource(type, resolvedName);
-    }
-#endif
-#ifndef QT_NO_TEXTCONTROL
-    else if (QWidgetTextControl *control = qobject_cast<QWidgetTextControl *>(parent())) {
-        r = control->loadResource(type, name);
-    }
-#endif
-#endif
 
     // handle data: URLs
     if (r.isNull() && name.scheme().compare(QLatin1String("data"), Qt::CaseInsensitive) == 0) {
@@ -1933,7 +1926,7 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
     }
 
     // if resource was not loaded try to load it here
-    if (!doc && r.isNull() && name.isRelative()) {
+    if (!qobject_cast<QTextDocument *>(p) && r.isNull() && name.isRelative()) {
         QUrl currentURL = d->url;
         QUrl resourceUrl = name;
 

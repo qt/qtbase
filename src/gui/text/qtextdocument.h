@@ -45,6 +45,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>
+#include <QtCore/qvariant.h>
 #include <QtGui/qfont.h>
 
 QT_BEGIN_HEADER
@@ -288,7 +289,7 @@ public Q_SLOTS:
 
 protected:
     virtual QTextObject *createObject(const QTextFormat &f);
-    virtual QVariant loadResource(int type, const QUrl &name);
+    Q_INVOKABLE virtual QVariant loadResource(int type, const QUrl &name);
 
     QTextDocument(QTextDocumentPrivate &dd, QObject *parent);
 public:

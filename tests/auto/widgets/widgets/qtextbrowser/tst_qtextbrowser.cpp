@@ -296,7 +296,6 @@ void tst_QTextBrowser::anchors()
 void tst_QTextBrowser::resourceAutoDetection()
 {
     browser->setHtml("<img src=\":/some/resource\"/>");
-QEXPECT_FAIL("", "FIXME: Resource detection broken", Continue);
     QCOMPARE(browser->lastResource.toString(), QString("qrc:/some/resource"));
 }
 
@@ -451,8 +450,7 @@ void tst_QTextBrowser::sourceInsideLoadResource()
 {
     QUrl url = QUrl::fromLocalFile("pagewithimage.html");
     browser->setSource(url);
-QEXPECT_FAIL("", "FIXME: Resource detection broken", Continue);
-    QCOMPARE(browser->lastResource.toLocalFile(), QUrl::fromLocalFile(QDir::current().filePath("foobar.png")).toString());
+    QCOMPARE(browser->lastResource, QUrl::fromLocalFile(QDir::current().filePath("foobar.png")));
     QEXPECT_FAIL("", "This is currently not supported", Continue);
     QCOMPARE(browser->sourceInsideLoadResource.toString(), url.toString());
 }
