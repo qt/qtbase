@@ -238,6 +238,7 @@ public:
     virtual const ImportList* importList() const { return 0; }
     virtual void setImportList(const ImportList& ) { }
     virtual const Node* applyModuleIdentifier(const Node* ) const { return 0; }
+    virtual QString idNumber() { return "0"; }
     QmlClassNode* qmlClassNode();
     ClassNode* declarativeCppNode();
     const QString& outputSubdirectory() const { return outSubDir_; }
@@ -251,6 +252,8 @@ public:
     static QString pageTypeString(unsigned t);
     static QString nodeTypeString(unsigned t);
     static QString nodeSubtypeString(unsigned t);
+    static int incPropertyGroupCount();
+    static void clearPropertyGroupCount();
 
 protected:
     Node(Type type, InnerNode* parent, const QString& name);
@@ -288,6 +291,7 @@ private:
     QString qmlModuleName_;
     QString qmlModuleVersion_;
     static QStringMap operators_;
+    static int propertyGroupCount_;
 };
 
 class FunctionNode;
@@ -563,28 +567,18 @@ class QmlPropGroupNode : public FakeNode
 {
 public:
     QmlPropGroupNode(QmlClassNode* parent, const QString& name);
-    //bool attached);
     virtual ~QmlPropGroupNode() { }
     virtual bool isQmlNode() const { return true; }
     virtual bool isQtQuickNode() const { return parent()->isQtQuickNode(); }
     virtual QString qmlModuleName() const { return parent()->qmlModuleName(); }
     virtual QString qmlModuleVersion() const { return parent()->qmlModuleVersion(); }
     virtual QString qmlModuleIdentifier() const { return parent()->qmlModuleIdentifier(); }
+    virtual QString idNumber();
 
     const QString& element() const { return parent()->name(); }
-#if 0
-    void setDefault() { isdefault_ = true; }
-    void setReadOnly(int ro) { readOnly_ = ro; }
-    int getReadOnly() const { return readOnly_; }
-    bool isDefault() const { return isdefault_; }
-    bool isAttached() const { return attached_; }
-    bool isReadOnly() const { return (readOnly_ > 0); }
 
-private:
-    bool    isdefault_;
-    bool    attached_;
-    int     readOnly_;
-#endif
+ private:
+    int     idNumber_;
 };
 
 class QmlPropertyNode;

@@ -48,8 +48,21 @@
 
 QT_BEGIN_NAMESPACE
 
+int Node::propertyGroupCount_ = 0;
 ExampleNodeMap ExampleNode::exampleNodeMap;
 QStringMap Node::operators_;
+
+/*!
+  Increment the number of property groups seen in the current
+  file, and return the new value.
+ */
+int Node::incPropertyGroupCount() { return ++propertyGroupCount_; }
+
+/*!
+  Reset the number of property groups seen in the current file
+  to 0, because we are starting a new file.
+ */
+void Node::clearPropertyGroupCount() { propertyGroupCount_ = 0; }
 
 /*!
   \class Node
@@ -2182,16 +2195,25 @@ QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
   always a QmlClassNode.
  */
 QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent, const QString& name)
-    //bool attached)
     : FakeNode(parent, name, QmlPropertyGroup, Node::ApiPage)
-#if 0
-      isdefault_(false),
-      attached_(attached),
-      readOnly_(-1)
-#endif
 {
-    // nothing.
+    idNumber_ = -1;
 }
+
+/*!
+  Return the property group node's id number for use in
+  constructing an id attribute for the property group.
+  If the id number is currently -1, increment the global
+  property group count and set the id number to the new
+  value.
+ */
+QString QmlPropGroupNode::idNumber()
+{
+    if (idNumber_ == -1)
+        idNumber_ = incPropertyGroupCount();
+    return QString().setNum(idNumber_);
+}
+
 
 /*!
   Constructor for the QML property node, when the \a parent
@@ -2662,50 +2684,53 @@ QString Node::idForNode() const
         }
         break;
     case Node::Fake:
-    {
-        switch (subType()) {
-        case Node::QmlClass:
-            str = "qml-class-" + name();
-            break;
-        case Node::QmlPropertyGroup:
-            str = "qml-property-" + name();
-            break;
-        case Node::Page:
-        case Node::Group:
-        case Node::Module:
-        case Node::HeaderFile:
-            str = title();
-            if (str.isEmpty()) {
+        {
+            switch (subType()) {
+            case Node::QmlClass:
+                str = "qml-class-" + name();
+                break;
+            case Node::QmlPropertyGroup:
+                {
+                    Node* n = const_cast<Node*>(this);
+                    str = "qml-propertygroup-" + n->name();
+                }
+                break;
+            case Node::Page:
+            case Node::Group:
+            case Node::Module:
+            case Node::HeaderFile:
+                str = title();
+                if (str.isEmpty()) {
+                    str = name();
+                    if (str.endsWith(".html"))
+                        str.remove(str.size()-5,5);
+                }
+                str.replace("/","-");
+                break;
+            case Node::File:
                 str = name();
-                if (str.endsWith(".html"))
-                    str.remove(str.size()-5,5);
+                str.replace("/","-");
+                break;
+            case Node::Example:
+                str = name();
+                str.replace("/","-");
+                break;
+            case Node::QmlBasicType:
+                str = "qml-basic-type-" + name();
+                break;
+            case Node::QmlModule:
+                str = "qml-module-" + name();
+                break;
+            case Node::Collision:
+                str = title();
+                str.replace(": ","-");
+                break;
+            default:
+                qDebug() << "ERROR: A case was not handled in Node::idForNode():"
+                         << "subType():" << subType() << "type():" << type();
+                break;
             }
-            str.replace("/","-");
-            break;
-        case Node::File:
-            str = name();
-            str.replace("/","-");
-            break;
-        case Node::Example:
-            str = name();
-            str.replace("/","-");
-            break;
-        case Node::QmlBasicType:
-            str = "qml-basic-type-" + name();
-            break;
-        case Node::QmlModule:
-            str = "qml-module-" + name();
-            break;
-        case Node::Collision:
-            str = title();
-            str.replace(": ","-");
-            break;
-        default:
-            qDebug() << "ERROR: A case was not handled in Node::idForNode():"
-                     << "subType():" << subType() << "type():" << type();
-            break;
         }
-    }
         break;
     case Node::QmlProperty:
         str = "qml-property-" + name();

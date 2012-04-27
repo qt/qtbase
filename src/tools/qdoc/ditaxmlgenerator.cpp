@@ -2210,6 +2210,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         rawTitle = marker->plainName(inner);
         fullTitle = marker->plainFullName(inner);
         title = rawTitle + " Element";
+        Node::clearPropertyGroupCount();
 
         generateHeader(inner, fullTitle);
         generateBrief(inner, marker); // <shortdesc>
@@ -4491,6 +4492,9 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
         }
         else {
             writeStartTag(DT_qmlPropertyGroup);
+            QString id = "id-qml-propertygroup-" + node->name();
+            id.replace('.','-');
+            xmlWriter().writeAttribute("id",id);
             writeStartTag(DT_apiName);
             //writeCharacters("...");
             writeEndTag(); // </apiName>
@@ -4534,6 +4538,9 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
               group.
              */
             writeStartTag(DT_qmlPropertyGroup);
+            QString id = "id-qml-propertygroup-" + node->name();
+            id.replace('.','-');
+            xmlWriter().writeAttribute("id",id);
             writeStartTag(DT_apiName);
             //writeCharacters("...");
             writeEndTag(); // </apiName>
@@ -4908,8 +4915,6 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
         if ((*m)->type() == Node::Function) {
             FunctionNode* fn = const_cast<FunctionNode*>(static_cast<const FunctionNode*>(*m));
             writeStartTag(DT_cxxFunction);
-            if (outFileName() == "qgeoboundingbox.dita" && fn->guid() == "id-operator-")
-                qDebug() << "ID:" << fn->guid() << fn->name();
             xmlWriter().writeAttribute("id",fn->guid());
             if (fn->metaness() == FunctionNode::Signal)
                 xmlWriter().writeAttribute("otherprops","signal");
