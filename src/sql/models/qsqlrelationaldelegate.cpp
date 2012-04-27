@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
     use the class, simply call QAbstractItemView::setItemDelegate()
     on the view with an instance of QSqlRelationalDelegate:
 
-    \snippet examples/sql/relationaltablemodel/relationaltablemodel.cpp 4
+    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 4
 
     The \l{sql/relationaltablemodel}{Relational Table Model} example
     (shown below) illustrates how to use QSqlRelationalDelegate in

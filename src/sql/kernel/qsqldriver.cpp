@@ -133,7 +133,7 @@ QSqlDriver::~QSqlDriver()
 /*!
     \since 5.0
 
-    \fn QSqlDriver::notification(const QString &name, NotificationSource source, const QString & payload)
+    \fn QSqlDriver::notification(const QString &name, QSqlDriver::NotificationSource source, const QVariant & payload)
 
     This signal is emitted when the database posts an event notification
     that the driver subscribes to. \a name identifies the event notification, \a source indicates the signal source,
@@ -682,11 +682,11 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
 
     This example retrieves the handle for a connection to sqlite:
 
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqldriver.cpp 0
+    \snippet code/src_sql_kernel_qsqldriver.cpp 0
 
     This snippet returns the handle for PostgreSQL or MySQL:
 
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqldriver.cpp 1
+    \snippet code/src_sql_kernel_qsqldriver.cpp 1
 
     \sa QSqlResult::handle()
 */
@@ -694,36 +694,6 @@ QVariant QSqlDriver::handle() const
 {
     return QVariant();
 }
-
-/*!
-    \fn QSqlRecord QSqlDriver::record(const QSqlQuery& query) const
-
-    Use query.record() instead.
-*/
-
-/*!
-    \fn QSqlRecord QSqlDriver::recordInfo(const QString& tablename) const
-
-    Use record() instead.
-*/
-
-/*!
-    \fn QSqlRecord QSqlDriver::recordInfo(const QSqlQuery& query) const
-
-    Use query.record() instead.
-*/
-
-/*!
-    \fn QString QSqlDriver::nullText() const
-
-    sqlStatement() is now used to generate SQL. Use tr("NULL") for example, instead.
-*/
-
-/*!
-    \fn QString QSqlDriver::formatValue(const QSqlField *field, bool trimStrings) const
-
-    Use the other formatValue() overload instead.
-*/
 
 /*!
     This function is called to subscribe to event notifications from the database.
@@ -743,7 +713,7 @@ QVariant QSqlDriver::handle() const
     own QSqlDriver subclass,
 
     \since 4.4
-    \sa unsubscribeFromNotification() subscribedToNotifications() QSqlDriver::hasFeature()
+    \sa unsubscribeFromNotification(), subscribedToNotifications(), QSqlDriver::hasFeature()
 */
 bool QSqlDriver::subscribeToNotification(const QString &name)
 {
@@ -767,7 +737,7 @@ bool QSqlDriver::subscribeToNotification(const QString &name)
     own QSqlDriver subclass,
 
     \since 4.4
-    \sa subscribeToNotification() subscribedToNotifications()
+    \sa subscribeToNotification(), subscribedToNotifications()
 */
 bool QSqlDriver::unsubscribeFromNotification(const QString &name)
 {
@@ -782,7 +752,7 @@ bool QSqlDriver::unsubscribeFromNotification(const QString &name)
     own QSqlDriver subclass,
 
     \since 4.4
-    \sa subscribeToNotification() unsubscribeFromNotification()
+    \sa subscribeToNotification(), unsubscribeFromNotification()
 */
 QStringList QSqlDriver::subscribedToNotifications() const
 {

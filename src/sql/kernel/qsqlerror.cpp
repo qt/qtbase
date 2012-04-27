@@ -155,7 +155,7 @@ QSqlError::~QSqlError()
     Returns the text of the error as reported by the driver. This may
     contain database-specific descriptions. It may also be empty.
 
-    \sa setDriverText() databaseText() text()
+    \sa setDriverText(), databaseText(), text()
 */
 QString QSqlError::driverText() const
 {
@@ -165,7 +165,7 @@ QString QSqlError::driverText() const
 /*!
     Sets the driver error text to the value of \a driverText.
 
-    \sa driverText() setDatabaseText() text()
+    \sa driverText(), setDatabaseText(), text()
 */
 
 void QSqlError::setDriverText(const QString& driverText)
@@ -177,7 +177,7 @@ void QSqlError::setDriverText(const QString& driverText)
     Returns the text of the error as reported by the database. This
     may contain database-specific descriptions; it may be empty.
 
-    \sa setDatabaseText() driverText() text()
+    \sa setDatabaseText(), driverText(), text()
 */
 
 QString QSqlError::databaseText() const
@@ -188,7 +188,7 @@ QString QSqlError::databaseText() const
 /*!
     Sets the database error text to the value of \a databaseText.
 
-    \sa databaseText() setDriverText() text()
+    \sa databaseText(), setDriverText(), text()
 */
 
 void QSqlError::setDatabaseText(const QString& databaseText)
@@ -245,7 +245,7 @@ void QSqlError::setNumber(int number)
     This is a convenience function that returns databaseText() and
     driverText() concatenated into a single string.
 
-    \sa driverText() databaseText()
+    \sa driverText(), databaseText()
 */
 
 QString QSqlError::text() const
@@ -261,7 +261,7 @@ QString QSqlError::text() const
     Returns true if an error is set, otherwise false.
 
     Example:
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqlerror.cpp 0
+    \snippet code/src_sql_kernel_qsqlerror.cpp 0
 
     \sa type()
 */

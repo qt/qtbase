@@ -213,7 +213,7 @@ QSqlRecord QSqlTableModelPrivate::primaryValues(int row) const
     lower-level QSqlQuery and can be used to provide data to view
     classes such as QTableView. For example:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 24
+    \snippet sqldatabase/sqldatabase.cpp 24
 
     We set the SQL table's name and the edit strategy, then we set up
     the labels displayed in the view header. The edit strategy
@@ -224,7 +224,7 @@ QSqlRecord QSqlTableModelPrivate::primaryValues(int row) const
     QSqlTableModel can also be used to access a database
     programmatically, without binding it to a view:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 21
+    \snippet sqldatabase/sqldatabase.cpp 21
 
     The code snippet above extracts the \c salary field from record 4 in
     the result set of the query \c{SELECT * from employee}.

@@ -189,7 +189,7 @@ bool QSqlRecord::operator==(const QSqlRecord &other) const
     the record. If \a index is out of bounds, an invalid QVariant
     is returned.
 
-    \sa fieldName() isNull()
+    \sa fieldName(), isNull()
 */
 
 QVariant QSqlRecord::value(int index) const
@@ -264,7 +264,7 @@ QSqlField QSqlRecord::field(const QString &name) const
 /*!
     Append a copy of field \a field to the end of the record.
 
-    \sa insert() replace() remove()
+    \sa insert(), replace(), remove()
 */
 
 void QSqlRecord::append(const QSqlField& field)
@@ -276,7 +276,7 @@ void QSqlRecord::append(const QSqlField& field)
 /*!
     Inserts the field \a field at position \a pos in the record.
 
-    \sa append() replace() remove()
+    \sa append(), replace(), remove()
  */
 void QSqlRecord::insert(int pos, const QSqlField& field)
 {
@@ -288,7 +288,7 @@ void QSqlRecord::insert(int pos, const QSqlField& field)
     Replaces the field at position \a pos with the given \a field. If
     \a pos is out of range, nothing happens.
 
-    \sa append() insert() remove()
+    \sa append(), insert(), remove()
 */
 
 void QSqlRecord::replace(int pos, const QSqlField& field)
@@ -304,7 +304,7 @@ void QSqlRecord::replace(int pos, const QSqlField& field)
     Removes the field at position \a pos. If \a pos is out of range,
     nothing happens.
 
-    \sa append() insert() replace()
+    \sa append(), insert(), replace()
 */
 
 void QSqlRecord::remove(int pos)
@@ -319,7 +319,7 @@ void QSqlRecord::remove(int pos)
 /*!
     Removes all the record's fields.
 
-    \sa clearValues() isEmpty()
+    \sa clearValues(), isEmpty()
 */
 
 void QSqlRecord::clear()
@@ -332,7 +332,7 @@ void QSqlRecord::clear()
     Returns true if there are no fields in the record; otherwise
     returns false.
 
-    \sa append() insert() clear()
+    \sa append(), insert(), clear()
 */
 
 bool QSqlRecord::isEmpty() const
@@ -523,11 +523,5 @@ QDebug operator<<(QDebug dbg, const QSqlRecord &r)
     return dbg;
 }
 #endif
-
-/*!
-    \fn int QSqlRecord::position(const QString& name) const
-
-    Use indexOf() instead.
-*/
 
 QT_END_NAMESPACE

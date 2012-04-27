@@ -111,7 +111,7 @@ void QSqlQueryModelPrivate::initColOffsets(int size)
     the lower-level QSqlQuery and can be used to provide data to
     view classes such as QTableView. For example:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 16
+    \snippet sqldatabase/sqldatabase.cpp 16
 
     We set the model's query, then we set up the labels displayed in
     the view header.
@@ -119,13 +119,13 @@ void QSqlQueryModelPrivate::initColOffsets(int size)
     QSqlQueryModel can also be used to access a database
     programmatically, without binding it to a view:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 21
+    \snippet sqldatabase/sqldatabase.cpp 21
 
     The code snippet above extracts the \c salary field from record 4 in
     the result set of the query \c{SELECT * from employee}. Assuming
     that \c salary is column 2, we can rewrite the last line as follows:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 22
+    \snippet sqldatabase/sqldatabase.cpp 22
 
     The model is read-only by default. To make it read-write, you
     must subclass it and reimplement setData() and flags(). Another
@@ -179,7 +179,7 @@ QSqlQueryModel::~QSqlQueryModel()
 
     To force fetching of the entire result set, you can use the following:
 
-    \snippet doc/src/snippets/code/src_sql_models_qsqlquerymodel.cpp 0
+    \snippet code/src_sql_models_qsqlquerymodel.cpp 0
 
     \a parent should always be an invalid QModelIndex.
 
@@ -394,7 +394,7 @@ void QSqlQueryModel::setQuery(const QSqlQuery &query)
     was an error setting the query.
 
     Example:
-    \snippet doc/src/snippets/code/src_sql_models_qsqlquerymodel.cpp 1
+    \snippet code/src_sql_models_qsqlquerymodel.cpp 1
 
     \sa query(), queryChange(), lastError()
 */
@@ -529,7 +529,7 @@ QSqlRecord QSqlQueryModel::record() const
     By default, inserted columns are empty. To fill them with data,
     reimplement data() and handle any inserted column separately:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 23
+    \snippet sqldatabase/sqldatabase.cpp 23
 
     \sa removeColumns()
 */

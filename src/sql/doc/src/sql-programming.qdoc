@@ -129,7 +129,7 @@
     following snippet shows how to create a \e{default} connection
     and then open it:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 26
+    \snippet sqldatabase/sqldatabase.cpp 26
 
     The first line creates the connection object, and the last line
     opens it for use. In between, we initialize some connection
@@ -150,7 +150,7 @@
     connection name. For example, here we establish two MySQL database
     connections named \c{"first"} and \c{"second"}:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 27
+    \snippet sqldatabase/sqldatabase.cpp 27
 
     After these connections have been initialized, \l{QSqlDatabase::}
     {open()} for each one to establish the live connections. If the
@@ -163,9 +163,9 @@
     connection name, it will return the default connection. For
     example:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 28
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 29
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 30
+    \snippet sqldatabase/sqldatabase.cpp 28
+    \snippet sqldatabase/sqldatabase.cpp 29
+    \snippet sqldatabase/sqldatabase.cpp 30
 
     To remove a database connection, first close the database using
     QSqlDatabase::close(), then remove it using the static method
@@ -195,7 +195,7 @@
     To execute an SQL statement, simply create a QSqlQuery object and
     call QSqlQuery::exec() like this:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 31
+    \snippet sqldatabase/sqldatabase.cpp 31
 
     The QSqlQuery constructor accepts an optional QSqlDatabase object
     that specifies which database connection to use. In the example
@@ -215,7 +215,7 @@
     to access the other records, until it returns false. Here's a
     typical loop that iterates over all the records in order:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 32
+    \snippet sqldatabase/sqldatabase.cpp 32
 
     The QSqlQuery::value() function returns the value of a field in
     the current record. Fields are specified as zero-based indexes.
@@ -243,7 +243,7 @@
     navigate to the last record and use the query's position to tell
     us how many records there are.
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 33
+    \snippet sqldatabase/sqldatabase.cpp 33
 
     If you iterate through a result set only using next() and seek()
     with positive values, you can call
@@ -257,7 +257,7 @@
     \c{SELECT}s. The following example inserts a record into a table
     using \c{INSERT}:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 34
+    \snippet sqldatabase/sqldatabase.cpp 34
 
     If you want to insert many records at the same time, it is often
     more efficient to separate the query from the actual values being
@@ -265,11 +265,11 @@
     placeholder syntaxes: named binding and positional binding.
     Here's an example of named binding:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 35
+    \snippet sqldatabase/sqldatabase.cpp 35
 
     Here's an example of positional binding:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 36
+    \snippet sqldatabase/sqldatabase.cpp 36
 
     Both syntaxes work with all database drivers provided by Qt. If
     the database supports the syntax natively, Qt simply forwards the
@@ -289,14 +289,14 @@
 
     Updating a record is similar to inserting it into a table:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 37
+    \snippet sqldatabase/sqldatabase.cpp 37
 
     You can also use named or positional binding to associate
     parameters to actual values.
 
     Finally, here's an example of a \c DELETE statement:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 38
+    \snippet sqldatabase/sqldatabase.cpp 38
 
     \section2 Transactions
 
@@ -311,7 +311,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 39
+    \snippet sqldatabase/sqldatabase.cpp 39
 
     Transactions can be used to ensure that a complex operation is
     atomic (for example, looking up a foreign key and creating a
@@ -364,7 +364,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 40
+    \snippet sqldatabase/sqldatabase.cpp 40
 
     After setting the query using QSqlQueryModel::setQuery(), you can
     use QSqlQueryModel::record(int) to access the individual records.
@@ -383,7 +383,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 41
+    \snippet sqldatabase/sqldatabase.cpp 41
 
     QSqlTableModel is a high-level alternative to QSqlQuery for
     navigating and modifying individual SQL tables. It typically
@@ -394,7 +394,7 @@
     following code will increase every employee's salary by 10 per
     cent:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 42
+    \snippet sqldatabase/sqldatabase.cpp 42
 
     You can also use QSqlTableModel::data() and
     QSqlTableModel::setData(), which are inherited from
@@ -402,16 +402,16 @@
     to update a record using
     \l{QSqlTableModel::setData()}{setData()}:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 43
+    \snippet sqldatabase/sqldatabase.cpp 43
 
     Here's how to insert a row and populate it:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 44
+    \snippet sqldatabase/sqldatabase.cpp 44
 
     Here's how to delete five consecutive rows:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 45
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 46
+    \snippet sqldatabase/sqldatabase.cpp 45
+    \snippet sqldatabase/sqldatabase.cpp 46
 
     The first argument to QSqlTableModel::removeRows() is the index
     of the first row to delete.
@@ -463,10 +463,10 @@
     The following code snippet shows how the QSqlRelationalTableModel
     was set up:
 
-    \snippet examples/sql/relationaltablemodel/relationaltablemodel.cpp 0
+    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 0
     \codeline
-    \snippet examples/sql/relationaltablemodel/relationaltablemodel.cpp 1
-    \snippet examples/sql/relationaltablemodel/relationaltablemodel.cpp 2
+    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 1
+    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 2
 
     See the QSqlRelationalTableModel documentation for details.
 */
@@ -490,15 +490,15 @@
 
     The following example creates a view based on an SQL data model:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 17
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 18
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 19
+    \snippet sqldatabase/sqldatabase.cpp 17
+    \snippet sqldatabase/sqldatabase.cpp 18
+    \snippet sqldatabase/sqldatabase.cpp 19
 
     If the model is a read-write model (e.g., QSqlTableModel), the
     view lets the user edit the fields. You can disable this by
     calling
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 20
+    \snippet sqldatabase/sqldatabase.cpp 20
 
     You can use the same model as a data source for multiple views.
     If the user edits the model through one of the views, the other
@@ -511,7 +511,7 @@
     model. The header's labels default to the table's field names.
     For example:
 
-    \snippet examples/sql/relationaltablemodel/relationaltablemodel.cpp 3
+    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 3
 
     QTableView also has a vertical header on the left with numbers
     identifying the rows. If you insert rows programmatically using
@@ -545,13 +545,13 @@
     read-write. The following two functions make fields 1 and 2 of a
     query model editable:
 
-    \snippet examples/sql/querymodel/editablesqlmodel.cpp 0
+    \snippet sql/querymodel/editablesqlmodel.cpp 0
     \codeline
-    \snippet examples/sql/querymodel/editablesqlmodel.cpp 1
+    \snippet sql/querymodel/editablesqlmodel.cpp 1
 
     The setFirstName() helper function is defined as follows:
 
-    \snippet examples/sql/querymodel/editablesqlmodel.cpp 2
+    \snippet sql/querymodel/editablesqlmodel.cpp 2
 
     The setLastName() function is similar. See the
     \l{sql/querymodel}{Query Model} example for the complete source code.

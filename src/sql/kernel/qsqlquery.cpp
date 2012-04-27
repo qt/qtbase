@@ -148,7 +148,7 @@ QSqlQueryPrivate::~QSqlQueryPrivate()
 
     For example:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 7
+    \snippet sqldatabase/sqldatabase.cpp 7
 
     To access the data returned by a query, use value(int). Each
     field in the data returned by a \c SELECT statement is accessed
@@ -161,7 +161,7 @@ QSqlQueryPrivate::~QSqlQueryPrivate()
     explained below). To convert a field name into an index, use
     record().\l{QSqlRecord::indexOf()}{indexOf()}, for example:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 8
+    \snippet sqldatabase/sqldatabase.cpp 8
 
     QSqlQuery supports prepared query execution and the binding of
     parameter values to placeholders. Some databases don't support
@@ -190,19 +190,19 @@ QSqlQueryPrivate::~QSqlQueryPrivate()
 
     \b{Named binding using named placeholders:}
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 9
+    \snippet sqldatabase/sqldatabase.cpp 9
 
     \b{Positional binding using named placeholders:}
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 10
+    \snippet sqldatabase/sqldatabase.cpp 10
 
     \b{Binding values using positional placeholders (version 1):}
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 11
+    \snippet sqldatabase/sqldatabase.cpp 11
 
     \b{Binding values using positional placeholders (version 2):}
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 12
+    \snippet sqldatabase/sqldatabase.cpp 12
 
     \b{Binding values to a stored procedure:}
 
@@ -210,7 +210,7 @@ QSqlQueryPrivate::~QSqlQueryPrivate()
     it a character through its in parameter, and taking its result in
     the out parameter.
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 13
+    \snippet sqldatabase/sqldatabase.cpp 13
 
     Note that unbound parameters will retain their values.
 
@@ -343,7 +343,7 @@ bool QSqlQuery::isNull(int field) const
 
   Example:
 
-  \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 34
+  \snippet sqldatabase/sqldatabase.cpp 34
 
   \sa isActive(), isValid(), next(), previous(), first(), last(),
   seek()
@@ -384,7 +384,7 @@ bool QSqlQuery::exec(const QString& query)
     The fields are numbered from left to right using the text of the
     \c SELECT statement, e.g. in
 
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqlquery.cpp 0
+    \snippet code/src_sql_kernel_qsqlquery.cpp 0
 
     field 0 is \c forename and field 1 is \c
     surname. Using \c{SELECT *} is not recommended because the order
@@ -394,7 +394,7 @@ bool QSqlQuery::exec(const QString& query)
     exist, if the query is inactive, or if the query is positioned on
     an invalid record.
 
-    \sa previous() next() first() last() seek() isActive() isValid()
+    \sa previous(), next(), first(), last(), seek(), isActive(), isValid()
 */
 
 QVariant QSqlQuery::value(int index) const
@@ -411,7 +411,7 @@ QVariant QSqlQuery::value(int index) const
     function returns QSql::BeforeFirstRow or
     QSql::AfterLastRow, which are special negative values.
 
-    \sa previous() next() first() last() seek() isActive() isValid()
+    \sa previous(), next(), first(), last(), seek(), isActive(), isValid()
 */
 
 int QSqlQuery::at() const
@@ -495,7 +495,7 @@ const QSqlResult* QSqlQuery::result() const
 
   \endlist
 
-  \sa next() previous() first() last() at() isActive() isValid()
+  \sa next(), previous(), first(), last(), at(), isActive(), isValid()
 */
 bool QSqlQuery::seek(int index, bool relative)
 {
@@ -587,7 +587,7 @@ bool QSqlQuery::seek(int index, bool relative)
   the last record and false is returned. If the record is successfully
   retrieved, true is returned.
 
-  \sa previous() first() last() seek() at() isActive() isValid()
+  \sa previous(), first(), last(), seek(), at(), isActive(), isValid()
 */
 bool QSqlQuery::next()
 {
@@ -636,7 +636,7 @@ bool QSqlQuery::next()
   before the first record and false is returned. If the record is
   successfully retrieved, true is returned.
 
-  \sa next() first() last() seek() at() isActive() isValid()
+  \sa next(), first(), last(), seek(), at(), isActive(), isValid()
 */
 bool QSqlQuery::previous()
 {
@@ -671,7 +671,7 @@ bool QSqlQuery::previous()
   return false.  Returns true if successful. If unsuccessful the query
   position is set to an invalid position and false is returned.
 
-  \sa next() previous() last() seek() at() isActive() isValid()
+  \sa next(), previous(), last(), seek(), at(), isActive(), isValid()
  */
 bool QSqlQuery::first()
 {
@@ -695,7 +695,7 @@ bool QSqlQuery::first()
   Returns true if successful. If unsuccessful the query position is
   set to an invalid position and false is returned.
 
-  \sa next() previous() first() seek() at() isActive() isValid()
+  \sa next(), previous(), first(), seek(), at(), isActive(), isValid()
 */
 
 bool QSqlQuery::last()
@@ -717,7 +717,7 @@ bool QSqlQuery::last()
   To determine the number of rows affected by a non-\c SELECT
   statement, use numRowsAffected().
 
-  \sa isActive() numRowsAffected() QSqlDriver::hasFeature()
+  \sa isActive(), numRowsAffected(), QSqlDriver::hasFeature()
 */
 int QSqlQuery::size() const
 {
@@ -732,7 +732,7 @@ int QSqlQuery::size() const
   statements, the value is undefined; use size() instead. If the query
   is not \l{isActive()}{active}, -1 is returned.
 
-  \sa size() QSqlDriver::hasFeature()
+  \sa size(), QSqlDriver::hasFeature()
 */
 
 int QSqlQuery::numRowsAffected() const
@@ -850,7 +850,7 @@ void QSqlQuery::setForwardOnly(bool forward)
   Since the order of the columns is not defined, QSqlRecord::indexOf()
   is used to obtain the index of a column.
 
-  \snippet doc/src/snippets/code/src_sql_kernel_qsqlquery.cpp 1
+  \snippet code/src_sql_kernel_qsqlquery.cpp 1
 
   \sa value()
 */
@@ -895,7 +895,7 @@ void QSqlQuery::clear()
 
   Example:
 
-  \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 9
+  \snippet sqldatabase/sqldatabase.cpp 9
 
   \sa exec(), bindValue(), addBindValue()
 */
@@ -937,7 +937,7 @@ bool QSqlQuery::prepare(const QString& query)
   Note that the last error for this query is reset when exec() is
   called.
 
-  \sa prepare() bindValue() addBindValue() boundValue() boundValues()
+  \sa prepare(), bindValue(), addBindValue(), boundValue(), boundValues()
 */
 bool QSqlQuery::exec()
 {
@@ -968,11 +968,11 @@ bool QSqlQuery::exec()
 
   Example:
 
-  \snippet doc/src/snippets/code/src_sql_kernel_qsqlquery.cpp 2
+  \snippet code/src_sql_kernel_qsqlquery.cpp 2
 
   The example above inserts four new rows into \c myTable:
 
-  \snippet doc/src/snippets/code/src_sql_kernel_qsqlquery.cpp 3
+  \snippet code/src_sql_kernel_qsqlquery.cpp 3
 
   To bind NULL values, a null QVariant of the relevant type has to be
   added to the bound QVariantList; for example, \c
@@ -1021,7 +1021,7 @@ bool QSqlQuery::execBatch(BatchExecutionMode mode)
   \endcode
   Binding to name will bind to the first :name, but not the second.
 
-  \sa addBindValue(), prepare(), exec(), boundValue() boundValues()
+  \sa addBindValue(), prepare(), exec(), boundValue(), boundValues()
 */
 void QSqlQuery::bindValue(const QString& placeholder, const QVariant& val,
                           QSql::ParamType paramType
@@ -1051,7 +1051,7 @@ void QSqlQuery::bindValue(int pos, const QVariant& val, QSql::ParamType paramTyp
   To bind a NULL value, use a null QVariant; for example, use \c
   {QVariant(QVariant::String)} if you are binding a string.
 
-  \sa bindValue(), prepare(), exec(), boundValue() boundValues()
+  \sa bindValue(), prepare(), exec(), boundValue(), boundValues()
 */
 void QSqlQuery::addBindValue(const QVariant& val, QSql::ParamType paramType)
 {
@@ -1061,7 +1061,7 @@ void QSqlQuery::addBindValue(const QVariant& val, QSql::ParamType paramType)
 /*!
   Returns the value for the \a placeholder.
 
-  \sa boundValues() bindValue() addBindValue()
+  \sa boundValues(), bindValue(), addBindValue()
 */
 QVariant QSqlQuery::boundValue(const QString& placeholder) const
 {
@@ -1082,13 +1082,13 @@ QVariant QSqlQuery::boundValue(int pos) const
   With named binding, the bound values can be examined in the
   following ways:
 
-  \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 14
+  \snippet sqldatabase/sqldatabase.cpp 14
 
   With positional binding, the code becomes:
 
-  \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 15
+  \snippet sqldatabase/sqldatabase.cpp 15
 
-  \sa boundValue() bindValue() addBindValue()
+  \sa boundValue(), bindValue(), addBindValue()
 */
 QMap<QString,QVariant> QSqlQuery::boundValues() const
 {
@@ -1116,12 +1116,6 @@ QString QSqlQuery::executedQuery() const
 {
     return d->sqlResult->executedQuery();
 }
-
-/*!
-  \fn bool QSqlQuery::prev()
-
-  Use previous() instead.
-*/
 
 /*!
   Returns the object ID of the most recent inserted row if the
@@ -1190,7 +1184,7 @@ QSql::NumericalPrecisionPolicy QSqlQuery::numericalPrecisionPolicy() const
     
   Sets the query to inactive. Bound values retain their values.
 
-  \sa prepare() exec() isActive()
+  \sa prepare(), exec(), isActive()
 */
 void QSqlQuery::finish()
 {
@@ -1230,7 +1224,8 @@ void QSqlQuery::finish()
   databases may have restrictions on which statements are allowed to
   be used in a SQL batch.
 
-  \sa QSqlDriver::hasFeature() setForwardOnly() next() isSelect() numRowsAffected() isActive() lastError()
+  \sa QSqlDriver::hasFeature(), setForwardOnly(), next(), isSelect(),
+      numRowsAffected(), isActive(), lastError()
 */
 bool QSqlQuery::nextResult()
 {

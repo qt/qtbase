@@ -390,7 +390,7 @@ void QSqlDatabasePrivate::disable()
     snippet shows how to create and open a default connection to a
     PostgreSQL database:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 0
+    \snippet sqldatabase/sqldatabase.cpp 0
 
     Once the QSqlDatabase object has been created, set the connection
     parameters with setDatabaseName(), setUserName(), setPassword(),
@@ -403,7 +403,7 @@ void QSqlDatabasePrivate::disable()
     {addDatabase()}. Subsequently, you can get the default connection
     by calling database() without the connection name argument:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 1
+    \snippet sqldatabase/sqldatabase.cpp 1
 
     QSqlDatabase is a value class. Changes made to a database
     connection via one instance of QSqlDatabase will affect other
@@ -440,7 +440,7 @@ void QSqlDatabasePrivate::disable()
     If you have created your own custom driver, you must register it
     with registerSqlDriver().
 
-    \sa QSqlDriver, QSqlQuery, {QtSql Module}, {Threads and the SQL Module}
+    \sa QSqlDriver, QSqlQuery, {Qt SQL Module}, {Threads and the SQL Module}
 */
 
 /*! \fn QSqlDatabase QSqlDatabase::addDatabase(const QString &type, const QString &connectionName)
@@ -472,7 +472,7 @@ void QSqlDatabasePrivate::disable()
     setHostName(), setPort(), and setConnectOptions(), and, finally,
     open().
 
-    \sa database() removeDatabase() {Threads and the SQL Module}
+    \sa database(), removeDatabase(), {Threads and the SQL Module}
 */
 QSqlDatabase QSqlDatabase::addDatabase(const QString &type, const QString &connectionName)
 {
@@ -492,7 +492,7 @@ QSqlDatabase QSqlDatabase::addDatabase(const QString &type, const QString &conne
     connectionName does not exist in the list of databases, an invalid
     connection is returned.
 
-    \sa isOpen() {Threads and the SQL Module}
+    \sa isOpen(), {Threads and the SQL Module}
 */
 
 QSqlDatabase QSqlDatabase::database(const QString& connectionName, bool open)
@@ -512,11 +512,11 @@ QSqlDatabase QSqlDatabase::database(const QString& connectionName, bool open)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqldatabase.cpp 0
+    \snippet code/src_sql_kernel_qsqldatabase.cpp 0
 
     The correct way to do it:
 
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqldatabase.cpp 1
+    \snippet code/src_sql_kernel_qsqldatabase.cpp 1
 
     To remove the default connection, which may have been created with a
     call to addDatabase() not specifying a connection name, you can
@@ -524,7 +524,7 @@ QSqlDatabase QSqlDatabase::database(const QString& connectionName, bool open)
     the database returned by database(). Note that if a default database
     hasn't been created an invalid database will be returned.
 
-    \sa database() connectionName() {Threads and the SQL Module}
+    \sa database(), connectionName(), {Threads and the SQL Module}
 */
 
 void QSqlDatabase::removeDatabase(const QString& connectionName)
@@ -600,7 +600,7 @@ QStringList QSqlDatabase::drivers()
     and don't want to compile it as a plugin.
 
     Example:
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqldatabase.cpp 2
+    \snippet code/src_sql_kernel_qsqldatabase.cpp 2
 
     QSqlDatabase takes ownership of the \a creator pointer, so you
     mustn't delete it yourself.
@@ -831,8 +831,8 @@ QSqlQuery QSqlDatabase::exec(const QString & query) const
     values. Returns true on success; otherwise returns false. Error
     information can be retrieved using lastError().
 
-    \sa lastError() setDatabaseName() setUserName() setPassword()
-    \sa setHostName() setPort() setConnectOptions()
+    \sa lastError(), setDatabaseName(), setUserName(), setPassword(),
+        setHostName(), setPort(), setConnectOptions()
 */
 
 bool QSqlDatabase::open()
@@ -924,7 +924,7 @@ bool QSqlDatabase::transaction()
 
   Call lastError() to get information about errors.
 
-  \sa QSqlQuery::isActive() QSqlDriver::hasFeature() rollback()
+  \sa QSqlQuery::isActive(), QSqlDriver::hasFeature(), rollback()
 */
 bool QSqlDatabase::commit()
 {
@@ -945,7 +945,7 @@ bool QSqlDatabase::commit()
 
   Call lastError() to get information about errors.
 
-  \sa QSqlQuery::isActive() QSqlDriver::hasFeature() commit()
+  \sa QSqlQuery::isActive(), QSqlDriver::hasFeature(), commit()
 */
 bool QSqlDatabase::rollback()
 {
@@ -974,12 +974,12 @@ bool QSqlDatabase::rollback()
     connection string to open an \c .mdb file directly, instead of
     having to create a DSN entry in the ODBC manager:
 
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqldatabase.cpp 3
+    \snippet code/src_sql_kernel_qsqldatabase.cpp 3
 
     There is no default value.
 
-    \sa databaseName() setUserName() setPassword() setHostName()
-    \sa setPort() setConnectOptions() open()
+    \sa databaseName(), setUserName(), setPassword(), setHostName(),
+        setPort(), setConnectOptions(), open()
 */
 
 void QSqlDatabase::setDatabaseName(const QString& name)
@@ -996,8 +996,8 @@ void QSqlDatabase::setDatabaseName(const QString& name)
 
     There is no default value.
 
-    \sa userName() setDatabaseName() setPassword() setHostName()
-    \sa setPort() setConnectOptions() open()
+    \sa userName(), setDatabaseName(), setPassword(), setHostName(),
+        setPort(), setConnectOptions(), open()
 */
 
 void QSqlDatabase::setUserName(const QString& name)
@@ -1018,8 +1018,8 @@ void QSqlDatabase::setUserName(const QString& name)
     Qt. Use the open() call that takes a password as parameter to
     avoid this behavior.
 
-    \sa password() setUserName() setDatabaseName() setHostName()
-    \sa setPort() setConnectOptions() open()
+    \sa password(), setUserName(), setDatabaseName(), setHostName(),
+        setPort(), setConnectOptions(), open()
 */
 
 void QSqlDatabase::setPassword(const QString& password)
@@ -1036,8 +1036,8 @@ void QSqlDatabase::setPassword(const QString& password)
 
     There is no default value.
 
-    \sa hostName() setUserName() setPassword() setDatabaseName()
-    \sa setPort() setConnectOptions() open()
+    \sa hostName(), setUserName(), setPassword(), setDatabaseName(),
+        setPort(), setConnectOptions(), open()
 */
 
 void QSqlDatabase::setHostName(const QString& host)
@@ -1054,8 +1054,8 @@ void QSqlDatabase::setHostName(const QString& host)
 
     There is no default value.
 
-    \sa port() setUserName() setPassword() setHostName()
-    \sa setDatabaseName() setConnectOptions() open()
+    \sa port(), setUserName(), setPassword(), setHostName(),
+        setDatabaseName(), setConnectOptions(), open()
 */
 
 void QSqlDatabase::setPort(int port)
@@ -1130,7 +1130,7 @@ int QSqlDatabase::port() const
     Returns the database driver used to access the database
     connection.
 
-    \sa addDatabase() drivers()
+    \sa addDatabase(), drivers()
 */
 
 QSqlDriver* QSqlDatabase::driver() const
@@ -1278,7 +1278,7 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \endtable
 
     Examples:
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqldatabase.cpp 4
+    \snippet code/src_sql_kernel_qsqldatabase.cpp 4
 
     Refer to the client library documentation for more information
     about the different options.
@@ -1325,9 +1325,9 @@ bool QSqlDatabase::isDriverAvailable(const QString& name)
     application. For example, you can create a PostgreSQL connection
     with your own QPSQL driver like this:
 
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqldatabase.cpp 5
+    \snippet code/src_sql_kernel_qsqldatabase.cpp 5
     \codeline
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqldatabase.cpp 6
+    \snippet code/src_sql_kernel_qsqldatabase.cpp 6
 
     The above code sets up a PostgreSQL connection and instantiates a
     QPSQLDriver object. Next, addDatabase() is called to add the
@@ -1346,7 +1346,7 @@ bool QSqlDatabase::isDriverAvailable(const QString& name)
     client library. Make sure the client library is in your linker's
     search path, and add lines like these to your \c{.pro} file:
 
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqldatabase.cpp 7
+    \snippet code/src_sql_kernel_qsqldatabase.cpp 7
 
     The method described works for all the supplied drivers.  The only
     difference will be in the driver constructor arguments.  Here is a
@@ -1423,7 +1423,7 @@ QSqlDatabase QSqlDatabase::addDatabase(QSqlDriver* driver, const QString& connec
     Returns true if the QSqlDatabase has a valid driver.
 
     Example:
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqldatabase.cpp 8
+    \snippet code/src_sql_kernel_qsqldatabase.cpp 8
 */
 bool QSqlDatabase::isValid() const
 {

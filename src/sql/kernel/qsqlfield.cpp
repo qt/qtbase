@@ -113,21 +113,21 @@ public:
     Field data values are stored as QVariants. Using an incompatible
     type is not permitted. For example:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 2
+    \snippet sqldatabase/sqldatabase.cpp 2
 
     However, the field will attempt to cast certain data types to the
     field data type where possible:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 3
+    \snippet sqldatabase/sqldatabase.cpp 3
 
     QSqlField objects are rarely created explicitly in application
     code. They are usually accessed indirectly through \l{QSqlRecord}s
     that already contain a list of fields. For example:
 
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 4
+    \snippet sqldatabase/sqldatabase.cpp 4
     \dots
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 5
-    \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 6
+    \snippet sqldatabase/sqldatabase.cpp 5
+    \snippet sqldatabase/sqldatabase.cpp 6
 
     A QSqlField object can provide some meta-data about the field, for
     example, its name(), variant type(), length(), precision(),
@@ -157,7 +157,8 @@ public:
     Constructs an empty field called \a fieldName of variant type \a
     type.
 
-    \sa setRequiredStatus() setLength() setPrecision() setDefaultValue() setGenerated() setReadOnly()
+    \sa setRequiredStatus(), setLength(), setPrecision(), setDefaultValue(),
+        setGenerated(), setReadOnly()
 */
 QSqlField::QSqlField(const QString& fieldName, QVariant::Type type)
 {
@@ -216,7 +217,8 @@ QSqlField::~QSqlField()
 /*!
     Sets the required status of this field to \a required.
 
-    \sa requiredStatus() setType() setLength() setPrecision() setDefaultValue() setGenerated() setReadOnly()
+    \sa requiredStatus(), setType(), setLength(), setPrecision(),
+        setDefaultValue(), setGenerated(), setReadOnly()
 */
 void QSqlField::setRequiredStatus(RequiredStatus required)
 {
@@ -237,7 +239,8 @@ void QSqlField::setRequiredStatus(RequiredStatus required)
     maximum number of characters the string can hold; the meaning
     varies for other types.
 
-    \sa length() setType() setRequiredStatus() setPrecision() setDefaultValue() setGenerated() setReadOnly()
+    \sa length(), setType(), setRequiredStatus(), setPrecision(),
+        setDefaultValue(), setGenerated(), setReadOnly()
 */
 void QSqlField::setLength(int fieldLength)
 {
@@ -248,7 +251,8 @@ void QSqlField::setLength(int fieldLength)
 /*!
     Sets the field's \a precision. This only affects numeric fields.
 
-    \sa precision() setType() setRequiredStatus() setLength() setDefaultValue() setGenerated() setReadOnly()
+    \sa precision(), setType(), setRequiredStatus(), setLength(),
+        setDefaultValue(), setGenerated(), setReadOnly()
 */
 void QSqlField::setPrecision(int precision)
 {
@@ -259,7 +263,8 @@ void QSqlField::setPrecision(int precision)
 /*!
     Sets the default value used for this field to \a value.
 
-    \sa defaultValue() value() setType() setRequiredStatus() setLength() setPrecision() setGenerated() setReadOnly()
+    \sa defaultValue(), value(), setType(), setRequiredStatus(),
+        setLength(), setPrecision(), setGenerated(), setReadOnly()
 */
 void QSqlField::setDefaultValue(const QVariant &value)
 {
@@ -282,7 +287,8 @@ void QSqlField::setSqlType(int type)
     QSqlQueryModel and QSqlTableModel will generate SQL for this
     field.
 
-    \sa isGenerated() setType() setRequiredStatus() setLength() setPrecision() setDefaultValue() setReadOnly()
+    \sa isGenerated(), setType(), setRequiredStatus(), setLength(),
+        setPrecision(), setDefaultValue(), setReadOnly()
 */
 void QSqlField::setGenerated(bool gen)
 {
@@ -302,7 +308,7 @@ void QSqlField::setGenerated(bool gen)
 
     To set the value to NULL, use clear().
 
-    \sa value() isReadOnly() defaultValue()
+    \sa value(), isReadOnly(), defaultValue()
 */
 
 void QSqlField::setValue(const QVariant& value)
@@ -316,7 +322,7 @@ void QSqlField::setValue(const QVariant& value)
     Clears the value of the field and sets it to NULL.
     If the field is read-only, nothing happens.
 
-    \sa setValue() isReadOnly() requiredStatus()
+    \sa setValue(), isReadOnly(), requiredStatus()
 */
 
 void QSqlField::clear()
@@ -384,7 +390,8 @@ QVariant::Type QSqlField::type() const
 /*!
     Set's the field's variant type to \a type.
 
-    \sa type() setRequiredStatus() setLength() setPrecision() setDefaultValue() setGenerated() setReadOnly()
+    \sa type(), setRequiredStatus(), setLength(), setPrecision(),
+        setDefaultValue(), setGenerated(), setReadOnly()
 */
 void QSqlField::setType(QVariant::Type type)
 {
@@ -399,7 +406,8 @@ void QSqlField::setType(QVariant::Type type)
     Returns true if the field's value is read-only; otherwise returns
     false.
 
-    \sa setReadOnly() type() requiredStatus() length() precision() defaultValue() isGenerated()
+    \sa setReadOnly(), type(), requiredStatus(), length(), precision(),
+        defaultValue(), isGenerated()
 */
 bool QSqlField::isReadOnly() const
 { return d->ro; }
@@ -424,7 +432,8 @@ void QSqlField::detach()
     Returns true if this is a required field; otherwise returns false.
     An \c INSERT will fail if a required field does not have a value.
 
-    \sa setRequiredStatus() type() length() precision() defaultValue() isGenerated()
+    \sa setRequiredStatus(), type(), length(), precision(), defaultValue(),
+        isGenerated()
 */
 QSqlField::RequiredStatus QSqlField::requiredStatus() const
 {
@@ -437,7 +446,8 @@ QSqlField::RequiredStatus QSqlField::requiredStatus() const
     If the returned value is negative, it means that the information
     is not available from the database.
 
-    \sa setLength() type() requiredStatus() precision() defaultValue() isGenerated()
+    \sa setLength(), type(), requiredStatus(), precision(), defaultValue(),
+        isGenerated()
 */
 int QSqlField::length() const
 {
@@ -451,7 +461,8 @@ int QSqlField::length() const
     If the returned value is negative, it means that the information
     is not available from the database.
 
-    \sa setPrecision() type() requiredStatus() length() defaultValue() isGenerated()
+    \sa setPrecision(), type(), requiredStatus(), length(), defaultValue(),
+        isGenerated()
 */
 int QSqlField::precision() const
 {
@@ -461,7 +472,8 @@ int QSqlField::precision() const
 /*!
     Returns the field's default value (which may be NULL).
 
-    \sa setDefaultValue() type() requiredStatus() length() precision() isGenerated()
+    \sa setDefaultValue(), type(), requiredStatus(), length(), precision(),
+        isGenerated()
 */
 QVariant QSqlField::defaultValue() const
 {
@@ -485,7 +497,8 @@ int QSqlField::typeID() const
     Returns true if the field is generated; otherwise returns
     false.
 
-    \sa setGenerated() type() requiredStatus() length() precision() defaultValue()
+    \sa setGenerated(), type(), requiredStatus(), length(), precision(),
+        defaultValue()
 */
 bool QSqlField::isGenerated() const
 {
@@ -521,12 +534,6 @@ QDebug operator<<(QDebug dbg, const QSqlField &f)
     return dbg.space();
 }
 #endif
-
-/*!
-    \fn void QSqlField::setNull()
-
-    Use clear() instead.
-*/
 
 /*!
     Returns true if the value is auto-generated by the database,
