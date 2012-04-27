@@ -157,7 +157,7 @@ static inline uint detectProcessorFeatures()
 static int maxBasicCpuidSupported()
 {
 #if defined(Q_CC_GNU)
-    long tmp1;
+    qintptr tmp1;
 
 # ifdef Q_PROCESSOR_X86_32
     // check if the CPUID instruction is supported
@@ -198,7 +198,7 @@ static int maxBasicCpuidSupported()
 static void cpuidFeatures01(uint &ecx, uint &edx)
 {
 #if defined(Q_CC_GNU)
-    long tmp1;
+    qintptr tmp1;
     asm ("xchg " PICreg", %2\n"
          "cpuid\n"
          "xchg " PICreg", %2\n"
@@ -215,7 +215,7 @@ static void cpuidFeatures01(uint &ecx, uint &edx)
 static void cpuidFeatures07_00(uint &ebx)
 {
 #if defined(Q_CC_GNU)
-    unsigned long rbx; // in case it's 64-bit
+    quintptr rbx; // in case it's 64-bit
     asm ("xchg " PICreg", %0\n"
          "cpuid\n"
          "xchg " PICreg", %0\n"
