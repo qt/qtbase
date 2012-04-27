@@ -24,6 +24,11 @@ QMAKE_QT_CONFIG = $$[QT_HOST_DATA/get]/mkspecs/qconfig.pri
          include($$mod)
       }
    }
+   unset(QT_MODULE_INCLUDE_BASE)
+   unset(QT_MODULE_LIB_BASE)
+   unset(QT_MODULE_PLUGIN_BASE)
+   unset(QT_MODULE_BIN_BASE)
+   unset(QT_MODULE_IMPORT_BASE)
 }
 
 load(qt_functions)
