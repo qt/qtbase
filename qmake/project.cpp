@@ -580,15 +580,13 @@ QStringList QMakeProject::qmakeFeaturePaths()
     feature_roots += cached_qmakefeatures;
     if(prop)
         feature_roots += splitPathList(prop->value("QMAKEFEATURES"));
+    QStringList feature_bases;
     if (!cached_build_root.isEmpty())
-        for(QStringList::Iterator concat_it = concat.begin();
-            concat_it != concat.end(); ++concat_it)
-            feature_roots << (cached_build_root + (*concat_it));
+        feature_bases << cached_build_root;
     QStringList qmakepath = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEPATH")));
     qmakepath += cached_qmakepath;
     foreach (const QString &path, qmakepath)
-        foreach (const QString &cat, concat)
-            feature_roots << (path + mkspecs_concat + cat);
+        feature_bases << (path + mkspecs_concat);
     if (!real_spec.isEmpty()) {
         // The spec is already platform-dependent, so no subdirs here.
         feature_roots << real_spec + base_concat;
@@ -600,19 +598,17 @@ QStringList QMakeProject::qmakeFeaturePaths()
             const QString specrootpath = specrootdir.path();
             if (specrootpath.endsWith(mkspecs_concat)) {
                 if (QFile::exists(specrootpath + base_concat))
-                    for (QStringList::Iterator concat_it = concat.begin();
-                         concat_it != concat.end(); ++concat_it)
-                        feature_roots << (specrootpath + (*concat_it));
+                    feature_bases << specrootpath;
                 break;
             }
             specrootdir.cdUp();
         }
     }
-    for(QStringList::Iterator concat_it = concat.begin();
-        concat_it != concat.end(); ++concat_it)
-        feature_roots << (QLibraryInfo::rawLocation(QLibraryInfo::HostDataPath,
-                                                    QLibraryInfo::EffectivePaths) +
-                          mkspecs_concat + (*concat_it));
+    feature_bases << (QLibraryInfo::rawLocation(QLibraryInfo::HostDataPath,
+                                                QLibraryInfo::EffectivePaths) + mkspecs_concat);
+    foreach (const QString &fb, feature_bases)
+        foreach (const QString &cc, concat)
+            feature_roots << (fb + cc);
     feature_roots.removeDuplicates();
 
     QStringList ret;
