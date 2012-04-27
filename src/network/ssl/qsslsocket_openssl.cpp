@@ -1252,7 +1252,8 @@ bool QSslSocketBackendPrivate::startHandshake()
             bool fetchCertificate = true;
             for (int i=0; i< sslErrors.count(); i++) {
                 switch (sslErrors.at(i).error()) {
-                case QSslError::UnableToGetLocalIssuerCertificate:
+                case QSslError::UnableToGetLocalIssuerCertificate: // site presented intermediate cert, but root is unknown
+                case QSslError::SelfSignedCertificateInChain: // site presented a complete chain, but root is unknown
                     certToFetch = sslErrors.at(i).certificate();
                     break;
                 case QSslError::SelfSignedCertificate:
@@ -1344,6 +1345,7 @@ void QSslSocketBackendPrivate::_q_caRootLoaded(QSslCertificate cert, QSslCertifi
                 case QSslError::UnableToGetLocalIssuerCertificate:
                 case QSslError::CertificateUntrusted:
                 case QSslError::UnableToVerifyFirstCertificate:
+                case QSslError::SelfSignedCertificateInChain:
                     // error can be ignored if OS says the chain is trusted
                     sslErrors.removeAt(i);
                     break;
