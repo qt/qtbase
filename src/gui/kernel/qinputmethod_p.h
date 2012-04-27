@@ -69,6 +69,17 @@ public:
     {
         return inputMethod->d_func();
     }
+    inline void setInputItem(QObject *item)
+    {
+        Q_Q(QInputMethod);
+
+        if (inputItem.data() == item)
+            return;
+
+        inputItem = item;
+        emit q->inputItemChanged();
+    }
+
     void q_connectFocusObject();
     void q_checkFocusObject(QObject *object);
     bool objectAcceptsInputMethod(QObject *object);

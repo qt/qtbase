@@ -97,12 +97,7 @@ QObject *QInputMethod::inputItem() const
 void QInputMethod::setInputItem(QObject *inputItem)
 {
     Q_D(QInputMethod);
-
-    if (d->inputItem.data() == inputItem)
-        return;
-
-    d->inputItem = inputItem;
-    emit inputItemChanged();
+    d->setInputItem(inputItem);
 }
 
 /*!
@@ -299,7 +294,7 @@ void QInputMethod::update(Qt::InputMethodQueries queries)
     if (queries & Qt::ImEnabled) {
         QObject *focus = qApp->focusObject();
         bool enabled = d->objectAcceptsInputMethod(focus);
-        setInputItem(enabled ? focus : 0);
+        d->setInputItem(enabled ? focus : 0);
         QPlatformInputContextPrivate::setInputMethodAccepted(enabled);
     }
 
@@ -365,9 +360,8 @@ void QInputMethodPrivate::q_connectFocusObject()
 
 void QInputMethodPrivate::q_checkFocusObject(QObject *object)
 {
-    Q_Q(QInputMethod);
     bool enabled = objectAcceptsInputMethod(object);
-    q->setInputItem(enabled ? object : 0);
+    setInputItem(enabled ? object : 0);
 }
 
 bool QInputMethodPrivate::objectAcceptsInputMethod(QObject *object)
