@@ -78,11 +78,12 @@ QPaintDevice *QWindowsBackingStore::paintDevice()
 void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
                                         const QPoint &offset)
 {
+    Q_ASSERT(window);
     // TODO: Prepare paint for translucent windows.
     const QRect br = region.boundingRect();
     if (QWindowsContext::verboseBackingStore > 1)
         qDebug() << __FUNCTION__ << window << offset << br;
-    QWindowsWindow *rw = rasterWindow();
+    QWindowsWindow *rw = QWindowsWindow::baseWindowOf(window);
     const HDC dc = rw->getDC();
     if (!dc) {
         qErrnoWarning("%s: GetDC failed", __FUNCTION__);
