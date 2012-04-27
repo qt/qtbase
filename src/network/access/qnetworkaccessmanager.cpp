@@ -1018,9 +1018,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
                 d->initializeSession = false;
         }
     }
-
-    if (d->networkSession)
-        d->networkSession->setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), -1);
 #endif
 
     QNetworkRequest request = req;
@@ -1113,8 +1110,11 @@ void QNetworkAccessManagerPrivate::_q_replyFinished()
         emit q->finished(reply);
 
 #ifndef QT_NO_BEARERMANAGEMENT
+    // If there are no active requests, release our reference to the network session.
+    // It will not be destroyed immediately, but rather when the connection cache is flushed
+    // after 2 minutes.
     if (networkSession && q->findChildren<QNetworkReply *>().count() == 1)
-        networkSession->setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), 120000);
+        networkSession.clear();
 #endif
 }
 
