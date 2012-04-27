@@ -119,7 +119,7 @@ enum TestFunc { T_REQUIRES=1, T_GREATERTHAN, T_LESSTHAN, T_EQUALS,
                 T_EXISTS, T_EXPORT, T_CLEAR, T_UNSET, T_EVAL, T_CONFIG, T_SYSTEM,
                 T_RETURN, T_BREAK, T_NEXT, T_DEFINED, T_CONTAINS, T_INFILE,
                 T_COUNT, T_ISEMPTY, T_INCLUDE, T_LOAD, T_DEBUG, T_ERROR,
-                T_MESSAGE, T_WARNING, T_IF, T_OPTION, T_CACHE };
+                T_MESSAGE, T_WARNING, T_IF, T_OPTION, T_CACHE, T_WRITE_FILE };
 QHash<QString, TestFunc> qmake_testFunctions()
 {
     static QHash<QString, TestFunc> *qmake_test_functions = 0;
@@ -155,6 +155,7 @@ QHash<QString, TestFunc> qmake_testFunctions()
         qmake_test_functions->insert("warning", T_WARNING);
         qmake_test_functions->insert("option", T_OPTION);
         qmake_test_functions->insert("cache", T_CACHE);
+        qmake_test_functions->insert("write_file", T_WRITE_FILE);
     }
     return *qmake_test_functions;
 }
@@ -1889,6 +1890,11 @@ writeFile(const QString &name, QIODevice::OpenMode mode, const QString &contents
 {
     QByteArray bytes = contents.toLocal8Bit();
     QFile cfile(name);
+    if (!(mode & QIODevice::Append) && cfile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        if (cfile.readAll() == bytes)
+            return true;
+        cfile.close();
+    }
     if (!cfile.open(mode | QIODevice::WriteOnly | QIODevice::Text)) {
         *errStr = cfile.errorString();
         return false;
@@ -3037,6 +3043,37 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
 #else
             exit(2);
 #endif
+        }
+        return true; }
+    case T_WRITE_FILE: {
+        if (args.count() > 3) {
+            fprintf(stderr, "%s:%d: write_file(name, [content var, [append]]) requires one to three arguments.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+            return false;
+        }
+        QIODevice::OpenMode mode = QIODevice::Truncate;
+        QString contents;
+        if (args.count() >= 2) {
+            QStringList vals = values(args.at(1), place);
+            if (!vals.isEmpty())
+                contents = vals.join(QLatin1String("\n")) + QLatin1Char('\n');
+            if (args.count() >= 3)
+                if (!args.at(2).compare(QLatin1String("append"), Qt::CaseInsensitive))
+                    mode = QIODevice::Append;
+        }
+        QFileInfo qfi(args.at(0));
+        if (!QDir::current().mkpath(qfi.path())) {
+            fprintf(stderr, "%s:%d: ERROR creating directory %s\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    qfi.path().toLatin1().constData());
+            return false;
+        }
+        QString errStr;
+        if (!writeFile(args.at(0), mode, contents, &errStr)) {
+            fprintf(stderr, "%s:%d ERROR writing %s: %s\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    args.at(0).toLatin1().constData(), errStr.toLatin1().constData());
+            return false;
         }
         return true; }
     default:

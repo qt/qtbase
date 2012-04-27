@@ -84,4 +84,18 @@ myTestFunction("oink baa moo")
      message("FAILED: myTestFunction: $$RESULT")
 }
 
-
+moo = "this is a test" "for real"
+fn = $$OUT_PWD/testdir/afile
+write_file($$fn, moo)|message("FAILED: write_file() failed")
+exists($$fn)|message("FAILED: write_file() didn't write anything")
+mooout = $$cat($$fn, line)
+equals(moo, $$mooout)|message("FAILED: write_file() wrote something wrong")
+moo += "another line"
+write_file($$fn, moo)|message("FAILED: write_file() failed (take 2)")
+mooout = $$cat($$fn, line)
+equals(moo, $$mooout)|message("FAILED: write_file() wrote something wrong (take 2)")
+mooadd = "yet another line"
+write_file($$fn, mooadd, append)|message("FAILED: write_file() failed (append)")
+moo += $$mooadd
+mooout = $$cat($$fn, line)
+equals(moo, $$mooout)|message("FAILED: write_file() wrote something wrong when appending")
