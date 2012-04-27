@@ -393,13 +393,17 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                 engine->moveToThread(bearerThread);
 
                 connect(engine, SIGNAL(updateCompleted()),
-                        this, SLOT(updateConfigurations()));
+                        this, SLOT(updateConfigurations()),
+                        Qt::QueuedConnection);
                 connect(engine, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
-                        this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
+                        this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)),
+                        Qt::QueuedConnection);
                 connect(engine, SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
-                        this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
+                        this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)),
+                        Qt::QueuedConnection);
                 connect(engine, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
-                        this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
+                        this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)),
+                        Qt::QueuedConnection);
             }
         }
 
