@@ -95,6 +95,6 @@ expect_pass(pass8)
 
 # If QtDBus has been installed then run the tests for its macros.
 find_package(Qt5DBus QUIET)
-if (Qt5DBus_FOUND)
+if (Qt5DBus_FOUND AND NOT APPLE)
     expect_pass(pass9)
 endif()

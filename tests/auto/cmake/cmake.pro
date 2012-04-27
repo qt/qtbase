@@ -4,8 +4,6 @@ CMAKE_VERSION = $$system(cmake --version)
 # Cause make to do nothing.
 TEMPLATE = subdirs
 
-mac:CONFIG+=insignificant_test
-
 check.commands =
 isEmpty(CMAKE_VERSION) {
     message("cmake executable not found. Not running CMake unit tests")
