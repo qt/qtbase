@@ -119,7 +119,7 @@ enum TestFunc { T_REQUIRES=1, T_GREATERTHAN, T_LESSTHAN, T_EQUALS,
                 T_EXISTS, T_EXPORT, T_CLEAR, T_UNSET, T_EVAL, T_CONFIG, T_SYSTEM,
                 T_RETURN, T_BREAK, T_NEXT, T_DEFINED, T_CONTAINS, T_INFILE,
                 T_COUNT, T_ISEMPTY, T_INCLUDE, T_LOAD, T_DEBUG, T_ERROR,
-                T_MESSAGE, T_WARNING, T_IF, T_OPTION };
+                T_MESSAGE, T_WARNING, T_IF, T_OPTION, T_CACHE };
 QHash<QString, TestFunc> qmake_testFunctions()
 {
     static QHash<QString, TestFunc> *qmake_test_functions = 0;
@@ -154,6 +154,7 @@ QHash<QString, TestFunc> qmake_testFunctions()
         qmake_test_functions->insert("message", T_MESSAGE);
         qmake_test_functions->insert("warning", T_WARNING);
         qmake_test_functions->insert("option", T_OPTION);
+        qmake_test_functions->insert("cache", T_CACHE);
     }
     return *qmake_test_functions;
 }
@@ -166,6 +167,16 @@ struct parser_info {
 
 static QString project_root;
 static QString project_build_root;
+
+static QStringList *all_feature_roots[2] = { 0, 0 };
+
+static void
+invalidateFeatureRoots()
+{
+    for (int i = 0; i < 2; i++)
+        if (all_feature_roots[i])
+            all_feature_roots[i]->clear();
+}
 
 static QString remove_quotes(const QString &arg)
 {
@@ -1673,12 +1684,13 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
             file += Option::prf_ext;
         validateModes(); // init dir_sep
         if(file.indexOf(QLatin1Char('/')) == -1 || !QFile::exists(file)) {
-            static QStringList *all_feature_roots[2] = { 0, 0 };
             QStringList *&feature_roots = all_feature_roots[host_build];
             if(!feature_roots) {
-                feature_roots = new QStringList(qmake_feature_paths(prop, host_build));
+                feature_roots = new QStringList;
                 qmakeAddCacheClear(qmakeDeleteCacheClear<QStringList>, (void**)&feature_roots);
             }
+            if (feature_roots->isEmpty())
+                *feature_roots = qmake_feature_paths(prop, host_build);
             debug_msg(2, "Looking for feature '%s' in (%s)", file.toLatin1().constData(),
 			feature_roots->join("::").toLatin1().constData());
             int start_root = 0;
@@ -1795,6 +1807,99 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
     if(!parsed)
         return IncludeParseFailure;
     return IncludeSuccess;
+}
+
+static void
+subAll(QStringList *val, const QStringList &diffval)
+{
+    foreach (const QString &dv, diffval)
+        val->removeAll(dv);
+}
+
+static QString
+quoteValue(const QString &val)
+{
+    QString ret;
+    ret.reserve(val.length());
+    bool quote = val.isEmpty();
+    bool escaping = false;
+    for (int i = 0, l = val.length(); i < l; i++) {
+        QChar c = val.unicode()[i];
+        ushort uc = c.unicode();
+        if (uc < 32) {
+            if (!escaping) {
+                escaping = true;
+                ret += QLatin1String("$$escape_expand(");
+            }
+            switch (uc) {
+            case '\r':
+                ret += QLatin1String("\\\\r");
+                break;
+            case '\n':
+                ret += QLatin1String("\\\\n");
+                break;
+            case '\t':
+                ret += QLatin1String("\\\\t");
+                break;
+            default:
+                ret += QString::fromLatin1("\\\\x%1").arg(uc, 2, 16, QLatin1Char('0'));
+                break;
+            }
+        } else {
+            if (escaping) {
+                escaping = false;
+                ret += QLatin1Char(')');
+            }
+            switch (uc) {
+            case '\\':
+                ret += QLatin1String("\\\\");
+                break;
+            case '"':
+                ret += QLatin1String("\\\"");
+                break;
+            case '\'':
+                ret += QLatin1String("\\'");
+                break;
+            case '$':
+                ret += QLatin1String("\\$");
+                break;
+            case '#':
+                ret += QLatin1String("$${LITERAL_HASH}");
+                break;
+            case 32:
+                quote = true;
+                // fallthrough
+            default:
+                ret += c;
+                break;
+            }
+        }
+    }
+    if (escaping)
+        ret += QLatin1Char(')');
+    if (quote) {
+        ret.prepend(QLatin1Char('"'));
+        ret.append(QLatin1Char('"'));
+    }
+    return ret;
+}
+
+static bool
+writeFile(const QString &name, QIODevice::OpenMode mode, const QString &contents, QString *errStr)
+{
+    QByteArray bytes = contents.toLocal8Bit();
+    QFile cfile(name);
+    if (!cfile.open(mode | QIODevice::WriteOnly | QIODevice::Text)) {
+        *errStr = cfile.errorString();
+        return false;
+    }
+    cfile.write(bytes);
+    cfile.close();
+    if (cfile.error() != QFile::NoError) {
+        *errStr = cfile.errorString();
+        return false;
+    }
+    return true;
 }
 
 static QByteArray
@@ -2820,6 +2925,120 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
             return false;
         }
         return true;
+    case T_CACHE: {
+        if (args.count() > 3) {
+            fprintf(stderr, "%s:%d: cache(var, [set|add|sub] [transient], [srcvar]) requires one to three arguments.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+            return false;
+        }
+        bool persist = true;
+        enum { CacheSet, CacheAdd, CacheSub } mode = CacheSet;
+        QString srcvar;
+        if (args.count() >= 2) {
+            foreach (const QString &opt, split_value_list(args.at(1))) {
+                if (opt == QLatin1String("transient")) {
+                    persist = false;
+                } else if (opt == QLatin1String("set")) {
+                    mode = CacheSet;
+                } else if (opt == QLatin1String("add")) {
+                    mode = CacheAdd;
+                } else if (opt == QLatin1String("sub")) {
+                    mode = CacheSub;
+                } else {
+                    fprintf(stderr, "%s:%d: cache(): invalid flag %s.\n",
+                            parser.file.toLatin1().constData(), parser.line_no,
+                            opt.toLatin1().constData());
+                    return false;
+                }
+            }
+            if (args.count() >= 3) {
+                srcvar = args.at(2);
+            } else if (mode != CacheSet) {
+                fprintf(stderr, "%s:%d: cache(): modes other than 'set' require a source variable.\n",
+                        parser.file.toLatin1().constData(), parser.line_no);
+                return false;
+            }
+        }
+        QString varstr;
+        QString dstvar = args.at(0);
+        if (!dstvar.isEmpty()) {
+            if (srcvar.isEmpty())
+                srcvar = dstvar;
+            if (!place.contains(srcvar)) {
+                fprintf(stderr, "%s:%d: variable %s is not defined.\n",
+                        parser.file.toLatin1().constData(), parser.line_no,
+                        srcvar.toLatin1().constData());
+                return false;
+            }
+            // The current ("native") value can differ from the cached value, e.g., the current
+            // CONFIG will typically have more values than the cached one. Therefore we deal with
+            // them separately.
+            const QStringList diffval = values(srcvar, place);
+            const QStringList oldval = base_vars.value(dstvar);
+            QStringList newval;
+            if (mode == CacheSet) {
+                newval = diffval;
+            } else {
+                newval = oldval;
+                if (mode == CacheAdd)
+                    newval += diffval;
+                else
+                    subAll(&newval, diffval);
+            }
+            // We assume that whatever got the cached value to be what it is now will do so
+            // the next time as well, so it is OK that the early exit here will skip the
+            // persisting as well.
+            if (oldval == newval)
+                return true;
+            base_vars[dstvar] = newval;
+            if (!persist)
+                return true;
+            varstr = dstvar;
+            if (mode == CacheAdd)
+                varstr += QLatin1String(" +=");
+            else if (mode == CacheSub)
+                varstr += QLatin1String(" -=");
+            else
+                varstr += QLatin1String(" =");
+            if (diffval.count() == 1) {
+                varstr += QLatin1Char(' ');
+                varstr += quoteValue(diffval.at(0));
+            } else if (!diffval.isEmpty()) {
+                foreach (const QString &vval, diffval) {
+                    varstr += QLatin1String(" \\\n    ");
+                    varstr += quoteValue(vval);
+                }
+            }
+            varstr += QLatin1Char('\n');
+        }
+        if (Option::mkfile::cachefile.isEmpty()) {
+            Option::mkfile::cachefile = Option::output_dir + QLatin1String("/.qmake.cache");
+            printf("Info: creating cache file %s\n",
+                   Option::mkfile::cachefile.toLatin1().constData());
+            project_build_root = Option::output_dir;
+            project_root = values("_PRO_FILE_PWD_", place).first();
+            if (project_root == project_build_root)
+                project_root.clear();
+            invalidateFeatureRoots();
+        }
+        QFileInfo qfi(Option::mkfile::cachefile);
+        if (!QDir::current().mkpath(qfi.path())) {
+            fprintf(stderr, "%s:%d: ERROR creating cache directory %s\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    qfi.path().toLatin1().constData());
+            return false;
+        }
+        QString errStr;
+        if (!writeFile(Option::mkfile::cachefile, QIODevice::Append, varstr, &errStr)) {
+            fprintf(stderr, "ERROR writing cache file %s: %s\n",
+                    Option::mkfile::cachefile.toLatin1().constData(), errStr.toLatin1().constData());
+#if defined(QT_BUILD_QMAKE_LIBRARY)
+            return false;
+#else
+            exit(2);
+#endif
+        }
+        return true; }
     default:
         fprintf(stderr, "%s:%d: Unknown test function: %s\n", parser.file.toLatin1().constData(), parser.line_no,
                 func.toLatin1().constData());
