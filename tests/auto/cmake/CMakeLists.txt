@@ -82,7 +82,7 @@ if(${CMAKE_VERSION} VERSION_EQUAL 2.8.7 OR ${CMAKE_VERSION} VERSION_GREATER 2.8.
     # Requires CMAKE_AUTOMOC function in CMake 2.8.7
     expect_pass(pass1)
 else()
-    message("CMake version older than 2.8.7. Not running test \"pass1\"")
+    message("CMake version older than 2.8.7 (Found ${CMAKE_VERSION}). Not running test \"pass1\"")
 endif()
 expect_pass(pass2)
 # Modules do not currently find their own dependencies.
