@@ -420,7 +420,7 @@ QVariant QMYSQLResult::handle() const
 {
 #if MYSQL_VERSION_ID >= 40108
     if(d->preparedQuery)
-        return d->meta ? QVariant::fromValue(d->meta) : qVariantFromValue(d->stmt);
+        return d->meta ? QVariant::fromValue(d->meta) : QVariant::fromValue(d->stmt);
     else
 #endif
         return QVariant::fromValue(d->result);

@@ -182,9 +182,9 @@ void basicNumericTypes_data()
 {
     QTest::newRow("bool") << QVariant(false) << "b" << "false";
     QTest::newRow("bool2") << QVariant(true) << "b" << "true";
-    QTest::newRow("byte") << qVariantFromValue(uchar(1)) << "y" << "1";
-    QTest::newRow("int16") << qVariantFromValue(short(2)) << "n" << "2";
-    QTest::newRow("uint16") << qVariantFromValue(ushort(3)) << "q" << "3";
+    QTest::newRow("byte") << QVariant::fromValue(uchar(1)) << "y" << "1";
+    QTest::newRow("int16") << QVariant::fromValue(short(2)) << "n" << "2";
+    QTest::newRow("uint16") << QVariant::fromValue(ushort(3)) << "q" << "3";
     QTest::newRow("int") << QVariant(1) << "i" << "1";
     QTest::newRow("uint") << QVariant(2U) << "u" << "2";
     QTest::newRow("int64") << QVariant(Q_INT64_C(3)) << "x" << "3";
@@ -195,8 +195,8 @@ void basicNumericTypes_data()
 void basicStringTypes_data()
 {
     QTest::newRow("string") << QVariant("ping") << "s" << "\"ping\"";
-    QTest::newRow("objectpath") << qVariantFromValue(QDBusObjectPath("/org/kde")) << "o" << "[ObjectPath: /org/kde]";
-    QTest::newRow("signature") << qVariantFromValue(QDBusSignature("g")) << "g" << "[Signature: g]";
+    QTest::newRow("objectpath") << QVariant::fromValue(QDBusObjectPath("/org/kde")) << "o" << "[ObjectPath: /org/kde]";
+    QTest::newRow("signature") << QVariant::fromValue(QDBusSignature("g")) << "g" << "[Signature: g]";
     QTest::newRow("emptystring") << QVariant("") << "s" << "\"\"";
     QTest::newRow("nullstring") << QVariant(QString()) << "s" << "\"\"";
 }
@@ -210,17 +210,17 @@ void tst_QDBusMarshall::sendBasic_data()
     basicStringTypes_data();
 
     if (fileDescriptorPassing)
-        QTest::newRow("file-descriptor") << qVariantFromValue(QDBusUnixFileDescriptor(fileDescriptorForTest())) << "h" << "[Unix FD: valid]";
+        QTest::newRow("file-descriptor") << QVariant::fromValue(QDBusUnixFileDescriptor(fileDescriptorForTest())) << "h" << "[Unix FD: valid]";
 }
 
 void tst_QDBusMarshall::sendVariant_data()
 {
     sendBasic_data();
 
-    QTest::newRow("variant") << qVariantFromValue(QDBusVariant(1)) << "v" << "[Variant(int): 1]";
+    QTest::newRow("variant") << QVariant::fromValue(QDBusVariant(1)) << "v" << "[Variant(int): 1]";
 
     QDBusVariant nested(1);
-    QTest::newRow("variant-variant") << qVariantFromValue(QDBusVariant(qVariantFromValue(nested))) << "v"
+    QTest::newRow("variant-variant") << QVariant::fromValue(QDBusVariant(QVariant::fromValue(nested))) << "v"
                                      << "[Variant(QDBusVariant): [Variant(int): 1]]";
 }
 
@@ -252,70 +252,70 @@ void tst_QDBusMarshall::sendArrays_data()
     QTest::newRow("bytearray") << QVariant(bytearray) << "ay" << "{102, 111, 111}";
 
     QList<bool> bools;
-    QTest::newRow("emptyboollist") << qVariantFromValue(bools) << "ab" << "[Argument: ab {}]";
+    QTest::newRow("emptyboollist") << QVariant::fromValue(bools) << "ab" << "[Argument: ab {}]";
     bools << false << true << false;
-    QTest::newRow("boollist") << qVariantFromValue(bools) << "ab" << "[Argument: ab {false, true, false}]";
+    QTest::newRow("boollist") << QVariant::fromValue(bools) << "ab" << "[Argument: ab {false, true, false}]";
 
     QList<short> shorts;
-    QTest::newRow("emptyshortlist") << qVariantFromValue(shorts) << "an" << "[Argument: an {}]";
+    QTest::newRow("emptyshortlist") << QVariant::fromValue(shorts) << "an" << "[Argument: an {}]";
     shorts << 42 << -43 << 44 << 45 << -32768 << 32767;
-    QTest::newRow("shortlist") << qVariantFromValue(shorts) << "an"
+    QTest::newRow("shortlist") << QVariant::fromValue(shorts) << "an"
                                << "[Argument: an {42, -43, 44, 45, -32768, 32767}]";
 
     QList<ushort> ushorts;
-    QTest::newRow("emptyushortlist") << qVariantFromValue(ushorts) << "aq" << "[Argument: aq {}]";
+    QTest::newRow("emptyushortlist") << QVariant::fromValue(ushorts) << "aq" << "[Argument: aq {}]";
     ushorts << 12u << 13u << 14u << 15 << 65535;
-    QTest::newRow("ushortlist") << qVariantFromValue(ushorts) << "aq" << "[Argument: aq {12, 13, 14, 15, 65535}]";
+    QTest::newRow("ushortlist") << QVariant::fromValue(ushorts) << "aq" << "[Argument: aq {12, 13, 14, 15, 65535}]";
 
     QList<int> ints;
-    QTest::newRow("emptyintlist") << qVariantFromValue(ints) << "ai" << "[Argument: ai {}]";
+    QTest::newRow("emptyintlist") << QVariant::fromValue(ints) << "ai" << "[Argument: ai {}]";
     ints << 42 << -43 << 44 << 45 << 2147483647 << -2147483647-1;
-    QTest::newRow("intlist") << qVariantFromValue(ints) << "ai" << "[Argument: ai {42, -43, 44, 45, 2147483647, -2147483648}]";
+    QTest::newRow("intlist") << QVariant::fromValue(ints) << "ai" << "[Argument: ai {42, -43, 44, 45, 2147483647, -2147483648}]";
 
     QList<uint> uints;
-    QTest::newRow("emptyuintlist") << qVariantFromValue(uints) << "au" << "[Argument: au {}]";
+    QTest::newRow("emptyuintlist") << QVariant::fromValue(uints) << "au" << "[Argument: au {}]";
     uints << uint(12) << uint(13) << uint(14) << 4294967295U;
-    QTest::newRow("uintlist") << qVariantFromValue(uints) << "au" << "[Argument: au {12, 13, 14, 4294967295}]";
+    QTest::newRow("uintlist") << QVariant::fromValue(uints) << "au" << "[Argument: au {12, 13, 14, 4294967295}]";
 
     QList<qlonglong> llints;
-    QTest::newRow("emptyllintlist") << qVariantFromValue(llints) << "ax" << "[Argument: ax {}]";
+    QTest::newRow("emptyllintlist") << QVariant::fromValue(llints) << "ax" << "[Argument: ax {}]";
     llints << Q_INT64_C(99) << Q_INT64_C(-100)
            << Q_INT64_C(-9223372036854775807)-1 << Q_INT64_C(9223372036854775807);
-    QTest::newRow("llintlist") << qVariantFromValue(llints) << "ax"
+    QTest::newRow("llintlist") << QVariant::fromValue(llints) << "ax"
                                << "[Argument: ax {99, -100, -9223372036854775808, 9223372036854775807}]";
 
     QList<qulonglong> ullints;
-    QTest::newRow("emptyullintlist") << qVariantFromValue(ullints) << "at" << "[Argument: at {}]";
+    QTest::newRow("emptyullintlist") << QVariant::fromValue(ullints) << "at" << "[Argument: at {}]";
     ullints << Q_UINT64_C(66) << Q_UINT64_C(67)
             << Q_UINT64_C(18446744073709551615);
-    QTest::newRow("ullintlist") << qVariantFromValue(ullints) << "at" << "[Argument: at {66, 67, 18446744073709551615}]";
+    QTest::newRow("ullintlist") << QVariant::fromValue(ullints) << "at" << "[Argument: at {66, 67, 18446744073709551615}]";
 
     QList<double> doubles;
-    QTest::newRow("emptydoublelist") << qVariantFromValue(doubles) << "ad" << "[Argument: ad {}]";
+    QTest::newRow("emptydoublelist") << QVariant::fromValue(doubles) << "ad" << "[Argument: ad {}]";
     doubles << 1.2 << 2.2 << 4.4
             << -std::numeric_limits<double>::infinity()
             << std::numeric_limits<double>::infinity()
             << std::numeric_limits<double>::quiet_NaN();
-    QTest::newRow("doublelist") << qVariantFromValue(doubles) << "ad" << "[Argument: ad {1.2, 2.2, 4.4, -inf, inf, nan}]";
+    QTest::newRow("doublelist") << QVariant::fromValue(doubles) << "ad" << "[Argument: ad {1.2, 2.2, 4.4, -inf, inf, nan}]";
 
     QList<QDBusObjectPath> objectPaths;
-    QTest::newRow("emptyobjectpathlist") << qVariantFromValue(objectPaths) << "ao" << "[Argument: ao {}]";
+    QTest::newRow("emptyobjectpathlist") << QVariant::fromValue(objectPaths) << "ao" << "[Argument: ao {}]";
     objectPaths << QDBusObjectPath("/") << QDBusObjectPath("/foo");
-    QTest::newRow("objectpathlist") << qVariantFromValue(objectPaths) << "ao" << "[Argument: ao {[ObjectPath: /], [ObjectPath: /foo]}]";
+    QTest::newRow("objectpathlist") << QVariant::fromValue(objectPaths) << "ao" << "[Argument: ao {[ObjectPath: /], [ObjectPath: /foo]}]";
 
     if (fileDescriptorPassing) {
         QList<QDBusUnixFileDescriptor> fileDescriptors;
-        QTest::newRow("emptyfiledescriptorlist") << qVariantFromValue(fileDescriptors) << "ah" << "[Argument: ah {}]";
+        QTest::newRow("emptyfiledescriptorlist") << QVariant::fromValue(fileDescriptors) << "ah" << "[Argument: ah {}]";
         fileDescriptors << QDBusUnixFileDescriptor(fileDescriptorForTest()) << QDBusUnixFileDescriptor(1);
-        QTest::newRow("filedescriptorlist") << qVariantFromValue(fileDescriptors) << "ah" << "[Argument: ah {[Unix FD: valid], [Unix FD: valid]}]";
+        QTest::newRow("filedescriptorlist") << QVariant::fromValue(fileDescriptors) << "ah" << "[Argument: ah {[Unix FD: valid], [Unix FD: valid]}]";
     }
 
     QVariantList variants;
     QTest::newRow("emptyvariantlist") << QVariant(variants) << "av" << "[Argument: av {}]";
     variants << QString("Hello") << QByteArray("World") << 42 << -43.0 << 44U << Q_INT64_C(-45)
-             << Q_UINT64_C(46) << true << qVariantFromValue(short(-47))
-             << qVariantFromValue(QDBusSignature("av"))
-             << qVariantFromValue(QDBusVariant(qVariantFromValue(QDBusObjectPath("/"))));
+             << Q_UINT64_C(46) << true << QVariant::fromValue(short(-47))
+             << QVariant::fromValue(QDBusSignature("av"))
+             << QVariant::fromValue(QDBusVariant(QVariant::fromValue(QDBusObjectPath("/"))));
     QTest::newRow("variantlist") << QVariant(variants) << "av"
         << "[Argument: av {[Variant(QString): \"Hello\"], [Variant(QByteArray): {87, 111, 114, 108, 100}], [Variant(int): 42], [Variant(double): -43], [Variant(uint): 44], [Variant(qlonglong): -45], [Variant(qulonglong): 46], [Variant(bool): true], [Variant(short): -47], [Variant: [Signature: av]], [Variant: [Variant: [ObjectPath: /]]]}]";
 }
@@ -328,132 +328,132 @@ void tst_QDBusMarshall::sendArrayOfArrays_data()
 
     // arrays:
     QList<QStringList> strings;
-    QTest::newRow("empty-list-of-stringlist") << qVariantFromValue(strings) << "aas"
+    QTest::newRow("empty-list-of-stringlist") << QVariant::fromValue(strings) << "aas"
             << "[Argument: aas {}]";
     strings << QStringList();
-    QTest::newRow("list-of-emptystringlist") << qVariantFromValue(strings) << "aas"
+    QTest::newRow("list-of-emptystringlist") << QVariant::fromValue(strings) << "aas"
             << "[Argument: aas {{}}]";
     strings << (QStringList() << "hello" << "world")
             << (QStringList() << "hi" << "there")
             << (QStringList() << QString());
-    QTest::newRow("stringlist") << qVariantFromValue(strings) << "aas"
+    QTest::newRow("stringlist") << QVariant::fromValue(strings) << "aas"
             << "[Argument: aas {{}, {\"hello\", \"world\"}, {\"hi\", \"there\"}, {\"\"}}]";
 
     QList<QByteArray> bytearray;
-    QTest::newRow("empty-list-of-bytearray") << qVariantFromValue(bytearray) << "aay"
+    QTest::newRow("empty-list-of-bytearray") << QVariant::fromValue(bytearray) << "aay"
             << "[Argument: aay {}]";
     bytearray << QByteArray();
-    QTest::newRow("list-of-emptybytearray") << qVariantFromValue(bytearray) << "aay"
+    QTest::newRow("list-of-emptybytearray") << QVariant::fromValue(bytearray) << "aay"
             << "[Argument: aay {{}}]";
     bytearray << "foo" << "bar" << "baz" << "" << QByteArray();
-    QTest::newRow("bytearray") << qVariantFromValue(bytearray) << "aay"
+    QTest::newRow("bytearray") << QVariant::fromValue(bytearray) << "aay"
             << "[Argument: aay {{}, {102, 111, 111}, {98, 97, 114}, {98, 97, 122}, {}, {}}]";
 
     QList<QList<bool> > bools;
-    QTest::newRow("empty-list-of-boollist") << qVariantFromValue(bools) << "aab"
+    QTest::newRow("empty-list-of-boollist") << QVariant::fromValue(bools) << "aab"
             << "[Argument: aab {}]";
     bools << QList<bool>();
-    QTest::newRow("list-of-emptyboollist") << qVariantFromValue(bools) << "aab"
+    QTest::newRow("list-of-emptyboollist") << QVariant::fromValue(bools) << "aab"
             << "[Argument: aab {[Argument: ab {}]}]";
     bools << (QList<bool>() << false << true) << (QList<bool>() << false) << (QList<bool>());
-    QTest::newRow("boollist") << qVariantFromValue(bools) << "aab"
+    QTest::newRow("boollist") << QVariant::fromValue(bools) << "aab"
             << "[Argument: aab {[Argument: ab {}], [Argument: ab {false, true}], [Argument: ab {false}], [Argument: ab {}]}]";
     QList<QList<short> > shorts;
-    QTest::newRow("empty-list-of-shortlist") << qVariantFromValue(shorts) << "aan"
+    QTest::newRow("empty-list-of-shortlist") << QVariant::fromValue(shorts) << "aan"
             << "[Argument: aan {}]";
     shorts << QList<short>();
-    QTest::newRow("list-of-emptyshortlist") << qVariantFromValue(shorts) << "aan"
+    QTest::newRow("list-of-emptyshortlist") << QVariant::fromValue(shorts) << "aan"
             << "[Argument: aan {[Argument: an {}]}]";
     shorts << (QList<short>() << 42 << -43 << 44 << 45)
            << (QList<short>() << -32768 << 32767)
            << (QList<short>());
-    QTest::newRow("shortlist") << qVariantFromValue(shorts) << "aan"
+    QTest::newRow("shortlist") << QVariant::fromValue(shorts) << "aan"
             << "[Argument: aan {[Argument: an {}], [Argument: an {42, -43, 44, 45}], [Argument: an {-32768, 32767}], [Argument: an {}]}]";
 
     QList<QList<ushort> > ushorts;
-    QTest::newRow("empty-list-of-ushortlist") << qVariantFromValue(ushorts) << "aaq"
+    QTest::newRow("empty-list-of-ushortlist") << QVariant::fromValue(ushorts) << "aaq"
             << "[Argument: aaq {}]";
     ushorts << QList<ushort>();
-    QTest::newRow("list-of-emptyushortlist") << qVariantFromValue(ushorts) << "aaq"
+    QTest::newRow("list-of-emptyushortlist") << QVariant::fromValue(ushorts) << "aaq"
             << "[Argument: aaq {[Argument: aq {}]}]";
     ushorts << (QList<ushort>() << 12u << 13u << 14u << 15)
             << (QList<ushort>() << 65535)
             << (QList<ushort>());
-    QTest::newRow("ushortlist") << qVariantFromValue(ushorts) << "aaq"
+    QTest::newRow("ushortlist") << QVariant::fromValue(ushorts) << "aaq"
             << "[Argument: aaq {[Argument: aq {}], [Argument: aq {12, 13, 14, 15}], [Argument: aq {65535}], [Argument: aq {}]}]";
 
     QList<QList<int> > ints;
-    QTest::newRow("empty-list-of-intlist") << qVariantFromValue(ints) << "aai"
+    QTest::newRow("empty-list-of-intlist") << QVariant::fromValue(ints) << "aai"
             << "[Argument: aai {}]";
     ints << QList<int>();
-    QTest::newRow("list-of-emptyintlist") << qVariantFromValue(ints) << "aai"
+    QTest::newRow("list-of-emptyintlist") << QVariant::fromValue(ints) << "aai"
             << "[Argument: aai {[Argument: ai {}]}]";
     ints << (QList<int>() << 42 << -43 << 44 << 45)
          << (QList<int>() << 2147483647 << -2147483647-1)
          << (QList<int>());
-    QTest::newRow("intlist") << qVariantFromValue(ints) << "aai"
+    QTest::newRow("intlist") << QVariant::fromValue(ints) << "aai"
             << "[Argument: aai {[Argument: ai {}], [Argument: ai {42, -43, 44, 45}], [Argument: ai {2147483647, -2147483648}], [Argument: ai {}]}]";
 
     QList<QList<uint> > uints;
-    QTest::newRow("empty-list-of-uintlist") << qVariantFromValue(uints) << "aau"
+    QTest::newRow("empty-list-of-uintlist") << QVariant::fromValue(uints) << "aau"
             << "[Argument: aau {}]";
     uints << QList<uint>();
-    QTest::newRow("list-of-emptyuintlist") << qVariantFromValue(uints) << "aau"
+    QTest::newRow("list-of-emptyuintlist") << QVariant::fromValue(uints) << "aau"
             << "[Argument: aau {[Argument: au {}]}]";
     uints << (QList<uint>() << uint(12) << uint(13) << uint(14))
           << (QList<uint>() << 4294967295U)
           << (QList<uint>());
-    QTest::newRow("uintlist") << qVariantFromValue(uints) << "aau"
+    QTest::newRow("uintlist") << QVariant::fromValue(uints) << "aau"
             << "[Argument: aau {[Argument: au {}], [Argument: au {12, 13, 14}], [Argument: au {4294967295}], [Argument: au {}]}]";
 
     QList<QList<qlonglong> > llints;
-    QTest::newRow("empty-list-of-llintlist") << qVariantFromValue(llints) << "aax"
+    QTest::newRow("empty-list-of-llintlist") << QVariant::fromValue(llints) << "aax"
             << "[Argument: aax {}]";
     llints << QList<qlonglong>();
-    QTest::newRow("list-of-emptyllintlist") << qVariantFromValue(llints) << "aax"
+    QTest::newRow("list-of-emptyllintlist") << QVariant::fromValue(llints) << "aax"
             << "[Argument: aax {[Argument: ax {}]}]";
     llints << (QList<qlonglong>() << Q_INT64_C(99) << Q_INT64_C(-100))
            << (QList<qlonglong>() << Q_INT64_C(-9223372036854775807)-1 << Q_INT64_C(9223372036854775807))
            << (QList<qlonglong>());
-    QTest::newRow("llintlist") << qVariantFromValue(llints) << "aax"
+    QTest::newRow("llintlist") << QVariant::fromValue(llints) << "aax"
             << "[Argument: aax {[Argument: ax {}], [Argument: ax {99, -100}], [Argument: ax {-9223372036854775808, 9223372036854775807}], [Argument: ax {}]}]";
 
     QList<QList<qulonglong> > ullints;
-    QTest::newRow("empty-list-of-ullintlist") << qVariantFromValue(ullints) << "aat"
+    QTest::newRow("empty-list-of-ullintlist") << QVariant::fromValue(ullints) << "aat"
             << "[Argument: aat {}]";
     ullints << QList<qulonglong>();
-    QTest::newRow("list-of-emptyullintlist") << qVariantFromValue(ullints) << "aat"
+    QTest::newRow("list-of-emptyullintlist") << QVariant::fromValue(ullints) << "aat"
             << "[Argument: aat {[Argument: at {}]}]";
     ullints << (QList<qulonglong>() << Q_UINT64_C(66) << Q_UINT64_C(67))
             << (QList<qulonglong>() << Q_UINT64_C(18446744073709551615))
             << (QList<qulonglong>());
-    QTest::newRow("ullintlist") << qVariantFromValue(ullints) << "aat"
+    QTest::newRow("ullintlist") << QVariant::fromValue(ullints) << "aat"
             << "[Argument: aat {[Argument: at {}], [Argument: at {66, 67}], [Argument: at {18446744073709551615}], [Argument: at {}]}]";
 
     QList<QList<double> > doubles;
-    QTest::newRow("empty-list-ofdoublelist") << qVariantFromValue(doubles) << "aad"
+    QTest::newRow("empty-list-ofdoublelist") << QVariant::fromValue(doubles) << "aad"
             << "[Argument: aad {}]";
     doubles << QList<double>();
-    QTest::newRow("list-of-emptydoublelist") << qVariantFromValue(doubles) << "aad"
+    QTest::newRow("list-of-emptydoublelist") << QVariant::fromValue(doubles) << "aad"
             << "[Argument: aad {[Argument: ad {}]}]";
     doubles << (QList<double>() << 1.2 << 2.2 << 4.4)
             << (QList<double>() << -std::numeric_limits<double>::infinity()
                 << std::numeric_limits<double>::infinity()
                 << std::numeric_limits<double>::quiet_NaN())
             << (QList<double>());
-    QTest::newRow("doublelist") << qVariantFromValue(doubles) << "aad"
+    QTest::newRow("doublelist") << QVariant::fromValue(doubles) << "aad"
             << "[Argument: aad {[Argument: ad {}], [Argument: ad {1.2, 2.2, 4.4}], [Argument: ad {-inf, inf, nan}], [Argument: ad {}]}]";
 
     QList<QVariantList> variants;
-    QTest::newRow("emptyvariantlist") << qVariantFromValue(variants) << "aav"
+    QTest::newRow("emptyvariantlist") << QVariant::fromValue(variants) << "aav"
             << "[Argument: aav {}]";
     variants << QVariantList();
-    QTest::newRow("emptyvariantlist") << qVariantFromValue(variants) << "aav"
+    QTest::newRow("emptyvariantlist") << QVariant::fromValue(variants) << "aav"
             << "[Argument: aav {[Argument: av {}]}]";
     variants << (QVariantList() << QString("Hello") << QByteArray("World"))
              << (QVariantList() << 42 << -43.0 << 44U << Q_INT64_C(-45))
-             << (QVariantList() << Q_UINT64_C(46) << true << qVariantFromValue(short(-47)));
-    QTest::newRow("variantlist") << qVariantFromValue(variants) << "aav"
+             << (QVariantList() << Q_UINT64_C(46) << true << QVariant::fromValue(short(-47)));
+    QTest::newRow("variantlist") << QVariant::fromValue(variants) << "aav"
             << "[Argument: aav {[Argument: av {}], [Argument: av {[Variant(QString): \"Hello\"], [Variant(QByteArray): {87, 111, 114, 108, 100}]}], [Argument: av {[Variant(int): 42], [Variant(double): -43], [Variant(uint): 44], [Variant(qlonglong): -45]}], [Argument: av {[Variant(qulonglong): 46], [Variant(bool): true], [Variant(short): -47]}]}]";
 }
 
@@ -464,65 +464,65 @@ void tst_QDBusMarshall::sendMaps_data()
     QTest::addColumn<QString>("stringResult");
 
     QMap<int, QString> ismap;
-    QTest::newRow("empty-is-map") << qVariantFromValue(ismap) << "a{is}"
+    QTest::newRow("empty-is-map") << QVariant::fromValue(ismap) << "a{is}"
             << "[Argument: a{is} {}]";
     ismap[1] = "a";
     ismap[2000] = "b";
     ismap[-47] = "c";
-    QTest::newRow("is-map") << qVariantFromValue(ismap) << "a{is}"
+    QTest::newRow("is-map") << QVariant::fromValue(ismap) << "a{is}"
             << "[Argument: a{is} {-47 = \"c\", 1 = \"a\", 2000 = \"b\"}]";
 
     QMap<QString, QString> ssmap;
-    QTest::newRow("empty-ss-map") << qVariantFromValue(ssmap) << "a{ss}"
+    QTest::newRow("empty-ss-map") << QVariant::fromValue(ssmap) << "a{ss}"
             << "[Argument: a{ss} {}]";
     ssmap["a"] = "a";
     ssmap["c"] = "b";
     ssmap["b"] = "c";
-    QTest::newRow("ss-map") << qVariantFromValue(ssmap) << "a{ss}"
+    QTest::newRow("ss-map") << QVariant::fromValue(ssmap) << "a{ss}"
             << "[Argument: a{ss} {\"a\" = \"a\", \"b\" = \"c\", \"c\" = \"b\"}]";
 
     QVariantMap svmap;
-    QTest::newRow("empty-sv-map") << qVariantFromValue(svmap) << "a{sv}"
+    QTest::newRow("empty-sv-map") << QVariant::fromValue(svmap) << "a{sv}"
             << "[Argument: a{sv} {}]";
     svmap["a"] = 1;
     svmap["c"] = "b";
     svmap["b"] = QByteArray("c");
     svmap["d"] = 42U;
-    svmap["e"] = qVariantFromValue(short(-47));
-    svmap["f"] = qVariantFromValue(QDBusVariant(0));
-    QTest::newRow("sv-map1") << qVariantFromValue(svmap) << "a{sv}"
+    svmap["e"] = QVariant::fromValue(short(-47));
+    svmap["f"] = QVariant::fromValue(QDBusVariant(0));
+    QTest::newRow("sv-map1") << QVariant::fromValue(svmap) << "a{sv}"
             << "[Argument: a{sv} {\"a\" = [Variant(int): 1], \"b\" = [Variant(QByteArray): {99}], \"c\" = [Variant(QString): \"b\"], \"d\" = [Variant(uint): 42], \"e\" = [Variant(short): -47], \"f\" = [Variant: [Variant(int): 0]]}]";
 
     QMap<QDBusObjectPath, QString> osmap;
-    QTest::newRow("empty-os-map") << qVariantFromValue(osmap) << "a{os}"
+    QTest::newRow("empty-os-map") << QVariant::fromValue(osmap) << "a{os}"
             << "[Argument: a{os} {}]";
     osmap[QDBusObjectPath("/")] = "root";
     osmap[QDBusObjectPath("/foo")] = "foo";
     osmap[QDBusObjectPath("/bar/baz")] = "bar and baz";
-    QTest::newRow("os-map") << qVariantFromValue(osmap) << "a{os}"
+    QTest::newRow("os-map") << QVariant::fromValue(osmap) << "a{os}"
             << "[Argument: a{os} {[ObjectPath: /] = \"root\", [ObjectPath: /bar/baz] = \"bar and baz\", [ObjectPath: /foo] = \"foo\"}]";
 
     QMap<QDBusSignature, QString> gsmap;
-    QTest::newRow("empty-gs-map") << qVariantFromValue(gsmap) << "a{gs}"
+    QTest::newRow("empty-gs-map") << QVariant::fromValue(gsmap) << "a{gs}"
             << "[Argument: a{gs} {}]";
     gsmap[QDBusSignature("i")] = "int32";
     gsmap[QDBusSignature("s")] = "string";
     gsmap[QDBusSignature("a{gs}")] = "array of dict_entry of (signature, string)";
-    QTest::newRow("gs-map") << qVariantFromValue(gsmap) << "a{gs}"
+    QTest::newRow("gs-map") << QVariant::fromValue(gsmap) << "a{gs}"
             << "[Argument: a{gs} {[Signature: a{gs}] = \"array of dict_entry of (signature, string)\", [Signature: i] = \"int32\", [Signature: s] = \"string\"}]";
 
     if (fileDescriptorPassing) {
-        svmap["zzfiledescriptor"] = qVariantFromValue(QDBusUnixFileDescriptor(fileDescriptorForTest()));
-        QTest::newRow("sv-map1-fd") << qVariantFromValue(svmap) << "a{sv}"
+        svmap["zzfiledescriptor"] = QVariant::fromValue(QDBusUnixFileDescriptor(fileDescriptorForTest()));
+        QTest::newRow("sv-map1-fd") << QVariant::fromValue(svmap) << "a{sv}"
                                     << "[Argument: a{sv} {\"a\" = [Variant(int): 1], \"b\" = [Variant(QByteArray): {99}], \"c\" = [Variant(QString): \"b\"], \"d\" = [Variant(uint): 42], \"e\" = [Variant(short): -47], \"f\" = [Variant: [Variant(int): 0]], \"zzfiledescriptor\" = [Variant(QDBusUnixFileDescriptor): [Unix FD: valid]]}]";
     }
 
     svmap.clear();
-    svmap["ismap"] = qVariantFromValue(ismap);
-    svmap["ssmap"] = qVariantFromValue(ssmap);
-    svmap["osmap"] = qVariantFromValue(osmap);
-    svmap["gsmap"] = qVariantFromValue(gsmap);
-    QTest::newRow("sv-map2") << qVariantFromValue(svmap) << "a{sv}"
+    svmap["ismap"] = QVariant::fromValue(ismap);
+    svmap["ssmap"] = QVariant::fromValue(ssmap);
+    svmap["osmap"] = QVariant::fromValue(osmap);
+    svmap["gsmap"] = QVariant::fromValue(gsmap);
+    QTest::newRow("sv-map2") << QVariant::fromValue(svmap) << "a{sv}"
             << "[Argument: a{sv} {\"gsmap\" = [Variant: [Argument: a{gs} {[Signature: a{gs}] = \"array of dict_entry of (signature, string)\", [Signature: i] = \"int32\", [Signature: s] = \"string\"}]], \"ismap\" = [Variant: [Argument: a{is} {-47 = \"c\", 1 = \"a\", 2000 = \"b\"}]], \"osmap\" = [Variant: [Argument: a{os} {[ObjectPath: /] = \"root\", [ObjectPath: /bar/baz] = \"bar and baz\", [ObjectPath: /foo] = \"foo\"}]], \"ssmap\" = [Variant: [Argument: a{ss} {\"a\" = \"a\", \"b\" = \"c\", \"c\" = \"b\"}]]}]";
 }
 
@@ -554,33 +554,33 @@ void tst_QDBusMarshall::sendStructs_data()
         << "[Argument: ((iii)(iiii)i) [Argument: (iii) 2006, 6, 18], [Argument: (iiii) 12, 25, 0, 0], 0]";
 
     MyStruct ms = { 1, "Hello, World" };
-    QTest::newRow("int-string") << qVariantFromValue(ms) << "(is)" << "[Argument: (is) 1, \"Hello, World\"]";
+    QTest::newRow("int-string") << QVariant::fromValue(ms) << "(is)" << "[Argument: (is) 1, \"Hello, World\"]";
 
     MyVariantMapStruct mvms = { "Hello, World", QVariantMap() };
-    QTest::newRow("string-variantmap") << qVariantFromValue(mvms) << "(sa{sv})" << "[Argument: (sa{sv}) \"Hello, World\", [Argument: a{sv} {}]]";
+    QTest::newRow("string-variantmap") << QVariant::fromValue(mvms) << "(sa{sv})" << "[Argument: (sa{sv}) \"Hello, World\", [Argument: a{sv} {}]]";
 
     // use only basic types, otherwise comparison will fail
     mvms.map["int"] = 42;
     mvms.map["uint"] = 42u;
-    mvms.map["short"] = qVariantFromValue<short>(-47);
+    mvms.map["short"] = QVariant::fromValue<short>(-47);
     mvms.map["bytearray"] = QByteArray("Hello, world");
-    QTest::newRow("string-variantmap2") << qVariantFromValue(mvms) << "(sa{sv})" << "[Argument: (sa{sv}) \"Hello, World\", [Argument: a{sv} {\"bytearray\" = [Variant(QByteArray): {72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100}], \"int\" = [Variant(int): 42], \"short\" = [Variant(short): -47], \"uint\" = [Variant(uint): 42]}]]";
+    QTest::newRow("string-variantmap2") << QVariant::fromValue(mvms) << "(sa{sv})" << "[Argument: (sa{sv}) \"Hello, World\", [Argument: a{sv} {\"bytearray\" = [Variant(QByteArray): {72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100}], \"int\" = [Variant(int): 42], \"short\" = [Variant(short): -47], \"uint\" = [Variant(uint): 42]}]]";
 
     QList<MyVariantMapStruct> list;
-    QTest::newRow("empty-list-of-string-variantmap") << qVariantFromValue(list) << "a(sa{sv})" << "[Argument: a(sa{sv}) {}]";
+    QTest::newRow("empty-list-of-string-variantmap") << QVariant::fromValue(list) << "a(sa{sv})" << "[Argument: a(sa{sv}) {}]";
     list << mvms;
-    QTest::newRow("list-of-string-variantmap") << qVariantFromValue(list) << "a(sa{sv})" << "[Argument: a(sa{sv}) {[Argument: (sa{sv}) \"Hello, World\", [Argument: a{sv} {\"bytearray\" = [Variant(QByteArray): {72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100}], \"int\" = [Variant(int): 42], \"short\" = [Variant(short): -47], \"uint\" = [Variant(uint): 42]}]]}]";
+    QTest::newRow("list-of-string-variantmap") << QVariant::fromValue(list) << "a(sa{sv})" << "[Argument: a(sa{sv}) {[Argument: (sa{sv}) \"Hello, World\", [Argument: a{sv} {\"bytearray\" = [Variant(QByteArray): {72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100}], \"int\" = [Variant(int): 42], \"short\" = [Variant(short): -47], \"uint\" = [Variant(uint): 42]}]]}]";
 
     if (fileDescriptorPassing) {
         MyFileDescriptorStruct fds;
         fds.fd = QDBusUnixFileDescriptor(fileDescriptorForTest());
-        QTest::newRow("fdstruct") << qVariantFromValue(fds) << "(h)" << "[Argument: (h) [Unix FD: valid]]";
+        QTest::newRow("fdstruct") << QVariant::fromValue(fds) << "(h)" << "[Argument: (h) [Unix FD: valid]]";
 
         QList<MyFileDescriptorStruct> fdlist;
-        QTest::newRow("empty-list-of-fdstruct") << qVariantFromValue(fdlist) << "a(h)" << "[Argument: a(h) {}]";
+        QTest::newRow("empty-list-of-fdstruct") << QVariant::fromValue(fdlist) << "a(h)" << "[Argument: a(h) {}]";
 
         fdlist << fds;
-        QTest::newRow("list-of-fdstruct") << qVariantFromValue(fdlist) << "a(h)" << "[Argument: a(h) {[Argument: (h) [Unix FD: valid]]}]";
+        QTest::newRow("list-of-fdstruct") << QVariant::fromValue(fdlist) << "a(h)" << "[Argument: a(h) {[Argument: (h) [Unix FD: valid]]}]";
     }
 }
 
@@ -591,23 +591,23 @@ void tst_QDBusMarshall::sendComplex_data()
     QTest::addColumn<QString>("stringResult");
 
     QList<QDateTime> dtlist;
-    QTest::newRow("empty-datetimelist") << qVariantFromValue(dtlist) << "a((iii)(iiii)i)"
+    QTest::newRow("empty-datetimelist") << QVariant::fromValue(dtlist) << "a((iii)(iiii)i)"
             << "[Argument: a((iii)(iiii)i) {}]";
     dtlist << QDateTime();
-    QTest::newRow("list-of-emptydatetime") << qVariantFromValue(dtlist) << "a((iii)(iiii)i)"
+    QTest::newRow("list-of-emptydatetime") << QVariant::fromValue(dtlist) << "a((iii)(iiii)i)"
             << "[Argument: a((iii)(iiii)i) {[Argument: ((iii)(iiii)i) [Argument: (iii) 0, 0, 0], [Argument: (iiii) -1, -1, -1, -1], 0]}]";
     dtlist << QDateTime(QDate(1977, 9, 13), QTime(0, 0, 0))
            << QDateTime(QDate(2006, 6, 18), QTime(13, 14, 0));
-    QTest::newRow("datetimelist") << qVariantFromValue(dtlist) << "a((iii)(iiii)i)"
+    QTest::newRow("datetimelist") << QVariant::fromValue(dtlist) << "a((iii)(iiii)i)"
             << "[Argument: a((iii)(iiii)i) {[Argument: ((iii)(iiii)i) [Argument: (iii) 0, 0, 0], [Argument: (iiii) -1, -1, -1, -1], 0], [Argument: ((iii)(iiii)i) [Argument: (iii) 1977, 9, 13], [Argument: (iiii) 0, 0, 0, 0], 0], [Argument: ((iii)(iiii)i) [Argument: (iii) 2006, 6, 18], [Argument: (iiii) 13, 14, 0, 0], 0]}]";
 
     QMap<qlonglong, QDateTime> lldtmap;
-    QTest::newRow("empty-lldtmap") << qVariantFromValue(lldtmap) << "a{x((iii)(iiii)i)}"
+    QTest::newRow("empty-lldtmap") << QVariant::fromValue(lldtmap) << "a{x((iii)(iiii)i)}"
             << "[Argument: a{x((iii)(iiii)i)} {}]";
     lldtmap[0] = QDateTime();
     lldtmap[1] = QDateTime(QDate(1970, 1, 1), QTime(0, 0, 1), Qt::UTC);
     lldtmap[1150629776] = QDateTime(QDate(2006, 6, 18), QTime(11, 22, 56), Qt::UTC);
-    QTest::newRow("lldtmap") << qVariantFromValue(lldtmap) << "a{x((iii)(iiii)i)}"
+    QTest::newRow("lldtmap") << QVariant::fromValue(lldtmap) << "a{x((iii)(iiii)i)}"
             << "[Argument: a{x((iii)(iiii)i)} {0 = [Argument: ((iii)(iiii)i) [Argument: (iii) 0, 0, 0], [Argument: (iiii) -1, -1, -1, -1], 0], 1 = [Argument: ((iii)(iiii)i) [Argument: (iii) 1970, 1, 1], [Argument: (iiii) 0, 0, 1, 0], 1], 1150629776 = [Argument: ((iii)(iiii)i) [Argument: (iii) 2006, 6, 18], [Argument: (iiii) 11, 22, 56, 0], 1]}]";
 
 
@@ -631,18 +631,18 @@ void tst_QDBusMarshall::sendComplex_data()
     svmap["c"] = "b";
     svmap["b"] = QByteArray("c");
     svmap["d"] = 42U;
-    svmap["e"] = qVariantFromValue(short(-47));
-    svmap["f"] = qVariantFromValue(QDBusVariant(0));
+    svmap["e"] = QVariant::fromValue(short(-47));
+    svmap["f"] = QVariant::fromValue(QDBusVariant(0));
     svmap["date"] = QDate(1977, 1, 1);
     svmap["time"] = QTime(8, 58, 0);
     svmap["datetime"] = QDateTime(QDate(13, 9, 2008), QTime(8, 59, 31));
     svmap["pointf"] = QPointF(0.5, -0.5);
-    svmap["ismap"] = qVariantFromValue(ismap);
-    svmap["ssmap"] = qVariantFromValue(ssmap);
-    svmap["gsmap"] = qVariantFromValue(gsmap);
-    svmap["dtlist"] = qVariantFromValue(dtlist);
-    svmap["lldtmap"] = qVariantFromValue(lldtmap);
-    QTest::newRow("sv-map") << qVariantFromValue(svmap) << "a{sv}"
+    svmap["ismap"] = QVariant::fromValue(ismap);
+    svmap["ssmap"] = QVariant::fromValue(ssmap);
+    svmap["gsmap"] = QVariant::fromValue(gsmap);
+    svmap["dtlist"] = QVariant::fromValue(dtlist);
+    svmap["lldtmap"] = QVariant::fromValue(lldtmap);
+    QTest::newRow("sv-map") << QVariant::fromValue(svmap) << "a{sv}"
             << "[Argument: a{sv} {\"a\" = [Variant(int): 1], \"b\" = [Variant(QByteArray): {99}], \"c\" = [Variant(QString): \"b\"], \"d\" = [Variant(uint): 42], \"date\" = [Variant: [Argument: (iii) 1977, 1, 1]], \"datetime\" = [Variant: [Argument: ((iii)(iiii)i) [Argument: (iii) 0, 0, 0], [Argument: (iiii) 8, 59, 31, 0], 0]], \"dtlist\" = [Variant: [Argument: a((iii)(iiii)i) {[Argument: ((iii)(iiii)i) [Argument: (iii) 0, 0, 0], [Argument: (iiii) -1, -1, -1, -1], 0], [Argument: ((iii)(iiii)i) [Argument: (iii) 1977, 9, 13], [Argument: (iiii) 0, 0, 0, 0], 0], [Argument: ((iii)(iiii)i) [Argument: (iii) 2006, 6, 18], [Argument: (iiii) 13, 14, 0, 0], 0]}]], \"e\" = [Variant(short): -47], \"f\" = [Variant: [Variant(int): 0]], \"gsmap\" = [Variant: [Argument: a{gs} {[Signature: a{gs}] = \"array of dict_entry of (signature, string)\", [Signature: i] = \"int32\", [Signature: s] = \"string\"}]], \"ismap\" = [Variant: [Argument: a{is} {-47 = \"c\", 1 = \"a\", 2000 = \"b\"}]], \"lldtmap\" = [Variant: [Argument: a{x((iii)(iiii)i)} {0 = [Argument: ((iii)(iiii)i) [Argument: (iii) 0, 0, 0], [Argument: (iiii) -1, -1, -1, -1], 0], 1 = [Argument: ((iii)(iiii)i) [Argument: (iii) 1970, 1, 1], [Argument: (iiii) 0, 0, 1, 0], 1], 1150629776 = [Argument: ((iii)(iiii)i) [Argument: (iii) 2006, 6, 18], [Argument: (iiii) 11, 22, 56, 0], 1]}]], \"pointf\" = [Variant: [Argument: (dd) 0.5, -0.5]], \"ssmap\" = [Variant: [Argument: a{ss} {\"a\" = \"a\", \"b\" = \"c\", \"c\" = \"b\"}]], \"time\" = [Variant: [Argument: (iiii) 8, 58, 0, 0]]}]";
 }
 
@@ -657,83 +657,83 @@ void tst_QDBusMarshall::sendArgument_data()
 
     arg = QDBusArgument();
     arg << true;
-    QTest::newRow("bool") << qVariantFromValue(arg) << "b" << int(QDBusArgument::BasicType);;
+    QTest::newRow("bool") << QVariant::fromValue(arg) << "b" << int(QDBusArgument::BasicType);;
 
     arg = QDBusArgument();
     arg << false;
-    QTest::newRow("bool2") << qVariantFromValue(arg) << "b" << int(QDBusArgument::BasicType);
+    QTest::newRow("bool2") << QVariant::fromValue(arg) << "b" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << uchar(1);
-    QTest::newRow("byte") << qVariantFromValue(arg) << "y" << int(QDBusArgument::BasicType);
+    QTest::newRow("byte") << QVariant::fromValue(arg) << "y" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << short(2);
-    QTest::newRow("int16") << qVariantFromValue(arg) << "n" << int(QDBusArgument::BasicType);
+    QTest::newRow("int16") << QVariant::fromValue(arg) << "n" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << ushort(3);
-    QTest::newRow("uint16") << qVariantFromValue(arg) << "q" << int(QDBusArgument::BasicType);
+    QTest::newRow("uint16") << QVariant::fromValue(arg) << "q" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << 1;
-    QTest::newRow("int32") << qVariantFromValue(arg) << "i" << int(QDBusArgument::BasicType);
+    QTest::newRow("int32") << QVariant::fromValue(arg) << "i" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << 2U;
-    QTest::newRow("uint32") << qVariantFromValue(arg) << "u" << int(QDBusArgument::BasicType);
+    QTest::newRow("uint32") << QVariant::fromValue(arg) << "u" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << Q_INT64_C(3);
-    QTest::newRow("int64") << qVariantFromValue(arg) << "x" << int(QDBusArgument::BasicType);
+    QTest::newRow("int64") << QVariant::fromValue(arg) << "x" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << Q_UINT64_C(4);
-    QTest::newRow("uint64") << qVariantFromValue(arg) << "t" << int(QDBusArgument::BasicType);
+    QTest::newRow("uint64") << QVariant::fromValue(arg) << "t" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << 42.5;
-    QTest::newRow("double") << qVariantFromValue(arg) << "d" << int(QDBusArgument::BasicType);
+    QTest::newRow("double") << QVariant::fromValue(arg) << "d" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << QLatin1String("ping");
-    QTest::newRow("string") << qVariantFromValue(arg) << "s" << int(QDBusArgument::BasicType);
+    QTest::newRow("string") << QVariant::fromValue(arg) << "s" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << QDBusObjectPath("/org/kde");
-    QTest::newRow("objectpath") << qVariantFromValue(arg) << "o" << int(QDBusArgument::BasicType);
+    QTest::newRow("objectpath") << QVariant::fromValue(arg) << "o" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << QDBusSignature("g");
-    QTest::newRow("signature") << qVariantFromValue(arg) << "g" << int(QDBusArgument::BasicType);
+    QTest::newRow("signature") << QVariant::fromValue(arg) << "g" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << QLatin1String("");
-    QTest::newRow("emptystring") << qVariantFromValue(arg) << "s" << int(QDBusArgument::BasicType);
+    QTest::newRow("emptystring") << QVariant::fromValue(arg) << "s" << int(QDBusArgument::BasicType);
 
     arg = QDBusArgument();
     arg << QString();
-    QTest::newRow("nullstring") << qVariantFromValue(arg) << "s" << int(QDBusArgument::BasicType);
+    QTest::newRow("nullstring") << QVariant::fromValue(arg) << "s" << int(QDBusArgument::BasicType);
 
     if (fileDescriptorPassing) {
         arg = QDBusArgument();
         arg << QDBusUnixFileDescriptor(fileDescriptorForTest());
-        QTest::newRow("filedescriptor") << qVariantFromValue(arg) << "h" << int(QDBusArgument::BasicType);
+        QTest::newRow("filedescriptor") << QVariant::fromValue(arg) << "h" << int(QDBusArgument::BasicType);
     }
 
     arg = QDBusArgument();
     arg << QDBusVariant(1);
-    QTest::newRow("variant") << qVariantFromValue(arg) << "v" << int(QDBusArgument::VariantType);
+    QTest::newRow("variant") << QVariant::fromValue(arg) << "v" << int(QDBusArgument::VariantType);
 
     arg = QDBusArgument();
-    arg << QDBusVariant(qVariantFromValue(QDBusVariant(1)));
-    QTest::newRow("variant-variant") << qVariantFromValue(arg) << "v" << int(QDBusArgument::VariantType);
+    arg << QDBusVariant(QVariant::fromValue(QDBusVariant(1)));
+    QTest::newRow("variant-variant") << QVariant::fromValue(arg) << "v" << int(QDBusArgument::VariantType);
 
     arg = QDBusArgument();
     arg.beginArray(QVariant::Int);
     arg << 1 << 2 << 3 << -4;
     arg.endArray();
-    QTest::newRow("array-of-int") << qVariantFromValue(arg) << "ai" << int(QDBusArgument::ArrayType);
+    QTest::newRow("array-of-int") << QVariant::fromValue(arg) << "ai" << int(QDBusArgument::ArrayType);
 
     arg = QDBusArgument();
     arg.beginMap(QVariant::Int, QVariant::UInt);
@@ -744,13 +744,13 @@ void tst_QDBusMarshall::sendArgument_data()
     arg << 3 << 4U;
     arg.endMapEntry();
     arg.endMap();
-    QTest::newRow("map") << qVariantFromValue(arg) << "a{iu}" << int(QDBusArgument::MapType);
+    QTest::newRow("map") << QVariant::fromValue(arg) << "a{iu}" << int(QDBusArgument::MapType);
 
     arg = QDBusArgument();
     arg.beginStructure();
     arg << 1 << 2U << short(-3) << ushort(4) << 5.0 << false;
     arg.endStructure();
-    QTest::newRow("structure") << qVariantFromValue(arg) << "(iunqdb)" << int(QDBusArgument::StructureType);
+    QTest::newRow("structure") << QVariant::fromValue(arg) << "(iunqdb)" << int(QDBusArgument::StructureType);
 }
 
 void tst_QDBusMarshall::sendBasic()
@@ -790,7 +790,7 @@ void tst_QDBusMarshall::sendVariant()
 
     QDBusMessage msg = QDBusMessage::createMethodCall(serviceName,
                                                       objectPath, interfaceName, "ping");
-    msg << qVariantFromValue(QDBusVariant(value));
+    msg << QVariant::fromValue(QDBusVariant(value));
 
     QDBusMessage reply = con.call(msg);
  //   qDebug() << reply;
@@ -851,7 +851,7 @@ void tst_QDBusMarshall::sendArgument()
     sendArg.beginStructure();
     sendArg.appendVariant(value);
     sendArg.endStructure();
-    msg.setArguments(QVariantList() << qVariantFromValue(sendArg));
+    msg.setArguments(QVariantList() << QVariant::fromValue(sendArg));
     reply = con.call(msg);
 
     QCOMPARE(reply.signature(), QString("(%1)").arg(sig));
@@ -883,7 +883,7 @@ void tst_QDBusMarshall::sendSignalErrors()
     QVERIFY(con.isConnected());
     QDBusMessage msg = QDBusMessage::createSignal("/foo", "local.interfaceName",
                                                   "signalName");
-    msg << qVariantFromValue(QDBusObjectPath());
+    msg << QVariant::fromValue(QDBusObjectPath());
 
     QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid object path passed in arguments");
     QVERIFY(!con.send(msg));
@@ -893,20 +893,20 @@ void tst_QDBusMarshall::sendSignalErrors()
 
     QTest::ignoreMessage(QtWarningMsg, "QDBusObjectPath: invalid path \"abc\"");
     path.setPath("abc");
-    msg << qVariantFromValue(path);
+    msg << QVariant::fromValue(path);
 
     QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid object path passed in arguments");
     QVERIFY(!con.send(msg));
 
     QDBusSignature sig;
-    msg.setArguments(QVariantList() << qVariantFromValue(sig));
+    msg.setArguments(QVariantList() << QVariant::fromValue(sig));
     QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid signature passed in arguments");
     QVERIFY(!con.send(msg));
 
     QTest::ignoreMessage(QtWarningMsg, "QDBusSignature: invalid signature \"a\"");
     sig.setSignature("a");
     msg.setArguments(QVariantList());
-    msg << qVariantFromValue(sig);
+    msg << QVariant::fromValue(sig);
     QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid signature passed in arguments");
     QVERIFY(!con.send(msg));
 }
@@ -956,7 +956,7 @@ void tst_QDBusMarshall::sendCallErrors_data()
             << "Marshalling failed: Variant containing QVariant::Invalid passed in arguments"
             << "QDBusMarshaller: cannot add an invalid QVariant";
     QTest::newRow("invalid-variant1") << serviceName << objectPath << interfaceName << "ping"
-            << (QVariantList() << qVariantFromValue(QDBusVariant()))
+            << (QVariantList() << QVariant::fromValue(QDBusVariant()))
             << "org.freedesktop.DBus.Error.Failed"
             << "Marshalling failed: Variant containing QVariant::Invalid passed in arguments"
             << "QDBusMarshaller: cannot add a null QDBusVariant";
@@ -970,20 +970,20 @@ void tst_QDBusMarshall::sendCallErrors_data()
     // this type is known to the meta type system, but not registered with D-Bus
     qRegisterMetaType<UnregisteredType>();
     QTest::newRow("extra-unregistered") << serviceName << objectPath << interfaceName << "ping"
-            << (QVariantList() << qVariantFromValue(UnregisteredType()))
+            << (QVariantList() << QVariant::fromValue(UnregisteredType()))
             << "org.freedesktop.DBus.Error.Failed"
             << "Marshalling failed: Unregistered type UnregisteredType passed in arguments"
             << QString("QDBusMarshaller: type `UnregisteredType' (%1) is not registered with D-BUS. Use qDBusRegisterMetaType to register it")
             .arg(qMetaTypeId<UnregisteredType>());
 
     QTest::newRow("invalid-object-path-arg") << serviceName << objectPath << interfaceName << "ping"
-            << (QVariantList() << qVariantFromValue(QDBusObjectPath()))
+            << (QVariantList() << QVariant::fromValue(QDBusObjectPath()))
             << "org.freedesktop.DBus.Error.Failed"
             << "Marshalling failed: Invalid object path passed in arguments"
             << "";
 
     QTest::newRow("invalid-signature-arg") << serviceName << objectPath << interfaceName << "ping"
-            << (QVariantList() << qVariantFromValue(QDBusSignature()))
+            << (QVariantList() << QVariant::fromValue(QDBusSignature()))
             << "org.freedesktop.DBus.Error.Failed"
             << "Marshalling failed: Invalid signature passed in arguments"
             << "";
@@ -991,7 +991,7 @@ void tst_QDBusMarshall::sendCallErrors_data()
     // invalid file descriptor
     if (fileDescriptorPassing) {
         QTest::newRow("invalid-file-descriptor") << serviceName << objectPath << interfaceName << "ping"
-                << (QVariantList() << qVariantFromValue(QDBusUnixFileDescriptor(-1)))
+                << (QVariantList() << QVariant::fromValue(QDBusUnixFileDescriptor(-1)))
                 << "org.freedesktop.DBus.Error.Failed"
                 << "Marshalling failed: Invalid file descriptor passed in arguments"
                 << "";
@@ -1200,7 +1200,7 @@ QVariant demarshallPrimitiveAs(const QDBusArgument& dbusArg)
 {
     T val;
     dbusArg >> val;
-    return qVariantFromValue(val);
+    return QVariant::fromValue(val);
 }
 
 QVariant demarshallPrimitiveAs(int typeIndex, const QDBusArgument& dbusArg)
@@ -1247,7 +1247,7 @@ void tst_QDBusMarshall::demarshallPrimitives()
         sendArg.beginStructure();
         sendArg.appendVariant(value);
         sendArg.endStructure();
-        msg.setArguments(QVariantList() << qVariantFromValue(sendArg));
+        msg.setArguments(QVariantList() << QVariant::fromValue(sendArg));
         QDBusMessage reply = con.call(msg);
 
         const QDBusArgument receiveArg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));
@@ -1279,15 +1279,15 @@ void tst_QDBusMarshall::demarshallStrings_data()
     typedef QPair<QVariant, char> ValSigPair;
     const QList<ValSigPair> nullStringTypes
         = QList<ValSigPair>()
-            << ValSigPair(qVariantFromValue(QString()), 's')
-            << ValSigPair(qVariantFromValue(QDBusObjectPath()), 'o')
-            << ValSigPair(qVariantFromValue(QDBusSignature()), 'g');
+            << ValSigPair(QVariant::fromValue(QString()), 's')
+            << ValSigPair(QVariant::fromValue(QDBusObjectPath()), 'o')
+            << ValSigPair(QVariant::fromValue(QDBusSignature()), 'g');
     foreach (ValSigPair valSigPair, nullStringTypes) {
         QTest::newRow("bool(false)") << QVariant(false) << valSigPair.second << valSigPair.first;
         QTest::newRow("bool(true)") << QVariant(true) << valSigPair.second << valSigPair.first;
-        QTest::newRow("byte") << qVariantFromValue(uchar(1)) << valSigPair.second << valSigPair.first;
-        QTest::newRow("int16") << qVariantFromValue(short(2)) << valSigPair.second << valSigPair.first;
-        QTest::newRow("uint16") << qVariantFromValue(ushort(3)) << valSigPair.second << valSigPair.first;
+        QTest::newRow("byte") << QVariant::fromValue(uchar(1)) << valSigPair.second << valSigPair.first;
+        QTest::newRow("int16") << QVariant::fromValue(short(2)) << valSigPair.second << valSigPair.first;
+        QTest::newRow("uint16") << QVariant::fromValue(ushort(3)) << valSigPair.second << valSigPair.first;
         QTest::newRow("int") << QVariant(1) << valSigPair.second << valSigPair.first;
         QTest::newRow("uint") << QVariant(2U) << valSigPair.second << valSigPair.first;
         QTest::newRow("int64") << QVariant(Q_INT64_C(3)) << valSigPair.second << valSigPair.first;
@@ -1299,32 +1299,32 @@ void tst_QDBusMarshall::demarshallStrings_data()
     // to check released functionality is maintained even after checks have
     // been added to string demarshalling
     QTest::newRow("empty string->invalid objectpath") << QVariant("")
-                                                      << 'o' << qVariantFromValue(QDBusObjectPath());
+                                                      << 'o' << QVariant::fromValue(QDBusObjectPath());
     QTest::newRow("null string->invalid objectpath") << QVariant(QString())
-                                                     << 'o' << qVariantFromValue(QDBusObjectPath());
+                                                     << 'o' << QVariant::fromValue(QDBusObjectPath());
     QTest::newRow("string->invalid objectpath") << QVariant("invalid objectpath")
-                                                << 'o' << qVariantFromValue(QDBusObjectPath());
+                                                << 'o' << QVariant::fromValue(QDBusObjectPath());
     QTest::newRow("string->valid objectpath") << QVariant("/org/kde")
-                                              << 'o' << qVariantFromValue(QDBusObjectPath("/org/kde"));
+                                              << 'o' << QVariant::fromValue(QDBusObjectPath("/org/kde"));
 
     QTest::newRow("empty string->invalid signature") << QVariant("")
-                                                     << 'g' << qVariantFromValue(QDBusSignature());
+                                                     << 'g' << QVariant::fromValue(QDBusSignature());
     QTest::newRow("null string->invalid signature") << QVariant(QString())
-                                                    << 'g' << qVariantFromValue(QDBusSignature());
+                                                    << 'g' << QVariant::fromValue(QDBusSignature());
     QTest::newRow("string->invalid signature") << QVariant("_invalid signature")
-                                               << 'g' << qVariantFromValue(QDBusSignature());
+                                               << 'g' << QVariant::fromValue(QDBusSignature());
     QTest::newRow("string->valid signature") << QVariant("s")
-                                             << 'g' << qVariantFromValue(QDBusSignature("s"));
+                                             << 'g' << QVariant::fromValue(QDBusSignature("s"));
 
-    QTest::newRow("objectpath->string") << qVariantFromValue(QDBusObjectPath("/org/kde"))
-                                        << 's' << qVariantFromValue(QString("/org/kde"));
-    QTest::newRow("objectpath->invalid signature") << qVariantFromValue(QDBusObjectPath("/org/kde"))
-                                                   << 'g' << qVariantFromValue(QDBusSignature());
+    QTest::newRow("objectpath->string") << QVariant::fromValue(QDBusObjectPath("/org/kde"))
+                                        << 's' << QVariant::fromValue(QString("/org/kde"));
+    QTest::newRow("objectpath->invalid signature") << QVariant::fromValue(QDBusObjectPath("/org/kde"))
+                                                   << 'g' << QVariant::fromValue(QDBusSignature());
 
-    QTest::newRow("signature->string") << qVariantFromValue(QDBusSignature("s"))
-                                       << 's' << qVariantFromValue(QString("s"));
-    QTest::newRow("signature->invalid objectpath") << qVariantFromValue(QDBusSignature("s"))
-                                                   << 'o' << qVariantFromValue(QDBusObjectPath());
+    QTest::newRow("signature->string") << QVariant::fromValue(QDBusSignature("s"))
+                                       << 's' << QVariant::fromValue(QString("s"));
+    QTest::newRow("signature->invalid objectpath") << QVariant::fromValue(QDBusSignature("s"))
+                                                   << 'o' << QVariant::fromValue(QDBusObjectPath());
 }
 
 QVariant demarshallAsString(const QDBusArgument& dbusArg, char targetSig)
@@ -1338,12 +1338,12 @@ QVariant demarshallAsString(const QDBusArgument& dbusArg, char targetSig)
         case 'o': {
             QDBusObjectPath op;
             dbusArg >> op;
-            return qVariantFromValue(op);
+            return QVariant::fromValue(op);
         }
         case 'g' : {
             QDBusSignature sig;
             dbusArg >> sig;
-            return qVariantFromValue(sig);
+            return QVariant::fromValue(sig);
         }
         default: {
             return QVariant();
@@ -1367,7 +1367,7 @@ void tst_QDBusMarshall::demarshallStrings()
     sendArg.beginStructure();
     sendArg.appendVariant(value);
     sendArg.endStructure();
-    msg.setArguments(QVariantList() << qVariantFromValue(sendArg));
+    msg.setArguments(QVariantList() << QVariant::fromValue(sendArg));
     QDBusMessage reply = con.call(msg);
 
     const QDBusArgument receiveArg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));
@@ -1391,15 +1391,15 @@ void tst_QDBusMarshall::demarshallInvalidStringList_data()
 
     // Arrays of non-string type should not demarshall to a string list
     QList<bool> bools;
-    QTest::newRow("emptyboollist") << qVariantFromValue(bools);
+    QTest::newRow("emptyboollist") << QVariant::fromValue(bools);
     bools << false << true << false;
-    QTest::newRow("boollist") << qVariantFromValue(bools);
+    QTest::newRow("boollist") << QVariant::fromValue(bools);
 
     // Structures should not demarshall to a QByteArray
     QTest::newRow("struct of strings")
-            << qVariantFromValue(QVariantList() << QString("foo") << QString("bar"));
+            << QVariant::fromValue(QVariantList() << QString("foo") << QString("bar"));
     QTest::newRow("struct of mixed types")
-            << qVariantFromValue(QVariantList() << QString("foo") << int(42) << double(3.14));
+            << QVariant::fromValue(QVariantList() << QString("foo") << int(42) << double(3.14));
 }
 
 void tst_QDBusMarshall::demarshallInvalidStringList()
@@ -1416,7 +1416,7 @@ void tst_QDBusMarshall::demarshallInvalidStringList()
     sendArg.beginStructure();
     sendArg.appendVariant(value);
     sendArg.endStructure();
-    msg.setArguments(QVariantList() << qVariantFromValue(sendArg));
+    msg.setArguments(QVariantList() << QVariant::fromValue(sendArg));
     QDBusMessage reply = con.call(msg);
 
     const QDBusArgument receiveArg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));
@@ -1440,16 +1440,16 @@ void tst_QDBusMarshall::demarshallInvalidByteArray_data()
 
     // Arrays of other types than byte should not demarshall to a QByteArray
     QList<bool> bools;
-    QTest::newRow("empty array of bool") << qVariantFromValue(bools);
+    QTest::newRow("empty array of bool") << QVariant::fromValue(bools);
     bools << true << false << true;
-    QTest::newRow("non-empty array of bool") << qVariantFromValue(bools);
+    QTest::newRow("non-empty array of bool") << QVariant::fromValue(bools);
 
     // Structures should not demarshall to a QByteArray
     QTest::newRow("struct of bytes")
-            << qVariantFromValue(QVariantList() << uchar(1) << uchar(2));
+            << QVariant::fromValue(QVariantList() << uchar(1) << uchar(2));
 
     QTest::newRow("struct of mixed types")
-            << qVariantFromValue(QVariantList() << int(42) << QString("foo") << double(3.14));
+            << QVariant::fromValue(QVariantList() << int(42) << QString("foo") << double(3.14));
 }
 
 void tst_QDBusMarshall::demarshallInvalidByteArray()
@@ -1466,7 +1466,7 @@ void tst_QDBusMarshall::demarshallInvalidByteArray()
     sendArg.beginStructure();
     sendArg.appendVariant(value);
     sendArg.endStructure();
-    msg.setArguments(QVariantList() << qVariantFromValue(sendArg));
+    msg.setArguments(QVariantList() << QVariant::fromValue(sendArg));
     QDBusMessage reply = con.call(msg);
 
     const QDBusArgument receiveArg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));

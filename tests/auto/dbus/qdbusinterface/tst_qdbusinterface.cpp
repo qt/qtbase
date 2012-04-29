@@ -161,7 +161,7 @@ int prop1Peer()
 void setComplexPropPeer(QList<int> val)
 {
     QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "setComplexProp");
-    req << qVariantFromValue(val);
+    req << QVariant::fromValue(val);
     QDBusMessage reply = QDBusConnection::sessionBus().call(req);
 }
 
@@ -474,7 +474,7 @@ void tst_QDBusInterface::callMethod()
     MyObject::callCount = 0;
 
     // call a SLOT method
-    QDBusMessage reply = iface.call("ping", qVariantFromValue(QDBusVariant("foo")));
+    QDBusMessage reply = iface.call("ping", QVariant::fromValue(QDBusVariant("foo")));
     QCOMPARE(MyObject::callCount, 1);
     QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
 
@@ -493,7 +493,7 @@ void tst_QDBusInterface::callMethod()
     QCOMPARE(dv.variant().toString(), QString("foo"));
 
     // call an INVOKABLE method
-    reply = iface.call("ping_invokable", qVariantFromValue(QDBusVariant("bar")));
+    reply = iface.call("ping_invokable", QVariant::fromValue(QDBusVariant("bar")));
     QCOMPARE(MyObject::callCount, 2);
     QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
 
@@ -708,7 +708,7 @@ void tst_QDBusInterface::callMethodPeer()
     resetPeer();
 
     // call a SLOT method
-    QDBusMessage reply = iface.call("ping", qVariantFromValue(QDBusVariant("foo")));
+    QDBusMessage reply = iface.call("ping", QVariant::fromValue(QDBusVariant("foo")));
     QCOMPARE(callCountPeer(), 1);
     QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
 
@@ -728,7 +728,7 @@ void tst_QDBusInterface::callMethodPeer()
     QCOMPARE(dv.variant().toString(), QString("foo"));
 
     // call an INVOKABLE method
-    reply = iface.call("ping_invokable", qVariantFromValue(QDBusVariant("bar")));
+    reply = iface.call("ping_invokable", QVariant::fromValue(QDBusVariant("bar")));
     QCOMPARE(callCountPeer(), 2);
     QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
 
@@ -1066,7 +1066,7 @@ void tst_QDBusInterface::complexPropertyWrite()
     obj.m_complexProp.clear();
     MyObject::callCount = 0;
 
-    QVERIFY(iface.setProperty("complexProp", qVariantFromValue(arg)));
+    QVERIFY(iface.setProperty("complexProp", QVariant::fromValue(arg)));
     QCOMPARE(MyObject::callCount, 1);
     QCOMPARE(obj.m_complexProp, arg);
 }
@@ -1129,7 +1129,7 @@ void tst_QDBusInterface::complexPropertyWritePeer()
     resetPeer();
     QList<int> arg = QList<int>() << -47 << 42;
 
-    QVERIFY(iface.setProperty("complexProp", qVariantFromValue(arg)));
+    QVERIFY(iface.setProperty("complexProp", QVariant::fromValue(arg)));
     QCOMPARE(callCountPeer(), 1);
     QCOMPARE(complexPropPeer(), arg);
 }

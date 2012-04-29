@@ -855,16 +855,16 @@ void tst_QQuaternion::properties()
 
     obj.setQuaternion(QQuaternion(6.0f, 7.0f, 8.0f, 9.0f));
 
-    QQuaternion q = qVariantValue<QQuaternion>(obj.property("quaternion"));
+    QQuaternion q = qvariant_cast<QQuaternion>(obj.property("quaternion"));
     QCOMPARE(q.scalar(), (qreal)6.0f);
     QCOMPARE(q.x(), (qreal)7.0f);
     QCOMPARE(q.y(), (qreal)8.0f);
     QCOMPARE(q.z(), (qreal)9.0f);
 
     obj.setProperty("quaternion",
-                    qVariantFromValue(QQuaternion(-6.0f, -7.0f, -8.0f, -9.0f)));
+                    QVariant::fromValue(QQuaternion(-6.0f, -7.0f, -8.0f, -9.0f)));
 
-    q = qVariantValue<QQuaternion>(obj.property("quaternion"));
+    q = qvariant_cast<QQuaternion>(obj.property("quaternion"));
     QCOMPARE(q.scalar(), (qreal)-6.0f);
     QCOMPARE(q.x(), (qreal)-7.0f);
     QCOMPARE(q.y(), (qreal)-8.0f);

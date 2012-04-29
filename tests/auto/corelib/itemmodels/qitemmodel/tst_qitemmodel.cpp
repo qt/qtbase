@@ -535,27 +535,27 @@ void tst_QItemModel::data()
     // General Purpose roles
     QVariant variant = currentModel->data(currentModel->index(0,0), Qt::ToolTipRole);
     if (variant.isValid()) {
-        QVERIFY(qVariantCanConvert<QString>(variant));
+        QVERIFY(variant.canConvert<QString>());
     }
     variant = currentModel->data(currentModel->index(0,0), Qt::StatusTipRole);
     if (variant.isValid()) {
-        QVERIFY(qVariantCanConvert<QString>(variant));
+        QVERIFY(variant.canConvert<QString>());
     }
     variant = currentModel->data(currentModel->index(0,0), Qt::WhatsThisRole);
     if (variant.isValid()) {
-        QVERIFY(qVariantCanConvert<QString>(variant));
+        QVERIFY(variant.canConvert<QString>());
     }
 
     variant = currentModel->data(currentModel->index(0,0), Qt::SizeHintRole);
     if (variant.isValid()) {
-        QVERIFY(qVariantCanConvert<QSize>(variant));
+        QVERIFY(variant.canConvert<QSize>());
     }
 
 
     // Appearance roles
     QVariant fontVariant = currentModel->data(currentModel->index(0,0), Qt::FontRole);
     if (fontVariant.isValid()) {
-        QVERIFY(qVariantCanConvert<QFont>(fontVariant));
+        QVERIFY(fontVariant.canConvert<QFont>());
     }
 
     QVariant textAlignmentVariant = currentModel->data(currentModel->index(0,0), Qt::TextAlignmentRole);
@@ -569,12 +569,12 @@ void tst_QItemModel::data()
 
     QVariant colorVariant = currentModel->data(currentModel->index(0,0), Qt::BackgroundColorRole);
     if (colorVariant.isValid()) {
-        QVERIFY(qVariantCanConvert<QColor>(colorVariant));
+        QVERIFY(colorVariant.canConvert<QColor>());
     }
 
     colorVariant = currentModel->data(currentModel->index(0,0), Qt::TextColorRole);
     if (colorVariant.isValid()) {
-        QVERIFY(qVariantCanConvert<QColor>(colorVariant));
+        QVERIFY(colorVariant.canConvert<QColor>());
     }
 
     QVariant checkStateVariant = currentModel->data(currentModel->index(0,0), Qt::CheckStateRole);

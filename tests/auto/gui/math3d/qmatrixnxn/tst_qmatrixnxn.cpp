@@ -3358,13 +3358,13 @@ void tst_QMatrixNxN::properties()
     QMatrix4x4 m1(uniqueValues4);
     obj.setMatrix(m1);
 
-    QMatrix4x4 m2 = qVariantValue<QMatrix4x4>(obj.property("matrix"));
+    QMatrix4x4 m2 = qvariant_cast<QMatrix4x4>(obj.property("matrix"));
     QVERIFY(isSame(m2, uniqueValues4));
 
     QMatrix4x4 m3(transposedValues4);
-    obj.setProperty("matrix", qVariantFromValue(m3));
+    obj.setProperty("matrix", QVariant::fromValue(m3));
 
-    m2 = qVariantValue<QMatrix4x4>(obj.property("matrix"));
+    m2 = qvariant_cast<QMatrix4x4>(obj.property("matrix"));
     QVERIFY(isSame(m2, transposedValues4));
 }
 

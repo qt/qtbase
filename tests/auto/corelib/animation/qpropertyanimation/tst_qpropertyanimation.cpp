@@ -702,7 +702,7 @@ Q_DECLARE_METATYPE(QAbstractAnimation::State)
 
 QVariant numberInterpolator(const Number &f, const Number &t, qreal progress)
 {
-    return qVariantFromValue<Number>(Number(f.n + (t.n - f.n)*progress));
+    return QVariant::fromValue<Number>(Number(f.n + (t.n - f.n)*progress));
 }
 
 QVariant xaxisQPointInterpolator(const QPointF &f, const QPointF &t, qreal progress)
@@ -714,21 +714,21 @@ void tst_QPropertyAnimation::interpolated()
 {
     QObject o;
     o.setProperty("point", QPointF()); //this will avoid warnings
-    o.setProperty("number", qVariantFromValue<Number>(Number(42)));
-    QCOMPARE(qVariantValue<Number>(o.property("number")), Number(42));
+    o.setProperty("number", QVariant::fromValue<Number>(Number(42)));
+    QCOMPARE(qvariant_cast<Number>(o.property("number")), Number(42));
     {
     qRegisterAnimationInterpolator<Number>(numberInterpolator);
     QPropertyAnimation anim(&o, "number");
-    anim.setStartValue(qVariantFromValue<Number>(Number(0)));
-    anim.setEndValue(qVariantFromValue<Number>(Number(100)));
+    anim.setStartValue(QVariant::fromValue<Number>(Number(0)));
+    anim.setEndValue(QVariant::fromValue<Number>(Number(100)));
     anim.setDuration(1000);
     anim.start();
     anim.pause();
     anim.setCurrentTime(100);
-    Number t(qVariantValue<Number>(o.property("number")));
+    Number t(qvariant_cast<Number>(o.property("number")));
     QCOMPARE(t, Number(10));
     anim.setCurrentTime(500);
-    QCOMPARE(qVariantValue<Number>(o.property("number")), Number(50));
+    QCOMPARE(qvariant_cast<Number>(o.property("number")), Number(50));
     }
     {
     qRegisterAnimationInterpolator<QPointF>(xaxisQPointInterpolator);
@@ -861,16 +861,16 @@ void tst_QPropertyAnimation::zeroDurationStart()
     //let's check the first state change
     const QVariantList firstChange = spy.first();
     //old state
-    QCOMPARE(qVariantValue<QAbstractAnimation::State>(firstChange.last()), QAbstractAnimation::Stopped);
+    QCOMPARE(qvariant_cast<QAbstractAnimation::State>(firstChange.last()), QAbstractAnimation::Stopped);
     //new state
-    QCOMPARE(qVariantValue<QAbstractAnimation::State>(firstChange.first()), QAbstractAnimation::Running);
+    QCOMPARE(qvariant_cast<QAbstractAnimation::State>(firstChange.first()), QAbstractAnimation::Running);
 
     //let's check the first state change
     const QVariantList secondChange = spy.last();
     //old state
-    QCOMPARE(qVariantValue<QAbstractAnimation::State>(secondChange.last()), QAbstractAnimation::Running);
+    QCOMPARE(qvariant_cast<QAbstractAnimation::State>(secondChange.last()), QAbstractAnimation::Running);
     //new state
-    QCOMPARE(qVariantValue<QAbstractAnimation::State>(secondChange.first()), QAbstractAnimation::Stopped);
+    QCOMPARE(qvariant_cast<QAbstractAnimation::State>(secondChange.first()), QAbstractAnimation::Stopped);
 }
 
 #define Pause 1

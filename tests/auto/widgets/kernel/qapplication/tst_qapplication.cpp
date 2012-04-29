@@ -1466,8 +1466,8 @@ void tst_QApplication::focusChanged()
     QApplication::setActiveWindow(&parent1); // needs this on twm (focus follows mouse)
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).count(), 2);
-    old = qVariantValue<QWidget*>(spy.at(0).at(0));
-    now = qVariantValue<QWidget*>(spy.at(0).at(1));
+    old = qvariant_cast<QWidget*>(spy.at(0).at(0));
+    now = qvariant_cast<QWidget*>(spy.at(0).at(1));
     QVERIFY(now == &le1);
     QVERIFY(now == QApplication::focusWidget());
     QVERIFY(old == 0);
@@ -1476,8 +1476,8 @@ void tst_QApplication::focusChanged()
 
     pb1.setFocus();
     QCOMPARE(spy.count(), 1);
-    old = qVariantValue<QWidget*>(spy.at(0).at(0));
-    now = qVariantValue<QWidget*>(spy.at(0).at(1));
+    old = qvariant_cast<QWidget*>(spy.at(0).at(0));
+    now = qvariant_cast<QWidget*>(spy.at(0).at(1));
     QVERIFY(now == &pb1);
     QVERIFY(now == QApplication::focusWidget());
     QVERIFY(old == &le1);
@@ -1485,8 +1485,8 @@ void tst_QApplication::focusChanged()
 
     lb1.setFocus();
     QCOMPARE(spy.count(), 1);
-    old = qVariantValue<QWidget*>(spy.at(0).at(0));
-    now = qVariantValue<QWidget*>(spy.at(0).at(1));
+    old = qvariant_cast<QWidget*>(spy.at(0).at(0));
+    now = qvariant_cast<QWidget*>(spy.at(0).at(1));
     QVERIFY(now == &lb1);
     QVERIFY(now == QApplication::focusWidget());
     QVERIFY(old == &pb1);
@@ -1494,8 +1494,8 @@ void tst_QApplication::focusChanged()
 
     lb1.clearFocus();
     QCOMPARE(spy.count(), 1);
-    old = qVariantValue<QWidget*>(spy.at(0).at(0));
-    now = qVariantValue<QWidget*>(spy.at(0).at(1));
+    old = qvariant_cast<QWidget*>(spy.at(0).at(0));
+    now = qvariant_cast<QWidget*>(spy.at(0).at(1));
     QVERIFY(now == 0);
     QVERIFY(now == QApplication::focusWidget());
     QVERIFY(old == &lb1);
@@ -1513,8 +1513,8 @@ void tst_QApplication::focusChanged()
     parent2.show();
     QApplication::setActiveWindow(&parent2); // needs this on twm (focus follows mouse)
     QVERIFY(spy.count() > 0); // one for deactivation, one for activation on Windows
-    old = qVariantValue<QWidget*>(spy.at(spy.count()-1).at(0));
-    now = qVariantValue<QWidget*>(spy.at(spy.count()-1).at(1));
+    old = qvariant_cast<QWidget*>(spy.at(spy.count()-1).at(0));
+    now = qvariant_cast<QWidget*>(spy.at(spy.count()-1).at(1));
     QVERIFY(now == &le2);
     QVERIFY(now == QApplication::focusWidget());
     QVERIFY(old == 0);
@@ -1547,8 +1547,8 @@ void tst_QApplication::focusChanged()
         QVERIFY(now == QApplication::focusWidget());
     } else {
         QVERIFY(spy.count() > 0);
-        old = qVariantValue<QWidget*>(spy.at(0).at(0));
-        now = qVariantValue<QWidget*>(spy.at(0).at(1));
+        old = qvariant_cast<QWidget*>(spy.at(0).at(0));
+        now = qvariant_cast<QWidget*>(spy.at(0).at(1));
         QVERIFY(now == &pb2);
         QVERIFY(now == QApplication::focusWidget());
         QVERIFY(old == &le2);
@@ -1561,8 +1561,8 @@ void tst_QApplication::focusChanged()
     } else {
         tab.simulate(now);
         QVERIFY(spy.count() > 0);
-        old = qVariantValue<QWidget*>(spy.at(0).at(0));
-        now = qVariantValue<QWidget*>(spy.at(0).at(1));
+        old = qvariant_cast<QWidget*>(spy.at(0).at(0));
+        now = qvariant_cast<QWidget*>(spy.at(0).at(1));
         QVERIFY(now == &le2);
         QVERIFY(now == QApplication::focusWidget());
         QVERIFY(old == &pb2);
@@ -1575,8 +1575,8 @@ void tst_QApplication::focusChanged()
     } else {
         backtab.simulate(now);
         QVERIFY(spy.count() > 0);
-        old = qVariantValue<QWidget*>(spy.at(0).at(0));
-        now = qVariantValue<QWidget*>(spy.at(0).at(1));
+        old = qvariant_cast<QWidget*>(spy.at(0).at(0));
+        now = qvariant_cast<QWidget*>(spy.at(0).at(1));
         QVERIFY(now == &pb2);
         QVERIFY(now == QApplication::focusWidget());
         QVERIFY(old == &le2);
@@ -1591,8 +1591,8 @@ void tst_QApplication::focusChanged()
     } else {
         backtab.simulate(now);
         QVERIFY(spy.count() > 0);
-        old = qVariantValue<QWidget*>(spy.at(0).at(0));
-        now = qVariantValue<QWidget*>(spy.at(0).at(1));
+        old = qvariant_cast<QWidget*>(spy.at(0).at(0));
+        now = qvariant_cast<QWidget*>(spy.at(0).at(1));
         QVERIFY(now == &le2);
         QVERIFY(now == QApplication::focusWidget());
         QVERIFY(old == &pb2);
@@ -1605,8 +1605,8 @@ void tst_QApplication::focusChanged()
         QVERIFY(now == QApplication::focusWidget());
     } else {
         QVERIFY(spy.count() > 0);
-        old = qVariantValue<QWidget*>(spy.at(0).at(0));
-        now = qVariantValue<QWidget*>(spy.at(0).at(1));
+        old = qvariant_cast<QWidget*>(spy.at(0).at(0));
+        now = qvariant_cast<QWidget*>(spy.at(0).at(1));
         QVERIFY(now == &pb2);
         QVERIFY(now == QApplication::focusWidget());
         QVERIFY(old == &le2);
@@ -1614,8 +1614,8 @@ void tst_QApplication::focusChanged()
 
         click.simulate(old);
         QVERIFY(spy.count() > 0);
-        old = qVariantValue<QWidget*>(spy.at(0).at(0));
-        now = qVariantValue<QWidget*>(spy.at(0).at(1));
+        old = qvariant_cast<QWidget*>(spy.at(0).at(0));
+        now = qvariant_cast<QWidget*>(spy.at(0).at(1));
         QVERIFY(now == &le2);
         QVERIFY(now == QApplication::focusWidget());
         QVERIFY(old == &pb2);
@@ -1629,10 +1629,10 @@ void tst_QApplication::focusChanged()
     //on windows, the change of focus is made in 2 steps
     //(the focusChanged SIGNAL is emitted twice)
     if (spy.count()==1)
-        old = qVariantValue<QWidget*>(spy.at(spy.count()-1).at(0));
+        old = qvariant_cast<QWidget*>(spy.at(spy.count()-1).at(0));
     else
-        old = qVariantValue<QWidget*>(spy.at(spy.count()-2).at(0));
-    now = qVariantValue<QWidget*>(spy.at(spy.count()-1).at(1));
+        old = qvariant_cast<QWidget*>(spy.at(spy.count()-2).at(0));
+    now = qvariant_cast<QWidget*>(spy.at(spy.count()-1).at(1));
     QVERIFY(now == &le1);
     QVERIFY(now == QApplication::focusWidget());
     QVERIFY(old == &le2);

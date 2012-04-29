@@ -282,21 +282,21 @@ void tst_QNetworkRequest::setHeader_data()
     cookie.setName("a");
     cookie.setValue("b");
     QTest::newRow("Cookie-1") << QNetworkRequest::CookieHeader
-                              << qVariantFromValue(QList<QNetworkCookie>() << cookie)
+                              << QVariant::fromValue(QList<QNetworkCookie>() << cookie)
                               << true << "Cookie"
                               << "a=b";
     QTest::newRow("SetCookie-1") << QNetworkRequest::SetCookieHeader
-                                 << qVariantFromValue(QList<QNetworkCookie>() << cookie)
+                                 << QVariant::fromValue(QList<QNetworkCookie>() << cookie)
                                  << true << "Set-Cookie"
                                  << "a=b";
 
     cookie.setPath("/");
     QTest::newRow("Cookie-2") << QNetworkRequest::CookieHeader
-                              << qVariantFromValue(QList<QNetworkCookie>() << cookie)
+                              << QVariant::fromValue(QList<QNetworkCookie>() << cookie)
                               << true << "Cookie"
                               << "a=b";
     QTest::newRow("SetCookie-2") << QNetworkRequest::SetCookieHeader
-                                 << qVariantFromValue(QList<QNetworkCookie>() << cookie)
+                                 << QVariant::fromValue(QList<QNetworkCookie>() << cookie)
                                  << true << "Set-Cookie"
                                  << "a=b; path=/";
 
@@ -304,11 +304,11 @@ void tst_QNetworkRequest::setHeader_data()
     cookie2.setName("c");
     cookie2.setValue("d");
     QTest::newRow("Cookie-3") << QNetworkRequest::CookieHeader
-                              << qVariantFromValue(QList<QNetworkCookie>() << cookie << cookie2)
+                              << QVariant::fromValue(QList<QNetworkCookie>() << cookie << cookie2)
                               << true << "Cookie"
                               << "a=b; c=d";
     QTest::newRow("SetCookie-3") << QNetworkRequest::SetCookieHeader
-                                 << qVariantFromValue(QList<QNetworkCookie>() << cookie << cookie2)
+                                 << QVariant::fromValue(QList<QNetworkCookie>() << cookie << cookie2)
                                  << true << "Set-Cookie"
                                  << "a=b; path=/, c=d";
 }
@@ -388,17 +388,17 @@ void tst_QNetworkRequest::rawHeaderParsing_data()
     cookie.setName("a");
     cookie.setValue("b");
     QTest::newRow("Cookie-1") << QNetworkRequest::CookieHeader
-                              << qVariantFromValue(QList<QNetworkCookie>() << cookie)
+                              << QVariant::fromValue(QList<QNetworkCookie>() << cookie)
                               << true << "Cookie"
                               << "a=b";
     QTest::newRow("SetCookie-1") << QNetworkRequest::SetCookieHeader
-                                 << qVariantFromValue(QList<QNetworkCookie>() << cookie)
+                                 << QVariant::fromValue(QList<QNetworkCookie>() << cookie)
                                  << true << "Set-Cookie"
                                  << "a=b";
 
     cookie.setPath("/");
     QTest::newRow("SetCookie-2") << QNetworkRequest::SetCookieHeader
-                                 << qVariantFromValue(QList<QNetworkCookie>() << cookie)
+                                 << QVariant::fromValue(QList<QNetworkCookie>() << cookie)
                                  << true << "Set-Cookie"
                                  << "a=b; path=/";
 
@@ -407,12 +407,12 @@ void tst_QNetworkRequest::rawHeaderParsing_data()
     cookie2.setName("c");
     cookie2.setValue("d");
     QTest::newRow("Cookie-3") << QNetworkRequest::CookieHeader
-                              << qVariantFromValue(QList<QNetworkCookie>() << cookie << cookie2)
+                              << QVariant::fromValue(QList<QNetworkCookie>() << cookie << cookie2)
                               << true << "Cookie"
                               << "a=b; c=d";
     cookie.setPath("/");
     QTest::newRow("SetCookie-3") << QNetworkRequest::SetCookieHeader
-                                 << qVariantFromValue(QList<QNetworkCookie>() << cookie << cookie2)
+                                 << QVariant::fromValue(QList<QNetworkCookie>() << cookie << cookie2)
                                  << true << "Set-Cookie"
                                  << "a=b; path=/, c=d";
 }

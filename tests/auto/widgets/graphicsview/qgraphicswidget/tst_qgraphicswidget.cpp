@@ -3211,11 +3211,11 @@ void tst_QGraphicsWidget::itemChangeEvents()
                 break;
             }
             case QEvent::ParentAboutToChange: {
-                valueDuringEvents.insert(QEvent::ParentAboutToChange, qVariantFromValue(parentItem()));
+                valueDuringEvents.insert(QEvent::ParentAboutToChange, QVariant::fromValue(parentItem()));
                 break;
             }
             case QEvent::ParentChange: {
-                valueDuringEvents.insert(QEvent::ParentChange, qVariantFromValue(parentItem()));
+                valueDuringEvents.insert(QEvent::ParentChange, QVariant::fromValue(parentItem()));
                 break;
             }
             case QEvent::CursorChange: {
@@ -3252,10 +3252,10 @@ void tst_QGraphicsWidget::itemChangeEvents()
     TestGraphicsWidget *item = new TestGraphicsWidget;
     item->setParentItem(parent);
     // ParentAboutToChange should be triggered before the parent has changed
-    QTRY_COMPARE(qVariantValue<QGraphicsItem *>(item->valueDuringEvents.value(QEvent::ParentAboutToChange)),
+    QTRY_COMPARE(qvariant_cast<QGraphicsItem *>(item->valueDuringEvents.value(QEvent::ParentAboutToChange)),
              static_cast<QGraphicsItem *>(0));
     // ParentChange should be triggered after the parent has changed
-    QTRY_COMPARE(qVariantValue<QGraphicsItem *>(item->valueDuringEvents.value(QEvent::ParentChange)),
+    QTRY_COMPARE(qvariant_cast<QGraphicsItem *>(item->valueDuringEvents.value(QEvent::ParentChange)),
              static_cast<QGraphicsItem *>(parent));
 
     // ShowEvent should be triggered before the item is shown

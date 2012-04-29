@@ -3001,7 +3001,7 @@ void tst_QSqlQuery::QTBUG_551()
     q.bindValue(":outp", outLst, QSql::Out);
 
     QVERIFY_SQL(q, execBatch(QSqlQuery::ValuesAsColumns) );
-    res_outLst = qVariantValue<QVariantList>(q.boundValues()[":outp"]);
+    res_outLst = qvariant_cast<QVariantList>(q.boundValues()[":outp"]);
     QCOMPARE(res_outLst[0].toString(), QLatin1String("1. Value is 0"));
     QCOMPARE(res_outLst[1].toString(), QLatin1String("2. Value is 1"));
     QCOMPARE(res_outLst[2].toString(), QLatin1String("3. Value is 2"));

@@ -582,7 +582,7 @@ void tst_QDBusAbstractInterface::variantPropWrite()
     QVERIFY2(p, "Not connected to D-Bus");
 
     QDBusVariant expectedValue = QDBusVariant(Q_INT64_C(-47));
-    QVERIFY(p->setProperty("variantProp", qVariantFromValue(expectedValue)));
+    QVERIFY(p->setProperty("variantProp", QVariant::fromValue(expectedValue)));
     QCOMPARE(targetObj.m_variantProp.variant(), expectedValue.variant());
 }
 
@@ -603,7 +603,7 @@ void tst_QDBusAbstractInterface::complexPropWrite()
     QVERIFY2(p, "Not connected to D-Bus");
 
     RegisteredType expectedValue = RegisteredType("This is a value");
-    QVERIFY(p->setProperty("complexProp", qVariantFromValue(expectedValue)));
+    QVERIFY(p->setProperty("complexProp", QVariant::fromValue(expectedValue)));
     QCOMPARE(targetObj.m_complexProp, expectedValue);
 }
 
@@ -652,7 +652,7 @@ void tst_QDBusAbstractInterface::variantPropWritePeer()
     resetServer();
 
     QDBusVariant expectedValue = QDBusVariant(Q_INT64_C(-47));
-    QVERIFY(p->setProperty("variantProp", qVariantFromValue(expectedValue)));
+    QVERIFY(p->setProperty("variantProp", QVariant::fromValue(expectedValue)));
     QEXPECT_FAIL("", "QTBUG-24262 peer tests are broken", Abort);
     QCOMPARE(targetObj.m_variantProp.variant(), expectedValue.variant());
 }
@@ -676,7 +676,7 @@ void tst_QDBusAbstractInterface::complexPropWritePeer()
     resetServer();
 
     RegisteredType expectedValue = RegisteredType("This is a value");
-    QVERIFY(p->setProperty("complexProp", qVariantFromValue(expectedValue)));
+    QVERIFY(p->setProperty("complexProp", QVariant::fromValue(expectedValue)));
     QEXPECT_FAIL("", "QTBUG-24262 peer tests are broken", Abort);
     QCOMPARE(targetObj.m_complexProp, expectedValue);
 }

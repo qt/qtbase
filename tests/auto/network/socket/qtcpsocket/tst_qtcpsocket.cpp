@@ -2212,9 +2212,9 @@ void tst_QTcpSocket::connectionRefused()
     QCOMPARE(socket->error(), QAbstractSocket::ConnectionRefusedError);
 
     QCOMPARE(stateSpy.count(), 3);
-    QCOMPARE(qVariantValue<QAbstractSocket::SocketState>(stateSpy.at(0).at(0)), QAbstractSocket::HostLookupState);
-    QCOMPARE(qVariantValue<QAbstractSocket::SocketState>(stateSpy.at(1).at(0)), QAbstractSocket::ConnectingState);
-    QCOMPARE(qVariantValue<QAbstractSocket::SocketState>(stateSpy.at(2).at(0)), QAbstractSocket::UnconnectedState);
+    QCOMPARE(qvariant_cast<QAbstractSocket::SocketState>(stateSpy.at(0).at(0)), QAbstractSocket::HostLookupState);
+    QCOMPARE(qvariant_cast<QAbstractSocket::SocketState>(stateSpy.at(1).at(0)), QAbstractSocket::ConnectingState);
+    QCOMPARE(qvariant_cast<QAbstractSocket::SocketState>(stateSpy.at(2).at(0)), QAbstractSocket::UnconnectedState);
     QCOMPARE(errorSpy.count(), 1);
 
     delete socket;

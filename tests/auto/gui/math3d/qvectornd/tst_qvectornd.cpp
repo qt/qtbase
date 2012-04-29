@@ -2077,38 +2077,38 @@ void tst_QVectorND::properties()
     obj.setVector3D(QVector3D(3.0f, 4.0f, 5.0f));
     obj.setVector4D(QVector4D(6.0f, 7.0f, 8.0f, 9.0f));
 
-    QVector2D v2 = qVariantValue<QVector2D>(obj.property("vector2D"));
+    QVector2D v2 = qvariant_cast<QVector2D>(obj.property("vector2D"));
     QCOMPARE(v2.x(), (qreal)1.0f);
     QCOMPARE(v2.y(), (qreal)2.0f);
 
-    QVector3D v3 = qVariantValue<QVector3D>(obj.property("vector3D"));
+    QVector3D v3 = qvariant_cast<QVector3D>(obj.property("vector3D"));
     QCOMPARE(v3.x(), (qreal)3.0f);
     QCOMPARE(v3.y(), (qreal)4.0f);
     QCOMPARE(v3.z(), (qreal)5.0f);
 
-    QVector4D v4 = qVariantValue<QVector4D>(obj.property("vector4D"));
+    QVector4D v4 = qvariant_cast<QVector4D>(obj.property("vector4D"));
     QCOMPARE(v4.x(), (qreal)6.0f);
     QCOMPARE(v4.y(), (qreal)7.0f);
     QCOMPARE(v4.z(), (qreal)8.0f);
     QCOMPARE(v4.w(), (qreal)9.0f);
 
     obj.setProperty("vector2D",
-                    qVariantFromValue(QVector2D(-1.0f, -2.0f)));
+                    QVariant::fromValue(QVector2D(-1.0f, -2.0f)));
     obj.setProperty("vector3D",
-                    qVariantFromValue(QVector3D(-3.0f, -4.0f, -5.0f)));
+                    QVariant::fromValue(QVector3D(-3.0f, -4.0f, -5.0f)));
     obj.setProperty("vector4D",
-                    qVariantFromValue(QVector4D(-6.0f, -7.0f, -8.0f, -9.0f)));
+                    QVariant::fromValue(QVector4D(-6.0f, -7.0f, -8.0f, -9.0f)));
 
-    v2 = qVariantValue<QVector2D>(obj.property("vector2D"));
+    v2 = qvariant_cast<QVector2D>(obj.property("vector2D"));
     QCOMPARE(v2.x(), (qreal)-1.0f);
     QCOMPARE(v2.y(), (qreal)-2.0f);
 
-    v3 = qVariantValue<QVector3D>(obj.property("vector3D"));
+    v3 = qvariant_cast<QVector3D>(obj.property("vector3D"));
     QCOMPARE(v3.x(), (qreal)-3.0f);
     QCOMPARE(v3.y(), (qreal)-4.0f);
     QCOMPARE(v3.z(), (qreal)-5.0f);
 
-    v4 = qVariantValue<QVector4D>(obj.property("vector4D"));
+    v4 = qvariant_cast<QVector4D>(obj.property("vector4D"));
     QCOMPARE(v4.x(), (qreal)-6.0f);
     QCOMPARE(v4.y(), (qreal)-7.0f);
     QCOMPARE(v4.z(), (qreal)-8.0f);

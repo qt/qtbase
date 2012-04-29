@@ -188,7 +188,7 @@ static void variantSetValue(T d)
     QVariant v;
     QBENCHMARK {
         for(int i = 0; i < ITERATION_COUNT; ++i) {
-            qVariantSetValue(v, d);
+            v.setValue(d);
         }
     }
 }

@@ -1068,7 +1068,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData
         downloadZerocopyBuffer = downloadBufferPointer.data();
         downloadBufferCurrentSize = 0;
         downloadBufferMaximumSize = contentLength;
-        q->setAttribute(QNetworkRequest::DownloadBufferAttribute, qVariantFromValue<QSharedPointer<char> > (downloadBufferPointer));
+        q->setAttribute(QNetworkRequest::DownloadBufferAttribute, QVariant::fromValue<QSharedPointer<char> > (downloadBufferPointer));
     }
 
     q->setAttribute(QNetworkRequest::HttpPipeliningWasUsedAttribute, pu);

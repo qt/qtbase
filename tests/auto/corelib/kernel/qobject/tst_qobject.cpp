@@ -2051,12 +2051,12 @@ void tst_QObject::property()
 
     CustomType *customPointer = 0;
     QVariant customVariant = object.property("custom");
-    customPointer = qVariantValue<CustomType *>(customVariant);
+    customPointer = qvariant_cast<CustomType *>(customVariant);
     QCOMPARE(customPointer, object.custom());
 
     CustomType custom;
     customPointer = &custom;
-    qVariantSetValue(customVariant, customPointer);
+    customVariant.setValue(customPointer);
 
     property = mo->property(mo->indexOfProperty("custom"));
     QVERIFY(property.isWritable());
@@ -2068,7 +2068,7 @@ void tst_QObject::property()
     QCOMPARE(object.custom(), customPointer);
 
     customVariant = object.property("custom");
-    customPointer = qVariantValue<CustomType *>(customVariant);
+    customPointer = qvariant_cast<CustomType *>(customVariant);
     QCOMPARE(object.custom(), customPointer);
 
     // this enum property has a meta type, but it's not yet registered, so we know this fails
@@ -2101,22 +2101,22 @@ void tst_QObject::property()
 
     var = object.property("priority");
     QVERIFY(!var.isNull());
-    QVERIFY(qVariantCanConvert<PropertyObject::Priority>(var));
-    QCOMPARE(qVariantValue<PropertyObject::Priority>(var), PropertyObject::High);
+    QVERIFY(var.canConvert<PropertyObject::Priority>());
+    QCOMPARE(qvariant_cast<PropertyObject::Priority>(var), PropertyObject::High);
     object.setPriority(PropertyObject::Low);
-    QCOMPARE(qVariantValue<PropertyObject::Priority>(object.property("priority")), PropertyObject::Low);
+    QCOMPARE(qvariant_cast<PropertyObject::Priority>(object.property("priority")), PropertyObject::Low);
     QVERIFY(object.setProperty("priority", PropertyObject::VeryHigh));
-    QCOMPARE(qVariantValue<PropertyObject::Priority>(object.property("priority")), PropertyObject::VeryHigh);
+    QCOMPARE(qvariant_cast<PropertyObject::Priority>(object.property("priority")), PropertyObject::VeryHigh);
     QVERIFY(object.setProperty("priority", "High"));
-    QCOMPARE(qVariantValue<PropertyObject::Priority>(object.property("priority")), PropertyObject::High);
+    QCOMPARE(qvariant_cast<PropertyObject::Priority>(object.property("priority")), PropertyObject::High);
     QVERIFY(!object.setProperty("priority", QVariant()));
 
     var = object.property("priority");
-    QCOMPARE(qVariantValue<PropertyObject::Priority>(var), PropertyObject::High);
+    QCOMPARE(qvariant_cast<PropertyObject::Priority>(var), PropertyObject::High);
     object.setPriority(PropertyObject::Low);
-    QCOMPARE(qVariantValue<PropertyObject::Priority>(object.property("priority")), PropertyObject::Low);
+    QCOMPARE(qvariant_cast<PropertyObject::Priority>(object.property("priority")), PropertyObject::Low);
     object.setProperty("priority", var);
-    QCOMPARE(qVariantValue<PropertyObject::Priority>(object.property("priority")), PropertyObject::High);
+    QCOMPARE(qvariant_cast<PropertyObject::Priority>(object.property("priority")), PropertyObject::High);
 
     qRegisterMetaType<CustomString>("CustomString");
     QVERIFY(mo->indexOfProperty("customString") != -1);
@@ -3002,10 +3002,10 @@ void tst_QObject::floatProperty()
     QVERIFY(prop.isValid());
     QVERIFY(prop.type() == uint(QMetaType::type("float")));
     QVERIFY(!prop.write(&obj, QVariant("Hello")));
-    QVERIFY(prop.write(&obj, qVariantFromValue(128.0f)));
+    QVERIFY(prop.write(&obj, QVariant::fromValue(128.0f)));
     QVariant v = prop.read(&obj);
     QVERIFY(int(v.userType()) == QMetaType::Float);
-    QVERIFY(qVariantValue<float>(v) == 128.0f);
+    QVERIFY(qvariant_cast<float>(v) == 128.0f);
 }
 
 void tst_QObject::qrealProperty()
@@ -3018,15 +3018,15 @@ void tst_QObject::qrealProperty()
     QVERIFY(prop.type() == uint(QMetaType::type("qreal")));
     QVERIFY(!prop.write(&obj, QVariant("Hello")));
 
-    QVERIFY(prop.write(&obj, qVariantFromValue(128.0f)));
+    QVERIFY(prop.write(&obj, QVariant::fromValue(128.0f)));
     QVariant v = prop.read(&obj);
     QCOMPARE(v.userType(), qMetaTypeId<qreal>());
-    QVERIFY(qVariantValue<qreal>(v) == 128.0);
+    QVERIFY(qvariant_cast<qreal>(v) == 128.0);
 
-    QVERIFY(prop.write(&obj, qVariantFromValue(double(127))));
+    QVERIFY(prop.write(&obj, QVariant::fromValue(double(127))));
     v = prop.read(&obj);
     QCOMPARE(v.userType(), qMetaTypeId<qreal>());
-    QVERIFY(qVariantValue<qreal>(v) == 127.0);
+    QVERIFY(qvariant_cast<qreal>(v) == 127.0);
 }
 
 class DynamicPropertyObject : public PropertyObject

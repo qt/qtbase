@@ -158,7 +158,7 @@ void tst_QClipboard::testSignals()
     QCOMPARE(selectionChangedSpy.count(), 0);
     QCOMPARE(changedSpy.count(), 1);
     QCOMPARE(changedSpy.at(0).count(), 1);
-    QCOMPARE(qVariantValue<QClipboard::Mode>(changedSpy.at(0).at(0)), QClipboard::Clipboard);
+    QCOMPARE(qvariant_cast<QClipboard::Mode>(changedSpy.at(0).at(0)), QClipboard::Clipboard);
 
     changedSpy.clear();
 
@@ -168,7 +168,7 @@ void tst_QClipboard::testSignals()
         QCOMPARE(selectionChangedSpy.count(), 1);
         QCOMPARE(changedSpy.count(), 1);
         QCOMPARE(changedSpy.at(0).count(), 1);
-        QCOMPARE(qVariantValue<QClipboard::Mode>(changedSpy.at(0).at(0)), QClipboard::Selection);
+        QCOMPARE(qvariant_cast<QClipboard::Mode>(changedSpy.at(0).at(0)), QClipboard::Selection);
     } else {
         QCOMPARE(selectionChangedSpy.count(), 0);
     }
@@ -183,7 +183,7 @@ void tst_QClipboard::testSignals()
         QCOMPARE(searchChangedSpy.count(), 1);
         QCOMPARE(changedSpy.count(), 1);
         QCOMPARE(changedSpy.at(0).count(), 1);
-        QCOMPARE(qVariantValue<QClipboard::Mode>(changedSpy.at(0).at(0)), QClipboard::FindBuffer);
+        QCOMPARE(qvariant_cast<QClipboard::Mode>(changedSpy.at(0).at(0)), QClipboard::FindBuffer);
     } else {
         QCOMPARE(searchChangedSpy.count(), 0);
     }

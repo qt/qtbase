@@ -260,7 +260,7 @@ Q_DECLARE_METATYPE(TestSpace::Foo)
 void tst_QMetaType::namespaces()
 {
     TestSpace::Foo nf = { 11.12 };
-    QVariant v = qVariantFromValue(nf);
+    QVariant v = QVariant::fromValue(nf);
     QCOMPARE(qvariant_cast<TestSpace::Foo>(v).d, 11.12);
 }
 

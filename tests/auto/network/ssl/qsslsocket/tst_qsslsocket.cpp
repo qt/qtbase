@@ -1793,8 +1793,8 @@ void tst_QSslSocket::peerVerifyError()
     QVERIFY(!socket->waitForEncrypted(10000));
     QVERIFY(!peerVerifyErrorSpy.isEmpty());
     QVERIFY(!sslErrorsSpy.isEmpty());
-    QCOMPARE(qVariantValue<QSslError>(peerVerifyErrorSpy.last().at(0)).error(), QSslError::HostNameMismatch);
-    QCOMPARE(qVariantValue<QList<QSslError> >(sslErrorsSpy.at(0).at(0)).size(), peerVerifyErrorSpy.size());
+    QCOMPARE(qvariant_cast<QSslError>(peerVerifyErrorSpy.last().at(0)).error(), QSslError::HostNameMismatch);
+    QCOMPARE(qvariant_cast<QList<QSslError> >(sslErrorsSpy.at(0).at(0)).size(), peerVerifyErrorSpy.size());
 }
 
 void tst_QSslSocket::disconnectFromHostWhenConnecting()

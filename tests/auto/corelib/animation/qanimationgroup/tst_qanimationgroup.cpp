@@ -145,9 +145,9 @@ void tst_QAnimationGroup::emptyGroup()
 
     QCOMPARE(groupStateChangedSpy.count(), 2);
 
-    QCOMPARE(qVariantValue<QAbstractAnimation::State>(groupStateChangedSpy.at(0).first()),
+    QCOMPARE(qvariant_cast<QAbstractAnimation::State>(groupStateChangedSpy.at(0).first()),
              QAnimationGroup::Running);
-    QCOMPARE(qVariantValue<QAbstractAnimation::State>(groupStateChangedSpy.at(1).first()),
+    QCOMPARE(qvariant_cast<QAbstractAnimation::State>(groupStateChangedSpy.at(1).first()),
              QAnimationGroup::Stopped);
 
     QCOMPARE(group.state(), QAnimationGroup::Stopped);
@@ -160,9 +160,9 @@ void tst_QAnimationGroup::emptyGroup()
 
     group.start();
 
-    QCOMPARE(qVariantValue<QAbstractAnimation::State>(groupStateChangedSpy.at(2).first()),
+    QCOMPARE(qvariant_cast<QAbstractAnimation::State>(groupStateChangedSpy.at(2).first()),
              QAnimationGroup::Running);
-    QCOMPARE(qVariantValue<QAbstractAnimation::State>(groupStateChangedSpy.at(3).first()),
+    QCOMPARE(qvariant_cast<QAbstractAnimation::State>(groupStateChangedSpy.at(3).first()),
              QAnimationGroup::Stopped);
 
     QCOMPARE(group.state(), QAnimationGroup::Stopped);

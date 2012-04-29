@@ -2078,7 +2078,7 @@ void tst_QSqlDatabase::eventNotificationPSQL()
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), procedureName);
-    QCOMPARE(qVariantValue<QSqlDriver::NotificationSource>(arguments.at(1)), QSqlDriver::SelfSource);
+    QCOMPARE(qvariant_cast<QSqlDriver::NotificationSource>(arguments.at(1)), QSqlDriver::SelfSource);
     QCOMPARE(qvariant_cast<QVariant>(arguments.at(2)).toString(), payload);
     QVERIFY_SQL(driver, unsubscribeFromNotification(procedureName));
 }

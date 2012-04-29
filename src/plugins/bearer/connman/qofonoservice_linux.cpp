@@ -786,7 +786,7 @@ bool QOfonoPrimaryDataContextInterface::setActive(bool on)
 {
 //    this->setProperty("Active", QVariant(on));
 
-    return setProp("Active", qVariantFromValue(on));
+    return setProp("Active", QVariant::fromValue(on));
 }
 
 bool QOfonoPrimaryDataContextInterface::setApn(const QString &name)
@@ -855,7 +855,7 @@ QVariantMap QOfonoPrimaryDataContextInterface::getProperties()
 bool QOfonoPrimaryDataContextInterface::setProp(const QString &property, const QVariant &var)
 {
     QList<QVariant> args;
-    args << qVariantFromValue(property) << qVariantFromValue(QDBusVariant(var));
+    args << QVariant::fromValue(property) << QVariant::fromValue(QDBusVariant(var));
 
     QDBusMessage reply = this->callWithArgumentList(QDBus::AutoDetect,
                                                     QLatin1String("SetProperty"),

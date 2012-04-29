@@ -287,7 +287,7 @@ QVariant QDBusDemarshaller::toVariantInternal()
 
     case DBUS_TYPE_UNIX_FD:
         if (capabilities & QDBusConnection::UnixFileDescriptorPassing)
-            return qVariantFromValue(toUnixFileDescriptor());
+            return QVariant::fromValue(toUnixFileDescriptor());
         // fall through
 
     default:

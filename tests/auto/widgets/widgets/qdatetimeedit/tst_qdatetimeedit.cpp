@@ -2049,7 +2049,7 @@ void tst_QDateTimeEdit::dateSignalChecking()
     if (timesEmitted > 0) {
         QList<QVariant> list = dateSpy.takeFirst();
         QDate d;
-        d = qVariantValue<QDate>(list.at(0));
+        d = qvariant_cast<QDate>(list.at(0));
         QCOMPARE(d, newDate);
     }
     QCOMPARE(dateTimeSpy.count(), timesEmitted);
@@ -2085,7 +2085,7 @@ void tst_QDateTimeEdit::timeSignalChecking()
     if (timesEmitted > 0) {
         QList<QVariant> list = timeSpy.takeFirst();
         QTime t;
-        t = qVariantValue<QTime>(list.at(0));
+        t = qvariant_cast<QTime>(list.at(0));
         QCOMPARE(t, newTime);
     }
     QCOMPARE(dateTimeSpy.count(), timesEmitted);
@@ -2135,21 +2135,21 @@ void tst_QDateTimeEdit::dateTimeSignalChecking()
         QCOMPARE(timesDateEmitted, 1);
         QList<QVariant> list = dateSpy.takeFirst();
         QDate d;
-        d = qVariantValue<QDate>(list.at(0));
+        d = qvariant_cast<QDate>(list.at(0));
         QCOMPARE(d, newDateTime.date());
     }
     QCOMPARE(timeSpy.count(), timesTimeEmitted);
     if (timesTimeEmitted > 0) {
         QList<QVariant> list = timeSpy.takeFirst();
         QTime t;
-        t = qVariantValue<QTime>(list.at(0));
+        t = qvariant_cast<QTime>(list.at(0));
         QCOMPARE(t, newDateTime.time());
     }
     QCOMPARE(dateTimeSpy.count(), timesDateTimeEmitted);
     if (timesDateTimeEmitted > 0) {
         QList<QVariant> list = dateTimeSpy.takeFirst();
         QDateTime dt;
-        dt = qVariantValue<QDateTime>(list.at(0));
+        dt = qvariant_cast<QDateTime>(list.at(0));
         QCOMPARE(dt, newDateTime);
     }
 }

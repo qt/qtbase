@@ -185,7 +185,7 @@ void tst_QDBusLocalCalls::makeCallsVariant()
     QFETCH(QVariant, value);
     QDBusMessage callMsg = QDBusMessage::createMethodCall(conn.baseService(),
                                                           "/", QString(), "echo");
-    callMsg << qVariantFromValue(QDBusVariant(value));
+    callMsg << QVariant::fromValue(QDBusVariant(value));
     QDBusMessage replyMsg = doCall(callMsg);
 
     QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ReplyMessage));
@@ -222,7 +222,7 @@ void tst_QDBusLocalCalls::makeCallsComplex()
     value << 1 << -42 << 47;
     QDBusMessage callMsg = QDBusMessage::createMethodCall(conn.baseService(),
                                                           "/", QString(), "echo");
-    callMsg << qVariantFromValue(value);
+    callMsg << QVariant::fromValue(value);
     QDBusMessage replyMsg = doCall(callMsg);
 
     QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ReplyMessage));

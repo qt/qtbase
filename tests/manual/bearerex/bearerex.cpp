@@ -90,7 +90,7 @@ void BearerEx::showConfigurations()
         font.setUnderline(true);
         listItem->setFont(font);        
         listItem->setText("       UserChoice");
-        listItem->setData(Qt::UserRole, qVariantFromValue(defaultConfig));
+        listItem->setData(Qt::UserRole, QVariant::fromValue(defaultConfig));
         listWidget->addItem(listItem);
     }
     
@@ -121,7 +121,7 @@ void BearerEx::showConfigurations()
             listItem->setFont(font);        
         }
         listItem->setText(text);
-        listItem->setData(Qt::UserRole, qVariantFromValue(configurations[i]));
+        listItem->setData(Qt::UserRole, QVariant::fromValue(configurations[i]));
         listWidget->addItem(listItem);
     }
 }
@@ -143,7 +143,7 @@ void BearerEx::on_showDetailsButton_clicked()
         return;
     }
 
-	QNetworkConfiguration networkConfiguration = qVariantValue<QNetworkConfiguration>(item->data(Qt::UserRole));
+    QNetworkConfiguration networkConfiguration = qvariant_cast<QNetworkConfiguration>(item->data(Qt::UserRole));
 	DetailedInfoDialog infoDialog(&networkConfiguration,this);
 	infoDialog.exec();
 }
@@ -154,7 +154,7 @@ void BearerEx::on_createSessionButton_clicked()
     if (!item) {
         return;
     }    
-    QNetworkConfiguration networkConfiguration = qVariantValue<QNetworkConfiguration>(item->data(Qt::UserRole));
+    QNetworkConfiguration networkConfiguration = qvariant_cast<QNetworkConfiguration>(item->data(Qt::UserRole));
     int newTabIndex = mainTabWidget->count();
     SessionTab* newTab = new SessionTab(&networkConfiguration,&m_NetworkConfigurationManager,eventListWidget,newTabIndex-1);
     QString label = QString("S")+QString::number(newTabIndex-1);

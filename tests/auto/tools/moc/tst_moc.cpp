@@ -860,13 +860,13 @@ void tst_Moc::namespaceTypeProperty()
     QByteArray ba = QByteArray("points");
     QVariant v = tst.property(ba);
     QVERIFY(v.isValid());
-    myNS::Points p = qVariantValue<myNS::Points>(v);
+    myNS::Points p = qvariant_cast<myNS::Points>(v);
     QCOMPARE(p.p1, 0xBEEF);
     QCOMPARE(p.p2, 0xBABE);
     p.p1 = 0xCAFE;
     p.p2 = 0x1EE7;
-    QVERIFY(tst.setProperty(ba, qVariantFromValue(p)));
-    myNS::Points pp = qVariantValue<myNS::Points>(tst.property(ba));
+    QVERIFY(tst.setProperty(ba, QVariant::fromValue(p)));
+    myNS::Points pp = qvariant_cast<myNS::Points>(tst.property(ba));
     QCOMPARE(p.p1, pp.p1);
     QCOMPARE(p.p2, pp.p2);
 }
@@ -1181,16 +1181,16 @@ void tst_Moc::qprivateproperties()
     PrivatePropertyTest test;
 
     test.setProperty("foo", 1);
-    QCOMPARE(test.property("foo"), qVariantFromValue(1));
+    QCOMPARE(test.property("foo"), QVariant::fromValue(1));
 
     test.setProperty("bar", 2);
-    QCOMPARE(test.property("bar"), qVariantFromValue(2));
+    QCOMPARE(test.property("bar"), QVariant::fromValue(2));
 
     test.setProperty("plop", 3);
-    QCOMPARE(test.property("plop"), qVariantFromValue(3));
+    QCOMPARE(test.property("plop"), QVariant::fromValue(3));
 
     test.setProperty("baz", 4);
-    QCOMPARE(test.property("baz"), qVariantFromValue(4));
+    QCOMPARE(test.property("baz"), QVariant::fromValue(4));
 
 }
 

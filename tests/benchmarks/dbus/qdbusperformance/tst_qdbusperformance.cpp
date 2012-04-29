@@ -168,13 +168,13 @@ void tst_QDBusPerformance::oneWay_data()
 
     QByteArray ba(256, 'a');
     while (ba.size() < 8193) {
-        QTest::newRow(QString("%1-byteArray").arg(ba.size()).toAscii()) << qVariantFromValue(ba) << ba.size();
+        QTest::newRow(QString("%1-byteArray").arg(ba.size()).toAscii()) << QVariant::fromValue(ba) << ba.size();
         ba += ba;
     }
 
     QString s(256, QLatin1Char('a'));
     while (s.size() < 8193) {
-        QTest::newRow(QString("%1-string").arg(s.size()).toAscii()) << qVariantFromValue(s) << s.size();
+        QTest::newRow(QString("%1-string").arg(s.size()).toAscii()) << QVariant::fromValue(s) << s.size();
         s += s;
     }
 }
@@ -197,7 +197,7 @@ void tst_QDBusPerformance::oneWayVariant()
     QFETCH(QVariant, data);
     QFETCH(int, size);
 
-    QVERIFY(executeTest("size", size, qVariantFromValue(QDBusVariant(data))));
+    QVERIFY(executeTest("size", size, QVariant::fromValue(QDBusVariant(data))));
 }
 
 void tst_QDBusPerformance::roundTrip_data()
@@ -223,7 +223,7 @@ void tst_QDBusPerformance::roundTripVariant()
     QFETCH(QVariant, data);
     QFETCH(int, size);
 
-    QVERIFY(executeTest("echo", size, qVariantFromValue(QDBusVariant(data))));
+    QVERIFY(executeTest("echo", size, QVariant::fromValue(QDBusVariant(data))));
 }
 
 QTEST_MAIN(tst_QDBusPerformance)

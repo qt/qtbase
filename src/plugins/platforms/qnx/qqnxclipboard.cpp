@@ -153,7 +153,7 @@ protected:
             return QMimeData::retrieveData(mimetype, preferredType);
 
         const QByteArray data = readClipboardBuff(mimetype.toUtf8().constData());
-        return qVariantFromValue(data);
+        return QVariant::fromValue(data);
     }
 
 private Q_SLOTS:

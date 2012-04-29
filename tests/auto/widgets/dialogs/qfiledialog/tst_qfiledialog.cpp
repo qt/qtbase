@@ -1061,11 +1061,11 @@ void tst_QFiledialog::historyBack()
     QCOMPARE(backButton->isEnabled(), true);
     QCOMPARE(forwardButton->isEnabled(), true);
     QCOMPARE(spy.count(), 3);
-    QString currentPath = qVariantValue<QString>(spy.last().first());
+    QString currentPath = qvariant_cast<QString>(spy.last().first());
     QCOMPARE(model->index(currentPath), model->index(temp));
 
     backButton->click();
-    currentPath = qVariantValue<QString>(spy.last().first());
+    currentPath = qvariant_cast<QString>(spy.last().first());
     QCOMPARE(currentPath, home);
     QCOMPARE(backButton->isEnabled(), false);
     QCOMPARE(forwardButton->isEnabled(), true);
@@ -1101,39 +1101,39 @@ void tst_QFiledialog::historyForward()
 
     backButton->click();
     QCOMPARE(forwardButton->isEnabled(), true);
-    QCOMPARE(model->index(qVariantValue<QString>(spy.last().first())), model->index(temp));
+    QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(temp));
 
     forwardButton->click();
-    QCOMPARE(model->index(qVariantValue<QString>(spy.last().first())), model->index(desktop));
+    QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(desktop));
     QCOMPARE(backButton->isEnabled(), true);
     QCOMPARE(forwardButton->isEnabled(), false);
     QCOMPARE(spy.count(), 4);
 
     backButton->click();
-    QCOMPARE(model->index(qVariantValue<QString>(spy.last().first())), model->index(temp));
+    QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(temp));
     QCOMPARE(backButton->isEnabled(), true);
 
     backButton->click();
-    QCOMPARE(model->index(qVariantValue<QString>(spy.last().first())), model->index(home));
+    QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(home));
     QCOMPARE(backButton->isEnabled(), false);
     QCOMPARE(forwardButton->isEnabled(), true);
     QCOMPARE(spy.count(), 6);
 
     forwardButton->click();
-    QCOMPARE(model->index(qVariantValue<QString>(spy.last().first())), model->index(temp));
+    QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(temp));
     backButton->click();
-    QCOMPARE(model->index(qVariantValue<QString>(spy.last().first())), model->index(home));
+    QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(home));
     QCOMPARE(spy.count(), 8);
 
     forwardButton->click();
-    QCOMPARE(model->index(qVariantValue<QString>(spy.last().first())), model->index(temp));
+    QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(temp));
     forwardButton->click();
-    QCOMPARE(model->index(qVariantValue<QString>(spy.last().first())), model->index(desktop));
+    QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(desktop));
 
     backButton->click();
-    QCOMPARE(model->index(qVariantValue<QString>(spy.last().first())), model->index(temp));
+    QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(temp));
     backButton->click();
-    QCOMPARE(model->index(qVariantValue<QString>(spy.last().first())), model->index(home));
+    QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(home));
     fd.setDirectory(desktop);
     QCOMPARE(forwardButton->isEnabled(), false);
 }

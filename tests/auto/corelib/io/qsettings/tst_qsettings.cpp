@@ -1023,7 +1023,7 @@ void tst_QSettings::testVariantTypes()
 #define testVal(key, val, tp, rtype) \
     { \
         QSettings settings1(format, QSettings::UserScope, "software.org", "KillerAPP"); \
-        settings1.setValue(key, qVariantFromValue(val)); \
+        settings1.setValue(key, QVariant::fromValue(val)); \
     } \
     QConfFile::clearCache(); \
     { \
@@ -1055,7 +1055,7 @@ void tst_QSettings::testVariantTypes()
     QList<QVariant> l3;
     QDate date = QDate::currentDate();
     QTime time = QTime::currentTime();
-    l3 << QString("ene") << 10 << qVariantFromValue(QColor(1, 2, 3)) << QVariant(QRect(1, 2, 3, 4))
+    l3 << QString("ene") << 10 << QVariant::fromValue(QColor(1, 2, 3)) << QVariant(QRect(1, 2, 3, 4))
         << QVariant(QSize(4, 56)) << QVariant(QPoint(4, 2)) << true << false << date << time;
     testVal("key3", l3, QVariantList, List);
 

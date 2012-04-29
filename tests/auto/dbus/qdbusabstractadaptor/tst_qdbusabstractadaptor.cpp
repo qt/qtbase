@@ -1064,11 +1064,11 @@ void tst_QDBusAbstractAdaptor::writeProperties()
 
         valueSpy.clear();
         properties.call(QDBus::BlockWithGui, "Set", "local." + name, QString("prop1"),
-                        qVariantFromValue(QDBusVariant(name)));
+                        QVariant::fromValue(QDBusVariant(name)));
         QVERIFY(valueSpy.isEmpty()); // call mustn't have succeeded
 
         properties.call(QDBus::BlockWithGui, "Set", "local." + name, QString("prop2"),
-                        qVariantFromValue(QDBusVariant(name)));
+                        QVariant::fromValue(QDBusVariant(name)));
         QCOMPARE(valueSpy, name);
         QCOMPARE(QString(slotSpy), QString("void %1::setProp2(const QString &)").arg(name));
     }
@@ -1570,11 +1570,11 @@ void tst_QDBusAbstractAdaptor::writePropertiesPeer()
 
         clearValueSpyPeer();
         properties.call(QDBus::BlockWithGui, "Set", "local." + name, QString("prop1"),
-                        qVariantFromValue(QDBusVariant(name)));
+                        QVariant::fromValue(QDBusVariant(name)));
         QVERIFY(valueSpyPeer().isEmpty()); // call mustn't have succeeded
 
         properties.call(QDBus::BlockWithGui, "Set", "local." + name, QString("prop2"),
-                        qVariantFromValue(QDBusVariant(name)));
+                        QVariant::fromValue(QDBusVariant(name)));
         QCOMPARE(valueSpyPeer(), name);
         QCOMPARE(QString(slotSpyPeer()), QString("void %1::setProp2(const QString &)").arg(name));
     }
@@ -1774,9 +1774,9 @@ void tst_QDBusAbstractAdaptor::typeMatching_data()
     QTest::addColumn<QVariant>("value");
 
     QTest::newRow("bool") << "Bool" << "b" << QVariant(true);
-    QTest::newRow("byte") << "UChar" << "y" << qVariantFromValue(uchar(42));
-    QTest::newRow("short") << "Short" << "n" << qVariantFromValue(short(-43));
-    QTest::newRow("ushort") << "UShort" << "q" << qVariantFromValue(ushort(44));
+    QTest::newRow("byte") << "UChar" << "y" << QVariant::fromValue(uchar(42));
+    QTest::newRow("short") << "Short" << "n" << QVariant::fromValue(short(-43));
+    QTest::newRow("ushort") << "UShort" << "q" << QVariant::fromValue(ushort(44));
     QTest::newRow("int") << "Int" << "i" << QVariant(42);
     QTest::newRow("uint") << "UInt" << "u" << QVariant(42U);
     QTest::newRow("qlonglong") << "LongLong" << "x" << QVariant(Q_INT64_C(42));
@@ -1784,12 +1784,12 @@ void tst_QDBusAbstractAdaptor::typeMatching_data()
     QTest::newRow("double") << "Double" << "d" << QVariant(2.5);
     QTest::newRow("string") << "String" << "s" << QVariant("Hello, World!");
 
-    QTest::newRow("variant") << "Variant" << "v" << qVariantFromValue(QDBusVariant("Hello again!"));
+    QTest::newRow("variant") << "Variant" << "v" << QVariant::fromValue(QDBusVariant("Hello again!"));
     QTest::newRow("list") << "List" << "av" << QVariant(QVariantList()
                                                         << 42
                                                         << QString("foo")
                                                         << QByteArray("bar")
-                                                        << qVariantFromValue(QDBusVariant(QString("baz"))));
+                                                        << QVariant::fromValue(QDBusVariant(QString("baz"))));
     QTest::newRow("stringlist") << "StringList" << "as" << QVariant(QStringList() << "Hello" << "world");
     QTest::newRow("bytearray") << "ByteArray" << "ay" << QVariant(QByteArray("foo"));
 
@@ -1798,24 +1798,24 @@ void tst_QDBusAbstractAdaptor::typeMatching_data()
     map["The answer to life, the Universe and everything"] = 42u; // uint
     map["In the beginning..."] = QString("There was nothing"); // string
     map["but Unix came and said"] = QByteArray("\"Hello, World\""); // bytearray
-    map["two"] = qVariantFromValue(short(2)); // short
+    map["two"] = QVariant::fromValue(short(2)); // short
     QTest::newRow("map") << "Map" << "a{sv}" << QVariant(map);
 
     StringStringMap ssmap;
     ssmap["a"] = "A";
     ssmap["A"] = "a";
-    QTest::newRow("ssmap") << "SSMap" << "a{ss}" << qVariantFromValue(ssmap);
+    QTest::newRow("ssmap") << "SSMap" << "a{ss}" << QVariant::fromValue(ssmap);
 
     LLDateTimeMap lldtmap;
     lldtmap[-1] = QDateTime();
     QDateTime now = QDateTime::currentDateTime();
     lldtmap[now.toTime_t()] = now; // array of struct of int64 and struct of 3 ints and struct of 4 ints and int
-    QTest::newRow("lldtmap") << "LLDateTimeMap" << "a{x((iii)(iiii)i)}" << qVariantFromValue(lldtmap);
+    QTest::newRow("lldtmap") << "LLDateTimeMap" << "a{x((iii)(iiii)i)}" << QVariant::fromValue(lldtmap);
 
     MyStruct s;
     s.i = 42;
     s.s = "A value";
-    QTest::newRow("struct") << "Struct" << "(is)" << qVariantFromValue(s);
+    QTest::newRow("struct") << "Struct" << "(is)" << QVariant::fromValue(s);
 }
 
 void tst_QDBusAbstractAdaptor::typeMatching()

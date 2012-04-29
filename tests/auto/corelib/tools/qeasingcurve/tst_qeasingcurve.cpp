@@ -526,7 +526,7 @@ void tst_QEasingCurve::properties()
 
     obj.setEasing(inOutBack);
 
-    QEasingCurve easing = qVariantValue<QEasingCurve>(obj.property("easing"));
+    QEasingCurve easing = qvariant_cast<QEasingCurve>(obj.property("easing"));
     QCOMPARE(easing.type(), QEasingCurve::InOutBack);
     QCOMPARE(easing.overshoot(), overshoot);
     QCOMPARE(easing.amplitude(), amplitude);
@@ -538,9 +538,9 @@ void tst_QEasingCurve::properties()
     period = linear.period();
 
     obj.setProperty("easing",
-                    qVariantFromValue(QEasingCurve(QEasingCurve::Linear)));
+                    QVariant::fromValue(QEasingCurve(QEasingCurve::Linear)));
 
-    easing = qVariantValue<QEasingCurve>(obj.property("easing"));
+    easing = qvariant_cast<QEasingCurve>(obj.property("easing"));
     QCOMPARE(easing.type(), QEasingCurve::Linear);
     QCOMPARE(easing.overshoot(), overshoot);
     QCOMPARE(easing.amplitude(), amplitude);

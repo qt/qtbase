@@ -698,7 +698,7 @@ char* QNetworkReplyImplPrivate::getDownloadBuffer(qint64 size)
             downloadBuffer = new char[downloadBufferMaximumSize]; // throws if allocation fails
             downloadBufferPointer = QSharedPointer<char>(downloadBuffer, downloadBufferDeleter);
 
-            q->setAttribute(QNetworkRequest::DownloadBufferAttribute, qVariantFromValue<QSharedPointer<char> > (downloadBufferPointer));
+            q->setAttribute(QNetworkRequest::DownloadBufferAttribute, QVariant::fromValue<QSharedPointer<char> > (downloadBufferPointer));
         }
     }
 
@@ -713,7 +713,7 @@ void QNetworkReplyImplPrivate::setDownloadBuffer(QSharedPointer<char> sp, qint64
     downloadBuffer = downloadBufferPointer.data();
     downloadBufferCurrentSize = 0;
     downloadBufferMaximumSize = size;
-    q->setAttribute(QNetworkRequest::DownloadBufferAttribute, qVariantFromValue<QSharedPointer<char> > (downloadBufferPointer));
+    q->setAttribute(QNetworkRequest::DownloadBufferAttribute, QVariant::fromValue<QSharedPointer<char> > (downloadBufferPointer));
 }
 
 

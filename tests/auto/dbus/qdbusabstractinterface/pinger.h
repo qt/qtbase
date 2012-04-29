@@ -81,19 +81,19 @@ public:
     inline RegisteredType complexProp() const
     { return qvariant_cast< RegisteredType >(property("complexProp")); }
     inline void setComplexProp(RegisteredType value)
-    { setProperty("complexProp", qVariantFromValue(value)); }
+    { setProperty("complexProp", QVariant::fromValue(value)); }
 
     Q_PROPERTY(QString stringProp READ stringProp WRITE setStringProp)
     inline QString stringProp() const
     { return qvariant_cast< QString >(property("stringProp")); }
     inline void setStringProp(const QString &value)
-    { setProperty("stringProp", qVariantFromValue(value)); }
+    { setProperty("stringProp", QVariant::fromValue(value)); }
 
     Q_PROPERTY(QDBusVariant variantProp READ variantProp WRITE setVariantProp)
     inline QDBusVariant variantProp() const
     { return qvariant_cast< QDBusVariant >(property("variantProp")); }
     inline void setVariantProp(const QDBusVariant &value)
-    { setProperty("variantProp", qVariantFromValue(value)); }
+    { setProperty("variantProp", QVariant::fromValue(value)); }
 
 public Q_SLOTS: // METHODS
     inline QDBusPendingReply<RegisteredType> complexMethod()
@@ -120,7 +120,7 @@ public Q_SLOTS: // METHODS
     inline QDBusPendingReply<int> sleepMethod(int in0)
     {
         QList<QVariant> argumentList;
-        argumentList << qVariantFromValue(in0);
+        argumentList << QVariant::fromValue(in0);
         return asyncCallWithArgumentList(QLatin1String("sleepMethod"), argumentList);
     }
 

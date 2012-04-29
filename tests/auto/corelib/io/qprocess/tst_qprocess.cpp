@@ -264,9 +264,9 @@ void tst_QProcess::simpleStart()
     process = 0;
 
     QCOMPARE(spy.count(), 3);
-    QCOMPARE(qVariantValue<QProcess::ProcessState>(spy.at(0).at(0)), QProcess::Starting);
-    QCOMPARE(qVariantValue<QProcess::ProcessState>(spy.at(1).at(0)), QProcess::Running);
-    QCOMPARE(qVariantValue<QProcess::ProcessState>(spy.at(2).at(0)), QProcess::NotRunning);
+    QCOMPARE(qvariant_cast<QProcess::ProcessState>(spy.at(0).at(0)), QProcess::Starting);
+    QCOMPARE(qvariant_cast<QProcess::ProcessState>(spy.at(1).at(0)), QProcess::Running);
+    QCOMPARE(qvariant_cast<QProcess::ProcessState>(spy.at(2).at(0)), QProcess::NotRunning);
 }
 //-----------------------------------------------------------------------------
 void tst_QProcess::execute()
@@ -331,9 +331,9 @@ void tst_QProcess::crashTest()
     process = 0;
 
     QCOMPARE(stateSpy.count(), 3);
-    QCOMPARE(qVariantValue<QProcess::ProcessState>(stateSpy.at(0).at(0)), QProcess::Starting);
-    QCOMPARE(qVariantValue<QProcess::ProcessState>(stateSpy.at(1).at(0)), QProcess::Running);
-    QCOMPARE(qVariantValue<QProcess::ProcessState>(stateSpy.at(2).at(0)), QProcess::NotRunning);
+    QCOMPARE(qvariant_cast<QProcess::ProcessState>(stateSpy.at(0).at(0)), QProcess::Starting);
+    QCOMPARE(qvariant_cast<QProcess::ProcessState>(stateSpy.at(1).at(0)), QProcess::Running);
+    QCOMPARE(qvariant_cast<QProcess::ProcessState>(stateSpy.at(2).at(0)), QProcess::NotRunning);
 }
 
 //-----------------------------------------------------------------------------
@@ -1571,8 +1571,8 @@ void tst_QProcess::failToStart()
             int it = j * attempts + i + 1;
 
             QCOMPARE(stateSpy.count(), it * 2);
-            QCOMPARE(qVariantValue<QProcess::ProcessState>(stateSpy.at(it * 2 - 2).at(0)), QProcess::Starting);
-            QCOMPARE(qVariantValue<QProcess::ProcessState>(stateSpy.at(it * 2 - 1).at(0)), QProcess::NotRunning);
+            QCOMPARE(qvariant_cast<QProcess::ProcessState>(stateSpy.at(it * 2 - 2).at(0)), QProcess::Starting);
+            QCOMPARE(qvariant_cast<QProcess::ProcessState>(stateSpy.at(it * 2 - 1).at(0)), QProcess::NotRunning);
         }
     }
 }
