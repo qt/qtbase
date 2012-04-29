@@ -512,8 +512,8 @@
 #endif
 
 // Common UNIX Printing System
-#if !defined(QT_NO_CUPS) && (defined(QT_NO_PRINTER) || defined(QT_NO_LIBRARY))
-#define QT_NO_CUPS
+#if !defined(QT_NO_PRINTER) && defined(QT_NO_LIBRARY) && defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+#define QT_NO_PRINTER
 #endif
 
 // QErrorMessage

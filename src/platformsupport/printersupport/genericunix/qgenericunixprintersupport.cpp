@@ -48,23 +48,17 @@ QT_BEGIN_NAMESPACE
 
 QList<QPrinter::PaperSize> QGenericUnixPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
 {
-#ifndef QT_NO_CUPS
     return QCUPSSupport::getCupsPrinterPaperSizes(QPlatformPrinterSupport::printerInfoCupsPrinterIndex(printerInfo));
-#else
-    return QList<QPrinter::PaperSize>();
-#endif
 }
 
 QList<QPrinterInfo> QGenericUnixPrinterSupport::availablePrinters()
 {
     QList<QPrinterInfo> printers;
-#ifndef QT_NO_CUPS
     foreach (const QCUPSSupport::Printer &p,  QCUPSSupport::availableUnixPrinters()) {
         QPrinterInfo printer(QPlatformPrinterSupport::printerInfo(p.name, p.isDefault));
         QPlatformPrinterSupport::setPrinterInfoCupsPrinterIndex(&printer, p.cupsPrinterIndex);
         printers.append(printer);
     }
-#endif
     return printers;
 }
 

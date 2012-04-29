@@ -156,6 +156,9 @@ private:
     QSizeF customPaperSize; // in postscript points
 
     int fd;
+#if !defined(QT_NO_CUPS)
+    QString cupsTempFile;
+#endif // QT_NO_CUPS
 };
 
 QT_END_NAMESPACE

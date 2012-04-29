@@ -246,6 +246,9 @@ void tst_QPrinterInfo::testForDefaultPrinter()
 
 void tst_QPrinterInfo::testForPrinters()
 {
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+    QSKIP("Test doesn't work on Unix, plugin not yet enabled");
+# endif
 #if defined(Q_OS_UNIX) || defined(Q_OS_WIN32)
 # ifdef Q_OS_WIN32
     if (QHostInfo::localHostName() == "fantomet" || QHostInfo::localHostName() == "bobo") {

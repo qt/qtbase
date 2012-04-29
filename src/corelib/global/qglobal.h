@@ -451,7 +451,6 @@ class QDataStream;
 #if defined(Q_OS_VXWORKS)
 #  define QT_NO_CRASHHANDLER     // no popen
 #  define QT_NO_PROCESS          // no exec*, no fork
-#  define QT_NO_LPR
 #  define QT_NO_SHAREDMEMORY     // only POSIX, no SysV and in the end...
 #  define QT_NO_SYSTEMSEMAPHORE  // not needed at all in a flat address space
 #endif

@@ -40,9 +40,8 @@
 ****************************************************************************/
 #include <qdebug.h>
 #include "qcups_p.h"
-#include "qprinterinfo_unix_p.h"
 
-#ifndef QT_NO_CUPS
+#ifndef QT_NO_PRINTER
 
 #ifndef QT_LINUXBASE // LSB merges everything into cups.h
 # include <cups/language.h>
@@ -405,7 +404,6 @@ QList<QCUPSSupport::Printer> QCUPSSupport::availableUnixPrinters()
 {
     QList<Printer> printers;
 
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     if (QCUPSSupport::isAvailable()) {
         QCUPSSupport cups;
         int cupsPrinterCount = cups.availablePrintersCount();
@@ -421,26 +419,85 @@ QList<QCUPSSupport::Printer> QCUPSSupport::availableUnixPrinters()
             p.cupsPrinterIndex = i;
             printers.append(p);
         }
-    } else
-#endif
-           {
-        QList<QPrinterDescription> lprPrinters;
-        int defprn = qt_getLprPrinters(lprPrinters);
-        // populating printer combo
-        foreach (const QPrinterDescription &description, lprPrinters)
-            printers.append(Printer(description.name));
-        if (defprn >= 0 && defprn < printers.size())
-            printers[defprn].isDefault = true;
     }
 
     return printers;
 }
 
+// preserve names in ascending order for the binary search
+static const struct NamedPaperSize {
+    const char *const name;
+    QPrinter::PaperSize size;
+} named_sizes_map[QPrinter::NPageSize] = {
+    { "A0", QPrinter::A0 },
+    { "A1", QPrinter::A1 },
+    { "A2", QPrinter::A2 },
+    { "A3", QPrinter::A3 },
+    { "A4", QPrinter::A4 },
+    { "A5", QPrinter::A5 },
+    { "A6", QPrinter::A6 },
+    { "A7", QPrinter::A7 },
+    { "A8", QPrinter::A8 },
+    { "A9", QPrinter::A9 },
+    { "B0", QPrinter::B0 },
+    { "B1", QPrinter::B1 },
+    { "B10", QPrinter::B10 },
+    { "B2", QPrinter::B2 },
+    { "B4", QPrinter::B4 },
+    { "B5", QPrinter::B5 },
+    { "B6", QPrinter::B6 },
+    { "B7", QPrinter::B7 },
+    { "B8", QPrinter::B8 },
+    { "B9", QPrinter::B9 },
+    { "C5E", QPrinter::C5E },
+    { "Comm10E", QPrinter::Comm10E },
+    { "Custom", QPrinter::Custom },
+    { "DLE", QPrinter::DLE },
+    { "Executive", QPrinter::Executive },
+    { "Folio", QPrinter::Folio },
+    { "Ledger", QPrinter::Ledger },
+    { "Legal", QPrinter::Legal },
+    { "Letter", QPrinter::Letter },
+    { "Tabloid", QPrinter::Tabloid }
+};
+
+inline bool operator<(const char *name, const NamedPaperSize &data)
+{ return qstrcmp(name, data.name) < 0; }
+inline bool operator<(const NamedPaperSize &data, const char *name)
+{ return qstrcmp(data.name, name) < 0; }
+
+static inline QPrinter::PaperSize string2PaperSize(const char *name)
+{
+    const NamedPaperSize *r = qBinaryFind(named_sizes_map, named_sizes_map + QPrinter::NPageSize, name);
+    if (r - named_sizes_map != QPrinter::NPageSize)
+        return r->size;
+    return QPrinter::Custom;
+}
+
+static inline const char *paperSize2String(QPrinter::PaperSize size)
+{
+    for (int i = 0; i < QPrinter::NPageSize; ++i) {
+        if (size == named_sizes_map[i].size)
+            return named_sizes_map[i].name;
+    }
+    return 0;
+}
+
 QList<QPrinter::PaperSize> QCUPSSupport::getCupsPrinterPaperSizes(int cupsPrinterIndex)
 {
-    return qt_getCupsPrinterPaperSizes(cupsPrinterIndex);
+    QList<QPrinter::PaperSize> result;
+    if (!QCUPSSupport::isAvailable() || cupsPrinterIndex < 0)
+        return result;
+    // Find paper sizes from CUPS.
+    QCUPSSupport cups;
+    cups.setCurrentPrinter(cupsPrinterIndex);
+    if (const ppd_option_t* size = cups.pageSizes()) {
+        for (int j = 0; j < size->num_choices; ++j)
+            result.append(string2PaperSize(size->choices[j].choice));
+    }
+    return result;
 }
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_CUPS
+#endif // QT_NO_PRINTER

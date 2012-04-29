@@ -53,11 +53,8 @@
 #include <private/qabstractpagesetupdialog_p.h>
 #include <private/qprinter_p.h>
 
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-#  include <private/qcups_p.h>
-#  include <cups/cups.h>
-#  include <private/qprintengine_pdf_p.h>
-#endif
+#include <private/qcups_p.h>
+#include <private/qprintengine_pdf_p.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -224,16 +221,12 @@ public:
     void init();
 
     QPageSetupWidget *widget;
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     QCUPSSupport *cups;
-#endif
 };
 
 QPageSetupDialogPrivate::~QPageSetupDialogPrivate()
 {
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     delete cups;
-#endif
 }
 
 void QPageSetupDialogPrivate::init()
@@ -242,14 +235,12 @@ void QPageSetupDialogPrivate::init()
 
     widget = new QPageSetupWidget(q);
     widget->setPrinter(printer);
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     if (printer->outputFormat() == QPrinter::NativeFormat && QCUPSSupport::isAvailable()) {
         cups = new QCUPSSupport;
         widget->selectPrinter(cups);
     } else {
         cups = 0;
     }
-#endif
 
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok
                                                      | QDialogButtonBox::Cancel,
@@ -353,9 +344,7 @@ void QPageSetupWidget::setupPrinter() const
     int ps = m_printer->pageSize();
     if (val.type() == QVariant::Int) {
         ps = val.toInt();
-    }
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    else if (m_cups && QCUPSSupport::isAvailable() && m_cups->currentPPD()) {
+    } else if (m_cups && QCUPSSupport::isAvailable() && m_cups->currentPPD()) {
         QByteArray cupsPageSize = val.toByteArray();
         QPrintEngine *engine = m_printer->printEngine();
         engine->setProperty(PPK_CupsStringPageSize, QString::fromLatin1(cupsPageSize));
@@ -373,7 +362,7 @@ void QPageSetupWidget::setupPrinter() const
                 break;
         }
     }
-#endif
+
     if (ps == QPrinter::Custom)
         m_printer->setPaperSize(sizeForOrientation(orientation, m_paperSize), QPrinter::Point);
     else
@@ -390,7 +379,7 @@ void QPageSetupWidget::selectPrinter(QCUPSSupport *cups)
 {
     m_cups = cups;
     widget.paperSize->clear();
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+
     if (m_cups && QCUPSSupport::isAvailable()) {
         const ppd_option_t* pageSizes = m_cups->pageSizes();
         const int numChoices = pageSizes ? pageSizes->num_choices : 0;
@@ -426,7 +415,7 @@ void QPageSetupWidget::selectPrinter(QCUPSSupport *cups)
             m_bottomMargin = paper.bottom() - content.bottom();
         }
     }
-#endif
+
     if (widget.paperSize->count() == 0) {
         populatePaperSizes(widget.paperSize);
         widget.paperSize->setCurrentIndex(widget.paperSize->findData(
@@ -471,9 +460,7 @@ void QPageSetupWidget::_q_paperSizeChanged()
 
     bool custom = size == QPrinter::Custom;
 
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     custom = custom ? !m_cups : custom;
-#endif
 
     widget.paperWidth->setEnabled(custom);
     widget.paperHeight->setEnabled(custom);
@@ -485,16 +472,14 @@ void QPageSetupWidget::_q_paperSizeChanged()
         m_pagePreview->setPaperSize(m_paperSize);
     } else {
         Q_ASSERT(m_printer);
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
         if (m_cups) { // combobox is filled with cups based data
             QByteArray cupsPageSize = widget.paperSize->itemData(widget.paperSize->currentIndex()).toByteArray();
             m_paperSize = m_cups->paperRect(cupsPageSize).size();
             if (orientation == QPrinter::Landscape)
                 m_paperSize = QSizeF(m_paperSize.height(), m_paperSize.width()); // swap
-        }
-        else
-#endif
+        } else {
             m_paperSize = qt_printerPaperSize(orientation, size, QPrinter::Point, 1);
+        }
 
         m_pagePreview->setPaperSize(m_paperSize);
         widget.paperWidth->setValue(m_paperSize.width() / m_currentMultiplier);

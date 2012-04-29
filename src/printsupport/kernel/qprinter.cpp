@@ -41,16 +41,17 @@
 
 #include "qprinter_p.h"
 #include "qprinter.h"
+
+#ifndef QT_NO_PRINTER
+
 #include "qprintengine.h"
 #include "qprinterinfo.h"
 #include "qlist.h"
 #include <qcoreapplication.h>
 #include <qfileinfo.h>
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+#if !defined(QT_NO_CUPS)
 #include "private/qcups_p.h"
 #endif
-
-#ifndef QT_NO_PRINTER
 
 #include <qpa/qplatformprintplugin.h>
 #include <qpa/qplatformprintersupport.h>
@@ -236,7 +237,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
 
   When printing directly to a printer on Windows or Mac OS X, QPrinter uses
   the built-in printer drivers. On X11, QPrinter uses the
-  \l{Common Unix Printing System (CUPS)} or the standard Unix \l lpr utility
+  \l{Common Unix Printing System (CUPS)}
   to send PDF output to the printer. As an alternative,
   the printProgram() function can be used to specify the command or utility
   to use instead of the system default.
@@ -554,7 +555,7 @@ void QPrinterPrivate::init(QPrinter::PrinterMode mode)
     realPrintEngine = 0;
     realPaintEngine = 0;
 
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+#if !defined(QT_NO_CUPS)
     if (QCUPSSupport::cupsVersion() >= 10200 && QCUPSSupport().currentPPD()) {
         q_func()->setOutputFormat(QPrinter::PdfFormat);
         outputFormat = QPrinter::NativeFormat;

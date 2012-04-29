@@ -132,9 +132,6 @@
 #ifndef QT_NO_PRINTER
 #  define QT_NO_PRINTER
 #endif
-#ifndef QT_NO_CUPS
-#  define QT_NO_CUPS
-#endif
 
 /* Qt for Embedded Linux */
 #ifndef QT_NO_QWS_SOUNDSERVER
