@@ -219,7 +219,7 @@
     \value ExtraButton21   The 24th non-wheel Mouse Button.
     \value ExtraButton22   The 25th non-wheel Mouse Button.
     \value ExtraButton23   The 26th non-wheel Mouse Button.
-    \value ExtraButton44   The 27th non-wheel Mouse Button.
+    \value ExtraButton24   The 27th non-wheel Mouse Button.
 
     \omitvalue MaxMouseButton
     \omitvalue MouseButtonMask
