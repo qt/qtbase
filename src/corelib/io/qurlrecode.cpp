@@ -483,6 +483,8 @@ static int recode(QString &result, const ushort *begin, const ushort *end, QUrl:
         // try a run where no change is necessary
         for ( ; input != end; ++input) {
             c = *input;
+            if (c < 0x20U)
+                action = EncodeCharacter;
             if (c < 0x20U || c >= 0x80U) // also: (c - 0x20 < 0x60U)
                 goto non_trivial;
             action = EncodingAction(actionTable[c - ' ']);
@@ -533,9 +535,6 @@ non_trivial:
                 continue;
             }
         }
-
-        if (decoded < 0x20)
-            action = EncodeCharacter;
 
         // there are six possibilities:
         //  current \ action  | DecodeCharacter | LeaveCharacter | EncodeCharacter
