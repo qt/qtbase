@@ -69,11 +69,25 @@ struct QStaticPlugin
 
 void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 
-#if defined (Q_OF_ELF) && defined (Q_CC_GNU)
+#if defined (Q_OF_ELF) && (defined (Q_CC_GNU) || defined(Q_CC_CLANG))
 #  define QT_PLUGIN_VERIFICATION_SECTION \
     __attribute__ ((section (".qtplugin"))) __attribute__((used))
 #  define QT_PLUGIN_METADATA_SECTION \
     __attribute__ ((section (".qtmetadata"))) __attribute__((used))
+#elif defined(Q_OS_MAC)
+// TODO: Implement section parsing on Mac
+#  define QT_PLUGIN_VERIFICATION_SECTION \
+    __attribute__((section("__TEXT,qtplugin"))) __attribute__((used))
+#  define QT_PLUGIN_METADATA_SECTION \
+    __attribute__ ((section ("__TEXT,qtmetadata"))) __attribute__((used))
+#elif defined(Q_CC_MSVC)
+// TODO: Implement section parsing for MSVC
+#pragma section(".qtplugin",read,shared)
+#pragma section(".qtmetadata",read,shared)
+#  define QT_PLUGIN_VERIFICATION_SECTION \
+    __declspec(allocate(".qtplugin"))
+#  define QT_PLUGIN_METADATA_SECTION \
+    __declspec(allocate(".qtmetadata"))
 #else
 #  define QT_PLUGIN_VERIFICATION_SECTION
 #  define QT_PLUGIN_METADATA_SECTION
@@ -140,8 +154,6 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 // NOTE: if you change pattern, you MUST change the pattern in
 // qlibrary.cpp as well.  changing the pattern will break all
 // backwards compatibility as well (no old plugins will be loaded).
-// QT5: should probably remove the entire pattern thing and do the section
-//      trick for all platforms. for now, keep it and fallback to scan for it.
 #  ifdef QPLUGIN_DEBUG_STR
 #    undef QPLUGIN_DEBUG_STR
 #  endif
