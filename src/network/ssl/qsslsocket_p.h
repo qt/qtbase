@@ -64,22 +64,26 @@
 
 #include <private/qringbuffer_p.h>
 
-QT_BEGIN_NAMESPACE
-
 #if defined(Q_OS_MAC)
 #include <Security/SecCertificate.h>
 #include <CoreFoundation/CFArray.h>
-#ifndef Q_OS_IOS
-    typedef OSStatus (*PtrSecCertificateGetData)(SecCertificateRef, CSSM_DATA_PTR);
-    typedef OSStatus (*PtrSecTrustSettingsCopyCertificates)(int, CFArrayRef*);
-    typedef OSStatus (*PtrSecTrustCopyAnchorCertificates)(CFArrayRef*);
-#endif
 #elif defined(Q_OS_WIN)
 #include <QtCore/qt_windows.h>
 #include <wincrypt.h>
 #ifndef HCRYPTPROV_LEGACY
 #define HCRYPTPROV_LEGACY HCRYPTPROV
 #endif
+#endif
+
+QT_BEGIN_NAMESPACE
+
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+    typedef OSStatus (*PtrSecCertificateGetData)(SecCertificateRef, CSSM_DATA_PTR);
+    typedef OSStatus (*PtrSecTrustSettingsCopyCertificates)(int, CFArrayRef*);
+    typedef OSStatus (*PtrSecTrustCopyAnchorCertificates)(CFArrayRef*);
+#endif
+
+#if defined(Q_OS_WIN)
 #if defined(Q_OS_WINCE)
     typedef HCERTSTORE (WINAPI *PtrCertOpenSystemStoreW)(LPCSTR, DWORD, HCRYPTPROV_LEGACY, DWORD, const void*);
 #else
