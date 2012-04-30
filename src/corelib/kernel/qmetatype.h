@@ -743,6 +743,7 @@ inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeI
     , m_loadOp(loadOp)
     , m_constructor(constructor)
     , m_destructor(destructor)
+    , m_extension(0)
     , m_size(size)
     , m_typeFlags(theTypeFlags)
     , m_extensionFlags(extensionFlags)
