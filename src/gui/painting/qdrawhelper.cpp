@@ -565,9 +565,8 @@ static const uint *QT_FASTCALL fetchUntransformedRGB16(uint *buffer, const Opera
 
 // blendType is either BlendTransformed or BlendTransformedTiled
 template<TextureBlendType blendType>
-Q_STATIC_TEMPLATE_FUNCTION
-const uint *QT_FASTCALL fetchTransformedARGB32PM(uint *buffer, const Operator *, const QSpanData *data,
-                                                 int y, int x, int length)
+static const uint *QT_FASTCALL fetchTransformedARGB32PM(uint *buffer, const Operator *, const QSpanData *data,
+                                                        int y, int x, int length)
 {
     int image_width = data->texture.width;
     int image_height = data->texture.height;
@@ -647,8 +646,7 @@ const uint *QT_FASTCALL fetchTransformedARGB32PM(uint *buffer, const Operator *,
 }
 
 template<TextureBlendType blendType>  /* either BlendTransformed or BlendTransformedTiled */
-Q_STATIC_TEMPLATE_FUNCTION
-const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const QSpanData *data,
+static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const QSpanData *data,
                                          int y, int x, int length)
 {
     int image_width = data->texture.width;
@@ -852,10 +850,9 @@ inline void fetchTransformedBilinear_pixelBounds<BlendTransformedBilinear>(int, 
 }
 
 template<TextureBlendType blendType> /* blendType = BlendTransformedBilinear or BlendTransformedBilinearTiled */
-Q_STATIC_TEMPLATE_FUNCTION
-const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, const Operator *,
-                                                          const QSpanData *data, int y, int x,
-                                                          int length)
+static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, const Operator *,
+                                                                 const QSpanData *data, int y, int x,
+                                                                 int length)
 {
     int image_width = data->texture.width;
     int image_height = data->texture.height;
@@ -1302,9 +1299,8 @@ const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, const Op
 
 // blendType = BlendTransformedBilinear or BlendTransformedBilinearTiled
 template<TextureBlendType blendType>
-Q_STATIC_TEMPLATE_FUNCTION
-const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *,
-                                                 const QSpanData *data, int y, int x, int length)
+static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *,
+                                                        const QSpanData *data, int y, int x, int length)
 {
     const QPixelLayout *layout = &qPixelLayouts[data->texture.format];
     const QRgb *clut = data->texture.colorTable ? data->texture.colorTable->constData() : 0;
