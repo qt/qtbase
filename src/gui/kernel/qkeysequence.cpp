@@ -876,7 +876,7 @@ const uint QKeySequencePrivate::numberOfKeyBindings = sizeof(QKeySequencePrivate
     \value Underline        Underline text.
     \value Undo             Undo.
     \value UnknownKey       Unbound key.
-    \value WhatsThis        Activate whats this.
+    \value WhatsThis        Activate "what's this".
     \value ZoomIn           Zoom in.
     \value ZoomOut          Zoom out.
 */
