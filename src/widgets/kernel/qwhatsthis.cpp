@@ -47,6 +47,7 @@
 #include "qdesktopwidget.h"
 #include "qevent.h"
 #include "qpixmap.h"
+#include "qscreen.h"
 #include "qpainter.h"
 #include "qtimer.h"
 #include "qhash.h"
@@ -232,8 +233,8 @@ QWhatsThat::~QWhatsThat()
 
 void QWhatsThat::showEvent(QShowEvent *)
 {
-    background = QPixmap::grabWindow(QApplication::desktop()->internalWinId(),
-                                     x(), y(), width(), height());
+    background = QGuiApplication::primaryScreen()->grabWindow(QApplication::desktop()->internalWinId(),
+                                                              x(), y(), width(), height());
 }
 
 void QWhatsThat::mousePressEvent(QMouseEvent* e)

@@ -41,6 +41,8 @@
 
 #include "qwindowsvistastyle.h"
 #include "qwindowsvistastyle_p.h"
+#include <qscreen.h>
+#include <qwindow.h>
 #include <private/qstylehelper_p.h>
 #include <private/qsystemlibrary_p.h>
 #include <private/qapplication_p.h>
@@ -1655,10 +1657,18 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                         t->setStartImage(startImage);
                     } else {
                         QPoint offset(0, 0);
-                        if (!widget->internalWinId())
-                            offset = widget->mapTo(widget->nativeParentWidget(), offset);
-                        t->setStartImage(QPixmap::grabWindow(widget->effectiveWinId(), offset.x(), offset.y(),
-                                         option->rect.width(), option->rect.height()).toImage());
+                        QWindow *window = widget->windowHandle();
+                        if (!window) {
+                            if (const QWidget *nativeParent = widget->nativeParentWidget()) {
+                                offset = widget->mapTo(nativeParent, offset);
+                                window = nativeParent->windowHandle();
+                            }
+                        }
+                        if (window && window->handle()) {
+                            const QPixmap pixmap = window->screen()->grabWindow(window->winId(),
+                                                                                offset.x(), offset.y(), option->rect.width(), option->rect.height());
+                            t->setStartImage(pixmap.toImage());
+                        }
                     }
                 } else {
                     startImage.fill(0);
