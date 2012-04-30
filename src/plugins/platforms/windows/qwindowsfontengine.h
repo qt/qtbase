@@ -128,11 +128,6 @@ public:
 
     bool getOutlineMetrics(glyph_t glyph, const QTransform &t, glyph_metrics_t *metrics) const;
 
-    static QFontEngine *createEngine(int script, const QFontDef &request,
-                                     HDC fontHdc, int dpi, bool rawMode,
-                                     const QStringList &family_list,
-                                     const QSharedPointer<QWindowsFontEngineData> &data);
-
     QSharedPointer<QWindowsFontEngineData> fontEngineData() const { return m_fontEngineData; }
     LOGFONT logfont() const { return m_logfont; }
     void setUniqueFamilyName(const QString &newName) { uniqueFamilyName = newName; }
