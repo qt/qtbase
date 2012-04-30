@@ -326,20 +326,29 @@ QObject *QFactoryLoader::instance(const QString &key) const
 QObject *QFactoryLoader::instance(int index) const
 {
     Q_D(const QFactoryLoader);
-    if (index < 0 || index >= d->libraryList.size())
+    if (index < 0)
         return 0;
 
-    QLibraryPrivate *library = d->libraryList.at(index);
-    if (library->instance || library->loadPlugin()) {
-        if (!library->inst)
-            library->inst = library->instance();
-        QObject *obj = library->inst.data();
-        if (obj) {
-            if (!obj->parent())
-                obj->moveToThread(QCoreApplicationPrivate::mainThread());
-            return obj;
+    if (index < d->libraryList.size()) {
+        QLibraryPrivate *library = d->libraryList.at(index);
+        if (library->instance || library->loadPlugin()) {
+            if (!library->inst)
+                library->inst = library->instance();
+            QObject *obj = library->inst.data();
+            if (obj) {
+                if (!obj->parent())
+                    obj->moveToThread(QCoreApplicationPrivate::mainThread());
+                return obj;
+            }
         }
+        return 0;
     }
+
+    index -= d->libraryList.size();
+    QVector<QStaticPlugin> staticPlugins = QLibraryPrivate::staticPlugins();
+    if (index < staticPlugins.size())
+        return staticPlugins.at(index).instance();
+
     return 0;
 }
 
