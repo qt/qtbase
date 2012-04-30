@@ -369,7 +369,6 @@ QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
                         QT_RETHROW;
                     }
 
-                    dup->h = oldNode->h;
                     *nextNode = dup;
                     nextNode = &dup->next;
                     oldNode = oldNode->next;

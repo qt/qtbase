@@ -197,16 +197,6 @@ inline bool operator==(const QHashDummyValue & /* v1 */, const QHashDummyValue &
 Q_DECLARE_TYPEINFO(QHashDummyValue, Q_MOVABLE_TYPE | Q_DUMMY_TYPE);
 
 template <class Key, class T>
-struct QHashDummyNode
-{
-    QHashDummyNode *next;
-    uint h;
-    Key key;
-
-    inline QHashDummyNode(const Key &key0) : key(key0) {}
-};
-
-template <class Key, class T>
 struct QHashNode
 {
     QHashNode *next;
@@ -214,9 +204,21 @@ struct QHashNode
     Key key;
     T value;
 
-    inline QHashNode(const Key &key0, const T &value0) : key(key0), value(value0) {}
+    inline QHashNode(const Key &key0, const T &value0, uint hash, QHashNode *n)
+        : next(n), h(hash), key(key0), value(value0) {}
     inline bool same_key(uint h0, const Key &key0) { return h0 == h && key0 == key; }
 };
+
+template <class Key, class T>
+struct QHashDummyNode
+{
+    QHashNode<Key, T> *next;
+    uint h;
+    Key key;
+
+    inline QHashDummyNode(const Key &key0, uint hash, QHashNode<Key, T> *n) : next(n), h(hash), key(key0) {}
+};
+
 
 #if 0
 // ###
@@ -519,9 +521,9 @@ Q_INLINE_TEMPLATE void QHash<Key, T>::duplicateNode(QHashData::Node *node, void 
 {
     Node *concreteNode = concrete(node);
     if (QTypeInfo<T>::isDummy) {
-        (void) new (newNode) DummyNode(concreteNode->key);
+        (void) new (newNode) DummyNode(concreteNode->key, concreteNode->h, 0);
     } else {
-        (void) new (newNode) Node(concreteNode->key, concreteNode->value);
+        (void) new (newNode) Node(concreteNode->key, concreteNode->value, concreteNode->h, 0);
     }
 }
 
@@ -532,13 +534,11 @@ QHash<Key, T>::createNode(uint ah, const Key &akey, const T &avalue, Node **anex
     Node *node;
 
     if (QTypeInfo<T>::isDummy) {
-        node = reinterpret_cast<Node *>(new (d->allocateNode(alignOfDummyNode())) DummyNode(akey));
+        node = reinterpret_cast<Node *>(new (d->allocateNode(alignOfDummyNode())) DummyNode(akey, ah, *anextNode));
     } else {
-        node = new (d->allocateNode(alignOfNode())) Node(akey, avalue);
+        node = new (d->allocateNode(alignOfNode())) Node(akey, avalue, ah, *anextNode);
     }
 
-    node->h = ah;
-    node->next = *anextNode;
     *anextNode = node;
     ++d->size;
     return node;
