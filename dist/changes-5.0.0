@@ -279,7 +279,9 @@ General Improvements
 Third party components
 ----------------------
 
--
+- SQLITE_ENABLE_FTS3,SQLITE_ENABLE_FTS3_PARENTHESIS and SQLITE_ENABLE_RTREE
+flags are now enabled by default on all platforms, for the sqlite3 copy under
+the 3rdparty directory.
 
 
 ****************************************************************************
