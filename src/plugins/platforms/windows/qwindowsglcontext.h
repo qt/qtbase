@@ -152,6 +152,7 @@ public:
     explicit QWindowsGLContext(const QOpenGLStaticContextPtr &staticContext,
                                QOpenGLContext *context);
     virtual ~QWindowsGLContext();
+    bool isSharing() const                { return m_context->shareHandle(); }
     bool isValid() const                  { return m_renderingContext; }
     virtual QSurfaceFormat format() const { return m_obtainedFormat; }
 
