@@ -2393,9 +2393,7 @@ Node* Tree::findNodeRecursive(const QStringList& path,
                 else if (n->isCollisionNode()) {
                     if (acceptCollision)
                         return n;
-                    return n = findNodeRecursive(path, pathIndex, n, type, subtype);
-                    if (n)
-                        return n;
+                    return findNodeRecursive(path, pathIndex, n, type, subtype);
                 }
                 else
                     return 0;
