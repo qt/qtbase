@@ -114,7 +114,8 @@ QTouchScreenData::QTouchScreenData(QTouchScreenHandler *q_ptr, const QStringList
       m_currentSlot(0),
       hw_range_x_min(0), hw_range_x_max(0),
       hw_range_y_min(0), hw_range_y_max(0),
-      hw_pressure_min(0), hw_pressure_max(0)
+      hw_pressure_min(0), hw_pressure_max(0),
+      m_device(0), m_typeB(false)
 {
     m_forceToActiveWindow = args.contains(QLatin1String("force_window"));
 }
