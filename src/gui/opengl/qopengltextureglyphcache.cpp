@@ -106,8 +106,10 @@ void QOpenGLTextureGlyphCache::createTextureData(int width, int height)
     if (height < 16)
         height = 16;
 
-    if (m_textureResource && !m_textureResource->m_texture)
+    if (m_textureResource && !m_textureResource->m_texture) {
         delete m_textureResource;
+        m_textureResource = 0;
+    }
 
     if (!m_textureResource)
         m_textureResource = new QOpenGLGlyphTexture(ctx);
