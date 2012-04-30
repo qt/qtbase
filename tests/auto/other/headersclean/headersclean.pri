@@ -10,7 +10,7 @@
 # The flags here come from http://wiki.qt-project.org/Coding_Conventions#Conventions_for_public_header_files
 # -Wold-style-cast cannot be used, /usr/include/bits/byteswap.h defines the macro bswap_16 using C style casts :(
 # -Wfloat-equal cannot be used, qrect.h and qvector2d.h do exact comparisons in isNull and operator==. Would need #pragmas.
-*-g++*: QMAKE_CXXFLAGS += -Woverloaded-virtual -Wshadow -Wundef
+*-g++*: QMAKE_CXXFLAGS += -Wshadow -Wundef
 
 # Other nice flags
 *-g++*: QMAKE_CXXFLAGS += -Wnon-virtual-dtor -ansi -Wcast-align -Wchar-subscripts -Wpointer-arith -Wformat-security
