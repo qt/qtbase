@@ -1299,7 +1299,7 @@ bool QSslSocketBackendPrivate::checkSslErrors()
     bool doEmitSslError = !verifyErrorsHaveBeenIgnored();
     // check whether we need to emit an SSL handshake error
     if (doVerifyPeer && doEmitSslError) {
-        if (q->pauseMode() & QAbstractSocket::PauseOnNotify) {
+        if (q->pauseMode() & QAbstractSocket::PauseOnSslErrors) {
             pauseSocketNotifiers(q);
             paused = true;
         } else {

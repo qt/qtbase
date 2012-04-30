@@ -127,7 +127,7 @@ public:
     Q_DECLARE_FLAGS(BindMode, BindFlag)
     enum PauseMode {
         PauseNever = 0x0,
-        PauseOnNotify = 0x1
+        PauseOnSslErrors = 0x1
     };
     Q_DECLARE_FLAGS(PauseModes, PauseMode)
 

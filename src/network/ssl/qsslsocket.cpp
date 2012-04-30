@@ -361,7 +361,7 @@ QSslSocket::~QSslSocket()
     \since 5.0
 
     Continues data transfer on the socket after it has been paused. If
-    "setPauseMode(QAbstractSocket::PauseOnNotify);" has been called on
+    "setPauseMode(QAbstractSocket::PauseOnSslErrors);" has been called on
     this socket and a sslErrors() signal is received, calling this method
     is necessary for the socket to continue.
 

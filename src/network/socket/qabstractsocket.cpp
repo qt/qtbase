@@ -434,12 +434,12 @@
 
     This enum describes the behavior of when the socket should hold
     back with continuing data transfer.
+    The only notification currently supported is QSslSocket::sslErrors().
 
     \value PauseNever Do not pause data transfer on the socket. This is the
     default and matches the behaviour of Qt 4.
-    \value PauseOnNotify Pause data transfer on the socket upon receiving a
-    notification. The only notification currently supported is
-    QSslSocket::sslErrors().
+    \value PauseOnSslErrors Pause data transfer on the socket upon receiving an
+    SSL error notification. I.E. QSslSocket::sslErrors().
 */
 
 #include "qabstractsocket.h"
@@ -1404,7 +1404,7 @@ QAbstractSocket::PauseModes QAbstractSocket::pauseMode() const
     \since 5.0
 
     Controls whether to pause upon receiving a notification. The only notification
-    currently supported is QSslSocket::sslErrors(). If set to PauseOnNotify,
+    currently supported is QSslSocket::sslErrors(). If set to PauseOnSslErrors,
     data transfer on the socket will be paused and needs to be enabled explicitly
     again by calling resume().
     By default this option is set to PauseNever.

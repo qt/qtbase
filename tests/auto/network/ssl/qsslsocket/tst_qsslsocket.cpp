@@ -2158,7 +2158,7 @@ void tst_QSslSocket::resume()
     QFETCH(bool, expectSuccess);
 
     QSslSocket socket;
-    socket.setPauseMode(QAbstractSocket::PauseOnNotify);
+    socket.setPauseMode(QAbstractSocket::PauseOnSslErrors);
 
     QSignalSpy sslErrorSpy(&socket, SIGNAL(sslErrors(QList<QSslError>)));
     QSignalSpy encryptedSpy(&socket, SIGNAL(encrypted()));
