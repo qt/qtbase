@@ -56,9 +56,13 @@ public:
     void handleOrientationChange(int angle);
     void handleSwipeDown();
     void handleExit();
+    void handleWindowGroupActivated(const QByteArray &id);
+    void handleWindowGroupDeactivated(const QByteArray &id);
 
 Q_SIGNALS:
     void rotationChanged(int angle);
+    void windowGroupActivated(const QByteArray &id);
+    void windowGroupDeactivated(const QByteArray &id);
 };
 
 QT_END_NAMESPACE

@@ -95,4 +95,22 @@ void QQnxNavigatorEventHandler::handleExit()
     QCoreApplication::quit();
 }
 
+void QQnxNavigatorEventHandler::handleWindowGroupActivated(const QByteArray &id)
+{
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
+    qDebug() << Q_FUNC_INFO << id;
+#endif
+
+    Q_EMIT windowGroupActivated(id);
+}
+
+void QQnxNavigatorEventHandler::handleWindowGroupDeactivated(const QByteArray &id)
+{
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
+    qDebug() << Q_FUNC_INFO << id;
+#endif
+
+    Q_EMIT windowGroupDeactivated(id);
+}
+
 QT_END_NAMESPACE

@@ -197,6 +197,10 @@ void QQnxNavigatorEventNotifier::handleMessage(const QByteArray &msg, const QByt
         m_eventHandler->handleSwipeDown();
     } else if (msg == "exit") {
         m_eventHandler->handleExit();
+    } else if (msg == "windowActive") {
+        m_eventHandler->handleWindowGroupActivated(dat);
+    } else if (msg == "windowInactive") {
+        m_eventHandler->handleWindowGroupDeactivated(dat);
     }
 }
 
