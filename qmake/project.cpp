@@ -254,6 +254,8 @@ static QString varMap(const QString &x)
         ret = "QMAKE_FRAMEWORKPATH";
     else if(ret == "QMAKE_FRAMEWORKDIR_FLAGS")
         ret = "QMAKE_FRAMEWORKPATH_FLAGS";
+    else if(ret == "IN_PWD")
+        ret = "PWD";
     else
         return ret;
     warn_msg(WarnDeprecated, "%s:%d: Variable %s is deprecated; use %s instead.",
@@ -3756,8 +3758,7 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QHash<QString, QString
 QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringList> &place)
 {
     QString var = varMap(_var);
-    if (var == QLatin1String("PWD") ||  //current working dir (of _FILE_)
-        var == QLatin1String("IN_PWD")) {
+    if (var == QLatin1String("PWD")) {
         var = ".BUILTIN." + var;
         place[var] = QStringList(qmake_getpwd());
     } else if(var == QLatin1String("_LINE_")) { //parser line number
