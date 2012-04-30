@@ -231,6 +231,7 @@ void * QXcbNativeInterface::eglContextForContext(QOpenGLContext *context)
     return 0;
 #endif
 #else
+    Q_UNUSED(context)
     return 0;
 #endif
 }
