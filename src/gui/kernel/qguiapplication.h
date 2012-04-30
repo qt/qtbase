@@ -90,7 +90,7 @@ public:
 
     static QWindow *modalWindow();
 
-#ifdef QT_DEPRECATED
+#if QT_DEPRECATED_SINCE(5, 0)
     static QT_DEPRECATED QWindow *activeWindow() { return focusWindow(); }
 #endif
     static QWindow *focusWindow();
@@ -130,7 +130,9 @@ public:
     static void setDesktopSettingsAware(bool on);
     static bool desktopSettingsAware();
 
-    QT_DEPRECATED QInputPanel *inputPanel() const;
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED QInputPanel *inputPanel() const { return inputMethod(); }
+#endif
     QInputMethod *inputMethod() const;
 
     static QPlatformNativeInterface *platformNativeInterface();

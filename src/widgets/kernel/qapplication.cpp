@@ -1954,13 +1954,11 @@ bool QApplication::event(QEvent *e)
 }
 
 /*!
+   \fn void QApplication::syncX()
     Was used to synchronize with the X server in 4.x, here for source compatibility.
     \internal
     \obsolete
 */
-void QApplication::syncX()
-{
-}
 
 void QApplicationPrivate::notifyLayoutDirectionChange()
 {
@@ -4247,26 +4245,20 @@ int QApplication::keyboardInputInterval()
 */
 
 /*!
+    \fn QLocale QApplication::keyboardInputLocale()
     \since 4.2
     \obsolete
 
     Returns the current keyboard input locale. Replaced with QInputMethod::locale()
 */
-QLocale QApplication::keyboardInputLocale()
-{
-    return qApp ? qApp->inputMethod()->locale() : QLocale::c();
-}
 
 /*!
+    \fn Qt::LayoutDirection QApplication::keyboardInputDirection()*
     \since 4.2
     \obsolete
 
     Returns the current keyboard input direction. Replaced with QInputMethod::inputDirection()
 */
-Qt::LayoutDirection QApplication::keyboardInputDirection()
-{
-    return qApp ? qApp->inputMethod()->inputDirection() : Qt::LeftToRight;
-}
 
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event)
 {

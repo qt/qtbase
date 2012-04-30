@@ -342,8 +342,9 @@ public:
     static RootObjectHandler installRootObjectHandler(RootObjectHandler);
 
     static QAccessibleInterface *queryAccessibleInterface(QObject *);
-
-    QT_DEPRECATED static void updateAccessibility(QObject *object, int child, Event reason);
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED static inline void updateAccessibility(QObject *object, int child, Event reason);
+#endif
     static void updateAccessibility(QAccessibleEvent *event);
 
     static bool isActive();
@@ -624,6 +625,17 @@ Q_GUI_EXPORT const char *qAccessibleEventString(QAccessible::Event event);
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface);
 Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleEvent &ev);
+#endif
+
+#if QT_DEPRECATED_SINCE(5, 0)
+inline void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
+{
+    Q_ASSERT(object);
+
+    QAccessibleEvent ev(object, reason);
+    ev.setChild(child);
+    updateAccessibility(&ev);
+}
 #endif
 
 #endif // QT_NO_ACCESSIBILITY

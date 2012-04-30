@@ -2163,18 +2163,17 @@ QInputMethod *QGuiApplication::inputMethod() const
 }
 
 /*!
+  \fn QInputPanel *QGuiApplication::inputPanel() const
   returns the input panel.
 
   The input panel returns properties about the state and position of
   the virtual keyboard. It also provides information about the position of the
   current focused input element.
 
-  \sa QInputPanel
+  \obsolete
+
+  \sa inputMethod()
   */
-QInputPanel *QGuiApplication::inputPanel() const
-{
-    return inputMethod();
-}
 
 /*!
     \fn void QGuiApplication::fontDatabaseChanged()

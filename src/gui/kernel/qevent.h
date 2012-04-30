@@ -458,15 +458,18 @@ public:
     QInputMethodEvent();
     QInputMethodEvent(const QString &preeditText, const QList<Attribute> &attributes);
     void setCommitString(const QString &commitString, int replaceFrom = 0, int replaceLength = 0);
-    QT_DEPRECATED void setTentativeCommitString(const QString &tentativeCommitString);
-
     inline const QList<Attribute> &attributes() const { return attrs; }
     inline const QString &preeditString() const { return preedit; }
 
     inline const QString &commitString() const { return commit; }
     inline int replacementStart() const { return replace_from; }
     inline int replacementLength() const { return replace_length; }
+
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline void setTentativeCommitString(const QString &string)
+    { tentativeCommit = string;  }
     QT_DEPRECATED inline const QString &tentativeCommitString() const { return tentativeCommit; }
+#endif
 
     QInputMethodEvent(const QInputMethodEvent &other);
 

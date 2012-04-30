@@ -69,7 +69,7 @@ public:
 
     QObject *instance();
 
-    QT_DEPRECATED static QObjectList staticInstances();
+    static QObjectList staticInstances();
 
     bool load();
     bool unload();

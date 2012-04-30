@@ -641,18 +641,11 @@ void QAccessible::setRootObject(QObject *object)
 }
 
 /*!
+  \fn void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
   \deprecated
 
   Use the version with a single \l QAccessibleEvent paremeter instead.
 */
-void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
-{
-    Q_ASSERT(object);
-
-    QAccessibleEvent ev(object, reason);
-    ev.setChild(child);
-    updateAccessibility(&ev);
-}
 
 /*!
   Notifies about a change that might be relevant for accessibility clients.

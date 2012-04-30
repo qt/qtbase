@@ -265,13 +265,10 @@ void QWindow::setVisible(bool visible)
 }
 
 /*!
+    \fn bool QWindow::visible() const
     Returns true if the window is set to visible.
     \obsolete
 */
-bool QWindow::visible() const
-{
-    return isVisible();
-}
 
 bool QWindow::isVisible() const
 {

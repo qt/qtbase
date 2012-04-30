@@ -69,11 +69,13 @@ class Q_GUI_EXPORT QInputMethod : public QObject
 
     Q_ENUMS(Action)
 public:
+#ifdef QT_DEPRECATED
     QT_DEPRECATED QObject *inputItem() const;
     QT_DEPRECATED void setInputItem(QObject *inputItemChanged);
 
     // the window containing the editor
     QT_DEPRECATED QWindow *inputWindow() const;
+#endif
 
     QTransform inputItemTransform() const;
     void setInputItemTransform(const QTransform &transform);
