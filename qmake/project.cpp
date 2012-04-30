@@ -1300,6 +1300,7 @@ QMakeProject::read(const QString &file, QHash<QString, QStringList> &place)
         qmake_setpwd(QFileInfo(filename).absolutePath());
     }
     if(ret) {
+        place["PWD"] = QStringList(qmake_getpwd());
         parser_info pi = parser;
         parser.from_file = true;
         parser.file = filename;
@@ -1897,6 +1898,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
     }
     parser = pi;
     qmake_setpwd(oldpwd);
+    place["PWD"] = QStringList(qmake_getpwd());
     if(!parsed)
         return IncludeParseFailure;
     return IncludeSuccess;
@@ -3759,10 +3761,7 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QHash<QString, QString
 QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringList> &place)
 {
     QString var = varMap(_var);
-    if (var == QLatin1String("PWD")) {
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(qmake_getpwd());
-    } else if(var == QLatin1String("_LINE_")) { //parser line number
+    if (var == QLatin1String("_LINE_")) { //parser line number
         var = ".BUILTIN." + var;
         place[var] = QStringList(QString::number(parser.line_no));
     } else if(var == QLatin1String("_FILE_")) { //parser file
