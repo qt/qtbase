@@ -94,11 +94,6 @@ QVariant  QPlatformDialogHelper::defaultStyleHint(QPlatformDialogHelper::StyleHi
     return QVariant();
 }
 
-void QPlatformDialogHelper::emitLaunchNativeAppModalPanel()
-{
-    emit launchNativeAppModalPanel();
-}
-
 // Font dialog
 
 class QFontDialogOptionsPrivate : public QSharedData

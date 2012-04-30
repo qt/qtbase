@@ -56,15 +56,13 @@ public:
     QCocoaFileDialogHelper();
     virtual ~QCocoaFileDialogHelper();
 
-    void platformNativeDialogModalHelp();
-    void _q_platformRunNativeAppModalPanel();
+    void exec_sys();
 
     bool defaultNameFilterDisables() const;
 
     void deleteNativeDialog_sys();
     bool show_sys(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
     void hide_sys();
-    QPlatformFileDialogHelper::DialogCode dialogResultCode_sys();
     void setDirectory_sys(const QString &directory);
     QString directory_sys() const;
     void selectFile_sys(const QString &filename);

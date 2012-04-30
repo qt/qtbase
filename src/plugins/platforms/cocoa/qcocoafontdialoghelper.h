@@ -56,14 +56,12 @@ public:
     QCocoaFontDialogHelper();
     virtual ~QCocoaFontDialogHelper();
 
-    void platformNativeDialogModalHelp();
-    void _q_platformRunNativeAppModalPanel();
+    void exec_sys();
+
     void deleteNativeDialog_sys();
 
     bool show_sys(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
     void hide_sys();
-
-    QPlatformDialogHelper::DialogCode dialogResultCode_sys();
 
     void setCurrentFont_sys(const QFont &);
     QFont currentFont_sys() const;

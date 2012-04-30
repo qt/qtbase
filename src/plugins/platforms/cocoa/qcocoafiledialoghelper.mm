@@ -672,36 +672,18 @@ bool QCocoaFileDialogHelper::hideCocoaFilePanel()
     }
 }
 
-void QCocoaFileDialogHelper::platformNativeDialogModalHelp()
+void QCocoaFileDialogHelper::exec_sys()
 {
-    // Do a queued meta-call to open the native modal dialog so it opens after the new
-    // event loop has started to execute (in QDialog::exec). Using a timer rather than
-    // a queued meta call is intentional to ensure that the call is only delivered when
-    // [NSApp run] runs (timers are handeled special in cocoa). If NSApp is not
-    // running (which is the case if e.g a top-most QEventLoop has been
-    // interrupted, and the second-most event loop has not yet been reactivated (regardless
-    // if [NSApp run] is still on the stack)), showing a native modal dialog will fail.
-    QTimer::singleShot(1, this, SIGNAL(launchNativeAppModalPanel()));
-}
-
-void QCocoaFileDialogHelper::_q_platformRunNativeAppModalPanel()
-{
-    // TODO:
-#if 0
-    QBoolBlocker nativeDialogOnTop(QApplicationPrivate::native_modal_dialog_active);
-#endif
+    // Note: If NSApp is not running (which is the case if e.g a top-most
+    // QEventLoop has been interrupted, and the second-most event loop has not
+    // yet been reactivated (regardless if [NSApp run] is still on the stack)),
+    // showing a native modal dialog will fail.
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
-    [delegate runApplicationModalPanel];
-    if (dialogResultCode_sys() == QPlatformDialogHelper::Accepted)
+    if ([delegate runApplicationModalPanel])
         emit accept();
     else
         emit reject();
-}
 
-QPlatformDialogHelper::DialogCode QCocoaFileDialogHelper::dialogResultCode_sys()
-{
-    QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
-    return [delegate dialogResultCode];
 }
 
 bool QCocoaFileDialogHelper::defaultNameFilterDisables() const

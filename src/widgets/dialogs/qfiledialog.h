@@ -252,7 +252,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_rowsInserted(const QModelIndex & parent))
     Q_PRIVATE_SLOT(d_func(), void _q_fileRenamed(const QString &path,
                 const QString oldName, const QString newName))
-    Q_PRIVATE_SLOT(d_func(), void _q_platformRunNativeAppModalPanel())
     friend class QPlatformDialogHelper;
 };
 

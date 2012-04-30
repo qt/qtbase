@@ -364,27 +364,14 @@ QCocoaFontDialogHelper::QCocoaFontDialogHelper() :
 QCocoaFontDialogHelper::~QCocoaFontDialogHelper()
 { }
 
-void QCocoaFontDialogHelper::platformNativeDialogModalHelp()
+void QCocoaFontDialogHelper::exec_sys()
 {
-    // Do a queued meta-call to open the native modal dialog so it opens after the new
-    // event loop has started to execute (in QDialog::exec). Using a timer rather than
-    // a queued meta call is intentional to ensure that the call is only delivered when
-    // [NSApp run] runs (timers are handeled special in cocoa). If NSApp is not
-    // running (which is the case if e.g a top-most QEventLoop has been
-    // interrupted, and the second-most event loop has not yet been reactivated (regardless
-    // if [NSApp run] is still on the stack)), showing a native modal dialog will fail.
-    QTimer::singleShot(1, this, SIGNAL(launchNativeAppModalPanel()));
-}
-
-void QCocoaFontDialogHelper::_q_platformRunNativeAppModalPanel()
-{
-    // TODO:
-#if 0
-    QBoolBlocker nativeDialogOnTop(QApplicationPrivate::native_modal_dialog_active);
-#endif
+    // Note: If NSApp is not running (which is the case if e.g a top-most
+    // QEventLoop has been interrupted, and the second-most event loop has not
+    // yet been reactivated (regardless if [NSApp run] is still on the stack)),
+    // showing a native modal dialog will fail.
     QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate);
-    [delegate runApplicationModalPanel];
-    if (dialogResultCode_sys() == QPlatformDialogHelper::Accepted)
+    if ([delegate runApplicationModalPanel])
         emit accept();
     else
         emit reject();
@@ -412,14 +399,6 @@ void QCocoaFontDialogHelper::hide_sys()
     if (!mDelegate)
         return;
     [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate)->mFontPanel close];
-}
-
-QCocoaFontDialogHelper::DialogCode QCocoaFontDialogHelper::dialogResultCode_sys()
-{
-    if (!mDelegate)
-        return QPlatformDialogHelper::Rejected;
-    QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate);
-    return [delegate dialogResultCode];
 }
 
 void QCocoaFontDialogHelper::setCurrentFont_sys(const QFont &font)

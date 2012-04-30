@@ -244,7 +244,6 @@ public:
     // dialog. Returning false means that a non-native dialog must be
     // used instead.
     bool canBeNativeDialog();
-    QDialog::DialogCode dialogResultCode_sys();
 
     void setDirectory_sys(const QString &directory);
     QString directory_sys() const;
@@ -344,15 +343,6 @@ inline QModelIndex QFileDialogPrivate::mapFromSource(const QModelIndex &index) c
 
 inline QString QFileDialogPrivate::rootPath() const {
     return model->rootPath();
-}
-
-inline QDialog::DialogCode QFileDialogPrivate::dialogResultCode_sys()
-{
-    QDialog::DialogCode result = QDialog::Rejected;
-    if (QPlatformDialogHelper *helper = platformHelper())
-        if (helper->dialogResultCode_sys() == QPlatformDialogHelper::Accepted)
-            result = QDialog::Accepted;
-    return result;
 }
 
 inline void QFileDialogPrivate::setDirectory_sys(const QString &directory)

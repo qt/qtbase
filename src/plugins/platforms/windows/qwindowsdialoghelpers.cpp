@@ -519,29 +519,12 @@ void QWindowsDialogHelperBase<BaseClass>::hide_sys()
 }
 
 template <class BaseClass>
-void QWindowsDialogHelperBase<BaseClass>::platformNativeDialogModalHelp()
+void QWindowsDialogHelperBase<BaseClass>::exec_sys()
 {
     if (QWindowsContext::verboseDialogs)
         qDebug("%s" , __FUNCTION__);
-    if (QWindowsNativeDialogBase *nd =nativeDialog())
-        nd->metaObject()->invokeMethod(this,
-                                       "emitLaunchNativeAppModalPanel",
-                                       Qt::QueuedConnection);
-}
-
-template <class BaseClass>
-void QWindowsDialogHelperBase<BaseClass>::_q_platformRunNativeAppModalPanel()
-{
-    if (QWindowsNativeDialogBase *nd =nativeDialog())
-        nd->exec(m_ownerWindow);
-}
-
-template <class BaseClass>
-QPlatformDialogHelper::DialogCode QWindowsDialogHelperBase<BaseClass>::dialogResultCode_sys()
-{
-    if (QWindowsNativeDialogBase *nd =nativeDialog())
-        return nd->result();
-    return QPlatformDialogHelper::Rejected;
+    if (QWindowsNativeDialogBase *nd = nativeDialog())
+         nd->exec(m_ownerWindow);
 }
 
 static inline bool snapToDefaultButtonHint()
@@ -1135,19 +1118,14 @@ QWindowsNativeDialogBase *QWindowsFileDialogHelper::createNativeDialog()
     QWindowsNativeFileDialogBase *result = QWindowsNativeFileDialogBase::create(options()->acceptMode());
     if (!result)
         return 0;
-    QObject::connect(result, SIGNAL(accepted()), this, SIGNAL(accept()),
-                     Qt::QueuedConnection);
-    QObject::connect(result, SIGNAL(rejected()), this, SIGNAL(reject()),
-                     Qt::QueuedConnection);
+    QObject::connect(result, SIGNAL(accepted()), this, SIGNAL(accept()));
+    QObject::connect(result, SIGNAL(rejected()), this, SIGNAL(reject()));
     QObject::connect(result, SIGNAL(directoryEntered(QString)),
-                     this, SIGNAL(directoryEntered(QString)),
-                     Qt::QueuedConnection);
+                     this, SIGNAL(directoryEntered(QString)));
     QObject::connect(result, SIGNAL(currentChanged(QString)),
-                     this, SIGNAL(currentChanged(QString)),
-                     Qt::QueuedConnection);
+                     this, SIGNAL(currentChanged(QString)));
     QObject::connect(result, SIGNAL(filterSelected(QString)),
-                     this, SIGNAL(filterSelected(QString)),
-                     Qt::QueuedConnection);
+                     this, SIGNAL(filterSelected(QString)));
 
     // Apply settings.
     const QSharedPointer<QFileDialogOptions> &opts = options();

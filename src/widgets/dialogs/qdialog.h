@@ -117,7 +117,6 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QDialog)
     Q_DISABLE_COPY(QDialog)
-    Q_PRIVATE_SLOT(d_func(), void _q_platformRunNativeAppModalPanel())
 
 #ifdef Q_OS_WINCE_WM
     Q_PRIVATE_SLOT(d_func(), void _q_doneAction())

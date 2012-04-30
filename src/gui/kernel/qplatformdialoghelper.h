@@ -90,26 +90,20 @@ public:
 
     virtual QVariant styleHint(StyleHint hint) const;
 
-    virtual void platformNativeDialogModalHelp() = 0;
-    virtual void _q_platformRunNativeAppModalPanel() = 0;
+    virtual void exec_sys() = 0;
 
     virtual void deleteNativeDialog_sys() = 0;
+
     virtual bool show_sys(Qt::WindowFlags windowFlags,
                           Qt::WindowModality windowModality,
                           QWindow *parent) = 0;
     virtual void hide_sys() = 0;
 
-    virtual DialogCode dialogResultCode_sys() = 0;
-
     static QVariant defaultStyleHint(QPlatformDialogHelper::StyleHint hint);
 
 Q_SIGNALS:
-    void launchNativeAppModalPanel();
     void accept();
     void reject();
-
-protected Q_SLOTS:
-    void emitLaunchNativeAppModalPanel();
 };
 
 class Q_GUI_EXPORT QColorDialogOptions

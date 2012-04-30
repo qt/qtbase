@@ -66,16 +66,13 @@ class QWindowsDialogHelperBase : public BaseClass
 {
 public:
 
-    virtual void platformNativeDialogModalHelp();
-    virtual void _q_platformRunNativeAppModalPanel();
+    virtual void exec_sys();
     virtual void deleteNativeDialog_sys();
     virtual bool show_sys(Qt::WindowFlags windowFlags,
                           Qt::WindowModality windowModality,
                           QWindow *parent);
     virtual void hide_sys();
     virtual QVariant styleHint(QPlatformDialogHelper::StyleHint) const;
-
-    virtual QPlatformDialogHelper::DialogCode dialogResultCode_sys();
 
     virtual bool supportsNonModalDialog() const { return true; }
 

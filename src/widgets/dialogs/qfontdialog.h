@@ -118,9 +118,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_styleHighlighted(int))
     Q_PRIVATE_SLOT(d_func(), void _q_sizeHighlighted(int))
     Q_PRIVATE_SLOT(d_func(), void _q_updateSample())
-#if defined(Q_WS_MAC)
-    Q_PRIVATE_SLOT(d_func(), void _q_macRunNativeAppModalPanel())
-#endif
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFontDialog::FontDialogOptions)

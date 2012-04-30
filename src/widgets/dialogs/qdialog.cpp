@@ -88,8 +88,6 @@ QPlatformDialogHelper *QDialogPrivate::platformHelper() const
             if (m_platformHelper) {
                 QObject::connect(m_platformHelper, SIGNAL(accept()), dialog, SLOT(accept()));
                 QObject::connect(m_platformHelper, SIGNAL(reject()), dialog, SLOT(reject()));
-                QObject::connect(m_platformHelper, SIGNAL(launchNativeAppModalPanel()),
-                                 dialog, SLOT(_q_platformRunNativeAppModalPanel()));
                 ncThis->initHelper(m_platformHelper);
             }
         }
@@ -117,13 +115,6 @@ bool QDialogPrivate::setNativeDialogVisible(bool visible)
     }
     return nativeDialogInUse;
 }
-
-void QDialogPrivate::_q_platformRunNativeAppModalPanel()
-{
-    if (nativeDialogInUse)
-        platformHelper()->_q_platformRunNativeAppModalPanel();
-}
-
 
 QVariant QDialogPrivate::styleHint(QPlatformDialogHelper::StyleHint hint) const
 {
@@ -535,13 +526,14 @@ int QDialog::exec()
     }
     show();
 
-    if (d->nativeDialogInUse)
-        d->platformHelper()->platformNativeDialogModalHelp();
-
-    QEventLoop eventLoop;
-    d->eventLoop = &eventLoop;
     QPointer<QDialog> guard = this;
-    (void) eventLoop.exec(QEventLoop::DialogExec);
+    if (d->nativeDialogInUse) {
+        d->platformHelper()->exec_sys();
+    } else {
+        QEventLoop eventLoop;
+        d->eventLoop = &eventLoop;
+        (void) eventLoop.exec(QEventLoop::DialogExec);
+    }
     if (guard.isNull())
         return QDialog::Rejected;
     d->eventLoop = 0;
