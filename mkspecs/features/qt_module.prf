@@ -226,6 +226,15 @@ DEFINES *= QT_MOC_COMPAT #we don't need warnings from calling moc code in our ge
 DEFINES *= QT_USE_QSTRINGBUILDER
 DEFINES *= QT_DEPRECATED_WARNINGS
 
+win32 {
+    # On Windows, due to the way DLLs work, we need to export all functions,
+    # including the inlines
+    DEFINES *= QT_DISABLE_DEPRECATED_BEFORE=0x040900
+} else {
+    # On other platforms, Qt's own compilation goes needs to compile the Qt 5.0 API
+    DEFINES *= QT_DISABLE_DEPRECATED_BEFORE=0x050000
+}
+
 TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
 
 # Provides useful info normally only contained in the internal .qmake.cache file

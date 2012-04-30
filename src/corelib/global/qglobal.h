@@ -332,8 +332,7 @@ QT_END_INCLUDE_NAMESPACE
 #endif
 
 #ifndef QT_DISABLE_DEPRECATED_BEFORE
-// ### Qt5: remember to change that to 5 when we reach feature freeze
-#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(4, 9, 0)
+#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(5, 0, 0)
 #endif
 
 /*
