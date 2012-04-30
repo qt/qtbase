@@ -57,12 +57,6 @@ void QClipboard::clear(Mode mode)
     setMimeData(0, mode);
 }
 
-
-bool QClipboard::event(QEvent *e)
-{
-    return QObject::event(e);
-}
-
 const QMimeData* QClipboard::mimeData(Mode mode) const
 {
     QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
@@ -88,14 +82,6 @@ bool QClipboard::ownsMode(Mode mode) const
 {
     QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
     return clipboard->ownsMode(mode);
-}
-
-void QClipboard::connectNotify( const char * )
-{
-}
-
-void QClipboard::ownerDestroyed()
-{
 }
 
 #endif // QT_NO_CLIPBOARD

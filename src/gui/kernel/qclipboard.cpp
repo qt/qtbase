@@ -237,17 +237,6 @@ QClipboard::~QClipboard()
 */
 
 
-/*****************************************************************************
-  QApplication member functions related to QClipboard.
- *****************************************************************************/
-
-// text handling is done directly in qclipboard_qws, for now
-
-/*!
-    \fn bool QClipboard::event(QEvent *e)
-    \reimp
-*/
-
 /*!
     \overload
 

@@ -91,13 +91,8 @@ Q_SIGNALS:
     void selectionChanged();
     void findBufferChanged();
     void dataChanged();
-private Q_SLOTS:
-    void ownerDestroyed();
 
 protected:
-    void connectNotify(const char *);
-    bool event(QEvent *);
-
     friend class QApplication;
     friend class QApplicationPrivate;
     friend class QGuiApplication;
