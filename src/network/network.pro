@@ -26,6 +26,7 @@ HEADERS += $$QT_SOURCE_TREE/src/network/qtnetworkversion.h
 
 include(access/access.pri)
 include(bearer/bearer.pri)
+include(doc/doc.pri)
 include(kernel/kernel.pri)
 include(socket/socket.pri)
 include(ssl/ssl.pri)

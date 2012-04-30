@@ -1,35 +1,35 @@
 include(../../../doc/global/qt-cpp-ignore.qdocconf)
 
-project                 = QtXml
-description             = Qt XML Reference Documentation
-url                     = http://qt-project.org/doc/qt-5.0/qtxml
+project                 = QtNetwork
+description             = Qt Network Reference Documentation
+url                     = http://qt-project.org/doc/qt-5.0/qtsql
 version                 = 5.0.0
 
 sourceencoding          = UTF-8
 outputencoding          = UTF-8
 naturallanguage         = en_US
-qhp.projects            = QtXml
+qhp.projects            = QtNetwork
 
-qhp.QtXml.file            = qtxml.qhp
-qhp.QtXml.namespace           = org.qt-project.qtxml.500
-qhp.QtXml.virtualFolder       = qdoc
-qhp.QtXml.indexTitle          = Qt XML Reference Documentation
-qhp.QtXml.indexRoot           =
+qhp.QtNetwork.file         = qtnetwork.qhp
+qhp.QtNetwork.namespace           = org.qt-project.qtnetwork.500
+qhp.QtNetwork.virtualFolder       = qdoc
+qhp.QtNetwork.indexTitle          = Qt Network Reference Documentation
+qhp.QtNetwork.indexRoot           =
 
-qhp.QtXml.filterAttributes    = qtxml 5.0.0 qtrefdoc
-qhp.QtXml.customFilters.Qt.name = QtXml 5.0.0
-qhp.QtXml.customFilters.Qt.filterAttributes = qtxml 5.0.0
-qhp.QtXml.subprojects         = classes overviews examples
-qhp.QtXml.subprojects.classes.title = Classes
-qhp.QtXml.subprojects.classes.indexTitle = Qt XML's Classes
-qhp.QtXml.subprojects.classes.selectors = class fake:headerfile
-qhp.QtXml.subprojects.classes.sortPages = true
-qhp.QtXml.subprojects.overviews.title = Overviews
-qhp.QtXml.subprojects.overviews.indexTitle = All Overviews and HOWTOs
-qhp.QtXml.subprojects.overviews.selectors = fake:page,group,module
-qhp.QtXml.subprojects.examples.title = Qt XML Examples
-qhp.QtXml.subprojects.examples.indexTitle = Qt XML Examples
-qhp.QtXml.subprojects.examples.selectors = fake:example
+qhp.QtNetwork.filterAttributes    = qtnetwork 5.0.0 qtrefdoc
+qhp.QtNetwork.customFilters.Qt.name = QtNetwork 5.0.0
+qhp.QtNetwork.customFilters.Qt.filterAttributes = qtnetwork 5.0.0
+qhp.QtNetwork.subprojects         = classes overviews examples
+qhp.QtNetwork.subprojects.classes.title = Classes
+qhp.QtNetwork.subprojects.classes.indexTitle = Qt Network's Classes
+qhp.QtNetwork.subprojects.classes.selectors = class fake:headerfile
+qhp.QtNetwork.subprojects.classes.sortPages = true
+qhp.QtNetwork.subprojects.overviews.title = Overviews
+qhp.QtNetwork.subprojects.overviews.indexTitle = All Overviews and HOWTOs
+qhp.QtNetwork.subprojects.overviews.selectors = fake:page,group,module
+qhp.QtNetwork.subprojects.examples.title = Qt Network Examples
+qhp.QtNetwork.subprojects.examples.indexTitle = Qt Network Examples
+qhp.QtNetwork.subprojects.examples.selectors = fake:example
 
 dita.metadata.default.author      = Qt Project
 dita.metadata.default.permissions = all
@@ -44,8 +44,8 @@ headers.fileextensions  = "*.ch *.h *.h++ *.hh *.hpp *.hxx"
 examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml *.css"
 examples.imageextensions = "*.png"
 
-outputdir               = ../../../doc/qtxml
-tagfile                 = ../../../doc/qtxml/qtxml.tags
+outputdir               = ../../../doc/qtnetwork
+tagfile                 = ../../../doc/qtnetwork/qtnetwork.tags
 
 HTML.generatemacrefs    = "true"
 HTML.nobreadcrumbs      = "true"
