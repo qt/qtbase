@@ -221,6 +221,7 @@ QString DitaXmlGenerator::ditaTags[] =
     "prodname",
     "prolog",
     "publisher",
+    "qmlAttached",
     "qmlDetail",
     "qmlImportModule",
     "qmlInheritedBy",
@@ -4463,6 +4464,12 @@ void DitaXmlGenerator::startQmlProperty(QmlPropertyNode* qpn,
         xmlWriter().writeAttribute("value","default");
         writeEndTag(); // </qmlQualifier>
     }
+    if (qpn->isAttached()) {
+        writeStartTag(DT_qmlAttached);
+        xmlWriter().writeAttribute("name","attached");
+        xmlWriter().writeAttribute("value","yes");
+        writeEndTag(); // </qmlAttached>
+    }
     writeStartTag(DT_apiData);
     generateQmlItem(qpn, relative, marker, false);
     writeEndTag(); // </apiData>
@@ -4589,6 +4596,12 @@ void DitaXmlGenerator::writeQmlRef(DitaTag tag,
     QString marked = getMarkedUpSynopsis(n, relative, marker, CodeMarker::Detailed);
     writeText(marked, marker, relative);
     writeEndTag(); // </apiData>
+    if (node->isAttached()) {
+        writeStartTag(DT_qmlAttached);
+        xmlWriter().writeAttribute("name","attached");
+        xmlWriter().writeAttribute("value","yes");
+        writeEndTag(); // </qmlAttached>
+    }
     writeEndTag(); // </qmlXxxDef>
     writeQmlDesc(node, marker);
     writeEndTag(); // </qmlXxxDetail>
@@ -4636,9 +4649,9 @@ void DitaXmlGenerator::generateQmlInherits(const QmlClassNode* qcn, CodeMarker* 
         return;
     const FakeNode* base = qcn->qmlBase();
     if (base) {
-        //writeStartTag(DT_qmlInherits);
-        writeStartTag(DT_qmlTypeDef);
-        xmlWriter().writeAttribute("outputclass","inherits");
+        writeStartTag(DT_qmlInherits);
+        //writeStartTag(DT_qmlTypeDef);
+        //xmlWriter().writeAttribute("outputclass","inherits");
         writeStartTag(DT_apiData);
         Text text;
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(base));
@@ -4661,9 +4674,9 @@ void DitaXmlGenerator::generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarke
         NodeList subs;
         QmlClassNode::subclasses(qcn->name(),subs);
         if (!subs.isEmpty()) {
-            //writeStartTag(DT_qmlInheritedBy);
-            writeStartTag(DT_qmlTypeDef);
-            xmlWriter().writeAttribute("outputclass","inherited-by");
+            writeStartTag(DT_qmlInheritedBy);
+            //writeStartTag(DT_qmlTypeDef);
+            //xmlWriter().writeAttribute("outputclass","inherited-by");
             writeStartTag(DT_apiData);
             Text text;
             appendSortedQmlNames(text,qcn,subs,marker);
@@ -4686,9 +4699,9 @@ void DitaXmlGenerator::generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* ma
 {
     ClassNode* cn = qcn->classNode();
     if (cn && (cn->status() != Node::Internal)) {
-        //writeStartTag(DT_qmlInstantiates);
-        writeStartTag(DT_qmlTypeDef);
-        xmlWriter().writeAttribute("outputclass","instantiates");
+        writeStartTag(DT_qmlInstantiates);
+        //writeStartTag(DT_qmlTypeDef);
+        //xmlWriter().writeAttribute("outputclass","instantiates");
         writeStartTag(DT_apiData);
         Text text;
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(cn));
@@ -4707,9 +4720,9 @@ void DitaXmlGenerator::generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* ma
 void DitaXmlGenerator::generateQmlSince(const Node* node)
 {
     if (!node->since().isEmpty()) {
-        //writeStartTag(DT_qmlSince);
-        writeStartTag(DT_qmlTypeDef);
-        xmlWriter().writeAttribute("outputclass","since");
+        writeStartTag(DT_qmlSince);
+        //writeStartTag(DT_qmlTypeDef);
+        //xmlWriter().writeAttribute("outputclass","since");
         writeStartTag(DT_apiItemName);
         QStringList pieces = node->since().split(QLatin1Char(' '));
         writeCharacters(pieces[0]);

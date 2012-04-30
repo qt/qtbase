@@ -190,6 +190,7 @@ public:
     virtual bool isAbstract() const { return false; }
     virtual bool isQmlPropertyGroup() const { return false; }
     virtual bool isCollisionNode() const { return false; }
+    virtual bool isAttached() const { return false; }
     virtual void setAbstract(bool ) { }
     virtual QString title() const { return QString(); }
     bool isInternal() const;
@@ -613,8 +614,8 @@ public:
     bool isStored() const { return fromFlagValue(stored_,true); }
     bool isDesignable() const { return fromFlagValue(designable_,false); }
     bool isWritable(Tree* tree);
-    bool isAttached() const { return attached_; }
     bool isReadOnly() const { return fromFlagValue(readOnly_,false); }
+    virtual bool isAttached() const { return attached_; }
     virtual bool isQmlNode() const { return true; }
     virtual bool isQtQuickNode() const { return parent()->isQtQuickNode(); }
     virtual QString qmlModuleName() const { return parent()->qmlModuleName(); }
@@ -788,7 +789,7 @@ public:
     QStringList reconstructParams(bool values = false) const;
     QString signature(bool values = false) const;
     const QString& element() const { return parent()->name(); }
-    bool isAttached() const { return attached_; }
+    virtual bool isAttached() const { return attached_; }
     virtual bool isQmlNode() const {
         return ((type() == QmlSignal) ||
                 (type() == QmlMethod) ||

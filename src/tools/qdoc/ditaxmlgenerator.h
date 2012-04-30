@@ -230,6 +230,7 @@ public:
         DT_prodname,
         DT_prolog,
         DT_publisher,
+        DT_qmlAttached,
         DT_qmlDetail,
         DT_qmlImportModule,
         DT_qmlInheritedBy,
