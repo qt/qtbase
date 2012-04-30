@@ -211,7 +211,7 @@ static QDialogButtonBox::ButtonRole roleFor(QDialogButtonBox::StandardButton but
     return QDialogButtonBox::InvalidRole;
 }
 
-static const int layouts[2][5][14] =
+static const uint layouts[2][5][14] =
 {
     // Qt::Horizontal
     {
@@ -406,7 +406,7 @@ void QDialogButtonBoxPrivate::layoutButtons()
             tmpPolicy = 4;  // Mac modeless
     }
 
-    const int *currentLayout = layouts[orientation == Qt::Vertical][tmpPolicy];
+    const uint *currentLayout = layouts[orientation == Qt::Vertical][tmpPolicy];
 
     if (center)
         buttonLayout->addStretch();

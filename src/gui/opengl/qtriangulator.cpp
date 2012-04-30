@@ -1133,7 +1133,7 @@ void QTriangulator<T>::ComplexToSimple::initEdges()
         } else {
             Q_ASSERT(i + 1 < m_parent->m_indices.size());
             // {node, from, to, next, previous, winding, mayIntersect, pointingUp, originallyPointingUp}
-            Edge edge = {0, m_parent->m_indices.at(i), m_parent->m_indices.at(i + 1), -1, -1, 0, true, false, false};
+            Edge edge = {0, int(m_parent->m_indices.at(i)), int(m_parent->m_indices.at(i + 1)), -1, -1, 0, true, false, false};
             m_edges.add(edge);
         }
     }
