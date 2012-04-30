@@ -348,4 +348,34 @@ void QQnxScreen::windowClosed(void *window)
     removeOverlayWindow(windowHandle);
 }
 
+void QQnxScreen::activateWindowGroup(const QByteArray &id)
+{
+#if defined(QQNXSCREEN_DEBUG)
+    qDebug() << Q_FUNC_INFO;
+#endif
+
+    if (!rootWindow() || id != rootWindow()->groupName())
+        return;
+
+    if (!m_childWindows.isEmpty()) {
+        // We're picking up the last window of the list here
+        // because this list is ordered by stacking order.
+        // Last window is effectively the one on top.
+        QWindow * const window = m_childWindows.last()->window();
+        QWindowSystemInterface::handleWindowActivated(window);
+    }
+}
+
+void QQnxScreen::deactivateWindowGroup(const QByteArray &id)
+{
+#if defined(QQNXSCREEN_DEBUG)
+    qDebug() << Q_FUNC_INFO;
+#endif
+
+    if (!rootWindow() || id != rootWindow()->groupName())
+        return;
+
+    QWindowSystemInterface::handleWindowActivated(0);
+}
+
 QT_END_NAMESPACE
