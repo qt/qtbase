@@ -49,6 +49,15 @@
 
 #include <string>
 
+#if defined(Q_OS_LINUX_ANDROID)
+// std::wstring is disabled on android's glibc, as bionic lacks certain features
+// that libstdc++ checks for (like mbcslen).
+namespace std
+{
+    typedef basic_string<wchar_t> wstring;
+}
+#endif
+
 #include <stdarg.h>
 
 #ifdef truncate
