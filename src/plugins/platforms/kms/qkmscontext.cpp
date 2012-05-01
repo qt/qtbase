@@ -72,7 +72,6 @@ bool QKmsContext::makeCurrent(QPlatformSurface *surface)
 
 void QKmsContext::doneCurrent()
 {
-    QPlatformOpenGLContext::doneCurrent();
     bool ok = eglMakeCurrent(m_device->eglDisplay(), EGL_NO_SURFACE, EGL_NO_SURFACE,
                              EGL_NO_CONTEXT);
     if (!ok)
