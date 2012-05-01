@@ -1097,6 +1097,11 @@ void tst_QMetaObjectBuilder::relocatableData()
     QMetaObject *meta = builder.toMetaObject();
 
     QVERIFY(sameMetaObject(meta, &meta2));
+
+    QVERIFY(!meta2.d.extradata);
+    QVERIFY(!meta2.d.relatedMetaObjects);
+    QVERIFY(!meta2.d.static_metacall);
+
     free(meta);
 }
 

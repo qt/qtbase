@@ -1536,6 +1536,7 @@ void QMetaObjectBuilder::fromRelocatableData(QMetaObject *output,
     output->d.data = reinterpret_cast<const uint *>(buf + dataOffset);
     output->d.extradata = 0;
     output->d.relatedMetaObjects = 0;
+    output->d.static_metacall = 0;
 }
 
 /*!
