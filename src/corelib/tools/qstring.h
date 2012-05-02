@@ -439,17 +439,12 @@ public:
 
     const ushort *utf16() const;
 
-    QByteArray toAscii() const Q_REQUIRED_RESULT;
     QByteArray toLatin1() const Q_REQUIRED_RESULT;
     QByteArray toUtf8() const Q_REQUIRED_RESULT;
     QByteArray toLocal8Bit() const Q_REQUIRED_RESULT;
     QVector<uint> toUcs4() const Q_REQUIRED_RESULT;
 
     // note - this are all inline so we can benefit from strlen() compile time optimizations
-    static inline QString fromAscii(const char *str, int size = -1)
-    {
-        return fromUtf8(str, size);
-    }
     static inline QString fromLatin1(const char *str, int size = -1)
     {
         QStringDataPtr dataPtr = { fromLatin1_helper(str, (str && size == -1) ? int(strlen(str)) : size) };
@@ -463,8 +458,6 @@ public:
     {
         return fromLocal8Bit_helper(str, (str && size == -1) ? int(strlen(str)) : size);
     }
-    static inline QString fromAscii(const QByteArray &str)
-    { return fromAscii(str.data(), qstrnlen(str.constData(), str.size())); }
     static inline QString fromLatin1(const QByteArray &str)
     { return fromLatin1(str.data(), qstrnlen(str.constData(), str.size())); }
     static inline QString fromUtf8(const QByteArray &str)
@@ -474,6 +467,15 @@ public:
     static QString fromUtf16(const ushort *, int size = -1);
     static QString fromUcs4(const uint *, int size = -1);
     static QString fromRawData(const QChar *, int size);
+
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED static inline QString fromAscii(const char *str, int size = -1)
+    { return fromLatin1(str, size); }
+    QT_DEPRECATED static inline QString fromAscii(const QByteArray &str)
+    { return fromLatin1(str); }
+    QByteArray toAscii() const Q_REQUIRED_RESULT
+    { return toLatin1(); }
+#endif
 
     inline int toWCharArray(wchar_t *array) const;
     static inline QString fromWCharArray(const wchar_t *string, int size = -1) Q_REQUIRED_RESULT;
@@ -563,7 +565,7 @@ public:
     inline QT_ASCII_CAST_WARN QString &operator=(const QByteArray &a)
     { return (*this = fromUtf8(a.constData(), qstrnlen(a.constData(), a.size()))); }
     inline QT_ASCII_CAST_WARN QString &operator=(char c)
-    { return (*this = QChar::fromAscii(c)); }
+    { return (*this = QChar::fromLatin1(c)); }
 
     // these are needed, so it compiles with STL support enabled
     inline QT_ASCII_CAST_WARN QString &prepend(const char *s)
@@ -579,7 +581,7 @@ public:
     inline QT_ASCII_CAST_WARN QString &operator+=(const QByteArray &s)
     { return append(QString::fromUtf8(s.constData(), qstrnlen(s.constData(), s.size()))); }
     inline QT_ASCII_CAST_WARN QString &operator+=(char c)
-    { return append(QChar::fromAscii(c)); }
+    { return append(QChar::fromLatin1(c)); }
 
     inline QT_ASCII_CAST_WARN bool operator==(const char *s) const;
     inline QT_ASCII_CAST_WARN bool operator!=(const char *s) const;
@@ -867,9 +869,9 @@ public:
     // An operator= for each QChar cast constructors
 #ifndef QT_NO_CAST_FROM_ASCII
     inline QT_ASCII_CAST_WARN QCharRef &operator=(char c)
-    { return operator=(QChar::fromAscii(c)); }
+    { return operator=(QChar::fromLatin1(c)); }
     inline QT_ASCII_CAST_WARN QCharRef &operator=(uchar c)
-    { return operator=(QChar::fromAscii(c)); }
+    { return operator=(QChar::fromLatin1(c)); }
 #endif
     inline QCharRef &operator=(const QCharRef &c) { return operator=(QChar(c)); }
     inline QCharRef &operator=(ushort rc) { return operator=(QChar(rc)); }
@@ -912,7 +914,9 @@ public:
     inline void setCell(uchar cell);
     inline void setRow(uchar row);
 
-    char toAscii() const { return QChar(*this).toAscii(); }
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED  char toAscii() const { return QChar(*this).toLatin1(); }
+#endif
     char toLatin1() const { return QChar(*this).toLatin1(); }
     ushort unicode() const { return QChar(*this).unicode(); }
     ushort& unicode() { return s.data()[i].unicode(); }
@@ -1095,9 +1099,9 @@ inline QT_ASCII_CAST_WARN const QString operator+(const QString &s1, const char 
 inline QT_ASCII_CAST_WARN const QString operator+(const char *s1, const QString &s2)
 { QString t = QString::fromUtf8(s1, s1 ? int(strlen(s1)) : -1); t += s2; return t; }
 inline QT_ASCII_CAST_WARN const QString operator+(char c, const QString &s)
-{ QString t = s; t.prepend(QChar::fromAscii(c)); return t; }
+{ QString t = s; t.prepend(QChar::fromLatin1(c)); return t; }
 inline QT_ASCII_CAST_WARN const QString operator+(const QString &s, char c)
-{ QString t = s; t += QChar::fromAscii(c); return t; }
+{ QString t = s; t += QChar::fromLatin1(c); return t; }
 inline QT_ASCII_CAST_WARN const QString operator+(const QByteArray &ba, const QString &s)
 { QString t = QString::fromUtf8(ba.constData(), qstrnlen(ba.constData(), ba.size())); t += s; return t; }
 inline QT_ASCII_CAST_WARN const QString operator+(const QString &s, const QByteArray &ba)
@@ -1201,7 +1205,10 @@ public:
     inline const QChar *data() const { return unicode(); }
     inline const QChar *constData() const {  return unicode(); }
 
-    QByteArray toAscii() const Q_REQUIRED_RESULT;
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED QByteArray toAscii() const Q_REQUIRED_RESULT
+    { return toLatin1(); }
+#endif
     QByteArray toLatin1() const Q_REQUIRED_RESULT;
     QByteArray toUtf8() const Q_REQUIRED_RESULT;
     QByteArray toLocal8Bit() const Q_REQUIRED_RESULT;

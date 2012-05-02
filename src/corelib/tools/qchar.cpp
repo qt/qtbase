@@ -1320,6 +1320,7 @@ uint QChar::toCaseFolded(uint ucs4)
 
 /*!
     \fn char QChar::toAscii() const
+    \deprecated
 
     Returns the Latin-1 character value of the QChar, or 0 if the character is not
     representable.
@@ -1339,6 +1340,7 @@ uint QChar::toCaseFolded(uint ucs4)
 
 /*!
     \fn QChar QChar::fromAscii(char)
+    \deprecated
 
     Converts the ASCII character \a c to it's equivalent QChar. This
     is mainly useful for non-internationalized software.

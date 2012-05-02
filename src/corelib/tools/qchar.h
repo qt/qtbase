@@ -227,12 +227,17 @@ public:
 
     inline UnicodeVersion unicodeVersion() const { return QChar::unicodeVersion(ucs); }
 
-    inline char toAscii() const;
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline char toAscii() const { return toLatin1(); }
+#endif
     inline char toLatin1() const;
     inline ushort unicode() const { return ucs; }
     inline ushort &unicode() { return ucs; }
 
-    static inline QChar fromAscii(char c);
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED static inline QChar fromAscii(char c)
+    { return fromLatin1(c); }
+#endif
     static inline QChar fromLatin1(char c);
 
     inline bool isNull() const { return ucs == 0; }
@@ -337,10 +342,8 @@ private:
 
 Q_DECLARE_TYPEINFO(QChar, Q_MOVABLE_TYPE);
 
-inline char QChar::toAscii() const { return ucs > 0xff ? 0 : char(ucs); }
 inline char QChar::toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
 inline QChar QChar::fromLatin1(char c) { return QChar(ushort(uchar(c))); }
-inline QChar QChar::fromAscii(char c) { return QChar(ushort(uchar(c))); }
 
 inline void QChar::setCell(uchar acell)
 { ucs = ushort((ucs & 0xff00) + acell); }

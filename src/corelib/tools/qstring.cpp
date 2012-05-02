@@ -3960,6 +3960,8 @@ QByteArray QString::toLatin1() const
 }
 
 /*!
+    \fn QByteArray QString::toAscii() const
+    \deprecated
     Returns an 8-bit representation of the string as a QByteArray.
 
     This function does the same as toLatin1().
@@ -3969,10 +3971,6 @@ QByteArray QString::toLatin1() const
 
     \sa fromAscii(), toLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
 */
-QByteArray QString::toAscii() const
-{
-    return toUtf8();
-}
 
 #if !defined(Q_OS_MAC) && defined(Q_OS_UNIX)
 static QByteArray toLocal8Bit_helper(const QChar *data, int length)
@@ -4146,6 +4144,8 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
 }
 
 /*! \fn QString QString::fromAscii(const char *, int size);
+    \deprecated
+
     Returns a QString initialized with the first \a size characters
     from the string \a str.
 
@@ -9078,7 +9078,9 @@ QByteArray QStringRef::toLatin1() const
 }
 
 /*!
+    \fn QByteArray QStringRef::toAscii() const
     \since 4.8
+    \deprecated
 
     Returns an 8-bit representation of the string as a QByteArray.
 
@@ -9089,10 +9091,6 @@ QByteArray QStringRef::toLatin1() const
 
     \sa toLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
 */
-QByteArray QStringRef::toAscii() const
-{
-    return toLatin1();
-}
 
 /*!
     \since 4.8
