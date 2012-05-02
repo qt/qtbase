@@ -168,13 +168,13 @@ void tst_QDBusPerformance::oneWay_data()
 
     QByteArray ba(256, 'a');
     while (ba.size() < 8193) {
-        QTest::newRow(QString("%1-byteArray").arg(ba.size()).toAscii()) << QVariant::fromValue(ba) << ba.size();
+        QTest::newRow(QString("%1-byteArray").arg(ba.size()).toLatin1()) << QVariant::fromValue(ba) << ba.size();
         ba += ba;
     }
 
     QString s(256, QLatin1Char('a'));
     while (s.size() < 8193) {
-        QTest::newRow(QString("%1-string").arg(s.size()).toAscii()) << QVariant::fromValue(s) << s.size();
+        QTest::newRow(QString("%1-string").arg(s.size()).toLatin1()) << QVariant::fromValue(s) << s.size();
         s += s;
     }
 }

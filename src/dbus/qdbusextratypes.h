@@ -123,7 +123,7 @@ private:
 };
 
 inline QDBusSignature::QDBusSignature(const char *dBusSignature)
-    : m_signature(QString::fromAscii(dBusSignature))
+    : m_signature(QString::fromLatin1(dBusSignature))
 { doCheck(); }
 
 inline QDBusSignature::QDBusSignature(const QLatin1String &dBusSignature)
