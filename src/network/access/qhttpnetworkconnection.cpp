@@ -300,15 +300,15 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
     // one always.
     value = request.headerField("accept-language");
     if (value.isEmpty()) {
-        QString systemLocale = QLocale::system().name().replace(QChar::fromAscii('_'),QChar::fromAscii('-'));
+        QString systemLocale = QLocale::system().name().replace(QChar::fromLatin1('_'),QChar::fromLatin1('-'));
         QString acceptLanguage;
         if (systemLocale == QLatin1String("C"))
-            acceptLanguage = QString::fromAscii("en,*");
+            acceptLanguage = QString::fromLatin1("en,*");
         else if (systemLocale.startsWith(QLatin1String("en-")))
-            acceptLanguage = QString::fromAscii("%1,*").arg(systemLocale);
+            acceptLanguage = QString::fromLatin1("%1,*").arg(systemLocale);
         else
-            acceptLanguage = QString::fromAscii("%1,en,*").arg(systemLocale);
-        request.setHeaderField("Accept-Language", acceptLanguage.toAscii());
+            acceptLanguage = QString::fromLatin1("%1,en,*").arg(systemLocale);
+        request.setHeaderField("Accept-Language", acceptLanguage.toLatin1());
     }
 
     // set the User Agent
@@ -322,9 +322,9 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
         QByteArray host;
         if (add.setAddress(hostName)) {
             if (add.protocol() == QAbstractSocket::IPv6Protocol)
-                host = "[" + hostName.toAscii() + "]";//format the ipv6 in the standard way
+                host = "[" + hostName.toLatin1() + "]";//format the ipv6 in the standard way
             else
-                host = hostName.toAscii();
+                host = hostName.toLatin1();
 
         } else {
             host = QUrl::toAce(hostName);

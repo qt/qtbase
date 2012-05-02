@@ -115,7 +115,7 @@ void DataTransfererQTcp::readyRead()
 
     // QDataStream in(&m_qsocket);
     QByteArray array = m_qsocket.readAll();
-    QString data = QString::fromAscii(array);
+    QString data = QString::fromLatin1(array);
 
     // in >> data;
 

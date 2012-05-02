@@ -383,7 +383,7 @@ void tst_QSslCertificate::subjectAlternativeNames()
         else
             QFAIL("unsupported alternative name type");
         QString entry = QString("%1:%2").arg(type).arg(it.value());
-        QVERIFY(fileContents.contains(entry.toAscii()));
+        QVERIFY(fileContents.contains(entry.toLatin1()));
     }
 
     // verify that each entry in fileContents is present in subjAltNames

@@ -5783,9 +5783,9 @@ public slots:
         client->readAll();
         client->write("HTTP/1.0 200 OK\n");
         if (serverSendsContentLength)
-            client->write(QString("Content-Length: " + QString::number(dataSize) + "\n").toAscii());
+            client->write(QString("Content-Length: " + QString::number(dataSize) + "\n").toLatin1());
         if (chunkedEncoding)
-            client->write(QString("Transfer-Encoding: chunked\n").toAscii());
+            client->write(QString("Transfer-Encoding: chunked\n").toLatin1());
         client->write("Connection: close\n\n");
     }
 
@@ -5796,7 +5796,7 @@ public slots:
 
             // chunked encoding: we have to send a last "empty" chunk
             if (chunkedEncoding)
-                client->write(QString("0\r\n\r\n").toAscii());
+                client->write(QString("0\r\n\r\n").toLatin1());
 
             client->disconnectFromHost();
             server.close();
@@ -5810,9 +5810,9 @@ public slots:
             QByteArray data(amount, '@');
 
             if (chunkedEncoding) {
-                client->write(QString(QString("%1").arg(amount,0,16).toUpper() + "\r\n").toAscii());
+                client->write(QString(QString("%1").arg(amount,0,16).toUpper() + "\r\n").toLatin1());
                 client->write(data.constData(), amount);
-                client->write(QString("\r\n").toAscii());
+                client->write(QString("\r\n").toLatin1());
             } else {
                 client->write(data.constData(), amount);
             }
@@ -5922,7 +5922,7 @@ void tst_QNetworkReply::getFromHttpIntoBufferCanReadLine()
 {
     QString header("HTTP/1.0 200 OK\r\nContent-Length: 7\r\n\r\nxxx\nxxx");
 
-    MiniHttpServer server(header.toAscii());
+    MiniHttpServer server(header.toLatin1());
     server.doClose = true;
 
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
@@ -5992,10 +5992,10 @@ void tst_QNetworkReply::qtbug12908compressedHttpReply()
 
     // dd if=/dev/zero of=qtbug-12908 bs=16384  count=1 && gzip qtbug-12908 && base64 -w 0 qtbug-12908.gz
     QString encodedFile("H4sICDdDaUwAA3F0YnVnLTEyOTA4AO3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA");
-    QByteArray decodedFile = QByteArray::fromBase64(encodedFile.toAscii());
+    QByteArray decodedFile = QByteArray::fromBase64(encodedFile.toLatin1());
     QCOMPARE(decodedFile.size(), 63);
 
-    MiniHttpServer server(header.toAscii() + decodedFile);
+    MiniHttpServer server(header.toLatin1() + decodedFile);
     server.doClose = true;
 
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
@@ -6015,10 +6015,10 @@ void tst_QNetworkReply::compressedHttpReplyBrokenGzip()
     // dd if=/dev/zero of=qtbug-12908 bs=16384  count=1 && gzip qtbug-12908 && base64 -w 0 qtbug-12908.gz
     // Then change "BMQ" to "BMX"
     QString encodedFile("H4sICDdDaUwAA3F0YnVnLTEyOTA4AO3BMXEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA");
-    QByteArray decodedFile = QByteArray::fromBase64(encodedFile.toAscii());
+    QByteArray decodedFile = QByteArray::fromBase64(encodedFile.toLatin1());
     QCOMPARE(decodedFile.size(), 63);
 
-    MiniHttpServer server(header.toAscii() + decodedFile);
+    MiniHttpServer server(header.toLatin1() + decodedFile);
     server.doClose = true;
 
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));

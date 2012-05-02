@@ -386,9 +386,9 @@ public slots:
         client->readAll();
         client->write("HTTP/1.0 200 OK\n");
         if (serverSendsContentLength)
-            client->write(QString("Content-Length: " + QString::number(dataSize) + "\n").toAscii());
+            client->write(QString("Content-Length: " + QString::number(dataSize) + "\n").toLatin1());
         if (chunkedEncoding)
-            client->write(QString("Transfer-Encoding: chunked\n").toAscii());
+            client->write(QString("Transfer-Encoding: chunked\n").toLatin1());
         client->write("Connection: close\n\n");
     }
 
@@ -399,7 +399,7 @@ public slots:
 
             // chunked encoding: we have to send a last "empty" chunk
             if (chunkedEncoding)
-                client->write(QString("0\r\n\r\n").toAscii());
+                client->write(QString("0\r\n\r\n").toLatin1());
 
             client->disconnectFromHost();
             server.close();
@@ -413,9 +413,9 @@ public slots:
             QByteArray data(amount, '@');
 
             if (chunkedEncoding) {
-                client->write(QString(QString("%1").arg(amount,0,16).toUpper() + "\r\n").toAscii());
+                client->write(QString(QString("%1").arg(amount,0,16).toUpper() + "\r\n").toLatin1());
                 client->write(data.constData(), amount);
-                client->write(QString("\r\n").toAscii());
+                client->write(QString("\r\n").toLatin1());
             } else {
                 client->write(data.constData(), amount);
             }

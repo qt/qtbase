@@ -1036,12 +1036,12 @@ void tst_QUdpSocket::multicastTtlOption_data()
     addresses += QHostAddress(QHostAddress::AnyIPv6);
 
     foreach (const QHostAddress &address, addresses) {
-        QTest::newRow(QString("%1 0").arg(address.toString()).toAscii()) << address << 0 << 0;
-        QTest::newRow(QString("%1 1").arg(address.toString()).toAscii()) << address << 1 << 1;
-        QTest::newRow(QString("%1 2").arg(address.toString()).toAscii()) << address << 2 << 2;
-        QTest::newRow(QString("%1 128").arg(address.toString()).toAscii()) << address << 128 << 128;
-        QTest::newRow(QString("%1 255").arg(address.toString()).toAscii()) << address << 255 << 255;
-        QTest::newRow(QString("%1 1024").arg(address.toString()).toAscii()) << address << 1024 << 1;
+        QTest::newRow(QString("%1 0").arg(address.toString()).toLatin1()) << address << 0 << 0;
+        QTest::newRow(QString("%1 1").arg(address.toString()).toLatin1()) << address << 1 << 1;
+        QTest::newRow(QString("%1 2").arg(address.toString()).toLatin1()) << address << 2 << 2;
+        QTest::newRow(QString("%1 128").arg(address.toString()).toLatin1()) << address << 128 << 128;
+        QTest::newRow(QString("%1 255").arg(address.toString()).toLatin1()) << address << 255 << 255;
+        QTest::newRow(QString("%1 1024").arg(address.toString()).toLatin1()) << address << 1024 << 1;
     }
 }
 
@@ -1077,13 +1077,13 @@ void tst_QUdpSocket::multicastLoopbackOption_data()
     addresses += QHostAddress(QHostAddress::AnyIPv6);
 
     foreach (const QHostAddress &address, addresses) {
-        QTest::newRow(QString("%1 0").arg(address.toString()).toAscii()) << address << 0 << 0;
-        QTest::newRow(QString("%1 1").arg(address.toString()).toAscii()) << address << 1 << 1;
-        QTest::newRow(QString("%1 2").arg(address.toString()).toAscii()) << address << 2 << 1;
-        QTest::newRow(QString("%1 0 again").arg(address.toString()).toAscii()) << address << 0 << 0;
-        QTest::newRow(QString("%1 2 again").arg(address.toString()).toAscii()) << address << 2 << 1;
-        QTest::newRow(QString("%1 0 last time").arg(address.toString()).toAscii()) << address << 0 << 0;
-        QTest::newRow(QString("%1 1 again").arg(address.toString()).toAscii()) << address << 1 << 1;
+        QTest::newRow(QString("%1 0").arg(address.toString()).toLatin1()) << address << 0 << 0;
+        QTest::newRow(QString("%1 1").arg(address.toString()).toLatin1()) << address << 1 << 1;
+        QTest::newRow(QString("%1 2").arg(address.toString()).toLatin1()) << address << 2 << 1;
+        QTest::newRow(QString("%1 0 again").arg(address.toString()).toLatin1()) << address << 0 << 0;
+        QTest::newRow(QString("%1 2 again").arg(address.toString()).toLatin1()) << address << 2 << 1;
+        QTest::newRow(QString("%1 0 last time").arg(address.toString()).toLatin1()) << address << 0 << 0;
+        QTest::newRow(QString("%1 1 again").arg(address.toString()).toLatin1()) << address << 1 << 1;
     }
 }
 
@@ -1164,7 +1164,7 @@ void tst_QUdpSocket::setMulticastInterface_data()
     QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
     foreach (const QNetworkInterface &iface, interfaces) {
         foreach (const QNetworkAddressEntry &entry, iface.addressEntries()) {
-            QTest::newRow(QString("%1:%2").arg(iface.name()).arg(entry.ip().toString()).toAscii())
+            QTest::newRow(QString("%1:%2").arg(iface.name()).arg(entry.ip().toString()).toLatin1())
                     << iface
                     << entry.ip();
         }

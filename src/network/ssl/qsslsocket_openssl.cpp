@@ -1545,7 +1545,7 @@ QString QSslSocketBackendPrivate::getErrorsFromOpenSsl()
         if (! errorString.isEmpty())
             errorString.append(QLatin1String(", "));
         const char *error = q_ERR_error_string(errNum, NULL);
-        errorString.append(QString::fromAscii(error)); // error is ascii according to man ERR_error_string
+        errorString.append(QString::fromLatin1(error)); // error is ascii according to man ERR_error_string
     }
     return errorString;
 }

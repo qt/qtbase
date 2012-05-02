@@ -123,7 +123,7 @@ int main(int argc, char** argv)
         session = new QNetworkSession(config);
 
         QString output = QString("Starting session for %1\n").arg(config.identifier());
-        oopSocket.write(output.toAscii());
+        oopSocket.write(output.toLatin1());
         oopSocket.waitForBytesWritten();
         session->open();
         session->waitForOpened();
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
     }
 
     QString output = QString("Started session for %1\n").arg(session->configuration().identifier());
-    oopSocket.write(output.toAscii());
+    oopSocket.write(output.toLatin1());
     oopSocket.waitForBytesWritten();
 
     oopSocket.waitForReadyRead();
