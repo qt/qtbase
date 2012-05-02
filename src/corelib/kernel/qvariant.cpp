@@ -330,7 +330,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             *str = QLatin1String(d->data.b ? "true" : "false");
             break;
         case QVariant::ByteArray:
-            *str = QString::fromAscii(v_cast<QByteArray>(d)->constData());
+            *str = QString::fromUtf8(v_cast<QByteArray>(d)->constData());
             break;
         case QVariant::StringList:
             if (v_cast<QStringList>(d)->count() == 1)
@@ -484,7 +484,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         QByteArray *ba = static_cast<QByteArray *>(result);
         switch (d->type) {
         case QVariant::String:
-            *ba = v_cast<QString>(d)->toAscii();
+            *ba = v_cast<QString>(d)->toUtf8();
             break;
         case QVariant::Double:
             *ba = QByteArray::number(d->data.d, 'g', DBL_DIG);
@@ -1178,7 +1178,7 @@ QVariant::QVariant(QDataStream &s)
 #ifndef QT_NO_CAST_FROM_ASCII
 QVariant::QVariant(const char *val)
 {
-    QString s = QString::fromAscii(val);
+    QString s = QString::fromUtf8(val);
     create(String, &s);
 }
 #endif

@@ -375,7 +375,7 @@ inline char qToLower(char ch)
 Q_CORE_EXPORT bool qStringComparisonHelper(const QString &s1, const char *s2)
 {
     // ### optimize me
-    return s1 == QString::fromAscii(s2);
+    return s1 == QString::fromUtf8(s2);
 }
 
 /*!
@@ -384,7 +384,7 @@ Q_CORE_EXPORT bool qStringComparisonHelper(const QString &s1, const char *s2)
 Q_CORE_EXPORT bool qStringComparisonHelper(const QString &s1, const QByteArray &s2)
 {
     // ### optimize me
-    return s1 == QString::fromAscii(s2);
+    return s1 == QString::fromUtf8(s2);
 }
 
 /*!
@@ -393,7 +393,7 @@ Q_CORE_EXPORT bool qStringComparisonHelper(const QString &s1, const QByteArray &
 Q_CORE_EXPORT bool qStringComparisonHelper(const QStringRef &s1, const char *s2)
 {
     // ### optimize me
-    return s1 == QString::fromAscii(s2);
+    return s1 == QString::fromUtf8(s2);
 }
 
 /*!
@@ -402,7 +402,7 @@ Q_CORE_EXPORT bool qStringComparisonHelper(const QStringRef &s1, const char *s2)
 Q_CORE_EXPORT bool qStringComparisonHelper(const QStringRef &s1, const QByteArray &s2)
 {
     // ### optimize me
-    return s1 == QString::fromAscii(s2);
+    return s1 == QString::fromUtf8(s2);
 }
 
 const QString::Null QString::null = { };

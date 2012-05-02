@@ -84,7 +84,7 @@ QTestData &operator<<(QTestData &data, const T &value)
 
 inline QTestData &operator<<(QTestData &data, const char * value)
 {
-    QString str = QString::fromAscii(value);
+    QString str = QString::fromUtf8(value);
     data.append(QMetaType::QString, &str);
     return data;
 }
