@@ -246,7 +246,7 @@ void QQnxRootWindow::resize(const QSize &size)
 void QQnxRootWindow::createWindowGroup()
 {
     // Generate a random window group name
-    m_windowGroupName = QUuid::createUuid().toString().toAscii();
+    m_windowGroupName = QUuid::createUuid().toString().toLatin1();
 
     // Create window group so child windows can be parented by container window
     errno = 0;

@@ -121,7 +121,7 @@ void QLinuxFbIntegrationPrivate::openTty()
                 break;
         }
     } else {
-        ttyfd = QT_OPEN(ttyDevice.toAscii().constData(), O_RDWR);
+        ttyfd = QT_OPEN(ttyDevice.toLatin1().constData(), O_RDWR);
     }
 
     if (ttyfd == -1)

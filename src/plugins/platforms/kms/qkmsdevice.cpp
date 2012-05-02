@@ -52,9 +52,9 @@ QT_BEGIN_NAMESPACE
 QKmsDevice::QKmsDevice(const QString &path, QKmsIntegration *parent) :
     QObject(0), m_integration(parent)
 {
-    m_fd = QT_OPEN(path.toAscii().constData(), O_RDWR);
+    m_fd = QT_OPEN(path.toLatin1().constData(), O_RDWR);
     if (m_fd < 0) {
-        qWarning("Could not open %s.", path.toAscii().constData());
+        qWarning("Could not open %s.", path.toLatin1().constData());
         qFatal("No DRM display device");
     }
 

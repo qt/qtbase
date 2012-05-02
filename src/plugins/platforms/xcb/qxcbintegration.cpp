@@ -105,7 +105,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
         qDebug() << "QXcbIntegration: Connecting to additional display: " << parameters.at(i) << parameters.at(i+1);
 #endif
         QString display = parameters.at(i) + ':' + parameters.at(i+1);
-        m_connections << new QXcbConnection(m_nativeInterface.data(), display.toAscii().constData());
+        m_connections << new QXcbConnection(m_nativeInterface.data(), display.toLatin1().constData());
     }
 
     foreach (QXcbConnection *connection, m_connections)

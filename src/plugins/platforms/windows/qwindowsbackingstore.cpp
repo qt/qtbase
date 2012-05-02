@@ -97,7 +97,7 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
     // Write image for debug purposes.
     if (QWindowsContext::verboseBackingStore > 2) {
         static int n = 0;
-        const QString fileName = QString::fromAscii("win%1_%2.png").
+        const QString fileName = QString::fromLatin1("win%1_%2.png").
                 arg(rw->winId()).arg(n++);
         m_image->image().save(fileName);
         qDebug() << "Wrote " << m_image->image().size() << fileName;
