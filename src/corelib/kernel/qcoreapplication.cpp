@@ -2055,7 +2055,7 @@ QStringList QCoreApplication::libraryPaths()
 #else
             QLatin1Char pathSep(':');
 #endif
-            QStringList paths = QString::fromLatin1(libPathEnv).split(pathSep, QString::SkipEmptyParts);
+            QStringList paths = QFile::decodeName(libPathEnv).split(pathSep, QString::SkipEmptyParts);
             for (QStringList::const_iterator it = paths.constBegin(); it != paths.constEnd(); ++it) {
                 QString canonicalPath = QDir(*it).canonicalPath();
                 if (!canonicalPath.isEmpty()

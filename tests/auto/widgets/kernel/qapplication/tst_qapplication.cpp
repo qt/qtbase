@@ -955,7 +955,7 @@ void tst_QApplication::libraryPaths_qt_plugin_path()
 
     // Our hook into libraryPaths() initialization: Set the QT_PLUGIN_PATH environment variable
     QString installPathPluginsDeCanon = appDirPath + QString::fromLatin1("/tmp/..");
-    QByteArray ascii = installPathPluginsDeCanon.toAscii();
+    QByteArray ascii = QFile::encodeName(installPathPluginsDeCanon);
     qputenv("QT_PLUGIN_PATH", ascii);
 
     QVERIFY(!app.libraryPaths().contains(appDirPath + QString::fromLatin1("/tmp/..")));
