@@ -4018,7 +4018,7 @@ QByteArray QString::toLocal8Bit() const
     However, in the Unicode range, there are certain codepoints that are not
     considered characters. The Unicode standard reserves the last two
     codepoints in each Unicode Plane (U+FFFE, U+FFFF, U+1FFFE, U+1FFFF,
-    U+2FFFE, etc.), as well as 16 codepoints in the range U+FDD0..U+FDDF,
+    U+2FFFE, etc.), as well as 32 codepoints in the range U+FDD0..U+FDEF,
     inclusive, as non-characters. If any of those appear in the string, they
     may be discarded and will not appear in the UTF-8 representation, or they
     may be replaced by one or more replacement characters.
@@ -4174,7 +4174,7 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
     Non-characters are codepoints that the Unicode standard reserves and must
     not be used in text interchange. They are the last two codepoints in each
     Unicode Plane (U+FFFE, U+FFFF, U+1FFFE, U+1FFFF, U+2FFFE, etc.), as well
-    as 16 codepoints in the range U+FDD0..U+FDDF, inclusive.
+    as 32 codepoints in the range U+FDD0..U+FDEF, inclusive.
 
     \sa toUtf8(), fromLatin1(), fromLocal8Bit()
 */
