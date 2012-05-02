@@ -529,6 +529,9 @@ QList<QMimeType> QMimeBinaryProvider::allMimeTypes()
 
 void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
 {
+    if (data.loaded)
+        return;
+    data.loaded = true;
     // load comment and globPatterns
 
     const QString file = data.name + QLatin1String(".xml");

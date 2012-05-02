@@ -63,6 +63,7 @@ bool qt_isQMimeTypeDebuggingActivated (false);
 #endif
 
 QMimeTypePrivate::QMimeTypePrivate()
+    : loaded(false)
 {}
 
 QMimeTypePrivate::QMimeTypePrivate(const QMimeType &other)
@@ -70,7 +71,8 @@ QMimeTypePrivate::QMimeTypePrivate(const QMimeType &other)
         localeComments(other.d->localeComments),
         genericIconName(other.d->genericIconName),
         iconName(other.d->iconName),
-        globPatterns(other.d->globPatterns)
+        globPatterns(other.d->globPatterns),
+        loaded(other.d->loaded)
 {}
 
 void QMimeTypePrivate::clear()
@@ -80,6 +82,7 @@ void QMimeTypePrivate::clear()
     genericIconName.clear();
     iconName.clear();
     globPatterns.clear();
+    loaded = false;
 }
 
 /*!
