@@ -44,7 +44,9 @@
 #include "private/qipaddress_p.h"
 #include "qdebug.h"
 #if defined(Q_OS_WIN)
-#include <winsock2.h>
+# include <winsock2.h>
+#else
+# include <netinet/in.h>
 #endif
 #include "qplatformdefs.h"
 #include "qstringlist.h"

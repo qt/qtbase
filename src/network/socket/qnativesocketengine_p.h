@@ -56,6 +56,7 @@
 #include "private/qabstractsocketengine_p.h"
 #ifndef Q_OS_WIN
 #  include "qplatformdefs.h"
+#  include <netinet/in.h>
 #else
 #  include <winsock2.h>
 #endif
