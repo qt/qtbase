@@ -63,7 +63,7 @@ public:
 
     void updateFamilyNameAndStyle()
     {
-        fontDef.family = QString::fromAscii(freetype->face->family_name);
+        fontDef.family = QString::fromUtf8(freetype->face->family_name);
 
         if (freetype->face->style_flags & FT_STYLE_FLAG_ITALIC)
             fontDef.style = QFont::StyleItalic;

@@ -670,7 +670,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         foreach (const QString &argument, arguments) {
             const int equalsPos = argument.indexOf(QLatin1Char('='));
             const QByteArray name =
-                equalsPos != -1 ? argument.left(equalsPos).toAscii() : argument.toAscii();
+                equalsPos != -1 ? argument.left(equalsPos).toUtf8() : argument.toUtf8();
             const QVariant value =
                 equalsPos != -1 ? QVariant(argument.mid(equalsPos + 1)) : QVariant(true);
             nativeInterface->setProperty(name.constData(), value);
