@@ -1825,13 +1825,9 @@ void tst_QSharedPointer::invalidConstructs()
     QFETCH(QString, code);
     static bool sane = true;
     if (code.isEmpty()) {
-        static const char snippet[] = "QSharedPointer<Data> baseptr; QSharedPointer<DerivedData> ptr;";
-        if (!test.tryCompile("")
-            || !test.tryRun("")
+        if (!test.tryRun("")
             || !test.tryRunFail("exit(1);")
-            || !test.tryCompile(snippet)
-            || !test.tryLink(snippet)
-            || !test.tryRun(snippet)) {
+            || !test.tryRun("QSharedPointer<Data> baseptr; QSharedPointer<DerivedData> ptr;")) {
             sane = false;
             qWarning("Sanity checking failed\nCode:\n%s\n",
                      qPrintable(test.errorReport()));
