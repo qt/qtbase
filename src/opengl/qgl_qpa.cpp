@@ -234,7 +234,7 @@ void QGLContext::swapBuffers() const
 QFunctionPointer QGLContext::getProcAddress(const QString &procName) const
 {
     Q_D(const QGLContext);
-    return d->guiGlContext->getProcAddress(procName.toAscii());
+    return d->guiGlContext->getProcAddress(procName.toLatin1());
 }
 
 void QGLWidget::setContext(QGLContext *context,

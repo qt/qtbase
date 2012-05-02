@@ -1113,7 +1113,7 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
     } else {
         // not ES, regular OpenGL, the version numbers are first in the string
         if (versionString.startsWith(QLatin1String("1."))) {
-            switch (versionString[2].toAscii()) {
+            switch (versionString[2].toLatin1()) {
             case '5':
                 versionFlags |= QGLFormat::OpenGL_Version_1_5;
             case '4':
@@ -1134,7 +1134,7 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                             QGLFormat::OpenGL_Version_1_4 |
                             QGLFormat::OpenGL_Version_1_5 |
                             QGLFormat::OpenGL_Version_2_0;
-            if (versionString[2].toAscii() == '1')
+            if (versionString[2].toLatin1() == '1')
                 versionFlags |= QGLFormat::OpenGL_Version_2_1;
         } else if (versionString.startsWith(QLatin1String("3."))) {
             versionFlags |= QGLFormat::OpenGL_Version_1_1 |
@@ -1145,7 +1145,7 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                             QGLFormat::OpenGL_Version_2_0 |
                             QGLFormat::OpenGL_Version_2_1 |
                             QGLFormat::OpenGL_Version_3_0;
-            switch (versionString[2].toAscii()) {
+            switch (versionString[2].toLatin1()) {
             case '3':
                 versionFlags |= QGLFormat::OpenGL_Version_3_3;
             case '2':

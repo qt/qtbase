@@ -111,7 +111,7 @@ void OpenGLBench::imageDrawing_data()
         bool pixmap = i & 4;
 
         QTest::newRow(QString("pixmap=%1 highQualityAntialiasing=%2 smoothPixmapTransform=%3")
-                      .arg(pixmap).arg(highQualityAntialiasing).arg(smoothPixmapTransform).toAscii().data())
+                      .arg(pixmap).arg(highQualityAntialiasing).arg(smoothPixmapTransform).toLatin1().data())
             << pixmap << highQualityAntialiasing << smoothPixmapTransform;
     }
 }
@@ -178,7 +178,7 @@ void OpenGLBench::pathDrawing_data()
 
         for (int i = 0; i < paths.size(); ++i) {
             QTest::newRow(QString("path=%1 highQualityAntialiasing=%2")
-                    .arg(paths[i].second).arg(highQualityAntialiasing).toAscii().data())
+                    .arg(paths[i].second).arg(highQualityAntialiasing).toLatin1().data())
                 << paths[i].first << highQualityAntialiasing;
         }
     }
@@ -264,7 +264,7 @@ void OpenGLBench::textDrawing_data()
 
     QTest::newRow("text lines=1 (warmup run)") << 1;
     for (unsigned int i = 0; i < sizeof(lines) / sizeof(int); ++i)
-        QTest::newRow(QString("text lines=%0").arg(lines[i]).toAscii().data()) << lines[i];
+        QTest::newRow(QString("text lines=%0").arg(lines[i]).toLatin1().data()) << lines[i];
 }
 
 void OpenGLBench::textDrawing()
