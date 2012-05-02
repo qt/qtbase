@@ -156,7 +156,7 @@ void tst_rcc::rcc()
     }
     const QChar cr = QLatin1Char('\r');
     const QString err = QString::fromLocal8Bit(process.readAllStandardError()).remove(cr);
-    const QString out = QString::fromAscii(process.readAllStandardOutput()).remove(cr);
+    const QString out = QString::fromLatin1(process.readAllStandardOutput()).remove(cr);
 
     if (!err.isEmpty()) {
         qDebug() << "UNEXPECTED STDERR CONTENTS: " << err;
@@ -167,7 +167,7 @@ void tst_rcc::rcc()
     const QStringList actualLines = out.split(nl);
 
     QVERIFY(expectedFile.open(QIODevice::ReadOnly|QIODevice::Text));
-    const QStringList expectedLines = QString::fromAscii(expectedFile.readAll()).split(nl);
+    const QStringList expectedLines = QString::fromLatin1(expectedFile.readAll()).split(nl);
 
     const QString diff = doCompare(actualLines, expectedLines);
     if (diff.size())

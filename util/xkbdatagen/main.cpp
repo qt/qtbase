@@ -476,26 +476,26 @@ int main(int argc, char **argv)
             lang = "C";
         printf("    // name = %s, description = %s\n"
                "    { \"%s\", \"\", %s, QLocale::%s, QLocale::%s },\n",
-               l.name.toAscii().constData(),
-               l.description.toAscii().constData(),
-               l.name.toAscii().constData(),
-               mapDirection(lang).toAscii().constData(),
-               lang.toAscii().constData(),
-               country.toAscii().constData());
+               l.name.toLatin1().constData(),
+               l.description.toLatin1().constData(),
+               l.name.toLatin1().constData(),
+               mapDirection(lang).toLatin1().constData(),
+               lang.toLatin1().constData(),
+               country.toLatin1().constData());
         foreach (const QString &v, l.variants) {
             QString vlang = mapLanguage(l.name + ":" + v);
             if (vlang.isEmpty())
                 vlang = "C";
             printf("    // name = %s:%s, description = %s\n"
                    "    { \"%s\", \"%s\", %s, QLocale::%s, QLocale::%s },\n",
-                   l.name.toAscii().constData(),
-                   v.toAscii().constData(),
-                   l.description.toAscii().constData(),
-                   l.name.toAscii().constData(),
-                   v.toAscii().constData(),
-                   mapDirection(vlang).toAscii().constData(),
-                   vlang.toAscii().constData(),
-                   country.toAscii().constData());
+                   l.name.toLatin1().constData(),
+                   v.toLatin1().constData(),
+                   l.description.toLatin1().constData(),
+                   l.name.toLatin1().constData(),
+                   v.toLatin1().constData(),
+                   mapDirection(vlang).toLatin1().constData(),
+                   vlang.toLatin1().constData(),
+                   country.toLatin1().constData());
         }
     }
 

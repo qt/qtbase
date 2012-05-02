@@ -93,7 +93,7 @@ void tst_uic::initTestCase()
     const QStringList outLines = out.split(QLatin1Char('\n'));
     // Print version
     QString msg = QString::fromLatin1("uic test built %1 running in '%2' using: ").
-                  arg(QString::fromAscii(__DATE__), QDir::currentPath());
+                  arg(QString::fromLatin1(__DATE__), QDir::currentPath());
     if (!outLines.empty())
         msg += outLines.front();
     qDebug() << msg;
