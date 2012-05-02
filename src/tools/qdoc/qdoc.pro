@@ -92,9 +92,9 @@ SOURCES += jscodemarker.cpp \
             qmlmarkupvisitor.cpp \
             qmlvisitor.cpp
 
-### Documentation for qdoc3 ###
+### Documentation for qdoc ###
 
-qtPrepareTool(QDOC, qdoc3)
+qtPrepareTool(QDOC, qdoc)
 qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
 
 equals(QMAKE_DIR_SEP, /) {
@@ -104,11 +104,11 @@ equals(QMAKE_DIR_SEP, /) {
     QDOC = $$replace(QDOC, "/", "\\")
 }
 
-html-docs.commands = cd \"$$QT_BUILD_TREE/doc\" && $$QDOC $$QT_SOURCE_TREE/tools/qdoc3/doc/config/qdoc.qdocconf
+html-docs.commands = cd \"$$QT_BUILD_TREE/doc\" && $$QDOC $$QT_SOURCE_TREE/tools/qdoc/doc/config/qdoc.qdocconf
 html-docs.files = $$QT_BUILD_TREE/doc/html
 
-qch-docs.commands = cd \"$$QT_BUILD_TREE/doc\" && $$QHELPGENERATOR $$QT_BUILD_TREE/tools/qdoc3/doc/html/qdoc.qhp -o $$QT_BUILD_TREE/tools/qdoc3/doc/qch/qdoc.qch
-qch-docs.files = $$QT_BUILD_TREE/tools/qdoc3/doc/qch
+qch-docs.commands = cd \"$$QT_BUILD_TREE/doc\" && $$QHELPGENERATOR $$QT_BUILD_TREE/tools/qdoc/doc/html/qdoc.qhp -o $$QT_BUILD_TREE/tools/qdoc/doc/qch/qdoc.qch
+qch-docs.files = $$QT_BUILD_TREE/tools/qdoc/doc/qch
 qch-docs.path = $$[QT_INSTALL_DOCS]
 qch-docs.CONFIG += no_check_exist directory
 

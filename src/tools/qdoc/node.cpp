@@ -2654,7 +2654,7 @@ QString Node::idForNode() const
                                     str += "-" + tail;
                             }
                             else
-                                qDebug() << "qdoc3 internal error: Operator missing from operators_ map:" << op;
+                                qDebug() << "qdoc internal error: Operator missing from operators_ map:" << op;
                         }
                         else {
                             str += op;
@@ -2671,11 +2671,11 @@ QString Node::idForNode() const
                     if (parent_->subType() == QmlClass)
                         str = "qml-method-" + func->name();
                     else
-                        qDebug() << "qdoc3 internal error: Node subtype not handled:"
+                        qDebug() << "qdoc internal error: Node subtype not handled:"
                                  << parent_->subType() << func->name();
                 }
                 else
-                    qDebug() << "qdoc3 internal error: Node type not handled:"
+                    qDebug() << "qdoc internal error: Node type not handled:"
                              << parent_->type() << func->name();
 
             }
