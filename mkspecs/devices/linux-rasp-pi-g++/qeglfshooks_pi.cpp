@@ -52,6 +52,8 @@
 #include <linux/fb.h>
 #endif
 
+QT_BEGIN_NAMESPACE
+
 static DISPMANX_DISPLAY_HANDLE_T dispman_display = 0;
 static DISPMANX_UPDATE_HANDLE_T dispman_update = 0;
 
@@ -167,3 +169,5 @@ bool QEglFSPiHooks::hasCapability(QPlatformIntegration::Capability cap) const
 
 QEglFSPiHooks eglFSPiHooks;
 QEglFSHooks *platformHooks = &eglFSPiHooks;
+
+QT_END_NAMESPACE

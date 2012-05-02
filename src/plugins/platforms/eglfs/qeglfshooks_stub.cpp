@@ -41,6 +41,8 @@
 
 #include "qeglfshooks.h"
 
+QT_BEGIN_NAMESPACE
+
 void QEglFSHooks::platformInit()
 {
 }
@@ -79,3 +81,5 @@ bool QEglFSHooks::hasCapability(QPlatformIntegration::Capability cap) const
 #ifndef EGLFS_PLATFORM_HOOKS
 QEglFSHooks stubHooks;
 #endif
+
+QT_END_NAMESPACE

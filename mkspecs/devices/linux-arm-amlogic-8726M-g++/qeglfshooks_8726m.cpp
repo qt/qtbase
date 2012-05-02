@@ -48,6 +48,8 @@
 #include <fcntl.h>
 #include <linux/fb.h>
 
+QT_BEGIN_NAMESPACE
+
 class QEglFS8726MHooks : public QEglFSHooks
 {
 public:
@@ -90,3 +92,4 @@ void QEglFS8726MHooks::destroyNativeWindow(EGLNativeWindowType window)
 QEglFS8726MHooks eglFS8726MHooks;
 QEglFSHooks *platformHooks = &eglFS8726MHooks;
 
+QT_END_NAMESPACE

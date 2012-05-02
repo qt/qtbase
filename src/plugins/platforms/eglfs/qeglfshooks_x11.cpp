@@ -43,6 +43,8 @@
 
 #include <X11/Xlib.h>
 
+QT_BEGIN_NAMESPACE
+
 class QEglFSX11Hooks : public QEglFSHooks
 {
 public:
@@ -108,3 +110,4 @@ bool QEglFSX11Hooks::hasCapability(QPlatformIntegration::Capability cap) const
 static QEglFSX11Hooks eglFSX11Hooks;
 QEglFSHooks *platformHooks = &eglFSX11Hooks;
 
+QT_END_NAMESPACE

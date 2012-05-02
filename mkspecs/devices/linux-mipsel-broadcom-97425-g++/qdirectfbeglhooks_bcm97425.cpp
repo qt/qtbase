@@ -44,6 +44,8 @@
 
 #include "default_directfb.h"
 
+QT_BEGIN_NAMESPACE
+
 // Exported to the directfb plugin
 QDirectFBEGLHooks platform_hook;
 static void *dbpl_handle;
@@ -69,3 +71,4 @@ bool QDirectFBEGLHooks::hasCapability(QPlatformIntegration::Capability cap) cons
     }
 }
 
+QT_END_NAMESPACE
