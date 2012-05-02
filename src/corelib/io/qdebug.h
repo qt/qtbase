@@ -110,7 +110,7 @@ public:
         { stream->ts << QString::number(t); return maybeSpace(); }
     inline QDebug &operator<<(float t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(double t) { stream->ts << t; return maybeSpace(); }
-    inline QDebug &operator<<(const char* t) { stream->ts << QString::fromAscii(t); return maybeSpace(); }
+    inline QDebug &operator<<(const char* t) { stream->ts << QString::fromUtf8(t); return maybeSpace(); }
     inline QDebug &operator<<(const QString & t) { stream->ts << '\"' << t  << '\"'; return maybeSpace(); }
     inline QDebug &operator<<(const QStringRef & t) { return operator<<(t.toString()); }
     inline QDebug &operator<<(const QLatin1String &t) { stream->ts << '\"'  << t << '\"'; return maybeSpace(); }

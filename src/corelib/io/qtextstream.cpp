@@ -2544,13 +2544,13 @@ QTextStream &QTextStream::operator<<(const QLatin1String &string)
     \overload
 
     Writes \a array to the stream. The contents of \a array are
-    converted with QString::fromAscii().
+    converted with QString::fromUtf8().
 */
 QTextStream &QTextStream::operator<<(const QByteArray &array)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    d->putString(QString::fromAscii(array.constData(), array.length()));
+    d->putString(QString::fromUtf8(array.constData(), array.length()));
     return *this;
 }
 
