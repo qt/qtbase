@@ -765,7 +765,7 @@ void Widget::sprintfFunction()
     char buf[BufSize];
 
     ::snprintf(buf, BufSize, "%lld", 123456789LL);
-    QString str = QString::fromAscii(buf);
+    QString str = QString::fromUtf8(buf);
     //! [63]
 
     //! [64]

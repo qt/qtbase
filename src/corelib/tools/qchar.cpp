@@ -151,9 +151,9 @@ QT_BEGIN_NAMESPACE
     to convert to and from traditional 8-bit \c{char}s. If you
     defined \c QT_NO_CAST_FROM_ASCII and \c QT_NO_CAST_TO_ASCII, as
     explained in the QString documentation, you will need to
-    explicitly call fromAscii() or fromLatin1(), or use QLatin1Char,
+    explicitly call fromLatin1(), or use QLatin1Char,
     to construct a QChar from an 8-bit \c char, and you will need to
-    call toAscii() or toLatin1() to get the 8-bit value back.
+    call toLatin1() to get the 8-bit value back.
 
     For more information see
     \l{http://www.unicode.org/ucd/}{"About the Unicode Character Database"}.
@@ -1251,7 +1251,7 @@ ushort QChar::toCaseFolded(ushort ucs2)
     \note It is not possible to distinguish a non-Latin-1 character from a Latin-1 0
     (NUL) character. Prefer to use unicode(), which does not have this ambiguity.
 
-    \sa toAscii(), unicode()
+    \sa unicode()
 */
 
 /*!
@@ -1262,7 +1262,7 @@ ushort QChar::toCaseFolded(ushort ucs2)
 
     An alternative is to use QLatin1Char.
 
-    \sa fromAscii(), unicode()
+    \sa toLatin1(), unicode()
 */
 
 /*!

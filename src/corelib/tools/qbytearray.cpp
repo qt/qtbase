@@ -1249,12 +1249,12 @@ void QByteArray::chop(int n)
 
     Appends the string \a str onto the end of this byte array and
     returns a reference to this byte array. The Unicode data is
-    converted into 8-bit characters using QString::toAscii().
+    converted into 8-bit characters using QString::toUtf8().
 
     If the QString contains non-ASCII Unicode characters, using this
     operator can lead to loss of information. You can disable this
     operator by defining \c QT_NO_CAST_TO_ASCII when you compile your
-    applications. You then need to call QString::toAscii() (or
+    applications. You then need to call QString::toUtf8() (or
     QString::toLatin1() or QString::toUtf8() or QString::toLocal8Bit())
     explicitly if you want to convert the data to \c{const char *}.
 */
@@ -1613,12 +1613,12 @@ QByteArray &QByteArray::append(const QByteArray &ba)
     \overload
 
     Appends the string \a str to this byte array. The Unicode data is
-    converted into 8-bit characters using QString::toAscii().
+    converted into 8-bit characters using QString::toUtf8().
 
     If the QString contains non-ASCII Unicode characters, using this
     function can lead to loss of information. You can disable this
     function by defining \c QT_NO_CAST_TO_ASCII when you compile your
-    applications. You then need to call QString::toAscii() (or
+    applications. You then need to call QString::toUtf8() (or
     QString::toLatin1() or QString::toUtf8() or QString::toLocal8Bit())
     explicitly if you want to convert the data to \c{const char *}.
 */
@@ -1729,17 +1729,15 @@ QByteArray &QByteArray::insert(int i, const QByteArray &ba)
 
     Inserts the string \a str at index position \a i in the byte
     array. The Unicode data is converted into 8-bit characters using
-    QString::toAscii().
+    QString::toUtf8().
 
     If \a i is greater than size(), the array is first extended using
     resize().
 
-    If the QString contains non-ASCII Unicode characters, using this
-    function can lead to loss of information. You can disable this
-    function by defining \c QT_NO_CAST_TO_ASCII when you compile your
-    applications. You then need to call QString::toAscii() (or
-    QString::toLatin1() or QString::toUtf8() or QString::toLocal8Bit())
-    explicitly if you want to convert the data to \c{const char *}.
+    You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
+    compile your applications. You then need to call QString::toUtf8() (or
+    QString::toLatin1() or QString::toLocal8Bit()) explicitly if you want to
+    convert the data to \c{const char *}.
 */
 
 /*!
@@ -2053,14 +2051,12 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
 
     Replaces every occurrence of the string \a before with the byte
     array \a after. The Unicode data is converted into 8-bit
-    characters using QString::toAscii().
+    characters using QString::toUtf8().
 
-    If the QString contains non-ASCII Unicode characters, using this
-    function can lead to loss of information. You can disable this
-    function by defining \c QT_NO_CAST_TO_ASCII when you compile your
-    applications. You then need to call QString::toAscii() (or
-    QString::toLatin1() or QString::toUtf8() or QString::toLocal8Bit())
-    explicitly if you want to convert the data to \c{const char *}.
+    You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
+    compile your applications. You then need to call QString::toUtf8() (or
+    QString::toLatin1() or QString::toLocal8Bit()) explicitly if you want to
+    convert the data to \c{const char *}.
 */
 
 /*! \fn QByteArray &QByteArray::replace(const QString &before, const char *after)
@@ -2098,12 +2094,12 @@ QByteArray &QByteArray::replace(char before, const QByteArray &after)
 
     Replaces every occurrence of the character \a before with the
     string \a after. The Unicode data is converted into 8-bit
-    characters using QString::toAscii().
+    characters using QString::toUtf8().
 
     If the QString contains non-ASCII Unicode characters, using this
     function can lead to loss of information. You can disable this
     function by defining \c QT_NO_CAST_TO_ASCII when you compile your
-    applications. You then need to call QString::toAscii() (or
+    applications. You then need to call QString::toUtf8() (or
     QString::toLatin1() or QString::toUtf8() or QString::toLocal8Bit())
     explicitly if you want to convert the data to \c{const char *}.
 */
@@ -2244,14 +2240,12 @@ int QByteArray::indexOf(const QByteArray &ba, int from) const
     \a from. Returns -1 if \a str could not be found.
 
     The Unicode data is converted into 8-bit characters using
-    QString::toAscii().
+    QString::toUtf8().
 
-    If the QString contains non-ASCII Unicode characters, using this
-    function can lead to loss of information. You can disable this
-    function by defining \c QT_NO_CAST_TO_ASCII when you compile your
-    applications. You then need to call QString::toAscii() (or
-    QString::toLatin1() or QString::toUtf8() or QString::toLocal8Bit())
-    explicitly if you want to convert the data to \c{const char *}.
+    You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
+    compile your applications. You then need to call QString::toUtf8() (or
+    QString::toLatin1() or QString::toLocal8Bit()) explicitly if you want to
+    convert the data to \c{const char *}.
 */
 
 /*! \fn int QByteArray::indexOf(const char *str, int from) const
@@ -2371,14 +2365,12 @@ int QByteArray::lastIndexOf(const QByteArray &ba, int from) const
     last (size() - 1) byte. Returns -1 if \a str could not be found.
 
     The Unicode data is converted into 8-bit characters using
-    QString::toAscii().
+    QString::toUtf8().
 
-    If the QString contains non-ASCII Unicode characters, using this
-    function can lead to loss of information. You can disable this
-    function by defining \c QT_NO_CAST_TO_ASCII when you compile your
-    applications. You then need to call QString::toAscii() (or
-    QString::toLatin1() or QString::toUtf8() or QString::toLocal8Bit())
-    explicitly if you want to convert the data to \c{const char *}.
+    You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
+    compile your applications. You then need to call QString::toUtf8() (or
+    QString::toLatin1() or QString::toLocal8Bit()) explicitly if you want to
+    convert the data to \c{const char *}.
 */
 
 /*! \fn int QByteArray::lastIndexOf(const char *str, int from) const
@@ -2772,16 +2764,15 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     otherwise returns false.
 
     The Unicode data is converted into 8-bit characters using
-    QString::toAscii().
+    QString::toUtf8().
 
     The comparison is case sensitive.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. You
-    then need to call QString::fromAscii(), QString::fromLatin1(),
-    QString::fromUtf8(), or QString::fromLocal8Bit() explicitly if
-    you want to convert the byte array to a QString before doing the
-    comparison.
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
 */
 
 /*! \fn bool QByteArray::operator!=(const QString &str) const
@@ -2790,16 +2781,15 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     otherwise returns false.
 
     The Unicode data is converted into 8-bit characters using
-    QString::toAscii().
+    QString::toUtf8().
 
     The comparison is case sensitive.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. You
-    then need to call QString::fromAscii(), QString::fromLatin1(),
-    QString::fromUtf8(), or QString::fromLocal8Bit() explicitly if
-    you want to convert the byte array to a QString before doing the
-    comparison.
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
 */
 
 /*! \fn bool QByteArray::operator<(const QString &str) const
@@ -2808,16 +2798,15 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     str; otherwise returns false.
 
     The Unicode data is converted into 8-bit characters using
-    QString::toAscii().
+    QString::toUtf8().
 
     The comparison is case sensitive.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. You
-    then need to call QString::fromAscii(), QString::fromLatin1(),
-    QString::fromUtf8(), or QString::fromLocal8Bit() explicitly if
-    you want to convert the byte array to a QString before doing the
-    comparison.
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
 */
 
 /*! \fn bool QByteArray::operator>(const QString &str) const
@@ -2826,16 +2815,15 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \a str; otherwise returns false.
 
     The Unicode data is converted into 8-bit characters using
-    QString::toAscii().
+    QString::toUtf8().
 
     The comparison is case sensitive.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. You
-    then need to call QString::fromAscii(), QString::fromLatin1(),
-    QString::fromUtf8(), or QString::fromLocal8Bit() explicitly if
-    you want to convert the byte array to a QString before doing the
-    comparison.
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
 */
 
 /*! \fn bool QByteArray::operator<=(const QString &str) const
@@ -2844,16 +2832,15 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     to string \a str; otherwise returns false.
 
     The Unicode data is converted into 8-bit characters using
-    QString::toAscii().
+    QString::toUtf8().
 
     The comparison is case sensitive.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. You
-    then need to call QString::fromAscii(), QString::fromLatin1(),
-    QString::fromUtf8(), or QString::fromLocal8Bit() explicitly if
-    you want to convert the byte array to a QString before doing the
-    comparison.
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
 */
 
 /*! \fn bool QByteArray::operator>=(const QString &str) const
@@ -2862,16 +2849,15 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \a str; otherwise returns false.
 
     The Unicode data is converted into 8-bit characters using
-    QString::toAscii().
+    QString::toUtf8().
 
     The comparison is case sensitive.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. You
-    then need to call QString::fromAscii(), QString::fromLatin1(),
-    QString::fromUtf8(), or QString::fromLocal8Bit() explicitly if
-    you want to convert the byte array to a QString before doing the
-    comparison.
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
 */
 
 /*! \fn bool operator==(const QByteArray &a1, const QByteArray &a2)

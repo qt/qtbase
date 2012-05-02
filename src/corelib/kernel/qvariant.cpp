@@ -1969,7 +1969,7 @@ QEasingCurve QVariant::toEasingCurve() const
     \fn QByteArray QVariant::toByteArray() const
 
     Returns the variant as a QByteArray if the variant has type() \l
-    ByteArray or \l String (converted using QString::fromAscii());
+    ByteArray or \l String (converted using QString::fromUtf8());
     otherwise returns an empty byte array.
 
     \sa canConvert(), convert()
