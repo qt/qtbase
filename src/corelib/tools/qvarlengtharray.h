@@ -180,8 +180,7 @@ private:
     int s;      // size
     T *ptr;     // data
     union {
-        // ### Qt 5: Use 'Prealloc * sizeof(T)' as array size
-        char array[sizeof(qint64) * (((Prealloc * sizeof(T)) / sizeof(qint64)) + 1)];
+        char array[Prealloc * sizeof(T)];
         qint64 q_for_alignment_1;
         double q_for_alignment_2;
     };
