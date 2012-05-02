@@ -126,7 +126,7 @@ void BlendBench::blendBench_data()
     for (int brush = ImageBrush; brush <= SolidBrush; ++brush)
         for (int mode = first; mode < limit; ++mode)
             QTest::newRow(QString("brush=%1; mode=%2")
-                          .arg(brushTypes[brush]).arg(compositionModes[mode]).toAscii().data())
+                          .arg(brushTypes[brush]).arg(compositionModes[mode]).toLatin1().data())
                 << brush << mode;
 }
 

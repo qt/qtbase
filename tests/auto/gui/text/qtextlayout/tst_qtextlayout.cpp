@@ -530,7 +530,7 @@ void tst_QTextLayout::defaultWordSeparators_data()
     QString separators(".,:;-<>[](){}=/+%&^*");
     separators += QLatin1String("!?");
     for (int i = 0; i < separators.count(); ++i) {
-        QTest::newRow(QString::number(i).toAscii().data())
+        QTest::newRow(QString::number(i).toLatin1().data())
             << QString::fromLatin1("abcd") + separators.at(i) + QString::fromLatin1("efgh")
             <<  0 << 4;
     }

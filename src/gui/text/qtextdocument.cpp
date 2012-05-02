@@ -2025,7 +2025,7 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
     fragmentMarkers = (mode == ExportFragment);
 
     if (!encoding.isEmpty())
-        html += QString::fromLatin1("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=%1\" />").arg(QString::fromAscii(encoding));
+        html += QString::fromLatin1("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=%1\" />").arg(QString::fromLatin1(encoding));
 
     QString title  = doc->metaInformation(QTextDocument::DocumentTitle);
     if (!title.isEmpty())

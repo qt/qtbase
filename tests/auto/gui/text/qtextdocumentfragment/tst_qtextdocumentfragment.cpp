@@ -884,7 +884,7 @@ void tst_QTextDocumentFragment::hrefAnchor()
         const char html[] = "<a href=\"test\">blah</a>";
         setHtml(QString::fromLatin1(html));
         QVERIFY(doc->begin().begin().fragment().charFormat().isAnchor());
-        QCOMPARE(doc->begin().begin().fragment().charFormat().anchorHref(), QString::fromAscii("test"));
+        QCOMPARE(doc->begin().begin().fragment().charFormat().anchorHref(), QString::fromLatin1("test"));
         QVERIFY(doc->begin().begin().fragment().charFormat().fontUnderline() == true);
     }
 
@@ -912,13 +912,13 @@ void tst_QTextDocumentFragment::namedAnchorFragments()
 
     // the 'a'
     QVERIFY(it.fragment().isValid());
-    QCOMPARE(it.fragment().text(), QString::fromAscii("a"));
+    QCOMPARE(it.fragment().text(), QString::fromLatin1("a"));
     QVERIFY(it.fragment().charFormat().isAnchor() == false);
 
     // the 'b' of 'blah' as separate fragment with the anchor attribute
     ++it;
     QVERIFY(it.fragment().isValid());
-    QCOMPARE(it.fragment().text(), QString::fromAscii("b"));
+    QCOMPARE(it.fragment().text(), QString::fromLatin1("b"));
     QVERIFY(it.fragment().charFormat().isAnchor());
 
     // the 'lah' of 'blah' as remainder
@@ -938,12 +938,12 @@ void tst_QTextDocumentFragment::namedAnchorFragments2()
     QTextBlock::Iterator it = doc->begin().begin();
     QVERIFY(!it.atEnd());
 
-    QCOMPARE(it.fragment().text(), QString::fromAscii("H"));
+    QCOMPARE(it.fragment().text(), QString::fromLatin1("H"));
     QVERIFY(it.fragment().charFormat().isAnchor());
 
     ++it;
 
-    QCOMPARE(it.fragment().text(), QString::fromAscii("ello"));
+    QCOMPARE(it.fragment().text(), QString::fromLatin1("ello"));
     QVERIFY(!it.fragment().charFormat().isAnchor());
 }
 
@@ -956,7 +956,7 @@ void tst_QTextDocumentFragment::namedAnchorFragments3()
     QTextBlock::Iterator it = doc->begin().begin();
     QVERIFY(!it.atEnd());
 
-    QCOMPARE(it.fragment().text(), QString::fromAscii("T"));
+    QCOMPARE(it.fragment().text(), QString::fromLatin1("T"));
     QVERIFY(it.fragment().charFormat().isAnchor());
     QCOMPARE(it.fragment().charFormat().anchorName(), QString("target"));
     QStringList targets; targets << "target" << "target2";
@@ -964,7 +964,7 @@ void tst_QTextDocumentFragment::namedAnchorFragments3()
 
     ++it;
 
-    QCOMPARE(it.fragment().text(), QString::fromAscii("ext"));
+    QCOMPARE(it.fragment().text(), QString::fromLatin1("ext"));
     QVERIFY(!it.fragment().charFormat().isAnchor());
 }
 
@@ -1068,7 +1068,7 @@ void tst_QTextDocumentFragment::mayNotHaveChildren()
     // make sure the Hey does not end up as tag text for the img tag
     const char html[] = "<img />Hey";
     setHtml(QString::fromLatin1(html));
-    QCOMPARE(doc->toPlainText().mid(1), QString::fromAscii("Hey"));
+    QCOMPARE(doc->toPlainText().mid(1), QString::fromLatin1("Hey"));
 }
 
 void tst_QTextDocumentFragment::inheritAlignment()

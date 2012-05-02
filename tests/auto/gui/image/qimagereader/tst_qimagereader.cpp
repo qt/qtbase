@@ -1617,14 +1617,14 @@ void tst_QImageReader::pixelCompareWithBaseline()
                                     // least one file succeeded we know that the plugin was built.
                                     // The other failures are then real failures.
     QImage icoImg;
-    const QString inputFileName(QString::fromAscii("images/%1").arg(fileName));
+    const QString inputFileName(QString::fromLatin1("images/%1").arg(fileName));
     QFileInfo fi(inputFileName);
 
     ++enteredCount;
     // might fail if the plugin does not exist, which is ok.
     if (icoImg.load(inputFileName)) {
         icoImg = icoImg.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-        const QString baselineFileName(QString::fromAscii("baseline/%1.png").arg(fi.baseName()));
+        const QString baselineFileName(QString::fromLatin1("baseline/%1.png").arg(fi.baseName()));
 #if 0
         icoImg.save(baselineFileName);
 #else

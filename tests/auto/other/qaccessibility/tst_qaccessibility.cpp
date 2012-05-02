@@ -368,7 +368,7 @@ void tst_QAccessibility::cleanup()
     const EventList list = QTestAccessibility::events();
     if (!list.isEmpty()) {
         qWarning("%d accessibility event(s) were not handled in testfunction '%s':", list.count(),
-                 QString(QTest::currentTestFunction()).toAscii().constData());
+                 QString(QTest::currentTestFunction()).toLatin1().constData());
         for (int i = 0; i < list.count(); ++i)
             qWarning(" %d: Object: %p Event: '%s' Child: %d", i + 1, list.at(i)->object(),
                      qAccessibleEventString(list.at(i)->type()), list.at(i)->child());
@@ -567,7 +567,7 @@ static QWidget *createWidgets()
 
     int i = 0;
     box->addWidget(new QComboBox(w));
-    box->addWidget(new QPushButton(QString::fromAscii("widget text %1").arg(i++), w));
+    box->addWidget(new QPushButton(QString::fromLatin1("widget text %1").arg(i++), w));
     box->addWidget(new QHeaderView(Qt::Vertical, w));
     box->addWidget(new QTreeView(w));
     box->addWidget(new QTreeWidget(w));
@@ -577,25 +577,25 @@ static QWidget *createWidgets()
     box->addWidget(new QTableWidget(w));
     box->addWidget(new QCalendarWidget(w));
     box->addWidget(new QDialogButtonBox(w));
-    box->addWidget(new QGroupBox(QString::fromAscii("widget text %1").arg(i++), w));
+    box->addWidget(new QGroupBox(QString::fromLatin1("widget text %1").arg(i++), w));
     box->addWidget(new QFrame(w));
-    box->addWidget(new QLineEdit(QString::fromAscii("widget text %1").arg(i++), w));
+    box->addWidget(new QLineEdit(QString::fromLatin1("widget text %1").arg(i++), w));
     box->addWidget(new QProgressBar(w));
     box->addWidget(new QTabWidget(w));
-    box->addWidget(new QCheckBox(QString::fromAscii("widget text %1").arg(i++), w));
-    box->addWidget(new QRadioButton(QString::fromAscii("widget text %1").arg(i++), w));
+    box->addWidget(new QCheckBox(QString::fromLatin1("widget text %1").arg(i++), w));
+    box->addWidget(new QRadioButton(QString::fromLatin1("widget text %1").arg(i++), w));
     box->addWidget(new QDial(w));
     box->addWidget(new QScrollBar(w));
     box->addWidget(new QSlider(w));
     box->addWidget(new QDateTimeEdit(w));
     box->addWidget(new QDoubleSpinBox(w));
     box->addWidget(new QSpinBox(w));
-    box->addWidget(new QLabel(QString::fromAscii("widget text %1").arg(i++), w));
+    box->addWidget(new QLabel(QString::fromLatin1("widget text %1").arg(i++), w));
     box->addWidget(new QLCDNumber(w));
     box->addWidget(new QStackedWidget(w));
     box->addWidget(new QToolBox(w));
-    box->addWidget(new QLabel(QString::fromAscii("widget text %1").arg(i++), w));
-    box->addWidget(new QTextEdit(QString::fromAscii("widget text %1").arg(i++), w));
+    box->addWidget(new QLabel(QString::fromLatin1("widget text %1").arg(i++), w));
+    box->addWidget(new QTextEdit(QString::fromLatin1("widget text %1").arg(i++), w));
 
     /* Not in the list
      * QAbstractItemView, QGraphicsView, QScrollArea,

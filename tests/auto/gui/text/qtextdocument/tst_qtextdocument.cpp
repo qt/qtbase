@@ -279,23 +279,23 @@ void tst_QTextDocument::find_data()
 
     QTest::newRow("1") << "Hello World" << "World" << int(QTextDocument::FindCaseSensitively) << 0 << 6 << 11;
 
-    QTest::newRow("2") << QString::fromAscii("Hello") + QString(QChar::ParagraphSeparator) + QString::fromAscii("World")
+    QTest::newRow("2") << QString::fromLatin1("Hello") + QString(QChar::ParagraphSeparator) + QString::fromLatin1("World")
                     << "World" << int(QTextDocument::FindCaseSensitively) << 1 << 6 << 11;
 
-    QTest::newRow("3") << QString::fromAscii("Hello") + QString(QChar::ParagraphSeparator) + QString::fromAscii("World")
+    QTest::newRow("3") << QString::fromLatin1("Hello") + QString(QChar::ParagraphSeparator) + QString::fromLatin1("World")
                     << "Hello" << int(QTextDocument::FindCaseSensitively | QTextDocument::FindBackward) << 10 << 0 << 5;
-    QTest::newRow("4wholewords") << QString::fromAscii("Hello Blah World")
+    QTest::newRow("4wholewords") << QString::fromLatin1("Hello Blah World")
                               << "Blah" << int(QTextDocument::FindWholeWords) << 0 << 6 << 10;
-    QTest::newRow("5wholewords") << QString::fromAscii("HelloBlahWorld")
+    QTest::newRow("5wholewords") << QString::fromLatin1("HelloBlahWorld")
                               << "Blah" << int(QTextDocument::FindWholeWords) << 0 << -1 << -1;
-    QTest::newRow("6wholewords") << QString::fromAscii("HelloBlahWorld Blah Hah")
+    QTest::newRow("6wholewords") << QString::fromLatin1("HelloBlahWorld Blah Hah")
                               << "Blah" << int(QTextDocument::FindWholeWords) << 0 << 15 << 19;
-    QTest::newRow("7wholewords") << QString::fromAscii("HelloBlahWorld Blah Hah")
+    QTest::newRow("7wholewords") << QString::fromLatin1("HelloBlahWorld Blah Hah")
                               << "Blah" << int(QTextDocument::FindWholeWords | QTextDocument::FindBackward) << 23 << 15 << 19;
-    QTest::newRow("8wholewords") << QString::fromAscii("Hello: World\n")
+    QTest::newRow("8wholewords") << QString::fromLatin1("Hello: World\n")
                               << "orld" << int(QTextDocument::FindWholeWords) << 0 << -1 << -1;
 
-    QTest::newRow("across-paragraphs") << QString::fromAscii("First Parag\nSecond Parag with a lot more text")
+    QTest::newRow("across-paragraphs") << QString::fromLatin1("First Parag\nSecond Parag with a lot more text")
                                        << "Parag" << int(QTextDocument::FindBackward)
                                        << 15 << 6 << 11;
 
@@ -350,7 +350,7 @@ void tst_QTextDocument::findWithRegExp_data()
     // match ampersands but not &amp;
     QTest::newRow("2") << "His &amp; hers & theirs" << "&(?!amp;)"<< int(QTextDocument::FindCaseSensitively) << 0 << 15 << 16;
     //backward search
-    QTest::newRow("3") << QString::fromAscii("HelloBlahWorld Blah Hah")
+    QTest::newRow("3") << QString::fromLatin1("HelloBlahWorld Blah Hah")
                               << "h" << int(QTextDocument::FindBackward) << 18 << 8 << 9;
 
 }

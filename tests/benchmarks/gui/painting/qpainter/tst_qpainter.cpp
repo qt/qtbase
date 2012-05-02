@@ -490,7 +490,7 @@ void tst_QPainter::setupBrushes()
 //          it != m_brushes.constEnd(); ++it) {
 //         for (int w=2; w<1025; w*=2) {
 //             for (int h=2; h<1025; h*=2) {
-//                 QTest::newRow(QString("brush=%1; size=[%2,%3]").arg(it.key()).arg(w).arg(h).toAscii().data())
+//                 QTest::newRow(QString("brush=%1; size=[%2,%3]").arg(it.key()).arg(w).arg(h).toLatin1().data())
 //                     << *it << QSize(w, h);
 //             }
 //         }
