@@ -51,6 +51,8 @@
 #include <QtCore/qbytearray.h>
 #include <QtGui/qcolor.h>
 
+QT_BEGIN_NAMESPACE
+
 static DATE QDateTimeToDATE(const QDateTime &dt)
 {
     if (!dt.isValid() || dt.isNull())
@@ -638,4 +640,6 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
     Q_ASSERT(!out || (arg.vt & VT_BYREF));
     return true;
 }
+
+QT_END_NAMESPACE
 

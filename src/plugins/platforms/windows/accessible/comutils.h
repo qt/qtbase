@@ -48,6 +48,8 @@
 #include <ocidl.h>
 #include <QtCore/qstring.h>
 
+QT_BEGIN_NAMESPACE
+
 class QVariant;
 
 bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &typeName, bool out);
@@ -56,6 +58,8 @@ inline BSTR QStringToBSTR(const QString &str)
 {
     return SysAllocStringLen((OLECHAR*)str.unicode(), str.length());
 }
+
+QT_END_NAMESPACE
 
 #endif // COMUTILS_H
 
