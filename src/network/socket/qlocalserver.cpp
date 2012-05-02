@@ -95,8 +95,10 @@ QT_BEGIN_NAMESPACE
     Access is restricted to the same user as the process that created the socket.
     \value GroupAccessOption
     Access is restricted to the same group but not the user that created the socket on Linux.
+    Access is restricted to the primary group of the process on Windows
     \value OtherAccessOption
     Access is available to everyone but the user and group that created the socket on Linux.
+    Access is available to everyone on Windows.
     \value WorldAccessOption
     No access restrictions.
 
@@ -149,6 +151,13 @@ QLocalServer::~QLocalServer()
     Other Unix-based operating systems, such as Mac OS X, do not
     honor file permissions for Unix domain sockets and by default
     have WorldAccess and these permission flags will have no effect.
+
+    On Windows, UserAccessOption is sufficient to allow a non
+    elevated process to connect to a local server created by an
+    elevated process run by the same user. GroupAccessOption
+    refers to the primary group of the process (see TokenPrimaryGroup
+    in the Windows documentation). OtherAccessOption refers to
+    the well known "Everyone" group.
 
     By default none of the flags are set, access permissions
     are the platform default.

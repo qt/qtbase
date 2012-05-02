@@ -42,8 +42,13 @@
 #include "qlocalserver.h"
 #include "qlocalserver_p.h"
 #include "qlocalsocket.h"
+#include <QtCore/private/qsystemerror_p.h>
 
 #include <qdebug.h>
+
+#include <Aclapi.h>
+#include <AccCtrl.h>
+#include <Sddl.h>
 
 // The buffer size need to be 0 otherwise data could be
 // lost if the socket that has written data closes the connection
@@ -62,6 +67,116 @@ bool QLocalServerPrivate::addListener()
     listeners << Listener();
     Listener &listener = listeners.last();
 
+    SECURITY_ATTRIBUTES sa;
+    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa.bInheritHandle = FALSE;      //non inheritable handle, same as default
+    sa.lpSecurityDescriptor = 0;    //default security descriptor
+
+    QScopedPointer<SECURITY_DESCRIPTOR> pSD;
+    PSID worldSID = 0;
+    QByteArray aclBuffer;
+    QByteArray tokenUserBuffer;
+    QByteArray tokenGroupBuffer;
+
+    // create security descriptor if access options were specified
+    if ((socketOptions & QLocalServer::WorldAccessOption)) {
+        pSD.reset(new SECURITY_DESCRIPTOR);
+        if (!InitializeSecurityDescriptor(pSD.data(), SECURITY_DESCRIPTOR_REVISION)) {
+            setError(QLatin1String("QLocalServerPrivate::addListener"));
+            return false;
+        }
+        HANDLE hToken = NULL;
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+            return false;
+        DWORD dwBufferSize = 0;
+        GetTokenInformation(hToken, TokenUser, 0, 0, &dwBufferSize);
+        tokenUserBuffer.fill(0, dwBufferSize);
+        PTOKEN_USER pTokenUser = (PTOKEN_USER)tokenUserBuffer.data();
+        if (!GetTokenInformation(hToken, TokenUser, pTokenUser, dwBufferSize, &dwBufferSize)) {
+            setError(QLatin1String("QLocalServerPrivate::addListener"));
+            CloseHandle(hToken);
+            return false;
+        }
+
+        dwBufferSize = 0;
+        GetTokenInformation(hToken, TokenPrimaryGroup, 0, 0, &dwBufferSize);
+        tokenGroupBuffer.fill(0, dwBufferSize);
+        PTOKEN_PRIMARY_GROUP pTokenGroup = (PTOKEN_PRIMARY_GROUP)tokenGroupBuffer.data();
+        if (!GetTokenInformation(hToken, TokenPrimaryGroup, pTokenGroup, dwBufferSize, &dwBufferSize)) {
+            setError(QLatin1String("QLocalServerPrivate::addListener"));
+            CloseHandle(hToken);
+            return false;
+        }
+        CloseHandle(hToken);
+
+#ifdef QLOCALSERVER_DEBUG
+        DWORD groupNameSize;
+        DWORD domainNameSize;
+        SID_NAME_USE groupNameUse;
+        LPWSTR groupNameSid;
+        LookupAccountSid(0, pTokenGroup->PrimaryGroup, 0, &groupNameSize, 0, &domainNameSize, &groupNameUse);
+        QScopedPointer<wchar_t, QScopedPointerArrayDeleter<wchar_t>> groupName(new wchar_t[groupNameSize]);
+        QScopedPointer<wchar_t, QScopedPointerArrayDeleter<wchar_t>> domainName(new wchar_t[domainNameSize]);
+        if (LookupAccountSid(0, pTokenGroup->PrimaryGroup, groupName.data(), &groupNameSize, domainName.data(), &domainNameSize, &groupNameUse)) {
+            qDebug() << "primary group" << QString::fromWCharArray(domainName.data()) << "\\" << QString::fromWCharArray(groupName.data()) << "type=" << groupNameUse;
+        }
+        if (ConvertSidToStringSid(pTokenGroup->PrimaryGroup, &groupNameSid)) {
+            qDebug() << "primary group SID" << QString::fromWCharArray(groupNameSid) << "valid" << IsValidSid(pTokenGroup->PrimaryGroup);
+            LocalFree(groupNameSid);
+        }
+#endif
+
+        SID_IDENTIFIER_AUTHORITY WorldAuth = SECURITY_WORLD_SID_AUTHORITY;
+        if (!AllocateAndInitializeSid(&WorldAuth, 1, SECURITY_WORLD_RID,
+            0, 0, 0, 0, 0, 0, 0,
+            &worldSID)) {
+            setError(QLatin1String("QLocalServerPrivate::addListener"));
+            return false;
+        }
+
+        //calculate size of ACL buffer
+        DWORD aclSize = sizeof(ACL) + ((sizeof(ACCESS_ALLOWED_ACE)) * 3);
+        aclSize += GetLengthSid(pTokenUser->User.Sid) - sizeof(DWORD);
+        aclSize += GetLengthSid(pTokenGroup->PrimaryGroup) - sizeof(DWORD);
+        aclSize += GetLengthSid(worldSID) - sizeof(DWORD);
+        aclSize = (aclSize + (sizeof(DWORD) - 1)) & 0xfffffffc;
+
+        aclBuffer.fill(0, aclSize);
+        PACL acl = (PACL)aclBuffer.data();
+        InitializeAcl(acl, aclSize, ACL_REVISION_DS);
+
+        if (socketOptions & QLocalServer::UserAccessOption) {
+            if (!AddAccessAllowedAce(acl, ACL_REVISION, FILE_ALL_ACCESS, pTokenUser->User.Sid)) {
+                setError(QLatin1String("QLocalServerPrivate::addListener"));
+                FreeSid(worldSID);
+                return false;
+            }
+        }
+        if (socketOptions & QLocalServer::GroupAccessOption) {
+            if (!AddAccessAllowedAce(acl, ACL_REVISION, FILE_ALL_ACCESS, pTokenGroup->PrimaryGroup)) {
+                setError(QLatin1String("QLocalServerPrivate::addListener"));
+                FreeSid(worldSID);
+                return false;
+            }
+        }
+        if (socketOptions & QLocalServer::OtherAccessOption) {
+            if (!AddAccessAllowedAce(acl, ACL_REVISION, FILE_ALL_ACCESS, worldSID)) {
+                setError(QLatin1String("QLocalServerPrivate::addListener"));
+                FreeSid(worldSID);
+                return false;
+            }
+        }
+        SetSecurityDescriptorOwner(pSD.data(), pTokenUser->User.Sid, FALSE);
+        SetSecurityDescriptorGroup(pSD.data(), pTokenGroup->PrimaryGroup, FALSE);
+        if (!SetSecurityDescriptorDacl(pSD.data(), TRUE, acl, FALSE)) {
+            setError(QLatin1String("QLocalServerPrivate::addListener"));
+            FreeSid(worldSID);
+            return false;
+        }
+
+        sa.lpSecurityDescriptor = pSD.data();
+    }
+
     listener.handle = CreateNamedPipe(
                  (const wchar_t *)fullServerName.utf16(), // pipe name
                  PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,       // read/write access
@@ -72,13 +187,16 @@ bool QLocalServerPrivate::addListener()
                  BUFSIZE,                  // output buffer size
                  BUFSIZE,                  // input buffer size
                  3000,                     // client time-out
-                 NULL);
+                 &sa);
 
     if (listener.handle == INVALID_HANDLE_VALUE) {
         setError(QLatin1String("QLocalServerPrivate::addListener"));
         listeners.removeLast();
         return false;
     }
+
+    if (worldSID)
+        FreeSid(worldSID);
 
     memset(&listener.overlapped, 0, sizeof(listener.overlapped));
     listener.overlapped.hEvent = eventHandle;
