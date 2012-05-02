@@ -544,7 +544,8 @@ bool QDBusAbstractInterface::callWithCallback(const QString &method,
     return d->connection.callWithCallback(msg,
                                           receiver,
                                           returnMethod,
-                                          errorMethod);
+                                          errorMethod,
+                                          d->timeout);
 }
 
 /*!
