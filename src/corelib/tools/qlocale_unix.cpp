@@ -71,6 +71,7 @@ struct QSystemLocaleData
     QLocale lc_messages;
     QByteArray lc_messages_var;
     QByteArray lc_measurement_var;
+    QStringList uiLanguages;
 };
 
 void QSystemLocaleData::readEnvironment()
@@ -212,29 +213,26 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return QVariant((int)QLocale(meas_locale).measurementSystem());
     }
     case UILanguages: {
-        static QString languages = QString::fromLatin1(qgetenv("LANGUAGE"));
-        if (!languages.isEmpty()) {
-            QStringList lst = languages.split(QLatin1Char(':'));
-            for (int i = 0; i < lst.size();) {
-                const QString &name = lst.at(i);
-                QString lang, script, cntry;
-                if (name.isEmpty() || !qt_splitLocaleName(name, lang, script, cntry))
-                    lst.removeAt(i);
-                else
-                    ++i;
-            }
-            return lst;
-        }
-        if (!d->lc_messages_var.isEmpty()) {
+        if (!d->uiLanguages.isEmpty())
+            return d->uiLanguages;
+        QString languages = QString::fromLatin1(qgetenv("LANGUAGE"));
+        QStringList lst;
+        if (languages.isEmpty())
+            lst.append(QString::fromLatin1(d->lc_messages_var));
+        else
+            lst = languages.split(QLatin1Char(':'));
+
+        for (int i = 0; i < lst.size(); ++i) {
+            const QString &name = lst.at(i);
             QString lang, script, cntry;
-            if (qt_splitLocaleName(QString::fromLatin1(d->lc_messages_var.constData(), d->lc_messages_var.size()),
-                                lang, script, cntry)) {
-                if (!cntry.length() && lang.length())
-                    return QStringList(lang);
-                return QStringList(lang % QLatin1Char('-') % cntry);
+            if (qt_splitLocaleName(name, lang, script, cntry)) {
+                if (!cntry.length())
+                    d->uiLanguages.append(lang);
+                else
+                    d->uiLanguages.append(lang % QLatin1Char('-') % cntry);
             }
         }
-        return QVariant();
+        return d->uiLanguages.isEmpty() ? QVariant() : QVariant(d->uiLanguages);
     }
     case StringToStandardQuotation:
         return lc_messages.quoteString(in.value<QStringRef>());
