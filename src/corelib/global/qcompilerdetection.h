@@ -505,7 +505,9 @@
 #ifdef Q_CC_CLANG
 /* General C++ features */
 #  if !__has_feature(cxx_exceptions)
-#    define QT_NO_EXCEPTIONS
+#    ifndef QT_NO_EXCEPTIONS
+#      define QT_NO_EXCEPTIONS
+#    endif
 #  endif
 #  if !__has_feature(cxx_rtti)
 #    define QT_NO_RTTI
