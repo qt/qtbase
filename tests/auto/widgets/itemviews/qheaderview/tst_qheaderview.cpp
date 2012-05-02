@@ -1545,7 +1545,7 @@ public:
             return QVariant();
         }
         if (role == Qt::DisplayRole) {
-            return QString::fromAscii("%1,%2").arg(index.row()).arg(index.column());
+            return QString::fromLatin1("%1,%2").arg(index.row()).arg(index.column());
         }
         return QVariant();
     }

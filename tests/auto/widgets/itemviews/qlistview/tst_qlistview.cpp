@@ -1277,7 +1277,7 @@ void tst_QListView::scrollBarRanges()
     QStringListModel model(&lv);
     QStringList list;
     for (int i = 0; i < rowCount; ++i)
-        list << QString::fromAscii("Item %1").arg(i);
+        list << QString::fromLatin1("Item %1").arg(i);
 
     model.setStringList(list);
     lv.setModel(&model);
@@ -1375,7 +1375,7 @@ void tst_QListView::scrollBarAsNeeded()
         QStringList list;
         int i;
         for (i = 0; i < rowCounts[r]; ++i)
-            list << QString::fromAscii("Item %1").arg(i);
+            list << QString::fromLatin1("Item %1").arg(i);
 
         model.setStringList(list);
         QApplication::processEvents();
@@ -1383,7 +1383,7 @@ void tst_QListView::scrollBarAsNeeded()
 
         QStringList replacement;
         for (i = 0; i < itemCount; ++i) {
-            replacement << QString::fromAscii("Item %1").arg(i);
+            replacement << QString::fromLatin1("Item %1").arg(i);
         }
         model.setStringList(replacement);
 
@@ -2059,7 +2059,7 @@ void tst_QListView::taskQTBUG_12308_wrongFlowLayout()
         QListWidgetItem *item = new QListWidgetItem();
         item->setText(QString("Item %L1").arg(i));
         lw.addItem(item);
-        if (!item->text().contains(QString::fromAscii("1")))
+        if (!item->text().contains(QString::fromLatin1("1")))
             item->setHidden(true);
     }
     lw.show();

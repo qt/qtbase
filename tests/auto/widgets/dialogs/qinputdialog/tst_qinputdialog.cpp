@@ -110,7 +110,7 @@ void testTypingValue(
     sbox->selectAll();
     for (int i = 0; i < value.size(); ++i) {
         const QChar valChar = value[i];
-	_keyClick(static_cast<QWidget *>(sbox), valChar.toAscii()); // ### always guaranteed to work?
+	_keyClick(static_cast<QWidget *>(sbox), valChar.toLatin1()); // ### always guaranteed to work?
         if (sbox->hasAcceptableInput())
             QVERIFY(okButton->isEnabled());
         else
@@ -123,7 +123,7 @@ void testTypingValue(QLineEdit *ledit, QPushButton *okButton, const QString &val
     ledit->selectAll();
     for (int i = 0; i < value.size(); ++i) {
         const QChar valChar = value[i];
-	_keyClick(ledit, valChar.toAscii()); // ### always guaranteed to work?
+	_keyClick(ledit, valChar.toLatin1()); // ### always guaranteed to work?
         QVERIFY(ledit->hasAcceptableInput());
         QVERIFY(okButton->isEnabled());
     }

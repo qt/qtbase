@@ -1271,7 +1271,7 @@ void tst_QComboBox::insertOnCurrentIndex()
     testWidget->addItem("first item");
     testWidget->setCurrentIndex(0);
     testWidget->insertItem(0, "second item");
-    QCOMPARE(testWidget->lineEdit()->text(), QString::fromAscii("first item"));
+    QCOMPARE(testWidget->lineEdit()->text(), QString::fromLatin1("first item"));
 }
 
 void tst_QComboBox::textpixmapdata_data()
@@ -1669,33 +1669,33 @@ void tst_QComboBox::flaggedItems_data()
         KeyList keyMovementList;
 
         keyMovementList << Qt::Key_Down << Qt::Key_Down << Qt::Key_Down << Qt::Key_Down;
-        QTest::newRow(testCase.toAscii() + "normal") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 4;
+        QTest::newRow(testCase.toLatin1() + "normal") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 4;
 
         deselectFlagList.clear();
         disableFlagList.clear();
         deselectFlagList << 1 << 3;
-        QTest::newRow(testCase.toAscii() + "non-selectable") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 4;
+        QTest::newRow(testCase.toLatin1() + "non-selectable") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 4;
 
         deselectFlagList.clear();
         disableFlagList.clear();
         disableFlagList << 2;
-        QTest::newRow(testCase.toAscii() + "disabled") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 5;
+        QTest::newRow(testCase.toLatin1() + "disabled") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 5;
 
         deselectFlagList.clear();
         disableFlagList.clear();
         deselectFlagList << 1 << 3;
         disableFlagList << 2 << 3;
-        QTest::newRow(testCase.toAscii() + "mixed") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 6;
+        QTest::newRow(testCase.toLatin1() + "mixed") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 6;
         deselectFlagList.clear();
         disableFlagList.clear();
         disableFlagList << 0 << 1 << 2 << 3 << 4 << 5 << 6;
-        QTest::newRow(testCase.toAscii() + "nearly-empty") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 7;
+        QTest::newRow(testCase.toLatin1() + "nearly-empty") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 7;
 
         deselectFlagList.clear();
         disableFlagList.clear();
         disableFlagList << 0 << 1 << 2 << 3 << 5 << 6 << 7;
         keyMovementList.clear();
-        QTest::newRow(testCase.toAscii() + "only one enabled") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 4;
+        QTest::newRow(testCase.toLatin1() + "only one enabled") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 4;
 
         if (!editable) {
             deselectFlagList.clear();
@@ -1703,38 +1703,38 @@ void tst_QComboBox::flaggedItems_data()
             keyMovementList.clear();
             disableFlagList << 0 << 2 << 3;
             keyMovementList << Qt::Key_Down << Qt::Key_Home;
-            QTest::newRow(testCase.toAscii() + "home-disabled") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 1;
+            QTest::newRow(testCase.toLatin1() + "home-disabled") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 1;
 
             keyMovementList.clear();
             keyMovementList << Qt::Key_End;
-            QTest::newRow(testCase.toAscii() + "end-key") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 7;
+            QTest::newRow(testCase.toLatin1() + "end-key") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 7;
 
             disableFlagList.clear();
             disableFlagList << 1 ;
             keyMovementList << Qt::Key_T;
-            QTest::newRow(testCase.toAscii() + "keyboard-search") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 2;
+            QTest::newRow(testCase.toLatin1() + "keyboard-search") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 2;
 
             itemList << "nine" << "ten";
             keyMovementList << Qt::Key_T;
-            QTest::newRow(testCase.toAscii() + "search same start letter") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 9;
+            QTest::newRow(testCase.toLatin1() + "search same start letter") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 9;
 
             keyMovementList.clear();
             keyMovementList << Qt::Key_T << Qt::Key_H;
-            QTest::newRow(testCase.toAscii() + "keyboard search item") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 2;
+            QTest::newRow(testCase.toLatin1() + "keyboard search item") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 2;
 
             disableFlagList.clear();
             disableFlagList << 1 << 3 << 5 << 7 << 9;
             keyMovementList.clear();
             keyMovementList << Qt::Key_End << Qt::Key_Up << Qt::Key_Up << Qt::Key_PageDown << Qt::Key_PageUp << Qt::Key_PageUp << Qt::Key_Down;
-            QTest::newRow(testCase.toAscii() + "all key combinations") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 4;
+            QTest::newRow(testCase.toLatin1() + "all key combinations") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 4;
         } else {
             deselectFlagList.clear();
             disableFlagList.clear();
             disableFlagList << 1;
             keyMovementList.clear();
             keyMovementList << Qt::Key_T << Qt::Key_Enter;
-            QTest::newRow(testCase.toAscii() + "disabled") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 2;
-            QTest::newRow(testCase.toAscii() + "broken autocompletion") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 2;
+            QTest::newRow(testCase.toLatin1() + "disabled") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 2;
+            QTest::newRow(testCase.toLatin1() + "broken autocompletion") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 2;
         }
     }
 }

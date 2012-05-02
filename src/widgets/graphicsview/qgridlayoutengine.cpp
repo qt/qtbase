@@ -783,11 +783,11 @@ void QGridLayoutRowInfo::dump(int indent) const
         QString message;
 
         if (stretches.value(i).value() >= 0)
-            message += QString::fromAscii(" stretch %1").arg(stretches.value(i).value());
+            message += QString::fromLatin1(" stretch %1").arg(stretches.value(i).value());
         if (spacings.value(i).value() >= 0.0)
-            message += QString::fromAscii(" spacing %1").arg(spacings.value(i).value());
+            message += QString::fromLatin1(" spacing %1").arg(spacings.value(i).value());
         if (alignments.value(i) != 0)
-            message += QString::fromAscii(" alignment %1").arg(int(alignments.value(i)), 16);
+            message += QString::fromLatin1(" alignment %1").arg(int(alignments.value(i)), 16);
 
         if (!message.isEmpty() || boxes.value(i) != QGridLayoutBox()) {
             qDebug("%*s Row %d:%s", indent, "", i, qPrintable(message));

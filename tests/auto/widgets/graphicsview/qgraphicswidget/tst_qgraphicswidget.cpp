@@ -1515,7 +1515,7 @@ void tst_QGraphicsWidget::setTabOrderAndReparent()
     for (i = 1; i < 4; ++i) {
         QGraphicsWidget *wid = new QGraphicsWidget;
         wid->setFocusPolicy(Qt::StrongFocus);
-        wid->setData(0, QString::fromAscii("w%1").arg(i));
+        wid->setData(0, QString::fromLatin1("w%1").arg(i));
         scene.addItem(wid);
         if (i == 1)
             w1 = wid;
@@ -1555,7 +1555,7 @@ void tst_QGraphicsWidget::setTabOrderAndReparent()
     for (i = 1; i < 5; ++i) {
         QGraphicsWidget *wid = new QGraphicsWidget;
         wid->setFocusPolicy(Qt::StrongFocus);
-        wid->setData(0, QString::fromAscii("w%1").arg(i));
+        wid->setData(0, QString::fromLatin1("w%1").arg(i));
         scene.addItem(wid);
         if (i == 1)
             w1 = wid;

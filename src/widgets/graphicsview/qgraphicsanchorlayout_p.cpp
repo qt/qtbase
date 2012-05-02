@@ -611,10 +611,10 @@ QString GraphPath::toString() const
 {
     QString string(QLatin1String("Path: "));
     foreach(AnchorData *edge, positives)
-        string += QString::fromAscii(" (+++) %1").arg(edge->toString());
+        string += QString::fromLatin1(" (+++) %1").arg(edge->toString());
 
     foreach(AnchorData *edge, negatives)
-        string += QString::fromAscii(" (---) %1").arg(edge->toString());
+        string += QString::fromLatin1(" (---) %1").arg(edge->toString());
 
     return string;
 }
@@ -765,9 +765,9 @@ static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
 #if defined(QT_DEBUG) && 0
     QString strVertices;
     for (int i = 0; i < vertices.count(); ++i) {
-        strVertices += QString::fromAscii("%1 - ").arg(vertices.at(i)->toString());
+        strVertices += QString::fromLatin1("%1 - ").arg(vertices.at(i)->toString());
     }
-    QString strPath = QString::fromAscii("%1 - %2%3").arg(before->toString(), strVertices, after->toString());
+    QString strPath = QString::fromLatin1("%1 - %2%3").arg(before->toString(), strVertices, after->toString());
     qDebug("simplifying [%s] to [%s - %s]", qPrintable(strPath), qPrintable(before->toString()), qPrintable(after->toString()));
 #endif
 
@@ -847,7 +847,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
     static int count = 0;
     if (orientation == Horizontal) {
         count++;
-        dumpGraph(QString::fromAscii("%1-full").arg(count));
+        dumpGraph(QString::fromLatin1("%1-full").arg(count));
     }
 #endif
 
@@ -872,8 +872,8 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
     }
 
 #if defined(QT_DEBUG) && 0
-    dumpGraph(QString::fromAscii("%1-simplified-%2").arg(count).arg(
-                  QString::fromAscii(orientation == Horizontal ? "Horizontal" : "Vertical")));
+    dumpGraph(QString::fromLatin1("%1-simplified-%2").arg(count).arg(
+                  QString::fromLatin1(orientation == Horizontal ? "Horizontal" : "Vertical")));
 #endif
 
     return true;
@@ -903,7 +903,7 @@ bool QGraphicsAnchorLayoutPrivate::replaceVertex(Orientation orientation, Anchor
         AnchorVertex *otherV = replaceVertex_helper(ad, oldV, newV);
 
 #if defined(QT_DEBUG)
-        ad->name = QString::fromAscii("%1 --to--> %2").arg(ad->from->toString()).arg(ad->to->toString());
+        ad->name = QString::fromLatin1("%1 --to--> %2").arg(ad->from->toString()).arg(ad->to->toString());
 #endif
 
         bool newFeasible;
@@ -1766,7 +1766,7 @@ void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstIt
     data->from = v1;
     data->to = v2;
 #ifdef QT_DEBUG
-    data->name = QString::fromAscii("%1 --to--> %2").arg(v1->toString()).arg(v2->toString());
+    data->name = QString::fromLatin1("%1 --to--> %2").arg(v1->toString()).arg(v2->toString());
 #endif
     // ### bit to track internal anchors, since inside AnchorData methods
     // we don't have access to the 'q' pointer.
@@ -2999,11 +2999,11 @@ bool QGraphicsAnchorLayoutPrivate::hasConflicts() const
 #ifdef QT_DEBUG
 void QGraphicsAnchorLayoutPrivate::dumpGraph(const QString &name)
 {
-    QFile file(QString::fromAscii("anchorlayout.%1.dot").arg(name));
+    QFile file(QString::fromLatin1("anchorlayout.%1.dot").arg(name));
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
         qWarning("Could not write to %s", file.fileName().toLocal8Bit().constData());
 
-    QString str = QString::fromAscii("digraph anchorlayout {\nnode [shape=\"rect\"]\n%1}");
+    QString str = QString::fromLatin1("digraph anchorlayout {\nnode [shape=\"rect\"]\n%1}");
     QString dotContents = graph[0].serializeToDot();
     dotContents += graph[1].serializeToDot();
     file.write(str.arg(dotContents).toLocal8Bit());

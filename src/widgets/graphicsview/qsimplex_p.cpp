@@ -356,14 +356,14 @@ void QSimplex::dumpMatrix()
 
     QString str(QLatin1String("       "));
     for (int j = 0; j < columns; ++j)
-        str += QString::fromAscii("  <%1 >").arg(j, 2);
+        str += QString::fromLatin1("  <%1 >").arg(j, 2);
     qDebug("%s", qPrintable(str));
     for (int i = 0; i < rows; ++i) {
-        str = QString::fromAscii("Row %1:").arg(i, 2);
+        str = QString::fromLatin1("Row %1:").arg(i, 2);
 
         qreal *row = matrix + i * columns;
         for (int j = 0; j < columns; ++j)
-            str += QString::fromAscii("%1").arg(row[j], 7, 'f', 2);
+            str += QString::fromLatin1("%1").arg(row[j], 7, 'f', 2);
         qDebug("%s", qPrintable(str));
     }
     qDebug("------------------------\n");

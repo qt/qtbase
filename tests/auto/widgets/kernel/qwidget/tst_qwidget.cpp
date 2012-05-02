@@ -4332,7 +4332,7 @@ void tst_QWidget::setWindowGeometry_data()
                           .arg(rect.y())
                           .arg(rect.width())
                           .arg(rect.height())
-                          .arg(windowFlag, 0, 16).toAscii())
+                          .arg(windowFlag, 0, 16).toLatin1())
                 << l
                 << windowFlag;
         }

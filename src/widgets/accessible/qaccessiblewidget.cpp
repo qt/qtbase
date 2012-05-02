@@ -277,7 +277,7 @@ public:
 */
 void QAccessibleWidget::addControllingSignal(const QString &signal)
 {
-    QByteArray s = QMetaObject::normalizedSignature(signal.toAscii());
+    QByteArray s = QMetaObject::normalizedSignature(signal.toLatin1());
     if (object()->metaObject()->indexOfSignal(s) < 0)
         qWarning("Signal %s unknown in %s", s.constData(), object()->metaObject()->className());
     d->primarySignals << QLatin1String(s);
@@ -388,7 +388,7 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
                 QACConnectionObject *connectionSender = (QACConnectionObject*)sender;
                 QStringList senderPrimarySignals = static_cast<QAccessibleWidget*>(iface)->d->primarySignals;
                 for (int sig = 0; sig < senderPrimarySignals.count(); ++sig) {
-                    const QByteArray strSignal = senderPrimarySignals.at(sig).toAscii();
+                    const QByteArray strSignal = senderPrimarySignals.at(sig).toLatin1();
                     if (connectionSender->isSender(object(), strSignal.constData()))
                         rels.append(qMakePair(iface, rel));
                 }
@@ -400,7 +400,7 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
         QObjectList allReceivers;
         QACConnectionObject *connectionObject = (QACConnectionObject*)object();
         for (int sig = 0; sig < d->primarySignals.count(); ++sig) {
-            const QObjectList receivers = connectionObject->receiverList(d->primarySignals.at(sig).toAscii());
+            const QObjectList receivers = connectionObject->receiverList(d->primarySignals.at(sig).toLatin1());
             allReceivers += receivers;
         }
 

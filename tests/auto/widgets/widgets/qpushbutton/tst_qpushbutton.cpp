@@ -561,37 +561,37 @@ void tst_QPushButton::sizeHint_data()
 {
     QTest::addColumn<QString>("stylename");
 #if !defined(QT_NO_STYLE_MOTIF)
-    QTest::newRow("motif") << QString::fromAscii("motif");
+    QTest::newRow("motif") << QString::fromLatin1("motif");
 #endif
 #if !defined(QT_NO_STYLE_CDE)
-    QTest::newRow("cde") << QString::fromAscii("cde");
+    QTest::newRow("cde") << QString::fromLatin1("cde");
 #endif
 #if !defined(QT_NO_STYLE_WINDOWS)
-    QTest::newRow("windows") << QString::fromAscii("windows");
+    QTest::newRow("windows") << QString::fromLatin1("windows");
 #endif
 #if !defined(QT_NO_STYLE_CLEANLOOKS)
-    QTest::newRow("cleanlooks") << QString::fromAscii("cleanlooks");
+    QTest::newRow("cleanlooks") << QString::fromLatin1("cleanlooks");
 #endif
 #if !defined(QT_NO_STYLE_GTK)
-    QTest::newRow("gtk") << QString::fromAscii("gtk");
+    QTest::newRow("gtk") << QString::fromLatin1("gtk");
 #endif
 #if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
-    QTest::newRow("mac") << QString::fromAscii("mac");
+    QTest::newRow("mac") << QString::fromLatin1("mac");
 #endif
 #if !defined(QT_NO_STYLE_PLASTIQUE)
-    QTest::newRow("plastique") << QString::fromAscii("plastique");
+    QTest::newRow("plastique") << QString::fromLatin1("plastique");
 #endif
 #if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
-    QTest::newRow("windowsxp") << QString::fromAscii("windowsxp");
+    QTest::newRow("windowsxp") << QString::fromLatin1("windowsxp");
 #endif
 #if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
-    QTest::newRow("windowsvista") << QString::fromAscii("windowsvista");
+    QTest::newRow("windowsvista") << QString::fromLatin1("windowsvista");
 #endif
 #if defined(Q_OS_WINCE) && !defined(QT_NO_STYLE_WINDOWSCE)
-    QTest::newRow("windowsce") << QString::fromAscii("windowsce");
+    QTest::newRow("windowsce") << QString::fromLatin1("windowsce");
 #endif
 #if defined(Q_OS_WINCE_WM) && !defined(QT_NO_STYLE_WINDOWSCE)
-    QTest::newRow("windowsmobile") << QString::fromAscii("windowsmobile");
+    QTest::newRow("windowsmobile") << QString::fromLatin1("windowsmobile");
 #endif
 }
 

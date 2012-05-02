@@ -568,7 +568,7 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
     // - No another dir with same start
     QString testDir;
     foreach (const QString &entry, entryList) {
-        if (entry.size() > 5 && QString(entry.toAscii()).compare(entry) == 0) {
+        if (entry.size() > 5 && QString(entry.toLatin1()).compare(entry) == 0) {
             bool invalid = false;
             for (int i = 0; i < 5; i++) {
                 if (!entry.at(i).isLetter()) {
@@ -605,7 +605,7 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     //I love testlib :D
     for (int i = 0; i < 5; i++)
-        QTest::keyClick(edit, testDir.at(i).toLower().toAscii() - 'a' + Qt::Key_A);
+        QTest::keyClick(edit, testDir.at(i).toLower().toLatin1() - 'a' + Qt::Key_A);
 #else
     QTest::keyClick(edit, Qt::Key_E);
     QTest::keyClick(edit, Qt::Key_T);

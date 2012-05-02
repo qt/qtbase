@@ -1702,7 +1702,7 @@ QTextStream& operator>>(QTextStream& ts, QSplitter& splitter)
     line.replace(QLatin1Char(' '), QString());
     line = line.toUpper();
 
-    splitter.restoreState(line.toAscii());
+    splitter.restoreState(line.toLatin1());
     return ts;
 }
 

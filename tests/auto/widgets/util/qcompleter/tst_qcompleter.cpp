@@ -266,7 +266,7 @@ retry:
 
     for (int i = 0; i < step.length(); i++) {
         int row = completer->currentRow();
-        switch (step[i].toUpper().toAscii()) {
+        switch (step[i].toUpper().toLatin1()) {
         case 'P': --row; break;
         case 'N': ++row; break;
         case 'L': row = completer->completionCount() - 1; break;

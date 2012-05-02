@@ -691,7 +691,7 @@ static QList<QVariant> subControlLayout(const QString& layout)
 {
     QList<QVariant> buttons;
     for (int i = 0; i < layout.count(); i++) {
-        int button = layout[i].toAscii();
+        int button = layout[i].toLatin1();
         switch (button) {
         case 'm':
             buttons.append(PseudoElement_MdiMinButton);

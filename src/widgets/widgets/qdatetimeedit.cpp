@@ -2208,7 +2208,7 @@ void QDateTimeEditPrivate::_q_editorCursorPositionChanged(int oldpos, int newpos
     currentSectionIndex = s;
     Q_ASSERT_X(currentSectionIndex < sectionNodes.size(),
                "QDateTimeEditPrivate::_q_editorCursorPositionChanged()",
-               qPrintable(QString::fromAscii("Internal error (%1 %2)").
+               qPrintable(QString::fromLatin1("Internal error (%1 %2)").
                           arg(currentSectionIndex).
                           arg(sectionNodes.size())));
 

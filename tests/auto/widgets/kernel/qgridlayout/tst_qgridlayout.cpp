@@ -540,7 +540,7 @@ public:
     }
 private:
     void init(int numPixels = -1){
-        setText(QString::fromAscii("(%1,%2)").arg(sh.width()).arg(sh.height()));
+        setText(QString::fromLatin1("(%1,%2)").arg(sh.width()).arg(sh.height()));
         setFrameStyle(QFrame::Box | QFrame::Plain);
         setNumberOfPixels(numPixels);
     }
@@ -797,12 +797,12 @@ void tst_QGridLayout::minMaxSize_data()
                 << SizeInfo(QPoint(10, 10), QSize( 90, 90), QSize(100,100))
                 << SizeInfo(QPoint(10 + 100 + 1, 10), QSize( 90, 90))
                 );
-    QTest::newRow("2x1 grid, extend to minimumSize, motif") << QString::fromAscii("motif") << 2 << 1
+    QTest::newRow("2x1 grid, extend to minimumSize, motif") << QString::fromLatin1("motif") << 2 << 1
                 << int(QSizePolicy::Preferred) << QSize() << (SizeInfoList()
                 << SizeInfo(QPoint(11, 11), QSize( 90, 90), QSize(100,100))
                 << SizeInfo(QPoint(11 + 100 + 6, 11), QSize( 90, 90))
                 );
-    QTest::newRow("2x1 grid, extend to minimumSize, windows") << QString::fromAscii("windows") << 2 << 1
+    QTest::newRow("2x1 grid, extend to minimumSize, windows") << QString::fromLatin1("windows") << 2 << 1
                 << int(QSizePolicy::Preferred) << QSize() << (SizeInfoList()
                 << SizeInfo(QPoint(11, 11), QSize( 90, 90), QSize(100,100))
                 << SizeInfo(QPoint(11 + 100 + 6, 11), QSize( 90, 90))
@@ -1430,7 +1430,7 @@ void tst_QGridLayout::layoutSpacingImplementation_data()
             w->setLayout(layout);
             int pw = up->sizeHint().width();
             int ph = up->sizeHint().height();
-            QByteArray testName = QString::fromAscii("arrowpad with %1 empty rows, %2 empty columns").arg(yoff).arg(xoff).toLatin1();
+            QByteArray testName = QString::fromLatin1("arrowpad with %1 empty rows, %2 empty columns").arg(yoff).arg(xoff).toLatin1();
             QTest::newRow(testName.data())
                     << w << (PointList()
                     << QPoint(0 + pw + 5, 3)

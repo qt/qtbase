@@ -458,7 +458,7 @@ void tst_QGraphicsGridLayout::addItem_data()
         int column = b;
         int rowSpan = c;
         int columnSpan = d;
-        QString name = QString::fromAscii("(%1,%2,%3,%4").arg(a).arg(b).arg(c).arg(d);
+        QString name = QString::fromLatin1("(%1,%2,%3,%4").arg(a).arg(b).arg(c).arg(d);
         Qt::Alignment alignment = Qt::AlignLeft;
         QTest::newRow(name.toLatin1()) << row << column << rowSpan << columnSpan << alignment;
     }}}}
@@ -1114,7 +1114,7 @@ void tst_QGraphicsGridLayout::itemAt()
         if (i >= 0 && i < layout->count()) {
             QVERIFY(layout->itemAt(i));
         } else {
-            QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QGraphicsGridLayout::itemAt: invalid index %1").arg(i).toLatin1().constData());
+            QTest::ignoreMessage(QtWarningMsg, QString::fromLatin1("QGraphicsGridLayout::itemAt: invalid index %1").arg(i).toLatin1().constData());
             QCOMPARE(layout->itemAt(i), static_cast<QGraphicsLayoutItem*>(0));
         }
     }
@@ -1146,7 +1146,7 @@ void tst_QGraphicsGridLayout::removeAt()
     layout->removeAt(0);
     QCOMPARE(item0->parentLayoutItem(), static_cast<QGraphicsLayoutItem *>(0));
     QCOMPARE(layout->count(), 0);
-    QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QGraphicsGridLayout::removeAt: invalid index 0").toLatin1().constData());
+    QTest::ignoreMessage(QtWarningMsg, QString::fromLatin1("QGraphicsGridLayout::removeAt: invalid index 0").toLatin1().constData());
     layout->removeAt(0);
     QCOMPARE(layout->count(), 0);
     delete widget;
@@ -1169,11 +1169,11 @@ void tst_QGraphicsGridLayout::removeItem()
     QCOMPARE(l->count(), 4);
 
     // Avoid crashing. Note that the warning message might change in the future.
-    QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QGraphicsGridLayout::removeAt: invalid index -1").toLatin1().constData());
+    QTest::ignoreMessage(QtWarningMsg, QString::fromLatin1("QGraphicsGridLayout::removeAt: invalid index -1").toLatin1().constData());
     l->removeItem(0);
     QCOMPARE(l->count(), 4);
 
-    QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QGraphicsGridLayout::removeAt: invalid index -1").toLatin1().constData());
+    QTest::ignoreMessage(QtWarningMsg, QString::fromLatin1("QGraphicsGridLayout::removeAt: invalid index -1").toLatin1().constData());
     l->removeItem(new QGraphicsWidget);
     QCOMPARE(l->count(), 4);
 }

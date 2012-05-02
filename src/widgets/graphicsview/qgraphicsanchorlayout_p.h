@@ -181,7 +181,7 @@ struct AnchorData : public QSimplexVariable {
 #ifdef QT_DEBUG
 inline QString AnchorData::toString() const
 {
-    return QString::fromAscii("Anchor(%1)").arg(name);
+    return QString::fromLatin1("Anchor(%1)").arg(name);
 }
 #endif
 
@@ -193,7 +193,7 @@ struct SequentialAnchorData : public AnchorData
         type = AnchorData::Sequential;
         orientation = m_edges.at(0)->orientation;
 #ifdef QT_DEBUG
-        name = QString::fromAscii("%1 -- %2").arg(vertices.first()->toString(), vertices.last()->toString());
+        name = QString::fromLatin1("%1 -- %2").arg(vertices.first()->toString(), vertices.last()->toString());
 #endif
     }
 
@@ -221,7 +221,7 @@ struct ParallelAnchorData : public AnchorData
         from = first->from;
         to = first->to;
 #ifdef QT_DEBUG
-        name = QString::fromAscii("%1 | %2").arg(first->toString(), second->toString());
+        name = QString::fromLatin1("%1 | %2").arg(first->toString(), second->toString());
 #endif
     }
 
@@ -263,9 +263,9 @@ inline QString AnchorVertex::toString() const
         return QLatin1String("NULL");
     } else if (m_type == Pair) {
         const AnchorVertexPair *vp = static_cast<const AnchorVertexPair *>(this);
-        return QString::fromAscii("(%1, %2)").arg(vp->m_first->toString()).arg(vp->m_second->toString());
+        return QString::fromLatin1("(%1, %2)").arg(vp->m_first->toString()).arg(vp->m_second->toString());
     } else if (!m_item) {
-        return QString::fromAscii("NULL_%1").arg(quintptr(this));
+        return QString::fromLatin1("NULL_%1").arg(quintptr(this));
     }
     QString edge;
     switch (m_edge) {

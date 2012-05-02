@@ -2127,12 +2127,12 @@ void tst_QTreeView::resizeColumnToContents()
     for (int r = 0; r < model.rowCount(); ++r) {
         for (int c = 0; c < model.columnCount(); ++c) {
             QModelIndex idx = model.index(r, c);
-            model.setData(idx, QString::fromAscii("%1,%2").arg(r).arg(c) );
+            model.setData(idx, QString::fromLatin1("%1,%2").arg(r).arg(c) );
             model.insertColumns(0, 2, idx);
             model.insertRows(0, 6, idx);
             for (int i = 0; i < 6; ++i) {
                 for (int j = 0; j < 2 ; ++j) {
-                    model.setData(model.index(i, j, idx), QString::fromAscii("child%1%2").arg(i).arg(j));
+                    model.setData(model.index(i, j, idx), QString::fromLatin1("child%1%2").arg(i).arg(j));
                 }
             }
         }

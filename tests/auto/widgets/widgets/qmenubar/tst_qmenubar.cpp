@@ -980,7 +980,7 @@ void tst_QMenuBar::check_altPress()
 {
     if ( !qApp->style()->styleHint(QStyle::SH_MenuBar_AltKeyNavigation) ) {
 	QSKIP( QString( "this is not supposed to work in the %1 style. Skipping." ).
-	      arg( qApp->style()->objectName() ).toAscii());
+	      arg( qApp->style()->objectName() ).toLatin1());
     }
 
     initSimpleMenubar();

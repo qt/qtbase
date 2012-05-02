@@ -604,7 +604,7 @@ void tst_QTextEdit::selectAllSetsNotSelection()
     ed->insertPlainText("Hello World");
     ed->selectAll();
 
-    QCOMPARE(QApplication::clipboard()->text(QClipboard::Selection), QString::fromAscii("foobar"));
+    QCOMPARE(QApplication::clipboard()->text(QClipboard::Selection), QString::fromLatin1("foobar"));
 }
 #endif
 void tst_QTextEdit::asciiTab()

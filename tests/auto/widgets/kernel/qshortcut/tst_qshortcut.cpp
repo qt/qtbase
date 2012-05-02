@@ -1204,25 +1204,25 @@ void tst_QShortcut::sendKeyEvents(QWidget *w, int k1, QChar c1, int k2, QChar c2
     k4 &= ~Qt::MODIFIER_MASK;
 
 
-    if (k1 || c1.toAscii()) {
+    if (k1 || c1.toLatin1()) {
         QString c(c1.unicode() == QChar::Null ? QString() : QString(c1));
         QTest::sendKeyEvent(QTest::Press, w, static_cast<Qt::Key>(k1), c, b1);
 	QTest::sendKeyEvent(QTest::Release, w, static_cast<Qt::Key>(k1), c, b1);
     }
 
-    if (k2 || c2.toAscii()) {
+    if (k2 || c2.toLatin1()) {
         QString c(c2.unicode() == QChar::Null ? QString() : QString(c2));
 	QTest::sendKeyEvent(QTest::Press, w, static_cast<Qt::Key>(k2), c, b2);
 	QTest::sendKeyEvent(QTest::Release, w, static_cast<Qt::Key>(k2), c, b2);
     }
 
-    if (k3 || c3.toAscii()) {
+    if (k3 || c3.toLatin1()) {
         QString c(c3.unicode() == QChar::Null ? QString() : QString(c3));
 	QTest::sendKeyEvent(QTest::Press, w, static_cast<Qt::Key>(k3), c, b3);
 	QTest::sendKeyEvent(QTest::Release, w, static_cast<Qt::Key>(k3), c, b3);
     }
 
-    if (k4 || c4.toAscii()) {
+    if (k4 || c4.toLatin1()) {
         QString c(c4.unicode() == QChar::Null ? QString() : QString(c4));
 	QTest::sendKeyEvent(QTest::Press, w, static_cast<Qt::Key>(k4), c, b4);
 	QTest::sendKeyEvent(QTest::Release, w, static_cast<Qt::Key>(k4), c, b4);
