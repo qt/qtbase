@@ -222,16 +222,19 @@ bool QSslCertificate::isNull() const
 #if QT_DEPRECATED_SINCE(5,0)
 /*!
     \fn bool QSslCertificate::isValid() const
+    \obsolete
 
-    Returns true if this certificate is valid; otherwise returns
-    false.
+    To verify a certificate, use verify().
+    To check if a certificate is blacklisted, use isBlacklisted().
+    To check if a certificate has expired or is not yet valid, compare
+    expiryDate() and effectiveDate() with QDateTime::currentDateTime()
 
-    Note: Currently, this function checks that the current
+    This function checks that the current
     data-time is within the date-time range during which the
     certificate is considered valid, and checks that the
     certificate is not in a blacklist of fraudulent certificates.
 
-    \sa isNull()
+    \sa isNull(), verify(), isBlacklisted(), expiryDate(), effectiveDate()
 */
 #endif
 
@@ -433,6 +436,15 @@ QList<QByteArray> QSslCertificate::issuerInfoAttributes() const
 
     return d->issuerInfo.uniqueKeys();
 }
+
+#if QT_DEPRECATED_SINCE(5,0)
+/*!
+  \fn QMultiMap<QSsl::AlternateNameEntryType, QString> alternateSubjectNames() const
+  \obsolete
+
+  Use subjectAlternativeNames();
+*/
+#endif
 
 /*!
   Returns the list of alternative subject names for this
