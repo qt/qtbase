@@ -191,7 +191,7 @@ namespace QTest {
     int formatResult(char * buffer, int bufferSize, T number, int significantDigits)
     {
         QString result = formatResult(number, significantDigits);
-        qstrncpy(buffer, result.toAscii().constData(), bufferSize);
+        qstrncpy(buffer, result.toLatin1().constData(), bufferSize);
         int size = result.count();
         return size;
     }
@@ -260,7 +260,7 @@ void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
         buf1, sizeof(buf1), "%s: %s::%s",
         bmtag,
         QTestResult::currentTestObjectName(),
-        result.context.slotName.toAscii().data());
+        result.context.slotName.toLatin1().data());
 
     char bufTag[1024];
     bufTag[0] = 0;
