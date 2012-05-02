@@ -174,8 +174,8 @@ void tst_QCryptographicHash::files_data() {
     QTest::addColumn<QString>("filename");
     QTest::addColumn<QCryptographicHash::Algorithm>("algorithm");
     QTest::addColumn<QByteArray>("md5sum");
-    QTest::newRow("data1") << QString::fromAscii("data/2c1517dad3678f03917f15849b052fd5.md5") << QCryptographicHash::Md5 << QByteArray("2c1517dad3678f03917f15849b052fd5");
-    QTest::newRow("data2") << QString::fromAscii("data/d41d8cd98f00b204e9800998ecf8427e.md5") << QCryptographicHash::Md5 << QByteArray("d41d8cd98f00b204e9800998ecf8427e");
+    QTest::newRow("data1") << QString::fromLatin1("data/2c1517dad3678f03917f15849b052fd5.md5") << QCryptographicHash::Md5 << QByteArray("2c1517dad3678f03917f15849b052fd5");
+    QTest::newRow("data2") << QString::fromLatin1("data/d41d8cd98f00b204e9800998ecf8427e.md5") << QCryptographicHash::Md5 << QByteArray("d41d8cd98f00b204e9800998ecf8427e");
 }
 
 

@@ -103,15 +103,15 @@ void tst_QEasingCurve::type()
     QTest::ignoreMessage(QtWarningMsg, "QEasingCurve: Invalid curve type -9999");
     curve.setType((QEasingCurve::Type)-9999);
     QCOMPARE(curve.type(), QEasingCurve::InCubic);
-    QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QEasingCurve: Invalid curve type %1")
+    QTest::ignoreMessage(QtWarningMsg, QString::fromLatin1("QEasingCurve: Invalid curve type %1")
                         .arg(QEasingCurve::NCurveTypes).toLatin1().constData());
     curve.setType(QEasingCurve::NCurveTypes);
     QCOMPARE(curve.type(), QEasingCurve::InCubic);
-    QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QEasingCurve: Invalid curve type %1")
+    QTest::ignoreMessage(QtWarningMsg, QString::fromLatin1("QEasingCurve: Invalid curve type %1")
                         .arg(QEasingCurve::Custom).toLatin1().constData());
     curve.setType(QEasingCurve::Custom);
     QCOMPARE(curve.type(), QEasingCurve::InCubic);
-    QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QEasingCurve: Invalid curve type %1")
+    QTest::ignoreMessage(QtWarningMsg, QString::fromLatin1("QEasingCurve: Invalid curve type %1")
                         .arg(-1).toLatin1().constData());
     curve.setType((QEasingCurve::Type)-1);
     QCOMPARE(curve.type(), QEasingCurve::InCubic);
@@ -389,10 +389,10 @@ void tst_QEasingCurve::valueForProgress()
 
         for (int t = 0; t <= 100; t+= 10) {
             qreal ease = curve.valueForProgress(t/qreal(100));
-            strInputs += QString::fromAscii(" << %1").arg(t);
+            strInputs += QString::fromLatin1(" << %1").arg(t);
             strOutputs += " << " + fixedToString(qRound(ease*10000));
         }
-        QString str = QString::fromAscii("    QTest::newRow(\"%1\") << int(QEasingCurve::%2)\n"
+        QString str = QString::fromLatin1("    QTest::newRow(\"%1\") << int(QEasingCurve::%2)\n"
                                                 "         << (IntList() %3)\n"
                                                 "         << (RealList()%4);\n\n")
                                       .arg(strCurve)

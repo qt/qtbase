@@ -74,7 +74,7 @@ void Receiver::received ()
         s->fire ();
 
     fprintf (stderr, "Receiver<%s>::received() sender=%s\n",
-        (const char *) objectName ().toAscii (), sender ()->metaObject()->className());
+        (const char *) objectName ().toLatin1 (), sender ()->metaObject()->className());
 
     TRACE (stepCopy, "ends Receiver::received()");
 }
@@ -93,7 +93,7 @@ void Disconnector::received ()
         qFatal("%s: Incorrect Step: %d (should be 5 or 6)", Q_FUNC_INFO, ::Step);
 
     fprintf (stderr, "Disconnector<%s>::received() sender=%s\n",
-        (const char *) objectName ().toAscii (), sender ()->metaObject()->className());
+        (const char *) objectName ().toLatin1 (), sender ()->metaObject()->className());
     if (sender () == 0)
         fprintf (stderr, "WE SHOULD NOT BE RECEIVING THIS SIGNAL\n");
 

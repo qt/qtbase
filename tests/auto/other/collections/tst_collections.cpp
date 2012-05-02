@@ -2124,14 +2124,14 @@ void tst_Collections::qstring()
     QVERIFY(s.toLocal8Bit().isEmpty());
 
     s = "first-ascii";
-    QVERIFY(s.toAscii() == "first-ascii");
+    QVERIFY(s.toLatin1() == "first-ascii");
     s = "second-ascii";
-    QVERIFY(s.toAscii() == "second-ascii");
+    QVERIFY(s.toLatin1() == "second-ascii");
     s.clear();
     QVERIFY(s.isNull());
-    QVERIFY(s.toAscii().size() == 0);
-    QVERIFY(s.toAscii().isEmpty());
-    QVERIFY(s.toAscii().isNull());
+    QVERIFY(s.toLatin1().size() == 0);
+    QVERIFY(s.toLatin1().isEmpty());
+    QVERIFY(s.toLatin1().isNull());
 
     s = "ascii";
     s += QChar((uchar) 0xb0);

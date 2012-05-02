@@ -578,9 +578,9 @@ void tst_QTextCodec::utf8Codec_data()
     // QTest::newRow("null5") << QByteArray() << QString() << 5;
     QTest::newRow("empty-1") << QByteArray("\0abcd", 5) << QString() << -1;
     QTest::newRow("empty0") << QByteArray() << QString() << 0;
-    QTest::newRow("empty5") << QByteArray("\0abcd", 5) << QString::fromAscii("\0abcd", 5) << 5;
-    QTest::newRow("other-1") << QByteArray("ab\0cd", 5) << QString::fromAscii("ab") << -1;
-    QTest::newRow("other5") << QByteArray("ab\0cd", 5) << QString::fromAscii("ab\0cd", 5) << 5;
+    QTest::newRow("empty5") << QByteArray("\0abcd", 5) << QString::fromLatin1("\0abcd", 5) << 5;
+    QTest::newRow("other-1") << QByteArray("ab\0cd", 5) << QString::fromLatin1("ab") << -1;
+    QTest::newRow("other5") << QByteArray("ab\0cd", 5) << QString::fromLatin1("ab\0cd", 5) << 5;
 
     str = "Old Italic: ";
     str += QChar(0xd800);

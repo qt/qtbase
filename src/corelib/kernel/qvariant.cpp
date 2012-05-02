@@ -290,7 +290,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             break;
         case QMetaType::Char:
         case QMetaType::UChar:
-            *str = QChar::fromAscii(d->data.c);
+            *str = QChar::fromLatin1(d->data.c);
             break;
         case QMetaType::Short:
         case QMetaType::Long:

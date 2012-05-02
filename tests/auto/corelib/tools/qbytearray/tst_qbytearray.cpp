@@ -197,9 +197,9 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
     int baSize = ba.size();
     char baTerminator = ba.constData()[baSize];
     if ('\0' != baTerminator)
-        return QString::fromAscii(
-            "*** Result ('%1') not null-terminated: 0x%2 ***").arg(QString::fromAscii(ba))
-                .arg(baTerminator, 2, 16, QChar('0')).toAscii();
+        return QString::fromLatin1(
+            "*** Result ('%1') not null-terminated: 0x%2 ***").arg(QString::fromLatin1(ba))
+                .arg(baTerminator, 2, 16, QChar('0')).toLatin1();
 
     // Skip mutating checks on shared strings
     if (baDataPtr->ref.isShared())
@@ -210,12 +210,12 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
 
     const_cast<char *>(baData)[baSize] = 'x';
     if ('x' != ba.constData()[baSize]) {
-        return QString::fromAscii("*** Failed to replace null-terminator in "
-                "result ('%1') ***").arg(QString::fromAscii(ba)).toAscii();
+        return QString::fromLatin1("*** Failed to replace null-terminator in "
+                "result ('%1') ***").arg(QString::fromLatin1(ba)).toLatin1();
     }
     if (ba != baCopy) {
-        return QString::fromAscii( "*** Result ('%1') differs from its copy "
-                "after null-terminator was replaced ***").arg(QString::fromAscii(ba)).toAscii();
+        return QString::fromLatin1( "*** Result ('%1') differs from its copy "
+                "after null-terminator was replaced ***").arg(QString::fromLatin1(ba)).toLatin1();
     }
     const_cast<char *>(baData)[baSize] = '\0'; // Restore sanity
 

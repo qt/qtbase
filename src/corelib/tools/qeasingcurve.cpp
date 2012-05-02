@@ -1421,9 +1421,9 @@ QDebug operator<<(QDebug debug, const QEasingCurve &item)
     debug << "type:" << item.d_ptr->type
           << "func:" << item.d_ptr->func;
     if (item.d_ptr->config) {
-        debug << QString::fromAscii("period:%1").arg(item.d_ptr->config->_p, 0, 'f', 20)
-              << QString::fromAscii("amp:%1").arg(item.d_ptr->config->_a, 0, 'f', 20)
-              << QString::fromAscii("overshoot:%1").arg(item.d_ptr->config->_o, 0, 'f', 20);
+        debug << QString::fromLatin1("period:%1").arg(item.d_ptr->config->_p, 0, 'f', 20)
+              << QString::fromLatin1("amp:%1").arg(item.d_ptr->config->_a, 0, 'f', 20)
+              << QString::fromLatin1("overshoot:%1").arg(item.d_ptr->config->_o, 0, 'f', 20);
     }
     return debug;
 }

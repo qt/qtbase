@@ -1544,7 +1544,7 @@ void tst_QFile::bufferedRead()
     file.close();
 
 #if defined(Q_OS_WINCE)
-    FILE *stdFile = fopen((QCoreApplication::applicationDirPath() + "/stdfile.txt").toAscii() , "r");
+    FILE *stdFile = fopen((QCoreApplication::applicationDirPath() + "/stdfile.txt").toLatin1() , "r");
 #else
     FILE *stdFile = fopen("stdfile.txt", "r");
 #endif
@@ -2306,7 +2306,7 @@ void tst_QFile::virtualFile()
 void tst_QFile::textFile()
 {
 #if defined(Q_OS_WINCE)
-    FILE *fs = ::fopen((QCoreApplication::applicationDirPath() + "/writeabletextfile").toAscii() , "wt");
+    FILE *fs = ::fopen((QCoreApplication::applicationDirPath() + "/writeabletextfile").toLatin1() , "wt");
 #elif defined(Q_OS_WIN)
     FILE *fs = ::fopen("writeabletextfile", "wt");
 #else

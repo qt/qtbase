@@ -200,7 +200,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         QRegExp varRegExp(QLatin1String("\\$\\{([^\\}]*)\\}"));
         while (value.contains(varRegExp)) {
             QString replacement =
-                    QFile::decodeName(qgetenv(varRegExp.cap(1).toAscii().data()));
+                    QFile::decodeName(qgetenv(varRegExp.cap(1).toLatin1().data()));
             value.replace(varRegExp.cap(0), replacement);
         }
     }

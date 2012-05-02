@@ -122,7 +122,7 @@ QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
 #endif
     if (!address) {
         errorString = QLibrary::tr("Cannot resolve symbol \"%1\" in %2: %3").arg(
-            QString::fromAscii(symbol)).arg(fileName).arg(qt_error_string());
+            QString::fromLatin1(symbol)).arg(fileName).arg(qt_error_string());
     } else {
         errorString.clear();
     }

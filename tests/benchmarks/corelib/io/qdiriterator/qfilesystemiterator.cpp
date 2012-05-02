@@ -228,7 +228,7 @@ void QFileSystemIteratorPrivate::pushSubDirectory(const QByteArray &path)
 
 #ifdef Q_OS_WIN
     wchar_t szSearchPath[MAX_PATH];
-    QString::fromAscii(path).toWCharArray(szSearchPath);
+    QString::fromLatin1(path).toWCharArray(szSearchPath);
     wcscat(szSearchPath, L"\\*");
     HANDLE dir = FindFirstFile(szSearchPath, &m_fileSearchResult);
     m_bFirstSearchResult = true;

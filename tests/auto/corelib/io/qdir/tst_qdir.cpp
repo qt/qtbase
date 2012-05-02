@@ -481,7 +481,7 @@ void tst_QDir::exists_data()
     char drive = 'Z';
     QString driv;
     do {
-        driv = QString::fromAscii("%1:/").arg(drive);
+        driv = QString::fromLatin1("%1:/").arg(drive);
         if (!driveLetters.contains(driv)) break;
         --drive;
     } while (drive >= 'A');

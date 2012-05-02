@@ -2341,7 +2341,7 @@ QTextStream &QTextStream::operator<<(char c)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    d->putString(QString(QChar::fromAscii(c)));
+    d->putString(QString(QChar::fromLatin1(c)));
     return *this;
 }
 
