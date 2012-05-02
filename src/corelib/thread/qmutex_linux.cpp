@@ -51,6 +51,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <errno.h>
+#include <asm/unistd.h>
 
 #ifndef QT_LINUX_FUTEX
 # error "Qt build is broken: qmutex_linux.cpp is being built but futex support is not wanted"
@@ -71,7 +72,7 @@ static inline int futexFlags()
         // try an operation that has no side-effects: wake up 42 threads
         // futex will return -1 (errno==ENOSYS) if the flag isn't supported
         // there should be no other error conditions
-        value = syscall(SYS_futex, &futexFlagSupport,
+        value = syscall(__NR_futex, &futexFlagSupport,
                         FUTEX_WAKE | FUTEX_PRIVATE_FLAG,
                         42, 0, 0, 0);
         if (value != -1) {
@@ -95,7 +96,9 @@ static inline int _q_futex(void *addr, int op, int val, const struct timespec *t
     int *addr2 = 0;
     int val2 = 0;
 
-    return syscall(SYS_futex, int_addr, op | futexFlags(), val, timeout, addr2, val2);
+    // we use __NR_futex because some libcs (like Android's bionic) don't
+    // provide SYS_futex etc.
+    return syscall(__NR_futex, int_addr, op | futexFlags(), val, timeout, addr2, val2);
 }
 
 static inline QMutexData *dummyFutexValue()
