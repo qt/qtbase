@@ -61,6 +61,11 @@
 #  define QT_NO_GETIFADDRS
 #endif
 
+#ifdef Q_OS_LINUX_ANDROID
+// android lacks if_nameindex
+# define QT_NO_IPV6IFNAME
+#endif
+
 #ifndef QT_NO_GETIFADDRS
 # include <ifaddrs.h>
 #endif
