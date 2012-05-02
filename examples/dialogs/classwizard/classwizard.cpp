@@ -79,7 +79,7 @@ void ClassWizard::accept()
 
     if (field("comment").toBool()) {
         block += "/*\n";
-        block += "    " + header.toAscii() + "\n";
+        block += "    " + header.toLatin1() + "\n";
         block += "*/\n";
         block += "\n";
     }
@@ -141,11 +141,11 @@ void ClassWizard::accept()
 
     if (field("comment").toBool()) {
         block += "/*\n";
-        block += "    " + implementation.toAscii() + "\n";
+        block += "    " + implementation.toLatin1() + "\n";
         block += "*/\n";
         block += "\n";
     }
-    block += "#include \"" + header.toAscii() + "\"\n";
+    block += "#include \"" + header.toLatin1() + "\"\n";
     block += "\n";
 
     if (field("qobjectCtor").toBool()) {

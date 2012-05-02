@@ -251,7 +251,7 @@ namespace {
 
         void updateFamilyNameAndStyle()
         {
-            fontDef.family = QString::fromAscii(freetype->face->family_name);
+            fontDef.family = QString::fromLatin1(freetype->face->family_name);
 
             if (freetype->face->style_flags & FT_STYLE_FLAG_ITALIC)
                 fontDef.style = QFont::StyleItalic;
@@ -413,7 +413,7 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
             }
         }
 
-        QString family = QString::fromAscii(face->family_name);
+        QString family = QString::fromLatin1(face->family_name);
         FontFile *fontFile = new FontFile;
         fontFile->fileName = QFile::decodeName(file);
         fontFile->indexValue = index;
