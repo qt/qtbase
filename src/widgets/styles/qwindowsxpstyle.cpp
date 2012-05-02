@@ -731,8 +731,9 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
             canDrawDirectly = true;
             break;
         case QInternal::Image:
+            // Ensure the backing store has received as resize and is initialized.
             if (QBackingStore *bs = backingStoreForWidget(themeData.widget))
-                if (bs->paintDevice() == enginePaintDevice)
+                if (bs->size().isValid() && bs->paintDevice() == enginePaintDevice)
                     canDrawDirectly = true;
         }
     }
