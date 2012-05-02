@@ -623,7 +623,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
         if(ptrGetNamedSecurityInfoW && ptrBuildTrusteeWithSidW && ptrGetEffectiveRightsFromAclW) {
             enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
 
-            QString fname = entry.filePath();
+            QString fname = entry.nativeFilePath();
             PSID pOwner = 0;
             PSID pGroup = 0;
             PACL pDacl;

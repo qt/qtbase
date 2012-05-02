@@ -51,6 +51,12 @@
 #include <private/qabstractfileengine_p.h>
 #include <private/qfsfileengine_p.h>
 
+#ifdef Q_OS_WIN
+QT_BEGIN_NAMESPACE
+extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
+QT_END_NAMESPACE
+#endif
+
 #if !defined(Q_OS_WINCE)
 #include <QHostInfo>
 #endif
@@ -137,6 +143,8 @@ private slots:
     void append();
     void permissions_data();
     void permissions();
+    void permissionsNtfs_data();
+    void permissionsNtfs();
     void setPermissions();
     void copy();
     void copyAfterFail();
@@ -1091,12 +1099,21 @@ void tst_QFile::permissions_data()
     QTest::addColumn<QString>("file");
     QTest::addColumn<uint>("perms");
     QTest::addColumn<bool>("expected");
+    QTest::addColumn<bool>("create");
 
-    QTest::newRow("data0") << QCoreApplication::instance()->applicationFilePath() << uint(QFile::ExeUser) << true;
-    QTest::newRow("data1") << QFINDTESTDATA("tst_qfile.cpp") << uint(QFile::ReadUser) << true;
-    QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::ReadUser) << true;
-    QTest::newRow("resource2") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::WriteUser) << false;
-    QTest::newRow("resource3") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::ExeUser) << false;
+    QTest::newRow("data0") << QCoreApplication::instance()->applicationFilePath() << uint(QFile::ExeUser) << true << false;
+    QTest::newRow("data1") << QFINDTESTDATA("tst_qfile.cpp") << uint(QFile::ReadUser) << true << false;
+    QTest::newRow("readonly") << QFINDTESTDATA("readonlyfile") << uint(QFile::WriteUser) << false << false;
+#ifndef Q_OS_WINCE
+    QTest::newRow("longfile") << QString::fromLatin1("longFileNamelongFileNamelongFileNamelongFileName"
+                                                    "longFileNamelongFileNamelongFileNamelongFileName"
+                                                    "longFileNamelongFileNamelongFileNamelongFileName"
+                                                    "longFileNamelongFileNamelongFileNamelongFileName"
+                                                    "longFileNamelongFileNamelongFileNamelongFileName.txt") << uint(QFile::ReadUser) << true << true;
+#endif
+    QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::ReadUser) << true << false;
+    QTest::newRow("resource2") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::WriteUser) << false << false;
+    QTest::newRow("resource3") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::ExeUser) << false << false;
 }
 
 void tst_QFile::permissions()
@@ -1104,9 +1121,44 @@ void tst_QFile::permissions()
     QFETCH(QString, file);
     QFETCH(uint, perms);
     QFETCH(bool, expected);
+    QFETCH(bool, create);
+    if (create) {
+        QFile fc(file);
+        QVERIFY(fc.open(QFile::WriteOnly));
+        QVERIFY(fc.write("hello\n"));
+        fc.close();
+    }
+
     QFile f(file);
-    QCOMPARE(((f.permissions() & perms) == QFile::Permissions(perms)), expected);
-    QCOMPARE(((QFile::permissions(file) & perms) == QFile::Permissions(perms)), expected);
+    QFile::Permissions memberResult = f.permissions() & perms;
+    QFile::Permissions staticResult = QFile::permissions(file) & perms;
+
+    if (create) {
+        QFile::remove(file);
+    }
+
+#ifdef Q_OS_WIN
+    if (qt_ntfs_permission_lookup)
+        QEXPECT_FAIL("readonly", "QTBUG-25630", Abort);
+#endif
+    QCOMPARE((memberResult == QFile::Permissions(perms)), expected);
+    QCOMPARE((staticResult == QFile::Permissions(perms)), expected);
+}
+
+void tst_QFile::permissionsNtfs_data()
+{
+    permissions_data();
+}
+
+void tst_QFile::permissionsNtfs()
+{
+#ifdef Q_OS_WIN
+    QScopedValueRollback<int> ntfsMode(qt_ntfs_permission_lookup);
+    qt_ntfs_permission_lookup++;
+    permissions();
+#else
+    QSKIP("windows test");
+#endif
 }
 
 void tst_QFile::setPermissions()
