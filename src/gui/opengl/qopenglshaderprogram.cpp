@@ -510,7 +510,7 @@ class QOpenGLShaderProgramPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QOpenGLShaderProgram)
 public:
-    QOpenGLShaderProgramPrivate(QOpenGLContext *ctx)
+    QOpenGLShaderProgramPrivate()
         : programGuard(0)
         , linked(false)
         , inited(false)
@@ -518,7 +518,7 @@ public:
         , geometryVertexCount(64)
         , geometryInputType(0)
         , geometryOutputType(0)
-        , glfuncs(new QOpenGLFunctions(ctx))
+        , glfuncs(new QOpenGLFunctions)
     {
     }
     ~QOpenGLShaderProgramPrivate();
@@ -574,7 +574,7 @@ bool QOpenGLShaderProgramPrivate::hasShader(QOpenGLShader::ShaderType type) cons
     \sa addShader()
 */
 QOpenGLShaderProgram::QOpenGLShaderProgram(QObject *parent)
-    : QObject(*new QOpenGLShaderProgramPrivate(QOpenGLContext::currentContext()), parent)
+    : QObject(*new QOpenGLShaderProgramPrivate, parent)
 {
 }
 
