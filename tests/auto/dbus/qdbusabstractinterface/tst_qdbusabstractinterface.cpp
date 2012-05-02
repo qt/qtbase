@@ -495,7 +495,7 @@ void tst_QDBusAbstractInterface::callWithTimeout()
 
     QDBusMessage msg = QDBusMessage::createMethodCall(server_serviceName,
                                                       server_objectPath, server_interfaceName, "sleepMethod");
-    msg << 100;
+    msg << 100; // sleep 100 ms
 
     {
        // Call with no timeout -> works
@@ -505,7 +505,7 @@ void tst_QDBusAbstractInterface::callWithTimeout()
     }
 
     {
-        // Call with 1 sec timeout -> fails
+        // Call with 1 msec timeout -> fails
         QDBusMessage reply = con.call(msg, QDBus::Block, 1);
         QCOMPARE(reply.type(), QDBusMessage::ErrorMessage);
     }
@@ -520,10 +520,16 @@ void tst_QDBusAbstractInterface::callWithTimeout()
         QCOMPARE(reply.arguments().at(0).toInt(), 42);
     }
     {
-        // Call with 1 sec timeout -> fails
+        // Call with 1 msec timeout -> fails
         iface.setTimeout(1);
         QDBusMessage reply = iface.call("sleepMethod", 100);
         QCOMPARE(reply.type(), QDBusMessage::ErrorMessage);
+    }
+    {
+        // Call with 300 msec timeout -> works
+        iface.setTimeout(300);
+        QDBusMessage reply = iface.call("sleepMethod", 100);
+        QCOMPARE(reply.arguments().at(0).toInt(), 42);
     }
 
     // Now using generated code
@@ -535,7 +541,7 @@ void tst_QDBusAbstractInterface::callWithTimeout()
         QCOMPARE(int(reply), 42);
     }
     {
-        // Call with 1 sec timeout -> fails
+        // Call with 1 msec timeout -> fails
         p.setTimeout(1);
         QDBusReply<int> reply = p.sleepMethod(100);
         QVERIFY(!reply.isValid());

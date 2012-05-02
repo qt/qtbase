@@ -385,7 +385,7 @@ QDBusError QDBusAbstractInterface::lastError() const
 }
 
 /*!
-    Sets the timeout in seconds for all future DBus calls to \a timeout.
+    Sets the timeout in milliseconds for all future DBus calls to \a timeout.
     -1 means the default DBus timeout (usually 25 seconds).
 
     \since 4.8
@@ -396,7 +396,7 @@ void QDBusAbstractInterface::setTimeout(int timeout)
 }
 
 /*!
-    Returns the current value of the timeout in seconds.
+    Returns the current value of the timeout in milliseconds.
     -1 means the default DBus timeout (usually 25 seconds).
 
     \since 4.8
