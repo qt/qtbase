@@ -47,6 +47,7 @@
 
 #include <QDate>
 #include <qdir.h>
+#include <qdiriterator.h>
 #include <qtemporaryfile.h>
 #include <qstack.h>
 #include <qdebug.h>
@@ -354,7 +355,6 @@ QString Configure::firstLicensePath()
             return allPaths.at(i);
     return QString();
 }
-
 
 // #### somehow I get a compiler error about vc++ reaching the nesting limit without
 // undefining the ansi for scoping.
@@ -1083,8 +1083,16 @@ void Configure::parseCmdLine()
     }
 
     // Ensure that QMAKESPEC exists in the mkspecs folder
-    QDir mkspec_dir = fixSeparators(sourcePath + "/mkspecs");
-    QStringList mkspecs = mkspec_dir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
+    const QString mkspecPath = fixSeparators(sourcePath + "/mkspecs");
+    QDirIterator itMkspecs(mkspecPath, QDir::AllDirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+    QStringList mkspecs;
+
+    while (itMkspecs.hasNext()) {
+        QString mkspec = itMkspecs.next();
+        // Remove base PATH
+        mkspec.remove(0, mkspecPath.length() + 1);
+        mkspecs << mkspec;
+    }
 
     if (dictionary["QMAKESPEC"].toLower() == "features"
         || !mkspecs.contains(dictionary["QMAKESPEC"], Qt::CaseInsensitive)) {
