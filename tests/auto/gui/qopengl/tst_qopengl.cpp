@@ -474,6 +474,9 @@ void tst_QOpenGL::openGLPaintDevice()
     QOpenGLContext ctx;
     ctx.create();
 
+    QSurfaceFormat format = ctx.format();
+    if (format.majorVersion() < 2)
+        QSKIP("This test requires at least OpenGL 2.0");
     ctx.makeCurrent(&window);
 
     QImage image(128, 128, QImage::Format_RGB32);
