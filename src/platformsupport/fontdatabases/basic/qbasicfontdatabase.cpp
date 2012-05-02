@@ -415,7 +415,7 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
 
         QString family = QString::fromAscii(face->family_name);
         FontFile *fontFile = new FontFile;
-        fontFile->fileName = QString::fromAscii(file);
+        fontFile->fileName = QFile::decodeName(file);
         fontFile->indexValue = index;
 
         QFont::Stretch stretch = QFont::Unstretched;

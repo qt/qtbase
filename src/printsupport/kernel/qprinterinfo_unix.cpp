@@ -254,7 +254,7 @@ void qt_parseEtcLpPrinters(QList<QPrinterDescription> *printers)
         QFileInfo printer = dirs.at(i);
         if (printer.isDir()) {
             tmp.sprintf("/etc/lp/printers/%s/configuration",
-                         printer.fileName().toAscii().data());
+                         QFile::encodeName(printer.fileName()).data());
             QFile configuration(tmp);
             char *line = new char[1025];
             QString remote(QLatin1String("Remote:"));
