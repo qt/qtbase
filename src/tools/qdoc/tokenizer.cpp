@@ -512,7 +512,7 @@ void Tokenizer::initialize(const Config &config)
 
     QStringList tokens = config.getStringList(LANGUAGE_CPP + Config::dot + CONFIG_IGNORETOKENS);
     foreach (const QString &t, tokens) {
-        const QByteArray tb = t.toAscii();
+        const QByteArray tb = t.toLatin1();
         ignoredTokensAndDirectives->insert(tb, false);
         insertKwordIntoHash(tb.data(), -1);
     }
@@ -520,7 +520,7 @@ void Tokenizer::initialize(const Config &config)
     QStringList directives = config.getStringList(LANGUAGE_CPP + Config::dot
                                                   + CONFIG_IGNOREDIRECTIVES);
     foreach (const QString &d, directives) {
-        const QByteArray db = d.toAscii();
+        const QByteArray db = d.toLatin1();
         ignoredTokensAndDirectives->insert(db, true);
         insertKwordIntoHash(db.data(), -1);
     }
