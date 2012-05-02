@@ -363,7 +363,7 @@ char *qt_parsePrintersConf(QList<QPrinterDescription> *printers, bool *found)
                         j++;
                     // that's our default printer
                     defaultPrinter =
-                        qstrdup(printerDesc.mid(i, j-i).toAscii().data());
+                        qstrdup(printerDesc.mid(i, j-i).toLatin1().data());
                     printerName = QString();
                     printerDesc = QString();
                 } else if (printerName == QLatin1String("_all")) {
@@ -758,7 +758,7 @@ Q_PRINTSUPPORT_EXPORT int qt_getLprPrinters(QList<QPrinterDescription>& printers
             if (def.readLine(etcLpDefault.data(), 1024) > 0) {
                 QRegExp rx(QLatin1String("^(\\S+)"));
                 if (rx.indexIn(QString::fromLatin1(etcLpDefault)) != -1)
-                    etcLpDefault = rx.cap(1).toAscii();
+                    etcLpDefault = rx.cap(1).toLatin1();
             }
         }
     }
