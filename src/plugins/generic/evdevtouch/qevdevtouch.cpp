@@ -455,7 +455,7 @@ void QTouchScreenData::reportPoints()
 {
     QRect winRect;
     if (m_forceToActiveWindow) {
-        QWindow *win = QGuiApplication::activeWindow();
+        QWindow *win = QGuiApplication::focusWindow();
         if (!win)
             return;
         winRect = win->geometry();
