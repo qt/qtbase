@@ -511,7 +511,7 @@
 #    define QT_NO_RTTI
 #  endif
 /* C++11 features, see http://clang.llvm.org/cxx_status.html */
-#  if __cplusplus >= 201103L || __GXX_EXPERIMENTAL_CXX0X__
+#  if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
 #    if ((__clang_major__ * 100) + __clang_minor__) >= 209 /* since clang 2.9 */
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_DECLTYPE
