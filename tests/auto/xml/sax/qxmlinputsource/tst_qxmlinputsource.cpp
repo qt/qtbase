@@ -138,10 +138,10 @@ public slots:
     {
         QUrl url("http://127.0.0.1:1088");
         QNetworkRequest req(url);
-        req.setRawHeader("POST", url.path().toAscii());
+        req.setRawHeader("POST", url.path().toLatin1());
         req.setRawHeader("user-agent", "xml-test");
         req.setRawHeader("keep-alive", "false");
-        req.setRawHeader("host", url.host().toAscii());
+        req.setRawHeader("host", url.host().toLatin1());
 
         QByteArray xmlrpc("<methodCall>\r\n\
                 <methodName>SFD.GetVersion</methodName>\r\n\

@@ -1563,7 +1563,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
 {
 #ifdef QT_NO_TEXTCODEC
     Q_UNUSED(beginning);
-    return QString::fromAscii(data.constData(), data.size());
+    return QString::fromLatin1(data.constData(), data.size());
 #else
     if (data.size() == 0)
         return QString();
