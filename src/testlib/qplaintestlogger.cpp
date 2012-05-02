@@ -264,7 +264,7 @@ void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
 
     char bufTag[1024];
     bufTag[0] = 0;
-    QByteArray tag = result.context.tag.toAscii();
+    QByteArray tag = result.context.tag.toLocal8Bit();
     if (tag.isEmpty() == false) {
         qsnprintf(bufTag, sizeof(bufTag), ":\"%s\"", tag.data());
     }

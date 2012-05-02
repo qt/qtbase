@@ -110,7 +110,7 @@ void QXmlTestLogger::startLogging()
         QTestCharBuffer quotedTc;
         xmlQuote(&quotedTc, QTestResult::currentTestObjectName());
         QTest::qt_asprintf(&buf,
-                "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 "<TestCase name=\"%s\">\n", quotedTc.constData());
         outputString(buf.constData());
     }
@@ -244,7 +244,7 @@ void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 
     xmlQuote(&quotedMetric,
         benchmarkMetricName(result.metric));
-    xmlQuote(&quotedTag, result.context.tag.toAscii().constData());
+    xmlQuote(&quotedTag, result.context.tag.toUtf8().constData());
 
     QTest::qt_asprintf(
         &buf,
