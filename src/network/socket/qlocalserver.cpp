@@ -84,19 +84,20 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \enum QLocalServer::SocketOption
+    \since 5.0
 
     This enum describes the possible options that can be used to create the
     socket. This changes the access permissions on platforms (Linux, Windows)
     that support access permissions on the socket. Both GroupAccess and OtherAccess
     may vary slightly in meanings depending on the platform.
 
-    \value UserAccess
+    \value UserAccessOption
     Access is restricted to the same user as the process that created the socket.
-    \value GroupAccess
+    \value GroupAccessOption
     Access is restricted to the same group but not the user that created the socket on Linux.
-    \value OtherAccess
+    \value OtherAccessOption
     Access is available to everyone but the user and group that created the socket on Linux.
-    \value WorldAccess
+    \value WorldAccessOption
     No access restrictions.
 
     \sa SocketOptions
@@ -162,6 +163,7 @@ void QLocalServer::setSocketOptions(SocketOptions options)
 }
 
 /*!
+    \since 5.0
     Returns the socket options set on the socket.
 
     \sa setSocketOptions()
