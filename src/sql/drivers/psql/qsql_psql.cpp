@@ -353,7 +353,7 @@ QVariant QPSQLResult::data(int i)
     case QVariant::Bool:
         return QVariant((bool)(val[0] == 't'));
     case QVariant::String:
-        return d->driver->isUtf8 ? QString::fromUtf8(val) : QString::fromAscii(val);
+        return d->driver->isUtf8 ? QString::fromUtf8(val) : QString::fromLatin1(val);
     case QVariant::LongLong:
         if (val[0] == '-')
             return QString::fromLatin1(val).toLongLong();
@@ -366,7 +366,7 @@ QVariant QPSQLResult::data(int i)
             if (numericalPrecisionPolicy() != QSql::HighPrecision) {
                 QVariant retval;
                 bool convert;
-                double dbl=QString::fromAscii(val).toDouble(&convert);
+                double dbl=QString::fromLatin1(val).toDouble(&convert);
                 if (numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
                     retval = (qlonglong)dbl;
                 else if (numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
@@ -377,9 +377,9 @@ QVariant QPSQLResult::data(int i)
                     return QVariant();
                 return retval;
             }
-            return QString::fromAscii(val);
+            return QString::fromLatin1(val);
         }
-        return QString::fromAscii(val).toDouble();
+        return QString::fromLatin1(val).toDouble();
     case QVariant::Date:
         if (val[0] == '\0') {
             return QVariant(QDate());
@@ -685,7 +685,7 @@ QPSQLDriver::Protocol QPSQLDriverPrivate::getPSQLVersion()
     PGresult* result = exec("select version()");
     int status = PQresultStatus(result);
     if (status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK) {
-        QString val = QString::fromAscii(PQgetvalue(result, 0, 0));
+        QString val = QString::fromLatin1(PQgetvalue(result, 0, 0));
 
         QRegExp rx(QLatin1String("(\\d+)\\.(\\d+)"));
         rx.setMinimal(true); // enforce non-greedy RegExp
@@ -1380,7 +1380,7 @@ void QPSQLDriver::_q_handleNotification(int)
             QString payload;
 #if defined PG_VERSION_NUM && PG_VERSION_NUM-0 >= 70400
             if (notify->extra)
-                payload = d->isUtf8 ? QString::fromUtf8(notify->extra) : QString::fromAscii(notify->extra);
+                payload = d->isUtf8 ? QString::fromUtf8(notify->extra) : QString::fromLatin1(notify->extra);
 #endif
             emit notification(name);
             QSqlDriver::NotificationSource source = (notify->be_pid == PQbackendPID(d->connection)) ? QSqlDriver::SelfSource : QSqlDriver::OtherSource;

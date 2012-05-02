@@ -2712,11 +2712,11 @@ void tst_QSqlQuery::blobsPreparedQuery()
     QVERIFY_SQL( q, exec( QString( "CREATE TABLE %1(id INTEGER, data %2)" ).arg( tableName ).arg( typeName ) ) );
     q.prepare( QString( "INSERT INTO %1(id, data) VALUES(:id, :data)" ).arg( tableName ) );
     q.bindValue( ":id", 1 );
-    q.bindValue( ":data", shortBLOB.toAscii() );
+    q.bindValue( ":data", shortBLOB.toLatin1() );
     QVERIFY_SQL( q, exec() );
 
     q.bindValue( ":id", 2 );
-    q.bindValue( ":data", longerBLOB.toAscii() );
+    q.bindValue( ":data", longerBLOB.toLatin1() );
     QVERIFY_SQL( q, exec() );
 
     // Two executions and result sets

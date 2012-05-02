@@ -185,11 +185,11 @@ static int CS_PUBLIC qTdsMsgHandler (DBPROCESS* dbproc,
 
     if (severity > 0) {
         QString errMsg = QString::fromLatin1("%1 (Msg %2, Level %3, State %4, Server %5, Line %6)")
-                         .arg(QString::fromAscii(msgtext))
+                         .arg(QString::fromLatin1(msgtext))
                          .arg(msgno)
                          .arg(severity)
                          .arg(msgstate)
-                         .arg(QString::fromAscii(srvname))
+                         .arg(QString::fromLatin1(srvname))
                          .arg(line);
         p->addErrorMsg(errMsg);
         if (severity > 10) {
@@ -435,7 +435,7 @@ bool QTDSResult::reset (const QString& query)
     for (int i = 0; i < numCols; ++i) {
         int dbType = dbcoltype(d->dbproc, i+1);
         QVariant::Type vType = qDecodeTDSType(dbType);
-        QSqlField f(QString::fromAscii(dbcolname(d->dbproc, i+1)), vType);
+        QSqlField f(QString::fromLatin1(dbcolname(d->dbproc, i+1)), vType);
         f.setSqlType(dbType);
         f.setLength(dbcollen(d->dbproc, i+1));
         d->rec.append(f);

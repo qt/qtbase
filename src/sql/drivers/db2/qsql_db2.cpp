@@ -760,7 +760,7 @@ bool QDB2Result::exec()
                 break;
             }
             default: {
-                QByteArray ba = values.at(i).toString().toAscii();
+                QByteArray ba = values.at(i).toString().toLatin1();
                 int len = ba.length() + 1;
                 if (*ind != SQL_NULL_DATA)
                     *ind = ba.length();
@@ -836,7 +836,7 @@ bool QDB2Result::exec()
                     values[i] = QString((const QChar *)tmpStorage.takeFirst().constData());
                 break;
             default: {
-                values[i] = QString::fromAscii(tmpStorage.takeFirst().constData());
+                values[i] = QString::fromLatin1(tmpStorage.takeFirst().constData());
                 break; }
         }
         if (indicators[i] == SQL_NULL_DATA)

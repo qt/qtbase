@@ -1342,8 +1342,8 @@ QSqlRecord QIBaseResult::record() const
             q.exec(QLatin1String("select b.RDB$FIELD_PRECISION, b.RDB$FIELD_SCALE, b.RDB$FIELD_LENGTH, a.RDB$NULL_FLAG "
                     "FROM RDB$RELATION_FIELDS a, RDB$FIELDS b "
                     "WHERE b.RDB$FIELD_NAME = a.RDB$FIELD_SOURCE "
-                    "AND a.RDB$RELATION_NAME = '") + QString::fromAscii(v.relname, v.relname_length).toUpper() + QLatin1String("' "
-                    "AND a.RDB$FIELD_NAME = '") + QString::fromAscii(v.sqlname, v.sqlname_length).toUpper() + QLatin1String("' "));
+                    "AND a.RDB$RELATION_NAME = '") + QString::fromLatin1(v.relname, v.relname_length).toUpper() + QLatin1String("' "
+                    "AND a.RDB$FIELD_NAME = '") + QString::fromLatin1(v.sqlname, v.sqlname_length).toUpper() + QLatin1String("' "));
             if(q.first()) {
                 if(v.sqlscale < 0) {
                     f.setLength(q.value(0).toInt());
