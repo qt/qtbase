@@ -59,6 +59,7 @@
 #include <QtCore/QDebug>
 
 #include <QStyleHints>
+#include <QPlatformCursor>
 
 QT_BEGIN_NAMESPACE
 
@@ -1683,5 +1684,65 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
     }
 
 }
+
+/*!
+    \property QWindow::cursor
+    \brief the cursor shape for this window
+
+    The mouse cursor will assume this shape when it is over this
+    window, unless an override cursor is set. See the \link
+    Qt::CursorShape list of predefined cursor objects\endlink for a
+    range of useful shapes.
+
+    By default, this property contains a cursor with the Qt::ArrowCursor
+    shape.
+
+    Some underlying window implementations will reset the cursor if it
+    leaves a window even if the mouse is grabbed. If you want to have
+    a cursor set for all windows, even when outside the window, consider
+    QGuiApplication::setOverrideCursor().
+
+    \sa QGuiApplication::setOverrideCursor()
+*/
+
+#ifndef QT_NO_CURSOR
+QCursor QWindow::cursor() const
+{
+    Q_D(const QWindow);
+    return d->cursor;
+}
+
+void QWindow::setCursor(const QCursor &cursor)
+{
+    Q_D(QWindow);
+    if (QPlatformCursor *platformCursor = d->screen->handle()->cursor()) {
+        d->cursor = cursor;
+        QCursor *oc = QGuiApplication::overrideCursor();
+        QCursor c = oc ? *oc : d->cursor;
+        platformCursor->changeCursor(&c, this);
+        QEvent event(QEvent::CursorChange);
+        QGuiApplication::sendEvent(this, &event);
+    }
+}
+
+/*!
+  \brief Restores the default arrow cursor for this window.
+ */
+void QWindow::unsetCursor()
+{
+    Q_D(QWindow);
+    if (QPlatformCursor *platformCursor = d->screen->handle()->cursor()) {
+        d->cursor = Qt::ArrowCursor;
+        QCursor *oc = QGuiApplication::overrideCursor();
+        if (!oc) {
+            QCursor c = d->cursor;
+            platformCursor->changeCursor(&c, this);
+        }
+        QEvent event(QEvent::CursorChange);
+        QGuiApplication::sendEvent(this, &event);
+    }
+}
+
+#endif
 
 QT_END_NAMESPACE

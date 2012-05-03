@@ -84,6 +84,9 @@ public:
         , blockedByModalWindow(false)
         , transientParent(0)
         , screen(0)
+#ifndef QT_NO_CURSOR
+        , cursor(Qt::ArrowCursor)
+#endif
     {
         isWindow = true;
     }
@@ -128,6 +131,10 @@ public:
 
     QPointer<QWindow> transientParent;
     QScreen *screen;
+
+#ifndef QT_NO_CURSOR
+    QCursor cursor;
+#endif
 };
 
 

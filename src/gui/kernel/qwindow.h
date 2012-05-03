@@ -53,6 +53,10 @@
 #include <QtGui/qsurfaceformat.h>
 #include <QtGui/qwindowdefs.h>
 
+#ifndef QT_NO_CURSOR
+#include <QtGui/qcursor.h>
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -92,6 +96,9 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
     Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
+#ifndef QT_NO_CURSOR
+    Q_PROPERTY(QCursor cursor READ cursor WRITE setCursor RESET unsetCursor)
+#endif
 
 public:
 
@@ -204,6 +211,12 @@ public:
 
     QPoint mapToGlobal(const QPoint &pos) const;
     QPoint mapFromGlobal(const QPoint &pos) const;
+
+#ifndef QT_NO_CURSOR
+    QCursor cursor() const;
+    void setCursor(const QCursor &);
+    void unsetCursor();
+#endif
 
 public Q_SLOTS:
     void setVisible(bool visible);
