@@ -140,6 +140,7 @@ private slots:
     void setEncodedFragment_data();
     void setEncodedFragment();
     void fromEncoded();
+    void stripTrailingSlash_data();
     void stripTrailingSlash();
     void hosts_data();
     void hosts();
@@ -2246,18 +2247,25 @@ void tst_QUrl::fromEncoded()
     QCOMPARE(qurl_newline_1.toEncoded().constData(), "http://www.foo.bar/foo/bar%0Agnork");
 }
 
+void tst_QUrl::stripTrailingSlash_data()
+{
+    QTest::addColumn<QString>("url");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("ftp no slash") << "ftp://ftp.de.kde.org/dir" << "ftp://ftp.de.kde.org/dir";
+    QTest::newRow("ftp slash") << "ftp://ftp.de.kde.org/dir/" << "ftp://ftp.de.kde.org/dir";
+    QTest::newRow("file slash") << "file:///dir/" << "file:///dir";
+    QTest::newRow("file no slash") << "file:///dir/" << "file:///dir";
+    QTest::newRow("file root") << "file:///" << "file:///";
+}
+
 void tst_QUrl::stripTrailingSlash()
 {
-    QUrl u1( "ftp://ftp.de.kde.org/dir" );
-    QUrl u2( "ftp://ftp.de.kde.org/dir/" );
-    QUrl::FormattingOptions options = QUrl::None;
-    options |= QUrl::StripTrailingSlash;
-    QString str1 = u1.toString(options);
-    QString str2 = u2.toString(options);
-    QCOMPARE( str1, u1.toString() );
-    QCOMPARE( str2, u1.toString() );
-    bool same = str1 == str2;
-    QVERIFY( same );
+    QFETCH(QString, url);
+    QFETCH(QString, expected);
+
+    QUrl u(url);
+    QCOMPARE(u.toString(QUrl::StripTrailingSlash), expected);
 }
 
 void tst_QUrl::hosts_data()
