@@ -283,9 +283,7 @@ public:
     QSizeF paperSize;
     qreal leftMargin, topMargin, rightMargin, bottomMargin;
 
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     QString cupsTempFile;
-#endif
 
 private:
 #ifdef USE_NATIVE_GRADIENTS
