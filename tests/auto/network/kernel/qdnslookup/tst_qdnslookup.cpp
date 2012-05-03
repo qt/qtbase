@@ -97,8 +97,10 @@ void tst_QDnsLookup::lookup_data()
     QTest::newRow("mx-empty") << int(QDnsLookup::MX) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("mx-notfound") << int(QDnsLookup::MX) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("mx-ascii") << int(QDnsLookup::MX) << "troll.no" << int(QDnsLookup::NoError) << "" << "" << "10 smtp.trolltech.com" << "" << "" << "" << QByteArray();
+#if 0
     // FIXME: we need an IDN MX record in the troll.no domain
     QTest::newRow("mx-idn") << int(QDnsLookup::MX) << QString::fromUtf8("råkat.se") << int(QDnsLookup::NoError) << "" << "" << "10 mail.cdr.se" << "" << "" << "" << QByteArray();
+#endif
 
     QTest::newRow("ns-empty") << int(QDnsLookup::NS) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("ns-notfound") << int(QDnsLookup::NS) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
@@ -111,8 +113,10 @@ void tst_QDnsLookup::lookup_data()
 
     QTest::newRow("srv-empty") << int(QDnsLookup::SRV) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("srv-notfound") << int(QDnsLookup::SRV) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
+#if 0
     // FIXME: we need SRV records in the troll.no domain
     QTest::newRow("srv-idn") << int(QDnsLookup::SRV) << QString::fromUtf8("_xmpp-client._tcp.råkat.se") << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "5 0 5224 jabber.cdr.se" << QByteArray();
+#endif
 
     QTest::newRow("txt-empty") << int(QDnsLookup::TXT) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("txt-notfound") << int(QDnsLookup::TXT) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
