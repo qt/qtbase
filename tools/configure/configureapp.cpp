@@ -3481,6 +3481,17 @@ void Configure::buildQmake()
         }
         QDir::setCurrent(pwd);
     }
+
+    // Generate qt.conf
+    QFile confFile(buildPath + "/bin/qt.conf");
+    if (confFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
+        QTextStream confStream(&confFile);
+        confStream << "[EffectivePaths]" << endl
+                   << "Prefix=.." << endl;
+
+        confStream.flush();
+        confFile.close();
+    }
 }
 #endif
 

@@ -632,7 +632,8 @@ QStringList qmake_feature_paths(QMakeProperty *prop, bool host_build)
     }
     for(QStringList::Iterator concat_it = concat.begin();
         concat_it != concat.end(); ++concat_it)
-        feature_roots << (QLibraryInfo::location(QLibraryInfo::HostDataPath) +
+        feature_roots << (QLibraryInfo::rawLocation(QLibraryInfo::HostDataPath,
+                                                    QLibraryInfo::EffectivePaths) +
                           mkspecs_concat + (*concat_it));
     feature_roots.removeDuplicates();
     return feature_roots;
@@ -652,7 +653,7 @@ QStringList qmake_mkspec_paths()
         ret << project_build_root + concat;
     if (!project_root.isEmpty())
         ret << project_root + concat;
-    ret << QLibraryInfo::location(QLibraryInfo::DataPath) + concat;
+    ret << QLibraryInfo::rawLocation(QLibraryInfo::HostDataPath, QLibraryInfo::EffectivePaths) + concat;
     ret.removeDuplicates();
 
     return ret;
@@ -3802,7 +3803,8 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
             place[var] = QStringList(Option::fixPathToTargetOS(
                 !Option::qmake_abslocation.isEmpty()
                     ? Option::qmake_abslocation
-                    : QLibraryInfo::location(QLibraryInfo::HostBinariesPath) + "/qmake",
+                    : QLibraryInfo::rawLocation(QLibraryInfo::HostBinariesPath,
+                                                QLibraryInfo::EffectivePaths) + "/qmake",
                 false));
     }
 #if defined(Q_OS_WIN32) && defined(Q_CC_MSVC)

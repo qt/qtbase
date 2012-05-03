@@ -70,6 +70,10 @@ struct QLibrarySettings
 {
     QLibrarySettings();
     QScopedPointer<QSettings> settings;
+#ifdef QT_BUILD_QMAKE
+    bool haveEffectivePaths;
+    bool havePaths;
+#endif
 };
 Q_GLOBAL_STATIC(QLibrarySettings, qt_library_settings)
 
@@ -77,12 +81,21 @@ class QLibraryInfoPrivate
 {
 public:
     static QSettings *findConfiguration();
+#ifndef QT_BUILD_QMAKE
     static void cleanup()
     {
         QLibrarySettings *ls = qt_library_settings();
         if (ls)
             ls->settings.reset(0);
     }
+#else
+    static bool haveGroup(QLibraryInfo::PathGroup group)
+    {
+        QLibrarySettings *ls = qt_library_settings();
+        return ls ? (group == QLibraryInfo::EffectivePaths
+                     ? ls->haveEffectivePaths : ls->havePaths) : false;
+    }
+#endif
     static QSettings *configuration()
     {
         QLibrarySettings *ls = qt_library_settings();
@@ -95,7 +108,25 @@ QLibrarySettings::QLibrarySettings()
 {
 #ifndef QT_BUILD_QMAKE
     qAddPostRoutine(QLibraryInfoPrivate::cleanup);
+    bool haveEffectivePaths;
+    bool havePaths;
 #endif
+    if (settings) {
+        // This code needs to be in the regular library, as otherwise a qt.conf that
+        // works for qmake would break things for dynamically built Qt tools.
+        QStringList children = settings->childGroups();
+        haveEffectivePaths = children.contains(QLatin1String("EffectivePaths"));
+        // Backwards compat: an existing but empty file is claimed to contain the Paths section.
+        havePaths = !haveEffectivePaths || children.contains(QLatin1String("Paths"));
+#ifndef QT_BUILD_QMAKE
+        if (!havePaths)
+            settings.reset(0);
+#else
+    } else {
+        haveEffectivePaths = false;
+        havePaths = false;
+#endif
+    }
 }
 
 QSettings *QLibraryInfoPrivate::findConfiguration()
@@ -244,11 +275,11 @@ QString
 QLibraryInfo::location(LibraryLocation loc)
 {
 #ifdef QT_BUILD_QMAKE
-    QString ret = rawLocation(loc);
+    QString ret = rawLocation(loc, FinalPaths);
 
     // Automatically prepend the sysroot to target paths
     if (loc < SysrootPath || loc > LastHostPath) {
-        QString sysroot = rawLocation(SysrootPath);
+        QString sysroot = rawLocation(SysrootPath, FinalPaths);
         if (!sysroot.isEmpty() && ret.length() > 2 && ret.at(1) == QLatin1Char(':')
             && (ret.at(2) == QLatin1Char('/') || ret.at(2) == QLatin1Char('\\')))
             ret.replace(0, 2, sysroot); // Strip out the drive on Windows targets
@@ -260,13 +291,25 @@ QLibraryInfo::location(LibraryLocation loc)
 }
 
 QString
-QLibraryInfo::rawLocation(LibraryLocation loc)
+QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 {
 #else
-# define rawLocation location
+# define rawLocation(loca, group) location(loca)
+# define group dummy
 #endif
     QString ret;
-    if(!QLibraryInfoPrivate::configuration()) {
+#ifdef QT_BUILD_QMAKE
+    // Logic for choosing the right data source: if EffectivePaths are requested
+    // and qt.conf with that section is present, use it, otherwise fall back to
+    // FinalPaths. For FinalPaths, use qt.conf if present and contains not only
+    // [EffectivePaths], otherwise fall back to builtins.
+    if (!QLibraryInfoPrivate::haveGroup(group)
+        && (group == FinalPaths
+            || !(group = FinalPaths, QLibraryInfoPrivate::haveGroup(FinalPaths))))
+#else
+    if (!QLibraryInfoPrivate::configuration())
+#endif
+    {
         const char *path = 0;
         if (loc >= 0 && loc < sizeof(qt_configure_prefix_path_strs)/sizeof(qt_configure_prefix_path_strs[0]))
             path = qt_configure_prefix_path_strs[loc] + 12;
@@ -291,7 +334,11 @@ QLibraryInfo::rawLocation(LibraryLocation loc)
 
         if(!key.isNull()) {
             QSettings *config = QLibraryInfoPrivate::configuration();
-            config->beginGroup(QLatin1String("Paths"));
+            config->beginGroup(QLatin1String(
+#ifdef QT_BUILD_QMAKE
+                   group == EffectivePaths ? "EffectivePaths" :
+#endif
+                                             "Paths"));
 
             ret = config->value(key, defaultValue).toString();
 
@@ -327,7 +374,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc)
             baseDir = QFileInfo(qmake_libraryInfoFile()).absolutePath();
         } else if (loc > SysrootPath && loc <= LastHostPath) {
             // We make any other host path absolute to the host prefix directory.
-            baseDir = rawLocation(HostPrefixPath);
+            baseDir = rawLocation(HostPrefixPath, group);
 #else
         if (loc == PrefixPath) {
             if (QCoreApplication::instance()) {
@@ -349,7 +396,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc)
 #endif
         } else {
             // we make any other path absolute to the prefix directory
-            baseDir = rawLocation(PrefixPath);
+            baseDir = rawLocation(PrefixPath, group);
         }
         ret = QDir::cleanPath(baseDir + QLatin1Char('/') + ret);
     }
