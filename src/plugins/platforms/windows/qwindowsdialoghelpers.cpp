@@ -770,8 +770,9 @@ void QWindowsNativeFileDialogBase::setDirectory(const QString &directory)
 QString QWindowsNativeFileDialogBase::directory() const
 {
     IShellItem *item = 0;
-    return (m_fileDialog && item) ?
-        QWindowsNativeFileDialogBase::itemPath(item) : QString();
+    if (m_fileDialog && SUCCEEDED(m_fileDialog->GetFolder(&item)) && item)
+        return QWindowsNativeFileDialogBase::itemPath(item);
+    return QString();
 }
 
 void QWindowsNativeFileDialogBase::exec(HWND owner)
