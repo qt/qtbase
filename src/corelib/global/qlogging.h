@@ -155,7 +155,8 @@ private:
 #  define qWarning QT_NO_QWARNING_MACRO
 #endif
 
-Q_CORE_EXPORT void qt_message_output(QtMsgType, const QMessageLogContext &context, const char *buf);
+Q_CORE_EXPORT void qt_message_output(QtMsgType, const QMessageLogContext &context,
+                                     const QString &message);
 
 Q_CORE_EXPORT void qErrnoWarning(int code, const char *msg, ...);
 Q_CORE_EXPORT void qErrnoWarning(const char *msg, ...);
@@ -164,8 +165,14 @@ Q_CORE_EXPORT void qErrnoWarning(const char *msg, ...);
 typedef void (*QtMsgHandler)(QtMsgType, const char *);
 Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
 
+typedef void (*QtMessageHandler)(QtMsgType, const QMessageLogContext &, const QString &);
+Q_CORE_EXPORT QtMessageHandler qInstallMessageHandler(QtMessageHandler);
+
+// TODO: Remove before Qt5.0 Beta
 typedef void (*QMessageHandler)(QtMsgType, const QMessageLogContext &, const char *);
 Q_CORE_EXPORT QMessageHandler qInstallMessageHandler(QMessageHandler);
+
+Q_CORE_EXPORT void qSetMessagePattern(const QString &messagePattern);
 
 QT_END_HEADER
 QT_END_NAMESPACE

@@ -73,13 +73,13 @@ int s_line;
 const char *s_function;
 static QString s_message;
 
-void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const char *msg)
+void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     s_type = type;
     s_file = context.file;
     s_line = context.line;
     s_function = context.function;
-    s_message = QString::fromLocal8Bit(msg);
+    s_message = msg;
 }
 
 void customMsgHandler(QtMsgType type, const char *msg)
@@ -101,7 +101,7 @@ void tst_qmessagehandler::initTestCase()
 void tst_qmessagehandler::cleanup()
 {
     qInstallMsgHandler(0);
-    qInstallMessageHandler(0);
+    qInstallMessageHandler((QtMessageHandler)0);
     s_type = QtFatalMsg;
     s_file = 0;
     s_line = 0;
@@ -117,7 +117,7 @@ void tst_qmessagehandler::defaultHandler()
 
 void tst_qmessagehandler::installMessageHandler()
 {
-    QMessageHandler oldHandler = qInstallMessageHandler(customMessageHandler);
+    QtMessageHandler oldHandler = qInstallMessageHandler(customMessageHandler);
 
     qDebug("installMessageHandler"); int line = __LINE__;
 
@@ -127,7 +127,7 @@ void tst_qmessagehandler::installMessageHandler()
     QCOMPARE(s_function, Q_FUNC_INFO);
     QCOMPARE(s_line, line);
 
-    QMessageHandler myHandler = qInstallMessageHandler(oldHandler);
+    QtMessageHandler myHandler = qInstallMessageHandler(oldHandler);
     QCOMPARE((void*)myHandler, (void*)customMessageHandler);
 }
 
@@ -630,13 +630,16 @@ void tst_qmessagehandler::cleanupFuncinfo()
 void tst_qmessagehandler::qMessagePattern()
 {
     QProcess process;
+    const QString appExe = m_appDir + "/app";
 
+    //
+    // test QT_MESSAGE_PATTERN
+    //
     QStringList environment = QProcess::systemEnvironment();
     // %{file} is tricky because of shadow builds
     environment.prepend("QT_MESSAGE_PATTERN=\"%{type} %{appname} %{line} %{function} %{message}\"");
     process.setEnvironment(environment);
 
-    QString appExe = m_appDir + "/app";
     process.start(appExe);
     QVERIFY2(process.waitForStarted(), qPrintable(
         QString::fromLatin1("Could not start %1: %2").arg(appExe, process.errorString())));
@@ -649,9 +652,10 @@ void tst_qmessagehandler::qMessagePattern()
     QVERIFY(output.contains("debug  45 T::T static constructor"));
     //  we can't be sure whether the QT_MESSAGE_PATTERN is already destructed
     QVERIFY(output.contains("static destructor"));
-    QVERIFY(output.contains("debug tst_qlogging 54 main qDebug"));
-    QVERIFY(output.contains("warning tst_qlogging 55 main qWarning"));
-    QVERIFY(output.contains("critical tst_qlogging 56 main qCritical"));
+    QVERIFY(output.contains("debug tst_qlogging 56 main qDebug"));
+    QVERIFY(output.contains("warning tst_qlogging 57 main qWarning"));
+    QVERIFY(output.contains("critical tst_qlogging 58 main qCritical"));
+    QVERIFY(output.contains("debug tst_qlogging 62 main qDebug2"));
 
     environment = QProcess::systemEnvironment();
     environment.prepend("QT_MESSAGE_PATTERN=\"PREFIX: %{unknown} %{message}\"");
@@ -668,6 +672,32 @@ void tst_qmessagehandler::qMessagePattern()
 
     QVERIFY(output.contains("QT_MESSAGE_PATTERN: Unknown placeholder %{unknown}"));
     QVERIFY(output.contains("PREFIX:  qDebug"));
+
+    //
+    // test qSetMessagePattern
+    //
+    QMutableListIterator<QString> iter(environment);
+    while (iter.hasNext()) {
+        if (iter.next().startsWith("QT_MESSAGE_PATTERN"))
+            iter.remove();
+    }
+    process.setEnvironment(environment);
+
+    process.start(appExe);
+    QVERIFY2(process.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(appExe, process.errorString())));
+    process.waitForFinished();
+
+    output = process.readAllStandardError();
+    //qDebug() << output;
+    QByteArray expected = "static constructor\n"
+            "[debug] qDebug\n"
+            "[warning] qWarning\n"
+            "[critical] qCritical\n";
+#ifdef Q_OS_WIN
+    output.replace("\r\n", "\n");
+#endif
+    QCOMPARE(QString::fromLatin1(output), QString::fromLatin1(expected));
 }
 
 QTEST_MAIN(tst_qmessagehandler)

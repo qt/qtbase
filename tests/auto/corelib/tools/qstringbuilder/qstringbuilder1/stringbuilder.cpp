@@ -107,21 +107,6 @@ void runScenario()
     QCOMPARE(r, r3);
 #endif
 
-    {
-        static const QStaticStringData<12> literalData = {
-                Q_STATIC_STRING_DATA_HEADER_INITIALIZER(12),
-                { 's', 'o', 'm', 'e', ' ', 'l', 'i', 't', 'e', 'r', 'a', 'l' }
-            };
-        static QStringDataPtr literal = { literalData.data_ptr() };
-
-        r = literal;
-        QCOMPARE(r, string);
-        r = r Q literal;
-        QCOMPARE(r, r2);
-        r = literal Q literal;
-        QCOMPARE(r, r2);
-    }
-
 #ifndef QT_NO_CAST_FROM_ASCII
     r = string P LITERAL;
     QCOMPARE(r, r2);
@@ -224,21 +209,6 @@ void runScenario()
         QCOMPARE(r, ba);
         r = zero P ba;
         QCOMPARE(r, ba);
-    }
-
-    {
-        static const QStaticByteArrayData<12> literalData = {
-                Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(12),
-                { 's', 'o', 'm', 'e', ' ', 'l', 'i', 't', 'e', 'r', 'a', 'l' }
-            };
-        static QByteArrayDataPtr literal = { literalData.data_ptr() };
-
-        QByteArray ba = literal;
-        QCOMPARE(ba, QByteArray(LITERAL));
-        ba = ba Q literal;
-        QCOMPARE(ba, QByteArray(LITERAL LITERAL));
-        ba = literal Q literal;
-        QCOMPARE(ba, QByteArray(LITERAL LITERAL));
     }
 
     //operator QString  +=

@@ -660,7 +660,7 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
         bool eventAccepted = event.isAccepted();
         foreach(QGesture *gesture, event.gestures()) {
             if (eventAccepted || event.isAccepted(gesture)) {
-                QWidget *w = event.d_func()->targetWidgets.value(gesture->gestureType(), 0);
+                QWidget *w = event.m_targetWidgets.value(gesture->gestureType(), 0);
                 Q_ASSERT(w);
                 DEBUG() << "override event: gesture was accepted:" << gesture << w;
                 QList<QGesture *> &gestures = normalStartedGestures[w];
@@ -687,7 +687,7 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
             foreach (QGesture *gesture, event.gestures()) {
                 if (gesture->state() == Qt::GestureStarted &&
                     (eventAccepted || event.isAccepted(gesture))) {
-                    QWidget *w = event.d_func()->targetWidgets.value(gesture->gestureType(), 0);
+                    QWidget *w = event.m_targetWidgets.value(gesture->gestureType(), 0);
                     Q_ASSERT(w);
                     DEBUG() << "started gesture was delivered and accepted by" << w;
                     m_gestureTargets[gesture] = w;

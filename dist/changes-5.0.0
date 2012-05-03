@@ -68,6 +68,12 @@ information about a particular change.
     method returns void is to compare the return value of QMetaMethod::returnType()
     to QMetaType::Void.
 
+- QVariant:
+  * Inconsistent constructor taking Qt::GlobalColor and producing QVariant(QColor)
+    instance was removed. Code constructing such variants can be migrated by
+    explicitly calling QColor constructor. For example from "QVariant(Qt::red)"
+    to "QVariant(QColor(Qt::red))"
+
 - QTestLib:
   * The plain-text, xml and lightxml test output formats have been changed to
     show a test result for every row of test data in data-driven tests.  In

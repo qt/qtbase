@@ -440,7 +440,7 @@ QT_BEGIN_NAMESPACE
 
     Finally, the QtMsgType definition identifies the various messages
     that can be generated and sent to a Qt message handler;
-    QMessageHandler is a type definition for a pointer to a function with
+    QtMessageHandler is a type definition for a pointer to a function with
     the signature
     \c {void myMessageHandler(QtMsgType, const QMessageLogContext &, const char *)}.
     QMessageLogContext class contains the line, file, and function the
@@ -476,7 +476,7 @@ QT_BEGIN_NAMESPACE
     accept a \l qreal value as their argument returning the value
     rounded up to the nearest integer and 64-bit integer respectively,
     the qInstallMessageHandler() function which installs the given
-    QMessageHandler, and the qVersion() function which returns the
+    QtMessageHandler, and the qVersion() function which returns the
     version number of Qt at run-time as a string.
 
     \section1 Macros
@@ -678,7 +678,7 @@ QT_BEGIN_NAMESPACE
     \value QtSystemMsg
 
 
-    \sa QMessageHandler, qInstallMessageHandler()
+    \sa QtMessageHandler, qInstallMessageHandler()
 */
 
 /*! \typedef QFunctionPointer

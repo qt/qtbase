@@ -87,7 +87,7 @@ QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
 
     m_dfbWindow->SetOpacity(m_dfbWindow.data(), 0xff);
 
-    setVisible(window()->visible());
+    setVisible(window()->isVisible());
 
     m_inputHandler->addWindow(m_dfbWindow.data(), tlw);
 }
@@ -103,7 +103,7 @@ void QDirectFbWindow::setGeometry(const QRect &rect)
 //    bool isMoveOnly = (rect.topLeft() != geometry().topLeft()) && (rect.size() == geometry().size());
 
     QPlatformWindow::setGeometry(rect);
-    if (window()->visible()) {
+    if (window()->isVisible()) {
         m_dfbWindow->SetBounds(m_dfbWindow.data(), rect.x(),rect.y(),
                                rect.width(), rect.height());
 // ### TODO port, verify if this is needed

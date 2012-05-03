@@ -82,7 +82,7 @@ namespace {
 struct DefinedTypesFilter {
     template<typename T>
     struct Acceptor {
-        static const bool IsAccepted = QtMetaTypePrivate::TypeDefinition<T>::IsAvailable && QTypeModuleInfo<T>::IsCore;
+        static const bool IsAccepted = QtMetaTypePrivate::TypeDefinition<T>::IsAvailable && QModulesPrivate::QTypeModuleInfo<T>::IsCore;
     };
 };
 } // namespace
@@ -1109,11 +1109,11 @@ class TypeCreator {
     struct CreatorImpl<T, /* IsAcceptedType = */ false> {
         static void *Create(const int type, const void *copy)
         {
-            if (QTypeModuleInfo<T>::IsGui) {
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsGui) {
                 if (Q_LIKELY(qMetaTypeGuiHelper))
                     return qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].creator(copy);
             }
-            if (QTypeModuleInfo<T>::IsWidget) {
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsWidget) {
                 if (Q_LIKELY(qMetaTypeWidgetsHelper))
                     return qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].creator(copy);
             }
@@ -1171,12 +1171,12 @@ class TypeDestroyer {
     struct DestroyerImpl<T, /* IsAcceptedType = */ false> {
         static void Destroy(const int type, void *where)
         {
-            if (QTypeModuleInfo<T>::IsGui) {
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsGui) {
                 if (Q_LIKELY(qMetaTypeGuiHelper))
                     qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].deleter(where);
                 return;
             }
-            if (QTypeModuleInfo<T>::IsWidget) {
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsWidget) {
                 if (Q_LIKELY(qMetaTypeWidgetsHelper))
                     qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].deleter(where);
                 return;
@@ -1237,10 +1237,10 @@ class TypeConstructor {
     struct ConstructorImpl<T, /* IsAcceptedType = */ false> {
         static void *Construct(const int type, void *where, const void *copy)
         {
-            if (QTypeModuleInfo<T>::IsGui)
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsGui)
                 return Q_LIKELY(qMetaTypeGuiHelper) ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].constructor(where, copy) : 0;
 
-            if (QTypeModuleInfo<T>::IsWidget)
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsWidget)
                 return Q_LIKELY(qMetaTypeWidgetsHelper) ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].constructor(where, copy) : 0;
 
             // This point can be reached only for known types that definition is not available, for example
@@ -1325,12 +1325,12 @@ class TypeDestructor {
     struct DestructorImpl<T, /* IsAcceptedType = */ false> {
         static void Destruct(const int type, void *where)
         {
-            if (QTypeModuleInfo<T>::IsGui) {
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsGui) {
                 if (Q_LIKELY(qMetaTypeGuiHelper))
                     qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].destructor(where);
                 return;
             }
-            if (QTypeModuleInfo<T>::IsWidget) {
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsWidget) {
                 if (Q_LIKELY(qMetaTypeWidgetsHelper))
                     qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].destructor(where);
                 return;
@@ -1398,10 +1398,10 @@ class SizeOf {
     struct SizeOfImpl<T, /* IsAcceptedType = */ false> {
         static int Size(const int type)
         {
-            if (QTypeModuleInfo<T>::IsGui)
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsGui)
                 return Q_LIKELY(qMetaTypeGuiHelper) ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].size : 0;
 
-            if (QTypeModuleInfo<T>::IsWidget)
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsWidget)
                 return Q_LIKELY(qMetaTypeWidgetsHelper) ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].size : 0;
 
             // This point can be reached only for known types that definition is not available, for example
@@ -1466,10 +1466,10 @@ class Flags
     {
         static quint32 Flags(const int type)
         {
-            if (QTypeModuleInfo<T>::IsGui)
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsGui)
                 return Q_LIKELY(qMetaTypeGuiHelper) ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].flags : 0;
 
-            if (QTypeModuleInfo<T>::IsWidget)
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsWidget)
                 return Q_LIKELY(qMetaTypeWidgetsHelper) ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].flags : 0;
 
             // This point can be reached only for known types that definition is not available, for example
@@ -1649,12 +1649,12 @@ class TypeInfo {
     {
         TypeInfoImpl(const uint type, QMetaTypeInterface &info)
         {
-            if (QTypeModuleInfo<T>::IsGui) {
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsGui) {
                 if (Q_LIKELY(qMetaTypeGuiHelper))
                     info = qMetaTypeGuiHelper[type - QMetaType::FirstGuiType];
                 return;
             }
-            if (QTypeModuleInfo<T>::IsWidget) {
+            if (QModulesPrivate::QTypeModuleInfo<T>::IsWidget) {
                 if (Q_LIKELY(qMetaTypeWidgetsHelper))
                     info = qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType];
                 return;
@@ -1671,7 +1671,6 @@ public:
     }
     template<typename T>
     void delegate(const T*) { TypeInfoImpl<T>(m_type, info); }
-    void delegate(const void*) {}
     void delegate(const QMetaTypeSwitcher::UnknownType*) {}
     void delegate(const QMetaTypeSwitcher::NotBuiltinType*) { customTypeInfo(m_type); }
 private:
@@ -1693,7 +1692,7 @@ QMetaType QMetaType::typeInfo(const int type)
 {
     TypeInfo typeInfo(type);
     QMetaTypeSwitcher::switcher<void>(typeInfo, type, 0);
-    return typeInfo.info.creator || type == Void ? QMetaType(QMetaType::NoExtensionFlags
+    return typeInfo.info.creator ? QMetaType(QMetaType::NoExtensionFlags
                                  , static_cast<const QMetaTypeInterface *>(0) // typeInfo::info is a temporary variable, we can't return address of it.
                                  , typeInfo.info.creator
                                  , typeInfo.info.deleter

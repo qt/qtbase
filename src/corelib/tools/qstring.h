@@ -69,17 +69,7 @@ class QLatin1String;
 class QStringRef;
 template <typename T> class QVector;
 
-struct QStringData {
-    QtPrivate::RefCount ref;
-    int size;
-    uint alloc : 31;
-    uint capacityReserved : 1;
-
-    qptrdiff offset;
-
-    inline ushort *data() { return reinterpret_cast<ushort *>(reinterpret_cast<char *>(this) + offset); }
-    inline const ushort *data() const { return reinterpret_cast<const ushort *>(reinterpret_cast<const char *>(this) + offset); }
-};
+typedef QTypedArrayData<ushort> QStringData;
 
 #if defined(Q_COMPILER_UNICODE_STRINGS)
 
@@ -113,13 +103,14 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 # if defined(Q_COMPILER_LAMBDA)
 
 #  define QStringLiteral(str) \
-    ([]() -> QStringDataPtr { \
+    ([]() -> QString { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QStaticStringData<Size> qstring_literal = { \
             Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
             QT_UNICODE_LITERAL(str) }; \
         QStringDataPtr holder = { qstring_literal.data_ptr() }; \
-        return holder; \
+        const QString s(holder); \
+        return s; \
     }()) \
     /**/
 
@@ -129,14 +120,14 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 // To do that, we need the __extension__ {( )} trick which only GCC supports
 
 #  define QStringLiteral(str) \
-    __extension__ ({ \
+    QString(__extension__ ({ \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QStaticStringData<Size> qstring_literal = { \
             Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
             QT_UNICODE_LITERAL(str) }; \
         QStringDataPtr holder = { qstring_literal.data_ptr() }; \
         holder; \
-    }) \
+    })) \
     /**/
 
 # endif
@@ -144,9 +135,10 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 
 #ifndef QStringLiteral
 // no lambdas, not GCC, or GCC in C++98 mode with 4-byte wchar_t
-// fallback, uses QLatin1String as next best options
+// fallback, return a temporary QString
+// source code is assumed to be encoded in UTF-8
 
-# define QStringLiteral(str) QLatin1String(str)
+# define QStringLiteral(str) QString::fromUtf8(str, sizeof(str) - 1)
 #endif
 
 #define Q_STATIC_STRING_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset) \
@@ -160,13 +152,13 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 template <int N>
 struct QStaticStringData
 {
-    QStringData str;
+    QArrayData str;
     qunicodechar data[N + 1];
 
     QStringData *data_ptr() const
     {
         Q_ASSERT(str.ref.isStatic());
-        return const_cast<QStringData *>(&str);
+        return const_cast<QStringData *>(static_cast<const QStringData*>(&str));
     }
 };
 
@@ -623,9 +615,9 @@ public:
     // compatibility
     struct Null { };
     static const Null null;
-    inline QString(const Null &): d(shared_null.data_ptr()) {}
+    inline QString(const Null &): d(Data::sharedNull()) {}
     inline QString &operator=(const Null &) { *this = QString(); return *this; }
-    inline bool isNull() const { return d == &shared_null.str; }
+    inline bool isNull() const { return d == Data::sharedNull(); }
 
 
     bool isSimpleText() const;
@@ -644,11 +636,8 @@ private:
     QString &operator=(const QByteArray &a);
 #endif
 
-    static const QStaticStringData<1> shared_null;
-    static const QStaticStringData<1> shared_empty;
     Data *d;
 
-    static void free(Data *);
     void reallocData(uint alloc, bool grow = false);
     void expand(int i);
     void updateProperties() const;
@@ -918,8 +907,8 @@ inline void QCharRef::setRow(uchar arow) { QChar(*this).setRow(arow); }
 inline void QCharRef::setCell(uchar acell) { QChar(*this).setCell(acell); }
 
 
-inline QString::QString() : d(shared_null.data_ptr()) {}
-inline QString::~QString() { if (!d->ref.deref()) free(d); }
+inline QString::QString() : d(Data::sharedNull()) {}
+inline QString::~QString() { if (!d->ref.deref()) Data::deallocate(d); }
 
 inline void QString::reserve(int asize)
 {
@@ -1194,7 +1183,7 @@ public:
 
     inline const QChar *unicode() const {
         if (!m_string)
-            return reinterpret_cast<const QChar *>(QString::shared_null.str.data());
+            return reinterpret_cast<const QChar *>(QString::Data::sharedNull()->data());
         return m_string->unicode() + m_position;
     }
     inline const QChar *data() const { return unicode(); }

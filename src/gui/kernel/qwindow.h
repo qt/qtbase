@@ -102,10 +102,6 @@ public:
     void setSurfaceType(SurfaceType surfaceType);
     SurfaceType surfaceType() const;
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline bool visible() const { return isVisible(); }
-#endif
-
     bool isVisible() const;
 
     void create();
