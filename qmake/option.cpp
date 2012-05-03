@@ -88,7 +88,6 @@ QStringList Option::before_user_vars;
 QStringList Option::after_user_vars;
 QString Option::user_template;
 QString Option::user_template_prefix;
-QStringList Option::shellPath;
 Option::HOST_MODE Option::host_mode = Option::HOST_UNKNOWN_MODE;
 
 //QMAKE_*_PROPERTY stuff
@@ -572,7 +571,6 @@ bool Option::postProcessProject(QMakeProject *project)
     Option::lex_mod = project->first("QMAKE_MOD_LEX");
     Option::yacc_mod = project->first("QMAKE_MOD_YACC");
     Option::dir_sep = project->first("QMAKE_DIR_SEP");
-    Option::shellPath = project->values("QMAKE_SH");
     return true;
 }
 

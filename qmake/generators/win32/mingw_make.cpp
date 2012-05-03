@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 MingwMakefileGenerator::MingwMakefileGenerator() : Win32MakefileGenerator(), init_flag(false)
 {
-    if (Option::shellPath.isEmpty())
+    if (isWindowsShell())
         quote = "\"";
     else
         quote = "'";
