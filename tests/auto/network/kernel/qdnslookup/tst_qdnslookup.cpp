@@ -104,7 +104,7 @@ void tst_QDnsLookup::lookup_data()
 
     QTest::newRow("ns-empty") << int(QDnsLookup::NS) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("ns-notfound") << int(QDnsLookup::NS) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("ns-ascii") << int(QDnsLookup::NS) << "troll.no" << int(QDnsLookup::NoError) << "" << "" << "" << "ns-0.trolltech.net ns-1.trolltech.net ns-i.trolltech.net" << "" << "" << QByteArray();
+    QTest::newRow("ns-ascii") << int(QDnsLookup::NS) << "troll.no" << int(QDnsLookup::NoError) << "" << "" << "" << "ns-0.trolltech.net ns-1.trolltech.net" << "" << "" << QByteArray();
 
     QTest::newRow("ptr-empty") << int(QDnsLookup::PTR) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("ptr-notfound") << int(QDnsLookup::PTR) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
