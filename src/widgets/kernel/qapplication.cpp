@@ -3523,7 +3523,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     ge.t = gestureEvent->t;
                     ge.spont = gestureEvent->spont;
                     ge.m_accept = wasAccepted;
-                    ge.d_func()->accepted = gestureEvent->d_func()->accepted;
+                    ge.m_accepted = gestureEvent->m_accepted;
                     res = d->notify_helper(w, &ge);
                     gestureEvent->spont = false;
                     eventAccepted = ge.isAccepted();
@@ -3533,7 +3533,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                         // packed into a single QEvent depends on not consuming the event
                         if (eventAccepted || ge.isAccepted(g)) {
                             // if the gesture was accepted, mark the target widget for it
-                            gestureEvent->d_func()->targetWidgets[g->gestureType()] = w;
+                            gestureEvent->m_targetWidgets[g->gestureType()] = w;
                             gestureEvent->setAccepted(g, true);
                         } else {
                             // if the gesture was explicitly ignored by the application,

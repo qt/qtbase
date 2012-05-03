@@ -85,7 +85,7 @@ public:
                 QT_TRY {
                     qt_message_output(stream->type,
                                       stream->context,
-                                      stream->buffer.toLocal8Bit().data());
+                                      stream->buffer);
                 } QT_CATCH(std::bad_alloc&) { /* We're out of memory - give up. */ }
             }
             delete stream;

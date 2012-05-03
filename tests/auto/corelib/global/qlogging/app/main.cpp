@@ -51,8 +51,15 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
     app.setApplicationName("tst_qlogging");
 
+    qSetMessagePattern("[%{type}] %{message}");
+
     qDebug("qDebug");
     qWarning("qWarning");
     qCritical("qCritical");
+
+    qSetMessagePattern(QString());
+
+    qDebug("qDebug2");
+
     return 0;
 }

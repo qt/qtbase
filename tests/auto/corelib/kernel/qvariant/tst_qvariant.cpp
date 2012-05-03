@@ -237,8 +237,6 @@ private slots:
 
     void saveLoadCustomTypes();
 
-    void globalColor();
-
     void variantMap();
     void variantHash();
 
@@ -2508,13 +2506,6 @@ void tst_QVariant::url()
     QVERIFY(v2.canConvert<QString>());
     QCOMPARE(v2.toString(), str);
     QCOMPARE(v3.toString(), str);
-}
-
-void tst_QVariant::globalColor()
-{
-    QVariant variant(Qt::blue);
-    QVERIFY(variant.type() == QVariant::Color);
-    QVERIFY(qvariant_cast<QColor>(variant) == QColor(Qt::blue));
 }
 
 void tst_QVariant::variantMap()

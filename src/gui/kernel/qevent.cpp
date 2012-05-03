@@ -2784,19 +2784,14 @@ QShowEvent::~QShowEvent()
     \note This class is currently supported for Mac OS X only.
 */
 
-QFileOpenEventPrivate::~QFileOpenEventPrivate()
-{
-}
-
 /*!
     \internal
 
     Constructs a file open event for the given \a file.
 */
 QFileOpenEvent::QFileOpenEvent(const QString &file)
-    : QEvent(FileOpen), f(file)
+    : QEvent(FileOpen), f(file), m_url(QUrl::fromLocalFile(file))
 {
-    d = reinterpret_cast<QEventPrivate *>(new QFileOpenEventPrivate(QUrl::fromLocalFile(file)));
 }
 
 /*!
@@ -2805,10 +2800,8 @@ QFileOpenEvent::QFileOpenEvent(const QString &file)
     Constructs a file open event for the given \a url.
 */
 QFileOpenEvent::QFileOpenEvent(const QUrl &url)
-    : QEvent(FileOpen)
+    : QEvent(FileOpen), f(url.toLocalFile()), m_url(url)
 {
-    d = reinterpret_cast<QEventPrivate *>(new QFileOpenEventPrivate(url));
-    f = url.toLocalFile();
 }
 
 
@@ -2816,7 +2809,6 @@ QFileOpenEvent::QFileOpenEvent(const QUrl &url)
 */
 QFileOpenEvent::~QFileOpenEvent()
 {
-    delete reinterpret_cast<QFileOpenEventPrivate *>(d);
 }
 
 /*!
@@ -2832,10 +2824,6 @@ QFileOpenEvent::~QFileOpenEvent()
 
     \since 4.6
 */
-QUrl QFileOpenEvent::url() const
-{
-    return reinterpret_cast<const QFileOpenEventPrivate *>(d)->url;
-}
 
 /*!
     \fn bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
@@ -3263,25 +3251,16 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
 
 /*! \internal
  */
-QWindowStateChangeEvent::QWindowStateChangeEvent(Qt::WindowStates s)
-    : QEvent(WindowStateChange), ostate(s)
-{
-}
-
-/*! \internal
- */
 QWindowStateChangeEvent::QWindowStateChangeEvent(Qt::WindowStates s, bool isOverride)
-    : QEvent(WindowStateChange), ostate(s)
+    : QEvent(WindowStateChange), ostate(s), m_override(isOverride)
 {
-    if (isOverride)
-        d = (QEventPrivate*)(this);
 }
 
 /*! \internal
  */
 bool QWindowStateChangeEvent::isOverride() const
 {
-    return (d != 0);
+    return m_override;
 }
 
 /*! \internal
@@ -4037,10 +4016,8 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
     The \a startPos is the position of a touch or mouse event that started the scrolling.
 */
 QScrollPrepareEvent::QScrollPrepareEvent(const QPointF &startPos)
-    : QEvent(QEvent::ScrollPrepare)
+    : QEvent(QEvent::ScrollPrepare), m_target(0), m_startPos(startPos)
 {
-    d = reinterpret_cast<QEventPrivate *>(new QScrollPrepareEventPrivate());
-    d_func()->startPos = startPos;
 }
 
 /*!
@@ -4048,7 +4025,6 @@ QScrollPrepareEvent::QScrollPrepareEvent(const QPointF &startPos)
 */
 QScrollPrepareEvent::~QScrollPrepareEvent()
 {
-    delete reinterpret_cast<QScrollPrepareEventPrivate *>(d);
 }
 
 /*!
@@ -4056,7 +4032,7 @@ QScrollPrepareEvent::~QScrollPrepareEvent()
 */
 QPointF QScrollPrepareEvent::startPos() const
 {
-    return d_func()->startPos;
+    return m_startPos;
 }
 
 /*!
@@ -4066,7 +4042,7 @@ QPointF QScrollPrepareEvent::startPos() const
 */
 QSizeF QScrollPrepareEvent::viewportSize() const
 {
-    return d_func()->viewportSize;
+    return m_viewportSize;
 }
 
 /*!
@@ -4074,7 +4050,7 @@ QSizeF QScrollPrepareEvent::viewportSize() const
 */
 QRectF QScrollPrepareEvent::contentPosRange() const
 {
-    return d_func()->contentPosRange;
+    return m_contentPosRange;
 }
 
 /*!
@@ -4082,7 +4058,7 @@ QRectF QScrollPrepareEvent::contentPosRange() const
 */
 QPointF QScrollPrepareEvent::contentPos() const
 {
-    return d_func()->contentPos;
+    return m_contentPos;
 }
 
 
@@ -4093,7 +4069,7 @@ QPointF QScrollPrepareEvent::contentPos() const
 */
 void QScrollPrepareEvent::setViewportSize(const QSizeF &size)
 {
-    d_func()->viewportSize = size;
+    m_viewportSize = size;
 }
 
 /*!
@@ -4103,7 +4079,7 @@ void QScrollPrepareEvent::setViewportSize(const QSizeF &size)
 */
 void QScrollPrepareEvent::setContentPosRange(const QRectF &rect)
 {
-    d_func()->contentPosRange = rect;
+    m_contentPosRange = rect;
 }
 
 /*!
@@ -4113,25 +4089,9 @@ void QScrollPrepareEvent::setContentPosRange(const QRectF &rect)
 */
 void QScrollPrepareEvent::setContentPos(const QPointF &pos)
 {
-    d_func()->contentPos = pos;
+    m_contentPos = pos;
 }
 
-
-/*!
-    \internal
-*/
-QScrollPrepareEventPrivate *QScrollPrepareEvent::d_func()
-{
-    return reinterpret_cast<QScrollPrepareEventPrivate *>(d);
-}
-
-/*!
-    \internal
-*/
-const QScrollPrepareEventPrivate *QScrollPrepareEvent::d_func() const
-{
-    return reinterpret_cast<const QScrollPrepareEventPrivate *>(d);
-}
 
 /*!
     \class QScrollEvent
@@ -4170,12 +4130,8 @@ const QScrollPrepareEventPrivate *QScrollPrepareEvent::d_func() const
     event is the first one, the last one or some event in between.
 */
 QScrollEvent::QScrollEvent(const QPointF &contentPos, const QPointF &overshootDistance, ScrollState scrollState)
-    : QEvent(QEvent::Scroll)
+    : QEvent(QEvent::Scroll), m_contentPos(contentPos), m_overshoot(overshootDistance), m_state(scrollState)
 {
-    d = reinterpret_cast<QEventPrivate *>(new QScrollEventPrivate());
-    d_func()->contentPos = contentPos;
-    d_func()->overshoot= overshootDistance;
-    d_func()->state = scrollState;
 }
 
 /*!
@@ -4183,7 +4139,6 @@ QScrollEvent::QScrollEvent(const QPointF &contentPos, const QPointF &overshootDi
 */
 QScrollEvent::~QScrollEvent()
 {
-    delete reinterpret_cast<QScrollEventPrivate *>(d);
 }
 
 /*!
@@ -4191,7 +4146,7 @@ QScrollEvent::~QScrollEvent()
 */
 QPointF QScrollEvent::contentPos() const
 {
-    return d_func()->contentPos;
+    return m_contentPos;
 }
 
 /*!
@@ -4202,7 +4157,7 @@ QPointF QScrollEvent::contentPos() const
 */
 QPointF QScrollEvent::overshootDistance() const
 {
-    return d_func()->overshoot;
+    return m_overshoot;
 }
 
 /*!
@@ -4215,23 +4170,7 @@ QPointF QScrollEvent::overshootDistance() const
 */
 QScrollEvent::ScrollState QScrollEvent::scrollState() const
 {
-    return d_func()->state;
-}
-
-/*!
-    \internal
-*/
-QScrollEventPrivate *QScrollEvent::d_func()
-{
-    return reinterpret_cast<QScrollEventPrivate *>(d);
-}
-
-/*!
-    \internal
-*/
-const QScrollEventPrivate *QScrollEvent::d_func() const
-{
-    return reinterpret_cast<const QScrollEventPrivate *>(d);
+    return m_state;
 }
 
 /*!
@@ -4239,11 +4178,8 @@ const QScrollEventPrivate *QScrollEvent::d_func() const
     \a orientation is the new orientation of the screen.
 */
 QScreenOrientationChangeEvent::QScreenOrientationChangeEvent(QScreen *screen, Qt::ScreenOrientation screenOrientation)
-    : QEvent(QEvent::OrientationChange)
+    : QEvent(QEvent::OrientationChange), m_screen(screen), m_orientation(screenOrientation)
 {
-    d = reinterpret_cast<QEventPrivate *>(new QScreenOrientationChangeEventPrivate());
-    d_func()->screen = screen;
-    d_func()->orientation = screenOrientation;
 }
 
 /*!
@@ -4251,7 +4187,6 @@ QScreenOrientationChangeEvent::QScreenOrientationChangeEvent(QScreen *screen, Qt
 */
 QScreenOrientationChangeEvent::~QScreenOrientationChangeEvent()
 {
-    delete reinterpret_cast<QScrollEventPrivate *>(d);
 }
 
 /*!
@@ -4259,7 +4194,7 @@ QScreenOrientationChangeEvent::~QScreenOrientationChangeEvent()
 */
 QScreen *QScreenOrientationChangeEvent::screen() const
 {
-    return d_func()->screen;
+    return m_screen;
 }
 
 /*!
@@ -4267,23 +4202,7 @@ QScreen *QScreenOrientationChangeEvent::screen() const
 */
 Qt::ScreenOrientation QScreenOrientationChangeEvent::orientation() const
 {
-    return d_func()->orientation;
-}
-
-/*!
-    \internal
-*/
-QScreenOrientationChangeEventPrivate *QScreenOrientationChangeEvent::d_func()
-{
-    return reinterpret_cast<QScreenOrientationChangeEventPrivate *>(d);
-}
-
-/*!
-    \internal
-*/
-const QScreenOrientationChangeEventPrivate *QScreenOrientationChangeEvent::d_func() const
-{
-    return reinterpret_cast<const QScreenOrientationChangeEventPrivate *>(d);
+    return m_orientation;
 }
 
 QT_END_NAMESPACE

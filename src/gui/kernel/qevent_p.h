@@ -92,57 +92,6 @@ public:
     QVector<QPointF> rawScreenPositions;
 };
 
-class QFileOpenEventPrivate
-{
-public:
-    inline QFileOpenEventPrivate(const QUrl &url)
-        : url(url)
-    {
-    }
-    ~QFileOpenEventPrivate();
-
-    QUrl url;
-};
-
-
-class QScrollPrepareEventPrivate
-{
-public:
-    inline QScrollPrepareEventPrivate()
-        : target(0)
-    {
-    }
-
-    QObject* target;
-    QPointF startPos;
-    QSizeF viewportSize;
-    QRectF contentPosRange;
-    QPointF contentPos;
-};
-
-class QScrollEventPrivate
-{
-public:
-    inline QScrollEventPrivate()
-    {
-    }
-
-    QPointF contentPos;
-    QPointF overshoot;
-    QScrollEvent::ScrollState state;
-};
-
-class QScreenOrientationChangeEventPrivate
-{
-public:
-    inline QScreenOrientationChangeEventPrivate()
-    {
-    }
-
-    QScreen *screen;
-    Qt::ScreenOrientation orientation;
-};
-
 QT_END_NAMESPACE
 
 #endif // QEVENT_P_H

@@ -1082,6 +1082,12 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     if (event->type() == QEvent::DeferredDelete && data == QThreadData::current()) {
         // remember the current running eventloop for DeferredDelete
         // events posted in the receiver's thread
+
+        // check that QEvent's d pointer is unused before we store the loop level
+        // if further updates to QEvent have made the use of the d pointer necessary,
+        // then update this code to store the loop level somewhere else
+        Q_ASSERT_X(event->d == 0, "QCoreApplication::postEvent",
+                   "Internal error: this code relies on QEvent::d being null");
         event->d = reinterpret_cast<QEventPrivate *>(quintptr(data->loopLevel));
     }
 

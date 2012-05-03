@@ -169,13 +169,14 @@ struct QByteArrayDataPtr
 #if defined(Q_COMPILER_LAMBDA)
 
 #  define QByteArrayLiteral(str) \
-    ([]() -> QByteArrayDataPtr { \
+    ([]() -> QByteArray { \
         enum { Size = sizeof(str) - 1 }; \
         static const QStaticByteArrayData<Size> qbytearray_literal = { \
             Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(Size), \
             str }; \
         QByteArrayDataPtr holder = { qbytearray_literal.data_ptr() }; \
-        return holder; \
+        const QByteArray ba(holder); \
+        return ba; \
     }()) \
     /**/
 
@@ -185,22 +186,22 @@ struct QByteArrayDataPtr
 // To do that, we need the __extension__ {( )} trick which only GCC supports
 
 #  define QByteArrayLiteral(str) \
-    __extension__ ({ \
+    QByteArray(__extension__ ({ \
         enum { Size = sizeof(str) - 1 }; \
         static const QStaticByteArrayData<Size> qbytearray_literal = { \
             Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(Size), \
             str }; \
         QByteArrayDataPtr holder = { qbytearray_literal.data_ptr() }; \
         holder; \
-    }) \
+    })) \
     /**/
 
 #endif
 
 #ifndef QByteArrayLiteral
-// no lambdas, not GCC, use const char * instead
+// no lambdas, not GCC, just return a temporary QByteArray
 
-# define QByteArrayLiteral(str) (str)
+# define QByteArrayLiteral(str) QByteArray(str, sizeof(str) - 1)
 #endif
 
 class Q_CORE_EXPORT QByteArray

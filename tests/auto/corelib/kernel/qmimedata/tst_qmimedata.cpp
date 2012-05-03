@@ -97,7 +97,7 @@ void tst_QMimeData::colorData() const
     QCOMPARE(qvariant_cast<QColor>(mimeData.colorData()), red);
 
     // change, verify
-    mimeData.setColorData(Qt::blue);
+    mimeData.setColorData(QColor(Qt::blue));
     QVERIFY(mimeData.hasColor());
     QCOMPARE(qvariant_cast<QColor>(mimeData.colorData()), blue);
 }

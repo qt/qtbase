@@ -133,7 +133,7 @@ public:
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED QInputPanel *inputPanel() const { return inputMethod(); }
 #endif
-    QInputMethod *inputMethod() const;
+    static QInputMethod *inputMethod();
 
     static QPlatformNativeInterface *platformNativeInterface();
 

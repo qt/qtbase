@@ -45,11 +45,12 @@
 #include "qstring.h"
 #include "qvarlengtharray.h"
 #include "qdebug.h"
+#include "qmutex.h"
 #ifndef QT_BOOTSTRAPPED
 #include "qcoreapplication.h"
 #include "qthread.h"
 #endif
-#ifdef Q_OS_WINCE
+#ifdef Q_OS_WIN
 #include <qt_windows.h>
 #endif
 
@@ -66,7 +67,7 @@ QT_BEGIN_NAMESPACE
     The class provides information about the source code location a qDebug(), qWarning(),
     qCritical() or qFatal() message was generated.
 
-    \sa QMessageLogger, QMessageHandler, qInstallMessageHandler()
+    \sa QMessageLogger, QtMessageHandler, qInstallMessageHandler()
 */
 
 /*!
@@ -92,6 +93,7 @@ QT_BEGIN_NAMESPACE
     \internal
     Uses a local buffer to output the message. Not locale safe + cuts off
     everything after character 255, but will work in out of memory situations.
+    Stop the execution afterwards.
 */
 static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
 {
@@ -99,8 +101,33 @@ static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
     emergency_buf[255] = '\0';
     if (msg)
         qvsnprintf(emergency_buf, 255, msg, ap);
-    QMessageLogContext context;
-    qt_message_output(msgType, context, emergency_buf);
+
+#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
+    OutputDebugStringA(emergency_buf);
+#else
+    fprintf(stderr, "%s", emergency_buf);
+    fflush(stderr);
+#endif
+
+    if (msgType == QtFatalMsg
+            || (msgType == QtWarningMsg
+                && (!qgetenv("QT_FATAL_WARNINGS").isNull())) ) {
+#if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
+        // get the current report mode
+        int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
+        _CrtSetReportMode(_CRT_ERROR, reportMode);
+        int ret = _CrtDbgReport(_CRT_ERROR, __FILE__, __LINE__, QT_VERSION_STR,
+                                msg);
+        if (ret == 1)
+            _CrtDbgBreak();
+#endif
+
+#if (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
+        abort(); // trap; generates core dump
+#else
+        exit(1); // goodbye cruel world
+#endif
+    }
 }
 #endif
 
@@ -116,10 +143,10 @@ static void qt_message(QtMsgType msgType, const QMessageLogContext &context, con
         return;
     }
 #endif
-    QByteArray buf;
+    QString buf;
     if (msg) {
         QT_TRY {
-            buf = QString().vsprintf(msg, ap).toLocal8Bit();
+            buf = QString().vsprintf(msg, ap);
         } QT_CATCH(const std::bad_alloc &) {
 #if !defined(QT_NO_EXCEPTIONS)
             qEmergencyOut(msgType, msg, ap);
@@ -128,7 +155,7 @@ static void qt_message(QtMsgType msgType, const QMessageLogContext &context, con
 #endif
         }
     }
-    qt_message_output(msgType, context, buf.constData());
+    qt_message_output(msgType, context, buf);
 }
 
 #undef qDebug
@@ -374,21 +401,53 @@ static const char appnameTokenC[] = "%{appname}";
 static const char threadidTokenC[] = "%{threadid}";
 static const char emptyTokenC[] = "";
 
+static const char defaultPattern[] = "%{message}";
+
+
 struct QMessagePattern {
     QMessagePattern();
     ~QMessagePattern();
 
+    void setPattern(const QString &pattern);
+
     // 0 terminated arrays of literal tokens / literal or placeholder tokens
     const char **literals;
     const char **tokens;
+
+    bool fromEnvironment;
+    static QBasicMutex mutex;
 };
 
+QBasicMutex QMessagePattern::mutex;
+
 QMessagePattern::QMessagePattern()
+    : literals(0)
+    , tokens(0)
+    , fromEnvironment(false)
 {
-    QString pattern = QString::fromLocal8Bit(qgetenv("QT_MESSAGE_PATTERN"));
-    if (pattern.isEmpty()) {
-        pattern = QLatin1String("%{message}");
+    const QString envPattern = QString::fromLocal8Bit(qgetenv("QT_MESSAGE_PATTERN"));
+    if (envPattern.isEmpty()) {
+        setPattern(QLatin1String(defaultPattern));
+    } else {
+        setPattern(envPattern);
+        fromEnvironment = true;
     }
+}
+
+QMessagePattern::~QMessagePattern()
+{
+    for (int i = 0; literals[i] != 0; ++i)
+        delete [] literals[i];
+    delete [] literals;
+    literals = 0;
+    delete [] tokens;
+    tokens = 0;
+}
+
+void QMessagePattern::setPattern(const QString &pattern)
+{
+    delete [] tokens;
+    delete [] literals;
 
     // scanner
     QList<QString> lexemes;
@@ -452,13 +511,13 @@ QMessagePattern::QMessagePattern()
             else {
                 fprintf(stderr, "%s\n",
                         QString::fromLatin1("QT_MESSAGE_PATTERN: Unknown placeholder %1\n"
-                                            ).arg(lexeme).toLocal8Bit().constData());
+                                            ).arg(lexeme).toLatin1().constData());
                 fflush(stderr);
                 tokens[i] = emptyTokenC;
             }
         } else {
             char *literal = new char[lexeme.size() + 1];
-            strncpy(literal, lexeme.toLocal8Bit().constData(), lexeme.size());
+            strncpy(literal, lexeme.toLatin1().constData(), lexeme.size());
             literal[lexeme.size()] = '\0';
             literalsVar.append(literal);
             tokens[i] = literal;
@@ -469,33 +528,29 @@ QMessagePattern::QMessagePattern()
     memcpy(literals, literalsVar.constData(), literalsVar.size() * sizeof(const char*));
 }
 
-QMessagePattern::~QMessagePattern()
-{
-    for (int i = 0; literals[i] != 0; ++i)
-        delete [] literals[i];
-    delete [] literals;
-    literals = 0;
-    delete [] tokens;
-    tokens = 0;
-}
-
 Q_GLOBAL_STATIC(QMessagePattern, qMessagePattern)
 
 /*!
     \internal
 */
-Q_CORE_EXPORT QByteArray qMessageFormatString(QtMsgType type, const QMessageLogContext &context,
-                                              const char *str)
+Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogContext &context,
+                                              const QString &str)
 {
-    QByteArray message;
+    QString message;
+
+    QMutexLocker lock(&QMessagePattern::mutex);
 
     QMessagePattern *pattern = qMessagePattern();
     if (!pattern) {
         // after destruction of static QMessagePattern instance
         message.append(str);
-        message.append('\n');
+        message.append(QLatin1Char('\n'));
         return message;
     }
+
+    // don't print anything if pattern was empty
+    if (pattern->tokens[0] == 0)
+        return message;
 
     // we do not convert file, function, line literals to local encoding due to overhead
     for (int i = 0; pattern->tokens[i] != 0; ++i) {
@@ -503,59 +558,69 @@ Q_CORE_EXPORT QByteArray qMessageFormatString(QtMsgType type, const QMessageLogC
         if (token == messageTokenC) {
             message.append(str);
         } else if (token == categoryTokenC) {
-            message.append(context.category);
+            message.append(QLatin1String(context.category));
         } else if (token == typeTokenC) {
             switch (type) {
-            case QtDebugMsg:   message.append("debug"); break;
-            case QtWarningMsg: message.append("warning"); break;
-            case QtCriticalMsg:message.append("critical"); break;
-            case QtFatalMsg:   message.append("fatal"); break;
+            case QtDebugMsg:   message.append(QLatin1String("debug")); break;
+            case QtWarningMsg: message.append(QLatin1String("warning")); break;
+            case QtCriticalMsg:message.append(QLatin1String("critical")); break;
+            case QtFatalMsg:   message.append(QLatin1String("fatal")); break;
             }
         } else if (token == fileTokenC) {
             if (context.file)
-                message.append(context.file);
+                message.append(QLatin1String(context.file));
             else
-                message.append("unknown");
+                message.append(QLatin1String("unknown"));
         } else if (token == lineTokenC) {
-            message.append(QByteArray::number(context.line));
+            message.append(QString::number(context.line));
         } else if (token == functionTokenC) {
             if (context.function)
-                message.append(qCleanupFuncinfo(context.function));
+                message.append(QString::fromLatin1(qCleanupFuncinfo(context.function)));
             else
-                message.append("unknown");
+                message.append(QLatin1String("unknown"));
 #ifndef QT_BOOTSTRAPPED
         } else if (token == pidTokenC) {
-            message.append(QByteArray::number(QCoreApplication::applicationPid()));
+            message.append(QString::number(QCoreApplication::applicationPid()));
         } else if (token == appnameTokenC) {
-            message.append(QCoreApplication::applicationName().toUtf8().constData());
+            message.append(QCoreApplication::applicationName());
         } else if (token == threadidTokenC) {
-            message.append("0x" + QByteArray::number(qlonglong(QThread::currentThread()->currentThread()), 16));
+            message.append(QLatin1String("0x"));
+            message.append(QString::number(qlonglong(QThread::currentThread()->currentThread()), 16));
 #endif
         } else {
-            message.append(token);
+            message.append(QLatin1String(token));
         }
     }
-    message.append('\n');
+    message.append(QLatin1Char('\n'));
     return message;
 }
 
 static QtMsgHandler msgHandler = 0;                // pointer to debug handler (without context)
-static QMessageHandler messageHandler = 0;         // pointer to debug handler (with context)
+static QtMessageHandler messageHandler = 0;         // pointer to debug handler (with context)
+static QMessageHandler messageHandler2 = 0;       // TODO: Remove before Qt5.0 beta
 
 /*!
     \internal
 */
 static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context,
-                                   const char *buf)
+                                   const QString &buf)
 {
-    QByteArray logMessage = qMessageFormatString(type, context, buf);
+    QString logMessage = qMessageFormatString(type, context, buf);
 #if defined(Q_OS_WINCE)
-    QString fstr = QString::fromLocal8Bit(logMessage);
-    OutputDebugString(reinterpret_cast<const wchar_t *> (fstr.utf16()));
+    OutputDebugString(reinterpret_cast<const wchar_t *> (logMessage.utf16()));
 #else
-    fprintf(stderr, "%s", logMessage.constData());
+    fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
     fflush(stderr);
 #endif
+}
+
+/*!
+    \internal
+*/
+static void qDefaultMessageHandler2(QtMsgType type, const QMessageLogContext &context,
+                                   const char *buf)
+{
+    qDefaultMessageHandler(type, context, QString::fromLocal8Bit(buf));
 }
 
 /*!
@@ -564,25 +629,31 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 static void qDefaultMsgHandler(QtMsgType type, const char *buf)
 {
     QMessageLogContext emptyContext;
-    qDefaultMessageHandler(type, emptyContext, buf);
+    qDefaultMessageHandler(type, emptyContext, QLatin1String(buf));
 }
 
 /*!
     \internal
 */
-void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, const char *buf)
+void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
 {
     if (!msgHandler)
         msgHandler = qDefaultMsgHandler;
     if (!messageHandler)
         messageHandler = qDefaultMessageHandler;
+    if (!messageHandler2)
+        messageHandler2 = qDefaultMessageHandler2;
+
+    if (messageHandler == qDefaultMessageHandler
+            && messageHandler2 != qDefaultMessageHandler2)
+        (*messageHandler2)(msgType, context, message.toLocal8Bit().constData());
 
     // prefer new message handler over the old one
     if (msgHandler == qDefaultMsgHandler
             || messageHandler != qDefaultMessageHandler) {
-        (*messageHandler)(msgType, context, buf);
+        (*messageHandler)(msgType, context, message);
     } else {
-        (*msgHandler)(msgType, buf);
+        (*msgHandler)(msgType, message.toLocal8Bit().constData());
     }
 
     if (msgType == QtFatalMsg
@@ -593,14 +664,12 @@ void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, con
         // get the current report mode
         int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
         _CrtSetReportMode(_CRT_ERROR, reportMode);
-#if !defined(Q_OS_WINCE)
-        int ret = _CrtDbgReport(_CRT_ERROR, context.file, context.line, QT_VERSION_STR, buf);
-#else
-        int ret = _CrtDbgReportW(_CRT_ERROR, _CRT_WIDE(context.file),
+
+        int ret = _CrtDbgReportW(_CRT_ERROR, reinterpret_cast<const wchar_t *> (
+                                     QString::fromLatin1(context.file).utf16()),
                                  context.line, _CRT_WIDE(QT_VERSION_STR),
                                  reinterpret_cast<const wchar_t *> (
-                                     QString::fromLatin1(buf).utf16()));
-#endif
+                                     message.utf16()));
         if (ret == 0  && reportMode & _CRTDBG_MODE_WNDW)
             return; // ignore
         else if (ret == 1)
@@ -626,8 +695,9 @@ void qErrnoWarning(const char *msg, ...)
         buf.vsprintf(msg, ap);
     va_end(ap);
 
-    QMessageLogger().critical("%s (%s)", buf.toLocal8Bit().constData(),
-                              qt_error_string(-1).toLocal8Bit().constData());
+    buf += QLatin1String(" (") + qt_error_string(-1) + QLatin1Char(')');
+    QMessageLogContext context;
+    qt_message_output(QtCriticalMsg, context, buf);
 }
 
 void qErrnoWarning(int code, const char *msg, ...)
@@ -641,15 +711,22 @@ void qErrnoWarning(int code, const char *msg, ...)
         buf.vsprintf(msg, ap);
     va_end(ap);
 
-    QMessageLogger().critical("%s (%s)", buf.toLocal8Bit().constData(),
-                              qt_error_string(code).toLocal8Bit().constData());
+    buf += QLatin1String(" (") + qt_error_string(code) + QLatin1Char(')');
+    QMessageLogContext context;
+    qt_message_output(QtCriticalMsg, context, buf);
 }
 
 #if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
 extern bool usingWinMain;
 extern Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char *str);
 extern Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogContext &context,
-                                             const char *str);
+                                             const QString &str);
+
+void qWinMessageHandler2(QtMsgType t, const QMessageLogContext &context,
+                         const char *str)
+{
+    qWinMessageHandler(t, context, QString::fromLocal8Bit(str));
+}
 #endif
 
 /*!
@@ -660,38 +737,27 @@ extern Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogConte
     This is a typedef for a pointer to a function with the following
     signature:
 
-    \snippet code/src_corelib_global_qglobal.cpp 7
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 7
 
-    This typedef is deprecated, you should use QMessageHandler instead.
-    \sa QtMsgType, QMessageHandler, qInstallMsgHandler(), qInstallMessageHandler()
+    This typedef is deprecated, you should use QtMessageHandler instead.
+    \sa QtMsgType, QtMessageHandler, qInstallMsgHandler(), qInstallMessageHandler()
 */
 
 /*!
-    \fn QtMsgHandler qInstallMsgHandler(QtMsgHandler handler)
-    \relates <QtGlobal>
-    \deprecated
-
-    Installs a Qt message \a handler which has been defined
-    previously. This method is deprecated, use qInstallMessageHandler
-    instead.
-    \sa QtMsgHandler, qInstallMessageHandler
-*/
-
-/*!
-    \typedef QMessageHandler
+    \typedef QtMessageHandler
     \relates <QtGlobal>
     \since 5.0
 
     This is a typedef for a pointer to a function with the following
     signature:
 
-    \snippet code/src_corelib_global_qglobal.cpp 49
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 49
 
     \sa QtMsgType, qInstallMessageHandler()
 */
 
 /*!
-    \fn QMessageHandler qInstallMessageHandler(QMessageHandler handler)
+    \fn QtMessageHandler qInstallMessageHandler(QtMessageHandler handler)
     \relates <QtGlobal>
     \since 5.0
 
@@ -719,21 +785,78 @@ extern Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogConte
 
     Example:
 
-    \snippet code/src_corelib_global_qglobal.cpp 23
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 23
 
-    \sa qDebug(), qWarning(), qCritical(), qFatal(), QtMsgType,
+    \sa QtMessageHandler, QtMsgType, qDebug(), qWarning(), qCritical(), qFatal(),
     {Debugging Techniques}
 */
 
-QMessageHandler qInstallMessageHandler(QMessageHandler h)
+/*!
+    \fn QtMsgHandler qInstallMsgHandler(QtMsgHandler handler)
+    \relates <QtGlobal>
+    \deprecated
+
+    Installs a Qt message \a handler which has been defined
+    previously. This method is deprecated, use qInstallMessageHandler
+    instead.
+    \sa QtMsgHandler, qInstallMessageHandler
+*/
+/*!
+    \fn void qSetMessagePattern(const QString &pattern)
+    \relates <QtGlobal>
+    \since 5.0
+
+    \brief Changes the output of the default message handler.
+
+    Allows to tweak the output of qDebug(), qWarning(), qCritical() and qFatal().
+
+    Following placeholders are supported:
+
+    \table
+    \header \li Placeholder \li Description
+    \row \li \c %{appname} \li QCoreApplication::applicationName()
+    \row \li \c %{file} \li Path to source file
+    \row \li \c %{function} \li Function
+    \row \li \c %{line} \li Line in source file
+    \row \li \c %{message} \li The actual message
+    \row \li \c %{pid} \li QCoreApplication::applicationPid()
+    \row \li \c %{threadid} \li ID of current thread
+    \row \li \c %{type} \li "debug", "warning", "critical" or "fatal"
+    \endtable
+
+    The default pattern is "%{message}".
+
+    The pattern can also be changed at runtime by setting the QT_MESSAGE_PATTERN
+    environment variable; if both qSetMessagePattern() is called and QT_MESSAGE_PATTERN is
+    set, the environment variable takes precedence.
+
+    qSetMessagePattern() has no effect if a custom message handler is installed.
+
+    \sa qInstallMessageHandler, Debugging Techniques
+ */
+
+QtMessageHandler qInstallMessageHandler(QtMessageHandler h)
 {
     if (!messageHandler)
         messageHandler = qDefaultMessageHandler;
-    QMessageHandler old = messageHandler;
+    QtMessageHandler old = messageHandler;
     messageHandler = h;
 #if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
     if (!messageHandler && usingWinMain)
         messageHandler = qWinMessageHandler;
+#endif
+    return old;
+}
+
+QMessageHandler qInstallMessageHandler(QMessageHandler h)
+{
+    if (!messageHandler2)
+        messageHandler2 = qDefaultMessageHandler2;
+    QMessageHandler old = messageHandler2;
+    messageHandler2 = h;
+#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
+    if (!messageHandler2 && usingWinMain)
+        messageHandler2 = qWinMessageHandler2;
 #endif
     return old;
 }
@@ -753,6 +876,14 @@ QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
     return old;
 }
 
+void qSetMessagePattern(const QString &pattern)
+{
+    QMutexLocker lock(&QMessagePattern::mutex);
+
+    if (!qMessagePattern()->fromEnvironment)
+        qMessagePattern()->setPattern(pattern);
+}
+
 void QMessageLogContext::copy(const QMessageLogContext &logContext)
 {
     this->category = logContext.category;
@@ -760,4 +891,5 @@ void QMessageLogContext::copy(const QMessageLogContext &logContext)
     this->line = logContext.line;
     this->function = logContext.function;
 }
+
 QT_END_NAMESPACE

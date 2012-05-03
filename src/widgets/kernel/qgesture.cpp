@@ -846,9 +846,9 @@ int QTapAndHoldGesturePrivate::Timeout = 700; // in ms
     Creates new QGestureEvent containing a list of \a gestures.
 */
 QGestureEvent::QGestureEvent(const QList<QGesture *> &gestures)
-    : QEvent(QEvent::Gesture)
+    : QEvent(QEvent::Gesture), m_gestures(gestures), m_widget(0)
+
 {
-    d = reinterpret_cast<QEventPrivate *>(new QGestureEventPrivate(gestures));
 }
 
 /*!
@@ -856,7 +856,6 @@ QGestureEvent::QGestureEvent(const QList<QGesture *> &gestures)
 */
 QGestureEvent::~QGestureEvent()
 {
-    delete reinterpret_cast<QGestureEventPrivate *>(d);
 }
 
 /*!
@@ -864,7 +863,7 @@ QGestureEvent::~QGestureEvent()
 */
 QList<QGesture *> QGestureEvent::gestures() const
 {
-    return d_func()->gestures;
+    return m_gestures;
 }
 
 /*!
@@ -872,10 +871,9 @@ QList<QGesture *> QGestureEvent::gestures() const
 */
 QGesture *QGestureEvent::gesture(Qt::GestureType type) const
 {
-    const QGestureEventPrivate *d = d_func();
-    for(int i = 0; i < d->gestures.size(); ++i)
-        if (d->gestures.at(i)->gestureType() == type)
-            return d->gestures.at(i);
+    for (int i = 0; i < m_gestures.size(); ++i)
+        if (m_gestures.at(i)->gestureType() == type)
+            return m_gestures.at(i);
     return 0;
 }
 
@@ -885,7 +883,7 @@ QGesture *QGestureEvent::gesture(Qt::GestureType type) const
 QList<QGesture *> QGestureEvent::activeGestures() const
 {
     QList<QGesture *> gestures;
-    foreach (QGesture *gesture, d_func()->gestures) {
+    foreach (QGesture *gesture, m_gestures) {
         if (gesture->state() != Qt::GestureCanceled)
             gestures.append(gesture);
     }
@@ -898,7 +896,7 @@ QList<QGesture *> QGestureEvent::activeGestures() const
 QList<QGesture *> QGestureEvent::canceledGestures() const
 {
     QList<QGesture *> gestures;
-    foreach (QGesture *gesture, d_func()->gestures) {
+    foreach (QGesture *gesture, m_gestures) {
         if (gesture->state() == Qt::GestureCanceled)
             gestures.append(gesture);
     }
@@ -980,7 +978,7 @@ bool QGestureEvent::isAccepted(QGesture *gesture) const
 void QGestureEvent::setAccepted(Qt::GestureType gestureType, bool value)
 {
     setAccepted(false);
-    d_func()->accepted[gestureType] = value;
+    m_accepted[gestureType] = value;
 }
 
 /*!
@@ -1017,7 +1015,7 @@ void QGestureEvent::ignore(Qt::GestureType gestureType)
 */
 bool QGestureEvent::isAccepted(Qt::GestureType gestureType) const
 {
-    return d_func()->accepted.value(gestureType, true);
+    return m_accepted.value(gestureType, true);
 }
 
 /*!
@@ -1027,7 +1025,7 @@ bool QGestureEvent::isAccepted(Qt::GestureType gestureType) const
 */
 void QGestureEvent::setWidget(QWidget *widget)
 {
-    d_func()->widget = widget;
+    m_widget = widget;
 }
 
 /*!
@@ -1035,7 +1033,7 @@ void QGestureEvent::setWidget(QWidget *widget)
 */
 QWidget *QGestureEvent::widget() const
 {
-    return d_func()->widget;
+    return m_widget;
 }
 
 #ifndef QT_NO_GRAPHICSVIEW
@@ -1061,22 +1059,6 @@ QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
     return QPointF();
 }
 #endif //QT_NO_GRAPHICSVIEW
-
-/*!
-    \internal
-*/
-QGestureEventPrivate *QGestureEvent::d_func()
-{
-    return reinterpret_cast<QGestureEventPrivate *>(d);
-}
-
-/*!
-    \internal
-*/
-const QGestureEventPrivate *QGestureEvent::d_func() const
-{
-    return reinterpret_cast<const QGestureEventPrivate *>(d);
-}
 
 #ifdef Q_NO_USING_KEYWORD
 /*!
