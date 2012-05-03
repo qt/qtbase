@@ -169,6 +169,17 @@ bool QPlatformWindow::isExposed() const
 }
 
 /*!
+    Returns true if the window should appear active from a style perspective.
+
+    This function can make platform-specific isActive checks, such as checking
+    if the QWindow is embedded in an active native window.
+*/
+bool QPlatformWindow::isActive() const
+{
+    return false;
+}
+
+/*!
     Requests setting the window state of this surface
     to \a type. Returns the actual state set.
 

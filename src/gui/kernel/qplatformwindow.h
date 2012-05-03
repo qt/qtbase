@@ -102,6 +102,7 @@ public:
     virtual void lower();
 
     virtual bool isExposed() const;
+    virtual bool isActive() const;
 
     virtual void propagateSizeHints();
 

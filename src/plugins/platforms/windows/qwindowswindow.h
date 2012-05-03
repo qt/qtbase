@@ -150,6 +150,7 @@ public:
 
     virtual void setVisible(bool visible);
     bool isVisible() const;
+    virtual bool isActive() const;
     virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
     virtual Qt::WindowState setWindowState(Qt::WindowState state);
 

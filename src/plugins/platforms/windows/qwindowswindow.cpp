@@ -807,6 +807,15 @@ bool QWindowsWindow::isVisible() const
     return m_data.hwnd && IsWindowVisible(m_data.hwnd);
 }
 
+bool QWindowsWindow::isActive() const
+{
+    // Check for native windows or children of the active native window.
+    if (const HWND activeHwnd = GetActiveWindow())
+        if (m_data.hwnd == activeHwnd || IsChild(activeHwnd, m_data.hwnd))
+            return true;
+    return false;
+}
+
 // partially from QWidgetPrivate::show_sys()
 void QWindowsWindow::show_sys() const
 {
