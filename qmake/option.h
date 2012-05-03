@@ -168,8 +168,6 @@ struct Option
     enum QMAKE_RECURSIVE { QMAKE_RECURSIVE_DEFAULT, QMAKE_RECURSIVE_YES, QMAKE_RECURSIVE_NO };
     static QMAKE_RECURSIVE recursive;
     static QStringList before_user_vars, after_user_vars;
-    enum HOST_MODE { HOST_UNKNOWN_MODE, HOST_UNIX_MODE, HOST_WIN_MODE, HOST_MACX_MODE };
-    static HOST_MODE host_mode;
     static QString user_template, user_template_prefix;
 
     //QMAKE_*_PROPERTY options

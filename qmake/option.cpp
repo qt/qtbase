@@ -88,7 +88,6 @@ QStringList Option::before_user_vars;
 QStringList Option::after_user_vars;
 QString Option::user_template;
 QString Option::user_template_prefix;
-Option::HOST_MODE Option::host_mode = Option::HOST_UNKNOWN_MODE;
 
 //QMAKE_*_PROPERTY stuff
 QStringList Option::prop::properties;
@@ -255,12 +254,10 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                 Option::user_template = argv[++x];
             } else if(opt == "tp" || opt == "template_prefix") {
                 Option::user_template_prefix = argv[++x];
-            } else if(opt == "macx") {
-                Option::host_mode = HOST_MACX_MODE;
             } else if(opt == "unix") {
-                Option::host_mode = HOST_UNIX_MODE;
+                Option::dir_sep = "/";
             } else if(opt == "win32") {
-                Option::host_mode = HOST_WIN_MODE;
+                Option::dir_sep = "\\";
             } else if(opt == "d") {
                 Option::debug_level++;
             } else if(opt == "version" || opt == "v" || opt == "-version") {
@@ -377,19 +374,14 @@ Option::parseCommandLine(int argc, char **argv, int skip)
 int
 Option::init(int argc, char **argv)
 {
-#if defined(Q_OS_MAC)
-    Option::host_mode = Option::HOST_MACX_MODE;
-#elif defined(Q_OS_UNIX)
-    Option::host_mode = Option::HOST_UNIX_MODE;
-#else
-    Option::host_mode = Option::HOST_WIN_MODE;
-#endif
     Option::application_argv0 = 0;
     Option::prf_ext = ".prf";
     Option::pro_ext = ".pro";
 #ifdef Q_OS_WIN
+    Option::dir_sep = "\\";
     Option::dirlist_sep = ";";
 #else
+    Option::dir_sep = "/";
     Option::dirlist_sep = ":";
 #endif
     Option::field_sep = ' ';
@@ -518,13 +510,6 @@ Option::init(int argc, char **argv)
             }
 #endif
         }
-    }
-
-    //defaults for globals
-    if (Option::host_mode == Option::HOST_WIN_MODE) {
-        Option::dir_sep = "\\";
-    } else {
-        Option::dir_sep = "/";
     }
 
     return QMAKE_CMDLINE_SUCCESS;
