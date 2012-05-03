@@ -95,6 +95,15 @@ QT_BEGIN_NAMESPACE
     \sa QSslCertificate::subjectAlternativeNames()
 
 */
+#if QT_DEPRECATED_SINCE(5,0)
+/*!
+    \enum QSsl::AlternateNameEntryType
+    \obsolete
+    Use QSsl::AlternativeNameEntryType instead.
+    This is a synonym for source compatibility with Qt 4.
+    \sa QSsl::AlternativeNameEntryType
+*/
+#endif
 
 /*!
     \enum QSsl::SslProtocol
@@ -104,6 +113,7 @@ QT_BEGIN_NAMESPACE
     \value SslV3 SSLv3
     \value SslV2 SSLv2
     \value TlsV1_0 TLSv1.0
+    \value TlsV1 Obsolete, means the same as TlsV1_0
     \value UnknownProtocol The cipher's protocol cannot be determined.
     \value AnyProtocol The socket understands SSLv2, SSLv3, and TLSv1.0. This
     value is used by QSslSocket only.
