@@ -997,7 +997,7 @@ struct QPixelLayout
 };
 
 template <QPixelLayout::BPP bpp>
-uint fetchPixel(const uchar *src, int index);
+uint QT_FASTCALL fetchPixel(const uchar *src, int index);
 
 template <>
 inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP1LSB>(const uchar *src, int index)
@@ -1053,7 +1053,7 @@ typedef const uint *(QT_FASTCALL *FetchPixelsFunc)(uint *buffer, const uchar *sr
 
 
 template <QPixelLayout::BPP width>
-void storePixel(uchar *dest, int index, uint pixel);
+void QT_FASTCALL storePixel(uchar *dest, int index, uint pixel);
 
 template <>
 inline void QT_FASTCALL storePixel<QPixelLayout::BPP1LSB>(uchar *dest, int index, uint pixel)
