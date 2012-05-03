@@ -4958,30 +4958,6 @@ if [ "$CFG_MAC_DWARF2" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG dwarf2"
 fi
 
-# Detect the default arch (x86 or x86_64) on Mac OS X
-if [ "$BUILD_ON_MAC" = "yes" ] && [ "$QT_CROSS_COMPILE" = "no" ]; then
-    DEFAULT_ARCH=
-    case `file "${outpath}/bin/qmake"` in
-    *i?86)
-        DEFAULT_ARCH=x86
-        ;;
-    *x86_64)
-        DEFAULT_ARCH=x86_64
-        ;;
-    *ppc|*ppc64|*)
-        # unsupported/unknown
-        ;;
-    esac
-
-    if [ -n "$DEFAULT_ARCH" ]; then
-        [ "$OPT_VERBOSE" = "yes" ] && echo "Setting default Mac OS X architechture to $DEFAULT_ARCH."
-        QT_CONFIG="$QT_CONFIG $DEFAULT_ARCH"
-        QMAKE_CONFIG="$QMAKE_CONFIG $DEFAULT_ARCH"
-        # Make the application arch follow the Qt arch
-        QTCONFIG_CONFIG="$QTCONFIG_CONFIG $DEFAULT_ARCH"
-    fi
-fi
-
 # ### Vestige
 if [ "$CFG_PHONON_BACKEND" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG phonon-backend"
