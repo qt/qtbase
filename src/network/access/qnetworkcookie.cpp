@@ -152,6 +152,7 @@ QNetworkCookie &QNetworkCookie::operator=(const QNetworkCookie &other)
 */
 
 /*!
+    \since 5.0
     Returns true if this cookie is equal to \a other. This function
     only returns true if all fields of the cookie are the same.
 
@@ -1056,6 +1057,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
 }
 
 /*!
+    \since 5.0
     This functions normalizes the path and domain of the cookie if they were previously empty.
 */
 void QNetworkCookie::normalize(const QUrl &url)

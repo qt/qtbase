@@ -706,6 +706,7 @@ QNetworkProxy QNetworkProxy::applicationProxy()
 }
 
 /*!
+    \since 5.0
     Returns the value of the known network header \a header if it is
     in use for this proxy. If it is not present, returns QVariant()
     (i.e., an invalid variant).
@@ -720,6 +721,7 @@ QVariant QNetworkProxy::header(QNetworkRequest::KnownHeaders header) const
 }
 
 /*!
+    \since 5.0
     Sets the value of the known header \a header to be \a value,
     overriding any previously set headers. This operation also sets
     the equivalent raw HTTP header.
@@ -736,6 +738,7 @@ void QNetworkProxy::setHeader(QNetworkRequest::KnownHeaders header, const QVaria
 }
 
 /*!
+    \since 5.0
     Returns true if the raw header \a headerName is in use for this
     proxy. Returns false if the proxy is not of type HttpProxy or
     HttpCachingProxy.
@@ -750,6 +753,7 @@ bool QNetworkProxy::hasRawHeader(const QByteArray &headerName) const
 }
 
 /*!
+    \since 5.0
     Returns the raw form of header \a headerName. If no such header is
     present or the proxy is not of type HttpProxy or HttpCachingProxy,
     an empty QByteArray is returned, which may be indistinguishable
@@ -772,6 +776,7 @@ QByteArray QNetworkProxy::rawHeader(const QByteArray &headerName) const
 }
 
 /*!
+    \since 5.0
     Returns a list of all raw headers that are set in this network
     proxy. The list is in the order that the headers were set.
 
@@ -788,6 +793,7 @@ QList<QByteArray> QNetworkProxy::rawHeaderList() const
 }
 
 /*!
+    \since 5.0
     Sets the header \a headerName to be of value \a headerValue. If \a
     headerName corresponds to a known header (see
     QNetworkRequest::KnownHeaders), the raw format will be parsed and
@@ -1521,6 +1527,10 @@ QList<QNetworkProxy> QNetworkProxyFactory::proxyForQuery(const QNetworkProxyQuer
 }
 
 #ifndef QT_NO_DEBUG_STREAM
+/*!
+    \since 5.0
+    Outputs a QNetworkProxy details to a debug stream
+*/
 QDebug operator<<(QDebug debug, const QNetworkProxy &proxy)
 {
     QNetworkProxy::ProxyType type = proxy.type();

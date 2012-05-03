@@ -1608,6 +1608,7 @@ bool QSslSocket::supportsSsl()
 }
 
 /*!
+    \since 5.0
     Returns the version number of the SSL library in use. Note that
     this is the version of the library in use at run-time not compile
     time. If no SSL support is available then this will return an
@@ -1619,6 +1620,7 @@ long QSslSocket::sslLibraryVersionNumber()
 }
 
 /*!
+    \since 5.0
     Returns the version string of the SSL library in use. Note that
     this is the version of the library in use at run-time not compile
     time. If no SSL support is available then this will return an empty value.

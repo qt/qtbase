@@ -252,6 +252,7 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
 }
 
 /*!
+    \since 5.0
     Adds \a cookie to this cookie jar.
 
     Returns true if \a cookie was added, false otherwise.
@@ -276,6 +277,7 @@ bool QNetworkCookieJar::insertCookie(const QNetworkCookie &cookie)
 }
 
 /*!
+    \since 5.0
     If a cookie with the same identifier as \a cookie exists in this cookie jar
     it will be updated. This function uses insertCookie().
 
@@ -292,6 +294,7 @@ bool QNetworkCookieJar::updateCookie(const QNetworkCookie &cookie)
 }
 
 /*!
+    \since 5.0
     Deletes from cookie jar the cookie found to have the same identifier as \a cookie.
 
     Returns true if a cookie was deleted, false otherwise.
@@ -311,6 +314,7 @@ bool QNetworkCookieJar::deleteCookie(const QNetworkCookie &cookie)
 }
 
 /*!
+    \since 5.0
     Returns true if the domain and path of \a cookie are valid, false otherwise.
 */
 bool QNetworkCookieJar::validateCookie(const QNetworkCookie &cookie, const QUrl &url) const

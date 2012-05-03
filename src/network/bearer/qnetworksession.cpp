@@ -151,6 +151,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \enum QNetworkSession::UsagePolicies
+    \since 5.0
 
     These flags allow the system to inform the application of network usage restrictions that
     may be in place.
@@ -235,6 +236,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn void QNetworkSession::usagePoliciesChanged(UsagePolicies)
+    \since 5.0
 
     This signal is emitted when the usage policies in force are changed by the system.
 */

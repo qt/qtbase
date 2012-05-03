@@ -104,6 +104,12 @@
     \value CountryName "C" The country.
 
     \value StateOrProvinceName "ST" The state or province.
+
+    \value DistinguishedNameQualifier The distinguished name qualifier
+
+    \value SerialNumber The certificate's serial number
+
+    \value EmailAddress The email address associated with the certificate
 */
 
 #include "qsslsocket_openssl_symbols_p.h"
@@ -398,6 +404,7 @@ QStringList QSslCertificate::subjectInfo(const QByteArray &attribute) const
 }
 
 /*!
+    \since 5.0
     Returns a list of the attributes that have values in the subject
     information of this certificate. The information associated
     with a given attribute can be accessed using the subjectInfo()
@@ -418,6 +425,7 @@ QList<QByteArray> QSslCertificate::subjectInfoAttributes() const
 }
 
 /*!
+    \since 5.0
     Returns a list of the attributes that have values in the issuer
     information of this certificate. The information associated
     with a given attribute can be accessed using the issuerInfo()

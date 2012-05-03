@@ -157,6 +157,7 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
 /*!
     \class QDnsLookup
     \brief The QDnsLookup class represents a DNS lookup.
+    \since 5.0
 
     \inmodule QtNetwork
     \ingroup network

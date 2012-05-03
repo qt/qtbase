@@ -269,6 +269,7 @@ QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::Encoding
 }
 
 /*!
+    \since 5.0
     Constructs a QSslKey from a valid native key \a handle.
     \a type specifies whether the key is public or private.
 
