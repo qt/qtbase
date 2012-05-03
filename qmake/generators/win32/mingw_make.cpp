@@ -57,15 +57,6 @@ MingwMakefileGenerator::MingwMakefileGenerator() : Win32MakefileGenerator(), ini
         quote = "'";
 }
 
-bool MingwMakefileGenerator::isWindowsShell() const
-{
-#ifdef Q_OS_WIN
-    return Option::shellPath.isEmpty();
-#else
-    return Win32MakefileGenerator::isWindowsShell();
-#endif
-}
-
 QString MingwMakefileGenerator::escapeDependencyPath(const QString &path) const
 {
     QString ret = path;
