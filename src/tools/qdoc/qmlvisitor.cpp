@@ -535,6 +535,15 @@ bool QmlDocVisitor::visit(QQmlJS::AST::FunctionDeclaration* fd)
         if (qmlClass) {
             QString name = fd->name.toString();
             FunctionNode* qmlMethod = new FunctionNode(Node::QmlMethod, current, name, false);
+            int overloads = 0;
+            NodeList::ConstIterator overloadIterator = current->childNodes().begin();
+            while (overloadIterator != current->childNodes().end()) {
+                if ((*overloadIterator)->name() == name)
+                    overloads++;
+                overloadIterator++;
+            }
+            if (overloads > 1)
+                qmlMethod->setOverload(true);
             QList<Parameter> parameters;
             QQmlJS::AST::FormalParameterList* formals = fd->formals;
             if (formals) {

@@ -1048,20 +1048,6 @@ int InnerNode::overloadNumber(const FunctionNode *func) const
 }
 
 /*!
-  Returns the number of member functions of a class such that
-  the functions are all named \a funcName.
- */
-int InnerNode::numOverloads(const QString& funcName) const
-{
-    if (primaryFunctionMap.contains(funcName)) {
-        return secondaryFunctionMap[funcName].count() + 1;
-    }
-    else {
-        return 0;
-    }
-}
-
-/*!
   Returns a node list containing all the member functions of
   some class such that the functions overload the name \a funcName.
  */
@@ -1818,15 +1804,6 @@ void FunctionNode::setAssociatedProperty(PropertyNode *property)
 int FunctionNode::overloadNumber() const
 {
     return parent()->overloadNumber(this);
-}
-
-/*!
-  Returns the number of times this function name has been
-  overloaded, obtained from the parent.
- */
-int FunctionNode::numOverloads() const
-{
-    return parent()->numOverloads(name());
 }
 
 /*!
@@ -2745,7 +2722,10 @@ QString Node::idForNode() const
         str = "qml-signal-handler-" + name();
         break;
     case Node::QmlMethod:
-        str = "qml-method-" + name();
+        func = static_cast<const FunctionNode*>(this);
+        str = "qml-method-" + func->name();
+        if (func->overloadNumber() != 1)
+            str += "-" + QString::number(func->overloadNumber());
         break;
     case Node::Variable:
         str = "var-" + name();

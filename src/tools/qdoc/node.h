@@ -335,7 +335,6 @@ public:
     const NodeList & relatedNodes() const { return related_; }
     int count() const { return children.size(); }
     int overloadNumber(const FunctionNode* func) const;
-    int numOverloads(const QString& funcName) const;
     NodeList overloads(const QString &funcName) const;
     const QStringList& includes() const { return inc; }
 
@@ -777,7 +776,6 @@ public:
     bool isReimp() const { return reimp; }
     bool isFunction() const { return true; }
     int overloadNumber() const;
-    int numOverloads() const;
     const QList<Parameter>& parameters() const { return params; }
     QStringList parameterNames() const;
     QString rawParameters(bool names = false, bool values = false) const;

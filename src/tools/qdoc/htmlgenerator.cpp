@@ -3383,7 +3383,10 @@ QString HtmlGenerator::refForNode(const Node *node)
         ref = node->name() + "-signal-handler";
         break;
     case Node::QmlMethod:
-        ref = node->name() + "-method";
+        func = static_cast<const FunctionNode *>(node);
+        ref = func->name() + "-method";
+        if (func->overloadNumber() != 1)
+            ref += "-" + QString::number(func->overloadNumber());
         break;
     case Node::Variable:
         ref = node->name() + "-var";
