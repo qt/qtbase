@@ -2469,7 +2469,12 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
 {
     QWindowsXPStyle::unpolish(widget);
 
-    QWindowsVistaStylePrivate *d = const_cast<QWindowsVistaStylePrivate*>(d_func());
+    QWindowsVistaStylePrivate *d = d_func();
+    // Delete the tree view helper in case the XP style cleaned the
+    // theme handle map due to a theme or QStyle change (QProxyStyle).
+    if (!QWindowsXPStylePrivate::hasTheme(QWindowsXPStylePrivate::TreeViewTheme))
+        d->cleanupTreeViewTheming();
+
     d->stopAnimation(widget);
 
 #ifndef QT_NO_LINEEDIT
@@ -2542,8 +2547,7 @@ QWindowsVistaStylePrivate::QWindowsVistaStylePrivate() :
 QWindowsVistaStylePrivate::~QWindowsVistaStylePrivate()
 {
     qDeleteAll(animations);
-    if (m_treeViewHelper)
-        DestroyWindow(m_treeViewHelper);
+    cleanupTreeViewTheming();
 }
 
 void QWindowsVistaStylePrivate::timerEvent()
@@ -2692,6 +2696,14 @@ bool QWindowsVistaStylePrivate::initTreeViewTheming()
         return false;
     }
     return QWindowsXPStylePrivate::createTheme(QWindowsXPStylePrivate::TreeViewTheme, m_treeViewHelper);
+}
+
+void QWindowsVistaStylePrivate::cleanupTreeViewTheming()
+{
+    if (m_treeViewHelper) {
+        DestroyWindow(m_treeViewHelper);
+        m_treeViewHelper = 0;
+    }
 }
 
 /*!

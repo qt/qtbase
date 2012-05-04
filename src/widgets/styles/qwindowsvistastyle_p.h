@@ -208,6 +208,7 @@ public:
 
 private:
     bool initTreeViewTheming();
+    void cleanupTreeViewTheming();
 
     QList <QWindowsVistaAnimation*> animations;
     QBasicTimer animationTimer;
