@@ -729,10 +729,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
 
     if (node->type() == Node::Fake) {
         const FakeNode *fake = static_cast<const FakeNode *>(node);
-        if (fake->subType() == Node::Example) {
-            generateExampleFiles(fake, marker);
-        }
-        else if ((fake->subType() == Node::File) || (fake->subType() == Node::Image)) {
+        if ((fake->subType() == Node::File) || (fake->subType() == Node::Image)) {
             quiet = true;
         }
     }
@@ -860,7 +857,10 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
 
     if (node->type() == Node::Fake) {
         const FakeNode *fake = static_cast<const FakeNode *>(node);
-        if (fake->subType() == Node::File) {
+        if (fake->subType() == Node::Example) {
+            generateExampleFiles(fake, marker);
+        }
+        else if (fake->subType() == Node::File) {
             Text text;
             Quoter quoter;
             Doc::quoteFromFile(fake->doc().location(), quoter, fake->name());
