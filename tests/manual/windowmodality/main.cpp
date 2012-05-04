@@ -44,11 +44,11 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QTimer>
-#include <QtWidgets/QColorDialog>
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QFontDialog>
-#include <QtPrintSupport/QPageSetupDialog>
-#include <QtPrintSupport/QPrintDialog>
+#include <QColorDialog>
+#include <QFileDialog>
+#include <QFontDialog>
+#include <QPageSetupDialog>
+#include <QPrintDialog>
 
 enum DialogType
 {
