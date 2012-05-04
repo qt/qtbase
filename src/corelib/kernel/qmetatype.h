@@ -77,6 +77,7 @@ QT_BEGIN_NAMESPACE
     F(UShort, 36, ushort) \
     F(UChar, 37, uchar) \
     F(Float, 38, float) \
+    F(SChar, 49, signed char) \
 
 #define QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(F)\
     F(VoidStar, 31, void*) \
@@ -160,8 +161,7 @@ QT_BEGIN_NAMESPACE
     F(UChar, -1, uchar, "unsigned char") \
     F(LongLong, -1, qlonglong, "long long") \
     F(ULongLong, -1, qulonglong, "unsigned long long") \
-    F(Char, -1, char, "qint8") \
-    F(Char, -1, char, "signed char") \
+    F(SChar, -1, signed char, "qint8") \
     F(UChar, -1, uchar, "quint8") \
     F(Short, -1, short, "qint16") \
     F(UShort, -1, ushort, "quint16") \
@@ -205,7 +205,7 @@ public:
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
         FirstCoreType = Bool,
-        LastCoreType = QJsonDocument,
+        LastCoreType = SChar,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,
         FirstWidgetsType = QIcon,
@@ -821,7 +821,6 @@ QT_END_NAMESPACE
     Q_DECLARE_BUILTIN_METATYPE(Name, MetaTypeName)
 
 QT_FOR_EACH_STATIC_TYPE(QT_DECLARE_BUILTIN_METATYPE_ITER)
-Q_DECLARE_BUILTIN_METATYPE(signed char, Char)
 
 #undef QT_DECLARE_BUILTIN_METATYPE_ITER
 

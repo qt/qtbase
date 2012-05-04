@@ -360,6 +360,7 @@ class Q_CORE_EXPORT QVariant
             char c;
             uchar uc;
             short s;
+            signed char sc;
             ushort us;
             int i;
             uint u;

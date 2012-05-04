@@ -605,8 +605,17 @@ void tst_QVariant::canConvert_data()
     var = QVariant((uint)1);
     QTest::newRow("UInt")
         << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+    var = QVariant((int)1);
+    QTest::newRow("Int")
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << Y << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = QVariant((qulonglong)1);
     QTest::newRow("ULongLong")
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+    var = QVariant::fromValue('a');
+    QTest::newRow("Char")
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+    var = QVariant::fromValue<signed char>(-1);
+    QTest::newRow("SChar")
         << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
 
 #undef N
@@ -696,6 +705,9 @@ void tst_QVariant::toInt_data()
 
     QTest::newRow( "invalid" ) << QVariant()  << 0 << false;
     QTest::newRow( "int" ) << QVariant( 123 ) << 123 << true;
+    QTest::newRow( "char" ) << QVariant::fromValue('a') << int('a') << true;
+    signed char signedChar = -13;
+    QTest::newRow( "signed char" ) << QVariant::fromValue(signedChar) << -13 << true;
     QTest::newRow( "double" ) << QVariant( 3.1415927 ) << 3 << true;
     QTest::newRow( "float" ) << QVariant( 3.1415927f ) << 3 << true;
     QTest::newRow( "uint" ) << QVariant( 123u ) << 123 << true;
@@ -744,6 +756,9 @@ void tst_QVariant::toUInt_data()
     QTest::addColumn<bool>("valueOK");
 
     QTest::newRow( "int" ) << QVariant( 123 ) << (uint)123 << true;
+    QTest::newRow( "char" ) << QVariant::fromValue('a') << uint('a') << true;
+    signed char signedChar = 12;
+    QTest::newRow( "signed char" ) << QVariant::fromValue(signedChar) << uint(12) << true;
     QTest::newRow( "double" ) << QVariant( 3.1415927 ) << (uint)3 << true;
     QTest::newRow( "float" ) << QVariant( 3.1415927f ) << (uint)3 << true;
     QTest::newRow( "uint" ) << QVariant( 123u ) << (uint)123 << true;
@@ -1710,8 +1725,16 @@ void tst_QVariant::writeToReadFromOldDataStream()
 
 void tst_QVariant::checkDataStream()
 {
-    QTest::ignoreMessage(QtWarningMsg, "Trying to construct an instance of an invalid type, type id: 49");
-    const QByteArray settingsHex("00000031ffffffffff");
+    const int typeId = QMetaType::LastCoreType + 1;
+    QVERIFY(!QMetaType::isRegistered(typeId));
+
+    QByteArray errorMessage("Trying to construct an instance of an invalid type, type id: ");
+    errorMessage.append(QString::number(typeId, 10));
+
+    QTest::ignoreMessage(QtWarningMsg, errorMessage.constData());
+    QByteArray settingsHex("000000");
+    settingsHex.append(QString::number(typeId, 16));
+    settingsHex.append("ffffffffff");
     const QByteArray settings = QByteArray::fromHex(settingsHex);
     QDataStream in(settings);
     QVariant v;

@@ -161,6 +161,7 @@ struct DefinedTypesFilter {
     \value ULong \c{unsigned long}
     \value ULongLong ULongLong
     \value UShort \c{unsigned short}
+    \value SChar \c{signed char}
     \value UChar \c{unsigned char}
     \value Float \c float
     \value QObjectStar QObject *
@@ -718,6 +719,9 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::UShort:
         stream << *static_cast<const ushort *>(data);
         break;
+    case QMetaType::SChar:
+        stream << *static_cast<const signed char *>(data);
+        break;
     case QMetaType::UChar:
         stream << *static_cast<const uchar *>(data);
         break;
@@ -936,6 +940,9 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
         break;
     case QMetaType::UShort:
         stream >> *static_cast<ushort *>(data);
+        break;
+    case QMetaType::SChar:
+        stream >> *static_cast<signed char *>(data);
         break;
     case QMetaType::UChar:
         stream >> *static_cast<uchar *>(data);

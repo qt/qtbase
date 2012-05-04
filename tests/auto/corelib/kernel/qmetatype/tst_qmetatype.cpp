@@ -273,6 +273,7 @@ void tst_QMetaType::qMetaTypeId()
     QCOMPARE(::qMetaTypeId<char>(), QMetaType::type("char"));
     QCOMPARE(::qMetaTypeId<uchar>(), QMetaType::type("unsigned char"));
     QCOMPARE(::qMetaTypeId<signed char>(), QMetaType::type("signed char"));
+    QVERIFY(::qMetaTypeId<signed char>() != ::qMetaTypeId<char>());
     QCOMPARE(::qMetaTypeId<qint8>(), QMetaType::type("qint8"));
 }
 
@@ -445,6 +446,9 @@ template<> struct TestValueFactory<QMetaType::ULong> {
 };
 template<> struct TestValueFactory<QMetaType::UShort> {
     static ushort *create() { return new ushort(0x1234); }
+};
+template<> struct TestValueFactory<QMetaType::SChar> {
+    static signed char *create() { return new signed char(-12); }
 };
 template<> struct TestValueFactory<QMetaType::UChar> {
     static uchar *create() { return new uchar('u'); }
@@ -1012,7 +1016,7 @@ void tst_QMetaType::typedefs()
 {
     QCOMPARE(QMetaType::type("long long"), int(QMetaType::LongLong));
     QCOMPARE(QMetaType::type("unsigned long long"), int(QMetaType::ULongLong));
-    QCOMPARE(QMetaType::type("qint8"), int(QMetaType::Char));
+    QCOMPARE(QMetaType::type("qint8"), int(QMetaType::SChar));
     QCOMPARE(QMetaType::type("quint8"), int(QMetaType::UChar));
     QCOMPARE(QMetaType::type("qint16"), int(QMetaType::Short));
     QCOMPARE(QMetaType::type("quint16"), int(QMetaType::UShort));

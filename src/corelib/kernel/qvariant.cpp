@@ -152,6 +152,8 @@ static qlonglong qMetaTypeNumber(const QVariant::Private *d)
         return d->data.ll;
     case QMetaType::Char:
         return qlonglong(d->data.c);
+    case QMetaType::SChar:
+        return qlonglong(d->data.sc);
     case QMetaType::Short:
         return qlonglong(d->data.s);
     case QMetaType::Long:
@@ -199,6 +201,7 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok)
     case QVariant::Double:
     case QVariant::Int:
     case QMetaType::Char:
+    case QMetaType::SChar:
     case QMetaType::Short:
     case QMetaType::Long:
     case QMetaType::Float:
@@ -232,6 +235,7 @@ static qulonglong qConvertToUnsignedNumber(const QVariant::Private *d, bool *ok)
     case QVariant::Double:
     case QVariant::Int:
     case QMetaType::Char:
+    case QMetaType::SChar:
     case QMetaType::Short:
     case QMetaType::Long:
     case QMetaType::Float:
@@ -289,6 +293,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             *str = QString(*v_cast<QChar>(d));
             break;
         case QMetaType::Char:
+        case QMetaType::SChar:
         case QMetaType::UChar:
             *str = QChar::fromLatin1(d->data.c);
             break;
@@ -350,6 +355,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QVariant::Int:
         case QVariant::LongLong:
         case QMetaType::Char:
+        case QMetaType::SChar:
         case QMetaType::Short:
         case QMetaType::Long:
         case QMetaType::Float:
@@ -487,6 +493,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             *ba = QByteArray::number(d->data.f, 'g', FLT_DIG);
             break;
         case QMetaType::Char:
+        case QMetaType::SChar:
         case QMetaType::UChar:
             *ba = QByteArray(1, d->data.c);
             break;
@@ -535,6 +542,11 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         *static_cast<qulonglong *>(result) = qConvertToUnsignedNumber(d, ok);
         return *ok;
     }
+    case QMetaType::SChar: {
+        signed char s = qConvertToNumber(d, ok);
+        *static_cast<signed char*>(result) = s;
+        return *ok;
+    }
     case QMetaType::UChar: {
         *static_cast<uchar *>(result) = qConvertToUnsignedNumber(d, ok);
         return *ok;
@@ -555,6 +567,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QVariant::Int:
         case QVariant::LongLong:
         case QMetaType::Char:
+        case QMetaType::SChar:
         case QMetaType::Short:
         case QMetaType::Long:
         case QMetaType::Float:
@@ -591,6 +604,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QVariant::LongLong:
         case QVariant::Int:
         case QMetaType::Char:
+        case QMetaType::SChar:
         case QMetaType::Short:
         case QMetaType::Long:
             *f = double(qMetaTypeNumber(d));
@@ -626,6 +640,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QVariant::LongLong:
         case QVariant::Int:
         case QMetaType::Char:
+        case QMetaType::SChar:
         case QMetaType::Short:
         case QMetaType::Long:
             *f = float(qMetaTypeNumber(d));
@@ -2440,11 +2455,17 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 bool QVariant::canConvert(int targetTypeId) const
 {
     // TODO Reimplement this function, currently it works but it is a historical mess.
-    const uint currentType = ((d.type == QMetaType::Float) ? QVariant::Double : d.type);
+    uint currentType = ((d.type == QMetaType::Float) ? QVariant::Double : d.type);
+    if (currentType == QMetaType::SChar || currentType == QMetaType::Char)
+        currentType = QMetaType::UInt;
+    if (targetTypeId == QMetaType::SChar || currentType == QMetaType::Char)
+        targetTypeId = QMetaType::UInt;
     if (uint(targetTypeId) == uint(QMetaType::Float)) targetTypeId = QVariant::Double;
+
 
     if (currentType == uint(targetTypeId))
         return true;
+
     if (targetTypeId < 0 || targetTypeId >= QMetaType::User)
         return false;
 
@@ -2452,12 +2473,16 @@ bool QVariant::canConvert(int targetTypeId) const
     if (currentType > int(QMetaType::QUuid) || targetTypeId > int(QMetaType::QUuid)) {
         switch (uint(targetTypeId)) {
         case QVariant::Int:
-            return currentType == QVariant::KeySequence
-                   || currentType == QMetaType::ULong
+            if (currentType == QVariant::KeySequence)
+                return true;
+            // fall through
+        case QVariant::UInt:
+               return currentType == QMetaType::ULong
                    || currentType == QMetaType::Long
                    || currentType == QMetaType::UShort
                    || currentType == QMetaType::UChar
                    || currentType == QMetaType::Char
+                   || currentType == QMetaType::SChar
                    || currentType == QMetaType::Short;
         case QVariant::Image:
             return currentType == QVariant::Pixmap || currentType == QVariant::Bitmap;
@@ -2482,6 +2507,7 @@ bool QVariant::canConvert(int targetTypeId) const
             return currentType == QVariant::Color || currentType == QVariant::Pixmap;
         case QMetaType::Long:
         case QMetaType::Char:
+        case QMetaType::SChar:
         case QMetaType::UChar:
         case QMetaType::ULong:
         case QMetaType::Short:
