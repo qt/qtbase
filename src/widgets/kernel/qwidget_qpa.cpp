@@ -521,12 +521,13 @@ void QWidgetPrivate::hide_sys()
 
     QWindow *window = q->windowHandle();
 
-    if (q->testAttribute(Qt::WA_DontShowOnScreen)
-        && q->isWindow()
-        && q->windowModality() != Qt::NonModal
-        && window) {
-        // remove our window from the modal window list
-        QGuiApplicationPrivate::hideModalWindow(window);
+    if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
+        q->setAttribute(Qt::WA_Mapped, false);
+        if (q->isWindow() && q->windowModality() != Qt::NonModal && window) {
+            // remove our window from the modal window list
+            QGuiApplicationPrivate::hideModalWindow(window);
+        }
+        // do not return here, if window non-zero, we must hide it
     }
 
     deactivateWidgetCleanup();
@@ -541,11 +542,8 @@ void QWidgetPrivate::hide_sys()
 
     invalidateBuffer(q->rect());
 
-    if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
-        q->setAttribute(Qt::WA_Mapped, false);
-    } else if (window) {
-         window->setVisible(false);
-    }
+    if (window)
+        window->setVisible(false);
 }
 
 void QWidgetPrivate::setMaxWindowState_helper()
