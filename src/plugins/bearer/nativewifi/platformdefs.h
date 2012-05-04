@@ -45,8 +45,11 @@
 #include <wtypes.h>
 #undef interface
 
+//proper header is wlanapi.h, but that is not included in windows XP
+
 #define WLAN_MAX_NAME_LENGTH 256
 #define WLAN_MAX_PHY_TYPE_NUMBER 8
+#define WLAN_NOTIFICATION_SOURCE_ACM 0x00000008
 #define WLAN_NOTIFICATION_SOURCE_ALL 0x0000ffff
 #define WLAN_AVAILABLE_NETWORK_CONNECTED 1
 #define WLAN_AVAILABLE_NETWORK_HAS_PROFILE 2
