@@ -255,6 +255,8 @@ void tst_QTcpServer::clientServerLoop()
 //----------------------------------------------------------------------------------
 void tst_QTcpServer::ipv6Server()
 {
+    if (!QtNetworkSettings::hasIPv6())
+        QSKIP("system doesn't support ipv6!");
     //### need to enter the event loop for the server to get the connection ?? ( windows)
     QTcpServer server;
     if (!server.listen(QHostAddress::LocalHostIPv6, 8944)) {
@@ -295,6 +297,8 @@ void tst_QTcpServer::dualStack()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         QSKIP("test server proxy doesn't support ipv6");
+    if (!QtNetworkSettings::hasIPv6())
+        QSKIP("system doesn't support ipv6!");
     QFETCH(QHostAddress, bindAddress);
     QFETCH(bool, v4ok);
     QFETCH(bool, v6ok);
@@ -327,6 +331,9 @@ void tst_QTcpServer::ipv6ServerMapped()
     client1.connectToHost("127.0.0.1", server.serverPort());
     QVERIFY(server.waitForNewConnection(5000));
     delete server.nextPendingConnection();
+
+    if (!QtNetworkSettings::hasIPv6())
+        QSKIP("system doesn't support ipv6!");
 
     // let's try the mapped one in the nice format
     QTcpSocket client2;
@@ -814,9 +821,13 @@ void tst_QTcpServer::serverAddress_data()
         QTest::newRow("Any") << QHostAddress(QHostAddress::Any) << QHostAddress(QHostAddress::AnyIPv4); //windows XP doesn't support dual stack sockets
     else
 #endif
-    QTest::newRow("Any") << QHostAddress(QHostAddress::Any) << QHostAddress(QHostAddress::Any);
+    if (QtNetworkSettings::hasIPv6())
+        QTest::newRow("Any") << QHostAddress(QHostAddress::Any) << QHostAddress(QHostAddress::Any);
+    else
+        QTest::newRow("Any") << QHostAddress(QHostAddress::Any) << QHostAddress(QHostAddress::AnyIPv4);
     QTest::newRow("AnyIPv4") << QHostAddress(QHostAddress::AnyIPv4) << QHostAddress(QHostAddress::AnyIPv4);
-    QTest::newRow("AnyIPv6") << QHostAddress(QHostAddress::AnyIPv6) << QHostAddress(QHostAddress::AnyIPv6);
+    if (QtNetworkSettings::hasIPv6())
+        QTest::newRow("AnyIPv6") << QHostAddress(QHostAddress::AnyIPv6) << QHostAddress(QHostAddress::AnyIPv6);
     foreach (const QHostAddress& addr, QNetworkInterface::allAddresses()) {
         if (addr.isInSubnet(QHostAddress::parseSubnet("fe80::/10"))
             || addr.isInSubnet(QHostAddress::parseSubnet("169.254/16")))
@@ -850,6 +861,7 @@ void tst_QTcpServer::qtbug6305()
         return;
 
     QFETCH(QHostAddress, listenAddress);
+
     QTcpServer server;
     QVERIFY2(server.listen(listenAddress), qPrintable(server.errorString()));
 

@@ -159,12 +159,17 @@ static inline void qt_socket_getPortAndAddress(const qt_sockaddr *s, quint16 *po
     and \a socketProtocol.  Returns -1 on failure.
 */
 bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType socketType,
-                                         QAbstractSocket::NetworkLayerProtocol socketProtocol)
+                                         QAbstractSocket::NetworkLayerProtocol &socketProtocol)
 {
     int protocol = (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) ? AF_INET6 : AF_INET;
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
 
 	int socket = qt_safe_socket(protocol, type, 0);
+    if (socket <= 0 && socketProtocol == QAbstractSocket::AnyIPProtocol && errno == EAFNOSUPPORT) {
+        protocol = AF_INET;
+        socket = qt_safe_socket(protocol, type, 0);
+        socketProtocol = QAbstractSocket::IPv4Protocol;
+    }
 
     if (socket <= 0) {
         switch (errno) {
@@ -527,6 +532,15 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
         }
 
     int bindResult = QT_SOCKET_BIND(socketDescriptor, sockAddrPtr, sockAddrSize);
+    if (bindResult < 0 && errno == EAFNOSUPPORT && address.protocol() == QAbstractSocket::AnyIPProtocol) {
+        memset(&sockAddrIPv4, 0, sizeof(sockAddrIPv4));
+        sockAddrIPv4.sin_family = AF_INET;
+        sockAddrIPv4.sin_port = htons(port);
+        sockAddrIPv4.sin_addr.s_addr = htonl(address.toIPv4Address());
+        sockAddrSize = sizeof(sockAddrIPv4);
+        sockAddrPtr = (struct sockaddr *) &sockAddrIPv4;
+        bindResult = QT_SOCKET_BIND(socketDescriptor, sockAddrPtr, sockAddrSize);
+    }
 
     if (bindResult < 0) {
         switch(errno) {

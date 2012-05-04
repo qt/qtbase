@@ -44,6 +44,12 @@
 #include <QtNetwork/QHostInfo>
 #endif
 
+#ifdef Q_OS_UNIX
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
+
 class QtNetworkSettings
 {
 public:
@@ -111,6 +117,27 @@ public:
 
         return false;
     }
+
+    static bool hasIPv6()
+    {
+#ifdef Q_OS_UNIX
+        int s = ::socket(AF_INET6, SOCK_DGRAM, 0);
+        if (s == -1)
+            return false;
+        else {
+            struct sockaddr_in6 addr;
+            memset(&addr, 0, sizeof(addr));
+            addr.sin6_family = AF_INET6;
+            memcpy(&addr.sin6_addr, &in6addr_loopback, sizeof(in6_addr));
+            if (-1 == ::bind(s, (sockaddr*)&addr, sizeof(addr))) {
+                ::close(s);
+                return false;
+            }
+        }
+#endif
+        return true;
+    }
+
 
 #ifdef QT_NETWORK_LIB
     static bool verifyTestNetworkSettings()

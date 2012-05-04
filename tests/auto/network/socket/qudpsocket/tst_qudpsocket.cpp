@@ -450,10 +450,6 @@ void tst_QUdpSocket::dualStack()
     QByteArray v4Data("v4");
     QVERIFY(v4Sock.bind(QHostAddress(QHostAddress::AnyIPv4), 0));
 
-    QUdpSocket v6Sock;
-    QByteArray v6Data("v6");
-    QVERIFY(v6Sock.bind(QHostAddress(QHostAddress::AnyIPv6), 0));
-
     QHostAddress from;
     quint16 port;
     QByteArray buffer;
@@ -466,14 +462,29 @@ void tst_QUdpSocket::dualStack()
     buffer.resize(size);
     QCOMPARE(buffer, v4Data);
 
-    //test v6 -> dual
-    QCOMPARE((int)v6Sock.writeDatagram(v6Data.constData(), v6Data.length(), QHostAddress(QHostAddress::LocalHostIPv6), dualSock.localPort()), v6Data.length());
-    QVERIFY(dualSock.waitForReadyRead(5000));
-    buffer.reserve(100);
-    size = dualSock.readDatagram(buffer.data(), 100, &from, &port);
-    QCOMPARE((int)size, v6Data.length());
-    buffer.resize(size);
-    QCOMPARE(buffer, v6Data);
+    if (QtNetworkSettings::hasIPv6()) {
+        QUdpSocket v6Sock;
+        QByteArray v6Data("v6");
+        QVERIFY(v6Sock.bind(QHostAddress(QHostAddress::AnyIPv6), 0));
+
+        //test v6 -> dual
+        QCOMPARE((int)v6Sock.writeDatagram(v6Data.constData(), v6Data.length(), QHostAddress(QHostAddress::LocalHostIPv6), dualSock.localPort()), v6Data.length());
+        QVERIFY(dualSock.waitForReadyRead(5000));
+        buffer.reserve(100);
+        size = dualSock.readDatagram(buffer.data(), 100, &from, &port);
+        QCOMPARE((int)size, v6Data.length());
+        buffer.resize(size);
+        QCOMPARE(buffer, v6Data);
+
+        //test dual -> v6
+        QCOMPARE((int)dualSock.writeDatagram(dualData.constData(), dualData.length(), QHostAddress(QHostAddress::LocalHostIPv6), v6Sock.localPort()), dualData.length());
+        QVERIFY(v6Sock.waitForReadyRead(5000));
+        buffer.reserve(100);
+        size = v6Sock.readDatagram(buffer.data(), 100, &from, &port);
+        QCOMPARE((int)size, dualData.length());
+        buffer.resize(size);
+        QCOMPARE(buffer, dualData);
+    }
 
     //test dual -> v4
     QCOMPARE((int)dualSock.writeDatagram(dualData.constData(), dualData.length(), QHostAddress(QHostAddress::LocalHost), v4Sock.localPort()), dualData.length());
@@ -483,16 +494,6 @@ void tst_QUdpSocket::dualStack()
     QCOMPARE((int)size, dualData.length());
     buffer.resize(size);
     QCOMPARE(buffer, dualData);
-
-    //test dual -> v6
-    QCOMPARE((int)dualSock.writeDatagram(dualData.constData(), dualData.length(), QHostAddress(QHostAddress::LocalHostIPv6), v6Sock.localPort()), dualData.length());
-    QVERIFY(v6Sock.waitForReadyRead(5000));
-    buffer.reserve(100);
-    size = v6Sock.readDatagram(buffer.data(), 100, &from, &port);
-    QCOMPARE((int)size, dualData.length());
-    buffer.resize(size);
-    QCOMPARE(buffer, dualData);
-
 }
 
 void tst_QUdpSocket::dualStackAutoBinding()
@@ -500,6 +501,8 @@ void tst_QUdpSocket::dualStackAutoBinding()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         QSKIP("test server SOCKS proxy doesn't support IPv6");
+    if (!QtNetworkSettings::hasIPv6())
+        QSKIP("system doesn't support ipv6!");
     QUdpSocket v4Sock;
     QVERIFY(v4Sock.bind(QHostAddress(QHostAddress::AnyIPv4), 0));
 
@@ -560,6 +563,8 @@ void tst_QUdpSocket::dualStackNoIPv4onV6only()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         QSKIP("test server SOCKS proxy doesn't support IPv6");
+    if (!QtNetworkSettings::hasIPv6())
+        QSKIP("system doesn't support ipv6!");
     QUdpSocket v4Sock;
     QVERIFY(v4Sock.bind(QHostAddress(QHostAddress::AnyIPv4), 0));
     QByteArray v4Data("v4");
@@ -1145,6 +1150,8 @@ void tst_QUdpSocket::multicastLeaveAfterClose()
     QFETCH(QHostAddress, groupAddress);
     if (setProxy)
         QSKIP("UDP Multicast does not work with proxies");
+    if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol)
+        QSKIP("system doesn't support ipv6!");
 
     QUdpSocket udpSocket;
 #ifdef FORCE_SESSION
@@ -1228,6 +1235,8 @@ void tst_QUdpSocket::multicast()
     QFETCH(bool, bindResult);
     QFETCH(QHostAddress, groupAddress);
     QFETCH(bool, joinResult);
+    if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol)
+        QSKIP("system doesn't support ipv6!");
     if (setProxy) {
         // UDP multicast does not work with proxies
         if (

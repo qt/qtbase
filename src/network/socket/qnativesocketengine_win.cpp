@@ -294,7 +294,7 @@ QWindowsSockInit::~QWindowsSockInit()
 #  define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR,12)
 #endif
 
-bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType socketType, QAbstractSocket::NetworkLayerProtocol socketProtocol)
+bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType socketType, QAbstractSocket::NetworkLayerProtocol &socketProtocol)
 {
 
     //### no ip6 support on winsocket 1.1 but we will try not to use this !!!!!!!!!!!!1

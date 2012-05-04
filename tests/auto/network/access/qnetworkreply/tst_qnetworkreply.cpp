@@ -2501,9 +2501,8 @@ void tst_QNetworkReply::connectToIPv6Address()
     QFETCH(QByteArray, dataToSend);
     QFETCH(QByteArray, hostfield);
 
-#if !defined(HAVE_IPV6) && defined(Q_OS_UNIX)
-    QSKIP("system doesn't support ipv6!");
-#endif
+    if (!QtNetworkSettings::hasIPv6())
+        QSKIP("system doesn't support ipv6!");
 
     QByteArray httpResponse = QByteArray("HTTP/1.0 200 OK\r\nContent-Length: ");
     httpResponse += QByteArray::number(dataToSend.size());

@@ -267,11 +267,12 @@ bool QTcpServer::listen(const QHostAddress &address, quint16 port)
     }
 
     QAbstractSocket::NetworkLayerProtocol proto = address.protocol();
+    QHostAddress addr = address;
 
 #ifdef QT_NO_NETWORKPROXY
     static const QNetworkProxy &proxy = *(QNetworkProxy *)0;
 #else
-    QNetworkProxy proxy = d->resolveProxy(address, port);
+    QNetworkProxy proxy = d->resolveProxy(addr, port);
 #endif
 
     delete d->socketEngine;
@@ -290,6 +291,9 @@ bool QTcpServer::listen(const QHostAddress &address, quint16 port)
         d->serverSocketErrorString = d->socketEngine->errorString();
         return false;
     }
+    proto = d->socketEngine->protocol();
+    if (addr.protocol() == QAbstractSocket::AnyIPProtocol && proto == QAbstractSocket::IPv4Protocol)
+        addr = QHostAddress::AnyIPv4;
 
 #if defined(Q_OS_UNIX)
     // Under Unix, we want to be able to bind to the port, even if a socket on
@@ -303,7 +307,7 @@ bool QTcpServer::listen(const QHostAddress &address, quint16 port)
     d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 1);
 #endif
 
-    if (!d->socketEngine->bind(address, port)) {
+    if (!d->socketEngine->bind(addr, port)) {
         d->serverSocketError = d->socketEngine->error();
         d->serverSocketErrorString = d->socketEngine->errorString();
         return false;

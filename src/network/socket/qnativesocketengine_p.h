@@ -244,7 +244,7 @@ public:
     int option(QNativeSocketEngine::SocketOption option) const;
     bool setOption(QNativeSocketEngine::SocketOption option, int value);
 
-    bool createNewSocket(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol);
+    bool createNewSocket(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol &protocol);
 
     bool nativeConnect(const QHostAddress &address, quint16 port);
     bool nativeBind(const QHostAddress &address, quint16 port);

@@ -572,14 +572,16 @@ void tst_PlatformSocketEngine::bind()
     QVERIFY(!binder3.bind(QHostAddress::AnyIPv4, 31180));
     QVERIFY(binder3.error() == QAbstractSocket::AddressInUseError);
 
-    PLATFORMSOCKETENGINE binder4;
-    QVERIFY(binder4.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv6Protocol));
-    QVERIFY(binder4.bind(QHostAddress::AnyIPv6, 31180));
+    if (QtNetworkSettings::hasIPv6()) {
+        PLATFORMSOCKETENGINE binder4;
+        QVERIFY(binder4.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv6Protocol));
+        QVERIFY(binder4.bind(QHostAddress::AnyIPv6, 31180));
 
-    PLATFORMSOCKETENGINE binder5;
-    QVERIFY(binder5.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv6Protocol));
-    QVERIFY(!binder5.bind(QHostAddress::AnyIPv6, 31180));
-    QVERIFY(binder5.error() == QAbstractSocket::AddressInUseError);
+        PLATFORMSOCKETENGINE binder5;
+        QVERIFY(binder5.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv6Protocol));
+        QVERIFY(!binder5.bind(QHostAddress::AnyIPv6, 31180));
+        QVERIFY(binder5.error() == QAbstractSocket::AddressInUseError);
+    }
 
     PLATFORMSOCKETENGINE binder6;
     QVERIFY(binder6.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::AnyIPProtocol));
