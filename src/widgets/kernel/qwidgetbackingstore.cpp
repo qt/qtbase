@@ -104,6 +104,10 @@ static inline void qt_flush(QWidget *widget, const QRegion &region, QBackingStor
             frames = 0;
         }
     }
+
+    if (tlw->testAttribute(Qt::WA_DontShowOnScreen) || widget->testAttribute(Qt::WA_DontShowOnScreen))
+        return;
+
     if (widget != tlw)
         backingStore->flush(region, widget->windowHandle(), tlwOffset + widget->mapTo(tlw, QPoint()));
     else
