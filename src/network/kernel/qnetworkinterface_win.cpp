@@ -146,8 +146,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
     ULONG bufSize = sizeof staticBuf;
 
     const QHash<QHostAddress, QHostAddress> &ipv4netmasks = ipv4Netmasks();
-    ULONG flags = GAA_FLAG_INCLUDE_ALL_INTERFACES |
-                  GAA_FLAG_INCLUDE_PREFIX |
+    ULONG flags = GAA_FLAG_INCLUDE_PREFIX |
                   GAA_FLAG_SKIP_DNS_SERVER |
                   GAA_FLAG_SKIP_MULTICAST;
     ULONG retval = ptrGetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAdapter, &bufSize);
