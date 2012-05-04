@@ -192,7 +192,7 @@ public:
     inline void setPos(int posx, int posy) { setPos(QPoint(posx, posy)); }
 
     void resize(const QSize &newSize);
-    inline void resize(int w, int h) { setGeometry(QRect(x(), y(), w, h)); }
+    inline void resize(int w, int h) { resize(QSize(w, h)); }
 
     void setWindowIcon(const QImage &icon) const;
 
