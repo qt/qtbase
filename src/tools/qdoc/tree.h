@@ -118,14 +118,12 @@ public:
                              PropertyNode::FunctionRole funcRole);
     void addToGroup(Node *node, const QString &group);
     void addToPublicGroup(Node *node, const QString &group);
-    void addToQmlModule(Node* node, const QString& module);
+    void addToQmlModule(Node* node);
     NodeMultiMap groups() const;
-    NodeMultiMap qmlModules() const;
     QMultiMap<QString,QString> publicGroups() const;
     void resolveInheritance(NamespaceNode *rootNode = 0);
     void resolveProperties();
     void resolveGroups();
-    void resolveQmlModules();
     void resolveTargets(InnerNode* root);
     void resolveCppToQmlLinks();
     void fixInheritance(NamespaceNode *rootNode = 0);

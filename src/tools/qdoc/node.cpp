@@ -1452,6 +1452,8 @@ QmlClassNode* ClassNode::findQmlBaseNode()
     return result;
 }
 
+QMap<QString, FakeNode*> FakeNode::qmlModuleMap_;
+
 /*!
   \class FakeNode
  */
@@ -1472,8 +1474,11 @@ FakeNode::FakeNode(InnerNode* parent, const QString& name, SubType subtype, Node
         setPageType(ptype);
         break;
     case Module:
-    case QmlModule:
     case Group:
+        setPageType(OverviewPage);
+        break;
+    case QmlModule:
+        setQmlModule(name);
         setPageType(OverviewPage);
         break;
     case QmlClass:
@@ -1545,6 +1550,47 @@ QString FakeNode::subTitle() const
             return name();
     }
     return QString();
+}
+
+/*!
+  The QML module map contains an entry for each QML module
+  identifier. A QML module identifier is constucted from the
+  QML module name and the module's major version number, like
+  this: \e {<module-name><major-version>}
+
+  If the QML module map does not contain the module identifier
+  \a qmid, insert the QML module node \a fn mapped to \a qmid.
+ */
+void FakeNode::insertQmlModuleNode(const QString& qmid, FakeNode* fn)
+{
+    if (!qmlModuleMap_.contains(qmid))
+        qmlModuleMap_.insert(qmid,fn);
+}
+
+/*!
+  Returns a pointer to the QML module node (FakeNode) that is
+  mapped to the QML module identifier constructed from \a arg.
+  If that QML module node does not yet exist, it is constructed
+  and inserted into the QML module map mapped to the QML module
+  identifier constructed from \a arg.
+ */
+FakeNode* FakeNode::lookupQmlModuleNode(Tree* tree, const QString& arg)
+{
+    QStringList dotSplit;
+    QStringList blankSplit = arg.split(QLatin1Char(' '));
+    QString qmid = blankSplit[0];
+    if (blankSplit.size() > 1) {
+        dotSplit = blankSplit[1].split(QLatin1Char('.'));
+        qmid += dotSplit[0];
+    }
+    FakeNode* fn = 0;
+    if (qmlModuleMap_.contains(qmid))
+        fn = qmlModuleMap_.value(qmid);
+    if (!fn) {
+        fn = new FakeNode(tree->root(), arg, Node::QmlModule, Node::OverviewPage);
+        insertQmlModuleNode(qmid,fn);
+    }
+    return fn;
 }
 
 /*!
@@ -1964,7 +2010,7 @@ QString PropertyNode::qualifiedDataType() const
 
 bool QmlClassNode::qmlOnly = false;
 QMultiMap<QString,Node*> QmlClassNode::inheritedBy;
-QMap<QString, QmlClassNode*> QmlClassNode::moduleMap;
+QMap<QString, QmlClassNode*> QmlClassNode::qmlModuleMemberMap_;
 
 /*!
   Constructs a Qml class node (i.e. a Fake node with the
@@ -1990,7 +2036,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
 }
 
 /*!
-  I made this so I could print a debug message here.
+  Needed for printing a debug messages.
  */
 QmlClassNode::~QmlClassNode()
 {
@@ -2006,7 +2052,26 @@ QmlClassNode::~QmlClassNode()
 void QmlClassNode::terminate()
 {
     inheritedBy.clear();
-    moduleMap.clear();
+    qmlModuleMemberMap_.clear();
+}
+
+/*!
+  Insert the QML type node \a qcn into the static QML module
+  member map. The key is \a qmid + "::" + qcn->name().
+ */
+void QmlClassNode::insertQmlModuleMember(const QString& qmid, QmlClassNode* qcn)
+{
+    qmlModuleMemberMap_.insert(qmid + "::" + qcn->name(), qcn);
+}
+
+/*!
+  Lookup the QML type node identified by the Qml module id
+  \a qmid and QML type \a name, and return a pointer to the
+  node. The key is \a qmid + "::" + qcn->name().
+ */
+QmlClassNode* QmlClassNode::lookupQmlTypeNode(const QString& qmid, const QString& name)
+{
+    return qmlModuleMemberMap_.value(qmid + "::" + name);
 }
 
 /*!
@@ -2057,20 +2122,38 @@ void QmlClassNode::subclasses(const QString& base, NodeList& subs)
   is returned is the concatenation of the QML module name
   and its version number. e.g., if an element or component
   is defined to be in the QML module QtQuick 1, its module
-  identifier is "QtQuick1". See setQmlModuleName().
+  identifier is "QtQuick1". See setQmlModule().
  */
 
 /*!
   This function splits \a arg on the blank character to get a
-  QML module name and version number. It stores these separately.
-  The version number is not required.
+  QML module name and version number. It then spilts the version
+  number on the '.' character to get a major version number and
+  a minor vrsion number. Both version numbers must be present.
+  It stores these components separately. If all three are found,
+  true is returned. If any of the three is not found or is not
+  correct, false is returned.
  */
-void Node::setQmlModuleName(const QString& arg)
+bool Node::setQmlModule(const QString& arg)
 {
+    QStringList dotSplit;
     QStringList blankSplit = arg.split(QLatin1Char(' '));
     qmlModuleName_ = blankSplit[0];
-    if (blankSplit.size() > 1)
-        qmlModuleVersion_ = blankSplit[1];
+    qmlModuleVersionMajor_ = "1";
+    qmlModuleVersionMinor_ = "0";
+    if (blankSplit.size() > 1) {
+        dotSplit = blankSplit[1].split(QLatin1Char('.'));
+        qmlModuleVersionMajor_ = dotSplit[0];
+        if (dotSplit.size() > 1) {
+            qmlModuleVersionMinor_ = dotSplit[1];
+            return true;
+        }
+        else
+            doc().location().warning(tr("Minor version number missing for '\\qmlmodule' or '\\inqmlmodule'; 0 assumed."));
+    }
+    else
+        doc().location().warning(tr("Module version number missing for '\\qmlmodule' or '\\inqmlmodule'; 1.0 assumed."));
+    return false;
 }
 
 /*!

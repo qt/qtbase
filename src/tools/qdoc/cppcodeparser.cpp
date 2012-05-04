@@ -711,7 +711,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         return new FakeNode(tree_->root(), arg, Node::Module, Node::OverviewPage);
     }
     else if (command == COMMAND_QMLMODULE) {
-        return new FakeNode(tree_->root(), arg, Node::QmlModule, Node::OverviewPage);
+        return FakeNode::lookupQmlModuleNode(tree_, arg);
     }
     else if (command == COMMAND_PAGE) {
         Node::PageType ptype = Node::ArticlePage;

@@ -250,11 +250,12 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         node->setModuleName(arg);
     }
     else if (command == COMMAND_INQMLMODULE) {
-        node->setQmlModuleName(arg);
-        tree->addToQmlModule(node,arg);
+        node->setQmlModule(arg);
+        FakeNode* fn = FakeNode::lookupQmlModuleNode(tree, arg);
+        fn->addQmlModuleMember(node);
         QString qmid = node->qmlModuleIdentifier();
         QmlClassNode* qcn = static_cast<QmlClassNode*>(node);
-        QmlClassNode::moduleMap.insert(qmid + QLatin1String("::") + node->name(), qcn);
+        QmlClassNode::insertQmlModuleMember(qmid, qcn);
     }
     else if (command == COMMAND_MAINCLASS) {
         node->setStatus(Node::Main);

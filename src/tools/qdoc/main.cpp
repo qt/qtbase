@@ -365,7 +365,6 @@ static void processQdocconfFile(const QString &fileName)
       targets, URLs, links, and other stuff that needs resolving.
      */
     tree->resolveGroups();
-    tree->resolveQmlModules();
     tree->resolveTargets(tree->root());
     tree->resolveCppToQmlLinks();
     tree->resolveQmlInheritance();

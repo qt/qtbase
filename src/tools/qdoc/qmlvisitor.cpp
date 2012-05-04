@@ -311,11 +311,12 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                 node->setStatus(Node::Deprecated);
             }
             else if (command == COMMAND_INQMLMODULE) {
-                node->setQmlModuleName(args[0]);
-                tree->addToQmlModule(node,args[0]);
+                node->setQmlModule(args[0]);
+                FakeNode* fn = FakeNode::lookupQmlModuleNode(tree, args[0]);
+                fn->addQmlModuleMember(node);
                 QString qmid = node->qmlModuleIdentifier();
                 QmlClassNode* qcn = static_cast<QmlClassNode*>(node);
-                QmlClassNode::moduleMap.insert(qmid + "::" + node->name(), qcn);
+                QmlClassNode::insertQmlModuleMember(qmid, qcn);
             }
             else if (command == COMMAND_QMLINHERITS) {
                 if (node->name() == args[0])

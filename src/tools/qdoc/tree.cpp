@@ -92,7 +92,6 @@ public:
     QMap<ClassNode* , QList<InheritanceBound> > unresolvedInheritanceMap;
     PropertyMap unresolvedPropertyMap;
     NodeMultiMap groupMap;
-    NodeMultiMap qmlModuleMap;
     QMultiMap<QString, QString> publicGroupMap;
     FakeNodeHash fakeNodesByTitle;
     TargetHash targetHash;
@@ -176,11 +175,13 @@ const Node* Tree::findNode(const QStringList& path,
         /*
           If the path contains one or two double colons ("::"),
           check first to see if the first two path strings refer
-          to a QML element. If yes, that reference identifies a
-          QML class node.
+          to a QML element. If they do, path[0] will be the QML
+          module identifier, and path[1] will be the QML type.
+          If the anser is yes, the reference identifies a QML
+          class node.
         */
         if (qml && path.size() >= 2) {
-            QmlClassNode* qcn = QmlClassNode::moduleMap.value(path[0]+ "::" +path[1]);
+            QmlClassNode* qcn = QmlClassNode::lookupQmlTypeNode(path[0], path[1]);
             if (qcn) {
                 node = qcn;
                 if (path.size() == 2)
@@ -250,7 +251,7 @@ QmlClassNode* Tree::findQmlClassNode(const QString& module, const QString& name)
         }
         return 0;
     }
-    return QmlClassNode::moduleMap.value(module + "::" + name);
+    return QmlClassNode::lookupQmlTypeNode(module, name);
 }
 
 /*!
@@ -328,7 +329,7 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
       QML class node in the QML module map.
      */
     if (path.size() == 3) {
-        QmlClassNode* qcn = QmlClassNode::moduleMap.value(path[0]+ "::" +path[1]);
+        QmlClassNode* qcn = QmlClassNode::lookupQmlTypeNode(path[0], path[1]);
         if (qcn) {
             return static_cast<const FunctionNode*>(qcn->findFunctionNode(path[2]));
         }
@@ -592,29 +593,11 @@ void Tree::addToGroup(Node* node, const QString& group)
 }
 
 /*!
-  This function adds the \a node to the QML \a module. The QML
-  module can be listed anywhere using the \e{annotated list}
-  command.
- */
-void Tree::addToQmlModule(Node* node, const QString& module)
-{
-    priv->qmlModuleMap.insert(module, node);
-}
-
-/*!
   Returns the group map.
  */
 NodeMultiMap Tree::groups() const
 {
     return priv->groupMap;
-}
-
-/*!
-  Returns the QML module map.
- */
-NodeMultiMap Tree::qmlModules() const
-{
-    return priv->qmlModuleMap;
 }
 
 /*!
@@ -761,20 +744,6 @@ void Tree::resolveGroups()
         Node* n = findGroupNode(QStringList(i.key()));
         if (n)
             n->addGroupMember(i.value());
-    }
-}
-
-/*!
-  For each node in the QML module map, add the node to the
-  appropriate QML module node.
- */
-void Tree::resolveQmlModules()
-{
-    NodeMultiMap::const_iterator i;
-    for (i = priv->qmlModuleMap.constBegin(); i != priv->qmlModuleMap.constEnd(); ++i) {
-        Node* n = findQmlModuleNode(QStringList(i.key()));
-        if (n)
-            n->addQmlModuleMember(i.value());
     }
 }
 
@@ -2319,15 +2288,6 @@ Node* Tree::findNodeByNameAndType(const QStringList& path,
     return result;
 }
 
-#if 0
-    if (result)
-        qDebug() << "FOUND:" << path << Node::nodeTypeString(type)
-                 << Node::nodeSubtypeString(subtype);
-    else
-        qDebug() << "NOT FOUND:" << path << Node::nodeTypeString(type)
-                 << Node::nodeSubtypeString(subtype);
-#endif
-
 /*!
   Recursive search for a node identified by \a path. Each
   path element is a name. \a pathIndex specifies the index
@@ -2445,11 +2405,13 @@ QmlClassNode* Tree::findQmlClassNode(const QStringList& path, Node* start)
     /*
       If the path contains one or two double colons ("::"),
       check first to see if the first two path strings refer
-      to a QML element. If yes, that reference identifies a
-      QML class node.
+      to a QML element. If they do, path[0] will be the QML
+      module identifier, and path[1] will be the QML type.
+      If the anser is yes, the reference identifies a QML
+      class node.
     */
     if (path.size() >= 2) {
-        QmlClassNode* qcn = QmlClassNode::moduleMap.value(path[0]+ "::" +path[1]);
+        QmlClassNode* qcn = QmlClassNode::lookupQmlTypeNode(path[0], path[1]);
         if (qcn)
             return qcn;
     }
@@ -2499,50 +2461,3 @@ FakeNode* Tree::findQmlModuleNode(const QStringList& path, Node* start)
 }
 
 QT_END_NAMESPACE
-
-#if 0
-const Node* Tree::findNodeXXX(const QStringList& path, bool qml) const
-{
-    const Node* current = root();
-    do {
-        const Node* node = current;
-        int i;
-        int start_idx = 0;
-
-        /*
-          If the path contains one or two double colons ("::"),
-          check first to see if the first two path strings refer
-          to a QML element. If yes, that reference identifies a
-          QML class node.
-        */
-        if (qml && path.size() >= 2) {
-            QmlClassNode* qcn = QmlClassNode::moduleMap.value(path[0]+ "::" +path[1]);
-            if (qcn) {
-                node = qcn;
-                if (path.size() == 2)
-                    return node;
-                start_idx = 2;
-            }
-        }
-
-        for (i = start_idx; i < path.size(); ++i) {
-            if (node == 0 || !node->isInnerNode())
-                break;
-
-            const Node* next = static_cast<const InnerNode*>(node)->findChildNodeByName(path.at(i), qml);
-            node = next;
-        }
-        if (node && i == path.size()) {
-            if (node->subType() != Node::QmlPropertyGroup) {
-                if (node->subType() == Node::Collision) {
-                    node = node->applyModuleIdentifier(start);
-                }
-                return node;
-            }
-        }
-        current = current->parent();
-    } while (current);
-
-    return 0;
-}
-#endif

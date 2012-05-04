@@ -231,9 +231,9 @@ public:
     QString ditaXmlHref();
     QString extractClassName(const QString &string) const;
     virtual QString qmlModuleName() const { return qmlModuleName_; }
-    virtual QString qmlModuleVersion() const { return qmlModuleVersion_; }
-    virtual QString qmlModuleIdentifier() const { return qmlModuleName_ + qmlModuleVersion_; }
-    virtual void setQmlModuleName(const QString& );
+    virtual QString qmlModuleVersion() const { return qmlModuleVersionMajor_ + "." + qmlModuleVersionMinor_; }
+    virtual QString qmlModuleIdentifier() const { return qmlModuleName_ + qmlModuleVersionMajor_; }
+    virtual bool setQmlModule(const QString& );
     virtual ClassNode* classNode() { return 0; }
     virtual void clearCurrentChild() { }
     virtual const ImportList* importList() const { return 0; }
@@ -290,7 +290,8 @@ private:
     mutable QString uuid;
     QString outSubDir_;
     QString qmlModuleName_;
-    QString qmlModuleVersion_;
+    QString qmlModuleVersionMajor_;
+    QString qmlModuleVersionMinor_;
     static QStringMap operators_;
     static int propertyGroupCount_;
 };
@@ -474,11 +475,16 @@ public:
     virtual void setImageFileName(const QString& ) { }
     virtual bool isQmlPropertyGroup() const { return (nodeSubtype_ == QmlPropertyGroup); }
 
+    static void insertQmlModuleNode(const QString& qmid, FakeNode* fn);
+    static FakeNode* lookupQmlModuleNode(Tree* tree, const QString& arg);
+
 protected:
     SubType nodeSubtype_;
     QString title_;
     QString subtitle_;
     NodeList nodeList; // used for groups and QML modules.
+
+    static QMap<QString, FakeNode*> qmlModuleMap_;
 };
 
 class NameCollisionNode : public FakeNode
@@ -542,10 +548,13 @@ public:
     static void subclasses(const QString& base, NodeList& subs);
     static void terminate();
 
+    static void insertQmlModuleMember(const QString& qmid, QmlClassNode* qcn);
+    static QmlClassNode* lookupQmlTypeNode(const QString& qmid, const QString& name);
+
 public:
     static bool qmlOnly;
     static QMultiMap<QString,Node*> inheritedBy;
-    static QMap<QString, QmlClassNode*> moduleMap;
+    static QMap<QString, QmlClassNode*> qmlModuleMemberMap_;
 
 private:
     bool abstract;
