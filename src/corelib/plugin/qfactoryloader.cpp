@@ -370,6 +370,39 @@ void QFactoryLoader::refreshAll()
     }
 }
 
+QMultiMap<int, QString> QFactoryLoader::keyMap() const
+{
+    QMultiMap<int, QString> result;
+    const QString metaDataKey = QStringLiteral("MetaData");
+    const QString keysKey = QStringLiteral("Keys");
+    const QList<QJsonObject> metaDataList = metaData();
+    for (int i = 0; i < metaDataList.size(); ++i) {
+        const QJsonObject metaData = metaDataList.at(i).value(metaDataKey).toObject();
+        const QJsonArray keys = metaData.value(keysKey).toArray();
+        const int keyCount = keys.size();
+        for (int k = 0; k < keyCount; ++k)
+            result.insert(i, keys.at(k).toString());
+    }
+    return result;
+}
+
+int QFactoryLoader::indexOf(const QString &needle) const
+{
+    const QString metaDataKey = QStringLiteral("MetaData");
+    const QString keysKey = QStringLiteral("Keys");
+    const QList<QJsonObject> metaDataList = metaData();
+    for (int i = 0; i < metaDataList.size(); ++i) {
+        const QJsonObject metaData = metaDataList.at(i).value(metaDataKey).toObject();
+        const QJsonArray keys = metaData.value(keysKey).toArray();
+        const int keyCount = keys.size();
+        for (int k = 0; k < keyCount; ++k) {
+            if (!keys.at(k).toString().compare(needle, Qt::CaseInsensitive))
+                return i;
+        }
+    }
+    return -1;
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_LIBRARY

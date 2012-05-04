@@ -56,6 +56,7 @@
 #include "QtCore/qobject.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qjsonobject.h"
+#include "QtCore/qmap.h"
 #include "private/qlibrary_p.h"
 #ifndef QT_NO_LIBRARY
 
@@ -84,10 +85,41 @@ public:
     QLibraryPrivate *library(const QString &key) const;
 #endif
 
+    QMultiMap<int, QString> keyMap() const;
+    int indexOf(const QString &needle) const;
+
     void update();
 
     static void refreshAll();
 };
+
+template <class PluginInterface, class FactoryInterface>
+    PluginInterface *qLoadPlugin(const QFactoryLoader *loader, const QString &key)
+{
+    const int index = loader->indexOf(key);
+    if (index != -1) {
+        QObject *factoryObject = loader->instance(index);
+        if (FactoryInterface *factory = qobject_cast<FactoryInterface *>(factoryObject))
+            if (PluginInterface *result = factory->create(key))
+                return result;
+    }
+    return 0;
+}
+
+template <class PluginInterface, class FactoryInterface, class Parameter1>
+PluginInterface *qLoadPlugin1(const QFactoryLoader *loader,
+                              const QString &key,
+                              const Parameter1 &parameter1)
+{
+    const int index = loader->indexOf(key);
+    if (index != -1) {
+        QObject *factoryObject = loader->instance(index);
+        if (FactoryInterface *factory = qobject_cast<FactoryInterface *>(factoryObject))
+            if (PluginInterface *result = factory->create(key, parameter1))
+                return result;
+    }
+    return 0;
+}
 
 QT_END_NAMESPACE
 
