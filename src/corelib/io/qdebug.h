@@ -127,6 +127,8 @@ public:
     { stream->ts << m; return *this; }
 };
 
+Q_DECLARE_SHARED(QDebug)
+
 class QNoDebug
 {
 public:

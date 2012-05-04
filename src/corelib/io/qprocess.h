@@ -100,6 +100,8 @@ private:
     QSharedDataPointer<QProcessEnvironmentPrivate> d;
 };
 
+Q_DECLARE_SHARED(QProcessEnvironment)
+
 class Q_CORE_EXPORT QProcess : public QIODevice
 {
     Q_OBJECT

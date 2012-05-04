@@ -139,7 +139,7 @@ private:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QPersistentModelIndex &);
 #endif
 };
-Q_DECLARE_TYPEINFO(QPersistentModelIndex, Q_MOVABLE_TYPE);
+Q_DECLARE_SHARED(QPersistentModelIndex)
 
 inline uint qHash(const QPersistentModelIndex &index)
 { return qHash(index.d); }

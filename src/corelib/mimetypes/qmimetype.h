@@ -107,6 +107,8 @@ protected:
     QExplicitlySharedDataPointer<QMimeTypePrivate> d;
 };
 
+Q_DECLARE_SHARED(QMimeType)
+
 QT_END_NAMESPACE
 
 #endif   // QMIMETYPE_H

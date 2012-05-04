@@ -133,9 +133,9 @@ private:
     QExplicitlySharedDataPointer<QRegularExpressionPrivate> d;
 };
 
+Q_DECLARE_SHARED(QRegularExpression)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRegularExpression::PatternOptions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRegularExpression::MatchOptions)
-Q_DECLARE_TYPEINFO(QRegularExpression, Q_MOVABLE_TYPE);
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &out, const QRegularExpression &re);
@@ -198,7 +198,7 @@ private:
     QSharedDataPointer<QRegularExpressionMatchPrivate> d;
 };
 
-Q_DECLARE_TYPEINFO(QRegularExpressionMatch, Q_MOVABLE_TYPE);
+Q_DECLARE_SHARED(QRegularExpressionMatch)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QRegularExpressionMatch &match);
@@ -235,7 +235,7 @@ private:
     QSharedDataPointer<QRegularExpressionMatchIteratorPrivate> d;
 };
 
-Q_DECLARE_TYPEINFO(QRegularExpressionMatchIterator, Q_MOVABLE_TYPE);
+Q_DECLARE_SHARED(QRegularExpressionMatchIterator)
 
 QT_END_NAMESPACE
 

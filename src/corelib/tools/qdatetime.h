@@ -271,7 +271,7 @@ private:
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QDateTime &);
 #endif
 };
-Q_DECLARE_TYPEINFO(QDateTime, Q_MOVABLE_TYPE);
+Q_DECLARE_SHARED(QDateTime)
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QDate &);
