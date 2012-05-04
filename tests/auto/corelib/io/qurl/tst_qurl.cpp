@@ -2782,18 +2782,19 @@ void tst_QUrl::componentEncodings_data()
     // test the query
     // since QUrl doesn't know what chars the user wants to use for the pair and value delimiters,
     // it keeps the delimiters alone except for "#", which must always be encoded.
-    QTest::newRow("unencoded-delims-query") << QUrl("?!$()*+,;=:/?[]@")
+    // In the following test, all delimiter characters appear both as encoded and as decoded (except for "#")
+    QTest::newRow("unencoded-delims-query") << QUrl("?!$()*+,;=:/?[]@%21%24%26%27%28%29%2a%2b%2c%2f%3a%3b%3d%3f%40%5b%5d")
                                             << int(QUrl::FullyEncoded)
                                             << QString() << QString() << QString()
                                             << QString() << QString()
-                                            << QString() << "!$()*+,;=:/?[]@" << QString()
-                                            << "?!$()*+,;=:/?[]@";
-    QTest::newRow("undecoded-delims-query") << QUrl("?%21%24%26%27%28%29%2a%2b%2c%2f%3a%3b%3d%3f%40%5b%5d")
+                                            << QString() << "!$()*+,;=:/?[]@%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D" << QString()
+                                            << "?!$()*+,;=:/?[]@%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D";
+    QTest::newRow("undecoded-delims-query") << QUrl("?!$()*+,;=:/?[]@%21%24%26%27%28%29%2a%2b%2c%2f%3a%3b%3d%3f%40%5b%5d")
                                             << int(QUrl::MostDecoded)
                                             << QString() << QString() << QString()
                                             << QString() << QString()
-                                            << QString() << "%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D" << QString()
-                                            << "?%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D";
+                                            << QString() << "!$()*+,;=:/?[]@%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D" << QString()
+                                            << "?!$()*+,;=:/?[]@%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D";
 
     // reserved characters:  '"' / "<" / ">" / "^" / "\" / "{" / "|" "}"
     // the RFC does not allow them undecoded anywhere, but we do
