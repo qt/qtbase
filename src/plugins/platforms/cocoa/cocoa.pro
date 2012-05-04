@@ -14,9 +14,12 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoaglcontext.mm \
     qcocoanativeinterface.mm \
     qcocoaeventdispatcher.mm \
-    qcocoamenuloader.mm \
     qcocoaapplicationdelegate.mm \
     qcocoaapplication.mm \
+    qcocoamenu.mm \
+    qcocoamenuitem.mm \
+    qcocoamenubar.mm \
+    qcocoamenuloader.mm \
     qcocoahelpers.mm \
     qmultitouch_mac.mm \
     qcocoaaccessibilityelement.mm \
@@ -46,9 +49,12 @@ HEADERS += qcocoaintegration.h \
     qcocoaglcontext.h \
     qcocoanativeinterface.h \
     qcocoaeventdispatcher.h \
-    qcocoamenuloader.h \
     qcocoaapplicationdelegate.h \
     qcocoaapplication.h \
+    qcocoamenu.h \
+    qcocoamenuitem.h \
+    qcocoamenubar.h \
+    qcocoamenuloader.h \
     qcocoahelpers.h \
     qmultitouch_mac_p.h \
     qcocoaaccessibilityelement.h \

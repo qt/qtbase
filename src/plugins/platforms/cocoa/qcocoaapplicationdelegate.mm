@@ -355,7 +355,7 @@ static void cleanupCocoaApplicationDelegate()
 - (void)qtDispatcherToQAction:(id)sender
 {
     Q_UNUSED(sender);
-    [qtMenuLoader qtDispatcherToQAction:sender];
+    [qtMenuLoader qtDispatcherToQPAMenuItem:sender];
 }
 
 @end

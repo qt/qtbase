@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author James Turner <james.turner@kdab.com>
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,229 +39,244 @@
 **
 ****************************************************************************/
 
-#include "qapplication.h"
-#include "qvarlengtharray.h"
-#import "qcocoamenu.h"
-#import "qcocoamenuloader.h"
-#import "qcocoaapplication.h"
+#include "qcocoamenu.h"
+
 #include "qcocoahelpers.h"
-#include <private/qapplication_p.h>
-#include <private/qaction_p.h>
+#include "qcocoaautoreleasepool.h"
 
-QT_FORWARD_DECLARE_CLASS(QAction)
-QT_FORWARD_DECLARE_CLASS(QWidget)
-QT_FORWARD_DECLARE_CLASS(QApplication)
-QT_FORWARD_DECLARE_CLASS(QCoreApplication)
-QT_FORWARD_DECLARE_CLASS(QApplicationPrivate)
-QT_FORWARD_DECLARE_CLASS(QKeyEvent)
-QT_FORWARD_DECLARE_CLASS(QEvent)
+@interface QT_MANGLE_NAMESPACE(QCocoaMenuDelegate) : NSObject <NSMenuDelegate> {
+    QCocoaMenu *m_menu;
+}
 
-QT_BEGIN_NAMESPACE
-extern void qt_mac_menu_collapseSeparators(NSMenu *menu, bool collapse);
-void qt_mac_clear_status_text(QAction *action);
-extern void qt_mac_emit_menuSignals(QMenu *menu, bool show);
-extern void qt_mac_menu_emit_hovered(QMenu *menu, QAction *action);
-QT_END_NAMESPACE
+- (id) initWithMenu:(QCocoaMenu*) m;
 
-QT_USE_NAMESPACE
+@end
 
-@implementation QT_MANGLE_NAMESPACE(QNativeCocoaMenu)
+@implementation QT_MANGLE_NAMESPACE(QCocoaMenuDelegate)
 
-- (id)initWithQMenu:(QMenu*)menu
+- (id) initWithMenu:(QCocoaMenu*) m
 {
-    self = [super init];
-    if (self) {
-        qmenu = menu;
-        previousAction = 0;
-        [self setAutoenablesItems:NO];
-        [self setDelegate:self];
-    }
+    if ((self = [super init]))
+        m_menu = m;
+
     return self;
 }
 
-- (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem*)item
+- (void) menuWillOpen:(NSMenu*)m
 {
-    Q_UNUSED(menu);
-
-    if (!item) {
-        if (previousAction) {
-            qt_mac_clear_status_text(previousAction);
-            previousAction = 0;
-        }
-        return;
-    }
-
-    if (QAction *action = reinterpret_cast<QAction *>([item tag])) {
-        QMenu *qtmenu = static_cast<QT_MANGLE_NAMESPACE(QNativeCocoaMenu) *>(menu)->qmenu;
-        previousAction = action;
-        action->activate(QAction::Hover);
-        qt_mac_menu_emit_hovered(qtmenu, action);
-        action->showStatusText(0); // 0 widget -> action's parent
-    }
+    Q_UNUSED(m);
+    emit m_menu->aboutToShow();
 }
 
-- (void)menuWillOpen:(NSMenu*)menu
+- (void) menuDidClose:(NSMenu*)m
 {
-    while (QWidget *popup
-                = QApplication::activePopupWidget())
-        popup->close();
-    QMenu *qtmenu = static_cast<QT_MANGLE_NAMESPACE(QNativeCocoaMenu) *>(menu)->qmenu;
-    qt_mac_emit_menuSignals(qtmenu, true);
-    qt_mac_menu_collapseSeparators(menu, qtmenu->separatorsCollapsible());
+    Q_UNUSED(m);
+    // wrong, but it's the best we can do
+    emit m_menu->aboutToHide();
 }
 
-- (void)menuDidClose:(NSMenu*)menu
+- (void) itemFired:(NSMenuItem*) item
 {
-    qt_mac_emit_menuSignals(((QT_MANGLE_NAMESPACE(QNativeCocoaMenu) *)menu)->qmenu, false);
-    if (previousAction) {
-        qt_mac_clear_status_text(previousAction);
-        previousAction = 0;
-    }
+    QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([item tag]);
+    cocoaItem->activated();
 }
 
-- (BOOL)hasShortcut:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier
-  whichItem:(NSMenuItem**)outItem
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem
 {
-    for (NSMenuItem *item in [menu itemArray]) {
-        if (![item isEnabled] || [item isHidden] || [item isSeparatorItem])
-            continue;
-        if ([item hasSubmenu]) {
-            if ([self hasShortcut:[item submenu]
-                           forKey:key
-                     forModifiers:modifier whichItem:outItem]) {
-                if (outItem)
-                    *outItem = item;
-                return YES;
-            }
-        }
-        NSString *menuKey = [item keyEquivalent];
-        if (menuKey && NSOrderedSame == [menuKey compare:key]
-            && (modifier == [item keyEquivalentModifierMask])) {
-            if (outItem)
-                *outItem = item;
-            return YES;
-        }
-    }
-    if (outItem)
-        *outItem = 0;
-    return NO;
-}
+    if (![menuItem tag])
+        return YES;
 
-NSString *qt_mac_removePrivateUnicode(NSString* string)
-{
-    int len = [string length];
-    if (len) {
-        QVarLengthArray <unichar, 10> characters(len);
-        bool changed = false;
-        for (int i = 0; i<len; i++) {
-            characters[i] = [string characterAtIndex:i];
-            // check if they belong to key codes in private unicode range
-            // currently we need to handle only the NSDeleteFunctionKey
-            if (characters[i] == NSDeleteFunctionKey) {
-                characters[i] = NSDeleteCharacter;
-                changed = true;
-            }
-        }
-        if (changed)
-            return [NSString stringWithCharacters:characters.data() length:len];
-    }
-    return string;
-}
 
-- (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action
-{
-    // Check if the menu actually has a keysequence defined for this key event.
-    // If it does, then we will first send the key sequence to the QWidget that has focus
-    // since (in Qt's eyes) it needs to a chance at the key event first. If the widget
-    // accepts the key event, we then return YES, but set the target and action to be nil,
-    // which means that the action should not be triggered, and instead dispatch the event ourselves.
-    // In every other case we return NO, which means that Cocoa can do as it pleases
-    // (i.e., fire the menu action).
-    NSMenuItem *whichItem;
-    // Change the private unicode keys to the ones used in setting the "Key Equivalents"
-    NSString *characters = qt_mac_removePrivateUnicode([event characters]);
-    if ([self hasShortcut:menu
-            forKey:characters
-            // Interested only in Shift, Cmd, Ctrl & Alt Keys, so ignoring masks like, Caps lock, Num Lock ...
-            forModifiers:([event modifierFlags] & (NSShiftKeyMask | NSControlKeyMask | NSCommandKeyMask | NSAlternateKeyMask))
-            whichItem:&whichItem]) {
-        QWidget *widget = 0;
-        QAction *qaction = 0;
-        if (whichItem && [whichItem tag]) {
-            qaction = reinterpret_cast<QAction *>([whichItem tag]);
-        }
-        if (qApp->activePopupWidget())
-            widget = (qApp->activePopupWidget()->focusWidget() ?
-                      qApp->activePopupWidget()->focusWidget() : qApp->activePopupWidget());
-        else if (QApplicationPrivate::focus_widget)
-            widget = QApplicationPrivate::focus_widget;
-        // If we could not find any receivers, pass it to the active window
-        if (!widget)
-            widget = qApp->activeWindow();
-        if (qaction && widget) {
-            int key = qaction->shortcut();
-            QKeyEvent accel_ev(QEvent::ShortcutOverride, (key & (~Qt::KeyboardModifierMask)),
-                               Qt::KeyboardModifiers(key & Qt::KeyboardModifierMask));
-            accel_ev.ignore();
-
-// ###           qt_sendSpontaneousEvent(widget, &accel_ev);
-
-            if (accel_ev.isAccepted()) {
-                qWarning("Unimplemented: qt_dispatchKeyEvent");
-#if 0
-                qt_dispatchKeyEvent(event, widget);
-#endif
-                *target = nil;
-                *action = nil;
-                return YES;
-            }
-        }
-    }
-    return NO;
-}
-
-- (NSInteger)indexOfItemWithTarget:(id)anObject andAction:(SEL)actionSelector
-{
-     NSInteger index = [super indexOfItemWithTarget:anObject andAction:actionSelector];
-     static SEL selForOFCP = NSSelectorFromString(@"orderFrontCharacterPalette:");
-     if (index == -1 && selForOFCP == actionSelector) {
-         // Check if the 'orderFrontCharacterPalette' SEL exists for QNativeCocoaMenuLoader object
-         QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = [NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)];
-         return [super indexOfItemWithTarget:loader andAction:actionSelector];
-     }
-     return index;
+    QCocoaMenuItem* cocoaItem = reinterpret_cast<QCocoaMenuItem *>([menuItem tag]);
+    return cocoaItem->isEnabled();
 }
 
 @end
 
-QT_BEGIN_NAMESPACE
-extern int qt_mac_menus_open_count; // qmenu_mac.mm
-
-void qt_mac_emit_menuSignals(QMenu *menu, bool show)
+QCocoaMenu::QCocoaMenu() :
+    m_enabled(true),
+    m_tag(0)
 {
-    if (!menu)
-        return;
-    int delta;
-    if (show) {
-        emit menu->aboutToShow();
-        delta = 1;
+    m_delegate = [[QCocoaMenuDelegate alloc] initWithMenu:this];
+    m_nativeItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
+    m_nativeMenu = [[NSMenu alloc] initWithTitle:@"Untitled"];
+    [m_nativeMenu setAutoenablesItems:YES];
+    m_nativeMenu.delegate = (QCocoaMenuDelegate *) m_delegate;
+    [m_nativeItem setSubmenu:m_nativeMenu];
+}
+
+void QCocoaMenu::setText(const QString &text)
+{
+    QString stripped = qt_mac_removeAmpersandEscapes(text);
+    [m_nativeMenu setTitle:QCFString::toNSString(stripped)];
+    [m_nativeItem setTitle:QCFString::toNSString(stripped)];
+}
+
+void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before)
+{
+    QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
+    QCocoaMenuItem *beforeItem = static_cast<QCocoaMenuItem *>(before);
+
+    cocoaItem->sync();
+    if (beforeItem) {
+        int index = m_menuItems.indexOf(beforeItem);
+        // if a before item is supplied, it should be in the menu
+        Q_ASSERT(index >= 0);
+        m_menuItems.insert(index, cocoaItem);
     } else {
-        emit menu->aboutToHide();
-        delta = -1;
+        m_menuItems.append(cocoaItem);
     }
-    qt_mac_menus_open_count += delta;
+
+    insertNative(cocoaItem, beforeItem);
 }
 
-void qt_mac_clear_status_text(QAction *action)
+void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
 {
-    action->d_func()->showStatusText(0, QString());
+    [item->nsItem() setTarget:m_delegate];
+    [item->nsItem() setAction:@selector(itemFired:)];
+
+    if (item->isMerged())
+        return;
+
+    // if the item we're inserting before is merged, skip along until
+    // we find a non-merged real item to insert ahead of.
+    while (beforeItem && beforeItem->isMerged()) {
+        beforeItem = itemOrNull(m_menuItems.indexOf(beforeItem) + 1);
+    }
+
+    if (beforeItem) {
+        Q_ASSERT(!beforeItem->isMerged());
+        NSUInteger nativeIndex = [m_nativeMenu indexOfItem:beforeItem->nsItem()];
+        [m_nativeMenu insertItem: item->nsItem() atIndex: nativeIndex];
+    } else {
+        [m_nativeMenu addItem: item->nsItem()];
+    }
 }
 
-void qt_mac_menu_emit_hovered(QMenu *menu, QAction *action)
+void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
 {
-    emit menu->hovered(action);
+    QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
+    Q_ASSERT(m_menuItems.contains(cocoaItem));
+    m_menuItems.removeOne(cocoaItem);
+    if (!cocoaItem->isMerged()) {
+        [m_nativeMenu removeItem: cocoaItem->nsItem()];
+    }
 }
 
+QCocoaMenuItem *QCocoaMenu::itemOrNull(int index) const
+{
+    if ((index < 0) || (index >= m_menuItems.size()))
+        return 0;
 
-QT_END_NAMESPACE
+    return m_menuItems.at(index);
+}
 
+void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
+{
+    QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
+    Q_ASSERT(m_menuItems.contains(cocoaItem));
+
+    bool wasMerged = cocoaItem->isMerged();
+    NSMenuItem *oldItem = [m_nativeMenu itemWithTag:(NSInteger) cocoaItem];
+
+    if (cocoaItem->sync() != oldItem) {
+    // native item was changed for some reason
+        if (!wasMerged) {
+            [m_nativeMenu removeItem:oldItem];
+        }
+
+        QCocoaMenuItem* beforeItem = itemOrNull(m_menuItems.indexOf(cocoaItem) + 1);
+        insertNative(cocoaItem, beforeItem);
+    }
+}
+
+void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
+{
+    QCocoaAutoReleasePool pool;
+    if (enable) {
+        bool previousIsSeparator = true; // setting to true kills all the separators placed at the top.
+        NSMenuItem *previousItem = nil;
+
+        NSArray *itemArray = [m_nativeMenu itemArray];
+        for (unsigned int i = 0; i < [itemArray count]; ++i) {
+            NSMenuItem *item = reinterpret_cast<NSMenuItem *>([itemArray objectAtIndex:i]);
+            if ([item isSeparatorItem])
+                [item setHidden:previousIsSeparator];
+
+            if (![item isHidden]) {
+                previousItem = item;
+                previousIsSeparator = ([previousItem isSeparatorItem]);
+            }
+        }
+
+        // We now need to check the final item since we don't want any separators at the end of the list.
+        if (previousItem && previousIsSeparator)
+            [previousItem setHidden:YES];
+    } else {
+        foreach (QCocoaMenuItem *item, m_menuItems) {
+            if (!item->isSeparator())
+                continue;
+
+            // sync the visiblity directly
+            item->sync();
+        }
+    }
+}
+
+void QCocoaMenu::setParentItem(QCocoaMenuItem *item)
+{
+    Q_UNUSED(item);
+}
+
+void QCocoaMenu::setEnabled(bool enabled)
+{
+    m_enabled = enabled;
+}
+
+QPlatformMenuItem *QCocoaMenu::menuItemAt(int position) const
+{
+    return m_menuItems.at(position);
+}
+
+QPlatformMenuItem *QCocoaMenu::menuItemForTag(quintptr tag) const
+{
+    foreach (QCocoaMenuItem *item, m_menuItems) {
+        if (item->tag() ==  tag)
+            return item;
+    }
+
+    return 0;
+}
+
+QList<QCocoaMenuItem *> QCocoaMenu::merged() const
+{
+    QList<QCocoaMenuItem *> result;
+    foreach (QCocoaMenuItem *item, m_menuItems) {
+        if (item->menu()) { // recurse into submenus
+            result.append(item->menu()->merged());
+            continue;
+        }
+
+        if (item->isMerged())
+            result.append(item);
+    }
+
+    return result;
+}
+
+void QCocoaMenu::syncModalState(bool modal)
+{
+    if (!m_enabled)
+        modal = true;
+
+    [m_nativeItem setEnabled:!modal];
+
+    foreach (QCocoaMenuItem *item, m_menuItems) {
+        if (item->menu()) { // recurse into submenus
+            item->menu()->syncModalState(modal);
+            continue;
+        }
+
+        item->syncModalState(modal);
+    }
+}

@@ -100,8 +100,12 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_synchedWindowState(Qt::WindowActive)
     , m_inConstructor(true)
     , m_glContext(0)
+    , m_menubar(0)
     , m_hasModalSession(false)
 {
+#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
+    qDebug() << "QCocoaWindow::QCocoaWindow" << this;
+#endif
     QCocoaAutoReleasePool pool;
 
     m_contentView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
@@ -576,4 +580,14 @@ bool QCocoaWindow::setWindowModified(bool modified)
         return false;
     [m_nsWindow setDocumentEdited:(modified?YES:NO)];
     return true;
+}
+
+void QCocoaWindow::setMenubar(QCocoaMenuBar *mb)
+{
+    m_menubar = mb;
+}
+
+QCocoaMenuBar *QCocoaWindow::menubar() const
+{
+    return m_menubar;
 }

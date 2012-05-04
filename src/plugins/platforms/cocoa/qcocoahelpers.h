@@ -115,6 +115,11 @@ inline NSPoint qt_mac_flipPoint(const QPointF &p)
 
 NSRect qt_mac_flipRect(const QRect &rect, QWindow *window);
 
+// strip out '&' characters, and convert "&&" to a single '&', in menu
+// text - since menu text is sometimes decorated with these for Windows
+// accelerators.
+QString qt_mac_removeAmpersandEscapes(QString s);
+
 QT_END_NAMESPACE
 
 #endif //QCOCOAHELPERS_H

@@ -85,6 +85,8 @@ QT_BEGIN_NAMESPACE
 // See the qt_on_cocoa manual tests for a working example, located
 // in tests/manual/cocoa at the time of writing.
 
+class QCocoaMenuBar;
+
 class QCocoaWindow : public QPlatformWindow
 {
 public:
@@ -120,6 +122,8 @@ public:
 
     bool setWindowModified(bool modified) Q_DECL_OVERRIDE;
 
+    void setMenubar(QCocoaMenuBar *mb);
+    QCocoaMenuBar *menubar() const;
 protected:
     // NSWindow handling. The QCocoaWindow/QNSView can either be displayed
     // in an existing NSWindow or in one created by Qt.
@@ -145,6 +149,7 @@ public: // for QNSView
 
     bool m_inConstructor;
     QCocoaGLContext *m_glContext;
+    QCocoaMenuBar *m_menubar;
 
     bool m_hasModalSession;
 };

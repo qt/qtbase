@@ -40,66 +40,78 @@
 **
 ****************************************************************************/
 
-#ifndef QCOCOAMENU_H
-#define QCOCOAMENU_H
+#ifndef QCOCOAMENUITEM_H
+#define QCOCOAMENUITEM_H
 
-#include <QtCore/QList>
 #include <qpa/qplatformmenu.h>
-#include "qcocoamenuitem.h"
+#include <QtGui/QImage>
+
+//#define QT_COCOA_ENABLE_MENU_DEBUG
 
 @class NSMenuItem;
 @class NSMenu;
-@class NSObject;
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaMenu : public QPlatformMenu
+class QCocoaMenu;
+
+class QCocoaMenuItem : public QPlatformMenuItem
 {
 public:
-    QCocoaMenu();
+    QCocoaMenuItem();
+    virtual ~QCocoaMenuItem();
 
     inline virtual void setTag(quintptr tag)
         { m_tag = tag; }
     inline virtual quintptr tag() const
         { return m_tag; }
 
-    void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before);
-    void removeMenuItem(QPlatformMenuItem *menuItem);
-    void syncMenuItem(QPlatformMenuItem *menuItem);
-    void setEnabled(bool enabled);
-    void syncSeparatorsCollapsible(bool enable);
+    void setText(const QString &text);
+    void setIcon(const QImage &icon);
+    void setMenu(QPlatformMenu *menu);
+    void setVisible(bool isVisible);
+    void setIsSeparator(bool isSeparator);
+    void setFont(const QFont &font);
+    void setRole(MenuRole role);
+    void setShortcut(const QKeySequence& shortcut);
+    void setChecked(bool isChecked);
+    void setEnabled(bool isEnabled);
 
+    inline QString text() const { return m_text; }
+    inline NSMenuItem * nsItem() { return m_native; }
+    NSMenuItem *sync();
+
+    void syncMerged();
     void syncModalState(bool modal);
 
-    virtual void setText(const QString &text);
+    inline bool isMerged() const { return m_merged; }
+    inline bool isEnabled() const { return m_enabled; }
+    inline bool isSeparator() const { return m_isSeparator; }
 
-    void setParentItem(QCocoaMenuItem* item);
-
-    inline NSMenu *nsMenu() const
-        { return m_nativeMenu; }
-    inline NSMenuItem *nsMenuItem() const
-        { return m_nativeItem; }
-
-    virtual QPlatformMenuItem *menuItemAt(int position) const;
-    virtual QPlatformMenuItem *menuItemForTag(quintptr tag) const;
-
-    QList<QCocoaMenuItem *> merged() const;
+    QCocoaMenu *menu() const { return m_menu; }
 private:
-    QCocoaMenuItem *itemOrNull(int index) const;
-    void insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem);
+    QString mergeText();
+    QKeySequence mergeAccel();
 
-    QList<QCocoaMenuItem *> m_menuItems;
-    NSMenu *m_nativeMenu;
-    NSMenuItem *m_nativeItem;
-    NSObject *m_delegate;
+    NSMenuItem *m_native;
+    QString m_text;
+    QImage m_icon;
+    QCocoaMenu *m_menu;
+    bool m_isVisible;
     bool m_enabled;
+    bool m_isSeparator;
+    QFont m_font;
+    MenuRole m_role;
+    QKeySequence m_shortcut;
+    bool m_checked;
+    bool m_merged;
     quintptr m_tag;
 };
 
-QT_END_NAMESPACE
-
 QT_END_HEADER
+
+QT_END_NAMESPACE
 
 #endif

@@ -41,12 +41,19 @@
 
 #include "qcocoatheme.h"
 
-#include <QVariant>
+#include <QtCore/QVariant>
 
 #include "qcocoacolordialoghelper.h"
 #include "qcocoafiledialoghelper.h"
 #include "qcocoafontdialoghelper.h"
 #include "qcocoasystemsettings.h"
+#include "qcocoamenuitem.h"
+#include "qcocoamenu.h"
+#include "qcocoamenubar.h"
+
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/QPlatformIntegration>
+#include <QtGui/QPlatformNativeInterface>
 
 QT_BEGIN_NAMESPACE
 
@@ -131,6 +138,29 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         break;
     }
     return QPlatformTheme::themeHint(hint);
+}
+
+QPlatformMenuItem *QCocoaTheme::createPlatformMenuItem() const
+{
+    return new QCocoaMenuItem();
+}
+
+QPlatformMenu *QCocoaTheme::createPlatformMenu() const
+{
+    return new QCocoaMenu();
+}
+
+QPlatformMenuBar *QCocoaTheme::createPlatformMenuBar() const
+{
+    static bool haveMenubar = false;
+    if (!haveMenubar) {
+        haveMenubar = true;
+        QObject::connect(qGuiApp, SIGNAL(focusWindowChanged(QWindow*)),
+            QGuiApplicationPrivate::platformIntegration()->nativeInterface(),
+                SLOT(onAppFocusWindowChanged(QWindow*)));
+    }
+
+    return new QCocoaMenuBar();
 }
 
 QT_END_NAMESPACE

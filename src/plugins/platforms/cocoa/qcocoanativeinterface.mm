@@ -43,6 +43,7 @@
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
 #include "qcocoaprintersupport.h"
+#include "qcocoamenubar.h"
 
 #include <qbytearray.h>
 #include <qwindow.h>
@@ -50,11 +51,16 @@
 #include "qsurfaceformat.h"
 #include <qpa/qplatformopenglcontext.h>
 #include "qopenglcontext.h"
+#include "qguiapplication.h"
 #include <qdebug.h>
 
 #include "qprintengine_mac_p.h"
 
 QT_BEGIN_NAMESPACE
+
+QCocoaNativeInterface::QCocoaNativeInterface()
+{
+}
 
 void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
@@ -82,6 +88,11 @@ void *QCocoaNativeInterface::NSPrintInfoForPrintEngine(QPrintEngine *printEngine
 {
     QMacPrintEngine *macPrintEngine = static_cast<QMacPrintEngine *>(printEngine);
     return macPrintEngine->d_func()->printInfo;
+}
+
+void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
+{
+    QCocoaMenuBar::updateMenuBarImmediately();
 }
 
 QT_END_NAMESPACE

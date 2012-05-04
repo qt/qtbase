@@ -42,6 +42,8 @@
 #include "qcocoamenuloader.h"
 
 #include "qcocoahelpers.h"
+#include "qcocoamenubar.h"
+#include "qcocoamenuitem.h"
 
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtCore/qcoreapplication.h>
@@ -52,13 +54,32 @@
 QT_FORWARD_DECLARE_CLASS(QCFString)
 QT_FORWARD_DECLARE_CLASS(QString)
 
-#ifndef QT_NO_TRANSLATION
-    QT_BEGIN_NAMESPACE
-    extern QString qt_mac_applicationmenu_string(int type);
-    QT_END_NAMESPACE
-#endif
 
 QT_USE_NAMESPACE
+
+#ifndef QT_NO_TRANSLATION
+static const char *application_menu_strings[] = {
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Services"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide %1"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide Others"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Show All"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Preferences..."),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Quit %1"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","About %1")
+    };
+
+QString qt_mac_applicationmenu_string(int type)
+{
+    QString menuString = QString::fromLatin1(application_menu_strings[type]);
+    QString translated = qApp->translate("QMenuBar", application_menu_strings[type]);
+    if (translated != menuString) {
+        return translated;
+    } else {
+        return qApp->translate("MAC_APPLICATION_MENU",
+                               application_menu_strings[type]);
+    }
+}
+#endif
 
 /*
     Loads and instantiates the main app menu from the menu nib file(s).
@@ -127,6 +148,11 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
     // They should get synced back in.
     [preferencesItem setEnabled:NO];
     [preferencesItem setHidden:YES];
+
+    // should set this in the NIB
+    [preferencesItem setTarget: self];
+    [preferencesItem setAction: @selector(qtDispatcherToQPAMenuItem:)];
+
     [aboutItem setEnabled:NO];
     [aboutItem setHidden:YES];
 }
@@ -269,19 +295,10 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
     [NSApp hide:sender];
 }
 
-- (void)qtUpdateMenubar
-{
-#if 0
-    QCocoaMenuBar::macUpdateMenuBarImmediatly();
-#endif
-}
-
 - (void)qtTranslateApplicationMenu
 {
 
-    qDebug() << "qtTranslateApplicationMenu";
-#if 0
-    //#ifndef QT_NO_TRANSLATION
+#ifndef QT_NO_TRANSLATION
     [servicesItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(0))];
     [hideItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(1).arg(qt_mac_applicationName()))];
     [hideAllOthersItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(2))];
@@ -292,27 +309,27 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
 #endif
 }
 
-- (IBAction)qtDispatcherToQAction:(id)sender
+- (IBAction)qtDispatcherToQPAMenuItem:(id)sender
 {
-#if 0
-    //
-    //QScopedLoopLevelCounter loopLevelCounter(QApplicationPrivate::instance()->threadData);
     NSMenuItem *item = static_cast<NSMenuItem *>(sender);
-    if (QAction *action = reinterpret_cast<QAction *>([item tag])) {
-        action->trigger();
-    } else if (item == quitItem) {
+    if (item == quitItem) {
         // We got here because someone was once the quitItem, but it has been
         // abandoned (e.g., the menubar was deleted). In the meantime, just do
         // normal QApplication::quit().
         qApp->quit();
+        return;
     }
-#endif
+
+    if ([item tag]) {
+        QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([item tag]);
+        cocoaItem->activated();
+    }
 }
 
- - (void)orderFrontCharacterPalette:(id)sender
- {
-     [NSApp orderFrontCharacterPalette:sender];
- }
+- (void)orderFrontCharacterPalette:(id)sender
+{
+    [NSApp orderFrontCharacterPalette:sender];
+}
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem
 {
@@ -320,9 +337,18 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
         || [menuItem action] == @selector(hideOtherApplications:)
         || [menuItem action] == @selector(unhideAllApplications:)) {
         return [NSApp validateMenuItem:menuItem];
+    } else if ([menuItem tag]) {
+        QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([menuItem tag]);
+        return cocoaItem->isEnabled();
     } else {
         return [menuItem isEnabled];
     }
+}
+
+- (NSArray*) mergeable
+{
+    // don't include the quitItem here, since we want it always visible and enabled regardless
+    return [NSArray arrayWithObjects:preferencesItem, aboutItem, aboutQtItem, lastAppSpecificItem, nil];
 }
 
 @end

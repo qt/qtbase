@@ -1,9 +1,10 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author James Turner <james.turner@kdab.com>
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the plugins module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,41 +40,43 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMTHEME_COCOA_H
-#define QPLATFORMTHEME_COCOA_H
+#ifndef QCOCOAMENUBAR_H
+#define QCOCOAMENUBAR_H
 
-#include <QtCore/QHash>
-#include <qpa/qplatformtheme.h>
+#include <QtCore/QList>
+#include <qpa/qplatformmenu.h>
+#include "qcocoamenu.h"
 
-QT_BEGIN_NAMESPACE
+@class NSMenu;
+class QCocoaWindow;
 
-class QPalette;
-class QCocoaTheme : public QPlatformTheme
+class QCocoaMenuBar : public QPlatformMenuBar
 {
 public:
-    QCocoaTheme();
-    ~QCocoaTheme();
+    QCocoaMenuBar();
+    virtual ~QCocoaMenuBar();
 
-    virtual QPlatformMenuItem* createPlatformMenuItem() const;
-    virtual QPlatformMenu* createPlatformMenu() const;
-    virtual QPlatformMenuBar* createPlatformMenuBar() const;
+    virtual void insertMenu(QPlatformMenu *menu, QPlatformMenu* before);
+    virtual void removeMenu(QPlatformMenu *menu);
+    virtual void syncMenu(QPlatformMenuItem *menuItem);
+    virtual void handleReparent(QWindow *newParentWindow);
+    virtual QPlatformMenu *menuForTag(quintptr tag) const;
 
-    bool usePlatformNativeDialog(DialogType dialogType) const;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const;
+    inline NSMenu *nsMenu() const
+        { return m_nativeMenu; }
 
-    const QPalette *palette(Palette type = SystemPalette) const;
-    const QFont *font(Font type = SystemFont) const;
+    static void updateMenuBarImmediately();
 
-    QVariant themeHint(ThemeHint hint) const;
-
-    static const char *name;
-
+    QList<QCocoaMenuItem*> merged() const;
 private:
-    mutable QPalette *m_systemPalette;
-    mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;
-    mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
-};
+    static QCocoaWindow *findWindowForMenubar();
+    static QCocoaMenuBar *findGlobalMenubar();
 
-QT_END_NAMESPACE
+    bool shouldDisable(QCocoaWindow *active) const;
+
+    QList<QCocoaMenu*> m_menus;
+    NSMenu *m_nativeMenu;
+    QCocoaWindow *m_window;
+};
 
 #endif

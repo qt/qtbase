@@ -53,7 +53,12 @@ class QCocoaNativeInterface : public QPlatformNativeInterface
 {
     Q_OBJECT
 public:
+    QCocoaNativeInterface();
+
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
+
+public Q_SLOTS:
+    void onAppFocusWindowChanged(QWindow *window);
 
 private:
     /*

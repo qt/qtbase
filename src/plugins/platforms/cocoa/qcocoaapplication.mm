@@ -189,17 +189,6 @@ QT_USE_NAMESPACE
         [super sendEvent:event];
 }
 
-- (void)qtDispatcherToQAction:(id)sender
-{
-    // Forward actions sent from the menu bar (e.g. quit) to the menu loader.
-    // Having this method here means that we are the last stop in the responder
-    // chain, and that we are able to handle menu actions even when no window is
-    // visible on screen. Note: If Qt is used as a plugin, Qt will not use a 
-    // native menu bar. Hence, we will also not need to do any redirection etc. as 
-    // we do with sendEvent.
-    [[NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)] qtDispatcherToQAction:sender];
-}
-
 @end
 
 QT_BEGIN_NAMESPACE

@@ -13,7 +13,7 @@
 				<string>id</string>
 				<key>orderFrontStandardAboutPanel</key>
 				<string>id</string>
-				<key>qtDispatcherToQAction</key>
+                <key>qtDispatcherToQPAMenuItem</key>
 				<string>id</string>
 				<key>terminate</key>
 				<string>id</string>

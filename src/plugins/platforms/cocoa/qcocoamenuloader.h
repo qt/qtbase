@@ -85,10 +85,11 @@
 - (IBAction)hideOtherApplications:(id)sender;
 - (IBAction)unhideAllApplications:(id)sender;
 - (IBAction)hide:(id)sender;
-- (IBAction)qtDispatcherToQAction:(id)sender;
-- (void)qtUpdateMenubar;
+- (IBAction)qtDispatcherToQPAMenuItem:(id)sender;
 - (void)orderFrontCharacterPalette:(id)sender;
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem;
+- (void)qtTranslateApplicationMenu;
+- (NSArray *)mergeable;
 @end
 
 void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader);
