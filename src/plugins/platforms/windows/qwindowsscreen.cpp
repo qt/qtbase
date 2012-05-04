@@ -59,7 +59,8 @@ QT_BEGIN_NAMESPACE
 
 QWindowsScreenData::QWindowsScreenData() :
     dpi(96, 96), depth(32), format(QImage::Format_ARGB32_Premultiplied),
-    flags(VirtualDesktop), orientation(Qt::LandscapeOrientation)
+    flags(VirtualDesktop), orientation(Qt::LandscapeOrientation),
+    refreshRateHz(60)
 {
 }
 
@@ -103,6 +104,9 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
         data.depth = GetDeviceCaps(hdc, BITSPIXEL);
         data.format = data.depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
         data.physicalSizeMM = QSizeF(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
+        const int refreshRate = GetDeviceCaps(hdc, VREFRESH);
+        if (refreshRate > 1) // 0,1 means heardware default.
+            data.refreshRateHz = refreshRate;
         DeleteDC(hdc);
     } else {
         qWarning("%s: Unable to obtain handle for monitor '%s', defaulting to %g DPI.",

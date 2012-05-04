@@ -91,7 +91,7 @@ contains(DEFINES, XCB_USE_DRI2) {
     }
 }
 
-LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shape -lxcb-shm
+LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shape -lxcb-shm -lxcb-randr
 
 DEFINES += $$QMAKE_DEFINES_XCB
 LIBS += $$QMAKE_LIBS_XCB

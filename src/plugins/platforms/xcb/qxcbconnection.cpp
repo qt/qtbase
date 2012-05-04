@@ -60,6 +60,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <xcb/xfixes.h>
+#include <xcb/randr.h>
 
 #ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>
@@ -109,7 +110,9 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     , m_has_support_for_dri2(false)
 #endif
     , xfixes_first_event(0)
+    , xrandr_first_event(0)
     , has_shape_extension(false)
+    , has_randr_extension(false)
     , has_input_shape(false)
 {
     m_primaryScreen = 0;
@@ -159,6 +162,8 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     m_time = XCB_CURRENT_TIME;
 
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
+
+    initializeXRandr();
 
     int screenNumber = 0;
     while (it.rem) {
@@ -585,6 +590,15 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         if (response_type == xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
             setTime(((xcb_xfixes_selection_notify_event_t *)event)->timestamp);
             m_clipboard->handleXFixesSelectionRequest((xcb_xfixes_selection_notify_event_t *)event);
+            handled = true;
+        } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
+            xcb_randr_screen_change_notify_event_t *change_event = (xcb_randr_screen_change_notify_event_t *)event;
+            foreach (QXcbScreen *s, m_screens) {
+                if (s->root() == change_event->root ) {
+                    s->updateRefreshRate();
+                    break;
+                }
+            }
             handled = true;
         }
     }
@@ -1058,6 +1072,31 @@ void QXcbConnection::initializeXRender()
     }
     free(xrender_query);
 #endif
+}
+
+void QXcbConnection::initializeXRandr()
+{
+    const xcb_query_extension_reply_t *xrandr_reply = xcb_get_extension_data(m_connection, &xcb_randr_id);
+    if (!xrandr_reply || !xrandr_reply->present)
+        return;
+
+    xrandr_first_event = xrandr_reply->first_event;
+
+    xcb_generic_error_t *error = 0;
+    xcb_randr_query_version_cookie_t xrandr_query_cookie = xcb_randr_query_version(m_connection,
+                                                                                   XCB_RANDR_MAJOR_VERSION,
+                                                                                   XCB_RANDR_MINOR_VERSION);
+
+    has_randr_extension = true;
+
+    xcb_randr_query_version_reply_t *xrandr_query = xcb_randr_query_version_reply(m_connection,
+                                                                                  xrandr_query_cookie, &error);
+    if (!xrandr_query || error || (xrandr_query->major_version < 1 || (xrandr_query->major_version == 1 && xrandr_query->minor_version < 2))) {
+        qWarning("QXcbConnection: Failed to initialize XRandr");
+        free(error);
+        has_randr_extension = false;
+    }
+    free(xrandr_query);
 }
 
 void QXcbConnection::initializeXShape()

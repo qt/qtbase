@@ -66,6 +66,7 @@ public:
         ScreenGeometry,
         ScreenAvailableGeometry,
         ScreenLogicalDotsPerInch,
+        ScreenRefreshRate,
         ThemeChange,
         Expose
     };
@@ -231,6 +232,14 @@ public:
         QWeakPointer<QScreen> screen;
         qreal dpiX;
         qreal dpiY;
+    };
+
+    class ScreenRefreshRateEvent : public WindowSystemEvent {
+    public:
+        ScreenRefreshRateEvent(QScreen *s, qreal r)
+            : WindowSystemEvent(ScreenRefreshRate), screen(s), rate(r) { }
+        QWeakPointer<QScreen> screen;
+        qreal rate;
     };
 
     class ThemeChangeEvent : public WindowSystemEvent {

@@ -48,13 +48,23 @@
 
 #include <QDebug>
 
+#include <xcb/randr.h>
+
+#include <QtGui/QWindowSystemInterface>
+
 QT_BEGIN_NAMESPACE
 
 QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int number)
     : QXcbObject(connection)
     , m_screen(screen)
     , m_number(number)
+    , m_refreshRate(60)
 {
+    if (connection->hasXRandr())
+        xcb_randr_select_input(xcb_connection(), screen->root, true);
+
+    updateRefreshRate();
+
 #ifdef Q_XCB_DEBUG
     qDebug();
     qDebug("Information of screen %d:", screen->root);
@@ -63,6 +73,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
     qDebug("  depth.........: %d", screen->root_depth);
     qDebug("  white pixel...: %x", screen->white_pixel);
     qDebug("  black pixel...: %x", screen->black_pixel);
+    qDebug("  refresh rate...: %d", m_refreshRate);
     qDebug();
 #endif
 
@@ -226,6 +237,34 @@ QSizeF QXcbScreen::physicalSize() const
 QPlatformCursor *QXcbScreen::cursor() const
 {
     return m_cursor;
+}
+
+qreal QXcbScreen::refreshRate() const
+{
+    return m_refreshRate;
+}
+
+void QXcbScreen::updateRefreshRate()
+{
+    if (!connection()->hasXRandr())
+        return;
+
+    int rate = m_refreshRate;
+
+    xcb_randr_get_screen_info_reply_t *screenInfoReply =
+        xcb_randr_get_screen_info_reply(xcb_connection(), xcb_randr_get_screen_info_unchecked(xcb_connection(), m_screen->root), 0);
+
+    if (screenInfoReply) {
+        rate = screenInfoReply->rate;
+        free(screenInfoReply);
+    }
+
+    if (rate == m_refreshRate)
+        return;
+
+    m_refreshRate = rate;
+
+    QWindowSystemInterface::handleScreenRefreshRateChange(QPlatformScreen::screen(), rate);
 }
 
 int QXcbScreen::screenNumber() const

@@ -69,6 +69,7 @@ public:
     QImage::Format format() const;
     QSizeF physicalSize() const;
     QPlatformCursor *cursor() const;
+    qreal refreshRate() const;
 
     int screenNumber() const;
 
@@ -84,6 +85,8 @@ public:
 
     QString name() const;
 
+    void updateRefreshRate();
+
 private:
     xcb_screen_t *m_screen;
     int m_number;
@@ -92,6 +95,7 @@ private:
     xcb_window_t m_clientLeader;
     QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
     QXcbCursor *m_cursor;
+    int m_refreshRate;
 };
 
 QT_END_NAMESPACE

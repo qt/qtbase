@@ -434,6 +434,13 @@ void QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QScreen *scree
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::handleScreenRefreshRateChange(QScreen *screen, qreal newRefreshRate)
+{
+    QWindowSystemInterfacePrivate::ScreenRefreshRateEvent *e =
+            new QWindowSystemInterfacePrivate::ScreenRefreshRateEvent(screen, newRefreshRate);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
 void QWindowSystemInterface::handleThemeChange(QWindow *tlw)
 {
     QWindowSystemInterfacePrivate::ThemeChangeEvent *e = new QWindowSystemInterfacePrivate::ThemeChangeEvent(tlw);

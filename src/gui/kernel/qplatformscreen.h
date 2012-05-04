@@ -101,6 +101,8 @@ public:
     virtual QSizeF physicalSize() const;
     virtual QDpi logicalDpi() const;
 
+    virtual qreal refreshRate() const;
+
     virtual Qt::ScreenOrientation orientation() const;
 
     virtual QWindow *topLevelAt(const QPoint &point) const;

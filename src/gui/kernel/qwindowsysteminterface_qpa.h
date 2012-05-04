@@ -144,6 +144,7 @@ public:
     static void handleScreenGeometryChange(QScreen *screen, const QRect &newGeometry);
     static void handleScreenAvailableGeometryChange(QScreen *screen, const QRect &newAvailableGeometry);
     static void handleScreenLogicalDotsPerInchChange(QScreen *screen, qreal newDpiX, qreal newDpiY);
+    static void handleScreenRefreshRateChange(QScreen *screen, qreal newRefreshRate);
 
     static void handleThemeChange(QWindow *tlw);
 

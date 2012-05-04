@@ -161,6 +161,17 @@ QDpi QPlatformScreen::logicalDpi() const
 }
 
 /*!
+    Reimplement this function in subclass to return the vertical refresh rate
+    of the screen, in Hz.
+
+    The default returns 60, a sensible default for modern displays.
+*/
+qreal QPlatformScreen::refreshRate() const
+{
+    return 60;
+}
+
+/*!
     Reimplement this function in subclass to return the current orientation
     of the screen, for example based on accelerometer data to determine
     the device orientation.

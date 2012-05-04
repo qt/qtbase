@@ -50,6 +50,7 @@
 #include <xcb/xcb_image.h>
 #include <xcb/xcb_keysyms.h>
 #include <xcb/sync.h>
+#include <xcb/randr.h>
 #include <xcb/shm.h>
 
 int main(int, char **)

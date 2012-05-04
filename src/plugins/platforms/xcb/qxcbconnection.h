@@ -355,6 +355,7 @@ public:
 
     bool hasXFixes() const { return xfixes_first_event > 0; }
     bool hasXShape() const { return has_shape_extension; }
+    bool hasXRandr() const { return has_randr_extension; }
     bool hasInputShape() const { return has_input_shape; }
 
 private slots:
@@ -365,6 +366,7 @@ private:
     void sendConnectionEvent(QXcbAtom::Atom atom, uint id = 0);
     void initializeXFixes();
     void initializeXRender();
+    void initializeXRandr();
     void initializeXShape();
 #ifdef XCB_USE_DRI2
     void initializeDri2();
@@ -432,8 +434,10 @@ private:
     QVector<PeekFunc> m_peekFuncs;
 
     uint32_t xfixes_first_event;
+    uint32_t xrandr_first_event;
 
     bool has_shape_extension;
+    bool has_randr_extension;
     bool has_input_shape;
 };
 

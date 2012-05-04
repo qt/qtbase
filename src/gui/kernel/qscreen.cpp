@@ -364,6 +364,16 @@ Qt::ScreenOrientation QScreen::orientation() const
 }
 
 /*!
+  \property QScreen::refreshRate
+  \brief the approximate vertical refresh rate of the screen in Hz
+*/
+qreal QScreen::refreshRate() const
+{
+    Q_D(const QScreen);
+    return d->refreshRate;
+}
+
+/*!
     \property QScreen::primaryOrientation
     \brief the primary screen orientation
 

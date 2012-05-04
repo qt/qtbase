@@ -83,6 +83,7 @@ class Q_GUI_EXPORT QScreen : public QObject
     Q_PROPERTY(QRect availableGeometry READ availableGeometry NOTIFY availableGeometryChanged)
     Q_PROPERTY(Qt::ScreenOrientation primaryOrientation READ orientation NOTIFY primaryOrientationChanged)
     Q_PROPERTY(Qt::ScreenOrientation orientation READ orientation NOTIFY orientationChanged)
+    Q_PROPERTY(qreal refreshRate READ refreshRate NOTIFY refreshRateChanged)
 
 public:
     QPlatformScreen *handle() const;
@@ -127,6 +128,8 @@ public:
 
     QPixmap grabWindow(WId window, int x, int y, int w, int h);
 
+    qreal refreshRate() const;
+
 Q_SIGNALS:
     void sizeChanged(const QSize &size);
     void geometryChanged(const QRect &geometry);
@@ -140,6 +143,7 @@ Q_SIGNALS:
     void availableGeometryChanged(const QRect &rect);
     void primaryOrientationChanged(Qt::ScreenOrientation orientation);
     void orientationChanged(Qt::ScreenOrientation orientation);
+    void refreshRateChanged(qreal refreshRate);
 
 private:
     explicit QScreen(QPlatformScreen *screen);

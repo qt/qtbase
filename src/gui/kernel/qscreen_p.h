@@ -63,6 +63,7 @@ public:
         geometry = screen->geometry();
         availableGeometry = screen->availableGeometry();
         logicalDpi = screen->logicalDpi();
+        refreshRate = screen->refreshRate();
 
         updatePrimaryOrientation();
     }
@@ -74,6 +75,7 @@ public:
     QRect geometry;
     QRect availableGeometry;
     QDpi logicalDpi;
+    qreal refreshRate;
 
     QPlatformScreen *platformScreen;
 };

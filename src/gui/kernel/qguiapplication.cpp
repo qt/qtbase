@@ -1090,6 +1090,10 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::reportLogicalDotsPerInchChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::ScreenRefreshRate:
+        QGuiApplicationPrivate::reportRefreshRateChange(
+                static_cast<QWindowSystemInterfacePrivate::ScreenRefreshRateEvent *>(e));
+        break;
     case QWindowSystemInterfacePrivate::ThemeChange:
         QGuiApplicationPrivate::processThemeChanged(
                     static_cast<QWindowSystemInterfacePrivate::ThemeChangeEvent *>(e));
@@ -1748,6 +1752,21 @@ void QGuiApplicationPrivate::reportLogicalDotsPerInchChange(QWindowSystemInterfa
     emit s->logicalDotsPerInchXChanged(s->logicalDotsPerInchX());
     emit s->logicalDotsPerInchYChanged(s->logicalDotsPerInchY());
     emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
+}
+
+void QGuiApplicationPrivate::reportRefreshRateChange(QWindowSystemInterfacePrivate::ScreenRefreshRateEvent *e)
+{
+    // This operation only makes sense after the QGuiApplication constructor runs
+    if (QCoreApplication::startingUp())
+        return;
+
+    if (!e->screen)
+        return;
+
+    QScreen *s = e->screen.data();
+    s->d_func()->refreshRate = e->rate;
+
+    emit s->refreshRateChanged(s->refreshRate());
 }
 
 void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::ExposeEvent *e)

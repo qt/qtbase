@@ -70,6 +70,7 @@ struct QWindowsScreenData
     unsigned flags;
     QString name;
     Qt::ScreenOrientation orientation;
+    qreal refreshRateHz;
 };
 
 class QWindowsScreen : public QPlatformScreen
@@ -87,6 +88,7 @@ public:
     virtual QImage::Format format() const { return m_data.format; }
     virtual QSizeF physicalSize() const { return m_data.physicalSizeMM; }
     virtual QDpi logicalDpi() const { return m_data.dpi; }
+    virtual qreal refreshRate() const { return m_data.refreshRateHz; }
     virtual QString name() const { return m_data.name; }
     virtual Qt::ScreenOrientation primaryOrientation() { return m_data.orientation; }
     virtual QList<QPlatformScreen *> virtualSiblings() const;
