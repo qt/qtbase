@@ -211,7 +211,6 @@ Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat =
     return bitmap;
 }
 
-#ifndef Q_OS_WINCE
 
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0)
 {
@@ -276,7 +275,6 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat =
     return QPixmap::fromImage(image);
 }
 
-#endif //ifndef Q_OS_WINCE
 
 Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &p)
 {
