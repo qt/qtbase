@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include "qfile.h"
 #include "private/qfiledevice_p.h"
 
 QT_BEGIN_NAMESPACE
