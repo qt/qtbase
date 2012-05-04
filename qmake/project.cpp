@@ -672,7 +672,6 @@ QMakeProject::init(QMakeProperty *p)
         prop = p;
         own_prop = false;
     }
-    recursive = false;
     host_build = false;
     reset();
 }
@@ -3225,9 +3224,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
                     parser.file.toLatin1().constData(), parser.line_no);
             return false;
         }
-        if (args.first() == "recursive") {
-            recursive = true;
-        } else if (args.first() == "host_build") {
+        if (args.first() == "host_build") {
             if (!host_build && isActiveConfig("cross_compile")) {
                 host_build = true;
                 need_restart = true;

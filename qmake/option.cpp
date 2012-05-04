@@ -83,7 +83,7 @@ int Option::warn_level = WarnLogic | WarnDeprecated;
 int Option::debug_level = 0;
 QFile Option::output;
 QString Option::output_dir;
-Option::QMAKE_RECURSIVE Option::recursive = Option::QMAKE_RECURSIVE_DEFAULT;
+bool Option::recursive = false;
 QStringList Option::before_user_vars;
 QStringList Option::after_user_vars;
 QString Option::user_template;
@@ -225,7 +225,7 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             if(x == 1) {
                 bool specified = true;
                 if(opt == "project") {
-                    Option::recursive = Option::QMAKE_RECURSIVE_YES;
+                    Option::recursive = true;
                     Option::qmake_mode = Option::QMAKE_GENERATE_PROJECT;
                 } else if(opt == "prl") {
                     Option::mkfile::do_deps = false;
@@ -283,9 +283,9 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             } else if(opt == "Wnone") {
                 Option::warn_level = WarnNone;
             } else if(opt == "r" || opt == "recursive") {
-                Option::recursive = Option::QMAKE_RECURSIVE_YES;
+                Option::recursive = true;
             } else if(opt == "nr" || opt == "norecursive") {
-                Option::recursive = Option::QMAKE_RECURSIVE_NO;
+                Option::recursive = false;
             } else if(opt == "config") {
                 user_configs += argv[++x];
             } else {

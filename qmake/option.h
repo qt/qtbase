@@ -165,8 +165,7 @@ struct Option
     static QString output_dir;
     static int debug_level;
     static int warn_level;
-    enum QMAKE_RECURSIVE { QMAKE_RECURSIVE_DEFAULT, QMAKE_RECURSIVE_YES, QMAKE_RECURSIVE_NO };
-    static QMAKE_RECURSIVE recursive;
+    static bool recursive;
     static QStringList before_user_vars, after_user_vars;
     static QString user_template, user_template_prefix;
 

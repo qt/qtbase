@@ -78,7 +78,6 @@ class QMakeProject
     FunctionBlock *function;
     QHash<QString, FunctionBlock*> testFunctions, replaceFunctions;
 
-    bool recursive;
     bool host_build;
     bool need_restart;
     bool own_prop;
@@ -175,7 +174,6 @@ public:
 
     void dump() const;
 
-    bool isRecursive() const { return recursive; }
     bool isHostBuild() const { return host_build; }
 
 protected:
