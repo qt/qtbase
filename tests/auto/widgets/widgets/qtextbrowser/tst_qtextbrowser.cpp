@@ -250,8 +250,6 @@ void tst_QTextBrowser::viewportPositionInHistory()
 
 void tst_QTextBrowser::relativeLinks()
 {
-    QEXPECT_FAIL("", "QTBUG-22416: First call to QTextBrowser::setSource fails unless URL created with QUrl::fromLocalFile", Abort);
-
     qRegisterMetaType<QUrl>("QUrl");
     QSignalSpy sourceChangedSpy(browser, SIGNAL(sourceChanged(const QUrl &)));
     browser->setSource(QUrl("subdir/../qtextbrowser.html"));

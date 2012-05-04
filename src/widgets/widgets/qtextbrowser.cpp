@@ -153,6 +153,8 @@ QString QTextBrowserPrivate::findFile(const QUrl &name) const
     QString fileName;
     if (name.scheme() == QLatin1String("qrc"))
         fileName = QLatin1String(":/") + name.path();
+    else if (name.scheme().isEmpty())
+        fileName = name.path();
     else
         fileName = name.toLocalFile();
 
