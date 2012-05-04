@@ -1049,7 +1049,7 @@ SeeAlso: ???
 Feature: BEARERMANAGEMENT
 Description: Provides bearer management support
 Section: Networking
-Requires: LIBRARY
+Requires: LIBRARY NETWORKINTERFACE
 Name: Bearer Management
 SeeAlso: ???
 
