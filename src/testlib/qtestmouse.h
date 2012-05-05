@@ -100,7 +100,6 @@ namespace QTest
             mouseEvent(MouseRelease, window, button, stateKey, pos);
             return;
         }
-        QTEST_ASSERT(button == Qt::NoButton || button & Qt::MouseButtonMask);
         QTEST_ASSERT(stateKey == 0 || stateKey & Qt::KeyboardModifierMask);
 
         stateKey &= static_cast<unsigned int>(Qt::KeyboardModifierMask);
@@ -172,7 +171,6 @@ namespace QTest
             return;
         }
 
-        QTEST_ASSERT(button == Qt::NoButton || button & Qt::MouseButtonMask);
         QTEST_ASSERT(stateKey == 0 || stateKey & Qt::KeyboardModifierMask);
 
         stateKey &= static_cast<unsigned int>(Qt::KeyboardModifierMask);
