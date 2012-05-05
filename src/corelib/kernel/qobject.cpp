@@ -2233,7 +2233,7 @@ bool QObject::isSignalConnected(const QMetaMethod &signal) const
         return false;
 
     Q_ASSERT_X(signal.mobj->cast(this) && signal.methodType() == QMetaMethod::Signal,
-               "QObject::isSignalConnected" , "the parametter must be a signal member of the object");
+               "QObject::isSignalConnected" , "the parameter must be a signal member of the object");
     uint signalIndex = (signal.handle - QMetaObjectPrivate::get(signal.mobj)->methodData)/5;
 
     if (signal.mobj->d.data[signal.handle + 4] & MethodCloned)
