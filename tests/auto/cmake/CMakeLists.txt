@@ -78,11 +78,11 @@ macro(expect_fail _dir)
   )
 endmacro()
 
-if(NOT ${CMAKE_VERSION} VERSION_LESS 2.8.7)
-    # Requires CMAKE_AUTOMOC function in CMake 2.8.7
+if(NOT ${CMAKE_VERSION} VERSION_LESS 2.8.8)
+    # Requires INCLUDE_DIRECTORIES target property in CMake 2.8.8
     expect_pass(pass1)
 else()
-    message("CMake version older than 2.8.7 (Found ${CMAKE_VERSION}). Not running test \"pass1\"")
+    message("CMake version older than 2.8.8 (Found ${CMAKE_VERSION}). Not running test \"pass1\"")
 endif()
 expect_pass(pass2)
 expect_pass(pass3)
