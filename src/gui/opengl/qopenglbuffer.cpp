@@ -523,18 +523,7 @@ void *QOpenGLBuffer::map(QOpenGLBuffer::Access access)
 #endif
     if (!d->guard || !d->guard->id())
         return 0;
-#if 0
-    if (!glMapBufferARB)
-        return 0;
-    return glMapBufferARB(d->type, access);
-#endif
-    Q_UNUSED(access);
-    static bool warned = false;
-    if (!warned) {
-        qWarning("QOpenGLBuffer::map(): pending implementation");
-        warned = true;
-    }
-    return 0;
+    return d->funcs->glMapBuffer(d->type, access);
 }
 
 /*!
@@ -559,17 +548,7 @@ bool QOpenGLBuffer::unmap()
 #endif
     if (!d->guard || !d->guard->id())
         return false;
-#if 0
-    if (!glUnmapBufferARB)
-        return false;
-    return glUnmapBufferARB(d->type) == GL_TRUE;
-#endif
-    static bool warned = false;
-    if (!warned) {
-        qWarning("QOpenGLBuffer::map(): pending implementation");
-        warned = true;
-    }
-    return 0;
+    return d->funcs->glUnmapBuffer(d->type) == GL_TRUE;
 }
 
 QT_END_NAMESPACE
