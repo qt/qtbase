@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 
 class QByteArray;
-class QArrayData;
+struct QArrayData;
 typedef QArrayData QByteArrayData;
 
 class QString;
