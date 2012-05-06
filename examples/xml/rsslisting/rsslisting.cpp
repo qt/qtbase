@@ -86,7 +86,7 @@ RSSListing::RSSListing(QWidget *parent)
     QStringList headerLabels;
     headerLabels << tr("Title") << tr("Link");
     treeWidget->setHeaderLabels(headerLabels);
-    treeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
+    treeWidget->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     connect(&manager, SIGNAL(finished(QNetworkReply*)),
              this, SLOT(finished(QNetworkReply*)));

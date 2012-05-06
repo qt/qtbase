@@ -50,7 +50,7 @@ MainWindow::MainWindow()
     labels << tr("Title") << tr("Location");
 
     treeWidget = new QTreeWidget;
-    treeWidget->header()->setResizeMode(QHeaderView::Stretch);
+    treeWidget->header()->setSectionResizeMode(QHeaderView::Stretch);
     treeWidget->setHeaderLabels(labels);
     setCentralWidget(treeWidget);
 

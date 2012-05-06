@@ -3608,7 +3608,7 @@ void tst_QTreeView::task250683_wrongSectionSize()
 {
     QDirModel model;
     QTreeView treeView;
-    treeView.header()->setResizeMode(QHeaderView::ResizeToContents);
+    treeView.header()->setSectionResizeMode(QHeaderView::ResizeToContents);
     treeView.setModel(&model);
     treeView.setColumnHidden(2, true);
     treeView.setColumnHidden(3, true);

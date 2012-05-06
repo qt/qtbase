@@ -131,10 +131,12 @@ public:
     void setHighlightSections(bool highlight);
     bool highlightSections() const;
 
-    void setResizeMode(ResizeMode mode);
     ResizeMode sectionResizeMode(int logicalIndex) const;
+    void setSectionResizeMode(ResizeMode mode);
     void setSectionResizeMode(int logicalIndex, ResizeMode mode);
 #if QT_DEPRECATED_SINCE(5, 0)
+    inline QT_DEPRECATED void setResizeMode(ResizeMode mode)
+        { setSectionResizeMode(mode); }
     inline QT_DEPRECATED void setResizeMode(int logicalindex, ResizeMode mode)
         { setSectionResizeMode(logicalindex, mode); }
     inline QT_DEPRECATED ResizeMode resizeMode(int logicalindex) const

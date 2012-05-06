@@ -577,7 +577,7 @@ void tst_QHeaderView::oneSectionSize()
     model.cols = 1;
     model.rows = 1;
 
-    view.setResizeMode(QHeaderView::Interactive);
+    view.setSectionResizeMode(QHeaderView::Interactive);
     view.setModel(&model);
 
     view.show();
@@ -1150,13 +1150,13 @@ void tst_QHeaderView::resizeMode()
 {
     // resizeMode must not be called with an invalid index
     int last = view->count() - 1;
-    view->setResizeMode(QHeaderView::Interactive);
+    view->setSectionResizeMode(QHeaderView::Interactive);
     QCOMPARE(view->sectionResizeMode(last), QHeaderView::Interactive);
     QCOMPARE(view->sectionResizeMode(1), QHeaderView::Interactive);
-    view->setResizeMode(QHeaderView::Stretch);
+    view->setSectionResizeMode(QHeaderView::Stretch);
     QCOMPARE(view->sectionResizeMode(last), QHeaderView::Stretch);
     QCOMPARE(view->sectionResizeMode(1), QHeaderView::Stretch);
-    view->setResizeMode(QHeaderView::Custom);
+    view->setSectionResizeMode(QHeaderView::Custom);
     QCOMPARE(view->sectionResizeMode(last), QHeaderView::Custom);
     QCOMPARE(view->sectionResizeMode(1), QHeaderView::Custom);
 
@@ -1349,7 +1349,7 @@ void tst_QHeaderView::unhideSection()
     view->setSectionHidden(0, true);
     QCOMPARE(view->sectionsHidden(), true);
     QVERIFY(view->sectionSize(0) == 0);
-    view->setResizeMode(QHeaderView::Interactive);
+    view->setSectionResizeMode(QHeaderView::Interactive);
     view->setSectionHidden(0, false);
     QVERIFY(view->sectionSize(0) > 0);
 
@@ -1357,7 +1357,7 @@ void tst_QHeaderView::unhideSection()
     QVERIFY(view->sectionSize(0) == 0);
     view->setSectionHidden(0, true);
     QVERIFY(view->sectionSize(0) == 0);
-    view->setResizeMode(QHeaderView::Stretch);
+    view->setSectionResizeMode(QHeaderView::Stretch);
     view->setSectionHidden(0, false);
     QVERIFY(view->sectionSize(0) > 0);
 
@@ -1462,7 +1462,7 @@ void tst_QHeaderView::hiddenSectionCount()
 
     QCOMPARE(view->hiddenSectionCount(), 5);
 
-    view->setResizeMode(QHeaderView::Stretch);
+    view->setSectionResizeMode(QHeaderView::Stretch);
     QCOMPARE(view->hiddenSectionCount(), 5);
 
     // Remove some rows and make sure they are now still counted
@@ -1717,7 +1717,7 @@ void tst_QHeaderView::globalResizeMode()
     QHeaderView h((Qt::Orientation)direction);
     h.setModel(&m);
 
-    h.setResizeMode((QHeaderView::ResizeMode)mode);
+    h.setSectionResizeMode((QHeaderView::ResizeMode)mode);
     m.insertRow(insert);
     for (int i = 0; i < h.count(); ++i)
         QCOMPARE(h.sectionResizeMode(i), (QHeaderView::ResizeMode)mode);
@@ -2095,7 +2095,7 @@ void tst_QHeaderView::QTBUG7833_sectionClicked()
     tv.horizontalHeader()->setSortIndicatorShown(true);
     tv.horizontalHeader()->setSectionsClickable(true);
     tv.horizontalHeader()->setStretchLastSection(true);
-    tv.horizontalHeader()->setResizeMode(QHeaderView::Interactive);
+    tv.horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 
     tv.setModel(proxyModel);
     tv.setColumnHidden(5, true);
@@ -2172,7 +2172,7 @@ void tst_QHeaderView::QTBUG14242_hideSectionAutoSize()
     qtv.setModel(&amodel);
     QHeaderView *hv = qtv.verticalHeader();
     hv->setDefaultSectionSize(25);
-    hv->setResizeMode(QHeaderView::ResizeToContents);
+    hv->setSectionResizeMode(QHeaderView::ResizeToContents);
     qtv.show();
 
     hv->hideSection(0);

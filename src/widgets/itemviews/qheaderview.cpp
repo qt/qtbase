@@ -122,7 +122,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionItem &sectio
 
     A header can be fixed in place, or made movable with setSectionsMovable(). It can
     be made clickable with setSectionsClickable(), and has resizing behavior in
-    accordance with setResizeMode() and setSectionResizeMode()
+    accordance with setSectionResizeMode()
 
     \note Double-clicking on a header to resize a section only applies for
     visible rows.
@@ -162,7 +162,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionItem &sectio
 
     The resize mode specifies the behavior of the header sections. It can be
     set on the entire header view or on individual sections using
-    setResizeMode().
+    setSectionResizeMode().
 
     \value Interactive The user can resize the section. The section can also be
            resized programmatically using resizeSection().  The section size
@@ -501,7 +501,7 @@ void QHeaderView::setOffsetToLastSection()
 /*!
     Returns the length along the orientation of the header.
 
-    \sa sizeHint(), setResizeMode(), offset()
+    \sa sizeHint(), setSectionResizeMode(), offset()
 */
 
 int QHeaderView::length() const
@@ -625,7 +625,7 @@ int QHeaderView::logicalIndexAt(int position) const
     Returns the width (or height for vertical headers) of the given
     \a logicalIndex.
 
-    \sa length(), setResizeMode(), defaultSectionSize()
+    \sa length(), setSectionResizeMode(), defaultSectionSize()
 */
 
 int QHeaderView::sectionSize(int logicalIndex) const
@@ -1186,7 +1186,7 @@ bool QHeaderView::highlightSections() const
     \sa resizeMode(), length(), sectionResized()
 */
 
-void QHeaderView::setResizeMode(ResizeMode mode)
+void QHeaderView::setSectionResizeMode(ResizeMode mode)
 {
     Q_D(QHeaderView);
     initializeSections();
@@ -1243,10 +1243,19 @@ void QHeaderView::setSectionResizeMode(int logicalIndex, ResizeMode mode)
 */
 
 /*!
+    \obsolete
+    \fn void QHeaderView::setResizeMode(ResizeMode mode)
+
+    Use setSectionResizeMode instead.
+
+    \sa setSectionResizeMode()
+*/
+
+/*!
     Returns the resize mode that applies to the section specified by the given
     \a logicalIndex.
 
-    \sa setResizeMode()
+    \sa setSectionResizeMode()
 */
 
 QHeaderView::ResizeMode QHeaderView::sectionResizeMode(int logicalIndex) const
@@ -1396,7 +1405,7 @@ Qt::SortOrder QHeaderView::sortIndicatorOrder() const
     property will override the resize mode set on the last section in the
     header.
 
-    \sa setResizeMode()
+    \sa setSectionResizeMode()
 */
 bool QHeaderView::stretchLastSection() const
 {
@@ -1428,7 +1437,7 @@ void QHeaderView::setStretchLastSection(bool stretch)
 
     The default value is false.
 
-    \sa setResizeMode()
+    \sa setSectionResizeMode()
 */
 bool QHeaderView::cascadingSectionResizes() const
 {
@@ -1449,7 +1458,7 @@ void QHeaderView::setCascadingSectionResizes(bool enable)
     This property only affects sections that have \l Interactive or \l Fixed
     as their resize mode.
 
-    \sa setResizeMode() minimumSectionSize
+    \sa setSectionResizeMode() minimumSectionSize
 */
 int QHeaderView::defaultSectionSize() const
 {
@@ -1475,7 +1484,7 @@ void QHeaderView::setDefaultSectionSize(int size)
 
     This property is honored by all \l{ResizeMode}{resize modes}.
 
-    \sa setResizeMode() defaultSectionSize
+    \sa setSectionResizeMode() defaultSectionSize
 */
 int QHeaderView::minimumSectionSize() const
 {

@@ -4067,7 +4067,7 @@ void tst_QTableView::taskQTBUG_10169_sizeHintForRow()
     QStandardItemModel model(1, 3); 
     model.setData(model.index(0, 0), "Word wrapping text goes here.");
     tableView.setModel(&model);
-    tableView.verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    tableView.verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     const int orderedHeight = tableView.sizeHintForRow(0);
     tableView.horizontalHeader()->moveSection(2, 0);
     const int reorderedHeight = tableView.sizeHintForRow(0);
