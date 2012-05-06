@@ -2167,18 +2167,24 @@ void tst_QUrl::emptyQueryOrFragment()
         QVERIFY(url.hasQuery());
         QCOMPARE(url.query(), QString(QLatin1String("abc=def")));
         QCOMPARE(url.toString(), QString(QLatin1String("http://www.foo.bar/baz?abc=def")));
+        url.setEncodedQuery("abc=def");
+        QCOMPARE(url.toString(), QString(QLatin1String("http://www.foo.bar/baz?abc=def")));
 
         // remove encodedQuery
         url.setQuery(QString());
         QVERIFY(!url.hasQuery());
         QVERIFY(url.encodedQuery().isNull());
         QCOMPARE(url.toString(), QString(QLatin1String("http://www.foo.bar/baz")));
+        url.setEncodedQuery(QByteArray());
+        QCOMPARE(url.toString(), QString(QLatin1String("http://www.foo.bar/baz")));
 
         // add empty encodedQuery
-        url.setEncodedQuery("");
+        url.setQuery("");
         QVERIFY(url.hasQuery());
         QVERIFY(url.encodedQuery().isEmpty());
         QVERIFY(!url.encodedQuery().isNull());
+        QCOMPARE(url.toString(), QString(QLatin1String("http://www.foo.bar/baz?")));
+        url.setEncodedQuery("");
         QCOMPARE(url.toString(), QString(QLatin1String("http://www.foo.bar/baz?")));
     }
 }
@@ -2217,6 +2223,7 @@ void tst_QUrl::setEncodedFragment_data()
     QTest::addColumn<QByteArray>("expected");
 
     typedef QByteArray BA;
+    QTest::newRow("null") << BA("http://www.kde.org") << BA() << BA("http://www.kde.org");
     QTest::newRow("empty") << BA("http://www.kde.org") << BA("") << BA("http://www.kde.org#");
     QTest::newRow("basic test") << BA("http://www.kde.org") << BA("abc") << BA("http://www.kde.org#abc");
     QTest::newRow("initial url has fragment") << BA("http://www.kde.org#old") << BA("new") << BA("http://www.kde.org#new");
@@ -2234,7 +2241,7 @@ void tst_QUrl::setEncodedFragment()
     QVERIFY(u.isValid());
     u.setEncodedFragment(fragment);
     QVERIFY(u.isValid());
-    QVERIFY(u.hasFragment());
+    QCOMPARE(!fragment.isNull(), u.hasFragment());
     QCOMPARE(QString::fromLatin1(u.toEncoded()), QString::fromLatin1(expected));
 }
 

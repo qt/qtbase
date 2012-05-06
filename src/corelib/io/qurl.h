@@ -294,12 +294,12 @@ public:
     QT_DEPRECATED QByteArray encodedQuery() const
     { return toLatin1_helper(query(FullyEncoded)); }
     QT_DEPRECATED void setEncodedQuery(const QByteArray &value)
-    { setQuery(QString::fromLatin1(value)); }
+    { setQuery(value.isNull() ? QString() : QString::fromLatin1(value)); }
 
     QT_DEPRECATED QByteArray encodedFragment() const
     { return toLatin1_helper(fragment(FullyEncoded)); }
     QT_DEPRECATED void setEncodedFragment(const QByteArray &value)
-    { setFragment(QString::fromLatin1(value)); }
+    { setFragment(value.isNull() ? QString() : QString::fromLatin1(value)); }
 
 private:
     // helper function for the encodedQuery and encodedFragment functions
