@@ -54,17 +54,6 @@ QT_BEGIN_NAMESPACE
 
 //#define QDEBUG_BEZIER
 
-#ifdef FLOAT_ACCURACY
-#define INV_EPS (1L<<23)
-#else
-/* The value of 1.0 / (1L<<14) is enough for most applications */
-#define INV_EPS (1L<<14)
-#endif
-
-#ifndef M_SQRT2
-#define M_SQRT2	1.41421356237309504880
-#endif
-
 /*!
   \internal
 */
