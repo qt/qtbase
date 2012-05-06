@@ -113,7 +113,6 @@ enum {
     CMD_ENDSIDEBAR,
     CMD_ENDTABLE,
     CMD_ENDTOPICREF,
-    CMD_EXPIRE,
     CMD_FOOTNOTE,
     CMD_GENERATELIST,
     CMD_GRANULARITY,
@@ -231,7 +230,6 @@ static struct {
     { "endsidebar", CMD_ENDSIDEBAR, 0 },
     { "endtable", CMD_ENDTABLE, 0 },
     { "endtopicref", CMD_ENDTOPICREF, 0 },
-    { "expire", CMD_EXPIRE, 0 },
     { "footnote", CMD_FOOTNOTE, 0 },
     { "generatelist", CMD_GENERATELIST, 0 },
     { "granularity", CMD_GRANULARITY, 0 }, // ### don't document for now
@@ -462,7 +460,6 @@ private:
     Location& location();
     QString detailsUnknownCommand(const QSet<QString>& metaCommandSet,
                                   const QString& str);
-    void checkExpiry(const QString& date);
     void insertBaseName(const QString &baseName);
     void insertTarget(const QString& target, bool keyword);
     void include(const QString& fileName, const QString& identifier);
@@ -858,9 +855,6 @@ void DocParser::parse(const QString& source,
                         leaveTableRow();
                         append(Atom::TableRight);
                     }
-                    break;
-                case CMD_EXPIRE:
-                    checkExpiry(getArgument());
                     break;
                 case CMD_FOOTNOTE:
                     if (openCommand(cmd)) {
@@ -1660,43 +1654,6 @@ QString DocParser::detailsUnknownCommand(const QSet<QString> &metaCommandSet,
     if (best.isEmpty())
         return QString();
     return tr("Maybe you meant '\\%1'?").arg(best);
-}
-
-void DocParser::checkExpiry(const QString& date)
-{
-    QRegExp ymd("(\\d{4})(?:-(\\d{2})(?:-(\\d{2})))");
-
-    if (ymd.exactMatch(date)) {
-        int y = ymd.cap(1).toInt();
-        int m = ymd.cap(2).toInt();
-        int d = ymd.cap(3).toInt();
-
-        if (m == 0)
-            m = 1;
-        if (d == 0)
-            d = 1;
-        QDate expiryDate(y, m, d);
-        if (expiryDate.isValid()) {
-            int days = expiryDate.daysTo(QDate::currentDate());
-            if (days == 0) {
-                location().warning(tr("Documentation expires today"));
-            }
-            else if (days == 1) {
-                location().warning(tr("Documentation expired yesterday"));
-            }
-            else if (days >= 2) {
-                location().warning(tr("Documentation expired %1 days ago")
-                                   .arg(days));
-            }
-        }
-        else {
-            location().warning(tr("Date '%1' invalid").arg(date));
-        }
-    }
-    else {
-        location().warning(tr("Date '%1' not in YYYY-MM-DD format")
-                           .arg(date));
-    }
 }
 
 void DocParser::insertBaseName(const QString &baseName)

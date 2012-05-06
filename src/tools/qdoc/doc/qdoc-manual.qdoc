@@ -256,7 +256,6 @@
     \li \l {04-qdoc-commands-textmarkup.html#e-command} {\\e} \span {class="newStuff"} {(new 5/3/2012)}
     \li \l {12-0-qdoc-commands-miscellaneous.html#else-command} {\\else}
     \li \l {12-0-qdoc-commands-miscellaneous.html#endif-command} {\\endif}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#expire-command} {\\expire}
     \li \l {11-qdoc-commands-specialcontent.html#footnote-command} {\\footnote}
     \li \l {12-0-qdoc-commands-miscellaneous.html#generatelist-command} {\\generatelist}
     \li \l {10-qdoc-commands-tablesandlists.html#header-command} {\\header}
@@ -3505,41 +3504,6 @@
     These commands provide miscellaneous functions connected to the
     visual appearance of the documentation, and to the process of
     generating the documentation.
-
-    \target expire-command
-    \section1 \\expire
-
-    The \\expire command allows you to define an expiration
-    date for your documentation.
-
-    When using the \\expire command, QDoc will emit a warning when the
-    current date is larger than the specified date. The command
-    accepts one argument; the argument's format is yyyy-mm-dd. For
-    example:
-
-           \code
-           / *!
-               \page porting.html
-
-               \title Porting to Qt 3.x
-
-               \expire 2004-12-31
-
-               This document describes porting applications from Qt
-               2.x to Qt 3.x.
-
-               The Qt 3.x series is not binary compatible with the
-               2.x series.
-               ...
-           * /
-           \endcode
-
-    If you run QDoc on 4 July 2005, it will emit the warning
-
-           \quotation
-               porting.qdoc:6: Documentation expired 185 days ago
-           \endquotation
-
 
     \target annotatedlist-command
     \section1 \\annotatedlist
@@ -8673,7 +8637,6 @@
     \li \l {12-0-qdoc-commands-miscellaneous.html#endif-command} {\\endif}
     \li \l {13-qdoc-commands-topics.html#enum-command} {\\enum}
     \li \l {13-qdoc-commands-topics.html#example-command} {\\example}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#expire-command} {\\expire}
     \li \l {13-qdoc-commands-topics.html#externalpage-command} {\\externalpage}
     \li \l {13-qdoc-commands-topics.html#fn-command} {\\fn}
     \li \l {11-qdoc-commands-specialcontent.html#footnote-command} {\\footnote}
