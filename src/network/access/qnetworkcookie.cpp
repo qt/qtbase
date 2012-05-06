@@ -1059,6 +1059,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
 /*!
     \since 5.0
     This functions normalizes the path and domain of the cookie if they were previously empty.
+    The \a url parameter is used to determine the correct domain and path.
 */
 void QNetworkCookie::normalize(const QUrl &url)
 {

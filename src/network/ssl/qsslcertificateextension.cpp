@@ -133,6 +133,9 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    Constructs a QSslCertificateExtension.
+ */
 QSslCertificateExtension::QSslCertificateExtension()
     : d(new QSslCertificateExtensionPrivate)
 {

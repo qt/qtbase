@@ -316,6 +316,8 @@ bool QNetworkCookieJar::deleteCookie(const QNetworkCookie &cookie)
 /*!
     \since 5.0
     Returns true if the domain and path of \a cookie are valid, false otherwise.
+    The \a url parameter is used to determine if the domain specified in the cookie
+    is allowed.
 */
 bool QNetworkCookieJar::validateCookie(const QNetworkCookie &cookie, const QUrl &url) const
 {

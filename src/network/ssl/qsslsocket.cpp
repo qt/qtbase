@@ -377,7 +377,8 @@ void QSslSocket::resume()
     Starts an encrypted connection to the device \a hostName on \a
     port, using \a mode as the \l OpenMode. This is equivalent to
     calling connectToHost() to establish the connection, followed by a
-    call to startClientEncryption().
+    call to startClientEncryption(). The \a protocol parameter can be
+    used to specify which network protocol to use (eg. IPv4 or IPv6).
 
     QSslSocket first enters the HostLookupState. Then, after entering
     either the event loop or one of the waitFor...() functions, it

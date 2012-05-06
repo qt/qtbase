@@ -252,6 +252,7 @@
 
     \value IPv4Protocol IPv4
     \value IPv6Protocol IPv6
+    \value AnyIPProtocol Either IPv4 or IPv6
     \value UnknownNetworkLayerProtocol Other than IPv4 and IPv6
 
     \sa QHostAddress::protocol()
@@ -339,12 +340,6 @@
     \value ClosingState The socket is about to close (data may still
     be waiting to be written).
     \value ListeningState For internal use only.
-    \omitvalue Idle
-    \omitvalue HostLookup
-    \omitvalue Connecting
-    \omitvalue Connected
-    \omitvalue Closing
-    \omitvalue Connection
 
     \sa QAbstractSocket::state()
 */
@@ -1403,7 +1398,8 @@ QAbstractSocket::PauseModes QAbstractSocket::pauseMode() const
 /*!
     \since 5.0
 
-    Controls whether to pause upon receiving a notification. The only notification
+    Controls whether to pause upon receiving a notification. The \pauseMode parameter
+    specifies the conditions in which the socket should be paused. The only notification
     currently supported is QSslSocket::sslErrors(). If set to PauseOnSslErrors,
     data transfer on the socket will be paused and needs to be enabled explicitly
     again by calling resume().
@@ -1524,6 +1520,8 @@ bool QAbstractSocket::isValid() const
 
 /*!
     Attempts to make a connection to \a hostName on the given \a port.
+    The \a protocol parameter can be used to specify which network
+    protocol to use (eg. IPv4 or IPv6).
 
     The socket is opened in the given \a openMode and first enters
     HostLookupState, then performs a host name lookup of \a hostName.
