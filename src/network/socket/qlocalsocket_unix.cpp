@@ -268,7 +268,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
 
     Tries to connect connectingName and connectingOpenMode
 
-    \sa connectToServer() waitForConnected()
+    \sa connectToServer(), waitForConnected()
   */
 void QLocalSocketPrivate::_q_connectToSocket()
 {

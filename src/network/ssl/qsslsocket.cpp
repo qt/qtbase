@@ -757,7 +757,7 @@ qint64 QSslSocket::encryptedBytesToWrite() const
     \reimp
 
     Returns true if you can read one while line (terminated by a single ASCII
-    '\n' character) of decrypted characters; otherwise, false is returned.
+    '\\n' character) of decrypted characters; otherwise, false is returned.
 */
 bool QSslSocket::canReadLine() const
 {
@@ -1673,7 +1673,7 @@ void QSslSocket::startClientEncryption()
     initiate the SSL handshake. Most servers will call this function
     immediately upon receiving a connection, or as a result of having
     received a protocol-specific command to enter SSL mode (e.g, the
-    server may respond to receiving the string "STARTTLS\r\n" by
+    server may respond to receiving the string "STARTTLS\\r\\n" by
     calling this function).
 
     The most common way to implement an SSL server is to create a

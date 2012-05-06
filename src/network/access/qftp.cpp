@@ -1468,7 +1468,7 @@ QFtp::QFtp(QObject *parent)
     closed. (The state will be \c Unconnected when the connection is
     closed.)
 
-    \sa stateChanged() state()
+    \sa stateChanged(), state()
 */
 /*!
     \internal
@@ -1559,7 +1559,7 @@ QFtp::QFtp(QObject *parent)
     command, but it can also be emitted "spontaneously", e.g. when the
     server closes the connection unexpectedly.
 
-    \sa connectToHost() close() state() State
+    \sa connectToHost(), close(), state(), State
 */
 
 /*!
@@ -1579,7 +1579,7 @@ QFtp::QFtp(QObject *parent)
     This signal is emitted when processing the command identified by
     \a id starts.
 
-    \sa commandFinished() done()
+    \sa commandFinished(), done()
 */
 
 /*!
@@ -1590,7 +1590,7 @@ QFtp::QFtp(QObject *parent)
     \a id has finished. \a error is true if an error occurred during
     the processing; otherwise \a error is false.
 
-    \sa commandStarted() done() error() errorString()
+    \sa commandStarted(), done(), error(), errorString()
 */
 
 /*!
@@ -1602,7 +1602,7 @@ QFtp::QFtp(QObject *parent)
     \a error is true if an error occurred during the processing;
     otherwise \a error is false.
 
-    \sa commandFinished() error() errorString()
+    \sa commandFinished(), error(), errorString()
 */
 
 /*!
@@ -1623,7 +1623,7 @@ QFtp::QFtp(QObject *parent)
     complete data, just connect to the commandFinished() signal and
     read the data then instead.
 
-    \sa get() read() readAll() bytesAvailable()
+    \sa get(), read(), readAll(), bytesAvailable()
 */
 
 /*!
@@ -1675,7 +1675,7 @@ QFtp::QFtp(QObject *parent)
     emitted. When it is finished the commandFinished() signal is
     emitted.
 
-    \sa stateChanged() commandStarted() commandFinished()
+    \sa stateChanged(), commandStarted(), commandFinished()
 */
 int QFtp::connectToHost(const QString &host, quint16 port)
 {
@@ -1704,7 +1704,7 @@ int QFtp::connectToHost(const QString &host, quint16 port)
     emitted. When it is finished the commandFinished() signal is
     emitted.
 
-    \sa commandStarted() commandFinished()
+    \sa commandStarted(), commandFinished()
 */
 int QFtp::login(const QString &user, const QString &password)
 {
@@ -1731,7 +1731,7 @@ int QFtp::login(const QString &user, const QString &password)
     emitted. When it is finished the commandFinished() signal is
     emitted.
 
-    \sa stateChanged() commandStarted() commandFinished()
+    \sa stateChanged(), commandStarted(), commandFinished()
 */
 int QFtp::close()
 {
@@ -1783,7 +1783,7 @@ int QFtp::setProxy(const QString &host, quint16 port)
     emitted. When it is finished the commandFinished() signal is
     emitted.
 
-    \sa listInfo() commandStarted() commandFinished()
+    \sa listInfo(), commandStarted(), commandFinished()
 */
 int QFtp::list(const QString &dir)
 {
@@ -1810,7 +1810,7 @@ int QFtp::list(const QString &dir)
     emitted. When it is finished the commandFinished() signal is
     emitted.
 
-    \sa commandStarted() commandFinished()
+    \sa commandStarted(), commandFinished()
 */
 int QFtp::cd(const QString &dir)
 {
@@ -1855,7 +1855,7 @@ int QFtp::cd(const QString &dir)
     emitted. When it is finished the commandFinished() signal is
     emitted.
 
-    \sa readyRead() dataTransferProgress() commandStarted()
+    \sa readyRead(), dataTransferProgress(), commandStarted(),
     commandFinished()
 */
 int QFtp::get(const QString &file, QIODevice *dev, TransferType type)
@@ -1894,7 +1894,7 @@ int QFtp::get(const QString &file, QIODevice *dev, TransferType type)
     Since this function takes a copy of the \a data, you can discard
     your own copy when this function returns.
 
-    \sa dataTransferProgress() commandStarted() commandFinished()
+    \sa dataTransferProgress(), commandStarted(), commandFinished()
 */
 int QFtp::put(const QByteArray &data, const QString &file, TransferType type)
 {
@@ -1951,7 +1951,7 @@ int QFtp::put(QIODevice *dev, const QString &file, TransferType type)
     emitted. When it is finished the commandFinished() signal is
     emitted.
 
-    \sa commandStarted() commandFinished()
+    \sa commandStarted(), commandFinished()
 */
 int QFtp::remove(const QString &file)
 {
@@ -1971,7 +1971,7 @@ int QFtp::remove(const QString &file)
     emitted. When it is finished the commandFinished() signal is
     emitted.
 
-    \sa commandStarted() commandFinished()
+    \sa commandStarted(), commandFinished()
 */
 int QFtp::mkdir(const QString &dir)
 {
@@ -1991,7 +1991,7 @@ int QFtp::mkdir(const QString &dir)
     emitted. When it is finished the commandFinished() signal is
     emitted.
 
-    \sa commandStarted() commandFinished()
+    \sa commandStarted(), commandFinished()
 */
 int QFtp::rmdir(const QString &dir)
 {
@@ -2011,7 +2011,7 @@ int QFtp::rmdir(const QString &dir)
     emitted. When it is finished the commandFinished() signal is
     emitted.
 
-    \sa commandStarted() commandFinished()
+    \sa commandStarted(), commandFinished()
 */
 int QFtp::rename(const QString &oldname, const QString &newname)
 {
@@ -2038,7 +2038,7 @@ int QFtp::rename(const QString &oldname, const QString &newname)
     emitted. When it is finished the commandFinished() signal is
     emitted.
 
-    \sa rawCommandReply() commandStarted() commandFinished()
+    \sa rawCommandReply(), commandStarted(), commandFinished()
 */
 int QFtp::rawCommand(const QString &command)
 {
@@ -2051,7 +2051,7 @@ int QFtp::rawCommand(const QString &command)
     Returns the number of bytes that can be read from the data socket
     at the moment.
 
-    \sa get() readyRead() read() readAll()
+    \sa get(), readyRead(), read(), readAll()
 */
 qint64 QFtp::bytesAvailable() const
 {
@@ -2063,7 +2063,7 @@ qint64 QFtp::bytesAvailable() const
     Reads \a maxlen bytes from the data socket into \a data and
     returns the number of bytes read. Returns -1 if an error occurred.
 
-    \sa get() readyRead() bytesAvailable() readAll()
+    \sa get(), readyRead(), bytesAvailable(), readAll()
 */
 qint64 QFtp::read(char *data, qint64 maxlen)
 {
@@ -2075,7 +2075,7 @@ qint64 QFtp::read(char *data, qint64 maxlen)
     Reads all the bytes available from the data socket and returns
     them.
 
-    \sa get() readyRead() bytesAvailable() read()
+    \sa get(), readyRead(), bytesAvailable(), read()
 */
 QByteArray QFtp::readAll()
 {
@@ -2158,7 +2158,7 @@ QFtp::Command QFtp::currentCommand() const
     This function can be used to delete the QIODevice in the slot connected to
     the commandFinished() signal.
 
-    \sa get() put()
+    \sa get(), put()
 */
 QIODevice* QFtp::currentDevice() const
 {
@@ -2178,7 +2178,7 @@ QIODevice* QFtp::currentDevice() const
     The command that is being executed is \e not considered as a
     scheduled command.
 
-    \sa clearPendingCommands() currentId() currentCommand()
+    \sa clearPendingCommands(), currentId(), currentCommand()
 */
 bool QFtp::hasPendingCommands() const
 {
@@ -2191,7 +2191,7 @@ bool QFtp::hasPendingCommands() const
     This does not affect the command that is being executed. If you
     want to stop this as well, use abort().
 
-    \sa hasPendingCommands() abort()
+    \sa hasPendingCommands(), abort()
 */
 void QFtp::clearPendingCommands()
 {
@@ -2205,7 +2205,7 @@ void QFtp::clearPendingCommands()
     Returns the current state of the object. When the state changes,
     the stateChanged() signal is emitted.
 
-    \sa State stateChanged()
+    \sa State, stateChanged()
 */
 QFtp::State QFtp::state() const
 {

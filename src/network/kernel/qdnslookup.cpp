@@ -311,8 +311,7 @@ QString QDnsLookup::errorString() const
 }
 
 /*!
-    \property QDnsLookup::finished
-    \brief whether the reply has finished or was aborted.
+    Returns whether the reply has finished or was aborted.
 */
 
 bool QDnsLookup::isFinished() const

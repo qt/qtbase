@@ -447,10 +447,10 @@ QList<QByteArray> QSslCertificate::issuerInfoAttributes() const
 
 #if QT_DEPRECATED_SINCE(5,0)
 /*!
-  \fn QMultiMap<QSsl::AlternateNameEntryType, QString> alternateSubjectNames() const
+  \fn QMultiMap<QSsl::AlternateNameEntryType, QString> QSslCertificate::alternateSubjectNames() const
   \obsolete
 
-  Use subjectAlternativeNames();
+  Use QSslCertificate::subjectAlternativeNames();
 */
 #endif
 
@@ -920,11 +920,13 @@ QList<QSslCertificate> QSslCertificate::fromData(const QByteArray &data, QSsl::E
 }
 
 /*!
-    Verifies a certificate chain. If \a hostName is specified then the certificate is
-    also checked to see if it is valid for the specified host name.
-    Note that the first certificate in the list should be the leaf certificate of
-    the chain to be verified.
-    The root (CA) certificate should not be included in the list to be verified,
+    Verifies a certificate chain. The chain to be verified is passed in the
+    \a certificateChain parameter. The first certificate in the list should
+    be the leaf certificate of the chain to be verified. If \a hostName is
+    specified then the certificate is also checked to see if it is valid for
+    the specified host name.
+
+    Note that the root (CA) certificate should not be included in the list to be verified,
     this will be looked up automatically either using the CA list specified by
     QSslSocket::defaultCaCertificates() or, if possible, it will be loaded on demand
     on Unix.
