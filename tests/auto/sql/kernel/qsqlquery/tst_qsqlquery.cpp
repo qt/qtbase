@@ -2712,11 +2712,11 @@ void tst_QSqlQuery::blobsPreparedQuery()
     QVERIFY_SQL( q, exec( QString( "CREATE TABLE %1(id INTEGER, data %2)" ).arg( tableName ).arg( typeName ) ) );
     q.prepare( QString( "INSERT INTO %1(id, data) VALUES(:id, :data)" ).arg( tableName ) );
     q.bindValue( ":id", 1 );
-    q.bindValue( ":data", shortBLOB.toLatin1() );
+    q.bindValue( ":data", shortBLOB );
     QVERIFY_SQL( q, exec() );
 
     q.bindValue( ":id", 2 );
-    q.bindValue( ":data", longerBLOB.toLatin1() );
+    q.bindValue( ":data", longerBLOB );
     QVERIFY_SQL( q, exec() );
 
     // Two executions and result sets
@@ -2729,7 +2729,7 @@ void tst_QSqlQuery::blobsPreparedQuery()
     q.bindValue( 0, QVariant( 2 ) );
     QVERIFY_SQL( q, exec() );
     QVERIFY_SQL( q, next() );
-    QCOMPARE( q.value( 0 ).toString(), longerBLOB );
+    QCOMPARE( q.value( 0 ).toString().toUtf8(), longerBLOB.toUtf8() );
 
     // Only one execution and result set
     q.prepare( QString( "SELECT id, data FROM %1 ORDER BY id" ).arg( tableName ) );
