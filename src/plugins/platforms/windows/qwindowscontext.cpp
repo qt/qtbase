@@ -595,37 +595,39 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
 {
     switch (hr) {
     case S_OK:
-        return QByteArray("S_OK");
+        return QByteArrayLiteral("S_OK");
     case S_FALSE:
-        return QByteArray("S_FALSE");
+        return QByteArrayLiteral("S_FALSE");
     case E_UNEXPECTED:
-        return QByteArray("E_UNEXPECTED");
+        return QByteArrayLiteral("E_UNEXPECTED");
     case CO_E_ALREADYINITIALIZED:
-        return QByteArray("CO_E_ALREADYINITIALIZED");
+        return QByteArrayLiteral("CO_E_ALREADYINITIALIZED");
     case CO_E_NOTINITIALIZED:
-        return QByteArray("CO_E_NOTINITIALIZED");
+        return QByteArrayLiteral("CO_E_NOTINITIALIZED");
     case RPC_E_CHANGED_MODE:
-        return QByteArray("RPC_E_CHANGED_MODE");
+        return QByteArrayLiteral("RPC_E_CHANGED_MODE");
     case OLE_E_WRONGCOMPOBJ:
-        return QByteArray("OLE_E_WRONGCOMPOBJ");
+        return QByteArrayLiteral("OLE_E_WRONGCOMPOBJ");
     case CO_E_NOT_SUPPORTED:
-        return QByteArray("CO_E_NOT_SUPPORTED");
+        return QByteArrayLiteral("CO_E_NOT_SUPPORTED");
     case E_NOTIMPL:
-        return QByteArray("E_NOTIMPL");
+        return QByteArrayLiteral("E_NOTIMPL");
     case E_INVALIDARG:
-        return QByteArray("");
+        return QByteArrayLiteral("E_INVALIDARG");
     case E_NOINTERFACE:
-        return QByteArray("");
+        return QByteArrayLiteral("E_NOINTERFACE");
     case E_POINTER:
-        return QByteArray("");
+        return QByteArrayLiteral("E_POINTER");
     case E_HANDLE:
-        return QByteArray("");
+        return QByteArrayLiteral("E_HANDLE");
     case E_ABORT:
-        return QByteArray("");
+        return QByteArrayLiteral("E_ABORT");
     case E_FAIL:
-        return QByteArray("");
-    case E_ACCESSDENIED:
-        return QByteArray("");
+        return QByteArrayLiteral("E_FAIL");
+    case RPC_E_WRONG_THREAD:
+        return QByteArrayLiteral("RPC_E_WRONG_THREAD");
+    case RPC_E_THREAD_NOT_INIT:
+        return QByteArrayLiteral("RPC_E_THREAD_NOT_INIT");
     default:
         break;
     }
