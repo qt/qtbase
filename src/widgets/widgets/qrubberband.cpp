@@ -112,7 +112,7 @@ void QRubberBand::initStyleOption(QStyleOptionRubberBand *option) const
     setGeometry(), move() or resize() to position and size it. A common
     pattern is to do this in conjunction with mouse events. For example:
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qrubberband.cpp 0
+    \snippet code/src_gui_widgets_qrubberband.cpp 0
 
     If you pass a parent to QRubberBand's constructor, the rubber band will
     display only inside its parent, but stays on top of other child widgets.

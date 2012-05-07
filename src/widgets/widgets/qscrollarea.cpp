@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
     widget can be viewed. The child widget must be specified with
     setWidget(). For example:
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qscrollarea.cpp 0
+    \snippet code/src_gui_widgets_qscrollarea.cpp 0
 
     The code above creates a scroll area (shown in the images below)
     containing an image label. When scaling the image, the scroll area

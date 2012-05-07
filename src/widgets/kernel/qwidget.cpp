@@ -2737,12 +2737,12 @@ void QWidget::overrideWindowState(Qt::WindowStates newstate)
     windows, the change is immediate. For example, to toggle between
     full-screen and normal mode, use the following code:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 0
+    \snippet code/src_gui_kernel_qwidget.cpp 0
 
     In order to restore and activate a minimized window (while
     preserving its maximized and/or full-screen state), use the following:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 1
+    \snippet code/src_gui_kernel_qwidget.cpp 1
 
     Calling this function will hide the widget. You must call show() to make
     the widget visible again.
@@ -3535,7 +3535,7 @@ QSize QWidget::maximumSize() const
     sizeIncrement.height() pixels vertically, with baseSize() as the
     basis. Preferred widget sizes are for non-negative integers \e i
     and \e j:
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 2
+    \snippet code/src_gui_kernel_qwidget.cpp 2
 
     Note that while you can set the size increment for all widgets, it
     only affects windows.
@@ -3946,7 +3946,7 @@ QPoint QWidget::mapFromParent(const QPoint &pos) const
 
     Typical usage is changing the window title:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 3
+    \snippet code/src_gui_kernel_qwidget.cpp 3
 
     \sa isWindow()
 */
@@ -4546,7 +4546,7 @@ void QWidget::unsetLayoutDirection()
     objects\endlink for a range of useful shapes.
 
     An editor widget might use an I-beam cursor:
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 6
+    \snippet code/src_gui_kernel_qwidget.cpp 6
 
     If no cursor has been set, or after a call to unsetCursor(), the
     parent's cursor is used.
@@ -4638,7 +4638,7 @@ void QWidget::unsetCursor()
     using \a renderFlags to determine how to render. Rendering
     starts at \a targetOffset in the \a target. For example:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 7
+    \snippet code/src_gui_kernel_qwidget.cpp 7
 
     If \a sourceRegion is a null region, this function will use QWidget::rect() as
     the region, i.e. the entire widget.
@@ -4646,7 +4646,7 @@ void QWidget::unsetCursor()
     Ensure that you call QPainter::end() for the \a target device's
     active painter (if any) before rendering. For example:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 8
+    \snippet code/src_gui_kernel_qwidget.cpp 8
 
     \note To obtain the contents of an OpenGL widget, use QGLWidget::grabFrameBuffer()
     or QGLWidget::renderPixmap() instead.
@@ -6267,11 +6267,11 @@ bool QWidget::isActiveWindow() const
     Note that since the tab order of the \a second widget is changed, you
     should order a chain like this:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 9
+    \snippet code/src_gui_kernel_qwidget.cpp 9
 
     \e not like this:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 10
+    \snippet code/src_gui_kernel_qwidget.cpp 10
 
     If \a first or \a second has a focus proxy, setTabOrder()
     correctly substitutes the proxy.
@@ -6532,7 +6532,7 @@ void QWidget::setGeometry(const QRect &r)
     To save the geometry when the window closes, you can
     implement a close event like this:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 11
+    \snippet code/src_gui_kernel_qwidget.cpp 11
 
     See the \l{Window Geometry} documentation for an overview of geometry
     issues with windows.
@@ -6591,7 +6591,7 @@ QByteArray QWidget::saveGeometry() const
     To restore geometry saved using QSettings, you can use code like
     this:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 12
+    \snippet code/src_gui_kernel_qwidget.cpp 12
 
     See the \l{Window Geometry} documentation for an overview of geometry
     issues with windows.
@@ -6917,7 +6917,7 @@ void QWidget::setFocusPolicy(Qt::FocusPolicy policy)
     widgets. Disabling updates solves this.
 
     Example:
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 13
+    \snippet code/src_gui_kernel_qwidget.cpp 13
 
     Disabling a widget implicitly disables all its children. Enabling a widget
     enables all child widgets \e except top-level widgets or those that
@@ -8663,7 +8663,7 @@ void QWidget::leaveEvent(QEvent *)
     \b{Note for the X11 platform}: It is possible to toggle global double
     buffering by calling \c qt_x11_set_global_double_buffer(). For example,
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 14
+    \snippet code/src_gui_kernel_qwidget.cpp 14
 
     \note Generally, you should refrain from calling update() or repaint()
     \b{inside} a paintEvent(). For example, calling update() or repaint() on
@@ -9124,7 +9124,7 @@ QLayout *QWidget::layout() const
 
     Example:
 
-    \snippet examples/uitools/textfinder/textfinder.cpp 3b
+    \snippet uitools/textfinder/textfinder.cpp 3b
 
     An alternative to calling this function is to pass this widget to
     the layout's constructor.
@@ -11363,7 +11363,7 @@ void QWidget::setMask(const QRegion &newMask)
     The following code shows how an image with an alpha channel can be
     used to generate a mask for a widget:
 
-    \snippet doc/src/snippets/widget-mask/main.cpp 0
+    \snippet widget-mask/main.cpp 0
 
     The label shown by this code is masked using the image it contains,
     giving the appearance that an irregularly-shaped image is being drawn

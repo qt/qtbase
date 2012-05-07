@@ -1038,11 +1038,11 @@ QStyle* QFormLayoutPrivate::getStyle() const
        creates a QLabel behind the scenes and automatically set up
        its buddy. We can then write code like this:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qformlayout.cpp 0
+    \snippet code/src_gui_kernel_qformlayout.cpp 0
 
        Compare this with the following code, written using QGridLayout:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qformlayout.cpp 1
+    \snippet code/src_gui_kernel_qformlayout.cpp 1
     \endlist
 
     The table below shows the default appearance in different styles.
@@ -1083,7 +1083,7 @@ QStyle* QFormLayoutPrivate::getStyle() const
     appearance of QMacStyle on all platforms, but with left-aligned
     labels, you could write:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qformlayout.cpp 2
+    \snippet code/src_gui_kernel_qformlayout.cpp 2
 
     \sa QGridLayout, QBoxLayout, QStackedLayout
 */

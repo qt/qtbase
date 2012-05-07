@@ -1980,7 +1980,7 @@ void QLineEdit::dropEvent(QDropEvent* e)
     to extend the standard context menu, reimplement this function, call
     createStandardContextMenu() and extend the menu returned.
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qlineedit.cpp 0
+    \snippet code/src_gui_widgets_qlineedit.cpp 0
 
     The \a event parameter is used to obtain the position where
     the mouse cursor was when the event was generated.

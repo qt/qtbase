@@ -901,12 +901,12 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
   to represent cities of the world, and adds a entry for Oslo as a child
   item:
 
-  \snippet doc/src/snippets/qtreewidget-using/mainwindow.cpp 3
+  \snippet qtreewidget-using/mainwindow.cpp 3
 
   Items can be added in a particular order by specifying the item they
   follow when they are constructed:
 
-  \snippet doc/src/snippets/qtreewidget-using/mainwindow.cpp 5
+  \snippet qtreewidget-using/mainwindow.cpp 5
 
   Each column in an item can have its own background brush which is set with
   the setBackground() function. The current background brush can be
@@ -2355,7 +2355,7 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
 
   In its simplest form, a tree widget can be constructed in the following way:
 
-  \snippet doc/src/snippets/code/src_gui_itemviews_qtreewidget.cpp 0
+  \snippet code/src_gui_itemviews_qtreewidget.cpp 0
 
   Before items can be added to the tree widget, the number of columns must
   be set with setColumnCount(). This allows each item to have one or more

@@ -85,8 +85,8 @@ QT_BEGIN_NAMESPACE
     model. In the following example, the contents of a directory are
     supplied by a QFileSystemModel and displayed as a tree:
 
-    \snippet doc/src/snippets/shareddirmodel/main.cpp 3
-    \snippet doc/src/snippets/shareddirmodel/main.cpp 6
+    \snippet shareddirmodel/main.cpp 3
+    \snippet shareddirmodel/main.cpp 6
 
     The model/view architecture ensures that the contents of the tree view
     are updated as the model changes.

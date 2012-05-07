@@ -442,9 +442,9 @@ void QInputDialogPrivate::_q_currentRowChanged(const QModelIndex &newIndex,
     getDouble(), and getItem(). All the functions can be used in a similar way,
     for example:
 
-    \snippet examples/dialogs/standarddialogs/dialog.cpp 3
+    \snippet dialogs/standarddialogs/dialog.cpp 3
 
-    The \c ok variable is set to true if the user clicks \gui OK; otherwise it
+    The \c ok variable is set to true if the user clicks \uicontrol OK; otherwise it
     is set to false.
 
     \img inputdialogs.png Input Dialogs
@@ -576,7 +576,7 @@ QString QInputDialog::labelText() const
     This enum specifies various options that affect the look and feel
     of an input dialog.
 
-    \value NoButtons Don't display \gui{OK} and \gui{Cancel} buttons. (Useful for "live dialogs".)
+    \value NoButtons Don't display \uicontrol{OK} and \uicontrol{Cancel} buttons. (Useful for "live dialogs".)
     \value UseListViewForComboBoxItems Use a QListView rather than a non-editable QComboBox for
                                        displaying the items set with setComboBoxItems().
 
@@ -1133,7 +1133,7 @@ void QInputDialog::done(int result)
     edit widget if an input method is active.
 
     If \a ok is nonnull \e *\a ok will be set to true if the user pressed
-    \gui OK and to false if the user pressed \gui Cancel. The dialog's parent
+    \uicontrol OK and to false if the user pressed \uicontrol Cancel. The dialog's parent
     is \a parent. The dialog will be modal and uses the specified widget
     \a flags.
 
@@ -1142,7 +1142,7 @@ void QInputDialog::done(int result)
 
     Use this static function like this:
 
-    \snippet examples/dialogs/standarddialogs/dialog.cpp 3
+    \snippet dialogs/standarddialogs/dialog.cpp 3
 
     \warning Do not delete \a parent during the execution of the dialog. If you
     want to do this, you should create the dialog yourself using one of the
@@ -1185,8 +1185,8 @@ QString QInputDialog::getText(QWidget *parent, const QString &title, const QStri
     \a step is the amount by which the values change as the user presses the
     arrow buttons to increment or decrement the value.
 
-    If \a ok is nonnull *\a ok will be set to true if the user pressed \gui OK
-    and to false if the user pressed \gui Cancel. The dialog's parent is
+    If \a ok is nonnull *\a ok will be set to true if the user pressed \uicontrol OK
+    and to false if the user pressed \uicontrol Cancel. The dialog's parent is
     \a parent. The dialog will be modal and uses the widget \a flags.
 
     On success, this function returns the integer which has been entered by the
@@ -1194,7 +1194,7 @@ QString QInputDialog::getText(QWidget *parent, const QString &title, const QStri
 
     Use this static function like this:
 
-    \snippet examples/dialogs/standarddialogs/dialog.cpp 0
+    \snippet dialogs/standarddialogs/dialog.cpp 0
 
     \warning Do not delete \a parent during the execution of the dialog. If you
     want to do this, you should create the dialog yourself using one of the
@@ -1234,8 +1234,8 @@ int QInputDialog::getInt(QWidget *parent, const QString &title, const QString &l
     \a min and \a max are the minimum and maximum values the user may choose.
     \a decimals is the maximum number of decimal places the number may have.
 
-    If \a ok is nonnull, *\a ok will be set to true if the user pressed \gui OK
-    and to false if the user pressed \gui Cancel. The dialog's parent is
+    If \a ok is nonnull, *\a ok will be set to true if the user pressed \uicontrol OK
+    and to false if the user pressed \uicontrol Cancel. The dialog's parent is
     \a parent. The dialog will be modal and uses the widget \a flags.
 
     This function returns the floating point number which has been entered by
@@ -1243,7 +1243,7 @@ int QInputDialog::getInt(QWidget *parent, const QString &title, const QString &l
 
     Use this static function like this:
 
-    \snippet examples/dialogs/standarddialogs/dialog.cpp 1
+    \snippet dialogs/standarddialogs/dialog.cpp 1
 
     \warning Do not delete \a parent during the execution of the dialog. If you
     want to do this, you should create the dialog yourself using one of the
@@ -1289,7 +1289,7 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
     user may only select one of the existing items.
 
     If \a ok is nonnull \e *\a ok will be set to true if the user pressed
-    \gui OK and to false if the user pressed \gui Cancel. The dialog's parent
+    \uicontrol OK and to false if the user pressed \uicontrol Cancel. The dialog's parent
     is \a parent. The dialog will be modal and uses the widget \a flags.
 
     This function returns the text of the current item, or if \a editable is
@@ -1297,7 +1297,7 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
 
     Use this static function like this:
 
-    \snippet examples/dialogs/standarddialogs/dialog.cpp 2
+    \snippet dialogs/standarddialogs/dialog.cpp 2
 
     \warning Do not delete \a parent during the execution of the dialog. If you
     want to do this, you should create the dialog yourself using one of the
@@ -1379,7 +1379,7 @@ QString QInputDialog::getItem(QWidget *parent, const QString &title, const QStri
     \fn void QInputDialog::doubleValueSelected(double value)
 
     This signal is emitted whenever the user selects a double value by
-    accepting the dialog; for example, by clicking the \gui{OK} button.
+    accepting the dialog; for example, by clicking the \uicontrol{OK} button.
     The selected value is specified by \a value.
 
     This signal is only relevant when the input dialog is used in
@@ -1400,7 +1400,7 @@ QString QInputDialog::getItem(QWidget *parent, const QString &title, const QStri
     \fn void QInputDialog::intValueSelected(int value)
 
     This signal is emitted whenever the user selects a integer value by
-    accepting the dialog; for example, by clicking the \gui{OK} button.
+    accepting the dialog; for example, by clicking the \uicontrol{OK} button.
     The selected value is specified by \a value.
 
     This signal is only relevant when the input dialog is used in
@@ -1421,7 +1421,7 @@ QString QInputDialog::getItem(QWidget *parent, const QString &title, const QStri
     \fn void QInputDialog::textValueSelected(const QString &text)
 
     This signal is emitted whenever the user selects a text string by
-    accepting the dialog; for example, by clicking the \gui{OK} button.
+    accepting the dialog; for example, by clicking the \uicontrol{OK} button.
     The selected string is specified by \a text.
 
     This signal is only relevant when the input dialog is used in

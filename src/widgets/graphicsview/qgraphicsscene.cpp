@@ -60,7 +60,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsscene.cpp 0
+    \snippet code/src_gui_graphicsview_qgraphicsscene.cpp 0
 
     Note that QGraphicsScene has no visual appearance of its own; it only
     manages the items. You need to create a QGraphicsView widget to visualize
@@ -1715,7 +1715,7 @@ void QGraphicsScene::setSceneRect(const QRectF &rect)
     device, such as a QImage (e.g., to take a screenshot), or for printing
     with QPrinter. For example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsscene.cpp 1
+    \snippet code/src_gui_graphicsview_qgraphicsscene.cpp 1
 
     If \a source is a null rect, this function will use sceneRect() to
     determine what to render. If \a target is a null rect, the dimensions of \a
@@ -1866,7 +1866,7 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
     granularity of the scene's partitioning. The size of each scene segment is
     determined by the following algorithm:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsscene.cpp 2
+    \snippet code/src_gui_graphicsview_qgraphicsscene.cpp 2
 
     The BSP tree has an optimal size when each segment contains between 0 and
     10 items.
@@ -3146,7 +3146,7 @@ QGraphicsItem *QGraphicsScene::mouseGrabberItem() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsscene.cpp 3
+    \snippet code/src_gui_graphicsview_qgraphicsscene.cpp 3
 
     QGraphicsScene::render() calls drawBackground() to draw the scene
     background. For more detailed control over how the background is drawn,
@@ -3181,7 +3181,7 @@ void QGraphicsScene::setBackgroundBrush(const QBrush &brush)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsscene.cpp 4
+    \snippet code/src_gui_graphicsview_qgraphicsscene.cpp 4
 
     QGraphicsScene::render() calls drawForeground() to draw the scene
     foreground. For more detailed control over how the foreground is
@@ -3295,7 +3295,7 @@ void QGraphicsScene::update(const QRectF &rect)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsscene.cpp 5
+    \snippet code/src_gui_graphicsview_qgraphicsscene.cpp 5
 
     Note that QGraphicsView currently supports background caching only (see
     QGraphicsView::CacheBackground). This function is equivalent to calling
@@ -5340,7 +5340,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     Example:
 
-    \snippet doc/src/snippets/graphicssceneadditemsnippet.cpp 0
+    \snippet graphicssceneadditemsnippet.cpp 0
 
     Since Qt 4.6, this function is not called anymore unless
     the QGraphicsView::IndirectPainting flag is given as an Optimization

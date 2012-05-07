@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
   For example, the following code examples each item in a tree, checking the
   text in the first column against a user-specified search string:
 
-  \snippet doc/src/snippets/qtreewidgetitemiterator-using/mainwindow.cpp 0
+  \snippet qtreewidgetitemiterator-using/mainwindow.cpp 0
 
   It is also possible to filter out certain types of node by passing certain
   \l{IteratorFlag}{flags} to the constructor of QTreeWidgetItemIterator.

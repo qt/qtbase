@@ -244,7 +244,7 @@ void QProgressDialogPrivate::_q_disconnectOnClose()
   to use for the programmer. Do the operation in a loop, call \l setValue() at
   intervals, and check for cancellation with wasCanceled(). For example:
 
-  \snippet doc/src/snippets/dialogs/dialogs.cpp 3
+  \snippet dialogs/dialogs.cpp 3
 
   A modeless progress dialog is suitable for operations that take
   place in the background, where the user is able to interact with the
@@ -257,11 +257,11 @@ void QProgressDialogPrivate::_q_disconnectOnClose()
   canceled() signal to a slot that stops the operation, and call \l
   setValue() at intervals. For example:
 
-  \snippet doc/src/snippets/dialogs/dialogs.cpp 4
+  \snippet dialogs/dialogs.cpp 4
   \codeline
-  \snippet doc/src/snippets/dialogs/dialogs.cpp 5
+  \snippet dialogs/dialogs.cpp 5
   \codeline
-  \snippet doc/src/snippets/dialogs/dialogs.cpp 6
+  \snippet dialogs/dialogs.cpp 6
 
   In both modes the progress dialog may be customized by
   replacing the child widgets with custom widgets by using setLabel(),

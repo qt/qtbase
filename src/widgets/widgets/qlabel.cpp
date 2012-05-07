@@ -115,7 +115,7 @@ QT_BEGIN_NAMESPACE
     the bottom right corner (both lines being flush with the right
     side of the label):
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qlabel.cpp 0
+    \snippet code/src_gui_widgets_qlabel.cpp 0
 
     The properties and functions QLabel inherits from QFrame can also
     be used to specify the widget frame to be used for any given label.
@@ -125,7 +125,7 @@ QT_BEGIN_NAMESPACE
     mnemonic (see QKeySequence) that will set the keyboard focus to
     the other widget (called the QLabel's "buddy"). For example:
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qlabel.cpp 1
+    \snippet code/src_gui_widgets_qlabel.cpp 1
 
     In this example, keyboard focus is transferred to the label's
     buddy (the QLineEdit) when the user presses Alt+P. If the buddy
@@ -1150,7 +1150,7 @@ void QLabelPrivate::updateLabel()
     In a dialog, you might create two data entry widgets and a label
     for each, and set up the geometry layout so each label is just to
     the left of its data entry widget (its "buddy"), for example:
-    \snippet doc/src/snippets/code/src_gui_widgets_qlabel.cpp 2
+    \snippet code/src_gui_widgets_qlabel.cpp 2
 
     With the code above, the focus jumps to the Name field when the
     user presses Alt+N, and to the Phone field when the user presses

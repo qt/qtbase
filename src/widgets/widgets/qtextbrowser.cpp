@@ -1170,7 +1170,7 @@ QUrl QTextBrowser::historyUrl(int i) const
     \row \li \a{i} > 0  \li \l forward() history
     \endtable
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qtextbrowser.cpp 0
+    \snippet code/src_gui_widgets_qtextbrowser.cpp 0
 
     \since 4.4
 */

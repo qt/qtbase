@@ -575,7 +575,7 @@ QApplication::QApplication(int &argc, char **argv, int _internal)
 
     \obsolete
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 0
+    \snippet code/src_gui_kernel_qapplication.cpp 0
 */
 
 QApplication::QApplication(int &argc, char **argv, bool GUIenabled , int _internal)
@@ -1106,7 +1106,7 @@ QStyle *QApplication::style()
     still the parent of the application object.
 
     Example usage:
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 1
+    \snippet code/src_gui_kernel_qapplication.cpp 1
 
     When switching application styles, the color palette is set back to the
     initial colors or the system defaults. This is necessary since certain
@@ -1298,7 +1298,7 @@ int QApplication::colorSpec()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 2
+    \snippet code/src_gui_kernel_qapplication.cpp 2
 
     \sa colorSpec()
 */
@@ -1322,7 +1322,7 @@ void QApplication::setColorSpec(int spec)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 3
+    \snippet code/src_gui_kernel_qapplication.cpp 3
 
     By default, this property contains a QSize object with zero width and height.
 */
@@ -1675,7 +1675,7 @@ void QApplication::setWindowIcon(const QIcon &icon)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 4
+    \snippet code/src_gui_kernel_qapplication.cpp 4
 
     \sa allWidgets(), QWidget::isWindow(), QWidget::isHidden()
 */
@@ -1700,7 +1700,7 @@ QWidgetList QApplication::topLevelWidgets()
     \note Some of the widgets may be hidden.
 
     Example:
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 5
+    \snippet code/src_gui_kernel_qapplication.cpp 5
 
     \sa topLevelWidgets(), QWidget::isVisible()
 */
@@ -1810,10 +1810,10 @@ QFontMetrics QApplication::fontMetrics()
     Closes all top-level windows.
 
     This function is particularly useful for applications with many top-level
-    windows. It could, for example, be connected to a \gui{Exit} entry in the
-    \gui{File} menu:
+    windows. It could, for example, be connected to a \uicontrol{Exit} entry in the
+    \uicontrol{File} menu:
 
-    \snippet examples/mainwindows/mdi/mainwindow.cpp 0
+    \snippet mainwindows/mdi/mainwindow.cpp 0
 
     The windows are closed in random order, until one window does not accept
     the close event. The application quits when the last window was
@@ -1850,7 +1850,7 @@ void QApplication::closeAllWindows()
     Displays a simple message box about Qt. The message includes the version
     number of Qt being used by the application.
 
-    This is useful for inclusion in the \gui Help menu of an application, as
+    This is useful for inclusion in the \uicontrol Help menu of an application, as
     shown in the \l{mainwindows/menus}{Menus} example.
 
     This function is a convenience slot for QMessageBox::aboutQt().
@@ -2873,7 +2873,7 @@ void QApplication::setStartDragDistance(int l)
     and the current position (e.g. in the mouse move event) is \c currentPos,
     you can find out if a drag should be started with code like this:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 7
+    \snippet code/src_gui_kernel_qapplication.cpp 7
 
     Qt uses this value internally, e.g. in QFileDialog.
 
@@ -3722,7 +3722,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     Here's an example of how an application's QApplication::commitData() might
     be implemented:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 8
+    \snippet code/src_gui_kernel_qapplication.cpp 8
 
     If an error occurred within the application while saving its data, you may
     want to try allowsErrorInteraction() instead.
@@ -3794,7 +3794,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     If the session manager is capable of restoring sessions it will execute
     \a command in order to restore the application. The command defaults to
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 9
+    \snippet code/src_gui_kernel_qapplication.cpp 9
 
     The \c -session option is mandatory; otherwise QApplication cannot tell
     whether it has been restored or what the current session identifier is.
@@ -3818,7 +3818,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 
     To iterate over the list, you can use the \l foreach pseudo-keyword:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 10
+    \snippet code/src_gui_kernel_qapplication.cpp 10
 
     \sa setRestartCommand(), restartHint()
 */
@@ -3839,7 +3839,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 
     To iterate over the list, you can use the \l foreach pseudo-keyword:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 11
+    \snippet code/src_gui_kernel_qapplication.cpp 11
 
     \sa setDiscardCommand(), restartCommand(), setRestartCommand()
 */
@@ -3967,7 +3967,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     Use the two-argument widgetAt() overload to get the child widget. To get
     the top-level widget do this:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 12
+    \snippet code/src_gui_kernel_qapplication.cpp 12
 */
 
 /*!
@@ -3976,7 +3976,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     Use the single-argument widgetAt() overload to get the child widget. To get
     the top-level widget do this:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 13
+    \snippet code/src_gui_kernel_qapplication.cpp 13
 */
 
 bool QApplicationPrivate::inPopupMode() const
@@ -4098,7 +4098,7 @@ bool QApplication::keypadNavigationEnabled()
     flash time, then hidden for the same amount of time, but this may vary.
 
     The default value on X11 is 1000 milliseconds. On Windows, the
-    \gui{Control Panel} value is used and setting this property sets the cursor
+    \uicontrol{Control Panel} value is used and setting this property sets the cursor
     flash time for all applications.
 
     We recommend that widgets do not cache this value as it may change at any

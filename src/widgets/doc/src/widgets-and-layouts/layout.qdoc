@@ -118,25 +118,25 @@
     The following code creates a QHBoxLayout that manages the geometry of five
     \l{QPushButton}{QPushButtons}, as shown on the first screenshot above:
 
-    \snippet doc/src/snippets/layouts/layouts.cpp 0
-    \snippet doc/src/snippets/layouts/layouts.cpp 1
-    \snippet doc/src/snippets/layouts/layouts.cpp 2
+    \snippet layouts/layouts.cpp 0
+    \snippet layouts/layouts.cpp 1
+    \snippet layouts/layouts.cpp 2
     \codeline
-    \snippet doc/src/snippets/layouts/layouts.cpp 3
-    \snippet doc/src/snippets/layouts/layouts.cpp 4
-    \snippet doc/src/snippets/layouts/layouts.cpp 5
+    \snippet layouts/layouts.cpp 3
+    \snippet layouts/layouts.cpp 4
+    \snippet layouts/layouts.cpp 5
 
     The code for QVBoxLayout is identical, except the line where the layout is
     created. The code for QGridLayout is a bit different, because we need to
     specify the row and column position of the child widget:
 
-    \snippet doc/src/snippets/layouts/layouts.cpp 12
-    \snippet doc/src/snippets/layouts/layouts.cpp 13
-    \snippet doc/src/snippets/layouts/layouts.cpp 14
+    \snippet layouts/layouts.cpp 12
+    \snippet layouts/layouts.cpp 13
+    \snippet layouts/layouts.cpp 14
     \codeline
-    \snippet doc/src/snippets/layouts/layouts.cpp 15
-    \snippet doc/src/snippets/layouts/layouts.cpp 16
-    \snippet doc/src/snippets/layouts/layouts.cpp 17
+    \snippet layouts/layouts.cpp 15
+    \snippet layouts/layouts.cpp 16
+    \snippet layouts/layouts.cpp 17
 
     The third QPushButton spans 2 columns. This is possible by specifying 2 as
     the fifth argument to QGridLayout::addWidget().
@@ -147,13 +147,13 @@
     QFormLayout to place three \l{QPushButton}{QPushButtons} and a corresponding
     QLineEdit on a row. 
     
-    \snippet doc/src/snippets/layouts/layouts.cpp 18
-    \snippet doc/src/snippets/layouts/layouts.cpp 19
-    \snippet doc/src/snippets/layouts/layouts.cpp 20
+    \snippet layouts/layouts.cpp 18
+    \snippet layouts/layouts.cpp 19
+    \snippet layouts/layouts.cpp 20
     \codeline
-    \snippet doc/src/snippets/layouts/layouts.cpp 21
-    \snippet doc/src/snippets/layouts/layouts.cpp 22
-    \snippet doc/src/snippets/layouts/layouts.cpp 23
+    \snippet layouts/layouts.cpp 21
+    \snippet layouts/layouts.cpp 22
+    \snippet layouts/layouts.cpp 23
 
 
     \section2 Tips for Using Layouts
@@ -319,16 +319,16 @@
 
     \section2 The Header File (\c card.h)
 
-    \snippet doc/src/snippets/code/doc_src_layout.cpp 0
+    \snippet code/doc_src_layout.cpp 0
 
 
     \section2 The Implementation File (\c card.cpp)
 
-    \snippet doc/src/snippets/code/doc_src_layout.cpp 1
+    \snippet code/doc_src_layout.cpp 1
 
     First we define \c{count()} to fetch the number of items in the list.
 
-    \snippet doc/src/snippets/code/doc_src_layout.cpp 2
+    \snippet code/doc_src_layout.cpp 2
 
     Then we define two functions that iterate over the layout: \c{itemAt()}
     and \c{takeAt()}. These functions are used internally by the layout system
@@ -341,7 +341,7 @@
     structure, we may have to spend more effort defining a linear order for the
     items.
 
-    \snippet doc/src/snippets/code/doc_src_layout.cpp 3
+    \snippet code/doc_src_layout.cpp 3
 
     \c{addItem()} implements the default placement strategy for layout items.
     This function must be implemented. It is used by QLayout::add(), by the
@@ -351,26 +351,26 @@
     QGridLayout::addItem(), QGridLayout::addWidget(), and
     QGridLayout::addLayout().
 
-    \snippet doc/src/snippets/code/doc_src_layout.cpp 4
+    \snippet code/doc_src_layout.cpp 4
 
     The layout takes over responsibility of the items added. Since QLayoutItem
     does not inherit QObject, we must delete the items manually. In the 
     destructor, we remove each item from the list using \c{takeAt()}, and
     then delete it.
 
-    \snippet doc/src/snippets/code/doc_src_layout.cpp 5
+    \snippet code/doc_src_layout.cpp 5
 
     The \c{setGeometry()} function actually performs the layout. The rectangle
     supplied as an argument does not include \c{margin()}. If relevant, use
     \c{spacing()} as the distance between items.
 
-    \snippet doc/src/snippets/code/doc_src_layout.cpp 6
+    \snippet code/doc_src_layout.cpp 6
 
     \c{sizeHint()} and \c{minimumSize()} are normally very similar in
     implementation. The sizes returned by both functions should include
     \c{spacing()}, but not \c{margin()}.
 
-    \snippet doc/src/snippets/code/doc_src_layout.cpp 7
+    \snippet code/doc_src_layout.cpp 7
 
 
     \section2 Further Notes

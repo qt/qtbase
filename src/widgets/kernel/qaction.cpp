@@ -235,10 +235,10 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     menu and toolbar, then connected to the slot which will perform
     the action. For example:
 
-    \snippet examples/mainwindows/application/mainwindow.cpp 19
+    \snippet mainwindows/application/mainwindow.cpp 19
     \codeline
-    \snippet examples/mainwindows/application/mainwindow.cpp 28
-    \snippet examples/mainwindows/application/mainwindow.cpp 31
+    \snippet mainwindows/application/mainwindow.cpp 28
+    \snippet mainwindows/application/mainwindow.cpp 31
 
     We recommend that actions are created as children of the window
     they are used in. In most cases actions will be children of
@@ -1037,7 +1037,7 @@ bool QAction::isChecked() const
     which indicates that they are unavailable. For example, they might
     be displayed using only shades of gray.
 
-    \gui{What's This?} help on disabled actions is still available, provided
+    \uicontrol{What's This?} help on disabled actions is still available, provided
     that the QAction::whatsThis property is set.
 
     An action will be disabled when all widgets to which it is added
@@ -1328,7 +1328,7 @@ QAction::SoftKeyRole QAction::softKeyRole() const
     the presence (or abscence) of the attribute.
 
     For example:
-    \snippet doc/src/snippets/code/src_gui_kernel_qaction.cpp 0
+    \snippet code/src_gui_kernel_qaction.cpp 0
 
     \sa QAction::icon QApplication::setAttribute()
 */

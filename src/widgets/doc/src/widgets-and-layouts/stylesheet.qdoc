@@ -73,7 +73,7 @@
     \l{QLineEdit}s should use yellow as their background color, and
     all \l{QCheckBox}es should use red as the text color:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 0
+    \snippet code/doc_src_stylesheet.qdoc 0
 
     For this kind of customization, style sheets are much more
     powerful than QPalette. For example, it might be tempting to set
@@ -157,7 +157,7 @@
     the \e{declaration} specifies which properties should be set on
     the widget. For example:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 1
+    \snippet code/doc_src_stylesheet.qdoc 1
 
     In the above style rule, \c QPushButton is the selector and \c{{
     color: red }} is the declaration. The rule specifies that
@@ -174,17 +174,17 @@
     using commas (\c{,}) to separate the selectors. For example,
     the rule
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 2
+    \snippet code/doc_src_stylesheet.qdoc 2
 
     is equivalent to this sequence of three rules:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 3
+    \snippet code/doc_src_stylesheet.qdoc 3
 
     The declaration part of a style rule is a list of
     \tt{\e{property}: \e{value}} pairs, enclosed in braces (\c{{}})
     and separated with semicolons. For example:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 4
+    \snippet code/doc_src_stylesheet.qdoc 4
 
     See the \l{List of Properties} section below for the list of
     properties provided by Qt widgets.
@@ -271,7 +271,7 @@
     possible to restrict the application of a rule to specific widget
     subcontrols. For example:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 5
+    \snippet code/doc_src_stylesheet.qdoc 5
 
     The above rule styles the drop-down button of all \l{QComboBox}es.
     Although the double-colon (\c{::}) syntax is reminiscent of CSS3
@@ -295,7 +295,7 @@
     rectangle of the QComboBox instead of the default Padding rectangle, we
     can specify:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 6
+    \snippet code/doc_src_stylesheet.qdoc 6
 
     The alignment of the drop-down within the Margin rectangle is changed
     using \l{Qt Style Sheets Reference#subcontrol-position-prop}
@@ -314,7 +314,7 @@
     pressed, we might like the arrow inside to be offset to give a
     "pressed" effect. To achieve this, we can specify:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 7
+    \snippet code/doc_src_stylesheet.qdoc 7
 
     The absolute positioning scheme
     (\l{Qt Style Sheets Reference#position-prop}{position} : absolute),
@@ -340,34 +340,34 @@
     (\c{:}) in between. For example, the following rule applies when
     the mouse hovers over a QPushButton:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 8
+    \snippet code/doc_src_stylesheet.qdoc 8
 
     Pseudo-states can be negated using the exclamation operator. For
     example, the following rule applies when the mouse does not hover
     over a QRadioButton:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 9
+    \snippet code/doc_src_stylesheet.qdoc 9
 
     Pseudo-states can be chained, in which case a logical AND is
     implied. For example, the following rule applies to when the
     mouse hovers over a checked QCheckBox:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 10
+    \snippet code/doc_src_stylesheet.qdoc 10
 
     Negated Pseudo-states may appear in Pseudo-state chains. For example,
     the following rule applies when the mouse hovers over a QPushButton
     that is not pressed:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 11
+    \snippet code/doc_src_stylesheet.qdoc 11
 
     If needed, logical OR can be expressed using the comma operator:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 12
+    \snippet code/doc_src_stylesheet.qdoc 12
 
     Pseudo-states can appear in combination with subcontrols. For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 13
+    \snippet code/doc_src_stylesheet.qdoc 13
 
     See the \l{List of Pseudo-States} section below for the list of
     pseudo-states provided by Qt widgets.
@@ -378,7 +378,7 @@
     properties with different values. Consider the following style
     sheet:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 14
+    \snippet code/doc_src_stylesheet.qdoc 14
 
     Both rules match QPushButton instances called \c okButton and
     there is a conflict for the \c color property. To resolve this
@@ -393,27 +393,27 @@
     sheet specifies that a \l{QPushButton} should have white text
     when the mouse is hovering over it, otherwise red text:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 15
+    \snippet code/doc_src_stylesheet.qdoc 15
 
     Here's a tricky one:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 16
+    \snippet code/doc_src_stylesheet.qdoc 16
 
     Here, both selectors have the same specificity, so if the mouse
     hovers over the button while it is enabled, the second rule takes
     precedence. If we want the text to be white in that case, we can
     reorder the rules like this:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 17
+    \snippet code/doc_src_stylesheet.qdoc 17
 
     Alternatively, we can make the first rule more specific:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 18
+    \snippet code/doc_src_stylesheet.qdoc 18
 
     A similar issue arises in conjunction with Type Selectors.
     Consider the following example:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 19
+    \snippet code/doc_src_stylesheet.qdoc 19
 
     Both rules apply to QPushButton instances (since QPushButton
     inherits QAbstractButton) and there is a conflict for the
@@ -447,7 +447,7 @@
 
     \e{Some examples:}
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 20
+    \snippet code/doc_src_stylesheet.qdoc 20
     \endquotation
 
     \section1 Cascading
@@ -469,11 +469,11 @@
     sheet. Consider the following example. First, we set a style
     sheet on the QApplication:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 21
+    \snippet code/doc_src_stylesheet.cpp 21
 
     Then we set a style sheet on a QPushButton object:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 22
+    \snippet code/doc_src_stylesheet.cpp 22
 
     The style sheet on the QPushButton forces the QPushButton (and
     any child widget) to have blue text, in spite of the more
@@ -481,7 +481,7 @@
 
     The result would have been the same if we had written
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 23
+    \snippet code/doc_src_stylesheet.cpp 23
 
     except that if the QPushButton had children (which is unlikely),
     the style sheet would have no impact on them.
@@ -500,14 +500,14 @@
 
     For example, consider a QPushButton inside a QGroupBox:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 24
+    \snippet code/doc_src_stylesheet.cpp 24
 
     The QPushButton does not have an explicit color set. Hence, instead
     of inheriting color of its parent QGroupBox, it has the system color.
     If we want to set the color on a QGroupBox and its children,
     we can write:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 25
+    \snippet code/doc_src_stylesheet.cpp 25
 
     In contrast, setting a font and propagate using QWidget::setFont() and
     QWidget::setPalette() propagates to child widgets.
@@ -517,7 +517,7 @@
     The Type Selector can be used to style widgets of a particular type. For
     example,
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 26
+    \snippet code/doc_src_stylesheet.cpp 26
 
     Qt Style Sheet uses QObject::className() of the widget to determine
     when to apply the Type Selector. When custom widgets are inside namespaces,
@@ -526,7 +526,7 @@
     when using the Type Selector for widgets inside namespaces, we must
     replace the "::" with "--". For example,
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 27
+    \snippet code/doc_src_stylesheet.cpp 27
 
     \section1 Setting QObject properties
 
@@ -534,7 +534,7 @@
     can be set using the qproperty-<property name> syntax.
 
     For example,
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 28
+    \snippet code/doc_src_stylesheet.qdoc 28
 
     If the property references an enum declared with Q_ENUMS, you should
     reference its constants by name, i.e., not their numeric value.
@@ -982,7 +982,7 @@
            because, by default, the QPushButton draws a native border which completely
            overlaps the background-color. For example,
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 30
+           \snippet code/doc_src_stylesheet.qdoc 30
 
            See \l{Qt Style Sheets Examples#Customizing QPushButton}{Customizing QPushButton}
            for an example.
@@ -1260,7 +1260,7 @@
            because, by default, the QToolButton draws a native border which completely
            overlaps the background-color. For example,
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 31
+           \snippet code/doc_src_stylesheet.qdoc 31
 
            See \l{Qt Style Sheets Examples#Customizing QToolButton}{Customizing QToolButton}
            for an example.
@@ -1328,7 +1328,7 @@
 
            If you subclass from QWidget, you need to provide a paintEvent for your
            custom QWidget as below:
-           \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 32
+           \snippet code/doc_src_stylesheet.cpp 32
 
            The above code is a no-operation if there is no stylesheet set.
 
@@ -1364,7 +1364,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 33
+           \snippet code/doc_src_stylesheet.qdoc 33
 
            See also \l{Qt Style Sheets Reference#background-prop}{background} and
            \l{#selection-background-color-prop}{selection-background-color}.
@@ -1384,7 +1384,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 34
+           \snippet code/doc_src_stylesheet.qdoc 34
 
 
            Often, it is required to set a fill pattern similar to the styles
@@ -1395,7 +1395,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 35
+           \snippet code/doc_src_stylesheet.qdoc 35
 
            See also \l{#background-origin-prop}{background-origin},
            \l{#selection-background-color-prop}{selection-background-color},
@@ -1410,7 +1410,7 @@
 
            Examples:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 36
+           \snippet code/doc_src_stylesheet.qdoc 36
 
     \row
         \li \c background-image \target background-image-prop
@@ -1421,7 +1421,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 37
+           \snippet code/doc_src_stylesheet.qdoc 37
 
     \row
         \li \c background-repeat \target background-repeat-prop
@@ -1434,7 +1434,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 38
+           \snippet code/doc_src_stylesheet.qdoc 38
 
     \row
         \li \c background-position
@@ -1447,7 +1447,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 39
+           \snippet code/doc_src_stylesheet.qdoc 39
 
     \row
         \li \b{\c background-attachment} \target background-attachment-prop
@@ -1458,7 +1458,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 40
+           \snippet code/doc_src_stylesheet.qdoc 40
 
         See also \l{Qt Style Sheets Reference#background-prop}{background}
 
@@ -1481,7 +1481,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 41
+           \snippet code/doc_src_stylesheet.qdoc 41
 
            See also \l{Qt Style Sheets Reference#background-prop}{background},
            \l{#background-origin-prop}{background-origin} and \l{The Box Model}.
@@ -1503,7 +1503,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 42
+           \snippet code/doc_src_stylesheet.qdoc 42
 
            See also \l{Qt Style Sheets Reference#background-prop}{background} and
            \l{The Box Model}.
@@ -1523,7 +1523,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 43
+           \snippet code/doc_src_stylesheet.qdoc 43
 
     \row
         \li \c border-top
@@ -1573,7 +1573,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 44
+           \snippet code/doc_src_stylesheet.qdoc 44
 
            See also \l{Qt Style Sheets Reference#border-style-prop}{border-style},
            \l{Qt Style Sheets Reference#border-width-prop}{border-width},
@@ -1638,7 +1638,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 45
+           \snippet code/doc_src_stylesheet.qdoc 45
 
            See also \l{Qt Style Sheets Reference#border-width-prop}{border-width} and
            \l{The Box Model}.
@@ -1681,7 +1681,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 46
+           \snippet code/doc_src_stylesheet.qdoc 46
 
            See also \l{#border-color-prop}{border-color},
            \l{Qt Style Sheets Reference#border-style-prop}{border-style},
@@ -1722,7 +1722,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 47
+           \snippet code/doc_src_stylesheet.qdoc 47
 
            See also \l{#border-color-prop}{border-color},
            \l{#border-radius-prop}{border-radius},
@@ -1766,7 +1766,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 48
+           \snippet code/doc_src_stylesheet.qdoc 48
 
            See also \l{Qt Style Sheets Reference#left-prop}{left}, \l{#right-prop}{right}, and
            \l{Qt Style Sheets Reference#top-prop}{top}.
@@ -1787,7 +1787,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 49
+           \snippet code/doc_src_stylesheet.qdoc 49
 
     \row
         \li \b{\c color} \target color-prop
@@ -1803,7 +1803,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 50
+           \snippet code/doc_src_stylesheet.qdoc 50
 
            See also \l{Qt Style Sheets Reference#background-prop}{background} and
            \l{#selection-color-prop}{selection-color}.
@@ -1819,7 +1819,7 @@
         See the \l{Qt Style Sheets Reference#list of icons}{List of Icons}
         section for information on how to set icons.
 
-        \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 51
+        \snippet code/doc_src_stylesheet.qdoc 51
 
         \note Styles defining this property must be applied before the
         QDialogButtonBox is created; this means that you must apply the
@@ -1837,7 +1837,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 52
+           \snippet code/doc_src_stylesheet.qdoc 52
     \endomit
 
     \row
@@ -1855,7 +1855,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 53
+           \snippet code/doc_src_stylesheet.qdoc 53
 
     \row
         \li \c font-family
@@ -1864,7 +1864,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 54
+           \snippet code/doc_src_stylesheet.qdoc 54
 
     \row
         \li \c font-size
@@ -1874,7 +1874,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 55
+           \snippet code/doc_src_stylesheet.qdoc 55
 
     \row
         \li \c font-style
@@ -1883,7 +1883,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 56
+           \snippet code/doc_src_stylesheet.qdoc 56
 
     \row
         \li \c font-weight
@@ -1901,7 +1901,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 57
+           \snippet code/doc_src_stylesheet.qdoc 57
 
     \row
         \li \b{\c height} \target height-prop
@@ -1918,7 +1918,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 58
+           \snippet code/doc_src_stylesheet.qdoc 58
 
            See also \l{#width-prop}{width}.
 
@@ -1966,7 +1966,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 59
+           \snippet code/doc_src_stylesheet.qdoc 59
 
     \row
         \li \b{\c image-position} \target image-position-prop
@@ -1990,7 +1990,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 60
+           \snippet code/doc_src_stylesheet.qdoc 60
 
            See also \l{#right-prop}{right}, \l{Qt Style Sheets Reference#top-prop}{top}, and
            \l{#bottom-prop}{bottom}.
@@ -2006,7 +2006,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 61
+           \snippet code/doc_src_stylesheet.qdoc 61
 
     \row
         \li \b{\c margin} \target margin-prop
@@ -2025,7 +2025,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 62
+           \snippet code/doc_src_stylesheet.qdoc 62
 
            See also \l{Qt Style Sheets Reference#padding-prop}{padding},
            \l{#spacing-prop}{spacing}, and \l{The Box Model}.
@@ -2066,7 +2066,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 63
+           \snippet code/doc_src_stylesheet.qdoc 63
 
            See also \l{#max-width-prop}{max-width}.
 
@@ -2086,7 +2086,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 64
+           \snippet code/doc_src_stylesheet.qdoc 64
 
            See also \l{#max-height-prop}{max-height}.
 
@@ -2104,7 +2104,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 65
+           \snippet code/doc_src_stylesheet.qdoc 65
 
     \row
         \li \b{\c min-height} \target min-height-prop
@@ -2125,7 +2125,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 66
+           \snippet code/doc_src_stylesheet.qdoc 66
 
            See also \l{#min-width-prop}{min-width}.
 
@@ -2148,7 +2148,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 67
+           \snippet code/doc_src_stylesheet.qdoc 67
 
            See also \l{#min-height-prop}{min-height}.
 
@@ -2165,7 +2165,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 68
+           \snippet code/doc_src_stylesheet.qdoc 68
 
     \row
         \li \b{\c padding} \target padding-prop
@@ -2184,7 +2184,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 69
+           \snippet code/doc_src_stylesheet.qdoc 69
 
            See also \l{#margin-prop}{margin},
            \l{#spacing-prop}{spacing}, and \l{The Box Model}.
@@ -2243,7 +2243,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 70
+           \snippet code/doc_src_stylesheet.qdoc 70
 
            See also \l{Qt Style Sheets Reference#left-prop}{left}, \l{Qt Style Sheets Reference#top-prop}{top}, and
            \l{#bottom-prop}{bottom}.
@@ -2262,7 +2262,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 71
+           \snippet code/doc_src_stylesheet.qdoc 71
 
            See also \l{#selection-color-prop}{selection-color} and
            \l{Qt Style Sheets Reference#background-prop}{background}.
@@ -2281,7 +2281,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 72
+           \snippet code/doc_src_stylesheet.qdoc 72
 
            See also
            \l{#selection-background-color-prop}{selection-background-color}
@@ -2300,7 +2300,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 73
+           \snippet code/doc_src_stylesheet.qdoc 73
 
     \row
         \li \b{\c spacing*} \target spacing-prop
@@ -2315,7 +2315,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 74
+           \snippet code/doc_src_stylesheet.qdoc 74
 
            See also \l{Qt Style Sheets Reference#padding-prop}{padding} and
            \l{#margin-prop}{margin}.
@@ -2331,7 +2331,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 75
+           \snippet code/doc_src_stylesheet.qdoc 75
 
            See also
            \l{Qt Style Sheets Reference#subcontrol-position-prop}{subcontrol-position}.
@@ -2348,7 +2348,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 76
+           \snippet code/doc_src_stylesheet.qdoc 76
 
            See also
            \l{Qt Style Sheets Reference#subcontrol-origin-prop}{subcontrol-origin}.
@@ -2363,7 +2363,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 77
+           \snippet code/doc_src_stylesheet.qdoc 77
 
             This property is currently supported only by QPushButton
             and QProgressBar.
@@ -2392,7 +2392,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 78
+           \snippet code/doc_src_stylesheet.qdoc 78
 
            See also \l{Qt Style Sheets Reference#left-prop}{left}, \l{#right-prop}{right}, and
            \l{#bottom-prop}{bottom}.
@@ -2412,7 +2412,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 79
+           \snippet code/doc_src_stylesheet.qdoc 79
 
            See also \l{#height-prop}{height}.
 
@@ -2671,7 +2671,7 @@
 
            Example:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 80
+    \snippet code/doc_src_stylesheet.qdoc 80
 
     \row
         \li \b Attachment \target Attachment
@@ -2695,7 +2695,7 @@
 
            Example:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 81
+    \snippet code/doc_src_stylesheet.qdoc 81
 
     \row
         \li \b Border \target Border
@@ -2750,7 +2750,7 @@
 
            Example:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 82
+           \snippet code/doc_src_stylesheet.qdoc 82
 
     \row
         \li \b{Box Lengths} \target Box Lengths
@@ -2765,7 +2765,7 @@
 
            Examples:
 
-           \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 83
+           \snippet code/doc_src_stylesheet.qdoc 83
 
     \row
         \li \b{Brush} \target Brush
@@ -2791,7 +2791,7 @@
 
            Examples:
 
-            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 84
+            \snippet code/doc_src_stylesheet.qdoc 84
 
             \note The RGB colors allowed are the same as those allowed with
             CSS 2.1, as listed
@@ -2852,7 +2852,7 @@
 
         Examples:
 
-        \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 85
+        \snippet code/doc_src_stylesheet.qdoc 85
 
     \row
         \li \b{Icon} \target Icon
@@ -2861,7 +2861,7 @@
         \li A list of url, QIcon::Mode and QIcon::State.
 
             Example:
-            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 86
+            \snippet code/doc_src_stylesheet.qdoc 86
 
     \row
         \li \b{Length} \target Length
@@ -2930,7 +2930,7 @@
            in the widget's QPalette.
 
             For example,
-            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 87
+            \snippet code/doc_src_stylesheet.qdoc 87
 
     \row
         \li \b{Radius} \target Radius
@@ -3373,35 +3373,35 @@
     \l{QLineEdit}s in an application. This could be achieved like
     this:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 88
+    \snippet code/doc_src_stylesheet.cpp 88
 
     If we want the property to apply only to the \l{QLineEdit}s that are
     children (or grandchildren or grand-grandchildren) of a specific dialog,
     we would rather do this:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 89
+    \snippet code/doc_src_stylesheet.cpp 89
 
     If we want the property to apply only to one specific QLineEdit,
     we can give it a name using QObject::setObjectName() and use an
     ID Selector to refer to it:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 90
+    \snippet code/doc_src_stylesheet.cpp 90
 
     Alternatively, we can set the
     \l{Qt Style Sheets Reference#background-prop}{background-color} property directly on the
     QLineEdit, omitting the selector:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 91
+    \snippet code/doc_src_stylesheet.cpp 91
 
     To ensure a good contrast, we should also specify a suitable
     color for the text:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 92
+    \snippet code/doc_src_stylesheet.cpp 92
 
     It might be a good idea to change the colors used for selected
     text as well:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 93
+    \snippet code/doc_src_stylesheet.cpp 93
 
 
     \section2 Customizing Using Dynamic Properties
@@ -3413,7 +3413,7 @@
     turns out this is very easy to implement using Qt Style Sheets.
     First, we would use the following application-wide style sheet:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 94
+    \snippet code/doc_src_stylesheet.qdoc 94
 
     This means that every widget whose \c mandatoryField Qt property
     is set to true would have a yellow background.
@@ -3422,7 +3422,7 @@
     \c mandatoryField property on the fly and set it to true. For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.cpp 95
+    \snippet code/doc_src_stylesheet.cpp 95
 
     \section2 Customizing a QPushButton Using the Box Model
 
@@ -3432,7 +3432,7 @@
 
     First, we are tempted to use this style sheet:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 96
+    \snippet code/doc_src_stylesheet.qdoc 96
 
     However, the result is a boring, flat button with no borders:
 
@@ -3453,7 +3453,7 @@
 
     Let's improve the situation by specifying a border:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 97
+    \snippet code/doc_src_stylesheet.qdoc 97
 
     \image stylesheet-redbutton2.png A red button with a beige border
 
@@ -3463,7 +3463,7 @@
     enforce a minimum width, round the corners, and specify a larger
     font to make the button look nicer:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 98
+    \snippet code/doc_src_stylesheet.qdoc 98
 
     \image stylesheet-redbutton3.png A red button with a round beige border and big, bold text
 
@@ -3471,7 +3471,7 @@
     press it. We can fix this by specifying a slightly different
     background color and use a different border style.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 99
+    \snippet code/doc_src_stylesheet.qdoc 99
 
     \section2 Customizing the QPushButton's Menu Indicator Sub-Control
 
@@ -3480,7 +3480,7 @@
     QPushButton::setMenu()) has a menu indicator. Let's customize
     the menu indicator for the red push button:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 100
+    \snippet code/doc_src_stylesheet.qdoc 100
 
     By default, the menu indicator is located at the bottom-right
     corner of the padding rectangle. We can change this by specifying
@@ -3490,7 +3490,7 @@
     \l{Qt Style Sheets Reference#left-prop}{left} to move the indicator by a few pixels. For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 101
+    \snippet code/doc_src_stylesheet.qdoc 101
 
     This positions the \c myindicator.png to the center right of the
     QPushButton's \l{Qt Style Sheets Reference#padding-prop}{padding} rectangle (see
@@ -3503,24 +3503,24 @@
     QLineEdit red by setting the following application-wide
     stylesheet:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 102
+    \snippet code/doc_src_stylesheet.qdoc 102
 
     However, we would like to give a visual indication that a
     QLineEdit is read-only by making it appear gray:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 103
+    \snippet code/doc_src_stylesheet.qdoc 103
 
     At some point, our design team comes with the requirement that
     all \l{QLineEdit}s in the registration form (with the
     \l{QObject::objectName}{object name} \c registrationDialog) to be
     brown:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 104
+    \snippet code/doc_src_stylesheet.qdoc 104
 
     A few UI design meetings later, we decide that all our
     \l{QDialog}s should have brown colored \l{QLineEdit}s:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 105
+    \snippet code/doc_src_stylesheet.qdoc 105
 
     Quiz: What happens if we have a read-only QLineEdit in a QDialog?
     [Hint: The \l{The Style Sheet Syntax#Conflict Resolution}{Conflict Resolution} section above explains
@@ -3535,40 +3535,40 @@
     The background of any QAbstractScrollArea (Item views, QTextEdit
     and QTextBrowser) can be set using the background properties. For example,
     to set a background-image that scrolls with the scroll bar:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 106
+    \snippet code/doc_src_stylesheet.qdoc 106
 
     If the background-image is to be fixed with the viewport:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 107
+    \snippet code/doc_src_stylesheet.qdoc 107
 
     \section2 Customizing QCheckBox
 
     Styling of a QCheckBox is almost identical to styling a QRadioButton. The
     main difference is that a tristate QCheckBox has an indeterminate state.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 108
+    \snippet code/doc_src_stylesheet.qdoc 108
 
     \section2 Customizing QComboBox
 
     We will look at an example where the drop down button of a QComboBox
     appears "merged" with the combo box frame.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 109
+    \snippet code/doc_src_stylesheet.qdoc 109
 
     The pop-up of the QComboBox is a QAbstractItemView and is styled using
     the descendant selector:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 110
+    \snippet code/doc_src_stylesheet.qdoc 110
 
     \section2 Customizing QDockWidget
 
     The title bar and the buttons of a QDockWidget can be customized as
     follows:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 111
+    \snippet code/doc_src_stylesheet.qdoc 111
 
     If one desires to move the dock widget buttons to the left, the following
     style sheet can be used:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 112
+    \snippet code/doc_src_stylesheet.qdoc 112
 
     \note To customize the separator (resize handle) of a QDockWidget,
     use QMainWindow::separator.
@@ -3577,73 +3577,73 @@
 
     A QFrame is styled using the \l{The Box Model}.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 113
+    \snippet code/doc_src_stylesheet.qdoc 113
 
     \section2 Customizing QGroupBox
 
     Let us look at an example that moves the QGroupBox's title to
     the center.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 114
+    \snippet code/doc_src_stylesheet.qdoc 114
 
     For a checkable QGroupBox, use the \{#indicator-sub}{::indicator} subcontrol
     and style it exactly like a QCheckBox (i.e)
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 115
+    \snippet code/doc_src_stylesheet.qdoc 115
 
     \section2 Customizing QHeaderView
 
     QHeaderView is customized as follows:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 116
+    \snippet code/doc_src_stylesheet.qdoc 116
 
     \section2 Customizing QLineEdit
 
     The frame of a QLineEdit is styled using the \l{The Box Model}. To
     create a line edit with rounded corners, we can set:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 117
+    \snippet code/doc_src_stylesheet.qdoc 117
 
     The password character of line edits that have QLineEdit::Password
     echo mode can be set using:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 118
+    \snippet code/doc_src_stylesheet.qdoc 118
 
     The background of a read only QLineEdit can be modified as below:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 119
+    \snippet code/doc_src_stylesheet.qdoc 119
 
     \section2 Customizing QListView
 
     The background color of alternating rows can be customized using the following
     style sheet:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 120
+    \snippet code/doc_src_stylesheet.qdoc 120
 
     To provide a special background when you hover over items, we can use the
     \l{item-sub}{::item} subcontrol. For example,
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 121
+    \snippet code/doc_src_stylesheet.qdoc 121
 
     \section2 Customizing QMainWindow
 
     The separator of a QMainWindow can be styled as follows:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 122
+    \snippet code/doc_src_stylesheet.qdoc 122
 
     \section2 Customizing QMenu
 
     Individual items of a QMenu are styled using the 'item' subcontrol as
     follows:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 123
+    \snippet code/doc_src_stylesheet.qdoc 123
 
     For a more advanced customization, use a style sheet as follows:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 124
+    \snippet code/doc_src_stylesheet.qdoc 124
 
     \section2 Customizing QMenuBar
 
     QMenuBar is styled as follows:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 125
+    \snippet code/doc_src_stylesheet.qdoc 125
 
     \section2 Customizing QProgressBar
 
@@ -3659,13 +3659,13 @@
     {border} to grey and the \l{stylesheet-reference.html#chunk-sub}{chunk}
     to cerulean.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 126
+    \snippet code/doc_src_stylesheet.qdoc 126
 
     This leaves the \l{stylesheet-reference.html#text-align-prop}
     {text-align}, which we customize by positioning the text in the center of
     the progress bar.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 127
+    \snippet code/doc_src_stylesheet.qdoc 127
 
     A \l{stylesheet-reference.html#margin-prop}{margin} can be included to
     obtain more visible chunks.
@@ -3675,18 +3675,18 @@
     In the screenshot above, we use a
     \l{stylesheet-reference.html#margin-prop}{margin} of 0.5 pixels.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 128
+    \snippet code/doc_src_stylesheet.qdoc 128
 
     \section2 Customizing QPushButton
 
     A QPushButton is styled as follows:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 129
+    \snippet code/doc_src_stylesheet.qdoc 129
 
     For a QPushButton with a menu, use the
     \l{Qt Style Sheets Reference#menu-indicator-sub}{::menu-indicator}
     subcontrol.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 130
+    \snippet code/doc_src_stylesheet.qdoc 130
 
     Checkable QPushButton have the \l{Qt Style Sheets Reference#checked-ps}
     {:checked} pseudo state set.
@@ -3694,7 +3694,7 @@
     \section2 Customizing QRadioButton
 
     The indicator of a QRadioButton can be changed using:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 131
+    \snippet code/doc_src_stylesheet.qdoc 131
 
     \section2 Customizing QScrollBar
 
@@ -3710,52 +3710,52 @@
     The scroll bar above has been styled in aquamarine with a solid grey
     border.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 132
+    \snippet code/doc_src_stylesheet.qdoc 132
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 133
+    \snippet code/doc_src_stylesheet.qdoc 133
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 134
+    \snippet code/doc_src_stylesheet.qdoc 134
 
     The \l{stylesheet-reference.html#left-arrow-sub}{left-arrow} and
     \l{stylesheet-reference.html#right-arrow-sub}{right-arrow} have a solid grey
     border with a white background. As an alternative, you could also embed the
     image of an arrow.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 135
+    \snippet code/doc_src_stylesheet.qdoc 135
 
     If you want the scroll buttons of the scroll bar to be placed together
     (instead of the edges) like on Mac OS X, you can use the following
     stylesheet:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 136
+    \snippet code/doc_src_stylesheet.qdoc 136
 
     The scroll bar using the above stylesheet looks like this:
         \image stylesheet-scrollbar2.png
 
 
     To customize a vertical scroll bar use a style sheet similar to the following:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 137
+    \snippet code/doc_src_stylesheet.qdoc 137
 
     \section2 Customizing QSizeGrip
 
     QSizeGrip is usually styled by just setting an image.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 138
+    \snippet code/doc_src_stylesheet.qdoc 138
 
     \section2 Customizing QSlider
 
     You can style horizontal slider as below:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 139
+    \snippet code/doc_src_stylesheet.qdoc 139
 
     If you want to change the color of the slider parts before and after the handle, you can use the add-page
     and sub-page subcontrols. For example, for a vertical slider:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 140
+    \snippet code/doc_src_stylesheet.qdoc 140
 
     \section2 Customizing QSpinBox
 
     QSpinBox can be completely customized as below (the style sheet has commentary inline):
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 141
+    \snippet code/doc_src_stylesheet.qdoc 141
 
 
     \section2 Customizing QSplitter
@@ -3764,17 +3764,17 @@
     The grip or the handle is customized using the
     \l{Qt Style Sheets Reference#handle-sub}{::handle} subcontrol.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 142
+    \snippet code/doc_src_stylesheet.qdoc 142
 
     \section2 Customizing QStatusBar
 
     We can provide a background for the status bar and a border for items
     inside the status bar as follows:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 143
+    \snippet code/doc_src_stylesheet.qdoc 143
 
     Note that widgets that have been added to the QStatusBar can be styled
     using the descendant declaration (i.e)
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 144
+    \snippet code/doc_src_stylesheet.qdoc 144
 
     \section2 Customizing QTabWidget and QTabBar
 
@@ -3782,7 +3782,7 @@
 
     For the screenshot above, we need a stylesheet as follows:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 145
+    \snippet code/doc_src_stylesheet.qdoc 145
 
     Often we require the tabs to overlap to look like below:
     \image tabWidget-stylesheet2.png
@@ -3791,18 +3791,18 @@
     \l{http://www.communitymx.com/content/article.cfm?cid=B0029}
     {negative margins}. The resulting stylesheet looks like this:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 146
+    \snippet code/doc_src_stylesheet.qdoc 146
 
     To move the tab bar to the center (as below), we require the following stylesheet:
     \image tabWidget-stylesheet3.png
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 147
+    \snippet code/doc_src_stylesheet.qdoc 147
 
     The tear indicator and the scroll buttons can be further customized as follows:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 148
+    \snippet code/doc_src_stylesheet.qdoc 148
 
     Since Qt 4.6 the close button can be customized as follow:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 159
+    \snippet code/doc_src_stylesheet.qdoc 159
 
     \section2 Customizing QTableView
 
@@ -3815,22 +3815,22 @@
     \l{stylesheet-reference.html#selection-background-color-prop}
     {selection-background-color} property and the syntax required is:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 149
+    \snippet code/doc_src_stylesheet.qdoc 149
 
     The corner widget can be customized using the following style sheet
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 150
+    \snippet code/doc_src_stylesheet.qdoc 150
 
     \section2 Customizing QToolBar
 
     The background and the handle of a QToolBar is customized as below:
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 151
+    \snippet code/doc_src_stylesheet.qdoc 151
 
     \section2 Customizing QToolBox
 
     The tabs of the QToolBox are customized using the 'tab' subcontrol.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 152
+    \snippet code/doc_src_stylesheet.qdoc 152
 
     \section2 Customizing QToolButton
 
@@ -3851,7 +3851,7 @@
            QToolButton::MenuButtonPopup. In this case, we style it as follows:
     \endlist
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 153
+    \snippet code/doc_src_stylesheet.qdoc 153
 
 
     \section2 Customizing QToolTip
@@ -3860,25 +3860,25 @@
     that support it, the opacity property may be set to adjust the opacity.
 
     For example,
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 154
+    \snippet code/doc_src_stylesheet.qdoc 154
 
     \section2 Customizing QTreeView
 
     The background color of alternating rows can be customized using the following
     style sheet:
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 155
+    \snippet code/doc_src_stylesheet.qdoc 155
 
     To provide a special background when you hover over items, we can use the
     \l{item-sub}{::item} subcontrol. For example,
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 156
+    \snippet code/doc_src_stylesheet.qdoc 156
 
     The branches of a QTreeView are styled using the
     \l{Qt Style Sheets Reference#branch-sub}{::branch} subcontrol. The
     following stylesheet color codes the various states when drawing
     a branch.
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 157
+    \snippet code/doc_src_stylesheet.qdoc 157
 
     Colorful, though it is, a more useful example can be made using the
     following images:
@@ -3898,7 +3898,7 @@
     \li branch-open.png
     \endtable
 
-    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 158
+    \snippet code/doc_src_stylesheet.qdoc 158
 
     The resulting tree view looks like this:
 
@@ -3932,7 +3932,7 @@
 
     Consider the following snippet:
 
-    \snippet doc/src/snippets/stylesheet/common-mistakes.cpp 1
+    \snippet stylesheet/common-mistakes.cpp 1
 
     This will produce a button looking like this:
 

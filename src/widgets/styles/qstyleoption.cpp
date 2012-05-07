@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     The following code snippet shows how to use a specific
     QStyleOption subclass to paint a push button:
 
-    \snippet doc/src/snippets/qstyleoption/main.cpp 0
+    \snippet qstyleoption/main.cpp 0
 
     In our example, the control is a QStyle::CE_PushButton, and
     according to the QStyle::drawControl() documentation the
@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
     For safety, you can use qstyleoption_cast() to ensure that the
     pointer type is correct. For example:
 
-    \snippet doc/src/snippets/qstyleoption/main.cpp 4
+    \snippet qstyleoption/main.cpp 4
 
     The qstyleoption_cast() function will return 0 if the object to
     which \c option points is not of the correct type.
@@ -3240,7 +3240,7 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
 
     Example:
 
-    \snippet doc/src/snippets/qstyleoption/main.cpp 4
+    \snippet qstyleoption/main.cpp 4
 
     \sa QStyleOption::type, QStyleOption::version
 */
@@ -3958,7 +3958,7 @@ QStyleHintReturnVariant::QStyleHintReturnVariant() : QStyleHintReturn(Version, T
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_styles_qstyleoption.cpp 0
+    \snippet code/src_gui_styles_qstyleoption.cpp 0
 
     \sa QStyleHintReturn::type, QStyleHintReturn::version
 */

@@ -70,11 +70,11 @@
 
     Here is an example of putting a QPushButton into a NSWindow:
 
-    \snippet doc/src/snippets/qmacnativewidget/main.mm 0
+    \snippet qmacnativewidget/main.mm 0
 
     On Carbon, this would do the equivalent:
 
-    \snippet doc/src/snippets/qmacnativewidget/main.mm 1
+    \snippet qmacnativewidget/main.mm 1
 
     Note that QMacNativeWidget requires knowledge of Carbon or Cocoa. All it
     does is get the Qt hierarchy into a window not owned by Qt. It is then up

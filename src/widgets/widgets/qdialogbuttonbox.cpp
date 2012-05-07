@@ -86,19 +86,19 @@ QT_BEGIN_NAMESPACE
     destructive results.
 
     Most dialogs have buttons that can almost be considered standard (e.g.
-    \gui OK and \gui Cancel buttons). It is sometimes convenient to create these
+    \uicontrol OK and \uicontrol Cancel buttons). It is sometimes convenient to create these
     buttons in a standard way.
 
     There are a couple ways of using QDialogButtonBox. One ways is to create
     the buttons (or button texts) yourself and add them to the button box,
     specifying their role.
 
-    \snippet examples/dialogs/extension/finddialog.cpp 1
+    \snippet dialogs/extension/finddialog.cpp 1
 
     Alternatively, QDialogButtonBox provides several standard buttons (e.g. OK, Cancel, Save)
     that you can use. They exist as flags so you can OR them together in the constructor.
 
-    \snippet examples/dialogs/tabdialog/tabdialog.cpp 2
+    \snippet dialogs/tabdialog/tabdialog.cpp 2
 
     You can mix and match normal buttons and standard buttons.
 
@@ -133,6 +133,8 @@ QT_BEGIN_NAMESPACE
     \table
     \row \li modeless horizontal MacLayout
          \li \inlineimage buttonbox-mac-modeless-horizontal.png Screenshot of modeless horizontal MacLayout
+    \row \li modeless vertical MacLayout
+         \li \inlineimage buttonbox-mac-modeless-vertical.png Screenshot of modeless vertical MacLayout
     \endtable
 
     When a button is clicked in the button box, the clicked() signal is emitted

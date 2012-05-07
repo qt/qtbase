@@ -54,7 +54,7 @@
     QGraphicsWidget::setLayout(). QGraphicsGridLayout automatically computes
     the dimensions of the grid as you add items.
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsgridlayout.cpp 0
+    \snippet code/src_gui_graphicsview_qgraphicsgridlayout.cpp 0
 
     The layout takes ownership of the items. In some cases when the layout
     item also inherits from QGraphicsItem (such as QGraphicsWidget) there will be a

@@ -186,12 +186,12 @@ QRect QStatusBarPrivate::messageRect() const
 
     Use the showMessage() slot to display a \e temporary message:
 
-    \snippet examples/mainwindows/dockwidgets/mainwindow.cpp 8
+    \snippet mainwindows/dockwidgets/mainwindow.cpp 8
 
     To remove a temporary message, use the clearMessage() slot, or set
     a time limit when calling showMessage(). For example:
 
-    \snippet examples/mainwindows/dockwidgets/mainwindow.cpp 3
+    \snippet mainwindows/dockwidgets/mainwindow.cpp 3
 
     Use the currentMessage() function to retrieve the temporary
     message currently shown. The QStatusBar class also provide the
@@ -205,7 +205,7 @@ QRect QStatusBarPrivate::messageRect() const
     addPermanentWidget() function. Use the removeWidget() function to
     remove such messages from the status bar.
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qstatusbar.cpp 0
+    \snippet code/src_gui_widgets_qstatusbar.cpp 0
 
     By default QStatusBar provides a QSizeGrip in the lower-right
     corner. You can disable it using the setSizeGripEnabled()

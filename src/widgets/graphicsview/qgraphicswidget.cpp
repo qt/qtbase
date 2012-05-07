@@ -677,7 +677,7 @@ QRectF QGraphicsWidget::windowFrameRect() const
 
     For example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicswidget.cpp 0
+    \snippet code/src_gui_graphicsview_qgraphicswidget.cpp 0
 
     \sa QStyleOption::initFrom()
 */
@@ -2098,11 +2098,11 @@ QList<QAction *> QGraphicsWidget::actions() const
     Note that since the tab order of the \a second widget is changed, you
     should order a chain like this:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicswidget.cpp 1
+    \snippet code/src_gui_graphicsview_qgraphicswidget.cpp 1
 
     \e not like this:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicswidget.cpp 2
+    \snippet code/src_gui_graphicsview_qgraphicswidget.cpp 2
 
     If \a first is 0, this indicates that \a second should be the first widget
     to receive input focus should the scene gain Tab focus (i.e., the user

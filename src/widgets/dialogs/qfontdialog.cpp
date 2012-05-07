@@ -122,10 +122,10 @@ static const Qt::WindowFlags DefaultWindowFlags =
 
   Examples:
 
-  \snippet doc/src/snippets/code/src_gui_dialogs_qfontdialog.cpp 0
+  \snippet code/src_gui_dialogs_qfontdialog.cpp 0
 
     The dialog can also be used to set a widget's font directly:
-  \snippet doc/src/snippets/code/src_gui_dialogs_qfontdialog.cpp 1
+  \snippet code/src_gui_dialogs_qfontdialog.cpp 1
   If the user clicks OK the font they chose will be used for myWidget,
   and if they click Cancel the original font is used.
 
@@ -345,20 +345,20 @@ QFontDialog::~QFontDialog()
 /*!
   Executes a modal font dialog and returns a font.
 
-  If the user clicks \gui OK, the selected font is returned. If the user
-  clicks \gui Cancel, the \a initial font is returned.
+  If the user clicks \uicontrol OK, the selected font is returned. If the user
+  clicks \uicontrol Cancel, the \a initial font is returned.
 
   The dialog is constructed with the given \a parent and the options specified
   in \a options. \a title is shown as the window title of the dialog and  \a
   initial is the initially selected font. If the \a ok parameter is not-null,
-  the value it refers to is set to true if the user clicks \gui OK, and set to
-  false if the user clicks \gui Cancel.
+  the value it refers to is set to true if the user clicks \uicontrol OK, and set to
+  false if the user clicks \uicontrol Cancel.
 
   Examples:
-  \snippet doc/src/snippets/code/src_gui_dialogs_qfontdialog.cpp 2
+  \snippet code/src_gui_dialogs_qfontdialog.cpp 2
 
     The dialog can also be used to set a widget's font directly:
-  \snippet doc/src/snippets/code/src_gui_dialogs_qfontdialog.cpp 3
+  \snippet code/src_gui_dialogs_qfontdialog.cpp 3
   In this example, if the user clicks OK the font they chose will be
   used, and if they click Cancel the original font is used.
 
@@ -377,16 +377,16 @@ QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget *parent, cons
 
   Executes a modal font dialog and returns a font.
 
-  If the user clicks \gui OK, the selected font is returned. If the user
-  clicks \gui Cancel, the Qt default font is returned.
+  If the user clicks \uicontrol OK, the selected font is returned. If the user
+  clicks \uicontrol Cancel, the Qt default font is returned.
 
   The dialog is constructed with the given \a parent.
   If the \a ok parameter is not-null, the value it refers to is set
-  to true if the user clicks \gui OK, and false if the user clicks
-  \gui Cancel.
+  to true if the user clicks \uicontrol OK, and false if the user clicks
+  \uicontrol Cancel.
 
   Example:
-  \snippet doc/src/snippets/code/src_gui_dialogs_qfontdialog.cpp 4
+  \snippet code/src_gui_dialogs_qfontdialog.cpp 4
 
   \warning Do not delete \a parent during the execution of the dialog.
            If you want to do this, you should create the dialog
@@ -829,7 +829,7 @@ QFont QFontDialog::currentFont() const
 }
 
 /*!
-    Returns the font that the user selected by clicking the \gui{OK}
+    Returns the font that the user selected by clicking the \uicontrol{OK}
     or equivalent button.
 
     \note This font is not always the same as the font held by the
@@ -849,7 +849,7 @@ QFont QFontDialog::selectedFont() const
     This enum specifies various options that affect the look and feel
     of a font dialog.
 
-    \value NoButtons Don't display \gui{OK} and \gui{Cancel} buttons. (Useful for "live dialogs".)
+    \value NoButtons Don't display \uicontrol{OK} and \uicontrol{Cancel} buttons. (Useful for "live dialogs".)
     \value DontUseNativeDialog Use Qt's standard font dialog on the Mac instead of Apple's
                                native font panel. (Currently, the native dialog is never used,
                                but this is likely to change in future Qt releases.)

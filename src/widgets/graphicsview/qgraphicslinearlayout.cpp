@@ -56,7 +56,7 @@
     and finally assign the layout to a widget by calling
     QGraphicsWidget::setLayout().
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicslinearlayout.cpp 0
+    \snippet code/src_gui_graphicsview_qgraphicslinearlayout.cpp 0
 
     You can add widgets, layouts, stretches (addStretch(), insertStretch() or
     setStretchFactor()), and spacings (setItemSpacing()) to a linear

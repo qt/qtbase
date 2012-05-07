@@ -308,7 +308,7 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
     setVerticalScrollMode(). To set the range of the scroll bars, you
     can, for example, reimplement the view's resizeEvent() function:
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qabstractitemview.cpp 0
+    \snippet code/src_gui_itemviews_qabstractitemview.cpp 0
 
     Note that the range is not updated until the widget is shown.
 
@@ -654,7 +654,7 @@ QAbstractItemView::~QAbstractItemView()
     views. We recommend that you delete the old selection model if it is no
     longer required. This is done with the following code:
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qabstractitemview.cpp 2
+    \snippet code/src_gui_itemviews_qabstractitemview.cpp 2
 
     If both the old model and the old selection model do not have parents, or
     if their parents are long-lived objects, it may be preferable to call their
@@ -3124,7 +3124,7 @@ void QAbstractItemView::closePersistentEditor(const QModelIndex &index)
     deleted. For example, in the code snippet below, the QLineEdit object will
     be deleted.
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qabstractitemview.cpp 1
+    \snippet code/src_gui_itemviews_qabstractitemview.cpp 1
 
     This function should only be used to display static content within the
     visible area corresponding to an item of data. If you want to display

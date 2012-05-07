@@ -979,7 +979,7 @@ QTableWidgetSelectionRange::~QTableWidgetSelectionRange()
     Top-level items are constructed without a parent then inserted at the
     position specified by a pair of row and column numbers:
 
-    \snippet doc/src/snippets/qtablewidget-using/mainwindow.cpp 3
+    \snippet qtablewidget-using/mainwindow.cpp 3
 
     Each item can have its own background brush which is set with
     the setBackground() function. The current background brush can be
@@ -1504,18 +1504,18 @@ QTableWidgetItem &QTableWidgetItem::operator=(const QTableWidgetItem &other)
     Table widgets can be constructed with the required numbers of rows and
     columns:
 
-    \snippet doc/src/snippets/qtablewidget-using/mainwindow.cpp 0
+    \snippet qtablewidget-using/mainwindow.cpp 0
 
     Alternatively, tables can be constructed without a given size and resized
     later:
 
-    \snippet doc/src/snippets/qtablewidget-resizing/mainwindow.cpp 0
-    \snippet doc/src/snippets/qtablewidget-resizing/mainwindow.cpp 1
+    \snippet qtablewidget-resizing/mainwindow.cpp 0
+    \snippet qtablewidget-resizing/mainwindow.cpp 1
 
     Items are created ouside the table (with no parent widget) and inserted
     into the table with setItem():
 
-    \snippet doc/src/snippets/qtablewidget-resizing/mainwindow.cpp 2
+    \snippet qtablewidget-resizing/mainwindow.cpp 2
 
     If you want to enable sorting in your table widget, do so after you
     have populated it with items, otherwise sorting may interfere with
@@ -1530,7 +1530,7 @@ QTableWidgetItem &QTableWidgetItem::operator=(const QTableWidgetItem &other)
     construct a table item with an icon and aligned text, and use it as the
     header for a particular column:
 
-    \snippet doc/src/snippets/qtablewidget-using/mainwindow.cpp 2
+    \snippet qtablewidget-using/mainwindow.cpp 2
 
     The number of rows in the table can be found with rowCount(), and the
     number of columns with columnCount(). The table can be cleared with the
@@ -2267,7 +2267,7 @@ QWidget *QTableWidget::cellWidget(int row, int column) const
     deleted. For example, in the code snippet below, the QLineEdit object will
     be deleted.
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qtablewidget.cpp 0
+    \snippet code/src_gui_itemviews_qtablewidget.cpp 0
 
     \sa cellWidget()
 */

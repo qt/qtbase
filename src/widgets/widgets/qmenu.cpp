@@ -1990,11 +1990,11 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
     In most situations you'll want to specify the position yourself,
     for example, the current mouse position:
-    \snippet doc/src/snippets/code/src_gui_widgets_qmenu.cpp 0
+    \snippet code/src_gui_widgets_qmenu.cpp 0
     or aligned to a widget:
-    \snippet doc/src/snippets/code/src_gui_widgets_qmenu.cpp 1
+    \snippet code/src_gui_widgets_qmenu.cpp 1
     or in reaction to a QMouseEvent *e:
-    \snippet doc/src/snippets/code/src_gui_widgets_qmenu.cpp 2
+    \snippet code/src_gui_widgets_qmenu.cpp 2
 */
 QAction *QMenu::exec()
 {
@@ -2022,11 +2022,11 @@ QAction *QMenu::exec()
 
     Common usage is to position the menu at the current mouse
     position:
-    \snippet doc/src/snippets/code/src_gui_widgets_qmenu.cpp 3
+    \snippet code/src_gui_widgets_qmenu.cpp 3
     or aligned to a widget:
-    \snippet doc/src/snippets/code/src_gui_widgets_qmenu.cpp 4
+    \snippet code/src_gui_widgets_qmenu.cpp 4
     or in reaction to a QMouseEvent *e:
-    \snippet doc/src/snippets/code/src_gui_widgets_qmenu.cpp 5
+    \snippet code/src_gui_widgets_qmenu.cpp 5
 
     When positioning a menu with exec() or popup(), bear in mind that
     you cannot rely on the menu's current size(). For performance
@@ -2074,7 +2074,7 @@ QAction *QMenu::exec(const QPoint &p, QAction *action)
     (normally because the user pressed Esc).
 
     This is equivalent to:
-    \snippet doc/src/snippets/code/src_gui_widgets_qmenu.cpp 6
+    \snippet code/src_gui_widgets_qmenu.cpp 6
 
     \sa popup(), QWidget::mapToGlobal()
 */
