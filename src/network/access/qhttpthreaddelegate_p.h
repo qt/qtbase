@@ -93,6 +93,8 @@ public:
 #endif
     QHttpNetworkRequest httpRequest;
     qint64 downloadBufferMaximumSize;
+    qint64 readBufferMaxSize;
+    qint64 bytesEmitted;
     // From backend, modified by us for signal compression
     QSharedPointer<QAtomicInt> pendingDownloadData;
     QSharedPointer<QAtomicInt> pendingDownloadProgress;
@@ -145,6 +147,9 @@ public slots:
     // This are called via QueuedConnection from user thread
     void startRequest();
     void abortRequest();
+    void readBufferSizeChanged(qint64 size);
+    void readBufferFreed(qint64 size);
+
     // This is called with a BlockingQueuedConnection from user thread
     void startRequestSynchronously();
 protected slots:

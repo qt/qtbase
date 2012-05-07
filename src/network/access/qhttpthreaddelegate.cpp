@@ -194,6 +194,8 @@ QHttpThreadDelegate::QHttpThreadDelegate(QObject *parent) :
     QObject(parent)
     , ssl(false)
     , downloadBufferMaximumSize(0)
+    , readBufferMaxSize(0)
+    , bytesEmitted(0)
     , pendingDownloadData(0)
     , pendingDownloadProgress(0)
     , synchronous(false)
@@ -349,15 +351,58 @@ void QHttpThreadDelegate::abortRequest()
     }
 }
 
+void QHttpThreadDelegate::readBufferSizeChanged(qint64 size)
+{
+#ifdef QHTTPTHREADDELEGATE_DEBUG
+    qDebug() << "QHttpThreadDelegate::readBufferSizeChanged() size " << size;
+#endif
+    if (httpReply) {
+        httpReply->setDownstreamLimited(size > 0);
+        httpReply->setReadBufferSize(size);
+        readBufferMaxSize = size;
+    }
+}
+
+void QHttpThreadDelegate::readBufferFreed(qint64 size)
+{
+    if (readBufferMaxSize) {
+        bytesEmitted -= size;
+
+        QMetaObject::invokeMethod(this, "readyReadSlot", Qt::QueuedConnection);
+    }
+}
+
 void QHttpThreadDelegate::readyReadSlot()
 {
     // Don't do in zerocopy case
     if (!downloadBuffer.isNull())
         return;
 
-    while (httpReply->readAnyAvailable()) {
-        pendingDownloadData->fetchAndAddRelease(1);
-        emit downloadData(httpReply->readAny());
+    if (readBufferMaxSize) {
+        if (bytesEmitted < readBufferMaxSize) {
+            qint64 sizeEmitted = 0;
+            while (httpReply->readAnyAvailable() && (sizeEmitted < (readBufferMaxSize-bytesEmitted))) {
+                if (httpReply->sizeNextBlock() > (readBufferMaxSize-bytesEmitted)) {
+                    sizeEmitted = readBufferMaxSize-bytesEmitted;
+                    bytesEmitted += sizeEmitted;
+                    pendingDownloadData->fetchAndAddRelease(1);
+                    emit downloadData(httpReply->read(sizeEmitted));
+                } else {
+                    sizeEmitted = httpReply->sizeNextBlock();
+                    bytesEmitted += sizeEmitted;
+                    pendingDownloadData->fetchAndAddRelease(1);
+                    emit downloadData(httpReply->readAny());
+                }
+            }
+        } else {
+            // We need to wait until we empty data from the read buffer in the reply.
+        }
+
+    } else {
+        while (httpReply->readAnyAvailable()) {
+            pendingDownloadData->fetchAndAddRelease(1);
+            emit downloadData(httpReply->readAny());
+        }
     }
 }
 

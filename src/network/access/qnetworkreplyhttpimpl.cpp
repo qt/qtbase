@@ -357,17 +357,22 @@ qint64 QNetworkReplyHttpImpl::readData(char* data, qint64 maxlen)
     if (maxlen == 1) {
         // optimization for getChar()
         *data = d->downloadMultiBuffer.getChar();
+        if (readBufferSize())
+            emit readBufferFreed(1);
         return 1;
     }
 
     maxlen = qMin<qint64>(maxlen, d->downloadMultiBuffer.byteAmount());
-    return d->downloadMultiBuffer.read(data, maxlen);
+    qint64 bytesRead = d->downloadMultiBuffer.read(data, maxlen);
+    if (readBufferSize())
+        emit readBufferFreed(bytesRead);
+    return bytesRead;
 }
 
 void QNetworkReplyHttpImpl::setReadBufferSize(qint64 size)
 {
-    Q_UNUSED(size);
-    // FIXME, unsupported right now
+    QNetworkReply::setReadBufferSize(size);
+    emit readBufferSizeChanged(size);
     return;
 }
 
@@ -838,6 +843,10 @@ void QNetworkReplyHttpImplPrivate::postRequest()
         // This signal we will use to start the request.
         QObject::connect(q, SIGNAL(startHttpRequest()), delegate, SLOT(startRequest()));
         QObject::connect(q, SIGNAL(abortHttpRequest()), delegate, SLOT(abortRequest()));
+
+        // To throttle the connection.
+        QObject::connect(q, SIGNAL(readBufferSizeChanged(qint64)), delegate, SLOT(readBufferSizeChanged(qint64)));
+        QObject::connect(q, SIGNAL(readBufferFreed(qint64)), delegate, SLOT(readBufferFreed(qint64)));
 
         if (uploadByteDevice) {
             QNonContiguousByteDeviceThreadForwardImpl *forwardUploadDevice =

@@ -206,11 +206,30 @@ QByteArray QHttpNetworkReply::readAll()
     return d->responseData.readAll();
 }
 
+QByteArray QHttpNetworkReply::read(qint64 amount)
+{
+    Q_D(QHttpNetworkReply);
+    return d->responseData.read(amount);
+}
+
+
+qint64 QHttpNetworkReply::sizeNextBlock()
+{
+    Q_D(QHttpNetworkReply);
+    return d->responseData.sizeNextBlock();
+}
+
 void QHttpNetworkReply::setDownstreamLimited(bool dsl)
 {
     Q_D(QHttpNetworkReply);
     d->downstreamLimited = dsl;
     d->connection->d_func()->readMoreLater(this);
+}
+
+void QHttpNetworkReply::setReadBufferSize(qint64 size)
+{
+    Q_D(QHttpNetworkReply);
+    d->readBufferMaxSize = size;
 }
 
 bool QHttpNetworkReply::supportsUserProvidedDownloadBuffer()
@@ -258,7 +277,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
       connectionCloseEnabled(true),
       forceConnectionCloseEnabled(false),
       lastChunkRead(false),
-      currentChunkSize(0), currentChunkRead(0), connection(0),
+      currentChunkSize(0), currentChunkRead(0), readBufferMaxSize(0), connection(0),
       autoDecompress(false), responseData(), requestIsPrepared(false)
       ,pipeliningUsed(false), downstreamLimited(false)
       ,userProvidedDownloadBuffer(0)
@@ -598,6 +617,10 @@ qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QByteData
 {
 
     qint64 toBeRead = qMin(socket->bytesAvailable(), bodyLength - contentRead);
+    if (readBufferMaxSize)
+        toBeRead = qMin(toBeRead, readBufferMaxSize);
+
+
     QByteArray bd;
     bd.resize(toBeRead);
     qint64 haveRead = socket->read(bd.data(), toBeRead);
@@ -698,6 +721,9 @@ qint64 QHttpNetworkReplyPrivate::readReplyBodyRaw(QAbstractSocket *socket, QByte
 
     int toBeRead = qMin<qint64>(128*1024, qMin<qint64>(size, socket->bytesAvailable()));
 
+    if (readBufferMaxSize)
+        toBeRead = qMin<qint64>(toBeRead, readBufferMaxSize);
+
     while (toBeRead > 0) {
         QByteArray byteData;
         byteData.resize(toBeRead);
@@ -723,6 +749,10 @@ qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QAbstractSocket *socket, Q
 {
     qint64 bytes = 0;
     while (socket->bytesAvailable()) {
+
+        if (readBufferMaxSize && (bytes > readBufferMaxSize))
+            break;
+
         if (!lastChunkRead && currentChunkRead >= currentChunkSize) {
             // For the first chunk and when we're done with a chunk
             currentChunkSize = 0;
