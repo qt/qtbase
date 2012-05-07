@@ -88,6 +88,11 @@ QT_BEGIN_NAMESPACE
     \sa QMessageLogContext, qDebug(), qWarning(), qCritical(), qFatal()
 */
 
+#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
+// defined in qcoreapplication_win.cpp
+extern bool usingWinMain;
+#endif
+
 #if !defined(QT_NO_EXCEPTIONS)
 /*!
     \internal
@@ -509,11 +514,22 @@ void QMessagePattern::setPattern(const QString &pattern)
             else if (lexeme == QLatin1String(threadidTokenC))
                 tokens[i] = threadidTokenC;
             else {
-                fprintf(stderr, "%s\n",
-                        QString::fromLatin1("QT_MESSAGE_PATTERN: Unknown placeholder %1\n"
-                                            ).arg(lexeme).toLatin1().constData());
-                fflush(stderr);
                 tokens[i] = emptyTokenC;
+
+                QString error = QStringLiteral("QT_MESSAGE_PATTERN: Unknown placeholder %1\n")
+                        .arg(lexeme);
+
+#if defined(Q_OS_WINCE)
+                OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
+                continue;
+#elif defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
+                if (usingWinMain) {
+                    OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
+                    continue;
+                }
+#endif
+                fprintf(stderr, "%s", error.toLocal8Bit().constData());
+                fflush(stderr);
             }
         } else {
             char *literal = new char[lexeme.size() + 1];
@@ -717,7 +733,6 @@ void qErrnoWarning(int code, const char *msg, ...)
 }
 
 #if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-extern bool usingWinMain;
 extern Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char *str);
 extern Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogContext &context,
                                              const QString &str);
