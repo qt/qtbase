@@ -123,8 +123,8 @@ QScreen *QPlatformScreen::screen() const
 
 /*!
     Reimplement this function in subclass to return the physical size of the
-    screen. The physical size represents the actual physical dimensions of
-    the display.
+    screen, in millimeters. The physical size represents the actual physical
+    dimensions of the display.
 
     The default implementation takes the pixel size of the screen, considers a
     resolution of 100 dots per inch, and returns the calculated physical size.
