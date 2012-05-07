@@ -21,7 +21,9 @@ DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 SQL_P = sql
 
-include(doc/doc.pri)
+QMAKE_DOCS = $$PWD/doc/qtsql.qdocconf
+QMAKE_DOCS_INDEX = ../../doc
+
 include(kernel/kernel.pri)
 include(drivers/drivers.pri)
 include(models/models.pri)
