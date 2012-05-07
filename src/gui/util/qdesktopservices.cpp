@@ -135,7 +135,7 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     URLs, and by registering a handler it becomes possible to display the help text
     inside the application:
 
-    \snippet doc/src/snippets/code/src_gui_util_qdesktopservices.cpp 0
+    \snippet code/src_gui_util_qdesktopservices.cpp 0
 
     If inside the handler you decide that you can't open the requested
     URL, you can just call QDesktopServices::openUrl() again with the
@@ -155,7 +155,7 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     The following example opens a file on the Windows file system residing on a path
     that contains spaces:
 
-    \snippet doc/src/snippets/code/src_gui_util_qdesktopservices.cpp 2
+    \snippet code/src_gui_util_qdesktopservices.cpp 2
 
     If a \c mailto URL is specified, the user's e-mail client will be used to open a
     composer window containing the options specified in the URL, similar to the way
@@ -164,7 +164,7 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     For example, the following URL contains a recipient (\c{user@foo.com}), a
     subject (\c{Test}), and a message body (\c{Just a test}):
 
-    \snippet doc/src/snippets/code/src_gui_util_qdesktopservices.cpp 1
+    \snippet code/src_gui_util_qdesktopservices.cpp 1
 
     \warning Although many e-mail clients can send attachments and are
     Unicode-aware, the user may have configured their client without these features.

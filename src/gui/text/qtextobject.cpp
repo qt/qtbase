@@ -939,8 +939,8 @@ bool QTextBlock::isValid() const
     An iterator can be constructed and used to access the fragments within
     a text block in the following way:
 
-    \snippet doc/src/snippets/textblock-fragments/xmlwriter.cpp 4
-    \snippet doc/src/snippets/textblock-fragments/xmlwriter.cpp 7
+    \snippet textblock-fragments/xmlwriter.cpp 4
+    \snippet textblock-fragments/xmlwriter.cpp 7
 
     \sa QTextFragment
 */

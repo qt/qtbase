@@ -79,11 +79,11 @@ typedef QPenPrivate QPenData;
 
     For example:
 
-    \snippet doc/src/snippets/code/src_gui_painting_qpen.cpp 0
+    \snippet code/src_gui_painting_qpen.cpp 0
 
     which is equivalent to
 
-    \snippet doc/src/snippets/code/src_gui_painting_qpen.cpp 1
+    \snippet code/src_gui_painting_qpen.cpp 1
 
     The default pen is a solid black brush with 0 width, square
     cap style (Qt::SquareCap), and  bevel join style (Qt::BevelJoin).
@@ -135,7 +135,7 @@ typedef QPenPrivate QPenData;
     spaces. For example, the custom pattern shown above is created
     using the following code:
 
-    \snippet doc/src/snippets/code/src_gui_painting_qpen.cpp 2
+    \snippet code/src_gui_painting_qpen.cpp 2
 
     Note that the dash pattern is specified in units of the pens
     width, e.g. a dash of length 5 in width 10 is 50 pixels long.
@@ -476,7 +476,7 @@ QVector<qreal> QPen::dashPattern() const
     \row
     \li \inlineimage qpen-custom.png
     \li
-    \snippet doc/src/snippets/code/src_gui_painting_qpen.cpp 3
+    \snippet code/src_gui_painting_qpen.cpp 3
     \endtable
 
     The dash pattern is specified in units of the pens width; e.g. a

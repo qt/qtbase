@@ -181,7 +181,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     printing a document, and can be specified in any of the following
     ways:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qkeysequence.cpp 0
+    \snippet code/src_gui_kernel_qkeysequence.cpp 0
 
     Note that, for letters, the case used in the specification string
     does not matter. In the above examples, the user does not need to
@@ -354,7 +354,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     For example, the key sequence, \key{Ctrl X} followed by \key{Ctrl C}, can
     be specified using either of the following ways:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qkeysequence.cpp 1
+    \snippet code/src_gui_kernel_qkeysequence.cpp 1
 
     \warning A QApplication instance must have been constructed before a
              QKeySequence is created; otherwise, your application may crash.
@@ -929,7 +929,7 @@ QKeySequence::QKeySequence()
     \endlink(), so that shortcut keys can be replaced in
     translations:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qkeysequence.cpp 2
+    \snippet code/src_gui_kernel_qkeysequence.cpp 2
 
     Note the "File|Open" translator comment. It is by no means
     necessary, but it provides some context for the human translator.

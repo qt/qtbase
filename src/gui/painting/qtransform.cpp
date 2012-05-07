@@ -159,7 +159,7 @@ QT_BEGIN_NAMESPACE
     \row
     \li \inlineimage qtransform-simpletransformation.png
     \li
-    \snippet doc/src/snippets/transform/main.cpp 0
+    \snippet transform/main.cpp 0
     \endtable
 
     Although these functions are very convenient, it can be more
@@ -171,7 +171,7 @@ QT_BEGIN_NAMESPACE
     \row
     \li \inlineimage qtransform-combinedtransformation.png
     \li
-    \snippet doc/src/snippets/transform/main.cpp 1
+    \snippet transform/main.cpp 1
     \endtable
 
     \section1 Basic Matrix Operations
@@ -188,7 +188,7 @@ QT_BEGIN_NAMESPACE
     QTransform transforms a point in the plane to another point using the
     following formulas:
 
-    \snippet doc/src/snippets/code/src_gui_painting_qtransform.cpp 0
+    \snippet code/src_gui_painting_qtransform.cpp 0
 
     The point \e (x, y) is the original point, and \e (x', y') is the
     transformed point. \e (x', y') can be transformed back to \e (x,
@@ -221,7 +221,7 @@ QT_BEGIN_NAMESPACE
     \row
     \li \inlineimage qtransform-combinedtransformation2.png
     \li
-    \snippet doc/src/snippets/transform/main.cpp 2
+    \snippet transform/main.cpp 2
     \endtable
 
     \sa QPainter, {Coordinate System}, {painting/affine}{Affine
@@ -1662,7 +1662,7 @@ QPainterPath QTransform::map(const QPainterPath &path) const
     The rectangle's coordinates are transformed using the following
     formulas:
 
-    \snippet doc/src/snippets/code/src_gui_painting_qtransform.cpp 1
+    \snippet code/src_gui_painting_qtransform.cpp 1
 
     Polygons and rectangles behave slightly differently when
     transformed (due to integer rounding), so
@@ -1915,7 +1915,7 @@ QRect QTransform::mapRect(const QRect &rect) const
     The rectangle's coordinates are transformed using the following
     formulas:
 
-    \snippet doc/src/snippets/code/src_gui_painting_qtransform.cpp 2
+    \snippet code/src_gui_painting_qtransform.cpp 2
 
     If rotation or shearing has been specified, this function returns
     the \e bounding rectangle. To retrieve the exact region the given
@@ -1991,7 +1991,7 @@ QRectF QTransform::mapRect(const QRectF &rect) const
 
     The coordinates are transformed using the following formulas:
 
-    \snippet doc/src/snippets/code/src_gui_painting_qtransform.cpp 3
+    \snippet code/src_gui_painting_qtransform.cpp 3
 
     The point (x, y) is the original point, and (x', y') is the
     transformed point.

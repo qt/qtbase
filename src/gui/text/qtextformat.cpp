@@ -2269,7 +2269,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     can be used to customize the numbers used in an ordered list so that they
     appear as (1), (2), (3), etc.:
 
-    \snippet doc/src/snippets/textdocument-listitemstyles/mainwindow.cpp add a styled, ordered list
+    \snippet textdocument-listitemstyles/mainwindow.cpp add a styled, ordered list
 
     \sa QTextList
 */

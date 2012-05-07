@@ -653,7 +653,7 @@ QImageReader::~QImageReader()
     Sets the format QImageReader will use when reading images, to \a
     format. \a format is a case insensitive text string. Example:
 
-    \snippet doc/src/snippets/code/src_gui_image_qimagereader.cpp 0
+    \snippet code/src_gui_image_qimagereader.cpp 0
 
     You can call supportedImageFormats() for the full list of formats
     QImageReader supports.
@@ -671,7 +671,7 @@ void QImageReader::setFormat(const QByteArray &format)
     You can call this function after assigning a device to the
     reader to determine the format of the device. For example:
 
-    \snippet doc/src/snippets/code/src_gui_image_qimagereader.cpp 1
+    \snippet code/src_gui_image_qimagereader.cpp 1
 
     If the reader cannot read any image from the device (e.g., there is no
     image there, or the image has already been read), or if the format is
@@ -1131,7 +1131,7 @@ QImage QImageReader::read()
     which always constructs a new image; especially when reading several
     images with the same format and size.
 
-    \snippet doc/src/snippets/code/src_gui_image_qimagereader.cpp 2
+    \snippet code/src_gui_image_qimagereader.cpp 2
 
     For image formats that support animation, calling read() repeatedly will
     return the next frame. When all frames have been read, a null image will
@@ -1371,7 +1371,7 @@ QString QImageReader::errorString() const
     (see text()), and the BMP format allows you to determine the image's size
     without loading the whole image into memory (see size()).
 
-    \snippet doc/src/snippets/code/src_gui_image_qimagereader.cpp 3
+    \snippet code/src_gui_image_qimagereader.cpp 3
 
     \sa QImageWriter::supportsOption()
 */

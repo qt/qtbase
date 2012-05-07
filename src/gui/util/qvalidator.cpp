@@ -303,12 +303,12 @@ void QValidator::fixup(QString &) const
 
     Example of use:
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qvalidator.cpp 0
+    \snippet code/src_gui_util_qvalidator.cpp 0
 
     Below we present some examples of validators. In practice they would
     normally be associated with a widget as in the example above.
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qvalidator.cpp 1
+    \snippet code/src_gui_util_qvalidator.cpp 1
 
     Notice that the value \c 999 returns Intermediate. Values
     consisting of a number of digits equal to or less than the max
@@ -377,7 +377,7 @@ QIntValidator::~QIntValidator()
     the user might be just about to type the minus (especially for right-to-left
     languages).
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qvalidator.cpp 2
+    \snippet code/src_gui_util_qvalidator.cpp 2
 
     By default, the \a pos parameter is not used by this validator.
 */
@@ -812,12 +812,12 @@ QDoubleValidator::Notation QDoubleValidator::notation() const
     For a brief introduction to Qt's regexp engine, see \l QRegExp.
 
     Example of use:
-    \snippet doc/src/snippets/code/src_gui_widgets_qvalidator.cpp 3
+    \snippet code/src_gui_util_qvalidator.cpp 3
 
     Below we present some examples of validators. In practice they would
     normally be associated with a widget as in the example above.
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qvalidator.cpp 4
+    \snippet code/src_gui_util_qvalidator.cpp 4
 
     \sa QRegExp, QIntValidator, QDoubleValidator, {Settings Editor Example}
 */

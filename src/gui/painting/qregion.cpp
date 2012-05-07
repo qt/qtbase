@@ -86,7 +86,7 @@ QT_BEGIN_NAMESPACE
     rectangles.
 
     Example of using complex regions:
-    \snippet doc/src/snippets/code/src_gui_painting_qregion.cpp 0
+    \snippet code/src_gui_painting_qregion.cpp 0
 
     \section1 Additional License Information
 
@@ -725,7 +725,7 @@ QRegion QRegion::intersect(const QRect &r) const
     empty region is a region that contains no points.
 
     Example:
-    \snippet doc/src/snippets/code/src_gui_painting_qregion_unix.cpp 0
+    \snippet code/src_gui_painting_qregion_unix.cpp 0
 */
 
 /*!

@@ -460,7 +460,7 @@ static void qAccessibleCleanup()
     This is a typedef for a pointer to a function with the following
     signature:
 
-    \snippet doc/src/snippets/code/src_gui_accessible_qaccessible.cpp 1
+    \snippet code/src_gui_accessible_qaccessible.cpp 1
 
     The function receives a QString and a QObject pointer, where the
     QString is the key identifying the interface. The QObject is used

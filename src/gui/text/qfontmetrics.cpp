@@ -122,7 +122,7 @@ extern void qt_format_text(const QFont& font, const QRectF &_r,
     and size(), to return the size of that rectangle.
 
     Example:
-    \snippet doc/src/snippets/code/src_gui_text_qfontmetrics.cpp 0
+    \snippet code/src_gui_text_qfontmetrics.cpp 0
 
     \sa QFont, QFontInfo, QFontDatabase, QFontComboBox, {Character Map Example}
 */
@@ -976,7 +976,7 @@ int QFontMetrics::lineWidth() const
     and size(), to return the size of that rectangle.
 
     Example:
-    \snippet doc/src/snippets/code/src_gui_text_qfontmetrics.cpp 1
+    \snippet code/src_gui_text_qfontmetrics.cpp 1
 
     \sa QFont QFontInfo QFontDatabase
 */
