@@ -97,7 +97,7 @@ QT_BEGIN_NAMESPACE
 
     It is usually used like the following example:
 
-    \snippet doc/src/snippets/code/src.qdbus.qdbuspendingcall.cpp 0
+    \snippet code/src_qdbus_qdbuspendingcall.cpp 0
 
     Note that it is not necessary to keep the original QDBusPendingCall
     object around since QDBusPendingCallWatcher inherits from that class
@@ -106,7 +106,7 @@ QT_BEGIN_NAMESPACE
     The slot connected to by the above code could be something similar
     to the following:
 
-    \snippet doc/src/snippets/code/src.qdbus.qdbuspendingcall.cpp 1
+    \snippet code/src_qdbus_qdbuspendingcall.cpp 1
 
     Note the use of QDBusPendingReply to validate the argument types in
     the reply. If the reply did not contain exactly two arguments
