@@ -145,6 +145,8 @@ private:
     QExplicitlySharedDataPointer<QRawFontPrivate> d;
 };
 
+Q_DECLARE_SHARED(QRawFont)
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

@@ -316,6 +316,7 @@ private:
     uint resolve_mask;
 };
 
+Q_DECLARE_SHARED(QFont)
 
 inline bool QFont::bold() const
 { return weight() > Normal; }

@@ -186,6 +186,8 @@ private:
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &s, const QPalette &p);
 };
 
+Q_DECLARE_SHARED(QPalette)
+
 inline void QPalette::setColor(ColorGroup acg, ColorRole acr,
                                const QColor &acolor)
 { setBrush(acg, acr, QBrush(acolor)); }

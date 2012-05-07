@@ -235,6 +235,8 @@ private:
     friend class QWidgetTextControlPrivate;
 };
 
+Q_DECLARE_SHARED(QTextCursor)
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

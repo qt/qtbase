@@ -101,6 +101,8 @@ private:
     friend class QStaticTextPrivate;
 };
 
+Q_DECLARE_SHARED(QStaticText)
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QStaticText)

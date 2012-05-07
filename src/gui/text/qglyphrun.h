@@ -126,7 +126,7 @@ private:
     QExplicitlySharedDataPointer<QGlyphRunPrivate> d;
 };
 
-Q_DECLARE_TYPEINFO(QGlyphRun, Q_MOVABLE_TYPE);
+Q_DECLARE_SHARED(QGlyphRun)
 
 QT_END_NAMESPACE
 

@@ -140,6 +140,8 @@ private:
     QSharedDataPointer<QColorDialogOptionsPrivate> d;
 };
 
+Q_DECLARE_SHARED(QColorDialogOptions)
+
 class Q_GUI_EXPORT QPlatformColorDialogHelper : public QPlatformDialogHelper
 {
     Q_OBJECT
@@ -186,6 +188,8 @@ public:
 private:
     QSharedDataPointer<QFontDialogOptionsPrivate> d;
 };
+
+Q_DECLARE_SHARED(QFontDialogOptions)
 
 class Q_GUI_EXPORT QPlatformFontDialogHelper : public QPlatformDialogHelper
 {
@@ -280,6 +284,8 @@ public:
 private:
     QSharedDataPointer<QFileDialogOptionsPrivate> d;
 };
+
+Q_DECLARE_SHARED(QFileDialogOptions)
 
 class Q_GUI_EXPORT QPlatformFileDialogHelper : public QPlatformDialogHelper
 {

@@ -376,6 +376,8 @@ private:
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QTextFormat &);
 };
 
+Q_DECLARE_SHARED(QTextFormat)
+
 inline void QTextFormat::setObjectType(int atype)
 { setProperty(ObjectType, atype); }
 
@@ -549,6 +551,8 @@ protected:
     friend class QTextFormat;
 };
 
+Q_DECLARE_SHARED(QTextCharFormat)
+
 inline void QTextCharFormat::setTableCellRowSpan(int _tableCellRowSpan)
 {
     if (_tableCellRowSpan <= 1)
@@ -639,6 +643,8 @@ protected:
     friend class QTextFormat;
 };
 
+Q_DECLARE_SHARED(QTextBlockFormat)
+
 inline void QTextBlockFormat::setAlignment(Qt::Alignment aalignment)
 { setProperty(BlockAlignment, int(aalignment)); }
 
@@ -702,6 +708,8 @@ protected:
     friend class QTextFormat;
 };
 
+Q_DECLARE_SHARED(QTextListFormat)
+
 inline void QTextListFormat::setStyle(Style astyle)
 { setProperty(ListStyle, astyle); }
 
@@ -737,6 +745,8 @@ protected:
     explicit QTextImageFormat(const QTextFormat &format);
     friend class QTextFormat;
 };
+
+Q_DECLARE_SHARED(QTextImageFormat)
 
 inline void QTextImageFormat::setName(const QString &aname)
 { setProperty(ImageName, aname); }
@@ -836,6 +846,8 @@ protected:
     friend class QTextFormat;
 };
 
+Q_DECLARE_SHARED(QTextFrameFormat)
+
 inline void QTextFrameFormat::setBorder(qreal aborder)
 { setProperty(FrameBorder, aborder); }
 
@@ -905,6 +917,8 @@ protected:
     friend class QTextFormat;
 };
 
+Q_DECLARE_SHARED(QTextTableFormat)
+
 inline void QTextTableFormat::setColumns(int acolumns)
 {
     if (acolumns == 1)
@@ -943,6 +957,8 @@ protected:
     explicit QTextTableCellFormat(const QTextFormat &fmt);
     friend class QTextFormat;
 };
+
+Q_DECLARE_SHARED(QTextTableCellFormat)
 
 inline void QTextTableCellFormat::setTopPadding(qreal padding)
 {

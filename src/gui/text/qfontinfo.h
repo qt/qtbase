@@ -83,6 +83,8 @@ private:
     QExplicitlySharedDataPointer<QFontPrivate> d;
 };
 
+Q_DECLARE_SHARED(QFontInfo)
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

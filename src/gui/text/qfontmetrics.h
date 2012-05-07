@@ -125,6 +125,7 @@ private:
     QExplicitlySharedDataPointer<QFontPrivate> d;
 };
 
+Q_DECLARE_SHARED(QFontMetrics)
 
 class Q_GUI_EXPORT QFontMetricsF
 {
@@ -185,6 +186,8 @@ public:
 private:
     QExplicitlySharedDataPointer<QFontPrivate> d;
 };
+
+Q_DECLARE_SHARED(QFontMetricsF)
 
 QT_END_NAMESPACE
 
