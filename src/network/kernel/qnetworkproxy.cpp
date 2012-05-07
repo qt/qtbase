@@ -59,14 +59,14 @@
     network-enabled applications that you have written should
     automatically support network proxy using the following code.
 
-    \snippet doc/src/snippets/code/src_network_kernel_qnetworkproxy.cpp 0
+    \snippet code/src_network_kernel_qnetworkproxy.cpp 0
 
     An alternative to setting an application wide proxy is to specify
     the proxy for individual sockets using QAbstractSocket::setProxy()
     and QTcpServer::setProxy(). In this way, it is possible to disable
     the use of a proxy for specific sockets using the following code:
 
-    \snippet doc/src/snippets/code/src_network_kernel_qnetworkproxy.cpp 1
+    \snippet code/src_network_kernel_qnetworkproxy.cpp 1
 
     Network proxy is not used if the address used in \l
     {QAbstractSocket::connectToHost()}{connectToHost()}, \l
@@ -800,7 +800,7 @@ QList<QByteArray> QNetworkProxy::rawHeaderList() const
     the corresponding "cooked" header will be set as well.
 
     For example:
-    \snippet doc/src/snippets/code/src_network_access_qnetworkrequest.cpp 0
+    \snippet code/src_network_access_qnetworkrequest.cpp 0
 
     will also set the known header LastModifiedHeader to be the
     QDateTime object of the parsed date.

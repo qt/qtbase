@@ -83,7 +83,7 @@ Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_network_kernel_qhostinfo.cpp 0
+    \snippet code/src_network_kernel_qhostinfo.cpp 0
 
 
     The slot is invoked when the results are ready. The results are
@@ -97,7 +97,7 @@ Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
 
     If you want a blocking lookup, use the QHostInfo::fromName() function:
 
-    \snippet doc/src/snippets/code/src_network_kernel_qhostinfo.cpp 1
+    \snippet code/src_network_kernel_qhostinfo.cpp 1
 
     QHostInfo supports Internationalized Domain Names (IDNs) through the
     IDNA and Punycode standards.
@@ -126,12 +126,12 @@ static QBasicAtomicInt theIdCounter = Q_BASIC_ATOMIC_INITIALIZER(1);
 
     The lookup is performed by a single function call, for example:
 
-    \snippet doc/src/snippets/code/src_network_kernel_qhostinfo.cpp 2
+    \snippet code/src_network_kernel_qhostinfo.cpp 2
 
     The implementation of the slot prints basic information about the
     addresses returned by the lookup, or reports an error if it failed:
 
-    \snippet doc/src/snippets/code/src_network_kernel_qhostinfo.cpp 3
+    \snippet code/src_network_kernel_qhostinfo.cpp 3
 
     If you pass a literal IP address to \a name instead of a host name,
     QHostInfo will search for the domain name for the IP (i.e., QHostInfo will
@@ -139,7 +139,7 @@ static QBasicAtomicInt theIdCounter = Q_BASIC_ATOMIC_INITIALIZER(1);
     contain both the resolved domain name and IP addresses for the host
     name. Example:
 
-    \snippet doc/src/snippets/code/src_network_kernel_qhostinfo.cpp 4
+    \snippet code/src_network_kernel_qhostinfo.cpp 4
 
     \note There is no guarantee on the order the signals will be emitted
     if you start multiple requests with lookupHost().
@@ -311,7 +311,7 @@ QHostInfo::~QHostInfo()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_network_kernel_qhostinfo.cpp 5
+    \snippet code/src_network_kernel_qhostinfo.cpp 5
 
     \sa hostName(), error()
 */

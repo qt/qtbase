@@ -321,7 +321,7 @@ QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(
 
     This is equivalent to the following code snippet:
 
-    \snippet doc/src/snippets/code/src_network_bearer_qnetworkconfigmanager.cpp 0
+    \snippet code/src_network_bearer_qnetworkconfigmanager.cpp 0
 
     \sa onlineStateChanged()
 */

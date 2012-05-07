@@ -1361,7 +1361,7 @@ int QFtpPrivate::addCommand(QFtpCommand *cmd)
     e.g. if you want to connect and login to a FTP server. This is
     simply achieved:
 
-    \snippet doc/src/snippets/code/src_network_access_qftp.cpp 0
+    \snippet code/src_network_access_qftp.cpp 0
 
     In this case two FTP commands have been scheduled. When the last
     scheduled command has finished, a done() signal is emitted with
@@ -1379,12 +1379,12 @@ int QFtpPrivate::addCommand(QFtpCommand *cmd)
     Example: If you want to download the INSTALL file from the Qt
     FTP server, you would write this:
 
-    \snippet doc/src/snippets/code/src_network_access_qftp.cpp 1
+    \snippet code/src_network_access_qftp.cpp 1
 
     For this example the following sequence of signals is emitted
     (with small variations, depending on network traffic, etc.):
 
-    \snippet doc/src/snippets/code/src_network_access_qftp.cpp 2
+    \snippet code/src_network_access_qftp.cpp 2
 
     The dataTransferProgress() signal in the above example is useful
     if you want to show a \link QProgressBar progress bar \endlink to
@@ -1397,7 +1397,7 @@ int QFtpPrivate::addCommand(QFtpCommand *cmd)
     If the login fails for the above example, the signals would look
     like this:
 
-    \snippet doc/src/snippets/code/src_network_access_qftp.cpp 3
+    \snippet code/src_network_access_qftp.cpp 3
 
     You can then get details about the error with the error() and
     errorString() functions.

@@ -88,17 +88,17 @@ QT_BEGIN_NAMESPACE
 
     A network disk cache can be enabled by:
 
-    \snippet doc/src/snippets/code/src_network_access_qnetworkdiskcache.cpp 0
+    \snippet code/src_network_access_qnetworkdiskcache.cpp 0
 
     When sending requests, to control the preference of when to use the cache
     and when to use the network, consider the following:
 
-    \snippet doc/src/snippets/code/src_network_access_qnetworkdiskcache.cpp 1
+    \snippet code/src_network_access_qnetworkdiskcache.cpp 1
 
     To check whether the response came from the cache or from the network, the
     following can be applied:
 
-    \snippet doc/src/snippets/code/src_network_access_qnetworkdiskcache.cpp 2
+    \snippet code/src_network_access_qnetworkdiskcache.cpp 2
 */
 
 /*!

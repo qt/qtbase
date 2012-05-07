@@ -71,7 +71,7 @@
     This method starts an immediate SSL handshake once the connection
     has been established.
 
-    \snippet doc/src/snippets/code/src_network_ssl_qsslsocket.cpp 0
+    \snippet code/src_network_ssl_qsslsocket.cpp 0
 
     As with a plain QTcpSocket, QSslSocket enters the HostLookupState,
     ConnectingState, and finally the ConnectedState, if the connection
@@ -94,7 +94,7 @@
     the existing one passed in. It then initiates the SSL handshake
     by calling startServerEncryption().
 
-    \snippet doc/src/snippets/code/src_network_ssl_qsslsocket.cpp 1
+    \snippet code/src_network_ssl_qsslsocket.cpp 1
 
     If an error occurs, QSslSocket emits the sslErrors() signal. In this
     case, if no action is taken to ignore the error(s), the connection
@@ -122,7 +122,7 @@
     waitForEncrypted(), which will block the calling thread until an
     encrypted connection has been established.
 
-    \snippet doc/src/snippets/code/src_network_ssl_qsslsocket.cpp 2
+    \snippet code/src_network_ssl_qsslsocket.cpp 2
 
     QSslSocket provides an extensive, easy-to-use API for handling
     cryptographic ciphers, private keys, and local, peer, and
@@ -397,7 +397,7 @@ void QSslSocket::resume()
 
     If the SSL handshake is successful, QSslSocket emits encrypted().
 
-    \snippet doc/src/snippets/code/src_network_ssl_qsslsocket.cpp 3
+    \snippet code/src_network_ssl_qsslsocket.cpp 3
 
     \b{Note:} The example above shows that text can be written to
     the socket immediately after requesting the encrypted connection,
@@ -1149,7 +1149,7 @@ void QSslSocket::setCiphers(const QList<QSslCipher> &ciphers)
     is a colon-separated list of cipher suite names. The ciphers are listed in
     order of preference, starting with the most preferred cipher. For example:
 
-    \snippet doc/src/snippets/code/src_network_ssl_qsslsocket.cpp 4
+    \snippet code/src_network_ssl_qsslsocket.cpp 4
 
     Each cipher name in \a ciphers must be the name of a cipher in the
     list returned by supportedCiphers().  Restricting the cipher suite
@@ -1438,7 +1438,7 @@ bool QSslSocket::waitForConnected(int msecs)
     The following example waits up to one second for the socket to be
     encrypted:
 
-    \snippet doc/src/snippets/code/src_network_ssl_qsslsocket.cpp 5
+    \snippet code/src_network_ssl_qsslsocket.cpp 5
 
     If msecs is -1, this function will not time out.
 
@@ -1736,7 +1736,7 @@ void QSslSocket::ignoreSslErrors()
     If, for instance, you want to connect to a server that uses
     a self-signed certificate, consider the following snippet:
 
-    \snippet doc/src/snippets/code/src_network_ssl_qsslsocket.cpp 6
+    \snippet code/src_network_ssl_qsslsocket.cpp 6
 
     Multiple calls to this function will replace the list of errors that
     were passed in previous calls.

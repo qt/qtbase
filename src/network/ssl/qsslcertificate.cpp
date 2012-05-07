@@ -834,7 +834,7 @@ QByteArray QSslCertificate::toText() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_network_ssl_qsslcertificate.cpp 0
+    \snippet code/src_network_ssl_qsslcertificate.cpp 0
 
     \sa fromData()
 */

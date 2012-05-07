@@ -75,7 +75,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/code/src_network_socket_qudpsocket.cpp 0
+    \snippet code/src_network_socket_qudpsocket.cpp 0
 
     QUdpSocket also supports UDP multicast. Use joinMulticastGroup() and
     leaveMulticastGroup() to control group membership, and

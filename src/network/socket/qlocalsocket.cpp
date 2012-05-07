@@ -255,7 +255,7 @@ QT_BEGIN_NAMESPACE
     The following example waits up to one second for a connection
     to be established:
 
-    \snippet doc/src/snippets/code/src_network_socket_qlocalsocket_unix.cpp 0
+    \snippet code/src_network_socket_qlocalsocket_unix.cpp 0
 
     If \a msecs is -1, this function will not time out.
 
@@ -274,7 +274,7 @@ QT_BEGIN_NAMESPACE
     The following example waits up to one second for a connection
     to be closed:
 
-    \snippet doc/src/snippets/code/src_network_socket_qlocalsocket_unix.cpp 1
+    \snippet code/src_network_socket_qlocalsocket_unix.cpp 1
 
     If \a msecs is -1, this function will not time out.
 

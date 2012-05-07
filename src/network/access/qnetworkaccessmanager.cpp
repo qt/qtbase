@@ -178,7 +178,7 @@ static void ensureInitialized()
     returned in response to the corresponding request.
 
     A simple download off the network could be accomplished with:
-    \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 0
+    \snippet code/src_network_access_qnetworkaccessmanager.cpp 0
 
     QNetworkAccessManager has an asynchronous API.
     When the \tt replyFinished slot above is called, the parameter it
@@ -197,7 +197,7 @@ static void ensureInitialized()
 
     A more involved example, assuming the manager is already existent,
     can be:
-    \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 1
+    \snippet code/src_network_access_qnetworkaccessmanager.cpp 1
 
     \section1 Network and Roaming support
 
@@ -283,11 +283,11 @@ static void ensureInitialized()
     By default the value of this property reflects the physical state of the device.  Applications
     may override it to disable all network requests via this network access manager by calling
 
-    \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 4
+    \snippet code/src_network_access_qnetworkaccessmanager.cpp 4
 
     Network requests can be reenabled again by calling
 
-    \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 5
+    \snippet code/src_network_access_qnetworkaccessmanager.cpp 5
 
     \note Calling setNetworkAccessible() does not change the network state.
 */
@@ -805,12 +805,12 @@ QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &requ
     To restore the default network configuration set the network configuration to the value
     returned from QNetworkConfigurationManager::defaultConfiguration().
 
-    \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 2
+    \snippet code/src_network_access_qnetworkaccessmanager.cpp 2
 
     If an invalid network configuration is set, a network session will not be created.  In this
     case network requests will be processed regardless, but may fail.  For example:
 
-    \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 3
+    \snippet code/src_network_access_qnetworkaccessmanager.cpp 3
 
     \sa configuration(), QNetworkSession
 */
