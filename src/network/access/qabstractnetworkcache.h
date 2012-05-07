@@ -104,6 +104,8 @@ private:
     QSharedDataPointer<QNetworkCacheMetaDataPrivate> d;
 };
 
+Q_DECLARE_SHARED(QNetworkCacheMetaData)
+
 Q_NETWORK_EXPORT QDataStream &operator<<(QDataStream &, const QNetworkCacheMetaData &);
 Q_NETWORK_EXPORT QDataStream &operator>>(QDataStream &, QNetworkCacheMetaData &);
 

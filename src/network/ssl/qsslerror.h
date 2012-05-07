@@ -110,6 +110,7 @@ public:
 private:
     QScopedPointer<QSslErrorPrivate> d;
 };
+Q_DECLARE_SHARED(QSslError)
 
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;

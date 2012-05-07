@@ -119,7 +119,8 @@ public:
 private:
     QSharedDataPointer<QNetworkProxyQueryPrivate> d;
 };
-Q_DECLARE_TYPEINFO(QNetworkProxyQuery, Q_MOVABLE_TYPE);
+
+Q_DECLARE_SHARED(QNetworkProxyQuery)
 
 class QNetworkProxyPrivate;
 
@@ -193,6 +194,8 @@ public:
 private:
     QSharedDataPointer<QNetworkProxyPrivate> d;
 };
+
+Q_DECLARE_SHARED(QNetworkProxy)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkProxy::Capabilities)
 
 class Q_NETWORK_EXPORT QNetworkProxyFactory

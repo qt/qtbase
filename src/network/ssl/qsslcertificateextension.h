@@ -79,6 +79,8 @@ private:
     QSharedDataPointer<QSslCertificateExtensionPrivate> d;
 };
 
+Q_DECLARE_SHARED(QSslCertificateExtension)
+
 #endif // QT_NO_SSL
 
 QT_END_NAMESPACE

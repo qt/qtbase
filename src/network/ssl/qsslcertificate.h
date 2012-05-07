@@ -146,6 +146,7 @@ private:
     friend class QSslCertificatePrivate;
     friend class QSslSocketBackendPrivate;
 };
+Q_DECLARE_SHARED(QSslCertificate)
 
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;

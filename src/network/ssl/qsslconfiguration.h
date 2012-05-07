@@ -133,6 +133,8 @@ private:
     QSharedDataPointer<QSslConfigurationPrivate> d;
 };
 
+Q_DECLARE_SHARED(QSslConfiguration)
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QSslConfiguration)

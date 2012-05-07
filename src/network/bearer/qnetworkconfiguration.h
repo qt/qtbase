@@ -124,6 +124,8 @@ private:
     QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> d;
 };
 
+Q_DECLARE_SHARED(QNetworkConfiguration)
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkConfiguration)

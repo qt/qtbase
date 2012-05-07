@@ -86,6 +86,8 @@ private:
     friend class QSslSocketBackendPrivate;
 };
 
+Q_DECLARE_SHARED(QSslCipher)
+
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslCipher &cipher);

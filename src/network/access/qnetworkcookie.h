@@ -109,7 +109,8 @@ private:
     QSharedDataPointer<QNetworkCookiePrivate> d;
     friend class QNetworkCookiePrivate;
 };
-Q_DECLARE_TYPEINFO(QNetworkCookie, Q_MOVABLE_TYPE);
+
+Q_DECLARE_SHARED(QNetworkCookie)
 
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;

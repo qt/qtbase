@@ -99,6 +99,8 @@ private:
     friend class QSslCertificate;
 };
 
+Q_DECLARE_SHARED(QSslKey)
+
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslKey &key);

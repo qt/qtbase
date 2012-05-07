@@ -82,6 +82,8 @@ private:
     friend class QDnsLookupRunnable;
 };
 
+Q_DECLARE_SHARED(QDnsDomainNameRecord)
+
 class Q_NETWORK_EXPORT QDnsHostAddressRecord
 {
 public:
@@ -101,6 +103,8 @@ private:
     QSharedDataPointer<QDnsHostAddressRecordPrivate> d;
     friend class QDnsLookupRunnable;
 };
+
+Q_DECLARE_SHARED(QDnsHostAddressRecord)
 
 class Q_NETWORK_EXPORT QDnsMailExchangeRecord
 {
@@ -122,6 +126,8 @@ private:
     QSharedDataPointer<QDnsMailExchangeRecordPrivate> d;
     friend class QDnsLookupRunnable;
 };
+
+Q_DECLARE_SHARED(QDnsMailExchangeRecord)
 
 class Q_NETWORK_EXPORT QDnsServiceRecord
 {
@@ -146,6 +152,8 @@ private:
     friend class QDnsLookupRunnable;
 };
 
+Q_DECLARE_SHARED(QDnsServiceRecord)
+
 class Q_NETWORK_EXPORT QDnsTextRecord
 {
 public:
@@ -165,6 +173,8 @@ private:
     QSharedDataPointer<QDnsTextRecordPrivate> d;
     friend class QDnsLookupRunnable;
 };
+
+Q_DECLARE_SHARED(QDnsTextRecord)
 
 class Q_NETWORK_EXPORT QDnsLookup : public QObject
 {

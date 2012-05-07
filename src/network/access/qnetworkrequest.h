@@ -153,6 +153,8 @@ private:
     friend class QNetworkRequestPrivate;
 };
 
+Q_DECLARE_SHARED(QNetworkRequest)
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkRequest)

@@ -81,6 +81,8 @@ private:
     friend class QHttpMultiPartIODevice;
 };
 
+Q_DECLARE_SHARED(QHttpPart)
+
 class QHttpMultiPartPrivate;
 
 class Q_NETWORK_EXPORT QHttpMultiPart : public QObject

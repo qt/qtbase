@@ -85,6 +85,8 @@ private:
     QScopedPointer<QNetworkAddressEntryPrivate> d;
 };
 
+Q_DECLARE_SHARED(QNetworkAddressEntry)
+
 class QNetworkInterfacePrivate;
 class Q_NETWORK_EXPORT QNetworkInterface
 {
@@ -124,6 +126,8 @@ private:
     friend class QNetworkInterfacePrivate;
     QSharedDataPointer<QNetworkInterfacePrivate> d;
 };
+
+Q_DECLARE_SHARED(QNetworkInterface)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkInterface::InterfaceFlags)
 
