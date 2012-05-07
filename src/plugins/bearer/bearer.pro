@@ -7,6 +7,7 @@ linux*:contains(QT_CONFIG, dbus) {
 
 #win32:SUBDIRS += nla
 win32:SUBDIRS += generic
+blackberry:SUBDIRS += blackberry
 win32:!wince*:SUBDIRS += nativewifi
 macx:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
 macx:SUBDIRS += generic
