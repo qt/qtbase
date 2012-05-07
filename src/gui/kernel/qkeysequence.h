@@ -137,7 +137,8 @@ public:
         InsertLineSeparator,
         SaveAs,
         Preferences,
-        Quit
+        Quit,
+        FullScreen
      };
 
     enum SequenceFormat {

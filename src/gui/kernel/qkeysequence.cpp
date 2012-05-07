@@ -246,6 +246,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \li Refresh          \li F5                                   \li F5                       \li F5           \li Ctrl+R, F5
     \row    \li ZoomIn           \li Ctrl+Plus                            \li Ctrl+Plus                \li Ctrl+Plus    \li Ctrl+Plus
     \row    \li ZoomOut          \li Ctrl+Minus                           \li Ctrl+Minus               \li Ctrl+Minus   \li Ctrl+Minus
+    \row    \li FullScreen       \li F11, Alt+Enter                       \li Ctrl+Meta+F              \li F11, Ctrl+Shift+F \li Ctrl+F11
     \row    \li Print            \li Ctrl+P                               \li Ctrl+P                   \li Ctrl+P       \li Ctrl+P
     \row    \li AddTab           \li Ctrl+T                               \li Ctrl+T                   \li Ctrl+Shift+N, Ctrl+T \li Ctrl+T
     \row    \li NextChild        \li Ctrl+Tab, Forward, Ctrl+F6           \li Ctrl+}, Forward, Ctrl+Tab \li Ctrl+Tab, Forward, Ctrl+Comma \li Ctrl+Tab, Forward
@@ -638,8 +639,9 @@ static const struct {
     { 0, 0 }
 };
 
-//Table of key bindings. It must be sorted on key sequence.
-//A priority of 1 indicates that this is the primary key binding when multiple are defined.
+// Table of key bindings. It must be sorted on key sequence:
+// The integer value of VK_KEY | Modifier Keys (e.g., VK_META, and etc.)
+// A priority of 1 indicates that this is the primary key binding when multiple are defined.
 
 enum KeyPlatform {
     KB_Win = (1 << QPlatformTheme::WindowsKeyboardScheme),
@@ -671,6 +673,7 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::FindNext,                0,          Qt::Key_F3,                             KB_X11},
     {QKeySequence::FindNext,                1,          Qt::Key_F3,                             KB_Win},
     {QKeySequence::Refresh,                 0,          Qt::Key_F5,                             KB_Win | KB_X11},
+    {QKeySequence::FullScreen,              1,          Qt::Key_F11,                            KB_Win | KB_KDE},
     {QKeySequence::Undo,                    0,          Qt::Key_F14,                            KB_X11}, //Undo on sun keyboards
     {QKeySequence::Copy,                    0,          Qt::Key_F16,                            KB_X11}, //Copy on sun keyboards
     {QKeySequence::Paste,                   0,          Qt::Key_F18,                            KB_X11}, //Paste on sun keyboards
@@ -749,6 +752,8 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::Close,                   1,          Qt::CTRL | Qt::Key_F4,                  KB_Win},
     {QKeySequence::Close,                   0,          Qt::CTRL | Qt::Key_F4,                  KB_Mac},
     {QKeySequence::NextChild,               0,          Qt::CTRL | Qt::Key_F6,                  KB_Win},
+    {QKeySequence::FullScreen,              1,          Qt::CTRL | Qt::Key_F11,                 KB_Gnome},
+    {QKeySequence::FullScreen,              0,          Qt::CTRL | Qt::SHIFT | Qt::Key_F,       KB_KDE},
     {QKeySequence::FindPrevious,            1,          Qt::CTRL | Qt::SHIFT | Qt::Key_G,       KB_Gnome | KB_Mac},
     {QKeySequence::FindPrevious,            0,          Qt::CTRL | Qt::SHIFT | Qt::Key_G,       KB_Win},
     {QKeySequence::AddTab,                  1,          Qt::CTRL | Qt::SHIFT | Qt::Key_N,       KB_KDE},
@@ -769,6 +774,7 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::SHIFT | Qt::Key_F6,      KB_Win},
     {QKeySequence::Undo,                    0,          Qt::ALT  | Qt::Key_Backspace,           KB_Win},
     {QKeySequence::DeleteStartOfWord,       0,          Qt::ALT  | Qt::Key_Backspace,           KB_Mac},
+    {QKeySequence::FullScreen,              0,          Qt::ALT  | Qt::Key_Enter,               KB_Win},
     {QKeySequence::DeleteEndOfWord,         0,          Qt::ALT  | Qt::Key_Delete,              KB_Mac},
     {QKeySequence::Back,                    1,          Qt::ALT  | Qt::Key_Left,                KB_Win | KB_X11},
     {QKeySequence::MoveToPreviousWord,      0,          Qt::ALT  | Qt::Key_Left,                KB_Mac},
@@ -797,7 +803,8 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::SelectStartOfBlock,      0,          Qt::META | Qt::SHIFT | Qt::Key_A,       KB_Mac},
     {QKeySequence::SelectEndOfBlock,        0,          Qt::META | Qt::SHIFT | Qt::Key_E,       KB_Mac},
     {QKeySequence::SelectStartOfLine,       0,          Qt::META | Qt::SHIFT | Qt::Key_Left,    KB_Mac},
-    {QKeySequence::SelectEndOfLine,         0,          Qt::META | Qt::SHIFT | Qt::Key_Right,   KB_Mac}
+    {QKeySequence::SelectEndOfLine,         0,          Qt::META | Qt::SHIFT | Qt::Key_Right,   KB_Mac},
+    {QKeySequence::FullScreen,              1,          Qt::META | Qt::CTRL | Qt::Key_F,        KB_Mac}
 };
 
 const uint QKeySequencePrivate::numberOfKeyBindings = sizeof(QKeySequencePrivate::keyBindings)/(sizeof(QKeyBinding));
@@ -879,6 +886,7 @@ const uint QKeySequencePrivate::numberOfKeyBindings = sizeof(QKeySequencePrivate
     \value WhatsThis        Activate "what's this".
     \value ZoomIn           Zoom in.
     \value ZoomOut          Zoom out.
+    \value FullScreen       Toggle the window state to/from full screen.
 */
 
 /*!
