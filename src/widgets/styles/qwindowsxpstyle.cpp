@@ -53,7 +53,7 @@
 #include <qpainter.h>
 #include <qpaintengine.h>
 #include <qwidget.h>
-#include <qbackingstore.>
+#include <qbackingstore.h>
 #include <qapplication.h>
 #include <qpixmapcache.h>
 
