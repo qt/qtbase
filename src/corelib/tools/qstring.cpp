@@ -372,7 +372,7 @@ inline char qToLower(char ch)
 /*!
    \internal
 */
-bool qStringComparisonHelper(const QString &s1, const char *s2)
+Q_CORE_EXPORT bool qStringComparisonHelper(const QString &s1, const char *s2)
 {
     // ### optimize me
     return s1 == QString::fromAscii(s2);
@@ -381,7 +381,7 @@ bool qStringComparisonHelper(const QString &s1, const char *s2)
 /*!
    \internal
 */
-bool qStringComparisonHelper(const QString &s1, const QByteArray &s2)
+Q_CORE_EXPORT bool qStringComparisonHelper(const QString &s1, const QByteArray &s2)
 {
     // ### optimize me
     return s1 == QString::fromAscii(s2);
@@ -390,7 +390,7 @@ bool qStringComparisonHelper(const QString &s1, const QByteArray &s2)
 /*!
    \internal
 */
-bool qStringComparisonHelper(const QStringRef &s1, const char *s2)
+Q_CORE_EXPORT bool qStringComparisonHelper(const QStringRef &s1, const char *s2)
 {
     // ### optimize me
     return s1 == QString::fromAscii(s2);
@@ -399,7 +399,7 @@ bool qStringComparisonHelper(const QStringRef &s1, const char *s2)
 /*!
    \internal
 */
-bool qStringComparisonHelper(const QStringRef &s1, const QByteArray &s2)
+Q_CORE_EXPORT bool qStringComparisonHelper(const QStringRef &s1, const QByteArray &s2)
 {
     // ### optimize me
     return s1 == QString::fromAscii(s2);

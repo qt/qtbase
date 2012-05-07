@@ -674,10 +674,10 @@ private:
     friend class QTextCodec;
     friend class QStringRef;
     friend struct QAbstractConcatenable;
-    friend bool qStringComparisonHelper(const QString &s1, const char *s2);
-    friend bool qStringComparisonHelper(const QString &s1, const QByteArray &s2);
-    friend bool qStringComparisonHelper(const QStringRef &s1, const char *s2);
-    friend bool qStringComparisonHelper(const QStringRef &s1, const QByteArray &s2);
+    friend Q_CORE_EXPORT bool qStringComparisonHelper(const QString &s1, const char *s2);
+    friend Q_CORE_EXPORT bool qStringComparisonHelper(const QString &s1, const QByteArray &s2);
+    friend Q_CORE_EXPORT bool qStringComparisonHelper(const QStringRef &s1, const char *s2);
+    friend Q_CORE_EXPORT bool qStringComparisonHelper(const QStringRef &s1, const QByteArray &s2);
 public:
     typedef Data * DataPtr;
     inline DataPtr &data_ptr() { return d; }
