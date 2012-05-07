@@ -374,7 +374,7 @@
     QFuture::constBegin() or QFuture::constEnd() before you start iterating.
     Here's a typical loop that prints all the results available in a future:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qfuture.cpp 0
+    \snippet code/src_concurrent_qfuture.cpp 0
 
     \sa QFutureIterator, QFuture
 */
@@ -555,7 +555,7 @@
     list (i.e. before the first result). Here's how to iterate over all the
     results sequentially:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qfuture.cpp 1
+    \snippet code/src_concurrent_qfuture.cpp 1
 
     The next() function returns the next result (waiting for it to become
     available, if necessary) from the future and advances the iterator. Unlike
@@ -570,7 +570,7 @@
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qfuture.cpp 2
+    \snippet code/src_concurrent_qfuture.cpp 2
 
     If you want to find all occurrences of a particular value, use findNext()
     or findPrevious() in a loop.

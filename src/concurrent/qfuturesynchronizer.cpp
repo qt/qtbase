@@ -57,7 +57,7 @@
     an easy way to ensure that all futures have finished before returning from
     a function:
     
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qfuturesynchronizer.cpp 0
+    \snippet code/src_concurrent_qfuturesynchronizer.cpp 0
     
     The behavior of waitForFinished() can be changed using the
     setCancelOnWait() function. Calling setCancelOnWait(true) will cause

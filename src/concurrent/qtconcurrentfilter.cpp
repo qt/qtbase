@@ -60,7 +60,7 @@
     result instead of a QFuture. You use them in the same way as the
     asynchronous variants.
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 6
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 6
 
     Note that the result types above are not QFuture objects, but real result
     types (in this case, QStringList and QSet<QString>).
@@ -73,7 +73,7 @@
 
     The filter function must be of the form:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 0
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 0
 
     T must match the type stored in the sequence. The function returns true if
     the item should be kept, false if it should be discarded.
@@ -81,7 +81,7 @@
     This example shows how to keep strings that are all lower-case from a
     QStringList:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 1
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 1
 
     The results of the filter are made available through QFuture. See the
     QFuture and QFutureWatcher documentation for more information on how to
@@ -89,7 +89,7 @@
 
     If you want to modify a sequence in-place, use QtConcurrent::filter():
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 2
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 2
 
     Since the sequence is modified in place, QtConcurrent::filter() does not
     return any results via QFuture. However, you can still use QFuture and
@@ -103,7 +103,7 @@
 
     The reduce function must be of the form:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 3
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 3
 
     T is the type of the final result, U is the type of items being filtered.
     Note that the return value and return type of the reduce function are not
@@ -111,7 +111,7 @@
 
     Call QtConcurrent::filteredReduced() like this:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 4
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 4
 
     The reduce function will be called once for each result kept by the filter
     function, and should merge the \e{intermediate} into the \e{result}
@@ -128,7 +128,7 @@
     instead of a sequence. You use them in the same way as the sequence
     variants:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 5
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 5
 
 
     \section2 Using Member Functions
@@ -137,12 +137,12 @@
     QtConcurrent::filteredReduced() accept pointers to member functions.
     The member function class type must match the type stored in the sequence:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 7
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 7
 
     Note that when using QtConcurrent::filteredReduced(), you can mix the use of
     normal and member functions freely:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 8
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 8
 
     \section2 Using Function Objects
 
@@ -151,7 +151,7 @@
     add state to a function call. The result_type typedef must define the 
     result type of the function call operator:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 13
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 13
 
     \section2 Using Bound Function Arguments
 
@@ -167,7 +167,7 @@
 
     As an example, we use QString::contains():
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 9
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 9
 
     QString::contains() takes 2 arguments (including the "this" pointer) and
     can't be used with QtConcurrent::filtered() directly, because
@@ -175,17 +175,17 @@
     use QString::contains() with QtConcurrent::filtered() we have to provide a
     value for the \e regexp argument:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 10
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 10
 
     The return value from boost::bind() is a function object (functor) with
     the following signature:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 11
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 11
 
     This matches what QtConcurrent::filtered() expects, and the complete
     example becomes:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentfilter.cpp 12
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 12
 */
 
 /*!

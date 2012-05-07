@@ -57,7 +57,7 @@
     
     To run a function in another thread, use QtConcurrent::run():
     
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentrun.cpp 0
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 0
     
     This will run \e aFunction in a separate thread obtained from the default
     QThreadPool. You can use the QFuture and QFutureWatcher classes to monitor
@@ -68,7 +68,7 @@
     Passing arguments to the function is done by adding them to the
     QtConcurrent::run() call immediately after the function name. For example:
     
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentrun.cpp 1
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 1
     
     A copy of each argument is made at the point where QtConcurrent::run() is
     called, and these values are passed to the thread when it begins executing
@@ -79,11 +79,11 @@
     
     Any return value from the function is available via QFuture:
     
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentrun.cpp 2
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 2
     
     As documented above, passing arguments is done like this:
     
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentrun.cpp 3
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 3
     
     Note that the QFuture::result() function blocks and waits for the result
     to become available. Use QFutureWatcher to get notification when the
@@ -102,11 +102,11 @@
     For example, calling QByteArray::split() (a const member function) in a
     separate thread is done like this:
     
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentrun.cpp 4
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 4
     
     Calling a non-const member function is done like this:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentrun.cpp 5
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 5
 
     \section2 Using Bound Function Arguments
 
@@ -131,7 +131,7 @@
 
     Calling a bound function is done like this:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentrun.cpp 6
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 6
 */
 
 /*!
