@@ -150,7 +150,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QNetworkSession::UsagePolicies
+    \enum QNetworkSession::UsagePolicy
     \since 5.0
 
     These flags allow the system to inform the application of network usage restrictions that
