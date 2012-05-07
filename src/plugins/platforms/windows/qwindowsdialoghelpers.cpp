@@ -1088,6 +1088,13 @@ QWindowsNativeFileDialogBase *QWindowsNativeFileDialogBase::create(QFileDialogOp
     \class QWindowsFileDialogHelper
     \brief Helper for native Windows file dialogs
 
+    Non-modal dialogs are disabled for now. The functionality is
+    implemented in principle, however there are failures
+    when querying the results from a dialog run in another thread.
+    This could probably be fixed be calling CoInitializeEx() with
+    the right parameters from each thread. The problem is though
+    that calls to CoInitialize() occur in several places in Qt.
+
     \ingroup qt-lighthouse-win
 */
 
@@ -1095,6 +1102,7 @@ class QWindowsFileDialogHelper : public QWindowsDialogHelperBase<QPlatformFileDi
 {
 public:
     QWindowsFileDialogHelper() {}
+    virtual bool supportsNonModalDialog() const { return false; }
 
     virtual bool defaultNameFilterDisables() const
         { return true; }
