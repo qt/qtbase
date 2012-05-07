@@ -200,9 +200,11 @@ void tst_ExceptionSafety::exceptionInSlot()
     }
 }
 
-void tst_ExceptionSafety::exceptionList() {
-
+void tst_ExceptionSafety::exceptionList()
+{
+    const int intancesCount = objCounter;
     {
+        int instances;
         QList<FlexibleThrowerSmall> list;
         QList<FlexibleThrowerSmall> list2;
         QList<FlexibleThrowerSmall> list3;
@@ -210,43 +212,53 @@ void tst_ExceptionSafety::exceptionList() {
         for( int i = 0; i<10; i++ )
             list.append( FlexibleThrowerSmall(i) );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             list.append( FlexibleThrowerSmall(10));
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( list.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             list.prepend( FlexibleThrowerSmall(10));
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( list.at(0).value(), 0 );
         QCOMPARE( list.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             list.insert( 8, FlexibleThrowerSmall(10));
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( list.at(7).value(), 7 );
         QCOMPARE( list.at(8).value(), 8 );
         QCOMPARE( list.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             FlexibleThrowerSmall t = list.takeAt( 6 );
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( list.at(6).value(), 6 );
         QCOMPARE( list.at(7).value(), 7 );
         QCOMPARE( list.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             list3 = list;
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( list.at(0).value(), 0 );
         QCOMPARE( list.at(7).value(), 7 );
@@ -255,10 +267,12 @@ void tst_ExceptionSafety::exceptionList() {
         QCOMPARE( list3.at(7).value(), 7 );
         QCOMPARE( list3.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             list3.append( FlexibleThrowerSmall(11) );
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( list.at(0).value(), 0 );
         QCOMPARE( list.at(7).value(), 7 );
@@ -271,8 +285,10 @@ void tst_ExceptionSafety::exceptionList() {
             list2.clear();
             list2.append( FlexibleThrowerSmall(11));
             throwType = ThrowAtCopy;
+            instances = objCounter;
             list3 = list+list2;
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( list.at(0).value(), 0 );
         QCOMPARE( list.at(7).value(), 7 );
@@ -282,10 +298,12 @@ void tst_ExceptionSafety::exceptionList() {
         list2.clear();
         list2.append( FlexibleThrowerSmall(11));
         list3 = list+list2;
+        instances = objCounter;
         try {
             throwType = ThrowAtCreate;
             list3[7]=FlexibleThrowerSmall(12);
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( list.at(7).value(), 7 );
         QCOMPARE( list.size(), 10 );
@@ -293,12 +311,14 @@ void tst_ExceptionSafety::exceptionList() {
         QCOMPARE( list3.size(), 11 );
 
     }
-    QCOMPARE(objCounter, 0 ); // check that every object has been freed
+    QCOMPARE(objCounter, intancesCount); // check that every object has been freed
 }
 
-void tst_ExceptionSafety::exceptionLinkedList() {
-
+void tst_ExceptionSafety::exceptionLinkedList()
+{
+    const int intancesCount = objCounter;
     {
+        int instances;
         QLinkedList<FlexibleThrowerSmall> list;
         QLinkedList<FlexibleThrowerSmall> list2;
         QLinkedList<FlexibleThrowerSmall> list3;
@@ -306,37 +326,45 @@ void tst_ExceptionSafety::exceptionLinkedList() {
         for( int i = 0; i<10; i++ )
             list.append( FlexibleThrowerSmall(i) );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             list.append( FlexibleThrowerSmall(10));
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( list.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             list.prepend( FlexibleThrowerSmall(10));
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( list.first().value(), 0 );
         QCOMPARE( list.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             list3 = list;
             list3.append( FlexibleThrowerSmall(11) );
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( list.first().value(), 0 );
         QCOMPARE( list.size(), 10 );
         QCOMPARE( list3.size(), 10 );
     }
-    QCOMPARE(objCounter, 0 ); // check that every object has been freed
+    QCOMPARE(objCounter, intancesCount); // check that every object has been freed
 }
 
-void tst_ExceptionSafety::exceptionVector() {
-
+void tst_ExceptionSafety::exceptionVector()
+{
+    const int intancesCount = objCounter;
     {
+        int instances;
         QVector<FlexibleThrowerSmall> vector;
         QVector<FlexibleThrowerSmall> vector2;
         QVector<FlexibleThrowerSmall> vector3;
@@ -344,34 +372,42 @@ void tst_ExceptionSafety::exceptionVector() {
         for (int i = 0; i<10; i++)
             vector.append( FlexibleThrowerSmall(i) );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             vector.append( FlexibleThrowerSmall(10));
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( vector.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             vector.prepend( FlexibleThrowerSmall(10));
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( vector.at(0).value(), 0 );
         QCOMPARE( vector.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             vector.insert( 8, FlexibleThrowerSmall(10));
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( vector.at(7).value(), 7 );
         QCOMPARE( vector.at(8).value(), 8 );
         QCOMPARE( vector.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             vector3 = vector;
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( vector.at(0).value(), 0 );
         QCOMPARE( vector.at(7).value(), 7 );
@@ -380,10 +416,12 @@ void tst_ExceptionSafety::exceptionVector() {
         QCOMPARE( vector3.at(7).value(), 7 );
         QCOMPARE( vector3.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCopy;
             vector3.append( FlexibleThrowerSmall(11) );
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( vector.at(0).value(), 0 );
         QCOMPARE( vector.at(7).value(), 7 );
@@ -394,9 +432,11 @@ void tst_ExceptionSafety::exceptionVector() {
         try {
             vector2.clear();
             vector2.append( FlexibleThrowerSmall(11));
+            instances = objCounter;
             throwType = ThrowAtCopy;
             vector3 = vector+vector2;
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( vector.at(0).value(), 0 );
         QCOMPARE( vector.at(7).value(), 7 );
@@ -406,49 +446,57 @@ void tst_ExceptionSafety::exceptionVector() {
         vector2.clear();
         vector2.append( FlexibleThrowerSmall(11));
         vector3 = vector+vector2;
+        instances = objCounter;
         try {
             throwType = ThrowAtCreate;
             vector3[7]=FlexibleThrowerSmall(12);
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( vector.at(7).value(), 7 );
         QCOMPARE( vector.size(), 10 );
         QCOMPARE( vector3.at(7).value(), 7 );
         QCOMPARE( vector3.size(), 11 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCreate;
             vector.resize(15);
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( vector.at(7).value(), 7 );
         QCOMPARE( vector.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowAtCreate;
             vector.resize(15);
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( vector.at(7).value(), 7 );
         QCOMPARE( vector.size(), 10 );
 
+        instances = objCounter;
         try {
             throwType = ThrowLater;
             vector.fill(FlexibleThrowerSmall(1), 15);
         } catch (...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( vector.at(0).value(), 0 );
         QCOMPARE( vector.size(), 10 );
-
-
     }
-    QCOMPARE(objCounter, 0 ); // check that every object has been freed
+    QCOMPARE(objCounter, intancesCount); // check that every object has been freed
 }
 
 
-void tst_ExceptionSafety::exceptionMap() {
-
+void tst_ExceptionSafety::exceptionMap()
+{
+    const int intancesCount = objCounter;
     {
+        int instances;
         MyMap map;
         MyMap map2;
         MyMap map3;
@@ -460,20 +508,24 @@ void tst_ExceptionSafety::exceptionMap() {
         return; // further test are deactivated until Map is fixed.
 
         for( int i = ThrowAtCopy; i<=ThrowAtComparison; i++ ) {
+            instances = objCounter;
             try {
                 throwType = (ThrowType)i;
                 map[ FlexibleThrowerSmall(10) ] = FlexibleThrowerSmall(10);
             } catch(...) {
+                QCOMPARE(instances, objCounter);
             }
             QCOMPARE( map.size(), 10 );
             QCOMPARE( map[ FlexibleThrowerSmall(1) ], FlexibleThrowerSmall(1) );
         }
 
         map2 = map;
+        instances = objCounter;
         try {
             throwType = ThrowLater;
             map2[ FlexibleThrowerSmall(10) ] = FlexibleThrowerSmall(10);
         } catch(...) {
+            QCOMPARE(instances, objCounter);
         }
         /* qDebug("%d %d", map.size(), map2.size() );
         for( int i=0; i<map.size(); i++ )
@@ -488,12 +540,14 @@ void tst_ExceptionSafety::exceptionMap() {
         QCOMPARE( map2.size(), 10 );
 
     }
-    QCOMPARE(objCounter, 0 ); // check that every object has been freed
+    QCOMPARE(objCounter, intancesCount); // check that every object has been freed
 }
 
-void tst_ExceptionSafety::exceptionHash() {
-
+void tst_ExceptionSafety::exceptionHash()
+{
+    const int intancesCount = objCounter;
     {
+        int instances;
         MyHash hash;
         MyHash hash2;
         MyHash hash3;
@@ -502,19 +556,23 @@ void tst_ExceptionSafety::exceptionHash() {
             hash[ FlexibleThrowerSmall(i) ] = FlexibleThrowerSmall(i);
 
         for( int i = ThrowAtCopy; i<=ThrowAtComparison; i++ ) {
+            instances = objCounter;
             try {
                 throwType = (ThrowType)i;
                 hash[ FlexibleThrowerSmall(10) ] = FlexibleThrowerSmall(10);
             } catch(...) {
+                QCOMPARE(instances, objCounter);
             }
             QCOMPARE( hash.size(), 10 );
         }
 
         hash2 = hash;
+        instances = objCounter;
         try {
             throwType = ThrowLater;
             hash2[ FlexibleThrowerSmall(10) ] = FlexibleThrowerSmall(10);
         } catch(...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( hash[ FlexibleThrowerSmall(1) ], FlexibleThrowerSmall(1) );
         QCOMPARE( hash.size(), 10 );
@@ -522,10 +580,12 @@ void tst_ExceptionSafety::exceptionHash() {
         QCOMPARE( hash2.size(), 10 );
 
         hash2.clear();
+        instances = objCounter;
         try {
             throwType = ThrowLater;
             hash2.reserve(30);
         } catch(...) {
+            QCOMPARE(instances, objCounter);
         }
         QCOMPARE( hash2.size(), 0 );
 
@@ -600,7 +660,7 @@ void tst_ExceptionSafety::exceptionHash() {
 
 
     }
-    QCOMPARE(objCounter, 0 ); // check that every object has been freed
+    QCOMPARE(objCounter, intancesCount); // check that every object has been freed
 }
 
 // Disable these tests until the level of exception safety in event loops is clear
