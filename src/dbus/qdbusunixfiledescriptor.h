@@ -91,6 +91,8 @@ protected:
     Data d;
 };
 
+Q_DECLARE_SHARED(QDBusUnixFileDescriptor)
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QDBusUnixFileDescriptor)

@@ -96,6 +96,8 @@ private:
     QDBusPendingCall();         // not defined
 };
 
+Q_DECLARE_SHARED(QDBusPendingCall)
+
 class QDBusPendingCallWatcherPrivate;
 class Q_DBUS_EXPORT QDBusPendingCallWatcher: public QObject, public QDBusPendingCall
 {
