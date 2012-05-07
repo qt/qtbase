@@ -187,8 +187,7 @@ QBitmap::QBitmap(const QString& fileName, const char *format)
 QBitmap &QBitmap::operator=(const QPixmap &pixmap)
 {
     if (pixmap.isNull()) {                        // a null pixmap
-        QBitmap bm(0, 0);
-        QBitmap::operator=(bm);
+        QBitmap(0, 0).swap(*this);
     } else if (pixmap.depth() == 1) {                // 1-bit pixmap
         QPixmap::operator=(pixmap);                // shallow assignment
     } else {                                        // n-bit depth pixmap

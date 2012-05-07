@@ -983,7 +983,7 @@ QImage::QImage(const QImage &image)
 {
     if (image.paintingActive() || isLocked(image.d)) {
         d = 0;
-        operator=(image.copy());
+        image.copy().swap(*this);
     } else {
         d = image.d;
         if (d)

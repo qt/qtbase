@@ -226,7 +226,7 @@ QPixmap::QPixmap(const QPixmap &pixmap)
         return;
     }
     if (pixmap.paintingActive()) {                // make a deep copy
-        operator=(pixmap.copy());
+        pixmap.copy().swap(*this);
     } else {
         data = pixmap.data;
     }
@@ -384,7 +384,7 @@ QPixmap &QPixmap::operator=(const QPixmap &pixmap)
         return *this;
     }
     if (pixmap.paintingActive()) {                // make a deep copy
-        *this = pixmap.copy();
+        pixmap.copy().swap(*this);
     } else {
         data = pixmap.data;
     }
