@@ -548,6 +548,16 @@ QJsonValueRef &QJsonValueRef::operator =(const QJsonValue &val)
     return *this;
 }
 
+QJsonValueRef &QJsonValueRef::operator =(const QJsonValueRef &ref)
+{
+    if (is_object)
+        o->setValueAt(index, ref);
+    else
+        a->replace(index, ref);
+
+    return *this;
+}
+
 QJsonArray QJsonValueRef::toArray() const
 {
     return toValue().toArray();

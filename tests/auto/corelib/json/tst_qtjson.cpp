@@ -550,6 +550,11 @@ void TestQtJson::testValueRef()
     QJsonValue val = object[QLatin1String("null")];
     QCOMPARE(val.toDouble(), 100.);
     QCOMPARE(object.size(), 2);
+
+    array[1] = array[2] = object[QLatin1String("key")] = 42;
+    QCOMPARE(array[1], array[2]);
+    QCOMPARE(array[2], object[QLatin1String("key")]);
+    QCOMPARE(object.value(QLatin1String("key")), QJsonValue(42));
 }
 
 void TestQtJson::testObjectIteration()
