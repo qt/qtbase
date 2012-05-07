@@ -380,6 +380,7 @@ struct MessageHandlerInvalidType
 
     static void handler(QtMsgType type, const char *txt)
     {
+        Q_UNUSED(type);
         QString msg = QString::fromLatin1(txt);
         // uint(-1) can be platform dependent so we check only beginning of the message.
         ok = msg.startsWith("Trying to construct an instance of an invalid type, type id:");
