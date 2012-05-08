@@ -1179,14 +1179,14 @@ foreach my $lib (@modules_to_sync) {
                 } else {
                     print "$lib: created deprecated header $header => $include\n";
                 }
-
-                my $addendum = fixPaths($header_path, $dir) . " ";
-                if ($public_header) {
-                    $pri_install_files .=  $addendum;
-                } else {
-                    $pri_install_pfiles .=  $addendum;
-                }
                 $first = 0;
+            }
+
+            my $addendum = fixPaths($header_path, $dir) . " ";
+            if ($public_header) {
+                $pri_install_files .=  $addendum;
+            } else {
+                $pri_install_pfiles .=  $addendum;
             }
         }
         if ($verbose_level < 3) {
