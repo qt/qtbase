@@ -158,7 +158,7 @@ private:
     void restartDropExpiryTimer();
     int findTransactionByWindow(xcb_window_t window);
     int findTransactionByTime(xcb_timestamp_t timestamp);
-    xcb_window_t findRealWindow(const QPoint & pos, xcb_window_t w, int md);
+    xcb_window_t findRealWindow(const QPoint & pos, xcb_window_t w, int md, bool ignoreNonXdndAwareWindows);
 };
 
 QT_END_NAMESPACE

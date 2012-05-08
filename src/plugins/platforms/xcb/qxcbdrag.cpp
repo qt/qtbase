@@ -218,12 +218,11 @@ translateCoordinates(QXcbConnection *c, xcb_window_t from, xcb_window_t to, int 
 static
 bool windowInteractsWithPosition(xcb_connection_t *connection, const QPoint & pos, xcb_window_t w, xcb_shape_sk_t shapeType)
 {
-    bool interacts = true;
+    bool interacts = false;
     xcb_shape_get_rectangles_reply_t *reply = xcb_shape_get_rectangles_reply(connection, xcb_shape_get_rectangles(connection, w, shapeType), NULL);
     if (reply) {
         xcb_rectangle_t *rectangles = xcb_shape_get_rectangles_rectangles(reply);
         if (rectangles) {
-            interacts = false;
             const int nRectangles = xcb_shape_get_rectangles_rectangles_length(reply);
             for (int i = 0; !interacts && i < nRectangles; ++i) {
                 interacts = QRect(rectangles[i].x, rectangles[i].y, rectangles[i].width, rectangles[i].height).contains(pos);
@@ -235,7 +234,7 @@ bool windowInteractsWithPosition(xcb_connection_t *connection, const QPoint & po
     return interacts;
 }
 
-xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md)
+xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md, bool ignoreNonXdndAwareWindows)
 {
     if (w == shapedPixmapWindow()->handle()->winId())
         return 0;
@@ -252,7 +251,7 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
         xcb_get_geometry_cookie_t gcookie = xcb_get_geometry(xcb_connection(), w);
         xcb_get_geometry_reply_t *greply = xcb_get_geometry_reply(xcb_connection(), gcookie, 0);
         if (reply && QRect(greply->x, greply->y, greply->width, greply->height).contains(pos)) {
-            bool windowContainsMouse = true;
+            bool windowContainsMouse = !ignoreNonXdndAwareWindows;
             {
                 xcb_get_property_cookie_t cookie =
                         Q_XCB_CALL(xcb_get_property(xcb_connection(), false, w, connection()->atom(QXcbAtom::XdndAware),
@@ -262,12 +261,15 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
                 bool isAware = reply && reply->type != XCB_NONE;
                 free(reply);
                 if (isAware) {
+                    const QPoint relPos = pos - QPoint(greply->x, greply->y);
                     // When ShapeInput and ShapeBounding are not set they return a single rectangle with the geometry of the window, this is why we
                     // need to check both here so that in the case one is set and the other is not we still get the correct result.
                     if (connection()->hasInputShape())
-                        windowContainsMouse = windowInteractsWithPosition(xcb_connection(), pos, w, XCB_SHAPE_SK_INPUT);
+                        windowContainsMouse = windowInteractsWithPosition(xcb_connection(), relPos, w, XCB_SHAPE_SK_INPUT);
                     if (windowContainsMouse && connection()->hasXShape())
-                        windowContainsMouse = windowInteractsWithPosition(xcb_connection(), pos, w, XCB_SHAPE_SK_BOUNDING);
+                        windowContainsMouse = windowInteractsWithPosition(xcb_connection(), relPos, w, XCB_SHAPE_SK_BOUNDING);
+                    if (!connection()->hasInputShape() && !connection()->hasXShape())
+                        windowContainsMouse = true;
                     if (windowContainsMouse)
                         return w;
                 }
@@ -283,7 +285,7 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
 
             xcb_window_t r = 0;
             for (uint i = nc; !r && i--;)
-                r = findRealWindow(pos - QPoint(greply->x, greply->y), c[i], md-1);
+                r = findRealWindow(pos - QPoint(greply->x, greply->y), c[i], md-1, ignoreNonXdndAwareWindows);
 
             free(reply);
             if (r)
@@ -382,7 +384,9 @@ void QXcbDrag::move(const QMouseEvent *me)
 
         if (!target || target == shapedPixmapWindow()->handle()->winId()) {
             DNDDEBUG << "need to find real window";
-            target = findRealWindow(globalPos, rootwin, 6);
+            target = findRealWindow(globalPos, rootwin, 6, true);
+            if (target == 0)
+                target = findRealWindow(globalPos, rootwin, 6, false);
             DNDDEBUG << "real window found" << target;
         }
     }
