@@ -1008,11 +1008,11 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
     entire_shaper_item.item.length = length(item);
     entire_shaper_item.item.bidiLevel = si.analysis.bidiLevel;
 
-    HB_UChar16 upperCased[256]; // XXX what about making this 4096, so we don't have to extend it ever.
+    QVarLengthArray<HB_UChar16, 256> casedString;
     if (hasCaseChange(si)) {
-        HB_UChar16 *uc = upperCased;
-        if (entire_shaper_item.item.length > 256)
-            uc = new HB_UChar16[entire_shaper_item.item.length];
+        if (casedString.size() < entire_shaper_item.item.length)
+            casedString.resize(entire_shaper_item.item.length);
+        HB_UChar16 *uc = casedString.data();
         for (uint i = 0; i < entire_shaper_item.item.length; ++i) {
             if(si.analysis.flags == QScriptAnalysis::Lowercase)
                 uc[i] = QChar::toLower(entire_shaper_item.string[si.position + i]);
@@ -1031,25 +1031,16 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
         entire_shaper_item.shaperFlags |= HB_ShaperFlag_UseDesignMetrics;
 
     entire_shaper_item.num_glyphs = qMax(layoutData->glyphLayout.numGlyphs - layoutData->used, int(entire_shaper_item.item.length));
-    if (! ensureSpace(entire_shaper_item.num_glyphs)) {
-        if (hasCaseChange(si))
-            delete [] const_cast<HB_UChar16 *>(entire_shaper_item.string);
+    if (!ensureSpace(entire_shaper_item.num_glyphs))
         return;
-    }
     QGlyphLayout initialGlyphs = availableGlyphs(&si).mid(0, entire_shaper_item.num_glyphs);
 
     if (!stringToGlyphs(&entire_shaper_item, &initialGlyphs, font)) {
-        if (! ensureSpace(entire_shaper_item.num_glyphs)) {
-            if (hasCaseChange(si))
-                delete [] const_cast<HB_UChar16 *>(entire_shaper_item.string);
+        if (!ensureSpace(entire_shaper_item.num_glyphs))
             return;
-        }
         initialGlyphs = availableGlyphs(&si).mid(0, entire_shaper_item.num_glyphs);
-
         if (!stringToGlyphs(&entire_shaper_item, &initialGlyphs, font)) {
             // ############ if this happens there's a bug in the fontengine
-            if (hasCaseChange(si) && entire_shaper_item.string != upperCased)
-                delete [] const_cast<HB_UChar16 *>(entire_shaper_item.string);
             return;
         }
     }
@@ -1119,11 +1110,8 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
         remaining_glyphs -= shaper_item.initialGlyphCount;
 
         do {
-            if (! ensureSpace(glyph_pos + shaper_item.num_glyphs + remaining_glyphs)) {
-                if (hasCaseChange(si))
-                    delete [] const_cast<HB_UChar16 *>(entire_shaper_item.string);
+            if (!ensureSpace(glyph_pos + shaper_item.num_glyphs + remaining_glyphs))
                 return;
-            }
 
             const QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos);
             if (shaper_item.num_glyphs > shaper_item.item.length)
@@ -1163,9 +1151,6 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
     si.num_glyphs = glyph_pos;
 
     layoutData->used += si.num_glyphs;
-
-    if (hasCaseChange(si) && entire_shaper_item.string != upperCased)
-        delete [] const_cast<HB_UChar16 *>(entire_shaper_item.string);
 }
 
 static void init(QTextEngine *e)
