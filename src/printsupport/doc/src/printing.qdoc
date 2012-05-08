@@ -74,7 +74,7 @@
   a QPrintDialog, allowing the user to specify the printer to use, paper size, and
   other printing properties.
 
-  \snippet examples/richtext/orderform/mainwindow.cpp 18
+  \snippet richtext/orderform/mainwindow.cpp 18
 
   It is also possible to set certain default properties by modifying the QPrinter
   before it is supplied to the print dialog. For example, applications that
@@ -88,7 +88,7 @@
   to perform painting operations on it. We can construct and set up a painter in
   the following way:
 
-  \snippet doc/src/snippets/printing-qprinter/object.cpp 0
+  \snippet printing-qprinter/object.cpp 0
 
   Since the QPrinter starts with a blank page, we only need to call the
   \l{QPrinter::}{newPage()} function after drawing each page, except for the
@@ -143,7 +143,7 @@
   will have to scale the painter. You may also want to position the widget on the
   page. The following code sample shows how this may look.
 
-  \snippet doc/src/snippets/widgetprinting.cpp 0
+  \snippet widgetprinting.cpp 0
 
   This will center the widget on the page and scale it so that it fits the page.
 

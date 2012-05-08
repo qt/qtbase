@@ -36,11 +36,11 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtprintsupport.cpp 1
+    \snippet code/doc_src_qtprintsupport.cpp 1
 
     To link against the module, add this line to your \l qmake \c
     .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qtprintsupport.pro 0
+    \snippet code/doc_src_qtprintsupport.pro 0
 */
 

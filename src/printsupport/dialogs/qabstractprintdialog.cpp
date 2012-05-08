@@ -379,7 +379,7 @@ void QAbstractPrintDialogPrivate::setPrinter(QPrinter *newPrinter)
     Typically, QPrintDialog objects are constructed with a QPrinter
     object, and executed using the exec() function.
 
-    \snippet doc/src/snippets/code/src_gui_dialogs_qabstractprintdialog.cpp 0
+    \snippet code/src_gui_dialogs_qabstractprintdialog.cpp 0
 
     If the dialog is accepted by the user, the QPrinter object is
     correctly configured for printing.
