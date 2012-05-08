@@ -372,6 +372,10 @@ HB_Bool HB_GreekShape(HB_ShaperItem *shaper_item)
     *shapedChars = *uc;
     logClusters[0] = 0;
 
+    attributes[0].mark = false;
+    attributes[0].clusterStart = true;
+    attributes[0].dontPrint = false;
+
     for (i = 1; i < shaper_item->item.length; ++i) {
         hb_uint16 base = shapedChars[slen-1];
         hb_uint16 shaped = 0;
