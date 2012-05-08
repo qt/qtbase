@@ -35,6 +35,9 @@ load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/dbus/qtdbusversion.h
 
+QMAKE_DOCS = $$PWD/doc/qtdbus.qdocconf
+QMAKE_DOCS_INDEX = ../../doc
+
 PUB_HEADERS = qdbusargument.h \
     qdbusconnectioninterface.h \
     qdbusmacros.h \
