@@ -65,7 +65,7 @@
 #include <QtWidgets/QGtkStyle>
 #include <private/qcleanlooksstyle_p.h>
 
-#undef signals // Collides with GTK stymbols
+#undef signals // Collides with GTK symbols
 #include <gtk/gtk.h>
 
 typedef unsigned long XID;
