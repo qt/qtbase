@@ -119,7 +119,9 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
                     url.port() ? url.port() : 1080, url.userName(), url.password());
             proxy.setCapabilities(QNetworkProxy::HostNameLookupCapability);
             proxyList << proxy;
-        } else if (url.scheme() == QLatin1String("http") || url.scheme().isEmpty()) {
+        } else if ((url.scheme() == QLatin1String("http") || url.scheme().isEmpty())
+                  && query.queryType() != QNetworkProxyQuery::UdpSocket
+                  && query.queryType() != QNetworkProxyQuery::TcpServer) {
             QNetworkProxy proxy(QNetworkProxy::HttpProxy, url.host(),
                     url.port() ? url.port() : 8080, url.userName(), url.password());
             proxyList << proxy;
