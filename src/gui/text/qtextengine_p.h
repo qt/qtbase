@@ -339,14 +339,6 @@ public:
     QFontEngine *fontEngine;
 };
 
-inline bool qIsControlChar(ushort uc)
-{
-    return uc >= 0x200b && uc <= 0x206f
-        && (uc <= 0x200f /* ZW Space, ZWNJ, ZWJ, LRM and RLM */
-            || (uc >= 0x2028 && uc <= 0x202f /* LS, PS, LRE, RLE, PDF, LRO, RLO, NNBSP */)
-            || uc >= 0x206a /* ISS, ASS, IAFS, AFS, NADS, NODS */);
-}
-
 struct Q_AUTOTEST_EXPORT QScriptItem
 {
     inline QScriptItem()
