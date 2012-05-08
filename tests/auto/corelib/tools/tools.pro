@@ -36,6 +36,7 @@ SUBDIRS=\
     qsizef \
     qstl \
     qstring \
+    qstring_no_cast_from_bytearray \
     qstringbuilder \
     qstringlist \
     qstringmatcher \
