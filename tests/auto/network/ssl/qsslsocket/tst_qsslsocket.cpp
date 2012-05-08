@@ -970,8 +970,12 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::newRow("ssl3-tls1.0") << QSsl::SslV3 << QSsl::TlsV1_0 << false;
     QTest::newRow("ssl3-tls1ssl3") << QSsl::SslV3 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("ssl3-secure") << QSsl::SslV3 << QSsl::SecureProtocols << true;
+#ifndef OPENSSL_NO_SSL2
     QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << false; // we wont set a SNI header here because we connect to a
                                                                             // numerical IP, so OpenSSL will send a SSL 2 handshake
+#else
+    QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << true;
+#endif
 
 #ifndef OPENSSL_NO_SSL2
     QTest::newRow("tls1.0-ssl2") << QSsl::TlsV1_0 << QSsl::SslV2 << false;
@@ -979,8 +983,12 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::newRow("tls1.0-ssl3") << QSsl::TlsV1_0 << QSsl::SslV3 << false;
     QTest::newRow("tls1-tls1ssl3") << QSsl::TlsV1_0 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("tls1.0-secure") << QSsl::TlsV1_0 << QSsl::SecureProtocols << true;
+#ifndef OPENSSL_NO_SSL2
     QTest::newRow("tls1.0-any") << QSsl::TlsV1_0 << QSsl::AnyProtocol << false; // we wont set a SNI header here because we connect to a
                                                                             // numerical IP, so OpenSSL will send a SSL 2 handshake
+#else
+    QTest::newRow("tls1.0-any") << QSsl::TlsV1_0 << QSsl::AnyProtocol << true;
+#endif
 
 #ifndef OPENSSL_NO_SSL2
     QTest::newRow("tls1ssl3-ssl2") << QSsl::TlsV1SslV3 << QSsl::SslV2 << false;
@@ -1041,10 +1049,6 @@ void tst_QSslSocket::protocolServerSide()
 
     QFETCH(bool, works);
     QAbstractSocket::SocketState expectedState = (works) ? QAbstractSocket::ConnectedState : QAbstractSocket::UnconnectedState;
-#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
-    QEXPECT_FAIL("ssl3-any", "QTBUG-23575 - Fails on this platform", Abort);
-    QEXPECT_FAIL("tls1.0-any", "QTBUG-23575 - Fails on this platform", Abort);
-#endif
     QCOMPARE(int(client->state()), int(expectedState));
     QCOMPARE(client->isEncrypted(), works);
 }
