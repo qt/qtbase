@@ -83,6 +83,12 @@ QObject *QWidgetWindow::focusObject() const
 
 bool QWidgetWindow::event(QEvent *event)
 {
+    if (m_widget->testAttribute(Qt::WA_DontShowOnScreen)) {
+        // \a event is uninteresting for QWidgetWindow, the event was probably
+        // generated before WA_DontShowOnScreen was set
+        return m_widget->event(event);
+    }
+
     switch (event->type()) {
     case QEvent::Close:
         handleCloseEvent(static_cast<QCloseEvent *>(event));
