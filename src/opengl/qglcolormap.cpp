@@ -69,7 +69,7 @@
     optimization.
 
     Example of use:
-    \snippet doc/src/snippets/code/src_opengl_qglcolormap.cpp 0
+    \snippet code/src_opengl_qglcolormap.cpp 0
 
     \sa QGLWidget::setColormap(), QGLWidget::colormap()
 */
