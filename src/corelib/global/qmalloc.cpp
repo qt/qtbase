@@ -51,7 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 #if !QT_DEPRECATED_SINCE(5, 0)
-// Make sure they're defined to be exportedgit
+// Make sure they're defined to be exported
 Q_CORE_EXPORT void *qMalloc(size_t size) Q_ALLOC_SIZE(1);
 Q_CORE_EXPORT void qFree(void *ptr);
 Q_CORE_EXPORT void *qRealloc(void *ptr, size_t size) Q_ALLOC_SIZE(2);
