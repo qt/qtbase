@@ -411,6 +411,16 @@ void tst_QUrl::setUrl()
     }
 
     {
+        QUrl url("http://user@localhost:8000/xmlhttprequest/resources/basic-auth-nouserpass/basic-auth-nouserpass.php");
+        QVERIFY(url.isValid());
+        QCOMPARE(url.scheme(), QString::fromLatin1("http"));
+        QCOMPARE(url.userName(), QString::fromLatin1("user"));
+        QCOMPARE(url.password(), QString());
+        QCOMPARE(url.userInfo(), QString::fromLatin1("user"));
+        QCOMPARE(url.port(), 8000);
+    }
+
+    {
         QUrl url("http://www.foo.bar");
         QVERIFY(url.isValid());
 

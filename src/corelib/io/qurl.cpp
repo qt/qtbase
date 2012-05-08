@@ -777,7 +777,7 @@ void QUrlPrivate::setUserInfo(const QString &userInfo, int from, int end)
     int delimIndex = userInfo.indexOf(QLatin1Char(':'), from);
     setUserName(userInfo, from, qMin<uint>(delimIndex, end));
 
-    if (delimIndex == -1) {
+    if (uint(delimIndex) >= uint(end)) {
         password.clear();
         sectionIsPresent &= ~Password;
         sectionHasError &= ~Password;
