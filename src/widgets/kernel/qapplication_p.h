@@ -266,13 +266,7 @@ public:
     static int  wheel_scroll_lines;
 #endif
 
-    static bool animate_ui;
-    static bool animate_menu;
-    static bool animate_tooltip;
-    static bool animate_combo;
-    static bool fade_menu;
-    static bool fade_tooltip;
-    static bool animate_toolbox;
+    static int enabledAnimations; // Combination of QPlatformTheme::UiEffect
     static bool widgetCount; // Coupled with -widgetcount switch
     static bool load_testability; // Coupled with -testability switch
 

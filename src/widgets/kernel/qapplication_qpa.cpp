@@ -354,58 +354,47 @@ int QApplication::wheelScrollLines()
 }
 #endif
 
-void QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
+static inline int uiEffectToFlag(Qt::UIEffect effect)
 {
     switch (effect) {
+    case Qt::UI_General:
+        return QPlatformTheme::GeneralUiEffect;
     case Qt::UI_AnimateMenu:
-        QApplicationPrivate::animate_menu = enable;
-        break;
+        return QPlatformTheme::AnimateMenuUiEffect;
     case Qt::UI_FadeMenu:
-        if (enable)
-            QApplicationPrivate::animate_menu = true;
-        QApplicationPrivate::fade_menu = enable;
-        break;
+        return QPlatformTheme::FadeMenuUiEffect;
     case Qt::UI_AnimateCombo:
-        QApplicationPrivate::animate_combo = enable;
-        break;
+        return QPlatformTheme::AnimateComboUiEffect;
     case Qt::UI_AnimateTooltip:
-        QApplicationPrivate::animate_tooltip = enable;
-        break;
+        return QPlatformTheme::AnimateTooltipUiEffect;
     case Qt::UI_FadeTooltip:
-        if (enable)
-            QApplicationPrivate::animate_tooltip = true;
-        QApplicationPrivate::fade_tooltip = enable;
-        break;
+        return QPlatformTheme::FadeTooltipUiEffect;
     case Qt::UI_AnimateToolBox:
-        QApplicationPrivate::animate_toolbox = enable;
-        break;
-    default:
-        QApplicationPrivate::animate_ui = enable;
-        break;
+        return QPlatformTheme::AnimateToolBoxUiEffect;
+    }
+    return 0;
+}
+
+void QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
+{
+    int effectFlags = uiEffectToFlag(effect);
+    if (enable) {
+        if (effectFlags & QPlatformTheme::FadeMenuUiEffect)
+            effectFlags |= QPlatformTheme::AnimateMenuUiEffect;
+        if (effectFlags & QPlatformTheme::FadeTooltipUiEffect)
+            effectFlags |= QPlatformTheme::AnimateTooltipUiEffect;
+        QApplicationPrivate::enabledAnimations |= effectFlags;
+    } else {
+        QApplicationPrivate::enabledAnimations &= ~effectFlags;
     }
 }
 
 bool QApplication::isEffectEnabled(Qt::UIEffect effect)
 {
-    if (QColormap::instance().depth() < 16 || !QApplicationPrivate::animate_ui)
+    return QColormap::instance().depth() >= 16
+           && (QApplicationPrivate::enabledAnimations & QPlatformTheme::GeneralUiEffect)
+           && (QApplicationPrivate::enabledAnimations & uiEffectToFlag(effect));
         return false;
-
-    switch(effect) {
-    case Qt::UI_AnimateMenu:
-        return QApplicationPrivate::animate_menu;
-    case Qt::UI_FadeMenu:
-        return QApplicationPrivate::fade_menu;
-    case Qt::UI_AnimateCombo:
-        return QApplicationPrivate::animate_combo;
-    case Qt::UI_AnimateTooltip:
-        return QApplicationPrivate::animate_tooltip;
-    case Qt::UI_FadeTooltip:
-        return QApplicationPrivate::fade_tooltip;
-    case Qt::UI_AnimateToolBox:
-        return QApplicationPrivate::animate_toolbox;
-    default:
-        return QApplicationPrivate::animate_ui;
-    }
 }
 
 QWidget *QApplication::topLevelAt(const QPoint &pos)

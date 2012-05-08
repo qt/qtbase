@@ -402,13 +402,7 @@ bool Q_WIDGETS_EXPORT qt_tab_all_widgets = true;
 bool qt_in_tab_key_event = false;
 int qt_antialiasing_threshold = -1;
 QSize QApplicationPrivate::app_strut = QSize(0,0); // no default application strut
-bool QApplicationPrivate::animate_ui = true;
-bool QApplicationPrivate::animate_menu = false;
-bool QApplicationPrivate::fade_menu = false;
-bool QApplicationPrivate::animate_combo = false;
-bool QApplicationPrivate::animate_tooltip = false;
-bool QApplicationPrivate::fade_tooltip = false;
-bool QApplicationPrivate::animate_toolbox = false;
+int QApplicationPrivate::enabledAnimations = QPlatformTheme::GeneralUiEffect;
 bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::load_testability = false;
 #ifdef QT_KEYPAD_NAVIGATION
@@ -685,6 +679,10 @@ void QApplicationPrivate::initialize()
 
     if (qt_is_gui_used)
         initializeMultitouch();
+
+    if (QApplication::desktopSettingsAware())
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+            QApplicationPrivate::enabledAnimations = theme->themeHint(QPlatformTheme::UiEffects).toInt();
 }
 
 /*!
@@ -819,12 +817,7 @@ QApplication::~QApplication()
     QApplicationPrivate::obey_desktop_settings = true;
 
     QApplicationPrivate::app_strut = QSize(0, 0);
-    QApplicationPrivate::animate_ui = true;
-    QApplicationPrivate::animate_menu = false;
-    QApplicationPrivate::fade_menu = false;
-    QApplicationPrivate::animate_combo = false;
-    QApplicationPrivate::animate_tooltip = false;
-    QApplicationPrivate::fade_tooltip = false;
+    QApplicationPrivate::enabledAnimations = QPlatformTheme::GeneralUiEffect;
     QApplicationPrivate::widgetCount = false;
 
 #ifndef QT_NO_STATEMACHINE

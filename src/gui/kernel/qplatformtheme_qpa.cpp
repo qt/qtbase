@@ -99,6 +99,8 @@ QT_BEGIN_NAMESPACE
     \value KeyboardScheme (int) An integer value (enum KeyboardSchemes) specifying the
                            keyboard scheme.
 
+    \value UiEffects (int) A flag value consisting of UiEffect values specifying the enabled UI animations.
+
     \sa themeHint(), QStyle::pixelMetric()
 */
 
@@ -175,6 +177,8 @@ QVariant QPlatformTheme::themeHint(ThemeHint hint) const
         return QVariant(-1);
     case KeyboardScheme:
         return QVariant(int(WindowsKeyboardScheme));
+    case UiEffects:
+        return QVariant(int(0));
     }
     return QVariant();
 }

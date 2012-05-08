@@ -296,6 +296,22 @@ static inline QStringList styleNames()
     return result;
 }
 
+static inline int uiEffects()
+{
+    int result = 0;
+    if (booleanSystemParametersInfo(SPI_GETUIEFFECTS, false))
+        result |= QPlatformTheme::GeneralUiEffect;
+    if (booleanSystemParametersInfo(SPI_GETMENUANIMATION, false))
+        result |= QPlatformTheme::AnimateMenuUiEffect;
+    if (booleanSystemParametersInfo(SPI_GETMENUFADE, false))
+        result |= QPlatformTheme::FadeMenuUiEffect;
+    if (booleanSystemParametersInfo(SPI_GETCOMBOBOXANIMATION, false))
+        result |= QPlatformTheme::AnimateComboUiEffect;
+    if (booleanSystemParametersInfo(SPI_GETTOOLTIPANIMATION, false))
+        result |= QPlatformTheme::AnimateTooltipUiEffect;
+    return result;
+}
+
 QVariant QWindowsTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
@@ -315,6 +331,8 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
         return QVariant(qRound(qreal(QWindowsContext::instance()->defaultDPI()) * 1.375));
     case KeyboardScheme:
         return QVariant(int(WindowsKeyboardScheme));
+    case UiEffects:
+        return QVariant(uiEffects());
     default:
         break;
     }
