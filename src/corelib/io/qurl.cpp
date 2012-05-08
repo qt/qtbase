@@ -2159,7 +2159,7 @@ QString QUrl::toString(FormattingOptions options) const
 
         d->appendPath(url, options, QUrlPrivate::FullUrl);
         // check if we need to remove trailing slashes
-        if ((options & StripTrailingSlash) && d->path != QLatin1String("/") && url.endsWith(QLatin1Char('/')))
+        if ((options & StripTrailingSlash) && !d->path.isEmpty() && d->path != QLatin1String("/") && url.endsWith(QLatin1Char('/')))
             url.chop(1);
     }
 

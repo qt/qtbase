@@ -2257,6 +2257,7 @@ void tst_QUrl::stripTrailingSlash_data()
     QTest::newRow("file slash") << "file:///dir/" << "file:///dir";
     QTest::newRow("file no slash") << "file:///dir/" << "file:///dir";
     QTest::newRow("file root") << "file:///" << "file:///";
+    QTest::newRow("no path") << "remote://" << "remote://";
 }
 
 void tst_QUrl::stripTrailingSlash()
