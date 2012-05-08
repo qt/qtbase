@@ -75,8 +75,8 @@ public:
     virtual ~tst_QImageReader();
 
 public slots:
-    void init();
-    void cleanup();
+    void initTestCase();
+    void cleanupTestCase();
 
 private slots:
     void getSetCheck();
@@ -201,13 +201,15 @@ tst_QImageReader::~tst_QImageReader()
 
 }
 
-void tst_QImageReader::init()
+void tst_QImageReader::initTestCase()
 {
     prefix = QFINDTESTDATA("images/");
+    if (prefix.isEmpty())
+        QFAIL("Can't find images directory!");
    QVERIFY(m_temporaryDir.isValid());
 }
 
-void tst_QImageReader::cleanup()
+void tst_QImageReader::cleanupTestCase()
 {
 }
 
@@ -1772,6 +1774,11 @@ void tst_QImageReader::readText_data()
     QTest::newRow("png, zTXt before img") << "txts.png" << "Comment" << "Some compressed text.";
     QTest::newRow("png, tEXt after img") << "txts.png" << "Disclaimer" << "For testing only.";
     QTest::newRow("png, zTXt after img") << "txts.png" << "Description" << "Rendered by Persistence of Vision (tm) Ray Tracer";
+
+    QTest::newRow("jpg, JPEG_COM Title") << "txts.jpg" << "Title" << "JPG";
+    QTest::newRow("jpg, JPEG_COM Comment") << "txts.jpg" << "Comment" << "Some non-compressed text.";
+    QTest::newRow("jpg, JPEG_COM Disclaimer") << "txts.jpg" << "Disclaimer" << "For testing only.";
+    QTest::newRow("jpg, JPEG_COM Description") << "txts.jpg" << "Description" << "Rendered by Persistence of Vision (tm) Ray Tracer";
 }
 
 
@@ -1789,30 +1796,37 @@ void tst_QImageReader::readText()
 
 void tst_QImageReader::preserveTexts_data()
 {
+    QTest::addColumn<QString>("fileName");
     QTest::addColumn<QString>("text");
 
-    QTest::newRow("Simple") << "simpletext";
-    QTest::newRow("Whitespace") << " A text  with whitespace ";
-    QTest::newRow("Newline") << "A text\nwith newlines\n";
-    QTest::newRow("Double newlines") << "A text\n\nwith double newlines\n\n";
-    QTest::newRow("Long") << QString("A rather long text, at least after many repetitions. ").repeated(100);
     QString latin1set;
-    int c;
-    for(c = 0x20; c <= 0x7e; c++)
+    for (int c = 0x20; c <= 0x7e; c++)
         latin1set.append(QLatin1Char(c));
-    for(c = 0xa0; c <= 0xff; c++)
+    for (int c = 0xa0; c <= 0xff; c++)
         latin1set.append(QLatin1Char(c));
-    QTest::newRow("All Latin1 chars") << latin1set;
 
+    QStringList fileNames;
+    fileNames << QLatin1String(":/images/kollada.png")
+              << QLatin1String(":/images/txts.jpg");
+    foreach (const QString &fileName, fileNames) {
+        QTest::newRow("Simple") << fileName << "simpletext";
+        QTest::newRow("Whitespace") << fileName << " A text  with whitespace ";
+        QTest::newRow("Newline") << fileName << "A text\nwith newlines\n";
+        QTest::newRow("Double newlines") << fileName << "A text\n\nwith double newlines\n\n";
+        QTest::newRow("Long") << fileName << QString("A rather long text, at least after many repetitions. ").repeated(100);
+        QTest::newRow("All Latin1 chars") << fileName << latin1set;
 #if 0
-    // Depends on iTXt support in libpng
-    QTest::newRow("Multibyte string") << QString::fromUtf8("\341\233\222\341\233\226\341\232\251\341\232\271\341\232\242\341\233\232\341\232\240");
+        // Depends on iTXt support in libpng
+        QTest::newRow("Multibyte string") << fileName << QString::fromUtf8("\341\233\222\341\233\226\341\232\251\341\232\271\341\232\242\341\233\232\341\232\240");
 #endif
+    }
 }
 
 
 void tst_QImageReader::preserveTexts()
 {
+    QFETCH(QString, fileName);
+    QByteArray format = fileName.right(3).toLatin1();
     QFETCH(QString, text);
     QString key("testkey");
     QString key2("testkey2");
@@ -1820,26 +1834,26 @@ void tst_QImageReader::preserveTexts()
     QString key3("testkey3");
     QString text3("Some more other text.");
 
-    QImage img(":/images/kollada.png");
+    QImage img(fileName);
     img.setText(key, text);
     img.setText(key2, text2);
     QBuffer buf;
     buf.open(QIODevice::WriteOnly);
-    QVERIFY(img.save(&buf, "png"));
+    QVERIFY(img.save(&buf, format.constData()));
     buf.close();
-    QImage stored = QImage::fromData(buf.buffer(), "png");
+    QImage stored = QImage::fromData(buf.buffer(), format.constData());
     QCOMPARE(stored.text(key), text);
     QCOMPARE(stored.text(key2), text2);
 
-    QImage img2(":/images/kollada.png");
+    QImage img2(fileName);
     img2.setText(key3, text3);
     QBuffer buf2;
-    QImageWriter w(&buf2, "png");
+    QImageWriter w(&buf2, format);
     w.setText(key, text);
     w.setText(key2, text2);
     QVERIFY(w.write(img2));
     buf2.close();
-    QImageReader r(&buf2, "png");
+    QImageReader r(&buf2, format);
     QCOMPARE(r.text(key), text.simplified());
     QCOMPARE(r.text(key2), text2.simplified());
     QCOMPARE(r.text(key3), text3.simplified());

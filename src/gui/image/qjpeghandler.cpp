@@ -528,7 +528,40 @@ inline my_jpeg_destination_mgr::my_jpeg_destination_mgr(QIODevice *device)
 }
 
 
-static bool write_jpeg_image(const QImage &image, QIODevice *device, int sourceQuality)
+static inline void set_text(const QImage &image, j_compress_ptr cinfo, const QString &description)
+{
+    QMap<QString, QString> text;
+    foreach (const QString &key, image.textKeys()) {
+        if (!key.isEmpty())
+            text.insert(key, image.text(key));
+    }
+    foreach (const QString &pair, description.split(QLatin1String("\n\n"))) {
+        int index = pair.indexOf(QLatin1Char(':'));
+        if (index >= 0 && pair.indexOf(QLatin1Char(' ')) < index) {
+            QString s = pair.simplified();
+            if (!s.isEmpty())
+                text.insert(QLatin1String("Description"), s);
+        } else {
+            QString key = pair.left(index);
+            if (!key.simplified().isEmpty())
+                text.insert(key, pair.mid(index + 2).simplified());
+        }
+    }
+    if (text.isEmpty())
+        return;
+
+    for (QMap<QString, QString>::ConstIterator it = text.constBegin(); it != text.constEnd(); ++it) {
+        QByteArray comment = it.key().toLatin1();
+        if (!comment.isEmpty())
+            comment += ": ";
+        comment += it.value().toLatin1();
+        if (comment.length() > 65530)
+            comment.truncate(65530);
+        jpeg_write_marker(cinfo, JPEG_COM, (JOCTET *)comment.constData(), comment.size());
+    }
+}
+
+static bool write_jpeg_image(const QImage &image, QIODevice *device, int sourceQuality, const QString &description)
 {
     bool success = false;
     const QVector<QRgb> cmap = image.colorTable();
@@ -599,6 +632,8 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, int sourceQ
         jpeg_set_quality(&cinfo, quality, true /* limit to baseline-JPEG values */);
         jpeg_start_compress(&cinfo, true);
 #endif
+
+        set_text(image, &cinfo, description);
 
         row_pointer[0] = new uchar[cinfo.image_width*cinfo.input_components];
         int w = cinfo.image_width;
@@ -734,6 +769,9 @@ public:
     QSize scaledSize;
     QRect scaledClipRect;
     QRect clipRect;
+    QString description;
+    QStringList readTexts;
+
     struct jpeg_decompress_struct info;
     struct my_jpeg_source_mgr * iod_src;
     struct my_error_mgr err;
@@ -760,6 +798,8 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
         err.output_message = my_output_message;
 
         if (!setjmp(err.setjmp_buffer)) {
+            jpeg_save_markers(&info, JPEG_COM, 0xFFFF);
+
     #if defined(Q_OS_UNIXWARE)
             (void) jpeg_read_header(&info, B_TRUE);
     #else
@@ -773,6 +813,27 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
 
             format = QImage::Format_Invalid;
             read_jpeg_format(format, &info);
+
+            for (jpeg_saved_marker_ptr marker = info.marker_list; marker != NULL; marker = marker->next) {
+                if (marker->marker == JPEG_COM) {
+                    QString key, value;
+                    QString s = QString::fromLatin1((const char *)marker->data, marker->data_length);
+                    int index = s.indexOf(QLatin1String(": "));
+                    if (index == -1 || s.indexOf(QLatin1Char(' ')) < index) {
+                        key = QLatin1String("Description");
+                        value = s;
+                    } else {
+                        key = s.left(index);
+                        value = s.mid(index + 2);
+                    }
+                    if (!description.isEmpty())
+                        description += QLatin1String("\n\n");
+                    description += key + QLatin1String(": ") + value.simplified();
+                    readTexts.append(key);
+                    readTexts.append(value);
+                }
+            }
+
             state = ReadHeader;
             return true;
         }
@@ -793,9 +854,16 @@ bool QJpegHandlerPrivate::read(QImage *image)
 
     if(state == ReadHeader)
     {
-        bool success = read_jpeg_image(image, scaledSize, scaledClipRect, clipRect, quality,  &info, &err);
-        state = success ? Ready : Error;
-        return success;
+        bool success = read_jpeg_image(image, scaledSize, scaledClipRect, clipRect, quality, &info, &err);
+        if (success) {
+            for (int i = 0; i < readTexts.size()-1; i+=2)
+                image->setText(readTexts.at(i), readTexts.at(i+1));
+
+            state = Ready;
+            return true;
+        }
+
+        state = Error;
     }
 
     return false;
@@ -863,7 +931,7 @@ bool QJpegHandler::read(QImage *image)
 
 bool QJpegHandler::write(const QImage &image)
 {
-    return write_jpeg_image(image, device(), d->quality);
+    return write_jpeg_image(image, device(), d->quality, d->description);
 }
 
 bool QJpegHandler::supportsOption(ImageOption option) const
@@ -872,6 +940,7 @@ bool QJpegHandler::supportsOption(ImageOption option) const
         || option == ScaledSize
         || option == ScaledClipRect
         || option == ClipRect
+        || option == Description
         || option == Size
         || option == ImageFormat;
 }
@@ -887,6 +956,9 @@ QVariant QJpegHandler::option(ImageOption option) const
         return d->scaledClipRect;
     case ClipRect:
         return d->clipRect;
+    case Description:
+        d->readJpegHeader(device());
+        return d->description;
     case Size:
         d->readJpegHeader(device());
         return d->size;
@@ -894,8 +966,10 @@ QVariant QJpegHandler::option(ImageOption option) const
         d->readJpegHeader(device());
         return d->format;
     default:
-        return QVariant();
+        break;
     }
+
+    return QVariant();
 }
 
 void QJpegHandler::setOption(ImageOption option, const QVariant &value)
@@ -913,6 +987,9 @@ void QJpegHandler::setOption(ImageOption option, const QVariant &value)
     case ClipRect:
         d->clipRect = value.toRect();
         break;
+    case Description:
+        d->description = value.toString();
+        break;
     default:
         break;
     }
@@ -922,8 +999,5 @@ QByteArray QJpegHandler::name() const
 {
     return "jpeg";
 }
-
-
-
 
 QT_END_NAMESPACE
