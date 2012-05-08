@@ -57,7 +57,7 @@
 #include "QtCore/qpair.h"
 #include "QtPrintSupport/qprinter.h"
 
-#ifndef QT_NO_PRINTER
+#ifndef QT_NO_CUPS
 #include <QtCore/qlibrary.h>
 #include <cups/cups.h>
 #include <cups/ppd.h>
@@ -128,6 +128,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_PRINTER
+#endif // QT_NO_CUPS
 
 #endif

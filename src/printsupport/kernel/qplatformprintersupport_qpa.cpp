@@ -116,12 +116,22 @@ bool QPlatformPrinterSupport::printerInfoIsDefault(const QPrinterInfo &p)
 
 int QPlatformPrinterSupport::printerInfoCupsPrinterIndex(const QPrinterInfo &p)
 {
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     return p.isNull() ? -1 : p.d_func()->cupsPrinterIndex;
+#else
+    Q_UNUSED(p)
+    return -1;
+#endif
 }
 
 void QPlatformPrinterSupport::setPrinterInfoCupsPrinterIndex(QPrinterInfo *p, int index)
 {
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     p->d_func()->cupsPrinterIndex = index;
+#else
+    Q_UNUSED(p)
+    Q_UNUSED(index)
+#endif
 }
 
 /*
