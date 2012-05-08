@@ -58,7 +58,7 @@ typedef QArrayData QByteArrayData;
 class QString;
 
 #ifndef Q_MOC_OUTPUT_REVISION
-#define Q_MOC_OUTPUT_REVISION 66
+#define Q_MOC_OUTPUT_REVISION 67
 #endif
 
 // The following macros are our "extensions" to C++
