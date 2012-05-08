@@ -1478,7 +1478,6 @@ FakeNode::FakeNode(InnerNode* parent, const QString& name, SubType subtype, Node
         setPageType(OverviewPage);
         break;
     case QmlModule:
-        setQmlModule(name);
         setPageType(OverviewPage);
         break;
     case QmlClass:
@@ -1574,10 +1573,10 @@ void FakeNode::insertQmlModuleNode(const QString& qmid, FakeNode* fn)
   and inserted into the QML module map mapped to the QML module
   identifier constructed from \a arg.
  */
-FakeNode* FakeNode::lookupQmlModuleNode(Tree* tree, const QString& arg)
+FakeNode* FakeNode::lookupQmlModuleNode(Tree* tree, const ArgLocPair& arg)
 {
     QStringList dotSplit;
-    QStringList blankSplit = arg.split(QLatin1Char(' '));
+    QStringList blankSplit = arg.first.split(QLatin1Char(' '));
     QString qmid = blankSplit[0];
     if (blankSplit.size() > 1) {
         dotSplit = blankSplit[1].split(QLatin1Char('.'));
@@ -1587,7 +1586,8 @@ FakeNode* FakeNode::lookupQmlModuleNode(Tree* tree, const QString& arg)
     if (qmlModuleMap_.contains(qmid))
         fn = qmlModuleMap_.value(qmid);
     if (!fn) {
-        fn = new FakeNode(tree->root(), arg, Node::QmlModule, Node::OverviewPage);
+        fn = new FakeNode(tree->root(), arg.first, Node::QmlModule, Node::OverviewPage);
+        fn->setQmlModule(arg);
         insertQmlModuleNode(qmid,fn);
     }
     return fn;
@@ -2134,10 +2134,10 @@ void QmlClassNode::subclasses(const QString& base, NodeList& subs)
   true is returned. If any of the three is not found or is not
   correct, false is returned.
  */
-bool Node::setQmlModule(const QString& arg)
+bool Node::setQmlModule(const ArgLocPair& arg)
 {
     QStringList dotSplit;
-    QStringList blankSplit = arg.split(QLatin1Char(' '));
+    QStringList blankSplit = arg.first.split(QLatin1Char(' '));
     qmlModuleName_ = blankSplit[0];
     qmlModuleVersionMajor_ = "1";
     qmlModuleVersionMinor_ = "0";
@@ -2149,10 +2149,10 @@ bool Node::setQmlModule(const QString& arg)
             return true;
         }
         else
-            doc().location().warning(tr("Minor version number missing for '\\qmlmodule' or '\\inqmlmodule'; 0 assumed."));
+            arg.second.warning(tr("Minor version number missing for '\\qmlmodule' or '\\inqmlmodule'; 0 assumed."));
     }
     else
-        doc().location().warning(tr("Module version number missing for '\\qmlmodule' or '\\inqmlmodule'; 1.0 assumed."));
+        arg.second.warning(tr("Module version number missing for '\\qmlmodule' or '\\inqmlmodule'; 1.0 assumed."));
     return false;
 }
 

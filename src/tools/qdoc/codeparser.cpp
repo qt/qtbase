@@ -229,7 +229,7 @@ QSet<QString> CodeParser::commonMetaCommands()
  */
 void CodeParser::processCommonMetaCommand(const Location& location,
                                           const QString& command,
-                                          const QString& arg,
+                                          const ArgLocPair& arg,
                                           Node* node,
                                           Tree* tree)
 {
@@ -241,13 +241,13 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         node->setStatus(Node::Deprecated);
     }
     else if (command == COMMAND_INGROUP) {
-        tree->addToGroup(node, arg);
+        tree->addToGroup(node, arg.first);
     }
     else if (command == COMMAND_INPUBLICGROUP) {
-        tree->addToPublicGroup(node, arg);
+        tree->addToPublicGroup(node, arg.first);
     }
     else if (command == COMMAND_INMODULE) {
-        node->setModuleName(arg);
+        node->setModuleName(arg.first);
     }
     else if (command == COMMAND_INQMLMODULE) {
         node->setQmlModule(arg);
@@ -280,15 +280,15 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         node->setThreadSafeness(Node::Reentrant);
     }
     else if (command == COMMAND_SINCE) {
-        node->setSince(arg);
+        node->setSince(arg.first);
     }
     else if (command == COMMAND_PAGEKEYWORDS) {
-        node->addPageKeywords(arg);
+        node->addPageKeywords(arg.first);
     }
     else if (command == COMMAND_SUBTITLE) {
         if (node->type() == Node::Fake) {
             FakeNode *fake = static_cast<FakeNode *>(node);
-            fake->setSubTitle(arg);
+            fake->setSubTitle(arg.first);
         }
         else
             location.warning(tr("Ignored '\\%1'").arg(COMMAND_SUBTITLE));
@@ -299,11 +299,11 @@ void CodeParser::processCommonMetaCommand(const Location& location,
     else if (command == COMMAND_TITLE) {
         if (node->type() == Node::Fake) {
             FakeNode *fake = static_cast<FakeNode *>(node);
-            fake->setTitle(arg);
+            fake->setTitle(arg.first);
             if (fake->subType() == Node::Example) {
                 ExampleNode::exampleNodeMap.insert(fake->title(),static_cast<ExampleNode*>(fake));
             }
-            nameToTitle.insert(fake->name(),arg);
+            nameToTitle.insert(fake->name(),arg.first);
         }
         else
             location.warning(tr("Ignored '\\%1'").arg(COMMAND_TITLE));

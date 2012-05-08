@@ -89,7 +89,8 @@ public:
 protected:
     QSet<QString> commonMetaCommands();
     void processCommonMetaCommand(const Location& location,
-                                  const QString& command, const QString& arg,
+                                  const QString& command,
+                                  const ArgLocPair& arg,
                                   Node *node, Tree *tree);
     static void extractPageLinkAndDesc(const QString& arg,
                                        QString* link,

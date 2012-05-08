@@ -63,7 +63,8 @@ class Text;
 class FakeNode;
 class DitaRef;
 
-typedef QMap<QString, QStringList> QCommandMap;
+typedef QPair<QString, Location> ArgLocPair;
+typedef QList<ArgLocPair> ArgList;
 typedef QMap<QString, QString> QStringMap;
 typedef QMultiMap<QString, QString> QStringMultiMap;
 
@@ -168,7 +169,7 @@ public:
     const QStringList &omitEnumItemNames() const;
     const QSet<QString> &metaCommandsUsed() const;
     const TopicList& topicsUsed() const;
-    QStringList metaCommandArgs( const QString& metaCommand ) const;
+    ArgList metaCommandArgs(const QString& metaCommand) const;
     const QList<Text> &alsoList() const;
     bool hasTableOfContents() const;
     bool hasKeywords() const;

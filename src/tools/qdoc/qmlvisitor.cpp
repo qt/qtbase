@@ -254,7 +254,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
     QSet<QString> metacommands = doc.metaCommandsUsed();
     if (metacommands.count() > 0) {
         QString topic;
-        QStringList args;
+        ArgList args;
         QSet<QString>::iterator i = metacommands.begin();
         while (i != metacommands.end()) {
             if (topics.contains(*i)) {
@@ -273,7 +273,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                     QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
                     qpn->setReadOnly(0);
                     if (qpn->dataType() == "alias") {
-                        QStringList part = args[0].split(QLatin1Char(' '));
+                        QStringList part = args[0].first.split(QLatin1Char(' '));
                         qpn->setDataType(part[0]);
                     }
                 }
@@ -319,12 +319,12 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                 QmlClassNode::insertQmlModuleMember(qmid, qcn);
             }
             else if (command == COMMAND_QMLINHERITS) {
-                if (node->name() == args[0])
-                    doc.location().warning(tr("%1 tries to inherit itself").arg(args[0]));
+                if (node->name() == args[0].first)
+                    doc.location().warning(tr("%1 tries to inherit itself").arg(args[0].first));
                 else {
-                    CodeParser::setLink(node, Node::InheritsLink, args[0]);
+                    CodeParser::setLink(node, Node::InheritsLink, args[0].first);
                     if (node->subType() == Node::QmlClass) {
-                        QmlClassNode::addInheritedBy(args[0],node);
+                        QmlClassNode::addInheritedBy(args[0].first,node);
                     }
                 }
             }
@@ -341,10 +341,10 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                 }
             }
             else if ((command == COMMAND_INGROUP) && !args.isEmpty()) {
-                QStringList::ConstIterator arg = args.begin();
-                while (arg != args.end()) {
-                    tree->addToGroup(node, *arg);
-                    ++arg;
+                ArgList::ConstIterator argsIter = args.begin();
+                while (argsIter != args.end()) {
+                    tree->addToGroup(node, argsIter->first);
+                    ++argsIter;
                 }
             }
             else if (command == COMMAND_INTERNAL) {
@@ -362,7 +362,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                 node->setStatus(Node::Preliminary);
             }
             else if (command == COMMAND_SINCE) {
-                QString arg = args.join(" ");
+                QString arg = args[0].first; //.join(" ");
                 node->setSince(arg);
             }
             else {

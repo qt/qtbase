@@ -346,6 +346,8 @@ static QString cleanLink(const QString &link)
     return link.mid(colonPos + 1).simplified();
 }
 
+typedef QMap<QString, ArgList> CommandMap;
+
 class DocPrivate : public Shared
 {
 public:
@@ -368,7 +370,7 @@ public:
     QStringList enumItemList;
     QStringList omitEnumItemList;
     QSet<QString> metacommandsUsed;
-    QCommandMap metaCommandMap;
+    CommandMap metaCommandMap;
     bool hasLegalese : 1;
     bool hasSectioningUnits : 1;
     DocPrivateExtra *extra;
@@ -1386,13 +1388,13 @@ void DocParser::parse(const QString& source,
                         append(Atom::ParaRight);
                         p1 = getMetaCommandArgument(cmdStr);
                     }
-                    priv->metaCommandMap[cmdStr].append(p1);
+                    priv->metaCommandMap[cmdStr].append(ArgLocPair(p1,location()));
                     break;
                 case NOT_A_CMD:
                     if (metaCommandSet.contains(cmdStr)) {
                         priv->metacommandsUsed.insert(cmdStr);
                         QString arg = getMetaCommandArgument(cmdStr);
-                        priv->metaCommandMap[cmdStr].append(arg);
+                        priv->metaCommandMap[cmdStr].append(ArgLocPair(arg,location()));
                         if (possibleTopics.contains(cmdStr)) {
                             priv->topics.append(Topic(cmdStr,arg));
                         }
@@ -3043,9 +3045,9 @@ const TopicList& Doc::topicsUsed() const
     return priv == 0 ? *nullTopicList() : priv->topics;
 }
 
-QStringList Doc::metaCommandArgs(const QString& metacommand) const
+ArgList Doc::metaCommandArgs(const QString& metacommand) const
 {
-    return priv == 0 ? QStringList() : priv->metaCommandMap.value(metacommand);
+    return priv == 0 ? ArgList() : priv->metaCommandMap.value(metacommand);
 }
 
 const QList<Text> &Doc::alsoList() const

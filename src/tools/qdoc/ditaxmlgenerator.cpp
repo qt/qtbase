@@ -3295,7 +3295,7 @@ void DitaXmlGenerator::generateOverviewList(const Node* relative, CodeMarker* /*
             QString group;
             bool isGroupPage = false;
             if (fakeNode->doc().metaCommandsUsed().contains("group")) {
-                group = fakeNode->doc().metaCommandArgs("group")[0];
+                group = fakeNode->doc().metaCommandArgs("group")[0].first;
                 isGroupPage = true;
             }
 

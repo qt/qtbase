@@ -88,12 +88,12 @@ protected:
     virtual QSet<QString> topicCommands();
     virtual Node *processTopicCommand(const Doc& doc,
                                       const QString& command,
-                                      const QString& arg);
+                                      const ArgLocPair& arg);
 #ifdef QDOC_QML
     // might need to implement this in QsCodeParser as well.
     virtual Node *processTopicCommandGroup(const Doc& doc,
                                            const QString& command,
-                                           const QStringList& args);
+                                           const ArgList& args);
     bool splitQmlPropertyArg(const Doc& doc,
                              const QString& arg,
                              QString& type,
@@ -109,7 +109,7 @@ protected:
     virtual QSet<QString> otherMetaCommands();
     virtual void processOtherMetaCommand(const Doc& doc,
                                          const QString& command,
-                                         const QString& arg,
+                                         const ArgLocPair& argLocPair,
                                          Node *node);
     void processOtherMetaCommands(const Doc& doc, Node *node);
 

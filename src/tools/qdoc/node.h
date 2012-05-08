@@ -233,7 +233,7 @@ public:
     virtual QString qmlModuleName() const { return qmlModuleName_; }
     virtual QString qmlModuleVersion() const { return qmlModuleVersionMajor_ + "." + qmlModuleVersionMinor_; }
     virtual QString qmlModuleIdentifier() const { return qmlModuleName_ + qmlModuleVersionMajor_; }
-    virtual bool setQmlModule(const QString& );
+    virtual bool setQmlModule(const ArgLocPair& );
     virtual ClassNode* classNode() { return 0; }
     virtual void clearCurrentChild() { }
     virtual const ImportList* importList() const { return 0; }
@@ -476,7 +476,7 @@ public:
     virtual bool isQmlPropertyGroup() const { return (nodeSubtype_ == QmlPropertyGroup); }
 
     static void insertQmlModuleNode(const QString& qmid, FakeNode* fn);
-    static FakeNode* lookupQmlModuleNode(Tree* tree, const QString& arg);
+    static FakeNode* lookupQmlModuleNode(Tree* tree, const ArgLocPair& arg);
 
 protected:
     SubType nodeSubtype_;
