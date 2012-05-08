@@ -33,5 +33,9 @@ qt_install_headers {
     private_headers.files = $$SYNCQT.PRIVATE_HEADER_FILES
     private_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET/$$eval(QT.$${MODULE}.VERSION)/$$TARGET/private
     INSTALLS += private_headers
+
+    qpa_headers.files = $$SYNCQT.QPA_HEADER_FILES
+    qpa_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET/$$eval(QT.$${MODULE}.VERSION)/$$TARGET/qpa
+    INSTALLS += qpa_headers
 }
 
