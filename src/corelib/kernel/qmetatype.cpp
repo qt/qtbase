@@ -611,7 +611,7 @@ bool QMetaType::isRegistered(int type)
 
     Implementation of QMetaType::type().
 */
-template <int tryNormalizedType>
+template <bool tryNormalizedType>
 static inline int qMetaTypeTypeImpl(const char *typeName)
 {
     int length = qstrlen(typeName);
