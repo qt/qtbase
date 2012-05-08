@@ -565,6 +565,9 @@ struct UnicodeData {
         propertyIndex = -1;
         excludedComposition = false;
     }
+
+    static UnicodeData &valueRef(int codepoint);
+
     PropertyFlags p;
 
     // from UnicodeData.txt
@@ -582,6 +585,23 @@ struct UnicodeData {
     // computed position of unicode property set
     int propertyIndex;
 };
+
+static QList<UnicodeData> unicodeData;
+
+UnicodeData &UnicodeData::valueRef(int codepoint)
+{
+    static bool initialized = false;
+    if (!initialized) {
+        unicodeData.reserve(LAST_CODEPOINT + 1);
+        for (int uc = 0; uc <= LAST_CODEPOINT; ++uc)
+            unicodeData.append(UnicodeData(uc));
+        initialized = true;
+    }
+
+    Q_ASSERT(codepoint <= 0x10ffff);
+    return unicodeData[codepoint];
+}
+
 
 enum UniDataFields {
     UD_Value,
@@ -728,10 +748,6 @@ static void initDecompositionMap()
 }
 
 
-static QHash<int, UnicodeData> unicodeData;
-static QList<PropertyFlags> uniqueProperties;
-
-
 static QHash<int, int> decompositionLength;
 static int highestComposedCharacter = 0;
 static int numLigatures = 0;
@@ -794,7 +810,7 @@ static void readUnicodeData()
             Q_ASSERT(lastCodepoint <= LAST_CODEPOINT);
         }
 
-        UnicodeData data(codepoint);
+        UnicodeData &data = UnicodeData::valueRef(codepoint);
         data.p.category = categoryMap.value(properties[UD_Category], QChar::Other_NotAssigned);
         data.p.combiningClass = properties[UD_CombiningClass].toInt();
         if (!combiningClassUsage.contains(data.p.combiningClass))
@@ -892,7 +908,7 @@ static void readUnicodeData()
         }
 
         for (int i = codepoint; i <= lastCodepoint; ++i)
-            unicodeData.insert(i, data);
+            unicodeData[i] = data;
     }
 
 }
@@ -931,11 +947,10 @@ static void readBidiMirroring()
         int mirror = pair[1].toInt(&ok, 16);
         Q_ASSERT(ok);
 
-        UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
+        UnicodeData &d = UnicodeData::valueRef(codepoint);
         d.mirroredChar = mirror;
         d.p.mirrorDiff = d.mirroredChar - codepoint;
         maxMirroredDiff = qMax(maxMirroredDiff, qAbs(d.p.mirrorDiff));
-        unicodeData.insert(codepoint, d);
     }
 }
 
@@ -978,7 +993,7 @@ static void readArabicShaping()
             qFatal("%x: joining type '%s' was met; the current implementation needs to be revised!", codepoint, l[2].constData());
         }
 
-        UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
+        UnicodeData &d = UnicodeData::valueRef(codepoint);
         if (joining == Joining_Right)
             d.p.joining = QChar::Right;
         else if (joining == Joining_Dual)
@@ -987,7 +1002,6 @@ static void readArabicShaping()
             d.p.joining = QChar::Center;
         else
             d.p.joining = QChar::OtherJoining;
-        unicodeData.insert(codepoint, d);
     }
 }
 
@@ -1036,9 +1050,8 @@ static void readDerivedAge()
             qFatal("unassigned or unhandled age value: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
-            UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
+            UnicodeData &d = UnicodeData::valueRef(codepoint);
             d.p.age = age;
-            unicodeData.insert(codepoint, d);
         }
     }
 }
@@ -1088,14 +1101,13 @@ static void readDerivedNormalizationProps()
         }
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
-            UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
+            UnicodeData &d = UnicodeData::valueRef(codepoint);
             d.excludedComposition = true;
-            unicodeData.insert(codepoint, d);
         }
     }
 
     for (int codepoint = 0; codepoint <= LAST_CODEPOINT; ++codepoint) {
-        UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
+        UnicodeData &d = UnicodeData::valueRef(codepoint);
         if (!d.excludedComposition
             && d.decompositionType == QChar::Canonical
             && d.decomposition.size() > 1) {
@@ -1106,7 +1118,7 @@ static void readDerivedNormalizationProps()
 
             // all non-starters are listed in DerivedNormalizationProps.txt
             // and already excluded from composition
-            Q_ASSERT(unicodeData.value(part1, UnicodeData(part1)).p.combiningClass == 0);
+            Q_ASSERT(UnicodeData::valueRef(part1).p.combiningClass == 0);
 
             ++numLigatures;
             highestLigature = qMax(highestLigature, part1);
@@ -1191,11 +1203,13 @@ static QByteArray createNormalizationCorrections()
 }
 
 
+static QList<PropertyFlags> uniqueProperties;
+
 static void computeUniqueProperties()
 {
     qDebug("computeUniqueProperties:");
-    for (int uc = 0; uc <= LAST_CODEPOINT; ++uc) {
-        UnicodeData d = unicodeData.value(uc, UnicodeData(uc));
+    for (int codepoint = 0; codepoint <= LAST_CODEPOINT; ++codepoint) {
+        UnicodeData &d = UnicodeData::valueRef(codepoint);
 
         int index = uniqueProperties.indexOf(d.p);
         if (index == -1) {
@@ -1203,7 +1217,6 @@ static void computeUniqueProperties()
             uniqueProperties.append(d.p);
         }
         d.propertyIndex = index;
-        unicodeData.insert(uc, d);
     }
     qDebug("    %d unique unicode properties found", uniqueProperties.size());
 }
@@ -1253,9 +1266,8 @@ static void readLineBreak()
             qFatal("unassigned line break class: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
-            UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
+            UnicodeData &d = UnicodeData::valueRef(codepoint);
             d.p.line_break_class = lb;
-            unicodeData.insert(codepoint, d);
         }
     }
 }
@@ -1326,8 +1338,7 @@ static void readSpecialCasing()
         }
 
 
-        UnicodeData ud = unicodeData.value(codepoint, UnicodeData(codepoint));
-
+        UnicodeData &ud = UnicodeData::valueRef(codepoint);
         Q_ASSERT(lowerMap.size() > 1 || lowerMap.at(0) == codepoint + ud.p.lowerCaseDiff);
         Q_ASSERT(titleMap.size() > 1 || titleMap.at(0) == codepoint + ud.p.titleCaseDiff);
         Q_ASSERT(upperMap.size() > 1 || upperMap.at(0) == codepoint + ud.p.upperCaseDiff);
@@ -1344,8 +1355,6 @@ static void readSpecialCasing()
             ud.p.upperCaseSpecial = true;
             ud.p.upperCaseDiff = appendToSpecialCaseMap(upperMap);
         }
-
-        unicodeData.insert(codepoint, ud);
     }
 }
 
@@ -1394,7 +1403,7 @@ static void readCaseFolding()
             Q_ASSERT(ok);
         }
 
-        UnicodeData ud = unicodeData.value(codepoint, UnicodeData(codepoint));
+        UnicodeData &ud = UnicodeData::valueRef(codepoint);
         if (foldMap.size() == 1) {
             int caseFolded = foldMap.at(0);
             int diff = caseFolded - codepoint;
@@ -1421,7 +1430,6 @@ static void readCaseFolding()
             ud.p.caseFoldSpecial = true;
             ud.p.caseFoldDiff = appendToSpecialCaseMap(foldMap);
         }
-        unicodeData.insert(codepoint, ud);
     }
 }
 
@@ -1469,9 +1477,8 @@ static void readGraphemeBreak()
             qFatal("unassigned grapheme break class: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
-            UnicodeData ud = unicodeData.value(codepoint, UnicodeData(codepoint));
+            UnicodeData &ud = UnicodeData::valueRef(codepoint);
             ud.p.graphemeBreak = brk;
-            unicodeData.insert(codepoint, ud);
         }
     }
 }
@@ -1520,9 +1527,8 @@ static void readWordBreak()
             qFatal("unassigned word break class: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
-            UnicodeData ud = unicodeData.value(codepoint, UnicodeData(codepoint));
+            UnicodeData &ud = UnicodeData::valueRef(codepoint);
             ud.p.wordBreak = brk;
-            unicodeData.insert(codepoint, ud);
         }
     }
 }
@@ -1571,9 +1577,8 @@ static void readSentenceBreak()
             qFatal("unassigned sentence break class: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
-            UnicodeData ud = unicodeData.value(codepoint, UnicodeData(codepoint));
+            UnicodeData &ud = UnicodeData::valueRef(codepoint);
             ud.p.sentenceBreak = brk;
-            unicodeData.insert(codepoint, ud);
         }
     }
 }
@@ -1890,7 +1895,7 @@ QByteArray createScriptEnumDeclaration()
 
     // output the ones with special processing first
     for (int i = 1; i < scriptNames.size(); ++i) {
-        QByteArray scriptName = scriptNames.at(i);
+        const QByteArray &scriptName = scriptNames.at(i);
         // does the script require special processing?
         bool special = false;
         for (int s = 0; s < specialScriptsCount; ++s) {
@@ -2051,7 +2056,7 @@ QByteArray createScriptTableDeclaration()
 static void dump(int from, int to)
 {
     for (int i = from; i <= to; ++i) {
-        UnicodeData d = unicodeData.value(i, UnicodeData(i));
+        UnicodeData &d = UnicodeData::valueRef(i);
         qDebug("0x%04x: cat=%d combining=%d dir=%d case=%x mirror=%x joining=%d age=%d",
                i, d.p.category, d.p.combiningClass, d.p.direction, d.otherCase, d.mirroredChar, d.p.joining, d.p.age);
         if (d.decompositionType != QChar::NoDecomposition) {
@@ -2098,7 +2103,7 @@ static QByteArray createPropertyInfo()
         PropertyBlock b;
         for (int i = 0; i < BMP_BLOCKSIZE; ++i) {
             int uc = block*BMP_BLOCKSIZE + i;
-            UnicodeData d = unicodeData.value(uc, UnicodeData(uc));
+            UnicodeData &d = UnicodeData::valueRef(uc);
             b.properties.append(d.propertyIndex);
         }
         int index = blocks.indexOf(b);
@@ -2118,7 +2123,7 @@ static QByteArray createPropertyInfo()
         PropertyBlock b;
         for (int i = 0; i < SMP_BLOCKSIZE; ++i) {
             int uc = block*SMP_BLOCKSIZE + i;
-            UnicodeData d = unicodeData.value(uc, UnicodeData(uc));
+            UnicodeData &d = UnicodeData::valueRef(uc);
             b.properties.append(d.propertyIndex);
         }
         int index = blocks.indexOf(b);
@@ -2216,7 +2221,7 @@ static QByteArray createPropertyInfo()
 
     // keep in sync with the property declaration
     for (int i = 0; i < uniqueProperties.size(); ++i) {
-        PropertyFlags p = uniqueProperties.at(i);
+        const PropertyFlags &p = uniqueProperties.at(i);
         out += "\n    { ";
 //     "        ushort category : 8;\n"
         out += QByteArray::number( p.category );
@@ -2381,7 +2386,7 @@ static QByteArray createCompositionInfo()
         DecompositionBlock b;
         for (int i = 0; i < BMP_BLOCKSIZE; ++i) {
             int uc = block*BMP_BLOCKSIZE + i;
-            UnicodeData d = unicodeData.value(uc, UnicodeData(uc));
+            UnicodeData &d = UnicodeData::valueRef(uc);
             if (!d.decomposition.isEmpty()) {
                 int utf16Length = 0;
                 decompositions.append(0);
@@ -2421,7 +2426,7 @@ static QByteArray createCompositionInfo()
         DecompositionBlock b;
         for (int i = 0; i < SMP_BLOCKSIZE; ++i) {
             int uc = block*SMP_BLOCKSIZE + i;
-            UnicodeData d = unicodeData.value(uc, UnicodeData(uc));
+            UnicodeData &d = UnicodeData::valueRef(uc);
             if (!d.decomposition.isEmpty()) {
                 int utf16Length = 0;
                 decompositions.append(0);
@@ -2561,7 +2566,8 @@ static QByteArray createLigatureInfo()
 {
     qDebug("createLigatureInfo: numLigatures=%d, highestLigature=0x%x", numLigatures, highestLigature);
 
-    foreach (const QList<Ligature> &l, ligatureHashes) {
+    for (int i = 0; i < ligatureHashes.size(); ++i) {
+        const QList<Ligature> &l = ligatureHashes.value(i);
         for (int j = 0; j < l.size(); ++j) {
             // if the condition below doesn't hold anymore we need to modify our ligatureHelper code
             Q_ASSERT(QChar::requiresSurrogates(l.at(j).u2) == QChar::requiresSurrogates(l.at(j).ligature) &&
