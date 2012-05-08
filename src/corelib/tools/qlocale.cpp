@@ -2148,7 +2148,8 @@ Qt::LayoutDirection QLocale::textDirection() const
         lang == QLocale::Hebrew ||
         lang == QLocale::Persian ||
         lang == QLocale::Urdu ||
-        lang == QLocale::Syriac)
+        lang == QLocale::Syriac ||
+        lang == QLocale::Divehi)
         return Qt::RightToLeft;
 
     return Qt::LeftToRight;
