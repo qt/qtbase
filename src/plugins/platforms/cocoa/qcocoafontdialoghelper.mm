@@ -362,9 +362,7 @@ QCocoaFontDialogHelper::QCocoaFontDialogHelper() :
 }
 
 QCocoaFontDialogHelper::~QCocoaFontDialogHelper()
-{
-    deleteNativeDialog_sys();
-}
+{ }
 
 void QCocoaFontDialogHelper::platformNativeDialogModalHelp()
 {

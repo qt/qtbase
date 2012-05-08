@@ -244,7 +244,6 @@ public:
     // dialog. Returning false means that a non-native dialog must be
     // used instead.
     bool canBeNativeDialog();
-    void deleteNativeDialog_sys();
     QDialog::DialogCode dialogResultCode_sys();
 
     void setDirectory_sys(const QString &directory);
@@ -345,15 +344,6 @@ inline QModelIndex QFileDialogPrivate::mapFromSource(const QModelIndex &index) c
 
 inline QString QFileDialogPrivate::rootPath() const {
     return model->rootPath();
-}
-
-// Dummies for platforms that don't use native dialogs:
-inline void QFileDialogPrivate::deleteNativeDialog_sys()
-{
-    if (QPlatformFileDialogHelper *helper = platformFileDialogHelper()) {
-        helper->deleteNativeDialog_sys();
-        nativeDialogInUse = false;
-    }
 }
 
 inline QDialog::DialogCode QFileDialogPrivate::dialogResultCode_sys()

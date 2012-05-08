@@ -362,13 +362,11 @@ QFileDialog::QFileDialog(const QFileDialogArgs &args)
 */
 QFileDialog::~QFileDialog()
 {
-    Q_D(QFileDialog);
 #ifndef QT_NO_SETTINGS
     QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
     settings.beginGroup(QLatin1String("Qt"));
     settings.setValue(QLatin1String("filedialog"), saveState());
 #endif
-    d->deleteNativeDialog_sys();
 }
 
 /*!
@@ -1372,10 +1370,10 @@ void QFileDialog::setAcceptMode(QFileDialog::AcceptMode mode)
         d->qFileDialogUi->lookInCombo->setEditable(false);
     }
     d->retranslateWindowTitle();
-#if defined(Q_OS_MAC)
-    d->deleteNativeDialog_sys();
+    // we need to recreate the native dialog when changing the AcceptMode
+    d->deleteNativeDialog();
+    // clear WA_DontShowOnScreen so that d->canBeNativeDialog() doesn't return false incorrectly
     setAttribute(Qt::WA_DontShowOnScreen, false);
-#endif
 }
 
 /*

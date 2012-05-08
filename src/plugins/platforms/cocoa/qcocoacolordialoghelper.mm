@@ -343,9 +343,7 @@ QCocoaColorDialogHelper::QCocoaColorDialogHelper() :
 }
 
 QCocoaColorDialogHelper::~QCocoaColorDialogHelper()
-{
-    deleteNativeDialog_sys();
-}
+{ }
 
 void QCocoaColorDialogHelper::platformNativeDialogModalHelp()
 {

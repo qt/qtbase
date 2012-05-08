@@ -132,6 +132,14 @@ QVariant QDialogPrivate::styleHint(QPlatformDialogHelper::StyleHint hint) const
     return QPlatformDialogHelper::defaultStyleHint(hint);
 }
 
+void QDialogPrivate::deleteNativeDialog()
+{
+    if (QPlatformDialogHelper *helper = platformHelper()) {
+        helper->deleteNativeDialog_sys();
+        nativeDialogInUse = false;
+    }
+}
+
 /*!
     \class QDialog
     \brief The QDialog class is the base class of dialog windows.
@@ -328,6 +336,7 @@ QDialog::QDialog(QDialogPrivate &dd, QWidget *parent, Qt::WindowFlags f)
 
 QDialog::~QDialog()
 {
+    Q_D(QDialog);
     QT_TRY {
         // Need to hide() here, as our (to-be) overridden hide()
         // will not be called in ~QWidget.
@@ -335,6 +344,7 @@ QDialog::~QDialog()
     } QT_CATCH(...) {
         // we're in the destructor - just swallow the exception
     }
+    d->deleteNativeDialog();
 }
 
 /*!
