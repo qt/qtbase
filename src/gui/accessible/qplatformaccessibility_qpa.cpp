@@ -112,15 +112,21 @@ void QPlatformAccessibility::initialize()
     isInit = true;      // ### not atomic
 
 #ifndef QT_NO_LIBRARY
-    const QStringList l = bridgeloader()->keys();
-    for (int i = 0; i < l.count(); ++i) {
-        if (QAccessibleBridgeFactoryInterface *factory =
-                qobject_cast<QAccessibleBridgeFactoryInterface*>(bridgeloader()->instance(l.at(i)))) {
-            QAccessibleBridge * bridge = factory->create(l.at(i));
-            if (bridge) {
-                bridges()->append(bridge);
-            }
+    typedef QMultiMap<int, QString> PluginKeyMap;
+    typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
+
+    const PluginKeyMap keyMap = bridgeloader()->keyMap();
+    QAccessibleBridgeFactoryInterface *factory = 0;
+    int i = -1;
+    const PluginKeyMapConstIterator cend = keyMap.constEnd();
+    for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it) {
+        if (it.key() != i) {
+            i = it.key();
+            factory = qobject_cast<QAccessibleBridgeFactoryInterface*>(bridgeloader()->instance(i));
         }
+        if (factory)
+            if (QAccessibleBridge *bridge = factory->create(it.value()))
+                bridges()->append(bridge);
     }
 #endif
 }

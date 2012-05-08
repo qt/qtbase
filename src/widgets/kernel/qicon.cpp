@@ -816,10 +816,13 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
         QString suffix = info.suffix();
         if (!suffix.isEmpty()) {
             // first try version 2 engines..
-            if (QIconEngineFactoryInterface *factory = qobject_cast<QIconEngineFactoryInterface*>(loader()->instance(suffix))) {
-                if (QIconEngine *engine = factory->create(fileName)) {
-                    d = new QIconPrivate;
-                    d->engine = engine;
+            const int index = loader()->indexOf(suffix);
+            if (index != -1) {
+                if (QIconEngineFactoryInterface *factory = qobject_cast<QIconEngineFactoryInterface*>(loader()->instance(index))) {
+                    if (QIconEngine *engine = factory->create(fileName)) {
+                        d = new QIconPrivate;
+                        d->engine = engine;
+                    }
                 }
             }
         }
@@ -1068,12 +1071,17 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
             icon.d->engine = engine;
             engine->read(s);
 #if !defined (QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-        } else if (QIconEngineFactoryInterface *factory = qobject_cast<QIconEngineFactoryInterface*>(loader()->instance(key))) {
-            if (QIconEngine *engine= factory->create()) {
-                icon.d = new QIconPrivate;
-                icon.d->engine = engine;
-                engine->read(s);
-            }
+        } else {
+            const int index = loader()->indexOf(key);
+            if (index != -1) {
+                if (QIconEngineFactoryInterface *factory = qobject_cast<QIconEngineFactoryInterface*>(loader()->instance(index))) {
+                    if (QIconEngine *engine= factory->create()) {
+                        icon.d = new QIconPrivate;
+                        icon.d->engine = engine;
+                        engine->read(s);
+                    } // factory
+                } // instance
+            } // index
 #endif
         }
     } else if (s.version() == QDataStream::Qt_4_2) {

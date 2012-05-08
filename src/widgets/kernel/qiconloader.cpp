@@ -121,7 +121,7 @@ void QIconLoader::ensureInitialized()
         QFactoryLoader iconFactoryLoader(QIconEngineFactoryInterface_iid,
                                          QLatin1String("/iconengines"),
                                          Qt::CaseInsensitive);
-        if (iconFactoryLoader.keys().contains(QLatin1String("svg")))
+        if (iconFactoryLoader.keyMap().key(QLatin1String("svg"), -1) != -1)
             m_supportsSvg = true;
 #endif //QT_NO_LIBRARY
     }

@@ -577,11 +577,14 @@ QStringList QSqlDatabase::drivers()
 
 #ifndef QT_NO_LIBRARY
     if (QFactoryLoader *fl = loader()) {
-        QStringList keys = fl->keys();
-        for (QStringList::const_iterator i = keys.constBegin(); i != keys.constEnd(); ++i) {
-            if (!list.contains(*i))
-                list << *i;
-        }
+        typedef QMultiMap<int, QString> PluginKeyMap;
+        typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
+
+        const PluginKeyMap keyMap = fl->keyMap();
+        const PluginKeyMapConstIterator cend = keyMap.constEnd();
+        for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it)
+            if (!list.contains(it.value()))
+                list << it.value();
     }
 #endif
 
@@ -774,10 +777,8 @@ void QSqlDatabasePrivate::init(const QString &type)
     }
 
 #ifndef QT_NO_LIBRARY
-    if (!driver && loader()) {
-        if (QSqlDriverFactoryInterface *factory = qobject_cast<QSqlDriverFactoryInterface*>(loader()->instance(type)))
-            driver = factory->create(type);
-    }
+    if (!driver && loader())
+        driver = qLoadPlugin<QSqlDriver, QSqlDriverFactoryInterface>(loader(), type);
 #endif // QT_NO_LIBRARY
 
     if (!driver) {

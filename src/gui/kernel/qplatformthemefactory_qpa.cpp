@@ -41,6 +41,7 @@
 
 #include <qpa/qplatformthemefactory_p.h>
 #include <qpa/qplatformthemeplugin.h>
+#include <QDir>
 #include "private/qfactoryloader_p.h"
 #include "qmutex.h"
 
@@ -58,26 +59,20 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
 
 QPlatformTheme *QPlatformThemeFactory::create(const QString& key, const QString &platformPluginPath)
 {
-    QPlatformTheme *ret = 0;
     QStringList paramList = key.split(QLatin1Char(':'));
-    QString platform = paramList.takeFirst().toLower();
+    const QString platform = paramList.takeFirst().toLower();
 
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     // Try loading the plugin from platformPluginPath first:
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
-        if (QPlatformThemeFactoryInterface *factory =
-            qobject_cast<QPlatformThemeFactoryInterface*>(directLoader()->instance(platform)))
-            ret = factory->create(key, paramList);
-
-        if (ret)
+        if (QPlatformTheme *ret = qLoadPlugin1<QPlatformTheme, QPlatformThemeFactoryInterface>(directLoader(), platform, paramList))
             return ret;
     }
-    if (QPlatformThemeFactoryInterface *factory = qobject_cast<QPlatformThemeFactoryInterface*>(loader()->instance(platform)))
-        ret = factory->create(platform, paramList);
+    if (QPlatformTheme *ret = qLoadPlugin1<QPlatformTheme, QPlatformThemeFactoryInterface>(loader(), platform, paramList))
+           return ret;
 #endif
-
-    return ret;
+    return 0;
 }
 
 /*!
@@ -93,16 +88,21 @@ QStringList QPlatformThemeFactory::keys(const QString &platformPluginPath)
 
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
-        foreach (const QString &key, directLoader()->keys()) {
-            list += key + QString(QLatin1String(" (from %1)")).arg(platformPluginPath);
+        list += directLoader()->keyMap().values();
+        if (!list.isEmpty()) {
+            const QString postFix = QStringLiteral(" (from ")
+                    + QDir::toNativeSeparators(platformPluginPath)
+                    + QLatin1Char(')');
+            const QStringList::iterator end = list.end();
+            for (QStringList::iterator it = list.begin(); it != end; ++it)
+                (*it).append(postFix);
         }
     }
-
-    list += loader()->keys();
-#else
-    QStringList list;
-#endif
+    list += loader()->keyMap().values();
     return list;
+#else
+    return QStringList();
+#endif
 }
 
 QT_END_NAMESPACE

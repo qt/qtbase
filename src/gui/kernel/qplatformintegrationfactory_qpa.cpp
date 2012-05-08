@@ -43,6 +43,7 @@
 #include <qpa/qplatformintegrationplugin.h>
 #include "private/qfactoryloader_p.h"
 #include "qmutex.h"
+#include "qdir.h"
 
 #include "qguiapplication.h"
 #include "qdebug.h"
@@ -58,26 +59,20 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
 
 QPlatformIntegration *QPlatformIntegrationFactory::create(const QString& key, const QString &platformPluginPath)
 {
-    QPlatformIntegration *ret = 0;
     QStringList paramList = key.split(QLatin1Char(':'));
-    QString platform = paramList.takeFirst().toLower();
+    const QString platform = paramList.takeFirst().toLower();
 
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     // Try loading the plugin from platformPluginPath first:
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
-        if (QPlatformIntegrationFactoryInterface *factory =
-            qobject_cast<QPlatformIntegrationFactoryInterface*>(directLoader()->instance(platform)))
-            ret = factory->create(key, paramList);
-
-        if (ret)
+        if (QPlatformIntegration *ret = qLoadPlugin1<QPlatformIntegration, QPlatformIntegrationFactoryInterface >(directLoader(), platform, paramList))
             return ret;
     }
-    if (QPlatformIntegrationFactoryInterface *factory = qobject_cast<QPlatformIntegrationFactoryInterface*>(loader()->instance(platform)))
-        ret = factory->create(platform, paramList);
+    if (QPlatformIntegration *ret = qLoadPlugin1<QPlatformIntegration, QPlatformIntegrationFactoryInterface >(loader(), platform, paramList))
+        return ret;
 #endif
-
-    return ret;
+    return 0;
 }
 
 /*!
@@ -86,23 +81,28 @@ QPlatformIntegration *QPlatformIntegrationFactory::create(const QString& key, co
 
     \sa create()
 */
+
 QStringList QPlatformIntegrationFactory::keys(const QString &platformPluginPath)
 {
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     QStringList list;
-
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
-        foreach (const QString &key, directLoader()->keys()) {
-            list += key + QString(QLatin1String(" (from %1)")).arg(platformPluginPath);
+        list = directLoader()->keyMap().values();
+        if (!list.isEmpty()) {
+            const QString postFix = QStringLiteral(" (from ")
+                                    + QDir::toNativeSeparators(platformPluginPath)
+                                    + QLatin1Char(')');
+            const QStringList::iterator end = list.end();
+            for (QStringList::iterator it = list.begin(); it != end; ++it)
+                (*it).append(postFix);
         }
     }
-
-    list += loader()->keys();
-#else
-    QStringList list;
-#endif
+    list.append(loader()->keyMap().values());
     return list;
+#else
+    return QStringList();
+#endif
 }
 
 QT_END_NAMESPACE

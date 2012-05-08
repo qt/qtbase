@@ -181,10 +181,8 @@ QStyle *QStyleFactory::create(const QString& key)
 #endif
     { } // Keep these here - they make the #ifdefery above work
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    if(!ret) {
-        if (QStyleFactoryInterface *factory = qobject_cast<QStyleFactoryInterface*>(loader()->instance(style)))
-            ret = factory->create(style);
-    }
+    if (!ret)
+        ret = qLoadPlugin<QStyle, QStyleFactoryInterface>(loader(), style);
 #endif
     if(ret)
         ret->setObjectName(style);
@@ -199,10 +197,15 @@ QStyle *QStyleFactory::create(const QString& key)
 */
 QStringList QStyleFactory::keys()
 {
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    QStringList list = loader()->keys();
-#else
     QStringList list;
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+    typedef QMultiMap<int, QString> PluginKeyMap;
+    typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
+
+    const PluginKeyMap keyMap = loader()->keyMap();
+    const PluginKeyMap::const_iterator cend = keyMap.constEnd();
+    for (PluginKeyMap::const_iterator it = keyMap.constBegin(); it != cend; ++it)
+        list.append(it.value());
 #endif
 #ifndef QT_NO_STYLE_WINDOWS
     if (!list.contains(QLatin1String("Windows")))

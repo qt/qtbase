@@ -570,35 +570,28 @@ QAccessible::RootObjectHandler QAccessible::installRootObjectHandler(RootObjectH
 QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
 {
     accessibility_active = true;
-    QAccessibleInterface *iface = 0;
     if (!object)
         return 0;
 
     const QMetaObject *mo = object->metaObject();
     while (mo) {
-        const QLatin1String cn(mo->className());
+        const QString cn = QLatin1String(mo->className());
         for (int i = qAccessibleFactories()->count(); i > 0; --i) {
             InterfaceFactory factory = qAccessibleFactories()->at(i - 1);
-            iface = factory(cn, object);
-            if (iface)
+            if (QAccessibleInterface *iface = factory(cn, object))
                 return iface;
         }
 #ifndef QT_NO_LIBRARY
-        QAccessibleFactoryInterface *factory = qobject_cast<QAccessibleFactoryInterface*>(loader()->instance(cn));
-        if (factory) {
-            iface = factory->create(cn, object);
-            if (iface)
-                return iface;
-        }
+        if (QAccessibleInterface * iface = qLoadPlugin1<QAccessibleInterface, QAccessibleFactoryInterface>(loader(), cn, object))
+            return iface;
 #endif
         mo = mo->superClass();
     }
 
-    if (!iface) {
-        if (object == qApp)
-            iface = new QAccessibleApplication;
-    }
-    return iface;
+    if (object == qApp)
+        return new QAccessibleApplication;
+
+    return 0;
 }
 
 /*!

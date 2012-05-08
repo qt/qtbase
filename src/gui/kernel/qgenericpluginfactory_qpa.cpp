@@ -79,12 +79,12 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 */
 QObject *QGenericPluginFactory::create(const QString& key, const QString &specification)
 {
-    QString driver = key.toLower();
+    const QString driver = key.toLower();
 
 #if !defined(Q_OS_WIN32) || defined(QT_MAKEDLL)
 #ifndef QT_NO_LIBRARY
-    if (QGenericPluginFactoryInterface *factory = qobject_cast<QGenericPluginFactoryInterface*>(loader()->instance(driver)))
-        return factory->create(driver, specification);
+    if (QObject *object = qLoadPlugin1<QObject, QGenericPluginFactoryInterface>(loader(), driver, specification))
+        return object;
 #endif
 #endif
     return 0;
@@ -101,11 +101,14 @@ QStringList QGenericPluginFactory::keys()
 
 #if !defined(Q_OS_WIN32) || defined(QT_MAKEDLL)
 #ifndef QT_NO_LIBRARY
-    QStringList plugins = loader()->keys();
-    for (int i = 0; i < plugins.size(); ++i) {
-        if (!list.contains(plugins.at(i)))
-            list += plugins.at(i);
-    }
+    typedef QMultiMap<int, QString> PluginKeyMap;
+    typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
+
+    const PluginKeyMap keyMap = loader()->keyMap();
+    const PluginKeyMapConstIterator cend = keyMap.constEnd();
+    for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it)
+        if (!list.contains(it.value()))
+            list += it.value();
 #endif //QT_NO_LIBRARY
 #endif //QT_MAKEDLL
     return list;

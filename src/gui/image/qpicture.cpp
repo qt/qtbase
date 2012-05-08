@@ -1400,14 +1400,20 @@ Q_GLOBAL_STATIC(QPHList, pictureHandlers)
 void qt_init_picture_plugins()
 {
 #ifndef QT_NO_LIBRARY
+    typedef QMultiMap<int, QString> PluginKeyMap;
+    typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
+
     static QBasicMutex mutex;
     QMutexLocker locker(&mutex);
     static QFactoryLoader loader(QPictureFormatInterface_iid,
                                  QStringLiteral("/pictureformats"));
-    QStringList keys = loader.keys();
-    for (int i = 0; i < keys.count(); ++i)
-        if (QPictureFormatInterface *format = qobject_cast<QPictureFormatInterface*>(loader.instance(keys.at(i))))
-            format->installIOHandler(keys.at(i));
+
+    const PluginKeyMap keyMap = loader.keyMap();
+    const PluginKeyMapConstIterator cend = keyMap.constEnd();
+    for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it) {
+        if (QPictureFormatInterface *format = qobject_cast<QPictureFormatInterface*>(loader.instance(it.key())))
+            format->installIOHandler(it.value());
+    }
 #endif
 }
 

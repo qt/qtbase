@@ -70,13 +70,9 @@ QPlatformPrinterSupport *QPlatformPrinterSupportPlugin::get()
 {
     static QPlatformPrinterSupport *singleton = 0;
     if (!singleton) {
-        QStringList k = loader()->keys();
-        if (k.isEmpty())
-            return 0;
-        QPlatformPrinterSupportPlugin *plugin = qobject_cast<QPlatformPrinterSupportPlugin *>(loader()->instance(k.first()));
-        if (!plugin)
-            return 0;
-        singleton = plugin->create(k.first());
+        const QMultiMap<int, QString> keyMap = loader()->keyMap();
+        if (!keyMap.isEmpty())
+            singleton = qLoadPlugin<QPlatformPrinterSupport, QPlatformPrinterSupportPlugin>(loader(), keyMap.constBegin().value());
     }
     return singleton;
 }

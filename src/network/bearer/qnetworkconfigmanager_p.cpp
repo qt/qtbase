@@ -366,6 +366,10 @@ void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigura
 
 void QNetworkConfigurationManagerPrivate::updateConfigurations()
 {
+#ifndef QT_NO_LIBRARY
+    typedef QMultiMap<int, QString> PluginKeyMap;
+    typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
+#endif
     QMutexLocker locker(&mutex);
 
     if (firstUpdate) {
@@ -376,15 +380,12 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 
 #ifndef QT_NO_LIBRARY
         QBearerEngine *generic = 0;
-
         QFactoryLoader *l = loader();
-        foreach (const QString &key, l->keys()) {
-            QBearerEnginePlugin *plugin = qobject_cast<QBearerEnginePlugin *>(l->instance(key));
-            if (plugin) {
-                QBearerEngine *engine = plugin->create(key);
-                if (!engine)
-                    continue;
-
+        const PluginKeyMap keyMap = l->keyMap();
+        const PluginKeyMapConstIterator cend = keyMap.constEnd();
+        for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it) {
+            const QString &key = it.value();
+            if (QBearerEngine *engine = qLoadPlugin<QBearerEngine, QBearerEnginePlugin>(l, key)) {
                 if (key == QLatin1String("generic"))
                     generic = engine;
                 else
