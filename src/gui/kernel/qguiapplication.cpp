@@ -50,6 +50,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformdrag.h>
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/QVariant>

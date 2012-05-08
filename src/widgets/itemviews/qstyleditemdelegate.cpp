@@ -45,6 +45,7 @@
 #include <qabstractitemmodel.h>
 #include <qapplication.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformdrag.h>
 #include <private/qguiapplication_p.h>
 #include <qbrush.h>
 #include <qlineedit.h>

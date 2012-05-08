@@ -53,14 +53,13 @@
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "private/qshortcutmap_p.h"
 
-#include <qpa/qplatformdrag.h>
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 class QPlatformIntegration;
 class QPlatformTheme;
+class QPlatformDragQtResponse;
 struct QDrawHelperGammaTables;
 
 class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
