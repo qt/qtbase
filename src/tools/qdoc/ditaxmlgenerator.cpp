@@ -2548,7 +2548,10 @@ void DitaXmlGenerator::generateHeader(const Node* node,
     if (!outputclass.isEmpty())
         xmlWriter().writeAttribute("outputclass",outputclass);
     writeStartTag(nameTag); // <title> or <apiName>
-    writeCharacters(name);
+    if (!name.isEmpty())
+        writeCharacters(name);
+    else
+        writeCharacters(node->name());
     writeEndTag(); // </title> or </apiName>
 }
 
