@@ -102,7 +102,7 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::createLinuxInputKeyboardHandler(co
 #endif
 
     QString keymapFile;
-    QString device = "/dev/input/event0";
+    QString device = QLatin1String("/dev/input/event0");
     int repeatDelay = 400;
     int repeatRate = 80;
     bool disableZap = false;

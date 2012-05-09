@@ -65,9 +65,9 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
     QStringList devices;
 
     foreach (const QString &arg, args) {
-        if (arg.startsWith("udev") && arg.contains("no")) {
+        if (arg.startsWith(QLatin1String("udev")) && arg.contains(QLatin1String("no"))) {
             useUDev = false;
-        } else if (arg.startsWith("/dev/")) {
+        } else if (arg.startsWith(QLatin1String("/dev/"))) {
             // if device is specified try to use it
             devices.append(arg);
             args.removeAll(arg);
@@ -75,7 +75,7 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
     }
 
     // build new specification without /dev/ elements
-    m_spec = args.join(":");
+    m_spec = args.join(QLatin1String(":"));
 
     // add all keyboards for devices specified in the argument list
     foreach (const QString &device, devices)
@@ -99,6 +99,8 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
             connect(m_udeviceHelper, SIGNAL(deviceRemoved(QString,QUDeviceTypes)), this, SLOT(removeKeyboard(QString)));
         }
     }
+#else
+    Q_UNUSED(useUDev)
 #endif // QT_NO_LIBUDEV
 }
 
@@ -117,12 +119,12 @@ void QEvdevKeyboardManager::addKeyboard(const QString &deviceNode)
     QString specification = m_spec;
 
     if (!deviceNode.isEmpty()) {
-        specification.append(":");
+        specification.append(QLatin1Char(':'));
         specification.append(deviceNode);
     }
 
     QEvdevKeyboardHandler *keyboard;
-    keyboard = QEvdevKeyboardHandler::createLinuxInputKeyboardHandler("EvdevKeyboard", specification);
+    keyboard = QEvdevKeyboardHandler::createLinuxInputKeyboardHandler(QLatin1String("EvdevKeyboard"), specification);
     if (keyboard)
         m_keyboards.insert(deviceNode, keyboard);
     else

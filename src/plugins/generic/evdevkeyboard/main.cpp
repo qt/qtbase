@@ -63,8 +63,7 @@ QEvdevKeyboardPlugin::QEvdevKeyboardPlugin()
 
 QStringList QEvdevKeyboardPlugin::keys() const
 {
-    return (QStringList()
-            << QLatin1String("EvdevKeyboard"));
+    return QStringList(QLatin1String("EvdevKeyboard"));
 }
 
 QObject* QEvdevKeyboardPlugin::create(const QString &key,
