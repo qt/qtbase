@@ -602,6 +602,26 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
     return feature_roots;
 }
 
+QStringList qmake_mkspec_paths()
+{
+    QStringList ret;
+    const QString concat = QLatin1String("/mkspecs");
+    QByteArray qmakepath = qgetenv("QMAKEPATH");
+    if (!qmakepath.isEmpty()) {
+        const QStringList lst = splitPathList(QString::fromLocal8Bit(qmakepath));
+        for (QStringList::ConstIterator it = lst.begin(); it != lst.end(); ++it)
+            ret << ((*it) + concat);
+    }
+    if (!Option::mkfile::project_build_root.isEmpty())
+        ret << Option::mkfile::project_build_root + concat;
+    if (!Option::mkfile::project_root.isEmpty())
+        ret << Option::mkfile::project_root + concat;
+    ret << QLibraryInfo::location(QLibraryInfo::DataPath) + concat;
+    ret.removeDuplicates();
+
+    return ret;
+}
+
 QMakeProject::~QMakeProject()
 {
     if(own_prop)
@@ -1285,6 +1305,29 @@ QMakeProject::read(uchar cmd)
         }
         {             // parse mkspec
             QString qmakespec = Option::mkfile::qmakespec;
+            if (qmakespec.isEmpty())
+                qmakespec = "default";
+            if (QDir::isRelativePath(qmakespec)) {
+                    QStringList mkspec_roots = qmake_mkspec_paths();
+                    debug_msg(2, "Looking for mkspec %s in (%s)", qmakespec.toLatin1().constData(),
+                              mkspec_roots.join("::").toLatin1().constData());
+                    bool found_mkspec = false;
+                    for (QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
+                        QString mkspec = (*it) + QLatin1Char('/') + qmakespec;
+                        if (QFile::exists(mkspec)) {
+                            found_mkspec = true;
+                            Option::mkfile::qmakespec = qmakespec = mkspec;
+                            break;
+                        }
+                    }
+                    if (!found_mkspec) {
+                        fprintf(stderr, "Could not find mkspecs for your QMAKESPEC(%s) after trying:\n\t%s\n",
+                                qmakespec.toLatin1().constData(), mkspec_roots.join("\n\t").toLatin1().constData());
+                        return false;
+                    }
+            }
+
+            // parse qmake configuration
             while(qmakespec.endsWith(QLatin1Char('/')))
                 qmakespec.truncate(qmakespec.length()-1);
             QString spec = qmakespec + QLatin1String("/qmake.conf");
