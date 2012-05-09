@@ -91,9 +91,12 @@ static QHostAddress addressFromSockaddr(sockaddr *sa)
 
     if (sa->sa_family == AF_INET)
         address.setAddress(htonl(((sockaddr_in *)sa)->sin_addr.s_addr));
-    else if (sa->sa_family == AF_INET6)
+    else if (sa->sa_family == AF_INET6) {
         address.setAddress(((qt_sockaddr_in6 *)sa)->sin6_addr.qt_s6_addr);
-    else
+        int scope = ((qt_sockaddr_in6 *)sa)->sin6_scope_id;
+        if (scope)
+            address.setScopeId(QString::number(scope));
+    } else
         qWarning("Got unknown socket family %d", sa->sa_family);
     return address;
 
