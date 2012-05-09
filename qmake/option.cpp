@@ -115,6 +115,8 @@ bool Option::mkfile::do_dep_heuristics = true;
 bool Option::mkfile::do_preprocess = false;
 bool Option::mkfile::do_stub_makefile = false;
 bool Option::mkfile::do_cache = true;
+QString Option::mkfile::source_root;
+QString Option::mkfile::build_root;
 QString Option::mkfile::cachefile;
 QStringList Option::mkfile::project_files;
 QString Option::mkfile::qmakespec_commandline;
@@ -592,6 +594,29 @@ void Option::applyHostMode()
        Option::dir_sep = "/";
        Option::obj_ext = ".o";
    }
+}
+
+void Option::prepareProject(const QString &pfile)
+{
+    QString srcpath = (pfile != "-")
+            ? QDir::cleanPath(QFileInfo(pfile).absolutePath()) : qmake_getpwd();
+    if (srcpath != output_dir) {
+        if (!srcpath.endsWith(QLatin1Char('/')))
+            srcpath += QLatin1Char('/');
+        QString dstpath = output_dir;
+        if (!dstpath.endsWith(QLatin1Char('/')))
+            dstpath += QLatin1Char('/');
+        int srcLen = srcpath.length();
+        int dstLen = dstpath.length();
+        int lastSl = 0;
+        while (++lastSl, srcpath.at(--srcLen) == dstpath.at(--dstLen))
+            if (srcpath.at(srcLen) == QLatin1Char('/'))
+                lastSl = 1;
+        mkfile::source_root = srcpath.left(srcLen + lastSl);
+        mkfile::build_root = dstpath.left(dstLen + lastSl);
+    } else {
+        mkfile::source_root.clear();
+    }
 }
 
 bool Option::postProcessProject(QMakeProject *project)

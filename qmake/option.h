@@ -109,6 +109,7 @@ struct Option
     //both of these must be called..
     static int init(int argc=0, char **argv=0); //parse cmdline
     static void applyHostMode();
+    static void prepareProject(const QString &pfile);
     static bool postProcessProject(QMakeProject *);
 
     enum StringFixFlags {
@@ -203,6 +204,8 @@ struct Option
         static bool do_dep_heuristics;
         static bool do_preprocess;
         static bool do_stub_makefile;
+        static QString source_root;
+        static QString build_root;
         static QString cachefile;
         static int cachefile_depth;
         static QStringList project_files;

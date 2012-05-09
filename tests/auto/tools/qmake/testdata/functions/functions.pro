@@ -112,3 +112,4 @@ in = easy "less easy" sca$${LITERAL_HASH}ry crazy$$escape_expand(\\t\\r\\n) $$es
 out = "easy \"less easy\" sca\$\${LITERAL_HASH}ry crazy\$\$escape_expand(\\\\t\\\\r\\\\n) \$\$escape_expand(\\\\t)shit \\\'no\\\"way\\\\here"
 testReplace($$val_escape(in), $$out, "val_escape")
 
+testReplace($$shadowed($$PWD/something), $$OUT_PWD/something, "shadowed")
