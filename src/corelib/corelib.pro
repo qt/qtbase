@@ -4,7 +4,7 @@ TARGET	   = QtCore
 QPRO_PWD   = $$PWD
 QT         =
 
-CONFIG += module
+CONFIG += module exceptions
 MODULE = core     # not corelib, as per project file
 MODULE_PRI = ../modules/qt_core.pri
 

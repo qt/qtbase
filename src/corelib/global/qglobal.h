@@ -659,11 +659,10 @@ inline void qt_noop(void) {}
    Use the QT_NO_EXCEPTIONS macro to protect your code instead.
 */
 
-#ifdef QT_BOOTSTRAPPED
-#  define QT_NO_EXCEPTIONS
-#endif
-#if !defined(QT_NO_EXCEPTIONS) && defined(Q_CC_GNU) && !defined (__EXCEPTIONS) && !defined(Q_MOC_RUN)
-#  define QT_NO_EXCEPTIONS
+#if !defined(QT_NO_EXCEPTIONS)
+#  if defined(QT_BOOTSTRAPPED) || (defined(Q_CC_GNU) && !defined (__EXCEPTIONS) && !defined(Q_MOC_RUN))
+#    define QT_NO_EXCEPTIONS
+#  endif
 #endif
 
 #ifdef QT_NO_EXCEPTIONS

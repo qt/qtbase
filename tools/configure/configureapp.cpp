@@ -200,7 +200,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QMAKE_INTERNAL" ]  = "no";
     dictionary[ "FAST" ]            = "no";
     dictionary[ "NOPROCESS" ]       = "no";
-    dictionary[ "EXCEPTIONS" ]      = "yes";
     dictionary[ "WIDGETS" ]         = "yes";
     dictionary[ "RTTI" ]            = "yes";
     dictionary[ "SSE2" ]            = "auto";
@@ -768,11 +767,6 @@ void Configure::parseCmdLine()
             dictionary[ "FAST" ] = "yes";
         else if (configCmdLine.at(i) == "-no-fast")
             dictionary[ "FAST" ] = "no";
-
-        else if (configCmdLine.at(i) == "-exceptions")
-            dictionary[ "EXCEPTIONS" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-exceptions")
-            dictionary[ "EXCEPTIONS" ] = "no";
 
         else if (configCmdLine.at(i) == "-widgets")
             dictionary[ "WIDGETS" ] = "yes";
@@ -1365,7 +1359,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "FREETYPE" ]            = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "no";
-        dictionary[ "EXCEPTIONS" ]          = "no";
         dictionary[ "RTTI" ]                = "no";
         dictionary[ "SSE2" ]                = "no";
         dictionary[ "IWMMXT" ]              = "no";
@@ -1388,7 +1381,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "GFX_DRIVERS" ]         = "linuxfb";
         dictionary[ "MOUSE_DRIVERS" ]       = "pc linuxtp";
         dictionary[ "OPENGL" ]              = "no";
-        dictionary[ "EXCEPTIONS" ]          = "no";
         dictionary[ "DBUS"]                 = "no";
         dictionary[ "QT_QWS_DEPTH" ]        = "4 8 16 24 32";
         dictionary[ "QT_SXE" ]              = "no";
@@ -1446,7 +1438,7 @@ bool Configure::displayHelp()
     if (dictionary[ "HELP" ] == "yes") {
         desc("Usage: configure\n"
                     "[-release] [-debug] [-debug-and-release] [-shared] [-static]\n"
-                    "[-no-fast] [-fast] [-no-exceptions] [-exceptions]\n"
+                    "[-no-fast] [-fast] \n"
                     "[-no-accessibility] [-accessibility] [-no-rtti] [-rtti]\n"
                     "[-no-sql-<driver>] [-qt-sql-<driver>]\n"
                     "[-plugin-sql-<driver>] [-system-sqlite]\n"
@@ -1524,9 +1516,6 @@ bool Configure::displayHelp()
         for (int i=0; i<defaultBuildParts.size(); ++i)
             desc(               "",                     qPrintable(QString("  %1").arg(defaultBuildParts.at(i))), false, ' ');
         desc(                   "-nomake <part>",       "Exclude part from the list of parts to be built.\n");
-
-        desc("EXCEPTIONS", "no", "-no-exceptions",      "Disable exceptions on platforms that support it.");
-        desc("EXCEPTIONS", "yes","-exceptions",         "Enable exceptions on platforms that support it.\n");
 
         desc("WIDGETS", "no", "-no-widgets",            "Disable QtWidgets module\n");
 
@@ -2606,10 +2595,6 @@ void Configure::generateQConfigPri()
 
         if (dictionary[ "LTCG" ] == "yes")
             configStream << " ltcg";
-        if (dictionary[ "EXCEPTIONS" ] == "yes")
-            configStream << " exceptions";
-        if (dictionary[ "EXCEPTIONS" ] == "no")
-            configStream << " exceptions_off";
         if (dictionary[ "RTTI" ] == "yes")
             configStream << " rtti";
         if (dictionary[ "SSE2" ] == "yes")
@@ -2805,7 +2790,6 @@ void Configure::generateConfigfiles()
         }
 
         if (dictionary["ACCESSIBILITY"] == "no")     qconfigList += "QT_NO_ACCESSIBILITY";
-        if (dictionary["EXCEPTIONS"] == "no")        qconfigList += "QT_NO_EXCEPTIONS";
         if (dictionary["WIDGETS"] == "no")           qconfigList += "QT_NO_WIDGETS";
         if (dictionary["OPENGL"] == "no")            qconfigList += "QT_NO_OPENGL";
         if (dictionary["OPENVG"] == "no")            qconfigList += "QT_NO_OPENVG";
@@ -3027,7 +3011,6 @@ void Configure::displayConfig()
     cout << "Debug symbols..............." << (dictionary[ "BUILD" ] == "debug" ? "yes" : "no") << endl;
     cout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
     cout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
-    cout << "Exception support..........." << dictionary[ "EXCEPTIONS" ] << endl;
     cout << "RTTI support................" << dictionary[ "RTTI" ] << endl;
     cout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;
     cout << "IWMMXT support.............." << dictionary[ "IWMMXT" ] << endl;

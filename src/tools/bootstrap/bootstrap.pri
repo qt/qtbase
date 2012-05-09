@@ -5,6 +5,7 @@ build_all:!build_pass {
     CONFIG += release
 }
 CONFIG     -= app_bundle
+CONFIG += exceptions_off
 
 DEFINES	       += \
         QT_BOOTSTRAPPED \

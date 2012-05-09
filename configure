@@ -645,7 +645,6 @@ MIN_DBUS_1_VERSION=0.93
 # initalize internal variables
 CFG_CONFIGURE_EXIT_ON_ERROR=yes
 CFG_PROFILE=no
-CFG_EXCEPTIONS=unspecified
 CFG_GUI=auto # (yes|no|auto)
 CFG_WIDGETS=yes
 CFG_QCONFIG=full
@@ -891,7 +890,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-directfb|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-pkg-config|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-directfb|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-pkg-config|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1207,15 +1206,6 @@ while [ "$#" -gt 0 ]; do
     testcocoon)
         if [ "$VAL" = "yes" ]; then
             QTCONFIG_CONFIG="$QTCONFIG_CONFIG testcocoon"
-        fi
-        ;;
-    exceptions|g++-exceptions)
-        if [ "$VAL" = "no" ]; then
-            CFG_EXCEPTIONS=no
-        elif [ "$VAL" = "yes" ]; then
-            CFG_EXCEPTIONS=yes
-        else
-            UNKNOWN_OPT=yes
         fi
         ;;
     platform)
@@ -2842,8 +2832,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-translationdir <dir>] [-sysconfdir <dir>] [-examplesdir <dir>] [-testsdir <dir>]
         [-release] [-debug] [-debug-and-release]
         [-developer-build] [-shared] [-static] [-no-fast] [-fast] [-no-largefile]
-        [-largefile] [-no-exceptions] [-exceptions] [-no-accessibility]
-        [-accessibility] [-no-sql-<driver>] [-sql-<driver>]
+        [-largefile] [-no-accessibility] [-accessibility] [-no-sql-<driver>] [-sql-<driver>]
         [-plugin-sql-<driver>] [-system-sqlite]
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
         [-qt-zlib] [-system-zlib] [-no-gif] [-no-libpng] [-qt-libpng] [-system-libpng]
@@ -2943,9 +2932,6 @@ Configure options:
 
     -no-largefile ...... Disables large file support.
  +  -largefile ......... Enables Qt to access files larger than 4 GB.
-
-    -no-exceptions ..... Disable exceptions on compilers that support it.
- *  -exceptions ........ Enable exceptions on compilers that support it.
 
     -no-accessibility .. Do not compile Accessibility support.
  *  -accessibility ..... Compile Accessibility support.
@@ -5196,17 +5182,6 @@ if [ '!' -z "$W_FLAGS" ]; then
     QMakeVar add QMAKE_OBJECTIVE_CFLAGS_WARN_ON "$W_FLAGS"
 fi
 
-# turn off exceptions for the compilers that support it
-if [ "$XPLATFORM" != "$PLATFORM" ]; then
-    COMPILER=`echo $XPLATFORM | cut -f 2- -d-`
-else
-    COMPILER=`echo $PLATFORM | cut -f 2- -d-`
-fi
-
-if [ "$CFG_EXCEPTIONS" != "no" ]; then
-    QTCONFIG_CONFIG="$QTCONFIG_CONFIG exceptions"
-fi
-
 if [ "$XPLATFORM_MINGW" = "yes" ]; then
     # mkspecs/features/win32/default_pre.prf sets "no-rtti".
     # Follow default behavior of configure.exe by overriding with "rtti".
@@ -5412,28 +5387,6 @@ if [ "$CFG_QML_DEBUG" = "no" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_QML_NO_DEBUGGER"
 fi
 
-if [ "$CFG_EXCEPTIONS" = "no" ]; then
-    case "$COMPILER" in
-    g++*)
-	QMakeVar add QMAKE_CFLAGS -fno-exceptions
-	QMakeVar add QMAKE_CXXFLAGS -fno-exceptions
-	QMakeVar add QMAKE_LFLAGS -fno-exceptions
-        ;;
-    cc*)
-        case "$PLATFORM" in
-        irix-cc*)
-	    QMakeVar add QMAKE_CFLAGS -LANG:exceptions=off
-	    QMakeVar add QMAKE_CXXFLAGS -LANG:exceptions=off
-	    QMakeVar add QMAKE_LFLAGS -LANG:exceptions=off
-            ;;
-        *) ;;
-        esac
-        ;;
-    *) ;;
-    esac
-    QMAKE_CONFIG="$QMAKE_CONFIG exceptions_off"
-fi
-
 case "$COMPILER" in
 g++*)
     # GNU C++
@@ -5553,7 +5506,6 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_PNG" != "yes" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_PNG"
 [ "$CFG_JPEG" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_JPEG"
 [ "$CFG_ZLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ZLIB"
-[ "$CFG_EXCEPTIONS" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EXCEPTIONS"
 [ "$CFG_SXE" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SXE"
 [ "$CFG_DBUS" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DBUS"
 
@@ -5859,46 +5811,6 @@ fi
 # give feedback on configuration
 #-------------------------------------------------------------------------------
 exec 3>&1 1>$outpath/config.summary # redirect output temporarily to config.summary
-
-case "$COMPILER" in
-g++*)
-    if [ "$CFG_EXCEPTIONS" != "no" ]; then
-        cat <<EOF
-
-        This target is using the GNU C++ compiler ($PLATFORM).
-
-        Recent versions of this compiler automatically include code for
-        exceptions, which increase both the size of the Qt libraries and
-        the amount of memory taken by your applications.
-
-        You may choose to re-run `basename $0` with the -no-exceptions
-        option to compile Qt without exceptions. This is completely binary
-        compatible, and existing applications will continue to work.
-
-EOF
-    fi
-    ;;
-cc*)
-    case "$PLATFORM" in
-    irix-cc*)
-        if [ "$CFG_EXCEPTIONS" != "no" ]; then
-            cat <<EOF
-
-        This target is using the MIPSpro C++ compiler ($PLATFORM).
-
-        You may choose to re-run `basename $0` with the -no-exceptions
-        option to compile Qt without exceptions. This will make the
-        size of the Qt library smaller and reduce the amount of memory
-        taken by your applications.
-
-EOF
-        fi
-        ;;
-    *) ;;
-    esac
-    ;;
-*) ;;
-esac
 
 echo
 if [ "$XPLATFORM" = "$PLATFORM" ]; then

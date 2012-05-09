@@ -28,3 +28,6 @@ mac {
        CONFIG += absolute_library_soname
    }
 }
+
+# Qt modules get compiled without exceptions enabled by default
+CONFIG += exceptions_off

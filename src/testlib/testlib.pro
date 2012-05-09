@@ -4,7 +4,7 @@ TARGET = QtTest
 QPRO_PWD = $$PWD
 QT = core
 
-CONFIG += module
+CONFIG += module exceptions
 MODULE_PRI = ../modules/qt_testlib.pri
 
 INCLUDEPATH += .

@@ -4,6 +4,7 @@ CONFIG += staticlib
 
 CONFIG += console qtinc 
 CONFIG -= qt
+CONFIG += exceptions_off
 build_all:!build_pass {
     CONFIG -= build_all
     CONFIG += release
