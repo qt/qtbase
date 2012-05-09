@@ -367,40 +367,94 @@ typedef DWORD OLE_COLOR;
 #define WS_EX_NODRAG       0x40000000L
 #endif
 
-// As Windows CE lacks some standard functions used in Qt, these got
-// reimplented. Other projects do this as well and to not fill the
-// global namespace with this implementation, prepend qt_wince* and use
-// these versions inside of Qt.
-// The other declarations available in this file are being used per
-// define inside qplatformdefs.h of the corresponding WinCE mkspec.
-#define getenv_s(a,b,c,d)       qt_wince_getenv_s(a,b,c,d)
-#define _putenv_s(a,b)          qt_wince__putenv_s(a,b)
-#define _getpid()               qt_wince__getpid()
-#define time_tToFt(a)           qt_wince_time_tToFt(a)
-#define _getdrive()             qt_wince__getdrive()
-#define _waccess(a,b)           qt_wince__waccess(a,b)
-#define _wopen(a,b,c)           qt_wince__wopen(a,b,c)
-#define _fdopen(a,b)            qt_wince__fdopen(a,b)
-#define fdopen(a,b)             qt_wince_fdopen(a,b)
-#define rewind(a)               qt_wince_rewind(a)
-#define tmpfile()               qt_wince_tmpfile()
-#define _rename(a,b)            qt_wince__rename(a,b)
-#define _remove(a)              qt_wince__remove(a)
-#define SetErrorMode(a)         qt_wince_SetErrorMode(a)
-#define _chmod(a,b)             qt_wince__chmod(a,b)
-#define _wchmod(a,b)            qt_wince__wchmod(a,b)
-#define CreateFileA(a,b,c,d,e,f,g) qt_wince_CreateFileA(a,b,c,d,e,f,g)
-#define SetWindowOrgEx(a,b,c,d) qt_wince_SetWindowOrgEx(a,b,c,d)
-#define calloc(a,b)             qt_wince_calloc(a,b)
-#define GetThreadLocale()       qt_wince_GetThreadLocale()
-#define _beginthread(a,b,c)     qt_wince__beginthread(a,b,c)
-#define _beginthreadex(a,b,c,d,e,f) qt_wince__beginthreadex(a,b,c,d,e,f)
-#define _endthreadex(a)         qt_wince__endthreadex(a)
-#define bsearch(a,b,c,d,e)      qt_wince_bsearch(a,b,c,d,e)
-
 #ifdef __cplusplus
 } // Extern C.
 #endif
+
+#ifdef __cplusplus
+
+
+// As Windows CE lacks some standard functions used in Qt, these got
+// reimplemented. Other projects do this as well. Inline functions are used
+// that there is a central place to disable functions for newer versions if
+// they get available. There are no defines used anymore, because this
+// will break member functions of classes which are called like these
+// functions. Also inline functions are only supported by C++, so just define
+// them for C++, as only 3rd party dependencies are C, this is no issue.
+// The other declarations available in this file are being used per
+// define inside qplatformdefs.h of the corresponding WinCE mkspec.
+
+#define generate_inline_return_func0(funcname, returntype) \
+        inline returntype funcname() \
+        { \
+            return qt_wince_##funcname(); \
+        }
+#define generate_inline_return_func1(funcname, returntype, param1) \
+        inline returntype funcname(param1 p1) \
+        { \
+            return qt_wince_##funcname(p1); \
+        }
+#define generate_inline_return_func2(funcname, returntype, param1, param2) \
+        inline returntype funcname(param1 p1, param2 p2) \
+        { \
+            return qt_wince_##funcname(p1,  p2); \
+        }
+#define generate_inline_return_func3(funcname, returntype, param1, param2, param3) \
+        inline returntype funcname(param1 p1, param2 p2, param3 p3) \
+        { \
+            return qt_wince_##funcname(p1,  p2, p3); \
+        }
+#define generate_inline_return_func4(funcname, returntype, param1, param2, param3, param4) \
+        inline returntype funcname(param1 p1, param2 p2, param3 p3, param4 p4) \
+        { \
+            return qt_wince_##funcname(p1,  p2, p3, p4); \
+        }
+#define generate_inline_return_func5(funcname, returntype, param1, param2, param3, param4, param5) \
+        inline returntype funcname(param1 p1, param2 p2, param3 p3, param4 p4, param5 p5) \
+        { \
+            return qt_wince_##funcname(p1,  p2, p3, p4, p5); \
+        }
+#define generate_inline_return_func6(funcname, returntype, param1, param2, param3, param4, param5, param6) \
+        inline returntype funcname(param1 p1, param2 p2, param3 p3, param4 p4, param5 p5, param6 p6) \
+        { \
+            return qt_wince_##funcname(p1,  p2, p3, p4, p5, p6); \
+        }
+#define generate_inline_return_func7(funcname, returntype, param1, param2, param3, param4, param5, param6, param7) \
+        inline returntype funcname(param1 p1, param2 p2, param3 p3, param4 p4, param5 p5, param6 p6, param7 p7) \
+        { \
+            return qt_wince_##funcname(p1,  p2, p3, p4, p5, p6, p7); \
+        }
+
+typedef unsigned (__stdcall *StartAdressExFunc)(void *);
+typedef void(*StartAdressFunc)(void *);
+typedef int ( __cdecl *CompareFunc ) (const void *, const void *) ;
+
+generate_inline_return_func4(getenv_s, errno_t, size_t *, char *, size_t, const char *)
+generate_inline_return_func2(_putenv_s, errno_t, const char *, const char *)
+generate_inline_return_func0(_getpid, int)
+generate_inline_return_func1(time_tToFt, FILETIME, time_t)
+generate_inline_return_func0(_getdrive, int)
+generate_inline_return_func2(_waccess, int, const wchar_t *, int)
+generate_inline_return_func3(_wopen, int, const wchar_t *, int, int)
+generate_inline_return_func2(_fdopen, FILE *, int, const char *)
+generate_inline_return_func2(fdopen, FILE *, int, const char *)
+generate_inline_return_func1(rewind, void, FILE *)
+generate_inline_return_func0(tmpfile, FILE *)
+generate_inline_return_func2(_rename, int, const char *, const char *)
+generate_inline_return_func1(_remove, int, const char *)
+generate_inline_return_func1(SetErrorMode, int, int)
+generate_inline_return_func2(_chmod, bool, const char *, int)
+generate_inline_return_func2(_wchmod, bool, const wchar_t *, int)
+generate_inline_return_func7(CreateFileA, HANDLE, LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE)
+generate_inline_return_func4(SetWindowOrgEx, BOOL, HDC, int, int, LPPOINT)
+generate_inline_return_func2(calloc, void *, size_t, size_t)
+generate_inline_return_func0(GetThreadLocale, DWORD)
+generate_inline_return_func3(_beginthread, HANDLE, StartAdressFunc, unsigned, void *)
+generate_inline_return_func6(_beginthreadex, unsigned long, void *, unsigned, StartAdressExFunc, void *, unsigned, unsigned *)
+generate_inline_return_func1(_endthreadex, void, unsigned)
+generate_inline_return_func5(bsearch, void *, const void *, const void *, size_t, size_t, CompareFunc)
+
+#endif //__cplusplus
 
 #endif // Q_OS_WINCE
 #endif // QFUNCTIONS_WCE_H
