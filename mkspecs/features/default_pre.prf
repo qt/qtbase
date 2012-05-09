@@ -47,9 +47,6 @@ CONFIG = lex yacc warn_on debug uic resources exceptions $$CONFIG
         error("Failed to run: $$MSG")
     }
 
-    # Let qmake know about the unexpectedly appearing cache file.
-    exists($$QMAKE_SYNCQT_OUTDIR/.qmake.cache):_QMAKE_CACHE_ = $$QMAKE_SYNCQT_OUTDIR/.qmake.cache
-
     unset(QTFWD)
     unset(PRO_BASENAME)
 }
