@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,58 +39,55 @@
 **
 ****************************************************************************/
 
-#include "qplatformdefs.h"
-#include "qurl.h"
+#define QT_DEPRECATED
+#define QT_DISABLE_DEPRECATED_BEFORE 0
 #include "private/qdataurl_p.h"
+#include <QtTest/QtTest>
+#include <QtCore/QDebug>
 
-QT_BEGIN_NAMESPACE
-
-/*!
-    \internal
-
-    Decode a data: URL into its mimetype and payload. Returns a null string if
-    the URL could not be decoded.
-*/
-Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray &payload)
+class tst_QDataUrl : public QObject
 {
-    if (uri.scheme() != QLatin1String("data") || !uri.host().isEmpty())
-        return false;
+    Q_OBJECT
 
-    mimeType = QLatin1String("text/plain;charset=US-ASCII");
+private slots:
+    void nonData();
+    void emptyData();
+    void alreadyPercentageEncoded();
+};
 
-    // the following would have been the correct thing, but
-    // reality often differs from the specification. People have
-    // data: URIs with ? and #
-    //QByteArray data = QByteArray::fromPercentEncoding(uri.path(QUrl::FullyEncoded).toLatin1());
-    QByteArray data = QByteArray::fromPercentEncoding(uri.url(QUrl::FullyEncoded | QUrl::RemoveScheme).toLatin1());
-
-    // parse it:
-    int pos = data.indexOf(',');
-    if (pos != -1) {
-        payload = data.mid(pos + 1);
-        data.truncate(pos);
-        data = data.trimmed();
-
-        // find out if the payload is encoded in Base64
-        if (data.endsWith(";base64")) {
-            payload = QByteArray::fromBase64(payload);
-            data.chop(7);
-        }
-
-        if (data.toLower().startsWith("charset")) {
-            int i = 7;      // strlen("charset")
-            while (data.at(i) == ' ')
-                ++i;
-            if (data.at(i) == '=')
-                data.prepend("text/plain;");
-        }
-
-        if (!data.isEmpty())
-            mimeType = QLatin1String(data.trimmed());
-
-    }
-
-    return true;
+void tst_QDataUrl::nonData()
+{
+    QLatin1String data("http://test.com");
+    QUrl url(data);
+    QString mimeType;
+    QByteArray payload;
+    bool result = qDecodeDataUrl(url, mimeType, payload);
+    QVERIFY(!result);
 }
 
-QT_END_NAMESPACE
+void tst_QDataUrl::emptyData()
+{
+    QLatin1String data("data:text/plain");
+    QUrl url(data);
+    QString mimeType;
+    QByteArray payload;
+    bool result = qDecodeDataUrl(url, mimeType, payload);
+    QVERIFY(result);
+    QCOMPARE(mimeType, QLatin1String("text/plain;charset=US-ASCII"));
+    QVERIFY(payload.isNull());
+}
+
+void tst_QDataUrl::alreadyPercentageEncoded()
+{
+    QLatin1String data("data:text/plain,%E2%88%9A");
+    QUrl url(data);
+    QString mimeType;
+    QByteArray payload;
+    bool result = qDecodeDataUrl(url, mimeType, payload);
+    QVERIFY(result);
+    QCOMPARE(mimeType, QLatin1String("text/plain"));
+    QCOMPARE(payload, QByteArray::fromPercentEncoding("%E2%88%9A"));
+}
+
+QTEST_MAIN(tst_QDataUrl)
+#include "tst_qdataurl.moc"

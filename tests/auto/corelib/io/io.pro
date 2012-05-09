@@ -3,6 +3,7 @@ SUBDIRS=\
     qabstractfileengine \
     qbuffer \
     qdatastream \
+    qdataurl \
     qdebug \
     qdir \
     qdiriterator \
