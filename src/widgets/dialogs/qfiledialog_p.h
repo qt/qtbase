@@ -348,45 +348,45 @@ inline QString QFileDialogPrivate::rootPath() const {
 inline void QFileDialogPrivate::setDirectory_sys(const QString &directory)
 {
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
-        helper->setDirectory_sys(directory);
+        helper->setDirectory(directory);
 }
 
 inline QString QFileDialogPrivate::directory_sys() const
 {
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
-        return helper->directory_sys();
+        return helper->directory();
     return QString();
 }
 
 inline void QFileDialogPrivate::selectFile_sys(const QString &filename)
 {
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
-        helper->selectFile_sys(filename);
+        helper->selectFile(filename);
 }
 
 inline QStringList QFileDialogPrivate::selectedFiles_sys() const
 {
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
-        return helper->selectedFiles_sys();
+        return helper->selectedFiles();
     return QStringList();
 }
 
 inline void QFileDialogPrivate::setFilter_sys()
 {
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
-        helper->setFilter_sys();
+        helper->setFilter();
 }
 
 inline void QFileDialogPrivate::selectNameFilter_sys(const QString &filter)
 {
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
-        helper->selectNameFilter_sys(filter);
+        helper->selectNameFilter(filter);
 }
 
 inline QString QFileDialogPrivate::selectedNameFilter_sys() const
 {
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
-        return helper->selectedNameFilter_sys();
+        return helper->selectedNameFilter();
     return QString();
 }
 

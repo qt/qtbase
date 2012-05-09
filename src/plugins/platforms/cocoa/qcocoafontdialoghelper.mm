@@ -364,7 +364,7 @@ QCocoaFontDialogHelper::QCocoaFontDialogHelper() :
 QCocoaFontDialogHelper::~QCocoaFontDialogHelper()
 { }
 
-void QCocoaFontDialogHelper::exec_sys()
+void QCocoaFontDialogHelper::exec()
 {
     // Note: If NSApp is not running (which is the case if e.g a top-most
     // QEventLoop has been interrupted, and the second-most event loop has not
@@ -377,7 +377,7 @@ void QCocoaFontDialogHelper::exec_sys()
         emit reject();
 }
 
-void QCocoaFontDialogHelper::deleteNativeDialog_sys()
+void QCocoaFontDialogHelper::deleteNativeDialog()
 {
     if (!mDelegate)
         return;
@@ -385,7 +385,7 @@ void QCocoaFontDialogHelper::deleteNativeDialog_sys()
     mDelegate = 0;
 }
 
-bool QCocoaFontDialogHelper::show_sys(Qt::WindowFlags, Qt::WindowModality windowModality, QWindow *parent)
+bool QCocoaFontDialogHelper::show(Qt::WindowFlags, Qt::WindowModality windowModality, QWindow *parent)
 {
     if (windowModality == Qt::WindowModal) {
         // Cocoa's shared font panel cannot be shown as a sheet
@@ -394,14 +394,14 @@ bool QCocoaFontDialogHelper::show_sys(Qt::WindowFlags, Qt::WindowModality window
     return showCocoaFontPanel(windowModality, parent);
 }
 
-void QCocoaFontDialogHelper::hide_sys()
+void QCocoaFontDialogHelper::hide()
 {
     if (!mDelegate)
         return;
     [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate)->mFontPanel close];
 }
 
-void QCocoaFontDialogHelper::setCurrentFont_sys(const QFont &font)
+void QCocoaFontDialogHelper::setCurrentFont(const QFont &font)
 {
     NSFontManager *mgr = [NSFontManager sharedFontManager];
     const NSFont *nsFont = 0;
@@ -429,7 +429,7 @@ void QCocoaFontDialogHelper::setCurrentFont_sys(const QFont &font)
     static_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate)->mQtFont = font;
 }
 
-QFont QCocoaFontDialogHelper::currentFont_sys() const
+QFont QCocoaFontDialogHelper::currentFont() const
 {
     if (!mDelegate)
         return QFont();

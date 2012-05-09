@@ -345,7 +345,7 @@ QCocoaColorDialogHelper::QCocoaColorDialogHelper() :
 QCocoaColorDialogHelper::~QCocoaColorDialogHelper()
 { }
 
-void QCocoaColorDialogHelper::exec_sys()
+void QCocoaColorDialogHelper::exec()
 {
     // Note: If NSApp is not running (which is the case if e.g a top-most
     // QEventLoop has been interrupted, and the second-most event loop has not
@@ -358,7 +358,7 @@ void QCocoaColorDialogHelper::exec_sys()
         emit reject();
 }
 
-void QCocoaColorDialogHelper::deleteNativeDialog_sys()
+void QCocoaColorDialogHelper::deleteNativeDialog()
 {
     if (!mDelegate)
         return;
@@ -366,7 +366,7 @@ void QCocoaColorDialogHelper::deleteNativeDialog_sys()
     mDelegate = 0;
 }
 
-bool QCocoaColorDialogHelper::show_sys(Qt::WindowFlags, Qt::WindowModality windowModality, QWindow *parent)
+bool QCocoaColorDialogHelper::show(Qt::WindowFlags, Qt::WindowModality windowModality, QWindow *parent)
 {
     if (windowModality == Qt::WindowModal) {
         // Cocoa's shared color panel cannot be shown as a sheet
@@ -375,14 +375,14 @@ bool QCocoaColorDialogHelper::show_sys(Qt::WindowFlags, Qt::WindowModality windo
     return showCocoaColorPanel(windowModality, parent);
 }
 
-void QCocoaColorDialogHelper::hide_sys()
+void QCocoaColorDialogHelper::hide()
 {
     if (!mDelegate)
         return;
     [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate)->mColorPanel close];
 }
 
-void QCocoaColorDialogHelper::setCurrentColor_sys(const QColor &color)
+void QCocoaColorDialogHelper::setCurrentColor(const QColor &color)
 {
     if (!mDelegate)
         createNSColorPanelDelegate();
@@ -410,7 +410,7 @@ void QCocoaColorDialogHelper::setCurrentColor_sys(const QColor &color)
     [delegate->mColorPanel setColor:nsColor];
 }
 
-QColor QCocoaColorDialogHelper::currentColor_sys() const
+QColor QCocoaColorDialogHelper::currentColor() const
 {
     if (!mDelegate)
         return QColor();

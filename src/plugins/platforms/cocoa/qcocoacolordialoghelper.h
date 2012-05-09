@@ -53,13 +53,13 @@ public:
     QCocoaColorDialogHelper();
     virtual ~QCocoaColorDialogHelper();
 
-    void exec_sys();
-    void deleteNativeDialog_sys();
-    bool show_sys(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
-    void hide_sys();
+    void exec();
+    void deleteNativeDialog();
+    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
+    void hide();
 
-    void setCurrentColor_sys(const QColor&);
-    QColor currentColor_sys() const;
+    void setCurrentColor(const QColor&);
+    QColor currentColor() const;
 
 public:
     bool showCocoaColorPanel(Qt::WindowModality windowModality, QWindow *parent);

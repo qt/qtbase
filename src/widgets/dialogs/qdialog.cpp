@@ -108,9 +108,9 @@ bool QDialogPrivate::setNativeDialogVisible(bool visible)
         if (visible) {
             Q_Q(QDialog);
             helperPrepareShow(helper);
-            nativeDialogInUse = helper->show_sys(q->windowFlags(), q->windowModality(), parentWindow());
+            nativeDialogInUse = helper->show(q->windowFlags(), q->windowModality(), parentWindow());
         } else {
-            helper->hide_sys();
+            helper->hide();
         }
     }
     return nativeDialogInUse;
@@ -126,7 +126,7 @@ QVariant QDialogPrivate::styleHint(QPlatformDialogHelper::StyleHint hint) const
 void QDialogPrivate::deleteNativeDialog()
 {
     if (QPlatformDialogHelper *helper = platformHelper()) {
-        helper->deleteNativeDialog_sys();
+        helper->deleteNativeDialog();
         nativeDialogInUse = false;
     }
 }
@@ -528,7 +528,7 @@ int QDialog::exec()
 
     QPointer<QDialog> guard = this;
     if (d->nativeDialogInUse) {
-        d->platformHelper()->exec_sys();
+        d->platformHelper()->exec();
     } else {
         QEventLoop eventLoop;
         d->eventLoop = &eventLoop;

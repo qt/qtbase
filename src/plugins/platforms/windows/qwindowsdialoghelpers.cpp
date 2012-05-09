@@ -445,7 +445,7 @@ QWindowsNativeDialogBase *QWindowsDialogHelperBase<BaseClass>::ensureNativeDialo
 }
 
 template <class BaseClass>
-void QWindowsDialogHelperBase<BaseClass>::deleteNativeDialog_sys()
+void QWindowsDialogHelperBase<BaseClass>::deleteNativeDialog()
 {
     if (QWindowsContext::verboseDialogs)
         qDebug("%s" , __FUNCTION__);
@@ -486,7 +486,7 @@ void QWindowsDialogThread::run()
 }
 
 template <class BaseClass>
-bool QWindowsDialogHelperBase<BaseClass>::show_sys(Qt::WindowFlags,
+bool QWindowsDialogHelperBase<BaseClass>::show(Qt::WindowFlags,
                                                    Qt::WindowModality windowModality,
                                                    QWindow *parent)
 {
@@ -511,7 +511,7 @@ bool QWindowsDialogHelperBase<BaseClass>::show_sys(Qt::WindowFlags,
 }
 
 template <class BaseClass>
-void QWindowsDialogHelperBase<BaseClass>::hide_sys()
+void QWindowsDialogHelperBase<BaseClass>::hide()
 {
     if (m_nativeDialog)
         m_nativeDialog->close();
@@ -519,7 +519,7 @@ void QWindowsDialogHelperBase<BaseClass>::hide_sys()
 }
 
 template <class BaseClass>
-void QWindowsDialogHelperBase<BaseClass>::exec_sys()
+void QWindowsDialogHelperBase<BaseClass>::exec()
 {
     if (QWindowsContext::verboseDialogs)
         qDebug("%s" , __FUNCTION__);
@@ -1106,14 +1106,14 @@ public:
 
     virtual bool defaultNameFilterDisables() const
         { return true; }
-    virtual void setDirectory_sys(const QString &directory);
-    virtual QString directory_sys() const;
-    virtual void selectFile_sys(const QString &filename);
-    virtual QStringList selectedFiles_sys() const;
-    virtual void setFilter_sys();
-    virtual void setNameFilters_sys(const QStringList &filters);
-    virtual void selectNameFilter_sys(const QString &filter);
-    virtual QString selectedNameFilter_sys() const;
+    virtual void setDirectory(const QString &directory);
+    virtual QString directory() const;
+    virtual void selectFile(const QString &filename);
+    virtual QStringList selectedFiles() const;
+    virtual void setFilter();
+    virtual void setNameFilters(const QStringList &filters);
+    virtual void selectNameFilter(const QString &filter);
+    virtual QString selectedNameFilter() const;
 
 private:
     virtual QWindowsNativeDialogBase *createNativeDialog();
@@ -1159,7 +1159,7 @@ QWindowsNativeDialogBase *QWindowsFileDialogHelper::createNativeDialog()
     return result;
 }
 
-void QWindowsFileDialogHelper::setDirectory_sys(const QString &directory)
+void QWindowsFileDialogHelper::setDirectory(const QString &directory)
 {
     if (QWindowsContext::verboseDialogs)
         qDebug("%s %s" , __FUNCTION__, qPrintable(directory));
@@ -1168,19 +1168,19 @@ void QWindowsFileDialogHelper::setDirectory_sys(const QString &directory)
         nfd->setDirectory(directory);
 }
 
-QString QWindowsFileDialogHelper::directory_sys() const
+QString QWindowsFileDialogHelper::directory() const
 {
     if (const QWindowsNativeFileDialogBase *nfd = nativeFileDialog())
         return nfd->directory();
     return QString();
 }
 
-void QWindowsFileDialogHelper::selectFile_sys(const QString & /* filename */)
+void QWindowsFileDialogHelper::selectFile(const QString & /* filename */)
 {
     // Not implemented.
 }
 
-QStringList QWindowsFileDialogHelper::selectedFiles_sys() const
+QStringList QWindowsFileDialogHelper::selectedFiles() const
 {
     QStringList files;
     if (const QWindowsNativeFileDialogBase *nfd = nativeFileDialog())
@@ -1191,13 +1191,13 @@ QStringList QWindowsFileDialogHelper::selectedFiles_sys() const
     return files;
 }
 
-void QWindowsFileDialogHelper::setFilter_sys()
+void QWindowsFileDialogHelper::setFilter()
 {
     if (QWindowsContext::verboseDialogs)
         qDebug("%s" , __FUNCTION__);
 }
 
-void QWindowsFileDialogHelper::setNameFilters_sys(const QStringList &filters)
+void QWindowsFileDialogHelper::setNameFilters(const QStringList &filters)
 {
     if (QWindowsContext::verboseDialogs)
         qDebug("%s" , __FUNCTION__);
@@ -1205,13 +1205,13 @@ void QWindowsFileDialogHelper::setNameFilters_sys(const QStringList &filters)
         nfd->setNameFilters(filters);
 }
 
-void QWindowsFileDialogHelper::selectNameFilter_sys(const QString &filter)
+void QWindowsFileDialogHelper::selectNameFilter(const QString &filter)
 {
     if (QWindowsNativeFileDialogBase *nfd = nativeFileDialog())
         nfd->selectNameFilter(filter);
 }
 
-QString QWindowsFileDialogHelper::selectedNameFilter_sys() const
+QString QWindowsFileDialogHelper::selectedNameFilter() const
 {
     if (const QWindowsNativeFileDialogBase *nfd = nativeFileDialog())
         return nfd->selectedNameFilter();
@@ -1322,8 +1322,8 @@ public:
     virtual bool supportsNonModalDialog()
         { return false; }
 
-    virtual QColor currentColor_sys() const { return *m_currentColor; }
-    virtual void setCurrentColor_sys(const QColor &c) { *m_currentColor = c; }
+    virtual QColor currentColor() const { return *m_currentColor; }
+    virtual void setCurrentColor(const QColor &c) { *m_currentColor = c; }
 
 private:
     inline QWindowsNativeColorDialog *nativeFileDialog() const

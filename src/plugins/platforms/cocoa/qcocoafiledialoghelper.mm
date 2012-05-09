@@ -543,36 +543,36 @@ void QCocoaFileDialogHelper::QNSOpenSavePanelDelegate_filterSelected(int menuInd
 extern OSErr qt_mac_create_fsref(const QString &, FSRef *); // qglobal.cpp
 extern void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding encoding=0, int len=-1); // qglobal.cpp
 
-void QCocoaFileDialogHelper::setDirectory_sys(const QString &directory)
+void QCocoaFileDialogHelper::setDirectory(const QString &directory)
 {
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
     [delegate->mSavePanel setDirectory:QCFString::toNSString(directory)];
 }
 
-QString QCocoaFileDialogHelper::directory_sys() const
+QString QCocoaFileDialogHelper::directory() const
 {
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
     return QCFString::toQString([delegate->mSavePanel directory]);
 }
 
-void QCocoaFileDialogHelper::selectFile_sys(const QString &filename)
+void QCocoaFileDialogHelper::selectFile(const QString &filename)
 {
     QString filePath = filename;
     if (QDir::isRelativePath(filePath))
-        filePath = QFileInfo(directory_sys(), filePath).filePath();
+        filePath = QFileInfo(directory(), filePath).filePath();
 
     // There seems to no way to select a file once the dialog is running.
     // So do the next best thing, set the file's directory:
-    setDirectory_sys(QFileInfo(filePath).absolutePath());
+    setDirectory(QFileInfo(filePath).absolutePath());
 }
 
-QStringList QCocoaFileDialogHelper::selectedFiles_sys() const
+QStringList QCocoaFileDialogHelper::selectedFiles() const
 {
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
     return [delegate selectedFiles];
 }
 
-void QCocoaFileDialogHelper::setFilter_sys()
+void QCocoaFileDialogHelper::setFilter()
 {
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
     const SharedPointerFileDialogOptions &opts = options();
@@ -585,7 +585,7 @@ void QCocoaFileDialogHelper::setFilter_sys()
     [delegate updateProperties];
 }
 
-void QCocoaFileDialogHelper::selectNameFilter_sys(const QString &filter)
+void QCocoaFileDialogHelper::selectNameFilter(const QString &filter)
 {
     const int index = options()->nameFilters().indexOf(filter);
     if (index != -1) {
@@ -595,25 +595,25 @@ void QCocoaFileDialogHelper::selectNameFilter_sys(const QString &filter)
     }
 }
 
-QString QCocoaFileDialogHelper::selectedNameFilter_sys() const
+QString QCocoaFileDialogHelper::selectedNameFilter() const
 {
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
     int index = [delegate->mPopUpButton indexOfSelectedItem];
     return index != -1 ? options()->nameFilters().at(index) : QString();
 }
 
-void QCocoaFileDialogHelper::deleteNativeDialog_sys()
+void QCocoaFileDialogHelper::deleteNativeDialog()
 {
     [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate) release];
     mDelegate = 0;
 }
 
-void QCocoaFileDialogHelper::hide_sys()
+void QCocoaFileDialogHelper::hide()
 {
     hideCocoaFilePanel();
 }
 
-bool QCocoaFileDialogHelper::show_sys(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent)
+bool QCocoaFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent)
 {
 //    Q_Q(QFileDialog);
     if (windowFlags & Qt::WindowStaysOnTopHint) {
@@ -672,7 +672,7 @@ bool QCocoaFileDialogHelper::hideCocoaFilePanel()
     }
 }
 
-void QCocoaFileDialogHelper::exec_sys()
+void QCocoaFileDialogHelper::exec()
 {
     // Note: If NSApp is not running (which is the case if e.g a top-most
     // QEventLoop has been interrupted, and the second-most event loop has not

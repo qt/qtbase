@@ -90,14 +90,14 @@ public:
 
     virtual QVariant styleHint(StyleHint hint) const;
 
-    virtual void exec_sys() = 0;
+    virtual void exec() = 0;
 
-    virtual void deleteNativeDialog_sys() = 0;
+    virtual void deleteNativeDialog() = 0;
 
-    virtual bool show_sys(Qt::WindowFlags windowFlags,
+    virtual bool show(Qt::WindowFlags windowFlags,
                           Qt::WindowModality windowModality,
                           QWindow *parent) = 0;
-    virtual void hide_sys() = 0;
+    virtual void hide() = 0;
 
     static QVariant defaultStyleHint(QPlatformDialogHelper::StyleHint hint);
 
@@ -150,8 +150,8 @@ public:
     const QSharedPointer<QColorDialogOptions> &options() const;
     void setOptions(const QSharedPointer<QColorDialogOptions> &options);
 
-    virtual void setCurrentColor_sys(const QColor &) = 0;
-    virtual QColor currentColor_sys() const = 0;
+    virtual void setCurrentColor(const QColor &) = 0;
+    virtual QColor currentColor() const = 0;
 
 Q_SIGNALS:
     void currentColorChanged(const QColor &color);
@@ -192,8 +192,8 @@ class Q_GUI_EXPORT QPlatformFontDialogHelper : public QPlatformDialogHelper
 {
     Q_OBJECT
 public:
-    virtual void setCurrentFont_sys(const QFont &) = 0;
-    virtual QFont currentFont_sys() const = 0;
+    virtual void setCurrentFont(const QFont &) = 0;
+    virtual QFont currentFont() const = 0;
 
     const QSharedPointer<QFontDialogOptions> &options() const;
     void setOptions(const QSharedPointer<QFontDialogOptions> &options);
@@ -285,13 +285,13 @@ class Q_GUI_EXPORT QPlatformFileDialogHelper : public QPlatformDialogHelper
     Q_OBJECT
 public:
     virtual bool defaultNameFilterDisables() const = 0;
-    virtual void setDirectory_sys(const QString &directory) = 0;
-    virtual QString directory_sys() const = 0;
-    virtual void selectFile_sys(const QString &filename) = 0;
-    virtual QStringList selectedFiles_sys() const = 0;
-    virtual void setFilter_sys() = 0;
-    virtual void selectNameFilter_sys(const QString &filter) = 0;
-    virtual QString selectedNameFilter_sys() const = 0;
+    virtual void setDirectory(const QString &directory) = 0;
+    virtual QString directory() const = 0;
+    virtual void selectFile(const QString &filename) = 0;
+    virtual QStringList selectedFiles() const = 0;
+    virtual void setFilter() = 0;
+    virtual void selectNameFilter(const QString &filter) = 0;
+    virtual QString selectedNameFilter() const = 0;
 
     const QSharedPointer<QFileDialogOptions> &options() const;
     void setOptions(const QSharedPointer<QFileDialogOptions> &options);

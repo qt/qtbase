@@ -802,7 +802,7 @@ void QFontDialog::setCurrentFont(const QFont &font)
     d->updateFamilies();
     if (d->canBeNativeDialog()) {
         if (QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
-            helper->setCurrentFont_sys(font);
+            helper->setCurrentFont(font);
     }
 
 #ifdef Q_WS_MAC
@@ -823,7 +823,7 @@ QFont QFontDialog::currentFont() const
     Q_D(const QFontDialog);
     if (d->canBeNativeDialog()) {
         if (const QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
-            return helper->currentFont_sys();
+            return helper->currentFont();
     }
     return d->sampleEdit->font();
 }

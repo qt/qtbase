@@ -56,20 +56,20 @@ public:
     QCocoaFileDialogHelper();
     virtual ~QCocoaFileDialogHelper();
 
-    void exec_sys();
+    void exec();
 
     bool defaultNameFilterDisables() const;
 
-    void deleteNativeDialog_sys();
-    bool show_sys(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
-    void hide_sys();
-    void setDirectory_sys(const QString &directory);
-    QString directory_sys() const;
-    void selectFile_sys(const QString &filename);
-    QStringList selectedFiles_sys() const;
-    void setFilter_sys();
-    void selectNameFilter_sys(const QString &filter);
-    QString selectedNameFilter_sys() const;
+    void deleteNativeDialog();
+    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
+    void hide();
+    void setDirectory(const QString &directory);
+    QString directory() const;
+    void selectFile(const QString &filename);
+    QStringList selectedFiles() const;
+    void setFilter();
+    void selectNameFilter(const QString &filter);
+    QString selectedNameFilter() const;
 
 public:
     bool showCocoaFilePanel(Qt::WindowModality windowModality, QWindow *parent);
