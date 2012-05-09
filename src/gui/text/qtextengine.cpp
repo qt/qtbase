@@ -1399,12 +1399,14 @@ void QTextEngine::itemize() const
                     s = 0;
                 }
                 Q_ASSERT(position <= length);
-                itemizer.generate(prevPosition, position - prevPosition,
-                    formats()->charFormat(format).fontCapitalization());
+                QFont::Capitalization capitalization =
+                        formats()->charFormat(format).hasProperty(QTextFormat::FontCapitalization)
+                        ? formats()->charFormat(format).fontCapitalization()
+                        : formats()->defaultFont().capitalization();
+                itemizer.generate(prevPosition, position - prevPosition, capitalization);
                 if (it == end) {
                     if (position < length)
-                        itemizer.generate(position, length - position,
-                                          formats()->charFormat(format).fontCapitalization());
+                        itemizer.generate(position, length - position, capitalization);
                     break;
                 }
                 format = frag->format;
