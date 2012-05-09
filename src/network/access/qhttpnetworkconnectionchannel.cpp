@@ -1111,6 +1111,32 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
                 return;
             }
             // ok, we got a disconnect even though we did not expect it
+            // Try to read everything from the socket before we emit the error.
+            if (socket->bytesAvailable()) {
+                // Read everything from the socket into the reply buffer.
+                // we can ignore the readbuffersize as the data is already
+                // in memory and we will not recieve more data on the socket.
+                reply->setReadBufferSize(0);
+                _q_receiveReply();
+#ifndef QT_NO_SSL
+                if (ssl) {
+                    // QT_NO_OPENSSL. The QSslSocket can still have encrypted bytes in the plainsocket.
+                    // So we need to check this if the socket is a QSslSocket. When the socket is flushed
+                    // it will force a decrypt of the encrypted data in the plainsocket.
+                    QSslSocket *sslSocket = static_cast<QSslSocket*>(socket);
+                    qint64 beforeFlush = sslSocket->encryptedBytesAvailable();
+                    while (sslSocket->encryptedBytesAvailable()) {
+                        sslSocket->flush();
+                        _q_receiveReply();
+                        qint64 afterFlush = sslSocket->encryptedBytesAvailable();
+                        if (afterFlush == beforeFlush)
+                            break;
+                        beforeFlush = afterFlush;
+                    }
+                }
+#endif
+            }
+
             errorCode = QNetworkReply::RemoteHostClosedError;
         } else {
             errorCode = QNetworkReply::RemoteHostClosedError;
