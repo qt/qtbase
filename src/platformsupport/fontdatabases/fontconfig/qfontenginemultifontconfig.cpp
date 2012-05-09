@@ -61,18 +61,12 @@ QFontEngineMultiFontConfig::~QFontEngineMultiFontConfig()
 
 bool QFontEngineMultiFontConfig::shouldLoadFontEngineForCharacter(int at, uint ucs4) const
 {
-    QFontEngineFT *fontEngine = static_cast<QFontEngineFT *>(engines.at(at));
     bool charSetHasChar = true;
-    if (fontEngine != 0) {
-        FcCharSet *charSet = fontEngine->freetype->charset;
+    FcPattern *matchPattern = getMatchPatternForFallback(at - 1);
+    if (matchPattern != 0) {
+        FcCharSet *charSet;
+        FcPatternGetCharSet(matchPattern, FC_CHARSET, 0, &charSet);
         charSetHasChar = FcCharSetHasChar(charSet, ucs4);
-    } else {
-        FcPattern *matchPattern = getMatchPatternForFallback(at - 1);
-        if (matchPattern != 0) {
-            FcCharSet *charSet;
-            FcPatternGetCharSet(matchPattern, FC_CHARSET, 0, &charSet);
-            charSetHasChar = FcCharSetHasChar(charSet, ucs4);
-        }
     }
 
     return charSetHasChar;

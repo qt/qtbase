@@ -270,9 +270,6 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         newFreetype->matrix.yx = 0;
         newFreetype->unicode_map = 0;
         newFreetype->symbol_map = 0;
-#ifndef QT_NO_FONTCONFIG
-        newFreetype->charset = 0;
-#endif
 
         memset(newFreetype->cmapCache, 0, sizeof(newFreetype->cmapCache));
 
@@ -299,21 +296,6 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
 
         if (!FT_IS_SCALABLE(newFreetype->face) && newFreetype->face->num_fixed_sizes == 1)
             FT_Set_Char_Size (face, X_SIZE(newFreetype->face, 0), Y_SIZE(newFreetype->face, 0), 0, 0);
-# if 0
-        FcChar8 *name;
-        FcPatternGetString(pattern, FC_FAMILY, 0, &name);
-        qDebug("%s: using maps: default: %x unicode: %x, symbol: %x", name,
-               newFreetype->face->charmap ? newFreetype->face->charmap->encoding : 0,
-               newFreetype->unicode_map ? newFreetype->unicode_map->encoding : 0,
-               newFreetype->symbol_map ? newFreetype->symbol_map->encoding : 0);
-
-        for (int i = 0; i < 256; i += 8)
-            qDebug("    %x: %d %d %d %d %d %d %d %d", i,
-                   FcCharSetHasChar(newFreetype->charset, i), FcCharSetHasChar(newFreetype->charset, i),
-                   FcCharSetHasChar(newFreetype->charset, i), FcCharSetHasChar(newFreetype->charset, i),
-                   FcCharSetHasChar(newFreetype->charset, i), FcCharSetHasChar(newFreetype->charset, i),
-                   FcCharSetHasChar(newFreetype->charset, i), FcCharSetHasChar(newFreetype->charset, i));
-#endif
 
         FT_Set_Charmap(newFreetype->face, newFreetype->unicode_map);
         QT_TRY {
@@ -334,10 +316,6 @@ void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
     if (!ref.deref()) {
         qHBFreeFace(hbFace);
         FT_Done_Face(face);
-#ifndef QT_NO_FONTCONFIG
-        if (charset)
-            FcCharSetDestroy(charset);
-#endif
         if(freetypeData->faces.contains(face_id))
             freetypeData->faces.take(face_id);
         delete this;
@@ -1430,19 +1408,6 @@ static inline unsigned int getChar(const QChar *str, int &i, const int len)
 bool QFontEngineFT::canRender(const QChar *string, int len)
 {
     FT_Face face = freetype->face;
-#if 0
-    if (_cmap != -1) {
-        lockFace();
-        for ( int i = 0; i < len; i++ ) {
-            unsigned int uc = getChar(string, i, len);
-            if (!FcCharSetHasChar (_font->charset, uc) && getAdobeCharIndex(face, _cmap, uc) == 0) {
-                allExist = false;
-                break;
-            }
-        }
-        unlockFace();
-    } else
-#endif
     {
         for ( int i = 0; i < len; i++ ) {
             unsigned int uc = getChar(string, i, len);
@@ -1513,19 +1478,20 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
             unsigned int uc = getChar(str, i, len);
             glyphs->glyphs[glyph_pos] = uc < QFreetypeFace::cmapCacheSize ? freetype->cmapCache[uc] : 0;
             if ( !glyphs->glyphs[glyph_pos] ) {
-                glyph_t glyph;
-#if !defined(QT_NO_FONTCONFIG)
-                if (freetype->charset != 0 && FcCharSetHasChar(freetype->charset, uc)) {
-#else
-                if (false) {
-#endif
-                redo0:
+                // Symbol fonts can have more than one CMAPs, FreeType should take the
+                // correct one for us by default, so we always try FT_Get_Char_Index
+                // first. If it didn't work (returns 0), we will explicitly set the
+                // CMAP to symbol font one and try again. symbol_map is not always the
+                // correct one because in certain fonts like Wingdings symbol_map only
+                // contains PUA codepoints instead of the common ones.
+                glyph_t glyph = FT_Get_Char_Index(face, uc);
+                // Certain symbol fonts don't have no-break space (0xa0) and tab (0x9),
+                // while we usually want to render them as space
+                if (!glyph && (uc == 0xa0 || uc == 0x9)) {
+                    uc = 0x20;
                     glyph = FT_Get_Char_Index(face, uc);
-                    if (!glyph && (uc == 0xa0 || uc == 0x9)) {
-                        uc = 0x20;
-                        goto redo0;
-                    }
-                } else {
+                }
+                if (!glyph) {
                     FT_Set_Charmap(face, freetype->symbol_map);
                     glyph = FT_Get_Char_Index(face, uc);
                     FT_Set_Charmap(face, freetype->unicode_map);
@@ -1544,9 +1510,6 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
                 uc = QChar::mirroredChar(uc);
             glyphs->glyphs[glyph_pos] = uc < QFreetypeFace::cmapCacheSize ? freetype->cmapCache[uc] : 0;
             if (!glyphs->glyphs[glyph_pos]) {
-#if !defined(QT_NO_FONTCONFIG)
-                if (freetype->charset == 0 || FcCharSetHasChar(freetype->charset, uc))
-#endif
                 {
                 redo:
                     glyph_t glyph = FT_Get_Char_Index(face, uc);
