@@ -1,3 +1,5 @@
+
+QT += widgets
 SOURCES = main.cpp
 
 # install
