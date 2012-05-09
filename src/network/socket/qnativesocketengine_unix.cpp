@@ -862,23 +862,28 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
     if (host.protocol() == QAbstractSocket::IPv6Protocol
         || socketProtocol == QAbstractSocket::IPv6Protocol
         || socketProtocol == QAbstractSocket::AnyIPProtocol) {
-    memset(&sockAddrIPv6, 0, sizeof(sockAddrIPv6));
-    sockAddrIPv6.sin6_family = AF_INET6;
-    sockAddrIPv6.sin6_port = htons(port);
+        memset(&sockAddrIPv6, 0, sizeof(sockAddrIPv6));
+        sockAddrIPv6.sin6_family = AF_INET6;
+        sockAddrIPv6.sin6_port = htons(port);
 
-    Q_IPV6ADDR tmp = host.toIPv6Address();
-    memcpy(&sockAddrIPv6.sin6_addr.s6_addr, &tmp, sizeof(tmp));
-    sockAddrSize = sizeof(sockAddrIPv6);
-    sockAddrPtr = (struct sockaddr *)&sockAddrIPv6;
-    } else
-
-    if (host.protocol() == QAbstractSocket::IPv4Protocol) {
-    memset(&sockAddrIPv4, 0, sizeof(sockAddrIPv4));
-    sockAddrIPv4.sin_family = AF_INET;
-    sockAddrIPv4.sin_port = htons(port);
-    sockAddrIPv4.sin_addr.s_addr = htonl(host.toIPv4Address());
-    sockAddrSize = sizeof(sockAddrIPv4);
-    sockAddrPtr = (struct sockaddr *)&sockAddrIPv4;
+        Q_IPV6ADDR tmp = host.toIPv6Address();
+        memcpy(&sockAddrIPv6.sin6_addr.s6_addr, &tmp, sizeof(tmp));
+        QString scopeid = host.scopeId();
+        bool ok;
+        sockAddrIPv6.sin6_scope_id = scopeid.toInt(&ok);
+#ifndef QT_NO_IPV6IFNAME
+        if (!ok)
+            sockAddrIPv6.sin6_scope_id = ::if_nametoindex(scopeid.toLatin1());
+#endif
+        sockAddrSize = sizeof(sockAddrIPv6);
+        sockAddrPtr = (struct sockaddr *)&sockAddrIPv6;
+    } else if (host.protocol() == QAbstractSocket::IPv4Protocol) {
+        memset(&sockAddrIPv4, 0, sizeof(sockAddrIPv4));
+        sockAddrIPv4.sin_family = AF_INET;
+        sockAddrIPv4.sin_port = htons(port);
+        sockAddrIPv4.sin_addr.s_addr = htonl(host.toIPv4Address());
+        sockAddrSize = sizeof(sockAddrIPv4);
+        sockAddrPtr = (struct sockaddr *)&sockAddrIPv4;
     }
 
     // ignore the SIGPIPE signal

@@ -170,10 +170,12 @@ static inline void qt_socket_getPortAndAddress(SOCKET socketDescriptor, const qt
         Q_IPV6ADDR tmp;
         for (int i = 0; i < 16; ++i)
             tmp.c[i] = sa6->sin6_addr.qt_s6_addr[i];
-        QHostAddress a;
-	a.setAddress(tmp);
-	if (address)
-	    *address = a;
+        if (address) {
+            QHostAddress a;
+            a.setAddress(tmp);
+            a.setScopeId(QString::number(sa6->sin6_scope_id));
+            *address = a;
+        }
         if (port)
 	    WSANtohs(socketDescriptor, sa6->sin6_port, port);
     } else
