@@ -54,6 +54,13 @@
   \value CPUTicks               CPU time
   \value InstructionReads       Instruction reads
   \value Events                 Event count
+  \value WalltimeNanoseconds    Clock time in nanoseconds
+  \value BytesAllocated         Memory usage in bytes
+
+  Note that \c WalltimeNanoseconds and \c BytesAllocated are
+  only provided for use via \l setBenchmarkResult(), and results
+  in those metrics are not able to be provided automatically
+  by the QTest framework.
 
   \sa QTest::benchmarkMetricName(), QTest::benchmarkMetricUnit()
 
@@ -81,6 +88,10 @@ const char * QTest::benchmarkMetricName(QBenchmarkMetric metric)
         return "InstructionReads";
     case Events:
         return "Events";
+    case WalltimeNanoseconds:
+        return "WalltimeNanoseconds";
+    case BytesAllocated:
+        return "BytesAllocated";
     default:
         return "";
     }
@@ -108,6 +119,10 @@ const char * QTest::benchmarkMetricUnit(QBenchmarkMetric metric)
         return "instruction reads";
     case Events:
         return "events";
+    case WalltimeNanoseconds:
+        return "nsecs";
+    case BytesAllocated:
+        return "bytes";
     default:
         return "";
     }

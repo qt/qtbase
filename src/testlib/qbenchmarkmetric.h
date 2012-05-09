@@ -58,7 +58,9 @@ enum QBenchmarkMetric {
     WalltimeMilliseconds,
     CPUTicks,
     InstructionReads,
-    Events
+    Events,
+    WalltimeNanoseconds,
+    BytesAllocated
 };
 
 }
