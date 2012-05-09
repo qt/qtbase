@@ -120,9 +120,9 @@ void Notepad::save()
     }
 }
 
-int main(int argv, char **args)
+int main(int argc, char **argv)
 {
-    QApplication app(argv, args);
+    QApplication app(argc, argv);
 
     Notepad notepad;
     notepad.show();
