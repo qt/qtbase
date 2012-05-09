@@ -4496,7 +4496,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
         if (qpgn->childNodes().size() == 1) {
             qpn = static_cast<QmlPropertyNode*>(*p);
             startQmlProperty(qpn,relative,marker);
-            writeQmlDesc(node, marker);
+            writeApiDesc(node, marker, node->title());
             writeEndTag(); // </qmlPropertyDetail>
             writeEndTag(); // </qmlProperty>
         }
@@ -4509,7 +4509,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
             //writeCharacters("...");
             writeEndTag(); // </apiName>
             writeStartTag(DT_qmlPropertyGroupDetail);
-            writeQmlDesc(node, marker);
+            writeApiDesc(node, marker, node->title());
             writeEndTag(); // </qmlPropertyGroupDetail>
             while (p != qpgn->childNodes().end()) {
                 if ((*p)->type() == Node::QmlProperty) {
@@ -4527,7 +4527,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
         qpn = static_cast<QmlPropertyNode*>(node);
         if (qpn->qmlPropNodes().isEmpty()) {
             startQmlProperty(qpn,relative,marker);
-            writeQmlDesc(node, marker);
+            writeApiDesc(node, marker, node->title());
             writeEndTag(); // </qmlPropertyDetail>
             writeEndTag(); // </qmlProperty>
         }
@@ -4536,7 +4536,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
             if (n->type() == Node::QmlProperty) {
                 qpn = static_cast<QmlPropertyNode*>(n);
                 startQmlProperty(qpn,relative,marker);
-                writeQmlDesc(node, marker);
+                writeApiDesc(node, marker, node->title());
                 writeEndTag(); // </qmlPropertyDetail>
                 writeEndTag(); // </qmlProperty>
             }
@@ -4555,7 +4555,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
             //writeCharacters("...");
             writeEndTag(); // </apiName>
             writeStartTag(DT_qmlPropertyGroupDetail);
-            writeQmlDesc(node, marker);
+            writeApiDesc(node, marker, node->title());
             writeEndTag(); // </qmlPropertyGroupDetail>
             NodeList::ConstIterator p = qpn->qmlPropNodes().begin();
             while (p != qpn->qmlPropNodes().end()) {
@@ -4606,24 +4606,9 @@ void DitaXmlGenerator::writeQmlRef(DitaTag tag,
         writeEndTag(); // </qmlAttached>
     }
     writeEndTag(); // </qmlXxxDef>
-    writeQmlDesc(node, marker);
+    writeApiDesc(node, marker, node->title());
     writeEndTag(); // </qmlXxxDetail>
     writeEndTag(); // tag
-}
-
-/*!
-  Writes the <apiDesc> tag and its contents for the \a node.
-  The \a marker is used for markeing up the text body.
- */
-void DitaXmlGenerator::writeQmlDesc(Node* node, CodeMarker* marker)
-{
-    writeStartTag(DT_apiDesc);
-    generateStatus(node, marker);
-    generateBody(node, marker);
-    generateThreadSafeness(node, marker);
-    generateSince(node, marker);
-    generateAlsoList(node, marker);
-    writeEndTag(); // </apiDesc>
 }
 
 /*!

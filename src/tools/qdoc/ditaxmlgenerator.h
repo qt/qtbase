@@ -418,7 +418,6 @@ private:
                      Node* node,
                      const InnerNode* relative,
                      CodeMarker* marker);
-    void writeQmlDesc(Node* node, CodeMarker* marker);
     void generateDetailedQmlMember(Node* node,
                                    const InnerNode* relative,
                                    CodeMarker* marker);
