@@ -2294,6 +2294,7 @@ QmlPropertyNode::QmlPropertyNode(QmlPropGroupNode *parent,
       designable_(FlagValueDefault),
       isdefault_(false),
       attached_(attached),
+      qproperty_(false),
       readOnly_(FlagValueDefault)
 {
     setPageType(ApiPage);
@@ -2313,6 +2314,7 @@ QmlPropertyNode::QmlPropertyNode(QmlClassNode *parent,
       designable_(FlagValueDefault),
       isdefault_(false),
       attached_(attached),
+      qproperty_(false),
       readOnly_(FlagValueDefault)
 {
     setPageType(ApiPage);
@@ -2339,6 +2341,7 @@ QmlPropertyNode::QmlPropertyNode(QmlPropertyNode* parent,
       designable_(FlagValueDefault),
       isdefault_(false),
       attached_(attached),
+      qproperty_(false),
       readOnly_(FlagValueDefault)
 {
     setPageType(ApiPage);
@@ -2353,18 +2356,19 @@ QmlPropertyNode::QmlPropertyNode(QmlPropertyNode* parent,
  */
 bool QmlPropertyNode::isWritable(Tree* tree)
 {
-    if (readOnly_ != FlagValueDefault) {
+    if (readOnly_ != FlagValueDefault)
         return !fromFlagValue(readOnly_, false);
-    }
 
-    PropertyNode* pn = correspondingProperty(tree);
-    if (pn) {
-        return pn->isWritable();
+    if (qproperty_) {
+        PropertyNode* pn = correspondingProperty(tree);
+        if (pn)
+            return pn->isWritable();
+
+        location().warning(tr("Can't detect if QML property %1::%2::%3 is read-only; "
+                              "writable assumed.")
+                           .arg(qmlModuleIdentifier()).arg(qmlTypeName()).arg(name()));
     }
-    else {
-        location().warning(tr("Can't detect if QML property %1 is read-only; writable assumed.").arg(name()));
-        return true;
-    }
+    return true;
 }
 
 PropertyNode* QmlPropertyNode::correspondingProperty(Tree *tree)

@@ -964,11 +964,14 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
             QmlClassNode* qmlClass = tree_->findQmlClassNode(module,element);
             if (qmlClass) {
                 qmlPropGroup = new QmlPropGroupNode(qmlClass,property); //,attached);
+                qmlPropGroup->setLocation(location());
             }
         }
         if (qmlPropGroup) {
             ClassNode *correspondingClass = static_cast<QmlClassNode*>(qmlPropGroup->parent())->classNode();
             QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlPropGroup,property,type,attached);
+            qmlPropNode->setLocation(location());
+            qmlPropNode->setQPropertyFlag();
 
             const PropertyNode *correspondingProperty = 0;
             if (correspondingClass) {
@@ -986,6 +989,8 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
                                                                        property,
                                                                        type,
                                                                        attached);
+                    qmlPropNode->setLocation(location());
+                    qmlPropNode->setQPropertyFlag();
                     if (correspondingProperty) {
                         bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
                         qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));

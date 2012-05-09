@@ -242,7 +242,11 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                     QmlPropArgs qpa;
                     if (splitQmlPropertyArg(doc, topicsUsed.at(i).args, qpa)) {
                         QmlPropertyNode* n = new QmlPropertyNode(qpn, qpa.name_, qpa.type_, false);
+                        n->setLocation(doc.location());
                         qpn->appendQmlPropNode(n);
+                        n->setReadOnly(qpn->isReadOnly());
+                        if (qpn->isDefault())
+                            n->setDefault();
                     }
                     else
                         qDebug() << "  FAILED TO PARSE QML PROPERTY:"
@@ -484,22 +488,12 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiPublicMember *member)
             if (qmlClass) {
                 QString name = member->name.toString();
                 QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlClass, name, type, false);
+                //qmlPropNode->setLocation(doc.location());
                 qmlPropNode->setReadOnly(member->isReadonlyMember);
                 if (member->isDefaultMember)
                     qmlPropNode->setDefault();
                 applyDocumentation(member->firstSourceLocation(), qmlPropNode);
             }
-#if 0
-            if (qmlClass) {
-                QString name = member->name->asString();
-                QmlPropGroupNode *qmlPropGroup = new QmlPropGroupNode(qmlClass, name, false);
-                if (member->isDefaultMember)
-                    qmlPropGroup->setDefault();
-                QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlPropGroup, name, type, false);
-                qmlPropNode->setWritable(!member->isReadonlyMember);
-                applyDocumentation(member->firstSourceLocation(), qmlPropGroup);
-            }
-#endif
         }
         break;
     }

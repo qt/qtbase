@@ -230,6 +230,7 @@ public:
     QString guid() const;
     QString ditaXmlHref();
     QString extractClassName(const QString &string) const;
+    virtual QString qmlTypeName() const { return name_; }
     virtual QString qmlModuleName() const { return qmlModuleName_; }
     virtual QString qmlModuleVersion() const { return qmlModuleVersionMajor_ + "." + qmlModuleVersionMinor_; }
     virtual QString qmlModuleIdentifier() const { return qmlModuleName_ + qmlModuleVersionMajor_; }
@@ -579,6 +580,7 @@ public:
     virtual ~QmlPropGroupNode() { }
     virtual bool isQmlNode() const { return true; }
     virtual bool isQtQuickNode() const { return parent()->isQtQuickNode(); }
+    virtual QString qmlTypeName() const { return parent()->qmlTypeName(); }
     virtual QString qmlModuleName() const { return parent()->qmlModuleName(); }
     virtual QString qmlModuleVersion() const { return parent()->qmlModuleVersion(); }
     virtual QString qmlModuleIdentifier() const { return parent()->qmlModuleIdentifier(); }
@@ -626,6 +628,7 @@ public:
     virtual bool isAttached() const { return attached_; }
     virtual bool isQmlNode() const { return true; }
     virtual bool isQtQuickNode() const { return parent()->isQtQuickNode(); }
+    virtual QString qmlTypeName() const { return parent()->qmlTypeName(); }
     virtual QString qmlModuleName() const { return parent()->qmlModuleName(); }
     virtual QString qmlModuleVersion() const { return parent()->qmlModuleVersion(); }
     virtual QString qmlModuleIdentifier() const { return parent()->qmlModuleIdentifier(); }
@@ -635,6 +638,7 @@ public:
     const QString& element() const { return static_cast<QmlPropGroupNode*>(parent())->element(); }
     void appendQmlPropNode(QmlPropertyNode* p) { qmlPropNodes_.append(p); }
     const NodeList& qmlPropNodes() const { return qmlPropNodes_; }
+    void setQPropertyFlag() { qproperty_ = true; }
 
 private:
     QString type_;
@@ -642,6 +646,7 @@ private:
     FlagValue   designable_;
     bool    isdefault_;
     bool    attached_;
+    bool        qproperty_;
     FlagValue   readOnly_;
     NodeList qmlPropNodes_;
 };
@@ -803,6 +808,7 @@ public:
                 (type() == QmlSignalHandler));
     }
     virtual bool isQtQuickNode() const { return parent()->isQtQuickNode(); }
+    virtual QString qmlTypeName() const { return parent()->qmlTypeName(); }
     virtual QString qmlModuleName() const { return parent()->qmlModuleName(); }
     virtual QString qmlModuleVersion() const { return parent()->qmlModuleVersion(); }
     virtual QString qmlModuleIdentifier() const { return parent()->qmlModuleIdentifier(); }
