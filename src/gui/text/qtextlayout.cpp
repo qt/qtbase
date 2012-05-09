@@ -2584,13 +2584,14 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     bool lastLine = index >= eng->lines.size() - 1;
 
     QFixed x = line.x;
-    x += eng->alignLine(line);
+    x += eng->alignLine(line) - eng->leadingSpaceWidth(line);
 
     if (!index && !eng->layoutData->items.size()) {
         *cursorPos = 0;
         return x.toReal();
     }
 
+    int lineEnd = line.from + line.length + line.trailingSpaces;
     int pos = *cursorPos;
     int itm;
     const HB_CharAttributes *attributes = eng->attributes();
@@ -2598,9 +2599,9 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
         *cursorPos = 0;
         return x.toReal();
     }
-    while (pos < line.from + line.length && !attributes[pos].charStop)
+    while (pos < lineEnd && !attributes[pos].charStop)
         pos++;
-    if (pos == line.from + (int)line.length) {
+    if (pos == lineEnd) {
         // end of line ensure we have the last item on the line
         itm = eng->findItem(pos-1);
     }
@@ -2633,7 +2634,6 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
 
     bool reverse = eng->layoutData->items[itm].analysis.bidiLevel % 2;
 
-    int lineEnd = line.from + line.length;
 
     // add the items left of the cursor
 
@@ -2705,6 +2705,8 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
 
     if (eng->option.wrapMode() != QTextOption::NoWrap && x > line.width)
         x = line.width;
+    if (eng->option.wrapMode() != QTextOption::NoWrap && x < 0)
+        x = 0;
 
     *cursorPos = pos + si->position;
     return x.toReal();
