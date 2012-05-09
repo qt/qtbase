@@ -617,7 +617,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         else if (QRegExp("[A-Za-z_][A-Za-z0-9_]+").exactMatch(arg.first)) {
             func = new FunctionNode(tree_->root(), arg.first);
             func->setAccess(Node::Public);
-            func->setLocation(doc.location());
+            func->setLocation(arg.second);
             func->setMetaness(FunctionNode::MacroWithoutParams);
         }
         else {
@@ -689,6 +689,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
     else if (command == COMMAND_EXAMPLE) {
         if (Config::generateExamples) {
             ExampleNode* en = new ExampleNode(tree_->root(), arg.first);
+            en->setLocation(arg.second);
             createExampleFileNodes(en);
             return en;
         }
@@ -749,6 +750,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             fn = new DitaMapNode(tree_->root(), args[0]);
         else
             fn = new FakeNode(tree_->root(), args[0], Node::Page, ptype);
+        fn->setLocation(arg.second);
         if (ncn) {
             ncn->addCollision(fn);
         }
@@ -777,7 +779,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
          */
         NameCollisionNode* ncn = tree_->checkForCollision(names[0]);
         QmlClassNode* qcn = new QmlClassNode(tree_->root(), names[0], classNode);
-        qcn->setLocation(location());
+        qcn->setLocation(arg.second);
         if (ncn)
             ncn->addCollision(qcn);
         return qcn;
@@ -2491,8 +2493,8 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
                                         proFileName,
                                         userFriendlyFilePath);
             if (fullPath.isEmpty()) {
-                fake->doc().location().warning(tr("Cannot find file '%1' or '%2'").arg(tmp).arg(proFileName));
-                fake->doc().location().warning(tr("EXAMPLE PATH DOES NOT EXIST: %1").arg(examplePath));
+                fake->location().warning(tr("Cannot find file '%1' or '%2'").arg(tmp).arg(proFileName));
+                fake->location().warning(tr("  EXAMPLE PATH DOES NOT EXIST: %1").arg(examplePath));
                 return;
             }
         }
