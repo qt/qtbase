@@ -404,8 +404,8 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegExp &r
 
     For example:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 5
-    \snippet doc/src/snippets/qstringlist/main.cpp 16
+    \snippet qstringlist/main.cpp 5
+    \snippet qstringlist/main.cpp 16
 
     For regular expressions that contain capturing groups,
     occurrences of \b{\\1}, \b{\\2}, ..., in \a after are
@@ -413,8 +413,8 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegExp &r
 
     For example:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 5
-    \snippet doc/src/snippets/qstringlist/main.cpp 17
+    \snippet qstringlist/main.cpp 5
+    \snippet qstringlist/main.cpp 17
 */
 void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegularExpression &re, const QString &after)
 {

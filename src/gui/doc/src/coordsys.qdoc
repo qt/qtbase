@@ -97,10 +97,10 @@
 
     \row
     \li
-    \snippet doc/src/snippets/code/doc_src_coordsys.cpp 0
+    \snippet code/doc_src_coordsys.cpp 0
 
     \li
-    \snippet doc/src/snippets/code/doc_src_coordsys.cpp 1
+    \snippet code/doc_src_coordsys.cpp 1
     \endtable
 
     When rendering with a pen with an even number of pixels, the
@@ -163,10 +163,10 @@
     \row
     \li
 
-    \snippet doc/src/snippets/code/doc_src_coordsys.cpp 2
+    \snippet code/doc_src_coordsys.cpp 2
 
     \li
-    \snippet doc/src/snippets/code/doc_src_coordsys.cpp 3
+    \snippet code/doc_src_coordsys.cpp 3
     \endtable
 
     \section1 Transformations
@@ -238,7 +238,7 @@
     \row
     \li {2,1}
 
-    \snippet examples/widgets/analogclock/analogclock.cpp 9
+    \snippet widgets/analogclock/analogclock.cpp 9
 
     First, we set up the painter. We translate the coordinate system
     so that point (0, 0) is in the widget's center, instead of being
@@ -253,7 +253,7 @@
 
     See also the \l {Window-Viewport Conversion} section.
 
-    \snippet examples/widgets/analogclock/analogclock.cpp 18
+    \snippet widgets/analogclock/analogclock.cpp 18
 
     We draw the clock's hour hand by rotating the coordinate system
     and calling QPainter::drawConvexPolygon(). Thank's to the
@@ -268,14 +268,14 @@
     the code guarantees that the code that follows won't be disturbed
     by the transformations we've used.
 
-    \snippet examples/widgets/analogclock/analogclock.cpp 24
+    \snippet widgets/analogclock/analogclock.cpp 24
 
     We do the same for the clock's minute hand, which is defined by
     the four points (1, 0), (0, 1), (-1, 0), and (0, -40). These
     coordinates specify a hand that is thinner and longer than the
     minute hand.
 
-    \snippet examples/widgets/analogclock/analogclock.cpp 27
+    \snippet widgets/analogclock/analogclock.cpp 27
 
     Finally, we draw the clock face, which consists of twelve short
     lines at 30-degree intervals. At the end of that, the painter is
@@ -319,7 +319,7 @@
     -50) to (50, 50) with (0, 0) in the center by calling the
     QPainter::setWindow() function:
 
-    \snippet doc/src/snippets/code/doc_src_coordsys.cpp 4
+    \snippet code/doc_src_coordsys.cpp 4
 
     Now, the logical coordinates (-50,-50) correspond to the paint
     device's physical coordinates (0, 0). Independent of the paint
@@ -333,7 +333,7 @@
     viewport and "window" maintain the same aspect ratio to prevent
     deformation:
 
-    \snippet doc/src/snippets/code/doc_src_coordsys.cpp 5
+    \snippet code/doc_src_coordsys.cpp 5
 
     If we make the logical coordinate system a square, we should also
     make the viewport a square using the QPainter::setViewport()

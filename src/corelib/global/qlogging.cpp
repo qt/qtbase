@@ -737,7 +737,7 @@ void qWinMessageHandler2(QtMsgType t, const QMessageLogContext &context,
     This is a typedef for a pointer to a function with the following
     signature:
 
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 7
+    \snippet code/src_corelib_global_qglobal.cpp 7
 
     This typedef is deprecated, you should use QtMessageHandler instead.
     \sa QtMsgType, QtMessageHandler, qInstallMsgHandler(), qInstallMessageHandler()
@@ -751,7 +751,7 @@ void qWinMessageHandler2(QtMsgType t, const QMessageLogContext &context,
     This is a typedef for a pointer to a function with the following
     signature:
 
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 49
+    \snippet code/src_corelib_global_qglobal.cpp 49
 
     \sa QtMsgType, qInstallMessageHandler()
 */
@@ -785,7 +785,7 @@ void qWinMessageHandler2(QtMsgType t, const QMessageLogContext &context,
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 23
+    \snippet code/src_corelib_global_qglobal.cpp 23
 
     \sa QtMessageHandler, QtMsgType, qDebug(), qWarning(), qCritical(), qFatal(),
     {Debugging Techniques}
