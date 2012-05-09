@@ -58,24 +58,22 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 QStringList QPlatformInputContextFactory::keys()
 {
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    QStringList list = loader()->keys();
+    return loader()->keyMap().values();
 #else
-    QStringList list;
+    return QStringList();
 #endif
-    return list;
 }
 
 QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
 {
-    QPlatformInputContext *ret = 0;
     QStringList paramList = key.split(QLatin1Char(':'));
-    QString platform = paramList.takeFirst().toLower();
+    const QString platform = paramList.takeFirst().toLower();
 
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    if (QPlatformInputContextFactoryInterface *factory = qobject_cast<QPlatformInputContextFactoryInterface*>(loader()->instance(platform)))
-        ret = factory->create(platform, paramList);
+    if (QPlatformInputContext *ret = qLoadPlugin1<QPlatformInputContext, QPlatformInputContextFactoryInterface>(loader(), platform, paramList))
+        return ret;
 #endif
-    return ret;
+    return 0;
 }
 
 QPlatformInputContext *QPlatformInputContextFactory::create()

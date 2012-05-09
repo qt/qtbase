@@ -59,7 +59,7 @@
 #include <QtCore/QDebug>
 
 #include <QStyleHints>
-#include <QPlatformCursor>
+#include <qpa/qplatformcursor.h>
 
 QT_BEGIN_NAMESPACE
 
