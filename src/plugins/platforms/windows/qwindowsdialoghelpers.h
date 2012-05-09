@@ -67,7 +67,6 @@ class QWindowsDialogHelperBase : public BaseClass
 public:
 
     virtual void exec();
-    virtual void deleteNativeDialog();
     virtual bool show(Qt::WindowFlags windowFlags,
                           Qt::WindowModality windowModality,
                           QWindow *parent);
@@ -78,6 +77,7 @@ public:
 
 protected:
     QWindowsDialogHelperBase();
+    ~QWindowsDialogHelperBase();
     QWindowsNativeDialogBase *nativeDialog() const;
 
 private:

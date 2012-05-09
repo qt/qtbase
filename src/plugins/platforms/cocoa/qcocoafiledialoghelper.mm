@@ -511,7 +511,10 @@ QCocoaFileDialogHelper::QCocoaFileDialogHelper()
 
 QCocoaFileDialogHelper::~QCocoaFileDialogHelper()
 {
-
+    if (!mDelegate)
+        return;
+    [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate) release];
+    mDelegate = 0;
 }
 
 void QCocoaFileDialogHelper::QNSOpenSavePanelDelegate_selectionChanged(const QString &newPath)
@@ -600,12 +603,6 @@ QString QCocoaFileDialogHelper::selectedNameFilter() const
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
     int index = [delegate->mPopUpButton indexOfSelectedItem];
     return index != -1 ? options()->nameFilters().at(index) : QString();
-}
-
-void QCocoaFileDialogHelper::deleteNativeDialog()
-{
-    [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate) release];
-    mDelegate = 0;
 }
 
 void QCocoaFileDialogHelper::hide()

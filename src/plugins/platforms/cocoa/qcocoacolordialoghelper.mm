@@ -343,7 +343,12 @@ QCocoaColorDialogHelper::QCocoaColorDialogHelper() :
 }
 
 QCocoaColorDialogHelper::~QCocoaColorDialogHelper()
-{ }
+{
+    if (!mDelegate)
+        return;
+    [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate) release];
+    mDelegate = 0;
+}
 
 void QCocoaColorDialogHelper::exec()
 {
@@ -356,14 +361,6 @@ void QCocoaColorDialogHelper::exec()
         emit accept();
     else
         emit reject();
-}
-
-void QCocoaColorDialogHelper::deleteNativeDialog()
-{
-    if (!mDelegate)
-        return;
-    [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate) release];
-    mDelegate = 0;
 }
 
 bool QCocoaColorDialogHelper::show(Qt::WindowFlags, Qt::WindowModality windowModality, QWindow *parent)

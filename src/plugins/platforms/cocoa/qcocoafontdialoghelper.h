@@ -54,11 +54,9 @@ class QCocoaFontDialogHelper : public QPlatformFontDialogHelper
 {
 public:
     QCocoaFontDialogHelper();
-    virtual ~QCocoaFontDialogHelper();
+    ~QCocoaFontDialogHelper();
 
     void exec();
-
-    void deleteNativeDialog();
 
     bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
     void hide();

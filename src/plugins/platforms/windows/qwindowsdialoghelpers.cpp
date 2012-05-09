@@ -426,6 +426,12 @@ QWindowsDialogHelperBase<BaseClass>::QWindowsDialogHelperBase() :
 }
 
 template <class BaseClass>
+QWindowsDialogHelperBase<BaseClass>::~QWindowsDialogHelperBase()
+{
+    delete m_nativeDialog;
+}
+
+template <class BaseClass>
 QWindowsNativeDialogBase *QWindowsDialogHelperBase<BaseClass>::nativeDialog() const
 {
     if (!m_nativeDialog) {
@@ -442,15 +448,6 @@ QWindowsNativeDialogBase *QWindowsDialogHelperBase<BaseClass>::ensureNativeDialo
     if (!m_nativeDialog)
         m_nativeDialog = createNativeDialog();
     return m_nativeDialog;
-}
-
-template <class BaseClass>
-void QWindowsDialogHelperBase<BaseClass>::deleteNativeDialog()
-{
-    if (QWindowsContext::verboseDialogs)
-        qDebug("%s" , __FUNCTION__);
-    delete m_nativeDialog;
-    m_nativeDialog = 0;
 }
 
 /*!

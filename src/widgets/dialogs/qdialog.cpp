@@ -123,12 +123,12 @@ QVariant QDialogPrivate::styleHint(QPlatformDialogHelper::StyleHint hint) const
     return QPlatformDialogHelper::defaultStyleHint(hint);
 }
 
-void QDialogPrivate::deleteNativeDialog()
+void QDialogPrivate::deletePlatformHelper()
 {
-    if (QPlatformDialogHelper *helper = platformHelper()) {
-        helper->deleteNativeDialog();
-        nativeDialogInUse = false;
-    }
+    delete m_platformHelper;
+    m_platformHelper = 0;
+    m_platformHelperCreated = false;
+    nativeDialogInUse = false;
 }
 
 /*!
@@ -335,7 +335,6 @@ QDialog::~QDialog()
     } QT_CATCH(...) {
         // we're in the destructor - just swallow the exception
     }
-    d->deleteNativeDialog();
 }
 
 /*!

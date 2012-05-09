@@ -362,7 +362,12 @@ QCocoaFontDialogHelper::QCocoaFontDialogHelper() :
 }
 
 QCocoaFontDialogHelper::~QCocoaFontDialogHelper()
-{ }
+{
+    if (!mDelegate)
+        return;
+    [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate) release];
+    mDelegate = 0;
+}
 
 void QCocoaFontDialogHelper::exec()
 {
@@ -375,14 +380,6 @@ void QCocoaFontDialogHelper::exec()
         emit accept();
     else
         emit reject();
-}
-
-void QCocoaFontDialogHelper::deleteNativeDialog()
-{
-    if (!mDelegate)
-        return;
-    [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate) release];
-    mDelegate = 0;
 }
 
 bool QCocoaFontDialogHelper::show(Qt::WindowFlags, Qt::WindowModality windowModality, QWindow *parent)

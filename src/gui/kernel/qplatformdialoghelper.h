@@ -91,9 +91,6 @@ public:
     virtual QVariant styleHint(StyleHint hint) const;
 
     virtual void exec() = 0;
-
-    virtual void deleteNativeDialog() = 0;
-
     virtual bool show(Qt::WindowFlags windowFlags,
                           Qt::WindowModality windowModality,
                           QWindow *parent) = 0;

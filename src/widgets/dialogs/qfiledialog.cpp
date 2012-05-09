@@ -1371,7 +1371,7 @@ void QFileDialog::setAcceptMode(QFileDialog::AcceptMode mode)
     }
     d->retranslateWindowTitle();
     // we need to recreate the native dialog when changing the AcceptMode
-    d->deleteNativeDialog();
+    d->deletePlatformHelper();
     // clear WA_DontShowOnScreen so that d->canBeNativeDialog() doesn't return false incorrectly
     setAttribute(Qt::WA_DontShowOnScreen, false);
 }

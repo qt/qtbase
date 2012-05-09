@@ -60,7 +60,6 @@ public:
 
     bool defaultNameFilterDisables() const;
 
-    void deleteNativeDialog();
     bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
     void hide();
     void setDirectory(const QString &directory);

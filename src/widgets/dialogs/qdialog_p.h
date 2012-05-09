@@ -83,7 +83,7 @@ public:
     QWindow *parentWindow() const;
     bool setNativeDialogVisible(bool visible);
     QVariant styleHint(QPlatformDialogHelper::StyleHint hint) const;
-    void deleteNativeDialog();
+    void deletePlatformHelper();
 
     QPointer<QPushButton> mainDef;
     Qt::Orientation orientation;
