@@ -474,11 +474,11 @@ void QTouchScreenData::reportPoints()
 
         // Generate a screen position that is always inside the active window
         // or the primary screen.
-        const int wx = winRect.left() + int(tp.normalPosition.x() * winRect.width());
-        const int wy = winRect.top() + int(tp.normalPosition.y() * winRect.height());
+        const qreal wx = winRect.left() + tp.normalPosition.x() * winRect.width();
+        const qreal wy = winRect.top() + tp.normalPosition.y() * winRect.height();
         const qreal sizeRatio = (winRect.width() + winRect.height()) / qreal(hw_w + hw_h);
-        tp.area = QRect(0, 0, tp.area.width() * sizeRatio, tp.area.height() * sizeRatio);
-        tp.area.moveCenter(QPoint(wx, wy));
+        tp.area = QRectF(0, 0, tp.area.width() * sizeRatio, tp.area.height() * sizeRatio);
+        tp.area.moveCenter(QPointF(wx, wy));
 
         // Calculate normalized pressure.
         if (!hw_pressure_min && !hw_pressure_max)
