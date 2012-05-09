@@ -41,19 +41,18 @@
 
 #include "qprinter_p.h"
 #include "qprinter.h"
-#include "qprintengine.h"
-#include "qprinterinfo.h"
-#include "qlist.h"
-#include <qcoreapplication.h>
-#include <qfileinfo.h>
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-#include "private/qcups_p.h"
-#endif
 
 #ifndef QT_NO_PRINTER
 
 #include <qpa/qplatformprintplugin.h>
 #include <qpa/qplatformprintersupport.h>
+
+#include "qprintengine.h"
+#include "qprinterinfo.h"
+#include "qlist.h"
+#include <qcoreapplication.h>
+#include <qfileinfo.h>
+
 #include <private/qpagedpaintdevice_p.h>
 
 #if defined(Q_WS_X11)
@@ -150,32 +149,14 @@ Q_PRINTSUPPORT_EXPORT QSizeF qt_printerPaperSize(QPrinter::Orientation orientati
 
 void QPrinterPrivate::createDefaultEngines()
 {
-    QPrinter::OutputFormat realOutputFormat = outputFormat;
-#if defined (Q_OS_UNIX) && !defined(Q_OS_MAC)
-    if(outputFormat == QPrinter::NativeFormat) {
-        realOutputFormat = QPrinter::PdfFormat;
-    }
-#endif
-
-    switch (realOutputFormat) {
-    case QPrinter::NativeFormat: {
-        QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
-        if (ps) {
-            printEngine = ps->createNativePrintEngine(printerMode);
-            paintEngine = ps->createPaintEngine(printEngine, printerMode);
-        } else {
-            QPdfPrintEngine *pdfEngine = new QPdfPrintEngine(printerMode);
-            paintEngine = pdfEngine;
-            printEngine = pdfEngine;
-        }
-        }
-        break;
-    case QPrinter::PdfFormat: {
+    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    if (outputFormat == QPrinter::NativeFormat && ps) {
+        printEngine = ps->createNativePrintEngine(printerMode);
+        paintEngine = ps->createPaintEngine(printEngine, printerMode);
+    } else {
         QPdfPrintEngine *pdfEngine = new QPdfPrintEngine(printerMode);
         paintEngine = pdfEngine;
         printEngine = pdfEngine;
-    }
-        break;
     }
     use_default_engine = true;
     had_default_engines = true;
@@ -236,7 +217,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
 
   When printing directly to a printer on Windows or Mac OS X, QPrinter uses
   the built-in printer drivers. On X11, QPrinter uses the
-  \l{Common Unix Printing System (CUPS)} or the standard Unix \l lpr utility
+  \l{Common Unix Printing System (CUPS)}
   to send PDF output to the printer. As an alternative,
   the printProgram() function can be used to specify the command or utility
   to use instead of the system default.
@@ -513,9 +494,7 @@ QPrinter::QPrinter(PrinterMode mode)
     QPrinterInfo defPrn(QPrinterInfo::defaultPrinter());
     if (!defPrn.isNull()) {
         setPrinterName(defPrn.printerName());
-    } else if (QPrinterInfo::availablePrinters().isEmpty()
-               && d_ptr->paintEngine->type() != QPaintEngine::Windows
-               && d_ptr->paintEngine->type() != QPaintEngine::MacPrinter) {
+    } else if (QPrinterInfo::availablePrinters().isEmpty()) {
         setOutputFormat(QPrinter::PdfFormat);
     }
 }
@@ -553,13 +532,6 @@ void QPrinterPrivate::init(QPrinter::PrinterMode mode)
 #endif
     realPrintEngine = 0;
     realPaintEngine = 0;
-
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    if (QCUPSSupport::cupsVersion() >= 10200 && QCUPSSupport().currentPPD()) {
-        q_func()->setOutputFormat(QPrinter::PdfFormat);
-        outputFormat = QPrinter::NativeFormat;
-    }
-#endif
 }
 
 /*!
@@ -706,13 +678,6 @@ void QPrinter::setPrinterName(const QString &name)
 {
     Q_D(QPrinter);
     ABORT_IF_ACTIVE("QPrinter::setPrinterName");
-
-#if defined(Q_OS_UNIX) && !defined(QT_NO_CUPS)
-    if(d->use_default_engine && d->outputFormat == QPrinter::NativeFormat) {
-        setOutputFormat(QPrinter::PdfFormat);
-        d->outputFormat = QPrinter::NativeFormat;
-    }
-#endif
 
     QList<QPrinterInfo> prnList = QPrinterInfo::availablePrinters();
     if (name.isEmpty()) {

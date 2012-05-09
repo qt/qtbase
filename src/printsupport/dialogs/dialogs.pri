@@ -21,6 +21,7 @@ win32 {
 }
 
 unix:!mac {
+    INCLUDEPATH += $$QT_SOURCE_TREE/src/plugins/printsupport/cups
     HEADERS += dialogs/qpagesetupdialog_unix_p.h
     SOURCES += dialogs/qprintdialog_unix.cpp \
                dialogs/qpagesetupdialog_unix.cpp

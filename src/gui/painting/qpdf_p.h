@@ -283,8 +283,6 @@ public:
     QSizeF paperSize;
     qreal leftMargin, topMargin, rightMargin, bottomMargin;
 
-    QString cupsTempFile;
-
 private:
 #ifdef USE_NATIVE_GRADIENTS
     int gradientBrush(const QBrush &b, const QMatrix &matrix, int *gStateObject);

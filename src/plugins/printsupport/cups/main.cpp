@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,54 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMPRINTINGSUPPORT_H
-#define QPLATFORMPRINTINGSUPPORT_H
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is part of the QPA API and is not meant to be used
-// in applications. Usage of this API may make your code
-// source and binary incompatible with future versions of Qt.
-//
 
-#include <QtPrintSupport/qprinter.h>
+#include "qcupsprintersupport_p.h"
 
-QT_BEGIN_HEADER
+#include <qpa/qplatformprintplugin.h>
+#include <QtCore/QStringList>
 
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_PRINTER
-
-class QPrintEngine;
-
-class Q_PRINTSUPPORT_EXPORT QPlatformPrinterSupport
+class QCupsPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.QPlatformPrinterSupportFactoryInterface" FILE "cups.json")
+
 public:
-    QPlatformPrinterSupport();
-    virtual ~QPlatformPrinterSupport();
-
-    virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
-    virtual QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode);
-    virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
-
-    virtual QList<QPrinterInfo> availablePrinters();
-    virtual QPrinterInfo defaultPrinter();
-    virtual QPrinterInfo printerInfo(const QString &printerName);
-
-    static QPrinter::PaperSize convertQSizeFToPaperSize(const QSizeF &sizef);
-    static QSizeF convertPaperSizeToQSizeF(QPrinter::PaperSize paperSize);
-
-protected:
-     static void setPrinterInfoDefault(QPrinterInfo *p, bool isDefault);
-     static bool printerInfoIsDefault(const QPrinterInfo &p);
+    QStringList keys() const;
+    QPlatformPrinterSupport *create(const QString &);
 };
 
-#endif // QT_NO_PRINTER
+QStringList QCupsPrinterSupportPlugin::keys() const
+{
+    return QStringList(QStringLiteral("cupsprintersupport"));
+}
+
+QPlatformPrinterSupport *QCupsPrinterSupportPlugin::create(const QString &key)
+{
+    if (key.compare(key, QStringLiteral("cupsprintersupport"), Qt::CaseInsensitive) == 0)
+        return new QCupsPrinterSupport;
+    return 0;
+}
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QPLATFORMPRINTINGSUPPORT_H
+#include "main.moc"

@@ -52,11 +52,10 @@
 #include <QtPrintSupport/qprinter.h>
 #include <private/qabstractpagesetupdialog_p.h>
 #include <private/qprinter_p.h>
+#include <private/qprintengine_pdf_p.h>
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
 #  include <private/qcups_p.h>
-#  include <cups/cups.h>
-#  include <private/qprintengine_pdf_p.h>
 #endif
 
 

@@ -39,54 +39,76 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMPRINTINGSUPPORT_H
-#define QPLATFORMPRINTINGSUPPORT_H
+#ifndef QCUPSPRINTENGINE_P_H
+#define QCUPSPRINTENGINE_P_H
+
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is part of the QPA API and is not meant to be used
-// in applications. Usage of this API may make your code
-// source and binary incompatible with future versions of Qt.
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
 //
 
-#include <QtPrintSupport/qprinter.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
+#include "QtPrintSupport/qprintengine.h"
 
 #ifndef QT_NO_PRINTER
 
-class QPrintEngine;
+#include <QtCore/qstring.h>
+#include <QtGui/qpaintengine.h>
 
-class Q_PRINTSUPPORT_EXPORT QPlatformPrinterSupport
+#include <private/qpaintengine_p.h>
+#include <private/qprintengine_pdf_p.h>
+#include <QtPrintSupport/qprintengine.h>
+#include <private/qcups_p.h>
+
+QT_BEGIN_NAMESPACE
+
+class QCupsPrintEnginePrivate;
+
+class QCupsPrintEngine : public QPdfPrintEngine
 {
+    Q_DECLARE_PRIVATE(QCupsPrintEngine)
 public:
-    QPlatformPrinterSupport();
-    virtual ~QPlatformPrinterSupport();
+    QCupsPrintEngine(QPrinter::PrinterMode m);
+    virtual ~QCupsPrintEngine();
 
-    virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
-    virtual QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode);
-    virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
+    // reimplementations QPdfPrintEngine
+    void setProperty(PrintEnginePropertyKey key, const QVariant &value);
+    QVariant property(PrintEnginePropertyKey key) const;
+    // end reimplementations QPdfPrintEngine
 
-    virtual QList<QPrinterInfo> availablePrinters();
-    virtual QPrinterInfo defaultPrinter();
-    virtual QPrinterInfo printerInfo(const QString &printerName);
-
-    static QPrinter::PaperSize convertQSizeFToPaperSize(const QSizeF &sizef);
-    static QSizeF convertPaperSizeToQSizeF(QPrinter::PaperSize paperSize);
-
-protected:
-     static void setPrinterInfoDefault(QPrinterInfo *p, bool isDefault);
-     static bool printerInfoIsDefault(const QPrinterInfo &p);
+private:
+    Q_DISABLE_COPY(QCupsPrintEngine)
 };
 
-#endif // QT_NO_PRINTER
+class QCupsPrintEnginePrivate : public QPdfPrintEnginePrivate
+{
+    Q_DECLARE_PUBLIC(QCupsPrintEngine)
+public:
+    QCupsPrintEnginePrivate(QPrinter::PrinterMode m);
+    ~QCupsPrintEnginePrivate();
+
+    bool openPrintDevice();
+    void closePrintDevice();
+
+    void updatePaperSize();
+
+private:
+    Q_DISABLE_COPY(QCupsPrintEnginePrivate)
+
+    QStringList cupsOptions;
+    QString cupsStringPageSize;
+    QRect cupsPaperRect;
+    QRect cupsPageRect;
+    QString cupsTempFile;
+};
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif // QT_NO_PRINTER
 
-#endif // QPLATFORMPRINTINGSUPPORT_H
+#endif // QCUPSPRINTENGINE_P_H

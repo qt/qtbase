@@ -1397,7 +1397,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_QWS_DEPTH" ]        = "4 8 16 24 32";
         dictionary[ "QT_SXE" ]              = "no";
         dictionary[ "QT_INOTIFY" ]          = "no";
-        dictionary[ "QT_LPR" ]              = "no";
         dictionary[ "QT_CUPS" ]             = "no";
         dictionary[ "QT_GLIB" ]             = "no";
         dictionary[ "QT_ICONV" ]            = "no";
@@ -2951,9 +2950,6 @@ void Configure::generateConfigfiles()
 
         if (dictionary[ "QT_GLIB" ] == "no")
           tmpStream<<"#define QT_NO_GLIB"<<endl;
-
-        if (dictionary[ "QT_LPR" ] == "no")
-          tmpStream<<"#define QT_NO_LPR"<<endl;
 
         if (dictionary[ "QT_INOTIFY" ] == "no")
           tmpStream<<"#define QT_NO_INOTIFY"<<endl;

@@ -79,11 +79,6 @@ class QRegion;
 class QFile;
 class QPdfPrintEngine;
 
-#define PPK_CupsOptions QPrintEngine::PrintEnginePropertyKey(0xfe00)
-#define PPK_CupsPageRect QPrintEngine::PrintEnginePropertyKey(0xfe01)
-#define PPK_CupsPaperRect QPrintEngine::PrintEnginePropertyKey(0xfe02)
-#define PPK_CupsStringPageSize QPrintEngine::PrintEnginePropertyKey(0xfe03)
-
 namespace QPdf {
 
     struct PaperSize {
@@ -95,7 +90,7 @@ namespace QPdf {
 
 class QPdfPrintEnginePrivate;
 
-class QPdfPrintEngine : public QPdfEngine, public QPrintEngine
+class Q_PRINTSUPPORT_EXPORT QPdfPrintEngine : public QPdfEngine, public QPrintEngine
 {
     Q_DECLARE_PRIVATE(QPdfPrintEngine)
 public:
@@ -113,36 +108,40 @@ public:
 
     bool newPage();
     int metric(QPaintDevice::PaintDeviceMetric) const;
-    void setProperty(PrintEnginePropertyKey key, const QVariant &value);
-    QVariant property(PrintEnginePropertyKey key) const;
+    virtual void setProperty(PrintEnginePropertyKey key, const QVariant &value);
+    virtual QVariant property(PrintEnginePropertyKey key) const;
     // end reimplementations QPrintEngine
 
     QPrinter::PrinterState state;
+
+protected:
+    QPdfPrintEngine(QPdfPrintEnginePrivate &p);
 
 private:
     Q_DISABLE_COPY(QPdfPrintEngine)
 };
 
-class QPdfPrintEnginePrivate : public QPdfEnginePrivate
+class Q_PRINTSUPPORT_EXPORT QPdfPrintEnginePrivate : public QPdfEnginePrivate
 {
     Q_DECLARE_PUBLIC(QPdfPrintEngine)
 public:
     QPdfPrintEnginePrivate(QPrinter::PrinterMode m);
     ~QPdfPrintEnginePrivate();
 
-    bool openPrintDevice();
-    void closePrintDevice();
+    virtual bool openPrintDevice();
+    virtual void closePrintDevice();
 
-    void updatePaperSize();
+    virtual void updatePaperSize();
 
 private:
     Q_DISABLE_COPY(QPdfPrintEnginePrivate)
 
+    friend class QCupsPrintEngine;
+    friend class QCupsPrintEnginePrivate;
+
     QString printerName;
     QString printProgram;
     QString selectionOption;
-    QStringList cupsOptions;
-    QString cupsStringPageSize;
 
     QPrinter::DuplexMode duplex;
     bool collate;
@@ -151,8 +150,6 @@ private:
     QPrinter::PaperSource paperSource;
 
     QPrinter::PaperSize printerPaperSize;
-    QRect cupsPaperRect;
-    QRect cupsPageRect;
     QSizeF customPaperSize; // in postscript points
 
     int fd;

@@ -39,21 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef QGENERICUNIXPRINTINGSUPPORT_H
-#define QGENERICUNIXPRINTINGSUPPORT_H
+#ifndef QCUPSPRINTERSUPPORT_H
+#define QCUPSPRINTERSUPPORT_H
 
 #include <qpa/qplatformprintersupport.h>
 
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QGenericUnixPrinterSupport : public QPlatformPrinterSupport
+class QCupsPrinterSupport : public QPlatformPrinterSupport
 {
 public:
+    QCupsPrinterSupport();
+    ~QCupsPrinterSupport();
+
+    virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
+    virtual QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode);
     virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
 
     virtual QList<QPrinterInfo> availablePrinters();
+
+private:
+    static int printerInfoCupsPrinterIndex(const QPrinterInfo &p);
+    static void setPrinterInfoCupsPrinterIndex(QPrinterInfo *p, int index);
 };
 
 QT_END_NAMESPACE
+QT_END_HEADER
 
-#endif // QGENERICUNIXPRINTINGSUPPORT_H
+#endif // QCUPSPRINTERSUPPORT_H

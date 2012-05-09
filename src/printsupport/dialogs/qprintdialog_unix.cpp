@@ -52,6 +52,7 @@
 #include <QtWidgets/qfilesystemmodel.h>
 #include <QtWidgets/qstyleditemdelegate.h>
 #include <QtPrintSupport/qprinter.h>
+#include <private/qprintengine_pdf_p.h>
 
 #include <QtWidgets/qdialogbuttonbox.h>
 
@@ -62,13 +63,10 @@
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
 #  include <private/qcups_p.h>
-#  include <cups/cups.h>
-#  include <private/qprintengine_pdf_p.h>
 #else
 #  include <QtCore/qlibrary.h>
+#  include <private/qprintengine_pdf_p.h>
 #endif
-
-#include <private/qprinterinfo_unix_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -165,7 +163,6 @@ public:
     Ui::QPrintWidget widget;
     QAbstractPrintDialog * q;
     QPrinter *printer;
-    QList<QPrinterDescription> lprPrinters;
     void updateWidget();
 
 private:
@@ -664,14 +661,6 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p)
             widget.properties->setEnabled(true);
         }
         currentPrinterIndex = cups->currentPrinterIndex();
-    } else {
-#endif
-        currentPrinterIndex = qt_getLprPrinters(lprPrinters);
-        // populating printer combo
-        QList<QPrinterDescription>::const_iterator i = lprPrinters.constBegin();
-        for(; i != lprPrinters.constEnd(); ++i)
-            widget.printers->addItem((*i).name);
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     }
 #endif
 
@@ -783,16 +772,6 @@ void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
     } else {
         if (optionsPane)
             optionsPane->selectPrinter(0);
-#endif
-        if (lprPrinters.count() > 0) {
-            QString type = lprPrinters.at(index).name + QLatin1Char('@') + lprPrinters.at(index).host;
-            if (!lprPrinters.at(index).comment.isEmpty())
-            type += QLatin1String(", ") + lprPrinters.at(index).comment;
-            widget.type->setText(type);
-            if (propertiesDialog)
-                propertiesDialog->selectPrinter();
-        }
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     }
 #endif
 }

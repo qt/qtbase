@@ -61,8 +61,18 @@
 #include <QtCore/qlibrary.h>
 #include <cups/cups.h>
 #include <cups/ppd.h>
+#include "qprintengine.h"
 
 QT_BEGIN_NAMESPACE
+
+// HACK! Define these here temporarily so they can be used in the dialogs
+// without a circular reference to QCupsPrintEngine in the plugin.
+// Move back to qcupsprintengine_p.h in the plugin once all usage
+// removed from the dialogs.
+#define PPK_CupsOptions QPrintEngine::PrintEnginePropertyKey(0xfe00)
+#define PPK_CupsPageRect QPrintEngine::PrintEnginePropertyKey(0xfe01)
+#define PPK_CupsPaperRect QPrintEngine::PrintEnginePropertyKey(0xfe02)
+#define PPK_CupsStringPageSize QPrintEngine::PrintEnginePropertyKey(0xfe03)
 
 Q_DECLARE_TYPEINFO(cups_option_t, Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE);
 

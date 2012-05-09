@@ -117,26 +117,6 @@ bool QPlatformPrinterSupport::printerInfoIsDefault(const QPrinterInfo &p)
     return p.d_func()->isDefault;
 }
 
-int QPlatformPrinterSupport::printerInfoCupsPrinterIndex(const QPrinterInfo &p)
-{
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    return p.isNull() ? -1 : p.d_func()->cupsPrinterIndex;
-#else
-    Q_UNUSED(p)
-    return -1;
-#endif
-}
-
-void QPlatformPrinterSupport::setPrinterInfoCupsPrinterIndex(QPrinterInfo *p, int index)
-{
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    p->d_func()->cupsPrinterIndex = index;
-#else
-    Q_UNUSED(p)
-    Q_UNUSED(index)
-#endif
-}
-
 /*
     Converts QSizeF in millimeters to a predefined PaperSize (returns Custom if
     the size isn't a standard size)

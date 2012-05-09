@@ -39,20 +39,19 @@
 **
 ****************************************************************************/
 
-#include <QtPrintSupport/qprintengine.h>
+#include "qprintengine_pdf_p.h"
+
+#ifndef QT_NO_PRINTER
 
 #include <qiodevice.h>
 #include <qfile.h>
 #include <qdebug.h>
 #include <qbuffer.h>
-#include "private/qcups_p.h"
 #include "qprinterinfo.h"
 
-#ifndef QT_NO_PRINTER
 #include <limits.h>
 #include <math.h>
 
-#include "qprintengine_pdf_p.h"
 
 #ifdef Q_OS_UNIX
 #include "private/qcore_unix_p.h" // overrides QT_OPEN
@@ -95,32 +94,12 @@ const char *QPdf::paperSizeToString(QPrinter::PaperSize paperSize)
 QPdfPrintEngine::QPdfPrintEngine(QPrinter::PrinterMode m)
     : QPdfEngine(*new QPdfPrintEnginePrivate(m))
 {
-    Q_D(QPdfPrintEngine);
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    if (QCUPSSupport::isAvailable()) {
-        QCUPSSupport cups;
-        const cups_dest_t* printers = cups.availablePrinters();
-        int prnCount = cups.availablePrintersCount();
+    state = QPrinter::Idle;
+}
 
-        for (int i = 0; i <  prnCount; ++i) {
-            if (printers[i].is_default) {
-                d->printerName = QString::fromLocal8Bit(printers[i].name);
-                break;
-            }
-        }
-
-    } else
-#endif
-    {
-        d->printerName = QString::fromLocal8Bit(qgetenv("PRINTER"));
-        if (d->printerName.isEmpty())
-            d->printerName = QString::fromLocal8Bit(qgetenv("LPDEST"));
-        if (d->printerName.isEmpty())
-            d->printerName = QString::fromLocal8Bit(qgetenv("NPRINTER"));
-        if (d->printerName.isEmpty())
-            d->printerName = QString::fromLocal8Bit(qgetenv("NGPRINTER"));
-    }
-
+QPdfPrintEngine::QPdfPrintEngine(QPdfPrintEnginePrivate &p)
+    : QPdfEngine(p)
+{
     state = QPrinter::Idle;
 }
 
@@ -221,18 +200,6 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     case PPK_Duplex:
         d->duplex = static_cast<QPrinter::DuplexMode> (value.toInt());
         break;
-    case PPK_CupsPageRect:
-        d->cupsPageRect = value.toRect();
-        break;
-    case PPK_CupsPaperRect:
-        d->cupsPaperRect = value.toRect();
-        break;
-    case PPK_CupsOptions:
-        d->cupsOptions = value.toStringList();
-        break;
-    case PPK_CupsStringPageSize:
-        d->cupsStringPageSize = value.toString();
-        break;
     case PPK_CustomPaperSize:
         d->printerPaperSize = QPrinter::Custom;
         d->customPaperSize = value.toSizeF();
@@ -278,20 +245,10 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         ret = d->copies;
         break;
     case PPK_SupportsMultipleCopies:
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-        if (QCUPSSupport::isAvailable())
-            ret = true;
-        else
-#endif
-            ret = false;
+        ret = false;
         break;
     case PPK_NumberOfCopies:
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-        if (QCUPSSupport::isAvailable())
-            ret = 1;
-        else
-#endif
-            ret = d->copies;
+        ret = d->copies;
         break;
     case PPK_Orientation:
         ret = d->landscape ? QPrinter::Landscape : QPrinter::Portrait;
@@ -335,18 +292,6 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_Duplex:
         ret = d->duplex;
         break;
-    case PPK_CupsPageRect:
-        ret = d->cupsPageRect;
-        break;
-    case PPK_CupsPaperRect:
-        ret = d->cupsPaperRect;
-        break;
-    case PPK_CupsOptions:
-        ret = d->cupsOptions;
-        break;
-    case PPK_CupsStringPageSize:
-        ret = d->cupsStringPageSize;
-        break;
     case PPK_CustomPaperSize:
         ret = d->customPaperSize;
         break;
@@ -365,28 +310,6 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
 }
 
 
-#ifndef QT_NO_LPR
-static void closeAllOpenFds()
-{
-    // hack time... getting the maximum number of open
-    // files, if possible.  if not we assume it's the
-    // larger of 256 and the fd we got
-    int i;
-#if defined(_SC_OPEN_MAX)
-    i = (int)sysconf(_SC_OPEN_MAX);
-#elif defined(_POSIX_OPEN_MAX)
-    i = (int)_POSIX_OPEN_MAX;
-#elif defined(OPEN_MAX)
-    i = (int)OPEN_MAX;
-#else
-    i = 256;
-#endif
-    // leave stdin/out/err untouched
-    while(--i > 2)
-        QT_CLOSE(i);
-}
-#endif
-
 bool QPdfPrintEnginePrivate::openPrintDevice()
 {
     if (outDevice)
@@ -399,130 +322,6 @@ bool QPdfPrintEnginePrivate::openPrintDevice()
             return false;
         }
         outDevice = file;
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    } else if (QCUPSSupport::isAvailable()) {
-        QCUPSSupport cups;
-        QPair<int, QString> ret = cups.tempFd();
-        if (ret.first < 0) {
-            qWarning("QPdfPrinter: Could not open temporary file to print");
-            return false;
-        }
-        cupsTempFile = ret.second;
-        outDevice = new QFile();
-        static_cast<QFile *>(outDevice)->open(ret.first, QIODevice::WriteOnly);
-#endif
-#ifndef QT_NO_LPR
-    } else {
-        QString pr;
-        if (!printerName.isEmpty())
-            pr = printerName;
-        int fds[2];
-        if (qt_safe_pipe(fds) != 0) {
-            qWarning("QPdfPrinter: Could not open pipe to print");
-            return false;
-        }
-
-        pid_t pid = fork();
-        if (pid == 0) {       // child process
-            // if possible, exit quickly, so the actual lp/lpr
-            // becomes a child of init, and ::waitpid() is
-            // guaranteed not to wait.
-            if (fork() > 0) {
-                closeAllOpenFds();
-
-                // try to replace this process with "true" - this prevents
-                // global destructors from being called (that could possibly
-                // do wrong things to the parent process)
-                (void)execlp("true", "true", (char *)0);
-                (void)execl("/bin/true", "true", (char *)0);
-                (void)execl("/usr/bin/true", "true", (char *)0);
-                ::_exit(0);
-            }
-            qt_safe_dup2(fds[0], 0, 0);
-
-            closeAllOpenFds();
-
-            if (!printProgram.isEmpty()) {
-                if (!selectionOption.isEmpty())
-                    pr.prepend(selectionOption);
-                else
-                    pr.prepend(QLatin1String("-P"));
-                (void)execlp(printProgram.toLocal8Bit().data(), printProgram.toLocal8Bit().data(),
-                             pr.toLocal8Bit().data(), (char *)0);
-            } else {
-                // if no print program has been specified, be smart
-                // about the option string too.
-                QList<QByteArray> lprhack;
-                QList<QByteArray> lphack;
-                QByteArray media;
-                if (!pr.isEmpty() || !selectionOption.isEmpty()) {
-                    if (!selectionOption.isEmpty()) {
-                        QStringList list = selectionOption.split(QLatin1Char(' '));
-                        for (int i = 0; i < list.size(); ++i)
-                            lprhack.append(list.at(i).toLocal8Bit());
-                        lphack = lprhack;
-                    } else {
-                        lprhack.append("-P");
-                        lphack.append("-d");
-                    }
-                    lprhack.append(pr.toLocal8Bit());
-                    lphack.append(pr.toLocal8Bit());
-                }
-                lphack.append("-s");
-
-                char ** lpargs = new char *[lphack.size()+6];
-                char lp[] = "lp";
-                lpargs[0] = lp;
-                int i;
-                for (i = 0; i < lphack.size(); ++i)
-                    lpargs[i+1] = (char *)lphack.at(i).constData();
-#ifndef Q_OS_OSF
-                if (QPdf::paperSizeToString(printerPaperSize)) {
-                    char dash_o[] = "-o";
-                    lpargs[++i] = dash_o;
-                    lpargs[++i] = const_cast<char *>(QPdf::paperSizeToString(printerPaperSize));
-                    lpargs[++i] = dash_o;
-                    media = "media=";
-                    media += QPdf::paperSizeToString(printerPaperSize);
-                    lpargs[++i] = media.data();
-                }
-#endif
-                lpargs[++i] = 0;
-                char **lprargs = new char *[lprhack.size()+2];
-                char lpr[] = "lpr";
-                lprargs[0] = lpr;
-                for (int i = 0; i < lprhack.size(); ++i)
-                    lprargs[i+1] = (char *)lprhack[i].constData();
-                lprargs[lprhack.size() + 1] = 0;
-                (void)execvp("lp", lpargs);
-                (void)execvp("lpr", lprargs);
-                (void)execv("/bin/lp", lpargs);
-                (void)execv("/bin/lpr", lprargs);
-                (void)execv("/usr/bin/lp", lpargs);
-                (void)execv("/usr/bin/lpr", lprargs);
-
-                delete []lpargs;
-                delete []lprargs;
-            }
-            // if we couldn't exec anything, close the fd,
-            // wait for a second so the parent process (the
-            // child of the GUI process) has exited.  then
-            // exit.
-            QT_CLOSE(0);
-            (void)::sleep(1);
-            ::_exit(0);
-        }
-        // parent process
-        QT_CLOSE(fds[0]);
-        fd = fds[1];
-        (void)qt_safe_waitpid(pid, 0, 0);
-
-        if (fd < 0)
-            return false;
-
-        outDevice = new QFile();
-        static_cast<QFile *>(outDevice)->open(fd, QIODevice::WriteOnly);
-#endif
     }
 
     return true;
@@ -542,85 +341,6 @@ void QPdfPrintEnginePrivate::closePrintDevice()
         delete outDevice;
         outDevice = 0;
     }
-
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    if (!cupsTempFile.isEmpty()) {
-        QString tempFile = cupsTempFile;
-        cupsTempFile.clear();
-        QCUPSSupport cups;
-
-        // Set up print options.
-        QByteArray prnName;
-        QList<QPair<QByteArray, QByteArray> > options;
-        QVector<cups_option_t> cupsOptStruct;
-
-        if (!printerName.isEmpty()) {
-            prnName = printerName.toLocal8Bit();
-        } else {
-            QPrinterInfo def = QPrinterInfo::defaultPrinter();
-            if (def.isNull()) {
-                qWarning("Could not determine printer to print to");
-                QFile::remove(tempFile);
-                return;
-            }
-            prnName = def.printerName().toLocal8Bit();
-        }
-
-        if (!cupsStringPageSize.isEmpty()) {
-            options.append(QPair<QByteArray, QByteArray>("media", cupsStringPageSize.toLocal8Bit()));
-        }
-
-        if (copies > 1) {
-            options.append(QPair<QByteArray, QByteArray>("copies", QString::number(copies).toLocal8Bit()));
-        }
-
-        if (collate) {
-            options.append(QPair<QByteArray, QByteArray>("Collate", "True"));
-        }
-
-        switch (duplex) {
-        case QPrinter::DuplexNone:
-            options.append(QPair<QByteArray, QByteArray>("sides", "one-sided"));
-            break;
-        case QPrinter::DuplexAuto:
-            if (!landscape)
-                options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-long-edge"));
-            else
-                options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-short-edge"));
-            break;
-        case QPrinter::DuplexLongSide:
-            options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-long-edge"));
-            break;
-        case QPrinter::DuplexShortSide:
-            options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-short-edge"));
-            break;
-        }
-
-        if (QCUPSSupport::cupsVersion() >= 10300 && landscape) {
-            options.append(QPair<QByteArray, QByteArray>("landscape", ""));
-        }
-
-        QStringList::const_iterator it = cupsOptions.constBegin();
-        while (it != cupsOptions.constEnd()) {
-            options.append(QPair<QByteArray, QByteArray>((*it).toLocal8Bit(), (*(it+1)).toLocal8Bit()));
-            it += 2;
-        }
-
-        for (int c = 0; c < options.size(); ++c) {
-            cups_option_t opt;
-            opt.name = options[c].first.data();
-            opt.value = options[c].second.data();
-            cupsOptStruct.append(opt);
-        }
-
-        // Print the file.
-        cups_option_t* optPtr = cupsOptStruct.size() ? &cupsOptStruct.first() : 0;
-        cups.printFile(prnName.constData(), tempFile.toLocal8Bit().constData(),
-                title.toLocal8Bit().constData(), cupsOptStruct.size(), optPtr);
-
-        QFile::remove(tempFile);
-    }
-#endif
 }
 
 
@@ -651,10 +371,7 @@ void QPdfPrintEnginePrivate::updatePaperSize()
 {
     if (printerPaperSize == QPrinter::Custom) {
         paperSize = customPaperSize;
-    } else if (!cupsPaperRect.isNull()) {
-        QRect r = cupsPaperRect;
-        paperSize = r.size();
-    } else{
+    } else {
         QPdf::PaperSize s = QPdf::paperSize(printerPaperSize);
         paperSize = QSize(s.width, s.height);
     }

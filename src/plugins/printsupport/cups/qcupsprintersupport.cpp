@@ -39,33 +39,61 @@
 **
 ****************************************************************************/
 
-#include "qgenericunixprintersupport_p.h"
+#include "qcupsprintersupport_p.h"
+
+#include "qcupsprintengine_p.h"
+#include <private/qprinterinfo_p.h>
 
 #include <QtPrintSupport/QPrinterInfo>
-#include <private/qcups_p.h>
+
+#include "qcups_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QList<QPrinter::PaperSize> QGenericUnixPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
+QCupsPrinterSupport::QCupsPrinterSupport() : QPlatformPrinterSupport()
 {
-#ifndef QT_NO_CUPS
-    return QCUPSSupport::getCupsPrinterPaperSizes(QPlatformPrinterSupport::printerInfoCupsPrinterIndex(printerInfo));
-#else
-    return QList<QPrinter::PaperSize>();
-#endif
 }
 
-QList<QPrinterInfo> QGenericUnixPrinterSupport::availablePrinters()
+QCupsPrinterSupport::~QCupsPrinterSupport()
+{
+}
+
+QPrintEngine *QCupsPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode printerMode)
+{
+    return new QCupsPrintEngine(printerMode);
+}
+
+QPaintEngine *QCupsPrinterSupport::createPaintEngine(QPrintEngine *engine, QPrinter::PrinterMode printerMode)
+{
+    Q_UNUSED(printerMode)
+    return static_cast<QCupsPrintEngine *>(engine);
+}
+
+QList<QPrinter::PaperSize> QCupsPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
+{
+    return QCUPSSupport::getCupsPrinterPaperSizes(printerInfoCupsPrinterIndex(printerInfo));
+}
+
+QList<QPrinterInfo> QCupsPrinterSupport::availablePrinters()
 {
     QList<QPrinterInfo> printers;
-#ifndef QT_NO_CUPS
     foreach (const QCUPSSupport::Printer &p,  QCUPSSupport::availableUnixPrinters()) {
-        QPrinterInfo printer(QPlatformPrinterSupport::printerInfo(p.name, p.isDefault));
-        QPlatformPrinterSupport::setPrinterInfoCupsPrinterIndex(&printer, p.cupsPrinterIndex);
+        QPrinterInfo printer(p.name);
+        printer.d_func()->isDefault = p.isDefault;
+        setPrinterInfoCupsPrinterIndex(&printer, p.cupsPrinterIndex);
         printers.append(printer);
     }
-#endif
     return printers;
+}
+
+int QCupsPrinterSupport::printerInfoCupsPrinterIndex(const QPrinterInfo &p)
+{
+    return p.isNull() ? -1 : p.d_func()->cupsPrinterIndex;
+}
+
+void QCupsPrinterSupport::setPrinterInfoCupsPrinterIndex(QPrinterInfo *p, int index)
+{
+    p->d_func()->cupsPrinterIndex = index;
 }
 
 QT_END_NAMESPACE
