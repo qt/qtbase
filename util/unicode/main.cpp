@@ -397,6 +397,18 @@ static const char *property_string =
     "    Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2);\n";
 
 static const char *methods =
+    "    Q_CORE_EXPORT GraphemeBreak QT_FASTCALL graphemeBreakClass(uint ucs4);\n"
+    "    inline int graphemeBreakClass(QChar ch)\n"
+    "    { return graphemeBreakClass(ch.unicode()); }\n"
+    "\n"
+    "    Q_CORE_EXPORT WordBreak QT_FASTCALL wordBreakClass(uint ucs4);\n"
+    "    inline int wordBreakClass(QChar ch)\n"
+    "    { return wordBreakClass(ch.unicode()); }\n"
+    "\n"
+    "    Q_CORE_EXPORT SentenceBreak QT_FASTCALL sentenceBreakClass(uint ucs4);\n"
+    "    inline int sentenceBreakClass(QChar ch)\n"
+    "    { return sentenceBreakClass(ch.unicode()); }\n"
+    "\n"
     "    Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);\n"
     "    inline int lineBreakClass(QChar ch)\n"
     "    { return lineBreakClass(ch.unicode()); }\n"
@@ -404,6 +416,18 @@ static const char *methods =
     "    Q_CORE_EXPORT int QT_FASTCALL script(uint ucs4);\n"
     "    inline int script(QChar ch)\n"
     "    { return script(ch.unicode()); }\n\n";
+
+static const char *generated_methods =
+    "    inline bool isNonCharacter(uint ucs4)\n"
+    "    {\n"
+    "        // Noncharacter_Code_Point:\n"
+    "        // Unicode has a couple of \"non-characters\" that one can use internally,\n"
+    "        // but are not allowed to be used for text interchange.\n"
+    "        // Those are the last two entries each Unicode Plane (U+FFFE..U+FFFF,\n"
+    "        // U+1FFFE..U+1FFFF, etc.) as well as the entries in range U+FDD0..U+FDEF\n"
+    "\n"
+    "        return ucs4 >= 0xfdd0 && (ucs4 <= 0xfdef || (ucs4 & 0xfffe) == 0xfffe);\n"
+    "    }\n\n";
 
 static const int SizeOfPropertiesStruct = 20;
 
@@ -2275,7 +2299,22 @@ static QByteArray createPropertyInfo()
            "    return qGetProp(ucs2);\n"
            "}\n\n";
 
-    out += "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4)\n"
+    out += "Q_CORE_EXPORT GraphemeBreak QT_FASTCALL graphemeBreakClass(uint ucs4)\n"
+           "{\n"
+           "    return (GraphemeBreak)qGetProp(ucs4)->graphemeBreak;\n"
+           "}\n"
+           "\n"
+           "Q_CORE_EXPORT WordBreak QT_FASTCALL wordBreakClass(uint ucs4)\n"
+           "{\n"
+           "    return (WordBreak)qGetProp(ucs4)->wordBreak;\n"
+           "}\n"
+           "\n"
+           "Q_CORE_EXPORT SentenceBreak QT_FASTCALL sentenceBreakClass(uint ucs4)\n"
+           "{\n"
+           "    return (SentenceBreak)qGetProp(ucs4)->sentenceBreak;\n"
+           "}\n"
+           "\n"
+           "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4)\n"
            "{\n"
            "    return (LineBreakClass)qGetProp(ucs4)->line_break_class;\n"
            "}\n\n";
@@ -2868,6 +2907,8 @@ int main(int, char **)
     f.write(line_break_class_string);
     f.write("\n");
     f.write(methods);
+    f.write("\n");
+    f.write(generated_methods);
     f.write("} // namespace QUnicodeTables\n\n"
             "QT_END_NAMESPACE\n\n"
             "#endif // QUNICODETABLES_P_H\n");

@@ -45,6 +45,7 @@
 #include <qdebug.h>
 #include "qjsonparser_p.h"
 #include "qjson_p.h"
+#include <private/qunicodetables_p.h>
 
 //#define PARSER_DEBUG
 #ifdef PARSER_DEBUG
@@ -721,19 +722,6 @@ static inline bool scanEscapeSequence(const char *&json, const char *end, uint *
     return true;
 }
 
-static inline bool isUnicodeNonCharacter(uint ucs4)
-{
-    // Unicode has a couple of "non-characters" that one can use internally,
-    // but are not allowed to be used for text interchange.
-    //
-    // Those are the last two entries each Unicode Plane (U+FFFE, U+FFFF,
-    // U+1FFFE, U+1FFFF, etc.) as well as the entries between U+FDD0 and
-    // U+FDEF (inclusive)
-
-    return (ucs4 & 0xfffe) == 0xfffe
-            || (ucs4 - 0xfdd0U) < 32;
-}
-
 static inline bool scanUtf8Char(const char *&json, const char *end, uint *result)
 {
     int need;
@@ -769,7 +757,7 @@ static inline bool scanUtf8Char(const char *&json, const char *end, uint *result
         uc = (uc << 6) | (ch & 0x3f);
     }
 
-    if (uc < min_uc || isUnicodeNonCharacter(uc) ||
+    if (uc < min_uc || QUnicodeTables::isNonCharacter(uc) ||
         (uc >= 0xd800 && uc <= 0xdfff) || uc >= 0x110000) {
         return false;
     }

@@ -41,6 +41,7 @@
 
 #include "qjsonwriter_p.h"
 #include "qjson_p.h"
+#include <private/qunicodetables_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -48,21 +49,6 @@ using namespace QJsonPrivate;
 
 static void objectContentToJson(const QJsonPrivate::Object *o, QByteArray &json, int indent, bool compact);
 static void arrayContentToJson(const QJsonPrivate::Array *a, QByteArray &json, int indent, bool compact);
-
-// some code from qutfcodec.cpp, inlined here for performance reasons
-// to allow fast escaping of strings
-static inline bool isUnicodeNonCharacter(uint ucs4)
-{
-    // Unicode has a couple of "non-characters" that one can use internally,
-    // but are not allowed to be used for text interchange.
-    //
-    // Those are the last two entries each Unicode Plane (U+FFFE, U+FFFF,
-    // U+1FFFE, U+1FFFF, etc.) as well as the entries between U+FDD0 and
-    // U+FDEF (inclusive)
-
-    return (ucs4 & 0xfffe) == 0xfffe
-            || (ucs4 - 0xfdd0U) < 32;
-}
 
 static inline uchar hexdig(uint u)
 {
@@ -154,7 +140,7 @@ static QByteArray escapedString(const QString &s)
                 *cursor++ = 0xc0 | ((uchar) (u >> 6));
             } else {
                 // is it one of the Unicode non-characters?
-                if (isUnicodeNonCharacter(u)) {
+                if (QUnicodeTables::isNonCharacter(u)) {
                     *cursor++ = replacement;
                     ++ch;
                     continue;

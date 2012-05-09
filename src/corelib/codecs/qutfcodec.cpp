@@ -43,23 +43,11 @@
 #include "qlist.h"
 #include "qendian.h"
 #include "qchar.h"
+#include <private/qunicodetables_p.h>
 
 QT_BEGIN_NAMESPACE
 
 enum { Endian = 0, Data = 1 };
-
-static inline bool isUnicodeNonCharacter(uint ucs4)
-{
-    // Unicode has a couple of "non-characters" that one can use internally,
-    // but are not allowed to be used for text interchange.
-    //
-    // Those are the last two entries each Unicode Plane (U+FFFE, U+FFFF,
-    // U+1FFFE, U+1FFFF, etc.) as well as the entries between U+FDD0 and
-    // U+FDEF (inclusive)
-
-    return (ucs4 & 0xfffe) == 0xfffe
-            || (ucs4 - 0xfdd0U) < 32;
-}
 
 QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::ConverterState *state)
 {
@@ -120,7 +108,7 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
                 *cursor++ = 0xc0 | ((uchar) (u >> 6));
             } else {
                 // is it one of the Unicode non-characters?
-                if (isUnicodeNonCharacter(u)) {
+                if (QUnicodeTables::isNonCharacter(u)) {
                     *cursor++ = replacement;
                     ++ch;
                     ++invalid;
@@ -196,7 +184,7 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
                     bool nonCharacter;
                     if (!headerdone && uc == 0xfeff) {
                         // don't do anything, just skip the BOM
-                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc < 0x110000) {
+                    } else if (!(nonCharacter = QUnicodeTables::isNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc < 0x110000) {
                         // surrogate pair
                         Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
                         *qch++ = QChar::highSurrogate(uc);

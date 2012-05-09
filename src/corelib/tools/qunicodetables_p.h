@@ -217,6 +217,18 @@ namespace QUnicodeTables {
     };
 
 
+    Q_CORE_EXPORT GraphemeBreak QT_FASTCALL graphemeBreakClass(uint ucs4);
+    inline int graphemeBreakClass(QChar ch)
+    { return graphemeBreakClass(ch.unicode()); }
+
+    Q_CORE_EXPORT WordBreak QT_FASTCALL wordBreakClass(uint ucs4);
+    inline int wordBreakClass(QChar ch)
+    { return wordBreakClass(ch.unicode()); }
+
+    Q_CORE_EXPORT SentenceBreak QT_FASTCALL sentenceBreakClass(uint ucs4);
+    inline int sentenceBreakClass(QChar ch)
+    { return sentenceBreakClass(ch.unicode()); }
+
     Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);
     inline int lineBreakClass(QChar ch)
     { return lineBreakClass(ch.unicode()); }
@@ -224,6 +236,18 @@ namespace QUnicodeTables {
     Q_CORE_EXPORT int QT_FASTCALL script(uint ucs4);
     inline int script(QChar ch)
     { return script(ch.unicode()); }
+
+
+    inline bool isNonCharacter(uint ucs4)
+    {
+        // Noncharacter_Code_Point:
+        // Unicode has a couple of "non-characters" that one can use internally,
+        // but are not allowed to be used for text interchange.
+        // Those are the last two entries each Unicode Plane (U+FFFE..U+FFFF,
+        // U+1FFFE..U+1FFFF, etc.) as well as the entries in range U+FDD0..U+FDEF
+
+        return ucs4 >= 0xfdd0 && (ucs4 <= 0xfdef || (ucs4 & 0xfffe) == 0xfffe);
+    }
 
 } // namespace QUnicodeTables
 

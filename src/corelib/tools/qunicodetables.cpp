@@ -4348,6 +4348,21 @@ Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2)
     return qGetProp(ucs2);
 }
 
+Q_CORE_EXPORT GraphemeBreak QT_FASTCALL graphemeBreakClass(uint ucs4)
+{
+    return (GraphemeBreak)qGetProp(ucs4)->graphemeBreak;
+}
+
+Q_CORE_EXPORT WordBreak QT_FASTCALL wordBreakClass(uint ucs4)
+{
+    return (WordBreak)qGetProp(ucs4)->wordBreak;
+}
+
+Q_CORE_EXPORT SentenceBreak QT_FASTCALL sentenceBreakClass(uint ucs4)
+{
+    return (SentenceBreak)qGetProp(ucs4)->sentenceBreak;
+}
+
 Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4)
 {
     return (LineBreakClass)qGetProp(ucs4)->line_break_class;
