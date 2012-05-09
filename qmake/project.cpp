@@ -164,6 +164,9 @@ struct parser_info {
     bool from_file;
 } parser;
 
+static QString project_root;
+static QString project_build_root;
+
 static QString remove_quotes(const QString &arg)
 {
     const ushort SINGLEQUOTE = '\'';
@@ -612,10 +615,10 @@ QStringList qmake_mkspec_paths()
         for (QStringList::ConstIterator it = lst.begin(); it != lst.end(); ++it)
             ret << ((*it) + concat);
     }
-    if (!Option::mkfile::project_build_root.isEmpty())
-        ret << Option::mkfile::project_build_root + concat;
-    if (!Option::mkfile::project_root.isEmpty())
-        ret << Option::mkfile::project_root + concat;
+    if (!project_build_root.isEmpty())
+        ret << project_build_root + concat;
+    if (!project_root.isEmpty())
+        ret << project_root + concat;
     ret << QLibraryInfo::location(QLibraryInfo::DataPath) + concat;
     ret.removeDuplicates();
 
@@ -1298,11 +1301,61 @@ QMakeProject::read(uchar cmd)
         if(!Option::user_template_prefix.isEmpty())
             base_vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
 
+        project_build_root.clear();
+
         if (Option::mkfile::do_cache) {        // parse the cache
-            if (Option::output_dir.startsWith(Option::mkfile::project_build_root))
+            if (Option::mkfile::cachefile.isEmpty())  { //find it as it has not been specified
+                QDir dir(Option::output_dir);
+                while (!dir.exists(QLatin1String(".qmake.cache")))
+                    if (dir.isRoot() || !dir.cdUp())
+                        goto no_cache;
+                Option::mkfile::cachefile = dir.filePath(QLatin1String(".qmake.cache"));
+                project_build_root = dir.path();
+            } else {
+                QFileInfo fi(Option::mkfile::cachefile);
+                Option::mkfile::cachefile = QDir::cleanPath(fi.absoluteFilePath());
+                project_build_root = QDir::cleanPath(fi.absolutePath());
+            }
+
+            QHash<QString, QStringList> cache;
+            if (!read(Option::mkfile::cachefile, cache)) {
+                Option::mkfile::cachefile.clear();
+                goto no_cache;
+            }
+            if (Option::mkfile::qmakespec.isEmpty() && !cache["QMAKESPEC"].isEmpty())
+                Option::mkfile::qmakespec = cache["QMAKESPEC"].first();
+
+            if (Option::output_dir.startsWith(project_build_root))
                 Option::mkfile::cachefile_depth =
-                        Option::output_dir.mid(Option::mkfile::project_build_root.length()).count('/');
+                        Option::output_dir.mid(project_build_root.length()).count('/');
         }
+      no_cache:
+
+        if (qmake_getpwd() != Option::output_dir || project_build_root.isEmpty()) {
+            QDir srcdir(qmake_getpwd());
+            QDir dstdir(Option::output_dir);
+            do {
+                if (!project_build_root.isEmpty()) {
+                    // If we already know the build root, just match up the source root with it.
+                    if (dstdir.path() == project_build_root) {
+                        project_root = srcdir.path();
+                        break;
+                    }
+                } else {
+                    // Look for mkspecs/ in source and build. First to win determines the root.
+                    if (dstdir.exists("mkspecs") || srcdir.exists("mkspecs")) {
+                        project_build_root = dstdir.path();
+                        project_root = srcdir.path();
+                        if (project_root == project_build_root)
+                            project_root.clear();
+                        break;
+                    }
+                }
+            } while (!srcdir.isRoot() && srcdir.cdUp() && !dstdir.isRoot() && dstdir.cdUp());
+        } else {
+            project_root.clear();
+        }
+
         {             // parse mkspec
             QString qmakespec = Option::mkfile::qmakespec;
             if (qmakespec.isEmpty())

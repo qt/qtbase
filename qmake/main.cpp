@@ -163,11 +163,6 @@ int runQMake(int argc, char **argv)
                 fn = fn.right(fn.length() - di - 1);
             }
 
-            if (!Option::prepareProject(fn)) {
-                exit_val = 3;
-                break;
-            }
-
             // read project..
             if(!project.read(fn)) {
                 fprintf(stderr, "Error processing project file: %s\n",
