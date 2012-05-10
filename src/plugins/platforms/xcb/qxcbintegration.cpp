@@ -85,6 +85,7 @@
 #include <QtGui/QScreen>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qpa/qplatformaccessibility.h>
+#include "../../../platformsupport/linuxaccessibility/bridge_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -117,7 +118,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
     m_inputContext.reset(QPlatformInputContextFactory::create());
 #ifndef QT_NO_ACCESSIBILITY
-    m_accessibility.reset(new QPlatformAccessibility());
+    m_accessibility.reset(new QSpiAccessibleBridge());
 #endif
 }
 

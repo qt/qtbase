@@ -16,6 +16,7 @@ SUBDIRS=\
    modeltest \
    networkselftest \
    qaccessibility \
+   qaccessibilitylinux \
    qcomplextext \
    qfocusevent \
    qnetworkaccessmanager_and_qprogressdialog \
@@ -45,7 +46,9 @@ cross_compile: SUBDIRS -= \
    atwrapper \
    compiler
 
-wince*|!contains(QT_CONFIG, accessibility):SUBDIRS -= qaccessibility
+wince*|!contains(QT_CONFIG, accessibility): SUBDIRS -= qaccessibility
+
+!contains(QT_CONFIG, accessibility)|!contains(QT_CONFIG, xcb): SUBDIRS -= qaccessibilitylinux
 
 !mac: SUBDIRS -= \
            macgui \

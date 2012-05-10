@@ -3012,7 +3012,7 @@ Configure options:
  +  -largefile ......... Enables Qt to access files larger than 4 GB.
 
     -no-accessibility .. Do not compile Accessibility support.
- *  -accessibility ..... Compile Accessibility support.
+ +  -accessibility ..... Compile Accessibility support.
 
     -no-sql-<driver> ... Disable SQL <driver> entirely.
     -qt-sql-<driver> ... Enable a SQL <driver> in the QtSql library, by default
@@ -3989,11 +3989,6 @@ if [ "$CFG_LIBPNG" = "auto" ]; then
     fi
 fi
 
-# detect accessibility
-if [ "$CFG_ACCESSIBILITY" = "auto" ]; then
-    CFG_ACCESSIBILITY=yes
-fi
-
 if [ "$CFG_EGLFS" = "yes" ]; then
     if [ "$CFG_EGL" = "no" ]; then
         echo "The EGLFS plugin requires EGL support and cannot be built"
@@ -4839,6 +4834,25 @@ if [ "$CFG_KMS" = "yes" ]; then
         CFG_KMS="yes"
     else
         CFG_KMS="no"
+    fi
+fi
+
+# Detect accessibility support
+if [ "$CFG_ACCESSIBILITY" != "no" ]; then
+    if [ "$CFG_XCB" = "no" ]; then
+        CFG_ACCESSIBILITY=yes
+    else
+        # linux/xcb accessibility needs dbus and atspi-2
+        if [ "$CFG_DBUS" != "no" ] && [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "atspi-2" 2>/dev/null; then
+            CFG_ACCESSIBILITY=yes
+        else
+            if [ "$CFG_ACCESSIBILITY" = "auto" ]; then
+                CFG_ACCESSIBILITY=no
+            else
+                echo "Accessibility support needs pkg-config and libatspi2."
+                exit 101
+            fi
+        fi
     fi
 fi
 
