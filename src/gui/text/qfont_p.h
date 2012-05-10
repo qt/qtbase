@@ -56,6 +56,7 @@
 #include "QtGui/qfont.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qobject.h"
+#include "QtCore/qstringlist.h"
 #include <private/qunicodetables_p.h>
 #include <QtGui/qfontdatabase.h>
 #include "private/qfixed_p.h"
@@ -79,6 +80,7 @@ struct QFontDef
     QString family;
     QString styleName;
 
+    QStringList fallBackFamilies;
 
     qreal pointSize;
     qreal pixelSize;

@@ -317,7 +317,12 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
 
     if (!engine) {
         if (!request.family.isEmpty()) {
-            QStringList fallbacks = fallbackFamilies(request.family,QFont::Style(request.style),QFont::StyleHint(request.styleHint),QUnicodeTables::Script(script));
+            QStringList fallbacks = request.fallBackFamilies
+                                  + fallbackFamilies(request.family,
+                                                     QFont::Style(request.style),
+                                                     QFont::StyleHint(request.styleHint),
+                                                     QUnicodeTables::Script(script));
+
             for (int i = 0; !engine && i < fallbacks.size(); i++) {
                 QFontDef def = request;
                 def.family = fallbacks.at(i);
@@ -386,7 +391,13 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     QStringList family_list;
 
     if (!req.family.isEmpty()) {
-        family_list = familyList(req);
+        QStringList familiesForRequest = familyList(req);
+
+        // Add primary selection
+        family_list << familiesForRequest.takeFirst();
+
+        // Fallbacks requested in font request
+        req.fallBackFamilies = familiesForRequest;
 
         // add the default family
         QString defaultFamily = QGuiApplication::font().family();
@@ -409,6 +420,9 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
 
             fe = 0;
         }
+
+        // No need to check requested fallback families again
+        req.fallBackFamilies.clear();
     }
 
     if (fe->symbol || (d->request.styleStrategy & QFont::NoFontMerging)) {
