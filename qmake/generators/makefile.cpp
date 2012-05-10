@@ -198,12 +198,12 @@ MakefileGenerator::initOutPaths()
     QHash<QString, QStringList> &v = project->variables();
     //for shadow builds
     if(!v.contains("QMAKE_ABSOLUTE_SOURCE_PATH")) {
-        if(Option::mkfile::do_cache && !Option::mkfile::cachefile.isEmpty() &&
+        if (Option::mkfile::do_cache && !project->cacheFile().isEmpty() &&
            v.contains("QMAKE_ABSOLUTE_SOURCE_ROOT")) {
             QString root = v["QMAKE_ABSOLUTE_SOURCE_ROOT"].first();
             root = QDir::fromNativeSeparators(root);
             if(!root.isEmpty()) {
-                QFileInfo fi = fileInfo(Option::mkfile::cachefile);
+                QFileInfo fi = fileInfo(project->cacheFile());
                 if(!fi.makeAbsolute()) {
                     QString cache_r = fi.path(), pwd = Option::output_dir;
                     if(pwd.startsWith(cache_r) && !pwd.startsWith(root)) {
@@ -2692,7 +2692,7 @@ MakefileGenerator::writeMakeQmake(QTextStream &t)
         if(!ofile.isEmpty() && !project->isActiveConfig("no_autoqmake")) {
             t << escapeFilePath(ofile) << ": " << escapeDependencyPath(fileFixify(pfile)) << " ";
             if(Option::mkfile::do_cache)
-                t <<  escapeDependencyPath(fileFixify(Option::mkfile::cachefile)) << " ";
+                t <<  escapeDependencyPath(fileFixify(project->cacheFile())) << " ";
             if(!specdir().isEmpty()) {
                 if(exists(Option::fixPathToLocalOS(specdir()+QDir::separator()+"qmake.conf")))
                     t << escapeDependencyPath(specdir() + Option::dir_sep + "qmake.conf") << " ";

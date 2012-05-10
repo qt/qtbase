@@ -186,9 +186,8 @@ struct parser_info {
     bool from_file;
 } parser;
 
-static QString project_root;
-static QString project_build_root;
-
+static QString cached_source_root;
+static QString cached_build_root;
 static QStringList cached_qmakepath;
 static QStringList cached_qmakefeatures;
 
@@ -593,10 +592,10 @@ QStringList qmake_feature_paths(QMakeProperty *prop, bool host_build)
     feature_roots += cached_qmakefeatures;
     if(prop)
         feature_roots += splitPathList(prop->value("QMAKEFEATURES"));
-    if (!project_build_root.isEmpty())
+    if (!cached_build_root.isEmpty())
         for(QStringList::Iterator concat_it = concat.begin();
             concat_it != concat.end(); ++concat_it)
-            feature_roots << (project_build_root + (*concat_it));
+            feature_roots << (cached_build_root + (*concat_it));
     QStringList qmakepath = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEPATH")));
     qmakepath += cached_qmakepath;
     foreach (const QString &path, qmakepath)
@@ -640,10 +639,10 @@ QStringList qmake_mkspec_paths()
     qmakepath += cached_qmakepath;
     foreach (const QString &path, qmakepath)
         ret << (path + concat);
-    if (!project_build_root.isEmpty())
-        ret << project_build_root + concat;
-    if (!project_root.isEmpty())
-        ret << project_root + concat;
+    if (!cached_build_root.isEmpty())
+        ret << cached_build_root + concat;
+    if (!cached_source_root.isEmpty())
+        ret << cached_source_root + concat;
     ret << QLibraryInfo::rawLocation(QLibraryInfo::HostDataPath, QLibraryInfo::EffectivePaths) + concat;
     ret.removeDuplicates();
 
@@ -1334,27 +1333,34 @@ QMakeProject::read(uchar cmd)
         if(!Option::user_template_prefix.isEmpty())
             base_vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
 
-        project_build_root.clear();
-
+        QString project_root;
+        QString project_build_root;
         QStringList qmakepath;
         QStringList qmakefeatures;
         if (Option::mkfile::do_cache) {        // parse the cache
             if (Option::mkfile::cachefile.isEmpty())  { //find it as it has not been specified
-                QDir dir(Option::output_dir);
-                while (!dir.exists(QLatin1String(".qmake.cache")))
-                    if (dir.isRoot() || !dir.cdUp())
+                QString dir = Option::output_dir;
+                forever {
+                    QFileInfo qfi(dir, QLatin1String(".qmake.cache"));
+                    if (qfi.exists()) {
+                        cachefile = qfi.filePath();
+                        project_build_root = dir;
+                        break;
+                    }
+                    QFileInfo qdfi(dir);
+                    if (qdfi.isRoot())
                         goto no_cache;
-                Option::mkfile::cachefile = dir.filePath(QLatin1String(".qmake.cache"));
-                project_build_root = dir.path();
+                    dir = qdfi.path();
+                }
             } else {
                 QFileInfo fi(Option::mkfile::cachefile);
-                Option::mkfile::cachefile = QDir::cleanPath(fi.absoluteFilePath());
+                cachefile = QDir::cleanPath(fi.absoluteFilePath());
                 project_build_root = QDir::cleanPath(fi.absolutePath());
             }
 
             QHash<QString, QStringList> cache;
-            if (!read(Option::mkfile::cachefile, cache)) {
-                Option::mkfile::cachefile.clear();
+            if (!read(cachefile, cache)) {
+                cachefile.clear();
                 goto no_cache;
             }
             if (Option::mkfile::xqmakespec.isEmpty() && !cache["XQMAKESPEC"].isEmpty())
@@ -1366,11 +1372,6 @@ QMakeProject::read(uchar cmd)
             }
             qmakepath = cache.value(QLatin1String("QMAKEPATH"));
             qmakefeatures = cache.value(QLatin1String("QMAKEFEATURES"));
-            if (qmakepath != cached_qmakepath || qmakefeatures != cached_qmakefeatures) {
-                cached_qmakepath = qmakepath;
-                cached_qmakefeatures = qmakefeatures;
-                invalidateFeatureRoots();
-            }
 
             if (Option::output_dir.startsWith(project_build_root))
                 Option::mkfile::cachefile_depth =
@@ -1401,6 +1402,15 @@ QMakeProject::read(uchar cmd)
             } while (!srcdir.isRoot() && srcdir.cdUp() && !dstdir.isRoot() && dstdir.cdUp());
         } else {
             project_root.clear();
+        }
+
+        if (qmakepath != cached_qmakepath || qmakefeatures != cached_qmakefeatures
+            || project_build_root != cached_build_root) { // No need to check source dir, as it goes in sync
+            cached_source_root = project_root;
+            cached_build_root = project_build_root;
+            cached_qmakepath = qmakepath;
+            cached_qmakefeatures = qmakefeatures;
+            invalidateFeatureRoots();
         }
 
         {             // parse mkspec
@@ -1439,9 +1449,9 @@ QMakeProject::read(uchar cmd)
             }
             validateModes();
 
-            if(Option::mkfile::do_cache && !Option::mkfile::cachefile.isEmpty()) {
-                debug_msg(1, "QMAKECACHE file: reading %s", Option::mkfile::cachefile.toLatin1().constData());
-                read(Option::mkfile::cachefile, base_vars);
+            if (!cachefile.isEmpty()) {
+                debug_msg(1, "QMAKECACHE file: reading %s", cachefile.toLatin1().constData());
+                read(cachefile, base_vars);
             }
         }
     }
@@ -3259,14 +3269,13 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
             }
             varstr += QLatin1Char('\n');
         }
-        if (Option::mkfile::cachefile.isEmpty()) {
-            Option::mkfile::cachefile = Option::output_dir + QLatin1String("/.qmake.cache");
-            printf("Info: creating cache file %s\n",
-                   Option::mkfile::cachefile.toLatin1().constData());
-            project_build_root = Option::output_dir;
-            project_root = values("_PRO_FILE_PWD_", place).first();
-            if (project_root == project_build_root)
-                project_root.clear();
+        if (cachefile.isEmpty()) {
+            cachefile = Option::output_dir + QLatin1String("/.qmake.cache");
+            printf("Info: creating cache file %s\n", cachefile.toLatin1().constData());
+            cached_build_root = Option::output_dir;
+            cached_source_root = values("_PRO_FILE_PWD_", place).first();
+            if (cached_source_root == cached_build_root)
+                cached_source_root.clear();
             invalidateFeatureRoots();
         }
         QFileInfo qfi(Option::mkfile::cachefile);
@@ -3277,9 +3286,9 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
             return false;
         }
         QString errStr;
-        if (!writeFile(Option::mkfile::cachefile, QIODevice::Append, varstr, &errStr)) {
+        if (!writeFile(cachefile, QIODevice::Append, varstr, &errStr)) {
             fprintf(stderr, "ERROR writing cache file %s: %s\n",
-                    Option::mkfile::cachefile.toLatin1().constData(), errStr.toLatin1().constData());
+                    cachefile.toLatin1().constData(), errStr.toLatin1().constData());
 #if defined(QT_BUILD_QMAKE_LIBRARY)
             return false;
 #else
@@ -3695,7 +3704,7 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
     } else if(var == QLatin1String("_QMAKE_CACHE_")) {
         var = ".BUILTIN." + var;
         if(Option::mkfile::do_cache)
-            place[var] = QStringList(Option::mkfile::cachefile);
+            place[var] = QStringList(cachefile);
     } else if(var == QLatin1String("TEMPLATE")) {
         if(!Option::user_template.isEmpty()) {
             var = ".BUILTIN.USER." + var;
