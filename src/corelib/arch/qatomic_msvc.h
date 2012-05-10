@@ -44,17 +44,6 @@
 
 #include <QtCore/qgenericatomic.h>
 
-QT_BEGIN_HEADER
-QT_BEGIN_NAMESPACE
-
-#if 0
-// silence syncqt warnings
-QT_END_NAMESPACE
-QT_END_HEADER
-
-#pragma qt_sync_stop_processing
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef Q_OS_WINCE
@@ -224,6 +213,17 @@ extern "C" {
 #endif // !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
+
+#if 0
+// silence syncqt warnings
+QT_END_NAMESPACE
+QT_END_HEADER
+
+#pragma qt_sync_stop_processing
+#endif
 
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_WAIT_FREE
