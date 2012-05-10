@@ -7304,7 +7304,15 @@ bool QString::isRightToLeft() const
     const ushort *p = d->data();
     const ushort * const end = p + d->size;
     while (p < end) {
-        switch(QChar::direction(*p))
+        uint ucs4 = *p;
+        if (QChar::isHighSurrogate(ucs4) && p < end - 1) {
+            ushort low = p[1];
+            if (QChar::isLowSurrogate(low)) {
+                ucs4 = QChar::surrogateToUcs4(ucs4, low);
+                ++p;
+            }
+        }
+        switch (QChar::direction(ucs4))
         {
         case QChar::DirL:
             return false;

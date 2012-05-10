@@ -239,6 +239,8 @@ private slots:
     void compareQLatin1Strings();
     void fromQLatin1StringWithLength();
     void assignQLatin1String();
+    void isRightToLeft_data();
+    void isRightToLeft();
 };
 
 template <class T> const T &verifyZeroTermination(const T &t) { return t; }
@@ -5625,6 +5627,39 @@ void tst_QString::assignQLatin1String()
     QCOMPARE(foo.size(), latin1subfoo.size());
     QCOMPARE(foo, QString::fromLatin1("foo"));
 
+}
+
+void tst_QString::isRightToLeft_data()
+{
+    QTest::addColumn<QString>("unicode");
+    QTest::addColumn<bool>("rtl");
+
+    QTest::newRow("null") << QString() << false;
+    QTest::newRow("empty") << QString("") << false;
+
+    QTest::newRow("numbers-only") << QString("12345") << false;
+    QTest::newRow("latin1-only") << QString("hello") << false;
+    QTest::newRow("numbers-latin1") << (QString("12345") + QString("hello")) << false;
+
+    static const ushort unicode1[] = { 0x627, 0x627 };
+    QTest::newRow("arabic-only") << QString::fromUtf16(unicode1, 2) << true;
+    QTest::newRow("numbers-arabic") << (QString("12345") + QString::fromUtf16(unicode1, 2)) << true;
+    QTest::newRow("numbers-latin1-arabic") << (QString("12345") + QString("hello") + QString::fromUtf16(unicode1, 2)) << false;
+    QTest::newRow("numbers-arabic-latin1") << (QString("12345") + QString::fromUtf16(unicode1, 2) + QString("hello")) << true;
+
+    static const ushort unicode2[] = { QChar::highSurrogate(0xE01DAu), QChar::lowSurrogate(0xE01DAu), QChar::highSurrogate(0x2F800u), QChar::lowSurrogate(0x2F800u) };
+    QTest::newRow("surrogates-VS-CJK") << QString::fromUtf16(unicode2, 4) << false;
+
+    static const ushort unicode3[] = { QChar::highSurrogate(0x10800u), QChar::lowSurrogate(0x10800u), QChar::highSurrogate(0x10805u), QChar::lowSurrogate(0x10805u) };
+    QTest::newRow("surrogates-cypriot") << QString::fromUtf16(unicode3, 4) << true;
+}
+
+void tst_QString::isRightToLeft()
+{
+    QFETCH(QString, unicode);
+    QFETCH(bool, rtl);
+
+    QCOMPARE(unicode.isRightToLeft(), rtl);
 }
 
 QTEST_APPLESS_MAIN(tst_QString)
