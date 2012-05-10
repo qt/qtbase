@@ -119,6 +119,8 @@ private slots:
     void qtbug6305_data() { serverAddress_data(); }
     void qtbug6305();
 
+    void linkLocal();
+
 private:
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkSession *networkSession;
@@ -853,6 +855,87 @@ void tst_QTcpServer::qtbug6305()
 
     QTcpServer server2;
     QVERIFY(!server2.listen(listenAddress, server.serverPort())); // second listen should fail
+}
+
+void tst_QTcpServer::linkLocal()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QList <QHostAddress> addresses;
+    QSet <QString> scopes;
+    QHostAddress localMaskv4("169.254.0.0");
+    QHostAddress localMaskv6("fe80::");
+    foreach (const QNetworkInterface& iface, QNetworkInterface::allInterfaces()) {
+        //Windows preallocates link local addresses to interfaces that are down.
+        //These may or may not work depending on network driver (they do not work for the Bluetooth PAN driver)
+        if (iface.flags() & QNetworkInterface::IsUp) {
+            foreach (QNetworkAddressEntry addressEntry, iface.addressEntries()) {
+                QHostAddress addr = addressEntry.ip();
+                if (addr.isInSubnet(localMaskv4, 16)) {
+                    addresses << addr;
+                    qDebug() << addr;
+                }
+                else if (!addr.scopeId().isEmpty() && addr.isInSubnet(localMaskv6, 64)) {
+                    scopes << addr.scopeId();
+                    addresses << addr;
+                    qDebug() << addr;
+                }
+            }
+        }
+    }
+    if (addresses.isEmpty())
+        QSKIP("no link local addresses");
+
+    QList<QTcpServer*> servers;
+    quint16 port = 0;
+    foreach (const QHostAddress& addr, addresses) {
+        QTcpServer *server = new QTcpServer;
+        QVERIFY(server->listen(addr, port));
+        port = server->serverPort(); //listen to same port on different interfaces
+        servers << server;
+    }
+
+    QList<QTcpSocket*> clients;
+    foreach (const QHostAddress& addr, addresses) {
+        //unbound socket
+        QTcpSocket *socket = new QTcpSocket;
+        socket->connectToHost(addr, port);
+        QVERIFY(socket->waitForConnected(5000));
+        clients << socket;
+        //bound socket
+        socket = new QTcpSocket;
+        QVERIFY(socket->bind(addr));
+        socket->connectToHost(addr, port);
+        QVERIFY(socket->waitForConnected(5000));
+        clients << socket;
+    }
+
+    //each server should have two connections
+    foreach (QTcpServer* server, servers) {
+        QTcpSocket* remote;
+        //qDebug() << "checking for connections" << server->serverAddress() << ":" << server->serverPort();
+        QVERIFY(server->waitForNewConnection(5000));
+        QVERIFY(remote = server->nextPendingConnection());
+        remote->close();
+        delete remote;
+        if (!server->hasPendingConnections())
+            QVERIFY(server->waitForNewConnection(5000));
+        QVERIFY(remote = server->nextPendingConnection());
+        remote->close();
+        delete remote;
+        QVERIFY(!server->hasPendingConnections());
+    }
+
+    //Connecting to the same address with different scope should normally fail
+    //However it will pass if there are two interfaces connected to the same physical network,
+    //e.g. connected via wired and wireless interfaces, or two wired NICs.
+    //which is a reasonably common case.
+    //So this is not auto tested.
+
+    qDeleteAll(clients);
+    qDeleteAll(servers);
 }
 
 QTEST_MAIN(tst_QTcpServer)
