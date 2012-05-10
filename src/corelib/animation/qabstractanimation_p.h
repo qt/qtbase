@@ -132,8 +132,9 @@ private:
 class Q_CORE_EXPORT QAnimationDriverPrivate : public QObjectPrivate
 {
 public:
-    QAnimationDriverPrivate() : running(false) {}
+    QAnimationDriverPrivate() : running(false), startTime(0) {}
     bool running;
+    qint64 startTime;
 };
 
 class Q_CORE_EXPORT QAbstractAnimationTimer : public QObject

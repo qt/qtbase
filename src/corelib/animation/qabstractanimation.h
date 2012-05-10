@@ -151,6 +151,9 @@ public:
 
     virtual qint64 elapsed() const;
 
+    void setStartTime(qint64 startTime);
+    qint64 startTime() const;
+
 Q_SIGNALS:
     void started();
     void stopped();

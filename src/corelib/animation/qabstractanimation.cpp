@@ -317,6 +317,7 @@ void QUnifiedTimer::localRestart()
     } else if (!driver->isRunning()) {
         if (pauseTimer.isActive())
             pauseTimer.stop();
+        driver->setStartTime(time.isValid() ? time.elapsed() : 0);
         driver->start();
     }
 
@@ -339,6 +340,7 @@ void QUnifiedTimer::setTimingInterval(int interval)
     if (driver->isRunning() && !pauseTimer.isActive()) {
         //we changed the timing interval
         driver->stop();
+        driver->setStartTime(time.isValid() ? time.elapsed() : 0);
         driver->start();
     }
 }
@@ -477,6 +479,7 @@ void QUnifiedTimer::installAnimationDriver(QAnimationDriver *d)
 
     if (driver->isRunning()) {
         driver->stop();
+        d->setStartTime(time.isValid() ? time.elapsed() : 0);
         d->start();
     }
 
@@ -495,6 +498,7 @@ void QUnifiedTimer::uninstallAnimationDriver(QAnimationDriver *d)
 
     if (d->isRunning()) {
         d->stop();
+        driver->setStartTime(time.isValid() ? time.elapsed() : 0);
         driver->start();
     }
 }
@@ -732,6 +736,28 @@ QAnimationDriver::~QAnimationDriver()
 }
 
 
+/*!
+    Sets the time at which an animation driver should start at.
+
+    This is to take into account that pauses can occur in running
+    animations which will stop the driver, but the time still
+    increases.
+ */
+void QAnimationDriver::setStartTime(qint64 startTime)
+{
+    Q_D(QAnimationDriver);
+    d->startTime = startTime;
+}
+
+/*!
+    Returns the start time of the animation.
+ */
+qint64 QAnimationDriver::startTime() const
+{
+    Q_D(const QAnimationDriver);
+    return d->startTime;
+}
+
 
 /*!
     Advances the animation based to the specified \a timeStep. This function should
@@ -821,6 +847,8 @@ void QAnimationDriver::stop()
 
 qint64 QAnimationDriver::elapsed() const
 {
+    // The default implementation picks up the elapsed time from the
+    // unified timer and can ignore the time offset.
     return QUnifiedTimer::instance()->time.elapsed();
 }
 
