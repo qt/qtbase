@@ -1279,13 +1279,11 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             }
         }
 
-        if (currentTag() != DT_xref)
+        if (currentTag() != DT_xref && atom->type() != Atom::InlineImage)
             writeStartTag(DT_fig);
         writeStartTag(DT_image);
         writeHrefAttribute(protectEnc(fileName));
-        if (atom->type() == Atom::InlineImage)
-            xmlWriter().writeAttribute("placement","inline");
-        else {
+        if (atom->type() == Atom::Image) {
             xmlWriter().writeAttribute("placement","break");
             xmlWriter().writeAttribute("align","center");
         }
@@ -1295,7 +1293,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             writeEndTag(); // </alt>
         }
         writeEndTag(); // </image>
-        if (currentTag() != DT_xref)
+        if (currentTag() != DT_xref && atom->type() != Atom::InlineImage)
             writeEndTag(); // </fig>
     }
         break;
