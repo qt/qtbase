@@ -53,12 +53,14 @@ static th_render_cell_win_def th_render_cell_win = 0;
 static th_render_cell_mac_def th_render_cell_mac = 0;
 
 static int init_libthai() {
-    if (!th_brk || !th_next_cell || !th_render_cell_tis || !th_render_cell_win || !th_render_cell_mac) {
+    static HB_Bool initialized = false;
+    if (!initialized && (!th_brk || !th_next_cell || !th_render_cell_tis || !th_render_cell_win || !th_render_cell_mac)) {
         th_brk = (th_brk_def) HB_Library_Resolve("thai", (int)LIBTHAI_MAJOR, "th_brk");
         th_next_cell = (th_next_cell_def)HB_Library_Resolve("thai", LIBTHAI_MAJOR, "th_next_cell");
         th_render_cell_tis = (th_render_cell_tis_def) HB_Library_Resolve("thai", (int)LIBTHAI_MAJOR, "th_render_cell_tis");
         th_render_cell_win = (th_render_cell_win_def) HB_Library_Resolve("thai", (int)LIBTHAI_MAJOR, "th_render_cell_win");
         th_render_cell_mac = (th_render_cell_mac_def) HB_Library_Resolve("thai", (int)LIBTHAI_MAJOR, "th_render_cell_mac");
+        initialized = true;
     }
     if (th_brk && th_next_cell && th_render_cell_tis && th_render_cell_win && th_render_cell_mac)
         return 1;
