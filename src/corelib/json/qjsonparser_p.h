@@ -84,6 +84,7 @@ public:
 
 
 private:
+    inline void eatBOM();
     inline bool eatSpace();
     inline char nextToken();
 

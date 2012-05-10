@@ -185,7 +185,16 @@ enum {
     Quote = 0x22
 };
 
-
+void Parser::eatBOM()
+{
+    // eat UTF-8 byte order mark
+    uchar utf8bom[3] = { 0xef, 0xbb, 0xbf };
+    if (end - json > 3 &&
+        (uchar)json[0] == utf8bom[0] &&
+        (uchar)json[1] == utf8bom[1] &&
+        (uchar)json[2] == utf8bom[2])
+        json += 3;
+}
 
 bool Parser::eatSpace()
 {
@@ -244,8 +253,10 @@ QJsonDocument Parser::parse(QJsonParseError *error)
 
     current = sizeof(QJsonPrivate::Header);
 
+    eatBOM();
     char token = nextToken();
-    DEBUG << token;
+
+    DEBUG << hex << (uint)token;
     if (token == BeginArray) {
         if (!parseArray())
             goto error;
@@ -253,6 +264,7 @@ QJsonDocument Parser::parse(QJsonParseError *error)
         if (!parseObject())
             goto error;
     } else {
+        lastError = QJsonParseError::IllegalValue;
         goto error;
     }
 

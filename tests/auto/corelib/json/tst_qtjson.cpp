@@ -125,6 +125,8 @@ private Q_SLOTS:
     void testDetachBug();
 
     void valueEquals();
+
+    void bom();
 private:
     QString testDataDir;
 };
@@ -1906,6 +1908,20 @@ void TestQtJson::valueEquals()
     QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(true));
     QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(1.));
     QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(QJsonArray()));
+}
+
+void TestQtJson::bom()
+{
+    QFile file(testDataDir + "/bom.json");
+    file.open(QFile::ReadOnly);
+    QByteArray json = file.readAll();
+
+    // Import json document into a QJsonDocument
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+
+    QVERIFY(!doc.isNull());
+    QVERIFY(error.error == QJsonParseError::NoError);
 }
 
 QTEST_MAIN(TestQtJson)
