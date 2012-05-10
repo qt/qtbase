@@ -2509,6 +2509,8 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
     }
 
     int sizeOfBoringPartOfName = fullPath.size() - proFileName.size();
+    if (fullPath.startsWith("./"))
+        sizeOfBoringPartOfName = sizeOfBoringPartOfName - 2;
     fullPath.truncate(fullPath.lastIndexOf('/'));
 
     QStringList exampleFiles = Config::getFilesHere(fullPath,exampleNameFilter);
