@@ -77,7 +77,6 @@ SOURCES += atom.cpp \
 
 ### QML/JS Parser ###
 
-DEFINES += HAVE_DECLARATIVE
 include(qmlparser/qmlparser.pri)
 
 HEADERS += jscodemarker.h \

@@ -58,11 +58,9 @@
 #include "tokenizer.h"
 #include "tree.h"
 
-#ifdef HAVE_DECLARATIVE
 #include "jscodemarker.h"
 #include "qmlcodemarker.h"
 #include "qmlcodeparser.h"
-#endif
 
 #include <qdatetime.h>
 #include <qdebug.h>
@@ -428,9 +426,7 @@ int main(int argc, char **argv)
       and create a tree for C++.
      */
     CppCodeParser cppParser;
-#ifdef HAVE_DECLARATIVE
     QmlCodeParser qmlParser;
-#endif
     PureDocParser docParser;
 
     /*
@@ -439,10 +435,8 @@ int main(int argc, char **argv)
      */
     PlainCodeMarker plainMarker;
     CppCodeMarker cppMarker;
-#ifdef HAVE_DECLARATIVE
     JsCodeMarker jsMarker;
     QmlCodeMarker qmlMarker;
-#endif
 
     HtmlGenerator htmlGenerator;
     DitaXmlGenerator ditaxmlGenerator;
