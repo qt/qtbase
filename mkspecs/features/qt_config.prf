@@ -9,6 +9,7 @@ QMAKE_QT_CONFIG = $$[QT_HOST_DATA/get]/mkspecs/qconfig.pri
    QMAKE_MODULE_PATH += $$replace($$list($$split($$list($$[QMAKE_MKSPECS]), $$DIRLIST_SEPARATOR)), \
                                   \$, /modules)
    QMAKE_MODULE_PATH = $$unique(QMAKE_MODULE_PATH)
+   QMAKE_MODULE_PATH = $$reverse(QMAKE_MODULE_PATH)
    for(dir, QMAKE_MODULE_PATH) {
       debug(1, "Loading modules from $${dir}")
       for(mod, $$list($$files($$dir/qt_*.pri))) {
