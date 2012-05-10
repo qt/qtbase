@@ -119,7 +119,7 @@ void QTabBarPrivate::updateMacBorderMetrics()
     This function will check the version of the QStyleOptionTab and fill in the
     additional values for a QStyleOptionTabV2 and QStyleOptionTabV3.
 
-    \sa QStyleOption::initFrom() QTabWidget::initStyleOption()
+    \sa QStyleOption::initFrom(), QTabWidget::initStyleOption()
 */
 void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
 {
@@ -739,7 +739,7 @@ void QTabBar::setShape(Shape shape)
     If true then QTabBar draws a base in relation to the styles overlab.
     Otherwise only the tabs are drawn.
 
-    \sa QStyle::pixelMetric() QStyle::PM_TabBarBaseOverlap QStyleOptionTabBarBaseV2
+    \sa QStyle::pixelMetric(), QStyle::PM_TabBarBaseOverlap, QStyleOptionTabBarBaseV2
 */
 
 void QTabBar::setDrawBase(bool drawBase)
@@ -1992,7 +1992,7 @@ void QTabBar::changeEvent(QEvent *event)
 
     By default the value is style dependent.
 
-    \sa QTabWidget::elideMode usesScrollButtons QStyle::SH_TabBar_ElideMode
+    \sa QTabWidget::elideMode, usesScrollButtons, QStyle::SH_TabBar_ElideMode
 */
 
 Qt::TextElideMode QTabBar::elideMode() const
@@ -2020,7 +2020,7 @@ void QTabBar::setElideMode(Qt::TextElideMode mode)
 
     By default the value is style dependant.
 
-    \sa elideMode QTabWidget::usesScrollButtons QStyle::SH_TabBar_PreferNoArrows
+    \sa elideMode, QTabWidget::usesScrollButtons, QStyle::SH_TabBar_PreferNoArrows
 */
 bool QTabBar::usesScrollButtons() const
 {

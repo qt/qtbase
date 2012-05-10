@@ -484,7 +484,7 @@ void QToolBarPrivate::plug(const QRect &r)
     This signal is emitted when the icon size is changed.  The \a
     iconSize parameter holds the toolbar's new icon size.
 
-    \sa iconSize QMainWindow::iconSize
+    \sa iconSize, QMainWindow::iconSize
 */
 
 /*!
@@ -513,7 +513,7 @@ void QToolBarPrivate::plug(const QRect &r)
     \a toolButtonStyle parameter holds the toolbar's new tool button
     style.
 
-    \sa toolButtonStyle QMainWindow::toolButtonStyle
+    \sa toolButtonStyle, QMainWindow::toolButtonStyle
 */
 
 /*!
@@ -1209,7 +1209,7 @@ bool QToolBar::event(QEvent *event)
 
     The action's text is set to the toolbar's window title.
 
-    \sa QAction::text QWidget::windowTitle
+    \sa QAction::text, QWidget::windowTitle
 */
 QAction *QToolBar::toggleViewAction() const
 { Q_D(const QToolBar); return d->toggleViewAction; }

@@ -171,7 +171,7 @@ QT_BEGIN_NAMESPACE
     This signal is emitted when the user releases the slider with the
     mouse, or programmatically when setSliderDown(false) is called.
 
-    \sa sliderPressed() sliderMoved() sliderDown
+    \sa sliderPressed(), sliderMoved(), sliderDown
 */
 
 /*!
@@ -238,7 +238,7 @@ QAbstractSliderPrivate::~QAbstractSliderPrivate()
     If \a max is smaller than \a min, \a min becomes the only legal
     value.
 
-    \sa minimum maximum
+    \sa minimum, maximum
 */
 void QAbstractSlider::setRange(int min, int max)
 {

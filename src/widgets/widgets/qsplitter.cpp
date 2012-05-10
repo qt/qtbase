@@ -182,7 +182,7 @@ QSplitter *QSplitterHandle::splitter() const
     right-to-left languages. This function will map \a pos to the
     appropriate position before calling QSplitter::moveSplitter().
 
-    \sa QSplitter::moveSplitter() closestLegalPosition()
+    \sa QSplitter::moveSplitter(), closestLegalPosition()
 */
 void QSplitterHandle::moveSplitter(int pos)
 {
@@ -1086,7 +1086,7 @@ void QSplitter::resizeEvent(QResizeEvent *)
 
     If \a widget is already in the splitter, it will be moved to the new position.
 
-    \sa insertWidget() widget() indexOf()
+    \sa insertWidget(), widget(), indexOf()
 */
 void QSplitter::addWidget(QWidget *widget)
 {
@@ -1102,7 +1102,7 @@ void QSplitter::addWidget(QWidget *widget)
 
     if \a index is an invalid index, then the widget will be inserted at the end.
 
-    \sa addWidget() indexOf() widget()
+    \sa addWidget(), indexOf(), widget()
 */
 void QSplitter::insertWidget(int index, QWidget *widget)
 {
@@ -1201,7 +1201,7 @@ int QSplitter::count() const
     putting widgets into a splitter in new code. Please use insertWidget() or
     addWidget() in new code.
 
-    \sa addWidget() insertWidget()
+    \sa addWidget(), insertWidget()
 */
 
 void QSplitter::childEvent(QChildEvent *c)

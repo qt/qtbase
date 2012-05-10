@@ -155,5 +155,5 @@
     The \c main() function initialises the \e{textfinder.qrc} resource file
     and instantiates as well as displays \c TextFinder.
 
-    \sa{Calculator Builder Example}, {World Time Clock Builder Example}
+    \sa {Calculator Builder Example}, {World Time Clock Builder Example}
     */

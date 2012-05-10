@@ -874,7 +874,7 @@ QDialogButtonBox::~QDialogButtonBox()
     This signal is emitted when a button inside the button box is clicked, as long
     as it was defined with the \l AcceptRole or \l YesRole.
 
-    \sa rejected(), clicked() helpRequested()
+    \sa rejected(), clicked(), helpRequested()
 */
 
 /*!
@@ -883,7 +883,7 @@ QDialogButtonBox::~QDialogButtonBox()
     This signal is emitted when a button inside the button box is clicked, as long
     as it was defined with the \l RejectRole or \l NoRole.
 
-    \sa accepted() helpRequested() clicked()
+    \sa accepted(), helpRequested(), clicked()
 */
 
 /*!
@@ -892,7 +892,7 @@ QDialogButtonBox::~QDialogButtonBox()
     This signal is emitted when a button inside the button box is clicked, as long
     as it was defined with the \l HelpRole.
 
-    \sa accepted() rejected() clicked()
+    \sa accepted(), rejected(), clicked()
 */
 
 /*!

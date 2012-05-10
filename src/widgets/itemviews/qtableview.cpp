@@ -1169,7 +1169,7 @@ QHeaderView *QTableView::verticalHeader() const
 /*!
     Sets the widget to use for the horizontal header to \a header.
 
-    \sa horizontalHeader() setVerticalHeader()
+    \sa horizontalHeader(), setVerticalHeader()
 */
 void QTableView::setHorizontalHeader(QHeaderView *header)
 {
@@ -1206,7 +1206,7 @@ void QTableView::setHorizontalHeader(QHeaderView *header)
 /*!
     Sets the widget to use for the vertical header to \a header.
 
-    \sa verticalHeader() setHorizontalHeader()
+    \sa verticalHeader(), setHorizontalHeader()
 */
 void QTableView::setVerticalHeader(QHeaderView *header)
 {
@@ -2876,7 +2876,7 @@ void QTableView::selectColumn(int column)
 /*!
     Hide the given \a row.
 
-    \sa showRow() hideColumn()
+    \sa showRow(), hideColumn()
 */
 void QTableView::hideRow(int row)
 {
@@ -2887,7 +2887,7 @@ void QTableView::hideRow(int row)
 /*!
     Hide the given \a column.
 
-    \sa showColumn() hideRow()
+    \sa showColumn(), hideRow()
 */
 void QTableView::hideColumn(int column)
 {
@@ -2898,7 +2898,7 @@ void QTableView::hideColumn(int column)
 /*!
     Show the given \a row.
 
-    \sa hideRow() showColumn()
+    \sa hideRow(), showColumn()
 */
 void QTableView::showRow(int row)
 {
@@ -2909,7 +2909,7 @@ void QTableView::showRow(int row)
 /*!
     Show the given \a column.
 
-    \sa hideColumn() showRow()
+    \sa hideColumn(), showRow()
 */
 void QTableView::showColumn(int column)
 {

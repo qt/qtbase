@@ -573,7 +573,7 @@ void QPrinterPrivate::init(QPrinter::PrinterMode mode)
     Note that changing the engines will reset the printer state and
     all its properties.
 
-    \sa printEngine() paintEngine() setOutputFormat()
+    \sa printEngine(), paintEngine(), setOutputFormat()
 
     \since 4.1
 */
@@ -812,7 +812,7 @@ QString QPrinter::outputFileName() const
     Mac OS X can generate PDF's from its print engine, set the output format
     back to NativeFormat.
 
-    \sa outputFileName() setOutputToFile() setOutputFormat()
+    \sa outputFileName(), setOutputToFile(), setOutputFormat()
 */
 
 void QPrinter::setOutputFileName(const QString &fileName)
@@ -971,7 +971,7 @@ void QPrinter::setOrientation(Orientation orientation)
     \since 4.4
     Returns the printer paper size. The default value is driver-dependent.
 
-    \sa setPaperSize() pageRect() paperRect()
+    \sa setPaperSize(), pageRect(), paperRect()
 */
 
 QPrinter::PaperSize QPrinter::paperSize() const
@@ -992,7 +992,7 @@ QPrinter::PaperSize QPrinter::paperSize() const
     This function is useful mostly for setting a default value that
     the user can override in the print dialog.
 
-    \sa paperSize() PaperSize setFullPage() setResolution() pageRect() paperRect()
+    \sa paperSize(), PaperSize, setFullPage(), setResolution(), pageRect(), paperRect()
 */
 void QPrinter::setPaperSize(PaperSize newPaperSize)
 {
@@ -1351,7 +1351,7 @@ void QPrinter::setFullPage(bool fp)
 
   See setFullPage() for details and caveats.
 
-  \sa setFullPage() PaperSize
+  \sa setFullPage(), PaperSize
 */
 
 bool QPrinter::fullPage() const
@@ -1371,7 +1371,7 @@ bool QPrinter::fullPage() const
   This function must be called before QPainter::begin() to have an effect on
   all platforms.
 
-  \sa resolution() setPaperSize()
+  \sa resolution(), setPaperSize()
 */
 
 void QPrinter::setResolution(int dpi)

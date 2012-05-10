@@ -1189,7 +1189,7 @@ QT_END_INCLUDE_NAMESPACE
     fileName, or 0 if the file cannot be read or if the format is not
     recognized.
 
-    \sa load() save()
+    \sa load(), save()
 */
 
 const char* QPicture::pictureFormat(const QString &fileName)
@@ -1203,7 +1203,7 @@ const char* QPicture::pictureFormat(const QString &fileName)
     Returns a list of picture formats that are supported for picture
     input.
 
-    \sa outputFormats() inputFormatList() QPictureIO
+    \sa outputFormats(), inputFormatList(), QPictureIO
 */
 QList<QByteArray> QPicture::inputFormats()
 {
@@ -1228,7 +1228,7 @@ static QStringList qToStringList(const QList<QByteArray> arr)
     over a copy, e.g.
     \snippet picture/picture.cpp 2
 
-    \sa outputFormatList() inputFormats() QPictureIO
+    \sa outputFormatList(), inputFormats(), QPictureIO
 */
 QStringList QPicture::inputFormatList()
 {
@@ -1246,7 +1246,7 @@ QStringList QPicture::inputFormatList()
     over a copy, e.g.
     \snippet picture/picture.cpp 3
 
-    \sa inputFormatList() outputFormats() QPictureIO
+    \sa inputFormatList(), outputFormats(), QPictureIO
 */
 QStringList QPicture::outputFormatList()
 {
@@ -1259,7 +1259,7 @@ QStringList QPicture::outputFormatList()
     Returns a list of picture formats that are supported for picture
     output.
 
-    \sa inputFormats() outputFormatList() QPictureIO
+    \sa inputFormats(), outputFormatList(), QPictureIO
 */
 QList<QByteArray> QPicture::outputFormats()
 {
@@ -1288,7 +1288,7 @@ QList<QByteArray> QPicture::outputFormats()
     You don't normally need to use this class; QPicture::load(),
     QPicture::save().
 
-    \sa QPicture QPixmap QFile
+    \sa QPicture, QPixmap, QFile
 */
 
 struct QPictureIOData
@@ -1581,7 +1581,7 @@ void QPictureIO::setStatus(int status)
     reading it. If a format is set the picture will only be read if it
     has that format.
 
-    \sa read() write() format()
+    \sa read(), write(), format()
 */
 void QPictureIO::setFormat(const char *format)
 {
@@ -1619,7 +1619,7 @@ void QPictureIO::setFileName(const QString &fileName)
     Returns the quality of the written picture, related to the
     compression ratio.
 
-    \sa setQuality() QPicture::save()
+    \sa setQuality(), QPicture::save()
 */
 int QPictureIO::quality() const
 {
@@ -1634,7 +1634,7 @@ int QPictureIO::quality() const
     compressed files, 100 for large uncompressed files. (-1 signifies
     the default compression.)
 
-    \sa quality() QPicture::save()
+    \sa quality(), QPicture::save()
 */
 
 void QPictureIO::setQuality(int q)
@@ -1841,7 +1841,7 @@ QList<QByteArray> QPictureIO::outputFormats()
 
     \snippet picture/picture.cpp 4
 
-    \sa setIODevice() setFileName() setFormat() write() QPixmap::load()
+    \sa setIODevice(), setFileName(), setFormat(), write(), QPixmap::load()
 */
 bool QPictureIO::read()
 {
@@ -1910,7 +1910,7 @@ bool QPictureIO::read()
     Example:
     \snippet picture/picture.cpp 5
 
-    \sa setIODevice() setFileName() setFormat() read() QPixmap::save()
+    \sa setIODevice(), setFileName(), setFormat(), read(), QPixmap::save()
 */
 bool QPictureIO::write()
 {

@@ -412,7 +412,7 @@
     uninitialized iterartor. Use operator=() to assign a value to it before
     using it.
 
-    \sa QFuture::constBegin() QFuture::constEnd()
+    \sa QFuture::constBegin(), QFuture::constEnd()
 */
 
 /*! \fn QFuture::const_iterator::const_iterator(QFuture const * const future, int index)

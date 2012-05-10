@@ -115,7 +115,7 @@ QTextObject::~QTextObject()
 /*!
     Returns the text object's format.
 
-    \sa setFormat() document()
+    \sa setFormat(), document()
 */
 QTextFormat QTextObject::format() const
 {
@@ -201,7 +201,7 @@ QTextDocumentPrivate *QTextObject::docHandle() const
     for example, the top-level items in a multi-level list will be separated
     by the items in lower levels of the list.
 
-    \sa QTextBlock QTextDocument
+    \sa QTextBlock, QTextDocument
 */
 
 void QTextBlockGroupPrivate::markBlocksDirty()
@@ -343,7 +343,7 @@ QTextFrameLayoutData::~QTextFrameLayoutData()
     QTextFrame::iterator class: this provides read-only access to its
     internal list of text blocks and child frames.
 
-    \sa QTextCursor QTextDocument
+    \sa QTextCursor, QTextDocument
 */
 
 /*!
@@ -357,7 +357,7 @@ QTextFrameLayoutData::~QTextFrameLayoutData()
 
     Returns the parent frame of the current frame.
 
-    \sa currentFrame() QTextFrame::parentFrame()
+    \sa currentFrame(), QTextFrame::parentFrame()
 */
 
 /*!
@@ -447,7 +447,7 @@ QList<QTextFrame *> QTextFrame::childFrames() const
     Returns the frame's parent frame. If the frame is the root frame of a
     document, this will return 0.
 
-    \sa childFrames() QTextDocument::rootFrame()
+    \sa childFrames(), QTextDocument::rootFrame()
 */
 QTextFrame *QTextFrame::parentFrame() const
 {
@@ -459,7 +459,7 @@ QTextFrame *QTextFrame::parentFrame() const
 /*!
     Returns the first cursor position inside the frame.
 
-    \sa lastCursorPosition() firstPosition() lastPosition()
+    \sa lastCursorPosition(), firstPosition(), lastPosition()
 */
 QTextCursor QTextFrame::firstCursorPosition() const
 {
@@ -470,7 +470,7 @@ QTextCursor QTextFrame::firstCursorPosition() const
 /*!
     Returns the last cursor position inside the frame.
 
-    \sa firstCursorPosition() firstPosition() lastPosition()
+    \sa firstCursorPosition(), firstPosition(), lastPosition()
 */
 QTextCursor QTextFrame::lastCursorPosition() const
 {
@@ -481,7 +481,7 @@ QTextCursor QTextFrame::lastCursorPosition() const
 /*!
     Returns the first document position inside the frame.
 
-    \sa lastPosition() firstCursorPosition() lastCursorPosition()
+    \sa lastPosition(), firstCursorPosition(), lastCursorPosition()
 */
 int QTextFrame::firstPosition() const
 {
@@ -494,7 +494,7 @@ int QTextFrame::firstPosition() const
 /*!
     Returns the last document position inside the frame.
 
-    \sa firstPosition() firstCursorPosition() lastCursorPosition()
+    \sa firstPosition(), firstCursorPosition(), lastCursorPosition()
 */
 int QTextFrame::lastPosition() const
 {
@@ -718,7 +718,7 @@ QTextBlock QTextFrame::iterator::currentBlock() const
 /*!
     Moves the iterator to the next frame or block.
 
-    \sa currentBlock() currentFrame()
+    \sa currentBlock(), currentFrame()
 */
 QTextFrame::iterator &QTextFrame::iterator::operator++()
 {
@@ -756,7 +756,7 @@ QTextFrame::iterator &QTextFrame::iterator::operator++()
 /*!
     Moves the iterator to the previous frame or block.
 
-    \sa currentBlock() currentFrame()
+    \sa currentBlock(), currentFrame()
 */
 QTextFrame::iterator &QTextFrame::iterator::operator--()
 {
@@ -864,7 +864,7 @@ QTextBlockUserData::~QTextBlockUserData()
 
     \img qtextblock-sequence.png
 
-    \sa QTextBlockFormat QTextCharFormat QTextFragment
+    \sa QTextBlockFormat, QTextCharFormat, QTextFragment
  */
 
 /*!
@@ -1027,7 +1027,7 @@ int QTextBlock::position() const
     \note The length returned includes all formatting characters,
     for example, newline.
 
-    \sa text() charFormat() blockFormat()
+    \sa text(), charFormat(), blockFormat()
  */
 int QTextBlock::length() const
 {
@@ -1195,7 +1195,7 @@ Qt::LayoutDirection QTextBlock::textDirection() const
 /*!
     Returns the block's contents as plain text.
 
-    \sa length() charFormat() blockFormat()
+    \sa length(), charFormat(), blockFormat()
  */
 QString QTextBlock::text() const
 {
@@ -1468,7 +1468,7 @@ QTextBlock::iterator QTextBlock::begin() const
     Returns a text block iterator pointing to the end of the text
     block.
 
-    \sa begin() next() previous()
+    \sa begin(), next(), previous()
 */
 QTextBlock::iterator QTextBlock::end() const
 {
@@ -1489,7 +1489,7 @@ QTextBlock::iterator QTextBlock::end() const
 
     Note that the next block may be in a different frame or table to this block.
 
-    \sa previous() begin() end()
+    \sa previous(), begin(), end()
 */
 QTextBlock QTextBlock::next() const
 {
@@ -1505,7 +1505,7 @@ QTextBlock QTextBlock::next() const
 
     Note that the next block may be in a different frame or table to this block.
 
-    \sa next() begin() end()
+    \sa next(), begin(), end()
 */
 QTextBlock QTextBlock::previous() const
 {

@@ -589,7 +589,7 @@ QStringList QColor::colorNames()
     These components can be retrieved individually using the hueF(),
     saturationF(), valueF() and alphaF() functions.
 
-    \sa setHsv() {QColor#The HSV Color Model}{The HSV Color Model}
+    \sa setHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 void QColor::getHsvF(qreal *h, qreal *s, qreal *v, qreal *a) const
 {
@@ -643,8 +643,7 @@ void QColor::getHsv(int *h, int *s, int *v, int *a) const
 
     All the values must be in the range 0.0-1.0.
 
-    \sa getHsvF(), setHsv(), {QColor#The HSV Color Model}{The HSV
-    Color Model}
+    \sa getHsvF(), setHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 void QColor::setHsvF(qreal h, qreal s, qreal v, qreal a)
 {
@@ -671,8 +670,7 @@ void QColor::setHsvF(qreal h, qreal s, qreal v, qreal a)
     The saturation, value and alpha-channel values must be in the range 0-255,
     and the hue value must be greater than -1.
 
-    \sa getHsv(), setHsvF(), {QColor#The HSV Color Model}{The HSV
-    Color Model}
+    \sa getHsv(), setHsvF(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 void QColor::setHsv(int h, int s, int v, int a)
 {
@@ -978,8 +976,7 @@ void QColor::setRgb(QRgb rgb)
 /*!
     Returns the alpha color component of this color.
 
-    \sa setAlpha(), alphaF(), {QColor#Alpha-Blended
-    Drawing}{Alpha-Blended Drawing}
+    \sa setAlpha(), alphaF(), {QColor#Alpha-Blended Drawing}{Alpha-Blended Drawing}
 */
 int QColor::alpha() const
 { return ct.argb.alpha >> 8; }
@@ -989,8 +986,7 @@ int QColor::alpha() const
     Sets the alpha of this color to \a alpha. Integer alpha is specified in the
     range 0-255.
 
-    \sa alpha(), alphaF(), {QColor#Alpha-Blended
-    Drawing}{Alpha-Blended Drawing}
+    \sa alpha(), alphaF(), {QColor#Alpha-Blended Drawing}{Alpha-Blended Drawing}
 */
 
 void QColor::setAlpha(int alpha)
@@ -1002,8 +998,7 @@ void QColor::setAlpha(int alpha)
 /*!
     Returns the alpha color component of this color.
 
-    \sa setAlphaF(), alpha(),  {QColor#Alpha-Blended
-    Drawing}{Alpha-Blended Drawing}
+    \sa setAlphaF(), alpha(), {QColor#Alpha-Blended Drawing}{Alpha-Blended Drawing}
 */
 qreal QColor::alphaF() const
 { return ct.argb.alpha / qreal(USHRT_MAX); }
@@ -1012,8 +1007,7 @@ qreal QColor::alphaF() const
     Sets the alpha of this color to \a alpha. qreal alpha is specified in the
     range 0.0-1.0.
 
-    \sa alphaF(), alpha(), {QColor#Alpha-Blended
-    Drawing}{Alpha-Blended Drawing}
+    \sa alphaF(), alpha(), {QColor#Alpha-Blended Drawing}{Alpha-Blended Drawing}
 
 */
 void QColor::setAlphaF(qreal alpha)
@@ -1067,7 +1061,7 @@ int QColor::green() const
     Sets the green color component of this color to \a green. Integer
     components are specified in the range 0-255.
 
-    \sa green(), greenF(),  setRgb()
+    \sa green(), greenF(), setRgb()
 */
 void QColor::setGreen(int green)
 {
@@ -1195,8 +1189,7 @@ void QColor::setBlueF(qreal blue)
 
     The color is implicitly converted to HSV.
 
-    \sa hsvHue(), hueF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
-    Model}
+    \sa hsvHue(), hueF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 
 int QColor::hue() const
@@ -1207,8 +1200,7 @@ int QColor::hue() const
 /*!
     Returns the hue color component of this color.
 
-    \sa hueF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
-    Model}
+    \sa hueF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 int QColor::hsvHue() const
 {
@@ -1234,8 +1226,7 @@ int QColor::saturation() const
 /*!
     Returns the saturation color component of this color.
 
-    \sa saturationF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
-    Model}
+    \sa saturationF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 int QColor::hsvSaturation() const
 {
@@ -1247,8 +1238,7 @@ int QColor::hsvSaturation() const
 /*!
     Returns the value color component of this color.
 
-    \sa valueF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
-    Model}
+    \sa valueF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 int QColor::value() const
 {
@@ -1262,8 +1252,7 @@ int QColor::value() const
 
     The color is implicitly converted to HSV.
 
-    \sa hsvHueF(), hue(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color
-    Model}
+    \sa hsvHueF(), hue(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 qreal QColor::hueF() const
 {
@@ -1288,7 +1277,7 @@ qreal QColor::hsvHueF() const
 
      The color is implicitly converted to HSV.
 
-    \sa hsvSaturationF(), saturation() getHsvF(), {QColor#The HSV Color Model}{The HSV Color
+    \sa hsvSaturationF(), saturation(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color
     Model}
 */
 qreal QColor::saturationF() const
@@ -1299,8 +1288,7 @@ qreal QColor::saturationF() const
 /*!
     Returns the saturation color component of this color.
 
-    \sa saturation() getHsvF(), {QColor#The HSV Color Model}{The HSV Color
-    Model}
+    \sa saturation(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 qreal QColor::hsvSaturationF() const
 {
@@ -1312,8 +1300,7 @@ qreal QColor::hsvSaturationF() const
 /*!
     Returns the value color component of this color.
 
-    \sa value() getHsvF(), {QColor#The HSV Color Model}{The HSV Color
-    Model}
+    \sa value(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 qreal QColor::valueF() const
 {
@@ -1341,8 +1328,7 @@ int QColor::hslHue() const
 
     Returns the saturation color component of this color.
 
-    \sa saturationF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
-    Model}
+    \sa saturationF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 int QColor::hslSaturation() const
 {
@@ -1384,7 +1370,7 @@ qreal QColor::hslHueF() const
 
     Returns the saturation color component of this color.
 
-    \sa saturationF() getHslF()
+    \sa saturationF(), getHslF()
 */
 qreal QColor::hslSaturationF() const
 {
@@ -1398,7 +1384,7 @@ qreal QColor::hslSaturationF() const
 
     Returns the lightness color component of this color.
 
-    \sa value() getHslF()
+    \sa value(), getHslF()
 */
 qreal QColor::lightnessF() const
 {
@@ -1410,8 +1396,7 @@ qreal QColor::lightnessF() const
 /*!
     Returns the cyan color component of this color.
 
-    \sa cyanF(), getCmyk(), {QColor#The CMYK Color Model}{The CMYK
-    Color Model}
+    \sa cyanF(), getCmyk(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
 int QColor::cyan() const
 {
@@ -1423,8 +1408,7 @@ int QColor::cyan() const
 /*!
     Returns the magenta color component of this color.
 
-    \sa magentaF(), getCmyk(), {QColor#The CMYK Color Model}{The CMYK
-    Color Model}
+    \sa magentaF(), getCmyk(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
 int QColor::magenta() const
 {
@@ -1436,8 +1420,7 @@ int QColor::magenta() const
 /*!
     Returns the yellow color component of this color.
 
-    \sa yellowF(), getCmyk(), {QColor#The CMYK Color Model}{The CMYK
-    Color Model}
+    \sa yellowF(), getCmyk(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
 int QColor::yellow() const
 {
@@ -1449,8 +1432,7 @@ int QColor::yellow() const
 /*!
     Returns the black color component of this color.
 
-    \sa blackF(), getCmyk(), {QColor#The CMYK Color Model}{The CMYK
-    Color Model}
+    \sa blackF(), getCmyk(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 
 */
 int QColor::black() const
@@ -1463,8 +1445,7 @@ int QColor::black() const
 /*!
     Returns the cyan color component of this color.
 
-    \sa cyan(), getCmykF(), {QColor#The CMYK Color Model}{The CMYK
-    Color Model}
+    \sa cyan(), getCmykF(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
 qreal QColor::cyanF() const
 {
@@ -1476,8 +1457,7 @@ qreal QColor::cyanF() const
 /*!
     Returns the magenta color component of this color.
 
-    \sa magenta(), getCmykF(), {QColor#The CMYK Color Model}{The CMYK
-    Color Model}
+    \sa magenta(), getCmykF(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
 qreal QColor::magentaF() const
 {
@@ -1489,8 +1469,7 @@ qreal QColor::magentaF() const
 /*!
     Returns the yellow color component of this color.
 
-     \sa yellow(), getCmykF(), {QColor#The CMYK Color Model}{The CMYK
-    Color Model}
+     \sa yellow(), getCmykF(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
 qreal QColor::yellowF() const
 {
@@ -1502,8 +1481,7 @@ qreal QColor::yellowF() const
 /*!
     Returns the black color component of this color.
 
-    \sa black(), getCmykF(), {QColor#The CMYK Color Model}{The CMYK
-    Color Model}
+    \sa black(), getCmykF(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
 qreal QColor::blackF() const
 {
@@ -1661,8 +1639,7 @@ QColor QColor::toRgb() const
 /*!
     Creates and returns an HSV QColor based on this color.
 
-    \sa fromHsv(), convertTo(), isValid(), {QColor#The HSV Color
-    Model}{The HSV Color Model}
+    \sa fromHsv(), convertTo(), isValid(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 QColor QColor::toHsv() const
 {
@@ -1769,8 +1746,7 @@ QColor QColor::toHsl() const
 /*!
     Creates and returns a CMYK QColor based on this color.
 
-    \sa fromCmyk(), convertTo(), isValid(), {QColor#The CMYK Color
-    Model}{The CMYK Color Model}
+    \sa fromCmyk(), convertTo(), isValid(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
 QColor QColor::toCmyk() const
 {
@@ -1926,8 +1902,7 @@ QColor QColor::fromRgbF(qreal r, qreal g, qreal b, qreal a)
     The value of \a s, \a v, and \a a must all be in the range 0-255; the value
     of \a h must be in the range 0-359.
 
-    \sa toHsv(), fromHsvF(), isValid(), {QColor#The HSV Color
-    Model}{The HSV Color Model}
+    \sa toHsv(), fromHsvF(), isValid(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 QColor QColor::fromHsv(int h, int s, int v, int a)
 {
@@ -1958,8 +1933,7 @@ QColor QColor::fromHsv(int h, int s, int v, int a)
 
     All the values must be in the range 0.0-1.0.
 
-    \sa toHsv(), fromHsv(), isValid(), {QColor#The HSV Color
-    Model}{The HSV Color Model}
+    \sa toHsv(), fromHsv(), isValid(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 QColor QColor::fromHsvF(qreal h, qreal s, qreal v, qreal a)
 {
@@ -2112,8 +2086,7 @@ void QColor::getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a)
 
     All the values must be in the range 0-255.
 
-    \sa getCmyk(), setCmykF(), {QColor#The CMYK Color Model}{The
-    CMYK Color Model}
+    \sa getCmyk(), setCmykF(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
 void QColor::setCmyk(int c, int m, int y, int k, int a)
 {
@@ -2142,8 +2115,7 @@ void QColor::setCmyk(int c, int m, int y, int k, int a)
 
     All the values must be in the range 0.0-1.0.
 
-    \sa getCmykF() setCmyk(), {QColor#The CMYK Color Model}{The CMYK
-    Color Model}
+    \sa getCmykF(), setCmyk(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
 void QColor::setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a)
 {
@@ -2171,8 +2143,7 @@ void QColor::setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a)
 
     All the values must be in the range 0-255.
 
-    \sa toCmyk(), fromCmykF(), isValid(), {QColor#The CMYK Color Model}{The CMYK
-    Color Model}
+    \sa toCmyk(), fromCmykF(), isValid(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
 QColor QColor::fromCmyk(int c, int m, int y, int k, int a)
 {
@@ -2204,8 +2175,7 @@ QColor QColor::fromCmyk(int c, int m, int y, int k, int a)
 
     All the values must be in the range 0.0-1.0.
 
-    \sa toCmyk(), fromCmyk(), isValid(), {QColor#The CMYK Color
-    Model}{The CMYK Color Model}
+    \sa toCmyk(), fromCmyk(), isValid(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
 QColor QColor::fromCmykF(qreal c, qreal m, qreal y, qreal k, qreal a)
 {

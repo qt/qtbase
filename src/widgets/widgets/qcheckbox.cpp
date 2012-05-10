@@ -233,7 +233,7 @@ bool QCheckBox::isTristate() const
     Returns the check box's check state. If you do not need tristate support,
     you can also  use \l QAbstractButton::isChecked() which returns a boolean.
 
-    \sa setCheckState() Qt::CheckState
+    \sa setCheckState(), Qt::CheckState
 */
 Qt::CheckState QCheckBox::checkState() const
 {
@@ -248,7 +248,7 @@ Qt::CheckState QCheckBox::checkState() const
     support, you can also use \l QAbstractButton::setChecked() which takes a
     boolean.
 
-    \sa checkState() Qt::CheckState
+    \sa checkState(), Qt::CheckState
 */
 void QCheckBox::setCheckState(Qt::CheckState state)
 {

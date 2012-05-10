@@ -613,7 +613,7 @@ QTextEdit::~QTextEdit()
 /*!
     Returns the point size of the font of the current format.
 
-    \sa setFontFamily() setCurrentFont() setFontPointSize()
+    \sa setFontFamily(), setCurrentFont(), setFontPointSize()
 */
 qreal QTextEdit::fontPointSize() const
 {
@@ -624,7 +624,7 @@ qreal QTextEdit::fontPointSize() const
 /*!
     Returns the font family of the current format.
 
-    \sa setFontFamily() setCurrentFont() setFontPointSize()
+    \sa setFontFamily(), setCurrentFont(), setFontPointSize()
 */
 QString QTextEdit::fontFamily() const
 {
@@ -635,7 +635,7 @@ QString QTextEdit::fontFamily() const
 /*!
     Returns the font weight of the current format.
 
-    \sa setFontWeight() setCurrentFont() setFontPointSize() QFont::Weight
+    \sa setFontWeight(), setCurrentFont(), setFontPointSize(), QFont::Weight
 */
 int QTextEdit::fontWeight() const
 {
@@ -694,7 +694,7 @@ QColor QTextEdit::textBackgroundColor() const
 /*!
     Returns the font of the current format.
 
-    \sa setCurrentFont() setFontFamily() setFontPointSize()
+    \sa setCurrentFont(), setFontFamily(), setFontPointSize()
 */
 QFont QTextEdit::currentFont() const
 {
@@ -782,7 +782,7 @@ QTextCursor QTextEdit::textCursor() const
 /*!
     Sets the font family of the current format to \a fontFamily.
 
-    \sa fontFamily() setCurrentFont()
+    \sa fontFamily(), setCurrentFont()
 */
 void QTextEdit::setFontFamily(const QString &fontFamily)
 {
@@ -797,7 +797,7 @@ void QTextEdit::setFontFamily(const QString &fontFamily)
     Note that if \a s is zero or negative, the behavior of this
     function is not defined.
 
-    \sa fontPointSize() setCurrentFont() setFontFamily()
+    \sa fontPointSize(), setCurrentFont(), setFontFamily()
 */
 void QTextEdit::setFontPointSize(qreal s)
 {
@@ -877,7 +877,7 @@ void QTextEdit::setTextBackgroundColor(const QColor &c)
 /*!
     Sets the font of the current format to \a f.
 
-    \sa currentFont() setFontPointSize() setFontFamily()
+    \sa currentFont(), setFontPointSize(), setFontFamily()
 */
 void QTextEdit::setCurrentFont(const QFont &f)
 {
@@ -935,7 +935,7 @@ void QTextEdit::redo()
 
     If there is no selected text nothing happens.
 
-    \sa copy() paste()
+    \sa copy(), paste()
 */
 
 void QTextEdit::cut()
@@ -967,7 +967,7 @@ void QTextEdit::copy()
     virtual canInsertFromMimeData() and insertFromMimeData()
     functions.
 
-    \sa cut() copy()
+    \sa cut(), copy()
 */
 
 void QTextEdit::paste()
@@ -982,7 +982,7 @@ void QTextEdit::paste()
 
     Note that the undo/redo history is cleared by this function.
 
-    \sa cut() setPlainText() setHtml()
+    \sa cut(), setPlainText(), setHtml()
 */
 void QTextEdit::clear()
 {
@@ -995,7 +995,7 @@ void QTextEdit::clear()
 /*!
     Selects all text.
 
-    \sa copy() cut() textCursor()
+    \sa copy(), cut(), textCursor()
  */
 void QTextEdit::selectAll()
 {

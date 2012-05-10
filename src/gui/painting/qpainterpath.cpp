@@ -344,7 +344,7 @@ static void qt_debug_path(const QPainterPath &path)
     \value CurveToDataElement  The extra data required to describe a curve in
                                                a CurveToElement element.
 
-    \sa elementAt(),  elementCount()
+    \sa elementAt(), elementCount()
 */
 
 /*!

@@ -718,7 +718,7 @@ void QMainWindow::removeToolBarBreak(QToolBar *before)
     bar block (i.e. line). If the main window already manages \a toolbar
     then it will only move the toolbar to \a area.
 
-    \sa insertToolBar() addToolBarBreak() insertToolBarBreak()
+    \sa insertToolBar(), addToolBarBreak(), insertToolBarBreak()
 */
 void QMainWindow::addToolBar(Qt::ToolBarArea area, QToolBar *toolbar)
 {
@@ -788,7 +788,7 @@ QToolBar *QMainWindow::addToolBar(const QString &title)
     layout operation, this means that \a toolbar will appear to the left
     of the toolbar specified by \a before in a horizontal toolbar area.
 
-    \sa insertToolBarBreak() addToolBar() addToolBarBreak()
+    \sa insertToolBarBreak(), addToolBar(), addToolBarBreak()
 */
 void QMainWindow::insertToolBar(QToolBar *before, QToolBar *toolbar)
 {
@@ -823,7 +823,7 @@ void QMainWindow::removeToolBar(QToolBar *toolbar)
     been added to the main window, this function returns \c
     Qt::NoToolBarArea.
 
-    \sa addToolBar() addToolBarBreak() Qt::ToolBarArea
+    \sa addToolBar(), addToolBarBreak(), Qt::ToolBarArea
 */
 Qt::ToolBarArea QMainWindow::toolBarArea(QToolBar *toolbar) const
 { return d_func()->layout->toolBarArea(toolbar); }
@@ -833,7 +833,7 @@ Qt::ToolBarArea QMainWindow::toolBarArea(QToolBar *toolbar) const
     Returns whether there is a toolbar
     break before the \a toolbar.
 
-    \sa  addToolBarBreak(), insertToolBarBreak()
+    \sa addToolBarBreak(), insertToolBarBreak()
 */
 bool QMainWindow::toolBarBreak(QToolBar *toolbar) const
 {
@@ -1191,7 +1191,7 @@ void QMainWindow::removeDockWidget(QDockWidget *dockwidget)
     has not been added to the main window, this function returns \c
     Qt::NoDockWidgetArea.
 
-    \sa addDockWidget() splitDockWidget() Qt::DockWidgetArea
+    \sa addDockWidget(), splitDockWidget(), Qt::DockWidgetArea
 */
 Qt::DockWidgetArea QMainWindow::dockWidgetArea(QDockWidget *dockwidget) const
 { return d_func()->layout->dockWidgetArea(dockwidget); }

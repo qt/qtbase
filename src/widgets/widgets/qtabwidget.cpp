@@ -161,7 +161,7 @@ QT_BEGIN_NAMESPACE
     if there isn't a new one (for example, if there are no widgets
     in the QTabWidget)
 
-    \sa currentWidget() currentIndex
+    \sa currentWidget(), currentIndex
 */
 
 /*!
@@ -256,7 +256,7 @@ bool QTabWidget::hasHeightForWidth() const
     for subclasses when they need a QStyleOptionTabWidgetFrame, but don't want to fill
     in all the information themselves.
 
-    \sa QStyleOption::initFrom() QTabBar::initStyleOption()
+    \sa QStyleOption::initFrom(), QTabBar::initStyleOption()
 */
 void QTabWidget::initStyleOption(QStyleOptionTabWidgetFrame *option) const
 {
@@ -1133,7 +1133,7 @@ int QTabWidget::count() const
 /*!
     Sets the tab tool tip for the page at position \a index to \a tip.
 
-    \sa  tabToolTip()
+    \sa tabToolTip()
 */
 void QTabWidget::setTabToolTip(int index, const QString & tip)
 {
@@ -1267,7 +1267,7 @@ void QTabWidget::setIconSize(const QSize &size)
 
     By default the value is style dependant.
 
-    \sa QTabBar::elideMode usesScrollButtons QStyle::SH_TabBar_ElideMode
+    \sa QTabBar::elideMode, usesScrollButtons, QStyle::SH_TabBar_ElideMode
 */
 Qt::TextElideMode QTabWidget::elideMode() const
 {
@@ -1290,7 +1290,7 @@ void QTabWidget::setElideMode(Qt::TextElideMode mode)
 
     By default the value is style dependant.
 
-    \sa elideMode QTabBar::usesScrollButtons QStyle::SH_TabBar_PreferNoArrows
+    \sa elideMode, QTabBar::usesScrollButtons, QStyle::SH_TabBar_PreferNoArrows
 */
 bool QTabWidget::usesScrollButtons() const
 {

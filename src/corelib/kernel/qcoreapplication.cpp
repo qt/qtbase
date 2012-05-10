@@ -1559,7 +1559,7 @@ bool QCoreApplication::installTranslator(QTranslator *translationFile)
 
     The function returns true on success and false on failure.
 
-    \sa installTranslator() translate(), QObject::tr()
+    \sa installTranslator(), translate(), QObject::tr()
 */
 
 bool QCoreApplication::removeTranslator(QTranslator *translationFile)

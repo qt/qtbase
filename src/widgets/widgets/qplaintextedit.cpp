@@ -1383,7 +1383,7 @@ void QPlainTextEdit::redo()
 
     If there is no selected text nothing happens.
 
-    \sa copy() paste()
+    \sa copy(), paste()
 */
 
 void QPlainTextEdit::cut()
@@ -1415,7 +1415,7 @@ void QPlainTextEdit::copy()
     virtual canInsertFromMimeData() and insertFromMimeData()
     functions.
 
-    \sa cut() copy()
+    \sa cut(), copy()
 */
 
 void QPlainTextEdit::paste()
@@ -1430,7 +1430,7 @@ void QPlainTextEdit::paste()
 
     Note that the undo/redo history is cleared by this function.
 
-    \sa cut() setPlainText()
+    \sa cut(), setPlainText()
 */
 void QPlainTextEdit::clear()
 {
@@ -1444,7 +1444,7 @@ void QPlainTextEdit::clear()
 /*!
     Selects all text.
 
-    \sa copy() cut() textCursor()
+    \sa copy(), cut(), textCursor()
  */
 void QPlainTextEdit::selectAll()
 {

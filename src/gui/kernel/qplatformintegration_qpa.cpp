@@ -163,7 +163,7 @@ QPlatformServices *QPlatformIntegration::services() const
     or QWindow::setWindowState(), respectively.
 
     \sa QPlatformWindow, QPlatformWindowFormat
-    \sa createPlatformBackingStore(QWindow *window) const
+    \sa createPlatformBackingStore()
 */
 
 /*!
@@ -174,7 +174,7 @@ QPlatformServices *QPlatformIntegration::services() const
     before the QPlatformBackingStore for tlw where the widget also requires a backing store.
 
     \sa QBackingStore
-    \sa createPlatformWindow(QWindow *window, WId winId = 0) const
+    \sa createPlatformWindow()
 */
 
 /*!

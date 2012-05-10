@@ -211,7 +211,7 @@ QString QAccessibleTabBar::text(QAccessible::Text t) const
     to and including the item with index \a child. Returns true if a
     selection was made or extended; otherwise returns false.
 
-    \sa selection() clearSelection()
+    \sa selection(), clearSelection()
 */
 bool QAccessibleTabBar::setSelected(int child, bool on, bool extend)
 {
@@ -228,7 +228,7 @@ bool QAccessibleTabBar::setSelected(int child, bool on, bool extend)
     Returns a (possibly empty) list of indexes of the items selected
     in the list box.
 
-    \sa setSelected() clearSelection()
+    \sa setSelected(), clearSelection()
 */
 QVector<int> QAccessibleTabBar::selection() const
 {

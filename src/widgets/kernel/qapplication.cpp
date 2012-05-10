@@ -2872,7 +2872,7 @@ void QApplication::setStartDragDistance(int l)
 
     The default value is 4 pixels.
 
-    \sa startDragTime() QPoint::manhattanLength() {Drag and Drop}
+    \sa startDragTime(), QPoint::manhattanLength(), {Drag and Drop}
 */
 
 int QApplication::startDragDistance()

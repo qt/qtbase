@@ -309,7 +309,7 @@ QPen::QPen(const QColor &color)
     Constructs a pen with the specified \a brush, \a width, pen \a style,
     \a cap style and \a join style.
 
-    \sa setBrush(), setWidth(), setStyle(),  setCapStyle(), setJoinStyle()
+    \sa setBrush(), setWidth(), setStyle(), setCapStyle(), setJoinStyle()
 */
 
 QPen::QPen(const QBrush &brush, qreal width, Qt::PenStyle s, Qt::PenCapStyle c, Qt::PenJoinStyle j)
@@ -556,7 +556,7 @@ void QPen::setDashOffset(qreal offset)
     Returns the miter limit of the pen. The miter limit is only
     relevant when the join style is set to Qt::MiterJoin.
 
-    \sa setMiterLimit(),  {QPen#Join Style}{Join Style}
+    \sa setMiterLimit(), {QPen#Join Style}{Join Style}
 */
 qreal QPen::miterLimit() const
 {
@@ -606,7 +606,7 @@ int QPen::width() const
 
     Returns the pen width with floating point precision.
 
-    \sa setWidthF() width()
+    \sa setWidthF(), width()
 */
 qreal QPen::widthF() const
 {
@@ -649,7 +649,7 @@ void QPen::setWidth(int width)
 
     Setting a pen width with a negative value is not supported.
 
-    \sa setWidth() widthF()
+    \sa setWidth(), widthF()
 */
 
 void QPen::setWidthF(qreal width)
@@ -693,7 +693,7 @@ void QPen::setCapStyle(Qt::PenCapStyle c)
 /*!
     Returns the pen's join style.
 
-    \sa setJoinStyle(),  {QPen#Join Style}{Join Style}
+    \sa setJoinStyle(), {QPen#Join Style}{Join Style}
 */
 Qt::PenJoinStyle QPen::joinStyle() const
 {

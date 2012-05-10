@@ -734,7 +734,8 @@ void QDirModel::setSorting(QDir::SortFlags sort)
 /*!
   Returns the sorting method used for the directory model.
 
-  \sa QDir::SortFlags */
+  \sa QDir::SortFlags
+*/
 
 QDir::SortFlags QDirModel::sorting() const
 {

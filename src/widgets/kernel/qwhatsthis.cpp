@@ -541,7 +541,7 @@ QWhatsThis::QWhatsThis()
     When entering "What's This?" mode, a QEvent of type
     Qt::EnterWhatsThisMode is sent to all toplevel widgets.
 
-    \sa inWhatsThisMode() leaveWhatsThisMode()
+    \sa inWhatsThisMode(), leaveWhatsThisMode()
 */
 void QWhatsThis::enterWhatsThisMode()
 {
@@ -570,7 +570,7 @@ bool QWhatsThis::inWhatsThisMode()
     When leaving "What's This?" mode, a QEvent of type
     Qt::LeaveWhatsThisMode is sent to all toplevel widgets.
 
-    \sa enterWhatsThisMode() inWhatsThisMode()
+    \sa enterWhatsThisMode(), inWhatsThisMode()
 */
 void QWhatsThis::leaveWhatsThisMode()
 {

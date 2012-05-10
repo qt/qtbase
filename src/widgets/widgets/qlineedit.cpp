@@ -366,7 +366,7 @@ void QLineEdit::setPlaceholderText(const QString& placeholderText)
 
     By default, this property contains an empty string.
 
-    \sa setEchoMode() text() EchoMode
+    \sa setEchoMode(), text(), EchoMode
 */
 
 QString QLineEdit::displayText() const
@@ -445,7 +445,7 @@ void QLineEdit::setFrame(bool enable)
     \value PasswordEchoOnEdit Display characters as they are entered
                     while editing otherwise display asterisks.
 
-    \sa setEchoMode() echoMode()
+    \sa setEchoMode(), echoMode()
 */
 
 
@@ -466,7 +466,7 @@ void QLineEdit::setFrame(bool enable)
 
     By default, this property is set to \l Normal.
 
-    \sa EchoMode displayText()
+    \sa EchoMode, displayText()
 */
 
 QLineEdit::EchoMode QLineEdit::echoMode() const
@@ -524,7 +524,7 @@ const QValidator * QLineEdit::validator() const
     The initial setting is to have no input validator (i.e. any input
     is accepted up to maxLength()).
 
-    \sa validator() QIntValidator QDoubleValidator QRegExpValidator
+    \sa validator(), QIntValidator, QDoubleValidator, QRegExpValidator
 */
 
 void QLineEdit::setValidator(const QValidator *v)
@@ -901,7 +901,7 @@ int QLineEdit::selectionStart() const
     Selects text from position \a start and for \a length characters.
     Negative lengths are allowed.
 
-    \sa deselect() selectAll() selectedText()
+    \sa deselect(), selectAll(), selectedText()
 */
 
 void QLineEdit::setSelection(int start, int length)
@@ -1159,7 +1159,7 @@ void QLineEdit::setInputMask(const QString &inputMask)
     because if the user types before clicking on the widget, the
     selected text will be deleted.
 
-    \sa setSelection() deselect()
+    \sa setSelection(), deselect()
 */
 
 void QLineEdit::selectAll()
@@ -1171,7 +1171,7 @@ void QLineEdit::selectAll()
 /*!
     Deselects any selected text.
 
-    \sa setSelection() selectAll()
+    \sa setSelection(), selectAll()
 */
 
 void QLineEdit::deselect()
@@ -1276,7 +1276,7 @@ void QLineEdit::setReadOnly(bool enable)
     If the current validator disallows deleting the selected text,
     cut() will copy without deleting.
 
-    \sa copy() paste() setValidator()
+    \sa copy(), paste(), setValidator()
 */
 
 void QLineEdit::cut()
@@ -1292,7 +1292,7 @@ void QLineEdit::cut()
     Copies the selected text to the clipboard, if there is any, and if
     echoMode() is \l Normal.
 
-    \sa cut() paste()
+    \sa cut(), paste()
 */
 
 void QLineEdit::copy() const
@@ -1309,7 +1309,7 @@ void QLineEdit::copy() const
     If the end result would not be acceptable to the current
     \link setValidator() validator\endlink, nothing happens.
 
-    \sa copy() cut()
+    \sa copy(), cut()
 */
 
 void QLineEdit::paste()

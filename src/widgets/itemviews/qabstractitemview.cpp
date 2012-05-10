@@ -1009,7 +1009,7 @@ QAbstractItemDelegate *QAbstractItemView::itemDelegate(const QModelIndex &index)
     and, in many-item selections, whether the selection must be a
     continuous range of items.
 
-    \sa SelectionMode SelectionBehavior
+    \sa SelectionMode, SelectionBehavior
 */
 void QAbstractItemView::setSelectionMode(SelectionMode mode)
 {
@@ -1030,7 +1030,7 @@ QAbstractItemView::SelectionMode QAbstractItemView::selectionMode() const
     This property holds whether selections are done
     in terms of single items, rows or columns.
 
-    \sa SelectionMode SelectionBehavior
+    \sa SelectionMode, SelectionBehavior
 */
 
 void QAbstractItemView::setSelectionBehavior(QAbstractItemView::SelectionBehavior behavior)
@@ -1383,7 +1383,7 @@ bool QAbstractItemView::tabKeyNavigation() const
     \property QAbstractItemView::showDropIndicator
     \brief whether the drop indicator is shown when dragging items and dropping.
 
-    \sa dragEnabled DragDropMode dragDropOverwriteMode acceptDrops
+    \sa dragEnabled, DragDropMode, dragDropOverwriteMode, acceptDrops
 */
 
 void QAbstractItemView::setDropIndicatorShown(bool enable)
@@ -1402,7 +1402,7 @@ bool QAbstractItemView::showDropIndicator() const
     \property QAbstractItemView::dragEnabled
     \brief whether the view supports dragging of its own items
 
-    \sa showDropIndicator DragDropMode dragDropOverwriteMode acceptDrops
+    \sa showDropIndicator, DragDropMode, dragDropOverwriteMode, acceptDrops
 */
 
 void QAbstractItemView::setDragEnabled(bool enable)
@@ -1434,7 +1434,7 @@ bool QAbstractItemView::dragEnabled() const
 
     Note that the model used needs to provide support for drag and drop operations.
 
-    \sa setDragDropMode() {Using drag and drop with item views}
+    \sa setDragDropMode(), {Using drag and drop with item views}
 */
 
 /*!
@@ -1442,7 +1442,7 @@ bool QAbstractItemView::dragEnabled() const
     \brief the drag and drop event the view will act upon
 
     \since 4.2
-    \sa showDropIndicator dragDropOverwriteMode
+    \sa showDropIndicator, dragDropOverwriteMode
 */
 void QAbstractItemView::setDragDropMode(DragDropMode behavior)
 {
@@ -1483,7 +1483,7 @@ QAbstractItemView::DragDropMode QAbstractItemView::dragDropMode() const
     actions support CopyAction.
 
     \since 4.6
-    \sa showDropIndicator dragDropOverwriteMode
+    \sa showDropIndicator, dragDropOverwriteMode
 */
 void QAbstractItemView::setDefaultDropAction(Qt::DropAction dropAction)
 {
@@ -1905,7 +1905,7 @@ void QAbstractItemView::mouseDoubleClickEvent(QMouseEvent *event)
     the widget. If the drag is over a valid dropping place (e.g. over an item that
     accepts drops), the event is accepted; otherwise it is ignored.
 
-    \sa dropEvent() startDrag()
+    \sa dropEvent(), startDrag()
 */
 void QAbstractItemView::dragEnterEvent(QDragEnterEvent *event)
 {
@@ -1927,7 +1927,7 @@ void QAbstractItemView::dragEnterEvent(QDragEnterEvent *event)
     the user drags a selection to view's right or bottom edge. In this case, the
     event will be accepted; otherwise it will be ignored.
 
-    \sa dropEvent() startDrag()
+    \sa dropEvent(), startDrag()
 */
 void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
 {
@@ -2863,7 +2863,7 @@ void QAbstractItemView::editorDestroyed(QObject *editor)
     Note that if the view has a horizontal header, the item steps
     will be ignored and the header section size will be used instead.
 
-    \sa horizontalStepsPerItem() setVerticalStepsPerItem()
+    \sa horizontalStepsPerItem(), setVerticalStepsPerItem()
 */
 void QAbstractItemView::setHorizontalStepsPerItem(int steps)
 {
@@ -2875,7 +2875,7 @@ void QAbstractItemView::setHorizontalStepsPerItem(int steps)
     \obsolete
     Returns the horizontal scroll bar's steps per item.
 
-    \sa setHorizontalStepsPerItem() verticalStepsPerItem()
+    \sa setHorizontalStepsPerItem(), verticalStepsPerItem()
 */
 int QAbstractItemView::horizontalStepsPerItem() const
 {
@@ -2892,7 +2892,7 @@ int QAbstractItemView::horizontalStepsPerItem() const
     Note that if the view has a vertical header, the item steps
     will be ignored and the header section size will be used instead.
 
-    \sa verticalStepsPerItem() setHorizontalStepsPerItem()
+    \sa verticalStepsPerItem(), setHorizontalStepsPerItem()
 */
 void QAbstractItemView::setVerticalStepsPerItem(int steps)
 {
@@ -2904,7 +2904,7 @@ void QAbstractItemView::setVerticalStepsPerItem(int steps)
     \obsolete
     Returns the vertical scroll bar's steps per item.
 
-    \sa setVerticalStepsPerItem() horizontalStepsPerItem()
+    \sa setVerticalStepsPerItem(), horizontalStepsPerItem()
 */
 int QAbstractItemView::verticalStepsPerItem() const
 {

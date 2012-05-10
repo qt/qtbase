@@ -184,7 +184,7 @@ int QUndoCommand::id() const
 
     \snippet code/src_gui_util_qundostack.cpp 3
 
-    \sa id() QUndoStack::push()
+    \sa id(), QUndoStack::push()
 */
 
 bool QUndoCommand::mergeWith(const QUndoCommand *command)
@@ -271,7 +271,7 @@ QString QUndoCommand::actionText() const
     different strings in order to match specific languages' needs.
     The described feature and the function actionText() are available since Qt 4.8.
 
-    \sa text() actionText() QUndoStack::createUndoAction() QUndoStack::createRedoAction()
+    \sa text(), actionText(), QUndoStack::createUndoAction(), QUndoStack::createRedoAction()
 */
 
 void QUndoCommand::setText(const QString &text)
@@ -578,7 +578,7 @@ void QUndoStack::clear()
     been executed will almost always lead to corruption of the document's
     state.
 
-    \sa QUndoCommand::id() QUndoCommand::mergeWith()
+    \sa QUndoCommand::id(), QUndoCommand::mergeWith()
 */
 
 void QUndoStack::push(QUndoCommand *cmd)
@@ -652,7 +652,7 @@ void QUndoStack::setClean()
 /*!
     If the stack is in the clean state, returns true; otherwise returns false.
 
-    \sa setClean() cleanIndex()
+    \sa setClean(), cleanIndex()
 */
 
 bool QUndoStack::isClean() const
@@ -671,7 +671,7 @@ bool QUndoStack::isClean() const
     push() deletes all the undone commands before pushing the new command, the stack
     can't return to the clean state again. In this case, this function returns -1.
 
-    \sa isClean() setClean()
+    \sa isClean(), setClean()
 */
 
 int QUndoStack::cleanIndex() const
@@ -687,7 +687,7 @@ int QUndoStack::cleanIndex() const
     If the stack is empty, or if the bottom command on the stack has already been
     undone, this function does nothing.
 
-    \sa redo() index()
+    \sa redo(), index()
 */
 
 void QUndoStack::undo()
@@ -713,7 +713,7 @@ void QUndoStack::undo()
     If the stack is empty, or if the top command on the stack has already been
     redone, this function does nothing.
 
-    \sa undo() index()
+    \sa undo(), index()
 */
 
 void QUndoStack::redo()
@@ -735,7 +735,7 @@ void QUndoStack::redo()
     Returns the number of commands on the stack. Macro commands are counted as
     one command.
 
-    \sa index() setIndex() command()
+    \sa index(), setIndex(), command()
 */
 
 int QUndoStack::count() const
@@ -749,7 +749,7 @@ int QUndoStack::count() const
     executed on the next call to redo(). It is not always the top-most command
     on the stack, since a number of commands may have been undone.
 
-    \sa undo() redo() count()
+    \sa undo(), redo(), count()
 */
 
 int QUndoStack::index() const
@@ -763,7 +763,7 @@ int QUndoStack::index() const
     \a idx. This function can be used to roll the state of the document forwards
     of backwards. indexChanged() is emitted only once.
 
-    \sa index() count() undo() redo()
+    \sa index(), count(), undo(), redo()
 */
 
 void QUndoStack::setIndex(int idx)
@@ -796,7 +796,7 @@ void QUndoStack::setIndex(int idx)
 
     Synonymous with index() == 0.
 
-    \sa index() canRedo()
+    \sa index(), canRedo()
 */
 
 bool QUndoStack::canUndo() const
@@ -815,7 +815,7 @@ bool QUndoStack::canUndo() const
 
     Synonymous with index() == count().
 
-    \sa index() canUndo()
+    \sa index(), canUndo()
 */
 
 bool QUndoStack::canRedo() const
@@ -829,7 +829,7 @@ bool QUndoStack::canRedo() const
 /*!
     Returns the text of the command which will be undone in the next call to undo().
 
-    \sa QUndoCommand::actionText() redoText()
+    \sa QUndoCommand::actionText(), redoText()
 */
 
 QString QUndoStack::undoText() const
@@ -845,7 +845,7 @@ QString QUndoStack::undoText() const
 /*!
     Returns the text of the command which will be redone in the next call to redo().
 
-    \sa QUndoCommand::actionText() undoText()
+    \sa QUndoCommand::actionText(), undoText()
 */
 
 QString QUndoStack::redoText() const
@@ -1129,7 +1129,7 @@ bool QUndoStack::isActive() const
     \a idx specifies the index of the current command, ie. the command which will be
     executed on the next call to redo().
 
-    \sa index() setIndex()
+    \sa index(), setIndex()
 */
 
 /*!
@@ -1139,7 +1139,7 @@ bool QUndoStack::isActive() const
     If \a clean is true, the stack is in a clean state; otherwise this signal
     indicates that it has left the clean state.
 
-    \sa isClean() setClean()
+    \sa isClean(), setClean()
 */
 
 /*!

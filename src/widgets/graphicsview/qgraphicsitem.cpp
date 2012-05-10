@@ -2057,7 +2057,7 @@ void QGraphicsItem::setPanelModality(PanelModality panelModality)
 
     This function always returns false for items not in a scene.
 
-    \sa panelModality() setPanelModality() PanelModality
+    \sa panelModality(), setPanelModality(), PanelModality
 */
 bool QGraphicsItem::isBlockedByModalPanel(QGraphicsItem **blockingPanel) const
 {

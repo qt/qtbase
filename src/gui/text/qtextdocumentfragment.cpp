@@ -303,7 +303,7 @@ QTextDocumentFragment::QTextDocumentFragment(const QTextDocument *document)
     Creates a QTextDocumentFragment from the \a{cursor}'s selection.
     If the cursor doesn't have a selection, the created fragment is empty.
 
-    \sa isEmpty() QTextCursor::selection()
+    \sa isEmpty(), QTextCursor::selection()
 */
 QTextDocumentFragment::QTextDocumentFragment(const QTextCursor &cursor)
     : d(0)

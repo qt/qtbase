@@ -104,7 +104,7 @@ const QSsl::SslOptions QSslConfigurationPrivate::defaultSslOptions = QSsl::SslOp
 
     \snippet code/src_network_ssl_qsslconfiguration.cpp 0
 
-    \sa QSsl::SslProtocol, QSslCertificate, QSslCipher, QSslKey
+    \sa QSsl::SslProtocol, QSslCertificate, QSslCipher, QSslKey,
         QSslSocket, QNetworkAccessManager,
         QSslSocket::sslConfiguration(), QSslSocket::setSslConfiguration()
 */

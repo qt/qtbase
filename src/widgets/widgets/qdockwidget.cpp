@@ -1471,7 +1471,7 @@ bool QDockWidget::event(QEvent *event)
 
   The action's text is set to the dock widget's window title.
 
-  \sa QAction::text QWidget::windowTitle
+  \sa QAction::text, QWidget::windowTitle
  */
 QAction * QDockWidget::toggleViewAction() const
 {
@@ -1562,7 +1562,7 @@ QAction * QDockWidget::toggleViewAction() const
     to its parent QDockWidget. Hence it can perform such operations as docking
     and hiding in response to user actions.
 
-    \sa titleBarWidget() DockWidgetVerticalTitleBar
+    \sa titleBarWidget(), DockWidgetVerticalTitleBar
 */
 
 void QDockWidget::setTitleBarWidget(QWidget *widget)

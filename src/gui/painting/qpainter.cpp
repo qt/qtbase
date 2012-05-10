@@ -3085,8 +3085,7 @@ bool QPainter::matrixEnabled() const
 /*!
     Scales the coordinate system by (\a{sx}, \a{sy}).
 
-    \sa setWorldTransform() {QPainter#Coordinate Transformations}{Coordinate
-    Transformations}
+    \sa setWorldTransform(), {QPainter#Coordinate Transformations}{Coordinate Transformations}
 */
 
 void QPainter::scale(qreal sx, qreal sy)
@@ -3109,8 +3108,7 @@ void QPainter::scale(qreal sx, qreal sy)
 /*!
     Shears the coordinate system by (\a{sh}, \a{sv}).
 
-    \sa setWorldTransform(), {QPainter#Coordinate Transformations}{Coordinate
-    Transformations}
+    \sa setWorldTransform(), {QPainter#Coordinate Transformations}{Coordinate Transformations}
 */
 
 void QPainter::shear(qreal sh, qreal sv)
@@ -3135,8 +3133,7 @@ void QPainter::shear(qreal sh, qreal sv)
 
     Rotates the coordinate system the given \a angle clockwise.
 
-    \sa setWorldTransform(), {QPainter#Coordinate Transformations}{Coordinate
-    Transformations}
+    \sa setWorldTransform(), {QPainter#Coordinate Transformations}{Coordinate Transformations}
 */
 
 void QPainter::rotate(qreal a)
@@ -3160,8 +3157,7 @@ void QPainter::rotate(qreal a)
     Translates the coordinate system by the given \a offset; i.e. the
     given \a offset is added to points.
 
-    \sa setWorldTransform(), {QPainter#Coordinate Transformations}{Coordinate
-    Transformations}
+    \sa setWorldTransform(), {QPainter#Coordinate Transformations}{Coordinate Transformations}
 */
 void QPainter::translate(const QPointF &offset)
 {
@@ -4794,7 +4790,7 @@ void QPainter::drawPolyline(const QPoint *points, int pointCount)
     \l{Qt::FillRule} for a more detailed description of these fill
     rules.
 
-    \sa  drawConvexPolygon(), drawPolyline(), {Coordinate System}
+    \sa drawConvexPolygon(), drawPolyline(), {Coordinate System}
 */
 void QPainter::drawPolygon(const QPointF *points, int pointCount, Qt::FillRule fillRule)
 {
@@ -7140,7 +7136,7 @@ QRect QPainter::window() const
     The default viewport rectangle is the same as the device's
     rectangle.
 
-    \sa viewport(), viewTransformEnabled() {Coordinate
+    \sa viewport(), viewTransformEnabled(), {Coordinate
     System#Window-Viewport Conversion}{Window-Viewport Conversion}
 */
 
@@ -8102,7 +8098,7 @@ qreal QPaintEngineState::opacity() const
     If \a combine is true, the specified \a transform is combined with
     the current matrix; otherwise it replaces the current matrix.
 
-    \sa transform() setWorldTransform()
+    \sa transform(), setWorldTransform()
 */
 
 void QPainter::setTransform(const QTransform &transform, bool combine )

@@ -414,7 +414,7 @@ void QPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDraw
     painting is to start on the paint device \a pdev. Return true if
     the initialization was successful; otherwise return false.
 
-    \sa end() isActive()
+    \sa end(), isActive()
 */
 
 /*!
@@ -424,7 +424,7 @@ void QPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDraw
     device. Return true if painting was finished successfully;
     otherwise return false.
 
-    \sa begin() isActive()
+    \sa begin(), isActive()
 */
 
 

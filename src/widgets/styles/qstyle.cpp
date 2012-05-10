@@ -1088,7 +1088,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value CC_CustomBase Base value for custom complex controls. Custom
     values must be greater than this value.
 
-    \sa SubControl drawComplexControl()
+    \sa SubControl, drawComplexControl()
 */
 
 /*!
@@ -1536,7 +1536,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \row \li \l CT_MenuItem     \li \l QStyleOptionMenuItem
     \endtable
 
-    \sa ContentsType QStyleOption
+    \sa ContentsType, QStyleOption
 */
 
 /*!

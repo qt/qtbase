@@ -832,7 +832,7 @@ void qWinMessageHandler2(QtMsgType t, const QMessageLogContext &context,
 
     qSetMessagePattern() has no effect if a custom message handler is installed.
 
-    \sa qInstallMessageHandler, Debugging Techniques
+    \sa qInstallMessageHandler, {Debugging Techniques}
  */
 
 QtMessageHandler qInstallMessageHandler(QtMessageHandler h)

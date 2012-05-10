@@ -248,7 +248,7 @@ QLocale QValidator::locale() const
     locale set with QLocale::setDefault(). If a default locale has not
     been set, it is the operating system's locale.
 
-    \sa locale() QLocale::setDefault()
+    \sa locale(), QLocale::setDefault()
 */
 void QValidator::setLocale(const QLocale &locale)
 {

@@ -269,7 +269,7 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
     \value CacheLocation Returns a directory location where user-specific
            non-essential (cached) data should be written.
 
-    \sa storageLocation() displayName()
+    \sa storageLocation(), displayName()
 */
 
 /*!

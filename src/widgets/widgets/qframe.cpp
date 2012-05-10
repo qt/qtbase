@@ -150,7 +150,7 @@ inline void QFramePrivate::init()
     the lineWidth() and the midLineWidth() to create the total result.
     See the picture of the frames in the main class documentation.
 
-    \sa QFrame::Shadow QFrame::style() QStyle::drawPrimitive()
+    \sa QFrame::Shadow, QFrame::style(), QStyle::drawPrimitive()
 */
 
 
@@ -175,7 +175,7 @@ inline void QFramePrivate::init()
     midLineWidth(). See the picture of the frames in the main class
     documentation.
 
-    \sa QFrame::Shape lineWidth() midLineWidth()
+    \sa QFrame::Shape, lineWidth(), midLineWidth()
 */
 
 /*!

@@ -167,7 +167,7 @@
     to its default value, you must save the old value of the attribute before
     you change it.
 
-    \sa focusRectPolicy() QWidget::setAttribute()
+    \sa focusRectPolicy(), QWidget::setAttribute()
 */
 
 /*! \fn QMacStyle::FocusRectPolicy QMacStyle::focusRectPolicy(const QWidget *w)

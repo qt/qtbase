@@ -306,7 +306,7 @@ void QPolygon::point(int index, int *x, int *y) const
 
     \snippet polygon/polygon.cpp 2
 
-    \sa setPoint() putPoints()
+    \sa setPoint(), putPoints()
 */
 
 void QPolygon::setPoints(int nPoints, const int *points)

@@ -1218,7 +1218,7 @@ void QBoxLayout::setDirection(Direction direction)
     Returns the direction of the box. addWidget() and addSpacing()
     work in this direction; the stretch stretches in this direction.
 
-    \sa QBoxLayout::Direction addWidget() addSpacing()
+    \sa QBoxLayout::Direction, addWidget(), addSpacing()
 */
 
 QBoxLayout::Direction QBoxLayout::direction() const

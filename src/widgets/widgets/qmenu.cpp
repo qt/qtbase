@@ -1140,7 +1140,7 @@ bool QMenuPrivate::hasMouseMoved(const QPoint &globalPos)
     is useful for subclasses when they need a QStyleOptionMenuItem, but don't want
     to fill in all the information themselves.
 
-    \sa QStyleOption::initFrom() QMenuBar::initStyleOption()
+    \sa QStyleOption::initFrom(), QMenuBar::initStyleOption()
 */
 void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action) const
 {
@@ -1444,7 +1444,7 @@ QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject 
     It returns \a menu's menuAction(). This menu does not take
     ownership of \a menu.
 
-    \sa QWidget::addAction() QMenu::menuAction()
+    \sa QWidget::addAction(), QMenu::menuAction()
 */
 QAction *QMenu::addMenu(QMenu *menu)
 {
@@ -1457,7 +1457,7 @@ QAction *QMenu::addMenu(QMenu *menu)
   Appends a new QMenu with \a title to the menu. The menu
   takes ownership of the menu. Returns the new menu.
 
-  \sa QWidget::addAction() QMenu::menuAction()
+  \sa QWidget::addAction(), QMenu::menuAction()
 */
 QMenu *QMenu::addMenu(const QString &title)
 {
@@ -1470,7 +1470,7 @@ QMenu *QMenu::addMenu(const QString &title)
   Appends a new QMenu with \a icon and \a title to the menu. The menu
   takes ownership of the menu. Returns the new menu.
 
-  \sa QWidget::addAction() QMenu::menuAction()
+  \sa QWidget::addAction(), QMenu::menuAction()
 */
 QMenu *QMenu::addMenu(const QIcon &icon, const QString &title)
 {
@@ -1584,7 +1584,7 @@ bool QMenu::isTearOffEnabled() const
   contents in a new window. When the menu is in this mode and the menu
   is visible returns true; otherwise false.
 
-  \sa hideTearOffMenu() isTearOffEnabled()
+  \sa hideTearOffMenu(), isTearOffEnabled()
 */
 bool QMenu::isTearOffMenuVisible() const
 {
@@ -1597,7 +1597,7 @@ bool QMenu::isTearOffMenuVisible() const
    This function will forcibly hide the torn off menu making it
    disappear from the users desktop.
 
-   \sa isTearOffMenuVisible() isTearOffEnabled()
+   \sa isTearOffMenuVisible(), isTearOffEnabled()
 */
 void QMenu::hideTearOffMenu()
 {

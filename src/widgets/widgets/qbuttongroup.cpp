@@ -82,7 +82,7 @@
     of the mapping mechanism is to simplify the representation of enum
     values in a user interface.
 
-    \sa QGroupBox QPushButton, QCheckBox, QRadioButton
+    \sa QGroupBox, QPushButton, QCheckBox, QRadioButton
 */
 
 /*!
@@ -90,7 +90,7 @@
 
     Constructs a new, empty button group with the given \a parent.
 
-    \sa addButton() setExclusive()
+    \sa addButton(), setExclusive()
 */
 
 /*!
@@ -183,7 +183,7 @@
     starting with -2. If you are assigning your own ids, use
     positive values to avoid conflicts.
 
-    \sa removeButton() buttons()
+    \sa removeButton(), buttons()
 */
 
 /*!
@@ -191,7 +191,7 @@
 
     Removes the given \a button from the button group.
 
-    \sa addButton() buttons()
+    \sa addButton(), buttons()
 */
 
 /*!

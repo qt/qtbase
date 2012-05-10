@@ -135,7 +135,7 @@ QInputEvent::~QInputEvent()
     and QWidget::mouseMoveEvent() to receive mouse events in your own
     widgets.
 
-    \sa QWidget::setMouseTracking() QWidget::grabMouse()
+    \sa QWidget::setMouseTracking(), QWidget::grabMouse(),
     QCursor::pos()
 */
 
@@ -234,7 +234,7 @@ QMouseEvent::~QMouseEvent()
     screen position returned by screenPos() to avoid a shaking
     motion.
 
-    \sa x() y() windowPos() screenPos()
+    \sa x(), y(), windowPos(), screenPos()
 */
 
 /*!
@@ -249,7 +249,7 @@ QMouseEvent::~QMouseEvent()
     global position returned by globalPos() to avoid a shaking
     motion.
 
-    \sa x() y() pos() localPos() screenPos()
+    \sa x(), y(), pos(), localPos(), screenPos()
 */
 
 /*!
@@ -260,7 +260,7 @@ QMouseEvent::~QMouseEvent()
     Returns the position of the mouse cursor as a QPointF, relative to the
     screen that received the event.
 
-    \sa x() y() pos() localPos() screenPos()
+    \sa x(), y(), pos(), localPos(), screenPos()
 */
 
 /*!
@@ -273,7 +273,7 @@ QMouseEvent::~QMouseEvent()
     global position returned by globalPos() to avoid a shaking
     motion.
 
-    \sa x() y() globalPos()
+    \sa x(), y(), globalPos()
 */
 
 /*!
@@ -286,7 +286,7 @@ QMouseEvent::~QMouseEvent()
     pointer position QCursor::pos(), and from
     QWidget::mapToGlobal(pos()).
 
-    \sa globalX() globalY()
+    \sa globalX(), globalY()
 */
 
 /*!
@@ -295,7 +295,7 @@ QMouseEvent::~QMouseEvent()
     Returns the x position of the mouse cursor, relative to the
     widget that received the event.
 
-    \sa y() pos()
+    \sa y(), pos()
 */
 
 /*!
@@ -304,7 +304,7 @@ QMouseEvent::~QMouseEvent()
     Returns the y position of the mouse cursor, relative to the
     widget that received the event.
 
-    \sa x() pos()
+    \sa x(), pos()
 */
 
 /*!
@@ -313,7 +313,7 @@ QMouseEvent::~QMouseEvent()
     Returns the global x position of the mouse cursor at the time of
     the event.
 
-    \sa globalY() globalPos()
+    \sa globalY(), globalPos()
 */
 
 /*!
@@ -322,7 +322,7 @@ QMouseEvent::~QMouseEvent()
     Returns the global y position of the mouse cursor at the time of
     the event.
 
-    \sa globalX() globalPos()
+    \sa globalX(), globalPos()
 */
 
 /*!
@@ -333,7 +333,7 @@ QMouseEvent::~QMouseEvent()
     Note that the returned value is always Qt::NoButton for mouse
     move events.
 
-    \sa buttons() Qt::MouseButton
+    \sa buttons(), Qt::MouseButton
 */
 
 /*!
@@ -347,7 +347,7 @@ QMouseEvent::~QMouseEvent()
     event. For mouse release events this excludes the button that
     caused the event.
 
-    \sa button() Qt::MouseButton
+    \sa button(), Qt::MouseButton
 */
 
 /*!
@@ -473,7 +473,7 @@ QHoverEvent::~QHoverEvent()
 
     The event handler QWidget::wheelEvent() receives wheel events.
 
-    \sa QMouseEvent QWidget::grabMouse()
+    \sa QMouseEvent, QWidget::grabMouse()
 */
 
 /*!
@@ -505,7 +505,7 @@ QHoverEvent::~QHoverEvent()
     \a modifiers holds the keyboard modifier flags at the time of the
     event, and \a orient holds the wheel's orientation.
 
-    \sa pos() pixelDelta() angleDelta() state()
+    \sa pos(), pixelDelta(), angleDelta(), state()
 */
 #ifndef QT_NO_WHEELEVENT
 QWheelEvent::QWheelEvent(const QPointF &pos, int delta,
@@ -536,7 +536,7 @@ QWheelEvent::~QWheelEvent()
     \a orient holds the wheel's orientation.
 
 
-    \sa pos() pixelDelta() angleDelta() state()
+    \sa pos(), pixelDelta(), angleDelta(), state()
 */
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
@@ -559,7 +559,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
     \a angleDelta contains the rotation distance, and
     \a orient holds the wheel's orientation.
 
-    \sa pos() globalPos() delta() state()
+    \sa pos(), globalPos(), delta(), state()
 */
 
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
@@ -622,7 +622,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     If you move your widgets around in response to mouse events,
     use globalPos() instead of this function.
 
-    \sa x() y() globalPos()
+    \sa x(), y(), globalPos()
 */
 
 /*!
@@ -631,7 +631,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     Returns the x position of the mouse cursor, relative to the
     widget that received the event.
 
-    \sa y() pos()
+    \sa y(), pos()
 */
 
 /*!
@@ -640,7 +640,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     Returns the y position of the mouse cursor, relative to the
     widget that received the event.
 
-    \sa x() pos()
+    \sa x(), pos()
 */
 
 
@@ -653,7 +653,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     mouse events, globalPos() can differ a lot from the current
     cursor position returned by QCursor::pos().
 
-    \sa globalX() globalY()
+    \sa globalX(), globalY()
 */
 
 /*!
@@ -662,7 +662,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     Returns the global x position of the mouse cursor at the time of
     the event.
 
-    \sa globalY() globalPos()
+    \sa globalY(), globalPos()
 */
 
 /*!
@@ -671,7 +671,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     Returns the global y position of the mouse cursor at the time of
     the event.
 
-    \sa globalX() globalPos()
+    \sa globalX(), globalPos()
 */
 
 /*!
@@ -1059,7 +1059,7 @@ QPaintEvent::~QPaintEvent()
 
     Returns the rectangle that needs to be updated.
 
-    \sa region() QPainter::setClipRect()
+    \sa region(), QPainter::setClipRect()
 */
 
 /*!
@@ -1067,7 +1067,7 @@ QPaintEvent::~QPaintEvent()
 
     Returns the region that needs to be updated.
 
-    \sa rect() QPainter::setClipRegion()
+    \sa rect(), QPainter::setClipRegion()
 */
 
 
@@ -1157,7 +1157,7 @@ QExposeEvent::~QExposeEvent()
 
     The event handler QWidget::resizeEvent() receives resize events.
 
-    \sa QWidget::resize() QWidget::setGeometry()
+    \sa QWidget::resize(), QWidget::setGeometry()
 */
 
 /*!
@@ -1907,7 +1907,8 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
   \a rotation contains the device's rotation in degrees. 4D mice support
   rotation. If the device does not support rotation, pass 0 here.
 
-  \sa pos() globalPos() device() pressure() xTilt() yTilt() uniqueId(), rotation(), tangentialPressure(), z()
+  \sa pos(), globalPos(), device(), pressure(), xTilt(), yTilt(), uniqueId(), rotation(),
+      tangentialPressure(), z()
 */
 
 QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalPos,
@@ -2014,7 +2015,7 @@ QTabletEvent::~QTabletEvent()
     If you move widgets around in response to mouse events, use
     globalPos() instead of this function.
 
-    \sa x() y() globalPos()
+    \sa x(), y(), globalPos()
 */
 
 /*!
@@ -2023,7 +2024,7 @@ QTabletEvent::~QTabletEvent()
     Returns the x position of the device, relative to the widget that
     received the event.
 
-    \sa y() pos()
+    \sa y(), pos()
 */
 
 /*!
@@ -2032,7 +2033,7 @@ QTabletEvent::~QTabletEvent()
     Returns the y position of the device, relative to the widget that
     received the event.
 
-    \sa x() pos()
+    \sa x(), pos()
 */
 
 /*!
@@ -2054,7 +2055,7 @@ QTabletEvent::~QTabletEvent()
     globalPos() can differ significantly from the current position
     QCursor::pos().
 
-    \sa globalX() globalY() hiResGlobalPos()
+    \sa globalX(), globalY(), hiResGlobalPos()
 */
 
 /*!
@@ -2063,7 +2064,7 @@ QTabletEvent::~QTabletEvent()
     Returns the global x position of the mouse pointer at the time of
     the event.
 
-    \sa globalY() globalPos() hiResGlobalX()
+    \sa globalY(), globalPos(), hiResGlobalX()
 */
 
 /*!
@@ -2072,7 +2073,7 @@ QTabletEvent::~QTabletEvent()
     Returns the global y position of the tablet device at the time of
     the event.
 
-    \sa globalX() globalPos() hiResGlobalY()
+    \sa globalX(), globalPos(), hiResGlobalY()
 */
 
 /*!
@@ -2104,7 +2105,7 @@ QTabletEvent::~QTabletEvent()
     The high precision coordinates delivered from the tablet expressed.
     Sub pixeling information is in the fractional part of the QPointF.
 
-    \sa globalPos() hiResGlobalX() hiResGlobalY()
+    \sa globalPos(), hiResGlobalX(), hiResGlobalY()
 */
 
 /*!

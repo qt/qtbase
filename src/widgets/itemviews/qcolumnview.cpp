@@ -663,7 +663,7 @@ void QColumnViewPrivate::_q_clicked(const QModelIndex &index)
 
     Return the new view
 
-    \sa createColumn() setPreviewWidget()
+    \sa createColumn(), setPreviewWidget()
     \sa doLayout()
 */
 QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bool show)

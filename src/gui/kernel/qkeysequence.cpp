@@ -1593,7 +1593,7 @@ bool QKeySequence::operator==(const QKeySequence &other) const
     This function is useful in some circumstances, for example
     if you want to use QKeySequence objects as keys in a QMap.
 
-    \sa operator==() operator!=() operator>() operator<=() operator>=()
+    \sa operator==(), operator!=(), operator>(), operator<=(), operator>=()
 */
 bool QKeySequence::operator< (const QKeySequence &other) const
 {
@@ -1609,7 +1609,7 @@ bool QKeySequence::operator< (const QKeySequence &other) const
     Returns true if this key sequence is larger than the \a other key
     sequence; otherwise returns false.
 
-    \sa operator==() operator!=() operator<() operator<=() operator>=()
+    \sa operator==(), operator!=(), operator<(), operator<=(), operator>=()
 */
 
 /*!
@@ -1618,7 +1618,7 @@ bool QKeySequence::operator< (const QKeySequence &other) const
     Returns true if this key sequence is smaller or equal to the
     \a other key sequence; otherwise returns false.
 
-    \sa operator==() operator!=() operator<() operator>() operator>=()
+    \sa operator==(), operator!=(), operator<(), operator>(), operator>=()
 */
 
 /*!
@@ -1627,7 +1627,7 @@ bool QKeySequence::operator< (const QKeySequence &other) const
     Returns true if this key sequence is larger or equal to the
     \a other key sequence; otherwise returns false.
 
-    \sa operator==() operator!=() operator<() operator>() operator<=()
+    \sa operator==(), operator!=(), operator<(), operator>(), operator<=()
 */
 
 /*!

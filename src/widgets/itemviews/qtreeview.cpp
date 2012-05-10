@@ -2614,7 +2614,7 @@ void QTreeView::selectAll()
   Warning: if the model contains a large number of items,
   this function will take some time to execute.
 
-  \sa collapseAll() expand()  collapse() setExpanded()
+  \sa collapseAll(), expand(), collapse(), setExpanded()
 */
 void QTreeView::expandAll()
 {
@@ -2631,7 +2631,7 @@ void QTreeView::expandAll()
 
   Collapses all expanded items.
 
-  \sa expandAll() expand()  collapse() setExpanded()
+  \sa expandAll(), expand(), collapse(), setExpanded()
 */
 void QTreeView::collapseAll()
 {
@@ -2644,7 +2644,7 @@ void QTreeView::collapseAll()
   \since 4.3
   Expands all expandable items to the given \a depth.
 
-  \sa expandAll() collapseAll() expand()  collapse() setExpanded()
+  \sa expandAll(), collapseAll(), expand(), collapse(), setExpanded()
 */
 void QTreeView::expandToDepth(int depth)
 {

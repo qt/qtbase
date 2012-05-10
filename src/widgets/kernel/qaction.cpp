@@ -571,7 +571,7 @@ bool QAction::autoRepeat() const
 
     By default, this property contains the application's default font.
 
-    \sa QAction::setText() QStyle
+    \sa QAction::setText(), QStyle
 */
 void QAction::setFont(const QFont &font)
 {
@@ -821,7 +821,7 @@ QString QAction::iconText() const
 
     By default, this property contains the action's text.
 
-    \sa setStatusTip() setShortcut()
+    \sa setStatusTip(), setShortcut()
 */
 void QAction::setToolTip(const QString &tooltip)
 {
@@ -853,7 +853,7 @@ QString QAction::toolTip() const
 
     By default, this property contains an empty string.
 
-    \sa setToolTip() showStatusText()
+    \sa setToolTip(), showStatusText()
 */
 void QAction::setStatusTip(const QString &statustip)
 {
@@ -1330,7 +1330,7 @@ QAction::SoftKeyRole QAction::softKeyRole() const
     For example:
     \snippet code/src_gui_kernel_qaction.cpp 0
 
-    \sa QAction::icon QApplication::setAttribute()
+    \sa QAction::icon, QApplication::setAttribute()
 */
 void QAction::setIconVisibleInMenu(bool visible)
 {

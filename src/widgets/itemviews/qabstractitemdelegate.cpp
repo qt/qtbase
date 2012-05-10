@@ -232,7 +232,7 @@ QAbstractItemDelegate::~QAbstractItemDelegate()
     editor paints its own background (e.g., with
     \l{QWidget::}{setAutoFillBackground()}).
 
-    \sa destroyEditor() setModelData() setEditorData()
+    \sa destroyEditor(), setModelData(), setEditorData()
 */
 QWidget *QAbstractItemDelegate::createEditor(QWidget *,
                                              const QStyleOptionViewItem &,

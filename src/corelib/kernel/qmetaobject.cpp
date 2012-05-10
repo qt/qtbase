@@ -3205,7 +3205,7 @@ const char* QMetaClassInfo::value() const
     This class should never be used directly. Please use the \l Q_ARG()
     macro instead.
 
-    \sa Q_ARG(), QMetaObject::invokeMethod(),  QGenericReturnArgument
+    \sa Q_ARG(), QMetaObject::invokeMethod(), QGenericReturnArgument
 */
 
 /*!

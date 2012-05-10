@@ -242,7 +242,7 @@
     Note that if the logicalDpiY() doesn't equal the physicalDpiY(),
     the corresponding QPaintEngine must handle the resolution mapping.
 
-    \sa  logicalDpiX(), physicalDpiY()
+    \sa logicalDpiX(), physicalDpiY()
 */
 
 /*!
@@ -256,7 +256,7 @@
     Note that if the physicalDpiX() doesn't equal the logicalDpiX(),
     the corresponding QPaintEngine must handle the resolution mapping.
 
-    \sa  physicalDpiY(),  logicalDpiX()
+    \sa physicalDpiY(), logicalDpiX()
 */
 
 /*!
@@ -270,5 +270,5 @@
     Note that if the physicalDpiY() doesn't equal the logicalDpiY(),
     the corresponding QPaintEngine must handle the resolution mapping.
 
-    \sa  physicalDpiX(),  logicalDpiY()
+    \sa physicalDpiX(), logicalDpiY()
 */

@@ -185,7 +185,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionItem &sectio
     The following values are obsolete:
     \value Custom Use Fixed instead.
 
-    \sa setResizeMode() setSectionResizeMode() stretchLastSection minimumSectionSize
+    \sa setResizeMode(), setSectionResizeMode(), stretchLastSection, minimumSectionSize
 */
 
 /*!
@@ -1019,7 +1019,7 @@ void QHeaderView::setSectionHidden(int logicalIndex, bool hide)
 /*!
     Returns the number of sections in the header.
 
-    \sa  sectionCountChanged(), length()
+    \sa sectionCountChanged(), length()
 */
 
 int QHeaderView::count() const
@@ -1334,7 +1334,7 @@ bool QHeaderView::isSortIndicatorShown() const
     and the model will return to its natural, unsorted order. Note that not
     all models support this and may even crash in this case.
 
-    \sa sortIndicatorSection() sortIndicatorOrder()
+    \sa sortIndicatorSection(), sortIndicatorOrder()
 */
 
 void QHeaderView::setSortIndicator(int logicalIndex, Qt::SortOrder order)
@@ -1370,7 +1370,7 @@ void QHeaderView::setSortIndicator(int logicalIndex, Qt::SortOrder order)
     Returns the logical index of the section that has a sort indicator.
     By default this is section 0.
 
-    \sa setSortIndicator() sortIndicatorOrder() setSortIndicatorShown()
+    \sa setSortIndicator(), sortIndicatorOrder(), setSortIndicatorShown()
 */
 
 int QHeaderView::sortIndicatorSection() const
@@ -1383,7 +1383,7 @@ int QHeaderView::sortIndicatorSection() const
     Returns the order for the sort indicator. If no section has a sort
     indicator the return value of this function is undefined.
 
-    \sa setSortIndicator() sortIndicatorSection()
+    \sa setSortIndicator(), sortIndicatorSection()
 */
 
 Qt::SortOrder QHeaderView::sortIndicatorOrder() const
@@ -1458,7 +1458,7 @@ void QHeaderView::setCascadingSectionResizes(bool enable)
     This property only affects sections that have \l Interactive or \l Fixed
     as their resize mode.
 
-    \sa setSectionResizeMode() minimumSectionSize
+    \sa setSectionResizeMode(), minimumSectionSize
 */
 int QHeaderView::defaultSectionSize() const
 {
@@ -1484,7 +1484,7 @@ void QHeaderView::setDefaultSectionSize(int size)
 
     This property is honored by all \l{ResizeMode}{resize modes}.
 
-    \sa setSectionResizeMode() defaultSectionSize
+    \sa setSectionResizeMode(), defaultSectionSize
 */
 int QHeaderView::minimumSectionSize() const
 {

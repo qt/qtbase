@@ -978,7 +978,7 @@ int QFontMetrics::lineWidth() const
     Example:
     \snippet code/src_gui_text_qfontmetrics.cpp 1
 
-    \sa QFont QFontInfo QFontDatabase
+    \sa QFont, QFontInfo, QFontDatabase
 */
 
 /*!

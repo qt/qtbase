@@ -1118,7 +1118,7 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 
     Sets the item's text to the \a text specified.
 
-    \sa text() setFont() setForeground()
+    \sa text(), setFont(), setForeground()
 */
 
 /*!
@@ -1152,7 +1152,7 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
     \a statusTip. QTableWidget mouse tracking needs to be enabled for this
     feature to work.
 
-    \sa statusTip() setToolTip() setWhatsThis()
+    \sa statusTip(), setToolTip(), setWhatsThis()
 */
 
 /*!
@@ -1168,7 +1168,7 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 
     Sets the item's tooltip to the string specified by \a toolTip.
 
-    \sa toolTip() setStatusTip() setWhatsThis()
+    \sa toolTip(), setStatusTip(), setWhatsThis()
 */
 
 /*!
@@ -1184,7 +1184,7 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 
     Sets the item's "What's This?" help to the string specified by \a whatsThis.
 
-    \sa whatsThis() setStatusTip() setToolTip()
+    \sa whatsThis(), setStatusTip(), setToolTip()
 */
 
 /*!
@@ -1200,7 +1200,7 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 
     Sets the font used to display the item's text to the given \a font.
 
-    \sa font() setText() setForeground()
+    \sa font(), setText(), setForeground()
 */
 
 /*!
@@ -1724,7 +1724,7 @@ void QTableWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
 
     This signal is emitted whenever the selection changes.
 
-    \sa selectedItems() QTableWidgetItem::isSelected()
+    \sa selectedItems(), QTableWidgetItem::isSelected()
 */
 
 
@@ -1950,7 +1950,7 @@ QTableWidgetItem *QTableWidget::item(int row, int column) const
     you to use the same \a row argument for all items in the same row
     (i.e. setItem() will not move the row).
 
-    \sa item() takeItem()
+    \sa item(), takeItem()
 */
 void QTableWidget::setItem(int row, int column, QTableWidgetItem *item)
 {

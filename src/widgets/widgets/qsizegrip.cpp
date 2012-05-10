@@ -207,7 +207,7 @@ Qt::Corner QSizeGripPrivate::corner() const
     {QWidget::paintEvent()}{paintEvent()} function to render the
     size grip widget.
 
-    \sa QStatusBar QWidget::windowState()
+    \sa QStatusBar, QWidget::windowState()
 */
 
 

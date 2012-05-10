@@ -579,7 +579,7 @@ void QDialog::done(int r)
 /*!
   Hides the modal dialog and sets the result code to \c Accepted.
 
-  \sa reject() done()
+  \sa reject(), done()
 */
 
 void QDialog::accept()
@@ -590,7 +590,7 @@ void QDialog::accept()
 /*!
   Hides the modal dialog and sets the result code to \c Rejected.
 
-  \sa accept() done()
+  \sa accept(), done()
 */
 
 void QDialog::reject()

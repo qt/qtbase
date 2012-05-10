@@ -345,7 +345,7 @@ void QClipboard::setText(const QString &text, Mode mode)
     QClipboard::Selection, the image is retrieved from the global
     mouse selection. 
 
-    \sa setImage() pixmap() mimeData(), QImage::isNull()
+    \sa setImage(), pixmap(), mimeData(), QImage::isNull()
 */
 QImage QClipboard::image(Mode mode) const
 {
@@ -368,7 +368,7 @@ QImage QClipboard::image(Mode mode) const
 
     \snippet code/src_gui_kernel_qclipboard.cpp 1
 
-    \sa image(), setPixmap() setMimeData()
+    \sa image(), setPixmap(), setMimeData()
 */
 void QClipboard::setImage(const QImage &image, Mode mode)
 {
@@ -390,7 +390,7 @@ void QClipboard::setImage(const QImage &image, Mode mode)
     QClipboard::Selection, the pixmap is retrieved from the global
     mouse selection.
 
-    \sa setPixmap() image() mimeData() QPixmap::convertFromImage()
+    \sa setPixmap(), image(), mimeData(), QPixmap::convertFromImage()
 */
 QPixmap QClipboard::pixmap(Mode mode) const
 {
@@ -409,7 +409,7 @@ QPixmap QClipboard::pixmap(Mode mode) const
     QClipboard::Selection, the pixmap is stored in the global
     mouse selection.
 
-    \sa pixmap() setImage() setMimeData()
+    \sa pixmap(), setImage(), setMimeData()
 */
 void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
 {

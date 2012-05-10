@@ -542,7 +542,7 @@ QDebug operator<<(QDebug d, const QPointF &p)
 
     Sets the y coordinate of this point to the given \a y coordinate.
 
-    \sa  y(), setX()
+    \sa y(), setX()
 */
 
 /*!

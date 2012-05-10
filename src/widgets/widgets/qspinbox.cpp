@@ -356,7 +356,7 @@ void QSpinBox::setSingleStep(int value)
 
     The default minimum value is 0.
 
-    \sa setRange()  specialValueText
+    \sa setRange(), specialValueText
 */
 
 int QSpinBox::minimum() const
@@ -383,7 +383,7 @@ void QSpinBox::setMinimum(int minimum)
 
     The default maximum value is 99.
 
-    \sa setRange() specialValueText
+    \sa setRange(), specialValueText
 
 */
 
@@ -409,7 +409,7 @@ void QSpinBox::setMaximum(int maximum)
     is equivalent to:
     \snippet code/src_gui_widgets_qspinbox.cpp 3
 
-    \sa minimum maximum
+    \sa minimum, maximum
 */
 
 void QSpinBox::setRange(int minimum, int maximum)
@@ -728,7 +728,7 @@ void QDoubleSpinBox::setSingleStep(double value)
     Note: The minimum value will be rounded to match the decimals
     property.
 
-    \sa decimals, setRange() specialValueText
+    \sa decimals, setRange(), specialValueText
 */
 
 double QDoubleSpinBox::minimum() const
@@ -788,7 +788,7 @@ void QDoubleSpinBox::setMaximum(double maximum)
     is equivalent to:
     \snippet code/src_gui_widgets_qspinbox.cpp 7
 
-    \sa minimum maximum
+    \sa minimum, maximum
 */
 
 void QDoubleSpinBox::setRange(double minimum, double maximum)

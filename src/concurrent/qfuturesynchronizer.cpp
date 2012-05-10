@@ -124,7 +124,7 @@
 
     Removes all managed futures from this QFutureSynchronizer.
     
-    \sa addFuture(), setFuture()   
+    \sa addFuture(), setFuture()
 */
 
 /*!

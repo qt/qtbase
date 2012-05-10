@@ -139,7 +139,7 @@ int QTextList::count() const
 /*!
     Returns the \a{i}-th text block in the list.
 
-    \sa count() itemText()
+    \sa count(), itemText()
 */
 QTextBlock QTextList::item(int i) const
 {

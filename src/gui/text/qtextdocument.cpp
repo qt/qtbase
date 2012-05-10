@@ -272,7 +272,7 @@ QTextCodec *Qt::codecForHtml(const QByteArray &ba)
         \li Text block group format changes.
     \endlist
 
-    \sa QTextCursor, QTextEdit, \link richtext.html Rich Text Processing\endlink , {Text Object Example}
+    \sa QTextCursor, QTextEdit, {Rich Text Processing}, {Text Object Example}
 */
 
 /*!
@@ -432,7 +432,7 @@ void QTextDocument::redo(QTextCursor *cursor)
     signals are emitted, QTextDocument::undoAvailable() or
     QTextDocument::redoAvailable().
 
-    \sa QTextDocument::undoAvailable() QTextDocument::redoAvailable()
+    \sa QTextDocument::undoAvailable(), QTextDocument::redoAvailable()
 */
 void QTextDocument::clearUndoRedoStacks(Stacks stacksToClear)
 {

@@ -97,7 +97,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     Returns the color that has been set for the given color \a role in
     the current ColorGroup.
 
-    \sa brush() ColorRole
+    \sa brush(), ColorRole
  */
 
 /*!
@@ -108,7 +108,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     Returns the brush that has been set for the given color \a role in
     the current ColorGroup.
 
-    \sa color() setBrush() ColorRole
+    \sa color(), setBrush(), ColorRole
 */
 
 /*!
@@ -119,7 +119,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     Sets the color used for the given color \a role, in all color
     groups, to the specified solid \a color.
 
-    \sa brush() setColor() ColorRole
+    \sa brush(), setColor(), ColorRole
 */
 
 /*!
@@ -128,7 +128,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     Sets the brush for the given color \a role to the specified \a
     brush for all groups in the palette.
 
-    \sa brush() setColor() ColorRole
+    \sa brush(), setColor(), ColorRole
 */
 
 /*!
@@ -144,7 +144,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     Returns the window text (general foreground) brush of the
     current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -152,7 +152,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the button brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -160,7 +160,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the light brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -168,7 +168,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the midlight brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -176,7 +176,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the dark brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -184,7 +184,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the mid brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -192,7 +192,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the text foreground brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -200,7 +200,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the bright text foreground brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -208,7 +208,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the button text foreground brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -216,7 +216,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the base brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -224,7 +224,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the alternate base brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -237,7 +237,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     \note Tool tips use the Inactive color group of QPalette, because tool
     tips are not active windows.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -250,7 +250,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     \note Tool tips use the Inactive color group of QPalette, because tool
     tips are not active windows.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -266,7 +266,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     Returns the window (general background) brush of the current
     color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -274,7 +274,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the shadow brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -282,7 +282,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the highlight brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -290,7 +290,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the highlighted text brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -298,7 +298,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the unvisited link text brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -306,7 +306,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the visited link text brush of the current color group.
 
-    \sa ColorRole brush()
+    \sa ColorRole, brush()
 */
 
 /*!
@@ -682,7 +682,7 @@ QPalette::operator QVariant() const
     Returns the color in the specified color \a group, used for the
     given color \a role.
 
-    \sa brush() setColor() ColorRole
+    \sa brush(), setColor(), ColorRole
 */
 
 /*!
@@ -691,7 +691,7 @@ QPalette::operator QVariant() const
     Returns the brush in the specified color \a group, used for the
     given color \a role.
 
-    \sa color() setBrush() ColorRole
+    \sa color(), setBrush(), ColorRole
 */
 const QBrush &QPalette::brush(ColorGroup gr, ColorRole cr) const
 {
@@ -713,7 +713,7 @@ const QBrush &QPalette::brush(ColorGroup gr, ColorRole cr) const
     Sets the color in the specified color \a group, used for the given
     color \a role, to the specified solid \a color.
 
-    \sa setBrush() color() ColorRole
+    \sa setBrush(), color(), ColorRole
 */
 
 /*!
@@ -723,7 +723,7 @@ const QBrush &QPalette::brush(ColorGroup gr, ColorRole cr) const
     Sets the brush in the specified color \a group, used for the given
     color \a role, to \a brush.
 
-    \sa brush() setColor() ColorRole
+    \sa brush(), setColor(), ColorRole
 */
 void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
 {
@@ -1001,7 +1001,7 @@ QDataStream &operator>>(QDataStream &s, QPalette &p)
     was subsequently modified; otherwise returns false. This is much
     stricter than equality.
 
-    \sa operator=() operator==()
+    \sa operator=(), operator==()
 */
 
 bool QPalette::isCopyOf(const QPalette &p) const

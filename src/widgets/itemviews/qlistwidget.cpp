@@ -853,7 +853,7 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 
     Returns the list item's tooltip.
 
-    \sa setToolTip() statusTip() whatsThis()
+    \sa setToolTip(), statusTip(), whatsThis()
 */
 
 /*!
@@ -861,7 +861,7 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 
     Returns the list item's "What's This?" help text.
 
-    \sa setWhatsThis() statusTip() toolTip()
+    \sa setWhatsThis(), statusTip(), toolTip()
 */
 
 /*!
@@ -891,7 +891,7 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 
     Returns the brush used to display the list item's background.
 
-    \sa setBackground() foreground()
+    \sa setBackground(), foreground()
 */
 
 /*!
@@ -909,7 +909,7 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 
     Returns the brush used to display the list item's foreground (e.g. text).
 
-    \sa setForeground() background()
+    \sa setForeground(), background()
 */
 
 /*!
@@ -1019,7 +1019,7 @@ void QListWidgetItem::setFlags(Qt::ItemFlags aflags) {
 
     Sets the background brush of the list item to the given \a brush.
 
-    \sa background() setForeground()
+    \sa background(), setForeground()
 */
 
 /*!
@@ -1035,7 +1035,7 @@ void QListWidgetItem::setFlags(Qt::ItemFlags aflags) {
 
     Sets the foreground brush of the list item to the given \a brush.
 
-    \sa foreground() setBackground()
+    \sa foreground(), setBackground()
 */
 
 /*!

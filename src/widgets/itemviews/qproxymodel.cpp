@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     representation, proxy models must create their own model indexes instead of
     supplying model indexes from their underlying models.
 
-    \sa \link model-view-programming.html Model/View Programming\endlink QAbstractItemModel
+    \sa {Model/View Programming}, QAbstractItemModel
 
 */
 
@@ -204,7 +204,7 @@ QVariant QProxyModel::data(const QModelIndex &index, int role) const
     The base class implementation returns false. This function and
     data() must be reimplemented for editable models.
 
-    \sa data() itemData() QAbstractItemModel::setData()
+    \sa data(), itemData(), QAbstractItemModel::setData()
 */
 bool QProxyModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
@@ -295,7 +295,8 @@ Qt::DropActions QProxyModel::supportedDropActions() const
     Returns true if the rows were successfully inserted; otherwise
     returns false.
 
-    \sa QAbstractItemModel::insertRows()*/
+    \sa QAbstractItemModel::insertRows()
+*/
 bool QProxyModel::insertRows(int row, int count, const QModelIndex &parent)
 {
     Q_D(const QProxyModel);

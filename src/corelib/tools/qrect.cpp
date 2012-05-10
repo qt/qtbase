@@ -322,7 +322,7 @@ QRect QRect::normalized() const
     Returns the x-coordinate of the rectangle's left edge. Equivalent
     to x().
 
-    \sa setLeft(),  topLeft(), bottomLeft()
+    \sa setLeft(), topLeft(), bottomLeft()
 */
 
 /*!
@@ -752,7 +752,7 @@ QRect QRect::normalized() const
 
     Returns the width of the rectangle.
 
-    \sa setWidth(), height(),  size()
+    \sa setWidth(), height(), size()
 */
 
 /*!
@@ -1093,7 +1093,7 @@ QRect QRect::operator&(const QRect &r) const
     The intersection rectangle can be retrieved using the intersected()
     function.
 
-    \sa  contains()
+    \sa contains()
 */
 
 bool QRect::intersects(const QRect &r) const
@@ -1423,7 +1423,7 @@ QDebug operator<<(QDebug dbg, const QRect &r) {
     Use the normalized() function to retrieve a rectangle where the
     corners are swapped.
 
-    \sa isNull(),  isValid(),  normalized()
+    \sa isNull(), isValid(), normalized()
 */
 
 /*!
@@ -1480,7 +1480,7 @@ QRectF QRectF::normalized() const
     Returns the y-coordinate of the rectangle's top edge. Equivalent
     to top().
 
-    \sa setY(), x(),  topLeft()
+    \sa setY(), x(), topLeft()
 */
 
 
@@ -1727,7 +1727,7 @@ QRectF QRectF::normalized() const
     relative to the current position. Positive values move the rectangle to the
     right and downwards.
 
-    \sa moveTopLeft(),  moveTo(),  translated()
+    \sa moveTopLeft(), moveTo(), translated()
 */
 
 
@@ -2019,7 +2019,7 @@ bool QRectF::contains(const QRectF &r) const
 
     Returns the position of the rectangle's  bottom-left corner.
 
-    \sa setBottomLeft(),  bottom(), left()
+    \sa setBottomLeft(), bottom(), left()
 */
 
 /*!

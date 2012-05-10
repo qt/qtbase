@@ -177,8 +177,8 @@ QT_BEGIN_NAMESPACE
     \snippet matrix/matrix.cpp 2
     \endtable
 
-    \sa QPainter, QTransform, {Coordinate System}, 
-    {painting/affine}{Affine Transformations Example}, {Transformations Example}
+    \sa QPainter, QTransform, {Coordinate System},
+        {painting/affine}{Affine Transformations Example}, {Transformations Example}
 */
 
 
@@ -1157,7 +1157,7 @@ QDebug operator<<(QDebug dbg, const QMatrix &m)
 
     \brief The qFuzzyCompare function is for comparing two matrices
     using a fuzziness factor.
-    
+
     Returns true if \a m1 and \a m2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
 */

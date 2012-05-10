@@ -992,7 +992,7 @@ Qt::ItemFlags QStandardItem::flags() const
 
     Sets the font used to display the item's text to the given \a font.
 
-    \sa font() setText() setForeground()
+    \sa font(), setText(), setForeground()
 */
 
 /*!
@@ -1000,7 +1000,7 @@ Qt::ItemFlags QStandardItem::flags() const
 
     Returns the brush used to render the item's background.
 
-    \sa  foreground() setBackground()
+    \sa foreground(), setBackground()
 */
 
 /*!
@@ -1008,7 +1008,7 @@ Qt::ItemFlags QStandardItem::flags() const
 
     Sets the item's background brush to the specified \a brush.
 
-    \sa background() setForeground()
+    \sa background(), setForeground()
 */
 
 /*!
@@ -1016,7 +1016,7 @@ Qt::ItemFlags QStandardItem::flags() const
 
     Returns the brush used to render the item's foreground (e.g. text).
 
-    \sa setForeground() background()
+    \sa setForeground(), background()
 */
 
 /*!
@@ -1025,7 +1025,7 @@ Qt::ItemFlags QStandardItem::flags() const
     Sets the brush used to display the item's foreground (e.g. text) to the
     given \a brush.
 
-    \sa foreground() setBackground() setFont()
+    \sa foreground(), setBackground(), setFont()
 */
 
 /*!

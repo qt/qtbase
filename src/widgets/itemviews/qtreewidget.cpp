@@ -1067,7 +1067,7 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
 
     Sets the text to be displayed in the given \a column to the given \a text.
 
-    \sa text() setFont() setForeground()
+    \sa text(), setFont(), setForeground()
 */
 
 /*!
@@ -1100,7 +1100,7 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
     Sets the status tip for the given \a column to the given \a statusTip.
     QTreeWidget mouse tracking needs to be enabled for this feature to work.
 
-    \sa statusTip() setToolTip() setWhatsThis()
+    \sa statusTip(), setToolTip(), setWhatsThis()
 */
 
 /*!
@@ -1116,7 +1116,7 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
 
     Sets the tooltip for the given \a column to \a toolTip.
 
-    \sa toolTip() setStatusTip() setWhatsThis()
+    \sa toolTip(), setStatusTip(), setWhatsThis()
 */
 
 /*!
@@ -1132,7 +1132,7 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
 
     Sets the "What's This?" help for the given \a column to \a whatsThis.
 
-    \sa whatsThis() setStatusTip() setToolTip()
+    \sa whatsThis(), setStatusTip(), setToolTip()
 */
 
 /*!
@@ -1149,7 +1149,7 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
     Sets the font used to display the text in the given \a column to the given
     \a font.
 
-    \sa font() setText() setForeground()
+    \sa font(), setText(), setForeground()
 */
 
 /*!
@@ -1881,7 +1881,7 @@ QTreeWidgetItem &QTreeWidgetItem::operator=(const QTreeWidgetItem &other)
 /*!
   Appends the \a child item to the list of children.
 
-  \sa insertChild() takeChild()
+  \sa insertChild(), takeChild()
 */
 void QTreeWidgetItem::addChild(QTreeWidgetItem *child)
 {
@@ -1984,7 +1984,7 @@ QTreeWidgetItem *QTreeWidgetItem::takeChild(int index)
 
   Appends the given list of \a children to the item.
 
-  \sa insertChildren() takeChildren()
+  \sa insertChildren(), takeChildren()
 */
 void QTreeWidgetItem::addChildren(const QList<QTreeWidgetItem*> &children)
 {

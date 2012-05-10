@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
     By default it will also carry an arrow icon, indicating that pressing the
     control will open another window or page.
 
-    \sa QPushButton QRadioButton
+    \sa QPushButton, QRadioButton
 */
 
 /*!

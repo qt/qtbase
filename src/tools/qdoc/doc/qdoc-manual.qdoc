@@ -6378,7 +6378,7 @@
         should be set at application startup, before any non-GUI
         threads are created.
 
-        \sa system() c()
+        \sa system(), c()
     * /
     void QLocale::setDefault(const QLocale &locale)
     {

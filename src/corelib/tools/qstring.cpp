@@ -965,7 +965,7 @@ const QString::Null QString::null = { };
     This constructor is only available if Qt is configured with STL
     compatibility enabled.
 
-    \sa  fromLatin1(), fromLocal8Bit(), fromUtf8()
+    \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
 */
 
 /*! \fn QString QString::fromStdWString(const std::wstring &str)

@@ -2046,7 +2046,7 @@ bool QAbstractSocket::waitForConnected(int msecs)
     there is new data available for reading; otherwise it returns false
     (if an error occurred or the operation timed out).
 
-    \sa waitForBytesWritten() 
+    \sa waitForBytesWritten()
 */
 bool QAbstractSocket::waitForReadyRead(int msecs)
 {

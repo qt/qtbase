@@ -76,7 +76,7 @@ QT_BEGIN_NAMESPACE
     contents. The firstCursorPosition() and lastCursorPosition() functions
     are used to obtain the extent of the cell in the document.
 
-    \sa QTextTable QTextTableFormat
+    \sa QTextTable, QTextTableFormat
 */
 
 /*!
@@ -583,7 +583,7 @@ QTextTable::~QTextTable()
 
     Returns the table cell at the given \a row and \a column in the table.
 
-    \sa columns() rows()
+    \sa columns(), rows()
 */
 QTextTableCell QTextTable::cellAt(int row, int col) const
 {
@@ -639,7 +639,7 @@ QTextTableCell QTextTable::cellAt(const QTextCursor &c) const
 
     Resizes the table to contain the required number of \a rows and \a columns.
 
-    \sa insertRows() insertColumns() removeRows() removeColumns()
+    \sa insertRows(), insertColumns(), removeRows(), removeColumns()
 */
 void QTextTable::resize(int rows, int cols)
 {
@@ -673,7 +673,7 @@ void QTextTable::resize(int rows, int cols)
 
     Inserts a number of \a rows before the row with the specified \a index.
 
-    \sa resize() insertColumns() removeRows() removeColumns() appendRows() appendColumns()
+    \sa resize(), insertColumns(), removeRows(), removeColumns(), appendRows(), appendColumns()
 */
 void QTextTable::insertRows(int pos, int num)
 {
@@ -735,7 +735,7 @@ void QTextTable::insertRows(int pos, int num)
 
     Inserts a number of \a columns before the column with the specified \a index.
 
-    \sa insertRows() resize() removeRows() removeColumns() appendRows() appendColumns()
+    \sa insertRows(), resize(), removeRows(), removeColumns(), appendRows(), appendColumns()
 */
 void QTextTable::insertColumns(int pos, int num)
 {
@@ -816,7 +816,7 @@ void QTextTable::insertColumns(int pos, int num)
     \since 4.5
     Appends \a count rows at the bottom of the table.
 
-    \sa insertColumns() insertRows() resize() removeRows() removeColumns() appendColumns()
+    \sa insertColumns(), insertRows(), resize(), removeRows(), removeColumns(), appendColumns()
 */
 void QTextTable::appendRows(int count)
 {
@@ -827,7 +827,7 @@ void QTextTable::appendRows(int count)
     \since 4.5
     Appends \a count columns at the right side of the table.
 
-    \sa insertColumns() insertRows() resize() removeRows() removeColumns() appendRows()
+    \sa insertColumns(), insertRows(), resize(), removeRows(), removeColumns(), appendRows()
 */
 void QTextTable::appendColumns(int count)
 {
@@ -839,7 +839,7 @@ void QTextTable::appendColumns(int count)
 
     Removes a number of \a rows starting with the row at the specified \a index.
 
-    \sa insertRows(), insertColumns(), resize(), removeColumns() appendRows() appendColumns()
+    \sa insertRows(), insertColumns(), resize(), removeColumns(), appendRows(), appendColumns()
 */
 void QTextTable::removeRows(int pos, int num)
 {
@@ -901,7 +901,7 @@ void QTextTable::removeRows(int pos, int num)
     Removes a number of \a columns starting with the column at the specified
     \a index.
 
-    \sa insertRows() insertColumns() removeRows() resize() appendRows() appendColumns()
+    \sa insertRows(), insertColumns(), removeRows(), resize(), appendRows(), appendColumns()
 */
 void QTextTable::removeColumns(int pos, int num)
 {

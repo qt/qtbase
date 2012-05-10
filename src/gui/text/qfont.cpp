@@ -607,7 +607,7 @@ QFontEngineData::~QFontEngineData()
     Returns the family name that corresponds to the current style
     hint.
 
-    \sa StyleHint styleHint() setStyleHint()
+    \sa StyleHint, styleHint(), setStyleHint()
 */
 
 /*!
@@ -629,7 +629,7 @@ QFontEngineData::~QFontEngineData()
     happens. Please \link bughowto.html report it as a bug\endlink if
     it does, preferably with a list of the fonts you have installed.
 
-    \sa lastResortFamily() rawName()
+    \sa lastResortFamily(), rawName()
 */
 
 /*!
@@ -702,7 +702,7 @@ QFont::QFont()
     algorithm.
 
     \sa Weight, setFamily(), setPointSize(), setWeight(), setItalic(),
-    setStyleHint() QGuiApplication::font()
+    setStyleHint(), QGuiApplication::font()
 */
 QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
     : d(new QFontPrivate()), resolve_mask(QFont::FamilyResolved)
@@ -758,7 +758,7 @@ QFont &QFont::operator=(const QFont &font)
     Returns the requested font family name, i.e. the name set in the
     constructor or the last setFont() call.
 
-    \sa setFamily() substitutes() substitute()
+    \sa setFamily(), substitutes(), substitute()
 */
 QString QFont::family() const
 {
@@ -796,7 +796,7 @@ void QFont::setFamily(const QString &family)
     Mac OS X and X11 so far. On Windows irregular styles will be added
     as separate font families so there is no need for this.
 
-    \sa setFamily() setStyle()
+    \sa setFamily(), setStyle()
 */
 QString QFont::styleName() const
 {
@@ -823,7 +823,7 @@ void QFont::setStyleName(const QString &styleName)
     Returns the point size of the font. Returns -1 if the font size
     was specified in pixels.
 
-    \sa setPointSize() pointSizeF()
+    \sa setPointSize(), pointSizeF()
 */
 int QFont::pointSize() const
 {
@@ -933,7 +933,7 @@ QFont::HintingPreference QFont::hintingPreference() const
     Sets the point size to \a pointSize. The point size must be
     greater than zero.
 
-    \sa pointSize() setPointSizeF()
+    \sa pointSize(), setPointSizeF()
 */
 void QFont::setPointSize(int pointSize)
 {
@@ -955,7 +955,7 @@ void QFont::setPointSize(int pointSize)
     greater than zero. The requested precision may not be achieved on
     all platforms.
 
-    \sa pointSizeF() setPointSize() setPixelSize()
+    \sa pointSizeF(), setPointSize(), setPixelSize()
 */
 void QFont::setPointSizeF(qreal pointSize)
 {
@@ -976,7 +976,7 @@ void QFont::setPointSizeF(qreal pointSize)
     Returns the point size of the font. Returns -1 if the font size was
     specified in pixels.
 
-    \sa pointSize() setPointSizeF() pixelSize() QFontInfo::pointSize() QFontInfo::pixelSize()
+    \sa pointSize(), setPointSizeF(), pixelSize(), QFontInfo::pointSize(), QFontInfo::pixelSize()
 */
 qreal QFont::pointSizeF() const
 {
@@ -1012,7 +1012,7 @@ void QFont::setPixelSize(int pixelSize)
     setPixelSize(). Returns -1 if the size was set with setPointSize()
     or setPointSizeF().
 
-    \sa setPixelSize() pointSize() QFontInfo::pointSize() QFontInfo::pixelSize()
+    \sa setPixelSize(), pointSize(), QFontInfo::pointSize(), QFontInfo::pixelSize()
 */
 int QFont::pixelSize() const
 {
@@ -1024,7 +1024,7 @@ int QFont::pixelSize() const
 
     Returns true if the style() of the font is not QFont::StyleNormal
 
-    \sa setItalic() style()
+    \sa setItalic(), style()
 */
 
 /*!
@@ -1033,7 +1033,7 @@ int QFont::pixelSize() const
   Sets the style() of the font to QFont::StyleItalic if \a enable is true;
   otherwise the style is set to QFont::StyleNormal.
 
-  \sa italic() QFontInfo
+  \sa italic(), QFontInfo
 */
 
 /*!
@@ -1254,7 +1254,7 @@ void QFont::setKerning(bool enable)
     The style strategy affects the \l{QFont}{font matching} algorithm.
     See \l QFont::StyleStrategy for the list of available strategies.
 
-    \sa setStyleHint() QFont::StyleHint
+    \sa setStyleHint(), QFont::StyleHint
 */
 QFont::StyleStrategy QFont::styleStrategy() const
 {
@@ -1267,7 +1267,7 @@ QFont::StyleStrategy QFont::styleStrategy() const
     The style hint affects the \l{QFont}{font matching} algorithm.
     See \l QFont::StyleHint for the list of available hints.
 
-    \sa setStyleHint(), QFont::StyleStrategy QFontInfo::styleHint()
+    \sa setStyleHint(), QFont::StyleStrategy, QFontInfo::styleHint()
 */
 QFont::StyleHint QFont::styleHint() const
 {
@@ -1407,7 +1407,7 @@ void QFont::setStyleStrategy(StyleStrategy s)
     \value ExtraExpanded 150
     \value UltraExpanded 200
 
-    \sa setStretch() stretch()
+    \sa setStretch(), stretch()
 */
 
 /*!
@@ -1436,7 +1436,7 @@ int QFont::stretch() const
     X11, the stretch factor is matched against a predefined set of
     values for the SETWIDTH_NAME field of the XLFD.
 
-    \sa stretch() QFont::Stretch
+    \sa stretch(), QFont::Stretch
 */
 void QFont::setStretch(int factor)
 {
@@ -1647,7 +1647,7 @@ bool QFont::exactMatch() const
     equal. If rawMode() is enabled for both fonts, only the family
     fields are compared.
 
-    \sa operator!=() isCopyOf()
+    \sa operator!=(), isCopyOf()
 */
 bool QFont::operator==(const QFont &f) const
 {
@@ -1675,7 +1675,7 @@ bool QFont::operator==(const QFont &f) const
     This function is useful in some circumstances, for example if you
     want to use QFont objects as keys in a QMap.
 
-    \sa operator==() operator!=() isCopyOf()
+    \sa operator==(), operator!=(), isCopyOf()
 */
 bool QFont::operator<(const QFont &f) const
 {
@@ -1731,7 +1731,7 @@ QFont::operator QVariant() const
     one of them was created as a copy of the other and neither has
     been modified since. This is much stricter than equality.
 
-    \sa operator=() operator==()
+    \sa operator=(), operator==()
 */
 bool QFont::isCopyOf(const QFont & f) const
 {
@@ -1742,7 +1742,7 @@ bool QFont::isCopyOf(const QFont & f) const
     Returns true if raw mode is used for font name matching; otherwise
     returns false.
 
-    \sa setRawMode() rawName()
+    \sa setRawMode(), rawName()
 */
 bool QFont::rawMode() const
 {
@@ -1797,7 +1797,7 @@ Q_GLOBAL_STATIC(QFontSubst, globalFontSubst)
 
     To obtain a list of substitutions use substitutes().
 
-    \sa setFamily() insertSubstitutions() insertSubstitution() removeSubstitutions()
+    \sa setFamily(), insertSubstitutions(), insertSubstitution(), removeSubstitutions()
 */
 QString QFont::substitute(const QString &familyName)
 {
@@ -1818,7 +1818,7 @@ QString QFont::substitute(const QString &familyName)
     If there is no substitution for \a familyName, an empty list is
     returned.
 
-    \sa substitute() insertSubstitutions() insertSubstitution() removeSubstitutions()
+    \sa substitute(), insertSubstitutions(), insertSubstitution(), removeSubstitutions()
  */
 QStringList QFont::substitutes(const QString &familyName)
 {
@@ -1832,7 +1832,7 @@ QStringList QFont::substitutes(const QString &familyName)
     Inserts \a substituteName into the substitution
     table for the family \a familyName.
 
-    \sa insertSubstitutions() removeSubstitutions() substitutions() substitute() substitutes()
+    \sa insertSubstitutions(), removeSubstitutions(), substitutions(), substitute(), substitutes()
 */
 void QFont::insertSubstitution(const QString &familyName,
                                const QString &substituteName)
@@ -2266,7 +2266,7 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     info object is \e not updated.
     \endlist
 
-    \sa QFont QFontMetrics QFontDatabase
+    \sa QFont, QFontMetrics, QFontDatabase
 */
 
 /*!
@@ -2343,7 +2343,7 @@ QString QFontInfo::styleName() const
 /*!
     Returns the point size of the matched window system font.
 
-    \sa pointSizeF() QFont::pointSize()
+    \sa pointSizeF(), QFont::pointSize()
 */
 int QFontInfo::pointSize() const
 {
@@ -2492,7 +2492,7 @@ bool QFontInfo::fixedPitch() const
 
     Currently only returns the style hint set in QFont.
 
-    \sa QFont::styleHint() QFont::StyleHint
+    \sa QFont::styleHint(), QFont::StyleHint
 */
 QFont::StyleHint QFontInfo::styleHint() const
 {

@@ -1890,7 +1890,7 @@ QGraphicsWidget *QGraphicsWidget::focusWidget() const
     key sequence, so are much easier to use than this low-level
     function.
 
-    \sa releaseShortcut() setShortcutEnabled() QWidget::grabShortcut()
+    \sa releaseShortcut(), setShortcutEnabled(), QWidget::grabShortcut()
 */
 int QGraphicsWidget::grabShortcut(const QKeySequence &sequence, Qt::ShortcutContext context)
 {
@@ -1916,7 +1916,7 @@ int QGraphicsWidget::grabShortcut(const QKeySequence &sequence, Qt::ShortcutCont
     this low-level function. Note also that this is an expensive
     operation.
 
-    \sa grabShortcut() setShortcutEnabled() , QWidget::releaseShortcut()
+    \sa grabShortcut(), setShortcutEnabled(), QWidget::releaseShortcut()
 */
 void QGraphicsWidget::releaseShortcut(int id)
 {
@@ -1937,7 +1937,7 @@ void QGraphicsWidget::releaseShortcut(int id)
     to use QAction or QShortcut to handle shortcuts, since they are
     easier to use than this low-level function.
 
-    \sa grabShortcut() releaseShortcut(), QWidget::setShortcutEnabled()
+    \sa grabShortcut(), releaseShortcut(), QWidget::setShortcutEnabled()
 */
 void QGraphicsWidget::setShortcutEnabled(int id, bool enabled)
 {
@@ -1952,7 +1952,7 @@ void QGraphicsWidget::setShortcutEnabled(int id, bool enabled)
     If \a enabled is true, auto repeat of the shortcut with the
     given \a id is enabled; otherwise it is disabled.
 
-    \sa grabShortcut() releaseShortcut() QWidget::setShortcutAutoRepeat()
+    \sa grabShortcut(), releaseShortcut(), QWidget::setShortcutAutoRepeat()
 */
 void QGraphicsWidget::setShortcutAutoRepeat(int id, bool enabled)
 {

@@ -338,7 +338,7 @@ int QProgressBar::value() const
     If the current value falls outside the new range, the progress bar is reset
     with reset().
 
-    \sa minimum maximum
+    \sa minimum, maximum
 */
 void QProgressBar::setRange(int minimum, int maximum)
 {

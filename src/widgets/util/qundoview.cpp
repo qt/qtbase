@@ -350,7 +350,7 @@ QUndoView::~QUndoView()
     Returns the stack currently displayed by this view. If the view is looking at a
     QUndoGroup, this the group's active stack.
 
-    \sa setStack() setGroup()
+    \sa setStack(), setGroup()
 */
 
 QUndoStack *QUndoView::stack() const
@@ -365,7 +365,7 @@ QUndoStack *QUndoView::stack() const
 
     If the view was previously looking at a QUndoGroup, the group is set to 0.
 
-    \sa stack() setGroup()
+    \sa stack(), setGroup()
 */
 
 void QUndoView::setStack(QUndoStack *stack)
@@ -385,7 +385,7 @@ void QUndoView::setStack(QUndoStack *stack)
 
     The view will update itself autmiatically whenever the active stack of the group changes.
 
-    \sa group() setStack()
+    \sa group(), setStack()
 */
 
 void QUndoView::setGroup(QUndoGroup *group)
@@ -416,7 +416,7 @@ void QUndoView::setGroup(QUndoGroup *group)
 
     If the view is not looking at group, this function returns 0.
 
-    \sa setGroup() setStack()
+    \sa setGroup(), setStack()
 */
 
 QUndoGroup *QUndoView::group() const

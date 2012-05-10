@@ -316,7 +316,7 @@ QKeySequence::SequenceMatch QShortcutMap::state()
     Uses ShortcutOverride event to see if any widgets want to override
     the event. If not, uses nextState(QKeyEvent) to check for a grabbed
     Shortcut, and dispatchEvent() is found an identical.
-    \sa nextState dispatchEvent
+    \sa nextState, dispatchEvent
 */
 bool QShortcutMap::tryShortcutEvent(QObject *o, QKeyEvent *e)
 {

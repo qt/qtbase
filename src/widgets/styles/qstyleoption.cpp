@@ -2098,7 +2098,7 @@ QStyleOptionSlider::QStyleOptionSlider(int version)
 
     The default value is 0.
 
-    \sa QAbstractSlider::tracking sliderPosition
+    \sa QAbstractSlider::tracking, sliderPosition
 */
 
 /*!

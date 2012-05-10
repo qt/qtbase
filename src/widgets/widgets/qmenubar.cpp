@@ -547,7 +547,7 @@ void QMenuBarPrivate::_q_actionHovered()
     is useful for subclasses when they need a QStyleOptionMenuItem, but don't want
     to fill in all the information themselves.
 
-    \sa QStyleOption::initFrom() QMenu::initStyleOption()
+    \sa QStyleOption::initFrom(), QMenu::initStyleOption()
 */
 void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *action) const
 {
@@ -831,7 +831,7 @@ QAction *QMenuBar::addAction(const QString &text, const QObject *receiver, const
   Appends a new QMenu with \a title to the menu bar. The menu bar
   takes ownership of the menu. Returns the new menu.
 
-  \sa QWidget::addAction() QMenu::menuAction()
+  \sa QWidget::addAction(), QMenu::menuAction()
 */
 QMenu *QMenuBar::addMenu(const QString &title)
 {
@@ -844,7 +844,7 @@ QMenu *QMenuBar::addMenu(const QString &title)
   Appends a new QMenu with \a icon and \a title to the menu bar. The menu bar
   takes ownership of the menu. Returns the new menu.
 
-  \sa QWidget::addAction() QMenu::menuAction()
+  \sa QWidget::addAction(), QMenu::menuAction()
 */
 QMenu *QMenuBar::addMenu(const QIcon &icon, const QString &title)
 {
@@ -860,7 +860,7 @@ QMenu *QMenuBar::addMenu(const QIcon &icon, const QString &title)
     \note The returned QAction object can be used to hide the corresponding
     menu.
 
-    \sa QWidget::addAction() QMenu::menuAction()
+    \sa QWidget::addAction(), QMenu::menuAction()
 */
 QAction *QMenuBar::addMenu(QMenu *menu)
 {
@@ -900,7 +900,7 @@ QAction *QMenuBar::insertSeparator(QAction *before)
   This convenience function inserts \a menu before action \a before
   and returns the menus menuAction().
 
-  \sa QWidget::insertAction() addMenu()
+  \sa QWidget::insertAction(), addMenu()
 */
 QAction *QMenuBar::insertMenu(QAction *before, QMenu *menu)
 {

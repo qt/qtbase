@@ -355,7 +355,7 @@ void QUrlModel::layoutChanged()
 /*!
     The following path changed data update our copy of that data
 
-    \sa layoutChanged() dataChanged()
+    \sa layoutChanged(), dataChanged()
 */
 void QUrlModel::changed(const QString &path)
 {

@@ -2704,7 +2704,7 @@ bool QWidget::isMaximized() const
     combination of Qt::WindowState: Qt::WindowMinimized,
     Qt::WindowMaximized, Qt::WindowFullScreen, and Qt::WindowActive.
 
-  \sa Qt::WindowState setWindowState()
+  \sa Qt::WindowState, setWindowState()
  */
 Qt::WindowStates QWidget::windowState() const
 {
@@ -2753,7 +2753,7 @@ void QWidget::overrideWindowState(Qt::WindowStates newstate)
     When the window state changes, the widget receives a changeEvent()
     of type QEvent::WindowStateChange.
 
-    \sa Qt::WindowState windowState()
+    \sa Qt::WindowState, windowState()
 */
 
 /*!
@@ -2889,7 +2889,7 @@ void QWidget::showNormal()
 
     isEnabledTo(0) is equivalent to isEnabled().
 
-    \sa setEnabled() enabled
+    \sa setEnabled(), enabled
 */
 
 bool QWidget::isEnabledTo(const QWidget *ancestor) const
@@ -3160,7 +3160,7 @@ void QWidget::setDisabled(bool disable)
     By default, this property contains a value that depends on the user's
     platform and screen geometry.
 
-    \sa geometry() x() y() pos()
+    \sa geometry(), x(), y(), pos()
 */
 QRect QWidget::frameGeometry() const
 {
@@ -3237,7 +3237,7 @@ int QWidget::y() const
     See the \l{Window Geometry} documentation for an overview of geometry
     issues with windows.
 
-    \sa frameGeometry, size x(), y()
+    \sa frameGeometry, size, x(), y()
 */
 QPoint QWidget::pos() const
 {
@@ -3384,7 +3384,7 @@ QRect QWidget::normalGeometry() const
     By default, for a widget with no children, this property contains a
     rectangle with zero width and height located at the origin.
 
-    \sa childrenRegion() geometry()
+    \sa childrenRegion(), geometry()
 */
 
 QRect QWidget::childrenRect() const
@@ -3408,7 +3408,7 @@ QRect QWidget::childrenRect() const
     By default, for a widget with no children, this property contains an
     empty region.
 
-    \sa childrenRect() geometry() mask()
+    \sa childrenRect(), geometry(), mask()
 */
 
 QRegion QWidget::childrenRegion() const
@@ -3824,7 +3824,7 @@ void QWidget::setMaximumHeight(int h)
     Sets both the minimum and maximum width of the widget to \a w
     without changing the heights. Provided for convenience.
 
-    \sa sizeHint() minimumSize() maximumSize() setFixedSize()
+    \sa sizeHint(), minimumSize(), maximumSize(), setFixedSize()
 */
 
 void QWidget::setFixedWidth(int w)
@@ -3844,7 +3844,7 @@ void QWidget::setFixedWidth(int w)
     Sets both the minimum and maximum heights of the widget to \a h
     without changing the widths. Provided for convenience.
 
-    \sa sizeHint() minimumSize() maximumSize() setFixedSize()
+    \sa sizeHint(), minimumSize(), maximumSize(), setFixedSize()
 */
 
 void QWidget::setFixedHeight(int h)
@@ -3865,7 +3865,7 @@ void QWidget::setFixedHeight(int h)
     of \a parent. The \a parent must not be 0 and must be a parent
     of the calling widget.
 
-    \sa mapFrom() mapToParent() mapToGlobal() underMouse()
+    \sa mapFrom(), mapToParent(), mapToGlobal(), underMouse()
 */
 
 QPoint QWidget::mapTo(const QWidget * parent, const QPoint & pos) const
@@ -3889,7 +3889,7 @@ QPoint QWidget::mapTo(const QWidget * parent, const QPoint & pos) const
     of \a parent to this widget's coordinate system. The \a parent
     must not be 0 and must be a parent of the calling widget.
 
-    \sa mapTo() mapFromParent() mapFromGlobal() underMouse()
+    \sa mapTo(), mapFromParent(), mapFromGlobal(), underMouse()
 */
 
 QPoint QWidget::mapFrom(const QWidget * parent, const QPoint & pos) const
@@ -3915,7 +3915,7 @@ QPoint QWidget::mapFrom(const QWidget * parent, const QPoint & pos) const
 
     Same as mapToGlobal() if the widget has no parent.
 
-    \sa mapFromParent() mapTo() mapToGlobal() underMouse()
+    \sa mapFromParent(), mapTo(), mapToGlobal(), underMouse()
 */
 
 QPoint QWidget::mapToParent(const QPoint &pos) const
@@ -3929,7 +3929,7 @@ QPoint QWidget::mapToParent(const QPoint &pos) const
 
     Same as mapFromGlobal() if the widget has no parent.
 
-    \sa mapToParent() mapFrom() mapFromGlobal() underMouse()
+    \sa mapToParent(), mapFrom(), mapFromGlobal(), underMouse()
 */
 
 QPoint QWidget::mapFromParent(const QPoint &pos) const
@@ -5420,7 +5420,7 @@ QGraphicsProxyWidget * QWidgetPrivate::nearestGraphicsProxyWidget(const QWidget 
     If the widget displays dates or numbers, these should be formatted
     using the widget's locale.
 
-    \sa QLocale QLocale::setDefault()
+    \sa QLocale, QLocale::setDefault()
 */
 
 void QWidgetPrivate::setLocale_helper(const QLocale &loc, bool forceUpdate)
@@ -6839,7 +6839,7 @@ QRect QWidget::contentsRect() const
   \link QAbstractScrollArea::viewport() viewport() \endlink .
 
 
-  \sa mapToGlobal() QMenu contextMenuPolicy
+  \sa mapToGlobal(), QMenu, contextMenuPolicy
 */
 
 
@@ -7572,7 +7572,7 @@ bool QWidget::close()
 
     isVisibleTo(0) is identical to isVisible().
 
-    \sa show() hide() isVisible()
+    \sa show(), hide(), isVisible()
 */
 
 bool QWidget::isVisibleTo(const QWidget *ancestor) const
@@ -8436,7 +8436,7 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
     developer to ensure that the application interprets these events
     correctly.
 
-    \sa mousePressEvent(), mouseReleaseEvent() mouseMoveEvent(),
+    \sa mousePressEvent(), mouseReleaseEvent(), mouseMoveEvent(),
     event(), QMouseEvent
 */
 
@@ -8776,7 +8776,7 @@ void QWidget::closeEvent(QCloseEvent *event)
     The default implementation ignores the context event.
     See the \l QContextMenuEvent documentation for more details.
 
-    \sa event(), QContextMenuEvent customContextMenuRequested()
+    \sa event(), QContextMenuEvent, customContextMenuRequested()
 */
 
 void QWidget::contextMenuEvent(QContextMenuEvent *event)
@@ -9211,7 +9211,7 @@ QLayout *QWidget::takeLayout()
     use additional space, and that they can make do with less than
     sizeHint().
 
-    \sa sizeHint() QLayout QSizePolicy updateGeometry()
+    \sa sizeHint(), QLayout, QSizePolicy, updateGeometry()
 */
 QSizePolicy QWidget::sizePolicy() const
 {
@@ -9844,7 +9844,7 @@ void QWidget::repaint(const QRegion &rgn)
     If the Qt::WA_OpaquePaintEvent widget attribute is set, the widget is
     responsible for painting all its pixels with an opaque color.
 
-    \sa repaint() paintEvent(), setUpdatesEnabled(), {Analog Clock Example}
+    \sa repaint(), paintEvent(), setUpdatesEnabled(), {Analog Clock Example}
 */
 void QWidget::update()
 {
@@ -10357,7 +10357,7 @@ void QWidgetPrivate::setWindowModified_helper()
 
   By default, this property contains an empty string.
 
-  \sa QToolTip statusTip whatsThis
+  \sa QToolTip, statusTip, whatsThis
 */
 void QWidget::setToolTip(const QString &s)
 {
@@ -10383,7 +10383,7 @@ QString QWidget::toolTip() const
 
   By default, this property contains an empty string.
 
-  \sa toolTip whatsThis
+  \sa toolTip, whatsThis
 */
 void QWidget::setStatusTip(const QString &s)
 {
@@ -10406,7 +10406,7 @@ QString QWidget::statusTip() const
 
   By default, this property contains an empty string.
 
-  \sa QWhatsThis QWidget::toolTip QWidget::statusTip
+  \sa QWhatsThis, QWidget::toolTip, QWidget::statusTip
 */
 void QWidget::setWhatsThis(const QString &s)
 {
@@ -10494,7 +10494,7 @@ QString QWidget::accessibleDescription() const
     key sequence, so are much easier to use than this low-level
     function.
 
-    \sa releaseShortcut() setShortcutEnabled()
+    \sa releaseShortcut(), setShortcutEnabled()
 */
 int QWidget::grabShortcut(const QKeySequence &key, Qt::ShortcutContext context)
 {
@@ -10518,7 +10518,7 @@ int QWidget::grabShortcut(const QKeySequence &key, Qt::ShortcutContext context)
     this low-level function. Note also that this is an expensive
     operation.
 
-    \sa grabShortcut() setShortcutEnabled()
+    \sa grabShortcut(), setShortcutEnabled()
 */
 void QWidget::releaseShortcut(int id)
 {
@@ -10537,7 +10537,7 @@ void QWidget::releaseShortcut(int id)
     to use QAction or QShortcut to handle shortcuts, since they are
     easier to use than this low-level function.
 
-    \sa grabShortcut() releaseShortcut()
+    \sa grabShortcut(), releaseShortcut()
 */
 void QWidget::setShortcutEnabled(int id, bool enable)
 {
@@ -10552,7 +10552,7 @@ void QWidget::setShortcutEnabled(int id, bool enable)
     If \a enable is true, auto repeat of the shortcut with the
     given \a id is enabled; otherwise it is disabled.
 
-    \sa grabShortcut() releaseShortcut()
+    \sa grabShortcut(), releaseShortcut()
 */
 void QWidget::setShortcutAutoRepeat(int id, bool enable)
 {
@@ -11093,7 +11093,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     coordinates. For example, \c{mapToGlobal(QPoint(0,0))} would give
     the global coordinates of the top-left pixel of the widget.
 
-    \sa mapFromGlobal() mapTo() mapToParent()
+    \sa mapFromGlobal(), mapTo(), mapToParent()
 */
 
 /*!
@@ -11102,7 +11102,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     Translates the global screen coordinate \a pos to widget
     coordinates.
 
-    \sa mapToGlobal() mapFrom() mapFromParent()
+    \sa mapToGlobal(), mapFrom(), mapFromParent()
 */
 
 /*!
@@ -11132,7 +11132,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     frame of that widget.  For \e Carbon, it works outside the widget's
     frame as well, like for Windows and X11.
 
-    \sa releaseMouse() grabKeyboard() releaseKeyboard()
+    \sa releaseMouse(), grabKeyboard(), releaseKeyboard()
 */
 
 /*!
@@ -11177,7 +11177,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     If a different widget is currently grabbing keyboard input, that
     widget's grab is released first.
 
-    \sa releaseKeyboard() grabMouse() releaseMouse() focusWidget()
+    \sa releaseKeyboard(), grabMouse(), releaseMouse(), focusWidget()
 */
 
 /*!

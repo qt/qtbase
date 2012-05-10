@@ -90,7 +90,7 @@ QT_BEGIN_NAMESPACE
     implicit data sharing. For more information, see the \l {Implicit
     Data Sharing} documentation.
 
-    \sa  QPixmap, QImage, QImageReader, QImageWriter
+    \sa QPixmap, QImage, QImageReader, QImageWriter
 */
 
 /*! \typedef QBitmap::DataPtr

@@ -1138,7 +1138,7 @@ bool QTextCursor::isNull() const
     \a pos using a \c MoveMode specified by \a m. The cursor is positioned
     between characters.
 
-    \sa position() movePosition() anchor()
+    \sa position(), movePosition(), anchor()
 */
 void QTextCursor::setPosition(int pos, MoveMode m)
 {
@@ -1169,7 +1169,7 @@ void QTextCursor::setPosition(int pos, MoveMode m)
     Returns the absolute position of the cursor within the document.
     The cursor is positioned between characters.
 
-    \sa setPosition() movePosition() anchor() positionInBlock()
+    \sa setPosition(), movePosition(), anchor(), positionInBlock()
 */
 int QTextCursor::position() const
 {
@@ -1200,7 +1200,7 @@ int QTextCursor::positionInBlock() const
     selection and anchor() marks the other end. Just like the cursor
     position, the anchor position is between characters.
 
-    \sa position() setPosition() movePosition() selectionStart() selectionEnd()
+    \sa position(), setPosition(), movePosition(), selectionStart(), selectionEnd()
 */
 int QTextCursor::anchor() const
 {
@@ -1388,7 +1388,7 @@ void QTextCursor::setKeepPositionOnInsert(bool b)
     Any ASCII linefeed characters (\\n) in the inserted text are transformed
     into unicode block separators, corresponding to insertBlock() calls.
 
-    \sa charFormat() hasSelection()
+    \sa charFormat(), hasSelection()
 */
 void QTextCursor::insertText(const QString &text)
 {
@@ -1476,7 +1476,7 @@ void QTextCursor::insertText(const QString &text, const QTextCharFormat &_format
     If there is no selected text, deletes the character \e at the
     current cursor position; otherwise deletes the selected text.
 
-    \sa deletePreviousChar() hasSelection() clearSelection()
+    \sa deletePreviousChar(), hasSelection(), clearSelection()
 */
 void QTextCursor::deleteChar()
 {
@@ -1500,7 +1500,7 @@ void QTextCursor::deleteChar()
     If there is no selected text, deletes the character \e before the
     current cursor position; otherwise deletes the selected text.
 
-    \sa deleteChar() hasSelection() clearSelection()
+    \sa deleteChar(), hasSelection(), clearSelection()
 */
 void QTextCursor::deletePreviousChar()
 {
@@ -1623,7 +1623,7 @@ void QTextCursor::selectedTableCells(int *firstRow, int *numRows, int *firstColu
 
     Note that it does \b{not} delete the text of the selection.
 
-    \sa removeSelectedText() hasSelection()
+    \sa removeSelectedText(), hasSelection()
 */
 void QTextCursor::clearSelection()
 {
@@ -1654,7 +1654,7 @@ void QTextCursor::removeSelectedText()
     Returns the start of the selection or position() if the
     cursor doesn't have a selection.
 
-    \sa selectionEnd() position() anchor()
+    \sa selectionEnd(), position(), anchor()
 */
 int QTextCursor::selectionStart() const
 {
@@ -1667,7 +1667,7 @@ int QTextCursor::selectionStart() const
     Returns the end of the selection or position() if the cursor
     doesn't have a selection.
 
-    \sa selectionStart() position() anchor()
+    \sa selectionStart(), position(), anchor()
 */
 int QTextCursor::selectionEnd() const
 {
@@ -1770,7 +1770,7 @@ QTextBlock QTextCursor::block() const
 /*!
     Returns the block format of the block the cursor is in.
 
-    \sa setBlockFormat() charFormat()
+    \sa setBlockFormat(), charFormat()
  */
 QTextBlockFormat QTextCursor::blockFormat() const
 {
@@ -2049,7 +2049,7 @@ void QTextCursor::insertBlock(const QTextBlockFormat &format, const QTextCharFor
     list item of a newly created list with the given \a format. Returns
     the created list.
 
-    \sa currentList() createList() insertBlock()
+    \sa currentList(), createList(), insertBlock()
  */
 QTextList *QTextCursor::insertList(const QTextListFormat &format)
 {
@@ -2076,7 +2076,7 @@ QTextList *QTextCursor::insertList(QTextListFormat::Style style)
     Creates and returns a new list with the given \a format, and makes the
     current paragraph the cursor is in the first list item.
 
-    \sa insertList() currentList()
+    \sa insertList(), currentList()
  */
 QTextList *QTextCursor::createList(const QTextListFormat &format)
 {
@@ -2098,7 +2098,7 @@ QTextList *QTextCursor::createList(const QTextListFormat &format)
 
     The style to be used is defined by the QTextListFormat::Style enum.
 
-    \sa insertList() currentList()
+    \sa insertList(), currentList()
  */
 QTextList *QTextCursor::createList(QTextListFormat::Style style)
 {
@@ -2111,7 +2111,7 @@ QTextList *QTextCursor::createList(QTextListFormat::Style style)
     Returns the current list if the cursor position() is inside a
     block that is part of a list; otherwise returns 0.
 
-    \sa insertList() createList()
+    \sa insertList(), createList()
  */
 QTextList *QTextCursor::currentList() const
 {
@@ -2509,7 +2509,7 @@ void QTextCursor::endEditBlock()
     one of them was created as a copy of the other and neither has moved since.
     This is much stricter than equality.
 
-    \sa operator=() operator==()
+    \sa operator=(), operator==()
 */
 bool QTextCursor::isCopyOf(const QTextCursor &other) const
 {
