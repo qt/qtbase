@@ -408,7 +408,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                                                  marker,relative))
               << "</pre>\n";
         break;
-#ifdef QDOC_QML
     case Atom::Qml:
         out() << "<pre class=\"qml\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
@@ -421,7 +420,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                                                  marker,relative))
               << "</pre>\n";
         break;
-#endif
     case Atom::CodeNew:
         out() << "<p>you can rewrite it as</p>\n"
               << "<pre class=\"cpp\">"
@@ -1149,12 +1147,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << "<b class=\"redFont\"><code>\\" << protectEnc(atom->string())
               << "</code></b>";
         break;
-#ifdef QDOC_QML
     case Atom::QmlText:
     case Atom::EndQmlText:
         // don't do anything with these. They are just tags.
         break;
-#endif
     default:
         unknownAtom(atom);
     }

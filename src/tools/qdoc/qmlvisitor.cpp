@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#define COMMAND_DEPRECATED              Doc::alias(QLatin1String("deprecated")) // ### don't document
+#define COMMAND_DEPRECATED              Doc::alias(QLatin1String("deprecated"))
 #define COMMAND_INGROUP                 Doc::alias(QLatin1String("ingroup"))
 #define COMMAND_INTERNAL                Doc::alias(QLatin1String("internal"))
 #define COMMAND_OBSOLETE                Doc::alias(QLatin1String("obsolete"))
@@ -488,7 +488,6 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiPublicMember *member)
             if (qmlClass) {
                 QString name = member->name.toString();
                 QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlClass, name, type, false);
-                //qmlPropNode->setLocation(doc.location());
                 qmlPropNode->setReadOnly(member->isReadonlyMember);
                 if (member->isDefaultMember)
                     qmlPropNode->setDefault();

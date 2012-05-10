@@ -556,9 +556,7 @@ private:
     NodeMap obsoleteClasses;
     NodeMap namespaceIndex;
     NodeMap serviceClasses;
-#ifdef QDOC_QML
     NodeMap qmlClasses;
-#endif
     QMap<QString, NodeMap > funcIndex;
     QMap<Text, const Node*> legaleseTexts;
     static int id;
@@ -573,7 +571,7 @@ private:
 
 #define DITAXMLGENERATOR_ADDRESS           "address"
 #define DITAXMLGENERATOR_FOOTER            "footer"
-#define DITAXMLGENERATOR_GENERATEMACREFS   "generatemacrefs" // ### document me
+#define DITAXMLGENERATOR_GENERATEMACREFS   "generatemacrefs"
 #define DITAXMLGENERATOR_POSTHEADER        "postheader"
 #define DITAXMLGENERATOR_POSTPOSTHEADER    "postpostheader"
 #define DITAXMLGENERATOR_STYLE             "style"

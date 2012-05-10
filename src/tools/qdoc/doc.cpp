@@ -2027,13 +2027,8 @@ void DocParser::appendWord(const QString &word)
 void DocParser::appendToCode(const QString& markedCode)
 {
     Atom::Type lastType = priv->text.lastAtom()->type();
-#ifdef QDOC_QML
     if (lastType != Atom::Qml && lastType != Atom::Code && lastType != Atom::JavaScript)
         append(Atom::Qml);
-#else
-    if (lastType != Atom::Code)
-        append(Atom::Code);
-#endif
     priv->text.lastAtom()->appendString(markedCode);
 }
 

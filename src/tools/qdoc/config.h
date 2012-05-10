@@ -132,7 +132,7 @@ private:
 };
 
 #define CONFIG_ALIAS                    "alias"
-#define CONFIG_BASE                     "base"      // ### don't document for now
+#define CONFIG_BASE                     "base"
 #define CONFIG_BASEDIR                  "basedir"
 #define CONFIG_CODEINDENT               "codeindent"
 #define CONFIG_DEFINES                  "defines"
@@ -184,17 +184,13 @@ private:
 #define CONFIG_TEMPLATEDIR              "templatedir"
 #define CONFIG_TABSIZE                  "tabsize"
 #define CONFIG_TAGFILE                  "tagfile"
-#define CONFIG_TRANSLATORS              "translators" // ### don't document for now
+#define CONFIG_TRANSLATORS              "translators"
 #define CONFIG_URL                      "url"
 #define CONFIG_VERSION                  "version"
 #define CONFIG_VERSIONSYM               "versionsym"
-
 #define CONFIG_FILEEXTENSIONS           "fileextensions"
 #define CONFIG_IMAGEEXTENSIONS          "imageextensions"
-
-#ifdef QDOC_QML
 #define CONFIG_QMLONLY                  "qmlonly"
-#endif
 
 QT_END_NAMESPACE
 
