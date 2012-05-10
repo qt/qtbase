@@ -1333,12 +1333,28 @@ QMakeProject::read(uchar cmd)
         if(!Option::user_template_prefix.isEmpty())
             base_vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
 
+        QString superdir;
         QString project_root;
         QString project_build_root;
         QStringList qmakepath;
         QStringList qmakefeatures;
         if (Option::mkfile::do_cache) {        // parse the cache
             QHash<QString, QStringList> cache;
+            QString rdir = Option::output_dir;
+            forever {
+                QFileInfo qfi(rdir, QLatin1String(".qmake.super"));
+                if (qfi.exists()) {
+                    superfile = qfi.filePath();
+                    if (!read(superfile, cache))
+                        return false;
+                    superdir = rdir;
+                    break;
+                }
+                QFileInfo qdfi(rdir);
+                if (qdfi.isRoot())
+                    break;
+                rdir = qdfi.path();
+            }
             if (Option::mkfile::cachefile.isEmpty())  { //find it as it has not been specified
                 QString sdir = qmake_getpwd();
                 QString dir = Option::output_dir;
@@ -1360,6 +1376,8 @@ QMakeProject::read(uchar cmd)
                         project_build_root = dir;
                         break;
                     }
+                    if (dir == superdir)
+                        goto no_cache;
                     QFileInfo qsdfi(sdir);
                     QFileInfo qdfi(dir);
                     if (qsdfi.isRoot() || qdfi.isRoot())
@@ -1405,7 +1423,8 @@ QMakeProject::read(uchar cmd)
                             project_root.clear();
                         break;
                     }
-            } while (!srcdir.isRoot() && srcdir.cdUp() && !dstdir.isRoot() && dstdir.cdUp());
+            } while (!srcdir.isRoot() && srcdir.cdUp()
+                     && dstdir != superdir && !dstdir.isRoot() && dstdir.cdUp());
         }
 
         if (qmakepath != cached_qmakepath || qmakefeatures != cached_qmakefeatures
@@ -1440,6 +1459,13 @@ QMakeProject::read(uchar cmd)
                                 qmakespec.toLatin1().constData(), mkspec_roots.join("\n\t").toLatin1().constData());
                         return false;
                     }
+            }
+
+            // We do this before reading the spec, so it can use module and feature paths from
+            // here without resorting to tricks. This is the only planned use case anyway.
+            if (!superfile.isEmpty()) {
+                debug_msg(1, "Project super cache file: reading %s", superfile.toLatin1().constData());
+                read(superfile, base_vars);
             }
 
             // parse qmake configuration
@@ -3184,17 +3210,20 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
         return true;
     case T_CACHE: {
         if (args.count() > 3) {
-            fprintf(stderr, "%s:%d: cache(var, [set|add|sub] [transient], [srcvar]) requires one to three arguments.\n",
+            fprintf(stderr, "%s:%d: cache(var, [set|add|sub] [transient] [super], [srcvar]) requires one to three arguments.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
             return false;
         }
         bool persist = true;
+        bool super = false;
         enum { CacheSet, CacheAdd, CacheSub } mode = CacheSet;
         QString srcvar;
         if (args.count() >= 2) {
             foreach (const QString &opt, split_value_list(args.at(1))) {
                 if (opt == QLatin1String("transient")) {
                     persist = false;
+                } else if (opt == QLatin1String("super")) {
+                    super = true;
                 } else if (opt == QLatin1String("set")) {
                     mode = CacheSet;
                 } else if (opt == QLatin1String("add")) {
@@ -3277,16 +3306,26 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
             }
             varstr += QLatin1Char('\n');
         }
-        if (cachefile.isEmpty()) {
-            cachefile = Option::output_dir + QLatin1String("/.qmake.cache");
-            printf("Info: creating cache file %s\n", cachefile.toLatin1().constData());
-            cached_build_root = Option::output_dir;
-            cached_source_root = values("_PRO_FILE_PWD_", place).first();
-            if (cached_source_root == cached_build_root)
-                cached_source_root.clear();
-            invalidateFeatureRoots();
+        QString fn;
+        if (super) {
+            if (superfile.isEmpty()) {
+                superfile = Option::output_dir + QLatin1String("/.qmake.super");
+                printf("Info: creating super cache file %s\n", superfile.toLatin1().constData());
+            }
+            fn = superfile;
+        } else {
+            if (cachefile.isEmpty()) {
+                cachefile = Option::output_dir + QLatin1String("/.qmake.cache");
+                printf("Info: creating cache file %s\n", cachefile.toLatin1().constData());
+                cached_build_root = Option::output_dir;
+                cached_source_root = values("_PRO_FILE_PWD_", place).first();
+                if (cached_source_root == cached_build_root)
+                    cached_source_root.clear();
+                invalidateFeatureRoots();
+            }
+            fn = cachefile;
         }
-        QFileInfo qfi(Option::mkfile::cachefile);
+        QFileInfo qfi(fn);
         if (!QDir::current().mkpath(qfi.path())) {
             fprintf(stderr, "%s:%d: ERROR creating cache directory %s\n",
                     parser.file.toLatin1().constData(), parser.line_no,
@@ -3294,9 +3333,9 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
             return false;
         }
         QString errStr;
-        if (!writeFile(cachefile, QIODevice::Append, varstr, &errStr)) {
+        if (!writeFile(fn, QIODevice::Append, varstr, &errStr)) {
             fprintf(stderr, "ERROR writing cache file %s: %s\n",
-                    cachefile.toLatin1().constData(), errStr.toLatin1().constData());
+                    fn.toLatin1().constData(), errStr.toLatin1().constData());
 #if defined(QT_BUILD_QMAKE_LIBRARY)
             return false;
 #else
@@ -3713,6 +3752,10 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
         var = ".BUILTIN." + var;
         if(Option::mkfile::do_cache)
             place[var] = QStringList(cachefile);
+    } else if(var == QLatin1String("_QMAKE_SUPER_CACHE_")) {
+        var = ".BUILTIN." + var;
+        if(Option::mkfile::do_cache && !superfile.isEmpty())
+            place[var] = QStringList(superfile);
     } else if(var == QLatin1String("TEMPLATE")) {
         if(!Option::user_template.isEmpty()) {
             var = ".BUILTIN.USER." + var;

@@ -84,6 +84,7 @@ class QMakeProject
     bool own_prop;
     bool backslashWarned;
     QString conffile;
+    QString superfile;
     QString cachefile;
     QString pfile;
     QMakeProperty *prop;
