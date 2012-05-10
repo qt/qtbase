@@ -43,6 +43,9 @@
 #define QWINDOWSWINDOW_H
 
 #include "qtwindows_additional.h"
+#ifdef Q_OS_WINCE
+#  include "qplatformfunctions_wince.h"
+#endif
 #include "qwindowscursor.h"
 
 #include <qpa/qplatformwindow.h>
@@ -57,8 +60,10 @@ struct QWindowsGeometryHint
     QWindowsGeometryHint() {}
     explicit QWindowsGeometryHint(const QWindow *w);
     static QMargins frame(DWORD style, DWORD exStyle);
+#ifndef Q_OS_WINCE //MinMax maybe define struct if not available
     void applyToMinMaxInfo(DWORD style, DWORD exStyle, MINMAXINFO *mmi) const;
     void applyToMinMaxInfo(HWND hwnd, MINMAXINFO *mmi) const;
+#endif
     bool validSize(const QSize &s) const;
 
     static inline QPoint mapToGlobal(HWND hwnd, const QPoint &);
@@ -76,9 +81,10 @@ struct QWindowCreationContext
 {
     QWindowCreationContext(const QWindow *w, const QRect &r,
                            DWORD style, DWORD exStyle);
-
+#ifndef Q_OS_WINCE //MinMax maybe define struct if not available
     void applyToMinMaxInfo(MINMAXINFO *mmi) const
         { geometryHint.applyToMinMaxInfo(style, exStyle, mmi); }
+#endif
 
     QWindowsGeometryHint geometryHint;
     DWORD style;
@@ -176,8 +182,9 @@ public:
 
     HDC getDC();
     void releaseDC();
-
+#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
     void getSizeHints(MINMAXINFO *mmi) const;
+#endif
 
     QWindowsWindowCursor cursor() const { return m_cursor; }
     void setCursor(const QWindowsWindowCursor &c);
@@ -197,8 +204,10 @@ public:
     void setEnabled(bool enabled);
     bool isEnabled() const;
 
+#ifndef Q_OS_WINCE
     void alertWindow(int durationMs = 0);
     void stopAlertWindow();
+#endif
 
 private:
     inline void show_sys() const;
@@ -242,8 +251,10 @@ inline QRect operator-(const QRect &r, const QMargins &m)
 
 // Debug
 QDebug operator<<(QDebug d, const RECT &r);
+#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO/WM_NCCALCSIZE
 QDebug operator<<(QDebug d, const MINMAXINFO &i);
 QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p);
+#endif
 
 // ---------- QWindowsGeometryHint inline functions.
 QPoint QWindowsGeometryHint::mapToGlobal(HWND hwnd, const QPoint &qp)

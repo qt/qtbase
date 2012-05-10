@@ -70,6 +70,10 @@
 
 #include <limits.h>
 
+#ifdef Q_OS_WINCE
+#  include "qplatformfunctions_wince.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //### mingw needed define
@@ -199,6 +203,9 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
     int i = 0;
     int glyph_pos = 0;
     if (mirrored) {
+#if defined(Q_OS_WINCE)
+        {
+#else
         if (symbol) {
             for (; i < numChars; ++i, ++glyph_pos) {
                 unsigned int uc = getChar(str, i, numChars);
@@ -212,18 +219,26 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
                 glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, QChar::mirroredChar(uc));
             }
         } else {
+#endif
             wchar_t first = tm.tmFirstChar;
             wchar_t last = tm.tmLastChar;
 
             for (; i < numChars; ++i, ++glyph_pos) {
                 uint ucs = QChar::mirroredChar(getChar(str, i, numChars));
-                if (ucs >= first && ucs <= last)
+                if (
+#ifdef Q_WS_WINCE
+                    tm.tmFirstChar > 60000 ||
+#endif
+                         ucs >= first && ucs <= last)
                     glyphs->glyphs[glyph_pos] = ucs;
                 else
                     glyphs->glyphs[glyph_pos] = 0;
             }
         }
     } else {
+#if defined(Q_OS_WINCE)
+        {
+#else
         if (symbol) {
             for (; i < numChars; ++i, ++glyph_pos) {
                 unsigned int uc = getChar(str, i, numChars);
@@ -237,12 +252,17 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
                 glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
             }
         } else {
+#endif
             wchar_t first = tm.tmFirstChar;
             wchar_t last = tm.tmLastChar;
 
             for (; i < numChars; ++i, ++glyph_pos) {
                 uint uc = getChar(str, i, numChars);
-                if (uc >= first && uc <= last)
+                if (
+#ifdef Q_WS_WINCE
+                    tm.tmFirstChar > 60000 ||
+#endif
+                         uc >= first && uc <= last)
                     glyphs->glyphs[glyph_pos] = uc;
                 else
                     glyphs->glyphs[glyph_pos] = 0;
@@ -353,8 +373,12 @@ bool QWindowsFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *g
 
 inline void calculateTTFGlyphWidth(HDC hdc, UINT glyph, int &width)
 {
+#if defined(Q_OS_WINCE)
+    GetCharWidth32(hdc, glyph, glyph, &width);
+#else
     if (ptrGetCharWidthI)
         ptrGetCharWidthI(hdc, glyph, 1, 0, &width);
+#endif
 }
 
 void QWindowsFontEngine::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const
@@ -442,7 +466,7 @@ glyph_metrics_t QWindowsFontEngine::boundingBox(const QGlyphLayout &glyphs)
 
     return glyph_metrics_t(0, -tm.tmAscent, w - lastRightBearing(glyphs), tm.tmHeight, w, 0);
 }
-
+#ifndef Q_OS_WINCE
 bool QWindowsFontEngine::getOutlineMetrics(glyph_t glyph, const QTransform &t, glyph_metrics_t *metrics) const
 {
     Q_ASSERT(metrics != 0);
@@ -494,9 +518,11 @@ bool QWindowsFontEngine::getOutlineMetrics(glyph_t glyph, const QTransform &t, g
         return false;
     }
 }
+#endif
 
 glyph_metrics_t QWindowsFontEngine::boundingBox(glyph_t glyph, const QTransform &t)
 {
+#ifndef Q_OS_WINCE
     HDC hdc = m_fontEngineData->hdc;
     SelectObject(hdc, hfont);
 
@@ -514,6 +540,34 @@ glyph_metrics_t QWindowsFontEngine::boundingBox(glyph_t glyph, const QTransform 
     }
 
     return glyphMetrics;
+#else
+    HDC hdc = m_fontEngineData->hdc;
+    HGDIOBJ oldFont = SelectObject(hdc, hfont);
+
+    ABC abc;
+    int width;
+    int advance;
+#ifdef GWES_MGTT    // true type fonts
+    if (GetCharABCWidths(hdc, glyph, glyph, &abc)) {
+        width = qAbs(abc.abcA) + abc.abcB + qAbs(abc.abcC);
+        advance = abc.abcA + abc.abcB + abc.abcC;
+    }
+    else
+#endif
+#if defined(GWES_MGRAST) || defined(GWES_MGRAST2)   // raster fonts
+    if (GetCharWidth32(hdc, glyph, glyph, &width)) {
+        advance = width;
+    }
+    else
+#endif
+    {   // fallback
+        width = tm.tmMaxCharWidth;
+        advance = width;
+    }
+
+    SelectObject(hdc, oldFont);
+    return glyph_metrics_t(0, -tm.tmAscent, width, tm.tmHeight, advance, 0).transformed(t);
+#endif
 }
 
 QFixed QWindowsFontEngine::ascent() const
@@ -580,7 +634,9 @@ void QWindowsFontEngine::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qre
     HDC hdc = m_fontEngineData->hdc;
     SelectObject(hdc, hfont);
 
+#ifndef Q_OS_WINCE
     if (ttf)
+#endif
     {
         ABC abcWidths;
         GetCharABCWidthsI(hdc, glyph, 1, 0, &abcWidths);
@@ -588,9 +644,12 @@ void QWindowsFontEngine::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qre
             *leftBearing = abcWidths.abcA;
         if (rightBearing)
             *rightBearing = abcWidths.abcC;
-    } else {
+    }
+#ifndef Q_OS_WINCE
+    else {
         QFontEngine::getGlyphBearings(glyph, leftBearing, rightBearing);
     }
+#endif
 }
 #endif // Q_CC_MINGW
 
@@ -604,6 +663,7 @@ qreal QWindowsFontEngine::minLeftBearing() const
 
 qreal QWindowsFontEngine::minRightBearing() const
 {
+#ifndef Q_OS_WINCE
     if (rbearing == SHRT_MIN) {
         int ml = 0;
         int mr = 0;
@@ -659,6 +719,40 @@ qreal QWindowsFontEngine::minRightBearing() const
     }
 
     return rbearing;
+#else // !Q_OS_WINCE
+    if (rbearing == SHRT_MIN) {
+        int ml = 0;
+        int mr = 0;
+        HDC hdc = m_fontEngineData->hdc;
+        SelectObject(hdc, hfont);
+        if (ttf) {
+            ABC *abc = 0;
+            int n = tm.tmLastChar - tm.tmFirstChar;
+            if (n <= max_font_count) {
+                abc = new ABC[n+1];
+                GetCharABCWidths(hdc, tm.tmFirstChar, tm.tmLastChar, abc);
+            } else {
+                abc = new ABC[char_table_entries+1];
+                for (int i = 0; i < char_table_entries; i++)
+                    GetCharABCWidths(hdc, char_table[i], char_table[i], abc+i);
+                n = char_table_entries;
+            }
+            ml = abc[0].abcA;
+            mr = abc[0].abcC;
+            for (int i = 1; i < n; i++) {
+                if (abc[i].abcA + abc[i].abcB + abc[i].abcC != 0) {
+                    ml = qMin(ml,abc[i].abcA);
+                    mr = qMin(mr,abc[i].abcC);
+                }
+            }
+            delete [] abc;
+        }
+        lbearing = ml;
+        rbearing = mr;
+    }
+
+    return rbearing;
+#endif // Q_OS_WINCE
 }
 
 
@@ -973,6 +1067,7 @@ QWindowsNativeImage *QWindowsFontEngine::drawGDIGlyph(HFONT font, glyph_t glyph,
 
     bool has_transformation = t.type() > QTransform::TxTranslate;
 
+#ifndef Q_OS_WINCE
     unsigned int options = ttf ? ETO_GLYPH_INDEX : 0;
     XFORM xform;
 
@@ -1011,6 +1106,14 @@ QWindowsNativeImage *QWindowsFontEngine::drawGDIGlyph(HFONT font, glyph_t glyph,
         SelectObject(hdc, old_font);
         ReleaseDC(0, hdc);
     }
+#else // else wince
+    unsigned int options = 0;
+#ifdef DEBUG
+    Q_ASSERT(!has_transformation);
+#else
+    Q_UNUSED(has_transformation);
+#endif
+#endif // wince
     QWindowsNativeImage *ni = new QWindowsNativeImage(iw + 2 * margin + 4,
                                                       ih + 2 * margin + 4,
                                                       QWindowsNativeImage::systemFormat());
@@ -1030,11 +1133,13 @@ QWindowsNativeImage *QWindowsFontEngine::drawGDIGlyph(HFONT font, glyph_t glyph,
 
     HGDIOBJ old_font = SelectObject(hdc, font);
 
+#ifndef Q_OS_WINCE
     if (has_transformation) {
         SetGraphicsMode(hdc, GM_ADVANCED);
         SetWorldTransform(hdc, &xform);
         ExtTextOut(hdc, 0, 0, options, 0, (LPCWSTR) &glyph, 1, 0);
     } else
+#endif // !Q_OS_WINCE
     {
         ExtTextOut(hdc, -gx + margin, -gy + margin, options, 0, (LPCWSTR) &glyph, 1, 0);
     }

@@ -72,9 +72,6 @@
 #include <comdef.h>
 #endif
 
-#ifdef Q_OS_WINCE
-#include "../qguifunctions_wince.h"
-#endif
 
 #include "../qtwindows_additional.h"
 

@@ -55,9 +55,13 @@
 
 #include <wchar.h>
 
+#ifdef Q_OS_WINCE
+#  include "qplatformfunctions_wince.h"
+#endif
+
 #if !defined(QT_NO_DIRECTWRITE)
-#    include <dwrite.h>
-#    include <d2d1.h>
+#  include <dwrite.h>
+#  include <d2d1.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1002,6 +1006,17 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
         quint32 codePageRange[2] = {
             signature->fsCsb[0], signature->fsCsb[1]
         };
+#ifdef Q_OS_WINCE
+        if (signature->fsUsb[0] == 0) {
+            // If the unicode ranges bit mask is zero then
+            // EnumFontFamiliesEx failed to determine it properly.
+            // In this case we just pretend that the font supports all languages.
+            unicodeRange[0] = 0xbfffffff;   // second most significant bit must be zero
+            unicodeRange[1] = 0xffffffff;
+            unicodeRange[2] = 0xffffffff;
+            unicodeRange[3] = 0xffffffff;
+        }
+#endif
         writingSystemsFromTrueTypeBits(unicodeRange, codePageRange, &writingSystems);
         // ### Hack to work around problem with Thai text on Windows 7. Segoe UI contains
         // the symbol for Baht, and Windows thus reports that it supports the Thai script.
@@ -1603,6 +1618,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
         const QString fam = request.family.toLower();
         if (fam == QStringLiteral("default") || fam == QStringLiteral("system"))
             f = SYSTEM_FONT;
+#ifndef Q_OS_WINCE
         else if (fam == QStringLiteral("system_fixed"))
             f = SYSTEM_FIXED_FONT;
         else if (fam == QStringLiteral("ansi_fixed"))
@@ -1613,6 +1629,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
             f = DEVICE_DEFAULT_FONT;
         else if (fam == QStringLiteral("oem_fixed"))
             f = OEM_FIXED_FONT;
+#endif
         else if (fam.at(0) == QLatin1Char('#'))
             f = fam.right(fam.length()-1).toInt();
         hfont = (HFONT)GetStockObject(f);
@@ -1657,12 +1674,14 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
         int strat = OUT_DEFAULT_PRECIS;
         if (request.styleStrategy & QFont::PreferBitmap) {
             strat = OUT_RASTER_PRECIS;
+#ifndef Q_OS_WINCE
         } else if (request.styleStrategy & QFont::PreferDevice) {
             strat = OUT_DEVICE_PRECIS;
         } else if (request.styleStrategy & QFont::PreferOutline) {
             strat = OUT_OUTLINE_PRECIS;
         } else if (request.styleStrategy & QFont::ForceOutline) {
             strat = OUT_TT_ONLY_PRECIS;
+#endif
         }
 
         lf.lfOutPrecision   = strat;
@@ -1671,8 +1690,10 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
 
         if (request.styleStrategy & QFont::PreferMatch)
             qual = DRAFT_QUALITY;
+#ifndef Q_OS_WINCE
         else if (request.styleStrategy & QFont::PreferQuality)
             qual = PROOF_QUALITY;
+#endif
 
         if (request.styleStrategy & QFont::PreferAntialias) {
             if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP) {
@@ -1733,10 +1754,17 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
                     qErrnoWarning("%s: CreateFontIndirect with stretch failed", __FUNCTION__);
             }
 
+#ifndef Q_OS_WINCE
             if (hfont == 0) {
                 hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
                 stockFont = true;
             }
+#else
+            if (hfont == 0) {
+                hfont = (HFONT)GetStockObject(SYSTEM_FONT);
+                stockFont = true;
+            }
+#endif
         }
 
 #if !defined(QT_NO_DIRECTWRITE)

@@ -725,6 +725,7 @@ void QWindowsNativeFileDialogBase::setWindowTitle(const QString &title)
 
 IShellItem *QWindowsNativeFileDialogBase::shellItem(const QString &path)
 {
+#ifndef Q_OS_WINCE
     if (QWindowsContext::shell32dll.sHCreateItemFromParsingName) {
         IShellItem *result = 0;
         const QString native = QDir::toNativeSeparators(path);
@@ -735,6 +736,7 @@ IShellItem *QWindowsNativeFileDialogBase::shellItem(const QString &path)
         if (SUCCEEDED(hr))
             return result;
     }
+#endif
     qErrnoWarning("%s: SHCreateItemFromParsingName()) failed", __FUNCTION__);
     return 0;
 }
@@ -749,9 +751,11 @@ void QWindowsNativeFileDialogBase::setDirectory(const QString &directory)
 
 QString QWindowsNativeFileDialogBase::directory() const
 {
+#ifndef Q_OS_WINCE
     IShellItem *item = 0;
     if (m_fileDialog && SUCCEEDED(m_fileDialog->GetFolder(&item)) && item)
         return QWindowsNativeFileDialogBase::itemPath(item);
+#endif
     return QString();
 }
 
@@ -1230,6 +1234,7 @@ QString QWindowsFileDialogHelper::selectedNameFilter() const
 
 typedef QSharedPointer<QColor> SharedPointerColor;
 
+#ifdef USE_NATIVE_COLOR_DIALOG
 class QWindowsNativeColorDialog : public QWindowsNativeDialogBase
 {
     Q_OBJECT
@@ -1336,6 +1341,7 @@ QWindowsNativeDialogBase *QWindowsColorDialogHelper::createNativeDialog()
     nativeDialog->setWindowTitle(options()->windowTitle());
     return nativeDialog;
 }
+#endif // USE_NATIVE_COLOR_DIALOG
 
 namespace QWindowsDialogs {
 

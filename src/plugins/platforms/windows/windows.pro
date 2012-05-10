@@ -9,11 +9,13 @@ INCLUDEPATH += ../../../3rdparty/harfbuzz/src
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 # Note: OpenGL32 must precede Gdi32 as it overwrites some functions.
-LIBS *= -lOpenGL32 -lGdi32 -lUser32 -lOle32 -lWinspool -lImm32 -lWinmm  -lOleaut32
+LIBS *= -lole32
+!wince*:LIBS *= -lgdi32 -luser32 -lwinspool -limm32 -lwinmm  -loleaut32
+contains(QT_CONFIG, opengl):LIBS *= -lOpenGL32
 win32-g++: LIBS *= -luuid
 # For the dialog helpers:
-LIBS *= -lshlwapi -lShell32
-LIBS *= -lAdvapi32
+!wince*:LIBS *= -lshlwapi -lshell32
+!wince*:LIBS *= -ladvapi32
 
 DEFINES *= QT_NO_CAST_FROM_ASCII
 
@@ -38,11 +40,10 @@ SOURCES += \
     qwindowsfontdatabase.cpp \
     qwindowsmousehandler.cpp \
     qwindowsguieventdispatcher.cpp \
-    qwindowsglcontext.cpp \
-    qwindowsclipboard.cpp \
     qwindowsole.cpp \
     qwindowsmime.cpp \
     qwindowsdrag.cpp \
+    qwindowsinternalmimedata.cpp \
     qwindowscursor.cpp \
     qwindowsinputcontext.cpp \
     qwindowstheme.cpp \
@@ -63,8 +64,6 @@ HEADERS += \
     qwindowsguieventdispatcher.h \
     qtwindowsglobal.h \
     qtwindows_additional.h \
-    qwindowsglcontext.h \
-    qwindowsclipboard.h \
     qwindowsole.h \
     qwindowsmime.h \
     qwindowsdrag.h \
@@ -74,7 +73,18 @@ HEADERS += \
     qwindowsinputcontext.h \
     qwindowstheme.h \
     qwindowsdialoghelpers.h \
-    qwindowsservices.h
+    qwindowsservices.h \
+    qplatformfunctions_wince.h
+
+contains(QT_CONFIG, opengl) {
+    SOURCES += qwindowsglcontext.cpp
+    HEADERS += qwindowsglcontext.h
+}
+
+!contains( DEFINES, QT_NO_CLIPBOARD ) {
+    SOURCES += qwindowsclipboard.cpp
+    HEADERS += qwindowsclipboard.h
+}
 
 # Enable access to HB_Face in harfbuzz includes included by qfontengine_p.h.
 DEFINES *= QT_COMPILES_IN_HARFBUZZ

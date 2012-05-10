@@ -164,6 +164,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         if (QWindowsContext::verboseEvents)
             qDebug() << "Entering " << window;
         QWindowsWindow::baseWindowOf(window)->applyCursor();
+#ifndef Q_OS_WINCE
         QWindowSystemInterface::handleEnterEvent(window);
         TRACKMOUSEEVENT tme;
         tme.cbSize = sizeof(TRACKMOUSEEVENT);
@@ -172,6 +173,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         tme.dwHoverTime = HOVER_DEFAULT; //
         if (!TrackMouseEvent(&tme))
             qWarning("TrackMouseEvent failed.");
+#endif // !Q_OS_WINCE
     }
     QWindowSystemInterface::handleMouseEvent(window, client,
                                              QWindowsGeometryHint::mapToGlobal(hwnd, client),
@@ -220,6 +222,7 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
                                                QtWindows::WindowsEventType,
                                                MSG msg, LRESULT *)
 {
+#ifndef Q_OS_WINCE
     typedef QWindowSystemInterface::TouchPoint QTouchPoint;
     typedef QList<QWindowSystemInterface::TouchPoint> QTouchPointList;
 
@@ -289,6 +292,9 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
                                              m_touchDevice,
                                              touchPoints);
     return true;
+#else
+    return false;
+#endif
 }
 
 QT_END_NAMESPACE

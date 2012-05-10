@@ -99,7 +99,14 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
     WindowsScreenDataList *result = reinterpret_cast<WindowsScreenDataList *>(p);
     QWindowsScreenData data;
     data.geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
-    if (HDC hdc = CreateDC(info.szDevice, NULL, NULL, NULL)) {
+#ifdef Q_OS_WINCE
+    //Windows CE, just supports one Display and expects to get only DISPLAY,
+    //instead of DISPLAY0 and so on, which are passed by info.szDevice
+    HDC hdc = CreateDC(TEXT("DISPLAY"), NULL, NULL, NULL);
+#else
+    HDC hdc = CreateDC(info.szDevice, NULL, NULL, NULL);
+#endif
+    if (hdc) {
         data.dpi = deviceDPI(hdc);
         data.depth = GetDeviceCaps(hdc, BITSPIXEL);
         data.format = data.depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;

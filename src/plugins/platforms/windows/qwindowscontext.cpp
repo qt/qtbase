@@ -113,6 +113,9 @@ static inline bool hasTouchSupport(QSysInfo::WinVersion wv)
 
 static inline bool useRTL_Extensions(QSysInfo::WinVersion ver)
 {
+    // This is SDK dependent on CE so out of scope for now
+    if (QSysInfo::windowsVersion() & QSysInfo::WV_CE_based)
+        return false;
     if ((ver & QSysInfo::WV_NT_based) && (ver >= QSysInfo::WV_VISTA)) {
         // Since the IsValidLanguageGroup/IsValidLocale functions always return true on
         // Vista, check the Keyboard Layouts for enabling RTL.
@@ -133,6 +136,7 @@ static inline bool useRTL_Extensions(QSysInfo::WinVersion ver)
         }
         return false;
     } // NT/Vista
+#ifndef Q_OS_WINCE
     // Pre-NT: figure out whether a RTL language is installed
     return IsValidLanguageGroup(LGRPID_ARABIC, LGRPID_INSTALLED)
                             || IsValidLanguageGroup(LGRPID_HEBREW, LGRPID_INSTALLED)
@@ -140,6 +144,9 @@ static inline bool useRTL_Extensions(QSysInfo::WinVersion ver)
                             || IsValidLocale(MAKELCID(MAKELANGID(LANG_HEBREW, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED)
                             || IsValidLocale(MAKELCID(MAKELANGID(LANG_SYRIAC, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED)
                             || IsValidLocale(MAKELCID(MAKELANGID(LANG_FARSI, SUBLANG_DEFAULT), SORT_DEFAULT), LCID_INSTALLED);
+#else
+    return false;
+#endif
 }
 
 /*!
@@ -156,6 +163,8 @@ static inline bool useRTL_Extensions(QSysInfo::WinVersion ver)
 
     \ingroup qt-lighthouse-win
 */
+
+#ifndef Q_OS_WINCE
 
 QWindowsUser32DLL::QWindowsUser32DLL() :
     setLayeredWindowAttributes(0), updateLayeredWindow(0),
@@ -212,6 +221,8 @@ void QWindowsShell32DLL::init()
 QWindowsUser32DLL QWindowsContext::user32dll;
 QWindowsShell32DLL QWindowsContext::shell32dll;
 
+#endif // !Q_OS_WINCE
+
 QWindowsContext *QWindowsContext::m_instance = 0;
 
 /*!
@@ -257,13 +268,16 @@ QWindowsContextPrivate::QWindowsContextPrivate() :
     m_oleInitializeResult(OleInitialize(NULL)),
     m_eventType(QByteArrayLiteral("windows_generic_MSG"))
 {
+#ifndef Q_OS_WINCE
     QWindowsContext::user32dll.init();
     QWindowsContext::shell32dll.init();
+#endif
 
     const QSysInfo::WinVersion ver = QSysInfo::windowsVersion();
-
+#ifndef Q_OS_WINCE
     if (hasTouchSupport(ver) && QWindowsContext::user32dll.initTouch())
         m_systemInfo |= QWindowsContext::SI_SupportsTouch;
+#endif
 
     if (useRTL_Extensions(ver)) {
         m_systemInfo |= QWindowsContext::SI_RTL_Extensions;
@@ -279,7 +293,9 @@ QWindowsContext::QWindowsContext() :
 #    pragma warning( disable : 4996 )
 #endif
     m_instance = this;
-    if (const char *v = getenv("QT_QPA_VERBOSE")) {
+    const QByteArray bv = qgetenv("QT_QPA_VERBOSE");
+    if (bv.isEmpty()) {
+        const char *v = bv.data();
         QWindowsContext::verboseIntegration = componentVerbose(v, "integration");
         QWindowsContext::verboseWindows = componentVerbose(v, "windows");
         QWindowsContext::verboseEvents = componentVerbose(v, "events");
@@ -419,13 +435,20 @@ QString QWindowsContext::registerWindowClass(QString cname,
     if (d->m_registeredWindowClassNames.contains(cname))        // already registered in our list
         return cname;
 
+#ifndef Q_OS_WINCE
     WNDCLASSEX wc;
     wc.cbSize       = sizeof(WNDCLASSEX);
+#else
+    WNDCLASS wc;
+#endif
     wc.style        = style;
     wc.lpfnWndProc  = proc;
     wc.cbClsExtra   = 0;
     wc.cbWndExtra   = 0;
     wc.hInstance    = appInstance;
+    wc.hCursor      = 0;
+#ifndef Q_OS_WINCE
+    wc.hbrBackground = brush;
     if (icon) {
         wc.hIcon = (HICON)LoadImage(appInstance, L"IDI_ICON1", IMAGE_ICON, 0, 0, LR_DEFAULTSIZE);
         if (wc.hIcon) {
@@ -440,11 +463,21 @@ QString QWindowsContext::registerWindowClass(QString cname,
         wc.hIcon    = 0;
         wc.hIconSm  = 0;
     }
-    wc.hCursor      = 0;
-    wc.hbrBackground = brush;
+#else
+    if (icon) {
+        wc.hIcon = (HICON)LoadImage(appInstance, L"IDI_ICON1", IMAGE_ICON, 0, 0, LR_DEFAULTSIZE);
+    } else {
+        wc.hIcon    = 0;
+    }
+#endif
+
     wc.lpszMenuName  = 0;
     wc.lpszClassName = (wchar_t*)cname.utf16();
+#ifndef Q_OS_WINCE
     ATOM atom = RegisterClassEx(&wc);
+#else
+    ATOM atom = RegisterClass(&wc);
+#endif
 
     if (!atom)
         qErrnoWarning("QApplication::regClass: Registering window class '%s' failed.",
@@ -719,9 +752,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     // Pass on to current creation context
     if (!platformWindow && !d->m_creationContext.isNull()) {
         switch (et) {
+#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
         case QtWindows::QuerySizeHints:
             d->m_creationContext->applyToMinMaxInfo(reinterpret_cast<MINMAXINFO *>(lParam));
             return true;
+#endif
         case QtWindows::ResizeEvent:
             d->m_creationContext->obtainedGeometry.setSize(QSize(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
             return true;
@@ -762,9 +797,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::ResizeEvent:
         platformWindow->handleResized((int)wParam);
         return true;
+#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
     case QtWindows::QuerySizeHints:
         platformWindow->getSizeHints(reinterpret_cast<MINMAXINFO *>(lParam));
-        return true;
+        return true;// maybe available on some SDKs revisit WM_NCCALCSIZE
     case QtWindows::CalculateSize:
         // NCCALCSIZE_PARAMS structure if wParam==TRUE
         if (wParam && QWindowsContext::verboseWindows) {
@@ -772,6 +808,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             qDebug() << platformWindow->window() << *ncp;
         }
         break;
+#endif
     case QtWindows::ExposeEvent:
         return platformWindow->handleWmPaint(hwnd, message, wParam, lParam);
     case QtWindows::MouseWheelEvent:
@@ -800,11 +837,13 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         if (QWindowsTheme *theme = QWindowsTheme::instance())
             theme->windowsThemeChanged(platformWindow->window());
         return true;
+#ifndef Q_OS_WINCE
     case QtWindows::ActivateWindowEvent:
         if (platformWindow->testFlag(QWindowsWindow::BlockedByModal))
             if (const QWindow *modalWindow = QGuiApplication::modalWindow())
                 QWindowsWindow::baseWindowOf(modalWindow)->alertWindow();
         break;
+#endif
     default:
         break;
     }

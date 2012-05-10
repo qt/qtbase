@@ -42,6 +42,7 @@
 #ifndef QWINDOWSINTEGRATION_H
 #define QWINDOWSINTEGRATION_H
 
+#include <QtCore/qconfig.h>
 #include <qpa/qplatformintegration.h>
 #include <QtCore/QScopedPointer>
 
@@ -60,10 +61,13 @@ public:
     virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+#ifndef QT_NO_OPENGL
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+#endif
     virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-
+#ifndef QT_NO_CLIPBOARD
     virtual QPlatformClipboard *clipboard() const;
+#endif
     virtual QPlatformDrag *drag() const;
     virtual QPlatformInputContext *inputContext() const;
 #ifndef QT_NO_ACCESSIBILITY

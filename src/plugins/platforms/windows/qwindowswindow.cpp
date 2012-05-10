@@ -112,6 +112,7 @@ static QByteArray debugWindowStates(Qt::WindowStates s)
     return rc;
 }
 
+#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
 QDebug operator<<(QDebug d, const MINMAXINFO &i)
 {
     d.nospace() << "MINMAXINFO maxSize=" << i.ptMaxSize.x << ','
@@ -122,6 +123,7 @@ QDebug operator<<(QDebug d, const MINMAXINFO &i)
                  << i.ptMaxTrackSize.y;
     return d;
 }
+#endif // !Q_OS_WINCE
 
 static inline QSize qSizeOfRect(const RECT &rect)
 {
@@ -148,6 +150,7 @@ QDebug operator<<(QDebug d, const RECT &r)
     return d;
 }
 
+#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_NCCALCSIZE
 QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
 {
     qDebug().nospace() << "NCCALCSIZE_PARAMS "
@@ -156,6 +159,7 @@ QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
         << qrectFromRECT(p.rgrc[2]);
     return d;
 }
+#endif // !Q_OS_WINCE
 
 // Return the frame geometry relative to the parent
 // if there is one.
@@ -507,6 +511,7 @@ QMargins QWindowsGeometryHint::frame(DWORD style, DWORD exStyle)
     return result;
 }
 
+#ifndef Q_OS_WINCE
 void QWindowsGeometryHint::applyToMinMaxInfo(HWND hwnd, MINMAXINFO *mmi) const
 {
     return applyToMinMaxInfo(GetWindowLong(hwnd, GWL_STYLE),
@@ -541,6 +546,7 @@ void QWindowsGeometryHint::applyToMinMaxInfo(DWORD style, DWORD exStyle, MINMAXI
                            << " frame=" << margins << ' ' << frameWidth << ',' << frameHeight
                            << " out " << *mmi;
 }
+#endif // !Q_OS_WINCE
 
 bool QWindowsGeometryHint::positionIncludesFrame(const QWindow *w)
 {
@@ -1264,6 +1270,9 @@ void QWindowsWindow::setOpacity(qreal level)
 
 void QWindowsWindow::setOpacity_sys(qreal level) const
 {
+#ifdef Q_OS_WINCE // maybe needs revisit WS_EX_LAYERED
+    Q_UNUSED(level);
+#else
     const long wl = GetWindowLong(m_data.hwnd, GWL_EXSTYLE);
     const bool isOpaque = level == 1.0;
 
@@ -1280,6 +1289,7 @@ void QWindowsWindow::setOpacity_sys(qreal level) const
             QWindowsContext::user32dll.setLayeredWindowAttributes(m_data.hwnd, 0, (int)(level * 255), LWA_ALPHA);
         }
     }
+#endif // !Q_OS_WINCE
 }
 
 void QWindowsWindow::requestActivateWindow()
@@ -1340,6 +1350,7 @@ void QWindowsWindow::setMouseGrabEnabled_sys(bool grab)
     }
 }
 
+#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
 void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {
     const QWindowsGeometryHint hint(window());
@@ -1347,6 +1358,7 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << window() << *mmi;
 }
+#endif // !Q_OS_WINCE
 
 /*!
     \brief Applies to cursor property set on the window to the global cursor.
@@ -1392,6 +1404,7 @@ QWindowsWindow *QWindowsWindow::childAt(const QPoint &clientPoint, unsigned cwex
     return 0;
 }
 
+#ifndef Q_OS_WINCE
 void QWindowsWindow::alertWindow(int durationMs)
 {
     DWORD timeOutMs = GetCaretBlinkTime();
@@ -1417,6 +1430,7 @@ void QWindowsWindow::stopAlertWindow()
     info.uCount = 0;
     FlashWindowEx(&info);
 }
+#endif // !Q_OS_WINCE
 
 bool QWindowsWindow::isEnabled() const
 {

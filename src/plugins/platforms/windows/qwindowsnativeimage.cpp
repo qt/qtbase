@@ -127,7 +127,9 @@ QWindowsNativeImage::QWindowsNativeImage(int width, int height,
         m_image = QImage(width, height, format);
     }
 
+#ifndef Q_OS_WINCE
     GdiFlush();
+#endif
 }
 
 QWindowsNativeImage::~QWindowsNativeImage()

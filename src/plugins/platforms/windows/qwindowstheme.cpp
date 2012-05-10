@@ -45,6 +45,10 @@
 #include "qwindowsintegration.h"
 #include "qt_windows.h"
 #include "qwindowsfontdatabase.h"
+#ifdef Q_OS_WINCE
+#  include "qplatformfunctions_wince.h"
+#  include "winuser.h"
+#endif
 
 #include <QtCore/QVariant>
 #include <QtCore/QCoreApplication>
@@ -226,8 +230,13 @@ static inline QPalette menuPalette(const QPalette &systemPalette)
     result.setColor(QPalette::Active, QPalette::ButtonText, menuTextColor);
     result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Text, disabled);
+#ifndef Q_OS_WINCE
     result.setColor(QPalette::Disabled, QPalette::Highlight,
                     getSysColor(isFlat ? COLOR_MENUHILIGHT : COLOR_HIGHLIGHT));
+#else
+    result.setColor(QPalette::Disabled, QPalette::Highlight,
+                    getSysColor(COLOR_HIGHLIGHT));
+#endif
     result.setColor(QPalette::Disabled, QPalette::HighlightedText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Button,
                     result.color(QPalette::Active, QPalette::Button));
@@ -253,7 +262,11 @@ static inline QPalette *menuBarPalette(const QPalette &menuPalette)
     QPalette *result = 0;
     if (booleanSystemParametersInfo(SPI_GETFLATMENU, false)) {
         result = new QPalette(menuPalette);
+#ifndef Q_OS_WINCE
         const QColor menubar(getSysColor(COLOR_MENUBAR));
+#else
+        const QColor menubar(getSysColor(COLOR_MENU));
+#endif
         result->setColor(QPalette::Active, QPalette::Button, menubar);
         result->setColor(QPalette::Disabled, QPalette::Button, menubar);
         result->setColor(QPalette::Inactive, QPalette::Button, menubar);
@@ -323,10 +336,12 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
         return QVariant(iconThemeSearchPaths());
     case StyleNames:
         return QVariant(styleNames());
+#ifndef Q_OS_WINCE
     case TextCursorWidth:
         return QVariant(int(dWordSystemParametersInfo(SPI_GETCARETWIDTH, 1u)));
     case DropShadow:
         return QVariant(booleanSystemParametersInfo(SPI_GETDROPSHADOW, false));
+#endif // !Q_OS_WINCE
     case MaximumScrollBarDragDistance:
         return QVariant(qRound(qreal(QWindowsContext::instance()->defaultDPI()) * 1.375));
     case KeyboardScheme:
@@ -368,6 +383,7 @@ void QWindowsTheme::clearFonts()
 
 void QWindowsTheme::refreshFonts()
 {
+#ifndef Q_OS_WINCE // ALL THIS FUNCTIONALITY IS MISSING ON WINCE
     clearFonts();
     if (!QGuiApplication::desktopSettingsAware())
         return;
@@ -398,6 +414,7 @@ void QWindowsTheme::refreshFonts()
         qDebug() << __FUNCTION__ << '\n'
                  << "  menuFont=" << menuFont
                  << "  messageBox=" << MessageBoxFont;
+#endif // !Q_OS_WINCE
 }
 
 bool QWindowsTheme::usePlatformNativeDialog(DialogType type) const

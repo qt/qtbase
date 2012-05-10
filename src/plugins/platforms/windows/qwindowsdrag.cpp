@@ -41,7 +41,9 @@
 
 #include "qwindowsdrag.h"
 #include "qwindowscontext.h"
-#include "qwindowsclipboard.h"
+#ifndef QT_NO_CLIPBOARD
+#  include "qwindowsclipboard.h"
+#endif
 #include "qwindowsintegration.h"
 #include "qwindowsole.h"
 #include "qtwindows_additional.h"

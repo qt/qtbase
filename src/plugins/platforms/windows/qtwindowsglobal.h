@@ -44,6 +44,9 @@
 
 #include "qtwindows_additional.h"
 #include <QtCore/qnamespace.h>
+#ifdef Q_OS_WINCE
+#  include "qplatformfunctions_wince.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 

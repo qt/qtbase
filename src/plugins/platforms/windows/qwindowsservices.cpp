@@ -46,7 +46,9 @@
 #include <QtCore/QDebug>
 
 #include <shlobj.h>
-#include <intshcut.h>
+#ifndef Q_OS_WINCE
+#  include <intshcut.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -54,6 +56,7 @@ enum { debug = 0 };
 
 static inline bool shellExecute(const QString &file)
 {
+#ifndef Q_OS_WINCE
     const quintptr result = (quintptr)ShellExecute(0, 0, (wchar_t*)file.utf16(), 0, 0, SW_SHOWNORMAL);
     // ShellExecute returns a value greater than 32 if successful
     if (result <= 32) {
@@ -61,6 +64,10 @@ static inline bool shellExecute(const QString &file)
         return false;
     }
     return true;
+#else
+    Q_UNUSED(file)
+    return false;
+#endif
 }
 
 // Retrieve the commandline for the default mail client. It contains a
@@ -95,9 +102,13 @@ static inline QString mailCommand()
     }
     if (!command[0])
         return QString();
+#ifndef Q_OS_WINCE
     wchar_t expandedCommand[MAX_PATH] = {0};
     return ExpandEnvironmentStrings(command, expandedCommand, MAX_PATH) ?
            QString::fromWCharArray(expandedCommand) : QString::fromWCharArray(command);
+#else
+    return QString();
+#endif
 }
 
 static inline bool launchMail(const QUrl &url)

@@ -59,6 +59,7 @@ struct QWindowCreationContext;
 struct QWindowsContextPrivate;
 class QPoint;
 
+#ifndef Q_OS_WINCE
 struct QWindowsUser32DLL
 {
     QWindowsUser32DLL();
@@ -98,6 +99,7 @@ struct QWindowsShell32DLL
 
     SHCreateItemFromParsingName sHCreateItemFromParsingName;
 };
+#endif // Q_OS_WINCE
 
 class QWindowsContext
 {
@@ -169,9 +171,10 @@ public:
 
     QWindowsMimeConverter &mimeConverter() const;
     QWindowsScreenManager &screenManager();
-
+#ifndef Q_OS_WINCE
     static QWindowsUser32DLL user32dll;
     static QWindowsShell32DLL shell32dll;
+#endif
 
     static QByteArray comErrorString(HRESULT hr);
 

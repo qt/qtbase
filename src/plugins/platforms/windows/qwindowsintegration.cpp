@@ -43,20 +43,24 @@
 #include "qwindowsbackingstore.h"
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
-#include "qwindowsglcontext.h"
+#ifndef QT_NO_OPENGL
+#  include "qwindowsglcontext.h"
+#endif
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
 #include "qwindowsservices.h"
 #ifndef QT_NO_FREETYPE
-#include "qwindowsfontdatabase_ft.h"
+#  include "qwindowsfontdatabase_ft.h"
 #endif
 #include "qwindowsfontdatabase.h"
 #include "qwindowsguieventdispatcher.h"
-#include "qwindowsclipboard.h"
+#ifndef QT_NO_CLIPBOARD
+#  include "qwindowsclipboard.h"
+#endif
 #include "qwindowsdrag.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowskeymapper.h"
-#ifndef QT_NO_ACCESSIBILITY
+#  ifndef QT_NO_ACCESSIBILITY
 #include "accessible/qwindowsaccessibility.h"
 #endif
 
@@ -89,7 +93,9 @@ class QWindowsNativeInterface : public QPlatformNativeInterface
 {
     Q_OBJECT
 public:
+#ifndef QT_NO_OPENGL
     virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
+#endif
     virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
     virtual void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *bs);
     virtual EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter)
@@ -134,6 +140,7 @@ void *QWindowsNativeInterface::nativeResourceForBackingStore(const QByteArray &r
     return 0;
 }
 
+#ifndef QT_NO_OPENGL
 void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
 {
     if (!context || !context->handle()) {
@@ -147,6 +154,7 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
     return 0;
 }
+#endif // !QT_NO_OPENGL
 
 /*!
     \brief Creates a non-visible window handle for filtering messages.
@@ -171,7 +179,9 @@ void *QWindowsNativeInterface::createMessageWindow(const QString &classNameTempl
 
 struct QWindowsIntegrationPrivate
 {
+#ifndef QT_NO_OPENGL
     typedef QSharedPointer<QOpenGLStaticContext> QOpenGLStaticContextPtr;
+#endif
 
     QWindowsIntegrationPrivate();
     ~QWindowsIntegrationPrivate();
@@ -179,10 +189,14 @@ struct QWindowsIntegrationPrivate
     QWindowsContext m_context;
     QPlatformFontDatabase *m_fontDatabase;
     QWindowsNativeInterface m_nativeInterface;
+#ifndef QT_NO_CLIPBOARD
     QWindowsClipboard m_clipboard;
+#endif
     QWindowsDrag m_drag;
     QWindowsGuiEventDispatcher *m_eventDispatcher;
+#ifndef QT_NO_OPENGL
     QOpenGLStaticContextPtr m_staticOpenGLContext;
+#endif
     QWindowsInputContext m_inputContext;
 #ifndef QT_NO_ACCESSIBILITY
     QWindowsAccessibility m_accessibility;
@@ -205,7 +219,9 @@ QWindowsIntegration::QWindowsIntegration() :
     d(new QWindowsIntegrationPrivate)
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(d->m_eventDispatcher);
+#ifndef QT_NO_CLIPBOARD
     d->m_clipboard.registerViewer();
+#endif
     d->m_context.screenManager().handleScreenChanges();
 }
 
@@ -220,10 +236,12 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     switch (cap) {
     case ThreadedPixmaps:
         return true;
+#ifndef QT_NO_OPENGL
     case OpenGL:
         return true;
     case ThreadedOpenGL:
         return true;
+#endif
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
@@ -267,6 +285,7 @@ QPlatformBackingStore *QWindowsIntegration::createPlatformBackingStore(QWindow *
     return new QWindowsBackingStore(window);
 }
 
+#ifndef QT_NO_OPENGL
 QPlatformOpenGLContext
     *QWindowsIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
@@ -280,6 +299,7 @@ QPlatformOpenGLContext
         return result.take();
     return 0;
 }
+#endif // !QT_NO_OPENGL
 
 /* Workaround for QTBUG-24205: In 'Auto', pick the FreeType engine for
  * QML2 applications. */
@@ -319,6 +339,7 @@ QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
     return d->m_fontDatabase;
 }
 
+#ifdef SPI_GETKEYBOARDSPEED
 static inline int keyBoardAutoRepeatRateMS()
 {
   DWORD time = 0;
@@ -326,6 +347,7 @@ static inline int keyBoardAutoRepeatRateMS()
       return time ? 1000 / static_cast<int>(time) : 500;
   return 30;
 }
+#endif
 
 QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
@@ -334,8 +356,10 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
         if (const unsigned timeMS = GetCaretBlinkTime())
             return QVariant(int(timeMS));
         break;
+#ifdef SPI_GETKEYBOARDSPEED
     case KeyboardAutoRepeatRate:
         return QVariant(keyBoardAutoRepeatRateMS());
+#endif
     case QPlatformIntegration::StartDragTime:
     case QPlatformIntegration::StartDragDistance:
     case QPlatformIntegration::MouseDoubleClickInterval:
@@ -358,10 +382,12 @@ QPlatformNativeInterface *QWindowsIntegration::nativeInterface() const
     return &d->m_nativeInterface;
 }
 
+#ifndef QT_NO_CLIPBOARD
 QPlatformClipboard * QWindowsIntegration::clipboard() const
 {
     return &d->m_clipboard;
 }
+#endif // !QT_NO_CLIPBOARD
 
 QPlatformDrag *QWindowsIntegration::drag() const
 {
