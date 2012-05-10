@@ -1338,31 +1338,45 @@ QMakeProject::read(uchar cmd)
         QStringList qmakepath;
         QStringList qmakefeatures;
         if (Option::mkfile::do_cache) {        // parse the cache
+            QHash<QString, QStringList> cache;
             if (Option::mkfile::cachefile.isEmpty())  { //find it as it has not been specified
+                QString sdir = qmake_getpwd();
                 QString dir = Option::output_dir;
                 forever {
+                    QFileInfo qsfi(sdir, QLatin1String(".qmake.conf"));
+                    if (qsfi.exists()) {
+                        conffile = qsfi.filePath();
+                        if (!read(conffile, cache))
+                            return false;
+                    }
                     QFileInfo qfi(dir, QLatin1String(".qmake.cache"));
                     if (qfi.exists()) {
                         cachefile = qfi.filePath();
+                        if (!read(cachefile, cache))
+                            return false;
+                    }
+                    if (!conffile.isEmpty() || !cachefile.isEmpty()) {
+                        project_root = sdir;
                         project_build_root = dir;
                         break;
                     }
+                    QFileInfo qsdfi(sdir);
                     QFileInfo qdfi(dir);
-                    if (qdfi.isRoot())
+                    if (qsdfi.isRoot() || qdfi.isRoot())
                         goto no_cache;
+                    sdir = qsdfi.path();
                     dir = qdfi.path();
                 }
             } else {
                 QFileInfo fi(Option::mkfile::cachefile);
                 cachefile = QDir::cleanPath(fi.absoluteFilePath());
+                if (!read(cachefile, cache))
+                    return false;
                 project_build_root = QDir::cleanPath(fi.absolutePath());
+                // This intentionally bypasses finding a source root,
+                // as the result would be more or less arbitrary.
             }
 
-            QHash<QString, QStringList> cache;
-            if (!read(cachefile, cache)) {
-                cachefile.clear();
-                goto no_cache;
-            }
             if (Option::mkfile::xqmakespec.isEmpty() && !cache["XQMAKESPEC"].isEmpty())
                 Option::mkfile::xqmakespec = cache["XQMAKESPEC"].first();
             if (Option::mkfile::qmakespec.isEmpty() && !cache["QMAKESPEC"].isEmpty()) {
@@ -1379,17 +1393,10 @@ QMakeProject::read(uchar cmd)
         }
       no_cache:
 
-        if (qmake_getpwd() != Option::output_dir || project_build_root.isEmpty()) {
+        if (project_build_root.isEmpty()) {
             QDir srcdir(qmake_getpwd());
             QDir dstdir(Option::output_dir);
             do {
-                if (!project_build_root.isEmpty()) {
-                    // If we already know the build root, just match up the source root with it.
-                    if (dstdir.path() == project_build_root) {
-                        project_root = srcdir.path();
-                        break;
-                    }
-                } else {
                     // Look for mkspecs/ in source and build. First to win determines the root.
                     if (dstdir.exists("mkspecs") || srcdir.exists("mkspecs")) {
                         project_build_root = dstdir.path();
@@ -1398,10 +1405,7 @@ QMakeProject::read(uchar cmd)
                             project_root.clear();
                         break;
                     }
-                }
             } while (!srcdir.isRoot() && srcdir.cdUp() && !dstdir.isRoot() && dstdir.cdUp());
-        } else {
-            project_root.clear();
         }
 
         if (qmakepath != cached_qmakepath || qmakefeatures != cached_qmakefeatures
@@ -1449,6 +1453,10 @@ QMakeProject::read(uchar cmd)
             }
             validateModes();
 
+            if (!conffile.isEmpty()) {
+                debug_msg(1, "Project config file: reading %s", conffile.toLatin1().constData());
+                read(conffile, base_vars);
+            }
             if (!cachefile.isEmpty()) {
                 debug_msg(1, "QMAKECACHE file: reading %s", cachefile.toLatin1().constData());
                 read(cachefile, base_vars);

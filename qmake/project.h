@@ -83,6 +83,7 @@ class QMakeProject
     bool need_restart;
     bool own_prop;
     bool backslashWarned;
+    QString conffile;
     QString cachefile;
     QString pfile;
     QMakeProperty *prop;
@@ -132,6 +133,7 @@ public:
     QStringList userTestFunctions() { return testFunctions.keys(); }
 
     QString projectFile();
+    QString confFile() const { return conffile; }
     QString cacheFile() const { return cachefile; }
     inline QMakeProperty *properties() { return prop; }
 

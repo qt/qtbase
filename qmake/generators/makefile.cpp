@@ -2691,8 +2691,12 @@ MakefileGenerator::writeMakeQmake(QTextStream &t)
         QString qmake = build_args();
         if(!ofile.isEmpty() && !project->isActiveConfig("no_autoqmake")) {
             t << escapeFilePath(ofile) << ": " << escapeDependencyPath(fileFixify(pfile)) << " ";
-            if(Option::mkfile::do_cache)
-                t <<  escapeDependencyPath(fileFixify(project->cacheFile())) << " ";
+            if (Option::mkfile::do_cache) {
+                if (!project->confFile().isEmpty())
+                    t <<  escapeDependencyPath(fileFixify(project->confFile())) << " ";
+                if (!project->cacheFile().isEmpty())
+                    t <<  escapeDependencyPath(fileFixify(project->cacheFile())) << " ";
+            }
             if(!specdir().isEmpty()) {
                 if(exists(Option::fixPathToLocalOS(specdir()+QDir::separator()+"qmake.conf")))
                     t << escapeDependencyPath(specdir() + Option::dir_sep + "qmake.conf") << " ";
