@@ -300,6 +300,8 @@ SubdirsMetaMakefileGenerator::init()
     bool recurse = Option::recursive == Option::QMAKE_RECURSIVE_YES
                    || (Option::recursive == Option::QMAKE_RECURSIVE_DEFAULT
                        && project->isRecursive());
+    if (recurse && project->isActiveConfig("dont_recurse"))
+        recurse = false;
     if(recurse) {
         QString old_output_dir = Option::output_dir;
         QString old_output = Option::output.fileName();
