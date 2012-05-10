@@ -1,7 +1,7 @@
 
 check_PROGRAMS = shaping
 
-shaping_SOURCES = main.cpp ../linebreaking/harfbuzz-qt.cpp
+shaping_SOURCES = main.cpp harfbuzz-qt.cpp
 shaping_LDADD = $(QT_GUI_LIBS) $(QT_QTEST_LIBS) ../../src/libharfbuzz-1.la
 
 main.o: main.moc

@@ -40,9 +40,9 @@
 ****************************************************************************/
 #include <QtCore/qtextboundaryfinder.h>
 #include <QtCore/qvarlengtharray.h>
+
 #include <private/qunicodetables_p.h>
-#include <qdebug.h>
-#include "private/qharfbuzz_p.h"
+#include <private/qunicodetools_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -93,11 +93,12 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
         scriptItems.append(item);
     }
 
-    qGetCharAttributes(string, length, scriptItems.data(), scriptItems.count(), attributes);
+    QCharAttributeOptions options = 0;
     if (type == QTextBoundaryFinder::Word)
-        HB_GetWordBoundaries(string, length, scriptItems.data(), scriptItems.count(), attributes);
+        options |= GetWordBreaks;
     else if (type == QTextBoundaryFinder::Sentence)
-        HB_GetSentenceBoundaries(string, length, scriptItems.data(), scriptItems.count(), attributes);
+        options |= GetSentenceBreaks;
+    qGetCharAttributes(string, length, scriptItems.data(), scriptItems.count(), attributes, options);
 }
 
 /*! 

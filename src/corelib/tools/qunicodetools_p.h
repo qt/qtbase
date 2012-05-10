@@ -39,35 +39,38 @@
 **
 ****************************************************************************/
 
+#ifndef QUNICODETOOLS_P_H
+#define QUNICODETOOLS_P_H
+
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
-
-#ifndef QHARFBUZZ_P_H
-#define QHARFBUZZ_P_H
 
 #include <QtCore/qglobal.h>
 #include <harfbuzz-shaper.h>
 
 QT_BEGIN_NAMESPACE
 
-Q_CORE_EXPORT HB_Bool qShapeItem(HB_ShaperItem *item);
+Q_DECLARE_TYPEINFO(HB_CharAttributes, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(HB_ScriptItem, Q_PRIMITIVE_TYPE);
 
-// ### temporary
-Q_CORE_EXPORT HB_Face qHBNewFace(void *font, HB_GetFontTableFunc tableFunc);
-Q_CORE_EXPORT void qHBFreeFace(HB_Face);
-Q_CORE_EXPORT HB_Face qHBLoadFace(HB_Face face);
+enum QCharAttributeOption {
+    GetWordBreaks = 1,
+    GetSentenceBreaks = 2
+};
+Q_DECLARE_FLAGS(QCharAttributeOptions, QCharAttributeOption)
 
-Q_DECLARE_TYPEINFO(HB_GlyphAttributes, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(HB_FixedPoint, Q_PRIMITIVE_TYPE);
+Q_CORE_EXPORT void qGetCharAttributes(const ushort *string, int length,
+                                      const HB_ScriptItem *items, int numItems,
+                                      HB_CharAttributes *attributes, QCharAttributeOptions options = QFlag(0));
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QUNICODETOOLS_P_H

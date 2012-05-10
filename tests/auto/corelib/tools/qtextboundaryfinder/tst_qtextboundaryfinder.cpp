@@ -42,6 +42,7 @@
 #include <QtTest/QtTest>
 
 #include <qtextboundaryfinder.h>
+#include <qtextcodec.h>
 #include <qfile.h>
 #include <qdebug.h>
 
@@ -61,6 +62,7 @@ private slots:
     void toNextBoundary();
     void toPreviousBoundary_data();
     void toPreviousBoundary();
+    void thaiLineBreak();
 };
 
 void tst_QTextBoundaryFinder::init()
@@ -382,7 +384,95 @@ void tst_QTextBoundaryFinder::toPreviousBoundary()
     QCOMPARE(boundaries, foundBoundaries);
 }
 
+#include <qlibrary.h>
 
+#define LIBTHAI_MAJOR   0
+typedef int (*th_brk_def) (const unsigned char*, int*, size_t);
+static th_brk_def th_brk = 0;
+
+static bool init_libthai()
+{
+#if !defined(QT_NO_LIBRARY)
+    static bool triedResolve = false;
+    if (!triedResolve) {
+        th_brk = (th_brk_def) QLibrary::resolve("thai", (int)LIBTHAI_MAJOR, "th_brk");
+        triedResolve = true;
+    }
+#endif
+    return th_brk != 0;
+}
+
+void tst_QTextBoundaryFinder::thaiLineBreak()
+{
+    if (!init_libthai())
+        QSKIP("This test requires libThai-0.1.1x to be installed.");
+#if 0
+    // สวัสดีครับ นี่เป็นการงทดสอบตัวเอ
+    QTextCodec *codec = QTextCodec::codecForMib(2259);
+    QString text = codec->toUnicode(QByteArray("\xca\xc7\xd1\xca\xb4\xd5\xa4\xc3\xd1\xba\x20\xb9\xd5\xe8\xe0\xbb\xe7\xb9\xa1\xd2\xc3\xb7\xb4\xca\xcd\xba\xb5\xd1\xc7\xe0\xcd\xa7"));
+    QCOMPARE(text.length(), 32);
+
+    QTextBoundaryFinder finder(QTextBoundaryFinder::Line, text);
+    finder.setPosition(0);
+    QVERIFY(finder.isAtBoundary());
+    finder.setPosition(1);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(2);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(3);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(4);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(5);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(6);
+    QVERIFY(finder.isAtBoundary());
+    finder.setPosition(7);
+    QVERIFY(finder.isAtBoundary());
+    finder.setPosition(8);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(9);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(10);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(11);
+    QVERIFY(finder.isAtBoundary());
+    finder.setPosition(12);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(13);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(14);
+    QVERIFY(finder.isAtBoundary());
+    finder.setPosition(15);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(16);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(17);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(18);
+    QVERIFY(finder.isAtBoundary());
+    finder.setPosition(19);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(20);
+    QVERIFY(finder.isAtBoundary());
+    finder.setPosition(21);
+    QVERIFY(finder.isAtBoundary());
+    finder.setPosition(22);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(23);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(24);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(25);
+    QVERIFY(finder.isAtBoundary());
+    finder.setPosition(26);
+    QVERIFY(finder.isAtBoundary());
+    for (int i = 27; i < 32; ++i) {
+        finder.setPosition(i);
+        QVERIFY(!finder.isAtBoundary());
+    }
+#endif
+}
 
 
 QTEST_MAIN(tst_QTextBoundaryFinder)

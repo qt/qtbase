@@ -52,6 +52,7 @@
 #include "qfontengine_p.h"
 #include "qstring.h"
 #include <private/qunicodetables_p.h>
+#include <private/qunicodetools_p.h>
 #include "qtextdocument_p.h"
 #include "qrawfont.h"
 #include "qrawfont_p.h"

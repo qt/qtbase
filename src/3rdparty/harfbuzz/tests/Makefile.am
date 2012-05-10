@@ -2,6 +2,6 @@
 SUBDIRS =
 
 if QT
-SUBDIRS += linebreaking shaping
+SUBDIRS += shaping
 endif
 

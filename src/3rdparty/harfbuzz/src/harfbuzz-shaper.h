@@ -143,19 +143,9 @@ typedef struct {
     hb_bitfield unused                  :2;
 } HB_CharAttributes;
 
-void HB_GetCharAttributes(const HB_UChar16 *string, hb_uint32 stringLength,
-                          const HB_ScriptItem *items, hb_uint32 numItems,
-                          HB_CharAttributes *attributes);
-
-/* requires HB_GetCharAttributes to be called before */
-void HB_GetWordBoundaries(const HB_UChar16 *string, hb_uint32 stringLength,
-                          const HB_ScriptItem *items, hb_uint32 numItems,
-                          HB_CharAttributes *attributes);
-
-/* requires HB_GetCharAttributes to be called before */
-void HB_GetSentenceBoundaries(const HB_UChar16 *string, hb_uint32 stringLength,
-                              const HB_ScriptItem *items, hb_uint32 numItems,
-                              HB_CharAttributes *attributes);
+void HB_GetTailoredCharAttributes(const HB_UChar16 *string, hb_uint32 stringLength,
+                                  const HB_ScriptItem *items, hb_uint32 numItems,
+                                  HB_CharAttributes *attributes);
 
 
 typedef enum {

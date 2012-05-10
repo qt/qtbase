@@ -39,46 +39,14 @@
 **
 ****************************************************************************/
 
+#include "qharfbuzz_p.h"
+
 #include "qunicodetables_p.h"
 #include "qlibrary.h"
-#include "qtextcodec.h"
-
-#include "qharfbuzz_p.h"
 
 QT_USE_NAMESPACE
 
 extern "C" {
-
-HB_GraphemeClass HB_GetGraphemeClass(HB_UChar32 ch)
-{
-    const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ch);
-    return (HB_GraphemeClass) prop->graphemeBreak;
-}
-
-HB_WordClass HB_GetWordClass(HB_UChar32 ch)
-{
-    const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ch);
-    return (HB_WordClass) prop->wordBreak;
-}
-
-HB_SentenceClass HB_GetSentenceClass(HB_UChar32 ch)
-{
-    const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ch);
-    return (HB_SentenceClass) prop->sentenceBreak;
-}
-
-HB_LineBreakClass HB_GetLineBreakClass(HB_UChar32 ch)
-{
-    return (HB_LineBreakClass)QUnicodeTables::lineBreakClass(ch);
-}
-
-
-void HB_GetGraphemeAndLineBreakClass(HB_UChar32 ch, HB_GraphemeClass *grapheme, HB_LineBreakClass *lineBreak)
-{
-    const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ch);
-    *grapheme = (HB_GraphemeClass) prop->graphemeBreak;
-    *lineBreak = (HB_LineBreakClass) prop->line_break_class;
-}
 
 void HB_GetUnicodeCharProperties(HB_UChar32 ch, HB_CharCategory *category, int *combiningClass)
 {
@@ -133,13 +101,6 @@ HB_Face qHBLoadFace(HB_Face face)
 void qHBFreeFace(HB_Face face)
 {
     HB_FreeFace(face);
-}
-
-void qGetCharAttributes(const HB_UChar16 *string, hb_uint32 stringLength,
-                        const HB_ScriptItem *items, hb_uint32 numItems,
-                        HB_CharAttributes *attributes)
-{
-    HB_GetCharAttributes(string, stringLength, items, numItems, attributes);
 }
 
 QT_END_NAMESPACE
