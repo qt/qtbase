@@ -6952,6 +6952,9 @@ void tst_QNetworkReply::backgroundRequestInterruption()
 
     QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), QNetworkSession::NoBackgroundTrafficPolicy);
 
+    // After we have changed the policy we can download at full speed.
+    reply->setReadBufferSize(0);
+
     QVERIFY(waitForFinish(reply) != Timeout);
     if (session)
         QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), original);
