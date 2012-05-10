@@ -258,6 +258,13 @@ bool QLibraryPrivate::unload_sys()
     return true;
 }
 
+#ifdef Q_OS_LINUX
+Q_CORE_EXPORT QFunctionPointer qt_linux_find_symbol_sys(const char *symbol)
+{
+    return QFunctionPointer(dlsym(RTLD_DEFAULT, symbol));
+}
+#endif
+
 #ifdef Q_OS_MAC
 Q_CORE_EXPORT QFunctionPointer qt_mac_resolve_sys(void *handle, const char *symbol)
 {
