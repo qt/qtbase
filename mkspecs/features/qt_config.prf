@@ -3,9 +3,15 @@ QMAKE_QT_CONFIG = $$[QT_HOST_DATA/get]/mkspecs/qconfig.pri
    debug(1, "Cannot load qconfig.pri!")
 } else {
    debug(1, "Loaded .qconfig.pri from ($$QMAKE_QT_CONFIG)")
-   for(dir, $$list($$split($$list($$[QMAKE_MKSPECS]), $$DIRLIST_SEPARATOR))) {
+   QMAKE_MODULE_PATH = $$split($$list($$(QMAKEMODULES)), $$DIRLIST_SEPARATOR)
+   QMAKE_MODULE_PATH += $$QMAKEMODULES
+   QMAKE_MODULE_PATH += $$split($$list($$[QMAKEMODULES]), $$DIRLIST_SEPARATOR)
+   QMAKE_MODULE_PATH += $$replace($$list($$split($$list($$[QMAKE_MKSPECS]), $$DIRLIST_SEPARATOR)), \
+                                  \$, /modules)
+   QMAKE_MODULE_PATH = $$unique(QMAKE_MODULE_PATH)
+   for(dir, QMAKE_MODULE_PATH) {
       debug(1, "Loading modules from $${dir}")
-      for(mod, $$list($$files($$dir/modules/qt_*.pri))) {
+      for(mod, $$list($$files($$dir/qt_*.pri))) {
          # For installed Qt these paths will be common for all modules
          # For development these will vary per module, and syncqt will override the value in the
          # qt_<module>.pri forwarding file
