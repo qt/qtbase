@@ -906,30 +906,6 @@ void tst_QAccessibility::buttonTest()
     toggletool.setText("Toggle");
     toggletool.setMinimumSize(20,20);
 
-    // test Controller/Controlled relations
-    {
-    QCheckBox toggler("Toggle me!", &window);
-    bool ok = connect(&pushButton, SIGNAL(clicked()), &toggler, SLOT(toggle()));
-    QCOMPARE(ok, true);
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&toggler);
-    QVERIFY(iface);
-    QCOMPARE(iface->role(), QAccessible::CheckBox);
-    QAccessibleInterface *buttonIFace = relatedInterface(iface, QAccessible::Controller);
-    QVERIFY(buttonIFace);
-    QCOMPARE(buttonIFace->role(), QAccessible::Button);
-    QCOMPARE(buttonIFace->object(), &pushButton);
-    delete buttonIFace;
-    delete iface;
-
-    buttonIFace = QAccessible::queryAccessibleInterface(&pushButton);
-    QVERIFY(buttonIFace);
-    QCOMPARE(buttonIFace->role(), QAccessible::Button);
-    iface = relatedInterface(buttonIFace, QAccessible::Controlled);
-    QVERIFY(iface);
-    QCOMPARE(iface->object(), &toggler);
-
-    }
-
     // test push button
     QAccessibleInterface* interface = QAccessible::queryAccessibleInterface(&pushButton);
     QAccessibleActionInterface* actionInterface = interface->actionInterface();

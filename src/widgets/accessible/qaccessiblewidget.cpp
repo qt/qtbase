@@ -377,25 +377,6 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
         }
     }
 
-    if (match & QAccessible::Controller) {
-        const QAccessible::Relation rel = QAccessible::Controller;
-        QACConnectionObject *connectionObject = (QACConnectionObject*)object();
-        const QObjectList senderList = connectionObject->senderList();
-        for (int s = 0; s < senderList.count(); ++s) {
-            QObject *sender = senderList.at(s);
-            if (sender->isWidgetType() && sender != object()) {
-                QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(sender);
-                QACConnectionObject *connectionSender = (QACConnectionObject*)sender;
-                QStringList senderPrimarySignals = static_cast<QAccessibleWidget*>(iface)->d->primarySignals;
-                for (int sig = 0; sig < senderPrimarySignals.count(); ++sig) {
-                    const QByteArray strSignal = senderPrimarySignals.at(sig).toLatin1();
-                    if (connectionSender->isSender(object(), strSignal.constData()))
-                        rels.append(qMakePair(iface, rel));
-                }
-            }
-        }
-    }
-
     if (match & QAccessible::Controlled) {
         QObjectList allReceivers;
         QACConnectionObject *connectionObject = (QACConnectionObject*)object();
