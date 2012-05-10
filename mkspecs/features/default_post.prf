@@ -64,3 +64,30 @@ QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST
     QMAKE_EXTRA_TARGETS += check
 }
 
+# Let every project have a 'docs' target
+!contains(QMAKE_EXTRA_TARGETS, docs) {
+    contains(TEMPLATE, subdirs) {
+        # `make docs' should iterate through all subdirs
+        # (except those with no_default_target or no_docs_target)
+        !contains(CONFIG, no_docs_target):for(subdir, SUBDIRS) {
+            subdir_config = $$eval($${subdir}.CONFIG)
+            !contains(subdir_config, no_docs_target):!contains(subdir_config, no_default_target):docs.recurse += $$subdir
+            unset(subdir_config)
+        }
+        !isEmpty(docs.recurse) {
+            # setup the recurse target only when there is something to recurse into
+            docs.CONFIG = recursive
+            docs.recurse_target = docs
+        }
+    } else {
+        # apps and libs only generate docs if QMAKE_DOCS is set
+        !isEmpty(QMAKE_DOCS) {
+            !exists($$QMAKE_DOCS):error("Cannot find documentation specification file $$QMAKE_DOCS")
+            exists($$[QT_INSTALL_DOCS]):QMAKE_DOCS_INDEX *= $$[QT_INSTALL_DOCS]
+            qtPrepareTool(QDOC, qdoc)
+            for(index, QMAKE_DOCS_INDEX):QDOC_INDEX += -indexdir $$index
+            docs.commands += $$QDOC $$QMAKE_DOCS_OPTIONS $$QDOC_INDEX $$QMAKE_DOCS
+        }
+    }
+    QMAKE_EXTRA_TARGETS += docs
+}

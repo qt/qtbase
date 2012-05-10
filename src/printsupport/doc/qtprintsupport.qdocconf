@@ -1,0 +1,92 @@
+include(../../../doc/global/qt-cpp-ignore.qdocconf)
+
+project                 = QtPrintSupport
+description             = Qt Print Support Reference Documentation
+url                     = http://qt-project.org/doc/qt-5.0/qtprintsupport
+version                 = 5.0.0
+
+sourceencoding          = UTF-8
+outputencoding          = UTF-8
+naturallanguage         = en_US
+qhp.projects            = QtPrintSupport
+
+qhp.QtPrintSupport.file         = qtprintsupport.qhp
+qhp.QtPrintSupport.namespace           = org.qt-project.qtprintsupport.500
+qhp.QtPrintSupport.virtualFolder       = qdoc
+qhp.QtPrintSupport.indexTitle          = Qt Print Support Reference Documentation
+qhp.QtPrintSupport.indexRoot           =
+
+qhp.QtPrintSupport.filterAttributes    = qtprintsupport 5.0.0 qtrefdoc
+qhp.QtPrintSupport.customFilters.Qt.name = QtPrintSupport 5.0.0
+qhp.QtPrintSupport.customFilters.Qt.filterAttributes = qtprintsupport 5.0.0
+qhp.QtPrintSupport.subprojects         = classes overviews examples
+qhp.QtPrintSupport.subprojects.classes.title = Classes
+qhp.QtPrintSupport.subprojects.classes.indexTitle = Qt Print Support's Classes
+qhp.QtPrintSupport.subprojects.classes.selectors = class fake:headerfile
+qhp.QtPrintSupport.subprojects.classes.sortPages = true
+qhp.QtPrintSupport.subprojects.overviews.title = Overviews
+qhp.QtPrintSupport.subprojects.overviews.indexTitle = All Overviews and HOWTOs
+qhp.QtPrintSupport.subprojects.overviews.selectors = fake:page,group,module
+qhp.QtPrintSupport.subprojects.examples.title = Qt Print Support Examples
+qhp.QtPrintSupport.subprojects.examples.indexTitle = Qt Print Support Examples
+qhp.QtPrintSupport.subprojects.examples.selectors = fake:example
+
+dita.metadata.default.author      = Qt Project
+dita.metadata.default.permissions = all
+dita.metadata.default.publisher   = Qt Project
+dita.metadata.default.copyryear = 2012
+dita.metadata.default.copyrholder = Nokia
+dita.metadata.default.audience = programmer
+
+sources.fileextensions  = "*.c++ *.cc *.cpp *.cxx *.mm *.qml *.qdoc"
+headers.fileextensions  = "*.ch *.h *.h++ *.hh *.hpp *.hxx"
+
+examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml *.css"
+examples.imageextensions = "*.png"
+
+outputdir               = ../../../doc/qtprintsupport
+tagfile                 = ../../../doc/qtprintsupport/qtprintsupport.tags
+
+HTML.generatemacrefs    = "true"
+HTML.nobreadcrumbs      = "true"
+
+HTML.templatedir = .
+
+HTML.stylesheets = ../../../doc/global/style/offline.css
+
+HTML.headerstyles = \
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline.css\" />\n"
+
+HTML.endheader = \
+    "</head>\n" \
+
+defines                 = Q_QDOC \
+                          QT_.*_SUPPORT \
+                          QT_.*_LIB \
+                          QT_COMPAT \
+                          QT_KEYPAD_NAVIGATION \
+                          QT_NO_EGL \
+                          Q_WS_.* \
+                          Q_OS_.* \
+                          Q_BYTE_ORDER \
+                          QT_DEPRECATED \
+                          QT_DEPRECATED_* \
+                          Q_NO_USING_KEYWORD \
+                          __cplusplus \
+                          Q_COMPILER_INITIALIZER_LISTS
+
+versionsym              = QT_VERSION_STR
+
+codeindent              = 1
+
+depends                 += qtcore qtgui qtwidgets
+
+headerdirs  += ..
+
+sourcedirs  += ..
+
+exampledirs += ../../../examples \
+               ../ \
+               snippets
+
+imagedirs   += images

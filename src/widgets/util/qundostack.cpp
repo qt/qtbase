@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
     a change to the document with redo() and undo the change with undo(). The
     implementations for these functions must be provided in a derived class.
 
-    \snippet doc/src/snippets/code/src_gui_util_qundostack.cpp 0
+    \snippet code/src_gui_util_qundostack.cpp 0
 
     A QUndoCommand has an associated text(). This is a short string
     describing what the command does. It is used to update the text
@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
     QUndoCommand objects are owned by the stack they were pushed on.
     QUndoStack deletes a command if it has been undone and a new command is pushed. For example:
 
-\snippet doc/src/snippets/code/src_gui_util_qundostack.cpp 1
+\snippet code/src_gui_util_qundostack.cpp 1
 
     In effect, when a command is pushed, it becomes the top-most command
     on the stack.
@@ -93,7 +93,7 @@ QT_BEGIN_NAMESPACE
     redo() on all its children. The parent should, however, have a meaningful
     text().
 
-    \snippet doc/src/snippets/code/src_gui_util_qundostack.cpp 2
+    \snippet code/src_gui_util_qundostack.cpp 2
 
     Another way to create macros is to use the convenience functions
     QUndoStack::beginMacro() and QUndoStack::endMacro().
@@ -182,7 +182,7 @@ int QUndoCommand::id() const
 
     The default implementation returns false.
 
-    \snippet doc/src/snippets/code/src_gui_util_qundostack.cpp 3
+    \snippet code/src_gui_util_qundostack.cpp 3
 
     \sa id() QUndoStack::push()
 */
@@ -943,11 +943,11 @@ QAction *QUndoStack::createRedoAction(QObject *parent, const QString &prefix) co
     The stack becomes enabled and appropriate signals are emitted when endMacro()
     is called for the outermost macro.
 
-    \snippet doc/src/snippets/code/src_gui_util_qundostack.cpp 4
+    \snippet code/src_gui_util_qundostack.cpp 4
 
     This code is equivalent to:
 
-    \snippet doc/src/snippets/code/src_gui_util_qundostack.cpp 5
+    \snippet code/src_gui_util_qundostack.cpp 5
 
     \sa endMacro()
 */

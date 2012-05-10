@@ -57,6 +57,9 @@ HEADERS += \
         qfutureinterface_p.h \
         qfuturewatcher_p.h
 
+QMAKE_DOCS = $$PWD/doc/qtconcurrent.qdocconf
+QMAKE_DOCS_INDEX = ../../doc
+
 contains(QT_CONFIG, clock-gettime) {
     linux-*|hpux-*|solaris-*:LIBS *= -lrt
 }

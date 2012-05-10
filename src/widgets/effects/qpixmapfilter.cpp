@@ -198,7 +198,7 @@ QRectF QPixmapFilter::boundingRectFor(const QRectF &rect) const
     \endomit
 
     Example:
-    \snippet doc/src/snippets/code/src_gui_image_qpixmapfilter.cpp 1
+    \snippet code/src_gui_image_qpixmapfilter.cpp 1
 
     \sa {Pixmap Filters Example}, QPixmapColorizeFilter, QPixmapDropShadowFilter
 
@@ -1011,7 +1011,7 @@ static void grayscale(const QImage &image, QImage &dest, const QRect& rect = QRe
     chosen color. The alpha-channel is not changed.
 
     Example:
-    \snippet doc/src/snippets/code/src_gui_image_qpixmapfilter.cpp 0
+    \snippet code/src_gui_image_qpixmapfilter.cpp 0
 
     \sa QPainter::CompositionMode
 
@@ -1194,7 +1194,7 @@ public:
     radius of 1 at an offset of 8 pixels towards the lower right.
 
     Example:
-    \snippet doc/src/snippets/code/src_gui_image_qpixmapfilter.cpp 2
+    \snippet code/src_gui_image_qpixmapfilter.cpp 2
 
     \sa QPixmapColorizeFilter, QPixmapConvolutionFilter
 

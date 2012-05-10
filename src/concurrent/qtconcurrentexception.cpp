@@ -56,12 +56,12 @@ QT_BEGIN_NAMESPACE
     boundaries, provided that the exception inherit from QtConcurrent::Exception
     and implement two helper functions:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentexception.cpp 0
+    \snippet code/src_concurrent_qtconcurrentexception.cpp 0
 
     QtConcurrent::Exception subclasses must be thrown by value and
     caught by reference:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentexception.cpp 1
+    \snippet code/src_concurrent_qtconcurrentexception.cpp 1
 
     If you throw an exception that is not a subclass of QtConcurrent::Exception,
     the Qt Concurrent functions will throw a QtConcurrent::UnhandledException
@@ -80,14 +80,14 @@ QT_BEGIN_NAMESPACE
     \fn QtConcurrent::Exception::raise() const 
     In your QtConcurrent::Exception subclass, reimplement raise() like this:
     
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentexception.cpp 2
+    \snippet code/src_concurrent_qtconcurrentexception.cpp 2
 */
 
 /*!
     \fn QtConcurrent::Exception::clone() const
     In your QtConcurrent::Exception subclass, reimplement clone() like this:
     
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentexception.cpp 3
+    \snippet code/src_concurrent_qtconcurrentexception.cpp 3
 */
 
 /*! 

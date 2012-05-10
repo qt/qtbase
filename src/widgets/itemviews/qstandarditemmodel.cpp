@@ -1989,11 +1989,11 @@ QDataStream &operator<<(QDataStream &out, const QStandardItem &item)
 
     An example usage of QStandardItemModel to create a table:
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qstandarditemmodel.cpp 0
+    \snippet code/src_gui_itemviews_qstandarditemmodel.cpp 0
 
     An example usage of QStandardItemModel to create a tree:
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qstandarditemmodel.cpp 1
+    \snippet code/src_gui_itemviews_qstandarditemmodel.cpp 1
 
     After setting the model on a view, you typically want to react to user
     actions, such as an item being clicked. Since a QAbstractItemView provides
@@ -2005,19 +2005,19 @@ QDataStream &operator<<(QDataStream &out, const QStandardItem &item)
     a QAbstractItemView signal, such as QAbstractItemView::clicked(). First
     you connect the view's signal to a slot in your class:
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qstandarditemmodel.cpp 2
+    \snippet code/src_gui_itemviews_qstandarditemmodel.cpp 2
 
     When you receive the signal, you call itemFromIndex() on the given model
     index to get a pointer to the item:
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qstandarditemmodel.cpp 3
+    \snippet code/src_gui_itemviews_qstandarditemmodel.cpp 3
 
     Conversely, you must obtain the QModelIndex of an item when you want to
     invoke a model/view function that takes an index as argument. You can
     obtain the index either by using the model's indexFromItem() function, or,
     equivalently, by calling QStandardItem::index():
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qstandarditemmodel.cpp 4
+    \snippet code/src_gui_itemviews_qstandarditemmodel.cpp 4
 
     You are, of course, not required to use the item-based approach; you could
     instead rely entirely on the QAbstractItemModel interface when working with

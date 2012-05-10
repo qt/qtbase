@@ -257,7 +257,7 @@ bool QGLPixelBuffer::doneCurrent()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_opengl_qglpixelbuffer.cpp 0
+    \snippet code/src_opengl_qglpixelbuffer.cpp 0
 
     \warning This function uses the \c {render_texture} extension,
     which is currently not supported under X11. An alternative that
@@ -292,7 +292,7 @@ bool QGLPixelBuffer::doneCurrent()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_opengl_qglpixelbuffer.cpp 1
+    \snippet code/src_opengl_qglpixelbuffer.cpp 1
 
     An alternative on Windows and Mac OS X systems that support the
     \c render_texture extension is to use bindToDynamicTexture() to

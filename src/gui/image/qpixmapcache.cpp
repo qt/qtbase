@@ -472,7 +472,7 @@ QPixmapCacheEntry::~QPixmapCacheEntry()
     bool find(const QString&, QPixmap*) instead.
 
     Example:
-    \snippet doc/src/snippets/code/src_gui_image_qpixmapcache.cpp 0
+    \snippet code/src_gui_image_qpixmapcache.cpp 0
 */
 
 QPixmap *QPixmapCache::find(const QString &key)
@@ -500,7 +500,7 @@ bool QPixmapCache::find(const QString &key, QPixmap& pixmap)
     \since 4.6
 
     Example:
-    \snippet doc/src/snippets/code/src_gui_image_qpixmapcache.cpp 1
+    \snippet code/src_gui_image_qpixmapcache.cpp 1
 */
 
 bool QPixmapCache::find(const QString &key, QPixmap* pixmap)

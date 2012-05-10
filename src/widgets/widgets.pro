@@ -15,6 +15,9 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 HEADERS += $$QT_SOURCE_TREE/src/widgets/qtwidgetsversion.h
 
+QMAKE_DOCS = $$PWD/doc/qtwidgets.qdocconf
+QMAKE_DOCS_INDEX = ../../doc
+
 include(../qbase.pri)
 
 contains(QT_CONFIG, x11sm):CONFIG += x11sm

@@ -289,7 +289,7 @@ void QDataWidgetMapperPrivate::_q_modelDestroyed()
     The following code will map the columns of the model to widgets called \c mySpinBox,
     \c myLineEdit and \c{myCountryChooser}:
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qdatawidgetmapper.cpp 0
+    \snippet code/src_gui_itemviews_qdatawidgetmapper.cpp 0
 
     After the call to toFirst(), \c mySpinBox displays the value \c{1}, \c myLineEdit
     displays \c{Qt Norway} and \c myCountryChooser displays \c{Oslo}. The
@@ -476,7 +476,7 @@ QModelIndex QDataWidgetMapper::rootIndex() const
     is mapped to the QLineEdit \c nameLineEdit, and the second is
     mapped to the QSpinBox \c{ageSpinBox}:
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qdatawidgetmapper.cpp 1
+    \snippet code/src_gui_itemviews_qdatawidgetmapper.cpp 1
 
     \b{Notes:}
     \list
@@ -737,7 +737,7 @@ int QDataWidgetMapper::currentIndex() const
     with new data whenever the selection of a QTableView named
     \c myTableView changes:
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qdatawidgetmapper.cpp 2
+    \snippet code/src_gui_itemviews_qdatawidgetmapper.cpp 2
 
     \sa currentIndex()
 */

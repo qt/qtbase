@@ -90,7 +90,7 @@ QDBusContextPrivate *QDBusContextPrivate::set(QObject *obj, QDBusContextPrivate 
     exported using QDBusConnection::registerObject(). The following
     example illustrates the usage:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbuscontext.cpp 0
+    \snippet code/src_qdbus_qdbuscontext.cpp 0
 
     The example illustrates the two typical uses, that of sending
     error replies and that of delayed replies.

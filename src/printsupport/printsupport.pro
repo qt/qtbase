@@ -15,6 +15,9 @@ load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/printsupport/qtprintsupportversion.h
 
+QMAKE_DOCS = $$PWD/doc/qtprintsupport.qdocconf
+QMAKE_DOCS_INDEX = ../../doc
+
 QMAKE_LIBS += $$QMAKE_LIBS_PRINTSUPPORT
 
 include(kernel/kernel.pri)

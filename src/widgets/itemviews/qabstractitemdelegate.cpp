@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
     We create the \c WidgetDelegate class, which inherits from
     QStyledItemDelegate. We do the drawing in the paint() function:
 
-    \snippet doc/src/snippets/widgetdelegate.cpp 0
+    \snippet widgetdelegate.cpp 0
 
     Notice that we use a QStyleOptionProgressBar and initialize its
     members. We can then use the current QStyle to draw it.

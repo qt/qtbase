@@ -2039,7 +2039,7 @@ bool QPlainTextEdit::focusNextPrevChild(bool next)
 
   Information about the event is passed in the \a event object.
 
-  \snippet doc/src/snippets/code/src_gui_widgets_qplaintextedit.cpp 0
+  \snippet code/src_gui_widgets_qplaintextedit.cpp 0
 */
 void QPlainTextEdit::contextMenuEvent(QContextMenuEvent *e)
 {
@@ -2479,7 +2479,7 @@ QTextCharFormat QPlainTextEdit::currentCharFormat() const
 
     It is equivalent to
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qplaintextedit.cpp 1
+    \snippet code/src_gui_widgets_qplaintextedit.cpp 1
  */
 void QPlainTextEdit::insertPlainText(const QString &text)
 {
@@ -2528,10 +2528,10 @@ void QPlainTextEdit::print(QPagedPaintDevice *printer) const
 #endif
 
 /*! \property QPlainTextEdit::tabChangesFocus
-  \brief whether \gui Tab changes focus or is accepted as input
+  \brief whether \uicontrol Tab changes focus or is accepted as input
 
   In some occasions text edits should not allow the user to input
-  tabulators or change indentation using the \gui Tab key, as this breaks
+  tabulators or change indentation using the \uicontrol Tab key, as this breaks
   the focus chain. The default is false.
 
 */

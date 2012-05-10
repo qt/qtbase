@@ -528,7 +528,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e)
 /*! \internal
     Clears \a seq to an empty QKeySequence.
     Same as doing (the slower)
-    \snippet doc/src/snippets/code/src_gui_kernel_qshortcutmap.cpp 0
+    \snippet code/src_gui_kernel_qshortcutmap.cpp 0
 */
 void QShortcutMap::clearSequence(QVector<QKeySequence> &ksl)
 {

@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
   QDateTimeEdit box. Dates and times appear in accordance with the
   format set; see setDisplayFormat().
 
-  \snippet doc/src/snippets/code/src_gui_widgets_qdatetimeedit.cpp 0
+  \snippet code/src_gui_widgets_qdatetimeedit.cpp 0
 
   Here we've created a new QDateTimeEdit object initialized with
   today's date, and restricted the valid date range to today plus or
@@ -397,11 +397,11 @@ void QDateTimeEdit::setMaximumDateTime(const QDateTime &dt)
   function call.
   \since 4.4
 
-  \snippet doc/src/snippets/code/src_gui_widgets_qdatetimeedit.cpp 1
+  \snippet code/src_gui_widgets_qdatetimeedit.cpp 1
 
   is analogous to:
 
-  \snippet doc/src/snippets/code/src_gui_widgets_qdatetimeedit.cpp 2
+  \snippet code/src_gui_widgets_qdatetimeedit.cpp 2
 
   If either \a min or \a max are not valid, this function does
   nothing.
@@ -560,11 +560,11 @@ void QDateTimeEdit::clearMaximumTime()
   Convenience function to set minimum and maximum date with one
   function call.
 
-  \snippet doc/src/snippets/code/src_gui_widgets_qdatetimeedit.cpp 3
+  \snippet code/src_gui_widgets_qdatetimeedit.cpp 3
 
   is analogous to:
 
-  \snippet doc/src/snippets/code/src_gui_widgets_qdatetimeedit.cpp 4
+  \snippet code/src_gui_widgets_qdatetimeedit.cpp 4
 
   If either \a min or \a max are not valid, this function does
   nothing.
@@ -587,11 +587,11 @@ void QDateTimeEdit::setDateRange(const QDate &min, const QDate &max)
   Convenience function to set minimum and maximum time with one
   function call.
 
-  \snippet doc/src/snippets/code/src_gui_widgets_qdatetimeedit.cpp 5
+  \snippet code/src_gui_widgets_qdatetimeedit.cpp 5
 
   is analogous to:
 
-  \snippet doc/src/snippets/code/src_gui_widgets_qdatetimeedit.cpp 6
+  \snippet code/src_gui_widgets_qdatetimeedit.cpp 6
 
   If either \a min or \a max are not valid, this function does
   nothing.

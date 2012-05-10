@@ -1461,7 +1461,7 @@ void QGraphicsSceneDragDropEvent::setProposedAction(Qt::DropAction action)
     Sets the proposed action as accepted, i.e, the drop action
     is set to the proposed action. This is equal to:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicssceneevent.cpp 0
+    \snippet code/src_gui_graphicsview_qgraphicssceneevent.cpp 0
 
     When using this function, one should not call \c accept().
 

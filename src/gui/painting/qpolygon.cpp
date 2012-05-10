@@ -98,7 +98,7 @@ static void qt_polygon_isect_line(const QPointF &p1, const QPointF &p2, const QP
     points to a QPolygon is to use QVector's streaming operator, as
     illustrated below:
 
-    \snippet doc/src/snippets/polygon/polygon.cpp 0
+    \snippet polygon/polygon.cpp 0
 
     In addition to the functions provided by QVector, QPolygon
     provides some point-specific functions.
@@ -304,7 +304,7 @@ void QPolygon::point(int index, int *x, int *y) const
     The example code creates a polygon with two points (10, 20) and
     (30, 40):
 
-    \snippet doc/src/snippets/polygon/polygon.cpp 2
+    \snippet polygon/polygon.cpp 2
 
     \sa setPoint() putPoints()
 */
@@ -330,7 +330,7 @@ void QPolygon::setPoints(int nPoints, const int *points)
     The example code creates a polygon with two points (10, 20) and
     (30, 40):
 
-    \snippet doc/src/snippets/polygon/polygon.cpp 3
+    \snippet polygon/polygon.cpp 3
 */
 
 void QPolygon::setPoints(int nPoints, int firstx, int firsty, ...)
@@ -381,12 +381,12 @@ void QPolygon::putPoints(int index, int nPoints, const int *points)
     The example code creates a polygon with three points (4,5), (6,7)
     and (8,9), by expanding the polygon from 1 to 3 points:
 
-    \snippet doc/src/snippets/polygon/polygon.cpp 4
+    \snippet polygon/polygon.cpp 4
 
     The following code has the same result, but here the putPoints()
     function overwrites rather than extends:
 
-    \snippet doc/src/snippets/polygon/polygon.cpp 5
+    \snippet polygon/polygon.cpp 5
 
     \sa setPoints()
 */
@@ -418,7 +418,7 @@ void QPolygon::putPoints(int index, int nPoints, int firstx, int firsty, ...)
     default) in \a fromPolygon into this polygon, starting at the
     specified \a index. For example:
 
-    \snippet doc/src/snippets/polygon/polygon.cpp 6
+    \snippet polygon/polygon.cpp 6
 */
 
 void QPolygon::putPoints(int index, int nPoints, const QPolygon & from, int fromIndex)
@@ -490,7 +490,7 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
     to a QPolygonF is to use its streaming operator, as illustrated
     below:
 
-    \snippet doc/src/snippets/polygon/polygon.cpp 1
+    \snippet polygon/polygon.cpp 1
 
     In addition to the functions provided by QVector, QPolygonF
     provides the boundingRect() and translate() functions for geometry

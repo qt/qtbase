@@ -511,7 +511,7 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
     If \a valueDelimiter is set to '(' and \a pairDelimiter is ')',
     the above query string would instead be represented like this:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qurl.cpp 4
+    \snippet code/src_corelib_io_qurl.cpp 4
 
     \note Non-standard delimiters should be chosen from among what RFC 3986 calls
     "sub-delimiters". They are:

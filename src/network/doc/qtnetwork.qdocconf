@@ -2,7 +2,7 @@ include(../../../doc/global/qt-cpp-ignore.qdocconf)
 
 project                 = QtNetwork
 description             = Qt Network Reference Documentation
-url                     = http://qt-project.org/doc/qt-5.0/qtsql
+url                     = http://qt-project.org/doc/qt-5.0/qtnetwork
 version                 = 5.0.0
 
 sourceencoding          = UTF-8

@@ -114,7 +114,7 @@ QT_BEGIN_NAMESPACE
     \row
     \li \inlineimage qmatrix-simpletransformation.png
     \li
-    \snippet doc/src/snippets/matrix/matrix.cpp 0
+    \snippet matrix/matrix.cpp 0
     \endtable
 
     Although these functions are very convenient, it can be more
@@ -126,7 +126,7 @@ QT_BEGIN_NAMESPACE
     \row
     \li \inlineimage qmatrix-combinedtransformation.png
     \li
-    \snippet doc/src/snippets/matrix/matrix.cpp 1
+    \snippet matrix/matrix.cpp 1
     \endtable
 
     \section1 Basic Matrix Operations
@@ -142,7 +142,7 @@ QT_BEGIN_NAMESPACE
     QMatrix transforms a point in the plane to another point using the
     following formulas:
 
-    \snippet doc/src/snippets/code/src_gui_painting_qmatrix.cpp 0
+    \snippet code/src_gui_painting_qmatrix.cpp 0
 
     The point \e (x, y) is the original point, and \e (x', y') is the
     transformed point. \e (x', y') can be transformed back to \e (x,
@@ -174,7 +174,7 @@ QT_BEGIN_NAMESPACE
     \row
     \li \inlineimage qmatrix-combinedtransformation.png
     \li
-    \snippet doc/src/snippets/matrix/matrix.cpp 2
+    \snippet matrix/matrix.cpp 2
     \endtable
 
     \sa QPainter, QTransform, {Coordinate System}, 
@@ -342,7 +342,7 @@ void QMatrix::setMatrix(qreal m11, qreal m12, qreal m21, qreal m22, qreal dx, qr
 
     The coordinates are transformed using the following formulas:
 
-    \snippet doc/src/snippets/code/src_gui_painting_qmatrix.cpp 1
+    \snippet code/src_gui_painting_qmatrix.cpp 1
 
     The point (x, y) is the original point, and (x', y') is the
     transformed point.
@@ -427,7 +427,7 @@ QRect QMatrix::mapRect(const QRect &rect) const
     The rectangle's coordinates are transformed using the following
     formulas:
 
-    \snippet doc/src/snippets/code/src_gui_painting_qmatrix.cpp 2
+    \snippet code/src_gui_painting_qmatrix.cpp 2
 
     If rotation or shearing has been specified, this function returns
     the \e bounding rectangle. To retrieve the exact region the given
@@ -741,7 +741,7 @@ QPainterPath QMatrix::map(const QPainterPath &path) const
     The rectangle's coordinates are transformed using the following
     formulas:
 
-    \snippet doc/src/snippets/code/src_gui_painting_qmatrix.cpp 3
+    \snippet code/src_gui_painting_qmatrix.cpp 3
 
     Polygons and rectangles behave slightly differently when
     transformed (due to integer rounding), so

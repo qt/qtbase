@@ -65,13 +65,13 @@ QT_BEGIN_NAMESPACE
 
     Example using QStyle directly:
 
-    \snippet doc/src/snippets/styles/styles.cpp 1
+    \snippet styles/styles.cpp 1
 
     Example using QStylePainter:
 
-    \snippet doc/src/snippets/styles/styles.cpp 0
-    \snippet doc/src/snippets/styles/styles.cpp 4
-    \snippet doc/src/snippets/styles/styles.cpp 6
+    \snippet styles/styles.cpp 0
+    \snippet styles/styles.cpp 4
+    \snippet styles/styles.cpp 6
 
     \sa QStyle, QStyleOption
 */

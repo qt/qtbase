@@ -208,15 +208,15 @@ QGLSignalProxy *QGLSignalProxy::instance()
     There are different ways to define the display characteristics of
     a rendering context. One is to create a QGLFormat and make it the
     default for the entire application:
-    \snippet doc/src/snippets/code/src_opengl_qgl.cpp 0
+    \snippet code/src_opengl_qgl.cpp 0
 
     Or you can specify the desired format when creating an object of
     your QGLWidget subclass:
-    \snippet doc/src/snippets/code/src_opengl_qgl.cpp 1
+    \snippet code/src_opengl_qgl.cpp 1
 
     After the widget has been created, you can find out which of the
     requested features the system was able to provide:
-    \snippet doc/src/snippets/code/src_opengl_qgl.cpp 2
+    \snippet code/src_opengl_qgl.cpp 2
 
     \legalese
         OpenGL is a trademark of Silicon Graphics, Inc. in the
@@ -305,7 +305,7 @@ QGLFormat::QGLFormat()
 
     This constructor makes it easy to specify a certain desired format
     in classes derived from QGLWidget, for example:
-    \snippet doc/src/snippets/code/src_opengl_qgl.cpp 3
+    \snippet code/src_opengl_qgl.cpp 3
 
     Note that there are QGL::FormatOption values to turn format settings
     both on and off, e.g. QGL::DepthBuffer and QGL::NoDepthBuffer,
@@ -1323,7 +1323,7 @@ QGLFormat QGLFormat::defaultFormat()
     Sets a new default QGLFormat for the application to \a f. For
     example, to set single buffering as the default instead of double
     buffering, your main() might contain code like this:
-    \snippet doc/src/snippets/code/src_opengl_qgl.cpp 4
+    \snippet code/src_opengl_qgl.cpp 4
 
     \sa defaultFormat()
 */
@@ -1368,13 +1368,13 @@ QGLFormat QGLFormat::defaultOverlayFormat()
     For example, to get a double buffered overlay context (if
     available), use code like this:
 
-    \snippet doc/src/snippets/code/src_opengl_qgl.cpp 5
+    \snippet code/src_opengl_qgl.cpp 5
 
     As usual, you can find out after widget creation whether the
     underlying OpenGL system was able to provide the requested
     specification:
 
-    \snippet doc/src/snippets/code/src_opengl_qgl.cpp 6
+    \snippet code/src_opengl_qgl.cpp 6
 
     \sa defaultOverlayFormat()
 */
@@ -2808,7 +2808,7 @@ int QGLContext::textureCacheLimit()
     Call create() to create a new GL context that tries to match the
     new format.
 
-    \snippet doc/src/snippets/code/src_opengl_qgl.cpp 7
+    \snippet code/src_opengl_qgl.cpp 7
 
     \sa format(), reset(), create()
 */
@@ -3226,7 +3226,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 
     Here is a rough outline of how a QGLWidget subclass might look:
 
-    \snippet doc/src/snippets/code/src_opengl_qgl.cpp 8
+    \snippet code/src_opengl_qgl.cpp 8
 
     If you need to trigger a repaint from places other than paintGL()
     (a typical example is when using \link QTimer timers\endlink to

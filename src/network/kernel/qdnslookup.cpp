@@ -171,11 +171,11 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
     For example, you can determine which servers an XMPP chat client should
     connect to for a given domain with:
 
-    \snippet doc/src/snippets/code/src_network_kernel_qdnslookup.cpp 0
+    \snippet code/src_network_kernel_qdnslookup.cpp 0
 
     Once the request finishes you can handle the results with:
 
-    \snippet doc/src/snippets/code/src_network_kernel_qdnslookup.cpp 1
+    \snippet code/src_network_kernel_qdnslookup.cpp 1
 
     \note If you simply want to find the IP address(es) associated with a host
     name, or the host name associated with an IP address you should use

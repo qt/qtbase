@@ -84,12 +84,12 @@ QT_BEGIN_NAMESPACE
     reimplement QSplitter::createHandle() to instantiate the custom splitter
     handle. For example, a minimum QSplitter subclass might look like this:
 
-    \snippet doc/src/snippets/splitterhandle/splitter.h 0
+    \snippet splitterhandle/splitter.h 0
 
     The \l{QSplitter::}{createHandle()} implementation simply constructs a
     custom splitter handle, called \c Splitter in this example:
 
-    \snippet doc/src/snippets/splitterhandle/splitter.cpp 1
+    \snippet splitterhandle/splitter.cpp 1
 
     Information about a given handle can be obtained using functions like
     orientation() and opaqueResize(), and is retrieved from its parent splitter.
@@ -100,7 +100,7 @@ QT_BEGIN_NAMESPACE
     needs to perform. A simple subclass might only provide a paintEvent()
     implementation:
 
-    \snippet doc/src/snippets/splitterhandle/splitter.cpp 0
+    \snippet splitterhandle/splitter.cpp 0
 
     In this example, a predefined gradient is set up differently depending on
     the orientation of the handle. QSplitterHandle provides a reasonable
@@ -888,7 +888,7 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
     The following example will show a QListView, QTreeView, and
     QTextEdit side by side, with two splitter handles:
 
-    \snippet doc/src/snippets/splitter/splitter.cpp 0
+    \snippet splitter/splitter.cpp 0
 
     If a widget is already inside a QSplitter when insertWidget() or
     addWidget() is called, it will move to the new position. This can be used
@@ -1569,7 +1569,7 @@ static const qint32 SplitterMagic = 0xff;
     for a future session. A version number is stored as part of the data.
     Here is an example:
 
-    \snippet doc/src/snippets/splitter/splitter.cpp 1
+    \snippet splitter/splitter.cpp 1
 
     \sa restoreState()
 */
@@ -1604,7 +1604,7 @@ QByteArray QSplitter::saveState() const
 
     Restore the splitters's state:
 
-    \snippet doc/src/snippets/splitter/splitter.cpp 2
+    \snippet splitter/splitter.cpp 2
 
     A failure to restore the splitter's layout may result from either
     invalid or out-of-date data in the supplied byte array.
@@ -1657,7 +1657,7 @@ bool QSplitter::restoreState(const QByteArray &state)
 
     This function is provided for convenience. It is equivalent to
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qsplitter.cpp 0
+    \snippet code/src_gui_widgets_qsplitter.cpp 0
 
     \sa setSizes(), widget()
 */

@@ -92,13 +92,13 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     depending on the window system.
 
     Example of how to record a picture:
-    \snippet doc/src/snippets/picture/picture.cpp 0
+    \snippet picture/picture.cpp 0
 
     Note that the list of painter commands is reset on each call to
     the QPainter::begin() function.
 
     Example of how to replay a picture:
-    \snippet doc/src/snippets/picture/picture.cpp 1
+    \snippet picture/picture.cpp 1
 
     Pictures can also be drawn using play(). Some basic data about a
     picture is available, for example, size(), isNull() and
@@ -1226,7 +1226,7 @@ static QStringList qToStringList(const QList<QByteArray> arr)
 
     Note that if you want to iterate over the list, you should iterate
     over a copy, e.g.
-    \snippet doc/src/snippets/picture/picture.cpp 2
+    \snippet picture/picture.cpp 2
 
     \sa outputFormatList() inputFormats() QPictureIO
 */
@@ -1244,7 +1244,7 @@ QStringList QPicture::inputFormatList()
 
     Note that if you want to iterate over the list, you should iterate
     over a copy, e.g.
-    \snippet doc/src/snippets/picture/picture.cpp 3
+    \snippet picture/picture.cpp 3
 
     \sa inputFormatList() outputFormats() QPictureIO
 */
@@ -1470,11 +1470,11 @@ static QPictureHandler *get_picture_handler(const char *format)
     both are null, the QPictureIO object is valid but useless.
 
     Example:
-    \snippet doc/src/snippets/picture/picture.cpp 6
+    \snippet picture/picture.cpp 6
     \codeline
-    \snippet doc/src/snippets/picture/picture.cpp 7
+    \snippet picture/picture.cpp 7
     \codeline
-    \snippet doc/src/snippets/picture/picture.cpp 8
+    \snippet picture/picture.cpp 8
 
     Before the regular expression test, all the 0 bytes in the file header are
     converted to 1 bytes. This is done because when Qt was ASCII-based, QRegExp
@@ -1839,7 +1839,7 @@ QList<QByteArray> QPictureIO::outputFormats()
 
     Example:
 
-    \snippet doc/src/snippets/picture/picture.cpp 4
+    \snippet picture/picture.cpp 4
 
     \sa setIODevice() setFileName() setFormat() write() QPixmap::load()
 */
@@ -1908,7 +1908,7 @@ bool QPictureIO::read()
     The picture will be written using the specified picture format.
 
     Example:
-    \snippet doc/src/snippets/picture/picture.cpp 5
+    \snippet picture/picture.cpp 5
 
     \sa setIODevice() setFileName() setFormat() read() QPixmap::save()
 */

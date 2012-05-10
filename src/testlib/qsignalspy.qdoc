@@ -38,7 +38,7 @@
     The following example records all signal emissions for the \c clicked() signal
     of a QCheckBox:
 
-    \snippet doc/src/snippets/code/doc_src_qsignalspy.cpp 0
+    \snippet code/doc_src_qsignalspy.cpp 0
 
     \c{spy.takeFirst()} returns the arguments for the first emitted signal, as a
     list of QVariant objects. The \c clicked() signal has a single bool argument,
@@ -46,17 +46,17 @@
 
     The example below catches a signal from a custom object:
 
-    \snippet doc/src/snippets/code/doc_src_qsignalspy.cpp 1
+    \snippet code/doc_src_qsignalspy.cpp 1
 
     \b {Note:} Non-standard data types need to be registered, using
     the qRegisterMetaType() function, before you can create a
     QSignalSpy. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qsignalspy.cpp 2
+    \snippet code/doc_src_qsignalspy.cpp 2
 
     To retrieve the \c QModelIndex, you can use qvariant_cast:
 
-    \snippet doc/src/snippets/code/doc_src_qsignalspy.cpp 3
+    \snippet code/doc_src_qsignalspy.cpp 3
  */
 
 /*! \fn QSignalSpy::QSignalSpy(QObject *object, const char *signal)
@@ -69,7 +69,7 @@
     return false.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qsignalspy.cpp 4
+    \snippet code/doc_src_qsignalspy.cpp 4
 */
 
 /*! \fn QSignalSpy::isValid() const

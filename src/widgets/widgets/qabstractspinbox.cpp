@@ -230,7 +230,7 @@ QString QAbstractSpinBox::text() const
     to automatically choose one that will enable the image to fit completely
     within the display window, you can set up the spin box like this:
 
-    \snippet examples/widgets/spinboxes/window.cpp 3
+    \snippet widgets/spinboxes/window.cpp 3
 
     The user will then be able to choose a scale from 1% to 1000%
     or select "Auto" to leave it up to the application to choose. Your code
@@ -275,7 +275,7 @@ void QAbstractSpinBox::setSpecialValueText(const QString &specialValueText)
     to the minimum() value and vica versa. Wrapping only make sense if
     you have minimum() and maximum() values set.
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qabstractspinbox.cpp 0
+    \snippet code/src_gui_widgets_qabstractspinbox.cpp 0
 
     \sa QSpinBox::minimum(), QSpinBox::maximum()
 */

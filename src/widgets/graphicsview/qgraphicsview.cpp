@@ -62,7 +62,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     center of the scene and display any items that are visible at this
     point. For example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsview.cpp 0
+    \snippet code/src_gui_graphicsview_qgraphicsview.cpp 0
 
     You can explicitly scroll to any position on the scene by using the
     scroll bars, or by calling centerOn(). By passing a point to centerOn(),
@@ -1189,7 +1189,7 @@ QSize QGraphicsView::sizeHint() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsview.cpp 1
+    \snippet code/src_gui_graphicsview_qgraphicsview.cpp 1
 */
 QPainter::RenderHints QGraphicsView::renderHints() const
 {
@@ -1472,7 +1472,7 @@ void QGraphicsView::setRubberBandSelectionMode(Qt::ItemSelectionMode mode)
     especially with a transformed view. The CacheBackground flag enables
     caching of the view's background. For example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsview.cpp 2
+    \snippet code/src_gui_graphicsview_qgraphicsview.cpp 2
 
     The cache is invalidated every time the view is transformed. However, when
     scrolling, only partial invalidation is required.
@@ -1727,7 +1727,7 @@ QMatrix QGraphicsView::matrix() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsview.cpp 3
+    \snippet code/src_gui_graphicsview_qgraphicsview.cpp 3
 
     To simplify interation with items using a transformed view, QGraphicsView
     provides mapTo... and mapFrom... functions that can translate between
@@ -2030,7 +2030,7 @@ void QGraphicsView::fitInView(const QGraphicsItem *item, Qt::AspectRatioMode asp
     onto a paint device, such as a QImage (e.g., to take a screenshot), or for
     printing to QPrinter. For example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsview.cpp 4
+    \snippet code/src_gui_graphicsview_qgraphicsview.cpp 4
 
     If \a source is a null rect, this function will use viewport()->rect() to
     determine what to draw. If \a target is a null rect, the full dimensions
@@ -2155,7 +2155,7 @@ QList<QGraphicsItem *> QGraphicsView::items() const
     a subclass in QGraphicsView. \a pos is in untransformed viewport
     coordinates, just like QMouseEvent::pos().
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsview.cpp 5
+    \snippet code/src_gui_graphicsview_qgraphicsview.cpp 5
 
     \sa QGraphicsScene::items(), {QGraphicsItem#Sorting}{Sorting}
 */
@@ -2270,7 +2270,7 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPainterPath &path, Qt::ItemSe
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsview.cpp 6
+    \snippet code/src_gui_graphicsview_qgraphicsview.cpp 6
 
     \sa items(), {QGraphicsItem#Sorting}{Sorting}
 */
@@ -3792,7 +3792,7 @@ bool QGraphicsView::isTransformed() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsview.cpp 7
+    \snippet code/src_gui_graphicsview_qgraphicsview.cpp 7
 
     To simplify interation with items using a transformed view, QGraphicsView
     provides mapTo... and mapFrom... functions that can translate between

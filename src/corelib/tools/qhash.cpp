@@ -838,7 +838,7 @@ void QHashData::checkSanity()
     operator==() and a qHash() implementation.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qhash.cpp 13
+    \snippet code/src_corelib_tools_qhash.cpp 13
 
     In the example above, we've relied on Qt's global qHash(const
     QString &, uint) to give us a hash value for the employee's name, and

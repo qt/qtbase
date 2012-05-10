@@ -61,10 +61,10 @@ QT_BEGIN_NAMESPACE
     argument.
 
     It can be used in the following manner:
-    \snippet doc/src/snippets/code/src_qdbus_qdbusreply.cpp 0
+    \snippet code/src_qdbus_qdbusreply.cpp 0
 
     If the remote method call cannot fail, you can skip the error checking:
-    \snippet doc/src/snippets/code/src_qdbus_qdbusreply.cpp 1
+    \snippet code/src_qdbus_qdbusreply.cpp 1
 
     However, if it does fail under those conditions, the value returned by QDBusReply::value() is
     a default-constructed value. It may be indistinguishable from a valid return value.

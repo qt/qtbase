@@ -74,17 +74,17 @@ public:
     A QStackedLayout can be populated with a number of child widgets
     ("pages"). For example:
 
-    \snippet doc/src/snippets/qstackedlayout/main.cpp 0
+    \snippet qstackedlayout/main.cpp 0
     \codeline
-    \snippet doc/src/snippets/qstackedlayout/main.cpp 2
-    \snippet doc/src/snippets/qstackedlayout/main.cpp 3
+    \snippet qstackedlayout/main.cpp 2
+    \snippet qstackedlayout/main.cpp 3
 
     QStackedLayout provides no intrinsic means for the user to switch
     page. This is typically done through a QComboBox or a QListWidget
     that stores the titles of the QStackedLayout's pages. For
     example:
 
-    \snippet doc/src/snippets/qstackedlayout/main.cpp 1
+    \snippet qstackedlayout/main.cpp 1
 
     When populating a layout, the widgets are added to an internal
     list. The indexOf() function returns the index of a widget in that

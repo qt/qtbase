@@ -284,17 +284,17 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
     objects can be informed when a shortcut is executed. The shortcut
     can be set up to contain all the key presses necessary to
     describe a keyboard shortcut, including the states of modifier
-    keys such as \gui Shift, \gui Ctrl, and \gui Alt.
+    keys such as \uicontrol Shift, \uicontrol Ctrl, and \uicontrol Alt.
 
     \target mnemonic
 
     On certain widgets, using '&' in front of a character will
     automatically create a mnemonic (a shortcut) for that character,
-    e.g. "E&xit" will create the shortcut \gui Alt+X (use '&&' to
+    e.g. "E&xit" will create the shortcut \uicontrol Alt+X (use '&&' to
     display an actual ampersand). The widget might consume and perform
     an action on a given shortcut. On X11 the ampersand will not be
     shown and the character will be underlined. On Windows, shortcuts
-    are normally not displayed until the user presses the \gui Alt
+    are normally not displayed until the user presses the \uicontrol Alt
     key, but this is a setting the user can change. On Mac, shortcuts
     are disabled by default. Call qt_set_sequence_auto_mnemonic() to
     enable them. However, because mnemonic shortcuts do not fit in
@@ -310,7 +310,7 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
     The simplest way to create a shortcut for a particular widget is
     to construct the shortcut with a key sequence. For example:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qshortcut.cpp 0
+    \snippet code/src_gui_kernel_qshortcut.cpp 0
 
     When the user types the \l{QKeySequence}{key sequence}
     for a given shortcut, the shortcut's activated() signal is
@@ -449,7 +449,7 @@ QShortcut::~QShortcut()
     This is a key sequence with an optional combination of Shift, Ctrl,
     and Alt. The key sequence may be supplied in a number of ways:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qshortcut.cpp 1
+    \snippet code/src_gui_kernel_qshortcut.cpp 1
 
     By default, this property contains an empty key sequence.
 */

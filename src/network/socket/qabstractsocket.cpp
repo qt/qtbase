@@ -142,7 +142,7 @@
 
     We show an example:
 
-    \snippet doc/src/snippets/network/tcpwait.cpp 0
+    \snippet network/tcpwait.cpp 0
 
     If \l{QIODevice::}{waitForReadyRead()} returns false, the
     connection has been closed or an error has occurred.
@@ -1937,7 +1937,7 @@ static int qt_timeout_value(int msecs, int elapsed)
     The following example waits up to one second for a connection
     to be established:
 
-    \snippet doc/src/snippets/code/src_network_socket_qabstractsocket.cpp 0
+    \snippet code/src_network_socket_qabstractsocket.cpp 0
 
     If msecs is -1, this function will not time out.
 
@@ -2182,7 +2182,7 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
     The following example waits up to one second for a connection
     to be closed:
 
-    \snippet doc/src/snippets/code/src_network_socket_qabstractsocket.cpp 1
+    \snippet code/src_network_socket_qabstractsocket.cpp 1
 
     If msecs is -1, this function will not time out.
 
@@ -2285,7 +2285,7 @@ bool QAbstractSocket::isSequential() const
      This function is most commonly used when reading data from the
      socket in a loop. For example:
 
-     \snippet doc/src/snippets/code/src_network_socket_qabstractsocket.cpp 2
+     \snippet code/src_network_socket_qabstractsocket.cpp 2
 
      \sa bytesAvailable(), readyRead()
  */
@@ -2873,7 +2873,7 @@ void QAbstractSocket::setSocketError(SocketError socketError)
     To disable the use of a proxy for this socket, use the
     QNetworkProxy::NoProxy proxy type:
 
-    \snippet doc/src/snippets/code/src_network_socket_qabstractsocket.cpp 3
+    \snippet code/src_network_socket_qabstractsocket.cpp 3
 
     The default value for the proxy is QNetworkProxy::DefaultProxy,
     which means the socket will use the application settings: if a

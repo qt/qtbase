@@ -83,10 +83,10 @@ QT_BEGIN_NAMESPACE
     The style key is usually the class name of the required
     style. Note that the keys are case insensitive. For example:
 
-    \snippet doc/src/snippets/qstyleplugin/main.cpp 0
+    \snippet qstyleplugin/main.cpp 0
     \codeline
-    \snippet doc/src/snippets/qstyleplugin/main.cpp 1
-    \snippet doc/src/snippets/qstyleplugin/main.cpp 2
+    \snippet qstyleplugin/main.cpp 1
+    \snippet qstyleplugin/main.cpp 2
 
     \sa keys()
 */

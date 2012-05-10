@@ -441,7 +441,7 @@ bool QImageData::checkForAlphaPixels() const
     \row
     \li \inlineimage qimage-32bit_scaled.png
     \li
-    \snippet doc/src/snippets/code/src_gui_image_qimage.cpp 0
+    \snippet code/src_gui_image_qimage.cpp 0
     \endtable
 
     In case of a 8-bit and monchrome images, the pixel value is only
@@ -462,7 +462,7 @@ bool QImageData::checkForAlphaPixels() const
     \row
     \li \inlineimage qimage-8bit_scaled.png
     \li
-    \snippet doc/src/snippets/code/src_gui_image_qimage.cpp 1
+    \snippet code/src_gui_image_qimage.cpp 1
     \endtable
 
     QImage also provide the scanLine() function which returns a
@@ -949,7 +949,7 @@ extern bool qt_read_xpm_image_or_array(QIODevice *device, const char * const *so
     Note that it's possible to squeeze the XPM variable a little bit
     by using an unusual declaration:
 
-    \snippet doc/src/snippets/code/src_gui_image_qimage.cpp 2
+    \snippet code/src_gui_image_qimage.cpp 2
 
     The extra \c const makes the entire definition read-only, which is
     slightly more efficient (e.g., when the code is in a shared
@@ -4478,7 +4478,7 @@ bool QImage::save(const QString &fileName, const char *format, int quality) cons
     This can, for example, be used to save an image directly into a
     QByteArray:
 
-    \snippet doc/src/snippets/image/image.cpp 0
+    \snippet image/image.cpp 0
 */
 
 bool QImage::save(QIODevice* device, const char* format, int quality) const
@@ -4801,7 +4801,7 @@ QString QImage::text(const QString &key) const
     if a specific image or format supports embedding text
     by using QImageWriter::supportsOption(). We give an example:
 
-    \snippet doc/src/snippets/image/supportedformat.cpp 0
+    \snippet image/supportedformat.cpp 0
 
     You can use QImageWriter::supportedImageFormats() to find out
     which image formats are available to you.

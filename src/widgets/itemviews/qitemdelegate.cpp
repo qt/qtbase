@@ -401,7 +401,7 @@ QString QItemDelegatePrivate::valueToText(const QVariant &value, const QStyleOpt
     For example, a selected item may need to be displayed differently to
     unselected items, as shown in the following code:
 
-    \snippet examples/itemviews/pixelator/pixeldelegate.cpp 2
+    \snippet itemviews/pixelator/pixeldelegate.cpp 2
     \dots
 
     After painting, you should ensure that the painter is returned to its
@@ -1137,21 +1137,21 @@ QRect QItemDelegate::textRectangle(QPainter * /*painter*/, const QRect &rect,
     key press events are handled by default:
 
     \list
-        \li \gui Tab
-        \li \gui Backtab
-        \li \gui Enter
-        \li \gui Return
-        \li \gui Esc
+        \li \uicontrol Tab
+        \li \uicontrol Backtab
+        \li \uicontrol Enter
+        \li \uicontrol Return
+        \li \uicontrol Esc
     \endlist
 
-    In the case of \gui Tab, \gui Backtab, \gui Enter and \gui Return
+    In the case of \uicontrol Tab, \uicontrol Backtab, \uicontrol Enter and \uicontrol Return
     key press events, the \a editor's data is comitted to the model
-    and the editor is closed. If the \a event is a \gui Tab key press
+    and the editor is closed. If the \a event is a \uicontrol Tab key press
     the view will open an editor on the next item in the
-    view. Likewise, if the \a event is a \gui Backtab key press the
+    view. Likewise, if the \a event is a \uicontrol Backtab key press the
     view will open an editor on the \e previous item in the view.
 
-    If the event is a \gui Esc key press event, the \a editor is
+    If the event is a \uicontrol Esc key press event, the \a editor is
     closed \e without committing its data.
 
     \sa commitData(), closeEditor()

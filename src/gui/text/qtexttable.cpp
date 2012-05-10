@@ -510,9 +510,9 @@ void QTextTablePrivate::update() const
     For example, we can insert a table with three rows and two columns at the
     current cursor position in an editor using the following lines of code:
 
-    \snippet doc/src/snippets/textdocument-tables/mainwindow.cpp 1
+    \snippet textdocument-tables/mainwindow.cpp 1
     \codeline
-    \snippet doc/src/snippets/textdocument-tables/mainwindow.cpp 3
+    \snippet textdocument-tables/mainwindow.cpp 3
 
     The table format is either defined when the table is created or changed
     later with setFormat().
@@ -545,14 +545,14 @@ void QTextTablePrivate::update() const
         \li Suppose we have a 2x3 table of names and addresses. To merge both
         columns in the first row we invoke mergeCells() with \a row = 0,
         \a column = 0, \a numRows = 1 and \a numColumns = 2.
-        \snippet doc/src/snippets/textdocument-texttable/main.cpp 0
+        \snippet textdocument-texttable/main.cpp 0
 
     \row
         \li \inlineimage texttable-merge.png
         \li  This gives us the following table. To split the first row of the table
         back into two cells, we invoke the splitCell() function with \a numRows
         and \a numCols = 1.
-        \snippet doc/src/snippets/textdocument-texttable/main.cpp 1
+        \snippet textdocument-texttable/main.cpp 1
 
     \row
         \li \inlineimage texttable-split.png Split Table

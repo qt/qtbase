@@ -16,6 +16,9 @@ load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/corelib/qtcoreversion.h
 
+QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
+QMAKE_DOCS_INDEX = ../../doc
+
 include(animation/animation.pri)
 include(arch/arch.pri)
 include(global/global.pri)
@@ -30,7 +33,6 @@ include(codecs/codecs.pri)
 include(statemachine/statemachine.pri)
 include(mimetypes/mimetypes.pri)
 include(xml/xml.pri)
-include(doc/doc.pri)
 
 mac|darwin {
     !ios {

@@ -177,16 +177,16 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
        more modifiers, such as Qt::SHIFT, Qt::CTRL, Qt::ALT and Qt::META.
     \endlist
 
-    For example, \gui{Ctrl P} might be a sequence used as a shortcut for
+    For example, \uicontrol{Ctrl P} might be a sequence used as a shortcut for
     printing a document, and can be specified in any of the following
     ways:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qkeysequence.cpp 0
+    \snippet code/src_gui_kernel_qkeysequence.cpp 0
 
     Note that, for letters, the case used in the specification string
     does not matter. In the above examples, the user does not need to
-    hold down the \key{Shift} key to activate a shortcut specified
-    with "Ctrl+P". However, for other keys, the use of \key{Shift} as
+    hold down the \uicontrol{Shift} key to activate a shortcut specified
+    with "Ctrl+P". However, for other keys, the use of \uicontrol{Shift} as
     an unspecified extra modifier key can lead to confusion for users
     of an application whose keyboards have different layouts to those
     used by the developers. See the \l{Keyboard Layout Issues} section
@@ -207,9 +207,9 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     as Qt::Key_A.
 
     \b{Note:} On Mac OS X, references to "Ctrl", Qt::CTRL, Qt::Control
-    and Qt::ControlModifier correspond to the \key Command keys on the
+    and Qt::ControlModifier correspond to the \uicontrol Command keys on the
     Macintosh keyboard, and references to "Meta", Qt::META, Qt::Meta and
-    Qt::MetaModifier correspond to the \key Control keys. Developers on
+    Qt::MetaModifier correspond to the \uicontrol Control keys. Developers on
     Mac OS X can use the same shortcut descriptions across all platforms,
     and their applications will automatically work as expected on Mac OS X.
 
@@ -220,9 +220,9 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     setting up actions in a typical application. The table below shows
     some common key sequences that are often used for these standard
     shortcuts by applications on four widely-used platforms.  Note
-    that on Mac OS X, the \key Ctrl value corresponds to the \key
-    Command keys on the Macintosh keyboard, and the \key Meta value
-    corresponds to the \key Control keys.
+    that on Mac OS X, the \uicontrol Ctrl value corresponds to the \uicontrol
+    Command keys on the Macintosh keyboard, and the \uicontrol Meta value
+    corresponds to the \uicontrol Control keys.
 
     \table
     \header \li StandardKey      \li Windows                              \li Mac OS X                 \li KDE          \li GNOME
@@ -303,23 +303,23 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
 
     Many key sequence specifications are chosen by developers based on the
     layout of certain types of keyboard, rather than choosing keys that
-    represent the first letter of an action's name, such as \key{Ctrl S}
-    ("Ctrl+S") or \key{Ctrl C} ("Ctrl+C").
+    represent the first letter of an action's name, such as \uicontrol{Ctrl S}
+    ("Ctrl+S") or \uicontrol{Ctrl C} ("Ctrl+C").
     Additionally, because certain symbols can only be entered with the
     help of modifier keys on certain keyboard layouts, key sequences intended
     for use with one keyboard layout may map to a different key, map to no
     keys at all, or require an additional modifier key to be used on
     different keyboard layouts.
 
-    For example, the shortcuts, \key{Ctrl plus} and \key{Ctrl minus}, are often
+    For example, the shortcuts, \uicontrol{Ctrl plus} and \uicontrol{Ctrl minus}, are often
     used as shortcuts for zoom operations in graphics applications, and these
     may be specified as "Ctrl++" and "Ctrl+-" respectively. However, the way
     these shortcuts are specified and interpreted depends on the keyboard layout.
-    Users of Norwegian keyboards will note that the \key{+} and \key{-} keys
+    Users of Norwegian keyboards will note that the \uicontrol{+} and \uicontrol{-} keys
     are not adjacent on the keyboard, but will still be able to activate both
-    shortcuts without needing to press the \key{Shift} key. However, users
-    with British keyboards will need to hold down the \key{Shift} key
-    to enter the \key{+} symbol, making the shortcut effectively the same as
+    shortcuts without needing to press the \uicontrol{Shift} key. However, users
+    with British keyboards will need to hold down the \uicontrol{Shift} key
+    to enter the \uicontrol{+} symbol, making the shortcut effectively the same as
     "Ctrl+Shift+=".
 
     Although some developers might resort to fully specifying all the modifiers
@@ -328,9 +328,9 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
 
     For example, a developer using a British keyboard may decide to specify
     "Ctrl+Shift+=" as the key sequence in order to create a shortcut that
-    coincidentally behaves in the same way as \key{Ctrl plus}. However, the
-    \key{=} key needs to be accessed using the \key{Shift} key on Norwegian
-    keyboard, making the required shortcut effectively \key{Ctrl Shift Shift =}
+    coincidentally behaves in the same way as \uicontrol{Ctrl plus}. However, the
+    \uicontrol{=} key needs to be accessed using the \uicontrol{Shift} key on Norwegian
+    keyboard, making the required shortcut effectively \uicontrol{Ctrl Shift Shift =}
     (an impossible key combination).
 
     As a result, both human-readable strings and hard-coded key codes
@@ -352,10 +352,10 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     key codes, can be created by using the multiple argument constructor,
     or by passing a human-readable string of comma-separated key sequences.
 
-    For example, the key sequence, \key{Ctrl X} followed by \key{Ctrl C}, can
+    For example, the key sequence, \uicontrol{Ctrl X} followed by \uicontrol{Ctrl C}, can
     be specified using either of the following ways:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qkeysequence.cpp 1
+    \snippet code/src_gui_kernel_qkeysequence.cpp 1
 
     \warning A QApplication instance must have been constructed before a
              QKeySequence is created; otherwise, your application may crash.
@@ -937,7 +937,7 @@ QKeySequence::QKeySequence()
     \endlink(), so that shortcut keys can be replaced in
     translations:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qkeysequence.cpp 2
+    \snippet code/src_gui_kernel_qkeysequence.cpp 2
 
     Note the "File|Open" translator comment. It is by no means
     necessary, but it provides some context for the human translator.

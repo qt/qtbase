@@ -282,10 +282,10 @@ Qt::LayoutDirection QTextInlineObject::textDirection() const
     created lines.
 
     Here is a code snippet that demonstrates the layout phase:
-    \snippet doc/src/snippets/code/src_gui_text_qtextlayout.cpp 0
+    \snippet code/src_gui_text_qtextlayout.cpp 0
 
     The text can then be rendered by calling the layout's draw() function:
-    \snippet doc/src/snippets/code/src_gui_text_qtextlayout.cpp 1
+    \snippet code/src_gui_text_qtextlayout.cpp 1
 
     For a given position in the text you can find a valid cursor position with
     isValidCursorPosition(), nextCursorPosition(), and previousCursorPosition().

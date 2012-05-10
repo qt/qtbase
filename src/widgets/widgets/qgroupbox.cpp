@@ -169,7 +169,7 @@ void QGroupBoxPrivate::click()
     widgets). The following example shows how we can set up a
     QGroupBox with a layout:
 
-    \snippet examples/widgets/groupbox/window.cpp 2
+    \snippet widgets/groupbox/window.cpp 2
 
     \table 100%
     \row \li \inlineimage windowsxp-groupbox.png Screenshot of a Windows XP style group box
@@ -261,7 +261,7 @@ void QGroupBox::setTitle(const QString &title)
     The group box title text will have a keyboard shortcut if the title
     contains an ampersand ('&') followed by a letter.
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qgroupbox.cpp 0
+    \snippet code/src_gui_widgets_qgroupbox.cpp 0
 
     In the example above, \key Alt+U moves the keyboard focus to the
     group box. See the \l {QShortcut#mnemonic}{QShortcut}

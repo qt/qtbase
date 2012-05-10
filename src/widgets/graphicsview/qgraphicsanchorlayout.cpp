@@ -64,7 +64,7 @@
     Anchors are always set up between edges of an item, where the "center" is also considered to
     be an edge. Consider the following example:
 
-    \snippet examples/graphicsview/simpleanchorlayout/main.cpp adding anchors
+    \snippet graphicsview/simpleanchorlayout/main.cpp adding anchors
 
     Here, the right edge of item \c a is anchored to the left edge of item \c b and the bottom
     edge of item \c a is anchored to the top edge of item \c b, with the result that
@@ -75,7 +75,7 @@
     above. Here, we see how a widget can be anchored to the top-left corner of the enclosing
     layout:
 
-    \snippet examples/graphicsview/simpleanchorlayout/main.cpp adding a corner anchor
+    \snippet graphicsview/simpleanchorlayout/main.cpp adding a corner anchor
 
     In cases where anchors are used to match the widths or heights of widgets, it is
     convenient to use the addAnchors() function. As with the other functions for specifying
@@ -299,11 +299,11 @@ QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint fi
     This is a convenience function, since anchoring corners can be expressed as anchoring
     two edges. For instance:
 
-    \snippet examples/graphicsview/simpleanchorlayout/main.cpp adding a corner anchor in two steps
+    \snippet graphicsview/simpleanchorlayout/main.cpp adding a corner anchor in two steps
 
     This can also be achieved with the following line of code:
 
-    \snippet examples/graphicsview/simpleanchorlayout/main.cpp adding a corner anchor
+    \snippet graphicsview/simpleanchorlayout/main.cpp adding a corner anchor
 
     If there is already an anchor between the edge pairs, it will be replaced by the anchors that
     this function specifies.
@@ -341,11 +341,11 @@ void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
     For example, the following example anchors the left and right edges of two items
     to match their widths:
 
-    \snippet examples/graphicsview/simpleanchorlayout/main.cpp adding anchors to match sizes in two steps
+    \snippet graphicsview/simpleanchorlayout/main.cpp adding anchors to match sizes in two steps
 
     This can also be achieved using the following line of code:
 
-    \snippet examples/graphicsview/simpleanchorlayout/main.cpp adding anchors to match sizes
+    \snippet graphicsview/simpleanchorlayout/main.cpp adding anchors to match sizes
 
     \sa addAnchor(), addCornerAnchors()
 */

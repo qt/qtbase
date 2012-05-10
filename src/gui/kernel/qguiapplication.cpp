@@ -2098,7 +2098,7 @@ static inline void applyCursor(const QList<QWindow *> &l, const QCursor &c)
     restoreOverrideCursor(), otherwise the stack will never be emptied.
 
     Example:
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication_x11.cpp 0
+    \snippet code/src_gui_kernel_qapplication_x11.cpp 0
 
     \sa overrideCursor(), restoreOverrideCursor(), changeOverrideCursor(),
     QWidget::setCursor()
@@ -2154,7 +2154,7 @@ QStyleHints *QGuiApplication::styleHints()
     This function must be called before creating the QGuiApplication object, like
     this:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 6
+    \snippet code/src_gui_kernel_qapplication.cpp 6
 
     \sa desktopSettingsAware()
 */

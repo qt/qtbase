@@ -148,7 +148,7 @@ QT_BEGIN_NAMESPACE
     represents a fully transparent color, while 255 represents a fully
     opaque color. For example:
 
-    \snippet doc/src/snippets/code/src_gui_painting_qcolor.cpp 0
+    \snippet code/src_gui_painting_qcolor.cpp 0
 
     The code above produces the following output:
 

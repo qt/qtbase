@@ -2004,7 +2004,7 @@ void QCalendarWidgetPrivate::_q_editingFinished()
     \row \li
         \image qcalendarwidget-grid.png
     \row \li
-        \snippet doc/src/snippets/code/src_gui_widgets_qcalendarwidget.cpp 0
+        \snippet code/src_gui_widgets_qcalendarwidget.cpp 0
     \endtable
 
     Finally, the day in the first column can be altered using the
@@ -2421,7 +2421,7 @@ void QCalendarWidget::showToday()
     \li \image qcalendarwidget-minimum.png
     \row
     \li
-    \snippet doc/src/snippets/code/src_gui_widgets_qcalendarwidget.cpp 1
+    \snippet code/src_gui_widgets_qcalendarwidget.cpp 1
     \endtable
 
     By default, the minimum date is the earliest date that the QDate
@@ -2472,7 +2472,7 @@ void QCalendarWidget::setMinimumDate(const QDate &date)
     \li \image qcalendarwidget-maximum.png
     \row
     \li
-    \snippet doc/src/snippets/code/src_gui_widgets_qcalendarwidget.cpp 2
+    \snippet code/src_gui_widgets_qcalendarwidget.cpp 2
     \endtable
 
     By default, the maximum date is the last day the QDate class can
@@ -2518,11 +2518,11 @@ void QCalendarWidget::setMaximumDate(const QDate &date)
     The date range restricts the user selection, i.e. the user can
     only select dates within the specified date range. Note that
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qcalendarwidget.cpp 3
+    \snippet code/src_gui_widgets_qcalendarwidget.cpp 3
 
     is analogous to
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qcalendarwidget.cpp 4
+    \snippet code/src_gui_widgets_qcalendarwidget.cpp 4
 
     If either the \a min or \a max parameters are not valid QDate
     objects, this function does nothing.
@@ -2641,7 +2641,7 @@ void QCalendarWidget::setVerticalHeaderFormat(QCalendarWidget::VerticalHeaderFor
         \li \inlineimage qcalendarwidget-grid.png
     \row
         \li
-        \snippet doc/src/snippets/code/src_gui_widgets_qcalendarwidget.cpp 5
+        \snippet code/src_gui_widgets_qcalendarwidget.cpp 5
     \endtable
 
     The default value is false.

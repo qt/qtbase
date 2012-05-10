@@ -1239,13 +1239,13 @@ QBoxLayout::Direction QBoxLayout::direction() const
 
     The simplest use of the class is like this:
 
-    \snippet doc/src/snippets/layouts/layouts.cpp 0
-    \snippet doc/src/snippets/layouts/layouts.cpp 1
-    \snippet doc/src/snippets/layouts/layouts.cpp 2
+    \snippet layouts/layouts.cpp 0
+    \snippet layouts/layouts.cpp 1
+    \snippet layouts/layouts.cpp 2
     \codeline
-    \snippet doc/src/snippets/layouts/layouts.cpp 3
-    \snippet doc/src/snippets/layouts/layouts.cpp 4
-    \snippet doc/src/snippets/layouts/layouts.cpp 5
+    \snippet layouts/layouts.cpp 3
+    \snippet layouts/layouts.cpp 4
+    \snippet layouts/layouts.cpp 5
 
     First, we create the widgets we want in the layout. Then, we
     create the QHBoxLayout object and add the widgets into the
@@ -1302,13 +1302,13 @@ QHBoxLayout::~QHBoxLayout()
 
     The simplest use of the class is like this:
 
-    \snippet doc/src/snippets/layouts/layouts.cpp 6
-    \snippet doc/src/snippets/layouts/layouts.cpp 7
-    \snippet doc/src/snippets/layouts/layouts.cpp 8
+    \snippet layouts/layouts.cpp 6
+    \snippet layouts/layouts.cpp 7
+    \snippet layouts/layouts.cpp 8
     \codeline
-    \snippet doc/src/snippets/layouts/layouts.cpp 9
-    \snippet doc/src/snippets/layouts/layouts.cpp 10
-    \snippet doc/src/snippets/layouts/layouts.cpp 11
+    \snippet layouts/layouts.cpp 9
+    \snippet layouts/layouts.cpp 10
+    \snippet layouts/layouts.cpp 11
 
     First, we create the widgets we want in the layout. Then, we
     create the QVBoxLayout object and add the widgets into the

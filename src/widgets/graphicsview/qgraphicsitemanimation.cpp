@@ -70,7 +70,7 @@
 
     An example animation with a timeline follows:
 
-    \snippet doc/src/snippets/timeline/main.cpp 0
+    \snippet timeline/main.cpp 0
 
     Note that steps lie between 0.0 and 1.0. It may be necessary to use
     \l{QTimeLine::}{setUpdateInterval()}. The default update interval

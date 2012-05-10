@@ -113,7 +113,7 @@ QT_BEGIN_NAMESPACE
    by the test framework.
 
    Example:
-   \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 0
+   \snippet code/src_qtestlib_qtestcase.cpp 0
 
    \sa QCOMPARE(), QTRY_VERIFY()
 */
@@ -127,7 +127,7 @@ QT_BEGIN_NAMESPACE
     C string.
 
     Example:
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 1
+    \snippet code/src_qtestlib_qtestcase.cpp 1
 
     \sa QVERIFY(), QCOMPARE()
 */
@@ -160,7 +160,7 @@ QT_BEGIN_NAMESPACE
    by the test framework.
 
    Example:
-   \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 2
+   \snippet code/src_qtestlib_qtestcase.cpp 2
 
    \sa QVERIFY(), QTRY_COMPARE(), QTest::toString()
 */
@@ -236,12 +236,12 @@ QT_BEGIN_NAMESPACE
 
    Assuming a test has the following data:
 
-   \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 3
+   \snippet code/src_qtestlib_qtestcase.cpp 3
 
    The test data has two elements, a QString called \c aString and an integer
    called \c expected. To fetch these values in the actual test:
 
-   \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 4
+   \snippet code/src_qtestlib_qtestcase.cpp 4
 
    \c aString and \c expected are variables on the stack that are initialized with
    the current test data.
@@ -271,7 +271,7 @@ QT_BEGIN_NAMESPACE
 
    Example:
 
-   \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 5
+   \snippet code/src_qtestlib_qtestcase.cpp 5
 */
 
 /*! \macro QTEST(actual, testElement)
@@ -286,11 +286,11 @@ QT_BEGIN_NAMESPACE
 
    Instead of writing:
 
-   \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 6
+   \snippet code/src_qtestlib_qtestcase.cpp 6
 
    you can write:
 
-   \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 7
+   \snippet code/src_qtestlib_qtestcase.cpp 7
 
    \sa QCOMPARE()
 */
@@ -320,7 +320,7 @@ QT_BEGIN_NAMESPACE
    function that is invoked by the test framework.
 
    Example:
-   \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 8
+   \snippet code/src_qtestlib_qtestcase.cpp 8
 */
 
 /*! \macro QEXPECT_FAIL(dataIndex, comment, mode)
@@ -347,7 +347,7 @@ QT_BEGIN_NAMESPACE
    by the test framework.
 
    Example 1:
-   \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 9
+   \snippet code/src_qtestlib_qtestcase.cpp 9
 
    In the example above, an expected fail will be written into the test output
    if the variable \c i is not 42. If the variable \c i is 42, an unexpected pass
@@ -355,7 +355,7 @@ QT_BEGIN_NAMESPACE
    statement in the example.
 
    Example 2:
-   \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 10
+   \snippet code/src_qtestlib_qtestcase.cpp 10
 
    The above testfunction will not continue executing for the test data
    entry \c{data27}.
@@ -391,7 +391,7 @@ QT_BEGIN_NAMESPACE
    a warning is printed to the test log.
 
    For example, in this code:
-   \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 26
+   \snippet code/src_qtestlib_qtestcase.cpp 26
 
    The testdata file will be resolved as the first existing file from:
 
@@ -441,7 +441,7 @@ QT_BEGIN_NAMESPACE
     \l {QApplication::setNavigationMode()}.
 
     Example:
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 11
+    \snippet code/src_qtestlib_qtestcase.cpp 11
 
     \sa QTEST_APPLESS_MAIN(), QTEST_GUILESS_MAIN(), QTest::qExec(),
     QApplication::setNavigationMode()
@@ -486,7 +486,7 @@ QT_BEGIN_NAMESPACE
 
     For example:
 
-    \snippet examples/qtestlib/tutorial5/benchmarking.cpp 0
+    \snippet qtestlib/tutorial5/benchmarking.cpp 0
 
     \sa {QTestLib Manual#Creating a Benchmark}{Creating a Benchmark},
         {Chapter 5: Writing a Benchmark}{Writing a Benchmark}
@@ -556,7 +556,7 @@ QT_BEGIN_NAMESPACE
     before clicking the key.
 
     Example:
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 13
+    \snippet code/src_qtestlib_qtestcase.cpp 13
 
     The example above simulates clicking \c a on \c myWidget without
     any keyboard modifiers and without delay of the test.
@@ -571,7 +571,7 @@ QT_BEGIN_NAMESPACE
     before clicking the key.
 
     Examples:
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 14
+    \snippet code/src_qtestlib_qtestcase.cpp 14
 
     The first example above simulates clicking the \c escape key on \c
     myWidget without any keyboard modifiers and without delay. The
@@ -650,7 +650,7 @@ QT_BEGIN_NAMESPACE
     click.
 
     Example:
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 15
+    \snippet code/src_qtestlib_qtestcase.cpp 15
 
     The example above simulates clicking the sequence of keys
     representing "hello world" on \c myWidget without any keyboard
@@ -726,7 +726,7 @@ QT_BEGIN_NAMESPACE
 
     Example:
 
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 16
+    \snippet code/src_qtestlib_qtestcase.cpp 16
 
     The example above defines a toString() specialization for a class
     called \c MyPoint. Whenever a comparison of two instances of \c
@@ -851,7 +851,7 @@ QT_BEGIN_NAMESPACE
     your test will stay responsive to user interface events or network communication.
 
     Example:
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 17
+    \snippet code/src_qtestlib_qtestcase.cpp 17
 
     The code above will wait until the network server is responding for a
     maximum of about 12.5 seconds.
@@ -867,7 +867,7 @@ QT_BEGIN_NAMESPACE
     time after being asked to show itself on the screen. Returns true.
 
     Example:
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 24
+    \snippet code/src_qtestlib_qtestcase.cpp 24
 */
 
 /*! \fn bool QTest::qWaitForWindowShown(QWindow *window, int timeout)
@@ -914,7 +914,7 @@ QT_BEGIN_NAMESPACE
     instance run out of scope to commit the sequence to the event system.
 
     Example:
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 25
+    \snippet code/src_qtestlib_qtestcase.cpp 25
 */
 
 /*!
@@ -2023,7 +2023,7 @@ FatalSignalHandler::~FatalSignalHandler()
 
     The following example will run all tests in \c MyTestObject:
 
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 18
+    \snippet code/src_qtestlib_qtestcase.cpp 18
 
     This function returns 0 if no tests failed, or a value other than 0 if one
     or more tests failed or in case of unhandled exceptions.  (Skipped tests do
@@ -2237,7 +2237,7 @@ void QTest::qWarn(const char *message, const char *file, int line)
     call ignoreMessage() twice, too.
 
     Example:
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 19
+    \snippet code/src_qtestlib_qtestcase.cpp 19
 
     The example above tests that QDir::mkdir() outputs the right warning when invoked
     with an invalid file name.
@@ -2397,7 +2397,7 @@ void QTest::addColumnInternal(int id, const char *name)
     that can be used to stream in data.
 
     Example:
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 20
+    \snippet code/src_qtestlib_qtestcase.cpp 20
 
     \b {Note:} This macro can only be used in a test's data function
     that is invoked by the test framework.
@@ -2427,7 +2427,7 @@ QTestData &QTest::newRow(const char *dataTag)
     \l QFETCH() to fetch the data in the actual test.
 
     Example:
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 21
+    \snippet code/src_qtestlib_qtestcase.cpp 21
 
     To add custom types to the testdata, the type must be registered with
     QMetaType via \l Q_DECLARE_METATYPE().
@@ -2446,7 +2446,7 @@ QTestData &QTest::newRow(const char *dataTag)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 22
+    \snippet code/src_qtestlib_qtestcase.cpp 22
 */
 const char *QTest::currentTestFunction()
 {
@@ -2483,7 +2483,7 @@ bool QTest::currentTestFailed()
     qSleep() depends on the operating system.
 
     Example:
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 23
+    \snippet code/src_qtestlib_qtestcase.cpp 23
 
     \sa qWait()
 */

@@ -116,4 +116,10 @@ QMAKE_EXTRA_TARGETS += html-docs qch-docs
 
 target.path = $$[QT_HOST_BINS]
 INSTALLS += target
+
+# Ensure that qdoc is built before we generate the docs
+docs.commands =
+docs.depends = first
+QMAKE_EXTRA_TARGET += docs
+
 load(qt_targets)

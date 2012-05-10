@@ -75,7 +75,7 @@ public:
     The \l{QTextCursor::insertList()} function inserts an empty block into the
     document at the cursor position, and makes it the first item in a list.
 
-    \snippet doc/src/snippets/textdocument-lists/mainwindow.cpp 0
+    \snippet textdocument-lists/mainwindow.cpp 0
 
     The \l{QTextCursor::createList()} function takes the contents of the
     cursor's current block and turns it into the first item of a new list.

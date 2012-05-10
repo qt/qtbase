@@ -586,7 +586,7 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     menu items with addMenu(). For example, asuming that \c menubar
     is a pointer to a QMenuBar and \c fileMenu is a pointer to a
     QMenu, the following statement inserts the menu into the menu bar:
-    \snippet doc/src/snippets/code/src_gui_widgets_qmenubar.cpp 0
+    \snippet code/src_gui_widgets_qmenubar.cpp 0
 
     The ampersand in the menu item's text sets Alt+F as a shortcut for
     this menu. (You can use "\&\&" to get a real ampersand in the menu
@@ -605,7 +605,7 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
 
     Example (from the \l{mainwindows/menus}{Menus} example):
 
-    \snippet examples/mainwindows/menus/mainwindow.cpp 9
+    \snippet mainwindows/menus/mainwindow.cpp 9
 
     Menu items may be removed with removeAction().
 
@@ -619,7 +619,7 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     of menu bars and their behavior when the user interacts with them.
     For example, Windows systems are often configured so that the
     underlined character mnemonics that indicate keyboard shortcuts
-    for items in the menu bar are only shown when the \gui{Alt} key is
+    for items in the menu bar are only shown when the \uicontrol{Alt} key is
     pressed.
 
     \table
@@ -628,13 +628,13 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     Plastique widget style.
 
     \li The \l{QPlastiqueStyle}{Plastique widget style}, like most
-    other styles, handles the \gui{Help} menu in the same way as it
+    other styles, handles the \uicontrol{Help} menu in the same way as it
     handles any other menu.
 
     \row \li \inlineimage motif-menubar.png A menu bar shown in the
     Motif widget style.
 
-    \li The \l{QMotifStyle}{Motif widget style} treats \gui{Help} menus
+    \li The \l{QMotifStyle}{Motif widget style} treats \uicontrol{Help} menus
     in a special way, placing them at right-hand end of the menu bar.
 
     \endtable
@@ -677,7 +677,7 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     bar, you must create a menu bar that does not have a parent.
     Create a parent-less menu bar this way:
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qmenubar.cpp 1
+    \snippet code/src_gui_widgets_qmenubar.cpp 1
 
     \b{Note:} Do \e{not} call QMainWindow::menuBar() to create the
     shared menu bar, because that menu bar will have the QMainWindow

@@ -24,9 +24,11 @@ load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/network/qtnetworkversion.h
 
+QMAKE_DOCS = $$PWD/doc/qtnetwork.qdocconf
+QMAKE_DOCS_INDEX = ../../doc
+
 include(access/access.pri)
 include(bearer/bearer.pri)
-include(doc/doc.pri)
 include(kernel/kernel.pri)
 include(socket/socket.pri)
 include(ssl/ssl.pri)

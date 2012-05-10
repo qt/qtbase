@@ -1197,8 +1197,8 @@ QString QFontDatabase::styleString(const QFontInfo &fontInfo)
 
     Example:
 
-    \snippet doc/src/snippets/qfontdatabase/main.cpp 0
-    \snippet doc/src/snippets/qfontdatabase/main.cpp 1
+    \snippet qfontdatabase/main.cpp 0
+    \snippet qfontdatabase/main.cpp 1
 
     This example gets the list of font families, the list of
     styles for each family, and the point sizes that are available for

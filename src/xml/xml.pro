@@ -16,6 +16,9 @@ load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/xml/qtxmlversion.h
 
+QMAKE_DOCS = $$PWD/doc/qtxml.qdocconf
+QMAKE_DOCS_INDEX = ../../doc
+
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 
 win32-borland {
@@ -23,6 +26,5 @@ win32-borland {
         QMAKE_CXXFLAGS_WARN_ON        += -w-use
 }
 
-include(doc/doc.pri)
 include(dom/dom.pri)
 include(sax/sax.pri)

@@ -1117,7 +1117,7 @@ bool QLayout::activate()
     This function can be used to iterate over a layout. The following
     code will draw a rectangle for each layout item in the layout structure of the widget.
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qlayout.cpp 0
+    \snippet code/src_gui_kernel_qlayout.cpp 0
 
     \sa count(), takeAt()
 */
@@ -1134,7 +1134,7 @@ bool QLayout::activate()
     The following code fragment shows a safe way to remove all items
     from a layout:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qlayout.cpp 1
+    \snippet code/src_gui_kernel_qlayout.cpp 1
 
     \sa itemAt(), count()
 */

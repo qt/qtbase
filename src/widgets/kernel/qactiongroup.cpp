@@ -109,15 +109,15 @@ void QActionGroupPrivate::_q_actionHovered()
     \inmodule QtWidgets
 
     In some situations it is useful to group QAction objects together.
-    For example, if you have a \gui{Left Align} action, a \gui{Right
-    Align} action, a \gui{Justify} action, and a \gui{Center} action,
+    For example, if you have a \uicontrol{Left Align} action, a \uicontrol{Right
+    Align} action, a \uicontrol{Justify} action, and a \uicontrol{Center} action,
     only one of these actions should be active at any one time. One
     simple way of achieving this is to group the actions together in
     an action group.
 
     Here's a example (from the \l{mainwindows/menus}{Menus} example):
 
-    \snippet examples/mainwindows/menus/mainwindow.cpp 6
+    \snippet mainwindows/menus/mainwindow.cpp 6
 
     Here we create a new action group. Since the action group is
     exclusive by default, only one of the actions in the group is

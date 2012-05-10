@@ -650,7 +650,7 @@ void QDBusAbstractInterface::internalPropSet(const char *propname, const QVarian
 
     It can be used the following way:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusabstractinterface.cpp 0
+    \snippet code/src_qdbus_qdbusabstractinterface.cpp 0
 
     This example illustrates function calling with 0, 1 and 2 parameters and illustrates different
     parameter types passed in each (the first call to \c "ProcessWorkUnicode" will contain one
@@ -742,7 +742,7 @@ QDBusMessage QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &m
 
     It can be used the following way:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusabstractinterface.cpp 1
+    \snippet code/src_qdbus_qdbusabstractinterface.cpp 1
 
     This example illustrates function calling with 0, 1 and 2 parameters and illustrates different
     parameter types passed in each (the first call to \c "ProcessWorkUnicode" will contain one
