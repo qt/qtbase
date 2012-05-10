@@ -60,6 +60,8 @@ extern bool qt_try_modal(QWidget *widget, QEvent::Type type);
 QWidgetWindow::QWidgetWindow(QWidget *widget)
     : m_widget(widget)
 {
+    updateObjectName();
+    connect(m_widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
 }
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -505,6 +507,15 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
 bool QWidgetWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
 {
     return m_widget->nativeEvent(eventType, message, result);
+}
+
+void QWidgetWindow::updateObjectName()
+{
+    QString name = m_widget->objectName();
+    if (name.isEmpty())
+        name = QString::fromUtf8(m_widget->metaObject()->className()) + QStringLiteral("Class");
+    name += QStringLiteral("Window");
+    setObjectName(name);
 }
 
 QT_END_NAMESPACE

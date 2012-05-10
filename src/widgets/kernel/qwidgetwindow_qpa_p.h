@@ -83,6 +83,9 @@ protected:
     void handleWindowStateChangedEvent(QWindowStateChangeEvent *event);
     bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 
+private slots:
+    void updateObjectName();
+
 private:
     void updateGeometry();
 
