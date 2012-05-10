@@ -327,7 +327,6 @@ QDialog::QDialog(QDialogPrivate &dd, QWidget *parent, Qt::WindowFlags f)
 
 QDialog::~QDialog()
 {
-    Q_D(QDialog);
     QT_TRY {
         // Need to hide() here, as our (to-be) overridden hide()
         // will not be called in ~QWidget.
