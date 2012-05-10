@@ -578,22 +578,22 @@ void QPdfPrintEnginePrivate::closePrintDevice()
             options.append(QPair<QByteArray, QByteArray>("Collate", "True"));
         }
 
-        if (duplex != QPrinter::DuplexNone) {
-            switch(duplex) {
-            case QPrinter::DuplexNone: break;
-            case QPrinter::DuplexAuto:
-                if (!landscape)
-                    options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-long-edge"));
-                else
-                    options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-short-edge"));
-                break;
-            case QPrinter::DuplexLongSide:
+        switch (duplex) {
+        case QPrinter::DuplexNone:
+            options.append(QPair<QByteArray, QByteArray>("sides", "one-sided"));
+            break;
+        case QPrinter::DuplexAuto:
+            if (!landscape)
                 options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-long-edge"));
-                break;
-            case QPrinter::DuplexShortSide:
+            else
                 options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-short-edge"));
-                break;
-            }
+            break;
+        case QPrinter::DuplexLongSide:
+            options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-long-edge"));
+            break;
+        case QPrinter::DuplexShortSide:
+            options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-short-edge"));
+            break;
         }
 
         if (QCUPSSupport::cupsVersion() >= 10300 && landscape) {
