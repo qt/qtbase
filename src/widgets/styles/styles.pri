@@ -43,6 +43,7 @@ contains(QT_CONFIG, gtkstyle) {
     QMAKE_CXXFLAGS += $$QT_CFLAGS_QGTKSTYLE
     LIBS_PRIVATE += $$QT_LIBS_QGTKSTYLE
     styles += gtk
+    CONFIG += x11
 }
 
 contains( styles, mac ) {
