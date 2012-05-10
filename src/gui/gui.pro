@@ -23,6 +23,9 @@ testcocoon {
 
 HEADERS += $$QT_SOURCE_TREE/src/gui/qtguiversion.h
 
+QMAKE_DOCS = $$PWD/doc/qtgui.qdocconf
+QMAKE_DOCS_INDEX = ../../doc
+
 include(accessible/accessible.pri)
 include(kernel/kernel.pri)
 include(image/image.pri)

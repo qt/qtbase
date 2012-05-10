@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
+CONFIG += no_docs_target
 SUBDIRS = auto
 
 # benchmarks in debug mode is rarely sensible

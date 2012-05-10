@@ -95,7 +95,7 @@
     the final result instead of a QFuture. You use them in the same
     way as the asynchronous variants.
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 7
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 7
 
     Note that the result types above are not QFuture objects, but real result
     types (in this case, QList<QImage> and QImage).
@@ -108,7 +108,7 @@
 
     The map function must be of the form:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 0
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 0
 
     T and U can be any type (and they can even be the same type), but T must
     match the type stored in the sequence. The function returns the modified
@@ -117,7 +117,7 @@
     This example shows how to apply a scale function to all the items
     in a sequence:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 1
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 1
 
     The results of the map are made available through QFuture.  See the
     QFuture and QFutureWatcher documentation for more information on how to
@@ -126,14 +126,14 @@
     If you want to modify a sequence in-place, use QtConcurrent::map(). The
     map function must then be of the form:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 2
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 2
 
     Note that the return value and return type of the map function are not
     used.
 
     Using QtConcurrent::map() is similar to using QtConcurrent::mapped():
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 3
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 3
 
     Since the sequence is modified in place, QtConcurrent::map() does not
     return any results via QFuture. However, you can still use QFuture and
@@ -147,7 +147,7 @@
 
     The reduce function must be of the form:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 4
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 4
 
     T is the type of the final result, U is the return type of the map
     function. Note that the return value and return type of the reduce
@@ -155,7 +155,7 @@
 
     Call QtConcurrent::mappedReduced() like this:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 5
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 5
 
     The reduce function will be called once for each result returned by the map
     function, and should merge the \e{intermediate} into the \e{result}
@@ -175,7 +175,7 @@
     instead of a sequence. You use them in the same way as the sequence
     variants:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 6
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 6
 
     \section2 Blocking Variants
 
@@ -183,7 +183,7 @@
     the final result instead of a QFuture. You use them in the same
     way as the asynchronous variants.
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 7
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 7
 
     Note that the result types above are not QFuture objects, but real result
     types (in this case, QList<QImage> and QImage).
@@ -194,12 +194,12 @@
     QtConcurrent::mappedReduced() accept pointers to member functions.
     The member function class type must match the type stored in the sequence:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 8
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 8
 
     Note that when using QtConcurrent::mappedReduced(), you can mix the use of
     normal and member functions freely:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 9
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 9
 
     \section2 Using Function Objects
 
@@ -208,7 +208,7 @@
     add state to a function call. The result_type typedef must define the 
     result type of the function call operator:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 14
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 14
 
     \section2 Using Bound Function Arguments
 
@@ -224,7 +224,7 @@
 
     As an example, we'll use QImage::scaledToWidth():
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 10
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 10
 
     scaledToWidth takes three arguments (including the "this" pointer) and
     can't be used with QtConcurrent::mapped() directly, because
@@ -232,17 +232,17 @@
     QImage::scaledToWidth() with QtConcurrent::mapped() we have to provide a
     value for the \e{width} and the \e{transformation mode}:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 11
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 11
 
     The return value from boost::bind() is a function object (functor) with
     the following signature:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 12
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 12
 
     This matches what QtConcurrent::mapped() expects, and the complete example
     becomes:
 
-    \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentmap.cpp 13
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 13
 */
 
 /*!

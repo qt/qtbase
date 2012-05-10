@@ -107,7 +107,7 @@ public:
     constructor or with setText(). A shortcut key can be specified by preceding
     the preferred character with an ampersand. For example:
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qcheckbox.cpp 0
+    \snippet code/src_gui_widgets_qcheckbox.cpp 0
 
     In this example the shortcut is \e{Alt+A}. See the \l{QShortcut#mnemonic}
     {QShortcut} documentation for details (to display an actual ampersand,

@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
     and a data block, which are separated by each other by two
     consecutive new lines. An example for one part would be:
 
-    \snippet doc/src/snippets/code/src_network_access_qhttppart.cpp 0
+    \snippet code/src_network_access_qhttppart.cpp 0
 
     For setting headers, use setHeader() and setRawHeader(), which behave
     exactly like QNetworkRequest::setHeader() and QNetworkRequest::setRawHeader().
@@ -77,12 +77,12 @@ QT_BEGIN_NAMESPACE
     To construct a QHttpPart with a small body, consider the following snippet
     (this produces the data shown in the example above):
 
-    \snippet doc/src/snippets/code/src_network_access_qhttppart.cpp 1
+    \snippet code/src_network_access_qhttppart.cpp 1
 
     To construct a QHttpPart reading from a device (e.g. a file), the following
     can be applied:
 
-    \snippet doc/src/snippets/code/src_network_access_qhttppart.cpp 2
+    \snippet code/src_network_access_qhttppart.cpp 2
 
     Be aware that QHttpPart does not take ownership of the device when set, so
     it is the developer's responsibility to destroy it when it is not needed anymore.
@@ -226,7 +226,7 @@ void QHttpPart::setBodyDevice(QIODevice *device)
     As an example, consider the following code snippet, which constructs a multipart
     message containing a text part followed by an image part:
 
-    \snippet doc/src/snippets/code/src_network_access_qhttpmultipart.cpp 0
+    \snippet code/src_network_access_qhttpmultipart.cpp 0
 
     \sa QHttpPart, QNetworkAccessManager::post()
 */

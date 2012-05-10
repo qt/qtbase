@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
     program is activated in the current QGLContext by calling
     QGLShaderProgram::bind():
 
-    \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 0
+    \snippet code/src_opengl_qglshaderprogram.cpp 0
 
     \section1 Writing portable shaders
 
@@ -97,12 +97,12 @@ QT_BEGIN_NAMESPACE
 
     \section1 Simple shader example
 
-    \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 1
+    \snippet code/src_opengl_qglshaderprogram.cpp 1
 
     With the above shader program active, we can draw a green triangle
     as follows:
 
-    \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 2
+    \snippet code/src_opengl_qglshaderprogram.cpp 2
 
     \section1 Binary shaders and programs
 

@@ -241,7 +241,7 @@ QPixmap::QPixmap(const QPixmap &pixmap)
     Note that it's possible to squeeze the XPM variable a little bit
     by using an unusual declaration:
 
-    \snippet doc/src/snippets/code/src_gui_image_qpixmap.cpp 0
+    \snippet code/src_gui_image_qpixmap.cpp 0
 
     The extra \c const makes the entire definition read-only, which is
     slightly more efficient (for example, when the code is in a shared
@@ -334,7 +334,7 @@ QPixmap QPixmap::copy(const QRect &rect) const
     region is left unchanged. You can optionally pass a pointer to an empty
     QRegion to get the region that is \a exposed by the scroll operation.
 
-    \snippet doc/src/snippets/code/src_gui_image_qpixmap.cpp 2
+    \snippet code/src_gui_image_qpixmap.cpp 2
 
     You cannot scroll while there is an active painter on the pixmap.
 
@@ -651,7 +651,7 @@ void QPixmap::setMask(const QBitmap &mask)
     The mask may not be perfect but it should be reasonable, so you
     can do things such as the following:
 
-    \snippet doc/src/snippets/code/src_gui_image_qpixmap.cpp 1
+    \snippet code/src_gui_image_qpixmap.cpp 1
 
     This function is slow because it involves converting to/from a
     QImage, and non-trivial computations.
@@ -810,7 +810,7 @@ bool QPixmap::save(const QString &fileName, const char *format, int quality) con
     specified image file \a format and \a quality factor. This can be
     used, for example, to save a pixmap directly into a QByteArray:
 
-    \snippet doc/src/snippets/image/image.cpp 1
+    \snippet image/image.cpp 1
 */
 
 bool QPixmap::save(QIODevice* device, const char* format, int quality) const

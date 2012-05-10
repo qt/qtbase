@@ -196,7 +196,7 @@ QDBusInterfacePrivate::~QDBusInterfacePrivate()
     mathematical operation of \tt{"2 + 2"} in a remote application
     called \c com.example.Calculator, accessed via the session bus.
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusinterface.cpp 0
+    \snippet code/src_qdbus_qdbusinterface.cpp 0
 
     \sa {QtDBus XML compiler (qdbusxml2cpp)}
 */

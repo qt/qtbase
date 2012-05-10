@@ -85,7 +85,7 @@
     developer to provide the autorelease pool.
 
     The following is a snippet of subclassing QMacCocoaViewContainer to wrap a NSSearchField.
-    \snippet examples/mainwindows/macmainwindow/macmainwindow.mm 0
+    \snippet mainwindows/macmainwindow/macmainwindow.mm 0
 
 */
 

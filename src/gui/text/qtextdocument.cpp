@@ -1511,7 +1511,7 @@ QTextBlock QTextDocument::begin() const
     This function returns a block to test for the end of the document
     while iterating over it.
 
-    \snippet doc/src/snippets/textdocumentendsnippet.cpp 0
+    \snippet textdocumentendsnippet.cpp 0
 
     The block returned is invalid and represents the block after the
     last block in the document. You can use lastBlock() to retrieve the
@@ -1868,15 +1868,15 @@ QVariant QTextDocument::resource(int type, const QUrl &name) const
     For example, you can add an image as a resource in order to reference it
     from within the document:
 
-    \snippet snippets/textdocument-resources/main.cpp Adding a resource
+    \snippet textdocument-resources/main.cpp Adding a resource
 
     The image can be inserted into the document using the QTextCursor API:
 
-    \snippet snippets/textdocument-resources/main.cpp Inserting an image with a cursor
+    \snippet textdocument-resources/main.cpp Inserting an image with a cursor
 
     Alternatively, you can insert images using the HTML \c img tag:
 
-    \snippet snippets/textdocument-resources/main.cpp Inserting an image using HTML
+    \snippet textdocument-resources/main.cpp Inserting an image using HTML
 */
 void QTextDocument::addResource(int type, const QUrl &name, const QVariant &resource)
 {
@@ -2967,7 +2967,7 @@ void QTextHtmlExporter::emitFrameStyle(const QTextFrameFormat &format, FrameType
     The \a encoding parameter specifies the value for the charset attribute
     in the html header. For example if 'utf-8' is specified then the
     beginning of the generated html will look like this:
-    \snippet doc/src/snippets/code/src_gui_text_qtextdocument.cpp 0
+    \snippet code/src_gui_text_qtextdocument.cpp 0
 
     If no encoding is specified then no such meta information is generated.
 

@@ -102,7 +102,7 @@ const QSsl::SslOptions QSslConfigurationPrivate::defaultSslOptions = QSsl::SslOp
     achieve that. The following example illustrates how to change the
     protocol to TLSv1_0 in a QSslSocket object:
 
-    \snippet doc/src/snippets/code/src_network_ssl_qsslconfiguration.cpp 0
+    \snippet code/src_network_ssl_qsslconfiguration.cpp 0
 
     \sa QSsl::SslProtocol, QSslCertificate, QSslCipher, QSslKey
         QSslSocket, QNetworkAccessManager,

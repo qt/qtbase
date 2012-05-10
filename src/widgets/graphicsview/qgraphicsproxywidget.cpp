@@ -84,7 +84,7 @@ QT_BEGIN_NAMESPACE
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsproxywidget.cpp 0
+    \snippet code/src_gui_graphicsview_qgraphicsproxywidget.cpp 0
 
     QGraphicsProxyWidget takes care of automatically embedding popup children
     of embedded widgets through creating a child proxy for each popup. This
@@ -104,7 +104,7 @@ QT_BEGIN_NAMESPACE
 
     For example, in the code snippet below, we embed a group box into the proxy:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsproxywidget.cpp 1
+    \snippet code/src_gui_graphicsview_qgraphicsproxywidget.cpp 1
 
     The image below is the output obtained with its contents margin and
     contents rect labeled.
@@ -131,7 +131,7 @@ QT_BEGIN_NAMESPACE
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsproxywidget.cpp 2
+    \snippet code/src_gui_graphicsview_qgraphicsproxywidget.cpp 2
 
     QGraphicsProxyWidget maintains symmetry for the following states:
 

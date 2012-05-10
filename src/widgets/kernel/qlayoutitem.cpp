@@ -392,7 +392,7 @@ int QLayoutItem::minimumHeightForWidth(int w) const
 
     Reimplement this function in layout managers that support height
     for width. A typical implementation will look like this:
-    \snippet doc/src/snippets/code/src_gui_kernel_qlayoutitem.cpp 0
+    \snippet code/src_gui_kernel_qlayoutitem.cpp 0
 
     Caching is strongly recommended; without it layout will take
     exponential time.

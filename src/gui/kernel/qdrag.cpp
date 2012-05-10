@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
     QMimeData object. This is specified with the setMimeData() function in the
     following way:
 
-    \snippet doc/src/snippets/dragging/mainwindow.cpp 1
+    \snippet dragging/mainwindow.cpp 1
 
     Note that setMimeData() assigns ownership of the QMimeData object to the
     QDrag object. The QDrag must be constructed on the heap with a parent QObject
@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
     that the cursor's hot spot points to the center of its bottom
     edge:
 
-    \snippet doc/src/snippets/separations/finalwidget.cpp 2
+    \snippet separations/finalwidget.cpp 2
 
     \note On X11, the pixmap may not be able to keep up with the mouse
     movements if the hot spot causes the pixmap to be displayed

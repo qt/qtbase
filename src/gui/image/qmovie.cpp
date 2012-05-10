@@ -61,7 +61,7 @@
     To display the movie in your application, you can pass your QMovie object
     to QLabel::setMovie(). Example:
 
-    \snippet doc/src/snippets/code/src_gui_image_qmovie.cpp 0
+    \snippet code/src_gui_image_qmovie.cpp 0
 
     Whenever a new frame is available in the movie, QMovie will emit
     updated(). If the size of the frame changes, resized() is emitted. You can
@@ -883,7 +883,7 @@ void QMovie::setPaused(bool paused)
     The default speed is 100%.
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_image_qmovie.cpp 1
+    \snippet code/src_gui_image_qmovie.cpp 1
 */
 void QMovie::setSpeed(int percentSpeed)
 {

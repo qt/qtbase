@@ -1809,17 +1809,17 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     \l{dialogs/classwizard}{Class Wizard} and \l{dialogs/licensewizard}{License
     Wizard}.
 
-    \snippet examples/dialogs/trivialwizard/trivialwizard.cpp 1
-    \snippet examples/dialogs/trivialwizard/trivialwizard.cpp 3
+    \snippet dialogs/trivialwizard/trivialwizard.cpp 1
+    \snippet dialogs/trivialwizard/trivialwizard.cpp 3
     \dots
-    \snippet examples/dialogs/trivialwizard/trivialwizard.cpp 4
+    \snippet dialogs/trivialwizard/trivialwizard.cpp 4
     \codeline
-    \snippet examples/dialogs/trivialwizard/trivialwizard.cpp 5
-    \snippet examples/dialogs/trivialwizard/trivialwizard.cpp 7
+    \snippet dialogs/trivialwizard/trivialwizard.cpp 5
+    \snippet dialogs/trivialwizard/trivialwizard.cpp 7
     \dots
-    \snippet examples/dialogs/trivialwizard/trivialwizard.cpp 8
+    \snippet dialogs/trivialwizard/trivialwizard.cpp 8
     \codeline
-    \snippet examples/dialogs/trivialwizard/trivialwizard.cpp 10
+    \snippet dialogs/trivialwizard/trivialwizard.cpp 10
 
     \section1 Wizard Look and Feel
 
@@ -1856,19 +1856,19 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     In addition to the wizard style, there are several options that
     control the look and feel of the wizard. These can be set using
     setOption() or setOptions(). For example, HaveHelpButton makes
-    QWizard show a \gui Help button along with the other wizard
+    QWizard show a \uicontrol Help button along with the other wizard
     buttons.
 
     You can even change the order of the wizard buttons to any
     arbitrary order using setButtonLayout(), and you can add up to
-    three custom buttons (e.g., a \gui Print button) to the button
+    three custom buttons (e.g., a \uicontrol Print button) to the button
     row. This is achieved by calling setButton() or setButtonText()
     with CustomButton1, CustomButton2, or CustomButton3 to set up the
     button, and by enabling the HaveCustomButton1, HaveCustomButton2,
     or HaveCustomButton3 options. Whenever the user clicks a custom
     button, customButtonClicked() is emitted. For example:
 
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 29
+    \snippet dialogs/licensewizard/licensewizard.cpp 29
 
     \section1 Elements of a Wizard Page
 
@@ -1936,12 +1936,12 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     To register a field, call QWizardPage::registerField() field.
     For example:
 
-    \snippet examples/dialogs/classwizard/classwizard.cpp 8
+    \snippet dialogs/classwizard/classwizard.cpp 8
     \dots
-    \snippet examples/dialogs/classwizard/classwizard.cpp 10
-    \snippet examples/dialogs/classwizard/classwizard.cpp 11
+    \snippet dialogs/classwizard/classwizard.cpp 10
+    \snippet dialogs/classwizard/classwizard.cpp 11
     \dots
-    \snippet examples/dialogs/classwizard/classwizard.cpp 13
+    \snippet dialogs/classwizard/classwizard.cpp 13
 
     The above code registers three fields, \c className, \c
     baseClass, and \c qobjectMacro, which are associated with three
@@ -1952,7 +1952,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     The fields of any page are accessible from any other page. For
     example:
 
-    \snippet examples/dialogs/classwizard/classwizard.cpp 17
+    \snippet dialogs/classwizard/classwizard.cpp 17
 
     Here, we call QWizardPage::field() to access the contents of the
     \c className field (which was defined in the \c ClassInfoPage)
@@ -1971,7 +1971,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
 
     If an asterisk (\c *) is appended to the name when the property
     is registered, the field is a \e{mandatory field}. When a page has
-    mandatory fields, the \gui Next and/or \gui Finish buttons are
+    mandatory fields, the \uicontrol Next and/or \uicontrol Finish buttons are
     enabled only when all mandatory fields are filled.
 
     To consider a field "filled", QWizard simply checks that the
@@ -1987,7 +1987,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     QWizardPage::completeChanged() signal whenever the page becomes
     complete or incomplete.
 
-    The enabled/disabled state of the \gui Next and/or \gui Finish
+    The enabled/disabled state of the \uicontrol Next and/or \uicontrol Finish
     buttons is one way to perform validation on the user input.
     Another way is to reimplement validateCurrentPage() (or
     QWizardPage::validatePage()) to perform some last-minute
@@ -2005,9 +2005,9 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     them using addPage(). By default, the pages are shown in the
     order in which they were added. For example:
 
-    \snippet examples/dialogs/classwizard/classwizard.cpp 0
+    \snippet dialogs/classwizard/classwizard.cpp 0
     \dots
-    \snippet examples/dialogs/classwizard/classwizard.cpp 2
+    \snippet dialogs/classwizard/classwizard.cpp 2
 
     When a page is about to be shown, QWizard calls initializePage()
     (which in turn calls QWizardPage::initializePage()) to fill the
@@ -2016,11 +2016,11 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     based on other pages' fields (see the \l{initialize page}{example
     above}).
 
-    If the user presses \gui Back, cleanupPage() is called (which in
+    If the user presses \uicontrol Back, cleanupPage() is called (which in
     turn calls QWizardPage::cleanupPage()). The default
     implementation resets the page's fields to their original values
     (the values they had before initializePage() was called). If you
-    want the \gui Back button to be non-destructive and keep the
+    want the \uicontrol Back button to be non-destructive and keep the
     values entered by the user, simply enable the IndependentPages
     option.
 
@@ -2037,37 +2037,37 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     In complex wizards, pages are identified by IDs. These IDs are
     typically defined using an enum. For example:
 
-    \snippet examples/dialogs/licensewizard/licensewizard.h 0
+    \snippet dialogs/licensewizard/licensewizard.h 0
     \dots
-    \snippet examples/dialogs/licensewizard/licensewizard.h 2
+    \snippet dialogs/licensewizard/licensewizard.h 2
     \dots
-    \snippet examples/dialogs/licensewizard/licensewizard.h 3
+    \snippet dialogs/licensewizard/licensewizard.h 3
 
     The pages are inserted using setPage(), which takes an ID and an
     instance of QWizardPage (or of a subclass):
 
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 1
+    \snippet dialogs/licensewizard/licensewizard.cpp 1
     \dots
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 8
+    \snippet dialogs/licensewizard/licensewizard.cpp 8
 
     By default, the pages are shown in increasing ID order. To
     provide a dynamic order that depends on the options chosen by the
     user, we must reimplement QWizardPage::nextId(). For example:
 
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 18
+    \snippet dialogs/licensewizard/licensewizard.cpp 18
     \codeline
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 23
+    \snippet dialogs/licensewizard/licensewizard.cpp 23
     \codeline
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 24
+    \snippet dialogs/licensewizard/licensewizard.cpp 24
     \codeline
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 25
+    \snippet dialogs/licensewizard/licensewizard.cpp 25
     \codeline
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 26
+    \snippet dialogs/licensewizard/licensewizard.cpp 26
 
     It would also be possible to put all the logic in one place, in a
     QWizard::nextId() reimplementation. For example:
 
-    \snippet doc/src/snippets/code/src_gui_dialogs_qwizard.cpp 0
+    \snippet code/src_gui_dialogs_qwizard.cpp 0
 
     To start at another page than the page with the lowest ID, call
     setStartId().
@@ -2075,7 +2075,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     To test whether a page has been visited or not, call
     hasVisitedPage(). For example:
 
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 27
+    \snippet dialogs/licensewizard/licensewizard.cpp 27
 
     \sa QWizardPage, {Class Wizard Example}, {License Wizard Example}
 */
@@ -2085,12 +2085,12 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
 
     This enum specifies the buttons in a wizard.
 
-    \value BackButton  The \gui Back button (\gui {Go Back} on Mac OS X)
-    \value NextButton  The \gui Next button (\gui Continue on Mac OS X)
-    \value CommitButton  The \gui Commit button
-    \value FinishButton  The \gui Finish button (\gui Done on Mac OS X)
-    \value CancelButton  The \gui Cancel button (see also NoCancelButton)
-    \value HelpButton    The \gui Help button (see also HaveHelpButton)
+    \value BackButton  The \uicontrol Back button (\uicontrol {Go Back} on Mac OS X)
+    \value NextButton  The \uicontrol Next button (\uicontrol Continue on Mac OS X)
+    \value CommitButton  The \uicontrol Commit button
+    \value FinishButton  The \uicontrol Finish button (\uicontrol Done on Mac OS X)
+    \value CancelButton  The \uicontrol Cancel button (see also NoCancelButton)
+    \value HelpButton    The \uicontrol Help button (see also HaveHelpButton)
     \value CustomButton1  The first user-defined button (see also HaveCustomButton1)
     \value CustomButton2  The second user-defined button (see also HaveCustomButton2)
     \value CustomButton3  The third user-defined button (see also HaveCustomButton3)
@@ -2148,18 +2148,18 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     \value IgnoreSubTitles  Don't show any subtitles, even if they are set.
     \value ExtendedWatermarkPixmap  Extend any WatermarkPixmap all the
                                     way down to the window's edge.
-    \value NoDefaultButton  Don't make the \gui Next or \gui Finish button the
+    \value NoDefaultButton  Don't make the \uicontrol Next or \uicontrol Finish button the
                             dialog's \l{QPushButton::setDefault()}{default button}.
-    \value NoBackButtonOnStartPage  Don't show the \gui Back button on the start page.
-    \value NoBackButtonOnLastPage   Don't show the \gui Back button on the last page.
-    \value DisabledBackButtonOnLastPage  Disable the \gui Back button on the last page.
-    \value HaveNextButtonOnLastPage  Show the (disabled) \gui Next button on the last page.
-    \value HaveFinishButtonOnEarlyPages  Show the (disabled) \gui Finish button on non-final pages.
-    \value NoCancelButton  Don't show the \gui Cancel button.
-    \value CancelButtonOnLeft  Put the \gui Cancel button on the left of \gui Back (rather than on
-                               the right of \gui Finish or \gui Next).
-    \value HaveHelpButton  Show the \gui Help button.
-    \value HelpButtonOnRight  Put the \gui Help button on the far right of the button layout
+    \value NoBackButtonOnStartPage  Don't show the \uicontrol Back button on the start page.
+    \value NoBackButtonOnLastPage   Don't show the \uicontrol Back button on the last page.
+    \value DisabledBackButtonOnLastPage  Disable the \uicontrol Back button on the last page.
+    \value HaveNextButtonOnLastPage  Show the (disabled) \uicontrol Next button on the last page.
+    \value HaveFinishButtonOnEarlyPages  Show the (disabled) \uicontrol Finish button on non-final pages.
+    \value NoCancelButton  Don't show the \uicontrol Cancel button.
+    \value CancelButtonOnLeft  Put the \uicontrol Cancel button on the left of \uicontrol Back (rather than on
+                               the right of \uicontrol Finish or \uicontrol Next).
+    \value HaveHelpButton  Show the \uicontrol Help button.
+    \value HelpButtonOnRight  Put the \uicontrol Help button on the far right of the button layout
                               (rather than on the far left).
     \value HaveCustomButton1  Show the first user-defined button (CustomButton1).
     \value HaveCustomButton2  Show the second user-defined button (CustomButton2).
@@ -2363,7 +2363,7 @@ QWizardPage *QWizard::page(int theid) const
     Returns true if the page history contains page \a id; otherwise,
     returns false.
 
-    Pressing \gui Back marks the current page as "unvisited" again.
+    Pressing \uicontrol Back marks the current page as "unvisited" again.
 
     \sa visitedPages()
 */
@@ -2377,7 +2377,7 @@ bool QWizard::hasVisitedPage(int theid) const
     Returns the list of IDs of visited pages, in the order in which the pages
     were visited.
 
-    Pressing \gui Back marks the current page as "unvisited" again.
+    Pressing \uicontrol Back marks the current page as "unvisited" again.
 
     \sa hasVisitedPage()
 */
@@ -2635,10 +2635,10 @@ QWizard::WizardOptions QWizard::options() const
     Sets the text on button \a which to be \a text.
 
     By default, the text on buttons depends on the wizardStyle. For
-    example, on Mac OS X, the \gui Next button is called \gui
+    example, on Mac OS X, the \uicontrol Next button is called \uicontrol
     Continue.
 
-    To add extra buttons to the wizard (e.g., a \gui Print button),
+    To add extra buttons to the wizard (e.g., a \uicontrol Print button),
     one way is to call setButtonText() with CustomButton1,
     CustomButton2, or CustomButton3 to set their text, and make the
     buttons visible using the HaveCustomButton1, HaveCustomButton2,
@@ -2667,7 +2667,7 @@ void QWizard::setButtonText(WizardButton which, const QString &text)
     If a text has ben set using setButtonText(), this text is returned.
 
     By default, the text on buttons depends on the wizardStyle. For
-    example, on Mac OS X, the \gui Next button is called \gui
+    example, on Mac OS X, the \uicontrol Next button is called \uicontrol
     Continue.
 
     \sa button(), setButton(), setButtonText(), QWizardPage::buttonText(),
@@ -2704,7 +2704,7 @@ QString QWizard::buttonText(WizardButton which) const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_dialogs_qwizard.cpp 1
+    \snippet code/src_gui_dialogs_qwizard.cpp 1
 
     \sa setButton(), setButtonText(), setOptions()
 */
@@ -2738,7 +2738,7 @@ void QWizard::setButtonLayout(const QList<WizardButton> &layout)
 /*!
     Sets the button corresponding to role \a which to \a button.
 
-    To add extra buttons to the wizard (e.g., a \gui Print button),
+    To add extra buttons to the wizard (e.g., a \uicontrol Print button),
     one way is to call setButton() with CustomButton1 to
     CustomButton3, and make the buttons visible using the
     HaveCustomButton1 to HaveCustomButton3 options.
@@ -3029,27 +3029,27 @@ QSize QWizard::sizeHint() const
 /*!
     \fn void QWizard::helpRequested()
 
-    This signal is emitted when the user clicks the \gui Help button.
+    This signal is emitted when the user clicks the \uicontrol Help button.
 
-    By default, no \gui Help button is shown. Call
+    By default, no \uicontrol Help button is shown. Call
     setOption(HaveHelpButton, true) to have one.
 
     Example:
 
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 0
+    \snippet dialogs/licensewizard/licensewizard.cpp 0
     \dots
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 5
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 7
+    \snippet dialogs/licensewizard/licensewizard.cpp 5
+    \snippet dialogs/licensewizard/licensewizard.cpp 7
     \dots
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 8
+    \snippet dialogs/licensewizard/licensewizard.cpp 8
     \codeline
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 10
+    \snippet dialogs/licensewizard/licensewizard.cpp 10
     \dots
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 12
+    \snippet dialogs/licensewizard/licensewizard.cpp 12
     \codeline
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 14
+    \snippet dialogs/licensewizard/licensewizard.cpp 14
     \codeline
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 15
+    \snippet dialogs/licensewizard/licensewizard.cpp 15
 
     \sa customButtonClicked()
 */
@@ -3070,7 +3070,7 @@ QSize QWizard::sizeHint() const
 /*!
     Goes back to the previous page.
 
-    This is equivalent to pressing the \gui Back button.
+    This is equivalent to pressing the \uicontrol Back button.
 
     \sa next(), accept(), reject(), restart()
 */
@@ -3086,7 +3086,7 @@ void QWizard::back()
 /*!
     Advances to the next page.
 
-    This is equivalent to pressing the \gui Next or \gui Commit button.
+    This is equivalent to pressing the \uicontrol Next or \uicontrol Commit button.
 
     \sa nextId(), back(), accept(), reject(), restart()
 */
@@ -3253,7 +3253,7 @@ void QWizard::done(int result)
 
     This virtual function is called by QWizard to prepare page \a id
     just before it is shown either as a result of QWizard::restart()
-    being called, or as a result of the user clicking \gui Next. (However, if the \l
+    being called, or as a result of the user clicking \uicontrol Next. (However, if the \l
     QWizard::IndependentPages option is set, this function is only
     called the first time the page is shown.)
 
@@ -3277,7 +3277,7 @@ void QWizard::initializePage(int theid)
     \fn void QWizard::cleanupPage(int id)
 
     This virtual function is called by QWizard to clean up page \a id just before the
-    user leaves it by clicking \gui Back (unless the \l QWizard::IndependentPages option is set).
+    user leaves it by clicking \uicontrol Back (unless the \l QWizard::IndependentPages option is set).
 
     The default implementation calls QWizardPage::cleanupPage() on
     page(\a id).
@@ -3293,15 +3293,15 @@ void QWizard::cleanupPage(int theid)
 
 /*!
     This virtual function is called by QWizard when the user clicks
-    \gui Next or \gui Finish to perform some last-minute validation.
+    \uicontrol Next or \uicontrol Finish to perform some last-minute validation.
     If it returns true, the next page is shown (or the wizard
     finishes); otherwise, the current page stays up.
 
     The default implementation calls QWizardPage::validatePage() on
     the currentPage().
 
-    When possible, it is usually better style to disable the \gui
-    Next or \gui Finish button (by specifying \l{mandatory fields} or
+    When possible, it is usually better style to disable the \uicontrol
+    Next or \uicontrol Finish button (by specifying \l{mandatory fields} or
     by reimplementing QWizardPage::isComplete()) than to reimplement
     validateCurrentPage().
 
@@ -3318,7 +3318,7 @@ bool QWizard::validateCurrentPage()
 
 /*!
     This virtual function is called by QWizard to find out which page
-    to show when the user clicks the \gui Next button.
+    to show when the user clicks the \uicontrol Next button.
 
     The return value is the ID of the next page, or -1 if no page follows.
 
@@ -3362,29 +3362,29 @@ int QWizard::nextId() const
 
     \list
     \li initializePage() is called to initialize the page's contents
-       when the user clicks the wizard's \gui Next button. If you
+       when the user clicks the wizard's \uicontrol Next button. If you
        want to derive the page's default from what the user entered
        on previous pages, this is the function to reimplement.
     \li cleanupPage() is called to reset the page's contents when the
-       user clicks the wizard's \gui Back button.
-    \li validatePage() validates the page when the user clicks \gui
-       Next or \gui Finish. It is often used to show an error message
+       user clicks the wizard's \uicontrol Back button.
+    \li validatePage() validates the page when the user clicks \uicontrol
+       Next or \uicontrol Finish. It is often used to show an error message
        if the user has entered incomplete or invalid information.
     \li nextId() returns the ID of the next page. It is useful when
        \l{creating non-linear wizards}, which allow different
        traversal paths based on the information provided by the user.
-    \li isComplete() is called to determine whether the \gui Next
-       and/or \gui Finish button should be enabled or disabled. If
+    \li isComplete() is called to determine whether the \uicontrol Next
+       and/or \uicontrol Finish button should be enabled or disabled. If
        you reimplement isComplete(), also make sure that
        completeChanged() is emitted whenever the complete state
        changes.
     \endlist
 
-    Normally, the \gui Next button and the \gui Finish button of a
-    wizard are mutually exclusive. If isFinalPage() returns true, \gui
-    Finish is available; otherwise, \gui Next is available. By
+    Normally, the \uicontrol Next button and the \uicontrol Finish button of a
+    wizard are mutually exclusive. If isFinalPage() returns true, \uicontrol
+    Finish is available; otherwise, \uicontrol Next is available. By
     default, isFinalPage() is true only when nextId() returns -1. If
-    you want to show \gui Next and \gui Final simultaneously for a
+    you want to show \uicontrol Next and \uicontrol Final simultaneously for a
     page (letting the user perform an "early finish"), call
     setFinalPage(true) on that page. For wizards that support early
     finishes, you might also want to set the
@@ -3532,7 +3532,7 @@ QPixmap QWizardPage::pixmap(QWizard::WizardPixmap which) const
 /*!
     This virtual function is called by QWizard::initializePage() to
     prepare the page just before it is shown either as a result of QWizard::restart()
-    being called, or as a result of the user clicking \gui Next.
+    being called, or as a result of the user clicking \uicontrol Next.
     (However, if the \l QWizard::IndependentPages option is set, this function is only
     called the first time the page is shown.)
 
@@ -3540,7 +3540,7 @@ QPixmap QWizardPage::pixmap(QWizard::WizardPixmap which) const
     fields are properly initialized based on fields from previous
     pages. For example:
 
-    \snippet examples/dialogs/classwizard/classwizard.cpp 17
+    \snippet dialogs/classwizard/classwizard.cpp 17
 
     The default implementation does nothing.
 
@@ -3552,7 +3552,7 @@ void QWizardPage::initializePage()
 
 /*!
     This virtual function is called by QWizard::cleanupPage() when
-    the user leaves the page by clicking \gui Back (unless the \l QWizard::IndependentPages
+    the user leaves the page by clicking \uicontrol Back (unless the \l QWizard::IndependentPages
     option is set).
 
     The default implementation resets the page's fields to their
@@ -3576,14 +3576,14 @@ void QWizardPage::cleanupPage()
 
 /*!
     This virtual function is called by QWizard::validateCurrentPage()
-    when the user clicks \gui Next or \gui Finish to perform some
+    when the user clicks \uicontrol Next or \uicontrol Finish to perform some
     last-minute validation. If it returns true, the next page is shown
     (or the wizard finishes); otherwise, the current page stays up.
 
     The default implementation returns true.
 
-    When possible, it is usually better style to disable the \gui
-    Next or \gui Finish button (by specifying \l{mandatory fields} or
+    When possible, it is usually better style to disable the \uicontrol
+    Next or \uicontrol Finish button (by specifying \l{mandatory fields} or
     reimplementing isComplete()) than to reimplement validatePage().
 
     \sa QWizard::validateCurrentPage(), isComplete()
@@ -3595,7 +3595,7 @@ bool QWizardPage::validatePage()
 
 /*!
     This virtual function is called by QWizard to determine whether
-    the \gui Next or \gui Finish button should be enabled or
+    the \uicontrol Next or \uicontrol Finish button should be enabled or
     disabled.
 
     The default implementation returns true if all \l{mandatory
@@ -3645,7 +3645,7 @@ bool QWizardPage::isComplete() const
 /*!
     Explicitly sets this page to be final if \a finalPage is true.
 
-    After calling setFinalPage(true), isFinalPage() returns true and the \gui
+    After calling setFinalPage(true), isFinalPage() returns true and the \uicontrol
     Finish button is visible (and enabled if isComplete() returns
     true).
 
@@ -3664,7 +3664,7 @@ void QWizardPage::setFinalPage(bool finalPage)
 }
 
 /*!
-    This function is called by QWizard to determine whether the \gui
+    This function is called by QWizard to determine whether the \uicontrol
     Finish button should be shown for this page or not.
 
     By default, it returns true if there is no next page
@@ -3695,12 +3695,12 @@ bool QWizardPage::isFinalPage() const
     sets it to be a normal page.
 
     A commit page is a page that represents an action which cannot be undone
-    by clicking \gui Back or \gui Cancel.
+    by clicking \uicontrol Back or \uicontrol Cancel.
 
-    A \gui Commit button replaces the \gui Next button on a commit page. Clicking this
-    button simply calls QWizard::next() just like clicking \gui Next does.
+    A \uicontrol Commit button replaces the \uicontrol Next button on a commit page. Clicking this
+    button simply calls QWizard::next() just like clicking \uicontrol Next does.
 
-    A page entered directly from a commit page has its \gui Back button disabled.
+    A page entered directly from a commit page has its \uicontrol Back button disabled.
 
     \sa isCommitPage()
 */
@@ -3748,7 +3748,7 @@ void QWizardPage::setButtonText(QWizard::WizardButton which, const QString &text
     this text is returned.
 
     By default, the text on buttons depends on the QWizard::wizardStyle.
-    For example, on Mac OS X, the \gui Next button is called \gui
+    For example, on Mac OS X, the \uicontrol Next button is called \uicontrol
     Continue.
 
     \sa setButtonText(), QWizard::buttonText(), QWizard::setButtonText()
@@ -3768,7 +3768,7 @@ QString QWizardPage::buttonText(QWizard::WizardButton which) const
 
 /*!
     This virtual function is called by QWizard::nextId() to find
-    out which page to show when the user clicks the \gui Next button.
+    out which page to show when the user clicks the \uicontrol Next button.
 
     The return value is the ID of the next page, or -1 if no page follows.
 
@@ -3778,7 +3778,7 @@ QString QWizardPage::buttonText(QWizard::WizardButton which) const
     By reimplementing this function, you can specify a dynamic page
     order. For example:
 
-    \snippet examples/dialogs/licensewizard/licensewizard.cpp 18
+    \snippet dialogs/licensewizard/licensewizard.cpp 18
 
     \sa QWizard::nextId()
 */
@@ -3845,7 +3845,7 @@ void QWizardPage::setField(const QString &name, const QVariant &value)
 
     Example:
 
-    \snippet examples/dialogs/classwizard/classwizard.cpp 17
+    \snippet dialogs/classwizard/classwizard.cpp 17
 
     \sa QWizard::field(), setField(), registerField()
 */
@@ -3868,8 +3868,8 @@ QVariant QWizardPage::field(const QString &name) const
     explicitly about each other.
 
     If \a name ends with an asterisk (\c *), the field is a mandatory
-    field. When a page has mandatory fields, the \gui Next and/or
-    \gui Finish buttons are enabled only when all mandatory fields
+    field. When a page has mandatory fields, the \uicontrol Next and/or
+    \uicontrol Finish buttons are enabled only when all mandatory fields
     are filled. This requires a \a changedSignal to be specified, to
     tell QWizard to recheck the value stored by the mandatory field.
 

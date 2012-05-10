@@ -472,12 +472,12 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     For example, to allow the user to drag and drop an image onto a QTextEdit,
     you could the implement these functions in the following way:
 
-    \snippet doc/src/snippets/textdocument-imagedrop/textedit.cpp 0
+    \snippet textdocument-imagedrop/textedit.cpp 0
 
     We add support for image MIME types by returning true. For all other
     MIME types, we use the default implementation.
 
-    \snippet doc/src/snippets/textdocument-imagedrop/textedit.cpp 1
+    \snippet textdocument-imagedrop/textedit.cpp 1
 
     We unpack the image from the QVariant held by the MIME source and insert
     it into the document as a resource.
@@ -1583,7 +1583,7 @@ bool QTextEdit::focusNextPrevChild(bool next)
 
   Information about the event is passed in the \a event object.
 
-  \snippet doc/src/snippets/code/src_gui_widgets_qtextedit.cpp 0
+  \snippet code/src_gui_widgets_qtextedit.cpp 0
 */
 void QTextEdit::contextMenuEvent(QContextMenuEvent *e)
 {
@@ -2143,7 +2143,7 @@ void QTextEdit::setAutoFormatting(AutoFormatting features)
 
     It is equivalent to
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qtextedit.cpp 1
+    \snippet code/src_gui_widgets_qtextedit.cpp 1
  */
 void QTextEdit::insertPlainText(const QString &text)
 {
@@ -2157,7 +2157,7 @@ void QTextEdit::insertPlainText(const QString &text)
 
     It is equivalent to:
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qtextedit.cpp 2
+    \snippet code/src_gui_widgets_qtextedit.cpp 2
 
     \note When using this function with a style sheet, the style sheet will
     only apply to the current block in the document. In order to apply a style
@@ -2273,10 +2273,10 @@ void QTextEdit::print(QPagedPaintDevice *printer) const
 #endif
 
 /*! \property QTextEdit::tabChangesFocus
-  \brief whether \gui Tab changes focus or is accepted as input
+  \brief whether \uicontrol Tab changes focus or is accepted as input
 
   In some occasions text edits should not allow the user to input
-  tabulators or change indentation using the \gui Tab key, as this breaks
+  tabulators or change indentation using the \uicontrol Tab key, as this breaks
   the focus chain. The default is false.
 
 */

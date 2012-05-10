@@ -644,7 +644,7 @@ QAbstractSocket::NetworkLayerProtocol QHostAddress::protocol() const
     Returns the IPv6 address as a Q_IPV6ADDR structure. The structure
     consists of 16 unsigned characters.
 
-    \snippet doc/src/snippets/code/src_network_kernel_qhostaddress.cpp 0
+    \snippet code/src_network_kernel_qhostaddress.cpp 0
 
     This value is valid if the protocol() is
     \l{QAbstractSocket::}{IPv6Protocol}.

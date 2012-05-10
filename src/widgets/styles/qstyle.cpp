@@ -107,7 +107,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     QApplication::setStyle() function. It can also be specified by the
     user of the application, using the \c -style command-line option:
 
-    \snippet doc/src/snippets/code/src_gui_styles_qstyle.cpp 0
+    \snippet code/src_gui_styles_qstyle.cpp 0
 
     If no style is specified, Qt will choose the most appropriate
     style for the user's platform or desktop environment.
@@ -133,7 +133,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     For example, if you want to draw a focus rectangle on your
     widget, you can write:
 
-    \snippet doc/src/snippets/styles/styles.cpp 1
+    \snippet styles/styles.cpp 1
 
     QStyle gets all the information it needs to render the graphical
     element from QStyleOption. The widget is passed as the last
@@ -154,15 +154,15 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     combines a QStyle, a QPainter, and a QWidget. This makes it
     possible to write
 
-    \snippet doc/src/snippets/styles/styles.cpp 5
+    \snippet styles/styles.cpp 5
     \dots
-    \snippet doc/src/snippets/styles/styles.cpp 7
+    \snippet styles/styles.cpp 7
 
     instead of
 
-    \snippet doc/src/snippets/styles/styles.cpp 2
+    \snippet styles/styles.cpp 2
     \dots
-    \snippet doc/src/snippets/styles/styles.cpp 3
+    \snippet styles/styles.cpp 3
 
     \section1 Creating a Custom Style
 
@@ -190,16 +190,16 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     function, so we need to reimplement that function. We need the
     following class declaration:
 
-    \snippet doc/src/snippets/customstyle/customstyle.h 0
+    \snippet customstyle/customstyle.h 0
 
     To draw its up and down arrows, QSpinBox uses the
     PE_IndicatorSpinUp and PE_IndicatorSpinDown primitive elements.
     Here's how to reimplement the drawPrimitive() function to draw
     them differently:
 
-    \snippet doc/src/snippets/customstyle/customstyle.cpp 2
-    \snippet doc/src/snippets/customstyle/customstyle.cpp 3
-    \snippet doc/src/snippets/customstyle/customstyle.cpp 4
+    \snippet customstyle/customstyle.cpp 2
+    \snippet customstyle/customstyle.cpp 3
+    \snippet customstyle/customstyle.cpp 4
 
     Notice that we don't use the \c widget argument, except to pass it
     on to the QWindowStyle::drawPrimitive() function. As mentioned
@@ -211,9 +211,9 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     information, be careful to ensure that it isn't 0 and that it is
     of the correct type before using it. For example:
 
-    \snippet doc/src/snippets/customstyle/customstyle.cpp 0
+    \snippet customstyle/customstyle.cpp 0
     \dots
-    \snippet doc/src/snippets/customstyle/customstyle.cpp 1
+    \snippet customstyle/customstyle.cpp 1
 
     When implementing a custom style, you cannot assume that the
     widget is a QSpinBox just because the enum value is called
@@ -233,7 +233,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     QApplication::setStyle() static function before creating the
     QApplication object:
 
-    \snippet snippets/customstyle/main.cpp using a custom style
+    \snippet customstyle/main.cpp using a custom style
 
     You can call QApplication::setStyle() at any time, but by calling
     it before the constructor, you ensure that the user's preference,
@@ -252,7 +252,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     automatically. To use your new style with existing applications,
     simply start the application with the following argument:
 
-    \snippet doc/src/snippets/code/src_gui_styles_qstyle.cpp 1
+    \snippet code/src_gui_styles_qstyle.cpp 1
 
     The application will use the look and feel from the custom style you
     implemented.
@@ -306,7 +306,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     We include a small example where we customize the drawing of item
     backgrounds.
 
-    \snippet doc/src/snippets/customviewstyle.cpp 0
+    \snippet customviewstyle.cpp 0
 
     The primitive element PE_PanelItemViewItem is responsible for
     painting the background of items, and is called from

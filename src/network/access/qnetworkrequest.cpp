@@ -487,7 +487,7 @@ QList<QByteArray> QNetworkRequest::rawHeaderList() const
     the corresponding "cooked" header will be set as well.
 
     For example:
-    \snippet doc/src/snippets/code/src_network_access_qnetworkrequest.cpp 0
+    \snippet code/src_network_access_qnetworkrequest.cpp 0
 
     will also set the known header LastModifiedHeader to be the
     QDateTime object of the parsed date.

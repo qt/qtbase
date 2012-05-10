@@ -261,7 +261,7 @@ void QMainWindowPrivate::init()
 
     An example of how to create menus follows:
 
-    \snippet examples/mainwindows/application/mainwindow.cpp 26
+    \snippet mainwindows/application/mainwindow.cpp 26
 
     The \c createPopupMenu() function creates popup menus when the
     main window receives context menu events.  The default
@@ -288,7 +288,7 @@ void QMainWindowPrivate::init()
 
     An example of toolbar creation follows:
 
-    \snippet examples/mainwindows/application/mainwindow.cpp 29
+    \snippet mainwindows/application/mainwindow.cpp 29
 
     \section2 Creating Dock Widgets
 
@@ -312,7 +312,7 @@ void QMainWindowPrivate::init()
     We give an example of how to create and add dock widgets to a
     main window:
 
-    \snippet doc/src/snippets/mainwindowsnippet.cpp 0
+    \snippet mainwindowsnippet.cpp 0
 
     \section2 The Status Bar
 
@@ -485,7 +485,7 @@ void QMainWindow::setToolButtonStyle(Qt::ToolButtonStyle toolButtonStyle)
     can then share among all the Mac windows. Create a parent-less
     menu bar this way:
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qmenubar.cpp 1
+    \snippet code/src_gui_widgets_qmenubar.cpp 1
 
     \sa setMenuBar()
 */
@@ -1213,7 +1213,7 @@ Qt::DockWidgetArea QMainWindow::dockWidgetArea(QDockWidget *dockwidget) const
     To save the geometry when the window closes, you can
     implement a close event like this:
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qmainwindow.cpp 0
+    \snippet code/src_gui_widgets_qmainwindow.cpp 0
 
     \sa restoreState(), QWidget::saveGeometry(), QWidget::restoreGeometry()
 */
@@ -1237,7 +1237,7 @@ QByteArray QMainWindow::saveState(int version) const
     To restore geometry saved using QSettings, you can use code like
     this:
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qmainwindow.cpp 1
+    \snippet code/src_gui_widgets_qmainwindow.cpp 1
 
     \sa saveState(), QWidget::saveGeometry(),
     QWidget::restoreGeometry(), restoreDockWidget()

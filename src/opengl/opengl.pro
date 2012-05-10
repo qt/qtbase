@@ -24,6 +24,9 @@ contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
 contains(QT_CONFIG, egl):CONFIG += egl
 
+QMAKE_DOCS = $$PWD/doc/qtopengl.qdocconf
+QMAKE_DOCS_INDEX = ../../doc
+
 HEADERS += qgl.h \
            qgl_p.h \
            qglcolormap.h \

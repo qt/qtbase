@@ -190,13 +190,13 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
     integer and a string can be constructed using the \l
     {qdbustypesystem.html}{QtDBus type system}:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 0
+    \snippet code/src_qdbus_qdbusargument.cpp 0
 
     The type has to be registered with qDBusRegisterMetaType() before
     it can be used with QDBusArgument. Therefore, somewhere in your
     program, you should add the following code:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 1
+    \snippet code/src_qdbus_qdbusargument.cpp 1
 
     Once registered, a type can be used in outgoing method calls
     (placed with QDBusAbstractInterface::call()), signal emissions
@@ -275,11 +275,11 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
     Attempts to demarshall the contents of \a argument into the type
     \c{T}. For example:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 2
+    \snippet code/src_qdbus_qdbusargument.cpp 2
 
     Note that it is equivalent to the following:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 3
+    \snippet code/src_qdbus_qdbusargument.cpp 3
 */
 
 /*!
@@ -817,12 +817,12 @@ const QDBusArgument &QDBusArgument::operator>>(QByteArray &arg) const
     This function is used usually in \c{operator<<} streaming
     operators, as in the following example:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 4
+    \snippet code/src_qdbus_qdbusargument.cpp 4
 
     Structures can contain other structures, so the following code is
     also valid:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 5
+    \snippet code/src_qdbus_qdbusargument.cpp 5
 
     \sa endStructure(), beginArray(), beginMap()
 */
@@ -850,7 +850,7 @@ void QDBusArgument::endStructure()
     This function is used usually in \c{operator<<} streaming
     operators, as in the following example:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 6
+    \snippet code/src_qdbus_qdbusargument.cpp 6
 
     If the type you want to marshall is a QList, QVector or any of the
     Qt's \l {Container Classes} that take one template parameter,
@@ -889,7 +889,7 @@ void QDBusArgument::endArray()
     This function is used usually in \c{operator<<} streaming
     operators, as in the following example:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 7
+    \snippet code/src_qdbus_qdbusargument.cpp 7
 
     If the type you want to marshall is a QMap or QHash, you need not
     declare an \c{operator<<} function for it, since QtDBus provides
@@ -948,7 +948,7 @@ void QDBusArgument::endMapEntry()
     This function is used usually in \c{operator>>} streaming
     operators, as in the following example:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 8
+    \snippet code/src_qdbus_qdbusargument.cpp 8
 
     \sa endStructure(), beginArray(), beginMap()
 */
@@ -977,7 +977,7 @@ void QDBusArgument::endStructure() const
     This function is used usually in \c{operator>>} streaming
     operators, as in the following example:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 9
+    \snippet code/src_qdbus_qdbusargument.cpp 9
 
     If the type you want to demarshall is a QList, QVector or any of the
     Qt's \l {Container Classes} that take one template parameter, you
@@ -1013,7 +1013,7 @@ void QDBusArgument::endArray() const
     This function is used usually in \c{operator>>} streaming
     operators, as in the following example:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 10
+    \snippet code/src_qdbus_qdbusargument.cpp 10
 
     If the type you want to demarshall is a QMap or QHash, you need not
     declare an \c{operator>>} function for it, since QtDBus provides

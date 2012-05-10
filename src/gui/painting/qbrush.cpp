@@ -292,7 +292,7 @@ struct QBrushDataPointerDeleter
     gradients: QLinearGradient, QConicalGradient, and QRadialGradient
     - all of which inherit QGradient.
 
-    \snippet doc/src/snippets/brush/gradientcreationsnippet.cpp 0
+    \snippet brush/gradientcreationsnippet.cpp 0
 
     The texture() defines the pixmap used when the current style is
     Qt::TexturePattern.  You can create a brush with a texture by
@@ -323,7 +323,7 @@ struct QBrushDataPointerDeleter
     QPainter's \l {QPen}{pen} combined with Qt::PenStyle and
     Qt::GlobalColor:
 
-    \snippet doc/src/snippets/code/src_gui_painting_qbrush.cpp 0
+    \snippet code/src_gui_painting_qbrush.cpp 0
 
     Note that, by default, QPainter renders the outline (using the
     currently set pen) when drawing shapes. Use \l {Qt::NoPen}{\c
@@ -1214,13 +1214,13 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
     A diagonal linear gradient from black at (100, 100) to white at
     (200, 200) could be specified like this:
 
-    \snippet doc/src/snippets/brush/brush.cpp 0
+    \snippet brush/brush.cpp 0
 
     A gradient can have an arbitrary number of stop points. The
     following would create a radial gradient starting with
     red in the center, blue and then green on the edges:
 
-    \snippet doc/src/snippets/brush/brush.cpp 1
+    \snippet brush/brush.cpp 1
 
     It is possible to repeat or reflect the gradient outside its area
     by specifiying the \l {QGradient::Spread}{spread method} using the

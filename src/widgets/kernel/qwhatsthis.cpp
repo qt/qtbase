@@ -102,7 +102,7 @@ QT_BEGIN_NAMESPACE
     simple method to determine whether the text can be rendered as
     plain text. See Qt::mightBeRichText() for details.
 
-    \snippet doc/src/snippets/whatsthis/whatsthis.cpp 0
+    \snippet whatsthis/whatsthis.cpp 0
 
     An alternative way to enter "What's This?" mode is to call
     createAction(), and add the returned QAction to either a menu or

@@ -69,22 +69,22 @@
 
     Where with QDBusReply you would write:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusreply.cpp 0
+    \snippet code/src_qdbus_qdbusreply.cpp 0
 
     with QDBusPendingReply, the equivalent code (including the blocking
     wait for the reply) would be:
 
-    \snippet doc/src/snippets/code/src.qdbus.qdbuspendingreply.cpp 0
+    \snippet code/src_qdbus_qdbuspendingreply.cpp 0
 
     For method calls that have more than one output argument, with
     QDBusReply, you would write:
 
-    \snippet doc/src/snippets/code/src_qdbus_qdbusreply.cpp 1
+    \snippet code/src_qdbus_qdbusreply.cpp 1
 
     whereas with QDBusPendingReply, all of the output arguments should
     be template parameters:
 
-    \snippet doc/src/snippets/code/src.qdbus.qdbuspendingreply.cpp 2
+    \snippet code/src_qdbus_qdbuspendingreply.cpp 2
 
     QDBusPendingReply objects can be associated with
     QDBusPendingCallWatcher objects, which emit signals when the reply

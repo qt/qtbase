@@ -180,8 +180,8 @@ void QDialogPrivate::deleteNativeDialog()
     exec() function. When the user closes the dialog, exec() will
     provide a useful \link #return return value\endlink. Typically,
     to get the dialog to close and return the appropriate value, we
-    connect a default button, e.g. \gui OK, to the accept() slot and a
-    \gui Cancel button to the reject() slot.
+    connect a default button, e.g. \uicontrol OK, to the accept() slot and a
+    \uicontrol Cancel button to the reject() slot.
     Alternatively you can call the done() slot with \c Accepted or
     \c Rejected.
 
@@ -238,7 +238,7 @@ void QDialogPrivate::deleteNativeDialog()
     partial dialog that shows the most commonly used options, and a
     full dialog that shows all the options. Typically an extensible
     dialog will initially appear as a partial dialog, but with a
-    \gui More toggle button. If the user presses the \gui More button down,
+    \uicontrol More toggle button. If the user presses the \uicontrol More button down,
     the dialog is expanded. The \l{Extension Example} shows how to achieve
     extensible dialogs using Qt.
 
@@ -246,8 +246,8 @@ void QDialogPrivate::deleteNativeDialog()
     \section1 Return Value (Modal Dialogs)
 
     Modal dialogs are often used in situations where a return value is
-    required, e.g. to indicate whether the user pressed \gui OK or
-    \gui Cancel. A dialog can be closed by calling the accept() or the
+    required, e.g. to indicate whether the user pressed \uicontrol OK or
+    \uicontrol Cancel. A dialog can be closed by calling the accept() or the
     reject() slots, and exec() will return \c Accepted or \c Rejected
     as appropriate. The exec() call returns the result of the dialog.
     The result is also available from result() if the dialog has not
@@ -264,11 +264,11 @@ void QDialogPrivate::deleteNativeDialog()
 
     A modal dialog:
 
-    \snippet doc/src/snippets/dialogs/dialogs.cpp 1
+    \snippet dialogs/dialogs.cpp 1
 
     A modeless dialog:
 
-    \snippet doc/src/snippets/dialogs/dialogs.cpp 0
+    \snippet dialogs/dialogs.cpp 0
 
     \sa QDialogButtonBox, QTabWidget, QWidget, QProgressDialog,
         {fowler}{GUI Design Handbook: Dialogs, Standard}, {Extension Example},

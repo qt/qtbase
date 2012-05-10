@@ -94,9 +94,9 @@ public:
    some initialization tasks are performed before the application's
    main window is shown:
 
-   \snippet doc/src/snippets/qsplashscreen/main.cpp 0
+   \snippet qsplashscreen/main.cpp 0
    \dots
-   \snippet doc/src/snippets/qsplashscreen/main.cpp 1
+   \snippet qsplashscreen/main.cpp 1
 
    The user can hide the splash screen by clicking on it with the
    mouse. Since the splash screen is typically displayed before the
@@ -107,7 +107,7 @@ public:
    for example, announcing connections established or modules loaded
    as the application starts up:
 
-   \snippet doc/src/snippets/code/src_gui_widgets_qsplashscreen.cpp 0
+   \snippet code/src_gui_widgets_qsplashscreen.cpp 0
 
    QSplashScreen supports this with the showMessage() function. If you
    wish to do your own drawing you can get a pointer to the pixmap

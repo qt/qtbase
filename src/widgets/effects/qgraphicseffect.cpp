@@ -243,7 +243,7 @@ void QGraphicsEffectSource::draw(QPainter *painter)
 
     For example:
 
-    \snippet doc/src/snippets/code/src_gui_effects_qgraphicseffect.cpp 0
+    \snippet code/src_gui_effects_qgraphicseffect.cpp 0
 
     \sa QGraphicsEffect::draw()
 */
@@ -545,7 +545,7 @@ void QGraphicsEffect::updateBoundingRect()
 
     For example:
 
-    \snippet doc/src/snippets/code/src_gui_effects_qgraphicseffect.cpp 1
+    \snippet code/src_gui_effects_qgraphicseffect.cpp 1
 
     This function should not be called explicitly by the user, since it is
     meant for reimplementation purposes only.
@@ -1154,7 +1154,7 @@ void QGraphicsOpacityEffect::setOpacity(qreal opacity)
 
     For example:
 
-    \snippet doc/src/snippets/code/src_gui_effects_qgraphicseffect.cpp 2
+    \snippet code/src_gui_effects_qgraphicseffect.cpp 2
 
     There is no opacity mask by default.
 

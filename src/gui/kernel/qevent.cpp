@@ -582,7 +582,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qevent.cpp 0
+    \snippet code/src_gui_kernel_qevent.cpp 0
 */
 
 /*!
@@ -604,7 +604,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_kernel_qevent.cpp 0
+    \snippet code/src_gui_kernel_qevent.cpp 0
 */
 
 /*!
@@ -2557,9 +2557,9 @@ QHelpEvent::~QHelpEvent()
     \table 100%
     \row
     \li
-    \snippet doc/src/snippets/qstatustipevent/main.cpp 1
+    \snippet qstatustipevent/main.cpp 1
     \dots
-    \snippet doc/src/snippets/qstatustipevent/main.cpp 3
+    \snippet qstatustipevent/main.cpp 3
     \li
     \image qstatustipevent-widget.png Widget with status tip.
     \endtable
@@ -2570,10 +2570,10 @@ QHelpEvent::~QHelpEvent()
     \table 100%
     \row
     \li
-    \snippet doc/src/snippets/qstatustipevent/main.cpp 0
-    \snippet doc/src/snippets/qstatustipevent/main.cpp 2
+    \snippet qstatustipevent/main.cpp 0
+    \snippet qstatustipevent/main.cpp 2
     \dots
-    \snippet doc/src/snippets/qstatustipevent/main.cpp 3
+    \snippet qstatustipevent/main.cpp 3
     \li
     \image qstatustipevent-action.png Action with status tip.
     \endtable

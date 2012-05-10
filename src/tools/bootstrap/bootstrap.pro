@@ -127,3 +127,6 @@ freeze_target.target = freeze
 freeze_target.commands =
 freeze_target.depends = first
 QMAKE_EXTRA_TARGETS += freeze_target
+docs.commands =
+docs.depends = first
+QMAKE_EXTRA_TARGETS += docs

@@ -62,12 +62,12 @@
     For example, here's how to provide auto completions from a simple
     word list in a QLineEdit:
 
-    \snippet doc/src/snippets/code/src_gui_util_qcompleter.cpp 0
+    \snippet code/src_gui_util_qcompleter.cpp 0
 
     A QFileSystemModel can be used to provide auto completion of file names.
     For example:
 
-    \snippet doc/src/snippets/code/src_gui_util_qcompleter.cpp 1
+    \snippet code/src_gui_util_qcompleter.cpp 1
 
     To set the model on which QCompleter should operate, call
     setModel(). By default, QCompleter will attempt to match the \l
@@ -100,7 +100,7 @@
     currentCompletion(). You can iterate through the list of
     completions as below:
 
-    \snippet doc/src/snippets/code/src_gui_util_qcompleter.cpp 2
+    \snippet code/src_gui_util_qcompleter.cpp 2
 
     completionCount() returns the total number of completions for the
     current prefix. completionCount() should be avoided when possible,

@@ -474,7 +474,7 @@ Qt::DropActions QListModel::supportedDropActions() const
     List items can be inserted automatically into a list, when they are
     constructed, by specifying the list widget:
 
-    \snippet doc/src/snippets/qlistwidget-using/mainwindow.cpp 2
+    \snippet qlistwidget-using/mainwindow.cpp 2
 
     Alternatively, list items can also be created without a parent widget, and
     later inserted into a list using QListWidget::insertItem().
@@ -1154,7 +1154,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
 
     List widgets are constructed in the same way as other widgets:
 
-    \snippet doc/src/snippets/qlistwidget-using/mainwindow.cpp 0
+    \snippet qlistwidget-using/mainwindow.cpp 0
 
     The selectionMode() of a list widget determines how many of the items in
     the list can be selected at the same time, and whether complex selections
@@ -1166,15 +1166,15 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     parent widget and added to the list later. If a list widget already exists
     when the items are constructed, the first method is easier to use:
 
-    \snippet doc/src/snippets/qlistwidget-using/mainwindow.cpp 1
+    \snippet qlistwidget-using/mainwindow.cpp 1
 
     If you need to insert a new item into the list at a particular position,
     then it should be constructed without a parent widget. The insertItem()
     function should then be used to place it within the list. The list widget
     will take ownership of the item.
 
-    \snippet doc/src/snippets/qlistwidget-using/mainwindow.cpp 6
-    \snippet doc/src/snippets/qlistwidget-using/mainwindow.cpp 7
+    \snippet qlistwidget-using/mainwindow.cpp 6
+    \snippet qlistwidget-using/mainwindow.cpp 7
 
     For multiple items, insertItems() can be used instead. The number of items
     in the list is found with the count() function. To remove items from the
@@ -1258,7 +1258,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     This signal is emitted when the \a item is activated. The \a item is
     activated when the user clicks or double clicks on it, depending on the
     system configuration. It is also activated when the user presses the
-    activation key (on Windows and X11 this is the \gui Return key, on Mac OS
+    activation key (on Windows and X11 this is the \uicontrol Return key, on Mac OS
     X it is \key{Ctrl+0}).
 */
 

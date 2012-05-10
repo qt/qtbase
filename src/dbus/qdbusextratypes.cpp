@@ -73,11 +73,11 @@ void QDBusSignature::doCheck()
     A D-Bus function that takes an integer, a D-Bus variant and a string as parameters
     can be called with the following argument list (see QDBusMessage::setArguments()):
 
-    \snippet doc/src/snippets/qdbusextratypes/qdbusextratypes.cpp 0
+    \snippet qdbusextratypes/qdbusextratypes.cpp 0
 
     When a D-Bus function returns a D-Bus variant, it can be retrieved as follows:
 
-    \snippet doc/src/snippets/qdbusextratypes/qdbusextratypes.cpp 1
+    \snippet qdbusextratypes/qdbusextratypes.cpp 1
 
     The QVariant within a QDBusVariant is required to distinguish between a normal
     D-Bus value and a value within a D-Bus variant.

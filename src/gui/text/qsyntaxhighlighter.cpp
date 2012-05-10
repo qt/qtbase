@@ -253,7 +253,7 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
     pass it the QTextEdit or QTextDocument that you want the syntax
     highlighting to be applied to. For example:
 
-    \snippet doc/src/snippets/code/src_gui_text_qsyntaxhighlighter.cpp 0
+    \snippet code/src_gui_text_qsyntaxhighlighter.cpp 0
 
     After this your highlightBlock() function will be called
     automatically whenever necessary. Use your highlightBlock()
@@ -262,7 +262,7 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
     setFormat() function which applies a given QTextCharFormat on
     the current text block. For example:
 
-    \snippet doc/src/snippets/code/src_gui_text_qsyntaxhighlighter.cpp 1
+    \snippet code/src_gui_text_qsyntaxhighlighter.cpp 1
 
     Some syntaxes can have constructs that span several text
     blocks. For example, a C++ syntax highlighter should be able to
@@ -285,7 +285,7 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
     For example, if you're writing a simple C++ syntax highlighter,
     you might designate 1 to signify "in comment":
 
-    \snippet doc/src/snippets/code/src_gui_text_qsyntaxhighlighter.cpp 2
+    \snippet code/src_gui_text_qsyntaxhighlighter.cpp 2
 
     In the example above, we first set the current block state to
     0. Then, if the previous block ended within a comment, we higlight
@@ -432,7 +432,7 @@ void QSyntaxHighlighter::rehighlightBlock(const QTextBlock &block)
     setFormat() as often as necessary to apply any font and color
     changes that you require. For example:
 
-    \snippet doc/src/snippets/code/src_gui_text_qsyntaxhighlighter.cpp 3
+    \snippet code/src_gui_text_qsyntaxhighlighter.cpp 3
 
     Some syntaxes can have constructs that span several text
     blocks. For example, a C++ syntax highlighter should be able to
@@ -602,7 +602,7 @@ void QSyntaxHighlighter::setCurrentBlockState(int newState)
     and store their relative position and the actual QChar in a simple
     class derived from QTextBlockUserData:
 
-    \snippet doc/src/snippets/code/src_gui_text_qsyntaxhighlighter.cpp 4
+    \snippet code/src_gui_text_qsyntaxhighlighter.cpp 4
 
     During cursor navigation in the associated editor, you can ask the
     current QTextBlock (retrieved using the QTextCursor::block()

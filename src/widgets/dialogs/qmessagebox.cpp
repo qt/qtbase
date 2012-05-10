@@ -498,9 +498,9 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     the message. The simplest configuration is to set only the
     \l{QMessageBox::text} {message text} property.
 
-    \snippet doc/src/snippets/code/src_gui_dialogs_qmessagebox.cpp 5
+    \snippet code/src_gui_dialogs_qmessagebox.cpp 5
 
-    The user must click the \gui{OK} button to dismiss the message
+    The user must click the \uicontrol{OK} button to dismiss the message
     box. The rest of the GUI is blocked until the message box is
     dismissed.
 
@@ -514,13 +514,13 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     responses. The buttons are specified by combining values from
     StandardButtons using the bitwise OR operator. The display order
     for the buttons is platform-dependent. For example, on Windows,
-    \gui{Save} is displayed to the left of \gui{Cancel}, whereas on
+    \uicontrol{Save} is displayed to the left of \uicontrol{Cancel}, whereas on
     Mac OS, the order is reversed.
 
     Mark one of your standard buttons to be your
     \l{QMessageBox::defaultButton()} {default button}.
 
-    \snippet doc/src/snippets/code/src_gui_dialogs_qmessagebox.cpp 6
+    \snippet code/src_gui_dialogs_qmessagebox.cpp 6
 
     This is the approach recommended in the
     \l{http://developer.apple.com/library/mac/documentation/UserExperience/Conceptual/AppleHIGuidelines/Windows/Windows.html#//apple_ref/doc/uid/20000961-BABCAJID}
@@ -534,16 +534,16 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     The exec() slot returns the StandardButtons value of the button
     that was clicked.
 
-    \snippet doc/src/snippets/code/src_gui_dialogs_qmessagebox.cpp 7
+    \snippet code/src_gui_dialogs_qmessagebox.cpp 7
 
     To give the user more information to help him answer the question,
     set the \l{QMessageBox::detailedText} {detailed text} property. If
     the \l{QMessageBox::detailedText} {detailed text} property is set,
-    the \gui{Show Details...} button will be shown.
+    the \uicontrol{Show Details...} button will be shown.
 
     \image msgbox3.png
 
-    Clicking the \gui{Show Details...} button displays the detailed text.
+    Clicking the \uicontrol{Show Details...} button displays the detailed text.
 
     \image msgbox4.png
 
@@ -632,7 +632,7 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     Static functions are available for creating information(),
     question(), warning(), and critical() message boxes.
 
-    \snippet doc/src/snippets/code/src_gui_dialogs_qmessagebox.cpp 0
+    \snippet code/src_gui_dialogs_qmessagebox.cpp 0
 
     The \l{dialogs/standarddialogs}{Standard Dialogs} example shows
     how to use QMessageBox and the other built-in Qt dialogs.
@@ -647,7 +647,7 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     platform). You can test the value of clickedButton() after calling
     exec(). For example,
 
-    \snippet doc/src/snippets/code/src_gui_dialogs_qmessagebox.cpp 2
+    \snippet code/src_gui_dialogs_qmessagebox.cpp 2
 
     \section1 Default and Escape Keys
 
@@ -1028,7 +1028,7 @@ void QMessageBoxPrivate::detectEscapeButton()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_dialogs_qmessagebox.cpp 3
+    \snippet code/src_gui_dialogs_qmessagebox.cpp 3
 
     \sa standardButton(), button()
 */
@@ -1707,7 +1707,7 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
     and centered over \a parent (if \a parent is not 0). The message
     includes the version number of Qt being used by the application.
 
-    This is useful for inclusion in the \gui Help menu of an application,
+    This is useful for inclusion in the \uicontrol Help menu of an application,
     as shown in the \l{mainwindows/menus}{Menus} example.
 
     QApplication provides this functionality as a slot.
@@ -1964,7 +1964,7 @@ void QMessageBoxPrivate::retranslateStrings()
     to make it the cancel or close button (clicked when \key Esc is
     pressed).
 
-    \snippet doc/src/snippets/dialogs/dialogs.cpp 2
+    \snippet dialogs/dialogs.cpp 2
 
     The message box is an \l{Qt::ApplicationModal} {application modal}
     dialog box.

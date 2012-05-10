@@ -105,7 +105,7 @@ void QRadioButtonPrivate::init()
     can be specified by preceding the preferred character with an
     ampersand in the text. For example:
 
-    \snippet doc/src/snippets/code/src_gui_widgets_qradiobutton.cpp 0
+    \snippet code/src_gui_widgets_qradiobutton.cpp 0
 
     In this example the shortcut is \e{Alt+c}. See the \l
     {QShortcut#mnemonic}{QShortcut} documentation for details (to

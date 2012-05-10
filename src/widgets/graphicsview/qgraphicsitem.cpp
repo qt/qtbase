@@ -90,7 +90,7 @@
     by the item, and paint(), which implements the actual painting. For
     example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 0
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 0
 
     The boundingRect() function has many different purposes.
     QGraphicsScene bases its item index on boundingRect(), and
@@ -277,7 +277,7 @@
     classes in Qt are associated with a unique value for Type,
     e.g. the value returned by QGraphicsPathItem::type() is 2.
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 18
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 18
 */
 
 /*!
@@ -288,7 +288,7 @@
     used in conjunction with a reimplementation of QGraphicsItem::type()
     and declaring a Type enum value. Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 1
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 1
 
     \note UserType = 65536
 */
@@ -2133,7 +2133,7 @@ void QGraphicsItem::setToolTip(const QString &toolTip)
 
     An editor item might want to use an I-beam cursor:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 2
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 2
 
     If no cursor has been set, the cursor of the item beneath is used.
 
@@ -2153,7 +2153,7 @@ QCursor QGraphicsItem::cursor() const
 
     An editor item might want to use an I-beam cursor:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 3
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 3
 
     If no cursor has been set, the cursor of the item beneath is used.
 
@@ -4146,7 +4146,7 @@ QMatrix QGraphicsItem::sceneMatrix() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 4
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 4
 
     Unlike transform(), which returns only an item's local transformation, this
     function includes the item's (and any parents') position, and all the transfomation properties.
@@ -4171,7 +4171,7 @@ QTransform QGraphicsItem::sceneTransform() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 5
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 5
 
     This function is the same as combining this item's scene transform with
     the view's viewport transform, but it also understands the
@@ -4474,7 +4474,7 @@ void QGraphicsItem::resetTransform()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 6
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 6
 
     \sa setTransform(), transform(), scale(), shear(), translate()
 */
@@ -4500,7 +4500,7 @@ void QGraphicsItem::rotate(qreal angle)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 7
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 7
 
     \sa setTransform(), transform()
 */
@@ -4787,7 +4787,7 @@ QRectF QGraphicsItem::childrenBoundingRect() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 8
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 8
 
     \sa boundingRegion(), shape(), contains(), {The Graphics View Coordinate
     System}, prepareGeometryChange()
@@ -4835,7 +4835,7 @@ QRectF QGraphicsItem::sceneBoundingRect() const
     may choose to return an elliptic shape for better collision detection. For
     example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 9
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 9
 
     The outline of a shape can vary depending on the width and style of the
     pen used when drawing. If you want to include this outline in the item's
@@ -5327,7 +5327,7 @@ void QGraphicsItem::setBoundingRegionGranularity(qreal granularity)
     provided, it points to the widget that is being painted on; otherwise, it
     is 0. For cached painting, \a widget is always 0.
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 10
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 10
 
     The painter's pen is 0-width by default, and its pen is initialized to the
     QPalette::Text brush from the paint device's palette. The brush is
@@ -5736,7 +5736,7 @@ void QGraphicsItem::update(const QRectF &rect)
     by other items, you can map the \a rect to viewport coordinates and scroll the
     viewport.
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 19
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 19
 
     \sa boundingRect()
 */
@@ -6515,7 +6515,7 @@ bool QGraphicsItem::isUnderMouse() const
     Custom item data is useful for storing arbitrary properties in any
     item. Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 11
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 11
 
     Qt does not use this feature for storing data; it is provided solely
     for the convenience of the user.
@@ -6572,7 +6572,7 @@ void QGraphicsItem::setData(int key, const QVariant &value)
 
     For example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp QGraphicsItem type
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp QGraphicsItem type
 
     \sa UserType
 */
@@ -6589,7 +6589,7 @@ int QGraphicsItem::type() const
     To filter another item's events, install this item as an event filter
     for the other item. Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 12
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 12
 
     An item can only filter events for other items in the same
     scene. Also, an item cannot filter its own events; instead, you
@@ -6805,7 +6805,7 @@ bool QGraphicsItem::sceneEvent(QEvent *event)
     It's common to open a QMenu in response to receiving a context menu
     event. Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 13
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 13
 
     The default implementation ignores the event.
 
@@ -6830,7 +6830,7 @@ void QGraphicsItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     A common implementation of dragEnterEvent accepts or ignores \a event
     depending on the associated mime data in \a event. Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 14
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 14
 
     Items do not receive drag and drop events by default; to enable this
     feature, call \c setAcceptDrops(true).
@@ -7424,7 +7424,7 @@ void QGraphicsItem::updateMicroFocus()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 15
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 15
 
     The default implementation does nothing, and returns \a value.
 
@@ -7519,7 +7519,7 @@ void QGraphicsItem::removeFromIndex()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 16
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 16
 
     \sa boundingRect()
 */
@@ -10613,11 +10613,11 @@ Qt::TextInteractionFlags QGraphicsTextItem::textInteractionFlags() const
 /*!
     \since 4.5
 
-    If \a b is true, the \gui Tab key will cause the widget to change focus;
+    If \a b is true, the \uicontrol Tab key will cause the widget to change focus;
     otherwise, the tab key will insert a tab into the document.
 
     In some occasions text edits should not allow the user to input tabulators
-    or change indentation using the \gui Tab key, as this breaks the focus
+    or change indentation using the \uicontrol Tab key, as this breaks the focus
     chain. The default is false.
 
     \sa tabChangesFocus(), ItemIsFocusable, textInteractionFlags()
@@ -10630,7 +10630,7 @@ void QGraphicsTextItem::setTabChangesFocus(bool b)
 /*!
     \since 4.5
 
-    Returns true if the \gui Tab key will cause the widget to change focus;
+    Returns true if the \uicontrol Tab key will cause the widget to change focus;
     otherwise, false is returned.
 
     By default, this behavior is disabled, and this function will return false.
@@ -11010,7 +11010,7 @@ QVariant QGraphicsSimpleTextItem::extension(const QVariant &variant) const
     QGraphicsScene::destroyItemGroup(), or you can manually remove all
     items from the group by calling removeFromGroup().
 
-    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 17
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 17
 
     The operation of adding and removing items preserves the items'
     scene-relative position and transformation, as opposed to calling

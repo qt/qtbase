@@ -1,0 +1,92 @@
+include(../../../doc/global/qt-cpp-ignore.qdocconf)
+
+project                 = QtTest
+description             = Qt Test Reference Documentation
+url                     = http://qt-project.org/doc/qt-5.0/qttest
+version                 = 5.0.0
+
+sourceencoding          = UTF-8
+outputencoding          = UTF-8
+naturallanguage         = en_US
+qhp.projects            = QtTest
+
+qhp.QtTest.file                = qttest.qhp
+qhp.QtTest.namespace           = org.qt-project.qttest.500
+qhp.QtTest.virtualFolder       = qdoc
+qhp.QtTest.indexTitle          = Qt Test Reference Documentation
+qhp.QtTest.indexRoot           =
+
+qhp.QtTest.filterAttributes    = qttest 5.0.0 qtrefdoc
+qhp.QtTest.customFilters.Qt.name = QtTest 5.0.0
+qhp.QtTest.customFilters.Qt.filterAttributes = qttest 5.0.0
+qhp.QtTest.subprojects         = classes overviews examples
+qhp.QtTest.subprojects.classes.title = Classes
+qhp.QtTest.subprojects.classes.indexTitle = Qt Test's Classes
+qhp.QtTest.subprojects.classes.selectors = class fake:headerfile
+qhp.QtTest.subprojects.classes.sortPages = true
+qhp.QtTest.subprojects.overviews.title = Overviews
+qhp.QtTest.subprojects.overviews.indexTitle = All Overviews and HOWTOs
+qhp.QtTest.subprojects.overviews.selectors = fake:page,group,module
+qhp.QtTest.subprojects.examples.title = Qt Test Examples
+qhp.QtTest.subprojects.examples.indexTitle = Qt Test Examples
+qhp.QtTest.subprojects.examples.selectors = fake:example
+
+dita.metadata.default.author      = Qt Project
+dita.metadata.default.permissions = all
+dita.metadata.default.publisher   = Qt Project
+dita.metadata.default.copyryear = 2012
+dita.metadata.default.copyrholder = Nokia
+dita.metadata.default.audience = programmer
+
+sources.fileextensions  = "*.c++ *.cc *.cpp *.cxx *.mm *.qml *.qdoc"
+headers.fileextensions  = "*.ch *.h *.h++ *.hh *.hpp *.hxx"
+
+examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml *.css"
+examples.imageextensions = "*.png"
+
+outputdir               = ../../../doc/qttest
+tagfile                 = ../../../doc/qttest/qttest.tags
+
+HTML.generatemacrefs    = "true"
+HTML.nobreadcrumbs      = "true"
+
+HTML.templatedir = .
+
+HTML.stylesheets = ../../../doc/global/style/offline.css
+
+HTML.headerstyles = \
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline.css\" />\n"
+
+HTML.endheader = \
+    "</head>\n" \
+
+defines                 = Q_QDOC \
+                          QT_.*_SUPPORT \
+                          QT_.*_LIB \
+                          QT_COMPAT \
+                          QT_KEYPAD_NAVIGATION \
+                          QT_NO_EGL \
+                          Q_WS_.* \
+                          Q_OS_.* \
+                          Q_BYTE_ORDER \
+                          QT_DEPRECATED \
+                          QT_DEPRECATED_* \
+                          Q_NO_USING_KEYWORD \
+                          __cplusplus \
+                          Q_COMPILER_INITIALIZER_LISTS
+
+versionsym              = QT_VERSION_STR
+
+codeindent              = 1
+
+depends                 += qtcore
+
+headerdirs  += ..
+
+sourcedirs  += ..
+
+exampledirs += ../../../examples \
+               ../ \
+               snippets
+
+imagedirs   += images

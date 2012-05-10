@@ -146,12 +146,12 @@ void QFileDevicePrivate::setError(QFileDevice::FileError err, int errNum)
     handling considerably. It is possible to force permission checking
     on NTFS by including the following code in your source:
 
-    \snippet doc/src/snippets/ntfsp.cpp 0
+    \snippet ntfsp.cpp 0
 
     Permission checking is then turned on and off by incrementing and
     decrementing \c qt_ntfs_permission_lookup by 1.
 
-    \snippet doc/src/snippets/ntfsp.cpp 1
+    \snippet ntfsp.cpp 1
 */
 
 //************* QFileDevice

@@ -740,7 +740,7 @@ void QPrinter::setPrinterName(const QString &name)
 
   To detect other failures check the output of QPainter::begin() or QPrinter::newPage().
 
-  \snippet doc/src/snippets/printing-qprinter/errors.cpp 0
+  \snippet printing-qprinter/errors.cpp 0
 
   \sa setPrinterName()
 */

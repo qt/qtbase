@@ -654,7 +654,7 @@ QString QTcpServer::errorString() const
     To disable the use of a proxy for this socket, use the
     QNetworkProxy::NoProxy proxy type:
 
-    \snippet doc/src/snippets/code/src_network_socket_qtcpserver.cpp 0
+    \snippet code/src_network_socket_qtcpserver.cpp 0
 
     \sa proxy(), QNetworkProxy
 */

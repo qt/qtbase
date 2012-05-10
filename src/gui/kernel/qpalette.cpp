@@ -499,7 +499,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     and the QTextDocument::setDefaultStyleSheet() function to alter
     the appearance of links. For example:
 
-    \snippet doc/src/snippets/textdocument-css/main.cpp 0
+    \snippet textdocument-css/main.cpp 0
 
     \value NoRole No role; this special role is often used to indicate that a
     role has not been assigned.

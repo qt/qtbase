@@ -616,7 +616,7 @@ void QNetworkReply::setSslConfiguration(const QSslConfiguration &config)
     If, for instance, you want to issue a request to a server that uses
     a self-signed certificate, consider the following snippet:
 
-    \snippet doc/src/snippets/code/src_network_access_qnetworkreply.cpp 0
+    \snippet code/src_network_access_qnetworkreply.cpp 0
 
     Multiple calls to this function will replace the list of errors that
     were passed in previous calls.

@@ -1717,7 +1717,7 @@ QColor QColorDialog::currentColor() const
 }
 
 /*!
-    Returns the color that the user selected by clicking the \gui{OK}
+    Returns the color that the user selected by clicking the \uicontrol{OK}
     or equivalent button.
 
     \note This color is not always the same as the color held by the
@@ -1795,7 +1795,7 @@ QColorDialog::ColorDialogOptions QColorDialog::options() const
     of a color dialog.
 
     \value ShowAlphaChannel Allow the user to select the alpha component of a color.
-    \value NoButtons Don't display \gui{OK} and \gui{Cancel} buttons. (Useful for "live dialogs".)
+    \value NoButtons Don't display \uicontrol{OK} and \uicontrol{Cancel} buttons. (Useful for "live dialogs".)
     \value DontUseNativeDialog Use Qt's standard color dialog on the Mac instead of Apple's
                                native color panel.
 
@@ -1819,7 +1819,7 @@ bool QColorDialogPrivate::sharedColorPanelAvailable = true;
 /*!
     \fn void QColorDialog::colorSelected(const QColor &color);
 
-    This signal is emitted just after the user has clicked \gui{OK} to
+    This signal is emitted just after the user has clicked \uicontrol{OK} to
     select a color to use. The chosen color is specified by \a color.
 
     \sa color, currentColorChanged()
@@ -1933,7 +1933,7 @@ QColor QColorDialog::getColor(const QColor &initial, QWidget *parent, const QStr
     initially set to \a initial. The dialog is a child of \a parent.
 
     If \a ok is non-null, \e *\a ok is set to true if the user clicked
-    \gui{OK}, and to false if the user clicked Cancel.
+    \uicontrol{OK}, and to false if the user clicked Cancel.
 
     If the user clicks Cancel, the \a initial value is returned.
 

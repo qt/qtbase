@@ -1547,7 +1547,7 @@ QAction * QDockWidget::toggleViewAction() const
     \li When DockWidgetVerticalTitleBar is set on QDockWidget, the title
        bar widget is repositioned accordingly. In resizeEvent(), the title
        bar should check what orientation it should assume:
-       \snippet doc/src/snippets/code/src_gui_widgets_qdockwidget.cpp 0
+       \snippet code/src_gui_widgets_qdockwidget.cpp 0
 
     \li The title bar widget must have a valid QWidget::sizeHint() and
        QWidget::minimumSizeHint(). These functions should take into account
