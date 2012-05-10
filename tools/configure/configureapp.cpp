@@ -2522,16 +2522,6 @@ void Configure::generateCachefile()
         if (dictionary["CE_SIGNATURE"] != QLatin1String("no"))
             moduleStream << "DEFAULT_SIGNATURE=" << dictionary["CE_SIGNATURE"] << endl;
 
-        if (!dictionary["QMAKE_RPATHDIR"].isEmpty())
-            moduleStream << "QMAKE_RPATHDIR += " << dictionary["QMAKE_RPATHDIR"] << endl;
-
-        if (!dictionary["QT_LIBINFIX"].isEmpty())
-            moduleStream << "QT_LIBINFIX = " << dictionary["QT_LIBINFIX"] << endl;
-
-        if (!dictionary["QT_NAMESPACE"].isEmpty()) {
-            moduleStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
-        }
-
         // embedded
         if (!dictionary["KBD_DRIVERS"].isEmpty())
             moduleStream << "kbd-drivers += "<< dictionary["KBD_DRIVERS"]<<endl;
@@ -2541,9 +2531,6 @@ void Configure::generateCachefile()
             moduleStream << "mouse-drivers += "<< dictionary["MOUSE_DRIVERS"]<<endl;
         if (!dictionary["DECORATIONS"].isEmpty())
             moduleStream << "decorations += "<<dictionary["DECORATIONS"]<<endl;
-
-        if (!dictionary["QMAKE_RPATHDIR"].isEmpty())
-            moduleStream << "QMAKE_RPATHDIR += "<<dictionary["QMAKE_RPATHDIR"]<<endl;
 
         moduleStream << "CONFIG += create_prl link_prl" << endl;
 
@@ -2666,6 +2653,15 @@ void Configure::generateQConfigPri()
                          << "    QMAKE_LFLAGS    += --sysroot=$$[QT_SYSROOT]" << endl
                          << "}" << endl;
         }
+
+        if (!dictionary["QMAKE_RPATHDIR"].isEmpty())
+            configStream << "QMAKE_RPATHDIR += " << dictionary["QMAKE_RPATHDIR"] << endl;
+
+        if (!dictionary["QT_LIBINFIX"].isEmpty())
+            configStream << "QT_LIBINFIX = " << dictionary["QT_LIBINFIX"] << endl;
+
+        if (!dictionary["QT_NAMESPACE"].isEmpty())
+            configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
 
         configStream.flush();
         configFile.close();
