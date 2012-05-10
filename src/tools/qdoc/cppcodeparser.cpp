@@ -695,22 +695,34 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         }
     }
     else if (command == COMMAND_EXTERNALPAGE) {
-        return new FakeNode(tree_->root(), arg.first, Node::ExternalPage, Node::ArticlePage);
+        FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::ExternalPage, Node::ArticlePage);
+        fn->setLocation(arg.second);
+        return fn;
     }
     else if (command == COMMAND_FILE) {
-        return new FakeNode(tree_->root(), arg.first, Node::File, Node::NoPageType);
+        FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::File, Node::NoPageType);
+        fn->setLocation(arg.second);
+        return fn;
     }
     else if (command == COMMAND_GROUP) {
-        return new FakeNode(tree_->root(), arg.first, Node::Group, Node::OverviewPage);
+        FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::Group, Node::OverviewPage);
+        fn->setLocation(arg.second);
+        return fn;
     }
     else if (command == COMMAND_HEADERFILE) {
-        return new FakeNode(tree_->root(), arg.first, Node::HeaderFile, Node::ApiPage);
+        FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::HeaderFile, Node::ApiPage);
+        fn->setLocation(arg.second);
+        return fn;
     }
     else if (command == COMMAND_MODULE) {
-        return new FakeNode(tree_->root(), arg.first, Node::Module, Node::OverviewPage);
+        FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::Module, Node::OverviewPage);
+        fn->setLocation(arg.second);
+        return fn;
     }
     else if (command == COMMAND_QMLMODULE) {
-        return FakeNode::lookupQmlModuleNode(tree_, arg);
+        FakeNode* fn = FakeNode::lookupQmlModuleNode(tree_, arg);
+        fn->setLocation(arg.second);
+        return fn;
     }
     else if (command == COMMAND_PAGE) {
         Node::PageType ptype = Node::ArticlePage;
@@ -758,6 +770,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
     }
     else if (command == COMMAND_DITAMAP) {
         FakeNode* fn = new DitaMapNode(tree_->root(), arg.first);
+        fn->setLocation(arg.second);
         return fn;
     }
     else if (command == COMMAND_QMLCLASS) {
@@ -785,7 +798,9 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         return qcn;
     }
     else if (command == COMMAND_QMLBASICTYPE) {
-        return new QmlBasicTypeNode(tree_->root(), arg.first);
+        QmlBasicTypeNode* n = new QmlBasicTypeNode(tree_->root(), arg.first);
+        n->setLocation(arg.second);
+        return n;
     }
     else if ((command == COMMAND_QMLSIGNAL) ||
              (command == COMMAND_QMLMETHOD) ||
@@ -794,41 +809,33 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         QString module;
         QString element;
         QString type;
-        if (splitQmlMethodArg(doc,arg.first,type,module,element)) {
+        if (splitQmlMethodArg(arg.first,type,module,element)) {
             QmlClassNode* qmlClass = tree_->findQmlClassNode(module,element);
             if (qmlClass) {
+                bool attached = false;
+                Node::Type nodeType = Node::QmlMethod;
                 if (command == COMMAND_QMLSIGNAL)
-                    return makeFunctionNode(doc,
-                                            arg.first,
-                                            qmlClass,
-                                            Node::QmlSignal,
-                                            false,
-                                            COMMAND_QMLSIGNAL);
-                else if (command == COMMAND_QMLATTACHEDSIGNAL)
-                    return makeFunctionNode(doc,
-                                            arg.first,
-                                            qmlClass,
-                                            Node::QmlSignal,
-                                            true,
-                                            COMMAND_QMLATTACHEDSIGNAL);
+                    nodeType = Node::QmlSignal;
+                else if (command == COMMAND_QMLATTACHEDSIGNAL) {
+                    nodeType = Node::QmlSignal;
+                    attached = true;
+                }
                 else if (command == COMMAND_QMLMETHOD) {
-                    return makeFunctionNode(doc,
-                                            arg.first,
-                                            qmlClass,
-                                            Node::QmlMethod,
-                                            false,
-                                            COMMAND_QMLMETHOD);
+                    // do nothing
                 }
                 else if (command == COMMAND_QMLATTACHEDMETHOD)
-                    return makeFunctionNode(doc,
-                                            arg.
-                                            first,
-                                            qmlClass,
-                                            Node::QmlMethod,
-                                            true,
-                                            COMMAND_QMLATTACHEDMETHOD);
+                    attached = true;
                 else
                     return 0; // never get here.
+                FunctionNode* fn = makeFunctionNode(doc,
+                                                    arg.first,
+                                                    qmlClass,
+                                                    nodeType,
+                                                    attached,
+                                                    command);
+                if (fn)
+                    fn->setLocation(arg.second);
+                return fn;
             }
         }
     }
@@ -854,8 +861,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
   \note The two elements \e{Component} and \e{QtObject} never
   have a module qualifier.
  */
-bool CppCodeParser::splitQmlPropertyArg(const Doc& doc,
-                                        const QString& arg,
+bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
                                         QString& type,
                                         QString& module,
                                         QString& element,
@@ -878,11 +884,11 @@ bool CppCodeParser::splitQmlPropertyArg(const Doc& doc,
             return true;
         }
         QString msg = "Unrecognizable QML module/component qualifier for " + arg;
-        doc.location().warning(tr(msg.toLatin1().data()));
+        location().warning(tr(msg.toLatin1().data()));
     }
     else {
         QString msg = "Missing property type for " + arg;
-        doc.location().warning(tr(msg.toLatin1().data()));
+        location().warning(tr(msg.toLatin1().data()));
     }
     return false;
 }
@@ -901,8 +907,7 @@ bool CppCodeParser::splitQmlPropertyArg(const Doc& doc,
   \note The two elements \e{Component} and \e{QtObject} never
   have a module qualifier.
  */
-bool CppCodeParser::splitQmlMethodArg(const Doc& doc,
-                                      const QString& arg,
+bool CppCodeParser::splitQmlMethodArg(const QString& arg,
                                       QString& type,
                                       QString& module,
                                       QString& element)
@@ -935,7 +940,7 @@ bool CppCodeParser::splitQmlMethodArg(const Doc& doc,
         return true;
     }
     QString msg = "Unrecognizable QML module/component qualifier for " + arg;
-    doc.location().warning(tr(msg.toLatin1().data()));
+    location().warning(tr(msg.toLatin1().data()));
     return false;
 }
 
@@ -945,9 +950,7 @@ bool CppCodeParser::splitQmlMethodArg(const Doc& doc,
   Currently, this function is called only for \e{qmlproperty}
   and \e{qmlattachedproperty}.
  */
-Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
-                                              const QString& command,
-                                              const ArgList& args)
+Node *CppCodeParser::processTopicCommandGroup(const QString& command, const ArgList& args)
 {
     QmlPropGroupNode* qmlPropGroup = 0;
     if ((command == COMMAND_QMLPROPERTY) ||
@@ -960,7 +963,7 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
         bool attached = (command == COMMAND_QMLATTACHEDPROPERTY);
         ArgList::ConstIterator argsIter = args.begin();
         arg = argsIter->first;
-        if (splitQmlPropertyArg(doc,arg,type,module,element,property)) {
+        if (splitQmlPropertyArg(arg,type,module,element,property)) {
             QmlClassNode* qmlClass = tree_->findQmlClassNode(module,element);
             if (qmlClass) {
                 qmlPropGroup = new QmlPropGroupNode(qmlClass,property); //,attached);
@@ -984,7 +987,7 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
             ++argsIter;
             while (argsIter != args.end()) {
                 arg = argsIter->first;
-                if (splitQmlPropertyArg(doc,arg,type,module,element,property)) {
+                if (splitQmlPropertyArg(arg,type,module,element,property)) {
                     QmlPropertyNode* qmlPropNode = new QmlPropertyNode(qmlPropGroup,
                                                                        property,
                                                                        type,
@@ -2296,7 +2299,7 @@ bool CppCodeParser::matchDocsAndStuff()
                 if ((topic == COMMAND_QMLPROPERTY) ||
                         (topic == COMMAND_QMLATTACHEDPROPERTY)) {
                     Doc nodeDoc = doc;
-                    Node *node = processTopicCommandGroup(nodeDoc,topic,args);
+                    Node *node = processTopicCommandGroup(topic,args);
                     if (node != 0) {
                         nodes.append(node);
                         docs.append(nodeDoc);

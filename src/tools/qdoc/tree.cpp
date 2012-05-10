@@ -430,8 +430,8 @@ static const char*  const suffixes[NumSuffixes] = { "", "s", "es" };
 
 /*!
   This function searches for a node with the specified \a title.
-  If \a relative is provided, use it to disambiguate if it has a
-  QML module identifier.
+  If \a relative node is provided, it is used to disambiguate if
+  it has a QML module identifier.
  */
 const FakeNode* Tree::findFakeNodeByTitle(const QString& title, const Node* relative ) const
 {
@@ -470,14 +470,13 @@ const FakeNode* Tree::findFakeNodeByTitle(const QString& title, const Node* rela
                 QList<Location> internalLocations;
                 while (j != priv->fakeNodesByTitle.constEnd()) {
                     if (j.key() == i.key() && j.value()->url().isEmpty())
-                        internalLocations.append(j.value()->doc().location());
+                        internalLocations.append(j.value()->location());
                     ++j;
                 }
                 if (internalLocations.size() > 0) {
-                    i.value()->doc().location().warning(
-                                tr("Page '%1' defined in more than one location:").arg(title));
+                    i.value()->location().warning(tr("This page exists in more than one file: \"%1\"").arg(title));
                     foreach (const Location &location, internalLocations)
-                        location.warning(tr("(defined here)"));
+                        location.warning(tr("[It also exists here]"));
                 }
             }
             return i.value();
@@ -601,6 +600,8 @@ NodeMultiMap Tree::groups() const
 }
 
 /*!
+  This function adds the \a group name to the list of groups
+  for the \a node name. It also adds the \a node to the \a group.
  */
 void Tree::addToPublicGroup(Node* node, const QString& group)
 {
@@ -609,6 +610,7 @@ void Tree::addToPublicGroup(Node* node, const QString& group)
 }
 
 /*!
+  Returns the public group map.
  */
 QMultiMap<QString, QString> Tree::publicGroups() const
 {
