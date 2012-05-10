@@ -1469,6 +1469,29 @@ bool Configure::displayHelp()
 
         desc("Installation options:\n\n");
 
+        desc("These are optional, but you may specify install directories.\n\n", 0, 1);
+
+        desc(       "-prefix <dir>",                    "This will install everything relative to <dir> (default $QT_INSTALL_PREFIX)\n\n");
+
+        desc(       "-hostprefix [dir]",                "Tools and libraries needed when developing applications are installed in [dir]. "
+                                                        "If [dir] is not given, the current build directory will be used. (default PREFIX)\n");
+
+        desc("You may use these to separate different parts of the install:\n\n");
+
+        desc(       "-bindir <dir>",                    "Executables will be installed to <dir> (default PREFIX/bin)");
+        desc(       "-libdir <dir>",                    "Libraries will be installed to <dir> (default PREFIX/lib)");
+        desc(       "-docdir <dir>",                    "Documentation will be installed to <dir> (default PREFIX/doc)");
+        desc(       "-headerdir <dir>",                 "Headers will be installed to <dir> (default PREFIX/include)");
+        desc(       "-plugindir <dir>",                 "Plugins will be installed to <dir> (default PREFIX/plugins)");
+        desc(       "-importdir <dir>",                 "Imports for QML will be installed to <dir> (default PREFIX/imports)");
+        desc(       "-datadir <dir>",                   "Data used by Qt programs will be installed to <dir> (default PREFIX)");
+        desc(       "-translationdir <dir>",            "Translations of Qt programs will be installed to <dir> (default PREFIX/translations)");
+        desc(       "-examplesdir <dir>",               "Examples will be installed to <dir> (default PREFIX/examples)");
+        desc(       "-testsdir <dir>",                  "Tests will be installed to <dir> (default PREFIX/tests)");
+
+        desc(       "-hostbindir <dir>",                "Host executables will be installed to <dir> (default HOSTPREFIX/bin)");
+        desc(       "-hostdatadir <dir>",               "Data used by qmake will be installed to <dir> (default HOSTPREFIX)");
+
 #if !defined(EVAL)
         desc("Configure options:\n\n");
 
@@ -1540,6 +1563,7 @@ bool Configure::displayHelp()
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
         desc(                   "-xplatform <spec>",    "The operating system and compiler you are cross compiling to.\n");
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
+        desc(                   "-sysroot <dir>",       "Sets <dir> as the target compiler's and qmake's sysroot.");
 
 #if !defined(EVAL)
         desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}");
