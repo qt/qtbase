@@ -51,8 +51,7 @@ hpux-acc*|hpuxi-acc* {
     LIBS += -lbootstrap
 }
 !contains(QT_CONFIG, zlib):!contains(QT_CONFIG, no-zlib):!cross_compile {
-    else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
-    else:LIBS += zdll.lib
+    include($$PWD/../../3rdparty/zlib_dependency.pri)
 }
 win32:LIBS += -luser32 -lole32
 
