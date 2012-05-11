@@ -43,8 +43,7 @@
 #include <QtTest/QtTest>
 #include <QtGlobal>
 #include <QtAlgorithms>
-#include <QtNetwork/QHostInfo>
-#include <qprinterinfo.h>
+#include <QtPrintSupport/qprinterinfo.h>
 
 #ifdef Q_OS_UNIX
 #  include <unistd.h>
@@ -58,10 +57,9 @@ class tst_QPrinterInfo : public QObject
 {
     Q_OBJECT
 
-#ifdef QT_NO_PRINTER
 public slots:
     void initTestCase();
-#else
+#ifndef QT_NO_PRINTER
 private slots:
     void testForDefaultPrinter();
     void testForPrinters();
@@ -74,20 +72,28 @@ private:
     QString getDefaultPrinterFromSystem();
     QStringList getPrintersFromSystem();
 
+#ifdef Q_OS_UNIX
     QString getOutputFromCommand(const QStringList& command);
-#endif
+#endif // Q_OS_UNIX
+#endif // QT_NO_PRINTER
 };
 
-#ifdef QT_NO_PRINTER
 void tst_QPrinterInfo::initTestCase()
 {
+#ifdef QT_NO_PRINTER
     QSKIP("This test requires printing support");
+#endif // QT_NO_PRINTER
 }
 
-#else
-
+#ifndef QT_NO_PRINTER
 QString tst_QPrinterInfo::getDefaultPrinterFromSystem()
 {
+    QString printer;
+
+#ifdef Q_OS_WIN32
+    // TODO "cscript c:\windows\system32\prnmngr.vbs -g"
+#endif // Q_OS_WIN32
+#ifdef Q_OS_UNIX
     QStringList command;
     command << "lpstat" << "-d";
     QString output = getOutputFromCommand(command);
@@ -100,7 +106,9 @@ QString tst_QPrinterInfo::getDefaultPrinterFromSystem()
 
     QRegExp defaultReg("default.*: *([a-zA-Z0-9_-]+)");
     defaultReg.indexIn(output);
-    QString printer = defaultReg.cap(1);
+    printer = defaultReg.cap(1);
+#endif // Q_OS_UNIX
+
     return printer;
 }
 
@@ -108,6 +116,10 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
 {
     QStringList ans;
 
+#ifdef Q_OS_WIN32
+    // TODO "cscript c:\windows\system32\prnmngr.vbs -l"
+#endif // Q_OS_WIN32
+#ifdef Q_OS_UNIX
     QStringList command;
     command << "lpstat" << "-p";
     QString output = getOutputFromCommand(command);
@@ -120,16 +132,17 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
             ans << printer;
         }
     }
+#endif // Q_OS_UNIX
 
     return ans;
 }
 
+#ifdef Q_OS_UNIX
 // This function does roughly the same as the `command substitution` in
 // the shell.
 QString tst_QPrinterInfo::getOutputFromCommand(const QStringList& command)
 {
 // The command execution does nothing on non-unix systems.
-#ifdef Q_OS_UNIX
     int pid;
     int status = 0;
     int pipePtr[2];
@@ -184,193 +197,106 @@ QString tst_QPrinterInfo::getOutputFromCommand(const QStringList& command)
         wait(&status);
         return QString(array);
     }
-#else
-    Q_UNUSED(command)
-    return QString();
-#endif
 }
+#endif
 
 void tst_QPrinterInfo::testForDefaultPrinter()
 {
-#if defined(Q_OS_UNIX) || defined(Q_OS_WIN32)
-# ifdef Q_OS_WIN32
-    if (QHostInfo::localHostName() == "fantomet" || QHostInfo::localHostName() == "bobo") {
-        QWARN("Test is hardcoded to \"fantomet\" and \"bobo\" on Windows and may fail");
-    } else {
-        QSKIP("Test is hardcoded to \"fantomet\" and \"bobo\" on Windows");
-    }
-    QString defSysPrinter;
-    if (QHostInfo::localHostName() == "fantomet") {
-        defSysPrinter = "Yacc (Lexmark Optra T610 PS3)";
-    } else if (QHostInfo::localHostName() == "bobo") {
-        defSysPrinter = "press";
-    }
-# else
-    QString defSysPrinter = getDefaultPrinterFromSystem();
-# endif
-    if (defSysPrinter == "")
-        QSKIP("No default printer available");
+#ifdef Q_OS_WIN32
+    QSKIP("Windows test support not yet implemented");
+#endif // Q_OS_WIN32
+    QString testPrinter = getDefaultPrinterFromSystem();
+    QString defaultPrinter = QPrinterInfo::defaultPrinter().printerName();
+    QString availablePrinter;
+    int availablePrinterDefaults = 0;
 
     QList<QPrinterInfo> list = QPrinterInfo::availablePrinters();
-    bool found = false;
     for (int c = 0; c < list.size(); ++c) {
         if (list[c].isDefault()) {
-            QVERIFY(list.at(c).printerName() == defSysPrinter);
-            QVERIFY(!list.at(c).isNull());
-            found = true;
-        } else {
-            QVERIFY(list.at(c).printerName() != defSysPrinter);
-            QVERIFY(!list.at(c).isNull());
+            availablePrinter = list.at(c).printerName();
+            ++availablePrinterDefaults;
         }
     }
 
-    if (!found && defSysPrinter != "") QFAIL("No default printer reported by Qt, although there is one");
-#else
-    QSKIP("Test doesn't work on non-Unix");
-#endif
+    qDebug() << "Test believes Default Printer                              = " << testPrinter;
+    qDebug() << "QPrinterInfo::defaultPrinter() believes Default Printer    = " << defaultPrinter;
+    qDebug() << "QPrinterInfo::availablePrinters() believes Default Printer = " << availablePrinter;
+
+    QCOMPARE(testPrinter, defaultPrinter);
+    QCOMPARE(testPrinter, availablePrinter);
+    if (!availablePrinter.isEmpty())
+        QCOMPARE(availablePrinterDefaults, 1);
 }
 
 void tst_QPrinterInfo::testForPrinters()
 {
-#if defined(Q_OS_UNIX) || defined(Q_OS_WIN32)
-# ifdef Q_OS_WIN32
-    if (QHostInfo::localHostName() == "fantomet" || QHostInfo::localHostName() == "bobo") {
-        QWARN("Test is hardcoded to \"fantomet\" and \"bobo\" on Windows and may fail");
-    } else {
-        QSKIP("Test is hardcoded to \"fantomet\" and \"bobo\" on Windows");
-    }
-    QStringList sysPrinters;
-    if (QHostInfo::localHostName() == "fantomet") {
-        sysPrinters
-                << "Press"
-                << "Canon PS-IPU Color Laser Copier v52.3"
-                << "EPSON EPL-N4000 PS3"
-                << "Kroksleiven"
-                << "Lexmark Optra Color 1200 PS"
-                << "Yacc (Lexmark Optra T610 PCL)"
-                << "Yacc (Lexmark Optra T610 PS3)"
-                ;
-    } else if (QHostInfo::localHostName() == "bobo") {
-        sysPrinters
-                << "press"
-                << "finnmarka"
-                << "nordmarka"
-                ;
-    }
-# else
-    QStringList sysPrinters = getPrintersFromSystem();
-# endif
+#ifdef Q_OS_WIN32
+    QSKIP("Windows test support not yet implemented");
+#endif // Q_OS_WIN32
+    QStringList testPrinters = getPrintersFromSystem();
+
     QList<QPrinterInfo> printers = QPrinterInfo::availablePrinters();
+    QStringList qtPrinters;
+    for (int i = 0; i < printers.size(); ++i)
+        qtPrinters.append(printers.at(i).printerName());
 
-//    QCOMPARE(printers.size(), sysPrinters.size());
+    qSort(testPrinters);
+    qSort(qtPrinters);
 
-    QHash<QString, bool> qtPrinters;
+    qDebug() << "Test believes Available Printers                              = " << testPrinters;
+    qDebug() << "QPrinterInfo::availablePrinters() believes Available Printers = " << qtPrinters;
 
-    for (int j = 0; j < printers.size(); ++j) {
-        qtPrinters.insert(printers.at(j).printerName(), !printers.at(j).isNull());
-    }
+    QCOMPARE(qtPrinters.size(), testPrinters.size());
 
-    for (int i = 0; i < sysPrinters.size(); ++i) {
-        if (!qtPrinters.value(sysPrinters.at(i))) {
-            qDebug() << "Available printers: " << qtPrinters;
-            QFAIL(qPrintable(QString("Printer '%1' reported by system, but not reported by Qt").arg(sysPrinters.at(i))));
-        }
-    }
-#else
-    QSKIP("Test doesn't work on non-Unix");
-#endif
+    for (int i = 0; i < testPrinters.size(); ++i)
+        QCOMPARE(qtPrinters.at(i), testPrinters.at(i));
 }
 
 void tst_QPrinterInfo::testForPaperSizes()
 {
-QSKIP("PaperSize feature doesn't work on Windows, fails on Mac, and is unstable on Linux");
-    // This test is based on common printers found at the Oslo
-    // office. It is likely to be skipped or fail for other locations.
-    QStringList hardPrinters;
-    hardPrinters << "Finnmarka" << "Huldra";
-
-    QList<QList<QPrinter::PaperSize> > hardSizes;
-    hardSizes
-            << QList<QPrinter::PaperSize>()
-            << QList<QPrinter::PaperSize>()
-            ;
-    hardSizes[0] // Finnmarka
-            << QPrinter::Letter
-            << QPrinter::A4
-            << QPrinter::A3
-            << QPrinter::A5
-            << QPrinter::B4
-            << QPrinter::B5
-            << QPrinter::Custom // COM10
-            << QPrinter::Custom // C5
-            << QPrinter::Custom // DL
-            << QPrinter::Custom // Monarch
-            << QPrinter::Executive
-            << QPrinter::Custom // Foolscap
-            << QPrinter::Custom // ISO B5
-            << QPrinter::Ledger
-            << QPrinter::Legal
-            << QPrinter::Custom // Japanese Post Card
-            << QPrinter::Custom // Invoice
-            ;
-    hardSizes[1] // Huldra
-            << QPrinter::Custom // Not listed at http://localhost:631/, name "Custom"
-            << QPrinter::Letter
-            << QPrinter::A4
-            << QPrinter::A5
-            << QPrinter::A6
-            << QPrinter::B5
-            << QPrinter::Custom // #5 1/2 Envelope
-            << QPrinter::Custom // 6x9 Envelope
-            << QPrinter::Custom // #10 Envelope
-            << QPrinter::Custom // A7 Envelope
-            << QPrinter::Custom // C5 Envelope
-            << QPrinter::Custom // DL Envelope
-            << QPrinter::Custom // Monarch Envelope
-            << QPrinter::Custom // #6 3/4 Envelope
-            << QPrinter::Executive
-            << QPrinter::Custom // US Folio
-            << QPrinter::Custom // Index Card
-            << QPrinter::Custom // ISO B5
-            << QPrinter::Legal
-            << QPrinter::Custom // Statement
-            ;
+    // TODO Old PaperSize test dependent on physical printer installed, new generic test required
+    // In the meantime just exercise the code path and print-out for inspection.
 
     QList<QPrinterInfo> printers = QPrinterInfo::availablePrinters();
-    for (int i = 0; i < printers.size(); ++i) {
-        for (int j = 0; j < hardPrinters.size(); ++j) {
-            if (printers[i].printerName() == hardPrinters[j]) {
-                QList<QPrinter::PaperSize> sizes = printers[i].supportedPaperSizes();
-                qSort(sizes);
-                qSort(hardSizes[j]);
-                QCOMPARE(sizes, hardSizes[j]);
-            }
-        }
-    }
+    for (int i = 0; i < printers.size(); ++i)
+        qDebug() << "Printer: " << printers.at(i).printerName() << " Paper Sizes: " << printers.at(i).supportedPaperSizes();
 }
 
 void tst_QPrinterInfo::testConstructors()
 {
-    QList<QPrinterInfo> prns(QPrinterInfo::availablePrinters());
+    QPrinterInfo null;
+    QCOMPARE(null.printerName(), QString());
+    QVERIFY(null.isNull());
 
-    for (int c = 0; c < prns.size(); ++c) {
-        QList<QPrinter::PaperSize> list1, list2;
-        list1 = prns[c].supportedPaperSizes();
-        QPrinter pr(prns[c]);
-        list2 = QPrinterInfo(pr).supportedPaperSizes();
-        QCOMPARE(list2, list1);
+    QList<QPrinterInfo> printers = QPrinterInfo::availablePrinters();
+
+    for (int i = 0; i < printers.size(); ++i) {
+        QPrinterInfo copy1(printers.at(i));
+        QCOMPARE(copy1.printerName(),         printers.at(i).printerName());
+        QCOMPARE(copy1.isNull(),              printers.at(i).isNull());
+        QCOMPARE(copy1.isDefault(),           printers.at(i).isDefault());
+        QCOMPARE(copy1.supportedPaperSizes(), printers.at(i).supportedPaperSizes());
+
+        QPrinter printer(printers.at(i));
+        QPrinterInfo copy2(printer);
+        QCOMPARE(copy2.printerName(),         printers.at(i).printerName());
+        QCOMPARE(copy2.isNull(),              printers.at(i).isNull());
+        QCOMPARE(copy2.isDefault(),           printers.at(i).isDefault());
+        QCOMPARE(copy2.supportedPaperSizes(), printers.at(i).supportedPaperSizes());
     }
 }
 
 void tst_QPrinterInfo::testAssignment()
 {
-    QList<QPrinterInfo> prns(QPrinterInfo::availablePrinters());
+    QList<QPrinterInfo> printers = QPrinterInfo::availablePrinters();
 
-    for (int c = 0; c < prns.size(); ++c) {
-        QPrinterInfo pi = QPrinterInfo::defaultPrinter();
-        pi = prns[c];
-        QCOMPARE(pi.printerName(), prns[c].printerName());
-        QCOMPARE(pi.supportedPaperSizes(), prns[c].supportedPaperSizes());
+    for (int i = 0; i < printers.size(); ++i) {
+        QPrinterInfo copy;
+        copy = printers.at(i);
+        QCOMPARE(copy.printerName(),         printers.at(i).printerName());
+        QCOMPARE(copy.isNull(),              printers.at(i).isNull());
+        QCOMPARE(copy.isDefault(),           printers.at(i).isDefault());
+        QCOMPARE(copy.supportedPaperSizes(), printers.at(i).supportedPaperSizes());
     }
 }
 
@@ -391,8 +317,7 @@ void tst_QPrinterInfo::namedPrinter()
     }
 }
 
-
-#endif
+#endif // QT_NO_PRINTER
 
 QTEST_MAIN(tst_QPrinterInfo)
 #include "tst_qprinterinfo.moc"
