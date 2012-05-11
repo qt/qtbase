@@ -108,7 +108,17 @@ static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
         qvsnprintf(emergency_buf, 255, msg, ap);
 
 #if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-    OutputDebugStringA(emergency_buf);
+#ifdef Q_OS_WINCE
+    OutputDebugStringW(reinterpret_cast<const wchar_t *> (
+                            QString::fromLatin1(emergency_buf).utf16()));
+#else
+    if (usingWinMain) {
+        OutputDebugStringA(emergency_buf);
+    } else {
+        fprintf(stderr, "%s", emergency_buf);
+        fflush(stderr);
+    }
+#endif
 #else
     fprintf(stderr, "%s", emergency_buf);
     fflush(stderr);
@@ -121,8 +131,10 @@ static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
         // get the current report mode
         int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
         _CrtSetReportMode(_CRT_ERROR, reportMode);
-        int ret = _CrtDbgReport(_CRT_ERROR, __FILE__, __LINE__, QT_VERSION_STR,
-                                msg);
+        int ret = _CrtDbgReportW(_CRT_ERROR, _CRT_WIDE(__FILE__), __LINE__,
+                                 _CRT_WIDE(QT_VERSION_STR),
+                                 reinterpret_cast<const wchar_t *> (
+                                     QString::fromLatin1(msg).utf16()));
         if (ret == 1)
             _CrtDbgBreak();
 #endif
