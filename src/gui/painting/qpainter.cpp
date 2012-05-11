@@ -5709,7 +5709,10 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    bool supportsTransformations = d->extended->supportsTransformations(staticText_d->font.d->engineForScript(QUnicodeTables::Common),
+    QFontEngine *fe = staticText_d->font.d->engineForScript(QUnicodeTables::Common);
+    if (fe->type() == QFontEngine::Multi)
+        fe = static_cast<QFontEngineMulti *>(fe)->engine(0);
+    bool supportsTransformations = d->extended->supportsTransformations(fe,
                                                                         d->state->matrix);
     if (supportsTransformations && !staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = true;
