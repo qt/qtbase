@@ -369,41 +369,6 @@ inline char qToLower(char ch)
         return ch;
 }
 
-/*!
-   \internal
-*/
-Q_CORE_EXPORT bool qStringComparisonHelper(const QString &s1, const char *s2)
-{
-    // ### optimize me
-    return s1 == QString::fromUtf8(s2);
-}
-
-/*!
-   \internal
-*/
-Q_CORE_EXPORT bool qStringComparisonHelper(const QString &s1, const QByteArray &s2)
-{
-    // ### optimize me
-    return s1 == QString::fromUtf8(s2);
-}
-
-/*!
-   \internal
-*/
-Q_CORE_EXPORT bool qStringComparisonHelper(const QStringRef &s1, const char *s2)
-{
-    // ### optimize me
-    return s1 == QString::fromUtf8(s2);
-}
-
-/*!
-   \internal
-*/
-Q_CORE_EXPORT bool qStringComparisonHelper(const QStringRef &s1, const QByteArray &s2)
-{
-    // ### optimize me
-    return s1 == QString::fromUtf8(s2);
-}
 
 const QString::Null QString::null = { };
 
@@ -4885,6 +4850,18 @@ int QString::compare(const QLatin1String &other, Qt::CaseSensitivity cs) const
   an integer less than, equal to, or greater than zero if the string
   is less than, equal to, or greater than \a ref.
 */
+
+/*!
+    \internal
+    \since 5.0
+*/
+int QString::compare_helper(const QChar *data1, int length1, const char *data2, int length2,
+                            Qt::CaseSensitivity cs)
+{
+    // ### optimize me
+    const QString s2 = QString::fromUtf8(data2, length2 == -1 ? (data2 ? int(strlen(data2)) : -1) : length2);
+    return compare_helper(data1, length1, s2.constData(), s2.size(), cs);
+}
 
 /*!
   \fn int QString::compare(const QString &s1, const QStringRef &s2, Qt::CaseSensitivity cs = Qt::CaseSensitive)
