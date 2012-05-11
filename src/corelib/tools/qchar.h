@@ -206,12 +206,13 @@ public:
     inline Category category() const { return QChar::category(ucs); }
     inline Direction direction() const { return QChar::direction(ucs); }
     inline Joining joining() const { return QChar::joining(ucs); }
-    bool hasMirrored() const;
     inline unsigned char combiningClass() const { return QChar::combiningClass(ucs); }
 
     inline QChar mirroredChar() const { return QChar::mirroredChar(ucs); }
+    inline bool hasMirrored() const { return QChar::hasMirrored(ucs); }
+
     QString decomposition() const;
-    Decomposition decompositionTag() const;
+    inline Decomposition decompositionTag() const { return QChar::decompositionTag(ucs); }
 
     inline int digitValue() const { return QChar::digitValue(ucs); }
     inline QChar toLower() const { return QChar::toLower(ucs); }
@@ -230,34 +231,19 @@ public:
     static inline QChar fromLatin1(char c);
 
     inline bool isNull() const { return ucs == 0; }
-    bool isPrint() const;
-    bool isPunct() const;
-    inline bool isSpace() const {
-        // note that [0x09..0x0d] + 0x85 are exceptional Cc-s and must be handled explicitly
-        return ucs == 0x20 || (ucs <= 0x0D && ucs >= 0x09)
-                || (ucs > 127 && (ucs == 0x85 || ucs == 0xa0 || isSpace(ucs)));
-    }
-    bool isMark() const;
-    inline bool isLetter() const {
-        return (ucs >= 'A' && ucs <= 'z' && (ucs >= 'a' || ucs <= 'Z'))
-                || (ucs > 127 && isLetter(ucs));
-    }
-    inline bool isNumber() const
-    { return (ucs <= '9' && ucs >= '0') || (ucs > 127 && isNumber(ucs)); }
-    inline bool isLetterOrNumber() const
-    {
-        return (ucs >= 'A' && ucs <= 'z' && (ucs >= 'a' || ucs <= 'Z'))
-                || (ucs >= '0' && ucs <= '9')
-                || (ucs > 127 && isLetterOrNumber(ucs));
-    }
-    inline bool isDigit() const
-    { return (ucs <= '9' && ucs >= '0') || (ucs > 127 && isDigit(ucs)); }
-    bool isSymbol() const;
-    inline bool isLower() const
-    { return (ucs <= 'z' && ucs >= 'a') || (ucs > 127 && category() == Letter_Lowercase); }
-    inline bool isUpper() const
-    { return (ucs <= 'Z' && ucs >= 'A') || (ucs > 127 && category() == Letter_Uppercase); }
-    inline bool isTitleCase() const { return ucs > 127 && category() == Letter_Titlecase; }
+
+    inline bool isPrint() const { return QChar::isPrint(ucs); }
+    inline bool isSpace() const { return QChar::isSpace(ucs); }
+    inline bool isMark() const { return QChar::isMark(ucs); }
+    inline bool isPunct() const { return QChar::isPunct(ucs); }
+    inline bool isSymbol() const { return QChar::isSymbol(ucs); }
+    inline bool isLetter() const { return QChar::isLetter(ucs); }
+    inline bool isNumber() const { return QChar::isNumber(ucs); }
+    inline bool isLetterOrNumber() const { return QChar::isLetterOrNumber(ucs); }
+    inline bool isDigit() const { return QChar::isDigit(ucs); }
+    inline bool isLower() const { return QChar::isLower(ucs); }
+    inline bool isUpper() const { return QChar::isUpper(ucs); }
+    inline bool isTitleCase() const { return QChar::isTitleCase(ucs); }
 
     inline bool isHighSurrogate() const {
         return ((ucs & 0xfc00) == 0xd800);
@@ -284,7 +270,7 @@ public:
         return (uint(high)<<10) + low - 0x35fdc00;
     }
     static inline uint surrogateToUcs4(QChar high, QChar low) {
-        return (uint(high.ucs)<<10) + low.ucs - 0x35fdc00;
+        return surrogateToUcs4(high.unicode(), low.unicode());
     }
     static inline ushort highSurrogate(uint ucs4) {
         return ushort((ucs4>>10) + 0xd7c0);
@@ -294,42 +280,44 @@ public:
     }
 
     static Category QT_FASTCALL category(uint ucs4);
-    static Category QT_FASTCALL category(ushort ucs2);
     static Direction QT_FASTCALL direction(uint ucs4);
-    static Direction QT_FASTCALL direction(ushort ucs2);
     static Joining QT_FASTCALL joining(uint ucs4);
-    static Joining QT_FASTCALL joining(ushort ucs2);
     static unsigned char QT_FASTCALL combiningClass(uint ucs4);
-    static unsigned char QT_FASTCALL combiningClass(ushort ucs2);
 
     static uint QT_FASTCALL mirroredChar(uint ucs4);
-    static ushort QT_FASTCALL mirroredChar(ushort ucs2);
+    static bool QT_FASTCALL hasMirrored(uint ucs4);
+
+    static QString QT_FASTCALL decomposition(uint ucs4);
     static Decomposition QT_FASTCALL decompositionTag(uint ucs4);
 
     static int QT_FASTCALL digitValue(uint ucs4);
-    static int QT_FASTCALL digitValue(ushort ucs2);
     static uint QT_FASTCALL toLower(uint ucs4);
-    static ushort QT_FASTCALL toLower(ushort ucs2);
     static uint QT_FASTCALL toUpper(uint ucs4);
-    static ushort QT_FASTCALL toUpper(ushort ucs2);
     static uint QT_FASTCALL toTitleCase(uint ucs4);
-    static ushort QT_FASTCALL toTitleCase(ushort ucs2);
     static uint QT_FASTCALL toCaseFolded(uint ucs4);
-    static ushort QT_FASTCALL toCaseFolded(ushort ucs2);
 
     static UnicodeVersion QT_FASTCALL unicodeVersion(uint ucs4);
-    static UnicodeVersion QT_FASTCALL unicodeVersion(ushort ucs2);
 
     static UnicodeVersion QT_FASTCALL currentUnicodeVersion();
 
-    static QString QT_FASTCALL decomposition(uint ucs4);
+    static bool QT_FASTCALL isPrint(uint ucs4);
+    static inline bool isSpace(uint ucs4);
+    static bool QT_FASTCALL isMark(uint ucs4);
+    static bool QT_FASTCALL isPunct(uint ucs4);
+    static bool QT_FASTCALL isSymbol(uint ucs4);
+    static inline bool isLetter(uint ucs4);
+    static inline bool isNumber(uint ucs4);
+    static inline bool isLetterOrNumber(uint ucs4);
+    static inline bool isDigit(uint ucs4);
+    static inline bool isLower(uint ucs4);
+    static inline bool isUpper(uint ucs4);
+    static inline bool isTitleCase(uint ucs4);
 
 private:
-    static bool QT_FASTCALL isDigit(ushort ucs2);
-    static bool QT_FASTCALL isLetter(ushort ucs2);
-    static bool QT_FASTCALL isNumber(ushort ucs2);
-    static bool QT_FASTCALL isLetterOrNumber(ushort ucs2);
-    static bool QT_FASTCALL isSpace(ushort ucs2);
+    static bool QT_FASTCALL isSpace_helper(uint ucs4);
+    static bool QT_FASTCALL isLetter_helper(uint ucs4);
+    static bool QT_FASTCALL isNumber_helper(uint ucs4);
+    static bool QT_FASTCALL isLetterOrNumber_helper(uint ucs4);
 
 #ifdef QT_NO_CAST_FROM_ASCII
     QChar(char c);
@@ -349,6 +337,34 @@ inline void QChar::setCell(uchar acell)
 { ucs = ushort((ucs & 0xff00) + acell); }
 inline void QChar::setRow(uchar arow)
 { ucs = ushort((ushort(arow)<<8) + (ucs&0xff)); }
+
+inline bool QChar::isSpace(uint ucs4)
+{
+    // note that [0x09..0x0d] + 0x85 are exceptional Cc-s and must be handled explicitly
+    return ucs4 == 0x20 || (ucs4 <= 0x0d && ucs4 >= 0x09)
+            || (ucs4 > 127 && (ucs4 == 0x85 || ucs4 == 0xa0 || QChar::isSpace_helper(ucs4)));
+}
+inline bool QChar::isLetter(uint ucs4)
+{
+    return (ucs4 >= 'A' && ucs4 <= 'z' && (ucs4 >= 'a' || ucs4 <= 'Z'))
+            || (ucs4 > 127 && QChar::isLetter_helper(ucs4));
+}
+inline bool QChar::isNumber(uint ucs4)
+{ return (ucs4 <= '9' && ucs4 >= '0') || (ucs4 > 127 && QChar::isNumber_helper(ucs4)); }
+inline bool QChar::isLetterOrNumber(uint ucs4)
+{
+    return (ucs4 >= 'A' && ucs4 <= 'z' && (ucs4 >= 'a' || ucs4 <= 'Z'))
+            || (ucs4 >= '0' && ucs4 <= '9')
+            || (ucs4 > 127 && QChar::isLetterOrNumber_helper(ucs4));
+}
+inline bool QChar::isDigit(uint ucs4)
+{ return (ucs4 <= '9' && ucs4 >= '0') || (ucs4 > 127 && QChar::category(ucs4) == Number_DecimalDigit); }
+inline bool QChar::isLower(uint ucs4)
+{ return (ucs4 <= 'z' && ucs4 >= 'a') || (ucs4 > 127 && QChar::category(ucs4) == Letter_Lowercase); }
+inline bool QChar::isUpper(uint ucs4)
+{ return (ucs4 <= 'Z' && ucs4 >= 'A') || (ucs4 > 127 && QChar::category(ucs4) == Letter_Uppercase); }
+inline bool QChar::isTitleCase(uint ucs4)
+{ return ucs4 > 127 && QChar::category(ucs4) == Letter_Titlecase; }
 
 inline bool operator==(QChar c1, QChar c2) { return c1.unicode() == c2.unicode(); }
 inline bool operator!=(QChar c1, QChar c2) { return c1.unicode() != c2.unicode(); }

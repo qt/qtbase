@@ -68,10 +68,10 @@ private slots:
     void isPrint();
     void isUpper();
     void isLower();
+    void isTitleCase();
     void isSpace_data();
     void isSpace();
     void isSpaceSpecial();
-    void isTitle();
     void category();
     void direction();
     void joining();
@@ -285,13 +285,11 @@ void tst_QChar::isPrint()
     QVERIFY(!QChar(0xfff8).isPrint());
     QVERIFY(!QChar(0xfffe).isPrint());
     QVERIFY(!QChar(0xffff).isPrint());
-/*
     QVERIFY(!QChar::isPrint(0xe0000u));
     QVERIFY(!QChar::isPrint(0xe0002u));
     QVERIFY(!QChar::isPrint(0xe001fu));
     QVERIFY(!QChar::isPrint(0xe0080u));
     QVERIFY(!QChar::isPrint(0xe00ffu));
-*/
 
     // Other_Default_Ignorable_Code_Point, Variation_Selector
     QVERIFY(QChar(0x034f).isPrint());
@@ -302,10 +300,8 @@ void tst_QChar::isPrint()
     QVERIFY(QChar(0xfe00).isPrint());
     QVERIFY(QChar(0xfe0f).isPrint());
     QVERIFY(QChar(0xffa0).isPrint());
-/*
     QVERIFY(QChar::isPrint(0xe0100u));
     QVERIFY(QChar::isPrint(0xe01efu));
-*/
 
     // Cf, Cs, Cc, White_Space, Annotation Characters
     QVERIFY(!QChar(0x0008).isPrint());
@@ -317,9 +313,7 @@ void tst_QChar::isPrint()
     QVERIFY(!QChar(0xd800).isPrint());
     QVERIFY(!QChar(0xdc00).isPrint());
     QVERIFY(!QChar(0xfeff).isPrint());
-/*
     QVERIFY(!QChar::isPrint(0x1d173u));
-*/
 
     QVERIFY(QChar('0').isPrint());
     QVERIFY(QChar('A').isPrint());
@@ -331,10 +325,8 @@ void tst_QChar::isPrint()
     QVERIFY(!QChar(0x08a0).isPrint()); // assigned in 6.1
     QVERIFY(!QChar(0x1aff).isPrint()); // not assigned
     QVERIFY(!QChar(0x1e9e).isPrint()); // assigned in 5.1
-/*
     QVERIFY(!QChar::isPrint(0x1b000u)); // assigned in 6.0
     QVERIFY(!QChar::isPrint(0x110d0u)); // assigned in 5.1
-*/
 }
 
 void tst_QChar::isUpper()
@@ -348,7 +340,7 @@ void tst_QChar::isUpper()
     QVERIFY(!QChar(0xE2).isUpper());  // a with ^
 
     for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
-        if (QChar::category(codepoint) == QChar::Letter_Uppercase)
+        if (QChar::isUpper(codepoint))
             QVERIFY(codepoint == QChar::toUpper(codepoint));
     }
 }
@@ -364,8 +356,16 @@ void tst_QChar::isLower()
     QVERIFY(QChar(0xE2).isLower());  // a with ^
 
     for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
-        if (QChar::category(codepoint) == QChar::Letter_Lowercase)
+        if (QChar::isLower(codepoint))
             QVERIFY(codepoint == QChar::toLower(codepoint));
+    }
+}
+
+void tst_QChar::isTitleCase()
+{
+    for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
+        if (QChar::isTitleCase(codepoint))
+            QVERIFY(codepoint == QChar::toTitleCase(codepoint));
     }
 }
 
@@ -395,14 +395,6 @@ void tst_QChar::isSpaceSpecial()
     QVERIFY(QChar(QChar::ParagraphSeparator).isSpace());
     QVERIFY(QChar(QChar::LineSeparator).isSpace());
     QVERIFY(QChar(0x1680).isSpace());
-}
-
-void tst_QChar::isTitle()
-{
-    for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
-        if (QChar::category(codepoint) == QChar::Letter_Titlecase)
-            QVERIFY(codepoint == QChar::toTitleCase(codepoint));
-    }
 }
 
 void tst_QChar::category()
@@ -725,7 +717,7 @@ void tst_QChar::normalization_data()
             }
         }
 
-        QString nm = QString("line #%1:").arg(linenum);
+        QString nm = QString("line #%1 (part %2").arg(linenum).arg(part);
         QTest::newRow(nm.toLatin1()) << columns << part;
     }
 }
