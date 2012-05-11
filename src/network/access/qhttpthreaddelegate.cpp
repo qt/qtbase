@@ -374,6 +374,9 @@ void QHttpThreadDelegate::readBufferFreed(qint64 size)
 
 void QHttpThreadDelegate::readyReadSlot()
 {
+    if (!httpReply)
+        return;
+
     // Don't do in zerocopy case
     if (!downloadBuffer.isNull())
         return;
