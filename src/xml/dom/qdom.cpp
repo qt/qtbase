@@ -2002,7 +2002,7 @@ void QDomNodePrivate::setLocation(int lineNumber, int columnNumber)
 */
 
 /*!
-    Constructs a \link isNull() null\endlink node.
+    Constructs a \l{isNull()}{null} node.
 */
 QDomNode::QDomNode()
 {
@@ -2242,7 +2242,7 @@ QDomNodeList QDomNode::childNodes() const
 
 /*!
     Returns the first child of the node. If there is no child node, a
-    \link isNull() null node\endlink is returned. Changing the
+    \l{isNull()}{null node} is returned. Changing the
     returned node will also change the node in the document tree.
 
     \sa lastChild(), childNodes()
@@ -2256,7 +2256,7 @@ QDomNode QDomNode::firstChild() const
 
 /*!
     Returns the last child of the node. If there is no child node, a
-    \link isNull() null node\endlink is returned. Changing the
+    \l{isNull()}{null node} is returned. Changing the
     returned node will also change the node in the document tree.
 
     \sa firstChild(), childNodes()
@@ -2380,8 +2380,8 @@ bool QDomNode::isSupported(const QString& feature, const QString& version) const
     Returns the namespace URI of this node or an empty string if the
     node has no namespace URI.
 
-    Only nodes of type \link QDomNode::NodeType ElementNode\endlink or
-    \link QDomNode::NodeType AttributeNode\endlink can have
+    Only nodes of type \l{QDomNode::NodeType}{ElementNode} or
+    \l{QDomNode::NodeType}{AttributeNode} can have
     namespaces. A namespace URI must be specified at creation time and
     cannot be changed later.
 
@@ -2399,8 +2399,8 @@ QString QDomNode::namespaceURI() const
     Returns the namespace prefix of the node or an empty string if the
     node has no namespace prefix.
 
-    Only nodes of type \link QDomNode::NodeType ElementNode\endlink or
-    \link QDomNode::NodeType AttributeNode\endlink can have
+    Only nodes of type \l{QDomNode::NodeType}{ElementNode} or
+    \l{QDomNode::NodeType}{AttributeNode} can have
     namespaces. A namespace prefix must be specified at creation time.
     If a node was created with a namespace prefix, you can change it
     later with setPrefix().
@@ -2429,8 +2429,8 @@ QString QDomNode::prefix() const
     namespace prefix of the node to \a pre. Otherwise this function
     does nothing.
 
-    Only nodes of type \link QDomNode::NodeType ElementNode\endlink or
-    \link QDomNode::NodeType AttributeNode\endlink can have
+    Only nodes of type \l{QDomNode::NodeType}{ElementNode} or
+    \l{QDomNode::NodeType}{AttributeNode} can have
     namespaces. A namespace prefix must have be specified at creation
     time; it is not possible to add a namespace prefix afterwards.
 
@@ -2450,8 +2450,8 @@ void QDomNode::setPrefix(const QString& pre)
     If the node uses namespaces, this function returns the local name
     of the node; otherwise it returns an empty string.
 
-    Only nodes of type \link QDomNode::NodeType ElementNode\endlink or
-    \link QDomNode::NodeType AttributeNode\endlink can have
+    Only nodes of type \l{QDomNode::NodeType}{ElementNode} or
+    \l{QDomNode::NodeType}{AttributeNode} can have
     namespaces. A namespace must have been specified at creation time;
     it is not possible to add a namespace afterwards.
 
@@ -2480,7 +2480,7 @@ bool QDomNode::hasAttributes() const
 /*!
     Inserts the node \a newChild before the child node \a refChild.
     \a refChild must be a direct child of this node. If \a refChild is
-    \link isNull() null\endlink then \a newChild is inserted as the
+    \l{isNull()}{null} then \a newChild is inserted as the
     node's first child.
 
     If \a newChild is the child of another node, it is reparented to
@@ -2491,8 +2491,7 @@ bool QDomNode::hasAttributes() const
     fragment are removed from the fragment and inserted before \a
     refChild.
 
-    Returns a new reference to \a newChild on success or a \link
-    isNull() null node\endlink on failure.
+    Returns a new reference to \a newChild on success or a \l{isNull()}{null node} on failure.
 
     The DOM specification disallow inserting attribute nodes, but due
     to historical reasons QDom accept them nevertheless.
@@ -2509,7 +2508,7 @@ QDomNode QDomNode::insertBefore(const QDomNode& newChild, const QDomNode& refChi
 /*!
     Inserts the node \a newChild after the child node \a refChild. \a
     refChild must be a direct child of this node. If \a refChild is
-    \link isNull() null\endlink then \a newChild is appended as this
+    \l{isNull()}{null} then \a newChild is appended as this
     node's last child.
 
     If \a newChild is the child of another node, it is reparented to
@@ -2520,8 +2519,7 @@ QDomNode QDomNode::insertBefore(const QDomNode& newChild, const QDomNode& refChi
     fragment are removed from the fragment and inserted after \a
     refChild.
 
-    Returns a new reference to \a newChild on success or a \link
-    isNull() null node\endlink on failure.
+    Returns a new reference to \a newChild on success or a \l{isNull()}{null node} on failure.
 
     The DOM specification disallow inserting attribute nodes, but due
     to historical reasons QDom accept them nevertheless.
@@ -2546,8 +2544,7 @@ QDomNode QDomNode::insertAfter(const QDomNode& newChild, const QDomNode& refChil
     If \a newChild is a QDomDocumentFragment, then \a oldChild is
     replaced by all of the children of the fragment.
 
-    Returns a new reference to \a oldChild on success or a \link
-    isNull() null node\endlink an failure.
+    Returns a new reference to \a oldChild on success or a \l{isNull()}{null node} an failure.
 
     \sa insertBefore(), insertAfter(), removeChild(), appendChild()
 */
@@ -2562,8 +2559,7 @@ QDomNode QDomNode::replaceChild(const QDomNode& newChild, const QDomNode& oldChi
     Removes \a oldChild from the list of children. \a oldChild must be
     a direct child of this node.
 
-    Returns a new reference to \a oldChild on success or a \link
-    isNull() null node\endlink on failure.
+    Returns a new reference to \a oldChild on success or a \l{isNull()}{null node} on failure.
 
     \sa insertBefore(), insertAfter(), replaceChild(), appendChild()
 */
@@ -2592,12 +2588,10 @@ QDomNode QDomNode::removeChild(const QDomNode& oldChild)
     already has an element node as a child, \a newChild is not added as
     a child and a null node is returned.
 
-    Returns a new reference to \a newChild on success or a \link
-    isNull() null node\endlink on failure.
+    Returns a new reference to \a newChild on success or a \l{isNull()}{null node} on failure.
 
     Calling this function on a null node(created, for example, with
-    the default constructor) does nothing and returns a \link isNull()
-    null node\endlink.
+    the default constructor) does nothing and returns a \l{isNull()}{null node}.
 
     The DOM specification disallow inserting attribute nodes, but for
     historical reasons, QDom accepts them anyway.
@@ -2650,7 +2644,7 @@ void QDomNode::clear()
     Returns the first direct child node for which nodeName() equals \a
     name.
 
-    If no such direct child exists, a \link isNull() null node\endlink
+    If no such direct child exists, a \l{isNull()}{null node}
     is returned.
 
     \sa nodeName()
@@ -3288,8 +3282,8 @@ QDomNamedNodeMap::~QDomNamedNodeMap()
 /*!
     Returns the node called \a name.
 
-    If the named node map does not contain such a node, a \link
-    QDomNode::isNull() null node\endlink is returned. A node's name is
+    If the named node map does not contain such a node, a
+    \l{QDomNode::isNull()}{null node} is returned. A node's name is
     the name returned by QDomNode::nodeName().
 
     \sa setNamedItem(), namedItemNS()
@@ -3321,8 +3315,8 @@ QDomNode QDomNamedNodeMap::setNamedItem(const QDomNode& newNode)
 /*!
     Removes the node called \a name from the map.
 
-    The function returns the removed node or a \link
-    QDomNode::isNull() null node\endlink if the map did not contain a
+    The function returns the removed node or a
+    \l{QDomNode::isNull()}{null node} if the map did not contain a
     node called \a name.
 
     \sa setNamedItem(), namedItem(), removeNamedItemNS()
@@ -3353,8 +3347,8 @@ QDomNode QDomNamedNodeMap::item(int index) const
     Returns the node associated with the local name \a localName and
     the namespace URI \a nsURI.
 
-    If the map does not contain such a node, a \link
-    QDomNode::isNull() null node\endlink is returned.
+    If the map does not contain such a node,
+    a \l{QDomNode::isNull()}{null node} is returned.
 
     \sa setNamedItemNS(), namedItem()
 */
@@ -3384,8 +3378,8 @@ QDomNode QDomNamedNodeMap::setNamedItemNS(const QDomNode& newNode)
     Removes the node with the local name \a localName and the
     namespace URI \a nsURI from the map.
 
-    The function returns the removed node or a \link
-    QDomNode::isNull() null node\endlink if the map did not contain a
+    The function returns the removed node or a
+    \l{QDomNode::isNull()}{null node} if the map did not contain a
     node with the local name \a localName and the namespace URI \a
     nsURI.
 
@@ -3996,7 +3990,7 @@ QDomCharacterData& QDomCharacterData::operator= (const QDomCharacterData& x)
 /*!
     Returns the string stored in this object.
 
-    If the node is a \link isNull() null node\endlink, it will return
+    If the node is a \l{isNull()}{null node}, it will return
     an empty string.
 */
 QString QDomCharacterData::data() const
@@ -4075,7 +4069,7 @@ void QDomCharacterData::replaceData(unsigned long offset, unsigned long count, c
 /*!
     Returns the type of node this object refers to (i.e. \c TextNode,
     \c CDATASectionNode, \c CommentNode or \c CharacterDataNode). For
-    a \link isNull() null node\endlink, returns \c CharacterDataNode.
+    a \l{isNull()}{null node}, returns \c CharacterDataNode.
 */
 QDomNode::NodeType QDomCharacterData::nodeType() const
 {
@@ -4343,8 +4337,8 @@ bool QDomAttr::specified() const
 }
 
 /*!
-    Returns the element node this attribute is attached to or a \link
-    QDomNode::isNull() null node\endlink if this attribute is not
+    Returns the element node this attribute is attached to or a
+    \l{QDomNode::isNull()}{null node} if this attribute is not
     attached to any element.
 */
 QDomElement QDomAttr::ownerElement() const
@@ -4384,7 +4378,7 @@ void QDomAttr::setValue(const QString& v)
 /*!
     \fn QDomNode::NodeType QDomAttr::nodeType() const
 
-    Returns \link QDomNode::NodeType AttributeNode\endlink.
+    Returns \l{QDomNode::NodeType}{AttributeNode}.
 */
 
 #undef IMPL
@@ -5096,8 +5090,8 @@ QDomAttr QDomElement::attributeNodeNS(const QString& nsURI, const QString& local
 
     If the element has another attribute that has the same local name
     and namespace URI as \a newAttr, this function replaces that
-    attribute and returns it; otherwise the function returns a \link
-    QDomNode::isNull() null attribute\endlink.
+    attribute and returns it; otherwise the function returns a
+    \l{QDomNode::isNull()}{null attribute}.
 
     \sa attributeNodeNS(), setAttributeNS(), setAttributeNode()
 */
@@ -7045,7 +7039,7 @@ QDomNodeList QDomDocument::elementsByTagName(const QString& tagname) const
     This function returns the imported node that belongs to this
     document. The returned node has no parent. It is not possible to
     import QDomDocument and QDomDocumentType nodes. In those cases
-    this function returns a \link QDomNode::isNull() null node\endlink.
+    this function returns a \l{QDomNode::isNull()}{null node}.
 
     If \a deep is true, this function imports not only the node \a
     importedNode but its whole subtree; if it is false, only the \a
@@ -7163,12 +7157,13 @@ QDomNodeList QDomDocument::elementsByTagNameNS(const QString& nsURI, const QStri
 
 /*!
     Returns the element whose ID is equal to \a elementId. If no
-    element with the ID was found, this function returns a \link
-    QDomNode::isNull() null element\endlink.
+    element with the ID was found, this function returns a
+    \l{QDomNode::isNull()}{null element}.
 
     Since the QDomClasses do not know which attributes are element
-    IDs, this function returns always a \link QDomNode::isNull() null
-    element\endlink. This may change in a future version.
+    IDs, this function returns always a
+    \l{QDomNode::isNull()}{null element}.
+    This may change in a future version.
 */
 QDomElement QDomDocument::elementById(const QString& /*elementId*/)
 {
@@ -7192,8 +7187,7 @@ QDomElement QDomDocument::elementById(const QString& /*elementId*/)
 
 /*!
     Converts a QDomNode into a QDomAttr. If the node is not an
-    attribute, the returned object will be \link QDomNode::isNull()
-    null\endlink.
+    attribute, the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isAttr()
 */
@@ -7206,8 +7200,7 @@ QDomAttr QDomNode::toAttr() const
 
 /*!
     Converts a QDomNode into a QDomCDATASection. If the node is not a
-    CDATA section, the returned object will be \link
-    QDomNode::isNull() null\endlink.
+    CDATA section, the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isCDATASection()
 */
@@ -7220,8 +7213,7 @@ QDomCDATASection QDomNode::toCDATASection() const
 
 /*!
     Converts a QDomNode into a QDomDocumentFragment. If the node is
-    not a document fragment the returned object will be \link
-    QDomNode::isNull() null\endlink.
+    not a document fragment the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isDocumentFragment()
 */
@@ -7234,8 +7226,7 @@ QDomDocumentFragment QDomNode::toDocumentFragment() const
 
 /*!
     Converts a QDomNode into a QDomDocument. If the node is not a
-    document the returned object will be \link QDomNode::isNull()
-    null\endlink.
+    document the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isDocument()
 */
@@ -7248,8 +7239,7 @@ QDomDocument QDomNode::toDocument() const
 
 /*!
     Converts a QDomNode into a QDomDocumentType. If the node is not a
-    document type the returned object will be \link QDomNode::isNull()
-    null\endlink.
+    document type the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isDocumentType()
 */
@@ -7262,8 +7252,7 @@ QDomDocumentType QDomNode::toDocumentType() const
 
 /*!
     Converts a QDomNode into a QDomElement. If the node is not an
-    element the returned object will be \link QDomNode::isNull()
-    null\endlink.
+    element the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isElement()
 */
@@ -7276,8 +7265,7 @@ QDomElement QDomNode::toElement() const
 
 /*!
     Converts a QDomNode into a QDomEntityReference. If the node is not
-    an entity reference, the returned object will be \link
-    QDomNode::isNull() null\endlink.
+    an entity reference, the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isEntityReference()
 */
@@ -7290,7 +7278,7 @@ QDomEntityReference QDomNode::toEntityReference() const
 
 /*!
     Converts a QDomNode into a QDomText. If the node is not a text,
-    the returned object will be \link QDomNode::isNull() null\endlink.
+    the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isText()
 */
@@ -7303,8 +7291,7 @@ QDomText QDomNode::toText() const
 
 /*!
     Converts a QDomNode into a QDomEntity. If the node is not an
-    entity the returned object will be \link QDomNode::isNull()
-    null\endlink.
+    entity the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isEntity()
 */
@@ -7317,8 +7304,7 @@ QDomEntity QDomNode::toEntity() const
 
 /*!
     Converts a QDomNode into a QDomNotation. If the node is not a
-    notation the returned object will be \link QDomNode::isNull()
-    null\endlink.
+    notation the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isNotation()
 */
@@ -7331,8 +7317,7 @@ QDomNotation QDomNode::toNotation() const
 
 /*!
     Converts a QDomNode into a QDomProcessingInstruction. If the node
-    is not a processing instruction the returned object will be \link
-    QDomNode::isNull() null\endlink.
+    is not a processing instruction the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isProcessingInstruction()
 */
@@ -7345,8 +7330,7 @@ QDomProcessingInstruction QDomNode::toProcessingInstruction() const
 
 /*!
     Converts a QDomNode into a QDomCharacterData. If the node is not a
-    character data node the returned object will be \link
-    QDomNode::isNull() null\endlink.
+    character data node the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isCharacterData()
 */
@@ -7359,8 +7343,7 @@ QDomCharacterData QDomNode::toCharacterData() const
 
 /*!
     Converts a QDomNode into a QDomComment. If the node is not a
-    comment the returned object will be \link QDomNode::isNull()
-    null\endlink.
+    comment the returned object will be \l{QDomNode::isNull()}{null}.
 
     \sa isComment()
 */

@@ -78,7 +78,7 @@
 
     Parts of the Qt XML module documentation assume that you are familiar
     with XML namespaces. Here we present a brief introduction; skip to
-    \link #namespacesConventions Qt XML documentation conventions \endlink
+    \l{#namespacesConventions}{Qt XML documentation conventions}
     if you already know this material.
 
     Namespaces are a concept introduced into XML to allow a more modular
@@ -402,7 +402,7 @@
     the element name \e document but not its attributes \e xmlns:book and
     \e xmlns with their values. A reader with the feature \e
     http://xml.org/sax/features/namespace-prefixes reports the namespace
-    attributes if the \link QXmlReader::feature() feature\endlink is
+    attributes if the \l{QXmlReader::feature()}{feature} is
     switched on.
 
     Other features include \e http://xml.org/sax/features/namespace
@@ -465,7 +465,7 @@
     a namespace URI for \e xmlns:fnord.
 
     This might be changed in the future following the W3C suggestion
-    \link http://www.w3.org/2000/xmlns/ http://www.w3.org/2000/xmlns/ \endlink
+    \l{http://www.w3.org/2000/xmlns/}
     to associate \e xmlns with the namespace \e http://www.w3.org/2000/xmlns.
 
     As the SAX2 standard suggests, \l QXmlSimpleReader defaults to having

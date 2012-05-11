@@ -25,12 +25,23 @@
 **
 ****************************************************************************/
 
+
 /*!
-    \externalpage http://www.w3.org/TR/REC-DOM-Level-1/
-    \title W3C DOM Level 1
+    \externalpage http://www.w3.org/2000/xmlns/
+    \title http://www.w3.org/2000/xmlns/
+*/
+
+/*!
+    \externalpage http://www.saxproject.org/
+    \title SAX2 Java interface
 */
 
 /*!
     \externalpage http://www.w3.org/TR/DOM-Level-2-Core/
     \title W3C DOM Level 2
+*/
+
+/*!
+    \externalpage http://www.w3.org/TR/REC-DOM-Level-1/
+    \title W3C DOM Level 1
 */
