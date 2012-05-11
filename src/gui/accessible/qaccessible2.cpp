@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
     \brief The QAccessible2 namespace defines constants relating to
     IAccessible2-based interfaces
 
-    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+    \l{IAccessible2 Specification}
 */
 
 /*!
@@ -76,7 +76,7 @@ QT_BEGIN_NAMESPACE
     This interface is, for example, implemented for QLineEdit.
 
     Editable text objects should also implement \l QAccessibleEditableTextInterface.
-    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+    \l{IAccessible2 Specification}
 */
 
 /*!
@@ -194,7 +194,7 @@ QT_BEGIN_NAMESPACE
 
     \sa QAccessibleInterface
 
-    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+    \l{IAccessible2 Specification}
 */
 
 /*!
@@ -257,7 +257,7 @@ QT_BEGIN_NAMESPACE
 
     \sa QAccessibleInterface, QAccessibleEditableTextInterface
 
-    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+    \l{IAccessible2 Specification}
 */
 
 /*!
@@ -275,7 +275,7 @@ QT_BEGIN_NAMESPACE
 
     Usually this interface is implemented by classes that also implement \l QAccessibleInterface.
 
-    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+    \l{IAccessible2 Specification}
 */
 
 /*!
@@ -322,7 +322,7 @@ QT_BEGIN_NAMESPACE
     \brief The QAccessibleImageInterface class implements support for
     the IAccessibleImage interface.
 
-    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+    \l{IAccessible2 Specification}
 */
 
 /*!
@@ -333,7 +333,7 @@ QT_BEGIN_NAMESPACE
     \brief The QAccessibleTableCellInterface class implements support for
     the IAccessibleTable2 Cell interface.
 
-    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+    \l{IAccessible2 Specification}
 */
 
 /*!
@@ -344,7 +344,7 @@ QT_BEGIN_NAMESPACE
     \brief The QAccessibleTableInterface class implements support for
     the IAccessibleTable2 interface.
 
-    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+    \l{IAccessible2 Specification}
 */
 
 
@@ -385,7 +385,7 @@ QT_BEGIN_NAMESPACE
     Most widgets will simply implement \l pressAction(). This is what happens when the widget is activated by
     being clicked, space pressed or similar.
 
-    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+    \l{IAccessible2 Specification}
 */
 
 /*!

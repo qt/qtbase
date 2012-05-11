@@ -383,7 +383,7 @@ void QRegion::exec(const QByteArray &buffer, int ver, QDataStream::ByteOrder byt
     Writes the region \a r to the stream \a s and returns a reference
     to the stream.
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 
 QDataStream &operator<<(QDataStream &s, const QRegion &r)
@@ -416,7 +416,7 @@ QDataStream &operator<<(QDataStream &s, const QRegion &r)
     Reads a region from the stream \a s into \a r and returns a
     reference to the stream.
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 
 QDataStream &operator>>(QDataStream &s, QRegion &r)

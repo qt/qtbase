@@ -382,7 +382,7 @@ QFontEngineData::~QFontEngineData()
     QFontInfo object.
 
     If the requested font family is unavailable you can influence the
-    \link #fontmatching font matching algorithm\endlink by choosing a
+    \l{#fontmatching}{font matching algorithm} by choosing a
     particular \l{QFont::StyleHint} and \l{QFont::StyleStrategy} with
     setStyleHint(). The default family (corresponding to the current
     style hint) is returned by defaultFamily().
@@ -484,9 +484,9 @@ QFontEngineData::~QFontEngineData()
     \snippet code/src_gui_text_qfont.cpp 4
 
     For more general information on fonts, see the
-    \link http://nwalsh.com/comp.fonts/FAQ/ comp.fonts FAQ.\endlink
+    \l{comp.fonts FAQ}{comp.fonts FAQ}.
     Information on encodings can be found from
-    \link http://czyborra.com/ Roman Czyborra's\endlink page.
+    \l{Roman Czyborra's} page.
 
     \sa QFontComboBox, QFontMetrics, QFontInfo, QFontDatabase, {Character Map Example}
 */
@@ -626,7 +626,7 @@ QFontEngineData::~QFontEngineData()
     It is theoretically possible that there really isn't a
     lastResortFont() in which case Qt will abort with an error
     message. We have not been able to identify a case where this
-    happens. Please \link bughowto.html report it as a bug\endlink if
+    happens. Please \l{bughowto.html}{report it as a bug} if
     it does, preferably with a list of the fonts you have installed.
 
     \sa lastResortFamily(), rawName()
@@ -1106,8 +1106,8 @@ void QFont::setWeight(int weight)
 /*!
     \fn bool QFont::bold() const
 
-    Returns true if weight() is a value greater than \link Weight
-    QFont::Normal \endlink; otherwise returns false.
+    Returns true if weight() is a value greater than
+   \l{Weight}{QFont::Normal}; otherwise returns false.
 
     \sa weight(), setBold(), QFontInfo::bold()
 */
@@ -1115,9 +1115,9 @@ void QFont::setWeight(int weight)
 /*!
     \fn void QFont::setBold(bool enable)
 
-    If \a enable is true sets the font's weight to \link Weight
-    QFont::Bold \endlink; otherwise sets the weight to \link Weight
-    QFont::Normal\endlink.
+    If \a enable is true sets the font's weight to
+    \l{Weight}{QFont::Bold};
+    otherwise sets the weight to \l{Weight}{QFont::Normal}.
 
     For finer boldness control use setWeight().
 
@@ -2097,7 +2097,7 @@ void QFont::cacheStatistics()
     Writes the font \a font to the data stream \a s. (toString()
     writes to a text stream.)
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 QDataStream &operator<<(QDataStream &s, const QFont &font)
 {
@@ -2148,7 +2148,7 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
     Reads the font \a font from the data stream \a s. (fromString()
     reads from a text stream.)
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 QDataStream &operator>>(QDataStream &s, QFont &font)
 {
@@ -2273,8 +2273,7 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     Constructs a font info object for \a font.
 
     The font must be screen-compatible, i.e. a font you use when
-    drawing text in \link QWidget widgets\endlink or \link QPixmap
-    pixmaps\endlink, not QPicture or QPrinter.
+    drawing text in \l{QWidget}{widgets} or \l{QPixmap}{pixmaps}, not QPicture or QPrinter.
 
     The font info object holds the information for the font that is
     passed in the constructor at the time it is created, and is not

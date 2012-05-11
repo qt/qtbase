@@ -933,8 +933,7 @@ QKeySequence::QKeySequence()
 
     \a key should be in NativeText format.
 
-    This constructor is typically used with \link QObject::tr() tr
-    \endlink(), so that shortcut keys can be replaced in
+    This constructor is typically used with \l{QObject::tr()}{tr}(), so that shortcut keys can be replaced in
     translations:
 
     \snippet code/src_gui_kernel_qkeysequence.cpp 2
@@ -1693,7 +1692,7 @@ QKeySequence QKeySequence::fromString(const QString &str, SequenceFormat format)
 
     Writes the key \a sequence to the \a stream.
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence)
 {
@@ -1716,7 +1715,7 @@ QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence)
 
     Reads a key sequence from the \a stream into the key \a sequence.
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 QDataStream &operator>>(QDataStream &s, QKeySequence &keysequence)
 {

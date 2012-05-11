@@ -925,7 +925,7 @@ static const int oldRoles[7] = { QPalette::Foreground, QPalette::Background, QPa
     Writes the palette, \a p to the stream \a s and returns a
     reference to the stream.
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 
 QDataStream &operator<<(QDataStream &s, const QPalette &p)
@@ -963,7 +963,7 @@ static void readV1ColorGroup(QDataStream &s, QPalette &pal, QPalette::ColorGroup
     Reads a palette from the stream, \a s into the palette \a p, and
     returns a reference to the stream.
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 
 QDataStream &operator>>(QDataStream &s, QPalette &p)

@@ -1695,8 +1695,8 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
     \brief the cursor shape for this window
 
     The mouse cursor will assume this shape when it is over this
-    window, unless an override cursor is set. See the \link
-    Qt::CursorShape list of predefined cursor objects\endlink for a
+    window, unless an override cursor is set.
+    See the \l{Qt::CursorShape}{list of predefined cursor objects} for a
     range of useful shapes.
 
     By default, this property contains a cursor with the Qt::ArrowCursor

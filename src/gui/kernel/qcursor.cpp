@@ -93,8 +93,7 @@ QT_BEGIN_NAMESPACE
 
     \section1 A Note for X11 Users
 
-    On X11, Qt supports the \link
-    http://www.xfree86.org/4.3.0/Xcursor.3.html Xcursor\endlink
+    On X11, Qt supports the \l{Xcursor}{Xcursor}
     library, which allows for full color icon themes. The table below
     shows the cursor name used for each Qt::CursorShape value. If a
     cursor cannot be found using the name shown below, a standard X11

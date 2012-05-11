@@ -1833,8 +1833,7 @@ QList<QByteArray> QPictureIO::outputFormats()
 
     Setting the picture file format string is optional.
 
-    Note that this function does \e not set the \link format()
-    format\endlink used to read the picture. If you need that
+    Note that this function does \e not set the \l{format()}{format} used to read the picture. If you need that
     information, use the pictureFormat() static functions.
 
     Example:

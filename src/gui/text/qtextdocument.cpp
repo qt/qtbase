@@ -400,8 +400,7 @@ void QTextDocument::undo(QTextCursor *cursor)
 
 /*!
     \since 4.2
-    Redoes the last editing operation on the document if \link
-    QTextDocument::isRedoAvailable() redo is available\endlink.
+    Redoes the last editing operation on the document if \l{QTextDocument::isRedoAvailable()}{redo is available}.
 
     The provided \a cursor is positioned at the end of the location where
     the edition operation was redone.
@@ -452,8 +451,7 @@ void QTextDocument::undo()
 
 /*!
     \overload
-    Redoes the last editing operation on the document if \link
-    QTextDocument::isRedoAvailable() redo is available\endlink.
+    Redoes the last editing operation on the document if \l{QTextDocument::isRedoAvailable()}{redo is available}.
 */
 void QTextDocument::redo()
 {

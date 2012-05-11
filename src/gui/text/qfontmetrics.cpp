@@ -166,7 +166,7 @@ QFontMetrics::QFontMetrics(const QFont &font)
     The font metrics will be compatible with the paintdevice passed.
     If the \a paintdevice is 0, the metrics will be screen-compatible,
     ie. the metrics you get if you use the font for drawing text on a
-    \link QWidget widgets\endlink or \link QPixmap pixmaps\endlink,
+    \l{QWidget}{widgets} or \l{QPixmap}{pixmaps},
     not on a QPicture or QPrinter.
 
     The font metrics object holds the information for the font that is
@@ -751,8 +751,8 @@ QRect QFontMetrics::boundingRect(QChar ch) const
 
     The bounding rectangle returned by this function is somewhat larger
     than that calculated by the simpler boundingRect() function. This
-    function uses the \link minLeftBearing() maximum left \endlink and
-    \link minRightBearing() right \endlink font bearings as is
+    function uses the \l{minLeftBearing()}{maximum left} and
+    \l{minRightBearing()}{right} font bearings as is
     necessary for multi-line text to align correctly. Also,
     fontHeight() and lineSpacing() are used to calculate the height,
     rather than individual character heights.
@@ -1027,7 +1027,7 @@ QFontMetricsF::QFontMetricsF(const QFont &font)
     The font metrics will be compatible with the paintdevice passed.
     If the \a paintdevice is 0, the metrics will be screen-compatible,
     ie. the metrics you get if you use the font for drawing text on a
-    \link QWidget widgets\endlink or \link QPixmap pixmaps\endlink,
+    \l{QWidget}{widgets} or \l{QPixmap}{pixmaps},
     not on a QPicture or QPrinter.
 
     The font metrics object holds the information for the font that is
@@ -1532,8 +1532,8 @@ QRectF QFontMetricsF::boundingRect(QChar ch) const
 
     The bounding rectangle returned by this function is somewhat larger
     than that calculated by the simpler boundingRect() function. This
-    function uses the \link minLeftBearing() maximum left \endlink and
-    \link minRightBearing() right \endlink font bearings as is
+    function uses the \l{minLeftBearing()}{maximum left} and
+    \l{minRightBearing()}{right} font bearings as is
     necessary for multi-line text to align correctly. Also,
     fontHeight() and lineSpacing() are used to calculate the height,
     rather than individual character heights.

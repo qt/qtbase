@@ -32,8 +32,7 @@
 
     \brief Classes that provide support for painting.
 
-    See also this introduction to the \link coordsys.html Qt
-    coordinate system. \endlink
+    See also this introduction to the \l{coordsys.html}{Qt coordinate system.}
 */
 
 /*!
