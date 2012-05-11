@@ -1,6 +1,6 @@
 CONFIG += testcase
 
-QT += declarative qmltest
+QT += qml qmltest
 
 macx: CONFIG -= app_bundle
 
