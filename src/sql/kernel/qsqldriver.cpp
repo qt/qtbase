@@ -575,7 +575,7 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
     format and enclosed in single quotation marks. If the date/time
     data is invalid, "NULL" is returned.
 
-    \li If \a field is \link QByteArray bytearray\endlink data, and the
+    \li If \a field is \l{QByteArray}{bytearray} data, and the
     driver can edit binary fields, the value is formatted as a
     hexadecimal string.
 

@@ -50,17 +50,17 @@
 
     \table
     \header \li Driver name \li DBMS
-    \row \li \link #QDB2 QDB2\endlink \li IBM DB2 (version 7.1 and above)
-    \row \li \link #QIBASE QIBASE\endlink \li Borland InterBase
-    \row \li \link #QMYSQL QMYSQL\endlink \li MySQL
-    \row \li \link #QOCI QOCI\endlink \li Oracle Call Interface Driver
-    \row \li \link #QODBC QODBC\endlink
+    \row \li \l{#QDB2}{QDB2} \li IBM DB2 (version 7.1 and above)
+    \row \li \l{#QIBASE}{QIBASE} \li Borland InterBase
+    \row \li \l{#QMYSQL}{QMYSQL} \li MySQL
+    \row \li \l{#QOCI}{QOCI} \li Oracle Call Interface Driver
+    \row \li \l{#QODBC}{QODBC}
          \li Open Database Connectivity (ODBC) - Microsoft SQL Server and other
             ODBC-compliant databases
-    \row \li \link #QPSQL QPSQL\endlink \li PostgreSQL (versions 7.3 and above)
-    \row \li \link #QSQLITE2 QSQLITE2\endlink \li SQLite version 2
-    \row \li \link #QSQLITE QSQLITE\endlink \li SQLite version 3
-    \row \li \link #QTDS QTDS\endlink \li Sybase Adaptive Server \note obsolete from Qt 4.7
+    \row \li \l{#QPSQL}{QPSQL} \li PostgreSQL (versions 7.3 and above)
+    \row \li \l{#QSQLITE2}{QSQLITE2} \li SQLite version 2
+    \row \li \l{#QSQLITE}{QSQLITE} \li SQLite version 3
+    \row \li \l{#QTDS}{QTDS} \li Sybase Adaptive Server \note obsolete from Qt 4.7
     \endtable
 
     SQLite is the in-process database system with the best test coverage
