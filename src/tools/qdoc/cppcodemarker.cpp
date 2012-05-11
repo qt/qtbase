@@ -87,6 +87,8 @@ bool CppCodeMarker::recognizeExtension(const QString& extension)
     return ext == "c" ||
             ext == "c++" ||
             ext == "qdoc" ||
+            ext == "qtt" ||
+            ext == "qtx" ||
             ext == "cc" ||
             ext == "cpp" ||
             ext == "cxx" ||
