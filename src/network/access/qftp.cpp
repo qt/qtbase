@@ -1387,7 +1387,7 @@ int QFtpPrivate::addCommand(QFtpCommand *cmd)
     \snippet code/src_network_access_qftp.cpp 2
 
     The dataTransferProgress() signal in the above example is useful
-    if you want to show a \link QProgressBar progress bar \endlink to
+    if you want to show a \l{QProgressBar}{progress bar} to
     inform the user about the progress of the download. The
     readyRead() signal tells you that there is data ready to be read.
     The amount of data can be queried then with the bytesAvailable()
@@ -1529,7 +1529,7 @@ QFtp::QFtp(QObject *parent)
     the currentCommand() is \c List.
 
     \value None No command is being executed.
-    \value SetTransferMode set the \link TransferMode transfer\endlink mode.
+    \value SetTransferMode set the \l{TransferMode}{transfer} mode.
     \value SetProxy switch proxying on or off.
     \value ConnectToHost connectToHost() is being executed.
     \value Login login() is being executed.
