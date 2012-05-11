@@ -64,7 +64,8 @@ OBJS        = project.o main.o makefile.o unixmake.o unixmake2.o mingw_make.o \
               option.o winmakefile.o projectgenerator.o property.o meta.o \
               makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
               borland_bmake.o msvc_nmake.o msvc_vcproj.o msvc_vcxproj.o \
-              msvc_objectmodel.o msbuild_objectmodel.o registry.o gbuild.o
+              msvc_objectmodel.o msbuild_objectmodel.o registry.o gbuild.o \
+              cesdkhandler.o
 
 ifdef QMAKE_OPENSOURCE_EDITION
 CFLAGS      += -DQMAKE_OPENSOURCE_EDITION

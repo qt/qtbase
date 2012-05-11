@@ -13,7 +13,7 @@ OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
      mingw_make.o option.o winmakefile.o projectgenerator.o \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
      borland_bmake.o msvc_vcproj.o msvc_vcxproj.o msvc_nmake.o msvc_objectmodel.o msbuild_objectmodel.o \
-     gbuild.o
+     gbuild.o cesdkhandler.o
 
 #qt code
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qstringbuilder.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
@@ -36,7 +36,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   generators/mac/pbuilder_pbx.cpp generators/mac/xmloutput.cpp generators/metamakefile.cpp \
 	   generators/makefiledeps.cpp option.cpp generators/win32/mingw_make.cpp generators/makefile.cpp \
 	   generators/win32/msvc_vcproj.cpp generators/win32/msvc_vcxproj.cpp generators/win32/msvc_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp generators/win32/msvc_nmake.cpp generators/win32/borland_bmake.cpp \
-	   generators/integrity/gbuild.cpp \
+	   generators/integrity/gbuild.cpp generators/win32/cesdkhandler.cpp \
 	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstring.cpp $(SOURCE_PATH)/src/corelib/io/qfile.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfiledevice.cpp \
@@ -158,6 +158,9 @@ msvc_vcxproj.o: $(QMKSRC)/generators/win32/msvc_vcxproj.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 msvc_nmake.o: $(QMKSRC)/generators/win32/msvc_nmake.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+cesdkhandler.o: $(QMKSRC)/generators/win32/cesdkhandler.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 pbuilder_pbx.o: $(QMKSRC)/generators/mac/pbuilder_pbx.cpp
