@@ -208,18 +208,21 @@ public:
 
     const char* readPointer(qint64 maximumLength, qint64 &len)
     {
-        if (m_amount == 0 && wantDataPending == false) {
-            len = 0;
-            wantDataPending = true;
-            emit wantData(maximumLength);
-        } else if (m_amount == 0 && wantDataPending == true) {
-            // Do nothing, we already sent a wantData signal and wait for results
-            len = 0;
-        } else if (m_amount > 0) {
+        if (m_amount > 0) {
             len = m_amount;
             return m_data;
         }
-        // cannot happen
+
+        if (m_atEnd) {
+            len = -1;
+        } else if (!wantDataPending) {
+            len = 0;
+            wantDataPending = true;
+            emit wantData(maximumLength);
+        } else {
+            // Do nothing, we already sent a wantData signal and wait for results
+            len = 0;
+        }
         return 0;
     }
 
