@@ -1327,16 +1327,12 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         {
             const Node *node = 0;
             QString myLink = getLink(atom, relative, marker, &node);
-            if (myLink.isEmpty()) {
+            if (myLink.isEmpty())
                 myLink = getCollisionLink(atom);
-            }
-            if (myLink.isEmpty()) {
-                relative->doc().location().warning(tr("Can't link to '%1'")
-                                                   .arg(atom->string()));
-            }
-            else if (!inSectionHeading) {
+            if (myLink.isEmpty())
+                relative->doc().location().warning(tr("Can't link to '%1'").arg(atom->string()));
+            else if (!inSectionHeading)
                 beginLink(myLink);
-            }
             skipAhead = 1;
         }
         break;
@@ -4237,25 +4233,20 @@ QString DitaXmlGenerator::getLink(const Atom* atom,
         }
         else {
             *node = marker->resolveTarget(first, tree_, relative);
-            if (!*node) {
+            if (!*node)
                 *node = tree_->findFakeNodeByTitle(first, relative);
-            }
-            if (!*node) {
+            if (!*node)
                 *node = tree_->findUnambiguousTarget(first, targetAtom, relative);
-            }
         }
 
         if (*node) {
-            if (!(*node)->url().isEmpty()) {
+            if (!(*node)->url().isEmpty())
                 return (*node)->url();
-            }
-            else {
+            else
                 path.removeFirst();
-            }
         }
-        else {
+        else
             *node = relative;
-        }
 
         if (*node && (*node)->status() == Node::Obsolete) {
             if (relative && (relative->parent() != *node) &&
@@ -5747,7 +5738,6 @@ DitaXmlGenerator::generateInnerNode(InnerNode* node)
       Obtain a code marker for the source file.
      */
     CodeMarker *marker = CodeMarker::markerForFileName(node->location().filePath());
-
     if (node->parent() != 0) {
         /*
           Skip name collision nodes here and process them
@@ -5908,7 +5898,6 @@ Node* DitaXmlGenerator::collectNodesByTypeAndSubtype(const InnerNode* parent)
                     nodeSubtypeMaps[Node::QmlModule]->insert(child->title(),child);
                 break;
             case Node::Collision:
-                qDebug() << "FAKE NODE: Collision";
                 if (!isDuplicate(nodeSubtypeMaps[Node::Collision],child->title(),child))
                     nodeSubtypeMaps[Node::Collision]->insert(child->title(),child);
                 break;

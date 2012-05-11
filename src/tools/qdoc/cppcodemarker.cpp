@@ -86,6 +86,7 @@ bool CppCodeMarker::recognizeExtension(const QString& extension)
     QByteArray ext = extension.toLatin1();
     return ext == "c" ||
             ext == "c++" ||
+            ext == "qdoc" ||
             ext == "cc" ||
             ext == "cpp" ||
             ext == "cxx" ||

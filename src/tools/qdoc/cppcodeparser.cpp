@@ -2538,11 +2538,12 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
         exampleFiles += Config::getFilesHere(fullPath, "*.qrc *.pro *.qmlproject qmldir");
     }
 
-    foreach (const QString &exampleFile, exampleFiles)
-        (void) new FakeNode(fake,
-                            exampleFile.mid(sizeOfBoringPartOfName),
-                            Node::File,
-                            Node::NoPageType);
+    foreach (const QString &exampleFile, exampleFiles) {
+        FakeNode* fn = new FakeNode(fake,
+                                    exampleFile.mid(sizeOfBoringPartOfName),
+                                    Node::File,
+                                    Node::NoPageType);
+    }
     foreach (const QString &imageFile, imageFiles) {
         new FakeNode(fake,
                      imageFile.mid(sizeOfBoringPartOfName),

@@ -682,7 +682,7 @@ QList<Section> CodeMarker::qmlSections(const QmlClassNode* ,
     return QList<Section>();
 }
 
-const Node* CodeMarker::resolveTarget(const QString& ,
+const Node* CodeMarker::resolveTarget(const QString& target,
                                       const Tree* ,
                                       const Node* ,
                                       const Node* )
