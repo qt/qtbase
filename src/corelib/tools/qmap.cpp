@@ -753,8 +753,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
     Returns the first key with value \a value, or \a defaultKey if
     the map contains no item with value \a value. If no \a defaultKey
-    is provided the function returns a \link {default-constructed value}
-    default-constructed key \endlink.
+    is provided the function returns a
+    \l{default-constructed value}{default-constructed key}.
 
     This function can be slow (\l{linear time}), because QMap's
     internal data structure is optimized for fast lookup by key, not
@@ -1491,7 +1491,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     This function requires the key and value types to implement \c
     operator<<().
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 
 /*! \fn QDataStream &operator>>(QDataStream &in, QMap<Key, T> &map)
@@ -1502,7 +1502,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     This function requires the key and value types to implement \c
     operator>>().
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 
 /*! \class QMultiMap

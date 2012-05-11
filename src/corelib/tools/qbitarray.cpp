@@ -55,11 +55,10 @@ QT_BEGIN_NAMESPACE
     \reentrant
 
     A QBitArray is an array that gives access to individual bits and
-    provides operators (\link operator&() AND\endlink, \link
-    operator|() OR\endlink, \link operator^() XOR\endlink, and \link
-    operator~() NOT\endlink) that work on entire arrays of bits. It
-    uses \l{implicit sharing} (copy-on-write) to reduce memory usage
-    and to avoid the needless copying of data.
+    provides operators (\l{operator&()}{AND}, \l{operator|()}{OR},
+    \l{operator^()}{XOR}, and \l{operator~()}{NOT}) that work on
+    entire arrays of bits. It uses \l{implicit sharing} (copy-on-write)
+    to reduce memory usage and to avoid the needless copying of data.
 
     The following code constructs a QBitArray containing 200 bits
     initialized to false (0):
@@ -83,9 +82,9 @@ QT_BEGIN_NAMESPACE
 
     \snippet code/src_corelib_tools_qbitarray.cpp 2
 
-    QBitArray supports \c{&} (\link operator&() AND\endlink), \c{|}
-    (\link operator|() OR\endlink), \c{^} (\link operator^()
-    XOR\endlink), \c{~} (\link operator~() NOT\endlink), as well as
+    QBitArray supports \c{&} (\l{operator&()}{AND}), \c{|}
+    (\l{operator|()}{OR}), \c{^} (\l{operator^()}{XOR}),
+    \c{~} (\l{operator~()}{NOT}), as well as
     \c{&=}, \c{|=}, and \c{^=}. These operators work in the same way
     as the built-in C++ bitwise operators of the same name. For
     example:

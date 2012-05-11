@@ -659,8 +659,7 @@
 
     \section1 Threads and Rich Text Processing
 
-    The QTextDocument, QTextCursor, and \link richtext.html all
-    related classes\endlink are reentrant.
+    The QTextDocument, QTextCursor, and \l{richtext.html}{all related classes} are reentrant.
 
     Note that a QTextDocument instance created in the GUI thread may
     contain QPixmap image resources. Use QTextDocument::clone() to

@@ -300,7 +300,7 @@ QT_END_INCLUDE_NAMESPACE
     This static function calls a slot after a given time interval.
 
     It is very convenient to use this function because you do not need
-    to bother with a \link QObject::timerEvent() timerEvent\endlink or
+    to bother with a \l{QObject::timerEvent()}{timerEvent} or
     create a local QTimer object.
 
     Example:
@@ -328,7 +328,7 @@ void QTimer::singleShot(int msec, QObject *receiver, const char *member)
     This static function calls a slot after a given time interval.
 
     It is very convenient to use this function because you do not need
-    to bother with a \link QObject::timerEvent() timerEvent\endlink or
+    to bother with a \l{QObject::timerEvent()}{timerEvent} or
     create a local QTimer object.
 
     The \a receiver is the receiving object and the \a member is the slot. The

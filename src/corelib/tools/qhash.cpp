@@ -1186,8 +1186,7 @@ void QHashData::checkSanity()
     Returns the first key mapped to \a value.
 
     If the hash contains no item with the \a value, the function
-    returns a \link {default-constructed value} default-constructed
-    key \endlink.
+    returns a \l{default-constructed value}{default-constructed key}.
 
     This function can be slow (\l{linear time}), because QHash's
     internal data structure is optimized for fast lookup by key, not

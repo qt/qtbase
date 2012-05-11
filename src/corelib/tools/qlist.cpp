@@ -1718,7 +1718,7 @@ void **QListData::erase(void **xi)
     This function requires the value type to implement \c
     operator<<().
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 
 /*! \fn QDataStream &operator>>(QDataStream &in, QList<T> &list)
@@ -1729,7 +1729,7 @@ void **QListData::erase(void **xi)
     This function requires the value type to implement \c
     operator>>().
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 
 /*! \fn QList<T> QList<T>::fromVector(const QVector<T> &vector)

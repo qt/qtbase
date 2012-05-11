@@ -69,7 +69,7 @@
 
     By default, resources are accessible in the application under the
     same file name as they have in the source tree, with a \c :/ prefix,
-    or by a \link QUrl URL\endlink with a \c qrc scheme.
+    or by a \l{QUrl}{URL} with a \c qrc scheme.
 
     For example, the file path \c :/images/cut.png or the URL
     \c qrc:///images/cut.png would give access to the

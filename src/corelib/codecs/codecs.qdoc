@@ -346,9 +346,9 @@
 
     The environment variable \c UNICODEMAP_JP can be used to
     fine-tune the JIS, Shift-JIS, and EUC-JP codecs. The mapping
-    names are as for the Japanese XML working group's \link
-    http://www.y-adagio.com/public/standards/tr_xml_jpf/toc.htm XML
-    Japanese Profile\endlink, because it names and explains all the
+    names are as for the Japanese XML working group's
+    \l{XML Japanese Profile},
+    because it names and explains all the
     widely used mappings. Here are brief descriptions, written by
     Serika Kurusugawa:
 
@@ -486,11 +486,10 @@
     TSCII, formally the Tamil Standard Code Information Interchange
     specification, is a commonly used charset for Tamils. The
     official page for the standard is at
-    \link http://www.tamil.net/tscii/ http://www.tamil.net/tscii/\endlink
+    \l{http://www.tamil.net/tscii/}
 
     This codec uses the mapping table found at
-    \link http://www.geocities.com/Athens/5180/tsciiset.html
-    http://www.geocities.com/Athens/5180/tsciiset.html\endlink.
+    \l{http://www.geocities.com/Athens/5180/tsciiset.html}.
     Tamil uses composed Unicode which might cause some
     problems if you are using Unicode fonts instead of TSCII fonts.
 

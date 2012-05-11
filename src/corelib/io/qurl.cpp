@@ -2875,7 +2875,7 @@ bool QUrl::isParentOf(const QUrl &childUrl) const
     Writes url \a url to the stream \a out and returns a reference
     to the stream.
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 QDataStream &operator<<(QDataStream &out, const QUrl &url)
 {
@@ -2891,7 +2891,7 @@ QDataStream &operator<<(QDataStream &out, const QUrl &url)
     Reads a url into \a url from the stream \a in and returns a
     reference to the stream.
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 QDataStream &operator>>(QDataStream &in, QUrl &url)
 {

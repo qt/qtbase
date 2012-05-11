@@ -34,9 +34,9 @@
 
     \section1 Overview
 
-    \link QObject QObjects\endlink organize themselves in object trees.
+    \l{QObject}{QObjects} organize themselves in object trees.
     When you create a QObject with another object as parent, it's added to
-    the parent's \link QObject::children() children() \endlink list, and
+    the parent's \l{QObject::children()}{children()} list, and
     is deleted when the parent is. It turns out that this approach fits
     the needs of GUI objects very well. For example, a \l QShortcut
     (keyboard shortcut) is a child of the relevant window, so when the

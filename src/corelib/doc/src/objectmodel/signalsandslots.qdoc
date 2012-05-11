@@ -272,9 +272,9 @@
     and slot members, as well as pointers to these functions.
 
     The meta-object contains additional information such as the
-    object's \link QObject::className() class name\endlink. You can
-    also check if an object \link QObject::inherits()
-    inherits\endlink a specific class, for example:
+    object's \l{QObject::className()}{class name}. You can
+    also check if an object \l{QObject::inherits()}{inherits}
+    a specific class, for example:
 
     \snippet signalsandslots/signalsandslots.cpp 5
     \snippet signalsandslots/signalsandslots.cpp 6

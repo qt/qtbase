@@ -977,8 +977,8 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
 
 
 /*!
-    Returns the QTextCodec which matches the \link
-    QTextCodec::mibEnum() MIBenum\endlink \a mib.
+    Returns the QTextCodec which matches the
+    \l{QTextCodec::mibEnum()}{MIBenum} \a mib.
 */
 QTextCodec* QTextCodec::codecForMib(int mib)
 {

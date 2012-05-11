@@ -7459,9 +7459,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Many of QString's member functions are overloaded to accept
     \c{const char *} instead of QString. This includes the copy
     constructor, the assignment operator, the comparison operators,
-    and various other functions such as \link QString::insert()
-    insert() \endlink, \link QString::replace() replace()\endlink,
-    and \link QString::indexOf() indexOf()\endlink. These functions
+    and various other functions such as \l{QString::insert()}{insert()}, \l{QString::replace()}{replace()},
+    and \l{QString::indexOf()}{indexOf()}. These functions
     are usually optimized to avoid constructing a QString object for
     the \c{const char *} data. For example, assuming \c str is a
     QString,

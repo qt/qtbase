@@ -654,11 +654,10 @@
 
     Color/Mono preference (ignored for QBitmap):
 
-    \value AutoColor (default) - If the image has \link
-           QImage::depth() depth\endlink 1 and contains only
+    \value AutoColor (default) - If the image has \l{QImage::depth()}{depth} 1 and contains only
            black and white pixels, the pixmap becomes monochrome.
     \value ColorOnly The pixmap is dithered/converted to the
-           \link QPixmap::defaultDepth() native display depth\endlink.
+           \l{QPixmap::defaultDepth()}{native display depth}.
     \value MonoOnly The pixmap becomes monochrome. If necessary,
            it is dithered using the chosen dithering algorithm.
 

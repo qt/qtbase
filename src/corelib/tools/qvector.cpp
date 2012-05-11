@@ -1011,7 +1011,7 @@ int QVectorData::grow(int sizeOfHeader, int size, int sizeOfT)
 
     This function requires the value type to implement \c operator<<().
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 
 /*! \fn QDataStream &operator>>(QDataStream &in, QVector<T> &vector)
@@ -1021,7 +1021,7 @@ int QVectorData::grow(int sizeOfHeader, int size, int sizeOfT)
 
     This function requires the value type to implement \c operator>>().
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 
 QT_END_NAMESPACE

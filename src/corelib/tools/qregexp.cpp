@@ -236,7 +236,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     spellings than we want: 'Eric', 'Erik', 'Eiric' and 'Eirik'.
 
     Some of the examples discussed above are implemented in the
-    \link #code-examples code examples \endlink section.
+    \l{#code-examples}{code examples} section.
 
     \target characters-and-abbreviations-for-sets-of-characters
     \section1 Characters and Abbreviations for Sets of Characters
@@ -453,8 +453,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
          writing \c{\\^}. For example, \b{^#include} will only
          match strings which \e begin with the characters '#include'.
          (When the caret is the first character of a character set it
-         has a special meaning, see \link #sets-of-characters Sets of
-         Characters \endlink.)
+         has a special meaning, see \l{#sets-of-characters}{Sets of Characters}.)
 
     \row \li \b{$}
          \li The dollar signifies the end of the string. For example
@@ -538,9 +537,8 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     \section1 Notes for Perl Users
 
     Most of the character class abbreviations supported by Perl are
-    supported by QRegExp, see \link
-    #characters-and-abbreviations-for-sets-of-characters characters
-    and abbreviations for sets of characters \endlink.
+    supported by QRegExp, see \l{#characters-and-abbreviations-for-sets-of-characters}
+    {characters and abbreviations for sets of characters}.
 
     In QRegExp, apart from within character classes, \c{^} always
     signifies the start of the string, so carets must always be
