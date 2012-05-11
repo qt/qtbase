@@ -1,3 +1,4 @@
+include(../../../doc/global/qt-html-templates-offline.qdocconf)
 include(../../../doc/global/qt-cpp-ignore.qdocconf)
 
 project                 = QtTest
