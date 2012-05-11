@@ -87,10 +87,10 @@ extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
     A framebuffer object has several characteristics:
     \list
-    \li \link setSamples() Number of samples per pixels.\endlink
-    \li \link setAttachment() Depth and/or stencil attachments.\endlink
-    \li \link setTextureTarget() Texture target.\endlink
-    \li \link setInternalTextureFormat() Internal texture format.\endlink
+    \li \l{setSamples()}{Number of samples per pixels.}
+    \li \l{setAttachment()}{Depth and/or stencil attachments.}
+    \li \l{setTextureTarget()}{Texture target.}
+    \li \l{setInternalTextureFormat()}{Internal texture format.}
     \endlist
 
     Note that the desired attachments or number of samples per pixels might not

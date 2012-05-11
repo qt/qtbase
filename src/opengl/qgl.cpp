@@ -169,17 +169,17 @@ QGLSignalProxy *QGLSignalProxy::instance()
 
     A display format has several characteristics:
     \list
-    \li \link setDoubleBuffer() Double or single buffering.\endlink
-    \li \link setDepth() Depth buffer.\endlink
-    \li \link setRgba() RGBA or color index mode.\endlink
-    \li \link setAlpha() Alpha channel.\endlink
-    \li \link setAccum() Accumulation buffer.\endlink
-    \li \link setStencil() Stencil buffer.\endlink
-    \li \link setStereo() Stereo buffers.\endlink
-    \li \link setDirectRendering() Direct rendering.\endlink
-    \li \link setOverlay() Presence of an overlay.\endlink
-    \li \link setPlane() Plane of an overlay.\endlink
-    \li \link setSampleBuffers() Multisample buffers.\endlink
+    \li \l{setDoubleBuffer()}{Double or single buffering.}
+    \li \l{setDepth()}{Depth buffer.}
+    \li \l{setRgba()}{RGBA or color index mode.}
+    \li \l{setAlpha()}{Alpha channel.}
+    \li \l{setAccum()}{Accumulation buffer.}
+    \li \l{setStencil()}{Stencil buffer.}
+    \li \l{setStereo()}{Stereo buffers.}
+    \li \l{setDirectRendering()}{Direct rendering.}
+    \li \l{setOverlay()}{Presence of an overlay.}
+    \li \l{setPlane()}{Plane of an overlay.}
+    \li \l{setSampleBuffers()}{Multisample buffers.}
     \endlist
 
     You can also specify preferred bit depths for the color buffer,
@@ -275,17 +275,17 @@ static inline GLint qgluProject(GLdouble objx, GLdouble objy, GLdouble objz,
 /*!
     Constructs a QGLFormat object with the following default settings:
     \list
-    \li \link setDoubleBuffer() Double buffer:\endlink Enabled.
-    \li \link setDepth() Depth buffer:\endlink Enabled.
-    \li \link setRgba() RGBA:\endlink Enabled (i.e., color index disabled).
-    \li \link setAlpha() Alpha channel:\endlink Disabled.
-    \li \link setAccum() Accumulator buffer:\endlink Disabled.
-    \li \link setStencil() Stencil buffer:\endlink Enabled.
-    \li \link setStereo() Stereo:\endlink Disabled.
-    \li \link setDirectRendering() Direct rendering:\endlink Enabled.
-    \li \link setOverlay() Overlay:\endlink Disabled.
-    \li \link setPlane() Plane:\endlink 0 (i.e., normal plane).
-    \li \link setSampleBuffers() Multisample buffers:\endlink Disabled.
+    \li \l{setDoubleBuffer()}{Double buffer:} Enabled.
+    \li \l{setDepth()}{Depth buffer:} Enabled.
+    \li \l{setRgba()}{RGBA:} Enabled (i.e., color index disabled).
+    \li \l{setAlpha()}{Alpha channel:} Disabled.
+    \li \l{setAccum()}{Accumulator buffer:} Disabled.
+    \li \l{setStencil()}{Stencil buffer:} Enabled.
+    \li \l{setStereo()}{Stereo:} Disabled.
+    \li \l{setDirectRendering()}{Direct rendering:} Enabled.
+    \li \l{setOverlay()}{Overlay:} Disabled.
+    \li \l{setPlane()}{Plane:} 0 (i.e., normal plane).
+    \li \l{setSampleBuffers()}{Multisample buffers:} Disabled.
     \endlist
 */
 
@@ -741,7 +741,7 @@ int QGLFormat::plane() const
     Note that in contrast to other format specifications, the plane
     specifications will be matched exactly. This means that if you
     specify a plane that the underlying OpenGL system cannot provide,
-    an \link QGLWidget::isValid() invalid\endlink QGLWidget will be
+    an \l{QGLWidget::isValid()}{invalid} QGLWidget will be
     created.
 
     \sa plane()
@@ -1339,17 +1339,17 @@ void QGLFormat::setDefaultFormat(const QGLFormat &f)
 
     The default overlay format is:
     \list
-    \li \link setDoubleBuffer() Double buffer:\endlink Disabled.
-    \li \link setDepth() Depth buffer:\endlink Disabled.
-    \li \link setRgba() RGBA:\endlink Disabled (i.e., color index enabled).
-    \li \link setAlpha() Alpha channel:\endlink Disabled.
-    \li \link setAccum() Accumulator buffer:\endlink Disabled.
-    \li \link setStencil() Stencil buffer:\endlink Disabled.
-    \li \link setStereo() Stereo:\endlink Disabled.
-    \li \link setDirectRendering() Direct rendering:\endlink Enabled.
-    \li \link setOverlay() Overlay:\endlink Disabled.
-    \li \link setSampleBuffers() Multisample buffers:\endlink Disabled.
-    \li \link setPlane() Plane:\endlink 1 (i.e., first overlay plane).
+    \li \l{setDoubleBuffer()}{Double buffer:} Disabled.
+    \li \l{setDepth()}{Depth buffer:} Disabled.
+    \li \l{setRgba()}{RGBA:} Disabled (i.e., color index enabled).
+    \li \l{setAlpha()}{Alpha channel:} Disabled.
+    \li \l{setAccum()}{Accumulator buffer:} Disabled.
+    \li \l{setStencil()}{Stencil buffer:} Disabled.
+    \li \l{setStereo()}{Stereo:} Disabled.
+    \li \l{setDirectRendering()}{Direct rendering:} Enabled.
+    \li \l{setOverlay()}{Overlay:} Disabled.
+    \li \l{setSampleBuffers()}{Multisample buffers:} Disabled.
+    \li \l{setPlane()}{Plane:} 1 (i.e., first overlay plane).
     \endlist
 
     \sa setDefaultFormat()
@@ -1785,7 +1785,7 @@ struct DDSFormat {
     by format(); the options you asked for are returned by
     requestedFormat(). Note that after a QGLContext object has been
     constructed, the actual OpenGL context must be created by
-    explicitly calling the \link create() create()\endlink
+    explicitly calling the \l{create()}
     function. The makeCurrent() function makes this context the
     current rendering context. You can make \e no context current
     using doneCurrent(). The reset() function will reset the context
@@ -2802,8 +2802,7 @@ int QGLContext::textureCacheLimit()
 */
 
 /*!
-    Sets a \a format for this context. The context is \link reset()
-    reset\endlink.
+    Sets a \a format for this context. The context is \l{reset()}{reset}.
 
     Call create() to create a new GL context that tries to match the
     new format.
@@ -2942,10 +2941,9 @@ bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *contex
     \fn QColor QGLContext::overlayTransparentColor() const
 
     If this context is a valid context in an overlay plane, returns
-    the plane's transparent color. Otherwise returns an \link
-    QColor::isValid() invalid \endlink color.
+    the plane's transparent color. Otherwise returns an \l{QColor::isValid()}{invalid} color.
 
-    The returned color's \link QColor::pixel() pixel \endlink value is
+    The returned color's \l{QColor::pixel()}{pixel} value is
     the index of the transparent color in the colormap of the overlay
     plane. (Naturally, the color's RGB values are meaningless.)
 
@@ -3098,7 +3096,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 /*! \fn int QGLContext::choosePixelFormat(void* dummyPfd, HDC pdc)
 
     \b{Win32 only:} This virtual function chooses a pixel format
-    that matches the OpenGL \link setFormat() format\endlink.
+    that matches the OpenGL \l{setFormat()}{format}.
     Reimplement this function in a subclass if you need a custom
     context.
 
@@ -3126,7 +3124,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
   \internal
 
   \b{X11 only:} This virtual function chooses a visual that matches
-  the OpenGL \link format() format\endlink. Reimplement this function
+  the OpenGL \l{format()}{format}. Reimplement this function
   in a subclass if you need a custom visual.
 
   \sa chooseContext()
@@ -3229,7 +3227,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     \snippet code/src_opengl_qgl.cpp 8
 
     If you need to trigger a repaint from places other than paintGL()
-    (a typical example is when using \link QTimer timers\endlink to
+    (a typical example is when using \l{QTimer}{timers} to
     animate scenes), you should call the widget's updateGL() function.
 
     Your widget's OpenGL rendering context is made current when
@@ -3238,9 +3236,9 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     your widget's constructor or in your own paint functions), you
     must call makeCurrent() first.
 
-    QGLWidget provides functions for requesting a new display \link
-    QGLFormat format\endlink and you can also create widgets with
-    customized rendering \link QGLContext contexts\endlink.
+    QGLWidget provides functions for requesting a new display
+    \l{QGLFormat}{format} and you can also create widgets with
+    customized rendering \l{QGLContext}{contexts}.
 
     You can also share OpenGL display lists between QGLWidget objects (see
     the documentation of the QGLWidget constructors for details).
@@ -3264,8 +3262,8 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     The QGLWidget creates a GL overlay context in addition to the
     normal context if overlays are supported by the underlying system.
 
-    If you want to use overlays, you specify it in the \link QGLFormat
-    format\endlink. (Note: Overlay must be requested in the format
+    If you want to use overlays, you specify it in the
+    \l{QGLFormat}{format}. (Note: Overlay must be requested in the format
     passed to the QGLWidget constructor.) Your GL widget should also
     implement some or all of these virtual methods:
 
@@ -3403,9 +3401,9 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 /*!
     Constructs an OpenGL widget with a \a parent widget.
 
-    The \link QGLFormat::defaultFormat() default format\endlink is
-    used. The widget will be \link isValid() invalid\endlink if the
-    system has no \link QGLFormat::hasOpenGL() OpenGL support\endlink.
+    The \l{QGLFormat::defaultFormat()}{default format} is
+    used. The widget will be \l{isValid()}{invalid} if the
+    system has no \l{QGLFormat::hasOpenGL()}{OpenGL support}.
 
     The \a parent and widget flag, \a f, arguments are passed
     to the QWidget constructor.
@@ -3451,14 +3449,15 @@ QGLWidget::QGLWidget(QGLWidgetPrivate &dd, const QGLFormat &format, QWidget *par
 /*!
     Constructs an OpenGL widget with parent \a parent.
 
-    The \a format argument specifies the desired \link QGLFormat
-    rendering options \endlink. If the underlying OpenGL/Window system
+    The \a format argument specifies the desired
+    \l{QGLFormat}{rendering options}.
+    If the underlying OpenGL/Window system
     cannot satisfy all the features requested in \a format, the
     nearest subset of features will be used. After creation, the
     format() method will return the actual format obtained.
 
-    The widget will be \link isValid() invalid\endlink if the system
-    has no \link QGLFormat::hasOpenGL() OpenGL support\endlink.
+    The widget will be \l{isValid()}{invalid} if the system
+    has no \l{QGLFormat::hasOpenGL()}{OpenGL support}.
 
     The \a parent and widget flag, \a f, arguments are passed
     to the QWidget constructor.
@@ -3494,8 +3493,8 @@ QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent, const QGLWidget* 
     you wish to be bound to this widget. This allows you to pass in
     your own QGLContext sub-classes.
 
-    The widget will be \link isValid() invalid\endlink if the system
-    has no \link QGLFormat::hasOpenGL() OpenGL support\endlink.
+    The widget will be \l{isValid()}{invalid} if the system
+    has no \l{QGLFormat::hasOpenGL()}{OpenGL support}.
 
     The \a parent and widget flag, \a f, arguments are passed
     to the QWidget constructor.
@@ -3587,7 +3586,7 @@ QGLWidget::~QGLWidget()
 
     Returns true if the widget has a valid GL rendering context;
     otherwise returns false. A widget will be invalid if the system
-    has no \link QGLFormat::hasOpenGL() OpenGL support\endlink.
+    has no \l{QGLFormat::hasOpenGL()}{OpenGL support}.
 */
 
 bool QGLWidget::isValid() const
