@@ -60,12 +60,14 @@
 
 #include "QtWidgets/qmenu.h"
 #include "QtGui/qpixmap.h"
+#include <qpa/qplatformsystemtrayicon.h>
 #include "QtCore/qstring.h"
 #include "QtCore/qpointer.h"
 
 QT_BEGIN_NAMESPACE
 
 class QSystemTrayIconSys;
+class QPlatformSystemTrayIcon;
 class QToolButton;
 class QLabel;
 
@@ -74,7 +76,8 @@ class QSystemTrayIconPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QSystemTrayIcon)
 
 public:
-    QSystemTrayIconPrivate() : sys(0), visible(false) { }
+    QSystemTrayIconPrivate();
+    ~QSystemTrayIconPrivate();
 
     void install_sys();
     void remove_sys();
@@ -87,10 +90,13 @@ public:
     static bool isSystemTrayAvailable_sys();
     static bool supportsMessages_sys();
 
+    void emitActivated(QPlatformSystemTrayIcon::ActivationReason reason);
+
     QPointer<QMenu> menu;
     QIcon icon;
     QString toolTip;
     QSystemTrayIconSys *sys;
+    QPlatformSystemTrayIcon *qpa_sys;
     bool visible;
 };
 

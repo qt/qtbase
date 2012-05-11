@@ -36,11 +36,6 @@ win32:!wince* {
     SOURCES += util/qsystemtrayicon_qpa.cpp
 }
 
-# TODO
-false:!x11:mac {
-		OBJECTIVE_SOURCES += util/qsystemtrayicon_mac.mm
-}
-
 macx {
     OBJECTIVE_SOURCES += util/qscroller_mac.mm
 }

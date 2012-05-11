@@ -192,4 +192,15 @@ QPlatformMenuBar *QPlatformTheme::createPlatformMenuBar() const
     return 0;
 }
 
+#ifndef QT_NO_SYSTEMTRAYICON
+/*!
+   Factory function for QSystemTrayIcon. This function will return 0 if the platform
+   integration does not support creating any system tray icon.
+*/
+QPlatformSystemTrayIcon *QPlatformTheme::createPlatformSystemTrayIcon() const
+{
+    return 0;
+}
+#endif
+
 QT_END_NAMESPACE

@@ -391,6 +391,12 @@ void QSystemTrayIcon::showMessage(const QString& title, const QString& msg,
         d->showMessage_sys(title, msg, icon, msecs);
 }
 
+void QSystemTrayIconPrivate::emitActivated(QPlatformSystemTrayIcon::ActivationReason reason)
+{
+    Q_Q(QSystemTrayIcon);
+    emit q->activated(static_cast<QSystemTrayIcon::ActivationReason>(reason));
+}
+
 //////////////////////////////////////////////////////////////////////
 static QBalloonTip *theSolitaryBalloonTip = 0;
 
@@ -665,11 +671,8 @@ void QBalloonTip::timerEvent(QTimerEvent *e)
     QWidget::timerEvent(e);
 }
 
-void qtsystray_sendActivated(QSystemTrayIcon *i, int r)
-{
-    emit i->activated((QSystemTrayIcon::ActivationReason)r);
-}
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_SYSTEMTRAYICON
+
+#include "moc_qsystemtrayicon.cpp"

@@ -120,14 +120,14 @@ void tst_QSystemTrayIcon::getSetCheck()
 void tst_QSystemTrayIcon::supportsMessages()
 {
     // ### fixme: Check platforms.
-#if defined(Q_WS_QWS)
+#if defined(Q_OS_WINCE)
     QCOMPARE(QSystemTrayIcon::supportsMessages(), false);
-#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    QCOMPARE(QSystemTrayIcon::supportsMessages(), true);
 #else
     const QString platform = QGuiApplication::platformName();
-    if (platform.compare(QStringLiteral("xcb"), Qt::CaseInsensitive)) {
-        QEXPECT_FAIL("", "QTBUG-20978 QSystemTrayIcon is unimplemented for qpa", Abort);
+    if (platform.compare(QStringLiteral("xcb"), Qt::CaseInsensitive)
+        && platform.compare(QStringLiteral("windows"), Qt::CaseInsensitive)
+        && platform.compare(QStringLiteral("cocoa"), Qt::CaseInsensitive)) {
+            QEXPECT_FAIL("", "QTBUG-20978 QSystemTrayIcon is unimplemented for this platform", Abort);
     }
     QCOMPARE(QSystemTrayIcon::supportsMessages(), true);
 #endif

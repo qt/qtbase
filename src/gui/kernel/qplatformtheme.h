@@ -63,6 +63,7 @@ class QPlatformMenuItem;
 class QPlatformMenu;
 class QPlatformMenuBar;
 class QPlatformDialogHelper;
+class QPlatformSystemTrayIcon;
 class QVariant;
 class QPalette;
 class QFont;
@@ -169,6 +170,10 @@ public:
 
     virtual bool usePlatformNativeDialog(DialogType type) const;
     virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
+
+#ifndef QT_NO_SYSTEMTRAYICON
+    virtual QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const;
+#endif
 
     virtual const QPalette *palette(Palette type = SystemPalette) const;
 

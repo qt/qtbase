@@ -47,6 +47,7 @@
 #include "qcocoafiledialoghelper.h"
 #include "qcocoafontdialoghelper.h"
 #include "qcocoasystemsettings.h"
+#include "qcocoasystemtrayicon.h"
 #include "qcocoamenuitem.h"
 #include "qcocoamenu.h"
 #include "qcocoamenubar.h"
@@ -102,6 +103,13 @@ QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(DialogType dialo
         return 0;
     }
 }
+
+#ifndef QT_NO_SYSTEMTRAYICON
+QPlatformSystemTrayIcon *QCocoaTheme::createPlatformSystemTrayIcon() const
+{
+    return new QCocoaSystemTrayIcon;
+}
+#endif
 
 const QPalette *QCocoaTheme::palette(Palette type) const
 {

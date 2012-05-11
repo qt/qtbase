@@ -201,6 +201,16 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
     return 0;
 }
 
+QSystemTrayIconPrivate::QSystemTrayIconPrivate()
+    : sys(0),
+      visible(false)
+{
+}
+
+QSystemTrayIconPrivate::~QSystemTrayIconPrivate()
+{
+}
+
 void QSystemTrayIconPrivate::install_sys()
 {
     Q_Q(QSystemTrayIcon);

@@ -41,43 +41,90 @@
 
 #include "qsystemtrayicon_p.h"
 
+#include <QtGui/qpa/qplatformsystemtrayicon.h>
+#include <qpa/qplatformtheme.h>
+#include <private/qguiapplication_p.h>
+
+#include <QApplication>
+#include <QStyle>
+
 #ifndef QT_NO_SYSTEMTRAYICON
 
 QT_BEGIN_NAMESPACE
 
+QSystemTrayIconPrivate::QSystemTrayIconPrivate()
+    : qpa_sys(QGuiApplicationPrivate::platformTheme()->createPlatformSystemTrayIcon())
+    , visible(false)
+{
+}
+
+QSystemTrayIconPrivate::~QSystemTrayIconPrivate()
+{
+    delete qpa_sys;
+}
+
 void QSystemTrayIconPrivate::install_sys()
 {
+    if (qpa_sys) {
+        qpa_sys->init();
+        QObject::connect(qpa_sys, SIGNAL(activated(QPlatformSystemTrayIcon::ActivationReason)),
+                         q_func(), SLOT(emitActivated(QPlatformSystemTrayIcon::ActivationReason)));
+        QObject::connect(qpa_sys, SIGNAL(messageClicked()),
+                         q_func(), SIGNAL(messageClicked()));
+        updateMenu_sys();
+        updateIcon_sys();
+        updateToolTip_sys();
+    }
 }
 
 void QSystemTrayIconPrivate::remove_sys()
 {
+    if (qpa_sys)
+        qpa_sys->cleanup();
 }
 
 QRect QSystemTrayIconPrivate::geometry_sys() const
 {
-    return QRect();
+    if (qpa_sys)
+        return qpa_sys->geometry();
+    else
+        return QRect();
 }
 
 void QSystemTrayIconPrivate::updateIcon_sys()
 {
+    if (qpa_sys)
+        qpa_sys->updateIcon(icon);
 }
 
 void QSystemTrayIconPrivate::updateMenu_sys()
 {
+    if (qpa_sys && menu)
+        qpa_sys->updateMenu(menu->platformMenu());
 }
 
 void QSystemTrayIconPrivate::updateToolTip_sys()
 {
+    if (qpa_sys)
+        qpa_sys->updateToolTip(toolTip);
 }
 
 bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
 {
-    return false;
+    QScopedPointer<QPlatformSystemTrayIcon> sys(QGuiApplicationPrivate::platformTheme()->createPlatformSystemTrayIcon());
+    if (sys)
+        return sys->isSystemTrayAvailable();
+    else
+        return false;
 }
 
 bool QSystemTrayIconPrivate::supportsMessages_sys()
 {
-    return false;
+    QScopedPointer<QPlatformSystemTrayIcon> sys(QGuiApplicationPrivate::platformTheme()->createPlatformSystemTrayIcon());
+    if (sys)
+        return sys->supportsMessages();
+    else
+        return false;
 }
 
 void QSystemTrayIconPrivate::showMessage_sys(const QString &message,
@@ -85,10 +132,25 @@ void QSystemTrayIconPrivate::showMessage_sys(const QString &message,
                                              QSystemTrayIcon::MessageIcon icon,
                                              int msecs)
 {
-    Q_UNUSED(message);
-    Q_UNUSED(title);
-    Q_UNUSED(icon);
-    Q_UNUSED(msecs);
+    if (!qpa_sys)
+        return;
+
+    QIcon notificationIcon;
+    switch (icon) {
+    case QSystemTrayIcon::Information:
+        notificationIcon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation);
+        break;
+    case QSystemTrayIcon::Warning:
+        notificationIcon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning);
+        break;
+    case QSystemTrayIcon::Critical:
+        notificationIcon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxCritical);
+        break;
+    default:
+        break;
+    }
+    qpa_sys->showMessage(message, title, notificationIcon,
+                     static_cast<QPlatformSystemTrayIcon::MessageIcon>(icon), msecs);
 }
 
 QT_END_NAMESPACE

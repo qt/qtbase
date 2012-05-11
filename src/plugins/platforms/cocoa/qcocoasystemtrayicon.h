@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Klaralvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Christoph Schleifenbaum <christoph.schleifenbaum@kdab.com>
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,45 +40,41 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMTHEME_COCOA_H
-#define QPLATFORMTHEME_COCOA_H
+#ifndef QCOCOASYSTEMTRAYICON_P_H
+#define QCOCOASYSTEMTRAYICON_P_H
 
-#include <QtCore/QHash>
-#include <qpa/qplatformtheme.h>
+#ifndef QT_NO_SYSTEMTRAYICON
+
+#include "QtCore/qstring.h"
+#include "QtGui/qpa/qplatformsystemtrayicon.h"
 
 QT_BEGIN_NAMESPACE
 
-class QPalette;
-class QCocoaTheme : public QPlatformTheme
+class QSystemTrayIconSys;
+
+class Q_GUI_EXPORT QCocoaSystemTrayIcon : public QPlatformSystemTrayIcon
 {
 public:
-    QCocoaTheme();
-    ~QCocoaTheme();
+    QCocoaSystemTrayIcon() : m_sys(0) {}
 
-    virtual QPlatformMenuItem* createPlatformMenuItem() const;
-    virtual QPlatformMenu* createPlatformMenu() const;
-    virtual QPlatformMenuBar* createPlatformMenuBar() const;
+    virtual void init();
+    virtual void cleanup();
+    virtual void updateIcon(const QIcon &icon);
+    virtual void updateToolTip(const QString &toolTip);
+    virtual void updateMenu(QPlatformMenu *menu);
+    virtual QRect geometry() const;
+    virtual void showMessage(const QString &msg, const QString &title,
+                             const QIcon& icon, MessageIcon iconType, int secs);
 
-#ifndef QT_NO_SYSTEMTRAYICON
-    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const;
-#endif
-
-    bool usePlatformNativeDialog(DialogType dialogType) const;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const;
-
-    const QPalette *palette(Palette type = SystemPalette) const;
-    const QFont *font(Font type = SystemFont) const;
-
-    QVariant themeHint(ThemeHint hint) const;
-
-    static const char *name;
+    virtual bool isSystemTrayAvailable() const;
+    virtual bool supportsMessages() const;
 
 private:
-    mutable QPalette *m_systemPalette;
-    mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;
-    mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
+    QSystemTrayIconSys *m_sys;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_NO_SYSTEMTRAYICON
+
+#endif // QCOCOASYSTEMTRAYICON_P_H

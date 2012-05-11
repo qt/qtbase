@@ -581,6 +581,84 @@ CGFloat qt_mac_get_scalefactor()
     return [[NSScreen mainScreen] userSpaceScaleFactor];
 }
 
+Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
+{
+    switch (buttonNum) {
+    case 0:
+        return Qt::LeftButton;
+    case 1:
+        return Qt::RightButton;
+    case 2:
+        return Qt::MidButton;
+    case 3:
+        return Qt::XButton1;
+    case 4:
+        return Qt::XButton2;
+    default:
+        return Qt::NoButton;
+    }
+}
+
+bool qt_mac_execute_apple_script(const char *script, long script_len, AEDesc *ret) {
+    OSStatus err;
+    AEDesc scriptTextDesc;
+    ComponentInstance theComponent = 0;
+    OSAID scriptID = kOSANullScript, resultID = kOSANullScript;
+
+    // set up locals to a known state
+    AECreateDesc(typeNull, 0, 0, &scriptTextDesc);
+    scriptID = kOSANullScript;
+    resultID = kOSANullScript;
+
+    // open the scripting component
+    theComponent = OpenDefaultComponent(kOSAComponentType, typeAppleScript);
+    if (!theComponent) {
+        err = paramErr;
+        goto bail;
+    }
+
+    // put the script text into an aedesc
+    err = AECreateDesc(typeUTF8Text, script, script_len, &scriptTextDesc);
+    if (err != noErr)
+        goto bail;
+
+    // compile the script
+    err = OSACompile(theComponent, &scriptTextDesc, kOSAModeNull, &scriptID);
+    if (err != noErr)
+        goto bail;
+
+    // run the script
+    err = OSAExecute(theComponent, scriptID, kOSANullScript, kOSAModeNull, &resultID);
+
+    // collect the results - if any
+    if (ret) {
+        AECreateDesc(typeNull, 0, 0, ret);
+        if (err == errOSAScriptError)
+            OSAScriptError(theComponent, kOSAErrorMessage, typeChar, ret);
+        else if (err == noErr && resultID != kOSANullScript)
+            OSADisplay(theComponent, resultID, typeChar, kOSAModeNull, ret);
+    }
+bail:
+    AEDisposeDesc(&scriptTextDesc);
+    if (scriptID != kOSANullScript)
+        OSADispose(theComponent, scriptID);
+    if (resultID != kOSANullScript)
+        OSADispose(theComponent, resultID);
+    if (theComponent)
+        CloseComponent(theComponent);
+    return err == noErr;
+}
+
+bool qt_mac_execute_apple_script(const char *script, AEDesc *ret)
+{
+    return qt_mac_execute_apple_script(script, qstrlen(script), ret);
+}
+
+bool qt_mac_execute_apple_script(const QString &script, AEDesc *ret)
+{
+    const QByteArray l = script.toUtf8(); return qt_mac_execute_apple_script(l.constData(), l.size(), ret);
+}
+
 QString qt_mac_removeAmpersandEscapes(QString s)
 {
     int i = 0;

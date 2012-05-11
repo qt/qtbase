@@ -1,9 +1,10 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Klaralvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Christoph Schleifenbaum <christoph.schleifenbaum@kdab.com>
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,45 +40,56 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMTHEME_COCOA_H
-#define QPLATFORMTHEME_COCOA_H
+#ifndef QPLATFORMSYSTEMTRAYICON_H
+#define QPLATFORMSYSTEMTRAYICON_H
 
-#include <QtCore/QHash>
-#include <qpa/qplatformtheme.h>
+#ifndef QT_NO_SYSTEMTRAYICON
+
+#include "QtCore/qobject.h"
 
 QT_BEGIN_NAMESPACE
 
-class QPalette;
-class QCocoaTheme : public QPlatformTheme
+class QPlatformMenu;
+class QIcon;
+class QString;
+class QRect;
+
+class Q_GUI_EXPORT QPlatformSystemTrayIcon : public QObject
 {
+    Q_OBJECT
 public:
-    QCocoaTheme();
-    ~QCocoaTheme();
+    enum ActivationReason {
+        Unknown,
+        Context,
+        DoubleClick,
+        Trigger,
+        MiddleClick
+    };
 
-    virtual QPlatformMenuItem* createPlatformMenuItem() const;
-    virtual QPlatformMenu* createPlatformMenu() const;
-    virtual QPlatformMenuBar* createPlatformMenuBar() const;
+    enum MessageIcon { NoIcon, Information, Warning, Critical };
 
-#ifndef QT_NO_SYSTEMTRAYICON
-    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const;
-#endif
+    QPlatformSystemTrayIcon();
+    ~QPlatformSystemTrayIcon();
 
-    bool usePlatformNativeDialog(DialogType dialogType) const;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const;
+    virtual void init() = 0;
+    virtual void cleanup() = 0;
+    virtual void updateIcon(const QIcon &icon) = 0;
+    virtual void updateToolTip(const QString &tooltip) = 0;
+    virtual void updateMenu(QPlatformMenu *menu) = 0;
+    virtual QRect geometry() const = 0;
+    virtual void showMessage(const QString &msg, const QString &title,
+                             const QIcon &icon, MessageIcon iconType, int secs) = 0;
 
-    const QPalette *palette(Palette type = SystemPalette) const;
-    const QFont *font(Font type = SystemFont) const;
+    virtual bool isSystemTrayAvailable() const = 0;
+    virtual bool supportsMessages() const = 0;
 
-    QVariant themeHint(ThemeHint hint) const;
-
-    static const char *name;
-
-private:
-    mutable QPalette *m_systemPalette;
-    mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;
-    mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
+Q_SIGNALS:
+    void activated(QPlatformSystemTrayIcon::ActivationReason reason);
+    void messageClicked();
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_NO_SYSTEMTRAYICON
+
+#endif // QSYSTEMTRAYICON_P_H

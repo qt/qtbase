@@ -115,6 +115,12 @@ inline NSPoint qt_mac_flipPoint(const QPointF &p)
 
 NSRect qt_mac_flipRect(const QRect &rect, QWindow *window);
 
+Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
+
+bool qt_mac_execute_apple_script(const char *script, long script_len, AEDesc *ret);
+bool qt_mac_execute_apple_script(const char *script, AEDesc *ret);
+bool qt_mac_execute_apple_script(const QString &script, AEDesc *ret);
+
 // strip out '&' characters, and convert "&&" to a single '&', in menu
 // text - since menu text is sometimes decorated with these for Windows
 // accelerators.
