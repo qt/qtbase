@@ -1202,7 +1202,7 @@ Qt::DockWidgetArea QMainWindow::dockWidgetArea(QDockWidget *dockwidget) const
     Saves the current state of this mainwindow's toolbars and
     dockwidgets. The \a version number is stored as part of the data.
 
-    The \link QObject::objectName objectName\endlink property is used
+    The \l{QObject::objectName}{objectName} property is used
     to identify each QToolBar and QDockWidget.  You should make sure
     that this property is unique for each QToolBar and QDockWidget you
     add to the QMainWindow

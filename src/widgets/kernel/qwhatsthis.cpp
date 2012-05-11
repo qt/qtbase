@@ -76,8 +76,8 @@ QT_BEGIN_NAMESPACE
     "What's This?" help is part of an application's online help
     system, and provides users with information about the
     functionality and usage of a particular widget. "What's This?"
-    help texts are typically longer and more detailed than \link
-    QToolTip tooltips\endlink, but generally provide less information
+    help texts are typically longer and more detailed than
+    \l{QToolTip}{tooltips}, but generally provide less information
     than that supplied by separate help windows.
 
     QWhatsThis provides a single window with an explanatory text that

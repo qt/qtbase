@@ -4542,8 +4542,7 @@ void QWidget::unsetLayoutDirection()
     \brief the cursor shape for this widget
 
     The mouse cursor will assume this shape when it's over this
-    widget. See the \link Qt::CursorShape list of predefined cursor
-    objects\endlink for a range of useful shapes.
+    widget. See the \l{Qt::CursorShape}{list of predefined cursor objects} for a range of useful shapes.
 
     An editor widget might use an I-beam cursor:
     \snippet code/src_gui_kernel_qwidget.cpp 6
@@ -5878,8 +5877,7 @@ bool QWidget::hasFocus() const
 
 /*!
     Gives the keyboard input focus to this widget (or its focus
-    proxy) if this widget or one of its parents is the \link
-    isActiveWindow() active window\endlink. The \a reason argument will
+    proxy) if this widget or one of its parents is the \l{isActiveWindow()}{active window}. The \a reason argument will
     be passed into any focus event sent from this function, it is used
     to give an explanation of what caused the widget to get focus.
     If the window is not active, the widget will be given the focus when
@@ -6052,8 +6050,7 @@ void QWidgetPrivate::updateFocusChild()
 /*!
     Takes keyboard input focus from the widget.
 
-    If the widget has active focus, a \link focusOutEvent() focus out
-    event\endlink is sent to this widget to tell it that it has
+    If the widget has active focus, a \l{focusOutEvent()}{focus out event} is sent to this widget to tell it that it has
     lost the focus.
 
     This widget must enable focus setting in order to get the keyboard
@@ -6836,7 +6833,7 @@ QRect QWidget::contentsRect() const
   event that the widget receives. Normally this is in widget
   coordinates. The exception to this rule is QAbstractScrollArea and
   its subclasses that map the context menu event to coordinates of the
-  \link QAbstractScrollArea::viewport() viewport() \endlink .
+  \l{QAbstractScrollArea::viewport()}{viewport()}.
 
 
   \sa mapToGlobal(), QMenu, contextMenuPolicy
@@ -7494,10 +7491,10 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
     Closes this widget. Returns true if the widget was closed;
     otherwise returns false.
 
-    First it sends the widget a QCloseEvent. The widget is \link
-    hide() hidden\endlink if it \link QCloseEvent::accept()
-    accepts\endlink the close event. If it \link QCloseEvent::ignore()
-    ignores\endlink the event, nothing happens. The default
+    First it sends the widget a QCloseEvent. The widget is
+    \l{hide()}{hidden} if it \l{QCloseEvent::accept()}{accepts}
+    the close event. If it \l{QCloseEvent::ignore()}{ignores}
+    the event, nothing happens. The default
     implementation of QWidget::closeEvent() accepts the close event.
 
     If the widget has the Qt::WA_DeleteOnClose flag, the widget
@@ -8451,7 +8448,7 @@ void QWidget::mouseDoubleClickEvent(QMouseEvent *event)
     subclass to receive wheel events for the widget.
 
     If you reimplement this handler, it is very important that you
-    \link QWheelEvent ignore()\endlink the event if you do not handle
+    \l{QWheelEvent}{ignore()} the event if you do not handle
     it, so that the widget's parent can interpret it.
 
     The default implementation ignores the event.
@@ -8472,7 +8469,7 @@ void QWidget::wheelEvent(QWheelEvent *event)
     subclass to receive tablet events for the widget.
 
     If you reimplement this handler, it is very important that you
-    \link QTabletEvent ignore()\endlink the event if you do not handle
+    \l{QTabletEvent}{ignore()} the event if you do not handle
     it, so that the widget's parent can interpret it.
 
     The default implementation ignores the event.
@@ -8523,8 +8520,8 @@ void QWidget::keyPressEvent(QKeyEvent *event)
     This event handler, for event \a event, can be reimplemented in a
     subclass to receive key release events for the widget.
 
-    A widget must \link setFocusPolicy() accept focus\endlink
-    initially and \link hasFocus() have focus\endlink in order to
+    A widget must \l{setFocusPolicy()}{accept focus}
+    initially and \l{hasFocus()}{have focus} in order to
     receive a key release event.
 
     If you reimplement this handler, it is very important that you
@@ -8890,7 +8887,7 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
     If the event is ignored, the widget won't receive any \l{dragMoveEvent()}{drag
     move events}.
 
-    See the \link dnd.html Drag-and-drop documentation\endlink for an
+    See the \l{dnd.html}{Drag-and-drop documentation} for an
     overview of how to provide drag-and-drop in your application.
 
     \sa QDrag, QDragEnterEvent
@@ -8908,7 +8905,7 @@ void QWidget::dragEnterEvent(QDragEnterEvent *)
     the keyboard while this widget has the focus. The event is passed
     in the \a event parameter.
 
-    See the \link dnd.html Drag-and-drop documentation\endlink for an
+    See the \l{dnd.html}{Drag-and-drop documentation} for an
     overview of how to provide drag-and-drop in your application.
 
     \sa QDrag, QDragMoveEvent
@@ -8924,7 +8921,7 @@ void QWidget::dragMoveEvent(QDragMoveEvent *)
     mouse leaves this widget. The event is passed in the \a event
     parameter.
 
-    See the \link dnd.html Drag-and-drop documentation\endlink for an
+    See the \l{dnd.html}{Drag-and-drop documentation} for an
     overview of how to provide drag-and-drop in your application.
 
     \sa QDrag, QDragLeaveEvent
@@ -8939,7 +8936,7 @@ void QWidget::dragLeaveEvent(QDragLeaveEvent *)
     This event handler is called when the drag is dropped on this
     widget. The event is passed in the \a event parameter.
 
-    See the \link dnd.html Drag-and-drop documentation\endlink for an
+    See the \l{dnd.html}{Drag-and-drop documentation} for an
     overview of how to provide drag-and-drop in your application.
 
     \sa QDrag, QDropEvent

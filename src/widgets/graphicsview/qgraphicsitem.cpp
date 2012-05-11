@@ -2111,8 +2111,8 @@ void QGraphicsItem::setToolTip(const QString &toolTip)
 #ifndef QT_NO_CURSOR
 /*!
     Returns the current cursor shape for the item. The mouse cursor
-    will assume this shape when it's over this item. See the \link
-    Qt::CursorShape list of predefined cursor objects\endlink for a
+    will assume this shape when it's over this item.
+    See the \l{Qt::CursorShape}{list of predefined cursor objects} for a
     range of useful shapes.
 
     An editor item might want to use an I-beam cursor:
@@ -2131,9 +2131,9 @@ QCursor QGraphicsItem::cursor() const
 
 /*!
     Sets the current cursor shape for the item to \a cursor. The mouse cursor
-    will assume this shape when it's over this item. See the \link
-    Qt::CursorShape list of predefined cursor objects\endlink for a range of
-    useful shapes.
+    will assume this shape when it's over this item.
+    See the \l{Qt::CursorShape}{list of predefined cursor objects} for a
+    range of useful shapes.
 
     An editor item might want to use an I-beam cursor:
 

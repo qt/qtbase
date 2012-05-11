@@ -1650,11 +1650,10 @@ QMessageBox::StandardButton QMessageBox::critical(QWidget *parent, const QString
     about() looks for a suitable icon in four locations:
 
     \list 1
-    \li It prefers \link QWidget::windowIcon() parent->icon() \endlink
+    \li It prefers \l{QWidget::windowIcon()}{parent->icon()}
     if that exists.
     \li If not, it tries the top-level widget containing \a parent.
-    \li If that fails, it tries the \link
-    QApplication::activeWindow() active window. \endlink
+    \li If that fails, it tries the \l{QApplication::activeWindow()}{active window.}
     \li As a last resort it uses the Information icon.
     \endlist
 

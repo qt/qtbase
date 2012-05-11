@@ -1082,8 +1082,9 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
     \section1 Appearance
 
     A QDockWidget consists of a title bar and the content area.  The
-    title bar displays the dock widgets \link QWidget::windowTitle()
-    window title\endlink, a \e float button and a \e close button.
+    title bar displays the dock widgets
+    \l{QWidget::windowTitle()}{window title},
+    a \e float button and a \e close button.
     Depending on the state of the QDockWidget, the \e float and \e
     close buttons may be either disabled or not shown at all.
 

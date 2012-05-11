@@ -937,8 +937,7 @@ the release timer.
 
 All signals associated with a click are emitted as appropriate.
 
-This function does nothing if the button is \link setEnabled()
-disabled. \endlink
+This function does nothing if the button is \l{setEnabled()}{disabled.}
 
 \sa click()
 */
@@ -964,8 +963,7 @@ All the usual signals associated with a click are emitted as
 appropriate. If the button is checkable, the state of the button is
 toggled.
 
-This function does nothing if the button is \link setEnabled()
-disabled. \endlink
+This function does nothing if the button is \l{setEnabled()}{disabled.}
 
 \sa animateClick()
  */

@@ -305,7 +305,7 @@
     To write your own layout class, you must define the following:
     \list
         \li  A data structure to store the items handled by the layout. Each
-            item is a \link QLayoutItem QLayoutItem\endlink. We will use a
+            item is a \l{QLayoutItem}{QLayoutItem}. We will use a
             QList in this example.
         \li  \l{QLayout::}{addItem()}, how to add items to the layout.
         \li  \l{QLayout::}{setGeometry()}, how to perform the layout.

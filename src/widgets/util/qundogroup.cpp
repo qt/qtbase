@@ -64,7 +64,7 @@ public:
     \inmodule QtWidgets
 
     For an overview of the Qt's undo framework, see the
-    \link qundo.html overview\endlink.
+    \l{qundo.html}{overview}.
 
     An application often has multiple undo stacks, one for each opened document. At the
     same time, an application usually has one undo action and one redo action, which

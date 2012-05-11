@@ -43,8 +43,7 @@
 
     There are additional issues that should be taken
     into consideration to make an application compatible with the
-    \link http://developer.apple.com/documentation/UserExperience/Conceptual/OSXHIGuidelines/index.html
-    Apple Human Interface Guidelines \endlink. Some of these issues are outlined
+    \l{Apple Human Interface Guidelines}{Apple Human Interface Guidelines}. Some of these issues are outlined
     below.
 
     \list

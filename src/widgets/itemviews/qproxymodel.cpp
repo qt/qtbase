@@ -278,7 +278,7 @@ bool QProxyModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
     The selection of drop actions provided by the model will influence the
     behavior of the component that started the drag and drop operation.
 
-    \sa \link dnd.html Drag and Drop\endlink
+    \sa \l{dnd.html}{Drag and Drop}
 */
 Qt::DropActions QProxyModel::supportedDropActions() const
 {

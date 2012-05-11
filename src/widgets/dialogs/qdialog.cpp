@@ -146,9 +146,7 @@ void QDialogPrivate::deletePlatformHelper()
     A dialog window is a top-level window mostly used for short-term
     tasks and brief communications with the user. QDialogs may be
     modal or modeless. QDialogs can
-    provide a \link #return return
-    value\endlink, and they can have \link #default default
-    buttons\endlink. QDialogs can also have a QSizeGrip in their
+    provide a \l{#return}{return value}, and they can have \l{#default}{default buttons}. QDialogs can also have a QSizeGrip in their
     lower-right corner, using setSizeGripEnabled().
 
     Note that QDialog (an any other widget that has type Qt::Dialog) uses
@@ -182,7 +180,7 @@ void QDialogPrivate::deletePlatformHelper()
 
     The most common way to display a modal dialog is to call its
     exec() function. When the user closes the dialog, exec() will
-    provide a useful \link #return return value\endlink. Typically,
+    provide a useful \l{#return}{return value}. Typically,
     to get the dialog to close and return the appropriate value, we
     connect a default button, e.g. \uicontrol OK, to the accept() slot and a
     \uicontrol Cancel button to the reject() slot.
@@ -232,9 +230,7 @@ void QDialogPrivate::deletePlatformHelper()
     \section1 Escape Key
 
     If the user presses the Esc key in a dialog, QDialog::reject()
-    will be called. This will cause the window to close: The \link
-    QCloseEvent close event \endlink cannot be \link
-    QCloseEvent::ignore() ignored \endlink.
+    will be called. This will cause the window to close: The \l{QCloseEvent}{close event} cannot be \l{QCloseEvent::ignore()}{ignored}.
 
     \section1 Extensibility
 

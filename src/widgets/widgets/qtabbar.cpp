@@ -205,7 +205,7 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
     \inmodule QtWidgets
 
     QTabBar is straightforward to use; it draws the tabs using one of
-    the predefined \link QTabBar::Shape shapes\endlink, and emits a
+    the predefined \l{QTabBar::Shape}{shapes}, and emits a
     signal when a tab is selected. It can be subclassed to tailor the
     look and feel. Qt also provides a ready-made \l{QTabWidget}.
 

@@ -818,9 +818,8 @@ QAction *QToolBar::addAction(const QIcon &icon, const QString &text)
     \overload
 
     Creates a new action with the given \a text. This action is added to
-    the end of the toolbar. The action's \link QAction::triggered()
-    triggered()\endlink signal is connected to \a member in \a
-    receiver.
+    the end of the toolbar. The action's \l{QAction::triggered()}{triggered()}
+    signal is connected to \a member in \a receiver.
 */
 QAction *QToolBar::addAction(const QString &text,
                              const QObject *receiver, const char* member)
@@ -835,8 +834,8 @@ QAction *QToolBar::addAction(const QString &text,
     \overload
 
     Creates a new action with the icon \a icon and text \a text. This
-    action is added to the end of the toolbar. The action's \link
-    QAction::triggered() triggered()\endlink signal is connected to \a
+    action is added to the end of the toolbar. The action's
+    \l{QAction::triggered()}{triggered()} signal is connected to \a
     member in \a receiver.
 */
 QAction *QToolBar::addAction(const QIcon &icon, const QString &text,

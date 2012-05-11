@@ -1448,7 +1448,7 @@ QSizePolicy::ControlType QSizePolicy::controlType() const
 
     Writes the size \a policy to the data stream \a stream.
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 QDataStream &operator<<(QDataStream &stream, const QSizePolicy &policy)
 {
@@ -1461,7 +1461,7 @@ QDataStream &operator<<(QDataStream &stream, const QSizePolicy &policy)
 
     Reads the size \a policy from the data stream \a stream.
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
 QDataStream &operator>>(QDataStream &stream, QSizePolicy &policy)
 {

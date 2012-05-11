@@ -1137,7 +1137,7 @@ QMargins QLineEdit::textMargins() const
     \endtable
 
     To get range control (e.g., for an IP address) use masks together
-    with \link setValidator() validators\endlink.
+    with \l{setValidator()}{validators}.
 
     \sa maxLength
 */
@@ -1208,8 +1208,7 @@ void QLineEdit::clear()
 }
 
 /*!
-    Undoes the last operation if undo is \link
-    QLineEdit::undoAvailable available\endlink. Deselects any current
+    Undoes the last operation if undo is \l{QLineEdit::undoAvailable}{available}. Deselects any current
     selection, and updates the selection start to the current cursor
     position.
 */
@@ -1221,8 +1220,7 @@ void QLineEdit::undo()
 }
 
 /*!
-    Redoes the last operation if redo is \link
-    QLineEdit::redoAvailable available\endlink.
+    Redoes the last operation if redo is \l{QLineEdit::redoAvailable}{available}.
 */
 void QLineEdit::redo()
 {
@@ -1303,11 +1301,10 @@ void QLineEdit::copy() const
 
 /*!
     Inserts the clipboard's text at the cursor position, deleting any
-    selected text, providing the line edit is not \link
-    QLineEdit::readOnly read-only\endlink.
+    selected text, providing the line edit is not \l{QLineEdit::readOnly}{read-only}.
 
     If the end result would not be acceptable to the current
-    \link setValidator() validator\endlink, nothing happens.
+    \l{setValidator()}{validator}, nothing happens.
 
     \sa copy(), cut()
 */
@@ -1549,7 +1546,7 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
     Converts the given key press \a event into a line edit action.
 
     If Return or Enter is pressed and the current text is valid (or
-    can be \link QValidator::fixup() made valid\endlink by the
+    can be \l{QValidator::fixup()}{made valid} by the
     validator), the signal returnPressed() is emitted.
 
     The default key bindings are listed in the class's detailed

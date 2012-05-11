@@ -103,9 +103,7 @@ public:
     store the value there.
 
     Incidentally, QLCDNumber is the very oldest part of Qt, tracing
-    its roots back to a BASIC program on the \link
-    http://www.nvg.ntnu.no/sinclair/computers/zxspectrum/zxspectrum.htm
-    Sinclair Spectrum\endlink.
+    its roots back to a BASIC program on the \l{Sinclair Spectrum}{Sinclair Spectrum}.
 
     \table
     \row \li \inlineimage motif-lcdnumber.png Screenshot of a Motif style LCD number widget
