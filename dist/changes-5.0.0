@@ -608,6 +608,8 @@ Qt for Windows CE
 
 - configure
 
+  * The Mac OS X -dwarf2 configure argument has been removed. DWARF2 is always
+    used on Mac OS X now.
 
 - qtconfig
 
