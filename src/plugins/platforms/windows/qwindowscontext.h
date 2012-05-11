@@ -179,6 +179,7 @@ public:
     static QByteArray comErrorString(HRESULT hr);
 
 private:
+    void handleFocusEvent(QtWindows::WindowsEventType et, QWindowsWindow *w);
     void unregisterWindowClasses();
 
     QScopedPointer<QWindowsContextPrivate> d;

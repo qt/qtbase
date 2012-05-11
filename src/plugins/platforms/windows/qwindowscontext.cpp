@@ -259,6 +259,7 @@ struct QWindowsContextPrivate {
     const HRESULT m_oleInitializeResult;
     const QByteArray m_eventType;
     EventFilter m_eventFilters[EventFilterTypeCount];
+    QWindow *m_lastActiveWindow;
 };
 
 QWindowsContextPrivate::QWindowsContextPrivate() :
@@ -266,7 +267,8 @@ QWindowsContextPrivate::QWindowsContextPrivate() :
     m_displayContext(GetDC(0)),
     m_defaultDPI(GetDeviceCaps(m_displayContext,LOGPIXELSY)),
     m_oleInitializeResult(OleInitialize(NULL)),
-    m_eventType(QByteArrayLiteral("windows_generic_MSG"))
+    m_eventType(QByteArrayLiteral("windows_generic_MSG")),
+    m_lastActiveWindow(0)
 {
 #ifndef Q_OS_WINCE
     QWindowsContext::user32dll.init();
@@ -819,10 +821,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::TouchEvent:
         return d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
     case QtWindows::FocusInEvent: // see QWindowsWindow::requestActivateWindow().
-        QWindowSystemInterface::handleWindowActivated(platformWindow->window());
-        return true;
     case QtWindows::FocusOutEvent:
-        QWindowSystemInterface::handleWindowActivated(0);
+        handleFocusEvent(et, platformWindow);
         return true;
     case QtWindows::ShowEvent:
         platformWindow->handleShown();
@@ -848,6 +848,31 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         break;
     }
     return false;
+}
+
+/* Compress activation events. If the next focus window is already known
+ * at the time the current one receives focus-out, pass that to
+ * QWindowSystemInterface instead of sending 0 and ignore its consecutive
+ * focus-in event.
+ * This helps applications that do handling in focus-out events. */
+void QWindowsContext::handleFocusEvent(QtWindows::WindowsEventType et,
+                                       QWindowsWindow *platformWindow)
+{
+    QWindow *nextActiveWindow = 0;
+    if (et == QtWindows::FocusInEvent) {
+        nextActiveWindow = platformWindow->window();
+    } else {
+        // Focus out: Is the next window known and different
+        // from the receiving the focus out.
+        if (const HWND nextActiveHwnd = GetActiveWindow())
+            if (QWindowsWindow *nextActivePlatformWindow = findPlatformWindow(nextActiveHwnd))
+                if (nextActivePlatformWindow != platformWindow)
+                    nextActiveWindow = nextActivePlatformWindow->window();
+    }
+    if (nextActiveWindow != d->m_lastActiveWindow) {
+         d->m_lastActiveWindow = nextActiveWindow;
+         QWindowSystemInterface::handleWindowActivated(nextActiveWindow);
+    }
 }
 
 /*!
