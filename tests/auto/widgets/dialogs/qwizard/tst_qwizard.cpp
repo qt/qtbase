@@ -111,6 +111,7 @@ private slots:
     void task177022_setFixedSize();
     void task248107_backButton();
     void task255350_fieldObjectDestroyed();
+    void taskQTBUG_25691_fieldObjectDestroyed2();
 
     /*
         Things that could be added:
@@ -2641,6 +2642,16 @@ void tst_QWizard::task255350_fieldObjectDestroyed()
     delete page->lineEdit;
     wizard.removePage(id); // don't crash!
     delete page;
+}
+
+// Global taskQTBUG_25691_fieldObjectDestroyed2 is defined in
+// tst_qwizard_2.cpp to avoid cluttering up this file with
+// the QWizardPage subclasses, etc. required to complete this
+// test.
+void taskQTBUG_25691_fieldObjectDestroyed2(void);
+void tst_QWizard::taskQTBUG_25691_fieldObjectDestroyed2()
+{
+    ::taskQTBUG_25691_fieldObjectDestroyed2();
 }
 
 QTEST_MAIN(tst_QWizard)
