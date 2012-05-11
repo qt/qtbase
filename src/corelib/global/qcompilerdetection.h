@@ -449,7 +449,8 @@
  *  N2541           Q_COMPILER_AUTO_FUNCTION
  *  N1984 N2546     Q_COMPILER_AUTO_TYPE
  *  N2437           Q_COMPILER_CLASS_ENUM
- *  N2235 N3276     Q_COMPILER_DECLTYPE
+ *  N2235           Q_COMPILER_CONSTEXPR
+ *  N2343 N3276     Q_COMPILER_DECLTYPE
  *  N2346           Q_COMPILER_DEFAULT_DELETE_MEMBERS
  *  N1986           Q_COMPILER_DELEGATING_CONSTRUCTORS
  *  N3206 N3272     Q_COMPILER_EXPLICIT_OVERRIDES   (v0.9 and above only)
@@ -466,7 +467,7 @@
  *  N1720           Q_COMPILER_STATIC_ASSERT
  *  N2258           Q_COMPILER_TEMPLATE_ALIAS
  *  N2659           Q_COMPILER_THREAD_LOCAL
- *  N2756           Q_COMPILER_UDL
+ *  N2765           Q_COMPILER_UDL
  *  N2442           Q_COMPILER_UNICODE_STRINGS
  *  N2544           Q_COMPILER_UNRESTRICTED_UNIONS
  *  N1653           Q_COMPILER_VARIADIC_MACROS
@@ -512,42 +513,94 @@
 #  if !__has_feature(cxx_rtti)
 #    define QT_NO_RTTI
 #  endif
+
 /* C++11 features, see http://clang.llvm.org/cxx_status.html */
 #  if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
-#    if ((__clang_major__ * 100) + __clang_minor__) >= 209 /* since clang 2.9 */
+    /* Detect C++ features using __has_feature(), see http://clang.llvm.org/docs/LanguageExtensions.html#cxx11 */
+#    if __has_feature(cxx_alignas)
+#      define Q_COMPILER_ALIGNAS
+#      define Q_COMPILER_ALIGNOF
+#    endif
+#    if 0 /* not implemented in clang yet */
+#     define Q_COMPILER_ATOMICS
+#    endif
+#    if __has_feature(cxx_attributes)
+#      define Q_COMPILER_ATTRIBUTES
+#    endif
+#    if __has_feature(cxx_auto_type)
+#      define Q_COMPILER_AUTO_FUNCTION
 #      define Q_COMPILER_AUTO_TYPE
-#      define Q_COMPILER_DECLTYPE
-#      define Q_COMPILER_EXTERN_TEMPLATES
-#      define Q_COMPILER_RVALUE_REFS
-#      define Q_COMPILER_STATIC_ASSERT
-#      define Q_COMPILER_VARIADIC_MACROS
-#      define Q_COMPILER_VARIADIC_TEMPLATES
 #    endif
-#    if ((__clang_major__ * 100) + __clang_minor__) >= 300 /* since clang 3.0 */
+#    if __has_feature(cxx_strong_enums)
 #      define Q_COMPILER_CLASS_ENUM
-        /* defaulted members in 3.0, deleted members in 2.9 */
-#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
-#      define Q_COMPILER_DELEGATING_CONSTRUCTORS
-#      define Q_COMPILER_EXPLICIT_OVERRIDES
-#      define Q_COMPILER_NULLPTR
-#      define Q_COMPILER_RANGE_FOR
-#      define Q_COMPILER_UNICODE_STRINGS
 #    endif
-        /* not implemented in clang yet */
 #    if __has_feature(cxx_constexpr)
 #      define Q_COMPILER_CONSTEXPR
 #    endif
-#    if __has_feature(cxx_lambdas)
-#      define Q_COMPILER_LAMBDA
+#    if __has_feature(cxx_decltype) /* && __has_feature(cxx_decltype_incomplete_return_types) */
+#      define Q_COMPILER_DECLTYPE
+#    endif
+#    if __has_feature(cxx_defaulted_functions) && __has_feature(cxx_deleted_functions) /* defaulted members in 3.0, deleted members in 2.9 */
+#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#    endif
+#    if __has_feature(cxx_delegating_constructors)
+#      define Q_COMPILER_DELEGATING_CONSTRUCTORS
+#    endif
+#    if __has_feature(cxx_override_control)
+#      define Q_COMPILER_EXPLICIT_OVERRIDES
+#    endif
+#    if __has_feature(cxx_inheriting_constructors)
+#      define Q_COMPILER_INHERITING_CONSTRUCTORS
 #    endif
 #    if __has_feature(cxx_generalized_initializers)
 #      define Q_COMPILER_INITIALIZER_LISTS
 #    endif
+#    if __has_feature(cxx_lambdas)
+#      define Q_COMPILER_LAMBDA
+#    endif
+#    if __has_feature(cxx_nonstatic_member_init)
+#      define Q_COMPILER_NONSTATIC_MEMBER_INIT
+#    endif
+#    if __has_feature(cxx_nullptr)
+#      define Q_COMPILER_NULLPTR
+#    endif
+#    if __has_feature(cxx_range_for)
+#      define Q_COMPILER_RANGE_FOR
+#    endif
+#    if __has_feature(cxx_raw_string_literals)
+#      define Q_COMPILER_RAW_STRINGS
+#    endif
+#    if __has_feature(cxx_reference_qualified_functions)
+#      define Q_COMPILER_REF_QUALIFIERS
+#    endif
+#    if __has_feature(cxx_rvalue_references)
+#      define Q_COMPILER_RVALUE_REFS
+#    endif
+#    if __has_feature(cxx_static_assert)
+#      define Q_COMPILER_STATIC_ASSERT
+#    endif
+#    if __has_feature(cxx_alias_templates)
+#      define Q_COMPILER_TEMPLATE_ALIAS
+#    endif
+#    if 0 /* not implemented in clang yet */
+#      define Q_COMPILER_THREAD_LOCAL
+#    endif
+#    if __has_feature(cxx_user_literals)
+#      define Q_COMPILER_UDL
+#    endif
+#    if __has_feature(cxx_unicode_literals)
+#      define Q_COMPILER_UNICODE_STRINGS
+#    endif
 #    if __has_feature(cxx_unrestricted_unions)
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #    endif
-#    if 0
-#      define Q_COMPILER_ATOMICS
+#    if __has_feature(cxx_variadic_templates)
+#      define Q_COMPILER_VARIADIC_TEMPLATES
+#    endif
+    /* Features that have no __has_feature() check */
+#    if ((__clang_major__ * 100) + __clang_minor__) >= 209 /* since clang 2.9 */
+#      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_VARIADIC_MACROS
 #    endif
 #  endif
 #endif // Q_CC_CLANG
