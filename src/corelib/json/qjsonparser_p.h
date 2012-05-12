@@ -75,7 +75,7 @@ public:
 
         Parser *parser;
         int objectPosition;
-        QVarLengthArray<uint> offsets;
+        QVarLengthArray<uint, 64> offsets;
 
         inline QJsonPrivate::Entry *entryAt(int i) const {
             return reinterpret_cast<QJsonPrivate::Entry *>(parser->data + objectPosition + offsets[i]);
@@ -101,6 +101,7 @@ private:
     char *data;
     int dataLength;
     int current;
+    int nestingLevel;
     QJsonParseError::ParseError lastError;
 
     inline int reserveSpace(int space) {

@@ -58,6 +58,8 @@ static int indent = 0;
 #define DEBUG if (1) ; else qDebug()
 #endif
 
+static const int nestingLimit = 1024;
+
 QT_BEGIN_NAMESPACE
 
 // error strings for the JSON parser
@@ -73,6 +75,7 @@ QT_BEGIN_NAMESPACE
 #define JSONERR_STR_UTF8    QT_TRANSLATE_NOOP("QJsonParseError", "invalid UTF8 string")
 #define JSONERR_UTERM_STR   QT_TRANSLATE_NOOP("QJsonParseError", "unterminated string")
 #define JSONERR_MISS_OBJ    QT_TRANSLATE_NOOP("QJsonParseError", "object is missing after a comma")
+#define JSONERR_DEEP_NEST   QT_TRANSLATE_NOOP("QJsonParseError", "too deeply nested document")
 
 /*!
     \class QJsonParseError
@@ -81,6 +84,26 @@ QT_BEGIN_NAMESPACE
     \since 5.0
 
     \brief The QJsonParseError class is used to report errors during JSON parsing.
+*/
+
+/*!
+    \enum QJsonParseError::ParseError
+
+    This enum describes the type of error that occurred during the parsing of a JSON document.
+
+    \value NoError                  No error occured
+    \value UnterminatedObject       An object is not correctly terminated with a closing curly bracket
+    \value MissingNameSeparator     A comma separating different items is missing
+    \value UnterminatedArray        The array is not correctly terminated with a closing square bracket
+    \value MissingValueSeparator    A colon separating keys from values inside objects is missing
+    \value IllegalValue             The value is illegal
+    \value TerminationByNumber      The input stream ended while parsing a number
+    \value IllegalNumber            The number is not well formed
+    \value IllegalEscapeSequence    An illegal escape sequence occurred in the input
+    \value IllegalUTF8String        An illegal UTF8 sequence occurred in the input
+    \value UnterminatedString       A string wasn't terminated with a quote
+    \value MissingObject            An object was expected but couldn't be found
+    \value DeepNesting              The JSON document is too deeply nested for the parser to parse it
 */
 
 /*!
@@ -126,6 +149,9 @@ QString QJsonParseError::errorString() const
     case MissingObject:
         sz = JSONERR_MISS_OBJ;
         break;
+    case DeepNesting:
+        sz = JSONERR_DEEP_NEST;
+        break;
     }
 #ifndef QT_BOOTSTRAPPED
     return QCoreApplication::translate("QJsonParseError", sz);
@@ -137,7 +163,7 @@ QString QJsonParseError::errorString() const
 using namespace QJsonPrivate;
 
 Parser::Parser(const char *json, int length)
-    : head(json), json(json), data(0), dataLength(0), current(0), lastError(QJsonParseError::NoError)
+    : head(json), json(json), data(0), dataLength(0), current(0), nestingLevel(0), lastError(QJsonParseError::NoError)
 {
     end = json + length;
 }
@@ -318,6 +344,11 @@ void Parser::ParsedObject::insert(uint offset) {
 
 bool Parser::parseObject()
 {
+    if (++nestingLevel > nestingLimit) {
+        lastError = QJsonParseError::DeepNesting;
+        return false;
+    }
+
     int objectOffset = reserveSpace(sizeof(QJsonPrivate::Object));
     BEGIN << "parseObject pos=" << objectOffset << current << json;
 
@@ -369,6 +400,8 @@ bool Parser::parseObject()
 
     DEBUG << "current=" << current;
     END;
+
+    --nestingLevel;
     return true;
 }
 
@@ -407,9 +440,15 @@ bool Parser::parseMember(int baseOffset)
 bool Parser::parseArray()
 {
     BEGIN << "parseArray";
+
+    if (++nestingLevel > nestingLimit) {
+        lastError = QJsonParseError::DeepNesting;
+        return false;
+    }
+
     int arrayOffset = reserveSpace(sizeof(QJsonPrivate::Array));
 
-    QVarLengthArray<QJsonPrivate::Value> values;
+    QVarLengthArray<QJsonPrivate::Value, 64> values;
 
     if (!eatSpace()) {
         lastError = QJsonParseError::UnterminatedArray;
@@ -453,6 +492,8 @@ bool Parser::parseArray()
 
     DEBUG << "current=" << current;
     END;
+
+    --nestingLevel;
     return true;
 }
 

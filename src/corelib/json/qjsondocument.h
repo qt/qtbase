@@ -68,7 +68,8 @@ struct Q_CORE_EXPORT QJsonParseError
         IllegalEscapeSequence,
         IllegalUTF8String,
         UnterminatedString,
-        MissingObject
+        MissingObject,
+        DeepNesting
     };
 
     QString    errorString() const;
