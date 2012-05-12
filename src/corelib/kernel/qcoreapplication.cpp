@@ -230,7 +230,7 @@ bool QCoreApplicationPrivate::is_app_running = false;
  // app closing down if true
 bool QCoreApplicationPrivate::is_app_closing = false;
 // initialized in qcoreapplication and in qtextstream autotest when setlocale is called.
-Q_CORE_EXPORT bool qt_locale_initialized = false;
+static bool qt_locale_initialized = false;
 
 Q_CORE_EXPORT uint qGlobalPostedEventsCount()
 {
@@ -405,6 +405,17 @@ QString qAppName()
     return QCoreApplication::instance()->d_func()->appName();
 }
 
+void QCoreApplicationPrivate::initLocale()
+{
+    if (qt_locale_initialized)
+        return;
+    qt_locale_initialized = true;
+#ifdef Q_OS_UNIX
+    setlocale(LC_ALL, "");
+#endif
+}
+
+
 /*!
     \class QCoreApplication
     \brief The QCoreApplication class provides an event loop for console Qt
@@ -543,10 +554,7 @@ void QCoreApplication::init()
 {
     Q_D(QCoreApplication);
 
-#ifdef Q_OS_UNIX
-    setlocale(LC_ALL, "");                // use correct char set mapping
-    qt_locale_initialized = true;
-#endif
+    QCoreApplicationPrivate::initLocale();
 
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = this;

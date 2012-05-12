@@ -89,6 +89,8 @@ public:
     static QString macMenuBarName();
 #endif
 
+    static void initLocale();
+
     QAtomicInt quitLockRef;
     void ref();
     void deref();

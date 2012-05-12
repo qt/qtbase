@@ -49,6 +49,9 @@
 #include "qfile.h"
 #include "qstringlist.h"
 #include "qvarlengtharray.h"
+#if !defined(QT_BOOTSTRAPPED)
+#include <private/qcoreapplication_p.h>
+#endif
 
 #ifdef Q_OS_UNIX
 #  include "qiconvcodec_p.h"
@@ -82,8 +85,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <locale.h>
-#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && \
-    !defined(Q_OS_OSF) && !defined(Q_OS_LINUX_ANDROID)
+#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_OSF) && !defined(Q_OS_LINUX_ANDROID)
 # include <langinfo.h>
 #endif
 
@@ -477,14 +479,11 @@ static bool try_locale_list(const char * const locale[], const QByteArray &lang)
 static const char * const probably_koi8_rlocales[] = {
     "ru", "ru_SU", "ru_RU", "russian", 0 };
 
-static QTextCodec * ru_RU_hack(const char * i) {
+static QTextCodec * ru_RU_hack(const char * i)
+{
     QTextCodec * ru_RU_codec = 0;
 
-#if !defined(QT_NO_SETLOCALE)
     QByteArray origlocale(setlocale(LC_CTYPE, i));
-#else
-    QByteArray origlocale(i);
-#endif
     // unicode   koi8r   latin5   name
     // 0x044E    0xC0    0xEE     CYRILLIC SMALL LETTER YU
     // 0x042E    0xE0    0xCE     CYRILLIC CAPITAL LETTER YU
@@ -500,16 +499,11 @@ static QTextCodec * ru_RU_hack(const char * i) {
         qWarning("QTextCodec: Using KOI8-R, probe failed (%02x %02x %s)",
                   koi8r, latin5, i);
     }
-#if !defined(QT_NO_SETLOCALE)
     setlocale(LC_CTYPE, origlocale.constData());
-#endif
 
     return ru_RU_codec;
 }
 
-#endif
-
-#if !defined(Q_OS_WIN32) && !defined(Q_OS_WINCE)
 static QTextCodec *checkForCodec(const QByteArray &name) {
     QTextCodec *c = QTextCodec::codecForName(name);
     if (!c) {
@@ -531,16 +525,25 @@ static void setupLocaleMapper()
     localeMapper = QTextCodec::codecForName("System");
 #else
 
-#ifndef QT_NO_ICONV
-    localeMapper = QTextCodec::codecForName("System");
+#if !defined(QT_BOOTSTRAPPED)
+    QCoreApplicationPrivate::initLocale();
 #endif
+    // First try getting the codecs name from nl_langinfo and see
+    // if we have a builtin codec for it.
+    // Only fall back to using iconv if we can't find a builtin codec
+    // This is because the builtin utf8 codec is around 5 times faster
+    // then the using QIconvCodec
 
-#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && \
-    !defined(Q_OS_OSF) && !defined(Q_OS_LINUX_ANDROID)
+#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_OSF) && !defined(Q_OS_LINUX_ANDROID)
+    char *charset = nl_langinfo(CODESET);
+    if (charset)
+        localeMapper = QTextCodec::codecForName(charset);
+#endif
+#if !defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
     if (!localeMapper) {
-        char *charset = nl_langinfo (CODESET);
-        if (charset)
-            localeMapper = QTextCodec::codecForName(charset);
+        // no builtin codec for the locale found, let's try using iconv
+        (void) new QIconvCodec();
+        localeMapper = QTextCodec::codecForName("System");
     }
 #endif
 
@@ -556,11 +559,7 @@ static void setupLocaleMapper()
         // First part is getting that locale name.  First try setlocale() which
         // definitely knows it, but since we cannot fully trust it, get ready
         // to fall back to environment variables.
-#if !defined(QT_NO_SETLOCALE)
         const QByteArray ctype = setlocale(LC_CTYPE, 0);
-#else
-        const QByteArray ctype;
-#endif
 
         // Get the first nonempty value from $LC_ALL, $LC_CTYPE, and $LANG
         // environment variables.
@@ -722,13 +721,6 @@ static void setup()
     (void)new QLatin15Codec;
     (void)new QLatin1Codec;
     (void)new QUtf8Codec;
-
-#if !defined(Q_OS_INTEGRITY)
-#if defined(Q_OS_UNIX) && !defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
-    // QIconvCodec depends on the UTF-16 codec, so it needs to be created last
-    (void) new QIconvCodec();
-#endif
-#endif
 
     if (!localeMapper)
         setupLocaleMapper();
@@ -1105,9 +1097,10 @@ void QTextCodec::setCodecForLocale(QTextCodec *c)
     Returns a pointer to the codec most suitable for this locale.
 
     On Windows, the codec will be based on a system locale. On Unix
-    systems, starting with Qt 4.2, the codec will be using the \e
-    iconv library. Note that in both cases the codec's name will be
-    "System".
+    systems, the codec will might fall back to using the \e iconv
+    library if no builtin codec for the locale can be found.
+
+    Note that in these cases the codec's name will be "System".
 */
 
 QTextCodec* QTextCodec::codecForLocale()

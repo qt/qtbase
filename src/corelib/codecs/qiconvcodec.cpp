@@ -88,8 +88,6 @@ static Ptr_iconv_close ptr_iconv_close = 0;
 
 QT_BEGIN_NAMESPACE
 
-extern bool qt_locale_initialized;
-
 QIconvCodec::QIconvCodec()
     : utf16Codec(0)
 {
@@ -190,7 +188,7 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
         }
     } else {
         QThreadStorage<QIconvCodec::IconvState *> *ts = toUnicodeState();
-        if (!qt_locale_initialized || !ts) {
+        if (!ts) {
             // we're running after the Q_GLOBAL_STATIC has been deleted
             // or before the QCoreApplication initialization
             // bad programmer, no cookie for you
@@ -346,7 +344,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
 
     IconvState *temporaryState = 0;
     QThreadStorage<QIconvCodec::IconvState *> *ts = fromUnicodeState();
-    IconvState *&state = (qt_locale_initialized && ts) ? ts->localData() : temporaryState;
+    IconvState *&state = ts ? ts->localData() : temporaryState;
     if (!state) {
         iconv_t cd = QIconvCodec::createIconv_t(0, UTF16);
         if (cd != reinterpret_cast<iconv_t>(-1)) {
