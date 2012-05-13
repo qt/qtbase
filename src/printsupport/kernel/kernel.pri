@@ -30,7 +30,7 @@ win32 {
                 $$PWD/qprintengine_win_p.h
         SOURCES += \
                 $$PWD/qprintengine_win.cpp
-        LIBS += -lWinspool -lComdlg32
+        LIBS += -lwinspool -lcomdlg32
 }
 
 mac|win32 {

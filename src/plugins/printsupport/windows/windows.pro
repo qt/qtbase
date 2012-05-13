@@ -19,4 +19,4 @@ OTHER_FILES += windows.json
 
 target.path += $$[QT_INSTALL_PLUGINS]/printsupport
 INSTALLS += target
-LIBS += -lWinspool -lComdlg32
+LIBS += -lwinspool -lcomdlg32

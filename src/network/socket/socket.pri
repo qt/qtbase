@@ -40,7 +40,7 @@ win32:SOURCES += socket/qnativesocketengine_win.cpp \
                 socket/qlocalsocket_win.cpp \
                 socket/qlocalserver_win.cpp
 
-win32:!wince*:LIBS += -lAdvapi32
+win32:!wince*:LIBS += -ladvapi32
 
 wince*: {
     SOURCES -= socket/qlocalsocket_win.cpp \

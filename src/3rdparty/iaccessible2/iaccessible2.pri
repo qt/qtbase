@@ -85,4 +85,4 @@ OTHER_FILES = \
     $$PWD/idl/IA2CommonTypes.idl \
     $$PWD/idl/IA2TypeLibrary.idl
 
-LIBS += -lRpcRT4
+LIBS += -lrpcrt4

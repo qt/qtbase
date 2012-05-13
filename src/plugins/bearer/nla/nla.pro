@@ -4,9 +4,9 @@ load(qt_plugin)
 QT = core core-private network network-private
 
 !wince* {
-    LIBS += -lWs2_32
+    LIBS += -lws2_32
 } else {
-    LIBS += -lWs2
+    LIBS += -lws2
 }
 
 HEADERS += qnlaengine.h \

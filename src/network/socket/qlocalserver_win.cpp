@@ -46,9 +46,9 @@
 
 #include <qdebug.h>
 
-#include <Aclapi.h>
-#include <AccCtrl.h>
-#include <Sddl.h>
+#include <aclapi.h>
+#include <accctrl.h>
+#include <sddl.h>
 
 // The buffer size need to be 0 otherwise data could be
 // lost if the socket that has written data closes the connection

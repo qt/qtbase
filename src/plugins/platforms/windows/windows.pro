@@ -11,7 +11,7 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 # Note: OpenGL32 must precede Gdi32 as it overwrites some functions.
 LIBS *= -lole32
 !wince*:LIBS *= -lgdi32 -luser32 -lwinspool -limm32 -lwinmm  -loleaut32
-contains(QT_CONFIG, opengl):LIBS *= -lOpenGL32
+contains(QT_CONFIG, opengl):LIBS *= -lopengl32
 win32-g++: LIBS *= -luuid
 # For the dialog helpers:
 !wince*:LIBS *= -lshlwapi -lshell32

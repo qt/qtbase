@@ -56,7 +56,7 @@
 #include <private/qmutexpool_p.h>
 #include <rpc.h>
 #define SECURITY_WIN32 1
-#include <Security.h>
+#include <security.h>
 #endif
 
 //#define NTLMV1_CLIENT
