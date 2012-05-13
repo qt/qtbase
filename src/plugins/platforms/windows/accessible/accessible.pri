@@ -14,3 +14,4 @@ HEADERS += \
     include(../../../../3rdparty/iaccessible2/iaccessible2.pri)
 }
 
+win32-g++*: LIBS *= -luuid
