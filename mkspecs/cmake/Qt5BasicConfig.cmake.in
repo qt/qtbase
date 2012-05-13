@@ -109,8 +109,9 @@ list(APPEND _Qt5Gui_LIB_DEPENDENCIES ${JPEG_LIBRARIES})
 
 !!ENDIF # Static
 
-if (NOT _Qt5$${CMAKE_MODULE_NAME}_target)
-    set(_Qt5$${CMAKE_MODULE_NAME}_target 1)
+get_property(_qt5$${CMAKE_MODULE_NAME}TargetExists DIRECTORY PROPERTY _Qt5$${CMAKE_MODULE_NAME}_target)
+if (NOT _qt5$${CMAKE_MODULE_NAME}TargetExists)
+    set_property(DIRECTORY PROPERTY _Qt5$${CMAKE_MODULE_NAME}_target TRUE)
 !!IF !isEmpty(CMAKE_STATIC_TYPE)
     add_library(Qt5::$${CMAKE_MODULE_NAME} STATIC IMPORTED)
 !!ELSE
