@@ -1045,7 +1045,7 @@ void SendPostedEventsTester::doTest()
     QPointer<SendPostedEventsTester> p = this;
     QApplication::postEvent(this, new QEvent(QEvent::User));
     // DeferredDelete should not be delivered until returning from this function
-    QApplication::postEvent(this, new QEvent(QEvent::DeferredDelete));
+    QApplication::postEvent(this, new QDeferredDeleteEvent());
 
     QEventLoop eventLoop;
     QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);

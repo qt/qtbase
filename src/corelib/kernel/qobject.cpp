@@ -1907,7 +1907,7 @@ void QObject::removeEventFilter(QObject *obj)
 */
 void QObject::deleteLater()
 {
-    QCoreApplication::postEvent(this, new QEvent(QEvent::DeferredDelete));
+    QCoreApplication::postEvent(this, new QDeferredDeleteEvent());
 }
 
 /*!

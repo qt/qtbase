@@ -116,7 +116,7 @@ QT_BEGIN_NAMESPACE
     \value ContentsRectChange               The margins of the widget's content rect changed.
     \value ContextMenu                      Context popup menu (QContextMenuEvent).
     \value CursorChange                     The widget's cursor has changed.
-    \value DeferredDelete                   The object will be deleted after it has cleaned up.
+    \value DeferredDelete                   The object will be deleted after it has cleaned up (QDeferredDeleteEvent).
     \value DragEnter                        The cursor enters a widget during a drag and drop operation (QDragEnterEvent).
     \value DragLeave                        The cursor leaves a widget during a drag and drop operation (QDragLeaveEvent).
     \value DragMove                         A drag and drop operation is in progress (QDragMoveEvent).
@@ -578,6 +578,26 @@ QDynamicPropertyChangeEvent::~QDynamicPropertyChangeEvent()
     removed.
 
     \sa QObject::setProperty(), QObject::dynamicPropertyNames()
+*/
+
+/*!
+    Constructs a deferred delete event with an initial loopLevel() of zero.
+*/
+QDeferredDeleteEvent::QDeferredDeleteEvent()
+    : QEvent(QEvent::DeferredDelete)
+    , level(0)
+{ }
+
+/*! \internal */
+QDeferredDeleteEvent::~QDeferredDeleteEvent()
+{ }
+
+/*! \fn int QDeferredDeleteEvent::loopLevel() const
+
+    Returns the loop-level in which the event was posted. The
+    loop-level is set by QCoreApplication::postEvent().
+
+    \sa QObject::deleteLater()
 */
 
 QT_END_NAMESPACE

@@ -360,6 +360,17 @@ private:
     QByteArray n;
 };
 
+class Q_CORE_EXPORT QDeferredDeleteEvent : public QEvent
+{
+public:
+    explicit QDeferredDeleteEvent();
+    ~QDeferredDeleteEvent();
+    int loopLevel() const { return level; }
+private:
+    int level;
+    friend class QCoreApplication;
+};
+
 QT_END_NAMESPACE
 
 QT_END_HEADER
