@@ -486,14 +486,14 @@ void tst_QMimeDatabase::mimeTypeForFileAndContent()
     QFETCH(QString, expectedMimeTypeName);
 
     QMimeDatabase db;
-    QCOMPARE(db.mimeTypeForNameAndData(name, data).name(), expectedMimeTypeName);
+    QCOMPARE(db.mimeTypeForFileNameAndData(name, data).name(), expectedMimeTypeName);
 
     QBuffer buffer(&data);
-    QCOMPARE(db.mimeTypeForNameAndData(name, &buffer).name(), expectedMimeTypeName);
+    QCOMPARE(db.mimeTypeForFileNameAndData(name, &buffer).name(), expectedMimeTypeName);
     QVERIFY(!buffer.isOpen()); // initial state was restored
 
     QVERIFY(buffer.open(QIODevice::ReadOnly));
-    QCOMPARE(db.mimeTypeForNameAndData(name, &buffer).name(), expectedMimeTypeName);
+    QCOMPARE(db.mimeTypeForFileNameAndData(name, &buffer).name(), expectedMimeTypeName);
     QVERIFY(buffer.isOpen());
     QCOMPARE(buffer.pos(), qint64(0));
 }

@@ -77,8 +77,17 @@ public:
     QMimeType mimeTypeForData(QIODevice *device) const;
 
     QMimeType mimeTypeForUrl(const QUrl &url) const;
-    QMimeType mimeTypeForNameAndData(const QString &fileName, QIODevice *device) const;
-    QMimeType mimeTypeForNameAndData(const QString &fileName, const QByteArray &data) const;
+    QMimeType mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device) const;
+    QMimeType mimeTypeForFileNameAndData(const QString &fileName, const QByteArray &data) const;
+
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED QMimeType mimeTypeForNameAndData(const QString &fileName, QIODevice *device) const {
+        return mimeTypeForFileNameAndData(fileName, device);
+    }
+    QT_DEPRECATED QMimeType mimeTypeForNameAndData(const QString &fileName, const QByteArray &data) const {
+        return mimeTypeForFileNameAndData(fileName, data);
+    }
+#endif
 
     QString suffixForFileName(const QString &fileName) const;
 

@@ -165,7 +165,7 @@ QMimeType QMimeDatabasePrivate::findByData(const QByteArray &data, int *accuracy
     return mimeTypeForName(defaultMimeType());
 }
 
-QMimeType QMimeDatabasePrivate::mimeTypeForNameAndData(const QString &fileName, QIODevice *device, int *accuracyPtr)
+QMimeType QMimeDatabasePrivate::mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device, int *accuracyPtr)
 {
     // First, glob patterns are evaluated. If there is a match with max weight,
     // this one is selected and we are done. Otherwise, the file contents are
@@ -385,7 +385,7 @@ QMimeType QMimeDatabase::mimeTypeForFile(const QFileInfo &fileInfo, MatchMode mo
     switch (mode) {
     case MatchDefault:
         file.open(QIODevice::ReadOnly); // isOpen() will be tested by method below
-        return d->mimeTypeForNameAndData(fileInfo.absoluteFilePath(), &file, &priority);
+        return d->mimeTypeForFileNameAndData(fileInfo.absoluteFilePath(), &file, &priority);
     case MatchExtension:
         locker.unlock();
         return mimeTypeForFile(fileInfo.absoluteFilePath(), mode);
@@ -437,7 +437,7 @@ QMimeType QMimeDatabase::mimeTypeForFile(const QString &fileName, MatchMode mode
 
     This function does not try to open the file. To also use the content
     when determining the MIME type, use mimeTypeForFile() or
-    mimeTypeForNameAndData() instead.
+    mimeTypeForFileNameAndData() instead.
 
     \sa mimeTypeForFile
 */
@@ -551,13 +551,13 @@ QMimeType QMimeDatabase::mimeTypeForUrl(const QUrl &url) const
     but the contents will be used if the file extension is unknown, or
     matches multiple MIME types.
 */
-QMimeType QMimeDatabase::mimeTypeForNameAndData(const QString &fileName, QIODevice *device) const
+QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device) const
 {
     DBG() << "fileName" << fileName;
 
     int accuracy = 0;
     const bool openedByUs = !device->isOpen() && device->open(QIODevice::ReadOnly);
-    const QMimeType result = d->mimeTypeForNameAndData(fileName, device, &accuracy);
+    const QMimeType result = d->mimeTypeForFileNameAndData(fileName, device, &accuracy);
     if (openedByUs)
         device->close();
     return result;
@@ -579,14 +579,14 @@ QMimeType QMimeDatabase::mimeTypeForNameAndData(const QString &fileName, QIODevi
     but the contents will be used if the file extension is unknown, or
     matches multiple MIME types.
 */
-QMimeType QMimeDatabase::mimeTypeForNameAndData(const QString &fileName, const QByteArray &data) const
+QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, const QByteArray &data) const
 {
     DBG() << "fileName" << fileName;
 
     QBuffer buffer(const_cast<QByteArray *>(&data));
     buffer.open(QIODevice::ReadOnly);
     int accuracy = 0;
-    return d->mimeTypeForNameAndData(fileName, &buffer, &accuracy);
+    return d->mimeTypeForFileNameAndData(fileName, &buffer, &accuracy);
 }
 
 /*!
