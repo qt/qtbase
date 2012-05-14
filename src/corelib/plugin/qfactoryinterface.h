@@ -57,7 +57,7 @@ struct Q_CORE_EXPORT QFactoryInterface
 };
 
 
-Q_DECLARE_INTERFACE(QFactoryInterface, "com.trolltech.Qt.QFactoryInterface")
+Q_DECLARE_INTERFACE(QFactoryInterface, "org.qt-project.Qt.QFactoryInterface")
 
 QT_END_NAMESPACE
 
