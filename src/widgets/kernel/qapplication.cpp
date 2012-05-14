@@ -2950,7 +2950,7 @@ bool QApplicationPrivate::shouldQuit()
         if (w->isVisible() && !w->parentWidget() && w->testAttribute(Qt::WA_QuitOnClose))
             return false;
     }
-    return true;
+    return QGuiApplicationPrivate::shouldQuit();
 }
 
 /*! \reimp

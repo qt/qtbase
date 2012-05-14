@@ -718,6 +718,30 @@ void tst_QApplication::quitOnLastWindowClosed()
         QCOMPARE(timerSpy.count(), 1);
         QCOMPARE(appSpy.count(), 2);
     }
+    {
+        int argc = 0;
+        QApplication app(argc, 0, QApplication::GuiServer);
+        QVERIFY(app.quitOnLastWindowClosed());
+
+        QTimer timer;
+        timer.setInterval(100);
+        QSignalSpy timerSpy(&timer, SIGNAL(timeout()));
+
+        QWindow w;
+        w.show();
+
+        QWidget wid;
+        wid.show();
+
+        timer.start();
+        QTimer::singleShot(1000, &wid, SLOT(close())); // This should NOT quit the application because the
+                                                       // QWindow is still there.
+        QTimer::singleShot(2000, &app, SLOT(quit()));  // This causes the quit.
+
+        app.exec();
+
+        QVERIFY(timerSpy.count() > 15);      // Should be around 20 if closing did not caused the quit
+    }
 }
 
 class PromptOnCloseWidget : public QWidget

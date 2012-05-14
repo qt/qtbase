@@ -57,6 +57,7 @@ private slots:
     void changeFocusWindow();
     void keyboardModifiers();
     void modalWindow();
+    void quitOnLastWindowClosed();
 };
 
 class DummyWindow : public QWindow
@@ -490,6 +491,68 @@ void tst_QGuiApplication::modalWindow()
     delete window2;
     delete window1;
 }
+
+void tst_QGuiApplication::quitOnLastWindowClosed()
+{
+    {
+        int argc = 0;
+        QGuiApplication app(argc, 0);
+
+        QTimer timer;
+        timer.setInterval(100);
+
+        QSignalSpy spy(&app, SIGNAL(aboutToQuit()));
+        QSignalSpy spy2(&timer, SIGNAL(timeout()));
+
+        QPointer<QWindow> mainWindow = new QWindow;
+        QPointer<QWindow> dialog = new QWindow;
+
+        dialog->setTransientParent(mainWindow);
+
+        QVERIFY(app.quitOnLastWindowClosed());
+
+        mainWindow->show();
+        dialog->show();
+
+        timer.start();
+        QTimer::singleShot(1000, mainWindow, SLOT(close())); // This should quit the application
+        QTimer::singleShot(2000, &app, SLOT(quit()));        // This makes sure we quit even if it didn't
+
+        app.exec();
+
+        QCOMPARE(spy.count(), 1);
+        QVERIFY(spy2.count() < 15);      // Should be around 10 if closing caused the quit
+    }
+    {
+        int argc = 0;
+        QGuiApplication app(argc, 0);
+
+        QTimer timer;
+        timer.setInterval(100);
+
+        QSignalSpy spy(&app, SIGNAL(aboutToQuit()));
+        QSignalSpy spy2(&timer, SIGNAL(timeout()));
+
+        QPointer<QWindow> mainWindow = new QWindow;
+        QPointer<QWindow> dialog = new QWindow;
+
+        QVERIFY(!dialog->transientParent());
+        QVERIFY(app.quitOnLastWindowClosed());
+
+        mainWindow->show();
+        dialog->show();
+
+        timer.start();
+        QTimer::singleShot(1000, mainWindow, SLOT(close())); // This should not quit the application
+        QTimer::singleShot(2000, &app, SLOT(quit()));
+
+        app.exec();
+
+        QCOMPARE(spy.count(), 1);
+        QVERIFY(spy2.count() > 15);      // Should be around 20 if closing did not cause the quit
+    }
+}
+
 
 QTEST_APPLESS_MAIN(tst_QGuiApplication)
 #include "tst_qguiapplication.moc"
