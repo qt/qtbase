@@ -87,7 +87,7 @@ QString Generator::sinceTitles[] =
     "    New Typedefs",
     "    New Properties",
     "    New Variables",
-    "    New QML Elements",
+    "    New QML Types",
     "    New QML Properties",
     "    New QML Signals",
     "    New QML Signal Handlers",

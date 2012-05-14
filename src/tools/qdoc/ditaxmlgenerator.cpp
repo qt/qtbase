@@ -2204,7 +2204,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         ClassNode* cn = qcn->classNode();
         rawTitle = marker->plainName(inner);
         fullTitle = marker->plainFullName(inner);
-        title = rawTitle + " Element";
+        title = rawTitle + " Type";
         Node::clearPropertyGroupCount();
 
         generateHeader(inner, fullTitle);
