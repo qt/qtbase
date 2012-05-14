@@ -47,7 +47,7 @@
 #include "qundogroup.h"
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qpointer.h>
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 #include <private/qlistview_p.h>
 
 QT_BEGIN_NAMESPACE

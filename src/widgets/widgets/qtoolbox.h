@@ -43,7 +43,7 @@
 #define QTOOLBOX_H
 
 #include <QtWidgets/qframe.h>
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 
 QT_BEGIN_HEADER
 

@@ -42,7 +42,7 @@
 #ifndef QABSTRACTBUTTON_H
 #define QABSTRACTBUTTON_H
 
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 #include <QtGui/qkeysequence.h>
 #include <QtWidgets/qwidget.h>
 

@@ -374,6 +374,7 @@ public:
                                        ulong timestamp);
     static void translateTouchCancel(QTouchDevice *device, ulong timestamp);
 
+    QPixmap applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const;
 private:
 #ifdef Q_WS_QWS
     QHash<const QScreen*, QRect> maxWindowRects;

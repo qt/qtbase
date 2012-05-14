@@ -45,7 +45,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qsize.h>
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qpalette.h>
 #include <QtWidgets/qsizepolicy.h>

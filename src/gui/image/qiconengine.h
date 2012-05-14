@@ -44,14 +44,14 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qlist.h>
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 
-class Q_WIDGETS_EXPORT QIconEngine
+class Q_GUI_EXPORT QIconEngine
 {
 public:
     virtual ~QIconEngine();

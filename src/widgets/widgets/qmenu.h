@@ -44,7 +44,7 @@
 
 #include <QtWidgets/qwidget.h>
 #include <QtCore/qstring.h>
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 #include <QtWidgets/qaction.h>
 
 #ifdef Q_OS_WINCE

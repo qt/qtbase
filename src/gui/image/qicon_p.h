@@ -57,8 +57,8 @@
 #include <QtCore/qsize.h>
 #include <QtCore/qlist.h>
 #include <QtGui/qpixmap.h>
-#include <QtWidgets/qicon.h>
-#include <QtWidgets/qiconengine.h>
+#include <QtGui/qicon.h>
+#include <QtGui/qiconengine.h>
 
 #ifndef QT_NO_ICON
 QT_BEGIN_NAMESPACE

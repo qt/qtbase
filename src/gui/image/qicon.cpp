@@ -45,15 +45,13 @@
 #include "qiconengineplugin.h"
 #include "private/qfactoryloader_p.h"
 #include "private/qiconloader_p.h"
-#include "qstyleoption.h"
 #include "qpainter.h"
 #include "qfileinfo.h"
-#include "qstyle.h"
 #include "qpixmapcache.h"
 #include "qvariant.h"
 #include "qcache.h"
 #include "qdebug.h"
-#include "qapplication.h"
+#include "qpalette.h"
 
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
@@ -61,6 +59,7 @@
 #endif
 
 #include "private/qhexstring_p.h"
+#include "private/qguiapplication_p.h"
 
 #ifndef QT_NO_ICON
 QT_BEGIN_NAMESPACE
@@ -265,11 +264,10 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
     if (!actualSize.isNull() && (actualSize.width() > size.width() || actualSize.height() > size.height()))
         actualSize.scale(size, Qt::KeepAspectRatio);
 
-    // #### Qt5 no idea what this really does, but we need to remove the QApp and style references
     QString key = QLatin1String("qt_")
                   % HexString<quint64>(pm.cacheKey())
                   % HexString<uint>(pe->mode)
-                  % HexString<quint64>(QApplication::palette().cacheKey())
+                  % HexString<quint64>(QGuiApplication::palette().cacheKey())
                   % HexString<uint>(actualSize.width())
                   % HexString<uint>(actualSize.height());
 
@@ -277,9 +275,9 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
         if (QPixmapCache::find(key % HexString<uint>(mode), pm))
             return pm; // horray
         if (QPixmapCache::find(key % HexString<uint>(QIcon::Normal), pm)) {
-            QStyleOption opt(0);
-            opt.palette = QApplication::palette();
-            QPixmap active = QApplication::style()->generatedIconPixmap(QIcon::Active, pm, &opt);
+            QPixmap active = pm;
+            if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
+                active = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(guiApp))->applyQIconStyleHelper(QIcon::Active, pm);
             if (pm.cacheKey() == active.cacheKey())
                 return pm;
         }
@@ -289,9 +287,9 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
         if (pm.size() != actualSize)
             pm = pm.scaled(actualSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         if (pe->mode != mode && mode != QIcon::Normal) {
-            QStyleOption opt(0);
-            opt.palette = QApplication::palette();
-            QPixmap generated = QApplication::style()->generatedIconPixmap(mode, pm, &opt);
+            QPixmap generated = pm;
+            if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
+                generated = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(guiApp))->applyQIconStyleHelper(mode, pm);
             if (!generated.isNull())
                 pm = generated;
         }
@@ -457,7 +455,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 
   \ingroup painting
   \ingroup shared
-  \inmodule QtWidgets
+  \inmodule QtGui
 
   A QIcon can generate smaller, larger, active, and disabled pixmaps
   from the set of pixmaps it is given. Such pixmaps are used by Qt
@@ -710,7 +708,24 @@ void QIcon::paint(QPainter *painter, const QRect &rect, Qt::Alignment alignment,
 {
     if (!d || !painter)
         return;
-    QRect alignedRect = QStyle::alignedRect(painter->layoutDirection(), alignment, d->engine->actualSize(rect.size(), mode, state), rect);
+
+    // Copy of QStyle::alignedRect
+    const QSize size = d->engine->actualSize(rect.size(), mode, state);
+    alignment = QGuiApplicationPrivate::visualAlignment(painter->layoutDirection(), alignment);
+    int x = rect.x();
+    int y = rect.y();
+    int w = size.width();
+    int h = size.height();
+    if ((alignment & Qt::AlignVCenter) == Qt::AlignVCenter)
+        y += rect.size().height()/2 - h/2;
+    else if ((alignment & Qt::AlignBottom) == Qt::AlignBottom)
+        y += rect.size().height() - h;
+    if ((alignment & Qt::AlignRight) == Qt::AlignRight)
+        x += rect.size().width() - w;
+    else if ((alignment & Qt::AlignHCenter) == Qt::AlignHCenter)
+        x += rect.size().width()/2 - w/2;
+    QRect alignedRect(x, y, w, h);
+
     d->engine->paint(painter, alignedRect, mode, state);
 }
 

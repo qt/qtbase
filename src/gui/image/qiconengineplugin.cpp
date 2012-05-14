@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
     \brief The QIconEnginePlugin class provides an abstract base for custom QIconEngine plugins.
 
     \ingroup plugins
-    \inmodule QtWidgets
+    \inmodule QtGui
 
     \b {Use QIconEnginePluginV2 instead.}
 

@@ -23,6 +23,11 @@ HEADERS += \
         image/qpixmapcache_p.h \
         image/qplatformpixmap.h \
         image/qimagepixmapcleanuphooks_p.h \
+        image/qicon.h \
+        image/qicon_p.h \
+        image/qiconloader_p.h \
+        image/qiconengine.h \
+        image/qiconengineplugin.h \
 
 SOURCES += \
         image/qbitmap.cpp \
@@ -40,7 +45,12 @@ SOURCES += \
         image/qpixmap_raster.cpp \
         image/qpixmap_blitter.cpp \
         image/qnativeimage.cpp \
-        image/qimagepixmapcleanuphooks.cpp
+        image/qimagepixmapcleanuphooks.cpp \
+        image/qicon.cpp \
+        image/qiconloader.cpp \
+        image/qiconengine.cpp \
+        image/qiconengineplugin.cpp \
+
 
 win32: SOURCES += image/qpixmap_win.cpp
 

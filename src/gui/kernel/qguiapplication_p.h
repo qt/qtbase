@@ -52,6 +52,7 @@
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "private/qshortcutmap_p.h"
+#include <qicon.h>
 
 QT_BEGIN_HEADER
 
@@ -212,6 +213,9 @@ public:
     QHash<QWindow *, SynthesizedMouseData> synthesizedMousePoints;
 
     const QDrawHelperGammaTables *gammaTables();
+
+    // hook reimplemented in QApplication to apply the QStyle function on the QIcon
+    virtual QPixmap applyQIconStyleHelper(QIcon::Mode, const QPixmap &basePixmap) const { return basePixmap; }
 
 protected:
     virtual void notifyThemeChanged();

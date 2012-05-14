@@ -43,14 +43,12 @@
 
 #include <private/qguiapplication_p.h>
 #include <private/qicon_p.h>
-#include <private/qguiapplication_p.h>
 
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QIconEnginePlugin>
+#include <QtGui/QIconEnginePlugin>
 #include <QtGui/QPixmapCache>
 #include <qpa/qplatformtheme.h>
-#include <QtWidgets/QIconEngine>
-#include <QtWidgets/QStyleOption>
+#include <QtGui/QIconEngine>
+#include <QtGui/QPalette>
 #include <QtCore/QList>
 #include <QtCore/QHash>
 #include <QtCore/QDir>
@@ -510,16 +508,16 @@ QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State st
     QString key = QLatin1String("$qt_theme_")
                   % HexString<qint64>(basePixmap.cacheKey())
                   % HexString<int>(mode)
-                  % HexString<qint64>(qApp->palette().cacheKey())
+                  % HexString<qint64>(QGuiApplication::palette().cacheKey())
                   % HexString<int>(actualSize);
 
     QPixmap cachedPixmap;
     if (QPixmapCache::find(key, &cachedPixmap)) {
         return cachedPixmap;
     } else {
-        QStyleOption opt(0);
-        opt.palette = qApp->palette();
-        cachedPixmap = qApp->style()->generatedIconPixmap(mode, basePixmap, &opt);
+        cachedPixmap = basePixmap;
+        if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
+            cachedPixmap = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(guiApp))->applyQIconStyleHelper(mode, basePixmap);
         QPixmapCache::insert(key, cachedPixmap);
     }
     return cachedPixmap;

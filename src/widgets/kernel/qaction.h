@@ -46,7 +46,7 @@
 #include <QtCore/qstring.h>
 #include <QtWidgets/qwidget.h>
 #include <QtCore/qvariant.h>
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 
 QT_BEGIN_HEADER
 

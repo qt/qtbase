@@ -15,11 +15,6 @@ HEADERS += \
 	kernel/qdesktopwidget.h \
 	kernel/qformlayout.h \
 	kernel/qgridlayout.h \
-        kernel/qicon.h \
-        kernel/qicon_p.h \
-        kernel/qiconloader_p.h \
-        kernel/qiconengine.h \
-        kernel/qiconengineplugin.h \
         kernel/qlayout.h \
 	kernel/qlayout_p.h \
 	kernel/qlayoutengine_p.h \
@@ -52,10 +47,6 @@ SOURCES += \
         kernel/qboxlayout.cpp \
 	kernel/qformlayout.cpp \
 	kernel/qgridlayout.cpp \
-        kernel/qicon.cpp \
-        kernel/qiconloader.cpp \
-        kernel/qiconengine.cpp \
-        kernel/qiconengineplugin.cpp \
         kernel/qlayout.cpp \
 	kernel/qlayoutengine.cpp \
 	kernel/qlayoutitem.cpp \

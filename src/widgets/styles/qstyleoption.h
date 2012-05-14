@@ -44,7 +44,7 @@
 
 #include <QtCore/qvariant.h>
 #include <QtWidgets/qabstractspinbox.h>
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 #include <QtGui/qmatrix.h>
 #include <QtWidgets/qslider.h>
 #include <QtWidgets/qstyle.h>

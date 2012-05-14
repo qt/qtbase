@@ -46,7 +46,7 @@
 
 #ifndef QT_NO_SYSTEMTRAYICON
 
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 
 QT_BEGIN_HEADER
 

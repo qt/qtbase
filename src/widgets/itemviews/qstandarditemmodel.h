@@ -45,7 +45,7 @@
 #include <QtCore/qabstractitemmodel.h>
 #include <QtGui/qbrush.h>
 #include <QtGui/qfont.h>
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 #ifndef QT_NO_DATASTREAM
 #include <QtCore/qdatastream.h>
 #endif

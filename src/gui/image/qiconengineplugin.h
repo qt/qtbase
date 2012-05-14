@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QIconEngine;
 
-struct Q_WIDGETS_EXPORT QIconEngineFactoryInterface : public QFactoryInterface
+struct Q_GUI_EXPORT QIconEngineFactoryInterface : public QFactoryInterface
 {
     virtual QIconEngine *create(const QString &filename = QString()) = 0;
 };
@@ -61,7 +61,7 @@ struct Q_WIDGETS_EXPORT QIconEngineFactoryInterface : public QFactoryInterface
     "org.qt-project.Qt.QIconEngineFactoryInterface"
 Q_DECLARE_INTERFACE(QIconEngineFactoryInterface, QIconEngineFactoryInterface_iid)
 
-class Q_WIDGETS_EXPORT QIconEnginePlugin : public QObject, public QIconEngineFactoryInterface
+class Q_GUI_EXPORT QIconEnginePlugin : public QObject, public QIconEngineFactoryInterface
 {
     Q_OBJECT
     Q_INTERFACES(QIconEngineFactoryInterface:QFactoryInterface)

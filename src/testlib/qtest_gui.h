@@ -61,7 +61,7 @@
 #include <QtGui/qimage.h>
 
 #ifdef QT_WIDGETS_LIB
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 #endif
 
 #if 0

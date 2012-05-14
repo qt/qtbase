@@ -4510,6 +4510,14 @@ QGestureManager* QGestureManager::instance()
 }
 #endif // QT_NO_GESTURES
 
+QPixmap QApplicationPrivate::applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const
+{
+    Q_Q(const QApplication);
+    QStyleOption opt(0);
+    opt.palette = q->palette();
+    return q->style()->generatedIconPixmap(mode, base, &opt);
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qapplication.cpp"

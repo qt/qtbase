@@ -54,7 +54,7 @@
 #include <QtWidgets/qdesktopwidget.h>
 #include <QtWidgets/qpushbutton.h>
 #include <QtGui/qaccessible.h>
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 #include <QtGui/qtextdocument.h>
 #include <QtWidgets/qapplication.h>
 #include <QtWidgets/qtextedit.h>

@@ -43,7 +43,7 @@
 #define QTABWIDGET_H
 
 #include <QtWidgets/qwidget.h>
-#include <QtWidgets/qicon.h>
+#include <QtGui/qicon.h>
 
 QT_BEGIN_HEADER
 

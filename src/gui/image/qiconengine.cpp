@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
   \brief The QIconEngine class provides an abstract base class for QIcon renderers.
 
   \ingroup painting
-  \inmodule QtWidgets
+  \inmodule QtGui
 
   An icon engine provides the rendering functions for a QIcon. Each icon has a
   corresponding icon engine that is responsible for drawing the icon with a
@@ -158,7 +158,7 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
     \class QIconEngine::AvailableSizesArgument
     \since 4.5
 
-    \inmodule QtWidgets
+    \inmodule QtGui
 
     This struct represents arguments to virtual_hook() function when
     \a id parameter is QIconEngine::AvailableSizesHook.

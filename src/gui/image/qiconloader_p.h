@@ -54,8 +54,8 @@
 // We mean it.
 //
 
-#include <QtWidgets/QIcon>
-#include <QtWidgets/QIconEngine>
+#include <QtGui/QIcon>
+#include <QtGui/QIconEngine>
 #include <QtGui/QPixmapCache>
 #include <private/qicon_p.h>
 #include <private/qfactoryloader_p.h>
@@ -153,7 +153,7 @@ private:
     bool m_valid;
 };
 
-class QIconLoader : public QObject
+class Q_GUI_EXPORT QIconLoader : public QObject
 {
 public:
     QIconLoader();
