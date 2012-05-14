@@ -68,6 +68,44 @@
 #  include <private/qprintengine_pdf_p.h>
 #endif
 
+/*
+
+Print dialog class declarations
+
+    QPrintDialog:            The main Print Dialog, nothing really held here.
+
+    QUnixPrintWidget:
+    QUnixPrintWidgetPrivate: The real Unix Print Dialog implementation.
+
+                             Directly includes the upper half of the Print Dialog
+                             containing the Printer Selection widgets and
+                             Properties button.
+
+                             Embeds the Properties pop-up dialog from
+                             QPrintPropertiesDialog
+
+                             Embeds the lower half from separate widget class
+                             QPrintDialogPrivate
+
+                             Layout in qprintwidget.ui
+
+    QPrintDialogPrivate:     The lower half of the Print Dialog containing the
+                             Copies and Options tabs that expands when the
+                             Options button is selected.
+
+                             Layout in qprintsettingsoutput.ui
+
+    QPrintPropertiesDialog:  Dialog displayed when clicking on Properties button to
+                             allow editing of Page and Advanced tabs.
+
+                             Layout in qprintpropertieswidget.ui
+
+    QPPDOptionsModel:        Holds the PPD Options for the printer.
+
+    QPPDOptionsEditor:       Edits the PPD Options for the printer.
+
+*/
+
 QT_BEGIN_NAMESPACE
 
 class QOptionTreeItem;
@@ -104,38 +142,24 @@ private:
 #endif
 };
 
-class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
+class QUnixPrintWidgetPrivate;
+
+class QUnixPrintWidget : public QWidget
 {
-    Q_DECLARE_PUBLIC(QPrintDialog)
-    Q_DECLARE_TR_FUNCTIONS(QPrintDialog)
+    Q_OBJECT
+
 public:
-    QPrintDialogPrivate();
-    ~QPrintDialogPrivate();
+    explicit QUnixPrintWidget(QPrinter *printer, QWidget *parent = 0);
+    ~QUnixPrintWidget();
+    void updatePrinter();
 
-    void init();
-    /// copy printer properties to the widget
-    void applyPrinterProperties(QPrinter *p);
-
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    void selectPrinter(QCUPSSupport *cups);
-#endif
-
-    void _q_chbPrintLastFirstToggled(bool);
-#ifndef QT_NO_MESSAGEBOX
-    void _q_checkFields();
-#endif
-    void _q_collapseOrExpandDialog();
-
-    void setupPrinter();
-    void updateWidgets();
-
-    virtual void setTabs(const QList<QWidget*> &tabs);
-
-    Ui::QPrintSettingsOutput options;
-    QUnixPrintWidget *top;
-    QWidget *bottom;
-    QDialogButtonBox *buttons;
-    QPushButton *collapseButton;
+private:
+    friend class QPrintDialogPrivate;
+    friend class QUnixPrintWidgetPrivate;
+    QUnixPrintWidgetPrivate *d;
+    Q_PRIVATE_SLOT(d, void _q_printerChanged(int))
+    Q_PRIVATE_SLOT(d, void _q_btnBrowseClicked())
+    Q_PRIVATE_SLOT(d, void _q_btnPropertiesClicked())
 };
 
 class QUnixPrintWidgetPrivate
@@ -174,6 +198,40 @@ private:
     const cups_dest_t* cupsPrinters;
     const ppd_file_t* cupsPPD;
 #endif
+};
+
+class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
+{
+    Q_DECLARE_PUBLIC(QPrintDialog)
+    Q_DECLARE_TR_FUNCTIONS(QPrintDialog)
+public:
+    QPrintDialogPrivate();
+    ~QPrintDialogPrivate();
+
+    void init();
+    /// copy printer properties to the widget
+    void applyPrinterProperties(QPrinter *p);
+
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+    void selectPrinter(QCUPSSupport *cups);
+#endif
+
+    void _q_chbPrintLastFirstToggled(bool);
+#ifndef QT_NO_MESSAGEBOX
+    void _q_checkFields();
+#endif
+    void _q_collapseOrExpandDialog();
+
+    void setupPrinter();
+    void updateWidgets();
+
+    virtual void setTabs(const QList<QWidget*> &tabs);
+
+    Ui::QPrintSettingsOutput options;
+    QUnixPrintWidget *top;
+    QWidget *bottom;
+    QDialogButtonBox *buttons;
+    QPushButton *collapseButton;
 };
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
@@ -248,7 +306,17 @@ private slots:
 
 #endif
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+
+    QPrintPropertiesDialog
+
+    Dialog displayed when clicking on Properties button to allow editing of Page
+    and Advanced tabs.
+
+*/
 
 QPrintPropertiesDialog::QPrintPropertiesDialog(QAbstractPrintDialog *parent)
     : QDialog(parent)
@@ -364,6 +432,18 @@ void QPrintPropertiesDialog::addItemToOptions(QOptionTreeItem *parent, QList<con
     }
 }
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+
+    QPrintDialogPrivate
+
+    The lower half of the Print Dialog containing the Copies and Options
+    tabs that expands when the Options button is selected.
+
+*/
 
 QPrintDialogPrivate::QPrintDialogPrivate()
     : top(0), bottom(0), buttons(0), collapseButton(0)
@@ -578,6 +658,15 @@ void QPrintDialogPrivate::selectPrinter(QCUPSSupport *cups)
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+
+    QPrintDialog
+
+    The main Print Dialog.
+
+*/
 
 QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), printer, parent)
@@ -621,6 +710,17 @@ void QPrintDialog::accept()
     d->setupPrinter();
     QDialog::accept();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+
+    QUnixPrintWidget && QUnixPrintWidgetPrivate
+
+    The upper half of the Print Dialog containing the Printer Selection widgets
+
+*/
 
 #if defined (Q_OS_UNIX)
 
@@ -957,7 +1057,6 @@ void QUnixPrintWidgetPrivate::setupPrinter()
 #endif
 }
 
-
 /*! \internal
 */
 QUnixPrintWidget::QUnixPrintWidget(QPrinter *printer, QWidget *parent)
@@ -983,6 +1082,16 @@ void QUnixPrintWidget::updatePrinter()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+
+    QPPDOptionsModel
+
+    Holds the PPD Options for the printer.
+
+*/
+
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
 
 QPPDOptionsModel::QPPDOptionsModel(QCUPSSupport *c, QObject *parent)
@@ -1170,6 +1279,15 @@ QVariant QPPDOptionsModel::headerData(int section, Qt::Orientation, int role) co
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+
+    QPPDOptionsEditor
+
+    Edits the PPD Options for the printer.
+
+*/
 
 QWidget* QPPDOptionsEditor::createEditor(QWidget* parent, const QStyleOptionViewItem&, const QModelIndex& index) const
 {
@@ -1222,6 +1340,9 @@ void QPPDOptionsEditor::cbChanged(int)
     emit commitData(static_cast<QWidget*>(sender()));
 */
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 #endif // !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
 #endif // defined (Q_OS_UNIX)

@@ -55,28 +55,6 @@ class QPrintDialogPrivate;
 class QPushButton;
 class QPrinter;
 
-#if defined (Q_OS_UNIX) && !defined(Q_OS_MAC)
-class QUnixPrintWidgetPrivate;
-
-class Q_PRINTSUPPORT_EXPORT QUnixPrintWidget : public QWidget
-{
-    Q_OBJECT
-
-public:
-    explicit QUnixPrintWidget(QPrinter *printer, QWidget *parent = 0);
-    ~QUnixPrintWidget();
-    void updatePrinter();
-
-private:
-    friend class QPrintDialogPrivate;
-    friend class QUnixPrintWidgetPrivate;
-    QUnixPrintWidgetPrivate *d;
-    Q_PRIVATE_SLOT(d, void _q_printerChanged(int))
-    Q_PRIVATE_SLOT(d, void _q_btnBrowseClicked())
-    Q_PRIVATE_SLOT(d, void _q_btnPropertiesClicked())
-};
-#endif
-
 class Q_PRINTSUPPORT_EXPORT QPrintDialog : public QAbstractPrintDialog
 {
     Q_OBJECT
@@ -129,14 +107,14 @@ Q_SIGNALS:
     void accepted(QPrinter *printer);
 
 private:
-    Q_PRIVATE_SLOT(d_func(), void _q_chbPrintLastFirstToggled(bool))
 #if defined (Q_OS_UNIX) && !defined(Q_OS_MAC)
+    Q_PRIVATE_SLOT(d_func(), void _q_chbPrintLastFirstToggled(bool))
     Q_PRIVATE_SLOT(d_func(), void _q_collapseOrExpandDialog())
-#endif
-# if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(QT_NO_MESSAGEBOX)
+# if !defined(QT_NO_MESSAGEBOX)
     Q_PRIVATE_SLOT(d_func(), void _q_checkFields())
-# endif
+# endif // QT_NO_MESSAGEBOX
     friend class QUnixPrintWidget;
+# endif // Q_OS_UNIX
 };
 
 #endif // QT_NO_PRINTDIALOG
