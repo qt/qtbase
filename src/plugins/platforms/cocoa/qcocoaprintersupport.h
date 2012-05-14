@@ -44,6 +44,8 @@
 
 #include <qpa/qplatformprintersupport.h>
 
+#include "qt_mac_p.h"
+
 class QCocoaPrinterSupport : public QPlatformPrinterSupport
 {
 public:
@@ -55,6 +57,10 @@ public:
     QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const Q_DECL_OVERRIDE;
 
     QList<QPrinterInfo> availablePrinters() Q_DECL_OVERRIDE;
+    QPrinterInfo printerInfo(const QString &printerName) Q_DECL_OVERRIDE;
+
+private:
+    QPrinterInfo printerInfoFromPMPrinter(const PMPrinter &printer);
 };
 
 #endif // QCOCOAPRINTERSUPPORT_H

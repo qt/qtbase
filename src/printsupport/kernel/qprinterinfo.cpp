@@ -96,11 +96,10 @@ QPrinterInfo::QPrinterInfo(const QPrinterInfo &other)
 QPrinterInfo::QPrinterInfo(const QPrinter &printer)
     : d_ptr(&QPrinterInfoPrivate::shared_null)
 {
-    foreach (const QPrinterInfo &printerInfo, availablePrinters()) {
-        if (printerInfo.printerName() == printer.printerName()) {
-            d_ptr.reset(new QPrinterInfoPrivate(*printerInfo.d_ptr));
-            break;
-        }
+    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    if (ps) {
+        QPrinterInfo pi = ps->printerInfo(printer.printerName());
+        d_ptr.reset(new QPrinterInfoPrivate(*pi.d_ptr));
     }
 }
 
@@ -195,7 +194,27 @@ QPrinterInfo QPrinterInfo::defaultPrinter()
     QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
     if (!ps)
         return QPrinterInfo();
-    return QPlatformPrinterSupportPlugin::get()->defaultPrinter();
+    return ps->defaultPrinter();
+}
+
+/*!
+    \fn QPrinterInfo QPrinterInfo::printerInfo()
+    \since 5.0
+
+    Returns the named printer.
+
+    The return value should be checked using isNull() before being
+    used, in case the named printer does not exist.
+
+    \sa isNull()
+*/
+
+QPrinterInfo QPrinterInfo::printerInfo(const QString &printerName)
+{
+    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    if (!ps)
+        return QPrinterInfo();
+    return ps->printerInfo(printerName);
 }
 
 QT_END_NAMESPACE

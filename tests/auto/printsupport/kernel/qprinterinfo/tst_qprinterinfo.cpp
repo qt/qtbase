@@ -68,6 +68,7 @@ private slots:
     void testForPaperSizes();
     void testConstructors();
     void testAssignment();
+    void namedPrinter();
 
 private:
     QString getDefaultPrinterFromSystem();
@@ -372,6 +373,24 @@ void tst_QPrinterInfo::testAssignment()
         QCOMPARE(pi.supportedPaperSizes(), prns[c].supportedPaperSizes());
     }
 }
+
+void tst_QPrinterInfo::namedPrinter()
+{
+    QList<QPrinterInfo> printers = QPrinterInfo::availablePrinters();
+
+    QStringList printerNames;
+
+    foreach (const QPrinterInfo &pi, printers) {
+        QPrinterInfo pi2 = QPrinterInfo::printerInfo(pi.printerName());
+        qDebug() << "Printer: " << pi2.printerName() << " : "
+                 << pi2.isNull() << " : " << pi2.isDefault();
+        QCOMPARE(pi2.printerName(),         pi.printerName());
+        QCOMPARE(pi2.supportedPaperSizes(), pi.supportedPaperSizes());
+        QCOMPARE(pi2.isNull(),              pi.isNull());
+        QCOMPARE(pi2.isDefault(),           pi.isDefault());
+    }
+}
+
 
 #endif
 

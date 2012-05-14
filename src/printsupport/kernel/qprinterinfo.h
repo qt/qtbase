@@ -71,6 +71,7 @@ public:
 
     static QList<QPrinterInfo> availablePrinters();
     static QPrinterInfo defaultPrinter();
+    static QPrinterInfo printerInfo(const QString &printerName);
 
 private:
     explicit QPrinterInfo(const QString &name);
@@ -78,6 +79,7 @@ private:
 private:
     friend class QPlatformPrinterSupport;
     friend class QWindowsPrinterSupport;
+    friend class QCocoaPrinterSupport;
     Q_DECLARE_PRIVATE(QPrinterInfo)
     QScopedPointer<QPrinterInfoPrivate, QPrinterInfoPrivateDeleter> d_ptr;
 };

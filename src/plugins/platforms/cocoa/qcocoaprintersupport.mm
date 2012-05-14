@@ -44,6 +44,7 @@
 
 #include <QtPrintSupport/QPrinter>
 #include <QtPrintSupport/QPrinterInfo>
+#include <private/qprinterinfo_p.h>
 
 QCocoaPrinterSupport::QCocoaPrinterSupport()
 { }
@@ -108,9 +109,27 @@ QList<QPrinterInfo> QCocoaPrinterSupport::availablePrinters()
         CFIndex count = CFArrayGetCount(printerList);
         for (CFIndex i = 0; i < count; ++i) {
             PMPrinter printer = static_cast<PMPrinter>(const_cast<void *>(CFArrayGetValueAtIndex(printerList, i)));
-            QString printerName = QCFString::toQString(PMPrinterGetID(printer));
-            returnValue += QPlatformPrinterSupport::printerInfo(printerName, PMPrinterIsDefault(printer));
+            returnValue += printerInfoFromPMPrinter(printer);
         }
     }
     return returnValue;
+}
+
+QPrinterInfo QCocoaPrinterSupport::printerInfo(const QString &printerName)
+{
+    PMPrinter printer = PMPrinterCreateFromPrinterID(QCFString::toCFStringRef(printerName));
+    QPrinterInfo pi = printerInfoFromPMPrinter(printer);
+    PMRelease(printer);
+    return pi;
+}
+
+QPrinterInfo QCocoaPrinterSupport::printerInfoFromPMPrinter(const PMPrinter &printer)
+{
+    if (!printer)
+        return QPrinterInfo();
+
+    QPrinterInfo pi = QPrinterInfo(QCFString::toQString(PMPrinterGetID(printer)));
+    pi.d_func()->isDefault = PMPrinterIsDefault(printer);
+
+    return pi;
 }

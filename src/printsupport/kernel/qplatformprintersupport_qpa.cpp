@@ -97,11 +97,14 @@ QPrinterInfo QPlatformPrinterSupport::defaultPrinter()
     return printers.isEmpty() ? QPrinterInfo() : printers.front();
 }
 
-QPrinterInfo QPlatformPrinterSupport::printerInfo(const QString &printerName, bool isDefault)
+QPrinterInfo QPlatformPrinterSupport::printerInfo(const QString &printerName)
 {
-    QPrinterInfo pi = QPrinterInfo(printerName);
-    pi.d_func()->isDefault = isDefault;
-    return pi;
+    const QList<QPrinterInfo> printers = availablePrinters();
+    foreach (const QPrinterInfo &printerInfo, printers) {
+        if (printerInfo.printerName() == printerName)
+            return printerInfo;
+    }
+    return QPrinterInfo();
 }
 
 void QPlatformPrinterSupport::setPrinterInfoDefault(QPrinterInfo *p, bool isDefault)

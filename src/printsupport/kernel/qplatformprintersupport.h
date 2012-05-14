@@ -73,12 +73,12 @@ public:
 
     virtual QList<QPrinterInfo> availablePrinters();
     virtual QPrinterInfo defaultPrinter();
+    virtual QPrinterInfo printerInfo(const QString &printerName);
 
     static QPrinter::PaperSize convertQSizeFToPaperSize(const QSizeF &sizef);
     static QSizeF convertPaperSizeToQSizeF(QPrinter::PaperSize paperSize);
 
 protected:
-     static QPrinterInfo printerInfo(const QString &printerName, bool isDefault = false);
      static void setPrinterInfoDefault(QPrinterInfo *p, bool isDefault);
      static bool printerInfoIsDefault(const QPrinterInfo &p);
      static int printerInfoCupsPrinterIndex(const QPrinterInfo &p);
