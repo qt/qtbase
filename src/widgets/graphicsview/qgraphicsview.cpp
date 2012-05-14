@@ -271,6 +271,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qmath.h>
+#include <QtCore/qscopedvaluerollback.h>
 #include <QtWidgets/qapplication.h>
 #include <QtWidgets/qdesktopwidget.h>
 #include <QtGui/qevent.h>
@@ -2777,7 +2778,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             QApplication::sendEvent(d->scene, &windowDeactivate);
         }
         break;
-    case QEvent::Leave:
+    case QEvent::Leave: {
         // ### This is a temporary fix for until we get proper mouse grab
         // events. activeMouseGrabberItem should be set to 0 if we lose the
         // mouse grab.
@@ -2790,9 +2791,11 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         d->useLastMouseEvent = false;
         // a hack to pass a viewport pointer to the scene inside the leave event
         Q_ASSERT(event->d == 0);
+        QScopedValueRollback<QEventPrivate *> rb(event->d);
         event->d = reinterpret_cast<QEventPrivate *>(viewport());
         QApplication::sendEvent(d->scene, event);
         break;
+    }
 #ifndef QT_NO_TOOLTIP
     case QEvent::ToolTip: {
         QHelpEvent *toolTip = static_cast<QHelpEvent *>(event);
