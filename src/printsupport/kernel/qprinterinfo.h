@@ -65,8 +65,13 @@ public:
     QPrinterInfo &operator=(const QPrinterInfo &other);
 
     QString printerName() const;
+    QString description() const;
+    QString location() const;
+    QString makeAndModel() const;
+
     bool isNull() const;
     bool isDefault() const;
+
     QList<QPrinter::PaperSize> supportedPaperSizes() const;
 
     static QList<QPrinterInfo> availablePrinters();

@@ -296,6 +296,9 @@ void tst_QPrinterInfo::testAssignment()
         QCOMPARE(copy.printerName(),         printers.at(i).printerName());
         QCOMPARE(copy.isNull(),              printers.at(i).isNull());
         QCOMPARE(copy.isDefault(),           printers.at(i).isDefault());
+        QCOMPARE(copy.description(),         printers.at(i).description());
+        QCOMPARE(copy.location(),            printers.at(i).location());
+        QCOMPARE(copy.makeAndModel(),        printers.at(i).makeAndModel());
         QCOMPARE(copy.supportedPaperSizes(), printers.at(i).supportedPaperSizes());
     }
 }
@@ -308,9 +311,13 @@ void tst_QPrinterInfo::namedPrinter()
 
     foreach (const QPrinterInfo &pi, printers) {
         QPrinterInfo pi2 = QPrinterInfo::printerInfo(pi.printerName());
-        qDebug() << "Printer: " << pi2.printerName() << " : "
+        qDebug() << "Printer: " << pi2.printerName() << " : " << pi2.description() << " : "
+                 << pi2.location() << " : " << pi2.makeAndModel() << " : "
                  << pi2.isNull() << " : " << pi2.isDefault();
         QCOMPARE(pi2.printerName(),         pi.printerName());
+        QCOMPARE(pi2.description(),         pi.description());
+        QCOMPARE(pi2.location(),            pi.location());
+        QCOMPARE(pi2.makeAndModel(),        pi.makeAndModel());
         QCOMPARE(pi2.supportedPaperSizes(), pi.supportedPaperSizes());
         QCOMPARE(pi2.isNull(),              pi.isNull());
         QCOMPARE(pi2.isDefault(),           pi.isDefault());

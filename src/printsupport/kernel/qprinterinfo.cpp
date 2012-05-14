@@ -137,12 +137,53 @@ QPrinterInfo &QPrinterInfo::operator=(const QPrinterInfo &other)
 /*!
     Returns the name of the printer.
 
+    This is a unique id to identify the printer and may not be human-readable.
+
+    \sa QPrinterInfo::description()
     \sa QPrinter::setPrinterName()
 */
 QString QPrinterInfo::printerName() const
 {
     const Q_D(QPrinterInfo);
     return d->name;
+}
+
+/*!
+    \fn QString QPrinterInfo::description()
+    \since 5.0
+
+    Returns the human-readable description of the printer.
+
+    \sa QPrinterInfo::printerName()
+*/
+QString QPrinterInfo::description() const
+{
+    const Q_D(QPrinterInfo);
+    return d->description;
+}
+
+/*!
+    \fn QString QPrinterInfo::location()
+    \since 5.0
+
+    Returns the human-readable location of the printer.
+*/
+QString QPrinterInfo::location() const
+{
+    const Q_D(QPrinterInfo);
+    return d->location;
+}
+
+/*!
+    \fn QString QPrinterInfo::makeAndModel()
+    \since 5.0
+
+    Returns the human-readable make and model of the printer.
+*/
+QString QPrinterInfo::makeAndModel() const
+{
+    const Q_D(QPrinterInfo);
+    return d->makeAndModel;
 }
 
 /*!

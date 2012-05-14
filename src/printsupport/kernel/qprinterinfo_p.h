@@ -77,6 +77,9 @@ public:
     static QPrinterInfoPrivate shared_null;
 
     QString name;
+    QString description;
+    QString location;
+    QString makeAndModel;
     bool isDefault;
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
