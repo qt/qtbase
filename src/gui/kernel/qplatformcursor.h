@@ -38,8 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QPLATFORMCURSOR_QPA_H
-#define QPLATFORMCURSOR_QPA_H
+#ifndef QPLATFORMCURSOR_H
+#define QPLATFORMCURSOR_H
 
 //
 //  W A R N I N G
@@ -108,4 +108,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QPLATFORMCURSOR_QPA_H
+#endif // QPLATFORMCURSOR_H

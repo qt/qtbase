@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMNATIVEINTERFACE_QPA_H
-#define QPLATFORMNATIVEINTERFACE_QPA_H
+#ifndef QPLATFORMNATIVEINTERFACE_H
+#define QPLATFORMNATIVEINTERFACE_H
 
 //
 //  W A R N I N G
@@ -101,4 +101,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QPLATFORMNATIVEINTERFACE_QPA_H
+#endif // QPLATFORMNATIVEINTERFACE_H

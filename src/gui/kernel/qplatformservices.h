@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMSERVICES_QPA_H
-#define QPLATFORMSERVICES_QPA_H
+#ifndef QPLATFORMSERVICES_H
+#define QPLATFORMSERVICES_H
 
 //
 //  W A R N I N G
@@ -73,4 +73,4 @@ public:
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#endif // QPLATFORMSERVICES_QPA_H
+#endif // QPLATFORMSERVICES_H

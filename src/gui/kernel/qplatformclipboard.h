@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMCLIPBOARD_QPA_H
-#define QPLATFORMCLIPBOARD_QPA_H
+#ifndef QPLATFORMCLIPBOARD_H
+#define QPLATFORMCLIPBOARD_H
 
 //
 //  W A R N I N G
@@ -82,4 +82,4 @@ QT_END_HEADER
 
 #endif // QT_NO_CLIPBOARD
 
-#endif //QPLATFORMCLIPBOARD_QPA_H
+#endif //QPLATFORMCLIPBOARD_H

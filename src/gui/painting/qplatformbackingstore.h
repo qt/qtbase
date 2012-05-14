@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMBACKINGSTORE_QPA_H
-#define QPLATFORMBACKINGSTORE_QPA_H
+#ifndef QPLATFORMBACKINGSTORE_H
+#define QPLATFORMBACKINGSTORE_H
 
 //
 //  W A R N I N G
@@ -99,4 +99,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QPLATFORMBACKINGSTORE_QPA_H
+#endif // QPLATFORMBACKINGSTORE_H
