@@ -338,7 +338,7 @@ SubdirsMetaMakefileGenerator::init()
                 printf(" ");
             sub->input_dir = subdir.absolutePath();
             if(subdir.isRelative() && old_output_dir != oldpwd) {
-                sub->output_dir = old_output_dir + "/" + subdir.path();
+                sub->output_dir = old_output_dir + (subdir.path() != "." ? "/" + subdir.path() : QString());
                 printf("Reading %s [%s]\n", subdir.absoluteFilePath().toLatin1().constData(), sub->output_dir.toLatin1().constData());
             } else { //what about shadow builds?
                 sub->output_dir = sub->input_dir;
