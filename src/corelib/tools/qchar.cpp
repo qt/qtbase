@@ -366,6 +366,10 @@ QT_BEGIN_NAMESPACE
     \enum QChar::SpecialCharacter
 
     \value Null A QChar with this value isNull().
+    \value Tabulation Character tabulation.
+    \value LineFeed
+    \value CarriageReturn
+    \value Space
     \value Nbsp Non-breaking space.
     \value ReplacementCharacter The character shown when a font has no glyph
            for a certain codepoint. A special question mark character is often

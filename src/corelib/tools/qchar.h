@@ -67,6 +67,10 @@ class Q_CORE_EXPORT QChar {
 public:
     enum SpecialCharacter {
         Null = 0x0000,
+        Tabulation = 0x0009,
+        LineFeed = 0x000a,
+        CarriageReturn = 0x000d,
+        Space = 0x0020,
         Nbsp = 0x00a0,
         ReplacementCharacter = 0xfffd,
         ObjectReplacementCharacter = 0xfffc,
