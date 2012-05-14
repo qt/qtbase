@@ -362,12 +362,15 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
 #endif
     case QPlatformIntegration::StartDragTime:
     case QPlatformIntegration::StartDragDistance:
-    case QPlatformIntegration::MouseDoubleClickInterval:
     case QPlatformIntegration::KeyboardInputInterval:
     case QPlatformIntegration::ShowIsFullScreen:
         break; // Not implemented
     case QPlatformIntegration::FontSmoothingGamma:
         return QVariant(QWindowsFontDatabase::fontSmoothingGamma());
+    case QPlatformIntegration::MouseDoubleClickInterval:
+        if (const int ms = GetDoubleClickTime())
+            return QVariant(ms);
+        break;
     }
     return QPlatformIntegration::styleHint(hint);
 }
