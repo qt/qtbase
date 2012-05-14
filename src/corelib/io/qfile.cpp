@@ -59,30 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static QByteArray locale_encode(const QString &f)
-{
-#if defined(Q_OS_DARWIN)
-    // Mac always expects UTF-8... and decomposed...
-    return f.normalized(QString::NormalizationForm_D).toUtf8();
-#else
-    return f.toLocal8Bit();
-#endif
-}
-
-static QString locale_decode(const QByteArray &f)
-{
-#if defined(Q_OS_DARWIN)
-    // Mac always gives us UTF-8 and decomposed, we want that composed...
-    return QString::fromUtf8(f).normalized(QString::NormalizationForm_C);
-#else
-    return QString::fromLocal8Bit(f);
-#endif
-}
-
 //************* QFilePrivate
-QFile::EncoderFn QFilePrivate::encoder = locale_encode;
-QFile::DecoderFn QFilePrivate::decoder = locale_decode;
-
 QFilePrivate::QFilePrivate()
 {
 }
@@ -358,22 +335,19 @@ QFile::setFileName(const QString &name)
 */
 
 /*!
-    By default, this function converts \a fileName to the local 8-bit
+    \fn QByteArray QFile::encodeName(const QString &fileName)
+
+    Converts \a fileName to the local 8-bit
     encoding determined by the user's locale. This is sufficient for
     file names that the user chooses. File names hard-coded into the
     application should only use 7-bit ASCII filename characters.
 
-    \sa decodeName(), setEncodingFunction()
+    \sa decodeName()
 */
-
-QByteArray
-QFile::encodeName(const QString &fileName)
-{
-    return (*QFilePrivate::encoder)(fileName);
-}
 
 /*!
     \typedef QFile::EncoderFn
+    \obsolete
 
     This is a typedef for a pointer to a function with the following
     signature:
@@ -384,35 +358,23 @@ QFile::encodeName(const QString &fileName)
 */
 
 /*!
+    \fn QString QFile::decodeName(const QByteArray &localFileName)
+
     This does the reverse of QFile::encodeName() using \a localFileName.
 
-    \sa setDecodingFunction(), encodeName()
+    \sa encodeName()
 */
-
-QString
-QFile::decodeName(const QByteArray &localFileName)
-{
-    return (*QFilePrivate::decoder)(localFileName);
-}
 
 /*!
     \fn void QFile::setEncodingFunction(EncoderFn function)
+    \obsolete
 
-    \nonreentrant
-
-    Sets the \a function for encoding Unicode file names. The
-    default encodes in the locale-specific 8-bit encoding.
+    This function does nothing. It is provided for compatibility with Qt 4 code
+    that attempted to set a different encoding function for file names. That
+    feature is flawed and no longer supported in Qt 5.
 
     \sa encodeName(), setDecodingFunction()
 */
-
-void
-QFile::setEncodingFunction(EncoderFn f)
-{
-    if (!f)
-        f = locale_encode;
-    QFilePrivate::encoder = f;
-}
 
 /*!
     \typedef QFile::DecoderFn
@@ -427,22 +389,14 @@ QFile::setEncodingFunction(EncoderFn f)
 
 /*!
     \fn void QFile::setDecodingFunction(DecoderFn function)
+    \obsolete
 
-    \nonreentrant
-
-    Sets the \a function for decoding 8-bit file names. The
-    default uses the locale-specific 8-bit encoding.
+    This function does nothing. It is provided for compatibility with Qt 4 code
+    that attempted to set a different decoding function for file names. That
+    feature is flawed and no longer supported in Qt 5.
 
     \sa setEncodingFunction(), decodeName()
 */
-
-void
-QFile::setDecodingFunction(DecoderFn f)
-{
-    if (!f)
-        f = locale_decode;
-    QFilePrivate::decoder = f;
-}
 
 /*!
     \overload

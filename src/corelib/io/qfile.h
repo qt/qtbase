@@ -76,14 +76,35 @@ public:
     QString fileName() const;
     void setFileName(const QString &name);
 
-    typedef QByteArray (*EncoderFn)(const QString &fileName);
-    typedef QString (*DecoderFn)(const QByteArray &localfileName);
-    static QByteArray encodeName(const QString &fileName);
-    static QString decodeName(const QByteArray &localFileName);
+#if defined(Q_OS_DARWIN)
+    // Mac always expects filenames in UTF-8... and decomposed...
+    static inline QByteArray encodeName(const QString &fileName)
+    {
+        return fileName.normalized(QString::NormalizationForm_D).toUtf8();
+    }
+    static QString decodeName(const QByteArray &localFileName)
+    {
+        return QString::fromUtf8(localFileName).normalized(QString::NormalizationForm_C);
+    }
+#else
+    static inline QByteArray encodeName(const QString &fileName)
+    {
+        return fileName.toLocal8Bit();
+    }
+    static QString decodeName(const QByteArray &localFileName)
+    {
+        return QString::fromLocal8Bit(localFileName);
+    }
+#endif
     inline static QString decodeName(const char *localFileName)
         { return decodeName(QByteArray(localFileName)); }
-    static void setEncodingFunction(EncoderFn);
-    static void setDecodingFunction(DecoderFn);
+
+#if QT_DEPRECATED_SINCE(5,0)
+    typedef QByteArray (*EncoderFn)(const QString &fileName);
+    typedef QString (*DecoderFn)(const QByteArray &localfileName);
+    QT_DEPRECATED static void setEncodingFunction(EncoderFn) {}
+    QT_DEPRECATED static void setDecodingFunction(DecoderFn) {}
+#endif
 
     bool exists() const;
     static bool exists(const QString &fileName);

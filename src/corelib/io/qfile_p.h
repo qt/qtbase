@@ -75,10 +75,6 @@ protected:
     virtual QAbstractFileEngine *engine() const;
 
     QString fileName;
-
-private:
-    static QFile::EncoderFn encoder;
-    static QFile::DecoderFn decoder;
 };
 
 QT_END_NAMESPACE

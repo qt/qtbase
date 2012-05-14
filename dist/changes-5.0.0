@@ -347,6 +347,14 @@ QtCore
   QCoreApplication::Encoding value CodecForTr is now obsolete, use
   DefaultCodec instead. For reasoning, see the codecForCStrings() removal above.
 
+* QFile::setEncodingFunction and QFile::setDecodingFunction are obsolete and do
+  nothing in Qt 5. The QFile::encodeName and QFile::decodeName functions are now
+  hardcoded to operate on QString::fromLocal8Bit and QString::toLocal8Bit
+  only. Therefore, it's still possible to obtain the old behaviour by calling
+  QTextCodec::setCodecForLocale. However, that is not recommended: new code
+  should not make assumptions about the filesystem encoding and older code should
+  have those assumptions removed.
+
 * QIntValidator and QDoubleValidator no longer fall back to using the C locale if
   the requested locale fails to validate the input.
 
