@@ -70,7 +70,6 @@ private slots:
     void testAssignment();
 
 private:
-    void macFixNameFormat(QString *printerName);
     QString getDefaultPrinterFromSystem();
     QStringList getPrintersFromSystem();
 
@@ -85,18 +84,6 @@ void tst_QPrinterInfo::initTestCase()
 }
 
 #else
-
-void tst_QPrinterInfo::macFixNameFormat(QString *printerName)
-{
-// Modify the format of the printer name to match Qt, lpstat returns
-// foo___domain_no, Qt returns foo @ domain.no
-#ifdef Q_OS_MAC
-    printerName->replace(QLatin1String("___"), QLatin1String(" @ "));
-    printerName->replace(QLatin1String("_"), QLatin1String("."));
-#else
-    Q_UNUSED(printerName);
-#endif
-}
 
 QString tst_QPrinterInfo::getDefaultPrinterFromSystem()
 {
@@ -113,7 +100,6 @@ QString tst_QPrinterInfo::getDefaultPrinterFromSystem()
     QRegExp defaultReg("default.*: *([a-zA-Z0-9_-]+)");
     defaultReg.indexIn(output);
     QString printer = defaultReg.cap(1);
-    macFixNameFormat(&printer);
     return printer;
 }
 
@@ -130,7 +116,6 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
     for (int c = 0; c < list.size(); ++c) {
         if (reg.indexIn(list[c]) >= 0) {
             QString printer = reg.cap(1);
-            macFixNameFormat(&printer);
             ans << printer;
         }
     }

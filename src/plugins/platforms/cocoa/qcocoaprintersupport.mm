@@ -108,7 +108,7 @@ QList<QPrinterInfo> QCocoaPrinterSupport::availablePrinters()
         CFIndex count = CFArrayGetCount(printerList);
         for (CFIndex i = 0; i < count; ++i) {
             PMPrinter printer = static_cast<PMPrinter>(const_cast<void *>(CFArrayGetValueAtIndex(printerList, i)));
-            QString printerName = QCFString::toQString(PMPrinterGetName(printer));
+            QString printerName = QCFString::toQString(PMPrinterGetID(printer));
             returnValue += QPlatformPrinterSupport::printerInfo(printerName, PMPrinterIsDefault(printer));
         }
     }

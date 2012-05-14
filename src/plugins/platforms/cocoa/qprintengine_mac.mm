@@ -626,7 +626,7 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
             CFIndex count = CFArrayGetCount(printerList);
             for (CFIndex i=0; i<count; ++i) {
                 PMPrinter printer = static_cast<PMPrinter>(const_cast<void *>(CFArrayGetValueAtIndex(printerList, i)));
-                QString name = QCFString::toQString(PMPrinterGetName(printer));
+                QString name = QCFString::toQString(PMPrinterGetID(printer));
                 if (name == value.toString()) {
                     status = PMSessionSetCurrentPMPrinter(d->session(), printer);
                     printerNameSet = true;
@@ -777,7 +777,7 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         if (status != noErr)
             qWarning("QMacPrintEngine::printerName: Failed getting current PMPrinter: %ld", long(status));
         if (printer)
-            ret = QCFString::toQString(PMPrinterGetName(printer));
+            ret = QCFString::toQString(PMPrinterGetID(printer));
         break; }
     case PPK_Resolution: {
         ret = d->resolution.hRes;
