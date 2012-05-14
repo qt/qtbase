@@ -179,7 +179,7 @@ public:
     T fetchAndAddOrdered(T valueToAdd)
     { return Ops::fetchAndAddOrdered(_q_value, valueToAdd); }
 
-#if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_DELETE_MEMBERS)
+#if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
     QBasicAtomicInteger() = default;
     constexpr QBasicAtomicInteger(T value) : _q_value(value) {}
     QBasicAtomicInteger(const QBasicAtomicInteger &) = delete;
@@ -243,7 +243,7 @@ public:
     Type fetchAndAddOrdered(qptrdiff valueToAdd)
     { return Ops::fetchAndAddOrdered(_q_value, valueToAdd); }
 
-#if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_DELETE_MEMBERS)
+#if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
     QBasicAtomicPointer() = default;
     constexpr QBasicAtomicPointer(Type value) : _q_value(value) {}
     QBasicAtomicPointer(const QBasicAtomicPointer &) = delete;

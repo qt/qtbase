@@ -451,7 +451,8 @@
  *  N2437           Q_COMPILER_CLASS_ENUM
  *  N2235           Q_COMPILER_CONSTEXPR
  *  N2343 N3276     Q_COMPILER_DECLTYPE
- *  N2346           Q_COMPILER_DEFAULT_DELETE_MEMBERS
+ *  N2346           Q_COMPILER_DEFAULT_MEMBERS
+ *  N2346           Q_COMPILER_DELETE_MEMBERS
  *  N1986           Q_COMPILER_DELEGATING_CONSTRUCTORS
  *  N3206 N3272     Q_COMPILER_EXPLICIT_OVERRIDES   (v0.9 and above only)
  *  N1987           Q_COMPILER_EXTERN_TEMPLATES
@@ -484,7 +485,8 @@
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_CLASS_ENUM
 #      define Q_COMPILER_DECLTYPE
-#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#      define Q_COMPILER_DEFAULT_MEMBERS
+#      define Q_COMPILER_DELETE_MEMBERS
 #      define Q_COMPILER_EXTERN_TEMPLATES
 #      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_RVALUE_REFS
@@ -540,8 +542,11 @@
 #    if __has_feature(cxx_decltype) /* && __has_feature(cxx_decltype_incomplete_return_types) */
 #      define Q_COMPILER_DECLTYPE
 #    endif
-#    if __has_feature(cxx_defaulted_functions) && __has_feature(cxx_deleted_functions) /* defaulted members in 3.0, deleted members in 2.9 */
-#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#    if __has_feature(cxx_defaulted_functions)
+#      define Q_COMPILER_DEFAULT_MEMBERS
+#    endif
+#    if __has_feature(cxx_deleted_functions)
+#      define Q_COMPILER_DELETE_MEMBERS
 #    endif
 #    if __has_feature(cxx_delegating_constructors)
 #      define Q_COMPILER_DELEGATING_CONSTRUCTORS
@@ -620,7 +625,8 @@
 #      define Q_COMPILER_AUTO_FUNCTION
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_CLASS_ENUM
-#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#      define Q_COMPILER_DEFAULT_MEMBERS
+#      define Q_COMPILER_DELETE_MEMBERS
 #      define Q_COMPILER_EXTERN_TEMPLATES
 #      define Q_COMPILER_INITIALIZER_LISTS
 #      define Q_COMPILER_UNICODE_STRINGS
@@ -668,10 +674,21 @@
 # define Q_NULLPTR         0
 #endif
 
-#ifdef Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#ifdef Q_COMPILER_DEFAULT_MEMBERS
+#  define Q_DECL_EQ_DEFAULT = default
+#else
+#  define Q_DECL_EQ_DEFAULT
+#endif
+
+#ifdef Q_COMPILER_DELETE_MEMBERS
 # define Q_DECL_EQ_DELETE = delete
 #else
 # define Q_DECL_EQ_DELETE
+#endif
+
+// Don't break code that is already using Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#if defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
+#  define Q_COMPILER_DEFAULT_DELETE_MEMBERS
 #endif
 
 #ifdef Q_COMPILER_CONSTEXPR
