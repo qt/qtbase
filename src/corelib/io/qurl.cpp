@@ -2356,9 +2356,15 @@ bool QUrl::operator <(const QUrl &url) const
     if (cmp != 0)
         return cmp < 0;
 
+    if (d->hasQuery() != url.d->hasQuery())
+        return url.d->hasQuery();
+
     cmp = d->query.compare(url.d->query);
     if (cmp != 0)
         return cmp < 0;
+
+    if (d->hasFragment() != url.d->hasFragment())
+        return url.d->hasFragment();
 
     cmp = d->fragment.compare(url.d->fragment);
     return cmp < 0;
@@ -2376,7 +2382,8 @@ bool QUrl::operator ==(const QUrl &url) const
         return url.d->isEmpty();
     if (!url.d)
         return d->isEmpty();
-    return d->scheme == url.d->scheme &&
+    return d->sectionIsPresent == url.d->sectionIsPresent &&
+            d->scheme == url.d->scheme &&
             d->userName == url.d->userName &&
             d->password == url.d->password &&
             d->host == url.d->host &&

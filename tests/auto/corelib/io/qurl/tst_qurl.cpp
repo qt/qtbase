@@ -307,6 +307,8 @@ void tst_QUrl::comparison2_data()
 
     QTest::newRow("scheme-null") << QUrl("x:") << QUrl() << 1;
     QTest::newRow("samescheme") << QUrl("x:") << QUrl("x:") << 0;
+    QTest::newRow("no-fragment-empty-fragment") << QUrl("http://kde.org/dir/") << QUrl("http://kde.org/dir/#") << -1;
+    QTest::newRow("no-query-empty-query") << QUrl("http://kde.org/dir/") << QUrl("http://kde.org/dir/?") << -1;
 
     // the following three are by choice
     // the order could be the opposite and it would still be correct
