@@ -2382,7 +2382,11 @@ bool QUrl::operator ==(const QUrl &url) const
         return url.d->isEmpty();
     if (!url.d)
         return d->isEmpty();
-    return d->sectionIsPresent == url.d->sectionIsPresent &&
+
+    // Compare which sections are present, but ignore Host
+    // which is set by parsing but not by construction, when empty.
+    const int mask = QUrlPrivate::FullUrl & ~QUrlPrivate::Host;
+    return (d->sectionIsPresent & mask) == (url.d->sectionIsPresent & mask) &&
             d->scheme == url.d->scheme &&
             d->userName == url.d->userName &&
             d->password == url.d->password &&

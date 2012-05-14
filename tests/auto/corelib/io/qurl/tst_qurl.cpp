@@ -309,6 +309,8 @@ void tst_QUrl::comparison2_data()
     QTest::newRow("samescheme") << QUrl("x:") << QUrl("x:") << 0;
     QTest::newRow("no-fragment-empty-fragment") << QUrl("http://kde.org/dir/") << QUrl("http://kde.org/dir/#") << -1;
     QTest::newRow("no-query-empty-query") << QUrl("http://kde.org/dir/") << QUrl("http://kde.org/dir/?") << -1;
+    QTest::newRow("simple-file-url") << QUrl("file:///home/dfaure/file") << QUrl("file:///home/dfaure/file") << 0;
+    QTest::newRow("fromLocalFile-vs-ctor") << QUrl::fromLocalFile("/home/dfaure/file") << QUrl("file:///home/dfaure/file") << 0;
 
     // the following three are by choice
     // the order could be the opposite and it would still be correct
@@ -2638,6 +2640,8 @@ void tst_QUrl::emptyAuthorityRemovesExistingAuthority()
 
 void tst_QUrl::acceptEmptyAuthoritySegments()
 {
+    QCOMPARE(QUrl("remote://").toString(), QString::fromLatin1("remote://"));
+
     // Verify that foo:///bar is not mangled to foo:/bar
     QString foo_triple_bar("foo:///bar"), foo_uni_bar("foo:/bar");
 
