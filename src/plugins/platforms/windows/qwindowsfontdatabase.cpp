@@ -1115,6 +1115,12 @@ void QWindowsFontDatabase::populate(const QString &family)
 QWindowsFontDatabase::QWindowsFontDatabase() :
     m_fontEngineData(new QWindowsFontEngineData)
 {
+    // Properties accessed by QWin32PrintEngine (QtPrintSupport)
+    static const int hfontMetaTypeId = qRegisterMetaType<HFONT>();
+    static const int logFontMetaTypeId = qRegisterMetaType<LOGFONT>();
+    Q_UNUSED(hfontMetaTypeId)
+    Q_UNUSED(logFontMetaTypeId)
+
     if (QWindowsContext::verboseFonts)
         qDebug() << __FUNCTION__ << "Clear type: "
                  << m_fontEngineData->clearTypeEnabled << "gamma: "

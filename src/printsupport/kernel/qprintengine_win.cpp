@@ -57,6 +57,11 @@
 #include <qpa/qplatformpixmap.h>
 #include <private/qpicture_p.h>
 #include <private/qpixmap_raster_p.h>
+#include <QtCore/QMetaType>
+#include <QtCore/qt_windows.h>
+
+Q_DECLARE_METATYPE(HFONT)
+Q_DECLARE_METATYPE(LOGFONT)
 
 QT_BEGIN_NAMESPACE
 
@@ -349,22 +354,22 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
                     || d->txop >= QTransform::TxProject
                     || ti.fontEngine->type() != QFontEngine::Win;
 
-
-#if 0
     if (!fallBack) {
-        QFontEngineWin *fe = static_cast<QFontEngineWin *>(ti.fontEngine);
-
-        // Try selecting the font to see if we get a substitution font
-        SelectObject(d->hdc, fe->hfont);
-
-        if (GetDeviceCaps(d->hdc, TECHNOLOGY) != DT_CHARSTREAM) {
-            wchar_t n[64];
-            GetTextFace(d->hdc, 64, n);
-            fallBack = QString::fromWCharArray(n)
-                    != QString::fromWCharArray(fe->logfont.lfFaceName);
+        const QVariant hFontV = ti.fontEngine->property("hFont");
+        const QVariant logFontV = ti.fontEngine->property("logFont");
+        if (hFontV.canConvert<HFONT>() && logFontV.canConvert<LOGFONT>()) {
+            const HFONT hfont = hFontV.value<HFONT>();
+            const LOGFONT logFont = logFontV.value<LOGFONT>();
+            // Try selecting the font to see if we get a substitution font
+            SelectObject(d->hdc, hfont);
+            if (GetDeviceCaps(d->hdc, TECHNOLOGY) != DT_CHARSTREAM) {
+                wchar_t n[64];
+                GetTextFace(d->hdc, 64, n);
+                fallBack = QString::fromWCharArray(n)
+                    != QString::fromWCharArray(logFont.lfFaceName);
+            }
         }
     }
-#endif
 
 
     if (fallBack) {
@@ -1680,19 +1685,22 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
     SetTextAlign(hdc, TA_BASELINE);
     SetBkMode(hdc, TRANSPARENT);
 
-    bool has_kerning = ti.f && ti.f->kerning();
-//  ### TODO
-//    QFontEngineWin *winfe = (fe->type() == QFontEngine::Win) ? static_cast<QFontEngineWin *>(fe) : 0;
+    const bool has_kerning = ti.f && ti.f->kerning();
 
-    HFONT hfont;
+    HFONT hfont = 0;
     bool ttf = false;
 
-//    if (winfe) {
-//        hfont = winfe->hfont;
-//        ttf = winfe->ttf;
-//    } else {
+    if (ti.fontEngine->type() == QFontEngine::Win) {
+        const QVariant hfontV = ti.fontEngine->property("hFont");
+        const QVariant ttfV = ti.fontEngine->property("trueType");
+        if (ttfV.type() == QVariant::Bool && hfontV.canConvert<HFONT>()) {
+            hfont = hfontV.value<HFONT>();
+            ttf = ttfV.toBool();
+        }
+    }
+
+    if (!hfont)
         hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
-//    }
 
     HGDIOBJ old_font = SelectObject(hdc, hfont);
     unsigned int options = (ttf && !convertToText) ? ETO_GLYPH_INDEX : 0;

@@ -283,7 +283,7 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
 
 QWindowsFontEngine::QWindowsFontEngine(const QString &name,
                                HFONT _hfont, bool stockFontIn, LOGFONT lf,
-                               QSharedPointer<QWindowsFontEngineData> fontEngineData) :
+                               const QSharedPointer<QWindowsFontEngineData> &fontEngineData) :
     m_fontEngineData(fontEngineData),
     _name(name),
     hfont(_hfont),
@@ -1318,7 +1318,7 @@ void QWindowsMultiFontEngine::loadEngine(int at)
 
     const QString fam = fallbacks.at(at-1);
     QWindowsFontEngine *fe = static_cast<QWindowsFontEngine*>(engines.at(0));
-    LOGFONT lf = fe->logfont();
+    LOGFONT lf = fe->logFont();
     memcpy(lf.lfFaceName, fam.utf16(), sizeof(wchar_t) * qMin(fam.length() + 1, 32));  // 32 = Windows hard-coded
     HFONT hfont = CreateFontIndirect(&lf);
 
