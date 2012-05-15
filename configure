@@ -4749,7 +4749,9 @@ if [ -z "$QT_QPA_DEFAULT_PLATFORM" ]; then
     # check the mkspec
     QT_QPA_DEFAULT_PLATFORM=`getXQMakeConf QT_QPA_DEFAULT_PLATFORM`
     if [ -z "$QT_QPA_DEFAULT_PLATFORM" ]; then
-        if [ "$BUILD_ON_MAC" = "yes" ]; then
+        if [ "$XPLATFORM_MINGW" = "yes" ]; then
+            QT_QPA_DEFAULT_PLATFORM="windows"
+        elif [ "$BUILD_ON_MAC" = "yes" ]; then
             QT_QPA_DEFAULT_PLATFORM="cocoa"
         elif [ "$UNAME_SYSTEM" = "QNX" ]; then
             QT_QPA_DEFAULT_PLATFORM="qnx"
