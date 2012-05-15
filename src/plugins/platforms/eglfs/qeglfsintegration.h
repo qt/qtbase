@@ -45,13 +45,14 @@
 #include "qeglfsscreen.h"
 
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformscreen.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSIntegration : public QPlatformIntegration
+class QEglFSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 {
 public:
     QEglFSIntegration();
@@ -62,12 +63,17 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    QPlatformNativeInterface *nativeInterface() const;
 
     QPlatformFontDatabase *fontDatabase() const;
 
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
     QVariant styleHint(QPlatformIntegration::StyleHint hint) const;
+
+    // QPlatformNativeInterface
+    void *nativeResourceForIntegration(const QByteArray &resource);
+    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
 
 private:
     QPlatformFontDatabase *mFontDb;

@@ -47,6 +47,7 @@
 
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 
 #include <qpa/qplatformwindow.h>
 #include <QtGui/QSurfaceFormat>
@@ -128,6 +129,36 @@ QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) cons
         return true;
 
     return QPlatformIntegration::styleHint(hint);
+}
+
+QPlatformNativeInterface *QEglFSIntegration::nativeInterface() const
+{
+    return const_cast<QEglFSIntegration *>(this);
+}
+
+void *QEglFSIntegration::nativeResourceForIntegration(const QByteArray &resource)
+{
+    QByteArray lowerCaseResource = resource.toLower();
+
+    if (lowerCaseResource == "egldisplay")
+        return static_cast<QEglFSScreen *>(mScreen)->display();
+
+    return 0;
+}
+
+void *QEglFSIntegration::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
+{
+    QByteArray lowerCaseResource = resource.toLower();
+
+    QEGLPlatformContext *handle = static_cast<QEGLPlatformContext *>(context->handle());
+
+    if (!handle)
+        return 0;
+
+    if (lowerCaseResource == "eglcontext")
+        return handle->eglContext();
+
+    return 0;
 }
 
 QT_END_NAMESPACE

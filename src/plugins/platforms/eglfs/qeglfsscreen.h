@@ -68,6 +68,7 @@ public:
     QPlatformOpenGLContext *platformContext() const;
 
     EGLSurface surface() const { return m_surface; }
+    EGLDisplay display() const { return m_dpy; }
 
 private:
     void createAndSetPlatformContext() const;
