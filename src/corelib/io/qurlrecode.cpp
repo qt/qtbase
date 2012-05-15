@@ -285,19 +285,6 @@ static void ensureDetached(QString &result, ushort *&output, const ushort *begin
     }
 }
 
-static inline bool isUnicodeNonCharacter(uint ucs4)
-{
-    // Unicode has a couple of "non-characters" that one can use internally,
-    // but are not allowed to be used for text interchange.
-    //
-    // Those are the last two entries each Unicode Plane (U+FFFE, U+FFFF,
-    // U+1FFFE, U+1FFFF, etc.) as well as the entries between U+FDD0 and
-    // U+FDEF (inclusive)
-
-    return (ucs4 & 0xfffe) == 0xfffe
-            || (ucs4 - 0xfdd0U) < 16;
-}
-
 // returns true if we performed an UTF-8 decoding
 static bool encodedUtf8ToUtf16(QString &result, ushort *&output, const ushort *begin, const ushort *&input,
                                const ushort *end, ushort decoded)
@@ -370,7 +357,7 @@ static bool encodedUtf8ToUtf16(QString &result, ushort *&output, const ushort *b
     // we've decoded something; safety-check it
     if (uc < min_uc)
         return false;
-    if (isUnicodeNonCharacter(uc) || (uc >= 0xD800 && uc <= 0xDFFF) || uc >= 0x110000)
+    if (QChar::isSurrogate(uc) || QChar::isNonCharacter(uc) || uc > QChar::LastValidCodePoint)
         return false;
 
     if (!QChar::requiresSurrogates(uc)) {

@@ -73,7 +73,8 @@ public:
         ByteOrderMark = 0xfeff,
         ByteOrderSwapped = 0xfffe,
         ParagraphSeparator = 0x2029,
-        LineSeparator = 0x2028
+        LineSeparator = 0x2028,
+        LastValidCodePoint = 0x10ffff
     };
 
     Q_DECL_CONSTEXPR QChar() : ucs(0) {}
@@ -245,23 +246,27 @@ public:
     inline bool isUpper() const { return QChar::isUpper(ucs); }
     inline bool isTitleCase() const { return QChar::isTitleCase(ucs); }
 
-    inline bool isHighSurrogate() const {
-        return ((ucs & 0xfc00) == 0xd800);
-    }
-    inline bool isLowSurrogate() const {
-        return ((ucs & 0xfc00) == 0xdc00);
-    }
+    inline bool isNonCharacter() const { return QChar::isNonCharacter(ucs); }
+    inline bool isHighSurrogate() const { return QChar::isHighSurrogate(ucs); }
+    inline bool isLowSurrogate() const { return QChar::isLowSurrogate(ucs); }
+    inline bool isSurrogate() const { return QChar::isSurrogate(ucs); }
 
     inline uchar cell() const { return uchar(ucs & 0xff); }
     inline uchar row() const { return uchar((ucs>>8)&0xff); }
     inline void setCell(uchar cell);
     inline void setRow(uchar row);
 
+    static inline bool isNonCharacter(uint ucs4) {
+        return ucs4 >= 0xfdd0 && (ucs4 <= 0xfdef || (ucs4 & 0xfffe) == 0xfffe);
+    }
     static inline bool isHighSurrogate(uint ucs4) {
         return ((ucs4 & 0xfffffc00) == 0xd800);
     }
     static inline bool isLowSurrogate(uint ucs4) {
         return ((ucs4 & 0xfffffc00) == 0xdc00);
+    }
+    static inline bool isSurrogate(uint ucs4) {
+        return (ucs4 - 0xd800u < 2048u);
     }
     static inline bool requiresSurrogates(uint ucs4) {
         return (ucs4 >= 0x10000);

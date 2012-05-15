@@ -986,7 +986,7 @@ bool QXmlStreamReaderPrivate::scanUntil(const char *str, short tokenToInject)
             textBuffer += QChar(c);
             continue;
         default:
-            if(c < 0x20 || (c > 0xFFFD && c < 0x10000) || c > 0x10FFFF ) {
+            if (c < 0x20 || (c > 0xFFFD && c < 0x10000) || c > QChar::LastValidCodePoint ) {
                 raiseWellFormedError(QXmlStream::tr("Invalid XML character."));
                 lineNumber = oldLineNumber;
                 return false;
@@ -1718,7 +1718,7 @@ uint QXmlStreamReaderPrivate::resolveCharRef(int symbolIndex)
         s = symString(symbolIndex).toString().toUInt(&ok, 10);
 
     ok &= (s == 0x9 || s == 0xa || s == 0xd || (s >= 0x20 && s <= 0xd7ff)
-           || (s >= 0xe000 && s <= 0xfffd) || (s >= 0x10000 && s <= 0x10ffff));
+           || (s >= 0xe000 && s <= 0xfffd) || (s >= 0x10000 && s <= QChar::LastValidCodePoint));
 
     return ok ? s : 0;
 }

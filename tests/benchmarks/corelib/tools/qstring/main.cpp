@@ -1934,19 +1934,6 @@ int fromUtf8_latin1_sse2_improved(ushort *dst, const char *chars, int len)
 }
 #endif
 
-static inline bool isUnicodeNonCharacter(uint ucs4)
-{
-    // Unicode has a couple of "non-characters" that one can use internally,
-    // but are not allowed to be used for text interchange.
-    //
-    // Those are the last two entries each Unicode Plane (U+FFFE, U+FFFF,
-    // U+1FFFE, U+1FFFF, etc.) as well as the entries between U+FDD0 and
-    // U+FDEF (inclusive)
-
-    return (ucs4 & 0xfffe) == 0xfffe
-            || (ucs4 - 0xfdd0U) < 32;
-}
-
 int fromUtf8_qt47(ushort *dst, const char *chars, int len)
 {
     // this is almost the code found in Qt 4.7's qutfcodec.cpp QUtf8Codec::convertToUnicode
@@ -1996,12 +1983,12 @@ int fromUtf8_qt47(ushort *dst, const char *chars, int len)
                     bool nonCharacter;
                     if (!headerdone && uc == 0xfeff) {
                         // don't do anything, just skip the BOM
-                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc < 0x110000) {
+                    } else if (!(nonCharacter = QChar::isNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc <= QChar::LastValidCodePoint) {
                         // surrogate pair
                         //Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
                         *qch++ = QChar::highSurrogate(uc);
                         *qch++ = QChar::lowSurrogate(uc);
-                    } else if ((uc < min_uc) || (uc >= 0xd800 && uc <= 0xdfff) || nonCharacter || uc >= 0x110000) {
+                    } else if ((uc < min_uc) || QChar::isSurrogate(uc) || nonCharacter || uc > QChar::LastValidCodePoint) {
                         // error: overlong sequence, UTF16 surrogate or non-character
                         *qch++ = replacement;
                         ++invalid;
@@ -2102,12 +2089,12 @@ int fromUtf8_qt47_stateless(ushort *dst, const char *chars, int len)
                     bool nonCharacter;
                     if (!headerdone && uc == 0xfeff) {
                         // don't do anything, just skip the BOM
-                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc < 0x110000) {
+                    } else if (!(nonCharacter = QChar::isNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc <= QChar::LastValidCodePoint) {
                         // surrogate pair
                         //Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
                         *qch++ = QChar::highSurrogate(uc);
                         *qch++ = QChar::lowSurrogate(uc);
-                    } else if ((uc < min_uc) || (uc >= 0xd800 && uc <= 0xdfff) || nonCharacter || uc >= 0x110000) {
+                    } else if ((uc < min_uc) || QChar::isSurrogate(uc) || nonCharacter || uc > QChar::LastValidCodePoint) {
                         // error: overlong sequence, UTF16 surrogate or non-character
                         *qch++ = replacement;
                         ++invalid;
@@ -2227,7 +2214,7 @@ static inline void extract_utf8_multibyte(ushort *&dst, const char *&chars, qptr
         chars += 2;
         len -= 2;
         if (!trusted &&
-            (ucs < 0x800 || isUnicodeNonCharacter(ucs) || (ucs >= 0xd800 && ucs <= 0xdfff)))
+            (ucs < 0x800 || QChar::isNonCharacter(ucs) || QChar::isSurrogate(ucs)))
             dst[counter] = QChar::ReplacementCharacter;
         else
             dst[counter] = ucs;
@@ -2258,7 +2245,7 @@ static inline void extract_utf8_multibyte(ushort *&dst, const char *&chars, qptr
         // dst[counter] will correspond to chars[counter..counter+2], so adjust
         chars += 3;
         len -= 3;
-        if (trusted || (QChar::requiresSurrogates(ucs) && ucs < 0x110000 && !isUnicodeNonCharacter(ucs))) {
+        if (trusted || (QChar::requiresSurrogates(ucs) && ucs <= QChar::LastValidCodePoint && !QChar::isNonCharacter(ucs))) {
             dst[counter + 0] = QChar::highSurrogate(ucs);
             dst[counter + 1] = QChar::lowSurrogate(ucs);
             counter += 2;

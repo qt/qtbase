@@ -45,7 +45,6 @@
 #include <qdebug.h>
 #include "qjsonparser_p.h"
 #include "qjson_p.h"
-#include <private/qunicodetables_p.h>
 
 //#define PARSER_DEBUG
 #ifdef PARSER_DEBUG
@@ -769,8 +768,8 @@ static inline bool scanUtf8Char(const char *&json, const char *end, uint *result
         uc = (uc << 6) | (ch & 0x3f);
     }
 
-    if (uc < min_uc || QUnicodeTables::isNonCharacter(uc) ||
-        (uc >= 0xd800 && uc <= 0xdfff) || uc >= 0x110000) {
+    if (uc < min_uc || QChar::isNonCharacter(uc) ||
+        QChar::isSurrogate(uc) || uc > QChar::LastValidCodePoint) {
         return false;
     }
 

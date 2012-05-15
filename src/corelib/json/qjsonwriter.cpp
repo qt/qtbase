@@ -41,7 +41,6 @@
 
 #include "qjsonwriter_p.h"
 #include "qjson_p.h"
-#include <private/qunicodetables_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -140,7 +139,7 @@ static QByteArray escapedString(const QString &s)
                 *cursor++ = 0xc0 | ((uchar) (u >> 6));
             } else {
                 // is it one of the Unicode non-characters?
-                if (QUnicodeTables::isNonCharacter(u)) {
+                if (QChar::isNonCharacter(u)) {
                     *cursor++ = replacement;
                     ++ch;
                     continue;

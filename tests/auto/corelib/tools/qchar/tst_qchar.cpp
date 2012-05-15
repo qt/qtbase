@@ -339,7 +339,7 @@ void tst_QChar::isUpper()
     QVERIFY(QChar(0xC2).isUpper());   // A with ^
     QVERIFY(!QChar(0xE2).isUpper());  // a with ^
 
-    for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
+    for (uint codepoint = 0; codepoint <= QChar::LastValidCodePoint; ++codepoint) {
         if (QChar::isUpper(codepoint))
             QVERIFY(codepoint == QChar::toUpper(codepoint));
     }
@@ -355,7 +355,7 @@ void tst_QChar::isLower()
     QVERIFY(!QChar(0xC2).isLower());   // A with ^
     QVERIFY(QChar(0xE2).isLower());  // a with ^
 
-    for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
+    for (uint codepoint = 0; codepoint <= QChar::LastValidCodePoint; ++codepoint) {
         if (QChar::isLower(codepoint))
             QVERIFY(codepoint == QChar::toLower(codepoint));
     }
@@ -363,7 +363,7 @@ void tst_QChar::isLower()
 
 void tst_QChar::isTitleCase()
 {
-    for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
+    for (uint codepoint = 0; codepoint <= QChar::LastValidCodePoint; ++codepoint) {
         if (QChar::isTitleCase(codepoint))
             QVERIFY(codepoint == QChar::toTitleCase(codepoint));
     }
@@ -575,7 +575,7 @@ void tst_QChar::digitValue()
     QVERIFY(QChar::digitValue((uint)0x1040) == 0);
 
     QVERIFY(QChar::digitValue((ushort)0xd800) == -1);
-    QVERIFY(QChar::digitValue((uint)UNICODE_LAST_CODEPOINT + 1) == -1);
+    QVERIFY(QChar::digitValue((uint)0x110000u) == -1);
 }
 
 void tst_QChar::mirroredChar()

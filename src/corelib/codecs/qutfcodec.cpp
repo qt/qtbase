@@ -43,7 +43,6 @@
 #include "qlist.h"
 #include "qendian.h"
 #include "qchar.h"
-#include <private/qunicodetables_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -108,7 +107,7 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
                 *cursor++ = 0xc0 | ((uchar) (u >> 6));
             } else {
                 // is it one of the Unicode non-characters?
-                if (QUnicodeTables::isNonCharacter(u)) {
+                if (QChar::isNonCharacter(u)) {
                     *cursor++ = replacement;
                     ++ch;
                     ++invalid;
@@ -184,12 +183,12 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
                     bool nonCharacter;
                     if (!headerdone && uc == 0xfeff) {
                         // don't do anything, just skip the BOM
-                    } else if (!(nonCharacter = QUnicodeTables::isNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc < 0x110000) {
+                    } else if (!(nonCharacter = QChar::isNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc <= QChar::LastValidCodePoint) {
                         // surrogate pair
                         Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
                         *qch++ = QChar::highSurrogate(uc);
                         *qch++ = QChar::lowSurrogate(uc);
-                    } else if ((uc < min_uc) || (uc >= 0xd800 && uc <= 0xdfff) || nonCharacter || uc >= 0x110000) {
+                    } else if ((uc < min_uc) || QChar::isSurrogate(uc) || nonCharacter || uc > QChar::LastValidCodePoint) {
                         // error: overlong sequence, UTF16 surrogate or non-character
                         *qch++ = replacement;
                         ++invalid;

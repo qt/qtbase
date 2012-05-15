@@ -377,6 +377,7 @@ QT_BEGIN_NAMESPACE
     \value ByteOrderSwapped
     \value ParagraphSeparator
     \value LineSeparator
+    \value LastValidCodePoint
 */
 
 /*!
@@ -499,7 +500,7 @@ QT_BEGIN_NAMESPACE
 */
 bool QChar::isPrint(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return false;
     const int test = FLAG(Other_Control) |
                      FLAG(Other_Format) |
@@ -532,7 +533,7 @@ bool QChar::isPrint(uint ucs4)
 */
 bool QT_FASTCALL QChar::isSpace_helper(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return false;
     const int test = FLAG(Separator_Space) |
                      FLAG(Separator_Line) |
@@ -558,7 +559,7 @@ bool QT_FASTCALL QChar::isSpace_helper(uint ucs4)
 */
 bool QChar::isMark(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return false;
     const int test = FLAG(Mark_NonSpacing) |
                      FLAG(Mark_SpacingCombining) |
@@ -582,7 +583,7 @@ bool QChar::isMark(uint ucs4)
 */
 bool QChar::isPunct(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return false;
     const int test = FLAG(Punctuation_Connector) |
                      FLAG(Punctuation_Dash) |
@@ -610,7 +611,7 @@ bool QChar::isPunct(uint ucs4)
 */
 bool QChar::isSymbol(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return false;
     const int test = FLAG(Symbol_Math) |
                      FLAG(Symbol_Currency) |
@@ -640,7 +641,7 @@ bool QChar::isSymbol(uint ucs4)
 */
 bool QT_FASTCALL QChar::isLetter_helper(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return false;
     const int test = FLAG(Letter_Uppercase) |
                      FLAG(Letter_Lowercase) |
@@ -675,7 +676,7 @@ bool QT_FASTCALL QChar::isLetter_helper(uint ucs4)
 */
 bool QT_FASTCALL QChar::isNumber_helper(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return false;
     const int test = FLAG(Number_DecimalDigit) |
                      FLAG(Number_Letter) |
@@ -704,7 +705,7 @@ bool QT_FASTCALL QChar::isNumber_helper(uint ucs4)
 */
 bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return false;
     const int test = FLAG(Letter_Uppercase) |
                      FLAG(Letter_Lowercase) |
@@ -738,17 +739,54 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 */
 
 /*!
+    \fn bool QChar::isNonCharacter() const
+    \since 5.0
+
+    Returns true if the QChar is a non-character; false otherwise.
+
+    Unicode has a certain number of code points that are classified
+    as "non-characters:" that is, they can be used for internal purposes
+    in applications but cannot be used for text interchange.
+    Those are the last two entries each Unicode Plane ([0xfffe..0xffff],
+    [0x1fffe..0x1ffff], etc.) as well as the entries in range [0xfdd0..0xfdef].
+*/
+
+/*!
     \fn bool QChar::isHighSurrogate() const
 
     Returns true if the QChar is the high part of a UTF16 surrogate
-    (i.e. if it's code point in range [0xd800..0xdbff]).
+    (i.e. if its code point is in range [0xd800..0xdbff]); false otherwise.
 */
 
 /*!
     \fn bool QChar::isLowSurrogate() const
 
     Returns true if the QChar is the low part of a UTF16 surrogate
-    (i.e. if it's code point in range [0xdc00..0xdfff]).
+    (i.e. if its code point is in range [0xdc00..0xdfff]); false otherwise.
+*/
+
+/*!
+    \fn bool QChar::isSurrogate() const
+    \since 5.0
+
+    Returns true if the QChar contains a code point that is in either
+    the high or the low part of the UTF-16 surrogate range
+    (i.e. if its code point is in range [0xd800..0xdfff]); false otherwise.
+*/
+
+/*!
+    \fn static bool isNonCharacter(uint ucs4)
+    \overload
+    \since 5.0
+
+    Returns true if the UCS-4-encoded character specified by \a ucs4
+    is a non-character; false otherwise.
+
+    Unicode has a certain number of code points that are classified
+    as "non-characters:" that is, they can be used for internal purposes
+    in applications but cannot be used for text interchange.
+    Those are the last two entries each Unicode Plane ([0xfffe..0xffff],
+    [0x1fffe..0x1ffff], etc.) as well as the entries in range [0xfdd0..0xfdef].
 */
 
 /*!
@@ -757,7 +795,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
     is the high part of a UTF16 surrogate
-    (i.e. if it's code point in range [0xd800..0xdbff]).
+    (i.e. if its code point is in range [0xd800..0xdbff]); false otherwise.
 */
 
 /*!
@@ -766,7 +804,18 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
     is the low part of a UTF16 surrogate
-    (i.e. if it's code point in range [0xdc00..0xdfff]).
+    (i.e. if its code point is in range [0xdc00..0xdfff]); false otherwise.
+*/
+
+/*!
+    \fn static bool QChar::isSurrogate(uint ucs4)
+    \overload
+    \since 5.0
+
+    Returns true if the UCS-4-encoded character specified by \a ucs4
+    contains a code point that is in either the high or the low part of the
+    UTF-16 surrogate range (i.e. if its code point is in range [0xd800..0xdfff]);
+    false otherwise.
 */
 
 /*!
@@ -774,7 +823,8 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
     can be split into the high and low parts of a UTF16 surrogate
-    (i.e. if it's code point is greater than or equals to 0x10000).
+    (i.e. if its code point is greater than or equals to 0x10000);
+    false otherwise.
 */
 
 /*!
@@ -818,7 +868,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 */
 int QChar::digitValue(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return -1;
     return qGetProp(ucs4)->digitValue;
 }
@@ -835,7 +885,7 @@ int QChar::digitValue(uint ucs4)
 */
 QChar::Category QChar::category(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return QChar::Other_NotAssigned;
     return (QChar::Category) qGetProp(ucs4)->category;
 }
@@ -852,7 +902,7 @@ QChar::Category QChar::category(uint ucs4)
 */
 QChar::Direction QChar::direction(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return QChar::DirL;
     return (QChar::Direction) qGetProp(ucs4)->direction;
 }
@@ -871,7 +921,7 @@ QChar::Direction QChar::direction(uint ucs4)
 */
 QChar::Joining QChar::joining(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return QChar::OtherJoining;
     return (QChar::Joining) qGetProp(ucs4)->joining;
 }
@@ -900,7 +950,7 @@ QChar::Joining QChar::joining(uint ucs4)
 */
 bool QChar::hasMirrored(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return false;
     return qGetProp(ucs4)->mirrorDiff != 0;
 }
@@ -950,7 +1000,7 @@ bool QChar::hasMirrored(uint ucs4)
 */
 uint QChar::mirroredChar(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return ucs4;
     return ucs4 + qGetProp(ucs4)->mirrorDiff;
 }
@@ -1060,7 +1110,7 @@ QChar::Decomposition QChar::decompositionTag(uint ucs4)
 */
 unsigned char QChar::combiningClass(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return 0;
     return (unsigned char) qGetProp(ucs4)->combiningClass;
 }
@@ -1078,7 +1128,7 @@ unsigned char QChar::combiningClass(uint ucs4)
 */
 QChar::UnicodeVersion QChar::unicodeVersion(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return QChar::Unicode_Unassigned;
     return (QChar::UnicodeVersion) qGetProp(ucs4)->unicodeVersion;
 }
@@ -1155,7 +1205,7 @@ static inline T toCaseFolded_helper(T uc)
 */
 uint QChar::toLower(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return ucs4;
     return toLowerCase_helper<uint>(ucs4);
 }
@@ -1175,7 +1225,7 @@ uint QChar::toLower(uint ucs4)
 */
 uint QChar::toUpper(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return ucs4;
     return toUpperCase_helper<uint>(ucs4);
 }
@@ -1195,7 +1245,7 @@ uint QChar::toUpper(uint ucs4)
 */
 uint QChar::toTitleCase(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return ucs4;
     return toTitleCase_helper<uint>(ucs4);
 }
@@ -1236,7 +1286,7 @@ static inline ushort foldCase(ushort ch)
 */
 uint QChar::toCaseFolded(uint ucs4)
 {
-    if (ucs4 > UNICODE_LAST_CODEPOINT)
+    if (ucs4 > LastValidCodePoint)
         return ucs4;
     return toCaseFolded_helper<uint>(ucs4);
 }

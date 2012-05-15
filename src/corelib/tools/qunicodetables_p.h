@@ -61,8 +61,6 @@ QT_BEGIN_NAMESPACE
 
 #define UNICODE_DATA_VERSION QChar::Unicode_5_0
 
-#define UNICODE_LAST_CODEPOINT 0x10ffff
-
 namespace QUnicodeTables {
 
     struct Properties {
@@ -236,18 +234,6 @@ namespace QUnicodeTables {
     Q_CORE_EXPORT int QT_FASTCALL script(uint ucs4);
     inline int script(QChar ch)
     { return script(ch.unicode()); }
-
-
-    inline bool isNonCharacter(uint ucs4)
-    {
-        // Noncharacter_Code_Point:
-        // Unicode has a couple of "non-characters" that one can use internally,
-        // but are not allowed to be used for text interchange.
-        // Those are the last two entries each Unicode Plane (U+FFFE..U+FFFF,
-        // U+1FFFE..U+1FFFF, etc.) as well as the entries in range U+FDD0..U+FDEF
-
-        return ucs4 >= 0xfdd0 && (ucs4 <= 0xfdef || (ucs4 & 0xfffe) == 0xfffe);
-    }
 
 } // namespace QUnicodeTables
 

@@ -54,9 +54,6 @@
 #define DATA_VERSION_S "5.0"
 #define DATA_VERSION_STR "QChar::Unicode_5_0"
 
-#define LAST_CODEPOINT 0x10ffff
-#define LAST_CODEPOINT_STR "0x10ffff"
-
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
 
@@ -417,18 +414,6 @@ static const char *methods =
     "    inline int script(QChar ch)\n"
     "    { return script(ch.unicode()); }\n\n";
 
-static const char *generated_methods =
-    "    inline bool isNonCharacter(uint ucs4)\n"
-    "    {\n"
-    "        // Noncharacter_Code_Point:\n"
-    "        // Unicode has a couple of \"non-characters\" that one can use internally,\n"
-    "        // but are not allowed to be used for text interchange.\n"
-    "        // Those are the last two entries each Unicode Plane (U+FFFE..U+FFFF,\n"
-    "        // U+1FFFE..U+1FFFF, etc.) as well as the entries in range U+FDD0..U+FDEF\n"
-    "\n"
-    "        return ucs4 >= 0xfdd0 && (ucs4 <= 0xfdef || (ucs4 & 0xfffe) == 0xfffe);\n"
-    "    }\n\n";
-
 static const int SizeOfPropertiesStruct = 20;
 
 struct PropertyFlags {
@@ -592,8 +577,8 @@ UnicodeData &UnicodeData::valueRef(int codepoint)
 {
     static bool initialized = false;
     if (!initialized) {
-        unicodeData.reserve(LAST_CODEPOINT + 1);
-        for (int uc = 0; uc <= LAST_CODEPOINT; ++uc)
+        unicodeData.reserve(QChar::LastValidCodePoint + 1);
+        for (int uc = 0; uc <= QChar::LastValidCodePoint; ++uc)
             unicodeData.append(UnicodeData(uc));
         initialized = true;
     }
@@ -795,7 +780,7 @@ static void readUnicodeData()
         bool ok;
         int codepoint = properties[UD_Value].toInt(&ok, 16);
         Q_ASSERT(ok);
-        Q_ASSERT(codepoint <= LAST_CODEPOINT);
+        Q_ASSERT(codepoint <= QChar::LastValidCodePoint);
         int lastCodepoint = codepoint;
 
         QByteArray name = properties[UD_Name];
@@ -807,7 +792,7 @@ static void readUnicodeData()
             Q_ASSERT(properties[UD_Name].startsWith('<') && properties[UD_Name].contains("Last"));
             lastCodepoint = properties[UD_Value].toInt(&ok, 16);
             Q_ASSERT(ok);
-            Q_ASSERT(lastCodepoint <= LAST_CODEPOINT);
+            Q_ASSERT(lastCodepoint <= QChar::LastValidCodePoint);
         }
 
         UnicodeData &data = UnicodeData::valueRef(codepoint);
@@ -1106,7 +1091,7 @@ static void readDerivedNormalizationProps()
         }
     }
 
-    for (int codepoint = 0; codepoint <= LAST_CODEPOINT; ++codepoint) {
+    for (int codepoint = 0; codepoint <= QChar::LastValidCodePoint; ++codepoint) {
         UnicodeData &d = UnicodeData::valueRef(codepoint);
         if (!d.excludedComposition
             && d.decompositionType == QChar::Canonical
@@ -1208,9 +1193,8 @@ static QList<PropertyFlags> uniqueProperties;
 static void computeUniqueProperties()
 {
     qDebug("computeUniqueProperties:");
-    for (int codepoint = 0; codepoint <= LAST_CODEPOINT; ++codepoint) {
+    for (int codepoint = 0; codepoint <= QChar::LastValidCodePoint; ++codepoint) {
         UnicodeData &d = UnicodeData::valueRef(codepoint);
-
         int index = uniqueProperties.indexOf(d.p);
         if (index == -1) {
             index = uniqueProperties.size();
@@ -2898,7 +2882,6 @@ int main(int, char **)
             "#include <QtCore/qchar.h>\n\n"
             "QT_BEGIN_NAMESPACE\n\n");
     f.write("#define UNICODE_DATA_VERSION "DATA_VERSION_STR"\n\n");
-    f.write("#define UNICODE_LAST_CODEPOINT "LAST_CODEPOINT_STR"\n\n");
     f.write("namespace QUnicodeTables {\n\n");
     f.write(property_string);
     f.write("\n");
@@ -2913,8 +2896,6 @@ int main(int, char **)
     f.write(line_break_class_string);
     f.write("\n");
     f.write(methods);
-    f.write("\n");
-    f.write(generated_methods);
     f.write("} // namespace QUnicodeTables\n\n"
             "QT_END_NAMESPACE\n\n"
             "#endif // QUNICODETABLES_P_H\n");
