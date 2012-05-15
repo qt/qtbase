@@ -1634,7 +1634,6 @@ void QNetworkReplyHttpImplPrivate::_q_cacheLoadReadyRead()
     lastBytesDownloaded = bytesDownloaded;
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
 
-    //pauseNotificationHandling();
     // emit readyRead before downloadProgress incase this will cause events to be
     // processed and we get into a recursive call (as in QProgressDialog).
 
@@ -1848,12 +1847,10 @@ void QNetworkReplyHttpImplPrivate::finished()
     if (state == Finished || state == Aborted || state == WaitingForSession)
         return;
 
-    //pauseNotificationHandling();
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
 
-    // FIXME why should it be 0
     if (manager) {
 #ifndef QT_NO_BEARERMANAGEMENT
         QNetworkSession *session = managerPrivate->networkSession.data();
@@ -1865,7 +1862,6 @@ void QNetworkReplyHttpImplPrivate::finished()
                     if (migrateBackend()) {
                         // either we are migrating or the request is finished/aborted
                         if (state == Reconnecting || state == WaitingForSession) {
-                            //resumeNotificationHandling();
                             return; // exit early if we are migrating.
                         }
                     } else {
@@ -1877,33 +1873,23 @@ void QNetworkReplyHttpImplPrivate::finished()
         }
 #endif
     }
-    //resumeNotificationHandling();
 
     state = Finished;
     q->setFinished(true);
 
-    //pendingNotifications.clear();
-
-    //pauseNotificationHandling();
     if (totalSize.isNull() || totalSize == -1) {
         emit q->downloadProgress(bytesDownloaded, bytesDownloaded);
     }
 
     if (bytesUploaded == -1 && (outgoingData || outgoingDataBuffer))
         emit q->uploadProgress(0, 0);
-    //resumeNotificationHandling();
 
     // if we don't know the total size of or we received everything save the cache
     if (totalSize.isNull() || totalSize == -1 || bytesDownloaded == totalSize)
         completeCacheSave();
 
-    // note: might not be a good idea, since users could decide to delete us
-    // which would delete the backend too...
-    // maybe we should protect the backend
-    //pauseNotificationHandling();
     emit q->readChannelFinished();
     emit q->finished();
-    //resumeNotificationHandling();
 }
 
 void QNetworkReplyHttpImplPrivate::_q_error(QNetworkReplyImpl::NetworkError code, const QString &errorMessage)
@@ -1976,27 +1962,14 @@ bool QNetworkReplyHttpImplPrivate::migrateBackend()
 
     state = Reconnecting;
 
-//    if (backend) {
-//        delete backend;
-//        backend = 0;
-//    }
-
     cookedHeaders.clear();
     rawHeaders.clear();
 
     preMigrationDownloaded = bytesDownloaded;
 
-//    backend = manager->d_func()->findBackend(operation, request);
+    setResumeOffset(bytesDownloaded);
 
-//    if (backend) {
-//        backend->setParent(q);
-//        backend->reply = this;
-//        backend->setResumeOffset(bytesDownloaded);
-//    }
-
-    // FIXME
-    Q_ASSERT(0);
-    // What probably needs to be done is an abort and then re-send?
+    emit q->abortHttpRequest();
 
     QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
 
