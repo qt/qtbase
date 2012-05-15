@@ -72,7 +72,7 @@ union RawTestData
     TestData data;
 };
 
-static const TestData inNativeEndian = { 0x0123456789abcdef, 0x00c0ffee, 0xcafe, 0xcf, '\0' };
+static const TestData inNativeEndian = { Q_UINT64_C(0x0123456789abcdef), 0x00c0ffee, 0xcafe, 0xcf, '\0' };
 static const RawTestData inBigEndian = { "\x01\x23\x45\x67\x89\xab\xcd\xef" "\x00\xc0\xff\xee" "\xca\xfe" "\xcf" };
 static const RawTestData inLittleEndian = { "\xef\xcd\xab\x89\x67\x45\x23\x01" "\xee\xff\xc0\x00" "\xfe\xca" "\xcf" };
 
