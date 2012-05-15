@@ -274,6 +274,17 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         if (!showInternal) {
             node->setAccess(Node::Private);
             node->setStatus(Node::Internal);
+            if (node->subType() == Node::QmlPropertyGroup) {
+                const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
+                NodeList::ConstIterator p = qpgn->childNodes().begin();
+                while (p != qpgn->childNodes().end()) {
+                    if ((*p)->type() == Node::QmlProperty) {
+                        (*p)->setAccess(Node::Private);
+                        (*p)->setStatus(Node::Internal);
+                    }
+                    ++p;
+                }
+            }
         }
     }
     else if (command == COMMAND_REENTRANT) {

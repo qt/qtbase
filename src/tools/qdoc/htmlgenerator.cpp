@@ -4025,8 +4025,6 @@ void HtmlGenerator::endLink()
 /*!
   Generates the summary for the \a section. Only used for
   sections of QML element documentation.
-
-  Currently handles only the QML property group.
  */
 void HtmlGenerator::generateQmlSummary(const Section& section,
                                        const Node *relative,

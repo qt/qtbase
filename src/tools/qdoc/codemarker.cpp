@@ -397,8 +397,9 @@ void CodeMarker::insert(FastSection &fastSection,
     bool inheritedMember = false;
     if (!node->relates()) {
         if (node->parent() != (const InnerNode*)fastSection.innerNode && !node->parent()->isAbstract()) {
-            if (node->type() != Node::QmlProperty)
+            if (node->type() != Node::QmlProperty) {
                 inheritedMember = true;
+            }
         }
     }
 

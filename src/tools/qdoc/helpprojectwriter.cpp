@@ -534,7 +534,10 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
 
         writer.writeStartElement("section");
         writer.writeAttribute("ref", href);
-        writer.writeAttribute("title", fakeNode->fullTitle());
+        if (fakeNode->subType() == Node::QmlClass)
+            writer.writeAttribute("title", tr("%1 Type Reference").arg(fakeNode->fullTitle()));
+        else
+            writer.writeAttribute("title", fakeNode->fullTitle());
 
         if ((fakeNode->subType() == Node::HeaderFile) || (fakeNode->subType() == Node::QmlClass)) {
             // Write subsections for all members, obsolete members and Qt 3

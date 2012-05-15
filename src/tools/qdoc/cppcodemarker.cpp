@@ -1125,11 +1125,8 @@ QString CppCodeMarker::addMarkUp(const QString &in,
   This function is for documenting QML properties. It returns
   the list of documentation sections for the children of the
   \a qmlClassNode.
-
-  Currently, it only handles QML property groups.
  */
-QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
-                                          SynopsisStyle style)
+QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, SynopsisStyle style)
 {
     QList<Section> sections;
     if (qmlClassNode) {
