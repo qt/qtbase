@@ -65,12 +65,11 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
     QStringList devices;
 
     foreach (const QString &arg, args) {
-        if (arg.startsWith(QLatin1String("udev")) && arg.contains(QLatin1String("no"))) {
-            useUDev = false;
-        } else if (arg.startsWith(QLatin1String("/dev/"))) {
+        if (arg.startsWith(QLatin1String("/dev/"))) {
             // if device is specified try to use it
             devices.append(arg);
             args.removeAll(arg);
+            useUDev = false;
         }
     }
 

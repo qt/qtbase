@@ -65,12 +65,11 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
     QStringList devices;
 
     foreach (const QString &arg, args) {
-        if (arg.startsWith("udev") && arg.contains("no")) {
-            useUDev = false;
-        } else if (arg.startsWith("/dev/")) {
+        if (arg.startsWith("/dev/")) {
             // if device is specified try to use it
             devices.append(arg);
             args.removeAll(arg);
+            useUDev = false;
         }
     }
 

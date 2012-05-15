@@ -150,25 +150,31 @@ QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
 
     QString dev;
 
-#ifndef QT_NO_LIBUDEV
-    // try to let udev scan for already connected devices
-    QScopedPointer<QUDeviceHelper> udeviceHelper(QUDeviceHelper::createUDeviceHelper(QUDeviceHelper::UDev_Touchpad | QUDeviceHelper::UDev_Touchscreen, this));
-    if (udeviceHelper) {
-        QStringList devices = udeviceHelper->scanConnectedDevices();
+    // only the first device argument is used for now
+    QStringList args = spec.split(QLatin1Char(':'));
+    for (int i = 0; i < args.count(); ++i) {
+        if (args.at(i).startsWith(QLatin1String("/dev/"))) {
+            dev = args.at(i);
+            break;
+        }
+    }
 
-        // only the first device found is used for now
-        if (devices.size() > 0)
-            dev = devices[0];
+#ifndef QT_NO_LIBUDEV
+    if (dev.isEmpty()) {
+        // try to let udev scan for already connected devices
+        QScopedPointer<QUDeviceHelper> udeviceHelper(QUDeviceHelper::createUDeviceHelper(QUDeviceHelper::UDev_Touchpad | QUDeviceHelper::UDev_Touchscreen, this));
+        if (udeviceHelper) {
+            QStringList devices = udeviceHelper->scanConnectedDevices();
+
+            // only the first device found is used for now
+            if (devices.size() > 0)
+                dev = devices[0];
+        }
     }
 #endif // QT_NO_LIBUDEV
 
     if (dev.isEmpty())
         dev = QLatin1String("/dev/input/event0");
-
-    QStringList args = spec.split(QLatin1Char(':'));
-    for (int i = 0; i < args.count(); ++i)
-        if (args.at(i).startsWith(QLatin1String("/dev/")))
-            dev = args.at(i);
 
     qDebug("evdevtouch: Using device %s", qPrintable(dev));
     m_fd = QT_OPEN(dev.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
