@@ -415,6 +415,8 @@ void tst_QTextLayout::forcedBreaks()
     QCOMPARE(qRound(line.naturalTextWidth()), testFont.pixelSize());
     QCOMPARE((int) line.height(), testFont.pixelSize());
     QCOMPARE(line.xToCursor(0), line.textStart());
+
+    layout.endLayout();
 }
 
 void tst_QTextLayout::breakAny()
@@ -425,6 +427,7 @@ void tst_QTextLayout::breakAny()
     QString text = "ABCD";
 
     QTextLayout layout(text, testFont);
+    layout.setCacheEnabled(true);
     QTextLine line;
 
     QTextOption opt;
@@ -506,6 +509,7 @@ void tst_QTextLayout::cursorToXForInlineObjects()
 void tst_QTextLayout::cursorToXForSetColumns()
 {
     QTextLayout lay("abc", testFont);
+    lay.setCacheEnabled(true);
     QTextOption o = lay.textOption();
     o.setWrapMode(QTextOption::WrapAnywhere);
 
@@ -614,6 +618,7 @@ void tst_QTextLayout::xToCursorAtEndOfLine()
     const qreal firstLineWidth = QString("FirstLine").length() * testFont.pixelSize();
 
     QTextLayout layout(text, testFont);
+    layout.setCacheEnabled(true);
 
     layout.beginLayout();
     QTextLine line = layout.createLine();
@@ -635,6 +640,7 @@ void tst_QTextLayout::boundingRectTopLeft()
     text.replace('\n', QChar::LineSeparator);
 
     QTextLayout layout(text, testFont);
+    layout.setCacheEnabled(true);
 
     layout.beginLayout();
     QTextLine firstLine = layout.createLine();
@@ -711,6 +717,7 @@ void tst_QTextLayout::setNumColumnsWrapAtWordBoundaryOrAnywhere()
 {
     QString txt("This is a small test text");
     QTextLayout layout(txt, testFont);
+    layout.setCacheEnabled(true);
     QTextOption option = layout.textOption();
     option.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
     layout.setTextOption(option);
@@ -734,6 +741,7 @@ void tst_QTextLayout::setNumColumnsWordWrap()
 {
     QString txt("This is a small test text");
     QTextLayout layout(txt, testFont);
+    layout.setCacheEnabled(true);
     QTextOption option = layout.textOption();
     option.setWrapMode(QTextOption::WordWrap);
     layout.setTextOption(option);
@@ -757,6 +765,7 @@ void tst_QTextLayout::smallTextLengthNoWrap()
 {
     QString txt("This is a small test text");
     QTextLayout layout(txt, testFont);
+    layout.setCacheEnabled(true);
     QTextOption option = layout.textOption();
     option.setWrapMode(QTextOption::NoWrap);
     layout.setTextOption(option);
@@ -780,6 +789,7 @@ void tst_QTextLayout::smallTextLengthWordWrap()
 {
     QString txt("This is a small test text");
     QTextLayout layout(txt, testFont);
+    layout.setCacheEnabled(true);
     QTextOption option = layout.textOption();
     option.setWrapMode(QTextOption::WordWrap);
     layout.setTextOption(option);
@@ -804,6 +814,7 @@ void tst_QTextLayout::smallTextLengthWrapAtWordBoundaryOrAnywhere()
 {
     QString txt("This is a small test text");
     QTextLayout layout(txt, testFont);
+    layout.setCacheEnabled(true);
     QTextOption option = layout.textOption();
     option.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
     layout.setTextOption(option);
@@ -827,6 +838,7 @@ void tst_QTextLayout::smallTextLengthWrapAtWordBoundaryOrAnywhere()
 void tst_QTextLayout::testDefaultTabs()
 {
     QTextLayout layout("Foo\tBar\ta slightly longer text\tend.", testFont);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
     line.setLineWidth(1000);
@@ -868,6 +880,7 @@ void tst_QTextLayout::testDefaultTabs()
 void tst_QTextLayout::testTabs()
 {
     QTextLayout layout("Foo\tBar.", testFont);
+    layout.setCacheEnabled(true);
     QTextOption option = layout.textOption();
     option.setTabStop(150);
     layout.setTextOption(option);
@@ -884,6 +897,7 @@ void tst_QTextLayout::testTabs()
 void tst_QTextLayout::testMultilineTab()
 {
     QTextLayout layout("Lorem ipsum dolor sit\tBar.", testFont);
+    layout.setCacheEnabled(true);
     // test if this works on the second line.
     layout.beginLayout();
     QTextLine line = layout.createLine();
@@ -898,6 +912,7 @@ void tst_QTextLayout::testMultilineTab()
 void tst_QTextLayout::testMultiTab()
 {
     QTextLayout layout("Foo\t\t\tBar.", testFont);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
     line.setLineWidth(1000.);
@@ -909,6 +924,7 @@ void tst_QTextLayout::testMultiTab()
 void tst_QTextLayout::testTabsInAlignedParag()
 {
     QTextLayout layout("Foo\tsome more words", testFont);
+    layout.setCacheEnabled(true);
     QTextOption option = layout.textOption();
     // right
     option.setAlignment(Qt::AlignRight);
@@ -966,6 +982,7 @@ void tst_QTextLayout::testRightTab()
      c) tab is after last tab (both auto and defined) and thus moves text to start of next line.
      d) tab takes space so text until enter fits to tab pos.
     */
+    layout.setCacheEnabled(true);
 
     QTextOption option = layout.textOption();
     QList<QTextOption::Tab> tabs;
@@ -1004,6 +1021,7 @@ void tst_QTextLayout::testRightTab()
 void tst_QTextLayout::testCenteredTab()
 {
     QTextLayout layout("Foo\tBar", testFont);
+    layout.setCacheEnabled(true);
     // test if centering the tab works.  We expect the center of 'Bar.' to be at the tab point.
     QTextOption option = layout.textOption();
     QList<QTextOption::Tab> tabs;
@@ -1024,6 +1042,7 @@ void tst_QTextLayout::testCenteredTab()
 void tst_QTextLayout::testDelimiterTab()
 {
     QTextLayout layout("Foo\tBar. Barrabas", testFont);
+    layout.setCacheEnabled(true);
     // try the different delimiter characters to see if the alignment works there.
     QTextOption option = layout.textOption();
     QList<QTextOption::Tab> tabs;
@@ -1044,6 +1063,7 @@ void tst_QTextLayout::testDelimiterTab()
 void tst_QTextLayout::testLineBreakingAllSpaces()
 {
     QTextLayout layout("                    123", testFont); // thats 20 spaces
+    layout.setCacheEnabled(true);
     const qreal firstLineWidth = 17 * TESTFONT_SIZE;
     layout.beginLayout();
     QTextLine line1 = layout.createLine();
@@ -1073,6 +1093,7 @@ void tst_QTextLayout::tabsForRtl()
      c) right tab on RTL is a left tab; so its at width - 240
      d) center tab is still a centered tab.
     */
+    layout.setCacheEnabled(true);
 
     QTextOption option = layout.textOption();
     QList<QTextOption::Tab> tabs;
@@ -1135,6 +1156,7 @@ void tst_QTextLayout::testTabDPIScale()
     MyPaintDevice pd;
 
     QTextLayout layout("text1\ttext2\ttext3\tend", testFont, &pd);
+    layout.setCacheEnabled(true);
 
     QTextOption option = layout.textOption();
     QList<QTextOption::Tab> tabs;
@@ -1171,6 +1193,7 @@ void tst_QTextLayout::testTabDPIScale()
 void tst_QTextLayout::tabHeight()
 {
     QTextLayout layout("\t", testFont);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
     layout.endLayout();
@@ -1184,6 +1207,7 @@ void tst_QTextLayout::capitalization_allUpperCase()
     QFont font(testFont);
     font.setCapitalization(QFont::AllUppercase);
     QTextLayout layout("Test", font);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
@@ -1199,6 +1223,7 @@ void tst_QTextLayout::capitalization_allLowerCase()
     QFont font(testFont);
     font.setCapitalization(QFont::AllLowercase);
     QTextLayout layout("Test", font);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
@@ -1214,6 +1239,7 @@ void tst_QTextLayout::capitalization_smallCaps()
     QFont font(testFont);
     font.setCapitalization(QFont::SmallCaps);
     QTextLayout layout("Test", font);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
@@ -1230,6 +1256,7 @@ void tst_QTextLayout::capitalization_capitalize()
     QFont font(testFont);
     font.setCapitalization(QFont::Capitalize);
     QTextLayout layout("hello\tworld", font);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
@@ -1250,6 +1277,7 @@ void tst_QTextLayout::longText()
 
     {
         QTextLayout layout(longText, testFont);
+        layout.setCacheEnabled(true);
         layout.beginLayout();
         QTextLine line = layout.createLine();
         layout.endLayout();
@@ -1261,6 +1289,7 @@ void tst_QTextLayout::longText()
         QFont f(testFont);
         f.setCapitalization(QFont::Capitalization(cap));
         QTextLayout layout(longText, f);
+        layout.setCacheEnabled(true);
         layout.beginLayout();
         QTextLine line = layout.createLine();
         layout.endLayout();
@@ -1270,6 +1299,7 @@ void tst_QTextLayout::longText()
 
     {
         QTextLayout layout(longText, testFont);
+        layout.setCacheEnabled(true);
         layout.setFlags(Qt::TextForceLeftToRight);
         layout.beginLayout();
         QTextLine line = layout.createLine();
@@ -1280,6 +1310,7 @@ void tst_QTextLayout::longText()
 
     {
         QTextLayout layout(longText, testFont);
+        layout.setCacheEnabled(true);
         layout.setFlags(Qt::TextForceRightToLeft);
         layout.beginLayout();
         QTextLine line = layout.createLine();
@@ -1334,7 +1365,7 @@ void tst_QTextLayout::columnWrapWithTabs()
 void tst_QTextLayout::boundingRectForUnsetLineWidth()
 {
     QTextLayout layout("FOOBAR");
-
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
     layout.endLayout();
@@ -1345,7 +1376,7 @@ void tst_QTextLayout::boundingRectForUnsetLineWidth()
 void tst_QTextLayout::boundingRectForSetLineWidth()
 {
     QTextLayout layout("FOOBAR");
-
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
     line.setLineWidth(QFIXED_MAX - 1);
@@ -1388,6 +1419,7 @@ void tst_QTextLayout::glyphLessItems()
 void tst_QTextLayout::textWidthVsWIdth()
 {
     QTextLayout layout;
+    layout.setCacheEnabled(true);
     QTextOption opt;
     opt.setWrapMode(QTextOption::WrapAnywhere);
     layout.setTextOption(opt);
@@ -1417,6 +1449,7 @@ void tst_QTextLayout::textWithSurrogates_qtbug15679()
 {
     QString str = QString::fromUtf8("🀀a🀀");
     QTextLayout layout(str);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
     layout.endLayout();
@@ -1436,6 +1469,7 @@ void tst_QTextLayout::textWidthWithStackedTextEngine()
 {
     QString text = QString::fromUtf8("คลิก ถัดไป เพื่อดำเนินการต่อ");
     QTextLayout layout(text);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
     layout.endLayout();
@@ -1465,6 +1499,7 @@ void tst_QTextLayout::cursorInLigatureWithMultipleLines()
     QSKIP("This test can only be run on Mac");
 #endif
     QTextLayout layout("first line finish", QFont("Times", 20));
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
     line.setLineWidth(70);
@@ -1481,6 +1516,7 @@ void tst_QTextLayout::xToCursorForLigatures()
     QSKIP("This test can only be run on Mac");
 #endif
     QTextLayout layout("fi", QFont("Times", 20));
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
     layout.endLayout();
@@ -1489,7 +1525,7 @@ void tst_QTextLayout::xToCursorForLigatures()
 
     // U+0061 U+0308
     QTextLayout layout2(QString::fromUtf8("\x61\xCC\x88"), QFont("Times", 20));
-
+    layout2.setCacheEnabled(true);
     layout2.beginLayout();
     line = layout2.createLine();
     layout2.endLayout();
@@ -1505,6 +1541,7 @@ void tst_QTextLayout::cursorInNonStopChars()
     QSKIP("This test can not be run on Mac");
 #endif
     QTextLayout layout(QString::fromUtf8("\xE0\xA4\xA4\xE0\xA5\x8D\xE0\xA4\xA8"));
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
     layout.endLayout();

@@ -325,6 +325,7 @@ void tst_QRawFont::textLayout()
 
     QTextLayout layout(QLatin1String("Foobar"));
     layout.setFont(font);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
@@ -822,6 +823,7 @@ void tst_QRawFont::unsupportedWritingSystem()
     QTextLayout layout;
     layout.setFont(font);
     layout.setText(arabicText);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
@@ -862,6 +864,7 @@ void tst_QRawFont::rawFontSetPixelSize()
     font.setPixelSize(12);
     layout.setFont(font);
 
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();

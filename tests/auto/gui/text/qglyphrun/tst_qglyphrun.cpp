@@ -244,6 +244,7 @@ void tst_QGlyphRun::textLayoutGlyphIndexes()
 
     QTextLayout layout(s);
     layout.setFont(m_testFont);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
@@ -273,6 +274,7 @@ void tst_QGlyphRun::drawExistingGlyphs()
 
     QTextLayout layout(s);
     layout.setFont(m_testFont);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
@@ -411,6 +413,7 @@ void tst_QGlyphRun::drawMultiScriptText1()
     text += QChar(0x03D0); // Greek, beta
 
     QTextLayout textLayout(text);
+    textLayout.setCacheEnabled(true);
     textLayout.beginLayout();
     textLayout.createLine();
     textLayout.endLayout();
@@ -451,6 +454,7 @@ void tst_QGlyphRun::drawMultiScriptText2()
     text += QChar(0x03D0); // Greek, beta
 
     QTextLayout textLayout(text);
+    textLayout.setCacheEnabled(true);
     textLayout.beginLayout();
     textLayout.createLine();
     textLayout.endLayout();
@@ -515,6 +519,7 @@ void tst_QGlyphRun::drawStruckOutText()
 
     QTextLayout layout(s);
     layout.setFont(font);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
@@ -556,6 +561,7 @@ void tst_QGlyphRun::drawOverlinedText()
 
     QTextLayout layout(s);
     layout.setFont(font);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
@@ -597,6 +603,7 @@ void tst_QGlyphRun::drawUnderlinedText()
 
     QTextLayout layout(s);
     layout.setFont(font);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
@@ -640,6 +647,7 @@ void tst_QGlyphRun::drawRightToLeft()
 
     QTextLayout layout(s);
     layout.setFont(font);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();

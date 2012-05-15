@@ -610,6 +610,7 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
         textLayout.setText(text);
         textLayout.setFont(font);
         textLayout.setTextOption(textOption);
+        textLayout.setCacheEnabled(true);
 
         qreal leading = QFontMetricsF(font).leading();
         qreal height = -leading;

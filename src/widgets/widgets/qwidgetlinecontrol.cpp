@@ -351,6 +351,7 @@ void QWidgetLineControl::_q_deleteSelected()
 */
 void QWidgetLineControl::init(const QString &txt)
 {
+    m_textLayout.setCacheEnabled(true);
     m_text = txt;
     updateDisplayText();
     m_cursor = m_text.length();

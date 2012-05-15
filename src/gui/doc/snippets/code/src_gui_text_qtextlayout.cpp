@@ -41,6 +41,7 @@
 //! [0]
 int leading = fontMetrics.leading();
 qreal height = 0;
+textLayout.setCacheEnabled(true);
 textLayout.beginLayout();
 while (1) {
     QTextLine line = textLayout.createLine();

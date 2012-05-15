@@ -168,6 +168,7 @@ void tst_QComplexText::bidiCursor_qtbug2795()
     QTextLayout l1(str);
 
     l1.beginLayout();
+    l1.setCacheEnabled(true);
     QTextLine line1 = l1.createLine();
     l1.endLayout();
 
@@ -175,6 +176,7 @@ void tst_QComplexText::bidiCursor_qtbug2795()
 
     str.append("1");
     QTextLayout l2(str);
+    l2.setCacheEnabled(true);
     l2.beginLayout();
     QTextLine line2 = l2.createLine();
     l2.endLayout();
@@ -206,6 +208,7 @@ void tst_QComplexText::bidiCursorMovement()
     QFETCH(int,  basicDir);
 
     QTextLayout layout(logical);
+    layout.setCacheEnabled(true);
 
     QTextOption option = layout.textOption();
     option.setTextDirection(basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
@@ -273,6 +276,7 @@ void tst_QComplexText::bidiCursor_PDF()
 {
     QString str = QString::fromUtf8("\342\200\252hello\342\200\254");
     QTextLayout layout(str);
+    layout.setCacheEnabled(true);
 
     layout.beginLayout();
     QTextLine line = layout.createLine();

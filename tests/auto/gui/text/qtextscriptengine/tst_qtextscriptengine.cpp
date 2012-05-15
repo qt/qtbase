@@ -1231,6 +1231,7 @@ void tst_QTextScriptEngine::mirroredChars()
     HB_Glyph rightParenthesis;
     {
         QTextLayout layout(s);
+        layout.setCacheEnabled(true);
         layout.beginLayout();
         layout.createLine();
         layout.endLayout();
@@ -1267,6 +1268,7 @@ void tst_QTextScriptEngine::thaiIsolatedSaraAm()
         s.append(QChar(0x0e33));
 
         QTextLayout layout(s, QFont("Waree"));
+        layout.setCacheEnabled(true);
         layout.beginLayout();
         layout.createLine();
         layout.endLayout();
@@ -1289,6 +1291,7 @@ void tst_QTextScriptEngine::thaiWithZWJ()
 #endif
     QString s(QString::fromUtf8("ร‍ร‌.ร.“ร…ร”ร\xA0ร本ร") + QChar(0x0363)/*superscript 'a', for testing Inherited class*/);
     QTextLayout layout(s);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
@@ -1341,6 +1344,7 @@ void tst_QTextScriptEngine::thaiMultipleVowels()
     for (int i = 0; i < 10; i++)
         s += s; //Repeat the string to make it more likely to crash if we have a buffer overflow
     QTextLayout layout(s);
+    layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
     layout.endLayout();
