@@ -192,12 +192,17 @@ void QUDeviceHelper::handleUDevNotification()
         subsystem = "drm";
     else goto cleanup;
 
-    // does not increase the refcount
-    dev = udev_device_get_parent_with_subsystem_devtype(dev, subsystem, 0);
-    if (!dev)
-        goto cleanup;
-
     types = checkDeviceType(dev);
+
+    // if we cannot determine a type, walk up the device tree
+    if (types == UDev_Unknown) {
+        // does not increase the refcount
+        dev = udev_device_get_parent_with_subsystem_devtype(dev, subsystem, 0);
+        if (!dev)
+            goto cleanup;
+
+        types = checkDeviceType(dev);
+    }
 
     if (types && (qstrcmp(action, "add") == 0))
         emit deviceDetected(devNode, types);
