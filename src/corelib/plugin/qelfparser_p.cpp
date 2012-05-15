@@ -61,8 +61,8 @@ const char *QElfParser::parseSectionHeader(const char *data, ElfSectionHeader *s
          + sizeof(qelfaddr_t);  // sh_addr
     sh->offset = read<qelfoff_t>(data);
     data += sizeof(qelfoff_t);  // sh_offset
-    sh->size = read<qelfword_t>(data);
-    data += sizeof(qelfword_t); // sh_size
+    sh->size = read<qelfoff_t>(data);
+    data += sizeof(qelfoff_t);  // sh_size
     return data;
 }
 

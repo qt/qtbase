@@ -80,7 +80,7 @@ public:
         qelfword_t name;
         qelfword_t type;
         qelfoff_t  offset;
-        qelfword_t size;
+        qelfoff_t  size;
     };
 
     int m_endian;
