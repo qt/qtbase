@@ -1190,9 +1190,7 @@ Q_CORE_EXPORT int qrand();
 #endif
 
 #if defined (__ELF__)
-#  if defined (Q_OS_LINUX) || defined (Q_OS_SOLARIS) || defined (Q_OS_FREEBSD) || defined (Q_OS_OPENBSD) || defined (Q_OS_IRIX)
-#    define Q_OF_ELF
-#  endif
+#  define Q_OF_ELF
 #endif
 
 #if !defined(QT_BOOTSTRAPPED) && defined(QT_REDUCE_RELOCATIONS) && defined(__ELF__) && !defined(__PIC__)
