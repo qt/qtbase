@@ -14,8 +14,8 @@ CONFIG = lex yacc warn_on debug exceptions $$CONFIG
 
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
 
-    isEmpty(QMAKE_SYNCQT_OUTDIR): QMAKE_SYNCQT_OUTDIR = $$OUT_PWD
-    MSG = $$quote($$QMAKE_SYNCQT -qtdir $$[QT_HOST_DATA/get] $$QTFWD -generator $$MAKEFILE_GENERATOR -outdir $$QMAKE_SYNCQT_OUTDIR $$_PRO_FILE_PWD_)
+    isEmpty(MODULE_BASE_OUTDIR): MODULE_BASE_OUTDIR = $$OUT_PWD
+    MSG = $$quote($$QMAKE_SYNCQT -qtdir $$[QT_HOST_DATA/get] $$QTFWD -generator $$MAKEFILE_GENERATOR -outdir $$MODULE_BASE_OUTDIR $$_PRO_FILE_PWD_)
     !silent:message($$MSG)
     system($$MSG) {
         # success! Nothing to do
