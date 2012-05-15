@@ -309,9 +309,18 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     int protocol = (socketProtocol == QAbstractSocket::IPv6Protocol
         || (socketProtocol == QAbstractSocket::AnyIPProtocol && QSysInfo::windowsVersion() >= QSysInfo::WV_6_0)) ? AF_INET6 : AF_INET;
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
+
     // MSDN KB179942 states that on winnt 4 WSA_FLAG_OVERLAPPED is needed if socket is to be non blocking
     // and recomends alwasy doing it for cross windows version comapablity.
-    SOCKET socket = ::WSASocket(protocol, type, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
+
+    // WSA_FLAG_NO_HANDLE_INHERIT is atomic (like linux O_CLOEXEC), but requires windows 7 SP 1 or later
+    // SetHandleInformation is supported since W2K but isn't atomic
+    // According to the MS docs, we can use the new flag and call GetHandleInformation to see if it was successful
+#ifndef WSA_FLAG_NO_HANDLE_INHERIT
+#define WSA_FLAG_NO_HANDLE_INHERIT 0x80
+#endif
+
+    SOCKET socket = ::WSASocket(protocol, type, 0, NULL, 0, WSA_FLAG_NO_HANDLE_INHERIT | WSA_FLAG_OVERLAPPED);
 
     if (socket == INVALID_SOCKET) {
         int err = WSAGetLastError();
@@ -336,6 +345,19 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
 
         return false;
     }
+
+#ifdef HANDLE_FLAG_INHERIT
+    // check if the WSASocket was successful or not at creating a non inheritable socket
+    DWORD handleFlags = 0xFF;
+    if (GetHandleInformation((HANDLE)socket, &handleFlags) && (handleFlags & HANDLE_FLAG_INHERIT)) {
+        // make non inheritable the old way
+        if (SetHandleInformation((HANDLE)socket, HANDLE_FLAG_INHERIT, 0))
+            handleFlags = 0;
+    }
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QNativeSocketEnginePrivate::createNewSocket - set inheritable" << handleFlags;
+#endif
+#endif
 
 #if !defined(Q_OS_WINCE)
     if (socketType == QAbstractSocket::UdpSocket) {
