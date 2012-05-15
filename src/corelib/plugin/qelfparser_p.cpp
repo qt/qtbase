@@ -218,7 +218,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
                 continue;
             }
 
-            if (sh.offset == 0 || (sh.offset + sh.size) > fdlen) {
+            if (sh.offset == 0 || (sh.offset + sh.size) > fdlen || sh.size < 1) {
                 if (lib)
                     lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library)
                                       .arg(QLatin1String("missing section data. This is not a library."));
