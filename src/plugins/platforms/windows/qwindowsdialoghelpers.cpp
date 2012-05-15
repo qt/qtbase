@@ -870,7 +870,8 @@ void QWindowsNativeFileDialogBase::setNameFilters(const QStringList &filters)
         const int closingParenPos = openingParenPos != -1 ?
             filterString.indexOf(QLatin1Char(')'), openingParenPos + 1) : -1;
         QString filterSpec = closingParenPos == -1 ?
-            QString(QLatin1Char('*')) : filterString.mid(openingParenPos + 1, closingParenPos - openingParenPos - 1);
+                    QString(QLatin1Char('*')) :
+                    filterString.mid(openingParenPos + 1, closingParenPos - openingParenPos - 1).trimmed();
         filterSpec.replace(filterSeparatorRE, separator);
         if (m_hideFiltersDetails) {
             // Do not show pattern in description
