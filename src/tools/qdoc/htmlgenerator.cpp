@@ -4444,7 +4444,7 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
                          fileName.endsWith(".h") ||
                          fileName.endsWith(".qml")))
                     baseName.truncate(baseName.lastIndexOf(QChar('.')));
-                if (baseName.toLower() == ename) {
+                if (baseName.compare(ename, Qt::CaseInsensitive) == 0) {
                     if (!usedNames.contains(fileName)) {
                         writer.writeStartElement("fileToOpen");
                         if (file.startsWith("demos/"))
