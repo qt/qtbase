@@ -242,6 +242,21 @@ DeviceVar()
     echo "$2" "$eq" "$3" >> "$DEVICE_VARS_FILE"
 }
 
+resolveDeviceMkspec()
+{
+    result=$(find "$relpath/mkspecs/devices/" -type d -name "*$VAL*" | sed "s,^$relpath/mkspecs/,,")
+    match_count=$(echo "$result" | wc -w)
+    if [ "$match_count" -gt 1 ]; then
+        echo >&2 "Error: Multiple matches for device '$VAL'. Candidates are:"
+        tabbed_result=$(echo "$result" | sed "s,^,    ,")
+        echo >&2 "$tabbed_result"
+        echo "undefined"
+    elif [ "$match_count" -eq 0 ]; then
+        echo >&2 "Error: No device matching '$VAL'"
+        echo "undefined"
+    fi
+}
+
 #-------------------------------------------------------------------------------
 # operating system detection
 #-------------------------------------------------------------------------------
@@ -1270,7 +1285,8 @@ while [ "$#" -gt 0 ]; do
         case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
         ;;
     device)
-        XPLATFORM="devices/$VAL"
+        XPLATFORM=`resolveDeviceMkspec $VAL`
+        [ "$XPLATFORM" = "undefined" ] && exit 101
         ;;
     device-option)
         DEV_VAR=`echo $VAL | sed "s,^\(.*\)=.*,\1,"`
