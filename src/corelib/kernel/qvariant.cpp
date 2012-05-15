@@ -1669,18 +1669,12 @@ void QVariant::load(QDataStream &s)
             // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
             // by moving all ids down by 97.
             typeId -= 97;
-        } else if (typeId == 69 /* QIcon */) {
-            // In Qt5 after modularization project these types where moved to a separate module (and ids were downgraded)
-            typeId = QMetaType::QIcon;
         } else if (typeId == 75 /* QSizePolicy */) {
             typeId = QMetaType::QSizePolicy;
-        } else if (typeId >= 70) {
+        } else if (typeId > 75 && typeId <= 86) {
             // and as a result these types received lower ids too
-            if (typeId <= 74) { // QImage QPolygon QRegion QBitmap QCursor
-                typeId -=1;
-            } else if (typeId <= 86) { // QKeySequence QPen QTextLength QTextFormat QMatrix QTransform QMatrix4x4 QVector2D QVector3D QVector4D QQuaternion
-                typeId -=2;
-            }
+            // QKeySequence QPen QTextLength QTextFormat QMatrix QTransform QMatrix4x4 QVector2D QVector3D QVector4D QQuaternion
+            typeId -=1;
         }
     }
 
@@ -1744,18 +1738,11 @@ void QVariant::save(QDataStream &s) const
             // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
             // by moving all ids down by 97.
             typeId += 97;
-        } else if (typeId == QMetaType::QIcon) {
-            // In Qt5 after modularization project these types where moved to a separate module (and ids were downgraded)
-            typeId = 69;
         } else if (typeId == QMetaType::QSizePolicy) {
             typeId = 75;
-        } else if (typeId >= QMetaType::QImage) {
+        } else if (typeId >= QMetaType::QKeySequence && typeId <= QMetaType::QQuaternion) {
             // and as a result these types received lower ids too
-            if (typeId <= QMetaType::QCursor) {
-                typeId +=1;
-            } else if (typeId <= QMetaType::QQuaternion) {
-                typeId +=2;
-            }
+            typeId +=1;
         }
     }
     s << typeId;

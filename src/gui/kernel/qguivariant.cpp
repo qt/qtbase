@@ -64,6 +64,7 @@
 #include "qvector3d.h"
 #include "qvector4d.h"
 #include "qquaternion.h"
+#include "qicon.h"
 
 // Core types
 #include "qvariant.h"
@@ -137,7 +138,7 @@ static bool isNull(const QVariant::Private *d)
     return QMetaTypeSwitcher::switcher<bool>(isNull, d->type, 0);
 }
 
-// This class is a hack that customizes access to QPixmap, QBitmap and QCursor
+// This class is a hack that customizes access to QPixmap, QBitmap, QCursor and QIcon
 template<class Filter>
 class QGuiVariantComparator : public QVariantComparator<Filter> {
     typedef QVariantComparator<Filter> Base;
@@ -162,6 +163,12 @@ public:
     bool delegate(const QCursor*)
     {
         return v_cast<QCursor>(Base::m_a)->shape() == v_cast<QCursor>(Base::m_b)->shape();
+    }
+#endif
+#ifndef QT_NO_ICON
+    bool delegate(const QIcon *)
+    {
+        return false;
     }
 #endif
     bool delegate(const void *p) { return Base::delegate(p); }
@@ -287,6 +294,13 @@ static bool convert(const QVariant::Private *d, int t,
         default:
             break;
         }
+    }
+#endif
+#ifndef QT_NO_ICON
+    case QVariant::Icon: {
+        if (ok)
+            *ok = false;
+        return false;
     }
 #endif
     default:

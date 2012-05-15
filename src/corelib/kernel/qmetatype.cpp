@@ -845,11 +845,11 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QVector3D:
     case QMetaType::QVector4D:
     case QMetaType::QQuaternion:
+    case QMetaType::QIcon:
         if (!qMetaTypeGuiHelper)
             return false;
         qMetaTypeGuiHelper[type - FirstGuiType].saveOp(stream, data);
         break;
-    case QMetaType::QIcon:
     case QMetaType::QSizePolicy:
         if (!qMetaTypeWidgetsHelper)
             return false;
@@ -1069,11 +1069,11 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::QVector3D:
     case QMetaType::QVector4D:
     case QMetaType::QQuaternion:
+    case QMetaType::QIcon:
         if (!qMetaTypeGuiHelper)
             return false;
         qMetaTypeGuiHelper[type - FirstGuiType].loadOp(stream, data);
         break;
-    case QMetaType::QIcon:
     case QMetaType::QSizePolicy:
         if (!qMetaTypeWidgetsHelper)
             return false;

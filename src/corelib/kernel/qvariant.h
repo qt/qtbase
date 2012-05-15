@@ -184,9 +184,9 @@ class Q_CORE_EXPORT QVariant
         Vector4D = QMetaType::QVector4D,
         Quaternion = QMetaType::QQuaternion,
         PolygonF = QMetaType::QPolygonF,
+        Icon = QMetaType::QIcon,
         LastGuiType = QMetaType::LastGuiType,
 
-        Icon = QMetaType::QIcon,
         SizePolicy = QMetaType::QSizePolicy,
 
         UserType = QMetaType::User,

@@ -236,6 +236,9 @@ template<> struct TypeDefinition<QVector4D> { static const bool IsAvailable = fa
 #ifdef QT_NO_QUATERNION
 template<> struct TypeDefinition<QQuaternion> { static const bool IsAvailable = false; };
 #endif
+#ifdef QT_NO_ICON
+template<> struct TypeDefinition<QIcon> { static const bool IsAvailable = false; };
+#endif
 } //namespace QtMetaTypePrivate
 
 QT_END_NAMESPACE

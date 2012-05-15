@@ -127,26 +127,27 @@ QT_BEGIN_NAMESPACE
     F(QBrush, 66, QBrush) \
     F(QColor, 67, QColor) \
     F(QPalette, 68, QPalette) \
-    F(QImage, 69, QImage) \
-    F(QPolygon, 70, QPolygon) \
-    F(QRegion, 71, QRegion) \
-    F(QBitmap, 72, QBitmap) \
-    F(QCursor, 73, QCursor) \
-    F(QKeySequence, 74, QKeySequence) \
-    F(QPen, 75, QPen) \
-    F(QTextLength, 76, QTextLength) \
-    F(QTextFormat, 77, QTextFormat) \
-    F(QMatrix, 78, QMatrix) \
-    F(QTransform, 79, QTransform) \
-    F(QMatrix4x4, 80, QMatrix4x4) \
-    F(QVector2D, 81, QVector2D) \
-    F(QVector3D, 82, QVector3D) \
-    F(QVector4D, 83, QVector4D) \
-    F(QQuaternion, 84, QQuaternion) \
-    F(QPolygonF, 85, QPolygonF) \
+    F(QIcon, 69, QIcon) \
+    F(QImage, 70, QImage) \
+    F(QPolygon, 71, QPolygon) \
+    F(QRegion, 72, QRegion) \
+    F(QBitmap, 73, QBitmap) \
+    F(QCursor, 74, QCursor) \
+    F(QKeySequence, 75, QKeySequence) \
+    F(QPen, 76, QPen) \
+    F(QTextLength, 77, QTextLength) \
+    F(QTextFormat, 78, QTextFormat) \
+    F(QMatrix, 79, QMatrix) \
+    F(QTransform, 80, QTransform) \
+    F(QMatrix4x4, 81, QMatrix4x4) \
+    F(QVector2D, 82, QVector2D) \
+    F(QVector3D, 83, QVector3D) \
+    F(QVector4D, 84, QVector4D) \
+    F(QQuaternion, 85, QQuaternion) \
+    F(QPolygonF, 86, QPolygonF) \
+
 
 #define QT_FOR_EACH_STATIC_WIDGETS_CLASS(F)\
-    F(QIcon, 120, QIcon) \
     F(QSizePolicy, 121, QSizePolicy) \
 
 // ### FIXME kill that set
@@ -208,7 +209,7 @@ public:
         LastCoreType = SChar,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,
-        FirstWidgetsType = QIcon,
+        FirstWidgetsType = QSizePolicy,
         LastWidgetsType = QSizePolicy,
         HighestInternalId = LastWidgetsType,
 
@@ -232,11 +233,11 @@ public:
         QObjectStar = 39, QWidgetStar = 40,
         QVariantMap = 8, QVariantList = 9, QVariantHash = 28,
         QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,
-        QImage = 69, QPolygon = 70, QRegion = 71, QBitmap = 72, QCursor = 73,
-        QKeySequence = 74, QPen = 75, QTextLength = 76, QTextFormat = 77,
-        QMatrix = 78, QTransform = 79, QMatrix4x4 = 80, QVector2D = 81,
-        QVector3D = 82, QVector4D = 83, QQuaternion = 84, QPolygonF = 85,
-        QIcon = 120, QSizePolicy = 121,
+        QIcon = 69, QImage = 70, QPolygon = 71, QRegion = 72, QBitmap = 73,
+        QCursor = 74, QKeySequence = 75, QPen = 76, QTextLength = 77, QTextFormat = 78,
+        QMatrix = 79, QTransform = 80, QMatrix4x4 = 81, QVector2D = 82,
+        QVector3D = 83, QVector4D = 84, QQuaternion = 85, QPolygonF = 86,
+        QSizePolicy = 121,
         User = 256
     };
 #endif

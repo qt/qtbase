@@ -41,7 +41,6 @@
 
 #include "qvariant.h"
 
-#include "qicon.h"
 #include "qsizepolicy.h"
 
 #include "private/qvariant_p.h"
@@ -53,11 +52,6 @@ namespace {
 static void construct(QVariant::Private *x, const void *copy)
 {
     switch (x->type) {
-#ifndef QT_NO_ICON
-    case QVariant::Icon:
-        v_construct<QIcon>(x, copy);
-        break;
-#endif
     case QVariant::SizePolicy:
         v_construct<QSizePolicy>(x, copy);
         break;
@@ -72,11 +66,6 @@ static void construct(QVariant::Private *x, const void *copy)
 static void clear(QVariant::Private *d)
 {
     switch (d->type) {
-#ifndef QT_NO_ICON
-    case QVariant::Icon:
-        v_clear<QIcon>(d);
-        break;
-#endif
     case QVariant::SizePolicy:
         v_clear<QSizePolicy>(d);
         break;
@@ -93,12 +82,6 @@ static void clear(QVariant::Private *d)
 
 static bool isNull(const QVariant::Private *d)
 {
-    switch(d->type) {
-#ifndef QT_NO_ICON
-    case QVariant::Icon:
-        return v_cast<QIcon>(d)->isNull();
-#endif
-    }
     return false;
 }
 
@@ -106,10 +89,6 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
 {
     Q_ASSERT(a->type == b->type);
     switch(a->type) {
-#ifndef QT_NO_ICON
-    case QVariant::Icon:
-        return false;
-#endif
     case QVariant::SizePolicy:
         return *v_cast<QSizePolicy>(a) == *v_cast<QSizePolicy>(b);
     default:
@@ -133,11 +112,6 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
     switch (d->type) {
-#ifndef QT_NO_ICON
-    case QVariant::Icon:
-        dbg.nospace() << *v_cast<QIcon>(d);
-        break;
-#endif
     case QVariant::SizePolicy:
         dbg.nospace() << *v_cast<QSizePolicy>(d);
         break;
