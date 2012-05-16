@@ -215,19 +215,6 @@ inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *ev
 #ifdef QT_NO_TRANSLATION
 // Simple versions
 inline QString QCoreApplication::translate(const char *, const char *sourceText,
-                                           const char *, Encoding encoding)
-{
-#ifndef QT_NO_TEXTCODEC
-    if (encoding == UnicodeUTF8)
-        return QString::fromUtf8(sourceText);
-#else
-    Q_UNUSED(encoding)
-#endif
-    return QString::fromLatin1(sourceText);
-}
-
-// Simple versions
-inline QString QCoreApplication::translate(const char *, const char *sourceText,
                                            const char *, Encoding encoding, int)
 {
 #ifndef QT_NO_TEXTCODEC
