@@ -44,6 +44,7 @@
 #include "qdirectfbinput.h"
 #include "qdirectfbscreen.h"
 
+#include <QtGui/QWindowSystemInterface>
 
 #include <directfb.h>
 
@@ -86,8 +87,6 @@ QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
     }
 
     m_dfbWindow->SetOpacity(m_dfbWindow.data(), 0xff);
-
-    setVisible(window()->isVisible());
 
     m_inputHandler->addWindow(m_dfbWindow.data(), tlw);
 }
@@ -137,6 +136,9 @@ void QDirectFbWindow::setVisible(bool visible)
         displayLayer->GetConfiguration(displayLayer.data(), &config);
         m_dfbWindow->MoveTo(m_dfbWindow.data(), config. width + 1, config.height + 1);
     }
+
+    if (window()->isTopLevel() && visible)
+        QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
 }
 
 Qt::WindowFlags QDirectFbWindow::setWindowFlags(Qt::WindowFlags flags)
