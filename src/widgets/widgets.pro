@@ -23,7 +23,6 @@ include(../qbase.pri)
 contains(QT_CONFIG, x11sm):CONFIG += x11sm
 
 #platforms
-x11:include(kernel/x11.pri)
 mac:include(kernel/mac.pri)
 win32:include(kernel/win.pri)
 
