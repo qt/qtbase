@@ -310,8 +310,12 @@ public:
 
     QXcbKeyboard *keyboard() const { return m_keyboard; }
 
+#ifndef QT_NO_CLIPBOARD
     QXcbClipboard *clipboard() const { return m_clipboard; }
+#endif
+#ifndef QT_NO_DRAGANDDROP
     QXcbDrag *drag() const { return m_drag; }
+#endif
 
     QXcbWMSupport *wmSupport() const { return m_wmSupport.data(); }
 
@@ -393,8 +397,12 @@ private:
     xcb_window_t m_connectionEventListener;
 
     QXcbKeyboard *m_keyboard;
+#ifndef QT_NO_CLIPBOARD
     QXcbClipboard *m_clipboard;
+#endif
+#ifndef QT_NO_DRAGANDDROP
     QXcbDrag *m_drag;
+#endif
     QScopedPointer<QXcbWMSupport> m_wmSupport;
     QXcbNativeInterface *m_nativeInterface;
 

@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_CLIPBOARD
+
 class QXcbConnection;
 class QXcbScreen;
 class QXcbClipboardMime;
@@ -106,6 +108,8 @@ private:
     static const int clipboard_timeout;
 
 };
+
+#endif // QT_NO_CLIPBOARD
 
 QT_END_NAMESPACE
 

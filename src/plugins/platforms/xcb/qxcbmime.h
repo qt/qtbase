@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_DRAGANDDROP
+
 class QXcbMime : public QInternalMimeData {
     Q_OBJECT
 public:
@@ -66,6 +68,8 @@ public:
     static xcb_atom_t mimeAtomForFormat(QXcbConnection *connection, const QString &format, QVariant::Type requestedType,
                                         const QList<xcb_atom_t> &atoms, QByteArray *requestedEncoding);
 };
+
+#endif // QT_NO_DRAGANDDROP
 
 QT_END_NAMESPACE
 

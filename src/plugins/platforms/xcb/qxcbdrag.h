@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_DRAGANDDROP
+
 class QMouseEvent;
 class QWindow;
 class QXcbConnection;
@@ -160,6 +162,8 @@ private:
     int findTransactionByTime(xcb_timestamp_t timestamp);
     xcb_window_t findRealWindow(const QPoint & pos, xcb_window_t w, int md, bool ignoreNonXdndAwareWindows);
 };
+
+#endif // QT_NO_DRAGANDDROP
 
 QT_END_NAMESPACE
 

@@ -226,15 +226,19 @@ QPlatformNativeInterface * QXcbIntegration::nativeInterface() const
     return m_nativeInterface.data();
 }
 
+#ifndef QT_NO_CLIPBOARD
 QPlatformClipboard *QXcbIntegration::clipboard() const
 {
     return m_connections.at(0)->clipboard();
 }
+#endif
 
+#ifndef QT_NO_DRAGANDDROP
 QPlatformDrag *QXcbIntegration::drag() const
 {
     return m_connections.at(0)->drag();
 }
+#endif
 
 QPlatformInputContext *QXcbIntegration::inputContext() const
 {

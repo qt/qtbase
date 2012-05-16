@@ -376,7 +376,9 @@ void QXcbWindow::create()
     if (window()->windowFlags() & Qt::WindowTransparentForInput)
         setTransparentForMouseEvents(true);
 
+#ifndef QT_NO_DRAGANDDROP
     connection()->drag()->dndEnable(this, true);
+#endif
 }
 
 QXcbWindow::~QXcbWindow()
@@ -1298,6 +1300,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
         } else {
             qWarning() << "QXcbWindow: Unhandled WM_PROTOCOLS message:" << connection()->atomName(event->data.data32[0]);
         }
+#ifndef QT_NO_DRAGANDDROP
     } else if (event->type == atom(QXcbAtom::XdndEnter)) {
         connection()->drag()->handleEnter(window(), event);
     } else if (event->type == atom(QXcbAtom::XdndPosition)) {
@@ -1306,6 +1309,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
         connection()->drag()->handleLeave(window(), event);
     } else if (event->type == atom(QXcbAtom::XdndDrop)) {
         connection()->drag()->handleDrop(window(), event);
+#endif
     } else if (event->type == atom(QXcbAtom::_XEMBED)) { // QSystemTrayIcon
     } else {
         qWarning() << "QXcbWindow: Unhandled client message:" << connection()->atomName(event->type);

@@ -72,8 +72,12 @@ public:
 
     QPlatformNativeInterface *nativeInterface()const;
 
+#ifndef QT_NO_CLIPBOARD
     QPlatformClipboard *clipboard() const;
+#endif
+#ifndef QT_NO_DRAGANDDROP
     QPlatformDrag *drag() const;
+#endif
 
     QPlatformInputContext *inputContext() const;
 

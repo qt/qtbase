@@ -186,8 +186,12 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
 
     m_wmSupport.reset(new QXcbWMSupport(this));
     m_keyboard = new QXcbKeyboard(this);
+#ifndef QT_NO_CLIPBOARD
     m_clipboard = new QXcbClipboard(this);
+#endif
+#ifndef QT_NO_DRAGANDDROP
     m_drag = new QXcbDrag(this);
+#endif
 
 #ifdef XCB_USE_DRI2
     initializeDri2();
@@ -197,8 +201,12 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
 
 QXcbConnection::~QXcbConnection()
 {
+#ifndef QT_NO_CLIPBOARD
     delete m_clipboard;
-
+#endif
+#ifndef QT_NO_DRAGANDDROP
+    delete m_drag;
+#endif
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!m_screens.isEmpty())
         delete m_screens.takeLast();
@@ -562,15 +570,23 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_SELECTION_REQUEST:
         {
             xcb_selection_request_event_t *sr = (xcb_selection_request_event_t *)event;
+#ifndef QT_NO_DRAGANDDROP
             if (sr->selection == atom(QXcbAtom::XdndSelection))
                 m_drag->handleSelectionRequest(sr);
             else
+#endif
+            {
+#ifndef QT_NO_CLIPBOARD
                 m_clipboard->handleSelectionRequest(sr);
+#endif
+            }
             break;
         }
         case XCB_SELECTION_CLEAR:
             setTime(((xcb_selection_clear_event_t *)event)->time);
+#ifndef QT_NO_CLIPBOARD
             m_clipboard->handleSelectionClearRequest((xcb_selection_clear_event_t *)event);
+#endif
             handled = true;
             break;
         case XCB_SELECTION_NOTIFY:
@@ -594,7 +610,9 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     if (!handled) {
         if (response_type == xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
             setTime(((xcb_xfixes_selection_notify_event_t *)event)->timestamp);
+#ifndef QT_NO_CLIPBOARD
             m_clipboard->handleXFixesSelectionRequest((xcb_xfixes_selection_notify_event_t *)event);
+#endif
             handled = true;
         } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
             xcb_randr_screen_change_notify_event_t *change_event = (xcb_randr_screen_change_notify_event_t *)event;
@@ -744,11 +762,13 @@ void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *
     if (event->format != 32)
         return;
 
+#ifndef QT_NO_DRAGANDDROP
     if (event->type == atom(QXcbAtom::XdndStatus)) {
         drag()->handleStatus(event);
     } else if (event->type == atom(QXcbAtom::XdndFinished)) {
         drag()->handleFinished(event);
     }
+#endif
 
     QXcbWindow *window = platformWindowFromId(event->window);
     if (!window)

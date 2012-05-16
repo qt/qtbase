@@ -56,6 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_CLIPBOARD
+
 class QXcbClipboardMime : public QXcbMime
 {
     Q_OBJECT
@@ -861,6 +863,8 @@ QByteArray QXcbClipboard::getSelection(xcb_atom_t selection, xcb_atom_t target, 
 
     return buf;
 }
+
+#endif // QT_NO_CLIPBOARD
 
 QT_END_NAMESPACE
 
