@@ -278,8 +278,18 @@ Q_GLOBAL_STATIC(QCoreApplicationData, coreappdata)
 static bool quitLockRefEnabled = true;
 
 QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint flags)
-    : QObjectPrivate(), argc(aargc), argv(aargv), application_type(0), eventFilter(0),
-      in_exec(false), aboutToQuitEmitted(false), threadData_clean(false)
+    : QObjectPrivate()
+    , argc(aargc)
+    , argv(aargv)
+#ifdef Q_OS_WIN
+    , origArgc(aargc)
+    , origArgv(new char *[aargc])
+#endif
+    , application_type(0)
+    , eventFilter(0)
+    , in_exec(false)
+    , aboutToQuitEmitted(false)
+    , threadData_clean(false)
 {
     app_compile_version = flags & 0xffffff;
     static const char *const empty = "";
@@ -289,8 +299,10 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     }
     QCoreApplicationPrivate::is_app_closing = false;
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX)
     qt_application_thread_id = QThread::currentThreadId();
+#elif defined(Q_OS_WIN)
+    qCopy(argv, argv + argc, origArgv);
 #endif
 
     // note: this call to QThread::currentThread() may end up setting theMainThread!
@@ -301,6 +313,9 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
 QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
     cleanupThreadData();
+#ifdef Q_OS_WIN
+    delete [] origArgv;
+#endif
 }
 
 void QCoreApplicationPrivate::cleanupThreadData()
@@ -1867,7 +1882,15 @@ QStringList QCoreApplication::arguments()
         qWarning("QCoreApplication::arguments: Please instantiate the QApplication object first");
         return list;
     }
+    const int ac = self->d_func()->argc;
+    char ** const av = self->d_func()->argv;
+    list.reserve(ac);
+
 #ifdef Q_OS_WIN
+    // On Windows, it is possible to pass Unicode arguments on
+    // the command line. To restore those, we split the command line
+    // and filter out arguments that were deleted by derived application
+    // classes by index.
     QString cmdline = QString::fromWCharArray(GetCommandLine());
 
 #if defined(Q_OS_WINCE)
@@ -1878,33 +1901,17 @@ QStringList QCoreApplication::arguments()
     }
 #endif // Q_OS_WINCE
 
-    list = qWinCmdArgs(cmdline);
-    if (self->d_func()->application_type) { // GUI app? Skip known - see qapplication.cpp
-        QStringList stripped;
-        for (int a = 0; a < list.count(); ++a) {
-            QString arg = list.at(a);
-            QByteArray l1arg = arg.toLatin1();
-            if (l1arg == "-qdevel" ||
-                l1arg == "-qdebug" ||
-                l1arg == "-reverse" ||
-                l1arg == "-stylesheet" ||
-                l1arg == "-widgetcount")
-                ;
-            else if (l1arg.startsWith("-style=") ||
-                     l1arg.startsWith("-qmljsdebugger="))
-                ;
-            else if (l1arg == "-style" ||
-                     l1arg == "-session" ||
-                     l1arg == "-testability")
-                ++a;
-            else
-                stripped += arg;
-        }
-        list = stripped;
-    }
+    char ** const origArgv = self->d_func()->origArgv;
+    const int origArgc = self->d_func()->origArgc;
+    char ** const avEnd = av + ac;
+
+    const QStringList allArguments = qWinCmdArgs(cmdline);
+    Q_ASSERT(allArguments.size() == origArgc);
+    for (int i = 0; i < origArgc; ++i)
+        if (qFind(av, avEnd, origArgv[i]) != avEnd)
+            list.push_back(allArguments.at(i));
+
 #else
-    const int ac = self->d_func()->argc;
-    char ** const av = self->d_func()->argv;
     for (int a = 0; a < ac; ++a) {
         list << QString::fromLocal8Bit(av[a]);
     }

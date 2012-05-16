@@ -109,6 +109,10 @@ public:
 #endif
     int &argc;
     char **argv;
+#ifdef Q_OS_WIN
+    int origArgc;
+    char **origArgv; // store unmodified arguments for QCoreApplication::arguments()
+#endif
     void appendApplicationPathToLibraryPaths(void);
     void cleanupThreadData();
 
