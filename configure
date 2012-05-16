@@ -3720,13 +3720,34 @@ fi
 # detect avx support
 if [ "${CFG_AVX}" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/avx "avx" $L_FLAGS $I_FLAGS $l_FLAGS "-mavx"; then
-       CFG_AVX=yes
+       case "$XQMAKESPEC" in
+           *g++*|*-clang*)
+               # Some clang versions produce internal compiler errors compiling Qt AVX code
+               case `$TEST_COMPILER --version` in
+                   Apple\ clang\ version\ 2*|Apple\ clang\ version\ 3.0*)
+                       CFG_AVX=no
+                       if [ "$OPT_VERBOSE" = "yes" ]; then
+                           echo 'AVX support disabled for blacklisted clang compiler'
+                       fi
+                       ;;
+                   *)
+                       CFG_AVX=yes
+                       ;;
+               esac
+               ;;
+           *)
+               CFG_AVX=yes
+               ;;
+       esac
     else
        CFG_AVX=no
     fi
 fi
 
 # detect avx2 support
+if [ "${CFG_AVX}" = "no" ]; then
+    CFG_AVX2=no
+fi
 if [ "${CFG_AVX2}" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/avx2 "avx2" $L_FLAGS $I_FLAGS $l_FLAGS "-march=core-avx2"; then
        CFG_AVX2=yes
