@@ -58,6 +58,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_DRAGANDDROP
 
 class QMimeData;
 class QMouseEvent;
@@ -112,6 +113,8 @@ private:
 
     Q_DISABLE_COPY(QPlatformDrag)
 };
+
+#endif // QT_NO_DRAGANDDROP
 
 QT_END_NAMESPACE
 

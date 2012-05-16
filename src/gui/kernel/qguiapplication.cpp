@@ -671,6 +671,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     if (!QGuiApplicationPrivate::platform_theme)
         QGuiApplicationPrivate::platform_theme = new QPlatformTheme;
 
+#ifndef QT_NO_PROPERTIES
     // Set arguments as dynamic properties on the native interface as
     // boolean 'foo' or strings: 'foo=bar'
     if (!arguments.isEmpty()) {
@@ -684,6 +685,8 @@ static void init_platform(const QString &pluginArgument, const QString &platform
             nativeInterface->setProperty(name.constData(), value);
         }
     }
+#endif
+
     fontSmoothingGamma = QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::FontSmoothingGamma).toReal();
 }
 
@@ -1816,6 +1819,8 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
     QCoreApplication::sendSpontaneousEvent(window, &exposeEvent);
 }
 
+#ifndef QT_NO_DRAGANDDROP
+
 QPlatformDragQtResponse QGuiApplicationPrivate::processDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
     static QPointer<QWindow> currentDragWindow;
@@ -1873,6 +1878,8 @@ QPlatformDropQtResponse QGuiApplicationPrivate::processDrop(QWindow *w, const QM
     QPlatformDropQtResponse response(de.isAccepted(),acceptedAction);
     return response;
 }
+
+#endif // QT_NO_DRAGANDDROP
 
 #ifndef QT_NO_CLIPBOARD
 /*!

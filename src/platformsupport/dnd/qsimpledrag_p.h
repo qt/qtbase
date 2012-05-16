@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
 QT_BEGIN_HEADER
 
+#ifndef QT_NO_DRAGANDDROP
+
 class QMouseEvent;
 class QWindow;
 class QEventLoop;
@@ -115,6 +117,8 @@ protected:
 private:
     QWindow *m_current_window;
 };
+
+#endif // QT_NO_DRAGANDDROP
 
 QT_END_HEADER
 

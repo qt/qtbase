@@ -497,6 +497,7 @@ int QWindowSystemInterface::windowSystemEventsQueued()
     return QWindowSystemInterfacePrivate::windowSystemEventsQueued();
 }
 
+#ifndef QT_NO_DRAGANDDROP
 QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
     return QGuiApplicationPrivate::processDrag(w, dropData, p,supportedActions);
@@ -506,6 +507,7 @@ QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *w, const QMi
 {
     return QGuiApplicationPrivate::processDrop(w, dropData, p,supportedActions);
 }
+#endif // QT_NO_DRAGANDDROP
 
 /*!
     \fn static QWindowSystemInterface::handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result)

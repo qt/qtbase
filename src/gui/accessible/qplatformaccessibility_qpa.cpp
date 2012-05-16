@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 /* accessiblebridge plugin discovery stuff */
 #ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, bridgeloader,
@@ -135,5 +137,7 @@ void QPlatformAccessibility::cleanup()
 {
     qDeleteAll(*bridges());
 }
+
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE

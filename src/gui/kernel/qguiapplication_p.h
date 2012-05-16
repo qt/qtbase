@@ -124,8 +124,10 @@ public:
 
     static void processFileOpenEvent(QWindowSystemInterfacePrivate::FileOpenEvent *e);
 
+#ifndef QT_NO_DRAGANDDROP
     static QPlatformDragQtResponse processDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
     static QPlatformDropQtResponse processDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
+#endif
 
     static bool processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
 

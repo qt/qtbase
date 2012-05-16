@@ -66,6 +66,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_DRAGANDDROP
+
 /*!
     \class QBasicDrag
     \brief QBasicDrag is a base class for implementing platform drag and drop.
@@ -334,5 +336,7 @@ void QSimpleDrag::drop(const QMouseEvent *me)
         setExecutedDropAction(Qt::IgnoreAction);
     }
 }
+
+#endif // QT_NO_DRAGANDDROP
 
 QT_END_NAMESPACE

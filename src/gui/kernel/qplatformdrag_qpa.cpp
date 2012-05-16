@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_DRAGANDDROP
+
 QPlatformDropQtResponse::QPlatformDropQtResponse(bool accepted, Qt::DropAction acceptedAction)
     : m_accepted(accepted)
     , m_accepted_action(acceptedAction)
@@ -193,5 +195,7 @@ QPixmap QPlatformDrag::defaultPixmap()
 {
     return *qt_drag_default_pixmap();
 }
+
+#endif // QT_NO_DRAGANDDROP
 
 QT_END_NAMESPACE

@@ -133,9 +133,11 @@ public:
     static void handleExposeEvent(QWindow *tlw, const QRegion &region);
     static void handleSynchronousExposeEvent(QWindow *tlw, const QRegion &region);
 
+#ifndef QT_NO_DRAGANDDROP
     // Drag and drop. These events are sent immediately.
     static QPlatformDragQtResponse handleDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
     static QPlatformDropQtResponse handleDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
+#endif
 
     static bool handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
 
