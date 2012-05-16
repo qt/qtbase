@@ -1944,7 +1944,7 @@ static const uint * QT_FASTCALL qt_fetch_conical_gradient(uint *buffer, const Op
 // Force ARM code generation for comp_func_* -methods
 #  pragma push
 #  pragma arm
-#  if defined(QT_HAVE_ARMV6)
+#  if defined(Q_PROCESSOR_ARM_V6)
 static __forceinline void preload(const uint *start)
 {
     asm( "pld [start]" );
@@ -1957,10 +1957,10 @@ static const uint L2CacheLineLengthInInts = L2CacheLineLength/sizeof(uint);
 // Two consecutive preloads stall, so space them out a bit by using different modulus.
 #    define PRELOAD_COND2(x,y) if (((uint)&x[i])%L2CacheLineLength == 0) preload(&x[i] + L2CacheLineLengthInInts); \
          if (((uint)&y[i])%L2CacheLineLength == 16) preload(&y[i] + L2CacheLineLengthInInts);
-#  endif // QT_HAVE_ARMV6
+#  endif // Q_PROCESSOR_ARM_V6
 #endif // Q_CC_RVCT
 
-#if !defined(Q_CC_RVCT) || !defined(QT_HAVE_ARMV6)
+#if !defined(Q_CC_RVCT) || !defined(Q_PROCESSOR_ARM_V6)
 #    define PRELOAD_INIT(x)
 #    define PRELOAD_INIT2(x,y)
 #    define PRELOAD_COND(x)

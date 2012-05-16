@@ -105,12 +105,6 @@
 #    define Q_DECL_VARIABLE_DEPRECATED
 #    define Q_CC_INTEL
 #  endif
-/* MSVC does not support SSE/MMX on x64 */
-#  if (defined(Q_CC_MSVC) && defined(_M_X64))
-#    undef QT_HAVE_SSE
-#    undef QT_HAVE_MMX
-#    undef QT_HAVE_3DNOW
-#  endif
 
 #  if defined(Q_CC_MSVC) && _MSC_VER >= 1400
 #    define Q_COMPILER_VARIADIC_MACROS
@@ -143,9 +137,6 @@
    so check for it before that */
 #elif defined(__ARMCC__) || defined(__CC_ARM)
 #  define Q_CC_RVCT
-#  if __TARGET_ARCH_ARM >= 6
-#    define QT_HAVE_ARMV6
-#  endif
 /* work-around for missing compiler intrinsics */
 #  define __is_empty(X) false
 #  define __is_pod(X) false
