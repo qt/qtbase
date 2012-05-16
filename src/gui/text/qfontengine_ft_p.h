@@ -141,7 +141,7 @@ public:
     /* we don't cache glyphs that are too large anyway, so we can make this struct rather small */
     struct Glyph {
         ~Glyph();
-        int linearAdvance : 22; // 16.6
+        short linearAdvance;
         unsigned char width;
         unsigned char height;
         signed char x;

@@ -856,26 +856,6 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         qWarning("load glyph failed err=%x face=%p, glyph=%d", err, face, glyph);
 
     FT_GlyphSlot slot = face->glyph;
-    if ((set && set->outline_drawing) || fetchMetricsOnly) {
-        g = new Glyph;
-        g->data = 0;
-        g->linearAdvance = slot->linearHoriAdvance >> 10;
-        int left  = FLOOR(slot->metrics.horiBearingX);
-        int right = CEIL(slot->metrics.horiBearingX + slot->metrics.width);
-        int top    = CEIL(slot->metrics.horiBearingY);
-        int bottom = FLOOR(slot->metrics.horiBearingY - slot->metrics.height);
-        g->width = TRUNC(right-left);
-        g->height = TRUNC(top-bottom);
-        g->x = TRUNC(left);
-        g->y = TRUNC(top);
-        g->advance = TRUNC(ROUND(slot->advance.x));
-        g->format = format;
-
-        if (set)
-            set->setGlyph(glyph, subPixelPosition, g);
-
-        return g;
-    }
 
     if (embolden) Q_FT_GLYPHSLOT_EMBOLDEN(slot);
     if (obliquen) {
@@ -897,6 +877,30 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 
     info.xOff = TRUNC(ROUND(slot->advance.x));
     info.yOff = 0;
+
+    if ((set && set->outline_drawing) || fetchMetricsOnly) {
+        // If the advance doesn't fit in signed char, don't cache it
+        if (qAbs(info.xOff) >= 128)
+            return 0;
+        g = new Glyph;
+        g->data = 0;
+        g->linearAdvance = slot->linearHoriAdvance >> 10;
+        int left  = FLOOR(slot->metrics.horiBearingX);
+        int right = CEIL(slot->metrics.horiBearingX + slot->metrics.width);
+        int top    = CEIL(slot->metrics.horiBearingY);
+        int bottom = FLOOR(slot->metrics.horiBearingY - slot->metrics.height);
+        g->width = TRUNC(right-left);
+        g->height = TRUNC(top-bottom);
+        g->x = TRUNC(left);
+        g->y = TRUNC(top);
+        g->advance = TRUNC(ROUND(slot->advance.x));
+        g->format = format;
+
+        if (set)
+            set->setGlyph(glyph, subPixelPosition, g);
+
+        return g;
+    }
 
     uchar *glyph_buffer = 0;
     int glyph_buffer_size = 0;
