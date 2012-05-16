@@ -288,7 +288,7 @@ private:
     QString url_;
     QString sinc;
     QString templateStuff_;
-    mutable QString uuid;
+    mutable QString uuid_;
     QString outSubDir_;
     QString qmlModuleName_;
     QString qmlModuleVersionMajor_;

@@ -527,9 +527,9 @@ QString Node::fileBase() const
  */
 QString Node::guid() const
 {
-    if (uuid.isEmpty())
-        uuid = idForNode();
-    return uuid;
+    if (uuid_.isEmpty())
+        uuid_ = idForNode();
+    return uuid_;
 }
 
 #if 0
@@ -2724,7 +2724,7 @@ QString Node::idForNode() const
                     str = "namespace-member-" + func->name();
                 else if (parent_->type() == Fake) {
                     if (parent_->subType() == QmlClass)
-                        str = "qml-method-" + func->name();
+                        str = "qml-method-" + parent_->name().toLower() + "-" + func->name();
                     else
                         qDebug() << "qdoc internal error: Node subtype not handled:"
                                  << parent_->subType() << func->name();
@@ -2801,7 +2801,7 @@ QString Node::idForNode() const
         break;
     case Node::QmlMethod:
         func = static_cast<const FunctionNode*>(this);
-        str = "qml-method-" + func->name();
+        str = "qml-method-" + parent_->name().toLower() + "-" + func->name();
         if (func->overloadNumber() != 1)
             str += QLatin1Char('-') + QString::number(func->overloadNumber());
         break;
