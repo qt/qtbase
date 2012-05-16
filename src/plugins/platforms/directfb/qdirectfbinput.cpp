@@ -131,6 +131,16 @@ void QDirectFbInput::handleEvents()
             case DWET_ENTER:
             case DWET_LEAVE:
                 handleEnterLeaveEvents(event);
+                break;
+            case DWET_GOTFOCUS:
+                handleGotFocusEvent(event);
+                break;
+            case DWET_CLOSE:
+                handleCloseEvent(event);
+                break;
+            case DWET_POSITION_SIZE:
+                handleGeometryEvent(event);
+                break;
             default:
                 break;
             }
@@ -196,6 +206,25 @@ void QDirectFbInput::handleEnterLeaveEvents(const DFBEvent &event)
     default:
         break;
     }
+}
+
+void QDirectFbInput::handleGotFocusEvent(const DFBEvent &event)
+{
+    QWindow *tlw = m_tlwMap.value(event.window.window_id);
+    QWindowSystemInterface::handleWindowActivated(tlw);
+}
+
+void QDirectFbInput::handleCloseEvent(const DFBEvent &event)
+{
+    QWindow *tlw = m_tlwMap.value(event.window.window_id);
+    QWindowSystemInterface::handleCloseEvent(tlw);
+}
+
+void QDirectFbInput::handleGeometryEvent(const DFBEvent &event)
+{
+    QWindow *tlw = m_tlwMap.value(event.window.window_id);
+    QRect rect(event.window.x, event.window.y, event.window.w, event.window.h);
+    QWindowSystemInterface::handleGeometryChange(tlw, rect);
 }
 
 inline QPoint QDirectFbInput::globalPoint(const DFBEvent &event) const

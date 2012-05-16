@@ -72,6 +72,9 @@ private:
     void handleWheelEvent(const DFBEvent &event);
     void handleKeyEvents(const DFBEvent &event);
     void handleEnterLeaveEvents(const DFBEvent &event);
+    void handleGotFocusEvent(const DFBEvent &event);
+    void handleCloseEvent(const DFBEvent& event);
+    void handleGeometryEvent(const DFBEvent& event);
     inline QPoint globalPoint(const DFBEvent &event) const;
 
 
