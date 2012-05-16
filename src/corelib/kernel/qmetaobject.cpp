@@ -367,15 +367,7 @@ const QObject *QMetaObject::cast(const QObject *obj) const
 */
 QString QMetaObject::tr(const char *s, const char *c, int n) const
 {
-    return QCoreApplication::translate(rawStringData(this, 0), s, c, QCoreApplication::DefaultCodec, n);
-}
-
-/*!
-    \internal
-*/
-QString QMetaObject::trUtf8(const char *s, const char *c, int n) const
-{
-    return QCoreApplication::translate(rawStringData(this, 0), s, c, QCoreApplication::UnicodeUTF8, n);
+    return QCoreApplication::translate(rawStringData(this, 0), s, c, n);
 }
 #endif // QT_NO_TRANSLATION
 

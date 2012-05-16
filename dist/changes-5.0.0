@@ -354,9 +354,9 @@ QtCore
   libraries, creating uncertainty/bugs in using QString easily, and (to a lesser
   extent) performance issues.
 
-* QTextCodec::codecForTr() and QTextCodec::setCodecForTr() have been removed,
-  QCoreApplication::Encoding value CodecForTr is now obsolete, use
-  DefaultCodec instead. For reasoning, see the codecForCStrings() removal above.
+* QTextCodec::codecForTr() and QTextCodec::setCodecForTr() have been removed.
+  QObject::trUtf8 and QCoreApplication::Encoding enum are now obsolete. Qt assumes
+  that the source code is encoded in UTF-8.
 
 * QFile::setEncodingFunction and QFile::setDecodingFunction are obsolete and do
   nothing in Qt 5. The QFile::encodeName and QFile::decodeName functions are now

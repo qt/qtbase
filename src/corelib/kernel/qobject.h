@@ -133,9 +133,9 @@ public:
 #endif
 #ifdef QT_NO_TRANSLATION
     static QString tr(const char *sourceText, const char * = 0, int = -1)
-        { return QString::fromLatin1(sourceText); }
-#ifndef QT_NO_TEXTCODEC
-    static QString trUtf8(const char *sourceText, const char * = 0, int = -1)
+        { return QString::fromUtf8(sourceText); }
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED static QString trUtf8(const char *sourceText, const char * = 0, int = -1)
         { return QString::fromUtf8(sourceText); }
 #endif
 #endif //QT_NO_TRANSLATION

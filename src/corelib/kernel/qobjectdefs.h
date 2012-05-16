@@ -97,19 +97,12 @@ class QString;
 #endif // QT_NO_META_MACROS
 
 #ifndef QT_NO_TRANSLATION
-# ifndef QT_NO_TEXTCODEC
 // full set of tr functions
 #  define QT_TR_FUNCTIONS \
     static inline QString tr(const char *s, const char *c = 0, int n = -1) \
         { return staticMetaObject.tr(s, c, n); } \
-    static inline QString trUtf8(const char *s, const char *c = 0, int n = -1) \
-        { return staticMetaObject.trUtf8(s, c, n); }
-# else
-// no QTextCodec, no utf8
-#  define QT_TR_FUNCTIONS \
-    static inline QString tr(const char *s, const char *c = 0, int n = -1) \
+    QT_DEPRECATED static inline QString trUtf8(const char *s, const char *c = 0, int n = -1) \
         { return staticMetaObject.tr(s, c, n); }
-# endif
 #else
 // inherit the ones from QObject
 # define QT_TR_FUNCTIONS
@@ -306,7 +299,6 @@ struct Q_CORE_EXPORT QMetaObject
 
 #ifndef QT_NO_TRANSLATION
     QString tr(const char *s, const char *c, int n = -1) const;
-    QString trUtf8(const char *s, const char *c, int n = -1) const;
 #endif // QT_NO_TRANSLATION
 
     int methodOffset() const;

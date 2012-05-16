@@ -1466,15 +1466,17 @@ bool QCoreApplication::event(QEvent *e)
 }
 
 /*! \enum QCoreApplication::Encoding
+    \obsolete
 
-    This enum type defines the 8-bit encoding of character string
-    arguments to translate():
+    This enum type used to define the 8-bit encoding of character string
+    arguments to translate(). This enum is now obsolete and UTF-8 will be
+    used in all cases.
 
     \value UnicodeUTF8   UTF-8.
-    \value Latin1        Latin-1.
-    \value DefaultCodec  Latin-1.
+    \value Latin1        UTF-8.
+    \value DefaultCodec  UTF-8.
 
-    \sa QObject::tr(), QObject::trUtf8(), QString::fromUtf8()
+    \sa QObject::tr(), QString::fromUtf8()
 */
 
 void QCoreApplicationPrivate::ref()
@@ -1626,15 +1628,13 @@ static void replacePercentN(QString *result, int n)
 
 /*!
     \reentrant
-    \since 4.5
 
     Returns the translation text for \a sourceText, by querying the
     installed translation files. The translation files are searched
     from the most recently installed file back to the first
     installed file.
 
-    QObject::tr() and QObject::trUtf8() provide this functionality
-    more conveniently.
+    QObject::tr() provides this functionality more conveniently.
 
     \a context is typically a class name (e.g., "MyDialog") and \a
     sourceText is either English text or a short identifying text.
@@ -1646,15 +1646,12 @@ static void replacePercentN(QString *result, int n)
     See the \l QTranslator and \l QObject::tr() documentation for
     more information about contexts, disambiguations and comments.
 
-    \a encoding indicates the 8-bit encoding of character strings.
-
     \a n is used in conjunction with \c %n to support plural forms.
     See QObject::tr() for details.
 
     If none of the translation files contain a translation for \a
     sourceText in \a context, this function returns a QString
-    equivalent of \a sourceText. The encoding of \a sourceText is
-    specified by \e encoding; it defaults to DefaultCodec.
+    equivalent of \a sourceText.
 
     This function is not virtual. You can use alternative translation
     techniques by subclassing \l QTranslator.
@@ -1667,10 +1664,8 @@ static void replacePercentN(QString *result, int n)
 
     \sa QObject::tr(), installTranslator()
 */
-
-
 QString QCoreApplication::translate(const char *context, const char *sourceText,
-                                    const char *disambiguation, Encoding encoding, int n)
+                                    const char *disambiguation, int n)
 {
     QString result;
 
@@ -1688,16 +1683,8 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
         }
     }
 
-    if (result.isNull()) {
-#ifdef QT_NO_TEXTCODEC
-        Q_UNUSED(encoding)
-#else
-        if (encoding == UnicodeUTF8)
-            result = QString::fromUtf8(sourceText);
-        else
-#endif
-            result = QString::fromLatin1(sourceText);
-    }
+    if (result.isNull())
+        result = QString::fromUtf8(sourceText);
 
     replacePercentN(&result, n);
     return result;
@@ -1706,7 +1693,7 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
 // Declared in qglobal.h
 QString qtTrId(const char *id, int n)
 {
-    return QCoreApplication::translate(0, id, 0, QCoreApplication::UnicodeUTF8, n);
+    return QCoreApplication::translate(0, id, 0, n);
 }
 
 bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)

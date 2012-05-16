@@ -137,16 +137,17 @@ public:
     static bool installTranslator(QTranslator * messageFile);
     static bool removeTranslator(QTranslator * messageFile);
 #endif
-    enum Encoding { UnicodeUTF8, Latin1, DefaultCodec = Latin1
-#if QT_DEPRECATED_SINCE(5, 0)
-                    , CodecForTr = Latin1
-#endif
-                  };
+
     static QString translate(const char * context,
                              const char * key,
                              const char * disambiguation = 0,
-                             Encoding encoding = DefaultCodec,
                              int n = -1);
+#if QT_DEPRECATED_SINCE(5, 0)
+    enum Encoding { UnicodeUTF8, Latin1, DefaultCodec = UnicodeUTF8, CodecForTr = UnicodeUTF8 };
+    QT_DEPRECATED static inline QString translate(const char * context, const char * key,
+                             const char * disambiguation, Encoding, int n = -1)
+        { return translate(context, key, disambiguation, n); }
+#endif
 
     static void flush();
 
@@ -213,28 +214,26 @@ inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *ev
 { if (event) event->spont = true; return self ? self->notifyInternal(receiver, event) : false; }
 
 #ifdef QT_NO_TRANSLATION
-// Simple versions
-inline QString QCoreApplication::translate(const char *, const char *sourceText,
-                                           const char *, Encoding encoding, int)
+inline QString QCoreApplication::translate(const char *, const char *sourceText, const char *, int)
 {
-#ifndef QT_NO_TEXTCODEC
-    if (encoding == UnicodeUTF8)
-        return QString::fromUtf8(sourceText);
-#else
     Q_UNUSED(encoding)
-#endif
-    return QString::fromLatin1(sourceText);
+    return QString::fromUtf8(sourceText);
 }
+#if QT_DEPRECATED_SINCE(5, 0)
+QT_DEPRECATED inline QString QCoreApplication::translate(const char *, const char *sourceText, const char *, Encoding encoding, int)
+{
+    Q_UNUSED(encoding)
+    return QString::fromUtf8(sourceText);
+}
+#endif
 #endif
 
 #define Q_DECLARE_TR_FUNCTIONS(context) \
 public: \
     static inline QString tr(const char *sourceText, const char *disambiguation = 0, int n = -1) \
-        { return QCoreApplication::translate(#context, sourceText, disambiguation, \
-                                             QCoreApplication::DefaultCodec, n); } \
-    static inline QString trUtf8(const char *sourceText, const char *disambiguation = 0, int n = -1) \
-        { return QCoreApplication::translate(#context, sourceText, disambiguation, \
-                                             QCoreApplication::UnicodeUTF8, n); } \
+        { return QCoreApplication::translate(#context, sourceText, disambiguation, n); } \
+    QT_DEPRECATED static inline QString trUtf8(const char *sourceText, const char *disambiguation = 0, int n = -1) \
+        { return QCoreApplication::translate(#context, sourceText, disambiguation, n); } \
 private:
 
 typedef void (*QtCleanUpFunction)();
