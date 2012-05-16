@@ -416,7 +416,9 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     qRegisterMetaType<QSslConfiguration>("QSslConfiguration");
 #endif
     qRegisterMetaType<QList<QPair<QByteArray,QByteArray> > >("QList<QPair<QByteArray,QByteArray> >");
+#ifndef QT_NO_HTTP
     qRegisterMetaType<QHttpNetworkRequest>("QHttpNetworkRequest");
+#endif
     qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
     qRegisterMetaType<QSharedPointer<char> >("QSharedPointer<char>");
 }

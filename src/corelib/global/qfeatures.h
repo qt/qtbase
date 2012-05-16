@@ -377,7 +377,7 @@
 #endif
 
 // Bearer Management
-#if !defined(QT_NO_BEARERMANAGEMENT) && (defined(QT_NO_LIBRARY))
+#if !defined(QT_NO_BEARERMANAGEMENT) && (defined(QT_NO_LIBRARY) || defined(QT_NO_PROPERTIES))
 #define QT_NO_BEARERMANAGEMENT
 #endif
 

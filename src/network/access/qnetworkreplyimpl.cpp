@@ -136,11 +136,13 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     }
 
+#ifndef QT_NO_BEARERMANAGEMENT
     if (session) {
         //get notification of policy changes.
         QObject::connect(session.data(), SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)),
                     q, SLOT(_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies)));
     }
+#endif
 
     if (backend && backend->isSynchronous()) {
         state = Finished;
