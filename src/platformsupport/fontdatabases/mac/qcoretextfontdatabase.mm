@@ -345,6 +345,8 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString family, cons
     Q_UNUSED(family);
     Q_UNUSED(style);
     Q_UNUSED(script);
+    if (fallbackLists.isEmpty())
+        const_cast<QCoreTextFontDatabase*>(this)->populateFontDatabase();
     return fallbackLists[styleHint];
 }
 
