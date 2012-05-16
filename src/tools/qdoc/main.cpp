@@ -254,6 +254,11 @@ static void processQdocconfFile(const QString &fileName)
 
     if (dependModules.size() > 0) {
         if (indexDirs.size() > 0) {
+            for (int j = 0; j < indexDirs.size(); j++) {
+                if (indexDirs[j].startsWith("..")) {
+                    indexDirs[j].prepend(QDir(dir).relativeFilePath(prevCurrentDir));
+                }
+            }
             for (int i = 0; i < dependModules.size(); i++) {
                 QMultiMap<uint, QFileInfo> foundIndices;
                 for (int j = 0; j < indexDirs.size(); j++) {

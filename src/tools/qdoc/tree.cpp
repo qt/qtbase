@@ -946,7 +946,9 @@ void Tree::readIndexFile(const QString& path)
             indexUrl = indexElement.attribute("url", "");
         }
         else {
-            QDir installDir(Config::installDir);
+            // Use a fake directory, since we will copy the output to a sub directory of
+            // installDir when using "make install". This is just for a proper relative path.
+            QDir installDir(Config::installDir + "/outputdir");
             indexUrl = installDir.relativeFilePath(path).section('/', 0, -2);
         }
 
@@ -1001,7 +1003,6 @@ void Tree::readIndexSection(const QDomElement& element,
             location = Location(indexUrl + QLatin1Char('/') + name.toLower() + ".html");
         else if (!indexUrl.isNull())
             location = Location(name.toLower() + ".html");
-
     }
     else if ((element.nodeName() == "qmlclass") ||
              ((element.nodeName() == "page") && (element.attribute("subtype") == "qmlclass"))) {
@@ -1275,10 +1276,7 @@ void Tree::readIndexSection(const QDomElement& element,
 
     section->setModuleName(element.attribute("module"));
     if (!indexUrl.isEmpty()) {
-        if (indexUrl.startsWith(QLatin1Char('.')))
-            section->setUrl(href);
-        else
-            section->setUrl(indexUrl + QLatin1Char('/') + href);
+        section->setUrl(indexUrl + QLatin1Char('/') + href);
     }
 
     // Create some content for the node.
