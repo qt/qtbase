@@ -114,7 +114,10 @@ void QEglFSCursor::createCursorTexture(uint *texture, const QImage &image)
 
 void QEglFSCursor::initCursorAtlas()
 {
-    QImage image = QImage(":/cursor-atlas.png").convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    static QByteArray atlas = qgetenv("QT_QPA_EGLFS_CURSORATLAS");
+    if (atlas.isEmpty())
+        atlas = ":/cursor-atlas.png";
+    QImage image = QImage(atlas).convertToFormat(QImage::Format_ARGB32_Premultiplied);
     m_cursorAtlas.cursorWidth = image.width() / CURSORS_PER_ROW;
     m_cursorAtlas.cursorHeight = image.height() / ((Qt::LastCursor + CURSORS_PER_ROW - 1) / CURSORS_PER_ROW);
     m_cursorAtlas.hotSpot = QPoint(m_cursorAtlas.cursorWidth/2, m_cursorAtlas.cursorHeight/2); // ## be smarter
