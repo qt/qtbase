@@ -26,7 +26,6 @@ HEADERS =   qeglfsintegration.h \
             qeglfswindow.h \
             qeglfsbackingstore.h \
             qeglfsscreen.h \
-            qeglfshooks.h \
             qeglfscursor.h \
             qeglfshooks.h
 
