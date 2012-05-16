@@ -212,6 +212,10 @@ static void cpuidFeatures01(uint &ecx, uint &edx)
 #endif
 }
 
+#ifdef Q_OS_WIN
+inline void __cpuidex(int info[4], int, __int64) { memset(info, 0, 4*sizeof(int));}
+#endif
+
 static void cpuidFeatures07_00(uint &ebx)
 {
 #if defined(Q_CC_GNU)
@@ -231,10 +235,7 @@ static void cpuidFeatures07_00(uint &ebx)
 }
 
 #ifdef Q_OS_WIN
-namespace QtXgetbvHack {
-    inline quint64 _xgetbv(int) { return 0; }
-}
-using namespace QtXgetbvHack;
+inline quint64 _xgetbv(__int64) { return 0; }
 #endif
 
 static void xgetbv(int in, uint &eax, uint &edx)
