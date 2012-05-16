@@ -42,6 +42,7 @@
 #include "qeglfscursor.h"
 #include <QtGui/qwindowsysteminterface_qpa.h>
 #include <QtGui/QOpenGLShaderProgram>
+#include <QtGui/QOpenGLContext>
 #include <QtDebug>
 
 QT_BEGIN_NAMESPACE
@@ -61,7 +62,12 @@ QEglFSCursor::QEglFSCursor(QEglFSScreen *screen)
 
 QEglFSCursor::~QEglFSCursor()
 {
-    // destroy atlas?
+    if (QOpenGLContext::currentContext()) {
+        if (m_cursor.shape == Qt::BitmapCursor && m_cursor.texture)
+            glDeleteTextures(1, &m_cursor.texture);
+
+        glDeleteTextures(1, &m_cursorAtlas.texture);
+    }
 }
 
 void QEglFSCursor::createShaderPrograms()
