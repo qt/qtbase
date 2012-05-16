@@ -151,40 +151,40 @@ public:
 
     QRectF itemsBoundingRect() const;
 
-    QList<QGraphicsItem *> items() const;
-    QList<QGraphicsItem *> items(Qt::SortOrder order) const; // ### Qt 5: unify
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::DescendingOrder) const;
 
-    QList<QGraphicsItem *> items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
-    QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
-    QList<QGraphicsItem *> items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
-    QList<QGraphicsItem *> items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
-
-    QList<QGraphicsItem *> items(const QPointF &pos) const; // ### obsolete
-    QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const; // ### obsolete
-    QList<QGraphicsItem *> items(const QPolygonF &polygon, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const; // ### obsolete
-    QList<QGraphicsItem *> items(const QPainterPath &path, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const; // ### obsolete
+    QList<QGraphicsItem *> items(const QPointF &pos, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape, Qt::SortOrder order = Qt::DescendingOrder, const QTransform &deviceTransform = QTransform()) const;
+    QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape, Qt::SortOrder order = Qt::DescendingOrder, const QTransform &deviceTransform = QTransform()) const;
+    QList<QGraphicsItem *> items(const QPolygonF &polygon, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape, Qt::SortOrder order = Qt::DescendingOrder, const QTransform &deviceTransform = QTransform()) const;
+    QList<QGraphicsItem *> items(const QPainterPath &path, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape, Qt::SortOrder order = Qt::DescendingOrder, const QTransform &deviceTransform = QTransform()) const;
 
     QList<QGraphicsItem *> collidingItems(const QGraphicsItem *item, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const;
-
-    QGraphicsItem *itemAt(const QPointF &pos) const; // ### obsolete
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline QGraphicsItem *itemAt(const QPointF &position) const {
+        QList<QGraphicsItem *> itemsAtPoint = items(position);
+        return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
+    }
+#endif
     QGraphicsItem *itemAt(const QPointF &pos, const QTransform &deviceTransform) const;
-
-    inline QList<QGraphicsItem *> items(qreal x, qreal y, qreal w, qreal h, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const
-    { return items(QRectF(x, y, w, h), mode); } // ### obsolete
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline QList<QGraphicsItem *> items(qreal x, qreal y, qreal w, qreal h, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const
+    { return items(QRectF(x, y, w, h), mode); }
+#endif
     inline QList<QGraphicsItem *> items(qreal x, qreal y, qreal w, qreal h, Qt::ItemSelectionMode mode, Qt::SortOrder order,
                                         const QTransform &deviceTransform = QTransform()) const
     { return items(QRectF(x, y, w, h), mode, order, deviceTransform); }
-    inline QGraphicsItem *itemAt(qreal x, qreal y) const // ### obsolete
-    { return itemAt(QPointF(x, y)); }
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline QGraphicsItem *itemAt(qreal x, qreal y) const {
+        return itemAt(QPointF(x, y));
+    }
+#endif
     inline QGraphicsItem *itemAt(qreal x, qreal y, const QTransform &deviceTransform) const
     { return itemAt(QPointF(x, y), deviceTransform); }
 
     QList<QGraphicsItem *> selectedItems() const;
     QPainterPath selectionArea() const;
-    void setSelectionArea(const QPainterPath &path); // ### obsolete
     void setSelectionArea(const QPainterPath &path, const QTransform &deviceTransform);
-    void setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode); // ### obsolete
-    void setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode, const QTransform &deviceTransform);
+    void setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape, const QTransform &deviceTransform = QTransform());
 
     QGraphicsItemGroup *createItemGroup(const QList<QGraphicsItem *> &items);
     void destroyItemGroup(QGraphicsItemGroup *group);

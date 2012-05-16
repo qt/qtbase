@@ -1933,17 +1933,6 @@ QRectF QGraphicsScene::itemsBoundingRect() const
 }
 
 /*!
-    Returns a list of all items in the scene in descending stacking order.
-
-    \sa addItem(), removeItem(), {QGraphicsItem#Sorting}{Sorting}
-*/
-QList<QGraphicsItem *> QGraphicsScene::items() const
-{
-    Q_D(const QGraphicsScene);
-    return d->index->items(Qt::DescendingOrder);
-}
-
-/*!
     Returns an ordered list of all items on the scene. \a order decides the
     stacking order.
 
@@ -1953,47 +1942,6 @@ QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
 {
     Q_D(const QGraphicsScene);
     return d->index->items(order);
-}
-
-/*!
-    \obsolete
-
-    Returns all visible items at position \a pos in the scene. The items are
-    listed in descending stacking order (i.e., the first item in the list is the
-    top-most item, and the last item is the bottom-most item).
-
-    This function is deprecated and returns incorrect results if the scene
-    contains items that ignore transformations. Use the overload that takes
-    a QTransform instead.
-
-    \sa itemAt(), {QGraphicsItem#Sorting}{Sorting}
-*/
-QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
-{
-    Q_D(const QGraphicsScene);
-    return d->index->items(pos, Qt::IntersectsItemShape, Qt::DescendingOrder);
-}
-
-/*!
-    \overload
-    \obsolete
-
-    Returns all visible items that, depending on \a mode, are either inside or
-    intersect with the specified \a rectangle.
-
-    The default value for \a mode is Qt::IntersectsItemShape; all items whose
-    exact shape intersects with or is contained by \a rectangle are returned.
-
-    This function is deprecated and returns incorrect results if the scene
-    contains items that ignore transformations. Use the overload that takes
-    a QTransform instead.
-
-    \sa itemAt(), {QGraphicsItem#Sorting}{Sorting}
-*/
-QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSelectionMode mode) const
-{
-    Q_D(const QGraphicsScene);
-    return d->index->items(rectangle, mode, Qt::DescendingOrder);
 }
 
 /*!
@@ -2020,52 +1968,6 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSe
     \a deviceTransform is the transformation that applies to the view, and needs to
     be provided if the scene contains items that ignore transformations.
 */
-
-/*!
-    \fn QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode) const
-    \overload
-    \obsolete
-
-    Returns all visible items that, depending on \a mode, are either inside or
-    intersect with the polygon \a polygon.
-
-    The default value for \a mode is Qt::IntersectsItemShape; all items whose
-    exact shape intersects with or is contained by \a polygon are returned.
-
-    This function is deprecated and returns incorrect results if the scene
-    contains items that ignore transformations. Use the overload that takes
-    a QTransform instead.
-
-    \sa itemAt(), {QGraphicsItem#Sorting}{Sorting}
-*/
-QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode) const
-{
-    Q_D(const QGraphicsScene);
-    return d->index->items(polygon, mode, Qt::DescendingOrder);
-}
-
-/*!
-    \fn QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemSelectionMode mode) const
-    \overload
-    \obsolete
-
-    Returns all visible items that, depending on \a path, are either inside or
-    intersect with the path \a path.
-
-    The default value for \a mode is Qt::IntersectsItemShape; all items whose
-    exact shape intersects with or is contained by \a path are returned.
-
-    This function is deprecated and returns incorrect results if the scene
-    contains items that ignore transformations. Use the overload that takes
-    a QTransform instead.
-
-    \sa itemAt(), {QGraphicsItem#Sorting}{Sorting}
-*/
-QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemSelectionMode mode) const
-{
-    Q_D(const QGraphicsScene);
-    return d->index->items(path, mode, Qt::DescendingOrder);
-}
 
 /*!
     \fn QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
@@ -2192,6 +2094,7 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 }
 
 /*!
+    \fn QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position) const
     \overload
     \obsolete
 
@@ -2204,11 +2107,6 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 
     \sa items(), collidingItems(), {QGraphicsItem#Sorting}{Sorting}
 */
-QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position) const
-{
-    QList<QGraphicsItem *> itemsAtPoint = items(position);
-    return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
-}
 
 /*!
     \since 4.6
@@ -2313,36 +2211,6 @@ QPainterPath QGraphicsScene::selectionArea() const
 void QGraphicsScene::setSelectionArea(const QPainterPath &path, const QTransform &deviceTransform)
 {
     setSelectionArea(path, Qt::IntersectsItemShape, deviceTransform);
-}
-
-/*!
-    \obsolete
-    \overload
-
-    Sets the selection area to \a path.
-
-    This function is deprecated and leads to incorrect results if the scene
-    contains items that ignore transformations. Use the overload that takes
-    a QTransform instead.
-*/
-void QGraphicsScene::setSelectionArea(const QPainterPath &path)
-{
-    setSelectionArea(path, Qt::IntersectsItemShape, QTransform());
-}
-
-/*!
-    \obsolete
-    \overload
-    \since 4.3
-
-    Sets the selection area to \a path using \a mode to determine if items are
-    included in the selection area.
-
-    \sa clearSelection(), selectionArea()
-*/
-void QGraphicsScene::setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode)
-{
-    setSelectionArea(path, mode, QTransform());
 }
 
 /*!
