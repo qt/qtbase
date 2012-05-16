@@ -154,12 +154,14 @@ bool QWidgetWindow::event(QEvent *event)
         handleWheelEvent(static_cast<QWheelEvent *>(event));
         return true;
 
+#ifndef QT_NO_DRAGANDDROP
     case QEvent::DragEnter:
     case QEvent::DragLeave:
     case QEvent::DragMove:
     case QEvent::Drop:
         handleDragEvent(event);
         break;
+#endif
 
     case QEvent::Expose:
         handleExposeEvent(static_cast<QExposeEvent *>(event));
@@ -390,6 +392,8 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
     QGuiApplication::sendSpontaneousEvent(widget, &translated);
 }
 
+#ifndef QT_NO_DRAGANDDROP
+
 void QWidgetWindow::handleDragEvent(QEvent *event)
 {
     switch (event->type()) {
@@ -447,6 +451,8 @@ void QWidgetWindow::handleDragEvent(QEvent *event)
         break;
     }
 }
+
+#endif // QT_NO_DRAGANDDROP
 
 void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
 {

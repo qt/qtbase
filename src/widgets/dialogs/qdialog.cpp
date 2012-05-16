@@ -64,12 +64,16 @@ QT_BEGIN_NAMESPACE
 
 static inline int themeDialogType(const QDialog *dialog)
 {
+#ifndef QT_NO_FILEDIALOG
     if (qobject_cast<const QFileDialog *>(dialog))
         return QPlatformTheme::FileDialog;
+#endif
     if (qobject_cast<const QColorDialog *>(dialog))
         return QPlatformTheme::ColorDialog;
+#ifndef QT_NO_FONTDIALOG
     if (qobject_cast<const QFontDialog *>(dialog))
         return QPlatformTheme::FontDialog;
+#endif
     return -1;
 }
 

@@ -78,7 +78,9 @@ protected:
     void handleMoveEvent(QMoveEvent *);
     void handleResizeEvent(QResizeEvent *);
     void handleWheelEvent(QWheelEvent *);
+#ifndef QT_NO_DRAGANDDROP
     void handleDragEvent(QEvent *);
+#endif
     void handleExposeEvent(QExposeEvent *);
     void handleWindowStateChangedEvent(QWindowStateChangeEvent *event);
     bool nativeEvent(const QByteArray &eventType, void *message, long *result);
@@ -91,7 +93,9 @@ private:
 
     QWidget *m_widget;
     QWeakPointer<QWidget> m_implicit_mouse_grabber;
+#ifndef QT_NO_DRAGANDDROP
     QWeakPointer<QWidget> m_dragTarget;
+#endif
 };
 
 QT_END_NAMESPACE
