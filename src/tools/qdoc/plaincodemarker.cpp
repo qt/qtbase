@@ -73,12 +73,12 @@ Atom::Type PlainCodeMarker::atomType() const
 
 QString PlainCodeMarker::plainName( const Node * /* node */ )
 {
-    return "";
+    return QString();
 }
 
 QString PlainCodeMarker::plainFullName(const Node * /* node */, const Node * /* relative */)
 {
-    return "";
+    return QString();
 }
 
 QString PlainCodeMarker::markedUpCode( const QString& code,
@@ -97,34 +97,34 @@ QString PlainCodeMarker::markedUpSynopsis( const Node * /* node */,
 
 QString PlainCodeMarker::markedUpName( const Node * /* node */ )
 {
-    return "";
+    return QString();
 }
 
 QString PlainCodeMarker::markedUpFullName( const Node * /* node */,
                                            const Node * /* relative */ )
 {
-    return "";
+    return QString();
 }
 
 QString PlainCodeMarker::markedUpEnumValue(const QString & /* enumValue */,
                                            const Node * /* relative */)
 {
-    return "";
+    return QString();
 }
 
 QString PlainCodeMarker::markedUpIncludes( const QStringList& /* includes */ )
 {
-    return "";
+    return QString();
 }
 
 QString PlainCodeMarker::functionBeginRegExp( const QString& /* funcName */ )
 {
-    return "";
+    return QString();
 }
 
 QString PlainCodeMarker::functionEndRegExp( const QString& /* funcName */ )
 {
-    return "";
+    return QString();
 }
 
 QList<Section> PlainCodeMarker::sections(const InnerNode * /* innerNode */,

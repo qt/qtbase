@@ -1051,7 +1051,7 @@ void DocParser::parse(const QString& source,
                     }
                     else if (openedCommands.top() == CMD_TABLE) {
                         p1 = "1,1";
-                        p2 = "";
+                        p2.clear();
                         if (isLeftBraceAhead()) {
                             p1 = getArgument();
                             if (isLeftBraceAhead()) {
@@ -1307,7 +1307,7 @@ void DocParser::parse(const QString& source,
                     p1 = "1";
                     if (isLeftBraceAhead())
                         p1 = getArgument();
-                    p1 += ",";
+                    p1 += QLatin1Char(',');
                     p1 += QString::number((int)getSectioningUnit());
                     append(Atom::TableOfContents, p1);
                     break;
@@ -2094,7 +2094,7 @@ void DocParser::leavePara()
         paraState = OutsideParagraph;
         indexStartedPara = false;
         pendingParaRightType = Atom::Nop;
-        pendingParaString = "";
+        pendingParaString.clear();
     }
 }
 
@@ -2177,7 +2177,7 @@ void DocParser::expandMacro(const QString &name,
                     (paramNo <= numParams)) {
                 if (!rawString.isEmpty()) {
                     append(Atom::RawString, rawString);
-                    rawString = "";
+                    rawString.clear();
                 }
                 append(Atom::String, args[paramNo - 1]);
                 j += 1;
@@ -2402,7 +2402,7 @@ QString DocParser::getOptionalArgument()
     skipSpacesOrOneEndl();
     if (pos + 1 < (int) in.length() && in[pos] == '\\' &&
             in[pos + 1].isLetterOrNumber()) {
-        return "";
+        return QString();
     }
     else {
         return getArgument();
@@ -2436,7 +2436,7 @@ QString DocParser::getRestOfLine()
         }
 
         if (!t.isEmpty())
-            t += " ";
+            t += QLatin1Char(' ');
         t += in.mid(begin, pos - begin).simplified();
 
         if (trailingSlash) {

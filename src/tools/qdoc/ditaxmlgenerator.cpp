@@ -555,7 +555,7 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
                                               DITAXMLGENERATOR_CUSTOMHEADELEMENTS);
     codeIndent = config.getInt(CONFIG_CODEINDENT);
     version = config.getString(CONFIG_VERSION);
-    vrm = version.split(".");
+    vrm = version.split(QLatin1Char('.'));
 }
 
 /*!
@@ -681,7 +681,7 @@ void DitaXmlGenerator::generateTree(Tree *tree)
     Generator::generateTree(tree);
     generateCollisionPages();
 
-    QString fileBase = project.toLower().simplified().replace(" ", "-");
+    QString fileBase = project.toLower().simplified().replace(QLatin1Char(' '), QLatin1Char('-'));
     generateIndex(fileBase, projectUrl, projectDescription);
 
     writeDitaMap(tree);
@@ -1843,7 +1843,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         generateThreadSafeness(nsn, marker);
         generateSince(nsn, marker);
 
-        enterSection("","");
+        enterSection(QString(), QString());
         generateBody(nsn, marker);
         generateAlsoList(nsn, marker);
         leaveSection();
@@ -1980,7 +1980,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         generateInheritedBy(cn, marker);
         generateThreadSafeness(cn, marker);
         generateSince(cn, marker);
-        enterSection("","");
+        enterSection(QString(), QString());
         generateBody(cn, marker);
         generateAlsoList(cn, marker);
         leaveSection();
@@ -2105,7 +2105,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         generateThreadSafeness(fn, marker);
         generateSince(fn, marker);
         generateSince(fn, marker);
-        enterSection("","");
+        enterSection(QString(), QString());
         generateBody(fn, marker);
         generateAlsoList(fn, marker);
         leaveSection();
@@ -2228,7 +2228,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
             writeEndTag(); // </p>
         }
 #endif
-        enterSection("","");
+        enterSection(QString(), QString());
         generateBody(qcn, marker);
         if (cn) {
             generateQmlText(cn->doc().body(), cn, marker, qcn->name());
@@ -2303,7 +2303,7 @@ void DitaXmlGenerator::generateFakeNode(FakeNode* fake, CodeMarker* marker)
     writeProlog(fake);
 
     writeStartTag(DT_body);
-    enterSection("","");
+    enterSection(QString(), QString());
     if (fake->subType() == Node::Module) {
         generateStatus(fake, marker);
         if (moduleNamespaceMap.contains(fake->name())) {
@@ -2336,7 +2336,7 @@ void DitaXmlGenerator::generateFakeNode(FakeNode* fake, CodeMarker* marker)
     }
     else {
         if (fake->subType() == Node::Module) {
-            enterSection("","");
+            enterSection(QString(), QString());
             generateBody(fake, marker);
             leaveSection();
         }
@@ -2383,7 +2383,7 @@ void DitaXmlGenerator::writeLink(const Node* node,
 {
     if (node) {
         QString link = fileName(node) + QLatin1Char('#') + node->guid();
-        if (link.endsWith("#"))
+        if (link.endsWith(QLatin1Char('#')))
             qDebug() << "LINK ENDS WITH #:" << link << outFileName();
         writeStartTag(DT_link);
         writeHrefAttribute(link);
@@ -2627,7 +2627,7 @@ void DitaXmlGenerator::generateTableOfContents(const Node* node,
         out() << "<li>";
         out() << "<xref href=\""
               << nodeName
-              << "#"
+              << '#'
               << Doc::canonicalTitle(headingText.toString())
               << "\">";
         generateAtomList(headingText.firstAtom(), node, marker, true, numAtoms);
@@ -2748,7 +2748,7 @@ void DitaXmlGenerator::generateTableOfContents(const Node* node,
               << sectionNumber.size()
               << "\">";
         out() << "<xref href=\""
-              << "#"
+              << '#'
               << Doc::canonicalTitle(s)
               << "\">";
         generateAtomList(headingText.firstAtom(), node, marker, true, numAtoms);
@@ -6417,10 +6417,10 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner)
         QString text;
         QStringList::ConstIterator i = inner->includes().begin();
         while (i != inner->includes().end()) {
-            if ((*i).startsWith("<") && (*i).endsWith(">"))
+            if ((*i).startsWith(QLatin1Char('<')) && (*i).endsWith(QLatin1Char('>')))
                 text += *i;
             else
-                text += "<" + *i + ">";
+                text += QLatin1Char('<') + *i + QLatin1Char('>');
             ++i;
             if (i != inner->includes().end())
                 text += "\n";
@@ -6530,14 +6530,14 @@ void DitaXmlGenerator::generateCollisionPages()
         generateHeader(ncn, ditaTitle);
         writeProlog(ncn);
         writeStartTag(DT_body);
-        enterSection("","");
+        enterSection(QString(), QString());
 
         NodeMap nm;
         for (int i=0; i<collisions.size(); ++i) {
             Node* n = collisions.at(i);
             QString t;
             if (!n->qmlModuleIdentifier().isEmpty())
-                t = n->qmlModuleIdentifier() + " ";
+                t = n->qmlModuleIdentifier() + QLatin1Char(' ');
             t += protectEnc(fullTitle);
             nm.insertMulti(t,n);
         }

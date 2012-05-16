@@ -83,7 +83,7 @@ HelpProjectWriter::HelpProjectWriter(const Config &config, const QString &defaul
         //customFilters = config.defs.
 
         foreach (QString name, config.getStringSet(prefix + "excluded"))
-            project.excluded.insert(name.replace("\\", "/"));
+            project.excluded.insert(name.replace(QLatin1Char('\\'), QLatin1Char('/')));
 
         foreach (const QString &name, config.getStringList(prefix + "subprojects")) {
             SubProject subproject;
@@ -99,7 +99,7 @@ HelpProjectWriter::HelpProjectWriter(const Config &config, const QString &defaul
         if (project.subprojects.isEmpty()) {
             SubProject subproject;
             readSelectors(subproject, config.getStringList(prefix + "selectors"));
-            project.subprojects[""] = subproject;
+            project.subprojects.insert(QString(), subproject);
         }
 
         projects.append(project);

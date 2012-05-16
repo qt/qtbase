@@ -82,7 +82,7 @@ int editDistance( const QString& s, const QString& t )
 QString nearestName( const QString& actual, const QSet<QString>& candidates )
 {
     if (actual.isEmpty())
-        return "";
+        return QString();
 
     int deltaBest = 10000;
     int numBest = 0;
@@ -107,7 +107,7 @@ QString nearestName( const QString& actual, const QSet<QString>& candidates )
          actual.length() + best.length() >= 5 ) {
         return best;
     } else {
-        return "";
+        return QString();
     }
 }
 

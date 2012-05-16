@@ -382,7 +382,7 @@ QString CodeMarker::sortName(const Node *node, const QString* name)
         (node->type() == Node::QmlSignal) ||
         (node->type() == Node::QmlSignalHandler)) {
         const FunctionNode* func = static_cast<const FunctionNode *>(node);
-        return QLatin1String("E") + func->signature();
+        return QLatin1Char('E') + func->signature();
     }
 
     return QLatin1Char('B') + nodeName;

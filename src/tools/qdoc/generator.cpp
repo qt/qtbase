@@ -454,13 +454,13 @@ QMap<QString, QString>& Generator::formattingRightMap()
 QString Generator::fullDocumentLocation(const Node *node, bool subdir)
 {
     if (!node)
-        return "";
+        return QString();
     if (!node->url().isEmpty())
         return node->url();
 
     QString parentName;
     QString anchorRef;
-    QString fdl = "";
+    QString fdl;
 
     /*
       If the output is being sent to subdirectories of the
@@ -478,31 +478,31 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
         // an attribute containing the location of any documentation.
 
         if (!node->fileBase().isEmpty())
-            parentName = node->fileBase() + "." + currentGenerator()->fileExtension();
+            parentName = node->fileBase() + QLatin1Char('.') + currentGenerator()->fileExtension();
         else
-            return "";
+            return QString();
     }
     else if (node->type() == Node::Fake) {
         if ((node->subType() == Node::QmlClass) ||
                 (node->subType() == Node::QmlBasicType)) {
             QString fb = node->fileBase();
             if (fb.startsWith(Generator::outputPrefix(QLatin1String("QML"))))
-                return fb + "." + currentGenerator()->fileExtension();
+                return fb + QLatin1Char('.') + currentGenerator()->fileExtension();
             else {
-                QString mq = "";
+                QString mq;
                 if (!node->qmlModuleName().isEmpty()) {
                     mq = node->qmlModuleIdentifier().replace(QChar('.'),QChar('-'));
-                    mq = mq.toLower() + "-";
+                    mq = mq.toLower() + QLatin1Char('-');
                 }
                 return fdl+ Generator::outputPrefix(QLatin1String("QML")) + mq +
-                        node->fileBase() + "." + currentGenerator()->fileExtension();
+                        node->fileBase() + QLatin1Char('.') + currentGenerator()->fileExtension();
             }
         }
         else
-            parentName = node->fileBase() + "." + currentGenerator()->fileExtension();
+            parentName = node->fileBase() + QLatin1Char('.') + currentGenerator()->fileExtension();
     }
     else if (node->fileBase().isEmpty())
-        return "";
+        return QString();
 
     Node *parentNode = 0;
 
@@ -522,11 +522,11 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
     case Node::Class:
     case Node::Namespace:
         if (parentNode && !parentNode->name().isEmpty()) {
-            parentName.remove("." + currentGenerator()->fileExtension());
+            parentName.remove(QLatin1Char('.') + currentGenerator()->fileExtension());
             parentName +=  QLatin1Char('-')
-                    + node->fileBase().toLower() + "." + currentGenerator()->fileExtension();
+                    + node->fileBase().toLower() + QLatin1Char('.') + currentGenerator()->fileExtension();
         } else {
-            parentName = node->fileBase() + "." + currentGenerator()->fileExtension();
+            parentName = node->fileBase() + QLatin1Char('.') + currentGenerator()->fileExtension();
         }
         break;
     case Node::Function:
@@ -546,7 +546,7 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
 
         else if (functionNode->overloadNumber() > 1)
             anchorRef = QLatin1Char('#') + functionNode->name()
-                    + "-" + QString::number(functionNode->overloadNumber());
+                    + QLatin1Char('-') + QString::number(functionNode->overloadNumber());
         else
             anchorRef = QLatin1Char('#') + functionNode->name();
     }
@@ -588,8 +588,8 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
               by pages whose file names are lower-case.
             */
         parentName = node->fileBase();
-        parentName.replace(QLatin1Char('/'), "-").replace(".", "-");
-        parentName += "." + currentGenerator()->fileExtension();
+        parentName.replace(QLatin1Char('/'), QLatin1Char('-')).replace(QLatin1Char('.'), QLatin1Char('-'));
+        parentName += QLatin1Char('.') + currentGenerator()->fileExtension();
     }
         break;
     default:
@@ -600,11 +600,11 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
     if (node->type() != Node::Class && node->type() != Node::Namespace) {
         switch (node->status()) {
         case Node::Compat:
-            parentName.replace("." + currentGenerator()->fileExtension(),
+            parentName.replace(QLatin1Char('.') + currentGenerator()->fileExtension(),
                                "-compat." + currentGenerator()->fileExtension());
             break;
         case Node::Obsolete:
-            parentName.replace("." + currentGenerator()->fileExtension(),
+            parentName.replace(QLatin1Char('.') + currentGenerator()->fileExtension(),
                                "-obsolete." + currentGenerator()->fileExtension());
             break;
         default:
@@ -864,7 +864,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             Text text;
             Quoter quoter;
             Doc::quoteFromFile(fake->doc().location(), quoter, fake->name());
-            QString code = quoter.quoteTo(fake->location(), "", "");
+            QString code = quoter.quoteTo(fake->location(), QString(), QString());
             CodeMarker *codeMarker = CodeMarker::markerForFileName(fake->name());
             text << Atom(codeMarker->atomType(), code);
             generateText(text, fake, codeMarker);
@@ -1965,7 +1965,7 @@ void Generator::terminate()
     imgFileExts.clear();
     imageFiles.clear();
     imageDirs.clear();
-    outDir_ = "";
+    outDir_.clear();
     QmlClassNode::terminate();
     ExampleNode::terminate();
 }

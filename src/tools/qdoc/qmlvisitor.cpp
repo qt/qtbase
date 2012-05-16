@@ -128,7 +128,7 @@ QQmlJS::AST::SourceLocation QmlDocVisitor::precedingComment(quint32 offset) cons
         else if (loc.begin() > lastEndOffset && loc.end() < offset) {
 
             // Only examine multiline comments in order to avoid snippet markers.
-            if (document.mid(loc.offset - 1, 1) == "*") {
+            if (document.at(loc.offset - 1) == QLatin1Char('*')) {
                 QString comment = document.mid(loc.offset, loc.length);
                 if (comment.startsWith(QLatin1Char('!')) || comment.startsWith(QLatin1Char('*')))
                     return loc;

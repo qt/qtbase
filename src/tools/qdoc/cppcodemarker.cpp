@@ -366,7 +366,7 @@ QString CppCodeMarker::markedUpQmlItem(const Node* node, bool summary)
             synopsis = typified(func->returnType()) + QLatin1Char(' ') + name;
         else
             synopsis = name;
-        synopsis += "(";
+        synopsis += QLatin1Char('(');
         if (!func->parameters().isEmpty()) {
             QList<Parameter>::ConstIterator p = func->parameters().begin();
             while (p != func->parameters().end()) {
@@ -374,8 +374,8 @@ QString CppCodeMarker::markedUpQmlItem(const Node* node, bool summary)
                     synopsis += ", ";
                 synopsis += typified((*p).leftType());
                 if (!(*p).name().isEmpty()) {
-                    if (!synopsis.endsWith("("))
-                        synopsis += " ";
+                    if (!synopsis.endsWith(QLatin1Char('(')))
+                        synopsis += QLatin1Char(' ');
                     synopsis += "<@param>" + protect((*p).name()) + "</@param>";
                 }
                 synopsis += protect((*p).rightType());

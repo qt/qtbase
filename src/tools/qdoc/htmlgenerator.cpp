@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 int HtmlGenerator::id = 0;
 bool HtmlGenerator::debugging_on = false;
 
-QString HtmlGenerator::divNavTop = "";
+QString HtmlGenerator::divNavTop;
 
 static bool showBrokenLinks = false;
 
@@ -278,7 +278,7 @@ void HtmlGenerator::generateTree(Tree *tree)
     //reportOrphans(tree->root());
     generateCollisionPages();
 
-    QString fileBase = project.toLower().simplified().replace(" ", "-");
+    QString fileBase = project.toLower().simplified().replace(QLatin1Char(' '), QLatin1Char('-'));
     generateIndex(fileBase, projectUrl, projectDescription);
 
     helpProjectWriter->generate(tree_);
@@ -1492,7 +1492,7 @@ void HtmlGenerator::generateFakeNode(FakeNode* fake, CodeMarker* marker)
 
     if (fake->subType() == Node::File && !fake->subTitle().isEmpty()) {
         subTitleSize = SmallSubTitle;
-        htmlTitle += " (" + fake->subTitle() + ")";
+        htmlTitle += " (" + fake->subTitle() + QLatin1Char(')');
     }
     else if (fake->subType() == Node::QmlBasicType) {
         fullTitle = "QML Basic Type: " + fullTitle;
@@ -1591,7 +1591,7 @@ void HtmlGenerator::generateFakeNode(FakeNode* fake, CodeMarker* marker)
         s = sections.begin();
         while (s != sections.end()) {
             out() << "<a name=\"" << registerRef((*s).name.toLower())
-                  << "\"></a>" << divNavTop << "\n";
+                  << "\"></a>" << divNavTop << '\n';
             out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
             generateQmlSummary(*s,fake,marker);
             ++s;
@@ -1833,7 +1833,7 @@ void HtmlGenerator::generateHeader(const QString& title,
     if (shortVersion.count(QChar('.')) == 2)
         shortVersion.truncate(shortVersion.lastIndexOf(QChar('.')));
     if (!project.isEmpty())
-        shortVersion = project + QLatin1String(" ") + shortVersion + QLatin1String(": ");
+        shortVersion = project + QLatin1Char(' ') + shortVersion + QLatin1String(": ");
     else
         shortVersion = QLatin1String("Qt ") + shortVersion + QLatin1String(": ");
 
@@ -3201,7 +3201,7 @@ QString HtmlGenerator::cleanRef(const QString& ref)
     } else if (u == '_') {
         clean += "underscore.";
     } else {
-        clean += "A";
+        clean += QLatin1Char('A');
     }
 
     for (int i = 1; i < (int) ref.length(); i++) {
@@ -3213,7 +3213,7 @@ QString HtmlGenerator::cleanRef(const QString& ref)
                 u == '_' || u == ':' || u == '.') {
             clean += c;
         } else if (c.isSpace()) {
-            clean += "-";
+            clean += QLatin1Char('-');
         } else if (u == '!') {
             clean += "-not";
         } else if (u == '&') {
@@ -3227,7 +3227,7 @@ QString HtmlGenerator::cleanRef(const QString& ref)
         } else if (u == '#') {
             clean += QLatin1Char('#');
         } else {
-            clean += "-";
+            clean += QLatin1Char('-');
             clean += QString::number((int)u, 16);
         }
     }
@@ -3246,7 +3246,7 @@ QString HtmlGenerator::registerRef(const QString& ref)
         } else if (prevRef == ref) {
             break;
         }
-        clean += "x";
+        clean += QLatin1Char('x');
     }
     return clean;
 }
@@ -3362,7 +3362,7 @@ QString HtmlGenerator::refForNode(const Node *node)
         else {
             ref = func->name();
             if (func->overloadNumber() != 1)
-                ref += "-" + QString::number(func->overloadNumber());
+                ref += QLatin1Char('-') + QString::number(func->overloadNumber());
         }
         break;
     case Node::Fake:
@@ -3382,7 +3382,7 @@ QString HtmlGenerator::refForNode(const Node *node)
         func = static_cast<const FunctionNode *>(node);
         ref = func->name() + "-method";
         if (func->overloadNumber() != 1)
-            ref += "-" + QString::number(func->overloadNumber());
+            ref += QLatin1Char('-') + QString::number(func->overloadNumber());
         break;
     case Node::Variable:
         ref = node->name() + "-var";
@@ -3771,7 +3771,7 @@ QString HtmlGenerator::getLink(const Atom *atom,
     *node = 0;
     inObsoleteLink = false;
 
-    if (atom->string().contains(":") &&
+    if (atom->string().contains(QLatin1Char(':')) &&
             (atom->string().startsWith("file:")
              || atom->string().startsWith("http:")
              || atom->string().startsWith("https:")

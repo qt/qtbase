@@ -64,7 +64,7 @@ QString separator(int index, int count)
 QString comma(int index, int count)
 {
     if (index == count - 1)
-        return QString("");
+        return QString();
     if (count == 2)
         return tr(" and ", "separator when N = 2");
     if (index == 0)

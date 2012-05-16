@@ -188,7 +188,7 @@ QString QmlCodeMarker::markedUpIncludes(const QStringList& includes)
 
 QString QmlCodeMarker::functionBeginRegExp(const QString& funcName)
 {
-    return "^" + QRegExp::escape("function " + funcName) + "$";
+    return QLatin1Char('^') + QRegExp::escape("function " + funcName) + QLatin1Char('$');
 
 }
 

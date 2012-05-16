@@ -257,8 +257,8 @@ static void processQdocconfFile(const QString &fileName)
             for (int i = 0; i < dependModules.size(); i++) {
                 QMultiMap<uint, QFileInfo> foundIndices;
                 for (int j = 0; j < indexDirs.size(); j++) {
-                    QString fileToLookFor = indexDirs[j] + "/" + dependModules[i] +
-                            "/" + dependModules[i] + ".index";
+                    QString fileToLookFor = indexDirs[j] + QLatin1Char('/') + dependModules[i] +
+                            QLatin1Char('/') + dependModules[i] + QLatin1String(".index");
                     if (QFile::exists(fileToLookFor)) {
                         QFileInfo tempFileInfo(fileToLookFor);
                         foundIndices.insert(tempFileInfo.lastModified().toTime_t(), tempFileInfo);
@@ -390,7 +390,7 @@ static void processQdocconfFile(const QString &fileName)
         tree->generateTagFile(tagFile);
     }
 
-    tree->setVersion("");
+    tree->setVersion(QString());
     Generator::terminate();
     CodeParser::terminate();
     CodeMarker::terminate();

@@ -927,7 +927,7 @@ bool CppCodeParser::splitQmlMethodArg(const QString& arg,
             }
         }
         else {
-            type = QString("");
+            type.clear();
             if (colonSplit.size() > 2) {
                 module = colonSplit[0];
                 element = colonSplit[1];
@@ -1221,7 +1221,7 @@ void CppCodeParser::reset(Tree *tree)
     access = Node::Public;
     metaness = FunctionNode::Plain;
     lastPath.clear();
-    moduleName = "";
+    moduleName.clear();
 }
 
 /*!
@@ -2441,7 +2441,7 @@ void CppCodeParser::parseQiteratorDotH(const Location &location,
     text.remove("\\\n");
     QStringList lines = text.split(QLatin1Char('\n'));
     lines = lines.filter("Q_DECLARE");
-    lines.replaceInStrings(QRegExp("#define Q[A-Z_]*\\(C\\)"), "");
+    lines.replaceInStrings(QRegExp("#define Q[A-Z_]*\\(C\\)"), QString());
 
     if (lines.size() == 4) {
         sequentialIteratorDefinition = lines[0];

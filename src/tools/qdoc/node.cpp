@@ -261,7 +261,7 @@ QString Node::nodeTypeString(unsigned t)
     default:
         break;
     }
-    return "";
+    return QString();
 }
 
 /*!
@@ -314,7 +314,7 @@ QString Node::nodeSubtypeString(unsigned t)
     default:
         break;
     }
-    return "";
+    return QString();
 }
 
 /*!
@@ -1206,13 +1206,13 @@ QString Node::moduleName() const
     int start = path.lastIndexOf(pattern);
 
     if (start == -1)
-        return "";
+        return QString();
 
     QString moduleDir = path.mid(start + pattern.size());
     int finish = moduleDir.indexOf(QDir::separator());
 
     if (finish == -1)
-        return "";
+        return QString();
 
     QString moduleName = moduleDir.left(finish);
 
@@ -1237,7 +1237,7 @@ QString Node::moduleName() const
     else if (moduleName == "xml")
         return "QtXml";
     else
-        return "";
+        return QString();
 }
 
 /*!
@@ -2563,7 +2563,7 @@ QString Node::cleanId(QString str)
         return clean;
 
     name = name.replace("::","-");
-    name = name.replace(" ","-");
+    name = name.replace(QLatin1Char(' '), QLatin1Char('-'));
     name = name.replace("()","-call");
 
     clean.reserve(name.size() + 20);
@@ -2618,10 +2618,10 @@ QString Node::cleanId(QString str)
             clean += "-hash";
         }
         else if (u == '(') {
-            clean += "-";
+            clean += QLatin1Char('-');
         }
         else if (u == ')') {
-            clean += "-";
+            clean += QLatin1Char('-');
         }
         else {
             clean += QLatin1Char('-');
@@ -2671,7 +2671,7 @@ QString Node::idForNode() const
         }
         else {
             if (func->name().startsWith("operator")) {
-                str = "";
+                str.clear();
                 /*
                   The test below should probably apply to all
                   functions, but for now, overloaded operators
@@ -2706,7 +2706,7 @@ QString Node::idForNode() const
                             if (operators_.contains(op)) {
                                 str += operators_.value(op);
                                 if (!tail.isEmpty())
-                                    str += "-" + tail;
+                                    str += QLatin1Char('-') + tail;
                             }
                             else
                                 qDebug() << "qdoc internal error: Operator missing from operators_ map:" << op;
@@ -2760,15 +2760,15 @@ QString Node::idForNode() const
                     if (str.endsWith(".html"))
                         str.remove(str.size()-5,5);
                 }
-                str.replace("/","-");
+                str.replace(QLatin1Char('/'), QLatin1Char('-'));
                 break;
             case Node::File:
                 str = name();
-                str.replace("/","-");
+                str.replace(QLatin1Char('/'), QLatin1Char('-'));
                 break;
             case Node::Example:
                 str = name();
-                str.replace("/","-");
+                str.replace(QLatin1Char('/'), QLatin1Char('-'));
                 break;
             case Node::QmlBasicType:
                 str = "qml-basic-type-" + name();
@@ -2803,7 +2803,7 @@ QString Node::idForNode() const
         func = static_cast<const FunctionNode*>(this);
         str = "qml-method-" + func->name();
         if (func->overloadNumber() != 1)
-            str += "-" + QString::number(func->overloadNumber());
+            str += QLatin1Char('-') + QString::number(func->overloadNumber());
         break;
     case Node::Variable:
         str = "var-" + name();

@@ -229,7 +229,7 @@ void Text::dump() const
         str.replace("\n", "\\n");
         str.replace(QRegExp("[^\x20-\x7e]"), "?");
         if (!str.isEmpty())
-            str = " \"" + str + "\"";
+            str = " \"" + str + QLatin1Char('"');
         fprintf(stderr, "    %-15s%s\n", atom->typeString().toLatin1().data(), str.toLatin1().data());
         atom = atom->next();
     }
