@@ -2298,7 +2298,7 @@ MakefileGenerator::findSubDirsSubTargets() const
             if(!project->isEmpty(fixedSubdir + ".makefile")) {
                 st->makefile = project->first(fixedSubdir + ".makefile");
             } else {
-                st->makefile = "$(MAKEFILE)";
+                st->makefile = "Makefile";
                 if(!st->profile.isEmpty()) {
                     QString basename = st->in_directory;
                     int new_slsh = basename.lastIndexOf(Option::dir_sep);
