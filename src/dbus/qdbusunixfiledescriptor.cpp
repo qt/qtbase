@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_DBUS
+
 /*!
     \class QDBusUnixFileDescriptor
     \inmodule QtDBus
@@ -332,5 +334,7 @@ QDBusUnixFileDescriptorPrivate::~QDBusUnixFileDescriptorPrivate()
 }
 
 #endif
+
+#endif // QT_NO_DBUS
 
 QT_END_NAMESPACE
