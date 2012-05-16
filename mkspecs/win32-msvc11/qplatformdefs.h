@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,44 +39,4 @@
 **
 ****************************************************************************/
 
-#include <qstring.h>
-#include <qt_windows.h>
-
-QT_BEGIN_NAMESPACE
-
-
-enum Compiler {
-    CC_UNKNOWN = 0,
-    CC_BORLAND = 0x01,
-    CC_MINGW   = 0x02,
-    CC_INTEL   = 0x03,
-    CC_NET2003 = 0x71,
-    CC_NET2005 = 0x80,
-    CC_NET2008 = 0x90,
-    CC_NET2010 = 0xA0,
-    CC_NET11 = 0xB0
-};
-
-struct CompilerInfo;
-class Environment
-{
-public:
-    static Compiler detectCompiler();
-    static QString detectQMakeSpec();
-    static bool detectExecutable(const QString &executable);
-
-    static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
-    static QString execute(const QString &command);
-    static bool cpdir(const QString &srcDir,
-                      const QString &destDir,
-                      const QString &includeSrcDir = QString());
-    static bool rmdir(const QString &name);
-
-private:
-    static Compiler detectedCompiler;
-
-    static CompilerInfo *compilerInfo(Compiler compiler);
-};
-
-
-QT_END_NAMESPACE
+#include "../win32-msvc2005/qplatformdefs.h"

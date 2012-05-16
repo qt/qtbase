@@ -83,6 +83,8 @@ struct CompilerInfo{
     {CC_NET2008, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2008 (9.0)",  "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\9.0", "cl.exe"}, // link.exe, lib.exe
     {CC_NET2010, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2010 (10.0)", "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\10.0", "cl.exe"}, // link.exe, lib.exe
     {CC_NET2010, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 2010 (10.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\10.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_NET11, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 11 (11.0)", "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\11.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_NET11, "Microsoft (R) 32-bit C/C++ Optimizing Compiler.NET 11 (11.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VC7\\11.0", "cl.exe"}, // link.exe, lib.exe
     {CC_UNKNOWN, "Unknown", 0, 0},
 };
 
@@ -108,6 +110,9 @@ QString Environment::detectQMakeSpec()
 {
     QString spec;
     switch (detectCompiler()) {
+    case CC_NET11:
+        spec = "win32-msvc11";
+        break;
     case CC_NET2010:
         spec = "win32-msvc2010";
         break;
