@@ -40,15 +40,18 @@
 ****************************************************************************/
 #include "qstandardpaths.h"
 
-#include <QRegExp>
 #include <QString>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QJsonArray>
 #include <QFile>
 #include <QDir>
 #include <QAtomicPointer>
 #include <QCoreApplication>
+#include <QRegularExpression>
+#include <QRegularExpressionMatchIterator>
+#include <QRegularExpressionMatch>
 
 #ifndef QT_NO_STANDARDPATHS
 
@@ -64,6 +67,49 @@ public:
 Q_GLOBAL_STATIC(QStandardPathsPrivate, configCache);
 
 static bool qsp_testMode = false;
+
+/*!
+    \internal
+    Substitute environment variables in the form ${name}
+
+    The JSON QStandardPaths implementation can be configured on a per user
+    (or per application) basis through the use of environment variables,
+    which are evaluated each time a location is queried. This function
+    performs that evaluation on \a value. No substitution is performed
+    for undefined variables.
+
+    This slightly underselects according to the 2009-09-20 version of
+    the GNU setenv(3) manual page: It disallows '}' within the variable
+    name. ${var}} will look for a variable named "var", not "var}".
+ */
+static QString substituteEnvVars(const QJsonValue & value)
+{
+    QString str = value.toString();
+    if (str.isEmpty() || !str.contains(QLatin1String("${")))
+        return str;
+
+    // optimize for a common case
+    str.replace(QLatin1String("${HOME}"), QDir::homePath());
+
+    // Do ${} format environment variable substitution if necessary
+    // repeat this test because ${HOME} might expand to the empty string
+    if (!str.isEmpty() && str.contains(QLatin1String("${"))) {
+        QRegularExpression varRegExp(QLatin1String("\\$\\{([^\\}=]*)\\}"));
+        QRegularExpressionMatchIterator matchIterator =
+                varRegExp.globalMatch(str);
+        while (matchIterator.hasNext()) {
+            QRegularExpressionMatch match = matchIterator.next();
+            QByteArray envValue =
+                    qgetenv(match.captured(1).toLatin1().data());
+            if (!envValue.isNull()) {
+                QString replacement =
+                        QFile::decodeName(envValue);
+                str.replace(match.captured(0), replacement);
+            }
+        }
+    }
+    return str;
+}
 
 void QStandardPaths::enableTestMode(bool testMode)
 {
@@ -82,11 +128,19 @@ static void appendOrganizationAndApp(QString &path)
 
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
+    QStringList locations = QStandardPaths::standardLocations(type);
+    if (locations.isEmpty())
+        return QString();
+    return locations.first();
+}
+
+QStringList QStandardPaths::standardLocations(StandardLocation type)
+{
     switch (type) {
     case HomeLocation:
-        return QDir::homePath(); // set $HOME
+        return QStringList(QDir::homePath()); // set $HOME
     case TempLocation:
-        return QDir::tempPath(); // set $TMPDIR
+        return QStringList(QDir::tempPath()); // set $TMPDIR
     default:
         break;
     }
@@ -100,15 +154,15 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             path = qttestDir + QLatin1String("/share");
             if (type == DataLocation)
                 appendOrganizationAndApp(path);
-            return path;
+            return QStringList(path);
         case GenericCacheLocation:
         case CacheLocation:
             path = qttestDir + QLatin1String("/cache");
             if (type == CacheLocation)
                 appendOrganizationAndApp(path);
-            return path;
+            return QStringList(path);
         case ConfigLocation:
-            return qttestDir + QLatin1String("/config");
+            return QStringList(qttestDir + QLatin1String("/config"));
         default:
             break;
         }
@@ -124,7 +178,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         if (file.open(QIODevice::ReadOnly)) {
             QJsonDocument configDoc = QJsonDocument::fromJson(file.readAll());
             if (configDoc.isNull())
-                return QString();
+                return QStringList();
 
             QJsonObject myConfigObject = configDoc.object();
             localConfigObject = new QJsonObject(myConfigObject);
@@ -133,7 +187,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
                 localConfigObject = configCache()->object.loadAcquire();
             }
         } else {
-            return QString();
+            return QStringList();
         }
     }
 
@@ -184,35 +238,26 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         break;
 
     default:
-        return QString();
+        return QStringList();
     }
 
     QJsonObject::const_iterator iter = localConfigObject->constFind(key);
-    if (iter == localConfigObject->constEnd() || ! iter.value().isString())
-        return QString();
-    QString value = iter.value().toString();
+    if (iter == localConfigObject->constEnd())
+        return QStringList();
 
-    // optimize for a common case
-    value.replace(QLatin1String("${HOME}"), QDir::homePath());
-
-    // Do ${} format environment variable substitution if necessary
-    if (!value.isEmpty() && value.contains(QLatin1String("${"))) {
-        QRegExp varRegExp(QLatin1String("\\$\\{([^\\}]*)\\}"));
-        while (value.contains(varRegExp)) {
-            QString replacement =
-                    QFile::decodeName(qgetenv(varRegExp.cap(1).toLatin1().data()));
-            value.replace(varRegExp.cap(0), replacement);
-        }
+    switch (iter.value().type()) {
+    case QJsonValue::Array: {
+        QStringList resultList;
+        foreach (const QJsonValue &item, iter.value().toArray())
+            resultList.append(substituteEnvVars(item));
+        return resultList;
     }
-    return value;
-}
-
-QStringList QStandardPaths::standardLocations(StandardLocation type)
-{
-    QStringList dirs;
-    const QString localDir = writableLocation(type);
-    dirs.prepend(localDir);
-    return dirs;
+    case QJsonValue::String:
+        return QStringList(substituteEnvVars(iter.value()));
+    default:
+        break;
+    }
+    return QStringList();
 }
 
 QT_END_NAMESPACE
