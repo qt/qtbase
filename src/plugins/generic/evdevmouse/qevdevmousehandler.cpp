@@ -73,8 +73,6 @@ QEvdevMouseHandler *QEvdevMouseHandler::createLinuxInputMouseHandler(const QStri
     QString device = "/dev/input/event0";
     bool compression = true;
     int jitterLimit = 0;
-    int xoffset = 0;
-    int yoffset = 0;
 
     QStringList args = specification.split(QLatin1Char(':'));
     foreach (const QString &arg, args) {
@@ -82,10 +80,6 @@ QEvdevMouseHandler *QEvdevMouseHandler::createLinuxInputMouseHandler(const QStri
             compression = false;
         else if (arg.startsWith("dejitter="))
             jitterLimit = arg.mid(9).toInt();
-        else if (arg.startsWith("xoffset="))
-            xoffset = arg.mid(8).toInt();
-        else if (arg.startsWith("yoffset="))
-            yoffset = arg.mid(8).toInt();
         else if (arg.startsWith(QLatin1String("/dev/")))
             device = arg;
     }
@@ -97,17 +91,17 @@ QEvdevMouseHandler *QEvdevMouseHandler::createLinuxInputMouseHandler(const QStri
     int fd;
     fd = qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (fd >= 0) {
-        return new QEvdevMouseHandler(fd, compression, jitterLimit, xoffset, yoffset);
+        return new QEvdevMouseHandler(fd, compression, jitterLimit);
     } else {
         qWarning("Cannot open mouse input device '%s': %s", qPrintable(device), strerror(errno));
         return 0;
     }
 }
 
-QEvdevMouseHandler::QEvdevMouseHandler(int deviceDescriptor, bool compression, int jitterLimit, int xoffset, int yoffset)
+QEvdevMouseHandler::QEvdevMouseHandler(int deviceDescriptor, bool compression, int jitterLimit)
     : m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0),
       m_fd(deviceDescriptor), m_compression(compression),
-      m_xoffset(xoffset), m_yoffset(yoffset), m_buttons(0)
+      m_buttons(0)
 {
     setObjectName(QLatin1String("Evdev Mouse Handler"));
 
@@ -127,24 +121,8 @@ QEvdevMouseHandler::~QEvdevMouseHandler()
 
 void QEvdevMouseHandler::sendMouseEvent()
 {
-    QRect g = QGuiApplication::primaryScreen()->virtualGeometry();
-    if (m_x + m_xoffset < g.left())
-        m_x = g.left() - m_xoffset;
-    else if (m_x + m_xoffset > g.right())
-        m_x = g.right() - m_xoffset;
+    emit handleMouseEvent(m_x - m_prevx, m_y - m_prevy, m_buttons);
 
-    if (m_y + m_yoffset < g.top())
-        m_y = g.top() - m_yoffset;
-    else if (m_y + m_yoffset > g.bottom())
-        m_y = g.bottom() - m_yoffset;
-
-    QPoint pos(m_x + m_xoffset, m_y + m_yoffset);
-
-#ifdef QT_QPA_MOUSE_HANDLER_DEBUG
-    qDebug("mouse event %d %d %d", pos.x(), pos.y(), int(m_buttons));
-#endif
-
-    QWindowSystemInterface::handleMouseEvent(0, pos, pos, m_buttons);
     m_prevx = m_x;
     m_prevy = m_y;
 }

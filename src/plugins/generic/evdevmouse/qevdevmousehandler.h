@@ -58,11 +58,14 @@ public:
     static QEvdevMouseHandler *createLinuxInputMouseHandler(const QString &key, const QString &specification);
     ~QEvdevMouseHandler();
 
+signals:
+    void handleMouseEvent(int x, int y, Qt::MouseButtons buttons);
+
 private slots:
     void readMouseData();
 
 private:
-    QEvdevMouseHandler(int deviceDescriptor, bool compression, int jitterLimit, int xoffset, int yoffset);
+    QEvdevMouseHandler(int deviceDescriptor, bool compression, int jitterLimit);
 
     void sendMouseEvent();
 
@@ -71,7 +74,6 @@ private:
     int m_prevx, m_prevy;
     int m_fd;
     bool m_compression;
-    int m_xoffset, m_yoffset;
     Qt::MouseButtons m_buttons;
     int m_jitterLimitSquared;
 };

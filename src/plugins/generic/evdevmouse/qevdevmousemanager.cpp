@@ -42,9 +42,11 @@
 #include "qevdevmousemanager.h"
 
 #include <QStringList>
-#include <QCoreApplication>
+#include <QGuiApplication>
+#include <QScreen>
+#include <QWindowSystemInterface>
 
-//#define QT_QPA_MOUSEMANAGER_DEBUG
+#define QT_QPA_MOUSEMANAGER_DEBUG
 
 #ifdef QT_QPA_MOUSEMANAGER_DEBUG
 #include <QDebug>
@@ -53,6 +55,7 @@
 QT_BEGIN_NAMESPACE
 
 QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specification)
+    : m_x(0), m_y(0), m_xoffset(0), m_yoffset(0)
 {
     Q_UNUSED(key);
 
@@ -70,6 +73,10 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
             devices.append(arg);
             args.removeAll(arg);
             useUDev = false;
+        } else if (arg.startsWith("xoffset=")) {
+            m_xoffset = arg.mid(8).toInt();
+        } else if (arg.startsWith("yoffset=")) {
+            m_yoffset = arg.mid(8).toInt();
         }
     }
 
@@ -109,6 +116,32 @@ QEvdevMouseManager::~QEvdevMouseManager()
     m_mice.clear();
 }
 
+void QEvdevMouseManager::handleMouseEvent(int x, int y, Qt::MouseButtons buttons)
+{
+    // update current absolute coordinates
+    m_x += x;
+    m_y += y;
+
+    // clamp to screen geometry
+    QRect g = QGuiApplication::primaryScreen()->virtualGeometry();
+    if (m_x + m_xoffset < g.left())
+        m_x = g.left() - m_xoffset;
+    else if (m_x + m_xoffset > g.right())
+        m_x = g.right() - m_xoffset;
+
+    if (m_y + m_yoffset < g.top())
+        m_y = g.top() - m_yoffset;
+    else if (m_y + m_yoffset > g.bottom())
+        m_y = g.bottom() - m_yoffset;
+
+    QPoint pos(m_x + m_xoffset, m_y + m_yoffset);
+    QWindowSystemInterface::handleMouseEvent(0, pos, pos, buttons);
+
+#ifdef QT_QPA_MOUSEMANAGER_DEBUG
+    qDebug("mouse event %d %d %d", pos.x(), pos.y(), int(buttons));
+#endif
+}
+
 void QEvdevMouseManager::addMouse(const QString &deviceNode)
 {
 #ifdef QT_QPA_MOUSEMANAGER_DEBUG
@@ -124,10 +157,12 @@ void QEvdevMouseManager::addMouse(const QString &deviceNode)
 
     QEvdevMouseHandler *handler;
     handler = QEvdevMouseHandler::createLinuxInputMouseHandler("EvdevMouse", specification);
-    if (handler)
+    if (handler) {
+        connect(handler, SIGNAL(handleMouseEvent(int, int, Qt::MouseButtons)), this, SLOT(handleMouseEvent(int, int, Qt::MouseButtons)));
         m_mice.insert(deviceNode, handler);
-    else
+    } else {
         qWarning("Failed to open mouse");
+    }
 }
 
 void QEvdevMouseManager::removeMouse(const QString &deviceNode)

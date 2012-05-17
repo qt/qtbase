@@ -63,6 +63,9 @@ public:
     explicit QEvdevMouseManager(const QString &key, const QString &specification);
     ~QEvdevMouseManager();
 
+public slots:
+    void handleMouseEvent(int x, int y, Qt::MouseButtons buttons);
+
 private slots:
     void addMouse(const QString &deviceNode = QString());
     void removeMouse(const QString &deviceNode);
@@ -73,6 +76,10 @@ private:
 #ifndef QT_NO_LIBUDEV
     QUDeviceHelper *m_udeviceHelper;
 #endif // QT_NO_LIBUDEV
+    int m_x;
+    int m_y;
+    int m_xoffset;
+    int m_yoffset;
 };
 
 QT_END_HEADER
