@@ -66,7 +66,7 @@ QAbstractTestLogger::QAbstractTestLogger(const char *filename)
     stream = ::fopen(filename, "wt");
     if (!stream) {
 #endif
-        fprintf(stderr, "Unable to open file for logging: %s", filename);
+        fprintf(stderr, "Unable to open file for logging: %s\n", filename);
         ::exit(1);
     }
 }
