@@ -43,11 +43,12 @@
 #include <QtGui/qwindowsysteminterface_qpa.h>
 #include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/QOpenGLContext>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonObject>
 #include <QtDebug>
 
 QT_BEGIN_NAMESPACE
-
-#define CURSORS_PER_ROW 8
 
 QEglFSCursor::QEglFSCursor(QEglFSScreen *screen)
     : m_screen(screen), m_pos(0, 0), m_program(0), m_vertexCoordEntry(0), m_textureCoordEntry(0), m_textureEntry(0)
@@ -114,13 +115,32 @@ void QEglFSCursor::createCursorTexture(uint *texture, const QImage &image)
 
 void QEglFSCursor::initCursorAtlas()
 {
-    static QByteArray atlas = qgetenv("QT_QPA_EGLFS_CURSORATLAS");
-    if (atlas.isEmpty())
-        atlas = ":/cursor-atlas.png";
+    static QByteArray json = qgetenv("QT_QPA_EGLFS_CURSOR");
+    if (json.isEmpty())
+        json = ":/cursor.json";
+
+    QFile file(json);
+    file.open(QFile::ReadOnly);
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    QJsonObject object = doc.object();
+
+    QString atlas = object.value("image").toString();
+    Q_ASSERT(!atlas.isEmpty());
+
+    const int cursorsPerRow = object.value("cursorsPerRow").toDouble();
+    Q_ASSERT(cursorsPerRow);
+    m_cursorAtlas.cursorsPerRow = cursorsPerRow;
+
+    const QJsonArray hotSpots = object.value("hotSpots").toArray();
+    Q_ASSERT(hotSpots.count() == Qt::LastCursor);
+    for (int i = 0; i < hotSpots.count(); i++) {
+        QPoint hotSpot(hotSpots[i].toArray()[0].toDouble(), hotSpots[i].toArray()[1].toDouble());
+        m_cursorAtlas.hotSpots << hotSpot;
+    }
+
     QImage image = QImage(atlas).convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    m_cursorAtlas.cursorWidth = image.width() / CURSORS_PER_ROW;
-    m_cursorAtlas.cursorHeight = image.height() / ((Qt::LastCursor + CURSORS_PER_ROW - 1) / CURSORS_PER_ROW);
-    m_cursorAtlas.hotSpot = QPoint(m_cursorAtlas.cursorWidth/2, m_cursorAtlas.cursorHeight/2); // ## be smarter
+    m_cursorAtlas.cursorWidth = image.width() / m_cursorAtlas.cursorsPerRow;
+    m_cursorAtlas.cursorHeight = image.height() / ((Qt::LastCursor + cursorsPerRow - 1) / cursorsPerRow);
     m_cursorAtlas.width = image.width();
     m_cursorAtlas.height = image.height();
     createCursorTexture(&m_cursorAtlas.texture, image);
@@ -137,10 +157,10 @@ void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
     if (cursor->shape() != Qt::BitmapCursor) { // standard cursor
         const float ws = (float)m_cursorAtlas.cursorWidth / m_cursorAtlas.width,
                     hs = (float)m_cursorAtlas.cursorHeight / m_cursorAtlas.height;
-        m_cursor.textureRect = QRectF(ws * (m_cursor.shape % CURSORS_PER_ROW),
-                                      hs * (m_cursor.shape / CURSORS_PER_ROW),
+        m_cursor.textureRect = QRectF(ws * (m_cursor.shape % m_cursorAtlas.cursorsPerRow),
+                                      hs * (m_cursor.shape / m_cursorAtlas.cursorsPerRow),
                                       ws, hs);
-        m_cursor.hotSpot = m_cursorAtlas.hotSpot;
+        m_cursor.hotSpot = m_cursorAtlas.hotSpots[m_cursor.shape];
         m_cursor.texture = m_cursorAtlas.texture;
         m_cursor.size = QSize(m_cursorAtlas.cursorWidth, m_cursorAtlas.cursorHeight);
     } else {
@@ -153,6 +173,11 @@ void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
 
     QRegion rgn = oldCursorRect | cursorRect();
     QWindowSystemInterface::handleSynchronousExposeEvent(window, rgn);
+}
+
+QRect QEglFSCursor::cursorRect() const
+{
+    return QRect(m_pos - m_cursor.hotSpot, m_cursor.size);
 }
 
 QPoint QEglFSCursor::pos() const

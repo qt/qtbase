@@ -61,7 +61,7 @@ public:
     QPoint pos() const;
     void setPos(const QPoint &pos);
 
-    QRect cursorRect() const { return QRect(m_pos, m_cursor.size); }
+    QRect cursorRect() const;
 
     void render();
 
@@ -74,11 +74,12 @@ private:
 
     // cursor atlas information
     struct CursorAtlas {
-        CursorAtlas() : texture(0), cursorWidth(0), cursorHeight(0) { }
+        CursorAtlas() : cursorsPerRow(0), texture(0), cursorWidth(0), cursorHeight(0) { }
+        int cursorsPerRow;
         uint texture;
         int width, height; // width and height of the the atlas
         int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
-        QPoint hotSpot;
+        QList<QPoint> hotSpots;
     } m_cursorAtlas;
 
     // current cursor information
