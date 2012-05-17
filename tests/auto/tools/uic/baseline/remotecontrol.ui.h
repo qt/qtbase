@@ -224,22 +224,22 @@ public:
 
     void retranslateUi(QMainWindow *RemoteControlClass)
     {
-        RemoteControlClass->setWindowTitle(QApplication::translate("RemoteControlClass", "RemoteControl", 0, QApplication::UnicodeUTF8));
-        actionQuit->setText(QApplication::translate("RemoteControlClass", "Quit", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("RemoteControlClass", "Start URL:", 0, QApplication::UnicodeUTF8));
-        launchButton->setText(QApplication::translate("RemoteControlClass", "Launch Qt HelpViewer", 0, QApplication::UnicodeUTF8));
-        actionGroupBox->setTitle(QApplication::translate("RemoteControlClass", "Actions", 0, QApplication::UnicodeUTF8));
-        label_2->setText(QApplication::translate("RemoteControlClass", "Search in Index:", 0, QApplication::UnicodeUTF8));
+        RemoteControlClass->setWindowTitle(QApplication::translate("RemoteControlClass", "RemoteControl", 0));
+        actionQuit->setText(QApplication::translate("RemoteControlClass", "Quit", 0));
+        label->setText(QApplication::translate("RemoteControlClass", "Start URL:", 0));
+        launchButton->setText(QApplication::translate("RemoteControlClass", "Launch Qt HelpViewer", 0));
+        actionGroupBox->setTitle(QApplication::translate("RemoteControlClass", "Actions", 0));
+        label_2->setText(QApplication::translate("RemoteControlClass", "Search in Index:", 0));
         indexButton->setText(QString());
-        label_4->setText(QApplication::translate("RemoteControlClass", "Identifier:", 0, QApplication::UnicodeUTF8));
+        label_4->setText(QApplication::translate("RemoteControlClass", "Identifier:", 0));
         identifierButton->setText(QString());
-        label_3->setText(QApplication::translate("RemoteControlClass", "Show URL:", 0, QApplication::UnicodeUTF8));
+        label_3->setText(QApplication::translate("RemoteControlClass", "Show URL:", 0));
         urlButton->setText(QString());
-        syncContentsButton->setText(QApplication::translate("RemoteControlClass", "Sync Contents", 0, QApplication::UnicodeUTF8));
-        contentsCheckBox->setText(QApplication::translate("RemoteControlClass", "Show Contents", 0, QApplication::UnicodeUTF8));
-        indexCheckBox->setText(QApplication::translate("RemoteControlClass", "Show Index", 0, QApplication::UnicodeUTF8));
-        bookmarksCheckBox->setText(QApplication::translate("RemoteControlClass", "Show Bookmarks", 0, QApplication::UnicodeUTF8));
-        menuFile->setTitle(QApplication::translate("RemoteControlClass", "File", 0, QApplication::UnicodeUTF8));
+        syncContentsButton->setText(QApplication::translate("RemoteControlClass", "Sync Contents", 0));
+        contentsCheckBox->setText(QApplication::translate("RemoteControlClass", "Show Contents", 0));
+        indexCheckBox->setText(QApplication::translate("RemoteControlClass", "Show Index", 0));
+        bookmarksCheckBox->setText(QApplication::translate("RemoteControlClass", "Show Bookmarks", 0));
+        menuFile->setTitle(QApplication::translate("RemoteControlClass", "File", 0));
     } // retranslateUi
 
 };

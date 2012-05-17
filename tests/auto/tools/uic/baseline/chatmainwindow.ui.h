@@ -150,25 +150,25 @@ public:
 
     void retranslateUi(QMainWindow *ChatMainWindow)
     {
-        ChatMainWindow->setWindowTitle(QApplication::translate("ChatMainWindow", "QtDBus Chat", 0, QApplication::UnicodeUTF8));
-        actionQuit->setText(QApplication::translate("ChatMainWindow", "Quit", 0, QApplication::UnicodeUTF8));
-        actionQuit->setShortcut(QApplication::translate("ChatMainWindow", "Ctrl+Q", 0, QApplication::UnicodeUTF8));
-        actionAboutQt->setText(QApplication::translate("ChatMainWindow", "About Qt...", 0, QApplication::UnicodeUTF8));
-        actionChangeNickname->setText(QApplication::translate("ChatMainWindow", "Change nickname...", 0, QApplication::UnicodeUTF8));
-        actionChangeNickname->setShortcut(QApplication::translate("ChatMainWindow", "Ctrl+N", 0, QApplication::UnicodeUTF8));
+        ChatMainWindow->setWindowTitle(QApplication::translate("ChatMainWindow", "QtDBus Chat", 0));
+        actionQuit->setText(QApplication::translate("ChatMainWindow", "Quit", 0));
+        actionQuit->setShortcut(QApplication::translate("ChatMainWindow", "Ctrl+Q", 0));
+        actionAboutQt->setText(QApplication::translate("ChatMainWindow", "About Qt...", 0));
+        actionChangeNickname->setText(QApplication::translate("ChatMainWindow", "Change nickname...", 0));
+        actionChangeNickname->setShortcut(QApplication::translate("ChatMainWindow", "Ctrl+N", 0));
 #ifndef QT_NO_TOOLTIP
-        chatHistory->setToolTip(QApplication::translate("ChatMainWindow", "Messages sent and received from other users", 0, QApplication::UnicodeUTF8));
+        chatHistory->setToolTip(QApplication::translate("ChatMainWindow", "Messages sent and received from other users", 0));
 #endif // QT_NO_TOOLTIP
-        label->setText(QApplication::translate("ChatMainWindow", "Message:", 0, QApplication::UnicodeUTF8));
+        label->setText(QApplication::translate("ChatMainWindow", "Message:", 0));
 #ifndef QT_NO_TOOLTIP
-        sendButton->setToolTip(QApplication::translate("ChatMainWindow", "Sends a message to other people", 0, QApplication::UnicodeUTF8));
+        sendButton->setToolTip(QApplication::translate("ChatMainWindow", "Sends a message to other people", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
         sendButton->setWhatsThis(QString());
 #endif // QT_NO_WHATSTHIS
-        sendButton->setText(QApplication::translate("ChatMainWindow", "Send", 0, QApplication::UnicodeUTF8));
-        menuQuit->setTitle(QApplication::translate("ChatMainWindow", "Help", 0, QApplication::UnicodeUTF8));
-        menuFile->setTitle(QApplication::translate("ChatMainWindow", "File", 0, QApplication::UnicodeUTF8));
+        sendButton->setText(QApplication::translate("ChatMainWindow", "Send", 0));
+        menuQuit->setTitle(QApplication::translate("ChatMainWindow", "Help", 0));
+        menuFile->setTitle(QApplication::translate("ChatMainWindow", "File", 0));
     } // retranslateUi
 
 };

@@ -128,13 +128,13 @@ public:
 
     void retranslateUi(QWidget *DownloadItem)
     {
-        DownloadItem->setWindowTitle(QApplication::translate("DownloadItem", "Form", 0, QApplication::UnicodeUTF8));
-        fileIcon->setText(QApplication::translate("DownloadItem", "Ico", 0, QApplication::UnicodeUTF8));
-        fileNameLabel->setProperty("text", QVariant(QApplication::translate("DownloadItem", "Filename", 0, QApplication::UnicodeUTF8)));
+        DownloadItem->setWindowTitle(QApplication::translate("DownloadItem", "Form", 0));
+        fileIcon->setText(QApplication::translate("DownloadItem", "Ico", 0));
+        fileNameLabel->setProperty("text", QVariant(QApplication::translate("DownloadItem", "Filename", 0)));
         downloadInfoLabel->setProperty("text", QVariant(QString()));
-        tryAgainButton->setText(QApplication::translate("DownloadItem", "Try Again", 0, QApplication::UnicodeUTF8));
-        stopButton->setText(QApplication::translate("DownloadItem", "Stop", 0, QApplication::UnicodeUTF8));
-        openButton->setText(QApplication::translate("DownloadItem", "Open", 0, QApplication::UnicodeUTF8));
+        tryAgainButton->setText(QApplication::translate("DownloadItem", "Try Again", 0));
+        stopButton->setText(QApplication::translate("DownloadItem", "Stop", 0));
+        openButton->setText(QApplication::translate("DownloadItem", "Open", 0));
     } // retranslateUi
 
 };

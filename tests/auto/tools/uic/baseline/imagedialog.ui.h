@@ -200,14 +200,14 @@ public:
 
     void retranslateUi(QDialog *dialog)
     {
-        dialog->setWindowTitle(QApplication::translate("ImageDialog", "Create Image", 0, QApplication::UnicodeUTF8));
-        widthLabel->setText(QApplication::translate("ImageDialog", "Width:", 0, QApplication::UnicodeUTF8));
-        heightLabel->setText(QApplication::translate("ImageDialog", "Height:", 0, QApplication::UnicodeUTF8));
-        nameLineEdit->setText(QApplication::translate("ImageDialog", "Untitled image", 0, QApplication::UnicodeUTF8));
-        nameLabel->setText(QApplication::translate("ImageDialog", "Name:", 0, QApplication::UnicodeUTF8));
-        colorDepthLabel->setText(QApplication::translate("ImageDialog", "Color depth:", 0, QApplication::UnicodeUTF8));
-        okButton->setText(QApplication::translate("ImageDialog", "OK", 0, QApplication::UnicodeUTF8));
-        cancelButton->setText(QApplication::translate("ImageDialog", "Cancel", 0, QApplication::UnicodeUTF8));
+        dialog->setWindowTitle(QApplication::translate("ImageDialog", "Create Image", 0));
+        widthLabel->setText(QApplication::translate("ImageDialog", "Width:", 0));
+        heightLabel->setText(QApplication::translate("ImageDialog", "Height:", 0));
+        nameLineEdit->setText(QApplication::translate("ImageDialog", "Untitled image", 0));
+        nameLabel->setText(QApplication::translate("ImageDialog", "Name:", 0));
+        colorDepthLabel->setText(QApplication::translate("ImageDialog", "Color depth:", 0));
+        okButton->setText(QApplication::translate("ImageDialog", "OK", 0));
+        cancelButton->setText(QApplication::translate("ImageDialog", "Cancel", 0));
     } // retranslateUi
 
 };

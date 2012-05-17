@@ -106,14 +106,14 @@ public:
 
     void retranslateUi(QWidget *FilterPage)
     {
-        FilterPage->setWindowTitle(QApplication::translate("FilterPage", "Form", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("FilterPage", "Filter attributes for current documentation (comma separated list):", 0, QApplication::UnicodeUTF8));
-        groupBox->setTitle(QApplication::translate("FilterPage", "Custom Filters", 0, QApplication::UnicodeUTF8));
+        FilterPage->setWindowTitle(QApplication::translate("FilterPage", "Form", 0));
+        label->setText(QApplication::translate("FilterPage", "Filter attributes for current documentation (comma separated list):", 0));
+        groupBox->setTitle(QApplication::translate("FilterPage", "Custom Filters", 0));
         QTreeWidgetItem *___qtreewidgetitem = customFilterWidget->headerItem();
-        ___qtreewidgetitem->setText(1, QApplication::translate("FilterPage", "2", 0, QApplication::UnicodeUTF8));
-        ___qtreewidgetitem->setText(0, QApplication::translate("FilterPage", "1", 0, QApplication::UnicodeUTF8));
-        addButton->setText(QApplication::translate("FilterPage", "Add", 0, QApplication::UnicodeUTF8));
-        removeButton->setText(QApplication::translate("FilterPage", "Remove", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem->setText(1, QApplication::translate("FilterPage", "2", 0));
+        ___qtreewidgetitem->setText(0, QApplication::translate("FilterPage", "1", 0));
+        addButton->setText(QApplication::translate("FilterPage", "Add", 0));
+        removeButton->setText(QApplication::translate("FilterPage", "Remove", 0));
     } // retranslateUi
 
 };

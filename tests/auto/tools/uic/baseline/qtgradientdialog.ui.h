@@ -106,7 +106,7 @@ public:
 
     void retranslateUi(QDialog *QtGradientDialog)
     {
-        QtGradientDialog->setWindowTitle(QApplication::translate("QtGradientDialog", "Edit Gradient", 0, QApplication::UnicodeUTF8));
+        QtGradientDialog->setWindowTitle(QApplication::translate("QtGradientDialog", "Edit Gradient", 0));
     } // retranslateUi
 
 };

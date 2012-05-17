@@ -157,18 +157,18 @@ public:
 
     void retranslateUi(QWidget *Browser)
     {
-        Browser->setWindowTitle(QApplication::translate("Browser", "Qt SQL Browser", 0, QApplication::UnicodeUTF8));
-        insertRowAction->setText(QApplication::translate("Browser", "&Insert Row", 0, QApplication::UnicodeUTF8));
+        Browser->setWindowTitle(QApplication::translate("Browser", "Qt SQL Browser", 0));
+        insertRowAction->setText(QApplication::translate("Browser", "&Insert Row", 0));
 #ifndef QT_NO_STATUSTIP
-        insertRowAction->setStatusTip(QApplication::translate("Browser", "Inserts a new Row", 0, QApplication::UnicodeUTF8));
+        insertRowAction->setStatusTip(QApplication::translate("Browser", "Inserts a new Row", 0));
 #endif // QT_NO_STATUSTIP
-        deleteRowAction->setText(QApplication::translate("Browser", "&Delete Row", 0, QApplication::UnicodeUTF8));
+        deleteRowAction->setText(QApplication::translate("Browser", "&Delete Row", 0));
 #ifndef QT_NO_STATUSTIP
-        deleteRowAction->setStatusTip(QApplication::translate("Browser", "Deletes the current Row", 0, QApplication::UnicodeUTF8));
+        deleteRowAction->setStatusTip(QApplication::translate("Browser", "Deletes the current Row", 0));
 #endif // QT_NO_STATUSTIP
-        groupBox->setTitle(QApplication::translate("Browser", "SQL Query", 0, QApplication::UnicodeUTF8));
-        clearButton->setText(QApplication::translate("Browser", "&Clear", 0, QApplication::UnicodeUTF8));
-        submitButton->setText(QApplication::translate("Browser", "&Submit", 0, QApplication::UnicodeUTF8));
+        groupBox->setTitle(QApplication::translate("Browser", "SQL Query", 0));
+        clearButton->setText(QApplication::translate("Browser", "&Clear", 0));
+        submitButton->setText(QApplication::translate("Browser", "&Submit", 0));
     } // retranslateUi
 
 };

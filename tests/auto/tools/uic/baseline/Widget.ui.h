@@ -61,13 +61,13 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Form", 0, QApplication::UnicodeUTF8));
+        Form->setWindowTitle(QApplication::translate("Form", "Form", 0));
         Alabel->setText(QApplication::translate("Form", "A label.\n"
 "One new line.\n"
 "Another new line.\n"
-"Last line.", 0, QApplication::UnicodeUTF8));
-        groupBox->setTitle(QApplication::translate("Form", "A Group Box", 0, QApplication::UnicodeUTF8));
-        pushButton->setText(QApplication::translate("Form", "PushButton", 0, QApplication::UnicodeUTF8));
+"Last line.", 0));
+        groupBox->setTitle(QApplication::translate("Form", "A Group Box", 0));
+        pushButton->setText(QApplication::translate("Form", "PushButton", 0));
     } // retranslateUi
 
 };

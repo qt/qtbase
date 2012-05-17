@@ -103,10 +103,10 @@ public:
 
     void retranslateUi(QDialog *TranslationSettings)
     {
-        TranslationSettings->setWindowTitle(QApplication::translate("TranslationSettings", "Qt Linguist - Translation file settings", 0, QApplication::UnicodeUTF8));
-        groupBox->setTitle(QApplication::translate("TranslationSettings", "Target language", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("TranslationSettings", "Language", 0, QApplication::UnicodeUTF8));
-        lblCountry->setText(QApplication::translate("TranslationSettings", "Country/Region", 0, QApplication::UnicodeUTF8));
+        TranslationSettings->setWindowTitle(QApplication::translate("TranslationSettings", "Qt Linguist - Translation file settings", 0));
+        groupBox->setTitle(QApplication::translate("TranslationSettings", "Target language", 0));
+        label->setText(QApplication::translate("TranslationSettings", "Language", 0));
+        lblCountry->setText(QApplication::translate("TranslationSettings", "Country/Region", 0));
     } // retranslateUi
 
 };

@@ -287,26 +287,26 @@ public:
 
     void retranslateUi(QDialog *QFileDialog)
     {
-        lookInLabel->setText(QApplication::translate("QFileDialog", "Look in:", 0, QApplication::UnicodeUTF8));
+        lookInLabel->setText(QApplication::translate("QFileDialog", "Look in:", 0));
 #ifndef QT_NO_TOOLTIP
-        backButton->setToolTip(QApplication::translate("QFileDialog", "Back", 0, QApplication::UnicodeUTF8));
+        backButton->setToolTip(QApplication::translate("QFileDialog", "Back", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        forwardButton->setToolTip(QApplication::translate("QFileDialog", "Forward", 0, QApplication::UnicodeUTF8));
+        forwardButton->setToolTip(QApplication::translate("QFileDialog", "Forward", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        toParentButton->setToolTip(QApplication::translate("QFileDialog", "Parent Directory", 0, QApplication::UnicodeUTF8));
+        toParentButton->setToolTip(QApplication::translate("QFileDialog", "Parent Directory", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        newFolderButton->setToolTip(QApplication::translate("QFileDialog", "Create New Folder", 0, QApplication::UnicodeUTF8));
+        newFolderButton->setToolTip(QApplication::translate("QFileDialog", "Create New Folder", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        listModeButton->setToolTip(QApplication::translate("QFileDialog", "List View", 0, QApplication::UnicodeUTF8));
+        listModeButton->setToolTip(QApplication::translate("QFileDialog", "List View", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        detailModeButton->setToolTip(QApplication::translate("QFileDialog", "Detail View", 0, QApplication::UnicodeUTF8));
+        detailModeButton->setToolTip(QApplication::translate("QFileDialog", "Detail View", 0));
 #endif // QT_NO_TOOLTIP
-        fileTypeLabel->setText(QApplication::translate("QFileDialog", "Files of type:", 0, QApplication::UnicodeUTF8));
+        fileTypeLabel->setText(QApplication::translate("QFileDialog", "Files of type:", 0));
         Q_UNUSED(QFileDialog);
     } // retranslateUi
 

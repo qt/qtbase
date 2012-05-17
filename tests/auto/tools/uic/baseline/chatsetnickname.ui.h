@@ -116,10 +116,10 @@ public:
 
     void retranslateUi(QDialog *NicknameDialog)
     {
-        NicknameDialog->setWindowTitle(QApplication::translate("NicknameDialog", "Set nickname", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("NicknameDialog", "New nickname:", 0, QApplication::UnicodeUTF8));
-        okButton->setText(QApplication::translate("NicknameDialog", "OK", 0, QApplication::UnicodeUTF8));
-        cancelButton->setText(QApplication::translate("NicknameDialog", "Cancel", 0, QApplication::UnicodeUTF8));
+        NicknameDialog->setWindowTitle(QApplication::translate("NicknameDialog", "Set nickname", 0));
+        label->setText(QApplication::translate("NicknameDialog", "New nickname:", 0));
+        okButton->setText(QApplication::translate("NicknameDialog", "OK", 0));
+        cancelButton->setText(QApplication::translate("NicknameDialog", "Cancel", 0));
     } // retranslateUi
 
 };

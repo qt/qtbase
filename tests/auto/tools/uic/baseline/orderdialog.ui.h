@@ -147,13 +147,13 @@ public:
 
     void retranslateUi(QDialog *qdesigner_internal__OrderDialog)
     {
-        qdesigner_internal__OrderDialog->setWindowTitle(QApplication::translate("qdesigner_internal::OrderDialog", "Change Page Order", 0, QApplication::UnicodeUTF8));
-        groupBox->setTitle(QApplication::translate("qdesigner_internal::OrderDialog", "Page Order", 0, QApplication::UnicodeUTF8));
+        qdesigner_internal__OrderDialog->setWindowTitle(QApplication::translate("qdesigner_internal::OrderDialog", "Change Page Order", 0));
+        groupBox->setTitle(QApplication::translate("qdesigner_internal::OrderDialog", "Page Order", 0));
 #ifndef QT_NO_TOOLTIP
-        upButton->setToolTip(QApplication::translate("qdesigner_internal::OrderDialog", "Move page up", 0, QApplication::UnicodeUTF8));
+        upButton->setToolTip(QApplication::translate("qdesigner_internal::OrderDialog", "Move page up", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        downButton->setToolTip(QApplication::translate("qdesigner_internal::OrderDialog", "Move page down", 0, QApplication::UnicodeUTF8));
+        downButton->setToolTip(QApplication::translate("qdesigner_internal::OrderDialog", "Move page down", 0));
 #endif // QT_NO_TOOLTIP
     } // retranslateUi
 

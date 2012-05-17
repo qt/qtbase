@@ -154,11 +154,11 @@ public:
 
     void retranslateUi(QDialog *PreferencesDialog)
     {
-        PreferencesDialog->setWindowTitle(QApplication::translate("PreferencesDialog", "Preferences", 0, QApplication::UnicodeUTF8));
-        m_uiModeGroupBox->setTitle(QApplication::translate("PreferencesDialog", "User Interface Mode", 0, QApplication::UnicodeUTF8));
-        m_templatePathGroupBox->setTitle(QApplication::translate("PreferencesDialog", "Additional Template Paths", 0, QApplication::UnicodeUTF8));
-        m_addTemplatePathButton->setText(QApplication::translate("PreferencesDialog", "...", 0, QApplication::UnicodeUTF8));
-        m_removeTemplatePathButton->setText(QApplication::translate("PreferencesDialog", "...", 0, QApplication::UnicodeUTF8));
+        PreferencesDialog->setWindowTitle(QApplication::translate("PreferencesDialog", "Preferences", 0));
+        m_uiModeGroupBox->setTitle(QApplication::translate("PreferencesDialog", "User Interface Mode", 0));
+        m_templatePathGroupBox->setTitle(QApplication::translate("PreferencesDialog", "Additional Template Paths", 0));
+        m_addTemplatePathButton->setText(QApplication::translate("PreferencesDialog", "...", 0));
+        m_removeTemplatePathButton->setText(QApplication::translate("PreferencesDialog", "...", 0));
     } // retranslateUi
 
 };

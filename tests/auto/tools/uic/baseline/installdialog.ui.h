@@ -124,13 +124,13 @@ public:
 
     void retranslateUi(QDialog *InstallDialog)
     {
-        InstallDialog->setWindowTitle(QApplication::translate("InstallDialog", "Install Documentation", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("InstallDialog", "Available Documentation:", 0, QApplication::UnicodeUTF8));
-        installButton->setText(QApplication::translate("InstallDialog", "Install", 0, QApplication::UnicodeUTF8));
-        cancelButton->setText(QApplication::translate("InstallDialog", "Cancel", 0, QApplication::UnicodeUTF8));
-        closeButton->setText(QApplication::translate("InstallDialog", "Close", 0, QApplication::UnicodeUTF8));
-        label_4->setText(QApplication::translate("InstallDialog", "Installation Path:", 0, QApplication::UnicodeUTF8));
-        browseButton->setText(QApplication::translate("InstallDialog", "...", 0, QApplication::UnicodeUTF8));
+        InstallDialog->setWindowTitle(QApplication::translate("InstallDialog", "Install Documentation", 0));
+        label->setText(QApplication::translate("InstallDialog", "Available Documentation:", 0));
+        installButton->setText(QApplication::translate("InstallDialog", "Install", 0));
+        cancelButton->setText(QApplication::translate("InstallDialog", "Cancel", 0));
+        closeButton->setText(QApplication::translate("InstallDialog", "Close", 0));
+        label_4->setText(QApplication::translate("InstallDialog", "Installation Path:", 0));
+        browseButton->setText(QApplication::translate("InstallDialog", "...", 0));
     } // retranslateUi
 
 };

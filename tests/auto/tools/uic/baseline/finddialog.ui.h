@@ -208,40 +208,40 @@ public:
 
     void retranslateUi(QDialog *FindDialog)
     {
-        FindDialog->setWindowTitle(QApplication::translate("FindDialog", "Find", 0, QApplication::UnicodeUTF8));
+        FindDialog->setWindowTitle(QApplication::translate("FindDialog", "Find", 0));
 #ifndef QT_NO_WHATSTHIS
-        FindDialog->setWhatsThis(QApplication::translate("FindDialog", "This window allows you to search for some text in the translation source file.", 0, QApplication::UnicodeUTF8));
+        FindDialog->setWhatsThis(QApplication::translate("FindDialog", "This window allows you to search for some text in the translation source file.", 0));
 #endif // QT_NO_WHATSTHIS
-        findWhat->setText(QApplication::translate("FindDialog", "&Find what:", 0, QApplication::UnicodeUTF8));
+        findWhat->setText(QApplication::translate("FindDialog", "&Find what:", 0));
 #ifndef QT_NO_WHATSTHIS
-        led->setWhatsThis(QApplication::translate("FindDialog", "Type in the text to search for.", 0, QApplication::UnicodeUTF8));
+        led->setWhatsThis(QApplication::translate("FindDialog", "Type in the text to search for.", 0));
 #endif // QT_NO_WHATSTHIS
-        groupBox->setTitle(QApplication::translate("FindDialog", "Options", 0, QApplication::UnicodeUTF8));
+        groupBox->setTitle(QApplication::translate("FindDialog", "Options", 0));
 #ifndef QT_NO_WHATSTHIS
-        sourceText->setWhatsThis(QApplication::translate("FindDialog", "Source texts are searched when checked.", 0, QApplication::UnicodeUTF8));
+        sourceText->setWhatsThis(QApplication::translate("FindDialog", "Source texts are searched when checked.", 0));
 #endif // QT_NO_WHATSTHIS
-        sourceText->setText(QApplication::translate("FindDialog", "&Source texts", 0, QApplication::UnicodeUTF8));
+        sourceText->setText(QApplication::translate("FindDialog", "&Source texts", 0));
 #ifndef QT_NO_WHATSTHIS
-        translations->setWhatsThis(QApplication::translate("FindDialog", "Translations are searched when checked.", 0, QApplication::UnicodeUTF8));
+        translations->setWhatsThis(QApplication::translate("FindDialog", "Translations are searched when checked.", 0));
 #endif // QT_NO_WHATSTHIS
-        translations->setText(QApplication::translate("FindDialog", "&Translations", 0, QApplication::UnicodeUTF8));
+        translations->setText(QApplication::translate("FindDialog", "&Translations", 0));
 #ifndef QT_NO_WHATSTHIS
-        matchCase->setWhatsThis(QApplication::translate("FindDialog", "Texts such as 'TeX' and 'tex' are considered as different when checked.", 0, QApplication::UnicodeUTF8));
+        matchCase->setWhatsThis(QApplication::translate("FindDialog", "Texts such as 'TeX' and 'tex' are considered as different when checked.", 0));
 #endif // QT_NO_WHATSTHIS
-        matchCase->setText(QApplication::translate("FindDialog", "&Match case", 0, QApplication::UnicodeUTF8));
+        matchCase->setText(QApplication::translate("FindDialog", "&Match case", 0));
 #ifndef QT_NO_WHATSTHIS
-        comments->setWhatsThis(QApplication::translate("FindDialog", "Comments and contexts are searched when checked.", 0, QApplication::UnicodeUTF8));
+        comments->setWhatsThis(QApplication::translate("FindDialog", "Comments and contexts are searched when checked.", 0));
 #endif // QT_NO_WHATSTHIS
-        comments->setText(QApplication::translate("FindDialog", "&Comments", 0, QApplication::UnicodeUTF8));
-        ignoreAccelerators->setText(QApplication::translate("FindDialog", "Ignore &accelerators", 0, QApplication::UnicodeUTF8));
+        comments->setText(QApplication::translate("FindDialog", "&Comments", 0));
+        ignoreAccelerators->setText(QApplication::translate("FindDialog", "Ignore &accelerators", 0));
 #ifndef QT_NO_WHATSTHIS
-        findNxt->setWhatsThis(QApplication::translate("FindDialog", "Click here to find the next occurrence of the text you typed in.", 0, QApplication::UnicodeUTF8));
+        findNxt->setWhatsThis(QApplication::translate("FindDialog", "Click here to find the next occurrence of the text you typed in.", 0));
 #endif // QT_NO_WHATSTHIS
-        findNxt->setText(QApplication::translate("FindDialog", "Find Next", 0, QApplication::UnicodeUTF8));
+        findNxt->setText(QApplication::translate("FindDialog", "Find Next", 0));
 #ifndef QT_NO_WHATSTHIS
-        cancel->setWhatsThis(QApplication::translate("FindDialog", "Click here to close this window.", 0, QApplication::UnicodeUTF8));
+        cancel->setWhatsThis(QApplication::translate("FindDialog", "Click here to close this window.", 0));
 #endif // QT_NO_WHATSTHIS
-        cancel->setText(QApplication::translate("FindDialog", "Cancel", 0, QApplication::UnicodeUTF8));
+        cancel->setText(QApplication::translate("FindDialog", "Cancel", 0));
     } // retranslateUi
 
 };

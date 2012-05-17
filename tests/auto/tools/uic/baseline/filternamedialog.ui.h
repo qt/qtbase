@@ -80,8 +80,8 @@ public:
 
     void retranslateUi(QDialog *FilterNameDialogClass)
     {
-        FilterNameDialogClass->setWindowTitle(QApplication::translate("FilterNameDialogClass", "FilterNameDialog", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("FilterNameDialogClass", "Filter Name:", 0, QApplication::UnicodeUTF8));
+        FilterNameDialogClass->setWindowTitle(QApplication::translate("FilterNameDialogClass", "FilterNameDialog", 0));
+        label->setText(QApplication::translate("FilterNameDialogClass", "Filter Name:", 0));
     } // retranslateUi
 
 };

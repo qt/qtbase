@@ -220,88 +220,88 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", 0, QApplication::UnicodeUTF8));
-        exitAction->setText(QApplication::translate("MainWindow", "&Exit", 0, QApplication::UnicodeUTF8));
-        aboutQtAction->setText(QApplication::translate("MainWindow", "About Qt", 0, QApplication::UnicodeUTF8));
-        editStyleAction->setText(QApplication::translate("MainWindow", "Edit &Style", 0, QApplication::UnicodeUTF8));
-        aboutAction->setText(QApplication::translate("MainWindow", "About", 0, QApplication::UnicodeUTF8));
-        nameLabel->setText(QApplication::translate("MainWindow", "&Name:", 0, QApplication::UnicodeUTF8));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", 0));
+        exitAction->setText(QApplication::translate("MainWindow", "&Exit", 0));
+        aboutQtAction->setText(QApplication::translate("MainWindow", "About Qt", 0));
+        editStyleAction->setText(QApplication::translate("MainWindow", "Edit &Style", 0));
+        aboutAction->setText(QApplication::translate("MainWindow", "About", 0));
+        nameLabel->setText(QApplication::translate("MainWindow", "&Name:", 0));
         nameCombo->clear();
         nameCombo->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Girish", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "Jasmin", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "Simon", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "Zack", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("MainWindow", "Girish", 0)
+         << QApplication::translate("MainWindow", "Jasmin", 0)
+         << QApplication::translate("MainWindow", "Simon", 0)
+         << QApplication::translate("MainWindow", "Zack", 0)
         );
 #ifndef QT_NO_TOOLTIP
-        nameCombo->setToolTip(QApplication::translate("MainWindow", "Specify your name", 0, QApplication::UnicodeUTF8));
+        nameCombo->setToolTip(QApplication::translate("MainWindow", "Specify your name", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        femaleRadioButton->setToolTip(QApplication::translate("MainWindow", "Check this if you are female", 0, QApplication::UnicodeUTF8));
+        femaleRadioButton->setToolTip(QApplication::translate("MainWindow", "Check this if you are female", 0));
 #endif // QT_NO_TOOLTIP
-        femaleRadioButton->setText(QApplication::translate("MainWindow", "&Female", 0, QApplication::UnicodeUTF8));
+        femaleRadioButton->setText(QApplication::translate("MainWindow", "&Female", 0));
 #ifndef QT_NO_TOOLTIP
-        agreeCheckBox->setToolTip(QApplication::translate("MainWindow", "Please read the license before checking this", 0, QApplication::UnicodeUTF8));
+        agreeCheckBox->setToolTip(QApplication::translate("MainWindow", "Please read the license before checking this", 0));
 #endif // QT_NO_TOOLTIP
-        agreeCheckBox->setText(QApplication::translate("MainWindow", "I &accept the terms and conditions", 0, QApplication::UnicodeUTF8));
+        agreeCheckBox->setText(QApplication::translate("MainWindow", "I &accept the terms and conditions", 0));
 #ifndef QT_NO_TOOLTIP
-        maleRadioButton->setToolTip(QApplication::translate("MainWindow", "Check this if you are male", 0, QApplication::UnicodeUTF8));
+        maleRadioButton->setToolTip(QApplication::translate("MainWindow", "Check this if you are male", 0));
 #endif // QT_NO_TOOLTIP
-        maleRadioButton->setText(QApplication::translate("MainWindow", "&Male", 0, QApplication::UnicodeUTF8));
-        genderLabel->setText(QApplication::translate("MainWindow", "Gender:", 0, QApplication::UnicodeUTF8));
+        maleRadioButton->setText(QApplication::translate("MainWindow", "&Male", 0));
+        genderLabel->setText(QApplication::translate("MainWindow", "Gender:", 0));
 #ifndef QT_NO_TOOLTIP
-        ageSpinBox->setToolTip(QApplication::translate("MainWindow", "Specify your age", 0, QApplication::UnicodeUTF8));
+        ageSpinBox->setToolTip(QApplication::translate("MainWindow", "Specify your age", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_STATUSTIP
-        ageSpinBox->setStatusTip(QApplication::translate("MainWindow", "Specify your age here", 0, QApplication::UnicodeUTF8));
+        ageSpinBox->setStatusTip(QApplication::translate("MainWindow", "Specify your age here", 0));
 #endif // QT_NO_STATUSTIP
-        ageLabel->setText(QApplication::translate("MainWindow", "&Age:", 0, QApplication::UnicodeUTF8));
-        passwordLabel->setText(QApplication::translate("MainWindow", "&Password:", 0, QApplication::UnicodeUTF8));
+        ageLabel->setText(QApplication::translate("MainWindow", "&Age:", 0));
+        passwordLabel->setText(QApplication::translate("MainWindow", "&Password:", 0));
 #ifndef QT_NO_TOOLTIP
-        passwordEdit->setToolTip(QApplication::translate("MainWindow", "Specify your password", 0, QApplication::UnicodeUTF8));
+        passwordEdit->setToolTip(QApplication::translate("MainWindow", "Specify your password", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_STATUSTIP
-        passwordEdit->setStatusTip(QApplication::translate("MainWindow", "Specify your password here", 0, QApplication::UnicodeUTF8));
+        passwordEdit->setStatusTip(QApplication::translate("MainWindow", "Specify your password here", 0));
 #endif // QT_NO_STATUSTIP
-        passwordEdit->setText(QApplication::translate("MainWindow", "Password", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("MainWindow", "Profession", 0, QApplication::UnicodeUTF8));
-        countryLabel->setText(QApplication::translate("MainWindow", "&Country", 0, QApplication::UnicodeUTF8));
+        passwordEdit->setText(QApplication::translate("MainWindow", "Password", 0));
+        label->setText(QApplication::translate("MainWindow", "Profession", 0));
+        countryLabel->setText(QApplication::translate("MainWindow", "&Country", 0));
 
         const bool __sortingEnabled = professionList->isSortingEnabled();
         professionList->setSortingEnabled(false);
         QListWidgetItem *___qlistwidgetitem = professionList->item(0);
-        ___qlistwidgetitem->setText(QApplication::translate("MainWindow", "Developer", 0, QApplication::UnicodeUTF8));
+        ___qlistwidgetitem->setText(QApplication::translate("MainWindow", "Developer", 0));
         QListWidgetItem *___qlistwidgetitem1 = professionList->item(1);
-        ___qlistwidgetitem1->setText(QApplication::translate("MainWindow", "Student", 0, QApplication::UnicodeUTF8));
+        ___qlistwidgetitem1->setText(QApplication::translate("MainWindow", "Student", 0));
         QListWidgetItem *___qlistwidgetitem2 = professionList->item(2);
-        ___qlistwidgetitem2->setText(QApplication::translate("MainWindow", "Fisherman", 0, QApplication::UnicodeUTF8));
+        ___qlistwidgetitem2->setText(QApplication::translate("MainWindow", "Fisherman", 0));
         professionList->setSortingEnabled(__sortingEnabled);
 
 #ifndef QT_NO_TOOLTIP
-        professionList->setToolTip(QApplication::translate("MainWindow", "Select your profession", 0, QApplication::UnicodeUTF8));
+        professionList->setToolTip(QApplication::translate("MainWindow", "Select your profession", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_STATUSTIP
-        professionList->setStatusTip(QApplication::translate("MainWindow", "Select your profession", 0, QApplication::UnicodeUTF8));
+        professionList->setStatusTip(QApplication::translate("MainWindow", "Select your profession", 0));
 #endif // QT_NO_STATUSTIP
 #ifndef QT_NO_WHATSTHIS
-        professionList->setWhatsThis(QApplication::translate("MainWindow", "Select your profession", 0, QApplication::UnicodeUTF8));
+        professionList->setWhatsThis(QApplication::translate("MainWindow", "Select your profession", 0));
 #endif // QT_NO_WHATSTHIS
         countryCombo->clear();
         countryCombo->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Germany", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "India", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "Norway", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "United States Of America", 0, QApplication::UnicodeUTF8)
-         << QApplication::translate("MainWindow", "United Kingdom", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("MainWindow", "Germany", 0)
+         << QApplication::translate("MainWindow", "India", 0)
+         << QApplication::translate("MainWindow", "Norway", 0)
+         << QApplication::translate("MainWindow", "United States Of America", 0)
+         << QApplication::translate("MainWindow", "United Kingdom", 0)
         );
 #ifndef QT_NO_TOOLTIP
-        countryCombo->setToolTip(QApplication::translate("MainWindow", "Specify your country", 0, QApplication::UnicodeUTF8));
+        countryCombo->setToolTip(QApplication::translate("MainWindow", "Specify your country", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_STATUSTIP
-        countryCombo->setStatusTip(QApplication::translate("MainWindow", "Specify your country here", 0, QApplication::UnicodeUTF8));
+        countryCombo->setStatusTip(QApplication::translate("MainWindow", "Specify your country here", 0));
 #endif // QT_NO_STATUSTIP
-        menu_File->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
-        menu_Help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
+        menu_File->setTitle(QApplication::translate("MainWindow", "&File", 0));
+        menu_Help->setTitle(QApplication::translate("MainWindow", "&Help", 0));
     } // retranslateUi
 
 };

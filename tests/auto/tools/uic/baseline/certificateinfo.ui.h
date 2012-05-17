@@ -94,9 +94,9 @@ public:
 
     void retranslateUi(QDialog *CertificateInfo)
     {
-        CertificateInfo->setWindowTitle(QApplication::translate("CertificateInfo", "Display Certificate Information", 0, QApplication::UnicodeUTF8));
-        groupBox->setTitle(QApplication::translate("CertificateInfo", "Certification Path", 0, QApplication::UnicodeUTF8));
-        groupBox_2->setTitle(QApplication::translate("CertificateInfo", "Certificate Information", 0, QApplication::UnicodeUTF8));
+        CertificateInfo->setWindowTitle(QApplication::translate("CertificateInfo", "Display Certificate Information", 0));
+        groupBox->setTitle(QApplication::translate("CertificateInfo", "Certification Path", 0));
+        groupBox_2->setTitle(QApplication::translate("CertificateInfo", "Certificate Information", 0));
     } // retranslateUi
 
 };

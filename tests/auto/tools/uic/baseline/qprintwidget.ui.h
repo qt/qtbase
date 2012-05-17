@@ -144,15 +144,15 @@ public:
 
     void retranslateUi(QWidget *QPrintWidget)
     {
-        QPrintWidget->setWindowTitle(QApplication::translate("QPrintWidget", "Form", 0, QApplication::UnicodeUTF8));
-        printerGroup->setTitle(QApplication::translate("QPrintWidget", "Printer", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("QPrintWidget", "&Name:", 0, QApplication::UnicodeUTF8));
-        properties->setText(QApplication::translate("QPrintWidget", "P&roperties", 0, QApplication::UnicodeUTF8));
-        label_2->setText(QApplication::translate("QPrintWidget", "Location:", 0, QApplication::UnicodeUTF8));
-        preview->setText(QApplication::translate("QPrintWidget", "Preview", 0, QApplication::UnicodeUTF8));
-        label_3->setText(QApplication::translate("QPrintWidget", "Type:", 0, QApplication::UnicodeUTF8));
-        lOutput->setText(QApplication::translate("QPrintWidget", "Output &file:", 0, QApplication::UnicodeUTF8));
-        fileBrowser->setText(QApplication::translate("QPrintWidget", "...", 0, QApplication::UnicodeUTF8));
+        QPrintWidget->setWindowTitle(QApplication::translate("QPrintWidget", "Form", 0));
+        printerGroup->setTitle(QApplication::translate("QPrintWidget", "Printer", 0));
+        label->setText(QApplication::translate("QPrintWidget", "&Name:", 0));
+        properties->setText(QApplication::translate("QPrintWidget", "P&roperties", 0));
+        label_2->setText(QApplication::translate("QPrintWidget", "Location:", 0));
+        preview->setText(QApplication::translate("QPrintWidget", "Preview", 0));
+        label_3->setText(QApplication::translate("QPrintWidget", "Type:", 0));
+        lOutput->setText(QApplication::translate("QPrintWidget", "Output &file:", 0));
+        fileBrowser->setText(QApplication::translate("QPrintWidget", "...", 0));
     } // retranslateUi
 
 };

@@ -312,77 +312,77 @@ public:
 
     void retranslateUi(QWidget *HelpDialog)
     {
-        HelpDialog->setWindowTitle(QApplication::translate("HelpDialog", "Help", 0, QApplication::UnicodeUTF8));
+        HelpDialog->setWindowTitle(QApplication::translate("HelpDialog", "Help", 0));
 #ifndef QT_NO_WHATSTHIS
-        HelpDialog->setWhatsThis(QApplication::translate("HelpDialog", "<b>Help</b><p>Choose the topic you want help on from the contents list, or search the index for keywords.</p>", 0, QApplication::UnicodeUTF8));
+        HelpDialog->setWhatsThis(QApplication::translate("HelpDialog", "<b>Help</b><p>Choose the topic you want help on from the contents list, or search the index for keywords.</p>", 0));
 #endif // QT_NO_WHATSTHIS
 #ifndef QT_NO_WHATSTHIS
-        tabWidget->setWhatsThis(QApplication::translate("HelpDialog", "Displays help topics organized by category, index or bookmarks. Another tab inherits the full text search.", 0, QApplication::UnicodeUTF8));
+        tabWidget->setWhatsThis(QApplication::translate("HelpDialog", "Displays help topics organized by category, index or bookmarks. Another tab inherits the full text search.", 0));
 #endif // QT_NO_WHATSTHIS
         QTreeWidgetItem *___qtreewidgetitem = listContents->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("HelpDialog", "column 1", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem->setText(0, QApplication::translate("HelpDialog", "column 1", 0));
 #ifndef QT_NO_WHATSTHIS
-        listContents->setWhatsThis(QApplication::translate("HelpDialog", "<b>Help topics organized by category.</b><p>Double-click an item to see the topics in that category. To view a topic, just double-click it.</p>", 0, QApplication::UnicodeUTF8));
+        listContents->setWhatsThis(QApplication::translate("HelpDialog", "<b>Help topics organized by category.</b><p>Double-click an item to see the topics in that category. To view a topic, just double-click it.</p>", 0));
 #endif // QT_NO_WHATSTHIS
-        tabWidget->setTabText(tabWidget->indexOf(contentPage), QApplication::translate("HelpDialog", "Con&tents", 0, QApplication::UnicodeUTF8));
-        TextLabel1->setText(QApplication::translate("HelpDialog", "&Look For:", 0, QApplication::UnicodeUTF8));
+        tabWidget->setTabText(tabWidget->indexOf(contentPage), QApplication::translate("HelpDialog", "Con&tents", 0));
+        TextLabel1->setText(QApplication::translate("HelpDialog", "&Look For:", 0));
 #ifndef QT_NO_TOOLTIP
-        editIndex->setToolTip(QApplication::translate("HelpDialog", "Enter keyword", 0, QApplication::UnicodeUTF8));
+        editIndex->setToolTip(QApplication::translate("HelpDialog", "Enter keyword", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        editIndex->setWhatsThis(QApplication::translate("HelpDialog", "<b>Enter a keyword.</b><p>The list will select an item that matches the entered string best.</p>", 0, QApplication::UnicodeUTF8));
+        editIndex->setWhatsThis(QApplication::translate("HelpDialog", "<b>Enter a keyword.</b><p>The list will select an item that matches the entered string best.</p>", 0));
 #endif // QT_NO_WHATSTHIS
 #ifndef QT_NO_WHATSTHIS
-        listIndex->setWhatsThis(QApplication::translate("HelpDialog", "<b>List of available help topics.</b><p>Double-click on an item to open its help page. If more than one is found, you must specify which page you want.</p>", 0, QApplication::UnicodeUTF8));
+        listIndex->setWhatsThis(QApplication::translate("HelpDialog", "<b>List of available help topics.</b><p>Double-click on an item to open its help page. If more than one is found, you must specify which page you want.</p>", 0));
 #endif // QT_NO_WHATSTHIS
-        tabWidget->setTabText(tabWidget->indexOf(indexPage), QApplication::translate("HelpDialog", "&Index", 0, QApplication::UnicodeUTF8));
+        tabWidget->setTabText(tabWidget->indexOf(indexPage), QApplication::translate("HelpDialog", "&Index", 0));
         QTreeWidgetItem *___qtreewidgetitem1 = listBookmarks->headerItem();
-        ___qtreewidgetitem1->setText(0, QApplication::translate("HelpDialog", "column 1", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem1->setText(0, QApplication::translate("HelpDialog", "column 1", 0));
 #ifndef QT_NO_WHATSTHIS
-        listBookmarks->setWhatsThis(QApplication::translate("HelpDialog", "Displays the list of bookmarks.", 0, QApplication::UnicodeUTF8));
+        listBookmarks->setWhatsThis(QApplication::translate("HelpDialog", "Displays the list of bookmarks.", 0));
 #endif // QT_NO_WHATSTHIS
 #ifndef QT_NO_TOOLTIP
-        buttonAdd->setToolTip(QApplication::translate("HelpDialog", "Add new bookmark", 0, QApplication::UnicodeUTF8));
+        buttonAdd->setToolTip(QApplication::translate("HelpDialog", "Add new bookmark", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        buttonAdd->setWhatsThis(QApplication::translate("HelpDialog", "Add the currently displayed page as a new bookmark.", 0, QApplication::UnicodeUTF8));
+        buttonAdd->setWhatsThis(QApplication::translate("HelpDialog", "Add the currently displayed page as a new bookmark.", 0));
 #endif // QT_NO_WHATSTHIS
-        buttonAdd->setText(QApplication::translate("HelpDialog", "&New", 0, QApplication::UnicodeUTF8));
+        buttonAdd->setText(QApplication::translate("HelpDialog", "&New", 0));
 #ifndef QT_NO_TOOLTIP
-        buttonRemove->setToolTip(QApplication::translate("HelpDialog", "Delete bookmark", 0, QApplication::UnicodeUTF8));
+        buttonRemove->setToolTip(QApplication::translate("HelpDialog", "Delete bookmark", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        buttonRemove->setWhatsThis(QApplication::translate("HelpDialog", "Delete the selected bookmark.", 0, QApplication::UnicodeUTF8));
+        buttonRemove->setWhatsThis(QApplication::translate("HelpDialog", "Delete the selected bookmark.", 0));
 #endif // QT_NO_WHATSTHIS
-        buttonRemove->setText(QApplication::translate("HelpDialog", "&Delete", 0, QApplication::UnicodeUTF8));
-        tabWidget->setTabText(tabWidget->indexOf(bookmarkPage), QApplication::translate("HelpDialog", "&Bookmarks", 0, QApplication::UnicodeUTF8));
-        TextLabel1_2->setText(QApplication::translate("HelpDialog", "Searching f&or:", 0, QApplication::UnicodeUTF8));
+        buttonRemove->setText(QApplication::translate("HelpDialog", "&Delete", 0));
+        tabWidget->setTabText(tabWidget->indexOf(bookmarkPage), QApplication::translate("HelpDialog", "&Bookmarks", 0));
+        TextLabel1_2->setText(QApplication::translate("HelpDialog", "Searching f&or:", 0));
 #ifndef QT_NO_TOOLTIP
-        termsEdit->setToolTip(QApplication::translate("HelpDialog", "Enter searchword(s).", 0, QApplication::UnicodeUTF8));
+        termsEdit->setToolTip(QApplication::translate("HelpDialog", "Enter searchword(s).", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        termsEdit->setWhatsThis(QApplication::translate("HelpDialog", "<b>Enter search word(s).</b><p>Enter here the word(s) you are looking for. The words may contain wildcards (*). For a sequence of words quote them.</p>", 0, QApplication::UnicodeUTF8));
+        termsEdit->setWhatsThis(QApplication::translate("HelpDialog", "<b>Enter search word(s).</b><p>Enter here the word(s) you are looking for. The words may contain wildcards (*). For a sequence of words quote them.</p>", 0));
 #endif // QT_NO_WHATSTHIS
 #ifndef QT_NO_WHATSTHIS
-        resultBox->setWhatsThis(QApplication::translate("HelpDialog", "<b>Found documents</b><p>This list contains all found documents from the last search. The documents are ordered, i.e. the first document has the most matches.</p>", 0, QApplication::UnicodeUTF8));
+        resultBox->setWhatsThis(QApplication::translate("HelpDialog", "<b>Found documents</b><p>This list contains all found documents from the last search. The documents are ordered, i.e. the first document has the most matches.</p>", 0));
 #endif // QT_NO_WHATSTHIS
-        TextLabel2->setText(QApplication::translate("HelpDialog", "Found &Documents:", 0, QApplication::UnicodeUTF8));
+        TextLabel2->setText(QApplication::translate("HelpDialog", "Found &Documents:", 0));
 #ifndef QT_NO_TOOLTIP
-        helpButton->setToolTip(QApplication::translate("HelpDialog", "Display the help page.", 0, QApplication::UnicodeUTF8));
+        helpButton->setToolTip(QApplication::translate("HelpDialog", "Display the help page.", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        helpButton->setWhatsThis(QApplication::translate("HelpDialog", "Display the help page for the full text search.", 0, QApplication::UnicodeUTF8));
+        helpButton->setWhatsThis(QApplication::translate("HelpDialog", "Display the help page for the full text search.", 0));
 #endif // QT_NO_WHATSTHIS
-        helpButton->setText(QApplication::translate("HelpDialog", "He&lp", 0, QApplication::UnicodeUTF8));
+        helpButton->setText(QApplication::translate("HelpDialog", "He&lp", 0));
 #ifndef QT_NO_TOOLTIP
-        searchButton->setToolTip(QApplication::translate("HelpDialog", "Start searching.", 0, QApplication::UnicodeUTF8));
+        searchButton->setToolTip(QApplication::translate("HelpDialog", "Start searching.", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        searchButton->setWhatsThis(QApplication::translate("HelpDialog", "Pressing this button starts the search.", 0, QApplication::UnicodeUTF8));
+        searchButton->setWhatsThis(QApplication::translate("HelpDialog", "Pressing this button starts the search.", 0));
 #endif // QT_NO_WHATSTHIS
-        searchButton->setText(QApplication::translate("HelpDialog", "&Search", 0, QApplication::UnicodeUTF8));
-        tabWidget->setTabText(tabWidget->indexOf(searchPage), QApplication::translate("HelpDialog", "&Search", 0, QApplication::UnicodeUTF8));
-        labelPrepare->setText(QApplication::translate("HelpDialog", "Preparing...", 0, QApplication::UnicodeUTF8));
+        searchButton->setText(QApplication::translate("HelpDialog", "&Search", 0));
+        tabWidget->setTabText(tabWidget->indexOf(searchPage), QApplication::translate("HelpDialog", "&Search", 0));
+        labelPrepare->setText(QApplication::translate("HelpDialog", "Preparing...", 0));
     } // retranslateUi
 
 };

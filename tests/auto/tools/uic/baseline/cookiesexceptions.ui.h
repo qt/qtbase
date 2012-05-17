@@ -161,15 +161,15 @@ public:
 
     void retranslateUi(QDialog *CookiesExceptionsDialog)
     {
-        CookiesExceptionsDialog->setWindowTitle(QApplication::translate("CookiesExceptionsDialog", "Cookie Exceptions", 0, QApplication::UnicodeUTF8));
-        newExceptionGroupBox->setTitle(QApplication::translate("CookiesExceptionsDialog", "New Exception", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("CookiesExceptionsDialog", "Domain:", 0, QApplication::UnicodeUTF8));
-        blockButton->setText(QApplication::translate("CookiesExceptionsDialog", "Block", 0, QApplication::UnicodeUTF8));
-        allowForSessionButton->setText(QApplication::translate("CookiesExceptionsDialog", "Allow For Session", 0, QApplication::UnicodeUTF8));
-        allowButton->setText(QApplication::translate("CookiesExceptionsDialog", "Allow", 0, QApplication::UnicodeUTF8));
-        ExceptionsGroupBox->setTitle(QApplication::translate("CookiesExceptionsDialog", "Exceptions", 0, QApplication::UnicodeUTF8));
-        removeButton->setText(QApplication::translate("CookiesExceptionsDialog", "&Remove", 0, QApplication::UnicodeUTF8));
-        removeAllButton->setText(QApplication::translate("CookiesExceptionsDialog", "Remove &All", 0, QApplication::UnicodeUTF8));
+        CookiesExceptionsDialog->setWindowTitle(QApplication::translate("CookiesExceptionsDialog", "Cookie Exceptions", 0));
+        newExceptionGroupBox->setTitle(QApplication::translate("CookiesExceptionsDialog", "New Exception", 0));
+        label->setText(QApplication::translate("CookiesExceptionsDialog", "Domain:", 0));
+        blockButton->setText(QApplication::translate("CookiesExceptionsDialog", "Block", 0));
+        allowForSessionButton->setText(QApplication::translate("CookiesExceptionsDialog", "Allow For Session", 0));
+        allowButton->setText(QApplication::translate("CookiesExceptionsDialog", "Allow", 0));
+        ExceptionsGroupBox->setTitle(QApplication::translate("CookiesExceptionsDialog", "Exceptions", 0));
+        removeButton->setText(QApplication::translate("CookiesExceptionsDialog", "&Remove", 0));
+        removeAllButton->setText(QApplication::translate("CookiesExceptionsDialog", "Remove &All", 0));
     } // retranslateUi
 
 };

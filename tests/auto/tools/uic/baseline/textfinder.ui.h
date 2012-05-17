@@ -97,9 +97,9 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Find Text", 0, QApplication::UnicodeUTF8));
-        searchLabel->setText(QApplication::translate("Form", "&Keyword:", 0, QApplication::UnicodeUTF8));
-        findButton->setText(QApplication::translate("Form", "&Find", 0, QApplication::UnicodeUTF8));
+        Form->setWindowTitle(QApplication::translate("Form", "Find Text", 0));
+        searchLabel->setText(QApplication::translate("Form", "&Keyword:", 0));
+        findButton->setText(QApplication::translate("Form", "&Find", 0));
     } // retranslateUi
 
 };

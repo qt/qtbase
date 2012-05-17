@@ -220,34 +220,34 @@ public:
 
     void retranslateUi(QDialog *TranslateDialog)
     {
-        TranslateDialog->setWindowTitle(QApplication::translate("TranslateDialog", "Qt Linguist", 0, QApplication::UnicodeUTF8));
+        TranslateDialog->setWindowTitle(QApplication::translate("TranslateDialog", "Qt Linguist", 0));
 #ifndef QT_NO_WHATSTHIS
-        TranslateDialog->setWhatsThis(QApplication::translate("TranslateDialog", "This window allows you to search for some text in the translation source file.", 0, QApplication::UnicodeUTF8));
+        TranslateDialog->setWhatsThis(QApplication::translate("TranslateDialog", "This window allows you to search for some text in the translation source file.", 0));
 #endif // QT_NO_WHATSTHIS
 #ifndef QT_NO_WHATSTHIS
-        ledTranslateTo->setWhatsThis(QApplication::translate("TranslateDialog", "Type in the text to search for.", 0, QApplication::UnicodeUTF8));
+        ledTranslateTo->setWhatsThis(QApplication::translate("TranslateDialog", "Type in the text to search for.", 0));
 #endif // QT_NO_WHATSTHIS
-        findWhat->setText(QApplication::translate("TranslateDialog", "Find &source text:", 0, QApplication::UnicodeUTF8));
-        translateTo->setText(QApplication::translate("TranslateDialog", "&Translate to:", 0, QApplication::UnicodeUTF8));
+        findWhat->setText(QApplication::translate("TranslateDialog", "Find &source text:", 0));
+        translateTo->setText(QApplication::translate("TranslateDialog", "&Translate to:", 0));
 #ifndef QT_NO_WHATSTHIS
-        ledFindWhat->setWhatsThis(QApplication::translate("TranslateDialog", "Type in the text to search for.", 0, QApplication::UnicodeUTF8));
+        ledFindWhat->setWhatsThis(QApplication::translate("TranslateDialog", "Type in the text to search for.", 0));
 #endif // QT_NO_WHATSTHIS
-        groupBox->setTitle(QApplication::translate("TranslateDialog", "Search options", 0, QApplication::UnicodeUTF8));
+        groupBox->setTitle(QApplication::translate("TranslateDialog", "Search options", 0));
 #ifndef QT_NO_WHATSTHIS
-        ckMatchCase->setWhatsThis(QApplication::translate("TranslateDialog", "Texts such as 'TeX' and 'tex' are considered as different when checked.", 0, QApplication::UnicodeUTF8));
+        ckMatchCase->setWhatsThis(QApplication::translate("TranslateDialog", "Texts such as 'TeX' and 'tex' are considered as different when checked.", 0));
 #endif // QT_NO_WHATSTHIS
-        ckMatchCase->setText(QApplication::translate("TranslateDialog", "Match &case", 0, QApplication::UnicodeUTF8));
-        ckMarkFinished->setText(QApplication::translate("TranslateDialog", "Mark new translation as &finished", 0, QApplication::UnicodeUTF8));
+        ckMatchCase->setText(QApplication::translate("TranslateDialog", "Match &case", 0));
+        ckMarkFinished->setText(QApplication::translate("TranslateDialog", "Mark new translation as &finished", 0));
 #ifndef QT_NO_WHATSTHIS
-        findNxt->setWhatsThis(QApplication::translate("TranslateDialog", "Click here to find the next occurrence of the text you typed in.", 0, QApplication::UnicodeUTF8));
+        findNxt->setWhatsThis(QApplication::translate("TranslateDialog", "Click here to find the next occurrence of the text you typed in.", 0));
 #endif // QT_NO_WHATSTHIS
-        findNxt->setText(QApplication::translate("TranslateDialog", "Find Next", 0, QApplication::UnicodeUTF8));
-        translate->setText(QApplication::translate("TranslateDialog", "Translate", 0, QApplication::UnicodeUTF8));
-        translateAll->setText(QApplication::translate("TranslateDialog", "Translate All", 0, QApplication::UnicodeUTF8));
+        findNxt->setText(QApplication::translate("TranslateDialog", "Find Next", 0));
+        translate->setText(QApplication::translate("TranslateDialog", "Translate", 0));
+        translateAll->setText(QApplication::translate("TranslateDialog", "Translate All", 0));
 #ifndef QT_NO_WHATSTHIS
-        cancel->setWhatsThis(QApplication::translate("TranslateDialog", "Click here to close this window.", 0, QApplication::UnicodeUTF8));
+        cancel->setWhatsThis(QApplication::translate("TranslateDialog", "Click here to close this window.", 0));
 #endif // QT_NO_WHATSTHIS
-        cancel->setText(QApplication::translate("TranslateDialog", "Cancel", 0, QApplication::UnicodeUTF8));
+        cancel->setText(QApplication::translate("TranslateDialog", "Cancel", 0));
     } // retranslateUi
 
 };

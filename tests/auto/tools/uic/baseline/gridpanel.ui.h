@@ -136,14 +136,14 @@ public:
 
     void retranslateUi(QWidget *qdesigner_internal__GridPanel)
     {
-        qdesigner_internal__GridPanel->setWindowTitle(QApplication::translate("qdesigner_internal::GridPanel", "Form", 0, QApplication::UnicodeUTF8));
-        m_gridGroupBox->setTitle(QApplication::translate("qdesigner_internal::GridPanel", "Grid", 0, QApplication::UnicodeUTF8));
-        m_visibleCheckBox->setText(QApplication::translate("qdesigner_internal::GridPanel", "Visible", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("qdesigner_internal::GridPanel", "Grid &X", 0, QApplication::UnicodeUTF8));
-        m_snapXCheckBox->setText(QApplication::translate("qdesigner_internal::GridPanel", "Snap", 0, QApplication::UnicodeUTF8));
-        m_resetButton->setText(QApplication::translate("qdesigner_internal::GridPanel", "Reset", 0, QApplication::UnicodeUTF8));
-        label_2->setText(QApplication::translate("qdesigner_internal::GridPanel", "Grid &Y", 0, QApplication::UnicodeUTF8));
-        m_snapYCheckBox->setText(QApplication::translate("qdesigner_internal::GridPanel", "Snap", 0, QApplication::UnicodeUTF8));
+        qdesigner_internal__GridPanel->setWindowTitle(QApplication::translate("qdesigner_internal::GridPanel", "Form", 0));
+        m_gridGroupBox->setTitle(QApplication::translate("qdesigner_internal::GridPanel", "Grid", 0));
+        m_visibleCheckBox->setText(QApplication::translate("qdesigner_internal::GridPanel", "Visible", 0));
+        label->setText(QApplication::translate("qdesigner_internal::GridPanel", "Grid &X", 0));
+        m_snapXCheckBox->setText(QApplication::translate("qdesigner_internal::GridPanel", "Snap", 0));
+        m_resetButton->setText(QApplication::translate("qdesigner_internal::GridPanel", "Reset", 0));
+        label_2->setText(QApplication::translate("qdesigner_internal::GridPanel", "Grid &Y", 0));
+        m_snapYCheckBox->setText(QApplication::translate("qdesigner_internal::GridPanel", "Snap", 0));
     } // retranslateUi
 
 };

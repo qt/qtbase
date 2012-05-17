@@ -84,10 +84,10 @@ public:
 
     void retranslateUi(QWidget *FilesPage)
     {
-        FilesPage->setWindowTitle(QApplication::translate("FilesPage", "Form", 0, QApplication::UnicodeUTF8));
-        fileLabel->setText(QApplication::translate("FilesPage", "Files:", 0, QApplication::UnicodeUTF8));
-        removeButton->setText(QApplication::translate("FilesPage", "Remove", 0, QApplication::UnicodeUTF8));
-        removeAllButton->setText(QApplication::translate("FilesPage", "Remove All", 0, QApplication::UnicodeUTF8));
+        FilesPage->setWindowTitle(QApplication::translate("FilesPage", "Form", 0));
+        fileLabel->setText(QApplication::translate("FilesPage", "Files:", 0));
+        removeButton->setText(QApplication::translate("FilesPage", "Remove", 0));
+        removeAllButton->setText(QApplication::translate("FilesPage", "Remove All", 0));
     } // retranslateUi
 
 };

@@ -91,9 +91,9 @@ public:
 
     void retranslateUi(QWidget *OutputPage)
     {
-        OutputPage->setWindowTitle(QApplication::translate("OutputPage", "Form", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("OutputPage", "Project file name:", 0, QApplication::UnicodeUTF8));
-        label_2->setText(QApplication::translate("OutputPage", "Collection file name:", 0, QApplication::UnicodeUTF8));
+        OutputPage->setWindowTitle(QApplication::translate("OutputPage", "Form", 0));
+        label->setText(QApplication::translate("OutputPage", "Project file name:", 0));
+        label_2->setText(QApplication::translate("OutputPage", "Collection file name:", 0));
     } // retranslateUi
 
 };

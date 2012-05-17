@@ -186,13 +186,13 @@ public:
 
     void retranslateUi(QDialog *Dialog)
     {
-        Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("Dialog", "Audio device:", 0, QApplication::UnicodeUTF8));
-        label_6->setText(QApplication::translate("Dialog", "Audio effect:", 0, QApplication::UnicodeUTF8));
-        crossFadeLabel->setText(QApplication::translate("Dialog", "Cross fade:", 0, QApplication::UnicodeUTF8));
-        label_3->setText(QApplication::translate("Dialog", "-10 Sec", 0, QApplication::UnicodeUTF8));
-        label_5->setText(QApplication::translate("Dialog", "0", 0, QApplication::UnicodeUTF8));
-        label_4->setText(QApplication::translate("Dialog", "10 Sec", 0, QApplication::UnicodeUTF8));
+        Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", 0));
+        label->setText(QApplication::translate("Dialog", "Audio device:", 0));
+        label_6->setText(QApplication::translate("Dialog", "Audio effect:", 0));
+        crossFadeLabel->setText(QApplication::translate("Dialog", "Cross fade:", 0));
+        label_3->setText(QApplication::translate("Dialog", "-10 Sec", 0));
+        label_5->setText(QApplication::translate("Dialog", "0", 0));
+        label_4->setText(QApplication::translate("Dialog", "10 Sec", 0));
     } // retranslateUi
 
 };

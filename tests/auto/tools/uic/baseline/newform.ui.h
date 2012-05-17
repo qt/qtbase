@@ -148,11 +148,11 @@ public:
 
     void retranslateUi(QDialog *NewForm)
     {
-        NewForm->setWindowTitle(QApplication::translate("NewForm", "New Form", 0, QApplication::UnicodeUTF8));
+        NewForm->setWindowTitle(QApplication::translate("NewForm", "New Form", 0));
         QTreeWidgetItem *___qtreewidgetitem = treeWidget->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("NewForm", "0", 0, QApplication::UnicodeUTF8));
-        lblPreview->setText(QApplication::translate("NewForm", "Choose a template for a preview", 0, QApplication::UnicodeUTF8));
-        chkShowOnStartup->setText(QApplication::translate("NewForm", "Show this Dialog on Startup", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem->setText(0, QApplication::translate("NewForm", "0", 0));
+        lblPreview->setText(QApplication::translate("NewForm", "Choose a template for a preview", 0));
+        chkShowOnStartup->setText(QApplication::translate("NewForm", "Show this Dialog on Startup", 0));
     } // retranslateUi
 
 };

@@ -157,10 +157,10 @@ public:
 
     void retranslateUi(QMainWindow *QueryWidget)
     {
-        QueryWidget->setWindowTitle(QApplication::translate("QueryWidget", "Recipes XQuery Example", 0, QApplication::UnicodeUTF8));
-        inputGroupBox->setTitle(QApplication::translate("QueryWidget", "Input Document", 0, QApplication::UnicodeUTF8));
-        queryGroupBox->setTitle(QApplication::translate("QueryWidget", "Select your query:", 0, QApplication::UnicodeUTF8));
-        outputGroupBox->setTitle(QApplication::translate("QueryWidget", "Output Document", 0, QApplication::UnicodeUTF8));
+        QueryWidget->setWindowTitle(QApplication::translate("QueryWidget", "Recipes XQuery Example", 0));
+        inputGroupBox->setTitle(QApplication::translate("QueryWidget", "Input Document", 0));
+        queryGroupBox->setTitle(QApplication::translate("QueryWidget", "Select your query:", 0));
+        outputGroupBox->setTitle(QApplication::translate("QueryWidget", "Output Document", 0));
     } // retranslateUi
 
 };

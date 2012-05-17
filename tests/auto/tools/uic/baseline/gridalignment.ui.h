@@ -65,11 +65,11 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Form", 0, QApplication::UnicodeUTF8));
-        pushButton->setText(QApplication::translate("Form", "Left", 0, QApplication::UnicodeUTF8));
-        pushButton_3->setText(QApplication::translate("Form", "Top", 0, QApplication::UnicodeUTF8));
-        pushButton_2->setText(QApplication::translate("Form", "Right", 0, QApplication::UnicodeUTF8));
-        pushButton_4->setText(QApplication::translate("Form", "Bottom", 0, QApplication::UnicodeUTF8));
+        Form->setWindowTitle(QApplication::translate("Form", "Form", 0));
+        pushButton->setText(QApplication::translate("Form", "Left", 0));
+        pushButton_3->setText(QApplication::translate("Form", "Top", 0));
+        pushButton_2->setText(QApplication::translate("Form", "Right", 0));
+        pushButton_4->setText(QApplication::translate("Form", "Bottom", 0));
     } // retranslateUi
 
 };

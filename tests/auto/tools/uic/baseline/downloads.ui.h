@@ -82,9 +82,9 @@ public:
 
     void retranslateUi(QDialog *DownloadDialog)
     {
-        DownloadDialog->setWindowTitle(QApplication::translate("DownloadDialog", "Downloads", 0, QApplication::UnicodeUTF8));
-        cleanupButton->setText(QApplication::translate("DownloadDialog", "Clean up", 0, QApplication::UnicodeUTF8));
-        itemCount->setText(QApplication::translate("DownloadDialog", "0 Items", 0, QApplication::UnicodeUTF8));
+        DownloadDialog->setWindowTitle(QApplication::translate("DownloadDialog", "Downloads", 0));
+        cleanupButton->setText(QApplication::translate("DownloadDialog", "Clean up", 0));
+        itemCount->setText(QApplication::translate("DownloadDialog", "0 Items", 0));
     } // retranslateUi
 
 };

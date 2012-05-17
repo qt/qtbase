@@ -160,15 +160,15 @@ public:
 
     void retranslateUi(QMainWindow *BookWindow)
     {
-        BookWindow->setWindowTitle(QApplication::translate("BookWindow", "Books", 0, QApplication::UnicodeUTF8));
-        groupBox->setTitle(QApplication::translate("BookWindow", "Books", 0, QApplication::UnicodeUTF8));
-        groupBox_2->setTitle(QApplication::translate("BookWindow", "Details", 0, QApplication::UnicodeUTF8));
-        label_5->setText(QApplication::translate("BookWindow", "<b>Title:</b>", 0, QApplication::UnicodeUTF8));
-        label_2_2_2_2->setText(QApplication::translate("BookWindow", "<b>Author: </b>", 0, QApplication::UnicodeUTF8));
-        label_3->setText(QApplication::translate("BookWindow", "<b>Genre:</b>", 0, QApplication::UnicodeUTF8));
-        label_4->setText(QApplication::translate("BookWindow", "<b>Year:</b>", 0, QApplication::UnicodeUTF8));
+        BookWindow->setWindowTitle(QApplication::translate("BookWindow", "Books", 0));
+        groupBox->setTitle(QApplication::translate("BookWindow", "Books", 0));
+        groupBox_2->setTitle(QApplication::translate("BookWindow", "Details", 0));
+        label_5->setText(QApplication::translate("BookWindow", "<b>Title:</b>", 0));
+        label_2_2_2_2->setText(QApplication::translate("BookWindow", "<b>Author: </b>", 0));
+        label_3->setText(QApplication::translate("BookWindow", "<b>Genre:</b>", 0));
+        label_4->setText(QApplication::translate("BookWindow", "<b>Year:</b>", 0));
         yearEdit->setPrefix(QString());
-        label->setText(QApplication::translate("BookWindow", "<b>Rating:</b>", 0, QApplication::UnicodeUTF8));
+        label->setText(QApplication::translate("BookWindow", "<b>Rating:</b>", 0));
     } // retranslateUi
 
 };

@@ -280,25 +280,25 @@ public:
 
     void retranslateUi(QWidget *QPrintSettingsOutput)
     {
-        QPrintSettingsOutput->setWindowTitle(QApplication::translate("QPrintSettingsOutput", "Form", 0, QApplication::UnicodeUTF8));
-        gbPrintRange->setTitle(QApplication::translate("QPrintSettingsOutput", "Print range", 0, QApplication::UnicodeUTF8));
-        printAll->setText(QApplication::translate("QPrintSettingsOutput", "Print all", 0, QApplication::UnicodeUTF8));
-        printRange->setText(QApplication::translate("QPrintSettingsOutput", "Pages from", 0, QApplication::UnicodeUTF8));
-        label_3->setText(QApplication::translate("QPrintSettingsOutput", "to", 0, QApplication::UnicodeUTF8));
-        printSelection->setText(QApplication::translate("QPrintSettingsOutput", "Selection", 0, QApplication::UnicodeUTF8));
-        groupBox->setTitle(QApplication::translate("QPrintSettingsOutput", "Output Settings", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("QPrintSettingsOutput", "Copies:", 0, QApplication::UnicodeUTF8));
-        collate->setText(QApplication::translate("QPrintSettingsOutput", "Collate", 0, QApplication::UnicodeUTF8));
-        reverse->setText(QApplication::translate("QPrintSettingsOutput", "Reverse", 0, QApplication::UnicodeUTF8));
-        tabs->setTabText(tabs->indexOf(copiesTab), QApplication::translate("QPrintSettingsOutput", "Copies", 0, QApplication::UnicodeUTF8));
-        colorMode->setTitle(QApplication::translate("QPrintSettingsOutput", "Color Mode", 0, QApplication::UnicodeUTF8));
-        color->setText(QApplication::translate("QPrintSettingsOutput", "Color", 0, QApplication::UnicodeUTF8));
-        grayscale->setText(QApplication::translate("QPrintSettingsOutput", "Grayscale", 0, QApplication::UnicodeUTF8));
-        duplex->setTitle(QApplication::translate("QPrintSettingsOutput", "Duplex Printing", 0, QApplication::UnicodeUTF8));
-        noDuplex->setText(QApplication::translate("QPrintSettingsOutput", "None", 0, QApplication::UnicodeUTF8));
-        duplexLong->setText(QApplication::translate("QPrintSettingsOutput", "Long side", 0, QApplication::UnicodeUTF8));
-        duplexShort->setText(QApplication::translate("QPrintSettingsOutput", "Short side", 0, QApplication::UnicodeUTF8));
-        tabs->setTabText(tabs->indexOf(optionsTab), QApplication::translate("QPrintSettingsOutput", "Options", 0, QApplication::UnicodeUTF8));
+        QPrintSettingsOutput->setWindowTitle(QApplication::translate("QPrintSettingsOutput", "Form", 0));
+        gbPrintRange->setTitle(QApplication::translate("QPrintSettingsOutput", "Print range", 0));
+        printAll->setText(QApplication::translate("QPrintSettingsOutput", "Print all", 0));
+        printRange->setText(QApplication::translate("QPrintSettingsOutput", "Pages from", 0));
+        label_3->setText(QApplication::translate("QPrintSettingsOutput", "to", 0));
+        printSelection->setText(QApplication::translate("QPrintSettingsOutput", "Selection", 0));
+        groupBox->setTitle(QApplication::translate("QPrintSettingsOutput", "Output Settings", 0));
+        label->setText(QApplication::translate("QPrintSettingsOutput", "Copies:", 0));
+        collate->setText(QApplication::translate("QPrintSettingsOutput", "Collate", 0));
+        reverse->setText(QApplication::translate("QPrintSettingsOutput", "Reverse", 0));
+        tabs->setTabText(tabs->indexOf(copiesTab), QApplication::translate("QPrintSettingsOutput", "Copies", 0));
+        colorMode->setTitle(QApplication::translate("QPrintSettingsOutput", "Color Mode", 0));
+        color->setText(QApplication::translate("QPrintSettingsOutput", "Color", 0));
+        grayscale->setText(QApplication::translate("QPrintSettingsOutput", "Grayscale", 0));
+        duplex->setTitle(QApplication::translate("QPrintSettingsOutput", "Duplex Printing", 0));
+        noDuplex->setText(QApplication::translate("QPrintSettingsOutput", "None", 0));
+        duplexLong->setText(QApplication::translate("QPrintSettingsOutput", "Long side", 0));
+        duplexShort->setText(QApplication::translate("QPrintSettingsOutput", "Short side", 0));
+        tabs->setTabText(tabs->indexOf(optionsTab), QApplication::translate("QPrintSettingsOutput", "Options", 0));
     } // retranslateUi
 
 };

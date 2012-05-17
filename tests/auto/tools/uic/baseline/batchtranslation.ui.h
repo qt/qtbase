@@ -230,16 +230,16 @@ public:
 
     void retranslateUi(QDialog *databaseTranslationDialog)
     {
-        databaseTranslationDialog->setWindowTitle(QApplication::translate("databaseTranslationDialog", "Qt Linguist - Batch Translation", 0, QApplication::UnicodeUTF8));
-        groupBox->setTitle(QApplication::translate("databaseTranslationDialog", "Options", 0, QApplication::UnicodeUTF8));
-        ckOnlyUntranslated->setText(QApplication::translate("databaseTranslationDialog", "Only translate entries with no translation", 0, QApplication::UnicodeUTF8));
-        ckMarkFinished->setText(QApplication::translate("databaseTranslationDialog", "Set translated entries to finished", 0, QApplication::UnicodeUTF8));
-        groupBox_2->setTitle(QApplication::translate("databaseTranslationDialog", "Phrase book preference", 0, QApplication::UnicodeUTF8));
-        moveUpButton->setText(QApplication::translate("databaseTranslationDialog", "Move up", 0, QApplication::UnicodeUTF8));
-        moveDownButton->setText(QApplication::translate("databaseTranslationDialog", "Move down", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("databaseTranslationDialog", "The batch translator will search through the selected phrasebooks in the order given above.", 0, QApplication::UnicodeUTF8));
-        runButton->setText(QApplication::translate("databaseTranslationDialog", "&Run", 0, QApplication::UnicodeUTF8));
-        cancelButton->setText(QApplication::translate("databaseTranslationDialog", "&Cancel", 0, QApplication::UnicodeUTF8));
+        databaseTranslationDialog->setWindowTitle(QApplication::translate("databaseTranslationDialog", "Qt Linguist - Batch Translation", 0));
+        groupBox->setTitle(QApplication::translate("databaseTranslationDialog", "Options", 0));
+        ckOnlyUntranslated->setText(QApplication::translate("databaseTranslationDialog", "Only translate entries with no translation", 0));
+        ckMarkFinished->setText(QApplication::translate("databaseTranslationDialog", "Set translated entries to finished", 0));
+        groupBox_2->setTitle(QApplication::translate("databaseTranslationDialog", "Phrase book preference", 0));
+        moveUpButton->setText(QApplication::translate("databaseTranslationDialog", "Move up", 0));
+        moveDownButton->setText(QApplication::translate("databaseTranslationDialog", "Move down", 0));
+        label->setText(QApplication::translate("databaseTranslationDialog", "The batch translator will search through the selected phrasebooks in the order given above.", 0));
+        runButton->setText(QApplication::translate("databaseTranslationDialog", "&Run", 0));
+        cancelButton->setText(QApplication::translate("databaseTranslationDialog", "&Cancel", 0));
     } // retranslateUi
 
 };

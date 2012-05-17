@@ -127,9 +127,9 @@ public:
 
     void retranslateUi(QWidget *WorldTimeForm)
     {
-        WorldTimeForm->setWindowTitle(QApplication::translate("WorldTimeForm", "World Time Clock", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("WorldTimeForm", "Current time:", 0, QApplication::UnicodeUTF8));
-        label_2->setText(QApplication::translate("WorldTimeForm", "Set time zone:", 0, QApplication::UnicodeUTF8));
+        WorldTimeForm->setWindowTitle(QApplication::translate("WorldTimeForm", "World Time Clock", 0));
+        label->setText(QApplication::translate("WorldTimeForm", "Current time:", 0));
+        label_2->setText(QApplication::translate("WorldTimeForm", "Set time zone:", 0));
     } // retranslateUi
 
 };

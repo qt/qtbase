@@ -720,46 +720,46 @@ public:
 
     void retranslateUi(QDialog *Config)
     {
-        Config->setWindowTitle(QApplication::translate("Config", "Configure", 0, QApplication::UnicodeUTF8));
-        ButtonGroup1->setTitle(QApplication::translate("Config", "Size", 0, QApplication::UnicodeUTF8));
-        size_176_220->setText(QApplication::translate("Config", "176x220 \"SmartPhone\"", 0, QApplication::UnicodeUTF8));
-        size_240_320->setText(QApplication::translate("Config", "240x320 \"PDA\"", 0, QApplication::UnicodeUTF8));
-        size_320_240->setText(QApplication::translate("Config", "320x240 \"TV\" / \"QVGA\"", 0, QApplication::UnicodeUTF8));
-        size_640_480->setText(QApplication::translate("Config", "640x480 \"VGA\"", 0, QApplication::UnicodeUTF8));
-        size_800_600->setText(QApplication::translate("Config", "800x600", 0, QApplication::UnicodeUTF8));
-        size_1024_768->setText(QApplication::translate("Config", "1024x768", 0, QApplication::UnicodeUTF8));
-        size_custom->setText(QApplication::translate("Config", "Custom", 0, QApplication::UnicodeUTF8));
-        ButtonGroup2->setTitle(QApplication::translate("Config", "Depth", 0, QApplication::UnicodeUTF8));
-        depth_1->setText(QApplication::translate("Config", "1 bit monochrome", 0, QApplication::UnicodeUTF8));
-        depth_4gray->setText(QApplication::translate("Config", "4 bit grayscale", 0, QApplication::UnicodeUTF8));
-        depth_8->setText(QApplication::translate("Config", "8 bit", 0, QApplication::UnicodeUTF8));
-        depth_12->setText(QApplication::translate("Config", "12 (16) bit", 0, QApplication::UnicodeUTF8));
-        depth_15->setText(QApplication::translate("Config", "15 bit", 0, QApplication::UnicodeUTF8));
-        depth_16->setText(QApplication::translate("Config", "16 bit", 0, QApplication::UnicodeUTF8));
-        depth_18->setText(QApplication::translate("Config", "18 bit", 0, QApplication::UnicodeUTF8));
-        depth_24->setText(QApplication::translate("Config", "24 bit", 0, QApplication::UnicodeUTF8));
-        depth_32->setText(QApplication::translate("Config", "32 bit", 0, QApplication::UnicodeUTF8));
-        depth_32_argb->setText(QApplication::translate("Config", "32 bit ARGB", 0, QApplication::UnicodeUTF8));
-        TextLabel1_3->setText(QApplication::translate("Config", "Skin", 0, QApplication::UnicodeUTF8));
+        Config->setWindowTitle(QApplication::translate("Config", "Configure", 0));
+        ButtonGroup1->setTitle(QApplication::translate("Config", "Size", 0));
+        size_176_220->setText(QApplication::translate("Config", "176x220 \"SmartPhone\"", 0));
+        size_240_320->setText(QApplication::translate("Config", "240x320 \"PDA\"", 0));
+        size_320_240->setText(QApplication::translate("Config", "320x240 \"TV\" / \"QVGA\"", 0));
+        size_640_480->setText(QApplication::translate("Config", "640x480 \"VGA\"", 0));
+        size_800_600->setText(QApplication::translate("Config", "800x600", 0));
+        size_1024_768->setText(QApplication::translate("Config", "1024x768", 0));
+        size_custom->setText(QApplication::translate("Config", "Custom", 0));
+        ButtonGroup2->setTitle(QApplication::translate("Config", "Depth", 0));
+        depth_1->setText(QApplication::translate("Config", "1 bit monochrome", 0));
+        depth_4gray->setText(QApplication::translate("Config", "4 bit grayscale", 0));
+        depth_8->setText(QApplication::translate("Config", "8 bit", 0));
+        depth_12->setText(QApplication::translate("Config", "12 (16) bit", 0));
+        depth_15->setText(QApplication::translate("Config", "15 bit", 0));
+        depth_16->setText(QApplication::translate("Config", "16 bit", 0));
+        depth_18->setText(QApplication::translate("Config", "18 bit", 0));
+        depth_24->setText(QApplication::translate("Config", "24 bit", 0));
+        depth_32->setText(QApplication::translate("Config", "32 bit", 0));
+        depth_32_argb->setText(QApplication::translate("Config", "32 bit ARGB", 0));
+        TextLabel1_3->setText(QApplication::translate("Config", "Skin", 0));
         skin->clear();
         skin->insertItems(0, QStringList()
-         << QApplication::translate("Config", "None", 0, QApplication::UnicodeUTF8)
+         << QApplication::translate("Config", "None", 0)
         );
-        touchScreen->setText(QApplication::translate("Config", "Emulate touch screen (no mouse move)", 0, QApplication::UnicodeUTF8));
-        lcdScreen->setText(QApplication::translate("Config", "Emulate LCD screen (Only with fixed zoom of 3.0 times magnification)", 0, QApplication::UnicodeUTF8));
-        TextLabel1->setText(QApplication::translate("Config", "<p>Note that any applications using the virtual framebuffer will be terminated if you change the Size or Depth <i>above</i>. You may freely modify the Gamma <i>below</i>.", 0, QApplication::UnicodeUTF8));
-        GroupBox1->setTitle(QApplication::translate("Config", "Gamma", 0, QApplication::UnicodeUTF8));
-        TextLabel3->setText(QApplication::translate("Config", "Blue", 0, QApplication::UnicodeUTF8));
-        blabel->setText(QApplication::translate("Config", "1.0", 0, QApplication::UnicodeUTF8));
-        TextLabel2->setText(QApplication::translate("Config", "Green", 0, QApplication::UnicodeUTF8));
-        glabel->setText(QApplication::translate("Config", "1.0", 0, QApplication::UnicodeUTF8));
-        TextLabel7->setText(QApplication::translate("Config", "All", 0, QApplication::UnicodeUTF8));
-        TextLabel8->setText(QApplication::translate("Config", "1.0", 0, QApplication::UnicodeUTF8));
-        TextLabel1_2->setText(QApplication::translate("Config", "Red", 0, QApplication::UnicodeUTF8));
-        rlabel->setText(QApplication::translate("Config", "1.0", 0, QApplication::UnicodeUTF8));
-        PushButton3->setText(QApplication::translate("Config", "Set all to 1.0", 0, QApplication::UnicodeUTF8));
-        buttonOk->setText(QApplication::translate("Config", "&OK", 0, QApplication::UnicodeUTF8));
-        buttonCancel->setText(QApplication::translate("Config", "&Cancel", 0, QApplication::UnicodeUTF8));
+        touchScreen->setText(QApplication::translate("Config", "Emulate touch screen (no mouse move)", 0));
+        lcdScreen->setText(QApplication::translate("Config", "Emulate LCD screen (Only with fixed zoom of 3.0 times magnification)", 0));
+        TextLabel1->setText(QApplication::translate("Config", "<p>Note that any applications using the virtual framebuffer will be terminated if you change the Size or Depth <i>above</i>. You may freely modify the Gamma <i>below</i>.", 0));
+        GroupBox1->setTitle(QApplication::translate("Config", "Gamma", 0));
+        TextLabel3->setText(QApplication::translate("Config", "Blue", 0));
+        blabel->setText(QApplication::translate("Config", "1.0", 0));
+        TextLabel2->setText(QApplication::translate("Config", "Green", 0));
+        glabel->setText(QApplication::translate("Config", "1.0", 0));
+        TextLabel7->setText(QApplication::translate("Config", "All", 0));
+        TextLabel8->setText(QApplication::translate("Config", "1.0", 0));
+        TextLabel1_2->setText(QApplication::translate("Config", "Red", 0));
+        rlabel->setText(QApplication::translate("Config", "1.0", 0));
+        PushButton3->setText(QApplication::translate("Config", "Set all to 1.0", 0));
+        buttonOk->setText(QApplication::translate("Config", "&OK", 0));
+        buttonCancel->setText(QApplication::translate("Config", "&Cancel", 0));
     } // retranslateUi
 
 };

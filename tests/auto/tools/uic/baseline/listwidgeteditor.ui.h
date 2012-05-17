@@ -189,28 +189,28 @@ public:
 
     void retranslateUi(QDialog *qdesigner_internal__ListWidgetEditor)
     {
-        qdesigner_internal__ListWidgetEditor->setWindowTitle(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Dialog", 0, QApplication::UnicodeUTF8));
-        groupBox->setTitle(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Items List", 0, QApplication::UnicodeUTF8));
+        qdesigner_internal__ListWidgetEditor->setWindowTitle(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Dialog", 0));
+        groupBox->setTitle(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Items List", 0));
 #ifndef QT_NO_TOOLTIP
-        listWidget->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Items List", 0, QApplication::UnicodeUTF8));
+        listWidget->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Items List", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        newItemButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "New Item", 0, QApplication::UnicodeUTF8));
+        newItemButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "New Item", 0));
 #endif // QT_NO_TOOLTIP
-        newItemButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "&New", 0, QApplication::UnicodeUTF8));
+        newItemButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "&New", 0));
 #ifndef QT_NO_TOOLTIP
-        deleteItemButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Delete Item", 0, QApplication::UnicodeUTF8));
+        deleteItemButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Delete Item", 0));
 #endif // QT_NO_TOOLTIP
-        deleteItemButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "&Delete", 0, QApplication::UnicodeUTF8));
+        deleteItemButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "&Delete", 0));
 #ifndef QT_NO_TOOLTIP
-        moveItemUpButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Move Item Up", 0, QApplication::UnicodeUTF8));
+        moveItemUpButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Move Item Up", 0));
 #endif // QT_NO_TOOLTIP
-        moveItemUpButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "U", 0, QApplication::UnicodeUTF8));
+        moveItemUpButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "U", 0));
 #ifndef QT_NO_TOOLTIP
-        moveItemDownButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Move Item Down", 0, QApplication::UnicodeUTF8));
+        moveItemDownButton->setToolTip(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Move Item Down", 0));
 #endif // QT_NO_TOOLTIP
-        moveItemDownButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "D", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Icon", 0, QApplication::UnicodeUTF8));
+        moveItemDownButton->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "D", 0));
+        label->setText(QApplication::translate("qdesigner_internal::ListWidgetEditor", "Icon", 0));
     } // retranslateUi
 
 };

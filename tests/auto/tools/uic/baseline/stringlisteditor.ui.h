@@ -231,25 +231,25 @@ public:
 
     void retranslateUi(QDialog *qdesigner_internal__Dialog)
     {
-        qdesigner_internal__Dialog->setWindowTitle(QApplication::translate("qdesigner_internal::Dialog", "Dialog", 0, QApplication::UnicodeUTF8));
-        groupBox->setTitle(QApplication::translate("qdesigner_internal::Dialog", "StringList", 0, QApplication::UnicodeUTF8));
+        qdesigner_internal__Dialog->setWindowTitle(QApplication::translate("qdesigner_internal::Dialog", "Dialog", 0));
+        groupBox->setTitle(QApplication::translate("qdesigner_internal::Dialog", "StringList", 0));
 #ifndef QT_NO_TOOLTIP
-        newButton->setToolTip(QApplication::translate("qdesigner_internal::Dialog", "New String", 0, QApplication::UnicodeUTF8));
+        newButton->setToolTip(QApplication::translate("qdesigner_internal::Dialog", "New String", 0));
 #endif // QT_NO_TOOLTIP
-        newButton->setText(QApplication::translate("qdesigner_internal::Dialog", "&New", 0, QApplication::UnicodeUTF8));
+        newButton->setText(QApplication::translate("qdesigner_internal::Dialog", "&New", 0));
 #ifndef QT_NO_TOOLTIP
-        deleteButton->setToolTip(QApplication::translate("qdesigner_internal::Dialog", "Delete String", 0, QApplication::UnicodeUTF8));
+        deleteButton->setToolTip(QApplication::translate("qdesigner_internal::Dialog", "Delete String", 0));
 #endif // QT_NO_TOOLTIP
-        deleteButton->setText(QApplication::translate("qdesigner_internal::Dialog", "&Delete", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("qdesigner_internal::Dialog", "&Value:", 0, QApplication::UnicodeUTF8));
+        deleteButton->setText(QApplication::translate("qdesigner_internal::Dialog", "&Delete", 0));
+        label->setText(QApplication::translate("qdesigner_internal::Dialog", "&Value:", 0));
 #ifndef QT_NO_TOOLTIP
-        upButton->setToolTip(QApplication::translate("qdesigner_internal::Dialog", "Move String Up", 0, QApplication::UnicodeUTF8));
+        upButton->setToolTip(QApplication::translate("qdesigner_internal::Dialog", "Move String Up", 0));
 #endif // QT_NO_TOOLTIP
-        upButton->setText(QApplication::translate("qdesigner_internal::Dialog", "Up", 0, QApplication::UnicodeUTF8));
+        upButton->setText(QApplication::translate("qdesigner_internal::Dialog", "Up", 0));
 #ifndef QT_NO_TOOLTIP
-        downButton->setToolTip(QApplication::translate("qdesigner_internal::Dialog", "Move String Down", 0, QApplication::UnicodeUTF8));
+        downButton->setToolTip(QApplication::translate("qdesigner_internal::Dialog", "Move String Down", 0));
 #endif // QT_NO_TOOLTIP
-        downButton->setText(QApplication::translate("qdesigner_internal::Dialog", "Down", 0, QApplication::UnicodeUTF8));
+        downButton->setText(QApplication::translate("qdesigner_internal::Dialog", "Down", 0));
     } // retranslateUi
 
 };

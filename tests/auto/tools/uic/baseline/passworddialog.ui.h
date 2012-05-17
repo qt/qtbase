@@ -102,11 +102,11 @@ public:
 
     void retranslateUi(QDialog *PasswordDialog)
     {
-        PasswordDialog->setWindowTitle(QApplication::translate("PasswordDialog", "Authentication Required", 0, QApplication::UnicodeUTF8));
-        iconLabel->setText(QApplication::translate("PasswordDialog", "DUMMY ICON", 0, QApplication::UnicodeUTF8));
-        introLabel->setText(QApplication::translate("PasswordDialog", "INTRO TEXT DUMMY", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("PasswordDialog", "Username:", 0, QApplication::UnicodeUTF8));
-        lblPassword->setText(QApplication::translate("PasswordDialog", "Password:", 0, QApplication::UnicodeUTF8));
+        PasswordDialog->setWindowTitle(QApplication::translate("PasswordDialog", "Authentication Required", 0));
+        iconLabel->setText(QApplication::translate("PasswordDialog", "DUMMY ICON", 0));
+        introLabel->setText(QApplication::translate("PasswordDialog", "INTRO TEXT DUMMY", 0));
+        label->setText(QApplication::translate("PasswordDialog", "Username:", 0));
+        lblPassword->setText(QApplication::translate("PasswordDialog", "Password:", 0));
     } // retranslateUi
 
 };

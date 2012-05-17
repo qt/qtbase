@@ -79,12 +79,12 @@ public:
 
     void retranslateUi(QWidget *Controller)
     {
-        Controller->setWindowTitle(QApplication::translate("Controller", "Controller", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("Controller", "Controller", 0, QApplication::UnicodeUTF8));
-        decelerate->setText(QApplication::translate("Controller", "Decelerate", 0, QApplication::UnicodeUTF8));
-        accelerate->setText(QApplication::translate("Controller", "Accelerate", 0, QApplication::UnicodeUTF8));
-        right->setText(QApplication::translate("Controller", "Right", 0, QApplication::UnicodeUTF8));
-        left->setText(QApplication::translate("Controller", "Left", 0, QApplication::UnicodeUTF8));
+        Controller->setWindowTitle(QApplication::translate("Controller", "Controller", 0));
+        label->setText(QApplication::translate("Controller", "Controller", 0));
+        decelerate->setText(QApplication::translate("Controller", "Decelerate", 0));
+        accelerate->setText(QApplication::translate("Controller", "Accelerate", 0));
+        right->setText(QApplication::translate("Controller", "Right", 0));
+        left->setText(QApplication::translate("Controller", "Left", 0));
     } // retranslateUi
 
 };

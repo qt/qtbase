@@ -327,54 +327,54 @@ public:
 
     void retranslateUi(QDialog *qdesigner_internal__TableWidgetEditor)
     {
-        qdesigner_internal__TableWidgetEditor->setWindowTitle(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Edit Table Widget", 0, QApplication::UnicodeUTF8));
-        itemsBox->setTitle(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Table Items", 0, QApplication::UnicodeUTF8));
+        qdesigner_internal__TableWidgetEditor->setWindowTitle(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Edit Table Widget", 0));
+        itemsBox->setTitle(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Table Items", 0));
 #ifndef QT_NO_TOOLTIP
-        tableWidget->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Table Items", 0, QApplication::UnicodeUTF8));
+        tableWidget->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Table Items", 0));
 #endif // QT_NO_TOOLTIP
-        label_3->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Icon", 0, QApplication::UnicodeUTF8));
-        columnsBox->setTitle(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Columns", 0, QApplication::UnicodeUTF8));
+        label_3->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Icon", 0));
+        columnsBox->setTitle(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Columns", 0));
 #ifndef QT_NO_TOOLTIP
-        columnsListWidget->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Table Columns", 0, QApplication::UnicodeUTF8));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_TOOLTIP
-        newColumnButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "New Column", 0, QApplication::UnicodeUTF8));
-#endif // QT_NO_TOOLTIP
-        newColumnButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "New", 0, QApplication::UnicodeUTF8));
-#ifndef QT_NO_TOOLTIP
-        deleteColumnButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Delete Column", 0, QApplication::UnicodeUTF8));
-#endif // QT_NO_TOOLTIP
-        deleteColumnButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Delete", 0, QApplication::UnicodeUTF8));
-#ifndef QT_NO_TOOLTIP
-        moveColumnUpButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Move Column Up", 0, QApplication::UnicodeUTF8));
-#endif // QT_NO_TOOLTIP
-        moveColumnUpButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "U", 0, QApplication::UnicodeUTF8));
-#ifndef QT_NO_TOOLTIP
-        moveColumnDownButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Move Column Down", 0, QApplication::UnicodeUTF8));
-#endif // QT_NO_TOOLTIP
-        moveColumnDownButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "D", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Icon", 0, QApplication::UnicodeUTF8));
-        rowsBox->setTitle(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Rows", 0, QApplication::UnicodeUTF8));
-#ifndef QT_NO_TOOLTIP
-        rowsListWidget->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Table Rows", 0, QApplication::UnicodeUTF8));
+        columnsListWidget->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Table Columns", 0));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        newRowButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "New Row", 0, QApplication::UnicodeUTF8));
+        newColumnButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "New Column", 0));
 #endif // QT_NO_TOOLTIP
-        newRowButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "New", 0, QApplication::UnicodeUTF8));
+        newColumnButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "New", 0));
 #ifndef QT_NO_TOOLTIP
-        deleteRowButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Delete Row", 0, QApplication::UnicodeUTF8));
+        deleteColumnButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Delete Column", 0));
 #endif // QT_NO_TOOLTIP
-        deleteRowButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Delete", 0, QApplication::UnicodeUTF8));
+        deleteColumnButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Delete", 0));
 #ifndef QT_NO_TOOLTIP
-        moveRowUpButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Move Row Up", 0, QApplication::UnicodeUTF8));
+        moveColumnUpButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Move Column Up", 0));
 #endif // QT_NO_TOOLTIP
-        moveRowUpButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "U", 0, QApplication::UnicodeUTF8));
+        moveColumnUpButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "U", 0));
 #ifndef QT_NO_TOOLTIP
-        moveRowDownButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Move Row Down", 0, QApplication::UnicodeUTF8));
+        moveColumnDownButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Move Column Down", 0));
 #endif // QT_NO_TOOLTIP
-        moveRowDownButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "D", 0, QApplication::UnicodeUTF8));
-        label_2->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Icon", 0, QApplication::UnicodeUTF8));
+        moveColumnDownButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "D", 0));
+        label->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Icon", 0));
+        rowsBox->setTitle(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Rows", 0));
+#ifndef QT_NO_TOOLTIP
+        rowsListWidget->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Table Rows", 0));
+#endif // QT_NO_TOOLTIP
+#ifndef QT_NO_TOOLTIP
+        newRowButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "New Row", 0));
+#endif // QT_NO_TOOLTIP
+        newRowButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "New", 0));
+#ifndef QT_NO_TOOLTIP
+        deleteRowButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Delete Row", 0));
+#endif // QT_NO_TOOLTIP
+        deleteRowButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Delete", 0));
+#ifndef QT_NO_TOOLTIP
+        moveRowUpButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Move Row Up", 0));
+#endif // QT_NO_TOOLTIP
+        moveRowUpButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "U", 0));
+#ifndef QT_NO_TOOLTIP
+        moveRowDownButton->setToolTip(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Move Row Down", 0));
+#endif // QT_NO_TOOLTIP
+        moveRowDownButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "D", 0));
+        label_2->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Icon", 0));
     } // retranslateUi
 
 };

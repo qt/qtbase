@@ -112,14 +112,14 @@ public:
 
     void retranslateUi(QGroupBox *PreviewConfigurationWidget)
     {
-        PreviewConfigurationWidget->setWindowTitle(QApplication::translate("PreviewConfigurationWidget", "Form", 0, QApplication::UnicodeUTF8));
-        PreviewConfigurationWidget->setTitle(QApplication::translate("PreviewConfigurationWidget", "Print/Preview Configuration", 0, QApplication::UnicodeUTF8));
-        m_styleLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Style", 0, QApplication::UnicodeUTF8));
-        m_appStyleSheetLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Style sheet", 0, QApplication::UnicodeUTF8));
-        m_appStyleSheetChangeButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", 0, QApplication::UnicodeUTF8));
-        m_appStyleSheetClearButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", 0, QApplication::UnicodeUTF8));
-        m_skinLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Device skin", 0, QApplication::UnicodeUTF8));
-        m_skinRemoveButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", 0, QApplication::UnicodeUTF8));
+        PreviewConfigurationWidget->setWindowTitle(QApplication::translate("PreviewConfigurationWidget", "Form", 0));
+        PreviewConfigurationWidget->setTitle(QApplication::translate("PreviewConfigurationWidget", "Print/Preview Configuration", 0));
+        m_styleLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Style", 0));
+        m_appStyleSheetLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Style sheet", 0));
+        m_appStyleSheetChangeButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", 0));
+        m_appStyleSheetClearButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", 0));
+        m_skinLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Device skin", 0));
+        m_skinRemoveButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", 0));
     } // retranslateUi
 
 };

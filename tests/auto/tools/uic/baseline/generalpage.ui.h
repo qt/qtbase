@@ -77,9 +77,9 @@ public:
 
     void retranslateUi(QWidget *GeneralPage)
     {
-        GeneralPage->setWindowTitle(QApplication::translate("GeneralPage", "Form", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("GeneralPage", "Namespace:", 0, QApplication::UnicodeUTF8));
-        label_2->setText(QApplication::translate("GeneralPage", "Virtual Folder:", 0, QApplication::UnicodeUTF8));
+        GeneralPage->setWindowTitle(QApplication::translate("GeneralPage", "Form", 0));
+        label->setText(QApplication::translate("GeneralPage", "Namespace:", 0));
+        label_2->setText(QApplication::translate("GeneralPage", "Virtual Folder:", 0));
     } // retranslateUi
 
 };

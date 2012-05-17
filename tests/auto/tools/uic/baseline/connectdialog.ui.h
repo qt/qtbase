@@ -130,12 +130,12 @@ public:
 
     void retranslateUi(QDialog *ConnectDialog)
     {
-        ConnectDialog->setWindowTitle(QApplication::translate("ConnectDialog", "Configure Connection", 0, QApplication::UnicodeUTF8));
-        signalGroupBox->setTitle(QApplication::translate("ConnectDialog", "GroupBox", 0, QApplication::UnicodeUTF8));
-        editSignalsButton->setText(QApplication::translate("ConnectDialog", "Edit...", 0, QApplication::UnicodeUTF8));
-        slotGroupBox->setTitle(QApplication::translate("ConnectDialog", "GroupBox", 0, QApplication::UnicodeUTF8));
-        editSlotsButton->setText(QApplication::translate("ConnectDialog", "Edit...", 0, QApplication::UnicodeUTF8));
-        showAllCheckBox->setText(QApplication::translate("ConnectDialog", "Show signals and slots inherited from QWidget", 0, QApplication::UnicodeUTF8));
+        ConnectDialog->setWindowTitle(QApplication::translate("ConnectDialog", "Configure Connection", 0));
+        signalGroupBox->setTitle(QApplication::translate("ConnectDialog", "GroupBox", 0));
+        editSignalsButton->setText(QApplication::translate("ConnectDialog", "Edit...", 0));
+        slotGroupBox->setTitle(QApplication::translate("ConnectDialog", "GroupBox", 0));
+        editSlotsButton->setText(QApplication::translate("ConnectDialog", "Edit...", 0));
+        showAllCheckBox->setText(QApplication::translate("ConnectDialog", "Show signals and slots inherited from QWidget", 0));
     } // retranslateUi
 
 };

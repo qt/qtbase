@@ -127,11 +127,11 @@ public:
 
     void retranslateUi(QDialog *PluginDialog)
     {
-        PluginDialog->setWindowTitle(QApplication::translate("PluginDialog", "Plugin Information", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("PluginDialog", "TextLabel", 0, QApplication::UnicodeUTF8));
+        PluginDialog->setWindowTitle(QApplication::translate("PluginDialog", "Plugin Information", 0));
+        label->setText(QApplication::translate("PluginDialog", "TextLabel", 0));
         QTreeWidgetItem *___qtreewidgetitem = treeWidget->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("PluginDialog", "1", 0, QApplication::UnicodeUTF8));
-        message->setText(QApplication::translate("PluginDialog", "TextLabel", 0, QApplication::UnicodeUTF8));
+        ___qtreewidgetitem->setText(0, QApplication::translate("PluginDialog", "1", 0));
+        message->setText(QApplication::translate("PluginDialog", "TextLabel", 0));
     } // retranslateUi
 
 };
