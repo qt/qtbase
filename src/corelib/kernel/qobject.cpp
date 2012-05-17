@@ -3293,7 +3293,14 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
     int signalOffset;
     int methodOffset;
     computeOffsets(m, &signalOffset, &methodOffset);
+    activate(sender, methodOffset, signalOffset, local_signal_index, argv);
+}
 
+/*!\internal
+ */
+void QMetaObject::activate(QObject *sender, int methodOffset, int signalOffset, int local_signal_index,
+                           void **argv)
+{
     int signal_index = signalOffset + local_signal_index;
 
     if (sender->d_func()->declarativeData && QAbstractDeclarativeData::signalEmitted)

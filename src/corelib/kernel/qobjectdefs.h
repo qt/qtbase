@@ -356,6 +356,7 @@ struct Q_CORE_EXPORT QMetaObject
     // internal index-based signal activation
     static void activate(QObject *sender, int signal_index, void **argv);
     static void activate(QObject *sender, const QMetaObject *, int local_signal_index, void **argv);
+    static void activate(QObject *sender, int method_offset, int signal_offset, int local_signal_index, void **argv);
 
     static bool invokeMethod(QObject *obj, const char *member,
                              Qt::ConnectionType,
