@@ -1007,7 +1007,8 @@ bool QGuiApplication::notify(QObject *object, QEvent *event)
     }
 #endif
 
-    QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(qobject_cast<QWindow *>(object), event);
+    if (object->isWindowType())
+        QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(static_cast<QWindow *>(object), event);
     return QCoreApplication::notify(object, event);
 }
 
