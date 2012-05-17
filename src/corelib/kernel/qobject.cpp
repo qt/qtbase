@@ -70,16 +70,6 @@
 
 QT_BEGIN_NAMESPACE
 
-struct QObjectPrivate::ExtraData
-{
-    ExtraData() {}
-#ifndef QT_NO_USERDATA
-    QVector<QObjectUserData *> userData;
-#endif
-    QList<QByteArray> propertyNames;
-    QList<QVariant> propertyValues;
-};
-
 static int DIRECT_CONNECTION_ONLY = 0;
 
 static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)
@@ -217,14 +207,14 @@ QObjectPrivate::QObjectPrivate(int version)
 
 QObjectPrivate::~QObjectPrivate()
 {
-    if (!runningTimers.isEmpty()) {
+    if (extraData && !extraData->runningTimers.isEmpty()) {
         // unregister pending timers
         if (threadData->eventDispatcher)
             threadData->eventDispatcher->unregisterTimers(q_ptr);
 
         // release the timer ids back to the pool
-        for (int i = 0; i < runningTimers.size(); ++i)
-            QAbstractEventDispatcherPrivate::releaseTimerId(runningTimers.at(i));
+        for (int i = 0; i < extraData->runningTimers.size(); ++i)
+            QAbstractEventDispatcherPrivate::releaseTimerId(extraData->runningTimers.at(i));
     }
 
     if (postedEvents)
@@ -237,8 +227,8 @@ QObjectPrivate::~QObjectPrivate()
 #ifndef QT_NO_USERDATA
     if (extraData)
         qDeleteAll(extraData->userData);
-    delete extraData;
 #endif
+    delete extraData;
 }
 
 /*!\internal
@@ -983,7 +973,7 @@ QObjectPrivate::Connection::~Connection()
 QString QObject::objectName() const
 {
     Q_D(const QObject);
-    return d->objectName;
+    return d->extraData ? d->extraData->objectName : QString();
 }
 
 /*
@@ -992,9 +982,12 @@ QString QObject::objectName() const
 void QObject::setObjectName(const QString &name)
 {
     Q_D(QObject);
-    if (d->objectName != name) {
-        d->objectName = name;
-        emit objectNameChanged(d->objectName);
+    if (!d->extraData)
+        d->extraData = new QObjectPrivate::ExtraData;
+
+    if (d->extraData->objectName != name) {
+        d->extraData->objectName = name;
+        emit objectNameChanged(d->extraData->objectName);
     }
 }
 
@@ -1425,7 +1418,9 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
         return 0;
     }
     int timerId = d->threadData->eventDispatcher->registerTimer(interval, timerType, this);
-    d->runningTimers.append(timerId);
+    if (!d->extraData)
+        d->extraData = new QObjectPrivate::ExtraData;
+    d->extraData->runningTimers.append(timerId);
     return timerId;
 }
 
@@ -1442,7 +1437,7 @@ void QObject::killTimer(int id)
 {
     Q_D(QObject);
     if (id) {
-        int at = d->runningTimers.indexOf(id);
+        int at = d->extraData ? d->extraData->runningTimers.indexOf(id) : -1;
         if (at == -1) {
             // timer isn't owned by this object
             qWarning("QObject::killTimer(): Error: timer id %d is not valid for object %p (%s), timer has not been killed",
@@ -1455,7 +1450,7 @@ void QObject::killTimer(int id)
         if (d->threadData->eventDispatcher)
             d->threadData->eventDispatcher->unregisterTimer(id);
 
-        d->runningTimers.remove(at);
+        d->extraData->runningTimers.remove(at);
         QAbstractEventDispatcherPrivate::releaseTimerId(id);
     }
 }
@@ -1844,10 +1839,13 @@ void QObject::installEventFilter(QObject *obj)
         return;
     }
 
+    if (!d->extraData)
+        d->extraData = new QObjectPrivate::ExtraData;
+
     // clean up unused items in the list
-    d->eventFilters.removeAll((QObject*)0);
-    d->eventFilters.removeAll(obj);
-    d->eventFilters.prepend(obj);
+    d->extraData->eventFilters.removeAll((QObject*)0);
+    d->extraData->eventFilters.removeAll(obj);
+    d->extraData->eventFilters.prepend(obj);
 }
 
 /*!
@@ -1866,9 +1864,11 @@ void QObject::installEventFilter(QObject *obj)
 void QObject::removeEventFilter(QObject *obj)
 {
     Q_D(QObject);
-    for (int i = 0; i < d->eventFilters.count(); ++i) {
-        if (d->eventFilters.at(i) == obj)
-            d->eventFilters[i] = 0;
+    if (d->extraData) {
+        for (int i = 0; i < d->extraData->eventFilters.count(); ++i) {
+            if (d->extraData->eventFilters.at(i) == obj)
+                d->extraData->eventFilters[i] = 0;
+        }
     }
 }
 

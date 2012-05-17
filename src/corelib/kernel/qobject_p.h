@@ -59,6 +59,7 @@
 #include "QtCore/qcoreevent.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qvector.h"
+#include "QtCore/qvariant.h"
 #include "QtCore/qreadwritelock.h"
 
 QT_BEGIN_NAMESPACE
@@ -97,8 +98,19 @@ class Q_CORE_EXPORT QObjectPrivate : public QObjectData
 {
     Q_DECLARE_PUBLIC(QObject)
 
-    struct ExtraData;
 public:
+    struct ExtraData
+    {
+        ExtraData() {}
+    #ifndef QT_NO_USERDATA
+        QVector<QObjectUserData *> userData;
+    #endif
+        QList<QByteArray> propertyNames;
+        QList<QVariant> propertyValues;
+        QVector<int> runningTimers;
+        QList<QPointer<QObject> > eventFilters;
+        QString objectName;
+    };
 
     typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
     struct Connection
@@ -179,7 +191,6 @@ public:
     inline bool isSignalConnected(uint signalIdx) const;
 
 public:
-    QString objectName;
     ExtraData *extraData;    // extra data set by the user
     QThreadData *threadData; // id of the thread that owns the object
 
@@ -189,8 +200,6 @@ public:
     Sender *currentSender;   // object currently activating the object
     mutable quint32 connectedSignals[2];
 
-    QVector<int> runningTimers;
-    QList<QPointer<QObject> > eventFilters;
     union {
         QObject *currentChildBeingDeleted;
         QAbstractDeclarativeData *declarativeData; //extra data used by the declarative module

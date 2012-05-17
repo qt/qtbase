@@ -1599,7 +1599,7 @@ void QStateMachinePrivate::registerEventTransition(QEventTransition *transition)
     if (!object)
         return;
     QObjectPrivate *od = QObjectPrivate::get(object);
-    if (!od->eventFilters.contains(q))
+    if (!od->extraData || !od->extraData->eventFilters.contains(q))
         object->installEventFilter(q);
     ++qobjectEvents[object][transition->eventType()];
     QEventTransitionPrivate::get(transition)->registered = true;
