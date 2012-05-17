@@ -67,6 +67,7 @@ QT_BEGIN_NAMESPACE
 class QPlatformScreen;
 class QPlatformWindowPrivate;
 class QWindow;
+class QIcon;
 
 class Q_GUI_EXPORT QPlatformWindow : public QPlatformSurface
 {
@@ -95,6 +96,7 @@ public:
     virtual void setParent(const QPlatformWindow *window);
 
     virtual void setWindowTitle(const QString &title);
+    virtual void setWindowIcon(const QIcon &icon);
     virtual void raise();
     virtual void lower();
 

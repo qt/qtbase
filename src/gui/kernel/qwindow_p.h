@@ -46,6 +46,7 @@
 #include <qpa/qplatformwindow.h>
 
 #include <QtCore/private/qobject_p.h>
+#include <QtGui/QIcon>
 
 QT_BEGIN_HEADER
 
@@ -113,6 +114,7 @@ public:
     bool exposed;
     QSurfaceFormat requestedFormat;
     QString windowTitle;
+    QIcon windowIcon;
     QRect geometry;
     Qt::WindowState windowState;
     bool resizeEventPending;

@@ -53,6 +53,8 @@
 #include <QtGui/qsurfaceformat.h>
 #include <QtGui/qwindowdefs.h>
 
+#include <QtGui/qicon.h>
+
 #ifndef QT_NO_CURSOR
 #include <QtGui/qcursor.h>
 #endif
@@ -89,6 +91,7 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_DECLARE_PRIVATE(QWindow)
 
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
+    Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon)
     Q_PROPERTY(Qt::WindowModality windowModality READ windowModality WRITE setWindowModality NOTIFY windowModalityChanged)
     Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(int y READ y WRITE setY NOTIFY yChanged)
@@ -194,7 +197,8 @@ public:
     void resize(const QSize &newSize);
     inline void resize(int w, int h) { resize(QSize(w, h)); }
 
-    void setWindowIcon(const QImage &icon) const;
+    void setWindowIcon(const QIcon &icon);
+    QIcon windowIcon() const;
 
     void destroy();
 

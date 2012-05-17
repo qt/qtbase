@@ -516,15 +516,34 @@ void QWindow::setWindowTitle(const QString &title)
 {
     Q_D(QWindow);
     d->windowTitle = title;
-    if (d->platformWindow) {
+    if (d->platformWindow)
         d->platformWindow->setWindowTitle(title);
-    }
 }
 
 QString QWindow::windowTitle() const
 {
     Q_D(const QWindow);
     return d->windowTitle;
+}
+
+/*!
+    Sets the window icon to the given \a icon.
+
+    The window icon might be used by the windowing system for example to decorate the window,
+    or in the task switcher.
+*/
+void QWindow::setWindowIcon(const QIcon &icon)
+{
+    Q_D(QWindow);
+    d->windowIcon = icon;
+    if (d->platformWindow)
+        d->platformWindow->setWindowIcon(icon);
+}
+
+QIcon QWindow::windowIcon() const
+{
+    Q_D(const QWindow);
+    return d->windowIcon;
 }
 
 /*!
@@ -535,9 +554,8 @@ QString QWindow::windowTitle() const
 void QWindow::raise()
 {
     Q_D(QWindow);
-    if (d->platformWindow) {
+    if (d->platformWindow)
         d->platformWindow->raise();
-    }
 }
 
 /*!
@@ -548,9 +566,8 @@ void QWindow::raise()
 void QWindow::lower()
 {
     Q_D(QWindow);
-    if (d->platformWindow) {
+    if (d->platformWindow)
         d->platformWindow->lower();
-    }
 }
 
 /*!
@@ -1053,18 +1070,6 @@ void QWindow::resize(const QSize &newSize)
     } else {
         d->geometry.setSize(newSize);
     }
-}
-
-/*!
-    Sets the window icon to the given \a icon image.
-
-    The window icon might be used by the windowing system for example to decorate the window,
-    or in the task switcher.
-*/
-void QWindow::setWindowIcon(const QImage &icon) const
-{
-    Q_UNUSED(icon);
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
 /*!

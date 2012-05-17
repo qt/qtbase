@@ -216,6 +216,11 @@ void QPlatformWindow::setParent(const QPlatformWindow *parent)
 void QPlatformWindow::setWindowTitle(const QString &title) { Q_UNUSED(title); }
 
 /*!
+  Reimplement to set the window icon to \a icon
+*/
+void QPlatformWindow::setWindowIcon(const QIcon &icon) { Q_UNUSED(icon); }
+
+/*!
   Reimplement to be able to let Qt raise windows to the top of the desktop
 */
 void QPlatformWindow::raise() { qWarning("This plugin does not support raise()"); }
