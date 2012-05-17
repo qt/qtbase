@@ -187,6 +187,11 @@ int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QO
 
 QObjectData::~QObjectData() {}
 
+QMetaObject *QObjectData::dynamicMetaObject() const
+{
+    return metaObject->toDynamicMetaObject(q_ptr);
+}
+
 QObjectPrivate::QObjectPrivate(int version)
     : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0)
 {
@@ -227,7 +232,8 @@ QObjectPrivate::~QObjectPrivate()
 
     threadData->deref();
 
-    delete static_cast<QAbstractDynamicMetaObject*>(metaObject);
+    if (metaObject) metaObject->objectDestroyed(q_ptr);
+
 #ifndef QT_NO_USERDATA
     if (extraData)
         qDeleteAll(extraData->userData);

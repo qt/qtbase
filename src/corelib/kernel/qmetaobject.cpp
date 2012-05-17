@@ -300,8 +300,8 @@ int QMetaObject::static_metacall(Call cl, int idx, void **argv) const
 */
 int QMetaObject::metacall(QObject *object, Call cl, int idx, void **argv)
 {
-    if (QMetaObject *mo = object->d_ptr->metaObject)
-        return static_cast<QAbstractDynamicMetaObject*>(mo)->metaCall(cl, idx, argv);
+    if (object->d_ptr->metaObject)
+        return object->d_ptr->metaObject->metaCall(object, cl, idx, argv);
     else
         return object->qt_metacall(cl, idx, argv);
 }

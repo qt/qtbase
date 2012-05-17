@@ -286,12 +286,23 @@ private:
 
 void Q_CORE_EXPORT qDeleteInEventHandler(QObject *o);
 
-
-struct Q_CORE_EXPORT QAbstractDynamicMetaObject : public QMetaObject
+struct QAbstractDynamicMetaObject;
+struct Q_CORE_EXPORT QDynamicMetaObjectData
 {
-    virtual ~QAbstractDynamicMetaObject() {}
-    virtual int metaCall(QMetaObject::Call, int _id, void **) { return _id; }
+    virtual ~QDynamicMetaObjectData() {}
+    virtual void objectDestroyed(QObject *) { delete this; }
+
+    virtual QAbstractDynamicMetaObject *toDynamicMetaObject(QObject *) = 0;
+    virtual int metaCall(QObject *, QMetaObject::Call, int _id, void **) = 0;
+};
+
+struct Q_CORE_EXPORT QAbstractDynamicMetaObject : public QDynamicMetaObjectData, public QMetaObject
+{
+    virtual QAbstractDynamicMetaObject *toDynamicMetaObject(QObject *) { return this; }
     virtual int createProperty(const char *, const char *) { return -1; }
+    virtual int metaCall(QObject *, QMetaObject::Call c, int _id, void **a)
+    { return metaCall(c, _id, a); }
+    virtual int metaCall(QMetaObject::Call, int _id, void **) { return _id; } // Compat overload
 };
 
 QT_END_NAMESPACE

@@ -79,6 +79,7 @@ class QRegularExpression;
 #ifndef QT_NO_USERDATA
 class QObjectUserData;
 #endif
+class QDynamicMetaObjectData;
 
 typedef QList<QObject*> QObjectList;
 
@@ -90,11 +91,7 @@ Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegular
                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
 Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options);
 
-class
-#if defined(__INTEL_COMPILER) && defined(Q_OS_WIN)
-Q_CORE_EXPORT
-#endif
-QObjectData {
+class Q_CORE_EXPORT QObjectData {
 public:
     virtual ~QObjectData() = 0;
     QObject *q_ptr;
@@ -110,7 +107,8 @@ public:
     uint isWindow : 1; //for QWindow
     uint unused : 25;
     int postedEvents;
-    QMetaObject *metaObject; // assert dynamic
+    QDynamicMetaObjectData *metaObject;
+    QMetaObject *dynamicMetaObject() const;
 };
 
 
