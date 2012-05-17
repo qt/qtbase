@@ -123,8 +123,7 @@ QEglFSScreen::QEglFSScreen()
     qWarning("QEglScreen %p\n", this);
 #endif
 
-    if (hooks)
-        hooks->platformInit();
+    hooks->platformInit();
 
     EGLint major, minor;
 
@@ -165,13 +164,11 @@ QEglFSScreen::~QEglFSScreen()
     if (m_surface)
         eglDestroySurface(m_dpy, m_surface);
 
-    if (hooks)
-        hooks->destroyNativeWindow(m_window);
+    hooks->destroyNativeWindow(m_window);
 
     eglTerminate(m_dpy);
 
-    if (hooks)
-        hooks->platformDestroy();
+    hooks->platformDestroy();
 }
 
 void QEglFSScreen::createAndSetPlatformContext() const {
@@ -205,8 +202,7 @@ void QEglFSScreen::createAndSetPlatformContext()
 
     EGLConfig config = q_configFromGLFormat(m_dpy, platformFormat);
 
-    if (hooks)
-        m_window = hooks->createNativeWindow(hooks->screenSize());
+    m_window = hooks->createNativeWindow(hooks->screenSize());
 
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("Configuration %d matches requirements\n", (int)config);
