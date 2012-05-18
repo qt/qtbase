@@ -2260,7 +2260,7 @@ QStringList QODBCDriver::tables(QSql::TableType type) const
     if (tableType.isEmpty())
         return tl;
 
-    QString joinedTableTypeString = tableType.join(QLatin1String(","));
+    QString joinedTableTypeString = tableType.join(QLatin1Char(','));
 
     r = SQLTables(hStmt,
                    NULL,
