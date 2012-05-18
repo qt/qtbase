@@ -1594,6 +1594,25 @@ FakeNode* FakeNode::lookupQmlModuleNode(Tree* tree, const ArgLocPair& arg)
 }
 
 /*!
+  Returns true if this QML type or property group contains a
+  property named \a name.
+ */
+bool FakeNode::hasProperty(const QString& name) const
+{
+    foreach (Node* child, childNodes()) {
+        if (child->type() == Node::Fake && child->subType() == Node::QmlPropertyGroup) {
+            if (child->hasProperty(name))
+                return true;
+        }
+        else if (child->type() == Node::QmlProperty) {
+            if (child->hasProperty(name))
+                return true;
+        }
+    }
+    return false;
+}
+
+/*!
   The constructor calls the FakeNode constructor with
   \a parent, \a name, and Node::Example.
  */
@@ -1614,6 +1633,7 @@ ExampleNode::ExampleNode(InnerNode* parent, const QString& name)
 EnumNode::EnumNode(InnerNode *parent, const QString& name)
     : LeafNode(Enum, parent, name), ft(0)
 {
+    // nothing.
 }
 
 /*!
@@ -2362,6 +2382,10 @@ bool QmlPropertyNode::isWritable(Tree* tree)
     return true;
 }
 
+/*!
+  Returns a pointer this QML property's corresponding C++
+  property, if it has one.
+ */
 PropertyNode* QmlPropertyNode::correspondingProperty(Tree *tree)
 {
     PropertyNode* pn;
@@ -2403,6 +2427,23 @@ PropertyNode* QmlPropertyNode::correspondingProperty(Tree *tree)
     }
 
     return 0;
+}
+
+/*!
+  Returns true if this QML type or property group contains a
+  property named \a name.
+ */
+bool QmlPropertyNode::hasProperty(const QString& n) const
+{
+    if (name() == n)
+        return true;
+    foreach (Node* child, qmlPropNodes()) {
+        if (child->type() == Node::QmlProperty) {
+            if (child->name() == n)
+                return true;
+        }
+    }
+    return false;
 }
 
 /*! \class NameCollisionNode

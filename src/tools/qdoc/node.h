@@ -193,6 +193,7 @@ public:
     virtual bool isAttached() const { return false; }
     virtual void setAbstract(bool ) { }
     virtual QString title() const { return QString(); }
+    virtual bool hasProperty(const QString& ) const { return false; }
     bool isInternal() const;
     bool isIndexNode() const { return indexNodeFlag_; }
     Type type() const { return nodeType_; }
@@ -475,6 +476,7 @@ public:
     virtual QString nameForLists() const { return title(); }
     virtual void setImageFileName(const QString& ) { }
     virtual bool isQmlPropertyGroup() const { return (nodeSubtype_ == QmlPropertyGroup); }
+    virtual bool hasProperty(const QString& ) const;
 
     static void insertQmlModuleNode(const QString& qmid, FakeNode* fn);
     static FakeNode* lookupQmlModuleNode(Tree* tree, const ArgLocPair& arg);
@@ -632,6 +634,7 @@ public:
     virtual QString qmlModuleName() const { return parent()->qmlModuleName(); }
     virtual QString qmlModuleVersion() const { return parent()->qmlModuleVersion(); }
     virtual QString qmlModuleIdentifier() const { return parent()->qmlModuleIdentifier(); }
+    virtual bool hasProperty(const QString& name) const;
 
     PropertyNode* correspondingProperty(Tree* tree);
 

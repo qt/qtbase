@@ -960,43 +960,54 @@ Node *CppCodeParser::processTopicCommandGroup(const QString& command, const ArgL
         QString module;
         QString element;
         QString property;
+        QmlClassNode* qmlClass = 0;
         bool attached = (command == COMMAND_QMLATTACHEDPROPERTY);
         ArgList::ConstIterator argsIter = args.begin();
         arg = argsIter->first;
         if (splitQmlPropertyArg(arg,type,module,element,property)) {
-            QmlClassNode* qmlClass = tree_->findQmlClassNode(module,element);
+            qmlClass = tree_->findQmlClassNode(module,element);
             if (qmlClass) {
                 qmlPropGroup = new QmlPropGroupNode(qmlClass,property); //,attached);
                 qmlPropGroup->setLocation(location());
             }
         }
         if (qmlPropGroup) {
-            ClassNode *correspondingClass = static_cast<QmlClassNode*>(qmlPropGroup->parent())->classNode();
-            QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlPropGroup,property,type,attached);
-            qmlPropNode->setLocation(location());
-            qmlPropNode->setQPropertyFlag();
-
             const PropertyNode *correspondingProperty = 0;
-            if (correspondingClass) {
-                correspondingProperty = qmlPropNode->correspondingProperty(tree_);
+            if (qmlClass->hasProperty(property)) {
+                location().warning(tr("QML property documented multiple times: '%1'").arg(arg));
             }
-            if (correspondingProperty) {
-                bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
-                qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));
+            else {
+                ClassNode *correspondingClass = static_cast<QmlClassNode*>(qmlPropGroup->parent())->classNode();
+                QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlPropGroup,property,type,attached);
+                qmlPropNode->setLocation(location());
+                qmlPropNode->setQPropertyFlag();
+
+                if (correspondingClass) {
+                    correspondingProperty = qmlPropNode->correspondingProperty(tree_);
+                }
+                if (correspondingProperty) {
+                    bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
+                    qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));
+                }
             }
             ++argsIter;
             while (argsIter != args.end()) {
                 arg = argsIter->first;
                 if (splitQmlPropertyArg(arg,type,module,element,property)) {
-                    QmlPropertyNode* qmlPropNode = new QmlPropertyNode(qmlPropGroup,
-                                                                       property,
-                                                                       type,
-                                                                       attached);
-                    qmlPropNode->setLocation(location());
-                    qmlPropNode->setQPropertyFlag();
-                    if (correspondingProperty) {
-                        bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
-                        qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));
+                    if (qmlClass->hasProperty(property)) {
+                        location().warning(tr("QML property documented multiple times: '%1'").arg(arg));
+                    }
+                    else {
+                        QmlPropertyNode* qmlPropNode = new QmlPropertyNode(qmlPropGroup,
+                                                                           property,
+                                                                           type,
+                                                                           attached);
+                        qmlPropNode->setLocation(location());
+                        qmlPropNode->setQPropertyFlag();
+                        if (correspondingProperty) {
+                            bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
+                            qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));
+                        }
                     }
                 }
                 ++argsIter;
