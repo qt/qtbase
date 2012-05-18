@@ -428,6 +428,9 @@ MakefileGenerator::init()
     QHash<QString, QStringList> &v = project->variables();
 
     chkdir = v["QMAKE_CHK_DIR_EXISTS"].join(" ");
+    chkfile = v["QMAKE_CHK_FILE_EXISTS"].join(" ");
+    if (chkfile.isEmpty()) // Backwards compat with Qt4 specs
+        chkfile = isWindowsShell() ? "if not exist" : "test -f";
     chkglue = v["QMAKE_CHK_EXISTS_GLUE"].join(" ");
     if (chkglue.isEmpty()) // Backwards compat with Qt4 specs
         chkglue = isWindowsShell() ? "" : "|| ";
@@ -2369,6 +2372,22 @@ void MakefileGenerator::writeSubMakeCall(QTextStream &t, const QString &callPref
 }
 
 void
+MakefileGenerator::writeSubTargetCall(QTextStream &t,
+        const QString &in_directory, const QString &in, const QString &out_directory, const QString &out,
+        const QString &out_directory_cdin, const QString &makefilein, const QString &out_directory_cdout)
+{
+    QString pfx;
+    if (!in.isEmpty()) {
+        if (!in_directory.isEmpty())
+            t << "\n\t" << mkdir_p_asstring(out_directory);
+        pfx = "( " + chkfile + " " + out + " " + chkglue
+              + "$(QMAKE) " + in + buildArgs(in_directory) + " -o " + out
+              + " ) && ";
+    }
+    writeSubMakeCall(t, out_directory_cdin + pfx, makefilein, out_directory_cdout);
+}
+
+void
 MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubTarget*> targets, int flags)
 {
     // blasted includes
@@ -2426,10 +2445,6 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         if(!abs_source_path.isEmpty() && out_directory.startsWith(abs_source_path))
             out_directory = Option::output_dir + out_directory.mid(abs_source_path.length());
 
-        QString mkfile = subtarget->makefile;
-        if(!in_directory.isEmpty())
-            mkfile.prepend(out_directory);
-
 #define MAKE_CD_IN_AND_OUT(directory) \
         if(!directory.isEmpty()) {               \
             if(project->isActiveConfig("cd_change_global")) { \
@@ -2457,20 +2472,13 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         QString makefilein = " -f " + subtarget->makefile;
 
         //qmake it
+        QString out;
+        QString in;
         if(!subtarget->profile.isEmpty()) {
-            QString out = subtarget->makefile;
-            QString in = escapeFilePath(fileFixify(in_directory + subtarget->profile, FileFixifyAbsolute));
+            out = subtarget->makefile;
+            in = escapeFilePath(fileFixify(in_directory + subtarget->profile, FileFixifyAbsolute));
             if(out.startsWith(in_directory))
                 out = out.mid(in_directory.length());
-            t << mkfile << ": " << "\n\t";
-            if(!in_directory.isEmpty()) {
-                t << mkdir_p_asstring(out_directory)
-                  << out_directory_cdin
-                  << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out
-                  << out_directory_cdout << endl;
-            } else {
-                t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out << endl;
-            }
             t << subtarget->target << "-qmake_all: ";
             if (flags & SubTargetOrdered) {
                 if (target)
@@ -2497,12 +2505,13 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         }
 
         { //actually compile
-            t << subtarget->target << ": " << mkfile;
+            t << subtarget->target << ":";
             if(!subtarget->depends.isEmpty())
                 t << " " << valList(subtarget->depends);
             if(project->isEmpty("QMAKE_NOFORCE"))
                 t <<  " FORCE";
-            writeSubMakeCall(t, out_directory_cdin, makefilein, out_directory_cdout);
+            writeSubTargetCall(t, in_directory, in, out_directory, out,
+                               out_directory_cdin, makefilein, out_directory_cdout);
         }
 
         for(int suffix = 0; suffix < targetSuffixes.size(); ++suffix) {
@@ -2515,20 +2524,22 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 s = QString();
 
             if(flags & SubTargetOrdered) {
-                t << subtarget->target << "-" << targetSuffixes.at(suffix) << "-ordered: " << mkfile;
+                t << subtarget->target << "-" << targetSuffixes.at(suffix) << "-ordered:";
                 if(target)
                     t << " " << targets.at(target-1)->target << "-" << targetSuffixes.at(suffix) << "-ordered ";
                 if(project->isEmpty("QMAKE_NOFORCE"))
                     t <<  " FORCE";
-                writeSubMakeCall(t, out_directory_cdin, makefilein + " " + s, out_directory_cdout);
+                writeSubTargetCall(t, in_directory, in, out_directory, out,
+                                   out_directory_cdin, makefilein + " " + s, out_directory_cdout);
             }
-            t << subtarget->target << "-" << targetSuffixes.at(suffix) << ": " << mkfile;
+            t << subtarget->target << "-" << targetSuffixes.at(suffix) << ":";
             if(!subtarget->depends.isEmpty())
                 t << " " << valGlue(subtarget->depends, QString(), "-" + targetSuffixes.at(suffix) + " ",
                                     "-"+targetSuffixes.at(suffix));
             if(project->isEmpty("QMAKE_NOFORCE"))
                 t <<  " FORCE";
-            writeSubMakeCall(t, out_directory_cdin, makefilein + " " + s, out_directory_cdout);
+            writeSubTargetCall(t, in_directory, in, out_directory, out,
+                               out_directory_cdin, makefilein + " " + s, out_directory_cdout);
         }
     }
     t << endl;
@@ -2627,28 +2638,31 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
 
                 if(!recurse.contains(subtarget->name))
                     continue;
-                QString mkfile = subtarget->makefile;
-                if(!in_directory.isEmpty()) {
-                    if(!out_directory.endsWith(Option::dir_sep))
-                        mkfile.prepend(out_directory + Option::dir_sep);
-                    else
-                        mkfile.prepend(out_directory);
-                }
+
                 QString out_directory_cdin, out_directory_cdout;
                 MAKE_CD_IN_AND_OUT(out_directory);
 
                 QString makefilein = " -f " + subtarget->makefile;
 
+                QString out;
+                QString in;
+                if (!subtarget->profile.isEmpty()) {
+                    out = subtarget->makefile;
+                    in = escapeFilePath(fileFixify(in_directory + subtarget->profile, FileFixifyAbsolute));
+                    if (out.startsWith(in_directory))
+                        out = out.mid(in_directory.length());
+                }
+
                 //write the rule/depends
                 if(flags & SubTargetOrdered) {
                     const QString dep = subtarget->target + "-" + (*qut_it) + "_ordered";
-                    t << dep << ": " << mkfile;
+                    t << dep << ":";
                     if(target)
                         t << " " << targets.at(target-1)->target << "-" << (*qut_it) << "_ordered ";
                     deps += " " + dep;
                 } else {
                     const QString dep = subtarget->target + "-" + (*qut_it);
-                    t << dep << ": " << mkfile;
+                    t << dep << ":";
                     if(!subtarget->depends.isEmpty())
                         t << " " << valGlue(subtarget->depends, QString(), "-" + (*qut_it) + " ", "-" + (*qut_it));
                     deps += " " + dep;
@@ -2659,8 +2673,8 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                     sub_targ = project->first((*qut_it) + ".recurse_target");
 
                 //write the commands
-                writeSubMakeCall(t, out_directory_cdin, makefilein + " " + sub_targ,
-                                 out_directory_cdout);
+                writeSubTargetCall(t, in_directory, in, out_directory, out,
+                                   out_directory_cdin, makefilein + " " + sub_targ, out_directory_cdout);
             }
         }
         if(project->isEmpty("QMAKE_NOFORCE") &&

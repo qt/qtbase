@@ -81,7 +81,7 @@ class MakefileGenerator : protected QMakeSourceFileInfo
     QString spec;
     bool init_opath_already, init_already, no_io;
     QHash<QString, bool> init_compiler_already;
-    QString chkdir, chkglue;
+    QString chkdir, chkfile, chkglue;
     QString build_args(const QString &outdir=QString());
     void checkMultipleDefinition(const QString &, const QString &);
 
@@ -128,6 +128,9 @@ protected:
         SubTargetsNoFlags=0x00
     };
     QList<MakefileGenerator::SubTarget*> findSubDirsSubTargets() const;
+    void writeSubTargetCall(QTextStream &t,
+            const QString &in_directory, const QString &in, const QString &out_directory, const QString &out,
+            const QString &out_directory_cdin, const QString &makefilein, const QString &out_directory_cdout);
     virtual void writeSubMakeCall(QTextStream &t, const QString &outDirectory_cdin,
                                   const QString &makeFileIn, const QString &outDirectory_cdout);
     void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags);
