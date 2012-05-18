@@ -86,7 +86,10 @@ void DownloadManager::doDownload(const QUrl &url)
 {
     QNetworkRequest request(url);
     QNetworkReply *reply = manager.get(request);
+
+#ifndef QT_NO_SSL
     connect(reply, SIGNAL(sslErrors(QList<QSslError>)), SLOT(sslErrors(QList<QSslError>)));
+#endif
 
     currentDownloads.append(reply);
 }
