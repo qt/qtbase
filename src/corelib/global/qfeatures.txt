@@ -155,13 +155,6 @@ Name: QInputContext
 SeeAlso: ???
 # Data structures
 
-Feature: STL
-Description: Supports standard template library compatiblity.
-Section: Data structures
-Requires:
-Name: Standard Template Library
-SeeAlso: ???
-
 Feature: QUUID_STRING
 Description: Supports convertion between UUID and strings.
 Section: Data structures
