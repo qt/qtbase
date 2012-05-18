@@ -2113,6 +2113,8 @@ QString QUrl::url(FormattingOptions options) const
     Returns a string representation of the URL.
     The output can be customized by passing flags with \a options.
 
+    The default formatting option is \l{QUrl::FormattingOptions}{PrettyDecoded}.
+
     \sa FormattingOptions, url(), setUrl()
 */
 QString QUrl::toString(FormattingOptions options) const
