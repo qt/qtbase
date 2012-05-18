@@ -3423,9 +3423,6 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     int a = adjustForAntialiasing ? 2 : 1;
     expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
     expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
-#ifdef Q_OS_WIN
-    QEXPECT_FAIL("", "QTBUG-24296", Abort);
-#endif
     COMPARE_REGIONS(view.lastPaintedRegion, expectedRegion);
 }
 
@@ -4389,9 +4386,7 @@ void tst_QGraphicsView::task259503_scrollingArtifacts()
 
             if (itSTimeToTest)
             {
-#ifndef Q_OS_WIN
                 QEXPECT_FAIL("", "QTBUG-24296", Continue);
-#endif
                 QCOMPARE(event->region(), updateRegion);
             }
         }

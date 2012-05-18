@@ -121,6 +121,20 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
     }
 }
 
+Q_GUI_EXPORT void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
+
+bool QWindowsBackingStore::scroll(const QRegion &area, int dx, int dy)
+{
+    if (m_image.isNull() || m_image->image().isNull())
+        return false;
+
+    const QVector<QRect> rects = area.rects();
+    for (int i = 0; i < rects.size(); ++i)
+        qt_scrollRectInImage(m_image->image(), rects.at(i), QPoint(dx, dy));
+
+    return true;
+}
+
 void QWindowsBackingStore::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);

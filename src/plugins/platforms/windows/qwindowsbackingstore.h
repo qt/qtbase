@@ -62,6 +62,7 @@ public:
     virtual QPaintDevice *paintDevice();
     virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset);
     virtual void resize(const QSize &size, const QRegion &r);
+    virtual bool scroll(const QRegion &area, int dx, int dy);
     virtual void beginPaint(const QRegion &);
 
     HDC getDC() const;
