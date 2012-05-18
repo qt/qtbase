@@ -488,7 +488,7 @@ namespace QTest {
             projectFile.write("\nCONFIG  += release\n");
 #endif
 
-        QByteArray extraSources = QFile::encodeName(extraProgramSources.join(" "));
+        QByteArray extraSources = QFile::encodeName(extraProgramSources.join(' '));
         if (!extraSources.isEmpty()) {
             projectFile.write("SOURCES  += ");
             projectFile.write(extraSources);

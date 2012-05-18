@@ -399,7 +399,7 @@ QMacSettingsPrivate::QMacSettingsPrivate(QSettings::Scope scope, const QString &
                     const QString &bundle_identifier_component = bundle_identifier_components.at(i);
                     bundle_identifier_components_reversed.push_front(bundle_identifier_component);
                 }
-                domainName = bundle_identifier_components_reversed.join(QLatin1String("."));
+                domainName = bundle_identifier_components_reversed.join(QLatin1Char('.'));
             }
         }
     }

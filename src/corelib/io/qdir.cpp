@@ -2255,7 +2255,7 @@ QDebug operator<<(QDebug debug, QDir::Filters filters)
         if (filters & QDir::System) flags << QLatin1String("System");
         if (filters & QDir::CaseSensitive) flags << QLatin1String("CaseSensitive");
     }
-    debug << "QDir::Filters(" << qPrintable(flags.join(QLatin1String("|"))) << ')';
+    debug << "QDir::Filters(" << qPrintable(flags.join(QLatin1Char('|'))) << ')';
     return debug;
 }
 
@@ -2278,7 +2278,7 @@ static QDebug operator<<(QDebug debug, QDir::SortFlags sorting)
         if (sorting & QDir::Type) flags << QLatin1String("Type");
         debug << "QDir::SortFlags(" << qPrintable(type)
               << '|'
-              << qPrintable(flags.join(QLatin1String("|"))) << ')';
+              << qPrintable(flags.join(QLatin1Char('|'))) << ')';
     }
     return debug;
 }
@@ -2287,7 +2287,7 @@ QDebug operator<<(QDebug debug, const QDir &dir)
 {
     debug.maybeSpace() << "QDir(" << dir.path()
                        << ", nameFilters = {"
-                       << qPrintable(dir.nameFilters().join(QLatin1String(",")))
+                       << qPrintable(dir.nameFilters().join(QLatin1Char(',')))
                        << "}, "
                        << dir.sorting()
                        << ','

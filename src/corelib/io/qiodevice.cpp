@@ -1687,7 +1687,7 @@ QDebug operator<<(QDebug debug, QIODevice::OpenMode modes)
             modeList << QLatin1String("Unbuffered");
     }
     qSort(modeList);
-    debug << modeList.join(QLatin1String("|"));
+    debug << modeList.join(QLatin1Char('|'));
     debug << ')';
     return debug;
 }

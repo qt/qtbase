@@ -581,7 +581,7 @@ void tst_QMimeDatabase::suffixes()
     expectedPatterns.sort();
     QStringList mimePatterns = mime.globPatterns();
     mimePatterns.sort();
-    QCOMPARE(mimePatterns.join(QLatin1String(";")), expectedPatterns.join(QLatin1String(";")));
+    QCOMPARE(mimePatterns.join(QLatin1Char(';')), expectedPatterns.join(QLatin1Char(';')));
     QCOMPARE(mime.preferredSuffix(), preferredSuffix);
 }
 
