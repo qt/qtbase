@@ -37,10 +37,7 @@ set(QT_LIBINFIX \"$${QT_LIBINFIX}\")
 !!IF !isEmpty(CMAKE_WINDOWS_BUILD)
 set(Qt5Core_QTMAIN_LIBRARIES Qt5::WinMain)
 
-if (NOT _Qt5WinMain_target)
-    set(_Qt5WinMain_target 1)
-    add_library(Qt5::WinMain STATIC IMPORTED)
-endif()
+add_library(Qt5::WinMain STATIC IMPORTED)
 
 !!IF !isEmpty(CMAKE_DEBUG_TYPE)
 set_property(TARGET Qt5::WinMain APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
