@@ -1839,7 +1839,7 @@ bool QRegExpMatchState::testAnchor(int i, int a, const int *capBegin)
                 QRegExpMatchState matchState;
                 matchState.prepareForMatch(ahead[j]->eng);
                 matchState.match(in + pos + i, len - pos - i, 0,
-                    true, true, matchState.caretPos - matchState.pos - i);
+                    true, true, caretPos - pos - i);
                 if ((matchState.captured[0] == 0) == ahead[j]->neg)
                     return false;
             }

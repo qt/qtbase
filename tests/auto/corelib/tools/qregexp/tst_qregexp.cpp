@@ -571,7 +571,6 @@ void tst_QRegExp::indexIn()
         int mylen = rx.matchedLength();
         QStringList mycaps = rx.capturedTexts();
 
-        QEXPECT_FAIL("anc11", "QRegExp has bugs with anchors inside lookaheads", Abort);
         QCOMPARE( mypos, pos );
         QCOMPARE( mylen, len );
         if ( caps.size() > 1 && caps[1] != "IGNORE ME" ) {
@@ -625,7 +624,6 @@ void tst_QRegExp::lastIndexIn()
         QStringList mycaps = rx.capturedTexts();
 
         if ( mypos <= pos || pos == -1 ) {
-            QEXPECT_FAIL("anc11", "QRegExp has bugs with anchors inside lookaheads", Abort);
             QCOMPARE( mypos, pos );
             QCOMPARE( mylen, len );
 
