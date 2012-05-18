@@ -408,6 +408,12 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         m_nsWindow = createNSWindow();
         setNSWindow(m_nsWindow);
 
+        // QPlatformWindow subclasses must sync up with QWindow on creation:
+        propagateSizeHints();
+        setWindowFlags(window()->windowFlags());
+        setWindowTitle(window()->windowTitle());
+        setWindowState(window()->windowState());
+
         if (window()->transientParent()) {
             // keep this window on the same level as its transient parent (which may be a modal dialog, for example)
             QCocoaWindow *parentCocoaWindow = static_cast<QCocoaWindow *>(window()->transientParent()->handle());
