@@ -57,6 +57,8 @@
 #include <qhash.h>
 
 #include <iostream>
+#include <string>
+#include <fstream>
 #include <windows.h>
 #include <conio.h>
 
@@ -2964,161 +2966,165 @@ void Configure::generateConfigfiles()
 #if !defined(EVAL)
 void Configure::displayConfig()
 {
+    fstream sout;
+    sout.open(QString(buildPath + "/config.summary").toLocal8Bit().constData(),
+              ios::in | ios::out | ios::trunc);
+
     // Give some feedback
-    cout << "Environment:" << endl;
+    sout << "Environment:" << endl;
     QString env = QString::fromLocal8Bit(getenv("INCLUDE")).replace(QRegExp("[;,]"), "\r\n      ");
     if (env.isEmpty())
         env = "Unset";
-    cout << "    INCLUDE=\r\n      " << env << endl;
+    sout << "    INCLUDE=\r\n      " << env << endl;
     env = QString::fromLocal8Bit(getenv("LIB")).replace(QRegExp("[;,]"), "\r\n      ");
     if (env.isEmpty())
         env = "Unset";
-    cout << "    LIB=\r\n      " << env << endl;
+    sout << "    LIB=\r\n      " << env << endl;
     env = QString::fromLocal8Bit(getenv("PATH")).replace(QRegExp("[;,]"), "\r\n      ");
     if (env.isEmpty())
         env = "Unset";
-    cout << "    PATH=\r\n      " << env << endl;
+    sout << "    PATH=\r\n      " << env << endl;
 
     if (dictionary["EDITION"] == "OpenSource") {
-        cout << "You are licensed to use this software under the terms of the GNU GPL version 3.";
-        cout << "You are licensed to use this software under the terms of the Lesser GNU LGPL version 2.1." << endl;
-        cout << "See " << dictionary["LICENSE FILE"] << "3" << endl << endl
+        sout << "You are licensed to use this software under the terms of the GNU GPL version 3.";
+        sout << "You are licensed to use this software under the terms of the Lesser GNU LGPL version 2.1." << endl;
+        sout << "See " << dictionary["LICENSE FILE"] << "3" << endl << endl
              << " or " << dictionary["LICENSE FILE"] << "L" << endl << endl;
     } else {
         QString l1 = licenseInfo[ "LICENSEE" ];
         QString l2 = licenseInfo[ "LICENSEID" ];
         QString l3 = dictionary["EDITION"] + ' ' + "Edition";
         QString l4 = licenseInfo[ "EXPIRYDATE" ];
-        cout << "Licensee...................." << (l1.isNull() ? "" : l1) << endl;
-        cout << "License ID.................." << (l2.isNull() ? "" : l2) << endl;
-        cout << "Product license............." << (l3.isNull() ? "" : l3) << endl;
-        cout << "Expiry Date................." << (l4.isNull() ? "" : l4) << endl << endl;
+        sout << "Licensee...................." << (l1.isNull() ? "" : l1) << endl;
+        sout << "License ID.................." << (l2.isNull() ? "" : l2) << endl;
+        sout << "Product license............." << (l3.isNull() ? "" : l3) << endl;
+        sout << "Expiry Date................." << (l4.isNull() ? "" : l4) << endl << endl;
     }
 
-    cout << "Configuration:" << endl;
-    cout << "    " << qmakeConfig.join("\r\n    ") << endl;
-    cout << "Qt Configuration:" << endl;
-    cout << "    " << qtConfig.join("\r\n    ") << endl;
-    cout << endl;
+    sout << "Configuration:" << endl;
+    sout << "    " << qmakeConfig.join("\r\n    ") << endl;
+    sout << "Qt Configuration:" << endl;
+    sout << "    " << qtConfig.join("\r\n    ") << endl;
+    sout << endl;
 
     if (dictionary.contains("XQMAKESPEC"))
-        cout << "QMAKESPEC..................." << dictionary[ "XQMAKESPEC" ] << " (" << dictionary["QMAKESPEC_FROM"] << ")" << endl;
+        sout << "QMAKESPEC..................." << dictionary[ "XQMAKESPEC" ] << " (" << dictionary["QMAKESPEC_FROM"] << ")" << endl;
     else
-        cout << "QMAKESPEC..................." << dictionary[ "QMAKESPEC" ] << " (" << dictionary["QMAKESPEC_FROM"] << ")" << endl;
-    cout << "Architecture................" << dictionary["QT_ARCH"] << endl;
-    cout << "Host Architecture..........." << dictionary["QT_HOST_ARCH"] << endl;
-    cout << "Maketool...................." << dictionary[ "MAKE" ] << endl;
-    cout << "Debug symbols..............." << (dictionary[ "BUILD" ] == "debug" ? "yes" : "no") << endl;
-    cout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
-    cout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
-    cout << "RTTI support................" << dictionary[ "RTTI" ] << endl;
-    cout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;
-    cout << "IWMMXT support.............." << dictionary[ "IWMMXT" ] << endl;
-    cout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
-    cout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
-    cout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
-    cout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
-    cout << "QtWidgets module support...." << dictionary[ "WIDGETS" ] << endl;
-    cout << "QML debugging..............." << dictionary[ "QML_DEBUG" ] << endl;
-    cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
+        sout << "QMAKESPEC..................." << dictionary[ "QMAKESPEC" ] << " (" << dictionary["QMAKESPEC_FROM"] << ")" << endl;
+    sout << "Architecture................" << dictionary["QT_ARCH"] << endl;
+    sout << "Host Architecture..........." << dictionary["QT_HOST_ARCH"] << endl;
+    sout << "Maketool...................." << dictionary[ "MAKE" ] << endl;
+    sout << "Debug symbols..............." << (dictionary[ "BUILD" ] == "debug" ? "yes" : "no") << endl;
+    sout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
+    sout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
+    sout << "RTTI support................" << dictionary[ "RTTI" ] << endl;
+    sout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;
+    sout << "IWMMXT support.............." << dictionary[ "IWMMXT" ] << endl;
+    sout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
+    sout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
+    sout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
+    sout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
+    sout << "QtWidgets module support...." << dictionary[ "WIDGETS" ] << endl;
+    sout << "QML debugging..............." << dictionary[ "QML_DEBUG" ] << endl;
+    sout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
 
-    cout << "Third Party Libraries:" << endl;
-    cout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;
-    cout << "    GIF support............." << dictionary[ "GIF" ] << endl;
-    cout << "    JPEG support............" << dictionary[ "JPEG" ] << endl;
-    cout << "    PNG support............." << dictionary[ "PNG" ] << endl;
-    cout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl << endl;
-    cout << "    PCRE support............" << dictionary[ "PCRE" ] << endl;
-    cout << "    ICU support............." << dictionary[ "ICU" ] << endl;
+    sout << "Third Party Libraries:" << endl;
+    sout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;
+    sout << "    GIF support............." << dictionary[ "GIF" ] << endl;
+    sout << "    JPEG support............" << dictionary[ "JPEG" ] << endl;
+    sout << "    PNG support............." << dictionary[ "PNG" ] << endl;
+    sout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl << endl;
+    sout << "    PCRE support............" << dictionary[ "PCRE" ] << endl;
+    sout << "    ICU support............." << dictionary[ "ICU" ] << endl;
 
-    cout << "Styles:" << endl;
-    cout << "    Windows................." << dictionary[ "STYLE_WINDOWS" ] << endl;
-    cout << "    Windows XP.............." << dictionary[ "STYLE_WINDOWSXP" ] << endl;
-    cout << "    Windows Vista..........." << dictionary[ "STYLE_WINDOWSVISTA" ] << endl;
-    cout << "    Plastique..............." << dictionary[ "STYLE_PLASTIQUE" ] << endl;
-    cout << "    Cleanlooks.............." << dictionary[ "STYLE_CLEANLOOKS" ] << endl;
-    cout << "    Motif..................." << dictionary[ "STYLE_MOTIF" ] << endl;
-    cout << "    CDE....................." << dictionary[ "STYLE_CDE" ] << endl;
-    cout << "    Windows CE.............." << dictionary[ "STYLE_WINDOWSCE" ] << endl;
-    cout << "    Windows Mobile.........." << dictionary[ "STYLE_WINDOWSMOBILE" ] << endl << endl;
+    sout << "Styles:" << endl;
+    sout << "    Windows................." << dictionary[ "STYLE_WINDOWS" ] << endl;
+    sout << "    Windows XP.............." << dictionary[ "STYLE_WINDOWSXP" ] << endl;
+    sout << "    Windows Vista..........." << dictionary[ "STYLE_WINDOWSVISTA" ] << endl;
+    sout << "    Plastique..............." << dictionary[ "STYLE_PLASTIQUE" ] << endl;
+    sout << "    Cleanlooks.............." << dictionary[ "STYLE_CLEANLOOKS" ] << endl;
+    sout << "    Motif..................." << dictionary[ "STYLE_MOTIF" ] << endl;
+    sout << "    CDE....................." << dictionary[ "STYLE_CDE" ] << endl;
+    sout << "    Windows CE.............." << dictionary[ "STYLE_WINDOWSCE" ] << endl;
+    sout << "    Windows Mobile.........." << dictionary[ "STYLE_WINDOWSMOBILE" ] << endl << endl;
 
-    cout << "Sql Drivers:" << endl;
-    cout << "    ODBC...................." << dictionary[ "SQL_ODBC" ] << endl;
-    cout << "    MySQL..................." << dictionary[ "SQL_MYSQL" ] << endl;
-    cout << "    OCI....................." << dictionary[ "SQL_OCI" ] << endl;
-    cout << "    PostgreSQL.............." << dictionary[ "SQL_PSQL" ] << endl;
-    cout << "    TDS....................." << dictionary[ "SQL_TDS" ] << endl;
-    cout << "    DB2....................." << dictionary[ "SQL_DB2" ] << endl;
-    cout << "    SQLite.................." << dictionary[ "SQL_SQLITE" ] << " (" << dictionary[ "SQL_SQLITE_LIB" ] << ")" << endl;
-    cout << "    SQLite2................." << dictionary[ "SQL_SQLITE2" ] << endl;
-    cout << "    InterBase..............." << dictionary[ "SQL_IBASE" ] << endl << endl;
+    sout << "Sql Drivers:" << endl;
+    sout << "    ODBC...................." << dictionary[ "SQL_ODBC" ] << endl;
+    sout << "    MySQL..................." << dictionary[ "SQL_MYSQL" ] << endl;
+    sout << "    OCI....................." << dictionary[ "SQL_OCI" ] << endl;
+    sout << "    PostgreSQL.............." << dictionary[ "SQL_PSQL" ] << endl;
+    sout << "    TDS....................." << dictionary[ "SQL_TDS" ] << endl;
+    sout << "    DB2....................." << dictionary[ "SQL_DB2" ] << endl;
+    sout << "    SQLite.................." << dictionary[ "SQL_SQLITE" ] << " (" << dictionary[ "SQL_SQLITE_LIB" ] << ")" << endl;
+    sout << "    SQLite2................." << dictionary[ "SQL_SQLITE2" ] << endl;
+    sout << "    InterBase..............." << dictionary[ "SQL_IBASE" ] << endl << endl;
 
-    cout << "Sources are in.............." << dictionary[ "QT_SOURCE_TREE" ] << endl;
-    cout << "Build is done in............" << dictionary[ "QT_BUILD_TREE" ] << endl;
-    cout << "Install prefix.............." << dictionary[ "QT_INSTALL_PREFIX" ] << endl;
-    cout << "Headers installed to........" << dictionary[ "QT_INSTALL_HEADERS" ] << endl;
-    cout << "Libraries installed to......" << dictionary[ "QT_INSTALL_LIBS" ] << endl;
-    cout << "Plugins installed to........" << dictionary[ "QT_INSTALL_PLUGINS" ] << endl;
-    cout << "Imports installed to........" << dictionary[ "QT_INSTALL_IMPORTS" ] << endl;
-    cout << "Binaries installed to......." << dictionary[ "QT_INSTALL_BINS" ] << endl;
-    cout << "Docs installed to..........." << dictionary[ "QT_INSTALL_DOCS" ] << endl;
-    cout << "Data installed to..........." << dictionary[ "QT_INSTALL_DATA" ] << endl;
-    cout << "Translations installed to..." << dictionary[ "QT_INSTALL_TRANSLATIONS" ] << endl;
-    cout << "Examples installed to......." << dictionary[ "QT_INSTALL_EXAMPLES" ] << endl;
-    cout << "Tests installed to.........." << dictionary[ "QT_INSTALL_TESTS" ] << endl;
+    sout << "Sources are in.............." << dictionary[ "QT_SOURCE_TREE" ] << endl;
+    sout << "Build is done in............" << dictionary[ "QT_BUILD_TREE" ] << endl;
+    sout << "Install prefix.............." << dictionary[ "QT_INSTALL_PREFIX" ] << endl;
+    sout << "Headers installed to........" << dictionary[ "QT_INSTALL_HEADERS" ] << endl;
+    sout << "Libraries installed to......" << dictionary[ "QT_INSTALL_LIBS" ] << endl;
+    sout << "Plugins installed to........" << dictionary[ "QT_INSTALL_PLUGINS" ] << endl;
+    sout << "Imports installed to........" << dictionary[ "QT_INSTALL_IMPORTS" ] << endl;
+    sout << "Binaries installed to......." << dictionary[ "QT_INSTALL_BINS" ] << endl;
+    sout << "Docs installed to..........." << dictionary[ "QT_INSTALL_DOCS" ] << endl;
+    sout << "Data installed to..........." << dictionary[ "QT_INSTALL_DATA" ] << endl;
+    sout << "Translations installed to..." << dictionary[ "QT_INSTALL_TRANSLATIONS" ] << endl;
+    sout << "Examples installed to......." << dictionary[ "QT_INSTALL_EXAMPLES" ] << endl;
+    sout << "Tests installed to.........." << dictionary[ "QT_INSTALL_TESTS" ] << endl;
 
     if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith(QLatin1String("wince"))) {
-        cout << "Using c runtime detection..." << dictionary[ "CE_CRT" ] << endl;
-        cout << "Cetest support.............." << dictionary[ "CETEST" ] << endl;
-        cout << "Signature..................." << dictionary[ "CE_SIGNATURE"] << endl << endl;
+        sout << "Using c runtime detection..." << dictionary[ "CE_CRT" ] << endl;
+        sout << "Cetest support.............." << dictionary[ "CETEST" ] << endl;
+        sout << "Signature..................." << dictionary[ "CE_SIGNATURE"] << endl << endl;
     }
 
     if (checkAvailability("INCREDIBUILD_XGE"))
-        cout << "Using IncrediBuild XGE......" << dictionary["INCREDIBUILD_XGE"] << endl;
+        sout << "Using IncrediBuild XGE......" << dictionary["INCREDIBUILD_XGE"] << endl;
     if (!qmakeDefines.isEmpty()) {
-        cout << "Defines.....................";
+        sout << "Defines.....................";
         for (QStringList::Iterator defs = qmakeDefines.begin(); defs != qmakeDefines.end(); ++defs)
-            cout << (*defs) << " ";
-        cout << endl;
+            sout << (*defs) << " ";
+        sout << endl;
     }
     if (!qmakeIncludes.isEmpty()) {
-        cout << "Include paths...............";
+        sout << "Include paths...............";
         for (QStringList::Iterator incs = qmakeIncludes.begin(); incs != qmakeIncludes.end(); ++incs)
-            cout << (*incs) << " ";
-        cout << endl;
+            sout << (*incs) << " ";
+        sout << endl;
     }
     if (!qmakeLibs.isEmpty()) {
-        cout << "Additional libraries........";
+        sout << "Additional libraries........";
         for (QStringList::Iterator libs = qmakeLibs.begin(); libs != qmakeLibs.end(); ++libs)
-            cout << (*libs) << " ";
-        cout << endl;
+            sout << (*libs) << " ";
+        sout << endl;
     }
     if (dictionary[ "QMAKE_INTERNAL" ] == "yes") {
-        cout << "Using internal configuration." << endl;
+        sout << "Using internal configuration." << endl;
     }
     if (dictionary[ "SHARED" ] == "no") {
-        cout << "WARNING: Using static linking will disable the use of plugins." << endl;
-        cout << "         Make sure you compile ALL needed modules into the library." << endl;
+        sout << "WARNING: Using static linking will disable the use of plugins." << endl;
+        sout << "         Make sure you compile ALL needed modules into the library." << endl;
     }
     if (dictionary[ "OPENSSL" ] == "linked" && opensslLibs.isEmpty()) {
-        cout << "NOTE: When linking against OpenSSL, you can override the default" << endl;
-        cout << "library names through OPENSSL_LIBS." << endl;
-        cout << "For example:" << endl;
-        cout << "    configure -openssl-linked OPENSSL_LIBS=\"-lssleay32 -llibeay32\"" << endl;
+        sout << "NOTE: When linking against OpenSSL, you can override the default" << endl;
+        sout << "library names through OPENSSL_LIBS." << endl;
+        sout << "For example:" << endl;
+        sout << "    configure -openssl-linked OPENSSL_LIBS=\"-lssleay32 -llibeay32\"" << endl;
     }
     if (dictionary[ "ZLIB_FORCED" ] == "yes") {
         QString which_zlib = "supplied";
         if (dictionary[ "ZLIB" ] == "system")
             which_zlib = "system";
 
-        cout << "NOTE: The -no-zlib option was supplied but is no longer supported." << endl
+        sout << "NOTE: The -no-zlib option was supplied but is no longer supported." << endl
              << endl
              << "Qt now requires zlib support in all builds, so the -no-zlib" << endl
              << "option was ignored. Qt will be built using the " << which_zlib
              << "zlib" << endl;
     }
     if (dictionary["OBSOLETE_ARCH_ARG"] == "yes") {
-        cout << endl
+        sout << endl
              << "NOTE: The -arch option is obsolete." << endl
              << endl
              << "Qt now detects the target and host architectures based on compiler" << endl
@@ -3126,6 +3132,14 @@ void Configure::displayConfig()
              << "and " << dictionary["QT_HOST_ARCH"] << " for the host architecture (note that these two" << endl
              << "will be the same unless you are cross-compiling)." << endl
              << endl;
+    }
+
+    // display config.summary
+    sout.seekg(0, ios::beg);
+    while (sout) {
+        string str;
+        getline(sout, str);
+        cout << str << endl;
     }
 }
 #endif
