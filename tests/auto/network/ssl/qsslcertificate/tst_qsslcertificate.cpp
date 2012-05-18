@@ -164,6 +164,8 @@ void tst_QSslCertificate::cleanupTestCase()
     }
 }
 
+#ifndef QT_NO_SSL
+
 static QByteArray readFile(const QString &absFilePath)
 {
     QFile file(absFilePath);
@@ -173,8 +175,6 @@ static QByteArray readFile(const QString &absFilePath)
     }
     return file.readAll();
 }
-
-#ifndef QT_NO_SSL
 
 void tst_QSslCertificate::emptyConstructor()
 {
