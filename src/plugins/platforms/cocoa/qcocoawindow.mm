@@ -266,18 +266,30 @@ void QCocoaWindow::propagateSizeHints()
     if (!m_nsWindow)
         return;
 
-    [m_nsWindow setMinSize : qt_mac_toNSSize(window()->minimumSize())];
-    [m_nsWindow setMaxSize : qt_mac_toNSSize(window()->maximumSize())];
-
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QCocoaWindow::propagateSizeHints" << this;
     qDebug() << "     min/max " << window()->minimumSize() << window()->maximumSize();
+    qDebug() << "size increment" << window()->sizeIncrement();
     qDebug() << "     basesize" << window()->baseSize();
     qDebug() << "     geometry" << geometry();
 #endif
 
-    if (!window()->sizeIncrement().isNull())
+    // Set the minimum content size.
+    const QSize minimumSize = window()->minimumSize();
+    if (!minimumSize.isValid()) // minimumSize is (-1, -1) when not set. Make that (0, 0) for Cocoa.
+        [m_nsWindow setContentMinSize : NSMakeSize(0.0, 0.0)];
+    [m_nsWindow setContentMinSize : NSMakeSize(minimumSize.width(), minimumSize.height())];
+
+    // Set the maximum content size.
+    const QSize maximumSize = window()->maximumSize();
+    [m_nsWindow setContentMaxSize : NSMakeSize(maximumSize.width(), maximumSize.height())];
+
+    // sizeIncrement is observed to take values of (-1, -1) and (0, 0) for windows that should be
+    // resizable and that have no specific size increment set. Cocoa expects (1.0, 1.0) in this case.
+    if (!window()->sizeIncrement().isEmpty())
         [m_nsWindow setResizeIncrements : qt_mac_toNSSize(window()->sizeIncrement())];
+    else
+        [m_nsWindow setResizeIncrements : NSMakeSize(1.0, 1.0)];
 
     QRect rect = geometry();
     QSize baseSize = window()->baseSize();
