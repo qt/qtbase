@@ -1507,6 +1507,24 @@ QString &QString::append(const QString &str)
 
 /*!
   \overload append()
+  \since 5.0
+
+  Appends \a len characters from the QChar array \a str to this string.
+*/
+QString &QString::append(const QChar *str, int len)
+{
+    if (str && len > 0) {
+        if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
+            reallocData(uint(d->size + len) + 1u, true);
+        memcpy(d->data() + d->size, str, len * sizeof(QChar));
+        d->size += len;
+        d->data()[d->size] = '\0';
+    }
+    return *this;
+}
+
+/*!
+  \overload append()
 
   Appends the Latin-1 string \a str to this string.
 */

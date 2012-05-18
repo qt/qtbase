@@ -2012,9 +2012,29 @@ void tst_QString::insert()
 
 void tst_QString::append()
 {
-    QString a;
-    a = "<>ABCABCABCABC";
-    QCOMPARE(a.append(">"),(QString)"<>ABCABCABCABC>");
+    {
+        QString a;
+        a = "<>ABCABCABCABC";
+        QCOMPARE(a.append(">"),QString("<>ABCABCABCABC>"));
+    }
+
+    {
+        QString a;
+        static const QChar unicode[] = { 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!' };
+        a.append(unicode, sizeof unicode / sizeof *unicode);
+        QCOMPARE(a, QLatin1String("Hello, World!"));
+        static const QChar nl('\n');
+        a.append(&nl, 1);
+        QCOMPARE(a, QLatin1String("Hello, World!\n"));
+        a.append(unicode, sizeof unicode / sizeof *unicode);
+        QCOMPARE(a, QLatin1String("Hello, World!\nHello, World!"));
+        a.append(unicode, 0); // no-op
+        QCOMPARE(a, QLatin1String("Hello, World!\nHello, World!"));
+        a.append(unicode, -1); // no-op
+        QCOMPARE(a, QLatin1String("Hello, World!\nHello, World!"));
+        a.append(0, 1); // no-op
+        QCOMPARE(a, QLatin1String("Hello, World!\nHello, World!"));
+    }
 }
 
 void tst_QString::append_bytearray_data()
