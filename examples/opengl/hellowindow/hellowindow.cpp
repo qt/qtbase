@@ -80,6 +80,8 @@ HelloWindow::HelloWindow(Renderer *renderer)
 
 void HelloWindow::exposeEvent(QExposeEvent *event)
 {
+    Q_UNUSED(event);
+
     render();
 
     QTimer *timer = new QTimer(this);
