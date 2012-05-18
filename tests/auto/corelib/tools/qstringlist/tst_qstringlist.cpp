@@ -66,6 +66,8 @@ private slots:
     void join() const;
     void join_data() const;
     void joinEmptiness() const;
+    void joinChar() const;
+    void joinChar_data() const;
 
     void initializeList() const;
 };
@@ -359,6 +361,42 @@ void tst_QStringList::join_data() const
                         << QLatin1String("b")
                         << QLatin1String("c"))
                 << QString(QLatin1String(" "))
+                << QString("a b c");
+}
+
+void tst_QStringList::joinChar() const
+{
+    QFETCH(QStringList, input);
+    QFETCH(QChar, separator);
+    QFETCH(QString, expectedResult);
+
+    QCOMPARE(input.join(separator), expectedResult);
+}
+
+void tst_QStringList::joinChar_data() const
+{
+    QTest::addColumn<QStringList>("input");
+    QTest::addColumn<QChar>("separator");
+    QTest::addColumn<QString>("expectedResult");
+
+    QTest::newRow("data1")
+                << QStringList()
+                << QChar(QLatin1Char(' '))
+                << QString();
+
+    QTest::newRow("data5")
+                << (QStringList()
+                        << QLatin1String("a")
+                        << QLatin1String("b"))
+                << QChar(QLatin1Char(' '))
+                << QString("a b");
+
+    QTest::newRow("data6")
+                << (QStringList()
+                        << QLatin1String("a")
+                        << QLatin1String("b")
+                        << QLatin1String("c"))
+                << QChar(QLatin1Char(' '))
                 << QString("a b c");
 }
 

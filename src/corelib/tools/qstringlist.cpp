@@ -434,7 +434,13 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegularEx
 
     \sa QString::split()
 */
-QString QtPrivate::QStringList_join(const QStringList *that, const QString &sep)
+
+/*!
+    \fn QString QStringList::join(QChar separator) const
+    \since 5.0
+    \overload join()
+*/
+QString QtPrivate::QStringList_join(const QStringList *that, const QChar *sep, int seplen)
 {
     int totalLength = 0;
     const int size = that->size();
@@ -443,7 +449,7 @@ QString QtPrivate::QStringList_join(const QStringList *that, const QString &sep)
         totalLength += that->at(i).size();
 
     if(size > 0)
-        totalLength += sep.size() * (size - 1);
+        totalLength += seplen * (size - 1);
 
     QString res;
     if (totalLength == 0)
@@ -451,7 +457,7 @@ QString QtPrivate::QStringList_join(const QStringList *that, const QString &sep)
     res.reserve(totalLength);
     for (int i = 0; i < that->size(); ++i) {
         if (i)
-            res += sep;
+            res.append(sep, seplen);
         res += that->at(i);
     }
     return res;
