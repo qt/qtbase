@@ -309,12 +309,9 @@ void PieView::paintEvent(QPaintEvent *event)
 {
     QItemSelectionModel *selections = selectionModel();
     QStyleOptionViewItem option = viewOptions();
-    QStyle::State state = option.state;
 
     QBrush background = option.palette.base();
     QPen foreground(option.palette.color(QPalette::WindowText));
-    QPen textPen(option.palette.color(QPalette::Text));
-    QPen highlightedPen(option.palette.color(QPalette::HighlightedText));
 
     QPainter painter(viewport());
     painter.setRenderHint(QPainter::Antialiasing);
@@ -324,8 +321,6 @@ void PieView::paintEvent(QPaintEvent *event)
 
     // Viewport rectangles
     QRect pieRect = QRect(margin, margin, pieSize, pieSize);
-    QPoint keyPoint = QPoint(totalSize - horizontalScrollBar()->value(),
-                             margin - verticalScrollBar()->value());
 
     if (validItems > 0) {
 
