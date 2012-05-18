@@ -75,7 +75,7 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
     }
 
     // build new specification without /dev/ elements
-    m_spec = args.join(QLatin1String(":"));
+    m_spec = args.join(QLatin1Char(':'));
 
     // add all mice for devices specified in the argument list
     foreach (const QString &device, devices)

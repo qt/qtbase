@@ -1190,7 +1190,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
             stateStrings << QLatin1String("invisible");
 
         if (!stateStrings.isEmpty())
-            d << stateStrings.join(QLatin1String("|"));
+            d << stateStrings.join(QLatin1Char('|'));
 
         if (!st.invisible)
             d << "rect=" << iface->rect();
