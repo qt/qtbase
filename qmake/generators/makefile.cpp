@@ -2432,7 +2432,6 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         if(!in_directory.isEmpty())
             mkfile.prepend(out_directory);
 
-        QString in_directory_cdin, in_directory_cdout, out_directory_cdin, out_directory_cdout;
 #define MAKE_CD_IN_AND_OUT(directory) \
         if(!directory.isEmpty()) {               \
             if(project->isActiveConfig("cd_change_global")) { \
@@ -2453,7 +2452,8 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         } else { \
             directory ## _cdin = "\n\t"; \
         }
-        MAKE_CD_IN_AND_OUT(in_directory);
+
+        QString out_directory_cdin, out_directory_cdout;
         MAKE_CD_IN_AND_OUT(out_directory);
 
         QString makefilein = " -f " + subtarget->makefile;
@@ -2469,7 +2469,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 t << mkdir_p_asstring(out_directory)
                   << out_directory_cdin
                   << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out
-                  << in_directory_cdout << endl;
+                  << out_directory_cdout << endl;
             } else {
                 t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out << endl;
             }
@@ -2488,7 +2488,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 t << mkdir_p_asstring(out_directory)
                   << out_directory_cdin
                   << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out
-                  << in_directory_cdout;
+                  << out_directory_cdout;
             } else {
                 t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out;
             }
