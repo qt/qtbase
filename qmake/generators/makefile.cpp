@@ -98,12 +98,7 @@ QString MakefileGenerator::mkdir_p_asstring(const QString &dir, bool escape) con
         ret += escapeFilePath(dir);
     else
         ret += dir;
-    ret += " ";
-    if(isWindowsShell())
-        ret += "$(MKDIR)";
-    else
-        ret += "|| $(MKDIR)";
-    ret += " ";
+    ret += " " + chkglue + "$(MKDIR) ";
     if(escape)
         ret += escapeFilePath(dir);
     else
@@ -433,6 +428,9 @@ MakefileGenerator::init()
     QHash<QString, QStringList> &v = project->variables();
 
     chkdir = v["QMAKE_CHK_DIR_EXISTS"].join(" ");
+    chkglue = v["QMAKE_CHK_EXISTS_GLUE"].join(" ");
+    if (chkglue.isEmpty()) // Backwards compat with Qt4 specs
+        chkglue = isWindowsShell() ? "" : "|| ";
 
     QStringList &quc = v["QMAKE_EXTRA_COMPILERS"];
 
