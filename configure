@@ -1024,9 +1024,14 @@ while [ "$#" -gt 0 ]; do
             VAL=`echo $1 | sed 's,-R,,'`
         fi
         ;;
-    -l?*)
+    -l?*|-l)
         VAR="add_link"
-        VAL=`echo $1 | sed 's,-l,,'`
+        if [ "$1" = "-l" ]; then
+            shift
+            VAL="$1"
+        else
+            VAL=`echo $1 | sed 's,-l,,'`
+        fi
         ;;
     -F?*|-F)
         VAR="add_fpath"
