@@ -157,6 +157,8 @@ void DownloadManager::sslErrors(const QList<QSslError> &sslErrors)
 #ifndef QT_NO_SSL
     foreach (const QSslError &error, sslErrors)
         fprintf(stderr, "SSL error: %s\n", qPrintable(error.errorString()));
+#else
+    Q_UNUSED(sslErrors);
 #endif
 }
 
