@@ -168,7 +168,7 @@ void tst_QDnsLookup::lookup()
             addresses << record.value().toString().toLower();
     }
     addresses.sort();
-    QCOMPARE(addresses.join(" "), host);
+    QCOMPARE(addresses.join(' '), host);
 
     // mail exchanges
     QStringList mailExchanges;
@@ -176,7 +176,7 @@ void tst_QDnsLookup::lookup()
         QCOMPARE(record.name(), domain);
         mailExchanges << QString("%1 %2").arg(QString::number(record.preference()), record.exchange());
     }
-    QCOMPARE(mailExchanges.join(" "), mx);
+    QCOMPARE(mailExchanges.join(' '), mx);
 
     // name servers
     QStringList nameServers;
@@ -186,7 +186,7 @@ void tst_QDnsLookup::lookup()
             nameServers << record.value();
     }
     nameServers.sort();
-    QCOMPARE(nameServers.join(" "), ns);
+    QCOMPARE(nameServers.join(' '), ns);
 
     // pointers
     if (!ptr.isEmpty()) {
@@ -208,7 +208,7 @@ void tst_QDnsLookup::lookup()
                 QString::number(record.port()),
                 record.target());
     }
-    QCOMPARE(services.join(" "), srv);
+    QCOMPARE(services.join(' '), srv);
 
     // text
     if (!txt.isEmpty()) {

@@ -1610,7 +1610,7 @@ QDebug operator<<(QDebug debug, const QNetworkProxy &proxy)
         scaps << QStringLiteral("Caching");
     if (caps & QNetworkProxy::HostNameLookupCapability)
         scaps << QStringLiteral("NameLookup");
-    debug << "[" << scaps.join(QStringLiteral(" ")) << "]";
+    debug << "[" << scaps.join(QLatin1Char(' ')) << "]";
     return debug;
 }
 #endif

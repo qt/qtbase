@@ -302,7 +302,7 @@ void tst_QHostInfo::lookupIPv4()
     QStringList expected = addresses.split(' ');
     expected.sort();
 
-    QCOMPARE(tmp.join(" "), expected.join(" "));
+    QCOMPARE(tmp.join(' '), expected.join(' '));
 }
 
 void tst_QHostInfo::lookupIPv6_data()
@@ -349,7 +349,7 @@ void tst_QHostInfo::lookupIPv6()
     QStringList expected = addresses.split(' ');
     expected.sort();
 
-    QCOMPARE(tmp.join(" ").toLower(), expected.join(" ").toLower());
+    QCOMPARE(tmp.join(' ').toLower(), expected.join(' ').toLower());
 }
 
 void tst_QHostInfo::reverseLookup_data()
@@ -414,7 +414,7 @@ void tst_QHostInfo::blockingLookup()
     QStringList expected = addresses.split(' ');
     expected.sort();
 
-    QCOMPARE(tmp.join(" ").toUpper(), expected.join(" ").toUpper());
+    QCOMPARE(tmp.join(' ').toUpper(), expected.join(' ').toUpper());
 }
 
 void tst_QHostInfo::raceCondition()
