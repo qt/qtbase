@@ -2214,8 +2214,8 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         writeStartTag(DT_qmlTypeDetail);
         generateQmlModuleDef(qcn);
         generateQmlInherits(qcn,marker);
-        generateQmlInstantiates(qcn,marker);
         generateQmlInheritedBy(qcn, marker);
+        generateQmlInstantiates(qcn,marker);
         generateQmlSince(qcn);
 
         enterDesc(DT_apiDesc,QString(),title);
