@@ -2661,12 +2661,8 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                     sub_targ = project->first((*qut_it) + ".recurse_target");
 
                 //write the commands
-                if(!out_directory.isEmpty()) {
-                    writeSubMakeCall(t, out_directory_cdin, makefilein + " " + sub_targ,
-                                     out_directory_cdout);
-                } else {
-                    writeSubMakeCall(t, "\n\t", makefilein + " " + sub_targ, QString());
-                }
+                writeSubMakeCall(t, out_directory_cdin, makefilein + " " + sub_targ,
+                                 out_directory_cdout);
             }
         }
         if(project->isEmpty("QMAKE_NOFORCE") &&
