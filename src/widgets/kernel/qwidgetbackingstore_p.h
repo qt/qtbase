@@ -77,7 +77,7 @@ public:
 
     void sync(QWidget *exposedWidget, const QRegion &exposedRegion);
     void sync();
-    void flush(QWidget *widget = 0, QBackingStore *store = 0);
+    void flush(QWidget *widget = 0);
 
     inline QPoint topLevelOffset() const { return tlwOffset; }
 

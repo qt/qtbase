@@ -1086,12 +1086,11 @@ void QWidgetBackingStore::sync()
     If the \a widget is non-zero, the content is flushed to the \a widget.
     If the \a surface is non-zero, the content of the \a surface is flushed.
 */
-void QWidgetBackingStore::flush(QWidget *widget, QBackingStore *backingStore)
+void QWidgetBackingStore::flush(QWidget *widget)
 {
     if (!dirtyOnScreen.isEmpty()) {
         QWidget *target = widget ? widget : tlw;
-        QBackingStore *source = store ? store : backingStore;
-        qt_flush(target, dirtyOnScreen, source, tlw, tlwOffset);
+        qt_flush(target, dirtyOnScreen, store, tlw, tlwOffset);
         dirtyOnScreen = QRegion();
     }
 
@@ -1102,7 +1101,7 @@ void QWidgetBackingStore::flush(QWidget *widget, QBackingStore *backingStore)
         QWidget *w = dirtyOnScreenWidgets->at(i);
         QWidgetPrivate *wd = w->d_func();
         Q_ASSERT(wd->needsFlush);
-        qt_flush(w, *wd->needsFlush, backingStore, tlw, tlwOffset);
+        qt_flush(w, *wd->needsFlush, store, tlw, tlwOffset);
         *wd->needsFlush = QRegion();
     }
     dirtyOnScreenWidgets->clear();
