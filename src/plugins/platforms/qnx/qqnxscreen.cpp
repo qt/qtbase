@@ -210,7 +210,17 @@ void QQnxScreen::addWindow(QQnxWindow *window)
     if (m_childWindows.contains(window))
         return;
 
-    m_childWindows.push_back(window);
+    // Ensure that the desktop window is at the bottom of the zorder.
+    // If we do not do this then we may end up activating the desktop
+    // when the navigator service gets an event that our window group
+    // has been activated (see QQnxScreen::activateWindowGroup()).
+    // Such a situation would strangely break focus handling due to the
+    // invisible desktop widget window being layered on top of normal
+    // windows
+    if (window->window()->windowType() == Qt::Desktop)
+        m_childWindows.push_front(window);
+    else
+        m_childWindows.push_back(window);
     updateHierarchy();
 }
 
