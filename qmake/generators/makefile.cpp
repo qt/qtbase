@@ -2413,6 +2413,8 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                        << QString((flags & SubTargetInstalls) ? "uninstall_subtargets" : "uninstall");
     }
 
+    bool dont_recurse = project->isActiveConfig("dont_recurse");
+
     // generate target rules
     for(int target = 0; target < targets.size(); ++target) {
         SubTarget *subtarget = targets.at(target);
@@ -2453,6 +2455,8 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         MAKE_CD_IN_AND_OUT(in_directory);
         MAKE_CD_IN_AND_OUT(out_directory);
 
+        QString makefilein = " -f " + subtarget->makefile;
+
         //qmake it
         if(!subtarget->profile.isEmpty()) {
             QString out = subtarget->makefile;
@@ -2476,13 +2480,15 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 t << mkdir_p_asstring(out_directory)
                   << out_directory_cdin
                   << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out
-                  << in_directory_cdout << endl;
+                  << in_directory_cdout;
             } else {
-                t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out << endl;
+                t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out;
             }
+            if (!dont_recurse)
+                writeSubMakeCall(t, out_directory_cdin, makefilein + " qmake_all", out_directory_cdout);
+            else
+                t << endl;
         }
-
-        QString makefilein = " -f " + subtarget->makefile;
 
         { //actually compile
             t << subtarget->target << ": " << mkfile;
@@ -2522,7 +2528,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
     t << endl;
 
     if (!(flags & SubTargetSkipDefaultTargets)) {
-        writeMakeQmake(t);
+        writeMakeQmake(t, true);
 
         t << "qmake_all:";
         if(!targets.isEmpty()) {
@@ -2674,7 +2680,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
 }
 
 void
-MakefileGenerator::writeMakeQmake(QTextStream &t)
+MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
 {
     QString ofile = Option::fixPathToTargetOS(fileFixify(Option::output.fileName()));
     if(project->isEmpty("QMAKE_FAILED_REQUIREMENTS") && !project->isEmpty("QMAKE_INTERNAL_PRL_FILE")) {
@@ -2712,6 +2718,14 @@ MakefileGenerator::writeMakeQmake(QTextStream &t)
             if(project->isEmpty("QMAKE_NOFORCE"))
                 t <<  " FORCE";
             t << "\n\t" << "@" << qmake << endl << endl;
+            if (!noDummyQmakeAll) {
+                t << "qmake_all:";
+                if (project->isEmpty("QMAKE_NOFORCE"))
+                    t <<  " FORCE";
+                if (project->isActiveConfig("no_empty_targets"))
+                    t << "\n\t" << "@cd .";
+                t << endl << endl;
+            }
         }
     }
 }

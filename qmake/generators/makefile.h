@@ -97,7 +97,7 @@ protected:
     void writeInstalls(QTextStream &t, const QString &installs, bool noBuild=false);
     void writeHeader(QTextStream &t);
     void writeSubDirs(QTextStream &t);
-    void writeMakeQmake(QTextStream &t);
+    void writeMakeQmake(QTextStream &t, bool noDummyQmakeAll = false);
     void writeExtraVariables(QTextStream &t);
     void writeExtraTargets(QTextStream &t);
     void writeExtraCompilerTargets(QTextStream &t);
