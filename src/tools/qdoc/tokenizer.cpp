@@ -502,8 +502,8 @@ void Tokenizer::initialize(const Config &config)
 
     QStringList d = config.getStringList(CONFIG_DEFINES);
     d += "qdoc";
-    defines = new QRegExp(d.join("|"));
-    falsehoods = new QRegExp(config.getStringList(CONFIG_FALSEHOODS).join("|"));
+    defines = new QRegExp(d.join('|'));
+    falsehoods = new QRegExp(config.getStringList(CONFIG_FALSEHOODS).join('|'));
 
     memset(kwordHashTable, 0, sizeof(kwordHashTable));
     for (int i = 0; i < Tok_LastKeyword - Tok_FirstKeyword + 1; i++)

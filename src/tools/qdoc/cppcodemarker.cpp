@@ -220,7 +220,7 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
                 bracketed += "slot";
             }
             if (!bracketed.isEmpty())
-                extra += " [" + bracketed.join(" ") + QLatin1Char(']');
+                extra += " [" + bracketed.join(' ') + QLatin1Char(']');
         }
         break;
     case Node::Enum:

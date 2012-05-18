@@ -2954,7 +2954,7 @@ Text Doc::trimmedBriefText(const QString &className) const
                 w.removeFirst();
         }
 
-        whats = w.join(" ");
+        whats = w.join(' ');
 
         if (whats.endsWith(QLatin1Char('.')))
             whats.truncate(whats.length() - 1);

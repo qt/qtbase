@@ -229,7 +229,7 @@ void Config::unload(const QString& fileName)
  */
 void Config::setStringList(const QString& var, const QStringList& values)
 {
-    stringValueMap[var] = values.join(QLatin1String(" "));
+    stringValueMap[var] = values.join(QLatin1Char(' '));
     stringListValueMap[var] = values;
 }
 

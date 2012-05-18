@@ -1485,7 +1485,7 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
             ClassNode* baseClassNode = related.node;
             baseStrings.insert(baseClassNode->name());
         }
-        writer.writeAttribute("bases", QStringList(baseStrings.toList()).join(","));
+        writer.writeAttribute("bases", QStringList(baseStrings.toList()).join(','));
         writer.writeAttribute("module", node->moduleName());
     }
         break;

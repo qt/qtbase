@@ -2439,7 +2439,7 @@ void Configure::generateOutputVars()
     if (dictionary[ "SHARED" ] == "yes") {
         QString version = dictionary[ "VERSION" ];
         if (!version.isEmpty()) {
-            qmakeVars += "QMAKE_QT_VERSION_OVERRIDE = " + version.left(version.indexOf("."));
+            qmakeVars += "QMAKE_QT_VERSION_OVERRIDE = " + version.left(version.indexOf('.'));
             version.remove(QLatin1Char('.'));
         }
         dictionary[ "QMAKE_OUTDIR" ] += "_shared";
@@ -2560,7 +2560,7 @@ void Configure::generateOutputVars()
     qmakeVars += QString("RCC_DIR         = ") + formatPath("tmp/rcc/" + dictionary["QMAKE_OUTDIR"]);
 
     if (!qmakeDefines.isEmpty())
-        qmakeVars += QString("DEFINES        += ") + qmakeDefines.join(" ");
+        qmakeVars += QString("DEFINES        += ") + qmakeDefines.join(' ');
     if (!qmakeIncludes.isEmpty())
         qmakeVars += QString("INCLUDEPATH    += ") + formatPaths(qmakeIncludes);
     if (!opensslLibs.isEmpty())
@@ -2595,17 +2595,17 @@ void Configure::generateOutputVars()
         if (!sybaseLibs.isEmpty())
             lflagsTDS += sybaseLibs.section("=", 1);
         if (!lflagsTDS.isEmpty())
-            qmakeVars += QString("QT_LFLAGS_TDS=") + lflagsTDS.join(" ");
+            qmakeVars += QString("QT_LFLAGS_TDS=") + lflagsTDS.join(' ');
     }
 
     if (!qmakeSql.isEmpty())
-        qmakeVars += QString("sql-drivers    += ") + qmakeSql.join(" ");
+        qmakeVars += QString("sql-drivers    += ") + qmakeSql.join(' ');
     if (!qmakeSqlPlugins.isEmpty())
-        qmakeVars += QString("sql-plugins    += ") + qmakeSqlPlugins.join(" ");
+        qmakeVars += QString("sql-plugins    += ") + qmakeSqlPlugins.join(' ');
     if (!qmakeStyles.isEmpty())
-        qmakeVars += QString("styles         += ") + qmakeStyles.join(" ");
+        qmakeVars += QString("styles         += ") + qmakeStyles.join(' ');
     if (!qmakeStylePlugins.isEmpty())
-        qmakeVars += QString("style-plugins  += ") + qmakeStylePlugins.join(" ");
+        qmakeVars += QString("style-plugins  += ") + qmakeStylePlugins.join(' ');
 
     if (dictionary["QMAKESPEC"].endsWith("-g++")) {
         QString includepath = qgetenv("INCLUDE");
@@ -2650,7 +2650,7 @@ void Configure::generateCachefile()
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
             cacheStream << (*var) << endl;
         }
-        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << "no_private_qt_headers_warning QTDIR_build" << endl;
+        cacheStream << "CONFIG         += " << qmakeConfig.join(' ') << "no_private_qt_headers_warning QTDIR_build" << endl;
 
         cacheStream.flush();
         cacheFile.close();
@@ -2664,7 +2664,7 @@ void Configure::generateCachefile()
         moduleStream << "#paths" << endl;
         moduleStream << "QT_BUILD_TREE   = " << formatPath(dictionary["QT_BUILD_TREE"]) << endl;
         moduleStream << "QT_SOURCE_TREE  = " << formatPath(dictionary["QT_SOURCE_TREE"]) << endl;
-        moduleStream << "QT_BUILD_PARTS += " << buildParts.join(" ") << endl << endl;
+        moduleStream << "QT_BUILD_PARTS += " << buildParts.join(' ') << endl << endl;
 
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
             moduleStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;
@@ -2915,7 +2915,7 @@ void Configure::generateQConfigPri()
             configStream << "QT_EDITION = " << QLatin1String("OpenSource") << endl;
         else
             configStream << "QT_EDITION = " << dictionary["EDITION"] << endl;
-        configStream << "QT_CONFIG += " << qtConfig.join(" ") << endl;
+        configStream << "QT_CONFIG += " << qtConfig.join(' ') << endl;
 
         configStream << "#versioning " << endl
                      << "QT_VERSION = " << dictionary["VERSION"] << endl
@@ -3757,11 +3757,11 @@ void Configure::generateMakefiles()
                     }
                     QTextStream txt(&file);
                     txt << "all:\n";
-                    txt << "\t" << args.join(" ") << "\n";
+                    txt << "\t" << args.join(' ') << "\n";
                     txt << "\t$(MAKE) -$(MAKEFLAGS) -f " << it->target << "\n";
                     txt << "first: all\n";
                     txt << "qmake: FORCE\n";
-                    txt << "\t" << args.join(" ") << "\n";
+                    txt << "\t" << args.join(' ') << "\n";
                     txt << "FORCE:\n";
                 }
             }

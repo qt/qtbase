@@ -364,7 +364,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                 node->setStatus(Node::Preliminary);
             }
             else if (command == COMMAND_SINCE) {
-                QString arg = args[0].first; //.join(" ");
+                QString arg = args[0].first; //.join(' ');
                 node->setSince(arg);
             }
             else {

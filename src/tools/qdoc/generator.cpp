@@ -1083,7 +1083,7 @@ void Generator::generateSince(const Node *node, CodeMarker *marker)
             text << " " << since[0];
         } else {
             // Reconstruct the <project> <version> string.
-            text << " " << since.join(" ");
+            text << " " << since.join(' ');
         }
 
         text << "." << Atom::ParaRight;

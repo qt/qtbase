@@ -104,7 +104,7 @@ void CppCodeParser::initializeParser(const Config &config)
                 CONFIG_EXAMPLES + Config::dot + CONFIG_FILEEXTENSIONS);
 
     if (!exampleFilePatterns.isEmpty())
-        exampleNameFilter = exampleFilePatterns.join(" ");
+        exampleNameFilter = exampleFilePatterns.join(' ');
     else
         exampleNameFilter = "*.cpp *.h *.js *.xq *.svg *.xml *.dita *.ui";
 
@@ -112,7 +112,7 @@ void CppCodeParser::initializeParser(const Config &config)
                 CONFIG_EXAMPLES + Config::dot + CONFIG_IMAGEEXTENSIONS);
 
     if (!exampleImagePatterns.isEmpty())
-        exampleImageFilter = exampleImagePatterns.join(" ");
+        exampleImageFilter = exampleImagePatterns.join(' ');
     else
         exampleImageFilter = "*.png";
 }

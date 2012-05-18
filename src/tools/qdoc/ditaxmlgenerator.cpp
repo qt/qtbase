@@ -1754,7 +1754,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             if (pieces.size() >= 2) {
                 columnText = pieces.at(0);
                 pieces.pop_front();
-                QString path = pieces.join(" ").trimmed();
+                QString path = pieces.join(' ').trimmed();
                 node = qdb_->findNodeForTarget(path, relative, atom);
                 if (!node)
                     relative->doc().location().warning(tr("Cannot link to '%1'").arg(path));

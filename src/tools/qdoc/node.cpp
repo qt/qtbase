@@ -2004,7 +2004,7 @@ QString FunctionNode::signature(bool values) const
 void FunctionNode::debug() const
 {
     qDebug("QML METHOD %s rt %s pp %s",
-           qPrintable(name()), qPrintable(rt), qPrintable(pp.join(" ")));
+           qPrintable(name()), qPrintable(rt), qPrintable(pp.join(' ')));
 }
 
 /*!
