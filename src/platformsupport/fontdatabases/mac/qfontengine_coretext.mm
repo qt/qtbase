@@ -190,20 +190,46 @@ void QCoreTextFontEngine::init()
 bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
                                        int *nglyphs, QTextEngine::ShaperFlags flags) const
 {
-    *nglyphs = len;
     QCFType<CFStringRef> cfstring;
 
     QVarLengthArray<CGGlyph> cgGlyphs(len);
     CTFontGetGlyphsForCharacters(ctfont, (const UniChar*)str, cgGlyphs.data(), len);
 
-    for (int i = 0; i < len; ++i)
-        if (cgGlyphs[i])
-            glyphs->glyphs[i] = cgGlyphs[i];
+    int glyph_pos = 0;
+    for (int i = 0; i < len; ++i) {
+        if (cgGlyphs[i]) {
+            glyphs->glyphs[glyph_pos] = cgGlyphs[i];
+            if (glyph_pos < i)
+                cgGlyphs[glyph_pos] = cgGlyphs[i];
+        }
+        glyph_pos++;
 
+        // If it's a non-BMP char, skip the lower part of surrogate pair and go
+        // directly to the next char without increasing glyph_pos
+        if (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate())
+            ++i;
+    }
+
+    *nglyphs = glyph_pos;
     if (flags & QTextEngine::GlyphIndicesOnly)
         return true;
 
-    loadAdvancesForGlyphs(ctfont, cgGlyphs, glyphs, len, flags, fontDef);
+    QVarLengthArray<CGSize> advances(glyph_pos);
+    CTFontGetAdvancesForGlyphs(ctfont, kCTFontHorizontalOrientation, cgGlyphs.data(), advances.data(), glyph_pos);
+
+    for (int i = 0; i < glyph_pos; ++i) {
+        if (glyphs->glyphs[i] & 0xff000000)
+            continue;
+        glyphs->advances_x[i] = QFixed::fromReal(advances[i].width);
+        glyphs->advances_y[i] = QFixed::fromReal(advances[i].height);
+    }
+
+    if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+        for (int i = 0; i < glyph_pos; ++i) {
+            glyphs->advances_x[i] = glyphs->advances_x[i].round();
+            glyphs->advances_y[i] = glyphs->advances_y[i].round();
+        }
+    }
     return true;
 }
 
