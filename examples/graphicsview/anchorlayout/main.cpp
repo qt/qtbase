@@ -86,37 +86,37 @@ int main(int argc, char **argv)
     w->setLayout(l);
 
     // vertical
-    QGraphicsAnchor *anchor = l->addAnchor(a, Qt::AnchorTop, l, Qt::AnchorTop);
-    anchor = l->addAnchor(b, Qt::AnchorTop, l, Qt::AnchorTop);
+    l->addAnchor(a, Qt::AnchorTop, l, Qt::AnchorTop);
+    l->addAnchor(b, Qt::AnchorTop, l, Qt::AnchorTop);
 
-    anchor = l->addAnchor(c, Qt::AnchorTop, a, Qt::AnchorBottom);
-    anchor = l->addAnchor(c, Qt::AnchorTop, b, Qt::AnchorBottom);
-    anchor = l->addAnchor(c, Qt::AnchorBottom, d, Qt::AnchorTop);
-    anchor = l->addAnchor(c, Qt::AnchorBottom, e, Qt::AnchorTop);
+    l->addAnchor(c, Qt::AnchorTop, a, Qt::AnchorBottom);
+    l->addAnchor(c, Qt::AnchorTop, b, Qt::AnchorBottom);
+    l->addAnchor(c, Qt::AnchorBottom, d, Qt::AnchorTop);
+    l->addAnchor(c, Qt::AnchorBottom, e, Qt::AnchorTop);
 
-    anchor = l->addAnchor(d, Qt::AnchorBottom, l, Qt::AnchorBottom);
-    anchor = l->addAnchor(e, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    l->addAnchor(d, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    l->addAnchor(e, Qt::AnchorBottom, l, Qt::AnchorBottom);
 
-    anchor = l->addAnchor(c, Qt::AnchorTop, f, Qt::AnchorTop);
-    anchor = l->addAnchor(c, Qt::AnchorVerticalCenter, f, Qt::AnchorBottom);
-    anchor = l->addAnchor(f, Qt::AnchorBottom, g, Qt::AnchorTop);
-    anchor = l->addAnchor(c, Qt::AnchorBottom, g, Qt::AnchorBottom);
+    l->addAnchor(c, Qt::AnchorTop, f, Qt::AnchorTop);
+    l->addAnchor(c, Qt::AnchorVerticalCenter, f, Qt::AnchorBottom);
+    l->addAnchor(f, Qt::AnchorBottom, g, Qt::AnchorTop);
+    l->addAnchor(c, Qt::AnchorBottom, g, Qt::AnchorBottom);
 
     // horizontal
-    anchor = l->addAnchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
-    anchor = l->addAnchor(l, Qt::AnchorLeft, d, Qt::AnchorLeft);
-    anchor = l->addAnchor(a, Qt::AnchorRight, b, Qt::AnchorLeft);
+    l->addAnchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
+    l->addAnchor(l, Qt::AnchorLeft, d, Qt::AnchorLeft);
+    l->addAnchor(a, Qt::AnchorRight, b, Qt::AnchorLeft);
 
-    anchor = l->addAnchor(a, Qt::AnchorRight, c, Qt::AnchorLeft);
-    anchor = l->addAnchor(c, Qt::AnchorRight, e, Qt::AnchorLeft);
+    l->addAnchor(a, Qt::AnchorRight, c, Qt::AnchorLeft);
+    l->addAnchor(c, Qt::AnchorRight, e, Qt::AnchorLeft);
 
-    anchor = l->addAnchor(b, Qt::AnchorRight, l, Qt::AnchorRight);
-    anchor = l->addAnchor(e, Qt::AnchorRight, l, Qt::AnchorRight);
-    anchor = l->addAnchor(d, Qt::AnchorRight, e, Qt::AnchorLeft);
+    l->addAnchor(b, Qt::AnchorRight, l, Qt::AnchorRight);
+    l->addAnchor(e, Qt::AnchorRight, l, Qt::AnchorRight);
+    l->addAnchor(d, Qt::AnchorRight, e, Qt::AnchorLeft);
 
-    anchor = l->addAnchor(l, Qt::AnchorLeft, f, Qt::AnchorLeft);
-    anchor = l->addAnchor(l, Qt::AnchorLeft, g, Qt::AnchorLeft);
-    anchor = l->addAnchor(f, Qt::AnchorRight, g, Qt::AnchorRight);
+    l->addAnchor(l, Qt::AnchorLeft, f, Qt::AnchorLeft);
+    l->addAnchor(l, Qt::AnchorLeft, g, Qt::AnchorLeft);
+    l->addAnchor(f, Qt::AnchorRight, g, Qt::AnchorRight);
 
 
     scene.addItem(w);
