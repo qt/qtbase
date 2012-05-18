@@ -82,8 +82,8 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
             if (variables["QMAKESPEC"].first().contains("wince", Qt::CaseInsensitive)) {
                 CeSdkHandler sdkhandler;
                 sdkhandler.parse();
-                const QString sdkName = variables["CE_SDK"].join(" ")
-                                        + " (" + variables["CE_ARCH"].join(" ") + ")";
+                const QString sdkName = variables["CE_SDK"].join(' ')
+                                        + " (" + variables["CE_ARCH"].join(' ') + ")";
                 const QList<CeSdkInfo> sdkList = sdkhandler.listAll();
                 CeSdkInfo sdk;
                 foreach (const CeSdkInfo &info, sdkList) {

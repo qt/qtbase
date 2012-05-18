@@ -470,7 +470,7 @@ ProjectGenerator::getWritableVar(const char *vk, bool)
         ret = v.left(v.length() - 7) + " = ";
     else
         ret = v + " += ";
-    QString join = vals.join(" ");
+    QString join = vals.join(' ');
     if(ret.length() + join.length() > 80) {
         QString spaces;
         for(int i = 0; i < ret.length(); i++)

@@ -363,7 +363,7 @@ void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
         // QMAKE_LIB is used for win32, including mingw, whereas QMAKE_AR is used on Unix.
         if (project->isActiveConfig("rvct_linker")) {
             createRvctObjectScriptFile(ar_script_file, project->values("OBJECTS"));
-            QString ar_cmd = project->values("QMAKE_LIB").join(" ");
+            QString ar_cmd = project->values("QMAKE_LIB").join(' ');
             if (ar_cmd.isEmpty())
                 ar_cmd = "armar --create";
             objectsLinkLine = ar_cmd + " " + var("DEST_TARGET") + " --via " + escapeFilePath(ar_script_file);

@@ -377,23 +377,23 @@ void Win32MakefileGenerator::processRcFileVar()
         QStringList vers = project->first("VERSION").toQString().split(".");
         for (int i = vers.size(); i < 4; i++)
             vers += "0";
-        QString versionString = vers.join(".");
+        QString versionString = vers.join('.');
 
         QString companyName;
         if (!project->values("QMAKE_TARGET_COMPANY").isEmpty())
-            companyName = project->values("QMAKE_TARGET_COMPANY").join(" ");
+            companyName = project->values("QMAKE_TARGET_COMPANY").join(' ');
 
         QString description;
         if (!project->values("QMAKE_TARGET_DESCRIPTION").isEmpty())
-            description = project->values("QMAKE_TARGET_DESCRIPTION").join(" ");
+            description = project->values("QMAKE_TARGET_DESCRIPTION").join(' ');
 
         QString copyright;
         if (!project->values("QMAKE_TARGET_COPYRIGHT").isEmpty())
-            copyright = project->values("QMAKE_TARGET_COPYRIGHT").join(" ");
+            copyright = project->values("QMAKE_TARGET_COPYRIGHT").join(' ');
 
         QString productName;
         if (!project->values("QMAKE_TARGET_PRODUCT").isEmpty())
-            productName = project->values("QMAKE_TARGET_PRODUCT").join(" ");
+            productName = project->values("QMAKE_TARGET_PRODUCT").join(' ');
         else
             productName = project->first("TARGET").toQString();
 
@@ -703,7 +703,7 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     }
     t << "dist:" << "\n\t"
       << "$(ZIP) " << var("QMAKE_ORIG_TARGET") << ".zip " << "$(SOURCES) $(DIST) "
-      << dist_files.join(" ") << " " << var("TRANSLATIONS") << " ";
+      << dist_files.join(' ') << " " << var("TRANSLATIONS") << " ";
     if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
         const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
         for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {

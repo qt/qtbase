@@ -828,7 +828,7 @@ void QMakeSourceFileInfo::saveCache(const QString &cf)
              stream << verify.count() << endl;
              for(QMap<QString, QStringList>::iterator it = verify.begin();
                  it != verify.end(); ++it) {
-                 stream << it.key() << endl << it.value().join(";") << endl;
+                 stream << it.key() << endl << it.value().join(';') << endl;
              }
              stream << endl;
         }

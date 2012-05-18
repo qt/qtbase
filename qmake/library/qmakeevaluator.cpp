@@ -1361,7 +1361,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProFile(
 #ifdef QT_BUILD_QMAKE
         // After user configs, to override them
         if (!m_extraConfigs.isEmpty())
-            evaluateCommand("CONFIG += " + m_extraConfigs.join(" "), fL1S("(extra configs)"));
+            evaluateCommand("CONFIG += " + m_extraConfigs.join(' '), fL1S("(extra configs)"));
 #endif
     }
 
@@ -1378,7 +1378,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProFile(
         // Specifically, do not allow a project to override debug/release within a
         // debug_and_release build pass - it's too late for that at this point anyway.
         if (!m_extraConfigs.isEmpty())
-            evaluateCommand("CONFIG += " + m_extraConfigs.join(" "), fL1S("(extra configs)"));
+            evaluateCommand("CONFIG += " + m_extraConfigs.join(' '), fL1S("(extra configs)"));
 #endif
 
         if ((vr = evaluateFeatureFile(QLatin1String("default_post.prf"))) == ReturnError)

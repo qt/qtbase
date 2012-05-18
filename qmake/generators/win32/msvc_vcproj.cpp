@@ -467,7 +467,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                     // Check if all requirements are fulfilled
                     if (!tmp_proj.isEmpty("QMAKE_FAILED_REQUIREMENTS")) {
                         fprintf(stderr, "Project file(%s) not added to Solution because all requirements not met:\n\t%s\n",
-                                fn.toLatin1().constData(), tmp_proj.values("QMAKE_FAILED_REQUIREMENTS").join(" ").toLatin1().constData());
+                                fn.toLatin1().constData(), tmp_proj.values("QMAKE_FAILED_REQUIREMENTS").join(' ').toLatin1().constData());
                         continue;
                     }
                     if(tmp_proj.first("TEMPLATE") == "vcsubdirs") {
@@ -617,7 +617,7 @@ nextfile:
 
     QString slnConf = _slnSolutionConf;
     if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH")) {
-        QString slnPlatform = QString("|") + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
+        QString slnPlatform = QString("|") + project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
         slnConf.replace(QString("|Win32"), slnPlatform);
     } else if (is64Bit) {
         slnConf.replace(QString("|Win32"), "|x64");
@@ -643,7 +643,7 @@ nextfile:
         QString platform = is64Bit ? "x64" : "Win32";
         QString xplatform = platform;
         if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
-            xplatform = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
+            xplatform = project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
         if (!project->isHostBuild())
             platform = xplatform;
         t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag1).arg(xplatform) << platform;
@@ -852,7 +852,7 @@ void VcprojGenerator::initProject()
     if (project->isHostBuild() || project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
         vcProject.PlatformName = (is64Bit ? "x64" : "Win32");
     } else {
-        vcProject.PlatformName = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
+        vcProject.PlatformName = project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
     }
     // These are not used by Qt, but may be used by customers
     vcProject.SccProjectName = project->first("SCCPROJECTNAME").toQString();
@@ -910,14 +910,14 @@ void VcprojGenerator::initConfiguration()
         conf.PrimaryOutputExtension = project->first("TARGET_EXT").toQString();
     }
 
-    conf.Name = project->values("BUILD_NAME").join(" ");
+    conf.Name = project->values("BUILD_NAME").join(' ');
     if (conf.Name.isEmpty())
         conf.Name = isDebug ? "Debug" : "Release";
     conf.ConfigurationName = conf.Name;
     if (project->isHostBuild() || project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
         conf.Name += (is64Bit ? "|x64" : "|Win32");
     } else {
-        conf.Name += "|" + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
+        conf.Name += "|" + project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
     }
     conf.ATLMinimizesCRunTimeLibraryUsage = (project->first("ATLMinimizesCRunTimeLibraryUsage").isEmpty() ? _False : _True);
     conf.BuildBrowserInformation = triState(temp.isEmpty() ? (short)unset : temp.toShort());
@@ -1085,7 +1085,7 @@ void VcprojGenerator::initPostBuildEventTools()
 void VcprojGenerator::initDeploymentTool()
 {
     VCConfiguration &conf = vcProject.Configuration;
-    QString targetPath = project->values("deploy.path").join(" ");
+    QString targetPath = project->values("deploy.path").join(' ');
     if (targetPath.isEmpty())
         targetPath = QString("%CSIDL_PROGRAM_FILES%\\") + project->first("TARGET");
     if (targetPath.endsWith("/") || targetPath.endsWith("\\"))
@@ -1116,7 +1116,7 @@ void VcprojGenerator::initDeploymentTool()
     }
 
     // C-runtime deployment
-    QString runtime = project->values("QT_CE_C_RUNTIME").join(QLatin1String(" "));
+    QString runtime = project->values("QT_CE_C_RUNTIME").join(QLatin1Char(' '));
     if (!runtime.isEmpty() && (runtime != QLatin1String("no"))) {
         QString runtimeVersion = QLatin1String("msvcr");
         ProString mkspec = project->first("QMAKESPEC");
@@ -1135,7 +1135,7 @@ void VcprojGenerator::initDeploymentTool()
                 QString vcInstallDir = qgetenv("VCINSTALLDIR");
                 if (!vcInstallDir.isEmpty()) {
                     vcInstallDir += "\\ce\\dll\\";
-                    vcInstallDir += project->values("CE_ARCH").join(QLatin1String(" "));
+                    vcInstallDir += project->values("CE_ARCH").join(QLatin1Char(' '));
                     if (!QFileInfo(vcInstallDir + QDir::separator() + runtimeVersion).exists())
                         runtime.clear();
                     else
@@ -1323,7 +1323,7 @@ void VcprojGenerator::initResourceFiles()
     vcProject.ResourceFiles.Guid = _GUIDResourceFiles;
 
     // Bad hack, please look away -------------------------------------
-    QString rcc_dep_cmd = project->values("rcc.depend_command").join(" ");
+    QString rcc_dep_cmd = project->values("rcc.depend_command").join(' ');
     if(!rcc_dep_cmd.isEmpty()) {
         ProStringList qrc_files = project->values("RESOURCES");
         QStringList deps;
@@ -1509,7 +1509,7 @@ QString VcprojGenerator::replaceExtraCompilerVariables(const QString &var, const
     ProStringList &incpath = project->values("VCPROJ_MAKEFILE_INCPATH");
     if(incpath.isEmpty() && !this->var("MSVCPROJ_INCPATH").isEmpty())
         incpath.append(this->var("MSVCPROJ_INCPATH"));
-    ret.replace("$(INCPATH)", incpath.join(" "));
+    ret.replace("$(INCPATH)", incpath.join(' '));
 
     return ret;
 }

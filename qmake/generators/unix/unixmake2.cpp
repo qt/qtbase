@@ -327,7 +327,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                             QStringList deps = findDependencies((*it).toQString()).filter(QRegExp(
                                         "((^|/)" + Option::h_moc_mod + "|" + Option::cpp_moc_ext + "$)"));
                             if(!deps.isEmpty())
-                                t << d_file << ": " << deps.join(" ") << endl;
+                                t << d_file << ": " << deps.join(' ') << endl;
                             t << "-include " << d_file << endl;
                             project->values("QMAKE_DISTCLEAN") += d_file;
                         }
@@ -642,10 +642,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << destdir << "$(TARGET): " << var("PRE_TARGETDEPS")
                       << " " << var("POST_TARGETDEPS") << valList(build) << "\n\t";
                     ar = project->first("QMAKE_AR_CMD").toQString();
-                    ar = ar.replace("$(OBJECTS)", build.join(" "));
+                    ar = ar.replace("$(OBJECTS)", build.join(' '));
                 } else {
                     t << (*libit) << ": " << valList(build) << "\n\t";
-                    ar = "$(AR) " + (*libit) + " " + build.join(" ");
+                    ar = "$(AR) " + (*libit) + " " + build.join(' ');
                 }
                 if(!destdir.isEmpty())
                     t << mkdir_p_asstring(destdir) << "\n\t";
@@ -807,7 +807,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 const ProStringList &val = project->values((*var_it).toKey());
                 if(val.isEmpty())
                     continue;
-                t << "$(COPY_FILE) --parents " << val.join(" ") << " " << ddir_c << Option::dir_sep << " && ";
+                t << "$(COPY_FILE) --parents " << val.join(' ') << " " << ddir_c << Option::dir_sep << " && ";
             }
         }
     }
@@ -877,7 +877,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     precomp_files += precomph_out_dir + header_prefix + "objective-c++" + header_suffix;
             }
         }
-        t << "-$(DEL_FILE) " << precomp_files.join(" ") << "\n\t";
+        t << "-$(DEL_FILE) " << precomp_files.join(' ') << "\n\t";
     }
     if(!project->isEmpty("IMAGES"))
         t << varGlue("QMAKE_IMAGE_COLLECTION", "\t-$(DEL_FILE) ", " ", "") << "\n\t";
@@ -1326,7 +1326,7 @@ UnixMakefileGenerator::writeLibtoolFile()
         libs << "QMAKE_LIBS"; //obvious one
     t << "dependency_libs='";
     for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
-        t << project->values((*it).toKey()).join(" ") << " ";
+        t << project->values((*it).toKey()).join(' ') << " ";
     t << "'\n\n";
 
     t << "# Version information for " << lname << "\n";

@@ -2169,7 +2169,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
     bool hasBuiltIn = false;
     if (!objectMappedFile.isEmpty()) {
         hasBuiltIn = Project->hasBuiltinCompiler(objectMappedFile.at(0));
-//        qDebug("*** Extra compiler file has object mapped file '%s' => '%s'", qPrintable(inFile), qPrintable(objectMappedFile.join(" ")));
+//        qDebug("*** Extra compiler file has object mapped file '%s' => '%s'", qPrintable(inFile), qPrintable(objectMappedFile.join(' ')));
     }
 
     CustomBuildTool.AdditionalDependencies.clear();
@@ -2187,10 +2187,10 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
 
         // All information about the extra compiler
         QString tmp_out = Project->project->first(ProKey(extraCompilerName + ".output")).toQString();
-        QString tmp_cmd = Project->project->values(ProKey(extraCompilerName + ".commands")).join(" ");
-        QString tmp_cmd_name = Project->project->values(ProKey(extraCompilerName + ".name")).join(" ");
+        QString tmp_cmd = Project->project->values(ProKey(extraCompilerName + ".commands")).join(' ');
+        QString tmp_cmd_name = Project->project->values(ProKey(extraCompilerName + ".name")).join(' ');
         QStringList tmp_dep = Project->project->values(ProKey(extraCompilerName + ".depends")).toQStringList();
-        QString tmp_dep_cmd = Project->project->values(ProKey(extraCompilerName + ".depend_command")).join(" ");
+        QString tmp_dep_cmd = Project->project->values(ProKey(extraCompilerName + ".depend_command")).join(' ');
         const ProStringList &configs = Project->project->values(ProKey(extraCompilerName + ".CONFIG"));
         bool combined = configs.indexOf("combine") != -1;
 
@@ -2268,7 +2268,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
             // Replace variables for command w/all input files
             // ### join gives path issues with directories containing spaces!
             cmd = Project->replaceExtraCompilerVariables(tmp_cmd,
-                                                         inputs.join(" "),
+                                                         inputs.join(' '),
                                                          out);
         } else {
             deps += inFile; // input file itself too..
