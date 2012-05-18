@@ -1043,7 +1043,7 @@ void tst_QDBusAbstractAdaptor::readAllPropertiesEmptyInterface()
         }
 
         QVERIFY2(allprops.isEmpty(),
-                 qPrintable(QStringList(allprops.keys()).join(" ")));
+                 qPrintable(QStringList(allprops.keys()).join(' ')));
     } else {
         for ( ; it != expectedProperties.constEnd(); ++it)
             QVERIFY2(!allprops.contains(it.key()), qPrintable(it.key()));
@@ -1549,7 +1549,7 @@ void tst_QDBusAbstractAdaptor::readAllPropertiesEmptyInterfacePeer()
         }
 
         QVERIFY2(allprops.isEmpty(),
-                 qPrintable(QStringList(allprops.keys()).join(" ")));
+                 qPrintable(QStringList(allprops.keys()).join(' ')));
     } else {
         for ( ; it != expectedProperties.constEnd(); ++it)
             QVERIFY2(!allprops.contains(it.key()), qPrintable(it.key()));
