@@ -32,12 +32,14 @@ unset(DIR)
 
 # Provide a function to be used by mkspecs
 defineTest(deviceSanityCheckCompiler) {
-    # Check if the binary exists, e.g. with an absolute path
+    # Check if the binary exists with an absolute path
     exists($$QMAKE_CXX):return()
 
-    # Check if the compiler is in the path
-    system("which $$QMAKE_CXX > /dev/null"):return()
+    # Check for possible reasons of failure
+    # check if CROSS_COMPILE device-option is set
+    isEmpty(CROSS_COMPILE):error("CROSS_COMPILE needs to be set via -device-option CROSS_COMPILE=<path>")
 
-    error("Compiler $$QMAKE_CXX not found")
+    # CROSS_COMPILE is an incorrect path
+    error("Compiler $$QMAKE_CXX not found. Check the value of CROSS_COMPILE -device-option")
 }
 
