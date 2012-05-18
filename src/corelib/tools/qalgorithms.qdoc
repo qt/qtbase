@@ -635,3 +635,34 @@ of \a value in the variable passed as a reference in argument \a n.
 
     \sa {qLess()}{qLess<T>()}
 */
+
+
+/*!
+    \fn uint qPopulationCount(quint8 v)
+    \relates <QtAlgorithms>
+    \since 5.2
+
+    Returns the number of bits set in \a v. This number also called
+    the Hamming Weight of \a v.
+ */
+
+/*!
+    \fn uint qPopulationCount(quint16 v)
+    \relates <QtAlgorithms>
+    \since 5.2
+    \overload
+ */
+
+/*!
+    \fn uint qPopulationCount(quint32 v)
+    \relates <QtAlgorithms>
+    \since 5.2
+    \overload
+ */
+
+/*!
+    \fn uint qPopulationCount(quint64 v)
+    \relates <QtAlgorithms>
+    \since 5.2
+    \overload
+ */

@@ -516,6 +516,44 @@ Q_OUTOFLINE_TEMPLATE RandomAccessIterator qBinaryFindHelper(RandomAccessIterator
 
 } //namespace QAlgorithmsPrivate
 
+Q_DECL_CONSTEXPR inline uint qPopulationCount(quint32 v)
+{
+    // See http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
+    return
+        (((v      ) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
+        (((v >> 12) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
+        (((v >> 24) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f;
+}
+
+Q_DECL_CONSTEXPR inline uint qPopulationCount(quint8 v)
+{
+    return
+        (((v      ) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f;
+}
+
+Q_DECL_CONSTEXPR inline uint qPopulationCount(quint16 v)
+{
+    return
+        (((v      ) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
+        (((v >> 12) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f;
+}
+
+Q_DECL_CONSTEXPR inline uint qPopulationCount(quint64 v)
+{
+    return
+        (((v      ) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
+        (((v >> 12) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
+        (((v >> 24) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
+        (((v >> 36) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
+        (((v >> 48) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
+        (((v >> 60) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f;
+}
+
+Q_DECL_CONSTEXPR inline uint qPopulationCount(long unsigned int v)
+{
+    return qPopulationCount(static_cast<quint64>(v));
+}
+
 QT_END_NAMESPACE
 
 #endif // QALGORITHMS_H

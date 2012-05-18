@@ -78,10 +78,22 @@ private slots:
     void qCountContainer() const;
     void binaryFindOnLargeContainer() const;
 
-#if Q_TEST_PERFORMANCE
+    void popCount08_data() { popCount_data_impl(sizeof(quint8 )); }
+    void popCount16_data() { popCount_data_impl(sizeof(quint16)); }
+    void popCount32_data() { popCount_data_impl(sizeof(quint32)); }
+    void popCount64_data() { popCount_data_impl(sizeof(quint64)); }
+    void popCount08()      { popCount_impl<quint8 >(); }
+    void popCount16()      { popCount_impl<quint16>(); }
+    void popCount32()      { popCount_impl<quint32>(); }
+    void popCount64()      { popCount_impl<quint64>(); }
+
 private:
+#if Q_TEST_PERFORMANCE
     void performance();
 #endif
+    void popCount_data_impl(size_t sizeof_T_Int);
+    template <typename T_Int>
+    void popCount_impl();
 };
 
 class TestInt
@@ -1005,6 +1017,72 @@ void tst_QAlgorithms::binaryFindOnLargeContainer() const
 
   RAI foundIt = qBinaryFind(rai.begin(), rai.end(), 5);
   QCOMPARE(foundIt.pos(), 1073987655);
+}
+
+// alternative implementation of qPopulationCount for comparison:
+static const uint bitsSetInNibble[] = {
+    0, 1, 1, 2, 1, 2, 2, 3,
+    1, 2, 2, 3, 2, 3, 3, 4,
+};
+Q_STATIC_ASSERT(sizeof bitsSetInNibble / sizeof *bitsSetInNibble == 16);
+
+static Q_DECL_CONSTEXPR uint bitsSetInByte(quint8 byte)
+{
+    return bitsSetInNibble[byte & 0xF] + bitsSetInNibble[byte >> 4];
+}
+static Q_DECL_CONSTEXPR uint bitsSetInShort(quint16 word)
+{
+    return bitsSetInByte(word & 0xFF) + bitsSetInByte(word >> 8);
+}
+static Q_DECL_CONSTEXPR uint bitsSetInInt(quint32 word)
+{
+    return bitsSetInShort(word & 0xFFFF) + bitsSetInShort(word >> 16);
+}
+static Q_DECL_CONSTEXPR uint bitsSetInInt64(quint64 word)
+{
+    return bitsSetInInt(word & 0xFFFFFFFF) + bitsSetInInt(word >> 32);
+}
+
+
+void tst_QAlgorithms::popCount_data_impl(size_t sizeof_T_Int)
+{
+    using namespace QTest;
+    addColumn<quint64>("input");
+    addColumn<uint>("expected");
+
+    for (uint i = 0; i < UCHAR_MAX; ++i) {
+        const uchar byte = static_cast<uchar>(i);
+        const uint bits = bitsSetInByte(byte);
+        const quint64 value = static_cast<quint64>(byte);
+        const quint64 input = value << ((i % sizeof_T_Int) * 8U);
+        newRow(qPrintable(QString().sprintf("0x%016llx", input))) << input << bits;
+    }
+
+    // and some random ones:
+    if (sizeof_T_Int >= 8)
+        for (size_t i = 0; i < 1000; ++i) {
+            const quint64 input = quint64(qrand()) << 32 | quint32(qrand());
+            newRow(qPrintable(QString().sprintf("0x%016llx", input))) << input << bitsSetInInt64(input);
+        }
+        else if (sizeof_T_Int >= 2)
+            for (size_t i = 0; i < 1000 ; ++i) {
+                const quint32 input = qrand();
+                if (sizeof_T_Int >= 4)
+                    newRow(qPrintable(QString().sprintf("0x%08x", input))) << quint64(input) << bitsSetInInt(input);
+                else
+                    newRow(qPrintable(QString().sprintf("0x%04x", quint16(input & 0xFFFF)))) << quint64(input & 0xFFFF) << bitsSetInShort(input & 0xFFFF);
+            }
+}
+
+template <typename T_Int>
+void tst_QAlgorithms::popCount_impl()
+{
+    QFETCH(quint64, input);
+    QFETCH(uint, expected);
+
+    const T_Int value = static_cast<T_Int>(input);
+
+    QCOMPARE(qPopulationCount(value), expected);
 }
 
 QTEST_APPLESS_MAIN(tst_QAlgorithms)

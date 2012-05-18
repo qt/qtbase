@@ -41,17 +41,6 @@
 
 #include "qxlibeglintegration_p.h"
 
-static int countBits(unsigned long mask)
-{
-    int count = 0;
-    while (mask != 0) {
-        if (mask & 1)
-            ++count;
-        mask >>= 1;
-    }
-    return count;
-}
-
 VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay eglDisplay, EGLConfig config)
 {
     VisualID    visualId = 0;
@@ -92,9 +81,9 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
                 return visualId;
             }
 
-            int visualRedSize = countBits(chosenVisualInfo->red_mask);
-            int visualGreenSize = countBits(chosenVisualInfo->green_mask);
-            int visualBlueSize = countBits(chosenVisualInfo->blue_mask);
+            int visualRedSize = qPopulationCount(chosenVisualInfo->red_mask);
+            int visualGreenSize = qPopulationCount(chosenVisualInfo->green_mask);
+            int visualBlueSize = qPopulationCount(chosenVisualInfo->blue_mask);
             int visualAlphaSize = -1; // Need XRender to tell us the alpha channel size
 
             bool visualMatchesConfig = false;
