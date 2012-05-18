@@ -306,7 +306,7 @@ QString VariantDelegate::displayText(const QVariant &value)
             return QString("(%1,%2)").arg(size.width()).arg(size.height());
         }
     case QVariant::StringList:
-        return value.toStringList().join(",");
+        return value.toStringList().join(',');
     case QVariant::Time:
         return value.toTime().toString(Qt::ISODate);
     default:

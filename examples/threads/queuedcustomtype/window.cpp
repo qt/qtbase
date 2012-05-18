@@ -84,7 +84,7 @@ void Window::loadImage()
             formats.append("*." + format);
 
     QString newPath = QFileDialog::getOpenFileName(this, tr("Open Image"),
-        path, tr("Image files (%1)").arg(formats.join(" ")));
+        path, tr("Image files (%1)").arg(formats.join(' ')));
 
     if (newPath.isEmpty())
         return;

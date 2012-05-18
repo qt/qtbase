@@ -91,9 +91,9 @@ QVariant DomModel::data(const QModelIndex &index, int role) const
                 attributes << attribute.nodeName() + "=\""
                               +attribute.nodeValue() + "\"";
             }
-            return attributes.join(" ");
+            return attributes.join(' ');
         case 2:
-            return node.nodeValue().split("\n").join(" ");
+            return node.nodeValue().split("\n").join(' ');
         default:
             return QVariant();
     }

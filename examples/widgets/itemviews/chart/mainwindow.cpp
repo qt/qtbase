@@ -162,7 +162,7 @@ void MainWindow::saveFile()
                 pieces.append(model->data(model->index(row, 0, QModelIndex()),
                                           Qt::DecorationRole).toString());
 
-                stream << pieces.join(",") << "\n";
+                stream << pieces.join(',') << "\n";
             }
         }
 

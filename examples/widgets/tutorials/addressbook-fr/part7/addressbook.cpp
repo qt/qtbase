@@ -427,7 +427,7 @@ void AddressBook::exportAsVCard()
     out << "N:" << lastName << ";" << firstName << "\n";
         
     if (!nameList.isEmpty())            
-       out << "FN:" << nameList.join(" ") << "\n";
+       out << "FN:" << nameList.join(' ') << "\n";
     else
        out << "FN:" << firstName << "\n";
 //! [export function part3] 

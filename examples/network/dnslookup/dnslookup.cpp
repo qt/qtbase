@@ -138,7 +138,7 @@ void DnsManager::showResults()
         QStringList values;
         foreach (const QByteArray &ba, record.values())
             values << "\"" + QString::fromLatin1(ba) + "\"";
-        printf("%s\t%i\tIN\tTXT\t%s\n", qPrintable(record.name()), record.timeToLive(), qPrintable(values.join(" ")));
+        printf("%s\t%i\tIN\tTXT\t%s\n", qPrintable(record.name()), record.timeToLive(), qPrintable(values.join(' ')));
     }
 
     QCoreApplication::instance()->quit();
