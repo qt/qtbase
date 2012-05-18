@@ -304,7 +304,6 @@ void MainWindow::itemSelected(QGraphicsItem *item)
     qgraphicsitem_cast<DiagramTextItem *>(item);
 
     QFont font = textItem->font();
-    QColor color = textItem->defaultTextColor();
     fontCombo->setCurrentFont(font);
     fontSizeCombo->setEditText(QString().setNum(font.pointSize()));
     boldAction->setChecked(font.weight() == QFont::Bold);
