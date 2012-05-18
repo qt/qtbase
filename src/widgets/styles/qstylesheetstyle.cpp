@@ -1468,7 +1468,7 @@ public:
         }
         QString valueStr;
         if(value.type() == QVariant::StringList || value.type() == QVariant::List)
-            valueStr = value.toStringList().join(QLatin1String(" "));
+            valueStr = value.toStringList().join(QLatin1Char(' '));
         else
             valueStr = value.toString();
         cache[name] = valueStr;

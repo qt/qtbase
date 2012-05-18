@@ -1701,7 +1701,7 @@ bool AtSpiAdaptor::actionInterface(const QAIPointer &interface, const QString &f
                 keyBindings.append(acc);
         }
         if (keyBindings.length() > 0)
-            sendReply(connection, message, keyBindings.join(QLatin1String(";")));
+            sendReply(connection, message, keyBindings.join(QLatin1Char(';')));
         else
             sendReply(connection, message, QString());
     } else {

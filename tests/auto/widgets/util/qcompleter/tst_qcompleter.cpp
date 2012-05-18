@@ -87,7 +87,7 @@ QString CsvCompleter::pathFromIndex(const QModelIndex& si) const
 
     if (list.count() == 1)
         return list[0];
-    return list.join(",");
+    return list.join(',');
 }
 
 class tst_QCompleter : public QObject

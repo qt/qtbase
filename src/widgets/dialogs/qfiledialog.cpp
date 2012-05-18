@@ -3049,7 +3049,7 @@ void QFileDialogPrivate::_q_selectionChanged()
             allFiles.replace(i, QString(QLatin1Char('"') + allFiles.at(i) + QLatin1Char('"')));
     }
 
-    QString finalFiles = allFiles.join(QLatin1String(" "));
+    QString finalFiles = allFiles.join(QLatin1Char(' '));
     if (!finalFiles.isEmpty() && !lineEdit()->hasFocus() && lineEdit()->isVisible())
         lineEdit()->setText(finalFiles);
     else

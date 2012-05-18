@@ -204,7 +204,7 @@ static inline QFont *readKdeFontSetting(const QSettings &settings, const QString
             const QStringList list = fontValue.toStringList();
             if (!list.isEmpty()) {
                 fontFamily = list.first();
-                fontDescription = list.join(QStringLiteral(","));
+                fontDescription = list.join(QLatin1Char(','));
             }
         } else {
             fontDescription = fontFamily = fontValue.toString();
