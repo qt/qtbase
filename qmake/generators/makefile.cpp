@@ -2522,9 +2522,6 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
     t << endl;
 
     if (!(flags & SubTargetSkipDefaultTargets)) {
-        if(project->values("QMAKE_INTERNAL_QMAKE_DEPS").indexOf("qmake_all") == -1)
-            project->values("QMAKE_INTERNAL_QMAKE_DEPS").append("qmake_all");
-
         writeMakeQmake(t);
 
         t << "qmake_all:";
@@ -2711,8 +2708,7 @@ MakefileGenerator::writeMakeQmake(QTextStream &t)
             }
         }
         if(project->first("QMAKE_ORIG_TARGET") != "qmake") {
-            t << "qmake: " <<
-                project->values("QMAKE_INTERNAL_QMAKE_DEPS").join(" \\\n\t\t");
+            t << "qmake:";
             if(project->isEmpty("QMAKE_NOFORCE"))
                 t <<  " FORCE";
             t << "\n\t" << "@" << qmake << endl << endl;
