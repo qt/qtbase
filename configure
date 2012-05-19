@@ -254,6 +254,8 @@ resolveDeviceMkspec()
     elif [ "$match_count" -eq 0 ]; then
         echo >&2 "Error: No device matching '$VAL'"
         echo "undefined"
+    else
+        echo "$result"
     fi
 }
 
