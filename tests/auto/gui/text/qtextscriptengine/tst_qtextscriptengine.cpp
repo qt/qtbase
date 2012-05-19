@@ -1032,7 +1032,7 @@ void tst_QTextScriptEngine::linearB()
 }
 
 #if defined(Q_WS_X11)
-static bool decomposedShaping( const QFont &f, const QChar &ch)
+static bool decomposedShaping(const QFont &f, QChar ch)
 {
     QString str = QString().append(ch);
     QTextLayout layout(str, f);

@@ -4901,7 +4901,7 @@ void tst_QString::arg_fillChar()
     for (int i=0; i<replaceValues.count(); ++i) {
         const QVariant &var = replaceValues.at(i);
         const int width = widths.at(i);
-        const QChar &fillChar = fillChars.at(i);
+        const QChar fillChar = fillChars.at(i);
         switch (var.type()) {
         case QVariant::String: actual = actual.arg(var.toString(), width, fillChar); break;
         case QVariant::Int: actual = actual.arg(var.toInt(), width, base, fillChar); break;

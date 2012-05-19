@@ -58,7 +58,7 @@ QT_END_NAMESPACE
 
 using namespace QQmlJS;
 
-static int regExpFlagFromChar(const QChar &ch)
+static inline int regExpFlagFromChar(QChar ch)
 {
     switch (ch.unicode()) {
     case 'g': return Lexer::RegExp_Global;
