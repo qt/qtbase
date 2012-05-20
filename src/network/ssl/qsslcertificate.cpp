@@ -820,10 +820,10 @@ QByteArray QSslCertificate::toDer() const
 
     \since 5.0
 */
-QByteArray QSslCertificate::toText() const
+QString QSslCertificate::toText() const
 {
     if (!d->x509)
-        return QByteArray();
+        return QString();
     return d->text_from_X509(d->x509);
 }
 
@@ -991,17 +991,17 @@ QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::Encodi
     return BEGINCERTSTRING "\n" + tmp + ENDCERTSTRING "\n";
 }
 
-QByteArray QSslCertificatePrivate::text_from_X509(X509 *x509)
+QString QSslCertificatePrivate::text_from_X509(X509 *x509)
 {
     if (!x509) {
         qWarning("QSslSocketBackendPrivate::text_from_X509: null X509");
-        return QByteArray();
+        return QString();
     }
 
     QByteArray result;
     BIO *bio = q_BIO_new(q_BIO_s_mem());
     if (!bio)
-      return result;
+        return QString();
 
     q_X509_print(bio, x509);
 
@@ -1013,7 +1013,7 @@ QByteArray QSslCertificatePrivate::text_from_X509(X509 *x509)
 
     q_BIO_free(bio);
 
-    return result;
+    return QString::fromLatin1(result);
 }
 
 QByteArray QSslCertificatePrivate::asn1ObjectId(ASN1_OBJECT *object)

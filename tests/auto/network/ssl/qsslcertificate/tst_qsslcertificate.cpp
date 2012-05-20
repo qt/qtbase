@@ -859,7 +859,7 @@ void tst_QSslCertificate::toText()
     QFile fNew(testDataDir + "/more-certificates/cert-large-expiration-date.txt.1.0.0");
     QVERIFY(fNew.open(QIODevice::ReadOnly | QFile::Text));
     QByteArray txtNew = fNew.readAll();
-    QVERIFY(txtOld == cert.toText() || txtNew == cert.toText());
+    QVERIFY(QString::fromLatin1(txtOld) == cert.toText() || QString::fromLatin1(txtNew) == cert.toText());
 }
 
 void tst_QSslCertificate::multipleCommonNames()
@@ -1093,7 +1093,7 @@ public:
     QList<QByteArray> subjectInfoAttributes;
     QByteArray toDer;
     QByteArray toPem;
-    QByteArray toText;
+    QString toText;
     QByteArray version;
 };
 
