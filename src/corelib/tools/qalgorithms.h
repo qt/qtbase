@@ -518,28 +518,43 @@ Q_OUTOFLINE_TEMPLATE RandomAccessIterator qBinaryFindHelper(RandomAccessIterator
 
 Q_DECL_CONSTEXPR inline uint qPopulationCount(quint32 v)
 {
+#ifdef Q_CC_GNU
+    return __builtin_popcount(v);
+#else
     // See http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
     return
         (((v      ) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
         (((v >> 12) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
         (((v >> 24) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f;
+#endif
 }
 
 Q_DECL_CONSTEXPR inline uint qPopulationCount(quint8 v)
 {
+#ifdef Q_CC_GNU
+    return __builtin_popcount(v);
+#else
     return
         (((v      ) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f;
+#endif
 }
 
 Q_DECL_CONSTEXPR inline uint qPopulationCount(quint16 v)
 {
+#ifdef Q_CC_GNU
+    return __builtin_popcount(v);
+#else
     return
         (((v      ) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
         (((v >> 12) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f;
+#endif
 }
 
 Q_DECL_CONSTEXPR inline uint qPopulationCount(quint64 v)
 {
+#ifdef Q_CC_GNU
+    return __builtin_popcountll(v);
+#else
     return
         (((v      ) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
         (((v >> 12) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
@@ -547,6 +562,7 @@ Q_DECL_CONSTEXPR inline uint qPopulationCount(quint64 v)
         (((v >> 36) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
         (((v >> 48) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f +
         (((v >> 60) & 0xfff)    * Q_UINT64_C(0x1001001001001) & Q_UINT64_C(0x84210842108421)) % 0x1f;
+#endif
 }
 
 Q_DECL_CONSTEXPR inline uint qPopulationCount(long unsigned int v)
