@@ -246,8 +246,12 @@ public:
         : mutex(QMutex::Recursive)
         , applicationLevelProxy(0)
         , applicationLevelProxyFactory(0)
+#ifndef QT_NO_SOCKS5
         , socks5SocketEngineHandler(0)
+#endif
+#ifndef QT_NO_HTTP
         , httpSocketEngineHandler(0)
+#endif
     {
 #ifndef QT_NO_SOCKS5
         socks5SocketEngineHandler = new QSocks5SocketEngineHandler();
@@ -261,8 +265,12 @@ public:
     {
         delete applicationLevelProxy;
         delete applicationLevelProxyFactory;
+#ifndef QT_NO_SOCKS5
         delete socks5SocketEngineHandler;
+#endif
+#ifndef QT_NO_HTTP
         delete httpSocketEngineHandler;
+#endif
     }
 
     void setApplicationProxy(const QNetworkProxy &proxy)
@@ -297,8 +305,12 @@ private:
     QMutex mutex;
     QNetworkProxy *applicationLevelProxy;
     QNetworkProxyFactory *applicationLevelProxyFactory;
+#ifndef QT_NO_SOCKS5
     QSocks5SocketEngineHandler *socks5SocketEngineHandler;
+#endif
+#ifndef QT_NO_HTTP
     QHttpSocketEngineHandler *httpSocketEngineHandler;
+#endif
 };
 
 QList<QNetworkProxy> QGlobalNetworkProxy::proxyForQuery(const QNetworkProxyQuery &query)
