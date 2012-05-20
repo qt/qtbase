@@ -137,7 +137,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     QBackingStore *store = q->backingStore();
 
     if (!store) {
-        if (win)
+        if (win && q->windowType() != Qt::Desktop)
             q->setBackingStore(new QBackingStore(win));
         else
             q->setAttribute(Qt::WA_PaintOnScreen, true);
