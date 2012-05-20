@@ -216,16 +216,8 @@ inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *ev
 #ifdef QT_NO_TRANSLATION
 inline QString QCoreApplication::translate(const char *, const char *sourceText, const char *, int)
 {
-    Q_UNUSED(encoding)
     return QString::fromUtf8(sourceText);
 }
-#if QT_DEPRECATED_SINCE(5, 0)
-QT_DEPRECATED inline QString QCoreApplication::translate(const char *, const char *sourceText, const char *, Encoding encoding, int)
-{
-    Q_UNUSED(encoding)
-    return QString::fromUtf8(sourceText);
-}
-#endif
 #endif
 
 #define Q_DECLARE_TR_FUNCTIONS(context) \
