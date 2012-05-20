@@ -84,7 +84,7 @@ QAbstractPageSetupDialog::QAbstractPageSetupDialog(QAbstractPageSetupDialogPriva
 QAbstractPageSetupDialog::~QAbstractPageSetupDialog()
 {
     Q_D(QAbstractPageSetupDialog);
-    if (d->opts & QPageSetupDialog::OwnsPrinter)
+    if (d->ownsPrinter)
         delete d->printer;
 }
 
@@ -101,9 +101,10 @@ void QAbstractPageSetupDialogPrivate::setPrinter(QPrinter *newPrinter)
 {
     if (newPrinter) {
         printer = newPrinter;
+        ownsPrinter = false;
     } else {
         printer = new QPrinter;
-        opts |= QPageSetupDialog::OwnsPrinter;
+        ownsPrinter = true;
     }
 #ifndef Q_WS_X11
     if (printer->outputFormat() != QPrinter::NativeFormat)

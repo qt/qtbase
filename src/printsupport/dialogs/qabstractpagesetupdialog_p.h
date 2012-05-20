@@ -71,12 +71,12 @@ class QAbstractPageSetupDialogPrivate : public QDialogPrivate
     Q_DECLARE_PUBLIC(QAbstractPageSetupDialog)
 
 public:
-    QAbstractPageSetupDialogPrivate() : printer(0) {}
+    QAbstractPageSetupDialogPrivate() : printer(0), ownsPrinter(false) {}
 
     void setPrinter(QPrinter *newPrinter);
 
     QPrinter *printer;
-    QPageSetupDialog::PageSetupDialogOptions opts;
+    bool ownsPrinter;
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
 };

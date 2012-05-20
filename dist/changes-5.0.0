@@ -276,6 +276,9 @@ information about a particular change.
   QColorDialog::setCustomColor() and QColorDialog::setStandardColor() now
   take a QColor value for their second parameter instead of QRgb.
 
+- QPageSetupDialog has had the PageSetupDialogOption enum and the api to
+  set and get the enum removed as none of the Options are used any more.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

@@ -57,31 +57,10 @@ class Q_PRINTSUPPORT_EXPORT QPageSetupDialog : public QAbstractPageSetupDialog
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPageSetupDialog)
-    Q_ENUMS(PageSetupDialogOption)
-    Q_PROPERTY(PageSetupDialogOptions options READ options WRITE setOptions)
 
 public:
-    enum PageSetupDialogOption {
-        None                    = 0x00000000, // internal
-        DontUseSheet            = 0x00000001,
-        OwnsPrinter             = 0x80000000  // internal
-    };
-
-    Q_DECLARE_FLAGS(PageSetupDialogOptions, PageSetupDialogOption)
-
     explicit QPageSetupDialog(QPrinter *printer, QWidget *parent = 0);
     explicit QPageSetupDialog(QWidget *parent = 0);
-
-    // obsolete
-    void addEnabledOption(PageSetupDialogOption option);
-    void setEnabledOptions(PageSetupDialogOptions options);
-    PageSetupDialogOptions enabledOptions() const;
-    bool isOptionEnabled(PageSetupDialogOption option) const;
-
-    void setOption(PageSetupDialogOption option, bool on = true);
-    bool testOption(PageSetupDialogOption option) const;
-    void setOptions(PageSetupDialogOptions options);
-    PageSetupDialogOptions options() const;
 
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
     virtual void setVisible(bool visible);
