@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QABSTRACTPAGESETUPDIALOG_P_H
-#define QABSTRACTPAGESETUPDIALOG_P_H
+#ifndef QPAGESETUPDIALOG_P_H
+#define QPAGESETUPDIALOG_P_H
 
 //
 //  W A R N I N G
@@ -66,13 +66,14 @@ QT_BEGIN_NAMESPACE
 
 class QPrinter;
 
-class QAbstractPageSetupDialogPrivate : public QDialogPrivate
+class QPageSetupDialogPrivate : public QDialogPrivate
 {
-    Q_DECLARE_PUBLIC(QAbstractPageSetupDialog)
+    Q_DECLARE_PUBLIC(QPageSetupDialog)
 
 public:
-    QAbstractPageSetupDialogPrivate() : printer(0), ownsPrinter(false) {}
+    QPageSetupDialogPrivate(QPrinter *printer);
 
+    virtual void init();
     void setPrinter(QPrinter *newPrinter);
 
     QPrinter *printer;
@@ -85,4 +86,4 @@ QT_END_NAMESPACE
 
 #endif // QT_NO_PRINTDIALOG
 
-#endif // QABSTRACTPAGESETUPDIALOG_P_H
+#endif // QPAGESETUPDIALOG_P_H

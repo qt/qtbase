@@ -42,7 +42,8 @@
 #ifndef QPAGESETUPDIALOG_H
 #define QPAGESETUPDIALOG_H
 
-#include <QtPrintSupport/qabstractpagesetupdialog.h>
+#include <QtWidgets/qdialog.h>
+#include <QtPrintSupport/qtprintsupportglobal.h>
 
 QT_BEGIN_HEADER
 
@@ -51,9 +52,10 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTDIALOG
 
+class QPrinter;
 class QPageSetupDialogPrivate;
 
-class Q_PRINTSUPPORT_EXPORT QPageSetupDialog : public QAbstractPageSetupDialog
+class Q_PRINTSUPPORT_EXPORT QPageSetupDialog : public QDialog
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPageSetupDialog)
@@ -61,6 +63,7 @@ class Q_PRINTSUPPORT_EXPORT QPageSetupDialog : public QAbstractPageSetupDialog
 public:
     explicit QPageSetupDialog(QPrinter *printer, QWidget *parent = 0);
     explicit QPageSetupDialog(QWidget *parent = 0);
+    virtual ~QPageSetupDialog();
 
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
     virtual void setVisible(bool visible);
@@ -76,9 +79,9 @@ public:
 #endif
     void open(QObject *receiver, const char *member);
 
-#ifdef qdoc
+    void done(int result);
+
     QPrinter *printer();
-#endif
 };
 
 #endif // QT_NO_PRINTDIALOG

@@ -291,6 +291,8 @@ information about a particular change.
 - QPageSetupDialog has had the PageSetupDialogOption enum and the api to
   set and get the enum removed as none of the Options are used any more.
 
+- QAbstractPageSetupDialog has been removed.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

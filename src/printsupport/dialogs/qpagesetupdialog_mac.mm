@@ -44,7 +44,7 @@
 #include <Cocoa/Cocoa.h>
 
 #include "qpagesetupdialog.h"
-#include "qabstractpagesetupdialog_p.h"
+#include "qpagesetupdialog_p.h"
 
 #include <qpa/qplatformnativeinterface.h>
 #include <QtPrintSupport/qprintengine.h>
@@ -93,16 +93,16 @@ QT_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-class QPageSetupDialogPrivate : public QAbstractPageSetupDialogPrivate
+class QMacPageSetupDialogPrivate : public QPageSetupDialogPrivate
 {
     Q_DECLARE_PUBLIC(QPageSetupDialog)
 
 public:
-    QPageSetupDialogPrivate()
-        : printInfo(0), pageLayout(0)
+    QMacPageSetupDialogPrivate(QPrinter *printer)
+        :  QPageSetupDialogPrivate(printer), printInfo(0), pageLayout(0)
     { }
 
-    ~QPageSetupDialogPrivate() {
+    ~QMacPageSetupDialogPrivate() {
     }
 
     void openCocoaPageLayout(Qt::WindowModality modality);
@@ -112,7 +112,7 @@ public:
     NSPageLayout *pageLayout;
 };
 
-void QPageSetupDialogPrivate::openCocoaPageLayout(Qt::WindowModality modality)
+void QMacPageSetupDialogPrivate::openCocoaPageLayout(Qt::WindowModality modality)
 {
     Q_Q(QPageSetupDialog);
 
@@ -145,7 +145,7 @@ void QPageSetupDialogPrivate::openCocoaPageLayout(Qt::WindowModality modality)
     }
 }
 
-void QPageSetupDialogPrivate::closeCocoaPageLayout()
+void QMacPageSetupDialogPrivate::closeCocoaPageLayout()
 {
     [printInfo release];
     printInfo = 0;
@@ -154,14 +154,16 @@ void QPageSetupDialogPrivate::closeCocoaPageLayout()
 }
 
 QPageSetupDialog::QPageSetupDialog(QPrinter *printer, QWidget *parent)
-    : QAbstractPageSetupDialog(*(new QPageSetupDialogPrivate), printer, parent)
+    : QDialog(*(new QMacPageSetupDialogPrivate(printer)), parent)
 {
+    setWindowTitle(QCoreApplication::translate("QPrintPreviewDialog", "Page Setup"));
     setAttribute(Qt::WA_DontShowOnScreen);
 }
 
 QPageSetupDialog::QPageSetupDialog(QWidget *parent)
-    : QAbstractPageSetupDialog(*(new QPageSetupDialogPrivate), 0, parent)
+    : QDialog(*(new QMacPageSetupDialogPrivate(0)), parent)
 {
+    setWindowTitle(QCoreApplication::translate("QPrintPreviewDialog", "Page Setup"));
     setAttribute(Qt::WA_DontShowOnScreen);
 }
 
@@ -172,7 +174,7 @@ void QPageSetupDialog::setVisible(bool visible)
     if (d->printer->outputFormat() != QPrinter::NativeFormat)
         return;
 
-    bool isCurrentlyVisible = (d->pageLayout != 0);
+    bool isCurrentlyVisible = (static_cast <QMacPageSetupDialogPrivate*>(d)->pageLayout != 0);
     if (!visible == !isCurrentlyVisible)
         return;
 
@@ -184,11 +186,11 @@ void QPageSetupDialog::setVisible(bool visible)
             // NSPrintPanels can only be modal, so we must pick a type
             modality = parentWidget() ? Qt::WindowModal : Qt::ApplicationModal;
         }
-        d->openCocoaPageLayout(modality);
+        static_cast <QMacPageSetupDialogPrivate*>(d)->openCocoaPageLayout(modality);
         return;
     } else {
-        if (d->pageLayout) {
-            d->closeCocoaPageLayout();
+        if (static_cast <QMacPageSetupDialogPrivate*>(d)->pageLayout) {
+            static_cast <QMacPageSetupDialogPrivate*>(d)->closeCocoaPageLayout();
             return;
         }
     }
@@ -204,8 +206,8 @@ int QPageSetupDialog::exec()
     QDialog::setVisible(true);
 
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    d->openCocoaPageLayout(Qt::ApplicationModal);
-    d->closeCocoaPageLayout();
+    static_cast <QMacPageSetupDialogPrivate*>(d)->openCocoaPageLayout(Qt::ApplicationModal);
+    static_cast <QMacPageSetupDialogPrivate*>(d)->closeCocoaPageLayout();
     [pool release];
 
     QDialog::setVisible(false);

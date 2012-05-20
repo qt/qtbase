@@ -45,25 +45,23 @@
 #include <qapplication.h>
 
 #include "../kernel/qprintengine_win_p.h"
-#include "qabstractpagesetupdialog_p.h"
+#include "qpagesetupdialog_p.h"
 #include "qprinter.h"
 #include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPageSetupDialogPrivate : public QAbstractPageSetupDialogPrivate
-{
-};
-
 QPageSetupDialog::QPageSetupDialog(QPrinter *printer, QWidget *parent)
-    : QAbstractPageSetupDialog(*(new QPageSetupDialogPrivate), printer, parent)
+    : QDialog(*(new QPageSetupDialogPrivate(printer)), parent)
 {
+    setWindowTitle(QCoreApplication::translate("QPrintPreviewDialog", "Page Setup"));
     setAttribute(Qt::WA_DontShowOnScreen);
 }
 
 QPageSetupDialog::QPageSetupDialog(QWidget *parent)
-    : QAbstractPageSetupDialog(*(new QPageSetupDialogPrivate), 0, parent)
+    : QDialog(*(new QPageSetupDialogPrivate(0)), parent)
 {
+    setWindowTitle(QCoreApplication::translate("QPrintPreviewDialog", "Page Setup"));
     setAttribute(Qt::WA_DontShowOnScreen);
 }
 

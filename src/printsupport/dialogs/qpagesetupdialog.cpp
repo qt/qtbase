@@ -39,7 +39,10 @@
 **
 ****************************************************************************/
 
-#include <private/qabstractpagesetupdialog_p.h>
+#include "qpagesetupdialog.h"
+#include <private/qpagesetupdialog_p.h>
+
+#include <QtPrintSupport/qprinter.h>
 
 #ifndef QT_NO_PRINTDIALOG
 
@@ -75,6 +78,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QPageSetupDialog::~QPageSetupDialog()
+
+    Destroys the page setup dialog.
+*/
+
+/*!
     \since 4.5
 
     \fn QPageSetupDialog::QPageSetupDialog(QWidget *parent)
@@ -92,10 +101,33 @@ QT_BEGIN_NAMESPACE
     constructor.
 */
 
-// hack
-class QPageSetupDialogPrivate : public QAbstractPageSetupDialogPrivate
+QPageSetupDialogPrivate::QPageSetupDialogPrivate(QPrinter *prntr) : printer(0), ownsPrinter(false)
 {
-};
+    setPrinter(prntr);
+    init();
+}
+
+void QPageSetupDialogPrivate::init()
+{
+}
+
+void QPageSetupDialogPrivate::setPrinter(QPrinter *newPrinter)
+{
+    if (printer && ownsPrinter)
+        delete printer;
+
+    if (newPrinter) {
+        printer = newPrinter;
+        ownsPrinter = false;
+    } else {
+        printer = new QPrinter;
+        ownsPrinter = true;
+    }
+#ifndef Q_WS_X11
+    if (printer->outputFormat() != QPrinter::NativeFormat)
+        qWarning("QPageSetupDialog: Cannot be used on non-native printers");
+#endif
+}
 
 /*!
     \overload
@@ -120,6 +152,42 @@ void QPageSetupDialog::open(QObject *receiver, const char *member)
     \reimp
 */
 #endif
+
+QPageSetupDialog::~QPageSetupDialog()
+{
+    Q_D(QPageSetupDialog);
+    if (d->ownsPrinter)
+        delete d->printer;
+}
+
+QPrinter *QPageSetupDialog::printer()
+{
+    Q_D(QPageSetupDialog);
+    return d->printer;
+}
+
+/*!
+    \fn int QPageSetupDialog::exec()
+
+    This virtual function is called to pop up the dialog. It must be
+    reimplemented in subclasses.
+*/
+
+/*!
+    \reimp
+*/
+void QPageSetupDialog::done(int result)
+{
+    Q_D(QPageSetupDialog);
+    QDialog::done(result);
+    if (d->receiverToDisconnectOnClose) {
+        disconnect(this, SIGNAL(accepted()),
+                   d->receiverToDisconnectOnClose, d->memberToDisconnectOnClose);
+        d->receiverToDisconnectOnClose = 0;
+    }
+    d->memberToDisconnectOnClose.clear();
+
+}
 
 QT_END_NAMESPACE
 

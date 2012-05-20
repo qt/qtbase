@@ -50,7 +50,7 @@
 #include <ui_qpagesetupwidget.h>
 
 #include <QtPrintSupport/qprinter.h>
-#include <private/qabstractpagesetupdialog_p.h>
+#include <private/qpagesetupdialog_p.h>
 #include <private/qprinter_p.h>
 #include <private/qprintengine_pdf_p.h>
 
@@ -214,12 +214,13 @@ private:
 };
 
 
-class QPageSetupDialogPrivate : public QAbstractPageSetupDialogPrivate
+class QUnixPageSetupDialogPrivate : public QPageSetupDialogPrivate
 {
     Q_DECLARE_PUBLIC(QPageSetupDialog)
 
 public:
-    ~QPageSetupDialogPrivate();
+    QUnixPageSetupDialogPrivate(QPrinter *printer);
+    ~QUnixPageSetupDialogPrivate();
     void init();
 
     QPageSetupWidget *widget;
@@ -228,14 +229,24 @@ public:
 #endif
 };
 
-QPageSetupDialogPrivate::~QPageSetupDialogPrivate()
+QUnixPageSetupDialogPrivate::QUnixPageSetupDialogPrivate(QPrinter *printer) : QPageSetupDialogPrivate(printer)
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+    , cups(0)
+#endif
+{
+}
+
+QUnixPageSetupDialogPrivate::~QUnixPageSetupDialogPrivate()
 {
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    delete cups;
+    if (cups) {
+        delete cups;
+        cups = 0;
+    }
 #endif
 }
 
-void QPageSetupDialogPrivate::init()
+void QUnixPageSetupDialogPrivate::init()
 {
     Q_Q(QPageSetupDialog);
 
@@ -584,30 +595,25 @@ void QPageSetupWidget::setRightMargin(double newValue)
 
 
 QPageSetupDialog::QPageSetupDialog(QPrinter *printer, QWidget *parent)
-    : QAbstractPageSetupDialog(*(new QPageSetupDialogPrivate), printer, parent)
+    : QDialog(*(new QUnixPageSetupDialogPrivate(printer)), parent)
 {
-    Q_D(QPageSetupDialog);
-    d->init();
+    setWindowTitle(QCoreApplication::translate("QPrintPreviewDialog", "Page Setup"));
 }
 
 
 QPageSetupDialog::QPageSetupDialog(QWidget *parent)
-    : QAbstractPageSetupDialog(*(new QPageSetupDialogPrivate), 0, parent)
+    : QDialog(*(new QUnixPageSetupDialogPrivate(0)), parent)
 {
-    Q_D(QPageSetupDialog);
-    d->init();
+    setWindowTitle(QCoreApplication::translate("QPrintPreviewDialog", "Page Setup"));
 }
 
-/*!
-    \internal
-*/
 int QPageSetupDialog::exec()
 {
     Q_D(QPageSetupDialog);
 
     int ret = QDialog::exec();
     if (ret == Accepted)
-        d->widget->setupPrinter();
+        static_cast <QUnixPageSetupDialogPrivate*>(d)->widget->setupPrinter();
     return ret;
 }
 

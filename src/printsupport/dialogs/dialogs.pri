@@ -3,8 +3,7 @@
 HEADERS += \
         dialogs/qabstractprintdialog.h \
         dialogs/qabstractprintdialog_p.h \
-        dialogs/qabstractpagesetupdialog.h \
-        dialogs/qabstractpagesetupdialog_p.h \
+        dialogs/qpagesetupdialog_p.h \
         dialogs/qpagesetupdialog.h \
         dialogs/qprintdialog.h \
         dialogs/qprintpreviewdialog.h
@@ -34,7 +33,6 @@ INCLUDEPATH += $$PWD
 
 SOURCES += \
         dialogs/qabstractprintdialog.cpp \
-        dialogs/qabstractpagesetupdialog.cpp \
         dialogs/qpagesetupdialog.cpp \
         dialogs/qprintpreviewdialog.cpp
 
