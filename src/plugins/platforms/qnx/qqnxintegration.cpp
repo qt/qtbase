@@ -146,9 +146,6 @@ QQnxIntegration::QQnxIntegration()
     QMetaObject::invokeMethod(m_navigatorEventNotifier, "start", Qt::QueuedConnection);
 #endif
 
-    // Create displays for all possible screens (which may not be attached)
-    createDisplays();
-
 #if !defined(QT_NO_OPENGL)
     // Initialize global OpenGL resources
     QQnxGLContext::initialize();
@@ -184,12 +181,23 @@ QQnxIntegration::QQnxIntegration()
 #if defined(Q_OS_BLACKBERRY)
     QQnxVirtualKeyboardBps* virtualKeyboardBps = new QQnxVirtualKeyboardBps;
     m_bpsEventFilter = new QQnxBpsEventFilter(m_navigatorEventHandler, m_screenEventHandler, virtualKeyboardBps);
-    Q_FOREACH (QQnxScreen *screen, m_screens)
-        m_bpsEventFilter->registerForScreenEvents(screen);
-
     m_bpsEventFilter->installOnEventDispatcher(m_eventDispatcher);
 
     m_virtualKeyboard = virtualKeyboardBps;
+#endif
+
+    // Create displays for all possible screens (which may not be attached). We have to do this
+    // *after* the call to m_bpsEventFilter->installOnEventDispatcher(m_eventDispatcher). The
+    // reason for this is that we have to be registered for NAVIGATOR events before we create the
+    // QQnxScreen objects, and hence the QQnxRootWindow's. It is when the NAVIGATOR service sees
+    // the window creation that it starts sending us messages which results in a race if we
+    // create the displays first.
+    createDisplays();
+
+#if defined(Q_OS_BLACKBERRY)
+    // Register for screen domain events with bps
+    Q_FOREACH (QQnxScreen *screen, m_screens)
+        m_bpsEventFilter->registerForScreenEvents(screen);
 #endif
 
     if (m_virtualKeyboard) {
