@@ -188,6 +188,8 @@ void QQnxWindow::setGeometry(const QRect &rect)
         qFatal("QQnxWindow: failed to set window source size, errno=%d", errno);
     }
 
+    QWindowSystemInterface::handleGeometryChange(window(), rect);
+
     // Now move all children.
     QPoint offset;
     if (!oldGeometry.isEmpty()) {
