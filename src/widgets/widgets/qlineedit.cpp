@@ -1682,7 +1682,7 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property) const
         else
             return QVariant(d->control->selectionStart());
     default:
-        return QVariant();
+        return QWidget::inputMethodQuery(property);
     }
 }
 

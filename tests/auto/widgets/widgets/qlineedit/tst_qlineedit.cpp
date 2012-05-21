@@ -283,6 +283,9 @@ private slots:
     void inputMethod();
     void inputMethodSelection();
 
+    void inputMethodQueryImHints_data();
+    void inputMethodQueryImHints();
+
 protected slots:
     void editingFinished();
 
@@ -3924,6 +3927,24 @@ void tst_QLineEdit::inputMethodSelection()
     QCOMPARE(selectionSpy.count(), 3);
 }
 
+Q_DECLARE_METATYPE(Qt::InputMethodHints)
+void tst_QLineEdit::inputMethodQueryImHints_data()
+{
+    QTest::addColumn<Qt::InputMethodHints>("hints");
+
+    QTest::newRow("None") << static_cast<Qt::InputMethodHints>(Qt::ImhNone);
+    QTest::newRow("Password") << static_cast<Qt::InputMethodHints>(Qt::ImhHiddenText);
+    QTest::newRow("Normal") << static_cast<Qt::InputMethodHints>(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText | Qt::ImhSensitiveData);
+}
+
+void tst_QLineEdit::inputMethodQueryImHints()
+{
+    QFETCH(Qt::InputMethodHints, hints);
+    testWidget->setInputMethodHints(hints);
+
+    QVariant value = testWidget->inputMethodQuery(Qt::ImHints);
+    QCOMPARE(static_cast<Qt::InputMethodHints>(value.toInt()), hints);
+}
 
 QTEST_MAIN(tst_QLineEdit)
 #include "tst_qlineedit.moc"
