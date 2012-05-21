@@ -339,12 +339,12 @@ public:
 
 QAuthenticatorPrivate::QAuthenticatorPrivate()
     : method(None)
+    #ifdef Q_OS_WIN
+    , ntlmWindowsHandles(0)
+    #endif
     , hasFailed(false)
     , phase(Start)
     , nonceCount(0)
-#ifdef Q_OS_WIN32
-    , ntlmWindowsHandles(0)
-#endif
 {
     cnonce = QCryptographicHash::hash(QByteArray::number(qrand(), 16) + QByteArray::number(qrand(), 16),
                                       QCryptographicHash::Md5).toHex();

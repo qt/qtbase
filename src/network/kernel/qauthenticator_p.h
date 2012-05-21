@@ -80,7 +80,7 @@ public:
     Method method;
     QString realm;
     QByteArray challenge;
-#ifdef Q_OS_WIN32
+#ifdef Q_OS_WIN
     QNtlmWindowsHandles *ntlmWindowsHandles;
 #endif
     bool hasFailed; //credentials have been tried but rejected by server.
