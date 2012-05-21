@@ -75,6 +75,7 @@ static QTouchDevice *touchDevice = 0;
         m_cgImage = 0;
         m_window = 0;
         m_buttons = Qt::NoButton;
+        m_sendKeyEvent = false;
         currentCustomDragTypes = 0;
         if (!touchDevice) {
             touchDevice = new QTouchDevice;
@@ -95,7 +96,7 @@ static QTouchDevice *touchDevice = 0;
     m_window = window;
     m_platformWindow = platformWindow;
     m_accessibleRoot = 0;
-    m_keyEventsAccepted = false;
+    m_sendKeyEvent = false;
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
     // prevent rift in space-time continuum, disable
@@ -614,6 +615,9 @@ static QTouchDevice *touchDevice = 0;
     QChar ch([charactersIgnoringModifiers characterAtIndex:0]);
     int keyCode = [self convertKeyCode:ch];
 
+    // we will send a key event unless the input method sets m_sendKeyEvent to false
+    m_sendKeyEvent = true;
+
     QString text;
     if (eventType == QEvent::KeyPress) {
         // ignore text for the U+F700-U+F8FF range. This is used by Cocoa when
@@ -621,27 +625,31 @@ static QTouchDevice *touchDevice = 0;
         if ([charactersIgnoringModifiers length] == 1 && (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff))
             text = QString::fromUtf8([[nsevent characters] UTF8String]);
 
-        if (!m_keyEventsAccepted && m_composingText.isEmpty())
-            m_keyEventsAccepted = QWindowSystemInterface::tryHandleSynchronousShortcutEvent(m_window, timestamp, keyCode, modifiers, text);
+        if (m_composingText.isEmpty())
+            m_sendKeyEvent = !QWindowSystemInterface::tryHandleSynchronousShortcutEvent(m_window, timestamp, keyCode, modifiers, text);
 
         QObject *fo = QGuiApplication::focusObject();
-        if (!m_keyEventsAccepted && fo) {
+        if (m_sendKeyEvent && fo) {
             QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImHints);
             if (QCoreApplication::sendEvent(fo, &queryEvent)) {
                 bool imEnabled = queryEvent.value(Qt::ImEnabled).toBool();
                 Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(queryEvent.value(Qt::ImHints).toUInt());
-                if (imEnabled && !(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText))
+                if (imEnabled && !(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText)) {
+                    // pass the key event to the input method. note that m_sendKeyEvent may be set to false during this call
                     [self interpretKeyEvents:[NSArray arrayWithObject:nsevent]];
+                }
             }
         }
     }
-    if (!m_keyEventsAccepted && m_composingText.isEmpty())
+
+    if (m_sendKeyEvent && m_composingText.isEmpty())
         QWindowSystemInterface::handleKeyEvent(m_window, timestamp, QEvent::Type(eventType), keyCode, modifiers, text);
+
+    m_sendKeyEvent = false;
 }
 
 - (void)keyDown:(NSEvent *)nsevent
 {
-    m_keyEventsAccepted = false;
     [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
 }
 
@@ -695,6 +703,12 @@ static QTouchDevice *touchDevice = 0;
 - (void) insertText:(id)aString replacementRange:(NSRange)replacementRange
 {
     Q_UNUSED(replacementRange)
+
+    if (m_sendKeyEvent && m_composingText.isEmpty()) {
+        // don't send input method events for simple text input (let handleKeyEvent send key events instead)
+        return;
+    }
+
     QString commitString;
     if ([aString length]) {
         if ([aString isKindOfClass:[NSAttributedString class]]) {
@@ -711,13 +725,14 @@ static QTouchDevice *touchDevice = 0;
                 QInputMethodEvent e;
                 e.setCommitString(commitString);
                 QCoreApplication::sendEvent(fo, &e);
-                m_keyEventsAccepted = true;
+                // prevent handleKeyEvent from sending a key event
+                m_sendKeyEvent = false;
             }
         }
     }
 
     m_composingText.clear();
- }
+}
 
 - (void) setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
@@ -777,7 +792,8 @@ static QTouchDevice *touchDevice = 0;
             if (queryEvent.value(Qt::ImEnabled).toBool()) {
                 QInputMethodEvent e(preeditString, attrs);
                 QCoreApplication::sendEvent(fo, &e);
-                m_keyEventsAccepted = true;
+                // prevent handleKeyEvent from sending a key event
+                m_sendKeyEvent = false;
             }
         }
     }

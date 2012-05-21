@@ -59,7 +59,7 @@ QT_END_NAMESPACE
     Qt::MouseButtons m_buttons;
     QAccessibleInterface *m_accessibleRoot;
     QString m_composingText;
-    bool m_keyEventsAccepted;
+    bool m_sendKeyEvent;
     QStringList *currentCustomDragTypes;
     Qt::KeyboardModifiers currentWheelModifiers;
 }
