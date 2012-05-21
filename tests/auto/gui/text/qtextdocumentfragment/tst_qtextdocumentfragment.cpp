@@ -307,24 +307,6 @@ void tst_QTextDocumentFragment::cleanup()
     doc = 0;
 }
 
-#include <private/qtextdocument_p.h>
-#include <qdebug.h>
-static void dumpTable(const QTextDocumentPrivate *pt)
-{
-    qDebug() << "---dump----";
-    qDebug() << "all text:" << pt->buffer();
-    for (QTextDocumentPrivate::FragmentIterator it = pt->begin();
-         !it.atEnd(); ++it) {
-        qDebug() << "Fragment at text position" << it.position() << "; stringPosition" << it.value()->stringPosition << "; size" << it.value()->size_array[0] << "format :" << it.value()->format << "frag: " << it.n;
-        qDebug() << "    text:" << pt->buffer().mid(it.value()->stringPosition, it.value()->size_array[0]);
-    }
-    qDebug() << "----begin block dump----";
-    for (QTextBlock it = pt->blocksBegin(); it.isValid(); it = it.next())
-        qDebug() << "block at" << it.position() << "with length" << it.length() << "block alignment" << it.blockFormat().alignment();
-    qDebug() << "---dump----";
-}
-static void dumpTable(QTextDocument *doc) { dumpTable(doc->docHandle()); }
-
 void tst_QTextDocumentFragment::listCopying()
 {
     cursor.insertList(QTextListFormat::ListDecimal);
