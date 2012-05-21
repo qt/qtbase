@@ -145,9 +145,10 @@ public:
         EncodeDelimiters = 0x400000 | 0x800000,
         EncodeReserved = 0x1000000,
         DecodeReserved = 0x2000000,
+        // 0x4000000 used to indicate full-decode mode
 
         FullyEncoded = EncodeSpaces | EncodeUnicode | EncodeDelimiters | EncodeReserved,
-        MostDecoded = PrettyDecoded | DecodeReserved
+        FullyDecoded = FullyEncoded | DecodeReserved | 0x4000000
     };
     Q_DECLARE_FLAGS(ComponentFormattingOptions, ComponentFormattingOption)
 #ifdef qdoc

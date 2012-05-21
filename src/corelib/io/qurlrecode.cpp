@@ -560,6 +560,43 @@ non_trivial:
     return 0;
 }
 
+static int decode(QString &appendTo, const ushort *begin, const ushort *end)
+{
+    const int origSize = appendTo.size();
+    const ushort *input = begin;
+    ushort *output = 0;
+    while (input != end) {
+        if (*input != '%') {
+            if (output)
+                *output++ = *input;
+            ++input;
+            continue;
+        }
+
+        if (Q_UNLIKELY(!output)) {
+            // detach
+            appendTo.resize(origSize + (end - begin));
+            output = reinterpret_cast<ushort *>(appendTo.begin()) + origSize;
+            memcpy(output, begin, (input - begin) * sizeof(ushort));
+            output += input - begin;
+        }
+
+        ++input;
+        Q_ASSERT(input <= end - 2); // we need two characters
+        Q_ASSERT(isHex(input[0]));
+        Q_ASSERT(isHex(input[1]));
+        *output++ = decodeNibble(input[0]) << 4 | decodeNibble(input[1]);
+        input += 2;
+    }
+
+    if (output) {
+        int len = output - reinterpret_cast<ushort *>(appendTo.begin());
+        appendTo.truncate(len);
+        return len - origSize;
+    }
+    return 0;
+}
+
 template <size_t N>
 static void maskTable(uchar (&table)[N], const uchar (&mask)[N])
 {
@@ -583,6 +620,12 @@ static void maskTable(uchar (&table)[N], const uchar (&mask)[N])
     \li QUrl::EncodeSpaces: if set, spaces will be encoded to "%20"; if unset, they will be " "
     \li QUrl::EncodeUnicode: if set, characters above U+0080 will be encoded to their UTF-8
                              percent-encoded form; if unset, they will be decoded to UTF-16
+    \li QUrl::FullyDecoded: if set, this function will decode all percent-encoded sequences,
+                            including that of the percent character. The resulting string
+                            will not be percent-encoded anymore. Use with caution!
+                            In this mode, the behaviour is undefined if the input string
+                            contains any percent-encoding sequences above %80.
+                            Also, the function will not correct bad % sequences.
     \endlist
 
     Other flags are ignored (including QUrl::EncodeReserved).
@@ -599,6 +642,10 @@ qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
              QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications)
 {
     uchar actionTable[sizeof defaultActionTable];
+    if (encoding == QUrl::FullyDecoded) {
+        return decode(appendTo, reinterpret_cast<const ushort *>(begin), reinterpret_cast<const ushort *>(end));
+    }
+
     if (!(encoding & QUrl::EncodeDelimiters) && encoding & QUrl::DecodeReserved) {
         // reset the table
         memset(actionTable, DecodeCharacter, sizeof actionTable);

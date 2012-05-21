@@ -886,6 +886,14 @@ void tst_QUrlInternal::encodingRecode_data()
         QTest::newRow("control-unreserved-0x" + code) << "Foo%00Bar%0D%0Abksp%7F" << mode << "Foo%00Bar%0D%0Abksp%7F";
     }
 
+    // however, control characters and the percent *are* decoded in FullyDecoded mode
+    // this is the only exception
+    QTest::newRow("control-nul-fullydecoded") << "%00" << F(QUrl::FullyDecoded) << QStringLiteral("\0");
+    QTest::newRow("control-fullydecoded") << "%0D%0A%1F%1A%7F" << F(QUrl::FullyDecoded) << "\r\n\x1f\x1a\x7f";
+    QTest::newRow("percent-fullydecoded") << "25%2525" << F(QUrl::FullyDecoded) << "25%25";
+    QTest::newRow("control-unreserved-fullydecoded") << "Foo%00Bar%0D%0Abksp%7F" << F(QUrl::FullyDecoded)
+                                                     << QStringLiteral("Foo\0Bar\r\nbksp\x7F");
+
     //    gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
     //    sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
     //                  / "*" / "+" / "," / ";" / "="

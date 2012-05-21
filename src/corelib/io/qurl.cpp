@@ -242,17 +242,32 @@
                            URL in QString form, exactly equal to the result of
                            toEncoded()
 
-    \value MostDecoded     Attempt to decode as much as possible. For individual
+    \value FullyDecoded    Attempt to decode as much as possible. For individual
                            components of the URL, this decodes every percent
-                           encoding sequence, control characters (U+0000 to U+001F)
-                           and non-US-ASCII sequences that aren't valid UTF-8
-                           sequences.
+                           encoding sequence, including control characters (U+0000
+                           to U+001F) and UTF-8 sequences found in percent-encoded form.
+                           Note: if the component contains non-US-ASCII sequences
+                           that aren't valid UTF-8 sequences, the behaviour is
+                           undefined since QString cannot represent those values
+                           (data will be lost!)
+                           This mode is should not be used in functions where more
+                           than one URL component is returned (userInfo() and authority())
+                           and it is not allowed in url() and toString().
 
     The values of EncodeReserved and DecodeReserved should not be used together
     in one call. The behaviour is undefined if that happens. They are provided
     as separate values because the behaviour of the "pretty mode" with regards
     to reserved characters is different on certain components and specially on
     the full URL.
+
+    The FullyDecoded mode is similar to the behaviour of the functions
+    returning QString in Qt 4.x, including the fact that they will most likely
+    cause data loss if the component in question contains a non-UTF-8
+    percent-encoded sequence. Fortunately, those cases aren't common, so this
+    mode should be used when the component in question is used in a non-URL
+    context. For example, in an FTP client application, the path to the remote
+    file could be stored in a QUrl object, and the string to be transmitted to
+    the FTP server should be obtained using this flag.
 
     \sa QUrl::FormattingOptions
 */
@@ -278,17 +293,6 @@ inline static bool isHex(char c)
 {
     c |= 0x20;
     return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
-}
-
-static inline char toHex(quint8 c)
-{
-    return c > 9 ? c - 10 + 'A' : c + '0';
-}
-
-static inline quint8 fromHex(quint8 c)
-{
-    c |= 0x20;
-    return c >= 'a' ? c - 'a' + 10 : c - '0';
 }
 
 static inline QString ftpScheme()
@@ -1672,7 +1676,15 @@ void QUrl::setAuthority(const QString &authority, ParsingMode mode)
     Returns the authority of the URL if it is defined; otherwise
     an empty string is returned.
 
-    \sa setAuthority()
+    The \a options argument controls how to format the authority portion of the
+    URL. The value of QUrl::FullyDecoded should be avoided, since it may
+    produce an ambiguous return value (for example, if the username contains a
+    colon ':' or either the username or password contain an at-sign '@'). In
+    all other cases, this function returns an unambiguous value, which may
+    contain those characters still percent-encoded, plus some control
+    sequences not representable in decoded form in QString.
+
+    \sa setAuthority(), userInfo(), userName(), password(), host(), port()
 */
 QString QUrl::authority(ComponentFormattingOptions options) const
 {
@@ -1725,6 +1737,15 @@ void QUrl::setUserInfo(const QString &userInfo, ParsingMode mode)
 /*!
     Returns the user info of the URL, or an empty string if the user
     info is undefined.
+
+    The \a options argument controls how to format the user info component. The
+    value of QUrl::FullyDecoded should be avoided, since it may produce an
+    ambiguous return value (for example, if the username contains a colon ':').
+    In all other cases, this function returns an unambiguous value, which may
+    contain that characters still percent-encoded, plus some control sequences
+    not representable in decoded form in QString.
+
+    \sa setUserInfo(), userName(), password(), authority()
 */
 QString QUrl::userInfo(ComponentFormattingOptions options) const
 {
@@ -1775,7 +1796,18 @@ void QUrl::setUserName(const QString &userName, ParsingMode mode)
     Returns the user name of the URL if it is defined; otherwise
     an empty string is returned.
 
-    \sa setUserName(), encodedUserName()
+    The \a options argument controls how to format the user name component. All
+    values produce an unambiguous result. With QUrl::FullyDecoded, all
+    percent-encoded sequences are decoded; otherwise, the returned value may
+    contain some percent-encoded sequences for some control sequences not
+    representable in decoded form in QString.
+
+    Note that QUrl::FullyDecoded may cause data loss if those non-representable
+    sequences are present. It is recommended to use that value when the result
+    will be used in a non-URL context, such as setting in QAuthenticator or
+    negotiating a login.
+
+    \sa setUserName(), userInfo()
 */
 QString QUrl::userName(ComponentFormattingOptions options) const
 {
@@ -1824,6 +1856,17 @@ void QUrl::setPassword(const QString &password, ParsingMode mode)
 /*!
     Returns the password of the URL if it is defined; otherwise
     an empty string is returned.
+
+    The \a options argument controls how to format the user name component. All
+    values produce an unambiguous result. With QUrl::FullyDecoded, all
+    percent-encoded sequences are decoded; otherwise, the returned value may
+    contain some percent-encoded sequences for some control sequences not
+    representable in decoded form in QString.
+
+    Note that QUrl::FullyDecoded may cause data loss if those non-representable
+    sequences are present. It is recommended to use that value when the result
+    will be used in a non-URL context, such as setting in QAuthenticator or
+    negotiating a login.
 
     \sa setPassword()
 */
@@ -1887,6 +1930,20 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
 /*!
     Returns the host of the URL if it is defined; otherwise
     an empty string is returned.
+
+    The \a options argument controls how the hostname will be formatted. The
+    QUrl::EncodeUnicode option will cause this function to return the hostname
+    in the ASCII-Compatible Encoding (ACE) form, which is suitable for use in
+    channels that are not 8-bit clean or that require the legacy hostname (such
+    as DNS requests or in HTTP request headers). If that flag is not present,
+    this function returns the International Domain Name (IDN) in Unicode form,
+    according to the list of permissible top-level domains (see
+    idnWhiteList()).
+
+    All other flags are ignored. Host names cannot contain control or percent
+    characters, so the returned value can be considered fully decoded.
+
+    \sa setHost(), idnWhiteList(), setIdnWhiteList(), authority()
 */
 QString QUrl::host(ComponentFormattingOptions options) const
 {
@@ -1983,6 +2040,16 @@ void QUrl::setPath(const QString &path, ParsingMode mode)
 /*!
     Returns the path of the URL.
 
+    The \a options argument controls how to format the path component. All
+    values produce an unambiguous result. With QUrl::FullyDecoded, all
+    percent-encoded sequences are decoded; otherwise, the returned value may
+    contain some percent-encoded sequences for some control sequences not
+    representable in decoded form in QString.
+
+    Note that QUrl::FullyDecoded may cause data loss if those non-representable
+    sequences are present. It is recommended to use that value when the result
+    will be used in a non-URL context, such as sending to an FTP server.
+
     \sa setPath()
 */
 QString QUrl::path(ComponentFormattingOptions options) const
@@ -1999,7 +2066,7 @@ QString QUrl::path(ComponentFormattingOptions options) const
 
     Returns true if this URL contains a Query (i.e., if ? was seen on it).
 
-    \sa hasQueryItem(), encodedQuery()
+    \sa setQuery(), query(), hasFragment()
 */
 bool QUrl::hasQuery() const
 {
@@ -2028,7 +2095,15 @@ bool QUrl::hasQuery() const
     In DecodedMode, '%' stand for themselves and encoded characters are not
     possible.
 
-    \sa encodedQuery(), hasQuery()
+    Query strings often contain percent-encoded sequences, so use of
+    DecodedMode is discouraged. One special sequence to be aware of is that of
+    the plus character ('+'). QUrl does not convert spaces to plus characters,
+    even though HTML forms posted by web browsers do. In order to represent an
+    actual plus character in a query, the sequence "%2B" is usually used. This
+    function will leave "%2B" sequences untouched in TolerantMode or
+    StrictMode.
+
+    \sa query(), hasQuery()
 */
 void QUrl::setQuery(const QString &query, ParsingMode mode)
 {
@@ -2045,6 +2120,17 @@ void QUrl::setQuery(const QString &query, ParsingMode mode)
         d->sectionIsPresent &= ~QUrlPrivate::Query;
 }
 
+/*!
+    \overload
+    \since 5.0
+    Sets the query string of the URL to \a query.
+
+    This function reconstructs the query string from the QUrlQuery object and
+    sets on this QUrl object. This function does not have parsing parameters
+    because the QUrlQuery contains data that is already parsed.
+
+    \sa query(), hasQuery()
+*/
 void QUrl::setQuery(const QUrlQuery &query)
 {
     detach();
@@ -2058,7 +2144,21 @@ void QUrl::setQuery(const QUrlQuery &query)
 }
 
 /*!
-    Returns the query string of the URL in percent encoded form.
+    Returns the query string of the URL if there's a query string, or an empty
+    result if not. To determine if the parsed URL contained a query string, use
+    hasQuery().
+
+    The \a options argument controls how to format the query component. All
+    values produce an unambiguous result. With QUrl::FullyDecoded, all
+    percent-encoded sequences are decoded; otherwise, the returned value may
+    contain some percent-encoded sequences for some control sequences not
+    representable in decoded form in QString.
+
+    Note that use of QUrl::FullyDecoded in queries is discouraged, as queries
+    often contain data that is supposed to remain percent-encoded, including
+    the use of the "%2B" sequence to represent a plus character ('+').
+
+    \sa setQuery(), hasQuery()
 */
 QString QUrl::query(ComponentFormattingOptions options) const
 {
@@ -2116,9 +2216,20 @@ void QUrl::setFragment(const QString &fragment, ParsingMode mode)
 }
 
 /*!
-    Returns the fragment of the URL.
+    Returns the fragment of the URL. To determine if the parsed URL contained a
+    fragment, use hasFragment().
 
-    \sa setFragment()
+    The \a options argument controls how to format the fragment component. All
+    values produce an unambiguous result. With QUrl::FullyDecoded, all
+    percent-encoded sequences are decoded; otherwise, the returned value may
+    contain some percent-encoded sequences for some control sequences not
+    representable in decoded form in QString.
+
+    Note that QUrl::FullyDecoded may cause data loss if those non-representable
+    sequences are present. It is recommended to use that value when the result
+    will be used in a non-URL context.
+
+    \sa setFragment(), hasFragment()
 */
 QString QUrl::fragment(ComponentFormattingOptions options) const
 {
@@ -2258,8 +2369,9 @@ bool QUrl::isRelative() const
 }
 
 /*!
-    Returns a string representation of the URL.
-    The output can be customized by passing flags with \a options.
+    Returns a string representation of the URL. The output can be customized by
+    passing flags with \a options. The option QUrl::FullyDecoded is not
+    permitted in this function since it would generate ambiguous data.
 
     The resulting QString can be passed back to a QUrl later on.
 
@@ -2273,8 +2385,9 @@ QString QUrl::url(FormattingOptions options) const
 }
 
 /*!
-    Returns a string representation of the URL.
-    The output can be customized by passing flags with \a options.
+    Returns a string representation of the URL. The output can be customized by
+    passing flags with \a options. The option QUrl::FullyDecoded is not
+    permitted in this function since it would generate ambiguous data.
 
     The default formatting option is \l{QUrl::FormattingOptions}{PrettyDecoded}.
 
@@ -2283,6 +2396,10 @@ QString QUrl::url(FormattingOptions options) const
 QString QUrl::toString(FormattingOptions options) const
 {
     if (!d) return QString();
+    if (options == QUrl::FullyDecoded) {
+        qWarning("QUrl: QUrl::FullyDecoded is not permitted when reconstructing the full URL");
+        options = QUrl::PrettyDecoded;
+    }
 
     // return just the path if:
     //  - QUrl::PreferLocalFile is passed
@@ -2690,7 +2807,7 @@ QString QUrl::toLocalFile() const
         return QString();
 
     QString tmp;
-    QString ourPath = path(QUrl::MostDecoded);
+    QString ourPath = path(QUrl::FullyDecoded);
 
     // magic for shared drive on windows
     if (!d->host.isEmpty()) {
@@ -2703,21 +2820,6 @@ QString QUrl::toLocalFile() const
         if (ourPath.length() > 2 && ourPath.at(0) == QLatin1Char('/') && ourPath.at(2) == QLatin1Char(':'))
             tmp.remove(0, 1);
 #endif
-    }
-
-    // check if we need to do one more decoding pass
-    int pct = tmp.indexOf(QLatin1Char('%'));
-    while (pct != -1) {
-        Q_ASSERT(tmp.size() >= pct + 2);
-        ushort char1 = tmp.at(pct + 1).unicode();
-        ushort char2 = tmp.at(pct + 2).unicode();
-
-        Q_ASSERT(isHex(char1) && char1 < 0x80u);
-        Q_ASSERT(isHex(char2) && char2 < 0x80u);
-        tmp.replace(pct, 3, QChar(fromHex(char1) << 4 | fromHex(char2)));
-
-        // next iteration
-        pct = tmp.indexOf(QLatin1Char('%'), pct + 1);
     }
     return tmp;
 }

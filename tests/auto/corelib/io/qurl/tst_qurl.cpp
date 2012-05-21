@@ -3059,6 +3059,26 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("fragment-encode") << QUrl("http://example.com/foo#z")
                                      << int(Fragment) << "bar%23" << Decoded << true
                                      << PrettyDecoded << "bar%2523" << "http://example.com/foo#bar%2523";
+    // force decoding; note how the userinfo becomes ambiguous
+    QTest::newRow("userinfo-decode") << QUrl("http://example.com")
+                                     << int(UserInfo) << "hello%3Aworld:}}>b9o%25kR(" << Tolerant << true
+                                     << FullyDecoded << "hello:world:}}>b9o%kR("
+                                     << "http://hello%3Aworld:%7D%7D%3Eb9o%25kR(@example.com";
+    QTest::newRow("username-decode") << QUrl("http://example.com")
+                                     << int(UserName) << "hello%3Aworld%25" << Tolerant << true
+                                     << FullyDecoded << "hello:world%" << "http://hello%3Aworld%25@example.com";
+    QTest::newRow("password-decode") << QUrl("http://example.com")
+                                     << int(Password) << "}}>b9o%25kR(" << Tolerant << true
+                                     << FullyDecoded << "}}>b9o%kR(" << "http://:%7D%7D%3Eb9o%25kR(@example.com";
+    QTest::newRow("path-decode") << QUrl("http://example.com/")
+                                 << int(Path) << "/bar%25foo" << Tolerant << true
+                                 << FullyDecoded << "/bar%foo" << "http://example.com/bar%25foo";
+    QTest::newRow("query-decode") << QUrl("http://example.com/foo?qq")
+                                  << int(Query) << "bar%25foo" << Tolerant << true
+                                  << FullyDecoded << "bar%foo" << "http://example.com/foo?bar%25foo";
+    QTest::newRow("fragment-decode") << QUrl("http://example.com/foo#qq")
+                                     << int(Fragment) << "bar%25foo" << Tolerant << true
+                                     << FullyDecoded << "bar%foo" << "http://example.com/foo#bar%25foo";
 }
 
 void tst_QUrl::setComponents()
