@@ -1500,8 +1500,8 @@ QString QRegularExpression::errorString() const
 {
     d.data()->compilePattern();
     if (d->errorString)
-        return QCoreApplication::translate("QRegularExpression", d->errorString, 0, QCoreApplication::UnicodeUTF8);
-    return QCoreApplication::translate("QRegularExpression", "no error", 0, QCoreApplication::UnicodeUTF8);
+        return QCoreApplication::translate("QRegularExpression", d->errorString);
+    return QCoreApplication::translate("QRegularExpression", "no error");
 }
 
 /*!
