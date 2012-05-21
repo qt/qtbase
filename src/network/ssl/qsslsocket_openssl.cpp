@@ -1331,7 +1331,7 @@ void QSslSocketBackendPrivate::fetchCaRootForCert(const QSslCertificate &cert)
 void QSslSocketBackendPrivate::_q_caRootLoaded(QSslCertificate cert, QSslCertificate trustedRoot)
 {
     Q_Q(QSslSocket);
-    if (trustedRoot.isValid()) {
+    if (!trustedRoot.isNull() && !trustedRoot.isBlacklisted()) {
         if (s_loadRootCertsOnDemand) {
             //Add the new root cert to default cert list for use by future sockets
             QSslSocket::addDefaultCaCertificate(trustedRoot);
