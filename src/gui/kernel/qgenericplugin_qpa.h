@@ -52,9 +52,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_LIBRARY
 
-//class QGenericObject; ?????
-
-    struct Q_GUI_EXPORT QGenericPluginFactoryInterface : public QFactoryInterface
+struct Q_GUI_EXPORT QGenericPluginFactoryInterface : public QFactoryInterface
 {
     virtual QObject* create(const QString &name, const QString &spec) = 0;
 };
