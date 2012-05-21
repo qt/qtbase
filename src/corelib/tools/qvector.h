@@ -73,7 +73,7 @@ public:
     explicit QVector(int size);
     QVector(int size, const T &t);
     inline QVector(const QVector<T> &v);
-    inline ~QVector() { if (!d->ref.deref()) free(d); }
+    inline ~QVector() { if (!d->ref.deref()) freeData(d); }
     QVector<T> &operator=(const QVector<T> &v);
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QVector(QVector<T> &&other) : d(other.d) { other.d = Data::sharedNull(); }
@@ -97,7 +97,7 @@ public:
     void reserve(int size);
     inline void squeeze()
     {
-        realloc(d->size, d->size);
+        reallocData(d->size, d->size);
         if (d->capacityReserved) {
             // capacity reserved in a read only memory would be useless
             // this checks avoid writing to such memory.
@@ -220,8 +220,8 @@ public:
 private:
     friend class QRegion; // Optimization for QRegion::rects()
 
-    void realloc(const int size, const int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
-    void free(Data *d);
+    void reallocData(const int size, const int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
+    void freeData(Data *d);
     void defaultConstruct(T *from, T *to);
     void copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom);
     void destruct(T *from, T *to);
@@ -294,7 +294,7 @@ void QVector<T>::detach()
 {
     if (!isDetached()) {
         if (d->alloc)
-            realloc(d->size, int(d->alloc));
+            reallocData(d->size, int(d->alloc));
         else
             d = Data::unsharableEmpty();
     }
@@ -305,7 +305,7 @@ template <typename T>
 void QVector<T>::reserve(int asize)
 {
     if (asize > int(d->alloc))
-        realloc(d->size, asize);
+        reallocData(d->size, asize);
     if (isDetached())
         d->capacityReserved = 1;
     Q_ASSERT(capacity() >= asize);
@@ -327,7 +327,7 @@ void QVector<T>::resize(int asize)
     } else {
         newAlloc = oldAlloc;
     }
-    realloc(asize, newAlloc, opt);
+    reallocData(asize, newAlloc, opt);
 }
 template <typename T>
 inline void QVector<T>::clear()
@@ -421,14 +421,14 @@ QVector<T>::QVector(std::initializer_list<T> args)
 #endif
 
 template <typename T>
-void QVector<T>::free(Data *x)
+void QVector<T>::freeData(Data *x)
 {
     destruct(x->begin(), x->end());
     Data::deallocate(x);
 }
 
 template <typename T>
-void QVector<T>::realloc(const int asize, const int aalloc, QArrayData::AllocationOptions options)
+void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::AllocationOptions options)
 {
     Q_ASSERT(asize >= 0 && asize <= aalloc);
     Data *x = d;
@@ -499,7 +499,7 @@ void QVector<T>::realloc(const int asize, const int aalloc, QArrayData::Allocati
             if (QTypeInfo<T>::isStatic || !aalloc) {
                 // data was copy constructed, we need to call destructors
                 // or if !alloc we did nothing to the old 'd'.
-                free(d);
+                freeData(d);
             } else {
                 Data::deallocate(d);
             }
@@ -536,7 +536,7 @@ void QVector<T>::append(const T &t)
     const bool isTooSmall = uint(d->size + 1) > d->alloc;
     if (!isDetached() || isTooSmall) {
         QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
-        realloc(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
+        reallocData(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
     }
     if (QTypeInfo<T>::isComplex)
         new (d->end()) T(copy);
@@ -552,7 +552,7 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, c
     if (n != 0) {
         const T copy(t);
         if (!isDetached() || d->size + n > int(d->alloc))
-            realloc(d->size, d->size + n, QArrayData::Grow);
+            reallocData(d->size, d->size + n, QArrayData::Grow);
         if (QTypeInfo<T>::isStatic) {
             T *b = d->end();
             T *i = d->end() + n;
@@ -650,7 +650,7 @@ template <typename T>
 QVector<T> &QVector<T>::operator+=(const QVector &l)
 {
     int newSize = d->size + l.d->size;
-    realloc(d->size, newSize);
+    reallocData(d->size, newSize);
 
     if (d->alloc) {
         T *w = d->begin() + newSize;
