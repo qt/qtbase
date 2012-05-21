@@ -68,6 +68,8 @@ public:
     QImage::Format format() const { return (depth() == 32) ? QImage::Format_RGB32 : QImage::Format_RGB16; }
     QSizeF physicalSize() const { return m_currentPhysicalSize; }
 
+    Qt::ScreenOrientation orientation() const;
+
     bool isPrimaryScreen() const { return m_primaryScreen; }
 
     int rotation() const { return m_currentRotation; }

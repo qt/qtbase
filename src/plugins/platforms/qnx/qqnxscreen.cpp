@@ -65,7 +65,6 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
     qDebug() << Q_FUNC_INFO;
 #endif
     // Cache initial orientation of this display
-    // TODO: use ORIENTATION environment variable?
     errno = 0;
     int result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_ROTATION, &m_initialRotation);
     if (result != 0) {
@@ -74,7 +73,6 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
     m_currentRotation = m_initialRotation;
 
     // Cache size of this display in pixels
-    // TODO: use WIDTH and HEIGHT environment variables?
     errno = 0;
     int val[2];
     result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_SIZE, val);
@@ -135,6 +133,23 @@ QRect QQnxScreen::availableGeometry() const
 int QQnxScreen::depth() const
 {
     return defaultDepth();
+}
+
+Qt::ScreenOrientation QQnxScreen::orientation() const
+{
+    Qt::ScreenOrientation orient;
+    if (m_currentRotation == 0)
+        orient = Qt::LandscapeOrientation;
+    else if (m_currentRotation == 90)
+        orient = Qt::PortraitOrientation;
+    else if (m_currentRotation == 180)
+        orient = Qt::InvertedLandscapeOrientation;
+    else
+        orient = Qt::InvertedPortraitOrientation;
+#if defined(QQNXSCREEN_DEBUG)
+    qDebug() << Q_FUNC_INFO << "orientation =" << orient;
+#endif
+    return orient;
 }
 
 /*!
