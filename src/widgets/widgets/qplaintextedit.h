@@ -179,6 +179,7 @@ public:
     void print(QPagedPaintDevice *printer) const;
 
     int blockCount() const;
+    QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 
 public Q_SLOTS:
 
@@ -249,7 +250,6 @@ protected:
     virtual void insertFromMimeData(const QMimeData *source);
 
     virtual void inputMethodEvent(QInputMethodEvent *);
-    QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 
     QPlainTextEdit(QPlainTextEditPrivate &dd, QWidget *parent);
 

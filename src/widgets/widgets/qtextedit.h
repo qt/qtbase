@@ -206,6 +206,8 @@ public:
 
     void print(QPagedPaintDevice *printer) const;
 
+    QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
+
 public Q_SLOTS:
     void setFontPointSize(qreal s);
     void setFontFamily(const QString &fontFamily);
@@ -290,7 +292,6 @@ protected:
     virtual void insertFromMimeData(const QMimeData *source);
 
     virtual void inputMethodEvent(QInputMethodEvent *);
-    QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 
     QTextEdit(QTextEditPrivate &dd, QWidget *parent);
 

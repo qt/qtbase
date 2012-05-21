@@ -204,6 +204,7 @@ public:
     virtual void hidePopup();
 
     bool event(QEvent *event);
+    QVariant inputMethodQuery(Qt::InputMethodQuery) const;
 
 public Q_SLOTS:
     void clear();
@@ -237,7 +238,6 @@ protected:
 #endif
     void contextMenuEvent(QContextMenuEvent *e);
     void inputMethodEvent(QInputMethodEvent *);
-    QVariant inputMethodQuery(Qt::InputMethodQuery) const;
     void initStyleOption(QStyleOptionComboBox *option) const;
 
 
