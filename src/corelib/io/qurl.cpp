@@ -132,6 +132,12 @@
     \value StrictMode Only valid URLs are accepted. This mode is useful for
                       general URL validation.
 
+    \value DecodedMode QUrl will interpret the URL component in the fully-decoded form,
+                       where percent characters stand for themselves, not as the beginning
+                       of a percent-encoded sequence. This mode is only valid for the
+                       setters setting components of a URL; it is not permitted in
+                       the QUrl constructor, in fromEncoded() or in setUrl().
+
     In TolerantMode, the parser has the following behaviour:
 
     \list
@@ -1460,7 +1466,8 @@ const QByteArray &QUrlPrivate::normalized() const
     will accept any character in any position. In StrictMode, encoding mistakes
     will not be tolerated and QUrl will also check that certain forbidden
     characters are not present in unencoded form. If an error is detected in
-    StrictMode, isValid() will return false.
+    StrictMode, isValid() will return false. The parsing mode DecodedMode is not
+    permitted in this context.
 
     Example:
 
@@ -1550,14 +1557,19 @@ void QUrl::clear()
     will accept any character in any position. In StrictMode, encoding mistakes
     will not be tolerated and QUrl will also check that certain forbidden
     characters are not present in unencoded form. If an error is detected in
-    StrictMode, isValid() will return false.
+    StrictMode, isValid() will return false. The parsing mode DecodedMode is
+    not permitted in this context and will produce a run-time warning.
 
     \sa setEncodedUrl()
 */
 void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
 {
-    detach();
-    d->parse(url, parsingMode);
+    if (parsingMode == DecodedMode) {
+        qWarning("QUrl: QUrl::DecodedMode is not permitted when parsing a full URL");
+    } else {
+        detach();
+        d->parse(url, parsingMode);
+    }
 }
 
 
@@ -2219,7 +2231,8 @@ QByteArray QUrl::toEncoded(FormattingOptions options) const
     Parses \a input and returns the corresponding QUrl. \a input is
     assumed to be in encoded form, containing only ASCII characters.
 
-    Parses the URL using \a parsingMode.
+    Parses the URL using \a parsingMode. See setUrl() for more information on
+    this parameter. QUrl::DecodedMode is not permitted in this context.
 
     \sa toEncoded(), setUrl()
 */

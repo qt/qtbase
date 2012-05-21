@@ -118,7 +118,8 @@ class Q_CORE_EXPORT QUrl
 public:
     enum ParsingMode {
         TolerantMode,
-        StrictMode
+        StrictMode,
+        DecodedMode
     };
 
     // encoding / toString values
