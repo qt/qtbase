@@ -124,6 +124,7 @@ bool QWidgetWindow::event(QEvent *event)
 
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
+    case QEvent::ShortcutOverride:
         handleKeyEvent(static_cast<QKeyEvent *>(event));
         return true;
 
