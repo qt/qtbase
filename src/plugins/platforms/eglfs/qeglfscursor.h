@@ -44,6 +44,7 @@
 
 #include <qpa/qplatformcursor.h>
 #include "qeglfsscreen.h"
+#include <GLES2/gl2.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -94,7 +95,7 @@ private:
 
     QPoint m_pos;
 
-    QOpenGLShaderProgram *m_program;
+    GLuint m_program;
     int m_vertexCoordEntry;
     int m_textureCoordEntry;
     int m_textureEntry;

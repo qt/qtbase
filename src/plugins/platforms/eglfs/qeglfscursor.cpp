@@ -41,7 +41,6 @@
 
 #include "qeglfscursor.h"
 #include <QtGui/qwindowsysteminterface_qpa.h>
-#include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/QOpenGLContext>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonArray>
@@ -64,11 +63,52 @@ QEglFSCursor::QEglFSCursor(QEglFSScreen *screen)
 QEglFSCursor::~QEglFSCursor()
 {
     if (QOpenGLContext::currentContext()) {
+        glDeleteProgram(m_program);
+
         if (m_cursor.shape == Qt::BitmapCursor && m_cursor.texture)
             glDeleteTextures(1, &m_cursor.texture);
 
         glDeleteTextures(1, &m_cursorAtlas.texture);
     }
+}
+
+static GLuint createShader(GLenum shaderType, const char *program)
+{
+    GLuint shader = glCreateShader(shaderType);
+    glShaderSource(shader, 1 /* count */, &program, NULL /* lengths */);
+    glCompileShader(shader);
+    GLint status;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+    if (status == GL_TRUE)
+        return shader;
+
+    GLint length;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+    char *infoLog = new char[length];
+    glGetShaderInfoLog(shader, length, NULL, infoLog);
+    qDebug("%s shader compilation error: %s", shaderType == GL_VERTEX_SHADER ? "vertex" : "fragment", infoLog);
+    delete [] infoLog;
+    return 0;
+}
+
+static GLuint createProgram(GLuint vshader, GLuint fshader)
+{
+    GLuint program = glCreateProgram();
+    glAttachShader(program, vshader);
+    glAttachShader(program, fshader);
+    glLinkProgram(program);
+    GLint status;
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (status == GL_TRUE)
+        return program;
+
+    GLint length;
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+    char *infoLog = new char[length];
+    glGetProgramInfoLog(program, length, NULL, infoLog);
+    qDebug("program link error: %s", infoLog);
+    delete [] infoLog;
+    return 0;
 }
 
 void QEglFSCursor::createShaderPrograms()
@@ -89,15 +129,15 @@ void QEglFSCursor::createShaderPrograms()
         "   gl_FragColor = texture2D(texture, textureCoord).bgra;\n"
         "}\n";
 
-    m_program = new QOpenGLShaderProgram;
+    GLuint vertexShader = createShader(GL_VERTEX_SHADER, textureVertexProgram);
+    GLuint fragmentShader = createShader(GL_FRAGMENT_SHADER, textureFragmentProgram);
+    m_program = createProgram(vertexShader, fragmentShader);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
 
-    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexProgram);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentProgram);
-    m_program->link();
-
-    m_vertexCoordEntry = m_program->attributeLocation("vertexCoordEntry");
-    m_textureCoordEntry = m_program->attributeLocation("textureCoordEntry");
-    m_textureEntry = m_program->uniformLocation("texture");
+    m_vertexCoordEntry = glGetAttribLocation(m_program, "vertexCoordEntry");
+    m_textureCoordEntry = glGetAttribLocation(m_program, "textureCoordEntry");
+    m_textureEntry = glGetUniformLocation(m_program, "texture");
 }
 
 void QEglFSCursor::createCursorTexture(uint *texture, const QImage &image)
@@ -203,7 +243,7 @@ void QEglFSCursor::pointerEvent(const QMouseEvent &event)
 
 void QEglFSCursor::render()
 {
-    m_program->bind();
+    glUseProgram(m_program);
 
     const QRectF cr = cursorRect();
     const QRect screenRect(m_screen->geometry());
@@ -250,7 +290,7 @@ void QEglFSCursor::render()
     glDisableVertexAttribArray(m_vertexCoordEntry);
     glDisableVertexAttribArray(m_textureCoordEntry);
 
-    m_program->release();
+    glUseProgram(0);
 }
 
 QT_END_NAMESPACE
