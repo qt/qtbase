@@ -153,7 +153,7 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 // fallback, return a temporary QString
 // source code is assumed to be encoded in UTF-8
 
-# define QStringLiteral(str) QString::fromUtf8(str, sizeof(str) - 1)
+# define QStringLiteral(str) QString::fromUtf8("" str "", sizeof(str) - 1)
 #endif
 
 #define Q_STATIC_STRING_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset) \
