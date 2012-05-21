@@ -194,36 +194,36 @@ public:
     void setScheme(const QString &scheme);
     QString scheme() const;
 
-    void setAuthority(const QString &authority);
+    void setAuthority(const QString &authority, ParsingMode mode = TolerantMode);
     QString authority(ComponentFormattingOptions options = PrettyDecoded) const;
 
-    void setUserInfo(const QString &userInfo);
+    void setUserInfo(const QString &userInfo, ParsingMode mode = TolerantMode);
     QString userInfo(ComponentFormattingOptions options = PrettyDecoded) const;
 
-    void setUserName(const QString &userName);
+    void setUserName(const QString &userName, ParsingMode mode = TolerantMode);
     QString userName(ComponentFormattingOptions options = PrettyDecoded) const;
 
-    void setPassword(const QString &password);
+    void setPassword(const QString &password, ParsingMode mode = TolerantMode);
     QString password(ComponentFormattingOptions = PrettyDecoded) const;
 
-    void setHost(const QString &host);
+    void setHost(const QString &host, ParsingMode mode = TolerantMode);
     QString host(ComponentFormattingOptions = PrettyDecoded) const;
     QString topLevelDomain(ComponentFormattingOptions options = PrettyDecoded) const;
 
     void setPort(int port);
     int port(int defaultPort = -1) const;
 
-    void setPath(const QString &path);
+    void setPath(const QString &path, ParsingMode mode = TolerantMode);
     QString path(ComponentFormattingOptions options = PrettyDecoded) const;
 
     bool hasQuery() const;
-    void setQuery(const QString &query);
+    void setQuery(const QString &query, ParsingMode mode = TolerantMode);
     void setQuery(const QUrlQuery &query);
     QString query(ComponentFormattingOptions = PrettyDecoded) const;
 
     bool hasFragment() const;
     QString fragment(ComponentFormattingOptions options = PrettyDecoded) const;
-    void setFragment(const QString &fragment);
+    void setFragment(const QString &fragment, ParsingMode mode = TolerantMode);
 
     QUrl resolved(const QUrl &relative) const;
 

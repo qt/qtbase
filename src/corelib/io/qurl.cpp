@@ -503,6 +503,10 @@ static const ushort decodedQueryInUrlActions[] = {
     0
 };
 
+static inline void parseDecodedComponent(QString &data)
+{
+    data.replace(QLatin1Char('%'), QStringLiteral("%25"));
+}
 
 static inline QString
 recodeFromUser(const QString &input, const ushort *actions, int from, int to)
@@ -1560,7 +1564,7 @@ void QUrl::clear()
     StrictMode, isValid() will return false. The parsing mode DecodedMode is
     not permitted in this context and will produce a run-time warning.
 
-    \sa setEncodedUrl()
+    \sa url(), toString()
 */
 void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
 {
@@ -1576,7 +1580,7 @@ void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
 /*!
     Sets the scheme of the URL to \a scheme. As a scheme can only
     contain ASCII characters, no conversion or encoding is done on the
-    input.
+    input. It must also start with an ASCII letter.
 
     The scheme describes the type (or protocol) of the URL. It's
     represented by one or more ASCII characters at the start the URL,
@@ -1607,6 +1611,9 @@ void QUrl::setScheme(const QString &scheme)
     Returns the scheme of the URL. If an empty string is returned,
     this means the scheme is undefined and the URL is then relative.
 
+    The scheme can only contain US-ASCII letters or digits, which means it
+    cannot contain any character that would otherwise require encoding.
+
     \sa setScheme(), isRelative()
 */
 QString QUrl::scheme() const
@@ -1631,11 +1638,29 @@ QString QUrl::scheme() const
     The following example shows a valid authority string:
 
     \image qurl-authority.png
+
+    The \a authority data is interpreted according to \a mode: in StrictMode,
+    any '%' characters must be followed by exactly two hexadecimal characters
+    and some characters (including space) are not allowed in undecoded form. In
+    TolerantMode (the default), all characters are accepted in undecoded form
+    and the tolerant parser will correct stray '%' not followed by two hex
+    characters. In DecodedMode, '%' stand for themselves and encoded characters
+    are not possible. Because of that, in DecodedMode, it is not possible to
+    use the delimiter characters as non-delimiters (e.g., a password containing
+    a '@').
+
+    \sa setUserInfo, setHost, setPort
 */
-void QUrl::setAuthority(const QString &authority)
+void QUrl::setAuthority(const QString &authority, ParsingMode mode)
 {
     detach();
-    d->setAuthority(authority, 0, authority.length());
+    QString data = authority;
+    if (mode == DecodedMode) {
+        parseDecodedComponent(data);
+        mode = TolerantMode;
+    }
+
+    d->setAuthority(data, 0, data.length());
     if (authority.isNull()) {
         // QUrlPrivate::setAuthority cleared almost everything
         // but it leaves the Host bit set
@@ -1669,12 +1694,26 @@ QString QUrl::authority(ComponentFormattingOptions options) const
 
     \image qurl-authority3.png
 
+    The \a userInfo data is interpreted according to \a mode: in StrictMode,
+    any '%' characters must be followed by exactly two hexadecimal characters
+    and some characters (including space) are not allowed in undecoded form. In
+    TolerantMode (the default), all characters are accepted in undecoded form
+    and the tolerant parser will correct stray '%' not followed by two hex
+    characters. In DecodedMode, '%' stand for themselves and encoded characters
+    are not possible. Because of that, in DecodedMode, it is not possible to
+    use the ':' delimiter characters as non-delimiter in the user name.
+
     \sa userInfo(), setUserName(), setPassword(), setAuthority()
 */
-void QUrl::setUserInfo(const QString &userInfo)
+void QUrl::setUserInfo(const QString &userInfo, ParsingMode mode)
 {
     detach();
     QString trimmed = userInfo.trimmed();
+    if (mode == DecodedMode) {
+        parseDecodedComponent(trimmed);
+        mode = TolerantMode;
+    }
+
     d->setUserInfo(trimmed, 0, trimmed.length());
     if (userInfo.isNull()) {
         // QUrlPrivate::setUserInfo cleared almost everything
@@ -1701,12 +1740,33 @@ QString QUrl::userInfo(ComponentFormattingOptions options) const
     of the user info element in the authority of the URL, as described
     in setUserInfo().
 
-    \sa setEncodedUserName(), userName(), setUserInfo()
+    The \a userName data is interpreted according to \a mode: in StrictMode,
+    any '%' characters must be followed by exactly two hexadecimal characters
+    and some characters (including space) are not allowed in undecoded form. In
+    TolerantMode (the default), all characters are accepted in undecoded form
+    and the tolerant parser will correct stray '%' not followed by two hex
+    characters. In DecodedMode, '%' stand for themselves and encoded characters
+    are not possible.
+
+    QUrl::DecodedMode should be used when setting the user name from a data
+    source which is not a URL, such as a password dialog shown to the user or
+    with a user name obtained by calling userName() with the QUrl::FullyEncoded
+    formatting option.
+
+    \sa userName(), setUserInfo()
 */
-void QUrl::setUserName(const QString &userName)
+void QUrl::setUserName(const QString &userName, ParsingMode mode)
 {
     detach();
-    d->setUserName(userName, 0, userName.length());
+
+    QString data = userName;
+    if (mode == DecodedMode) {
+        parseDecodedComponent(data);
+        mode = TolerantMode;
+    }
+
+
+    d->setUserName(data, 0, data.length());
     if (userName.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::UserName;
 }
@@ -1731,12 +1791,32 @@ QString QUrl::userName(ComponentFormattingOptions options) const
     the user info element in the authority of the URL, as described in
     setUserInfo().
 
+    The \a password data is interpreted according to \a mode: in StrictMode,
+    any '%' characters must be followed by exactly two hexadecimal characters
+    and some characters (including space) are not allowed in undecoded form. In
+    TolerantMode, all characters are accepted in undecoded form and the
+    tolerant parser will correct stray '%' not followed by two hex characters.
+    In DecodedMode, '%' stand for themselves and encoded characters are not
+    possible.
+
+    QUrl::DecodedMode should be used when setting the password from a data
+    source which is not a URL, such as a password dialog shown to the user or
+    with a password obtained by calling password() with the QUrl::FullyEncoded
+    formatting option.
+
     \sa password(), setUserInfo()
 */
-void QUrl::setPassword(const QString &password)
+void QUrl::setPassword(const QString &password, ParsingMode mode)
 {
     detach();
-    d->setPassword(password, 0, password.length());
+
+    QString data = password;
+    if (mode == DecodedMode) {
+        parseDecodedComponent(data);
+        mode = TolerantMode;
+    }
+
+    d->setPassword(data, 0, data.length());
     if (password.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::Password;
 }
@@ -1760,21 +1840,43 @@ QString QUrl::password(ComponentFormattingOptions options) const
     Sets the host of the URL to \a host. The host is part of the
     authority.
 
+    The \a host data is interpreted according to \a mode: in StrictMode,
+    any '%' characters must be followed by exactly two hexadecimal characters
+    and some characters (including space) are not allowed in undecoded form. In
+    TolerantMode, all characters are accepted in undecoded form and the
+    tolerant parser will correct stray '%' not followed by two hex characters.
+    In DecodedMode, '%' stand for themselves and encoded characters are not
+    possible.
+
+    Note that, in all cases, the result of the parsing must be a valid hostname
+    according to STD 3 rules, as modified by the Internationalized Resource
+    Identifiers specification (RFC 3987). Invalid hostnames are not permitted
+    and will cause isValid() to become false.
+
     \sa host(), setAuthority()
 */
-void QUrl::setHost(const QString &host)
+void QUrl::setHost(const QString &host, ParsingMode mode)
 {
     detach();
-    if (d->setHost(host, 0, host.length())) {
+
+    QString data = host;
+    if (mode == DecodedMode) {
+        parseDecodedComponent(data);
+        mode = TolerantMode;
+    }
+
+    if (d->setHost(data, 0, data.length())) {
         if (host.isNull())
             d->sectionIsPresent &= ~QUrlPrivate::Host;
-    } else if (!host.startsWith(QLatin1Char('['))) {
+    } else if (!data.startsWith(QLatin1Char('['))) {
         // setHost failed, it might be IPv6 or IPvFuture in need of bracketing
         ushort oldCode = d->errorCode;
         ushort oldSupplement = d->errorSupplement;
-        if (!d->setHost(QLatin1Char('[') + host + QLatin1Char(']'), 0, host.length() + 2)) {
+        data.prepend(QLatin1Char('['));
+        data.append(QLatin1Char(']'));
+        if (!d->setHost(data, 0, data.length())) {
             // failed again: choose if this was an IPv6 error or not
-            if (!host.contains(QLatin1Char(':'))) {
+            if (!data.contains(QLatin1Char(':'))) {
                 d->errorCode = oldCode;
                 d->errorSupplement = oldSupplement;
             }
@@ -1847,12 +1949,31 @@ int QUrl::port(int defaultPort) const
 
     \image qurl-mailtopath.png
 
+    The \a path data is interpreted according to \a mode: in StrictMode,
+    any '%' characters must be followed by exactly two hexadecimal characters
+    and some characters (including space) are not allowed in undecoded form. In
+    TolerantMode (the default), all characters are accepted in undecoded form and the
+    tolerant parser will correct stray '%' not followed by two hex characters.
+    In DecodedMode, '%' stand for themselves and encoded characters are not
+    possible.
+
+    QUrl::DecodedMode should be used when setting the path from a data source
+    which is not a URL, such as a dialog shown to the user or with a path
+    obtained by calling path() with the QUrl::FullyEncoded formatting option.
+
     \sa path()
 */
-void QUrl::setPath(const QString &path)
+void QUrl::setPath(const QString &path, ParsingMode mode)
 {
     detach();
-    d->setPath(path, 0, path.length());
+
+    QString data = path;
+    if (mode == DecodedMode) {
+        parseDecodedComponent(data);
+        mode = TolerantMode;
+    }
+
+    d->setPath(data, 0, data.length());
 
     // optimized out, since there is no path delimiter
 //    if (path.isNull())
@@ -1887,27 +2008,39 @@ bool QUrl::hasQuery() const
 }
 
 /*!
-    Sets the query string of the URL to \a query. The string is
-    inserted as-is, and no further encoding is performed when calling
-    toEncoded().
+    Sets the query string of the URL to \a query.
 
     This function is useful if you need to pass a query string that
     does not fit into the key-value pattern, or that uses a different
     scheme for encoding special characters than what is suggested by
     QUrl.
 
-    Passing a value of QByteArray() to \a query (a null QByteArray) unsets
-    the query completely. However, passing a value of QByteArray("")
+    Passing a value of QString() to \a query (a null QString) unsets
+    the query completely. However, passing a value of QString("")
     will set the query to an empty value, as if the original URL
     had a lone "?".
 
+    The \a query data is interpreted according to \a mode: in StrictMode,
+    any '%' characters must be followed by exactly two hexadecimal characters
+    and some characters (including space) are not allowed in undecoded form. In
+    TolerantMode, all characters are accepted in undecoded form and the
+    tolerant parser will correct stray '%' not followed by two hex characters.
+    In DecodedMode, '%' stand for themselves and encoded characters are not
+    possible.
+
     \sa encodedQuery(), hasQuery()
 */
-void QUrl::setQuery(const QString &query)
+void QUrl::setQuery(const QString &query, ParsingMode mode)
 {
     detach();
 
-    d->setQuery(query, 0, query.length());
+    QString data = query;
+    if (mode == DecodedMode) {
+        parseDecodedComponent(data);
+        mode = TolerantMode;
+    }
+
+    d->setQuery(data, 0, data.length());
     if (query.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::Query;
 }
@@ -1953,13 +2086,31 @@ QString QUrl::query(ComponentFormattingOptions options) const
     will set the fragment to an empty string (as if the original URL
     had a lone "#").
 
+    The \a fragment data is interpreted according to \a mode: in StrictMode,
+    any '%' characters must be followed by exactly two hexadecimal characters
+    and some characters (including space) are not allowed in undecoded form. In
+    TolerantMode, all characters are accepted in undecoded form and the
+    tolerant parser will correct stray '%' not followed by two hex characters.
+    In DecodedMode, '%' stand for themselves and encoded characters are not
+    possible.
+
+    QUrl::DecodedMode should be used when setting the fragment from a data
+    source which is not a URL or with a fragment obtained by calling
+    fragment() with the QUrl::FullyEncoded formatting option.
+
     \sa fragment(), hasFragment()
 */
-void QUrl::setFragment(const QString &fragment)
+void QUrl::setFragment(const QString &fragment, ParsingMode mode)
 {
     detach();
 
-    d->setFragment(fragment, 0, fragment.length());
+    QString data = fragment;
+    if (mode == DecodedMode) {
+        parseDecodedComponent(data);
+        mode = TolerantMode;
+    }
+
+    d->setFragment(data, 0, data.length());
     if (fragment.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::Fragment;
 }
@@ -2514,7 +2665,7 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
             deslashified.clear();
     }
 
-    url.setPath(deslashified.replace(QLatin1Char('%'), QStringLiteral("%25")));
+    url.setPath(deslashified, DecodedMode);
     return url;
 }
 
