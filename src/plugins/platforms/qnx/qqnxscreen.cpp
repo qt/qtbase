@@ -223,8 +223,10 @@ void QQnxScreen::setRotation(int rotation)
         // TODO: check if other screens are supposed to rotate as well and/or whether this depends
         // on if clone mode is being used.
         // Rotating only the primary screen is what we had in the navigator event handler before refactoring
-        if (m_primaryScreen)
+        if (m_primaryScreen) {
+            QWindowSystemInterface::handleScreenOrientationChange(screen(), orientation());
             QWindowSystemInterface::handleScreenGeometryChange(screen(), m_currentGeometry);
+        }
     }
 }
 
