@@ -115,6 +115,7 @@ int QPageSetupDialog::exec()
         multiplier = 1;
         break;
     case QLocale::ImperialSystem:
+    case QLocale::ImperialUKSystem:
         psd.Flags |= PSD_INTHOUSANDTHSOFINCHES;
         multiplier = 25.4/10;
         break;
