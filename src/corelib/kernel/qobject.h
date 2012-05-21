@@ -79,7 +79,7 @@ class QRegularExpression;
 #ifndef QT_NO_USERDATA
 class QObjectUserData;
 #endif
-class QDynamicMetaObjectData;
+struct QDynamicMetaObjectData;
 
 typedef QList<QObject*> QObjectList;
 
