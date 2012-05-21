@@ -1102,7 +1102,7 @@ void tst_QUrl::fromLocalFile()
 
     QUrl url = QUrl::fromLocalFile(theFile);
 
-    QCOMPARE(url.toString(QUrl::MostDecoded), theUrl);
+    QCOMPARE(url.toString(QUrl::DecodeReserved), theUrl);
     QCOMPARE(url.path(), thePath);
 }
 
@@ -2696,6 +2696,8 @@ void tst_QUrl::componentEncodings_data()
     QTest::addColumn<QString>("fragment");
     QTest::addColumn<QString>("toString");
 
+    const int MostDecoded = QUrl::DecodeReserved; // the most decoded mode without being fully decoded
+
     QTest::newRow("empty") << QUrl() << int(QUrl::FullyEncoded)
                            << QString() << QString() << QString()
                            << QString() << QString()
@@ -2710,7 +2712,7 @@ void tst_QUrl::componentEncodings_data()
                                    << "x://user%20name:pass%20word@host/path%20name?query%20value#fragment%20value";
 
     QTest::newRow("decoded-space") << QUrl("x://user%20name:pass%20word@host/path%20name?query%20value#fragment%20value")
-                                   << int(QUrl::MostDecoded)
+                                   << MostDecoded
                                    << "user name" << "pass word" << "user name:pass word"
                                    << "host" << "user name:pass word@host"
                                    << "/path name" << "query value" << "fragment value"
@@ -2719,7 +2721,7 @@ void tst_QUrl::componentEncodings_data()
     // binary data is always encoded
     // this is also testing non-UTF8 data
     QTest::newRow("binary") << QUrl("x://%c0%00:%c1%01@host/%c2%02?%c3%03#%d4%04")
-                            << int(QUrl::MostDecoded)
+                            << MostDecoded
                             << "%C0%00" << "%C1%01" << "%C0%00:%C1%01"
                             << "host" << "%C0%00:%C1%01@host"
                             << "/%C2%02" << "%C3%03" << "%D4%04"
@@ -2734,7 +2736,7 @@ void tst_QUrl::componentEncodings_data()
                                      << "/%E0%A0%80" << "%F0%90%80%80" << "%C3%A9"
                                      << "x://%C2%80:%C3%90@xn--smrbrd-cyad.example.no/%E0%A0%80?%F0%90%80%80#%C3%A9";
     QTest::newRow("decoded-unicode") << QUrl("x://%C2%80:%C3%90@XN--SMRBRD-cyad.example.NO/%E0%A0%80?%F0%90%80%80#%C3%A9")
-                                     << int(QUrl::MostDecoded)
+                                     << MostDecoded
                                      << QString::fromUtf8("\xc2\x80") << QString::fromUtf8("\xc3\x90")
                                      << QString::fromUtf8("\xc2\x80:\xc3\x90")
                                      << QString::fromUtf8("smørbrød.example.no")
@@ -2770,7 +2772,7 @@ void tst_QUrl::componentEncodings_data()
     // 1) test the delimiters that must appear encoded
     //    (if they were decoded, they'd would change the URL parsing)
     QTest::newRow("encoded-gendelims-changing") << QUrl("x://%5b%3a%2f%3f%23%40%5d:%5b%2f%3f%23%40%5d@host/%2f%3f%23?%23")
-                                                << int(QUrl::MostDecoded)
+                                                << MostDecoded
                                                 << "[:/?#@]" << "[/?#@]" << "[%3A/?#@]:[/?#@]"
                                                 << "host" << "%5B%3A/?#%40%5D:%5B/?#%40%5D@host"
                                                 << "/%2F?#" << "#" << ""
@@ -2797,7 +2799,7 @@ void tst_QUrl::componentEncodings_data()
 
     // 4) like above, but now decode them, which is allowed
     QTest::newRow("decoded-square-brackets") << QUrl("x:/%5B%5D#%5B%5D")
-                                             << int(QUrl::MostDecoded)
+                                             << MostDecoded
                                              << "" << "" << ""
                                              << "" << ""
                                              << "/[]" << "" << "[]"
@@ -2814,7 +2816,7 @@ void tst_QUrl::componentEncodings_data()
                                             << QString() << "!$()*+,;=:/?[]@%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D" << QString()
                                             << "?!$()*+,;=:/?[]@%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D";
     QTest::newRow("undecoded-delims-query") << QUrl("?!$()*+,;=:/?[]@%21%24%26%27%28%29%2a%2b%2c%2f%3a%3b%3d%3f%40%5b%5d")
-                                            << int(QUrl::MostDecoded)
+                                            << MostDecoded
                                             << QString() << QString() << QString()
                                             << QString() << QString()
                                             << QString() << "!$()*+,;=:/?[]@%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D" << QString()

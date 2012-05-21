@@ -505,7 +505,7 @@ recodeFromUser(const QString &input, const ushort *actions, int from, int to)
     const QChar *begin = input.constData() + from;
     const QChar *end = input.constData() + to;
     if (qt_urlRecode(output, begin, end,
-                     QUrl::MostDecoded, actions))
+                     QUrl::DecodeReserved, actions))
         return output;
 
     return input.mid(from, to - from);
@@ -1021,7 +1021,7 @@ bool QUrlPrivate::setHost(const QString &value, int from, int iend, bool maybePe
 
     // check for percent-encoding first
     QString s;
-    if (maybePercentEncoded && qt_urlRecode(s, begin, end, QUrl::MostDecoded, 0)) {
+    if (maybePercentEncoded && qt_urlRecode(s, begin, end, QUrl::DecodeReserved, 0)) {
         // something was decoded
         // anything encoded left?
         if (s.contains(QChar(0x25))) { // '%'

@@ -210,7 +210,7 @@ inline QString QUrlQueryPrivate::recodeFromUser(const QString &input) const
     // note: duplicated in setQuery()
     QString output;
     if (qt_urlRecode(output, input.constData(), input.constData() + input.length(),
-                     QUrl::MostDecoded,
+                     QUrl::DecodeReserved,
                      prettyDecodedActions))
         return output;
     return input;
@@ -269,7 +269,7 @@ void QUrlQueryPrivate::setQuery(const QString &query)
 
         QString key;
         if (!qt_urlRecode(key, begin, delimiter,
-                          QUrl::MostDecoded,
+                          QUrl::DecodeReserved,
                           prettyDecodedActions))
             key = QString(begin, delimiter - begin);
 
@@ -282,7 +282,7 @@ void QUrlQueryPrivate::setQuery(const QString &query)
         } else {
             QString value;
             if (!qt_urlRecode(value, delimiter + 1, pos,
-                              QUrl::MostDecoded,
+                              QUrl::DecodeReserved,
                               prettyDecodedActions))
                 value = QString(delimiter + 1, pos - delimiter - 1);
             itemList.append(qMakePair(key, value));
