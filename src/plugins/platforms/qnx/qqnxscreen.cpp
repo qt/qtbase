@@ -82,14 +82,19 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
 
     m_currentGeometry = m_initialGeometry = QRect(0, 0, val[0], val[1]);
 
-    // Cache size of this display in millimeters
+    // Cache size of this display in millimeters. We have to take care of the orientation.
+    // libscreen always reports the physical size dimensions as width and height in the
+    // landscape orientation. Contrary to this, QPlatformScreen::physicalSize() expects the
+    // returned dimensions to follow the current orientation.
     errno = 0;
     result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_PHYSICAL_SIZE, val);
     if (result != 0) {
         qFatal("QQnxScreen: failed to query display physical size, errno=%d", errno);
     }
-
-    m_currentPhysicalSize = m_initialPhysicalSize = QSize(val[0], val[1]);
+    if (m_currentRotation == 0 || m_currentRotation == 180)
+        m_currentPhysicalSize = m_initialPhysicalSize = QSize(val[0], val[1]);
+    else
+        m_currentPhysicalSize = m_initialPhysicalSize = QSize(val[1], val[0]);
 
     // We only create the root window if we are the primary display.
     if (primaryScreen)
