@@ -699,14 +699,13 @@ qint64 QHttpNetworkReplyPrivate::uncompressBodyData(QByteDataBuffer *in, QByteDa
             inflateStrm.next_out = reinterpret_cast<Bytef*>(bOut.data());
 
             int ret = inflate(&inflateStrm, Z_NO_FLUSH);
-            switch (ret) {
-            case Z_NEED_DICT:
-            case Z_DATA_ERROR:
-            case Z_MEM_ERROR:
+            //All negative return codes are errors, in the context of HTTP compression, Z_NEED_DICT is also an error.
+            if (ret < 0 || ret == Z_NEED_DICT)
                 return -1;
-            }
             bOut.resize(bOut.capacity() - inflateStrm.avail_out);
             out->append(bOut);
+            if (ret == Z_STREAM_END)
+                return out->byteAmount();
         } while (inflateStrm.avail_in > 0);
     }
 
