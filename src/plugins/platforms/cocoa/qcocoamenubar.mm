@@ -113,9 +113,9 @@ void QCocoaMenuBar::removeMenu(QPlatformMenu *platformMenu)
     [m_nativeMenu removeItemAtIndex: realIndex];
 }
 
-void QCocoaMenuBar::syncMenu(QPlatformMenuItem *menuItem)
+void QCocoaMenuBar::syncMenu(QPlatformMenu *menu)
 {
-    Q_UNUSED(menuItem);
+    Q_UNUSED(menu);
 }
 
 void QCocoaMenuBar::handleReparent(QWindow *newParentWindow)

@@ -52,8 +52,8 @@
 #include "qcocoamenubar.h"
 
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformNativeInterface>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 

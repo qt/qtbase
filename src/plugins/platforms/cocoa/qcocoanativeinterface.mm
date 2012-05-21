@@ -92,6 +92,7 @@ void *QCocoaNativeInterface::NSPrintInfoForPrintEngine(QPrintEngine *printEngine
 
 void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
 {
+    Q_UNUSED(window);
     QCocoaMenuBar::updateMenuBarImmediately();
 }
 

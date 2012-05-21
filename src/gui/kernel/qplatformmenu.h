@@ -69,50 +69,56 @@ public:
     enum MenuRole { NoRole = 0, TextHeuristicRole, ApplicationSpecificRole, AboutQtRole,
                     AboutRole, PreferencesRole, QuitRole };
 
-    virtual void setTag(quintptr tag);
-    virtual quintptr tag() const;
+    virtual void setTag(quintptr tag) = 0;
+    virtual quintptr tag()const = 0;
 
-    virtual void setText(const QString &text);
-    virtual void setIcon(const QImage &icon);
-    virtual void setMenu(QPlatformMenu *menu);
-    virtual void setVisible(bool isVisible);
-    virtual void setIsSeparator(bool isSeparator);
-    virtual void setFont(const QFont &font);
-    virtual void setRole(MenuRole role);
-    virtual void setChecked(bool isChecked);
-    virtual void setShortcut(const QKeySequence& shortcut);
-    virtual void setEnabled(bool enabled);
+    virtual void setText(const QString &text) = 0;
+    virtual void setIcon(const QImage &icon) = 0;
+    virtual void setMenu(QPlatformMenu *menu) = 0;
+    virtual void setVisible(bool isVisible) = 0;
+    virtual void setIsSeparator(bool isSeparator) = 0;
+    virtual void setFont(const QFont &font) = 0;
+    virtual void setRole(MenuRole role) = 0;
+    virtual void setChecked(bool isChecked) = 0;
+    virtual void setShortcut(const QKeySequence& shortcut) = 0;
+    virtual void setEnabled(bool enabled) = 0;
 Q_SIGNALS:
     void activated();
     void hovered();
 };
 
-class Q_GUI_EXPORT QPlatformMenu : public QPlatformMenuItem // Some (but not all) of the PlatformMenuItem API applies to QPlatformMenu as well.
+class Q_GUI_EXPORT QPlatformMenu : public QObject
 {
 Q_OBJECT
 public:
-    virtual void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before);
-    virtual void removeMenuItem(QPlatformMenuItem *menuItem);
-    virtual void syncMenuItem(QPlatformMenuItem *menuItem);
-    virtual void syncSeparatorsCollapsible(bool enable);
+    virtual void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) = 0;
+    virtual void removeMenuItem(QPlatformMenuItem *menuItem) = 0;
+    virtual void syncMenuItem(QPlatformMenuItem *menuItem) = 0;
+    virtual void syncSeparatorsCollapsible(bool enable) = 0;
 
-    virtual QPlatformMenuItem *menuItemAt(int position) const;
-    virtual QPlatformMenuItem *menuItemForTag(quintptr tag) const;
+    virtual void setTag(quintptr tag) = 0;
+    virtual quintptr tag()const = 0;
+
+    virtual void setText(const QString &text) = 0;
+    virtual void setEnabled(bool enabled) = 0;
+
+    virtual QPlatformMenuItem *menuItemAt(int position) const = 0;
+    virtual QPlatformMenuItem *menuItemForTag(quintptr tag) const = 0;
 Q_SIGNALS:
     void aboutToShow();
     void aboutToHide();
 };
 
-class Q_GUI_EXPORT QPlatformMenuBar : public QPlatformMenu
+class Q_GUI_EXPORT QPlatformMenuBar : public QObject
 {
 Q_OBJECT
 public:
-    virtual void insertMenu(QPlatformMenu *menu, QPlatformMenu *before);
-    virtual void removeMenu(QPlatformMenu *menu);
-    virtual void syncMenu(QPlatformMenuItem *menuItem);
-    virtual void handleReparent(QWindow *newParentWindow);
+    virtual void insertMenu(QPlatformMenu *menu, QPlatformMenu *before) = 0;
+    virtual void removeMenu(QPlatformMenu *menu) = 0;
+    virtual void syncMenu(QPlatformMenu *menuItem) = 0;
+    virtual void handleReparent(QWindow *newParentWindow) = 0;
 
-    virtual QPlatformMenu *menuForTag(quintptr tag) const;
+    virtual QPlatformMenu *menuForTag(quintptr tag) const = 0;
 };
 
 QT_END_NAMESPACE

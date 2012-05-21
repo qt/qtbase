@@ -58,7 +58,7 @@ public:
 
     virtual void insertMenu(QPlatformMenu *menu, QPlatformMenu* before);
     virtual void removeMenu(QPlatformMenu *menu);
-    virtual void syncMenu(QPlatformMenuItem *menuItem);
+    virtual void syncMenu(QPlatformMenu *menuItem);
     virtual void handleReparent(QWindow *newParentWindow);
     virtual QPlatformMenu *menuForTag(quintptr tag) const;
 
