@@ -5431,8 +5431,8 @@ if [ "$CFG_QML_DEBUG" = "no" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_QML_NO_DEBUGGER"
 fi
 
-case "$COMPILER" in
-g++*)
+case "$QMAKE_CONF_COMPILER" in
+*g++*)
     # GNU C++
     COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -dumpversion 2>/dev/null`
 
