@@ -118,6 +118,8 @@ public:
     virtual QPlatformCursor *cursor() const;
 
 protected:
+    void resizeMaximizedWindows();
+
     QScopedPointer<QPlatformScreenPrivate> d_ptr;
 
 private:
