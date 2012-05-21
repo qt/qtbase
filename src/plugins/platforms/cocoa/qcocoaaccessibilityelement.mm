@@ -73,6 +73,7 @@ static QAccessibleInterface *acast(void *ptr)
 
 - (void)dealloc {
     [super dealloc];
+    delete acast(accessibleInterface);
 }
 
 - (BOOL)isEqual:(id)object {
