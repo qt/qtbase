@@ -2985,12 +2985,7 @@ void Configure::displayConfig()
         env = "Unset";
     sout << "    PATH=\r\n      " << env << endl;
 
-    if (dictionary["EDITION"] == "OpenSource") {
-        sout << "You are licensed to use this software under the terms of the GNU GPL version 3.";
-        sout << "You are licensed to use this software under the terms of the Lesser GNU LGPL version 2.1." << endl;
-        sout << "See " << dictionary["LICENSE FILE"] << "3" << endl << endl
-             << " or " << dictionary["LICENSE FILE"] << "L" << endl << endl;
-    } else {
+    if (dictionary[QStringLiteral("EDITION")] != QStringLiteral("OpenSource")) {
         QString l1 = licenseInfo[ "LICENSEE" ];
         QString l2 = licenseInfo[ "LICENSEID" ];
         QString l3 = dictionary["EDITION"] + ' ' + "Edition";
