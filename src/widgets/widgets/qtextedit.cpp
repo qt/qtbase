@@ -1665,16 +1665,24 @@ void QTextEdit::scrollContentsBy(int dx, int dy)
 QVariant QTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 {
     Q_D(const QTextEdit);
-    QVariant v = d->control->inputMethodQuery(property);
-    const QPoint offset(-d->horizontalOffset(), -d->verticalOffset());
-    if (v.type() == QVariant::RectF)
-        v = v.toRectF().toRect().translated(offset);
-    else if (v.type() == QVariant::PointF)
-        v = v.toPointF().toPoint() + offset;
-    else if (v.type() == QVariant::Rect)
-        v = v.toRect().translated(offset);
-    else if (v.type() == QVariant::Point)
-        v = v.toPoint() + offset;
+    QVariant v;
+    switch (property) {
+    case Qt::ImHints:
+        v = QWidget::inputMethodQuery(property);
+        break;
+    default:
+        v = d->control->inputMethodQuery(property);
+        const QPoint offset(-d->horizontalOffset(), -d->verticalOffset());
+        if (v.type() == QVariant::RectF)
+            v = v.toRectF().toRect().translated(offset);
+        else if (v.type() == QVariant::PointF)
+            v = v.toPointF().toPoint() + offset;
+        else if (v.type() == QVariant::Rect)
+            v = v.toRect().translated(offset);
+        else if (v.type() == QVariant::Point)
+            v = v.toPoint() + offset;
+    }
+
     return v;
 }
 

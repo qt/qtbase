@@ -209,6 +209,8 @@ private slots:
     void inputMethodEvent();
     void inputMethodSelection();
     void inputMethodQuery();
+    void inputMethodQueryImHints_data();
+    void inputMethodQueryImHints();
 
 private:
     void createSelection();
@@ -2460,6 +2462,25 @@ void tst_QTextEdit::inputMethodQuery()
     ed->setEnabled(false);
     QGuiApplication::sendEvent(ed, &event);
     QCOMPARE(event.value(Qt::ImEnabled).toBool(), false);
+}
+
+Q_DECLARE_METATYPE(Qt::InputMethodHints)
+void tst_QTextEdit::inputMethodQueryImHints_data()
+{
+    QTest::addColumn<Qt::InputMethodHints>("hints");
+
+    QTest::newRow("None") << static_cast<Qt::InputMethodHints>(Qt::ImhNone);
+    QTest::newRow("Password") << static_cast<Qt::InputMethodHints>(Qt::ImhHiddenText);
+    QTest::newRow("Normal") << static_cast<Qt::InputMethodHints>(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText | Qt::ImhSensitiveData);
+}
+
+void tst_QTextEdit::inputMethodQueryImHints()
+{
+    QFETCH(Qt::InputMethodHints, hints);
+    ed->setInputMethodHints(hints);
+
+    QVariant value = ed->inputMethodQuery(Qt::ImHints);
+    QCOMPARE(static_cast<Qt::InputMethodHints>(value.toInt()), hints);
 }
 
 QTEST_MAIN(tst_QTextEdit)
