@@ -168,8 +168,12 @@ void QFactoryLoader::update()
                 if (instance && factory && instance->qt_metacast(d->iid))
                     keys = factory->keys();
 
-                if (!keys.isEmpty())
+                if (!keys.isEmpty()) {
                     metaDataOk = true;
+                    QJsonObject object = library->metaData.value(QLatin1String("MetaData")).toObject();
+                    object.insert(QLatin1String("Keys"), QJsonArray::fromStringList(keys));
+                    library->metaData[QLatin1String("MetaData")] = object;
+                }
 
             } else {
                 QString iid = library->metaData.value(QLatin1String("IID")).toString();
