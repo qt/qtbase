@@ -2231,7 +2231,7 @@ void QTextEngine::addRequiredBoundaries() const
 bool QTextEngine::atWordSeparator(int position) const
 {
     const QChar c = layoutData->string.at(position);
-    switch (c.toLatin1()) {
+    switch (c.unicode()) {
     case '.':
     case ',':
     case '?':
@@ -2264,19 +2264,24 @@ bool QTextEngine::atWordSeparator(int position) const
     case '|':
         return true;
     default:
-        return false;
+        break;
     }
+    return false;
 }
 
 bool QTextEngine::atSpace(int position) const
 {
     const QChar c = layoutData->string.at(position);
-
-    return c == QLatin1Char(' ')
-        || c == QChar::Nbsp
-        || c == QChar::LineSeparator
-        || c == QLatin1Char('\t')
-        ;
+    switch (c.unicode()) {
+    case QChar::Tabulation:
+    case QChar::Space:
+    case QChar::Nbsp:
+    case QChar::LineSeparator:
+        return true;
+    default:
+        break;
+    }
+    return false;
 }
 
 
@@ -2317,7 +2322,7 @@ static inline bool prevCharJoins(const QString &string, int pos)
     return (joining == QChar::Dual || joining == QChar::Center);
 }
 
-static bool isRetainableControlCode(const QChar &c)
+static inline bool isRetainableControlCode(QChar c)
 {
     return (c.unicode() == 0x202a       // LRE
             || c.unicode() == 0x202b    // LRE
