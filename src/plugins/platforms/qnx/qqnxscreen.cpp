@@ -140,6 +140,24 @@ int QQnxScreen::depth() const
     return defaultDepth();
 }
 
+qreal QQnxScreen::refreshRate() const
+{
+    screen_display_mode_t displayMode;
+    int result = screen_get_display_property_pv(m_display, SCREEN_PROPERTY_MODE, reinterpret_cast<void **>(&displayMode));
+    if (result != 0) {
+        qWarning("QQnxScreen: Failed to query screen mode. Using default value of 60Hz");
+        return 60.0;
+    }
+#if defined(QQNXSCREEN_DEBUG)
+    qDebug() << Q_FUNC_INFO << "screen mode:" << endl
+             << "      width =" << displayMode.width << endl
+             << "     height =" << displayMode.height << endl
+             << "    refresh =" << displayMode.refresh << endl
+             << " interlaced =" << displayMode.interlaced;
+#endif
+    return static_cast<qreal>(displayMode.refresh);
+}
+
 Qt::ScreenOrientation QQnxScreen::orientation() const
 {
     Qt::ScreenOrientation orient;
