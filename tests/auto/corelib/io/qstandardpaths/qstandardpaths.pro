@@ -1,4 +1,4 @@
-CONFIG += testcase parallel_test
+CONFIG += testcase
 TARGET = tst_qstandardpaths
 QT = core testlib
 SOURCES = tst_qstandardpaths.cpp

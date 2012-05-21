@@ -1,4 +1,4 @@
-CONFIG += testcase parallel_test
+CONFIG += testcase
 TARGET = tst_qdiriterator
 QT = core-private core testlib
 SOURCES = tst_qdiriterator.cpp

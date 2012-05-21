@@ -1,4 +1,4 @@
-CONFIG += testcase parallel_test
+CONFIG += testcase
 TARGET = tst_qsettings
 QT = core-private gui testlib
 SOURCES = tst_qsettings.cpp
