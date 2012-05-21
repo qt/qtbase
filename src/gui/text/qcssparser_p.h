@@ -411,22 +411,6 @@ struct BorderData {
     BrushData color;
 };
 
-struct Q_GUI_EXPORT IconValue
-{
-    enum Mode { Normal, Disabled, Active, Selected }; // In sync with QIcon.
-    enum State { On, Off };
-
-    struct Q_GUI_EXPORT IconEntry
-    {
-        IconEntry() : mode(Normal) , state(On) {}
-
-        Mode mode;
-        State state;
-        QString uri;
-    };
-
-    QList<IconEntry> entries;
-};
 
 // 1. StyleRule - x:hover, y:clicked > z:checked { prop1: value1; prop2: value2; }
 // 2. QVector<Selector> - x:hover, y:clicked z:checked
@@ -471,7 +455,7 @@ struct Q_GUI_EXPORT Declaration
     QSize sizeValue() const;
     QRect rectValue() const;
     QString uriValue() const;
-    IconValue iconValue() const;
+    QIcon iconValue() const;
 
     void borderImageValue(QString *image, int *cuts, TileMode *h, TileMode *v) const;
 };
@@ -598,7 +582,7 @@ struct Q_GUI_EXPORT ValueExtractor
     bool extractOutline(int *borders, QBrush *colors, BorderStyle *Styles, QSize *radii, int *offsets);
     bool extractPalette(QBrush *fg, QBrush *sfg, QBrush *sbg, QBrush *abg);
     int  extractStyleFeatures();
-    bool extractImage(QCss::IconValue *icon, Qt::Alignment *a, QSize *size);
+    bool extractImage(QIcon *icon, Qt::Alignment *a, QSize *size);
 
     int lengthValue(const Declaration &decl);
 
@@ -858,7 +842,6 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE( QCss::BackgroundData )
 Q_DECLARE_METATYPE( QCss::LengthData )
 Q_DECLARE_METATYPE( QCss::BorderData )
-Q_DECLARE_METATYPE( QCss::IconValue )
 
 
 #endif // QT_NO_CSSPARSER

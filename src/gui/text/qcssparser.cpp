@@ -42,6 +42,7 @@
 #include "qcssparser_p.h"
 
 #include <qdebug.h>
+#include <qicon.h>
 #include <qcolor.h>
 #include <qfont.h>
 #include <qfileinfo.h>
@@ -1272,7 +1273,7 @@ void ValueExtractor::extractFont()
     extractFont(&f, &dummy);
 }
 
-bool ValueExtractor::extractImage(QCss::IconValue *icon, Qt::Alignment *a, QSize *size)
+bool ValueExtractor::extractImage(QIcon *icon, Qt::Alignment *a, QSize *size)
 {
     bool hit = false;
     for (int i = 0; i < declarations.count(); ++i) {
@@ -1643,27 +1644,28 @@ void Declaration::borderImageValue(QString *image, int *cuts,
         *h = *v;
 }
 
-IconValue Declaration::iconValue() const
+QIcon Declaration::iconValue() const
 {
     if (d->parsed.isValid())
-        return qvariant_cast<IconValue>(d->parsed);
+        return qvariant_cast<QIcon>(d->parsed);
 
-    IconValue icon;
+    QIcon icon;
     for (int i = 0; i < d->values.count();) {
         const Value &value = d->values.at(i++);
         if (value.type != Value::Uri)
             break;
-        IconValue::IconEntry entry;
-        entry.uri = value.variant.toString();
+        QString uri = value.variant.toString();
+        QIcon::Mode mode = QIcon::Normal;
+        QIcon::State state = QIcon::Off;
         for (int j = 0; j < 2; j++) {
             if (i != d->values.count() && d->values.at(i).type == Value::KnownIdentifier) {
                 switch (d->values.at(i).variant.toInt()) {
-                case Value_Disabled: entry.mode = IconValue::Disabled; break;
-                case Value_Active: entry.mode = IconValue::Active; break;
-                case Value_Selected: entry.mode = IconValue::Selected; break;
-                case Value_Normal: entry.mode = IconValue::Normal; break;
-                case Value_On: entry.state = IconValue::On; break;
-                case Value_Off: entry.state = IconValue::Off; break;
+                case Value_Disabled: mode = QIcon::Disabled; break;
+                case Value_Active: mode = QIcon::Active; break;
+                case Value_Selected: mode = QIcon::Selected; break;
+                case Value_Normal: mode = QIcon::Normal; break;
+                case Value_On: state = QIcon::On; break;
+                case Value_Off: state = QIcon::Off; break;
                 default: break;
                 }
                 ++i;
@@ -1671,7 +1673,12 @@ IconValue Declaration::iconValue() const
                 break;
             }
         }
-        icon.entries.push_back(entry);
+
+        // QIcon is soo broken
+        if (icon.isNull())
+            icon = QIcon(uri);
+        else
+            icon.addPixmap(uri, mode, state);
 
         if (i == d->values.count())
             break;
@@ -1680,7 +1687,7 @@ IconValue Declaration::iconValue() const
             i++;
     }
 
-    d->parsed = QVariant::fromValue<QCss::IconValue>(icon);
+    d->parsed = QVariant::fromValue<QIcon>(icon);
     return icon;
 }
 
