@@ -1913,12 +1913,10 @@ QByteArray createScriptEnumDeclaration()
         declaration += " = Common";
     }
 
-    declaration += "\n    };\n";
+    declaration += "\n    };\n\n";
 
     scriptSentinel = ((uniqueScripts + 16) / 32) * 32; // a multiple of 32
-    declaration += "    enum { ScriptSentinel = ";
-    declaration += QByteArray::number(scriptSentinel);
-    declaration += " };\n\n";
+
     return declaration;
 }
 
@@ -2016,6 +2014,8 @@ QByteArray createScriptTableDeclaration()
             declaration.chop(1);
     }
     declaration += "\n};\n\n";
+
+    declaration += "enum { ScriptSentinel = " + QByteArray::number(scriptSentinel) + " };\n\n";
 
     declaration +=
             "Q_CORE_EXPORT int QT_FASTCALL script(uint ucs4)\n"

@@ -157,7 +157,6 @@ namespace QUnicodeTables {
         Phoenician = Common,
         PhagsPa = Common
     };
-    enum { ScriptSentinel = 32 };
 
 
     enum GraphemeBreak {

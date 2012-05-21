@@ -9559,6 +9559,8 @@ static const unsigned char uc_scripts[] = {
     Common, Common, Common, Common, Common, Common, Common, Common
 };
 
+enum { ScriptSentinel = 32 };
+
 Q_CORE_EXPORT int QT_FASTCALL script(uint ucs4)
 {
     if (ucs4 > 0xffff)
