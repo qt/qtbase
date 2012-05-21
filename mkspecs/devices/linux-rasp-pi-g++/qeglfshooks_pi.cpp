@@ -55,7 +55,6 @@
 QT_BEGIN_NAMESPACE
 
 static DISPMANX_DISPLAY_HANDLE_T dispman_display = 0;
-static DISPMANX_UPDATE_HANDLE_T dispman_update = 0;
 
 class QEglFSPiHooks : public QEglFSHooks
 {
@@ -126,7 +125,7 @@ EGLNativeWindowType QEglFSPiHooks::createNativeWindow(const QSize &size)
     src_rect.width = size.width() << 16;
     src_rect.height = size.height() << 16;
 
-    dispman_update = vc_dispmanx_update_start(0);
+    DISPMANX_UPDATE_HANDLE_T dispman_update = vc_dispmanx_update_start(0);
 
     VC_DISPMANX_ALPHA_T alpha;
     alpha.flags = DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS;
@@ -150,7 +149,9 @@ EGLNativeWindowType QEglFSPiHooks::createNativeWindow(const QSize &size)
 void QEglFSPiHooks::destroyNativeWindow(EGLNativeWindowType window)
 {
     EGL_DISPMANX_WINDOW_T *eglWindow = static_cast<EGL_DISPMANX_WINDOW_T *>(window);
+    DISPMANX_UPDATE_HANDLE_T dispman_update = vc_dispmanx_update_start(0);
     vc_dispmanx_element_remove(dispman_update, eglWindow->element);
+    vc_dispmanx_update_submit_sync(dispman_update);
     delete eglWindow;
 }
 
