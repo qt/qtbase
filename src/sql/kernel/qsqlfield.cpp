@@ -517,7 +517,7 @@ bool QSqlField::isValid() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QSqlField &f)
 {
-    dbg.nospace() << "QSqlField(" << f.name() << ", " << QVariant::typeToName(f.type());
+    dbg.nospace() << "QSqlField(" << f.name() << ", " << QMetaType::typeName(f.type());
     if (f.length() >= 0)
         dbg.nospace() << ", length: " << f.length();
     if (f.precision() >= 0)

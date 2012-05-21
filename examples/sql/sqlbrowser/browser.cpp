@@ -185,8 +185,8 @@ void Browser::showMetaData(const QString &t)
         QSqlField fld = rec.field(i);
         model->setData(model->index(i, 0), fld.name());
         model->setData(model->index(i, 1), fld.typeID() == -1
-                ? QString(QVariant::typeToName(fld.type()))
-                : QString("%1 (%2)").arg(QVariant::typeToName(fld.type())).arg(fld.typeID()));
+                ? QString(QMetaType::typeName(fld.type()))
+                : QString("%1 (%2)").arg(QMetaType::typeName(fld.type())).arg(fld.typeID()));
         model->setData(model->index(i, 2), fld.length());
         model->setData(model->index(i, 3), fld.precision());
         model->setData(model->index(i, 4), fld.requiredStatus() == -1 ? QVariant("?")

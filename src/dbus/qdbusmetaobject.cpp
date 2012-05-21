@@ -219,7 +219,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
             type = -1;
         }
     } else {
-        result.name = QVariant::typeToName( QVariant::Type(type) );
+        result.name = QMetaType::typeName(type);
     }
 
     result.id = type;

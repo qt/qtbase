@@ -215,7 +215,7 @@ void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data
         } else {
             // not an argument and doesn't match?
             int type = reply.arguments().at(0).userType();
-            receivedType = QVariant::typeToName(QVariant::Type(type));
+            receivedType = QMetaType::typeName(type);
             receivedSignature = QDBusMetaType::typeToSignature(type);
         }
     }
