@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qudevicehelper_p.h"
+#include "qdevicediscovery_p.h"
 
 #include <QStringList>
 #include <QCoreApplication>
@@ -49,26 +49,26 @@
 
 #include <linux/input.h>
 
-//#define QT_QPA_UDEVICE_HELPER_DEBUG
+//#define QT_QPA_DEVICE_DISCOVERY_DEBUG
 
-#ifdef QT_QPA_UDEVICE_HELPER_DEBUG
+#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
 #include <QtDebug>
 #endif
 
 QT_BEGIN_NAMESPACE
 
-QUDeviceHelper *QUDeviceHelper::createUDeviceHelper(QUDeviceTypes types, QObject *parent)
+QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
 {
-#ifdef QT_QPA_UDEVICE_HELPER_DEBUG
+#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
     qWarning() << "Try to create new UDeviceHelper";
 #endif
 
-    QUDeviceHelper *helper = 0;
+    QDeviceDiscovery *helper = 0;
     struct udev *udev;
 
     udev = udev_new();
     if (udev) {
-        helper = new QUDeviceHelper(types, udev, parent);
+        helper = new QDeviceDiscovery(types, udev, parent);
     } else {
         qWarning("Failed to get udev library context.");
     }
@@ -76,11 +76,11 @@ QUDeviceHelper *QUDeviceHelper::createUDeviceHelper(QUDeviceTypes types, QObject
     return helper;
 }
 
-QUDeviceHelper::QUDeviceHelper(QUDeviceTypes types, struct udev *udev, QObject *parent) :
+QDeviceDiscovery::QDeviceDiscovery(QDeviceTypes types, struct udev *udev, QObject *parent) :
     QObject(parent),
-    m_udev(udev), m_types(types), m_udevMonitor(0), m_udevMonitorFileDescriptor(-1), m_udevSocketNotifier(0)
+    m_types(types), m_udev(udev), m_udevMonitor(0), m_udevMonitorFileDescriptor(-1), m_udevSocketNotifier(0)
 {
-#ifdef QT_QPA_UDEVICE_HELPER_DEBUG
+#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
     qWarning() << "New UDeviceHelper created for type" << types;
 #endif
 
@@ -89,7 +89,7 @@ QUDeviceHelper::QUDeviceHelper(QUDeviceTypes types, struct udev *udev, QObject *
 
     m_udevMonitor = udev_monitor_new_from_netlink(m_udev, "udev");
     if (!m_udevMonitor) {
-#ifdef QT_QPA_UDEVICE_HELPER_DEBUG
+#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
         qWarning("Unable to create an Udev monitor. No devices can be detected.");
 #endif
         return;
@@ -104,7 +104,7 @@ QUDeviceHelper::QUDeviceHelper(QUDeviceTypes types, struct udev *udev, QObject *
     connect(m_udevSocketNotifier, SIGNAL(activated(int)), this, SLOT(handleUDevNotification()));
 }
 
-QUDeviceHelper::~QUDeviceHelper()
+QDeviceDiscovery::~QDeviceDiscovery()
 {
     if (m_udevMonitor)
         udev_monitor_unref(m_udevMonitor);
@@ -113,7 +113,7 @@ QUDeviceHelper::~QUDeviceHelper()
         udev_unref(m_udev);
 }
 
-QStringList QUDeviceHelper::scanConnectedDevices()
+QStringList QDeviceDiscovery::scanConnectedDevices()
 {
     QStringList devices;
 
@@ -124,17 +124,17 @@ QStringList QUDeviceHelper::scanConnectedDevices()
     udev_enumerate_add_match_subsystem(ue, "input");
     udev_enumerate_add_match_subsystem(ue, "drm");
 
-    if (m_types & UDev_Mouse)
+    if (m_types & Device_Mouse)
         udev_enumerate_add_match_property(ue, "ID_INPUT_MOUSE", "1");
-    if (m_types & UDev_Touchpad)
+    if (m_types & Device_Touchpad)
         udev_enumerate_add_match_property(ue, "ID_INPUT_TOUCHPAD", "1");
-    if (m_types & UDev_Touchscreen)
+    if (m_types & Device_Touchscreen)
         udev_enumerate_add_match_property(ue, "ID_INPUT_TOUCHSCREEN", "1");
-    if (m_types & UDev_Keyboard)
+    if (m_types & Device_Keyboard)
         udev_enumerate_add_match_property(ue, "ID_INPUT_KEYBOARD", "1");
 
     if (udev_enumerate_scan_devices(ue) != 0) {
-#ifdef QT_QPA_UDEVICE_HELPER_DEBUG
+#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
         qWarning() << "UDeviceHelper scan connected devices for enumeration failed";
 #endif
         return devices;
@@ -145,30 +145,29 @@ QStringList QUDeviceHelper::scanConnectedDevices()
         const char *syspath = udev_list_entry_get_name(entry);
         udev_device *udevice = udev_device_new_from_syspath(m_udev, syspath);
         QString candidate = QString::fromUtf8(udev_device_get_devnode(udevice));
-        if ((m_types & UDev_InputMask) && candidate.startsWith(QLatin1String("/dev/input/event")))
+        if ((m_types & Device_InputMask) && candidate.startsWith(QLatin1String(QT_EVDEV_DEVICE)))
             devices << candidate;
-        if ((m_types & UDev_VideoMask) && candidate.startsWith(QLatin1String("/dev/dri/card")))
+        if ((m_types & Device_VideoMask) && candidate.startsWith(QLatin1String(QT_DRM_DEVICE)))
             devices << candidate;
 
         udev_device_unref(udevice);
     }
     udev_enumerate_unref(ue);
 
-#ifdef QT_QPA_UDEVICE_HELPER_DEBUG
+#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
     qWarning() << "UDeviceHelper found matching devices" << devices;
 #endif
 
     return devices;
 }
 
-void QUDeviceHelper::handleUDevNotification()
+void QDeviceDiscovery::handleUDevNotification()
 {
     if (!m_udevMonitor)
         return;
 
     struct udev_device *dev;
     QString devNode;
-    QUDeviceTypes types = QFlag(UDev_Unknown);
 
     dev = udev_monitor_receive_device(m_udevMonitor);
     if (!dev)
@@ -186,39 +185,39 @@ void QUDeviceHelper::handleUDevNotification()
 
     const char *subsystem;
     devNode = QString::fromUtf8(str);
-    if (devNode.startsWith(QLatin1String("/dev/input/event")))
+    if (devNode.startsWith(QLatin1String(QT_EVDEV_DEVICE)))
         subsystem = "input";
-    else if (devNode.startsWith(QLatin1String("/dev/dri/card")))
+    else if (devNode.startsWith(QLatin1String(QT_DRM_DEVICE)))
         subsystem = "drm";
     else goto cleanup;
 
-    types = checkDeviceType(dev);
-
     // if we cannot determine a type, walk up the device tree
-    if (types == UDev_Unknown) {
+    if (!checkDeviceType(dev)) {
         // does not increase the refcount
         dev = udev_device_get_parent_with_subsystem_devtype(dev, subsystem, 0);
         if (!dev)
             goto cleanup;
 
-        types = checkDeviceType(dev);
+        if (!checkDeviceType(dev))
+            goto cleanup;
     }
 
-    if (types && (qstrcmp(action, "add") == 0))
-        emit deviceDetected(devNode, types);
+    if (qstrcmp(action, "add") == 0)
+        emit deviceDetected(devNode);
 
-    if (types && (qstrcmp(action, "remove") == 0))
-        emit deviceRemoved(devNode, types);
+    if (qstrcmp(action, "remove") == 0)
+        emit deviceRemoved(devNode);
 
 cleanup:
     udev_device_unref(dev);
 }
 
-QUDeviceHelper::QUDeviceTypes QUDeviceHelper::checkDeviceType(udev_device *dev)
+bool QDeviceDiscovery::checkDeviceType(udev_device *dev)
 {
-    QUDeviceTypes types = QFlag(UDev_Unknown);
+    if (!dev)
+        return false;
 
-    if ((m_types & UDev_Keyboard) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_KEYBOARD"), "1") == 0 )) {
+    if ((m_types & Device_Keyboard) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_KEYBOARD"), "1") == 0 )) {
         const char *capabilities_key = udev_device_get_sysattr_value(dev, "capabilities/key");
         QStringList val = QString::fromUtf8(capabilities_key).split(QString::fromUtf8(" "), QString::SkipEmptyParts);
         if (!val.isEmpty()) {
@@ -228,24 +227,24 @@ QUDeviceHelper::QUDeviceTypes QUDeviceHelper::checkDeviceType(udev_device *dev)
                 // Tests if the letter Q is valid for the device.  We may want to alter this test, but it seems mostly reliable.
                 bool test = (keys >> KEY_Q) & 1;
                 if (test)
-                    types |= UDev_Keyboard;
+                    return true;
             }
         }
     }
 
-    if ((m_types & UDev_Mouse) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_MOUSE"), "1") == 0))
-        types |= UDev_Mouse;
+    if ((m_types & Device_Mouse) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_MOUSE"), "1") == 0))
+        return true;
 
-    if ((m_types & UDev_Touchpad) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_TOUCHPAD"), "1") == 0))
-        types |= UDev_Touchpad;
+    if ((m_types & Device_Touchpad) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_TOUCHPAD"), "1") == 0))
+        return true;
 
-    if ((m_types & UDev_Touchscreen) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_TOUCHSCREEN"), "1") == 0))
-        types |= UDev_Touchscreen;
+    if ((m_types & Device_Touchscreen) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_TOUCHSCREEN"), "1") == 0))
+        return true;
 
-    if ((m_types & UDev_DRM) && (qstrcmp(udev_device_get_subsystem(dev), "drm") == 0))
-        types |= UDev_DRM;
+    if ((m_types & Device_DRM) && (qstrcmp(udev_device_get_subsystem(dev), "drm") == 0))
+        return true;
 
-    return types;
+    return false;
 }
 
 QT_END_NAMESPACE

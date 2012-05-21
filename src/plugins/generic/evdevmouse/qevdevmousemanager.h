@@ -44,9 +44,7 @@
 
 #include "qevdevmousehandler.h"
 
-#ifndef QT_NO_LIBUDEV
-#include <QtPlatformSupport/private/qudevicehelper_p.h>
-#endif // QT_NO_LIBUDEV
+#include <QtPlatformSupport/private/qdevicediscovery_p.h>
 
 #include <QObject>
 #include <QHash>
@@ -73,9 +71,7 @@ private slots:
 private:
     QString m_spec;
     QHash<QString,QEvdevMouseHandler*> m_mice;
-#ifndef QT_NO_LIBUDEV
-    QUDeviceHelper *m_udeviceHelper;
-#endif // QT_NO_LIBUDEV
+    QDeviceDiscovery *m_deviceDiscovery;
     int m_x;
     int m_y;
     int m_xoffset;

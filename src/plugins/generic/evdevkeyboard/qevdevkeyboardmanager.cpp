@@ -56,11 +56,6 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
 {
     Q_UNUSED(key);
 
-#ifndef QT_NO_LIBUDEV
-    bool useUDev = true;
-#else
-    bool useUDev = false;
-#endif // QT_NO_LIBUDEV
     QStringList args = specification.split(QLatin1Char(':'));
     QStringList devices;
 
@@ -69,7 +64,6 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
             // if device is specified try to use it
             devices.append(arg);
             args.removeAll(arg);
-            useUDev = false;
         }
     }
 
@@ -80,27 +74,23 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
     foreach (const QString &device, devices)
         addKeyboard(device);
 
-#ifndef QT_NO_LIBUDEV
-    if (useUDev) {
+    if (devices.isEmpty()) {
 #ifdef QT_QPA_KEYMAP_DEBUG
-        qWarning() << "Use UDev for device discovery";
+        qWarning() << "Use device discovery";
 #endif
 
-        m_udeviceHelper = QUDeviceHelper::createUDeviceHelper(QUDeviceHelper::UDev_Keyboard, this);
-        if (m_udeviceHelper) {
+        m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Keyboard, this);
+        if (m_deviceDiscovery) {
             // scan and add already connected keyboards
-            QStringList devices = m_udeviceHelper->scanConnectedDevices();
+            QStringList devices = m_deviceDiscovery->scanConnectedDevices();
             foreach (QString device, devices) {
                 addKeyboard(device);
             }
 
-            connect(m_udeviceHelper, SIGNAL(deviceDetected(QString,QUDeviceTypes)), this, SLOT(addKeyboard(QString)));
-            connect(m_udeviceHelper, SIGNAL(deviceRemoved(QString,QUDeviceTypes)), this, SLOT(removeKeyboard(QString)));
+            connect(m_deviceDiscovery, SIGNAL(deviceDetected(QString)), this, SLOT(addKeyboard(QString)));
+            connect(m_deviceDiscovery, SIGNAL(deviceRemoved(QString)), this, SLOT(removeKeyboard(QString)));
         }
     }
-#else
-    Q_UNUSED(useUDev)
-#endif // QT_NO_LIBUDEV
 }
 
 QEvdevKeyboardManager::~QEvdevKeyboardManager()

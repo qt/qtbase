@@ -46,7 +46,7 @@
 #include <QScreen>
 #include <QWindowSystemInterface>
 
-#define QT_QPA_MOUSEMANAGER_DEBUG
+//#define QT_QPA_MOUSEMANAGER_DEBUG
 
 #ifdef QT_QPA_MOUSEMANAGER_DEBUG
 #include <QDebug>
@@ -59,11 +59,6 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
 {
     Q_UNUSED(key);
 
-#ifndef QT_NO_LIBUDEV
-    bool useUDev = true;
-#else
-    bool useUDev = false;
-#endif // QT_NO_LIBUDEV
     QStringList args = specification.split(QLatin1Char(':'));
     QStringList devices;
 
@@ -72,7 +67,6 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
             // if device is specified try to use it
             devices.append(arg);
             args.removeAll(arg);
-            useUDev = false;
         } else if (arg.startsWith("xoffset=")) {
             m_xoffset = arg.mid(8).toInt();
         } else if (arg.startsWith("yoffset=")) {
@@ -87,27 +81,23 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
     foreach (const QString &device, devices)
         addMouse(device);
 
-#ifdef QT_NO_LIBUDEV
-    Q_UNUSED(useUDev)
-#else
-    if (useUDev) {
+    if (devices.isEmpty()) {
 #ifdef QT_QPA_MOUSEMANAGER_DEBUG
-        qWarning() << "Use UDev for device discovery";
+        qWarning() << "Use device discovery";
 #endif
 
-        m_udeviceHelper = QUDeviceHelper::createUDeviceHelper(QUDeviceHelper::UDev_Mouse | QUDeviceHelper::UDev_Touchpad, this);
-        if (m_udeviceHelper) {
+        m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse | QDeviceDiscovery::Device_Touchpad, this);
+        if (m_deviceDiscovery) {
             // scan and add already connected keyboards
-            QStringList devices = m_udeviceHelper->scanConnectedDevices();
+            QStringList devices = m_deviceDiscovery->scanConnectedDevices();
             foreach (QString device, devices) {
                 addMouse(device);
             }
 
-            connect(m_udeviceHelper, SIGNAL(deviceDetected(QString,QUDeviceTypes)), this, SLOT(addMouse(QString)));
-            connect(m_udeviceHelper, SIGNAL(deviceRemoved(QString,QUDeviceTypes)), this, SLOT(removeMouse(QString)));
+            connect(m_deviceDiscovery, SIGNAL(deviceDetected(QString)), this, SLOT(addMouse(QString)));
+            connect(m_deviceDiscovery, SIGNAL(deviceRemoved(QString)), this, SLOT(removeMouse(QString)));
         }
     }
-#endif // QT_NO_LIBUDEV
 }
 
 QEvdevMouseManager::~QEvdevMouseManager()
