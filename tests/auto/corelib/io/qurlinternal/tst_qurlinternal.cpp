@@ -834,9 +834,34 @@ void tst_QUrlInternal::encodingRecode_data()
     QTest::addColumn<QString>("expected");
 
     // -- idempotent tests --
-    for (int i = 0; i < 0x10; ++i) {
-        QByteArray code = QByteArray::number(i, 16);
-        F mode = QUrl::ComponentFormattingOption(i << 12);
+    static int modes[] = { QUrl::PrettyDecoded,
+                           QUrl::EncodeSpaces,
+                           QUrl::EncodeSpaces | QUrl::EncodeUnicode,
+                           QUrl::EncodeSpaces | QUrl::EncodeUnicode | QUrl::EncodeDelimiters,
+                           QUrl::EncodeSpaces | QUrl::EncodeUnicode | QUrl::EncodeDelimiters | QUrl::EncodeReserved,
+                           QUrl::EncodeSpaces | QUrl::EncodeUnicode | QUrl::EncodeDelimiters | QUrl::DecodeReserved,
+                           QUrl::EncodeSpaces | QUrl::EncodeUnicode | QUrl::EncodeReserved,
+                           QUrl::EncodeSpaces | QUrl::EncodeUnicode | QUrl::DecodeReserved,
+                           QUrl::EncodeSpaces | QUrl::EncodeDelimiters,
+                           QUrl::EncodeSpaces | QUrl::EncodeDelimiters | QUrl::EncodeReserved,
+                           QUrl::EncodeSpaces | QUrl::EncodeDelimiters | QUrl::DecodeReserved,
+                           QUrl::EncodeSpaces | QUrl::EncodeReserved,
+                           QUrl::EncodeSpaces | QUrl::DecodeReserved,
+
+                           QUrl::EncodeUnicode,
+                           QUrl::EncodeUnicode | QUrl::EncodeDelimiters,
+                           QUrl::EncodeUnicode | QUrl::EncodeDelimiters | QUrl::EncodeReserved,
+                           QUrl::EncodeUnicode | QUrl::EncodeDelimiters | QUrl::DecodeReserved,
+                           QUrl::EncodeUnicode | QUrl::EncodeReserved,
+
+                           QUrl::EncodeDelimiters,
+                           QUrl::EncodeDelimiters | QUrl::EncodeReserved,
+                           QUrl::EncodeDelimiters | QUrl::DecodeReserved,
+                           QUrl::EncodeReserved,
+                           QUrl::DecodeReserved };
+    for (uint i = 0; i < sizeof(modes)/sizeof(modes[0]); ++i) {
+        QByteArray code = QByteArray::number(modes[i], 16);
+        F mode = QUrl::ComponentFormattingOption(modes[i]);
 
         QTest::newRow("null-0x" + code) << QString() << mode << QString();
         QTest::newRow("empty-0x" + code) << "" << mode << "";
