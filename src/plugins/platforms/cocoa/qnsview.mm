@@ -612,8 +612,18 @@ static QTouchDevice *touchDevice = 0;
     ulong timestamp = [nsevent timestamp] * 1000;
     Qt::KeyboardModifiers modifiers = [self convertKeyModifiers:[nsevent modifierFlags]];
     NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
-    QChar ch([charactersIgnoringModifiers characterAtIndex:0]);
-    int keyCode = [self convertKeyCode:ch];
+
+    QChar ch;
+    int keyCode;
+    if ([charactersIgnoringModifiers length] > 0) {
+        // convert the first character into a key code
+        ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
+        keyCode = [self convertKeyCode:ch];
+    } else {
+        // might be a dead key
+        ch = QChar::ReplacementCharacter;
+        keyCode = Qt::Key_unknown;
+    }
 
     // we will send a key event unless the input method sets m_sendKeyEvent to false
     m_sendKeyEvent = true;
