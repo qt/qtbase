@@ -1239,8 +1239,14 @@ QMakeProject::read(const QString &file, QHash<QString, QStringList> &place)
         parser.from_file = true;
         parser.file = filename;
         parser.line_no = 0;
-        QTextStream t(&qfile);
-        ret = read(t, place);
+        if (qfile.peek(3) == QByteArray("\xef\xbb\xbf")) {
+            //UTF-8 BOM will cause subtle errors
+            qmake_error_msg("Unexpected UTF-8 BOM found");
+            ret = false;
+        } else {
+            QTextStream t(&qfile);
+            ret = read(t, place);
+        }
         if(!using_stdin)
             qfile.close();
     }
