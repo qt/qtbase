@@ -84,9 +84,6 @@ public:
     QWidget *findFocusChild(QWidget *child, bool next) const;
     void removeSubFocusHelper(QWidget *widget, Qt::FocusReason reason);
 
-    // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
-    QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
-
     void _q_removeWidgetSlot();
 
     void embedSubWindow(QWidget *);

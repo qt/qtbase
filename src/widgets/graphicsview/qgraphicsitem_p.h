@@ -273,8 +273,6 @@ public:
     void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
     virtual void updateSceneTransformFromParent();
 
-    // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
-    virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
     static bool movableAncestorIsSelected(const QGraphicsItem *item);
 
     virtual void setPosHelper(const QPointF &pos);

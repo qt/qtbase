@@ -1077,22 +1077,6 @@ void QGraphicsItemPrivate::updateSceneTransformFromParent()
 /*!
     \internal
 
-    This helper function helped us add input method query support in
-    Qt 4.4.1 without having to reimplement the inputMethodQuery()
-    function in QGraphicsProxyWidget. ### Qt 5: Remove. We cannot
-    remove it in 4.5+ even if we do reimplement the function properly,
-    because apps compiled with 4.4 will not be able to call the
-    reimplementation.
-*/
-QVariant QGraphicsItemPrivate::inputMethodQueryHelper(Qt::InputMethodQuery query) const
-{
-    Q_UNUSED(query);
-    return QVariant();
-}
-
-/*!
-    \internal
-
     Make sure not to trigger any pure virtual function calls (e.g.,
     prepareGeometryChange) if the item is in its destructor, i.e.
     inDestructor is 1.
@@ -7331,13 +7315,6 @@ void QGraphicsItem::inputMethodEvent(QInputMethodEvent *event)
 */
 QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 {
-    if (isWidget()) {
-        // ### Qt 5: Remove. The reimplementation in
-        // QGraphicsProxyWidget solves this problem (but requires a
-        // recompile to take effect).
-        return d_ptr->inputMethodQueryHelper(query);
-    }
-
     Q_UNUSED(query);
     return QVariant();
 }
