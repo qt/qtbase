@@ -188,6 +188,22 @@ void QQnxWindow::setGeometry(const QRect &rect)
         qFatal("QQnxWindow: failed to set window source size, errno=%d", errno);
     }
 
+    if (m_platformOpenGLContext != 0 && bufferSize() != rect.size()) {
+        bool restoreCurrent = false;
+
+        if (m_platformOpenGLContext->isCurrent()) {
+            m_platformOpenGLContext->doneCurrent();
+            restoreCurrent = true;
+        }
+
+        m_platformOpenGLContext->destroySurface();
+        setBufferSize(rect.size());
+        m_platformOpenGLContext->createSurface(this);
+
+        if (restoreCurrent)
+            m_platformOpenGLContext->makeCurrent(this);
+    }
+
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 
     // Now move all children.
