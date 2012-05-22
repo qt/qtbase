@@ -1977,7 +1977,7 @@ void QCoreApplication::setApplicationName(const QString &application)
 
 QString QCoreApplication::applicationName()
 {
-    QString appname = coreappdata()->application;
+    QString appname = coreappdata() ? coreappdata()->application : QString();
     if (appname.isEmpty() && QCoreApplication::self)
         appname = QCoreApplication::self->d_func()->appName();
     return appname;
