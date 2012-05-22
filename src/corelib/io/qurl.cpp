@@ -2486,7 +2486,7 @@ QString QUrl::toDisplayString(FormattingOptions options) const
 */
 QByteArray QUrl::toEncoded(FormattingOptions options) const
 {
-    options &= ~DecodeReserved;
+    options &= ~(FullyDecoded | FullyEncoded);
     QString stringForm = toString(options | FullyEncoded);
     return stringForm.toLatin1();
 }
