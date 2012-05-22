@@ -1043,7 +1043,14 @@ QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
         if (pos == 3) {
             char month_name[4];
             int day, year, hour, minute, second;
+#ifdef Q_CC_MSVC
+            // Use secure version to avoid compiler warning
+            if (sscanf_s(value.constData(), "%*3s, %d %3s %d %d:%d:%d 'GMT'", &day, month_name, 4, &year, &hour, &minute, &second) == 6)
+#else
+            // The POSIX secure mode is %ms (which allocates memory), too bleeding edge for now
+            // In any case this is already safe as field width is specified.
             if (sscanf(value.constData(), "%*3s, %d %3s %d %d:%d:%d 'GMT'", &day, month_name, &year, &hour, &minute, &second) == 6)
+#endif
                 dt = QDateTime(QDate(year, name_to_month(month_name), day), QTime(hour, minute, second));
         } else {
             QLocale c = QLocale::c();

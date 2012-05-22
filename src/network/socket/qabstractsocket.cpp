@@ -1378,8 +1378,7 @@ QAbstractSocket::~QAbstractSocket()
 */
 void QAbstractSocket::resume()
 {
-    Q_D(QAbstractSocket);
-    d->resumeSocketNotifiers(this);
+    QAbstractSocketPrivate::resumeSocketNotifiers(this);
 }
 
 /*!
