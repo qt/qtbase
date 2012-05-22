@@ -53,7 +53,7 @@
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
-#include <QtGui/QPlatformCursor>
+#include <qpa/qplatformcursor.h>
 
 #include <EGL/egl.h>
 

@@ -57,7 +57,7 @@
 #include <qwhatsthis.h>
 #include <qpa/qplatformtheme.h>
 #include "private/qguiapplication_p.h"
-#include "qplatformintegration_qpa.h"
+#include "qpa/qplatformintegration.h"
 
 #ifndef QT_NO_MENUBAR
 
