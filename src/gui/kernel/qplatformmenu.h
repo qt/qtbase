@@ -42,6 +42,14 @@
 
 #ifndef QPLATFORMMENU_H
 #define QPLATFORMMENU_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is part of the QPA API and is not meant to be used
+// in applications. Usage of this API may make your code
+// source and binary incompatible with future versions of Qt.
+//
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qpointer.h>
