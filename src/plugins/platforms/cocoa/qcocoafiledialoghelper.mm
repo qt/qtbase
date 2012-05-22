@@ -48,29 +48,25 @@
  *****************************************************************************/
 //#define DEBUG_FILEDIALOG_FILTERS
 
-#include <qapplication.h>
-#include <private/qapplication_p.h>
-#include <private/qfiledialog_p.h>
+#include <qguiapplication.h>
+#include <private/qguiapplication_p.h>
 #include "qt_mac_p.h"
 #include "qcocoahelpers.h"
 #include <qregexp.h>
 #include <qbuffer.h>
 #include <qdebug.h>
 #include <qstringlist.h>
-#include <qaction.h>
 #include <qtextcodec.h>
 #include <qvarlengtharray.h>
-#include <qdesktopwidget.h>
 #include <stdlib.h>
 #include <qabstracteventdispatcher.h>
-#import <AppKit/NSSavePanel.h>
-#include "ui_qfiledialog.h"
 
-QT_FORWARD_DECLARE_CLASS(QFileDialogPrivate)
+#include <qpa/qplatformnativeinterface.h>
+
+#import <AppKit/NSSavePanel.h>
+
 QT_FORWARD_DECLARE_CLASS(QString)
 QT_FORWARD_DECLARE_CLASS(QStringList)
-QT_FORWARD_DECLARE_CLASS(QWidget)
-QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QFileInfo)
 QT_FORWARD_DECLARE_CLASS(QWindow)
 QT_USE_NAMESPACE
@@ -194,10 +190,24 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     [super dealloc];
 }
 
+static QString strippedText(QString s)
+{
+    s.remove( QString::fromLatin1("...") );
+    int i = 0;
+    while (i < s.size()) {
+        ++i;
+        if (s.at(i-1) != QLatin1Char('&'))
+            continue;
+        if (i < s.size() && s.at(i) == QLatin1Char('&'))
+            ++i;
+        s.remove(i-1,1);
+    }
+    return s.trimmed();
+}
+
 - (NSString *)strip:(const QString &)label
 {
-    QAction a(label, 0);
-    return QCFString::toNSString(a.iconText());
+    return QCFString::toNSString(strippedText(label));
 }
 
 - (void)closePanel

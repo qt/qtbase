@@ -65,7 +65,6 @@
 #include <private/qpainter_p.h>
 #include <private/qpainterpath_p.h>
 #include <private/qtextengine_p.h>
-#include <private/qwidget_p.h>
 
 #include "qcocoahelpers.h"
 

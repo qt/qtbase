@@ -74,7 +74,6 @@ HEADERS += qcocoaintegration.h \
     qcocoaprintersupport.h \
     qcocoaservices.h \
 
-FORMS += $$PWD/../../../widgets/dialogs/qfiledialog.ui
 RESOURCES += qcocoaresources.qrc
 
 LIBS += -framework Cocoa -framework IOKit

@@ -41,7 +41,7 @@
 
 #include "qmacclipboard.h"
 #include "qclipboard.h"
-#include "qapplication.h"
+#include "qguiapplication.h"
 #include "qbitmap.h"
 #include "qdatetime.h"
 #include "qdebug.h"
