@@ -152,6 +152,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_transparent(false)
     , m_deferredActivation(false)
     , m_netWmUserTimeWindow(XCB_NONE)
+    , m_dirtyFrameMargins(false)
 #if defined(XCB_USE_EGL)
     , m_eglSurface(0)
 #endif
