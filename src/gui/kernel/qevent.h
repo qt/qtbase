@@ -119,6 +119,10 @@ protected:
     QPointF l, w, s;
     Qt::MouseButton b;
     Qt::MouseButtons mouseState;
+    int caps;
+    QVector2D velocity;
+
+    friend class QGuiApplicationPrivate;
 };
 
 class Q_GUI_EXPORT QHoverEvent : public QInputEvent

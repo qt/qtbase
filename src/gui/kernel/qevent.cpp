@@ -161,7 +161,7 @@ QInputEvent::~QInputEvent()
 */
 QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton button,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, modifiers), l(localPos), w(localPos), b(button), mouseState(buttons)
+    : QInputEvent(type, modifiers), l(localPos), w(localPos), b(button), mouseState(buttons), caps(0)
 {
     s = QCursor::pos();
 }
@@ -188,7 +188,7 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton but
 QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &screenPos,
                          Qt::MouseButton button, Qt::MouseButtons buttons,
                          Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, modifiers), l(localPos), w(localPos), s(screenPos), b(button), mouseState(buttons)
+    : QInputEvent(type, modifiers), l(localPos), w(localPos), s(screenPos), b(button), mouseState(buttons), caps(0)
 {}
 
 /*!
@@ -211,7 +211,7 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &scre
 QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
                          Qt::MouseButton button, Qt::MouseButtons buttons,
                          Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, modifiers), l(localPos), w(windowPos), s(screenPos), b(button), mouseState(buttons)
+    : QInputEvent(type, modifiers), l(localPos), w(windowPos), s(screenPos), b(button), mouseState(buttons), caps(0)
 {}
 
 /*!

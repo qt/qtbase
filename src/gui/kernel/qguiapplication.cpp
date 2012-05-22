@@ -2387,6 +2387,29 @@ void QGuiApplicationPrivate::q_updateFocusObject(QObject *object)
     emit q->focusObjectChanged(object);
 }
 
+int QGuiApplicationPrivate::mouseEventCaps(QMouseEvent *event)
+{
+    return event->caps;
+}
+
+QVector2D QGuiApplicationPrivate::mouseEventVelocity(QMouseEvent *event)
+{
+    return event->velocity;
+}
+
+void QGuiApplicationPrivate::setMouseEventCapsAndVelocity(QMouseEvent *event, int caps, const QVector2D &velocity)
+{
+    event->caps = caps;
+    event->velocity = velocity;
+}
+
+void QGuiApplicationPrivate::setMouseEventCapsAndVelocity(QMouseEvent *event, QMouseEvent *other)
+{
+    event->caps = other->caps;
+    event->velocity = other->velocity;
+}
+
+
 #include "moc_qguiapplication.cpp"
 
 QT_END_NAMESPACE

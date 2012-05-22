@@ -212,6 +212,11 @@ public:
     };
     QHash<QWindow *, SynthesizedMouseData> synthesizedMousePoints;
 
+    static int mouseEventCaps(QMouseEvent *event);
+    static QVector2D mouseEventVelocity(QMouseEvent *event);
+    static void setMouseEventCapsAndVelocity(QMouseEvent *event, int caps, const QVector2D &velocity);
+    static void setMouseEventCapsAndVelocity(QMouseEvent *event, QMouseEvent *other);
+
     const QDrawHelperGammaTables *gammaTables();
 
     // hook reimplemented in QApplication to apply the QStyle function on the QIcon
