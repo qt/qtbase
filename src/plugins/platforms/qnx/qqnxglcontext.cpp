@@ -317,8 +317,7 @@ void QQnxGLContext::createSurface(QPlatformSurface *surface)
     // buffers of the proper size
     if (!platformWindow->hasBuffers()) {
         platformWindow->setPlatformOpenGLContext(this);
-        m_surfaceSize = platformWindow->geometry().size();
-        platformWindow->setBufferSize(m_surfaceSize);
+        platformWindow->setBufferSize(platformWindow->geometry().size());
     }
 
     // Obtain the native handle for our window
@@ -351,6 +350,8 @@ void QQnxGLContext::destroySurface()
             qFatal("QQNX: failed to destroy EGL surface, err=%d", eglGetError());
         }
     }
+
+    m_eglSurface = EGL_NO_SURFACE;
 }
 
 QT_END_NAMESPACE
