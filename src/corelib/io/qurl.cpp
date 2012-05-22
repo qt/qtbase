@@ -1771,7 +1771,7 @@ QString QUrl::userInfo(ComponentFormattingOptions options) const
 
     QUrl::DecodedMode should be used when setting the user name from a data
     source which is not a URL, such as a password dialog shown to the user or
-    with a user name obtained by calling userName() with the QUrl::FullyEncoded
+    with a user name obtained by calling userName() with the QUrl::FullyDecoded
     formatting option.
 
     \sa userName(), setUserInfo()
@@ -1833,7 +1833,7 @@ QString QUrl::userName(ComponentFormattingOptions options) const
 
     QUrl::DecodedMode should be used when setting the password from a data
     source which is not a URL, such as a password dialog shown to the user or
-    with a password obtained by calling password() with the QUrl::FullyEncoded
+    with a password obtained by calling password() with the QUrl::FullyDecoded
     formatting option.
 
     \sa password(), setUserInfo()
@@ -2016,7 +2016,7 @@ int QUrl::port(int defaultPort) const
 
     QUrl::DecodedMode should be used when setting the path from a data source
     which is not a URL, such as a dialog shown to the user or with a path
-    obtained by calling path() with the QUrl::FullyEncoded formatting option.
+    obtained by calling path() with the QUrl::FullyDecoded formatting option.
 
     \sa path()
 */
@@ -2196,7 +2196,7 @@ QString QUrl::query(ComponentFormattingOptions options) const
 
     QUrl::DecodedMode should be used when setting the fragment from a data
     source which is not a URL or with a fragment obtained by calling
-    fragment() with the QUrl::FullyEncoded formatting option.
+    fragment() with the QUrl::FullyDecoded formatting option.
 
     \sa fragment(), hasFragment()
 */
