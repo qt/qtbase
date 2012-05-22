@@ -226,6 +226,7 @@ void QQnxScreen::setRotation(int rotation)
         if (m_primaryScreen) {
             QWindowSystemInterface::handleScreenOrientationChange(screen(), orientation());
             QWindowSystemInterface::handleScreenGeometryChange(screen(), m_currentGeometry);
+            resizeMaximizedWindows();
         }
     }
 }
