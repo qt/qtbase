@@ -348,6 +348,13 @@ void tst_QMetaType::typeName_data()
     QTest::newRow("-1") << QMetaType::Type(-1) << QString();
     QTest::newRow("-124125534") << QMetaType::Type(-124125534) << QString();
     QTest::newRow("124125534") << QMetaType::Type(124125534) << QString();
+
+    // automatic registration
+    QTest::newRow("QList<int>") << static_cast<QMetaType::Type>(::qMetaTypeId<QList<int> >()) << QString::fromLatin1("QList<int>");
+    QTest::newRow("QHash<int,int>") << static_cast<QMetaType::Type>(::qMetaTypeId<QHash<int, int> >()) << QString::fromLatin1("QHash<int,int>");
+    QTest::newRow("QMap<int,int>") << static_cast<QMetaType::Type>(::qMetaTypeId<QMap<int, int> >()) << QString::fromLatin1("QMap<int,int>");
+    QTest::newRow("QVector<QList<int>>") << static_cast<QMetaType::Type>(::qMetaTypeId<QVector<QList<int> > >()) << QString::fromLatin1("QVector<QList<int> >");
+    QTest::newRow("QVector<QMap<int,int>>") << static_cast<QMetaType::Type>(::qMetaTypeId<QVector<QMap<int, int> > >()) << QString::fromLatin1("QVector<QMap<int,int> >");
 }
 
 void tst_QMetaType::typeName()
@@ -355,7 +362,10 @@ void tst_QMetaType::typeName()
     QFETCH(QMetaType::Type, aType);
     QFETCH(QString, aTypeName);
 
-    QCOMPARE(QString::fromLatin1(QMetaType::typeName(aType)), aTypeName);
+    QString name = QString::fromLatin1(QMetaType::typeName(aType));
+
+    QCOMPARE(name, aTypeName);
+    QCOMPARE(name.toLatin1(), QMetaObject::normalizedType(name.toLatin1().constData()));
 }
 
 #define FOR_EACH_PRIMITIVE_METATYPE(F) \
@@ -1392,6 +1402,8 @@ void tst_QMetaType::automaticTemplateRegistration()
                 tn += it->trimmed(); \
               } \
             } \
+            if (tn.endsWith('>')) \
+                tn += ' '; \
             tn += ">"; \
             const int type = QMetaType::type(tn); \
             const int expectedType = ::qMetaTypeId<CONTAINER< __VA_ARGS__ > >(); \
