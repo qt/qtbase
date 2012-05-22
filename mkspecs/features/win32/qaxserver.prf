@@ -9,8 +9,9 @@ isEmpty(ACTIVEQT_VERSION):ACTIVEQT_VERSION = 1.0
 DEFINES += QAXSERVER
 INCLUDEPATH += $$QT.activeqt.includes
 
+qtPrepareTool(QMAKE_IDC, idc, activeqt)
 contains(TEMPLATE, "vc.*") {
-    qtPrepareTool(ACTIVEQT_IDC, idc)
+    ACTIVEQT_IDC = $${QMAKE_IDC}
     ACTIVEQT_IDL = $${QMAKE_IDL}
     ACTIVEQT_TARGET = "$(TargetPath)"
     win32-msvc {
