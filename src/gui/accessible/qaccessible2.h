@@ -232,6 +232,7 @@ public:
     static const QString &decreaseAction();
     static const QString &showMenuAction();
     static const QString &setFocusAction();
+    static const QString &toggleAction();
     static const QString &checkAction();
     static const QString &uncheckAction();
 };

@@ -461,6 +461,7 @@ struct QAccessibleActionStrings
         decreaseAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Decrease"))),
         showMenuAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "ShowMenu"))),
         setFocusAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "SetFocus"))),
+        toggleAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Toggle"))),
         checkAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Check"))),
         uncheckAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Uncheck"))) {}
 
@@ -469,6 +470,7 @@ struct QAccessibleActionStrings
     const QString decreaseAction;
     const QString showMenuAction;
     const QString setFocusAction;
+    const QString toggleAction;
     const QString checkAction;
     const QString uncheckAction;
 };
@@ -493,6 +495,8 @@ QString QAccessibleActionInterface::localizedActionDescription(const QString &ac
         return tr("Shows the menu");
     else if (actionName == strings->setFocusAction)
         return tr("Sets the focus");
+    else if (actionName == strings->toggleAction)
+        return tr("Toggles the state");
     else if (actionName == strings->checkAction)
         return tr("Checks the checkbox");
     else if (actionName == strings->uncheckAction)
@@ -544,6 +548,15 @@ const QString &QAccessibleActionInterface::showMenuAction()
 const QString &QAccessibleActionInterface::setFocusAction()
 {
     return accessibleActionStrings()->setFocusAction;
+}
+
+/*!
+    Returns the name of the toggle default action.
+    \sa actionNames(), localizedActionName()
+  */
+const QString &QAccessibleActionInterface::toggleAction()
+{
+    return accessibleActionStrings()->toggleAction;
 }
 
 /*!
