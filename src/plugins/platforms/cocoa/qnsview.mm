@@ -623,7 +623,7 @@ static QTouchDevice *touchDevice = 0;
         // ignore text for the U+F700-U+F8FF range. This is used by Cocoa when
         // delivering function keys (e.g. arrow keys, backspace, F1-F35, etc.)
         if ([charactersIgnoringModifiers length] == 1 && (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff))
-            text = QString::fromUtf8([[nsevent characters] UTF8String]);
+            text = QCFString::toQString([nsevent characters]);
 
         if (m_composingText.isEmpty())
             m_sendKeyEvent = !QWindowSystemInterface::tryHandleSynchronousShortcutEvent(m_window, timestamp, keyCode, modifiers, text);
