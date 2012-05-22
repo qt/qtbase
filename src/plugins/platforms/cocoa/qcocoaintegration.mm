@@ -245,4 +245,11 @@ QPlatformServices *QCocoaIntegration::services() const
     return mServices.data();
 }
 
+QVariant QCocoaIntegration::styleHint(StyleHint hint) const
+{
+    if (hint == QPlatformIntegration::FontSmoothingGamma)
+        return 2.0;
+    return QPlatformIntegration::styleHint(hint);
+}
+
 QT_END_NAMESPACE

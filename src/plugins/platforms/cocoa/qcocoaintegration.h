@@ -101,6 +101,7 @@ public:
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
     QPlatformServices *services() const;
+    QVariant styleHint(StyleHint hint) const;
 
 private:
 
