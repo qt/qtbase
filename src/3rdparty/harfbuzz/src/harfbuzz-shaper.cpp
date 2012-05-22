@@ -882,6 +882,17 @@ HB_Bool HB_SelectScript(HB_ShaperItem *shaper_item, const HB_OpenTypeFeature *fe
     return true;
 }
 
+static HB_Bool containsSurrogates(HB_ShaperItem *item)
+{
+    for (hb_uint32 i=0; i<item->stringLength; ++i) {
+        HB_UChar16 ucs = item->string[i];
+        if ( HB_IsHighSurrogate(ucs) || HB_IsLowSurrogate(ucs) )
+            return true;
+    }
+
+    return false;
+}
+
 HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
 {
     HB_GlyphAttributes *tmpAttributes;
@@ -921,7 +932,7 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
 #endif
 
     face->glyphs_substituted = false;
-    if (face->gsub) {
+    if (face->gsub && !containsSurrogates(item)) {
         unsigned int error = HB_GSUB_Apply_String(face->gsub, face->buffer);
         if (error && error != HB_Err_Not_Covered)
             return false;
