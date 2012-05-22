@@ -168,18 +168,11 @@ QStringList QAccessibleButton::actionNames() const
             names << showMenuAction();
             break;
         case QAccessible::RadioButton:
-            names << checkAction();
+            names << toggleAction();
             break;
         default:
             if (button()->isCheckable()) {
-                if (state().checked) {
-                    names <<  uncheckAction();
-                } else {
-                    // FIXME
-    //                QCheckBox *cb = qobject_cast<QCheckBox*>(object());
-    //                if (!cb || !cb->isTristate() || cb->checkState() == Qt::PartiallyChecked)
-                    names <<  checkAction();
-                }
+                names <<  toggleAction();
             } else {
                 names << pressAction();
             }
@@ -203,10 +196,8 @@ void QAccessibleButton::doAction(const QString &actionName)
         else
 #endif
             button()->animateClick();
-    } else if (actionName == checkAction()) {
-        button()->setChecked(true);
-    } else if (actionName == uncheckAction()) {
-        button()->setChecked(false);
+    } else if (actionName == toggleAction()) {
+        button()->toggle();
     } else {
         QAccessibleWidget::doAction(actionName);
     }
@@ -552,14 +543,14 @@ QStringList QAccessibleGroupBox::actionNames() const
     QStringList actions = QAccessibleWidget::actionNames();
 
     if (groupBox()->isCheckable()) {
-        actions.prepend(QAccessibleActionInterface::checkAction());
+        actions.prepend(QAccessibleActionInterface::toggleAction());
     }
     return actions;
 }
 
 void QAccessibleGroupBox::doAction(const QString &actionName)
 {
-    if (actionName == QAccessibleActionInterface::checkAction())
+    if (actionName == QAccessibleActionInterface::toggleAction())
         groupBox()->setChecked(!groupBox()->isChecked());
 }
 

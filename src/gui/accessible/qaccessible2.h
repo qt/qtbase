@@ -233,8 +233,6 @@ public:
     static const QString &showMenuAction();
     static const QString &setFocusAction();
     static const QString &toggleAction();
-    static const QString &checkAction();
-    static const QString &uncheckAction();
 };
 
 class Q_GUI_EXPORT QAccessibleImageInterface

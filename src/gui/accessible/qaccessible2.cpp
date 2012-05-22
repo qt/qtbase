@@ -372,13 +372,12 @@ QT_BEGIN_NAMESPACE
     In general you should use one of the predefined action names, unless describing an action that does not fit these:
     \table
     \header \li Action name         \li Description
-    \row    \li \l checkAction()    \li checks the item (checkbox, radio button, ...)
+    \row    \li \l toggleAction()   \li toggles the item (checkbox, radio button, switch, ...)
     \row    \li \l decreaseAction() \li decrease the value of the accessible (e.g. spinbox)
     \row    \li \l increaseAction() \li increase the value of the accessible (e.g. spinbox)
     \row    \li \l pressAction()    \li press or click or activate the accessible (should correspont to clicking the object with the mouse)
     \row    \li \l setFocusAction() \li set the focus to this accessible
     \row    \li \l showMenuAction() \li show a context menu, corresponds to right-clicks
-    \row    \li \l uncheckAction()  \li uncheck the item (checkbox, radio button, ...)
     \endtable
 
     In order to invoke the action, \l doAction() is called with an action name.
@@ -461,9 +460,7 @@ struct QAccessibleActionStrings
         decreaseAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Decrease"))),
         showMenuAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "ShowMenu"))),
         setFocusAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "SetFocus"))),
-        toggleAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Toggle"))),
-        checkAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Check"))),
-        uncheckAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Uncheck"))) {}
+        toggleAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Toggle"))) {}
 
     const QString pressAction;
     const QString increaseAction;
@@ -471,8 +468,6 @@ struct QAccessibleActionStrings
     const QString showMenuAction;
     const QString setFocusAction;
     const QString toggleAction;
-    const QString checkAction;
-    const QString uncheckAction;
 };
 
 Q_GLOBAL_STATIC(QAccessibleActionStrings, accessibleActionStrings)
@@ -497,10 +492,6 @@ QString QAccessibleActionInterface::localizedActionDescription(const QString &ac
         return tr("Sets the focus");
     else if (actionName == strings->toggleAction)
         return tr("Toggles the state");
-    else if (actionName == strings->checkAction)
-        return tr("Checks the checkbox");
-    else if (actionName == strings->uncheckAction)
-        return tr("Unchecks the checkbox");
 
     return QString();
 }
@@ -559,23 +550,6 @@ const QString &QAccessibleActionInterface::toggleAction()
     return accessibleActionStrings()->toggleAction;
 }
 
-/*!
-    Returns the name of the check default action.
-    \sa actionNames(), localizedActionName()
-  */
-const QString &QAccessibleActionInterface::checkAction()
-{
-    return accessibleActionStrings()->checkAction;
-}
-
-/*!
-    Returns the name of the uncheck default action.
-    \sa actionNames(), localizedActionName()
-  */
-const QString &QAccessibleActionInterface::uncheckAction()
-{
-    return accessibleActionStrings()->uncheckAction;
-}
 
 /*!
   \internal

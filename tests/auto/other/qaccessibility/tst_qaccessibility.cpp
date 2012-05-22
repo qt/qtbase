@@ -949,14 +949,14 @@ void tst_QAccessibility::buttonTest()
     interface = QAccessible::queryAccessibleInterface(&toggleButton);
     actionInterface = interface->actionInterface();
     QCOMPARE(interface->role(), QAccessible::CheckBox);
-    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::checkAction() << QAccessibleActionInterface::setFocusAction());
-    QCOMPARE(actionInterface->localizedActionDescription(QAccessibleActionInterface::checkAction()), QString("Checks the checkbox"));
+    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::toggleAction() << QAccessibleActionInterface::setFocusAction());
+    QCOMPARE(actionInterface->localizedActionDescription(QAccessibleActionInterface::toggleAction()), QString("Toggles the state"));
     QVERIFY(!toggleButton.isChecked());
     QVERIFY(!interface->state().checked);
-    actionInterface->doAction(QAccessibleActionInterface::checkAction());
+    actionInterface->doAction(QAccessibleActionInterface::toggleAction());
     QTest::qWait(500);
     QVERIFY(toggleButton.isChecked());
-    QCOMPARE(actionInterface->actionNames().at(0), QAccessibleActionInterface::uncheckAction());
+    QCOMPARE(actionInterface->actionNames().at(0), QAccessibleActionInterface::toggleAction());
     QVERIFY(interface->state().checked);
     delete interface;
 
@@ -987,12 +987,12 @@ void tst_QAccessibility::buttonTest()
     interface = QAccessible::queryAccessibleInterface(&checkBox);
     actionInterface = interface->actionInterface();
     QCOMPARE(interface->role(), QAccessible::CheckBox);
-    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::checkAction() << QAccessibleActionInterface::setFocusAction());
+    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::toggleAction() << QAccessibleActionInterface::setFocusAction());
     QVERIFY(!interface->state().checked);
-    actionInterface->doAction(QAccessibleActionInterface::checkAction());
+    actionInterface->doAction(QAccessibleActionInterface::toggleAction());
 
     QTest::qWait(500);
-    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::uncheckAction() << QAccessibleActionInterface::setFocusAction());
+    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::toggleAction() << QAccessibleActionInterface::setFocusAction());
     QVERIFY(interface->state().checked);
     QVERIFY(checkBox.isChecked());
     QAccessible::State st;
@@ -1009,11 +1009,11 @@ void tst_QAccessibility::buttonTest()
     interface = QAccessible::queryAccessibleInterface(&radio);
     actionInterface = interface->actionInterface();
     QCOMPARE(interface->role(), QAccessible::RadioButton);
-    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::checkAction() << QAccessibleActionInterface::setFocusAction());
+    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::toggleAction() << QAccessibleActionInterface::setFocusAction());
     QVERIFY(!interface->state().checked);
-    actionInterface->doAction(QAccessibleActionInterface::checkAction());
+    actionInterface->doAction(QAccessibleActionInterface::toggleAction());
     QTest::qWait(500);
-    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::checkAction() << QAccessibleActionInterface::setFocusAction());
+    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::toggleAction() << QAccessibleActionInterface::setFocusAction());
     QVERIFY(interface->state().checked);
     QVERIFY(radio.isChecked());
     QAccessible::State st;
@@ -2045,8 +2045,8 @@ void tst_QAccessibility::groupBoxTest()
     QAccessible::State state = iface->state();
     QVERIFY(state.checkable);
     QVERIFY(!state.checked);
-    QVERIFY(actionIface->actionNames().contains(QAccessibleActionInterface::checkAction()));
-    actionIface->doAction(QAccessibleActionInterface::checkAction());
+    QVERIFY(actionIface->actionNames().contains(QAccessibleActionInterface::toggleAction()));
+    actionIface->doAction(QAccessibleActionInterface::toggleAction());
     QVERIFY(groupBox->isChecked());
     state = iface->state();
     QVERIFY(state.checked);
