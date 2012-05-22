@@ -50,6 +50,7 @@ QBasicAtomicInt qgltextureglyphcache_serial_number = Q_BASIC_ATOMIC_INITIALIZER(
 
 QGLTextureGlyphCache::QGLTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix)
     : QImageTextureGlyphCache(type, matrix)
+    , m_textureResource(0)
     , pex(0)
     , m_blitProgram(0)
     , m_filterMode(Nearest)
