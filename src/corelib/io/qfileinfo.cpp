@@ -379,7 +379,8 @@ QFileInfo::~QFileInfo()
     location as \a fileinfo; otherwise returns false.
 
     Note that the result of comparing two empty QFileInfo objects,
-    containing no file references, is undefined.
+    containing no file references (file paths that do not exist or
+    are empty), is undefined.
 
     \warning This will not compare two different symbolic links
     pointing to the same file.
