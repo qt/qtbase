@@ -165,6 +165,8 @@ private slots:
     void componentEncodings();
     void setComponents_data();
     void setComponents();
+    void streaming_data();
+    void streaming();
 };
 
 // Testing get/set functions
@@ -3144,6 +3146,38 @@ void tst_QUrl::setComponents()
         QFETCH(QString, toString);
         QCOMPARE(copy.toString(), toString);
     }
+}
+
+void tst_QUrl::streaming_data()
+{
+    QTest::addColumn<QString>("urlStr");
+
+    QTest::newRow("origURL") << "http://www.website.com/directory/?#ref";
+    QTest::newRow("urlWithPassAndNoUser") << "ftp://:password@ftp.kde.org/path";
+    QTest::newRow("accentuated") << QString::fromUtf8("trash:/été");
+    QTest::newRow("withPercents") << "http://host/path%25path?%3Fque%25ry#%23ref%25";
+    QTest::newRow("empty") << "";
+    QVERIFY(!QUrl("ptal://mlc:usb").isValid());
+    QTest::newRow("invalid") << "ptal://mlc:usb";
+    QTest::newRow("ipv6") << "http://[::ffff:129.144.52.38]:81?query";
+}
+
+void tst_QUrl::streaming()
+{
+    QFETCH(QString, urlStr);
+    QUrl url(urlStr);
+
+    QByteArray buffer;
+    QDataStream writeStream( &buffer, QIODevice::WriteOnly );
+    writeStream << url;
+
+    QDataStream stream( buffer );
+    QUrl restored;
+    stream >> restored;
+    if (url.isValid())
+        QCOMPARE(restored.url(), url.url());
+    else
+        QVERIFY(!restored.isValid());
 }
 
 QTEST_MAIN(tst_QUrl)

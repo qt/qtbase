@@ -2879,7 +2879,9 @@ bool QUrl::isParentOf(const QUrl &childUrl) const
 */
 QDataStream &operator<<(QDataStream &out, const QUrl &url)
 {
-    QByteArray u = url.toString(QUrl::FullyEncoded).toLatin1();
+    QByteArray u;
+    if (url.isValid())
+        u = url.toEncoded();
     out << u;
     return out;
 }
