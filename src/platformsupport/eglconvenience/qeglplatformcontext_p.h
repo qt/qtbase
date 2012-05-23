@@ -63,6 +63,8 @@ public:
     bool isValid() const { return m_eglContext != EGL_NO_CONTEXT; }
 
     EGLContext eglContext() const;
+    EGLDisplay eglDisplay() const;
+    EGLConfig eglConfig() const;
 
 protected:
     virtual EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) = 0;
@@ -72,8 +74,8 @@ private:
     EGLContext m_shareContext;
     EGLDisplay m_eglDisplay;
     EGLenum m_eglApi;
-
-    QSurfaceFormat m_format;
+    EGLConfig m_eglConfig;
+    const QSurfaceFormat m_format;
 };
 
 #endif //QEGLPLATFORMCONTEXT_H

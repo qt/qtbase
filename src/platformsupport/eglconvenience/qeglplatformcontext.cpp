@@ -51,11 +51,9 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
                                          EGLenum eglApi)
     : m_eglDisplay(display)
     , m_eglApi(eglApi)
-    , m_format(format)
+    , m_eglConfig(q_configFromGLFormat(display, format, true))
+    , m_format(q_glFormatFromConfig(display, m_eglConfig))
 {
-    EGLConfig config = q_configFromGLFormat(display, format, true);
-    m_format = q_glFormatFromConfig(display, config);
-
     m_shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : 0;
 
     QVector<EGLint> contextAttrs;
@@ -64,10 +62,10 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     contextAttrs.append(EGL_NONE);
 
     eglBindAPI(m_eglApi);
-    m_eglContext = eglCreateContext(m_eglDisplay, config, m_shareContext, contextAttrs.constData());
+    m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, m_shareContext, contextAttrs.constData());
     if (m_eglContext == EGL_NO_CONTEXT && m_shareContext != EGL_NO_CONTEXT) {
         m_shareContext = 0;
-        m_eglContext = eglCreateContext(m_eglDisplay, config, 0, contextAttrs.constData());
+        m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, 0, contextAttrs.constData());
     }
 }
 
@@ -156,4 +154,14 @@ QSurfaceFormat QEGLPlatformContext::format() const
 EGLContext QEGLPlatformContext::eglContext() const
 {
     return m_eglContext;
+}
+
+EGLDisplay QEGLPlatformContext::eglDisplay() const
+{
+    return m_eglDisplay;
+}
+
+EGLConfig QEGLPlatformContext::eglConfig() const
+{
+    return m_eglConfig;
 }
