@@ -168,7 +168,7 @@ QJsonValue::QJsonValue(const QString &s)
 /*!
     Creates a value of type String, with value \a s.
  */
-QJsonValue::QJsonValue(const QLatin1String &s)
+QJsonValue::QJsonValue(QLatin1String s)
     : d(0), t(String)
 {
     // ### FIXME: Avoid creating the temp QString below

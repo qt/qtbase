@@ -253,7 +253,7 @@ private:
     void enableSorting(DomWidget *w, const QString &varName, const QString &tempName);
 
     QString findDeclaration(const QString &name);
-    DomWidget *findWidget(const QLatin1String &widgetClass);
+    DomWidget *findWidget(QLatin1String widgetClass);
     DomImage *findImage(const QString &name) const;
 
     bool isValidObject(const QString &name) const;

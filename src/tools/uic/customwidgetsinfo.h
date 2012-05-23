@@ -76,7 +76,7 @@ public:
 
     QString realClassName(const QString &className) const;
 
-    bool extends(const QString &className, const QLatin1String &baseClassName) const;
+    bool extends(const QString &className, QLatin1String baseClassName) const;
 
     bool isCustomWidgetContainer(const QString &className) const;
 

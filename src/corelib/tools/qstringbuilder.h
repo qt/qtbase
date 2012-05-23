@@ -227,13 +227,13 @@ template <> struct QConcatenable<QLatin1String>
     typedef QLatin1String type;
     typedef QString ConvertTo;
     enum { ExactSize = true };
-    static int size(const QLatin1String &a) { return a.size(); }
-    static inline void appendTo(const QLatin1String &a, QChar *&out)
+    static int size(const QLatin1String a) { return a.size(); }
+    static inline void appendTo(const QLatin1String a, QChar *&out)
     {
         for (const char *s = a.data(); *s; )
             *out++ = QLatin1Char(*s++);
     }
-    static inline void appendTo(const QLatin1String &a, char *&out)
+    static inline void appendTo(const QLatin1String a, char *&out)
     {
         for (const char *s = a.data(); *s; )
             *out++ = *s++;

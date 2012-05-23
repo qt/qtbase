@@ -2532,7 +2532,7 @@ QTextStream &QTextStream::operator<<(const QString &string)
     QTextStream. The contents of \a string are converted with the
     QString constructor that takes a QLatin1String as argument.
 */
-QTextStream &QTextStream::operator<<(const QLatin1String &string)
+QTextStream &QTextStream::operator<<(QLatin1String string)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);

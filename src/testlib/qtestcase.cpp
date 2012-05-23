@@ -782,7 +782,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn char *QTest::toString(QChar character)
+    \fn char *QTest::toString(const QChar &character)
     \overload
 
     Returns a textual representation of the given \a character.

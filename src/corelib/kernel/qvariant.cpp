@@ -1155,7 +1155,7 @@ QVariant::QVariant(QDataStream &s)
 */
 
 /*!
-  \fn QVariant::QVariant(const QLatin1String &val)
+  \fn QVariant::QVariant(QLatin1String val)
 
     Constructs a new variant with a string value, \a val.
 */
@@ -1408,7 +1408,7 @@ QVariant::QVariant(const QString &val)
 { d.is_null = false; d.type = String; v_construct<QString>(&d, val);  }
 QVariant::QVariant(QChar val)
 { d.is_null = false; d.type = Char; v_construct<QChar>(&d, val);  }
-QVariant::QVariant(const QLatin1String &val)
+QVariant::QVariant(QLatin1String val)
 { QString str(val); d.is_null = false; d.type = String; v_construct<QString>(&d, str); }
 QVariant::QVariant(const QStringList &val)
 { d.is_null = false; d.type = StringList; v_construct<QStringList>(&d, val); }

@@ -2755,7 +2755,7 @@ bool Parser::until(QCss::TokenType target, QCss::TokenType target2)
     return false;
 }
 
-bool Parser::testTokenAndEndsWith(QCss::TokenType t, const QLatin1String &str)
+bool Parser::testTokenAndEndsWith(QCss::TokenType t, QLatin1String str)
 {
     if (!test(t)) return false;
     if (!lexem().endsWith(str, Qt::CaseInsensitive)) {

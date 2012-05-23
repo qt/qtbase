@@ -141,7 +141,7 @@ void QDBusSignature::doCheck()
 */
 
 /*!
-    \fn QDBusObjectPath::QDBusObjectPath(const QLatin1String &path)
+    \fn QDBusObjectPath::QDBusObjectPath(QLatin1String path)
 
     Constructs a new object path from the given \a path.
 */
@@ -203,7 +203,7 @@ void QDBusSignature::doCheck()
 */
 
 /*!
-    \fn QDBusSignature::QDBusSignature(const QLatin1String &signature)
+    \fn QDBusSignature::QDBusSignature(QLatin1String signature)
 
     Constructs a new signature from the given \a signature.
 */

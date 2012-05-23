@@ -140,7 +140,7 @@ uint qHash(const QBitArray &bitArray, uint seed)
     return result;
 }
 
-uint qHash(const QLatin1String &key, uint seed)
+uint qHash(QLatin1String key, uint seed)
 {
     return hash(reinterpret_cast<const uchar *>(key.data()), key.size(), seed);
 }
@@ -655,7 +655,7 @@ void QHashData::checkSanity()
     \fn uint qHash(const QBitArray &key, uint seed = 0)
     \fn uint qHash(const QString &key, uint seed = 0)
     \fn uint qHash(const QStringRef &key, uint seed = 0)
-    \fn uint qHash(const QLatin1String &key, uint seed = 0)
+    \fn uint qHash(QLatin1String key, uint seed = 0)
 
     \relates QHash
     \since 5.0

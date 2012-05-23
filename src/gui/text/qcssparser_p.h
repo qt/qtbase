@@ -824,7 +824,7 @@ public:
         return (index - 1) < symbols.count() ? symbols.at(index - 1).token : NONE;
     }
 
-    bool testTokenAndEndsWith(TokenType t, const QLatin1String &str);
+    bool testTokenAndEndsWith(TokenType t, QLatin1String str);
 
     inline bool recordError() { errorIndex = index; return false; }
 

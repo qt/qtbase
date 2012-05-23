@@ -2677,7 +2677,7 @@ QStringRef QXmlStreamAttributes::value(const QString &namespaceUri, const QStrin
   described with \a namespaceUri, or an empty string reference if the
   attribute is not defined. The \a namespaceUri can be empty.
  */
-QStringRef QXmlStreamAttributes::value(const QString &namespaceUri, const QLatin1String &name) const
+QStringRef QXmlStreamAttributes::value(const QString &namespaceUri, QLatin1String name) const
 {
     for (int i = 0; i < size(); ++i) {
         const QXmlStreamAttribute &attribute = at(i);
@@ -2692,7 +2692,7 @@ QStringRef QXmlStreamAttributes::value(const QString &namespaceUri, const QLatin
   described with \a namespaceUri, or an empty string reference if the
   attribute is not defined. The \a namespaceUri can be empty.
  */
-QStringRef QXmlStreamAttributes::value(const QLatin1String &namespaceUri, const QLatin1String &name) const
+QStringRef QXmlStreamAttributes::value(QLatin1String namespaceUri, QLatin1String name) const
 {
     for (int i = 0; i < size(); ++i) {
         const QXmlStreamAttribute &attribute = at(i);
@@ -2736,7 +2736,7 @@ QStringRef QXmlStreamAttributes::value(const QString &qualifiedName) const
   use qualified names, but a resolved namespaceUri and the attribute's
   local name.
  */
-QStringRef QXmlStreamAttributes::value(const QLatin1String &qualifiedName) const
+QStringRef QXmlStreamAttributes::value(QLatin1String qualifiedName) const
 {
     for (int i = 0; i < size(); ++i) {
         const QXmlStreamAttribute &attribute = at(i);
@@ -3919,7 +3919,7 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
 */
 
 /*!
- \fn bool QXmlStreamAttributes::hasAttribute(const QLatin1String &qualifiedName) const
+ \fn bool QXmlStreamAttributes::hasAttribute(QLatin1String qualifiedName) const
  \overload
  \since 4.5
 */

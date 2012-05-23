@@ -71,7 +71,7 @@ void CustomWidgetsInfo::acceptCustomWidget(DomCustomWidget *node)
     m_customWidgets.insert(node->elementClass(), node);
 }
 
-bool CustomWidgetsInfo::extends(const QString &classNameIn, const QLatin1String &baseClassName) const
+bool CustomWidgetsInfo::extends(const QString &classNameIn, QLatin1String baseClassName) const
 {
     if (classNameIn == baseClassName)
         return true;

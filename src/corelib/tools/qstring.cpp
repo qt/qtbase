@@ -117,7 +117,7 @@ static inline int qt_string_count(const QChar *haystack, int haystackLen,
                                   Qt::CaseSensitivity cs);
 static inline int qt_string_count(const QChar *haystack, int haystackLen,
                                   QChar needle, Qt::CaseSensitivity cs);
-static inline int qt_find_latin1_string(const QChar *hay, int size, const QLatin1String &needle,
+static inline int qt_find_latin1_string(const QChar *hay, int size, QLatin1String needle,
                                         int from, Qt::CaseSensitivity cs);
 static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
                                   const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
@@ -1091,7 +1091,7 @@ QString::QString(int size, Qt::Initialization)
     d->data()[size] = '\0';
 }
 
-/*! \fn QString::QString(const QLatin1String &str)
+/*! \fn QString::QString(QLatin1String str)
 
     Constructs a copy of the Latin-1 string \a str.
 
@@ -1328,7 +1328,7 @@ QString &QString::operator=(const QString &other)
 }
 
 
-/*! \fn QString &QString::operator=(const QLatin1String &str)
+/*! \fn QString &QString::operator=(QLatin1String str)
 
     \overload operator=()
 
@@ -1404,12 +1404,12 @@ QString &QString::operator=(QChar ch)
 
 
 /*!
-    \fn QString &QString::insert(int position, const QLatin1String &str)
+    \fn QString &QString::insert(int position, QLatin1String str)
     \overload insert()
 
     Inserts the Latin-1 string \a str at the given index \a position.
 */
-QString &QString::insert(int i, const QLatin1String &str)
+QString &QString::insert(int i, QLatin1String str)
 {
     const uchar *s = (const uchar *)str.latin1();
     if (i < 0 || !s || !(*s))
@@ -1512,7 +1512,7 @@ QString &QString::append(const QString &str)
 
   Appends the Latin-1 string \a str to this string.
 */
-QString &QString::append(const QLatin1String &str)
+QString &QString::append(QLatin1String str)
 {
     const uchar *s = (const uchar *)str.latin1();
     if (s) {
@@ -1579,7 +1579,7 @@ QString &QString::append(QChar ch)
     \sa append(), insert()
 */
 
-/*! \fn QString &QString::prepend(const QLatin1String &str)
+/*! \fn QString &QString::prepend(QLatin1String str)
 
     \overload prepend()
 
@@ -2021,9 +2021,7 @@ QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
 
   \note The text is not rescanned after a replacement.
 */
-QString &QString::replace(const QLatin1String &before,
-                          const QLatin1String &after,
-                          Qt::CaseSensitivity cs)
+QString &QString::replace(QLatin1String before, QLatin1String after, Qt::CaseSensitivity cs)
 {
     int alen = after.size();
     QVarLengthArray<ushort> a(alen);
@@ -2048,9 +2046,7 @@ QString &QString::replace(const QLatin1String &before,
 
   \note The text is not rescanned after a replacement.
 */
-QString &QString::replace(const QLatin1String &before,
-                          const QString &after,
-                          Qt::CaseSensitivity cs)
+QString &QString::replace(QLatin1String before, const QString &after, Qt::CaseSensitivity cs)
 {
     int blen = before.size();
     QVarLengthArray<ushort> b(blen);
@@ -2071,9 +2067,7 @@ QString &QString::replace(const QLatin1String &before,
 
   \note The text is not rescanned after a replacement.
 */
-QString &QString::replace(const QString &before,
-                          const QLatin1String &after,
-                          Qt::CaseSensitivity cs)
+QString &QString::replace(const QString &before, QLatin1String after, Qt::CaseSensitivity cs)
 {
     int alen = after.size();
     QVarLengthArray<ushort> a(alen);
@@ -2094,7 +2088,7 @@ QString &QString::replace(const QString &before,
 
   \note The text is not rescanned after a replacement.
 */
-QString &QString::replace(QChar c, const QLatin1String &after, Qt::CaseSensitivity cs)
+QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
 {
     int alen = after.size();
     QVarLengthArray<ushort> a(alen);
@@ -2125,7 +2119,7 @@ bool operator==(const QString &s1, const QString &s2)
 /*!
     \overload operator==()
 */
-bool QString::operator==(const QLatin1String &other) const
+bool QString::operator==(QLatin1String other) const
 {
     if (d->size != other.size())
         return false;
@@ -2191,7 +2185,7 @@ bool operator<(const QString &s1, const QString &s2)
 /*!
     \overload operator<()
 */
-bool QString::operator<(const QLatin1String &other) const
+bool QString::operator<(QLatin1String other) const
 {
     const uchar *c = (uchar *) other.latin1();
     if (!c || *c == 0)
@@ -2247,7 +2241,7 @@ bool QString::operator<(const QLatin1String &other) const
     localeAwareCompare().
 */
 
-/*! \fn bool QString::operator<=(const QLatin1String &other) const
+/*! \fn bool QString::operator<=(QLatin1String other) const
 
     \overload operator<=()
 */
@@ -2293,7 +2287,7 @@ bool QString::operator<(const QLatin1String &other) const
 /*!
     \overload operator>()
 */
-bool QString::operator>(const QLatin1String &other) const
+bool QString::operator>(QLatin1String other) const
 {
     const uchar *c = (uchar *) other.latin1();
     if (!c || *c == '\0')
@@ -2350,7 +2344,7 @@ bool QString::operator>(const QLatin1String &other) const
     localeAwareCompare().
 */
 
-/*! \fn bool QString::operator>=(const QLatin1String &other) const
+/*! \fn bool QString::operator>=(QLatin1String other) const
 
     \overload operator>=()
 */
@@ -2394,7 +2388,7 @@ bool QString::operator>(const QLatin1String &other) const
     localeAwareCompare().
 */
 
-/*! \fn bool QString::operator!=(const QLatin1String &other) const
+/*! \fn bool QString::operator!=(QLatin1String other) const
 
     \overload operator!=()
 */
@@ -2467,7 +2461,7 @@ int QString::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
   \sa lastIndexOf(), contains(), count()
 */
 
-int QString::indexOf(const QLatin1String &str, int from, Qt::CaseSensitivity cs) const
+int QString::indexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 {
     return qt_find_latin1_string(unicode(), size(), str, from, cs);
 }
@@ -2677,7 +2671,7 @@ int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) c
 
   \sa indexOf(), contains(), count()
 */
-int QString::lastIndexOf(const QLatin1String &str, int from, Qt::CaseSensitivity cs) const
+int QString::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 {
     const int sl = str.size();
     if (sl == 1)
@@ -3701,7 +3695,7 @@ bool QString::startsWith(const QString& s, Qt::CaseSensitivity cs) const
 /*!
   \overload startsWith()
  */
-bool QString::startsWith(const QLatin1String& s, Qt::CaseSensitivity cs) const
+bool QString::startsWith(QLatin1String s, Qt::CaseSensitivity cs) const
 {
     return qt_starts_with(isNull() ? 0 : unicode(), size(), s, cs);
 }
@@ -3775,7 +3769,7 @@ bool QString::endsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
 /*!
     \overload endsWith()
 */
-bool QString::endsWith(const QLatin1String& s, Qt::CaseSensitivity cs) const
+bool QString::endsWith(QLatin1String s, Qt::CaseSensitivity cs) const
 {
     return qt_ends_with(isNull() ? 0 : unicode(), size(), s, cs);
 }
@@ -4554,7 +4548,7 @@ QString& QString::fill(QChar ch, int size)
     \sa append(), prepend()
 */
 
-/*! \fn QString &QString::operator+=(const QLatin1String &str)
+/*! \fn QString &QString::operator+=(QLatin1String str)
 
     \overload operator+=()
 
@@ -4780,7 +4774,7 @@ QString& QString::fill(QChar ch, int size)
 */
 
 /*!
-    \fn int QString::compare(const QString &s1, const QLatin1String &s2, Qt::CaseSensitivity cs)
+    \fn int QString::compare(const QString &s1, QLatin1String s2, Qt::CaseSensitivity cs)
     \since 4.2
     \overload compare()
 
@@ -4789,7 +4783,7 @@ QString& QString::fill(QChar ch, int size)
 */
 
 /*!
-    \fn int QString::compare(const QLatin1String &s1, const QString &s2, Qt::CaseSensitivity cs = Qt::CaseSensitive)
+    \fn int QString::compare(QLatin1String s1, const QString &s2, Qt::CaseSensitivity cs = Qt::CaseSensitive)
 
     \since 4.2
     \overload compare()
@@ -4837,7 +4831,7 @@ int QString::compare_helper(const QChar *data1, int length1, const QChar *data2,
 
     Same as compare(*this, \a other, \a cs).
 */
-int QString::compare(const QLatin1String &other, Qt::CaseSensitivity cs) const
+int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const
 {
     return compare_helper(unicode(), length(), other, cs);
 }
@@ -7494,7 +7488,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     benefits as the first version of the code, and is faster than
     converting the Latin-1 strings using QString::fromLatin1().
 
-    Thanks to the QString(const QLatin1String &) constructor,
+    Thanks to the QString(QLatin1String) constructor,
     QLatin1String can be used everywhere a QString is expected. For
     example:
 
@@ -7705,37 +7699,37 @@ QString &QString::setRawData(const QChar *unicode, int size)
 
 
 
-/*! \fn bool operator==(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator==(QLatin1String s1, QLatin1String s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically equal to string \a s2; otherwise
    returns false.
 */
-/*! \fn bool operator!=(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator!=(QLatin1String s1, QLatin1String s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically unequal to string \a s2; otherwise
    returns false.
 */
-/*! \fn bool operator<(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator<(QLatin1String s1, QLatin1String s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically smaller than string \a s2; otherwise
    returns false.
 */
-/*! \fn bool operator<=(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator<=(QLatin1String s1, QLatin1String s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically smaller than or equal to string \a s2; otherwise
    returns false.
 */
-/*! \fn bool operator>(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator>(QLatin1String s1, QLatin1String s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically greater than string \a s2; otherwise
    returns false.
 */
-/*! \fn bool operator>=(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator>=(QLatin1String s1, QLatin1String s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically greater than or equal to
@@ -8057,7 +8051,7 @@ bool operator==(const QString &s1,const QStringRef &s2)
    Returns true if string  \a s1 is lexically equal to string reference \a s2; otherwise
    returns false.
 */
-bool operator==(const QLatin1String &s1, const QStringRef &s2)
+bool operator==(QLatin1String s1, const QStringRef &s2)
 {
     if (s1.size() != s2.size())
         return false;
@@ -8924,7 +8918,7 @@ static inline int qt_string_count(const QChar *unicode, int size, QChar ch,
 }
 
 static inline int qt_find_latin1_string(const QChar *haystack, int size,
-                                        const QLatin1String &needle,
+                                        QLatin1String needle,
                                         int from, Qt::CaseSensitivity cs)
 {
     const char *latin1 = needle.latin1();

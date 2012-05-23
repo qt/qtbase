@@ -269,7 +269,7 @@
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(const QLatin1String &s)
+    \fn QDebug &QDebug::operator<<(QLatin1String s)
 
     Writes the Latin1-encoded string, \a s, to the stream and returns a reference
     to the stream.

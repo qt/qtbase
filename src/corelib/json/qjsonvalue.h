@@ -82,7 +82,7 @@ public:
     QJsonValue(double n);
     QJsonValue(int n);
     QJsonValue(const QString &s);
-    QJsonValue(const QLatin1String &s);
+    QJsonValue(QLatin1String s);
     QJsonValue(const QJsonArray &a);
     QJsonValue(const QJsonObject &o);
 

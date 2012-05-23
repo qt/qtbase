@@ -122,7 +122,7 @@ public:
     virtual ~QXmlAttributes() {}
 
     int index(const QString& qName) const;
-    int index(const QLatin1String& qName) const;
+    int index(QLatin1String qName) const;
     int index(const QString& uri, const QString& localPart) const;
     int length() const;
     int count() const;
@@ -134,7 +134,7 @@ public:
     QString type(const QString& uri, const QString& localName) const;
     QString value(int index) const;
     QString value(const QString& qName) const;
-    QString value(const QLatin1String& qName) const;
+    QString value(QLatin1String qName) const;
     QString value(const QString& uri, const QString& localName) const;
 
     void clear();
