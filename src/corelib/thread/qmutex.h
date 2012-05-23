@@ -96,8 +96,16 @@ public:
     enum RecursionMode { NonRecursive, Recursive };
     explicit QMutex(RecursionMode mode = NonRecursive);
     ~QMutex();
+
+    void lock();
+    bool tryLock(int timeout = 0);
+    void unlock();
+
+    using QBasicMutex::isRecursive;
+
 private:
     Q_DISABLE_COPY(QMutex)
+    friend class QMutexLocker;
 };
 
 class Q_CORE_EXPORT QMutexLocker
@@ -107,12 +115,9 @@ public:
     {
         Q_ASSERT_X((reinterpret_cast<quintptr>(m) & quintptr(1u)) == quintptr(0),
                    "QMutexLocker", "QMutex pointer is misaligned");
-        if (m) {
-            m->lock();
-            val = reinterpret_cast<quintptr>(m) | quintptr(1u);
-        } else {
-            val = 0;
-        }
+        val = quintptr(m);
+        // relock() here ensures that we call QMutex::lock() instead of QBasicMutex::lock()
+        relock();
     }
     inline ~QMutexLocker() { unlock(); }
 

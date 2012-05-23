@@ -177,6 +177,10 @@ QMutex::~QMutex()
 
     \sa unlock()
 */
+void QMutex::lock()
+{
+    QBasicMutex::lock();
+}
 
 /*! \fn bool QMutex::tryLock(int timeout)
 
@@ -201,7 +205,10 @@ QMutex::~QMutex()
 
     \sa lock(), unlock()
 */
-
+bool QMutex::tryLock(int timeout)
+{
+    return QBasicMutex::tryLock(timeout);
+}
 
 /*! \fn void QMutex::unlock()
     Unlocks the mutex. Attempting to unlock a mutex in a different
@@ -210,6 +217,10 @@ QMutex::~QMutex()
 
     \sa lock()
 */
+void QMutex::unlock()
+{
+    QBasicMutex::unlock();
+}
 
 /*!
     \fn void QMutex::isRecursive()
