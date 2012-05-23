@@ -70,27 +70,66 @@ static LibLoadStatus status = NotLoaded;
 
 static UCollator *icuCollator = 0;
 
+namespace {
+struct Libraries {
+    QLibrary libicui18n;
+    QLibrary libicuuc;
+    ~Libraries()
+    {
+        if (icuCollator) {
+            ptr_ucol_close(icuCollator);
+            icuCollator = 0;
+        }
 
+        libicui18n.unload();
+        libicuuc.unload();
+    }
+};
+}
+Q_GLOBAL_STATIC(Libraries, icuLibraries)
+
+static bool loadIcuLibrary(QLibrary &lib, const QString &name)
+{
+#ifdef Q_OS_WIN
+    // QLibrary on Windows does not use the version number, the libraries
+    // are named "icuin<version>.dll", though.
+    lib.setFileName(name);
+#else
+    // on Unix, we can use the version number
+    lib.setFileNameAndVersion(name, QStringLiteral(U_ICU_VERSION_SHORT));
+#endif
+
+    // the ICU libraries appear to allocate global statics and not free them
+    // set the PreventUnloadHint so that we can unload the QLibrary object and
+    // delete it, but the libraries themselves remain in memory
+    lib.setLoadHints(QLibrary::PreventUnloadHint);
+    return lib.load();
+}
+
+// this function is NOT THREAD-SAFE!
 bool qt_initIcu(const QString &localeString)
 {
-    if (status == ErrorLoading)
+    if (status == ErrorLoading || !icuLibraries())
         return false;
 
     if (status == NotLoaded) {
 
         // resolve libicui18n
-        const QString version = QString::fromLatin1(U_ICU_VERSION_SHORT);
 #ifdef Q_OS_WIN
         // QLibrary on Windows does not use the version number, the libraries
         // are named "icuin<version>.dll", though.
-        QString libName = QStringLiteral("icuin") + version;
+        // QStringLiteral should work here and will work when MSVC fully supports C++11
+        // unfortunately, current versions have do not support proper string concatenation
+        QString libicui18nName = QLatin1String("icuin" U_ICU_VERSION_SHORT);
+        QString libicuucName = QLatin1String("icuuc" U_ICU_VERSION_SHORT);
 #else
-        QString libName = QStringLiteral("icui18n");
+        QString libicui18nName = QStringLiteral("icui18n");
+        QString libicuucName = QStringLiteral("icuuc");
 #endif
-        QLibrary lib(libName, version);
-        if (!lib.load()) {
-            qWarning("Unable to load library '%s' version %s: %s",
-                     qPrintable(libName), qPrintable(version),
+        QLibrary &lib = icuLibraries()->libicui18n;
+        if (!loadIcuLibrary(lib, libicui18nName)) {
+            qWarning("Unable to load library '%s' version " U_ICU_VERSION_SHORT ": %s",
+                     qPrintable(libicui18nName),
                      qPrintable(lib.errorString()));
             status = ErrorLoading;
             return false;
@@ -112,21 +151,16 @@ bool qt_initIcu(const QString &localeString)
             ptr_ucol_close = 0;
             ptr_ucol_strcoll = 0;
 
-            qWarning("Unable to find symbols in '%s'.", qPrintable(libName));
+            qWarning("Unable to find symbols in '%s'.", qPrintable(libicui18nName));
             status = ErrorLoading;
             return false;
         }
 
         // resolve libicuuc
-#ifdef Q_OS_WIN
-        libName = QStringLiteral("icuuc") + version;
-#else
-        libName = QStringLiteral("icuuc");
-#endif
-        QLibrary ucLib(libName, version);
-        if (!ucLib.load()) {
-            qWarning("Unable to load library '%s' version %s: %s",
-                     qPrintable(libName), qPrintable(version),
+        QLibrary &ucLib = icuLibraries()->libicuuc;
+        if (!loadIcuLibrary(ucLib, libicuucName)) {
+            qWarning("Unable to load library '%s' version " U_ICU_VERSION_SHORT ": %s",
+                     qPrintable(libicuucName),
                      qPrintable(ucLib.errorString()));
             status = ErrorLoading;
             return false;
@@ -144,7 +178,7 @@ bool qt_initIcu(const QString &localeString)
             ptr_u_strToUpper = 0;
             ptr_u_strToLower = 0;
 
-            qWarning("Unable to find symbols in '%s'", qPrintable(libName));
+            qWarning("Unable to find symbols in '%s'", qPrintable(libicuucName));
             status = ErrorLoading;
             return false;
         }
