@@ -65,12 +65,14 @@ typedef enum {
     /* Dual */
     Beh,
     Noon,
+    Nya = Noon,
     Meem = Noon,
     Heh = Noon,
     KnottedHeh = Noon,
     HehGoal = Noon,
     SwashKaf = Noon,
     Yeh,
+    FarsiYeh = Yeh,
     Hah,
     Seen,
     Sad = Seen,
@@ -87,9 +89,10 @@ typedef enum {
     Dal,
     TehMarbuta = Dal,
     Reh,
-    HamzaOnHehGoal,
-    YehWithTail = HamzaOnHehGoal,
-    YehBarre = HamzaOnHehGoal,
+    TehMarbutaGoal,
+    HamzaOnHehGoal = TehMarbutaGoal, /* has been retained as a property value alias */
+    YehWithTail = TehMarbutaGoal,
+    YehBarree = TehMarbutaGoal,
 
     /* Syriac */
     /* Dual */
@@ -98,12 +101,12 @@ typedef enum {
     Heth = Noon,
     Teth = Hah,
     Yudh = Noon,
-    Kaph = Noon,
+    Khaph = Noon,
     Lamadh = Lam,
     Mim = Noon,
     Nun = Noon,
-    Semakh = Noon,
-    FinalSemakh = Noon,
+    Semkath = Noon,
+    FinalSemkath = Noon,
     SyriacE = Ain,
     Pe = Ain,
     ReversedPe = Hah,
@@ -113,16 +116,16 @@ typedef enum {
 
     /* Right */
     Alaph = Alef,
-    Dalath = Dal,
+    DalathRish = Dal,
     He = Dal,
     SyriacWaw = Waw,
-    Zain = Alef,
+    Zhain = Alef,
     YudhHe = Waw,
-    Sadhe = HamzaOnHehGoal,
+    Sadhe = TehMarbutaGoal,
     Taw = Dal,
 
     /* Compiler bug? Otherwise ArabicGroupsEnd would be equal to Dal + 1. */
-    Dummy = HamzaOnHehGoal,
+    Dummy = TehMarbutaGoal,
     ArabicGroupsEnd
 } ArabicGroup;
 
@@ -133,19 +136,19 @@ static const unsigned char arabic_group[0x150] = {
     ArabicNone, ArabicNone, ArabicNone, ArabicNone,
 
     Transparent, Transparent, Transparent, Transparent,
-    Transparent, Transparent, ArabicNone, ArabicNone,
-    ArabicNone, ArabicNone, ArabicNone, ArabicNone,
+    Transparent, Transparent, Transparent, Transparent,
+    Transparent, Transparent, Transparent, ArabicNone,
     ArabicNone, ArabicNone, ArabicNone, ArabicNone,
 
-    ArabicNone, ArabicNone, Alef, Alef,
+    Yeh, ArabicNone, Alef, Alef,
     Waw, Alef, Yeh, Alef,
     Beh, TehMarbuta, Beh, Beh,
     Hah, Hah, Hah, Dal,
 
     Dal, Reh, Reh, Seen,
     Seen, Sad, Sad, Tah,
-    Tah, Ain, Ain, ArabicNone,
-    ArabicNone, ArabicNone, ArabicNone, ArabicNone,
+    Tah, Ain, Ain, Gaf,
+    Gaf, FarsiYeh, FarsiYeh, FarsiYeh,
 
     /* 0x640 */
     Kashida, Feh, Qaf, Kaf,
@@ -155,8 +158,8 @@ static const unsigned char arabic_group[0x150] = {
 
     Transparent, Transparent, Transparent, Transparent,
     Transparent, Transparent, Transparent, Transparent,
-    Transparent, ArabicNone, ArabicNone, ArabicNone,
-    ArabicNone, ArabicNone, ArabicNone, ArabicNone,
+    Transparent, Transparent, Transparent, Transparent,
+    Transparent, Transparent, Transparent, Transparent,
 
     ArabicNone, ArabicNone, ArabicNone, ArabicNone,
     ArabicNone, ArabicNone, ArabicNone, ArabicNone,
@@ -187,15 +190,15 @@ static const unsigned char arabic_group[0x150] = {
     Gaf, Gaf, Gaf, Gaf,
     Gaf, Lam, Lam, Lam,
     Lam, Noon, Noon, Noon,
-    Noon, Noon, KnottedHeh, Hah,
+    Noon, Nya, KnottedHeh, Hah,
 
     /* 0x6c0 */
-    TehMarbuta, HehGoal, HamzaOnHehGoal, HamzaOnHehGoal,
+    TehMarbuta, HehGoal, HehGoal, TehMarbutaGoal,
     Waw, Waw, Waw, Waw,
     Waw, Waw, Waw, Waw,
-    Yeh, YehWithTail, Yeh, Waw,
+    FarsiYeh, YehWithTail, FarsiYeh, Waw,
 
-    Yeh, Yeh, YehBarre, YehBarre,
+    Yeh, Yeh, YehBarree, YehBarree,
     ArabicNone, TehMarbuta, Transparent, Transparent,
     Transparent, Transparent, Transparent, Transparent,
     Transparent, ArabicNone, ArabicNone, Transparent,
@@ -214,17 +217,17 @@ static const unsigned char arabic_group[0x150] = {
     ArabicNone, ArabicNone, ArabicNone, ArabicNone,
     ArabicNone, ArabicNone, ArabicNone, ArabicNone,
     ArabicNone, ArabicNone, ArabicNone, ArabicNone,
-    ArabicNone, ArabicNone, ArabicNone, ArabicNone,
+    ArabicNone, ArabicNone, ArabicNone, Transparent,
 
     Alaph, Transparent, Beth, Gamal,
-    Gamal, Dalath, Dalath, He,
-    SyriacWaw, Zain, Heth, Teth,
-    Teth, Yudh, YudhHe, Kaph,
+    Gamal, DalathRish, DalathRish, He,
+    SyriacWaw, Zhain, Heth, Teth,
+    Teth, Yudh, YudhHe, Khaph,
 
-    Lamadh, Mim, Nun, Semakh,
-    FinalSemakh, SyriacE, Pe, ReversedPe,
-    Sadhe, Qaph, Dalath, Shin,
-    Taw, Beth, Gamal, Dalath,
+    Lamadh, Mim, Nun, Semkath,
+    FinalSemkath, SyriacE, Pe, ReversedPe,
+    Sadhe, Qaph, DalathRish, Shin,
+    Taw, Beth, Gamal, DalathRish,
 
     Transparent, Transparent, Transparent, Transparent,
     Transparent, Transparent, Transparent, Transparent,
@@ -234,7 +237,7 @@ static const unsigned char arabic_group[0x150] = {
     Transparent, Transparent, Transparent, Transparent,
     Transparent, Transparent, Transparent, Transparent,
     Transparent, Transparent, Transparent, ArabicNone,
-    ArabicNone, Zain, Kaph, Fe,
+    ArabicNone, Zhain, Khaph, Fe,
 };
 
 static ArabicGroup arabicGroup(unsigned short uc)
@@ -313,7 +316,7 @@ static const Joining joining_for_group[ArabicGroupsEnd] = {
     JRight, /* Waw */
     JRight, /* Dal */
     JRight, /* Reh */
-    JRight  /* HamzaOnHehGoal */
+    JRight  /* TehMarbutaGoal */
 };
 
 
@@ -471,7 +474,7 @@ static void getArabicProperties(const unsigned short *chars, int len, HB_ArabicP
 
         case Noon:
         case Beh:
-        case HamzaOnHehGoal:
+        case TehMarbutaGoal:
             lastGroup = Noon;
             break;
         case ArabicGroupsEnd:
@@ -604,7 +607,7 @@ static const hb_uint16 arabicUnicodeMapping[256][2] = {
 
     { 0xFEAB, 1 }, /* 0x0630    R       THAL */
     { 0xFEAD, 1 }, /* 0x0631    R       REH */
-    { 0xFEAF, 1 }, /* 0x0632    R       ZAIN */
+    { 0xFEAF, 1 }, /* 0x0632    R       ZHAIN */
     { 0xFEB1, 3 }, /* 0x0633    D       SEEN */
     { 0xFEB5, 3 }, /* 0x0634    D       SHEEN */
     { 0xFEB9, 3 }, /* 0x0635    D       SAD */
