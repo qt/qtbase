@@ -122,49 +122,6 @@ namespace QtSharedPointer {
     template <class T> struct RemovePointer<QSharedPointer<T> > { typedef T Type; };
     template <class T> struct RemovePointer<QWeakPointer<T> > { typedef T Type; };
 
-    // This class provides the basic functionality of a pointer wrapper.
-    // Its existence is mostly legacy, since originally QSharedPointer
-    // could also be used for internally-refcounted objects.
-    template <class T>
-    class Basic
-    {
-        typedef T *Basic:: *RestrictedBool;
-    public:
-        typedef T Type;
-        typedef T element_type;
-        typedef T value_type;
-        typedef value_type *pointer;
-        typedef const value_type *const_pointer;
-        typedef value_type &reference;
-        typedef const value_type &const_reference;
-        typedef qptrdiff difference_type;
-
-        inline T *data() const { return value; }
-        inline bool isNull() const { return !data(); }
-        inline operator RestrictedBool() const { return isNull() ? 0 : &Basic::value; }
-        inline bool operator !() const { return isNull(); }
-        inline T &operator*() const { return *data(); }
-        inline T *operator->() const { return data(); }
-
-    protected:
-        inline Basic(T *ptr = 0) : value(ptr) { }
-        inline Basic(Qt::Initialization) { }
-        // ~Basic();
-
-        inline void internalConstruct(T *ptr)
-        {
-            value = ptr;
-        }
-
-#if defined(Q_NO_TEMPLATE_FRIENDS)
-    public:
-#else
-        template <class X> friend class QT_PREPEND_NAMESPACE(QWeakPointer);
-#endif
-
-        Type *value;
-    };
-
     // This class is the d-pointer of QSharedPointer and QWeakPointer.
     //
     // It is a reference-counted reference counter. "strongref" is the inner
@@ -315,11 +272,28 @@ namespace QtSharedPointer {
     // This is the main body of QSharedPointer. It implements the
     // external reference counting functionality.
     template <class T>
-    class ExternalRefCount: public Basic<T>
+    class ExternalRefCount
     {
-    protected:
+        typedef T *ExternalRefCount:: *RestrictedBool;
         typedef ExternalRefCountData Data;
+    public:
+        typedef T Type;
+        typedef T element_type;
+        typedef T value_type;
+        typedef value_type *pointer;
+        typedef const value_type *const_pointer;
+        typedef value_type &reference;
+        typedef const value_type &const_reference;
+        typedef qptrdiff difference_type;
 
+        inline T *data() const { return value; }
+        inline bool isNull() const { return !data(); }
+        inline operator RestrictedBool() const { return isNull() ? 0 : &ExternalRefCount::value; }
+        inline bool operator !() const { return isNull(); }
+        inline T &operator*() const { return *data(); }
+        inline T *operator->() const { return data(); }
+
+    protected:
         inline void deref()
         { deref(d); }
         static inline void deref(Data *d)
@@ -344,31 +318,29 @@ namespace QtSharedPointer {
 
         inline void internalCreate()
         {
-            T *ptr;
-            d = ExternalRefCountWithContiguousData<T>::create(&ptr);
-            Basic<T>::internalConstruct(ptr);
+            d = ExternalRefCountWithContiguousData<T>::create(&value);
         }
 
         inline void internalFinishConstruction(T *ptr)
         {
-            Basic<T>::internalConstruct(ptr);
+            value = ptr;
             if (ptr) d->setQObjectShared(ptr, true);
 #ifdef QT_SHAREDPOINTER_TRACK_POINTERS
             if (ptr) internalSafetyCheckAdd(d, ptr);
 #endif
         }
 
-        inline ExternalRefCount() : d(0) { }
-        inline ExternalRefCount(Qt::Initialization i) : Basic<T>(i) { }
+        inline ExternalRefCount() : value(0), d(0) { }
+        inline ExternalRefCount(Qt::Initialization) { }
 
         template <typename Deleter>
-        inline ExternalRefCount(T *ptr, Deleter deleter) : Basic<T>(Qt::Uninitialized) // throws
+        inline ExternalRefCount(T *ptr, Deleter deleter) // throws
         { internalConstruct(ptr, deleter); }
 
-        inline ExternalRefCount(const ExternalRefCount<T> &other) : Basic<T>(other), d(other.d)
+        inline ExternalRefCount(const ExternalRefCount<T> &other) : value(other.value), d(other.d)
         { if (d) ref(); }
         template <class X>
-        inline ExternalRefCount(const ExternalRefCount<X> &other) : Basic<T>(other.value), d(other.d)
+        inline ExternalRefCount(const ExternalRefCount<X> &other) : value(other.value), d(other.d)
         { if (d) ref(); }
         inline ~ExternalRefCount() { deref(); }
 
@@ -429,6 +401,7 @@ namespace QtSharedPointer {
             deref(o);
         }
 
+        Type *value;
         Data *d;
     };
 } // namespace QtSharedPointer
