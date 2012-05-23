@@ -294,7 +294,7 @@ public:
     QSharedPointer() : value(0), d(0) { }
     ~QSharedPointer() { deref(); }
 
-    inline explicit QSharedPointer(T *ptr) // throws
+    inline explicit QSharedPointer(T *ptr) : value(ptr) // noexcept
     { internalConstruct(ptr, &QtSharedPointer::normalDeleter<T>); }
 
     template <typename Deleter>
@@ -380,7 +380,7 @@ public:
     static inline QSharedPointer<T> create()
     {
         QSharedPointer<T> result(Qt::Uninitialized);
-        result.internalCreate();
+        result.d = QtSharedPointer::ExternalRefCountWithContiguousData<T>::create(&result.value);
 
         // now initialize the data
         new (result.data()) T();
@@ -413,15 +413,9 @@ private:
         internalFinishConstruction(ptr);
     }
 
-    inline void internalCreate()
-    {
-        d = QtSharedPointer::ExternalRefCountWithContiguousData<T>::create(&value);
-    }
-
     inline void internalFinishConstruction(T *ptr)
     {
-        value = ptr;
-        if (ptr) d->setQObjectShared(ptr, true);
+        d->setQObjectShared(ptr, true);
 #ifdef QT_SHAREDPOINTER_TRACK_POINTERS
         if (ptr) internalSafetyCheckAdd(d, ptr);
 #endif
