@@ -116,7 +116,7 @@ namespace QtSharedPointer {
     template <class T, typename Deleter>
     inline void executeDeleter(T *t, Deleter d)
     { d(t); }
-    template <class T> inline void normalDeleter(T *t) { delete t; }
+    struct NormalDeleter {};
 
     // this uses partial template specialization
     template <class T> struct RemovePointer;
@@ -165,6 +165,33 @@ namespace QtSharedPointer {
     };
     // sizeof(ExternalRefCountData) = 12 (32-bit) / 16 (64-bit)
 
+    template <class T, typename Deleter>
+    struct CustomDeleter
+    {
+        Deleter deleter;
+        T *ptr;
+
+        CustomDeleter(T *p, Deleter d) : deleter(d), ptr(p) {}
+        void execute() { executeDeleter(ptr, deleter); }
+    };
+    // sizeof(CustomDeleter) = sizeof(Deleter) + sizeof(void*) + padding
+    // for Deleter = stateless functor: 8 (32-bit) / 16 (64-bit) due to padding
+    // for Deleter = function pointer:  8 (32-bit) / 16 (64-bit)
+    // for Deleter = PMF: 12 (32-bit) / 24 (64-bit)  (GCC)
+
+    // This specialization of CustomDeleter for a deleter of type NormalDeleter
+    // is an optimization: instead of storing a pointer to a function that does
+    // the deleting, we simply delete the pointer ourselves.
+    template <class T>
+    struct CustomDeleter<T, NormalDeleter>
+    {
+        T *ptr;
+
+        CustomDeleter(T *p, NormalDeleter) : ptr(p) {}
+        void execute() { delete ptr; }
+    };
+    // sizeof(CustomDeleter specialization) = sizeof(void*)
+
     // This class extends ExternalRefCountData and implements
     // the static function that deletes the object. The pointer and the
     // custom deleter are kept in the "extra" member so we can construct
@@ -174,27 +201,15 @@ namespace QtSharedPointer {
     {
         typedef ExternalRefCountWithCustomDeleter Self;
         typedef ExternalRefCountData BaseClass;
-
-        struct CustomDeleter
-        {
-            Deleter deleter;
-            T *ptr;
-
-            inline CustomDeleter(T *p, Deleter d) : deleter(d), ptr(p) {}
-        };
-        CustomDeleter extra;
-        // sizeof(CustomDeleter) = sizeof(Deleter) + sizeof(void*) + padding
-        // for Deleter = stateless functor: 8 (32-bit) / 16 (64-bit) due to padding
-        // for Deleter = function pointer:  8 (32-bit) / 16 (64-bit)
-        // for Deleter = PMF: 12 (32-bit) / 24 (64-bit)  (GCC)
+        CustomDeleter<T, Deleter> extra;
 
         static inline void deleter(ExternalRefCountData *self)
         {
             Self *realself = static_cast<Self *>(self);
-            executeDeleter(realself->extra.ptr, realself->extra.deleter);
+            realself->extra.execute();
 
             // delete the deleter too
-            realself->extra.~CustomDeleter();
+            realself->extra.~CustomDeleter<T, Deleter>();
         }
         static void safetyCheckDeleter(ExternalRefCountData *self)
         {
@@ -207,7 +222,7 @@ namespace QtSharedPointer {
             Self *d = static_cast<Self *>(::operator new(sizeof(Self)));
 
             // initialize the two sub-objects
-            new (&d->extra) CustomDeleter(ptr, userDeleter);
+            new (&d->extra) CustomDeleter<T, Deleter>(ptr, userDeleter);
             new (d) BaseClass(actualDeleter); // can't throw
 
             return d;
@@ -292,7 +307,7 @@ public:
     ~QSharedPointer() { deref(); }
 
     inline explicit QSharedPointer(T *ptr) : value(ptr) // noexcept
-    { internalConstruct(ptr, &QtSharedPointer::normalDeleter<T>); }
+    { internalConstruct(ptr, QtSharedPointer::NormalDeleter()); }
 
     template <typename Deleter>
     inline QSharedPointer(T *ptr, Deleter deleter) : value(ptr) // throws

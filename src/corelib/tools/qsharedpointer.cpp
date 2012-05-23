@@ -230,6 +230,13 @@
     structure will be 12+8+4 = 24 bytes on 32-bit architectures, 16+16+8 = 40
     bytes on 64-bit ones.
 
+    If the deleter was not specified when creating the QSharedPointer object
+    (i.e., if a standard \tt delete call is expected), then there's an
+    optimization that avoids the need to store another function pointer in
+    ExternalRefCountWithCustomDeleter. Instead, a template specialization makes
+    a direct delete call. The size of the structure, in this case, is 12+4 = 16
+    bytes on 32-bit architectures, 16+8 = 24 bytes on 64-bit ones.
+
     \section3 QtSharedPointer::ExternalRefCountWithContiguousData
 
     This class also derives from ExternalRefCountData and it is
