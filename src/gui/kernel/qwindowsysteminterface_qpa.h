@@ -152,6 +152,20 @@ public:
 
     static void handleFileOpenEvent(const QString& fileName);
 
+    static void handleTabletEvent(QWindow *w, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
+                                  int device, int pointerType, qreal pressure, int xTilt, int yTilt,
+                                  qreal tangentialPressure, qreal rotation, int z, qint64 uid,
+                                  Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    static void handleTabletEvent(QWindow *w, bool down, const QPointF &local, const QPointF &global,
+                                  int device, int pointerType, qreal pressure, int xTilt, int yTilt,
+                                  qreal tangentialPressure, qreal rotation, int z, qint64 uid,
+                                  Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    static void handleTabletEnterProximityEvent(ulong timestamp, int device, int pointerType, qint64 uid);
+    static void handleTabletEnterProximityEvent(int device, int pointerType, qint64 uid);
+    static void handleTabletLeaveProximityEvent(ulong timestamp, int device, int pointerType, qint64 uid);
+    static void handleTabletLeaveProximityEvent(int device, int pointerType, qint64 uid);
+
+
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags);
     static int windowSystemEventsQueued();

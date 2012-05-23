@@ -528,4 +528,52 @@ void QWindowSystemInterface::handleFileOpenEvent(const QString& fileName)
     QGuiApplicationPrivate::processWindowSystemEvent(&e);
 }
 
+void QWindowSystemInterface::handleTabletEvent(QWindow *w, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
+                                               int device, int pointerType, qreal pressure, int xTilt, int yTilt,
+                                               qreal tangentialPressure, qreal rotation, int z, qint64 uid,
+                                               Qt::KeyboardModifiers modifiers)
+{
+    QWindowSystemInterfacePrivate::TabletEvent *e =
+            new QWindowSystemInterfacePrivate::TabletEvent(w, timestamp, down, local, global, device, pointerType, pressure,
+                                                           xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleTabletEvent(QWindow *w, bool down, const QPointF &local, const QPointF &global,
+                                               int device, int pointerType, qreal pressure, int xTilt, int yTilt,
+                                               qreal tangentialPressure, qreal rotation, int z, qint64 uid,
+                                               Qt::KeyboardModifiers modifiers)
+{
+    ulong time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleTabletEvent(w, time, down, local, global, device, pointerType, pressure,
+                      xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
+}
+
+void QWindowSystemInterface::handleTabletEnterProximityEvent(ulong timestamp, int device, int pointerType, qint64 uid)
+{
+    QWindowSystemInterfacePrivate::TabletEnterProximityEvent *e =
+            new QWindowSystemInterfacePrivate::TabletEnterProximityEvent(timestamp, device, pointerType, uid);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleTabletEnterProximityEvent(int device, int pointerType, qint64 uid)
+{
+    ulong time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleTabletEnterProximityEvent(time, device, pointerType, uid);
+}
+
+void QWindowSystemInterface::handleTabletLeaveProximityEvent(ulong timestamp, int device, int pointerType, qint64 uid)
+{
+    QWindowSystemInterfacePrivate::TabletLeaveProximityEvent *e =
+            new QWindowSystemInterfacePrivate::TabletLeaveProximityEvent(timestamp, device, pointerType, uid);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleTabletLeaveProximityEvent(int device, int pointerType, qint64 uid)
+{
+    ulong time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleTabletLeaveProximityEvent(time, device, pointerType, uid);
+}
+
+
 QT_END_NAMESPACE

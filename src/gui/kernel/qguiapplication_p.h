@@ -124,6 +124,10 @@ public:
 
     static void processFileOpenEvent(QWindowSystemInterfacePrivate::FileOpenEvent *e);
 
+    static void processTabletEvent(QWindowSystemInterfacePrivate::TabletEvent *e);
+    static void processTabletEnterProximityEvent(QWindowSystemInterfacePrivate::TabletEnterProximityEvent *e);
+    static void processTabletLeaveProximityEvent(QWindowSystemInterfacePrivate::TabletLeaveProximityEvent *e);
+
 #ifndef QT_NO_DRAGANDDROP
     static QPlatformDragQtResponse processDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
     static QPlatformDropQtResponse processDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
@@ -167,6 +171,8 @@ public:
     static int mousePressY;
     static int mouse_double_click_distance;
     static QPointF lastCursorPosition;
+    static bool tabletState;
+    static QWindow *tabletPressTarget;
 
 #ifndef QT_NO_CLIPBOARD
     static QClipboard *qt_clipboard;

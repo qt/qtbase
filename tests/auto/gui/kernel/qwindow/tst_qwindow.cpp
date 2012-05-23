@@ -71,6 +71,7 @@ private slots:
     void mouseEventSequence();
     void windowModality();
     void inputReentrancy();
+    void tabletEvents();
 
     void initTestCase()
     {
@@ -923,6 +924,63 @@ void tst_QWindow::inputReentrancy()
     QCOMPARE(window.touchPressedCount, 1);
     QCOMPARE(window.touchMovedCount, 1);
     QCOMPARE(window.touchReleasedCount, 1);
+}
+
+#ifndef QT_NO_TABLETEVENT
+class TabletTestWindow : public QWindow
+{
+public:
+    TabletTestWindow() : eventType(0) { }
+    void tabletEvent(QTabletEvent *ev) {
+        eventType = ev->type();
+        eventGlobal = ev->globalPosF();
+        eventLocal = ev->posF();
+        eventDevice = ev->device();
+    }
+    int eventType;
+    QPointF eventGlobal, eventLocal;
+    int eventDevice;
+    bool eventFilter(QObject *obj, QEvent *ev) {
+        if (ev->type() == QEvent::TabletEnterProximity
+                || ev->type() == QEvent::TabletLeaveProximity) {
+            eventType = ev->type();
+            QTabletEvent *te = static_cast<QTabletEvent *>(ev);
+            eventDevice = te->device();
+        }
+        return QWindow::eventFilter(obj, ev);
+    }
+};
+#endif
+
+void tst_QWindow::tabletEvents()
+{
+#ifndef QT_NO_TABLETEVENT
+    TabletTestWindow window;
+    window.setGeometry(10, 10, 100, 100);
+    qGuiApp->installEventFilter(&window);
+
+    QPoint local(10, 10);
+    QPoint global = window.mapToGlobal(local);
+    QWindowSystemInterface::handleTabletEvent(&window, true, local, global, 1, 2, 0.5, 1, 2, 0.1, 0, 0, 0);
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(window.eventType == QEvent::TabletPress);
+    QTRY_COMPARE(window.eventGlobal.toPoint(), global);
+    QTRY_COMPARE(window.eventLocal.toPoint(), local);
+    QWindowSystemInterface::handleTabletEvent(&window, false, local, global, 1, 2, 0.5, 1, 2, 0.1, 0, 0, 0);
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(window.eventType == QEvent::TabletRelease);
+
+    QWindowSystemInterface::handleTabletEnterProximityEvent(1, 2, 3);
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(window.eventType == QEvent::TabletEnterProximity);
+    QTRY_COMPARE(window.eventDevice, 1);
+
+    QWindowSystemInterface::handleTabletLeaveProximityEvent(1, 2, 3);
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(window.eventType == QEvent::TabletLeaveProximity);
+    QTRY_COMPARE(window.eventDevice, 1);
+
+#endif
 }
 
 #include <tst_qwindow.moc>

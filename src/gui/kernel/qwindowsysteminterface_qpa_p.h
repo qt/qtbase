@@ -69,7 +69,10 @@ public:
         ScreenRefreshRate,
         ThemeChange,
         Expose,
-        FileOpen
+        FileOpen,
+        Tablet,
+        TabletEnterProximity,
+        TabletLeaveProximity
     };
 
     class WindowSystemEvent {
@@ -264,6 +267,55 @@ public:
             : WindowSystemEvent(FileOpen), fileName(fileName)
         { }
         QString fileName;
+    };
+
+    class TabletEvent : public InputEvent {
+    public:
+        static void handleTabletEvent(QWindow *w, bool down, const QPointF &local, const QPointF &global,
+                                      int device, int pointerType, qreal pressure, int xTilt, int yTilt,
+                                      qreal tangentialPressure, qreal rotation, int z, qint64 uid,
+                                      Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+
+        TabletEvent(QWindow *w, ulong time, bool down, const QPointF &local, const QPointF &global,
+                    int device, int pointerType, qreal pressure, int xTilt, int yTilt, qreal tpressure,
+                    qreal rotation, int z, qint64 uid, Qt::KeyboardModifiers mods)
+            : InputEvent(w, time, Tablet, Qt::NoModifier),
+              down(down), local(local), global(global), device(device), pointerType(pointerType),
+              pressure(pressure), xTilt(xTilt), yTilt(yTilt), tangentialPressure(tpressure),
+              rotation(rotation), z(z), uid(uid), mods(mods) { }
+        bool down;
+        QPointF local;
+        QPointF global;
+        int device;
+        int pointerType;
+        qreal pressure;
+        int xTilt;
+        int yTilt;
+        qreal tangentialPressure;
+        qreal rotation;
+        int z;
+        qint64 uid;
+        Qt::KeyboardModifiers mods;
+    };
+
+    class TabletEnterProximityEvent : public InputEvent {
+    public:
+        TabletEnterProximityEvent(ulong time, int device, int pointerType, qint64 uid)
+            : InputEvent(0, time, TabletEnterProximity, Qt::NoModifier),
+              device(device), pointerType(pointerType), uid(uid) { }
+        int device;
+        int pointerType;
+        qint64 uid;
+    };
+
+    class TabletLeaveProximityEvent : public InputEvent {
+    public:
+        TabletLeaveProximityEvent(ulong time, int device, int pointerType, qint64 uid)
+            : InputEvent(0, time, TabletLeaveProximity, Qt::NoModifier),
+              device(device), pointerType(pointerType), uid(uid) { }
+        int device;
+        int pointerType;
+        qint64 uid;
     };
 
     static QList<WindowSystemEvent *> windowSystemEventQueue;

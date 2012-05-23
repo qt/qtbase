@@ -1522,6 +1522,14 @@ bool QWindow::event(QEvent *ev)
         hideEvent(static_cast<QHideEvent *>(ev));
         break;
 
+#ifndef QT_NO_TABLETEVENT
+    case QEvent::TabletPress:
+    case QEvent::TabletMove:
+    case QEvent::TabletRelease:
+        tabletEvent(static_cast<QTabletEvent *>(ev));
+        break;
+#endif
+
     default:
         return QObject::event(ev);
     }
@@ -1627,6 +1635,19 @@ void QWindow::touchEvent(QTouchEvent *ev)
 {
     ev->ignore();
 }
+
+#ifndef QT_NO_TABLETEVENT
+/*!
+    Override this to handle tablet press, move, and release events.
+
+    Proximity enter and leave events are not sent to windows, they are
+    delivered to the application instance.
+*/
+void QWindow::tabletEvent(QTabletEvent *ev)
+{
+    ev->ignore();
+}
+#endif
 
 /*!
     Override this to handle platform dependent events.

@@ -102,6 +102,9 @@ Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
 
 QPointF QGuiApplicationPrivate::lastCursorPosition(0.0, 0.0);
 
+bool QGuiApplicationPrivate::tabletState = false;
+QWindow *QGuiApplicationPrivate::tabletPressTarget = 0;
+
 QPlatformIntegration *QGuiApplicationPrivate::platform_integration = 0;
 QPlatformTheme *QGuiApplicationPrivate::platform_theme = 0;
 
@@ -1113,6 +1116,18 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
     case QWindowSystemInterfacePrivate::Expose:
         QGuiApplicationPrivate::processExposeEvent(static_cast<QWindowSystemInterfacePrivate::ExposeEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::Tablet:
+        QGuiApplicationPrivate::processTabletEvent(
+                    static_cast<QWindowSystemInterfacePrivate::TabletEvent *>(e));
+        break;
+    case QWindowSystemInterfacePrivate::TabletEnterProximity:
+        QGuiApplicationPrivate::processTabletEnterProximityEvent(
+                    static_cast<QWindowSystemInterfacePrivate::TabletEnterProximityEvent *>(e));
+        break;
+    case QWindowSystemInterfacePrivate::TabletLeaveProximity:
+        QGuiApplicationPrivate::processTabletLeaveProximityEvent(
+                    static_cast<QWindowSystemInterfacePrivate::TabletLeaveProximityEvent *>(e));
+        break;
     default:
         qWarning() << "Unknown user input event type:" << e->type;
         break;
@@ -1437,6 +1452,81 @@ void QGuiApplicationPrivate::processFileOpenEvent(QWindowSystemInterfacePrivate:
 
     QFileOpenEvent event(e->fileName);
     QGuiApplication::sendSpontaneousEvent(qApp, &event);
+}
+
+void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::TabletEvent *e)
+{
+#ifndef QT_NO_TABLETEVENT
+    QEvent::Type type = QEvent::TabletMove;
+    if (e->down != tabletState) {
+        type = e->down ? QEvent::TabletPress : QEvent::TabletRelease;
+        tabletState = e->down;
+    }
+    QWindow *window = e->window.data();
+    bool localValid = true;
+    // If window is null, pick one based on the global position and make sure all
+    // subsequent events up to the release are delivered to that same window.
+    // If window is given, just send to that.
+    if (type == QEvent::TabletPress) {
+        if (!window) {
+            window = QGuiApplication::topLevelAt(e->global.toPoint());
+            localValid = false;
+        }
+        if (!window)
+            return;
+        tabletPressTarget = window;
+    } else {
+        if (!window) {
+            window = tabletPressTarget;
+            localValid = false;
+        }
+        if (type == QEvent::TabletRelease)
+            tabletPressTarget = 0;
+        if (!window)
+            return;
+    }
+    QPointF local = e->local;
+    if (!localValid) {
+        QPointF delta = e->global - e->global.toPoint();
+        local = window->mapFromGlobal(e->global.toPoint()) + delta;
+    }
+    QTabletEvent ev(type, local, e->global,
+                    e->device, e->pointerType, e->pressure, e->xTilt, e->yTilt,
+                    e->tangentialPressure, e->rotation, e->z,
+                    e->mods, e->uid);
+    ev.setTimestamp(e->timestamp);
+    QGuiApplication::sendSpontaneousEvent(window, &ev);
+#else
+    Q_UNUSED(e)
+#endif
+}
+
+void QGuiApplicationPrivate::processTabletEnterProximityEvent(QWindowSystemInterfacePrivate::TabletEnterProximityEvent *e)
+{
+#ifndef QT_NO_TABLETEVENT
+    QTabletEvent ev(QEvent::TabletEnterProximity, QPointF(), QPointF(),
+                    e->device, e->pointerType, 0, 0, 0,
+                    0, 0, 0,
+                    Qt::NoModifier, e->uid);
+    ev.setTimestamp(e->timestamp);
+    QGuiApplication::sendSpontaneousEvent(qGuiApp, &ev);
+#else
+    Q_UNUSED(e)
+#endif
+}
+
+void QGuiApplicationPrivate::processTabletLeaveProximityEvent(QWindowSystemInterfacePrivate::TabletLeaveProximityEvent *e)
+{
+#ifndef QT_NO_TABLETEVENT
+    QTabletEvent ev(QEvent::TabletLeaveProximity, QPointF(), QPointF(),
+                    e->device, e->pointerType, 0, 0, 0,
+                    0, 0, 0,
+                    Qt::NoModifier, e->uid);
+    ev.setTimestamp(e->timestamp);
+    QGuiApplication::sendSpontaneousEvent(qGuiApp, &ev);
+#else
+    Q_UNUSED(e)
+#endif
 }
 
 Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k)

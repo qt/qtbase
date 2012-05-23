@@ -78,6 +78,9 @@ class QMouseEvent;
 class QWheelEvent;
 #endif
 class QTouchEvent;
+#ifndef QT_NO_TABLETEVENT
+class QTabletEvent;
+#endif
 
 class QPlatformSurface;
 class QPlatformWindow;
@@ -302,6 +305,9 @@ protected:
     virtual void wheelEvent(QWheelEvent *);
 #endif
     virtual void touchEvent(QTouchEvent *);
+#ifndef QT_NO_TABLETEVENT
+    virtual void tabletEvent(QTabletEvent *);
+#endif
     virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 
     QWindow(QWindowPrivate &dd, QWindow *parent);
