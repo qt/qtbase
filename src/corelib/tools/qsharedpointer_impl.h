@@ -100,7 +100,6 @@ QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &ptr);
 #endif
 
 namespace QtSharedPointer {
-    template <class T> class InternalRefCount;
     template <class T> class ExternalRefCount;
 
     template <class X, class Y> QSharedPointer<X> copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
@@ -453,9 +452,6 @@ namespace QtSharedPointer {
         }
 
         Data *d;
-
-    private:
-        template<class X> ExternalRefCount(const InternalRefCount<X> &);
     };
 } // namespace QtSharedPointer
 
