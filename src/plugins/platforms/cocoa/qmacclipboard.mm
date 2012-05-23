@@ -305,14 +305,8 @@ QMacPasteboard::setMimeData(QMimeData *mime_src)
                 QString flavor(c->flavorFor(mimeType));
                 if (!flavor.isEmpty()) {
                     QVariant mimeData = static_cast<QMacMimeData*>(mime_src)->variantData(mimeType);
-#if 0
-                    //### Grrr, why didn't I put in a virtual int QMacPasteboardMime::count()? --Sam
-                    const int numItems = c->convertFromMime(mimeType, mimeData, flavor).size();
-#else
-                    int numItems = 1; //this is a hack but it is much faster than allowing conversion above
-                    if (c->convertorName() == QLatin1String("FileURL"))
-                        numItems = mime_src->urls().count();
-#endif
+
+                    int numItems = c->count(mime_src);
                     for (int item = 0; item < numItems; ++item) {
                         const int itemID = item+1; //id starts at 1
                         promises.append(QMacPasteboard::Promise(itemID, c, mimeType, mimeData, item));

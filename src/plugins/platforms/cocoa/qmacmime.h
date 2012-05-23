@@ -74,6 +74,7 @@ public:
     virtual QString flavorFor(const QString &mime) = 0;
     virtual QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav) = 0;
     virtual QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav) = 0;
+    virtual int count(QMimeData *mimeData);
 };
 
 QT_END_NAMESPACE

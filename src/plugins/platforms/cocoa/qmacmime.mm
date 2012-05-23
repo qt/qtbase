@@ -168,6 +168,14 @@ QMacPasteboardMime::~QMacPasteboardMime()
         globalMimeList()->removeAll(this);
 }
 
+/*!
+  Returns the item count for the given \a mimeData
+*/
+int QMacPasteboardMime::count(QMimeData *mimeData)
+{
+    return 1;
+}
+
 class QMacPasteboardMimeAny : public QMacPasteboardMime {
 private:
 
@@ -586,6 +594,7 @@ public:
     bool canConvert(const QString &mime, QString flav);
     QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav);
     QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav);
+    int count(QMimeData *mimeData);
 };
 
 QString QMacPasteboardMimeFileUri::convertorName()
@@ -646,6 +655,11 @@ QList<QByteArray> QMacPasteboardMimeFileUri::convertFromMime(const QString &mime
         ret.append(url.toEncoded());
     }
     return ret;
+}
+
+int QMacPasteboardMimeFileUri::count(QMimeData *mimeData)
+{
+    return mimeData->urls().count();
 }
 
 class QMacPasteboardMimeUrl : public QMacPasteboardMime {
