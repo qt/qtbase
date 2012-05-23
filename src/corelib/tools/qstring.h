@@ -96,6 +96,7 @@ public:
     inline bool operator>=(const QString &s) const;
     inline bool operator<=(const QString &s) const;
 
+#ifndef QT_NO_CAST_FROM_ASCII
     inline QT_ASCII_CAST_WARN bool operator==(const char *s) const;
     inline QT_ASCII_CAST_WARN bool operator!=(const char *s) const;
     inline QT_ASCII_CAST_WARN bool operator<(const char *s) const;
@@ -109,6 +110,7 @@ public:
     inline QT_ASCII_CAST_WARN bool operator>(const QByteArray &s) const;
     inline QT_ASCII_CAST_WARN bool operator<=(const QByteArray &s) const;
     inline QT_ASCII_CAST_WARN bool operator>=(const QByteArray &s) const;
+#endif // QT_NO_CAST_FROM_ASCII
 
 private:
     int m_size;
@@ -1049,7 +1051,6 @@ inline bool operator>(QLatin1String s1, QLatin1String s2)
 inline bool operator>=(QLatin1String s1, QLatin1String s2)
 { int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
   return (r > 0) || (r == 0 && s1.size() >= s2.size()); }
-#endif // QT_NO_CAST_FROM_ASCII
 
 inline QT_ASCII_CAST_WARN bool QLatin1String::operator==(const char *s) const
 { return QString::fromUtf8(s) == *this; }
@@ -1077,7 +1078,6 @@ inline QT_ASCII_CAST_WARN bool QLatin1String::operator<=(const QByteArray &s) co
 inline QT_ASCII_CAST_WARN bool QLatin1String::operator>=(const QByteArray &s) const
 { return QString::fromUtf8(s) <= *this; }
 
-#ifndef QT_NO_CAST_FROM_ASCII
 inline QT_ASCII_CAST_WARN bool QString::operator==(const QByteArray &s) const
 { return QString::compare_helper(constData(), size(), s.constData(), qstrnlen(s.constData(), s.size())) == 0; }
 inline QT_ASCII_CAST_WARN bool QString::operator!=(const QByteArray &s) const
