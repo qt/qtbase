@@ -70,8 +70,6 @@ static LibLoadStatus status = NotLoaded;
 
 static UCollator *icuCollator = 0;
 
-#define STRINGIFY2(x) #x
-#define STRINGIFY(x) STRINGIFY2(x)
 
 bool qt_initIcu(const QString &localeString)
 {
@@ -104,9 +102,9 @@ bool qt_initIcu(const QString &localeString)
 
         if (!ptr_ucol_open || !ptr_ucol_close || !ptr_ucol_strcoll) {
             // try again with decorated symbol names
-            ptr_ucol_open = (Ptr_ucol_open)lib.resolve("ucol_open" STRINGIFY(U_ICU_VERSION_SUFFIX));
-            ptr_ucol_close = (Ptr_ucol_close)lib.resolve("ucol_close" STRINGIFY(U_ICU_VERSION_SUFFIX));
-            ptr_ucol_strcoll = (Ptr_ucol_strcoll)lib.resolve("ucol_strcoll" STRINGIFY(U_ICU_VERSION_SUFFIX));
+            ptr_ucol_open = (Ptr_ucol_open)lib.resolve("ucol_open" QT_STRINGIFY(U_ICU_VERSION_SUFFIX));
+            ptr_ucol_close = (Ptr_ucol_close)lib.resolve("ucol_close" QT_STRINGIFY(U_ICU_VERSION_SUFFIX));
+            ptr_ucol_strcoll = (Ptr_ucol_strcoll)lib.resolve("ucol_strcoll" QT_STRINGIFY(U_ICU_VERSION_SUFFIX));
         }
 
         if (!ptr_ucol_open || !ptr_ucol_close || !ptr_ucol_strcoll) {
@@ -138,8 +136,8 @@ bool qt_initIcu(const QString &localeString)
         ptr_u_strToLower = (Ptr_u_strToCase)ucLib.resolve("u_strToLower");
 
         if (!ptr_u_strToUpper || !ptr_u_strToLower) {
-            ptr_u_strToUpper = (Ptr_u_strToCase)ucLib.resolve("u_strToUpper" STRINGIFY(U_ICU_VERSION_SUFFIX));
-            ptr_u_strToLower = (Ptr_u_strToCase)ucLib.resolve("u_strToLower" STRINGIFY(U_ICU_VERSION_SUFFIX));
+            ptr_u_strToUpper = (Ptr_u_strToCase)ucLib.resolve("u_strToUpper" QT_STRINGIFY(U_ICU_VERSION_SUFFIX));
+            ptr_u_strToLower = (Ptr_u_strToCase)ucLib.resolve("u_strToLower" QT_STRINGIFY(U_ICU_VERSION_SUFFIX));
         }
 
         if (!ptr_u_strToUpper || !ptr_u_strToLower) {
