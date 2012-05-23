@@ -133,19 +133,19 @@ void QWindowSystemInterface::handleSynchronousCloseEvent(QWindow *tlw)
 
 /*!
 
-\a tlw == 0 means that \a ev is in global coords only
-
+\a w == 0 means that the event is in global coords only, \a local will be ignored in this case
 
 */
-void QWindowSystemInterface::handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods) {
+void QWindowSystemInterface::handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
+{
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleMouseEvent(w, time, local, global, b, mods);
 }
 
-void QWindowSystemInterface::handleMouseEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
+void QWindowSystemInterface::handleMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
 {
     QWindowSystemInterfacePrivate::MouseEvent * e =
-            new QWindowSystemInterfacePrivate::MouseEvent(tlw, timestamp, local, global, b, mods);
+            new QWindowSystemInterfacePrivate::MouseEvent(w, timestamp, local, global, b, mods);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 

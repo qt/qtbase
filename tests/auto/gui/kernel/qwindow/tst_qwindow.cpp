@@ -328,6 +328,7 @@ public:
             mouseSequenceSignature += 'p';
             mousePressButton = event->button();
             mousePressScreenPos = event->screenPos();
+            mousePressLocalPos = event->localPos();
             if (spinLoopWhenPressed)
                 QCoreApplication::processEvents();
         }
@@ -401,7 +402,7 @@ public:
     int mousePressButton, mouseReleaseButton, mouseMoveButton;
     int mousePressedCount, mouseReleasedCount, mouseMovedCount, mouseDoubleClickedCount;
     QString mouseSequenceSignature;
-    QPointF mousePressScreenPos, mouseMoveScreenPos;
+    QPointF mousePressScreenPos, mouseMoveScreenPos, mousePressLocalPos;
     int touchPressedCount, touchReleasedCount, touchMovedCount;
     QEvent::Type touchEventType;
 
@@ -429,6 +430,7 @@ void tst_QWindow::testInputEvents()
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
     QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
+    QCOMPARE(window.mousePressLocalPos, local);
 
     QList<QWindowSystemInterface::TouchPoint> points;
     QWindowSystemInterface::TouchPoint tp1, tp2;
@@ -446,6 +448,24 @@ void tst_QWindow::testInputEvents()
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.touchPressedCount, 2);
     QTRY_COMPARE(window.touchReleasedCount, 2);
+
+    // Now with null pointer as window. local param should not be utilized:
+    // handleMouseEvent() with tlw == 0 means the event is in global coords only.
+    window.mousePressButton = window.mouseReleaseButton = 0;
+    QPointF nonWindowGlobal(500, 500); // not inside the window
+    QWindowSystemInterface::handleMouseEvent(0, nonWindowGlobal, nonWindowGlobal, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(0, nonWindowGlobal, nonWindowGlobal, Qt::NoButton);
+    QCoreApplication::processEvents();
+    QCOMPARE(window.mousePressButton, 0);
+    QCOMPARE(window.mouseReleaseButton, 0);
+    QPointF windowGlobal = window.mapToGlobal(local.toPoint());
+    QWindowSystemInterface::handleMouseEvent(0, windowGlobal, windowGlobal, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(0, windowGlobal, windowGlobal, Qt::NoButton);
+    QCoreApplication::processEvents();
+    QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
+    QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
+    QCOMPARE(window.mousePressScreenPos, windowGlobal);
+    QCOMPARE(window.mousePressLocalPos, local); // the local we passed was bogus, verify that qGuiApp calculated the proper one
 }
 
 void tst_QWindow::touchToMouseTranslation()

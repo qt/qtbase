@@ -1134,11 +1134,16 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     QWindow *window = e->window.data();
     modifier_buttons = e->modifiers;
 
-    if (!window)
-        window = QGuiApplication::topLevelAt(e->globalPos.toPoint());
-
     QPointF localPoint = e->localPos;
     QPointF globalPoint = e->globalPos;
+
+    if (!window) {
+        window = QGuiApplication::topLevelAt(globalPoint.toPoint());
+        if (window) {
+            QPointF delta = globalPoint - globalPoint.toPoint();
+            localPoint = window->mapFromGlobal(globalPoint.toPoint()) + delta;
+        }
+    }
 
     Qt::MouseButton button = Qt::NoButton;
     bool doubleClick = false;
