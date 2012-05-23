@@ -982,6 +982,23 @@ inline bool operator!=(QString::Null, QString::Null) { return false; }
 inline bool operator!=(QString::Null, const QString &s) { return !s.isNull(); }
 inline bool operator!=(const QString &s, QString::Null) { return !s.isNull(); }
 
+inline bool operator==(QLatin1String s1, QLatin1String s2)
+{ return (s1.size() == s2.size() && !memcmp(s1.latin1(), s2.latin1(), s1.size())); }
+inline bool operator!=(QLatin1String s1, QLatin1String s2)
+{ return (s1.size() != s2.size() || memcmp(s1.latin1(), s2.latin1(), s1.size())); }
+inline bool operator<(QLatin1String s1, QLatin1String s2)
+{ int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
+  return (r < 0) || (r == 0 && s1.size() < s2.size()); }
+inline bool operator<=(QLatin1String s1, QLatin1String s2)
+{ int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
+  return (r < 0) || (r == 0 && s1.size() <= s2.size()); }
+inline bool operator>(QLatin1String s1, QLatin1String s2)
+{ int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
+  return (r > 0) || (r == 0 && s1.size() > s2.size()); }
+inline bool operator>=(QLatin1String s1, QLatin1String s2)
+{ int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
+  return (r > 0) || (r == 0 && s1.size() >= s2.size()); }
+
 inline bool QLatin1String::operator==(const QString &s) const
 { return s == *this; }
 inline bool QLatin1String::operator!=(const QString &s) const
@@ -1034,23 +1051,6 @@ inline QT_ASCII_CAST_WARN bool operator<=(const char *s1, QLatin1String s2)
 { return (QString::fromUtf8(s1) <= s2); }
 inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, QLatin1String s2)
 { return (QString::fromUtf8(s1) >= s2); }
-
-inline bool operator==(QLatin1String s1, QLatin1String s2)
-{ return (s1.size() == s2.size() && !memcmp(s1.latin1(), s2.latin1(), s1.size())); }
-inline bool operator!=(QLatin1String s1, QLatin1String s2)
-{ return (s1.size() != s2.size() || memcmp(s1.latin1(), s2.latin1(), s1.size())); }
-inline bool operator<(QLatin1String s1, QLatin1String s2)
-{ int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
-  return (r < 0) || (r == 0 && s1.size() < s2.size()); }
-inline bool operator<=(QLatin1String s1, QLatin1String s2)
-{ int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
-  return (r < 0) || (r == 0 && s1.size() <= s2.size()); }
-inline bool operator>(QLatin1String s1, QLatin1String s2)
-{ int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
-  return (r > 0) || (r == 0 && s1.size() > s2.size()); }
-inline bool operator>=(QLatin1String s1, QLatin1String s2)
-{ int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
-  return (r > 0) || (r == 0 && s1.size() >= s2.size()); }
 
 inline QT_ASCII_CAST_WARN bool QLatin1String::operator==(const char *s) const
 { return QString::fromUtf8(s) == *this; }
