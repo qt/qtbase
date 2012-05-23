@@ -114,6 +114,7 @@ private:
     int m_size;
     const char *m_data;
 };
+Q_DECLARE_TYPEINFO(QLatin1String, Q_MOVABLE_TYPE);
 
 // Qt 4.x compatibility
 typedef QLatin1String QLatin1Literal;
@@ -910,6 +911,7 @@ public:
     ushort& unicode() { return s.data()[i].unicode(); }
 
 };
+Q_DECLARE_TYPEINFO(QCharRef, Q_MOVABLE_TYPE);
 
 inline void QCharRef::setRow(uchar arow) { QChar(*this).setRow(arow); }
 inline void QCharRef::setCell(uchar acell) { QChar(*this).setCell(acell); }
@@ -1285,6 +1287,7 @@ public:
     static int localeAwareCompare(const QStringRef &s1, const QString &s2);
     static int localeAwareCompare(const QStringRef &s1, const QStringRef &s2);
 };
+Q_DECLARE_TYPEINFO(QStringRef, Q_PRIMITIVE_TYPE);
 
 inline QStringRef &QStringRef::operator=(const QString *aString)
 { m_string = aString; m_position = 0; m_size = aString?aString->size():0; return *this; }
