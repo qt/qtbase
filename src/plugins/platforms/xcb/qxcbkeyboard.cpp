@@ -436,7 +436,7 @@ static const unsigned int KeyTbl[] = {
     XF86XK_AudioNext,           Qt::Key_MediaNext,
     XF86XK_AudioRecord,         Qt::Key_MediaRecord,
     XF86XK_Mail,                Qt::Key_LaunchMail,
-    XF86XK_MyComputer,          Qt::Key_Launch0,  // ### Qt 5: remap properly
+    XF86XK_MyComputer,          Qt::Key_Launch0,  // ### Qt 6: remap properly
     XF86XK_Calculator,          Qt::Key_Launch1,
     XF86XK_Memo,                Qt::Key_Memo,
     XF86XK_ToDoList,            Qt::Key_ToDoList,
@@ -538,7 +538,7 @@ static const unsigned int KeyTbl[] = {
     XF86XK_TouchpadToggle,      Qt::Key_TouchpadToggle,
     XF86XK_TouchpadOn,          Qt::Key_TouchpadOn,
     XF86XK_TouchpadOff,         Qt::Key_TouchpadOff,
-    XF86XK_Launch0,             Qt::Key_Launch2, // ### Qt 5: remap properly
+    XF86XK_Launch0,             Qt::Key_Launch2, // ### Qt 6: remap properly
     XF86XK_Launch1,             Qt::Key_Launch3,
     XF86XK_Launch2,             Qt::Key_Launch4,
     XF86XK_Launch3,             Qt::Key_Launch5,
