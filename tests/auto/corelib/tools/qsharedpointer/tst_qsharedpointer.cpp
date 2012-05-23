@@ -95,6 +95,7 @@ private slots:
     void lambdaCustomDeleter();
 #endif
     void creating();
+    void creatingVariadic();
     void creatingQObject();
     void mixTrackingPointerCode();
     void reentrancyWhileDestructing();
@@ -173,6 +174,49 @@ public:
 };
 int Data::generationCounter = 0;
 int Data::destructorCounter = 0;
+
+struct NoDefaultConstructor1
+{
+    int i;
+    NoDefaultConstructor1(int i) : i(i) {}
+    NoDefaultConstructor1(uint j) : i(j + 42) {}
+};
+
+struct NoDefaultConstructorRef1
+{
+    int &i;
+    NoDefaultConstructorRef1(int &i) : i(i) {}
+};
+
+struct NoDefaultConstructor2
+{
+    void *ptr;
+    int i;
+    NoDefaultConstructor2(void *ptr, int i) : ptr(ptr), i(i) {}
+};
+
+struct NoDefaultConstructorRef2
+{
+    QString str;
+    int i;
+    NoDefaultConstructorRef2(QString &str, int i) : str(str), i(i) {}
+};
+
+struct NoDefaultConstructorConstRef2
+{
+    QString str;
+    int i;
+    NoDefaultConstructorConstRef2(const QString &str, int i) : str(str), i(i) {}
+    NoDefaultConstructorConstRef2(const QByteArray &ba, int i = 42) : str(QString::fromLatin1(ba)), i(i) {}
+};
+
+#ifdef Q_COMPILER_RVALUE_REFS
+struct NoDefaultConstructorRRef1
+{
+    int &i;
+    NoDefaultConstructorRRef1(int &&i) : i(i) {}
+};
+#endif
 
 void tst_QSharedPointer::basics_data()
 {
@@ -1427,6 +1471,82 @@ void tst_QSharedPointer::creating()
         QCOMPARE(baseptr->classLevel(), 4);
     }
     safetyCheck();
+}
+
+void tst_QSharedPointer::creatingVariadic()
+{
+#if !defined(Q_COMPILER_RVALUE_REFS) || !defined(Q_COMPILER_VARIADIC_TEMPLATES)
+    QSKIP("This compiler is not in C++11 mode or it doesn't support rvalue refs and variadic templates");
+#else
+    int i = 42;
+
+    {
+        NoDefaultConstructor1(1); // control check
+        QSharedPointer<NoDefaultConstructor1> ptr = QSharedPointer<NoDefaultConstructor1>::create(1);
+        QCOMPARE(ptr->i, 1);
+
+        NoDefaultConstructor1(0u); // control check
+        ptr = QSharedPointer<NoDefaultConstructor1>::create(0u);
+        QCOMPARE(ptr->i, 42);
+
+        NoDefaultConstructor1 x(i); // control check
+        ptr = QSharedPointer<NoDefaultConstructor1>::create(i);
+        QCOMPARE(ptr->i, i);
+    }
+    {
+        NoDefaultConstructor2((void*)0, 1); // control check
+        QSharedPointer<NoDefaultConstructor2> ptr = QSharedPointer<NoDefaultConstructor2>::create((void*)0, 1);
+        QCOMPARE(ptr->i, 1);
+        QCOMPARE(ptr->ptr, (void*)0);
+
+        int *null = 0;
+        NoDefaultConstructor2(null, 2); // control check
+        ptr = QSharedPointer<NoDefaultConstructor2>::create(null, 2);
+        QCOMPARE(ptr->i, 2);
+        QCOMPARE(ptr->ptr, (void*)0);
+
+#ifdef Q_COMPILER_NULLPTR
+        NoDefaultConstructor2(nullptr, 3); // control check
+        ptr = QSharedPointer<NoDefaultConstructor2>::create(nullptr, 3);
+        QCOMPARE(ptr->i, 3);
+        QCOMPARE(ptr->ptr, (void*)nullptr);
+#endif
+    }
+    {
+        NoDefaultConstructorRef1 x(i); // control check
+        QSharedPointer<NoDefaultConstructorRef1> ptr = QSharedPointer<NoDefaultConstructorRef1>::create(i);
+        QCOMPARE(ptr->i, i);
+        QCOMPARE(&ptr->i, &i);
+    }
+    {
+        NoDefaultConstructorRRef1(1); // control check
+        QSharedPointer<NoDefaultConstructorRRef1> ptr = QSharedPointer<NoDefaultConstructorRRef1>::create(1);
+        QCOMPARE(ptr->i, 1);
+
+        NoDefaultConstructorRRef1(std::move(i)); // control check
+        ptr = QSharedPointer<NoDefaultConstructorRRef1>::create(std::move(i));
+        QCOMPARE(ptr->i, i);
+    }
+    {
+        QString text("Hello, World");
+        NoDefaultConstructorRef2(text, 1); // control check
+        QSharedPointer<NoDefaultConstructorRef2> ptr = QSharedPointer<NoDefaultConstructorRef2>::create(text, 1);
+        QCOMPARE(ptr->str, text);
+        QCOMPARE(ptr->i, 1);
+    }
+    {
+        QSharedPointer<NoDefaultConstructorConstRef2> ptr;
+        NoDefaultConstructorConstRef2(QLatin1String("string"), 1); // control check
+        ptr = QSharedPointer<NoDefaultConstructorConstRef2>::create(QLatin1String("string"), 1);
+        QCOMPARE(ptr->str, QString("string"));
+        QCOMPARE(ptr->i, 1);
+
+        NoDefaultConstructorConstRef2(QByteArray("bytearray")); // control check
+        ptr = QSharedPointer<NoDefaultConstructorConstRef2>::create(QByteArray("bytearray"));
+        QCOMPARE(ptr->str, QString("bytearray"));
+        QCOMPARE(ptr->i, 42);
+    }
+#endif
 }
 
 void tst_QSharedPointer::creatingQObject()

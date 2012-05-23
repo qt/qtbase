@@ -605,6 +605,37 @@
 */
 
 /*!
+    \fn QSharedPointer<T> QSharedPointer::create()
+    \since 4.6
+
+    Creates a QSharedPointer object and allocates a new item of type \tt T. The
+    QSharedPointer internals and the object are allocated in one single memory
+    allocation, which could help reduce memory fragmentation in a long-running
+    application.
+
+    This function calls the default constructor for type \tt T.
+*/
+
+/*!
+    \fn QSharedPointer<T> QSharedPointer::create(...)
+    \overload
+    \since 5.1
+
+    Creates a QSharedPointer object and allocates a new item of type \tt T. The
+    QSharedPointer internals and the object are allocated in one single memory
+    allocation, which could help reduce memory fragmentation in a long-running
+    application.
+
+    This function will attempt to call a constructor for type \tt T that can
+    accept all the arguments passed. Arguments will be perfectly-forwarded.
+
+    \note This function is only available with a C++11 compiler that supports
+    perfect forwarding of an arbitrary number of arguments. If the compiler
+    does not support the necessary C++11 features, you must use the overload
+    that calls the default constructor.
+*/
+
+/*!
     \fn QWeakPointer<T> QSharedPointer::toWeakRef() const
 
     Returns a weak reference object that shares the pointer referenced
