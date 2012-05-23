@@ -46,6 +46,7 @@
 #include "qevent.h"
 #include "qimage.h"
 #include "qpainter.h"
+#include "qscreen.h"
 #include "qpixmap.h"
 #include "qpointer.h"
 #include "qtimer.h"
@@ -161,8 +162,8 @@ void QAlphaWidget::run(int time)
     move(widget->geometry().x(),widget->geometry().y());
     resize(widget->size().width(), widget->size().height());
 
-    frontImage = QPixmap::grabWidget(widget).toImage();
-    backImage = QPixmap::grabWindow(QApplication::desktop()->winId(),
+    frontImage = widget->grab(QRect()).toImage();
+    backImage = QGuiApplication::primaryScreen()->grabWindow(QApplication::desktop()->winId(),
                                 widget->geometry().x(), widget->geometry().y(),
                                 widget->geometry().width(), widget->geometry().height()).toImage();
 
@@ -407,7 +408,7 @@ QRollEffect::QRollEffect(QWidget* w, Qt::WindowFlags f, DirFlags orient)
     if (orientation & (DownScroll|UpScroll))
         currentHeight = 0;
 
-    pm = QPixmap::grabWidget(widget);
+    pm = widget->grab(QRect());
 }
 
 /*
