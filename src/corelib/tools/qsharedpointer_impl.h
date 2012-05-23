@@ -171,21 +171,27 @@ namespace QtSharedPointer {
     // reference counter, and it tracks the lifetime of the pointer itself.
     // "weakref" is the outer reference counter and it tracks the lifetime of
     // the ExternalRefCountData object.
+    //
+    // The deleter is stored in the destroyer member and is always a pointer to
+    // a static function in ExternalRefCountWithCustomDeleter or in
+    // ExternalRefCountWithContiguousData
     struct ExternalRefCountData
     {
+        typedef void (*DestroyerFn)(ExternalRefCountData *);
         QBasicAtomicInt weakref;
         QBasicAtomicInt strongref;
+        DestroyerFn destroyer;
 
-        inline ExternalRefCountData()
+        inline ExternalRefCountData(DestroyerFn d)
+            : destroyer(d)
         {
             strongref.store(1);
             weakref.store(1);
         }
         inline ExternalRefCountData(Qt::Initialization) { }
-        virtual inline ~ExternalRefCountData() { Q_ASSERT(!weakref.load()); Q_ASSERT(strongref.load() <= 0); }
+        ~ExternalRefCountData() { Q_ASSERT(!weakref.load()); Q_ASSERT(strongref.load() <= 0); }
 
-        // overridden by derived classes
-        virtual inline void destroy() { }
+        void destroy() { destroyer(this); }
 
 #ifndef QT_NO_QOBJECT
         Q_CORE_EXPORT static ExternalRefCountData *getAndRef(const QObject *);
@@ -194,34 +200,21 @@ namespace QtSharedPointer {
 #endif
         inline void checkQObjectShared(...) { }
         inline void setQObjectShared(...) { }
-    };
-    // sizeof(ExternalRefCount) = 12 (32-bit) / 16 (64-bit)
 
-    // This class extends ExternalRefCountData with a pointer
-    // to a function, which is called by the destroy() function.
-    struct ExternalRefCountWithDestroyFn: public ExternalRefCountData
-    {
-        typedef void (*DestroyerFn)(ExternalRefCountData *);
-        DestroyerFn destroyer;
-
-        inline ExternalRefCountWithDestroyFn(DestroyerFn d)
-            : destroyer(d)
-        { }
-
-        inline void destroy() { destroyer(this); }
         inline void operator delete(void *ptr) { ::operator delete(ptr); }
         inline void operator delete(void *, void *) { }
     };
-    // sizeof(ExternalRefCountWithDestroyFn) = 16 (32-bit) / 24 (64-bit)
+    // sizeof(ExternalRefCountData) = 12 (32-bit) / 16 (64-bit)
 
-    // This class extends ExternalRefCountWithDestroyFn and implements
+    // This class extends ExternalRefCountData and implements
     // the static function that deletes the object. The pointer and the
-    // custom deleter are kept in the "extra" member.
+    // custom deleter are kept in the "extra" member so we can construct
+    // and destruct it independently of the full structure.
     template <class T, typename Deleter>
-    struct ExternalRefCountWithCustomDeleter: public ExternalRefCountWithDestroyFn
+    struct ExternalRefCountWithCustomDeleter: public ExternalRefCountData
     {
         typedef ExternalRefCountWithCustomDeleter Self;
-        typedef ExternalRefCountWithDestroyFn BaseClass;
+        typedef ExternalRefCountData BaseClass;
 
         struct CustomDeleter
         {
@@ -231,7 +224,8 @@ namespace QtSharedPointer {
             inline CustomDeleter(T *p, Deleter d) : deleter(d), ptr(p) {}
         };
         CustomDeleter extra;
-        // sizeof(CustomDeleter) = sizeof(Deleter) + sizeof(void*)
+        // sizeof(CustomDeleter) = sizeof(Deleter) + sizeof(void*) + padding
+        // for Deleter = stateless functor: 8 (32-bit) / 16 (64-bit) due to padding
         // for Deleter = function pointer:  8 (32-bit) / 16 (64-bit)
         // for Deleter = PMF: 12 (32-bit) / 24 (64-bit)  (GCC)
 
@@ -265,19 +259,20 @@ namespace QtSharedPointer {
             return d;
         }
     private:
-        // prevent construction and the emission of virtual symbols
-        ExternalRefCountWithCustomDeleter();
-        ~ExternalRefCountWithCustomDeleter();
+        // prevent construction
+        ExternalRefCountWithCustomDeleter() Q_DECL_EQ_DELETE;
+        ~ExternalRefCountWithCustomDeleter() Q_DECL_EQ_DELETE;
+        Q_DISABLE_COPY(ExternalRefCountWithCustomDeleter)
     };
 
-    // This class extends ExternalRefCountWithDestroyFn and adds a "T"
+    // This class extends ExternalRefCountData and adds a "T"
     // member. That way, when the create() function is called, we allocate
     // memory for both QSharedPointer's d-pointer and the actual object being
     // tracked.
     template <class T>
-    struct ExternalRefCountWithContiguousData: public ExternalRefCountWithDestroyFn
+    struct ExternalRefCountWithContiguousData: public ExternalRefCountData
     {
-        typedef ExternalRefCountWithDestroyFn Parent;
+        typedef ExternalRefCountData Parent;
         T data;
 
         static void deleter(ExternalRefCountData *self)
@@ -311,9 +306,10 @@ namespace QtSharedPointer {
         }
 
     private:
-        // prevent construction and the emission of virtual symbols
-        ExternalRefCountWithContiguousData();
-        ~ExternalRefCountWithContiguousData();
+        // prevent construction
+        ExternalRefCountWithContiguousData() Q_DECL_EQ_DELETE;
+        ~ExternalRefCountWithContiguousData() Q_DECL_EQ_DELETE;
+        Q_DISABLE_COPY(ExternalRefCountWithContiguousData)
     };
 
     // This is the main body of QSharedPointer. It implements the
