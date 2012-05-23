@@ -305,13 +305,14 @@ public:
     { if (d) ref(); }
     inline QSharedPointer<T> &operator=(const QSharedPointer<T> &other)
     {
-        internalCopy(other);
+        QSharedPointer copy(other);
+        swap(copy);
         return *this;
     }
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QSharedPointer<T> &operator=(QSharedPointer<T> &&other)
     {
-        QSharedPointer<T>::internalSwap(other);
+        swap(other);
         return *this;
     }
 #endif
@@ -372,7 +373,7 @@ public:
     }
 #endif
 
-    inline void clear() { *this = QSharedPointer<T>(); }
+    inline void clear() { QSharedPointer copy; swap(copy); }
 
     QWeakPointer<T> toWeakRef() const;
 
