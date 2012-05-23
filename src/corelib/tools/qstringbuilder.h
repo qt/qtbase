@@ -217,8 +217,8 @@ template <> struct QConcatenable<QCharRef> : private QAbstractConcatenable
     typedef QCharRef type;
     typedef QString ConvertTo;
     enum { ExactSize = true };
-    static int size(const QCharRef &) { return 1; }
-    static inline void appendTo(const QCharRef &c, QChar *&out)
+    static int size(QCharRef) { return 1; }
+    static inline void appendTo(QCharRef c, QChar *&out)
     { *out++ = QChar(c); }
 };
 
