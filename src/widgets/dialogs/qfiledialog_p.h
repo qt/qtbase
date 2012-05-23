@@ -211,9 +211,6 @@ public:
     void _q_rowsInserted(const QModelIndex & parent);
     void _q_fileRenamed(const QString &path, const QString oldName, const QString newName);
 
-    static QStringList qt_clean_filter_list(const QString &filter);
-    static const char *qt_file_dialog_filter_reg_exp;
-
     // layout
 #ifndef QT_NO_PROXYMODEL
     QAbstractProxyModel *proxyModel;

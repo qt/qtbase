@@ -444,7 +444,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
 - (QString)removeExtensions:(const QString &)filter
 {
-    QRegExp regExp(QT_PREPEND_NAMESPACE(QString::fromLatin1)(QT_PREPEND_NAMESPACE(QFileDialogPrivate::qt_file_dialog_filter_reg_exp)));
+    QRegExp regExp(QT_PREPEND_NAMESPACE(QString::fromLatin1)(QT_PREPEND_NAMESPACE(QPlatformFileDialogHelper::filterRegExp)));
     if (regExp.indexIn(filter) != -1)
         return regExp.cap(1).trimmed();
     return filter;
@@ -487,7 +487,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 {
     for (int i=0; i<mNameFilterDropDownList->size(); ++i) {
         if (mNameFilterDropDownList->at(i).startsWith(name))
-            return QFileDialogPrivate::qt_clean_filter_list(mNameFilterDropDownList->at(i));
+            return QPlatformFileDialogHelper::cleanFilterList(mNameFilterDropDownList->at(i));
     }
     return QStringList();
 }

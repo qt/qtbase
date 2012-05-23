@@ -401,9 +401,6 @@ QList<QUrl> QFileDialog::sidebarUrls() const
 
 static const qint32 QFileDialogMagic = 0xbe;
 
-const char *QFileDialogPrivate::qt_file_dialog_filter_reg_exp =
-"^(.*)\\(([a-zA-Z0-9_.*? +;#\\-\\[\\]@\\{\\}/!<>\\$%&=^~:\\|]*)\\)$";
-
 /*!
     \since 4.3
     Saves the state of the dialog's layout, history and current directory.
@@ -1137,7 +1134,7 @@ bool QFileDialog::isNameFilterDetailsVisible() const
 QStringList qt_strip_filters(const QStringList &filters)
 {
     QStringList strippedFilters;
-    QRegExp r(QString::fromLatin1(QFileDialogPrivate::qt_file_dialog_filter_reg_exp));
+    QRegExp r(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
     for (int i = 0; i < filters.count(); ++i) {
         QString filterName;
         int index = r.indexIn(filters[i]);
@@ -2993,17 +2990,6 @@ void QFileDialogPrivate::_q_goToDirectory(const QString &path)
     }
 }
 
-// Makes a list of filters from a normal filter string "Image Files (*.png *.jpg)"
-QStringList QFileDialogPrivate::qt_clean_filter_list(const QString &filter)
-{
-    QRegExp regexp(QString::fromLatin1(qt_file_dialog_filter_reg_exp));
-    QString f = filter;
-    int i = regexp.indexIn(f);
-    if (i >= 0)
-        f = regexp.cap(2);
-    return f.split(QLatin1Char(' '), QString::SkipEmptyParts);
-}
-
 /*!
     \internal
 
@@ -3020,7 +3006,7 @@ void QFileDialogPrivate::_q_useNameFilter(int index)
     }
 
     QString nameFilter = nameFilters.at(index);
-    QStringList newNameFilters = qt_clean_filter_list(nameFilter);
+    QStringList newNameFilters = QPlatformFileDialogHelper::cleanFilterList(nameFilter);
     if (q_func()->acceptMode() == QFileDialog::AcceptSave) {
         QString newNameFilterExtension;
         if (newNameFilters.count() > 0)
