@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -48,6 +49,7 @@
 #include <QtCore/QVector>
 
 #include "externaltests.h"
+#include "forwarddeclared.h"
 #include "wrapper.h"
 
 #include <stdlib.h>
@@ -68,9 +70,9 @@ private slots:
     void basics();
     void operators();
     void swap();
-    void forwardDeclaration1();
-    void forwardDeclaration2();
+    void useOfForwardDeclared();
     void memoryManagement();
+    void dropLastReferenceOfForwardDeclared();
     void downCast();
     void functionCallDownCast();
     void upCast();
@@ -341,43 +343,12 @@ void tst_QSharedPointer::swap()
     QVERIFY(*p1 == 42);
 }
 
-class ForwardDeclared;
-ForwardDeclared *forwardPointer();
-void externalForwardDeclaration();
-extern int forwardDeclaredDestructorRunCount;
-
-void tst_QSharedPointer::forwardDeclaration1()
+void tst_QSharedPointer::useOfForwardDeclared()
 {
-#if defined(Q_CC_SUN) || defined(Q_CC_WINSCW) || defined(Q_CC_RVCT)
-    QSKIP("This type of forward declaration is not valid with this compiler");
-#else
-    externalForwardDeclaration();
-
-    struct Wrapper { QSharedPointer<ForwardDeclared> pointer; };
-
-    forwardDeclaredDestructorRunCount = 0;
-    {
-        Wrapper w;
-        w.pointer = QSharedPointer<ForwardDeclared>(forwardPointer());
-        QVERIFY(!w.pointer.isNull());
-    }
-    QCOMPARE(forwardDeclaredDestructorRunCount, 1);
-#endif
+    // this just a compile test: use the forward-declared class
+    QSharedPointer<ForwardDeclared> sp;
 }
 
-#include "forwarddeclared.h"
-
-void tst_QSharedPointer::forwardDeclaration2()
-{
-    forwardDeclaredDestructorRunCount = 0;
-    {
-        struct Wrapper { QSharedPointer<ForwardDeclared> pointer; };
-        Wrapper w1, w2;
-        w1.pointer = QSharedPointer<ForwardDeclared>(forwardPointer());
-        QVERIFY(!w1.pointer.isNull());
-    }
-    QCOMPARE(forwardDeclaredDestructorRunCount, 1);
-}
 
 void tst_QSharedPointer::memoryManagement()
 {
@@ -442,6 +413,15 @@ void tst_QSharedPointer::memoryManagement()
     QVERIFY(ptr.isNull());
     QVERIFY(ptr == 0);
     QCOMPARE(ptr.data(), (Data*)0);
+}
+
+void tst_QSharedPointer::dropLastReferenceOfForwardDeclared()
+{
+    // pointer to shared-pointer is weird, but we need to do it so that
+    // we can drop the last reference in a different .cpp than where it was created
+    forwardDeclaredDestructorRunCount = 0;
+    delete forwardPointer();
+    QCOMPARE(forwardDeclaredDestructorRunCount, 1);
 }
 
 class DerivedData: public Data
@@ -1715,17 +1695,6 @@ void tst_QSharedPointer::invalidConstructs_data()
            "ptr = new Data;";
 
     // use of forward-declared class
-    QTest::newRow("forward-declaration")
-#ifdef Q_CC_CLANG
-        // Deleting a forward declaration is undefined, which results in a linker error with clang
-        << &QTest::QExternalTest::tryLinkFail
-#else
-        // Other compilers accept the code, but do not call the destructor at run-time
-        << &QTest::QExternalTest::tryRun
-#endif
-        << "forwardDeclaredDestructorRunCount = 0;\n"
-           "{ QSharedPointer<ForwardDeclared> ptr = QSharedPointer<ForwardDeclared>(forwardPointer()); }\n"
-           "exit(forwardDeclaredDestructorRunCount);";
     QTest::newRow("creating-forward-declaration")
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<ForwardDeclared>::create();";
@@ -1839,7 +1808,6 @@ void tst_QSharedPointer::invalidConstructs()
 
     QTest::QExternalTest test;
     test.setQtModules(QTest::QExternalTest::QtCore);
-    test.setExtraProgramSources(QStringList() << QFINDTESTDATA("forwarddeclared.cpp"));
     test.setProgramHeader(
         "#define QT_SHAREDPOINTER_TRACK_POINTERS\n"
         "#define QT_DEBUG\n"
@@ -1849,9 +1817,7 @@ void tst_QSharedPointer::invalidConstructs()
         "struct Data { int i; };\n"
         "struct DerivedData: public Data { int j; };\n"
         "\n"
-        "extern int forwardDeclaredDestructorRunCount;\n"
         "class ForwardDeclared;\n"
-        "ForwardDeclared *forwardPointer();\n"
         );
 
     QFETCH(QString, code);

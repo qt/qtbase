@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -43,12 +44,17 @@
 #define FORWARDDECLARED_H
 
 extern int forwardDeclaredDestructorRunCount;
-class ForwardDeclared
-{
-public:
-    ~ForwardDeclared();
-};
+class ForwardDeclared;
 
-ForwardDeclared *forwardPointer();
+#ifdef QT_NAMESPACE
+namespace QT_NAMESPACE {
+#endif
+template <typename T> class QSharedPointer;
+#ifdef QT_NAMESPACE
+}
+using namespace QT_NAMESPACE;
+#endif
+
+QSharedPointer<ForwardDeclared> *forwardPointer();
 
 #endif // FORWARDDECLARED_H

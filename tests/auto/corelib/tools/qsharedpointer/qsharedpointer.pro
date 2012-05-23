@@ -4,7 +4,6 @@ TARGET = tst_qsharedpointer
 QT = core testlib
 
 SOURCES = tst_qsharedpointer.cpp \
-    forwarddeclaration.cpp \
     forwarddeclared.cpp \
     wrapper.cpp
 

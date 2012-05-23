@@ -185,9 +185,7 @@ namespace QtSharedPointer {
         virtual inline ~ExternalRefCountData() { Q_ASSERT(!weakref.load()); Q_ASSERT(strongref.load() <= 0); }
 
         // overridden by derived classes
-        // returns false to indicate caller should delete the pointer
-        // returns true in case it has already done so
-        virtual inline bool destroy() { return false; }
+        virtual inline void destroy() { }
 
 #ifndef QT_NO_QOBJECT
         Q_CORE_EXPORT static ExternalRefCountData *getAndRef(const QObject *);
@@ -210,7 +208,7 @@ namespace QtSharedPointer {
             : destroyer(d)
         { }
 
-        inline bool destroy() { destroyer(this); return true; }
+        inline void destroy() { destroyer(this); }
         inline void operator delete(void *ptr) { ::operator delete(ptr); }
         inline void operator delete(void *, void *) { }
     };
@@ -327,29 +325,15 @@ namespace QtSharedPointer {
         typedef ExternalRefCountData Data;
 
         inline void deref()
-        { deref(d, this->value); }
-        static inline void deref(Data *d, T *value)
+        { deref(d); }
+        static inline void deref(Data *d)
         {
             if (!d) return;
             if (!d->strongref.deref()) {
-                if (!d->destroy())
-                    delete value;
+                d->destroy();
             }
             if (!d->weakref.deref())
                 delete d;
-        }
-
-        inline void internalConstruct(T *ptr)
-        {
-#ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-            internalConstruct<void (*)(T *)>(ptr, normalDeleter);
-#else
-            if (ptr)
-                d = new Data;
-            else
-                d = 0;
-            internalFinishConstruction(ptr);
-#endif
         }
 
         template <typename Deleter>
@@ -381,8 +365,6 @@ namespace QtSharedPointer {
         inline ExternalRefCount() : d(0) { }
         inline ExternalRefCount(Qt::Initialization i) : Basic<T>(i) { }
 
-        inline ExternalRefCount(T *ptr) : Basic<T>(Qt::Uninitialized) // throws
-        { internalConstruct(ptr); }
         template <typename Deleter>
         inline ExternalRefCount(T *ptr, Deleter deleter) : Basic<T>(Qt::Uninitialized) // throws
         { internalConstruct(ptr, deleter); }
@@ -403,7 +385,7 @@ namespace QtSharedPointer {
                 other.ref();
             qSwap(d, o);
             qSwap(this->value, actual);
-            deref(o, actual);
+            deref(o);
         }
 
         inline void internalSwap(ExternalRefCount &other)
@@ -448,7 +430,7 @@ namespace QtSharedPointer {
                 this->value = 0;
 
             // dereference saved data
-            deref(o, actual);
+            deref(o);
         }
 
         Data *d;
@@ -463,7 +445,7 @@ public:
     inline QSharedPointer() { }
     // inline ~QSharedPointer() { }
 
-    inline explicit QSharedPointer(T *ptr) : BaseClass(ptr) // throws
+    inline explicit QSharedPointer(T *ptr) : BaseClass(ptr, &QtSharedPointer::normalDeleter<T>) // throws
     { }
 
     template <typename Deleter>

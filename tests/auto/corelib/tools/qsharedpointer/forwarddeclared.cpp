@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -40,10 +41,17 @@
 ****************************************************************************/
 
 #include "forwarddeclared.h"
+#include "qsharedpointer.h"
 
-ForwardDeclared *forwardPointer()
+class ForwardDeclared
 {
-    return new ForwardDeclared;
+public:
+    ~ForwardDeclared();
+};
+
+QSharedPointer<ForwardDeclared> *forwardPointer()
+{
+    return new QSharedPointer<ForwardDeclared>(new ForwardDeclared);
 }
 
 int forwardDeclaredDestructorRunCount;
