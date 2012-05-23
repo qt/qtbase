@@ -439,10 +439,8 @@ QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
     , resumeOffset(0)
     , preMigrationDownloaded(-1)
     , bytesDownloaded(0)
-    , lastBytesDownloaded(-1)
     , downloadBufferReadPosition(0)
     , downloadBufferCurrentSize(0)
-    , downloadBufferMaximumSize(0)
     , downloadZerocopyBuffer(0)
     , pendingDownloadDataEmissions(new QAtomicInt())
     , pendingDownloadProgressEmissions(new QAtomicInt())
@@ -644,7 +642,6 @@ void QNetworkReplyHttpImplPrivate::postRequest()
 
     // FIXME the proxy stuff should be done in the HTTP thread
     foreach (const QNetworkProxy &p, managerPrivate->queryProxy(QNetworkProxyQuery(request.url()))) {
-    //foreach (const QNetworkProxy &p, proxyList()) {
         // use the first proxy that works
         // for non-encrypted connections, any transparent or HTTP proxy
         // for encrypted, only transparent proxies
@@ -1016,7 +1013,6 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
     pendingDownloadDataCopy.clear();
 
     bytesDownloaded += bytesWritten;
-    lastBytesDownloaded = bytesDownloaded;
 
 
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
@@ -1056,8 +1052,6 @@ void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
         QUrl url = QUrl(QString::fromUtf8(header));
         if (!url.isValid())
             url = QUrl(QLatin1String(header));
-        // FIXME?
-        //redirectionRequested(url);
         q->setAttribute(QNetworkRequest::RedirectionTargetAttribute, url);
     }
 }
@@ -1069,17 +1063,16 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData
          qint64 contentLength)
 {
     Q_Q(QNetworkReplyHttpImpl);
+    Q_UNUSED(contentLength);
 
     statusCode = sc;
     reasonPhrase = rp;
 
     // Download buffer
     if (!db.isNull()) {
-        //setDownloadBuffer(db, contentLength);
         downloadBufferPointer = db;
         downloadZerocopyBuffer = downloadBufferPointer.data();
         downloadBufferCurrentSize = 0;
-        downloadBufferMaximumSize = contentLength;
         q->setAttribute(QNetworkRequest::DownloadBufferAttribute, QVariant::fromValue<QSharedPointer<char> > (downloadBufferPointer));
     }
 
@@ -1089,8 +1082,6 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData
     QList<QPair<QByteArray, QByteArray> > headerMap = hm;
     QList<QPair<QByteArray, QByteArray> >::ConstIterator it = headerMap.constBegin(),
                                                         end = headerMap.constEnd();
-    QByteArray header;
-
     for (; it != end; ++it) {
         QByteArray value = q->rawHeader(it->first);
         if (!value.isEmpty()) {
@@ -1182,7 +1173,6 @@ void QNetworkReplyHttpImplPrivate::replyDownloadProgressSlot(qint64 bytesReceive
     }
 
     bytesDownloaded = bytesReceived;
-    lastBytesDownloaded = bytesReceived;
 
     downloadBufferCurrentSize = bytesReceived;
 
@@ -1607,10 +1597,6 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
         q_func()->setFinished(true);
     } else {
         if (state != Finished) {
-//            if (operation == QNetworkAccessManager::GetOperation)
-//                pendingNotifications.append(NotifyDownstreamReadyWrite);
-
-//            handleNotifications();
 
         }
     }
@@ -1630,8 +1616,6 @@ void QNetworkReplyHttpImplPrivate::_q_cacheLoadReadyRead()
     // metaDataChanged ?
 
 
-    // FIXME
-    lastBytesDownloaded = bytesDownloaded;
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
 
     // emit readyRead before downloadProgress incase this will cause events to be

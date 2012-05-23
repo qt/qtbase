@@ -181,14 +181,11 @@ public:
 #endif
     void _q_finished();
 
-
-    // FIXME
     void finished();
     void error(QNetworkReply::NetworkError code, const QString &errorString);
     void _q_error(QNetworkReply::NetworkError code, const QString &errorString);
     void metaDataChanged();
 
-    void redirectionRequested(const QUrl &target);
     void checkForRedirect(const int statusCode);
 
 
@@ -219,7 +216,6 @@ public:
     void setCachingEnabled(bool enable);
     bool isCachingEnabled() const;
     void initCacheSaveDevice();
-    QAbstractNetworkCache *networkCache() const;
     QIODevice *cacheLoadDevice;
     bool loadingFromCache;
 
@@ -230,7 +226,6 @@ public:
     QUrl urlForLastAuthentication;
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy lastProxyAuthentication;
-    QList<QNetworkProxy> proxyList;
 #endif
 
 
@@ -244,15 +239,11 @@ public:
     QByteDataBuffer downloadMultiBuffer;
     QByteDataBuffer pendingDownloadData; // For signal compression
     qint64 bytesDownloaded;
-    qint64 lastBytesDownloaded;
-    void setDownloadBuffer(QSharedPointer<char> sp, qint64 size);
-    char* getDownloadBuffer(qint64 size);
 
     // only used when the "zero copy" style is used. Else downloadMultiBuffer is used.
     // Please note that the whole "zero copy" download buffer API is private right now. Do not use it.
     qint64 downloadBufferReadPosition;
     qint64 downloadBufferCurrentSize;
-    qint64 downloadBufferMaximumSize;
     QSharedPointer<char> downloadBufferPointer;
     char* downloadZerocopyBuffer;
 
