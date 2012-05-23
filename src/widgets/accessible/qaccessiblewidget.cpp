@@ -161,10 +161,6 @@ public:
 
     QAccessible::Role role;
     QString name;
-    QString description;
-    QString value;
-    QString help;
-    QString accelerator;
     QStringList primarySignals;
     const QAccessibleInterface *asking;
 };
@@ -281,58 +277,6 @@ void QAccessibleWidget::addControllingSignal(const QString &signal)
     if (object()->metaObject()->indexOfSignal(s) < 0)
         qWarning("Signal %s unknown in %s", s.constData(), object()->metaObject()->className());
     d->primarySignals << QLatin1String(s);
-}
-
-/*!
-    Sets the value of this interface implementation to \a value.
-
-    The default implementation of text() returns the set value for
-    the Value text.
-
-    Note that the object wrapped by this interface is not modified.
-*/
-void QAccessibleWidget::setValue(const QString &value)
-{
-    d->value = value;
-}
-
-/*!
-    Sets the description of this interface implementation to \a desc.
-
-    The default implementation of text() returns the set value for
-    the Description text.
-
-    Note that the object wrapped by this interface is not modified.
-*/
-void QAccessibleWidget::setDescription(const QString &desc)
-{
-    d->description = desc;
-}
-
-/*!
-    Sets the help of this interface implementation to \a help.
-
-    The default implementation of text() returns the set value for
-    the Help text.
-
-    Note that the object wrapped by this interface is not modified.
-*/
-void QAccessibleWidget::setHelp(const QString &help)
-{
-    d->help = help;
-}
-
-/*!
-    Sets the accelerator of this interface implementation to \a accel.
-
-    The default implementation of text() returns the set value for
-    the Accelerator text.
-
-    Note that the object wrapped by this interface is not modified.
-*/
-void QAccessibleWidget::setAccelerator(const QString &accel)
-{
-    d->accelerator = accel;
 }
 
 static inline bool isAncestor(const QObject *obj, const QObject *child)
@@ -469,9 +413,7 @@ QString QAccessibleWidget::text(QAccessible::Text t) const
         }
         break;
     case QAccessible::Description:
-        if (!d->description.isEmpty())
-            str = d->description;
-        else if (!widget()->accessibleDescription().isEmpty())
+        if (!widget()->accessibleDescription().isEmpty())
             str = widget()->accessibleDescription();
 #ifndef QT_NO_TOOLTIP
         else
@@ -479,21 +421,14 @@ QString QAccessibleWidget::text(QAccessible::Text t) const
 #endif
         break;
     case QAccessible::Help:
-        if (!d->help.isEmpty())
-            str = d->help;
 #ifndef QT_NO_WHATSTHIS
-        else
-            str = widget()->whatsThis();
+        str = widget()->whatsThis();
 #endif
         break;
     case QAccessible::Accelerator:
-        if (!d->accelerator.isEmpty())
-            str = d->accelerator;
-        else
-            str = qt_accHotKey(buddyString(widget()));
+        str = qt_accHotKey(buddyString(widget()));
         break;
     case QAccessible::Value:
-        str = d->value;
         break;
     default:
         break;

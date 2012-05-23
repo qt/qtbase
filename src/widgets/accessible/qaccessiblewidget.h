@@ -88,10 +88,6 @@ protected:
     QObject *parentObject() const;
 
     void addControllingSignal(const QString &signal);
-    void setValue(const QString &value);
-    void setDescription(const QString &desc);
-    void setHelp(const QString &help);
-    void setAccelerator(const QString &accel);
 
 private:
     QAccessibleWidgetPrivate *d;
