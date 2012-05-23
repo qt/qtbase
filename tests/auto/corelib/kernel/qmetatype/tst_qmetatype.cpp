@@ -47,6 +47,12 @@
 # include <pthread.h>
 #endif
 
+// At least these specific versions of MSVC2010 has a severe performance problem with this file,
+// taking about 1 hour to compile if the portion making use of variadic macros is enabled.
+#if defined(_MSC_FULL_VER) && (_MSC_FULL_VER >= 160030319) && (_MSC_FULL_VER <= 160040219)
+# define TST_QMETATYPE_BROKEN_COMPILER
+#endif
+
 Q_DECLARE_METATYPE(QMetaType::Type)
 
 class tst_QMetaType: public QObject
@@ -1332,7 +1338,7 @@ void tst_QMetaType::automaticTemplateRegistration()
     QVERIFY(qRegisterMetaType<UnregisteredTypeList>("UnregisteredTypeList") > 0);
   }
 
-#ifdef Q_COMPILER_VARIADIC_MACROS
+#if defined(Q_COMPILER_VARIADIC_MACROS) && !defined(TST_QMETATYPE_BROKEN_COMPILER)
 
     #define FOR_EACH_STATIC_PRIMITIVE_TYPE(F, ...) \
         F(bool, __VA_ARGS__) \
