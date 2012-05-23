@@ -1997,14 +1997,14 @@ static QStringList parseCombinedArgString(const QString &program)
 /*!
     \overload
 
-    Starts the program \a program in a new process, if one is not already
-    running. \a program is a single string of text containing both the
+    Starts the command \a command in a new process, if one is not already
+    running. \a command is a single string of text containing both the
     program name and its arguments. The arguments are separated by one or
     more spaces. For example:
 
     \snippet code/src_corelib_io_qprocess.cpp 5
 
-    The \a program string can also contain quotes, to ensure that arguments
+    The \a command string can also contain quotes, to ensure that arguments
     containing spaces are correctly supplied to the new process. For example:
 
     \snippet code/src_corelib_io_qprocess.cpp 6
@@ -2021,9 +2021,9 @@ static QStringList parseCombinedArgString(const QString &program)
 
     The OpenMode is set to \a mode.
 */
-void QProcess::start(const QString &program, OpenMode mode)
+void QProcess::start(const QString &command, OpenMode mode)
 {
-    QStringList args = parseCombinedArgString(program);
+    QStringList args = parseCombinedArgString(command);
     if (args.isEmpty()) {
         Q_D(QProcess);
         d->processError = QProcess::FailedToStart;
@@ -2036,6 +2036,28 @@ void QProcess::start(const QString &program, OpenMode mode)
     args.removeFirst();
 
     start(prog, args, mode);
+}
+
+/*!
+    Returns the program the process was last started with.
+
+    \sa start()
+*/
+QString QProcess::program() const
+{
+    Q_D(const QProcess);
+    return d->program;
+}
+
+/*!
+    Returns the command line arguments the process was last started with.
+
+    \sa start()
+*/
+QStringList QProcess::arguments() const
+{
+    Q_D(const QProcess);
+    return d->arguments;
 }
 
 /*!

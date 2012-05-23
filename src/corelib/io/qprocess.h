@@ -133,7 +133,9 @@ public:
     virtual ~QProcess();
 
     void start(const QString &program, const QStringList &arguments, OpenMode mode = ReadWrite);
-    void start(const QString &program, OpenMode mode = ReadWrite);
+    void start(const QString &command, OpenMode mode = ReadWrite);
+    QString program() const;
+    QStringList arguments() const;
 
     ProcessChannelMode readChannelMode() const;
     void setReadChannelMode(ProcessChannelMode mode);
