@@ -118,7 +118,7 @@ public:
 };
 
 template<typename T> static inline
-QtSharedPointer::ExternalRefCountData *refCountData(const QtSharedPointer::ExternalRefCount<T> &b)
+QtSharedPointer::ExternalRefCountData *refCountData(const QSharedPointer<T> &b)
 {
     // access d-pointer:
     struct Dummy {
@@ -126,7 +126,7 @@ QtSharedPointer::ExternalRefCountData *refCountData(const QtSharedPointer::Exter
         QtSharedPointer::ExternalRefCountData* data;
     };
     // sanity checks:
-    Q_STATIC_ASSERT(sizeof(QtSharedPointer::ExternalRefCount<T>) == sizeof(Dummy));
+    Q_STATIC_ASSERT(sizeof(QSharedPointer<T>) == sizeof(Dummy));
     Q_ASSERT(static_cast<const Dummy*>(static_cast<const void*>(&b))->value == b.data());
     return static_cast<const Dummy*>(static_cast<const void*>(&b))->data;
 }
