@@ -14,5 +14,6 @@ SUBDIRS=\
    qwidget_window \
    qwidgetaction \
    qshortcut \
+   qsizepolicy
 
 SUBDIRS -= qsound

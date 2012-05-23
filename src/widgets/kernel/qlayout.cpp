@@ -1419,17 +1419,17 @@ void QSizePolicy::setControlType(ControlType type)
 
         Example:
 
-            0x00000001 maps to 0x00000000
-            0x00000002 maps to 0x00000200
-            0x00000004 maps to 0x00000400
-            0x00000008 maps to 0x00000600
+            0x00000001 maps to 0
+            0x00000002 maps to 1
+            0x00000004 maps to 2
+            0x00000008 maps to 3
             etc.
     */
 
     int i = 0;
     while (true) {
         if (type & (0x1 << i)) {
-            data = (data & ~CTMask) | (i << CTShift);
+            bits.ctype = i;
             return;
         }
         ++i;
@@ -1438,10 +1438,11 @@ void QSizePolicy::setControlType(ControlType type)
 
 QSizePolicy::ControlType QSizePolicy::controlType() const
 {
-    return QSizePolicy::ControlType(0x1 << ((data & CTMask) >> CTShift));
+    return QSizePolicy::ControlType(1 << bits.ctype);
 }
 
 #ifndef QT_NO_DATASTREAM
+
 /*!
     \relates QSizePolicy
     \since 4.2
@@ -1452,8 +1453,19 @@ QSizePolicy::ControlType QSizePolicy::controlType() const
 */
 QDataStream &operator<<(QDataStream &stream, const QSizePolicy &policy)
 {
-    return stream << policy.data;
+    // The order here is for historical reasons. (compatibility with Qt4)
+    quint32 data = (policy.bits.horPolicy |         // [0, 3]
+                    policy.bits.verPolicy << 4 |    // [4, 7]
+                    policy.bits.hfw << 8 |          // [8]
+                    policy.bits.ctype << 9 |        // [9, 13]
+                    policy.bits.wfh << 14 |         // [14]
+                  //policy.bits.padding << 15 |     // [15]
+                    policy.bits.verStretch << 16 |  // [16, 23]
+                    policy.bits.horStretch << 24);  // [24, 31]
+    return stream << data;
 }
+
+#define VALUE_OF_BITS(data, bitstart, bitcount) ((data >> bitstart) & ((1 << bitcount) -1))
 
 /*!
     \relates QSizePolicy
@@ -1465,7 +1477,17 @@ QDataStream &operator<<(QDataStream &stream, const QSizePolicy &policy)
 */
 QDataStream &operator>>(QDataStream &stream, QSizePolicy &policy)
 {
-    return stream >> policy.data;
+    quint32 data;
+    stream >> data;
+    policy.bits.horPolicy =  VALUE_OF_BITS(data, 0, 4);
+    policy.bits.verPolicy =  VALUE_OF_BITS(data, 4, 4);
+    policy.bits.hfw =        VALUE_OF_BITS(data, 8, 1);
+    policy.bits.ctype =      VALUE_OF_BITS(data, 9, 5);
+    policy.bits.wfh =        VALUE_OF_BITS(data, 14, 1);
+    policy.bits.padding =   0;
+    policy.bits.verStretch = VALUE_OF_BITS(data, 16, 8);
+    policy.bits.horStretch = VALUE_OF_BITS(data, 24, 8);
+    return stream;
 }
 #endif // QT_NO_DATASTREAM
 

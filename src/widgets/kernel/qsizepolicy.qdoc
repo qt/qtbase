@@ -319,19 +319,19 @@
 */
 
 /*!
-    \fn void QSizePolicy::setHorizontalStretch(uchar stretchFactor)
+    \fn void QSizePolicy::setHorizontalStretch(int stretchFactor)
 
     Sets the horizontal stretch factor of the size policy to the given \a
-    stretchFactor.
+    stretchFactor. \a stretchFactor must be in the range [0,255].
 
     \sa horizontalStretch(), setVerticalStretch(), setHorizontalPolicy()
 */
 
 /*!
-    \fn void QSizePolicy::setVerticalStretch(uchar stretchFactor)
+    \fn void QSizePolicy::setVerticalStretch(int stretchFactor)
 
     Sets the vertical stretch factor of the size policy to the given
-    \a stretchFactor.
+    \a stretchFactor. \a stretchFactor must be in the range [0,255].
 
     \sa verticalStretch(), setHorizontalStretch(), setVerticalPolicy()
 */

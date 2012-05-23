@@ -56,19 +56,6 @@ class Q_WIDGETS_EXPORT QSizePolicy
     Q_GADGET
     Q_ENUMS(Policy)
 
-private:
-    enum SizePolicyMasks {
-        HSize = 4,
-        HMask = 0x0f,
-        VMask = HMask << HSize,
-        CTShift = 9,
-        CTSize = 5,
-        CTMask = ((0x1 << CTSize) - 1) << CTShift,
-        WFHShift = CTShift + CTSize,
-        UnusedShift = WFHShift + 1,
-        UnusedSize = 1
-    };
-
 public:
     enum PolicyFlag {
         GrowFlag = 1,
@@ -109,17 +96,18 @@ public:
     QSizePolicy() : data(0) { }
 
     // ### Qt 5: merge these two constructors (with type == DefaultType)
-    QSizePolicy(Policy horizontal, Policy vertical)
-        : data(horizontal | (vertical << HSize)) { }
-    QSizePolicy(Policy horizontal, Policy vertical, ControlType type)
-        : data(horizontal | (vertical << HSize)) { setControlType(type); }
-
-    Policy horizontalPolicy() const { return static_cast<Policy>(data & HMask); }
-    Policy verticalPolicy() const { return static_cast<Policy>((data & VMask) >> HSize); }
+    QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType)
+        : data(0) {
+        bits.horPolicy = horizontal;
+        bits.verPolicy = vertical;
+        setControlType(type);
+    }
+    Policy horizontalPolicy() const { return static_cast<Policy>(bits.horPolicy); }
+    Policy verticalPolicy() const { return static_cast<Policy>(bits.verPolicy); }
     ControlType controlType() const;
 
-    void setHorizontalPolicy(Policy d) { data = (data & ~HMask) | d; }
-    void setVerticalPolicy(Policy d) { data = (data & ~(HMask << HSize)) | (d << HSize); }
+    void setHorizontalPolicy(Policy d) { bits.horPolicy = d; }
+    void setVerticalPolicy(Policy d) { bits.verPolicy = d; }
     void setControlType(ControlType type);
 
     Qt::Orientations expandingDirections() const {
@@ -131,19 +119,19 @@ public:
         return result;
     }
 
-    void setHeightForWidth(bool b) { data = b ? (data | (1 << 2*HSize)) : (data & ~(1 << 2*HSize));  }
-    bool hasHeightForWidth() const { return data & (1 << 2*HSize); }
-    void setWidthForHeight(bool b) { data = b ? (data | (1 << (WFHShift))) : (data & ~(1 << (WFHShift)));  }
-    bool hasWidthForHeight() const { return data & (1 << (WFHShift)); }
+    void setHeightForWidth(bool b) { bits.hfw = b;  }
+    bool hasHeightForWidth() const { return bits.hfw; }
+    void setWidthForHeight(bool b) { bits.wfh = b;  }
+    bool hasWidthForHeight() const { return bits.wfh; }
 
     bool operator==(const QSizePolicy& s) const { return data == s.data; }
     bool operator!=(const QSizePolicy& s) const { return data != s.data; }
-    operator QVariant() const; // implemented in qabstractlayout.cpp
+    operator QVariant() const; // implemented in qlayoutitem.cpp
 
-    int horizontalStretch() const { return data >> 24; }
-    int verticalStretch() const { return (data >> 16) & 0xff; }
-    void setHorizontalStretch(uchar stretchFactor) { data = (data&0x00ffffff) | (uint(stretchFactor)<<24); }
-    void setVerticalStretch(uchar stretchFactor) { data = (data&0xff00ffff) | (uint(stretchFactor)<<16); }
+    int horizontalStretch() const { return static_cast<int>(bits.horStretch); }
+    int verticalStretch() const { return static_cast<int>(bits.verStretch); }
+    void setHorizontalStretch(int stretchFactor) { bits.horStretch = static_cast<quint32>(qBound(0, stretchFactor, 255)); }
+    void setVerticalStretch(int stretchFactor) { bits.verStretch = static_cast<quint32>(qBound(0, stretchFactor, 255)); }
 
     void transpose();
 
@@ -155,21 +143,19 @@ private:
 #endif
     QSizePolicy(int i) : data(i) { }
 
-    quint32 data;
-/*  Qt5: Use bit flags instead, keep it here for improved readability for now.
-    We can maybe change it for Qt4, but we'd have to be careful, since the behaviour
-    is implementation defined. It usually varies between little- and big-endian compilers, but
-    it might also not vary.
-    quint32 horzPolicy : 4;
-    quint32 vertPolicy : 4;
-    quint32 hfw : 1;
-    quint32 ctype : 5;
-    quint32 wfh : 1;
-    quint32 padding : 1;   // we cannot use the highest bit
-    quint32 verStretch : 8;
-    quint32 horStretch : 8;
-*/
-
+    union {
+        struct {
+            quint32 horStretch : 8;
+            quint32 verStretch : 8;
+            quint32 horPolicy : 4;
+            quint32 verPolicy : 4;
+            quint32 ctype : 5;
+            quint32 hfw : 1;
+            quint32 wfh : 1;
+            quint32 padding : 1;   // feel free to use
+        } bits;
+        quint32 data;
+    };
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSizePolicy::ControlTypes)
@@ -187,8 +173,8 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QSizePolicy &);
 inline void QSizePolicy::transpose() {
     Policy hData = horizontalPolicy();
     Policy vData = verticalPolicy();
-    uchar hStretch = uchar(horizontalStretch());
-    uchar vStretch = uchar(verticalStretch());
+    int hStretch = horizontalStretch();
+    int vStretch = verticalStretch();
     setHorizontalPolicy(vData);
     setVerticalPolicy(hData);
     setHorizontalStretch(vStretch);
