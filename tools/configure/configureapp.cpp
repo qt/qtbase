@@ -654,6 +654,16 @@ void Configure::parseCmdLine()
                 dictionary[ "DONE" ] = "error";
                 break;
             }
+        // External location of ANGLE library  (Open GL ES 2)
+        } else if (configCmdLine.at(i) == QStringLiteral("-angle")) {
+            if (++i == argCount)
+              break;
+            const QFileInfo fi(configCmdLine.at(i));
+            if (!fi.isDir()) {
+                cout << "Argument passed to -angle option is not a directory." << endl;
+                dictionary.insert(QStringLiteral("DONE"), QStringLiteral( "error"));
+            }
+            dictionary.insert(QStringLiteral("ANGLE_DIR"), fi.absoluteFilePath());
         }
 
         // OpenVG Support -------------------------------------------
@@ -1608,7 +1618,7 @@ bool Configure::displayHelp()
 
         desc("PLUGIN_MANIFESTS", "no", "-no-plugin-manifests", "Do not embed manifests in plugins.");
         desc("PLUGIN_MANIFESTS", "yes", "-plugin-manifests",   "Embed manifests in plugins.\n");
-
+        desc(       "-angle <dir>",                     "Use ANGLE library from location <dir>.\n");
 #if !defined(EVAL)
         desc("BUILD_QMAKE", "no", "-no-qmake",          "Do not compile qmake.");
         desc("BUILD_QMAKE", "yes", "-qmake",            "Compile qmake.\n");
@@ -2713,6 +2723,19 @@ void Configure::generateQConfigPri()
         if (!dictionary["QT_NAMESPACE"].isEmpty())
             configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
 
+        if (dictionary.value(QStringLiteral("OPENGL_ES_2")) == QStringLiteral("yes")) {
+            const QString angleDir = dictionary.value(QStringLiteral("ANGLE_DIR"));
+            if (!angleDir.isEmpty()) {
+                configStream
+                    << "QMAKE_INCDIR_OPENGL_ES2 = "
+                    << fixSeparators(angleDir + QStringLiteral("/include"), true) << '\n'
+                    << "QMAKE_LIBDIR_OPENGL_ES2_DEBUG = "
+                    << fixSeparators(angleDir + QStringLiteral("/lib/Debug"), true) << '\n'
+                    << "QMAKE_LIBDIR_OPENGL_ES2_RELEASE = "
+                    << fixSeparators(angleDir + QStringLiteral("/lib/Release"), true) + '\n';
+            }
+        }
+
         configStream.flush();
         configFile.close();
     }
@@ -3080,6 +3103,11 @@ void Configure::displayConfig()
     sout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;
     sout << "IWMMXT support.............." << dictionary[ "IWMMXT" ] << endl;
     sout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
+    if (dictionary.value(QStringLiteral("OPENGL_ES_2")) == QStringLiteral("yes")) {
+        const QString angleDir = dictionary.value(QStringLiteral("ANGLE_DIR"));
+        if (!angleDir.isEmpty())
+            sout << "ANGLE......................." << QDir::toNativeSeparators(angleDir) << endl;
+    }
     sout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
     sout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
     sout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;

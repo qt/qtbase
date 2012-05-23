@@ -48,6 +48,8 @@
 #include <QtCore/QScopedPointer>
 #include <QtCore/QSharedPointer>
 
+struct IBindCtx;
+
 QT_BEGIN_NAMESPACE
 
 class QWindow;

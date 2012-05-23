@@ -6,6 +6,19 @@
 wince* {
     include(../unix/opengl.prf)
 } else {
-    QMAKE_LIBS += $$QMAKE_LIBS_OPENGL
-    QMAKE_LFLAGS += $$QMAKE_LFLAGS_OPENGL
+    contains(QT_CONFIG, opengles2) {
+#       For Desktop, use the ANGLE library location passed on from configure.
+        INCLUDEPATH += $$QMAKE_INCDIR_OPENGL_ES2
+        LIBS += $$QMAKE_LIBS_OPENGL_ES2
+        CONFIG(debug, debug|release) {
+            QMAKE_LIBDIR += $$QMAKE_LIBDIR_OPENGL_ES2_DEBUG
+        } else {
+            QMAKE_LIBDIR += $$QMAKE_LIBDIR_OPENGL_ES2_RELEASE
+        }
+        DEFINES += QT_OPENGL_ES_2 QT_OPENGL_ES_2_ANGLE
+        QT_CONFIG -= opengl
+    } else {
+        QMAKE_LIBS += $$QMAKE_LIBS_OPENGL
+        QMAKE_LFLAGS += $$QMAKE_LFLAGS_OPENGL
+    }
 }

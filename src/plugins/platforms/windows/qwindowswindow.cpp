@@ -46,6 +46,10 @@
 #include "qwindowsscreen.h"
 #include "qwindowscursor.h"
 
+#ifdef QT_OPENGL_ES_2
+#  include "qwindowseglcontext.h"
+#endif
+
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
@@ -644,6 +648,9 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     m_cursor(QWindowsScreen::screenOf(aWindow)->windowsCursor()->standardWindowCursor()),
     m_dropTarget(0),
     m_savedStyle(0)
+#ifdef QT_OPENGL_ES_2
+   , m_eglSurface(0)
+#endif
 {
     if (aWindow->surfaceType() == QWindow::OpenGLSurface)
         setFlag(OpenGLSurface);
@@ -676,6 +683,15 @@ void QWindowsWindow::destroyWindow()
     if (m_data.hwnd) { // Stop event dispatching before Window is destroyed.
         unregisterDropSite();
         QWindowsContext::instance()->removeWindow(m_data.hwnd);
+#ifdef QT_OPENGL_ES_2
+        if (m_eglSurface) {
+            if (QWindowsContext::verboseGL)
+                qDebug("%s: Freeing EGL surface %p, this = %p",
+                       __FUNCTION__, m_eglSurface, this);
+            eglDestroySurface(m_staticEglContext->display(), m_eglSurface);
+            m_eglSurface = 0;
+        }
+#endif
         if (m_data.hwnd != GetDesktopWindow())
             DestroyWindow(m_data.hwnd);
         m_data.hwnd = 0;
@@ -1453,6 +1469,23 @@ void QWindowsWindow::setEnabled(bool enabled)
     if (newStyle != oldStyle)
         setStyle(newStyle);
 }
+
+#ifdef QT_OPENGL_ES_2
+EGLSurface QWindowsWindow::ensureEglSurfaceHandle(const QWindowsWindow::QWindowsEGLStaticContextPtr &staticContext, EGLConfig config)
+{
+    if (!m_eglSurface) {
+        m_staticEglContext = staticContext;
+        m_eglSurface = eglCreateWindowSurface(staticContext->display(), config, (EGLNativeWindowType)m_data.hwnd, NULL);
+        if (m_eglSurface == EGL_NO_SURFACE)
+            qWarning("%s: Could not create the egl surface (eglCreateWindowSurface failed): error = 0x%x\n",
+                     Q_FUNC_INFO, eglGetError());
+        if (QWindowsContext::verboseGL)
+            qDebug("%s: Created EGL surface %p, this = %p",
+                   __FUNCTION__, m_eglSurface, this);
+    }
+    return m_eglSurface;
+}
+#endif // QT_OPENGL_ES_2
 
 QByteArray QWindowsWindow::debugWindowFlags(Qt::WindowFlags wf)
 {

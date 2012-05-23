@@ -566,7 +566,7 @@ Qt for Linux/X11
 Qt for Windows
 --------------
 * Accessibility framework uses IAccessible2
-
+* ANGLE can be used to provide Open GL ES 2.0 (see http://code.google.com/p/angleproject/)
 
 Qt for Mac OS X
 ---------------

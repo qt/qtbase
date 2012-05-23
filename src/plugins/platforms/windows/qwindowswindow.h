@@ -50,10 +50,19 @@
 
 #include <qpa/qplatformwindow.h>
 
+#ifdef QT_OPENGL_ES_2
+#  include <QtCore/QSharedPointer>
+#  include <EGL/egl.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QWindowsOleDropTarget;
 class QDebug;
+
+#ifdef QT_OPENGL_ES_2
+class QWindowsEGLStaticContext;
+#endif
 
 struct QWindowsGeometryHint
 {
@@ -101,6 +110,10 @@ struct QWindowCreationContext
 class QWindowsWindow : public QPlatformWindow
 {
 public:
+#ifdef QT_OPENGL_ES_2
+    typedef QSharedPointer<QWindowsEGLStaticContext> QWindowsEGLStaticContextPtr;
+#endif
+
     enum Flags
     {
         WithinWmPaint = 0x1,
@@ -159,6 +172,11 @@ public:
 
     Qt::WindowState windowState_sys() const;
     Qt::WindowStates windowStates_sys() const;
+
+#ifdef QT_OPENGL_ES_2
+    EGLSurface eglSurfaceHandle() const { return m_eglSurface;}
+    EGLSurface ensureEglSurfaceHandle(const QWindowsEGLStaticContextPtr &staticContext, EGLConfig config);
+#endif
 
     inline unsigned style() const
         { return GetWindowLongPtr(m_data.hwnd, GWL_STYLE); }
@@ -236,6 +254,10 @@ private:
     QWindowsOleDropTarget *m_dropTarget;
     unsigned m_savedStyle;
     QRect m_savedFrameGeometry;
+#ifdef QT_OPENGL_ES_2
+    EGLSurface m_eglSurface;
+    QSharedPointer<QWindowsEGLStaticContext> m_staticEglContext;
+#endif
 };
 
 // Conveniences for window frames.
