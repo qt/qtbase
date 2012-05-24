@@ -3046,7 +3046,7 @@ void QTextEngine::adjustUnderlines(ItemDecorationList::iterator start,
 {
     for (ItemDecorationList::iterator it = start; it != end; ++it) {
         it->y = underlinePos;
-        it->pen.setWidth(penWidth);
+        it->pen.setWidthF(penWidth);
     }
 }
 
