@@ -6,8 +6,6 @@ SUBDIRS       = application \
                 menus \
                 recentfiles \
                 sdi
-# ### fixme
-# mac* && !qpa: SUBDIRS += macmainwindow
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows
