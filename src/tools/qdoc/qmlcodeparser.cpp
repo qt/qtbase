@@ -126,7 +126,7 @@ QString QmlCodeParser::language()
  */
 QStringList QmlCodeParser::sourceFileNameFilter()
 {
-    return QStringList("*.qml");
+    return QStringList() << "*.qml";
 }
 
 /*!

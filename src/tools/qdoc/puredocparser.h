@@ -65,6 +65,10 @@ public:
     virtual ~PureDocParser();
 
     virtual QStringList sourceFileNameFilter();
+    virtual void parseSourceFile(const Location& location, const QString& filePath, Tree* tree);
+
+ private:
+    bool processQdocComments();
 };
 
 QT_END_NAMESPACE

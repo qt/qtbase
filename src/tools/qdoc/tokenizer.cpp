@@ -460,7 +460,8 @@ int Tokenizer::getToken()
             default:
                 // ### We should really prevent qdoc from looking at snippet files rather than
                 // ### suppress warnings when reading them.
-                if (yyNumPreprocessorSkipping == 0 && !yyTokLoc.fileName().endsWith(".qdoc")) {
+                if (yyNumPreprocessorSkipping == 0 && !(yyTokLoc.fileName().endsWith(".qdoc") ||
+                                                        yyTokLoc.fileName().endsWith(".js"))) {
                     yyTokLoc.warning(tr("Hostile character 0x%1 in C++ source")
                                      .arg((uchar)yyCh, 1, 16));
                 }
