@@ -50,6 +50,12 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 
+#ifdef QQNXGLCONTEXT_DEBUG
+#define qGLContextDebug qDebug
+#else
+#define qGLContextDebug QT_NO_QDEBUG_MACRO
+#endif
+
 QT_BEGIN_NAMESPACE
 
 EGLDisplay QQnxGLContext::ms_eglDisplay = EGL_NO_DISPLAY;
@@ -84,9 +90,7 @@ QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
       m_glContext(glContext),
       m_eglSurface(EGL_NO_SURFACE)
 {
-#if defined(QQNXGLCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qGLContextDebug() << Q_FUNC_INFO;
     QSurfaceFormat format = m_glContext->format();
 
     // Set current rendering API
@@ -160,9 +164,7 @@ QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
 
 QQnxGLContext::~QQnxGLContext()
 {
-#if defined(QQNXGLCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qGLContextDebug() << Q_FUNC_INFO;
 
     // Cleanup EGL context if it exists
     if (m_eglContext != EGL_NO_CONTEXT) {
@@ -175,9 +177,8 @@ QQnxGLContext::~QQnxGLContext()
 
 void QQnxGLContext::initialize()
 {
-#if defined(QQNXGLCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qGLContextDebug() << Q_FUNC_INFO;
+
     // Initialize connection to EGL
     ms_eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (ms_eglDisplay == EGL_NO_DISPLAY) {
@@ -194,18 +195,16 @@ void QQnxGLContext::initialize()
 
 void QQnxGLContext::shutdown()
 {
-#if defined(QQNXGLCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qGLContextDebug() << Q_FUNC_INFO;
+
     // Close connection to EGL
     eglTerminate(ms_eglDisplay);
 }
 
 bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
 {
-#if defined(QQNXGLCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qGLContextDebug() << Q_FUNC_INFO;
+
     // Set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
     if (eglResult != EGL_TRUE) {
@@ -225,9 +224,8 @@ bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
 
 void QQnxGLContext::doneCurrent()
 {
-#if defined(QQNXGLCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qGLContextDebug() << Q_FUNC_INFO;
+
     // set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
     if (eglResult != EGL_TRUE) {
@@ -244,9 +242,7 @@ void QQnxGLContext::doneCurrent()
 void QQnxGLContext::swapBuffers(QPlatformSurface *surface)
 {
     Q_UNUSED(surface);
-#if defined(QQNXGLCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qGLContextDebug() << Q_FUNC_INFO;
 
     // Set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
@@ -263,9 +259,7 @@ void QQnxGLContext::swapBuffers(QPlatformSurface *surface)
 
 QFunctionPointer QQnxGLContext::getProcAddress(const QByteArray &procName)
 {
-#if defined(QQNXGLCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qGLContextDebug() << Q_FUNC_INFO;
 
     // Set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
@@ -279,9 +273,7 @@ QFunctionPointer QQnxGLContext::getProcAddress(const QByteArray &procName)
 
 EGLint *QQnxGLContext::contextAttrs()
 {
-#if defined(QQNXGLCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qGLContextDebug() << Q_FUNC_INFO;
 
     // Choose EGL settings based on OpenGL version
 #if defined(QT_OPENGL_ES_2)
@@ -294,17 +286,14 @@ EGLint *QQnxGLContext::contextAttrs()
 
 bool QQnxGLContext::isCurrent() const
 {
-#if defined(QQNXGLCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qGLContextDebug() << Q_FUNC_INFO;
     return (eglGetCurrentContext() == m_eglContext);
 }
 
 void QQnxGLContext::createSurface(QPlatformSurface *surface)
 {
-#if defined(QQNXGLCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qGLContextDebug() << Q_FUNC_INFO;
+
     // Get a pointer to the corresponding platform window
     QQnxWindow *platformWindow = dynamic_cast<QQnxWindow*>(surface);
     if (!platformWindow) {
@@ -339,9 +328,7 @@ void QQnxGLContext::createSurface(QPlatformSurface *surface)
 
 void QQnxGLContext::destroySurface()
 {
-#if defined(QQNXGLCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qGLContextDebug() << Q_FUNC_INFO;
 
     // Destroy EGL surface if it exists
     if (m_eglSurface != EGL_NO_SURFACE) {

@@ -44,13 +44,10 @@
 #include <QFont>
 #include <qpa/qplatformfontdatabase.h>
 
-#include <QDebug>
-
 QT_BEGIN_NAMESPACE
 
 QHash<QPlatformTheme::Font, QFont *> qt_qnx_createRoleFonts(QPlatformFontDatabase *fontDatabase)
 {
-    qDebug() << Q_FUNC_INFO;
     // See http://docs.blackberry.com/en/developers/deliverables/27299/Text_tablet_1526156_11.jsp
     // which recommends using normal font size of 21 pixels and 36 pixels for titles (not covered
     // by the theme system).

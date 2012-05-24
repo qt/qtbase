@@ -53,6 +53,12 @@
 
 #include <errno.h>
 
+#ifdef QQNXWINDOW_DEBUG
+#define qWindowDebug qDebug
+#else
+#define qWindowDebug QT_NO_QDEBUG_MACRO
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
@@ -68,9 +74,7 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
       m_parentWindow(0),
       m_visible(true)
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window << ", size =" << window->size();
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window << ", size =" << window->size();
     int result;
 
     // Create child QNX window
@@ -133,9 +137,7 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
 
 QQnxWindow::~QQnxWindow()
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window();
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
     // Remove from plugin's window mapper
     QQnxIntegration::removeWindow(m_window);
 
@@ -154,9 +156,9 @@ QQnxWindow::~QQnxWindow()
 
 void QQnxWindow::setGeometry(const QRect &rect)
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window() << ", (" << rect.x() << "," << rect.y() << "," << rect.width() << "," << rect.height() << ")";
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window()
+                   << ", (" << rect.x() << "," << rect.y()
+                   << "," << rect.width() << "," << rect.height() << ")";
 
     QRect oldGeometry = geometry();
 
@@ -221,9 +223,7 @@ void QQnxWindow::setGeometry(const QRect &rect)
 
 void QQnxWindow::setOffset(const QPoint &offset)
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window();
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
     // Move self and then children.
     QRect newGeometry = geometry();
     newGeometry.translate(offset);
@@ -249,9 +249,7 @@ void QQnxWindow::setOffset(const QPoint &offset)
 
 void QQnxWindow::setVisible(bool visible)
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window() << "visible =" << visible;
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window() << "visible =" << visible;
 
     m_visible = visible;
 
@@ -269,9 +267,7 @@ void QQnxWindow::setVisible(bool visible)
 
 void QQnxWindow::updateVisibility(bool parentVisible)
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "parentVisible =" << parentVisible << "window =" << window();
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "parentVisible =" << parentVisible << "window =" << window();
     // Set window visibility
     errno = 0;
     int val = (m_visible && parentVisible) ? 1 : 0;
@@ -288,9 +284,7 @@ void QQnxWindow::updateVisibility(bool parentVisible)
 
 void QQnxWindow::setOpacity(qreal level)
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window() << "opacity =" << level;
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window() << "opacity =" << level;
     // Set window global alpha
     errno = 0;
     int val = (int)(level * 255);
@@ -310,9 +304,7 @@ bool QQnxWindow::isExposed() const
 
 void QQnxWindow::setBufferSize(const QSize &size)
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window() << "size =" << size;
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window() << "size =" << size;
     // Set window buffer size
     errno = 0;
     int val[2] = { size.width(), size.height() };
@@ -357,9 +349,7 @@ void QQnxWindow::setBufferSize(const QSize &size)
 
 QQnxBuffer &QQnxWindow::renderBuffer()
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window();
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
     // Check if render buffer is invalid
     if (m_currentBufferIndex == -1) {
         // Get all buffers available for rendering
@@ -385,9 +375,7 @@ QQnxBuffer &QQnxWindow::renderBuffer()
 
 void QQnxWindow::scroll(const QRegion &region, int dx, int dy, bool flush)
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window();
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
     copyBack(region, dx, dy, flush);
     m_scrolled += region;
 }
@@ -396,9 +384,7 @@ void QQnxWindow::post(const QRegion &dirty)
 {
     // Check if render buffer exists and something was rendered
     if (m_currentBufferIndex != -1 && !dirty.isEmpty()) {
-#if defined(QQNXWINDOW_DEBUG)
-        qDebug() << "QQnxWindow::post - window =" << window();
-#endif
+        qWindowDebug() << Q_FUNC_INFO << "window =" << window();
         QQnxBuffer &currentBuffer = m_buffers[m_currentBufferIndex];
 
         // Copy unmodified region from old render buffer to new render buffer;
@@ -437,9 +423,7 @@ void QQnxWindow::post(const QRegion &dirty)
 
 void QQnxWindow::setScreen(QQnxScreen *platformScreen)
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window() << "platformScreen =" << platformScreen;
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window() << "platformScreen =" << platformScreen;
 
     if (m_screen == platformScreen)
         return;
@@ -477,9 +461,7 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
 
 void QQnxWindow::removeFromParent()
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window();
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
     // Remove from old Hierarchy position
     if (m_parentWindow) {
         if (m_parentWindow->m_childWindows.removeAll(this))
@@ -493,9 +475,7 @@ void QQnxWindow::removeFromParent()
 
 void QQnxWindow::setParent(const QPlatformWindow *window)
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << this->window() << "platformWindow =" << window;
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << this->window() << "platformWindow =" << window;
     // Cast away the const, we need to modify the hierarchy.
     QQnxWindow *newParent = 0;
 
@@ -523,9 +503,7 @@ void QQnxWindow::setParent(const QPlatformWindow *window)
 
 void QQnxWindow::raise()
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window();
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
 
     QQnxWindow *oldParent = m_parentWindow;
     if (oldParent) {
@@ -540,9 +518,7 @@ void QQnxWindow::raise()
 
 void QQnxWindow::lower()
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window();
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
 
     QQnxWindow *oldParent = m_parentWindow;
     if (oldParent) {
@@ -557,9 +533,7 @@ void QQnxWindow::lower()
 
 void QQnxWindow::requestActivateWindow()
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window();
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
 
     // TODO: Tell screen to set keyboard focus to this window.
 
@@ -569,9 +543,7 @@ void QQnxWindow::requestActivateWindow()
 
 void QQnxWindow::gainedFocus()
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window();
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
 
     // Got focus
     QWindowSystemInterface::handleWindowActivated(window());
@@ -617,9 +589,7 @@ void QQnxWindow::updateZorder(int &topZorder)
 
 void QQnxWindow::copyBack(const QRegion &region, int dx, int dy, bool flush)
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "window =" << window();
-#endif
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
     int result;
 
     // Abort if previous buffer is invalid
@@ -679,9 +649,7 @@ void QQnxWindow::copyBack(const QRegion &region, int dx, int dy, bool flush)
 
 int QQnxWindow::platformWindowFormatToNativeFormat(const QSurfaceFormat &format)
 {
-#if defined(QQNXWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qWindowDebug() << Q_FUNC_INFO;
     // Extract size of colour channels from window format
     int redSize = format.redBufferSize();
     if (redSize == -1) {

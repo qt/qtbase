@@ -56,6 +56,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#ifdef QQNXVIRTUALKEYBOARD_DEBUG
+#define qVirtualKeyboardDebug qDebug
+#else
+#define qVirtualKeyboardDebug QT_NO_QDEBUG_MACRO
+#endif
+
 QT_BEGIN_NAMESPACE
 
 const char  *QQnxVirtualKeyboardPps::ms_PPSPath = "/pps/services/input/control";
@@ -80,9 +86,7 @@ QQnxVirtualKeyboardPps::~QQnxVirtualKeyboardPps()
 
 void QQnxVirtualKeyboardPps::start()
 {
-#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-    qDebug() << "QQNX: starting keyboard event processing";
-#endif
+    qVirtualKeyboardDebug() << Q_FUNC_INFO << "starting keyboard event processing";
     if (!connect())
         return;
 }
@@ -173,9 +177,7 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
 {
     ssize_t nread = qt_safe_read(m_fd, m_buffer, ms_bufferSize - 1);
 
-#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-    qDebug() << "QQNX: keyboardMessage size: " << nread;
-#endif
+    qVirtualKeyboardDebug() << Q_FUNC_INFO << "keyboardMessage size: " << nread;
     if (nread < 0){
         connect(); // reconnect
         return;
@@ -261,16 +263,12 @@ void QQnxVirtualKeyboardPps::handleKeyboardInfoMessage()
     const QLocale locale = QLocale(languageId + QLatin1Char('_') + countryId);
     setLocale(locale);
 
-#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-    qDebug() << "QQNX: handleKeyboardInfoMessage size=" << newHeight << "locale=" << locale;
-#endif
+    qVirtualKeyboardDebug() << Q_FUNC_INFO << "size=" << newHeight << "locale=" << locale;
 }
 
 bool QQnxVirtualKeyboardPps::showKeyboard()
 {
-#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-    qDebug() << "QQNX: showKeyboard()";
-#endif
+    qVirtualKeyboardDebug() << Q_FUNC_INFO;
 
     // Try to connect.
     if (m_fd == -1 && !connect())
@@ -302,9 +300,7 @@ bool QQnxVirtualKeyboardPps::showKeyboard()
 
 bool QQnxVirtualKeyboardPps::hideKeyboard()
 {
-#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-    qDebug() << "QQNX: hideKeyboard()";
-#endif
+    qVirtualKeyboardDebug() << Q_FUNC_INFO;
 
     if (m_fd == -1 && !connect())
         return false;

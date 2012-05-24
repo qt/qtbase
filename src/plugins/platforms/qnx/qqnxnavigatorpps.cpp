@@ -44,6 +44,12 @@
 #include <QDebug>
 #include <private/qcore_unix_p.h>
 
+#ifdef QQNXNAVIGATOR_DEBUG
+#define qNavigatorDebug qDebug
+#else
+#define qNavigatorDebug QT_NO_QDEBUG_MACRO
+#endif
+
 static const char *navigatorControlPath = "/pps/services/navigator/control";
 static const int ppsBufferSize = 4096;
 
@@ -75,9 +81,7 @@ bool QQnxNavigatorPps::openPpsConnection()
         return false;
     }
 
-#if defined(QQNXNAVIGATOR_DEBUG)
-    qDebug() << Q_FUNC_INFO << "successfully connected to Navigator. fd=" << m_fd;
-#endif
+    qNavigatorDebug() << Q_FUNC_INFO << "successfully connected to Navigator. fd=" << m_fd;
 
     return true;
 }
@@ -99,9 +103,7 @@ bool QQnxNavigatorPps::sendPpsMessage(const QByteArray &message, const QByteArra
 
     ppsMessage += "\n";
 
-#if defined(QQNXNAVIGATOR_DEBUG)
-    qDebug() << Q_FUNC_INFO << "sending PPS message:\n" << ppsMessage;
-#endif
+    qNavigatorDebug() << Q_FUNC_INFO << "sending PPS message:\n" << ppsMessage;
 
     // send pps message to navigator
     errno = 0;
@@ -123,9 +125,7 @@ bool QQnxNavigatorPps::sendPpsMessage(const QByteArray &message, const QByteArra
     // ensure data is null terminated
     buffer[bytes] = '\0';
 
-#if defined(QQNXNAVIGATOR_DEBUG)
-    qDebug() << Q_FUNC_INFO << "received PPS message:\n" << buffer;
-#endif
+    qNavigatorDebug() << Q_FUNC_INFO << "received PPS message:\n" << buffer;
 
     // process received message
     QByteArray ppsData(buffer);
@@ -144,9 +144,7 @@ bool QQnxNavigatorPps::sendPpsMessage(const QByteArray &message, const QByteArra
 
 void QQnxNavigatorPps::parsePPS(const QByteArray &ppsData, QHash<QByteArray, QByteArray> &messageFields)
 {
-#if defined(QQNXNAVIGATOR_DEBUG)
-    qDebug() << "PPS: data=" << ppsData;
-#endif
+    qNavigatorDebug() << Q_FUNC_INFO << "data=" << ppsData;
 
     // tokenize pps data into lines
     QList<QByteArray> lines = ppsData.split('\n');
@@ -162,9 +160,7 @@ void QQnxNavigatorPps::parsePPS(const QByteArray &ppsData, QHash<QByteArray, QBy
         // tokenize current attribute
         const QByteArray &attr = lines.at(i);
 
-#if defined(QQNXNAVIGATOR_DEBUG)
-        qDebug() << "PPS: attr=" << attr;
-#endif
+        qNavigatorDebug() << Q_FUNC_INFO << "attr=" << attr;
 
         int firstColon = attr.indexOf(':');
         if (firstColon == -1) {
@@ -181,10 +177,8 @@ void QQnxNavigatorPps::parsePPS(const QByteArray &ppsData, QHash<QByteArray, QBy
         QByteArray key = attr.left(firstColon);
         QByteArray value = attr.mid(secondColon + 1);
 
-#if defined(QQNXNAVIGATOR_DEBUG)
-        qDebug() << "PPS: key=" << key;
-        qDebug() << "PPS: val=" << value;
-#endif
+        qNavigatorDebug() << Q_FUNC_INFO << "key=" << key;
+        qNavigatorDebug() << Q_FUNC_INFO << "val=" << value;
         messageFields[key] = value;
     }
 }

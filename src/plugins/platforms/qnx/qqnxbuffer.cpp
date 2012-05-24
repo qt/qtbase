@@ -46,22 +46,24 @@
 #include <errno.h>
 #include <sys/mman.h>
 
+#ifdef QQNXBUFFER_DEBUG
+#define qBufferDebug qDebug
+#else
+#define qBufferDebug QT_NO_QDEBUG_MACRO
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QQnxBuffer::QQnxBuffer()
     : m_buffer(0)
 {
-#if defined(QQNXBUFFER_DEBUG)
-    qDebug() << "QQnxBuffer::QQnxBuffer - empty";
-#endif
+    qBufferDebug() << Q_FUNC_INFO << "empty";
 }
 
 QQnxBuffer::QQnxBuffer(screen_buffer_t buffer)
     : m_buffer(buffer)
 {
-#if defined(QQNXBUFFER_DEBUG)
-    qDebug() << "QQnxBuffer::QQnxBuffer - normal";
-#endif
+    qBufferDebug() << Q_FUNC_INFO << "normal";
 
     // Get size of buffer
     errno = 0;
@@ -131,23 +133,17 @@ QQnxBuffer::QQnxBuffer(const QQnxBuffer &other)
     : m_buffer(other.m_buffer),
       m_image(other.m_image)
 {
-#if defined(QQNXBUFFER_DEBUG)
-    qDebug() << "QQnxBuffer::QQnxBuffer - copy";
-#endif
+    qBufferDebug() << Q_FUNC_INFO << "copy";
 }
 
 QQnxBuffer::~QQnxBuffer()
 {
-#if defined(QQNXBUFFER_DEBUG)
-    qDebug() << "QQnxBuffer::~QQnxBuffer";
-#endif
+    qBufferDebug() << Q_FUNC_INFO;
 }
 
 void QQnxBuffer::invalidateInCache()
 {
-#if defined(QQNXBUFFER_DEBUG)
-    qDebug() << "QQnxBuffer::invalidateInCache";
-#endif
+    qBufferDebug() << Q_FUNC_INFO;
 
     // Verify native buffer exists
     if (m_buffer == 0) {

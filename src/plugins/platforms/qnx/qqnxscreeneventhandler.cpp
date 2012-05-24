@@ -49,6 +49,12 @@
 #include <errno.h>
 #include <sys/keycodes.h>
 
+#ifdef QQNXSCREENEVENT_DEBUG
+#define qScreenEventDebug qDebug
+#else
+#define qScreenEventDebug QT_NO_QDEBUG_MACRO
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QQnxScreenEventHandler::QQnxScreenEventHandler()
@@ -116,9 +122,7 @@ bool QQnxScreenEventHandler::handleEvent(screen_event_t event, int qnxType)
 
     default:
         // event ignored
-#if defined(QQNXSCREENEVENT_DEBUG)
-        qDebug() << "QQNX: QNX unknown event";
-#endif
+        qScreenEventDebug() << Q_FUNC_INFO << "unknown event";
         return false;
     }
 
@@ -166,9 +170,7 @@ void QQnxScreenEventHandler::injectKeyboardEvent(int flags, int sym, int modifie
 
         QWindowSystemInterface::handleExtendedKeyEvent(QGuiApplication::focusWindow(), type, key, qtMod,
                 scan, sym, modifiers, keyStr);
-#if defined(QQNXSCREENEVENT_DEBUG)
-        qDebug() << "QQNX: Qt key t=" << type << ", k=" << key << ", s=" << keyStr;
-#endif
+        qScreenEventDebug() << Q_FUNC_INFO << "Qt key t=" << type << ", k=" << key << ", s=" << keyStr;
     }
 }
 
@@ -261,16 +263,12 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
 
         if (wOld) {
             QWindowSystemInterface::handleLeaveEvent(wOld);
-#if defined(QQNXSCREENEVENT_DEBUG)
-            qDebug() << "QQNX: Qt leave, w=" << wOld;
-#endif
+            qScreenEventDebug() << Q_FUNC_INFO << "Qt leave, w=" << wOld;
         }
 
         if (w) {
             QWindowSystemInterface::handleEnterEvent(w);
-#if defined(QQNXSCREENEVENT_DEBUG)
-            qDebug() << "QQNX: Qt enter, w=" << w;
-#endif
+            qScreenEventDebug() << Q_FUNC_INFO << "Qt enter, w=" << w;
         }
     }
     m_lastMouseWindow = qnxWindow;
@@ -312,18 +310,14 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
             m_lastLocalMousePoint != localPoint ||
             m_lastButtonState != buttons) {
             QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons);
-#if defined(QQNXSCREENEVENT_DEBUG)
-            qDebug() << "QQNX: Qt mouse, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), b=" << static_cast<int>(buttons);
-#endif
+            qScreenEventDebug() << Q_FUNC_INFO << "Qt mouse, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), b=" << static_cast<int>(buttons);
         }
 
         if (wheelDelta) {
             // Screen only supports a single wheel, so we will assume Vertical orientation for
             // now since that is pretty much standard.
             QWindowSystemInterface::handleWheelEvent(w, localPoint, globalPoint, wheelDelta, Qt::Vertical);
-#if defined(QQNXSCREENEVENT_DEBUG)
-            qDebug() << "QQNX: Qt wheel, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), d=" << static_cast<int>(wheelDelta);
-#endif
+            qScreenEventDebug() << Q_FUNC_INFO << "Qt wheel, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), d=" << static_cast<int>(wheelDelta);
         }
     }
 
@@ -379,16 +373,12 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 
             if (wOld) {
                 QWindowSystemInterface::handleLeaveEvent(wOld);
-    #if defined(QQNXSCREENEVENT_DEBUG)
-                qDebug() << "QQNX: Qt leave, w=" << wOld;
-    #endif
+                qScreenEventDebug() << Q_FUNC_INFO << "Qt leave, w=" << wOld;
             }
 
             if (w) {
                 QWindowSystemInterface::handleEnterEvent(w);
-    #if defined(QQNXSCREENEVENT_DEBUG)
-                qDebug() << "QQNX: Qt enter, w=" << w;
-    #endif
+                qScreenEventDebug() << Q_FUNC_INFO << "Qt enter, w=" << w;
             }
         }
         m_lastMouseWindow = qnxWindow;
@@ -406,9 +396,9 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 
                 // inject event into Qt
                 QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons);
-#if defined(QQNXSCREENEVENT_DEBUG)
-                qDebug() << "QQNX: Qt mouse, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), b=" << buttons;
-#endif
+                qScreenEventDebug() << Q_FUNC_INFO << "Qt mouse, w =" << w
+                                    << ", (" << localPoint.x() << "," << localPoint.y()
+                                    << "), b =" << buttons;
             }
 
             // get size of screen which contains window
@@ -451,9 +441,9 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 
             // inject event into Qt
             QWindowSystemInterface::handleTouchEvent(w, m_touchDevice, pointList);
-#if defined(QQNXSCREENEVENT_DEBUG)
-            qDebug() << "QQNX: Qt touch, w=" << w << ", p=(" << pos[0] << "," << pos[1] << "), t=" << type;
-#endif
+            qScreenEventDebug() << Q_FUNC_INFO << "Qt touch, w =" << w
+                                << ", p=(" << pos[0] << "," << pos[1]
+                                << "), t=" << type;
         }
     }
 }

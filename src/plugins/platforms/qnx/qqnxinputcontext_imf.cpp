@@ -62,6 +62,18 @@
 #include <process.h>
 #include <sys/keycodes.h>
 
+#ifdef QQNXINPUTCONTEXT_IMF_EVENT_DEBUG
+#define qInputContextIMFEventDebug qDebug
+#else
+#define qInputContextIMFEventDebug QT_NO_QDEBUG_MACRO
+#endif
+
+#ifdef QQNXINPUTCONTEXT_DEBUG
+#define qInputContextDebug qDebug
+#else
+#define qInputContextDebug QT_NO_QDEBUG_MACRO
+#endif
+
 /** TODO:
     Support inputMethodHints to restrict input (needs additional features in IMF).
 */
@@ -175,9 +187,7 @@ int ImfEvent::sUserEventType = QEvent::registerEventType();
 
 static int32_t imfBeginBatchEdit(input_session_t *ic)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -194,9 +204,7 @@ static int32_t imfBeginBatchEdit(input_session_t *ic)
 
 static int32_t imfClearMetaKeyStates(input_session_t *ic, int32_t states)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -215,9 +223,7 @@ static int32_t imfClearMetaKeyStates(input_session_t *ic, int32_t states)
 
 static int32_t imfCommitText(input_session_t *ic, spannable_string_t *text, int32_t new_cursor_position)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -237,9 +243,7 @@ static int32_t imfCommitText(input_session_t *ic, spannable_string_t *text, int3
 
 static int32_t imfDeleteSurroundingText(input_session_t *ic, int32_t left_length, int32_t right_length)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -259,9 +263,7 @@ static int32_t imfDeleteSurroundingText(input_session_t *ic, int32_t left_length
 
 static int32_t imfEndBatchEdit(input_session_t *ic)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -279,9 +281,7 @@ static int32_t imfEndBatchEdit(input_session_t *ic)
 
 static int32_t imfFinishComposingText(input_session_t *ic)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -299,9 +299,7 @@ static int32_t imfFinishComposingText(input_session_t *ic)
 
 static int32_t imfGetCursorCapsMode(input_session_t *ic, int32_t req_modes)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -318,9 +316,7 @@ static int32_t imfGetCursorCapsMode(input_session_t *ic, int32_t req_modes)
 
 static int32_t imfGetCursorPosition(input_session_t *ic)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -338,9 +334,7 @@ static int32_t imfGetCursorPosition(input_session_t *ic)
 
 static extracted_text_t *imfGetExtractedText(input_session_t *ic, extracted_text_request_t *request, int32_t flags)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic)) {
         extracted_text_t *et = (extracted_text_t *)calloc(sizeof(extracted_text_t),1);
@@ -361,9 +355,7 @@ static extracted_text_t *imfGetExtractedText(input_session_t *ic, extracted_text
 
 static spannable_string_t *imfGetSelectedText(input_session_t *ic, int32_t flags)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return toSpannableString("");
@@ -380,9 +372,7 @@ static spannable_string_t *imfGetSelectedText(input_session_t *ic, int32_t flags
 
 static spannable_string_t *imfGetTextAfterCursor(input_session_t *ic, int32_t n, int32_t flags)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return toSpannableString("");
@@ -400,9 +390,7 @@ static spannable_string_t *imfGetTextAfterCursor(input_session_t *ic, int32_t n,
 
 static spannable_string_t *imfGetTextBeforeCursor(input_session_t *ic, int32_t n, int32_t flags)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return toSpannableString("");
@@ -420,9 +408,7 @@ static spannable_string_t *imfGetTextBeforeCursor(input_session_t *ic, int32_t n
 
 static int32_t imfPerformEditorAction(input_session_t *ic, int32_t editor_action)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -440,9 +426,7 @@ static int32_t imfPerformEditorAction(input_session_t *ic, int32_t editor_action
 
 static int32_t imfReportFullscreenMode(input_session_t *ic, int32_t enabled)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -460,9 +444,7 @@ static int32_t imfReportFullscreenMode(input_session_t *ic, int32_t enabled)
 
 static int32_t imfSendEvent(input_session_t *ic, event_t *event)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -477,9 +459,7 @@ static int32_t imfSendEvent(input_session_t *ic, event_t *event)
 
 static int32_t imfSendAsyncEvent(input_session_t *ic, event_t *event)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -494,9 +474,7 @@ static int32_t imfSendAsyncEvent(input_session_t *ic, event_t *event)
 
 static int32_t imfSetComposingRegion(input_session_t *ic, int32_t start, int32_t end)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -515,9 +493,7 @@ static int32_t imfSetComposingRegion(input_session_t *ic, int32_t start, int32_t
 
 static int32_t imfSetComposingText(input_session_t *ic, spannable_string_t *text, int32_t new_cursor_position)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -536,9 +512,7 @@ static int32_t imfSetComposingText(input_session_t *ic, spannable_string_t *text
 
 static int32_t imfSetSelection(input_session_t *ic, int32_t start, int32_t end)
 {
-#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextIMFEventDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -595,9 +569,7 @@ initEvent(event_t *pEvent, const input_session_t *pSession, EventType eventType,
 
 spannable_string_t *toSpannableString(const QString &text)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << text;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO << text;
 
     spannable_string_t *pString = reinterpret_cast<spannable_string_t *>(malloc(sizeof(spannable_string_t)));
     pString->str = (wchar_t *)malloc(sizeof(wchar_t) * text.length() + 1);
@@ -684,9 +656,7 @@ QQnxInputContext::QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard):
          m_inputPanelLocale(QLocale::c()),
          m_virtualKeyboad(keyboard)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!imfAvailable())
         return;
@@ -708,9 +678,7 @@ QQnxInputContext::QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard):
 
 QQnxInputContext::~QQnxInputContext()
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!imfAvailable())
         return;
@@ -878,9 +846,8 @@ bool QQnxInputContext::eventFilter(QObject *obj, QEvent *event)
 
 bool QQnxInputContext::filterEvent( const QEvent *event )
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << event;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO << event;
+
     switch (event->type()) {
     case QEvent::CloseSoftwareInputPanel: {
         return dispatchCloseSoftwareInputPanel();
@@ -895,17 +862,13 @@ bool QQnxInputContext::filterEvent( const QEvent *event )
 
 void QQnxInputContext::reset()
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
     endComposition();
 }
 
 void QQnxInputContext::update(Qt::InputMethodQueries queries)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
     reset();
 
     QPlatformInputContext::update(queries);
@@ -913,9 +876,7 @@ void QQnxInputContext::update(Qt::InputMethodQueries queries)
 
 void QQnxInputContext::closeSession()
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
     if (!imfAvailable())
         return;
 
@@ -927,9 +888,7 @@ void QQnxInputContext::closeSession()
 
 void QQnxInputContext::openSession()
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
     if (!imfAvailable())
         return;
 
@@ -957,9 +916,7 @@ bool QQnxInputContext::hasSelectedText()
 bool QQnxInputContext::dispatchRequestSoftwareInputPanel()
 {
     m_virtualKeyboard.showKeyboard();
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << "QQNX: requesting virtual keyboard";
-#endif
+    qInputContextDebug() << Q_FUNC_INFO << "requesting virtual keyboard";
     QObject *input = qGuiApp->focusObject();
     if (!imfAvailable() || !input || !inputMethodAccepted())
         return true;
@@ -983,9 +940,7 @@ bool QQnxInputContext::dispatchRequestSoftwareInputPanel()
 bool QQnxInputContext::dispatchCloseSoftwareInputPanel()
 {
     m_virtualKeyboard.hideKeyboard();
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << "QQNX: hiding virtual keyboard";
-#endif
+    qInputContextDebug() << Q_FUNC_INFO << "hiding virtual keyboard";
 
     // This also means we are stopping composition, but we should already have done that.
     return true;
@@ -996,9 +951,7 @@ bool QQnxInputContext::dispatchCloseSoftwareInputPanel()
  */
 bool QQnxInputContext::dispatchFocusEvent(FocusEventId id, int hints)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!sInputSession) {
         qWarning() << Q_FUNC_INFO << "Attempt to dispatch a focus event with no input session.";
@@ -1106,9 +1059,7 @@ bool QQnxInputContext::handleKeyboardEvent(int flags, int sym, int mod, int scan
             navigation_event_t navEvent;
             initEvent(&navEvent.event, sInputSession, EVENT_NAVIGATION, key);
             navEvent.magnitude = 1;
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-            qDebug() << Q_FUNC_INFO << "dispatch navigation event " << key;
-#endif
+            qInputContextDebug() << Q_FUNC_INFO << "dispatch navigation event " << key;
             p_ictrl_dispatch_event(&navEvent.event);
         }
     }
@@ -1120,9 +1071,7 @@ bool QQnxInputContext::handleKeyboardEvent(int flags, int sym, int mod, int scan
         keyEvent.meta_key_state = 0;
 
         p_ictrl_dispatch_event(&keyEvent.event);
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-        qDebug() << Q_FUNC_INFO << "dispatch key event " << key;
-#endif
+        qInputContextDebug() << Q_FUNC_INFO << "dispatch key event " << key;
     }
 
     scan = 0;
@@ -1175,17 +1124,13 @@ int32_t QQnxInputContext::processEvent(event_t *event)
     int32_t result = -1;
     switch (event->event_type) {
     case EVENT_SPELL_CHECK: {
-        #if defined(QQNXINPUTCONTEXT_DEBUG)
-        qDebug() << Q_FUNC_INFO << "EVENT_SPELL_CHECK";
-        #endif
+        qInputContextDebug() << Q_FUNC_INFO << "EVENT_SPELL_CHECK";
         result = 0;
         break;
     }
 
     case EVENT_NAVIGATION: {
-        #if defined(QQNXINPUTCONTEXT_DEBUG)
-        qDebug() << Q_FUNC_INFO << "EVENT_NAVIGATION";
-        #endif
+        qInputContextDebug() << Q_FUNC_INFO << "EVENT_NAVIGATION";
 
         int key = event->event_id == NAVIGATE_UP ? KEYCODE_UP :
             event->event_id == NAVIGATE_DOWN ? KEYCODE_DOWN :
@@ -1199,9 +1144,7 @@ int32_t QQnxInputContext::processEvent(event_t *event)
     }
 
     case EVENT_KEY: {
-        #if defined(QQNXINPUTCONTEXT_DEBUG)
-        qDebug() << Q_FUNC_INFO << "EVENT_KEY";
-        #endif
+        qInputContextDebug() << Q_FUNC_INFO << "EVENT_KEY";
         key_event_t *kevent = static_cast<key_event_t *>(event);
 
         QQnxEventThread::injectKeyboardEvent(KEY_DOWN | KEY_SYM_VALID | KEY_CAP_VALID, kevent->key_code, 0, 0, kevent->key_code);
@@ -1235,9 +1178,7 @@ int32_t QQnxInputContext::processEvent(event_t *event)
 
 int32_t QQnxInputContext::onBeginBatchEdit(input_session_t *ic)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1249,9 +1190,7 @@ int32_t QQnxInputContext::onBeginBatchEdit(input_session_t *ic)
 int32_t QQnxInputContext::onClearMetaKeyStates(input_session_t *ic, int32_t states)
 {
     Q_UNUSED(states);
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1273,9 +1212,7 @@ int32_t QQnxInputContext::onCommitText(input_session_t *ic, spannable_string_t *
 
     QString commitString = QString::fromWCharArray(text->str, text->length);
 
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << "Committing [" << commitString << "]";
-#endif
+    qInputContextDebug() << Q_FUNC_INFO << "Committing [" << commitString << "]";
 
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
@@ -1289,9 +1226,7 @@ int32_t QQnxInputContext::onCommitText(input_session_t *ic, spannable_string_t *
 
 int32_t QQnxInputContext::onDeleteSurroundingText(input_session_t *ic, int32_t left_length, int32_t right_length)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << "L:" << left_length << " R:" << right_length;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO << "L:" << left_length << " R:" << right_length;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1320,9 +1255,7 @@ int32_t QQnxInputContext::onDeleteSurroundingText(input_session_t *ic, int32_t l
 
 int32_t QQnxInputContext::onEndBatchEdit(input_session_t *ic)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1332,9 +1265,7 @@ int32_t QQnxInputContext::onEndBatchEdit(input_session_t *ic)
 
 int32_t QQnxInputContext::onFinishComposingText(input_session_t *ic)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1358,9 +1289,7 @@ int32_t QQnxInputContext::onFinishComposingText(input_session_t *ic)
 int32_t QQnxInputContext::onGetCursorCapsMode(input_session_t *ic, int32_t req_modes)
 {
     Q_UNUSED(req_modes);
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1373,9 +1302,7 @@ int32_t QQnxInputContext::onGetCursorCapsMode(input_session_t *ic, int32_t req_m
 
 int32_t QQnxInputContext::onGetCursorPosition(input_session_t *ic)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1395,9 +1322,7 @@ extracted_text_t *QQnxInputContext::onGetExtractedText(input_session_t *ic, extr
 {
     Q_UNUSED(flags);
     Q_UNUSED(request);
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic)) {
         extracted_text_t *et = (extracted_text_t *)calloc(sizeof(extracted_text_t),1);
@@ -1415,9 +1340,7 @@ extracted_text_t *QQnxInputContext::onGetExtractedText(input_session_t *ic, extr
 spannable_string_t *QQnxInputContext::onGetSelectedText(input_session_t *ic, int32_t flags)
 {
     Q_UNUSED(flags);
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return toSpannableString("");
@@ -1436,9 +1359,7 @@ spannable_string_t *QQnxInputContext::onGetSelectedText(input_session_t *ic, int
 spannable_string_t *QQnxInputContext::onGetTextAfterCursor(input_session_t *ic, int32_t n, int32_t flags)
 {
     Q_UNUSED(flags);
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return toSpannableString("");
@@ -1458,9 +1379,7 @@ spannable_string_t *QQnxInputContext::onGetTextAfterCursor(input_session_t *ic, 
 spannable_string_t *QQnxInputContext::onGetTextBeforeCursor(input_session_t *ic, int32_t n, int32_t flags)
 {
     Q_UNUSED(flags);
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return toSpannableString("");
@@ -1484,9 +1403,7 @@ spannable_string_t *QQnxInputContext::onGetTextBeforeCursor(input_session_t *ic,
 int32_t QQnxInputContext::onPerformEditorAction(input_session_t *ic, int32_t editor_action)
 {
     Q_UNUSED(editor_action);
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1500,9 +1417,7 @@ int32_t QQnxInputContext::onPerformEditorAction(input_session_t *ic, int32_t edi
 int32_t QQnxInputContext::onReportFullscreenMode(input_session_t *ic, int32_t enabled)
 {
     Q_UNUSED(enabled);
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1515,9 +1430,7 @@ int32_t QQnxInputContext::onReportFullscreenMode(input_session_t *ic, int32_t en
 
 int32_t QQnxInputContext::onSendEvent(input_session_t *ic, event_t *event)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1527,9 +1440,7 @@ int32_t QQnxInputContext::onSendEvent(input_session_t *ic, event_t *event)
 
 int32_t QQnxInputContext::onSendAsyncEvent(input_session_t *ic, event_t *event)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1539,9 +1450,7 @@ int32_t QQnxInputContext::onSendAsyncEvent(input_session_t *ic, event_t *event)
 
 int32_t QQnxInputContext::onSetComposingRegion(input_session_t *ic, int32_t start, int32_t end)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1573,9 +1482,7 @@ int32_t QQnxInputContext::onSetComposingRegion(input_session_t *ic, int32_t star
 int32_t QQnxInputContext::onSetComposingText(input_session_t *ic, spannable_string_t *text, int32_t new_cursor_position)
 {
     Q_UNUSED(new_cursor_position);
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1596,9 +1503,7 @@ int32_t QQnxInputContext::onSetSelection(input_session_t *ic, int32_t start, int
 {
     Q_UNUSED(start);
     Q_UNUSED(end);
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
 
     if (!isSessionOkay(ic))
         return 0;
@@ -1611,17 +1516,13 @@ int32_t QQnxInputContext::onSetSelection(input_session_t *ic, int32_t start, int
 
 void QQnxInputContext::showInputPanel()
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
     dispatchRequestSoftwareInputPanel();
 }
 
 void QQnxInputContext::hideInputPanel()
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
     dispatchCloseSoftwareInputPanel();
 }
 
@@ -1637,9 +1538,7 @@ QLocale QQnxInputContext::locale() const
 
 void QQnxInputContext::keyboardVisibilityChanged(bool visible)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << "visible=" << visible;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO << "visible=" << visible;
     if (m_inputPanelVisible != visible) {
         m_inputPanelVisible = visible;
         emitInputPanelVisibleChanged();
@@ -1648,9 +1547,7 @@ void QQnxInputContext::keyboardVisibilityChanged(bool visible)
 
 void QQnxInputContext::keyboardLocaleChanged(const QLocale &locale)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << "locale=" << locale;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO << "locale=" << locale;
     if (m_inputPanelLocale != locale) {
         m_inputPanelLocale = locale;
         emitLocaleChanged();
@@ -1659,9 +1556,7 @@ void QQnxInputContext::keyboardLocaleChanged(const QLocale &locale)
 
 void QQnxInputContext::setFocusObject(QObject *object)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << "input item=" << object;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO << "input item=" << object;
 
     if (!inputMethodAccepted()) {
         if (m_inputPanelVisible)

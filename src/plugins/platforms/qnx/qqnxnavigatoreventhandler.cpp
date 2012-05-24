@@ -45,6 +45,12 @@
 #include <QGuiApplication>
 #include <QWindowSystemInterface>
 
+#ifdef QQNXNAVIGATOREVENTHANDLER_DEBUG
+#define qNavigatorEventHandlerDebug qDebug
+#else
+#define qNavigatorEventHandlerDebug QT_NO_QDEBUG_MACRO
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QQnxNavigatorEventHandler::QQnxNavigatorEventHandler(QObject *parent)
@@ -55,31 +61,22 @@ QQnxNavigatorEventHandler::QQnxNavigatorEventHandler(QObject *parent)
 bool QQnxNavigatorEventHandler::handleOrientationCheck(int angle)
 {
     // reply to navigator that (any) orientation is acceptable
-#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
-    qDebug() << Q_FUNC_INFO << "angle=" << angle;
-#endif
-
     // TODO: check if top window flags prohibit orientation change
+    qNavigatorEventHandlerDebug() << Q_FUNC_INFO << "angle=" << angle;
     return true;
 }
 
 void QQnxNavigatorEventHandler::handleOrientationChange(int angle)
 {
     // update screen geometry and reply to navigator that we're ready
-#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
-    qDebug() << Q_FUNC_INFO << "angle=" << angle;
-#endif
-
+    qNavigatorEventHandlerDebug() << Q_FUNC_INFO << "angle=" << angle;
     emit rotationChanged(angle);
 }
 
 void QQnxNavigatorEventHandler::handleSwipeDown()
 {
     // simulate menu key press
-#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
-
+    qNavigatorEventHandlerDebug() << Q_FUNC_INFO;
     QWindow *w = QGuiApplication::focusWindow();
     QWindowSystemInterface::handleKeyEvent(w, QEvent::KeyPress, Qt::Key_Menu, Qt::NoModifier);
     QWindowSystemInterface::handleKeyEvent(w, QEvent::KeyRelease, Qt::Key_Menu, Qt::NoModifier);
@@ -88,28 +85,19 @@ void QQnxNavigatorEventHandler::handleSwipeDown()
 void QQnxNavigatorEventHandler::handleExit()
 {
     // shutdown everything
-#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
-
+    qNavigatorEventHandlerDebug() << Q_FUNC_INFO;
     QCoreApplication::quit();
 }
 
 void QQnxNavigatorEventHandler::handleWindowGroupActivated(const QByteArray &id)
 {
-#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
-    qDebug() << Q_FUNC_INFO << id;
-#endif
-
+    qNavigatorEventHandlerDebug() << Q_FUNC_INFO << id;
     Q_EMIT windowGroupActivated(id);
 }
 
 void QQnxNavigatorEventHandler::handleWindowGroupDeactivated(const QByteArray &id)
 {
-#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
-    qDebug() << Q_FUNC_INFO << id;
-#endif
-
+    qNavigatorEventHandlerDebug() << Q_FUNC_INFO << id;
     Q_EMIT windowGroupDeactivated(id);
 }
 

@@ -55,6 +55,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef QQNXNAVIGATOREVENTNOTIFIER_DEBUG
+#define qNavigatorEventNotifierDebug qDebug
+#else
+#define qNavigatorEventNotifierDebug QT_NO_QDEBUG_MACRO
+#endif
+
 static const char *navigatorControlPath = "/pps/services/navigator/control";
 static const int ppsBufferSize = 4096;
 
@@ -76,16 +82,12 @@ QQnxNavigatorEventNotifier::~QQnxNavigatorEventNotifier()
     if (m_fd != -1)
         close(m_fd);
 
-#if defined(QQNXNAVIGATOREVENTNOTIFIER_DEBUG)
-    qDebug() << "QQNX: navigator event notifier stopped";
-#endif
+    qNavigatorEventNotifierDebug() << Q_FUNC_INFO << "navigator event notifier stopped";
 }
 
 void QQnxNavigatorEventNotifier::start()
 {
-#if defined(QQNXNAVIGATOREVENTNOTIFIER_DEBUG)
-    qDebug() << "QQNX: navigator event notifier started";
-#endif
+    qNavigatorEventNotifierDebug() << Q_FUNC_INFO << "navigator event notifier started";
 
     // open connection to navigator
     errno = 0;
@@ -101,9 +103,7 @@ void QQnxNavigatorEventNotifier::start()
 
 void QQnxNavigatorEventNotifier::parsePPS(const QByteArray &ppsData, QByteArray &msg, QByteArray &dat, QByteArray &id)
 {
-#if defined(QQNXNAVIGATOREVENTNOTIFIER_DEBUG)
-    qDebug() << "PPS: data=" << ppsData;
-#endif
+    qNavigatorEventNotifierDebug() << Q_FUNC_INFO << "data=" << ppsData;
 
     // tokenize pps data into lines
     QList<QByteArray> lines = ppsData.split('\n');
@@ -117,10 +117,7 @@ void QQnxNavigatorEventNotifier::parsePPS(const QByteArray &ppsData, QByteArray 
 
         // tokenize current attribute
         const QByteArray &attr = lines.at(i);
-
-#if defined(QQNXNAVIGATOREVENTNOTIFIER_DEBUG)
-        qDebug() << "PPS: attr=" << attr;
-#endif
+        qNavigatorEventNotifierDebug() << Q_FUNC_INFO << "attr=" << attr;
 
         int firstColon = attr.indexOf(':');
         if (firstColon == -1) {
@@ -137,10 +134,8 @@ void QQnxNavigatorEventNotifier::parsePPS(const QByteArray &ppsData, QByteArray 
         QByteArray key = attr.left(firstColon);
         QByteArray value = attr.mid(secondColon + 1);
 
-#if defined(QQNXNAVIGATOREVENTNOTIFIER_DEBUG)
-        qDebug() << "PPS: key=" << key;
-        qDebug() << "PPS: val=" << value;
-#endif
+        qNavigatorEventNotifierDebug() << Q_FUNC_INFO << "key=" << key;
+        qNavigatorEventNotifierDebug() << Q_FUNC_INFO << "val=" << value;
 
         // save attribute value
         if (key == "msg")
@@ -167,9 +162,7 @@ void QQnxNavigatorEventNotifier::replyPPS(const QByteArray &res, const QByteArra
     }
     ppsData += "\n";
 
-#if defined(QQNXNAVIGATOREVENTNOTIFIER_DEBUG)
-    qDebug() << "PPS reply=" << ppsData;
-#endif
+    qNavigatorEventNotifierDebug() << Q_FUNC_INFO << "reply=" << ppsData;
 
     // send pps message to navigator
     errno = 0;
@@ -180,9 +173,7 @@ void QQnxNavigatorEventNotifier::replyPPS(const QByteArray &res, const QByteArra
 
 void QQnxNavigatorEventNotifier::handleMessage(const QByteArray &msg, const QByteArray &dat, const QByteArray &id)
 {
-#if defined(QQNXNAVIGATOREVENTNOTIFIER_DEBUG)
-    qDebug() << "PPS: msg=" << msg << ", dat=" << dat << ", id=" << id;
-#endif
+    qNavigatorEventNotifierDebug() << Q_FUNC_INFO << "msg=" << msg << ", dat=" << dat << ", id=" << id;
 
     // check message type
     if (msg == "orientationCheck") {
@@ -206,9 +197,8 @@ void QQnxNavigatorEventNotifier::handleMessage(const QByteArray &msg, const QByt
 
 void QQnxNavigatorEventNotifier::readData()
 {
-#if defined(QQNXNAVIGATOREVENTNOTIFIER_DEBUG)
-    qDebug() << "QQNX: reading navigator data";
-#endif
+    qNavigatorEventNotifierDebug() << Q_FUNC_INFO << "reading navigator data";
+
     // allocate buffer for pps data
     char buffer[ppsBufferSize];
 

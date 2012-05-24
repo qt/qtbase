@@ -47,6 +47,12 @@
 #include <bps/locale.h>
 #include <bps/virtualkeyboard.h>
 
+#ifdef QQNXVIRTUALKEYBOARD_DEBUG
+#define qVirtualKeyboardDebug qDebug
+#else
+#define qVirtualKeyboardDebug QT_NO_QDEBUG_MACRO
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QQnxVirtualKeyboardBps::QQnxVirtualKeyboardBps(QObject *parent)
@@ -79,20 +85,14 @@ bool QQnxVirtualKeyboardBps::handleEvent(bps_event_t *event)
 
 bool QQnxVirtualKeyboardBps::showKeyboard()
 {
-#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-    qDebug() << Q_FUNC_INFO << "current visibility=" << isVisible();
-#endif
-
+    qVirtualKeyboardDebug() << Q_FUNC_INFO << "current visibility=" << isVisible();
     virtualkeyboard_show();
     return true;
 }
 
 bool QQnxVirtualKeyboardBps::hideKeyboard()
 {
-#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-    qDebug() << Q_FUNC_INFO << "current visibility=" << isVisible();
-#endif
-
+    qVirtualKeyboardDebug() << Q_FUNC_INFO << "current visibility=" << isVisible();
     virtualkeyboard_hide();
     return true;
 }
@@ -136,9 +136,7 @@ void QQnxVirtualKeyboardBps::applyKeyboardMode(KeyboardMode mode)
         break;
     }
 
-#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-    qDebug() << Q_FUNC_INFO << "mode=" << mode;
-#endif
+    qVirtualKeyboardDebug() << Q_FUNC_INFO << "mode=" << mode;
 
     virtualkeyboard_change_options(layout, VIRTUALKEYBOARD_ENTER_DEFAULT);
 }
@@ -148,19 +146,14 @@ bool QQnxVirtualKeyboardBps::handleLocaleEvent(bps_event_t *event)
     if (bps_event_get_code(event) == LOCALE_INFO) {
         const QString language = QString::fromAscii(locale_event_get_language(event));
         const QString country  = QString::fromAscii(locale_event_get_country(event));
-
         const QLocale newLocale(language + QLatin1Char('_') + country);
 
-#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-        qDebug() << Q_FUNC_INFO << "current locale" << locale() << "new locale=" << newLocale;
-#endif
+        qVirtualKeyboardDebug() << Q_FUNC_INFO << "current locale" << locale() << "new locale=" << newLocale;
         setLocale(newLocale);
         return true;
     }
 
-#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-    qDebug() << "QQNX: Unhandled locale event. code=" << bps_event_get_code(event);
-#endif
+    qVirtualKeyboardDebug() << Q_FUNC_INFO << "Unhandled locale event. code=" << bps_event_get_code(event);
 
     return false;
 }
@@ -169,37 +162,24 @@ bool QQnxVirtualKeyboardBps::handleVirtualKeyboardEvent(bps_event_t *event)
 {
     switch (bps_event_get_code(event)) {
     case VIRTUALKEYBOARD_EVENT_VISIBLE:
-        #if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-        qDebug() << Q_FUNC_INFO << "EVENT VISIBLE: current visibility=" << isVisible();
-        #endif
-
+        qVirtualKeyboardDebug() << Q_FUNC_INFO << "EVENT VISIBLE: current visibility=" << isVisible();
         setVisible(true);
         break;
 
     case VIRTUALKEYBOARD_EVENT_HIDDEN:
-        #if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-        qDebug() << Q_FUNC_INFO << "EVENT HIDDEN: current visibility=" << isVisible();
-        #endif
-
+        qVirtualKeyboardDebug() << Q_FUNC_INFO << "EVENT HIDDEN: current visibility=" << isVisible();
         setVisible(false);
         break;
 
     case VIRTUALKEYBOARD_EVENT_INFO: {
         const int newHeight = virtualkeyboard_event_get_height(event);
-
-        #if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-        qDebug() << Q_FUNC_INFO << "EVENT INFO: current height=" << height() << "new height=" << newHeight;
-        #endif
-
+        qVirtualKeyboardDebug() << Q_FUNC_INFO << "EVENT INFO: current height=" << height() << "new height=" << newHeight;
         setHeight(newHeight);
         break;
     }
 
     default:
-        #if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-        qDebug() << "QQNX: Unhandled virtual keyboard event. code=" << bps_event_get_code(event);
-        #endif
-
+        qVirtualKeyboardDebug() << Q_FUNC_INFO << "Unhandled virtual keyboard event. code=" << bps_event_get_code(event);
         return false;
     }
 

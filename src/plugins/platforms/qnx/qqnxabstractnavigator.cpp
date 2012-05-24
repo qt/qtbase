@@ -44,6 +44,12 @@
 #include <QDebug>
 #include <QUrl>
 
+#ifdef QQNXNAVIGATOR_DEBUG
+#define qNavigatorDebug qDebug
+#else
+#define qNavigatorDebug QT_NO_QDEBUG_MACRO
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QQnxAbstractNavigator::QQnxAbstractNavigator(QObject *parent)
@@ -64,9 +70,7 @@ bool QQnxAbstractNavigator::invokeUrl(const QUrl &url)
     // which is not recognized by the navigator anymore
     const bool result = requestInvokeUrl(url.toString().toUtf8());
 
-#if defined(QQNXNAVIGATOR_DEBUG)
-    qDebug() << Q_FUNC_INFO << "url=" << url << "result=" << result;
-#endif
+    qNavigatorDebug() << Q_FUNC_INFO << "url=" << url << "result=" << result;
 
     return result;
 }

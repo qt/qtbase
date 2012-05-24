@@ -49,6 +49,12 @@
 
 #include <cctype>
 
+#ifdef QQNXSCREENEVENTTHREAD_DEBUG
+#define qScreenEventThreadDebug qDebug
+#else
+#define qScreenEventThreadDebug QT_NO_QDEBUG_MACRO
+#endif
+
 QQnxScreenEventThread::QQnxScreenEventThread(screen_context_t context, QQnxScreenEventHandler *screenEventHandler)
     : QThread(),
       m_screenContext(context),
@@ -78,9 +84,7 @@ void QQnxScreenEventThread::run()
     if (result)
         qFatal("QQNX: failed to create screen event, errno=%d", errno);
 
-#if defined(QQNXSCREENEVENTTHREAD_DEBUG)
-    qDebug() << "QQNX: screen event thread started";
-#endif
+    qScreenEventThreadDebug() << Q_FUNC_INFO << "screen event thread started";
 
     // loop indefinitely
     while (!m_quit) {
@@ -101,18 +105,14 @@ void QQnxScreenEventThread::run()
 
         if (qnxType == SCREEN_EVENT_USER) {
             // treat all user events as shutdown requests
-    #if defined(QQNXSCREENEVENTTHREAD_DEBUG)
-            qDebug() << "QQNX: QNX user screen event";
-    #endif
+            qScreenEventThreadDebug() << Q_FUNC_INFO << "QNX user screen event";
             m_quit = true;
         } else {
             m_screenEventHandler->handleEvent(event, qnxType);
         }
     }
 
-#if defined(QQNXSCREENEVENTTHREAD_DEBUG)
-    qDebug() << "QQNX: screen event thread stopped";
-#endif
+    qScreenEventThreadDebug() << Q_FUNC_INFO << "screen event thread stopped";
 
     // cleanup
     screen_destroy_event(event);
@@ -146,14 +146,10 @@ void QQnxScreenEventThread::shutdown()
     // cleanup
     screen_destroy_event(event);
 
-#if defined(QQNXSCREENEVENTTHREAD_DEBUG)
-    qDebug() << "QQNX: screen event thread shutdown begin";
-#endif
+    qScreenEventThreadDebug() << Q_FUNC_INFO << "screen event thread shutdown begin";
 
     // block until thread terminates
     wait();
 
-#if defined(QQNXSCREENEVENTTHREAD_DEBUG)
-    qDebug() << "QQNX: screen event thread shutdown end";
-#endif
+    qScreenEventThreadDebug() << Q_FUNC_INFO << "screen event thread shutdown end";
 }

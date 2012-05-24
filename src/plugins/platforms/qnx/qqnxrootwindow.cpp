@@ -44,9 +44,12 @@
 #include "qqnxscreen.h"
 
 #include <QtCore/QUuid>
-
-#if defined(QQNXROOTWINDOW_DEBUG)
 #include <QtCore/QDebug>
+
+#ifdef QQNXROOTWINDOW_DEBUG
+#define qRootWindowDebug qDebug
+#else
+#define qRootWindowDebug QT_NO_QDEBUG_MACRO
 #endif
 
 #include <errno.h>
@@ -59,9 +62,7 @@ QQnxRootWindow::QQnxRootWindow(QQnxScreen *screen)
       m_window(0),
       m_windowGroupName()
 {
-#if defined(QQNXROOTWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qRootWindowDebug() << Q_FUNC_INFO;
     // Create one top-level QNX window to act as a container for child windows
     // since navigator only supports one application window
     errno = 0;
@@ -182,9 +183,7 @@ QQnxRootWindow::~QQnxRootWindow()
 
 void QQnxRootWindow::post() const
 {
-#if defined(QQNXROOTWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qRootWindowDebug() << Q_FUNC_INFO;
     errno = 0;
     screen_buffer_t buffer;
     int result = screen_get_window_property_pv(m_window, SCREEN_PROPERTY_RENDER_BUFFERS, (void **)&buffer);
@@ -202,9 +201,7 @@ void QQnxRootWindow::post() const
 
 void QQnxRootWindow::flush() const
 {
-#if defined(QQNXROOTWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qRootWindowDebug() << Q_FUNC_INFO;
     // Force immediate display update
     errno = 0;
     int result = screen_flush_context(m_screen->nativeContext(), 0);
@@ -215,9 +212,7 @@ void QQnxRootWindow::flush() const
 
 void QQnxRootWindow::setRotation(int rotation)
 {
-#if defined(QQNXROOTWINDOW_DEBUG)
-    qDebug() << Q_FUNC_INFO << "angle =" << rotation;
-#endif
+    qRootWindowDebug() << Q_FUNC_INFO << "angle =" << rotation;
     errno = 0;
     int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_ROTATION, &rotation);
     if (result != 0) {

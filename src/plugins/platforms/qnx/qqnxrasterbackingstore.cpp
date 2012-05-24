@@ -46,14 +46,18 @@
 
 #include <errno.h>
 
+#ifdef QQNXRASTERBACKINGSTORE_DEBUG
+#define qRasterBackingStoreDebug qDebug
+#else
+#define qRasterBackingStoreDebug QT_NO_QDEBUG_MACRO
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QQnxRasterBackingStore::QQnxRasterBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
 {
-#if defined(QQNXRASTERBACKINGSTORE_DEBUG)
-    qDebug() << "QQnxRasterBackingStore::QQnxRasterBackingStore - w=" << window;
-#endif
+    qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << window;
 
     // save platform window associated with widget
     m_platformWindow = static_cast<QQnxWindow*>(window->handle());
@@ -61,9 +65,7 @@ QQnxRasterBackingStore::QQnxRasterBackingStore(QWindow *window)
 
 QQnxRasterBackingStore::~QQnxRasterBackingStore()
 {
-#if defined(QQnxRasterBackingStore_DEBUG)
-    qDebug() << "QQnxRasterBackingStore::~QQnxRasterBackingStore - w=" << window();
-#endif
+    qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << window();
 }
 
 QPaintDevice *QQnxRasterBackingStore::paintDevice()
@@ -76,9 +78,7 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
     Q_UNUSED(window);
     Q_UNUSED(offset);
 
-#if defined(QQNXRASTERBACKINGSTORE_DEBUG)
-    qDebug() << "QQnxRasterBackingStore::flush - w=" << this->window();
-#endif
+    qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << this->window();
 
     // visit all pending scroll operations
     for (int i = m_scrollOpList.size() - 1; i >= 0; i--) {
@@ -100,9 +100,7 @@ void QQnxRasterBackingStore::resize(const QSize &size, const QRegion &staticCont
 {
     Q_UNUSED(size);
     Q_UNUSED(staticContents);
-#if defined(QQNXRASTERBACKINGSTORE_DEBUG)
-    qDebug() << "QQnxRasterBackingStore::resize - w=" << window() << ", s=" << size;
-#endif
+    qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << window() << ", s =" << size;
 
     // NOTE: defer resizing window buffers until next paint as
     // resize() can be called multiple times before a paint occurs
@@ -110,9 +108,7 @@ void QQnxRasterBackingStore::resize(const QSize &size, const QRegion &staticCont
 
 bool QQnxRasterBackingStore::scroll(const QRegion &area, int dx, int dy)
 {
-#if defined(QQNXRASTERBACKINGSTORE_DEBUG)
-    qDebug() << "QQnxRasterBackingStore::scroll - w=" << window();
-#endif
+    qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << window();
 
     // calculate entire region affected by scroll operation (src + dst)
     QRegion totalArea = area.translated(dx, dy);
@@ -144,9 +140,7 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);
 
-#if defined(QQNXRASTERBACKINGSTORE_DEBUG)
-    qDebug() << "QQnxRasterBackingStore::beginPaint - w=" << window();
-#endif
+    qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << window();
 
     // resize window buffers if surface resized
     QSize s = window()->size();
@@ -158,9 +152,7 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
 void QQnxRasterBackingStore::endPaint(const QRegion &region)
 {
     Q_UNUSED(region);
-#if defined(QQnxRasterBackingStore_DEBUG)
-    qDebug() << "QQnxRasterBackingStore::endPaint - w=" << window();
-#endif
+    qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << window();
 }
 
 QT_END_NAMESPACE

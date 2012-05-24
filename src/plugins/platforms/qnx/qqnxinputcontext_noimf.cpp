@@ -46,6 +46,12 @@
 #include <QtGui/QGuiApplication>
 #include <QtWidgets/QAbstractSpinBox>
 
+#ifdef QQNXINPUTCONTEXT_DEBUG
+#define qInputContextDebug qDebug
+#else
+#define qInputContextDebug QT_NO_QDEBUG_MACRO
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QQnxInputContext::QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard) :
@@ -86,17 +92,13 @@ bool QQnxInputContext::filterEvent( const QEvent *event )
 
     if (event->type() == QEvent::CloseSoftwareInputPanel) {
         m_virtualKeyboard.hideKeyboard();
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-        qDebug() << "QQNX: hiding virtual keyboard";
-#endif
+        qInputContextDebug() << Q_FUNC_INFO << "hiding virtual keyboard";
         return false;
     }
 
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
         m_virtualKeyboard.showKeyboard();
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-        qDebug() << "QQNX: requesting virtual keyboard";
-#endif
+        qInputContextDebug() << Q_FUNC_INFO << "requesting virtual keyboard";
         return false;
     }
 
@@ -116,17 +118,13 @@ bool QQnxInputContext::handleKeyboardEvent(int flags, int sym, int mod, int scan
 
 void QQnxInputContext::showInputPanel()
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
     m_virtualKeyboard.showKeyboard();
 }
 
 void QQnxInputContext::hideInputPanel()
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO;
     m_virtualKeyboard.hideKeyboard();
 }
 
@@ -142,9 +140,7 @@ QLocale QQnxInputContext::locale() const
 
 void QQnxInputContext::keyboardVisibilityChanged(bool visible)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << "visible=" << visible;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO << "visible=" << visible;
     if (m_inputPanelVisible != visible) {
         m_inputPanelVisible = visible;
         emitInputPanelVisibleChanged();
@@ -153,9 +149,7 @@ void QQnxInputContext::keyboardVisibilityChanged(bool visible)
 
 void QQnxInputContext::keyboardLocaleChanged(const QLocale &locale)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << "locale=" << locale;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO << "locale=" << locale;
     if (m_inputPanelLocale != locale) {
         m_inputPanelLocale = locale;
         emitLocaleChanged();
@@ -164,9 +158,7 @@ void QQnxInputContext::keyboardLocaleChanged(const QLocale &locale)
 
 void QQnxInputContext::setFocusObject(QObject *object)
 {
-#if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << "input item=" << object;
-#endif
+    qInputContextDebug() << Q_FUNC_INFO << "input item=" << object;
 
     if (!inputMethodAccepted()) {
         if (m_inputPanelVisible)

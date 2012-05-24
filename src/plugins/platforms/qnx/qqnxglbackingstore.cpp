@@ -53,6 +53,12 @@
 
 #include <errno.h>
 
+#ifdef QQNXGLBACKINGSTORE_DEBUG
+#define qGLBackingStoreDebug qDebug
+#else
+#define qGLBackingStoreDebug QT_NO_QDEBUG_MACRO
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QQnxGLPaintDevice::QQnxGLPaintDevice(QWindow *window)
@@ -95,9 +101,7 @@ QQnxGLBackingStore::QQnxGLBackingStore(QWindow *window)
       m_requestedSize(),
       m_size()
 {
-#if defined(QQNXGLBACKINGSTORE_DEBUG)
-    qDebug() << "QQnxGLBackingStore::QQnxGLBackingStore - w=" << window;
-#endif
+    qGLBackingStoreDebug() << Q_FUNC_INFO << "w =" << window;
 
     // Create an OpenGL paint device which in turn creates a QGLContext for us
     m_paintDevice = new QQnxGLPaintDevice(window);
@@ -106,9 +110,7 @@ QQnxGLBackingStore::QQnxGLBackingStore(QWindow *window)
 
 QQnxGLBackingStore::~QQnxGLBackingStore()
 {
-#if defined(QQNXGLBACKINGSTORE_DEBUG)
-    qDebug() << "QQnxGLBackingStore::~QQnxGLBackingStore - w=" << window();
-#endif
+    qGLBackingStoreDebug() << Q_FUNC_INFO << "w =" << window();
 
     // cleanup OpenGL paint device
     delete m_paintDevice;
@@ -118,10 +120,7 @@ void QQnxGLBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 {
     Q_UNUSED(region);
     Q_UNUSED(offset);
-
-#if defined(QQNXGLBACKINGSTORE_DEBUG)
-    qDebug() << "QQnxGLBackingStore::flush - w=" << window;
-#endif
+    qGLBackingStoreDebug() << Q_FUNC_INFO << "w =" << window;
 
     // update the display with newly rendered content
     m_openGLContext->swapBuffers(window);
@@ -130,9 +129,8 @@ void QQnxGLBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 void QQnxGLBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
     Q_UNUSED(staticContents);
-#if defined(QQNXGLBACKINGSTORE_DEBUG)
-    qDebug() << "QQnxGLBackingStore::resize - w=" << window() << ", s=" << size;
-#endif
+    qGLBackingStoreDebug() << Q_FUNC_INFO << "w =" << window() << ", s =" << size;
+
     // NOTE: defer resizing window buffers until next paint as
     // resize() can be called multiple times before a paint occurs
     m_requestedSize = size;
@@ -141,10 +139,7 @@ void QQnxGLBackingStore::resize(const QSize &size, const QRegion &staticContents
 void QQnxGLBackingStore::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);
-
-#if defined(QQNXGLBACKINGSTORE_DEBUG)
-    qDebug() << "QQnxGLBackingStore::beginPaint - w=" << window();
-#endif
+    qGLBackingStoreDebug() << Q_FUNC_INFO << "w =" << window();
 
     // resize EGL surface if window surface resized
     if (m_size != m_requestedSize) {
@@ -155,9 +150,7 @@ void QQnxGLBackingStore::beginPaint(const QRegion &region)
 void QQnxGLBackingStore::endPaint(const QRegion &region)
 {
     Q_UNUSED(region);
-#if defined(QQNXGLBACKINGSTORE_DEBUG)
-    qDebug() << "QQnxGLBackingStore::endPaint - w=" << window();
-#endif
+    qGLBackingStoreDebug() << Q_FUNC_INFO << "w =" << window();
 }
 
 void QQnxGLBackingStore::resizeSurface(const QSize &size)
