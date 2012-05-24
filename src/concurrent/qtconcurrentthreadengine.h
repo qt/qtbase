@@ -72,11 +72,7 @@ private:
     // variable. The count can be either positive or negative - a negative
     // count signals that a thread is waiting on the barrier.
 
-    // BC note: inlined code from Qt < 4.6 will expect to find the QMutex 
-    // and QAtomicInt here. ### Qt 5: remove.
-    QMutex mutex;
     QAtomicInt count;
-
     QSemaphore semaphore;
 public:
     ThreadEngineBarrier();
