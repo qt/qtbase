@@ -681,7 +681,12 @@ static inline char qToLower(char c)
 
     A QByteArray can embed '\\0' bytes. The size() function always
     returns the size of the whole array, including embedded '\\0'
-    bytes. If you want to obtain the length of the data up to and
+    bytes, but excluding the terminating '\\0' added by QByteArray.
+    For example:
+
+    \snippet code/src_corelib_tools_qbytearray.cpp 48
+
+    If you want to obtain the length of the data up to and
     excluding the first '\\0' character, call qstrlen() on the byte
     array.
 

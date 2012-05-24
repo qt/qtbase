@@ -416,6 +416,25 @@ strcpy(data, text.data());
 delete [] data;
 //! [47]
 
+//! [48]
+QByteArray ba1("ca\0r\0t");
+ba1.size();                     // Returns 2.
+ba1.constData();                // Returns "ca" with terminating \0.
+
+QByteArray ba2("ca\0r\0t", 3);
+ba2.size();                     // Returns 3.
+ba2.constData();                // Returns "ca\0" with terminating \0.
+
+QByteArray ba3("ca\0r\0t", 4);
+ba3.size();                     // Returns 4.
+ba2.constData();                // Returns "ca\0r" with terminating \0.
+
+const char cart[] = {'c', 'a', '\0', 'r', '\0', 't'};
+QByteArray ba4(QByteArray::fromRawData(cart, 6));
+ba4.size();                     // Returns 6.
+ba4.constData();                // Returns "ca\0r\0t" without terminating \0.
+//! [48]
+
 }
 
 
