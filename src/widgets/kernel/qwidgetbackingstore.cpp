@@ -57,6 +57,11 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qgraphicseffect_p.h>
 
+#if defined(Q_OS_WIN) && !defined(QT_NO_PAINT_DEBUG)
+#  include <QtCore/qt_windows.h>
+#  include <qpa/qplatformnativeinterface.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 extern QRegion qt_dirtyRegion(QWidget *);
@@ -115,9 +120,19 @@ static inline void qt_flush(QWidget *widget, const QRegion &region, QBackingStor
 }
 
 #ifndef QT_NO_PAINT_DEBUG
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
+
 static void showYellowThing_win(QWidget *widget, const QRegion &region, int msec)
 {
+    // We expect to be passed a native parent.
+    QWindow *nativeWindow = widget->windowHandle();
+    if (!nativeWindow)
+        return;
+    void *hdcV = QGuiApplication::platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("getDC"), nativeWindow);
+    if (!hdcV)
+        return;
+    const HDC hdc = reinterpret_cast<HDC>(hdcV);
+
     HBRUSH brush;
     static int i = 0;
     switch (i) {
@@ -136,19 +151,16 @@ static void showYellowThing_win(QWidget *widget, const QRegion &region, int msec
     }
     i = (i + 1) & 3;
 
-    HDC hdc = widget->getDC();
-
-    const QVector<QRect> &rects = region.rects();
-    foreach (QRect rect, rects) {
+    foreach (const QRect &rect, region.rects()) {
         RECT winRect;
         SetRect(&winRect, rect.left(), rect.top(), rect.right(), rect.bottom());
         FillRect(hdc, &winRect, brush);
     }
-
-    widget->releaseDC(hdc);
+    DeleteObject(brush);
+    QGuiApplication::platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("releaseDC"), nativeWindow);
     ::Sleep(msec);
 }
-#endif
+#endif //  Q_OS_WIN
 
 void QWidgetBackingStore::showYellowThing(QWidget *widget, const QRegion &toBePainted, int msec, bool unclipped)
 {
@@ -163,7 +175,7 @@ void QWidgetBackingStore::showYellowThing(QWidget *widget, const QRegion &toBePa
         widget = nativeParent;
     }
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     Q_UNUSED(unclipped);
     showYellowThing_win(widget, paintRegion, msec);
 #else
@@ -215,7 +227,7 @@ void QWidgetBackingStore::showYellowThing(QWidget *widget, const QRegion &toBePa
 #if defined(Q_OS_UNIX)
     ::usleep(1000 * msec);
 #endif
-#endif // Q_WS_WIN
+#endif // !Q_OS_WIN
 }
 
 bool QWidgetBackingStore::flushPaint(QWidget *widget, const QRegion &rgn)
