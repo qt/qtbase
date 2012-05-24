@@ -51,7 +51,7 @@
 #include <qstring.h>
 #include <qdatetime.h>
 
-#ifdef Q_OS_WIN32
+#ifdef Q_OS_WIN
 #include <qmutex.h>
 #include <private/qmutexpool_p.h>
 #include <rpc.h>
@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
 
 static QByteArray qNtlmPhase1();
 static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phase2data);
-#ifdef Q_OS_WIN32
+#ifdef Q_OS_WIN
 static QByteArray qNtlmPhase1_SSPI(QAuthenticatorPrivate *ctx);
 static QByteArray qNtlmPhase3_SSPI(QAuthenticatorPrivate *ctx, const QByteArray& phase2data);
 #endif
@@ -327,7 +327,7 @@ bool QAuthenticator::isNull() const
     return !d;
 }
 
-#ifdef Q_OS_WIN32
+#ifdef Q_OS_WIN
 class QNtlmWindowsHandles
 {
 public:
@@ -353,7 +353,7 @@ QAuthenticatorPrivate::QAuthenticatorPrivate()
 
 QAuthenticatorPrivate::~QAuthenticatorPrivate()
 {
-#ifdef Q_OS_WIN32
+#ifdef Q_OS_WIN
     if (ntlmWindowsHandles)
         delete ntlmWindowsHandles;
 #endif
@@ -484,7 +484,7 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
     case QAuthenticatorPrivate::Ntlm:
         methodString = "NTLM ";
         if (challenge.isEmpty()) {
-#ifdef Q_OS_WIN32
+#ifdef Q_OS_WIN
             QByteArray phase1Token;
             if (user.isEmpty()) // Only pull from system if no user was specified in authenticator
                 phase1Token = qNtlmPhase1_SSPI(this);
@@ -501,7 +501,7 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
                     phase = Phase2;
             }
         } else {
-#ifdef Q_OS_WIN32
+#ifdef Q_OS_WIN
             QByteArray phase3Token;
             if (ntlmWindowsHandles)
                 phase3Token = qNtlmPhase3_SSPI(this, QByteArray::fromBase64(challenge));
@@ -1475,7 +1475,7 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
     return rc;
 }
 
-#ifdef Q_OS_WIN32
+#ifdef Q_OS_WIN
 // See http://davenport.sourceforge.net/ntlm.html
 // and libcurl http_ntlm.c
 
@@ -1493,9 +1493,15 @@ static bool q_NTLM_SSPI_library_load()
     if (pSecurityFunctionTable == NULL) {
         securityDLLHandle = LoadLibrary(L"secur32.dll");
         if (securityDLLHandle != NULL) {
+#if defined(Q_OS_WINCE)
+            INIT_SECURITY_INTERFACE pInitSecurityInterface =
+            (INIT_SECURITY_INTERFACE)GetProcAddress(securityDLLHandle,
+                                                    L"InitSecurityInterfaceW");
+#else
             INIT_SECURITY_INTERFACE pInitSecurityInterface =
             (INIT_SECURITY_INTERFACE)GetProcAddress(securityDLLHandle,
                                                     "InitSecurityInterfaceW");
+#endif
             if (pInitSecurityInterface != NULL)
                 pSecurityFunctionTable = pInitSecurityInterface();
         }
@@ -1507,7 +1513,7 @@ static bool q_NTLM_SSPI_library_load()
     return true;
 }
 
-
+#ifdef Q_OS_WIN
 // Phase 1:
 static QByteArray qNtlmPhase1_SSPI(QAuthenticatorPrivate *ctx)
 {
@@ -1631,6 +1637,8 @@ static QByteArray qNtlmPhase3_SSPI(QAuthenticatorPrivate *ctx, const QByteArray&
 
     return result;
 }
+#endif // Q_OS_WIN
+
 #endif
 
 QT_END_NAMESPACE
