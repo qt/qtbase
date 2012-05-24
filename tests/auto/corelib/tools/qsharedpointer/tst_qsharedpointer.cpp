@@ -89,6 +89,7 @@ private slots:
 #endif
     void constCorrectness();
     void customDeleter();
+    void lambdaCustomDeleter();
     void creating();
     void creatingQObject();
     void mixTrackingPointerCode();
@@ -1334,6 +1335,37 @@ void tst_QSharedPointer::customDeleter()
     QCOMPARE(derivedDataDeleter.callCount, 1);
     QCOMPARE(refcount, 2);
     safetyCheck();
+}
+
+void tst_QSharedPointer::lambdaCustomDeleter()
+{
+#ifndef Q_COMPILER_LAMBDA
+    QSKIP("This compiler is not in C++11 mode or does not support lambdas");
+#else
+    {
+        // stateless, one-argument
+        QSharedPointer<Data> ptr(new Data, [](Data *d) { delete d; });
+        QSharedPointer<Data> ptr2(new Data, [](Data *d) { d->doDelete(); });
+    }
+    safetyCheck();
+
+    customDeleterFnCallCount = 0;
+    {
+        // stateless, one-argument, modifies globals
+        QSharedPointer<Data> ptr(new Data, [](Data *d) { ++customDeleterFnCallCount; delete d; });
+    }
+    safetyCheck();
+    QCOMPARE(customDeleterFnCallCount, 1);
+
+    {
+        // stateful by ref, one-argument
+        int i = 0;
+        QSharedPointer<Data> ptr(new Data, [&i](Data *d) { i = 42; delete d; });
+        ptr.clear();
+        QCOMPARE(i, 42);
+    }
+    safetyCheck();
+#endif
 }
 
 void customQObjectDeleterFn(QObject *obj)
