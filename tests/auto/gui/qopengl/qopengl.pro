@@ -3,6 +3,7 @@
 ############################################################
 
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qopengl
 QT += gui gui-private core-private testlib
 

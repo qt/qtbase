@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qpainter
 
 QT += widgets widgets-private printsupport testlib

@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qicoimageformat
 SOURCES+= tst_qicoimageformat.cpp
 QT += testlib

@@ -3,6 +3,7 @@
 ############################################################
 
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qabstractprintdialog
 QT += widgets printsupport testlib
 SOURCES += tst_qabstractprintdialog.cpp

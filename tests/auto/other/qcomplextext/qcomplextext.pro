@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qcomplextext
 QT += widgets widgets-private testlib
 QT += core-private gui-private

@@ -1,4 +1,5 @@
 CONFIG += console testcase
+CONFIG += parallel_test
 CONFIG -= app_bundle
 QT = core testlib
 embedded: QT += gui

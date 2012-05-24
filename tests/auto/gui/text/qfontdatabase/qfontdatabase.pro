@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qfontdatabase
 SOURCES  += tst_qfontdatabase.cpp
 DEFINES += SRCDIR=\\\"$$PWD\\\"

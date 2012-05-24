@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qprinterinfo
 SOURCES  += tst_qprinterinfo.cpp
 

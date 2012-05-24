@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 
 SOURCES += tst_qsslkey.cpp
 !wince*:win32:LIBS += -lws2_32

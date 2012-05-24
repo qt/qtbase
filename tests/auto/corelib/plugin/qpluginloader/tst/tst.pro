@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET  = ../tst_qpluginloader
 QT = core testlib
 SOURCES = ../tst_qpluginloader.cpp

@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qfontdialog
 
 QT += widgets widgets-private testlib

@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET  = ../tst_qfactoryloader
 QT = core-private testlib
 

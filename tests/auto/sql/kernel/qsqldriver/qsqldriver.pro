@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qsqldriver
 SOURCES  += tst_qsqldriver.cpp
 

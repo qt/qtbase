@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qstyle
 TARGET.EPOCHEAPSIZE = 0x200000 0x800000
 QT += widgets testlib

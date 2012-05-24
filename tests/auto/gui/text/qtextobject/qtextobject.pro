@@ -3,6 +3,7 @@
 ############################################################
 
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qtextobject
 QT += widgets testlib
 SOURCES += tst_qtextobject.cpp

@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TEMPLATE = app
 TARGET = tst_qerrormessage
 

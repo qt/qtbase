@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qhttpnetworkconnection
 SOURCES  += tst_qhttpnetworkconnection.cpp
 INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/zlib

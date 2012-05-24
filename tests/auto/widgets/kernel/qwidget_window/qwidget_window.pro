@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qwidget_window
 QT += widgets testlib
 SOURCES  += tst_qwidget_window.cpp

@@ -3,6 +3,7 @@
 ############################################################
 
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qprogressdialog
 QT += widgets testlib
 SOURCES += tst_qprogressdialog.cpp

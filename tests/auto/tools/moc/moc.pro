@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_moc
 
 #exists(/usr/include/boost/spirit.hpp) {

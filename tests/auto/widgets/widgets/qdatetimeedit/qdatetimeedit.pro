@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qdatetimeedit
 QT += widgets testlib
 SOURCES  += tst_qdatetimeedit.cpp
