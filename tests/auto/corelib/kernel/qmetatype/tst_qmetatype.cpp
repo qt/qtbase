@@ -1171,8 +1171,6 @@ void tst_QMetaType::registerStreamBuiltin()
     qRegisterMetaTypeStreamOperators<QVariant>("QVariant");
 }
 
-Q_DECLARE_METATYPE(QSharedPointer<QObject>)
-
 typedef QHash<int, uint> IntUIntHash;
 Q_DECLARE_METATYPE(IntUIntHash)
 typedef QMap<int, uint> IntUIntMap;
@@ -1227,6 +1225,18 @@ private:
     QHash<int,int> m_hash;
     int m_int;
 };
+
+class MyObject : public QObject
+{
+  Q_OBJECT
+public:
+  MyObject(QObject *parent = 0)
+    : QObject(parent)
+  {
+  }
+};
+typedef MyObject* MyObjectPtr;
+Q_DECLARE_METATYPE(MyObjectPtr)
 
 void tst_QMetaType::automaticTemplateRegistration()
 {
@@ -1418,8 +1428,7 @@ void tst_QMetaType::automaticTemplateRegistration()
         F(QVector, TYPE) \
         F(QQueue, TYPE) \
         F(QStack, TYPE) \
-        F(QSet, TYPE) \
-        F(QSharedPointer, TYPE)
+        F(QSet, TYPE)
 
     #define PRINT_1ARG_TEMPLATE(RealName, ...) \
         FOR_EACH_1ARG_TEMPLATE_TYPE(CREATE_AND_VERIFY_CONTAINER, RealName)
@@ -1452,6 +1461,20 @@ void tst_QMetaType::automaticTemplateRegistration()
     CREATE_AND_VERIFY_CONTAINER(QList, QList<QMap<int, QHash<char, QVariantList> > >)
 
 #endif // Q_COMPILER_VARIADIC_MACROS
+
+#define TEST_QSHAREDPOINTER(FULLTYPE) \
+    { \
+        FULLTYPE sp = FULLTYPE::create(); \
+        QVariant v = QVariant::fromValue(sp); \
+        QCOMPARE(v.typeName(), #FULLTYPE); \
+    }
+
+    TEST_QSHAREDPOINTER(QSharedPointer<QObject>)
+    TEST_QSHAREDPOINTER(QSharedPointer<QFile>)
+    TEST_QSHAREDPOINTER(QSharedPointer<QTemporaryFile>)
+    TEST_QSHAREDPOINTER(QSharedPointer<MyObject>)
+
+#undef TEST_QSHAREDPOINTER
 
 }
 

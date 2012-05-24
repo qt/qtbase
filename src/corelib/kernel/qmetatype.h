@@ -752,12 +752,41 @@ Q_DECLARE_METATYPE_TEMPLATE_1ARG(QVector)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QQueue)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QStack)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSet)
-Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSharedPointer)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QLinkedList)
 
 Q_DECLARE_METATYPE_TEMPLATE_2ARG(QHash)
 Q_DECLARE_METATYPE_TEMPLATE_2ARG(QMap)
 Q_DECLARE_METATYPE_TEMPLATE_2ARG(QPair)
+
+template <typename T, bool = QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value>
+struct QMetaTypeIdSharedPointerQObjectStar
+{
+    enum {
+        Defined = 0
+    };
+};
+
+template <typename T>
+struct QMetaTypeIdSharedPointerQObjectStar<T, /* IsPointerToTypeDerivedFromQObject */ true>
+{
+    enum {
+        Defined = 1
+    };
+    static int qt_metatype_id()
+    {
+        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
+        if (!metatype_id.load()) {
+            metatype_id.storeRelease(qRegisterNormalizedMetaType< QSharedPointer<T> >( QByteArray("QSharedPointer<") + T::staticMetaObject.className() + ">",
+                        reinterpret_cast< QSharedPointer<T> *>(quintptr(-1))));
+        }
+        return metatype_id.loadAcquire();
+    }
+};
+
+template <typename T>
+struct QMetaTypeId< QSharedPointer<T> > : public QMetaTypeIdSharedPointerQObjectStar<T>
+{
+};
 
 inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeInterface *info,
                             Creator creator,
