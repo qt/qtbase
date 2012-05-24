@@ -42,6 +42,8 @@
 #ifndef QKMSDEVICE_H
 #define QKMSDEVICE_H
 
+#include <stddef.h>
+
 extern "C" {
 #include <gbm.h>
 }

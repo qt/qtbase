@@ -49,7 +49,6 @@
 #include "qkmsudevlistener.h"
 #include "qkmsudevdrmhandler.h"
 
-#include <QtPlatformSupport/private/qgenericunixprintersupport_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtGui/private/qguiapplication_p.h>
