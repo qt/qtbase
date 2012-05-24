@@ -167,10 +167,10 @@ public:
     inline const_iterator end() const { return ptr + s; }
     inline const_iterator cend() const { return ptr + s; }
     inline const_iterator constEnd() const { return ptr + s; }
-    iterator insert(iterator before, int n, const T &x);
-    inline iterator insert(iterator before, const T &x) { return insert(before, 1, x); }
-    iterator erase(iterator begin, iterator end);
-    inline iterator erase(iterator pos) { return erase(pos, pos+1); }
+    iterator insert(const_iterator before, int n, const T &x);
+    inline iterator insert(const_iterator before, const T &x) { return insert(before, 1, x); }
+    iterator erase(const_iterator begin, const_iterator end);
+    inline iterator erase(const_iterator pos) { return erase(pos, pos+1); }
 
 private:
     friend class QPodList<T, Prealloc>;
@@ -338,7 +338,7 @@ inline void QVarLengthArray<T, Prealloc>::replace(int i, const T &t)
 
 
 template <class T, int Prealloc>
-Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(iterator before, size_type n, const T &t)
+Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, size_type n, const T &t)
 {
     int offset = int(before - ptr);
     if (n != 0) {
@@ -365,7 +365,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
 }
 
 template <class T, int Prealloc>
-Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::erase(iterator abegin, iterator aend)
+Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::erase(const_iterator abegin, const_iterator aend)
 {
     int f = int(abegin - ptr);
     int l = int(aend - ptr);

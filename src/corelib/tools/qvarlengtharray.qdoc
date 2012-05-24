@@ -504,7 +504,7 @@
     \sa constBegin(), end()
 */
 
-/*! \fn QVarLengthArray::iterator QVarLengthArray::erase(iterator pos)
+/*! \fn QVarLengthArray::iterator QVarLengthArray::erase(const_iterator pos)
     \since 4.8
 
     Removes the item pointed to by the iterator \a pos from the
@@ -514,7 +514,7 @@
     \sa insert(), remove()
 */
 
-/*! \fn QVarLengthArray::iterator QVarLengthArray::erase(iterator begin, iterator end)
+/*! \fn QVarLengthArray::iterator QVarLengthArray::erase(const_iterator begin, const_iterator end)
 
     \overload
     \since 4.8
@@ -549,7 +549,7 @@
     vector.
 */
 
-/*! \fn QVarLengthArray::iterator QVarLengthArray::insert(iterator before, const T &value)
+/*! \fn QVarLengthArray::iterator QVarLengthArray::insert(const_iterator before, const T &value)
 
     \overload
     \since 4.8
@@ -558,7 +558,7 @@
     \a before. Returns an iterator pointing at the inserted item.
 */
 
-/*! \fn QVarLengthArray::iterator QVarLengthArray::insert(iterator before, int count, const T &value)
+/*! \fn QVarLengthArray::iterator QVarLengthArray::insert(const_iterator before, int count, const T &value)
 
     \since 4.8
     Inserts \a count copies of \a value in front of the item pointed to
