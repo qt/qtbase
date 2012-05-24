@@ -691,7 +691,7 @@ bool QSqlTableModel::submitAll()
     bool success = true;
 
     for (QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.begin();
-         it != d->cache.constEnd(); ++it) {
+         it != d->cache.end(); ++it) {
         if (it.value().submitted())
             continue;
 

@@ -2637,9 +2637,9 @@ void QIconModeViewBase::paintDragDrop(QPainter *painter)
         painter->translate(draggedItemsDelta());
         QStyleOptionViewItemV4 option = viewOptions();
         option.state &= ~QStyle::State_MouseOver;
-        QVector<QModelIndex>::const_iterator it = draggedItems.begin();
+        QVector<QModelIndex>::const_iterator it = draggedItems.constBegin();
         QListViewItem item = indexToListViewItem(*it);
-        for (; it != draggedItems.end(); ++it) {
+        for (; it != draggedItems.constEnd(); ++it) {
             item = indexToListViewItem(*it);
             option.rect = viewItemRect(item);
             delegate(*it)->paint(painter, option, *it);

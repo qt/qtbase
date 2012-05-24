@@ -2020,14 +2020,14 @@ void QTreeView::doItemsLayout()
         //clean the QSet that may contains old (and this invalid) indexes
         d->hasRemovedItems = false;
         QSet<QPersistentModelIndex>::iterator it = d->expandedIndexes.begin();
-        while (it != d->expandedIndexes.constEnd()) {
+        while (it != d->expandedIndexes.end()) {
             if (!it->isValid())
                 it = d->expandedIndexes.erase(it);
             else
                 ++it;
         }
         it = d->hiddenIndexes.begin();
-        while (it != d->hiddenIndexes.constEnd()) {
+        while (it != d->hiddenIndexes.end()) {
             if (!it->isValid())
                 it = d->hiddenIndexes.erase(it);
             else

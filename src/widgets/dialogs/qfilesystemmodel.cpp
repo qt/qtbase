@@ -1142,7 +1142,7 @@ void QFileSystemModelPrivate::sortChildren(int column, const QModelIndex &parent
     QList<QPair<QFileSystemModelPrivate::QFileSystemNode*, int> > values;
     QHash<QString, QFileSystemNode *>::const_iterator iterator;
     int i = 0;
-    for(iterator = indexNode->children.begin() ; iterator != indexNode->children.end() ; ++iterator) {
+    for(iterator = indexNode->children.constBegin() ; iterator != indexNode->children.constEnd() ; ++iterator) {
         if (filtersAcceptsNode(iterator.value())) {
             values.append(QPair<QFileSystemModelPrivate::QFileSystemNode*, int>((iterator.value()), i));
         } else {
