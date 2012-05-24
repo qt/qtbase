@@ -49,7 +49,7 @@
 
 #include "qcoreapplication.h"
 #include "qtcpsocket.h"
-#include "qurlinfo.h"
+#include "qurlinfo_p.h"
 #include "qstringlist.h"
 #include "qregexp.h"
 #include "qtimer.h"

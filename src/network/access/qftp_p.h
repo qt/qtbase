@@ -54,7 +54,7 @@
 #define QFTP_H
 
 #include <QtCore/qstring.h>
-#include <QtNetwork/qurlinfo.h>
+#include <qurlinfo_p.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER

@@ -207,8 +207,8 @@ information about a particular change.
 - The QHttp, QHttpHeader, QHttpResponseHeader and QHttpRequestHeader classes have
   been removed, QNetworkAccessManager should be used instead.
 
-- The QFtp class is no longer exported, QNetworkAccessManager should be used
-  instead.
+- The QFtp and QUrlInfo classes are no longer exported, QNetworkAccessManager should be used
+  instead. These classes are available in a separate module, qtftp.
 
 - QProcess
 

@@ -41,7 +41,7 @@
 
 #include "qnetworkaccessfilebackend_p.h"
 #include "qfileinfo.h"
-#include "qurlinfo.h"
+#include "qurlinfo_p.h"
 #include "qdir.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 

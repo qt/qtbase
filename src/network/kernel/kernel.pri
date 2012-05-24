@@ -11,7 +11,7 @@ HEADERS += kernel/qauthenticator.h \
            kernel/qhostaddress_p.h \
            kernel/qhostinfo.h \
            kernel/qhostinfo_p.h \
-           kernel/qurlinfo.h \
+           kernel/qurlinfo_p.h \
            kernel/qnetworkproxy.h \
            kernel/qnetworkproxy_p.h \
 	   kernel/qnetworkinterface.h \

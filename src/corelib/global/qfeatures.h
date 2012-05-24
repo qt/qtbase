@@ -235,9 +235,6 @@
 // QUndoCommand
 //#define QT_NO_UNDOCOMMAND
 
-// QUrlInfo
-//#define QT_NO_URLINFO
-
 // QValidator
 //#define QT_NO_VALIDATOR
 
@@ -388,7 +385,7 @@
 #endif
 
 // File Transfer Protocol
-#if !defined(QT_NO_FTP) && (defined(QT_NO_URLINFO) || defined(QT_NO_TEXTDATE))
+#if !defined(QT_NO_FTP) && (defined(QT_NO_TEXTDATE))
 #define QT_NO_FTP
 #endif
 

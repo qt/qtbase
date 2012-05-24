@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qurlinfo.h"
+#include "qurlinfo_p.h"
 
 #ifndef QT_NO_URLINFO
 

@@ -44,7 +44,7 @@
 #include "qnetworkaccesscachebackend_p.h"
 #include "qabstractnetworkcache.h"
 #include "qfileinfo.h"
-#include "qurlinfo.h"
+#include "qurlinfo_p.h"
 #include "qdir.h"
 #include "qcoreapplication.h"
 

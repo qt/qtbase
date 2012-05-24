@@ -962,13 +962,6 @@ SeeAlso: ???
 
 # Networking
 
-Feature: URLINFO
-Description: Supports storage of URL information.
-Section: Networking
-Requires:
-Name: QUrlInfo
-SeeAlso: ???
-
 Feature: HOSTINFO
 Description: Supports host name lookups.
 Section: Networking
@@ -979,7 +972,7 @@ SeeAlso: ???
 Feature: FTP
 Description: Supports FTP file access.
 Section: Networking
-Requires: URLINFO TEXTDATE
+Requires: TEXTDATE
 Name: File Transfer Protocol
 SeeAlso: ???
 
