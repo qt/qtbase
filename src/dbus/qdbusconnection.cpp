@@ -789,7 +789,7 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
     QDBusWriteLocker locker(RegisterObjectAction, d);
 
     // lower-bound search for where this object should enter in the tree
-    QDBusConnectionPrivate::ObjectTreeNode *node = &d->rootNode;
+    QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator node = &d->rootNode;
     int i = 1;
     while (node) {
         if (pathComponents.count() == i) {
