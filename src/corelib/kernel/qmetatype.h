@@ -247,7 +247,10 @@ public:
         NeedsDestruction = 0x2,
         MovableType = 0x4,
         PointerToQObject = 0x8,
-        IsEnumeration = 0x10
+        IsEnumeration = 0x10,
+        SharedPointerToQObject = 0x20,
+        WeakPointerToQObject = 0x40,
+        TrackingPointerToQObject = 0x80
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
@@ -415,6 +418,9 @@ template <> inline void qMetaTypeLoadHelper<void>(QDataStream &, void *) {}
 
 class QObject;
 class QWidget;
+template <class T> class QSharedPointer;
+template <class T> class QWeakPointer;
+template <class T> class QPointer;
 
 namespace QtPrivate
 {
@@ -465,6 +471,40 @@ namespace QtPrivate
     {
         static inline const QMetaObject *value() { return &T::staticMetaObject; }
     };
+
+    template<typename T>
+    struct IsSharedPointerToTypeDerivedFromQObject
+    {
+        enum { Value = false };
+    };
+
+    template<typename T>
+    struct IsSharedPointerToTypeDerivedFromQObject<QSharedPointer<T> > : IsPointerToTypeDerivedFromQObject<T*>
+    {
+    };
+
+    template<typename T>
+    struct IsWeakPointerToTypeDerivedFromQObject
+    {
+        enum { Value = false };
+    };
+
+    template<typename T>
+    struct IsWeakPointerToTypeDerivedFromQObject<QWeakPointer<T> > : IsPointerToTypeDerivedFromQObject<T*>
+    {
+    };
+
+    template<typename T>
+    struct IsTrackingPointerToTypeDerivedFromQObject
+    {
+        enum { Value = false };
+    };
+
+    template<typename T>
+    struct IsTrackingPointerToTypeDerivedFromQObject<QPointer<T> >
+    {
+        enum { Value = true };
+    };
 }
 
 template <typename T, bool = QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value>
@@ -511,6 +551,9 @@ namespace QtPrivate {
                      | (QTypeInfo<T>::isComplex ? QMetaType::NeedsConstruction : 0)
                      | (QTypeInfo<T>::isComplex ? QMetaType::NeedsDestruction : 0)
                      | (IsPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::PointerToQObject : 0)
+                     | (IsSharedPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::SharedPointerToQObject : 0)
+                     | (IsWeakPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::WeakPointerToQObject : 0)
+                     | (IsTrackingPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::TrackingPointerToQObject : 0)
                      | (Q_IS_ENUM(T) ? QMetaType::IsEnumeration : 0)
              };
     };
@@ -677,9 +720,6 @@ template <class T> class QVector;
 template <class T> class QQueue;
 template <class T> class QStack;
 template <class T> class QSet;
-template <class T> class QSharedPointer;
-template <class T> class QWeakPointer;
-template <class T> class QPointer;
 template <class T1, class T2> class QMap;
 template <class T1, class T2> class QHash;
 template <class T1, class T2> struct QPair;

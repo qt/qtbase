@@ -1221,6 +1221,7 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
 */
 QSharedPointer<QObject> QtSharedPointer::sharedPointerFromVariant_internal(const QVariant &variant)
 {
+    Q_ASSERT(QMetaType::typeFlags(variant.userType()) & QMetaType::SharedPointerToQObject);
     return *reinterpret_cast<const QSharedPointer<QObject>*>(variant.constData());
 }
 
@@ -1231,6 +1232,7 @@ QSharedPointer<QObject> QtSharedPointer::sharedPointerFromVariant_internal(const
 */
 QWeakPointer<QObject> QtSharedPointer::weakPointerFromVariant_internal(const QVariant &variant)
 {
+    Q_ASSERT(QMetaType::typeFlags(variant.userType()) & QMetaType::WeakPointerToQObject || QMetaType::typeFlags(variant.userType()) & QMetaType::TrackingPointerToQObject);
     return *reinterpret_cast<const QWeakPointer<QObject>*>(variant.constData());
 }
 

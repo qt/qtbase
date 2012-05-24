@@ -168,6 +168,9 @@ information about a particular change.
   * Q_DECLARE_METATYPE(Foo*) now requires that Foo is fully defined. In
     cases where a forward declared type should be used as a metatype,
     Q_DECLARE_OPAQUE_POINTER(Foo*) can be used to allow that.
+  * Similarly, Q_DECLARE_METATYPE(QSharedPointer<Foo>), and
+    Q_DECLARE_METATYPE(QWeakPointer<Foo>) require Foo to be fully defined. Again
+    though, Q_DECLARE_OPAQUE_POINTER(Foo*) can be used to allow that.
 
 - QItemEditorFactory
 
