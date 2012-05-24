@@ -46,6 +46,9 @@ QT_BEGIN_NAMESPACE
 
 class QTsLibPlugin : public QGenericPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "tslib.json")
+
 public:
     QTsLibPlugin();
 
@@ -71,8 +74,8 @@ QObject* QTsLibPlugin::create(const QString &key,
     if (!key.compare(QLatin1String("Tslib"), Qt::CaseInsensitive) || !key.compare(QLatin1String("TslibRaw"), Qt::CaseInsensitive))
         return new QTsLibMouseHandler(key, specification);
     return 0;
-    }
-
-Q_EXPORT_PLUGIN2(qtslibplugin, QTsLibPlugin)
+}
 
 QT_END_NAMESPACE
+
+#include "main.moc"

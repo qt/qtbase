@@ -1,4 +1,4 @@
-TARGET = qlinuxinputplugin
+TARGET = qtslibplugin
 load(qt_plugin)
 
 DESTDIR = $$QT.gui.plugins/generic
@@ -11,3 +11,5 @@ SOURCES	= main.cpp \
 	qtslib.cpp
 
 LIBS += -lts
+
+OTHER_FILES += tslib.json

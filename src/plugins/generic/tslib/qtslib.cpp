@@ -68,12 +68,15 @@ QTsLibMouseHandler::QTsLibMouseHandler(const QString &key,
     if (specification.startsWith("/dev/"))
         device = specification.toLocal8Bit();
 
-    m_dev =  ts_open(device.constData(), 1);
+    m_dev = ts_open(device.constData(), 1);
+    if (!m_dev) {
+        qErrnoWarning(errno, "ts_open() failed");
+        return;
+    }
 
     if (ts_config(m_dev)) {
         perror("Error configuring\n");
     }
-
 
     m_rawMode =  !key.compare(QLatin1String("TslibRaw"), Qt::CaseInsensitive);
 
