@@ -66,6 +66,10 @@ QT_BEGIN_NAMESPACE
     entered into the shared cache. As the items are rendered into the cache, itemsAvailable() signals
     will be emitted for each of the items which have previously been requested and which have not
     yet been reported as ready.
+
+    Using beginRequestBatch() and endRequestBatch(), it's possible to batch glyph requests, which
+    could improve performance in cases where you have a sequence of requests pending, and you
+    do not need the results during this sequence.
 */
 
 /*!
@@ -207,6 +211,86 @@ QT_BEGIN_NAMESPACE
     If the application no longer holds any references to previously referenced items in a given
     cache, it should call releaseItems() for these items, at which point it will no longer receive
     any itemsInvalidated() signal for these items.
+*/
+
+/*!
+    \fn void beginRequestBatch()
+
+    This is a hint to the cache that a burst of requests is pending. In some implementations, this
+    will improve performance, as the cache can focus on handling the requests and wait with the
+    results until it is done. It should typically be called prior to a sequence of calls to
+    requestItems() and releaseItems().
+
+    Any call to beginRequestBatch() must be followed at some point by a call to endRequestBatch().
+    Failing to do this may lead to the results of requests never being emitted.
+
+    \note beginRequestBatch() and endRequestBatch() have no stacking logic. Calling
+    beginRequestBatch() twice in a row has no effect, and the single existing batch will be ended
+    by the earliest call to endRequestBatch().
+
+    \sa endRequestBatch(), requestBatchStarted()
+*/
+
+/*!
+    \fn void endRequestBatch()
+
+    Signals to the cache that the request sequence which has previously been commenced using
+    beginRequestBatch() has now finished.
+
+    \sa beginRequestBatch(), requestBatchStarted()
+*/
+
+/*!
+   \fn bool requestBatchStarted() const
+
+   Returns true if a request batch has previously been started using beginRequestBatch()
+   and not yet stopped using endRequestBatch().
+
+   \sa beginRequestBatch(), endRequestBatch()
+*/
+
+/*!
+    \fn uint textureIdForBuffer(void *bufferId)
+
+    Returns an OpenGL texture ID corresponding to the buffer \a bufferId, which has previously
+    been passed through signals itemsAvailable() or itemsUpdated(). The relevant OpenGL context
+    should be current when calling this function.
+
+    \sa eglImageForBuffer(), sizeOfBuffer()
+*/
+
+/*!
+    \fn void *eglImageForBuffer(void *bufferId)
+
+    Returns an EGLImageKHR image corresponding to the buffer \a bufferId.
+
+    \sa textureIdForBuffer(), sizeOfBuffer()
+*/
+
+/*!
+    \fn void referenceBuffer(void *bufferId)
+
+    Registers a reference to the buffer \a bufferId.
+
+    \sa dereferenceBuffer()
+*/
+
+/*!
+    \fn bool dereferenceBuffer(void *bufferId)
+
+    Removed a previously registered reference to the buffer \a bufferId. Returns true if there
+    are still more references to the buffer in question, or false if this was the last reference
+    (in which case the buffer may have been deleted in the cache.)
+
+    \sa dereferenceBuffer()
+*/
+
+/*!
+    \fn QSize sizeOfBuffer(void *bufferId)
+
+    Returns the size of the buffer \a bufferId.
+
+    \sa textureIdForBuffer(), eglImageForBuffer()
 */
 
 QT_END_NAMESPACE

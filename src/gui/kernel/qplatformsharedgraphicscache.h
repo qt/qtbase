@@ -76,14 +76,17 @@ public:
 
     explicit QPlatformSharedGraphicsCache(QObject *parent = 0) : QObject(parent) {}
 
-    Q_INVOKABLE virtual void ensureCacheInitialized(const QByteArray &cacheId, BufferType bufferType,
+    virtual void beginRequestBatch() = 0;
+    virtual void ensureCacheInitialized(const QByteArray &cacheId, BufferType bufferType,
                                                     PixelFormat pixelFormat) = 0;
-
-    Q_INVOKABLE virtual void requestItems(const QByteArray &cacheId, const QVector<quint32> &itemIds) = 0;
-    Q_INVOKABLE virtual void insertItems(const QByteArray &cacheId,
+    virtual void requestItems(const QByteArray &cacheId, const QVector<quint32> &itemIds) = 0;
+    virtual void insertItems(const QByteArray &cacheId,
                                          const QVector<quint32> &itemIds,
                                          const QVector<QImage> &items) = 0;
-    Q_INVOKABLE virtual void releaseItems(const QByteArray &cacheId, const QVector<quint32> &itemIds) = 0;
+    virtual void releaseItems(const QByteArray &cacheId, const QVector<quint32> &itemIds) = 0;
+    virtual void endRequestBatch() = 0;
+
+    virtual bool requestBatchStarted() const = 0;
 
     virtual uint textureIdForBuffer(void *bufferId) = 0;
     virtual void referenceBuffer(void *bufferId) = 0;
