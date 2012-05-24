@@ -115,10 +115,10 @@ void MetaStack::process(QChar ch, const Location& location)
         QStringList prefixes = top().next;
 
         top().next.clear();
-        QStringList::ConstIterator pre = prefixes.begin();
-        while (pre != prefixes.end()) {
-            QStringList::ConstIterator suf = suffixes.begin();
-            while (suf != suffixes.end()) {
+        QStringList::ConstIterator pre = prefixes.constBegin();
+        while (pre != prefixes.constEnd()) {
+            QStringList::ConstIterator suf = suffixes.constBegin();
+            while (suf != suffixes.constEnd()) {
                 top().next << (*pre + *suf);
                 ++suf;
             }
@@ -212,8 +212,8 @@ void Config::load(const QString& fileName)
  */
 void Config::unload(const QString& fileName)
 {
-    QStringMultiMap::ConstIterator v = stringValueMap.begin();
-    while (v != stringValueMap.end()) {
+    QStringMultiMap::ConstIterator v = stringValueMap.constBegin();
+    while (v != stringValueMap.constEnd()) {
         qDebug() << v.key() << " = " << v.value();
 #if 0
         if (v.key().startsWith(varDot)) {
@@ -261,10 +261,10 @@ bool Config::getBool(const QString& var) const
 int Config::getInt(const QString& var) const
 {
     QStringList strs = getStringList(var);
-    QStringList::ConstIterator s = strs.begin();
+    QStringList::ConstIterator s = strs.constBegin();
     int sum = 0;
 
-    while (s != strs.end()) {
+    while (s != strs.constEnd()) {
         sum += (*s).toInt();
         ++s;
     }
@@ -357,8 +357,8 @@ QStringList Config::getCleanPathList(const QString& var) const
     if (!locMap[var].isEmpty())
         (Location&) lastLoc = locMap[var];
     QStringList t;
-    QMap<QString,QStringList>::const_iterator it = stringListValueMap.find(var);
-    if (it != stringListValueMap.end()) {
+    QMap<QString,QStringList>::const_iterator it = stringListValueMap.constFind(var);
+    if (it != stringListValueMap.constEnd()) {
         const QStringList& sl = it.value();
         if (!sl.isEmpty()) {
             t.reserve(sl.size());
@@ -382,9 +382,9 @@ QRegExp Config::getRegExp(const QString& var) const
 {
     QString pattern;
     QList<QRegExp> subRegExps = getRegExpList(var);
-    QList<QRegExp>::ConstIterator s = subRegExps.begin();
+    QList<QRegExp>::ConstIterator s = subRegExps.constBegin();
 
-    while (s != subRegExps.end()) {
+    while (s != subRegExps.constEnd()) {
         if (!(*s).isValid())
             return *s;
         if (!pattern.isEmpty())
@@ -405,10 +405,10 @@ QRegExp Config::getRegExp(const QString& var) const
 QList<QRegExp> Config::getRegExpList(const QString& var) const
 {
     QStringList strs = getStringList(var);
-    QStringList::ConstIterator s = strs.begin();
+    QStringList::ConstIterator s = strs.constBegin();
     QList<QRegExp> regExps;
 
-    while (s != strs.end()) {
+    while (s != strs.constEnd()) {
         regExps += QRegExp(*s);
         ++s;
     }
@@ -425,8 +425,8 @@ QSet<QString> Config::subVars(const QString& var) const
 {
     QSet<QString> result;
     QString varDot = var + QLatin1Char('.');
-    QStringMultiMap::ConstIterator v = stringValueMap.begin();
-    while (v != stringValueMap.end()) {
+    QStringMultiMap::ConstIterator v = stringValueMap.constBegin();
+    while (v != stringValueMap.constEnd()) {
         if (v.key().startsWith(varDot)) {
             QString subVar = v.key().mid(varDot.length());
             int dot = subVar.indexOf(QLatin1Char('.'));
@@ -447,8 +447,8 @@ QSet<QString> Config::subVars(const QString& var) const
 void Config::subVarsAndValues(const QString& var, QStringMultiMap& t) const
 {
     QString varDot = var + QLatin1Char('.');
-    QStringMultiMap::ConstIterator v = stringValueMap.begin();
-    while (v != stringValueMap.end()) {
+    QStringMultiMap::ConstIterator v = stringValueMap.constBegin();
+    while (v != stringValueMap.constEnd()) {
         if (v.key().startsWith(varDot)) {
             QString subVar = v.key().mid(varDot.length());
             int dot = subVar.indexOf(QLatin1Char('.'));
@@ -479,8 +479,8 @@ QStringList Config::getAllFiles(const QString &filesVar,
 
     QString nameFilter = getString(filesVar + dot + QLatin1String(CONFIG_FILEEXTENSIONS));
 
-    QStringList::ConstIterator d = dirs.begin();
-    while (d != dirs.end()) {
+    QStringList::ConstIterator d = dirs.constBegin();
+    while (d != dirs.constEnd()) {
         result += getFilesHere(*d, nameFilter, excludedDirs, excludedFiles);
         ++d;
     }
@@ -511,8 +511,8 @@ QString Config::findFile(const Location& location,
     QStringList components = fileName.split(QLatin1Char('?'));
     QString firstComponent = components.first();
 
-    QStringList::ConstIterator f = files.begin();
-    while (f != files.end()) {
+    QStringList::ConstIterator f = files.constBegin();
+    while (f != files.constEnd()) {
         if (*f == firstComponent ||
                 (*f).endsWith(QLatin1Char('/') + firstComponent)) {
             fileInfo.setFile(*f);
@@ -524,8 +524,8 @@ QString Config::findFile(const Location& location,
     }
 
     if (fileInfo.fileName().isEmpty()) {
-        QStringList::ConstIterator d = dirs.begin();
-        while (d != dirs.end()) {
+        QStringList::ConstIterator d = dirs.constBegin();
+        while (d != dirs.constEnd()) {
             fileInfo.setFile(QDir(*d), firstComponent);
             if (fileInfo.exists()) {
                 break;
@@ -538,9 +538,9 @@ QString Config::findFile(const Location& location,
     if (!fileInfo.exists())
         return QString();
 
-    QStringList::ConstIterator c = components.begin();
+    QStringList::ConstIterator c = components.constBegin();
     for (;;) {
-        bool isArchive = (c != components.end() - 1);
+        bool isArchive = (c != components.constEnd() - 1);
         QString userFriendly = *c;
 
         userFriendlyFilePath += userFriendly;
@@ -567,8 +567,8 @@ QString Config::findFile(const Location& location,
                          const QStringList& fileExtensions,
                          QString& userFriendlyFilePath)
 {
-    QStringList::ConstIterator e = fileExtensions.begin();
-    while (e != fileExtensions.end()) {
+    QStringList::ConstIterator e = fileExtensions.constBegin();
+    while (e != fileExtensions.constEnd()) {
         QString filePath = findFile(location,
                                     files,
                                     dirs,
@@ -900,8 +900,8 @@ void Config::load(Location location, const QString& fileName)
                     }
                 }
 
-                QStringList::ConstIterator key = keys.begin();
-                while (key != keys.end()) {
+                QStringList::ConstIterator key = keys.constBegin();
+                while (key != keys.constEnd()) {
                     if (!keySyntax.exactMatch(*key))
                         keyLoc.fatal(tr("Invalid key '%1'").arg(*key));
 

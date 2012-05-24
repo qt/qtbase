@@ -95,8 +95,8 @@ void CodeMarker::terminateMarker()
 void CodeMarker::initialize(const Config& config)
 {
     defaultLang = config.getString(QLatin1String(CONFIG_LANGUAGE));
-    QList<CodeMarker *>::ConstIterator m = markers.begin();
-    while (m != markers.end()) {
+    QList<CodeMarker *>::ConstIterator m = markers.constBegin();
+    while (m != markers.constEnd()) {
         (*m)->initializeMarker(config);
         ++m;
     }
@@ -107,8 +107,8 @@ void CodeMarker::initialize(const Config& config)
  */
 void CodeMarker::terminate()
 {
-    QList<CodeMarker *>::ConstIterator m = markers.begin();
-    while (m != markers.end()) {
+    QList<CodeMarker *>::ConstIterator m = markers.constBegin();
+    while (m != markers.constEnd()) {
         (*m)->terminateMarker();
         ++m;
     }
@@ -120,8 +120,8 @@ CodeMarker *CodeMarker::markerForCode(const QString& code)
     if (defaultMarker != 0 && defaultMarker->recognizeCode(code))
         return defaultMarker;
 
-    QList<CodeMarker *>::ConstIterator m = markers.begin();
-    while (m != markers.end()) {
+    QList<CodeMarker *>::ConstIterator m = markers.constBegin();
+    while (m != markers.constEnd()) {
         if ((*m)->recognizeCode(code))
             return *m;
         ++m;
@@ -137,8 +137,8 @@ CodeMarker *CodeMarker::markerForFileName(const QString& fileName)
         QString ext = fileName.mid(dot + 1);
         if (defaultMarker != 0 && defaultMarker->recognizeExtension(ext))
             return defaultMarker;
-        QList<CodeMarker *>::ConstIterator m = markers.begin();
-        while (m != markers.end()) {
+        QList<CodeMarker *>::ConstIterator m = markers.constBegin();
+        while (m != markers.constEnd()) {
             if ((*m)->recognizeExtension(ext))
                 return *m;
             ++m;
@@ -150,8 +150,8 @@ CodeMarker *CodeMarker::markerForFileName(const QString& fileName)
 
 CodeMarker *CodeMarker::markerForLanguage(const QString& lang)
 {
-    QList<CodeMarker *>::ConstIterator m = markers.begin();
-    while (m != markers.end()) {
+    QList<CodeMarker *>::ConstIterator m = markers.constBegin();
+    while (m != markers.constEnd()) {
         if ((*m)->recognizeLanguage(lang))
             return *m;
         ++m;

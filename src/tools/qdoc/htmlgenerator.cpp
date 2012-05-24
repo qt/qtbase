@@ -185,8 +185,8 @@ void HtmlGenerator::initializeGenerator(const Config &config)
         naturalLanguage = QLatin1String("en");
 
     QSet<QString> editionNames = config.subVars(CONFIG_EDITION);
-    QSet<QString>::ConstIterator edition = editionNames.begin();
-    while (edition != editionNames.end()) {
+    QSet<QString>::ConstIterator edition = editionNames.constBegin();
+    while (edition != editionNames.constEnd()) {
         QString editionName = *edition;
         QStringList editionModules = config.getStringList(CONFIG_EDITION +
                                                           Config::dot +
@@ -608,11 +608,11 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::SinceList:
     {
         NewSinceMaps::const_iterator nsmap;
-        nsmap = newSinceMaps.find(atom->string());
+        nsmap = newSinceMaps.constFind(atom->string());
         NewClassMaps::const_iterator ncmap;
-        ncmap = newClassMaps.find(atom->string());
+        ncmap = newClassMaps.constFind(atom->string());
         NewClassMaps::const_iterator nqcmap;
-        nqcmap = newQmlClassMaps.find(atom->string());
+        nqcmap = newQmlClassMaps.constFind(atom->string());
 
         if ((nsmap != newSinceMaps.constEnd()) && !nsmap.value().isEmpty()) {
             QList<Section> sections;
@@ -1231,8 +1231,8 @@ void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
     /*
       sections is built above for the call to generateTableOfContents().
      */
-    s = sections.begin();
-    while (s != sections.end()) {
+    s = sections.constBegin();
+    while (s != sections.constEnd()) {
         if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
             if (!s->inherited.isEmpty())
                 needOtherSection = true;
@@ -1269,8 +1269,8 @@ void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         out() << "<h3>Additional Inherited Members</h3>\n"
                  "<ul>\n";
 
-        s = sections.begin();
-        while (s != sections.end()) {
+        s = sections.constBegin();
+        while (s != sections.constEnd()) {
             if (s->members.isEmpty() && !s->inherited.isEmpty())
                 generateSectionInheritedList(*s, inner, marker);
             ++s;
@@ -1293,15 +1293,15 @@ void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
     }
 
     sections = marker->sections(inner, CodeMarker::Detailed, CodeMarker::Okay);
-    s = sections.begin();
-    while (s != sections.end()) {
+    s = sections.constBegin();
+    while (s != sections.constEnd()) {
         //out() << "<hr />\n";
         if (!(*s).divClass.isEmpty())
             out() << "<div class=\"" << (*s).divClass << "\">\n"; // QTBUG-9504
         out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
 
-        NodeList::ConstIterator m = (*s).members.begin();
-        while (m != (*s).members.end()) {
+        NodeList::ConstIterator m = (*s).members.constBegin();
+        while (m != (*s).members.constEnd()) {
             if ((*m)->access() != Node::Private) { // ### check necessary?
                 if ((*m)->type() != Node::Class)
                     generateDetailedMember(*m, inner, marker);
@@ -1382,8 +1382,8 @@ void HtmlGenerator::generateCollisionPages()
         NodeList collisions;
         const NodeList& nl = ncn->childNodes();
         if (!nl.isEmpty()) {
-            NodeList::ConstIterator it = nl.begin();
-            while (it != nl.end()) {
+            NodeList::ConstIterator it = nl.constBegin();
+            while (it != nl.constEnd()) {
                 if (!(*it)->isInternal())
                     collisions.append(*it);
                 ++it;
@@ -1420,8 +1420,8 @@ void HtmlGenerator::generateCollisionPages()
 
         QList<QString> targets;
         if (!ncn->linkTargets().isEmpty()) {
-            QMap<QString,QString>::ConstIterator t = ncn->linkTargets().begin();
-            while (t != ncn->linkTargets().end()) {
+            QMap<QString,QString>::ConstIterator t = ncn->linkTargets().constBegin();
+            while (t != ncn->linkTargets().constEnd()) {
                 int count = 0;
                 for (int i=0; i<collisions.size(); ++i) {
                     InnerNode* n = static_cast<InnerNode*>(collisions.at(i));
@@ -1437,8 +1437,8 @@ void HtmlGenerator::generateCollisionPages()
             }
         }
         if (!targets.isEmpty()) {
-            QList<QString>::ConstIterator t = targets.begin();
-            while (t != targets.end()) {
+            QList<QString>::ConstIterator t = targets.constBegin();
+            while (t != targets.constEnd()) {
                 out() << "<a name=\"" << Doc::canonicalTitle(*t) << "\"></a>";
                 out() << "<h2 class=\"title\">" << protectEnc(*t) << "</h2>\n";
                 out() << "<ul>\n";
@@ -1588,8 +1588,8 @@ void HtmlGenerator::generateFakeNode(FakeNode* fake, CodeMarker* marker)
             out() << "</ul>\n";
         }
 
-        s = sections.begin();
-        while (s != sections.end()) {
+        s = sections.constBegin();
+        while (s != sections.constEnd()) {
             out() << "<a name=\"" << registerRef((*s).name.toLower())
                   << "\"></a>" << divNavTop << '\n';
             out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
@@ -1608,11 +1608,11 @@ void HtmlGenerator::generateFakeNode(FakeNode* fake, CodeMarker* marker)
         //out() << "<hr />\n";
 
         sections = marker->qmlSections(qml_cn,CodeMarker::Detailed);
-        s = sections.begin();
-        while (s != sections.end()) {
+        s = sections.constBegin();
+        while (s != sections.constEnd()) {
             out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
-            NodeList::ConstIterator m = (*s).members.begin();
-            while (m != (*s).members.end()) {
+            NodeList::ConstIterator m = (*s).members.constBegin();
+            while (m != (*s).members.constEnd()) {
                 generateDetailedQmlMember(*m, fake, marker);
                 out() << "<br/>\n";
                 ++m;
@@ -1625,8 +1625,8 @@ void HtmlGenerator::generateFakeNode(FakeNode* fake, CodeMarker* marker)
     }
 
     sections = marker->sections(fake, CodeMarker::Summary, CodeMarker::Okay);
-    s = sections.begin();
-    while (s != sections.end()) {
+    s = sections.constBegin();
+    while (s != sections.constEnd()) {
         out() << "<a name=\"" << registerRef((*s).name) << "\"></a>" << divNavTop << '\n';
         out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
         generateSectionList(*s, fake, marker, CodeMarker::Summary);
@@ -1668,13 +1668,13 @@ void HtmlGenerator::generateFakeNode(FakeNode* fake, CodeMarker* marker)
     }
 
     sections = marker->sections(fake, CodeMarker::Detailed, CodeMarker::Okay);
-    s = sections.begin();
-    while (s != sections.end()) {
+    s = sections.constBegin();
+    while (s != sections.constEnd()) {
         //out() << "<hr />\n";
         out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
 
-        NodeList::ConstIterator m = (*s).members.begin();
-        while (m != (*s).members.end()) {
+        NodeList::ConstIterator m = (*s).members.constBegin();
+        while (m != (*s).members.constEnd()) {
             generateDetailedMember(*m, fake, marker);
             ++m;
         }
@@ -2031,8 +2031,8 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
     else if (sections && ((node->type() == Node::Class) ||
                           (node->type() == Node::Namespace) ||
                           (node->subType() == Node::QmlClass))) {
-        QList<Section>::ConstIterator s = sections->begin();
-        while (s != sections->end()) {
+        QList<Section>::ConstIterator s = sections->constBegin();
+        while (s != sections->constEnd()) {
             if (!s->members.isEmpty() || !s->reimpMembers.isEmpty()) {
                 out() << "<li class=\"level"
                       << sectionNumber.size()
@@ -2214,8 +2214,8 @@ QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner,
         //out() << "<hr />\n";
         out() << "<h2>" << protectEnc(sections.at(i).name) << "</h2>\n";
 
-        NodeList::ConstIterator m = sections.at(i).members.begin();
-        while (m != sections.at(i).members.end()) {
+        NodeList::ConstIterator m = sections.at(i).members.constBegin();
+        while (m != sections.at(i).members.constEnd()) {
             if ((*m)->access() != Node::Private)
                 generateDetailedMember(*m, inner, marker);
             ++m;
@@ -2235,8 +2235,8 @@ void HtmlGenerator::generateClassHierarchy(const Node *relative,
         return;
 
     NodeMap topLevel;
-    NodeMap::ConstIterator c = classMap.begin();
-    while (c != classMap.end()) {
+    NodeMap::ConstIterator c = classMap.constBegin();
+    while (c != classMap.constEnd()) {
         const ClassNode *classe = static_cast<const ClassNode *>(*c);
         if (classe->baseClasses().isEmpty())
             topLevel.insert(classe->name(), classe);
@@ -2254,7 +2254,7 @@ void HtmlGenerator::generateClassHierarchy(const Node *relative,
         }
         else {
             const ClassNode *child =
-                    static_cast<const ClassNode *>(*stack.top().begin());
+                    static_cast<const ClassNode *>(*stack.top().constBegin());
             out() << "<li>";
             generateFullName(child, relative, marker);
             out() << "</li>\n";
@@ -2347,8 +2347,8 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         for (int i=0; i<26; ++i)
             count[i] = 0;
 
-        NodeMap::const_iterator iter = classMap.begin();
-        while (iter != classMap.end()) {
+        NodeMap::const_iterator iter = classMap.constBegin();
+        while (iter != classMap.constEnd()) {
             if (!iter.key().contains("::")) {
                 QChar c = iter.key()[0];
                 if ((c >= 'A') && (c <= 'Z')) {
@@ -2388,8 +2388,8 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         */
         QString first;
         QString last;
-        NodeMap::const_iterator iter = classMap.begin();
-        while (iter != classMap.end()) {
+        NodeMap::const_iterator iter = classMap.constBegin();
+        while (iter != classMap.constEnd()) {
             if (!iter.key().contains("::")) {
                 first = iter.key();
                 break;
@@ -2398,10 +2398,10 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         }
 
         if (first.isEmpty())
-            first = classMap.begin().key();
+            first = classMap.constBegin().key();
 
-        iter = classMap.end();
-        while (iter != classMap.begin()) {
+        iter = classMap.constEnd();
+        while (iter != classMap.constBegin()) {
             --iter;
             if (!iter.key().contains("::")) {
                 last = iter.key();
@@ -2410,7 +2410,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         }
 
         if (last.isEmpty())
-            last = classMap.begin().key();
+            last = classMap.constBegin().key();
 
         if (classMap.size() > 1) {
             while (commonPrefixLen < first.length() + 1 &&
@@ -2433,8 +2433,8 @@ void HtmlGenerator::generateCompactList(const Node *relative,
     QString paragraphName[NumParagraphs+1];
     QSet<char> usedParagraphNames;
 
-    NodeMap::ConstIterator c = classMap.begin();
-    while (c != classMap.end()) {
+    NodeMap::ConstIterator c = classMap.constBegin();
+    while (c != classMap.constEnd()) {
         QStringList pieces = c.key().split("::");
         QString key;
         int idx = commonPrefixLen;
@@ -2578,8 +2578,8 @@ void HtmlGenerator::generateFunctionIndex(const Node *relative,
 #if 1
     out() << "<ul>\n";
 #endif
-    QMap<QString, NodeMap >::ConstIterator f = funcIndex.begin();
-    while (f != funcIndex.end()) {
+    QMap<QString, NodeMap >::ConstIterator f = funcIndex.constBegin();
+    while (f != funcIndex.constEnd()) {
 #if 1
         out() << "<li>";
 #else
@@ -2593,8 +2593,8 @@ void HtmlGenerator::generateFunctionIndex(const Node *relative,
             nextLetter++;
         }
 
-        NodeMap::ConstIterator s = (*f).begin();
-        while (s != (*f).end()) {
+        NodeMap::ConstIterator s = (*f).constBegin();
+        while (s != (*f).constEnd()) {
             out() << ' ';
             generateFullName((*s)->parent(), relative, marker, *s);
             ++s;
@@ -2615,8 +2615,8 @@ void HtmlGenerator::generateFunctionIndex(const Node *relative,
 void HtmlGenerator::generateLegaleseList(const Node *relative,
                                          CodeMarker *marker)
 {
-    QMap<Text, const Node *>::ConstIterator it = legaleseTexts.begin();
-    while (it != legaleseTexts.end()) {
+    QMap<Text, const Node *>::ConstIterator it = legaleseTexts.constBegin();
+    while (it != legaleseTexts.constEnd()) {
         Text text = it.key();
         //out() << "<hr />\n";
         generateText(text, relative, marker);
@@ -2626,7 +2626,7 @@ void HtmlGenerator::generateLegaleseList(const Node *relative,
             generateFullName(it.value(), relative, marker);
             out() << "</li>\n";
             ++it;
-        } while (it != legaleseTexts.end() && it.key() == text);
+        } while (it != legaleseTexts.constEnd() && it.key() == text);
         out() << "</ul>\n";
     }
 }
@@ -2799,8 +2799,8 @@ void HtmlGenerator::generateSection(const NodeList& nl,
         }
 
         int i = 0;
-        NodeList::ConstIterator m = nl.begin();
-        while (m != nl.end()) {
+        NodeList::ConstIterator m = nl.constBegin();
+        while (m != nl.constEnd()) {
             if ((*m)->access() == Node::Private) {
                 ++m;
                 continue;
@@ -2860,8 +2860,8 @@ void HtmlGenerator::generateSectionList(const Section& section,
         }
 
         int i = 0;
-        NodeList::ConstIterator m = section.members.begin();
-        while (m != section.members.end()) {
+        NodeList::ConstIterator m = section.members.constBegin();
+        while (m != section.members.constEnd()) {
             if ((*m)->access() == Node::Private) {
                 ++m;
                 continue;
@@ -2909,8 +2909,8 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section,
                                                  const Node *relative,
                                                  CodeMarker *marker)
 {
-    QList<QPair<InnerNode *, int> >::ConstIterator p = section.inherited.begin();
-    while (p != section.inherited.end()) {
+    QList<QPair<InnerNode *, int> >::ConstIterator p = section.inherited.constBegin();
+    while (p != section.inherited.constEnd()) {
         out() << "<li class=\"fn\">";
         out() << (*p).second << ' ';
         if ((*p).second == 1) {
@@ -3632,8 +3632,8 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
 
 void HtmlGenerator::findAllFunctions(const InnerNode *node)
 {
-    NodeList::ConstIterator c = node->childNodes().begin();
-    while (c != node->childNodes().end()) {
+    NodeList::ConstIterator c = node->childNodes().constBegin();
+    while (c != node->childNodes().constEnd()) {
         if ((*c)->access() != Node::Private) {
             if ((*c)->isInnerNode() && (*c)->url().isEmpty()) {
                 findAllFunctions(static_cast<const InnerNode *>(*c));
@@ -3654,8 +3654,8 @@ void HtmlGenerator::findAllFunctions(const InnerNode *node)
 
 void HtmlGenerator::findAllLegaleseTexts(const InnerNode *node)
 {
-    NodeList::ConstIterator c = node->childNodes().begin();
-    while (c != node->childNodes().end()) {
+    NodeList::ConstIterator c = node->childNodes().constBegin();
+    while (c != node->childNodes().constEnd()) {
         if ((*c)->access() != Node::Private) {
             if (!(*c)->doc().legaleseText().isEmpty())
                 legaleseTexts.insertMulti((*c)->doc().legaleseText(), *c);
@@ -3668,8 +3668,8 @@ void HtmlGenerator::findAllLegaleseTexts(const InnerNode *node)
 
 void HtmlGenerator::findAllNamespaces(const InnerNode *node)
 {
-    NodeList::ConstIterator c = node->childNodes().begin();
-    while (c != node->childNodes().end()) {
+    NodeList::ConstIterator c = node->childNodes().constBegin();
+    while (c != node->childNodes().constEnd()) {
         if ((*c)->access() != Node::Private) {
             if ((*c)->isInnerNode() && (*c)->url().isEmpty()) {
                 findAllNamespaces(static_cast<const InnerNode *>(*c));
@@ -4033,8 +4033,8 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
     if (!section.members.isEmpty()) {
         out() << "<ul>\n";
         NodeList::ConstIterator m;
-        m = section.members.begin();
-        while (m != section.members.end()) {
+        m = section.members.constBegin();
+        while (m != section.members.constEnd()) {
             out() << "<li class=\"fn\">";
             generateQmlItem(*m,relative,marker,true);
             out() << "</li>\n";
@@ -4060,10 +4060,10 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
     out() << "<div class=\"qmlitem\">";
     if (node->subType() == Node::QmlPropertyGroup) {
         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
-        NodeList::ConstIterator p = qpgn->childNodes().begin();
+        NodeList::ConstIterator p = qpgn->childNodes().constBegin();
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
-        while (p != qpgn->childNodes().end()) {
+        while (p != qpgn->childNodes().constEnd()) {
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<QmlPropertyNode*>(*p);
                 out() << "<tr valign=\"top\" class=\"odd\">";
@@ -4125,10 +4125,10 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
               Process the whole list as we would for a QML property
               group.
              */
-            NodeList::ConstIterator p = qpn->qmlPropNodes().begin();
+            NodeList::ConstIterator p = qpn->qmlPropNodes().constBegin();
             out() << "<div class=\"qmlproto\">";
             out() << "<table class=\"qmlname\">";
-            while (p != qpn->qmlPropNodes().end()) {
+            while (p != qpn->qmlPropNodes().constEnd()) {
                 if ((*p)->type() == Node::QmlProperty) {
                     QmlPropertyNode* q = static_cast<QmlPropertyNode*>(*p);
                     out() << "<tr valign=\"top\" class=\"odd\">";

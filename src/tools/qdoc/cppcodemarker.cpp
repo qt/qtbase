@@ -197,9 +197,9 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
             synopsis += "(";
             if (!func->parameters().isEmpty()) {
                 //synopsis += QLatin1Char(' ');
-                QList<Parameter>::ConstIterator p = func->parameters().begin();
-                while (p != func->parameters().end()) {
-                    if (p != func->parameters().begin())
+                QList<Parameter>::ConstIterator p = func->parameters().constBegin();
+                while (p != func->parameters().constEnd()) {
+                    if (p != func->parameters().constBegin())
                         synopsis += ", ";
                     synopsis += typified((*p).leftType());
                     if (style != Subpage && !(*p).name().isEmpty())
@@ -368,9 +368,9 @@ QString CppCodeMarker::markedUpQmlItem(const Node* node, bool summary)
             synopsis = name;
         synopsis += QLatin1Char('(');
         if (!func->parameters().isEmpty()) {
-            QList<Parameter>::ConstIterator p = func->parameters().begin();
-            while (p != func->parameters().end()) {
-                if (p != func->parameters().begin())
+            QList<Parameter>::ConstIterator p = func->parameters().constBegin();
+            while (p != func->parameters().constEnd()) {
+                if (p != func->parameters().constBegin())
                     synopsis += ", ";
                 synopsis += typified((*p).leftType());
                 if (!(*p).name().isEmpty()) {
@@ -455,8 +455,8 @@ QString CppCodeMarker::markedUpIncludes(const QStringList& includes)
 {
     QString code;
 
-    QStringList::ConstIterator inc = includes.begin();
-    while (inc != includes.end()) {
+    QStringList::ConstIterator inc = includes.constBegin();
+    while (inc != includes.constEnd()) {
         code += "<@preprocessor>#include &lt;<@headerfile>" + *inc + "</@headerfile>&gt;</@preprocessor>\n";
         ++inc;
     }
@@ -547,8 +547,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                             "static public members");
             FastSection macros(inner, "Macros", "", "macro", "macros");
 
-            NodeList::ConstIterator r = classe->relatedNodes().begin();
-            while (r != classe->relatedNodes().end()) {
+            NodeList::ConstIterator r = classe->relatedNodes().constBegin();
+            while (r != classe->relatedNodes().constEnd()) {
                 if ((*r)->type() == Node::Function) {
                     FunctionNode *func = static_cast<FunctionNode *>(*r);
                     if (func->isMacro())
@@ -568,8 +568,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
             while (!stack.isEmpty()) {
                 const ClassNode *ancestorClass = stack.pop();
 
-                NodeList::ConstIterator c = ancestorClass->childNodes().begin();
-                while (c != ancestorClass->childNodes().end()) {
+                NodeList::ConstIterator c = ancestorClass->childNodes().constBegin();
+                while (c != ancestorClass->childNodes().constEnd()) {
                     bool isSlot = false;
                     bool isSignal = false;
                     bool isStatic = false;
@@ -654,8 +654,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                 }
 
                 QList<RelatedClass>::ConstIterator r =
-                        ancestorClass->baseClasses().begin();
-                while (r != ancestorClass->baseClasses().end()) {
+                        ancestorClass->baseClasses().constBegin();
+                while (r != ancestorClass->baseClasses().constEnd()) {
                     stack.prepend((*r).node);
                     ++r;
                 }
@@ -688,8 +688,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
             FastSection relatedNonMembers(classe,"Related Non-Members","relnonmem","member","members");
             FastSection macros(classe,"Macro Documentation","macros","member","members");
 
-            NodeList::ConstIterator r = classe->relatedNodes().begin();
-            while (r != classe->relatedNodes().end()) {
+            NodeList::ConstIterator r = classe->relatedNodes().constBegin();
+            while (r != classe->relatedNodes().constEnd()) {
                 if ((*r)->type() == Node::Function) {
                     FunctionNode *func = static_cast<FunctionNode *>(*r);
                     if (func->isMacro())
@@ -703,8 +703,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                 ++r;
             }
 
-            NodeList::ConstIterator c = classe->childNodes().begin();
-            while (c != classe->childNodes().end()) {
+            NodeList::ConstIterator c = classe->childNodes().constBegin();
+            while (c != classe->childNodes().constEnd()) {
                 if ((*c)->type() == Node::Enum ||
                         (*c)->type() == Node::Typedef) {
                     insert(memberTypes, *c, style, status);
@@ -740,8 +740,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
             while (!stack.isEmpty()) {
                 const ClassNode *ancestorClass = stack.pop();
 
-                NodeList::ConstIterator c = ancestorClass->childNodes().begin();
-                while (c != ancestorClass->childNodes().end()) {
+                NodeList::ConstIterator c = ancestorClass->childNodes().constBegin();
+                while (c != ancestorClass->childNodes().constEnd()) {
                     if ((*c)->access() != Node::Private &&
                             (*c)->type() != Node::Property)
                         insert(all, *c, style, status);
@@ -749,8 +749,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                 }
 
                 QList<RelatedClass>::ConstIterator r =
-                        ancestorClass->baseClasses().begin();
-                while (r != ancestorClass->baseClasses().end()) {
+                        ancestorClass->baseClasses().constBegin();
+                while (r != ancestorClass->baseClasses().constEnd()) {
                     stack.prepend((*r).node);
                     ++r;
                 }
@@ -791,8 +791,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
             NodeList nodeList = inner->childNodes();
             nodeList += inner->relatedNodes();
 
-            NodeList::ConstIterator n = nodeList.begin();
-            while (n != nodeList.end()) {
+            NodeList::ConstIterator n = nodeList.constBegin();
+            while (n != nodeList.constEnd()) {
                 switch ((*n)->type()) {
                 case Node::Namespace:
                     insert(namespaces, *n, style, status);
@@ -1169,12 +1169,12 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
 
             const QmlClassNode* qcn = qmlClassNode;
             while (qcn != 0) {
-                NodeList::ConstIterator c = qcn->childNodes().begin();
-                while (c != qcn->childNodes().end()) {
+                NodeList::ConstIterator c = qcn->childNodes().constBegin();
+                while (c != qcn->childNodes().constEnd()) {
                     if ((*c)->subType() == Node::QmlPropertyGroup) {
                         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(*c);
-                        NodeList::ConstIterator p = qpgn->childNodes().begin();
-                        while (p != qpgn->childNodes().end()) {
+                        NodeList::ConstIterator p = qpgn->childNodes().constBegin();
+                        while (p != qpgn->childNodes().constEnd()) {
                             if ((*p)->type() == Node::QmlProperty) {
                                 const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*p);
                                 if (pn->isAttached())
@@ -1194,8 +1194,8 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                                 insert(qmlproperties,*c,style,Okay);
                         }
                         else {
-                            NodeList::ConstIterator p = pn->qmlPropNodes().begin();
-                            while (p != pn->qmlPropNodes().end()) {
+                            NodeList::ConstIterator p = pn->qmlPropNodes().constBegin();
+                            while (p != pn->qmlPropNodes().constEnd()) {
                                 if ((*p)->type() == Node::QmlProperty) {
                                     const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*p);
                                     if (pn->isAttached())
@@ -1255,13 +1255,13 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                                            "member","members");
             const QmlClassNode* qcn = qmlClassNode;
             while (qcn != 0) {
-                NodeList::ConstIterator c = qcn->childNodes().begin();
-                while (c != qcn->childNodes().end()) {
+                NodeList::ConstIterator c = qcn->childNodes().constBegin();
+                while (c != qcn->childNodes().constEnd()) {
                     if ((*c)->subType() == Node::QmlPropertyGroup) {
                         bool attached = false;
                         const QmlPropGroupNode* pgn = static_cast<const QmlPropGroupNode*>(*c);
-                        NodeList::ConstIterator C = pgn->childNodes().begin();
-                        while (C != pgn->childNodes().end()) {
+                        NodeList::ConstIterator C = pgn->childNodes().constBegin();
+                        while (C != pgn->childNodes().constEnd()) {
                             if ((*C)->type() == Node::QmlProperty) {
                                 const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*C);
                                 if (pn->isAttached()) {
@@ -1323,12 +1323,12 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
 
             const QmlClassNode* current = qmlClassNode;
             while (current != 0) {
-                NodeList::ConstIterator c = current->childNodes().begin();
-                while (c != current->childNodes().end()) {
+                NodeList::ConstIterator c = current->childNodes().constBegin();
+                while (c != current->childNodes().constEnd()) {
                     if ((*c)->subType() == Node::QmlPropertyGroup) {
                         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(*c);
-                        NodeList::ConstIterator p = qpgn->childNodes().begin();
-                        while (p != qpgn->childNodes().end()) {
+                        NodeList::ConstIterator p = qpgn->childNodes().constBegin();
+                        while (p != qpgn->childNodes().constEnd()) {
                             if ((*p)->type() == Node::QmlProperty) {
                                 QString key = current->name() + "::" + (*p)->name();
                                 key = sortName(*p, &key);

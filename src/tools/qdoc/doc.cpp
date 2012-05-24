@@ -1403,13 +1403,13 @@ void DocParser::parse(const QString& source,
                         const Macro &macro = macroHash()->value(cmdStr);
                         int numPendingFi = 0;
                         QStringMap::ConstIterator d;
-                        d = macro.otherDefs.begin();
-                        while (d != macro.otherDefs.end()) {
+                        d = macro.otherDefs.constBegin();
+                        while (d != macro.otherDefs.constEnd()) {
                             append(Atom::FormatIf, d.key());
                             expandMacro(cmdStr, *d, macro.numParams);
                             ++d;
 
-                            if (d == macro.otherDefs.end()) {
+                            if (d == macro.otherDefs.constEnd()) {
                                 append(Atom::FormatEndif);
                             }
                             else {
@@ -1785,8 +1785,8 @@ void DocParser::startFormat(const QString& format, int cmd)
 {
     enterPara();
 
-    QMap<int, QString>::ConstIterator f = pendingFormats.begin();
-    while (f != pendingFormats.end()) {
+    QMap<int, QString>::ConstIterator f = pendingFormats.constBegin();
+    while (f != pendingFormats.constEnd()) {
         if (*f == format) {
             location().warning(tr("Cannot nest '\\%1' commands")
                                .arg(cmdName(cmd)));
@@ -3108,8 +3108,8 @@ void Doc::initialize(const Config& config)
     QStringMap reverseAliasMap;
 
     QSet<QString> commands = config.subVars(CONFIG_ALIAS);
-    QSet<QString>::ConstIterator c = commands.begin();
-    while (c != commands.end()) {
+    QSet<QString>::ConstIterator c = commands.constBegin();
+    while (c != commands.constEnd()) {
         QString alias = config.getString(CONFIG_ALIAS + Config::dot + *c);
         if (reverseAliasMap.contains(alias)) {
             config.lastLocation().warning(tr("Command name '\\%1' cannot stand"
@@ -3136,8 +3136,8 @@ void Doc::initialize(const Config& config)
     }
 
     QSet<QString> macroNames = config.subVars(CONFIG_MACRO);
-    QSet<QString>::ConstIterator n = macroNames.begin();
-    while (n != macroNames.end()) {
+    QSet<QString>::ConstIterator n = macroNames.constBegin();
+    while (n != macroNames.constEnd()) {
         QString macroDotName = CONFIG_MACRO + Config::dot + *n;
         Macro macro;
         macro.numParams = -1;
@@ -3149,8 +3149,8 @@ void Doc::initialize(const Config& config)
         bool silent = false;
 
         QSet<QString> formats = config.subVars(macroDotName);
-        QSet<QString>::ConstIterator f = formats.begin();
-        while (f != formats.end()) {
+        QSet<QString>::ConstIterator f = formats.constBegin();
+        while (f != formats.constEnd()) {
             QString def = config.getString(macroDotName + Config::dot + *f);
             if (!def.isEmpty()) {
                 macro.otherDefs.insert(*f, def);
@@ -3162,7 +3162,7 @@ void Doc::initialize(const Config& config)
                     if (!silent) {
                         QString other = tr("default");
                         if (macro.defaultDef.isEmpty())
-                            other = macro.otherDefs.begin().key();
+                            other = macro.otherDefs.constBegin().key();
                         config.lastLocation().warning(tr("Macro '\\%1' takes"
                                                          " inconsistent number"
                                                          " of arguments (%2"

@@ -908,7 +908,7 @@ Node *CppCodeParser::processTopicCommandGroup(const QString& command, const ArgL
         QString property;
         QmlClassNode* qmlClass = 0;
         bool attached = (command == COMMAND_QMLATTACHEDPROPERTY);
-        ArgList::ConstIterator argsIter = args.begin();
+        ArgList::ConstIterator argsIter = args.constBegin();
         arg = argsIter->first;
         if (splitQmlPropertyArg(arg,type,module,element,property)) {
             qmlClass = tree_->findQmlClassNode(module,element);
@@ -937,7 +937,7 @@ Node *CppCodeParser::processTopicCommandGroup(const QString& command, const ArgL
                 }
             }
             ++argsIter;
-            while (argsIter != args.end()) {
+            while (argsIter != args.constEnd()) {
                 arg = argsIter->first;
                 if (splitQmlPropertyArg(arg,type,module,element,property)) {
                     if (qmlClass->hasProperty(property)) {
@@ -1110,8 +1110,8 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         }
         else if (node->type() == Node::Fake && node->subType() == Node::QmlPropertyGroup) {
             QmlPropGroupNode* qpgn = static_cast<QmlPropGroupNode*>(node);
-            NodeList::ConstIterator p = qpgn->childNodes().begin();
-            while (p != qpgn->childNodes().end()) {
+            NodeList::ConstIterator p = qpgn->childNodes().constBegin();
+            while (p != qpgn->childNodes().constEnd()) {
                 if ((*p)->type() == Node::QmlProperty) {
                     QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(*p);
                     qpn->setDefault();
@@ -1127,8 +1127,8 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         }
         else if (node->type() == Node::Fake && node->subType() == Node::QmlPropertyGroup) {
             QmlPropGroupNode* qpgn = static_cast<QmlPropGroupNode*>(node);
-            NodeList::ConstIterator p = qpgn->childNodes().begin();
-            while (p != qpgn->childNodes().end()) {
+            NodeList::ConstIterator p = qpgn->childNodes().constBegin();
+            while (p != qpgn->childNodes().constEnd()) {
                 if ((*p)->type() == Node::QmlProperty) {
                     QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(*p);
                     qpn->setReadOnly(1);
@@ -1155,11 +1155,11 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
 void CppCodeParser::processOtherMetaCommands(const Doc& doc, Node *node)
 {
     const QSet<QString> metaCommands = doc.metaCommandsUsed();
-    QSet<QString>::ConstIterator cmd = metaCommands.begin();
-    while (cmd != metaCommands.end()) {
+    QSet<QString>::ConstIterator cmd = metaCommands.constBegin();
+    while (cmd != metaCommands.constEnd()) {
         ArgList args = doc.metaCommandArgs(*cmd);
-        ArgList::ConstIterator arg = args.begin();
-        while (arg != args.end()) {
+        ArgList::ConstIterator arg = args.constBegin();
+        while (arg != args.constEnd()) {
             processOtherMetaCommand(doc, *cmd, *arg, node);
             ++arg;
         }
@@ -2210,7 +2210,7 @@ bool CppCodeParser::matchDocsAndStuff()
               should be a function description.
              */
             if (topicCommandsUsed.count() > 0) {
-                topic = *topicCommandsUsed.begin();
+                topic = *topicCommandsUsed.constBegin();
                 args = doc.metaCommandArgs(topic);
             }
 
@@ -2263,8 +2263,8 @@ bool CppCodeParser::matchDocsAndStuff()
                     }
                 }
                 else {
-                    ArgList::ConstIterator a = args.begin();
-                    while (a != args.end()) {
+                    ArgList::ConstIterator a = args.constBegin();
+                    while (a != args.constEnd()) {
                         Doc nodeDoc = doc;
                         Node *node = processTopicCommand(nodeDoc,topic,*a);
                         if (node != 0) {

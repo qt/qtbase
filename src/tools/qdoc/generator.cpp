@@ -146,9 +146,9 @@ void Generator::appendFullNames(Text& text,
                                 const Node* relative,
                                 CodeMarker* marker)
 {
-    NodeList::ConstIterator n = nodes.begin();
+    NodeList::ConstIterator n = nodes.constBegin();
     int index = 0;
-    while (n != nodes.end()) {
+    while (n != nodes.constEnd()) {
         appendFullName(text,*n,relative,marker);
         text << comma(index++,nodes.count());
         ++n;
@@ -164,8 +164,8 @@ void Generator::appendSortedNames(Text& text,
     QMap<QString,Text> classMap;
     int index = 0;
 
-    r = classes.begin();
-    while (r != classes.end()) {
+    r = classes.constBegin();
+    while (r != classes.constEnd()) {
         if ((*r).node->access() == Node::Public &&
                 (*r).node->status() != Node::Internal
                 && !(*r).node->doc().isEmpty()) {
@@ -755,8 +755,8 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             const EnumNode *enume = (const EnumNode *) node;
 
             QSet<QString> definedItems;
-            QList<EnumItem>::ConstIterator it = enume->items().begin();
-            while (it != enume->items().end()) {
+            QList<EnumItem>::ConstIterator it = enume->items().constBegin();
+            while (it != enume->items().constEnd()) {
                 definedItems.insert((*it).name());
                 ++it;
             }
@@ -765,8 +765,8 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             QSet<QString> allItems = definedItems + documentedItems;
             if (allItems.count() > definedItems.count() ||
                     allItems.count() > documentedItems.count()) {
-                QSet<QString>::ConstIterator a = allItems.begin();
-                while (a != allItems.end()) {
+                QSet<QString>::ConstIterator a = allItems.constBegin();
+                while (a != allItems.constEnd()) {
                     if (!definedItems.contains(*a)) {
                         QString details;
                         QString best = nearestName(*a, definedItems);
@@ -790,8 +790,8 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         else if (node->type() == Node::Function) {
             const FunctionNode *func = static_cast<const FunctionNode *>(node);
             QSet<QString> definedParams;
-            QList<Parameter>::ConstIterator p = func->parameters().begin();
-            while (p != func->parameters().end()) {
+            QList<Parameter>::ConstIterator p = func->parameters().constBegin();
+            while (p != func->parameters().constEnd()) {
                 if ((*p).name().isEmpty() && (*p).leftType() != QLatin1String("...")
                         && func->name() != QLatin1String("operator++")
                         && func->name() != QLatin1String("operator--")) {
@@ -807,8 +807,8 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             QSet<QString> allParams = definedParams + documentedParams;
             if (allParams.count() > definedParams.count()
                     || allParams.count() > documentedParams.count()) {
-                QSet<QString>::ConstIterator a = allParams.begin();
-                while (a != allParams.end()) {
+                QSet<QString>::ConstIterator a = allParams.constBegin();
+                while (a != allParams.constEnd()) {
                     if (!definedParams.contains(*a)) {
                         QString details;
                         QString best = nearestName(*a, definedParams);
@@ -980,9 +980,9 @@ void Generator::generateInherits(const ClassNode *classe, CodeMarker *marker)
              << "Inherits: "
              << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD);
 
-        r = classe->baseClasses().begin();
+        r = classe->baseClasses().constBegin();
         index = 0;
-        while (r != classe->baseClasses().end()) {
+        while (r != classe->baseClasses().constEnd()) {
             text << Atom(Atom::LinkNode, CodeMarker::stringForNode((*r).node))
                  << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
                  << Atom(Atom::String, (*r).dataTypeWithTemplateArgs)
@@ -1055,8 +1055,8 @@ void Generator::generateInnerNode(InnerNode* node)
         }
     }
 
-    NodeList::ConstIterator c = node->childNodes().begin();
-    while (c != node->childNodes().end()) {
+    NodeList::ConstIterator c = node->childNodes().constBegin();
+    while (c != node->childNodes().constEnd()) {
         if ((*c)->isInnerNode() && (*c)->access() != Node::Private) {
             generateInnerNode((InnerNode*)*c);
         }
@@ -1323,8 +1323,8 @@ void Generator::generateThreadSafeness(const Node *node, CodeMarker *marker)
             NodeList reentrant;
             NodeList threadsafe;
             NodeList nonreentrant;
-            NodeList::ConstIterator c = innerNode->childNodes().begin();
-            while (c != innerNode->childNodes().end()) {
+            NodeList::ConstIterator c = innerNode->childNodes().constBegin();
+            while (c != innerNode->childNodes().constEnd()) {
 
                 if ((*c)->status() != Node::Obsolete){
                     switch ((*c)->threadSafeness()) {
@@ -1420,8 +1420,8 @@ void Generator::generateTree(Tree *tree)
 
 Generator *Generator::generatorForFormat(const QString& format)
 {
-    QList<Generator *>::ConstIterator g = generators.begin();
-    while (g != generators.end()) {
+    QList<Generator *>::ConstIterator g = generators.constBegin();
+    while (g != generators.constEnd()) {
         if ((*g)->format() == format)
             return *g;
         ++g;
@@ -1600,22 +1600,22 @@ void Generator::initialize(const Config &config)
     QString imagesDotFileExtensions =
             CONFIG_IMAGES + Config::dot + CONFIG_FILEEXTENSIONS;
     QSet<QString> formats = config.subVars(imagesDotFileExtensions);
-    QSet<QString>::ConstIterator f = formats.begin();
-    while (f != formats.end()) {
+    QSet<QString>::ConstIterator f = formats.constBegin();
+    while (f != formats.constEnd()) {
         imgFileExts[*f] = config.getStringList(imagesDotFileExtensions +
                                                Config::dot + *f);
         ++f;
     }
 
-    QList<Generator *>::ConstIterator g = generators.begin();
-    while (g != generators.end()) {
+    QList<Generator *>::ConstIterator g = generators.constBegin();
+    while (g != generators.constEnd()) {
         if (outputFormats.contains((*g)->format())) {
             currentGenerator_ = (*g);
             (*g)->initializeGenerator(config);
             QStringList extraImages =
                     config.getCleanPathList(CONFIG_EXTRAIMAGES+Config::dot+(*g)->format());
-            QStringList::ConstIterator e = extraImages.begin();
-            while (e != extraImages.end()) {
+            QStringList::ConstIterator e = extraImages.constBegin();
+            while (e != extraImages.constEnd()) {
                 QString userFriendlyFilePath;
                 QString filePath = Config::findFile(config.lastLocation(),
                                                     imageFiles,
@@ -1641,8 +1641,8 @@ void Generator::initialize(const Config &config)
                 QStringList searchDirs = QStringList() << templateDir;
                 QStringList scripts =
                         config.getCleanPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS);
-                e = scripts.begin();
-                while (e != scripts.end()) {
+                e = scripts.constBegin();
+                while (e != scripts.constEnd()) {
                     QString userFriendlyFilePath;
                     QString filePath = Config::findFile(config.lastLocation(),
                                                         scriptFiles,
@@ -1661,8 +1661,8 @@ void Generator::initialize(const Config &config)
 
                 QStringList styles =
                         config.getCleanPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
-                e = styles.begin();
-                while (e != styles.end()) {
+                e = styles.constBegin();
+                while (e != styles.constEnd()) {
                     QString userFriendlyFilePath;
                     QString filePath = Config::findFile(config.lastLocation(),
                                                         styleFiles,
@@ -1685,13 +1685,13 @@ void Generator::initialize(const Config &config)
 
     QRegExp secondParamAndAbove("[\2-\7]");
     QSet<QString> formattingNames = config.subVars(CONFIG_FORMATTING);
-    QSet<QString>::ConstIterator n = formattingNames.begin();
-    while (n != formattingNames.end()) {
+    QSet<QString>::ConstIterator n = formattingNames.constBegin();
+    while (n != formattingNames.constEnd()) {
         QString formattingDotName = CONFIG_FORMATTING + Config::dot + *n;
 
         QSet<QString> formats = config.subVars(formattingDotName);
-        QSet<QString>::ConstIterator f = formats.begin();
-        while (f != formats.end()) {
+        QSet<QString>::ConstIterator f = formats.constBegin();
+        while (f != formats.constEnd()) {
             QString def = config.getString(formattingDotName +
                                            Config::dot + *f);
             if (!def.isEmpty()) {
@@ -1953,8 +1953,8 @@ void Generator::supplementAlsoList(const Node *node, QList<Text> &alsoList)
 
 void Generator::terminate()
 {
-    QList<Generator *>::ConstIterator g = generators.begin();
-    while (g != generators.end()) {
+    QList<Generator *>::ConstIterator g = generators.constBegin();
+    while (g != generators.constEnd()) {
         if (outputFormats.contains((*g)->format()))
             (*g)->terminateGenerator();
         ++g;

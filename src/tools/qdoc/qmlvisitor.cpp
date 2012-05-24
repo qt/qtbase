@@ -345,8 +345,8 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                 }
             }
             else if ((command == COMMAND_INGROUP) && !args.isEmpty()) {
-                ArgList::ConstIterator argsIter = args.begin();
-                while (argsIter != args.end()) {
+                ArgList::ConstIterator argsIter = args.constBegin();
+                while (argsIter != args.constEnd()) {
                     tree->addToGroup(node, argsIter->first);
                     ++argsIter;
                 }
@@ -530,8 +530,8 @@ bool QmlDocVisitor::visit(QQmlJS::AST::FunctionDeclaration* fd)
             QString name = fd->name.toString();
             FunctionNode* qmlMethod = new FunctionNode(Node::QmlMethod, current, name, false);
             int overloads = 0;
-            NodeList::ConstIterator overloadIterator = current->childNodes().begin();
-            while (overloadIterator != current->childNodes().end()) {
+            NodeList::ConstIterator overloadIterator = current->childNodes().constBegin();
+            while (overloadIterator != current->childNodes().constEnd()) {
                 if ((*overloadIterator)->name() == name)
                     overloads++;
                 overloadIterator++;

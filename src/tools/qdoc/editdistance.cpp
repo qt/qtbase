@@ -88,8 +88,8 @@ QString nearestName( const QString& actual, const QSet<QString>& candidates )
     int numBest = 0;
     QString best;
 
-    QSet<QString>::ConstIterator c = candidates.begin();
-    while ( c != candidates.end() ) {
+    QSet<QString>::ConstIterator c = candidates.constBegin();
+    while ( c != candidates.constEnd() ) {
         if ( (*c)[0] == actual[0] ) {
             int delta = editDistance( actual, *c );
             if ( delta < deltaBest ) {

@@ -775,15 +775,15 @@ FunctionNode *InnerNode::findFunctionNode(const QString& name)
  */
 FunctionNode *InnerNode::findFunctionNode(const FunctionNode *clone)
 {
-    QMap<QString,Node*>::ConstIterator c = primaryFunctionMap.find(clone->name());
-    if (c != primaryFunctionMap.end()) {
+    QMap<QString,Node*>::ConstIterator c = primaryFunctionMap.constFind(clone->name());
+    if (c != primaryFunctionMap.constEnd()) {
         if (isSameSignature(clone, (FunctionNode *) *c)) {
             return (FunctionNode *) *c;
         }
         else if (secondaryFunctionMap.contains(clone->name())) {
             const NodeList& secs = secondaryFunctionMap[clone->name()];
-            NodeList::ConstIterator s = secs.begin();
-            while (s != secs.end()) {
+            NodeList::ConstIterator s = secs.constBegin();
+            while (s != secs.constEnd()) {
                 if (isSameSignature(clone, (FunctionNode *) *s))
                     return (FunctionNode *) *s;
                 ++s;
@@ -896,8 +896,8 @@ void InnerNode::normalizeOverloads()
                  primaryFunc->access() == Private)) {
 
             NodeList& secs = secondaryFunctionMap[primaryFunc->name()];
-            NodeList::ConstIterator s = secs.begin();
-            while (s != secs.end()) {
+            NodeList::ConstIterator s = secs.constBegin();
+            while (s != secs.constEnd()) {
                 FunctionNode *secondaryFunc = (FunctionNode *) *s;
 
                 // Any non-obsolete, non-compatibility, non-private functions
@@ -918,15 +918,15 @@ void InnerNode::normalizeOverloads()
         ++p1;
     }
 
-    QMap<QString, Node *>::ConstIterator p = primaryFunctionMap.begin();
-    while (p != primaryFunctionMap.end()) {
+    QMap<QString, Node *>::ConstIterator p = primaryFunctionMap.constBegin();
+    while (p != primaryFunctionMap.constEnd()) {
         FunctionNode *primaryFunc = (FunctionNode *) *p;
         if (primaryFunc->isOverload())
             primaryFunc->ove = false;
         if (secondaryFunctionMap.contains(primaryFunc->name())) {
             NodeList& secs = secondaryFunctionMap[primaryFunc->name()];
-            NodeList::ConstIterator s = secs.begin();
-            while (s != secs.end()) {
+            NodeList::ConstIterator s = secs.constBegin();
+            while (s != secs.constEnd()) {
                 FunctionNode *secondaryFunc = (FunctionNode *) *s;
                 if (!secondaryFunc->isOverload())
                     secondaryFunc->ove = true;
@@ -936,8 +936,8 @@ void InnerNode::normalizeOverloads()
         ++p;
     }
 
-    NodeList::ConstIterator c = childNodes().begin();
-    while (c != childNodes().end()) {
+    NodeList::ConstIterator c = childNodes().constBegin();
+    while (c != childNodes().constEnd()) {
         if ((*c)->isInnerNode())
             ((InnerNode *) *c)->normalizeOverloads();
         ++c;
@@ -1105,9 +1105,9 @@ bool InnerNode::isSameSignature(const FunctionNode *f1, const FunctionNode *f2)
     if (f1->isConst() != f2->isConst())
         return false;
 
-    QList<Parameter>::ConstIterator p1 = f1->parameters().begin();
-    QList<Parameter>::ConstIterator p2 = f2->parameters().begin();
-    while (p2 != f2->parameters().end()) {
+    QList<Parameter>::ConstIterator p1 = f1->parameters().constBegin();
+    QList<Parameter>::ConstIterator p2 = f2->parameters().constBegin();
+    while (p2 != f2->parameters().constEnd()) {
         if ((*p1).hasType() && (*p2).hasType()) {
             if ((*p1).rightType() != (*p2).rightType())
                 return false;
@@ -1835,8 +1835,8 @@ void FunctionNode::addParameter(const Parameter& parameter)
 void FunctionNode::borrowParameterNames(const FunctionNode *source)
 {
     QList<Parameter>::Iterator t = params.begin();
-    QList<Parameter>::ConstIterator s = source->params.begin();
-    while (s != source->params.end() && t != params.end()) {
+    QList<Parameter>::ConstIterator s = source->params.constBegin();
+    while (s != source->params.constEnd() && t != params.end()) {
         if (!(*s).name().isEmpty())
             (*t).setName((*s).name());
         ++s;
@@ -1878,8 +1878,8 @@ int FunctionNode::overloadNumber() const
 QStringList FunctionNode::parameterNames() const
 {
     QStringList names;
-    QList<Parameter>::ConstIterator p = parameters().begin();
-    while (p != parameters().end()) {
+    QList<Parameter>::ConstIterator p = parameters().constBegin();
+    while (p != parameters().constEnd()) {
         names << (*p).name();
         ++p;
     }
@@ -1911,8 +1911,8 @@ QString FunctionNode::rawParameters(bool names, bool values) const
 QStringList FunctionNode::reconstructParams(bool values) const
 {
     QStringList params;
-    QList<Parameter>::ConstIterator p = parameters().begin();
-    while (p != parameters().end()) {
+    QList<Parameter>::ConstIterator p = parameters().constBegin();
+    while (p != parameters().constEnd()) {
         params << (*p).reconstruct(values);
         ++p;
     }
@@ -2109,7 +2109,7 @@ QString QmlClassNode::fileBase() const
  */
 void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
 {
-    if (inheritedBy.find(base,sub) == inheritedBy.end()) {
+    if (inheritedBy.constFind(base,sub) == inheritedBy.constEnd()) {
         inheritedBy.insert(base,sub);
     }
 }
@@ -2525,8 +2525,8 @@ InnerNode* NameCollisionNode::findAny(Node::Type t, Node::SubType st)
             return current;
     }
     const NodeList& cn = childNodes();
-    NodeList::ConstIterator i = cn.begin();
-    while (i != cn.end()) {
+    NodeList::ConstIterator i = cn.constBegin();
+    while (i != cn.constEnd()) {
         if ((*i)->type() == t && (*i)->subType() == st)
             return static_cast<InnerNode*>(*i);
         ++i;
@@ -2544,8 +2544,8 @@ const Node* NameCollisionNode::applyModuleIdentifier(const Node* origin) const
 {
     if (origin && !origin->qmlModuleIdentifier().isEmpty()) {
         const NodeList& cn = childNodes();
-        NodeList::ConstIterator i = cn.begin();
-        while (i != cn.end()) {
+        NodeList::ConstIterator i = cn.constBegin();
+        while (i != cn.constEnd()) {
             if ((*i)->type() == Node::Fake && (*i)->subType() == Node::QmlClass) {
                 if (origin->qmlModuleIdentifier() == (*i)->qmlModuleIdentifier())
                     return (*i);

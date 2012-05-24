@@ -606,7 +606,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
     // Write customFilter elements.
     QHash<QString, QSet<QString> >::ConstIterator it;
-    for (it = project.customFilters.begin(); it != project.customFilters.end(); ++it) {
+    for (it = project.customFilters.constBegin(); it != project.customFilters.constEnd(); ++it) {
         writer.writeStartElement("customFilter");
         writer.writeAttribute("name", it.key());
         foreach (const QString &filter, it.value())

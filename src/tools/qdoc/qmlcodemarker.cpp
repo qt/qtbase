@@ -177,8 +177,8 @@ QString QmlCodeMarker::markedUpIncludes(const QStringList& includes)
 {
     QString code;
 
-    QStringList::ConstIterator inc = includes.begin();
-    while (inc != includes.end()) {
+    QStringList::ConstIterator inc = includes.constBegin();
+    while (inc != includes.constEnd()) {
         code += "import " + *inc + QLatin1Char('\n');
         ++inc;
     }

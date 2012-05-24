@@ -340,7 +340,7 @@ static bool readLine()
             ( firstNonWhiteSpace(yyLinizerState->line) == QChar('{') );
 
     do {
-        if ( yyLinizerState->iter == yyProgram->begin() ) {
+        if ( yyLinizerState->iter == yyProgram->constBegin() ) {
             yyLinizerState->line.clear();
             return false;
         }
@@ -449,7 +449,7 @@ static void startLinizer()
     yyBraceDepth = &yyLinizerState->braceDepth;
     yyLeftBraceFollows = &yyLinizerState->leftBraceFollows;
 
-    yyLinizerState->iter = yyProgram->end();
+    yyLinizerState->iter = yyProgram->constEnd();
     --yyLinizerState->iter;
     yyLinizerState->line = *yyLinizerState->iter;
     readLine();
@@ -469,11 +469,11 @@ static bool bottomLineStartsInCComment()
         We could use the linizer here, but that would slow us down
         terribly. We are better to trim only the code lines we need.
     */
-    QStringList::ConstIterator p = yyProgram->end();
+    QStringList::ConstIterator p = yyProgram->constEnd();
     --p; // skip bottom line
 
     for ( int i = 0; i < BigRoof; i++ ) {
-        if ( p == yyProgram->begin() )
+        if ( p == yyProgram->constBegin() )
             return false;
         --p;
 
@@ -1162,8 +1162,8 @@ int main( int argc, char **argv )
     while ( !program.isEmpty() && program.last().trimmed().isEmpty() )
         program.remove( program.fromLast() );
 
-    QStringList::ConstIterator line = program.begin();
-    while ( line != program.end() ) {
+    QStringList::ConstIterator line = program.constBegin();
+    while ( line != program.constEnd() ) {
         p.push_back( *line );
         QChar typedIn = firstNonWhiteSpace( *line );
         if ( p.last().endsWith(QLatin1Char(':')) )

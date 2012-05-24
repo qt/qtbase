@@ -132,8 +132,8 @@ void CodeParser::doneParsingHeaderFiles(Tree *tree)
  */
 void CodeParser::initialize(const Config& config)
 {
-    QList<CodeParser *>::ConstIterator p = parsers.begin();
-    while (p != parsers.end()) {
+    QList<CodeParser *>::ConstIterator p = parsers.constBegin();
+    while (p != parsers.constEnd()) {
         (*p)->initializeParser(config);
         ++p;
     }
@@ -144,8 +144,8 @@ void CodeParser::initialize(const Config& config)
  */
 void CodeParser::terminate()
 {
-    QList<CodeParser *>::ConstIterator p = parsers.begin();
-    while (p != parsers.end()) {
+    QList<CodeParser *>::ConstIterator p = parsers.constBegin();
+    while (p != parsers.constEnd()) {
         (*p)->terminateParser();
         ++p;
     }
@@ -153,8 +153,8 @@ void CodeParser::terminate()
 
 CodeParser *CodeParser::parserForLanguage(const QString& language)
 {
-    QList<CodeParser *>::ConstIterator p = parsers.begin();
-    while (p != parsers.end()) {
+    QList<CodeParser *>::ConstIterator p = parsers.constBegin();
+    while (p != parsers.constEnd()) {
         if ((*p)->language() == language)
             return *p;
         ++p;
@@ -166,8 +166,8 @@ CodeParser *CodeParser::parserForHeaderFile(const QString &filePath)
 {
     QString fileName = QFileInfo(filePath).fileName();
 
-    QList<CodeParser *>::ConstIterator p = parsers.begin();
-    while (p != parsers.end()) {
+    QList<CodeParser *>::ConstIterator p = parsers.constBegin();
+    while (p != parsers.constEnd()) {
 
         QStringList headerPatterns = (*p)->headerFileNameFilter();
         foreach (QString pattern, headerPatterns) {
@@ -184,8 +184,8 @@ CodeParser *CodeParser::parserForSourceFile(const QString &filePath)
 {
     QString fileName = QFileInfo(filePath).fileName();
 
-    QList<CodeParser *>::ConstIterator p = parsers.begin();
-    while (p != parsers.end()) {
+    QList<CodeParser *>::ConstIterator p = parsers.constBegin();
+    while (p != parsers.constEnd()) {
 
         QStringList sourcePatterns = (*p)->sourceFileNameFilter();
         foreach (QString pattern, sourcePatterns) {
@@ -276,8 +276,8 @@ void CodeParser::processCommonMetaCommand(const Location& location,
             node->setStatus(Node::Internal);
             if (node->subType() == Node::QmlPropertyGroup) {
                 const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
-                NodeList::ConstIterator p = qpgn->childNodes().begin();
-                while (p != qpgn->childNodes().end()) {
+                NodeList::ConstIterator p = qpgn->childNodes().constBegin();
+                while (p != qpgn->childNodes().constEnd()) {
                     if ((*p)->type() == Node::QmlProperty) {
                         (*p)->setAccess(Node::Private);
                         (*p)->setStatus(Node::Internal);

@@ -436,15 +436,15 @@ static const char*  const suffixes[NumSuffixes] = { "", "s", "es" };
 const FakeNode* Tree::findFakeNodeByTitle(const QString& title, const Node* relative ) const
 {
     for (int pass = 0; pass < NumSuffixes; ++pass) {
-        FakeNodeHash::const_iterator i = priv->fakeNodesByTitle.find(Doc::canonicalTitle(title + suffixes[pass]));
+        FakeNodeHash::const_iterator i = priv->fakeNodesByTitle.constFind(Doc::canonicalTitle(title + suffixes[pass]));
         if (i != priv->fakeNodesByTitle.constEnd()) {
             if (relative && !relative->qmlModuleIdentifier().isEmpty()) {
                 const FakeNode* fn = i.value();
                 InnerNode* parent = fn->parent();
                 if (parent && parent->type() == Node::Fake && parent->subType() == Node::Collision) {
                     const NodeList& nl = parent->childNodes();
-                    NodeList::ConstIterator it = nl.begin();
-                    while (it != nl.end()) {
+                    NodeList::ConstIterator it = nl.constBegin();
+                    while (it != nl.constEnd()) {
                         if ((*it)->qmlModuleIdentifier() == relative->qmlModuleIdentifier()) {
                             /*
                               By returning here, we avoid printing all the duplicate
@@ -498,7 +498,7 @@ Tree::findUnambiguousTarget(const QString& target, Atom *&atom, const Node* rela
     QList<Target> bestTargetList;
 
     for (int pass = 0; pass < NumSuffixes; ++pass) {
-        TargetHash::const_iterator i = priv->targetHash.find(Doc::canonicalTitle(target + suffixes[pass]));
+        TargetHash::const_iterator i = priv->targetHash.constFind(Doc::canonicalTitle(target + suffixes[pass]));
         if (i != priv->targetHash.constEnd()) {
             TargetHash::const_iterator j = i;
             do {
@@ -545,7 +545,7 @@ Atom* Tree::findTarget(const QString& target, const Node* node) const
 {
     for (int pass = 0; pass < NumSuffixes; ++pass) {
         QString key = Doc::canonicalTitle(target + suffixes[pass]);
-        TargetHash::const_iterator i = priv->targetHash.find(key);
+        TargetHash::const_iterator i = priv->targetHash.constFind(key);
 
         if (i != priv->targetHash.constEnd()) {
             do {
@@ -625,8 +625,8 @@ void Tree::resolveInheritance(NamespaceNode* rootNode)
         rootNode = root();
 
     for (int pass = 0; pass < 2; pass++) {
-        NodeList::ConstIterator c = rootNode->childNodes().begin();
-        while (c != rootNode->childNodes().end()) {
+        NodeList::ConstIterator c = rootNode->childNodes().constBegin();
+        while (c != rootNode->childNodes().constEnd()) {
             if ((*c)->type() == Node::Class) {
                 resolveInheritance(pass, (ClassNode*)* c);
             }
@@ -647,8 +647,8 @@ void Tree::resolveProperties()
 {
     PropertyMap::ConstIterator propEntry;
 
-    propEntry = priv->unresolvedPropertyMap.begin();
-    while (propEntry != priv->unresolvedPropertyMap.end()) {
+    propEntry = priv->unresolvedPropertyMap.constBegin();
+    while (propEntry != priv->unresolvedPropertyMap.constEnd()) {
         PropertyNode* property = propEntry.key();
         InnerNode* parent = property->parent();
         QString getterName = (*propEntry)[PropertyNode::Getter];
@@ -656,8 +656,8 @@ void Tree::resolveProperties()
         QString resetterName = (*propEntry)[PropertyNode::Resetter];
         QString notifierName = (*propEntry)[PropertyNode::Notifier];
 
-        NodeList::ConstIterator c = parent->childNodes().begin();
-        while (c != parent->childNodes().end()) {
+        NodeList::ConstIterator c = parent->childNodes().constBegin();
+        while (c != parent->childNodes().constEnd()) {
             if ((*c)->type() == Node::Function) {
                 FunctionNode* function = static_cast<FunctionNode*>(*c);
                 if (function->access() == property->access() &&
@@ -682,8 +682,8 @@ void Tree::resolveProperties()
         ++propEntry;
     }
 
-    propEntry = priv->unresolvedPropertyMap.begin();
-    while (propEntry != priv->unresolvedPropertyMap.end()) {
+    propEntry = priv->unresolvedPropertyMap.constBegin();
+    while (propEntry != priv->unresolvedPropertyMap.constEnd()) {
         PropertyNode* property = propEntry.key();
         // redo it to set the property functions
         if (property->overriddenFrom())
@@ -700,8 +700,8 @@ void Tree::resolveInheritance(int pass, ClassNode* classe)
 {
     if (pass == 0) {
         QList<InheritanceBound> bounds = priv->unresolvedInheritanceMap[classe];
-        QList<InheritanceBound>::ConstIterator b = bounds.begin();
-        while (b != bounds.end()) {
+        QList<InheritanceBound>::ConstIterator b = bounds.constBegin();
+        while (b != bounds.constEnd()) {
             Node* n = findClassNode((*b).basePath);
             if (!n && (*b).parent) {
                 n = findClassNode((*b).basePath, (*b).parent);
@@ -713,8 +713,8 @@ void Tree::resolveInheritance(int pass, ClassNode* classe)
         }
     }
     else {
-        NodeList::ConstIterator c = classe->childNodes().begin();
-        while (c != classe->childNodes().end()) {
+        NodeList::ConstIterator c = classe->childNodes().constBegin();
+        while (c != classe->childNodes().constEnd()) {
             if ((*c)->type() == Node::Function) {
                 FunctionNode* func = (FunctionNode*)* c;
                 FunctionNode* from = findVirtualFunctionInBaseClasses(classe, func);
@@ -857,8 +857,8 @@ void Tree::fixInheritance(NamespaceNode* rootNode)
     if (!rootNode)
         rootNode = root();
 
-    NodeList::ConstIterator c = rootNode->childNodes().begin();
-    while (c != rootNode->childNodes().end()) {
+    NodeList::ConstIterator c = rootNode->childNodes().constBegin();
+    while (c != rootNode->childNodes().constEnd()) {
         if ((*c)->type() == Node::Class)
             static_cast<ClassNode*>(*c)->fixBaseClasses();
         else if ((*c)->type() == Node::Namespace) {
@@ -874,8 +874,8 @@ void Tree::fixInheritance(NamespaceNode* rootNode)
 FunctionNode* Tree::findVirtualFunctionInBaseClasses(ClassNode* classe,
                                                      FunctionNode* clone)
 {
-    QList<RelatedClass>::ConstIterator r = classe->baseClasses().begin();
-    while (r != classe->baseClasses().end()) {
+    QList<RelatedClass>::ConstIterator r = classe->baseClasses().constBegin();
+    while (r != classe->baseClasses().constEnd()) {
         FunctionNode* func;
         if (((func = findVirtualFunctionInBaseClasses((*r).node, clone)) != 0 ||
              (func = (*r).node->findFunctionNode(clone)) != 0)) {
@@ -891,8 +891,8 @@ FunctionNode* Tree::findVirtualFunctionInBaseClasses(ClassNode* classe,
  */
 void Tree::fixPropertyUsingBaseClasses(ClassNode* classe, PropertyNode* property)
 {
-    QList<RelatedClass>::const_iterator r = classe->baseClasses().begin();
-    while (r != classe->baseClasses().end()) {
+    QList<RelatedClass>::const_iterator r = classe->baseClasses().constBegin();
+    while (r != classe->baseClasses().constEnd()) {
         Node* n = r->node->findChildNodeByNameAndType(property->name(), Node::Property);
         if (n) {
             PropertyNode* baseProperty = static_cast<PropertyNode*>(n);

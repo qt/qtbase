@@ -209,8 +209,8 @@ static void processQdocconfFile(const QString &fileName)
       Load the language translators, if the configuration specifies any.
      */
     QStringList fileNames = config.getStringList(CONFIG_TRANSLATORS);
-    QStringList::Iterator fn = fileNames.begin();
-    while (fn != fileNames.end()) {
+    QStringList::Iterator fn = fileNames.constBegin();
+    while (fn != fileNames.constEnd()) {
         QTranslator *translator = new QTranslator(0);
         if (!translator->load(*fn))
             config.lastLocation().error(tr("Cannot load translator '%1'")
@@ -331,8 +331,8 @@ static void processQdocconfFile(const QString &fileName)
      */
     QSet<CodeParser *> usedParsers;
 
-    QSet<QString>::ConstIterator h = headers.begin();
-    while (h != headers.end()) {
+    QSet<QString>::ConstIterator h = headers.constBegin();
+    while (h != headers.constEnd()) {
         CodeParser *codeParser = CodeParser::parserForHeaderFile(*h);
         if (codeParser) {
             codeParser->parseHeaderFile(config.location(), *h, tree);
@@ -349,8 +349,8 @@ static void processQdocconfFile(const QString &fileName)
       Parse each source text file in the set using the appropriate parser and
       add it to the big tree.
      */
-    QSet<QString>::ConstIterator s = sources.begin();
-    while (s != sources.end()) {
+    QSet<QString>::ConstIterator s = sources.constBegin();
+    while (s != sources.constEnd()) {
         CodeParser *codeParser = CodeParser::parserForSourceFile(*s);
         if (codeParser) {
             codeParser->parseSourceFile(config.location(), *s, tree);
@@ -378,8 +378,8 @@ static void processQdocconfFile(const QString &fileName)
       documentation output. More than one output format can be
       requested. The tree is traversed for each one.
      */
-    QSet<QString>::ConstIterator of = outputFormats.begin();
-    while (of != outputFormats.end()) {
+    QSet<QString>::ConstIterator of = outputFormats.constBegin();
+    while (of != outputFormats.constEnd()) {
         Generator* generator = Generator::generatorForFormat(*of);
         if (generator == 0)
             outputFormatsLocation.fatal(tr("Unknown output format '%1'").arg(*of));
