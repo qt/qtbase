@@ -296,7 +296,7 @@ QWindowsContext::QWindowsContext() :
 #endif
     m_instance = this;
     const QByteArray bv = qgetenv("QT_QPA_VERBOSE");
-    if (bv.isEmpty()) {
+    if (!bv.isEmpty()) {
         const char *v = bv.data();
         QWindowsContext::verboseIntegration = componentVerbose(v, "integration");
         QWindowsContext::verboseWindows = componentVerbose(v, "windows");
