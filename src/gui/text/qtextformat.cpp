@@ -3296,8 +3296,8 @@ QTextFormatCollection::~QTextFormatCollection()
 int QTextFormatCollection::indexForFormat(const QTextFormat &format)
 {
     uint hash = getHash(format.d, format.format_type);
-    QMultiHash<uint, int>::const_iterator i = hashes.find(hash);
-    while (i != hashes.end() && i.key() == hash) {
+    QMultiHash<uint, int>::const_iterator i = hashes.constFind(hash);
+    while (i != hashes.constEnd() && i.key() == hash) {
         if (formats.value(i.value()) == format) {
             return i.value();
         }

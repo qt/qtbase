@@ -140,8 +140,8 @@ void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
         }
     }
 
-    QMap<ObjectGesture, QList<QGesture *> >::const_iterator iter = m_objectGestures.begin();
-    while (iter != m_objectGestures.end()) {
+    QMap<ObjectGesture, QList<QGesture *> >::const_iterator iter = m_objectGestures.constBegin();
+    while (iter != m_objectGestures.constEnd()) {
         ObjectGesture objectGesture = iter.key();
         if (objectGesture.gesture == type) {
             foreach (QGesture *g, iter.value()) {
@@ -248,9 +248,10 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
     ContextIterator contextEnd = contexts.end();
     for (ContextIterator context = contexts.begin(); context != contextEnd; ++context) {
         Qt::GestureType gestureType = context.value();
+        const QMap<Qt::GestureType, QGestureRecognizer *> &const_recognizers = m_recognizers;
         QMap<Qt::GestureType, QGestureRecognizer *>::const_iterator
-                typeToRecognizerIterator = m_recognizers.lowerBound(gestureType),
-                typeToRecognizerEnd = m_recognizers.upperBound(gestureType);
+                typeToRecognizerIterator = const_recognizers.lowerBound(gestureType),
+                typeToRecognizerEnd = const_recognizers.upperBound(gestureType);
         for (; typeToRecognizerIterator != typeToRecognizerEnd; ++typeToRecognizerIterator) {
             QGestureRecognizer *recognizer = typeToRecognizerIterator.value();
             QObject *target = context.key();
@@ -468,8 +469,8 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
     QWidget *w = receiver;
     typedef QMap<Qt::GestureType, Qt::GestureFlags>::const_iterator ContextIterator;
     if (!w->d_func()->gestureContext.isEmpty()) {
-        for(ContextIterator it = w->d_func()->gestureContext.begin(),
-            e = w->d_func()->gestureContext.end(); it != e; ++it) {
+        for(ContextIterator it = w->d_func()->gestureContext.constBegin(),
+            e = w->d_func()->gestureContext.constEnd(); it != e; ++it) {
             types.insert(it.key(), 0);
             contexts.insertMulti(w, it.key());
         }
@@ -478,8 +479,8 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
     w = w->isWindow() ? 0 : w->parentWidget();
     while (w)
     {
-        for (ContextIterator it = w->d_func()->gestureContext.begin(),
-             e = w->d_func()->gestureContext.end(); it != e; ++it) {
+        for (ContextIterator it = w->d_func()->gestureContext.constBegin(),
+             e = w->d_func()->gestureContext.constEnd(); it != e; ++it) {
             if (!(it.value() & Qt::DontStartGestureOnChildren)) {
                 if (!types.contains(it.key())) {
                     types.insert(it.key(), 0);
@@ -502,8 +503,8 @@ bool QGestureManager::filterEvent(QGraphicsObject *receiver, QEvent *event)
     QGraphicsObject *item = receiver;
     if (!item->QGraphicsItem::d_func()->gestureContext.isEmpty()) {
         typedef QMap<Qt::GestureType, Qt::GestureFlags>::const_iterator ContextIterator;
-        for(ContextIterator it = item->QGraphicsItem::d_func()->gestureContext.begin(),
-            e = item->QGraphicsItem::d_func()->gestureContext.end(); it != e; ++it) {
+        for(ContextIterator it = item->QGraphicsItem::d_func()->gestureContext.constBegin(),
+            e = item->QGraphicsItem::d_func()->gestureContext.constEnd(); it != e; ++it) {
             types.insert(it.key(), 0);
             contexts.insertMulti(item, it.key());
         }
@@ -513,8 +514,8 @@ bool QGestureManager::filterEvent(QGraphicsObject *receiver, QEvent *event)
     while (item)
     {
         typedef QMap<Qt::GestureType, Qt::GestureFlags>::const_iterator ContextIterator;
-        for (ContextIterator it = item->QGraphicsItem::d_func()->gestureContext.begin(),
-             e = item->QGraphicsItem::d_func()->gestureContext.end(); it != e; ++it) {
+        for (ContextIterator it = item->QGraphicsItem::d_func()->gestureContext.constBegin(),
+             e = item->QGraphicsItem::d_func()->gestureContext.constEnd(); it != e; ++it) {
             if (!(it.value() & Qt::DontStartGestureOnChildren)) {
                 if (!types.contains(it.key())) {
                     types.insert(it.key(), 0);
@@ -559,8 +560,8 @@ void QGestureManager::getGestureTargets(const QSet<QGesture*> &gestures,
             QWidget *w = widget->parentWidget();
             while (w) {
                 QMap<Qt::GestureType, Qt::GestureFlags>::const_iterator it
-                        = w->d_func()->gestureContext.find(type);
-                if (it != w->d_func()->gestureContext.end()) {
+                        = w->d_func()->gestureContext.constFind(type);
+                if (it != w->d_func()->gestureContext.constEnd()) {
                     // i.e. 'w' listens to gesture 'type'
                     if (!(it.value() & Qt::DontStartGestureOnChildren) && w != widget) {
                         // conflicting gesture!
@@ -642,8 +643,8 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
             << "\n";
 
     // if there are conflicting gestures, send the GestureOverride event
-    for (GesturesPerWidget::const_iterator it = conflictedGestures.begin(),
-        e = conflictedGestures.end(); it != e; ++it) {
+    for (GesturesPerWidget::const_iterator it = conflictedGestures.constBegin(),
+        e = conflictedGestures.constEnd(); it != e; ++it) {
         QWidget *receiver = it.key();
         QList<QGesture *> gestures = it.value();
         DEBUG() << "QGestureManager::deliverEvents: sending GestureOverride to"
@@ -676,8 +677,8 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
     }
 
     // delivering gestures that are not in conflicted state
-    for (GesturesPerWidget::const_iterator it = normalStartedGestures.begin(),
-        e = normalStartedGestures.end(); it != e; ++it) {
+    for (GesturesPerWidget::const_iterator it = normalStartedGestures.constBegin(),
+        e = normalStartedGestures.constEnd(); it != e; ++it) {
         if (!it.value().isEmpty()) {
             DEBUG() << "QGestureManager::deliverEvents: sending to" << it.key()
                     << "gestures:" << it.value();

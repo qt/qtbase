@@ -4193,8 +4193,8 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
     // Find the first popup under the mouse (including the popup's descendants) starting from the last.
     // Remove all popups after the one found, or all or them if no popup is under the mouse.
     // Then continue with the event.
-    QList<QGraphicsWidget *>::const_iterator iter = d->popupWidgets.end();
-    while (--iter >= d->popupWidgets.begin() && !wheelCandidates.isEmpty()) {
+    QList<QGraphicsWidget *>::const_iterator iter = d->popupWidgets.constEnd();
+    while (--iter >= d->popupWidgets.constBegin() && !wheelCandidates.isEmpty()) {
         if (wheelCandidates.first() == *iter || (*iter)->isAncestorOf(wheelCandidates.first()))
             break;
         d->removePopup(*iter);
@@ -6126,8 +6126,8 @@ void QGraphicsScenePrivate::gestureTargetsAtHotSpots(const QSet<QGesture *> &ges
             if (QGraphicsObject *itemobj = item->toGraphicsObject()) {
                 QGraphicsItemPrivate *d = item->QGraphicsItem::d_func();
                 QMap<Qt::GestureType, Qt::GestureFlags>::const_iterator it =
-                        d->gestureContext.find(gestureType);
-                if (it != d->gestureContext.end() && (!flag || (it.value() & flag))) {
+                        d->gestureContext.constFind(gestureType);
+                if (it != d->gestureContext.constEnd() && (!flag || (it.value() & flag))) {
                     if (normalGestures.contains(gesture)) {
                         normalGestures.remove(gesture);
                         if (conflicts)
