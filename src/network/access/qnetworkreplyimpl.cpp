@@ -144,6 +144,9 @@ void QNetworkReplyImplPrivate::_q_startOperation()
     }
 #endif
 
+    // Start timer for progress notifications
+    downloadProgressSignalChoke.start();
+
     if (backend && backend->isSynchronous()) {
         state = Finished;
         q_func()->setFinished(true);
@@ -210,8 +213,11 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
     // emit readyRead before downloadProgress incase this will cause events to be
     // processed and we get into a recursive call (as in QProgressDialog).
     emit q->readyRead();
-    emit q->downloadProgress(bytesDownloaded,
+    if (downloadProgressSignalChoke.elapsed() >= progressSignalInterval) {
+        downloadProgressSignalChoke.restart();
+        emit q->downloadProgress(bytesDownloaded,
                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
+    }
     resumeNotificationHandling();
 }
 
@@ -640,8 +646,11 @@ void QNetworkReplyImplPrivate::appendDownstreamDataSignalEmissions()
     emit q->readyRead();
     // emit readyRead before downloadProgress incase this will cause events to be
     // processed and we get into a recursive call (as in QProgressDialog).
-    emit q->downloadProgress(bytesDownloaded,
+    if (downloadProgressSignalChoke.elapsed() >= progressSignalInterval) {
+        downloadProgressSignalChoke.restart();
+        emit q->downloadProgress(bytesDownloaded,
                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
+    }
 
     resumeNotificationHandling();
     // do we still have room in the buffer?
@@ -747,7 +756,10 @@ void QNetworkReplyImplPrivate::appendDownstreamDataDownloadBuffer(qint64 bytesRe
     // processed and we get into a recursive call (as in QProgressDialog).
     if (bytesDownloaded > 0)
         emit q->readyRead();
-    emit q->downloadProgress(bytesDownloaded, bytesTotal);
+    if (downloadProgressSignalChoke.elapsed() >= progressSignalInterval) {
+        downloadProgressSignalChoke.restart();
+        emit q->downloadProgress(bytesDownloaded, bytesTotal);
+    }
 }
 
 void QNetworkReplyImplPrivate::finished()
@@ -795,6 +807,8 @@ void QNetworkReplyImplPrivate::finished()
     pauseNotificationHandling();
     if (totalSize.isNull() || totalSize == -1) {
         emit q->downloadProgress(bytesDownloaded, bytesDownloaded);
+    } else {
+        emit q->downloadProgress(bytesDownloaded, totalSize.toLongLong());
     }
 
     if (bytesUploaded == -1 && (outgoingData || outgoingDataBuffer))

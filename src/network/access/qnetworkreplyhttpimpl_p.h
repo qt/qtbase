@@ -188,7 +188,6 @@ public:
 
     void checkForRedirect(const int statusCode);
 
-
     // incoming from user
     QNetworkAccessManager *manager;
     QNetworkAccessManagerPrivate *managerPrivate;

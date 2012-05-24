@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+const int QNetworkReplyPrivate::progressSignalInterval = 100;
+
 QNetworkReplyPrivate::QNetworkReplyPrivate()
     : readBufferMaxSize(0),
       operation(QNetworkAccessManager::UnknownOperation),

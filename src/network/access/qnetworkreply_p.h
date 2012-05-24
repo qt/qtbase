@@ -57,6 +57,7 @@
 #include "qnetworkrequest_p.h"
 #include "qnetworkreply.h"
 #include "QtCore/qpointer.h"
+#include <QtCore/QElapsedTimer>
 #include "private/qiodevice_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -69,6 +70,8 @@ public:
     QUrl url;
     QPointer<QNetworkAccessManager> manager;
     qint64 readBufferMaxSize;
+    QElapsedTimer downloadProgressSignalChoke;
+    const static int progressSignalInterval;
     QNetworkAccessManager::Operation operation;
     QNetworkReply::NetworkError errorCode;
     bool isFinished;
