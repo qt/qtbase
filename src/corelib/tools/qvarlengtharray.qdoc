@@ -141,6 +141,18 @@
     \overload
 */
 
+/*! \fn T& QVarLengthArray::front()
+    \since 5.0
+
+    Same as first(). Provided for STL-compatibility.
+*/
+
+/*! \fn const T& QVarLengthArray::front() const
+    \since 5.0
+
+    \overload
+*/
+
 /*! \fn T& QVarLengthArray::last()
 
     Returns a reference to the last item in the array.  The array must
@@ -155,13 +167,29 @@
     \overload
 */
 
+/*! \fn T& QVarLengthArray::back()
+    \since 5.0
 
+    Same as last(). Provided for STL-compatibility.
+*/
+
+/*! \fn const T& QVarLengthArray::back() const
+    \since 5.0
+
+    \overload
+*/
 
 /*! \fn bool QVarLengthArray::isEmpty() const
 
     Returns true if the array has size 0; otherwise returns false.
 
     \sa size(), resize()
+*/
+
+/*! \fn bool QVarLengthArray::empty() const
+    \since 5.0
+
+    Same as isEmpty(). Provided for STL-compatibility.
 */
 
 /*! \fn void QVarLengthArray::clear()
@@ -239,6 +267,12 @@
     \sa removeLast()
 */
 
+/*!
+    \fn void QVarLengthArray::push_back(const T &t)
+    \since 5.0
+
+    Same as append(). Provided for STL-compatibility.
+*/
 
 /*!
     \fn inline void QVarLengthArray::removeLast()
@@ -247,6 +281,13 @@
     Decreases the size of the array by one.  The allocated size is not changed.
 
     \sa append()
+*/
+
+/*!
+    \fn void QVarLengthArray::pop_back()
+    \since 5.0
+
+    Same as removeLast(). Provided for STL-compatibility.
 */
 
 /*!

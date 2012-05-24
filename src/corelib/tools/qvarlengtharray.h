@@ -172,6 +172,15 @@ public:
     iterator erase(const_iterator begin, const_iterator end);
     inline iterator erase(const_iterator pos) { return erase(pos, pos+1); }
 
+    // STL compatibility:
+    inline bool empty() const { return isEmpty(); }
+    inline void push_back(const T &t) { append(t); }
+    inline void pop_back() { removeLast(); }
+    inline T &front() { return first(); }
+    inline const T &front() const { return first(); }
+    inline T &back() { return last(); }
+    inline const T &back() const { return last(); }
+
 private:
     friend class QPodList<T, Prealloc>;
     void realloc(int size, int alloc);
