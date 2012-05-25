@@ -109,6 +109,7 @@ QCocoaMenu::QCocoaMenu() :
 
 void QCocoaMenu::setText(const QString &text)
 {
+    QCocoaAutoReleasePool pool;
     QString stripped = qt_mac_removeAmpersandEscapes(text);
     [m_nativeMenu setTitle:QCFString::toNSString(stripped)];
     [m_nativeItem setTitle:QCFString::toNSString(stripped)];
