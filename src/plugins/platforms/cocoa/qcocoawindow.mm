@@ -460,6 +460,13 @@ NSWindow * QCocoaWindow::createNSWindow()
                                          defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up
                                                     // before the window is shown and needs a proper window.).
         [window setHasShadow:YES];
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+        if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+            // Make popup winows show on the same desktop as the parent full-screen window.
+            [window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+        }
+#endif
         window->m_cocoaPlatformWindow = this;
         createdWindow = window;
     } else {
