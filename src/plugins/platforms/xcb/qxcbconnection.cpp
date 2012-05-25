@@ -906,6 +906,7 @@ static const char * xcb_atomnames = {
     // Property formats
     "TEXT\0"
     "UTF8_STRING\0"
+    "CARDINAL\0"
 
     // xdnd
     "XdndEnter\0"

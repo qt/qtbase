@@ -43,12 +43,14 @@
 
 #include <QtDebug>
 #include <QScreen>
+#include <QtGui/QIcon>
 
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #include "qxcbdrag.h"
 #include "qxcbkeyboard.h"
 #include "qxcbwmsupport.h"
+#include "qxcbimage.h"
 
 #include <qpa/qplatformintegration.h>
 
@@ -1120,6 +1122,49 @@ void QXcbWindow::setWindowTitle(const QString &title)
                                    8,
                                    ba.length(),
                                    ba.constData()));
+}
+
+void QXcbWindow::setWindowIcon(const QIcon &icon)
+{
+    QVector<quint32> icon_data;
+
+    if (!icon.isNull()) {
+        QList<QSize> availableSizes = icon.availableSizes();
+        if (availableSizes.isEmpty()) {
+            // try to use default sizes since the icon can be a scalable image like svg.
+            availableSizes.push_back(QSize(16,16));
+            availableSizes.push_back(QSize(32,32));
+            availableSizes.push_back(QSize(64,64));
+            availableSizes.push_back(QSize(128,128));
+        }
+        for (int i = 0; i < availableSizes.size(); ++i) {
+            QSize size = availableSizes.at(i);
+            QPixmap pixmap = icon.pixmap(size);
+            if (!pixmap.isNull()) {
+                QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+                int pos = icon_data.size();
+                icon_data.resize(pos + 2 + image.width()*image.height());
+                icon_data[pos++] = image.width();
+                icon_data[pos++] = image.height();
+                memcpy(icon_data.data() + pos, image.bits(), image.width()*image.height()*4);
+            }
+        }
+    }
+
+    if (!icon_data.isEmpty()) {
+        Q_XCB_CALL(xcb_change_property(xcb_connection(),
+                                       XCB_PROP_MODE_REPLACE,
+                                       m_window,
+                                       atom(QXcbAtom::_NET_WM_ICON),
+                                       atom(QXcbAtom::CARDINAL),
+                                       32,
+                                       icon_data.size(),
+                                       (unsigned char *) icon_data.data()));
+    } else {
+        Q_XCB_CALL(xcb_delete_property(xcb_connection(),
+                                       m_window,
+                                       atom(QXcbAtom::_NET_WM_ICON)));
+    }
 }
 
 void QXcbWindow::raise()

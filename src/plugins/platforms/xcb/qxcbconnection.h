@@ -183,6 +183,7 @@ namespace QXcbAtom {
         // Property formats
         TEXT,
         UTF8_STRING,
+        CARDINAL,
 
         // Xdnd
         XdndEnter,

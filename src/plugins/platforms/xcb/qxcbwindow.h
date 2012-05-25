@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 
 class QXcbScreen;
 class QXcbEGLSurface;
+class QIcon;
 
 class QXcbWindow : public QXcbObject, public QPlatformWindow
 {
@@ -88,6 +89,7 @@ public:
     bool isExposed() const;
 
     void setWindowTitle(const QString &title);
+    void setWindowIcon(const QIcon &icon);
     void raise();
     void lower();
     void propagateSizeHints();
