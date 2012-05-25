@@ -435,15 +435,13 @@ public:
         inline iterator &operator+=(int j) { return *this = *this + j; }
         inline iterator &operator-=(int j) { return *this = *this - j; }
 
-#ifdef QT_STRICT_ITERATORS
-    private:
-#else
+#ifndef QT_STRICT_ITERATORS
     public:
-#endif
         inline bool operator==(const const_iterator &o) const
             { return i == o.i; }
         inline bool operator!=(const const_iterator &o) const
             { return i != o.i; }
+#endif
         friend class QMap<Key, T>;
     };
     friend class iterator;

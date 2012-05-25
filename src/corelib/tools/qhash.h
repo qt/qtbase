@@ -378,16 +378,13 @@ public:
         inline iterator &operator+=(int j) { return *this = *this + j; }
         inline iterator &operator-=(int j) { return *this = *this - j; }
 
-        // ### Qt 5: not sure this is necessary anymore
-#ifdef QT_STRICT_ITERATORS
-    private:
-#else
+#ifndef QT_STRICT_ITERATORS
     public:
-#endif
         inline bool operator==(const const_iterator &o) const
             { return i == o.i; }
         inline bool operator!=(const const_iterator &o) const
             { return i != o.i; }
+#endif
     };
     friend class iterator;
 
