@@ -907,7 +907,7 @@ int QLineEdit::selectionStart() const
 void QLineEdit::setSelection(int start, int length)
 {
     Q_D(QLineEdit);
-    if (start < 0 || start > (int)d->control->text().length()) {
+    if (start < 0 || start > (int)d->control->end()) {
         qWarning("QLineEdit::setSelection: Invalid start position (%d)", start);
         return;
     }

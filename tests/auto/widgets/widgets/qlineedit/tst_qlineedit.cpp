@@ -272,6 +272,7 @@ private slots:
     void QTBUG697_paletteCurrentColorGroup();
     void QTBUG13520_textNotVisible();
     void QTBUG7174_inputMaskCursorBlink();
+    void QTBUG16850_setSelection();
 
     void bidiVisualMovement_data();
     void bidiVisualMovement();
@@ -3720,6 +3721,16 @@ void tst_QLineEdit::QTBUG7174_inputMaskCursorBlink()
     edit.updateRegion = QRegion();
     QTest::qWait(QApplication::cursorFlashTime());
     QVERIFY(edit.updateRegion.contains(cursorRect));
+}
+
+void tst_QLineEdit::QTBUG16850_setSelection()
+{
+    QLineEdit le;
+    le.setInputMask("00:0");
+    le.setText("  1");
+    le.setSelection(3, 1);
+    QCOMPARE(le.selectionStart(), 3);
+    QCOMPARE(le.selectedText(), QString("1"));
 }
 
 void tst_QLineEdit::bidiVisualMovement_data()
