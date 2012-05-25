@@ -80,7 +80,7 @@ static void clear(QVariant::Private *d)
 }
 
 
-static bool isNull(const QVariant::Private *d)
+static bool isNull(const QVariant::Private *)
 {
     return false;
 }

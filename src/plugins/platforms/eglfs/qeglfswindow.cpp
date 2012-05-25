@@ -66,7 +66,7 @@ void QEglFSWindow::setGeometry(const QRect &)
     QPlatformWindow::setGeometry(rect);
 }
 
-Qt::WindowState QEglFSWindow::setWindowState(Qt::WindowState state)
+Qt::WindowState QEglFSWindow::setWindowState(Qt::WindowState)
 {
     setGeometry(QRect());
     return Qt::WindowFullScreen;
