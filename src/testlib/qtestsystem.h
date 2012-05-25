@@ -88,6 +88,20 @@ namespace QTest
             QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
             QTest::qSleep(10);
         }
+        // Try ensuring the platform window receives the real position.
+        // (i.e. that window->pos() reflects reality)
+        // isActive() ( == FocusIn in case of X) does not guarantee this. It seems some WMs randomly
+        // send the final ConfigureNotify (the one with the non-bogus 0,0 position) after the FocusIn.
+        // If we just let things go, every mapTo/FromGlobal call the tests perform directly after
+        // qWaitForWindowShown() will generate bogus results.
+        if (window->isActive()) {
+            int waitNo = 0; // 0, 0 might be a valid position after all, so do not wait for ever
+            while (window->pos().isNull()) {
+                if (waitNo++ > timeout / 10)
+                    break;
+                qWait(10);
+            }
+        }
         return window->isActive();
     }
 
