@@ -1016,6 +1016,7 @@ bool qSharedBuild()
     \value MV_LEOPARD  Apple codename for MV_10_5
     \value MV_SNOWLEOPARD  Apple codename for MV_10_6
     \value MV_LION     Apple codename for MV_10_7
+    \value MV_MOUNTAINLION Apple codename for MV_10_8
 
     \sa WinVersion
 */
