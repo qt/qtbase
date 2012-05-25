@@ -1865,7 +1865,9 @@ void QTextLine::layout_helper(int maxGlyphs)
                 addNextCluster(lbh.currentPosition, end, lbh.tmpData, lbh.glyphCount,
                                current, lbh.logClusters, lbh.glyphs);
 
-                if (attributes[lbh.currentPosition].whiteSpace || attributes[lbh.currentPosition-1].lineBreakType != HB_NoBreak) {
+                if (lbh.currentPosition >= eng->layoutData->string.length()
+                    || attributes[lbh.currentPosition].whiteSpace
+                    || attributes[lbh.currentPosition-1].lineBreakType != HB_NoBreak) {
                     sb_or_ws = true;
                     break;
                 } else if (breakany && attributes[lbh.currentPosition].charStop) {
