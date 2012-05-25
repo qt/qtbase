@@ -72,8 +72,18 @@ void QCocoaBackingStore::flush(QWindow *widget, const QRegion &region, const QPo
     QRect geo = region.boundingRect();
     NSRect rect = NSMakeRect(geo.x(), geo.y(), geo.width(), geo.height());
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
-    if (cocoaWindow)
+    if (cocoaWindow) {
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
+    if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
+        // Workaround for malfunctioning displayRect on 10.8 where
+        // calling it seems to have no effect. Call setImage like
+        // resize() does.
+        [cocoaWindow->m_contentView setImage:m_image];
+    }
+#endif
         [cocoaWindow->m_contentView displayRect:rect];
+   }
 }
 
 void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
