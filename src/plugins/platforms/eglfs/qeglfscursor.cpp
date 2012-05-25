@@ -235,6 +235,8 @@ void QEglFSCursor::setPos(const QPoint &pos)
 
 void QEglFSCursor::pointerEvent(const QMouseEvent &event)
 {
+    if (event.type() != QEvent::MouseMove)
+        return;
     const QRect oldCursorRect = cursorRect();
     m_pos = event.pos();
     QRegion rgn = oldCursorRect | cursorRect();
