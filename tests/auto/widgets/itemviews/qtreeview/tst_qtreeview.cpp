@@ -239,6 +239,7 @@ private slots:
     void taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint();
     void taskQTBUG_11466_keyboardNavigationRegression();
     void taskQTBUG_13567_removeLastItemRegression();
+    void taskQTBUG_25333_adjustViewOptionsForIndex();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -4007,6 +4008,47 @@ void tst_QTreeView::taskQTBUG_13567_removeLastItemRegression()
     QCOMPARE(view.currentIndex(), model.index(198, 0));
     CHECK_VISIBLE(198, 0);
 }
+
+// From QTBUG-25333 (QTreeWidget drag crashes when there was a hidden item in tree)
+// The test passes simply if it doesn't crash, hence there are no calls
+// to QCOMPARE() or QVERIFY().
+// Note: define QT_BUILD_INTERNAL to run this test
+void tst_QTreeView::taskQTBUG_25333_adjustViewOptionsForIndex()
+{
+    PublicView view;
+    QStandardItemModel model;
+    QStandardItem *item1 = new QStandardItem("Item1");
+    QStandardItem *item2 = new QStandardItem("Item2");
+    QStandardItem *item3 = new QStandardItem("Item3");
+    QStandardItem *data1 = new QStandardItem("Data1");
+    QStandardItem *data2 = new QStandardItem("Data2");
+    QStandardItem *data3 = new QStandardItem("Data3");
+
+    // Create a treeview
+    model.appendRow(QList<QStandardItem*>() << item1 << data1 );
+    model.appendRow(QList<QStandardItem*>() << item2 << data2 );
+    model.appendRow(QList<QStandardItem*>() << item3 << data3 );
+
+    view.setModel(&model);
+
+    // Hide a row
+    view.setRowHidden(1, QModelIndex(), true);
+    view.expandAll();
+
+    view.show();
+
+#ifdef QT_BUILD_INTERNAL
+    {
+        QStyleOptionViewItemV4 option;
+
+        view.aiv_priv()->adjustViewOptionsForIndex(&option, model.indexFromItem(item1));
+
+        view.aiv_priv()->adjustViewOptionsForIndex(&option, model.indexFromItem(item3));
+    }
+#endif
+
+}
+
 
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"

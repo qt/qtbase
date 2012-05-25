@@ -1357,7 +1357,7 @@ QItemViewPaintPairs QTreeViewPrivate::draggablePaintPairs(const QModelIndexList 
 
 void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItemV4 *option, const QModelIndex &current) const
 {
-    const int row = current.row();
+    const int row = viewIndex(current); // get the index in viewItems[]
     option->state = option->state | (viewItems.at(row).expanded ? QStyle::State_Open : QStyle::State_None)
                                   | (viewItems.at(row).hasChildren ? QStyle::State_Children : QStyle::State_None)
                                   | (viewItems.at(row).hasMoreSiblings ? QStyle::State_Sibling : QStyle::State_None);
