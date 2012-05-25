@@ -546,8 +546,6 @@ void QStatusBar::reformat()
 void QStatusBar::showMessage(const QString &message, int timeout)
 {
     Q_D(QStatusBar);
-    if (d->tempItem == message)
-        return;
 
     d->tempItem = message;
 

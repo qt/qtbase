@@ -73,6 +73,7 @@ private slots:
     void setSizeGripEnabled();
     void task194017_hiddenWidget();
     void QTBUG4334_hiddenOnMaximizedWindow();
+    void QTBUG25492_msgtimeout();
 
 private:
     QStatusBar *testWidget;
@@ -275,6 +276,50 @@ void tst_QStatusBar::QTBUG4334_hiddenOnMaximizedWindow()
     QTest::qWaitForWindowShown(&main);
     QVERIFY(!statusbar.findChild<QSizeGrip*>()->isVisible());
 }
+
+void tst_QStatusBar::QTBUG25492_msgtimeout()
+{
+    QVERIFY(testWidget->currentMessage().isNull());
+    QVERIFY(currentMessage.isNull());
+    testWidget->show();
+
+    // Set display message forever first
+    testWidget->showMessage("Ready", 0);
+    QCOMPARE(testWidget->currentMessage(), QString("Ready"));
+    QCOMPARE(testWidget->currentMessage(), currentMessage);
+
+    QTest::qWait(1000);
+
+    // Set display message for 2 seconds again
+    testWidget->showMessage("Ready", 2000);
+    QCOMPARE(testWidget->currentMessage(), QString("Ready"));
+    QCOMPARE(testWidget->currentMessage(), currentMessage);
+
+    QTest::qWait(3000);
+
+    // Message disappears after 2 seconds
+    QVERIFY(testWidget->currentMessage().isNull());
+    QVERIFY(currentMessage.isNull());
+
+    // Set display message for 2 seconds first
+    testWidget->showMessage("Ready 25492", 2000);
+    QCOMPARE(testWidget->currentMessage(), QString("Ready 25492"));
+    QCOMPARE(testWidget->currentMessage(), currentMessage);
+
+    QTest::qWait(1000);
+
+    // Set display message forever again
+    testWidget->showMessage("Ready 25492", 0);
+    QCOMPARE(testWidget->currentMessage(), QString("Ready 25492"));
+    QCOMPARE(testWidget->currentMessage(), currentMessage);
+
+    QTest::qWait(3000);
+
+    // Message displays forever
+    QCOMPARE(testWidget->currentMessage(), QString("Ready 25492"));
+    QCOMPARE(testWidget->currentMessage(), currentMessage);
+}
+
 
 QTEST_MAIN(tst_QStatusBar)
 #include "tst_qstatusbar.moc"
