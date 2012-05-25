@@ -54,12 +54,33 @@ use strict;
 use warnings;
 use English qw(-no_match_vars );
 
+my $normalizePath_fixDrive = ($^O eq "msys" ? 1 : 0);
+
+######################################################################
+# Syntax:  normalizePath(\$path)
+# Params:  Reference to a path that's going to be normalized.
+#
+# Purpose: Converts the path into a form that can be used as include
+#          path from C++ sources and qmake's .pro files.
+#          Only relevant on Windows.
+# Returns: -none-
+######################################################################
+sub normalizePath {
+    my $s = shift;
+    $$s =~ s=\\=/=g;
+    if ($normalizePath_fixDrive && $$s =~ m,^/([a-zA-Z])/(.*),) {
+        $$s = lc($1) . ":/$2";
+    }
+}
+
 # set output basedir to be where ever syncqt is run from
 our $out_basedir = getcwd();
-$out_basedir =~ s=\\=/=g;
+normalizePath(\$out_basedir);
 our $basedir;
 our $quoted_basedir;
 
+# Make sure we use Windows line endings for chomp and friends on Windows.
+$INPUT_RECORD_SEPARATOR = "\r\n" if ($^O eq "msys");
 
 # try to figure out where QtBase is located
 # normally the script location should be enough, if not fall back to
@@ -67,7 +88,7 @@ our $quoted_basedir;
 # user to use the -qtdir option explicitly.
 my $qtbasedir = $ENV{"QTDIR"};
 $qtbasedir = dirname(dirname($0)) if (!$qtbasedir);
-$qtbasedir =~ s=\\=/=g if (defined $qtbasedir);
+normalizePath(\$qtbasedir) if (defined $qtbasedir);
 
 # will be defined based on the modules sync.profile
 our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %mastercontent, %modulepris, %explicitheaders, %deprecatedheaders);
@@ -341,8 +362,8 @@ sub make_path {
 ######################################################################
 sub syncHeader {
     my ($lib, $header, $iheader, $copy, $ts) = @_;
-    $iheader =~ s=\\=/=g;
-    $header =~ s=\\=/=g;
+    normalizePath(\$iheader);
+    normalizePath(\$header);
     return copyFile($lib, $iheader, $header) if($copy);
 
     unless(-e $header) {
@@ -372,8 +393,8 @@ sub syncHeader {
 ######################################################################
 sub fixPaths {
     my ($file, $dir) = @_;
-    $file =~ s=\\=/=g;
-    $dir =~ s=\\=/=g;
+    normalizePath(\$file);
+    normalizePath(\$dir);
 
     #setup
     my $ret = $file;
@@ -381,12 +402,12 @@ sub fixPaths {
     my $file_dir = dirname($file);
     if($file_dir eq ".") {
         $file_dir = getcwd();
-        $file_dir =~ s=\\=/=g;
+        normalizePath(\$file_dir);
     }
     $file_dir =~ s,/cygdrive/([a-zA-Z])/,$1:/,g;
     if($dir eq ".") {
         $dir = getcwd();
-        $dir =~ s=\\=/=g;
+        normalizePath(\$dir);
     }
     $dir =~ s,/cygdrive/([a-zA-Z])/,$1:/,g;
     return basename($file) if($file_dir eq $dir);
@@ -561,7 +582,7 @@ sub findFiles {
     my ($dir,$match,$descend) = @_;
     my ($file,$p,@files);
     local(*D);
-    $dir =~ s=\\=/=g;
+    normalizePath(\$dir);
     ($dir eq "") && ($dir = ".");
     if ( opendir(D,$dir) ) {
         if ( $dir eq "." ) {
@@ -621,7 +642,7 @@ sub locateSyncProfile
 $basedir = locateSyncProfile($out_basedir);
 if ($basedir) {
     $basedir = dirname($basedir) ;
-    $basedir =~ s=\\=/=g;
+    normalizePath(\$basedir);
     $quoted_basedir = "\Q$basedir";
 }
 
@@ -701,7 +722,7 @@ while ( @ARGV ) {
         $basedir = locateSyncProfile($arg);
         die "Could not find a sync.profile for '$arg'\n" if (!$basedir);
         $basedir = dirname($basedir);
-        $basedir =~ s=\\=/=g;
+        normalizePath(\$basedir);
         $quoted_basedir = "\Q$basedir";
         $var = "ignore";
     }
@@ -767,7 +788,7 @@ while ( @ARGV ) {
     } elsif ($var eq "qtdir") {
         if($val) {
             $qtbasedir = $val;
-            $qtbasedir =~ s=\\=/=g;
+            normalizePath(\$qtbasedir);
         } else {
             die "The -qtdir option requires an argument";
         }
@@ -790,8 +811,7 @@ while ( @ARGV ) {
         } else {
             $out_basedir = $outdir;
         }
-        # \ -> /
-        $out_basedir =~ s=\\=/=g;
+        normalizePath(\$out_basedir);
     }
 }
 
