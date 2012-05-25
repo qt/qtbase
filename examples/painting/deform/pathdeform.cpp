@@ -471,7 +471,6 @@ void PathDeformRenderer::timerEvent(QTimerEvent *e)
         {
             QRect rectAfter = circle_bounds(m_pos, m_radius, m_fontSize);
             update(rectAfter | rectBefore);
-            QApplication::syncX();
         }
     }
 //     else if (e->timerId() == m_fpsTimer.timerId()) {

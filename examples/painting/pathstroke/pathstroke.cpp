@@ -582,7 +582,6 @@ void PathStrokeRenderer::timerEvent(QTimerEvent *e)
 {
     if (e->timerId() == m_timer.timerId()) {
         updatePoints();
-        QApplication::syncX();
     } // else if (e->timerId() == m_fpsTimer.timerId()) {
 //         emit frameRate(m_frameCount);
 //         m_frameCount = 0;
