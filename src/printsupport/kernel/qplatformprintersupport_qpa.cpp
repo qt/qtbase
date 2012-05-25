@@ -94,7 +94,7 @@ QPrinterInfo QPlatformPrinterSupport::defaultPrinter()
         if (printerInfo.isDefault())
             return printerInfo;
     }
-    return printers.isEmpty() ? QPrinterInfo() : printers.front();
+    return QPrinterInfo();
 }
 
 QPrinterInfo QPlatformPrinterSupport::printerInfo(const QString &printerName)

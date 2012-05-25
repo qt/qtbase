@@ -69,7 +69,12 @@ QPrinterInfoPrivate QPrinterInfoPrivate::shared_null;
     The return value should be checked using isNull() before being
     used, in case there is no default printer.
 
+    On some systems it is possible for there to be available printers
+    but none of them set to be the default printer.
+
     \sa isNull()
+    \sa isDefault()
+    \sa availablePrinters()
 */
 
 /*!
