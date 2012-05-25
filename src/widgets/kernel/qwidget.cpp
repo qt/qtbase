@@ -4765,10 +4765,8 @@ static void sendResizeEvents(QWidget *target)
     given \a rectangle. If the \a widget has any children, then
     they are also painted in the appropriate positions.
 
-    If no rectangle is specified (the default) the entire widget is
-    painted.
-
-    Replacement for Qt 4's QPixmap::grabWidget().
+    If a rectangle with an invalid size is specified  (the default),
+    the entire widget is painted.
 
     \sa render(), QPixmap
 */

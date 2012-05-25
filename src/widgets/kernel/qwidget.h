@@ -351,7 +351,7 @@ public:
                 const QRegion &sourceRegion = QRegion(),
                 RenderFlags renderFlags = RenderFlags(DrawWindowBackground | DrawChildren));
 
-    Q_INVOKABLE QPixmap grab(const QRect &rectangle);
+    Q_INVOKABLE QPixmap grab(const QRect &rectangle = QRect(QPoint(0, 0), QSize(-1, -1)));
 
 #ifndef QT_NO_GRAPHICSEFFECT
     QGraphicsEffect *graphicsEffect() const;
