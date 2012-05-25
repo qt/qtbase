@@ -57,7 +57,7 @@ class QPointerBase
 
 protected:
     inline QPointerBase() : wp() { }
-    inline QPointerBase(QObject *p) : wp(p) { }
+    inline QPointerBase(QObject *p) : wp(p, true) { }
     // compiler-generated copy/move ctor/assignment operators are fine! (even though public)
     inline ~QPointerBase() { }
 
@@ -65,7 +65,7 @@ protected:
     { return wp.data(); }
 
     inline void assign(QObject *p)
-    { wp = p; }
+    { wp.assign(p); }
 
     inline bool isNull() const
     { return wp.isNull(); }

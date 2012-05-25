@@ -585,13 +585,18 @@ public:
 
 #ifndef QT_NO_QOBJECT
     // special constructor that is enabled only if X derives from QObject
+#if QT_DEPRECATED_SINCE(5, 0)
     template <class X>
-    inline QWeakPointer(X *ptr) : d(ptr ? d->getAndRef(ptr) : 0), value(ptr)
+    QT_DEPRECATED inline QWeakPointer(X *ptr) : d(ptr ? d->getAndRef(ptr) : 0), value(ptr)
     { }
 #endif
+#endif
+
+#if QT_DEPRECATED_SINCE(5, 0)
     template <class X>
-    inline QWeakPointer &operator=(X *ptr)
+    QT_DEPRECATED inline QWeakPointer &operator=(X *ptr)
     { return *this = QWeakPointer(ptr); }
+#endif
 
     inline QWeakPointer(const QWeakPointer<T> &o) : d(o.d), value(o.value)
     { if (d) d->weakref.ref(); }
@@ -664,6 +669,17 @@ private:
 public:
 #else
     template <class X> friend class QSharedPointer;
+    friend class QPointerBase;
+#endif
+
+    template <class X>
+    inline QWeakPointer &assign(X *ptr)
+    { return *this = QWeakPointer<X>(ptr, true); }
+
+#ifndef QT_NO_QOBJECT
+    template <class X>
+    inline QWeakPointer(X *ptr, bool) : d(ptr ? d->getAndRef(ptr) : 0), value(ptr)
+    { }
 #endif
 
     inline void internalSet(Data *o, T *actual)
