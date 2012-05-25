@@ -125,7 +125,7 @@ class QEvdevKeyboardHandler : public QObject
 {
     Q_OBJECT
 public:
-    QEvdevKeyboardHandler(int deviceDescriptor, bool disableZap, bool enableCompose, const QString &keymapFile);
+    QEvdevKeyboardHandler(const QString &device, int fd, bool disableZap, bool enableCompose, const QString &keymapFile);
     ~QEvdevKeyboardHandler();
 
     enum KeycodeAction {
@@ -147,7 +147,7 @@ public:
         SwitchConsoleMask  = 0x0000007f
     };
 
-    static QEvdevKeyboardHandler *createLinuxInputKeyboardHandler(const QString &key, const QString &specification);
+    static QEvdevKeyboardHandler *create(const QString &device, const QString &specification);
 
     static Qt::KeyboardModifiers toQtModifiers(quint8 mod)
     {
@@ -173,6 +173,7 @@ private:
     void processKeyEvent(int unicode, int keycode, Qt::KeyboardModifiers modifiers, bool isPress, bool autoRepeat);
     void switchLed(int, bool);
 
+    QString m_device;
     int m_fd;
 
     // keymap handling

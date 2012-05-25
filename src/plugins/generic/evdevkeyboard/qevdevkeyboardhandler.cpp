@@ -62,8 +62,8 @@ QT_BEGIN_NAMESPACE
 // simple builtin US keymap
 #include "qevdevkeyboard_defaultmap.h"
 
-QEvdevKeyboardHandler::QEvdevKeyboardHandler(int deviceDescriptor, bool disableZap, bool enableCompose, const QString &keymapFile)
-    : m_fd(deviceDescriptor),
+QEvdevKeyboardHandler::QEvdevKeyboardHandler(const QString &device, int fd, bool disableZap, bool enableCompose, const QString &keymapFile)
+    : m_device(device), m_fd(fd),
       m_modifiers(0), m_composing(0), m_dead_unicode(0xffff),
       m_no_zap(disableZap), m_do_compose(enableCompose),
       m_keymap(0), m_keymap_size(0), m_keycompose(0), m_keycompose_size(0)
@@ -93,16 +93,13 @@ QEvdevKeyboardHandler::~QEvdevKeyboardHandler()
         qt_safe_close(m_fd);
 }
 
-QEvdevKeyboardHandler *QEvdevKeyboardHandler::createLinuxInputKeyboardHandler(const QString &key, const QString &specification)
+QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device, const QString &specification)
 {
 #ifdef QT_QPA_KEYMAP_DEBUG
-    qWarning() << "Try to create keyboard handler with" << key << specification;
-#else
-    Q_UNUSED(key)
+    qWarning() << "Try to create keyboard handler for" << device << specification;
 #endif
 
     QString keymapFile;
-    QString device = QLatin1String("/dev/input/event0");
     int repeatDelay = 400;
     int repeatRate = 80;
     bool disableZap = false;
@@ -120,8 +117,6 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::createLinuxInputKeyboardHandler(co
             repeatDelay = arg.mid(13).toInt();
         else if (arg.startsWith(QLatin1String("repeat-rate=")))
             repeatRate = arg.mid(12).toInt();
-        else if (arg.startsWith(QLatin1String("/dev/")))
-            device = arg;
     }
 
 #ifdef QT_QPA_KEYMAP_DEBUG
@@ -136,7 +131,7 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::createLinuxInputKeyboardHandler(co
             ::ioctl(fd, EVIOCSREP, kbdrep);
         }
 
-        return new QEvdevKeyboardHandler(fd, disableZap, enableCompose, keymapFile);
+        return new QEvdevKeyboardHandler(device, fd, disableZap, enableCompose, keymapFile);
     } else {
         qWarning("Cannot open keyboard input device '%s': %s", qPrintable(device), strerror(errno));
         return 0;

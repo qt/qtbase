@@ -105,15 +105,8 @@ void QEvdevKeyboardManager::addKeyboard(const QString &deviceNode)
     qWarning() << "Adding keyboard at" << deviceNode;
 #endif
 
-    QString specification = m_spec;
-
-    if (!deviceNode.isEmpty()) {
-        specification.append(QLatin1Char(':'));
-        specification.append(deviceNode);
-    }
-
     QEvdevKeyboardHandler *keyboard;
-    keyboard = QEvdevKeyboardHandler::createLinuxInputKeyboardHandler(QLatin1String("EvdevKeyboard"), specification);
+    keyboard = QEvdevKeyboardHandler::create(deviceNode, m_spec);
     if (keyboard)
         m_keyboards.insert(deviceNode, keyboard);
     else

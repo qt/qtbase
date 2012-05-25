@@ -62,15 +62,12 @@
 
 QT_BEGIN_NAMESPACE
 
-QEvdevMouseHandler *QEvdevMouseHandler::createLinuxInputMouseHandler(const QString &key, const QString &specification)
+QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QString &specification)
 {
 #ifdef QT_QPA_MOUSE_HANDLER_DEBUG
-    qWarning() << "Try to create mouse handler with" << key << specification;
-#else
-    Q_UNUSED(key)
+    qWarning() << "Try to create mouse handler for" << device << specification;
 #endif
 
-    QString device = "/dev/input/event0";
     bool compression = true;
     int jitterLimit = 0;
 
@@ -80,28 +77,21 @@ QEvdevMouseHandler *QEvdevMouseHandler::createLinuxInputMouseHandler(const QStri
             compression = false;
         else if (arg.startsWith("dejitter="))
             jitterLimit = arg.mid(9).toInt();
-        else if (arg.startsWith(QLatin1String("/dev/")))
-            device = arg;
     }
-
-#ifdef QT_QPA_MOUSE_HANDLER_DEBUG
-    qDebug("evdevmouse: Using device %s", qPrintable(device));
-#endif
 
     int fd;
     fd = qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (fd >= 0) {
-        return new QEvdevMouseHandler(fd, compression, jitterLimit);
+        return new QEvdevMouseHandler(device, fd, compression, jitterLimit);
     } else {
         qWarning("Cannot open mouse input device '%s': %s", qPrintable(device), strerror(errno));
         return 0;
     }
 }
 
-QEvdevMouseHandler::QEvdevMouseHandler(int deviceDescriptor, bool compression, int jitterLimit)
-    : m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0),
-      m_fd(deviceDescriptor), m_compression(compression),
-      m_buttons(0)
+QEvdevMouseHandler::QEvdevMouseHandler(const QString &device, int fd, bool compression, int jitterLimit)
+    : m_device(device), m_fd(fd), m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0),
+      m_compression(compression), m_buttons(0)
 {
     setObjectName(QLatin1String("Evdev Mouse Handler"));
 

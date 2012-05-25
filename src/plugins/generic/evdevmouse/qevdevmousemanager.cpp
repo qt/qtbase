@@ -138,15 +138,8 @@ void QEvdevMouseManager::addMouse(const QString &deviceNode)
     qWarning() << "Adding mouse at" << deviceNode;
 #endif
 
-    QString specification = m_spec;
-
-    if (!deviceNode.isEmpty()) {
-        specification.append(":");
-        specification.append(deviceNode);
-    }
-
     QEvdevMouseHandler *handler;
-    handler = QEvdevMouseHandler::createLinuxInputMouseHandler("EvdevMouse", specification);
+    handler = QEvdevMouseHandler::create(deviceNode, m_spec);
     if (handler) {
         connect(handler, SIGNAL(handleMouseEvent(int, int, Qt::MouseButtons)), this, SLOT(handleMouseEvent(int, int, Qt::MouseButtons)));
         m_mice.insert(deviceNode, handler);

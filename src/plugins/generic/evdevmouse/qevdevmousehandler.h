@@ -55,7 +55,7 @@ class QEvdevMouseHandler : public QObject
 {
     Q_OBJECT
 public:
-    static QEvdevMouseHandler *createLinuxInputMouseHandler(const QString &key, const QString &specification);
+    static QEvdevMouseHandler *create(const QString &device, const QString &specification);
     ~QEvdevMouseHandler();
 
 signals:
@@ -65,14 +65,15 @@ private slots:
     void readMouseData();
 
 private:
-    QEvdevMouseHandler(int deviceDescriptor, bool compression, int jitterLimit);
+    QEvdevMouseHandler(const QString &device, int fd, bool compression, int jitterLimit);
 
     void sendMouseEvent();
 
+    QString m_device;
+    int m_fd;
     QSocketNotifier *m_notify;
     int m_x, m_y;
     int m_prevx, m_prevy;
-    int m_fd;
     bool m_compression;
     Qt::MouseButtons m_buttons;
     int m_jitterLimitSquared;
