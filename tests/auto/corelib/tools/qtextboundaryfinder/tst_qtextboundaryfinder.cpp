@@ -70,6 +70,8 @@ private slots:
     void lineBoundaries_manual();
 
     void fastConstructor();
+    void isAtSoftHyphen_data();
+    void isAtSoftHyphen();
     void thaiLineBreak();
 };
 
@@ -485,7 +487,7 @@ void tst_QTextBoundaryFinder::lineBoundaries_manual_data()
         QChar s[] = { 0x0061, 0x00AD, 0x0062, 0x0009, 0x0063, 0x0064 };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions;
-        expectedBreakPositions << 0 << 4 << 6;
+        expectedBreakPositions << 0 << 2 << 4 << 6;
 
         QTest::newRow("x(AL)x(BA)+(AL)x(BA)+(AL)x(AL)+") << testString << expectedBreakPositions;
     }
@@ -520,6 +522,34 @@ void tst_QTextBoundaryFinder::fastConstructor()
     finder.toNextBoundary();
     QCOMPARE(finder.position(), -1);
     QCOMPARE(finder.boundaryReasons(), QTextBoundaryFinder::NotAtBoundary);
+}
+
+void tst_QTextBoundaryFinder::isAtSoftHyphen_data()
+{
+    QTest::addColumn<QString>("testString");
+    QTest::addColumn<QList<int> >("expectedBreakPositions");
+
+    QString testString = QString::fromUtf8("I a-m break-able");
+    testString.replace(QLatin1Char('-'), QChar(0x00AD));
+    QList<int> expectedBreakPositions;
+    expectedBreakPositions << 0 << 2 << 4 << 6 << 12 << 16;
+    QTest::newRow("Soft Hyphen") << testString << expectedBreakPositions;
+}
+
+void tst_QTextBoundaryFinder::isAtSoftHyphen()
+{
+    QFETCH(QString, testString);
+    QFETCH(QList<int>, expectedBreakPositions);
+
+    doTestData(testString, expectedBreakPositions, QTextBoundaryFinder::Line);
+
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Line, testString);
+    for (int i = 0; (i = testString.indexOf(QChar(0x00AD), i)) != -1; ++i) {
+        QVERIFY(expectedBreakPositions.contains(i + 1));
+        boundaryFinder.setPosition(i + 1);
+        QVERIFY(boundaryFinder.isAtBoundary());
+        QVERIFY(boundaryFinder.boundaryReasons() == QTextBoundaryFinder::SoftHyphen);
+    }
 }
 
 #include <qlibrary.h>
