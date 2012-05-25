@@ -4776,17 +4776,15 @@ static void sendResizeEvents(QWidget *target)
 /* INVOKABLE since used by QPixmap::grabWidget(). */
 QPixmap QWidget::grab(const QRect &rectangle)
 {
-    Q_D(const QWidget);
+    Q_D(QWidget);
     if (testAttribute(Qt::WA_PendingResizeEvent) || !testAttribute(Qt::WA_WState_Created))
         sendResizeEvents(this);
 
-    adjustSize();
+    const QWidget::RenderFlags renderFlags = QWidget::DrawWindowBackground | QWidget::DrawChildren | QWidget::IgnoreMask;
 
     QRect r(rectangle);
-    if (r.width() < 0)
-        r.setWidth(width() - rectangle.x());
-    if (r.height() < 0)
-        r.setHeight(height() - rectangle.y());
+    if (r.width() < 0 || r.height() < 0)
+        r = d->prepareToRender(QRegion(), renderFlags).boundingRect();
 
     if (!r.intersects(rect()))
         return QPixmap();
@@ -4794,8 +4792,7 @@ QPixmap QWidget::grab(const QRect &rectangle)
     QPixmap res(r.size());
     if (!d->isOpaque)
         res.fill(Qt::transparent);
-    render(&res, QPoint(), QRegion(r), QWidget::DrawWindowBackground
-           | QWidget::DrawChildren | QWidget::IgnoreMask);
+    render(&res, QPoint(), QRegion(r), renderFlags);
     return res;
 }
 
