@@ -81,16 +81,19 @@ private:
         int width, height; // width and height of the the atlas
         int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
         QList<QPoint> hotSpots;
+        QImage image; // valid until it's uploaded
     } m_cursorAtlas;
 
     // current cursor information
     struct Cursor {
-        Cursor() : texture(0), shape(Qt::BlankCursor) { }
+        Cursor() : texture(0), shape(Qt::BlankCursor), customCursorTexture(0) { }
         uint texture; // a texture from 'image' or the atlas
         Qt::CursorShape shape;
         QRectF textureRect; // normalized rect inside texture
         QSize size; // size of the cursor
         QPoint hotSpot;
+        QImage customCursorImage;
+        uint customCursorTexture;
     } m_cursor;
 
     QPoint m_pos;

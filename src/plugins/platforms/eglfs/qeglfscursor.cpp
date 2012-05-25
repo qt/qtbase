@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
 QEglFSCursor::QEglFSCursor(QEglFSScreen *screen)
     : m_screen(screen), m_pos(0, 0), m_program(0), m_vertexCoordEntry(0), m_textureCoordEntry(0), m_textureEntry(0)
 {
-    createShaderPrograms();
     initCursorAtlas();
 
     // ## this shouldn't be required
@@ -64,10 +63,7 @@ QEglFSCursor::~QEglFSCursor()
 {
     if (QOpenGLContext::currentContext()) {
         glDeleteProgram(m_program);
-
-        if (m_cursor.shape == Qt::BitmapCursor && m_cursor.texture)
-            glDeleteTextures(1, &m_cursor.texture);
-
+        glDeleteTextures(1, &m_cursor.customCursorTexture);
         glDeleteTextures(1, &m_cursorAtlas.texture);
     }
 }
@@ -142,7 +138,8 @@ void QEglFSCursor::createShaderPrograms()
 
 void QEglFSCursor::createCursorTexture(uint *texture, const QImage &image)
 {
-    glGenTextures(1, texture);
+    if (!*texture)
+        glGenTextures(1, texture);
     glBindTexture(GL_TEXTURE_2D, *texture);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -183,15 +180,16 @@ void QEglFSCursor::initCursorAtlas()
     m_cursorAtlas.cursorHeight = image.height() / ((Qt::LastCursor + cursorsPerRow - 1) / cursorsPerRow);
     m_cursorAtlas.width = image.width();
     m_cursorAtlas.height = image.height();
-    createCursorTexture(&m_cursorAtlas.texture, image);
+    m_cursorAtlas.image = image;
 }
 
 void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
     const QRect oldCursorRect = cursorRect();
 
-    if (m_cursor.shape == Qt::BitmapCursor && m_cursor.texture)
-        glDeleteTextures(1, &m_cursor.texture);
+    if (m_cursor.shape == Qt::BitmapCursor) {
+        m_cursor.customCursorImage = QImage(); // in case render() never uploaded it
+    }
 
     m_cursor.shape = cursor->shape();
     if (cursor->shape() != Qt::BitmapCursor) { // standard cursor
@@ -207,8 +205,9 @@ void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
         QImage image = cursor->pixmap().toImage();
         m_cursor.textureRect = QRectF(0, 0, 1, 1);
         m_cursor.hotSpot = cursor->hotSpot();
+        m_cursor.texture = 0; // will get updated in the next render()
         m_cursor.size = image.size();
-        createCursorTexture(&m_cursor.texture, image);
+        m_cursor.customCursorImage = image;
     }
 
     QRegion rgn = oldCursorRect | cursorRect();
@@ -245,6 +244,28 @@ void QEglFSCursor::pointerEvent(const QMouseEvent &event)
 
 void QEglFSCursor::render()
 {
+    if (!m_program) {
+        // one time initialization
+        createShaderPrograms();
+
+        if (!m_cursorAtlas.texture) {
+            createCursorTexture(&m_cursorAtlas.texture, m_cursorAtlas.image);
+            m_cursorAtlas.image = QImage();
+
+            if (m_cursor.shape != Qt::BitmapCursor)
+                m_cursor.texture = m_cursorAtlas.texture;
+        }
+    }
+
+    if (m_cursor.shape == Qt::BitmapCursor && !m_cursor.customCursorImage.isNull()) {
+        // upload the custom cursor
+        createCursorTexture(&m_cursor.customCursorTexture, m_cursor.customCursorImage);
+        m_cursor.texture = m_cursor.customCursorTexture;
+        m_cursor.customCursorImage = QImage();
+    }
+
+    Q_ASSERT(m_cursor.texture);
+
     glUseProgram(m_program);
 
     const QRectF cr = cursorRect();

@@ -122,6 +122,10 @@ QEglFSScreen::QEglFSScreen()
             swapInterval = 1;
     }
     eglSwapInterval(m_dpy, swapInterval);
+
+    static int hideCursor = qgetenv("QT_QPA_EGLFS_HIDECURSOR").toInt();
+    if (!hideCursor)
+        m_cursor = new QEglFSCursor(this);
 }
 
 QEglFSScreen::~QEglFSScreen()
@@ -216,17 +220,6 @@ QImage::Format QEglFSScreen::format() const
 
 QPlatformCursor *QEglFSScreen::cursor() const
 {
-    static int hideCursor = qgetenv("QT_QPA_EGLFS_HIDECURSOR").toInt();
-    if (hideCursor)
-        return 0;
-
-    if (!m_cursor) {
-        QEglFSScreen *that = const_cast<QEglFSScreen *>(this);
-        // cursor requires a gl context
-        if (!m_platformContext)
-            that->createAndSetPlatformContext();
-        that->m_cursor = new QEglFSCursor(that);
-    }
     return m_cursor;
 }
 
