@@ -101,6 +101,7 @@ public:
 
     virtual qreal refreshRate() const;
 
+    virtual Qt::ScreenOrientation nativeOrientation() const;
     virtual Qt::ScreenOrientation orientation() const;
 
     virtual QWindow *topLevelAt(const QPoint &point) const;

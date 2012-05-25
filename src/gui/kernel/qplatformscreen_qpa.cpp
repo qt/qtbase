@@ -172,6 +172,18 @@ qreal QPlatformScreen::refreshRate() const
 }
 
 /*!
+    Reimplement this function in subclass to return the native orientation
+    of the screen, e.g. the orientation where the logo sticker of the device
+    appears the right way up.
+
+    The default implementation returns Qt::PrimaryOrientation.
+*/
+Qt::ScreenOrientation QPlatformScreen::nativeOrientation() const
+{
+    return Qt::PrimaryOrientation;
+}
+
+/*!
     Reimplement this function in subclass to return the current orientation
     of the screen, for example based on accelerometer data to determine
     the device orientation.
