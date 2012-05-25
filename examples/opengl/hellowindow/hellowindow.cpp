@@ -59,7 +59,7 @@ Renderer::Renderer(const QSurfaceFormat &format, Renderer *share, QScreen *scree
     m_context->create();
 }
 
-HelloWindow::HelloWindow(Renderer *renderer)
+HelloWindow::HelloWindow(const QSharedPointer<Renderer> &renderer)
     : m_colorIndex(0)
     , m_renderer(renderer)
 {
@@ -73,7 +73,7 @@ HelloWindow::HelloWindow(Renderer *renderer)
     create();
 
     connect(this, SIGNAL(needRender(QSurface *, const QColor &, const QSize &)),
-            renderer, SLOT(render(QSurface *, const QColor &, const QSize &)));
+            renderer.data(), SLOT(render(QSurface *, const QColor &, const QSize &)));
 
     updateColor();
 }
@@ -196,7 +196,7 @@ void Renderer::initialize()
         "}\n";
     fshader->compileSourceCode(fsrc);
 
-    m_program = new QOpenGLShaderProgram;
+    m_program = new QOpenGLShaderProgram(this);
     m_program->addShader(vshader);
     m_program->addShader(fshader);
     m_program->link();

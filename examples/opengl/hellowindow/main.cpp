@@ -66,15 +66,18 @@ int main(int argc, char **argv)
     QSize windowSize(400, 320);
     int delta = 40;
 
-    Renderer *rendererA = new Renderer(format);
+    QList<QWindow *> windows;
+    QSharedPointer<Renderer> rendererA(new Renderer(format));
+
     HelloWindow *windowA = new HelloWindow(rendererA);
     windowA->setGeometry(QRect(center, windowSize).translated(-windowSize.width() - delta / 2, 0));
     windowA->setWindowTitle(QLatin1String("Thread A - Context A"));
     windowA->setVisible(true);
+    windows.prepend(windowA);
 
     QList<QThread *> renderThreads;
     if (multipleWindows) {
-        Renderer *rendererB = new Renderer(format, rendererA);
+        QSharedPointer<Renderer> rendererB(new Renderer(format, rendererA.data()));
 
         QThread *renderThread = new QThread;
         rendererB->moveToThread(renderThread);
@@ -84,19 +87,21 @@ int main(int argc, char **argv)
         windowB->setGeometry(QRect(center, windowSize).translated(delta / 2, 0));
         windowB->setWindowTitle(QLatin1String("Thread A - Context A"));
         windowB->setVisible(true);
+        windows.prepend(windowB);
 
         HelloWindow *windowC = new HelloWindow(rendererB);
         windowC->setGeometry(QRect(center, windowSize).translated(-windowSize.width() / 2, windowSize.height() + delta));
         windowC->setWindowTitle(QLatin1String("Thread B - Context B"));
         windowC->setVisible(true);
+        windows.prepend(windowC);
 
         for (int i = 1; i < QGuiApplication::screens().size(); ++i) {
             QScreen *screen = QGuiApplication::screens().at(i);
-            Renderer *renderer = new Renderer(format, rendererA, screen);
+            QSharedPointer<Renderer> renderer(new Renderer(format, rendererA.data(), screen));
 
             renderThread = new QThread;
             renderer->moveToThread(renderThread);
-            renderThreads << renderThread;
+            renderThreads.prepend(renderThread);
 
             QRect screenGeometry = screen->availableGeometry();
             QPoint center = screenGeometry.center();
@@ -110,6 +115,7 @@ int main(int argc, char **argv)
             QChar id = QChar('B' + i);
             window->setWindowTitle(QLatin1String("Thread ") + id + QLatin1String(" - Context ") + id);
             window->setVisible(true);
+            windows.prepend(window);
         }
     }
 
@@ -118,8 +124,12 @@ int main(int argc, char **argv)
         renderThreads.at(i)->start();
     }
 
-    app.exec();
+    const int exitValue = app.exec();
 
     for (int i = 0; i < renderThreads.size(); ++i)
         renderThreads.at(i)->wait();
+    qDeleteAll(windows);
+    qDeleteAll(renderThreads);
+
+    return exitValue;
 }

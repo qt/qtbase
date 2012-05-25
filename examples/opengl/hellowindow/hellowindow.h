@@ -45,6 +45,7 @@
 
 #include <QColor>
 #include <QTime>
+#include <QSharedPointer>
 
 QT_BEGIN_NAMESPACE
 class QOpenGLContext;
@@ -88,7 +89,7 @@ class HelloWindow : public QWindow
 {
     Q_OBJECT
 public:
-    HelloWindow(Renderer *renderer);
+    explicit HelloWindow(const QSharedPointer<Renderer> &renderer);
 
     void updateColor();
 
@@ -105,5 +106,5 @@ private:
 
     int m_colorIndex;
     QColor m_color;
-    Renderer *m_renderer;
+    const QSharedPointer<Renderer> m_renderer;
 };
