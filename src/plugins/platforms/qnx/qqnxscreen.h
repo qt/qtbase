@@ -70,6 +70,7 @@ public:
 
     qreal refreshRate() const;
 
+    Qt::ScreenOrientation nativeOrientation() const;
     Qt::ScreenOrientation orientation() const;
 
     bool isPrimaryScreen() const { return m_primaryScreen; }
@@ -119,6 +120,7 @@ private:
     int m_keyboardHeight;
     QSize m_initialPhysicalSize;
     QSize m_currentPhysicalSize;
+    Qt::ScreenOrientation m_nativeOrientation;
     QRect m_initialGeometry;
     QRect m_currentGeometry;
     QPlatformOpenGLContext *m_platformContext;

@@ -63,6 +63,7 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
       m_primaryScreen(primaryScreen),
       m_posted(false),
       m_keyboardHeight(0),
+      m_nativeOrientation(Qt::PrimaryOrientation),
       m_platformContext(0)
 {
     qScreenDebug() << Q_FUNC_INFO;
@@ -93,6 +94,9 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
     if (result != 0) {
         qFatal("QQnxScreen: failed to query display physical size, errno=%d", errno);
     }
+
+    m_nativeOrientation = val[0] >= val[1] ? Qt::LandscapeOrientation : Qt::PortraitOrientation;
+
     if (m_currentRotation == 0 || m_currentRotation == 180)
         m_currentPhysicalSize = m_initialPhysicalSize = QSize(val[0], val[1]);
     else
@@ -150,6 +154,11 @@ qreal QQnxScreen::refreshRate() const
                    << "    refresh =" << displayMode.refresh << endl
                    << " interlaced =" << displayMode.interlaced;
     return static_cast<qreal>(displayMode.refresh);
+}
+
+Qt::ScreenOrientation QQnxScreen::nativeOrientation() const
+{
+    return m_nativeOrientation;
 }
 
 Qt::ScreenOrientation QQnxScreen::orientation() const
