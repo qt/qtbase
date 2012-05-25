@@ -739,7 +739,7 @@ void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
     widget.lOutput->setEnabled(false);
 
     if (filePrintersAdded) {
-        Q_ASSERT(index != printerCount - 3); // separator
+        Q_ASSERT(index != printerCount - 2); // separator
         if (index == printerCount - 1) { // PDF
             widget.location->setText(QPrintDialog::tr("Local file"));
             widget.type->setText(QPrintDialog::tr("Write PDF file"));
@@ -958,7 +958,7 @@ void QUnixPrintWidgetPrivate::setupPrinter()
 
     if (filePrintersAdded && index == printerCount - 1) { // PDF
         printer->setPrinterName(QString());
-        Q_ASSERT(index != printerCount - 3); // separator
+        Q_ASSERT(index != printerCount - 2); // separator
         printer->setOutputFormat(QPrinter::PdfFormat);
         QString path = widget.filename->text();
         if (QDir::isRelativePath(path))
