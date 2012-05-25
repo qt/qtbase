@@ -213,6 +213,11 @@ QXcbConnection::~QXcbConnection()
 #endif
     delete m_reader;
 
+#ifdef XCB_USE_EGL
+    if (m_has_egl)
+        eglTerminate(m_egl_display);
+#endif //XCB_USE_EGL
+
 #ifdef XCB_USE_XLIB
     XCloseDisplay((Display *)m_xlib_display);
 #else
