@@ -1336,7 +1336,8 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
 
     // need to force the resting of the icon after changing parents
     if (testAttribute(Qt::WA_SetWindowIcon))
-        d->setWindowIcon_sys(true);
+        d->setWindowIcon_sys();
+
     if (isWindow() && !d->topData()->iconText.isEmpty())
         d->setWindowIconText_helper(d->topData()->iconText);
     if (isWindow() && !d->topData()->caption.isEmpty())
@@ -1520,7 +1521,6 @@ void QWidgetPrivate::createTLExtra()
     if (!extra->topextra) {
         QTLWExtra* x = extra->topextra = new QTLWExtra;
         x->icon = 0;
-        x->iconPixmap = 0;
         x->backingStore = 0;
         x->sharedPainter = 0;
         x->incw = x->inch = 0;
@@ -1604,7 +1604,6 @@ void QWidgetPrivate::deleteExtra()
             deleteTLSysExtra();
             extra->topextra->backingStoreTracker.destroy();
             delete extra->topextra->icon;
-            delete extra->topextra->iconPixmap;
             delete extra->topextra->backingStore;
             delete extra->topextra;
         }
@@ -5659,9 +5658,6 @@ void QWidget::setWindowIcon(const QIcon &icon)
     if (!d->extra->topextra->icon)
         d->extra->topextra->icon = new QIcon();
     *d->extra->topextra->icon = icon;
-
-    delete d->extra->topextra->iconPixmap;
-    d->extra->topextra->iconPixmap = 0;
 
     d->setWindowIcon_sys();
     d->setWindowIcon_helper();

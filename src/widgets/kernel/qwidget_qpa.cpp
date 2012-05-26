@@ -328,8 +328,11 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
 
 }
 
-void QWidgetPrivate::setWindowIcon_sys(bool /*forceReset*/)
+void QWidgetPrivate::setWindowIcon_sys()
 {
+    Q_Q(QWidget);
+    if (QWindow *window = q->windowHandle())
+        window->setWindowIcon(q->windowIcon());
 }
 
 void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)

@@ -155,7 +155,6 @@ struct QTLWExtra {
 
     // Regular pointers (keep them together to avoid gaps on 64 bits architectures).
     QIcon *icon; // widget icon
-    QPixmap *iconPixmap;
     QWidgetBackingStoreTracker backingStoreTracker;
     QBackingStore *backingStore;
     QPainter *sharedPainter;
@@ -421,7 +420,7 @@ public:
     bool close_helper(CloseMode mode);
 
     void setWindowIcon_helper();
-    void setWindowIcon_sys(bool forceReset = false);
+    void setWindowIcon_sys();
     void setWindowOpacity_sys(qreal opacity);
     void adjustQuitOnCloseAttribute();
 
