@@ -42,6 +42,8 @@
 #include "qevent.h"
 #include "qcursor.h"
 #include "private/qguiapplication_p.h"
+#include "qpa/qplatformintegration.h"
+#include "qpa/qplatformdrag.h"
 #include "private/qevent_p.h"
 #include "private/qkeysequence_p.h"
 #include "qdebug.h"
@@ -2252,7 +2254,7 @@ QDropEvent::QDropEvent(const QPointF& pos, Qt::DropActions actions, const QMimeD
       modState(modifiers), act(actions),
       mdata(data)
 {
-    default_action = Qt::CopyAction; // ### Qt5: QDragManager::self()->defaultAction(act, modifiers);
+    default_action = QGuiApplicationPrivate::platformIntegration()->drag()->defaultAction(act, modifiers);
     drop_action = default_action;
     ignore();
 }
