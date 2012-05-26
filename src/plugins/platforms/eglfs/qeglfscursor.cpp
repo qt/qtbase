@@ -54,9 +54,9 @@ QEglFSCursor::QEglFSCursor(QEglFSScreen *screen)
 {
     initCursorAtlas();
 
-    // ## this shouldn't be required
+    // initialize the cursor
     QCursor cursor(Qt::ArrowCursor);
-    changeCursor(&cursor, 0);
+    setCurrentCursor(&cursor);
 }
 
 QEglFSCursor::~QEglFSCursor()
@@ -185,7 +185,16 @@ void QEglFSCursor::initCursorAtlas()
 
 void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
+    Q_UNUSED(window);
     const QRect oldCursorRect = cursorRect();
+    if (setCurrentCursor(cursor))
+        update(oldCursorRect | cursorRect());
+}
+
+bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
+{
+    if (m_cursor.shape == cursor->shape() && cursor->shape() != Qt::BitmapCursor)
+        return false;
 
     if (m_cursor.shape == Qt::BitmapCursor) {
         m_cursor.customCursorImage = QImage(); // in case render() never uploaded it
@@ -210,8 +219,12 @@ void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
         m_cursor.customCursorImage = image;
     }
 
-    QRegion rgn = oldCursorRect | cursorRect();
-    QWindowSystemInterface::handleSynchronousExposeEvent(window, rgn);
+    return true;
+}
+
+void QEglFSCursor::update(const QRegion &rgn)
+{
+    QWindowSystemInterface::handleSynchronousExposeEvent(m_screen->topLevelAt(m_pos), rgn);
 }
 
 QRect QEglFSCursor::cursorRect() const
@@ -228,8 +241,7 @@ void QEglFSCursor::setPos(const QPoint &pos)
 {
     const QRect oldCursorRect = cursorRect();
     m_pos = pos;
-    QRegion rgn = oldCursorRect | cursorRect();
-    QWindowSystemInterface::handleSynchronousExposeEvent(m_screen->topLevelAt(m_pos), rgn);
+    update(oldCursorRect | cursorRect());
 }
 
 void QEglFSCursor::pointerEvent(const QMouseEvent &event)
@@ -238,11 +250,23 @@ void QEglFSCursor::pointerEvent(const QMouseEvent &event)
         return;
     const QRect oldCursorRect = cursorRect();
     m_pos = event.pos();
-    QRegion rgn = oldCursorRect | cursorRect();
-    QWindowSystemInterface::handleSynchronousExposeEvent(m_screen->topLevelAt(m_pos), rgn);
+    update(oldCursorRect | cursorRect());
 }
 
-void QEglFSCursor::render()
+void QEglFSCursor::paintOnScreen()
+{
+    const QRectF cr = cursorRect();
+    const QRect screenRect(m_screen->geometry());
+    const GLfloat x1 = 2 * (cr.left() / screenRect.width()) - 1;
+    const GLfloat x2 = 2 * (cr.right() / screenRect.width()) - 1;
+    const GLfloat y1 = 1 - (cr.top() / screenRect.height()) * 2;
+    const GLfloat y2 = 1 - (cr.bottom() / screenRect.height()) * 2;
+    QRectF r(QPointF(x1, y1), QPointF(x2, y2));
+
+    draw(r);
+}
+
+void QEglFSCursor::draw(const QRectF &r)
 {
     if (!m_program) {
         // one time initialization
@@ -268,18 +292,11 @@ void QEglFSCursor::render()
 
     glUseProgram(m_program);
 
-    const QRectF cr = cursorRect();
-    const QRect screenRect(m_screen->geometry());
-    const GLfloat x1 = 2 * (cr.left() / screenRect.width()) - 1;
-    const GLfloat x2 = 2 * (cr.right() / screenRect.width()) - 1;
-    const GLfloat y1 = 1 - (cr.top() / screenRect.height()) * 2;
-    const GLfloat y2 = 1 - (cr.bottom() / screenRect.height()) * 2;
-
     const GLfloat cursorCoordinates[] = {
-        x1, y2,
-        x2, y2,
-        x1, y1,
-        x2, y1
+        r.left(), r.bottom(),
+        r.right(), r.bottom(),
+        r.left(), r.top(),
+        r.right(), r.top()
     };
 
     const GLfloat s1 = m_cursor.textureRect.left();

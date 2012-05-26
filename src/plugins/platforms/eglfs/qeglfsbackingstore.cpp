@@ -182,7 +182,7 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 
     // draw the cursor
     if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(window->screen()->handle()->cursor()))
-        cursor->render();
+        cursor->paintOnScreen();
 
     m_context->swapBuffers(window);
 

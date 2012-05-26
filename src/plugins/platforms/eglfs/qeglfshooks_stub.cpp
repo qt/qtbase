@@ -78,6 +78,12 @@ bool QEglFSHooks::hasCapability(QPlatformIntegration::Capability cap) const
     return false;
 }
 
+QEglFSCursor *QEglFSHooks::createCursor(QEglFSScreen *screen) const
+{
+    Q_UNUSED(screen);
+    return 0;
+}
+
 #ifndef EGLFS_PLATFORM_HOOKS
 QEglFSHooks stubHooks;
 #endif

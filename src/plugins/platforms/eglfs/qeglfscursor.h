@@ -49,6 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpenGLShaderProgram;
+class QEglFSScreen;
 
 class QEglFSCursor : public QPlatformCursor
 {
@@ -64,25 +65,14 @@ public:
 
     QRect cursorRect() const;
 
-    void render();
+    virtual void paintOnScreen();
 
-private:
-    void createShaderPrograms();
-    static void createCursorTexture(uint *texture, const QImage &image);
-    void initCursorAtlas();
+protected:
+    bool setCurrentCursor(QCursor *cursor);
+    void draw(const QRectF &rect);
+    void update(const QRegion &region);
 
-    QPlatformScreen *m_screen;
-
-    // cursor atlas information
-    struct CursorAtlas {
-        CursorAtlas() : cursorsPerRow(0), texture(0), cursorWidth(0), cursorHeight(0) { }
-        int cursorsPerRow;
-        uint texture;
-        int width, height; // width and height of the the atlas
-        int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
-        QList<QPoint> hotSpots;
-        QImage image; // valid until it's uploaded
-    } m_cursorAtlas;
+    QEglFSScreen *m_screen;
 
     // current cursor information
     struct Cursor {
@@ -96,7 +86,23 @@ private:
         uint customCursorTexture;
     } m_cursor;
 
-    QPoint m_pos;
+    QPoint m_pos; // current cursor position
+
+private:
+    void createShaderPrograms();
+    static void createCursorTexture(uint *texture, const QImage &image);
+    void initCursorAtlas();
+
+    // cursor atlas information
+    struct CursorAtlas {
+        CursorAtlas() : cursorsPerRow(0), texture(0), cursorWidth(0), cursorHeight(0) { }
+        int cursorsPerRow;
+        uint texture;
+        int width, height; // width and height of the the atlas
+        int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
+        QList<QPoint> hotSpots;
+        QImage image; // valid until it's uploaded
+    } m_cursorAtlas;
 
     GLuint m_program;
     int m_vertexCoordEntry;

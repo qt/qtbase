@@ -72,7 +72,7 @@ public:
         QEglFSWindow *window = static_cast<QEglFSWindow *>(surface);
         QEglFSScreen *screen = static_cast<QEglFSScreen *>(window->screen());
         if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(screen->cursor()))
-            cursor->render();
+            cursor->paintOnScreen();
 
         QEGLPlatformContext::swapBuffers(surface);
     }
@@ -124,8 +124,12 @@ QEglFSScreen::QEglFSScreen()
     eglSwapInterval(m_dpy, swapInterval);
 
     static int hideCursor = qgetenv("QT_QPA_EGLFS_HIDECURSOR").toInt();
-    if (!hideCursor)
-        m_cursor = new QEglFSCursor(this);
+    if (!hideCursor) {
+        if (QEglFSCursor *customCursor = hooks->createCursor(this))
+            m_cursor = customCursor;
+        else
+            m_cursor = new QEglFSCursor(this);
+    }
 }
 
 QEglFSScreen::~QEglFSScreen()

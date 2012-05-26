@@ -47,6 +47,9 @@
 
 QT_BEGIN_NAMESPACE
 
+class QEglFSCursor;
+class QEglFSScreen;
+
 class QEglFSHooks
 {
 public:
@@ -57,6 +60,7 @@ public:
     virtual EGLNativeWindowType createNativeWindow(const QSize &size);
     virtual void destroyNativeWindow(EGLNativeWindowType window);
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
+    virtual QEglFSCursor *createCursor(QEglFSScreen *screen) const;
 };
 
 #ifdef EGLFS_PLATFORM_HOOKS
