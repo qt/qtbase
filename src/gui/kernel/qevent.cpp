@@ -1073,15 +1073,6 @@ QPaintEvent::~QPaintEvent()
 */
 
 
-QUpdateLaterEvent::QUpdateLaterEvent(const QRegion& paintRegion)
-    : QEvent(UpdateLater), m_region(paintRegion)
-{
-}
-
-QUpdateLaterEvent::~QUpdateLaterEvent()
-{
-}
-
 /*!
     \class QMoveEvent
     \brief The QMoveEvent class contains event parameters for move events.

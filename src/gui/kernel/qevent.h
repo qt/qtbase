@@ -326,19 +326,6 @@ protected:
     bool m_erased;
 };
 
-// ### Qt5: make internal
-class Q_GUI_EXPORT QUpdateLaterEvent : public QEvent
-{
-public:
-    explicit QUpdateLaterEvent(const QRegion& paintRegion);
-    ~QUpdateLaterEvent();
-
-    inline const QRegion &region() const { return m_region; }
-
-protected:
-    QRegion m_region;
-};
-
 class Q_GUI_EXPORT QMoveEvent : public QEvent
 {
 public:

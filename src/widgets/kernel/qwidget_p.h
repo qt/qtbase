@@ -88,6 +88,25 @@ class QUnifiedToolbarSurface;
 // implemented in qshortcut.cpp
 bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context);
 
+class QUpdateLaterEvent : public QEvent
+{
+public:
+    explicit QUpdateLaterEvent(const QRegion& paintRegion)
+        : QEvent(UpdateLater), m_region(paintRegion)
+    {
+    }
+
+    ~QUpdateLaterEvent()
+    {
+    }
+
+    inline const QRegion &region() const { return m_region; }
+
+protected:
+    QRegion m_region;
+};
+
+
 
 class Q_AUTOTEST_EXPORT QWidgetBackingStoreTracker
 {
