@@ -65,7 +65,7 @@ QEglFSIntegration::QEglFSIntegration()
     screenAdded(mScreen);
 
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglIntegration\n");
+    qWarning("QEglFSIntegration\n");
 #endif
 }
 
@@ -91,7 +91,7 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 {
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglIntegration::createPlatformWindow %p\n",window);
+    qWarning("QEglFSIntegration::createPlatformWindow %p\n",window);
 #endif
     QPlatformWindow *w = new QEglFSWindow(window);
     w->requestActivateWindow();
@@ -103,7 +103,7 @@ QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *window) const
 {
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglIntegration::createWindowSurface %p\n", window);
+    qWarning("QEglFSIntegration::createWindowSurface %p\n", window);
 #endif
     return new QEglFSBackingStore(window);
 }

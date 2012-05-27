@@ -44,7 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QEglIntegrationPlugin : public QPlatformIntegrationPlugin
+class QEglFSIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface" FILE "eglfs.json")
@@ -53,14 +53,14 @@ public:
     QPlatformIntegration *create(const QString&, const QStringList&);
 };
 
-QStringList QEglIntegrationPlugin::keys() const
+QStringList QEglFSIntegrationPlugin::keys() const
 {
     QStringList list;
     list << "EglFS";
     return list;
 }
 
-QPlatformIntegration* QEglIntegrationPlugin::create(const QString& system, const QStringList& paramList)
+QPlatformIntegration* QEglFSIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
     if (system.toLower() == "eglfs")
