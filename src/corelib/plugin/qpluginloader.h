@@ -56,6 +56,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QLibraryPrivate;
+class QJsonObject;
 
 class Q_CORE_EXPORT QPluginLoader : public QObject
 {
@@ -68,6 +69,7 @@ public:
     ~QPluginLoader();
 
     QObject *instance();
+    QJsonObject metaData() const;
 
     static QObjectList staticInstances();
 

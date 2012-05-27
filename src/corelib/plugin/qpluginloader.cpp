@@ -173,6 +173,23 @@ QObject *QPluginLoader::instance()
 }
 
 /*!
+    Returns the meta data for this plugin. The meta data is data specified
+    in a json format using the Q_PLUGIN_METADATA() macro when compiling
+    the plugin.
+
+    The meta data can be queried in a fast and inexpensive way without
+    actually loading the plugin. This makes it possible to e.g. store
+    capabilities of the plugin in there, and make the decision whether to
+    load the plugin dependent on this meta data.
+ */
+QJsonObject QPluginLoader::metaData() const
+{
+    if (!d)
+        return QJsonObject();
+    return d->metaData;
+}
+
+/*!
     Loads the plugin and returns true if the plugin was loaded
     successfully; otherwise returns false. Since instance() always
     calls this function before resolving any symbols it is not
