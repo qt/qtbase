@@ -27,9 +27,10 @@
 
 /*!
     \headerfile <QtPlugin>
-    \title Macros for Defining Plugins
+    \title Defining Plugins
+    \ingroup plugins
 
-    \brief The <QtPlugin> header files defines macros for defining plugins.
+    \brief The <QtPlugin> header file defines macros for defining plugins.
 
     \sa {How to Create Qt Plugins}
 */
@@ -53,32 +54,22 @@
     is not inside a namespace though. For example:
     \snippet code/doc_src_qplugin.cpp 0
 
-    \sa Q_INTERFACES(), Q_EXPORT_PLUGIN2(), {How to Create Qt Plugins}
+    \sa Q_INTERFACES(), {How to Create Qt Plugins}
 */
 
 /*!
-    \macro Q_EXPORT_PLUGIN(ClassName)
+    \macro Q_PLUGIN_METADATA(...)
     \relates <QtPlugin>
-    \obsolete
+    \since 5.0
 
-    Use Q_EXPORT_PLUGIN2() instead. This macro is equivalent to
-    Q_EXPORT_PLUGIN2(\a ClassName, \a ClassName).
-*/
+    This macro is being used to declare meta data that is part of a plugin
+    that instantiates this object.
 
-/*!
-    \macro Q_EXPORT_PLUGIN2(PluginName, ClassName)
-    \relates <QtPlugin>
-    \since 4.1
-    \keyword Q_EXPORT_PLUGIN2
-
-    This macro exports the plugin class \a ClassName for the plugin specified
-    by \a PluginName. The value of \a PluginName should correspond to the
-    \l{qmake Variable Reference#TARGET}{TARGET} specified in the plugin's
-    project file.
+    The macro needs to declare the IID of the interface implemented through
+    the object, and reference a file containing the meta data for the plugin.
 
     There should be exactly one occurrence of this macro in the source code
-    for a Qt plugin, and it should be used where the implementation is written
-    rather than in a header file.
+    for a Qt plugin.
 
     Example:
 
@@ -112,10 +103,4 @@
     \snippet code/doc_src_qplugin.pro 3
 
     \sa {Static Plugins}, {How to Create Qt Plugins}, {Using qmake}
-*/
-
-/*!
-    \macro Q_EXPORT_STATIC_PLUGIN(ClassName)
-    \relates <QtPlugin>
-    \internal
 */

@@ -49,7 +49,10 @@ Q_DECLARE_INTERFACE(Foo::MyInterface, "org.examples.MyInterface")
 
 
 //! [1]
-Q_EXPORT_PLUGIN2(pnp_extrafilters, ExtraFiltersPlugin)
+class MyInstance : public QObject
+{
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QDummyPlugin" FILE "mymetadata.json")
+};
 //! [1]
 
 
