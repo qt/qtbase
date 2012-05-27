@@ -61,24 +61,15 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformPrinterSupport;
 
-struct QPlatformPrinterSupportFactoryInterface : public QFactoryInterface
-{
-    virtual QPlatformPrinterSupport *create(const QString &key) = 0;
-};
-
 #define QPlatformPrinterSupportFactoryInterface_iid "org.qt-project.QPlatformPrinterSupportFactoryInterface"
 
-Q_DECLARE_INTERFACE(QPlatformPrinterSupportFactoryInterface, QPlatformPrinterSupportFactoryInterface_iid)
-
-class Q_PRINTSUPPORT_EXPORT QPlatformPrinterSupportPlugin : public QObject, public QPlatformPrinterSupportFactoryInterface
+class Q_PRINTSUPPORT_EXPORT QPlatformPrinterSupportPlugin : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QPlatformPrinterSupportFactoryInterface:QFactoryInterface)
 public:
     explicit QPlatformPrinterSupportPlugin(QObject *parent = 0);
     ~QPlatformPrinterSupportPlugin();
 
-    virtual QStringList keys() const = 0;
     virtual QPlatformPrinterSupport *create(const QString &key) = 0;
 
     static QPlatformPrinterSupport *get();

@@ -53,14 +53,8 @@ class QWindowsPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.QPlatformPrinterSupportFactoryInterface" FILE "windows.json")
 
 public:
-    QStringList keys() const;
     QPlatformPrinterSupport *create(const QString &);
 };
-
-QStringList QWindowsPrinterSupportPlugin::keys() const
-{
-    return QStringList(QStringLiteral("windowsprintsupport"));
-}
 
 QPlatformPrinterSupport *QWindowsPrinterSupportPlugin::create(const QString &key)
 {

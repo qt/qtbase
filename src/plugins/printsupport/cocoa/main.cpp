@@ -52,14 +52,8 @@ class QCocoaPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.QPlatformPrinterSupportFactoryInterface" FILE "cocoa.json")
 
 public:
-    QStringList keys() const;
     QPlatformPrinterSupport *create(const QString &);
 };
-
-QStringList QCocoaPrinterSupportPlugin::keys() const
-{
-    return QStringList(QStringLiteral("cocoaprintersupport"));
-}
 
 QPlatformPrinterSupport *QCocoaPrinterSupportPlugin::create(const QString &key)
 {
