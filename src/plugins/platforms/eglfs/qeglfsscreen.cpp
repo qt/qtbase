@@ -51,39 +51,6 @@ QT_BEGIN_NAMESPACE
 
 // #define QEGL_EXTRA_DEBUG
 
-#ifdef QEGL_EXTRA_DEBUG
-struct AttrInfo { EGLint attr; const char *name; };
-static struct AttrInfo attrs[] = {
-    {EGL_BUFFER_SIZE, "EGL_BUFFER_SIZE"},
-    {EGL_ALPHA_SIZE, "EGL_ALPHA_SIZE"},
-    {EGL_BLUE_SIZE, "EGL_BLUE_SIZE"},
-    {EGL_GREEN_SIZE, "EGL_GREEN_SIZE"},
-    {EGL_RED_SIZE, "EGL_RED_SIZE"},
-    {EGL_DEPTH_SIZE, "EGL_DEPTH_SIZE"},
-    {EGL_STENCIL_SIZE, "EGL_STENCIL_SIZE"},
-    {EGL_CONFIG_CAVEAT, "EGL_CONFIG_CAVEAT"},
-    {EGL_CONFIG_ID, "EGL_CONFIG_ID"},
-    {EGL_LEVEL, "EGL_LEVEL"},
-    {EGL_MAX_PBUFFER_HEIGHT, "EGL_MAX_PBUFFER_HEIGHT"},
-    {EGL_MAX_PBUFFER_PIXELS, "EGL_MAX_PBUFFER_PIXELS"},
-    {EGL_MAX_PBUFFER_WIDTH, "EGL_MAX_PBUFFER_WIDTH"},
-    {EGL_NATIVE_RENDERABLE, "EGL_NATIVE_RENDERABLE"},
-    {EGL_NATIVE_VISUAL_ID, "EGL_NATIVE_VISUAL_ID"},
-    {EGL_NATIVE_VISUAL_TYPE, "EGL_NATIVE_VISUAL_TYPE"},
-    {EGL_SAMPLES, "EGL_SAMPLES"},
-    {EGL_SAMPLE_BUFFERS, "EGL_SAMPLE_BUFFERS"},
-    {EGL_SURFACE_TYPE, "EGL_SURFACE_TYPE"},
-    {EGL_TRANSPARENT_TYPE, "EGL_TRANSPARENT_TYPE"},
-    {EGL_TRANSPARENT_BLUE_VALUE, "EGL_TRANSPARENT_BLUE_VALUE"},
-    {EGL_TRANSPARENT_GREEN_VALUE, "EGL_TRANSPARENT_GREEN_VALUE"},
-    {EGL_TRANSPARENT_RED_VALUE, "EGL_TRANSPARENT_RED_VALUE"},
-    {EGL_BIND_TO_TEXTURE_RGB, "EGL_BIND_TO_TEXTURE_RGB"},
-    {EGL_BIND_TO_TEXTURE_RGBA, "EGL_BIND_TO_TEXTURE_RGBA"},
-    {EGL_MIN_SWAP_INTERVAL, "EGL_MIN_SWAP_INTERVAL"},
-    {EGL_MAX_SWAP_INTERVAL, "EGL_MAX_SWAP_INTERVAL"},
-    {-1, 0}};
-#endif //QEGL_EXTRA_DEBUG
-
 class QEglFSContext : public QEGLPlatformContext
 {
 public:
@@ -206,16 +173,7 @@ void QEglFSScreen::createAndSetPlatformContext()
 
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("Configuration %d matches requirements\n", (int)config);
-
-    EGLint index;
-    for (index = 0; attrs[index].attr != -1; ++index) {
-        EGLint value;
-        if (eglGetConfigAttrib(m_dpy, config, attrs[index].attr, &value)) {
-            qWarning("\t%s: %d\n", attrs[index].name, (int)value);
-        }
-    }
-
-    qWarning("\n");
+    q_printEglConfig(config);
 #endif
 
     m_surface = eglCreateWindowSurface(m_dpy, config, m_window, NULL);
