@@ -52,17 +52,11 @@ class QEvdevTouchScreenPlugin : public QGenericPlugin
 public:
     QEvdevTouchScreenPlugin();
 
-    QStringList keys() const;
     QObject* create(const QString &key, const QString &specification);
 };
 
 QEvdevTouchScreenPlugin::QEvdevTouchScreenPlugin()
 {
-}
-
-QStringList QEvdevTouchScreenPlugin::keys() const
-{
-    return QStringList() << "EvdevTouch";
 }
 
 QObject* QEvdevTouchScreenPlugin::create(const QString &key,

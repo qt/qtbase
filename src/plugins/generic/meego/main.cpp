@@ -49,18 +49,12 @@ class QMeeGoIntegrationPlugin : public QGenericPlugin
 public:
     QMeeGoIntegrationPlugin();
 
-    QStringList keys() const;
     QObject* create(const QString &key, const QString &specification);
 };
 
 QMeeGoIntegrationPlugin::QMeeGoIntegrationPlugin()
     : QGenericPlugin()
 {
-}
-
-QStringList QMeeGoIntegrationPlugin::keys() const
-{
-    return QStringList() << QLatin1String("MeeGoIntegration");
 }
 
 QObject* QMeeGoIntegrationPlugin::create(const QString &key, const QString &specification)

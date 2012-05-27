@@ -52,23 +52,15 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_LIBRARY
 
-struct Q_GUI_EXPORT QGenericPluginFactoryInterface : public QFactoryInterface
-{
-    virtual QObject* create(const QString &name, const QString &spec) = 0;
-};
-
 #define QGenericPluginFactoryInterface_iid "org.qt-project.Qt.QGenericPluginFactoryInterface"
-Q_DECLARE_INTERFACE(QGenericPluginFactoryInterface, QGenericPluginFactoryInterface_iid)
 
-class Q_GUI_EXPORT QGenericPlugin : public QObject, public QGenericPluginFactoryInterface
+class Q_GUI_EXPORT QGenericPlugin : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QGenericPluginFactoryInterface:QFactoryInterface)
 public:
     explicit QGenericPlugin(QObject *parent = 0);
     ~QGenericPlugin();
 
-    virtual QStringList keys() const = 0;
     virtual QObject* create(const QString& name, const QString &spec) = 0;
 };
 

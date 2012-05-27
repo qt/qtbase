@@ -83,7 +83,7 @@ QObject *QGenericPluginFactory::create(const QString& key, const QString &specif
 
 #if !defined(Q_OS_WIN32) || defined(QT_MAKEDLL)
 #ifndef QT_NO_LIBRARY
-    if (QObject *object = qLoadPlugin1<QObject, QGenericPluginFactoryInterface>(loader(), driver, specification))
+    if (QObject *object = qLoadPlugin1<QObject, QGenericPlugin>(loader(), driver, specification))
         return object;
 #endif
 #endif

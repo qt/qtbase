@@ -52,18 +52,12 @@ class QEvdevKeyboardPlugin : public QGenericPlugin
 public:
     QEvdevKeyboardPlugin();
 
-    QStringList keys() const;
     QObject* create(const QString &key, const QString &specification);
 };
 
 QEvdevKeyboardPlugin::QEvdevKeyboardPlugin()
     : QGenericPlugin()
 {
-}
-
-QStringList QEvdevKeyboardPlugin::keys() const
-{
-    return QStringList(QLatin1String("EvdevKeyboard"));
 }
 
 QObject* QEvdevKeyboardPlugin::create(const QString &key,

@@ -52,19 +52,12 @@ class QEvdevMousePlugin : public QGenericPlugin
 public:
     QEvdevMousePlugin();
 
-    QStringList keys() const;
     QObject* create(const QString &key, const QString &specification);
 };
 
 QEvdevMousePlugin::QEvdevMousePlugin()
     : QGenericPlugin()
 {
-}
-
-QStringList QEvdevMousePlugin::keys() const
-{
-    return (QStringList()
-            << QLatin1String("EvdevMouse"));
 }
 
 QObject* QEvdevMousePlugin::create(const QString &key,

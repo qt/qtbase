@@ -56,23 +56,17 @@ QT_BEGIN_NAMESPACE
     Note that this class is only available in Qt QPA.
 
     A mouse plugin can be created by subclassing
-    QGenericPlugin and reimplementing the pure virtual keys() and
-    create() functions. By exporting the derived class using the
-    Q_EXPORT_PLUGIN2() macro, The default implementation of the
+    QGenericPlugin and reimplementing the pure virtual create()
+    function. By exporting the derived class using the
+    Q_PLUGIN_METADATA() macro, The default implementation of the
     QGenericPluginFactory class will automatically detect the plugin and
     load the driver into the server application at run-time. See \l
     {How to Create Qt Plugins} for details.
 
+    The json metadata file should contain a list of keys supported by this
+    plugin.
+
     \sa QGenericPluginFactory
-*/
-
-/*!
-    \fn QStringList QGenericPlugin::keys() const
-
-    Implement this function to return the list of valid keys, i.e. the
-    drivers supported by this plugin.
-
-    \sa create()
 */
 
 /*!

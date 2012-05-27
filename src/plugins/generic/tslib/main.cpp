@@ -52,20 +52,12 @@ class QTsLibPlugin : public QGenericPlugin
 public:
     QTsLibPlugin();
 
-    QStringList keys() const;
     QObject* create(const QString &key, const QString &specification);
 };
 
 QTsLibPlugin::QTsLibPlugin()
     : QGenericPlugin()
 {
-}
-
-QStringList QTsLibPlugin::keys() const
-{
-    return (QStringList()
-            << QLatin1String("Tslib")
-            << QLatin1String("TslibRaw"));
 }
 
 QObject* QTsLibPlugin::create(const QString &key,
