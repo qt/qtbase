@@ -55,6 +55,9 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qobjectdefs.h>
+#ifndef QT_NO_QOBJECT
+#include <private/qobject_p.h> // For QObjectPrivate::Connection
+#endif
 
 QT_BEGIN_NAMESPACE
 
