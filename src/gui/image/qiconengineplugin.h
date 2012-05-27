@@ -52,24 +52,15 @@ QT_BEGIN_NAMESPACE
 
 class QIconEngine;
 
-struct Q_GUI_EXPORT QIconEngineFactoryInterface : public QFactoryInterface
-{
-    virtual QIconEngine *create(const QString &filename = QString()) = 0;
-};
+#define QIconEngineFactoryInterface_iid "org.qt-project.Qt.QIconEngineFactoryInterface"
 
-#define QIconEngineFactoryInterface_iid \
-    "org.qt-project.Qt.QIconEngineFactoryInterface"
-Q_DECLARE_INTERFACE(QIconEngineFactoryInterface, QIconEngineFactoryInterface_iid)
-
-class Q_GUI_EXPORT QIconEnginePlugin : public QObject, public QIconEngineFactoryInterface
+class Q_GUI_EXPORT QIconEnginePlugin : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QIconEngineFactoryInterface:QFactoryInterface)
 public:
     QIconEnginePlugin(QObject *parent = 0);
     ~QIconEnginePlugin();
 
-    virtual QStringList keys() const = 0;
     virtual QIconEngine *create(const QString &filename = QString()) = 0;
 };
 

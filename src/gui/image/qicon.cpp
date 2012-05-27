@@ -833,7 +833,7 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
             // first try version 2 engines..
             const int index = loader()->indexOf(suffix);
             if (index != -1) {
-                if (QIconEngineFactoryInterface *factory = qobject_cast<QIconEngineFactoryInterface*>(loader()->instance(index))) {
+                if (QIconEnginePlugin *factory = qobject_cast<QIconEnginePlugin*>(loader()->instance(index))) {
                     if (QIconEngine *engine = factory->create(fileName)) {
                         d = new QIconPrivate;
                         d->engine = engine;
@@ -1089,7 +1089,7 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
         } else {
             const int index = loader()->indexOf(key);
             if (index != -1) {
-                if (QIconEngineFactoryInterface *factory = qobject_cast<QIconEngineFactoryInterface*>(loader()->instance(index))) {
+                if (QIconEnginePlugin *factory = qobject_cast<QIconEnginePlugin*>(loader()->instance(index))) {
                     if (QIconEngine *engine= factory->create()) {
                         icon.d = new QIconPrivate;
                         icon.d->engine = engine;

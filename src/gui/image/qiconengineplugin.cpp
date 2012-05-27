@@ -51,16 +51,22 @@ QT_BEGIN_NAMESPACE
     \ingroup plugins
     \inmodule QtGui
 
-    \b {Use QIconEnginePluginV2 instead.}
-
     The icon engine plugin is a simple plugin interface that makes it easy to
     create custom icon engines that can be loaded dynamically into applications
     through QIcon. QIcon uses the file or resource name's suffix to determine
     what icon engine to use.
 
     Writing a icon engine plugin is achieved by subclassing this base class,
-    reimplementing the pure virtual functions keys() and create(), and
-    exporting the class with the Q_EXPORT_PLUGIN2() macro.
+    reimplementing the pure virtual function create(), and
+    exporting the class with the Q_PLUGIN_METADATA() macro.
+
+    The json metadata should contain a list of icon engine keys that this plugin supports.
+    The keys correspond to the suffix of the file or resource name used when the plugin was
+    created. Keys are case insensitive.
+
+    \code
+    { "Keys": [ "myiconengine" ] }
+    \endcode
 
     \sa {How to Create Qt Plugins}
 */
@@ -68,9 +74,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QStringList QIconEnginePlugin::keys() const
 
-    Returns a list of icon engine keys that this plugin supports. The keys correspond
-    to the suffix of the file or resource name used when the plugin was created.
-    Keys are case insensitive.
+    Returns
 
     \sa create()
 */
@@ -86,7 +90,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     Constructs a icon engine plugin with the given \a parent. This is invoked
-    automatically by the Q_EXPORT_PLUGIN2() macro.
+    automatically by the plugin loader.
 */
 QIconEnginePlugin::QIconEnginePlugin(QObject *parent)
     : QObject(parent)
