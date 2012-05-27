@@ -175,7 +175,8 @@ public:
     { return items(QRectF(x, y, w, h), mode, order, deviceTransform); }
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED inline QGraphicsItem *itemAt(qreal x, qreal y) const {
-        return itemAt(QPointF(x, y));
+        QList<QGraphicsItem *> itemsAtPoint = items(QPointF(x, y));
+        return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
     }
 #endif
     inline QGraphicsItem *itemAt(qreal x, qreal y, const QTransform &deviceTransform) const
