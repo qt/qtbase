@@ -56,22 +56,18 @@ QT_BEGIN_NAMESPACE
     applications using the QStyleFactory class.
 
     Writing a style plugin is achieved by subclassing this base class,
-    reimplementing the pure virtual keys() and create() functions, and
-    exporting the class using the Q_EXPORT_PLUGIN2() macro. See \l
+    reimplementing the pure virtual create() function, and
+    exporting the class using the Q_PLUGIN_METADATA() macro. See \l
     {How to Create Qt Plugins} for details.
 
+    The json metadata file for the plugin needs to contain information
+    about the names of the styles the plugins supports as follows:
+
+    \code
+    { "Keys": [ "mystyle" ] }
+    \endcode
+
     \sa QStyleFactory, QStyle
-*/
-
-/*!
-    \fn QStringList QStylePlugin::keys() const
-
-    Returns the list of style keys this plugin supports.
-
-    These keys are usually the class names of the custom styles that
-    are implemented in the plugin.
-
-    \sa create()
 */
 
 /*!

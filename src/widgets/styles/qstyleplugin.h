@@ -52,24 +52,15 @@ QT_BEGIN_NAMESPACE
 
 class QStyle;
 
-struct Q_WIDGETS_EXPORT QStyleFactoryInterface : public QFactoryInterface
-{
-    virtual QStyle *create(const QString &key) = 0;
-};
-
 #define QStyleFactoryInterface_iid "org.qt-project.Qt.QStyleFactoryInterface"
 
-Q_DECLARE_INTERFACE(QStyleFactoryInterface, QStyleFactoryInterface_iid)
-
-class Q_WIDGETS_EXPORT QStylePlugin : public QObject, public QStyleFactoryInterface
+class Q_WIDGETS_EXPORT QStylePlugin : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QStyleFactoryInterface:QFactoryInterface)
 public:
     explicit QStylePlugin(QObject *parent = 0);
     ~QStylePlugin();
 
-    virtual QStringList keys() const = 0;
     virtual QStyle *create(const QString &key) = 0;
 };
 
