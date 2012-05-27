@@ -76,6 +76,8 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
+    makeCurrent();
+
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglBackingStore::flush %p", window);
 #endif
@@ -183,6 +185,8 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
         cursor->render();
 
     m_context->swapBuffers(window);
+
+    m_context->doneCurrent();
 }
 
 void QEglFSBackingStore::makeCurrent()
@@ -195,8 +199,6 @@ void QEglFSBackingStore::makeCurrent()
 
 void QEglFSBackingStore::beginPaint(const QRegion &rgn)
 {
-    makeCurrent();
-
     m_dirty = m_dirty | rgn;
 }
 
