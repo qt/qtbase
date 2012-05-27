@@ -99,7 +99,6 @@ public:
     QNativeWifiEnginePlugin();
     ~QNativeWifiEnginePlugin();
 
-    QStringList keys() const;
     QBearerEngine *create(const QString &key) const;
 };
 
@@ -109,11 +108,6 @@ QNativeWifiEnginePlugin::QNativeWifiEnginePlugin()
 
 QNativeWifiEnginePlugin::~QNativeWifiEnginePlugin()
 {
-}
-
-QStringList QNativeWifiEnginePlugin::keys() const
-{
-    return QStringList() << QLatin1String("nativewifi");
 }
 
 QBearerEngine *QNativeWifiEnginePlugin::create(const QString &key) const

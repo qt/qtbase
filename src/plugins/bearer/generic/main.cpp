@@ -58,7 +58,6 @@ public:
     QGenericEnginePlugin();
     ~QGenericEnginePlugin();
 
-    QStringList keys() const;
     QBearerEngine *create(const QString &key) const;
 };
 
@@ -68,11 +67,6 @@ QGenericEnginePlugin::QGenericEnginePlugin()
 
 QGenericEnginePlugin::~QGenericEnginePlugin()
 {
-}
-
-QStringList QGenericEnginePlugin::keys() const
-{
-    return QStringList() << QLatin1String("generic");
 }
 
 QBearerEngine *QGenericEnginePlugin::create(const QString &key) const

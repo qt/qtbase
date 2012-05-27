@@ -56,7 +56,6 @@ public:
     QNlaEnginePlugin();
     ~QNlaEnginePlugin();
 
-    QStringList keys() const;
     QBearerEngine *create(const QString &key) const;
 };
 
@@ -66,11 +65,6 @@ QNlaEnginePlugin::QNlaEnginePlugin()
 
 QNlaEnginePlugin::~QNlaEnginePlugin()
 {
-}
-
-QStringList QNlaEnginePlugin::keys() const
-{
-    return QStringList() << QLatin1String("nla");
 }
 
 QBearerEngine *QNlaEnginePlugin::create(const QString &key) const

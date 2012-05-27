@@ -58,7 +58,6 @@ public:
     QCoreWlanEnginePlugin();
     ~QCoreWlanEnginePlugin();
 
-    QStringList keys() const;
     QBearerEngine *create(const QString &key) const;
 };
 
@@ -68,11 +67,6 @@ QCoreWlanEnginePlugin::QCoreWlanEnginePlugin()
 
 QCoreWlanEnginePlugin::~QCoreWlanEnginePlugin()
 {
-}
-
-QStringList QCoreWlanEnginePlugin::keys() const
-{
-    return QStringList() << QLatin1String("corewlan");
 }
 
 QBearerEngine *QCoreWlanEnginePlugin::create(const QString &key) const

@@ -53,14 +53,8 @@ class QBBEnginePlugin : public QBearerEnginePlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QBearerEngineFactoryInterface" FILE "blackberry.json")
 
 public:
-    QStringList keys() const;
     QBearerEngine *create(const QString &key) const;
 };
-
-QStringList QBBEnginePlugin::keys() const
-{
-    return QStringList() << QStringLiteral("blackberry");
-}
 
 QBearerEngine *QBBEnginePlugin::create(const QString &key) const
 {

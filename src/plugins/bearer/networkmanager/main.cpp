@@ -59,7 +59,6 @@ public:
     QNetworkManagerEnginePlugin();
     ~QNetworkManagerEnginePlugin();
 
-    QStringList keys() const;
     QBearerEngine *create(const QString &key) const;
 };
 
@@ -69,11 +68,6 @@ QNetworkManagerEnginePlugin::QNetworkManagerEnginePlugin()
 
 QNetworkManagerEnginePlugin::~QNetworkManagerEnginePlugin()
 {
-}
-
-QStringList QNetworkManagerEnginePlugin::keys() const
-{
-    return QStringList() << QLatin1String("networkmanager");
 }
 
 QBearerEngine *QNetworkManagerEnginePlugin::create(const QString &key) const

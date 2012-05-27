@@ -65,24 +65,15 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
-struct Q_NETWORK_EXPORT QBearerEngineFactoryInterface : public QFactoryInterface
-{
-    virtual QBearerEngine *create(const QString &key) const = 0;
-};
-
 #define QBearerEngineFactoryInterface_iid "org.qt-project.Qt.QBearerEngineFactoryInterface"
-Q_DECLARE_INTERFACE(QBearerEngineFactoryInterface, QBearerEngineFactoryInterface_iid)
 
-class Q_NETWORK_EXPORT QBearerEnginePlugin : public QObject, public QBearerEngineFactoryInterface
+class Q_NETWORK_EXPORT QBearerEnginePlugin : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QBearerEngineFactoryInterface:QFactoryInterface)
-
 public:
     explicit QBearerEnginePlugin(QObject *parent = 0);
     virtual ~QBearerEnginePlugin();
 
-    virtual QStringList keys() const = 0;
     virtual QBearerEngine *create(const QString &key) const = 0;
 };
 

@@ -58,7 +58,6 @@ public:
     QConnmanEnginePlugin();
     ~QConnmanEnginePlugin();
 
-    QStringList keys() const;
     QBearerEngine *create(const QString &key) const;
 };
 
@@ -68,11 +67,6 @@ QConnmanEnginePlugin::QConnmanEnginePlugin()
 
 QConnmanEnginePlugin::~QConnmanEnginePlugin()
 {
-}
-
-QStringList QConnmanEnginePlugin::keys() const
-{
-    return QStringList() << QLatin1String("connman");
 }
 
 QBearerEngine *QConnmanEnginePlugin::create(const QString &key) const
