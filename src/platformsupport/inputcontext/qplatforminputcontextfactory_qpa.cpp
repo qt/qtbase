@@ -70,7 +70,7 @@ QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
     const QString platform = paramList.takeFirst().toLower();
 
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    if (QPlatformInputContext *ret = qLoadPlugin1<QPlatformInputContext, QPlatformInputContextFactoryInterface>(loader(), platform, paramList))
+    if (QPlatformInputContext *ret = qLoadPlugin1<QPlatformInputContext, QPlatformInputContextPlugin>(loader(), platform, paramList))
         return ret;
 #endif
     return 0;

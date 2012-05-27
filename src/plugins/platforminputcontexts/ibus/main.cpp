@@ -51,14 +51,8 @@ class QIbusPlatformInputContextPlugin : public QPlatformInputContextPlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformInputContextFactoryInterface" FILE "ibus.json")
 
 public:
-    QStringList keys() const;
     QIBusPlatformInputContext *create(const QString&, const QStringList&);
 };
-
-QStringList QIbusPlatformInputContextPlugin::keys() const
-{
-    return QStringList(QStringLiteral("ibus"));
-}
 
 QIBusPlatformInputContext *QIbusPlatformInputContextPlugin::create(const QString& system, const QStringList& paramList)
 {

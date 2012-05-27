@@ -63,24 +63,15 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformInputContext;
 
-    struct QPlatformInputContextFactoryInterface : public QFactoryInterface
-{
-    virtual QPlatformInputContext *create(const QString &key, const QStringList &paramList) = 0;
-};
-
 #define QPlatformInputContextFactoryInterface_iid "org.qt-project.Qt.QPlatformInputContextFactoryInterface"
 
-Q_DECLARE_INTERFACE(QPlatformInputContextFactoryInterface, QPlatformInputContextFactoryInterface_iid)
-
-class Q_PLATFORMSUPPORT_EXPORT QPlatformInputContextPlugin : public QObject, public QPlatformInputContextFactoryInterface
+class Q_PLATFORMSUPPORT_EXPORT QPlatformInputContextPlugin : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QPlatformInputContextFactoryInterface:QFactoryInterface)
 public:
     explicit QPlatformInputContextPlugin(QObject *parent = 0);
     ~QPlatformInputContextPlugin();
 
-    virtual QStringList keys() const = 0;
     virtual QPlatformInputContext *create(const QString &key, const QStringList &paramList) = 0;
 };
 

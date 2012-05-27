@@ -51,14 +51,8 @@ class QMaliitPlatformInputContextPlugin : public QPlatformInputContextPlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformInputContextFactoryInterface" FILE "maliit.json")
 
 public:
-    QStringList keys() const;
     QPlatformInputContext *create(const QString&, const QStringList&);
 };
-
-QStringList QMaliitPlatformInputContextPlugin::keys() const
-{
-    return QStringList(QStringLiteral("maliit"));
-}
 
 QPlatformInputContext *QMaliitPlatformInputContextPlugin::create(const QString& system, const QStringList& paramList)
 {
