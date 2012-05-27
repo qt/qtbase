@@ -54,7 +54,6 @@ public:
     QODBCDriverPlugin();
 
     QSqlDriver* create(const QString &);
-    QStringList keys() const;
 };
 
 QODBCDriverPlugin::QODBCDriverPlugin()
@@ -69,14 +68,6 @@ QSqlDriver* QODBCDriverPlugin::create(const QString &name)
         return driver;
     }
     return 0;
-}
-
-QStringList QODBCDriverPlugin::keys() const
-{
-    QStringList l;
-    l.append(QLatin1String("QODBC3"));
-    l.append(QLatin1String("QODBC"));
-    return l;
 }
 
 QT_END_NAMESPACE

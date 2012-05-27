@@ -52,23 +52,15 @@ QT_BEGIN_NAMESPACE
 
 class QSqlDriver;
 
-struct Q_SQL_EXPORT QSqlDriverFactoryInterface : public QFactoryInterface
-{
-    virtual QSqlDriver *create(const QString &name) = 0;
-};
-
 #define QSqlDriverFactoryInterface_iid "org.qt-project.Qt.QSqlDriverFactoryInterface"
-Q_DECLARE_INTERFACE(QSqlDriverFactoryInterface, QSqlDriverFactoryInterface_iid)
 
-class Q_SQL_EXPORT QSqlDriverPlugin : public QObject, public QSqlDriverFactoryInterface
+class Q_SQL_EXPORT QSqlDriverPlugin : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QSqlDriverFactoryInterface:QFactoryInterface)
 public:
     explicit QSqlDriverPlugin(QObject *parent = 0);
     ~QSqlDriverPlugin();
 
-    virtual QStringList keys() const = 0;
     virtual QSqlDriver *create(const QString &key) = 0;
 
 };

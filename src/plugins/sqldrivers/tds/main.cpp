@@ -61,7 +61,6 @@ public:
     QTDSDriverPlugin();
 
     QSqlDriver* create(const QString &);
-    QStringList keys() const;
 };
 
 QTDSDriverPlugin::QTDSDriverPlugin()
@@ -76,14 +75,6 @@ QSqlDriver* QTDSDriverPlugin::create(const QString &name)
         return driver;
     }
     return 0;
-}
-
-QStringList QTDSDriverPlugin::keys() const
-{
-    QStringList l;
-    l.append(QLatin1String("QTDS7"));
-    l.append(QLatin1String("QTDS"));
-    return l;
 }
 
 QT_END_NAMESPACE

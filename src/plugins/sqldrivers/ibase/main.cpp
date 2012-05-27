@@ -54,7 +54,6 @@ public:
     QIBaseDriverPlugin();
 
     QSqlDriver* create(const QString &);
-    QStringList keys() const;
 };
 
 QIBaseDriverPlugin::QIBaseDriverPlugin()
@@ -69,11 +68,6 @@ QSqlDriver* QIBaseDriverPlugin::create(const QString &name)
         return driver;
     }
     return 0;
-}
-
-QStringList QIBaseDriverPlugin::keys() const
-{
-    return QStringList(QStringLiteral("QIBASE"));
 }
 
 QT_END_NAMESPACE

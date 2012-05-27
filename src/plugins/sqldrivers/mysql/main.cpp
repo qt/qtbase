@@ -54,7 +54,6 @@ public:
     QMYSQLDriverPlugin();
 
     QSqlDriver* create(const QString &);
-    QStringList keys() const;
 };
 
 QMYSQLDriverPlugin::QMYSQLDriverPlugin()
@@ -69,14 +68,6 @@ QSqlDriver* QMYSQLDriverPlugin::create(const QString &name)
         return driver;
     }
     return 0;
-}
-
-QStringList QMYSQLDriverPlugin::keys() const
-{
-    QStringList l;
-    l << QLatin1String("QMYSQL3");
-    l << QLatin1String("QMYSQL");
-    return l;
 }
 
 QT_END_NAMESPACE

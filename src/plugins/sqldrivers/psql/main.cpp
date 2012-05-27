@@ -54,7 +54,6 @@ public:
     QPSQLDriverPlugin();
 
     QSqlDriver* create(const QString &);
-    QStringList keys() const;
 };
 
 QPSQLDriverPlugin::QPSQLDriverPlugin()
@@ -69,14 +68,6 @@ QSqlDriver* QPSQLDriverPlugin::create(const QString &name)
         return driver;
     }
     return 0;
-}
-
-QStringList QPSQLDriverPlugin::keys() const
-{
-    QStringList l;
-    l.append(QLatin1String("QPSQL7"));
-    l.append(QLatin1String("QPSQL"));
-    return l;
 }
 
 QT_END_NAMESPACE

@@ -54,7 +54,6 @@ public:
     QOCIDriverPlugin();
 
     QSqlDriver* create(const QString &);
-    QStringList keys() const;
 };
 
 QOCIDriverPlugin::QOCIDriverPlugin()
@@ -69,14 +68,6 @@ QSqlDriver* QOCIDriverPlugin::create(const QString &name)
         return driver;
     }
     return 0;
-}
-
-QStringList QOCIDriverPlugin::keys() const
-{
-    QStringList l;
-    l.append(QLatin1String("QOCI8"));
-    l.append(QLatin1String("QOCI"));
-    return l;
 }
 
 QT_END_NAMESPACE

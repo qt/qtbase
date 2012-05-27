@@ -54,7 +54,6 @@ public:
     QSQLiteDriverPlugin();
 
     QSqlDriver* create(const QString &);
-    QStringList keys() const;
 };
 
 QSQLiteDriverPlugin::QSQLiteDriverPlugin()
@@ -69,11 +68,6 @@ QSqlDriver* QSQLiteDriverPlugin::create(const QString &name)
         return driver;
     }
     return 0;
-}
-
-QStringList QSQLiteDriverPlugin::keys() const
-{
-    return QStringList(QStringLiteral("QSQLITE"));
 }
 
 QT_END_NAMESPACE

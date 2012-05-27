@@ -778,7 +778,7 @@ void QSqlDatabasePrivate::init(const QString &type)
 
 #ifndef QT_NO_LIBRARY
     if (!driver && loader())
-        driver = qLoadPlugin<QSqlDriver, QSqlDriverFactoryInterface>(loader(), type);
+        driver = qLoadPlugin<QSqlDriver, QSqlDriverPlugin>(loader(), type);
 #endif // QT_NO_LIBRARY
 
     if (!driver) {

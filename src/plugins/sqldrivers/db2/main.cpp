@@ -54,7 +54,6 @@ public:
     QDB2DriverPlugin();
 
     QSqlDriver* create(const QString &);
-    QStringList keys() const;
 };
 
 QDB2DriverPlugin::QDB2DriverPlugin()
@@ -69,11 +68,6 @@ QSqlDriver* QDB2DriverPlugin::create(const QString &name)
         return driver;
     }
     return 0;
-}
-
-QStringList QDB2DriverPlugin::keys() const
-{
-    return QStringList(QStringLiteral("QDB2"));
 }
 
 QT_END_NAMESPACE
