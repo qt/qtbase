@@ -66,10 +66,10 @@ QPlatformIntegration *QPlatformIntegrationFactory::create(const QString& key, co
     // Try loading the plugin from platformPluginPath first:
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
-        if (QPlatformIntegration *ret = qLoadPlugin1<QPlatformIntegration, QPlatformIntegrationFactoryInterface >(directLoader(), platform, paramList))
+        if (QPlatformIntegration *ret = qLoadPlugin1<QPlatformIntegration, QPlatformIntegrationPlugin>(directLoader(), platform, paramList))
             return ret;
     }
-    if (QPlatformIntegration *ret = qLoadPlugin1<QPlatformIntegration, QPlatformIntegrationFactoryInterface >(loader(), platform, paramList))
+    if (QPlatformIntegration *ret = qLoadPlugin1<QPlatformIntegration, QPlatformIntegrationPlugin>(loader(), platform, paramList))
         return ret;
 #endif
     return 0;

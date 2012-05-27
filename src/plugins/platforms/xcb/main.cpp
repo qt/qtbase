@@ -49,16 +49,8 @@ class QXcbIntegrationPlugin : public QPlatformIntegrationPlugin
    Q_OBJECT
    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface" FILE "xcb.json")
 public:
-    QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&);
 };
-
-QStringList QXcbIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "xcb";
-    return list;
-}
 
 QPlatformIntegration* QXcbIntegrationPlugin::create(const QString& system, const QStringList& parameters)
 {

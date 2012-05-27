@@ -50,16 +50,8 @@ class QMinimalIntegrationPlugin : public QPlatformIntegrationPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface" FILE "minimal.json")
 public:
-    QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&);
 };
-
-QStringList QMinimalIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "Minimal";
-    return list;
-}
 
 QPlatformIntegration *QMinimalIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {

@@ -58,27 +58,17 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
 class QPlatformTheme;
-
-struct QPlatformThemeFactoryInterface : public QFactoryInterface
-{
-    virtual QPlatformTheme *create(const QString &key, const QStringList &paramList) = 0;
-};
 
 #define QPlatformThemeFactoryInterface_iid "org.qt-project.Qt.QPlatformThemeFactoryInterface"
 
-Q_DECLARE_INTERFACE(QPlatformThemeFactoryInterface, QPlatformThemeFactoryInterface_iid)
-
-class Q_GUI_EXPORT QPlatformThemePlugin : public QObject, public QPlatformThemeFactoryInterface
+class Q_GUI_EXPORT QPlatformThemePlugin : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QPlatformThemeFactoryInterface:QFactoryInterface)
 public:
     explicit QPlatformThemePlugin(QObject *parent = 0);
     ~QPlatformThemePlugin();
 
-    virtual QStringList keys() const = 0;
     virtual QPlatformTheme *create(const QString &key, const QStringList &paramList) = 0;
 };
 

@@ -61,24 +61,15 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformIntegration;
 
-struct QPlatformIntegrationFactoryInterface : public QFactoryInterface
-{
-    virtual QPlatformIntegration *create(const QString &key, const QStringList &paramList) = 0;
-};
-
 #define QPlatformIntegrationFactoryInterface_iid "org.qt-project.Qt.QPlatformIntegrationFactoryInterface"
 
-Q_DECLARE_INTERFACE(QPlatformIntegrationFactoryInterface, QPlatformIntegrationFactoryInterface_iid)
-
-class Q_GUI_EXPORT QPlatformIntegrationPlugin : public QObject, public QPlatformIntegrationFactoryInterface
+class Q_GUI_EXPORT QPlatformIntegrationPlugin : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QPlatformIntegrationFactoryInterface:QFactoryInterface)
 public:
     explicit QPlatformIntegrationPlugin(QObject *parent = 0);
     ~QPlatformIntegrationPlugin();
 
-    virtual QStringList keys() const = 0;
     virtual QPlatformIntegration *create(const QString &key, const QStringList &paramList) = 0;
 };
 

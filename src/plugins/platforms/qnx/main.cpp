@@ -44,13 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QStringList QQnxIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << QLatin1String("qnx");
-    return list;
-}
-
 QPlatformIntegration *QQnxIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);

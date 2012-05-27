@@ -49,16 +49,8 @@ class QKmsIntegrationPlugin : public QPlatformIntegrationPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface" FILE "kms.json")
 public:
-    QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&);
 };
-
-QStringList QKmsIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "kms";
-    return list;
-}
 
 QPlatformIntegration *QKmsIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {

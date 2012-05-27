@@ -60,17 +60,8 @@ class QDirectFbIntegrationPlugin : public QPlatformIntegrationPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface" FILE "directfb.json")
 public:
-    QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&);
 };
-
-QStringList QDirectFbIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "directfb";
-    QT_EGL_BACKEND_STRING(list);
-    return list;
-}
 
 QPlatformIntegration * QDirectFbIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {

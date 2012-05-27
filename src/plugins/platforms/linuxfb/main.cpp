@@ -47,16 +47,8 @@ QT_BEGIN_NAMESPACE
 class QLinuxFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
-    QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&);
 };
-
-QStringList QLinuxFbIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "LinuxFb";
-    return list;
-}
 
 QPlatformIntegration* QLinuxFbIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {

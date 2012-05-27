@@ -47,16 +47,8 @@ QT_BEGIN_NAMESPACE
 class QOpenWFDIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
-    QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&);
 };
-
-QStringList QOpenWFDIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "OpenWFD";
-    return list;
-}
 
 QPlatformIntegration* QOpenWFDIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {

@@ -66,10 +66,10 @@ QPlatformTheme *QPlatformThemeFactory::create(const QString& key, const QString 
     // Try loading the plugin from platformPluginPath first:
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
-        if (QPlatformTheme *ret = qLoadPlugin1<QPlatformTheme, QPlatformThemeFactoryInterface>(directLoader(), platform, paramList))
+        if (QPlatformTheme *ret = qLoadPlugin1<QPlatformTheme, QPlatformThemePlugin>(directLoader(), platform, paramList))
             return ret;
     }
-    if (QPlatformTheme *ret = qLoadPlugin1<QPlatformTheme, QPlatformThemeFactoryInterface>(loader(), platform, paramList))
+    if (QPlatformTheme *ret = qLoadPlugin1<QPlatformTheme, QPlatformThemePlugin>(loader(), platform, paramList))
            return ret;
 #endif
     return 0;
