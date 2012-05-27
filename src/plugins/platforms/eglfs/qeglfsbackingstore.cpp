@@ -180,8 +180,8 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
+    m_program->release();
     glBindTexture(GL_TEXTURE_2D, 0);
-
     glDisableVertexAttribArray(m_vertexCoordEntry);
     glDisableVertexAttribArray(m_textureCoordEntry);
 #endif
