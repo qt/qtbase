@@ -2232,10 +2232,7 @@ bool QObject::isSignalConnected(const QMetaMethod &signal) const
     if (signal.mobj->d.data[signal.handle + 4] & MethodCloned)
         signalIndex = QMetaObjectPrivate::originalClone(signal.mobj, signalIndex);
 
-    int signalOffset;
-    int methodOffset;
-    computeOffsets(signal.mobj, &signalOffset, &methodOffset);
-    signalIndex += signalOffset;
+    signalIndex += QMetaObjectPrivate::signalOffset(signal.mobj);
 
     if (signalIndex < sizeof(d->connectedSignals) * 8)
         return d->isSignalConnected(signalIndex);
@@ -2429,9 +2426,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
         return QMetaObject::Connection(0);
     }
     signal_index = QMetaObjectPrivate::originalClone(smeta, signal_index);
-    int signalOffset, methodOffset;
-    computeOffsets(smeta, &signalOffset, &methodOffset);
-    signal_index += signalOffset;
+    signal_index += QMetaObjectPrivate::signalOffset(smeta);
 
     QByteArray tmp_method_name;
     int membcode = extract_code(method);
@@ -2734,9 +2729,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
             if (signal_index < 0)
                 break;
             signal_index = QMetaObjectPrivate::originalClone(smeta, signal_index);
-            int signalOffset, methodOffset;
-            computeOffsets(smeta, &signalOffset, &methodOffset);
-            signal_index += signalOffset;
+            signal_index += QMetaObjectPrivate::signalOffset(smeta);
             signal_found = true;
         }
 
@@ -3494,11 +3487,9 @@ int QObjectPrivate::signalIndex(const char *signalName,
     if (relative_index < 0)
         return relative_index;
     relative_index = QMetaObjectPrivate::originalClone(base, relative_index);
-    int signalOffset, methodOffset;
-    computeOffsets(base, &signalOffset, &methodOffset);
     if (meta)
         *meta = base;
-    return relative_index + signalOffset;
+    return relative_index + QMetaObjectPrivate::signalOffset(base);
 }
 
 /*****************************************************************************
@@ -4166,9 +4157,7 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
             delete slotObj;
         return QMetaObject::Connection(0);
     }
-    int signalOffset, methodOffset;
-    computeOffsets(senderMetaObject, &signalOffset, &methodOffset);
-    signal_index += signalOffset;
+    signal_index += QMetaObjectPrivate::signalOffset(senderMetaObject);
 
     QObject *s = const_cast<QObject *>(sender);
     QObject *r = const_cast<QObject *>(receiver);
@@ -4323,9 +4312,7 @@ bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject
             qWarning("QObject::disconnect: signal not found in %s", senderMetaObject->className());
             return false;
         }
-        int signalOffset, methodOffset;
-        computeOffsets(senderMetaObject, &signalOffset, &methodOffset);
-        signal_index += signalOffset;
+        signal_index += QMetaObjectPrivate::signalOffset(senderMetaObject);
     }
 
     return QMetaObjectPrivate::disconnect(sender, signal_index, senderMetaObject, receiver, -1, slot);
