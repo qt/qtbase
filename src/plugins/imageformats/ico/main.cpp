@@ -45,11 +45,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QStringList QICOPlugin::keys() const
-{
-    return QStringList() << QLatin1String("ico");
-}
-
 QImageIOPlugin::Capabilities QICOPlugin::capabilities(QIODevice *device, const QByteArray &format) const
 {
     if (format == "ico")

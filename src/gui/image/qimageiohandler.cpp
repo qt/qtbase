@@ -171,9 +171,9 @@
     support for different image formats to Qt.
 
     Writing an image I/O plugin is achieved by subclassing this
-    base class, reimplementing the pure virtual functions capabilities(),
-    create(), and keys(), and exporting the class with the
-    Q_EXPORT_PLUGIN2() macro. See \l{How to Create Qt Plugins} for details.
+    base class, reimplementing the pure virtual functions capabilities()
+    and create(), and exporting the class with the
+    Q_PLUGIN_METADATA() macro. See \l{How to Create Qt Plugins} for details.
 
     An image format plugin can support three capabilities: reading (\l
     CanRead), writing (\l CanWrite) and \e incremental reading (\l
@@ -182,8 +182,15 @@
 
     create() should create an instance of your QImageIOHandler
     subclass, with the provided device and format properly set, and
-    return this handler. You must also reimplement keys() so that Qt
-    knows which image formats your plugin supports.
+    return this handler.
+
+    The json metadata file for the plugin needs to contain information
+    about the image formats the plugins supports. For a jpeg plugin, this
+    could e.g. look as follows:
+
+    \code
+    { "Keys": [ "jpg", "jpeg" ] }
+    \endcode
 
     Different plugins can support different capabilities. For example,
     you may have one plugin that supports reading the GIF format, and
@@ -203,17 +210,6 @@
     \value CanRead The plugin can read images.
     \value CanWrite The plugin can write images.
     \value CanReadIncremental The plugin can read images incrementally.
-*/
-
-/*!
-    \class QImageIOHandlerFactoryInterface
-    \brief The QImageIOHandlerFactoryInterface class provides the factory
-    interface for QImageIOPlugin.
-    \reentrant
-
-    \internal
-
-    \sa QImageIOPlugin
 */
 
 #include "qimageiohandler.h"
@@ -544,17 +540,6 @@ QImageIOPlugin::~QImageIOPlugin()
     return \l CanRead. If \a format is "bmp" and the handler supports
     both reading and writing, this function should return \l CanRead |
     \l CanWrite.
-*/
-
-/*!
-    \fn QImageIOPlugin::keys() const
-
-    Returns the list of image keys this plugin supports.
-
-    These keys are usually the names of the image formats that are implemented
-    in the plugin (e.g., "jpg" or "gif").
-
-    \sa capabilities()
 */
 
 /*!

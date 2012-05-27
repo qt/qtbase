@@ -50,11 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QStringList QJpegPlugin::keys() const
-{
-    return QStringList() << QLatin1String("jpeg") << QLatin1String("jpg");
-}
-
 QImageIOPlugin::Capabilities QJpegPlugin::capabilities(QIODevice *device, const QByteArray &format) const
 {
     if (format == "jpeg" || format == "jpg")

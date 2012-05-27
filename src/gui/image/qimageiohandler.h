@@ -114,18 +114,11 @@ private:
     Q_DISABLE_COPY(QImageIOHandler)
 };
 
-struct Q_GUI_EXPORT QImageIOHandlerFactoryInterface : public QFactoryInterface
-{
-    virtual QImageIOHandler *create(QIODevice *device, const QByteArray &format = QByteArray()) const = 0;
-};
-
 #define QImageIOHandlerFactoryInterface_iid "org.qt-project.Qt.QImageIOHandlerFactoryInterface"
-Q_DECLARE_INTERFACE(QImageIOHandlerFactoryInterface, QImageIOHandlerFactoryInterface_iid)
 
-class Q_GUI_EXPORT QImageIOPlugin : public QObject, public QImageIOHandlerFactoryInterface
+class Q_GUI_EXPORT QImageIOPlugin : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QImageIOHandlerFactoryInterface:QFactoryInterface)
 public:
     explicit QImageIOPlugin(QObject *parent = 0);
     virtual ~QImageIOPlugin();
@@ -138,7 +131,6 @@ public:
     Q_DECLARE_FLAGS(Capabilities, Capability)
 
     virtual Capabilities capabilities(QIODevice *device, const QByteArray &format) const = 0;
-    virtual QStringList keys() const = 0;
     virtual QImageIOHandler *create(QIODevice *device, const QByteArray &format = QByteArray()) const = 0;
 };
 

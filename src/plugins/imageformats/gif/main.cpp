@@ -62,11 +62,6 @@ QGifPlugin::~QGifPlugin()
 {
 }
 
-QStringList QGifPlugin::keys() const
-{
-    return QStringList() << QLatin1String("gif");
-}
-
 QImageIOPlugin::Capabilities QGifPlugin::capabilities(QIODevice *device, const QByteArray &format) const
 {
     if (format == "gif" || (device && device->isReadable() && QGifHandler::canRead(device)))
