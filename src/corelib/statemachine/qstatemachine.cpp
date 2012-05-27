@@ -1657,7 +1657,7 @@ void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalInd
 
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": sending signal event ( sender =" << sender
-             << ", signal =" << sender->metaObject()->method(signalIndex).methodSignature().constData() << ')';
+             << ", signal =" << method.methodSignature().constData() << ')';
 #endif
     postInternalEvent(new QStateMachine::SignalEvent(sender, signalIndex, vargs));
     processEvents(DirectProcessing);
