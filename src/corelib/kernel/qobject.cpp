@@ -3220,7 +3220,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
             if (sigIndex < 0) { // search for compatible signals
                 const QMetaObject *smo = co->metaObject();
                 int slotlen = qstrlen(slot + len + 4) - 1;
-                for (int k = 0; k < co->metaObject()->methodCount(); ++k) {
+                for (int k = 0; k < smo->methodCount(); ++k) {
                     QMetaMethod method = smo->method(k);
                     if (method.methodType() != QMetaMethod::Signal)
                         continue;
