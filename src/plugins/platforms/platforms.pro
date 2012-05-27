@@ -16,6 +16,7 @@ qnx {
 
 contains(QT_CONFIG, eglfs) {
     SUBDIRS += eglfs
+    SUBDIRS += minimalegl
 }
 
 contains(QT_CONFIG, directfb) {
