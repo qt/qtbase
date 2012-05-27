@@ -53,10 +53,8 @@ QT_BEGIN_NAMESPACE
 QEglFSBackingStore::QEglFSBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
     , m_context(new QOpenGLContext)
-#ifdef EGLFS_BACKINGSTORE_USE_IMAGE
     , m_texture(0)
     , m_program(0)
-#endif
 {
     m_context->setFormat(window->requestedFormat());
     m_context->setScreen(window->screen());
@@ -70,11 +68,7 @@ QEglFSBackingStore::~QEglFSBackingStore()
 
 QPaintDevice *QEglFSBackingStore::paintDevice()
 {
-#ifdef EGLFS_BACKINGSTORE_USE_IMAGE
     return &m_image;
-#else
-    return m_device;
-#endif
 }
 
 void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
@@ -86,7 +80,6 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     qWarning("QEglBackingStore::flush %p", window);
 #endif
 
-#ifdef EGLFS_BACKINGSTORE_USE_IMAGE
     if (!m_program) {
         static const char *textureVertexProgram =
             "attribute highp vec2 vertexCoordEntry;\n"
@@ -184,7 +177,6 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisableVertexAttribArray(m_vertexCoordEntry);
     glDisableVertexAttribArray(m_textureCoordEntry);
-#endif
 
     // draw the cursor
     if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(window->screen()->handle()->cursor()))
@@ -205,26 +197,17 @@ void QEglFSBackingStore::beginPaint(const QRegion &rgn)
 {
     makeCurrent();
 
-#ifdef EGLFS_BACKINGSTORE_USE_IMAGE
     m_dirty = m_dirty | rgn;
-#else
-    Q_UNUSED(rgn);
-    m_device = new QOpenGLPaintDevice(window()->size());
-#endif
 }
 
 void QEglFSBackingStore::endPaint()
 {
-#ifndef EGLFS_BACKINGSTORE_USE_IMAGE
-    delete m_device;
-#endif
 }
 
 void QEglFSBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
     Q_UNUSED(staticContents);
 
-#ifdef EGLFS_BACKINGSTORE_USE_IMAGE
     m_image = QImage(size, QImage::Format_RGB32);
     makeCurrent();
     if (m_texture)
@@ -237,9 +220,6 @@ void QEglFSBackingStore::resize(const QSize &size, const QRegion &staticContents
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-#else
-    Q_UNUSED(size);
-#endif
 }
 
 QT_END_NAMESPACE
