@@ -108,17 +108,15 @@ QT_BEGIN_NAMESPACE
     \inmodule QtWidgets
 
     Writing an accessibility bridge plugin is achieved by subclassing
-    this base class, reimplementing the pure virtual functions keys()
-    and create(), and exporting the class with the
-    Q_EXPORT_PLUGIN2() macro.
+    this base class, reimplementing the pure virtual function create(),
+    and exporting the class with the Q_PLUGIN_METADATA() macro.
 
     \sa QAccessibleBridge, QAccessiblePlugin, {How to Create Qt Plugins}
 */
 
 /*!
     Constructs an accessibility bridge plugin with the given \a
-    parent. This is invoked automatically by the Q_EXPORT_PLUGIN2()
-    macro.
+    parent. This is invoked automatically by the plugin loader.
 */
 QAccessibleBridgePlugin::QAccessibleBridgePlugin(QObject *parent)
     : QObject(parent)
@@ -136,17 +134,6 @@ QAccessibleBridgePlugin::~QAccessibleBridgePlugin()
 {
 
 }
-
-/*!
-    \fn QStringList QAccessibleBridgePlugin::keys() const
-
-    Returns the list of keys this plugins supports.
-
-    These keys must be the names of the bridges that this
-    plugin provides.
-
-    \sa create()
-*/
 
 /*!
     \fn QAccessibleBridge *QAccessibleBridgePlugin::create(const QString &key)

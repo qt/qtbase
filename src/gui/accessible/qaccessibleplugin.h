@@ -55,25 +55,17 @@ QT_BEGIN_NAMESPACE
 class QStringList;
 class QAccessibleInterface;
 
-struct Q_GUI_EXPORT QAccessibleFactoryInterface : public QFactoryInterface
-{
-    virtual QAccessibleInterface* create(const QString &key, QObject *object) = 0;
-};
-
 #define QAccessibleFactoryInterface_iid "org.qt-project.Qt.QAccessibleFactoryInterface"
-Q_DECLARE_INTERFACE(QAccessibleFactoryInterface, QAccessibleFactoryInterface_iid)
 
 class QAccessiblePluginPrivate;
 
-class Q_GUI_EXPORT QAccessiblePlugin : public QObject, public QAccessibleFactoryInterface
+class Q_GUI_EXPORT QAccessiblePlugin : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QAccessibleFactoryInterface:QFactoryInterface)
 public:
     explicit QAccessiblePlugin(QObject *parent = 0);
     ~QAccessiblePlugin();
 
-    virtual QStringList keys() const = 0;
     virtual QAccessibleInterface *create(const QString &key, QObject *object) = 0;
 };
 

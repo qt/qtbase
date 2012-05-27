@@ -118,13 +118,13 @@ void QPlatformAccessibility::initialize()
     typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
     const PluginKeyMap keyMap = bridgeloader()->keyMap();
-    QAccessibleBridgeFactoryInterface *factory = 0;
+    QAccessibleBridgePlugin *factory = 0;
     int i = -1;
     const PluginKeyMapConstIterator cend = keyMap.constEnd();
     for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it) {
         if (it.key() != i) {
             i = it.key();
-            factory = qobject_cast<QAccessibleBridgeFactoryInterface*>(bridgeloader()->instance(i));
+            factory = qobject_cast<QAccessibleBridgePlugin*>(bridgeloader()->instance(i));
         }
         if (factory)
             if (QAccessibleBridge *bridge = factory->create(it.value()))

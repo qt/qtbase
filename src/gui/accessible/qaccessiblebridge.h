@@ -63,23 +63,15 @@ public:
     virtual void notifyAccessibilityUpdate(QAccessibleEvent *event) = 0;
 };
 
-struct Q_GUI_EXPORT QAccessibleBridgeFactoryInterface : public QFactoryInterface
-{
-    virtual QAccessibleBridge *create(const QString& name) = 0;
-};
-
 #define QAccessibleBridgeFactoryInterface_iid "org.qt-project.Qt.QAccessibleBridgeFactoryInterface"
-Q_DECLARE_INTERFACE(QAccessibleBridgeFactoryInterface, QAccessibleBridgeFactoryInterface_iid)
 
-class Q_GUI_EXPORT QAccessibleBridgePlugin : public QObject, public QAccessibleBridgeFactoryInterface
+class Q_GUI_EXPORT QAccessibleBridgePlugin : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QAccessibleBridgeFactoryInterface:QFactoryInterface)
 public:
     explicit QAccessibleBridgePlugin(QObject *parent = 0);
     ~QAccessibleBridgePlugin();
 
-    virtual QStringList keys() const = 0;
     virtual QAccessibleBridge *create(const QString &key) = 0;
 };
 

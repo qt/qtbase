@@ -582,7 +582,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
                 return iface;
         }
 #ifndef QT_NO_LIBRARY
-        if (QAccessibleInterface * iface = qLoadPlugin1<QAccessibleInterface, QAccessibleFactoryInterface>(loader(), cn, object))
+        if (QAccessibleInterface * iface = qLoadPlugin1<QAccessibleInterface, QAccessiblePlugin>(loader(), cn, object))
             return iface;
 #endif
         mo = mo->superClass();

@@ -67,94 +67,11 @@ class AccessibleFactory : public QAccessiblePlugin
 public:
     AccessibleFactory();
 
-    QStringList keys() const;
     QAccessibleInterface *create(const QString &classname, QObject *object);
 };
 
 AccessibleFactory::AccessibleFactory()
 {
-}
-
-QStringList AccessibleFactory::keys() const
-{
-    QStringList list;
-#ifndef QT_NO_LINEEDIT
-    list << QLatin1String("QLineEdit");
-#endif
-#ifndef QT_NO_COMBOBOX
-    list << QLatin1String("QComboBox");
-#endif
-#ifndef QT_NO_SPINBOX
-    list << QLatin1String("QAbstractSpinBox");
-    list << QLatin1String("QSpinBox");
-    list << QLatin1String("QDoubleSpinBox");
-#endif
-#ifndef QT_NO_SCROLLBAR
-    list << QLatin1String("QScrollBar");
-#endif
-#ifndef QT_NO_SLIDER
-    list << QLatin1String("QSlider");
-#endif
-    list << QLatin1String("QAbstractSlider");
-#ifndef QT_NO_TOOLBUTTON
-    list << QLatin1String("QToolButton");
-#endif
-    list << QLatin1String("QCheckBox");
-    list << QLatin1String("QRadioButton");
-    list << QLatin1String("QPushButton");
-    list << QLatin1String("QAbstractButton");
-    list << QLatin1String("QDialog");
-    list << QLatin1String("QMessageBox");
-    list << QLatin1String("QMainWindow");
-    list << QLatin1String("QLabel");
-    list << QLatin1String("QLCDNumber");
-    list << QLatin1String("QGroupBox");
-    list << QLatin1String("QStatusBar");
-    list << QLatin1String("QProgressBar");
-    list << QLatin1String("QMenuBar");
-    list << QLatin1String("QMenu");
-    list << QLatin1String("QHeaderView");
-    list << QLatin1String("QTabBar");
-    list << QLatin1String("QToolBar");
-    list << QLatin1String("QSizeGrip");
-    list << QLatin1String("QAbstractItemView");
-    list << QLatin1String("QWidget");
-#ifndef QT_NO_SPLITTER
-    list << QLatin1String("QSplitter");
-    list << QLatin1String("QSplitterHandle");
-#endif
-#ifndef QT_NO_TEXTEDIT
-    list << QLatin1String("QTextEdit");
-#endif
-    list << QLatin1String("QTipLabel");
-    list << QLatin1String("QFrame");
-    list << QLatin1String("QStackedWidget");
-    list << QLatin1String("QToolBox");
-    list << QLatin1String("QMdiArea");
-    list << QLatin1String("QMdiSubWindow");
-    list << QLatin1String("QDialogButtonBox");
-#ifndef QT_NO_DIAL
-    list << QLatin1String("QDial");
-#endif
-#ifndef QT_NO_RUBBERBAND
-    list << QLatin1String("QRubberBand");
-#endif
-#ifndef QT_NO_TEXTBROWSER
-    list << QLatin1String("QTextBrowser");
-#endif
-#ifndef QT_NO_SCROLLAREA
-    list << QLatin1String("QAbstractScrollArea");
-    list << QLatin1String("QScrollArea");
-#endif
-#ifndef QT_NO_CALENDARWIDGET
-    list << QLatin1String("QCalendarWidget");
-#endif
-
-#ifndef QT_NO_DOCKWIDGET
-    list << QLatin1String("QDockWidget");
-#endif
-    list << QLatin1String("QAccessibleWidget");
-    return list;
 }
 
 QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObject *object)

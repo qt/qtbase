@@ -58,16 +58,15 @@ QT_BEGIN_NAMESPACE
     \ingroup accessibility
 
     Writing an accessibility plugin is achieved by subclassing this
-    base class, reimplementing the pure virtual functions keys() and
-    create(), and exporting the class with the Q_EXPORT_PLUGIN2()
-    macro.
+    base class, reimplementing the pure virtual function create(),
+    and exporting the class with the Q_PLUGIN_METADATA() macro.
 
     \sa QAccessibleBridgePlugin, {How to Create Qt Plugins}
 */
 
 /*!
     Constructs an accessibility plugin with the given \a parent. This
-    is invoked automatically by the Q_EXPORT_PLUGIN2() macro.
+    is invoked automatically by the plugin loader.
 */
 QAccessiblePlugin::QAccessiblePlugin(QObject *parent)
     : QObject(parent)
@@ -83,17 +82,6 @@ QAccessiblePlugin::QAccessiblePlugin(QObject *parent)
 QAccessiblePlugin::~QAccessiblePlugin()
 {
 }
-
-/*!
-    \fn QStringList QAccessiblePlugin::keys() const
-
-    Returns the list of keys this plugin supports.
-
-    These keys must be the class names that this plugin provides
-    an accessibility implementation for.
-
-    \sa create()
-*/
 
 /*!
     \fn QAccessibleInterface *QAccessiblePlugin::create(const QString &key, QObject *object)
