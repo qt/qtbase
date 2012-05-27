@@ -59,19 +59,18 @@ QT_BEGIN_NAMESPACE
     transparently by applications.
 
     Writing an picture format plugin is achieved by subclassing this
-    base class, reimplementing the pure virtual functions keys(),
+    base class, reimplementing the pure virtual functions
     loadPicture(), savePicture(), and installIOHandler(), and
-    exporting the class with the Q_EXPORT_PLUGIN2() macro.
+    exporting the class with the Q_PLUGIN_METADATA() macro.
+
+    The json file containing the metadata should contain one entry
+    with the list of picture formats supported by the plugin:
+
+    \code
+    { "Keys": [ "mypictureformat" ] }
+    \endcode
 
     \sa {How to Create Qt Plugins}
-*/
-
-/*!
-    \fn QStringList QPictureFormatPlugin::keys() const
-
-    Returns the list of picture formats this plugin supports.
-
-    \sa installIOHandler()
 */
 
 /*!

@@ -1411,7 +1411,7 @@ void qt_init_picture_plugins()
     const PluginKeyMap keyMap = loader.keyMap();
     const PluginKeyMapConstIterator cend = keyMap.constEnd();
     for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it) {
-        if (QPictureFormatInterface *format = qobject_cast<QPictureFormatInterface*>(loader.instance(it.key())))
+        if (QPictureFormatPlugin *format = qobject_cast<QPictureFormatPlugin*>(loader.instance(it.key())))
             format->installIOHandler(it.value());
     }
 #endif
