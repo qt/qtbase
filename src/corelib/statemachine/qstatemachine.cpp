@@ -2299,16 +2299,10 @@ int QSignalEventGenerator::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 
 void QSignalEventGenerator::execute(void **_a)
 {
-// ### in Qt 4.6 we can use QObject::senderSignalIndex()
-    QObjectPrivate *d = static_cast<QObjectPrivate *>(d_ptr.data());
-    int signalIndex = -1;
-    QObject *sender = this->sender();
-    if (sender && d->currentSender)
-        signalIndex = d->currentSender->signal;
-
+    int signalIndex = senderSignalIndex();
     Q_ASSERT(signalIndex != -1);
     QStateMachine *machine = qobject_cast<QStateMachine*>(parent());
-    QStateMachinePrivate::get(machine)->handleTransitionSignal(sender, signalIndex, _a);
+    QStateMachinePrivate::get(machine)->handleTransitionSignal(sender(), signalIndex, _a);
 }
 
 QSignalEventGenerator::QSignalEventGenerator(QStateMachine *parent)
