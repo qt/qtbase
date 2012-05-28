@@ -4528,7 +4528,8 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
 
 void tst_QNetworkReply::ioPostToHttpUploadProgress()
 {
-    QFile sourceFile(testDataDir + "/bigfile");
+    //test file must be larger than OS socket buffers (~830kB on MacOS 10.6)
+    QFile sourceFile(testDataDir + "/image1.jpg");
     QVERIFY(sourceFile.open(QIODevice::ReadOnly));
 
     // emulate a minimal http server
@@ -4553,6 +4554,7 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     incomingSocket->setReadBufferSize(1*1024);
     QTestEventLoop::instance().enterLoop(5);
     // some progress should have been made
+    QVERIFY(!spy.isEmpty());
     QList<QVariant> args = spy.last();
     QVERIFY(!args.isEmpty());
     QVERIFY(args.at(0).toLongLong() > 0);
@@ -4563,6 +4565,7 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     incomingSocket->setReadBufferSize(0);
     QTestEventLoop::instance().enterLoop(10);
     // progress should be finished
+    QVERIFY(!spy.isEmpty());
     QList<QVariant> args3 = spy.last();
     QVERIFY(!args3.isEmpty());
     // More progress than before

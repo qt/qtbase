@@ -888,9 +888,9 @@ void QNetworkReplyHttpImplPrivate::postRequest()
     delegate->moveToThread(thread);
     // This call automatically moves the uploadDevice too for the asynchronous case.
 
-    // Start timer for progress notifications
+    // Prepare timers for progress notifications
     downloadProgressSignalChoke.start();
-
+    uploadProgressSignalChoke.invalidate();
 
     // Send an signal to the delegate so it starts working in the other thread
     if (synchronous) {
@@ -1802,6 +1802,17 @@ void QNetworkReplyHttpImplPrivate::emitReplyUploadProgress(qint64 bytesSent, qin
     Q_Q(QNetworkReplyHttpImpl);
     if (isFinished)
         return;
+
+    //choke signal emissions, except the first and last signals which are unconditional
+    if (uploadProgressSignalChoke.isValid()) {
+        if (bytesSent != bytesTotal && uploadProgressSignalChoke.elapsed() < progressSignalInterval) {
+            return;
+        }
+        uploadProgressSignalChoke.restart();
+    } else {
+        uploadProgressSignalChoke.start();
+    }
+
     emit q->uploadProgress(bytesSent, bytesTotal);
 }
 

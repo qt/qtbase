@@ -144,8 +144,9 @@ void QNetworkReplyImplPrivate::_q_startOperation()
     }
 #endif
 
-    // Start timer for progress notifications
+    // Prepare timer for progress notifications
     downloadProgressSignalChoke.start();
+    uploadProgressSignalChoke.invalidate();
 
     if (backend && backend->isSynchronous()) {
         state = Finished;
@@ -550,6 +551,17 @@ void QNetworkReplyImplPrivate::emitUploadProgress(qint64 bytesSent, qint64 bytes
 {
     Q_Q(QNetworkReplyImpl);
     bytesUploaded = bytesSent;
+
+    //choke signal emissions, except the first and last signals which are unconditional
+    if (uploadProgressSignalChoke.isValid()) {
+        if (bytesSent != bytesTotal && uploadProgressSignalChoke.elapsed() < progressSignalInterval) {
+            return;
+        }
+        uploadProgressSignalChoke.restart();
+    } else {
+        uploadProgressSignalChoke.start();
+    }
+
     pauseNotificationHandling();
     emit q->uploadProgress(bytesSent, bytesTotal);
     resumeNotificationHandling();

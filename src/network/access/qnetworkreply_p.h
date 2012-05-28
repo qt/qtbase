@@ -71,6 +71,7 @@ public:
     QPointer<QNetworkAccessManager> manager;
     qint64 readBufferMaxSize;
     QElapsedTimer downloadProgressSignalChoke;
+    QElapsedTimer uploadProgressSignalChoke;
     const static int progressSignalInterval;
     QNetworkAccessManager::Operation operation;
     QNetworkReply::NetworkError errorCode;
