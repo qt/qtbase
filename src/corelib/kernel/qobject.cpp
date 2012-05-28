@@ -2134,17 +2134,7 @@ QObject *QObject::sender() const
 int QObject::senderSignalIndex() const
 {
     Q_D(const QObject);
-
-    QMutexLocker locker(signalSlotLock(this));
-    if (!d->currentSender)
-        return -1;
-
-    for (QObjectPrivate::Connection *c = d->senders; c; c = c->next) {
-        if (c->sender == d->currentSender->sender)
-            return d->currentSender->signal;
-    }
-
-    return -1;
+    return d->senderSignalIndex();
 }
 
 /*!
@@ -3468,6 +3458,24 @@ void QMetaObject::activate(QObject *sender, int signal_index, void **argv)
     while (mo->methodOffset() > signal_index)
         mo = mo->superClass();
     activate(sender, mo, signal_index - mo->methodOffset(), argv);
+}
+
+/*! \internal
+    Implementation of QObject::senderSignalIndex()
+*/
+int QObjectPrivate::senderSignalIndex() const
+{
+    Q_Q(const QObject);
+    QMutexLocker locker(signalSlotLock(q));
+    if (!currentSender)
+        return -1;
+
+    for (QObjectPrivate::Connection *c = senders; c; c = c->next) {
+        if (c->sender == currentSender->sender)
+            return currentSender->signal;
+    }
+
+    return -1;
 }
 
 /*! \internal
