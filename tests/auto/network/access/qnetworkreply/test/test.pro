@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 QT -= gui
 SOURCES  += ../tst_qnetworkreply.cpp
 TARGET = ../tst_qnetworkreply

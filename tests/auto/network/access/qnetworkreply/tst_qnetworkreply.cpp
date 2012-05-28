@@ -1125,8 +1125,8 @@ tst_QNetworkReply::tst_QNetworkReply()
 #endif
     qRegisterMetaType<QNetworkReply::NetworkError>();
 
-    testFileName = QDir::currentPath() + "/testfile";
     uniqueExtension = createUniqueExtension();
+    testFileName = QDir::currentPath() + "/testfile" + uniqueExtension;
     cookieJar = new MyCookieJar;
     manager.setCookieJar(cookieJar);
 
@@ -1351,7 +1351,7 @@ void tst_QNetworkReply::initTestCase()
 
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 #if !defined Q_OS_WIN
-    wronlyFileName = testDataDir + "/write-only";
+    wronlyFileName = testDataDir + "/write-only" + uniqueExtension;
     QFile wr(wronlyFileName);
     QVERIFY(wr.open(QIODevice::WriteOnly | QIODevice::Truncate));
     wr.setPermissions(QFile::WriteOwner | QFile::WriteUser);
