@@ -889,7 +889,7 @@ void tst_QFileSystemModel::sort()
 
 void tst_QFileSystemModel::mkdir()
 {
-    QString tmp = QDir::tempPath();
+    QString tmp = flatDirTestPath;
     QString newFolderPath = QDir::toNativeSeparators(tmp + '/' + "NewFoldermkdirtest4");
     QModelIndex tmpDir = model->index(tmp);
     QVERIFY(tmpDir.isValid());
