@@ -426,7 +426,6 @@ void qt_init(QApplicationPrivate *priv, int type)
     Q_UNUSED(priv);
     Q_UNUSED(type);
 
-    qApp->setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
     QColormap::initialize();
 
     if (const QPalette *toolTipPalette = QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::ToolTipPalette))

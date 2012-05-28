@@ -146,10 +146,12 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     setWindowModified_helper();
     setWinId(win->winId());
 
-//    first check children. and create them if necessary
-//    q_createNativeChildrenAndSetParent(q->windowHandle(),q);
+    // Check children and create windows for them if necessary
+    q_createNativeChildrenAndSetParent(q->windowHandle(), q);
 
-//    qDebug() << "create_sys" << q << q->internalWinId();
+    // If widget is already shown, set window visible, too
+    if (q->isVisible())
+        win->setVisible(true);
 }
 
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)

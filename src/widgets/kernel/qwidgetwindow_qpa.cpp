@@ -46,6 +46,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <QtGui/qaccessible.h>
 #endif
+#include <private/qwidgetbackingstore_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -458,8 +459,14 @@ void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
 {
     if (isExposed()) {
         m_widget->setAttribute(Qt::WA_Mapped);
-        if (!event->region().isNull())
+        if (!event->region().isNull()) {
+            // Exposed native widgets need to be marked dirty to get them repainted correctly.
+            if (m_widget->internalWinId() && !m_widget->isWindow()) {
+                if (QWidgetBackingStore *bs = m_widget->d_func()->maybeBackingStore())
+                    bs->markDirty(event->region(), m_widget);
+            }
             m_widget->d_func()->syncBackingStore(event->region());
+        }
     } else {
         m_widget->setAttribute(Qt::WA_Mapped, false);
     }
