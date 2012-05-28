@@ -263,6 +263,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             if (m_widget->windowType() != Qt::Popup)
                 qt_button_down = 0;
             qt_replay_popup_mouse_event = false;
+#ifndef QT_NO_CONTEXTMENU
         } else if (event->type() == QEvent::MouseButtonPress
                    && event->button() == Qt::RightButton
                    && (openPopupCount == oldOpenPopupCount)) {
@@ -273,6 +274,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                 popupEvent = popupChild;
             QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPos(), event->modifiers());
             QApplication::sendSpontaneousEvent(popupEvent, &e);
+#endif
         }
 
         if (releaseAfter) {
@@ -310,10 +312,12 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
     QApplicationPrivate::sendMouseEvent(receiver, &translated, widget, m_widget, &qt_button_down,
                                         qt_last_mouse_receiver);
 
+#ifndef QT_NO_CONTEXTMENU
     if (event->type() == QEvent::MouseButtonPress && event->button() == Qt::RightButton) {
         QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPos(), event->modifiers());
         QGuiApplication::sendSpontaneousEvent(receiver, &e);
     }
+#endif
 }
 
 void QWidgetWindow::handleTouchEvent(QTouchEvent *event)

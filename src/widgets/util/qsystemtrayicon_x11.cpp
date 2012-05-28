@@ -213,8 +213,10 @@ QRect QSystemTrayIconSys::globalGeometry() const
 void QSystemTrayIconSys::mousePressEvent(QMouseEvent *ev)
 {
     QPoint globalPos = ev->globalPos();
+#ifndef QT_NO_CONTEXTMENU
     if (ev->button() == Qt::RightButton && q->contextMenu())
         q->contextMenu()->popup(globalPos);
+#endif
 
     if (QBalloonTip::isBalloonVisible()) {
         emit q->messageClicked();
