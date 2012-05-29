@@ -185,7 +185,7 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     delete iface;
 
     if (!window) {
-        window = QGuiApplication::activeWindow();
+        window = QGuiApplication::focusWindow();
         if (!window)
             return;
     }
