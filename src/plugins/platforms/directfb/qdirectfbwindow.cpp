@@ -79,7 +79,6 @@ QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
     description.options = DFBWindowOptions(DWOP_ALPHACHANNEL);
 #endif
     description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER|DWCAPS_ALPHACHANNEL);
-    description.surface_caps = DSCAPS_PREMULTIPLIED;
 
     DFBResult result = layer->CreateWindow(layer, &description, m_dfbWindow.outPtr());
     if (result != DFB_OK) {
