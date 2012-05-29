@@ -1,4 +1,5 @@
 CONFIG += testcase
+testcase.timeout = 250 # this test is slow
 TARGET = tst_qgraphicsview
 
 QT += widgets widgets-private testlib

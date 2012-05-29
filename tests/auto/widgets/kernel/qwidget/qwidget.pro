@@ -1,4 +1,5 @@
 CONFIG += testcase
+testcase.timeout = 600 # this test is slow
 TARGET = tst_qwidget
 
 QT += widgets core-private gui-private widgets-private testlib

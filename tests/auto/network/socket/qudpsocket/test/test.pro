@@ -1,4 +1,5 @@
 CONFIG += testcase
+testcase.timeout = 800 # this test is slow
 SOURCES  += ../tst_qudpsocket.cpp
 QT = core network testlib
 
