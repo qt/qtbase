@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qmake
 HEADERS += testcompiler.h
 SOURCES += tst_qmake.cpp testcompiler.cpp
