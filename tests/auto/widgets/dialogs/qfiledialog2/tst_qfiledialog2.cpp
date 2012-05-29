@@ -136,9 +136,12 @@ private slots:
 
 private:
     QByteArray userSettings;
+    QTemporaryDir tempDir;
 };
 
 tst_QFileDialog2::tst_QFileDialog2()
+    : userSettings()
+    , tempDir(QDir::tempPath() + "/tst_qfiledialog2.XXXXXX")
 {
 #if defined(Q_OS_WINCE)
     qApp->setAutoMaximizeThreshold(-1);
@@ -151,6 +154,8 @@ tst_QFileDialog2::~tst_QFileDialog2()
 
 void tst_QFileDialog2::init()
 {
+    QVERIFY(tempDir.isValid());
+
     // Save the developers settings so they don't get mad when their sidebar folders are gone.
     QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
     settings.beginGroup(QLatin1String("Qt"));
@@ -212,7 +217,7 @@ struct FriendlyQFileDialog : public QNonNativeFileDialog
 void tst_QFileDialog2::deleteDirAndFiles()
 {
 #if defined QT_BUILD_INTERNAL
-    QString tempPath = QDir::tempPath() + '/' + "QFileDialogTestDir4FullDelete";
+    QString tempPath = tempDir.path() + "/QFileDialogTestDir4FullDelete";
     QDir dir;
     QVERIFY(dir.mkpath(tempPath + "/foo"));
     QVERIFY(dir.mkpath(tempPath + "/foo/B"));
@@ -332,25 +337,25 @@ void tst_QFileDialog2::task180459_lastDirectory_data()
             << QDir::homePath()  << true
             << QDir::homePath() + QDir::separator() + "foo"  ;
     QTest::newRow("no path") << ""
-            << QDir::tempPath() << false << QString();
+            << tempDir.path() << false << QString();
     QTest::newRow("file") << "foo"
             << QDir::currentPath() << true
             << QDir::currentPath() + QDir::separator() + "foo"  ;
     QTest::newRow("path") << QDir::homePath()
             << QDir::homePath() << false << QString();
     QTest::newRow("path not existing") << "/usr/bin/foo/bar/foo/foo.txt"
-            << QDir::tempPath() << true
-            << QDir::tempPath() +  QDir::separator() + "foo.txt";
+            << tempDir.path() << true
+            << tempDir.path() + QDir::separator() + "foo.txt";
 
 }
 
 void tst_QFileDialog2::task180459_lastDirectory()
 {
     //first visit the temp directory and close the dialog
-    QNonNativeFileDialog *dlg = new QNonNativeFileDialog(0, "", QDir::tempPath());
+    QNonNativeFileDialog *dlg = new QNonNativeFileDialog(0, "", tempDir.path());
     QFileSystemModel *model = qFindChild<QFileSystemModel*>(dlg, "qt_filesystem_model");
     QVERIFY(model);
-    QCOMPARE(model->index(QDir::tempPath()), model->index(dlg->directory().absolutePath()));
+    QCOMPARE(model->index(tempDir.path()), model->index(dlg->directory().absolutePath()));
     delete dlg;
 
     QFETCH(QString, path);
@@ -474,7 +479,7 @@ void tst_QFileDialog2::task227304_proxyOnFileDialog()
     dialog->close();
     fd.close();
 
-    QNonNativeFileDialog fd2(0, "I should not crash with a proxy", QDir::tempPath(), 0);
+    QNonNativeFileDialog fd2(0, "I should not crash with a proxy", tempDir.path(), 0);
     QSortFilterProxyModel *pm = new QSortFilterProxyModel;
     fd2.setProxyModel(pm);
     fd2.show();
@@ -984,7 +989,7 @@ void tst_QFileDialog2::task251341_sideBarRemoveEntries()
 
 void tst_QFileDialog2::task254490_selectFileMultipleTimes()
 {
-    QString tempPath = QDir::tempPath();
+    QString tempPath = tempDir.path();
     QTemporaryFile *t;
     t = new QTemporaryFile;
     t->open();
@@ -1017,11 +1022,11 @@ void tst_QFileDialog2::task254490_selectFileMultipleTimes()
 void tst_QFileDialog2::task257579_sideBarWithNonCleanUrls()
 {
 #if defined QT_BUILD_INTERNAL
-    QDir tempDir = QDir::temp();
+    QDir dir(tempDir.path());
     QLatin1String dirname("autotest_task257579");
-    tempDir.rmdir(dirname); //makes sure it doesn't exist any more
-    QVERIFY(tempDir.mkdir(dirname));
-    QString url = QString::fromLatin1("%1/%2/..").arg(tempDir.absolutePath()).arg(dirname);
+    dir.rmdir(dirname); //makes sure it doesn't exist any more
+    QVERIFY(dir.mkdir(dirname));
+    QString url = QString::fromLatin1("%1/%2/..").arg(dir.absolutePath()).arg(dirname);
     QNonNativeFileDialog fd;
     fd.setSidebarUrls(QList<QUrl>() << QUrl::fromLocalFile(url));
     QSidebar *sidebar = qFindChild<QSidebar*>(&fd, "sidebar");
@@ -1030,13 +1035,13 @@ void tst_QFileDialog2::task257579_sideBarWithNonCleanUrls()
     QCOMPARE(sidebar->urls().first().toLocalFile(), QDir::cleanPath(url));
 
 #ifdef Q_OS_WIN
-    QCOMPARE(sidebar->model()->index(0,0).data().toString().toLower(), tempDir.dirName().toLower());
+    QCOMPARE(sidebar->model()->index(0,0).data().toString().toLower(), dir.dirName().toLower());
 #else
-    QCOMPARE(sidebar->model()->index(0,0).data().toString(), tempDir.dirName());
+    QCOMPARE(sidebar->model()->index(0,0).data().toString(), dir.dirName());
 #endif
 
     //all tests are finished, we can remove the temporary dir
-    QVERIFY(tempDir.rmdir(dirname));
+    QVERIFY(dir.rmdir(dirname));
 #endif
 }
 
@@ -1086,9 +1091,9 @@ void tst_QFileDialog2::task259105_filtersCornerCases()
 
 void tst_QFileDialog2::QTBUG4419_lineEditSelectAll()
 {
-    QString tempPath = QDir::tempPath();
+    QString tempPath = tempDir.path();
     QTemporaryFile *t;
-    t = new QTemporaryFile;
+    t = new QTemporaryFile(tempPath + "/tst_qfiledialog2_lineEditSelectAll.XXXXXX");
     t->open();
     QNonNativeFileDialog fd(0, "TestFileDialog", t->fileName());
 
@@ -1112,7 +1117,7 @@ void tst_QFileDialog2::QTBUG4419_lineEditSelectAll()
 
 void tst_QFileDialog2::QTBUG6558_showDirsOnly()
 {
-    const QString tempPath = QDir::tempPath();
+    const QString tempPath = tempDir.path();
     QDir dirTemp(tempPath);
     const QString tempName = QLatin1String("showDirsOnly.") + QString::number(qrand());
     dirTemp.mkdir(tempName);
