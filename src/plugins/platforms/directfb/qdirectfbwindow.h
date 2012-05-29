@@ -67,6 +67,7 @@ public:
     void lower();
     WId winId() const;
 
+    virtual void createDirectFBWindow();
     IDirectFBWindow *dfbWindow() const;
 
     // helper to get access to DirectFB types

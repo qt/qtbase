@@ -53,41 +53,41 @@ QT_BEGIN_NAMESPACE
 QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
     : QPlatformWindow(tlw), m_inputHandler(inputhandler)
 {
+}
+
+void QDirectFbWindow::createDirectFBWindow()
+{
+    Q_ASSERT(!m_dfbWindow.data());
+
     DFBDisplayLayerConfig layerConfig;
     IDirectFBDisplayLayer *layer;
 
-    layer = toDfbScreen(tlw)->dfbLayer();
-    toDfbScreen(tlw)->dfbLayer()->GetConfiguration(layer, &layerConfig);
+    layer = toDfbScreen(window())->dfbLayer();
+    layer->GetConfiguration(layer, &layerConfig);
 
     DFBWindowDescription description;
     memset(&description,0,sizeof(DFBWindowDescription));
     description.flags = DFBWindowDescriptionFlags(DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_POSX|DWDESC_POSY|DWDESC_SURFACE_CAPS
-#if DIRECTFB_MINOR_VERSION >= 1
                                                   |DWDESC_OPTIONS
-#endif
                                                   |DWDESC_CAPS);
-    description.width = qMax(1, tlw->width());
-    description.height = qMax(1, tlw->height());
-    description.posx = tlw->x();
-    description.posy = tlw->y();
+    description.width = qMax(1, window()->width());
+    description.height = qMax(1, window()->height());
+    description.posx = window()->x();
+    description.posy = window()->y();
 
     if (layerConfig.surface_caps & DSCAPS_PREMULTIPLIED)
         description.surface_caps = DSCAPS_PREMULTIPLIED;
     description.pixelformat = layerConfig.pixelformat;
 
-#if DIRECTFB_MINOR_VERSION >= 1
     description.options = DFBWindowOptions(DWOP_ALPHACHANNEL);
-#endif
     description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER|DWCAPS_ALPHACHANNEL);
 
     DFBResult result = layer->CreateWindow(layer, &description, m_dfbWindow.outPtr());
-    if (result != DFB_OK) {
+    if (result != DFB_OK)
         DirectFBError("QDirectFbWindow: failed to create window", result);
-    }
 
     m_dfbWindow->SetOpacity(m_dfbWindow.data(), 0xff);
-
-    m_inputHandler->addWindow(m_dfbWindow.data(), tlw);
+    m_inputHandler->addWindow(m_dfbWindow.data(), window());
 }
 
 QDirectFbWindow::~QDirectFbWindow()

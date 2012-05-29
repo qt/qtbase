@@ -124,7 +124,9 @@ QPlatformPixmap *QDirectFbIntegration::createPlatformPixmap(QPlatformPixmap::Pix
 
 QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWindow *window) const
 {
-    return new QDirectFbWindow(window,m_input.data());
+    QDirectFbWindow *dfbWindow = new QDirectFbWindow(window, m_input.data());
+    dfbWindow->createDirectFBWindow();
+    return dfbWindow;
 }
 
 QAbstractEventDispatcher *QDirectFbIntegration::guiThreadEventDispatcher() const

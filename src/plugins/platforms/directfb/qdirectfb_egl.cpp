@@ -203,7 +203,9 @@ EGLSurface QDirectFbEGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *s
 
 QPlatformWindow *QDirectFbIntegrationEGL::createPlatformWindow(QWindow *window) const
 {
-    return new QDirectFbWindowEGL(window, m_input.data());
+    QDirectFbWindow *dfbWindow = new QDirectFbWindowEGL(window, m_input.data());
+    dfbWindow->createDirectFBWindow();
+    return dfbWindow;
 }
 
 QPlatformOpenGLContext *QDirectFbIntegrationEGL::createPlatformOpenGLContext(QOpenGLContext *context) const
