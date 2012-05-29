@@ -802,6 +802,7 @@ CFG_ICU=auto
 CFG_FORCE_ASSERTS=no
 CFG_PCRE=auto
 QPA_PLATFORM_GUARD=yes
+CFG_CXX11=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -918,7 +919,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-directfb|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-pkg-config|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-directfb|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-pkg-config|-force-pkg-config|-icu|-force-asserts|-testcocoon|-c++11)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1986,6 +1987,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    c++11)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_CXX11="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -2871,7 +2879,7 @@ if [ "$OPT_HELP" = "yes" ]; then
 Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir <dir>]
         [-docdir <dir>] [-headerdir <dir>] [-plugindir <dir> ] [-importdir <dir>] [-datadir <dir>]
         [-translationdir <dir>] [-sysconfdir <dir>] [-examplesdir <dir>] [-testsdir <dir>]
-        [-release] [-debug] [-debug-and-release]
+        [-release] [-debug] [-debug-and-release] [-c++11] [-no-c++11]
         [-developer-build] [-shared] [-static] [-no-fast] [-fast] [-no-largefile]
         [-largefile] [-no-accessibility] [-accessibility] [-no-sql-<driver>] [-sql-<driver>]
         [-plugin-sql-<driver>] [-system-sqlite]
@@ -2961,6 +2969,8 @@ Configure options:
     -opensource ........ Compile and link the Open-Source Edition of Qt.
     -commercial ........ Compile and link the Commercial Edition of Qt.
 
+    -no-c++11 .......... Do not compile Qt with C++11 support enabled.
+ +  -c++11 ............. Compile Qt with C++11 support enabled.
 
  *  -shared ............ Create and use shared Qt libraries.
     -static ............ Create and use static Qt libraries.
@@ -3727,6 +3737,21 @@ fi
 #-------------------------------------------------------------------------------
 # functionality tests
 #-------------------------------------------------------------------------------
+
+# Detect C++11 support
+if [ "$CFG_CXX11" != "no" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/c++11 "C++11" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        CFG_CXX11="yes"
+    elif [ "$CFG_CXX11" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+        echo "C++11 support cannot be enabled due to functionality tests!"
+        echo " Turn on verbose messaging (-v) to $0 to see the final report."
+        echo " If you believe this message is in error you may use the continue"
+        echo " switch (-continue) to $0 to continue."
+        exit 101
+    else
+        CFG_CXX11="no"
+    fi
+fi
 
 # detect availability of float math.h functions
 if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/floatmath "floatmath" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
@@ -5006,6 +5031,8 @@ fi
 # ask for all that hasn't been auto-detected or specified in the arguments
 #-------------------------------------------------------------------------------
 
+[ "$CFG_CXX11" = "yes" ] && QT_CONFIG="$QT_CONFIG c++11"
+
 # ### Vestige
 if [ "$CFG_PHONON_BACKEND" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG phonon-backend"
@@ -5938,6 +5965,7 @@ if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
 else
    echo "Debug .................. $CFG_DEBUG"
 fi
+echo "C++11 support .......... $CFG_CXX11"
 if [ -n "$PKG_CONFIG" ]; then
     echo "pkg-config ............. yes"
 else

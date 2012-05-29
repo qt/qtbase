@@ -287,6 +287,12 @@ General Improvements
   more closely match the directory structure of the code under test.
   Integration tests have been moved to tests/auto/integrationtests.
 
+- Qt is compiled with C++11 support enabled by default, provided the compiler
+  supports C++11. Qmake based projects can enable C++11 support explicitly
+  using 'CONFIG+=c++11' in their .pro files. To enable it conditionally, use
+  'contains(QT_CONFIG,c++11):CONFIG+=c++11'. This will enable C++11 support
+  only if Qt was built with C++11 support.
+
 Third party components
 ----------------------
 
