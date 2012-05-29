@@ -200,7 +200,12 @@ QWindow::~QWindow()
     Specifies whether the window is meant for raster rendering with
     QBackingStore, or OpenGL rendering with QOpenGLContext.
 
-    \sa QBackingStore, QOpenGLContext
+    The surfaceType will be used when the native surface is created
+    in the create() function. Calling this function after the native
+    surface has been created requires calling destroy() and create()
+    to release the old native surface and create a new one.
+
+    \sa QBackingStore, QOpenGLContext, create(), destroy()
 */
 void QWindow::setSurfaceType(SurfaceType surfaceType)
 {
@@ -415,6 +420,12 @@ void QWindow::setWindowModality(Qt::WindowModality modality)
 
     The format determines properties such as color depth, alpha,
     depth and stencil buffer size, etc.
+
+    The surface format will be resolved in the create() function. Calling
+    this function after create() has been called will not re-resolve the
+    surface format of the native surface.
+
+    \sa create(), destroy()
 */
 void QWindow::setFormat(const QSurfaceFormat &format)
 {
