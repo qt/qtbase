@@ -46,13 +46,7 @@
 
 QT_BEGIN_HEADER
 
-namespace std {
-    struct bidirectional_iterator_tag;
-    struct random_access_iterator_tag;
-}
-
 QT_BEGIN_NAMESPACE
-
 
 #define Q_DECLARE_SEQUENTIAL_ITERATOR(C) \
 \
