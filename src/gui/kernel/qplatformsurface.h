@@ -66,12 +66,12 @@ public:
     virtual ~QPlatformSurface();
     virtual QSurfaceFormat format() const = 0;
 
-    QSurface::SurfaceClass surfaceClass() const;
+    QSurface *surface() const;
 
 private:
-    explicit QPlatformSurface(QSurface::SurfaceClass type);
+    explicit QPlatformSurface(QSurface *surface);
 
-    QSurface::SurfaceClass m_type;
+    QSurface *m_surface;
 
     friend class QPlatformWindow;
 };

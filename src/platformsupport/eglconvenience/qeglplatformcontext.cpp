@@ -71,6 +71,8 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
 
 bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
 {
+    Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::makeCurrent: %p\n",this);
 #endif

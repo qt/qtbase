@@ -57,12 +57,12 @@ QPlatformSurface::~QPlatformSurface()
 
 }
 
-QSurface::SurfaceClass QPlatformSurface::surfaceClass() const
+QSurface *QPlatformSurface::surface() const
 {
-    return m_type;
+    return m_surface;
 }
 
-QPlatformSurface::QPlatformSurface(QSurface::SurfaceClass type) : m_type(type)
+QPlatformSurface::QPlatformSurface(QSurface *surface) : m_surface(surface)
 {
 }
 

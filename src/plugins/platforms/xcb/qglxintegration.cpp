@@ -103,7 +103,7 @@ QGLXContext::~QGLXContext()
 
 bool QGLXContext::makeCurrent(QPlatformSurface *surface)
 {
-    Q_ASSERT(surface);
+    Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
 
     GLXDrawable glxDrawable = static_cast<QXcbWindow *>(surface)->xcb_window();
 

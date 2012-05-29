@@ -80,6 +80,8 @@ bool QKmsContext::isValid() const
 
 bool QKmsContext::makeCurrent(QPlatformSurface *surface)
 {
+    Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+
     EGLDisplay display = m_device->eglDisplay();
 
     QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);

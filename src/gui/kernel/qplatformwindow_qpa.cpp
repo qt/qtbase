@@ -49,7 +49,6 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformWindowPrivate
 {
-    QWindow *window;
     QRect rect;
     friend class QPlatformWindow;
 };
@@ -59,11 +58,10 @@ class QPlatformWindowPrivate
 */
 
 QPlatformWindow::QPlatformWindow(QWindow *window)
-    : QPlatformSurface(QSurface::Window)
+    : QPlatformSurface(window)
     , d_ptr(new QPlatformWindowPrivate)
 {
     Q_D(QPlatformWindow);
-    d->window = window;
     d->rect = window->geometry();
 }
 
@@ -79,8 +77,7 @@ QPlatformWindow::~QPlatformWindow()
 */
 QWindow *QPlatformWindow::window() const
 {
-    Q_D(const QPlatformWindow);
-    return d->window;
+    return static_cast<QWindow *>(m_surface);
 }
 
 /*!
@@ -88,8 +85,7 @@ QWindow *QPlatformWindow::window() const
 */
 QPlatformWindow *QPlatformWindow::parent() const
 {
-    Q_D(const QPlatformWindow);
-    return d->window->parent() ? d->window->parent()->handle() : 0;
+    return window()->parent() ? window()->parent()->handle() : 0;
 }
 
 /*!
@@ -97,8 +93,7 @@ QPlatformWindow *QPlatformWindow::parent() const
 */
 QPlatformScreen *QPlatformWindow::screen() const
 {
-    Q_D(const QPlatformWindow);
-    return d->window->screen()->handle();
+    return window()->screen()->handle();
 }
 
 /*!
@@ -170,8 +165,7 @@ Qt::WindowFlags QPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
 
 bool QPlatformWindow::isExposed() const
 {
-    Q_D(const QPlatformWindow);
-    return d->window->isVisible();
+    return window()->isVisible();
 }
 
 /*!

@@ -1042,6 +1042,9 @@ bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
     if (QWindowsContext::verboseGL > 1)
         qDebug("%s context=%p contexts=%d", __FUNCTION__, this, m_windowContexts.size());
 #endif // DEBUG_GL
+
+    Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+
     // Do we already have a DC entry for that window?
     QWindowsWindow *window = static_cast<QWindowsWindow *>(surface);
     const HWND hwnd = window->handle();

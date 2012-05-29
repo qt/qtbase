@@ -205,6 +205,8 @@ bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
 {
     qGLContextDebug() << Q_FUNC_INFO;
 
+    Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+
     // Set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
     if (eglResult != EGL_TRUE) {

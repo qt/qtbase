@@ -57,6 +57,8 @@ QSurfaceFormat QOpenWFDGLContext::format() const
 
 bool QOpenWFDGLContext::makeCurrent(QPlatformSurface *surface)
 {
+    Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+
     EGLDisplay display = mWfdDevice->eglDisplay();
     EGLContext context = mWfdDevice->eglContext();
     if (!eglMakeCurrent(display,EGL_NO_SURFACE,EGL_NO_SURFACE,context)) {
