@@ -188,7 +188,7 @@ SeeAlso: ???
 Feature: LIBRARY
 Description: Supports a shared library wrapper.
 Section: File I/O
-Requires: SETTINGS
+Requires:
 Name: QLibrary
 SeeAlso: ???
 

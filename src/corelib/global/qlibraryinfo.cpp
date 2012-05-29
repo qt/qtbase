@@ -162,6 +162,8 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
     return 0;     //no luck
 }
 
+#endif // QT_NO_SETTINGS
+
 /*!
     \class QLibraryInfo
     \brief The QLibraryInfo class provides information about the Qt library.
@@ -306,7 +308,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     if (!QLibraryInfoPrivate::haveGroup(group)
         && (group == FinalPaths
             || !(group = FinalPaths, QLibraryInfoPrivate::haveGroup(FinalPaths))))
-#else
+#elif !defined(QT_NO_SETTINGS)
     if (!QLibraryInfoPrivate::configuration())
 #endif
     {
@@ -320,6 +322,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 
         if (path)
             ret = QString::fromLocal8Bit(path);
+#ifndef QT_NO_SETTINGS
     } else {
         QString key;
         QString defaultValue;
@@ -362,6 +365,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 
             ret = QDir::fromNativeSeparators(ret);
         }
+#endif // QT_NO_SETTINGS
     }
 
     if (!ret.isEmpty() && QDir::isRelativePath(ret)) {
@@ -426,8 +430,6 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 
     \sa location()
 */
-
-#endif // QT_NO_SETTINGS
 
 QT_END_NAMESPACE
 

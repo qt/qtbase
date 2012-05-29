@@ -302,11 +302,6 @@
 #define QT_NO_ICONV
 #endif
 
-// QLibrary
-#if !defined(QT_NO_LIBRARY) && (defined(QT_NO_SETTINGS))
-#define QT_NO_LIBRARY
-#endif
-
 // QMenu
 #if !defined(QT_NO_MENU) && (defined(QT_NO_ACTION))
 #define QT_NO_MENU

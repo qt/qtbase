@@ -353,10 +353,8 @@ QString QPlatformFontDatabase::fontDir() const
 {
     QString fontpath = QString::fromLocal8Bit(qgetenv("QT_QPA_FONTDIR"));
     if (fontpath.isEmpty()) {
-#ifndef QT_NO_SETTINGS
         fontpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);
         fontpath += QLatin1String("/fonts");
-#endif
     }
 
     return fontpath;

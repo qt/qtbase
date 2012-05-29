@@ -180,7 +180,7 @@ QStyle *QStyleFactory::create(const QString& key)
     } else
 #endif
     { } // Keep these here - they make the #ifdefery above work
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
     if (!ret)
         ret = qLoadPlugin<QStyle, QStylePlugin>(loader(), style);
 #endif
@@ -198,7 +198,7 @@ QStyle *QStyleFactory::create(const QString& key)
 QStringList QStyleFactory::keys()
 {
     QStringList list;
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
     typedef QMultiMap<int, QString> PluginKeyMap;
     typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 

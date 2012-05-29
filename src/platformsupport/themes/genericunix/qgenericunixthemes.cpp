@@ -124,6 +124,8 @@ QVariant QGenericUnixTheme::themeHint(ThemeHint hint) const
     return QPlatformTheme::themeHint(hint);
 }
 
+#ifndef QT_NO_SETTINGS
+
 // Reads the color from the KDE configuration, and store it in the
 // palette with the given color role if found.
 static inline bool kdeColor(QPalette *pal, QPalette::ColorRole role,
@@ -326,6 +328,8 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
      return 0;
 }
 
+#endif // QT_NO_SETTINGS
+
 /*!
     \class QGnomeTheme
     \brief QGnomeTheme is a theme implementation for the Gnome desktop.
@@ -369,9 +373,11 @@ QPlatformTheme *QGenericUnixTheme::createUnixTheme(const QString &name)
 {
     if (name == QLatin1String(QGenericUnixTheme::name))
         return new QGenericUnixTheme;
+#ifndef QT_NO_SETTINGS
     if (name == QLatin1String(QKdeTheme::name))
         if (QPlatformTheme *kdeTheme = QKdeTheme::createKdeTheme())
             return kdeTheme;
+#endif
     if (name == QLatin1String(QGnomeTheme::name))
         return new QGnomeTheme;
     return new QGenericUnixTheme;
@@ -382,7 +388,9 @@ QStringList QGenericUnixTheme::themeNames()
     QStringList result;
     if (QGuiApplication::desktopSettingsAware()) {
         if (QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment() == QByteArray("KDE")) {
+#ifndef QT_NO_SETTINGS
             result.push_back(QLatin1String(QKdeTheme::name));
+#endif
         } else if (QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment() == QByteArray("GNOME")) {
             result.push_back(QLatin1String(QGnomeTheme::name));
         }

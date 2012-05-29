@@ -402,7 +402,7 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
 
 void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
 {
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
     QStringList *app_libpaths = coreappdata()->app_libpaths;
     Q_ASSERT(app_libpaths);
     QString app_location( QCoreApplication::applicationFilePath() );
@@ -589,7 +589,7 @@ void QCoreApplication::init()
 
     d->threadData->eventDispatcher = QCoreApplicationPrivate::eventDispatcher;
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
     if (!coreappdata()->app_libpaths) {
         // make sure that library paths is initialized
         libraryPaths();

@@ -77,6 +77,7 @@ public:
     static const char *name;
 };
 
+#ifndef QT_NO_SETTINGS
 class QKdeTheme : public QPlatformTheme
 {
     QKdeTheme(const QString &kdeHome, int kdeVersion);
@@ -107,6 +108,7 @@ private:
     int m_toolButtonStyle;
     int m_toolBarIconSize;
 };
+#endif // QT_NO_SETTINGS
 
 class QGnomeTheme : public QPlatformTheme
 {
