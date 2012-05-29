@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 SOURCES += ../tst_selftests.cpp
 QT = core xml testlib-private
 

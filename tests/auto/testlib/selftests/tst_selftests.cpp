@@ -43,13 +43,19 @@
 #include <QtCore/QXmlStreamReader>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
+#include <QtCore/QTemporaryDir>
 #include <QtTest/QtTest>
 
 #include <private/cycle_p.h>
 
+struct LoggerSet;
+
 class tst_Selftests: public QObject
 {
     Q_OBJECT
+public:
+    tst_Selftests();
+
 private slots:
     void initTestCase();
     void runSubTest_data();
@@ -58,6 +64,10 @@ private slots:
 
 private:
     void doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments);
+    QString logName(const QString &logger) const;
+    QList<LoggerSet> allLoggerSets() const;
+
+    QTemporaryDir tempDir;
 };
 
 struct BenchmarkResult
@@ -153,9 +163,9 @@ static inline QString logFormat(const QString &logger)
 }
 
 // Return the log file name, or an empty string if the log goes to stdout.
-static inline QString logName(const QString &logger)
+QString tst_Selftests::logName(const QString &logger) const
 {
-    return (logger.startsWith("stdout") ? "" : QString("test_output." + logger));
+    return (logger.startsWith("stdout") ? "" : QString(tempDir.path() + "/test_output." + logger));
 }
 
 // Load the expected test output for the nominated test (subdir) and logger
@@ -184,7 +194,7 @@ struct LoggerSet
 
 // This function returns a list of all sets of loggers to be used for
 // running each subtest.
-static QList<LoggerSet> allLoggerSets()
+QList<LoggerSet> tst_Selftests::allLoggerSets() const
 {
     // Note that in order to test XML output to standard output, the subtests
     // must not send output directly to stdout, bypassing Qt's output mechanisms
@@ -288,6 +298,10 @@ static QList<LoggerSet> allLoggerSets()
                     )
     ;
 }
+
+tst_Selftests::tst_Selftests()
+    : tempDir(QDir::tempPath() + "/tst_selftests.XXXXXX")
+{}
 
 void tst_Selftests::initTestCase()
 {
