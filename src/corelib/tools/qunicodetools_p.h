@@ -53,23 +53,29 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
-#include <harfbuzz-shaper.h>
+#include <private/qharfbuzz_p.h>
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_TYPEINFO(HB_CharAttributes, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(HB_ScriptItem, Q_PRIMITIVE_TYPE);
+namespace QUnicodeTools {
 
-enum QCharAttributeOption {
-    GetWordBreaks = 1,
-    GetSentenceBreaks = 2
+enum CharAttributeOption {
+    GraphemeBreaks = 0x01,
+    WordBreaks = 0x02,
+    SentenceBreaks = 0x04,
+    LineBreaks = 0x08,
+    WhiteSpaces = 0x10,
+    DefaultOptionsCompat = GraphemeBreaks | LineBreaks | WhiteSpaces, // ### remove
+
+    DontClearAttributes = 0x1000
 };
-Q_DECLARE_FLAGS(QCharAttributeOptions, QCharAttributeOption)
+Q_DECLARE_FLAGS(CharAttributeOptions, CharAttributeOption)
 
-Q_CORE_EXPORT void qGetCharAttributes(const ushort *string, int length,
+Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
                                       const HB_ScriptItem *items, int numItems,
-                                      HB_CharAttributes *attributes, QCharAttributeOptions options = QFlag(0));
+                                      HB_CharAttributes *attributes, CharAttributeOptions options = DefaultOptionsCompat);
+
+} // namespace QUnicodeTools
 
 QT_END_NAMESPACE
 

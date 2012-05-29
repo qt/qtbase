@@ -93,12 +93,15 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
         scriptItems.append(item);
     }
 
-    QCharAttributeOptions options = 0;
-    if (type == QTextBoundaryFinder::Word)
-        options |= GetWordBreaks;
-    else if (type == QTextBoundaryFinder::Sentence)
-        options |= GetSentenceBreaks;
-    qGetCharAttributes(string, length, scriptItems.data(), scriptItems.count(), attributes, options);
+    QUnicodeTools::CharAttributeOptions options = QUnicodeTools::WhiteSpaces;
+    switch (type) {
+    case QTextBoundaryFinder::Grapheme: options |= QUnicodeTools::GraphemeBreaks; break;
+    case QTextBoundaryFinder::Word: options |= QUnicodeTools::WordBreaks; break;
+    case QTextBoundaryFinder::Sentence: options |= QUnicodeTools::SentenceBreaks; break;
+    case QTextBoundaryFinder::Line: options |= QUnicodeTools::LineBreaks; break;
+    default: break;
+    }
+    QUnicodeTools::initCharAttributes(string, length, scriptItems.data(), scriptItems.count(), attributes, options);
 }
 
 /*! 

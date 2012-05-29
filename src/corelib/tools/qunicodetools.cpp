@@ -45,6 +45,10 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_AUTOTEST_EXPORT int qt_initcharattributes_default_algorithm_only = 0;
+
+namespace QUnicodeTools {
+
 // -----------------------------------------------------------------------------------------------------
 //
 // The line breaking algorithm. See http://www.unicode.org/reports/tr14/tr14-19.html
@@ -54,8 +58,6 @@ QT_BEGIN_NAMESPACE
 // The text boundaries determination algorithm. See http://www.unicode.org/reports/tr29/tr29-11.html
 //
 // -----------------------------------------------------------------------------------------------------
-
-namespace {
 
 /* The Unicode algorithm does in our opinion allow line breaks at some
    places they shouldn't be allowed. The following changes were thus
@@ -374,25 +376,33 @@ static void calcSentenceBreaks(const ushort *string, quint32 len, HB_CharAttribu
     }
 }
 
-} // namespace
 
-
-Q_CORE_EXPORT void qGetCharAttributes(const ushort *string, int length,
+Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
                                       const HB_ScriptItem *items, int numItems,
-                                      HB_CharAttributes *attributes, QCharAttributeOptions options)
+                                      HB_CharAttributes *attributes, CharAttributeOptions options)
 {
     if (length <= 0)
         return;
 
-    memset(attributes, 0, length * sizeof(HB_CharAttributes));
+    if (!(options & DontClearAttributes)) {
+        ::memset(attributes, 0, length * sizeof(HB_CharAttributes));
+        if (options & (WordBreaks | SentenceBreaks))
+            options |= GraphemeBreaks;
+    }
 
-    calcGraphemeAndLineBreaks(string, length, attributes);
-    if (options & GetWordBreaks)
+    if (options & (GraphemeBreaks | LineBreaks | WhiteSpaces))
+        calcGraphemeAndLineBreaks(string, length, attributes);
+    if (options & WordBreaks)
         calcWordBreaks(string, length, attributes);
-    if (options & GetSentenceBreaks)
+    if (options & SentenceBreaks)
         calcSentenceBreaks(string, length, attributes);
 
-    HB_GetTailoredCharAttributes(string, length, items, numItems, attributes);
+    if (!items || numItems <= 0)
+        return;
+    if (!qt_initcharattributes_default_algorithm_only)
+        HB_GetTailoredCharAttributes(string, length, items, numItems, attributes);
 }
+
+} // namespace QUnicodeTools
 
 QT_END_NAMESPACE

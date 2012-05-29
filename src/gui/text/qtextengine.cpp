@@ -1214,10 +1214,10 @@ const HB_CharAttributes *QTextEngine::attributes() const
         hbScriptItems[i].script = (HB_Script)si.analysis.script;
     }
 
-    qGetCharAttributes(reinterpret_cast<const HB_UChar16 *>(layoutData->string.constData()),
-                       layoutData->string.length(),
-                       hbScriptItems.data(), hbScriptItems.size(),
-                       (HB_CharAttributes *)layoutData->memory);
+    QUnicodeTools::initCharAttributes(reinterpret_cast<const HB_UChar16 *>(layoutData->string.constData()),
+                                      layoutData->string.length(),
+                                      hbScriptItems.data(), hbScriptItems.size(),
+                                      (HB_CharAttributes *)layoutData->memory);
 
 
     layoutData->haveCharAttributes = true;
