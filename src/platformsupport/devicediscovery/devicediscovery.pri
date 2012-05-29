@@ -1,4 +1,4 @@
-unix:!mac {
+linux-* {
     HEADERS += $$PWD/qdevicediscovery_p.h
 
     contains(QT_CONFIG, libudev) {
