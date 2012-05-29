@@ -73,11 +73,13 @@ QT_BEGIN_NAMESPACE
        keyword is one of \c integration, \c windows, \c backingstore and
        \c fonts. Level is an integer 0..9.
     \endlist
+    \internal
  */
 
 /*!
     \class QWindowsIntegrationPlugin
     \brief Plugin.
+    \internal
     \ingroup qt-lighthouse-win
  */
 
@@ -85,6 +87,7 @@ QT_BEGIN_NAMESPACE
     \namespace QtWindows
 
     \brief Namespace for enumerations, etc.
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -95,6 +98,7 @@ QT_BEGIN_NAMESPACE
 
     With flags that should help to structure the code.
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 

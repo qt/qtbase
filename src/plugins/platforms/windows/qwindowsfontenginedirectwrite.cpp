@@ -175,6 +175,7 @@ namespace {
 /*!
     \class QWindowsFontEngineDirectWrite
     \brief Windows font engine using Direct Write.
+    \internal
     \ingroup qt-lighthouse-win
 
     Font engine for subpixel positioned text on Windows Vista

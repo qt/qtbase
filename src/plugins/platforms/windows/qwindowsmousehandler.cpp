@@ -120,6 +120,7 @@ static inline void compressMouseMove(MSG *msg)
 
     Dispatches mouse and touch events. Separate for code cleanliness.
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 

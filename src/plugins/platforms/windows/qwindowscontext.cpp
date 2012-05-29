@@ -161,6 +161,7 @@ static inline bool useRTL_Extensions(QSysInfo::WinVersion ver)
 
     \sa QWindowsShell32DLL
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -205,6 +206,7 @@ bool QWindowsUser32DLL::initTouch()
 
     \sa QWindowsUser32DLL
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -230,6 +232,8 @@ QWindowsContext *QWindowsContext::m_instance = 0;
     \brief Singleton container for all relevant information.
 
     Holds state information formerly stored in \c qapplication_win.cpp.
+
+    \internal
     \ingroup qt-lighthouse-win
 */
 

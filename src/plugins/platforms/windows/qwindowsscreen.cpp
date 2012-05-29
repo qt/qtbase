@@ -169,8 +169,9 @@ static inline QSharedPointer<QWindowsCursor> sharedCursor()
 /*!
     \class QWindowsScreen
     \brief Windows screen.
-    \ingroup qt-lighthouse-win
     \sa QWindowsScreenManager
+    \internal
+    \ingroup qt-lighthouse-win
 */
 
 QWindowsScreen::QWindowsScreen(const QWindowsScreenData &data) :
@@ -314,8 +315,9 @@ void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
     Listens for changes and notifies QWindowSystemInterface about changed/
     added/deleted screens.
 
-    \ingroup qt-lighthouse-win
     \sa QWindowsScreen
+    \internal
+    \ingroup qt-lighthouse-win
 */
 
 QWindowsScreenManager::QWindowsScreenManager() :

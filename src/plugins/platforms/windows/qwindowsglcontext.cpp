@@ -664,6 +664,7 @@ static inline QOpenGLContextData createDummyWindowOpenGLContextData()
     Provides utility function to retrieve from currently active
     context and to apply to a QSurfaceFormat.
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -743,6 +744,7 @@ QDebug operator<<(QDebug d, const QWindowsOpenGLContextFormat &f)
     Functions like wglGetProcAddress() or glGetString() only work if there
     is a current GL context.
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -788,6 +790,7 @@ QOpenGLTemporaryContext::~QOpenGLTemporaryContext()
     \note Initialization requires an active context (see create()).
 
     \sa QWindowsGLContext
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -865,6 +868,7 @@ static inline bool useARB()
     which will affect the window as well. The HDCs are stored in a list of
     QOpenGLContextData and are released in doneCurrent().
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 

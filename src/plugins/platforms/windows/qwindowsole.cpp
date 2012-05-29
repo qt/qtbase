@@ -71,6 +71,7 @@ QT_BEGIN_NAMESPACE
        (NOTE: must set pformatetcOut->ptd = NULL)
    \endlist
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -277,6 +278,7 @@ QWindowsOleDataObject::EnumDAdvise(LPENUMSTATDATA FAR*)
 /*!
     \class QWindowsOleEnumFmtEtc
     \brief Enumerates the FORMATETC structures supported by QWindowsOleDataObject.
+    \internal
     \ingroup qt-lighthouse-win
 */
 

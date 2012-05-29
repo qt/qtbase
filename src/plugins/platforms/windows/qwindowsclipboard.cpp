@@ -73,6 +73,7 @@ static const char formatTextHtmlC[] = "text/html";
 
     \note The OLE-functions used in this class require OleInitialize().
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -105,6 +106,7 @@ QDebug operator<<(QDebug d, const QMimeData &m)
     IDataObject from the clipboard.
 
     \sa QWindowsInternalMimeDataBase, QWindowsClipboard
+    \internal
     \ingroup qt-lighthouse-win
 */
 

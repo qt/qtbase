@@ -60,6 +60,7 @@ QT_BEGIN_NAMESPACE
     qWindowsWndProc. Handling the Lighthouse gui events should be done
     from within the qWindowsWndProc to ensure correct processing of messages.
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 

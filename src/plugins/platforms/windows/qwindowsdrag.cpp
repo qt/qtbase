@@ -214,6 +214,7 @@ static const char * const ignoreDragCursorXpmC[] = {
     current drop data object from QWindowsDrag.
 
     \sa QWindowsDrag
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -278,6 +279,7 @@ static inline Qt::KeyboardModifiers toQtKeyboardModifiers(DWORD keyState)
     Used for drag operations.
 
     \sa QWindowsDrag
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -506,6 +508,7 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
     (sending DragEnter/Leave, etc) is handled in here.
 
     \sa QWindowsDrag
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -702,7 +705,7 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT /*pDataObj*/, DWORD grfKeyState,
 /*!
     \class QWindowsDrag
     \brief Windows drag implementation.
-
+    \internal
     \ingroup qt-lighthouse-win
 */
 

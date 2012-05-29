@@ -379,6 +379,7 @@ void eatMouseMove()
        like close() can be called on them from event handlers.
     \endlist
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -415,6 +416,7 @@ protected:
     they support it.
 
     \sa QWindowsDialogThread
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -455,6 +457,7 @@ QWindowsNativeDialogBase *QWindowsDialogHelperBase<BaseClass>::ensureNativeDialo
     \brief Run a non-modal native dialog in a separate thread.
 
     \sa QWindowsDialogHelperBase
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -550,7 +553,7 @@ QVariant QWindowsDialogHelperBase<BaseClass>::styleHint(QPlatformDialogHelper::S
     in QFileDialog are forwarded.
 
     \sa QWindowsNativeFileDialogBase, QWindowsFileDialogHelper
-
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -622,6 +625,7 @@ IFileDialogEvents *QWindowsNativeFileDialogEventHandler::create(QWindowsNativeFi
     Note that only IFileOpenDialog has multi-file functionality.
 
     \sa QWindowsNativeFileDialogEventHandler, QWindowsFileDialogHelper
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -987,6 +991,7 @@ HRESULT QWindowsNativeFileDialogEventHandler::OnTypeChange(IFileDialog *)
 
     Implements single-selection methods.
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -1026,6 +1031,7 @@ QStringList QWindowsNativeSaveFileDialog::selectedFiles() const
 
     Implements multi-selection methods.
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -1097,6 +1103,7 @@ QWindowsNativeFileDialogBase *QWindowsNativeFileDialogBase::create(QFileDialogOp
     the right parameters from each thread. The problem is though
     that calls to CoInitialize() occur in several places in Qt.
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -1229,7 +1236,7 @@ QString QWindowsFileDialogHelper::selectedNameFilter() const
 
     \sa QWindowsColorDialogHelper
     \sa #define USE_NATIVE_COLOR_DIALOG
-
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -1313,7 +1320,7 @@ void QWindowsNativeColorDialog::exec(HWND owner)
 
     \sa #define USE_NATIVE_COLOR_DIALOG
     \sa QWindowsNativeColorDialog
-
+    \internal
     \ingroup qt-lighthouse-win
 */
 

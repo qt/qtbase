@@ -62,6 +62,7 @@
     does conversion using QWindowsMime classes.
 
     \sa QInternalMimeData, QWindowsMime, QWindowsMimeConverter
+    \internal
     \ingroup qt-lighthouse-win
 */
 

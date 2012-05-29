@@ -68,6 +68,7 @@ Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap);
     Each Window sets on the global cursor on receiving a Enter-event
     as do the Window manager frames (resize/move handles).
 
+    \internal
     \ingroup qt-lighthouse-win
     \sa QWindowsWindowCursor
 */
@@ -387,6 +388,7 @@ void QWindowsCursor::setPos(const QPoint &pos)
     Based on QSharedDataPointer, so that it can be passed around and
     used as a property of QWindowsBaseWindow.
 
+    \internal
     \ingroup qt-lighthouse-win
     \sa QWindowsCursor
 */

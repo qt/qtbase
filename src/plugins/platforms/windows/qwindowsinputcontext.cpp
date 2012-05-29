@@ -153,6 +153,7 @@ template <class T>
     QtWindows::InputMethodCloseCandidateWindowEvent
     needs to be checked (mouse grab might interfere with candidate window).
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 

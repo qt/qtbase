@@ -398,6 +398,7 @@ static bool canGetData(int cf, IDataObject * pDataObj)
 /*!
     \class QWindowsMime
     \brief The QWindowsMime class maps open-standard MIME to Window Clipboard formats.
+    \internal
     \ingroup qt-lighthouse-win
 
     Qt's drag-and-drop and clipboard facilities use the MIME standard.
@@ -1437,6 +1438,7 @@ QString QLastResortMimes::mimeForFormat(const FORMATETC &formatetc) const
 /*!
     \class QWindowsMimeConverter
     \brief Manages the list of QWindowsMime instances.
+    \internal
     \ingroup qt-lighthouse-win
     \sa QWindowsMime
 */

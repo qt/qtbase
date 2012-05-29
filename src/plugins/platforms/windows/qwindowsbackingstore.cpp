@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QWindowsBackingStore
     \brief Backing store for windows.
+    \internal
     \ingroup qt-lighthouse-win
 */
 

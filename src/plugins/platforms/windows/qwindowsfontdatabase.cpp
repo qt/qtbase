@@ -591,6 +591,7 @@ static inline bool initDirectWrite(QWindowsFontEngineData *d)
     EnumFontFamiliesEx() does not list all fonts by default.
     This should be introduced to Lighthouse as well?
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 

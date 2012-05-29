@@ -86,6 +86,7 @@ QT_BEGIN_NAMESPACE
     \li releaseDC Releases the previously acquired DC and returns 0.
     \endlist
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -174,6 +175,7 @@ void *QWindowsNativeInterface::createMessageWindow(const QString &classNameTempl
 /*!
     \class QWindowsIntegration
     \brief QPlatformIntegration implementation for Windows.
+    \internal
     \ingroup qt-lighthouse-win
 */
 

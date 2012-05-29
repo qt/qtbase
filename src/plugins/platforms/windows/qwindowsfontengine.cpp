@@ -276,6 +276,7 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
 /*!
     \class QWindowsFontEngine
     \brief Standard Windows font engine.
+    \internal
     \ingroup qt-lighthouse-win
 
     Will probably be superseded by a common Free Type font engine in Qt 5.X.
@@ -1285,6 +1286,7 @@ void QWindowsFontEngine::initFontInfo(const QFontDef &request,
 /*!
     \class QWindowsMultiFontEngine
     \brief Standard Windows Multi font engine.
+    \internal
     \ingroup qt-lighthouse-win
 
     "Merges" several font engines that have gaps in the

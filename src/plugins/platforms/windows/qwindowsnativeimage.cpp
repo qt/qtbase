@@ -62,6 +62,7 @@ typedef struct {
     causes CreateDIBSection() to fail.
 
     \sa QWindowsBackingStore
+    \internal
     \ingroup qt-lighthouse-win
 */
 

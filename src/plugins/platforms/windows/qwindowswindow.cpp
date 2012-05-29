@@ -226,6 +226,7 @@ static bool shouldShowMaximizeButton(Qt::WindowFlags flags)
     Contains the window creation code formerly in qwidget_win.cpp.
 
     \sa QWindowCreationContext
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -476,6 +477,7 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange) const
     Geometry constraints ready to apply to a MINMAXINFO taking frame
     into account.
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -571,6 +573,7 @@ bool QWindowsGeometryHint::positionIncludesFrame(const QWindow *w)
     WM_GETMINMAXINFO and obtains the corrected size/position.
 
     \sa WindowCreationData, QWindowsContext
+    \internal
     \ingroup qt-lighthouse-win
 */
 
@@ -609,7 +612,7 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
 }
 
 /*!
-    \class QWindowsBaseWindow
+    \class QWindowsWindow
     \brief Raster or OpenGL Window.
 
     \list
@@ -626,6 +629,7 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
        handleWmPaint() is empty (although required).
     \endlist
 
+    \internal
     \ingroup qt-lighthouse-win
 */
 
