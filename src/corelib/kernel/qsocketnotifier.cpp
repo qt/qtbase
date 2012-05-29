@@ -221,7 +221,7 @@ QSocketNotifier::~QSocketNotifier()
 
     \sa type()
 */
-int QSocketNotifier::socket() const
+qintptr QSocketNotifier::socket() const
 {
     Q_D(const QSocketNotifier);
     return d->sockfd;

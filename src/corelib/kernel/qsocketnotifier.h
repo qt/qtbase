@@ -60,7 +60,7 @@ public:
     QSocketNotifier(qintptr socket, Type, QObject *parent = 0);
     ~QSocketNotifier();
 
-    int socket() const;
+    qintptr socket() const;
     Type type() const;
 
     bool isEnabled() const;
