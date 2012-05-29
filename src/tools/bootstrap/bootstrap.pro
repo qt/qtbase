@@ -1,7 +1,7 @@
 option(host_build)
 TEMPLATE = lib
 TARGET = bootstrap
-CONFIG += staticlib
+CONFIG += static
 
 CONFIG += console qtinc 
 CONFIG -= qt

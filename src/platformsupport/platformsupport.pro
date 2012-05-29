@@ -2,7 +2,7 @@ load(qt_build_config)
 TARGET     = QtPlatformSupport
 QT         = core-private gui-private
 
-CONFIG += staticlib
+CONFIG += static
 mac:LIBS += -lz -framework CoreFoundation -framework Carbon
 
 load(qt_module_config)
