@@ -92,6 +92,8 @@ public:
     QDirectFbWindowEGL(QWindow *tlw, QDirectFbInput *inputhandler);
     ~QDirectFbWindowEGL();
 
+    void createDirectFBWindow();
+
     // EGL. Subclass it instead to have different GL integrations?
     EGLSurface eglSurface();
 
@@ -167,6 +169,37 @@ QDirectFbWindowEGL::~QDirectFbWindowEGL()
         dfbScreen = static_cast<QDirectFbScreenEGL*>(screen());
         eglDestroySurface(dfbScreen->eglDisplay(), m_eglSurface);
     }
+}
+
+void QDirectFbWindowEGL::createDirectFBWindow()
+{
+    // Use the default for the raster surface.
+    if (window()->surfaceType() == QSurface::RasterSurface)
+        return QDirectFbWindow::createDirectFBWindow();
+
+    Q_ASSERT(!m_dfbWindow.data());
+
+    DFBWindowDescription description;
+    memset(&description, 0, sizeof(DFBWindowDescription));
+    description.flags = DFBWindowDescriptionFlags(DWDESC_WIDTH | DWDESC_HEIGHT|
+                                                  DWDESC_POSX | DWDESC_POSY|
+                                                  DWDESC_PIXELFORMAT | DWDESC_SURFACE_CAPS);
+    description.width = qMax(1, window()->width());
+    description.height = qMax(1, window()->height());
+    description.posx = window()->x();
+    description.posy = window()->y();
+
+    description.surface_caps = DSCAPS_GL;
+    description.pixelformat = DSPF_RGB16;
+
+    IDirectFBDisplayLayer *layer;
+    layer = toDfbScreen(window())->dfbLayer();
+    DFBResult result = layer->CreateWindow(layer, &description, m_dfbWindow.outPtr());
+    if (result != DFB_OK)
+        DirectFBError("QDirectFbWindow: failed to create window", result);
+
+    m_dfbWindow->SetOpacity(m_dfbWindow.data(), 0xff);
+    m_inputHandler->addWindow(m_dfbWindow.data(), window());
 }
 
 EGLSurface QDirectFbWindowEGL::eglSurface()
