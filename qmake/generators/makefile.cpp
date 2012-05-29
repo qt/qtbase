@@ -93,7 +93,7 @@ bool MakefileGenerator::canExecute(const QStringList &cmdline, int *a) const
 
 QString MakefileGenerator::mkdir_p_asstring(const QString &dir, bool escape) const
 {
-    QString ret =  "@$(CHK_DIR_EXISTS) ";
+    QString ret =  "@" + chkdir + " ";
     if(escape)
         ret += escapeFilePath(dir);
     else
@@ -431,6 +431,9 @@ MakefileGenerator::init()
     init_already = true;
 
     QHash<QString, QStringList> &v = project->variables();
+
+    chkdir = v["QMAKE_CHK_DIR_EXISTS"].join(" ");
+
     QStringList &quc = v["QMAKE_EXTRA_COMPILERS"];
 
     //make sure the COMPILERS are in the correct input/output chain order
