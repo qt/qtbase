@@ -188,10 +188,11 @@ static void calcGraphemeAndLineBreaks(const ushort *string, quint32 len, HB_Char
             attributes[i].whiteSpace = true;
 
         HB_LineBreakType lineBreakType = HB_NoBreak;
-        if (cls >= QUnicodeTables::LineBreak_LF) {
-            lineBreakType = HB_ForcedBreak;
-        } else if (cls == QUnicodeTables::LineBreak_CR) {
-            lineBreakType = (ncls == QUnicodeTables::LineBreak_LF) ? HB_NoBreak : HB_ForcedBreak;
+
+        if (cls >= QUnicodeTables::LineBreak_CR) {
+            if (cls > QUnicodeTables::LineBreak_CR || ncls != QUnicodeTables::LineBreak_LF)
+                lineBreakType = HB_ForcedBreak;
+            goto next;
         }
 
         if (ncls == QUnicodeTables::LineBreak_SP)
