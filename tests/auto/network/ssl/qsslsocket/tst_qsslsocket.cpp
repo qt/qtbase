@@ -373,9 +373,9 @@ void tst_QSslSocket::constructing()
     QCOMPARE(socket.readLine(0, 0), qint64(-1));
     char buf[10];
     QCOMPARE(socket.readLine(buf, sizeof(buf)), qint64(-1));
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::seek: The device is not open");
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::seek: Cannot call seek on a sequential device");
     QVERIFY(!socket.reset());
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::seek: The device is not open");
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::seek: Cannot call seek on a sequential device");
     QVERIFY(!socket.seek(2));
     QCOMPARE(socket.size(), qint64(0));
     QVERIFY(!socket.waitForBytesWritten(10));

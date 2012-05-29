@@ -606,18 +606,22 @@ qint64 QIODevice::size() const
 /*!
     For random-access devices, this function sets the current position
     to \a pos, returning true on success, or false if an error occurred.
-    For sequential devices, the default behavior is to do nothing and
-    return false.
+    For sequential devices, the default behavior is to produce a warning
+    and return false.
 
     When subclassing QIODevice, you must call QIODevice::seek() at the
     start of your function to ensure integrity with QIODevice's
-    built-in buffer. The base implementation always returns true.
+    built-in buffer.
 
     \sa pos(), isSequential()
 */
 bool QIODevice::seek(qint64 pos)
 {
     Q_D(QIODevice);
+    if (d->isSequential()) {
+        qWarning("QIODevice::seek: Cannot call seek on a sequential device");
+        return false;
+    }
     if (d->openMode == NotOpen) {
         qWarning("QIODevice::seek: The device is not open");
         return false;
@@ -633,10 +637,8 @@ bool QIODevice::seek(qint64 pos)
 #endif
 
     qint64 offset = pos - d->pos;
-    if (!d->isSequential()) {
-        d->pos = pos;
-        d->devicePos = pos;
-    }
+    d->pos = pos;
+    d->devicePos = pos;
 
     if (offset < 0
             || offset >= qint64(d->buffer.size()))
