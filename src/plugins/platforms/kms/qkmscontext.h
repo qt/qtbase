@@ -54,20 +54,22 @@ class QKmsDevice;
 class QKmsContext : public QPlatformOpenGLContext
 {
 public:
-    QKmsContext(QKmsDevice *device);
+    QKmsContext(QOpenGLContext *context, QKmsDevice *device);
 
     bool makeCurrent(QPlatformSurface *surface);
     void doneCurrent();
     void swapBuffers(QPlatformSurface *surface);
     void (*getProcAddress(const QByteArray &procName)) ();
 
+    bool isValid() const;
+
     QSurfaceFormat format() const;
 
     EGLContext eglContext() const;
 
-    GLuint defaultFramebufferObject(QPlatformSurface *surface) const;
-
 private:
+    EGLContext m_eglContext;
+    QSurfaceFormat m_format;
 
     QKmsDevice *m_device;
 };

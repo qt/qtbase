@@ -95,6 +95,7 @@ bool QKmsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case ThreadedPixmaps: return true;
     case OpenGL: return true;
     case ThreadedOpenGL: return true;
+    case BufferQueueingOpenGL: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
@@ -102,7 +103,7 @@ bool QKmsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 QPlatformOpenGLContext *QKmsIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QKmsScreen *screen = static_cast<QKmsScreen *>(context->screen()->handle());
-    return new QKmsContext(screen->device());
+    return new QKmsContext(context, screen->device());
 }
 
 QPlatformWindow *QKmsIntegration::createPlatformWindow(QWindow *window) const

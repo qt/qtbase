@@ -49,6 +49,8 @@ QKmsWindow::QKmsWindow(QWindow *window)
     : QPlatformWindow(window)
 {
     m_screen = QPlatformScreen::platformScreenForWindow(window);
+
+    static_cast<QKmsScreen *>(m_screen)->initializeWithFormat(window->requestedFormat());
 }
 
 void QKmsWindow::setGeometry(const QRect &rect)

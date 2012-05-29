@@ -65,7 +65,6 @@ public:
 
     EGLDisplay eglDisplay() { return m_eglDisplay; }
     gbm_device *gbmDevice() { return m_graphicsBufferManager; }
-    EGLContext eglContext() { return m_eglContext; }
     int fd() const { return m_fd; }
 
     static void pageFlipHandler(int fd, unsigned int frame, unsigned int sec,

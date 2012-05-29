@@ -87,15 +87,9 @@ void *QKmsNativeInterface::eglDisplayForWindow(QWindow *window)
     return device->eglDisplay();
 }
 
-void *QKmsNativeInterface::eglContextForWindow(QWindow *window)
+void *QKmsNativeInterface::eglContextForWindow(QWindow *)
 {
-    QKmsScreen *screen = qPlatformScreenForWindow(window);
-    if (!screen)
-        return 0;
-    QKmsDevice *device = screen->device();
-    if (!device)
-        return 0;
-    return device->eglContext();
+    return 0;
 }
 
 QKmsScreen *QKmsNativeInterface::qPlatformScreenForWindow(QWindow *window)

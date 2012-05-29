@@ -39,11 +39,16 @@
 **
 ****************************************************************************/
 //#include <QDebug>
-#include "qkmscursor.h"
+
 #include "qkmsscreen.h"
+#include "qkmscursor.h"
 #include "qkmsdevice.h"
 #include "qkmscontext.h"
-#include "qkmsbuffermanager.h"
+
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
+
+#include <QCoreApplication>
+#include <QtDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -60,12 +65,13 @@ static drmModeModeInfo builtin_1024x768 = {
 
 QKmsScreen::QKmsScreen(QKmsDevice *device, int connectorId)
     : m_device(device),
-      m_flipReady(true),
+      m_current_bo(0),
+      m_next_bo(0),
       m_connectorId(connectorId),
       m_depth(32),
       m_format(QImage::Format_Invalid),
-      m_bufferManager(this),
-      m_refreshTime(16000)
+      m_refreshTime(16000),
+      m_modeSet(false)
 {
     m_cursor = new QKmsCursor(this);
     initializeScreenMode();
@@ -101,11 +107,6 @@ QPlatformCursor *QKmsScreen::cursor() const
     return m_cursor;
 }
 
-GLuint QKmsScreen::framebufferObject() const
-{
-    return m_bufferManager.framebufferObject();
-}
-
 void QKmsScreen::initializeScreenMode()
 {
     //Determine optimal mode for screen
@@ -132,71 +133,100 @@ void QKmsScreen::initializeScreenMode()
     if (i == resources->count_crtcs)
         qFatal("No usable crtc for encoder.");
 
+    m_oldCrtc = drmModeGetCrtc(m_device->fd(), encoder->crtc_id);
+
     m_crtcId = resources->crtcs[i];
     m_mode = *mode;
     m_geometry = QRect(0, 0, m_mode.hdisplay, m_mode.vdisplay);
+    qDebug() << "kms initialized with geometry" << m_geometry;
     m_depth = 32;
     m_format = QImage::Format_RGB32;
     m_physicalSize = QSizeF(connector->mmWidth, connector->mmHeight);
 
-    //Setup three buffers for current mode
-    m_bufferManager.setupBuffersForMode(m_mode, 3);
+    m_gbmSurface = gbm_surface_create(m_device->gbmDevice(),
+                                      m_mode.hdisplay, m_mode.vdisplay,
+                                      GBM_BO_FORMAT_XRGB8888,
+                                      GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
 
-    //Set the Mode of the screen.
-    int ret = drmModeSetCrtc(m_device->fd(), m_crtcId, m_bufferManager.displayFramebufferId(),
-                             0, 0, &m_connectorId, 1, &m_mode);
-    if (ret)
-        qFatal("failed to set mode");
-
+    qDebug() << "created gbm surface" << m_gbmSurface << m_mode.hdisplay << m_mode.vdisplay;
     //Cleanup
     drmModeFreeEncoder(encoder);
     drmModeFreeConnector(connector);
     drmModeFreeResources(resources);
 }
 
-void QKmsScreen::bindFramebuffer()
+QSurfaceFormat QKmsScreen::tweakFormat(const QSurfaceFormat &format)
 {
-    if (m_bufferManager.framebufferObject()) {
-        glBindFramebuffer(GL_FRAMEBUFFER, m_bufferManager.framebufferObject());
+    QSurfaceFormat fmt = format;
+    fmt.setRedBufferSize(8);
+    fmt.setGreenBufferSize(8);
+    fmt.setBlueBufferSize(8);
+    if (fmt.alphaBufferSize() != -1)
+        fmt.setAlphaBufferSize(8);
+    return fmt;
+}
 
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                                  GL_COLOR_ATTACHMENT0,
-                                  GL_RENDERBUFFER,
-                                  m_bufferManager.renderTargetBuffer());
-    }
+void QKmsScreen::initializeWithFormat(const QSurfaceFormat &format)
+{
+    EGLDisplay display = m_device->eglDisplay();
+    EGLConfig config = q_configFromGLFormat(display, tweakFormat(format), true);
+
+    m_eglWindowSurface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)m_gbmSurface, NULL);
+    qDebug() << "created window surface";
 }
 
 void QKmsScreen::swapBuffers()
 {
-    waitForPageFlipComplete();
+    eglSwapBuffers(m_device->eglDisplay(), m_eglWindowSurface);
 
-    if ( m_flipReady )
-        performPageFlip();
-    //TODO: Do something with return value here
-    m_bufferManager.nextBuffer();
-    //qDebug() << "swapBuffers now rendering to " << m_bufferManager.renderTargetBuffer();
-    bindFramebuffer();
+    m_next_bo = gbm_surface_lock_front_buffer(m_gbmSurface);
+    if (!m_next_bo)
+        qFatal("kms: Failed to lock front buffer");
+
+    performPageFlip();
 }
 
 void QKmsScreen::performPageFlip()
 {
-    quint32 displayFramebufferId = m_bufferManager.displayFramebufferId();
-    //qDebug() << "Flipping to framebuffer: " << displayFramebufferId;
+    if (!m_next_bo)
+        return;
+
+    uint32_t width = gbm_bo_get_width(m_next_bo);
+    uint32_t height = gbm_bo_get_height(m_next_bo);
+    uint32_t stride = gbm_bo_get_pitch(m_next_bo);
+    uint32_t handle = gbm_bo_get_handle(m_next_bo).u32;
+
+    uint32_t fb_id;
+    int ret = drmModeAddFB(m_device->fd(), width, height, 24, 32,
+                           stride, handle, &fb_id);
+    if (ret) {
+        qFatal("kms: Failed to create fb: fd %d, w %d, h %d, stride %d, handle %d, ret %d",
+               m_device->fd(), width, height, stride, handle, ret);
+    }
+
+    if (!m_modeSet) {
+        //Set the Mode of the screen.
+        int ret = drmModeSetCrtc(m_device->fd(), m_crtcId, fb_id,
+                0, 0, &m_connectorId, 1, &m_mode);
+        if (ret)
+            qFatal("failed to set mode");
+        m_modeSet = true;
+    }
 
     int pageFlipStatus = drmModePageFlip(m_device->fd(), m_crtcId,
-                                         displayFramebufferId,
+                                         fb_id,
                                          DRM_MODE_PAGE_FLIP_EVENT, this);
     if (pageFlipStatus)
         qWarning("Pageflip status: %d", pageFlipStatus);
-
-    m_flipReady = false;
 }
 
-void QKmsScreen::setFlipReady(unsigned int time)
+void QKmsScreen::handlePageFlipped()
 {
-    m_flipReady = true;
-    m_refreshTime = time;
-    performPageFlip();
+    if (m_current_bo)
+        gbm_surface_release_buffer(m_gbmSurface, m_current_bo);
+
+    m_current_bo = m_next_bo;
+    m_next_bo = 0;
 }
 
 QKmsDevice * QKmsScreen::device() const
@@ -206,23 +236,25 @@ QKmsDevice * QKmsScreen::device() const
 
 void QKmsScreen::waitForPageFlipComplete()
 {
-    //Check manually if there is something to be read on the device
-    //as there are senarios where the signal is not received (starvation)
-    fd_set fdSet;
-    timeval timeValue;
-    int returnValue;
+    while (m_next_bo) {
+#if 0
+        //Check manually if there is something to be read on the device
+        //as there are senarios where the signal is not received (starvation)
+        fd_set fdSet;
+        timeval timeValue;
+        int returnValue;
 
-    FD_ZERO(&fdSet);
-    FD_SET(m_device->fd(), &fdSet);
-    timeValue.tv_sec = 0;
-    timeValue.tv_usec = m_refreshTime;
+        FD_ZERO(&fdSet);
+        FD_SET(m_device->fd(), &fdSet);
+        timeValue.tv_sec = 0;
+        timeValue.tv_usec = 1000;
 
-    returnValue = select(1, &fdSet, 0, 0, &timeValue);
+        returnValue = select(1, &fdSet, 0, 0, &timeValue);
+        printf("select returns %d\n", returnValue);
+#endif
 
-    if (returnValue) {
         m_device->handlePageFlipCompleted();
     }
-
 }
 
 

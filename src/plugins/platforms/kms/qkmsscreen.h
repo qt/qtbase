@@ -42,8 +42,23 @@
 #ifndef QKMSSCREEN_H
 #define QKMSSCREEN_H
 
+#include <stddef.h>
+
+#define EGL_EGLEXT_PROTOTYPES 1
+#define GL_GLEXT_PROTOTYPES 1
+
+extern "C" {
+#include <gbm.h>
+#include <xf86drmMode.h>
+#include <xf86drm.h>
+}
+
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
 #include <qpa/qplatformscreen.h>
-#include "qkmsbuffermanager.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -63,22 +78,28 @@ public:
     QSizeF physicalSize() const;
     QPlatformCursor *cursor() const;
 
-    GLuint framebufferObject() const;
     quint32 crtcId() const { return m_crtcId; }
     QKmsDevice *device() const;
 
+    void initializeWithFormat(const QSurfaceFormat &format);
+
     //Called by context for each screen
-    void bindFramebuffer();
     void swapBuffers();
-    void setFlipReady(unsigned int time);
+    void handlePageFlipped();
+
+    EGLSurface eglSurface() const { return m_eglWindowSurface; }
+
+    void waitForPageFlipComplete();
+
+    static QSurfaceFormat tweakFormat(const QSurfaceFormat &format);
 
 private:
     void performPageFlip();
     void initializeScreenMode();
-    void waitForPageFlipComplete();
 
     QKmsDevice *m_device;
-    bool m_flipReady;
+    gbm_bo *m_current_bo;
+    gbm_bo *m_next_bo;
     quint32 m_connectorId;
 
     quint32 m_crtcId;
@@ -88,9 +109,15 @@ private:
     int m_depth;
     QImage::Format m_format;
 
+    drmModeCrtcPtr m_oldCrtc;
+
     QKmsCursor *m_cursor;
-    QKmsBufferManager m_bufferManager;
     unsigned int m_refreshTime;
+
+    gbm_surface *m_gbmSurface;
+    EGLSurface m_eglWindowSurface;
+
+    bool m_modeSet;
 };
 
 QT_END_NAMESPACE

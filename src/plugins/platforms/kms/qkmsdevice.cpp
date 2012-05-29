@@ -73,37 +73,14 @@ QKmsDevice::QKmsDevice(const QString &path, QKmsIntegration *parent) :
         qFatal("EGL error");
     }
 
-    QString extensions = eglQueryString(m_eglDisplay, EGL_EXTENSIONS);
-    if (!extensions.contains(QString::fromLatin1("EGL_KHR_surfaceless_opengl"))) {
-        qFatal("EGL_KHR_surfaceless_opengl extension not available");
-    }
-
-    //Initialize EGLContext
-    static EGLint contextAttribs[] = {
-        EGL_CONTEXT_CLIENT_VERSION, 2,
-        EGL_NONE
-    };
-
-    eglBindAPI(EGL_OPENGL_ES_API);
-    m_eglContext = eglCreateContext(m_eglDisplay, 0, 0, contextAttribs);
-    if (m_eglContext == EGL_NO_CONTEXT) {
-        qWarning("Could not create the EGL context.");
-        eglTerminate(m_eglDisplay);
-        qFatal("EGL error");
-    }
-
     createScreens();
 
-    QSocketNotifier *notifier = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
-    connect(notifier, SIGNAL(activated(int)), this, SLOT(handlePageFlipCompleted()));
+//    QSocketNotifier *notifier = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
+//    connect(notifier, SIGNAL(activated(int)), this, SLOT(handlePageFlipCompleted()));
 }
 
 QKmsDevice::~QKmsDevice()
 {
-    if (m_eglContext != EGL_NO_CONTEXT) {
-        eglDestroyContext(m_eglDisplay, m_eglContext);
-        m_eglContext = EGL_NO_CONTEXT;
-    }
 }
 
 void QKmsDevice::createScreens()
@@ -127,7 +104,6 @@ void QKmsDevice::createScreens()
 
 void QKmsDevice::handlePageFlipCompleted()
 {
-    //qDebug() << "Display signal received";
     drmEventContext eventContext;
 
     memset(&eventContext, 0, sizeof eventContext);
@@ -143,21 +119,9 @@ void QKmsDevice::pageFlipHandler(int fd, unsigned int frame, unsigned int sec, u
     Q_UNUSED(frame)
     Q_UNUSED(sec)
     Q_UNUSED(usec)
-    static unsigned int previousTime = 0;
 
-    unsigned int currentTime = sec * 1000000 + usec;
-    unsigned int refreshTime = 0;
-//    qDebug() << "fd: " << fd << " frame: " << frame << " sec: "
-//             << sec << " usec: " << usec << " data: " << data
-//             << "msecs" << sec * 1000 + usec / 1000;
     QKmsScreen *screen = static_cast<QKmsScreen *>(data);
-
-    if (previousTime == 0)
-        refreshTime = 16000;
-    else
-        refreshTime = currentTime - previousTime;
-
-    screen->setFlipReady(refreshTime);
+    screen->handlePageFlipped();
 }
 
 QT_END_NAMESPACE

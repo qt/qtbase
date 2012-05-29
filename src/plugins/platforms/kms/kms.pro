@@ -17,7 +17,6 @@ SOURCES =   main.cpp \
             qkmswindow.cpp \
             qkmscursor.cpp \
             qkmsdevice.cpp \
-            qkmsbuffermanager.cpp \
             qkmsbackingstore.cpp \
             qkmsnativeinterface.cpp \
             qkmsudevlistener.cpp \
@@ -29,7 +28,6 @@ HEADERS =   qkmsintegration.h \
             qkmswindow.h \
             qkmscursor.h \
             qkmsdevice.h \
-            qkmsbuffermanager.h \
             qkmsbackingstore.h \
             qkmsnativeinterface.h \
             qkmsudevlistener.h \

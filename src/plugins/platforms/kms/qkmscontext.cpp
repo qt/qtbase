@@ -44,29 +44,56 @@
 #include "qkmscontext.h"
 #include "qkmswindow.h"
 
+#include <QOpenGLContext>
+
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QKmsContext::QKmsContext(QKmsDevice *device)
-    : QPlatformOpenGLContext(),
-      m_device(device)
+QKmsContext::QKmsContext(QOpenGLContext *context, QKmsDevice *device)
+    : QPlatformOpenGLContext()
+    , m_device(device)
 {
+    EGLDisplay display = m_device->eglDisplay();
+    EGLConfig config = q_configFromGLFormat(display, QKmsScreen::tweakFormat(context->format()), true);
+    m_format = q_glFormatFromConfig(display, config);
+
+    //Initialize EGLContext
+    static EGLint contextAttribs[] = {
+        EGL_CONTEXT_CLIENT_VERSION, context->format().majorVersion(),
+        EGL_NONE
+    };
+
+    eglBindAPI(EGL_OPENGL_ES_API);
+    m_eglContext = eglCreateContext(display, config, 0, contextAttribs);
+    if (m_eglContext == EGL_NO_CONTEXT) {
+        qWarning("QKmsContext::QKmsContext(): eglError: %x, this: %p",
+                 eglGetError(), this);
+        m_eglContext = 0;
+    }
+}
+
+bool QKmsContext::isValid() const
+{
+    return m_eglContext != EGL_NO_CONTEXT;
 }
 
 bool QKmsContext::makeCurrent(QPlatformSurface *surface)
 {
     EGLDisplay display = m_device->eglDisplay();
-    EGLContext context = m_device->eglContext();
-
-    bool ok = eglMakeCurrent(display, EGL_NO_SURFACE,
-                             EGL_NO_SURFACE, context);
-    if (!ok)
-        qWarning("QKmsContext::makeCurrent(): eglError: %d, this: %p",
-                 eglGetError(), this);
 
     QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
     QKmsScreen *screen = static_cast<QKmsScreen *> (QPlatformScreen::platformScreenForWindow(window->window()));
-    screen->bindFramebuffer();
+
+    EGLSurface eglSurface = screen->eglSurface();
+
+    screen->waitForPageFlipComplete();
+
+    bool ok = eglMakeCurrent(display, eglSurface, eglSurface, m_eglContext);
+    if (!ok)
+        qWarning("QKmsContext::makeCurrent(): eglError: %x, this: %p",
+                 eglGetError(), this);
+
     return true;
 }
 
@@ -75,17 +102,13 @@ void QKmsContext::doneCurrent()
     bool ok = eglMakeCurrent(m_device->eglDisplay(), EGL_NO_SURFACE, EGL_NO_SURFACE,
                              EGL_NO_CONTEXT);
     if (!ok)
-        qWarning("QKmsContext::doneCurrent(): eglError: %d, this: %p",
+        qWarning("QKmsContext::doneCurrent(): eglError: %x, this: %p",
                  eglGetError(), this);
 
 }
 
 void QKmsContext::swapBuffers(QPlatformSurface *surface)
 {
-    //After flush, the current render target should be moved to
-    //latest complete
-    glFlush();
-
     //Cast context to a window surface and get the screen the context
     //is on and call swapBuffers on that screen.
     QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
@@ -101,19 +124,12 @@ void (*QKmsContext::getProcAddress(const QByteArray &procName)) ()
 
 EGLContext QKmsContext::eglContext() const
 {
-    return m_device->eglContext();
+    return m_eglContext;
 }
 
 QSurfaceFormat QKmsContext::format() const
 {
-    return QSurfaceFormat();
-}
-
-GLuint QKmsContext::defaultFramebufferObject(QPlatformSurface *surface) const
-{
-    QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
-    QKmsScreen *screen = static_cast<QKmsScreen *> (QPlatformScreen::platformScreenForWindow(window->window()));
-    return screen->framebufferObject();
+    return m_format;
 }
 
 QT_END_NAMESPACE
