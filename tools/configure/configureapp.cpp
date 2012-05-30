@@ -2533,7 +2533,12 @@ void Configure::generateCachefile()
         if (!dictionary["DECORATIONS"].isEmpty())
             moduleStream << "decorations += "<<dictionary["DECORATIONS"]<<endl;
 
-        moduleStream << "CONFIG += create_prl link_prl" << endl;
+        moduleStream << "CONFIG += create_prl link_prl";
+        if (dictionary[ "SSE2" ] == "yes")
+            moduleStream << " sse2";
+        if (dictionary[ "IWMMXT" ] == "yes")
+            moduleStream << " iwmmxt";
+        moduleStream << endl;
 
         moduleStream.flush();
         moduleFile.close();
@@ -2668,10 +2673,6 @@ void Configure::generateQConfigPri()
             configStream << " ltcg";
         if (dictionary[ "RTTI" ] == "yes")
             configStream << " rtti";
-        if (dictionary[ "SSE2" ] == "yes")
-            configStream << " sse2";
-        if (dictionary[ "IWMMXT" ] == "yes")
-            configStream << " iwmmxt";
         if (dictionary["INCREDIBUILD_XGE"] == "yes")
             configStream << " incredibuild_xge";
         if (dictionary["PLUGIN_MANIFESTS"] == "no")

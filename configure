@@ -5781,7 +5781,7 @@ fi
 #-------------------------------------------------------------------------------
 QTMODULE="$outpath/mkspecs/qmodule.pri"
 
-echo "CONFIG += create_prl link_prl" >> "$QTMODULE.tmp"
+echo "CONFIG += $QMAKE_CONFIG create_prl link_prl" >> "$QTMODULE.tmp"
 
 # Ensure we can link to uninistalled libraries
 if [ "$BUILD_ON_MAC" != "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ] && linkerSupportsFlag -rpath-link "$outpath/lib"; then
@@ -5856,7 +5856,7 @@ QMAKE_INCDIR_QT  = \$\$QT_BUILD_TREE/include
 QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
 
 include(\$\$PWD/mkspecs/qmodule.pri)
-CONFIG += $QMAKE_CONFIG dylib depend_includepath fix_output_dirs no_private_qt_headers_warning QTDIR_build
+CONFIG += dylib depend_includepath fix_output_dirs no_private_qt_headers_warning QTDIR_build
 
 EOF
 
