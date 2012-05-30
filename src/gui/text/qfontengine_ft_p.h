@@ -361,7 +361,7 @@ inline QFontEngineFT::Glyph *QFontEngineFT::QGlyphSet::getGlyph(glyph_t index, Q
     return glyph_data.value(GlyphAndSubPixelPosition(index, subPixelPosition));
 }
 
-extern Q_GUI_EXPORT FT_Library qt_getFreetype();
+extern FT_Library qt_getFreetype();
 
 QT_END_NAMESPACE
 

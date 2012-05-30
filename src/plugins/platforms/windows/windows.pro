@@ -102,11 +102,9 @@ contains(QT_CONFIG, freetype) {
     QT_FREETYPE_DIR = $$QT_SOURCE_TREE/src/3rdparty/freetype
 
     HEADERS += \
-               qwindowsfontdatabase_ft.h \
-               $$QT_SOURCE_TREE/src/gui/text/qfontengine_ft_p.h
+               qwindowsfontdatabase_ft.h
     SOURCES += \
                qwindowsfontdatabase_ft.cpp \
-               $$QT_SOURCE_TREE/src/gui/text/qfontengine_ft.cpp \
                $$QT_FREETYPE_DIR/src/base/ftbase.c \
                $$QT_FREETYPE_DIR/src/base/ftbbox.c \
                $$QT_FREETYPE_DIR/src/base/ftdebug.c \
