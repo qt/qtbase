@@ -153,37 +153,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn HCURSOR_or_HANDLE QCursor::handle() const
-
-    Returns a platform-specific cursor handle. The \c
-    HCURSOR_or_HANDLE type is \c HCURSOR on Windows and Qt::HANDLE on X11
-    and Mac OS X. On \l{Qt for Embedded Linux} it is an integer.
-
-    \warning Using the value returned by this function is not
-    portable.
-*/
-
-/*!
-    \fn QCursor::QCursor(HCURSOR cursor)
-
-    Constructs a Qt cursor from the given Windows \a cursor.
-
-    \warning This function is only available on Windows.
-
-    \sa handle()
-*/
-
-/*!
-    \fn QCursor::QCursor(Qt::HANDLE handle)
-
-    Constructs a Qt cursor from the given \a handle.
-
-    \warning This function is only available on X11.
-
-    \sa handle()
-*/
-
-/*!
     \fn QPoint QCursor::pos(const QScreen *screen)
 
     Returns the position of the cursor (hot spot) of the \a screen
