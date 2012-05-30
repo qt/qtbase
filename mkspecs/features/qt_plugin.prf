@@ -12,6 +12,9 @@ contains(QT_CONFIG, separate_debug_info):CONFIG += separate_debug_info
 contains(QT_CONFIG, separate_debug_info_nocopy):CONFIG += separate_debug_info_nocopy
 contains(QT_CONFIG, c++11):CONFIG += c++11
 
+contains(QT_CONFIG, static):CONFIG += static
+else:CONFIG += shared
+
 load(qt_targets)
 
 wince*:LIBS += $$QMAKE_LIBS_GUI

@@ -5103,10 +5103,10 @@ elif [ "$CFG_DEBUG" = "no" ]; then
 fi
 if [ "$CFG_SHARED" = "yes" ]; then
     QMAKE_OUTDIR="${QMAKE_OUTDIR}-shared"
-    QMAKE_CONFIG="$QMAKE_CONFIG shared dll"
+    QT_CONFIG="$QT_CONFIG shared"
 elif [ "$CFG_SHARED" = "no" ]; then
     QMAKE_OUTDIR="${QMAKE_OUTDIR}-static"
-    QMAKE_CONFIG="$QMAKE_CONFIG static"
+    QT_CONFIG="$QT_CONFIG static"
 fi
 
 #FIXME: qpa is implicit this should all be removed
@@ -5551,6 +5551,16 @@ EOF
 
 echo '/* Compile time features */' >>"$outpath/src/corelib/global/qconfig.h.new"
 [ '!' -z "$LicenseKeyExt" ] && echo "#define QT_PRODUCT_LICENSEKEY \"$LicenseKeyExt\"" >>"$outpath/src/corelib/global/qconfig.h.new"
+
+if [ "$CFG_SHARED" = "no" ]; then
+    cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
+/* Qt was configured for a static build */
+#if !defined(QT_SHARED) && !defined(QT_STATIC)
+# define QT_STATIC
+#endif
+
+EOF
+fi
 
 if [ "$CFG_LARGEFILE" = "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     echo "#define QT_LARGEFILE_SUPPORT 64" >>"$outpath/src/corelib/global/qconfig.h.new"

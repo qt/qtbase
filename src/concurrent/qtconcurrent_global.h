@@ -48,24 +48,14 @@
 #  define QT_NO_QFUTURE
 #endif
 
-#if defined(Q_OS_WIN) && !defined(QT_NODLL)
-#  if defined(QT_MAKEDLL)
-#    if defined(QT_BUILD_CONCURRENT_LIB)
-#      define Q_CONCURRENT_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_CONCURRENT_EXPORT Q_DECL_IMPORT
-#    endif
-#  elif defined(QT_DLL)
-#    define Q_CONCURRENT_EXPORT Q_DECL_IMPORT
-#  endif
-#endif
-
-#if !defined(Q_CONCURRENT_EXPORT)
-#  if defined(QT_SHARED)
+#ifndef QT_STATIC
+#  if defined(QT_BUILD_CONCURRENT_LIB)
 #    define Q_CONCURRENT_EXPORT Q_DECL_EXPORT
 #  else
-#    define Q_CONCURRENT_EXPORT
+#    define Q_CONCURRENT_EXPORT Q_DECL_IMPORT
 #  endif
+#else
+#  define Q_CONCURRENT_EXPORT
 #endif
 
 #endif // include guard

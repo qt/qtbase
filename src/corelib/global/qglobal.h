@@ -460,16 +460,29 @@ class QDataStream;
 #define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
 
 /*
-   Create Qt DLL if QT_DLL is defined (Windows only)
+   The Qt modules' export macros.
+   The options are:
+    - defined(QT_STATIC): Qt was built or is being built in static mode
+    - defined(QT_SHARED): Qt was built or is being built in shared/dynamic mode
+   If neither was defined, then QT_SHARED is implied. If Qt was compiled in static
+   mode, QT_STATIC is defined in qconfig.h. In shared mode, QT_STATIC is implied
+   for the bootstrapped tools.
 */
 
-#if defined(Q_OS_WIN)
-#  if defined(QT_NODLL)
-#    undef QT_MAKEDLL
-#    undef QT_DLL
-#  elif defined(QT_MAKEDLL)        /* create a Qt DLL library */
-#    if defined(QT_DLL)
-#      undef QT_DLL
+#ifdef QT_BOOTSTRAPPED
+#  ifdef QT_SHARED
+#    error "QT_SHARED and QT_BOOTSTRAPPED together don't make sense. Please fix the build"
+#  elif !defined(QT_STATIC)
+#    define QT_STATIC
+#  endif
+#endif
+
+#if defined(QT_SHARED) || !defined(QT_STATIC)
+#  ifdef QT_STATIC
+#    error "Both QT_SHARED and QT_STATIC defined, please make up your mind"
+#  else
+#    ifndef QT_SHARED
+#      define QT_SHARED
 #    endif
 #    if defined(QT_BUILD_CORE_LIB)
 #      define Q_CORE_EXPORT Q_DECL_EXPORT
@@ -561,76 +574,27 @@ class QDataStream;
 #    else
 #      define Q_DBUS_EXPORT Q_DECL_IMPORT
 #    endif
-#    define Q_TEMPLATEDLL
-#  elif defined(QT_DLL) /* use a Qt DLL library */
-#    define Q_CORE_EXPORT Q_DECL_IMPORT
-#    define Q_GUI_EXPORT Q_DECL_IMPORT
-#    define Q_WIDGETS_EXPORT Q_DECL_IMPORT
-#    define Q_PLATFORMSUPPORT_EXPORT Q_DECL_IMPORT
-#    define Q_PRINTSUPPORT_EXPORT Q_DECL_IMPORT
-#    define Q_SQL_EXPORT Q_DECL_IMPORT
-#    define Q_NETWORK_EXPORT Q_DECL_IMPORT
-#    define Q_SVG_EXPORT Q_DECL_IMPORT
-#    define Q_CANVAS_EXPORT Q_DECL_IMPORT
-#    define Q_OPENGL_EXPORT Q_DECL_IMPORT
-#    define Q_MULTIMEDIA_EXPORT Q_DECL_IMPORT
-#    define Q_OPENVG_EXPORT Q_DECL_IMPORT
-#    define Q_XML_EXPORT Q_DECL_IMPORT
-#    define Q_XMLPATTERNS_EXPORT Q_DECL_IMPORT
-#    define Q_SCRIPT_EXPORT Q_DECL_IMPORT
-#    define Q_SCRIPTTOOLS_EXPORT Q_DECL_IMPORT
-#    define Q_COMPAT_EXPORT Q_DECL_IMPORT
-#    define Q_DBUS_EXPORT Q_DECL_IMPORT
-#    define Q_TEMPLATEDLL
 #  endif
-#  define Q_NO_DECLARED_NOT_DEFINED
 #else
-#  if defined(Q_OS_LINUX) && defined(Q_CC_BOR)
-#    define Q_TEMPLATEDLL
-#    define Q_NO_DECLARED_NOT_DEFINED
-#  endif
-#  undef QT_MAKEDLL /* ignore these for other platforms */
-#  undef QT_DLL
-#endif
-
-#if !defined(Q_CORE_EXPORT)
-#  if defined(QT_SHARED)
-#    define Q_CORE_EXPORT Q_DECL_EXPORT
-#    define Q_GUI_EXPORT Q_DECL_EXPORT
-#    define Q_WIDGETS_EXPORT Q_DECL_EXPORT
-#    define Q_PLATFORMSUPPORT_EXPORT Q_DECL_EXPORT
-#    define Q_PRINTSUPPORT_EXPORT Q_DECL_EXPORT
-#    define Q_SQL_EXPORT Q_DECL_EXPORT
-#    define Q_NETWORK_EXPORT Q_DECL_EXPORT
-#    define Q_SVG_EXPORT Q_DECL_EXPORT
-#    define Q_OPENGL_EXPORT Q_DECL_EXPORT
-#    define Q_MULTIMEDIA_EXPORT Q_DECL_EXPORT
-#    define Q_OPENVG_EXPORT Q_DECL_EXPORT
-#    define Q_XML_EXPORT Q_DECL_EXPORT
-#    define Q_XMLPATTERNS_EXPORT Q_DECL_EXPORT
-#    define Q_SCRIPT_EXPORT Q_DECL_EXPORT
-#    define Q_SCRIPTTOOLS_EXPORT Q_DECL_EXPORT
-#    define Q_COMPAT_EXPORT Q_DECL_EXPORT
-#    define Q_DBUS_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_CORE_EXPORT
-#    define Q_GUI_EXPORT
-#    define Q_WIDGETS_EXPORT
-#    define Q_PLATFORMSUPPORT_EXPORT
-#    define Q_PRINTSUPPORT_EXPORT
-#    define Q_SQL_EXPORT
-#    define Q_NETWORK_EXPORT
-#    define Q_SVG_EXPORT
-#    define Q_OPENGL_EXPORT
-#    define Q_MULTIMEDIA_EXPORT
-#    define Q_OPENVG_EXPORT
-#    define Q_XML_EXPORT
-#    define Q_XMLPATTERNS_EXPORT
-#    define Q_SCRIPT_EXPORT
-#    define Q_SCRIPTTOOLS_EXPORT
-#    define Q_COMPAT_EXPORT
-#    define Q_DBUS_EXPORT
-#  endif
+#  define Q_CORE_EXPORT
+#  define Q_GUI_EXPORT
+#  define Q_WIDGETS_EXPORT
+#  define Q_PLATFORMSUPPORT_EXPORT
+#  define Q_PRINTSUPPORT_EXPORT
+#  define Q_SQL_EXPORT
+#  define Q_NETWORK_EXPORT
+#  define Q_SVG_EXPORT
+#  define Q_QUICK1_EXPORT
+#  define Q_DECLARATIVE_EXPORT
+#  define Q_OPENGL_EXPORT
+#  define Q_MULTIMEDIA_EXPORT
+#  define Q_OPENVG_EXPORT
+#  define Q_XML_EXPORT
+#  define Q_SCRIPT_EXPORT
+#  define Q_SCRIPTTOOLS_EXPORT
+#  define Q_CANVAS_EXPORT
+#  define Q_COMPAT_EXPORT
+#  define Q_DBUS_EXPORT
 #endif
 
 /*
@@ -638,12 +602,10 @@ class QDataStream;
    for Qt's internal unit tests. If you want slower loading times and more
    symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
 */
-#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_WIN) && defined(QT_MAKEDLL)
+#if defined(QT_BUILD_INTERNAL) && defined(QT_BUILDING_QT) && defined(QT_SHARED)
 #    define Q_AUTOTEST_EXPORT Q_DECL_EXPORT
-#elif defined(QT_BUILD_INTERNAL) && defined(Q_OS_WIN) && defined(QT_DLL)
+#elif defined(QT_BUILD_INTERNAL) && defined(QT_SHARED)
 #    define Q_AUTOTEST_EXPORT Q_DECL_IMPORT
-#elif defined(QT_BUILD_INTERNAL) && !defined(Q_OS_WIN) && defined(QT_SHARED)
-#    define Q_AUTOTEST_EXPORT Q_DECL_EXPORT
 #else
 #    define Q_AUTOTEST_EXPORT
 #endif

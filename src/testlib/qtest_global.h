@@ -49,7 +49,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
-#if !defined(QT_SHARED) && !defined(QT_DLL)
+#if defined(QT_STATIC)
 # define Q_TESTLIB_EXPORT
 #else
 # ifdef QT_BUILD_TESTLIB_LIB

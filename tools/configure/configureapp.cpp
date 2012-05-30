@@ -2305,6 +2305,11 @@ void Configure::generateOutputVars()
         qtConfig += "release";
     }
 
+    if (dictionary[ "SHARED" ] == "no")
+        qtConfig += "static";
+    else
+        qtConfig += "shared";
+
     if (dictionary[ "WIDGETS" ] == "no")
         qtConfig += "no-widgets";
 
@@ -2937,10 +2942,6 @@ void Configure::generateQConfigPri()
 
         configStream << "CONFIG+= ";
         configStream << dictionary[ "BUILD" ];
-        if (dictionary[ "SHARED" ] == "yes")
-            configStream << " shared";
-        else
-            configStream << " static";
 
         if (dictionary[ "LTCG" ] == "yes")
             configStream << " ltcg";
@@ -3094,12 +3095,13 @@ void Configure::generateConfigfiles()
         }
         tmpStream << endl;
 
-        if (dictionary[ "SHARED" ] == "yes") {
-            tmpStream << "#ifndef QT_DLL" << endl;
-            tmpStream << "#define QT_DLL" << endl;
-            tmpStream << "#endif" << endl;
+        if (dictionary[ "SHARED" ] == "no") {
+            tmpStream << "/* Qt was configured for a static build */" << endl
+                      << "#if !defined(QT_SHARED) && !defined(QT_STATIC)" << endl
+                      << "# define QT_STATIC" << endl
+                      << "#endif" << endl
+                      << endl;
         }
-        tmpStream << endl;
         tmpStream << "/* License information */" << endl;
         tmpStream << "#define QT_PRODUCT_LICENSEE \"" << licenseInfo[ "LICENSEE" ] << "\"" << endl;
         tmpStream << "#define QT_PRODUCT_LICENSE \"" << dictionary[ "EDITION" ] << "\"" << endl;
