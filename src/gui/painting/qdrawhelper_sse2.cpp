@@ -41,7 +41,7 @@
 
 #include <private/qdrawhelper_x86_p.h>
 
-#ifdef QT_HAVE_SSE2
+#ifdef QT_COMPILER_SUPPORTS_SSE2
 
 #include <private/qdrawingprimitive_sse2_p.h>
 #include <private/qpaintengine_raster_p.h>
@@ -663,4 +663,4 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
 
 QT_END_NAMESPACE
 
-#endif // QT_HAVE_SSE2
+#endif // QT_COMPILER_SUPPORTS_SSE2

@@ -102,7 +102,7 @@ static inline uint detectProcessorFeatures()
     return features;
 }
 
-#elif defined(Q_PROCESSOR_ARM) || defined(QT_HAVE_IWMMXT) || defined(QT_HAVE_NEON)
+#elif defined(Q_PROCESSOR_ARM) || defined(QT_COMPILER_SUPPORTS_IWMMXT) || defined(QT_COMPILER_SUPPORTS_NEON)
 static inline uint detectProcessorFeatures()
 {
     uint features = 0;
@@ -136,7 +136,7 @@ static inline uint detectProcessorFeatures()
     // fall back if /proc/self/auxv wasn't found
 #endif
 
-#if defined(QT_HAVE_IWMMXT)
+#if defined(QT_COMPILER_SUPPORTS_IWMMXT)
     // runtime detection only available when running as a previlegied process
     features = IWMMXT;
 #elif defined(QT_ALWAYS_HAVE_NEON)

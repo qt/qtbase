@@ -46,12 +46,37 @@
 
 QT_BEGIN_HEADER
 
+/*
+ * qt_module_config.prf defines the QT_COMPILER_SUPPORTS_XXX macros.
+ * They mean the compiler supports the necessary flags and the headers
+ * for the x86 and ARM intrinsics:
+ *  - GCC: the -mXXX or march=YYY flag is necessary before #include
+ *  - Intel CC: #include can happen unconditionally
+ *  - MSVC: #include can happen unconditionally
+ *  - RVCT: ???
+ *
+ * We will try to include all headers possible under this configuration.
+ *
+ * Supported XXX are:
+ *   Flag  | Arch |  GCC  | Intel CC |  MSVC  |
+ *  NEON   | ARM  | I & C | None     |   ?    |
+ *  IWMMXT | ARM  | I & C | None     | I & C  |
+ *  SSE2   | x86  | I & C | I & C    | I & C  |
+ *  SSE3   | x86  | I & C | I & C    | I only |
+ *  SSSE3  | x86  | I & C | I & C    | I only |
+ *  SSE4_1 | x86  | I & C | I & C    | I only |
+ *  SSE4_2 | x86  | I & C | I & C    | I only |
+ *  AVX    | x86  | I & C | I & C    | I & C  |
+ *  AVX2   | x86  | I & C | I & C    | I only |
+ * I = intrinsics; C = code generation
+ */
+
 #ifdef __MINGW64_VERSION_MAJOR
 #include <intrin.h>
 #endif
 
 // SSE intrinsics
-#if defined(QT_HAVE_SSE2) && (defined(__SSE2__) || defined(Q_CC_MSVC))
+#if defined(__SSE2__) || (defined(QT_COMPILER_SUPPORTS_SSE2) && defined(Q_CC_MSVC))
 #if defined(QT_LINUXBASE)
 /// this is an evil hack - the posix_memalign declaration in LSB
 /// is wrong - see http://bugs.linuxbase.org/show_bug.cgi?id=2431
@@ -61,37 +86,33 @@ QT_BEGIN_HEADER
 #else
 #  include <emmintrin.h>
 #endif
+#endif
 
 // SSE3 intrinsics
-#if defined(QT_HAVE_SSE3) && (defined(__SSE3__) || defined(Q_CC_MSVC))
+#if defined(__SSE3__) || (defined(QT_COMPILER_SUPPORTS_SSE3) && defined(Q_CC_MSVC))
 #include <pmmintrin.h>
 #endif
 
 // SSSE3 intrinsics
-#if defined(QT_HAVE_SSSE3) && (defined(__SSSE3__) || defined(Q_CC_MSVC))
+#if defined(__SSSE3__) || (defined(QT_COMPILER_SUPPORTS_SSSE3) && defined(Q_CC_MSVC))
 #include <tmmintrin.h>
 #endif
 
 // SSE4.1 intrinsics
-#if defined(QT_HAVE_SSE4_1) && (defined(__SSE4_1__) || defined(Q_CC_MSVC))
+#if defined(__SSE4_1__) || (defined(QT_COMPILER_SUPPORTS_SSE4_1) && defined(Q_CC_MSVC))
 #include <smmintrin.h>
 #endif
 
 // SSE4.2 intrinsics
-#if defined(QT_HAVE_SSE4_2) && (defined(__SSE4_2__) || defined(Q_CC_MSVC))
+#if defined(__SSE4_2__) || (defined(QT_COMPILER_SUPPORTS_SSE4_2) && defined(Q_CC_MSVC))
 #include <nmmintrin.h>
 #endif
 
 // AVX intrinsics
-#if defined(QT_HAVE_AVX) && (defined(__AVX__) || defined(Q_CC_MSVC))
+#if defined(__AVX__) || (defined(QT_COMPILER_SUPPORTS_AVX) && defined(Q_CC_MSVC))
+// immintrin.h is the ultimate header, we don't need anything else after this
 #include <immintrin.h>
 #endif
-
-
-#if !defined(QT_BOOTSTRAPPED) && (!defined(Q_CC_MSVC) || (defined(_M_X64) || _M_IX86_FP == 2))
-#define QT_ALWAYS_HAVE_SSE2
-#endif
-#endif // defined(QT_HAVE_SSE2) && (defined(__SSE2__) || defined(Q_CC_MSVC))
 
 // NEON intrinsics
 #if defined __ARM_NEON__
@@ -101,14 +122,14 @@ QT_BEGIN_HEADER
 
 
 // IWMMXT intrinsics
-#if defined(QT_HAVE_IWMMXT)
+#if defined(QT_COMPILER_SUPPORTS_IWMMXT)
 #include <mmintrin.h>
 #if defined(Q_OS_WINCE)
 #  include "qplatformdefs.h"
 #endif
 #endif
 
-#if defined(QT_HAVE_IWMMXT)
+#if defined(QT_COMPILER_SUPPORTS_IWMMXT)
 #if !defined(__IWMMXT__) && !defined(Q_OS_WINCE)
 #  include <xmmintrin.h>
 #elif defined(Q_OS_WINCE_STD) && defined(_X86_)

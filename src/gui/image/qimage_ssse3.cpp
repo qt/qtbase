@@ -43,7 +43,7 @@
 #include <private/qimage_p.h>
 #include <private/qsimd_p.h>
 
-#ifdef QT_HAVE_SSSE3
+#ifdef QT_COMPILER_SUPPORTS_SSSE3
 
 QT_BEGIN_NAMESPACE
 
@@ -146,4 +146,4 @@ void convert_RGB888_to_RGB32_ssse3(QImageData *dest, const QImageData *src, Qt::
 
 QT_END_NAMESPACE
 
-#endif // QT_HAVE_SSSE3
+#endif // QT_COMPILER_SUPPORTS_SSSE3

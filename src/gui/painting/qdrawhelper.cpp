@@ -56,7 +56,7 @@
 #include <private/qpainter_p.h>
 #include <private/qdrawhelper_x86_p.h>
 #include <private/qdrawhelper_neon_p.h>
-#ifdef QT_HAVE_MIPS_DSP
+#ifdef QT_COMPILER_SUPPORTS_MIPS_DSP
 #include <private/qdrawhelper_mips_dsp_p.h>
 #endif
 #include <private/qmath_p.h>
@@ -555,7 +555,7 @@ static const uint *QT_FASTCALL fetchUntransformedRGB16(uint *buffer, const Opera
                                                        int length)
 {
     const quint16 *scanLine = (const quint16 *)data->texture.scanLine(y) + x;
-#ifdef QT_HAVE_MIPS_DSPR2
+#ifdef QT_COMPILER_SUPPORTS_MIPS_DSPR2
     qConvertRgb16To32_asm_mips_dspr2(buffer, scanLine, length);
 #else
     for (int i = 0; i < length; ++i)
@@ -5805,7 +5805,7 @@ void qInitDrawhelperAsm()
 
     const uint features = qDetectCPUFeatures();
     if (false) {
-#ifdef QT_HAVE_AVX
+#ifdef QT_COMPILER_SUPPORTS_AVX
     } else if (features & AVX) {
         qt_memfill32 = qt_memfill32_avx;
         qt_memfill16 = qt_memfill16_avx;
@@ -5823,7 +5823,7 @@ void qInitDrawhelperAsm()
         qScaleFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_avx;
         qScaleFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_avx;
 #endif
-#ifdef QT_HAVE_SSE2
+#ifdef QT_COMPILER_SUPPORTS_SSE2
     } else if (features & SSE2) {
         qt_memfill32 = qt_memfill32_sse2;
         qt_memfill16 = qt_memfill16_sse2;
@@ -5843,7 +5843,7 @@ void qInitDrawhelperAsm()
 #endif
     }
 
-#ifdef QT_HAVE_SSE2
+#ifdef QT_COMPILER_SUPPORTS_SSE2
     if (features & SSE2) {
         extern void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                                                  const uchar *srcPixels, int sbpl,
@@ -5865,7 +5865,7 @@ void qInitDrawhelperAsm()
         qt_fetch_radial_gradient = qt_fetch_radial_gradient_sse2;
     }
 
-#ifdef QT_HAVE_SSSE3
+#ifdef QT_COMPILER_SUPPORTS_SSSE3
     if (features & SSSE3) {
         extern void qt_blend_argb32_on_argb32_ssse3(uchar *destPixels, int dbpl,
                                                     const uchar *srcPixels, int sbpl,
@@ -5877,7 +5877,7 @@ void qInitDrawhelperAsm()
     }
 #endif // SSSE3
 
-#ifdef QT_HAVE_AVX
+#ifdef QT_COMPILER_SUPPORTS_AVX
     if (features & AVX) {
         extern void qt_blend_rgb32_on_rgb32_avx(uchar *destPixels, int dbpl,
                                                 const uchar *srcPixels, int sbpl,
@@ -5902,13 +5902,13 @@ void qInitDrawhelperAsm()
 
 #endif // SSE2
 
-#ifdef QT_HAVE_SSE2
+#ifdef QT_COMPILER_SUPPORTS_SSE2
     if (features & SSE2) {
         functionForModeAsm = qt_functionForMode_SSE2;
         functionForModeSolidAsm = qt_functionForModeSolid_SSE2;
         }
 #endif
-#ifdef QT_HAVE_AVX
+#ifdef QT_COMPILER_SUPPORTS_AVX
         if (features & AVX) {
             extern void QT_FASTCALL comp_func_SourceOver_avx(uint *destPixels,
                                                              const uint *srcPixels,
@@ -5925,7 +5925,7 @@ void qInitDrawhelperAsm()
     }
 #endif // SSE2
 
-#ifdef QT_HAVE_IWMMXT
+#ifdef QT_COMPILER_SUPPORTS_IWMMXT
     if (features & IWMMXT) {
         functionForModeAsm = qt_functionForMode_IWMMXT;
         functionForModeSolidAsm = qt_functionForModeSolid_IWMMXT;
@@ -5933,7 +5933,7 @@ void qInitDrawhelperAsm()
     }
 #endif // IWMMXT
 
-#if defined(QT_HAVE_NEON)
+#if defined(QT_COMPILER_SUPPORTS_NEON)
     if (features & NEON) {
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
@@ -5968,7 +5968,7 @@ void qInitDrawhelperAsm()
     }
 #endif
 
-#if defined(QT_HAVE_MIPS_DSP)
+#if defined(QT_COMPILER_SUPPORTS_MIPS_DSP)
         functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_asm_mips_dsp;
         functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_mips_dsp;
 
@@ -5983,7 +5983,7 @@ void qInitDrawhelperAsm()
 
         destStoreProc[QImage::Format_ARGB32] = qt_destStoreARGB32_mips_dsp;
 
-#endif // QT_HAVE_MIPS_DSP
+#endif // QT_COMPILER_SUPPORTS_MIPS_DSP
     if (functionForModeSolidAsm) {
         const int destinationMode = QPainter::CompositionMode_Destination;
         functionForModeSolidAsm[destinationMode] = functionForModeSolid_C[destinationMode];

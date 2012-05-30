@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#ifdef QT_HAVE_IWMMXT
+#ifdef QT_COMPILER_SUPPORTS_IWMMXT
 
 #include <mmintrin.h>
 #if defined(Q_OS_WINCE)
@@ -143,6 +143,6 @@ void qt_blend_color_argb_iwmmxt(int count, const QSpan *spans, void *userData)
                                                (CompositionFunctionSolid*)qt_functionForModeSolid_IWMMXT);
 }
 
-#endif // QT_HAVE_IWMMXT
+#endif // QT_COMPILER_SUPPORTS_IWMMXT
 
 QT_END_NAMESPACE

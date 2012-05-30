@@ -45,7 +45,7 @@
 #include <private/qdrawhelper_p.h>
 #include <private/qdrawingprimitive_sse2_p.h>
 
-#ifdef QT_HAVE_SSE2
+#ifdef QT_COMPILER_SUPPORTS_SSE2
 
 QT_BEGIN_NAMESPACE
 
@@ -106,4 +106,4 @@ bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionF
 
 QT_END_NAMESPACE
 
-#endif // QT_HAVE_SSE2
+#endif // QT_COMPILER_SUPPORTS_SSE2

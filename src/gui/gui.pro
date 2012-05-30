@@ -39,7 +39,6 @@ include(animation/animation.pri)
 QMAKE_LIBS += $$QMAKE_LIBS_GUI
 
 neon:*-g++* {
-    DEFINES += QT_HAVE_NEON
     HEADERS += $$NEON_HEADERS
 
     DRAWHELPER_NEON_ASM_FILES = $$NEON_ASM
@@ -115,12 +114,10 @@ win32:!contains(QT_CONFIG, directwrite) {
     }
 
 mips_dsp:*-g++* {
-    DEFINES += QT_HAVE_MIPS_DSP
     HEADERS += $$MIPS_DSP_HEADERS
 
     DRAWHELPER_MIPS_DSP_ASM_FILES = $$MIPS_DSP_ASM
         mips_dspr2 {
-            DEFINES += QT_HAVE_MIPS_DSPR2
             DRAWHELPER_MIPS_DSP_ASM_FILES += $$MIPS_DSPR2_ASM
         }
     mips_dsp_compiler.commands = $$QMAKE_CXX -c

@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(QT_HAVE_MIPS_DSP)
+#if defined(QT_COMPILER_SUPPORTS_MIPS_DSP)
 
 extern "C" void qt_memfill32_asm_mips_dsp(quint32 *dest, quint32 value, int count);
 
@@ -71,13 +71,13 @@ uint * QT_FASTCALL qt_destFetchARGB32_mips_dsp(uint *buffer,
 void QT_FASTCALL qt_destStoreARGB32_mips_dsp(QRasterBuffer *rasterBuffer, int x, int y,
                                              const uint *buffer, int length);
 
-#ifdef QT_HAVE_MIPS_DSPR2
+#ifdef QT_COMPILER_SUPPORTS_MIPS_DSPR2
 
 extern "C" void  qConvertRgb16To32_asm_mips_dspr2(quint32 *dest, const quint16 *src, int length);
 
-#endif // QT_HAVE_MIPS_DSPR2
+#endif // QT_COMPILER_SUPPORTS_MIPS_DSPR2
 
-#endif // QT_HAVE_MIPS_DSP
+#endif // QT_COMPILER_SUPPORTS_MIPS_DSP
 
 QT_END_NAMESPACE
 

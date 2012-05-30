@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef QT_HAVE_SSE2
+#ifdef QT_COMPILER_SUPPORTS_SSE2
 void qt_memfill32_sse2(quint32 *dest, quint32 value, int count);
 void qt_memfill16_sse2(quint16 *dest, quint16 value, int count);
 void qt_bitmapblit32_sse2(QRasterBuffer *rasterBuffer, int x, int y,
@@ -77,9 +77,9 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
 
 extern CompositionFunction qt_functionForMode_SSE2[];
 extern CompositionFunctionSolid qt_functionForModeSolid_SSE2[];
-#endif // QT_HAVE_SSE2
+#endif // QT_COMPILER_SUPPORTS_SSE2
 
-#ifdef QT_HAVE_AVX
+#ifdef QT_COMPILER_SUPPORTS_AVX
 void qt_memfill32_avx(quint32 *dest, quint32 value, int count);
 void qt_memfill16_avx(quint16 *dest, quint16 value, int count);
 void qt_bitmapblit32_avx(QRasterBuffer *rasterBuffer, int x, int y,
@@ -96,9 +96,9 @@ void qt_blend_rgb32_on_rgb32_avx(uchar *destPixels, int dbpl,
                                  const uchar *srcPixels, int sbpl,
                                  int w, int h,
                                  int const_alpha);
-#endif // QT_HAVE_AVX
+#endif // QT_COMPILER_SUPPORTS_AVX
 
-#ifdef QT_HAVE_IWMMXT
+#ifdef QT_COMPILER_SUPPORTS_IWMMXT
 void qt_blend_color_argb_iwmmxt(int count, const QSpan *spans, void *userData);
 
 extern CompositionFunction qt_functionForMode_IWMMXT[];

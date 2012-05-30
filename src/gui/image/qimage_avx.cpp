@@ -41,7 +41,7 @@
 
 #include <private/qsimd_p.h>
 
-#ifdef QT_HAVE_AVX
+#ifdef QT_COMPILER_SUPPORTS_AVX
 
 #ifndef __AVX__
 #error "AVX not enabled in this file, cannot proceed"

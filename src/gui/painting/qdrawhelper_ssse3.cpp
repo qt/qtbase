@@ -41,7 +41,7 @@
 
 #include <private/qdrawhelper_x86_p.h>
 
-#ifdef QT_HAVE_SSSE3
+#ifdef QT_COMPILER_SUPPORTS_SSSE3
 
 #include <private/qdrawingprimitive_sse2_p.h>
 
@@ -180,4 +180,4 @@ void qt_blend_argb32_on_argb32_ssse3(uchar *destPixels, int dbpl,
 
 QT_END_NAMESPACE
 
-#endif // QT_HAVE_SSSE3
+#endif // QT_COMPILER_SUPPORTS_SSSE3

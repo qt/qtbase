@@ -45,7 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(QT_HAVE_MIPS_DSP)
+#if defined(QT_COMPILER_SUPPORTS_MIPS_DSP)
 
 extern "C" uint INTERPOLATE_PIXEL_255_asm_mips_dsp(uint x, uint a, uint y, uint b);
 
@@ -55,13 +55,13 @@ extern "C" uint * destfetchARGB32_asm_mips_dsp(uint *buffer, const uint *data, i
 
 extern "C" uint * qt_destStoreARGB32_asm_mips_dsp(uint *buffer, const uint *data, int length);
 
-#if defined(QT_HAVE_MIPS_DSPR2)
+#if defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
 
 extern "C" uint INTERPOLATE_PIXEL_255_asm_mips_dspr2(uint x, uint a, uint y, uint b);
 
 extern "C" uint BYTE_MUL_asm_mips_dspr2(uint x, uint a);
 
-#endif // QT_HAVE_MIPS_DSPR2
+#endif // QT_COMPILER_SUPPORTS_MIPS_DSPR2
 
 void qt_blend_argb32_on_argb32_mips_dsp(uchar *destPixels, int dbpl,
                                       const uchar *srcPixels, int sbpl,
@@ -85,7 +85,7 @@ void qt_blend_argb32_on_argb32_mips_dsp(uchar *destPixels, int dbpl,
                 if (s >= 0xff000000)
                     dst[x] = s;
                 else if (s != 0)
-#if !defined(QT_HAVE_MIPS_DSPR2)
+#if !defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
                     dst[x] = s + BYTE_MUL_asm_mips_dsp(dst[x], qAlpha(~s));
 #else
                     dst[x] = s + BYTE_MUL_asm_mips_dspr2(dst[x], qAlpha(~s));
@@ -98,7 +98,7 @@ void qt_blend_argb32_on_argb32_mips_dsp(uchar *destPixels, int dbpl,
         const_alpha = (const_alpha * 255) >> 8;
         for (int y=0; y<h; ++y) {
             for (int x=0; x<w; ++x) {
-#if !defined(QT_HAVE_MIPS_DSPR2)
+#if !defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
                 uint s = BYTE_MUL_asm_mips_dsp(src[x], const_alpha);
                 dst[x] = s + BYTE_MUL_asm_mips_dsp(dst[x], qAlpha(~s));
 #else
@@ -146,7 +146,7 @@ void comp_func_Source_mips_dsp(uint *dest, const uint *src, int length, uint con
     } else {
         int ialpha = 255 - const_alpha;
         for (int i = 0; i < length; ++i) {
-#if !defined(QT_HAVE_MIPS_DSPR2)
+#if !defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
             dest[i] = INTERPOLATE_PIXEL_255_asm_mips_dsp(src[i], const_alpha, dest[i], ialpha);
 #else
             dest[i] = INTERPOLATE_PIXEL_255_asm_mips_dspr2(src[i], const_alpha, dest[i], ialpha);
@@ -171,6 +171,6 @@ void QT_FASTCALL qt_destStoreARGB32_mips_dsp(QRasterBuffer *rasterBuffer, int x,
     qt_destStoreARGB32_asm_mips_dsp(data, buffer, length);
 }
 
-#endif // QT_HAVE_MIPS_DSP
+#endif // QT_COMPILER_SUPPORTS_MIPS_DSP
 
 QT_END_NAMESPACE

@@ -41,7 +41,7 @@
 
 #include <private/qsimd_p.h>
 
-#ifdef QT_HAVE_AVX
+#ifdef QT_COMPILER_SUPPORTS_AVX
 #define QDRAWHELPER_AVX
 
 #ifndef __AVX__

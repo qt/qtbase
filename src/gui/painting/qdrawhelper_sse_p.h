@@ -55,7 +55,7 @@
 
 #include <private/qdrawhelper_mmx_p.h>
 
-#ifdef QT_HAVE_SSE
+#ifdef QT_COMPILER_SUPPORTS_SSE
 
 #ifdef QT_LINUXBASE
 // this is an evil hack - the posix_memalign declaration in LSB
@@ -178,5 +178,5 @@ inline void qt_bitmapblit16_sse_template(QRasterBuffer *rasterBuffer,
 
 QT_END_NAMESPACE
 
-#endif // QT_HAVE_SSE
+#endif // QT_COMPILER_SUPPORTS_SSE
 #endif // QDRAWHELPER_SSE_P_H
