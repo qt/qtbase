@@ -1011,7 +1011,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
 
     QVarLengthArray<HB_UChar16, 256> casedString;
     if (hasCaseChange(si)) {
-        if (casedString.size() < entire_shaper_item.item.length)
+        if (casedString.size() < static_cast<int>(entire_shaper_item.item.length))
             casedString.resize(entire_shaper_item.item.length);
         HB_UChar16 *uc = casedString.data();
         for (uint i = 0; i < entire_shaper_item.item.length; ++i) {
