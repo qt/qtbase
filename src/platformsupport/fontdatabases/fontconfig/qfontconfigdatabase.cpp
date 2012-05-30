@@ -751,7 +751,30 @@ QString QFontconfigDatabase::resolveFontFamilyAlias(const QString &family) const
 
 QFont QFontconfigDatabase::defaultFont() const
 {
-    return QFont(resolveFontFamilyAlias(QString()));
+    // Hack to get system default language until FcGetDefaultLangs()
+    // is exported (https://bugs.freedesktop.org/show_bug.cgi?id=32853)
+    // or https://bugs.freedesktop.org/show_bug.cgi?id=35482 is fixed
+    FcPattern *dummy = FcPatternCreate();
+    FcDefaultSubstitute(dummy);
+    FcChar8 *lang = 0;
+    FcResult res = FcPatternGetString(dummy, FC_LANG, 0, &lang);
+
+    FcPattern *pattern = FcPatternCreate();
+    if (res == FcResultMatch) {
+        // Make defaultFont pattern matching locale language aware, because
+        // certain FC_LANG based custom rules may happen in FcConfigSubstitute()
+        FcPatternAddString(pattern, FC_LANG, lang);
+    }
+    FcConfigSubstitute(0, pattern, FcMatchPattern);
+    FcDefaultSubstitute(pattern);
+
+    FcChar8 *familyAfterSubstitution = 0;
+    FcPatternGetString(pattern, FC_FAMILY, 0, &familyAfterSubstitution);
+    QString resolved = QString::fromUtf8((const char *) familyAfterSubstitution);
+    FcPatternDestroy(pattern);
+    FcPatternDestroy(dummy);
+
+    return QFont(resolved);
 }
 
 QT_END_NAMESPACE
