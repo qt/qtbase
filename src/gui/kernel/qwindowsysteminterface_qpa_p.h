@@ -44,6 +44,7 @@
 #include "qwindowsysteminterface_qpa.h"
 
 #include <QElapsedTimer>
+#include <QPointer>
 
 QT_BEGIN_HEADER
 
@@ -88,7 +89,7 @@ public:
     public:
         explicit CloseEvent(QWindow *w)
             : WindowSystemEvent(Close), window(w) { }
-        QWeakPointer<QWindow> window;
+        QPointer<QWindow> window;
     };
 
     class GeometryChangeEvent : public WindowSystemEvent {
@@ -96,7 +97,7 @@ public:
         GeometryChangeEvent(QWindow *tlw, const QRect &newGeometry)
             : WindowSystemEvent(GeometryChange), tlw(tlw), newGeometry(newGeometry)
         { }
-        QWeakPointer<QWindow> tlw;
+        QPointer<QWindow> tlw;
         QRect newGeometry;
     };
 
@@ -105,7 +106,7 @@ public:
         explicit EnterEvent(QWindow *enter)
             : WindowSystemEvent(Enter), enter(enter)
         { }
-        QWeakPointer<QWindow> enter;
+        QPointer<QWindow> enter;
     };
 
     class LeaveEvent : public WindowSystemEvent {
@@ -113,7 +114,7 @@ public:
         explicit LeaveEvent(QWindow *leave)
             : WindowSystemEvent(Leave), leave(leave)
         { }
-        QWeakPointer<QWindow> leave;
+        QPointer<QWindow> leave;
     };
 
     class ActivatedWindowEvent : public WindowSystemEvent {
@@ -121,7 +122,7 @@ public:
         explicit ActivatedWindowEvent(QWindow *activatedWindow)
             : WindowSystemEvent(ActivatedWindow), activated(activatedWindow)
         { }
-        QWeakPointer<QWindow> activated;
+        QPointer<QWindow> activated;
     };
 
     class WindowStateChangedEvent : public WindowSystemEvent {
@@ -130,7 +131,7 @@ public:
             : WindowSystemEvent(WindowStateChanged), window(_window), newState(_newState)
         { }
 
-        QWeakPointer<QWindow> window;
+        QPointer<QWindow> window;
         Qt::WindowState newState;
     };
 
@@ -138,7 +139,7 @@ public:
     public:
         UserEvent(QWindow * w, ulong time, EventType t)
             : WindowSystemEvent(t), window(w), nullWindow(w == 0), timestamp(time) { }
-        QWeakPointer<QWindow> window;
+        QPointer<QWindow> window;
         bool nullWindow;
         unsigned long timestamp;
     };
@@ -209,7 +210,7 @@ public:
     public:
         ScreenOrientationEvent(QScreen *s, Qt::ScreenOrientation o)
             : WindowSystemEvent(ScreenOrientation), screen(s), orientation(o) { }
-        QWeakPointer<QScreen> screen;
+        QPointer<QScreen> screen;
         Qt::ScreenOrientation orientation;
     };
 
@@ -217,7 +218,7 @@ public:
     public:
         ScreenGeometryEvent(QScreen *s, const QRect &g)
             : WindowSystemEvent(ScreenGeometry), screen(s), geometry(g) { }
-        QWeakPointer<QScreen> screen;
+        QPointer<QScreen> screen;
         QRect geometry;
     };
 
@@ -225,7 +226,7 @@ public:
     public:
         ScreenAvailableGeometryEvent(QScreen *s, const QRect &g)
             : WindowSystemEvent(ScreenAvailableGeometry), screen(s), availableGeometry(g) { }
-        QWeakPointer<QScreen> screen;
+        QPointer<QScreen> screen;
         QRect availableGeometry;
     };
 
@@ -233,7 +234,7 @@ public:
     public:
         ScreenLogicalDotsPerInchEvent(QScreen *s, qreal dx, qreal dy)
             : WindowSystemEvent(ScreenLogicalDotsPerInch), screen(s), dpiX(dx), dpiY(dy) { }
-        QWeakPointer<QScreen> screen;
+        QPointer<QScreen> screen;
         qreal dpiX;
         qreal dpiY;
     };
@@ -242,7 +243,7 @@ public:
     public:
         ScreenRefreshRateEvent(QScreen *s, qreal r)
             : WindowSystemEvent(ScreenRefreshRate), screen(s), rate(r) { }
-        QWeakPointer<QScreen> screen;
+        QPointer<QScreen> screen;
         qreal rate;
     };
 
@@ -250,13 +251,13 @@ public:
     public:
         explicit ThemeChangeEvent(QWindow * w)
             : WindowSystemEvent(ThemeChange), window(w) { }
-        QWeakPointer<QWindow> window;
+        QPointer<QWindow> window;
     };
 
     class ExposeEvent : public WindowSystemEvent {
     public:
         ExposeEvent(QWindow *exposed, const QRegion &region);
-        QWeakPointer<QWindow> exposed;
+        QPointer<QWindow> exposed;
         bool isExposed;
         QRegion region;
     };

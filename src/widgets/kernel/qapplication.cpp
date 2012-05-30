@@ -3425,7 +3425,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
             touchEvent->setTarget(widget);
             touchEvent->setAccepted(acceptTouchEvents);
-            QWeakPointer<QWidget> p = widget;
+            QPointer<QWidget> p = widget;
             res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
             eventAccepted = touchEvent->isAccepted();
             if (p.isNull()) {
@@ -4369,14 +4369,14 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         touchPoint.d = touchPoint.d->detach();
 
         // update state
-        QWeakPointer<QObject> target;
+        QPointer<QObject> target;
         ActiveTouchPointsKey touchInfoKey(device, touchPoint.id());
         ActiveTouchPointsValue &touchInfo = d->activeTouchPoints[touchInfoKey];
         if (touchPoint.state() == Qt::TouchPointPressed) {
             if (device->type() == QTouchDevice::TouchPad) {
                 // on touch-pads, send all touch points to the same widget
                 target = d->activeTouchPoints.isEmpty()
-                        ? QWeakPointer<QObject>()
+                        ? QPointer<QObject>()
                         : d->activeTouchPoints.constBegin().value().target;
             }
 

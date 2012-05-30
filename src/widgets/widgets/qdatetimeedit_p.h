@@ -173,7 +173,7 @@ protected:
 private:
     QCalendarWidget *verifyCalendarInstance();
 
-    QWeakPointer<QCalendarWidget> calendar;
+    QPointer<QCalendarWidget> calendar;
     QDate oldDate;
     bool dateChanged;
 };

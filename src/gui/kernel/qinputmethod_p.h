@@ -85,7 +85,7 @@ public:
     bool objectAcceptsInputMethod(QObject *object);
 
     QTransform inputItemTransform;
-    QWeakPointer<QObject> inputItem;
+    QPointer<QObject> inputItem;
     QPlatformInputContext *testContext;
 };
 

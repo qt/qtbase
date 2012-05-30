@@ -300,7 +300,7 @@ public Q_SLOTS:
 // TODO rename to sendGestureSequence
 static void sendCustomGesture(CustomEvent *event, QObject *object, QGraphicsScene *scene = 0)
 {
-    QWeakPointer<QObject> receiver(object);
+    QPointer<QObject> receiver(object);
     for (int i = CustomGesture::SerialMaybeThreshold;
          i <= CustomGesture::SerialFinishedThreshold && receiver; ++i) {
         event->serial = i;

@@ -1098,7 +1098,7 @@ void QMenuPrivate::_q_actionTriggered()
 {
     Q_Q(QMenu);
     if (QAction *action = qobject_cast<QAction *>(q->sender())) {
-        QWeakPointer<QAction> actionGuard = action;
+        QPointer<QAction> actionGuard = action;
         emit q->triggered(action);
         if (!activationRecursionGuard && actionGuard) {
             //in case the action has not been activated by the mouse

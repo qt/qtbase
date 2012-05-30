@@ -96,7 +96,7 @@ public:
     static QVector<QStaticPlugin> staticPlugins();
 
 
-    QWeakPointer<QObject> inst;
+    QPointer<QObject> inst;
     QtPluginInstanceFunction instance;
     QJsonObject metaData;
     bool compatPlugin;

@@ -2459,7 +2459,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
     Q_Q(QWidget);
     QStyle *oldStyle  = q->style();
 #ifndef QT_NO_STYLE_STYLESHEET
-    QWeakPointer<QStyle> origStyle;
+    QPointer<QStyle> origStyle;
 #endif
 
 #ifdef Q_WS_MAC

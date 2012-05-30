@@ -925,7 +925,7 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     }
 
     state = newState;
-    QWeakPointer<QAbstractAnimation> guard(q);
+    QPointer<QAbstractAnimation> guard(q);
 
     //(un)registration of the animation must always happen before calls to
     //virtual function (updateState) to ensure a correct state of the timer

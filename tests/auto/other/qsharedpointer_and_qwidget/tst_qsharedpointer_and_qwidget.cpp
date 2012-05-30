@@ -76,7 +76,7 @@ public:
 void tst_QSharedPointer_and_QWidget::weak_externalDelete()
 {
     QWidget *w = new QWidget;
-    QWeakPointer<QWidget> ptr = w;
+    QPointer<QWidget> ptr = w;
 
     QVERIFY(!ptr.isNull());
 
@@ -88,7 +88,7 @@ void tst_QSharedPointer_and_QWidget::weak_parentDelete()
 {
     QWidget *parent = new QWidget;
     QWidget *w = new QWidget(parent);
-    QWeakPointer<QWidget> ptr = w;
+    QPointer<QWidget> ptr = w;
 
     QVERIFY(!ptr.isNull());
 
@@ -100,7 +100,7 @@ void tst_QSharedPointer_and_QWidget::weak_parentDelete_setParent()
 {
     QWidget *parent = new QWidget;
     QWidget *w = new QWidget;
-    QWeakPointer<QWidget> ptr = w;
+    QPointer<QWidget> ptr = w;
     w->setParent(parent);
 
     QVERIFY(!ptr.isNull());
@@ -114,7 +114,7 @@ void tst_QSharedPointer_and_QWidget::weak_parentDelete_setParent()
 void tst_QSharedPointer_and_QWidget::strong_weak()
 {
     QSharedPointer<QWidget> ptr(new QWidget);
-    QWeakPointer<QWidget> weak = ptr.data();
+    QPointer<QWidget> weak = ptr.data();
     QWeakPointer<QWidget> weak2 = ptr;
 
     QVERIFY(!weak.isNull());

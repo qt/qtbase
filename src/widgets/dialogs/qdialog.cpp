@@ -624,7 +624,7 @@ void QDialog::contextMenuEvent(QContextMenuEvent *e)
     while (w && w->whatsThis().size() == 0 && !w->testAttribute(Qt::WA_CustomWhatsThis))
         w = w->isWindow() ? 0 : w->parentWidget();
     if (w) {
-        QWeakPointer<QMenu> p = new QMenu(this);
+        QPointer<QMenu> p = new QMenu(this);
         QAction *wt = p.data()->addAction(tr("What's This?"));
         if (p.data()->exec(e->globalPos()) == wt) {
             QHelpEvent e(QEvent::WhatsThis, w->rect().center(),

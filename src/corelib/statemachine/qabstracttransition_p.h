@@ -80,7 +80,7 @@ public:
     QStateMachine *machine() const;
     void emitTriggered();
 
-    QList<QWeakPointer<QAbstractState> > targetStates;
+    QList<QPointer<QAbstractState> > targetStates;
 
 #ifndef QT_NO_ANIMATION
     QList<QAbstractAnimation*> animations;

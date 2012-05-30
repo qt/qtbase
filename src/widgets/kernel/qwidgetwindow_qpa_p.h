@@ -95,9 +95,9 @@ private:
     void updateGeometry();
 
     QWidget *m_widget;
-    QWeakPointer<QWidget> m_implicit_mouse_grabber;
+    QPointer<QWidget> m_implicit_mouse_grabber;
 #ifndef QT_NO_DRAGANDDROP
-    QWeakPointer<QWidget> m_dragTarget;
+    QPointer<QWidget> m_dragTarget;
 #endif
 };
 

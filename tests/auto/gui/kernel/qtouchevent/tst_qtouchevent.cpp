@@ -1189,7 +1189,7 @@ void tst_QTouchEvent::deleteInEventHandler()
                                Qt::NoModifier,
                                Qt::TouchPointReleased,
                                touchPoints);
-        QWeakPointer<QWidget> p;
+        QPointer<QWidget> p;
         bool res;
 
         touchBeginEvent.ignore();
@@ -1339,7 +1339,7 @@ void tst_QTouchEvent::deleteInRawEventTranslation()
     QPointF rightScreenPos = rightWidget->mapToGlobal(rightPos.toPoint());
     QRectF screenGeometry = qApp->desktop()->screenGeometry(&touchWidget);
 
-    QWeakPointer<QWidget> pl = leftWidget, pc = centerWidget, pr = rightWidget;
+    QPointer<QWidget> pl = leftWidget, pc = centerWidget, pr = rightWidget;
 
     QList<QTouchEvent::TouchPoint> rawTouchPoints;
     rawTouchPoints.append(QTouchEvent::TouchPoint(0));

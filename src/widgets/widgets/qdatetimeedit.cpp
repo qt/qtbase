@@ -2598,7 +2598,7 @@ void QCalendarPopup::setCalendarWidget(QCalendarWidget *cw)
         widgetLayout->setSpacing(0);
     }
     delete calendar.data();
-    calendar = QWeakPointer<QCalendarWidget>(cw);
+    calendar = QPointer<QCalendarWidget>(cw);
     widgetLayout->addWidget(cw);
 
     connect(cw, SIGNAL(activated(QDate)), this, SLOT(dateSelected(QDate)));

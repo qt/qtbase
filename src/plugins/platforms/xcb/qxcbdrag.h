@@ -50,6 +50,7 @@
 #include <qpoint.h>
 #include <qrect.h>
 #include <qsharedpointer.h>
+#include <qpointer.h>
 #include <qvector.h>
 
 #include <qpixmap.h>
@@ -113,7 +114,7 @@ private:
     Qt::DropAction toDropAction(xcb_atom_t atom) const;
     xcb_atom_t toXdndAction(Qt::DropAction a) const;
 
-    QWeakPointer<QWindow> currentWindow;
+    QPointer<QWindow> currentWindow;
     QPoint currentPosition;
 
     QXcbDropData *dropData;

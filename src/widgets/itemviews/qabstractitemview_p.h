@@ -71,10 +71,10 @@
 QT_BEGIN_NAMESPACE
 
 struct QEditorInfo {
-    QEditorInfo(QWidget *e, bool s): widget(QWeakPointer<QWidget>(e)), isStatic(s) {}
+    QEditorInfo(QWidget *e, bool s): widget(QPointer<QWidget>(e)), isStatic(s) {}
     QEditorInfo(): isStatic(false) {}
 
-    QWeakPointer<QWidget> widget;
+    QPointer<QWidget> widget;
     bool isStatic;
 };
 

@@ -1604,7 +1604,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         touchPoint.d = touchPoint.d->detach();
 
         // update state
-        QWeakPointer<QWindow> w;
+        QPointer<QWindow> w;
         QTouchEvent::TouchPoint previousTouchPoint;
         ActiveTouchPointsKey touchInfoKey(e->device, touchPoint.id());
         ActiveTouchPointsValue &touchInfo = d->activeTouchPoints[touchInfoKey];
@@ -1613,7 +1613,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             if (e->device->type() == QTouchDevice::TouchPad) {
                 // on touch-pads, send all touch points to the same widget
                 w = d->activeTouchPoints.isEmpty()
-                    ? QWeakPointer<QWindow>()
+                    ? QPointer<QWindow>()
                     : d->activeTouchPoints.constBegin().value().window;
             }
 

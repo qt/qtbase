@@ -59,6 +59,7 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qshareddata.h"
 #include "QtCore/qsharedpointer.h"
+#include "QtCore/qpointer.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -74,7 +75,7 @@ public:
     RawHeadersList rawHeaders;
     CookedHeadersMap cookedHeaders;
     AttributesMap attributes;
-    QWeakPointer<QObject> originatingObject;
+    QPointer<QObject> originatingObject;
 
     RawHeadersList::ConstIterator findRawHeader(const QByteArray &key) const;
     RawHeadersList allRawHeaders() const;

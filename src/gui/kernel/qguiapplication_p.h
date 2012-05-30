@@ -205,8 +205,8 @@ public:
         int touchPointId;
     };
     struct ActiveTouchPointsValue {
-        QWeakPointer<QWindow> window;
-        QWeakPointer<QObject> target;
+        QPointer<QWindow> window;
+        QPointer<QObject> target;
         QTouchEvent::TouchPoint touchPoint;
     };
     QHash<ActiveTouchPointsKey, ActiveTouchPointsValue> activeTouchPoints;
@@ -216,7 +216,7 @@ public:
             : pos(p), screenPos(sp), window(w) { }
         QPointF pos;
         QPointF screenPos;
-        QWeakPointer<QWindow> window;
+        QPointer<QWindow> window;
     };
     QHash<QWindow *, SynthesizedMouseData> synthesizedMousePoints;
 

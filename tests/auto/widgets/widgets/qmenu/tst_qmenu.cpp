@@ -816,7 +816,7 @@ void tst_QMenu::deleteActionInTriggered()
     // should not crash
     QMenu m;
     QObject::connect(&m, SIGNAL(triggered(QAction*)), this, SLOT(deleteAction(QAction*)));
-    QWeakPointer<QAction> a = m.addAction("action");
+    QPointer<QAction> a = m.addAction("action");
     a.data()->trigger();
     QVERIFY(!a);
 }

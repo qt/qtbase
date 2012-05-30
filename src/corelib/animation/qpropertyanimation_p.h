@@ -70,7 +70,7 @@ public:
     {
     }
 
-    QWeakPointer<QObject> target;
+    QPointer<QObject> target;
     //we use targetValue to be able to unregister the target from the global hash
     QObject *targetValue;
 

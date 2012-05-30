@@ -1043,7 +1043,7 @@ void tst_QThread::connectThreadFinishedSignalToObjectDeleteLaterSlot()
 {
     QThread thread;
     QObject *object = new QObject;
-    QWeakPointer<QObject> p = object;
+    QPointer<QObject> p = object;
     QVERIFY(!p.isNull());
     connect(&thread, SIGNAL(started()), &thread, SLOT(quit()), Qt::DirectConnection);
     connect(&thread, SIGNAL(finished()), object, SLOT(deleteLater()));
@@ -1128,7 +1128,7 @@ void tst_QThread::destroyFinishRace()
     for (int i = 0; i < 15; i++) {
         Thread *thr = new Thread;
         connect(thr, SIGNAL(finished()), thr, SLOT(deleteLater()));
-        QWeakPointer<QThread> weak(static_cast<QThread*>(thr));
+        QPointer<QThread> weak(static_cast<QThread*>(thr));
         thr->start();
         while (weak) {
             qApp->processEvents();
@@ -1284,7 +1284,7 @@ void tst_QThread::customEventDispatcher()
     // test that the ED has really been used
     QVERIFY(ed->visited);
 
-    QWeakPointer<DummyEventDispatcher> weak_ed(ed);
+    QPointer<DummyEventDispatcher> weak_ed(ed);
     QVERIFY(!weak_ed.isNull());
     thr.quit();
     // wait for thread to be stopped
