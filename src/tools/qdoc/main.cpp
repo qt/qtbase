@@ -503,7 +503,6 @@ int main(int argc, char **argv)
             }
             else {
                 qDebug() << "Cannot find index directory" << argv[i];
-                return EXIT_FAILURE;
             }
             i++;
         }
