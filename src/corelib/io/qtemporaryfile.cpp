@@ -223,7 +223,8 @@ class QTemporaryFileEngine : public QFSFileEngine
     Q_DECLARE_PRIVATE(QFSFileEngine)
 public:
     QTemporaryFileEngine(const QString &file, bool fileIsTemplate = true)
-        : QFSFileEngine(), filePathIsTemplate(fileIsTemplate)
+        : QFSFileEngine(), filePathIsTemplate(fileIsTemplate),
+          filePathWasTemplate(fileIsTemplate)
     {
         Q_D(QFSFileEngine);
         d->fileEntry = QFileSystemEntry(file);
@@ -244,6 +245,7 @@ public:
     bool close();
 
     bool filePathIsTemplate;
+    bool filePathWasTemplate;
 };
 
 QTemporaryFileEngine::~QTemporaryFileEngine()
@@ -379,6 +381,12 @@ bool QTemporaryFileEngine::remove()
     QFSFileEngine::close();
     if (QFSFileEngine::remove()) {
         d->fileEntry.clear();
+        // If a QTemporaryFile is constructed using a template file path, the path
+        // is generated in QTemporaryFileEngine::open() and then filePathIsTemplate
+        // is set to false. If remove() and then open() are called on the same
+        // QTemporaryFile, the path is not regenerated. Here we ensure that if the
+        // file path was generated, it will be generated again in the scenario above.
+        filePathIsTemplate = filePathWasTemplate;
         return true;
     }
     return false;

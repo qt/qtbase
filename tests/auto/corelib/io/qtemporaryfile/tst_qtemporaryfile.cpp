@@ -76,6 +76,7 @@ private slots:
     void nonWritableCurrentDir();
     void write();
     void openCloseOpenClose();
+    void removeAndReOpen();
     void size();
     void resize();
     void openOnRootDrives();
@@ -312,6 +313,25 @@ void tst_QTemporaryFile::openCloseOpenClose()
         QCOMPARE(file.readAll(), QByteArray("OLE"));
         // Check that it's still the same file after being opened again.
         QCOMPARE(file.fileName(), fileName);
+    }
+    QVERIFY(!QFile::exists(fileName));
+}
+
+void tst_QTemporaryFile::removeAndReOpen()
+{
+    QString fileName;
+    {
+        QTemporaryFile file;
+        file.open();
+        fileName = file.fileName();
+        QVERIFY(QFile::exists(fileName));
+
+        file.remove();
+        QVERIFY(!QFile::exists(fileName));
+
+        QVERIFY(file.open());
+        fileName = file.fileName();
+        QVERIFY(QFile::exists(fileName));
     }
     QVERIFY(!QFile::exists(fileName));
 }
