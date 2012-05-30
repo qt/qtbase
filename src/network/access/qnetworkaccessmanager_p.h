@@ -81,6 +81,7 @@ public:
           networkSession(0),
           lastSessionState(QNetworkSession::Invalid),
           networkAccessible(QNetworkAccessManager::Accessible),
+          activeReplyCount(0),
           online(false),
           initializeSession(true),
 #endif
@@ -147,6 +148,7 @@ public:
     QNetworkSession::State lastSessionState;
     QString networkConfiguration;
     QNetworkAccessManager::NetworkAccessibility networkAccessible;
+    int activeReplyCount;
     bool online;
     bool initializeSession;
 #endif

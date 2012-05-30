@@ -1115,7 +1115,8 @@ void QNetworkAccessManagerPrivate::_q_replyFinished()
     // If there are no active requests, release our reference to the network session.
     // It will not be destroyed immediately, but rather when the connection cache is flushed
     // after 2 minutes.
-    if (networkSession && q->findChildren<QNetworkReply *>().count() == 1)
+    activeReplyCount--;
+    if (networkSession && activeReplyCount == 0)
         networkSession.clear();
 #endif
 }
@@ -1141,6 +1142,9 @@ QNetworkReply *QNetworkAccessManagerPrivate::postProcess(QNetworkReply *reply)
     /* In case we're compiled without SSL support, we don't have this signal and we need to
      * avoid getting a connection error. */
     q->connect(reply, SIGNAL(sslErrors(QList<QSslError>)), SLOT(_q_replySslErrors(QList<QSslError>)));
+#endif
+#ifndef QT_NO_BEARERMANAGEMENT
+    activeReplyCount++;
 #endif
 
     return reply;
