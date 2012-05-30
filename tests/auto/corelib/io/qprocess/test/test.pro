@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 QT = core testlib network
 embedded: QT += gui
 SOURCES = ../tst_qprocess.cpp
