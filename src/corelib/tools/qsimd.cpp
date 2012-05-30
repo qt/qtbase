@@ -139,7 +139,7 @@ static inline uint detectProcessorFeatures()
 #if defined(QT_COMPILER_SUPPORTS_IWMMXT)
     // runtime detection only available when running as a previlegied process
     features = IWMMXT;
-#elif defined(QT_ALWAYS_HAVE_NEON)
+#elif defined(__ARM_NEON__)
     features = NEON;
 #endif
 

@@ -57,6 +57,8 @@ QT_BEGIN_HEADER
  *
  * We will try to include all headers possible under this configuration.
  *
+ * MSVC does not define __SSE2__ & family, so we will define them.
+ *
  * Supported XXX are:
  *   Flag  | Arch |  GCC  | Intel CC |  MSVC  |
  *  NEON   | ARM  | I & C | None     |   ?    |
@@ -86,6 +88,10 @@ QT_BEGIN_HEADER
 #else
 #  include <emmintrin.h>
 #endif
+#if defined(Q_CC_MSVC) && (defined(_M_X64) || _M_IX86_FP >= 2)
+#  define __SSE__ 1
+#  define __SSE2__ 1
+#endif
 #endif
 
 // SSE3 intrinsics
@@ -112,11 +118,29 @@ QT_BEGIN_HEADER
 #if defined(__AVX__) || (defined(QT_COMPILER_SUPPORTS_AVX) && defined(Q_CC_MSVC))
 // immintrin.h is the ultimate header, we don't need anything else after this
 #include <immintrin.h>
+
+#  if defined(Q_CC_MSVC) && defined(_M_AVX)
+// MS Visual Studio 2010 has no macro pre-defined to identify the use of /arch:AVX
+// See: http://connect.microsoft.com/VisualStudio/feedback/details/605858/arch-avx-should-define-a-predefined-macro-in-x64-and-set-a-unique-value-for-m-ix86-fp-in-win32
+// When such a macro exists, add it above, replacing _M_AVX as appropriate
+#    define __SSE3__ 1
+#    define __SSSE3__ 1
+// no Intel CPU supports SSE4a, so don't define it
+#    define __SSE4_1__ 1
+#    define __SSE4_2__ 1
+#    define __AVX__ 1
+#    ifdef _M_AVX2
+// replace the macro above with the proper MS macro when it exists
+// All processors with AVX2 will support BMI1 and FMA
+#      define __AVX2__ 1
+#      define __BMI__ 1
+#      define __FMA__ 1
+#   endif
+#  endif
 #endif
 
 // NEON intrinsics
 #if defined __ARM_NEON__
-#define QT_ALWAYS_HAVE_NEON
 #include <arm_neon.h>
 #endif
 

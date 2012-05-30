@@ -751,7 +751,7 @@ static inline uint interpolate_4_pixels_16(uint tl, uint tr, uint bl, uint br, i
     return (((tlrb + trrb + blrb + brrb) >> 8) & 0x00ff00ff) | ((tlag + trag + blag + brag) & 0xff00ff00);
 }
 
-#if defined(QT_ALWAYS_HAVE_SSE2)
+#if defined(__SSE2__)
 #define interpolate_4_pixels_16_sse2(tl, tr, bl, br, distx, disty, colorMask, v_256, b)  \
 { \
     const __m128i dxdy = _mm_mullo_epi16 (distx, disty); \
@@ -788,7 +788,7 @@ static inline uint interpolate_4_pixels_16(uint tl, uint tr, uint bl, uint br, i
 }
 #endif
 
-#if defined(QT_ALWAYS_HAVE_NEON)
+#if defined(__ARM_NEON__)
 #define interpolate_4_pixels_16_neon(tl, tr, bl, br, distx, disty, disty_, colorMask, invColorMask, v_256, b)  \
 { \
     const int16x8_t dxdy = vmulq_s16(distx, disty); \
@@ -925,7 +925,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                 }
 
                 if (blendType != BlendTransformedBilinearTiled) {
-#if defined(QT_ALWAYS_HAVE_SSE2)
+#if defined(__SSE2__)
                     const __m128i disty_ = _mm_set1_epi16(disty);
                     const __m128i idisty_ = _mm_set1_epi16(idisty);
                     const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
@@ -955,7 +955,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                         rRB = _mm_srli_epi16(rRB, 8);
                         _mm_storeu_si128((__m128i*)(&intermediate_buffer[0][f]), rRB);
                     }
-#elif defined(QT_ALWAYS_HAVE_NEON)
+#elif defined(__ARM_NEON__)
                     const int16x8_t disty_ = vdupq_n_s16(disty);
                     const int16x8_t idisty_ = vdupq_n_s16(idisty);
                     const int16x8_t colorMask = vdupq_n_s16(0x00ff);
@@ -1077,7 +1077,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                         boundedEnd = qMin(end, buffer + uint((image_x1 - (fx >> 16)) / data->m11)); \
                     boundedEnd -= 3;
 
-#if defined(QT_ALWAYS_HAVE_SSE2)
+#if defined(__SSE2__)
                     BILINEAR_DOWNSCALE_BOUNDS_PROLOG
 
                     const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
@@ -1117,7 +1117,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                         v_fx.vect = _mm_add_epi32(v_fx.vect, v_fdx);
                     }
                     fx = v_fx.i[0];
-#elif defined(QT_ALWAYS_HAVE_NEON)
+#elif defined(__ARM_NEON__)
                     BILINEAR_DOWNSCALE_BOUNDS_PROLOG
 
                     const int16x8_t colorMask = vdupq_n_s16(0x00ff);

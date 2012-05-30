@@ -3789,7 +3789,7 @@ bool QString::endsWith(QChar c, Qt::CaseSensitivity cs) const
 }
 
 
-#if defined(QT_ALWAYS_HAVE_SSE2)
+#if defined(__SSE2__)
 static inline __m128i mergeQuestionMarks(__m128i chunk)
 {
     const __m128i questionMark = _mm_set1_epi16('?');
@@ -3851,7 +3851,7 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
         ba.resize(length);
         const ushort *src = reinterpret_cast<const ushort *>(data);
         uchar *dst = (uchar*) ba.data();
-#if defined(QT_ALWAYS_HAVE_SSE2)
+#if defined(__SSE2__)
         if (length >= 16) {
             const int chunkCount = length >> 4; // divided by 16
 
@@ -3872,7 +3872,7 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
             }
             length = length % 16;
         }
-#elif defined(QT_ALWAYS_HAVE_NEON)
+#elif defined(__ARM_NEON__)
         // Refer to the documentation of the SSE2 implementation
         // this use eactly the same method as for SSE except:
         // 1) neon has unsigned comparison
@@ -4028,7 +4028,7 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
          * Unpacking with SSE has been shown to improve performance on recent CPUs
          * The same method gives no improvement with NEON.
          */
-#if defined(QT_ALWAYS_HAVE_SSE2)
+#if defined(__SSE2__)
         if (size >= 16) {
             int chunkCount = size >> 4; // divided by 16
             const __m128i nullMask = _mm_set1_epi32(0);
