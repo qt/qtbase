@@ -211,6 +211,14 @@ void QKmsScreen::performPageFlip()
         if (ret)
             qFatal("failed to set mode");
         m_modeSet = true;
+
+        // Initialize cursor
+
+        static int hideCursor = qgetenv("QT_QPA_KMS_HIDECURSOR").toInt();
+        if (!hideCursor) {
+            QCursor cursor(Qt::ArrowCursor);
+            m_cursor->changeCursor(&cursor, 0);
+        }
     }
 
     int pageFlipStatus = drmModePageFlip(m_device->fd(), m_crtcId,
