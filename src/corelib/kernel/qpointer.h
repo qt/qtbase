@@ -69,6 +69,9 @@ protected:
 
     inline bool isNull() const
     { return wp.isNull(); }
+
+    inline void clear()
+    { wp.clear(); }
 };
 
 template <class T>
@@ -93,8 +96,10 @@ public:
     { return data(); }
 #ifdef qdoc
     inline bool isNull() const;
+    inline void clear() const;
 #else
     using QPointerBase::isNull;
+    using QPointerBase::clear;
 #endif
 };
 template <class T> Q_DECLARE_TYPEINFO_BODY(QPointer<T>, Q_MOVABLE_TYPE);

@@ -171,6 +171,14 @@
 */
 
 /*!
+    \fn void QPointer::clear()
+
+    Clears this QPointer object.
+
+    \sa isNull()
+*/
+
+/*!
     \fn T* QPointer::operator->() const
 
     Overloaded arrow operator; implements pointer semantics. Just use
