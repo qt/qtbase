@@ -347,12 +347,12 @@ static struct AttrInfo attrs[] = {
     {EGL_MAX_SWAP_INTERVAL, "EGL_MAX_SWAP_INTERVAL"},
     {-1, 0}};
 
-void q_printEglConfig(EGLConfig config)
+void q_printEglConfig(EGLDisplay display, EGLConfig config)
 {
     EGLint index;
     for (index = 0; attrs[index].attr != -1; ++index) {
         EGLint value;
-        if (eglGetConfigAttrib(m_dpy, config, attrs[index].attr, &value)) {
+        if (eglGetConfigAttrib(display, config, attrs[index].attr, &value)) {
             qWarning("\t%s: %d\n", attrs[index].name, (int)value);
         }
     }

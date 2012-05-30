@@ -54,7 +54,7 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes);
 EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format, bool highestPixelFormat = false, int surfaceType = EGL_WINDOW_BIT);
 QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config);
 bool q_hasEglExtension(EGLDisplay display,const char* extensionName);
-void q_printEglConfig(EGLConfig config);
+void q_printEglConfig(EGLDisplay display, EGLConfig config);
 
 QT_END_NAMESPACE
 

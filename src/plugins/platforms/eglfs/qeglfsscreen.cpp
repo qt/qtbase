@@ -172,8 +172,7 @@ void QEglFSScreen::createAndSetPlatformContext()
     m_window = hooks->createNativeWindow(hooks->screenSize());
 
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("Configuration %d matches requirements\n", (int)config);
-    q_printEglConfig(config);
+    q_printEglConfig(m_dpy, config);
 #endif
 
     m_surface = eglCreateWindowSurface(m_dpy, config, m_window, NULL);
