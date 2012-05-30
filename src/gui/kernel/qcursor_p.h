@@ -76,7 +76,6 @@ public:
     QBitmap  *bm, *bmm;
     QPixmap pixmap;
     short     hx, hy;
-    int id;
     static bool initialized;
     void update();
     static QCursorData *setBitmap(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY);

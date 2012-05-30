@@ -305,7 +305,7 @@ void QXcbCursor::changeCursor(QCursor *cursor, QWindow *widget)
             m_bitmapCursorMap.insert(id, createBitmapCursor(cursor));
         c = m_bitmapCursorMap.value(id);
     } else {
-        int id = cursor->handle();
+        int id = cursor->shape();
         if (!m_shapeCursorMap.contains(id))
             m_shapeCursorMap.insert(id, createFontCursor(cursor->shape()));
         c = m_shapeCursorMap.value(id);

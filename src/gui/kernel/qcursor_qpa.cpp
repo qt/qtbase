@@ -52,14 +52,12 @@ QT_USE_NAMESPACE
 
 #ifndef QT_NO_CURSOR
 
-static int nextCursorId = Qt::BitmapCursor;
-
 /*****************************************************************************
   Internal QCursorData class
  *****************************************************************************/
 
 QCursorData::QCursorData(Qt::CursorShape s)
-    : ref(1), cshape(s), bm(0), bmm(0), hx(0), hy(0), id(s)
+    : ref(1), cshape(s), bm(0), bmm(0), hx(0), hy(0)
 {
 }
 
@@ -76,12 +74,6 @@ QCursorData::~QCursorData()
 
 extern QCursorData *qt_cursorTable[Qt::LastCursor + 1]; // qcursor.cpp
 
-int QCursor::handle() const
-{
-    return d->id;
-}
-
-
 QCursorData *QCursorData::setBitmap(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY)
 {
     if (!QCursorData::initialized)
@@ -96,7 +88,6 @@ QCursorData *QCursorData::setBitmap(const QBitmap &bitmap, const QBitmap &mask, 
     d->bm  = new QBitmap(bitmap);
     d->bmm = new QBitmap(mask);
     d->cshape = Qt::BitmapCursor;
-    d->id = ++nextCursorId;
     d->hx = hotX >= 0 ? hotX : bitmap.width() / 2;
     d->hy = hotY >= 0 ? hotY : bitmap.height() / 2;
 

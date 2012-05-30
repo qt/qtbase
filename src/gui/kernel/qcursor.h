@@ -108,10 +108,6 @@ public:
     inline static void setPos(const QPoint &p) { setPos(p.x(), p.y()); }
     inline static void setPos(QScreen *screen, const QPoint &p) { setPos(screen, p.x(), p.y()); }
     
-#ifndef qdoc
-    int handle() const;
-#endif
-
 private:
     QCursorData *d;
 };
