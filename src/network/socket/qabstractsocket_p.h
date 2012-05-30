@@ -141,7 +141,6 @@ public:
     bool readFromSocket();
 
     qint64 readBufferMaxSize;
-    QRingBuffer readBuffer;
     QRingBuffer writeBuffer;
 
     bool isBuffered;

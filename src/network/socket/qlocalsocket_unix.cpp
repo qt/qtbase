@@ -401,7 +401,7 @@ qintptr QLocalSocket::socketDescriptor() const
 qint64 QLocalSocket::readData(char *data, qint64 c)
 {
     Q_D(QLocalSocket);
-    return d->unixSocket.readData(data, c);
+    return d->unixSocket.read(data, c);
 }
 
 qint64 QLocalSocket::writeData(const char *data, qint64 c)

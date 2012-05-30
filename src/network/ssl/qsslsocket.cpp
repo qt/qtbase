@@ -707,7 +707,7 @@ qint64 QSslSocket::bytesAvailable() const
     Q_D(const QSslSocket);
     if (d->mode == UnencryptedMode)
         return QIODevice::bytesAvailable() + (d->plainSocket ? d->plainSocket->bytesAvailable() : 0);
-    return QIODevice::bytesAvailable() + d->readBuffer.size();
+    return QIODevice::bytesAvailable();
 }
 
 /*!
@@ -764,7 +764,7 @@ bool QSslSocket::canReadLine() const
     Q_D(const QSslSocket);
     if (d->mode == UnencryptedMode)
         return QIODevice::canReadLine() || (d->plainSocket && d->plainSocket->canReadLine());
-    return QIODevice::canReadLine() || (!d->readBuffer.isEmpty() && d->readBuffer.canReadLine());
+    return QIODevice::canReadLine();
 }
 
 /*!
@@ -781,12 +781,8 @@ void QSslSocket::close()
     QTcpSocket::close();
 
     // must be cleared, reading/writing not possible on closed socket:
-    d->readBuffer.clear();
+    d->buffer.clear();
     d->writeBuffer.clear();
-    // for QTcpSocket this is already done because it uses the readBuffer/writeBuffer
-    // if the QIODevice it is based on
-    // ### FIXME QSslSocket should probably do similar instead of having
-    // its own readBuffer/writeBuffer
 }
 
 /*!
@@ -797,7 +793,7 @@ bool QSslSocket::atEnd() const
     Q_D(const QSslSocket);
     if (d->mode == UnencryptedMode)
         return QIODevice::atEnd() && (!d->plainSocket || d->plainSocket->atEnd());
-    return QIODevice::atEnd() && d->readBuffer.isEmpty();
+    return QIODevice::atEnd();
 }
 
 /*!
@@ -1829,21 +1825,18 @@ qint64 QSslSocket::readData(char *data, qint64 maxlen)
     if (d->mode == UnencryptedMode && !d->autoStartHandshake) {
         readBytes = d->plainSocket->read(data, maxlen);
     } else {
-        do {
-            const char *readPtr = d->readBuffer.readPointer();
-            int bytesToRead = qMin<int>(maxlen - readBytes, d->readBuffer.nextDataBlockSize());
-            ::memcpy(data + readBytes, readPtr, bytesToRead);
-            readBytes += bytesToRead;
-            d->readBuffer.free(bytesToRead);
-        } while (!d->readBuffer.isEmpty() && readBytes < maxlen);
+        int bytesToRead = qMin<int>(maxlen, d->buffer.size());
+        readBytes = d->buffer.read(data, bytesToRead);
     }
+
 #ifdef QSSLSOCKET_DEBUG
     qDebug() << "QSslSocket::readData(" << (void *)data << ',' << maxlen << ") ==" << readBytes;
 #endif
 
     // possibly trigger another transmit() to decrypt more data from the socket
-    if (d->readBuffer.isEmpty() && d->plainSocket->bytesAvailable())
+    if (d->buffer.isEmpty() && d->plainSocket->bytesAvailable()) {
         QMetaObject::invokeMethod(this, "_q_flushReadBuffer", Qt::QueuedConnection);
+    }
 
     return readBytes;
 }
@@ -1907,7 +1900,7 @@ void QSslSocketPrivate::init()
     // that it is possible setting it before connecting
 //    ignoreErrorsList.clear();
 
-    readBuffer.clear();
+    buffer.clear();
     writeBuffer.clear();
     configuration.peerCertificate.clear();
     configuration.peerCertificateChain.clear();
@@ -2112,7 +2105,7 @@ void QSslSocketPrivate::createPlainSocket(QIODevice::OpenMode openMode)
                q, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 #endif
 
-    readBuffer.clear();
+    buffer.clear();
     writeBuffer.clear();
     connectionEncrypted = false;
     configuration.peerCertificate.clear();

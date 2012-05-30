@@ -953,12 +953,13 @@ void QSslSocketBackendPrivate::transmit()
         }
 
         // Check if we've got any data to be read from the socket.
-        if (!connectionEncrypted || !readBufferMaxSize || readBuffer.size() < readBufferMaxSize)
+        if (!connectionEncrypted || !readBufferMaxSize || buffer.size() < readBufferMaxSize)
             while ((pendingBytes = plainSocket->bytesAvailable()) > 0) {
                 // Read encrypted data from the socket into a buffer.
                 data.resize(pendingBytes);
                 // just peek() here because q_BIO_write could write less data than expected
                 int encryptedBytesRead = plainSocket->peek(data.data(), pendingBytes);
+
 #ifdef QSSLSOCKET_DEBUG
                 qDebug() << "QSslSocketBackendPrivate::transmit: read" << encryptedBytesRead << "encrypted bytes from the socket";
 #endif
@@ -1025,7 +1026,7 @@ void QSslSocketBackendPrivate::transmit()
 #ifdef QSSLSOCKET_DEBUG
                 qDebug() << "QSslSocketBackendPrivate::transmit: decrypted" << readBytes << "bytes";
 #endif
-                char *ptr = readBuffer.reserve(readBytes);
+                char *ptr = buffer.reserve(readBytes);
                 ::memcpy(ptr, data.data(), readBytes);
 
                 if (readyReadEmittedPointer)

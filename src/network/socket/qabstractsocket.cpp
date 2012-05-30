@@ -548,7 +548,6 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       socketEngine(0),
       cachedSocketDescriptor(-1),
       readBufferMaxSize(0),
-      readBuffer(QABSTRACTSOCKET_BUFFERSIZE),
       writeBuffer(QABSTRACTSOCKET_BUFFERSIZE),
       isBuffered(false),
       blockingTimeout(30000),
@@ -684,7 +683,7 @@ bool QAbstractSocketPrivate::canReadNotification()
     qint64 newBytes = 0;
     if (isBuffered) {
         // Return if there is no space in the buffer
-        if (readBufferMaxSize && readBuffer.size() >= readBufferMaxSize) {
+        if (readBufferMaxSize && buffer.size() >= readBufferMaxSize) {
 #if defined (QABSTRACTSOCKET_DEBUG)
             qDebug("QAbstractSocketPrivate::canReadNotification() buffer is full");
 #endif
@@ -693,7 +692,7 @@ bool QAbstractSocketPrivate::canReadNotification()
 
         // If reading from the socket fails after getting a read
         // notification, close the socket.
-        newBytes = readBuffer.size();
+        newBytes = buffer.size();
         if (!readFromSocket()) {
 #if defined (QABSTRACTSOCKET_DEBUG)
             qDebug("QAbstractSocketPrivate::canReadNotification() disconnecting socket");
@@ -701,10 +700,10 @@ bool QAbstractSocketPrivate::canReadNotification()
             q->disconnectFromHost();
             return false;
         }
-        newBytes = readBuffer.size() - newBytes;
+        newBytes = buffer.size() - newBytes;
 
         // If read buffer is full, disable the read socket notifier.
-        if (readBufferMaxSize && readBuffer.size() == readBufferMaxSize) {
+        if (readBufferMaxSize && buffer.size() == readBufferMaxSize) {
             socketEngine->setReadNotificationEnabled(false);
         }
     }
@@ -1221,8 +1220,8 @@ bool QAbstractSocketPrivate::readFromSocket()
         // host has _not_ disappeared).
         bytesToRead = 4096;
     }
-    if (readBufferMaxSize && bytesToRead > (readBufferMaxSize - readBuffer.size()))
-        bytesToRead = readBufferMaxSize - readBuffer.size();
+    if (readBufferMaxSize && bytesToRead > (readBufferMaxSize - buffer.size()))
+        bytesToRead = readBufferMaxSize - buffer.size();
 
 #if defined(QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::readFromSocket() about to read %d bytes",
@@ -1230,17 +1229,17 @@ bool QAbstractSocketPrivate::readFromSocket()
 #endif
 
     // Read from the socket, store data in the read buffer.
-    char *ptr = readBuffer.reserve(bytesToRead);
+    char *ptr = buffer.reserve(bytesToRead);
     qint64 readBytes = socketEngine->read(ptr, bytesToRead);
     if (readBytes == -2) {
         // No bytes currently available for reading.
-        readBuffer.chop(bytesToRead);
+        buffer.chop(bytesToRead);
         return true;
     }
-    readBuffer.chop(int(bytesToRead - (readBytes < 0 ? qint64(0) : readBytes)));
+    buffer.chop(int(bytesToRead - (readBytes < 0 ? qint64(0) : readBytes)));
 #if defined(QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::readFromSocket() got %d bytes, buffer size = %d",
-           int(readBytes), readBuffer.size());
+           int(readBytes), buffer.size());
 #endif
 
     if (!socketEngine->isValid()) {
@@ -1563,7 +1562,7 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
     d->hostName = hostName;
     d->port = port;
     d->state = UnconnectedState;
-    d->readBuffer.clear();
+    d->buffer.clear();
     d->writeBuffer.clear();
     d->abortCalled = false;
     d->closeCalled = false;
@@ -1675,8 +1674,6 @@ qint64 QAbstractSocket::bytesAvailable() const
     Q_D(const QAbstractSocket);
     qint64 available = QIODevice::bytesAvailable();
 
-    available += (qint64) d->readBuffer.size();
-
     if (!d->isBuffered && d->socketEngine && d->socketEngine->isValid())
         available += d->socketEngine->bytesAvailable();
 
@@ -1758,10 +1755,10 @@ QString QAbstractSocket::peerName() const
 */
 bool QAbstractSocket::canReadLine() const
 {
-    bool hasLine = d_func()->readBuffer.canReadLine();
+    bool hasLine = d_func()->buffer.canReadLine();
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocket::canReadLine() == %s, buffer size = %d, size = %d", hasLine ? "true" : "false",
-           d_func()->readBuffer.size(), d_func()->buffer.size());
+           d_func()->buffer.size(), d_func()->buffer.size());
 #endif
     return hasLine || QIODevice::canReadLine();
 }
@@ -2290,7 +2287,7 @@ bool QAbstractSocket::isSequential() const
  */
 bool QAbstractSocket::atEnd() const
 {
-    return QIODevice::atEnd() && (!isOpen() || d_func()->readBuffer.isEmpty());
+    return QIODevice::atEnd() && (!isOpen() || d_func()->buffer.isEmpty());
 }
 
 /*!
@@ -2328,114 +2325,38 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
     Q_D(QAbstractSocket);
 
     // This is for a buffered QTcpSocket
-    if (d->isBuffered && d->readBuffer.isEmpty())
+    if (d->isBuffered && d->buffer.isEmpty())
         // if we're still connected, return 0 indicating there may be more data in the future
         // if we're not connected, return -1 indicating EOF
         return d->state == QAbstractSocket::ConnectedState ? qint64(0) : qint64(-1);
 
-    // short cut for a char read if we have something in the buffer
-    if (maxSize == 1 && !d->readBuffer.isEmpty()) {
-        *data = d->readBuffer.getChar();
-#if defined (QABSTRACTSOCKET_DEBUG)
-        qDebug("QAbstractSocket::readData(%p '%c (0x%.2x)', 1) == 1 [char buffer]",
-               data, isprint(int(uchar(*data))) ? *data : '?', *data);
-#endif
-        if (d->readBuffer.isEmpty() && d->socketEngine && d->socketEngine->isValid())
-            d->socketEngine->setReadNotificationEnabled(true);
-        return 1;
-    }
-
-    // Special case for an Unbuffered QTcpSocket
-    // Re-filling the buffer.
-    if (d->socketType == TcpSocket
-            && !d->isBuffered
-            && d->readBuffer.size() < maxSize
-            && d->readBufferMaxSize > 0
-            && maxSize < d->readBufferMaxSize
-            && d->socketEngine
-            && d->socketEngine->isValid()) {
-        // Our buffer is empty and a read() was requested for a byte amount that is smaller
-        // than the readBufferMaxSize. This means that we should fill our buffer since we want
-        // such small reads come from the buffer and not always go to the costly socket engine read()
-        qint64 bytesToRead = d->socketEngine->bytesAvailable();
-        if (bytesToRead > 0) {
-            char *ptr = d->readBuffer.reserve(bytesToRead);
-            qint64 readBytes = d->socketEngine->read(ptr, bytesToRead);
-            if (readBytes == -2) {
-                // No bytes currently available for reading.
-                d->readBuffer.chop(bytesToRead);
-            } else {
-                d->readBuffer.chop(int(bytesToRead - (readBytes < 0 ? qint64(0) : readBytes)));
-            }
-        }
-   }
-
-    // First try to satisfy the read from the buffer
-    qint64 bytesToRead = qMin(qint64(d->readBuffer.size()), maxSize);
-    qint64 readSoFar = 0;
-    while (readSoFar < bytesToRead) {
-        const char *ptr = d->readBuffer.readPointer();
-        int bytesToReadFromThisBlock = qMin(int(bytesToRead - readSoFar),
-                                            d->readBuffer.nextDataBlockSize());
-        memcpy(data + readSoFar, ptr, bytesToReadFromThisBlock);
-        readSoFar += bytesToReadFromThisBlock;
-        d->readBuffer.free(bytesToReadFromThisBlock);
-    }
-
-    if (d->socketEngine && !d->socketEngine->isReadNotificationEnabled() && d->socketEngine->isValid())
+    if (!d->socketEngine)
+        return -1;          // no socket engine is probably EOF
+    if (!d->socketEngine->isValid())
+        return -1; // This is for unbuffered TCP when we already had been disconnected
+    if (d->state != QAbstractSocket::ConnectedState)
+        return -1; // This is for unbuffered TCP if we're not connected yet
+    qint64 readBytes = d->socketEngine->read(data, maxSize);
+    if (readBytes == -2) {
+        // -2 from the engine means no bytes available (EAGAIN) so read more later
+        return 0;
+    } else if (readBytes < 0) {
+        d->socketError = d->socketEngine->error();
+        setErrorString(d->socketEngine->errorString());
+        d->resetSocketLayer();
+        d->state = QAbstractSocket::UnconnectedState;
+    } else if (!d->socketEngine->isReadNotificationEnabled()) {
+        // Only do this when there was no error
         d->socketEngine->setReadNotificationEnabled(true);
-
-    if (readSoFar > 0) {
-        // we read some data from buffer.
-        // Just return, readyRead will be emitted again
-#if defined (QABSTRACTSOCKET_DEBUG)
-        qDebug("QAbstractSocket::readData(%p '%c (0x%.2x)', %lli) == %lli [buffer]",
-               data, isprint(int(uchar(*data))) ? *data : '?', *data, maxSize, readSoFar);
-#endif
-
-        if (d->readBuffer.isEmpty() && d->socketEngine)
-            d->socketEngine->setReadNotificationEnabled(true);
-        return readSoFar;
     }
 
-    // This code path is for Unbuffered QTcpSocket or for connected UDP
-
-    if (!d->isBuffered) {
-        if (!d->socketEngine)
-            return -1;          // no socket engine is probably EOF
-        if (!d->socketEngine->isValid())
-            return -1; // This is for unbuffered TCP when we already had been disconnected
-        if (d->state != QAbstractSocket::ConnectedState)
-            return -1; // This is for unbuffered TCP if we're not connected yet
-        qint64 readBytes = d->socketEngine->read(data, maxSize);
-        if (readBytes == -2) {
-            // -2 from the engine means no bytes available (EAGAIN) so read more later
-            return 0;
-        } else if (readBytes < 0) {
-            d->socketError = d->socketEngine->error();
-            setErrorString(d->socketEngine->errorString());
-            d->resetSocketLayer();
-            d->state = QAbstractSocket::UnconnectedState;
-        } else if (!d->socketEngine->isReadNotificationEnabled()) {
-            // Only do this when there was no error
-            d->socketEngine->setReadNotificationEnabled(true);
-        }
-
 #if defined (QABSTRACTSOCKET_DEBUG)
-        qDebug("QAbstractSocket::readData(%p \"%s\", %lli) == %lld [engine]",
-               data, qt_prettyDebug(data, 32, readBytes).data(), maxSize,
-               readBytes);
+    qDebug("QAbstractSocket::readData(%p \"%s\", %lli) == %lld [engine]",
+           data, qt_prettyDebug(data, 32, readBytes).data(), maxSize,
+           readBytes);
 #endif
-        return readBytes;
-    }
+    return readBytes;
 
-
-#if defined (QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::readData(%p \"%s\", %lli) == %lld [unreachable]",
-           data, qt_prettyDebug(data, qMin<qint64>(32, readSoFar), readSoFar).data(),
-           maxSize, readSoFar);
-#endif
-    return readSoFar;
 }
 
 /*! \reimp
@@ -2754,7 +2675,7 @@ void QAbstractSocket::disconnectFromHost()
 #if defined(QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocket::disconnectFromHost() closed!");
 #endif
-        d->readBuffer.clear();
+        d->buffer.clear();
         d->writeBuffer.clear();
         QIODevice::close();
     }
@@ -2808,7 +2729,7 @@ void QAbstractSocket::setReadBufferSize(qint64 size)
         // ensure that the read notification is enabled if we've now got
         // room in the read buffer
         // but only if we're not inside canReadNotification -- that will take care on its own
-        if ((size == 0 || d->readBuffer.size() < size) && d->state == QAbstractSocket::ConnectedState) // Do not change the notifier unless we are connected.
+        if ((size == 0 || d->buffer.size() < size) && d->state == QAbstractSocket::ConnectedState) // Do not change the notifier unless we are connected.
             d->socketEngine->setReadNotificationEnabled(true);
     }
 }
