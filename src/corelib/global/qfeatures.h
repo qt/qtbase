@@ -157,9 +157,6 @@
 //  Universally Unique Identifier Convertion
 //#define QT_NO_QUUID_STRING
 
-// Raster Paint Engine callback functions
-//#define QT_NO_RASTERCALLBACKS
-
 // Resize Handler
 //#define QT_NO_RESIZEHANDLER
 
@@ -186,9 +183,6 @@
 
 // QSlider
 //#define QT_NO_SLIDER
-
-// Sounds
-//#define QT_NO_SOUND
 
 // Spin Widget
 //#define QT_NO_SPINWIDGET

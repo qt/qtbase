@@ -98,13 +98,6 @@ Requires:
 Name: QTabletEvent
 SeeAlso: ???
 
-Feature: SOUND
-Description: Supports playing audio files.
-Section: Kernel
-Requires:
-Name: Sounds
-SeeAlso: ???
-
 Feature: EFFECTS
 Description: Supports special widget effects (e.g. fading and scrolling).
 Section: Kernel
@@ -919,13 +912,6 @@ Description: Debug painting with the environment variables QT_FLUSH_UPDATE and Q
 Section: Painting
 Requires:
 Name: Painting Debug Utilities
-SeeAlso: ???
-
-Feature: RASTERCALLBACKS
-Description: Supports subclassing the QPaintEngineRaster with callback functions.
-Section: Painting
-Requires:
-Name: Raster Paint Engine callback functions
 SeeAlso: ???
 
 # Fonts
