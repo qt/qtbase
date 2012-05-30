@@ -2473,6 +2473,13 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out << endl;
             }
             t << subtarget->target << "-qmake_all: ";
+            if (flags & SubTargetOrdered) {
+                if (target)
+                    t << targets.at(target - 1)->target << "-qmake_all";
+            } else {
+                if (!subtarget->depends.isEmpty())
+                    t << valGlue(subtarget->depends, QString(), "-qmake_all ", "-qmake_all");
+            }
             if(project->isEmpty("QMAKE_NOFORCE"))
                 t <<  " FORCE";
             t << "\n\t";
