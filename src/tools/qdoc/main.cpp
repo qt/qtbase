@@ -254,12 +254,29 @@ static void processQdocconfFile(const QString &fileName)
 
     if (dependModules.size() > 0) {
         if (indexDirs.size() > 0) {
-            for (int j = 0; j < indexDirs.size(); j++) {
-                if (indexDirs[j].startsWith("..")) {
-                    indexDirs[j].prepend(QDir(dir).relativeFilePath(prevCurrentDir));
+            for (int i = 0; i < indexDirs.size(); i++) {
+                if (indexDirs[i].startsWith("..")) {
+                    indexDirs[i].prepend(QDir(dir).relativeFilePath(prevCurrentDir));
+                }
+            }
+            /*
+                Add all subdirectories of the indexdirs as dependModules when an asterisk is used in
+                the 'depends' list.
+            */
+            if (dependModules.contains("*")) {
+                dependModules.removeOne("*");
+                for (int i = 0; i < indexDirs.size(); i++) {
+                    QDir scanDir = QDir(indexDirs[i]);
+                    scanDir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+                    QFileInfoList dirList = scanDir.entryInfoList();
+                    for (int j = 0; j < dirList.size(); j++) {
+                        if (dirList[j].fileName().toLower() != config.getString(CONFIG_PROJECT).toLower())
+                            dependModules.append(dirList[j].fileName());
+                    }
                 }
             }
             for (int i = 0; i < dependModules.size(); i++) {
+                QString indexToAdd;
                 QMultiMap<uint, QFileInfo> foundIndices;
                 for (int j = 0; j < indexDirs.size(); j++) {
                     QString fileToLookFor = indexDirs[j] + QLatin1Char('/') + dependModules[i] +
@@ -279,16 +296,18 @@ static void processQdocconfFile(const QString &fileName)
                     qDebug() << "Using" << foundIndices.value(
                                     foundIndices.keys()[foundIndices.size() - 1]).absoluteFilePath()
                             << "as index for" << dependModules[i];
-                    indexFiles << foundIndices.value(
+                    indexToAdd = foundIndices.value(
                                       foundIndices.keys()[foundIndices.size() - 1]).absoluteFilePath();
                 }
                 else if (foundIndices.size() == 1) {
-                    indexFiles << foundIndices.value(foundIndices.keys()[0]).absoluteFilePath();
+                    indexToAdd = foundIndices.value(foundIndices.keys()[0]).absoluteFilePath();
                 }
                 else {
                     qDebug() << "No indices for" << dependModules[i] <<
                                 "could be found in the specified index directories.";
                 }
+                if (!indexToAdd.isEmpty() && !indexFiles.contains(indexToAdd))
+                    indexFiles << indexToAdd;
             }
         }
         else {
