@@ -5743,7 +5743,7 @@ if [ -n "$PKG_CONFIG_SYSROOT_DIR" ] || [ -n "$PKG_CONFIG_LIBDIR" ]; then
     echo "# pkgconfig" >> "$QTCONFIG.tmp"
     echo "PKG_CONFIG_SYSROOT_DIR = $PKG_CONFIG_SYSROOT_DIR" >> "$QTCONFIG.tmp"
     echo "PKG_CONFIG_LIBDIR = $PKG_CONFIG_LIBDIR" >> "$QTCONFIG.tmp"
-    echo >> $"$QTCONFIG.tmp"
+    echo >> "$QTCONFIG.tmp"
 fi
 
 if [ -n "$CFG_SYSROOT" ]; then
