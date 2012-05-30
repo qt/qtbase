@@ -44,6 +44,9 @@
 #include <qobject.h>
 #include <qmetaobject.h>
 #include <qlabel.h>
+#include <private/qmetaobject_p.h>
+
+Q_DECLARE_METATYPE(const QMetaObject *)
 
 struct MyStruct
 {
@@ -172,6 +175,15 @@ private slots:
     void indexOfMethod();
 
     void indexOfMethodPMF();
+
+    void signalOffset_data();
+    void signalOffset();
+    void signalCount_data();
+    void signalCount();
+    void signal_data();
+    void signal();
+    void signalIndex_data();
+    void signalIndex();
 
 signals:
     void value6Changed();
@@ -1149,6 +1161,131 @@ void tst_QMetaObject::indexOfMethodPMF()
     INDEXOFMETHODPMF_HELPER(QtTestObject, sig0, ())
     INDEXOFMETHODPMF_HELPER(QtTestObject, sig10, (QString,QString,QString,QString,QString,QString,QString,QString,QString,QString))
     INDEXOFMETHODPMF_HELPER(QtTestCustomObject, sig_custom, (const CustomString &))
+}
+
+namespace SignalTestHelper
+{
+// These functions use the public QMetaObject/QMetaMethod API to implement
+// the functionality of the internal API, and are used to check the results.
+
+static int signalCount(const QMetaObject *mo)
+{
+    int n = 0;
+    for (int i = 0; i < mo->methodCount(); ++i) {
+        QMetaMethod mm = mo->method(i);
+        if (mm.methodType() == QMetaMethod::Signal)
+            ++n;
+    }
+    return n;
+}
+
+static int signalOffset(const QMetaObject *mo)
+{
+    return mo->superClass() ? signalCount(mo->superClass()) : 0;
+}
+
+static QMetaMethod signal(const QMetaObject *mo, int index)
+{
+    int k = 0;
+    for (int i = 0; i < mo->methodCount(); ++i) {
+        QMetaMethod mm = mo->method(i);
+        if (mm.methodType() != QMetaMethod::Signal)
+            continue;
+        if (k == index)
+            return mm;
+        ++k;
+    }
+    return QMetaMethod();
+}
+
+static int signalIndex(const QMetaMethod &mm)
+{
+    int k = mm.methodIndex();
+    const QMetaObject *mo = mm.enclosingMetaObject();
+    for (int i = 0; i < mm.methodIndex(); ++i) {
+        if (mo->method(i).methodType() != QMetaMethod::Signal)
+            --k;
+    }
+    return k;
+}
+
+} // namespace SignalTestHelper
+
+void tst_QMetaObject::signalOffset_data()
+{
+    QTest::addColumn<const QMetaObject *>("metaObject");
+
+    QTest::newRow("QObject") << &QObject::staticMetaObject;
+    QTest::newRow("tst_QMetaObject") << &tst_QMetaObject::staticMetaObject;
+    QTest::newRow("QtTestObject") << &QtTestObject::staticMetaObject;
+}
+
+void tst_QMetaObject::signalOffset()
+{
+    QFETCH(const QMetaObject *, metaObject);
+    QCOMPARE(QMetaObjectPrivate::signalOffset(metaObject),
+             SignalTestHelper::signalOffset(metaObject));
+}
+
+void tst_QMetaObject::signalCount_data()
+{
+    signalOffset_data();
+}
+
+void tst_QMetaObject::signalCount()
+{
+    QFETCH(const QMetaObject *, metaObject);
+    QCOMPARE(QMetaObjectPrivate::absoluteSignalCount(metaObject),
+             SignalTestHelper::signalCount(metaObject));
+}
+
+void tst_QMetaObject::signal_data()
+{
+    QTest::addColumn<const QMetaObject *>("metaObject");
+    QTest::addColumn<int>("index");
+
+    struct SignalTestDataHelper
+    {
+        static void addSignals(const QMetaObject *mo)
+        {
+            int count = SignalTestHelper::signalCount(mo);
+            for (int i = 0; i < count; ++i) {
+                QMetaMethod mm = SignalTestHelper::signal(mo, i);
+                QByteArray tag(mo->className());
+                tag.append("::");
+                tag.append(mm.methodSignature());
+                QTest::newRow(tag.constData()) << mo << i;
+            }
+        }
+    };
+
+    SignalTestDataHelper::addSignals(&QObject::staticMetaObject);
+    SignalTestDataHelper::addSignals(&tst_QMetaObject::staticMetaObject);
+    SignalTestDataHelper::addSignals(&QtTestObject::staticMetaObject);
+}
+
+void tst_QMetaObject::signal()
+{
+    QFETCH(const QMetaObject *, metaObject);
+    QFETCH(int, index);
+
+    QCOMPARE(QMetaObjectPrivate::signal(metaObject, index),
+             SignalTestHelper::signal(metaObject, index));
+}
+
+void tst_QMetaObject::signalIndex_data()
+{
+    signal_data();
+}
+
+void tst_QMetaObject::signalIndex()
+{
+    QFETCH(const QMetaObject *, metaObject);
+    QFETCH(int, index);
+
+    QMetaMethod mm = SignalTestHelper::signal(metaObject, index);
+    QCOMPARE(QMetaObjectPrivate::signalIndex(mm),
+             SignalTestHelper::signalIndex(mm));
 }
 
 QTEST_MAIN(tst_QMetaObject)

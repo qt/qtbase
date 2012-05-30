@@ -798,31 +798,82 @@ int QMetaObjectPrivate::indexOfConstructor(const QMetaObject *m, const QByteArra
     return -1;
 }
 
+/*!
+    \internal
+    \since 5.0
+
+    Returns the signal offset for the class \a m; i.e., the index position
+    of the class's first signal.
+
+    Similar to QMetaObject::methodOffset(), but non-signal methods are
+    excluded.
+*/
+int QMetaObjectPrivate::signalOffset(const QMetaObject *m)
+{
+    Q_ASSERT(m != 0);
+    int offset = 0;
+    for (m = m->d.superdata; m; m = m->d.superdata)
+        offset += priv(m->d.data)->signalCount;
+    return offset;
+}
+
+/*!
+    \internal
+    \since 5.0
+
+    Returns the number of signals for the class \a m, including the signals
+    for the base class.
+
+    Similar to QMetaObject::methodCount(), but non-signal methods are
+    excluded.
+*/
+int QMetaObjectPrivate::absoluteSignalCount(const QMetaObject *m)
+{
+    Q_ASSERT(m != 0);
+    int n = priv(m->d.data)->signalCount;
+    for (m = m->d.superdata; m; m = m->d.superdata)
+        n += priv(m->d.data)->signalCount;
+    return n;
+}
+
+/*!
+    \internal
+    \since 5.0
+
+    Returns the index of the signal method \a m.
+
+    Similar to QMetaMethod::methodIndex(), but non-signal methods are
+    excluded.
+*/
+int QMetaObjectPrivate::signalIndex(const QMetaMethod &m)
+{
+    if (!m.mobj)
+        return -1;
+    return ((m.handle - priv(m.mobj->d.data)->methodData) / 5) + signalOffset(m.mobj);
+}
+
 /*! \internal
-    Returns the signal for the given \a metaObject at \a signal_index.
+    \since 5.0
+
+    Returns the signal for the given meta-object \a m at \a signal_index.
 
     It it different from QMetaObject::method(); the index should not include
     non-signal methods.
-
-    The index must correspond to a signal defined in \ a metaObject itself;
-    it should not be an inherited signal.
 */
-QMetaMethod QMetaObjectPrivate::signal(const QMetaObject *metaObject, int signal_index)
+QMetaMethod QMetaObjectPrivate::signal(const QMetaObject *m, int signal_index)
 {
     QMetaMethod result;
     if (signal_index < 0)
         return result;
-    Q_ASSERT(metaObject != 0);
+    Q_ASSERT(m != 0);
+    int i = signal_index;
+    i -= signalOffset(m);
+    if (i < 0 && m->d.superdata)
+        return signal(m->d.superdata, signal_index);
 
-    int signalOffset = 0;
-    for (const QMetaObject *m = metaObject->d.superdata; m; m = m->d.superdata)
-        signalOffset += priv(m->d.data)->signalCount;
-
-    Q_ASSERT(signal_index >= signalOffset);
-    int signal_index_relative = signal_index - signalOffset;
-    if (signal_index_relative < priv(metaObject->d.data)->signalCount) {
-        result.mobj = metaObject;
-        result.handle = priv(metaObject->d.data)->methodData + 5*signal_index_relative;
+    if (i >= 0 && i < priv(m->d.data)->signalCount) {
+        result.mobj = m;
+        result.handle = priv(m->d.data)->methodData + 5*i;
     }
     return result;
 }

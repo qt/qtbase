@@ -255,6 +255,7 @@ private:
     int idx;
     QMetaEnum menum;
     friend struct QMetaObject;
+    friend struct QMetaObjectPrivate;
 };
 
 class Q_CORE_EXPORT QMetaClassInfo

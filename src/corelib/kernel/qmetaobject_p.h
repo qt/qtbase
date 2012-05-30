@@ -203,7 +203,10 @@ struct QMetaObjectPrivate
                              int argc, const QArgumentType *types);
     static int indexOfConstructor(const QMetaObject *m, const QByteArray &name,
                                   int argc, const QArgumentType *types);
-    static QMetaMethod signal(const QMetaObject *m, int signal_index);
+    Q_CORE_EXPORT static QMetaMethod signal(const QMetaObject *m, int signal_index);
+    Q_CORE_EXPORT static int signalOffset(const QMetaObject *m);
+    Q_CORE_EXPORT static int absoluteSignalCount(const QMetaObject *m);
+    Q_CORE_EXPORT static int signalIndex(const QMetaMethod &m);
     static bool checkConnectArgs(int signalArgc, const QArgumentType *signalTypes,
                                  int methodArgc, const QArgumentType *methodTypes);
     static bool checkConnectArgs(const QMetaMethodPrivate *signal,
