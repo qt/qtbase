@@ -4850,6 +4850,21 @@ void tst_QString::nanAndInf()
 
     QString("0INF0").toLong(&ok, 36);
     QVERIFY(ok);
+
+    // Check that inf (float) => "inf" (QString) => inf (float).
+    float value = qInf();
+    QString valueAsString = QString::number(value);
+    QCOMPARE(valueAsString, QString::fromLatin1("inf"));
+    float valueFromString = valueAsString.toFloat();
+    QVERIFY(qIsInf(valueFromString));
+
+    // Check that -inf (float) => "-inf" (QString) => -inf (float).
+    value = -qInf();
+    valueAsString = QString::number(value);
+    QCOMPARE(valueAsString, QString::fromLatin1("-inf"));
+    valueFromString = valueAsString.toFloat();
+    QVERIFY(value == -qInf());
+    QVERIFY(qIsInf(valueFromString));
 }
 
 void tst_QString::arg_fillChar_data()

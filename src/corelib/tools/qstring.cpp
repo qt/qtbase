@@ -48,6 +48,7 @@
 #endif
 #include <private/qutfcodec_p.h>
 #include "qsimd_p.h"
+#include <qnumeric.h>
 #include <qdatastream.h>
 #include <qlist.h>
 #include "qlocale.h"
@@ -6051,14 +6052,21 @@ float QString::toFloat(bool *ok) const
 {
     bool myOk;
     double d = toDouble(&myOk);
-    if (!myOk || d > QT_MAX_FLOAT || d < -QT_MAX_FLOAT) {
+    if (!myOk) {
+        if (ok != 0)
+            *ok = false;
+        return 0.0;
+    }
+    if (qIsInf(d))
+        return float(d);
+    if (d > QT_MAX_FLOAT || d < -QT_MAX_FLOAT) {
         if (ok != 0)
             *ok = false;
         return 0.0;
     }
     if (ok != 0)
         *ok = true;
-    return (float) d;
+    return float(d);
 }
 
 /*! \fn QString &QString::setNum(int n, int base)
