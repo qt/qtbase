@@ -23,8 +23,6 @@ DEFINES	       += \
         QT_NO_USING_NAMESPACE \
         QT_NO_DEPRECATED
 
-win32:DEFINES += QT_NODLL
-
 INCLUDEPATH	+= $$QT_BUILD_TREE/include \
                    $$QT_BUILD_TREE/include/QtCore \
                    $$QT_BUILD_TREE/include/QtCore/$$QT_VERSION \

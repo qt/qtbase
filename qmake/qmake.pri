@@ -33,7 +33,7 @@ contains(QT_EDITION, OpenSource) {
 }
 
 bootstrap { #Qt code
-   DEFINES+=QT_NODLL QT_NO_THREAD
+   DEFINES+=QT_NO_THREAD
    SOURCES+= \
         qbitarray.cpp \
         qbuffer.cpp \
