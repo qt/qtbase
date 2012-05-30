@@ -139,6 +139,12 @@ QT_BEGIN_HEADER
 #  endif
 #endif
 
+// other x86 intrinsics
+#if defined(QT_COMPILER_SUPPORTS_AVX) && defined(Q_CC_GNU)
+#define QT_COMPILER_SUPPORTS_X86INTRIN
+#include <x86intrin.h>
+#endif
+
 // NEON intrinsics
 #if defined __ARM_NEON__
 #include <arm_neon.h>
