@@ -685,6 +685,7 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QByteDataBuff
 #ifndef QT_NO_COMPRESS
 qint64 QHttpNetworkReplyPrivate::uncompressBodyData(QByteDataBuffer *in, QByteDataBuffer *out)
 {
+    bool triedRawDeflate = false;
     for (int i = 0; i < in->bufferCount(); i++) {
         QByteArray &bIn = (*in)[i];
 
@@ -700,8 +701,26 @@ qint64 QHttpNetworkReplyPrivate::uncompressBodyData(QByteDataBuffer *in, QByteDa
 
             int ret = inflate(&inflateStrm, Z_NO_FLUSH);
             //All negative return codes are errors, in the context of HTTP compression, Z_NEED_DICT is also an error.
-            if (ret < 0 || ret == Z_NEED_DICT)
+            // in the case where we get Z_DATA_ERROR this could be because we recieved raw deflate compressed data.
+            if (ret == Z_DATA_ERROR && !triedRawDeflate) {
+                inflateEnd(&inflateStrm);
+                triedRawDeflate = true;
+                inflateStrm.zalloc = Z_NULL;
+                inflateStrm.zfree = Z_NULL;
+                inflateStrm.opaque = Z_NULL;
+                inflateStrm.avail_in = 0;
+                inflateStrm.next_in = Z_NULL;
+                int ret = inflateInit2(&inflateStrm, -MAX_WBITS);
+                if (ret != Z_OK) {
+                    return -1;
+                } else {
+                    inflateStrm.avail_in = bIn.size();
+                    inflateStrm.next_in = reinterpret_cast<Bytef*>(bIn.data());
+                    continue;
+                }
+            } else if (ret < 0 || ret == Z_NEED_DICT) {
                 return -1;
+            }
             bOut.resize(bOut.capacity() - inflateStrm.avail_out);
             out->append(bOut);
             if (ret == Z_STREAM_END)
