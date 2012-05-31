@@ -57,7 +57,7 @@
 #include <QtDebug>
 #endif
 
-#define LONG_BITS (sizeof(int) * 8 )
+#define LONG_BITS (sizeof(long) * 8 )
 #define LONG_FIELD_SIZE(bits) ((bits / LONG_BITS) + 1)
 
 static bool testBit(long bit, const long *field)
