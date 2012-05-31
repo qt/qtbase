@@ -996,6 +996,7 @@ QString QGtkStylePrivate::openFilename(QWidget *parent, const QString &caption, 
     QWidget modal_widget;
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
     modal_widget.setParent(parent, Qt::Window);
+    modal_widget.createWinId();
     QGuiApplicationPrivate::showModalWindow(modal_widget.windowHandle());
 
     QString filename;
@@ -1029,6 +1030,7 @@ QString QGtkStylePrivate::openDirectory(QWidget *parent, const QString &caption,
     QWidget modal_widget;
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
     modal_widget.setParent(parent, Qt::Window);
+    modal_widget.createWinId();
     QGuiApplicationPrivate::showModalWindow(modal_widget.windowHandle());
 
     QString filename;
@@ -1061,6 +1063,7 @@ QStringList QGtkStylePrivate::openFilenames(QWidget *parent, const QString &capt
     QWidget modal_widget;
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
     modal_widget.setParent(parent, Qt::Window);
+    modal_widget.createWinId();
     QGuiApplicationPrivate::showModalWindow(modal_widget.windowHandle());
 
     if (gtk_dialog_run ((GtkDialog*)gtkFileChooser) == GTK_RESPONSE_ACCEPT) {
@@ -1094,6 +1097,7 @@ QString QGtkStylePrivate::saveFilename(QWidget *parent, const QString &caption, 
     QWidget modal_widget;
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
     modal_widget.setParent(parent, Qt::Window);
+    modal_widget.createWinId();
     QGuiApplicationPrivate::showModalWindow(modal_widget.windowHandle());
 
     QString filename;
