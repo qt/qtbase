@@ -2501,6 +2501,12 @@ if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
     fi
 fi
 
+GCC_MACHINE_DUMP=
+case "$TEST_COMPILER" in *g++) GCC_MACHINE_DUMP=$($TEST_COMPILER -dumpmachine);; esac
+if [ -n "$GCC_MACHINE_DUMP" ]; then
+    DeviceVar set GCC_MACHINE_DUMP $($TEST_COMPILER -dumpmachine)
+fi
+
 if [ -n "$CFG_SYSROOT" ]; then
     SYSROOT_FLAG="--sysroot=$CFG_SYSROOT"
 else
@@ -3620,6 +3626,9 @@ elif [ -n "$PKG_CONFIG" ]; then
         if [ -z "$PKG_CONFIG_LIBDIR" ]; then
             if [ -n "$CFG_SYSROOT" ] && [ -d "$CFG_SYSROOT/usr/lib/pkgconfig" ]; then
                 PKG_CONFIG_LIBDIR=$CFG_SYSROOT/usr/lib/pkgconfig:$CFG_SYSROOT/usr/share/pkgconfig
+                if [ -n "$GCC_MACHINE_DUMP" ]; then
+                    PKG_CONFIG_LIBDIR=$PKG_CONFIG_LIBDIR:$CFG_SYSROOT/usr/lib/$GCC_MACHINE_DUMP/pkgconfig
+                fi
                 export PKG_CONFIG_LIBDIR
                 echo >&2 "Note: PKG_CONFIG_LIBDIR automatically set to $PKG_CONFIG_LIBDIR"
             elif [ "$CFG_PKGCONFIG" = "yes" ]; then
