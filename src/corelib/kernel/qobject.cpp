@@ -2134,7 +2134,11 @@ QObject *QObject::sender() const
 int QObject::senderSignalIndex() const
 {
     Q_D(const QObject);
-    return d->senderSignalIndex();
+    int signal_index = d->senderSignalIndex();
+    if (signal_index < 0)
+        return signal_index;
+    // Convert from signal range to method range
+    return QMetaObjectPrivate::signal(sender()->metaObject(), signal_index).methodIndex();
 }
 
 /*!
@@ -3230,11 +3234,15 @@ void QMetaObject::connectSlotsByName(QObject *o)
     }
 }
 
+/*! \internal
+
+    \a signal must be in the signal index range (see QObjectPrivate::signalIndex()).
+*/
 static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connection *c, void **argv)
 {
     const int *argumentTypes = c->argumentTypes.load();
     if (!argumentTypes && argumentTypes != &DIRECT_CONNECTION_ONLY) {
-        QMetaMethod m = sender->metaObject()->method(signal);
+        QMetaMethod m = QMetaObjectPrivate::signal(sender->metaObject(), signal);
         argumentTypes = queuedConnectionTypes(m.parameterTypes());
         if (!argumentTypes) // cannot queue arguments
             argumentTypes = &DIRECT_CONNECTION_ONLY;
@@ -3357,7 +3365,7 @@ void QMetaObject::activate(QObject *sender, int methodOffset, int signalOffset, 
             // put into the event queue
             if ((c->connectionType == Qt::AutoConnection && !receiverInSameThread)
                 || (c->connectionType == Qt::QueuedConnection)) {
-                queued_activate(sender, signal_absolute_index, c, argv ? argv : empty_argv);
+                queued_activate(sender, signal_index, c, argv ? argv : empty_argv);
                 continue;
 #ifndef QT_NO_THREAD
             } else if (c->connectionType == Qt::BlockingQueuedConnection) {
@@ -3370,8 +3378,8 @@ void QMetaObject::activate(QObject *sender, int methodOffset, int signalOffset, 
                 }
                 QSemaphore semaphore;
                 QMetaCallEvent *ev = c->isSlotObject ?
-                    new QMetaCallEvent(c->slotObj, sender, signal_absolute_index, 0, 0, argv ? argv : empty_argv, &semaphore) :
-                    new QMetaCallEvent(c->method_offset, c->method_relative, c->callFunction, sender, signal_absolute_index, 0, 0, argv ? argv : empty_argv, &semaphore);
+                    new QMetaCallEvent(c->slotObj, sender, signal_index, 0, 0, argv ? argv : empty_argv, &semaphore) :
+                    new QMetaCallEvent(c->method_offset, c->method_relative, c->callFunction, sender, signal_index, 0, 0, argv ? argv : empty_argv, &semaphore);
                 QCoreApplication::postEvent(receiver, ev);
                 semaphore.acquire();
                 locker.relock();
@@ -3382,7 +3390,7 @@ void QMetaObject::activate(QObject *sender, int methodOffset, int signalOffset, 
             QConnectionSenderSwitcher sw;
 
             if (receiverInSameThread) {
-                sw.switchSender(receiver, sender, signal_absolute_index);
+                sw.switchSender(receiver, sender, signal_index);
             }
             const QObjectPrivate::StaticMetaCallFunction callFunction = c->callFunction;
             const int method_relative = c->method_relative;
