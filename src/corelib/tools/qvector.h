@@ -298,6 +298,10 @@ private:
     class AlignmentDummy { Data header; T array[1]; };
 };
 
+#ifdef Q_CC_MSVC
+#   pragma warning ( disable : 4345 ) // behavior change: an object of POD type constructed with an initializer of the form () will be default-initialized
+#endif
+
 template <typename T>
 void QVector<T>::defaultConstruct(T *from, T *to)
 {
@@ -309,6 +313,10 @@ void QVector<T>::defaultConstruct(T *from, T *to)
         ::memset(from, 0, (to - from) * sizeof(T));
     }
 }
+
+#ifdef Q_CC_MSVC
+#   pragma warning ( default: 4345 )
+#endif
 
 template <typename T>
 void QVector<T>::copyConstruct(T *srcFrom, T *srcTo, T *dstFrom)
@@ -569,10 +577,10 @@ void QVector<T>::realloc(const int asize, const int aalloc, QArrayData::Allocati
     }
 
     Q_ASSERT(d->data());
-    Q_ASSERT(d->size <= d->alloc);
+    Q_ASSERT(uint(d->size) <= d->alloc);
     Q_ASSERT(d != Data::unsharableEmpty());
     Q_ASSERT(aalloc ? d != Data::sharedNull() : d == Data::sharedNull());
-    Q_ASSERT(d->alloc >= aalloc);
+    Q_ASSERT(d->alloc >= uint(aalloc));
     Q_ASSERT(d->size == asize);
 }
 
