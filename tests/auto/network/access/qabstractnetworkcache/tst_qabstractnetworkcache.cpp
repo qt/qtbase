@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-
+#include <QTemporaryDir>
 #include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
 #include "../../../network-settings.h"
@@ -101,10 +101,10 @@ class NetworkDiskCache : public QNetworkDiskCache
 public:
     NetworkDiskCache(QObject *parent = 0)
         : QNetworkDiskCache(parent)
+        , tempDir(QDir::tempPath() + QLatin1String("/tst_qabstractnetworkcache.XXXXXX"))
         , gotData(false)
     {
-        QString location = QDir::tempPath() + QLatin1String("/tst_qnetworkdiskcache/");
-        setCacheDirectory(location);
+        setCacheDirectory(tempDir.path());
         clear();
     }
 
@@ -114,6 +114,7 @@ public:
         return QNetworkDiskCache::data(url);
     }
 
+    QTemporaryDir tempDir;
     bool gotData;
 };
 
