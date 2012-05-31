@@ -3700,21 +3700,8 @@ void QObject::dumpObjectInfo()
     qDebug("  SIGNALS OUT");
 
     if (d->connectionLists) {
-        int offset = 0;
-        int offsetToNextMetaObject = 0;
         for (int signal_index = 0; signal_index < d->connectionLists->count(); ++signal_index) {
-            if (signal_index >= offsetToNextMetaObject) {
-                const QMetaObject *mo = metaObject();
-                int signalOffset, methodOffset;
-                computeOffsets(mo, &signalOffset, &methodOffset);
-                while (signalOffset > signal_index) {
-                    mo = mo->superClass();
-                    offsetToNextMetaObject = signalOffset;
-                    computeOffsets(mo, &signalOffset, &methodOffset);
-                }
-                offset = methodOffset - signalOffset;
-            }
-            const QMetaMethod signal = metaObject()->method(signal_index + offset);
+            const QMetaMethod signal = QMetaObjectPrivate::signal(metaObject(), signal_index);
             qDebug("        signal: %s", signal.methodSignature().constData());
 
             // receivers
