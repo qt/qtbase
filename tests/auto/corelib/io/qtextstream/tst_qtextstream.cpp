@@ -50,13 +50,12 @@
 #include <QDebug>
 #include <QFile>
 #include <QTcpSocket>
+#include <QTemporaryDir>
 #include <QTextStream>
 #include <QTextCodec>
 #include <QProcess>
 
 #include "../../../network-settings.h"
-
-static const char *TestFileName = "testfile";
 
 Q_DECLARE_METATYPE(qlonglong)
 Q_DECLARE_METATYPE(qulonglong)
@@ -70,6 +69,9 @@ QT_END_NAMESPACE
 class tst_QTextStream : public QObject
 {
     Q_OBJECT
+
+public:
+    tst_QTextStream();
 
 public slots:
     void initTestCase();
@@ -239,11 +241,21 @@ private:
     void generateRealNumbersData(bool for_QString);
     void generateStringData(bool for_QString);
     void generateRealNumbersDataWrite();
+
+    QTemporaryDir tempDir;
+    QString testFileName;
 };
+
+tst_QTextStream::tst_QTextStream()
+    : tempDir(QDir::tempPath() + "/tst_qtextstream.XXXXXX")
+{
+}
 
 void tst_QTextStream::initTestCase()
 {
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+
+    testFileName = tempDir.path() + "/testfile";
 
     // chdir into the testdata dir and refer to our helper apps with relative paths
     QString testdata_dir = QFileInfo(QFINDTESTDATA("stdinProcess")).absolutePath();
@@ -488,8 +500,8 @@ void tst_QTextStream::readLineFromDevice()
     QFETCH(QByteArray, data);
     QFETCH(QStringList, lines);
 
-    QFile::remove(TestFileName);
-    QFile file(TestFileName);
+    QFile::remove(testFileName);
+    QFile file(testFileName);
     QVERIFY(file.open(QFile::ReadWrite));
     QCOMPARE(file.write(data), qlonglong(data.size()));
     QVERIFY(file.flush());
@@ -1340,7 +1352,7 @@ void tst_QTextStream::pos2()
 void tst_QTextStream::pos3LargeFile()
 {
     {
-        QFile file(TestFileName);
+        QFile file(testFileName);
         file.open(QIODevice::WriteOnly | QIODevice::Text);
         QTextStream out( &file );
         // NOTE: The unusual spacing is to ensure non-1-character whitespace.
@@ -1351,7 +1363,7 @@ void tst_QTextStream::pos3LargeFile()
             out << lineString;
         // File is automatically flushed and closed on destruction.
     }
-    QFile file(TestFileName);
+    QFile file(testFileName);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     QTextStream in( &file );
     const int testValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -1677,8 +1689,8 @@ void tst_QTextStream::utf8IncompleteAtBufferBoundary_data()
 
 void tst_QTextStream::utf8IncompleteAtBufferBoundary()
 {
-    QFile::remove(TestFileName);
-    QFile data(TestFileName);
+    QFile::remove(testFileName);
+    QFile data(testFileName);
 
     QTextCodec *utf8Codec = QTextCodec::codecForMib(106);
     QString lineContents = QString::fromUtf8("\342\200\223" // U+2013 EN DASH
