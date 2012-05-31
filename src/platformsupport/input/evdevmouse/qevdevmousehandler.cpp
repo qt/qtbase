@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qevdevmousehandler.h"
+#include "qevdevmousehandler_p.h"
 
 #include <QSocketNotifier>
 #include <QStringList>
@@ -73,9 +73,9 @@ QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QStr
 
     QStringList args = specification.split(QLatin1Char(':'));
     foreach (const QString &arg, args) {
-        if (arg == "nocompress")
+        if (arg == QLatin1String("nocompress"))
             compression = false;
-        else if (arg.startsWith("dejitter="))
+        else if (arg.startsWith(QLatin1String("dejitter=")))
             jitterLimit = arg.mid(9).toInt();
     }
 

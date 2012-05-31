@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVMOUSEHANDLER_H
-#define QEVDEVMOUSEHANDLER_H
+#ifndef QEVDEVMOUSEHANDLER_P_H
+#define QEVDEVMOUSEHANDLER_P_H
 
 #include <QObject>
 #include <QString>
@@ -83,4 +83,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QEVDEVMOUSEHANDLER_H
+#endif // QEVDEVMOUSEHANDLER_P_H

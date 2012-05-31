@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVKEYBOARDHANDLER_DEFAULTMAP_H
-#define QEVDEVKEYBOARDHANDLER_DEFAULTMAP_H
+#ifndef QEVDEVKEYBOARDHANDLER_DEFAULTMAP_P_H
+#define QEVDEVKEYBOARDHANDLER_DEFAULTMAP_P_H
 
 // no QT_BEGIN_NAMESPACE, since we include it internally...
 
@@ -784,4 +784,4 @@ const QEvdevKeyboardMap::Composing QEvdevKeyboardHandler::s_keycompose_default[]
     { 0x0049, 0x004a, 0x0178 },
 };
 
-#endif // QEVDEVKEYBOARDHANDLER_DEFAULTMAP_H
+#endif // QEVDEVKEYBOARDHANDLER_DEFAULTMAP_P_H

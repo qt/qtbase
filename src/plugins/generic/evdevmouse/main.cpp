@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <qgenericplugin_qpa.h>
-#include "qevdevmousemanager.h"
+#include <QtPlatformSupport/private/qevdevmousemanager_p.h>
 
 QT_BEGIN_NAMESPACE
 

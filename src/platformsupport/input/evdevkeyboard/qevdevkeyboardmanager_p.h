@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,60 +39,40 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVTOUCH_H
-#define QEVDEVTOUCH_H
+#ifndef QEVDEVKEYBOARDMANAGER_P_H
+#define QEVDEVKEYBOARDMANAGER_P_H
+
+#include "qevdevkeyboardhandler_p.h"
+
+#include <QtPlatformSupport/private/qdevicediscovery_p.h>
 
 #include <QObject>
-#include <QString>
-#include <QList>
-#include <QThread>
-#include <QWindowSystemInterface>
+#include <QHash>
+#include <QSocketNotifier>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QSocketNotifier;
-class QTouchScreenData;
-#ifdef USE_MTDEV
-struct mtdev;
-#endif
-
-class QTouchScreenHandler : public QObject
+class QEvdevKeyboardManager : public QObject
 {
     Q_OBJECT
-
 public:
-    QTouchScreenHandler(const QString &spec = QString(), QObject *parent = 0);
-    ~QTouchScreenHandler();
+    QEvdevKeyboardManager(const QString &key, const QString &specification, QObject *parent = 0);
+    ~QEvdevKeyboardManager();
 
 private slots:
-    void readData();
-
-private:
-    QSocketNotifier *m_notify;
-    int m_fd;
-    QTouchScreenData *d;
-#ifdef USE_MTDEV
-    mtdev *m_mtdev;
-#endif
-};
-
-class QTouchScreenHandlerThread : public QThread
-{
-public:
-    QTouchScreenHandlerThread(const QString &spec);
-    ~QTouchScreenHandlerThread();
-    void run();
-    QTouchScreenHandler *handler() { return m_handler; }
+    void addKeyboard(const QString &deviceNode = QString());
+    void removeKeyboard(const QString &deviceNode);
 
 private:
     QString m_spec;
-    QTouchScreenHandler *m_handler;
+    QHash<QString,QEvdevKeyboardHandler*> m_keyboards;
+    QDeviceDiscovery *m_deviceDiscovery;
 };
-
-QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QEVDEVTOUCH_H
+QT_END_NAMESPACE
+
+#endif // QEVDEVKEYBOARDMANAGER_P_H

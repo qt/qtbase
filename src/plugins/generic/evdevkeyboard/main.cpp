@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <qgenericplugin_qpa.h>
-#include "qevdevkeyboardmanager.h"
+#include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
 
 QT_BEGIN_NAMESPACE
 

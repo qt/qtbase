@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,47 +39,60 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVMOUSEMANAGER_H
-#define QEVDEVMOUSEMANAGER_H
-
-#include "qevdevmousehandler.h"
-
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#ifndef QEVDEVTOUCH_P_H
+#define QEVDEVTOUCH_P_H
 
 #include <QObject>
-#include <QHash>
-#include <QSocketNotifier>
+#include <QString>
+#include <QList>
+#include <QThread>
+#include <QWindowSystemInterface>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QEvdevMouseManager : public QObject
+class QSocketNotifier;
+class QTouchScreenData;
+#ifdef USE_MTDEV
+struct mtdev;
+#endif
+
+class QTouchScreenHandler : public QObject
 {
     Q_OBJECT
-public:
-    QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent = 0);
-    ~QEvdevMouseManager();
 
-public slots:
-    void handleMouseEvent(int x, int y, Qt::MouseButtons buttons);
+public:
+    QTouchScreenHandler(const QString &spec = QString(), QObject *parent = 0);
+    ~QTouchScreenHandler();
 
 private slots:
-    void addMouse(const QString &deviceNode = QString());
-    void removeMouse(const QString &deviceNode);
+    void readData();
+
+private:
+    QSocketNotifier *m_notify;
+    int m_fd;
+    QTouchScreenData *d;
+#ifdef USE_MTDEV
+    mtdev *m_mtdev;
+#endif
+};
+
+class QTouchScreenHandlerThread : public QThread
+{
+public:
+    QTouchScreenHandlerThread(const QString &spec);
+    ~QTouchScreenHandlerThread();
+    void run();
+    QTouchScreenHandler *handler() { return m_handler; }
 
 private:
     QString m_spec;
-    QHash<QString,QEvdevMouseHandler*> m_mice;
-    QDeviceDiscovery *m_deviceDiscovery;
-    int m_x;
-    int m_y;
-    int m_xoffset;
-    int m_yoffset;
+    QTouchScreenHandler *m_handler;
 };
-
-QT_END_HEADER
 
 QT_END_NAMESPACE
 
-#endif // QEVDEVMOUSEMANAGER_H
+QT_END_HEADER
+
+#endif // QEVDEVTOUCH_P_H

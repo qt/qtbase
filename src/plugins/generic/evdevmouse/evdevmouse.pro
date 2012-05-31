@@ -5,18 +5,10 @@ DESTDIR = $$QT.gui.plugins/generic
 target.path = $$[QT_INSTALL_PLUGINS]/generic
 INSTALLS += target
 
-HEADERS = qevdevmousehandler.h \
-    qevdevmousemanager.h
-
 QT += core-private platformsupport-private
 
-SOURCES = main.cpp \
-          qevdevmousehandler.cpp \
-    qevdevmousemanager.cpp
+SOURCES = main.cpp
 
 OTHER_FILES += \
     evdevmouse.json
 
-contains(QT_CONFIG, libudev) {
-    LIBS += $$QMAKE_LIBS_LIBUDEV
-}

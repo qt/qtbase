@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qevdevkeyboardmanager.h"
+#include "qevdevkeyboardmanager_p.h"
 
 #include <QStringList>
 #include <QCoreApplication>

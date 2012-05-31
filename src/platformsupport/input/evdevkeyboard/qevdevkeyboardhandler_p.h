@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVKEYBOARDHANDLER_H
-#define QEVDEVKEYBOARDHANDLER_H
+#ifndef QEVDEVKEYBOARDHANDLER_P_H
+#define QEVDEVKEYBOARDHANDLER_P_H
 
 #include <qobject.h>
 #include <QTimer>
@@ -199,4 +199,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QEVDEVKEYBOARDHANDLER_H
+#endif // QEVDEVKEYBOARDHANDLER_P_H

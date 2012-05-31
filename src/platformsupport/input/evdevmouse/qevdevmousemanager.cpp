@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qevdevmousemanager.h"
+#include "qevdevmousemanager_p.h"
 
 #include <QStringList>
 #include <QGuiApplication>
@@ -63,19 +63,19 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
     QStringList devices;
 
     foreach (const QString &arg, args) {
-        if (arg.startsWith("/dev/")) {
+        if (arg.startsWith(QLatin1String("/dev/"))) {
             // if device is specified try to use it
             devices.append(arg);
             args.removeAll(arg);
-        } else if (arg.startsWith("xoffset=")) {
+        } else if (arg.startsWith(QLatin1String("xoffset="))) {
             m_xoffset = arg.mid(8).toInt();
-        } else if (arg.startsWith("yoffset=")) {
+        } else if (arg.startsWith(QLatin1String("yoffset="))) {
             m_yoffset = arg.mid(8).toInt();
         }
     }
 
     // build new specification without /dev/ elements
-    m_spec = args.join(":");
+    m_spec = args.join(QLatin1String(":"));
 
     // add all mice for devices specified in the argument list
     foreach (const QString &device, devices)

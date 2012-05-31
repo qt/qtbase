@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVKEYBOARDMANAGER_H
-#define QEVDEVKEYBOARDMANAGER_H
+#ifndef QEVDEVMOUSEMANAGER_P_H
+#define QEVDEVMOUSEMANAGER_P_H
 
-#include "qevdevkeyboardhandler.h"
+#include "qevdevmousehandler_p.h"
 
 #include <QtPlatformSupport/private/qdevicediscovery_p.h>
 
@@ -54,25 +54,32 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QEvdevKeyboardManager : public QObject
+class QEvdevMouseManager : public QObject
 {
     Q_OBJECT
 public:
-    QEvdevKeyboardManager(const QString &key, const QString &specification, QObject *parent = 0);
-    ~QEvdevKeyboardManager();
+    QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent = 0);
+    ~QEvdevMouseManager();
+
+public slots:
+    void handleMouseEvent(int x, int y, Qt::MouseButtons buttons);
 
 private slots:
-    void addKeyboard(const QString &deviceNode = QString());
-    void removeKeyboard(const QString &deviceNode);
+    void addMouse(const QString &deviceNode = QString());
+    void removeMouse(const QString &deviceNode);
 
 private:
     QString m_spec;
-    QHash<QString,QEvdevKeyboardHandler*> m_keyboards;
+    QHash<QString,QEvdevMouseHandler*> m_mice;
     QDeviceDiscovery *m_deviceDiscovery;
+    int m_x;
+    int m_y;
+    int m_xoffset;
+    int m_yoffset;
 };
 
 QT_END_HEADER
 
 QT_END_NAMESPACE
 
-#endif // QEVDEVKEYBOARDMANAGER_H
+#endif // QEVDEVMOUSEMANAGER_P_H

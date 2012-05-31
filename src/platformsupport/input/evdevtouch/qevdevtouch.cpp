@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qevdevtouch.h"
+#include "qevdevtouch_p.h"
 #include <QStringList>
 #include <QHash>
 #include <QSocketNotifier>

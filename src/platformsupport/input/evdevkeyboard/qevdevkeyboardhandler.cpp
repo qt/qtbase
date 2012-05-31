@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qevdevkeyboardhandler.h"
+#include "qevdevkeyboardhandler_p.h"
 
 #include <qplatformdefs.h>
 
@@ -60,7 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 // simple builtin US keymap
-#include "qevdevkeyboard_defaultmap.h"
+#include "qevdevkeyboard_defaultmap_p.h"
 
 QEvdevKeyboardHandler::QEvdevKeyboardHandler(const QString &device, int fd, bool disableZap, bool enableCompose, const QString &keymapFile)
     : m_device(device), m_fd(fd),
