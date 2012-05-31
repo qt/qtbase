@@ -20,8 +20,6 @@ QMAKE_DOCS_INDEX = ../../doc
 
 include(../qbase.pri)
 
-contains(QT_CONFIG, x11sm):CONFIG += x11sm
-
 #platforms
 mac:include(kernel/mac.pri)
 win32:include(kernel/win.pri)

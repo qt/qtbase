@@ -65,7 +65,6 @@ unix {
 			(cd config.tests/x11/xinput && $(MAKE) distclean); \
 			(cd config.tests/x11/fontconfig && $(MAKE) distclean); \
 			(cd config.tests/x11/xinerama && $(MAKE) distclean); \
-			(cd config.tests/x11/sm && $(MAKE) distclean); \
 			(cd config.tests/x11/xshape && $(MAKE) distclean); \
 			(cd config.tests/x11/opengl && $(MAKE) distclean); \
                         $(DEL_FILE) config.tests/.qmake.cache; \
