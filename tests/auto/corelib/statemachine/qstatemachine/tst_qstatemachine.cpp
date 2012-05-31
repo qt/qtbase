@@ -3753,7 +3753,7 @@ private Q_SLOTS:
     void postEvent()
     {
         m_machine->postEvent(new QEvent(QEvent::User));
-        if (++m_count < 10000)
+        if (++m_count < 1000)
             QTimer::singleShot(0, this, SLOT(postEvent()));
         else
             quit();
