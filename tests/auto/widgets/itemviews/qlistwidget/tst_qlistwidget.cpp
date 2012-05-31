@@ -1515,6 +1515,11 @@ void tst_QListWidget::fastScroll()
 
     topLevel.resize(300, 300); // toplevel needs to be wide enough for the item
     topLevel.show();
+
+    // Force the mouse cursor off the widget as it causes item it is over to highlight,
+    // which causes unexpected paint region.
+    QTest::mouseMove(&widget, QPoint(-10, -10));
+
     // Make sure the widget gets the first full repaint. On
     // some WMs, we'll get two (first inactive exposure, then
     // active exposure.
