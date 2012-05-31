@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qbitmap.h"
 #include "qpixmap.h"
 #include <qpa/qplatformpixmap.h>
 #include "qpixmap_raster_p.h"
