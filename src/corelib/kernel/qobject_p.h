@@ -69,11 +69,11 @@ class QThreadData;
 class QObjectConnectionListVector;
 namespace QtSharedPointer { struct ExternalRefCountData; }
 
-/* mirrored in QtTestLib, DON'T CHANGE without prior warning */
+/* for QtTestLib */
 struct QSignalSpyCallbackSet
 {
-    typedef void (*BeginCallback)(QObject *caller, int method_index, void **argv);
-    typedef void (*EndCallback)(QObject *caller, int method_index);
+    typedef void (*BeginCallback)(QObject *caller, int signal_or_method_index, void **argv);
+    typedef void (*EndCallback)(QObject *caller, int signal_or_method_index);
     BeginCallback signal_begin_callback,
                     slot_begin_callback;
     EndCallback signal_end_callback,

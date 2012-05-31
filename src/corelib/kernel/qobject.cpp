@@ -3299,11 +3299,9 @@ void QMetaObject::activate(QObject *sender, int methodOffset, int signalOffset, 
     if (sender->d_func()->blockSig)
         return;
 
-    int signal_absolute_index = methodOffset + local_signal_index;
-
     void *empty_argv[] = { 0 };
     if (qt_signal_spy_callback_set.signal_begin_callback != 0) {
-        qt_signal_spy_callback_set.signal_begin_callback(sender, signal_absolute_index,
+        qt_signal_spy_callback_set.signal_begin_callback(sender, signal_index,
                                                          argv ? argv : empty_argv);
     }
 
@@ -3337,7 +3335,7 @@ void QMetaObject::activate(QObject *sender, int methodOffset, int signalOffset, 
     if (!connectionLists.connectionLists) {
         locker.unlock();
         if (qt_signal_spy_callback_set.signal_end_callback != 0)
-            qt_signal_spy_callback_set.signal_end_callback(sender, signal_absolute_index);
+            qt_signal_spy_callback_set.signal_end_callback(sender, signal_index);
         return;
     }
 
@@ -3441,7 +3439,7 @@ void QMetaObject::activate(QObject *sender, int methodOffset, int signalOffset, 
     }
 
     if (qt_signal_spy_callback_set.signal_end_callback != 0)
-        qt_signal_spy_callback_set.signal_end_callback(sender, signal_absolute_index);
+        qt_signal_spy_callback_set.signal_end_callback(sender, signal_index);
 
 }
 

@@ -49,6 +49,8 @@
 
 #include <QtTest/private/qtestlog_p.h>
 
+#include <QtCore/private/qmetaobject_p.h>
+
 QT_BEGIN_NAMESPACE
 
 namespace QTest
@@ -64,12 +66,12 @@ static int iLevel = 0;
 static int ignoreLevel = 0;
 enum { IndentSpacesCount = 4 };
 
-static void qSignalDumperCallback(QObject *caller, int method_index, void **argv)
+static void qSignalDumperCallback(QObject *caller, int signal_index, void **argv)
 {
     Q_ASSERT(caller); Q_ASSERT(argv); Q_UNUSED(argv);
     const QMetaObject *mo = caller->metaObject();
     Q_ASSERT(mo);
-    QMetaMethod member = mo->method(method_index);
+    QMetaMethod member = QMetaObjectPrivate::signal(mo, signal_index);
     Q_ASSERT(member.isValid());
 
     if (QTest::ignoreClasses() && QTest::ignoreClasses()->contains(mo->className())) {
@@ -151,7 +153,7 @@ static void qSignalDumperCallbackSlot(QObject *caller, int method_index, void **
     qPrintMessage(str);
 }
 
-static void qSignalDumperCallbackEndSignal(QObject *caller, int /*method_index*/)
+static void qSignalDumperCallbackEndSignal(QObject *caller, int /*signal_index*/)
 {
     Q_ASSERT(caller); Q_ASSERT(caller->metaObject());
     if (QTest::ignoreClasses()
@@ -165,19 +167,6 @@ static void qSignalDumperCallbackEndSignal(QObject *caller, int /*method_index*/
 }
 
 }
-
-// this struct is copied from qobject_p.h to prevent us
-// from including private Qt headers.
-struct QSignalSpyCallbackSet
-{
-    typedef void (*BeginCallback)(QObject *caller, int method_index, void **argv);
-    typedef void (*EndCallback)(QObject *caller, int method_index);
-    BeginCallback signal_begin_callback,
-                  slot_begin_callback;
-    EndCallback signal_end_callback,
-                slot_end_callback;
-};
-extern void Q_CORE_EXPORT qt_register_signal_spy_callbacks(const QSignalSpyCallbackSet &);
 
 void QSignalDumper::startDump()
 {
