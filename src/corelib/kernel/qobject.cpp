@@ -2184,7 +2184,7 @@ int QObject::receivers(const char *signal) const
 
         if (d->declarativeData && QAbstractDeclarativeData::receivers) {
             receivers += QAbstractDeclarativeData::receivers(d->declarativeData, this,
-                                                             metaObject()->indexOfMethod(signal));
+                                                             signal_index);
         }
 
         if (!d->isSignalConnected(signal_index))
@@ -3276,22 +3276,18 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
 void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_signal_index,
                            void **argv)
 {
-    int signalOffset;
-    int methodOffset;
-    computeOffsets(m, &signalOffset, &methodOffset);
-    activate(sender, methodOffset, signalOffset, local_signal_index, argv);
+    activate(sender, QMetaObjectPrivate::signalOffset(m), local_signal_index, argv);
 }
 
 /*!\internal
  */
-void QMetaObject::activate(QObject *sender, int methodOffset, int signalOffset, int local_signal_index,
-                           void **argv)
+void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_index, void **argv)
 {
     int signal_index = signalOffset + local_signal_index;
 
     if (sender->d_func()->declarativeData && QAbstractDeclarativeData::signalEmitted)
         QAbstractDeclarativeData::signalEmitted(sender->d_func()->declarativeData, sender, 
-                                                methodOffset + local_signal_index, argv);
+                                                signal_index, argv);
 
     if (!sender->d_func()->isSignalConnected(signal_index))
         return; // nothing connected to these signals, and no spy
