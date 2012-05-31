@@ -495,10 +495,7 @@ void QVector<T>::realloc(const int asize, const int aalloc, QArrayData::Allocati
     Data *x = d;
 
     const bool isShared = d->ref.isShared();
-#ifndef QT_NO_DEBUG
-    bool moved = false;
-    int oldSize = d->size;
-#endif
+
     if (aalloc != 0) {
         if (aalloc != int(d->alloc) || isShared) {
             QT_TRY {
@@ -526,9 +523,6 @@ void QVector<T>::realloc(const int asize, const int aalloc, QArrayData::Allocati
                     // destruct unused / not moved data
                     if (asize < d->size)
                         destruct(d->begin() + asize, d->end());
-#ifndef QT_NO_DEBUG
-                    moved = true;
-#endif
                 }
 
                 if (asize > d->size) {
@@ -563,11 +557,9 @@ void QVector<T>::realloc(const int asize, const int aalloc, QArrayData::Allocati
     if (d != x) {
         if (!d->ref.deref()) {
             Q_ASSERT(!isShared);
-            Q_ASSERT(d->size == oldSize);
             if (QTypeInfo<T>::isStatic || !aalloc) {
                 // data was copy constructed, we need to call destructors
                 // or if !alloc we did nothing to the old 'd'.
-                Q_ASSERT(!moved);
                 free(d);
             } else {
                 Data::deallocate(d);
