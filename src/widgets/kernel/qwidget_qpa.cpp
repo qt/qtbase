@@ -542,10 +542,9 @@ void QWidgetPrivate::hide_sys()
         if (p &&p->isVisible()) {
             invalidateBuffer(q->rect());
         }
-        return;
+    } else {
+        invalidateBuffer(q->rect());
     }
-
-    invalidateBuffer(q->rect());
 
     if (window)
         window->setVisible(false);
