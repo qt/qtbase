@@ -83,9 +83,19 @@ public:
     bool flipped;
 
     QPaintEngine *engine;
-
-    void init(const QSize &size, QOpenGLContext *ctx);
 };
+
+/*!
+    Constructs a QOpenGLPaintDevice.
+
+    The QOpenGLPaintDevice is only valid for the current context.
+
+    \sa QOpenGLContext::currentContext()
+*/
+QOpenGLPaintDevice::QOpenGLPaintDevice()
+    : d_ptr(new QOpenGLPaintDevicePrivate(QSize()))
+{
+}
 
 /*!
     Constructs a QOpenGLPaintDevice with the given \a size.
@@ -164,6 +174,11 @@ QOpenGLContext *QOpenGLPaintDevice::context() const
 QSize QOpenGLPaintDevice::size() const
 {
     return d_ptr->size;
+}
+
+void QOpenGLPaintDevice::setSize(const QSize &size)
+{
+    d_ptr->size = size;
 }
 
 int QOpenGLPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const

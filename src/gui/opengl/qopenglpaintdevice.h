@@ -71,6 +71,7 @@ class Q_GUI_EXPORT QOpenGLPaintDevice : public QPaintDevice
 {
     Q_DECLARE_PRIVATE(QOpenGLPaintDevice)
 public:
+    QOpenGLPaintDevice();
     explicit QOpenGLPaintDevice(const QSize &size);
     QOpenGLPaintDevice(int width, int height);
     virtual ~QOpenGLPaintDevice();
@@ -80,6 +81,7 @@ public:
 
     QOpenGLContext *context() const;
     QSize size() const;
+    void setSize(const QSize &size);
 
     qreal dotsPerMeterX() const;
     qreal dotsPerMeterY() const;
