@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG += parallel_test
 TARGET = tst_qfreelist
 QT = core-private testlib
 SOURCES = tst_qfreelist.cpp
