@@ -38,30 +38,14 @@ include(animation/animation.pri)
 
 QMAKE_LIBS += $$QMAKE_LIBS_GUI
 
-neon:*-g++* {
-    HEADERS += $$NEON_HEADERS
-
-    DRAWHELPER_NEON_ASM_FILES = $$NEON_ASM
-
-    neon_compiler.commands = $$QMAKE_CXX -c
-    neon_compiler.commands += $(CXXFLAGS) -mfpu=neon $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-    neon_compiler.dependency_type = TYPE_C
-    neon_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-    neon_compiler.input = DRAWHELPER_NEON_ASM_FILES NEON_SOURCES
-    neon_compiler.variable_out = OBJECTS
-    neon_compiler.name = compiling[neon] ${QMAKE_FILE_IN}
-    silent:neon_compiler.commands = @echo compiling[neon] ${QMAKE_FILE_IN} && $$neon_compiler.commands
-    QMAKE_EXTRA_COMPILERS += neon_compiler
-}
-
 win32:!contains(QT_CONFIG, directwrite) {
     DEFINES += QT_NO_DIRECTWRITE
 }
 
-    win32-g++*|!win32:!win32-icc*:!macx-icc* {
+*-g++*|linux-icc*|*-clang {
         sse2 {
             sse2_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
-            sse2_compiler.commands += -msse2
+            sse2_compiler.commands += $$QMAKE_CFLAGS_SSE2
             sse2_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             sse2_compiler.dependency_type = TYPE_C
             sse2_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -73,7 +57,7 @@ win32:!contains(QT_CONFIG, directwrite) {
         }
         ssse3 {
             ssse3_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
-            ssse3_compiler.commands += -mssse3
+            ssse3_compiler.commands += $$QMAKE_CFLAGS_SSSE3
             ssse3_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             ssse3_compiler.dependency_type = TYPE_C
             ssse3_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -85,7 +69,7 @@ win32:!contains(QT_CONFIG, directwrite) {
         }
         avx {
             avx_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
-            avx_compiler.commands += -mavx
+            avx_compiler.commands += $$QMAKE_CFLAGS_AVX
             avx_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             avx_compiler.dependency_type = TYPE_C
             avx_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -95,9 +79,25 @@ win32:!contains(QT_CONFIG, directwrite) {
             silent:avx_compiler.commands = @echo compiling[avx] ${QMAKE_FILE_IN} && $$avx_compiler.commands
             QMAKE_EXTRA_COMPILERS += avx_compiler
         }
+        neon {
+            HEADERS += $$NEON_HEADERS
+
+            DRAWHELPER_NEON_ASM_FILES = $$NEON_ASM
+
+            neon_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
+            neon_compiler.commands += $$QMAKE_CFLAGS_NEON
+            neon_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+            neon_compiler.dependency_type = TYPE_C
+            neon_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+            neon_compiler.input = DRAWHELPER_NEON_ASM_FILES NEON_SOURCES
+            neon_compiler.variable_out = OBJECTS
+            neon_compiler.name = compiling[neon] ${QMAKE_FILE_IN}
+            silent:neon_compiler.commands = @echo compiling[neon] ${QMAKE_FILE_IN} && $$neon_compiler.commands
+            QMAKE_EXTRA_COMPILERS += neon_compiler
+        }
         iwmmxt {
             iwmmxt_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
-            iwmmxt_compiler.commands += -mcpu=iwmmxt
+            iwmmxt_compiler.commands += $$QMAKE_CFLAGS_IWMMXT
             iwmmxt_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             iwmmxt_compiler.dependency_type = TYPE_C
             iwmmxt_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -107,26 +107,30 @@ win32:!contains(QT_CONFIG, directwrite) {
             silent:iwmmxt_compiler.commands = @echo compiling[iwmmxt] ${QMAKE_FILE_IN} && $$iwmmxt_compiler.commands
             QMAKE_EXTRA_COMPILERS += iwmmxt_compiler
         }
-    } else {
-        sse2: SOURCES += $$SSE2_SOURCES
-        ssse3: SOURCES += $$SSSE3_SOURCES
-        iwmmxt: SOURCES += $$IWMMXT_SOURCES
-    }
+        mips_dsp {
+            HEADERS += $$MIPS_DSP_HEADERS
 
-mips_dsp:*-g++* {
-    HEADERS += $$MIPS_DSP_HEADERS
-
-    DRAWHELPER_MIPS_DSP_ASM_FILES = $$MIPS_DSP_ASM
-        mips_dspr2 {
-            DRAWHELPER_MIPS_DSP_ASM_FILES += $$MIPS_DSPR2_ASM
+            DRAWHELPER_MIPS_DSP_ASM_FILES = $$MIPS_DSP_ASM
+            mips_dspr2:DRAWHELPER_MIPS_DSP_ASM_FILES += $$MIPS_DSPR2_ASM
+            mips_dsp_compiler.commands = $$QMAKE_CXX -c
+            mips_dsp_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+            mips_dsp_compiler.dependency_type = TYPE_C
+            mips_dsp_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+            mips_dsp_compiler.input = DRAWHELPER_MIPS_DSP_ASM_FILES MIPS_DSP_SOURCES
+            mips_dsp_compiler.variable_out = OBJECTS
+            mips_dsp_compiler.name = compiling[mips_dsp] ${QMAKE_FILE_IN}
+            silent:mips_dsp_compiler.commands = @echo compiling[mips_dsp] ${QMAKE_FILE_IN} && $$mips_dsp_compiler.commands
+            QMAKE_EXTRA_COMPILERS += mips_dsp_compiler
         }
-    mips_dsp_compiler.commands = $$QMAKE_CXX -c
-    mips_dsp_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-    mips_dsp_compiler.dependency_type = TYPE_C
-    mips_dsp_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-    mips_dsp_compiler.input = DRAWHELPER_MIPS_DSP_ASM_FILES MIPS_DSP_SOURCES
-    mips_dsp_compiler.variable_out = OBJECTS
-    mips_dsp_compiler.name = compiling[mips_dsp] ${QMAKE_FILE_IN}
-    silent:mips_dsp_compiler.commands = @echo compiling[mips_dsp] ${QMAKE_FILE_IN} && $$mips_dsp_compiler.commands
-    QMAKE_EXTRA_COMPILERS += mips_dsp_compiler
+} else {
+    # This serves two purposes:
+    # 1) it allows an IDE like Creator to know that these files are part of the sources
+    # 2) with MSVC, we are allowed to build the extra helpers
+    #    but we only build the SSE2 and SSSE3 ones for now since the AVX ones are just
+    #    the other two with the VEX prefix
+    win32-msvc*: SOURCES += $$SSE2_SOURCES $$SSSE3_SOURCES
+    false: SOURCES += $$NEON_SOURCES $$NEON_ASM \
+                $$IWMMXT_SOURCES \
+                $$AVX_SOURCES \
+                $$MIPS_DSP_SOURCES $$MIPS_DSP_ASM $$MIPS_DSPR2_ASM
 }
