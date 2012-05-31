@@ -1203,7 +1203,6 @@ void QStateMachinePrivate::_q_start()
 #endif
     state = Running;
     processingScheduled = true; // we call _q_process() below
-    emit q->started();
 
     QState *start = startState();
     Q_ASSERT(start != 0);
@@ -1230,6 +1229,9 @@ void QStateMachinePrivate::_q_start()
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": initial configuration:" << configuration;
 #endif
+
+    emit q->started();
+
     _q_process();
 }
 

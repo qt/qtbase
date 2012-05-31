@@ -175,6 +175,8 @@ private slots:
     void stopInTransitionToFinalState();
     void stopInEventTest_data();
     void stopInEventTest();
+
+    void initialStateIsEnteredBeforeStartedEmitted();
 };
 
 class TestState : public QState
@@ -3904,6 +3906,22 @@ void tst_QStateMachine::stopInEventTest()
     QCOMPARE(finishedSpy.count(), 0);
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(s1));
+}
+
+void tst_QStateMachine::initialStateIsEnteredBeforeStartedEmitted()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+    QFinalState *s2 = new QFinalState(&machine);
+
+    // When started() is emitted, s1 should be the active state, and this
+    // transition should trigger.
+    s1->addTransition(&machine, SIGNAL(started()), s2);
+
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    machine.start();
+    QTRY_COMPARE(finishedSpy.count(), 1);
 }
 
 QTEST_MAIN(tst_QStateMachine)
