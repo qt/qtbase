@@ -45,9 +45,15 @@
 #include "qeglfsbackingstore.h"
 #include "qeglfshooks.h"
 
+#include <QtGui/private/qguiapplication_p.h>
+
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+
+#include <QtPlatformSupport/private/qevdevmousemanager_p.h>
+#include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
+#include <QtPlatformSupport/private/qevdevtouch_p.h>
 
 #include <qpa/qplatformwindow.h>
 #include <QtGui/QSurfaceFormat>
@@ -60,8 +66,14 @@
 QT_BEGIN_NAMESPACE
 
 QEglFSIntegration::QEglFSIntegration()
-    : mFontDb(new QGenericUnixFontDatabase()), mScreen(new QEglFSScreen)
+    : mEventDispatcher(createUnixEventDispatcher()), mFontDb(new QGenericUnixFontDatabase()), mScreen(new QEglFSScreen)
 {
+    QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
+
+    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
+    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
+    new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
+
     screenAdded(mScreen);
 
 #ifdef QEGL_EXTRA_DEBUG
@@ -120,7 +132,7 @@ QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
 
 QAbstractEventDispatcher *QEglFSIntegration::guiThreadEventDispatcher() const
 {
-    return createUnixEventDispatcher();
+    return mEventDispatcher;
 }
 
 QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
