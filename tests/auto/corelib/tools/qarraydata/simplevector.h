@@ -111,8 +111,8 @@ public:
     iterator begin() { detach(); return d->begin(); }
     iterator end() { detach(); return d->end(); }
 
-    const_iterator begin() const { return d->begin(); }
-    const_iterator end() const { return d->end(); }
+    const_iterator begin() const { return d->constBegin(); }
+    const_iterator end() const { return d->constEnd(); }
 
     const_iterator constBegin() const { return begin(); }
     const_iterator constEnd() const { return end(); }

@@ -223,7 +223,7 @@ private:
     void realloc(const int size, const int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
     void free(Data *d);
     void defaultConstruct(T *from, T *to);
-    void copyConstruct(T *srcFrom, T *srcTo, T *dstFrom);
+    void copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom);
     void destruct(T *from, T *to);
 
     class AlignmentDummy { Data header; T array[1]; };
@@ -250,7 +250,7 @@ void QVector<T>::defaultConstruct(T *from, T *to)
 #endif
 
 template <typename T>
-void QVector<T>::copyConstruct(T *srcFrom, T *srcTo, T *dstFrom)
+void QVector<T>::copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom)
 {
     if (QTypeInfo<T>::isComplex) {
         while (srcFrom != srcTo)
@@ -412,7 +412,7 @@ QVector<T>::QVector(int asize, const T &t)
 template <typename T>
 QVector<T>::QVector(std::initializer_list<T> args)
 {
-    d = malloc(int(args.size()));
+    d = Data::allocate(args.size());
     // std::initializer_list<T>::iterator is guaranteed to be
     // const T* ([support.initlist]/1), so can be memcpy'ed away from by copyConstruct
     copyConstruct(args.begin(), args.end(), d->begin());

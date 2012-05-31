@@ -190,9 +190,9 @@ struct QTypedArrayData
         inline bool operator>(const const_iterator& other) const { return i > other.i; }
         inline bool operator>=(const const_iterator& other) const { return i >= other.i; }
         inline const_iterator &operator++() { ++i; return *this; }
-        inline const_iterator operator++(int) { T *n = i; ++i; return n; }
+        inline const_iterator operator++(int) { const T *n = i; ++i; return n; }
         inline const_iterator &operator--() { i--; return *this; }
-        inline const_iterator operator--(int) { T *n = i; i--; return n; }
+        inline const_iterator operator--(int) { const T *n = i; i--; return n; }
         inline const_iterator &operator+=(int j) { i+=j; return *this; }
         inline const_iterator &operator-=(int j) { i-=j; return *this; }
         inline const_iterator operator+(int j) const { return const_iterator(i+j); }
