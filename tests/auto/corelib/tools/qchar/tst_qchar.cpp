@@ -698,6 +698,7 @@ void tst_QChar::lineBreakClass()
     QVERIFY(QUnicodeTables::lineBreakClass(0x0033u) == QUnicodeTables::LineBreak_NU);
     QVERIFY(QUnicodeTables::lineBreakClass(0x00adu) == QUnicodeTables::LineBreak_BA);
     QVERIFY(QUnicodeTables::lineBreakClass(0x05d0u) == QUnicodeTables::LineBreak_HL);
+    QVERIFY(QUnicodeTables::lineBreakClass(0xfffcu) == QUnicodeTables::LineBreak_CB);
     QVERIFY(QUnicodeTables::lineBreakClass(0xe0164u) == QUnicodeTables::LineBreak_CM);
     QVERIFY(QUnicodeTables::lineBreakClass(0x2f9a4u) == QUnicodeTables::LineBreak_ID);
     QVERIFY(QUnicodeTables::lineBreakClass(0x10000u) == QUnicodeTables::LineBreak_AL);

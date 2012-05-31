@@ -320,15 +320,15 @@ static void initSentenceBreak()
 
 static const char *line_break_class_string =
     "    // see http://www.unicode.org/reports/tr14/tr14-28.html\n"
-    "    // we don't use the XX, AI, and CB classes and map them to AL instead.\n"
+    "    // we don't use the XX and AI classes and map them to AL instead.\n"
     "    enum LineBreakClass {\n"
     "        LineBreak_OP, LineBreak_CL, LineBreak_CP, LineBreak_QU, LineBreak_GL,\n"
     "        LineBreak_NS, LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR,\n"
     "        LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,\n"
     "        LineBreak_IN, LineBreak_HY, LineBreak_BA, LineBreak_BB, LineBreak_B2,\n"
     "        LineBreak_ZW, LineBreak_CM, LineBreak_WJ, LineBreak_H2, LineBreak_H3,\n"
-    "        LineBreak_JL, LineBreak_JV, LineBreak_JT, LineBreak_SA, LineBreak_SG,\n"
-    "        LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK\n"
+    "        LineBreak_JL, LineBreak_JV, LineBreak_JT, LineBreak_CB, LineBreak_SA,\n"
+    "        LineBreak_SG, LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK\n"
     "    };\n\n";
 
 enum LineBreakClass {
@@ -337,8 +337,8 @@ enum LineBreakClass {
     LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,
     LineBreak_IN, LineBreak_HY, LineBreak_BA, LineBreak_BB, LineBreak_B2,
     LineBreak_ZW, LineBreak_CM, LineBreak_WJ, LineBreak_H2, LineBreak_H3,
-    LineBreak_JL, LineBreak_JV, LineBreak_JT, LineBreak_SA, LineBreak_SG,
-    LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK
+    LineBreak_JL, LineBreak_JV, LineBreak_JT, LineBreak_CB, LineBreak_SA,
+    LineBreak_SG, LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK
 
     , LineBreak_Unassigned
 };
@@ -348,7 +348,6 @@ static QHash<QByteArray, LineBreakClass> line_break_map;
 static void initLineBreak()
 {
     // ### Classes XX and AI are left out and mapped to AL for now.
-    // ### Class CB is unsupported for now and mapped to AL as well.
     // ### Class NL is mapped to BK.
     // ### Treating characters of class CJ as class NS will give CSS strict line breaking;
     //     treating them as class ID will give CSS normal breaking.
@@ -370,7 +369,7 @@ static void initLineBreak()
         { LineBreak_BA, "BA" },
         { LineBreak_BB, "BB" },
         { LineBreak_HY, "HY" },
-        { LineBreak_AL, "CB" }, // ###
+        { LineBreak_CB, "CB" },
         { LineBreak_NS, "CJ" },
         { LineBreak_CL, "CL" },
         { LineBreak_CP, "CP" },

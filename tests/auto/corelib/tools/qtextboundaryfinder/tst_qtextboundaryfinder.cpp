@@ -285,9 +285,6 @@ void tst_QTextBoundaryFinder::lineBoundariesDefault()
     QFETCH(QString, testString);
     QFETCH(QList<int>, expectedBreakPositions);
 
-    if (testString.contains(QChar::ObjectReplacementCharacter))
-        QSKIP("QTextBoundaryFinder doesn't handle Object Replacement character");
-
     expectedBreakPositions.prepend(0); // ### QTBF generates a boundary at start of text
     doTestData(testString, expectedBreakPositions, QTextBoundaryFinder::Line, true);
 }
