@@ -167,16 +167,6 @@ QT_BEGIN_NAMESPACE
     Translates to the given \a point.
 */
 
-/*!
-    \fn Handle QRegion::handle() const
-
-    Returns a platform-specific region handle. The \c Handle type is
-    \c HRGN on Windows, \c Region on X11, and \c RgnHandle on Mac OS
-    X. On \l{Qt for Embedded Linux} it is \c {void *}.
-
-    \warning This function is not portable.
-*/
-
 /*****************************************************************************
   QRegion member functions
  *****************************************************************************/

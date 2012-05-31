@@ -134,13 +134,6 @@ public:
     inline bool operator!=(const QRegion &r) const { return !(operator==(r)); }
     operator QVariant() const;
 
-#ifdef qdoc
-    Handle handle() const;
-#endif
-#ifndef qdoc
-    inline void *handle() const { return d->qt_rgn; }
-#endif
-
 #ifndef QT_NO_DATASTREAM
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QRegion &);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QRegion &);
