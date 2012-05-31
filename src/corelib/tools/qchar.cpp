@@ -1152,8 +1152,7 @@ static inline T toLowerCase_helper(T uc)
     const QUnicodeTables::Properties *p = qGetProp(uc);
     if (p->lowerCaseSpecial) {
         const ushort *specialCase = specialCaseMap + p->lowerCaseDiff;
-        if (*specialCase == 1)
-            return specialCase[1];
+        return (*specialCase == 1) ? specialCase[1] : uc;
     }
     return uc + p->lowerCaseDiff;
 }
@@ -1164,8 +1163,7 @@ static inline T toUpperCase_helper(T uc)
     const QUnicodeTables::Properties *p = qGetProp(uc);
     if (p->upperCaseSpecial) {
         const ushort *specialCase = specialCaseMap + p->upperCaseDiff;
-        if (*specialCase == 1)
-            return specialCase[1];
+        return (*specialCase == 1) ? specialCase[1] : uc;
     }
     return uc + p->upperCaseDiff;
 }
@@ -1176,8 +1174,7 @@ static inline T toTitleCase_helper(T uc)
     const QUnicodeTables::Properties *p = qGetProp(uc);
     if (p->titleCaseSpecial) {
         const ushort *specialCase = specialCaseMap + p->titleCaseDiff;
-        if (*specialCase == 1)
-            return specialCase[1];
+        return (*specialCase == 1) ? specialCase[1] : uc;
     }
     return uc + p->titleCaseDiff;
 }
@@ -1188,8 +1185,7 @@ static inline T toCaseFolded_helper(T uc)
     const QUnicodeTables::Properties *p = qGetProp(uc);
     if (p->caseFoldSpecial) {
         const ushort *specialCase = specialCaseMap + p->caseFoldDiff;
-        if (*specialCase == 1)
-            return specialCase[1];
+        return (*specialCase == 1) ? specialCase[1] : uc;
     }
     return uc + p->caseFoldDiff;
 }

@@ -129,6 +129,7 @@ void tst_QChar::toUpper()
     QVERIFY(QChar::toUpper((uint)0x10400) == 0x10400);
     QVERIFY(QChar::toUpper((uint)0x10428) == 0x10400);
 
+    QVERIFY(QChar::toUpper((uint)0xdf) == 0xdf); // german sharp s
 }
 
 void tst_QChar::toLower()
@@ -178,6 +179,7 @@ void tst_QChar::toTitle()
     QVERIFY(QChar::toTitleCase((uint)0x10400) == 0x10400);
     QVERIFY(QChar::toTitleCase((uint)0x10428) == 0x10400);
 
+    QVERIFY(QChar::toTitleCase((uint)0xdf) == 0xdf); // german sharp s
 }
 
 void tst_QChar::toCaseFolded()
