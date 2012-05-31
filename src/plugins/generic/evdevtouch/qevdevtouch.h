@@ -63,7 +63,7 @@ class QTouchScreenHandler : public QObject
     Q_OBJECT
 
 public:
-    QTouchScreenHandler(const QString &spec = QString());
+    QTouchScreenHandler(const QString &spec = QString(), QObject *parent = 0);
     ~QTouchScreenHandler();
 
 private slots:

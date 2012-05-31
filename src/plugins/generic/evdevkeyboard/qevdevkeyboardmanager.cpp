@@ -52,7 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &specification)
+QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &specification, QObject *parent)
+    : QObject(parent)
 {
     Q_UNUSED(key);
 

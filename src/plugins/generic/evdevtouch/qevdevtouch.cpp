@@ -138,8 +138,8 @@ static inline bool testBit(long bit, const long *array)
     return (array[bit / LONG_BITS] >> bit % LONG_BITS) & 1;
 }
 
-QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
-    : m_notify(0), m_fd(-1), d(0)
+QTouchScreenHandler::QTouchScreenHandler(const QString &spec, QObject *parent)
+    : QObject(parent), m_notify(0), m_fd(-1), d(0)
 #ifdef USE_MTDEV
       , m_mtdev(0)
 #endif

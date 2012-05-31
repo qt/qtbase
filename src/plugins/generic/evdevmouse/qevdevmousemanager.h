@@ -58,7 +58,7 @@ class QEvdevMouseManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit QEvdevMouseManager(const QString &key, const QString &specification);
+    QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent = 0);
     ~QEvdevMouseManager();
 
 public slots:

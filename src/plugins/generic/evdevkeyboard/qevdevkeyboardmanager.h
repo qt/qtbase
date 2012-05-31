@@ -58,7 +58,7 @@ class QEvdevKeyboardManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit QEvdevKeyboardManager(const QString &key, const QString &specification);
+    QEvdevKeyboardManager(const QString &key, const QString &specification, QObject *parent = 0);
     ~QEvdevKeyboardManager();
 
 private slots:

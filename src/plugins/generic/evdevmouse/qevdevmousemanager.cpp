@@ -54,8 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specification)
-    : m_x(0), m_y(0), m_xoffset(0), m_yoffset(0)
+QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent)
+    : QObject(parent), m_x(0), m_y(0), m_xoffset(0), m_yoffset(0)
 {
     Q_UNUSED(key);
 
