@@ -124,7 +124,7 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device, cons
 #endif
 
     int fd;
-    fd = qt_safe_open(device.toLocal8Bit().constData(), O_RDWR, 0);
+    fd = qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (fd >= 0) {
         if (repeatDelay > 0 && repeatRate > 0) {
             int kbdrep[2] = { repeatDelay, repeatRate };
