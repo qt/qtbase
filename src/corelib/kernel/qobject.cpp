@@ -3210,16 +3210,11 @@ void QMetaObject::connectSlotsByName(QObject *o)
             if (sigIndex < 0) { // search for compatible signals
                 const QMetaObject *smo = co->metaObject();
                 int slotlen = qstrlen(slot + len + 4) - 1;
-                for (int k = 0; k < smo->methodCount(); ++k) {
-                    QMetaMethod method = smo->method(k);
-                    if (method.methodType() != QMetaMethod::Signal)
-                        continue;
-
+                for (int k = 0; k < QMetaObjectPrivate::absoluteSignalCount(smo); ++k) {
+                    QMetaMethod method = QMetaObjectPrivate::signal(smo, k);
                     if (!qstrncmp(method.methodSignature().constData(), slot + len + 4, slotlen)) {
                         smeta = method.enclosingMetaObject();
-                        int signalOffset, methodOffset;
-                        computeOffsets(smeta, &signalOffset, &methodOffset);
-                        sigIndex = k + - methodOffset + signalOffset;
+                        sigIndex = k;
                         break;
                     }
                 }
