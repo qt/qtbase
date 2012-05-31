@@ -4745,71 +4745,73 @@ void tst_QNetworkReply::rateControl()
 
 void tst_QNetworkReply::downloadProgress_data()
 {
-    QTest::addColumn<int>("loopCount");
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<int>("expectedSize");
 
-    QTest::newRow("empty") << 0;
-    QTest::newRow("small") << 4;
-    QTest::newRow("big") << 4096;
+    QTest::newRow("empty") << QUrl::fromLocalFile(QFINDTESTDATA("empty")) << 0;
+    QTest::newRow("http:small") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt") << 25962;
+    QTest::newRow("http:big") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile") << 519240;
+    QTest::newRow("http:no-length") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/deflate/rfc2616.html") << -1;
+    QTest::newRow("ftp:small") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt") << 25962;
+    QTest::newRow("ftp:big") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile") << 519240;
 }
+
+class SlowReader : public QObject
+{
+    Q_OBJECT
+public:
+    SlowReader(QIODevice *dev)
+        : device(dev)
+    {
+        connect(device, SIGNAL(readyRead()), this, SLOT(deviceReady()));
+    }
+private slots:
+    void deviceReady()
+    {
+        QTimer::singleShot(100, this, SLOT(doRead()));
+    }
+
+    void doRead()
+    {
+        device->readAll();
+    }
+private:
+    QIODevice *device;
+};
 
 void tst_QNetworkReply::downloadProgress()
 {
-#if !defined(QT_BUILD_INTERNAL)
-    QSKIP("backend for testing not available!");
-#endif
-    QTcpServer server;
-    QVERIFY(server.listen());
+    QFETCH(QUrl, url);
+    QFETCH(int, expectedSize);
 
-    QNetworkRequest request("debugpipe://127.0.0.1:" + QString::number(server.serverPort()) + "/?bare=1");
+    QNetworkRequest request(url);
     QNetworkReplyPtr reply(manager.get(request));
+    //artificially slow down the test, otherwise only the final signal is emitted
+    reply->setReadBufferSize(qMax(20000, expectedSize / 4));
+    SlowReader reader(reply.data());
     QSignalSpy spy(reply.data(), SIGNAL(downloadProgress(qint64,qint64)));
-    connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
-            &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QVERIFY(spy.isValid());
-    QVERIFY(!reply->isFinished());
-    QVERIFY(reply->isRunning());
-
-    QCoreApplication::instance()->processEvents();
-    if (!server.hasPendingConnections())
-        server.waitForNewConnection(1000);
-    QVERIFY(server.hasPendingConnections());
-    QCOMPARE(spy.count(), 0);
-
-    QByteArray data(128, 'a');
-    QTcpSocket *sender = server.nextPendingConnection();
-    QVERIFY(sender);
-
-    QFETCH(int, loopCount);
-    for (int i = 1; i <= loopCount; ++i) {
-        sender->write(data);
-        QVERIFY2(sender->waitForBytesWritten(2000), "Network timeout");
-
-        spy.clear();
-        QTestEventLoop::instance().enterLoop(2);
-        QVERIFY(!QTestEventLoop::instance().timeout());
-        QVERIFY(spy.count() > 0);
-        QVERIFY(!reply->isFinished());
-        QVERIFY(reply->isRunning());
-
-        QList<QVariant> args = spy.last();
-        QCOMPARE(args.at(0).toInt(), i*data.size());
-        QCOMPARE(args.at(1).toInt(), -1);
-    }
-
-    // close the connection:
-    delete sender;
-
-    spy.clear();
-    QTestEventLoop::instance().enterLoop(2);
-    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(30);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QVERIFY(spy.count() > 0);
-    QVERIFY(!reply->isRunning());
     QVERIFY(reply->isFinished());
 
-    QList<QVariant> args = spy.last();
-    QCOMPARE(args.at(0).toInt(), loopCount * data.size());
-    QCOMPARE(args.at(1).toInt(), loopCount * data.size());
+    QVERIFY(spy.count() > 0);
+
+    //final progress should have equal current & total
+    QList<QVariant> args = spy.takeLast();
+    QCOMPARE(args.at(0).toInt(), args.at(1).toInt());
+
+    qint64 current = 0;
+    //intermediate progress ascending and has expected total
+    while (!spy.isEmpty()) {
+        args = spy.takeFirst();
+        QVERIFY(args.at(0).toInt() >= current);
+        if (expectedSize >=0)
+            QCOMPARE(args.at(1).toInt(), expectedSize);
+        else
+            QVERIFY(args.at(1).toInt() == expectedSize || args.at(1).toInt() == args.at(0).toInt());
+        current = args.at(0).toInt();
+    }
 }
 
 void tst_QNetworkReply::uploadProgress_data()
