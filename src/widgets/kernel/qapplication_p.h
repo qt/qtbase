@@ -94,7 +94,6 @@ extern QClipboard *qt_clipboard;
 
 #if defined (Q_OS_WIN32) || defined (Q_OS_CYGWIN) || defined(Q_OS_WINCE)
 extern QSysInfo::WinVersion qt_winver;
-enum { QT_TABLET_NPACKETQSIZE = 128 };
 # ifdef Q_OS_WINCE
   extern DWORD qt_cever;
 # endif
@@ -105,56 +104,6 @@ extern QSysInfo::MacVersion qt_macver;
 class QWSManager;
 class QDirectPainter;
 struct QWSServerCleaner { ~QWSServerCleaner(); };
-#endif
-
-#ifndef QT_NO_TABLET
-struct QTabletDeviceData
-{
-#ifndef Q_WS_MAC
-    int minPressure;
-    int maxPressure;
-    int minTanPressure;
-    int maxTanPressure;
-    int minX, maxX, minY, maxY, minZ, maxZ;
-    inline QPointF scaleCoord(int coordX, int coordY, int outOriginX, int outExtentX,
-                              int outOriginY, int outExtentY) const;
-#endif
-};
-
-static inline int sign(int x)
-{
-    return x >= 0 ? 1 : -1;
-}
-
-#ifndef Q_WS_MAC
-inline QPointF QTabletDeviceData::scaleCoord(int coordX, int coordY,
-                                            int outOriginX, int outExtentX,
-                                            int outOriginY, int outExtentY) const
-{
-    QPointF ret;
-
-    if (sign(outExtentX) == sign(maxX))
-        ret.setX(((coordX - minX) * qAbs(outExtentX) / qAbs(qreal(maxX - minX))) + outOriginX);
-    else
-        ret.setX(((qAbs(maxX) - (coordX - minX)) * qAbs(outExtentX) / qAbs(qreal(maxX - minX)))
-                 + outOriginX);
-
-    if (sign(outExtentY) == sign(maxY))
-        ret.setY(((coordY - minY) * qAbs(outExtentY) / qAbs(qreal(maxY - minY))) + outOriginY);
-    else
-        ret.setY(((qAbs(maxY) - (coordY - minY)) * qAbs(outExtentY) / qAbs(qreal(maxY - minY)))
-                 + outOriginY);
-
-    return ret;
-}
-#endif
-
-typedef QList<QTabletDeviceData> QTabletDeviceDataList;
-QTabletDeviceDataList *qt_tablet_devices();
-# if defined(Q_WS_MAC)
-typedef QHash<int, QTabletDeviceData> QMacTabletHash;
-QMacTabletHash *qt_mac_tablet_hash();
-# endif
 #endif
 
 typedef QHash<QByteArray, QFont> FontHash;
@@ -280,15 +229,6 @@ public:
     static void applyX11SpecificCommandLineArguments(QWidget *main_widget);
 #elif defined(Q_WS_QWS)
     static void applyQWSSpecificCommandLineArguments(QWidget *main_widget);
-#endif
-
-#ifdef Q_WS_MAC
-    static OSStatus globalEventProcessor(EventHandlerCallRef, EventRef, void *);
-    static OSStatus globalAppleEventProcessor(const AppleEvent *, AppleEvent *, long);
-    static OSStatus tabletProximityCallback(EventHandlerCallRef, EventRef, void *);
-    static void qt_initAfterNSAppStarted();
-    static void setupAppleEvents();
-    static bool qt_mac_apply_settings();
 #endif
 
 #ifdef Q_WS_QWS

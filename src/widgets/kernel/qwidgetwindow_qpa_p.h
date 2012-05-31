@@ -84,6 +84,9 @@ protected:
     void handleExposeEvent(QExposeEvent *);
     void handleWindowStateChangedEvent(QWindowStateChangeEvent *event);
     bool nativeEvent(const QByteArray &eventType, void *message, long *result);
+#ifndef QT_NO_TABLETEVENT
+    void handleTabletEvent(QTabletEvent *);
+#endif
 
 private slots:
     void updateObjectName();

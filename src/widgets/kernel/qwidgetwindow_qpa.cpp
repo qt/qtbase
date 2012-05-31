@@ -51,6 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 QWidget *qt_button_down = 0; // widget got last button-down
+static QWidget *qt_tablet_target = 0;
 
 // popup control
 QWidget *qt_popup_down = 0; // popup that contains the pressed widget
@@ -177,6 +178,14 @@ bool QWidgetWindow::event(QEvent *event)
         QGuiApplication::sendSpontaneousEvent(m_widget, &widgetEvent);
     }
         return true;
+
+#ifndef QT_NO_TABLETEVENT
+    case QEvent::TabletPress:
+    case QEvent::TabletMove:
+    case QEvent::TabletRelease:
+        handleTabletEvent(static_cast<QTabletEvent *>(event));
+        return true;
+#endif
 
     default:
         break;
@@ -526,6 +535,32 @@ bool QWidgetWindow::nativeEvent(const QByteArray &eventType, void *message, long
 {
     return m_widget->nativeEvent(eventType, message, result);
 }
+
+#ifndef QT_NO_TABLETEVENT
+void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
+{
+    if (event->type() == QEvent::TabletPress) {
+        QWidget *widget = m_widget->childAt(event->pos());
+        if (!widget)
+            widget = m_widget;
+
+        qt_tablet_target = widget;
+    }
+
+    if (qt_tablet_target) {
+        QPointF delta = event->globalPosF() - event->globalPos();
+        QPointF mapped = qt_tablet_target->mapFromGlobal(event->globalPos()) + delta;
+        QTabletEvent ev(event->type(), mapped, event->globalPosF(), event->device(), event->pointerType(),
+                        event->pressure(), event->xTilt(), event->yTilt(), event->tangentialPressure(),
+                        event->rotation(), event->z(), event->modifiers(), event->uniqueId());
+        ev.setTimestamp(event->timestamp());
+        QGuiApplication::sendSpontaneousEvent(qt_tablet_target, &ev);
+    }
+
+    if (event->type() == QEvent::TabletRelease)
+        qt_tablet_target = 0;
+}
+#endif // QT_NO_TABLETEVENT
 
 void QWidgetWindow::updateObjectName()
 {
