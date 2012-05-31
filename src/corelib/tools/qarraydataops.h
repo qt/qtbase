@@ -113,7 +113,7 @@ struct QPodArrayOps
         Q_ASSERT(e <= where || b > this->end()); // No overlap
         Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
 
-        ::memmove(where + (e - b), where, (this->end() - where) * sizeof(T));
+        ::memmove(where + (e - b), where, (static_cast<const T*>(this->end()) - where) * sizeof(T));
         ::memcpy(where, b, (e - b) * sizeof(T));
         this->size += (e - b);
     }

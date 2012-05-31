@@ -395,8 +395,8 @@ void tst_QHash::insert1()
             QVERIFY(count == 2);
 
             count = 0;
-            it1 = hash.begin();
-            while (it1 != hash.end()) {
+            it1 = hash.constBegin();
+            while (it1 != hash.constEnd()) {
                 count++;
                 ++it1;
             }
@@ -606,9 +606,9 @@ void tst_QHash::find()
         map1.insertMulti(4, compareString);
     }
 
-    QHash<int, QString>::const_iterator it=map1.find(4);
+    QHash<int, QString>::const_iterator it=map1.constFind(4);
 
-    for(i = 9; i > 2 && it != map1.end() && it.key() == 4; --i) {
+    for(i = 9; i > 2 && it != map1.constEnd() && it.key() == 4; --i) {
         compareString = testString.arg(i);
         QVERIFY(it.value() == compareString);
         ++it;

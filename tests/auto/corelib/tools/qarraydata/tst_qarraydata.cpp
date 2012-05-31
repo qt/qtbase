@@ -315,11 +315,11 @@ void tst_QArrayData::simpleVector()
     QVERIFY(!v1.isSharedWith(v5));
     QVERIFY(!v1.isSharedWith(v6));
 
-    QCOMPARE((void *)v1.constBegin(), (void *)v1.constEnd());
-    QCOMPARE((void *)v4.constBegin(), (void *)v4.constEnd());
-    QCOMPARE((void *)(v6.constBegin() + v6.size()), (void *)v6.constEnd());
-    QCOMPARE((void *)(v7.constBegin() + v7.size()), (void *)v7.constEnd());
-    QCOMPARE((void *)(v8.constBegin() + v8.size()), (void *)v8.constEnd());
+    QCOMPARE(v1.constBegin(), v1.constEnd());
+    QCOMPARE(v4.constBegin(), v4.constEnd());
+    QCOMPARE((v6.constBegin() + v6.size()), v6.constEnd());
+    QCOMPARE((v7.constBegin() + v7.size()), v7.constEnd());
+    QCOMPARE((v8.constBegin() + v8.size()), v8.constEnd());
 
     QVERIFY(v1 == v2);
     QVERIFY(v1 == v3);
@@ -370,7 +370,7 @@ void tst_QArrayData::simpleVector()
         }
 
         // A single detach should do
-        QCOMPARE(temp.begin(), tempBegin);
+        QCOMPARE((const int *)temp.begin(), tempBegin);
     }
 
     {
@@ -426,6 +426,7 @@ void tst_QArrayData::simpleVector()
     v1.clear();
 
     v1.append(array, array + sizeof(array)/sizeof(array[0]));
+    // v1 is now [0 .. 9]
     QCOMPARE(v1.size(), size_t(10));
     QVERIFY(v1 == v8);
 
@@ -433,6 +434,7 @@ void tst_QArrayData::simpleVector()
     QVERIFY(v1.isSharedWith(v6));
 
     v1.append(array, array + sizeof(array)/sizeof(array[0]));
+    // v1 is now [0 .. 9, 0 .. 9]
     QVERIFY(!v1.isSharedWith(v6));
     QCOMPARE(v1.size(), size_t(20));
     QCOMPARE(v6.size(), size_t(10));
@@ -441,29 +443,49 @@ void tst_QArrayData::simpleVector()
         QCOMPARE(v1[i], v6[i % 10]);
 
     v1.insert(0, v6.constBegin(), v6.constEnd());
+    // v1 is now [ 0 .. 9, 0 .. 9, 0 .. 9]
     QCOMPARE(v1.size(), size_t(30));
+
+    for (int i = 0; i < 30; ++i)
+        QCOMPARE(v1[i], v8[i % 10]);
 
     v6 = v1;
     QVERIFY(v1.isSharedWith(v6));
 
     v1.insert(10, v6.constBegin(), v6.constEnd());
+    // v1 is now [ 0..9, <new data>0..9, 0..9, 0..9</new data>, 0..9, 0..9 ]
     QVERIFY(!v1.isSharedWith(v6));
     QCOMPARE(v1.size(), size_t(60));
     QCOMPARE(v6.size(), size_t(30));
 
     for (int i = 0; i < 30; ++i)
         QCOMPARE(v6[i], v8[i % 10]);
+    for (int i = 0; i < 60; ++i)
+        QCOMPARE(v1[i], v8[i % 10]);
 
     v1.insert(v1.size(), v6.constBegin(), v6.constEnd());
+    // v1 is now [ 0..9 x 6, <new data>0..9 x 3</new data> ]
     QCOMPARE(v1.size(), size_t(90));
 
+    for (int i = 0; i < 90; ++i)
+        QCOMPARE(v1[i], v8[i % 10]);
+
     v1.insert(-1, v8.constBegin(), v8.constEnd());
+    // v1 is now [ 0..9 x 9, <new data>0..9</new data> ]
     QCOMPARE(v1.size(), size_t(100));
 
+    for (int i = 0; i < 100; ++i)
+        QCOMPARE(v1[i], v8[i % 10]);
+
     v1.insert(-11, v8.constBegin(), v8.constEnd());
+    // v1 is now [ 0..9 x 9, <new data>0..9</new data>, 0..9 ]
     QCOMPARE(v1.size(), size_t(110));
 
+    for (int i = 0; i < 110; ++i)
+        QCOMPARE(v1[i], v8[i % 10]);
+
     v1.insert(-200, v8.constBegin(), v8.constEnd());
+    // v1 is now [ <new data>0..9</new data>, 0..9 x 11 ]
     QCOMPARE(v1.size(), size_t(120));
 
     for (int i = 0; i < 120; ++i)
@@ -772,7 +794,7 @@ void tst_QArrayData::typedData()
         int j = 0;
         for (QTypedArrayData<int>::iterator iter = array->begin();
                 iter != array->end(); ++iter, ++j)
-            QCOMPARE(iter, data.data + j);
+            QCOMPARE((const int *)iter, data.data + j);
         QCOMPARE(j, 10);
     }
 
@@ -785,7 +807,7 @@ void tst_QArrayData::typedData()
         int j = 0;
         for (QTypedArrayData<int>::const_iterator iter = array->begin();
                 iter != array->end(); ++iter, ++j)
-            QCOMPARE(iter, data.data + j);
+            QCOMPARE((const int *)iter, data.data + j);
         QCOMPARE(j, 10);
     }
 
@@ -1356,8 +1378,8 @@ void tst_QArrayData::fromRawData()
                 sizeof(array)/sizeof(array[0]), QArrayData::Default);
 
         QCOMPARE(raw.size(), size_t(11));
-        QCOMPARE(raw.constBegin(), array);
-        QCOMPARE((void *)raw.constEnd(), (void *)(array + sizeof(array)/sizeof(array[0])));
+        QCOMPARE((const int *)raw.constBegin(), array);
+        QCOMPARE((const int *)raw.constEnd(), (const int *)(array + sizeof(array)/sizeof(array[0])));
 
         QVERIFY(!raw.isShared());
         QVERIFY(SimpleVector<int>(raw).isSharedWith(raw));
@@ -1365,7 +1387,7 @@ void tst_QArrayData::fromRawData()
 
         // Detach
         QCOMPARE(raw.back(), 11);
-        QVERIFY(raw.constBegin() != array);
+        QVERIFY((const int *)raw.constBegin() != array);
     }
 
     {
@@ -1374,8 +1396,8 @@ void tst_QArrayData::fromRawData()
                 sizeof(array)/sizeof(array[0]), QArrayData::Unsharable);
 
         QCOMPARE(raw.size(), size_t(11));
-        QCOMPARE(raw.constBegin(), array);
-        QCOMPARE((void *)raw.constEnd(), (void *)(array + sizeof(array)/sizeof(array[0])));
+        QCOMPARE((const int *)raw.constBegin(), array);
+        QCOMPARE((const int *)raw.constEnd(), (const int *)(array + sizeof(array)/sizeof(array[0])));
 
         SimpleVector<int> copy(raw);
         QVERIFY(!copy.isSharedWith(raw));
@@ -1387,12 +1409,12 @@ void tst_QArrayData::fromRawData()
             QCOMPARE(const_(copy)[i], const_(raw)[i]);
 
         QCOMPARE(raw.size(), size_t(11));
-        QCOMPARE(raw.constBegin(), array);
-        QCOMPARE((void *)raw.constEnd(), (void *)(array + sizeof(array)/sizeof(array[0])));
+        QCOMPARE((const int *)raw.constBegin(), array);
+        QCOMPARE((const int *)raw.constEnd(), (const int *)(array + sizeof(array)/sizeof(array[0])));
 
         // Detach
         QCOMPARE(raw.back(), 11);
-        QVERIFY(raw.constBegin() != array);
+        QVERIFY((const int *)raw.constBegin() != array);
     }
 }
 
@@ -1427,7 +1449,7 @@ void tst_QArrayData::literals()
 #endif
 
         QVERIFY(v.isSharable());
-        QCOMPARE((void *)(v.constBegin() + v.size()), (void *)v.constEnd());
+        QCOMPARE((const char *)(v.constBegin() + v.size()), (const char *)v.constEnd());
 
         for (int i = 0; i < 10; ++i)
             QCOMPARE(const_(v)[i], char('A' + i));
@@ -1476,7 +1498,7 @@ void tst_QArrayData::variadicLiterals()
         QVERIFY(v.isStatic());
 
         QVERIFY(v.isSharable());
-        QCOMPARE((void *)(v.constBegin() + v.size()), (void *)v.constEnd());
+        QCOMPARE((const int *)(v.constBegin() + v.size()), (const int *)v.constEnd());
 
         for (int i = 0; i < 7; ++i)
             QCOMPARE(const_(v)[i], i);
