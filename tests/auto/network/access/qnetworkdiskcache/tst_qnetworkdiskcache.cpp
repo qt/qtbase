@@ -51,6 +51,9 @@ class tst_QNetworkDiskCache : public QObject
 {
     Q_OBJECT
 
+public:
+    tst_QNetworkDiskCache();
+
 public slots:
     void initTestCase();
     void cleanupTestCase();
@@ -80,6 +83,9 @@ private slots:
     void sync();
 
     void crashWhenParentingCache();
+
+private:
+    QTemporaryDir tempDir;
 };
 
 // FIXME same as in tst_qnetworkreply.cpp .. could be unified
@@ -146,9 +152,9 @@ public:
     qint64 call_expire()
         { return SubQNetworkDiskCache::expire(); }
 
-    void setupWithOne(const QUrl &url, const QNetworkCacheMetaData &metaData = QNetworkCacheMetaData())
+    void setupWithOne(const QString &path, const QUrl &url, const QNetworkCacheMetaData &metaData = QNetworkCacheMetaData())
     {
-        setCacheDirectory(QDir::tempPath() + "/diskCache");
+        setCacheDirectory(path);
 
         QIODevice *d = 0;
         if (metaData.isValid()) {
@@ -167,19 +173,19 @@ public:
     }
 };
 
+tst_QNetworkDiskCache::tst_QNetworkDiskCache()
+    : tempDir(QDir::tempPath() + "/tst_qnetworkdiskcache.XXXXXX")
+{
+}
+
 // This will be called before the first test function is executed.
 // It is only called once.
 void tst_QNetworkDiskCache::initTestCase()
 {
+    QVERIFY(tempDir.isValid());
+
     SubQNetworkDiskCache cache;
-    cache.setCacheDirectory(QDir::tempPath() + "/diskCache");
-    cache.clear();
-    QString s = QDir::tempPath() + "/diskCache/";
-    QDir dir;
-    dir.rmdir(s + "data7"); // the number is the internal cache version
-    dir.rmdir(s + "prepared");
-    dir.rmdir(s);
-    dir.rmdir(s + "http"); // delete directory used by 4.7 and earlier (would make the tests fail)
+    cache.setCacheDirectory(tempDir.path());
 }
 
 // This will be called after the last test function is executed.
@@ -226,14 +232,14 @@ void tst_QNetworkDiskCache::qnetworkdiskcache()
     QNetworkCacheMetaData metaData;
     metaData.setUrl(url);
     badCache.prepare(metaData);
-    badCache.setCacheDirectory(QDir::tempPath() + "/diskCache");
+    badCache.setCacheDirectory(tempDir.path());
     badCache.prepare(metaData);
 }
 
 void tst_QNetworkDiskCache::prepare()
 {
     SubQNetworkDiskCache cache;
-    cache.setCacheDirectory(QDir::tempPath() + "/diskCache");
+    cache.setCacheDirectory(tempDir.path());
 
     QUrl url(EXAMPLE_URL);
     QNetworkCacheMetaData metaData;
@@ -247,7 +253,7 @@ void tst_QNetworkDiskCache::prepare()
 void tst_QNetworkDiskCache::cacheSize()
 {
     SubQNetworkDiskCache cache;
-    cache.setCacheDirectory(QDir::tempPath() + "/diskCache");
+    cache.setCacheDirectory(tempDir.path());
     QCOMPARE(cache.cacheSize(), qint64(0));
 
     QUrl url(EXAMPLE_URL);
@@ -276,7 +282,7 @@ void tst_QNetworkDiskCache::clear()
 {
     SubQNetworkDiskCache cache;
     QUrl url(EXAMPLE_URL);
-    cache.setupWithOne(url);
+    cache.setupWithOne(tempDir.path(), url);
     QVERIFY(cache.cacheSize() > qint64(0));
 
     QString cacheDirectory = cache.cacheDirectory();
@@ -315,7 +321,7 @@ void tst_QNetworkDiskCache::data()
     QFETCH(QNetworkCacheMetaData, data);
     SubQNetworkDiskCache cache;
     QUrl url(EXAMPLE_URL);
-    cache.setupWithOne(url, data);
+    cache.setupWithOne(tempDir.path(), url, data);
 
     for (int i = 0; i < 3; ++i) {
         QIODevice *d = cache.data(url);
@@ -340,7 +346,7 @@ void tst_QNetworkDiskCache::metaData()
     metaData.setExpirationDate(QDateTime::currentDateTime());
     metaData.setSaveToDisk(true);
 
-    cache.setupWithOne(url, metaData);
+    cache.setupWithOne(tempDir.path(), url, metaData);
 
     for (int i = 0; i < 3; ++i) {
         QNetworkCacheMetaData cacheMetaData = cache.metaData(url);
@@ -354,7 +360,7 @@ void tst_QNetworkDiskCache::remove()
 {
     SubQNetworkDiskCache cache;
     QUrl url(EXAMPLE_URL);
-    cache.setupWithOne(url);
+    cache.setupWithOne(tempDir.path(), url);
     QString cacheDirectory = cache.cacheDirectory();
     QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 3);
     cache.remove(url);
@@ -384,7 +390,7 @@ void tst_QNetworkDiskCache::updateMetaData()
 {
     QUrl url(EXAMPLE_URL);
     SubQNetworkDiskCache cache;
-    cache.setupWithOne(url);
+    cache.setupWithOne(tempDir.path(), url);
 
     QNetworkCacheMetaData metaData = cache.metaData(url);
     metaData.setLastModified(QDateTime::currentDateTime());
@@ -398,7 +404,7 @@ void tst_QNetworkDiskCache::fileMetaData()
 {
     SubQNetworkDiskCache cache;
     QUrl url(EXAMPLE_URL);
-    cache.setupWithOne(url);
+    cache.setupWithOne(tempDir.path(), url);
 
     url.setPassword(QString());
     url.setFragment(QString());
@@ -425,10 +431,10 @@ void tst_QNetworkDiskCache::fileMetaData()
 void tst_QNetworkDiskCache::expire()
 {
     SubQNetworkDiskCache cache;
-    cache.setCacheDirectory(QDir::tempPath() + "/diskCache");
+    cache.setCacheDirectory(tempDir.path());
     QCOMPARE(cache.call_expire(), (qint64)0);
     QUrl url(EXAMPLE_URL);
-    cache.setupWithOne(url);
+    cache.setupWithOne(tempDir.path(), url);
     QVERIFY(cache.call_expire() > (qint64)0);
     qint64 limit = (1024 * 1024 / 4) * 5;
     cache.setMaximumCacheSize(limit);
@@ -477,7 +483,7 @@ void tst_QNetworkDiskCache::oldCacheVersionFile()
     QFETCH(int, pass);
     SubQNetworkDiskCache cache;
     QUrl url(EXAMPLE_URL);
-    cache.setupWithOne(url);
+    cache.setupWithOne(tempDir.path(), url);
 
     if (pass == 0) {
         QString name;
@@ -525,9 +531,10 @@ class Runner : public QThread
 {
 
 public:
-    Runner()
+    Runner(const QString& cachePath)
         : QThread()
         , other(0)
+        , cachePath(cachePath)
     {}
 
     void run()
@@ -550,7 +557,7 @@ public:
         metaData2.setExpirationDate(dt);
 
         QNetworkDiskCache cache;
-        cache.setCacheDirectory(QDir::tempPath() + "/diskCache");
+        cache.setCacheDirectory(cachePath);
 
         int read = 0;
 
@@ -620,6 +627,7 @@ public:
     QDateTime dt;
     bool write;
     Runner *other;
+    QString cachePath;
 };
 
 void tst_QNetworkDiskCache::crashWhenParentingCache()
@@ -656,11 +664,11 @@ void tst_QNetworkDiskCache::sync()
 
     QTime midnight(0, 0, 0);
     qsrand(midnight.secsTo(QTime::currentTime()));
-    Runner reader;
+    Runner reader(tempDir.path());
     reader.dt = QDateTime::currentDateTime();
     reader.write = false;
 
-    Runner writer;
+    Runner writer(tempDir.path());
     writer.dt = reader.dt;
     writer.write = true;
 
