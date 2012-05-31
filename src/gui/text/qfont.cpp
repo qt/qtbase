@@ -533,13 +533,6 @@ QFontEngineData::~QFontEngineData()
 */
 
 /*!
-    \fn Qt::HANDLE QFont::handle() const
-
-    Returns the window system handle to the font, for low-level
-    access. Using this function is \e not portable.
-*/
-
-/*!
     \fn FT_Face QFont::freetypeFace() const
 
     Returns the handle to the primary FreeType face of the font. If font merging is not disabled a

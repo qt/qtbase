@@ -59,11 +59,6 @@ void QFont::cleanup()
   QFont member functions
  *****************************************************************************/
 
-Qt::HANDLE QFont::handle() const
-{
-    return 0;
-}
-
 QString QFont::rawName() const
 {
     return QLatin1String("unknown");

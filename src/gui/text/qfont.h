@@ -241,8 +241,6 @@ public:
     { qSwap(d, other.d); qSwap(resolve_mask, other.resolve_mask);  return *this; }
 #endif
 
-    Qt::HANDLE handle() const;
-
     // needed for X11
     void setRawName(const QString &);
     QString rawName() const;
