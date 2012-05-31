@@ -122,15 +122,48 @@ win32:!contains(QT_CONFIG, directwrite) {
             silent:mips_dsp_compiler.commands = @echo compiling[mips_dsp] ${QMAKE_FILE_IN} && $$mips_dsp_compiler.commands
             QMAKE_EXTRA_COMPILERS += mips_dsp_compiler
         }
-} else {
-    # This serves two purposes:
-    # 1) it allows an IDE like Creator to know that these files are part of the sources
-    # 2) with MSVC, we are allowed to build the extra helpers
-    #    but we only build the SSE2 and SSSE3 ones for now since the AVX ones are just
-    #    the other two with the VEX prefix
-    win32-msvc*: SOURCES += $$SSE2_SOURCES $$SSSE3_SOURCES
-    false: SOURCES += $$NEON_SOURCES $$NEON_ASM \
-                $$IWMMXT_SOURCES \
+} else:win32-msvc* {
+        sse2 {
+            sse2_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
+            sse2_compiler.commands += $$QMAKE_CFLAGS_SSE2
+            sse2_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT}
+            sse2_compiler.dependency_type = TYPE_C
+            sse2_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+            sse2_compiler.input = SSE2_SOURCES
+            sse2_compiler.variable_out = OBJECTS
+            sse2_compiler.name = compiling[sse2] ${QMAKE_FILE_IN}
+            silent:sse2_compiler.commands = @echo compiling[sse2] ${QMAKE_FILE_IN} && $$sse2_compiler.commands
+            QMAKE_EXTRA_COMPILERS += sse2_compiler
+        }
+        ssse3 {
+            ssse3_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
+            ssse3_compiler.commands += $$QMAKE_CFLAGS_SSSE3
+            ssse3_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT}
+            ssse3_compiler.dependency_type = TYPE_C
+            ssse3_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+            ssse3_compiler.input = SSSE3_SOURCES
+            ssse3_compiler.variable_out = OBJECTS
+            ssse3_compiler.name = compiling[ssse3] ${QMAKE_FILE_IN}
+            silent:ssse3_compiler.commands = @echo compiling[ssse3] ${QMAKE_FILE_IN} && $$ssse3_compiler.commands
+            QMAKE_EXTRA_COMPILERS += ssse3_compiler
+        }
+        avx {
+            avx_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS) -D_M_AVX
+            avx_compiler.commands += $$QMAKE_CFLAGS_AVX
+            avx_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT}
+            avx_compiler.dependency_type = TYPE_C
+            avx_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+            avx_compiler.input = AVX_SOURCES
+            avx_compiler.variable_out = OBJECTS
+            avx_compiler.name = compiling[avx] ${QMAKE_FILE_IN}
+            silent:avx_compiler.commands = @echo compiling[avx] ${QMAKE_FILE_IN} && $$avx_compiler.commands
+            QMAKE_EXTRA_COMPILERS += avx_compiler
+        }
+} else:false {
+    # This allows an IDE like Creator to know that these files are part of the sources
+    SOURCES += $$SSE2_SOURCES $$SSSE3_SOURCES \
                 $$AVX_SOURCES \
+                $$NEON_SOURCES $$NEON_ASM \
+                $$IWMMXT_SOURCES \
                 $$MIPS_DSP_SOURCES $$MIPS_DSP_ASM $$MIPS_DSPR2_ASM
 }
