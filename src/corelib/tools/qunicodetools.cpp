@@ -286,6 +286,77 @@ static void getSentenceBreaks(const ushort *string, quint32 len, HB_CharAttribut
 
 namespace LB {
 
+namespace NS { // Number Sequence
+
+// LB25 recommends to not break lines inside numbers of the form
+// described by the following regular expression:
+//  (PR|PO)?(OP|HY)?NU(NU|SY|IS)*(CL|CP)?(PR|PO)?
+
+enum Action {
+    None,
+    Start,
+    Continue,
+    Break
+};
+
+enum Class {
+    XX,
+    PRPO,
+    OPHY,
+    NU,
+    SYIS,
+    CLCP
+};
+
+static const uchar actionTable[CLCP + 1][CLCP + 1] = {
+//     XX       PRPO      OPHY       NU       SYIS      CLCP
+    { None    , Start   , Start   , Start   , None    , None     }, // XX
+    { None    , Start   , Continue, Continue, None    , None     }, // PRPO
+    { None    , Start   , Start   , Continue, None    , None     }, // OPHY
+    { Break   , Break   , Break   , Continue, Continue, Continue }, // NU
+    { Break   , Break   , Break   , Continue, Continue, Continue }, // SYIS
+    { Break   , Continue, Break   , Break   , Break   , Break    }, // CLCP
+};
+
+inline Class toClass(QUnicodeTables::LineBreakClass lbc, QChar::Category category)
+{
+    switch (lbc) {
+    case QUnicodeTables::LineBreak_AL:// case QUnicodeTables::LineBreak_AI:
+        // resolve AI math symbols in numerical context to IS
+        if (category == QChar::Symbol_Math)
+            return SYIS;
+        break;
+    case QUnicodeTables::LineBreak_PR: case QUnicodeTables::LineBreak_PO:
+        return PRPO;
+    case QUnicodeTables::LineBreak_OP: case QUnicodeTables::LineBreak_HY:
+        return OPHY;
+    case QUnicodeTables::LineBreak_NU:
+        return NU;
+    case QUnicodeTables::LineBreak_SY: case QUnicodeTables::LineBreak_IS:
+        return SYIS;
+    case QUnicodeTables::LineBreak_CL: case QUnicodeTables::LineBreak_CP:
+        return CLCP;
+    default:
+        break;
+    }
+    return XX;
+}
+
+} // namespace NS
+
+/* In order to support the tailored implementation of LB25 properly
+   the following changes were made in the pair table to allow breaks
+   where the numeric expression doesn't match the template (i.e. [^NU](IS|SY)NU):
+   CL->PO from IB to DB
+   CP->PO from IB to DB
+   CL->PR from IB to DB
+   CP->PR from IB to DB
+   PO->OP from IB to DB
+   PR->OP from IB to DB
+   IS->NU from IB to DB
+   SY->NU from IB to DB
+*/
+
 // The following line break classes are not treated by the pair table
 // and must be resolved outside:
 //  AI, BK, CB, CJ, CR, LF, NL, SA, SG, SP, XX
@@ -301,16 +372,16 @@ enum Action {
 static const uchar breakTable[QUnicodeTables::LineBreak_JT + 1][QUnicodeTables::LineBreak_JT + 1] = {
 /*         OP  CL  CP  QU  GL  NS  EX  SY  IS  PR  PO  NU  AL  HL  ID  IN  HY  BA  BB  B2  ZW  CM  WJ  H2  H3  JL  JV  JT */
 /* OP */ { PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, CP, PB, PB, PB, PB, PB, PB },
-/* CL */ { DB, PB, PB, IB, IB, PB, PB, PB, PB, IB, IB, DB, DB, DB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
-/* CP */ { DB, PB, PB, IB, IB, PB, PB, PB, PB, IB, IB, IB, IB, IB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
+/* CL */ { DB, PB, PB, IB, IB, PB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
+/* CP */ { DB, PB, PB, IB, IB, PB, PB, PB, PB, DB, DB, IB, IB, IB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
 /* QU */ { PB, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB },
 /* GL */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB },
 /* NS */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
 /* EX */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
-/* SY */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, DB, DB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
-/* IS */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
-/* PR */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, IB, DB, IB, IB, DB, DB, PB, CI, PB, IB, IB, IB, IB, IB },
-/* PO */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
+/* SY */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
+/* IS */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, IB, IB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
+/* PR */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, IB, DB, IB, IB, DB, DB, PB, CI, PB, IB, IB, IB, IB, IB },
+/* PO */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
 /* NU */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
 /* AL */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
 /* HL */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB },
@@ -334,6 +405,9 @@ static const uchar breakTable[QUnicodeTables::LineBreak_JT + 1][QUnicodeTables::
 
 static void getLineBreaks(const ushort *string, quint32 len, HB_CharAttributes *attributes)
 {
+    quint32 nestart = 0;
+    LB::NS::Class nelast = LB::NS::XX;
+
     uint lucs4 = 0;
     QUnicodeTables::LineBreakClass lcls = QUnicodeTables::LineBreak_LF; // to meet LB10
     QUnicodeTables::LineBreakClass cls = lcls;
@@ -361,6 +435,27 @@ static void getLineBreaks(const ushort *string, quint32 len, HB_CharAttributes *
             // LB10: treat CM that follows SP, BK, CR, LF, NL, or ZW as AL
             if (lcls == QUnicodeTables::LineBreak_ZW || lcls >= QUnicodeTables::LineBreak_SP)
                 ncls = QUnicodeTables::LineBreak_AL;
+        }
+
+        if (ncls != QUnicodeTables::LineBreak_CM) {
+            // LB25: do not break lines inside numbers
+            LB::NS::Class necur = LB::NS::toClass(ncls, (QChar::Category)prop->category);
+            switch (LB::NS::actionTable[nelast][necur]) {
+            case LB::NS::Break:
+                // do not change breaks before and after the expression
+                for (quint32 j = nestart + 1; j < pos; ++j)
+                    attributes[j].lineBreakType = HB_NoBreak;
+                // fall through
+            case LB::NS::None:
+                nelast = LB::NS::XX; // reset state
+                break;
+            case LB::NS::Start:
+                nestart = i;
+                // fall through
+            default:
+                nelast = necur;
+                break;
+            }
         }
 
         HB_LineBreakType lineBreakType = HB_NoBreak;
@@ -415,6 +510,12 @@ static void getLineBreaks(const ushort *string, quint32 len, HB_CharAttributes *
         lcls = ncls;
         if (lineBreakType != HB_NoBreak)
             attributes[pos].lineBreakType = lineBreakType;
+    }
+
+    if (LB::NS::actionTable[nelast][LB::NS::XX] == LB::NS::Break) {
+        // LB25: do not break lines inside numbers
+        for (quint32 j = nestart + 1; j < len; ++j)
+            attributes[j].lineBreakType = HB_NoBreak;
     }
 
     attributes[0].lineBreakType = HB_NoBreak; // LB2

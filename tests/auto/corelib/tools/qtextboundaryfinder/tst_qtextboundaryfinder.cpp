@@ -288,31 +288,6 @@ void tst_QTextBoundaryFinder::lineBoundariesDefault()
     if (testString.contains(QChar::ObjectReplacementCharacter))
         QSKIP("QTextBoundaryFinder doesn't handle Object Replacement character");
 
-    {   // The Line Break tests use tailoring of numbers described in Example 7
-        // of Section 8.2 Examples of Customization
-        QChar s[][2] = {
-            { 0x007D, 0x0025 }, // CL x PO
-            { 0x007D, 0x0024 }, // CL x PR
-            { 0x0029, 0x0025 }, // CP x PO
-            { 0x0029, 0x0024 }, // CP x PR
-            { 0x002C, 0x0030 }, // IS x NU
-            { 0x002E, 0x0031 }, // IS x NU
-            { 0x002E, 0x0032 }, // IS x NU
-            { 0x002E, 0x0033 }, // IS x NU
-            { 0x002E, 0x0034 }, // IS x NU
-            { 0x0025, 0x0028 }, // PO x OP
-            { 0x0024, 0x0028 }, // PR x OP
-            { 0x005C, 0x0028 }, // PR x OP
-            { 0x005C, 0x007B }, // PR x OP
-            { 0x002F, 0x0030 }, // SY x NU
-        };
-        QChar cm(0x0308);
-        for (int i = 0; i < int(sizeof(s) / sizeof(QChar)) / 2; ++i) {
-            if (testString.contains(QString(s[i], 2)) || testString.contains(QString(s[i], 2).insert(1, cm)))
-                QSKIP("QTextBoundaryFinder doesn't handle numerical expressions");
-        }
-    }
-
     expectedBreakPositions.prepend(0); // ### QTBF generates a boundary at start of text
     doTestData(testString, expectedBreakPositions, QTextBoundaryFinder::Line, true);
 }
