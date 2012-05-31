@@ -211,6 +211,13 @@ void runScenario()
         str = (QString::fromUtf8(UTF8_LITERAL) += QLatin1String(LITERAL) P UTF8_LITERAL);
         QCOMPARE(str, QString::fromUtf8(UTF8_LITERAL LITERAL UTF8_LITERAL));
 #endif
+
+        QString str2 = QString::fromUtf8(UTF8_LITERAL);
+        QString str2_e = QString::fromUtf8(UTF8_LITERAL);
+        const char * nullData = 0;
+        str2 += QLatin1String(nullData) P str2;
+        str2_e += QLatin1String("") P str2_e;
+        QCOMPARE(str2, str2_e);
     }
 
     //operator QByteArray  +=
