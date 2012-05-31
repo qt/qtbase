@@ -135,7 +135,6 @@ public:
     QGLWidgetPrivate() : QWidgetPrivate()
                        , disable_clear_on_painter_begin(false)
     {
-        isGLWidget = 1;
     }
 
     ~QGLWidgetPrivate() {}

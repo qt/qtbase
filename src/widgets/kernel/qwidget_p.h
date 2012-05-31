@@ -689,7 +689,6 @@ public:
     uint inDirtyList : 1;
     uint isScrolled : 1;
     uint isMoved : 1;
-    uint isGLWidget : 1;
     uint usesDoubleBufferedGLContext : 1;
 #ifndef QT_NO_IM
     uint inheritsInputMethodHints : 1;

@@ -262,7 +262,6 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , inDirtyList(0)
       , isScrolled(0)
       , isMoved(0)
-      , isGLWidget(0)
       , usesDoubleBufferedGLContext(0)
 #ifndef QT_NO_IM
       , inheritsInputMethodHints(0)
