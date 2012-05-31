@@ -123,6 +123,14 @@ getQMakeConf1()
             fi
             getQMakeConf1 "$conf_file"
         ;;
+        *load\(device_config\)*)
+            conf_file="$DEVICE_VARS_FILE"
+            if [ ! -f  "$conf_file" ]; then
+                echo "WARNING: Unable to find file $conf_file" >&2
+                continue
+            fi
+            getQMakeConf1 "$conf_file"
+        ;;
         *)
             echo "$line"
         ;;
@@ -3654,10 +3662,12 @@ fi
 #-------------------------------------------------------------------------------
 # write out device config before we run the test.
 #-------------------------------------------------------------------------------
-if cmp -s "$DEVICE_VARS_FILE" "$outpath/mkspecs/qdevice.pri"; then
+DEVICE_VARS_OUTFILE="$outpath/mkspecs/qdevice.pri"
+if cmp -s "$DEVICE_VARS_FILE" "$DEVICE_VARS_OUTFILE"; then
     rm -f "$DEVICE_VARS_FILE"
 else
-    mv -f $DEVICE_VARS_FILE "$outpath/mkspecs/qdevice.pri"
+    mv -f $DEVICE_VARS_FILE "$DEVICE_VARS_OUTFILE"
+    DEVICE_VARS_FILE="$DEVICE_VARS_OUTFILE"
 fi
 
 #-------------------------------------------------------------------------------
