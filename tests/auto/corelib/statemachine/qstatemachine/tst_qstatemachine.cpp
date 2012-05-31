@@ -1771,12 +1771,12 @@ void tst_QStateMachine::parallelStates()
 
     QState *s1 = new QState(QState::ParallelStates);
     QCOMPARE(s1->childMode(), QState::ParallelStates);
-      QState *s1_1 = new QState(s1);
+      TestState *s1_1 = new TestState(s1);
         QState *s1_1_1 = new QState(s1_1);
         QFinalState *s1_1_f = new QFinalState(s1_1);
         s1_1_1->addTransition(s1_1_f);
       s1_1->setInitialState(s1_1_1);
-      QState *s1_2 = new QState(s1);
+      TestState *s1_2 = new TestState(s1);
         QState *s1_2_1 = new QState(s1_2);
         QFinalState *s1_2_f = new QFinalState(s1_2);
         s1_2_1->addTransition(s1_2_f);
@@ -1797,10 +1797,25 @@ void tst_QStateMachine::parallelStates()
     machine.setInitialState(s1);
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
     QVERIFY(finishedSpy.isValid());
+    globalTick = 0;
     machine.start();
     QTRY_COMPARE(finishedSpy.count(), 1);
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(s2));
+
+    // s1_1 is entered
+    QCOMPARE(s1_1->events.count(), 2);
+    QCOMPARE(s1_1->events.at(0).first, 0);
+    QCOMPARE(s1_1->events.at(0).second, TestState::Entry);
+    // s1_2 is entered
+    QCOMPARE(s1_2->events.at(0).first, 1);
+    QCOMPARE(s1_2->events.at(0).second, TestState::Entry);
+    // s1_1 is exited
+    QCOMPARE(s1_1->events.at(1).first, 2);
+    QCOMPARE(s1_1->events.at(1).second, TestState::Exit);
+    // s1_2 is exited
+    QCOMPARE(s1_2->events.at(1).first, 3);
+    QCOMPARE(s1_2->events.at(1).second, TestState::Exit);
 }
 
 void tst_QStateMachine::parallelRootState()
