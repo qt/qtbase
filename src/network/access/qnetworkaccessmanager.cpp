@@ -833,8 +833,9 @@ QNetworkConfiguration QNetworkAccessManager::configuration() const
 {
     Q_D(const QNetworkAccessManager);
 
-    if (d->networkSession)
-        return d->networkSession->configuration();
+    QSharedPointer<QNetworkSession> session(d->getNetworkSession());
+    if (session)
+        return session->configuration();
     else
         return QNetworkConfiguration();
 }
@@ -858,11 +859,12 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
 {
     Q_D(const QNetworkAccessManager);
 
-    if (d->networkSession) {
+    QSharedPointer<QNetworkSession> networkSession(d->getNetworkSession());
+    if (networkSession) {
         QNetworkConfigurationManager manager;
 
         return manager.configurationFromIdentifier(
-            d->networkSession->sessionProperty(QLatin1String("ActiveConfiguration")).toString());
+            networkSession->sessionProperty(QLatin1String("ActiveConfiguration")).toString());
     } else {
         return QNetworkConfiguration();
     }
@@ -897,7 +899,8 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
 {
     Q_D(const QNetworkAccessManager);
 
-    if (d->networkSession) {
+    QSharedPointer<QNetworkSession> networkSession(d->getNetworkSession());
+    if (networkSession) {
         // d->online holds online/offline state of this network session.
         if (d->online)
             return d->networkAccessible;
@@ -917,7 +920,14 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
 */
 const QWeakPointer<const QNetworkSession> QNetworkAccessManagerPrivate::getNetworkSession(const QNetworkAccessManager *q)
 {
-    return q->d_func()->networkSession.toWeakRef();
+    return q->d_func()->networkSessionWeakRef;
+}
+
+QSharedPointer<QNetworkSession> QNetworkAccessManagerPrivate::getNetworkSession() const
+{
+    if (networkSessionStrongRef)
+        return networkSessionStrongRef;
+    return networkSessionWeakRef.toStrongRef();
 }
 
 #endif // QT_NO_BEARERMANAGEMENT
@@ -1009,7 +1019,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         return new QDisabledNetworkReply(this, req, op);
     }
 
-    if (!d->networkSession && (d->initializeSession || !d->networkConfiguration.isEmpty())) {
+    if (!d->networkSessionStrongRef && (d->initializeSession || !d->networkConfiguration.isEmpty())) {
         QNetworkConfigurationManager manager;
         if (!d->networkConfiguration.isEmpty()) {
             d->createSession(manager.configurationFromIdentifier(d->networkConfiguration));
@@ -1116,8 +1126,8 @@ void QNetworkAccessManagerPrivate::_q_replyFinished()
     // It will not be destroyed immediately, but rather when the connection cache is flushed
     // after 2 minutes.
     activeReplyCount--;
-    if (networkSession && activeReplyCount == 0)
-        networkSession.clear();
+    if (networkSessionStrongRef && activeReplyCount == 0)
+        networkSessionStrongRef.clear();
 #endif
 }
 
@@ -1294,25 +1304,29 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 
     initializeSession = false;
 
+    //resurrect weak ref if possible
+    networkSessionStrongRef = networkSessionWeakRef.toStrongRef();
+
     QSharedPointer<QNetworkSession> newSession;
     if (config.isValid())
         newSession = QSharedNetworkSessionManager::getSession(config);
 
-    if (networkSession) {
+    if (networkSessionStrongRef) {
         //do nothing if new and old session are the same
-        if (networkSession == newSession)
+        if (networkSessionStrongRef == newSession)
             return;
         //disconnect from old session
-        QObject::disconnect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
-        QObject::disconnect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
-        QObject::disconnect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
+        QObject::disconnect(networkSessionStrongRef.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
+        QObject::disconnect(networkSessionStrongRef.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
+        QObject::disconnect(networkSessionStrongRef.data(), SIGNAL(stateChanged(QNetworkSession::State)),
             q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
     }
 
     //switch to new session (null if config was invalid)
-    networkSession = newSession;
+    networkSessionStrongRef = newSession;
+    networkSessionWeakRef = networkSessionStrongRef.toWeakRef();
 
-    if (!networkSession) {
+    if (!networkSessionStrongRef) {
         online = false;
 
         if (networkAccessible == QNetworkAccessManager::NotAccessible)
@@ -1324,18 +1338,19 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
     }
 
     //connect to new session
-    QObject::connect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()), Qt::QueuedConnection);
+    QObject::connect(networkSessionStrongRef.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()), Qt::QueuedConnection);
     //QueuedConnection is used to avoid deleting the networkSession inside its closed signal
-    QObject::connect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()), Qt::QueuedConnection);
-    QObject::connect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
+    QObject::connect(networkSessionStrongRef.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()), Qt::QueuedConnection);
+    QObject::connect(networkSessionStrongRef.data(), SIGNAL(stateChanged(QNetworkSession::State)),
                      q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)), Qt::QueuedConnection);
 
-    _q_networkSessionStateChanged(networkSession->state());
+    _q_networkSessionStateChanged(networkSessionStrongRef->state());
 }
 
 void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
 {
     Q_Q(QNetworkAccessManager);
+    QSharedPointer<QNetworkSession> networkSession(getNetworkSession());
     if (networkSession) {
         networkConfiguration = networkSession->configuration().identifier();
 
@@ -1344,7 +1359,8 @@ void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
         QObject::disconnect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
         QObject::disconnect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
             q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
-        networkSession.clear();
+        networkSessionStrongRef.clear();
+        networkSessionWeakRef.clear();
     }
 }
 

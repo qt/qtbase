@@ -759,7 +759,7 @@ void QNetworkReplyHttpImplPrivate::postRequest()
     // Create the HTTP thread delegate
     QHttpThreadDelegate *delegate = new QHttpThreadDelegate;
 #ifndef QT_NO_BEARERMANAGEMENT
-    delegate->networkSession = managerPrivate->networkSession;
+    delegate->networkSession = managerPrivate->getNetworkSession();
 #endif
 
     // For the synchronous HTTP, this is the normal way the delegate gets deleted
@@ -1505,7 +1505,8 @@ void QNetworkReplyHttpImplPrivate::setResumeOffset(quint64 offset)
 bool QNetworkReplyHttpImplPrivate::start()
 {
 #ifndef QT_NO_BEARERMANAGEMENT
-    if (!managerPrivate->networkSession) {
+    QSharedPointer<QNetworkSession> networkSession(managerPrivate->getNetworkSession());
+    if (!networkSession) {
 #endif
         postRequest();
         return true;
@@ -1521,10 +1522,10 @@ bool QNetworkReplyHttpImplPrivate::start()
         return true;
     }
 
-    if (managerPrivate->networkSession->isOpen() &&
-        managerPrivate->networkSession->state() == QNetworkSession::Connected) {
+    if (networkSession->isOpen() &&
+        networkSession->state() == QNetworkSession::Connected) {
         Q_Q(QNetworkReplyHttpImpl);
-        QObject::connect(managerPrivate->networkSession.data(), SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)),
+        QObject::connect(networkSession.data(), SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)),
                             q, SLOT(_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies)));
         postRequest();
         return true;
@@ -1547,7 +1548,7 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
 
 #ifndef QT_NO_BEARERMANAGEMENT
     // Do not start background requests if they are not allowed by session policy
-    QSharedPointer<QNetworkSession> session(manager->d_func()->networkSession);
+    QSharedPointer<QNetworkSession> session(manager->d_func()->getNetworkSession());
     QVariant isBackground = request.attribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(false));
     if (isBackground.toBool() && session && session->usagePolicies().testFlag(QNetworkSession::NoBackgroundTrafficPolicy)) {
         QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
@@ -1564,10 +1565,9 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
         // QNetworkAccessManager will call reply->backend->start() again for us when the session
         // state changes.
         state = WaitingForSession;
-        QNetworkSession *session = managerPrivate->networkSession.data();
 
         if (session) {
-            QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
+            QObject::connect(session.data(), SIGNAL(error(QNetworkSession::SessionError)),
                              q, SLOT(_q_networkSessionFailed()), Qt::QueuedConnection);
 
             if (!session->isOpen()) {
@@ -1724,7 +1724,7 @@ void QNetworkReplyHttpImplPrivate::_q_networkSessionConnected()
     if (!manager)
         return;
 
-    QNetworkSession *session = managerPrivate->networkSession.data();
+    QSharedPointer<QNetworkSession> session = managerPrivate->getNetworkSession();
     if (!session)
         return;
 
@@ -1752,7 +1752,7 @@ void QNetworkReplyHttpImplPrivate::_q_networkSessionFailed()
     // Abort waiting and working replies.
     if (state == WaitingForSession || state == Working) {
         state = Working;
-        QSharedPointer<QNetworkSession> session(manager->d_func()->networkSession);
+        QSharedPointer<QNetworkSession> session(manager->d_func()->getNetworkSession());
         QString errorStr;
         if (session)
             errorStr = session->errorString();
@@ -1837,7 +1837,7 @@ void QNetworkReplyHttpImplPrivate::finished()
 
     if (manager) {
 #ifndef QT_NO_BEARERMANAGEMENT
-        QNetworkSession *session = managerPrivate->networkSession.data();
+        QSharedPointer<QNetworkSession> session = managerPrivate->getNetworkSession();
         if (session && session->state() == QNetworkSession::Roaming &&
             state == Working && errorCode != QNetworkReply::OperationCanceledError) {
             // only content with a known size will fail with a temporary network failure error

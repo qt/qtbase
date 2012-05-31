@@ -358,13 +358,14 @@ bool QNetworkAccessBackend::start()
 {
 #ifndef QT_NO_BEARERMANAGEMENT
     // For bearer, check if session start is required
-    if (manager->networkSession) {
+    QSharedPointer<QNetworkSession> networkSession(manager->getNetworkSession());
+    if (networkSession) {
         // session required
-        if (manager->networkSession->isOpen() &&
-            manager->networkSession->state() == QNetworkSession::Connected) {
+        if (networkSession->isOpen() &&
+            networkSession->state() == QNetworkSession::Connected) {
             // Session is already open and ready to use.
             // copy network session down to the backend
-            setProperty("_q_networksession", QVariant::fromValue(manager->networkSession));
+            setProperty("_q_networksession", QVariant::fromValue(networkSession));
         } else {
             // Session not ready, but can skip for loopback connections
 
@@ -386,7 +387,7 @@ bool QNetworkAccessBackend::start()
 #ifndef QT_NO_BEARERMANAGEMENT
     // Get the proxy settings from the network session (in the case of service networks,
     // the proxy settings change depending which AP was activated)
-    QNetworkSession *session = manager->networkSession.data();
+    QNetworkSession *session = networkSession.data();
     QNetworkConfiguration config;
     if (session) {
         QNetworkConfigurationManager configManager;

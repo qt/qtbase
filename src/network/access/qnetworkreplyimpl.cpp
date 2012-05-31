@@ -94,7 +94,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 
 #ifndef QT_NO_BEARERMANAGEMENT
     // Do not start background requests if they are not allowed by session policy
-    QSharedPointer<QNetworkSession> session(manager->d_func()->networkSession);
+    QSharedPointer<QNetworkSession> session(manager->d_func()->getNetworkSession());
     QVariant isBackground = backend->request().attribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(false));
     if (isBackground.toBool() && session && session->usagePolicies().testFlag(QNetworkSession::NoBackgroundTrafficPolicy)) {
         error(QNetworkReply::BackgroundRequestNotAllowedError,
@@ -288,7 +288,7 @@ void QNetworkReplyImplPrivate::_q_networkSessionConnected()
     if (manager.isNull())
         return;
 
-    QNetworkSession *session = manager->d_func()->networkSession.data();
+    QSharedPointer<QNetworkSession> session = manager->d_func()->getNetworkSession();
     if (!session)
         return;
 
@@ -316,7 +316,7 @@ void QNetworkReplyImplPrivate::_q_networkSessionFailed()
     // Abort waiting and working replies.
     if (state == WaitingForSession || state == Working) {
         state = Working;
-        QSharedPointer<QNetworkSession> session(manager->d_func()->networkSession);
+        QSharedPointer<QNetworkSession> session(manager->d_func()->getNetworkSession());
         QString errorStr;
         if (session)
             errorStr = session->errorString();
@@ -764,7 +764,7 @@ void QNetworkReplyImplPrivate::finished()
 
     if (!manager.isNull()) {
 #ifndef QT_NO_BEARERMANAGEMENT
-        QNetworkSession *session = manager->d_func()->networkSession.data();
+        QSharedPointer<QNetworkSession> session (manager->d_func()->getNetworkSession());
         if (session && session->state() == QNetworkSession::Roaming &&
             state == Working && errorCode != QNetworkReply::OperationCanceledError) {
             // only content with a known size will fail with a temporary network failure error
