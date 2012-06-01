@@ -132,6 +132,8 @@ QStringList QDeviceDiscovery::scanConnectedDevices()
         udev_enumerate_add_match_property(ue, "ID_INPUT_TOUCHSCREEN", "1");
     if (m_types & Device_Keyboard)
         udev_enumerate_add_match_property(ue, "ID_INPUT_KEYBOARD", "1");
+    if (m_types & Device_Tablet)
+        udev_enumerate_add_match_property(ue, "ID_INPUT_TABLET", "1");
 
     if (udev_enumerate_scan_devices(ue) != 0) {
 #ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
@@ -239,6 +241,9 @@ bool QDeviceDiscovery::checkDeviceType(udev_device *dev)
         return true;
 
     if ((m_types & Device_Touchscreen) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_TOUCHSCREEN"), "1") == 0))
+        return true;
+
+    if ((m_types & Device_Tablet) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_TABLET"), "1") == 0))
         return true;
 
     if ((m_types & Device_DRM) && (qstrcmp(udev_device_get_subsystem(dev), "drm") == 0))

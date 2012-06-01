@@ -162,6 +162,11 @@ bool QDeviceDiscovery::checkDeviceType(const QString &device)
                         qWarning() << "DeviceDiscovery found touchscreen at" << device;
 #endif
                         ret = true;
+                    } else if ((m_types & Device_Tablet) && (testBit(BTN_STYLUS, bitsKey) || testBit(BTN_TOOL_PEN, bitsKey))) {
+#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
+                        qWarning() << "DeviceDiscovery found tablet at" << device;
+#endif
+                        ret = true;
                     }
                 }
             }
