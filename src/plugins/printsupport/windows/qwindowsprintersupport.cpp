@@ -64,10 +64,8 @@ QWindowsPrinterSupport::QWindowsPrinterSupport()
             QWin32PrintEngine::queryDefaultPrinter(defaultPrinterName, program, port);
             for (uint i = 0; i < returned; ++i) {
                 QString printerName(QString::fromWCharArray(infoList[i].pPrinterName));
-
-                QPrinterInfo printerInfo(printerName);
-                if (printerInfo.printerName() == defaultPrinterName)
-                    printerInfo.d_ptr->isDefault = true;
+                bool isDefault = (printerName == defaultPrinterName);
+                QPrinterInfo printerInfo = createPrinterInfo(printerName, QString(), QString(), QString(), isDefault, i);
                 mPrinterList.append(printerInfo);
             }
         }

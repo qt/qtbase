@@ -107,14 +107,22 @@ QPrinterInfo QPlatformPrinterSupport::printerInfo(const QString &printerName)
     return QPrinterInfo();
 }
 
-void QPlatformPrinterSupport::setPrinterInfoDefault(QPrinterInfo *p, bool isDefault)
+int QPlatformPrinterSupport::printerIndex(const QPrinterInfo &printer)
 {
-    p->d_func()->isDefault = isDefault;
+    return printer.d_func()->index;
 }
 
-bool QPlatformPrinterSupport::printerInfoIsDefault(const QPrinterInfo &p)
+QPrinterInfo QPlatformPrinterSupport::createPrinterInfo(const QString &name, const QString &description,
+                                                        const QString &location, const QString &makeAndModel,
+                                                        bool isDefault, int index)
 {
-    return p.d_func()->isDefault;
+    QPrinterInfo printer(name);
+    printer.d_func()->description = description;
+    printer.d_func()->location = location;
+    printer.d_func()->makeAndModel = makeAndModel;
+    printer.d_func()->isDefault = isDefault;
+    printer.d_func()->index = index;
+    return printer;
 }
 
 /*

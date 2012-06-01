@@ -128,14 +128,13 @@ QPrinterInfo QCocoaPrinterSupport::printerInfoFromPMPrinter(const PMPrinter &pri
     if (!printer)
         return QPrinterInfo();
 
-    QPrinterInfo pi = QPrinterInfo(QCFString::toQString(PMPrinterGetID(printer)));
+    QString name = QCFString::toQString(PMPrinterGetID(printer));
+    QString description = QCFString::toQString(PMPrinterGetName(printer));
+    QString location = QCFString::toQString(PMPrinterGetLocation(printer));
+    CFStringRef cfMakeAndModel;
+    PMPrinterGetMakeAndModelName(printer, &cfMakeAndModel);
+    QString makeAndModel = QCFString::toQString(cfMakeAndModel);
+    bool isDefault = PMPrinterIsDefault(printer);
 
-    pi.d_func()->description = QCFString::toQString(PMPrinterGetName(printer));
-    pi.d_func()->location = QCFString::toQString(PMPrinterGetLocation(printer));
-    CFStringRef makeAndModel;
-    PMPrinterGetMakeAndModelName(printer, &makeAndModel);
-    pi.d_func()->makeAndModel = QCFString::toQString(makeAndModel);
-    pi.d_func()->isDefault = PMPrinterIsDefault(printer);
-
-    return pi;
+    return createPrinterInfo(name, description, location, makeAndModel, isDefault, 0);
 }

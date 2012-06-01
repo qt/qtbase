@@ -71,29 +71,17 @@ QPaintEngine *QCupsPrinterSupport::createPaintEngine(QPrintEngine *engine, QPrin
 
 QList<QPrinter::PaperSize> QCupsPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
 {
-    return QCUPSSupport::getCupsPrinterPaperSizes(printerInfoCupsPrinterIndex(printerInfo));
+    return QCUPSSupport::getCupsPrinterPaperSizes(printerIndex(printerInfo));
 }
 
 QList<QPrinterInfo> QCupsPrinterSupport::availablePrinters()
 {
     QList<QPrinterInfo> printers;
     foreach (const QCUPSSupport::Printer &p,  QCUPSSupport::availableUnixPrinters()) {
-        QPrinterInfo printer(p.name);
-        printer.d_func()->isDefault = p.isDefault;
-        setPrinterInfoCupsPrinterIndex(&printer, p.cupsPrinterIndex);
+        QPrinterInfo printer = createPrinterInfo(p.name, QString(), QString(), QString(), p.isDefault, p.cupsPrinterIndex);
         printers.append(printer);
     }
     return printers;
-}
-
-int QCupsPrinterSupport::printerInfoCupsPrinterIndex(const QPrinterInfo &p)
-{
-    return p.isNull() ? -1 : p.d_func()->cupsPrinterIndex;
-}
-
-void QCupsPrinterSupport::setPrinterInfoCupsPrinterIndex(QPrinterInfo *p, int index)
-{
-    p->d_func()->cupsPrinterIndex = index;
 }
 
 QT_END_NAMESPACE

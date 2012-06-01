@@ -79,8 +79,10 @@ public:
     static QSizeF convertPaperSizeToQSizeF(QPrinter::PaperSize paperSize);
 
 protected:
-     static void setPrinterInfoDefault(QPrinterInfo *p, bool isDefault);
-     static bool printerInfoIsDefault(const QPrinterInfo &p);
+    static int printerIndex(const QPrinterInfo &printer);
+    static QPrinterInfo createPrinterInfo(const QString &name, const QString &description,
+                                          const QString &location, const QString &makeAndModel,
+                                          bool isDefault, int index);
 };
 
 #endif // QT_NO_PRINTER

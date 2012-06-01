@@ -60,8 +60,6 @@ public:
     virtual QList<QPrinterInfo> availablePrinters();
 
 private:
-    static int printerInfoCupsPrinterIndex(const QPrinterInfo &p);
-    static void setPrinterInfoCupsPrinterIndex(QPrinterInfo *p, int index);
 };
 
 QT_END_NAMESPACE
