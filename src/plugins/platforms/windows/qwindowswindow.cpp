@@ -205,6 +205,32 @@ static bool shouldShowMaximizeButton(Qt::WindowFlags flags)
     return flags & Qt::WindowMaximizeButtonHint;
 }
 
+static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, qreal level)
+{
+#ifdef Q_OS_WINCE // maybe needs revisit WS_EX_LAYERED
+    Q_UNUSED(hwnd);
+    Q_UNUSED(flags);
+    Q_UNUSED(level);
+#else
+    const long wl = GetWindowLong(hwnd, GWL_EXSTYLE);
+    const bool isOpaque = level == 1.0 && !(flags & Qt::WindowTransparentForInput);
+
+    if (isOpaque) {
+        if (wl & WS_EX_LAYERED)
+            SetWindowLong(hwnd, GWL_EXSTYLE, wl & ~WS_EX_LAYERED);
+    } else {
+        if ((wl & WS_EX_LAYERED) == 0)
+            SetWindowLong(hwnd, GWL_EXSTYLE, wl | WS_EX_LAYERED);
+        if (flags & Qt::FramelessWindowHint) {
+            BLENDFUNCTION blend = {AC_SRC_OVER, 0, (int)(255.0 * level), AC_SRC_ALPHA};
+            QWindowsContext::user32dll.updateLayeredWindow(hwnd, NULL, NULL, NULL, NULL, NULL, 0, &blend, ULW_ALPHA);
+        } else {
+            QWindowsContext::user32dll.setLayeredWindowAttributes(hwnd, 0, (int)(level * 255), LWA_ALPHA);
+        }
+    }
+#endif // !Q_OS_WINCE
+}
+
 /*!
     \class WindowCreationData
     \brief Window creation code.
@@ -246,7 +272,7 @@ struct WindowCreationData
     void fromWindow(const QWindow *w, const Qt::WindowFlags flags, unsigned creationFlags = 0);
     inline WindowData create(const QWindow *w, const QRect &geometry, QString title) const;
     inline void applyWindowFlags(HWND hwnd) const;
-    void initialize(HWND h, bool frameChange) const;
+    void initialize(HWND h, bool frameChange, qreal opacityLevel) const;
 
     Qt::WindowFlags flags;
     HWND parentHandle;
@@ -375,6 +401,13 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
             } else {
                  exStyle |= WS_EX_TOOLWINDOW;
             }
+
+#ifndef Q_OS_WINCE
+            // make mouse events fall through this window
+            // NOTE: WS_EX_TRANSPARENT flag can make mouse inputs fall through a layered window
+            if (flagsIn & Qt::WindowTransparentForInput)
+                exStyle |= WS_EX_LAYERED | WS_EX_TRANSPARENT;
+#endif
         }
     }
 }
@@ -459,7 +492,7 @@ void WindowCreationData::applyWindowFlags(HWND hwnd) const
         << debugWinExStyle(newExStyle);
 }
 
-void WindowCreationData::initialize(HWND hwnd, bool frameChange) const
+void WindowCreationData::initialize(HWND hwnd, bool frameChange, qreal opacityLevel) const
 {
     if (desktop || !hwnd)
         return;
@@ -482,6 +515,8 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange) const
             else
                 EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
         }
+
+        setWindowOpacity(hwnd, flags, opacityLevel);
     } else { // child.
         SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, swpFlags);
     }
@@ -746,7 +781,7 @@ QWindowsWindow::WindowData
     WindowCreationData creationData;
     creationData.fromWindow(w, parameters.flags);
     WindowData result = creationData.create(w, parameters.geometry, title);
-    creationData.initialize(result.hwnd, false);
+    creationData.initialize(result.hwnd, false, 1);
     return result;
 }
 
@@ -1090,7 +1125,8 @@ QWindowsWindow::WindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt
     WindowCreationData creationData;
     creationData.fromWindow(window(), wt, flags);
     creationData.applyWindowFlags(m_data.hwnd);
-    creationData.initialize(m_data.hwnd, true);
+    creationData.initialize(m_data.hwnd, true, m_opacity);
+
     WindowData result = m_data;
     result.flags = creationData.flags;
     setFlag(FrameDirty);
@@ -1304,32 +1340,8 @@ void QWindowsWindow::setOpacity(qreal level)
     if (m_opacity != level) {
         m_opacity = level;
         if (m_data.hwnd)
-            setOpacity_sys(level);
+            setWindowOpacity(m_data.hwnd, m_data.flags, level);
     }
-}
-
-void QWindowsWindow::setOpacity_sys(qreal level) const
-{
-#ifdef Q_OS_WINCE // maybe needs revisit WS_EX_LAYERED
-    Q_UNUSED(level);
-#else
-    const long wl = GetWindowLong(m_data.hwnd, GWL_EXSTYLE);
-    const bool isOpaque = level == 1.0;
-
-    if (isOpaque) {
-        if (wl & WS_EX_LAYERED)
-            SetWindowLong(m_data.hwnd, GWL_EXSTYLE, wl & ~WS_EX_LAYERED);
-    } else {
-        if ((wl & WS_EX_LAYERED) == 0)
-            SetWindowLong(m_data.hwnd, GWL_EXSTYLE, wl | WS_EX_LAYERED);
-        if (m_data.flags & Qt::FramelessWindowHint) {
-            BLENDFUNCTION blend = {AC_SRC_OVER, 0, (int)(255.0 * level), AC_SRC_ALPHA};
-            QWindowsContext::user32dll.updateLayeredWindow(m_data.hwnd, NULL, NULL, NULL, NULL, NULL, 0, &blend, ULW_ALPHA);
-        } else {
-            QWindowsContext::user32dll.setLayeredWindowAttributes(m_data.hwnd, 0, (int)(level * 255), LWA_ALPHA);
-        }
-    }
-#endif // !Q_OS_WINCE
 }
 
 void QWindowsWindow::requestActivateWindow()

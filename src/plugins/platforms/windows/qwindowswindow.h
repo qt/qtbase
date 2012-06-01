@@ -239,7 +239,6 @@ private:
     inline WindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
     inline void setWindowState_sys(Qt::WindowState newState);
     inline void setParent_sys(const QPlatformWindow *parent) const;
-    inline void setOpacity_sys(qreal level) const;
     inline void setMouseGrabEnabled_sys(bool grab);
     void destroyWindow();
     void registerDropSite();
