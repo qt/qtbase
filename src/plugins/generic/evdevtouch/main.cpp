@@ -44,32 +44,32 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTouchScreenPlugin : public QGenericPlugin
+class QEvdevTouchScreenPlugin : public QGenericPlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "evdevtouch.json")
 
 public:
-    QTouchScreenPlugin();
+    QEvdevTouchScreenPlugin();
 
     QStringList keys() const;
     QObject* create(const QString &key, const QString &specification);
 };
 
-QTouchScreenPlugin::QTouchScreenPlugin()
+QEvdevTouchScreenPlugin::QEvdevTouchScreenPlugin()
 {
 }
 
-QStringList QTouchScreenPlugin::keys() const
+QStringList QEvdevTouchScreenPlugin::keys() const
 {
     return QStringList() << "EvdevTouch";
 }
 
-QObject* QTouchScreenPlugin::create(const QString &key,
-                                    const QString &spec)
+QObject* QEvdevTouchScreenPlugin::create(const QString &key,
+                                         const QString &spec)
 {
     if (!key.compare(QLatin1String("EvdevTouch"), Qt::CaseInsensitive))
-        return new QTouchScreenHandlerThread(spec);
+        return new QEvdevTouchScreenHandlerThread(spec);
 
     return 0;
 }

@@ -53,18 +53,18 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
-class QTouchScreenData;
+class QEvdevTouchScreenData;
 #ifdef USE_MTDEV
 struct mtdev;
 #endif
 
-class QTouchScreenHandler : public QObject
+class QEvdevTouchScreenHandler : public QObject
 {
     Q_OBJECT
 
 public:
-    QTouchScreenHandler(const QString &spec = QString(), QObject *parent = 0);
-    ~QTouchScreenHandler();
+    QEvdevTouchScreenHandler(const QString &spec = QString(), QObject *parent = 0);
+    ~QEvdevTouchScreenHandler();
 
 private slots:
     void readData();
@@ -72,23 +72,23 @@ private slots:
 private:
     QSocketNotifier *m_notify;
     int m_fd;
-    QTouchScreenData *d;
+    QEvdevTouchScreenData *d;
 #ifdef USE_MTDEV
     mtdev *m_mtdev;
 #endif
 };
 
-class QTouchScreenHandlerThread : public QThread
+class QEvdevTouchScreenHandlerThread : public QThread
 {
 public:
-    QTouchScreenHandlerThread(const QString &spec);
-    ~QTouchScreenHandlerThread();
+    QEvdevTouchScreenHandlerThread(const QString &spec, QObject *parent = 0);
+    ~QEvdevTouchScreenHandlerThread();
     void run();
-    QTouchScreenHandler *handler() { return m_handler; }
+    QEvdevTouchScreenHandler *handler() { return m_handler; }
 
 private:
     QString m_spec;
-    QTouchScreenHandler *m_handler;
+    QEvdevTouchScreenHandler *m_handler;
 };
 
 QT_END_NAMESPACE

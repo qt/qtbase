@@ -61,15 +61,15 @@ QT_BEGIN_NAMESPACE
 #define ABS_MT_SLOT 0x2f
 #endif
 
-class QTouchScreenData
+class QEvdevTouchScreenData
 {
 public:
-    QTouchScreenData(QTouchScreenHandler *q_ptr, const QStringList &args);
+    QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, const QStringList &args);
 
     void processInputEvent(input_event *data);
     void assignIds();
 
-    QTouchScreenHandler *q;
+    QEvdevTouchScreenHandler *q;
     int m_lastEventType;
     QList<QWindowSystemInterface::TouchPoint> m_touchPoints;
 
@@ -106,7 +106,7 @@ public:
     bool m_typeB;
 };
 
-QTouchScreenData::QTouchScreenData(QTouchScreenHandler *q_ptr, const QStringList &args)
+QEvdevTouchScreenData::QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, const QStringList &args)
     : q(q_ptr),
       m_lastEventType(-1),
       m_currentSlot(0),
@@ -118,7 +118,7 @@ QTouchScreenData::QTouchScreenData(QTouchScreenHandler *q_ptr, const QStringList
     m_forceToActiveWindow = args.contains(QLatin1String("force_window"));
 }
 
-void QTouchScreenData::registerDevice()
+void QEvdevTouchScreenData::registerDevice()
 {
     m_device = new QTouchDevice;
     m_device->setName(hw_name);
@@ -138,7 +138,7 @@ static inline bool testBit(long bit, const long *array)
     return (array[bit / LONG_BITS] >> bit % LONG_BITS) & 1;
 }
 
-QTouchScreenHandler::QTouchScreenHandler(const QString &spec, QObject *parent)
+QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &spec, QObject *parent)
     : QObject(parent), m_notify(0), m_fd(-1), d(0)
 #ifdef USE_MTDEV
       , m_mtdev(0)
@@ -193,7 +193,7 @@ QTouchScreenHandler::QTouchScreenHandler(const QString &spec, QObject *parent)
     }
 #endif
 
-    d = new QTouchScreenData(this, args);
+    d = new QEvdevTouchScreenData(this, args);
 
     input_absinfo absInfo;
     memset(&absInfo, 0, sizeof(input_absinfo));
@@ -235,7 +235,7 @@ QTouchScreenHandler::QTouchScreenHandler(const QString &spec, QObject *parent)
     d->registerDevice();
 }
 
-QTouchScreenHandler::~QTouchScreenHandler()
+QEvdevTouchScreenHandler::~QEvdevTouchScreenHandler()
 {
 #ifdef USE_MTDEV
     if (m_mtdev) {
@@ -250,7 +250,7 @@ QTouchScreenHandler::~QTouchScreenHandler()
     delete d;
 }
 
-void QTouchScreenHandler::readData()
+void QEvdevTouchScreenHandler::readData()
 {
     ::input_event buffer[32];
     int n = 0;
@@ -289,7 +289,7 @@ void QTouchScreenHandler::readData()
         d->processInputEvent(&buffer[i]);
 }
 
-void QTouchScreenData::processInputEvent(input_event *data)
+void QEvdevTouchScreenData::processInputEvent(input_event *data)
 {
     if (data->type == EV_ABS) {
 
@@ -400,7 +400,7 @@ void QTouchScreenData::processInputEvent(input_event *data)
     m_lastEventType = data->type;
 }
 
-int QTouchScreenData::findClosestContact(const QHash<int, Contact> &contacts, int x, int y, int *dist)
+int QEvdevTouchScreenData::findClosestContact(const QHash<int, Contact> &contacts, int x, int y, int *dist)
 {
     int minDist = -1, id = -1;
     for (QHash<int, Contact>::const_iterator it = contacts.constBegin(), ite = contacts.constEnd();
@@ -419,7 +419,7 @@ int QTouchScreenData::findClosestContact(const QHash<int, Contact> &contacts, in
     return id;
 }
 
-void QTouchScreenData::assignIds()
+void QEvdevTouchScreenData::assignIds()
 {
     QHash<int, Contact> candidates = m_lastContacts, pending = m_contacts, newContacts;
     int maxId = -1;
@@ -453,7 +453,7 @@ void QTouchScreenData::assignIds()
     m_contacts = newContacts;
 }
 
-void QTouchScreenData::reportPoints()
+void QEvdevTouchScreenData::reportPoints()
 {
     QRect winRect;
     if (m_forceToActiveWindow) {
@@ -493,21 +493,21 @@ void QTouchScreenData::reportPoints()
 }
 
 
-QTouchScreenHandlerThread::QTouchScreenHandlerThread(const QString &spec)
-    : m_spec(spec), m_handler(0)
+QEvdevTouchScreenHandlerThread::QEvdevTouchScreenHandlerThread(const QString &spec, QObject *parent)
+    : QThread(parent), m_spec(spec), m_handler(0)
 {
     start();
 }
 
-QTouchScreenHandlerThread::~QTouchScreenHandlerThread()
+QEvdevTouchScreenHandlerThread::~QEvdevTouchScreenHandlerThread()
 {
     quit();
     wait();
 }
 
-void QTouchScreenHandlerThread::run()
+void QEvdevTouchScreenHandlerThread::run()
 {
-    m_handler = new QTouchScreenHandler(m_spec);
+    m_handler = new QEvdevTouchScreenHandler(m_spec);
     exec();
     delete m_handler;
     m_handler = 0;

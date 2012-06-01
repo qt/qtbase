@@ -1,12 +1,17 @@
-Generic plug-in for evdev touch (ABS_MT) events.
+Generic plug-in for evdev multiple touch (ABS_MT) events.
 Supports protocol type A & B.
 Type B is supported both directly and via libmtdev.
+Single-touch devices reporting ABS_X and Y only are not supported
+by this plugin. Use tslib or evdevmouse instead.
 
 The protocol type will be detected automatically.
 To enable libmtdev support uncomment the USE_MTDEV define in
 evdevtouch.pro.
 
-Tested with the following kernel drivers: bcm5974, hid_magicmouse.
+Tested with the following kernel drivers:
+  bcm5974 (type A)
+  hid_magicmouse (type A with ABS_MT_TRACKING_ID) (type B over libmtdev)
+  wacom (type B)
 
 To use this "driver", pass -plugin EvdevTouch on the command line.
 
@@ -24,9 +29,9 @@ Only touch events are generated, mouse events are not. Be aware however
 that ignored touch events will generate a mouse event from the first
 touch point by default. See AA_SynthesizeMouseForUnhandledTouchEvents.
 
-If no evdev events are read, disable the synaptics driver from X or
-temporarily disable the device by running
-xinput set-prop <device> <device enabled property> 0.
+If no evdev events are read, X may be grabbing the device.
+Disable the synaptics driver from X or temporarily disable the device
+by running xinput set-prop <device> <device enabled property> 0.
 Use xinput list and xinput list-props to figure out the values.
 
 When not running on a windowing system (eglfs, kms, etc.) and having a
@@ -38,5 +43,5 @@ If the input device cannot be accessed, set up a udev rule.
 For example:
   sudo cp 70-qtouchscreen.rules /etc/udev/rules.d
   sudo udevadm trigger --subsystem-match=input
-The udev rule matches any touchpad or touchscreen device. If there are
-multiple ones, specify the device manually as described above.
+The sample udev rule matches any touchpad or touchscreen device.
+If there are multiple ones, specify the device manually as described above.
