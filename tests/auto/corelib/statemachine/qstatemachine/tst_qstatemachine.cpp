@@ -176,6 +176,7 @@ private slots:
     void stopInEventTest_data();
     void stopInEventTest();
 
+    void testIncrementReceivers();
     void initialStateIsEnteredBeforeStartedEmitted();
 };
 
@@ -3906,6 +3907,40 @@ void tst_QStateMachine::stopInEventTest()
     QCOMPARE(finishedSpy.count(), 0);
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(s1));
+}
+
+class IncrementReceiversTest : public QObject
+{
+    Q_OBJECT
+signals:
+    void mySignal();
+public:
+    virtual void connectNotify(const QMetaMethod &signal)
+    {
+        signalList.append(signal);
+    }
+
+    QList<QMetaMethod> signalList;
+};
+
+void tst_QStateMachine::testIncrementReceivers()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+    QFinalState *s2 = new QFinalState(&machine);
+
+    IncrementReceiversTest testObject;
+    s1->addTransition(&testObject, SIGNAL(mySignal()), s2);
+
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    machine.start();
+
+    QMetaObject::invokeMethod(&testObject, "mySignal", Qt::QueuedConnection);
+
+    QTRY_COMPARE(finishedSpy.count(), 1);
+    QCOMPARE(testObject.signalList.size(), 1);
+    QCOMPARE(testObject.signalList.at(0), QMetaMethod::fromSignal(&IncrementReceiversTest::mySignal));
 }
 
 void tst_QStateMachine::initialStateIsEnteredBeforeStartedEmitted()
