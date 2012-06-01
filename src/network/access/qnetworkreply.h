@@ -104,7 +104,6 @@ public:
     };
 
     ~QNetworkReply();
-    virtual void abort() = 0;
 
     // reimplemented from QIODevice
     virtual void close();
@@ -143,6 +142,7 @@ public:
 #endif
 
 public Q_SLOTS:
+    virtual void abort() = 0;
     virtual void ignoreSslErrors();
 
 Q_SIGNALS:
