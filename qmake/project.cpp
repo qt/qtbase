@@ -1474,6 +1474,15 @@ QMakeProject::read(uchar cmd)
                 fprintf(stderr, "Failure to read QMAKESPEC conf file %s.\n", spec.toLatin1().constData());
                 return false;
             }
+#ifdef Q_OS_UNIX
+            real_spec = QFileInfo(qmakespec).canonicalFilePath();
+#else
+            // We can't resolve symlinks as they do on Unix, so configure.exe puts the source of the
+            // qmake.conf at the end of the default/qmake.conf in the QMAKESPEC_ORG variable.
+            QString orig_spec = first(QLatin1String("QMAKESPEC_ORIGINAL"));
+            real_spec = orig_spec.isEmpty() ? qmakespec : orig_spec;
+#endif
+            short_spec = QFileInfo(real_spec).fileName();
             doProjectInclude("spec_post", IncludeFlagFeature, vars);
             // The spec extends the feature search path, so invalidate the cache.
             invalidateFeatureRoots();
@@ -1594,36 +1603,6 @@ QMakeProject::read(uchar cmd)
     return true;
 }
 
-void
-QMakeProject::resolveSpec(QString *spec, const QString &qmakespec)
-{
-    if (spec->isEmpty()) {
-        *spec = QFileInfo(qmakespec).fileName();
-        if (*spec == "default" || *spec == "default-host") {
-#ifdef Q_OS_UNIX
-            char buffer[1024];
-            int l = readlink(qmakespec.toLatin1().constData(), buffer, 1023);
-            if (l != -1) {
-                buffer[l] = '\0';
-                *spec = QString::fromLatin1(buffer);
-#else
-            // We can't resolve symlinks as they do on Unix, so configure.exe puts the source of the
-            // qmake.conf at the end of the default/qmake.conf in the QMAKESPEC_ORG variable.
-            const QStringList &spec_org = vars["QMAKESPEC_ORIGINAL"];
-            if (spec_org.isEmpty()) {
-                // try again the next time around
-                *spec = QString();
-            } else {
-                *spec = spec_org.at(0);
-#endif
-                int lastSlash = spec->lastIndexOf(QLatin1Char('/'));
-                if (lastSlash != -1)
-                    spec->remove(0, lastSlash + 1);
-            }
-        }
-    }
-}
-
 bool
 QMakeProject::isActiveConfig(const QString &x, bool regex, QHash<QString, QStringList> *place)
 {
@@ -1640,12 +1619,8 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QHash<QString, QStrin
         return host_build;
 
     //mkspecs
-    static QString hspec, xspec;
-    resolveSpec(&hspec, Option::mkfile::qmakespec);
-    resolveSpec(&xspec, Option::mkfile::xqmakespec);
-    const QString &spec = host_build ? hspec : xspec;
     QRegExp re(x, Qt::CaseSensitive, QRegExp::Wildcard);
-    if((regex && re.exactMatch(spec)) || (!regex && spec == x))
+    if ((regex && re.exactMatch(short_spec)) || (!regex && short_spec == x))
         return true;
 
     //simple matching

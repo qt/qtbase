@@ -86,6 +86,7 @@ class QMakeProject
     QString conffile;
     QString superfile;
     QString cachefile;
+    QString real_spec, short_spec;
     QString pfile;
     QMakeProperty *prop;
     void reset();
@@ -114,7 +115,6 @@ class QMakeProject
     void init(QMakeProperty *);
     void cleanup();
     QStringList &values(const QString &v, QHash<QString, QStringList> &place);
-    void resolveSpec(QString *spec, const QString &qmakespec);
     QStringList qmakeFeaturePaths();
 
 public:
