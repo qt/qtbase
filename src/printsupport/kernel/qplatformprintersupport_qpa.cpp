@@ -107,6 +107,19 @@ QPrinterInfo QPlatformPrinterSupport::printerInfo(const QString &printerName)
     return QPrinterInfo();
 }
 
+QString QPlatformPrinterSupport::printerOption(const QPrinterInfo &printer, const QString &key) const
+{
+    Q_UNUSED(printer)
+    Q_UNUSED(key)
+    return QString();
+}
+
+PrinterOptions QPlatformPrinterSupport::printerOptions(const QPrinterInfo &printer) const
+{
+    Q_UNUSED(printer)
+    return PrinterOptions();
+}
+
 int QPlatformPrinterSupport::printerIndex(const QPrinterInfo &printer)
 {
     return printer.d_func()->index;

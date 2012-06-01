@@ -53,12 +53,15 @@
 #include <QtPrintSupport/qprinter.h>
 
 #include <QtCore/qlist.h>
+#include <QtCore/qhash.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTER
+
+typedef QHash<QString, QString> PrinterOptions;
 
 class QPrintEngine;
 
@@ -75,6 +78,9 @@ public:
     virtual QList<QPrinterInfo> availablePrinters();
     virtual QPrinterInfo defaultPrinter();
     virtual QPrinterInfo printerInfo(const QString &printerName);
+
+    virtual QString printerOption(const QPrinterInfo &printer, const QString &key) const;
+    virtual PrinterOptions printerOptions(const QPrinterInfo &printer) const;
 
     static QPrinter::PaperSize convertQSizeFToPaperSize(const QSizeF &sizef);
     static QSizeF convertPaperSizeToQSizeF(QPrinter::PaperSize paperSize);
