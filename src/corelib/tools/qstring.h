@@ -728,6 +728,7 @@ private:
     friend class QTextCodec;
     friend class QStringRef;
     friend class QByteArray;
+    friend class QCollator;
     friend struct QAbstractConcatenable;
 
 public:
