@@ -76,6 +76,7 @@ public:
     void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
 
 private:
+    EGLDisplay mDisplay;
     QAbstractEventDispatcher *mEventDispatcher;
     QPlatformFontDatabase *mFontDb;
     QPlatformScreen *mScreen;

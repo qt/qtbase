@@ -78,8 +78,9 @@ public:
     }
 };
 
-QEglFSScreen::QEglFSScreen()
-    : m_depth(32)
+QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
+    : m_dpy(dpy)
+    , m_depth(32)
     , m_format(QImage::Format_Invalid)
     , m_platformContext(0)
     , m_surface(0)
@@ -89,39 +90,6 @@ QEglFSScreen::QEglFSScreen()
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglScreen %p\n", this);
 #endif
-
-    hooks->platformInit();
-
-    EGLint major, minor;
-
-    if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-        qWarning("Could not bind GL_ES API\n");
-        qFatal("EGL error");
-    }
-
-    m_dpy = eglGetDisplay(hooks ? hooks->platformDisplay() : EGL_DEFAULT_DISPLAY);
-    if (m_dpy == EGL_NO_DISPLAY) {
-        qWarning("Could not open egl display\n");
-        qFatal("EGL error");
-    }
-    qWarning("Opened display %p\n", m_dpy);
-
-    if (!eglInitialize(m_dpy, &major, &minor)) {
-        qWarning("Could not initialize egl display\n");
-        qFatal("EGL error");
-    }
-
-    qWarning("Initialized display %d %d\n", major, minor);
-
-    int swapInterval = 1;
-    QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
-    if (!swapIntervalString.isEmpty()) {
-        bool ok;
-        swapInterval = swapIntervalString.toInt(&ok);
-        if (!ok)
-            swapInterval = 1;
-    }
-    eglSwapInterval(m_dpy, swapInterval);
 
     static int hideCursor = qgetenv("QT_QPA_EGLFS_HIDECURSOR").toInt();
     if (!hideCursor) {
@@ -140,10 +108,6 @@ QEglFSScreen::~QEglFSScreen()
         eglDestroySurface(m_dpy, m_surface);
 
     hooks->destroyNativeWindow(m_window);
-
-    eglTerminate(m_dpy);
-
-    hooks->platformDestroy();
 }
 
 void QEglFSScreen::createAndSetPlatformContext() const {

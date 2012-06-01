@@ -66,7 +66,7 @@
 QT_BEGIN_NAMESPACE
 
 QEglFSIntegration::QEglFSIntegration()
-    : mEventDispatcher(createUnixEventDispatcher()), mFontDb(new QGenericUnixFontDatabase()), mScreen(new QEglFSScreen)
+    : mEventDispatcher(createUnixEventDispatcher()), mFontDb(new QGenericUnixFontDatabase())
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
 
@@ -74,6 +74,40 @@ QEglFSIntegration::QEglFSIntegration()
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
     new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
 
+    hooks->platformInit();
+
+    EGLint major, minor;
+
+    if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+        qWarning("Could not bind GL_ES API\n");
+        qFatal("EGL error");
+    }
+
+    mDisplay = eglGetDisplay(hooks ? hooks->platformDisplay() : EGL_DEFAULT_DISPLAY);
+    if (mDisplay == EGL_NO_DISPLAY) {
+        qWarning("Could not open egl display\n");
+        qFatal("EGL error");
+    }
+    qWarning("Opened display %p\n", mDisplay);
+
+    if (!eglInitialize(mDisplay, &major, &minor)) {
+        qWarning("Could not initialize egl display\n");
+        qFatal("EGL error");
+    }
+
+    qWarning("Initialized display %d %d\n", major, minor);
+
+    int swapInterval = 1;
+    QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
+    if (!swapIntervalString.isEmpty()) {
+        bool ok;
+        swapInterval = swapIntervalString.toInt(&ok);
+        if (!ok)
+            swapInterval = 1;
+    }
+    eglSwapInterval(mDisplay, swapInterval);
+
+    mScreen = new QEglFSScreen(mDisplay);
     screenAdded(mScreen);
 
 #ifdef QEGL_EXTRA_DEBUG
@@ -84,6 +118,9 @@ QEglFSIntegration::QEglFSIntegration()
 QEglFSIntegration::~QEglFSIntegration()
 {
     delete mScreen;
+
+    eglTerminate(mDisplay);
+    hooks->platformDestroy();
 }
 
 bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
