@@ -2414,16 +2414,28 @@ void DitaXmlGenerator::writeRelatedLinks(const FakeNode* node, CodeMarker* marke
         if (node->links().contains(Node::PreviousLink)) {
             linkPair = node->links()[Node::PreviousLink];
             linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (linkNode->type() == Node::Fake) {
+                const FakeNode *fakeNode = static_cast<const FakeNode*>(linkNode);
+                linkPair.second = fakeNode->title();
+            }
             writeLink(linkNode, linkPair.second, "previous");
         }
         if (node->links().contains(Node::NextLink)) {
             linkPair = node->links()[Node::NextLink];
             linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (linkNode->type() == Node::Fake) {
+                const FakeNode *fakeNode = static_cast<const FakeNode*>(linkNode);
+                linkPair.second = fakeNode->title();
+            }
             writeLink(linkNode, linkPair.second, "next");
         }
         if (node->links().contains(Node::StartLink)) {
             linkPair = node->links()[Node::StartLink];
             linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (linkNode->type() == Node::Fake) {
+                const FakeNode *fakeNode = static_cast<const FakeNode*>(linkNode);
+                linkPair.second = fakeNode->title();
+            }
             writeLink(linkNode, linkPair.second, "parent");
         }
         writeEndTag(); // </related-links>
