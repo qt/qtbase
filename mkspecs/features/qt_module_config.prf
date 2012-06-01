@@ -44,6 +44,8 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_$${MODULE}.pri
     # Create a module .pri file
     staticlib: \
         module_build_type = "QT.$${MODULE}.module_config = staticlib"
+    else:mac:!static:contains(QT_CONFIG, qt_framework): \
+        module_build_type = "QT.$${MODULE}.module_config = lib_bundle"
     else: \
         module_build_type =
     !isEmpty(MODULE_CONFIG): \
