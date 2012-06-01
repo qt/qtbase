@@ -2147,6 +2147,7 @@ Qt::LayoutDirection QLocale::textDirection() const
     if (lang == QLocale::Arabic ||
         lang == QLocale::Hebrew ||
         lang == QLocale::Persian ||
+        lang == QLocale::Pashto ||
         lang == QLocale::Urdu ||
         lang == QLocale::Syriac ||
         lang == QLocale::Divehi)
