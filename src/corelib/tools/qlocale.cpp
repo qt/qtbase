@@ -82,12 +82,6 @@ static QLocaleData *system_data = 0;
 Q_GLOBAL_STATIC(QLocaleData, globalLocaleData)
 #endif
 
-#ifdef QT_USE_ICU
-extern bool qt_initIcu(const QString &localeName);
-extern bool qt_u_strToUpper(const QString &str, QString *out, const QLocale &locale);
-extern bool qt_u_strToLower(const QString &str, QString *out, const QLocale &locale);
-#endif
-
 /******************************************************************************
 ** Helpers for accessing Qt locale database
 */
@@ -515,12 +509,6 @@ void QLocalePrivate::updateSystemPrivate()
     res = sys_locale->query(QSystemLocale::PositiveSign, QVariant());
     if (!res.isNull())
         system_data->m_plus = res.toString().at(0).unicode();
-
-#ifdef QT_USE_ICU
-    if (!default_data)
-        qt_initIcu(sys_locale->fallbackUiLocale().bcp47Name());
-#endif
-
 }
 #endif
 
@@ -587,7 +575,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 
 static const int locale_data_size = sizeof(locale_data)/sizeof(QLocaleData) - 1;
 
-static const QLocaleData *dataPointerHelper(quint16 index)
+const QLocaleData *QLocalePrivate::dataPointerForIndex(quint16 index)
 {
 #ifndef QT_NO_SYSTEMLOCALE
     Q_ASSERT(index <= locale_data_size);
@@ -613,6 +601,14 @@ static quint16 localeDataIndex(const QLocaleData *p)
 
     return index;
 }
+
+/*!
+ \internal
+*/
+QLocale::QLocale(QLocalePrivate &dd)
+    : d(&dd)
+{}
+
 
 /*!
     Constructs a QLocale object with the specified \a name,
@@ -644,11 +640,8 @@ static quint16 localeDataIndex(const QLocaleData *p)
 */
 
 QLocale::QLocale(const QString &name)
-    : d(new QLocalePrivate())
+    : d(new QLocalePrivate(localeDataIndex(findLocaleData(name))))
 {
-    d->m_numberOptions = 0;
-    d->m_index = localeDataIndex(findLocaleData(name));
-    d->m_data = dataPointerHelper(d->m_index);
 }
 
 /*!
@@ -660,11 +653,8 @@ QLocale::QLocale(const QString &name)
 */
 
 QLocale::QLocale()
-    : d(new QLocalePrivate())
+    : d(new QLocalePrivate(localeDataIndex(defaultData()), default_number_options))
 {
-    d->m_numberOptions = default_number_options;
-    d->m_index = localeDataIndex(defaultData());
-    d->m_data = dataPointerHelper(d->m_index);
 }
 
 /*!
@@ -687,19 +677,19 @@ QLocale::QLocale()
 */
 
 QLocale::QLocale(Language language, Country country)
-    : d(new QLocalePrivate())
 {
     const QLocaleData *data = QLocaleData::findLocaleData(language, QLocale::AnyScript, country);
+    int index;
+    int numberOptions = 0;
 
     // If not found, should default to system
     if (data->m_language_id == QLocale::C && language != QLocale::C) {
-        d->m_numberOptions = default_number_options;
-        d->m_index = localeDataIndex(defaultData());
+        numberOptions = default_number_options;
+        index = localeDataIndex(defaultData());
     } else {
-        d->m_numberOptions = 0;
-        d->m_index = localeDataIndex(data);
+        index = localeDataIndex(data);
     }
-    d->m_data = dataPointerHelper(d->m_index);
+    d = new QLocalePrivate(index, numberOptions);
 }
 \
 /*!
@@ -727,19 +717,19 @@ QLocale::QLocale(Language language, Country country)
 */
 
 QLocale::QLocale(Language language, Script script, Country country)
-    : d(new QLocalePrivate())
 {
     const QLocaleData *data = QLocaleData::findLocaleData(language, script, country);
+    int index;
+    int numberOptions = 0;
 
     // If not found, should default to system
     if (data->m_language_id == QLocale::C && language != QLocale::C) {
-        d->m_numberOptions = default_number_options;
-        d->m_index = localeDataIndex(defaultData());
+        numberOptions = default_number_options;
+        index = localeDataIndex(defaultData());
     } else {
-        d->m_numberOptions = 0;
-        d->m_index = localeDataIndex(data);
+        index = localeDataIndex(data);
     }
-    d->m_data = dataPointerHelper(d->m_index);
+    d = new QLocalePrivate(index, numberOptions);
 }
 
 /*!
@@ -897,10 +887,6 @@ void QLocale::setDefault(const QLocale &locale)
 {
     default_data = locale.d->m_data;
     default_number_options = locale.numberOptions();
-
-#ifdef QT_USE_ICU
-    qt_initIcu(locale.bcp47Name());
-#endif
 }
 
 /*!
@@ -1802,10 +1788,7 @@ QString QLocale::toString(double i, char f, int prec) const
 
 QLocale QLocale::system()
 {
-    QLocale result(C);
-    result.d->m_index = localeDataIndex(systemData());
-    result.d->m_data = dataPointerHelper(result.d->m_index);
-    return result;
+    return QLocale(*new QLocalePrivate(localeDataIndex(systemData())));
 }
 
 
@@ -1834,9 +1817,7 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
         data += locale_index[language];
     while ( (data != locale_data + locale_data_size)
             && (language == QLocale::AnyLanguage || data->m_language_id == uint(language))) {
-        QLocale locale(QLocale::C);
-        locale.d->m_index = localeDataIndex(data);
-        locale.d->m_data = dataPointerHelper(locale.d->m_index);
+        QLocale locale(*new QLocalePrivate(localeDataIndex(data)));
         result.append(locale);
         ++data;
     }
@@ -2164,12 +2145,11 @@ Qt::LayoutDirection QLocale::textDirection() const
 QString QLocale::toUpper(const QString &str) const
 {
 #ifdef QT_USE_ICU
-    {
-        QString result;
-        if (qt_u_strToUpper(str, &result, *this))
-            return result;
-        // else fall through and use Qt's toUpper
-    }
+    bool ok = true;
+    QString result = QIcu::toUpper(d->m_localeID, str, &ok);
+    if (ok)
+        return result;
+    // else fall through and use Qt's toUpper
 #endif
     return str.toUpper();
 }
@@ -2182,12 +2162,11 @@ QString QLocale::toUpper(const QString &str) const
 QString QLocale::toLower(const QString &str) const
 {
 #ifdef QT_USE_ICU
-    {
-        QString result;
-        if (qt_u_strToLower(str, &result, *this))
-            return result;
-        // else fall through and use Qt's toUpper
-    }
+    bool ok = true;
+    QString result = QIcu::toLower(d->m_localeID, str, &ok);
+    if (ok)
+        return result;
+    // else fall through and use Qt's toUpper
 #endif
     return str.toLower();
 }
