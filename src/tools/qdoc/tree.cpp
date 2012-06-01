@@ -1357,7 +1357,7 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
                                 Node* node,
                                 bool generateInternalNodes)
 {
-    if (!node->url().isEmpty())
+    if (!node->url().isEmpty() || node->subType() == Node::DitaMap)
         return false;
 
     QString nodeName;
