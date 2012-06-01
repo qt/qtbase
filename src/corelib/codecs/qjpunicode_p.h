@@ -86,6 +86,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_BIG_CODECS
+
 class QJpUnicodeConv {
 public:
     virtual ~QJpUnicodeConv() {}
@@ -179,6 +181,8 @@ protected:
 private:
     int rule;
 };
+
+#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE
 

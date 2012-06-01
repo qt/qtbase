@@ -956,7 +956,7 @@ SeeAlso: ???
 Feature: BIG_CODECS
 Description: Supports big codecs, e.g. CJK.
 Section: Internationalization
-Requires:
+Requires: TEXTCODEC
 Name: Big Codecs
 SeeAlso: ???
 

@@ -60,24 +60,22 @@
 #include "qutfcodec_p.h"
 #include "qsimplecodec_p.h"
 #include "qlatincodec_p.h"
-#ifndef QT_NO_CODECS
+#if !defined(QT_BOOTSTRAPPED) && !defined(QT_NO_BIG_CODECS)
 #  include "qtsciicodec_p.h"
 #  include "qisciicodec_p.h"
-#if !defined(Q_OS_INTEGRITY)
-#  if !defined(QT_BOOTSTRAPPED)
+#  ifndef Q_OS_INTEGRITY
 #    include "qgb18030codec_p.h"
 #    include "qeucjpcodec_p.h"
 #    include "qjiscodec_p.h"
 #    include "qsjiscodec_p.h"
 #    include "qeuckrcodec_p.h"
 #    include "qbig5codec_p.h"
-#  endif // !QT_BOOTSTRAPPED
-#  if defined(Q_OS_UNIX) && !defined(QT_BOOTSTRAPPED)
+#  endif // !Q_OS_INTEGRITY
+#  ifdef Q_OS_UNIX
 #    include "qfontlaocodec_p.h"
 #    include "qfontjpcodec_p.h"
 #  endif
-#endif // !Q_OS_INTEGRITY
-#endif // QT_NO_CODECS
+#endif // !QT_BOOTSTRAPPED && !QT_NO_BIG_CODECS
 #include "qlocale.h"
 #include "qmutex.h"
 #include "qhash.h"
@@ -670,15 +668,11 @@ static void setup()
     (void) createQTextCodecCleanup();
 
 #ifndef QT_NO_CODECS
-    (void)new QTsciiCodec;
-    for (int i = 0; i < 9; ++i)
-        (void)new QIsciiCodec(i);
-
     for (int i = 0; i < QSimpleTextCodec::numSimpleCodecs; ++i)
         (void)new QSimpleTextCodec(i);
 
-#  if defined(Q_OS_UNIX) && !defined(QT_BOOTSTRAPPED)
-    // no font codecs when bootstrapping
+#  if !defined(QT_BOOTSTRAPPED) && !defined(QT_NO_BIG_CODECS)
+#    ifdef Q_OS_UNIX
     (void)new QFontLaoCodec;
     (void)new QFontGb2312Codec;
     (void)new QFontGbkCodec;
@@ -688,12 +682,9 @@ static void setup()
     (void)new QFontKsc5601Codec;
     (void)new QFontBig5hkscsCodec;
     (void)new QFontBig5Codec;
-#  endif // Q_OS_UNIX && !QT_BOOTSTRAPPED
+#    endif // Q_OS_UNIX
 
-
-#if !defined(Q_OS_INTEGRITY)
-#  if !defined(QT_BOOTSTRAPPED)
-    // no asian codecs when bootstrapping, sorry
+#    ifndef Q_OS_INTEGRITY
     (void)new QGb18030Codec;
     (void)new QGbkCodec;
     (void)new QGb2312Codec;
@@ -704,8 +695,12 @@ static void setup()
     (void)new QCP949Codec;
     (void)new QBig5Codec;
     (void)new QBig5hkscsCodec;
-#  endif // !QT_BOOTSTRAPPED
-#endif // !Q_OS_INTEGRITY
+#    endif // !Q_OS_INTEGRITY
+
+    (void)new QTsciiCodec;
+    for (int i = 0; i < 9; ++i)
+        (void)new QIsciiCodec(i);
+#  endif // !QT_BOOTSTRAPPED && !QT_NO_BIG_CODECS
 #endif // QT_NO_CODECS
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)

@@ -49,9 +49,6 @@
 // QAction
 //#define QT_NO_ACTION
 
-// Big Codecs
-//#define QT_NO_BIG_CODECS
-
 // QClipboard
 //#define QT_NO_CLIPBOARD
 
@@ -253,6 +250,11 @@
 // Animation
 #if !defined(QT_NO_ANIMATION) && (defined(QT_NO_PROPERTIES))
 #define QT_NO_ANIMATION
+#endif
+
+// Big Codecs
+#if !defined(QT_NO_BIG_CODECS) && (defined(QT_NO_TEXTCODEC))
+#define QT_NO_BIG_CODECS
 #endif
 
 // QButtonGroup

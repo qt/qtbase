@@ -77,7 +77,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_TEXTCODEC
+#ifndef QT_NO_BIG_CODECS
 
 static const uchar Ss2 = 0x8e;        // Single Shift 2
 static const uchar Ss3 = 0x8f;        // Single Shift 3
@@ -256,6 +256,6 @@ QByteArray QEucJpCodec::_name()
 {
     return "EUC-JP";
 }
-#endif // QT_NO_TEXTCODEC
+#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE

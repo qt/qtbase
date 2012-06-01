@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_CODECS
+#ifndef QT_NO_BIG_CODECS
 
 class Q_CORE_EXPORT QFontLaoCodec : public QTextCodec
 {
@@ -71,7 +71,7 @@ public:
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
 };
 
-#endif // QT_NO_CODECS
+#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE
 

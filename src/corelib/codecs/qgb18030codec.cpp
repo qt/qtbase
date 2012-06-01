@@ -46,7 +46,7 @@
 
 #include "qgb18030codec_p.h"
 
-#ifndef QT_NO_TEXTCODEC
+#ifndef QT_NO_BIG_CODECS
 
 QT_BEGIN_NAMESPACE
 
@@ -9262,4 +9262,4 @@ int qt_UnicodeToGbk(uint uni, uchar *gbchar) {
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_TEXTCODEC
+#endif // QT_NO_BIG_CODECS

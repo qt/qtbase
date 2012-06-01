@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_BIG_CODECS
+
 class QJpUnicodeConv;
 
 #ifdef Q_OS_UNIX
@@ -98,6 +100,8 @@ private:
     QJpUnicodeConv *convJP;
 };
 #endif
+
+#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE
 

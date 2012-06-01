@@ -83,7 +83,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_TEXTCODEC
+#ifndef QT_NO_BIG_CODECS
 
 class QEucKrCodec : public QTextCodec {
 public:
@@ -133,7 +133,7 @@ public:
 };
 #endif
 
-#endif // QT_NO_TEXTCODEC
+#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE
 

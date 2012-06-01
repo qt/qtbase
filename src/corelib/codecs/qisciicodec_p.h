@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_CODECS
+#ifndef QT_NO_BIG_CODECS
 
 class QIsciiCodec : public QTextCodec {
 public:
@@ -74,7 +74,7 @@ private:
     int idx;
 };
 
-#endif // QT_NO_CODECS
+#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE
 

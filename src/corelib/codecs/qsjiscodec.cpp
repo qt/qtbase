@@ -53,7 +53,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_TEXTCODEC
+#ifndef QT_NO_BIG_CODECS
 enum {
     Esc = 0x1b
 };
@@ -224,6 +224,6 @@ QList<QByteArray> QSjisCodec::_aliases()
          << "MS_Kanji";
     return list;
 }
-#endif // QT_NO_TEXTCODEC
+#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE

@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_BIG_CODECS
+
 #ifdef Q_OS_UNIX
 // JIS X 0201
 
@@ -141,5 +143,7 @@ QByteArray QFontJis0208Codec::convertFromUnicode(const QChar *uc, int len, Conve
 }
 
 #endif
+
+#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE

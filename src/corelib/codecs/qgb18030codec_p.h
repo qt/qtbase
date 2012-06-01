@@ -60,7 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_TEXTCODEC
+#ifndef QT_NO_BIG_CODECS
 
 class QGb18030Codec : public QTextCodec {
 public:
@@ -163,7 +163,7 @@ public:
 };
 #endif // Q_OS_UNIX
 
-#endif // QT_NO_TEXTCODEC
+#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE
 

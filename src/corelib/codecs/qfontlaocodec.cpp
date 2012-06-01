@@ -42,7 +42,6 @@
 #include "qfontlaocodec_p.h"
 #include "qlist.h"
 
-#ifndef QT_NO_CODECS
 #ifndef QT_NO_BIG_CODECS
 
 QT_BEGIN_NAMESPACE
@@ -120,4 +119,3 @@ QByteArray QFontLaoCodec::convertFromUnicode(const QChar *uc, int len, Converter
 QT_END_NAMESPACE
 
 #endif // QT_NO_BIG_CODECS
-#endif // QT_NO_CODECS
