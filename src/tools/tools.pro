@@ -33,5 +33,4 @@ contains(QT_CONFIG, dbus) {
     }
 }
 
-SUBDIRS = $$TOOLS_SUBDIRS $$SUBDIRS
-isEqual(TARGET,tools): SUBDIRS += $$SRC_SUBDIRS
+SUBDIRS = $$TOOLS_SUBDIRS

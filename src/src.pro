@@ -1,9 +1,8 @@
 TEMPLATE = subdirs
 
 # this order is important
-unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
-!wince*:include(tools/tools.pro)
+!wince*:SRC_SUBDIRS += src_tools
 SRC_SUBDIRS += src_corelib
 SRC_SUBDIRS += src_network src_sql src_gui src_xml src_testlib src_platformsupport src_widgets
 !wince*:SRC_SUBDIRS += src_printsupport
@@ -16,6 +15,8 @@ contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
 SRC_SUBDIRS += src_plugins
 
+src_tools.subdir = $$PWD/tools
+src_tools.target = sub-tools
 src_winmain.subdir = $$PWD/winmain
 src_winmain.target = sub-winmain
 src_corelib.subdir = $$PWD/corelib
@@ -50,11 +51,11 @@ src_concurrent.target = sub-concurrent
 
 #CONFIG += ordered
 !wince*:!ordered {
-   src_corelib.depends = src_tools_moc src_tools_rcc
+   src_corelib.depends = src_tools
    src_gui.depends = src_corelib
    src_printsupport.depends = src_corelib src_gui src_widgets
    src_platformsupport.depends = src_corelib src_gui src_network
-   src_widgets.depends = src_corelib src_gui src_tools_uic
+   src_widgets.depends = src_corelib src_gui
    src_xml.depends = src_corelib
    src_concurrent.depends = src_corelib
    src_dbus.depends = src_corelib
@@ -67,11 +68,4 @@ src_concurrent.target = sub-concurrent
 
 contains(QT_CONFIG, no-widgets): SRC_SUBDIRS -= src_opengl src_widgets src_printsupport
 
-# This creates a sub-src rule
-sub_src_target.CONFIG = recursive
-sub_src_target.recurse = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
-sub_src_target.target = sub-src
-sub_src_target.recurse_target =
-QMAKE_EXTRA_TARGETS += sub_src_target
-
-SUBDIRS += $$SRC_SUBDIRS
+SUBDIRS = $$SRC_SUBDIRS

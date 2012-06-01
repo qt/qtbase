@@ -21,7 +21,7 @@ contains(PROJECTS, qmake) {
 }
 contains(PROJECTS, libs) {
     PROJECTS -= libs
-    include(src/src.pro)
+    SUBDIRS += src
 }
 contains(PROJECTS, examples) {
     PROJECTS -= examples
