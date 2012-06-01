@@ -957,7 +957,21 @@ void tst_QTextLayout::horizontalAlignmentMultiline()
     qDebug() << firstLine.textLength() << firstLine.naturalTextRect() << lastLine.naturalTextRect();
 
     QRectF rect = firstLine.naturalTextRect();
+
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("ltr linebreak ralign", "QTBUG-25924 fails on Windows", Abort);
+    QEXPECT_FAIL("ltr linebreak calign", "QTBUG-25924 fails on Windows", Abort);
+    QEXPECT_FAIL("rtl linebreak ralign", "QTBUG-25924 fails on Windows", Abort);
+    QEXPECT_FAIL("rtl linebreak calign", "QTBUG-25924 fails on Windows", Abort);
+#endif
+
     QCOMPARE(rect.left(), firstLeft);
+
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("ltr linebreak lalign", "QTBUG-25924 fails on Windows", Abort);
+    QEXPECT_FAIL("rtl linebreak lalign", "QTBUG-25924 fails on Windows", Abort);
+#endif
+
     QCOMPARE(rect.right(), firstRight);
 
     rect = lastLine.naturalTextRect();
