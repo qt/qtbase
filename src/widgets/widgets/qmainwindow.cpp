@@ -1471,28 +1471,9 @@ bool QMainWindow::event(QEvent *event)
     \property QMainWindow::unifiedTitleAndToolBarOnMac
     \brief whether the window uses the unified title and toolbar look on Mac OS X
     \since 4.3
+    \obsolete
 
-    This property is false by default and only has any effect on Mac OS X 10.4 or higher.
-
-    If set to true, then the top toolbar area is replaced with a Carbon HIToolbar
-    or a Cocoa NSToolbar (depending on whether Qt was built with Carbon or Cocoa).
-    All toolbars in the top toolbar area and any toolbars added afterwards are
-    moved to that. This means a couple of things.
-
-    \list
-    \li QToolBars in this toolbar area are not movable and you cannot drag other
-        toolbars to it
-    \li Toolbar breaks are not respected or preserved
-    \li Any custom widgets in the toolbar will not be shown if the toolbar
-        becomes too small (only actions will be shown)
-    \li Before Qt 4.5, if you called showFullScreen() on the main window, the QToolbar would
-        disappear since it is considered to be part of the title bar. Qt 4.5 and up will now work around this by pulling
-        the toolbars out and back into the regular toolbar and vice versa when you swap out.
-    \endlist
-
-    Setting this back to false will remove these restrictions.
-
-    The Qt::WA_MacBrushedMetal attribute takes precedence over this property.
+    This property is not implemented in Qt 5. Setting it has no effect.
 */
 void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
 {
