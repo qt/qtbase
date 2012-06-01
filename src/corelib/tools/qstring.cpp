@@ -59,6 +59,7 @@
 #include "qhash.h"
 #include "qdebug.h"
 #include "qendian.h"
+#include "qcollator_p.h"
 
 #ifdef Q_OS_MAC
 #include <private/qcore_mac_p.h>
@@ -5003,14 +5004,10 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
     CFRelease(thisString);
     CFRelease(otherString);
     return result;
+#elif defined(QT_USE_ICU)
+    QCollator collator;
+    return collator.compare(data1, length1, data2, length2);
 #elif defined(Q_OS_UNIX)
-#  if defined(QT_USE_ICU)
-    QLocale locale;
-    int res;
-    if (QIcu::strcoll(locale.d.constData()->m_localeID, data1, length1, data2, length2, &res))
-        return res;
-    // else fall through
-#  endif
     // declared in <string.h>
     int delta = strcoll(toLocal8Bit_helper(data1, length1).constData(), toLocal8Bit_helper(data2, length2).constData());
     if (delta == 0)

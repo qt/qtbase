@@ -45,36 +45,12 @@
 #include "qlocale_p.h"
 #include "qmutex.h"
 
-#include "unicode/uversion.h"
-#include "unicode/ucol.h"
 #include "unicode/uloc.h"
 #include "unicode/ustring.h"
 
 QT_BEGIN_NAMESPACE
 
 typedef int32_t (*Ptr_u_strToCase)(UChar *dest, int32_t destCapacity, const UChar *src, int32_t srcLength, const char *locale, UErrorCode *pErrorCode);
-
-bool QIcu::strcoll(const QByteArray &localeID,
-                   const QChar *source, int sourceLength, const QChar *target, int targetLength, int *result)
-{
-    Q_ASSERT(result);
-    Q_ASSERT(source);
-    Q_ASSERT(target);
-
-    UErrorCode icuStatus = U_ZERO_ERROR;
-    UCollator *collator = ucol_open(localeID, &icuStatus);
-
-    if (U_FAILURE((icuStatus)))
-        return false;
-
-    *result = ucol_strcoll(collator,
-                           reinterpret_cast<const UChar *>(source), int32_t(sourceLength),
-                           reinterpret_cast<const UChar *>(target), int32_t(targetLength));
-
-    ucol_close(collator);
-
-    return true;
-}
 
 // caseFunc can either be u_strToUpper or u_strToLower
 static bool qt_u_strToCase(const QString &str, QString *out, const char *localeID, Ptr_u_strToCase caseFunc)

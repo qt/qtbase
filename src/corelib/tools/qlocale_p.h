@@ -130,8 +130,6 @@ private:
 namespace QIcu {
     QString toUpper(const QByteArray &localeId, const QString &str, bool *ok);
     QString toLower(const QByteArray &localeId, const QString &str, bool *ok);
-
-    bool strcoll(const QByteArray &localeID, const QChar *source, int sourceLength, const QChar *target, int targetLength, int *result);
 }
 #endif
 
