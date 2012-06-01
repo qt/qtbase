@@ -61,6 +61,8 @@
 #include "qstatictext.h"
 #include "qglyphrun.h"
 
+#include <qpa/qplatformtheme.h>
+
 #include <private/qfontengine_p.h>
 #include <private/qpaintengine_p.h>
 #include <private/qemulationpaintengine_p.h>
@@ -6180,7 +6182,9 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     const qreal underlinePos = pos.y() + qCeil(underlineOffset);
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
-        underlineStyle = QTextCharFormat::SpellCheckUnderline; // ### Qt5 QTextCharFormat::UnderlineStyle(QApplication::style()->styleHint(QStyle::SH_SpellCheckUnderlineStyle));
+        QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
+        if (theme)
+            underlineStyle = QTextCharFormat::UnderlineStyle(theme->themeHint(QPlatformTheme::SpellCheckUnderlineStyle).toInt());
     }
 
     if (underlineStyle == QTextCharFormat::WaveUnderline) {

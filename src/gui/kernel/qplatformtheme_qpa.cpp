@@ -44,6 +44,7 @@
 #include <QtCore/QVariant>
 #include <QtCore/QStringList>
 #include <qpalette.h>
+#include <qtextformat.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -100,6 +101,9 @@ QT_BEGIN_NAMESPACE
                            keyboard scheme.
 
     \value UiEffects (int) A flag value consisting of UiEffect values specifying the enabled UI animations.
+
+    \value SpellCheckUnderlineStyle (int) A QTextCharFormat::UnderlineStyle specifying
+                                    the underline style used misspelled words when spell checking.
 
     \sa themeHint(), QStyle::pixelMetric()
 */
@@ -167,6 +171,8 @@ QVariant QPlatformTheme::themeHint(ThemeHint hint) const
         return QVariant(int(WindowsKeyboardScheme));
     case UiEffects:
         return QVariant(int(0));
+    case SpellCheckUnderlineStyle:
+        return QVariant(int(QTextCharFormat::SpellCheckUnderline));
     }
     return QVariant();
 }

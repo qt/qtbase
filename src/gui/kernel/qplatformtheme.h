@@ -86,7 +86,8 @@ public:
         DialogButtonBoxButtonsHaveIcons,
         UseFullScreenForPopupMenu,
         KeyboardScheme,
-        UiEffects
+        UiEffects,
+        SpellCheckUnderlineStyle
     };
 
     enum DialogType {
