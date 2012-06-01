@@ -75,9 +75,6 @@ private:
     void createAndSetPlatformContext();
 
     EGLDisplay m_dpy;
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
     QPlatformOpenGLContext *m_platformContext;
     EGLSurface m_surface;
     EGLNativeWindowType m_window;

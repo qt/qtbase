@@ -80,8 +80,6 @@ public:
 
 QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
     : m_dpy(dpy)
-    , m_depth(32)
-    , m_format(QImage::Format_Invalid)
     , m_platformContext(0)
     , m_surface(0)
     , m_window(0)
@@ -116,28 +114,7 @@ void QEglFSScreen::createAndSetPlatformContext() const {
 
 void QEglFSScreen::createAndSetPlatformContext()
 {
-    QSurfaceFormat platformFormat;
-
-    QByteArray depthString = qgetenv("QT_QPA_EGLFS_DEPTH");
-    if (depthString.toInt() == 16) {
-        platformFormat.setDepthBufferSize(16);
-        platformFormat.setRedBufferSize(5);
-        platformFormat.setGreenBufferSize(6);
-        platformFormat.setBlueBufferSize(5);
-        m_depth = 16;
-        m_format = QImage::Format_RGB16;
-    } else {
-        platformFormat.setDepthBufferSize(24);
-        platformFormat.setStencilBufferSize(8);
-        platformFormat.setRedBufferSize(8);
-        platformFormat.setGreenBufferSize(8);
-        platformFormat.setBlueBufferSize(8);
-        m_depth = 32;
-        m_format = QImage::Format_RGB32;
-    }
-
-    if (!qgetenv("QT_QPA_EGLFS_MULTISAMPLE").isEmpty())
-        platformFormat.setSamples(4);
+    QSurfaceFormat platformFormat = hooks->defaultSurfaceFormat();
 
     EGLConfig config = q_configFromGLFormat(m_dpy, platformFormat);
 
@@ -157,33 +134,21 @@ void QEglFSScreen::createAndSetPlatformContext()
 
     QEGLPlatformContext *platformContext = new QEglFSContext(platformFormat, 0, m_dpy);
     m_platformContext = platformContext;
-
-    EGLint w,h;                    // screen size detection
-    eglQuerySurface(m_dpy, m_surface, EGL_WIDTH, &w);
-    eglQuerySurface(m_dpy, m_surface, EGL_HEIGHT, &h);
-
-    m_geometry = QRect(0,0,w,h);
-
 }
 
 QRect QEglFSScreen::geometry() const
 {
-    if (m_geometry.isNull()) {
-        createAndSetPlatformContext();
-    }
-    return m_geometry;
+    return QRect(QPoint(0, 0), hooks->screenSize());
 }
 
 int QEglFSScreen::depth() const
 {
-    return m_depth;
+    return hooks->screenDepth();
 }
 
 QImage::Format QEglFSScreen::format() const
 {
-    if (m_format == QImage::Format_Invalid)
-        createAndSetPlatformContext();
-    return m_format;
+    return hooks->screenFormat();
 }
 
 QPlatformCursor *QEglFSScreen::cursor() const

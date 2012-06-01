@@ -43,6 +43,8 @@
 #define QEGLFSHOOKS_H
 
 #include <qpa/qplatformintegration.h>
+#include <QtGui/QSurfaceFormat>
+#include <QtGui/QImage>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
@@ -57,6 +59,9 @@ public:
     virtual void platformDestroy();
     virtual EGLNativeDisplayType platformDisplay() const;
     virtual QSize screenSize() const;
+    virtual int screenDepth() const;
+    virtual QImage::Format screenFormat() const;
+    virtual QSurfaceFormat defaultSurfaceFormat() const;
     virtual EGLNativeWindowType createNativeWindow(const QSize &size);
     virtual void destroyNativeWindow(EGLNativeWindowType window);
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
