@@ -2447,7 +2447,7 @@ QWidget *QApplicationPrivate::pickMouseReceiver(QWidget *candidate, const QPoint
 
     if (mouseGrabber && mouseGrabber != candidate) {
         receiver = mouseGrabber;
-        *pos = receiver->mapFrom(candidate, windowPos);
+        *pos = receiver->mapFromGlobal(candidate->mapToGlobal(windowPos));
 #ifdef ALIEN_DEBUG
         qDebug() << "  ** receiver adjusted to:" << receiver << "pos:" << pos;
 #endif
