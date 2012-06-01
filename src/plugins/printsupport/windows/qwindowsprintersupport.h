@@ -42,7 +42,6 @@
 #ifndef WINDOWSPRINTERSUPPORT_H
 #define WINDOWSPRINTERSUPPORT_H
 
-#include <QtCore/QList>
 #include <qpa/qplatformprintersupport.h>
 
 QT_BEGIN_HEADER
@@ -59,12 +58,6 @@ public:
     virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
     virtual QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode);
     virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
-
-    virtual QList<QPrinterInfo> availablePrinters();
-private:
-
-    QList<QPrinterInfo> mPrinterList;
-    QPrinter::PrinterMode mCurrentMode;
 };
 
 QT_END_NAMESPACE

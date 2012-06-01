@@ -66,7 +66,7 @@ QWindowsPrinterSupport::QWindowsPrinterSupport()
                 QString printerName(QString::fromWCharArray(infoList[i].pPrinterName));
                 bool isDefault = (printerName == defaultPrinterName);
                 QPrinterInfo printerInfo = createPrinterInfo(printerName, QString(), QString(), QString(), isDefault, i);
-                mPrinterList.append(printerInfo);
+                m_printers.append(printerInfo);
             }
         }
         delete [] buffer;
@@ -91,11 +91,6 @@ QPaintEngine *QWindowsPrinterSupport::createPaintEngine(QPrintEngine *engine, QP
 QList<QPrinter::PaperSize> QWindowsPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
 {
     return QWin32PrintEngine::supportedPaperSizes(printerInfo);
-}
-
-QList<QPrinterInfo> QWindowsPrinterSupport::availablePrinters()
-{
-    return mPrinterList;
 }
 
 QT_END_NAMESPACE

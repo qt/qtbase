@@ -52,10 +52,11 @@
 
 #include <QtPrintSupport/qprinter.h>
 
+#include <QtCore/qlist.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-
 
 #ifndef QT_NO_PRINTER
 
@@ -83,6 +84,8 @@ protected:
     static QPrinterInfo createPrinterInfo(const QString &name, const QString &description,
                                           const QString &location, const QString &makeAndModel,
                                           bool isDefault, int index);
+
+    QList<QPrinterInfo> m_printers;
 };
 
 #endif // QT_NO_PRINTER
