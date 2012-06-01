@@ -1577,22 +1577,6 @@ QString VcprojGenerator::fixFilename(QString ofile) const
     return ofile;
 }
 
-QString VcprojGenerator::findTemplate(QString file)
-{
-    QString ret;
-    if(!exists((ret = file)) &&
-       !exists((ret = QString((project->isHostBuild()
-                               ? Option::mkfile::qmakespec : Option::mkfile::xqmakespec) + '/' + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc.net/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc2002/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc2003/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc2005/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc2008/" + file))))
-        return "";
-    debug_msg(1, "Generator: MSVC.NET: Found template \'%s\'", ret.toLatin1().constData());
-    return ret;
-}
-
 void VcprojGenerator::outputVariables()
 {
 #if 0

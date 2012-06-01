@@ -63,7 +63,6 @@ class VcprojGenerator : public Win32MakefileGenerator
     bool writeMakefile(QTextStream &);
     bool writeProjectMakefile();
 
-    QString findTemplate(QString file);
     void init();
 
 public:
