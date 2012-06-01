@@ -56,7 +56,7 @@ defineTest(qtAddModule) {
 
     unset(LINKAGE)
     mac {
-        !contains(MODULE_CONFIG,staticlib):CONFIG(qt_framework, qt_framework|qt_no_framework) { #forced
+        contains(MODULE_CONFIG, lib_bundle) {
           FRAMEWORK_INCLUDE = $${MODULE_LIBS}/$${MODULE_NAME}.framework/Headers
           !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE) {
                INCLUDEPATH *= $$FRAMEWORK_INCLUDE
