@@ -59,7 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void q_createNativeChildrenAndSetParent(QWindow *parentWindow, const QWidget *parentWidget)
+void q_createNativeChildrenAndSetParent(const QWidget *parentWidget)
 {
     QObjectList children = parentWidget->children();
     for (int i = 0; i < children.size(); i++) {
@@ -70,13 +70,14 @@ void q_createNativeChildrenAndSetParent(QWindow *parentWindow, const QWidget *pa
                     if (!childWidget->windowHandle())
                         childWidget->winId();
                     if (childWidget->windowHandle()) {
-                        if (childWidget->isTopLevel())
+                        QWindow *parentWindow = childWidget->nativeParentWidget()->windowHandle();
+                        if (childWidget->isWindow())
                             childWidget->windowHandle()->setTransientParent(parentWindow);
                         else
                             childWidget->windowHandle()->setParent(parentWindow);
                     }
                 } else {
-                    q_createNativeChildrenAndSetParent(parentWindow,childWidget);
+                    q_createNativeChildrenAndSetParent(childWidget);
                 }
             }
         }
@@ -147,7 +148,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     setWinId(win->winId());
 
     // Check children and create windows for them if necessary
-    q_createNativeChildrenAndSetParent(q->windowHandle(), q);
+    q_createNativeChildrenAndSetParent(q);
 
     // If widget is already shown, set window visible, too
     if (q->isVisible())
