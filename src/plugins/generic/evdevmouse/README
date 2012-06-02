@@ -1,4 +1,4 @@
-Generic plug-in for absolute & relative evdev pointer events.
+Generic plug-in for relative evdev pointer events.
 
 To use it, launch apps with -plugin EvdevMouse
 
@@ -9,3 +9,6 @@ EvdevMouse:/dev/input/eventN to explicitly set the device node.
 The initial cursor position is assumed to be (0, 0). Relative events
 will generate Qt mouse events with screen positions relative to this
 initial position.
+
+Touchpads reporting absolute events will work too, the positions will
+be turned into relative. Touchscreens are however not supported.

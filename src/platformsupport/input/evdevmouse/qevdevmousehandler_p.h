@@ -77,6 +77,7 @@ private:
     bool m_compression;
     Qt::MouseButtons m_buttons;
     int m_jitterLimitSquared;
+    bool m_prevInvalid;
 };
 
 QT_END_NAMESPACE

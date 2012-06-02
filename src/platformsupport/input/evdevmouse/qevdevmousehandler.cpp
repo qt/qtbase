@@ -91,7 +91,7 @@ QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QStr
 
 QEvdevMouseHandler::QEvdevMouseHandler(const QString &device, int fd, bool compression, int jitterLimit)
     : m_device(device), m_fd(fd), m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0),
-      m_compression(compression), m_buttons(0)
+      m_compression(compression), m_buttons(0), m_prevInvalid(true)
 {
     setObjectName(QLatin1String("Evdev Mouse Handler"));
 
@@ -111,7 +111,14 @@ QEvdevMouseHandler::~QEvdevMouseHandler()
 
 void QEvdevMouseHandler::sendMouseEvent()
 {
-    emit handleMouseEvent(m_x - m_prevx, m_y - m_prevy, m_buttons);
+    int x = m_x - m_prevx;
+    int y = m_y - m_prevy;
+    if (m_prevInvalid) {
+        x = y = 0;
+        m_prevInvalid = false;
+    }
+
+    emit handleMouseEvent(x, y, m_buttons);
 
     m_prevx = m_x;
     m_prevy = m_y;
@@ -148,6 +155,7 @@ void QEvdevMouseHandler::readMouseData()
         struct ::input_event *data = &buffer[i];
         //qDebug() << ">>" << hex << data->type << data->code << dec << data->value;
         if (data->type == EV_ABS) {
+            // Touchpads: store the absolute position for now, will calculate a relative one later.
             if (data->code == ABS_X && m_x != data->value) {
                 m_x = data->value;
                 posChanged = true;
@@ -176,8 +184,9 @@ void QEvdevMouseHandler::readMouseData()
                                                          delta, Qt::Horizontal);
             }
         } else if (data->type == EV_KEY && data->code == BTN_TOUCH) {
-            m_buttons = data->value ? Qt::LeftButton : Qt::NoButton;
-            btnChanged = true;
+            // We care about touchpads only, not touchscreens -> don't map to button press.
+            // Need to invalidate prevx/y however to get proper relative pos.
+            m_prevInvalid = true;
         } else if (data->type == EV_KEY && data->code >= BTN_LEFT && data->code <= BTN_JOYSTICK) {
             Qt::MouseButton button = Qt::NoButton;
             // BTN_LEFT == 0x110 in kernel's input.h
