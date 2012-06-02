@@ -82,7 +82,7 @@ public:
         Qt::TouchPointState state;
         QTouchEvent::TouchPoint::InfoFlags flags;
         Contact() : trackingId(-1),
-            x(0), y(0), maj(1), pressure(0),
+            x(0), y(0), maj(-1), pressure(0),
             state(Qt::TouchPointPressed), flags(0) { }
     };
     QHash<int, Contact> m_contacts; // The key is a tracking id for type A, slot number for type B.
@@ -479,7 +479,10 @@ void QEvdevTouchScreenData::reportPoints()
         const qreal wx = winRect.left() + tp.normalPosition.x() * winRect.width();
         const qreal wy = winRect.top() + tp.normalPosition.y() * winRect.height();
         const qreal sizeRatio = (winRect.width() + winRect.height()) / qreal(hw_w + hw_h);
-        tp.area = QRectF(0, 0, tp.area.width() * sizeRatio, tp.area.height() * sizeRatio);
+        if (tp.area.width() == -1) // touch major was not provided
+            tp.area = QRectF(0, 0, 8, 8);
+        else
+            tp.area = QRectF(0, 0, tp.area.width() * sizeRatio, tp.area.height() * sizeRatio);
         tp.area.moveCenter(QPointF(wx, wy));
 
         // Calculate normalized pressure.
