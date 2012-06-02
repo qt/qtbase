@@ -144,56 +144,23 @@ void QFactoryLoader::update()
 
             QStringList keys;
             bool metaDataOk = false;
-            if (library->compatPlugin) {
-                qWarning("Qt plugin loader: Compatibility plugin '%s', need to load for accessing meta data.",
-                         qPrintable(QDir::toNativeSeparators(fileName)));
-                if (!library->loadPlugin()) {
-                    if (qt_debug_component()) {
-                        qDebug() << library->errorString;
-                        qDebug() << "           could not load";
-                    }
-                    library->release();
-                    continue;
-                }
 
-                if (!library->inst)
-                    library->inst = library->instance();
-                QObject *instance = library->inst.data();
-                if (!instance) {
-                    library->release();
-                    // ignore plugins that have a valid signature but cannot be loaded.
-                    continue;
-                }
-                QFactoryInterface *factory = qobject_cast<QFactoryInterface*>(instance);
-                if (instance && factory && instance->qt_metacast(d->iid))
-                    keys = factory->keys();
+            QString iid = library->metaData.value(QLatin1String("IID")).toString();
+            if (iid == QLatin1String(d->iid.constData(), d->iid.size())) {
+                QJsonObject object = library->metaData.value(QLatin1String("MetaData")).toObject();
+                metaDataOk = true;
 
-                if (!keys.isEmpty()) {
-                    metaDataOk = true;
-                    QJsonObject object = library->metaData.value(QLatin1String("MetaData")).toObject();
-                    object.insert(QLatin1String("Keys"), QJsonArray::fromStringList(keys));
-                    library->metaData[QLatin1String("MetaData")] = object;
+                QJsonArray k = object.value(QLatin1String("Keys")).toArray();
+                for (int i = 0; i < k.size(); ++i) {
+                    QString s = k.at(i).toString();
+                    keys += s;
                 }
-
-            } else {
-                QString iid = library->metaData.value(QLatin1String("IID")).toString();
-                if (iid == QLatin1String(d->iid.constData(), d->iid.size())) {
-                    QJsonObject object = library->metaData.value(QLatin1String("MetaData")).toObject();
-                    metaDataOk = true;
-
-                    QJsonArray k = object.value(QLatin1String("Keys")).toArray();
-                    for (int i = 0; i < k.size(); ++i) {
-                        QString s = k.at(i).toString();
-                        keys += s;
-                    }
-                }
-                if (qt_debug_component())
-                    qDebug() << "Got keys from plugin meta data" << keys;
             }
+            if (qt_debug_component())
+                qDebug() << "Got keys from plugin meta data" << keys;
+
 
             if (!metaDataOk) {
-                if (library->compatPlugin)
-                    library->unload();
                 library->release();
                 continue;
             }
@@ -235,37 +202,6 @@ QFactoryLoader::~QFactoryLoader()
     qt_factory_loaders()->removeAll(this);
 }
 
-QStringList QFactoryLoader::keys() const
-{
-    Q_D(const QFactoryLoader);
-    QMutexLocker locker(&d->mutex);
-    QStringList keys = d->keyList;
-    QVector<QStaticPlugin> staticPlugins = QLibraryPrivate::staticPlugins();
-    for (int i = 0; i < staticPlugins.count(); ++i) {
-        if (staticPlugins.at(i).metaData) {
-            const char *rawMetaData = staticPlugins.at(i).metaData();
-            QJsonObject object = QLibraryPrivate::fromRawMetaData(rawMetaData).object();
-            if (object.value(QLatin1String("IID")) != QLatin1String(d->iid.constData(), d->iid.size()))
-                continue;
-
-            QJsonObject meta = object.value(QLatin1String("MetaData")).toObject();
-            QJsonArray a = meta.value(QLatin1String("Keys")).toArray();
-            for (int i = 0; i < a.size(); ++i) {
-                QString s = a.at(i).toString();
-                if (!s.isEmpty())
-                    keys += s;
-            }
-        } else {
-            // compat plugin
-            QObject *instance = staticPlugins.at(i).instance();
-            QFactoryInterface *factory = qobject_cast<QFactoryInterface*>(instance);
-            if (instance && factory && instance->qt_metacast(d->iid))
-                keys += factory->keys();
-        }
-    }
-    return keys;
-}
-
 QList<QJsonObject> QFactoryLoader::metaData() const
 {
     Q_D(const QFactoryLoader);
@@ -276,55 +212,15 @@ QList<QJsonObject> QFactoryLoader::metaData() const
 
     QVector<QStaticPlugin> staticPlugins = QLibraryPrivate::staticPlugins();
     for (int i = 0; i < staticPlugins.count(); ++i) {
-        if (staticPlugins.at(i).metaData) {
-            const char *rawMetaData = staticPlugins.at(i).metaData();
-            QJsonObject object = QLibraryPrivate::fromRawMetaData(rawMetaData).object();
-            if (object.value(QLatin1String("IID")) != QLatin1String(d->iid.constData(), d->iid.size()))
-                continue;
+        const char *rawMetaData = staticPlugins.at(i).metaData();
+        QJsonObject object = QLibraryPrivate::fromRawMetaData(rawMetaData).object();
+        if (object.value(QLatin1String("IID")) != QLatin1String(d->iid.constData(), d->iid.size()))
+            continue;
 
-            QJsonObject meta = object.value(QLatin1String("MetaData")).toObject();
+        QJsonObject meta = object.value(QLatin1String("MetaData")).toObject();
             metaData.append(meta);
-        } else {
-            // compat plugins
-            QObject *instance = staticPlugins.at(i).instance();
-            QFactoryInterface *factory = qobject_cast<QFactoryInterface*>(instance);
-            if (instance && factory && instance->qt_metacast(d->iid)) {
-                QJsonObject meta;
-                QJsonArray a = QJsonArray::fromStringList(factory->keys());
-                meta.insert(QLatin1String("Keys"), a);
-                metaData.append(meta);
-            }
-        }
     }
     return metaData;
-}
-
-QObject *QFactoryLoader::instance(const QString &key) const
-{
-    Q_D(const QFactoryLoader);
-    QMutexLocker locker(&d->mutex);
-    QVector<QStaticPlugin> staticPlugins = QLibraryPrivate::staticPlugins();
-    for (int i = 0; i < staticPlugins.count(); ++i) {
-        QObject *instance = staticPlugins.at(i).instance();
-        if (QFactoryInterface *factory = qobject_cast<QFactoryInterface*>(instance))
-            if (instance->qt_metacast(d->iid) && factory->keys().contains(key, Qt::CaseInsensitive))
-                return instance;
-    }
-
-    QString lowered = d->cs ? key : key.toLower();
-    if (QLibraryPrivate* library = d->keyMap.value(lowered)) {
-        if (library->instance || library->loadPlugin()) {
-            if (!library->inst)
-                library->inst = library->instance();
-            QObject *obj = library->inst.data();
-            if (obj) {
-                if (!obj->parent())
-                    obj->moveToThread(QCoreApplicationPrivate::mainThread());
-                return obj;
-            }
-        }
-    }
-    return 0;
 }
 
 QObject *QFactoryLoader::instance(int index) const

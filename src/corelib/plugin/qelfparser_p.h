@@ -72,7 +72,7 @@ typedef quintptr qelfaddr_t;
 class QElfParser
 {
 public:
-    enum { QtMetaDataSection, QtPluginSection, NoQtSection, NotElf, Corrupt };
+    enum { QtMetaDataSection, NoQtSection, NotElf, Corrupt };
     enum {ElfLittleEndian = 0, ElfBigEndian = 1};
 
     struct ElfSectionHeader

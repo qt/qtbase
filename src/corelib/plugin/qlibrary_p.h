@@ -99,7 +99,6 @@ public:
     QPointer<QObject> inst;
     QtPluginInstanceFunction instance;
     QJsonObject metaData;
-    bool compatPlugin;
 
     QString errorString;
     QLibrary::LoadHints loadHints;

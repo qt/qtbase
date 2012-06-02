@@ -203,7 +203,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
         qDebug() << "++++" << i << shnam;
 #endif
 
-        if (qstrcmp(shnam, ".qtmetadata") == 0 || qstrcmp(shnam, ".qtplugin") == 0 || qstrcmp(shnam, ".rodata") == 0) {
+        if (qstrcmp(shnam, ".qtmetadata") == 0 || qstrcmp(shnam, ".rodata") == 0) {
             if (!(sh.type & 0x1)) {
                 if (shnam[1] == 'r') {
                     if (lib)
@@ -227,7 +227,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
             *pos = sh.offset;
             *sectionlen = sh.size - 1;
             if (shnam[1] == 'q')
-                return shnam[3] == 'm' ? QtMetaDataSection : QtPluginSection;
+                return QtMetaDataSection;
         }
         s += e_shentsize;
     }

@@ -70,22 +70,15 @@ struct QStaticPlugin
 void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 
 #if defined (Q_OF_ELF) && (defined (Q_CC_GNU) || defined(Q_CC_CLANG))
-#  define QT_PLUGIN_VERIFICATION_SECTION \
-    __attribute__ ((section (".qtplugin"))) __attribute__((used))
 #  define QT_PLUGIN_METADATA_SECTION \
     __attribute__ ((section (".qtmetadata"))) __attribute__((used))
 #elif defined(Q_OS_MAC)
 // TODO: Implement section parsing on Mac
-#  define QT_PLUGIN_VERIFICATION_SECTION \
-    __attribute__((section("__TEXT,qtplugin"))) __attribute__((used))
 #  define QT_PLUGIN_METADATA_SECTION \
     __attribute__ ((section ("__TEXT,qtmetadata"))) __attribute__((used))
 #elif defined(Q_CC_MSVC)
 // TODO: Implement section parsing for MSVC
-#pragma section(".qtplugin",read,shared)
 #pragma section(".qtmetadata",read,shared)
-#  define QT_PLUGIN_VERIFICATION_SECTION \
-    __declspec(allocate(".qtplugin"))
 #  define QT_PLUGIN_METADATA_SECTION \
     __declspec(allocate(".qtmetadata"))
 #else
@@ -137,51 +130,12 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 
 #define Q_EXPORT_PLUGIN(PLUGIN) \
             Q_EXPORT_PLUGIN2(PLUGIN, PLUGIN)
-#define Q_EXPORT_STATIC_PLUGIN(PLUGIN)
-#define Q_EXPORT_STATIC_PLUGIN2(PLUGIN, PLUGINCLASS)
-
-#if defined(QT_STATICPLUGIN)
-
-#  define Q_EXPORT_PLUGIN2(PLUGIN, PLUGINCLASS) \
-    static QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance() \
-    Q_PLUGIN_INSTANCE(PLUGINCLASS) \
-    const QT_PREPEND_NAMESPACE(QStaticPlugin) qt_static_plugin_##PLUGIN() { \
-        QT_PREPEND_NAMESPACE(QStaticPlugin) plugin = { qt_plugin_instance, 0 }; \
-        return plugin; \
-    }
-
-#else
-// NOTE: if you change pattern, you MUST change the pattern in
-// qlibrary.cpp as well.  changing the pattern will break all
-// backwards compatibility as well (no old plugins will be loaded).
-#  ifdef QPLUGIN_DEBUG_STR
-#    undef QPLUGIN_DEBUG_STR
-#  endif
-#  ifdef QT_NO_DEBUG
-#    define QPLUGIN_DEBUG_STR "false"
-#    define QPLUGIN_SECTION_DEBUG_STR ""
-#  else
-#    define QPLUGIN_DEBUG_STR "true"
-#    define QPLUGIN_SECTION_DEBUG_STR ".debug"
-#  endif
-#  define Q_PLUGIN_VERIFICATION_DATA \
-    static const char qt_plugin_verification_data[] = \
-      "pattern=" "QT_PLUGIN_VERIFICATION_DATA" "\n" \
-      "version=" QT_VERSION_STR "\n" \
-      "debug=" QPLUGIN_DEBUG_STR;
-
-
 #  define Q_EXPORT_PLUGIN2(PLUGIN, PLUGINCLASS)      \
-            QT_PLUGIN_VERIFICATION_SECTION Q_PLUGIN_VERIFICATION_DATA \
-            Q_EXTERN_C Q_DECL_EXPORT \
-            const char * qt_plugin_query_verification_data() \
-            { return qt_plugin_verification_data; } \
-            Q_EXTERN_C Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) * qt_plugin_instance() \
-            Q_PLUGIN_INSTANCE(PLUGINCLASS)
+    Q_STATIC_ASSERT_X(false, "Old plugin system used")
 
-#  define Q_EXPORT_STATIC_PLUGIN2(PLUGIN, PLUGINCLASS)
+#  define Q_EXPORT_STATIC_PLUGIN2(PLUGIN, PLUGINCLASS) \
+    Q_STATIC_ASSERT_X(false, "Old plugin system used")
 
-#endif
 
 QT_END_NAMESPACE
 

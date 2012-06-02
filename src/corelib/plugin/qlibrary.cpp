@@ -172,124 +172,7 @@ static QBasicMutex qt_library_mutex;
 */
 
 
-#ifndef QT_NO_PLUGIN_CHECK
-struct qt_token_info
-{
-    qt_token_info(const char *f, const ulong fc)
-        : fields(f), field_count(fc), results(fc), lengths(fc)
-    {
-        results.fill(0);
-        lengths.fill(0);
-    }
-
-    const char *fields;
-    const ulong field_count;
-
-    QVector<const char *> results;
-    QVector<ulong> lengths;
-};
-
-/*
-  return values:
-       1 parse ok
-       0 eos
-      -1 parse error
-*/
-static int qt_tokenize(const char *s, ulong s_len, ulong *advance,
-                        qt_token_info &token_info)
-{
-    ulong pos = 0, field = 0, fieldlen = 0;
-    char current;
-    int ret = -1;
-    *advance = 0;
-    for (;;) {
-        current = s[pos];
-
-        // next char
-        ++pos;
-        ++fieldlen;
-        ++*advance;
-
-        if (! current || pos == s_len + 1) {
-            // save result
-            token_info.results[(int)field] = s;
-            token_info.lengths[(int)field] = fieldlen - 1;
-
-            // end of string
-            ret = 0;
-            break;
-        }
-
-        if (current == token_info.fields[field]) {
-            // save result
-            token_info.results[(int)field] = s;
-            token_info.lengths[(int)field] = fieldlen - 1;
-
-            // end of field
-            fieldlen = 0;
-            ++field;
-            if (field == token_info.field_count - 1) {
-                // parse ok
-                ret = 1;
-            }
-            if (field == token_info.field_count) {
-                // done parsing
-                break;
-            }
-
-            // reset string and its length
-            s = s + pos;
-            s_len -= pos;
-            pos = 0;
-        }
-    }
-
-    return ret;
-}
-
-/*
-  returns true if the string s was correctly parsed, false otherwise.
-*/
-static bool qt_parse_pattern(const char *s, uint *version, bool *debug)
-{
-    bool ret = true;
-
-    qt_token_info pinfo("=\n", 2);
-    int parse;
-    ulong at = 0, advance, parselen = qstrlen(s);
-    do {
-        parse = qt_tokenize(s + at, parselen, &advance, pinfo);
-        if (parse == -1) {
-            ret = false;
-            break;
-        }
-
-        at += advance;
-        parselen -= advance;
-
-        if (qstrncmp("version", pinfo.results[0], pinfo.lengths[0]) == 0) {
-            // parse version string
-            qt_token_info pinfo2("..-", 3);
-            if (qt_tokenize(pinfo.results[1], pinfo.lengths[1],
-                              &advance, pinfo2) != -1) {
-                QByteArray m(pinfo2.results[0], pinfo2.lengths[0]);
-                QByteArray n(pinfo2.results[1], pinfo2.lengths[1]);
-                QByteArray p(pinfo2.results[2], pinfo2.lengths[2]);
-                *version  = (m.toUInt() << 16) | (n.toUInt() << 8) | p.toUInt();
-            } else {
-                ret = false;
-                break;
-            }
-        } else if (qstrncmp("debug", pinfo.results[0], pinfo.lengths[0]) == 0) {
-            *debug = qstrncmp("true", pinfo.results[1], pinfo.lengths[1]) == 0;
-        }
-    } while (parse == 1 && parselen > 0);
-
-    return ret;
-}
-#endif // QT_NO_PLUGIN_CHECK
-
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(QT_NO_PLUGIN_CHECK)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
 
 static long qt_find_pattern(const char *s, ulong s_len,
                              const char *pattern, ulong p_len)
@@ -366,8 +249,6 @@ static bool qt_unix_query(const QString &library, QLibraryPrivate *lib)
     */
     bool hasMetaData = false;
     long pos = 0;
-    const char oldPattern[] = "pattern=QT_PLUGIN_VERIFICATION_DATA";
-    const ulong oldPlen = qstrlen(oldPattern);
     const char pattern[] = "QTMETADATA  ";
     const ulong plen = qstrlen(pattern);
 #if defined (Q_OF_ELF) && defined(Q_CC_GNU)
@@ -377,18 +258,6 @@ static bool qt_unix_query(const QString &library, QLibraryPrivate *lib)
                 qWarning("QElfParser: %s",qPrintable(lib->errorString));
             }
             return false;
-    } else if (r == QElfParser::NoQtSection || r == QElfParser::QtPluginSection) {
-        if (pos > 0) {
-            // find inside .rodata
-            long rel = qt_find_pattern(filedata + pos, fdlen, oldPattern, oldPlen);
-            if (rel < 0) {
-                pos = -1;
-            } else {
-                pos += rel;
-            }
-        } else {
-            pos = qt_find_pattern(filedata, fdlen, oldPattern, oldPlen);
-        }
     } else if (r == QElfParser::QtMetaDataSection) {
         long rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
         if (rel < 0)
@@ -401,8 +270,6 @@ static bool qt_unix_query(const QString &library, QLibraryPrivate *lib)
     pos = qt_find_pattern(filedata, fdlen, pattern, plen);
     if (pos > 0)
         hasMetaData = true;
-    else
-        pos = qt_find_pattern(filedata, fdlen, oldPattern, oldPlen);
 #endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
 
     bool ret = false;
@@ -412,21 +279,10 @@ static bool qt_unix_query(const QString &library, QLibraryPrivate *lib)
             const char *data = filedata + pos;
             QJsonDocument doc = QLibraryPrivate::fromRawMetaData(data);
             lib->metaData = doc.object();
-            lib->compatPlugin = false;
             if (qt_debug_component())
                 qWarning("Found metadata in lib %s, metadata=\n%s\n",
                          library.toLocal8Bit().constData(), doc.toJson().constData());
             ret = !doc.isNull();
-        } else {
-            qWarning("Old plugin format found in lib %s", library.toLocal8Bit().constData());
-            uint version;
-            bool isDebug;
-            ret = qt_parse_pattern(filedata + pos, &version, &isDebug);
-            if (ret) {
-                lib->metaData.insert(QLatin1String("version"), (int)version);
-                lib->metaData.insert(QLatin1String("debug"), isDebug);
-                lib->compatPlugin = true;
-            }
         }
     }
 
@@ -436,7 +292,7 @@ static bool qt_unix_query(const QString &library, QLibraryPrivate *lib)
     return ret;
 }
 
-#endif // Q_OS_UNIX && !Q_OS_MAC && !defined(QT_NO_PLUGIN_CHECK)
+#endif // Q_OS_UNIX && !Q_OS_MAC
 
 static void installCoverageTool(QLibraryPrivate *libPrivate)
 {
@@ -490,7 +346,7 @@ static LibraryMap *libraryMap()
 
 QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString &version)
     : pHnd(0), fileName(canonicalFileName), fullVersion(version), instance(0),
-      compatPlugin(false), loadHints(0),
+      loadHints(0),
       libraryRefCount(1), libraryUnloadCount(0), pluginState(MightBeAPlugin)
 { libraryMap()->insert(canonicalFileName, this); }
 
@@ -691,30 +547,6 @@ const char* qt_try_versioninfo(void *pfn, bool *exceptionThrown)
 
 typedef const char * (*QtPluginQueryVerificationDataFunction)();
 
-bool qt_get_verificationdata(QtPluginQueryVerificationDataFunction pfn, QLibraryPrivate *priv, bool *exceptionThrown)
-{
-    *exceptionThrown = false;
-    const char *szData = 0;
-    if (!pfn)
-        return false;
-#ifdef QT_USE_MS_STD_EXCEPTION
-    szData = qt_try_versioninfo((void *)pfn, exceptionThrown);
-    if (*exceptionThrown)
-        return false;
-#else
-    szData = pfn();
-#endif
-    uint qt_version;
-    bool debug;
-    if (qt_parse_pattern(szData, &qt_version, &debug)) {
-        priv->metaData.insert(QLatin1String("version"), (int)qt_version);
-        priv->metaData.insert(QLatin1String("debug"), debug);
-        priv->compatPlugin = true;
-        return true;
-    }
-    return false;
-}
-
 bool qt_get_metadata(QtPluginQueryVerificationDataFunction pfn, QLibraryPrivate *priv, bool *exceptionThrown)
 {
     *exceptionThrown = false;
@@ -734,7 +566,6 @@ bool qt_get_metadata(QtPluginQueryVerificationDataFunction pfn, QLibraryPrivate 
     if (doc.isNull())
         return false;
     priv->metaData = doc.object();
-    priv->compatPlugin = false;
     return true;
 }
 
@@ -745,7 +576,6 @@ bool QLibraryPrivate::isPlugin()
     if (pluginState != MightBeAPlugin)
         return pluginState == IsAPlugin;
 
-#ifndef QT_NO_PLUGIN_CHECK
     bool success = false;
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
@@ -805,28 +635,8 @@ bool QLibraryPrivate::isPlugin()
                 getMetaData = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_metadata");
             }
 
-            if (getMetaData) {
+            if (getMetaData)
                 ret = qt_get_metadata(getMetaData, this, &exceptionThrown);
-            } else {
-                // try the old plugin style
-                QtPluginQueryVerificationDataFunction qtPluginQueryVerificationDataFunction = NULL;
-#ifdef Q_OS_WIN
-                if (hTempModule) {
-                    qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction)
-#ifdef Q_OS_WINCE
-                        ::GetProcAddress(hTempModule, L"qt_plugin_query_verification_data")
-#else
-                        ::GetProcAddress(hTempModule, "qt_plugin_query_verification_data")
-#endif
-                            ;
-                } else
-#endif
-                {
-                    qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
-                }
-
-                ret = qt_get_verificationdata(qtPluginQueryVerificationDataFunction, this, &exceptionThrown);
-            }
 
             if (!exceptionThrown) {
                 if (!ret) {
@@ -898,10 +708,6 @@ bool QLibraryPrivate::isPlugin()
     }
 
     return pluginState == IsAPlugin;
-#else
-    Q_UNUSED(settings);
-    return pluginState == MightBeAPlugin;
-#endif
 }
 
 /*!

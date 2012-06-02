@@ -75,10 +75,7 @@ public:
                    Qt::CaseSensitivity = Qt::CaseSensitive);
     ~QFactoryLoader();
 
-    QT_DEPRECATED QStringList keys() const;
     QList<QJsonObject> metaData() const;
-
-    QT_DEPRECATED QObject *instance(const QString &key) const;
     QObject *instance(int index) const;
 
 #if defined(Q_OS_UNIX) && !defined (Q_OS_MAC)
