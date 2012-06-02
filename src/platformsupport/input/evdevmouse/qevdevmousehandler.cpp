@@ -121,7 +121,7 @@ void QEvdevMouseHandler::readMouseData()
 {
     struct ::input_event buffer[32];
     int n = 0;
-    bool posChanged = false;
+    bool posChanged = false, btnChanged = false;
     bool pendingMouseEvent = false;
     int eventCompressCount = 0;
     forever {
@@ -177,9 +177,7 @@ void QEvdevMouseHandler::readMouseData()
             }
         } else if (data->type == EV_KEY && data->code == BTN_TOUCH) {
             m_buttons = data->value ? Qt::LeftButton : Qt::NoButton;
-
-            sendMouseEvent();
-            pendingMouseEvent = false;
+            btnChanged = true;
         } else if (data->type == EV_KEY && data->code >= BTN_LEFT && data->code <= BTN_JOYSTICK) {
             Qt::MouseButton button = Qt::NoButton;
             // BTN_LEFT == 0x110 in kernel's input.h
@@ -206,10 +204,13 @@ void QEvdevMouseHandler::readMouseData()
                 m_buttons |= button;
             else
                 m_buttons &= ~button;
-            sendMouseEvent();
-            pendingMouseEvent = false;
+            btnChanged = true;
         } else if (data->type == EV_SYN && data->code == SYN_REPORT) {
-            if (posChanged) {
+            if (btnChanged) {
+                btnChanged = posChanged = false;
+                sendMouseEvent();
+                pendingMouseEvent = false;
+            } else if (posChanged) {
                 posChanged = false;
                 if (m_compression) {
                     pendingMouseEvent = true;
