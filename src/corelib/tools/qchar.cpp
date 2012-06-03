@@ -176,8 +176,12 @@ QT_BEGIN_NAMESPACE
     \value Unicode_4_0  Version 4.0
     \value Unicode_4_1  Version 4.1
     \value Unicode_5_0  Version 5.0
+    \value Unicode_5_1  Version 5.1
+    \value Unicode_5_2  Version 5.2
+    \value Unicode_6_0  Version 6.0
+    \value Unicode_6_1  Version 6.1
     \value Unicode_Unassigned  The value is not assigned to any character
-        in version 5.0 of Unicode.
+        in version 6.1 of Unicode.
 
     \sa unicodeVersion(), currentUnicodeVersion()
 */

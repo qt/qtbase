@@ -51,8 +51,8 @@
 #include <private/qunicodetables_p.h>
 #endif
 
-#define DATA_VERSION_S "5.0"
-#define DATA_VERSION_STR "QChar::Unicode_5_0"
+#define DATA_VERSION_S "6.1"
+#define DATA_VERSION_STR "QChar::Unicode_6_1"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
@@ -72,6 +72,10 @@ static void initAgeMap()
         { QChar::Unicode_4_0,   "4.0" },
         { QChar::Unicode_4_1,   "4.1" },
         { QChar::Unicode_5_0,   "5.0" },
+        { QChar::Unicode_5_1,   "5.1" },
+        { QChar::Unicode_5_2,   "5.2" },
+        { QChar::Unicode_6_0,   "6.0" },
+        { QChar::Unicode_6_1,   "6.1" },
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -124,6 +128,8 @@ static const char *grapheme_break_string =
     "        GraphemeBreakLF,\n"
     "        GraphemeBreakControl,\n"
     "        GraphemeBreakExtend,\n"
+    "        GraphemeBreakPrepend,\n"
+    "        GraphemeBreakSpacingMark,\n"
     "        GraphemeBreakL,\n"
     "        GraphemeBreakV,\n"
     "        GraphemeBreakT,\n"
@@ -137,6 +143,8 @@ enum GraphemeBreak {
     GraphemeBreakLF,
     GraphemeBreakControl,
     GraphemeBreakExtend,
+    GraphemeBreakPrepend,
+    GraphemeBreakSpacingMark,
     GraphemeBreakL,
     GraphemeBreakV,
     GraphemeBreakT,
@@ -159,6 +167,8 @@ static void initGraphemeBreak()
         { GraphemeBreakLF, "LF" },
         { GraphemeBreakControl, "Control" },
         { GraphemeBreakExtend, "Extend" },
+        { GraphemeBreakPrepend, "Prepend" },
+        { GraphemeBreakSpacingMark, "SpacingMark" },
         { GraphemeBreakL, "L" },
         { GraphemeBreakV, "V" },
         { GraphemeBreakT, "T" },
@@ -177,9 +187,13 @@ static void initGraphemeBreak()
 static const char *word_break_string =
     "    enum WordBreak {\n"
     "        WordBreakOther,\n"
+    "        WordBreakCR,\n"
+    "        WordBreakLF,\n"
+    "        WordBreakNewline,\n"
     "        WordBreakFormat,\n"
     "        WordBreakKatakana,\n"
     "        WordBreakALetter,\n"
+    "        WordBreakMidNumLet,\n"
     "        WordBreakMidLetter,\n"
     "        WordBreakMidNum,\n"
     "        WordBreakNumeric,\n"
@@ -188,9 +202,13 @@ static const char *word_break_string =
 
 enum WordBreak {
     WordBreakOther,
+    WordBreakCR,
+    WordBreakLF,
+    WordBreakNewline,
     WordBreakFormat,
     WordBreakKatakana,
     WordBreakALetter,
+    WordBreakMidNumLet,
     WordBreakMidLetter,
     WordBreakMidNum,
     WordBreakNumeric,
@@ -207,10 +225,15 @@ static void initWordBreak()
         WordBreak brk;
         const char *name;
     } breaks[] = {
+        { WordBreakOther, "Other" },
+        { WordBreakCR, "CR" },
+        { WordBreakLF, "LF" },
+        { WordBreakNewline, "Newline" },
+        { WordBreakFormat, "Extend" },
         { WordBreakFormat, "Format" },
-        { WordBreakFormat, "Extend" }, // these are copied in from GraphemeBreakProperty.txt
         { WordBreakKatakana, "Katakana" },
         { WordBreakALetter, "ALetter" },
+        { WordBreakMidNumLet, "MidNumLet" },
         { WordBreakMidLetter, "MidLetter" },
         { WordBreakMidNum, "MidNum" },
         { WordBreakNumeric, "Numeric" },
@@ -228,6 +251,8 @@ static void initWordBreak()
 static const char *sentence_break_string =
     "    enum SentenceBreak {\n"
     "        SentenceBreakOther,\n"
+    "        SentenceBreakCR,\n"
+    "        SentenceBreakLF,\n"
     "        SentenceBreakSep,\n"
     "        SentenceBreakFormat,\n"
     "        SentenceBreakSp,\n"
@@ -236,12 +261,15 @@ static const char *sentence_break_string =
     "        SentenceBreakOLetter,\n"
     "        SentenceBreakNumeric,\n"
     "        SentenceBreakATerm,\n"
+    "        SentenceBreakSContinue,\n"
     "        SentenceBreakSTerm,\n"
     "        SentenceBreakClose\n"
     "    };\n\n";
 
 enum SentenceBreak {
     SentenceBreakOther,
+    SentenceBreakCR,
+    SentenceBreakLF,
     SentenceBreakSep,
     SentenceBreakFormat,
     SentenceBreakSp,
@@ -250,6 +278,7 @@ enum SentenceBreak {
     SentenceBreakOLetter,
     SentenceBreakNumeric,
     SentenceBreakATerm,
+    SentenceBreakSContinue,
     SentenceBreakSTerm,
     SentenceBreakClose
 
@@ -265,7 +294,10 @@ static void initSentenceBreak()
         const char *name;
     } breaks[] = {
         { SentenceBreakOther, "Other" },
+        { SentenceBreakCR, "CR" },
+        { SentenceBreakLF, "LF" },
         { SentenceBreakSep, "Sep" },
+        { SentenceBreakFormat, "Extend" },
         { SentenceBreakFormat, "Format" },
         { SentenceBreakSp, "Sp" },
         { SentenceBreakLower, "Lower" },
@@ -273,6 +305,7 @@ static void initSentenceBreak()
         { SentenceBreakOLetter, "OLetter" },
         { SentenceBreakNumeric, "Numeric" },
         { SentenceBreakATerm, "ATerm" },
+        { SentenceBreakSContinue, "SContinue" },
         { SentenceBreakSTerm, "STerm" },
         { SentenceBreakClose, "Close" },
         { SentenceBreak_Unassigned, 0 }
@@ -286,26 +319,25 @@ static void initSentenceBreak()
 
 
 static const char *line_break_class_string =
-    "    // see http://www.unicode.org/reports/tr14/tr14-19.html\n"
-    "    // we don't use the XX, AI and CB properties and map them to AL instead.\n"
-    "    // as we don't support any EBDIC based OS'es, NL is ignored and mapped to AL as well.\n"
+    "    // see http://www.unicode.org/reports/tr14/tr14-28.html\n"
+    "    // we don't use the XX, AI, and CB classes and map them to AL instead.\n"
     "    enum LineBreakClass {\n"
-    "        LineBreak_OP, LineBreak_CL, LineBreak_QU, LineBreak_GL, LineBreak_NS,\n"
-    "        LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR, LineBreak_PO,\n"
-    "        LineBreak_NU, LineBreak_AL, LineBreak_ID, LineBreak_IN, LineBreak_HY,\n"
-    "        LineBreak_BA, LineBreak_BB, LineBreak_B2, LineBreak_ZW, LineBreak_CM,\n"
-    "        LineBreak_WJ, LineBreak_H2, LineBreak_H3, LineBreak_JL, LineBreak_JV,\n"
-    "        LineBreak_JT, LineBreak_SA, LineBreak_SG,\n"
+    "        LineBreak_OP, LineBreak_CL, LineBreak_CP, LineBreak_QU, LineBreak_GL,\n"
+    "        LineBreak_NS, LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR,\n"
+    "        LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,\n"
+    "        LineBreak_IN, LineBreak_HY, LineBreak_BA, LineBreak_BB, LineBreak_B2,\n"
+    "        LineBreak_ZW, LineBreak_CM, LineBreak_WJ, LineBreak_H2, LineBreak_H3,\n"
+    "        LineBreak_JL, LineBreak_JV, LineBreak_JT, LineBreak_SA, LineBreak_SG,\n"
     "        LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK\n"
     "    };\n\n";
 
 enum LineBreakClass {
-    LineBreak_OP, LineBreak_CL, LineBreak_QU, LineBreak_GL, LineBreak_NS,
-    LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR, LineBreak_PO,
-    LineBreak_NU, LineBreak_AL, LineBreak_ID, LineBreak_IN, LineBreak_HY,
-    LineBreak_BA, LineBreak_BB, LineBreak_B2, LineBreak_ZW, LineBreak_CM,
-    LineBreak_WJ, LineBreak_H2, LineBreak_H3, LineBreak_JL, LineBreak_JV,
-    LineBreak_JT, LineBreak_SA, LineBreak_SG,
+    LineBreak_OP, LineBreak_CL, LineBreak_CP, LineBreak_QU, LineBreak_GL,
+    LineBreak_NS, LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR,
+    LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,
+    LineBreak_IN, LineBreak_HY, LineBreak_BA, LineBreak_BB, LineBreak_B2,
+    LineBreak_ZW, LineBreak_CM, LineBreak_WJ, LineBreak_H2, LineBreak_H3,
+    LineBreak_JL, LineBreak_JV, LineBreak_JT, LineBreak_SA, LineBreak_SG,
     LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK
 
     , LineBreak_Unassigned
@@ -315,8 +347,11 @@ static QHash<QByteArray, LineBreakClass> line_break_map;
 
 static void initLineBreak()
 {
-    // ### Classes XX and AI are left out and mapped to AL for now;
-    // ### Class NL is ignored and mapped to AL as well.
+    // ### Classes XX and AI are left out and mapped to AL for now.
+    // ### Class CB is unsupported for now and mapped to AL as well.
+    // ### Class NL is mapped to BK.
+    // ### Treating characters of class CJ as class NS will give CSS strict line breaking;
+    //     treating them as class ID will give CSS normal breaking.
     struct LineBreakList {
         LineBreakClass brk;
         const char *name;
@@ -325,7 +360,7 @@ static void initLineBreak()
         { LineBreak_CR, "CR" },
         { LineBreak_LF, "LF" },
         { LineBreak_CM, "CM" },
-        { LineBreak_AL, "NL" },
+        { LineBreak_BK, "NL" },
         { LineBreak_SG, "SG" },
         { LineBreak_WJ, "WJ" },
         { LineBreak_ZW, "ZW" },
@@ -336,7 +371,9 @@ static void initLineBreak()
         { LineBreak_BB, "BB" },
         { LineBreak_HY, "HY" },
         { LineBreak_AL, "CB" }, // ###
+        { LineBreak_NS, "CJ" },
         { LineBreak_CL, "CL" },
+        { LineBreak_CP, "CP" },
         { LineBreak_EX, "EX" },
         { LineBreak_IN, "IN" },
         { LineBreak_NS, "NS" },
@@ -349,6 +386,7 @@ static void initLineBreak()
         { LineBreak_SY, "SY" },
         { LineBreak_AL, "AI" },
         { LineBreak_AL, "AL" },
+        { LineBreak_HL, "HL" },
         { LineBreak_H2, "H2" },
         { LineBreak_H3, "H3" },
         { LineBreak_ID, "ID" },
@@ -513,20 +551,41 @@ struct UnicodeData {
 
         p.direction = QChar::DirL;
         // DerivedBidiClass.txt
-        // DirR for:  U+0590..U+05FF, U+07C0..U+08FF, U+FB1D..U+FB4F, U+10800..U+10FFF
-        if ((codepoint >= 0x590 && codepoint <= 0x5ff)
-            || (codepoint >= 0x7c0 && codepoint <= 0x8ff)
-            || (codepoint >= 0xfb1d && codepoint <= 0xfb4f)
-            || (codepoint >= 0x10800 && codepoint <= 0x10fff)) {
+        // The unassigned code points that default to AL are in the ranges:
+        //     [U+0600..U+07BF, U+08A0..U+08FF, U+FB50..U+FDCF, U+FDF0..U+FDFF, U+FE70..U+FEFF, U+1EE00..U+1EEFF]
+        if ((codepoint >= 0x0600 && codepoint <= 0x07BF)
+            || (codepoint >= 0x08A0 && codepoint <= 0x08FF)
+            || (codepoint >= 0xFB50 && codepoint <= 0xFDCF)
+            || (codepoint >= 0xFDF0 && codepoint <= 0xFDFF)
+            || (codepoint >= 0xFE70 && codepoint <= 0xFEFF)
+            || (codepoint >= 0x1EE00 && codepoint <= 0x1EEFF)) {
+            p.direction = QChar::DirAL;
+        }
+        // The unassigned code points that default to R are in the ranges:
+        //     [U+0590..U+05FF, U+07C0..U+089F, U+FB1D..U+FB4F, U+10800..U+10FFF, U+1E800..U+1EDFF, U+1EF00..U+1EFFF]
+        else if ((codepoint >= 0x0590 && codepoint <= 0x05FF)
+            || (codepoint >= 0x07C0 && codepoint <= 0x089F)
+            || (codepoint >= 0xFB1D && codepoint <= 0xFB4F)
+            || (codepoint >= 0x10800 && codepoint <= 0x10FFF)
+            || (codepoint >= 0x1E800 && codepoint <= 0x1EDFF)
+            || (codepoint >= 0x1EF00 && codepoint <= 0x1EFFF)) {
             p.direction = QChar::DirR;
         }
-        // DirAL for:  U+0600..U+07BF, U+FB50..U+FDFF, U+FE70..U+FEFF
-        //             minus noncharacter code points (intersects with U+FDD0..U+FDEF)
-        if ((codepoint >= 0x600 && codepoint <= 0x7bf)
-            || (codepoint >= 0xfb50 && codepoint <= 0xfdcf)
-            || (codepoint >= 0xfdf0 && codepoint <= 0xfdff)
-            || (codepoint >= 0xfe70 && codepoint <= 0xfeff)) {
-            p.direction = QChar::DirAL;
+
+        p.line_break_class = LineBreak_AL; // XX -> AL
+        // LineBreak.txt
+        // The unassigned code points that default to "ID" include ranges in the following blocks:
+        //     [U+3400..U+4DBF, U+4E00..U+9FFF, U+F900..U+FAFF, U+20000..U+2A6DF, U+2A700..U+2B73F, U+2B740..U+2B81F, U+2F800..U+2FA1F, U+20000..U+2FFFD, U+30000..U+3FFFD]
+        if ((codepoint >= 0x3400 && codepoint <= 0x4DBF)
+            || (codepoint >= 0x4E00 && codepoint <= 0x9FFF)
+            || (codepoint >= 0xF900 && codepoint <= 0xFAFF)
+            || (codepoint >= 0x20000 && codepoint <= 0x2A6DF)
+            || (codepoint >= 0x2A700 && codepoint <= 0x2B73F)
+            || (codepoint >= 0x2B740 && codepoint <= 0x2B81F)
+            || (codepoint >= 0x2F800 && codepoint <= 0x2FA1F)
+            || (codepoint >= 0x20000 && codepoint <= 0x2FFFD)
+            || (codepoint >= 0x30000 && codepoint <= 0x3FFFD)) {
+            p.line_break_class = LineBreak_ID;
         }
 
         mirroredChar = 0;
@@ -535,7 +594,6 @@ struct UnicodeData {
         p.age = QChar::Unicode_Unassigned;
         p.mirrorDiff = 0;
         p.digitValue = -1;
-        p.line_break_class = LineBreak_AL; // XX -> AL
         p.lowerCaseDiff = 0;
         p.upperCaseDiff = 0;
         p.titleCaseDiff = 0;
