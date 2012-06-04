@@ -100,7 +100,7 @@
 #define ULLONG_MAX quint64_C(18446744073709551615)
 #endif
 
-#define IS_RAW_DATA(d) ((d)->offset != sizeof(QStringData))
+#define IS_RAW_DATA(d) (!(d)->isMutable())
 
 QT_BEGIN_NAMESPACE
 
@@ -2272,7 +2272,7 @@ void QString::resize(int size)
 
     if (d->ref.isShared() || uint(size) + 1u > d->allocatedCapacity())
         reallocData(uint(size) + 1u, true);
-    if (d->alloc) {
+    if (d->flags & Data::AllocatedDataType) {
         d->size = size;
         d->data()[size] = '\0';
     }
@@ -9149,16 +9149,13 @@ QString QString::fromRawData(const QChar *unicode, int size)
 */
 QString &QString::setRawData(const QChar *unicode, int size)
 {
-    if (d->ref.isShared() || d->allocatedCapacity()) {
+    if (!unicode || !size) {
+        clear();
+    } else if (d->ref.isShared() || !IS_RAW_DATA(d)) {
         *this = fromRawData(unicode, size);
     } else {
-        if (unicode) {
-            d->size = size;
-            d->offset = reinterpret_cast<const char *>(unicode) - reinterpret_cast<char *>(d);
-        } else {
-            d->offset = sizeof(QStringData);
-            d->size = 0;
-        }
+        d->size = size;
+        d->offset = reinterpret_cast<const char *>(unicode) - reinterpret_cast<char *>(d);
     }
     return *this;
 }

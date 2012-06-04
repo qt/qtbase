@@ -48,6 +48,24 @@ QT_BEGIN_NAMESPACE
 
 struct Q_CORE_EXPORT QArrayData
 {
+    enum ArrayOption {
+        RawDataType          = 0x0001,  //!< this class is really a QArrayData
+        AllocatedDataType    = 0x0002,  //!< this class is really a QArrayAllocatedData
+        DataTypeBits         = 0x000f,
+
+        CapacityReserved     = 0x0010,  //!< the capacity was reserved by the user, try to keep it
+        GrowsForward         = 0x0020,  //!< allocate with eyes towards growing through append()
+        GrowsBackwards       = 0x0040,  //!< allocate with eyes towards growing through prepend()
+
+        /// this option is used by the Q_ARRAY_LITERAL and similar macros
+        StaticDataFlags = RawDataType,
+        /// this option is used by the allocate() function
+        DefaultAllocationFlags = 0,
+        /// this option is used by the prepareRawData() function
+        DefaultRawFlags = 0
+    };
+    Q_DECLARE_FLAGS(ArrayOptions, ArrayOption)
+
     QtPrivate::RefCount ref;
     uint flags;
     int size;
@@ -84,19 +102,8 @@ struct Q_CORE_EXPORT QArrayData
     // follow COW principles.
     bool isMutable() const
     {
-        return alloc != 0;
+        return flags & AllocatedDataType;
     }
-
-    enum ArrayOption {
-        CapacityReserved    = 0x1,
-        RawData             = 0x4,
-        GrowsForward        = 0x8,
-
-        DefaultAllocationFlags = 0,
-        DefaultRawFlags        = 0
-    };
-
-    Q_DECLARE_FLAGS(ArrayOptions, ArrayOption)
 
     size_t detachCapacity(size_t newSize) const
     {
@@ -107,7 +114,7 @@ struct Q_CORE_EXPORT QArrayData
 
     ArrayOptions detachFlags() const
     {
-        ArrayOptions result;
+        ArrayOptions result = DefaultAllocationFlags;
         if (flags & CapacityReserved)
             result |= CapacityReserved;
         return result;
@@ -115,7 +122,7 @@ struct Q_CORE_EXPORT QArrayData
 
     ArrayOptions cloneFlags() const
     {
-        ArrayOptions result;
+        ArrayOptions result = DefaultAllocationFlags;
         if (flags & CapacityReserved)
             result |= CapacityReserved;
         return result;
@@ -129,6 +136,8 @@ struct Q_CORE_EXPORT QArrayData
             size_t capacity, ArrayOptions options = DefaultAllocationFlags) noexcept;
     Q_REQUIRED_RESULT static QArrayData *reallocateUnaligned(QArrayData *data, size_t objectSize,
             size_t newCapacity, ArrayOptions newOptions = DefaultAllocationFlags) noexcept;
+    Q_REQUIRED_RESULT static QArrayData *prepareRawData(ArrayOptions options = ArrayOptions(RawDataType))
+        Q_DECL_NOTHROW;
     static void deallocate(QArrayData *data, size_t objectSize,
             size_t alignment) noexcept;
 
@@ -269,7 +278,7 @@ struct QTypedArrayData
             ArrayOptions options = DefaultRawFlags)
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
-        QTypedArrayData *result = allocate(0, options | RawData);
+        QTypedArrayData *result = static_cast<QTypedArrayData *>(prepareRawData(options));
         if (result) {
             Q_ASSERT(!result->ref.isShared()); // No shared empty, please!
 
@@ -302,6 +311,7 @@ struct QTypedArrayData
 template <class T, size_t N>
 struct QStaticArrayData
 {
+    // static arrays are of type RawDataType
     QArrayData header;
     T data[N];
 };
@@ -314,7 +324,7 @@ struct QArrayDataPointerRef
 };
 
 #define Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset) \
-    { Q_REFCOUNT_INITIALIZE_STATIC, QArrayData::DefaultAllocationFlags, size, 0, offset } \
+    { Q_REFCOUNT_INITIALIZE_STATIC, QArrayData::StaticDataFlags, size, 0, offset } \
     /**/
 
 #define Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(type, size) \

@@ -63,7 +63,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define IS_RAW_DATA(d) ((d)->offset != sizeof(QByteArrayData))
+#define IS_RAW_DATA(d) (!(d)->isMutable())
 
 QT_BEGIN_NAMESPACE
 
@@ -4469,16 +4469,13 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
 */
 QByteArray &QByteArray::setRawData(const char *data, uint size)
 {
-    if (d->ref.isShared() || d->allocatedCapacity()) {
+    if (!data || !size) {
+        clear();
+    } else if (d->ref.isShared() || (d->flags & Data::RawDataType) == 0) {
         *this = fromRawData(data, size);
     } else {
-        if (data) {
-            d->size = size;
-            d->offset = data - reinterpret_cast<char *>(d);
-        } else {
-            d->offset = sizeof(QByteArrayData);
-            d->size = 0;
-        }
+        d->size = size;
+        d->offset = data - reinterpret_cast<char *>(d);
     }
     return *this;
 }

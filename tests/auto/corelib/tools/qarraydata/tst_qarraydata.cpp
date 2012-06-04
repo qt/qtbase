@@ -84,7 +84,7 @@ void tst_QArrayData::referenceCounting()
 {
     {
         // Reference counting initialized to 1 (owned)
-        QArrayData array = { { Q_BASIC_ATOMIC_INITIALIZER(1) }, 0, 0, 0, 0 };
+        QArrayData array = { { Q_BASIC_ATOMIC_INITIALIZER(1) }, QArrayData::DefaultRawFlags, 0, 0, 0 };
 
         QCOMPARE(array.ref.atomic.loadRelaxed(), 1);
 
@@ -107,10 +107,9 @@ void tst_QArrayData::referenceCounting()
 
         // Now would be a good time to free/release allocated data
     }
-
     {
         // Reference counting initialized to -1 (static read-only data)
-        QArrayData array = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, 0 };
+        QArrayData array = { Q_REFCOUNT_INITIALIZE_STATIC, QArrayData::StaticDataFlags, 0, 0, 0 };
 
         QCOMPARE(array.ref.atomic.loadRelaxed(), -1);
 
@@ -186,7 +185,7 @@ void tst_QArrayData::staticData()
 
 void tst_QArrayData::simpleVector()
 {
-    QArrayData data0 = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, 0 };
+    QArrayData data0 = { Q_REFCOUNT_INITIALIZE_STATIC, QArrayData::StaticDataFlags, 0, 0, 0 };
     QStaticArrayData<int, 7> data1 = {
             Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(int, 7),
             { 0, 1, 2, 3, 4, 5, 6 }
