@@ -4388,15 +4388,35 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         writer.writeAttribute("name", en->title());
         QString docUrl = manifestDir + en->fileBase() + ".html";
         writer.writeAttribute("docUrl", docUrl);
+        QStringList proFiles;
         foreach (const Node* child, en->childNodes()) {
             if (child->subType() == Node::File) {
                 QString file = child->name();
                 if (file.endsWith(".pro") || file.endsWith(".qmlproject")) {
                     if (file.startsWith("demos/"))
                         file = file.mid(6);
-                    writer.writeAttribute("projectPath", file);
-                    break;
+                    proFiles << file;
                 }
+            }
+        }
+        if (!proFiles.isEmpty()) {
+            if (proFiles.size() == 1) {
+                writer.writeAttribute("projectPath", proFiles[0]);
+            }
+            else {
+                QString exampleName = en->name().split('/').last();
+                bool proWithExampleNameFound = false;
+                for (int j = 0; j < proFiles.size(); j++)
+                {
+                    if (proFiles[j].endsWith(QStringLiteral("%1/%1.pro").arg(exampleName))
+                            || proFiles[j].endsWith(QStringLiteral("%1/%1.qmlproject").arg(exampleName))) {
+                        writer.writeAttribute("projectPath", proFiles[j]);
+                        proWithExampleNameFound = true;
+                        break;
+                    }
+                }
+                if (!proWithExampleNameFound)
+                    writer.writeAttribute("projectPath", proFiles[0]);
             }
         }
         if (!en->imageFileName().isEmpty())
