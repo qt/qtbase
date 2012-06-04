@@ -88,6 +88,7 @@ QString DitaXmlGenerator::ditaTags[] =
     "brand",
     "category",
     "codeblock",
+    "colspec",
     "comment",
     "component",
     "copyrholder",
@@ -708,8 +709,20 @@ static int countTableColumns(const Atom* t)
             int count = 0;
             t = t->next();
             while (t->type() != Atom::TableHeaderRight) {
-                if (t->type() == Atom::TableItemLeft)
-                    ++count;
+                if (t->type() == Atom::TableItemLeft) {
+                    for (int i=0; i<t->count(); ++i) {
+                        QString attr = t->string(i);
+                        if (!attr.contains('=')) {
+                            QStringList spans = attr.split(QLatin1Char(','));
+                            if (spans.size() == 2) {
+                                count += spans[0].toInt();
+                            }
+                            else {
+                                ++count;
+                            }
+                        }
+                    }
+                }
                 t = t->next();
             }
             if (count > result)
@@ -719,8 +732,20 @@ static int countTableColumns(const Atom* t)
     }
     else if (t->type() == Atom::TableRowLeft) {
         while (t->type() != Atom::TableRowRight) {
-            if (t->type() == Atom::TableItemLeft)
-                ++result;
+            if (t->type() == Atom::TableItemLeft) {
+                for (int i=0; i<t->count(); ++i) {
+                    QString attr = t->string(i);
+                    if (!attr.contains('=')) {
+                        QStringList spans = attr.split(QLatin1Char(','));
+                        if (spans.size() == 2) {
+                            result += spans[0].toInt();
+                        }
+                        else {
+                            ++result;
+                        }
+                    }
+                }
+            }
             t = t->next();
         }
     }
@@ -1604,6 +1629,13 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         tableColumnCount = countTableColumns(atom->next());
         writeStartTag(DT_tgroup);
         xmlWriter().writeAttribute("cols",QString::number(tableColumnCount));
+        for (int i = 0; i < tableColumnCount; i++) {
+            writeStartTag(DT_colspec);
+            xmlWriter().writeAttribute("colname", QStringLiteral("col%1").arg(i));
+            xmlWriter().writeAttribute("colnum", QString::number(i));
+            xmlWriter().writeAttribute("colwidth", QStringLiteral("1*"));
+            writeEndTag(); // DT_colspec
+        }
         inTableHeader = false;
         inTableBody = false;
     }
@@ -1615,6 +1647,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         inTableHeader = false;
         inTableBody = false;
         tableColumnCount = 0;
+        currentColumn = 0;
         break;
     case Atom::TableHeaderLeft:
         if (inTableBody) {
@@ -1630,6 +1663,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             writeStartTag(DT_tgroup);
             xmlWriter().writeAttribute("cols",QString::number(tableColumnCount));
         }
+        currentColumn = 0;
         writeStartTag(DT_thead);
         xmlWriter().writeAttribute("valign","top");
         writeStartTag(DT_row);
@@ -1656,6 +1690,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             inTableBody = true;
             writeStartTag(DT_tbody);
         }
+        currentColumn = 0;
         writeStartTag(DT_row);
         attr = atom->string();
         if (!attr.isEmpty()) {
@@ -1713,9 +1748,14 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 else {
                     QStringList spans = attr.split(QLatin1Char(','));
                     if (spans.size() == 2) {
-                        if ((spans[0].toInt()>1) || (spans[1].toInt()>1)) {
-                            values += "span(" + spans[0] + QLatin1Char(',') + spans[1] + QLatin1Char(')');
+                        if (spans[0].toInt()>1) {
+                            xmlWriter().writeAttribute("namest",QStringLiteral("col%1").arg(currentColumn));
+                            xmlWriter().writeAttribute("nameend",QStringLiteral("col%1")
+                                                       .arg(currentColumn + (spans[0].toInt() - 1)));
                         }
+                        if (spans[1].toInt()>1)
+                            xmlWriter().writeAttribute("morerows",spans[1].simplified());
+                        currentColumn += spans[0].toInt();
                     }
                 }
             }

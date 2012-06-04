@@ -97,6 +97,7 @@ public:
         DT_brand,
         DT_category,
         DT_codeblock,
+        DT_colspec,
         DT_comment,
         DT_component,
         DT_copyrholder,
@@ -527,6 +528,7 @@ private:
     int divNestingLevel;
     int sectionNestingLevel;
     int tableColumnCount;
+    int currentColumn;
 
     QString link;
     QStringList sectionNumber;
