@@ -1,4 +1,4 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET     = QtOpenGL
 QT         = core-private gui-private widgets-private
