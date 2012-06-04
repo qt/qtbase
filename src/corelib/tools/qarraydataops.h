@@ -63,7 +63,7 @@ struct QPodArrayOps
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(newSize > uint(this->size));
-        Q_ASSERT(newSize <= this->alloc);
+        Q_ASSERT(newSize <= this->allocatedCapacity());
 
         ::memset(static_cast<void *>(this->end()), 0, (newSize - this->size) * sizeof(T));
         this->size = int(newSize);
@@ -74,7 +74,7 @@ struct QPodArrayOps
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(b < e);
-        Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
+        Q_ASSERT(e - b <= this->allocatedCapacity() - this->size);
 
         ::memcpy(static_cast<void *>(this->end()), static_cast<const void *>(b),
                  (e - b) * sizeof(T));
@@ -85,7 +85,7 @@ struct QPodArrayOps
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
-        Q_ASSERT(n <= this->alloc - uint(this->size));
+        Q_ASSERT(n <= uint(this->allocatedCapacity() - this->size));
 
         T *iter = this->end();
         const T *const end = iter + n;
@@ -119,7 +119,7 @@ struct QPodArrayOps
         Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
         Q_ASSERT(b < e);
         Q_ASSERT(e <= where || b > this->end()); // No overlap
-        Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
+        Q_ASSERT(e - b <= this->allocatedCapacity() - this->size);
 
         ::memmove(static_cast<void *>(where + (e - b)), static_cast<void *>(where),
                   (static_cast<const T*>(this->end()) - where) * sizeof(T));
@@ -150,7 +150,7 @@ struct QGenericArrayOps
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(newSize > uint(this->size));
-        Q_ASSERT(newSize <= this->alloc);
+        Q_ASSERT(newSize <= this->allocatedCapacity());
 
         T *const begin = this->begin();
         do {
@@ -163,7 +163,7 @@ struct QGenericArrayOps
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(b < e);
-        Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
+        Q_ASSERT(e - b <= this->allocatedCapacity() - this->size);
 
         T *iter = this->end();
         for (; b != e; ++iter, ++b) {
@@ -176,7 +176,7 @@ struct QGenericArrayOps
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
-        Q_ASSERT(n <= this->alloc - uint(this->size));
+        Q_ASSERT(n <= size_t(this->allocatedCapacity() - this->size));
 
         T *iter = this->end();
         const T *const end = iter + n;
@@ -220,7 +220,7 @@ struct QGenericArrayOps
         Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
         Q_ASSERT(b < e);
         Q_ASSERT(e <= where || b > this->end()); // No overlap
-        Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
+        Q_ASSERT(e - b <= this->allocatedCapacity() - this->size);
 
         // Array may be truncated at where in case of exceptions
 
@@ -316,7 +316,7 @@ struct QMovableArrayOps
         Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
         Q_ASSERT(b < e);
         Q_ASSERT(e <= where || b > this->end()); // No overlap
-        Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
+        Q_ASSERT(e - b <= this->allocatedCapacity() - this->size);
 
         // Provides strong exception safety guarantee,
         // provided T::~T() nothrow

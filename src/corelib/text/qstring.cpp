@@ -2270,7 +2270,7 @@ void QString::resize(int size)
         return;
     }
 
-    if (d->ref.isShared() || uint(size) + 1u > d->alloc)
+    if (d->ref.isShared() || uint(size) + 1u > d->allocatedCapacity())
         reallocData(uint(size) + 1u, true);
     if (d->alloc) {
         d->size = size;
@@ -2592,7 +2592,7 @@ QString& QString::insert(int i, const QChar *unicode, int size)
         return *this;
 
     const ushort *s = (const ushort *)unicode;
-    if (s >= d->data() && s < d->data() + d->alloc) {
+    if (s >= d->data() && s < d->data() + d->size) {
         // Part of me - take a copy
         ushort *tmp = static_cast<ushort *>(::malloc(size * sizeof(QChar)));
         Q_CHECK_PTR(tmp);
@@ -2658,7 +2658,7 @@ QString &QString::append(const QString &str)
         if (d == Data::sharedNull()) {
             operator=(str);
         } else {
-            if (d->ref.isShared() || uint(d->size + str.d->size) + 1u > d->alloc)
+            if (d->ref.isShared() || d->size + str.d->size > capacity())
                 reallocData(uint(d->size + str.d->size) + 1u, true);
             memcpy(d->data() + d->size, str.d->data(), str.d->size * sizeof(QChar));
             d->size += str.d->size;
@@ -2677,7 +2677,7 @@ QString &QString::append(const QString &str)
 QString &QString::append(const QChar *str, int len)
 {
     if (str && len > 0) {
-        if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
+        if (d->ref.isShared() || uint(d->size + len) + 1u > d->allocatedCapacity())
             reallocData(uint(d->size + len) + 1u, true);
         memcpy(d->data() + d->size, str, len * sizeof(QChar));
         d->size += len;
@@ -2696,7 +2696,7 @@ QString &QString::append(QLatin1String str)
     const char *s = str.latin1();
     if (s) {
         int len = str.size();
-        if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
+        if (d->ref.isShared() || d->size + len > capacity())
             reallocData(uint(d->size + len) + 1u, true);
         ushort *i = d->data() + d->size;
         qt_from_latin1(i, s, uint(len));
@@ -2743,7 +2743,7 @@ QString &QString::append(QLatin1String str)
 */
 QString &QString::append(QChar ch)
 {
-    if (d->ref.isShared() || uint(d->size) + 2u > d->alloc)
+    if (d->ref.isShared() || d->size + 1 > capacity())
         reallocData(uint(d->size) + 2u, true);
     d->data()[d->size++] = ch.unicode();
     d->data()[d->size] = '\0';
@@ -7954,7 +7954,7 @@ QString QString::repeated(int times) const
 
     QString result;
     result.reserve(resultSize);
-    if (result.d->alloc != uint(resultSize) + 1u)
+    if (result.capacity() != resultSize)
         return QString(); // not enough memory
 
     memcpy(result.d->data(), d->data(), d->size * sizeof(ushort));
@@ -9149,7 +9149,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
 */
 QString &QString::setRawData(const QChar *unicode, int size)
 {
-    if (d->ref.isShared() || d->alloc) {
+    if (d->ref.isShared() || d->allocatedCapacity()) {
         *this = fromRawData(unicode, size);
     } else {
         if (unicode) {

@@ -1207,9 +1207,9 @@ QByteArray &QByteArray::operator=(const char *str)
         x = Data::allocate(0);
     } else {
         const int len = int(strlen(str));
-        const uint fullLen = len + 1;
-        if (d->ref.isShared() || fullLen > d->alloc
-                || (len < d->size && fullLen < uint(d->alloc >> 1)))
+        const int fullLen = len + 1;
+        if (d->ref.isShared() || fullLen > int(d->allocatedCapacity())
+                || (len < d->size && fullLen < int(d->allocatedCapacity() >> 1)))
             reallocData(fullLen, d->detachFlags());
         x = d;
         memcpy(x->data(), str, fullLen); // include null terminator
@@ -1775,9 +1775,9 @@ void QByteArray::resize(int size)
         x->data()[size] = '\0';
         d = x;
     } else {
-        if (d->ref.isShared() || uint(size) + 1u > d->alloc)
+        if (d->ref.isShared() || size > capacity())
             reallocData(uint(size) + 1u, d->detachFlags() | Data::GrowsForward);
-        if (d->alloc) {
+        if (d->allocatedCapacity()) {
             d->size = size;
             d->data()[size] = '\0';
         }
@@ -1900,7 +1900,7 @@ QByteArray &QByteArray::prepend(const char *str)
 QByteArray &QByteArray::prepend(const char *str, int len)
 {
     if (str) {
-        if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
+        if (d->ref.isShared() || d->size + len > capacity())
             reallocData(uint(d->size + len) + 1u, d->detachFlags() | Data::GrowsForward);
         memmove(d->data()+len, d->data(), d->size);
         memcpy(d->data(), str, len);
@@ -1926,7 +1926,7 @@ QByteArray &QByteArray::prepend(const char *str, int len)
 
 QByteArray &QByteArray::prepend(char ch)
 {
-    if (d->ref.isShared() || uint(d->size) + 2u > d->alloc)
+    if (d->ref.isShared() || d->size + 1 > capacity())
         reallocData(uint(d->size) + 2u, d->detachFlags() | Data::GrowsForward);
     memmove(d->data()+1, d->data(), d->size);
     d->data()[0] = ch;
@@ -1964,7 +1964,7 @@ QByteArray &QByteArray::append(const QByteArray &ba)
     if (d->size == 0 && d->ref.isStatic() && !IS_RAW_DATA(ba.d)) {
         *this = ba;
     } else if (ba.d->size != 0) {
-        if (d->ref.isShared() || uint(d->size + ba.d->size) + 1u > d->alloc)
+        if (d->ref.isShared() || d->size + ba.d->size > capacity())
             reallocData(uint(d->size + ba.d->size) + 1u, d->detachFlags() | Data::GrowsForward);
         memcpy(d->data() + d->size, ba.d->data(), ba.d->size);
         d->size += ba.d->size;
@@ -1996,7 +1996,7 @@ QByteArray& QByteArray::append(const char *str)
 {
     if (str) {
         const int len = int(strlen(str));
-        if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
+        if (d->ref.isShared() || d->size + len > capacity())
             reallocData(uint(d->size + len) + 1u, d->detachFlags() | Data::GrowsForward);
         memcpy(d->data() + d->size, str, len + 1); // include null terminator
         d->size += len;
@@ -2021,7 +2021,7 @@ QByteArray &QByteArray::append(const char *str, int len)
     if (len < 0)
         len = qstrlen(str);
     if (str && len) {
-        if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
+        if (d->ref.isShared() || d->size + len > capacity())
             reallocData(uint(d->size + len) + 1u, d->detachFlags() | Data::GrowsForward);
         memcpy(d->data() + d->size, str, len); // include null terminator
         d->size += len;
@@ -2049,7 +2049,7 @@ QByteArray &QByteArray::append(const char *str, int len)
 
 QByteArray& QByteArray::append(char ch)
 {
-    if (d->ref.isShared() || uint(d->size) + 2u > d->alloc)
+    if (d->ref.isShared() || d->size + 1 > capacity())
         reallocData(uint(d->size) + 2u, d->detachFlags() | Data::GrowsForward);
     d->data()[d->size++] = ch;
     d->data()[d->size] = '\0';
@@ -2576,7 +2576,7 @@ QByteArray QByteArray::repeated(int times) const
 
     QByteArray result;
     result.reserve(resultSize);
-    if (result.d->alloc != uint(resultSize) + 1u)
+    if (result.capacity() != resultSize)
         return QByteArray(); // not enough memory
 
     memcpy(result.d->data(), d->data(), d->size);
@@ -4469,7 +4469,7 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
 */
 QByteArray &QByteArray::setRawData(const char *data, uint size)
 {
-    if (d->ref.isShared() || d->alloc) {
+    if (d->ref.isShared() || d->allocatedCapacity()) {
         *this = fromRawData(data, size);
     } else {
         if (data) {

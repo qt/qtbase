@@ -55,6 +55,16 @@ struct Q_CORE_EXPORT QArrayData
 
     qptrdiff offset; // in bytes from beginning of header
 
+    inline size_t allocatedCapacity()
+    {
+        return alloc;
+    }
+
+    inline size_t constAllocatedCapacity() const
+    {
+        return alloc;
+    }
+
     void *data()
     {
         Q_ASSERT(size == 0
@@ -90,8 +100,8 @@ struct Q_CORE_EXPORT QArrayData
 
     size_t detachCapacity(size_t newSize) const
     {
-        if (flags & CapacityReserved && newSize < alloc)
-            return alloc;
+        if (flags & CapacityReserved && newSize < constAllocatedCapacity())
+            return constAllocatedCapacity();
         return newSize;
     }
 

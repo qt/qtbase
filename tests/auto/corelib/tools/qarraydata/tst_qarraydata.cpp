@@ -154,10 +154,10 @@ void tst_QArrayData::sharedNullEmpty()
     QVERIFY(null != empty);
 
     QCOMPARE(null->size, 0);
-    QCOMPARE(null->alloc, 0u);
+    QCOMPARE(null->allocatedCapacity(), size_t(0));
 
     QCOMPARE(empty->size, 0);
-    QCOMPARE(empty->alloc, 0u);
+    QCOMPARE(empty->allocatedCapacity(), size_t(0));
 }
 
 void tst_QArrayData::staticData()
@@ -597,9 +597,9 @@ void tst_QArrayData::allocate()
 
         QCOMPARE(data->size, 0);
         if (allocateOptions & QArrayData::GrowsForward)
-            QVERIFY(data->alloc > uint(capacity));
+            QVERIFY(data->allocatedCapacity() > uint(capacity));
         else
-            QCOMPARE(data->alloc, uint(capacity));
+            QCOMPARE(data->allocatedCapacity(), size_t(capacity));
         QCOMPARE(bool(data->flags & QArrayData::CapacityReserved), isCapacityReserved);
 
         // Check that the allocated array can be used. Best tested with a
@@ -642,9 +642,9 @@ void tst_QArrayData::reallocate()
 
     QCOMPARE(data->size, capacity);
     if (allocateOptions & QArrayData::GrowsForward)
-        QVERIFY(data->alloc > uint(newCapacity));
+        QVERIFY(data->allocatedCapacity() > size_t(newCapacity));
     else
-        QCOMPARE(data->alloc, uint(newCapacity));
+        QCOMPARE(data->allocatedCapacity(), size_t(newCapacity));
     QCOMPARE(!(data->flags & QArrayData::CapacityReserved), !isCapacityReserved);
 
     for (int i = 0; i < capacity; ++i)
@@ -684,7 +684,7 @@ void tst_QArrayData::alignment()
 
         QVERIFY(data);
         QCOMPARE(data->size, 0);
-        QVERIFY(data->alloc >= uint(8));
+        QVERIFY(data->allocatedCapacity() >= uint(8));
 
         // These conditions should hold as long as header and array are
         // allocated together
@@ -756,7 +756,7 @@ void tst_QArrayData::typedData()
 
         QVERIFY(array);
         QCOMPARE(array->size, 0);
-        QCOMPARE(array->alloc, 10u);
+        QCOMPARE(array->allocatedCapacity(), size_t(10));
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
@@ -776,7 +776,7 @@ void tst_QArrayData::typedData()
 
         QVERIFY(array);
         QCOMPARE(array->size, 0);
-        QCOMPARE(array->alloc, 10u);
+        QCOMPARE(array->allocatedCapacity(), size_t(10));
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
@@ -796,7 +796,7 @@ void tst_QArrayData::typedData()
 
         QVERIFY(array);
         QCOMPARE(array->size, 0);
-        QCOMPARE(array->alloc, 10u);
+        QCOMPARE(array->allocatedCapacity(), size_t(10));
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
