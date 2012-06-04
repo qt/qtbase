@@ -307,9 +307,9 @@ public:
 
 private:
     // ### Qt6: remove methods, they are unused
-    void reallocData(const int size, const int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
+    void reallocData(const int size, const int alloc, QArrayData::ArrayOptions options = QArrayData::DefaultAllocationFlags);
     void reallocData(const int sz) { reallocData(sz, d->alloc); }
-    void realloc(int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
+    void realloc(int alloc, QArrayData::ArrayOptions options = QArrayData::DefaultAllocationFlags);
     void freeData(Data *d);
     void defaultConstruct(T *from, T *to);
     void copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom);
@@ -422,7 +422,7 @@ void QVector<T>::resize(int asize)
     if (asize == d->size)
         return detach();
     if (asize > int(d->alloc) || !isDetached()) { // there is not enough space
-        QArrayData::AllocationOptions opt = asize > int(d->alloc) ? QArrayData::Grow : QArrayData::Default;
+        QArrayData::ArrayOptions opt = asize > int(d->alloc) ? QArrayData::GrowsForward : QArrayData::DefaultAllocationFlags;
         realloc(qMax(int(d->alloc), asize), opt);
     }
     if (asize < d->size)
@@ -580,7 +580,7 @@ QT_WARNING_DISABLE_MSVC(4127) // conditional expression is constant
 #endif
 
 template <typename T>
-void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::AllocationOptions options)
+void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::ArrayOptions options)
 {
     Q_ASSERT(asize >= 0 && asize <= aalloc);
     Data *x = d;
@@ -680,7 +680,7 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
 }
 
 template<typename T>
-void QVector<T>::realloc(int aalloc, QArrayData::AllocationOptions options)
+void QVector<T>::realloc(int aalloc, QArrayData::ArrayOptions options)
 {
     Q_ASSERT(aalloc >= d->size);
     Data *x = d;
@@ -767,7 +767,7 @@ void QVector<T>::append(const T &t)
     const bool isTooSmall = uint(d->size + 1) > d->alloc;
     if (!isDetached() || isTooSmall) {
         T copy(t);
-        QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
+        QArrayData::ArrayOptions opt(isTooSmall ? QArrayData::GrowsForward : QArrayData::DefaultAllocationFlags);
         realloc(isTooSmall ? d->size + 1 : d->alloc, opt);
 
         if (QTypeInfo<T>::isComplex)
@@ -789,7 +789,7 @@ void QVector<T>::append(T &&t)
 {
     const bool isTooSmall = uint(d->size + 1) > d->alloc;
     if (!isDetached() || isTooSmall) {
-        QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
+        QArrayData::ArrayOptions opt(isTooSmall ? QArrayData::GrowsForward : QArrayData::DefaultAllocationFlags);
         realloc(isTooSmall ? d->size + 1 : d->alloc, opt);
     }
 
@@ -820,7 +820,7 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, c
     if (n != 0) {
         const T copy(t);
         if (!isDetached() || d->size + n > int(d->alloc))
-            realloc(d->size + n, QArrayData::Grow);
+            realloc(d->size + n, QArrayData::GrowsForward);
         if (!QTypeInfoQuery<T>::isRelocatable) {
             T *b = d->end();
             T *i = d->end() + n;
@@ -853,7 +853,7 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, T &&t)
 
     const auto offset = std::distance(d->begin(), before);
     if (!isDetached() || d->size + 1 > int(d->alloc))
-        realloc(d->size + 1, QArrayData::Grow);
+        realloc(d->size + 1, QArrayData::GrowsForward);
     if (!QTypeInfoQuery<T>::isRelocatable) {
         T *i = d->end();
         T *j = i + 1;
@@ -961,7 +961,7 @@ QVector<T> &QVector<T>::operator+=(const QVector &l)
         uint newSize = d->size + l.d->size;
         const bool isTooSmall = newSize > d->alloc;
         if (!isDetached() || isTooSmall) {
-            QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
+            QArrayData::ArrayOptions opt(isTooSmall ? QArrayData::GrowsForward : QArrayData::DefaultAllocationFlags);
             realloc(isTooSmall ? newSize : d->alloc, opt);
         }
 

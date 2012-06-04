@@ -155,7 +155,7 @@ public:
     }
 
 private:
-    Q_REQUIRED_RESULT Data *clone(QArrayData::AllocationOptions options) const
+    Q_REQUIRED_RESULT Data *clone(QArrayData::ArrayOptions options) const
     {
         Data *x = Data::allocate(d->detachCapacity(d->size), options);
         Q_CHECK_PTR(x);

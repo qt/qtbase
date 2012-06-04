@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -76,15 +77,16 @@ struct Q_CORE_EXPORT QArrayData
         return alloc != 0;
     }
 
-    enum AllocationOption {
+    enum ArrayOption {
         CapacityReserved    = 0x1,
         RawData             = 0x4,
-        Grow                = 0x8,
+        GrowsForward        = 0x8,
 
-        Default = 0
+        DefaultAllocationFlags = 0,
+        DefaultRawFlags        = 0
     };
 
-    Q_DECLARE_FLAGS(AllocationOptions, AllocationOption)
+    Q_DECLARE_FLAGS(ArrayOptions, ArrayOption)
 
     size_t detachCapacity(size_t newSize) const
     {
@@ -93,17 +95,17 @@ struct Q_CORE_EXPORT QArrayData
         return newSize;
     }
 
-    AllocationOptions detachFlags() const
+    ArrayOptions detachFlags() const
     {
-        AllocationOptions result;
+        ArrayOptions result;
         if (capacityReserved)
             result |= CapacityReserved;
         return result;
     }
 
-    AllocationOptions cloneFlags() const
+    ArrayOptions cloneFlags() const
     {
-        AllocationOptions result;
+        ArrayOptions result;
         if (capacityReserved)
             result |= CapacityReserved;
         return result;
@@ -114,9 +116,9 @@ struct Q_CORE_EXPORT QArrayData
     __attribute__((__malloc__))
 #endif
     static QArrayData *allocate(size_t objectSize, size_t alignment,
-            size_t capacity, AllocationOptions options = Default) noexcept;
+            size_t capacity, ArrayOptions options = DefaultAllocationFlags) noexcept;
     Q_REQUIRED_RESULT static QArrayData *reallocateUnaligned(QArrayData *data, size_t objectSize,
-            size_t newCapacity, AllocationOptions newOptions = Default) noexcept;
+            size_t newCapacity, ArrayOptions newOptions = DefaultAllocationFlags) noexcept;
     static void deallocate(QArrayData *data, size_t objectSize,
             size_t alignment) noexcept;
 
@@ -130,7 +132,7 @@ struct Q_CORE_EXPORT QArrayData
     }
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::AllocationOptions)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::ArrayOptions)
 
 template <class T>
 struct QTypedArrayData
@@ -225,7 +227,7 @@ struct QTypedArrayData
     class AlignmentDummy { QArrayData header; T data; };
 
     Q_REQUIRED_RESULT static QTypedArrayData *allocate(size_t capacity,
-            AllocationOptions options = Default)
+            ArrayOptions options = DefaultAllocationFlags)
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         void *result = QArrayData::allocate(sizeof(T),
@@ -237,10 +239,10 @@ struct QTypedArrayData
     }
 
     static QTypedArrayData *reallocateUnaligned(QTypedArrayData *data, size_t capacity,
-            AllocationOptions options = Default)
+            ArrayOptions options = DefaultAllocationFlags)
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
-        void *result = QArrayData::reallocateUnaligned(data, sizeof(T), capacity, options));
+        void *result = QArrayData::reallocateUnaligned(data, sizeof(T), capacity, options);
 #if (defined(Q_CC_GNU) && Q_CC_GNU >= 407) || QT_HAS_BUILTIN(__builtin_assume_aligned)
         result =__builtin_assume_aligned(result, Q_ALIGNOF(AlignmentDummy));
 #endif
@@ -254,7 +256,7 @@ struct QTypedArrayData
     }
 
     static QTypedArrayData *fromRawData(const T *data, size_t n,
-            AllocationOptions options = Default)
+            ArrayOptions options = DefaultRawFlags)
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QTypedArrayData *result = allocate(0, options | RawData);

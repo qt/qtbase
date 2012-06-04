@@ -2351,7 +2351,7 @@ void QString::reallocData(uint alloc, bool grow)
 {
     auto allocOptions = d->detachFlags();
     if (grow)
-        allocOptions |= QArrayData::Grow;
+        allocOptions |= QArrayData::GrowsForward;
 
     if (d->ref.isShared() || IS_RAW_DATA(d)) {
         Data *x = Data::allocate(alloc, allocOptions);
