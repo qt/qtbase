@@ -117,6 +117,19 @@ QLocale QSystemLocale::fallbackLocale() const
         lang = qgetenv("LC_MESSAGES");
     if (lang.isEmpty())
         lang = qgetenv("LANG");
+    // if the locale is the "C" locale, then we can return the language we found here:
+    if (lang.isEmpty() || lang == QByteArray("C") || lang == QByteArray("POSIX"))
+        return QLocale(QString::fromLatin1(lang));
+
+    // if the locale is not the "C" locale and LANGUAGE is not empty, return
+    // the first part of LANGUAGE if LANGUAGE is set and has a first part:
+    QByteArray language = qgetenv("LANGUAGE");
+    if (!language.isEmpty()) {
+        language = language.split(':').first();
+        if (!language.isEmpty())
+            return QLocale(QString::fromLatin1(language));
+    }
+
     return QLocale(QString::fromLatin1(lang));
 }
 

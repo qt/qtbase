@@ -437,7 +437,7 @@ void tst_QLocale::emptyCtor()
     // Get an environment free of any locale-related variables
     QStringList env;
     foreach (QString const& entry, QProcess::systemEnvironment()) {
-        if (entry.startsWith("LANG=") || entry.startsWith("LC_"))
+        if (entry.startsWith("LANG=") || entry.startsWith("LC_") || entry.startsWith("LANGUAGE="))
             continue;
         env << entry;
     }
