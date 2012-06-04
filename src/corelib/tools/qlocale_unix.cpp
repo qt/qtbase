@@ -114,7 +114,7 @@ QLocale QSystemLocale::fallbackLocale() const
 {
     QByteArray lang = qgetenv("LC_ALL");
     if (lang.isEmpty())
-        lang = qgetenv("LC_NUMERIC");
+        lang = qgetenv("LC_MESSAGES");
     if (lang.isEmpty())
         lang = qgetenv("LANG");
     return QLocale(QString::fromLatin1(lang));
@@ -242,8 +242,6 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return lc_messages.createSeparatedList(in.value<QStringList>());
     case LocaleChanged:
         Q_ASSERT(false);
-    case LanguageId:
-        return lc_messages.language();
     default:
         break;
     }
