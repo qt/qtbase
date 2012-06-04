@@ -80,6 +80,7 @@
 #include <qstyleoption.h>
 #include <QtWidgets/qlineedit.h>
 #include <QtGui/qaccessible.h>
+#include <QtCore/qmetaobject.h>
 
 #ifndef QT_NO_SHORTCUT
 #include "private/qapplication_p.h"
@@ -453,8 +454,8 @@ void QWidgetTextControlPrivate::setContent(Qt::TextFormat format, const QString 
         doc->setUndoRedoEnabled(false);
 
     //Saving the index save some time.
-    static int contentsChangedIndex = QTextDocument::staticMetaObject.indexOfSignal("contentsChanged()");
-    static int textChangedIndex = QWidgetTextControl::staticMetaObject.indexOfSignal("textChanged()");
+    static int contentsChangedIndex = QMetaMethod::fromSignal(&QTextDocument::contentsChanged).methodIndex();
+    static int textChangedIndex = QMetaMethod::fromSignal(&QWidgetTextControl::textChanged).methodIndex();
     // avoid multiple textChanged() signals being emitted
     QMetaObject::disconnect(doc, contentsChangedIndex, q, textChangedIndex);
 
