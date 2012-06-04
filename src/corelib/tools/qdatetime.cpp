@@ -3206,7 +3206,7 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
     case Qt::ISODate: {
         QString tmp = s;
         Qt::TimeSpec ts = Qt::LocalTime;
-        const QDate date = QDate::fromString(tmp.left(10), Qt::ISODate);
+        QDate date = QDate::fromString(tmp.left(10), Qt::ISODate);
         if (tmp.size() == 10)
             return QDateTime(date);
 
@@ -3240,7 +3240,15 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
                 return dt;
             }
         }
-        return QDateTime(date, QTime::fromString(tmp, Qt::ISODate), ts);
+
+        QTime time(QTime::fromString(tmp, Qt::ISODate));
+        if (!time.isValid() && tmp == QString::fromLatin1("24:00:00")) {
+            // ISO 8601 (section 4.2.3) says that 24:00 is equivalent to 00:00 the next day.
+            date = date.addDays(1);
+            // Don't need to correct time since QDateTime constructor will do it for us.
+        }
+
+        return QDateTime(date, time, ts);
     }
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:

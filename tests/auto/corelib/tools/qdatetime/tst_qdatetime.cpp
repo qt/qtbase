@@ -1268,6 +1268,22 @@ void tst_QDateTime::fromStringTextDate_data()
                             << 28 << 6 << 2005 << 7 << 57 << 30 << 110
                             << int(Qt::LocalTime);
 
+    // Should be next day according to ISO 8601 section 4.2.3.
+    QTest::newRow("ISO date 24:00") << QString("2012-06-04T24:00:00")
+                            << int(Qt::ISODate)
+                            << 5 << 6 << 2012 << 0 << 0 << 0 << 0
+                            << int(Qt::LocalTime);
+
+    QTest::newRow("ISO date 24:00 end of month") << QString("2012-06-30T24:00:00")
+                            << int(Qt::ISODate)
+                            << 1 << 7 << 2012 << 0 << 0 << 0 << 0
+                            << int(Qt::LocalTime);
+
+    QTest::newRow("ISO date 24:00 end of month and year") << QString("2012-12-31T24:00:00")
+                            << int(Qt::ISODate)
+                            << 1 << 1 << 2013 << 0 << 0 << 0 << 0
+                            << int(Qt::LocalTime);
+
     QTest::newRow("Year 0999") << QString("Tue Jun 17 08:00:10 0999")
                             << int(Qt::TextDate)
                             << 17 << 6 << 999 << 8 << 0 << 10 << 0
