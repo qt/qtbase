@@ -433,9 +433,19 @@ void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *position
     }
 }
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa, const QTransform &m)
 {
-    const glyph_metrics_t br = boundingBox(glyph);
+    glyph_metrics_t br = boundingBox(glyph);
+
+    if (m.isScaling()) {
+        QFixed hscale = QFixed::fromReal(m.m11());
+        QFixed vscale = QFixed::fromReal(m.m22());
+        br.width  *= hscale;
+        br.height *= vscale;
+        br.x      *= hscale;
+        br.y      *= vscale;
+    }
+
     QImage im(qRound(br.width)+2, qRound(br.height)+2, QImage::Format_RGB32);
     im.fill(0);
 
@@ -456,7 +466,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
                                  && !(fontDef.styleStrategy & QFont::NoAntialias));
     CGContextSetShouldSmoothFonts(ctx, aa);
     CGAffineTransform oldTextMatrix = CGContextGetTextMatrix(ctx);
-    CGAffineTransform cgMatrix = CGAffineTransformMake(1, 0, 0, 1, 0, 0);
+    CGAffineTransform cgMatrix = CGAffineTransformIdentity;
 
     CGAffineTransformConcat(cgMatrix, oldTextMatrix);
 
@@ -464,6 +474,8 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
         cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, SYNTHETIC_ITALIC_SKEW, 1, 0, 0));
 
     cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
+    if (m.isScaling())
+        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMakeScale(m.m11(), m.m22()));
 
     CGContextSetTextMatrix(ctx, cgMatrix);
     CGContextSetRGBFillColor(ctx, 1, 1, 1, 1);
@@ -493,7 +505,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 
 QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
 {
-    QImage im = imageForGlyph(glyph, subPixelPosition, false);
+    QImage im = imageForGlyph(glyph, subPixelPosition, false, QTransform());
 
     QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
     QVector<QRgb> colors(256);
@@ -516,10 +528,10 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosit
 
 QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &x)
 {
-    if (x.type() >= QTransform::TxScale)
+    if (x.type() > QTransform::TxScale)
         return QFontEngine::alphaRGBMapForGlyph(glyph, subPixelPosition, x);
 
-    QImage im = imageForGlyph(glyph, subPixelPosition, true);
+    QImage im = imageForGlyph(glyph, subPixelPosition, true, x);
     qGamma_correct_back_to_linear_cs(&im);
     return im;
 }

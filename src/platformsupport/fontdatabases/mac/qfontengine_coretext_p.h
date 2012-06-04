@@ -113,7 +113,7 @@ private:
     friend class QRawFontPrivate;
 
     void init();
-    QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool colorful);
+    QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool colorful, const QTransform &m);
     CTFontRef ctfont;
     CGFontRef cgFont;
     int synthesisFlags;
