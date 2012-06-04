@@ -279,7 +279,7 @@
 #  elif defined(__BIG_ENDIAN__)
 #    define Q_BYTE_ORDER Q_BIG_ENDIAN
 #  elif defined(__LITTLE_ENDIAN__)  \
-        || defined(Q_OS_WINCE) // Windows CE is always little-endian according to MSDN.
+        || defined(_WIN32_WCE) // Windows CE is always little-endian according to MSDN.
 #    define Q_BYTE_ORDER Q_LITTLE_ENDIAN
 #  else
 #    error "Unable to determine byte order!"
