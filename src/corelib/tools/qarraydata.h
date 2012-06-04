@@ -49,9 +49,9 @@ QT_BEGIN_NAMESPACE
 struct Q_CORE_EXPORT QArrayData
 {
     QtPrivate::RefCount ref;
+    uint flags;
     int size;
-    uint alloc : 31;
-    uint capacityReserved : 1;
+    uint alloc;
 
     qptrdiff offset; // in bytes from beginning of header
 
@@ -90,7 +90,7 @@ struct Q_CORE_EXPORT QArrayData
 
     size_t detachCapacity(size_t newSize) const
     {
-        if (capacityReserved && newSize < alloc)
+        if (flags & CapacityReserved && newSize < alloc)
             return alloc;
         return newSize;
     }
@@ -98,7 +98,7 @@ struct Q_CORE_EXPORT QArrayData
     ArrayOptions detachFlags() const
     {
         ArrayOptions result;
-        if (capacityReserved)
+        if (flags & CapacityReserved)
             result |= CapacityReserved;
         return result;
     }
@@ -106,7 +106,7 @@ struct Q_CORE_EXPORT QArrayData
     ArrayOptions cloneFlags() const
     {
         ArrayOptions result;
-        if (capacityReserved)
+        if (flags & CapacityReserved)
             result |= CapacityReserved;
         return result;
     }
@@ -304,7 +304,7 @@ struct QArrayDataPointerRef
 };
 
 #define Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset) \
-    { Q_REFCOUNT_INITIALIZE_STATIC, size, 0, 0, offset } \
+    { Q_REFCOUNT_INITIALIZE_STATIC, QArrayData::DefaultAllocationFlags, size, 0, offset } \
     /**/
 
 #define Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(type, size) \

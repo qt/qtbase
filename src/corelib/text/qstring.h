@@ -1266,10 +1266,8 @@ inline void QString::reserve(int asize)
     if (d->ref.isShared() || uint(asize) >= d->alloc)
         reallocData(qMax(asize, d->size) + 1u);
 
-    if (!d->capacityReserved) {
-        // cannot set unconditionally, since d could be the shared_null/shared_empty (which is const)
-        d->capacityReserved = true;
-    }
+    // we're not shared anymore, for sure
+    d->flags |= Data::CapacityReserved;
 }
 
 inline void QString::squeeze()
@@ -1277,11 +1275,8 @@ inline void QString::squeeze()
     if (d->ref.isShared() || uint(d->size) + 1u < d->alloc)
         reallocData(uint(d->size) + 1u);
 
-    if (d->capacityReserved) {
-        // cannot set unconditionally, since d could be shared_null or
-        // otherwise static.
-        d->capacityReserved = false;
-    }
+    // we're not shared anymore, for sure
+    d->flags &= ~Data::CapacityReserved;
 }
 
 inline QString &QString::setUtf16(const ushort *autf16, int asize)

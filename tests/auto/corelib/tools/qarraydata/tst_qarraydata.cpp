@@ -155,11 +155,9 @@ void tst_QArrayData::sharedNullEmpty()
 
     QCOMPARE(null->size, 0);
     QCOMPARE(null->alloc, 0u);
-    QCOMPARE(null->capacityReserved, 0u);
 
     QCOMPARE(empty->size, 0);
     QCOMPARE(empty->alloc, 0u);
-    QCOMPARE(empty->capacityReserved, 0u);
 }
 
 void tst_QArrayData::staticData()
@@ -602,7 +600,7 @@ void tst_QArrayData::allocate()
             QVERIFY(data->alloc > uint(capacity));
         else
             QCOMPARE(data->alloc, uint(capacity));
-        QCOMPARE(data->capacityReserved, uint(isCapacityReserved));
+        QCOMPARE(bool(data->flags & QArrayData::CapacityReserved), isCapacityReserved);
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
@@ -647,7 +645,7 @@ void tst_QArrayData::reallocate()
         QVERIFY(data->alloc > uint(newCapacity));
     else
         QCOMPARE(data->alloc, uint(newCapacity));
-    QCOMPARE(data->capacityReserved, uint(isCapacityReserved));
+    QCOMPARE(!(data->flags & QArrayData::CapacityReserved), !isCapacityReserved);
 
     for (int i = 0; i < capacity; ++i)
         QCOMPARE(static_cast<char *>(data->data())[i], 'A');

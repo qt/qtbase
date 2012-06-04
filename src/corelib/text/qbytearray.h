@@ -509,9 +509,7 @@ inline void QByteArray::reserve(int asize)
     if (d->ref.isShared() || uint(asize) + 1u > d->alloc) {
         reallocData(qMax(uint(size()), uint(asize)) + 1u, d->detachFlags() | Data::CapacityReserved);
     } else {
-        // cannot set unconditionally, since d could be the shared_null or
-        // otherwise static
-        d->capacityReserved = true;
+        d->flags |= Data::CapacityReserved;
     }
 }
 
@@ -520,9 +518,7 @@ inline void QByteArray::squeeze()
     if (d->ref.isShared() || uint(d->size) + 1u < d->alloc) {
         reallocData(uint(d->size) + 1u, d->detachFlags() & ~Data::CapacityReserved);
     } else {
-        // cannot set unconditionally, since d could be shared_null or
-        // otherwise static.
-        d->capacityReserved = false;
+        d->flags &= ~Data::CapacityReserved;
     }
 }
 

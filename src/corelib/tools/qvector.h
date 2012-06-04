@@ -119,12 +119,7 @@ public:
                 *this = QVector<T>();
                 return;
             }
-            realloc(d->size);
-        }
-        if (d->capacityReserved) {
-            // capacity reserved in a read only memory would be useless
-            // this checks avoid writing to such memory.
-            d->capacityReserved = 0;
+            realloc(d->size, QArrayData::ArrayOptions(d->flags));
         }
     }
 
@@ -376,10 +371,10 @@ inline QVector<T>::QVector(const QVector<T> &v)
     if (v.d->ref.ref()) {
         d = v.d;
     } else {
-        if (v.d->capacityReserved) {
+        if (v.d->flags & Data::CapacityReserved) {
             d = Data::allocate(v.d->alloc);
             Q_CHECK_PTR(d);
-            d->capacityReserved = true;
+            d->flags |= Data::CapacityReserved;
         } else {
             d = Data::allocate(v.d->size);
             Q_CHECK_PTR(d);
@@ -412,7 +407,7 @@ void QVector<T>::reserve(int asize)
     if (asize > int(d->alloc))
         realloc(asize);
     if (isDetached())
-        d->capacityReserved = 1;
+        d->flags |= Data::CapacityReserved;
     Q_ASSERT(capacity() >= asize);
 }
 
@@ -644,7 +639,6 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Arra
                 Data::deallocate(x);
                 QT_RETHROW;
             }
-            x->capacityReserved = d->capacityReserved;
         } else {
             Q_ASSERT(int(d->alloc) == aalloc); // resize, without changing allocation size
             Q_ASSERT(isDetached());       // can be done only on detached d
@@ -723,7 +717,6 @@ void QVector<T>::realloc(int aalloc, QArrayData::ArrayOptions options)
         Data::deallocate(x);
         QT_RETHROW;
     }
-    x->capacityReserved = d->capacityReserved;
 
     Q_ASSERT(d != x);
     if (!d->ref.deref()) {
