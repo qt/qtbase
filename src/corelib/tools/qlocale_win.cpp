@@ -653,7 +653,7 @@ QString QSystemLocalePrivate::winToQtFormat(const QString &sys_fmt)
     return result;
 }
 
-QLocale QSystemLocale::fallbackLocale() const
+QLocale QSystemLocale::fallbackUiLocale() const
 {
     return QLocale(QString::fromLatin1(getWinLocaleName()));
 }
@@ -714,7 +714,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         if (type == LanguageId)
             return lang;
         if (cntry == QLocale::AnyCountry)
-            return fallbackLocale().country();
+            return fallbackUiLocale().country();
         return cntry;
     }
     case ScriptId:

@@ -370,7 +370,7 @@ static QVariant macQuoteString(QSystemLocale::QueryType type, const QStringRef &
 
 #ifndef QT_NO_SYSTEMLOCALE
 
-QLocale QSystemLocale::fallbackLocale() const
+QLocale QSystemLocale::fallbackUiLocale() const
 {
     return QLocale(QString::fromUtf8(getMacLocaleName().constData()));
 }

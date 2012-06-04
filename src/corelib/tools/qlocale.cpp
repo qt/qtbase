@@ -480,7 +480,7 @@ void QLocalePrivate::updateSystemPrivate()
     // tell the object that the system locale has changed.
     sys_locale->query(QSystemLocale::LocaleChanged, QVariant());
 
-    *system_data = *sys_locale->fallbackLocale().d->m_data;
+    *system_data = *sys_locale->fallbackUiLocale().d->m_data;
 
     QVariant res = sys_locale->query(QSystemLocale::LanguageId, QVariant());
     if (!res.isNull()) {
@@ -518,7 +518,7 @@ void QLocalePrivate::updateSystemPrivate()
 
 #ifdef QT_USE_ICU
     if (!default_data)
-        qt_initIcu(sys_locale->fallbackLocale().bcp47Name());
+        qt_initIcu(sys_locale->fallbackUiLocale().bcp47Name());
 #endif
 
 }

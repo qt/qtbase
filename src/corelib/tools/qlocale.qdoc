@@ -776,7 +776,7 @@
 */
 
 /*!
-    \fn QLocale QSystemLocale::fallbackLocale() const
+    \fn QLocale QSystemLocale::fallbackUiLocale() const
 
     \since 4.6
     Returns the fallback locale obtained from the system.

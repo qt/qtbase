@@ -118,7 +118,7 @@ public:
         NativeCountryName // QString
     };
     virtual QVariant query(QueryType type, QVariant in) const;
-    virtual QLocale fallbackLocale() const;
+    virtual QLocale fallbackUiLocale() const;
 
 private:
     QSystemLocale(bool);
