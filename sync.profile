@@ -42,20 +42,6 @@
     "xml" => "#include <QtXml/QtXml>\n",
     "concurrent" => "#include <QtConcurrent/QtConcurrent>\n",
 );
-%modulepris = (
-    "QtCore" => "$basedir/src/modules/qt_core.pri",
-    "QtDBus" => "$basedir/src/modules/qt_dbus.pri",
-    "QtGui" => "$basedir/src/modules/qt_gui.pri",
-    "QtPrintSupport" => "$basedir/src/modules/qt_printsupport.pri",
-    "QtWidgets" => "$basedir/src/modules/qt_widgets.pri",
-    "QtNetwork" => "$basedir/src/modules/qt_network.pri",
-    "QtOpenGL" => "$basedir/src/modules/qt_opengl.pri",
-    "QtSql" => "$basedir/src/modules/qt_sql.pri",
-    "QtTest" => "$basedir/src/modules/qt_testlib.pri",
-    "QtXml" => "$basedir/src/modules/qt_xml.pri",
-    "QtConcurrent" => "$basedir/src/modules/qt_concurrent.pri",
-    "QtPlatformSupport" => "$basedir/src/modules/qt_platformsupport.pri",
-);
 %deprecatedheaders = (
     "QtGui" =>  {
         "qplatformaccessibility_qpa.h" => "qpa/qplatformaccessibility.h",

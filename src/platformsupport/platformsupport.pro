@@ -1,14 +1,10 @@
 load(qt_module)
 TARGET     = QtPlatformSupport
 QPRO_PWD   = $$PWD
-QT         += core-private gui-private
-TEMPLATE   = lib
-DESTDIR    = $$QT.gui.libs
+QT         = core-private gui-private
 
 CONFIG += staticlib
 mac:LIBS += -lz -framework CoreFoundation -framework Carbon
-
-MODULE_PRI = ../modules/qt_platformsupport.pri
 
 DEFINES += QT_BUILD_PLATFORMSUPPORT_LIB
 

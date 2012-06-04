@@ -5,8 +5,6 @@ QPRO_PWD   = $$PWD
 QT         = core-private
 CONFIG    += exceptions
 
-MODULE_PRI = ../modules/qt_concurrent.pri
-
 DEFINES   += QT_BUILD_CONCURRENT_LIB QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x66000000
 

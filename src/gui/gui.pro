@@ -3,8 +3,7 @@ load(qt_module)
 TARGET     = QtGui
 QPRO_PWD   = $$PWD
 QT = core-private
-
-MODULE_PRI = ../modules/qt_gui.pri
+MODULE_CONFIG = opengl
 
 DEFINES   += QT_BUILD_GUI_LIB QT_NO_USING_NAMESPACE
 

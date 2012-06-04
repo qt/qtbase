@@ -4,8 +4,7 @@ TARGET = QtDBus
 QPRO_PWD = $$PWD
 QT = core-private
 CONFIG += link_pkgconfig
-
-MODULE_PRI = ../modules/qt_dbus.pri
+MODULE_CONFIG = dbusadaptors dbusinterfaces
 
 DEFINES += QT_BUILD_DBUS_LIB \
     DBUS_API_SUBJECT_TO_CHANGE

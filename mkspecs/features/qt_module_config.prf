@@ -12,6 +12,10 @@ isEmpty(MODULE):MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
 isEmpty(TARGET):error("You must set TARGET before include()'ing $${_FILE_}")
 isEmpty(VERSION):VERSION = $$QT_VERSION
 
+ucmodule = $$upper($$MODULE)
+
+MODULE_DEPENDS = $$replace(QT, -private$, )
+
 # Find the module's source root dir.
 MODULE_PROFILE_DIR = $$_PRO_FILE_PWD_
 for(ever) {
@@ -26,13 +30,64 @@ isEmpty(MODULE_BASE_DIR): MODULE_BASE_DIR = $$MODULE_PROFILE_DIR
 MODULE_BASE_OUTDIR = $$shadowed($$MODULE_BASE_DIR)
 isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$MODULE_BASE_OUTDIR
 
+# This check will be removed soon. Weird indentation to avoid reindenting the code later.
+!isEmpty(MODULE_PRI) {
+    !build_pass:warning("$$_PRO_FILE_ still sets MODULE_PRI. Not auto-generating module .pri file.")
+    MODULE_PRI = $$absolute_path($$MODULE_PRI, $$_PRO_FILE_PWD_)
+    exists($$MODULE_PRI)|error("Specified module pri file $$MODULE_PRI does not exist.")
+} else {
+
+MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_$${MODULE}.pri
+
+!build_pass {
+
+    # Create a module .pri file
+    staticlib: \
+        module_build_type = "QT.$${MODULE}.module_config = staticlib"
+    else: \
+        module_build_type =
+    !isEmpty(MODULE_CONFIG): \
+        module_config = "QT.$${MODULE}.CONFIG = $$MODULE_CONFIG"
+    else: \
+        module_config =
+    contains(TARGET, QtAddOn.*): \
+        MODULE_DEFINE = QT_ADDON_$${ucmodule}_LIB
+    else: \
+        MODULE_DEFINE = QT_$${ucmodule}_LIB
+    MODULE_DEFINES = $$MODULE_DEFINE $$MODULE_DEFINES
+    MODULE_PRI_CONT = \
+        "QT.$${MODULE}.VERSION = $${VERSION}" \
+        "QT.$${MODULE}.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
+        "QT.$${MODULE}.MINOR_VERSION = $$section(VERSION, ., 1, 1)" \
+        "QT.$${MODULE}.PATCH_VERSION = $$section(VERSION, ., 2, 2)" \
+        "" \
+        "QT.$${MODULE}.name = $$TARGET" \
+        "QT.$${MODULE}.bins = \$\$QT_MODULE_BIN_BASE" \
+        "QT.$${MODULE}.includes = \$\$QT_MODULE_INCLUDE_BASE \$\$QT_MODULE_INCLUDE_BASE/$$TARGET" \
+        "QT.$${MODULE}.private_includes = \$\$QT_MODULE_INCLUDE_BASE/$$TARGET/\$\$QT.$${MODULE}.VERSION" \
+        "QT.$${MODULE}.sources = $$val_escape(_PRO_FILE_PWD_)" \
+        "QT.$${MODULE}.libs = \$\$QT_MODULE_LIB_BASE" \
+        "QT.$${MODULE}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
+        "QT.$${MODULE}.imports = \$\$QT_MODULE_IMPORT_BASE" \
+        "QT.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
+        $$module_build_type \
+        $$module_config \
+        "QT.$${MODULE}.DEFINES = $$MODULE_DEFINES" \ # assume sufficient quoting
+        "" \
+        "QT_CONFIG += $$MODULE" # this is obsolete, but some code still depends on it
+    write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
+
+} # !build_pass
+
+} # isEmpty(MODULE_PRI)
+
 load(qt_module_fwdpri)
 
 MODULE_INCLUDES = $$eval(QT.$${MODULE}.includes)
 MODULE_PRIVATE_INCLUDES = $$eval(QT.$${MODULE}.private_includes)
+INCLUDEPATH *= $$MODULE_INCLUDES
 INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES
 INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES/$$TARGET
-INCLUDEPATH *= $$MODULE_INCLUDES $$MODULE_INCLUDES/.. #just for today to have some compat
 
 load(qt_module_headers)
 

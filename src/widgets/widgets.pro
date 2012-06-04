@@ -2,10 +2,8 @@ load(qt_module)
 
 TARGET     = QtWidgets
 QPRO_PWD   = $$PWD
-QT = core core-private gui gui-private platformsupport-private
-CONFIG += uic
-
-MODULE_PRI = ../modules/qt_widgets.pri
+QT = core-private gui-private
+MODULE_CONFIG = uic
 
 DEFINES   += QT_BUILD_WIDGETS_LIB QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000

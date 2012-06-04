@@ -4,8 +4,6 @@ TARGET     = QtPrintSupport
 QPRO_PWD   = $$PWD
 QT = core-private gui-private widgets-private
 
-MODULE_PRI = ../modules/qt_printsupport.pri
-
 DEFINES   += QT_BUILD_PRINTSUPPORT_LIB QT_NO_USING_NAMESPACE
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui

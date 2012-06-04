@@ -5,7 +5,7 @@ QPRO_PWD = $$PWD
 QT = core-private
 CONFIG += exceptions
 
-MODULE_PRI = ../modules/qt_testlib.pri
+MODULE_CONFIG = console testlib_defines
 
 INCLUDEPATH += .
 unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
