@@ -538,6 +538,20 @@ CApaApplication *myApplicationFactory();
 void myMessageHandler(QtMsgType, const QMessageLogContext &, const char *);
 //! [49]
 
+//! [50]
+class B {...};
+class C {...};
+class D {...};
+struct A : public B {
+    C c;
+    D d;
+};
+//! [50]
+
+//! [51]
+template<> class QTypeInfo<A> : public QTypeInfoMerger<A, B, C, D> {};
+//! [51]
+
 //! [qlikely]
     // the condition inside the "if" will be successful most of the times
     for (int i = 1; i <= 365; i++) {

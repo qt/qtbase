@@ -97,6 +97,38 @@ public:
     };
 };
 
+/*!
+    \class QTypeInfoMerger
+    \internal
+
+    \brief QTypeInfoMerger merges the QTypeInfo flags of T1, T2... and presents them
+    as a QTypeInfo<T> would do.
+
+    Let's assume that we have a simple set of structs:
+
+    \snippet code/src_corelib_global_qglobal.cpp 50
+
+    To create a proper QTypeInfo specialization for A struct, we have to check
+    all sub-components; B, C and D, then take the lowest common denominator and call
+    Q_DECLATE_TYPEINFO with the resulting flags. An easier and less fragile approach is to
+    use QTypeInfoMerger, which does that automatically. So struct A would have
+    the following QTypeInfo definition:
+
+    \snippet code/src_corelib_global_qglobal.cpp 51
+*/
+template <class T, class T1, class T2 = T1, class T3 = T1, class T4 = T1>
+class QTypeInfoMerger
+{
+public:
+    enum {
+        isComplex = QTypeInfo<T1>::isComplex || QTypeInfo<T2>::isComplex || QTypeInfo<T3>::isComplex || QTypeInfo<T4>::isComplex,
+        isStatic = QTypeInfo<T1>::isStatic || QTypeInfo<T2>::isStatic || QTypeInfo<T3>::isStatic || QTypeInfo<T4>::isStatic,
+        isLarge = sizeof(T) > sizeof(void*),
+        isPointer = false,
+        isDummy = false,
+        sizeOf = sizeof(T)
+    };
+};
 
 #define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
 template <typename T> class CONTAINER; \
