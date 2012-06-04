@@ -101,6 +101,7 @@ private slots:
     void postEvent();
     void cancelDelayedEvent();
     void postDelayedEventAndStop();
+    void postDelayedEventFromThread();
     void stopAndPostEvent();
     void stateFinished();
     void parallelStates();
@@ -1729,6 +1730,55 @@ void tst_QStateMachine::postDelayedEventAndStop()
     QTestEventLoop::instance().enterLoop(2);
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(s1));
+}
+
+class DelayedEventPosterThread : public QThread
+{
+    Q_OBJECT
+public:
+    DelayedEventPosterThread(QStateMachine *machine, QObject *parent = 0)
+        : QThread(parent), firstEventWasCancelled(false),
+          m_machine(machine), m_count(0)
+    {
+        moveToThread(this);
+        QObject::connect(m_machine, SIGNAL(started()),
+                         this, SLOT(postEvent()));
+    }
+
+    mutable bool firstEventWasCancelled;
+
+private Q_SLOTS:
+    void postEvent()
+    {
+        int id = m_machine->postDelayedEvent(new QEvent(QEvent::User), 1000);
+        firstEventWasCancelled = m_machine->cancelDelayedEvent(id);
+
+        m_machine->postDelayedEvent(new QEvent(QEvent::User), 1);
+
+        quit();
+    }
+private:
+    QStateMachine *m_machine;
+    int m_count;
+};
+
+void tst_QStateMachine::postDelayedEventFromThread()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    QFinalState *f = new QFinalState(&machine);
+    s1->addTransition(new EventTransition(QEvent::User, f));
+    machine.setInitialState(s1);
+
+    DelayedEventPosterThread poster(&machine);
+    poster.start();
+
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QVERIFY(finishedSpy.isValid());
+    machine.start();
+    QTRY_COMPARE(finishedSpy.count(), 1);
+
+    QVERIFY(poster.firstEventWasCancelled);
 }
 
 void tst_QStateMachine::stopAndPostEvent()

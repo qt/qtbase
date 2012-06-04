@@ -62,6 +62,7 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qset.h>
 #include <QtCore/qvector.h>
+#include <private/qfreelist_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -120,6 +121,8 @@ public:
 #ifndef QT_NO_ANIMATION
     void _q_animationFinished();
 #endif
+    void _q_startDelayedEventTimer(int id, int delay);
+    void _q_killDelayedEventTimer(int id, int timerId);
 
     QState *rootState() const;
 
@@ -232,7 +235,17 @@ public:
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
     QHash<QObject*, QHash<QEvent::Type, int> > qobjectEvents;
 #endif
-    QHash<int, QEvent*> delayedEvents;
+    QFreeList<void> delayedEventIdFreeList;
+    struct DelayedEvent {
+        QEvent *event;
+        int timerId;
+        DelayedEvent(QEvent *e, int tid)
+            : event(e), timerId(tid) {}
+        DelayedEvent()
+            : event(0), timerId(0) {}
+    };
+    QHash<int, DelayedEvent> delayedEvents;
+    QHash<int, int> timerIdToDelayedEventId;
     QMutex delayedEventsMutex;
   
     typedef QEvent* (*f_cloneEvent)(QEvent*);

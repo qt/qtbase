@@ -184,6 +184,8 @@ private:
 #ifndef QT_NO_ANIMATION
     Q_PRIVATE_SLOT(d_func(), void _q_animationFinished())
 #endif
+    Q_PRIVATE_SLOT(d_func(), void _q_startDelayedEventTimer(int, int))
+    Q_PRIVATE_SLOT(d_func(), void _q_killDelayedEventTimer(int, int))
 };
 
 #endif //QT_NO_STATEMACHINE

@@ -1322,6 +1322,36 @@ void QStateMachinePrivate::_q_process()
     }
 }
 
+void QStateMachinePrivate::_q_startDelayedEventTimer(int id, int delay)
+{
+    Q_Q(QStateMachine);
+    QMutexLocker locker(&delayedEventsMutex);
+    QHash<int, DelayedEvent>::iterator it = delayedEvents.find(id);
+    if (it != delayedEvents.end()) {
+        DelayedEvent &e = it.value();
+        Q_ASSERT(!e.timerId);
+        e.timerId = q->startTimer(delay);
+        if (!e.timerId) {
+            qWarning("QStateMachine::postDelayedEvent: failed to start timer (id=%d, delay=%d)", id, delay);
+            delayedEvents.erase(it);
+            delayedEventIdFreeList.release(id);
+        } else {
+            timerIdToDelayedEventId.insert(e.timerId, id);
+        }
+    } else {
+        // It's been cancelled already
+        delayedEventIdFreeList.release(id);
+    }
+}
+
+void QStateMachinePrivate::_q_killDelayedEventTimer(int id, int timerId)
+{
+    Q_Q(QStateMachine);
+    q->killTimer(timerId);
+    QMutexLocker locker(&delayedEventsMutex);
+    delayedEventIdFreeList.release(id);
+}
+
 void QStateMachinePrivate::postInternalEvent(QEvent *e)
 {
     QMutexLocker locker(&internalEventMutex);
@@ -1384,12 +1414,17 @@ void QStateMachinePrivate::cancelAllDelayedEvents()
 {
     Q_Q(QStateMachine);
     QMutexLocker locker(&delayedEventsMutex);
-    QHash<int, QEvent*>::const_iterator it;
+    QHash<int, DelayedEvent>::const_iterator it;
     for (it = delayedEvents.constBegin(); it != delayedEvents.constEnd(); ++it) {
-        int id = it.key();
-        QEvent *e = it.value();
-        q->killTimer(id);
-        delete e;
+        const DelayedEvent &e = it.value();
+        if (e.timerId) {
+            timerIdToDelayedEventId.remove(e.timerId);
+            q->killTimer(e.timerId);
+            delayedEventIdFreeList.release(it.key());
+        } else {
+            // Cancellation will be detected in pending _q_startDelayedEventTimer() call
+        }
+        delete e.event;
     }
     delayedEvents.clear();
 }
@@ -1988,9 +2023,26 @@ int QStateMachine::postDelayedEvent(QEvent *event, int delay)
     qDebug() << this << ": posting event" << event << "with delay" << delay;
 #endif
     QMutexLocker locker(&d->delayedEventsMutex);
-    int tid = startTimer(delay);
-    d->delayedEvents[tid] = event;
-    return tid;
+    int id = d->delayedEventIdFreeList.next();
+    bool inMachineThread = (QThread::currentThread() == thread());
+    int timerId = inMachineThread ? startTimer(delay) : 0;
+    if (inMachineThread && !timerId) {
+        qWarning("QStateMachine::postDelayedEvent: failed to start timer with interval %d", delay);
+        d->delayedEventIdFreeList.release(id);
+        return -1;
+    }
+    QStateMachinePrivate::DelayedEvent delayedEvent(event, timerId);
+    d->delayedEvents.insert(id, delayedEvent);
+    if (timerId) {
+        d->timerIdToDelayedEventId.insert(timerId, id);
+    } else {
+        Q_ASSERT(!inMachineThread);
+        QMetaObject::invokeMethod(this, "_q_startDelayedEventTimer",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(int, id),
+                                  Q_ARG(int, delay));
+    }
+    return id;
 }
 
 /*!
@@ -2010,11 +2062,25 @@ bool QStateMachine::cancelDelayedEvent(int id)
         return false;
     }
     QMutexLocker locker(&d->delayedEventsMutex);
-    QEvent *e = d->delayedEvents.take(id);
-    if (!e)
+    QStateMachinePrivate::DelayedEvent e = d->delayedEvents.take(id);
+    if (!e.event)
         return false;
-    killTimer(id);
-    delete e;
+    if (e.timerId) {
+        d->timerIdToDelayedEventId.remove(e.timerId);
+        bool inMachineThread = (QThread::currentThread() == thread());
+        if (inMachineThread) {
+            killTimer(e.timerId);
+            d->delayedEventIdFreeList.release(id);
+        } else {
+            QMetaObject::invokeMethod(this, "_q_killDelayedEventTimer",
+                                      Qt::QueuedConnection,
+                                      Q_ARG(int, id),
+                                      Q_ARG(int, e.timerId));
+        }
+    } else {
+        // Cancellation will be detected in pending _q_startDelayedEventTimer() call
+    }
+    delete e.event;
     return true;
 }
 
@@ -2060,15 +2126,18 @@ bool QStateMachine::event(QEvent *e)
         if (d->state != QStateMachinePrivate::Running) {
             // This event has been cancelled already
             QMutexLocker locker(&d->delayedEventsMutex);
-            Q_ASSERT(!d->delayedEvents.contains(tid));
+            Q_ASSERT(!d->timerIdToDelayedEventId.contains(tid));
             return true;
         }
         d->delayedEventsMutex.lock();
-        QEvent *ee = d->delayedEvents.take(tid);
-        if (ee != 0) {
+        int id = d->timerIdToDelayedEventId.take(tid);
+        QStateMachinePrivate::DelayedEvent ee = d->delayedEvents.take(id);
+        if (ee.event != 0) {
+            Q_ASSERT(ee.timerId == tid);
             killTimer(tid);
+            d->delayedEventIdFreeList.release(id);
             d->delayedEventsMutex.unlock();
-            d->postExternalEvent(ee);
+            d->postExternalEvent(ee.event);
             d->processEvents(QStateMachinePrivate::DirectProcessing);
             return true;
         } else {
