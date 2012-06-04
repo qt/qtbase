@@ -132,7 +132,8 @@ public:
         KeyboardAutoRepeatRate,
         ShowIsFullScreen,
         PasswordMaskDelay,
-        FontSmoothingGamma
+        FontSmoothingGamma,
+        StartDragVelocity
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

@@ -76,6 +76,11 @@ int QStyleHints::startDragTime() const
     return hint(QPlatformIntegration::StartDragTime).toInt();
 }
 
+int QStyleHints::startDragVelocity() const
+{
+    return hint(QPlatformIntegration::StartDragVelocity).toInt();
+}
+
 int QStyleHints::keyboardInputInterval() const
 {
     return hint(QPlatformIntegration::KeyboardInputInterval).toInt();

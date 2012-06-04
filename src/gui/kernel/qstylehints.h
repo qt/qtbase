@@ -58,6 +58,7 @@ public:
     int mouseDoubleClickInterval() const;
     int startDragDistance() const;
     int startDragTime() const;
+    int startDragVelocity() const;
     int keyboardInputInterval() const;
     int keyboardAutoRepeatRate() const;
     int cursorFlashTime() const;
