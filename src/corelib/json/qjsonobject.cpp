@@ -452,6 +452,7 @@ QJsonObject::iterator QJsonObject::find(const QString &key)
     int index = o ? o->indexOf(key, &keyExists) : 0;
     if (!keyExists)
         return end();
+    detach();
     return iterator(this, index);
 }
 

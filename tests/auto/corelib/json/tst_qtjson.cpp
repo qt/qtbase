@@ -590,6 +590,16 @@ void TestQtJson::testObjectIteration()
     }
 
     {
+        QJsonObject object2 = object;
+        QVERIFY(object == object2);
+
+        QJsonObject::iterator it = object2.find(QString::number(5));
+        object2.erase(it);
+        QCOMPARE(object.size(), 10);
+        QCOMPARE(object2.size(), 9);
+    }
+
+    {
         QJsonObject::Iterator it = object.begin();
         it += 5;
         QCOMPARE(QJsonValue(it.value()).toDouble(), 5.);
