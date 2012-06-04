@@ -303,12 +303,27 @@ void tst_QtJson::testObjectSimple()
     QVERIFY2(!object.contains("boolean"), "key boolean should have been removed");
 
     QJsonValue taken = object.take("value");
-//    QCOMPARE(taken, value);
+    QCOMPARE(taken, value);
     QVERIFY2(!object.contains("value"), "key value should have been removed");
 
     QString before = object.value("string").toString();
     object.insert("string", QString::fromLatin1("foo"));
     QVERIFY2(object.value("string").toString() != before, "value should have been updated");
+
+    size = object.size();
+    QJsonObject subobject;
+    subobject.insert("number", 42);
+    subobject.insert(QLatin1String("string"), QLatin1String("foobar"));
+    object.insert("subobject", subobject);
+    QCOMPARE(object.size(), size+1);
+    QJsonValue subvalue = object.take(QLatin1String("subobject"));
+    QCOMPARE(object.size(), size);
+    QCOMPARE(subvalue.toObject(), subobject);
+    // make object detach by modifying it many times
+    for (int i = 0; i < 64; ++i)
+        object.insert(QLatin1String("string"), QLatin1String("bar"));
+    QCOMPARE(object.size(), size);
+    QCOMPARE(subvalue.toObject(), subobject);
 }
 
 void tst_QtJson::testObjectSmallKeys()

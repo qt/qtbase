@@ -390,13 +390,14 @@ QJsonValue QJsonObject::take(const QString &key)
     if (!keyExists)
         return QJsonValue(QJsonValue::Undefined);
 
-    QJsonPrivate::Entry *e = o->entryAt(index);
+    QJsonValue v(d, o, o->entryAt(index)->value);
+    detach();
     o->removeItems(index, 1);
     ++d->compactionCounter;
     if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
         compact();
 
-    return QJsonValue(d, o, e->value);
+    return v;
 }
 
 /*!
