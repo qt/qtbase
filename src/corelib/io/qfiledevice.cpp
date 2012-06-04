@@ -459,6 +459,8 @@ qint64 QFileDevice::readLineData(char *data, qint64 maxlen)
 qint64 QFileDevice::readData(char *data, qint64 len)
 {
     Q_D(QFileDevice);
+    if (!len)
+        return 0;
     unsetError();
     if (!d->ensureFlushed())
         return -1;

@@ -200,6 +200,9 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
 {
     Q_D(QLocalSocket);
 
+    if (!maxSize)
+        return 0;
+
     return d->pipeReader->read(data, maxSize);
 }
 

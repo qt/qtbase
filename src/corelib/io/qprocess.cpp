@@ -1774,6 +1774,8 @@ void QProcess::setupChildProcess()
 qint64 QProcess::readData(char *data, qint64 maxlen)
 {
     Q_D(QProcess);
+    if (!maxlen)
+        return 0;
     QRingBuffer *readBuffer = (d->processChannel == QProcess::StandardError)
                               ? &d->errorReadBuffer
                               : &d->outputReadBuffer;

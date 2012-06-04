@@ -2324,6 +2324,13 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
 {
     Q_D(QAbstractSocket);
 
+    // Check if the read notifier can be enabled again.
+    if (d->socketEngine && !d->socketEngine->isReadNotificationEnabled() && d->socketEngine->isValid())
+        d->socketEngine->setReadNotificationEnabled(true);
+
+    if (!maxSize)
+        return 0;
+
     // This is for a buffered QTcpSocket
     if (d->isBuffered && d->buffer.isEmpty())
         // if we're still connected, return 0 indicating there may be more data in the future

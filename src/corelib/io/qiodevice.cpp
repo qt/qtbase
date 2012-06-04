@@ -772,6 +772,8 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
             printf("%p \tread 0x%hhx (%c) returning 1 (shortcut)\n", this,
                    int(c), isprint(c) ? c : '?');
 #endif
+            if (d->buffer.isEmpty())
+                readData(data, 0);
             return qint64(1);
         }
     }
@@ -786,8 +788,11 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
             *d->pPos += lastReadChunkSize;
             readSoFar += lastReadChunkSize;
             // fast exit when satisfied by buffer
-            if (lastReadChunkSize == maxSize && !(d->openMode & Text))
+            if (lastReadChunkSize == maxSize && !(d->openMode & Text)) {
+                if (d->buffer.isEmpty())
+                    readData(data, 0);
                 return readSoFar;
+            }
 
             data += lastReadChunkSize;
             maxSize -= lastReadChunkSize;
@@ -906,6 +911,10 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
            int(readSoFar), int(d->pos), d->buffer.size());
     debugBinaryString(data - readSoFar, readSoFar);
 #endif
+
+    if (d->buffer.isEmpty())
+        readData(data, 0);
+
     return readSoFar;
 }
 
@@ -1083,6 +1092,8 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
     qint64 readSoFar = 0;
     if (!d->buffer.isEmpty()) {
         readSoFar = d->buffer.readLine(data, maxSize);
+        if (d->buffer.isEmpty())
+            readData(data,0);
         if (!sequential)
             d->pos += readSoFar;
 #if defined QIODEVICE_DEBUG
@@ -1621,6 +1632,9 @@ QString QIODevice::errorString() const
     for QDataStream to be able to operate on the class. QDataStream assumes
     all the requested information was read and therefore does not retry reading
     if there was a problem.
+
+    This function will be called with maxSize 0 when the device is
+    buffered and the buffer was emptied by a call to read().
 
     \sa read(), readLine(), writeData()
 */
