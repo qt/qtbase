@@ -839,10 +839,6 @@ bool QMYSQLResult::nextResult()
 void QMYSQLResult::virtual_hook(int id, void *data)
 {
     switch (id) {
-    case QSqlResult::NextResult:
-        Q_ASSERT(data);
-        *static_cast<bool*>(data) = nextResult();
-        break;
     default:
         QSqlResult::virtual_hook(id, data);
     }

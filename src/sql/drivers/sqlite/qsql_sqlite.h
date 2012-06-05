@@ -79,6 +79,7 @@ protected:
     int numRowsAffected();
     QVariant lastInsertId() const;
     QSqlRecord record() const;
+    void detachFromResultSet();
     void virtual_hook(int id, void *data);
 
 private:

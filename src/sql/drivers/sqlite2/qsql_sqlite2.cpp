@@ -267,9 +267,6 @@ QSQLite2Result::~QSQLite2Result()
 void QSQLite2Result::virtual_hook(int id, void *data)
 {
     switch (id) {
-    case QSqlResult::DetachFromResultSet:
-        d->finalize();
-        break;
     default:
         QSqlCachedResult::virtual_hook(id, data);
     }
@@ -341,6 +338,11 @@ QSqlRecord QSQLite2Result::record() const
     if (!isActive() || !isSelect())
         return QSqlRecord();
     return d->rInf;
+}
+
+void QSQLite2Result::detachFromResultSet()
+{
+    d->finalize();
 }
 
 QVariant QSQLite2Result::handle() const

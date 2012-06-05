@@ -80,6 +80,7 @@ protected:
     int numRowsAffected();
     QSqlRecord record() const;
     void virtual_hook(int id, void *data);
+    void detachFromResultSet();
     bool nextResult();
 
 private:

@@ -125,13 +125,13 @@ protected:
     virtual QSqlRecord record() const;
     virtual QVariant lastInsertId() const;
 
-    enum VirtualHookOperation { BatchOperation, DetachFromResultSet, SetNumericalPrecision, NextResult };
+    enum VirtualHookOperation { };
     virtual void virtual_hook(int id, void *data);
-    bool execBatch(bool arrayBind = false);
-    void detachFromResultSet();
-    void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy policy);
+    virtual bool execBatch(bool arrayBind = false);
+    virtual void detachFromResultSet();
+    virtual void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy policy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
-    bool nextResult();
+    virtual bool nextResult();
 
 private:
     QSqlResultPrivate* d;

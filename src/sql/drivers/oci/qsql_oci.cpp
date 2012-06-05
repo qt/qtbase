@@ -2042,14 +2042,18 @@ QVariant QOCIResult::lastInsertId() const
     return QVariant();
 }
 
+bool QOCIResult::execBatch(bool arrayBind)
+{
+    QOCICols::execBatch(d, boundValues(), arrayBind);
+    d->resetBindCount();
+    return d->error.type() == QSqlError::NoError;
+}
+
 void QOCIResult::virtual_hook(int id, void *data)
 {
     Q_ASSERT(data);
 
     switch (id) {
-    case QSqlResult::BatchOperation:
-        QOCICols::execBatch(d, boundValues(), *reinterpret_cast<bool *>(data));
-        break;
     default:
         QSqlCachedResult::virtual_hook(id, data);
     }

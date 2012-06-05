@@ -90,6 +90,8 @@ protected:
     ValueCache &cache();
 
     void virtual_hook(int id, void *data);
+    void detachFromResultSet();
+    void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy policy);
 private:
     bool cacheNext();
     QSqlCachedResultPrivate *d;

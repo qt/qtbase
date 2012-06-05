@@ -1120,17 +1120,15 @@ bool QDB2Result::nextResult()
 void QDB2Result::virtual_hook(int id, void *data)
 {
     switch (id) {
-    case QSqlResult::NextResult:
-        Q_ASSERT(data);
-        *static_cast<bool*>(data) = nextResult();
-        break;
-    case QSqlResult::DetachFromResultSet:
-        if (d->hStmt)
-            SQLCloseCursor(d->hStmt);
-        break;
     default:
         QSqlResult::virtual_hook(id, data);
     }
+}
+
+void QDB2Result::detachFromResultSet()
+{
+    if (d->hStmt)
+        SQLCloseCursor(d->hStmt);
 }
 
 /************************************/

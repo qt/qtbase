@@ -83,6 +83,7 @@ protected:
     int numRowsAffected();
     QSqlRecord record() const;
     QVariant lastInsertId() const;
+    bool execBatch(bool arrayBind = false);
     void virtual_hook(int id, void *data);
 
 private:

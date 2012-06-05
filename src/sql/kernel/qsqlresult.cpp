@@ -961,32 +961,24 @@ void QSqlResult::virtual_hook(int, void *)
 */
 bool QSqlResult::execBatch(bool arrayBind)
 {
-    if (driver()->hasFeature(QSqlDriver::BatchOperations)) {
-        virtual_hook(BatchOperation, &arrayBind);
-        d->resetBindCount();
-        return d->error.type() == QSqlError::NoError;
-    } else {
-        QVector<QVariant> values = d->values;
-        if (values.count() == 0)
+    Q_UNUSED(arrayBind);
+
+    QVector<QVariant> values = d->values;
+    if (values.count() == 0)
+        return false;
+    for (int i = 0; i < values.at(0).toList().count(); ++i) {
+        for (int j = 0; j < values.count(); ++j)
+            bindValue(j, values.at(j).toList().at(i), QSql::In);
+        if (!exec())
             return false;
-        for (int i = 0; i < values.at(0).toList().count(); ++i) {
-            for (int j = 0; j < values.count(); ++j)
-                bindValue(j, values.at(j).toList().at(i), QSql::In);
-            if (!exec())
-                return false;
-        }
-        return true;
     }
-    return false;
+    return true;
 }
 
 /*! \internal
  */
 void QSqlResult::detachFromResultSet()
 {
-    if (driver()->hasFeature(QSqlDriver::FinishQuery) 
-            || driver()->hasFeature(QSqlDriver::SimpleLocking))
-        virtual_hook(DetachFromResultSet, 0);
 }
 
 /*! \internal
@@ -994,7 +986,6 @@ void QSqlResult::detachFromResultSet()
 void QSqlResult::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy policy)
 {
     d->precisionPolicy = policy;
-    virtual_hook(SetNumericalPrecision, &policy);
 }
 
 /*! \internal
@@ -1008,11 +999,6 @@ QSql::NumericalPrecisionPolicy QSqlResult::numericalPrecisionPolicy() const
 */
 bool QSqlResult::nextResult()
 {
-    if (driver()->hasFeature(QSqlDriver::MultipleResultSets)) {
-        bool result = false;
-        virtual_hook(NextResult, &result);
-        return result;
-    }
     return false;
 }
 

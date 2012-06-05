@@ -1710,17 +1710,15 @@ bool QODBCResult::nextResult()
 void QODBCResult::virtual_hook(int id, void *data)
 {
     switch (id) {
-    case QSqlResult::DetachFromResultSet:
-        if (d->hStmt)
-            SQLCloseCursor(d->hStmt);
-        break;
-    case QSqlResult::NextResult:
-        Q_ASSERT(data);
-        *static_cast<bool*>(data) = nextResult();
-        break;
     default:
         QSqlResult::virtual_hook(id, data);
     }
+}
+
+void QODBCResult::detachFromResultSet()
+{
+    if (d->hStmt)
+        SQLCloseCursor(d->hStmt);
 }
 
 void QODBCResult::setForwardOnly(bool forward)
