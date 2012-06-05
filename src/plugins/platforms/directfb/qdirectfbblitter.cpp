@@ -143,13 +143,13 @@ void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, con
     m_surface->SetPorterDuff(m_surface.data(), porterDuff);
     m_surface->SetDstBlendFunction(m_surface.data(), DSBF_INVSRCALPHA);
 
-    const DFBRectangle sRect = { srcRect.x(), srcRect.y(), srcRect.width(), srcRect.height() };
+    const DFBRectangle sRect = { int(srcRect.x()), int(srcRect.y()), int(srcRect.width()), int(srcRect.height()) };
 
     DFBResult result;
     if (rect.width() == srcRect.width() && rect.height() == srcRect.height())
         result = m_surface->Blit(m_surface.data(), s, &sRect, rect.x(), rect.y());
     else {
-        const DFBRectangle dRect = { rect.x(), rect.y(), rect.width(), rect.height() };
+        const DFBRectangle dRect = { int(rect.x()), int(rect.y()), int(rect.width()), int(rect.height()) };
         result = m_surface->StretchBlit(m_surface.data(), s, &sRect, &dRect);
     }
     if (result != DFB_OK)
