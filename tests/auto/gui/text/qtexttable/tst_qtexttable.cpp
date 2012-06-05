@@ -49,7 +49,9 @@
 #include <qdebug.h>
 #include <qtextcursor.h>
 #include <qtextdocument.h>
+#ifndef QT_NO_WIDGETS
 #include <qtextedit.h>
+#endif
 
 typedef QList<int> IntList;
 Q_DECLARE_METATYPE(IntList)
@@ -98,8 +100,10 @@ private slots:
     void removeColumns4();
     void removeColumns5();
     void removeColumnsInTableWithMergedRows();
+#ifndef QT_NO_WIDGETS
     void QTBUG11282_insertBeforeMergedEnding_data();
     void QTBUG11282_insertBeforeMergedEnding();
+#endif
 
 private:
     QTextTable *create2x2Table();
@@ -961,6 +965,7 @@ void tst_QTextTable::removeColumnsInTableWithMergedRows()
     QCOMPARE(table->columns(), 1);
 }
 
+#ifndef QT_NO_WIDGETS
 void tst_QTextTable::QTBUG11282_insertBeforeMergedEnding_data()
 {
     QTest::addColumn<int>("rows");
@@ -997,6 +1002,7 @@ void tst_QTextTable::QTBUG11282_insertBeforeMergedEnding()
     QCOMPARE(table->columns(), columns + insert.at(1));
     delete textEdit;
 }
+#endif
 
 QTEST_MAIN(tst_QTextTable)
 #include "tst_qtexttable.moc"
