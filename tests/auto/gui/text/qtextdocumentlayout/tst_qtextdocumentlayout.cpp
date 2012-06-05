@@ -47,8 +47,10 @@
 #include <qdebug.h>
 #include <qpainter.h>
 #include <qtexttable.h>
+#ifndef QT_NO_WIDGETS
 #include <qtextedit.h>
 #include <qscrollbar.h>
+#endif
 
 class tst_QTextDocumentLayout : public QObject
 {
@@ -66,7 +68,9 @@ private slots:
     void defaultPageSizeHandling();
     void idealWidth();
     void lineSeparatorFollowingTable();
+#ifndef QT_NO_WIDGETS
     void wrapAtWordBoundaryOrAnywhere();
+#endif
     void inlineImage();
     void clippedTableCell();
     void floatingTablePageBreak();
@@ -180,6 +184,7 @@ void tst_QTextDocumentLayout::lineSeparatorFollowingTable()
     }
 }
 
+#ifndef QT_NO_WIDGETS
 void tst_QTextDocumentLayout::wrapAtWordBoundaryOrAnywhere()
 {
     //task 150562
@@ -192,6 +197,7 @@ void tst_QTextDocumentLayout::wrapAtWordBoundaryOrAnywhere()
     edit.show();
     QVERIFY(!edit.horizontalScrollBar()->isVisible());
 }
+#endif
 
 void tst_QTextDocumentLayout::inlineImage()
 {
