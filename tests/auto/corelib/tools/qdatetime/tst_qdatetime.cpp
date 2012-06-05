@@ -115,6 +115,8 @@ private slots:
     void dateFromStringFormat();
     void timeFromStringFormat_data();
     void timeFromStringFormat();
+    void timeFromStringDateFormat_data();
+    void timeFromStringDateFormat();
     void dateTimeFromStringFormat_data();
     void dateTimeFromStringFormat();
 
@@ -1435,6 +1437,32 @@ void tst_QDateTime::timeFromStringFormat()
     QCOMPARE(dt, expected);
 }
 
+void tst_QDateTime::timeFromStringDateFormat_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<Qt::DateFormat>("format");
+    QTest::addColumn<QTime>("expected");
+
+    QTest::newRow("valid, start of day, omit seconds") << QString::fromLatin1("00:00") << Qt::ISODate << QTime(0, 0, 0);
+    QTest::newRow("valid, omit seconds") << QString::fromLatin1("22:21") << Qt::ISODate << QTime(22, 21, 0);
+    QTest::newRow("valid, omit seconds (2)") << QString::fromLatin1("23:59") << Qt::ISODate << QTime(23, 59, 0);
+    QTest::newRow("valid, end of day") << QString::fromLatin1("23:59:59") << Qt::ISODate << QTime(23, 59, 59);
+
+    QTest::newRow("invalid, empty string") << QString::fromLatin1("") << Qt::ISODate << invalidTime();
+    QTest::newRow("invalid, too many hours") << QString::fromLatin1("25:00") << Qt::ISODate << invalidTime();
+    QTest::newRow("invalid, too many minutes") << QString::fromLatin1("10:70") << Qt::ISODate << invalidTime();
+    QTest::newRow("invalid, too many seconds") << QString::fromLatin1("23:59:60") << Qt::ISODate << invalidTime();
+}
+
+void tst_QDateTime::timeFromStringDateFormat()
+{
+    QFETCH(QString, string);
+    QFETCH(Qt::DateFormat, format);
+    QFETCH(QTime, expected);
+
+    QTime dt = QTime::fromString(string, format);
+    QCOMPARE(dt, expected);
+}
 
 void tst_QDateTime::dateTimeFromStringFormat_data()
 {

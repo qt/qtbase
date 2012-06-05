@@ -1803,6 +1803,10 @@ QTime QTime::fromString(const QString& s, Qt::DateFormat f)
             const int minute(s.mid(3, 2).toInt(&ok));
             if (!ok)
                 return QTime();
+            if (f == Qt::ISODate && s.size() == 5) {
+                // Do not need to specify seconds if using ISO format.
+                return QTime(hour, minute, 0, 0);
+            }
             const int second(s.mid(6, 2).toInt(&ok));
             if (!ok)
                 return QTime();
