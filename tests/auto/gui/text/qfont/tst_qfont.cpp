@@ -47,8 +47,10 @@
 #include <qfontdatabase.h>
 #include <qfontinfo.h>
 #include <qstringlist.h>
-#include <qapplication.h>
+#include <qguiapplication.h>
+#ifndef QT_NO_WIDGETS
 #include <qwidget.h>
+#endif
 #include <qlist.h>
 
 class tst_QFont : public QObject
@@ -67,7 +69,9 @@ private slots:
     void exactMatch();
     void compare();
     void resolve();
+#ifndef QT_NO_WIDGETS
     void resetFont();
+#endif
     void isCopyOf();
     void setFontRaw();
     void italicOblique();
@@ -468,6 +472,7 @@ void tst_QFont::resolve()
     QCOMPARE(f4.pointSize(), 55);
 }
 
+#ifndef QT_NO_WIDGETS
 void tst_QFont::resetFont()
 {
     QWidget parent;
@@ -491,14 +496,15 @@ void tst_QFont::resetFont()
     QVERIFY(child->font().pointSize() == parent.font().pointSize());
     QVERIFY(parent.font().resolve() != 0);
 }
+#endif
 
 void tst_QFont::isCopyOf()
 {
     QFont font;
-    QVERIFY(font.isCopyOf(QApplication::font()));
+    QVERIFY(font.isCopyOf(QGuiApplication::font()));
 
     QFont font2("bogusfont",  23);
-    QVERIFY(! font2.isCopyOf(QApplication::font()));
+    QVERIFY(! font2.isCopyOf(QGuiApplication::font()));
 
     QFont font3 = font;
     QVERIFY(font3.isCopyOf(font));
