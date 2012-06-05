@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformIntegration;
 
-class QPlatformIntegrationFactory
+class Q_GUI_EXPORT QPlatformIntegrationFactory
 {
 public:
     static QStringList keys(const QString &platformPluginPath = QString());
