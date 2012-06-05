@@ -42,32 +42,42 @@
 
 #include <QtTest/QtTest>
 #include <qpainter.h>
+#ifndef QT_NO_WIDGETS
 #include <qdrawutil.h>
 #include <qapplication.h>
 #include <qwidget.h>
+#endif
 #include <qfontmetrics.h>
 #include <qbitmap.h>
 #include <qimage.h>
 #include <qthread.h>
 #include <limits.h>
 #if !defined(Q_OS_WINCE)
+#ifndef QT_NO_WIDGETS
 #include <qprinter.h>
+#endif
 #include <math.h>
 #endif
 #include <qpaintengine.h>
+#ifndef QT_NO_WIDGETS
 #include <qdesktopwidget.h>
+#endif
 #include <qpixmap.h>
 
 #include <qpainter.h>
 
+#ifndef QT_NO_WIDGETS
 #include <qlabel.h>
+#endif
 
 #include <qqueue.h>
 
+#ifndef QT_NO_WIDGETS
 #include <qgraphicsview.h>
 #include <qgraphicsscene.h>
 #include <qgraphicsproxywidget.h>
 #include <qlayout.h>
+#endif
 #include <qfontdatabase.h>
 
 Q_DECLARE_METATYPE(QGradientStops)
@@ -92,12 +102,16 @@ public slots:
     void cleanupTestCase();
 private slots:
     void getSetCheck();
+#ifndef QT_NO_WIDGETS
     void drawPixmap_comp_data();
     void drawPixmap_comp();
+#endif
     void saveAndRestore_data();
     void saveAndRestore();
 
+#ifndef QT_NO_WIDGETS
     void drawBorderPixmap();
+#endif
     void drawPixmapFragments();
 
     void drawLine_data();
@@ -136,7 +150,9 @@ private slots:
     void qimageFormats();
     void textOnTransparentImage();
 
+#ifndef QT_NO_WIDGETS
     void initFrom();
+#endif
 
     void setWindow();
 
@@ -173,7 +189,9 @@ private slots:
 
     void drawhelper_blend_color();
 
+#ifndef QT_NO_WIDGETS
     void childWidgetViewport();
+#endif
 
     void fillRect_objectBoundingModeGradient();
     void fillRect_stretchToDeviceMode();
@@ -246,7 +264,9 @@ private slots:
     void setPenColorOnImage();
     void setPenColorOnPixmap();
 
+#ifndef QT_NO_WIDGETS
     void QTBUG5939_attachPainterPrivate();
+#endif
 
     void drawPointScaled();
 
@@ -350,7 +370,7 @@ Q_DECLARE_METATYPE(QRegion)
 tst_QPainter::tst_QPainter()
 {
     // QtTestCase sets this to false, but this turns off alpha pixmaps on Unix.
-    QApplication::setDesktopSettingsAware(true);
+    QGuiApplication::setDesktopSettingsAware(true);
 }
 
 tst_QPainter::~tst_QPainter()
@@ -417,6 +437,7 @@ static const char* const maskResult_data[] = {
 "...ddddddddddddd"};
 
 
+#ifndef QT_NO_WIDGETS
 void tst_QPainter::drawPixmap_comp_data()
 {
     if (qApp->desktop()->depth() < 24)
@@ -511,6 +532,7 @@ void tst_QPainter::drawPixmap_comp()
 
     QVERIFY(!different);
 }
+#endif
 
 void tst_QPainter::saveAndRestore_data()
 {
@@ -696,6 +718,7 @@ static QRect getPaintedSize(const QPixmap &pm, const QColor &background)
     return getPaintedSize(pm.toImage(), background);
 }
 
+#ifndef QT_NO_WIDGETS
 void tst_QPainter::initFrom()
 {
     QWidget *widget = new QWidget();
@@ -731,6 +754,7 @@ void tst_QPainter::drawBorderPixmap()
     qDrawBorderPixmap(&p, QRect(0,0,75,105), QMargins(39,39,39,39), src, QRect(0,0,79,79), QMargins(39,39,39,39),
                        QTileRules(Qt::StretchTile,Qt::StretchTile), 0);
 }
+#endif
 
 void tst_QPainter::drawPixmapFragments()
 {
@@ -2452,6 +2476,7 @@ void tst_QPainter::drawhelper_blend_color()
     QCOMPARE(dest, expected);
 }
 
+#ifndef QT_NO_WIDGETS
 class ViewportTestWidget : public QWidget
 {
 public:
@@ -2488,6 +2513,7 @@ void tst_QPainter::childWidgetViewport()
         qWarning("Failed to ensure that paintEvent has been run. Could not run test.");
     }
 }
+#endif
 
 void tst_QPainter::fillRect_objectBoundingModeGradient()
 {
@@ -4058,6 +4084,7 @@ void tst_QPainter::setPenColorOnPixmap()
     setPenColor(p);
 }
 
+#ifndef QT_NO_WIDGETS
 class TestProxy : public QGraphicsProxyWidget
 {
 public:
@@ -4106,6 +4133,7 @@ void tst_QPainter::QTBUG5939_attachPainterPrivate()
     QVERIFY(widget->worldTransform.isIdentity());
     QCOMPARE(widget->deviceTransform, proxy->deviceTransform);
 }
+#endif
 
 void tst_QPainter::clipBoundingRect()
 {

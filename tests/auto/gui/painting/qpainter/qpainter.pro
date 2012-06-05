@@ -2,7 +2,8 @@ CONFIG += testcase
 CONFIG += parallel_test
 TARGET = tst_qpainter
 
-QT += widgets widgets-private printsupport testlib
+QT += testlib
+!contains(QT_CONFIG, no-widgets): QT += widgets widgets-private printsupport
 
 SOURCES  += tst_qpainter.cpp
 
