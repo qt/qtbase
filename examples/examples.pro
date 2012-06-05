@@ -8,7 +8,7 @@ SUBDIRS       = \
                 xml \
                 qpa
 
-!contains(QT_CONFIG, no-gui) {
+!contains(QT_CONFIG, no-widgets) {
     SUBDIRS  += \
                 animation \
                 desktop \
