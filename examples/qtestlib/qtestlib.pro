@@ -6,5 +6,3 @@ target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qtestlib
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS qtestlib.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qtestlib
 INSTALLS += target sources
-
-QT += widgets

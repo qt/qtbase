@@ -22,5 +22,3 @@ SUBDIRS             =   books \
 sources.files = connection.h sql.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql
 INSTALLS += sources
-
-QT += widgets

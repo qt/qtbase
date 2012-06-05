@@ -15,5 +15,3 @@ target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/xml
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS xml.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/xml
 INSTALLS += target sources
-
-QT += widgets
