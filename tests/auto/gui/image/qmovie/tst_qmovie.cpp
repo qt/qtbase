@@ -44,7 +44,9 @@
 
 
 #include <QIODevice>
+#ifndef QT_NO_WIDGETS
 #include <QLabel>
+#endif
 #include <QMovie>
 
 class tst_QMovie : public QObject
@@ -70,7 +72,9 @@ private slots:
     void jumpToFrame_data();
     void jumpToFrame();
     void changeMovieFile();
+#ifndef QT_NO_WIDGETS
     void infiniteLoop();
+#endif
 };
 
 // Testing get/set functions
@@ -167,6 +171,7 @@ void tst_QMovie::playMovie()
 
     connect(&movie, SIGNAL(finished()), this, SLOT(exitLoopSlot()));
 
+#ifndef QT_NO_WIDGETS
     QLabel label;
     label.setMovie(&movie);
     label.show();
@@ -177,6 +182,7 @@ void tst_QMovie::playMovie()
 
     QCOMPARE(movie.state(), QMovie::NotRunning);
     QCOMPARE(movie.frameCount(), frameCount);
+#endif
 }
 
 void tst_QMovie::jumpToFrame_data()
@@ -203,6 +209,7 @@ void tst_QMovie::changeMovieFile()
     QVERIFY(movie.currentFrameNumber() == -1);
 }
 
+#ifndef QT_NO_WIDGETS
 void tst_QMovie::infiniteLoop()
 {
     QLabel label;
@@ -214,6 +221,7 @@ void tst_QMovie::infiniteLoop()
     QTestEventLoop::instance().enterLoop(1);
     QTestEventLoop::instance().timeout();
 }
+#endif
 
 QTEST_MAIN(tst_QMovie)
 #include "tst_qmovie.moc"
