@@ -241,7 +241,7 @@ struct WindowCreationData
 
     WindowCreationData() : parentHandle(0), type(Qt::Widget), style(0), exStyle(0),
         topLevel(false), popup(false), dialog(false), desktop(false),
-        tool(false) {}
+        tool(false), embedded(false) {}
 
     void fromWindow(const QWindow *w, const Qt::WindowFlags flags, unsigned creationFlags = 0);
     inline WindowData create(const QWindow *w, const QRect &geometry, QString title) const;
@@ -259,6 +259,7 @@ struct WindowCreationData
     bool dialog;
     bool desktop;
     bool tool;
+    bool embedded;
 };
 
 QDebug operator<<(QDebug debug, const WindowCreationData &d)
@@ -266,6 +267,7 @@ QDebug operator<<(QDebug debug, const WindowCreationData &d)
     debug.nospace() << QWindowsWindow::debugWindowFlags(d.flags)
         << " GL=" << d.isGL << " topLevel=" << d.topLevel << " popup="
         << d.popup << " dialog=" << d.dialog << " desktop=" << d.desktop
+        << " embedded=" << d.embedded
         << " tool=" << d.tool << " style=" << debugWinStyle(d.style)
         << " exStyle=" << debugWinExStyle(d.exStyle)
         << " parent=" << d.parentHandle;
@@ -277,7 +279,17 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
 {
     isGL = w->surfaceType() == QWindow::OpenGLSurface;
     flags = flagsIn;
-    topLevel = (creationFlags & ForceChild) ? false : w->isTopLevel();
+
+    // Sometimes QWindow doesn't have a QWindow parent but does have a native parent window,
+    // e.g. in case of embedded ActiveQt servers. They should not be considered a top-level
+    // windows in such cases.
+    QVariant prop = w->property("_q_embedded_native_parent_handle");
+    if (prop.isValid()) {
+        embedded = true;
+        parentHandle = (HWND)prop.value<WId>();
+    }
+
+    topLevel = ((creationFlags & ForceChild) || embedded) ? false : w->isTopLevel();
 
     if (topLevel && flags == 1) {
         qWarning("Remove me: fixing toplevel window flags");
@@ -310,7 +322,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
     // Parent: Use transient parent for top levels.
     if (popup) {
         flags |= Qt::WindowStaysOnTopHint; // a popup stays on top, no parent.
-    } else {
+    } else if (!embedded) {
         if (const QWindow *parentWindow = topLevel ? w->transientParent() : w->parent())
             parentHandle = QWindowsWindow::handleOf(parentWindow);
     }
@@ -423,6 +435,7 @@ QWindowsWindow::WindowData
 
     result.geometry = context->obtainedGeometry;
     result.frame = context->margins;
+    result.embedded = embedded;
     return result;
 }
 
@@ -959,7 +972,8 @@ void QWindowsWindow::setGeometry_sys(const QRect &rect) const
 QRect QWindowsWindow::frameGeometry_sys() const
 {
     // Warning: Returns bogus values when minimized.
-    return frameGeometry(m_data.hwnd, window()->isTopLevel());
+    bool isRealTopLevel = window()->isTopLevel() && !m_data.embedded;
+    return frameGeometry(m_data.hwnd, isRealTopLevel);
 }
 
 QRect QWindowsWindow::geometry_sys() const

@@ -133,6 +133,7 @@ public:
         QRect geometry;
         QMargins frame; // Do not use directly for windows, see FrameDirty.
         HWND hwnd;
+        bool embedded;
 
         static WindowData create(const QWindow *w,
                                  const WindowData &parameters,
