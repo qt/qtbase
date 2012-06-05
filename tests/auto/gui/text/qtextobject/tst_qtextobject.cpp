@@ -46,7 +46,9 @@
 #include <qdebug.h>
 #include <qtextobject.h>
 #include <qtextdocument.h>
+#ifndef QT_NO_WIDGETS
 #include <qtextedit.h>
+#endif
 #include <qtextcursor.h>
 
 class tst_QTextObject : public QObject
@@ -58,7 +60,9 @@ public:
     virtual ~tst_QTextObject();
 
 private slots:
+#ifndef QT_NO_WIDGETS
     void getSetCheck();
+#endif
     void testStandAloneTextObject();
 };
 
@@ -70,6 +74,7 @@ tst_QTextObject::~tst_QTextObject()
 {
 }
 
+#ifndef QT_NO_WIDGETS
 // Testing get/set functions
 void tst_QTextObject::getSetCheck()
 {
@@ -102,6 +107,7 @@ void tst_QTextObject::getSetCheck()
     obj2.setUserState(INT_MAX);
     QCOMPARE(INT_MAX, obj2.userState());
 }
+#endif
 
 class TestTextObject : public QTextObject
 {
