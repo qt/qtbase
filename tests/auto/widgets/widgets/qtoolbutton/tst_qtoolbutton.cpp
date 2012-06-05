@@ -218,8 +218,13 @@ void tst_QToolButton::task176137_autoRepeatOfAction()
     QTest::mousePress ( &tb, Qt::LeftButton);
     QTest::mouseRelease ( &tb, Qt::LeftButton, 0, QPoint (), 3000);
     qreal expected = (3000 - tb.autoRepeatDelay()) / tb.autoRepeatInterval() + 1;
-    //we check that the difference is less than 10% (on some systems timers are not super accurate)
-    QVERIFY ( qAbs( (expected - repeatSpy.count()) / expected) < 0.1);
+    //we check that the difference is small (on some systems timers are not super accurate)
+    qreal diff = (expected - repeatSpy.count()) / expected;
+    QVERIFY2(qAbs(diff) < 0.2, qPrintable(
+        QString("expected: %1, actual: %2, diff (fraction): %3")
+            .arg(expected)
+            .arg(repeatSpy.count())
+            .arg(diff)));
 }
 
 
