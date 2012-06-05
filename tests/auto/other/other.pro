@@ -25,6 +25,20 @@ SUBDIRS=\
    qtokenautomaton \
    windowsmobile \
 
+contains(QT_CONFIG, no-widgets): SUBDIRS -= \
+   baselineexample \
+   gestures \
+   headersclean \
+   lancelot \
+   languagechange \
+   modeltest \
+   qaccessibility \
+   qcomplextext \
+   qfocusevent \
+   qnetworkaccessmanager_and_qprogressdialog \
+   qsharedpointer_and_qwidget \
+   windowsmobile \
+
 testcocoon: SUBDIRS -= headersclean
 
 cross_compile: SUBDIRS -= \
