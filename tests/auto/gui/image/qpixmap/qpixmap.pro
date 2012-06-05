@@ -1,7 +1,8 @@
 CONFIG += testcase
 TARGET = tst_qpixmap
 
-QT += core-private gui-private widgets widgets-private testlib
+QT += core-private gui-private testlib
+!contains(QT_CONFIG, no-widgets): QT += widgets widgets-private
 
 SOURCES  += tst_qpixmap.cpp
 !wince* {

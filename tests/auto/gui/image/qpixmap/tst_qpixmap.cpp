@@ -46,9 +46,11 @@
 #include <qimage.h>
 #include <qimagereader.h>
 #include <qmatrix.h>
+#ifndef QT_NO_WIDGETS
 #include <qdesktopwidget.h>
-#include <qpaintengine.h>
 #include <qsplashscreen.h>
+#endif
+#include <qpaintengine.h>
 
 #include <qpa/qplatformpixmap.h>
 #include <qpa/qplatformintegration.h>
@@ -153,7 +155,9 @@ private slots:
     void fromImageReaderAnimatedGif();
 
     void preserveDepth();
+#ifndef QT_NO_WIDGETS
     void splash_crash();
+#endif
 
     void toImageDeepCopy();
 
@@ -720,6 +724,7 @@ void tst_QPixmap::grabWindow()
 {
 //  ### fixme: Check platforms
     QSKIP("QTBUG-20863 grabWindow is broken on most qpa backends");
+#ifndef QT_NO_WIDGETS
 #ifdef Q_OS_WINCE
     // We get out of memory, if the desktop itself is too big.
     if (QApplication::desktop()->width() <= 480)
@@ -747,6 +752,7 @@ void tst_QPixmap::grabWindow()
     QPixmap grabWindowPixmap = QPixmap::grabWindow(child.winId());
     QPixmap grabWidgetPixmap = QPixmap::grabWidget(&child);
     lenientCompare(grabWindowPixmap, grabWidgetPixmap);
+#endif
 }
 
 void tst_QPixmap::isNull()
@@ -1203,6 +1209,7 @@ void tst_QPixmap::fromImage_crash()
     delete img;
 }
 
+#ifndef QT_NO_WIDGETS
 //This is testing QPlatformPixmap::createCompatiblePlatformPixmap - see QTBUG-5977
 void tst_QPixmap::splash_crash()
 {
@@ -1213,6 +1220,7 @@ void tst_QPixmap::splash_crash()
     QCoreApplication::processEvents();
     splash.close();
 }
+#endif
 
 void tst_QPixmap::fromData()
 {
