@@ -45,8 +45,10 @@
 #include <qpicture.h>
 #include <qpainter.h>
 #include <qimage.h>
+#ifndef QT_NO_WIDGETS
 #include <qdesktopwidget.h>
 #include <qapplication.h>
+#endif
 #include <limits.h>
 
 class tst_QPicture : public QObject
@@ -64,7 +66,9 @@ private slots:
     void swap();
     void operator_lt_lt();
 
+#ifndef QT_NO_WIDGETS
     void save_restore();
+#endif
 
     void boundaryValues_data();
     void boundaryValues();
@@ -195,6 +199,7 @@ void tst_QPicture::operator_lt_lt()
     }
 }
 
+#ifndef QT_NO_WIDGETS
 static QPointF scalePoint(const QPointF &point, QPaintDevice *sourceDevice, QPaintDevice *destDevice)
 {
     return QPointF(point.x() * qreal(destDevice->logicalDpiX()) / qreal(sourceDevice->logicalDpiX()),
@@ -247,6 +252,7 @@ void tst_QPicture::save_restore()
 
     QVERIFY( pix1.toImage() == pix2.toImage() );
 }
+#endif
 
 void tst_QPicture::boundaryValues_data()
 {
