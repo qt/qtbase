@@ -70,7 +70,9 @@ private slots:
     void streamAvailableSizes();
     void fromTheme();
 
+#ifndef QT_NO_WIDGETS
     void task184901_badCache();
+#endif
     void task223279_inconsistentAddFile();
 
 private:
@@ -536,6 +538,7 @@ static inline bool operator<(const QSize &lhs, const QSize &rhs)
     return false;
 }
 
+#ifndef QT_NO_WIDGETS
 void tst_QIcon::task184901_badCache()
 {
     QPixmap pm(QFINDTESTDATA("image.png"));
@@ -548,6 +551,7 @@ void tst_QIcon::task184901_badCache()
     //the disabled icon must now be the same as the normal one.
     QVERIFY( icon.pixmap(32, QIcon::Normal).toImage() == icon.pixmap(32, QIcon::Disabled).toImage() );
 }
+#endif
 
 void tst_QIcon::fromTheme()
 {
