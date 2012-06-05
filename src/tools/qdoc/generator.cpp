@@ -1659,6 +1659,10 @@ void Generator::initialize(const Config &config)
                     ++e;
                 }
 
+                if (!Config::installDir.isEmpty()) {
+                    searchDirs.append(Config::installDir);
+                }
+
                 QStringList styles =
                         config.getCleanPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
                 e = styles.constBegin();

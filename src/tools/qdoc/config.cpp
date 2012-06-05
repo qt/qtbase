@@ -714,7 +714,10 @@ void Config::load(Location location, const QString& fileName)
 
     QFile fin(fileName);
     if (!fin.open(QFile::ReadOnly | QFile::Text)) {
-        fin.setFileName(fileName + QLatin1String(".qdoc"));
+        if (!Config::installDir.isEmpty()) {
+            int prefix = location.filePath().length() - location.fileName().length();
+            fin.setFileName(Config::installDir + "/" + fileName.right(fileName.length() - prefix));
+        }
         if (!fin.open(QFile::ReadOnly | QFile::Text))
             location.fatal(tr("Cannot open file '%1': %2").arg(fileName).arg(fin.errorString()));
     }

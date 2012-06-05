@@ -311,7 +311,7 @@ static void processQdocconfFile(const QString &fileName)
             }
         }
         else {
-            qDebug() << "Dependant modules specified, but not index directories were set."
+            qDebug() << "Dependant modules specified, but no index directories or install directory were set."
                      << "There will probably be errors for missing links.";
         }
     }
@@ -508,6 +508,7 @@ int main(int argc, char **argv)
         }
         else if (opt == "-installdir") {
             Config::installDir = argv[i];
+            indexDirs += argv[i];
             i++;
         }
         else if (opt == "-obsoletelinks") {
