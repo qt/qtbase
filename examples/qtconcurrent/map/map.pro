@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = mapdemo
-QT += concurrent widgets
+QT += concurrent
 CONFIG += console
 
 SOURCES += main.cpp

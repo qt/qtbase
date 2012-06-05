@@ -42,7 +42,7 @@
 #include <QList>
 #include <QThread>
 #include <QDebug>
-#include <QApplication>
+#include <QGuiApplication>
 #include <qtconcurrentmap.h>
 
 #ifndef QT_NO_CONCURRENT
@@ -55,7 +55,7 @@ QImage scale(const QImage &image)
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 
     const int imageCount = 20;
 
