@@ -41,11 +41,10 @@
 
 #include <QtTest/QtTest>
 #include <qabstractitemmodel.h>
-#include <qapplication.h>
+#include <qcoreapplication.h>
 #include <qmap.h>
 #include <qstringlistmodel.h>
 #include <qstringlist.h>
-#include <qlistview.h>
 #include "qmodellistener.h"
 #include <qstringlistmodel.h>
 
