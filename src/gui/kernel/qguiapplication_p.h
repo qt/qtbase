@@ -112,6 +112,7 @@ public:
 
     static void processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
 
+    static void updateFilteredScreenOrientation(QScreen *screen);
     static void reportScreenOrientationChange(QScreen *screen);
     static void reportScreenOrientationChange(QWindowSystemInterfacePrivate::ScreenOrientationEvent *e);
     static void reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e);

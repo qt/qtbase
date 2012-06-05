@@ -58,6 +58,7 @@ class QScreenPrivate : public QObjectPrivate
 public:
     QScreenPrivate(QPlatformScreen *screen)
         : platformScreen(screen)
+        , orientationUpdateMask(0)
     {
         orientation = screen->orientation();
         geometry = screen->geometry();
@@ -66,18 +67,24 @@ public:
         refreshRate = screen->refreshRate();
 
         updatePrimaryOrientation();
+
+        filteredOrientation = orientation;
+        if (filteredOrientation == Qt::PrimaryOrientation)
+            filteredOrientation = primaryOrientation;
     }
 
     void updatePrimaryOrientation();
 
+    QPlatformScreen *platformScreen;
+
+    Qt::ScreenOrientations orientationUpdateMask;
     Qt::ScreenOrientation orientation;
+    Qt::ScreenOrientation filteredOrientation;
     Qt::ScreenOrientation primaryOrientation;
     QRect geometry;
     QRect availableGeometry;
     QDpi logicalDpi;
     qreal refreshRate;
-
-    QPlatformScreen *platformScreen;
 };
 
 QT_END_NAMESPACE

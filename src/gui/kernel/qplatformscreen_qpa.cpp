@@ -195,6 +195,29 @@ Qt::ScreenOrientation QPlatformScreen::orientation() const
     return Qt::PrimaryOrientation;
 }
 
+/*
+    Reimplement this function in subclass to filter out unneeded screen
+    orientation updates.
+
+    The orientations will anyway be filtered before QScreen::orientationChanged()
+    is emitted, but the mask can be used by the platform plugin for example to
+    prevent having to have an accelerometer sensor running all the time, or to
+    improve the reported values. As an example of the latter, in case of only
+    Landscape | InvertedLandscape being set in the mask, on a platform that gets
+    its orientation readings from an accelerometer sensor embedded in a handheld
+    device, the platform can report transitions between the two even when the
+    device is held in an orientation that's closer to portrait.
+
+    By default, the orientation update mask is empty, so unless this function
+    has been called with a non-empty mask the platform does not need to report
+    any orientation updates through
+    QWindowSystemInterface::handleScreenOrientationChange().
+*/
+void QPlatformScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
+{
+    Q_UNUSED(mask);
+}
+
 QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *window)
 {
     return window->screen()->handle();

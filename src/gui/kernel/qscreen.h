@@ -119,6 +119,9 @@ public:
     Qt::ScreenOrientation primaryOrientation() const;
     Qt::ScreenOrientation orientation() const;
 
+    Qt::ScreenOrientations orientationUpdateMask() const;
+    void setOrientationUpdateMask(Qt::ScreenOrientations mask);
+
     int angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b) const;
     QTransform transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target) const;
     QRect mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect) const;

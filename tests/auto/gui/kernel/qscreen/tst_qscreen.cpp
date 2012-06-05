@@ -177,13 +177,26 @@ void tst_QScreen::transformBetween()
 
 void tst_QScreen::orientationChange()
 {
+    qRegisterMetaType<Qt::ScreenOrientation>("Qt::ScreenOrientation");
+
     QScreen *screen = QGuiApplication::primaryScreen();
+
+    screen->setOrientationUpdateMask(Qt::LandscapeOrientation | Qt::PortraitOrientation);
 
     QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::LandscapeOrientation);
     QTRY_COMPARE(screen->orientation(), Qt::LandscapeOrientation);
 
     QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::PortraitOrientation);
     QTRY_COMPARE(screen->orientation(), Qt::PortraitOrientation);
+
+    QSignalSpy spy(screen, SIGNAL(orientationChanged(Qt::ScreenOrientation)));
+
+    QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::InvertedLandscapeOrientation);
+    QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::InvertedPortraitOrientation);
+    QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::LandscapeOrientation);
+
+    QTRY_COMPARE(screen->orientation(), Qt::LandscapeOrientation);
+    QCOMPARE(spy.count(), 1);
 }
 
 #include <tst_qscreen.moc>

@@ -345,6 +345,35 @@ QRect QScreen::availableVirtualGeometry() const
 }
 
 /*!
+    Sets the orientations that the application is interested in receiving
+    updates for in conjunction with this screen.
+
+    For example, to receive orientation() updates and thus have
+    orientationChanged() signals being emitted for LandscapeOrientation and
+    InvertedLandscapeOrientation, call setOrientationUpdateMask() with the
+    argument Qt::LandscapeOrientation | Qt::InvertedLandscapeOrientation.
+
+    The default, 0, means no orientationChanged() signals are fired.
+*/
+void QScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
+{
+    Q_D(QScreen);
+    d->orientationUpdateMask = mask;
+    d->platformScreen->setOrientationUpdateMask(mask);
+}
+
+/*!
+    Returns the currently set orientation update mask.
+
+    \sa setOrientationUpdateMask()
+*/
+Qt::ScreenOrientations QScreen::orientationUpdateMask() const
+{
+    Q_D(const QScreen);
+    return d->orientationUpdateMask;
+}
+
+/*!
     \property QScreen::orientation
     \brief the screen orientation
 
@@ -353,6 +382,11 @@ QRect QScreen::availableVirtualGeometry() const
     will change based on the device is being held, and a desktop display
     might be rotated so that it's in portrait mode.
 
+    Changes to this property will be filtered by orientationUpdateMask(),
+    so in order to receive orientation updates the application must first
+    call setOrientationUpdateMask() with a mask of the orientations it wants
+    to receive.
+
     Qt::PrimaryOrientation is never returned.
 
     \sa primaryOrientation(), orientationChanged()
@@ -360,7 +394,7 @@ QRect QScreen::availableVirtualGeometry() const
 Qt::ScreenOrientation QScreen::orientation() const
 {
     Q_D(const QScreen);
-    return d->orientation == Qt::PrimaryOrientation ? primaryOrientation() : d->orientation;
+    return d->filteredOrientation;
 }
 
 /*!
