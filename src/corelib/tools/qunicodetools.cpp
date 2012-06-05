@@ -155,12 +155,10 @@ static void calcGraphemeAndLineBreaks(const ushort *string, quint32 len, HB_Char
     if (cls == QUnicodeTables::LineBreak_LF)
         cls = QUnicodeTables::LineBreak_BK;
 
-    attributes[0].whiteSpace = (cls == QUnicodeTables::LineBreak_SP || cls == QUnicodeTables::LineBreak_BK);
     attributes[0].charStop = true;
 
     int lcls = cls;
     for (quint32 i = 1; i < len; ++i) {
-        attributes[i].whiteSpace = false;
         attributes[i].charStop = true;
 
         uint ucs4 = string[i];
@@ -182,10 +180,6 @@ static void calcGraphemeAndLineBreaks(const ushort *string, quint32 len, HB_Char
                 ncls = QUnicodeTables::LineBreak_AL;
             }
         }
-
-        // set white space and char stop flag
-        if (ncls >= QUnicodeTables::LineBreak_SP)
-            attributes[i].whiteSpace = true;
 
         HB_LineBreakType lineBreakType = HB_NoBreak;
 
@@ -378,6 +372,24 @@ static void calcSentenceBreaks(const ushort *string, quint32 len, HB_CharAttribu
 }
 
 
+static void getWhiteSpaces(const ushort *string, quint32 len, HB_CharAttributes *attributes)
+{
+    for (quint32 i = 0; i != len; ++i) {
+        uint ucs4 = string[i];
+        if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
+            ushort low = string[i + 1];
+            if (QChar::isLowSurrogate(low)) {
+                ucs4 = QChar::surrogateToUcs4(ucs4, low);
+                ++i;
+            }
+        }
+
+        if (QChar::isSpace(ucs4))
+            attributes[i].whiteSpace = true;
+    }
+}
+
+
 Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
                                       const HB_ScriptItem *items, int numItems,
                                       HB_CharAttributes *attributes, CharAttributeOptions options)
@@ -391,12 +403,14 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
             options |= GraphemeBreaks;
     }
 
-    if (options & (GraphemeBreaks | LineBreaks | WhiteSpaces))
+    if (options & (GraphemeBreaks | LineBreaks))
         calcGraphemeAndLineBreaks(string, length, attributes);
     if (options & WordBreaks)
         calcWordBreaks(string, length, attributes);
     if (options & SentenceBreaks)
         calcSentenceBreaks(string, length, attributes);
+    if (options & WhiteSpaces)
+        getWhiteSpaces(string, length, attributes);
 
     if (!items || numItems <= 0)
         return;
