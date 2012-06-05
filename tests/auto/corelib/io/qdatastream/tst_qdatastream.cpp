@@ -41,6 +41,7 @@
 
 #include <QtTest/QtTest>
 #include <QtGui/QBitmap>
+#include <QtGui/QPalette>
 #include <QtGui/QPixmap>
 #include <QtGui/QPicture>
 #include <QtGui/QTextLength>
