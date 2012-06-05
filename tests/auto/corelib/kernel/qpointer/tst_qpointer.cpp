@@ -42,7 +42,9 @@
 #include <QtTest/QtTest>
 
 #include <QPointer>
+#ifndef QT_NO_WIDGETS
 #include <QWidget>
+#endif
 
 class tst_QPointer : public QObject
 {
@@ -138,7 +140,9 @@ void tst_QPointer::equality_operators()
     QVERIFY(p1 == p2);
 
     QObject *object = 0;
+#ifndef QT_NO_WIDGETS
     QWidget *widget = 0;
+#endif
 
     p1 = object;
     QVERIFY(p1 == p2);
@@ -162,10 +166,12 @@ void tst_QPointer::equality_operators()
     QVERIFY(object == p1);
     QVERIFY(p2 != object);
     QVERIFY(object != p2);
+#ifndef QT_NO_WIDGETS
     QVERIFY(p1 == widget);
     QVERIFY(widget == p1);
     QVERIFY(p2 != widget);
     QVERIFY(widget != p2);
+#endif
 }
 
 void tst_QPointer::isNull()
@@ -228,6 +234,7 @@ ChildObject::~ChildObject()
     QCOMPARE(qobject_cast<QObject *>(guardedPointer), static_cast<QObject *>(0));
 }
 
+#ifndef QT_NO_WIDGETS
 class ChildWidget : public QWidget
 {
     QPointer<QWidget> guardedPointer;
@@ -244,6 +251,7 @@ ChildWidget::~ChildWidget()
     QCOMPARE(static_cast<QWidget *>(guardedPointer), parentWidget());
     QCOMPARE(qobject_cast<QWidget *>(guardedPointer), parentWidget());
 }
+#endif
 
 class DerivedChild;
 
@@ -297,11 +305,13 @@ void tst_QPointer::castDuringDestruction()
         delete parentObject;
     }
 
+#ifndef QT_NO_WIDGETS
     {
         QWidget *parentWidget = new QWidget();
         (void) new ChildWidget(parentWidget);
         delete parentWidget;
     }
+#endif
 
     {
         delete new DerivedParent();

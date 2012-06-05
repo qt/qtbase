@@ -1,5 +1,6 @@
 CONFIG += testcase
 CONFIG += parallel_test
 TARGET = tst_qpointer
-QT += widgets testlib
+QT += testlib
+!contains(QT_CONFIG, no-widgets): QT += widgets
 SOURCES = tst_qpointer.cpp
