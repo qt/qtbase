@@ -53,8 +53,8 @@ QT_BEGIN_NAMESPACE
 
 // Define it here to work around XLib defining Bool and stuff.
 // We can't declare those variables in the header without facing include order headaches.
-struct XInput2Data {
-    XInput2Data()
+struct XInput2MaemoData {
+    XInput2MaemoData()
     : use_xinput(false)
     , xinput_opcode(0)
     , xinput_eventbase(0)
@@ -78,15 +78,15 @@ struct XInput2Data {
     QTouchDevice *qtTouchDevice;
 };
 
-bool QXcbConnection::isUsingXInput2()
+bool QXcbConnection::isUsingXInput2Maemo()
 {
     return m_xinputData && m_xinputData->use_xinput && m_xinputData->xiMaxContacts != 0;
 }
 
-void QXcbConnection::initializeXInput2()
+void QXcbConnection::initializeXInput2Maemo()
 {
     Q_ASSERT(!m_xinputData);
-    m_xinputData = new XInput2Data;
+    m_xinputData = new XInput2MaemoData;
     m_xinputData->use_xinput = XQueryExtension((Display *)m_xlib_display, "XInputExtension", &m_xinputData->xinput_opcode,
                                       &m_xinputData->xinput_eventbase, &m_xinputData->xinput_errorbase);
     if (m_xinputData->use_xinput) {
@@ -156,7 +156,7 @@ void QXcbConnection::initializeXInput2()
     }
 }
 
-void QXcbConnection::finalizeXInput2()
+void QXcbConnection::finalizeXInput2Maemo()
 {
     if (m_xinputData && m_xinputData->xideviceinfo) {
         XIFreeDeviceInfo(m_xinputData->xideviceinfo);
@@ -164,49 +164,9 @@ void QXcbConnection::finalizeXInput2()
     delete m_xinputData;
 }
 
-// Borrowed from libXi.
-static int count_bits(unsigned char* ptr, int len)
+void QXcbConnection::handleGenericEventMaemo(xcb_ge_event_t *event)
 {
-    int bits = 0;
-    int i;
-    unsigned char x;
-
-    for (i = 0; i < len; i++)
-    {
-        x = ptr[i];
-        while (x > 0)
-        {
-            bits += (x & 0x1);
-            x >>= 1;
-        }
-    }
-    return bits;
-}
-
-static bool getValuatorValueIfSet(xXIDeviceEvent *xideviceevent, int valuatorNum, double *value)
-{
-    unsigned char *buttonsMaskAddr = (unsigned char*)&xideviceevent[1];
-    unsigned char *valuatorsMaskAddr = buttonsMaskAddr + xideviceevent->buttons_len * 4;
-    FP3232 *valuatorsValuesAddr = (FP3232*)(valuatorsMaskAddr + xideviceevent->valuators_len * 4);
-    int numValuatorValues = count_bits(valuatorsMaskAddr, xideviceevent->valuators_len * 4);
-    // This relies on all bit being set until a certain number i.e. it doesn't support only bit 0 and 5 being set in the mask.
-    // Just like the original code, works for now.
-    if (valuatorNum >= numValuatorValues)
-        return false;
-    *value = valuatorsValuesAddr[valuatorNum].integral;
-    *value += ((double)valuatorsValuesAddr[valuatorNum].frac / (1 << 16) / (1 << 16));
-    return true;
-}
-
-void QXcbConnection::handleGenericEvent(xcb_ge_event_t *event)
-{
-    // xGenericEvent has "extension" on the second byte, xcb_ge_event_t has "pad0".
-    if (m_xinputData->use_xinput && event->pad0 == m_xinputData->xinput_opcode) {
-        // xcb event structs contain stuff that wasn't on the wire, the full_sequence field
-        // adds an extra 4 bytes and generic events cookie data is on the wire right after the standard 32 bytes.
-        // Move this data back to have the same layout in memory as it was on the wire
-        // and allow casting, overwritting the full_sequence field.
-        memmove((char*)event + 32, (char*)event + 36, event->length * 4);
+    if (m_xinputData->use_xinput && xi2PrepareXIGenericDeviceEvent(event, m_xinputData->xinput_opcode)) {
         xXIGenericDeviceEvent* xievent = (xXIGenericDeviceEvent*)event;
 
         // On Harmattan XInput2 is hacked to give touch points updates into standard mouse button press/motion events.
@@ -235,7 +195,7 @@ void QXcbConnection::handleGenericEvent(xcb_ge_event_t *event)
                     XIValuatorClassInfo *valuatorclassinfo = reinterpret_cast<XIValuatorClassInfo *>(classinfo);
                     int n = valuatorclassinfo->number;
                     double value;
-                    if (!getValuatorValueIfSet(xideviceevent, n, &value))
+                    if (!xi2GetValuatorValueIfSet(xideviceevent, n, &value))
                         continue;
 
                     if (valuatorclassinfo->label == atom(QXcbAtom::AbsMTPositionX)) {
@@ -305,5 +265,4 @@ void QXcbConnection::handleGenericEvent(xcb_ge_event_t *event)
 QT_END_NAMESPACE
 
 #endif // XCB_USE_XINPUT2_MAEMO
-
 

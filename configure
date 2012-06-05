@@ -4648,22 +4648,20 @@ if [ "$CFG_XCB" != "no" ]; then
             QT_CONFIG="$QT_CONFIG xcb-xlib"
         fi
 
-        if [ "$XPLATFORM_MAEMO" = "yes" ]; then
-            # auto-detect XInput2/Xinput support
-            if [ "$CFG_XINPUT2" != "no" ]; then
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xinput2 "XInput2" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
-                    CFG_XINPUT2=yes
-                    CFG_XINPUT=no
+        # auto-detect XInput2 support. Needed by xcb too.
+        if [ "$CFG_XINPUT2" != "no" ]; then
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xinput2 "XInput2" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
+                CFG_XINPUT2=yes
+                CFG_XINPUT=no
+            else
+                if [ "$CFG_XINPUT2" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                    echo "XInput2 support cannot be enabled due to functionality tests!"
+                    echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                    echo " If you believe this message is in error you may use the continue"
+                    echo " switch (-continue) to $0 to continue."
+                    exit 101
                 else
-                    if [ "$CFG_XINPUT2" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                        echo "XInput2 support cannot be enabled due to functionality tests!"
-                        echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                        echo " If you believe this message is in error you may use the continue"
-                        echo " switch (-continue) to $0 to continue."
-                        exit 101
-                    else
-                        CFG_XINPUT2=no
-                    fi
+                    CFG_XINPUT2=no
                 fi
             fi
         fi
@@ -6052,6 +6050,7 @@ echo "Xcursor support ........ $CFG_XCURSOR"
 echo "Xfixes support ......... $CFG_XFIXES"
 echo "Xrandr support ......... $CFG_XRANDR"
 echo "Xi support ............. $CFG_XINPUT"
+echo "Xi2 support ............ $CFG_XINPUT2"
 echo "MIT-SHM support ........ $CFG_MITSHM"
 echo "FontConfig support ..... $CFG_FONTCONFIG"
 echo "XKB Support ............ $CFG_XKB"

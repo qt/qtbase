@@ -103,7 +103,7 @@
 #endif // QT_NO_SHAPE
 #endif
 
-#ifdef XCB_USE_XINPUT2_MAEMO
+#if defined(XCB_USE_XINPUT2_MAEMO) || defined(XCB_USE_XINPUT2)
 #include <X11/extensions/XInput2.h>
 #endif
 
@@ -359,7 +359,7 @@ void QXcbWindow::create()
                                    1, &leader));
 
 #ifdef XCB_USE_XINPUT2_MAEMO
-    if (connection()->isUsingXInput2()) {
+    if (connection()->isUsingXInput2Maemo()) {
         XIEventMask xieventmask;
         uchar bitmask[2] = { 0, 0 };
 
@@ -373,6 +373,8 @@ void QXcbWindow::create()
 
         XISelectEvents(DISPLAY_FROM_XCB(this), m_window, &xieventmask, 1);
     }
+#elif defined(XCB_USE_XINPUT2)
+    connection()->xi2Select(m_window);
 #endif
 
     setWindowFlags(window()->windowFlags());

@@ -87,6 +87,11 @@ extern "C" {
 #include <EGL/eglext.h>
 #endif
 
+#if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
+#include <X11/extensions/XInput2.h>
+#include <X11/extensions/XI2proto.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifdef XCB_USE_XLIB
@@ -185,7 +190,10 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
 
     initializeXFixes();
     initializeXRender();
+    m_xi2Enabled = false;
 #ifdef XCB_USE_XINPUT2_MAEMO
+    initializeXInput2Maemo();
+#elif defined(XCB_USE_XINPUT2)
     initializeXInput2();
 #endif
     initializeXShape();
@@ -218,6 +226,8 @@ QXcbConnection::~QXcbConnection()
         delete m_screens.takeLast();
 
 #ifdef XCB_USE_XINPUT2_MAEMO
+    finalizeXInput2Maemo();
+#elif defined(XCB_USE_XINPUT2)
     finalizeXInput2();
 #endif
 
@@ -602,11 +612,16 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_PROPERTY_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
             break;
-    #ifdef XCB_USE_XINPUT2_MAEMO
+#ifdef XCB_USE_XINPUT2_MAEMO
         case GenericEvent:
-            handleGenericEvent((xcb_ge_event_t*)event);
+            handleGenericEventMaemo((xcb_ge_event_t*)event);
             break;
-    #endif
+#elif defined(XCB_USE_XINPUT2)
+        case GenericEvent:
+            if (m_xi2Enabled)
+                xi2HandleEvent(reinterpret_cast<xcb_ge_event_t *>(event));
+            break;
+#endif
         default:
             handled = false;
             break;
@@ -951,15 +966,6 @@ static const char * xcb_atomnames = {
     "_XEMBED\0"
     "_XEMBED_INFO\0"
 
-    // Wacom old. (before version 0.10)
-    "Wacom Stylus\0"
-    "Wacom Cursor\0"
-    "Wacom Eraser\0"
-
-    // Tablet
-    "STYLUS\0"
-    "ERASER\0"
-
     // XInput2
     "Button Left\0"
     "Button Middle\0"
@@ -975,6 +981,16 @@ static const char * xcb_atomnames = {
     "Abs MT Pressure\0"
     "Abs MT Tracking ID\0"
     "Max Contacts\0"
+    // XInput2 tablet
+    "Abs X\0"
+    "Abs Y\0"
+    "Abs Pressure\0"
+    "Abs Tilt X\0"
+    "Abs Tilt Y\0"
+    "Abs Wheel\0"
+    "Abs Distance\0"
+    "Wacom Serial IDs\0"
+    "INTEGER\0"
 #if XCB_USE_MAEMO_WINDOW_PROPERTIES
     "_MEEGOTOUCH_ORIENTATION_ANGLE\0"
 #endif
@@ -1244,5 +1260,54 @@ bool QXcbConnection::hasSupportForDri2() const
     return m_has_support_for_dri2;
 }
 #endif //XCB_USE_DRI2
+
+#if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
+// Borrowed from libXi.
+int QXcbConnection::xi2CountBits(unsigned char *ptr, int len)
+{
+    int bits = 0;
+    int i;
+    unsigned char x;
+
+    for (i = 0; i < len; i++) {
+        x = ptr[i];
+        while (x > 0) {
+            bits += (x & 0x1);
+            x >>= 1;
+        }
+    }
+    return bits;
+}
+
+bool QXcbConnection::xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value)
+{
+    xXIDeviceEvent *xideviceevent = static_cast<xXIDeviceEvent *>(event);
+    unsigned char *buttonsMaskAddr = (unsigned char*)&xideviceevent[1];
+    unsigned char *valuatorsMaskAddr = buttonsMaskAddr + xideviceevent->buttons_len * 4;
+    FP3232 *valuatorsValuesAddr = (FP3232*)(valuatorsMaskAddr + xideviceevent->valuators_len * 4);
+    int numValuatorValues = xi2CountBits(valuatorsMaskAddr, xideviceevent->valuators_len * 4);
+    // This relies on all bit being set until a certain number i.e. it doesn't support only bit 0 and 5 being set in the mask.
+    // Just like the original code, works for now.
+    if (valuatorNum >= numValuatorValues)
+        return false;
+    *value = valuatorsValuesAddr[valuatorNum].integral;
+    *value += ((double)valuatorsValuesAddr[valuatorNum].frac / (1 << 16) / (1 << 16));
+    return true;
+}
+
+bool QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event, int opCode)
+{
+    // xGenericEvent has "extension" on the second byte, xcb_ge_event_t has "pad0".
+    if (event->pad0 == opCode) {
+        // xcb event structs contain stuff that wasn't on the wire, the full_sequence field
+        // adds an extra 4 bytes and generic events cookie data is on the wire right after the standard 32 bytes.
+        // Move this data back to have the same layout in memory as it was on the wire
+        // and allow casting, overwriting the full_sequence field.
+        memmove((char*) event + 32, (char*) event + 36, event->length * 4);
+        return true;
+    }
+    return false;
+}
+#endif // defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
 
 QT_END_NAMESPACE

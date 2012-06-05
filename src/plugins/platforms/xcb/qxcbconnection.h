@@ -52,8 +52,12 @@
 #include <QVector>
 #include <QVarLengthArray>
 
+#ifndef QT_NO_TABLETEVENT
+#include <QTabletEvent>
+#endif
+
 #ifdef XCB_USE_XINPUT2_MAEMO
-struct XInput2Data;
+struct XInput2MaemoData;
 #endif
 
 //#define Q_XCB_DEBUG
@@ -222,13 +226,6 @@ namespace QXcbAtom {
         _XEMBED,
         _XEMBED_INFO,
 
-        XWacomStylus,
-        XWacomCursor,
-        XWacomEraser,
-
-        XTabletStylus,
-        XTabletEraser,
-
         // XInput2
         ButtonLeft,
         ButtonMiddle,
@@ -244,6 +241,16 @@ namespace QXcbAtom {
         AbsMTPressure,
         AbsMTTrackingID,
         MaxContacts,
+        // XInput2 tablet
+        AbsX,
+        AbsY,
+        AbsPressure,
+        AbsTiltX,
+        AbsTiltY,
+        AbsWheel,
+        AbsDistance,
+        WacomSerialIDs,
+        INTEGER,
 
 #if XCB_USE_MAEMO_WINDOW_PROPERTIES
         MeegoTouchOrientationAngle,
@@ -335,7 +342,9 @@ public:
     void *egl_display() const { return m_egl_display; }
 #endif
 #ifdef XCB_USE_XINPUT2_MAEMO
-    bool isUsingXInput2();
+    bool isUsingXInput2Maemo();
+#elif defined(XCB_USE_XINPUT2)
+    void xi2Select(xcb_window_t window);
 #endif
 
     void sync();
@@ -377,11 +386,48 @@ private:
     void initializeDri2();
 #endif
 #ifdef XCB_USE_XINPUT2_MAEMO
-    void initializeXInput2();
-    void finalizeXInput2();
-    void handleGenericEvent(xcb_ge_event_t *event);
+    void initializeXInput2Maemo();
+    void finalizeXInput2Maemo();
+    void handleGenericEventMaemo(xcb_ge_event_t *event);
 #endif
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
+
+    bool m_xi2Enabled;
+    int m_xi2Minor;
+#ifdef XCB_USE_XINPUT2
+    void initializeXInput2();
+    void finalizeXInput2();
+    void xi2HandleEvent(xcb_ge_event_t *event);
+    int m_xiOpCode, m_xiEventBase, m_xiErrorBase;
+#ifndef QT_NO_TABLETEVENT
+    struct TabletData {
+        TabletData() : deviceId(0), down(false), serialId(0), inProximity(false) { }
+        int deviceId;
+        QTabletEvent::PointerType pointerType;
+        bool down;
+        qint64 serialId;
+        bool inProximity;
+        struct ValuatorClassInfo {
+            ValuatorClassInfo() : minVal(0), maxVal(0) { }
+            double minVal;
+            double maxVal;
+            int number;
+        };
+        QHash<int, ValuatorClassInfo> valuatorInfo;
+    };
+    void xi2QueryTabletData(void *dev, TabletData *tabletData); // use no XI stuff in headers
+    void xi2SetupTabletDevices();
+    void xi2HandleTabletEvent(void *event, TabletData *tabletData);
+    void xi2ReportTabletEvent(const TabletData &tabletData, void *event);
+    QVector<TabletData> m_tabletData;
+#endif
+#endif // XCB_USE_XINPUT2
+
+#if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
+    static int xi2CountBits(unsigned char *ptr, int len);
+    static bool xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value);
+    static bool xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event, int opCode);
+#endif
 
     xcb_connection_t *m_connection;
     const xcb_setup_t *m_setup;
@@ -412,7 +458,7 @@ private:
 #endif
     QXcbEventReader *m_reader;
 #ifdef XCB_USE_XINPUT2_MAEMO
-    XInput2Data *m_xinputData;
+    XInput2MaemoData *m_xinputData;
 #endif
 #ifdef XCB_USE_DRI2
     uint32_t m_dri2_major;

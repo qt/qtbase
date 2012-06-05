@@ -56,6 +56,12 @@ contains(QT_CONFIG, xcb-xlib) {
             LIBS += -lXi
         }
         DEFINES += XCB_USE_MAEMO_WINDOW_PROPERTIES
+    } else {
+        contains(QT_CONFIG, xinput2) {
+            DEFINES += XCB_USE_XINPUT2
+            SOURCES += qxcbconnection_xi2.cpp
+            LIBS += -lXi
+        }
     }
 }
 
