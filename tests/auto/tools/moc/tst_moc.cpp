@@ -1920,6 +1920,6 @@ void tst_Moc::redefinedNames()
 }
 
 
-QTEST_APPLESS_MAIN(tst_Moc)
+QTEST_MAIN(tst_Moc)
 #include "tst_moc.moc"
 

@@ -210,5 +210,5 @@ QString tst_uic::workingDir() const
     return QDir::cleanPath(SRCDIR);
 }
 
-QTEST_APPLESS_MAIN(tst_uic)
+QTEST_MAIN(tst_uic)
 #include "tst_uic.moc"

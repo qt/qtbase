@@ -361,6 +361,6 @@ void tst_rcc::cleanupTestCase()
         QFile::remove(entry.absoluteFilePath());
 }
 
-QTEST_APPLESS_MAIN(tst_rcc)
+QTEST_MAIN(tst_rcc)
 
 #include "tst_rcc.moc"
