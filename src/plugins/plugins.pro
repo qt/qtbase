@@ -6,4 +6,4 @@ SUBDIRS *= sqldrivers bearer
 
 SUBDIRS += platforms platforminputcontexts generic
 
-!wince*:SUBDIRS += printsupport
+!wince*:!contains(QT_CONFIG, no-widgets):SUBDIRS += printsupport
