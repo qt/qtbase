@@ -1758,17 +1758,11 @@ void QString::resize(int size, QChar fillChar)
 
 void QString::reallocData(uint alloc, bool grow)
 {
-    size_t blockSize;
-    if (grow) {
-        auto r = qCalculateGrowingBlockSize(alloc, sizeof(QChar), sizeof(Data));
-        blockSize = r.size;
-        alloc = uint(r.elementCount);
-    } else {
-        blockSize = qCalculateBlockSize(alloc, sizeof(QChar), sizeof(Data));
-    }
+    auto allocOptions = d->detachFlags();
+    if (grow)
+        allocOptions |= QArrayData::Grow;
 
     if (d->ref.isShared() || IS_RAW_DATA(d)) {
-        Data::AllocationOptions allocOptions(d->capacityReserved ? Data::CapacityReserved : 0);
         Data *x = Data::allocate(alloc, allocOptions);
         Q_CHECK_PTR(x);
         x->size = qMin(int(alloc) - 1, d->size);
@@ -1778,11 +1772,9 @@ void QString::reallocData(uint alloc, bool grow)
             Data::deallocate(d);
         d = x;
     } else {
-        Data *p = static_cast<Data *>(::realloc(d, blockSize));
+        Data *p = Data::reallocateUnaligned(d, alloc, allocOptions);
         Q_CHECK_PTR(p);
         d = p;
-        d->alloc = alloc;
-        d->offset = sizeof(QStringData);
     }
 }
 

@@ -65,6 +65,8 @@ private slots:
     void simpleVectorReserve();
     void allocate_data();
     void allocate();
+    void reallocate_data() { allocate_data(); }
+    void reallocate();
     void alignment_data();
     void alignment();
     void typedData();
@@ -740,6 +742,54 @@ void tst_QArrayData::allocate()
         // memory checker, such as valgrind, running.
         ::memset(data->data(), 'A', objectSize * capacity);
     }
+}
+
+void tst_QArrayData::reallocate()
+{
+    QFETCH(size_t, objectSize);
+    QFETCH(size_t, alignment);
+    QFETCH(QArrayData::AllocationOptions, allocateOptions);
+    QFETCH(bool, isCapacityReserved);
+    QFETCH(const QArrayData *, commonEmpty);
+
+    // Maximum alignment that can be requested is that of QArrayData,
+    // otherwise, we can't use reallocate().
+    Q_ASSERT(alignment <= Q_ALIGNOF(QArrayData));
+
+    // Minimum alignment that can be requested is that of QArrayData.
+    // Typically, this alignment is sizeof(void *) and ensured by malloc.
+    size_t minAlignment = qMax(alignment, Q_ALIGNOF(QArrayData));
+
+    int capacity = 10;
+    Deallocator keeper(objectSize, minAlignment);
+    QArrayData *data = QArrayData::allocate(objectSize, minAlignment, capacity,
+                                            QArrayData::AllocationOptions(allocateOptions) & ~QArrayData::Grow);
+    keeper.headers.append(data);
+
+    memset(data->data(), 'A', objectSize * capacity);
+    data->size = capacity;
+
+    // now try to reallocate
+    int newCapacity = 40;
+    data = QArrayData::reallocateUnaligned(data, objectSize, newCapacity,
+                                           QArrayData::AllocationOptions(allocateOptions));
+    QVERIFY(data);
+    keeper.headers.clear();
+    keeper.headers.append(data);
+
+    QCOMPARE(data->size, capacity);
+    if (allocateOptions & QArrayData::Grow)
+        QVERIFY(data->alloc > uint(newCapacity));
+    else
+        QCOMPARE(data->alloc, uint(newCapacity));
+    QCOMPARE(data->capacityReserved, uint(isCapacityReserved));
+#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
+    QFETCH(bool, isSharable);
+    QCOMPARE(data->ref.isSharable(), isSharable);
+#endif
+
+    for (int i = 0; i < capacity; ++i)
+        QCOMPARE(static_cast<char *>(data->data())[i], 'A');
 }
 
 class Unaligned

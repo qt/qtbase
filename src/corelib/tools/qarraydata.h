@@ -115,6 +115,9 @@ struct Q_CORE_EXPORT QArrayData
     static QArrayData *allocate(size_t objectSize, size_t alignment,
             size_t capacity, AllocationOptions options = Default)
         Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    static QArrayData *reallocateUnaligned(QArrayData *data, size_t objectSize,
+            size_t newCapacity, AllocationOptions newOptions = Default)
+        Q_DECL_NOTHROW Q_REQUIRED_RESULT;
     static void deallocate(QArrayData *data, size_t objectSize,
             size_t alignment) Q_DECL_NOTHROW;
 
@@ -220,6 +223,14 @@ struct QTypedArrayData
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return static_cast<QTypedArrayData *>(QArrayData::allocate(sizeof(T),
                     Q_ALIGNOF(AlignmentDummy), capacity, options));
+    }
+
+    static QTypedArrayData *reallocateUnaligned(QTypedArrayData *data, size_t capacity,
+            AllocationOptions options = Default)
+    {
+        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
+        return static_cast<QTypedArrayData *>(QArrayData::reallocateUnaligned(data, sizeof(T),
+                    capacity, options));
     }
 
     static void deallocate(QArrayData *data)

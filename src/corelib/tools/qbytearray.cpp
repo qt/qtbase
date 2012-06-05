@@ -1706,19 +1706,8 @@ void QByteArray::reallocData(uint alloc, Data::AllocationOptions options)
             Data::deallocate(d);
         d = x;
     } else {
-        size_t blockSize;
-        if (options & Data::Grow) {
-            auto r = qCalculateGrowingBlockSize(alloc, sizeof(QChar), sizeof(Data));
-            blockSize = r.size;
-            alloc = uint(r.elementCount);
-        } else {
-            blockSize = qCalculateBlockSize(alloc, sizeof(QChar), sizeof(Data));
-        }
-
-        Data *x = static_cast<Data *>(::realloc(d, blockSize));
+        Data *x = Data::reallocateUnaligned(d, alloc, options);
         Q_CHECK_PTR(x);
-        x->alloc = alloc;
-        x->capacityReserved = (options & Data::CapacityReserved) ? 1 : 0;
         d = x;
     }
 }
