@@ -1056,7 +1056,9 @@ void tst_QProcess::softExitInSlots_data()
 {
     QTest::addColumn<QString>("appName");
 
+#ifndef QT_NO_WIDGETS
     QTest::newRow("gui app") << "testGuiProcess/testGuiProcess";
+#endif
     QTest::newRow("console app") << "testProcessEcho2/testProcessEcho2";
 }
 

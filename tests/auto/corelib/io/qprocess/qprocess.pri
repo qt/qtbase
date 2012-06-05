@@ -15,3 +15,6 @@ SUBPROGRAMS = \
           fileWriterProcess \
           testSetWorkingDirectory \
           testSoftExit
+
+contains(QT_CONFIG, no-widgets): SUBPROGRAMS -= \
+          testGuiProcess
