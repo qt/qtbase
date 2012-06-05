@@ -1259,7 +1259,8 @@ QDateTime QFileInfo::created() const
         return QDateTime();
     if (d->fileEngine == 0) {
         if (!d->cache_enabled || !d->metaData.hasFlags(QFileSystemMetaData::CreationTime))
-            QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::CreationTime);
+            if (!QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::CreationTime))
+                return QDateTime();
         return d->metaData.creationTime();
     }
     return d->getFileTime(QAbstractFileEngine::CreationTime);
@@ -1277,7 +1278,8 @@ QDateTime QFileInfo::lastModified() const
         return QDateTime();
     if (d->fileEngine == 0) {
         if (!d->cache_enabled || !d->metaData.hasFlags(QFileSystemMetaData::ModificationTime))
-            QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::ModificationTime);
+            if (!QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::ModificationTime))
+                return QDateTime();
         return d->metaData.modificationTime();
     }
     return d->getFileTime(QAbstractFileEngine::ModificationTime);
@@ -1298,7 +1300,8 @@ QDateTime QFileInfo::lastRead() const
         return QDateTime();
     if (d->fileEngine == 0) {
         if (!d->cache_enabled || !d->metaData.hasFlags(QFileSystemMetaData::AccessTime))
-            QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::AccessTime);
+            if (!QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::AccessTime))
+                return QDateTime();
         return d->metaData.accessTime();
     }
     return d->getFileTime(QAbstractFileEngine::AccessTime);

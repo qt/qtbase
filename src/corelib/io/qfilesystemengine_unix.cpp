@@ -467,7 +467,10 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         data.knownFlagsMask |= QFileSystemMetaData::BundleType;
     }
 #endif
-
+    if (!entryExists) {
+        data.clearFlags(what);
+        return false;
+    }
     return data.hasFlags(what);
 }
 

@@ -856,7 +856,10 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
             data.fillFromFindData(findData, false, fname.isDriveRoot());
         } else {
             if (!tryFindFallback(fname, data))
-                tryDriveUNCFallback(fname, data);
+                if (!tryDriveUNCFallback(fname, data)) {
+                    SetErrorMode(oldmode);
+                    return false;
+                }
         }
         SetErrorMode(oldmode);
     }

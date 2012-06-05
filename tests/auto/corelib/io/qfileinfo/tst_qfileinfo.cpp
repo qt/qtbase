@@ -189,6 +189,7 @@ private slots:
     void group();
 
     void invalidState();
+    void nonExistingFileDates();
 };
 
 void tst_QFileInfo::cleanupTestCase()
@@ -1817,6 +1818,15 @@ void tst_QFileInfo::invalidState()
     }
 
     QVERIFY(true);
+}
+
+void tst_QFileInfo::nonExistingFileDates()
+{
+    QFileInfo info("non-existing-file.foobar");
+    QVERIFY(!info.exists());
+    QVERIFY(!info.created().isValid());
+    QVERIFY(!info.lastRead().isValid());
+    QVERIFY(!info.lastModified().isValid());
 }
 
 QTEST_MAIN(tst_QFileInfo)
