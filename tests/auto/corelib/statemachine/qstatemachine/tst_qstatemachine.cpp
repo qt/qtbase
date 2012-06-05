@@ -41,16 +41,20 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
+#ifndef QT_NO_WIDGETS
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QGraphicsScene>
 #include <QtWidgets/QGraphicsSceneEvent>
 #include <QtWidgets/QGraphicsTextItem>
+#endif
 
 #include "qstatemachine.h"
 #include "qstate.h"
 #include "qhistorystate.h"
+#ifndef QT_NO_WIDGETS
 #include "qkeyeventtransition.h"
 #include "qmouseeventtransition.h"
+#endif
 #include "private/qstate_p.h"
 #include "private/qstatemachine_p.h"
 
@@ -108,8 +112,10 @@ private slots:
     void parallelRootState();
     void allSourceToTargetConfigurations();
     void signalTransitions();
+#ifndef QT_NO_WIDGETS
     void eventTransitions();
     void graphicsSceneEventTransitions();
+#endif
     void historyStates();
     void startAndStop();
     void targetStateWithNoParent();
@@ -171,7 +177,9 @@ private slots:
 
     void clonedSignals();
     void postEventFromOtherThread();
+#ifndef QT_NO_WIDGETS
     void eventFilterForApplication();
+#endif
     void eventClassesExported();
     void stopInTransitionToFinalState();
     void stopInEventTest_data();
@@ -2305,6 +2313,7 @@ private:
     QEvent::Type m_eventType;
 };
 
+#ifndef QT_NO_WIDGETS
 void tst_QStateMachine::eventTransitions()
 {
     QPushButton button;
@@ -2611,6 +2620,7 @@ void tst_QStateMachine::graphicsSceneEventTransitions()
     scene.sendEvent(textItem, &mouseEvent);
     QTRY_COMPARE(finishedSpy.count(), 1);
 }
+#endif
 
 void tst_QStateMachine::historyStates()
 {
@@ -3037,7 +3047,7 @@ void tst_QStateMachine::twoAnimatedTransitions()
     trans->addAnimation(fooAnimation2);
 
     QState *s5 = new QState(&machine);
-    QObject::connect(s5, SIGNAL(entered()), QApplication::instance(), SLOT(quit()));
+    QObject::connect(s5, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
     s4->addTransition(fooAnimation2, SIGNAL(finished()), s5);
 
     machine.setInitialState(s1);
@@ -3084,7 +3094,7 @@ void tst_QStateMachine::playAnimationTwice()
     trans->addAnimation(fooAnimation);
 
     QState *s5 = new QState(&machine);
-    QObject::connect(s5, SIGNAL(entered()), QApplication::instance(), SLOT(quit()));
+    QObject::connect(s5, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
     s4->addTransition(fooAnimation, SIGNAL(finished()), s5);
 
     machine.setInitialState(s1);
@@ -3849,6 +3859,7 @@ void tst_QStateMachine::postEventFromOtherThread()
     QTRY_COMPARE(finishedSpy.count(), 1);
 }
 
+#ifndef QT_NO_WIDGETS
 void tst_QStateMachine::eventFilterForApplication()
 {
     QStateMachine machine;
@@ -3878,6 +3889,7 @@ void tst_QStateMachine::eventFilterForApplication()
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(s2));
 }
+#endif
 
 void tst_QStateMachine::eventClassesExported()
 {
