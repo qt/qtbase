@@ -42,7 +42,7 @@
 #ifndef QSQLRELATIONALDELEGATE_H
 #define QSQLRELATIONALDELEGATE_H
 
-#ifdef QT_GUI_LIB
+#ifdef QT_WIDGETS_LIB
 
 #include <QtWidgets/qitemdelegate.h>
 #include <QtWidgets/qlistview.h>
@@ -123,6 +123,6 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QT_GUI_LIB
+#endif // QT_WIDGETS_LIB
 
 #endif // QSQLRELATIONALDELEGATE_H
