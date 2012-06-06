@@ -487,9 +487,9 @@ static void drawPolygons(qint32 *bits, int width, int height, const QPoint *vert
     }
 }
 
-static QImage makeDistanceField(int imgSize, const QPainterPath &path, int dfScale, int offs)
+static QImage makeDistanceField(int imgWidth, int imgHeight, const QPainterPath &path, int dfScale, int offs)
 {
-    QImage image(imgSize, imgSize, QImage::Format_Indexed8);
+    QImage image(imgWidth, imgHeight, QImage::Format_Indexed8);
 
     if (path.isEmpty()) {
         image.fill(0);
@@ -507,8 +507,8 @@ static QImage makeDistanceField(int imgSize, const QPainterPath &path, int dfSca
     const qint32 interiorColor = -0x7f80; // 8:8 signed format, -127.5
     const qint32 exteriorColor = 0x7f80; // 8:8 signed format, 127.5
 
-    QScopedArrayPointer<qint32> bits(new qint32[imgSize * imgSize]);
-    for (int i = 0; i < imgSize * imgSize; ++i)
+    QScopedArrayPointer<qint32> bits(new qint32[imgWidth * imgHeight]);
+    for (int i = 0; i < imgWidth * imgHeight; ++i)
         bits[i] = exteriorColor;
 
     const qreal angleStep = qreal(15 * 3.141592653589793238 / 180);
@@ -521,7 +521,7 @@ static QImage makeDistanceField(int imgSize, const QPainterPath &path, int dfSca
     QVarLengthArray<bool> isConvex;
     QVarLengthArray<bool> needsClipping;
 
-    drawPolygons(bits.data(), imgSize, imgSize, pathVertices.data(), indices, pathIndices.size(),
+    drawPolygons(bits.data(), imgWidth, imgHeight, pathVertices.data(), indices, pathIndices.size(),
                  interiorColor);
 
     int index = 0;
@@ -553,8 +553,8 @@ static QImage makeDistanceField(int imgSize, const QPainterPath &path, int dfSca
             normals.append(n);
             QPoint v(to.x() + 0x7f, to.y() + 0x7f);
             vertices.append(v);
-            needsClipping.append((to.x() < offs << 8) || (to.x() >= (imgSize - offs) << 8)
-                                 || (to.y() < offs << 8) || (to.y() >= (imgSize - offs) << 8));
+            needsClipping.append((to.x() < offs << 8) || (to.x() >= (imgWidth - offs) << 8)
+                                 || (to.y() < offs << 8) || (to.y() >= (imgHeight - offs) << 8));
         }
 
         isConvex.resize(normals.count());
@@ -581,12 +581,12 @@ static QImage makeDistanceField(int imgSize, const QPainterPath &path, int dfSca
             intNext.ry() += n.y();
 
             if (needsClipping[prev] || needsClipping[next]) {
-                drawRectangle<Clip>(bits.data(), imgSize, imgSize,
+                drawRectangle<Clip>(bits.data(), imgWidth, imgHeight,
                                     &intPrev, &vertices.at(prev), &extPrev,
                                     &intNext, &vertices.at(next), &extNext,
                                     exteriorColor);
             } else {
-                drawRectangle<NoClip>(bits.data(), imgSize, imgSize,
+                drawRectangle<NoClip>(bits.data(), imgWidth, imgHeight,
                                       &intPrev, &vertices.at(prev), &extPrev,
                                       &intNext, &vertices.at(next), &extNext,
                                       exteriorColor);
@@ -602,14 +602,14 @@ static QImage makeDistanceField(int imgSize, const QPainterPath &path, int dfSca
                         if (n.x() * normals.at(prev).y() - n.y() * normals.at(prev).x() <= 0) {
                             p.rx() = vertices.at(prev).x() - normals.at(prev).x();
                             p.ry() = vertices.at(prev).y() - normals.at(prev).y();
-                            drawTriangle<Clip>(bits.data(), imgSize, imgSize, &vertices.at(prev),
+                            drawTriangle<Clip>(bits.data(), imgWidth, imgHeight, &vertices.at(prev),
                                                &extPrev, &p, exteriorColor);
                             break;
                         }
 
                         p.rx() = vertices.at(prev).x() - n.x();
                         p.ry() = vertices.at(prev).y() - n.y();
-                        drawTriangle<Clip>(bits.data(), imgSize, imgSize, &vertices.at(prev),
+                        drawTriangle<Clip>(bits.data(), imgWidth, imgHeight, &vertices.at(prev),
                                            &extPrev, &p, exteriorColor);
                         extPrev = p;
                     }
@@ -621,14 +621,14 @@ static QImage makeDistanceField(int imgSize, const QPainterPath &path, int dfSca
                         if (n.x() * normals.at(prev).y() - n.y() * normals.at(prev).x() <= 0) {
                             p.rx() = vertices.at(prev).x() - normals.at(prev).x();
                             p.ry() = vertices.at(prev).y() - normals.at(prev).y();
-                            drawTriangle<NoClip>(bits.data(), imgSize, imgSize, &vertices.at(prev),
+                            drawTriangle<NoClip>(bits.data(), imgWidth, imgHeight, &vertices.at(prev),
                                                  &extPrev, &p, exteriorColor);
                             break;
                         }
 
                         p.rx() = vertices.at(prev).x() - n.x();
                         p.ry() = vertices.at(prev).y() - n.y();
-                        drawTriangle<NoClip>(bits.data(), imgSize, imgSize, &vertices.at(prev),
+                        drawTriangle<NoClip>(bits.data(), imgWidth, imgHeight, &vertices.at(prev),
                                              &extPrev, &p, exteriorColor);
                         extPrev = p;
                     }
@@ -643,14 +643,14 @@ static QImage makeDistanceField(int imgSize, const QPainterPath &path, int dfSca
                         if (n.x() * normals.at(prev).y() - n.y() * normals.at(prev).x() >= 0) {
                             p.rx() = vertices.at(prev).x() + normals.at(prev).x();
                             p.ry() = vertices.at(prev).y() + normals.at(prev).y();
-                            drawTriangle<Clip>(bits.data(), imgSize, imgSize, &vertices.at(prev),
+                            drawTriangle<Clip>(bits.data(), imgWidth, imgHeight, &vertices.at(prev),
                                                &p, &intPrev, interiorColor);
                             break;
                         }
 
                         p.rx() = vertices.at(prev).x() + n.x();
                         p.ry() = vertices.at(prev).y() + n.y();
-                        drawTriangle<Clip>(bits.data(), imgSize, imgSize, &vertices.at(prev),
+                        drawTriangle<Clip>(bits.data(), imgWidth, imgHeight, &vertices.at(prev),
                                            &p, &intPrev, interiorColor);
                         intPrev = p;
                     }
@@ -662,14 +662,14 @@ static QImage makeDistanceField(int imgSize, const QPainterPath &path, int dfSca
                         if (n.x() * normals.at(prev).y() - n.y() * normals.at(prev).x() >= 0) {
                             p.rx() = vertices.at(prev).x() + normals.at(prev).x();
                             p.ry() = vertices.at(prev).y() + normals.at(prev).y();
-                            drawTriangle<NoClip>(bits.data(), imgSize, imgSize, &vertices.at(prev),
+                            drawTriangle<NoClip>(bits.data(), imgWidth, imgHeight, &vertices.at(prev),
                                                  &p, &intPrev, interiorColor);
                             break;
                         }
 
                         p.rx() = vertices.at(prev).x() + n.x();
                         p.ry() = vertices.at(prev).y() + n.y();
-                        drawTriangle<NoClip>(bits.data(), imgSize, imgSize, &vertices.at(prev),
+                        drawTriangle<NoClip>(bits.data(), imgWidth, imgHeight, &vertices.at(prev),
                                              &p, &intPrev, interiorColor);
                         intPrev = p;
                     }
@@ -683,8 +683,8 @@ static QImage makeDistanceField(int imgSize, const QPainterPath &path, int dfSca
     const qint32 *inLine = bits.data();
     uchar *outLine = image.bits();
     int padding = image.bytesPerLine() - image.width();
-    for (int y = 0; y < imgSize; ++y) {
-        for (int x = 0; x < imgSize; ++x, ++inLine, ++outLine)
+    for (int y = 0; y < imgHeight; ++y) {
+        for (int x = 0; x < imgWidth; ++x, ++inLine, ++outLine)
             *outLine = uchar((0x7f80 - *inLine) >> 8);
         outLine += padding;
     }
@@ -765,7 +765,11 @@ bool qt_fontHasNarrowOutlines(const QRawFont &f)
 
 static QImage renderDistanceFieldPath(const QPainterPath &path, bool doubleResolution)
 {
-    QImage im = makeDistanceField(QT_DISTANCEFIELD_TILESIZE(doubleResolution),
+    int dfMargin = QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution);
+    int glyphWidth = qCeil(path.boundingRect().width() / QT_DISTANCEFIELD_SCALE(doubleResolution)) + dfMargin * 2;
+
+    QImage im = makeDistanceField(glyphWidth,
+                                  QT_DISTANCEFIELD_TILESIZE(doubleResolution),
                                   path,
                                   QT_DISTANCEFIELD_SCALE(doubleResolution),
                                   QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution));
