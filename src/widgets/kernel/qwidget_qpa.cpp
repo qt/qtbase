@@ -914,9 +914,13 @@ void QWidgetPrivate::deleteTLSysExtra()
             extra->topextra->window->destroy();
         }
         setWinId(0);
-        //hmmm. should we delete window..
         delete extra->topextra->window;
         extra->topextra->window = 0;
+
+        extra->topextra->backingStoreTracker.destroy();
+        delete extra->topextra->backingStore;
+        extra->topextra->backingStore = 0;
+
     }
 }
 

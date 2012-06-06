@@ -1601,9 +1601,8 @@ void QWidgetPrivate::deleteExtra()
 #endif
         if (extra->topextra) {
             deleteTLSysExtra();
-            extra->topextra->backingStoreTracker.destroy();
+            // extra->topextra->backingStore destroyed in QWidgetPrivate::deleteTLSysExtra()
             delete extra->topextra->icon;
-            delete extra->topextra->backingStore;
             delete extra->topextra;
         }
         delete extra;
