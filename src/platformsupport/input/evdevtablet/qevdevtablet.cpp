@@ -56,6 +56,7 @@ class QEvdevTabletData
 public:
     QEvdevTabletData(QEvdevTabletHandler *q_ptr);
     bool queryLimits();
+    void testGrab();
     void processInputEvent(input_event *ev);
     void reportProximityEnter();
     void reportProximityLeave();
@@ -118,6 +119,15 @@ bool QEvdevTabletData::queryLimits()
         qDebug("evdevtablet: device name: %s", name);
     }
     return ok;
+}
+
+void QEvdevTabletData::testGrab()
+{
+    bool grabSuccess = !ioctl(fd, EVIOCGRAB, (void *) 1);
+    if (grabSuccess)
+        ioctl(fd, EVIOCGRAB, (void *) 0);
+    else
+        qWarning("evdevtablet: ERROR: The device is grabbed by another process. No events will be read.");
 }
 
 void QEvdevTabletData::processInputEvent(input_event *ev)
@@ -232,9 +242,14 @@ QEvdevTabletHandler::QEvdevTabletHandler(const QString &spec, QObject *parent)
     if (!dev.isEmpty()) {
         qDebug("evdevtablet: using %s", qPrintable(dev));
         d->fd = QT_OPEN(dev.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
-        if (d->fd >= 0 && d->queryLimits()) {
-            d->notifier = new QSocketNotifier(d->fd, QSocketNotifier::Read, this);
-            connect(d->notifier, SIGNAL(activated(int)), this, SLOT(readData()));
+        if (d->fd >= 0) {
+            d->testGrab();
+            if (d->queryLimits()) {
+                d->notifier = new QSocketNotifier(d->fd, QSocketNotifier::Read, this);
+                connect(d->notifier, SIGNAL(activated(int)), this, SLOT(readData()));
+            }
+        } else {
+            qErrnoWarning(errno, "evdevtablet: Cannot open input device");
         }
     }
 }

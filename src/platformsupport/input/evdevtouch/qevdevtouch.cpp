@@ -179,7 +179,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &spec, QObject 
         m_notify = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
         connect(m_notify, SIGNAL(activated(int)), this, SLOT(readData()));
     } else {
-        qWarning("Cannot open input device '%s': %s", qPrintable(dev), strerror(errno));
+        qErrnoWarning(errno, "Cannot open input device %s", qPrintable(dev));
         return;
     }
 
@@ -219,6 +219,12 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &spec, QObject 
         d->hw_name = QString::fromLocal8Bit(name);
         qDebug("device name: %s", name);
     }
+
+    bool grabSuccess = !ioctl(m_fd, EVIOCGRAB, (void *) 1);
+    if (grabSuccess)
+        ioctl(m_fd, EVIOCGRAB, (void *) 0);
+    else
+        qWarning("ERROR: The device is grabbed by another process. No events will be read.");
 
 #ifdef USE_MTDEV
     const char *mtdevStr = "(mtdev)";
