@@ -377,13 +377,8 @@ QJsonValue QJsonArray::takeAt(int i)
     if (!a || i < 0 || i >= (int)a->length)
         return QJsonValue(QJsonValue::Undefined);
 
-    detach();
-
     QJsonValue v(d, a, a->at(i));
-    v.detach();
-
-    removeAt(i);
-
+    removeAt(i); // detaches
     return v;
 }
 
