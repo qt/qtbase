@@ -43,7 +43,7 @@
 
 #include <qobject.h>
 #include <qmetaobject.h>
-#include <qlabel.h>
+#include <qwindow.h>
 #include <private/qmetaobject_p.h>
 
 Q_DECLARE_METATYPE(const QMetaObject *)
@@ -720,13 +720,13 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
 void tst_QMetaObject::qtMetaObjectInheritance()
 {
     QVERIFY(QObject::staticMetaObject.superClass() == 0);
-    QCOMPARE(QLabel::staticMetaObject.indexOfEnumerator("Qt::Alignment"), -1);
-    QCOMPARE(QLabel::staticMetaObject.indexOfEnumerator("Alignment"), -1);
-    int indexOfAlignment = QLabel::staticMetaObject.indexOfProperty("alignment");
-    QVERIFY(indexOfAlignment != -1);
-    QMetaProperty alignment = QLabel::staticMetaObject.property(indexOfAlignment);
-    QVERIFY(alignment.isValid());
-    QCOMPARE(alignment.enumerator().name(), "Alignment");
+    QCOMPARE(QWindow::staticMetaObject.indexOfEnumerator("Qt::ScreenOrientation"), -1);
+    QCOMPARE(QWindow::staticMetaObject.indexOfEnumerator("ScreenOrientation"), -1);
+    int indexOfContentOrientation = QWindow::staticMetaObject.indexOfProperty("contentOrientation");
+    QVERIFY(indexOfContentOrientation != -1);
+    QMetaProperty contentOrientation = QWindow::staticMetaObject.property(indexOfContentOrientation);
+    QVERIFY(contentOrientation.isValid());
+    QCOMPARE(contentOrientation.enumerator().name(), "ScreenOrientation");
 }
 
 struct MyType
