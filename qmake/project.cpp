@@ -1411,20 +1411,25 @@ QMakeProject::read(uchar cmd)
         }
       no_cache:
 
-        if (project_build_root.isEmpty()) {
-            QDir srcdir(qmake_getpwd());
-            QDir dstdir(Option::output_dir);
-            do {
-                    // Look for mkspecs/ in source and build. First to win determines the root.
-                    if (dstdir.exists("mkspecs") || srcdir.exists("mkspecs")) {
-                        project_build_root = dstdir.path();
-                        project_root = srcdir.path();
-                        if (project_root == project_build_root)
-                            project_root.clear();
-                        break;
-                    }
-            } while (!srcdir.isRoot() && srcdir.cdUp()
-                     && dstdir != superdir && !dstdir.isRoot() && dstdir.cdUp());
+        // Look for mkspecs/ in source and build. First to win determines the root.
+        QString sdir = qmake_getpwd();
+        QString dir = Option::output_dir;
+        while (dir != project_build_root) {
+            if ((dir != sdir && QFileInfo(sdir, QLatin1String("mkspecs")).isDir())
+                    || QFileInfo(dir, QLatin1String("mkspecs")).isDir()) {
+                if (dir != sdir)
+                    project_root = sdir;
+                project_build_root = dir;
+                break;
+            }
+            if (dir == superdir)
+                break;
+            QFileInfo qsdfi(sdir);
+            QFileInfo qdfi(dir);
+            if (qsdfi.isRoot() || qdfi.isRoot())
+                break;
+            sdir = qsdfi.path();
+            dir = qdfi.path();
         }
 
         if (qmakepath != cached_qmakepath || qmakefeatures != cached_qmakefeatures
@@ -3317,11 +3322,13 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
             if (cachefile.isEmpty()) {
                 cachefile = Option::output_dir + QLatin1String("/.qmake.cache");
                 printf("Info: creating cache file %s\n", cachefile.toLatin1().constData());
-                cached_build_root = Option::output_dir;
-                cached_source_root = values("_PRO_FILE_PWD_", place).first();
-                if (cached_source_root == cached_build_root)
-                    cached_source_root.clear();
-                invalidateFeatureRoots();
+                if (cached_build_root.isEmpty()) {
+                    cached_build_root = Option::output_dir;
+                    cached_source_root = values("_PRO_FILE_PWD_", place).first();
+                    if (cached_source_root == cached_build_root)
+                        cached_source_root.clear();
+                    invalidateFeatureRoots();
+                }
             }
             fn = cachefile;
         }
