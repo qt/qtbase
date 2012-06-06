@@ -1039,6 +1039,7 @@ void QHttpNetworkConnectionChannel::_q_connected()
                 else
                     connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv6;
             }
+            connection->d_func()->networkLayerDetected(networkLayerPreference);
         } else {
             if (((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv4) && (networkLayerPreference != QAbstractSocket::IPv4Protocol))
                 || ((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv6) && (networkLayerPreference != QAbstractSocket::IPv6Protocol))) {

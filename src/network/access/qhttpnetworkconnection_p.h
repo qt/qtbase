@@ -193,6 +193,7 @@ public:
 
     void startHostInfoLookup();
     void startNetworkLayerStateLookup();
+    void networkLayerDetected(QAbstractSocket::NetworkLayerProtocol protocol);
 
     // private slots
     void _q_startNextRequest(); // send the next request from the queue

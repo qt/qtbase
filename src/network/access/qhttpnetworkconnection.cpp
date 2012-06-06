@@ -1094,6 +1094,15 @@ void QHttpNetworkConnectionPrivate::startNetworkLayerStateLookup()
     }
 }
 
+void QHttpNetworkConnectionPrivate::networkLayerDetected(QAbstractSocket::NetworkLayerProtocol protocol)
+{
+    for (int i = 0 ; i < channelCount; ++i) {
+        if ((channels[i].networkLayerPreference != protocol) && (channels[i].state == QHttpNetworkConnectionChannel::ConnectingState)) {
+            channels[i].close();
+        }
+    }
+}
+
 void QHttpNetworkConnectionPrivate::_q_connectDelayedChannel()
 {
     if (delayIpv4)
