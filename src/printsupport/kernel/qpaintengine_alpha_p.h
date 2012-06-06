@@ -55,6 +55,7 @@
 
 #ifndef QT_NO_PRINTER
 #include "private/qpaintengine_p.h"
+#include <QtPrintSupport/qtprintsupportglobal.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -42,6 +42,7 @@
 #ifndef QXML_H
 #define QXML_H
 
+#include <QtXml/qtxmlglobal.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qstring.h>

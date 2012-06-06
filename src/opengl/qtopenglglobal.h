@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtDBus module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,42 +39,27 @@
 **
 ****************************************************************************/
 
-#ifndef QDBUSMACROS_H
-#define QDBUSMACROS_H
+#ifndef QTOPENGLGLOBAL_H
+#define QTOPENGLGLOBAL_H
 
 #include <QtCore/qglobal.h>
-#include <QtCore/qmetatype.h>
-#include <QtCore/qvariant.h>
-
-#ifndef Q_MOC_RUN
-# define Q_NOREPLY
-#endif
-
-#ifdef Q_CC_MSVC
-#include <QtCore/qlist.h>
-#include <QtCore/qset.h>
-#include <QtCore/qhash.h>
-#include <QtCore/qvector.h>
-#endif
 
 QT_BEGIN_HEADER
+
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_DBUS
-
 #ifndef QT_STATIC
-#  if defined(QT_BUILD_DBUS_LIB)
-#    define Q_DBUS_EXPORT Q_DECL_EXPORT
+#  if defined(QT_BUILD_OPENGL_LIB)
+#    define Q_OPENGL_EXPORT Q_DECL_EXPORT
 #  else
-#    define Q_DBUS_EXPORT Q_DECL_IMPORT
+#    define Q_OPENGL_EXPORT Q_DECL_IMPORT
 #  endif
 #else
-#  define Q_DBUS_EXPORT
+#  define Q_OPENGL_EXPORT
 #endif
-
-#endif // QT_NO_DBUS
 
 QT_END_NAMESPACE
+
 QT_END_HEADER
 
-#endif
+#endif // QTOPENGLGLOBAL_H

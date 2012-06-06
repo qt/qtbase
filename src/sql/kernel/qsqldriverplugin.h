@@ -44,6 +44,7 @@
 
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
+#include <QtSql/qsql.h>
 
 QT_BEGIN_HEADER
 

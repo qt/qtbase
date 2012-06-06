@@ -43,6 +43,7 @@
 #define QABSTRACTPAGESETUPDIALOG_H
 
 #include <QtWidgets/qdialog.h>
+#include <QtPrintSupport/qtprintsupportglobal.h>
 
 QT_BEGIN_HEADER
 

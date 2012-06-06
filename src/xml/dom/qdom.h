@@ -42,6 +42,7 @@
 #ifndef QDOM_H
 #define QDOM_H
 
+#include <QtXml/qtxmlglobal.h>
 #include <QtCore/qstring.h>
 
 QT_BEGIN_HEADER

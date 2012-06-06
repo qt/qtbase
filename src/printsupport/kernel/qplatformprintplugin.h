@@ -53,6 +53,7 @@
 
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
+#include <QtPrintSupport/qtprintsupportglobal.h>
 
 QT_BEGIN_HEADER
 

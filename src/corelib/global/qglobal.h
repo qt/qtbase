@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -499,50 +500,22 @@ class QDataStream;
 #    else
 #      define Q_WIDGETS_EXPORT Q_DECL_IMPORT
 #    endif
-#    if defined(QT_BUILD_PLATFORMSUPPORT_LIB)
-#      define Q_PLATFORMSUPPORT_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_PLATFORMSUPPORT_EXPORT Q_DECL_IMPORT
-#    endif
-#    if defined(QT_BUILD_PRINTSUPPORT_LIB)
-#      define Q_PRINTSUPPORT_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_PRINTSUPPORT_EXPORT Q_DECL_IMPORT
-#    endif
-#    if defined(QT_BUILD_SQL_LIB)
-#      define Q_SQL_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_SQL_EXPORT Q_DECL_IMPORT
-#    endif
 #    if defined(QT_BUILD_NETWORK_LIB)
 #      define Q_NETWORK_EXPORT Q_DECL_EXPORT
 #    else
 #      define Q_NETWORK_EXPORT Q_DECL_IMPORT
 #    endif
+
+// ### Remove the following once their modules have been updated
 #    if defined(QT_BUILD_SVG_LIB)
 #      define Q_SVG_EXPORT Q_DECL_EXPORT
 #    else
 #      define Q_SVG_EXPORT Q_DECL_IMPORT
 #    endif
-#    if defined(QT_BUILD_OPENGL_LIB)
-#      define Q_OPENGL_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_OPENGL_EXPORT Q_DECL_IMPORT
-#    endif
 #    if defined(QT_BUILD_MULTIMEDIA_LIB)
 #      define Q_MULTIMEDIA_EXPORT Q_DECL_EXPORT
 #    else
 #      define Q_MULTIMEDIA_EXPORT Q_DECL_IMPORT
-#    endif
-#    if defined(QT_BUILD_OPENVG_LIB)
-#      define Q_OPENVG_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_OPENVG_EXPORT Q_DECL_IMPORT
-#    endif
-#    if defined(QT_BUILD_XML_LIB)
-#      define Q_XML_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_XML_EXPORT Q_DECL_IMPORT
 #    endif
 #    if defined(QT_BUILD_XMLPATTERNS_LIB)
 #      define Q_XMLPATTERNS_EXPORT Q_DECL_EXPORT
@@ -559,42 +532,16 @@ class QDataStream;
 #    else
 #      define Q_SCRIPTTOOLS_EXPORT Q_DECL_IMPORT
 #    endif
-#    if defined(QT_BUILD_CANVAS_LIB)
-#      define Q_CANVAS_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_CANVAS_EXPORT Q_DECL_IMPORT
-#    endif
-#    if defined(QT_BUILD_COMPAT_LIB)
-#      define Q_COMPAT_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_COMPAT_EXPORT Q_DECL_IMPORT
-#    endif
-#    if defined(QT_BUILD_DBUS_LIB)
-#      define Q_DBUS_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_DBUS_EXPORT Q_DECL_IMPORT
-#    endif
 #  endif
 #else
 #  define Q_CORE_EXPORT
 #  define Q_GUI_EXPORT
 #  define Q_WIDGETS_EXPORT
-#  define Q_PLATFORMSUPPORT_EXPORT
-#  define Q_PRINTSUPPORT_EXPORT
-#  define Q_SQL_EXPORT
 #  define Q_NETWORK_EXPORT
 #  define Q_SVG_EXPORT
-#  define Q_QUICK1_EXPORT
-#  define Q_DECLARATIVE_EXPORT
-#  define Q_OPENGL_EXPORT
 #  define Q_MULTIMEDIA_EXPORT
-#  define Q_OPENVG_EXPORT
-#  define Q_XML_EXPORT
 #  define Q_SCRIPT_EXPORT
 #  define Q_SCRIPTTOOLS_EXPORT
-#  define Q_CANVAS_EXPORT
-#  define Q_COMPAT_EXPORT
-#  define Q_DBUS_EXPORT
 #endif
 
 /*

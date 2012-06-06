@@ -43,6 +43,7 @@
 #define QPRINTPREVIEWDIALOG_H
 
 #include <QtWidgets/qdialog.h>
+#include <QtPrintSupport/qtprintsupportglobal.h>
 
 #ifndef QT_NO_PRINTPREVIEWDIALOG
 

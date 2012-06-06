@@ -8,6 +8,7 @@ win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x61000000
 
 load(qt_module_config)
 
+HEADERS += qtxmlglobal.h
 QMAKE_DOCS = $$PWD/doc/qtxml.qdocconf
 QMAKE_DOCS_INDEX = ../../doc
 

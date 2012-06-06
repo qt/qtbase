@@ -29,7 +29,7 @@ HEADERS += qgl.h \
            qglextensions_p.h \
            qglpaintdevice_p.h \
            qglbuffer.h \
-
+           qtopenglglobal.h
 
 SOURCES += qgl.cpp \
            qglcolormap.cpp \

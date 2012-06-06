@@ -44,6 +44,7 @@
 
 #include <QtGui/qcolor.h>
 #include <QtCore/qvector.h>
+#include <QtOpenGL/qtopenglglobal.h>
 
 QT_BEGIN_HEADER
 

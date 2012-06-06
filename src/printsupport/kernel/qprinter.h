@@ -45,6 +45,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/qpagedpaintdevice.h>
+#include <QtPrintSupport/qtprintsupportglobal.h>
 
 QT_BEGIN_HEADER
 

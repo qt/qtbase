@@ -54,6 +54,7 @@
 //
 
 #include <QtWidgets/qgraphicseffect.h>
+#include <QtOpenGL/qtopenglglobal.h>
 
 QT_BEGIN_HEADER
 

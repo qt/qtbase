@@ -7,7 +7,8 @@ HEADERS += \
         $$PWD/qprinterinfo.h \
         $$PWD/qprinterinfo_p.h \
         $$PWD/qplatformprintplugin.h \
-        $$PWD/qplatformprintersupport.h
+        $$PWD/qplatformprintersupport.h \
+        $$PWD/qtprintsupportglobal.h
 
 SOURCES += \
         $$PWD/qpaintengine_alpha.cpp \

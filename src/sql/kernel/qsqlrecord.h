@@ -43,6 +43,7 @@
 #define QSQLRECORD_H
 
 #include <QtCore/qstring.h>
+#include <QtSql/qsql.h>
 
 QT_BEGIN_HEADER
 
