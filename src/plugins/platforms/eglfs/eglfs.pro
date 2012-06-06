@@ -20,14 +20,16 @@ SOURCES =   main.cpp \
             qeglfsbackingstore.cpp \
             qeglfsscreen.cpp \
             qeglfshooks_stub.cpp \
-            qeglfscursor.cpp
+            qeglfscursor.cpp \
+            qeglfscontext.cpp
 
 HEADERS =   qeglfsintegration.h \
             qeglfswindow.h \
             qeglfsbackingstore.h \
             qeglfsscreen.h \
             qeglfscursor.h \
-            qeglfshooks.h
+            qeglfshooks.h \
+            qeglfscontext.h
 
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 

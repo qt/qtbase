@@ -39,53 +39,44 @@
 **
 ****************************************************************************/
 
-#include "qeglfscursor.h"
-#include "qeglfsscreen.h"
+#include "qeglfscontext.h"
 #include "qeglfswindow.h"
+#include "qeglfscursor.h"
 #include "qeglfshooks.h"
+
+#include <QtDebug>
 
 QT_BEGIN_NAMESPACE
 
-QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
-    : m_dpy(dpy)
-    , m_cursor(0)
+QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share,
+                             EGLDisplay display, EGLenum eglApi)
+    : QEGLPlatformContext(format, share, display, eglApi)
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglScreen %p\n", this);
-#endif
-
-    static int hideCursor = qgetenv("QT_QPA_EGLFS_HIDECURSOR").toInt();
-    if (!hideCursor) {
-        if (QEglFSCursor *customCursor = hooks->createCursor(this))
-            m_cursor = customCursor;
-        else
-            m_cursor = new QEglFSCursor(this);
-    }
 }
 
-QEglFSScreen::~QEglFSScreen()
+bool QEglFSContext::makeCurrent(QPlatformSurface *surface)
 {
-    delete m_cursor;
+    // create the native window surface. this makes sure that
+    // we create surfaces only for painted widgets (unlike QDesktopWidget)
+    (static_cast<QEglFSWindow *>(surface))->create();
+    return QEGLPlatformContext::makeCurrent(surface);
 }
 
-QRect QEglFSScreen::geometry() const
+EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
 {
-    return QRect(QPoint(0, 0), hooks->screenSize());
+    QEglFSWindow *window = static_cast<QEglFSWindow *>(surface);
+    return window->surface();
 }
 
-int QEglFSScreen::depth() const
+void QEglFSContext::swapBuffers(QPlatformSurface *surface)
 {
-    return hooks->screenDepth();
-}
+    QEglFSWindow *window = static_cast<QEglFSWindow *>(surface);
+    // draw the cursor
+    if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(window->screen()->cursor()))
+        cursor->paintOnScreen();
 
-QImage::Format QEglFSScreen::format() const
-{
-    return hooks->screenFormat();
-}
-
-QPlatformCursor *QEglFSScreen::cursor() const
-{
-    return m_cursor;
+    QEGLPlatformContext::swapBuffers(surface);
 }
 
 QT_END_NAMESPACE
+

@@ -61,6 +61,8 @@
 #include <QtGui/QScreen>
 #include <qpa/qplatformcursor.h>
 
+#include "qeglfscontext.h"
+
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
@@ -88,14 +90,11 @@ QEglFSIntegration::QEglFSIntegration()
         qWarning("Could not open egl display\n");
         qFatal("EGL error");
     }
-    qWarning("Opened display %p\n", mDisplay);
 
     if (!eglInitialize(mDisplay, &major, &minor)) {
         qWarning("Could not initialize egl display\n");
         qFatal("EGL error");
     }
-
-    qWarning("Initialized display %d %d\n", major, minor);
 
     int swapInterval = 1;
     QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
@@ -109,10 +108,6 @@ QEglFSIntegration::QEglFSIntegration()
 
     mScreen = new QEglFSScreen(mDisplay);
     screenAdded(mScreen);
-
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglFSIntegration\n");
-#endif
 }
 
 QEglFSIntegration::~QEglFSIntegration()
@@ -139,27 +134,19 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglFSIntegration::createPlatformWindow %p\n",window);
-#endif
     QPlatformWindow *w = new QEglFSWindow(window);
     w->requestActivateWindow();
-
     return w;
 }
 
-
 QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *window) const
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglFSIntegration::createWindowSurface %p\n", window);
-#endif
     return new QEglFSBackingStore(window);
 }
 
 QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    return static_cast<QEglFSScreen *>(context->screen()->handle())->platformContext();
+    return new QEglFSContext(context->format(), 0 /*share*/, mDisplay);
 }
 
 QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const

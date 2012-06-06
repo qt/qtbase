@@ -67,17 +67,10 @@ public:
 
     QPlatformOpenGLContext *platformContext() const;
 
-    EGLSurface surface() const { return m_surface; }
     EGLDisplay display() const { return m_dpy; }
 
 private:
-    void createAndSetPlatformContext() const;
-    void createAndSetPlatformContext();
-
     EGLDisplay m_dpy;
-    QPlatformOpenGLContext *m_platformContext;
-    EGLSurface m_surface;
-    EGLNativeWindowType m_window;
     QEglFSCursor *m_cursor;
 };
 

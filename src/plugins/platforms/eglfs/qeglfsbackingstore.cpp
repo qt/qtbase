@@ -41,6 +41,7 @@
 
 #include "qeglfsbackingstore.h"
 #include "qeglfscursor.h"
+#include "qeglfswindow.h"
 
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLPaintDevice>
@@ -56,7 +57,7 @@ QEglFSBackingStore::QEglFSBackingStore(QWindow *window)
     , m_texture(0)
     , m_program(0)
 {
-    m_context->setFormat(window->requestedFormat());
+    m_context->setFormat(window->format());
     m_context->setScreen(window->screen());
     m_context->create();
 }
@@ -193,7 +194,7 @@ void QEglFSBackingStore::makeCurrent()
 {
     // needed to prevent QOpenGLContext::makeCurrent() from failing
     window()->setSurfaceType(QSurface::OpenGLSurface);
-
+    (static_cast<QEglFSWindow *>(window()->handle()))->create();
     m_context->makeCurrent(window());
 }
 

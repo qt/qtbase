@@ -40,13 +40,19 @@
 ****************************************************************************/
 
 #include "qeglfswindow.h"
-
+#include "qeglfshooks.h"
 #include <QtGui/QWindowSystemInterface>
+
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
+
+#include <QtDebug>
 
 QT_BEGIN_NAMESPACE
 
 QEglFSWindow::QEglFSWindow(QWindow *w)
     : QPlatformWindow(w)
+    , m_surface(0)
+    , m_window(0)
 {
     static int serialNo = 0;
     m_winid  = ++serialNo;
@@ -55,6 +61,43 @@ QEglFSWindow::QEglFSWindow(QWindow *w)
 #endif
 
     setWindowState(Qt::WindowFullScreen);
+}
+
+QEglFSWindow::~QEglFSWindow()
+{
+    destroy();
+}
+
+void QEglFSWindow::create()
+{
+    if (m_window) {
+        return;
+    }
+
+    EGLDisplay display = (static_cast<QEglFSScreen *>(window()->screen()->handle()))->display();
+    QSurfaceFormat platformFormat = hooks->defaultSurfaceFormat();
+    EGLConfig config = q_configFromGLFormat(display, platformFormat);
+    m_window = hooks->createNativeWindow(hooks->screenSize());
+    m_surface = eglCreateWindowSurface(display, config, m_window, NULL);
+    if (m_surface == EGL_NO_SURFACE) {
+        qWarning("Could not create the egl surface: error = 0x%x\n", eglGetError());
+        eglTerminate(display);
+        qFatal("EGL error");
+    }
+}
+
+void QEglFSWindow::destroy()
+{
+    if (m_surface) {
+        EGLDisplay display = (static_cast<QEglFSScreen *>(window()->screen()->handle()))->display();
+        eglDestroySurface(display, m_surface);
+        m_surface = 0;
+    }
+
+    if (m_window) {
+        hooks->destroyNativeWindow(m_window);
+        m_window = 0;
+    }
 }
 
 void QEglFSWindow::setGeometry(const QRect &)
@@ -75,6 +118,11 @@ Qt::WindowState QEglFSWindow::setWindowState(Qt::WindowState)
 WId QEglFSWindow::winId() const
 {
     return m_winid;
+}
+
+QSurfaceFormat QEglFSWindow::format() const
+{
+    return hooks->defaultSurfaceFormat();
 }
 
 QT_END_NAMESPACE

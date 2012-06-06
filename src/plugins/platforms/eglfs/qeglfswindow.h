@@ -46,7 +46,6 @@
 #include "qeglfsscreen.h"
 
 #include <qpa/qplatformwindow.h>
-#include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
 
@@ -54,13 +53,22 @@ class QEglFSWindow : public QPlatformWindow
 {
 public:
     QEglFSWindow(QWindow *w);
+    ~QEglFSWindow();
 
     void setGeometry(const QRect &);
     Qt::WindowState setWindowState(Qt::WindowState state);
     WId winId() const;
 
+    EGLSurface surface() const { return m_surface; }
+    QSurfaceFormat format() const;
+
+    void create();
+    void destroy();
+
 private:
     WId m_winid;
+    EGLSurface m_surface;
+    EGLNativeWindowType m_window;
 };
 QT_END_NAMESPACE
 #endif // QEGLFSWINDOW_H

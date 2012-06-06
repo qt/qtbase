@@ -39,53 +39,24 @@
 **
 ****************************************************************************/
 
-#include "qeglfscursor.h"
-#include "qeglfsscreen.h"
-#include "qeglfswindow.h"
-#include "qeglfshooks.h"
+#ifndef QEGLFSCONTEXT_H
+#define QEGLFSCONTEXT_H
+
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
-    : m_dpy(dpy)
-    , m_cursor(0)
+class QEglFSContext : public QEGLPlatformContext
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglScreen %p\n", this);
-#endif
-
-    static int hideCursor = qgetenv("QT_QPA_EGLFS_HIDECURSOR").toInt();
-    if (!hideCursor) {
-        if (QEglFSCursor *customCursor = hooks->createCursor(this))
-            m_cursor = customCursor;
-        else
-            m_cursor = new QEglFSCursor(this);
-    }
-}
-
-QEglFSScreen::~QEglFSScreen()
-{
-    delete m_cursor;
-}
-
-QRect QEglFSScreen::geometry() const
-{
-    return QRect(QPoint(0, 0), hooks->screenSize());
-}
-
-int QEglFSScreen::depth() const
-{
-    return hooks->screenDepth();
-}
-
-QImage::Format QEglFSScreen::format() const
-{
-    return hooks->screenFormat();
-}
-
-QPlatformCursor *QEglFSScreen::cursor() const
-{
-    return m_cursor;
-}
+public:
+    QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
+                  EGLenum eglApi = EGL_OPENGL_ES_API);
+    bool makeCurrent(QPlatformSurface *surface);
+    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface);
+    void swapBuffers(QPlatformSurface *surface);
+};
 
 QT_END_NAMESPACE
+
+#endif // QEGLFSCONTEXT_H
