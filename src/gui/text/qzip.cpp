@@ -358,7 +358,7 @@ struct FileHeader
 };
 
 QZipReader::FileInfo::FileInfo()
-    : isDir(false), isFile(false), isSymLink(false), crc32(0), size(0)
+    : isDir(false), isFile(false), isSymLink(false), crc(0), size(0)
 {
 }
 
@@ -378,7 +378,7 @@ QZipReader::FileInfo& QZipReader::FileInfo::operator=(const FileInfo &other)
     isFile = other.isFile;
     isSymLink = other.isSymLink;
     permissions = other.permissions;
-    crc32 = other.crc32;
+    crc = other.crc;
     size = other.size;
     lastModified = other.lastModified;
     return *this;
@@ -424,7 +424,7 @@ void QZipPrivate::fillFileInfo(int index, QZipReader::FileInfo &fileInfo) const
     fileInfo.isFile = S_ISREG(mode);
     fileInfo.isSymLink = S_ISLNK(mode);
     fileInfo.permissions = modeToPermissions(mode);
-    fileInfo.crc32 = readUInt(header.h.crc_32);
+    fileInfo.crc = readUInt(header.h.crc_32);
     fileInfo.size = readUInt(header.h.uncompressed_size);
     fileInfo.lastModified = readMSDosDate(header.h.last_mod_file);
 }
@@ -701,8 +701,8 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
 */
 
 /*!
-    \variable FileInfo::crc32
-    The calculated checksum as a crc32 type.
+    \variable FileInfo::crc
+    The calculated checksum as a crc type.
 */
 
 /*!

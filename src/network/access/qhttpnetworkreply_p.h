@@ -56,7 +56,7 @@
 #ifndef QT_NO_HTTP
 
 #ifndef QT_NO_COMPRESS
-#include <zlib.h>
+struct z_stream_s;
 #endif
 
 #include <QtNetwork/qtcpsocket.h>
@@ -227,11 +227,6 @@ public:
     QPointer<QHttpNetworkConnection> connection;
     QPointer<QHttpNetworkConnectionChannel> connectionChannel;
 
-#ifndef QT_NO_COMPRESS
-    z_stream inflateStrm;
-    qint64 uncompressBodyData(QByteDataBuffer *in, QByteDataBuffer *out);
-#endif
-
     bool autoDecompress;
 
     QByteDataBuffer responseData; // uncompressed body
@@ -242,6 +237,11 @@ public:
     bool downstreamLimited;
 
     char* userProvidedDownloadBuffer;
+
+#ifndef QT_NO_COMPRESS
+    z_stream_s *inflateStrm;
+    qint64 uncompressBodyData(QByteDataBuffer *in, QByteDataBuffer *out);
+#endif
 };
 
 

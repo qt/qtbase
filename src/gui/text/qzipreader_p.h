@@ -88,7 +88,7 @@ public:
         uint isFile : 1;
         uint isSymLink : 1;
         QFile::Permissions permissions;
-        uint crc32;
+        uint crc;
         qint64 size;
         QDateTime lastModified;
         void *d;

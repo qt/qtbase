@@ -52,6 +52,10 @@
 #    include <QtNetwork/qsslconfiguration.h>
 #endif
 
+#ifndef QT_NO_COMPRESS
+#include <zlib.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QHttpNetworkReply::QHttpNetworkReply(const QUrl &url, QObject *parent)
@@ -67,8 +71,8 @@ QHttpNetworkReply::~QHttpNetworkReply()
     }
 
 #ifndef QT_NO_COMPRESS
-    if (d->autoDecompress && d->isCompressed())
-        inflateEnd(&d->inflateStrm);
+    if (d->autoDecompress && d->isCompressed() && d->inflateStrm)
+        inflateEnd(d->inflateStrm);
 #endif
 }
 
@@ -281,11 +285,19 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
       autoDecompress(false), responseData(), requestIsPrepared(false)
       ,pipeliningUsed(false), downstreamLimited(false)
       ,userProvidedDownloadBuffer(0)
+#ifndef QT_NO_COMPRESS
+      ,inflateStrm(0)
+#endif
+
 {
 }
 
 QHttpNetworkReplyPrivate::~QHttpNetworkReplyPrivate()
 {
+#ifndef QT_NO_COMPRESS
+      if (inflateStrm)
+          delete inflateStrm;
+#endif
 }
 
 void QHttpNetworkReplyPrivate::clearHttpLayerInformation()
@@ -300,8 +312,8 @@ void QHttpNetworkReplyPrivate::clearHttpLayerInformation()
     lastChunkRead = false;
     connectionCloseEnabled = true;
 #ifndef QT_NO_COMPRESS
-    if (autoDecompress)
-        inflateEnd(&inflateStrm);
+    if (autoDecompress && inflateStrm)
+        inflateEnd(inflateStrm);
 #endif
     fields.clear();
 }
@@ -530,15 +542,17 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
 #ifndef QT_NO_COMPRESS
         if (autoDecompress && isCompressed()) {
             // allocate inflate state
-            inflateStrm.zalloc = Z_NULL;
-            inflateStrm.zfree = Z_NULL;
-            inflateStrm.opaque = Z_NULL;
-            inflateStrm.avail_in = 0;
-            inflateStrm.next_in = Z_NULL;
+            if (!inflateStrm)
+                inflateStrm = new z_stream;
+            inflateStrm->zalloc = Z_NULL;
+            inflateStrm->zfree = Z_NULL;
+            inflateStrm->opaque = Z_NULL;
+            inflateStrm->avail_in = 0;
+            inflateStrm->next_in = Z_NULL;
             // "windowBits can also be greater than 15 for optional gzip decoding.
             // Add 32 to windowBits to enable zlib and gzip decoding with automatic header detection"
             // http://www.zlib.net/manual.html
-            int ret = inflateInit2(&inflateStrm, MAX_WBITS+32);
+            int ret = inflateInit2(inflateStrm, MAX_WBITS+32);
             if (ret != Z_OK)
                 return -1;
         }
@@ -685,47 +699,50 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QByteDataBuff
 #ifndef QT_NO_COMPRESS
 qint64 QHttpNetworkReplyPrivate::uncompressBodyData(QByteDataBuffer *in, QByteDataBuffer *out)
 {
+    if (!inflateStrm)
+        return -1;
+
     bool triedRawDeflate = false;
     for (int i = 0; i < in->bufferCount(); i++) {
         QByteArray &bIn = (*in)[i];
 
-        inflateStrm.avail_in = bIn.size();
-        inflateStrm.next_in = reinterpret_cast<Bytef*>(bIn.data());
+        inflateStrm->avail_in = bIn.size();
+        inflateStrm->next_in = reinterpret_cast<Bytef*>(bIn.data());
 
         do {
             QByteArray bOut;
             // make a wild guess about the uncompressed size.
-            bOut.reserve(inflateStrm.avail_in * 3 + 512);
-            inflateStrm.avail_out = bOut.capacity();
-            inflateStrm.next_out = reinterpret_cast<Bytef*>(bOut.data());
+            bOut.reserve(inflateStrm->avail_in * 3 + 512);
+            inflateStrm->avail_out = bOut.capacity();
+            inflateStrm->next_out = reinterpret_cast<Bytef*>(bOut.data());
 
-            int ret = inflate(&inflateStrm, Z_NO_FLUSH);
+            int ret = inflate(inflateStrm, Z_NO_FLUSH);
             //All negative return codes are errors, in the context of HTTP compression, Z_NEED_DICT is also an error.
             // in the case where we get Z_DATA_ERROR this could be because we recieved raw deflate compressed data.
             if (ret == Z_DATA_ERROR && !triedRawDeflate) {
-                inflateEnd(&inflateStrm);
+                inflateEnd(inflateStrm);
                 triedRawDeflate = true;
-                inflateStrm.zalloc = Z_NULL;
-                inflateStrm.zfree = Z_NULL;
-                inflateStrm.opaque = Z_NULL;
-                inflateStrm.avail_in = 0;
-                inflateStrm.next_in = Z_NULL;
-                int ret = inflateInit2(&inflateStrm, -MAX_WBITS);
+                inflateStrm->zalloc = Z_NULL;
+                inflateStrm->zfree = Z_NULL;
+                inflateStrm->opaque = Z_NULL;
+                inflateStrm->avail_in = 0;
+                inflateStrm->next_in = Z_NULL;
+                int ret = inflateInit2(inflateStrm, -MAX_WBITS);
                 if (ret != Z_OK) {
                     return -1;
                 } else {
-                    inflateStrm.avail_in = bIn.size();
-                    inflateStrm.next_in = reinterpret_cast<Bytef*>(bIn.data());
+                    inflateStrm->avail_in = bIn.size();
+                    inflateStrm->next_in = reinterpret_cast<Bytef*>(bIn.data());
                     continue;
                 }
             } else if (ret < 0 || ret == Z_NEED_DICT) {
                 return -1;
             }
-            bOut.resize(bOut.capacity() - inflateStrm.avail_out);
+            bOut.resize(bOut.capacity() - inflateStrm->avail_out);
             out->append(bOut);
             if (ret == Z_STREAM_END)
                 return out->byteAmount();
-        } while (inflateStrm.avail_in > 0);
+        } while (inflateStrm->avail_in > 0);
     }
 
     return out->byteAmount();
