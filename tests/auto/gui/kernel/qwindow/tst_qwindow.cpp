@@ -162,6 +162,12 @@ void tst_QWindow::eventOrderOnShow()
 
 void tst_QWindow::positioning()
 {
+#ifdef Q_OS_MAC
+    // the fullscreen animation delay on OS X Lion also causes failures in
+    // the isActive() test below, so it's best to just skip it for now
+    QSKIP("Multiple failures in this test on Mac OS X, see QTBUG-23059");
+#endif
+
     // Some platforms enforce minimum widths for windows, which can cause extra resize
     // events, so set the width to suitably large value to avoid those.
     QRect geometry(80, 80, 300, 40);
@@ -233,9 +239,6 @@ void tst_QWindow::isExposed()
     window.hide();
 
     QCoreApplication::processEvents();
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "This test fails on Mac OS X, see QTBUG-23059", Abort);
-#endif
     QTRY_VERIFY(window.received(QEvent::Expose) > 1);
     QTRY_VERIFY(!window.isExposed());
 }
