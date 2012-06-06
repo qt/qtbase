@@ -239,7 +239,10 @@ static void calcGraphemeAndLineBreaks(const ushort *string, quint32 len, HB_Char
         grapheme = ngrapheme;
         attributes[i-1].lineBreakType = lineBreakType;
     }
-    attributes[len-1].lineBreakType = HB_ForcedBreak;
+
+    for (quint32 i = len - 1; i > 0; --i)
+        attributes[i].lineBreakType = attributes[i - 1].lineBreakType;
+    attributes[0].lineBreakType = HB_NoBreak; // LB2
 }
 
 

@@ -374,8 +374,7 @@ int QTextBoundaryFinder::toNextBoundary()
             ++pos;
         break;
     case Line:
-        Q_ASSERT(pos);
-        while (pos < length && d->attributes[pos-1].lineBreakType == HB_NoBreak)
+        while (pos < length && d->attributes[pos].lineBreakType == HB_NoBreak)
             ++pos;
         break;
     }
@@ -417,7 +416,7 @@ int QTextBoundaryFinder::toPreviousBoundary()
             --pos;
         break;
     case Line:
-        while (pos > 0 && d->attributes[pos-1].lineBreakType == HB_NoBreak)
+        while (pos > 0 && d->attributes[pos].lineBreakType == HB_NoBreak)
             --pos;
         break;
     }
@@ -442,7 +441,7 @@ bool QTextBoundaryFinder::isAtBoundary() const
     case Word:
         return d->attributes[pos].wordBoundary;
     case Line:
-        return (pos > 0) ? d->attributes[pos-1].lineBreakType != HB_NoBreak : true;
+        return pos == 0 || d->attributes[pos].lineBreakType != HB_NoBreak;
     case Sentence:
         return d->attributes[pos].sentenceBoundary;
     }
@@ -458,7 +457,7 @@ QTextBoundaryFinder::BoundaryReasons QTextBoundaryFinder::boundaryReasons() cons
         return NotAtBoundary;
     if (! isAtBoundary())
         return NotAtBoundary;
-    if (t == Line && pos < length && d->attributes[pos-1].lineBreakType == HB_SoftHyphen)
+    if (t == Line && pos < length && d->attributes[pos].lineBreakType == HB_SoftHyphen)
         return SoftHyphen;
     if (pos == 0) {
         if (d->attributes[pos].whiteSpace)

@@ -274,15 +274,15 @@ void tst_QTextLayout::lineBreaking()
         QString str = QString::fromUtf8(b->utf8);
         QTextEngine engine(str, QFont());
         const HB_CharAttributes *attrs = engine.attributes();
+        QVERIFY(attrs[0].lineBreakType == HB_NoBreak);
         int i;
         for (i = 0; i < (int)str.length() - 1; ++i) {
             QVERIFY(b->breaks[i] != 0xff);
-            if ( (attrs[i].lineBreakType != HB_NoBreak) != (bool)b->breaks[i] ) {
-                qDebug("test case \"%s\" failed at char %d; break type: %d", b->utf8, i, attrs[i].lineBreakType);
-                QCOMPARE( (attrs[i].lineBreakType != HB_NoBreak), (bool)b->breaks[i] );
+            if ( (attrs[i + 1].lineBreakType != HB_NoBreak) != (bool)b->breaks[i] ) {
+                qDebug("test case \"%s\" failed at char %d; break type: %d", b->utf8, i, attrs[i + 1].lineBreakType);
+                QCOMPARE( (attrs[i + 1].lineBreakType != HB_NoBreak), (bool)b->breaks[i] );
             }
         }
-        QVERIFY(attrs[i].lineBreakType == HB_ForcedBreak);
         QCOMPARE(b->breaks[i], (uchar)0xff);
         ++b;
     }

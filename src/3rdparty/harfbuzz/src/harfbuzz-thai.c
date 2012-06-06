@@ -414,8 +414,7 @@ static void HB_ThaiAssignAttributes(const HB_UChar16 *string, hb_uint32 len, HB_
         numbreaks = th_brk((const unsigned char *)cstr, break_positions, brp_size);
         for (i = 0; i < numbreaks; ++i) {
             attributes[break_positions[i]].wordBoundary = TRUE;
-            if (break_positions[i] > 0)
-                attributes[break_positions[i]-1].lineBreakType = HB_Break;
+            attributes[break_positions[i]].lineBreakType = HB_Break;
         }
 
         if (break_positions != brp)
