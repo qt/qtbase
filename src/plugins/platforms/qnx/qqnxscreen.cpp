@@ -87,7 +87,7 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
 
     // Cache size of this display in millimeters. We have to take care of the orientation.
     // libscreen always reports the physical size dimensions as width and height in the
-    // landscape orientation. Contrary to this, QPlatformScreen::physicalSize() expects the
+    // native orientation. Contrary to this, QPlatformScreen::physicalSize() expects the
     // returned dimensions to follow the current orientation.
     errno = 0;
     result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_PHYSICAL_SIZE, val);
@@ -97,7 +97,8 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
 
     m_nativeOrientation = val[0] >= val[1] ? Qt::LandscapeOrientation : Qt::PortraitOrientation;
 
-    if (m_currentRotation == 0 || m_currentRotation == 180)
+    const int angle = screen()->angleBetween(m_nativeOrientation, orientation());
+    if (angle == 0 || angle == 180)
         m_currentPhysicalSize = m_initialPhysicalSize = QSize(val[0], val[1]);
     else
         m_currentPhysicalSize = m_initialPhysicalSize = QSize(val[1], val[0]);
@@ -164,14 +165,28 @@ Qt::ScreenOrientation QQnxScreen::nativeOrientation() const
 Qt::ScreenOrientation QQnxScreen::orientation() const
 {
     Qt::ScreenOrientation orient;
-    if (m_currentRotation == 0)
-        orient = Qt::LandscapeOrientation;
-    else if (m_currentRotation == 90)
-        orient = Qt::PortraitOrientation;
-    else if (m_currentRotation == 180)
-        orient = Qt::InvertedLandscapeOrientation;
-    else
-        orient = Qt::InvertedPortraitOrientation;
+    if (m_nativeOrientation == Qt::LandscapeOrientation) {
+        // Landscape devices e.g. PlayBook
+        if (m_currentRotation == 0)
+            orient = Qt::LandscapeOrientation;
+        else if (m_currentRotation == 90)
+            orient = Qt::PortraitOrientation;
+        else if (m_currentRotation == 180)
+            orient = Qt::InvertedLandscapeOrientation;
+        else
+            orient = Qt::InvertedPortraitOrientation;
+    } else {
+        // Portrait devices e.g. Phones
+        // ###TODO Check these on an actual phone device
+        if (m_currentRotation == 0)
+            orient = Qt::PortraitOrientation;
+        else if (m_currentRotation == 90)
+            orient = Qt::LandscapeOrientation;
+        else if (m_currentRotation == 180)
+            orient = Qt::InvertedPortraitOrientation;
+        else
+            orient = Qt::InvertedLandscapeOrientation;
+    }
     qScreenDebug() << Q_FUNC_INFO << "orientation =" << orient;
     return orient;
 }
