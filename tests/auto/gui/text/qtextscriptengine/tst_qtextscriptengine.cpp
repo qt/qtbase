@@ -1289,7 +1289,11 @@ void tst_QTextScriptEngine::thaiWithZWJ()
 #ifdef Q_OS_WIN
     QSKIP("This test currently fails on Windows - QTBUG-24565");
 #endif
-    QString s(QString::fromUtf8("ร‍ร‌.ร.“ร…ร”ร\xA0ร本ร") + QChar(0x0363)/*superscript 'a', for testing Inherited class*/);
+    QString s(QString::fromUtf8("\xe0\xb8\xa3\xe2\x80\x8d\xe0\xb8\xa3\xe2\x80"
+                                "\x8c\x2e\xe0\xb8\xa3\x2e\xe2\x80\x9c\xe0\xb8"
+                                "\xa3\xe2\x80\xa6\xe0\xb8\xa3\xe2\x80\x9d\xe0"
+                                "\xb8\xa3\xa0\xe0\xb8\xa3\xe6\x9c\xac\xe0\xb8\xa3")
+              + QChar(0x0363)/*superscript 'a', for testing Inherited class*/);
     QTextLayout layout(s);
     layout.setCacheEnabled(true);
     layout.beginLayout();
@@ -1334,7 +1338,7 @@ void tst_QTextScriptEngine::thaiWithZWJ()
 
 void tst_QTextScriptEngine::thaiMultipleVowels()
 {
-    QString s(QString::fromUtf8("ส"));
+    QString s(QString::fromUtf8("\xe0\xb8\xaa"));
     for (int i = 0; i < 100; i++)
         s += QChar(0x0E47); // Add lots of "VOWEL SIGN MAI TAI KHU N/S-T"  stacked on top of the character
     s += QChar(0x200D); // Now add a zero width joiner (which adds a circle which is hidden)
