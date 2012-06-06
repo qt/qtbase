@@ -525,6 +525,8 @@ void QSslConfiguration::setSslOption(QSsl::SslOption option, bool on)
 }
 
 /*!
+  \since 4.8
+
   Returns true if the specified SSL compatibility option is enabled.
 
   \sa testSSlOption()
