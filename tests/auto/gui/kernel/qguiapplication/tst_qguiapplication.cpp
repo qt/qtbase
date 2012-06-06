@@ -81,9 +81,6 @@ public:
 
 void tst_QGuiApplication::focusObject()
 {
-#ifdef Q_OS_MAC
-    QSKIP("This test fails intermittently, and at different locations. See QTBUG-24322");
-#endif
     int argc = 0;
     QGuiApplication app(argc, 0);
 

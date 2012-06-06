@@ -154,8 +154,15 @@ static QTouchDevice *touchDevice = 0;
         if (!m_platformWindow->windowIsPopupType())
             QWindowSystemInterface::handleWindowActivated(m_window);
     } else if (notificationName == NSWindowDidResignKeyNotification) {
-        if (!m_platformWindow->windowIsPopupType())
-            QWindowSystemInterface::handleWindowActivated(0);
+        // key window will be non-nil if another window became key... do not
+        // set the active window to zero here, the new key window's
+        // NSWindowDidBecomeKeyNotification hander will change the active window
+        NSWindow *keyWindow = [NSApp keyWindow];
+        if (!keyWindow) {
+            // no new key window, go ahead and set the active window to zero
+            if (!m_platformWindow->windowIsPopupType())
+                QWindowSystemInterface::handleWindowActivated(0);
+        }
     } else if (notificationName == NSWindowDidMiniaturizeNotification) {
         QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowMinimized);
     } else if (notificationName == NSWindowDidDeminiaturizeNotification) {
