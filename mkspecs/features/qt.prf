@@ -153,10 +153,11 @@ for(QTLIB, QT) {
 # Topological resolution of modules based on their QT.<module>.depends variable
 QT = $$resolve_depends(NEWQT, "QT.")
 # Finally actually add the modules
+unset(BAD_QT)
 for(QTLIB, QT) {
     QTLIBNAME = $$eval(QT.$${QTLIB}.name)
     isEmpty(QTLIBNAME) {
-        message("Warning: unknown QT module: $$QTLIB")
+        BAD_QT += $$QTLIB
         next()
     }
 
@@ -167,6 +168,7 @@ for(QTLIB, QT) {
 
     qtAddModule($$QTLIB, $$eval(QT.$${QTLIB}.want_private))
 }
+!isEmpty(BAD_QT):error("Unknown module(s) in QT: $$BAD_QT")
 
 !isEmpty(using_privates):!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
     message("This project is using private headers and will therefore be tied to this specific Qt module build version.")
