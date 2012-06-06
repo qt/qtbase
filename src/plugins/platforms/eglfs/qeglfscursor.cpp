@@ -292,11 +292,15 @@ void QEglFSCursor::draw(const QRectF &r)
 
     glUseProgram(m_program);
 
+    const GLfloat x1 = r.left();
+    const GLfloat x2 = r.right();
+    const GLfloat y1 = r.top();
+    const GLfloat y2 = r.bottom();
     const GLfloat cursorCoordinates[] = {
-        r.left(), r.bottom(),
-        r.right(), r.bottom(),
-        r.left(), r.top(),
-        r.right(), r.top()
+        x1, y2,
+        x2, y2,
+        x1, y1,
+        x2, y1
     };
 
     const GLfloat s1 = m_cursor.textureRect.left();
