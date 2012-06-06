@@ -73,8 +73,7 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
     // Anomymous pipes do not support asynchronous I/O. Thus we
     // create named pipes for redirecting stdout, stderr and stdin.
 
-    SECURITY_ATTRIBUTES secAtt = { 0 };
-    secAtt.nLength = sizeof(secAtt);
+    SECURITY_ATTRIBUTES secAtt = { sizeof(SECURITY_ATTRIBUTES), 0, false };
     secAtt.bInheritHandle = isInputPipe;    // The read handle must be non-inheritable for output pipes.
 
     HANDLE hRead;
