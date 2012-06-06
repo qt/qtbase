@@ -625,7 +625,6 @@ Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogCont
 
 static QtMsgHandler msgHandler = 0;                // pointer to debug handler (without context)
 static QtMessageHandler messageHandler = 0;         // pointer to debug handler (with context)
-static QMessageHandler messageHandler2 = 0;       // TODO: Remove before Qt5.0 beta
 
 /*!
     \internal
@@ -669,12 +668,6 @@ void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, con
         msgHandler = qDefaultMsgHandler;
     if (!messageHandler)
         messageHandler = qDefaultMessageHandler;
-    if (!messageHandler2)
-        messageHandler2 = qDefaultMessageHandler2;
-
-    if (messageHandler == qDefaultMessageHandler
-            && messageHandler2 != qDefaultMessageHandler2)
-        (*messageHandler2)(msgType, context, message.toLocal8Bit().constData());
 
     // prefer new message handler over the old one
     if (msgHandler == qDefaultMsgHandler
@@ -871,19 +864,6 @@ QtMessageHandler qInstallMessageHandler(QtMessageHandler h)
 #if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
     if (!messageHandler && usingWinMain)
         messageHandler = qWinMessageHandler;
-#endif
-    return old;
-}
-
-QMessageHandler qInstallMessageHandler(QMessageHandler h)
-{
-    if (!messageHandler2)
-        messageHandler2 = qDefaultMessageHandler2;
-    QMessageHandler old = messageHandler2;
-    messageHandler2 = h;
-#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-    if (!messageHandler2 && usingWinMain)
-        messageHandler2 = qWinMessageHandler2;
 #endif
     return old;
 }
