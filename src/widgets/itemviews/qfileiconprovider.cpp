@@ -47,6 +47,9 @@
 #include <qdir.h>
 #include <qpixmapcache.h>
 #include <private/qfunctions_p.h>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformservices.h>
 
 #if defined(Q_OS_WIN)
 #  define _WIN32_IE 0x0500
@@ -60,7 +63,6 @@
 
 #if defined(Q_OS_UNIX) && !defined(QT_NO_STYLE_GTK)
 #  include <private/qgtkstyle_p.h>
-#  include <QtPlatformSupport/private/qgenericunixservices_p.h>
 #endif
 
 #ifndef SHGFI_ADDOVERLAYS
@@ -400,7 +402,7 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
     Q_D(const QFileIconProvider);
 
 #if defined(Q_OS_UNIX) && !defined(QT_NO_STYLE_GTK)
-    if (QGenericUnixServices::desktopEnvironment() == QGenericUnixServices::DE_GNOME) {
+    if (QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment() == QByteArray("GNOME")) {
         QIcon gtkIcon = QGtkStylePrivate::getFilesystemIcon(info);
         if (!gtkIcon.isNull())
             return gtkIcon;

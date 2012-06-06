@@ -52,6 +52,9 @@
 #include <QtCore/QSettings>
 #include <QtCore/QVariant>
 #include <QtCore/QStringList>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformservices.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -378,15 +381,10 @@ QStringList QGenericUnixTheme::themeNames()
 {
     QStringList result;
     if (QGuiApplication::desktopSettingsAware()) {
-        switch (QGenericUnixServices::desktopEnvironment()) {
-        case QGenericUnixServices::DE_KDE:
+        if (QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment() == QByteArray("KDE")) {
             result.push_back(QLatin1String(QKdeTheme::name));
-            break;
-        case QGenericUnixServices::DE_GNOME:
+        } else if (QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment() == QByteArray("GNOME")) {
             result.push_back(QLatin1String(QGnomeTheme::name));
-            break;
-        case QGenericUnixServices::DE_UNKNOWN:
-            break;
         }
         const QByteArray session = qgetenv("DESKTOP_SESSION");
         if (!session.isEmpty() && session != "default")

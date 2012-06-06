@@ -52,14 +52,14 @@ QT_BEGIN_NAMESPACE
 
 enum { debug = 0 };
 
-static inline QGenericUnixServices::DesktopEnvironment detectDesktopEnvironment()
+static inline QByteArray detectDesktopEnvironment()
 {
     if (!qgetenv("KDE_FULL_SESSION").isEmpty())
-        return QGenericUnixServices::DE_KDE;
+        return QByteArray("KDE");
     // GNOME_DESKTOP_SESSION_ID is deprecated for some reason, but still check it
     if (qgetenv("DESKTOP_SESSION") == "gnome" || !qgetenv("GNOME_DESKTOP_SESSION_ID").isEmpty())
-        return QGenericUnixServices::DE_GNOME;
-    return QGenericUnixServices::DE_UNKNOWN;
+        return QByteArray("GNOME");
+    return QByteArray("UNKNOWN");
 }
 
 static inline bool checkExecutable(const QString &candidate, QString *result)
@@ -68,7 +68,7 @@ static inline bool checkExecutable(const QString &candidate, QString *result)
     return !result->isEmpty();
 }
 
-static inline bool detectWebBrowser(QGenericUnixServices::DesktopEnvironment desktop,
+static inline bool detectWebBrowser(QByteArray desktop,
                                     bool checkBrowserVariable,
                                     QString *browser)
 {
@@ -86,19 +86,15 @@ static inline bool detectWebBrowser(QGenericUnixServices::DesktopEnvironment des
             return true;
     }
 
-    switch (desktop) {
-    case QGenericUnixServices::DE_UNKNOWN:
-        break;
-    case QGenericUnixServices::DE_KDE:
+    if (desktop == QByteArray("KDE")) {
         // Konqueror launcher
         if (checkExecutable(QStringLiteral("kfmclient"), browser)) {
             browser->append(QStringLiteral(" exec"));
             return true;
         }
-    case QGenericUnixServices::DE_GNOME:
+    } else if (desktop == QByteArray("GNOME")) {
         if (checkExecutable(QStringLiteral("gnome-open"), browser))
             return true;
-        break;
     }
 
     for (size_t i = 0; i < sizeof(browsers)/sizeof(char *); ++i)
@@ -122,9 +118,9 @@ static inline bool launch(const QString &launcher, const QUrl &url)
     return ok;
 }
 
-QGenericUnixServices::DesktopEnvironment QGenericUnixServices::desktopEnvironment()
+QByteArray QGenericUnixServices::desktopEnvironment() const
 {
-    static const DesktopEnvironment result = detectDesktopEnvironment();
+    static const QByteArray result = detectDesktopEnvironment();
     return result;
 }
 

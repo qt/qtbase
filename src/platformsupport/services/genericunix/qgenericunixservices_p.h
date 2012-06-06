@@ -52,15 +52,9 @@ QT_BEGIN_NAMESPACE
 class QGenericUnixServices : public QPlatformServices
 {
 public:
-    enum DesktopEnvironment {
-        DE_UNKNOWN,
-        DE_KDE,
-        DE_GNOME
-    };
-
     QGenericUnixServices() {}
 
-    static DesktopEnvironment desktopEnvironment();
+    QByteArray desktopEnvironment() const;
 
     virtual bool openUrl(const QUrl &url);
     virtual bool openDocument(const QUrl &url);

@@ -71,4 +71,14 @@ bool QPlatformServices::openDocument(const QUrl &url)
     return false;
 }
 
+/*!
+ * \brief QPlatformServices::desktopEnvironment returns the active desktop environment.
+ * \return On Unix this function returns KDE, GNOME or UNKNOWN.
+ */
+QByteArray QPlatformServices::desktopEnvironment() const
+{
+    return QByteArray("UNKNOWN");
+}
+
+
 QT_END_NAMESPACE

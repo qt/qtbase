@@ -66,6 +66,8 @@ public:
 
     virtual bool openUrl(const QUrl &url);
     virtual bool openDocument(const QUrl &url);
+
+    virtual QByteArray desktopEnvironment() const;
 };
 
 QT_END_NAMESPACE
