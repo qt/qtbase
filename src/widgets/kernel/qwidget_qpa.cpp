@@ -989,8 +989,11 @@ void qt_qpa_set_cursor(QWidget *w, bool force)
     static QPointer<QWidget> lastUnderMouse = 0;
     if (force) {
         lastUnderMouse = w;
-    } else if (lastUnderMouse && lastUnderMouse->effectiveWinId() == w->effectiveWinId()) {
-        w = lastUnderMouse;
+    } else if (lastUnderMouse) {
+        const WId lastWinId = lastUnderMouse->effectiveWinId();
+        const WId winId = w->effectiveWinId();
+        if (lastWinId && lastWinId == winId)
+            w = lastUnderMouse;
     } else if (!w->internalWinId()) {
         return; // The mouse is not under this widget, and it's not native, so don't change it.
     }

@@ -2318,29 +2318,12 @@ void QWidget::createWinId()
 */
 WId QWidget::effectiveWinId() const
 {
-    WId id = internalWinId();
+    const WId id = internalWinId();
     if (id || !testAttribute(Qt::WA_WState_Created))
         return id;
-    QWidget *realParent = nativeParentWidget();
-    if (!realParent && d_func()->inSetParent) {
-        // In transitional state. This is really just a workaround. The real problem
-        // is that QWidgetPrivate::setParent_sys (platform specific code) first sets
-        // the window id to 0 (setWinId(0)) before it sets the Qt::WA_WState_Created
-        // attribute to false. The correct way is to do it the other way around, and
-        // in that case the Qt::WA_WState_Created logic above will kick in and
-        // return 0 whenever the widget is in a transitional state. However, changing
-        // the original logic for all platforms is far more intrusive and might
-        // break existing applications.
-        // Note: The widget can only be in a transitional state when changing its
-        // parent -- everything else is an internal error -- hence explicitly checking
-        // against 'inSetParent' rather than doing an unconditional return whenever
-        // 'realParent' is 0 (which may cause strange artifacts and headache later).
-        return 0;
-    }
-    // This widget *must* have a native parent widget.
-    Q_ASSERT(realParent);
-    Q_ASSERT(realParent->internalWinId());
-    return realParent->internalWinId();
+    if (const QWidget *realParent = nativeParentWidget())
+        return realParent->internalWinId();
+    return 0;
 }
 
 #ifndef QT_NO_STYLE_STYLESHEET
