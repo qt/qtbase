@@ -180,7 +180,9 @@ public:
     QGraphicsWidget *window() const;
     QGraphicsItem *panel() const;
     void setParentItem(QGraphicsItem *parent);
-    QList<QGraphicsItem *> children() const; // ### obsolete
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline QList<QGraphicsItem *> children() const { return childItems(); }
+#endif
     QList<QGraphicsItem *> childItems() const;
     bool isWidget() const;
     bool isWindow() const;
@@ -242,9 +244,10 @@ public:
 
     Qt::MouseButtons acceptedMouseButtons() const;
     void setAcceptedMouseButtons(Qt::MouseButtons buttons);
-
-    bool acceptsHoverEvents() const; // ### obsolete
-    void setAcceptsHoverEvents(bool enabled); // ### obsolete
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline bool acceptsHoverEvents() const { return acceptHoverEvents(); }
+    QT_DEPRECATED inline void setAcceptsHoverEvents(bool enabled) { setAcceptHoverEvents(enabled); }
+#endif
     bool acceptHoverEvents() const;
     void setAcceptHoverEvents(bool enabled);
     bool acceptTouchEvents() const;
@@ -299,12 +302,12 @@ public:
     QTransform itemTransform(const QGraphicsItem *other, bool *ok = 0) const;
     void setTransform(const QTransform &matrix, bool combine = false);
     void resetTransform();
-
-    void rotate(qreal angle);           // ### obsolete
-    void scale(qreal sx, qreal sy);     // ### obsolete
-    void shear(qreal sh, qreal sv);     // ### obsolete
-    void translate(qreal dx, qreal dy); // ### obsolete
-
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline void rotate(qreal angle) { setTransform(QTransform().rotate(angle), true); }
+    QT_DEPRECATED inline void scale(qreal sx, qreal sy) { setTransform(QTransform::fromScale(sx, sy), true); }
+    QT_DEPRECATED inline void shear(qreal sh, qreal sv) { setTransform(QTransform().shear(sh, sv), true); }
+    QT_DEPRECATED inline void translate(qreal dx, qreal dy) { setTransform(QTransform::fromTranslate(dx, dy), true); }
+#endif
     void setRotation(qreal angle);
     qreal rotation() const;
 
@@ -337,8 +340,7 @@ public:
     virtual bool collidesWithItem(const QGraphicsItem *other, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const;
     virtual bool collidesWithPath(const QPainterPath &path, Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const;
     QList<QGraphicsItem *> collidingItems(Qt::ItemSelectionMode mode = Qt::IntersectsItemShape) const;
-    bool isObscured() const;
-    bool isObscured(const QRectF &rect) const; // ### Qt 5: merge with isObscured(), add QRectF arg to isObscuredBy()
+    bool isObscured(const QRectF &rect = QRectF()) const;
     inline bool isObscured(qreal x, qreal y, qreal w, qreal h) const;
     virtual bool isObscuredBy(const QGraphicsItem *item) const;
     virtual QPainterPath opaqueArea() const;
@@ -568,7 +570,6 @@ class Q_WIDGETS_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
 public:
     QGraphicsObject(QGraphicsItem *parent = 0);
 
-    // ### Qt 5: Disambiguate
 #ifdef Q_NO_USING_KEYWORD
     const QObjectList &children() const { return QObject::children(); }
 #else

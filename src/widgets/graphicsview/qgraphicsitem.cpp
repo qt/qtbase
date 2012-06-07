@@ -1707,16 +1707,13 @@ void QGraphicsItem::setParentItem(QGraphicsItem *newParent)
 }
 
 /*!
+    \fn QList<QGraphicsItem *> QGraphicsItem::children() const
     \obsolete
 
     Use childItems() instead.
 
     \sa setParentItem()
 */
-QList<QGraphicsItem *> QGraphicsItem::children() const
-{
-    return childItems();
-}
 
 /*!
     \since 4.4
@@ -2973,14 +2970,11 @@ bool QGraphicsItem::acceptHoverEvents() const
 }
 
 /*!
+    \fn bool QGraphicsItem::acceptsHoverEvents() const
     \obsolete
 
     Call acceptHoverEvents() instead.
 */
-bool QGraphicsItem::acceptsHoverEvents() const
-{
-    return d_ptr->acceptsHover;
-}
 
 /*!
     \since 4.4
@@ -3025,14 +3019,11 @@ void QGraphicsItem::setAcceptHoverEvents(bool enabled)
 }
 
 /*!
+    \fn void QGraphicsItem::setAcceptsHoverEvents(bool enabled)
     \obsolete
 
     Use setAcceptHoverEvents(\a enabled) instead.
 */
-void QGraphicsItem::setAcceptsHoverEvents(bool enabled)
-{
-    setAcceptHoverEvents(enabled);
-}
 
 /*! \since 4.6
 
@@ -4442,6 +4433,7 @@ void QGraphicsItem::resetTransform()
 }
 
 /*!
+    \fn void QGraphicsItem::rotate(qreal angle)
     \obsolete
 
     Use
@@ -4462,12 +4454,9 @@ void QGraphicsItem::resetTransform()
 
     \sa setTransform(), transform(), scale(), shear(), translate()
 */
-void QGraphicsItem::rotate(qreal angle)
-{
-    setTransform(QTransform().rotate(angle), true);
-}
 
 /*!
+    \fn void QGraphicsItem::scale(qreal sx, qreal sy)
     \obsolete
 
     Use
@@ -4488,12 +4477,9 @@ void QGraphicsItem::rotate(qreal angle)
 
     \sa setTransform(), transform()
 */
-void QGraphicsItem::scale(qreal sx, qreal sy)
-{
-    setTransform(QTransform::fromScale(sx, sy), true);
-}
 
 /*!
+    \fn void QGraphicsItem::shear(qreal sh, qreal sv)
     \obsolete
 
     Use
@@ -4508,12 +4494,9 @@ void QGraphicsItem::scale(qreal sx, qreal sy)
 
     \sa setTransform(), transform()
 */
-void QGraphicsItem::shear(qreal sh, qreal sv)
-{
-    setTransform(QTransform().shear(sh, sv), true);
-}
 
 /*!
+    \fn void QGraphicsItem::translate(qreal dx, qreal dy)
     \obsolete
 
     Use setPos() or setTransformOriginPoint() instead. For identical
@@ -4531,10 +4514,6 @@ void QGraphicsItem::shear(qreal sh, qreal sv)
 
     \sa setTransform(), transform()
 */
-void QGraphicsItem::translate(qreal dx, qreal dy)
-{
-    setTransform(QTransform::fromTranslate(dx, dy), true);
-}
 
 /*!
     This virtual function is called twice for all items by the
@@ -5062,21 +5041,6 @@ QList<QGraphicsItem *> QGraphicsItem::collidingItems(Qt::ItemSelectionMode mode)
 }
 
 /*!
-    Returns true if this item's bounding rect is completely obscured by the
-    opaque shape of any of colliding items above it (i.e., with a higher Z
-    value than this item).
-
-    Its implementation is based on calling isObscuredBy(), which you can
-    reimplement to provide a custom obscurity algorithm.
-
-  \sa opaqueArea()
-*/
-bool QGraphicsItem::isObscured() const
-{
-    return isObscured(QRectF());
-}
-
-/*!
     \internal
 
     Item obscurity helper function.
@@ -5099,9 +5063,6 @@ static bool qt_QGraphicsItem_isObscured(const QGraphicsItem *item,
 
     Returns true if \a rect is completely obscured by the opaque shape of any
     of colliding items above it (i.e., with a higher Z value than this item).
-
-    Unlike the default isObscured() function, this function does not call
-    isObscuredBy().
 
     \sa opaqueArea()
 */
