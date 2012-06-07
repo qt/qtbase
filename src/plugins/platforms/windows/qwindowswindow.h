@@ -116,7 +116,7 @@ public:
 
     enum Flags
     {
-        WithinWmPaint = 0x1,
+        DCFromBeginPaint = 0x1,
         WithinSetParent = 0x2,
         FrameDirty = 0x4,            //! Frame outdated by setStyle, recalculate in next query.
         OpenGLSurface = 0x10,

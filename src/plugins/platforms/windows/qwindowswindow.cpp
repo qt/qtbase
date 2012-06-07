@@ -989,7 +989,7 @@ HDC QWindowsWindow::getDC()
 
 void QWindowsWindow::releaseDC()
 {
-    if (m_hdc && !testFlag(WithinWmPaint)) {
+    if (m_hdc && !testFlag(DCFromBeginPaint)) {
         ReleaseDC(handle(), m_hdc);
         m_hdc = 0;
     }
@@ -1013,17 +1013,22 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
                                                              QRegion(qrectFromRECT(ps.rcPaint)));
         EndPaint(hwnd, &ps);
     } else {
-        releaseDC();
-        m_hdc = BeginPaint(hwnd, &ps);
-        setFlag(WithinWmPaint);
-
+        const HDC dc = BeginPaint(hwnd, &ps);
         const QRect updateRect = qrectFromRECT(ps.rcPaint);
+        if (updateRect.size() == m_data.geometry.size()) {
+            // Store DC for access by the backing store if it has the full size.
+            releaseDC();
+            setFlag(DCFromBeginPaint);
+            m_hdc = dc;
+        }
         if (QWindowsContext::verboseIntegration)
             qDebug() << __FUNCTION__ << this << window() << updateRect;
 
         QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRegion(updateRect));
-        clearFlag(WithinWmPaint);
-        m_hdc = 0;
+        if (testFlag(DCFromBeginPaint)) {
+            clearFlag(DCFromBeginPaint);
+            m_hdc = 0;
+        }
         EndPaint(hwnd, &ps);
     }
     return true;
