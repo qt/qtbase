@@ -786,6 +786,7 @@ QCONFIG_FLAGS=
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 XPLATFORM_MAEMO=no
+XPLATFORM_QNX=no
 PLATFORM=$QMAKESPEC
 QT_CROSS_COMPILE=no
 OPT_CONFIRM_LICENSE=no
