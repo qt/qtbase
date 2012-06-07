@@ -1025,16 +1025,8 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                     cookie.setSecure(true);
                 } else if (field.first == "httponly") {
                     cookie.setHttpOnly(true);
-                } else if (field.first == "comment") {
-                    //cookie.setComment(QString::fromUtf8(field.second));
-                } else if (field.first == "version") {
-                    if (field.second != "1") {
-                        // oops, we don't know how to handle this cookie
-                        return result;
-                    }
                 } else {
-                    // got an unknown field in the cookie
-                    // what do we do?
+                    // ignore unknown fields in the cookie (RFC6265 section 5.2, rule 6)
                 }
 
                 position = nextNonWhitespace(cookieString, position);
