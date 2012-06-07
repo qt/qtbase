@@ -505,43 +505,12 @@ class QDataStream;
 #    else
 #      define Q_NETWORK_EXPORT Q_DECL_IMPORT
 #    endif
-
-// ### Remove the following once their modules have been updated
-#    if defined(QT_BUILD_SVG_LIB)
-#      define Q_SVG_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_SVG_EXPORT Q_DECL_IMPORT
-#    endif
-#    if defined(QT_BUILD_MULTIMEDIA_LIB)
-#      define Q_MULTIMEDIA_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_MULTIMEDIA_EXPORT Q_DECL_IMPORT
-#    endif
-#    if defined(QT_BUILD_XMLPATTERNS_LIB)
-#      define Q_XMLPATTERNS_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_XMLPATTERNS_EXPORT Q_DECL_IMPORT
-#    endif
-#    if defined(QT_BUILD_SCRIPT_LIB)
-#      define Q_SCRIPT_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_SCRIPT_EXPORT Q_DECL_IMPORT
-#    endif
-#    if defined(QT_BUILD_SCRIPTTOOLS_LIB)
-#      define Q_SCRIPTTOOLS_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_SCRIPTTOOLS_EXPORT Q_DECL_IMPORT
-#    endif
 #  endif
 #else
 #  define Q_CORE_EXPORT
 #  define Q_GUI_EXPORT
 #  define Q_WIDGETS_EXPORT
 #  define Q_NETWORK_EXPORT
-#  define Q_SVG_EXPORT
-#  define Q_MULTIMEDIA_EXPORT
-#  define Q_SCRIPT_EXPORT
-#  define Q_SCRIPTTOOLS_EXPORT
 #endif
 
 /*
