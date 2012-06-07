@@ -189,6 +189,9 @@ struct parser_info {
 static QString project_root;
 static QString project_build_root;
 
+static QStringList cached_qmakepath;
+static QStringList cached_qmakefeatures;
+
 static QStringList *all_feature_roots[2] = { 0, 0 };
 
 static void
@@ -587,6 +590,7 @@ QStringList qmake_feature_paths(QMakeProperty *prop, bool host_build)
     }
 
     QStringList feature_roots = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEFEATURES")));
+    feature_roots += cached_qmakefeatures;
     if(prop)
         feature_roots += splitPathList(prop->value("QMAKEFEATURES"));
     if (!project_build_root.isEmpty())
@@ -594,6 +598,7 @@ QStringList qmake_feature_paths(QMakeProperty *prop, bool host_build)
             concat_it != concat.end(); ++concat_it)
             feature_roots << (project_build_root + (*concat_it));
     QStringList qmakepath = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEPATH")));
+    qmakepath += cached_qmakepath;
     foreach (const QString &path, qmakepath)
         foreach (const QString &cat, concat)
             feature_roots << (path + mkspecs_concat + cat);
@@ -632,6 +637,7 @@ QStringList qmake_mkspec_paths()
     const QString concat = QLatin1String("/mkspecs");
 
     QStringList qmakepath = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEPATH")));
+    qmakepath += cached_qmakepath;
     foreach (const QString &path, qmakepath)
         ret << (path + concat);
     if (!project_build_root.isEmpty())
@@ -1330,6 +1336,8 @@ QMakeProject::read(uchar cmd)
 
         project_build_root.clear();
 
+        QStringList qmakepath;
+        QStringList qmakefeatures;
         if (Option::mkfile::do_cache) {        // parse the cache
             if (Option::mkfile::cachefile.isEmpty())  { //find it as it has not been specified
                 QDir dir(Option::output_dir);
@@ -1355,6 +1363,13 @@ QMakeProject::read(uchar cmd)
                 Option::mkfile::qmakespec = cache["QMAKESPEC"].first();
                 if (Option::mkfile::xqmakespec.isEmpty())
                     Option::mkfile::xqmakespec = Option::mkfile::qmakespec;
+            }
+            qmakepath = cache.value(QLatin1String("QMAKEPATH"));
+            qmakefeatures = cache.value(QLatin1String("QMAKEFEATURES"));
+            if (qmakepath != cached_qmakepath || qmakefeatures != cached_qmakefeatures) {
+                cached_qmakepath = qmakepath;
+                cached_qmakefeatures = qmakefeatures;
+                invalidateFeatureRoots();
             }
 
             if (Option::output_dir.startsWith(project_build_root))
@@ -3215,6 +3230,15 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
             if (oldval == newval)
                 return true;
             base_vars[dstvar] = newval;
+            do {
+                if (dstvar == "QMAKEPATH")
+                    cached_qmakepath = newval;
+                else if (dstvar == "QMAKEFEATURES")
+                    cached_qmakefeatures = newval;
+                else
+                    break;
+                invalidateFeatureRoots();
+            } while (false);
             if (!persist)
                 return true;
             varstr = dstvar;
