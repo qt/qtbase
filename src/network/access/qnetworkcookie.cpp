@@ -1015,9 +1015,15 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                 } else if (field.first == "max-age") {
                     bool ok = false;
                     int secs = field.second.toInt(&ok);
-                    if (!ok)
-                        return result;
-                    cookie.setExpirationDate(now.addSecs(secs));
+                    if (ok) {
+                        if (secs <= 0) {
+                            //earliest representable time (RFC6265 section 5.2.2)
+                            cookie.setExpirationDate(QDateTime::fromTime_t(0));
+                        } else {
+                            cookie.setExpirationDate(now.addSecs(secs));
+                        }
+                    }
+                    //if unparsed, ignore the attribute but not the whole cookie (RFC6265 section 5.2.2)
                 } else if (field.first == "path") {
                     QString path = QUrl::fromPercentEncoding(field.second);
                     cookie.setPath(path);
