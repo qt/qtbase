@@ -2111,6 +2111,7 @@ void QTreeWidgetItem::sortChildren(int column, Qt::SortOrder order, bool climb)
         return;
     if (model->isChanging())
         return;
+    QTreeModel::SkipSorting skipSorting(model);
     int oldSortColumn = view->d_func()->explicitSortColumn;
     view->d_func()->explicitSortColumn = column;
     emit model->layoutAboutToBeChanged();
