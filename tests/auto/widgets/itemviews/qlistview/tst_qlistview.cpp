@@ -131,6 +131,8 @@ private slots:
     void styleOptionViewItem();
     void taskQTBUG_12308_artihmeticException();
     void taskQTBUG_12308_wrongFlowLayout();
+    void taskQTBUG_21115_scrollToAndHiddenItems_data();
+    void taskQTBUG_21115_scrollToAndHiddenItems();
 };
 
 // Testing get/set functions
@@ -2065,6 +2067,52 @@ void tst_QListView::taskQTBUG_12308_wrongFlowLayout()
     lw.show();
     QTest::qWaitForWindowShown(&lw);
 }
+
+void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems_data()
+{
+    QTest::addColumn<int>("flow");
+    QTest::newRow("flow TopToBottom") << static_cast<int>(QListView::TopToBottom);
+    QTest::newRow("flow LeftToRight") << static_cast<int>(QListView::LeftToRight);
+}
+
+void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems()
+{
+    QFETCH(int, flow);
+
+    QListView lv;
+    lv.setUniformItemSizes(true);
+    lv.setFlow(static_cast<QListView::Flow>(flow));
+
+    QStringListModel model;
+    QStringList list;
+    for (int i = 0; i < 30; i++)
+        list << QString::number(i);
+    model.setStringList(list);
+    lv.setModel(&model);
+    lv.show();
+    QTest::qWaitForWindowShown(&lv);
+
+    // Save first item rect for reference
+    QRect firstItemRect = lv.visualRect(model.index(0, 0));
+
+    // Select an item and scroll to selection
+    QModelIndex index = model.index(2, 0);
+    lv.setCurrentIndex(index);
+    lv.scrollTo(index, QAbstractItemView::PositionAtTop);
+    QApplication::processEvents();
+    QCOMPARE(lv.visualRect(index), firstItemRect);
+
+    // Hide some rows and scroll to selection
+    for (int i = 0; i < 5; i++) {
+        if (i == index.row())
+            continue;
+        lv.setRowHidden(i, true);
+    }
+    lv.scrollTo(index, QAbstractItemView::PositionAtTop);
+    QApplication::processEvents();
+    QCOMPARE(lv.visualRect(index), firstItemRect);
+}
+
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"
