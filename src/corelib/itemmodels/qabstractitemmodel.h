@@ -45,7 +45,7 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qhash.h>
-#include <QtCore/qset.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_HEADER
 
@@ -243,7 +243,7 @@ public:
 #endif
 
 Q_SIGNALS:
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &roles = QSet<int>());
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
     void headerDataChanged(Qt::Orientation orientation, int first, int last);
     void layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>());
     void layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>());

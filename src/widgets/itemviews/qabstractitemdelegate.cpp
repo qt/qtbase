@@ -407,9 +407,9 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
 
     This virtual method is reserved and will be used in Qt 5.1.
 */
-QSet<int> QAbstractItemDelegate::paintingRoles() const
+QVector<int> QAbstractItemDelegate::paintingRoles() const
 {
-    return QSet<int>();
+    return QVector<int>();
 }
 
 QT_END_NAMESPACE

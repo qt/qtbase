@@ -1416,7 +1416,7 @@ QAbstractItemModel::~QAbstractItemModel()
 */
 
 /*!
-    \fn void QAbstractItemModel::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &roles = QSet<int>())
+    \fn void QAbstractItemModel::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>())
 
     This signal is emitted whenever the data in an existing item changes.
 
@@ -1427,9 +1427,10 @@ QAbstractItemModel::~QAbstractItemModel()
     When reimplementing the setData() function, this signal must be emitted
     explicitly.
 
-    The optional roles argument can be used to specify which data roles have actually
-    been modified. An empty set in the roles argument means that all roles should be
-    considered modified.
+    The optional \a roles argument can be used to specify which data roles have actually
+    been modified. An empty vector in the roles argument means that all roles should be
+    considered modified. The order of elements in the roles argument does not have any
+    relevance.
 
     \sa headerDataChanged(), setData(), layoutChanged()
 */

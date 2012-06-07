@@ -114,7 +114,7 @@ public:
                            const QStyleOptionViewItem &option,
                            const QModelIndex &index);
 
-    virtual QSet<int> paintingRoles() const;
+    virtual QVector<int> paintingRoles() const;
 
 Q_SIGNALS:
     void commitData(QWidget *editor);

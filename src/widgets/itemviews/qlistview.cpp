@@ -728,7 +728,7 @@ QSize QListView::contentsSize() const
 /*!
   \reimp
 */
-void QListView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &roles)
+void QListView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
     d_func()->commonListView->dataChanged(topLeft, bottomRight);
     QAbstractItemView::dataChanged(topLeft, bottomRight, roles);

@@ -226,7 +226,7 @@ protected:
     void updateGeometries();
     void scrollContentsBy(int dx, int dy);
 
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &roles = QSet<int>());
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
     void rowsInserted(const QModelIndex &parent, int start, int end);
 
     QRect visualRect(const QModelIndex &index) const;

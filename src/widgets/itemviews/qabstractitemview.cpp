@@ -673,8 +673,8 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
     if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
         disconnect(d->model, SIGNAL(destroyed()),
                    this, SLOT(_q_modelDestroyed()));
-        disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QSet<int>)),
-                   this, SLOT(dataChanged(QModelIndex,QModelIndex,QSet<int>)));
+        disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+                   this, SLOT(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
         disconnect(d->model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                    this, SLOT(_q_headerDataChanged()));
         disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
@@ -713,8 +713,8 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
     if (d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
         connect(d->model, SIGNAL(destroyed()),
                 this, SLOT(_q_modelDestroyed()));
-        connect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QSet<int>)),
-                this, SLOT(dataChanged(QModelIndex,QModelIndex,QSet<int>)));
+        connect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+                this, SLOT(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
         connect(d->model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                 this, SLOT(_q_headerDataChanged()));
         connect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
@@ -3223,7 +3223,7 @@ void QAbstractItemView::update(const QModelIndex &index)
     inclusive. If just one item is changed \a topLeft == \a
     bottomRight.
 */
-void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &)
+void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &)
 {
     // Single item changed
     Q_D(QAbstractItemView);

@@ -104,7 +104,7 @@ public:
     void populate();
 
     // private slots
-    void _q_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &);
+    void _q_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &);
     void _q_commitData(QWidget *);
     void _q_closeEditor(QWidget *, QAbstractItemDelegate::EndEditHint);
     void _q_modelDestroyed();
@@ -182,7 +182,7 @@ static bool qContainsIndex(const QModelIndex &idx, const QModelIndex &topLeft,
            && idx.column() >= topLeft.column() && idx.column() <= bottomRight.column();
 }
 
-void QDataWidgetMapperPrivate::_q_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &)
+void QDataWidgetMapperPrivate::_q_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &)
 {
     if (topLeft.parent() != rootIndex)
         return; // not in our hierarchy
@@ -369,8 +369,8 @@ void QDataWidgetMapper::setModel(QAbstractItemModel *model)
         return;
 
     if (d->model) {
-        disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QSet<int>)), this,
-                   SLOT(_q_dataChanged(QModelIndex,QModelIndex,QSet<int>)));
+        disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), this,
+                   SLOT(_q_dataChanged(QModelIndex,QModelIndex,QVector<int>)));
         disconnect(d->model, SIGNAL(destroyed()), this,
                    SLOT(_q_modelDestroyed()));
     }
@@ -380,8 +380,8 @@ void QDataWidgetMapper::setModel(QAbstractItemModel *model)
 
     d->model = model;
 
-    connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QSet<int>)),
-            SLOT(_q_dataChanged(QModelIndex,QModelIndex,QSet<int>)));
+    connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+            SLOT(_q_dataChanged(QModelIndex,QModelIndex,QVector<int>)));
     connect(model, SIGNAL(destroyed()), SLOT(_q_modelDestroyed()));
 }
 

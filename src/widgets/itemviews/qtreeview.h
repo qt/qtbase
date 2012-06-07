@@ -143,7 +143,7 @@ public:
 
     void sortByColumn(int column, Qt::SortOrder order);
 
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &roles = QSet<int>());
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
     void selectAll();
 
 Q_SIGNALS:

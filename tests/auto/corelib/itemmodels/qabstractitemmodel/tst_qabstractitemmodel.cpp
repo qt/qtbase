@@ -1926,20 +1926,18 @@ public:
         const QModelIndex bottom = index(2, 0);
 
         emit dataChanged(top, bottom);
-        emit dataChanged(top, bottom, QSet<int>() << Qt::ToolTipRole);
-        emit dataChanged(top, bottom, QSet<int>() << Qt::ToolTipRole << Custom1);
+        emit dataChanged(top, bottom, QVector<int>() << Qt::ToolTipRole);
+        emit dataChanged(top, bottom, QVector<int>() << Qt::ToolTipRole << Custom1);
     }
 };
 
-Q_DECLARE_METATYPE(QSet<int>)
-
 void tst_QAbstractItemModel::testDataChanged()
 {
-    qRegisterMetaType<QSet<int> >();
+    qRegisterMetaType<QVector<int> >();
 
     CustomRoleModel model;
 
-    QSignalSpy withRoles(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QSet<int>)));
+    QSignalSpy withRoles(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
     QSignalSpy withoutRoles(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
 
     QVERIFY(withRoles.isValid());
@@ -1953,8 +1951,8 @@ void tst_QAbstractItemModel::testDataChanged()
     const QVariantList secondEmission = withRoles.at(1);
     const QVariantList thirdEmission = withRoles.at(2);
 
-    const QSet<int> secondRoles = secondEmission.at(2).value<QSet<int> >();
-    const QSet<int> thirdRoles = thirdEmission.at(2).value<QSet<int> >();
+    const QVector<int> secondRoles = secondEmission.at(2).value<QVector<int> >();
+    const QVector<int> thirdRoles = thirdEmission.at(2).value<QVector<int> >();
 
     QCOMPARE(secondRoles.size(), 1);
     QVERIFY(secondRoles.contains(Qt::ToolTipRole));
