@@ -622,9 +622,8 @@ QString Generator::fullName(const Node *node,
     if (node->type() == Node::Fake) {
         const FakeNode* fn = static_cast<const FakeNode *>(node);
 
-        // Removed for QTBUG-22870
-        // Unremoved by mws 30/03/12
-        if (!fn->qmlModuleIdentifier().isEmpty())
+        // Only print modulename::type on collision pages.
+        if (!fn->qmlModuleIdentifier().isEmpty() && relative != 0 && relative->isCollisionNode())
             return fn->qmlModuleIdentifier() + "::" + fn->title();
 
         return fn->title();
