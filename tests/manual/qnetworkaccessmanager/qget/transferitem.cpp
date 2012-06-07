@@ -122,7 +122,7 @@ void DownloadItem::finished()
             qDebug() << "too many redirects";
         } else {
             //follow redirect
-            if (outputFile->isOpen()) {
+            if (outputFile && outputFile->isOpen()) {
                 if (!outputFile->seek(0) || !outputFile->resize(0)) {
                     outputFile->close();
                     outputFile->remove();
