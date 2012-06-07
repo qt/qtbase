@@ -65,6 +65,7 @@ HintControl::HintControl(QWidget *parent)
     , windowStaysOnTopCheckBox(new QCheckBox(tr("Window stays on top")))
     , windowStaysOnBottomCheckBox(new QCheckBox(tr("Window stays on bottom")))
     , customizeWindowHintCheckBox(new QCheckBox(tr("Customize window")))
+    , transparentForInputCheckBox(new QCheckBox(tr("Transparent for input")))
 {
     connect(msWindowsFixedSizeDialogCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(x11BypassWindowManagerCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
@@ -79,6 +80,7 @@ HintControl::HintControl(QWidget *parent)
     connect(windowStaysOnTopCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(windowStaysOnBottomCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(customizeWindowHintCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
+    connect(transparentForInputCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     QGridLayout *layout = new QGridLayout(this);
     layout->setSpacing(0);
     layout->setMargin(ControlLayoutMargin);
@@ -95,6 +97,7 @@ HintControl::HintControl(QWidget *parent)
     layout->addWidget(windowStaysOnTopCheckBox, 5, 1);
     layout->addWidget(windowStaysOnBottomCheckBox, 6, 1);
     layout->addWidget(customizeWindowHintCheckBox, 5, 0);
+    layout->addWidget(transparentForInputCheckBox, 6, 0);
 }
 
 Qt::WindowFlags HintControl::hints() const
@@ -126,6 +129,8 @@ Qt::WindowFlags HintControl::hints() const
         flags |= Qt::WindowStaysOnBottomHint;
     if (customizeWindowHintCheckBox->isChecked())
         flags |= Qt::CustomizeWindowHint;
+    if (transparentForInputCheckBox->isChecked())
+        flags |= Qt::WindowTransparentForInput;
     return flags;
 }
 
@@ -144,6 +149,7 @@ void HintControl::setHints(Qt::WindowFlags flags)
     windowStaysOnTopCheckBox->setChecked(flags & Qt::WindowStaysOnTopHint);
     windowStaysOnBottomCheckBox->setChecked(flags & Qt::WindowStaysOnBottomHint);
     customizeWindowHintCheckBox->setChecked(flags & Qt::CustomizeWindowHint);
+    transparentForInputCheckBox->setChecked(flags & Qt::WindowTransparentForInput);
 }
 
 void HintControl::slotCheckBoxChanged()
