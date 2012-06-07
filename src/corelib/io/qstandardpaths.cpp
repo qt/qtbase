@@ -113,8 +113,11 @@ QT_BEGIN_NAMESPACE
 
    Returns all the directories where files of \a type belong.
 
-   Much like the PATH variable, it returns the directories in order of priority,
-   starting with the user-specific writableLocation() for the \a type.
+   The list of directories is sorted from high to low priority, starting with
+   writableLocation() if it can be determined. This list is empty if no locations
+   for \a type are defined.
+
+   \sa writableLocation()
  */
 
 /*!
