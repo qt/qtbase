@@ -117,11 +117,21 @@ do { \
 
 #define QTRY_COMPARE(__expr, __expected) QTRY_COMPARE_WITH_TIMEOUT(__expr, __expected, 5000)
 
-#define QSKIP(statement) \
+#define QSKIP_INTERNAL(statement) \
 do {\
     QTest::qSkip(statement, __FILE__, __LINE__);\
     return;\
 } while (0)
+
+#ifdef Q_COMPILER_VARIADIC_MACROS
+
+#define QSKIP(statement, ...) QSKIP_INTERNAL(statement)
+
+#else
+
+#define QSKIP(statement) QSKIP_INTERNAL(statement)
+
+#endif
 
 #define QEXPECT_FAIL(dataIndex, comment, mode)\
 do {\
