@@ -209,7 +209,7 @@ void tst_QTextLayout::cleanup()
 
 void tst_QTextLayout::lineBreaking()
 {
-#if defined(Q_WS_X11)
+#if 0
     struct Breaks {
 	const char *utf8;
 	uchar breaks[32];
@@ -286,8 +286,6 @@ void tst_QTextLayout::lineBreaking()
         QCOMPARE(b->breaks[i], (uchar)0xff);
         ++b;
     }
-#else
-    QSKIP("This test can not be run on non-X11 platforms");
 #endif
 }
 

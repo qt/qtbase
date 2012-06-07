@@ -116,8 +116,9 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
     \reentrant
 
     QTextBoundaryFinder allows to find Unicode text boundaries in a
-    string, similar to the Unicode text boundary specification (see
-    http://www.unicode.org/reports/tr29/tr29-11.html).
+    string, accordingly to the Unicode text boundary specification (see
+    \l{http://www.unicode.org/reports/tr14/}{Unicode Standard Annex #14} and
+    \l{http://www.unicode.org/reports/tr29/}{Unicode Standard Annex #29}).
 
     QTextBoundaryFinder can operate on a QString in four possible
     modes depending on the value of \a BoundaryType.
@@ -127,14 +128,18 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
     Grapheme clusters. The two unicode characters 'A' + diaeresis do
     for example form one grapheme cluster as the user thinks of them
     as one character, yet it is in this case represented by two
-    unicode code points.
+    unicode code points
+    (see \l{http://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries}).
 
     Word boundaries are there to locate the start and end of what a
-    language considers to be a word.
+    language considers to be a word
+    (see \l{http://www.unicode.org/reports/tr29/#Word_Boundaries}).
 
     Line break boundaries give possible places where a line break
     might happen and sentence boundaries will show the beginning and
-    end of whole sentences.
+    end of whole sentences
+    (see \l{http://www.unicode.org/reports/tr29/#Sentence_Boundaries} and
+    \l{http://www.unicode.org/reports/tr14/}).
 
     The first position in a string is always a valid boundary and
     refers to the position before the first character. The last
