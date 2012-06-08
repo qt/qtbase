@@ -581,14 +581,15 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, c
 template <typename T>
 typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
 {
-    if (abegin < d->begin())
-        abegin = d->begin();
-    if (aend > d->end())
-        aend = d->end();
+    const int itemsToErase = aend - abegin;
 
+    if (!itemsToErase)
+        return abegin;
+
+    Q_ASSERT(abegin >= d->begin());
+    Q_ASSERT(aend <= d->end());
     Q_ASSERT(abegin <= aend);
 
-    const int itemsToErase = aend - abegin;
     const int itemsUntouched = abegin - d->begin();
 
     // FIXME we could do a proper realloc, which copy constructs only needed data.

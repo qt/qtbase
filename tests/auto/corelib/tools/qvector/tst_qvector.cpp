@@ -796,16 +796,12 @@ void tst_QVector::eraseEmpty() const
 {
     {
         QVector<T> v;
-        v.erase(v.begin());
-        QCOMPARE(v.size(), 0);
         v.erase(v.begin(), v.end());
         QCOMPARE(v.size(), 0);
     }
     {
         QVector<T> v;
         v.setSharable(false);
-        v.erase(v.begin());
-        QCOMPARE(v.size(), 0);
         v.erase(v.begin(), v.end());
         QCOMPARE(v.size(), 0);
     }
@@ -836,8 +832,6 @@ void tst_QVector::eraseEmptyReserved() const
     {
         QVector<T> v;
         v.reserve(10);
-        v.erase(v.begin());
-        QCOMPARE(v.size(), 0);
         v.erase(v.begin(), v.end());
         QCOMPARE(v.size(), 0);
     }
@@ -845,8 +839,6 @@ void tst_QVector::eraseEmptyReserved() const
         QVector<T> v;
         v.reserve(10);
         v.setSharable(false);
-        v.erase(v.begin());
-        QCOMPARE(v.size(), 0);
         v.erase(v.begin(), v.end());
         QCOMPARE(v.size(), 0);
     }
