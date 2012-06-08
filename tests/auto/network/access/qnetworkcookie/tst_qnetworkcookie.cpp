@@ -173,13 +173,13 @@ void tst_QNetworkCookie::parseSingleCookie_data()
 
     cookie.setValue("\",\"");
     QTest::newRow("with-value-with-special1") << "a = \",\" " << cookie;
-    cookie.setValue("\";\"");
+    cookie.setValue("\"");
     QTest::newRow("with-value-with-special2") << "a = \";\" " << cookie;
     cookie.setValue("\" \"");
     QTest::newRow("with-value-with-special3") << "a = \" \" " << cookie;
     cookie.setValue("\"\\\"\"");
     QTest::newRow("with-value-with-special4") << "a = \"\\\"\" " << cookie;
-    cookie.setValue("\"\\\"a, b; c\\\"\"");
+    cookie.setValue("\"\\\"a, b");
     QTest::newRow("with-value-with-special5") << "a = \"\\\"a, b; c\\\"\"" << cookie;
     // RFC6265 states that cookie values shouldn't contain commas, but we still allow them
     // since they are only reserved for future compatibility and other browsers do the same.
@@ -238,11 +238,13 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     cookie.setPath("/with spaces");
     QTest::newRow("path-with-spaces") << "a=b;path=/with%20spaces" << cookie;
     QTest::newRow("path-with-spaces2") << "a=b; path=/with%20spaces " << cookie;
+    cookie.setPath("\"/with spaces\"");
     QTest::newRow("path-with-spaces3") << "a=b; path=\"/with spaces\"" << cookie;
     QTest::newRow("path-with-spaces4") << "a=b; path = \"/with spaces\" " << cookie;
 
     cookie.setPath("/with\"Quotes");
     QTest::newRow("path-with-quotes") << "a=b; path = /with%22Quotes" << cookie;
+    cookie.setPath("\"/with\\\"Quotes\"");
     QTest::newRow("path-with-quotes2") << "a=b; path = \"/with\\\"Quotes\"" << cookie;
 
     cookie.setPath(QString::fromUtf8("/R\303\251sum\303\251"));
@@ -595,7 +597,11 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     cookie.setExpirationDate(QDateTime(QDate(2011, 3, 1), QTime(10, 51, 14), Qt::UTC));
     QTest::newRow("network5") << "leo_auth_token=\"GST:UroVXaxYA3sVSkoVjMNH9bj4dZxVzK2yekgrAUxMfUsyLTNyPjoP60:1298974875:b675566ae32ab36d7a708c0efbf446a5c22b9fca\"; Version=1; Max-Age=1799; Expires=Tue, 01-Mar-2011 10:51:14 GMT; Path=/" << cookie;
 
-
+    // cookie containing JSON data (illegal for server, client should accept) - QTBUG-26002
+    cookie = QNetworkCookie("xploreCookies", "{\"desktopReportingUrl\":\"null\",\"userIds\":\"1938850\",\"contactEmail\":\"NA\",\"contactName\":\"NA\",\"enterpriseLicenseId\":\"0\",\"openUrlTxt\":\"NA\",\"customerSurvey\":\"NA\",\"standardsLicenseId\":\"0\",\"openUrl\":\"NA\",\"smallBusinessLicenseId\":\"0\", \"instImage\":\"1938850_univ skovde.gif\",\"isMember\":\"false\",\"products\":\"IEL|VDE|\",\"openUrlImgLoc\":\"NA\",\"isIp\":\"true\",\"instName\": \"University of XXXXXX\",\"oldSessionKey\":\"LmZ8hlXo5a9uZx2Fnyw1564T1ZOWMnf3Dk*oDx2FQHwbg6RYefyrhC8PL2wx3Dx3D-18x2d8723DyqXRnkILyGpmx2Fh9wgx3Dx3Dc2lAOhHqGSKT78xxGwXZxxCgx3Dx3D-XrL4FnIlW2OPkqtVJq0LkQx3Dx3D-tujOLwhFqtX7Pa7HGqmCXQx3Dx3D\", \"isChargebackUser\":\"false\",\"isInst\":\"true\"}");
+    cookie.setDomain(".ieee.org");
+    cookie.setPath("/");
+    QTest::newRow("network6") << "xploreCookies={\"desktopReportingUrl\":\"null\",\"userIds\":\"1938850\",\"contactEmail\":\"NA\",\"contactName\":\"NA\",\"enterpriseLicenseId\":\"0\",\"openUrlTxt\":\"NA\",\"customerSurvey\":\"NA\",\"standardsLicenseId\":\"0\",\"openUrl\":\"NA\",\"smallBusinessLicenseId\":\"0\", \"instImage\":\"1938850_univ skovde.gif\",\"isMember\":\"false\",\"products\":\"IEL|VDE|\",\"openUrlImgLoc\":\"NA\",\"isIp\":\"true\",\"instName\": \"University of XXXXXX\",\"oldSessionKey\":\"LmZ8hlXo5a9uZx2Fnyw1564T1ZOWMnf3Dk*oDx2FQHwbg6RYefyrhC8PL2wx3Dx3D-18x2d8723DyqXRnkILyGpmx2Fh9wgx3Dx3Dc2lAOhHqGSKT78xxGwXZxxCgx3Dx3D-XrL4FnIlW2OPkqtVJq0LkQx3Dx3D-tujOLwhFqtX7Pa7HGqmCXQx3Dx3D\", \"isChargebackUser\":\"false\",\"isInst\":\"true\"}; domain=.ieee.org; path=/" << cookie;
 }
 
 void tst_QNetworkCookie::parseSingleCookie()

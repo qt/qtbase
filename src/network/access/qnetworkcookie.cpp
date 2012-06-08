@@ -379,85 +379,27 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
     //    (1)  token
     //    (2)  token = token
     //    (3)  token = quoted-string
-    int i;
     const int length = text.length();
     position = nextNonWhitespace(text, position);
 
-    // parse the first part, before the equal sign
-    for (i = position; i < length; ++i) {
-        register char c = text.at(i);
-        if (c == ';' || c == '=')
-            break;
-    }
+    int semiColonPosition = text.indexOf(';', position);
+    if (semiColonPosition < 0)
+        semiColonPosition = length; //no ';' means take everything to end of string
 
-    QByteArray first = text.mid(position, i - position).trimmed();
-    position = i;
-
-    if (first.isEmpty())
-        return qMakePair(QByteArray(), QByteArray());
-    if (i == length || text.at(i) != '=')
-        // no equal sign, we found format (1)
-        return qMakePair(first, QByteArray());
-
-    QByteArray second;
-    second.reserve(32);         // arbitrary but works for most cases
-
-    i = nextNonWhitespace(text, position + 1);
-    if (i < length && text.at(i) == '"') {
-        // a quote, we found format (3), where:
-        // quoted-string  = ( <"> *(qdtext | quoted-pair ) <"> )
-        // qdtext         = <any TEXT except <">>
-        // quoted-pair    = "\" CHAR
-
-        // If it is NAME=VALUE, retain the value as is
-        // refer to http://bugreports.qt-project.org/browse/QTBUG-17746
+    int equalsPosition = text.indexOf('=', position);
+    if (equalsPosition < 0 || equalsPosition > semiColonPosition) {
         if (isNameValue)
-            second += '"';
-        ++i;
-        while (i < length) {
-            register char c = text.at(i);
-            if (c == '"') {
-                // end of quoted text
-                if (isNameValue)
-                    second += '"';
-                break;
-            } else if (c == '\\') {
-                if (isNameValue)
-                    second += '\\';
-                ++i;
-                if (i >= length)
-                    // broken line
-                    return qMakePair(QByteArray(), QByteArray());
-                c = text.at(i);
-            }
-
-            second += c;
-            ++i;
-        }
-
-        for ( ; i < length; ++i) {
-            register char c = text.at(i);
-            if (c == ';')
-                break;
-        }
-        position = i;
-    } else {
-        // no quote, we found format (2)
-        position = i;
-        for ( ; i < length; ++i) {
-            register char c = text.at(i);
-            // for name value pairs, we want to parse until reaching the next ';'
-            // and not break when reaching a space char
-            if (c == ';' || ((isNameValue && (c == '\n' || c == '\r')) || (!isNameValue && isLWS(c))))
-                break;
-        }
-
-        second = text.mid(position, i - position).trimmed();
-        position = i;
+            return qMakePair(QByteArray(), QByteArray()); //'=' is required for name-value-pair (RFC6265 section 5.2, rule 2)
+        equalsPosition = semiColonPosition; //no '=' means there is an attribute-name but no attribute-value
     }
 
-    if (second.isNull())
-        second.resize(0); // turns into empty-but-not-null
+    QByteArray first = text.mid(position, equalsPosition - position).trimmed();
+    QByteArray second;
+    int secondLength = semiColonPosition - equalsPosition - 1;
+    if (secondLength > 0)
+        second = text.mid(equalsPosition + 1, secondLength).trimmed();
+
+    position = semiColonPosition;
     return qMakePair(first, second);
 }
 
@@ -500,20 +442,7 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
 
     result = d->name;
     result += '=';
-    if ((d->value.contains(';') ||
-        d->value.contains('"')) &&
-        (!d->value.startsWith('"') &&
-        !d->value.endsWith('"'))) {
-        result += '"';
-
-        QByteArray value = d->value;
-        value.replace('"', "\\\"");
-        result += value;
-
-        result += '"';
-    } else {
-        result += d->value;
-    }
+    result += d->value;
 
     if (form == Full) {
         // same as above, but encoding everything back
@@ -972,7 +901,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
 
         // The first part is always the "NAME=VALUE" part
         QPair<QByteArray,QByteArray> field = nextField(cookieString, position, true);
-        if (field.first.isEmpty() || field.second.isNull())
+        if (field.first.isEmpty())
             // parsing error
             break;
         cookie.setName(field.first);
