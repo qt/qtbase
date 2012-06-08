@@ -119,4 +119,5 @@
 - (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader;
 - (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate;
 - (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;
+- (void) removeAppleEventHandlers;
 @end

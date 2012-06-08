@@ -1042,26 +1042,6 @@ void QCocoaEventDispatcherPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
 {
     Q_UNUSED(ref);
     Q_UNUSED(activity);
-/*
-    // This function is called when NSApplication has finished initialization,
-    // which appears to be just after [NSApplication run] has started to execute.
-    // By setting up our apple events handlers this late, we override the ones
-    // set up by NSApplication.
-
-    // If Qt is used as a plugin, we let the 3rd party application handle events
-    // like quit and open file events. Otherwise, if we install our own handlers, we
-    // easily end up breaking functionallity the 3rd party application depend on:
-    if (QGuiApplication::testAttribute(Qt::AA_MacPluginApplication))
-        return;
-
-    QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
-    NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
-    [eventManager setEventHandler:newDelegate andSelector:@selector(appleEventQuit:withReplyEvent:)
-     forEventClass:kCoreEventClass andEventID:kAEQuitApplication];
-    [eventManager setEventHandler:newDelegate andSelector:@selector(getUrl:withReplyEvent:)
-      forEventClass:kInternetEventClass andEventID:kAEGetURL];
-*/
-
     static_cast<QCocoaEventDispatcherPrivate *>(info)->processPostedEvents();
 }
 

@@ -148,7 +148,13 @@ QCocoaIntegration::QCocoaIntegration()
 
 QCocoaIntegration::~QCocoaIntegration()
 {
-    [[NSApplication sharedApplication] setDelegate: 0];
+    if (!QCoreApplication::testAttribute(Qt::AA_MacPluginApplication)) {
+        // remove the apple event handlers installed by QCocoaApplicationDelegate
+        QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *delegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
+        [delegate removeAppleEventHandlers];
+        // reset the application delegate
+        [[NSApplication sharedApplication] setDelegate: 0];
+    }
 
     // Delete the clipboard integration and destroy mime type converters.
     // Deleting the clipboard integration flushes promised pastes using

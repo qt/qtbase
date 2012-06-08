@@ -217,6 +217,43 @@ static void cleanupCocoaApplicationDelegate()
     return NSTerminateCancel;
 }
 
+- (void) applicationWillFinishLaunching:(NSNotification *)notification
+{
+    Q_UNUSED(notification);
+
+    /*
+        From the Cocoa documentation: "A good place to install event handlers
+        is in the applicationWillFinishLaunching: method of the application
+        delegate. At that point, the Application Kit has installed its default
+        event handlers, so if you install a handler for one of the same events,
+        it will replace the Application Kit version."
+    */
+
+    /*
+        If Qt is used as a plugin, we let the 3rd party application handle
+        events like quit and open file events. Otherwise, if we install our own
+        handlers, we easily end up breaking functionality the 3rd party
+        application depends on.
+     */
+    NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
+    [eventManager setEventHandler:self
+                      andSelector:@selector(appleEventQuit:withReplyEvent:)
+                    forEventClass:kCoreEventClass
+                       andEventID:kAEQuitApplication];
+    [eventManager setEventHandler:self
+                      andSelector:@selector(getUrl:withReplyEvent:)
+                    forEventClass:kInternetEventClass
+                       andEventID:kAEGetURL];
+}
+
+// called by QCocoaIntegration's destructor before resetting the application delegate to nil
+- (void) removeAppleEventHandlers
+{
+    NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
+    [eventManager removeEventHandlerForEventClass:kCoreEventClass andEventID:kAEQuitApplication];
+    [eventManager removeEventHandlerForEventClass:kInternetEventClass andEventID:kAEGetURL];
+}
+
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     Q_UNUSED(aNotification);
@@ -347,22 +384,15 @@ static void cleanupCocoaApplicationDelegate()
 
 - (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 {
-    Q_UNUSED(event);
     Q_UNUSED(replyEvent);
-/*
     NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-    QUrl url(QCFString::toQString(urlString));
-    QFileOpenEvent qtEvent(url);
-    qt_sendSpontaneousEvent(qAppInstance(), &qtEvent);
-*/
+    QWindowSystemInterface::handleFileOpenEvent(QCFString::toQString(urlString));
 }
 
 - (void)appleEventQuit:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 {
     Q_UNUSED(event);
     Q_UNUSED(replyEvent);
-    qDebug() << "appleEventQuit";
-
     [NSApp terminate:self];
 }
 
