@@ -64,6 +64,13 @@
 
 QT_BEGIN_NAMESPACE
 
+enum Platforms {
+    WINDOWS,
+    WINDOWS_CE,
+    QNX,
+    BLACKBERRY
+};
+
 std::ostream &operator<<(std::ostream &s, const QString &val) {
     s << val.toLocal8Bit().data();
     return s;
@@ -2961,7 +2968,7 @@ void Configure::generateConfigfiles()
         if (dictionary[ "QT_SXE" ] == "no")
           tmpStream<<"#define QT_NO_SXE"<<endl;
 
-        tmpStream<<"#define QT_QPA_DEFAULT_PLATFORM_NAME \"windows\""<<endl;
+        tmpStream<<"#define QT_QPA_DEFAULT_PLATFORM_NAME \"" << qpaPlatformName() << "\""<<endl;
 
         tmpStream.flush();
         tmpFile.flush();
@@ -3699,11 +3706,7 @@ bool Configure::showLicense(QString orgLicenseFile)
 
 void Configure::readLicense()
 {
-   if (QFile::exists(dictionary["QT_SOURCE_TREE"] + "/src/corelib/kernel/qfunctions_wince.h") &&
-       (dictionary.value("QMAKESPEC").startsWith("wince") || dictionary.value("XQMAKESPEC").startsWith("wince")))
-        dictionary["PLATFORM NAME"] = "Qt for Windows CE";
-    else
-        dictionary["PLATFORM NAME"] = "Qt for Windows";
+    dictionary["PLATFORM NAME"] = platformName();
     dictionary["LICENSE FILE"] = sourcePath;
 
     bool openSource = false;
@@ -3807,6 +3810,52 @@ bool Configure::isDone()
 bool Configure::isOk()
 {
     return (dictionary[ "DONE" ] != "error");
+}
+
+QString Configure::platformName() const
+{
+    switch (platform()) {
+    default:
+    case WINDOWS:
+        return QStringLiteral("Qt for Windows");
+    case WINDOWS_CE:
+        return QStringLiteral("Qt for Windows CE");
+    case QNX:
+        return QStringLiteral("Qt for QNX");
+    case BLACKBERRY:
+        return QStringLiteral("Qt for Blackberry");
+    }
+}
+
+QString Configure::qpaPlatformName() const
+{
+    switch (platform()) {
+    default:
+    case WINDOWS:
+    case WINDOWS_CE:
+        return QStringLiteral("windows");
+    case QNX:
+        return QStringLiteral("qnx");
+    case BLACKBERRY:
+        return QStringLiteral("blackberry");
+    }
+}
+
+int Configure::platform() const
+{
+    const QString qMakeSpec = dictionary.value("QMAKESPEC");
+    const QString xQMakeSpec = dictionary.value("XQMAKESPEC");
+
+    if ((qMakeSpec.startsWith("wince") || xQMakeSpec.startsWith("wince")))
+        return WINDOWS_CE;
+
+    if (xQMakeSpec.contains("qnx"))
+        return QNX;
+
+    if (xQMakeSpec.contains("blackberry"))
+        return BLACKBERRY;
+
+    return WINDOWS;
 }
 
 bool

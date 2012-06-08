@@ -104,6 +104,11 @@ public:
     ProjectType projectType( const QString& proFileName );
     bool isDone();
     bool isOk();
+
+    int platform() const;
+    QString platformName() const;
+    QString qpaPlatformName() const;
+
 private:
     // Our variable dictionaries
     QMap<QString,QString> dictionary;
