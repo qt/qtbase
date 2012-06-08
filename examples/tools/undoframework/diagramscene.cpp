@@ -53,7 +53,8 @@ void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     QPointF mousePos(event->buttonDownScenePos(Qt::LeftButton).x(),
                      event->buttonDownScenePos(Qt::LeftButton).y());
-    movingItem = itemAt(mousePos.x(), mousePos.y());
+    const QList<QGraphicsItem *> itemList = items(mousePos);
+    movingItem = itemList.isEmpty() ? 0 : itemList.first();
 
     if (movingItem != 0 && event->button() == Qt::LeftButton) {
         oldPos = movingItem->pos();
