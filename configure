@@ -2355,10 +2355,6 @@ if [ -z "$PLATFORM" ]; then
         ;;
      *)
         if [ "$OPT_HELP" != "yes" ]; then
-            echo
-            for p in $PLATFORMS; do
-                echo "    $relconf $* -platform $p"
-            done
             echo >&2
             echo "   The build script does not currently recognize all" >&2
             echo "   platforms supported by Qt." >&2
@@ -2369,8 +2365,6 @@ if [ -z "$PLATFORM" ]; then
         fi
     esac
 fi
-
-PLATFORMS=`find "$relpath/mkspecs/" -type f | grep -v qws | sed "s,$relpath/mkspecs/qws/,,"`
 
 [ -z "$XPLATFORM" ] && XPLATFORM="$PLATFORM"
 
