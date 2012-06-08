@@ -925,10 +925,9 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                     QByteArray dateString = cookieString.mid(position, end - position).trimmed();
                     position = end;
                     QDateTime dt = parseDateString(dateString.toLower());
-                    if (!dt.isValid()) {
-                        return result;
-                    }
-                    cookie.setExpirationDate(dt);
+                    if (dt.isValid())
+                        cookie.setExpirationDate(dt);
+                    //if unparsed, ignore the attribute but not the whole cookie (RFC6265 section 5.2.1)
                 } else if (field.first == "domain") {
                     QByteArray rawDomain = field.second;
                     //empty domain should be ignored (RFC6265 section 5.2.3)
