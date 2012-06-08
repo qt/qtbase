@@ -692,7 +692,6 @@ public:
 #ifndef QT_NO_IM
     uint inheritsInputMethodHints : 1;
 #endif
-    uint inSetParent : 1;
 
     // *************************** Platform specific ************************************
 #if defined(Q_WS_X11) // <----------------------------------------------------------- X11

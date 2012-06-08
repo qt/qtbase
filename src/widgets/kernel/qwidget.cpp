@@ -266,7 +266,6 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #ifndef QT_NO_IM
       , inheritsInputMethodHints(0)
 #endif
-      , inSetParent(0)
 #if defined(Q_WS_X11)
       , picture(0)
 #elif defined(Q_WS_WIN)
@@ -9473,7 +9472,6 @@ void QWidget::setParent(QWidget *parent)
 void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 {
     Q_D(QWidget);
-    d->inSetParent = true;
     bool resized = testAttribute(Qt::WA_Resized);
     bool wasCreated = testAttribute(Qt::WA_WState_Created);
     QWidget *oldtlw = window();
@@ -9608,8 +9606,6 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
             ancestorProxy->d_func()->embedSubWindow(this);
     }
 #endif
-
-    d->inSetParent = false;
 }
 
 /*!
