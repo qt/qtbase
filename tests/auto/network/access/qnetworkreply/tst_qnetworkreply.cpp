@@ -4918,8 +4918,15 @@ void tst_QNetworkReply::receiveCookiesFromHttp_data()
     cookie.setName("c");
     cookie.setValue("d");
     jar << cookie;
-    QTest::newRow("two-cookies") << "a=b, c=d" << header << jar;
-    QTest::newRow("two-cookies-2") << "a=b\nc=d" << header << jar;
+    QTest::newRow("two-cookies") << "a=b\nc=d" << header << jar;
+
+    header.clear();
+    jar.clear();
+    header << QNetworkCookie("a", "b, c=d");
+    cookie.setName("a");
+    cookie.setValue("b, c=d");
+    jar << cookie;
+    QTest::newRow("invalid-two-cookies") << "a=b, c=d" << header << jar;
 
     header.clear();
     jar.clear();
