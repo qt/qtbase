@@ -169,6 +169,10 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 
     if (this == QApplicationPrivate::active_window)
         QApplication::setActiveWindow(0);
+    if (QWidget::mouseGrabber() == this)
+        releaseMouse();
+    if (QWidget::keyboardGrabber() == this)
+        releaseKeyboard();
 
     setAttribute(Qt::WA_WState_Created, false);
 
