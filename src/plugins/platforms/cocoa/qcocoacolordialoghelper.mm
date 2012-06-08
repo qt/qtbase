@@ -45,8 +45,6 @@
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qtimer.h>
-#include <QtWidgets/qdialogbuttonbox.h>
-#include <QtWidgets/qcolordialog.h>
 
 #include "qcocoahelpers.h"
 
@@ -61,7 +59,7 @@ static NSButton *macCreateButton(const char *text, NSView *superview)
     NSButton *button = [[NSButton alloc] initWithFrame:buttonFrameRect];
     [button setButtonType:NSMomentaryLightButton];
     [button setBezelStyle:NSRoundedBezelStyle];
-    [button setTitle:(NSString*)(CFStringRef)QCFString(QDialogButtonBox::tr(text)
+    [button setTitle:(NSString*)(CFStringRef)QCFString(QCoreApplication::translate("QDialogButtonBox", text)
                                                        .remove(QLatin1Char('&')))];
     [[button cell] setFont:[NSFont systemFontOfSize:
             [NSFont systemFontSizeForControlSize:NSRegularControlSize]]];
