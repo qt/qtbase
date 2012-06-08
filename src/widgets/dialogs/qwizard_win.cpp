@@ -378,25 +378,24 @@ void QVistaHelper::setTitleBarIconAndCaptionVisible(bool visible)
 
 bool QVistaHelper::winEvent(MSG* msg, long* result)
 {
-    bool retval = true;
-
     switch (msg->message) {
     case WM_NCHITTEST: {
         LRESULT lResult;
-        pDwmDefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam, &lResult);
-        if (lResult == HTCLOSE || lResult == HTMAXBUTTON || lResult == HTMINBUTTON || lResult == HTHELP)
+        // Perform hit testing using DWM
+        if (pDwmDefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam, &lResult)) {
+            // DWM returned a hit, no further processing necessary
             *result = lResult;
-        else
-            *result = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
-        break;
-    }
-    case WM_NCMOUSEMOVE:
-    case WM_NCLBUTTONDOWN:
-    case WM_NCLBUTTONUP:
-    case WIZ_WM_NCMOUSELEAVE: {
-        LRESULT lResult;
-        pDwmDefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam, &lResult);
-        *result = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
+        } else {
+            // DWM didn't return a hit, process using DefWindowProc
+            lResult = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
+            // If DefWindowProc returns a window caption button, just return HTCLIENT (client area).
+            // This avoid unnecessary hits to Windows NT style caption buttons which aren't visible but are
+            // located just under the Aero style window close button.
+            if (lResult == HTCLOSE || lResult == HTMAXBUTTON || lResult == HTMINBUTTON || lResult == HTHELP)
+                *result = HTCLIENT;
+            else
+                *result = lResult;
+        }
         break;
     }
 //    case WM_NCCALCSIZE: { #fixme: If the frame size is changed, it needs to be communicated to the QWindow.
@@ -407,10 +406,16 @@ bool QVistaHelper::winEvent(MSG* msg, long* result)
 //        break;
 //    }
     default:
-        retval = false;
+        LRESULT lResult;
+        // Pass to DWM to handle
+        if (pDwmDefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam, &lResult))
+            *result = lResult;
+        // If the message wasn't handled by DWM, continue processing it as normal
+        else
+            return false;
     }
 
-    return retval;
+    return true;
 }
 
 void QVistaHelper::setMouseCursor(QPoint pos)
@@ -597,30 +602,36 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
         winEvent(&msg, &result);
      } else if (event->type() == QEvent::MouseButtonPress) {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-        long result;
-        MSG msg;
-        msg.message = WM_NCHITTEST;
-        msg.wParam  = 0;
-        msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-        HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
-        msg.hwnd = handle;
-        winEvent(&msg, &result);
-        msg.wParam = result;
-        msg.message = WM_NCLBUTTONDOWN;
-        winEvent(&msg, &result);
+
+        if (mouseEvent->button() == Qt::LeftButton) {
+            long result;
+            MSG msg;
+            msg.message = WM_NCHITTEST;
+            msg.wParam  = 0;
+            msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
+            HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
+            msg.hwnd = handle;
+            winEvent(&msg, &result);
+            msg.wParam = result;
+            msg.message = WM_NCLBUTTONDOWN;
+            winEvent(&msg, &result);
+        }
      } else if (event->type() == QEvent::MouseButtonRelease) {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-        long result;
-        MSG msg;
-        msg.message = WM_NCHITTEST;
-        msg.wParam  = 0;
-        msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-        HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
-        msg.hwnd = handle;
-        winEvent(&msg, &result);
-        msg.wParam = result;
-        msg.message = WM_NCLBUTTONUP;
-        winEvent(&msg, &result);
+
+        if (mouseEvent->button() == Qt::LeftButton) {
+            long result;
+            MSG msg;
+            msg.message = WM_NCHITTEST;
+            msg.wParam  = 0;
+            msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
+            HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
+            msg.hwnd = handle;
+            winEvent(&msg, &result);
+            msg.wParam = result;
+            msg.message = WM_NCLBUTTONUP;
+            winEvent(&msg, &result);
+        }
      }
 
      return false;
