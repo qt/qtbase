@@ -41,8 +41,13 @@
 
 
 #include <QtTest/QtTest>
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonValue>
 #include <QtNetwork/QNetworkCookieJar>
 #include <QtNetwork/QNetworkCookie>
+#include <QtNetwork/QNetworkRequest>
 #include "private/qtldurl_p.h"
 
 class tst_QNetworkCookieJar: public QObject
@@ -59,6 +64,8 @@ private slots:
     void effectiveTLDs_data();
     void effectiveTLDs();
 #endif
+    void rfc6265_data();
+    void rfc6265();
 };
 
 QT_BEGIN_NAMESPACE
@@ -455,6 +462,92 @@ void tst_QNetworkCookieJar::effectiveTLDs()
     QCOMPARE(qIsEffectiveTLD(domain), isTLD);
 }
 #endif
+
+void tst_QNetworkCookieJar::rfc6265_data()
+{
+    QTest::addColumn<QStringList>("received");
+    QTest::addColumn<QList<QNetworkCookie> >("sent");
+    QTest::addColumn<QString>("sentTo");
+
+    QFile file(QFINDTESTDATA("parser.json"));
+    QVERIFY(file.open(QFile::ReadOnly | QFile::Text));
+    QJsonDocument document;
+    document = QJsonDocument::fromJson(file.readAll());
+    QVERIFY(!document.isNull());
+    QVERIFY(document.isArray());
+
+    foreach (const QJsonValue& testCase, document.array()) {
+        QJsonObject testObject = testCase.toObject();
+
+        //"test" - the test case name
+        QString testCaseName = testObject.value("test").toString();
+        if (testCaseName.toLower().startsWith("disabled"))
+            continue;
+
+        //"received" - the cookies received from the server
+        QJsonArray received = testObject.value("received").toArray();
+        QStringList receivedList;
+        foreach (const QJsonValue& receivedCookie, received)
+            receivedList.append(receivedCookie.toString());
+
+        //"sent" - the cookies sent back to the server
+        QJsonArray sent = testObject.value("sent").toArray();
+        QList<QNetworkCookie> sentList;
+        foreach (const QJsonValue& sentCookie, sent) {
+            QJsonObject sentCookieObject = sentCookie.toObject();
+            QNetworkCookie cookie;
+            cookie.setName(sentCookieObject.value("name").toString().toUtf8());
+            cookie.setValue(sentCookieObject.value("value").toString().toUtf8());
+            sentList.append(cookie);
+        }
+
+        //"sent-to" - the relative url where cookies are sent
+        QTest::newRow(qPrintable(testCaseName)) << receivedList << sentList << testObject.value("sent-to").toString();
+    }
+}
+
+void tst_QNetworkCookieJar::rfc6265()
+{
+    QFETCH(QStringList, received);
+    QFETCH(QList<QNetworkCookie>, sent);
+    QFETCH(QString, sentTo);
+
+    QUrl receivedUrl("http://home.example.org:8888/cookie-parser");
+    QUrl sentUrl("http://home.example.org:8888/cookie-parser-result");
+    if (!sentTo.isEmpty())
+        sentUrl = receivedUrl.resolved(sentTo);
+
+    QNetworkCookieJar jar;
+    QList<QNetworkCookie> receivedCookies;
+    foreach (const QString &cookieLine, received)
+        receivedCookies.append(QNetworkCookie::parseCookies(cookieLine.toUtf8()));
+
+    jar.setCookiesFromUrl(receivedCookies, receivedUrl);
+    QList<QNetworkCookie> cookiesToSend = jar.cookiesForUrl(sentUrl);
+
+    //compare cookies only using name/value, as the metadata isn't sent over the network
+    QCOMPARE(cookiesToSend.count(), sent.count());
+    bool ok = true;
+    for (int i = 0; i < cookiesToSend.count(); i++) {
+        if (cookiesToSend.at(i).name() != sent.at(i).name()) {
+            ok = false;
+            break;
+        }
+        if (cookiesToSend.at(i).value() != sent.at(i).value()) {
+            ok = false;
+            break;
+        }
+    }
+    if (!ok) {
+        QNetworkRequest r(sentUrl);
+        r.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookiesToSend));
+        QString actual = QString::fromUtf8(r.rawHeader("Cookie"));
+        r.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(sent));
+        QString expected = QString::fromUtf8(r.rawHeader("Cookie"));
+
+        QVERIFY2(ok, qPrintable(QString("Expected: %1\nActual: %2").arg(expected).arg(actual)));
+    }
+}
 
 QTEST_MAIN(tst_QNetworkCookieJar)
 #include "tst_qnetworkcookiejar.moc"
