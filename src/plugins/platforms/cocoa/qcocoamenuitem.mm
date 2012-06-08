@@ -211,24 +211,26 @@ NSMenuItem *QCocoaMenuItem::sync()
             break;
         case TextHeuristicRole: {
             QString aboutString = tr("About").toLower();
-
-            if (m_text.startsWith(aboutString) || m_text.endsWith(aboutString)) {
+            if (m_text.startsWith(aboutString, Qt::CaseInsensitive)
+                || m_text.endsWith(aboutString, Qt::CaseInsensitive))
+            {
                 if (m_text.indexOf(QRegExp(QString::fromLatin1("qt$"), Qt::CaseInsensitive)) == -1)
                     mergeItem = [loader aboutMenuItem];
                 else
                     mergeItem = [loader aboutQtMenuItem];
 
                 m_merged = true;
-            } else if (m_text.startsWith(tr("Config").toLower())
-                       || m_text.startsWith(tr("Preference").toLower())
-                       || m_text.startsWith(tr("Options").toLower())
-                       || m_text.startsWith(tr("Setting").toLower())
-                       || m_text.startsWith(tr("Setup").toLower())) {
+            } else if (m_text.startsWith(tr("Config"), Qt::CaseInsensitive)
+                       || m_text.startsWith(tr("Preference"), Qt::CaseInsensitive)
+                       || m_text.startsWith(tr("Options"), Qt::CaseInsensitive)
+                       || m_text.startsWith(tr("Setting"), Qt::CaseInsensitive)
+                       || m_text.startsWith(tr("Setup"), Qt::CaseInsensitive)) {
                 mergeItem = [loader preferencesMenuItem];
-            } else if (m_text.startsWith(tr("Quit").toLower())
-                       || m_text.startsWith(tr("Exit").toLower())) {
+            } else if (m_text.startsWith(tr("Quit"), Qt::CaseInsensitive)
+                       || m_text.startsWith(tr("Exit"), Qt::CaseInsensitive)) {
                 mergeItem = [loader quitMenuItem];
             }
+
             break;
         }
 
