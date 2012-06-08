@@ -64,19 +64,37 @@ QT_BEGIN_NAMESPACE
     direct inheritance:
 
     \code
-    class MyGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
+    class MyGLWindow : public QWindow, protected QOpenGLFunctions
     {
         Q_OBJECT
     public:
-        MyGLWidget(QWidget *parent = 0) : QOpenGLWidget(parent) {}
+        MyGLWindow(QScreen *screen = 0);
 
     protected:
         void initializeGL();
         void paintGL();
+
+        QOpenGLContext *m_context;
     };
 
-    void MyGLWidget::initializeGL()
+    MyGLWindow(QScreen *screen)
+      : QWindow(screen), QOpenGLWidget(parent)
     {
+        setSurfaceType(OpenGLSurface);
+        create();
+
+        // Create an OpenGL context
+        m_context = new QOpenGLContext;
+        m_context->create();
+
+        // Setup scene and render it
+        initializeGL();
+        paintGL()
+    }
+
+    void MyGLWindow::initializeGL()
+    {
+        m_context->makeCurrent(this);
         initializeGLFunctions();
     }
     \endcode
@@ -86,11 +104,14 @@ QT_BEGIN_NAMESPACE
     in the following example:
 
     \code
-    void MyGLWidget::paintGL()
+    void MyGLWindow::paintGL()
     {
+        m_context->makeCurrent(this);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, textureId);
         ...
+        m_context->swapBuffers(this);
+        m_context->doneCurrent();
     }
     \endcode
 
