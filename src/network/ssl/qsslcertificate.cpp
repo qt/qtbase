@@ -843,39 +843,46 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
                                                  QRegExp::PatternSyntax syntax)
 {
     // $, (,), *, +, ., ?, [, ,], ^, {, | and }.
+
+    // make sure to use the same path separators on Windows and Unix like systems.
+    QString sourcePath = QDir::fromNativeSeparators(path);
+
+    // Find the path without the filename
+    QString pathPrefix = sourcePath.left(sourcePath.lastIndexOf(QLatin1Char('/')));
+
+    // Check if the path contains any special chars
     int pos = -1;
     if (syntax == QRegExp::Wildcard)
-        pos = path.indexOf(QRegExp(QLatin1String("[^\\][\\*\\?\\[\\]]")));
+        pos = pathPrefix.indexOf(QRegExp(QLatin1String("[*?[]")));
     else if (syntax != QRegExp::FixedString)
-        pos = path.indexOf(QRegExp(QLatin1String("[^\\][\\$\\(\\)\\*\\+\\.\\?\\[\\]\\^\\{\\}\\|]")));
-    QString pathPrefix = path.left(pos); // == path if pos < 0
-    if (pos != -1)
-        pathPrefix = pathPrefix.left(pathPrefix.lastIndexOf(QLatin1Char('/')));
-
-    // Special case - if the prefix ends up being nothing, use "." instead and
-    // chop off the first two characters from the glob'ed paths.
-    int startIndex = 0;
-    if (pathPrefix.trimmed().isEmpty()) {
-        if(path.startsWith(QLatin1Char('/'))) {
-            pathPrefix = path.left(path.indexOf(QRegExp(QLatin1String("[\\*\\?\\[]"))));
-            pathPrefix = path.left(path.lastIndexOf(QLatin1Char('/')));
-        } else {
-            startIndex = 2;
-            pathPrefix = QLatin1String(".");
+        pos = sourcePath.indexOf(QRegExp(QLatin1String("[\\$\\(\\)\\*\\+\\.\\?\\[\\]\\^\\{\\}\\|]")));
+    if (pos != -1) {
+        // there was a special char in the path so cut of the part containing that char.
+        pathPrefix = pathPrefix.left(pos);
+        if (pathPrefix.contains(QLatin1Char('/')))
+            pathPrefix = pathPrefix.left(pathPrefix.lastIndexOf(QLatin1Char('/')));
+        else
+            pathPrefix.clear();
+    } else {
+        // Check if the path is a file.
+        if (QFileInfo(sourcePath).isFile()) {
+            QFile file(sourcePath);
+            if (file.open(QIODevice::ReadOnly | QIODevice::Text))
+                return QSslCertificate::fromData(file.readAll(),format);
+            return QList<QSslCertificate>();
         }
     }
 
-    // The path is a file.
-    if (pos == -1 && QFileInfo(pathPrefix).isFile()) {
-        QFile file(pathPrefix);
-        if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-            return QSslCertificate::fromData(file.readAll(),format);
-        return QList<QSslCertificate>();
+    // Special case - if the prefix ends up being nothing, use "." instead.
+    int startIndex = 0;
+    if (pathPrefix.isEmpty()) {
+        pathPrefix = QLatin1String(".");
+        startIndex = 2;
     }
 
     // The path can be a file or directory.
     QList<QSslCertificate> certs;
-    QRegExp pattern(path, Qt::CaseSensitive, syntax);
+    QRegExp pattern(sourcePath, Qt::CaseSensitive, syntax);
     QDirIterator it(pathPrefix, QDir::Files, QDirIterator::FollowSymlinks | QDirIterator::Subdirectories);
     while (it.hasNext()) {
         QString filePath = startIndex == 0 ? it.next() : it.next().mid(startIndex);

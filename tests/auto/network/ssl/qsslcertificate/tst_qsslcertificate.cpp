@@ -534,6 +534,10 @@ void tst_QSslCertificate::fromPath_data()
     QTest::newRow("\"certificates/*\" regexp pem") << QString("certificates/*") << int(QRegExp::RegExp) << true << 0;
     QTest::newRow("\"certificates/*\" regexp der") << QString("certificates/*") << int(QRegExp::RegExp) << false << 0;
     QTest::newRow("\"certificates/*\" wildcard pem") << QString("certificates/*") << int(QRegExp::Wildcard) << true << 5;
+    QTest::newRow("\"certificates/ca*\" wildcard pem") << QString("certificates/ca*") << int(QRegExp::Wildcard) << true << 1;
+    QTest::newRow("\"certificates/cert*\" wildcard pem") << QString("certificates/cert*") << int(QRegExp::Wildcard) << true << 4;
+    QTest::newRow("\"certificates/cert-[sure]*\" wildcard pem") << QString("certificates/cert-[sure]*") << int(QRegExp::Wildcard) << true << 3;
+    QTest::newRow("\"certificates/cert-[not]*\" wildcard pem") << QString("certificates/cert-[not]*") << int(QRegExp::Wildcard) << true << 0;
     QTest::newRow("\"certificates/*\" wildcard der") << QString("certificates/*") << int(QRegExp::Wildcard) << false << 0;
     QTest::newRow("\"c*/c*.pem\" fixed pem") << QString("c*/c*.pem") << int(QRegExp::FixedString) << true << 0;
     QTest::newRow("\"c*/c*.pem\" fixed der") << QString("c*/c*.pem") << int(QRegExp::FixedString) << false << 0;
