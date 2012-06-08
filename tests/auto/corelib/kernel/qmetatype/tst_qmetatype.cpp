@@ -1462,19 +1462,29 @@ void tst_QMetaType::automaticTemplateRegistration()
 
 #endif // Q_COMPILER_VARIADIC_MACROS
 
-#define TEST_QSHAREDPOINTER(FULLTYPE) \
+#define TEST_SMARTPOINTER(SMARTPOINTER, ELEMENT_TYPE) \
     { \
-        FULLTYPE sp = FULLTYPE::create(); \
+        SMARTPOINTER < ELEMENT_TYPE > sp(new ELEMENT_TYPE); \
         QVariant v = QVariant::fromValue(sp); \
-        QCOMPARE(v.typeName(), #FULLTYPE); \
+        QCOMPARE(v.typeName(), #SMARTPOINTER "<" #ELEMENT_TYPE ">"); \
     }
 
-    TEST_QSHAREDPOINTER(QSharedPointer<QObject>)
-    TEST_QSHAREDPOINTER(QSharedPointer<QFile>)
-    TEST_QSHAREDPOINTER(QSharedPointer<QTemporaryFile>)
-    TEST_QSHAREDPOINTER(QSharedPointer<MyObject>)
+    TEST_SMARTPOINTER(QSharedPointer, QObject)
+    TEST_SMARTPOINTER(QSharedPointer, QFile)
+    TEST_SMARTPOINTER(QSharedPointer, QTemporaryFile)
+    TEST_SMARTPOINTER(QSharedPointer, MyObject)
 
-#undef TEST_QSHAREDPOINTER
+    TEST_SMARTPOINTER(QWeakPointer, QObject)
+    TEST_SMARTPOINTER(QWeakPointer, QFile)
+    TEST_SMARTPOINTER(QWeakPointer, QTemporaryFile)
+    TEST_SMARTPOINTER(QWeakPointer, MyObject)
+
+    TEST_SMARTPOINTER(QPointer, QObject)
+    TEST_SMARTPOINTER(QPointer, QFile)
+    TEST_SMARTPOINTER(QPointer, QTemporaryFile)
+    TEST_SMARTPOINTER(QPointer, MyObject)
+
+#undef TEST_SMARTPOINTER
 
 }
 

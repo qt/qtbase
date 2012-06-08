@@ -678,6 +678,8 @@ template <class T> class QQueue;
 template <class T> class QStack;
 template <class T> class QSet;
 template <class T> class QSharedPointer;
+template <class T> class QWeakPointer;
+template <class T> class QPointer;
 template <class T1, class T2> class QMap;
 template <class T1, class T2> class QHash;
 template <class T1, class T2> struct QPair;
@@ -758,35 +760,41 @@ Q_DECLARE_METATYPE_TEMPLATE_2ARG(QHash)
 Q_DECLARE_METATYPE_TEMPLATE_2ARG(QMap)
 Q_DECLARE_METATYPE_TEMPLATE_2ARG(QPair)
 
-template <typename T, bool = QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value>
-struct QMetaTypeIdSharedPointerQObjectStar
-{
-    enum {
-        Defined = 0
-    };
+
+#define Q_DECLARE_SMART_POINTER_METATYPE(SMART_POINTER) \
+template <typename T, bool = QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value> \
+struct QMetaTypeId_ ## SMART_POINTER ## _QObjectStar \
+{ \
+    enum { \
+        Defined = 0 \
+    }; \
+};\
+ \
+template <typename T> \
+struct QMetaTypeId_ ## SMART_POINTER ## _QObjectStar<T, true> \
+{ \
+    enum { \
+        Defined = 1 \
+    }; \
+    static int qt_metatype_id() \
+    { \
+        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
+        if (!metatype_id.load()) { \
+            metatype_id.storeRelease(qRegisterNormalizedMetaType< SMART_POINTER<T> >( #SMART_POINTER "<" + QByteArray(T::staticMetaObject.className()) + ">", \
+                        reinterpret_cast< SMART_POINTER<T> *>(quintptr(-1)))); \
+        } \
+        return metatype_id.loadAcquire(); \
+    } \
+}; \
+\
+template <typename T> \
+struct QMetaTypeId< SMART_POINTER<T> > : public QMetaTypeId_ ## SMART_POINTER ## _QObjectStar<T> \
+{ \
 };
 
-template <typename T>
-struct QMetaTypeIdSharedPointerQObjectStar<T, /* IsPointerToTypeDerivedFromQObject */ true>
-{
-    enum {
-        Defined = 1
-    };
-    static int qt_metatype_id()
-    {
-        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
-        if (!metatype_id.load()) {
-            metatype_id.storeRelease(qRegisterNormalizedMetaType< QSharedPointer<T> >( QByteArray("QSharedPointer<") + T::staticMetaObject.className() + ">",
-                        reinterpret_cast< QSharedPointer<T> *>(quintptr(-1))));
-        }
-        return metatype_id.loadAcquire();
-    }
-};
-
-template <typename T>
-struct QMetaTypeId< QSharedPointer<T> > : public QMetaTypeIdSharedPointerQObjectStar<T>
-{
-};
+Q_DECLARE_SMART_POINTER_METATYPE(QSharedPointer)
+Q_DECLARE_SMART_POINTER_METATYPE(QWeakPointer)
+Q_DECLARE_SMART_POINTER_METATYPE(QPointer)
 
 inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeInterface *info,
                             Creator creator,
