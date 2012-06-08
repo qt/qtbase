@@ -110,18 +110,9 @@ private slots:
     void currentDateTimeUtc2();
     void fromStringTextDate_data();
     void fromStringTextDate();
-
-    void dateFromStringFormat_data();
-    void dateFromStringFormat();
-    void timeFromStringFormat_data();
-    void timeFromStringFormat();
-    void timeFromStringDateFormat_data();
-    void timeFromStringDateFormat();
     void dateTimeFromStringFormat_data();
     void dateTimeFromStringFormat();
-
     void fromString_LOCALE_ILDATE();
-
     void fromString();
 
     void utcOffset();
@@ -1331,138 +1322,6 @@ void tst_QDateTime::fromStringTextDate()
     QCOMPARE(int(dt.timeSpec()), timeSpec);
 }
 
-void tst_QDateTime::dateFromStringFormat_data()
-{
-    QTest::addColumn<QString>("string");
-    QTest::addColumn<QString>("format");
-    QTest::addColumn<QDate>("expected");
-
-    //get localized names
-    QString january = QDate::longMonthName(1);
-    QString february = QDate::longMonthName(2);
-    QString march = QDate::longMonthName(3);
-    QString august = QDate::longMonthName(8);
-    QString mon = QDate::shortDayName(1);
-    QString monday = QDate::longDayName(1);
-    QString tuesday = QDate::longDayName(2);
-    QString wednesday = QDate::longDayName(3);
-    QString thursday = QDate::longDayName(4);
-    QString friday = QDate::longDayName(5);
-    QString saturday = QDate::longDayName(6);
-    QString sunday = QDate::longDayName(7);
-
-    QTest::newRow("data0") << QString("") << QString("") << defDate();
-    QTest::newRow("data1") << QString(" ") << QString("") << invalidDate();
-    QTest::newRow("data2") << QString(" ") << QString(" ") << defDate();
-    QTest::newRow("data3") << QString("-%$%#") << QString("$*(#@") << invalidDate();
-    QTest::newRow("data4") << QString("d") << QString("'d'") << defDate();
-    QTest::newRow("data5") << QString("101010") << QString("dMyy") << QDate(1910, 10, 10);
-    QTest::newRow("data6") << QString("101010b") << QString("dMyy") << invalidDate();
-    QTest::newRow("data7") << january << QString("MMMM") << defDate();
-    QTest::newRow("data8") << QString("ball") << QString("balle") << invalidDate();
-    QTest::newRow("data9") << QString("balleh") << QString("balleh") << defDate();
-    QTest::newRow("data10") << QString("10.01.1") << QString("M.dd.d") << QDate(defDate().year(), 10, 1);
-    QTest::newRow("data11") << QString("-1.01.1") << QString("M.dd.d") << invalidDate();
-    QTest::newRow("data12") << QString("11010") << QString("dMMyy") << invalidDate();
-    QTest::newRow("data13") << QString("-2") << QString("d") << invalidDate();
-    QTest::newRow("data14") << QString("132") << QString("Md") << invalidDate();
-    QTest::newRow("data15") << february << QString("MMMM") << QDate(defDate().year(), 2, 1);
-
-    QString date = mon + " " + august + " 8 2005";
-    QTest::newRow("data16") << date << QString("ddd MMMM d yyyy") << QDate(2005, 8, 8);
-    QTest::newRow("data17") << QString("2000:00") << QString("yyyy:yy") << QDate(2000, 1, 1);
-    QTest::newRow("data18") << QString("1999:99") << QString("yyyy:yy") << QDate(1999, 1, 1);
-    QTest::newRow("data19") << QString("2099:99") << QString("yyyy:yy") << QDate(2099, 1, 1);
-    QTest::newRow("data20") << QString("2001:01") << QString("yyyy:yy") << QDate(2001, 1, 1);
-    QTest::newRow("data21") << QString("99") << QString("yy") << QDate(1999, 1, 1);
-    QTest::newRow("data22") << QString("01") << QString("yy") << QDate(1901, 1, 1);
-
-    QTest::newRow("data23") << monday << QString("dddd") << QDate(1900, 1, 1);
-    QTest::newRow("data24") << tuesday << QString("dddd") << QDate(1900, 1, 2);
-    QTest::newRow("data25") << wednesday << QString("dddd") << QDate(1900, 1, 3);
-    QTest::newRow("data26") << thursday << QString("dddd") << QDate(1900, 1, 4);
-    QTest::newRow("data27") << friday << QString("dddd") << QDate(1900, 1, 5);
-    QTest::newRow("data28") << saturday << QString("dddd") << QDate(1900, 1, 6);
-    QTest::newRow("data29") << sunday << QString("dddd") << QDate(1900, 1, 7);
-
-    QTest::newRow("data30") << monday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 2);
-    QTest::newRow("data31") << tuesday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 3);
-    QTest::newRow("data32") << wednesday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 4);
-    QTest::newRow("data33") << thursday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 5);
-    QTest::newRow("data34") << friday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 6);
-    QTest::newRow("data35") << saturday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 7);
-    QTest::newRow("data36") << sunday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 1);
-
-    QTest::newRow("data37") << tuesday + " 2007 " + march << QString("dddd yyyy MMMM") << QDate(2007, 3, 6);
-
-}
-
-
-void tst_QDateTime::dateFromStringFormat()
-{
-    QFETCH(QString, string);
-    QFETCH(QString, format);
-    QFETCH(QDate, expected);
-
-    QDate dt = QDate::fromString(string, format);
-    QCOMPARE(dt, expected);
-}
-
-void tst_QDateTime::timeFromStringFormat_data()
-{
-    QTest::addColumn<QString>("string");
-    QTest::addColumn<QString>("format");
-    QTest::addColumn<QTime>("expected");
-
-    QTest::newRow("data0") << QString("1010") << QString("mmm") << QTime(0, 10, 0);
-    QTest::newRow("data1") << QString("00") << QString("hm") << invalidTime();
-    QTest::newRow("data2") << QString("10am") << QString("hap") << QTime(10, 0, 0);
-    QTest::newRow("data3") << QString("10pm") << QString("hap") << QTime(22, 0, 0);
-    QTest::newRow("data4") << QString("10pmam") << QString("hapap") << invalidTime();
-    QTest::newRow("data5") << QString("1070") << QString("hhm") << invalidTime();
-    QTest::newRow("data6") << QString("1011") << QString("hh") << invalidTime();
-    QTest::newRow("data7") << QString("25") << QString("hh") << invalidTime();
-    QTest::newRow("data8") << QString("22pm") << QString("Hap") << QTime(22, 0, 0);
-    QTest::newRow("data9") << QString("2221") << QString("hhhh") << invalidTime();
-}
-
-
-void tst_QDateTime::timeFromStringFormat()
-{
-    QFETCH(QString, string);
-    QFETCH(QString, format);
-    QFETCH(QTime, expected);
-
-    QTime dt = QTime::fromString(string, format);
-    QCOMPARE(dt, expected);
-}
-
-void tst_QDateTime::timeFromStringDateFormat_data()
-{
-    QTest::addColumn<QString>("string");
-    QTest::addColumn<Qt::DateFormat>("format");
-    QTest::addColumn<QTime>("expected");
-
-    QTest::newRow("valid, start of day, omit seconds") << QString::fromLatin1("00:00") << Qt::ISODate << QTime(0, 0, 0);
-    QTest::newRow("valid, omit seconds") << QString::fromLatin1("22:21") << Qt::ISODate << QTime(22, 21, 0);
-    QTest::newRow("valid, omit seconds (2)") << QString::fromLatin1("23:59") << Qt::ISODate << QTime(23, 59, 0);
-    QTest::newRow("valid, end of day") << QString::fromLatin1("23:59:59") << Qt::ISODate << QTime(23, 59, 59);
-
-    QTest::newRow("invalid, empty string") << QString::fromLatin1("") << Qt::ISODate << invalidTime();
-    QTest::newRow("invalid, too many hours") << QString::fromLatin1("25:00") << Qt::ISODate << invalidTime();
-    QTest::newRow("invalid, too many minutes") << QString::fromLatin1("10:70") << Qt::ISODate << invalidTime();
-    QTest::newRow("invalid, too many seconds") << QString::fromLatin1("23:59:60") << Qt::ISODate << invalidTime();
-}
-
-void tst_QDateTime::timeFromStringDateFormat()
-{
-    QFETCH(QString, string);
-    QFETCH(Qt::DateFormat, format);
-    QFETCH(QTime, expected);
-
-    QTime dt = QTime::fromString(string, format);
-    QCOMPARE(dt, expected);
-}
 
 void tst_QDateTime::dateTimeFromStringFormat_data()
 {

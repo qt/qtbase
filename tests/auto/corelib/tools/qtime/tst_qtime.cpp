@@ -46,8 +46,6 @@ class tst_QTime : public QObject
 {
     Q_OBJECT
 private slots:
-    void toStringLocale();
-    void toString();
     void msecsTo_data();
     void msecsTo();
     void secsTo_data();
@@ -68,16 +66,22 @@ private slots:
     void operator_gt();
     void operator_lt_eq();
     void operator_gt_eq();
-    void fromString_data();
-    void fromString();
     void fromStringFormat_data();
     void fromStringFormat();
-    void toString_data();
-    void toString_format_data();
-    void toString_format();
+    void fromStringDateFormat_data();
+    void fromStringDateFormat();
+    void toStringDateFormat_data();
+    void toStringDateFormat();
+    void toStringFormat_data();
+    void toStringFormat();
+    void toStringLocale();
+
+private:
+    QTime invalidTime() { return QTime(-1, -1, -1); }
 };
 
 Q_DECLARE_METATYPE(QTime)
+Q_DECLARE_METATYPE(Qt::DateFormat)
 
 void tst_QTime::addSecs_data()
 {
@@ -522,54 +526,74 @@ void tst_QTime::operator_gt_eq()
     QVERIFY( t1 >= t2 );
 }
 
-void tst_QTime::fromString_data()
-{
-    // Since we can't define an element of Qt::DateFormat, t1 will be the time
-    // expected when we have a TextDate, and t2 will be the time expected when
-    // we have an ISODate.
-
-    QTest::addColumn<QString>("str");
-    QTest::addColumn<QTime>("t1");
-    QTest::addColumn<QTime>("t2");
-
-    QTest::newRow( "data0" ) << QString("00:00:00") << QTime(0,0,0,0) << QTime(0,0,0,0);
-    QTest::newRow( "data1" ) << QString("10:12:34") << QTime(10,12,34,0) << QTime(10,12,34,0);
-    QTest::newRow( "data2" ) << QString("19:03:54.998601") << QTime(19, 3, 54, 999) << QTime(19, 3, 54, 999);
-    QTest::newRow( "data3" ) << QString("19:03:54.999601") << QTime(19, 3, 54, 999) << QTime(19, 3, 54, 999);
-}
-
-void tst_QTime::fromString()
-{
-    QFETCH( QString, str );
-    QFETCH( QTime, t1 );
-    QFETCH( QTime, t2 );
-
-    QCOMPARE( t1, QTime::fromString( str, Qt::TextDate ) );
-    QCOMPARE( t2, QTime::fromString( str, Qt::ISODate ) );
-}
-
-
 void tst_QTime::fromStringFormat_data()
 {
-    QTest::addColumn<QString>("str");
+    QTest::addColumn<QString>("string");
     QTest::addColumn<QString>("format");
-    QTest::addColumn<QTime>("t");
+    QTest::addColumn<QTime>("expected");
 
-    QTest::newRow( "data0" ) << QString("02:23PM") << QString("hh:mmAP") << QTime(14,23,0,0);
-    QTest::newRow( "data1" ) << QString("02:23pm") << QString("hh:mmap") << QTime(14,23,0,0);
+    QTest::newRow("data0") << QString("1010") << QString("mmm") << QTime(0, 10, 0);
+    QTest::newRow("data1") << QString("00") << QString("hm") << invalidTime();
+    QTest::newRow("data2") << QString("10am") << QString("hap") << QTime(10, 0, 0);
+    QTest::newRow("data3") << QString("10pm") << QString("hap") << QTime(22, 0, 0);
+    QTest::newRow("data4") << QString("10pmam") << QString("hapap") << invalidTime();
+    QTest::newRow("data5") << QString("1070") << QString("hhm") << invalidTime();
+    QTest::newRow("data6") << QString("1011") << QString("hh") << invalidTime();
+    QTest::newRow("data7") << QString("25") << QString("hh") << invalidTime();
+    QTest::newRow("data8") << QString("22pm") << QString("Hap") << QTime(22, 0, 0);
+    QTest::newRow("data9") << QString("2221") << QString("hhhh") << invalidTime();
+    QTest::newRow("data10") << QString("02:23PM") << QString("hh:mmAP") << QTime(14,23,0,0);
+    QTest::newRow("data11") << QString("02:23pm") << QString("hh:mmap") << QTime(14,23,0,0);
 }
 
 void tst_QTime::fromStringFormat()
 {
-    QFETCH(QString, str);
+    QFETCH(QString, string);
     QFETCH(QString, format);
-    QFETCH(QTime, t);
+    QFETCH(QTime, expected);
 
-    QCOMPARE(t, QTime::fromString( str, format));
-
+    QTime dt = QTime::fromString(string, format);
+    QCOMPARE(dt, expected);
 }
 
-void tst_QTime::toString_data()
+void tst_QTime::fromStringDateFormat_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<Qt::DateFormat>("format");
+    QTest::addColumn<QTime>("expected");
+
+    QTest::newRow("valid, start of day, omit seconds") << QString::fromLatin1("00:00") << Qt::ISODate << QTime(0, 0, 0);
+    QTest::newRow("valid, omit seconds") << QString::fromLatin1("22:21") << Qt::ISODate << QTime(22, 21, 0);
+    QTest::newRow("valid, omit seconds (2)") << QString::fromLatin1("23:59") << Qt::ISODate << QTime(23, 59, 0);
+    QTest::newRow("valid, end of day") << QString::fromLatin1("23:59:59") << Qt::ISODate << QTime(23, 59, 59);
+
+    QTest::newRow("invalid, empty string") << QString::fromLatin1("") << Qt::ISODate << invalidTime();
+    QTest::newRow("invalid, too many hours") << QString::fromLatin1("25:00") << Qt::ISODate << invalidTime();
+    QTest::newRow("invalid, too many minutes") << QString::fromLatin1("10:70") << Qt::ISODate << invalidTime();
+    QTest::newRow("invalid, too many seconds") << QString::fromLatin1("23:59:60") << Qt::ISODate << invalidTime();
+
+    QTest::newRow("TextDate - data0") << QString("00:00:00") << Qt::TextDate << QTime(0,0,0,0);
+    QTest::newRow("TextDate - data1") << QString("10:12:34") << Qt::TextDate << QTime(10,12,34,0);
+    QTest::newRow("TextDate - data2") << QString("19:03:54.998601") << Qt::TextDate << QTime(19, 3, 54, 999);
+    QTest::newRow("TextDate - data3") << QString("19:03:54.999601") << Qt::TextDate << QTime(19, 3, 54, 999);
+
+    QTest::newRow("IsoDate - data0") << QString("00:00:00") << Qt::ISODate << QTime(0,0,0,0);
+    QTest::newRow("IsoDate - data1") << QString("10:12:34") << Qt::ISODate << QTime(10,12,34,0);
+    QTest::newRow("IsoDate - data2") << QString("19:03:54.998601") << Qt::ISODate << QTime(19, 3, 54, 999);
+    QTest::newRow("IsoDate - data3") << QString("19:03:54.999601") << Qt::ISODate << QTime(19, 3, 54, 999);
+}
+
+void tst_QTime::fromStringDateFormat()
+{
+    QFETCH(QString, string);
+    QFETCH(Qt::DateFormat, format);
+    QFETCH(QTime, expected);
+
+    QTime dt = QTime::fromString(string, format);
+    QCOMPARE(dt, expected);
+}
+
+void tst_QTime::toStringDateFormat_data()
 {
     // Since we can't define an element of Qt::DateFormat, str1 will be the string
     // in TextDate format, and str2 will be the time in ISODate format.
@@ -582,7 +606,7 @@ void tst_QTime::toString_data()
     QTest::newRow( "data1" ) << QTime(10,12,34,0) << QString("10:12:34") << QString("10:12:34");
 }
 
-void tst_QTime::toString()
+void tst_QTime::toStringDateFormat()
 {
     QFETCH( QTime, t );
     QFETCH( QString, str1 );
@@ -592,7 +616,7 @@ void tst_QTime::toString()
     QCOMPARE( str2, t.toString( Qt::ISODate ) );
 }
 
-void tst_QTime::toString_format_data()
+void tst_QTime::toStringFormat_data()
 {
     QTest::addColumn<QTime>("t");
     QTest::addColumn<QString>("format");
@@ -606,7 +630,7 @@ void tst_QTime::toString_format_data()
     QTest::newRow( "data5" ) << QTime(230,230,230,230) << QString("hh:mm:ss") << QString();
 }
 
-void tst_QTime::toString_format()
+void tst_QTime::toStringFormat()
 {
     QFETCH( QTime, t );
     QFETCH( QString, format );
