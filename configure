@@ -252,15 +252,15 @@ DeviceVar()
 
 resolveDeviceMkspec()
 {
-    result=$(find "$relpath/mkspecs/devices/" -type d -name "*$VAL*" | sed "s,^$relpath/mkspecs/,,")
+    result=$(find "$relpath/mkspecs/devices/" -type d -name "*$1*" | sed "s,^$relpath/mkspecs/,,")
     match_count=$(echo "$result" | wc -w)
     if [ "$match_count" -gt 1 ]; then
-        echo >&2 "Error: Multiple matches for device '$VAL'. Candidates are:"
+        echo >&2 "Error: Multiple matches for device '$1'. Candidates are:"
         tabbed_result=$(echo "$result" | sed "s,^,    ,")
         echo >&2 "$tabbed_result"
         echo "undefined"
     elif [ "$match_count" -eq 0 ]; then
-        echo >&2 "Error: No device matching '$VAL'"
+        echo >&2 "Error: No device matching '$1'"
         echo "undefined"
     else
         echo "$result"
