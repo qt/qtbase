@@ -134,6 +134,7 @@ private slots:
     void listPatterns();
 
     void measurementSystems();
+    void QTBUG_26035_positivesign();
 
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
@@ -2049,6 +2050,23 @@ void tst_QLocale::measurementSystems()
 
     locale = QLocale(QLocale::German);
     QCOMPARE(locale.measurementSystem(), QLocale::MetricSystem);
+}
+
+void tst_QLocale::QTBUG_26035_positivesign()
+{
+    QLocale locale(QLocale::C);
+    bool ok (false);
+    QCOMPARE(locale.toInt(QString("+100,000"), &ok), 100000);
+    QVERIFY(ok);
+    ok = false;
+    QCOMPARE(locale.toInt(QString("+100,000,000"), &ok), 100000000);
+    QVERIFY(ok);
+    ok = false;
+    QCOMPARE(locale.toLongLong(QString("+100,000"), &ok), (qlonglong)100000);
+    QVERIFY(ok);
+    ok = false;
+    QCOMPARE(locale.toLongLong(QString("+100,000,000"), &ok), (qlonglong)100000000);
+    QVERIFY(ok);
 }
 
 QTEST_MAIN(tst_QLocale)

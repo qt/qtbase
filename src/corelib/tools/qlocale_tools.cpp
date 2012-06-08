@@ -249,7 +249,7 @@ bool removeGroupSeparators(QLocalePrivate::CharBuff *num)
             // Check that we are not missing a separator
             if (i < decpt_idx
                     && (decpt_idx - i) % 4 == 0
-                    && !(i == 0 && c == '-')) // check for negative sign at start of string
+                    && !(i == 0 && (c == '-' || c == '+'))) // check for negative or positive sign at start of string
                 return false;
             ++i;
         }
