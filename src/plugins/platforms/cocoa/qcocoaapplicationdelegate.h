@@ -91,8 +91,6 @@
 
 #include <qglobal.h>
 
-QT_FORWARD_DECLARE_CLASS(QApplicationPrivate);
-
 @class QT_MANGLE_NAMESPACE(QCocoaMenuLoader);
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
@@ -110,7 +108,6 @@ QT_FORWARD_DECLARE_CLASS(QApplicationPrivate);
 
 @interface QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) : NSObject <NSApplicationDelegate> {
     bool startedQuit;
-    QApplicationPrivate *qtPrivate;
     NSMenu *dockMenu;
     QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader;
     NSObject <NSApplicationDelegate> *reflectionDelegate;
@@ -118,8 +115,6 @@ QT_FORWARD_DECLARE_CLASS(QApplicationPrivate);
 }
 + (QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate)*)sharedDelegate;
 - (void)setDockMenu:(NSMenu *)newMenu;
-- (void)setQtPrivate:(QApplicationPrivate *)value;
-- (QApplicationPrivate *)qAppPrivate;
 - (void)setMenuLoader:(QT_MANGLE_NAMESPACE(QCocoaMenuLoader)*)menuLoader;
 - (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader;
 - (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate;

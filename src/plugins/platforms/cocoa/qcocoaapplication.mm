@@ -89,11 +89,6 @@ QT_USE_NAMESPACE
     [[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate] setDockMenu:newMenu];
 }
 
-- (QApplicationPrivate *)QT_MANGLE_NAMESPACE(qt_qappPrivate)
-{
-    return [[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate] qAppPrivate];
-}
-
 - (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)
 {
     return [[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate] menuLoader];

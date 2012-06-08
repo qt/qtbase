@@ -91,12 +91,10 @@
 #include "qglobal.h"
 
 #import <AppKit/AppKit.h>
-QT_FORWARD_DECLARE_CLASS(QApplicationPrivate)
 @class QT_MANGLE_NAMESPACE(QCocoaMenuLoader);
 
 @interface NSApplication (QT_MANGLE_NAMESPACE(QApplicationIntegration))
 - (void)QT_MANGLE_NAMESPACE(qt_setDockMenu):(NSMenu *)newMenu;
-- (QApplicationPrivate *)QT_MANGLE_NAMESPACE(qt_qappPrivate);
 - (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader);
 - (int)QT_MANGLE_NAMESPACE(qt_validModesForFontPanel):(NSFontPanel *)fontPanel;
 

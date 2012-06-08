@@ -149,16 +149,6 @@ static void cleanupCocoaApplicationDelegate()
     return [[dockMenu retain] autorelease];
 }
 
-- (QApplicationPrivate *)qAppPrivate
-{
-    return qtPrivate;
-}
-
-- (void)setQtPrivate:(QApplicationPrivate *)value
-{
-    qtPrivate = value;
-}
-
 - (void)setMenuLoader:(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader
 {
     [menuLoader retain];
