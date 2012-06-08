@@ -931,16 +931,25 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                     cookie.setExpirationDate(dt);
                 } else if (field.first == "domain") {
                     QByteArray rawDomain = field.second;
-                    QString maybeLeadingDot;
-                    if (rawDomain.startsWith('.')) {
-                        maybeLeadingDot = QLatin1Char('.');
-                        rawDomain = rawDomain.mid(1);
-                    }
+                    //empty domain should be ignored (RFC6265 section 5.2.3)
+                    if (!rawDomain.isEmpty()) {
+                        QString maybeLeadingDot;
+                        if (rawDomain.startsWith('.')) {
+                            maybeLeadingDot = QLatin1Char('.');
+                            rawDomain = rawDomain.mid(1);
+                        }
 
-                    QString normalizedDomain = QUrl::fromAce(QUrl::toAce(QString::fromUtf8(rawDomain)));
-                    if (normalizedDomain.isEmpty() && !rawDomain.isEmpty())
-                        return result;
-                    cookie.setDomain(maybeLeadingDot + normalizedDomain);
+                        //IDN domains are required by RFC6265, accepting utf8 as well doesn't break any test cases.
+                        QString normalizedDomain = QUrl::fromAce(QUrl::toAce(QString::fromUtf8(rawDomain)));
+                        if (!normalizedDomain.isEmpty()) {
+                            cookie.setDomain(maybeLeadingDot + normalizedDomain);
+                        } else {
+                            //Normalization fails for malformed domains, e.g. "..example.org", reject the cookie now
+                            //rather than accepting it but never sending it due to domain match failure, as the
+                            //strict reading of RFC6265 would indicate.
+                            return result;
+                        }
+                    }
                 } else if (field.first == "max-age") {
                     bool ok = false;
                     int secs = field.second.toInt(&ok);
