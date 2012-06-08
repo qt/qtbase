@@ -1222,6 +1222,59 @@ void tst_QArrayData::arrayOps2()
         QCOMPARE(vo[i].id, i + 5);
         QCOMPARE(int(vo[i].flags), int(CountedObject::DefaultConstructed));
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    vi.resize(10);
+    vs.resize(10);
+    vo.resize(10);
+
+    for (size_t i = 7; i < 10; ++i) {
+        vi[i] = i;
+        vs[i] = QString::number(i);
+
+        QCOMPARE(vo[i].id, i);
+        QCOMPARE(int(vo[i].flags), int(CountedObject::DefaultConstructed));
+    }
+
+    QCOMPARE(CountedObject::liveCount, size_t(10));
+
+    ////////////////////////////////////////////////////////////////////////////
+    // erase
+    vi.erase(vi.begin() + 2, vi.begin() + 5);
+    vs.erase(vs.begin() + 2, vs.begin() + 5);
+    vo.erase(vo.begin() + 2, vo.begin() + 5);
+
+    QCOMPARE(vi.size(), size_t(7));
+    QCOMPARE(vs.size(), size_t(7));
+    QCOMPARE(vo.size(), size_t(7));
+
+    QCOMPARE(CountedObject::liveCount, size_t(7));
+    for (size_t i = 0; i < 2; ++i) {
+        QCOMPARE(vi[i], 0);
+        QVERIFY(vs[i].isNull());
+
+        QCOMPARE(vo[i].id, i);
+        QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed
+                | CountedObject::CopyConstructed);
+    }
+
+    for (size_t i = 2; i < 4; ++i) {
+        QCOMPARE(vi[i], 0);
+        QVERIFY(vs[i].isNull());
+
+        QCOMPARE(vo[i].id, i + 8);
+        QCOMPARE(int(vo[i].flags), int(CountedObject::DefaultConstructed)
+                | CountedObject::CopyAssigned);
+    }
+
+    for (size_t i = 4; i < 7; ++i) {
+        QCOMPARE(vi[i], int(i + 3));
+        QCOMPARE(vs[i], QString::number(i + 3));
+
+        QCOMPARE(vo[i].id, i + 3);
+        QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed
+                | CountedObject::CopyAssigned);
+    }
 }
 
 Q_DECLARE_METATYPE(QArrayDataPointer<int>)

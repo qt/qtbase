@@ -117,6 +117,16 @@ struct QPodArrayOps
         ::memcpy(where, b, (e - b) * sizeof(T));
         this->size += (e - b);
     }
+
+    void erase(T *b, T *e)
+    {
+        Q_ASSERT(b < e);
+        Q_ASSERT(b >= this->begin() && b < this->end());
+        Q_ASSERT(e > this->begin() && e < this->end());
+
+        ::memmove(b, e, (this->end() - e) * sizeof(T));
+        this->size -= (e - b);
+    }
 };
 
 template <class T>
@@ -250,6 +260,25 @@ struct QGenericArrayOps
             *writeIter = *e;
         }
     }
+
+    void erase(T *b, T *e)
+    {
+        Q_ASSERT(b < e);
+        Q_ASSERT(b >= this->begin() && b < this->end());
+        Q_ASSERT(e > this->begin() && e < this->end());
+
+        const T *const end = this->end();
+
+        do {
+            *b = *e;
+            ++b, ++e;
+        } while (e != end);
+
+        do {
+            (--e)->~T();
+            --this->size;
+        } while (e != b);
+    }
 };
 
 template <class T>
@@ -323,6 +352,40 @@ struct QMovableArrayOps
         copier.copy(b, e);
         displace.commit();
         this->size += (e - b);
+    }
+
+    void erase(T *b, T *e)
+    {
+        Q_ASSERT(b < e);
+        Q_ASSERT(b >= this->begin() && b < this->end());
+        Q_ASSERT(e > this->begin() && e < this->end());
+
+        struct Mover
+        {
+            Mover(T *&start, const T *finish, int &sz)
+                : destination(start)
+                , source(start)
+                , n(finish - start)
+                , size(sz)
+            {
+            }
+
+            ~Mover()
+            {
+                ::memmove(destination, source, n * sizeof(T));
+                size -= (source - destination);
+            }
+
+            T *&destination;
+            const T *const source;
+            size_t n;
+            int &size;
+        } mover(e, this->end(), this->size);
+
+        do {
+            // Exceptions or not, dtor called once per instance
+            (--e)->~T();
+        } while (e != b);
     }
 };
 

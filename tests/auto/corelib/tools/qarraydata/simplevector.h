@@ -302,6 +302,32 @@ public:
         d->insert(where, first, last);
     }
 
+    void erase(iterator first, iterator last)
+    {
+        if (first == last)
+            return;
+
+        const T *const begin = d->begin();
+        const T *const end = begin + d->size;
+
+        if (d.needsDetach()) {
+            SimpleVector detached(Data::allocate(
+                        d->detachCapacity(size() - (last - first)),
+                        d->detachFlags()));
+            if (first != begin)
+                detached.d->copyAppend(begin, first);
+            detached.d->copyAppend(last, end);
+            detached.swap(*this);
+
+            return;
+        }
+
+        if (last == end)
+            d->truncate(end - first);
+        else
+            d->erase(first, last);
+    }
+
     void swap(SimpleVector &other)
     {
         qSwap(d, other.d);
