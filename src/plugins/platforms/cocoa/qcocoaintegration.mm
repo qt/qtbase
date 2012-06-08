@@ -57,9 +57,6 @@
 #include <qpa/qplatformaccessibility.h>
 #include <QtCore/qcoreapplication.h>
 
-#include <QtWidgets/QDialog>
-#include <QtWidgets/QFileDialog>
-
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
