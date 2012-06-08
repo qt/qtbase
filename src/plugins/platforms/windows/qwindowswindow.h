@@ -142,6 +142,7 @@ public:
     QWindowsWindow(QWindow *window, const WindowData &data);
     ~QWindowsWindow();
 
+    virtual QSurfaceFormat format() const { return m_format; }
     virtual void setGeometry(const QRect &rect);
     virtual QRect geometry() const { return m_data.geometry; }
 
@@ -165,6 +166,7 @@ public:
     virtual QMargins frameMargins() const;
 
     virtual void setOpacity(qreal level);
+    qreal opacity() const { return m_opacity; }
     virtual void requestActivateWindow();
 
     virtual bool setKeyboardGrabEnabled(bool grab);
@@ -254,6 +256,7 @@ private:
     QWindowsOleDropTarget *m_dropTarget;
     unsigned m_savedStyle;
     QRect m_savedFrameGeometry;
+    const QSurfaceFormat m_format;
 #ifdef QT_OPENGL_ES_2
     EGLSurface m_eglSurface;
     QSharedPointer<QWindowsEGLStaticContext> m_staticEglContext;

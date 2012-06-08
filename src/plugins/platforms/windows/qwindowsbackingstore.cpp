@@ -80,21 +80,42 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
                                         const QPoint &offset)
 {
     Q_ASSERT(window);
-    // TODO: Prepare paint for translucent windows.
+
     const QRect br = region.boundingRect();
     if (QWindowsContext::verboseBackingStore > 1)
         qDebug() << __FUNCTION__ << window << offset << br;
     QWindowsWindow *rw = QWindowsWindow::baseWindowOf(window);
-    const HDC dc = rw->getDC();
-    if (!dc) {
-        qErrnoWarning("%s: GetDC failed", __FUNCTION__);
-        return;
+
+    if (rw->format().hasAlpha() && (window->windowFlags() & Qt::FramelessWindowHint)) {
+        const long wl = GetWindowLong(rw->handle(), GWL_EXSTYLE);
+        if ((wl & WS_EX_LAYERED) == 0)
+            SetWindowLong(rw->handle(), GWL_EXSTYLE, wl | WS_EX_LAYERED);
+
+        QRect r = window->frameGeometry();
+        QPoint frameOffset(window->frameMargins().left(), window->frameMargins().top());
+        QRect dirtyRect = br.translated(offset + frameOffset);
+
+        SIZE size = {r.width(), r.height()};
+        POINT ptDst = {r.x(), r.y()};
+        POINT ptSrc = {0, 0};
+        BLENDFUNCTION blend = {AC_SRC_OVER, 0, (int)(255.0 * rw->opacity()), AC_SRC_ALPHA};
+        RECT dirty = {dirtyRect.x(), dirtyRect.y(),
+            dirtyRect.x() + dirtyRect.width(), dirtyRect.y() + dirtyRect.height()};
+        UPDATELAYEREDWINDOWINFO info = {sizeof(info), NULL, &ptDst, &size, m_image->hdc(), &ptSrc, 0, &blend, ULW_ALPHA, &dirty};
+        QWindowsContext::user32dll.updateLayeredWindowIndirect(rw->handle(), &info);
+    } else {
+        const HDC dc = rw->getDC();
+        if (!dc) {
+            qErrnoWarning("%s: GetDC failed", __FUNCTION__);
+            return;
+        }
+
+        if (!BitBlt(dc, br.x(), br.y(), br.width(), br.height(),
+                    m_image->hdc(), br.x() + offset.x(), br.y() + offset.y(), SRCCOPY))
+            qErrnoWarning("%s: BitBlt failed", __FUNCTION__);
+        rw->releaseDC();
     }
 
-    if (!BitBlt(dc, br.x(), br.y(), br.width(), br.height(),
-                m_image->hdc(), br.x() + offset.x(), br.y() + offset.y(), SRCCOPY))
-        qErrnoWarning("%s: BitBlt failed", __FUNCTION__);
-    rw->releaseDC();
     // Write image for debug purposes.
     if (QWindowsContext::verboseBackingStore > 2) {
         static int n = 0;

@@ -647,7 +647,8 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     m_mouseGrab(false),
     m_cursor(QWindowsScreen::screenOf(aWindow)->windowsCursor()->standardWindowCursor()),
     m_dropTarget(0),
-    m_savedStyle(0)
+    m_savedStyle(0),
+    m_format(aWindow->format())
 #ifdef QT_OPENGL_ES_2
    , m_eglSurface(0)
 #endif
