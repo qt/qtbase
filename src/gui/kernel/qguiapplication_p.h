@@ -93,7 +93,12 @@ public:
     { return platform_theme; }
 
     static QAbstractEventDispatcher *qt_qpa_core_dispatcher()
-    { return QCoreApplication::instance()->d_func()->threadData->eventDispatcher; }
+    {
+        if (QCoreApplication::instance())
+            return QCoreApplication::instance()->d_func()->threadData->eventDispatcher;
+        else
+            return 0;
+    }
 
     static void processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent *e);
     static void processKeyEvent(QWindowSystemInterfacePrivate::KeyEvent *e);
