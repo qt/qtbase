@@ -43,11 +43,12 @@
 #define QCOCOANATIVEINTERFACE_H
 
 #include <qpa/qplatformnativeinterface.h>
-#include <qpa/qplatformprintersupport.h>
 
 QT_BEGIN_NAMESPACE
 
 class QWidget;
+class QPlatformPrinterSupport;
+class QPrintEngine;
 
 class QCocoaNativeInterface : public QPlatformNativeInterface
 {

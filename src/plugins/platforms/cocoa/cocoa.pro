@@ -34,9 +34,6 @@ OBJECTIVE_SOURCES += main.mm \
     qmacmime.mm \
     qcocoasystemsettings.mm \
     qcocoainputcontext.mm \
-    qpaintengine_mac.mm \
-    qprintengine_mac.mm \
-    qcocoaprintersupport.mm \
     qcocoaservices.mm \
 
 HEADERS += qcocoaintegration.h \
@@ -69,16 +66,27 @@ HEADERS += qcocoaintegration.h \
     qmacmime.h \
     qcocoasystemsettings.h \
     qcocoainputcontext.h \
-    qpaintengine_mac_p.h \
-    qprintengine_mac_p.h \
-    qcocoaprintersupport.h \
     qcocoaservices.h \
 
 RESOURCES += qcocoaresources.qrc
 
 LIBS += -framework Cocoa -framework IOKit
 
-QT += core-private gui-private widgets-private platformsupport-private printsupport-private
+QT += core-private gui-private platformsupport-private
+
+!contains(QT_CONFIG, no-widgets) {
+    OBJECTIVE_SOURCES += \
+        qpaintengine_mac.mm \
+        qprintengine_mac.mm \
+        qcocoaprintersupport.mm \
+
+    HEADERS += \
+        qpaintengine_mac_p.h \
+        qprintengine_mac_p.h \
+        qcocoaprintersupport.h \
+
+    QT += widgets-private printsupport-private
+}
 
 OTHER_FILES += cocoa.json
 target.path += $$[QT_INSTALL_PLUGINS]/platforms

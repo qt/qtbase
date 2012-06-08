@@ -42,7 +42,6 @@
 #include "qcocoanativeinterface.h"
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
-#include "qcocoaprintersupport.h"
 #include "qcocoamenubar.h"
 
 #include <qbytearray.h>
@@ -54,7 +53,11 @@
 #include "qguiapplication.h"
 #include <qdebug.h>
 
+#ifndef QT_NO_WIDGETS
+#include "qcocoaprintersupport.h"
 #include "qprintengine_mac_p.h"
+#include <qpa/qplatformprintersupport.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -81,13 +84,23 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
 
 QPlatformPrinterSupport *QCocoaNativeInterface::createPlatformPrinterSupport()
 {
+#ifndef QT_NO_WIDGETS
     return new QCocoaPrinterSupport();
+#else
+    qFatal("Printing is not supported when Qt is configured with -no-widgets");
+    return 0;
+#endif
 }
 
 void *QCocoaNativeInterface::NSPrintInfoForPrintEngine(QPrintEngine *printEngine)
 {
+#ifndef QT_NO_WIDGETS
     QMacPrintEngine *macPrintEngine = static_cast<QMacPrintEngine *>(printEngine);
     return macPrintEngine->d_func()->printInfo;
+#else
+    qFatal("Printing is not supported when Qt is configured with -no-widgets");
+    return 0;
+#endif
 }
 
 void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
