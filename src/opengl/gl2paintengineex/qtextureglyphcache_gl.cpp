@@ -170,7 +170,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     // ### the QTextureGlyphCache API needs to be reworked to allow
     // ### resizeTextureData to fail
 
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_textureResource->m_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_textureResource->m_fbo);
 
     GLuint tmp_texture;
     glGenTextures(1, &tmp_texture);
@@ -183,7 +183,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_filterMode = Nearest;
     glBindTexture(GL_TEXTURE_2D, 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                            GL_TEXTURE_2D, tmp_texture, 0);
 
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
@@ -258,12 +258,12 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, oldWidth, oldHeight);
 
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                              GL_RENDERBUFFER_EXT, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_RENDERBUFFER, 0);
     glDeleteTextures(1, &tmp_texture);
     glDeleteTextures(1, &oldTexture);
 
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_ptr->current_fbo);
 
     if (pex != 0) {
         glViewport(0, 0, pex->width, pex->height);
@@ -321,7 +321,12 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
 
     glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
     if (mask.format() == QImage::Format_RGB32) {
+#if defined(QT_OPENGL_ES_2)
+        // ###TODO Ensure extension is actually present on ES2
+        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA_EXT, GL_UNSIGNED_BYTE, mask.bits());
+#else
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
+#endif
     } else {
         // glTexSubImage2D() might cause some garbage to appear in the texture if the mask width is
         // not a multiple of four bytes. The bug appeared on a computer with 32-bit Windows Vista

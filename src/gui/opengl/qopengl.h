@@ -48,13 +48,13 @@
 
 QT_BEGIN_HEADER
 
-#if 1
 #if defined(QT_OPENGL_ES_2)
 # if defined(Q_OS_MAC)
 #  include <OpenGLES/ES2/gl.h>
 # else
 #  include <GLES2/gl2.h>
 # endif
+# include "qopengles2ext.h"
 # ifndef GL_DOUBLE
 #  define GL_DOUBLE GL_FLOAT
 # endif
@@ -62,15 +62,40 @@ QT_BEGIN_HEADER
 typedef GLfloat GLdouble;
 # endif
 #else
+// Mac OSX is a "controlled platform" for OpenGL ABI so we use
+// the system provided headers there. Controlled means that the
+// headers always match the actual driver implementation so there
+// is no possibility of drivers exposing additional functionality
+// from the system headers. Also it means that the vendor can
+// (and does) make different choices about some OpenGL types. For
+// e.g. Apple uses void* for GLhandleARB whereas other platforms
+// use unsigned int.
+//
+// For the "uncontrolled" Windows and Linux platforms we use the
+// official Khronos glext.h header. On these platforms this gives
+// access to additional functionality the drivers may expose but
+// which the system headers do not.
 # if defined(Q_OS_MAC)
 #  include <OpenGL/gl.h>
+#  if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+#   define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
+#   include <OpenGL/gl3.h>
+#  endif
+#  include <OpenGL/glext.h>
 # else
 #  if defined(Q_OS_WIN)
-#    include <QtCore/qt_windows.h>
+#   include <QtCore/qt_windows.h>
 #  endif
 #  include <GL/gl.h>
-# endif
+#  include "qopenglext.h"
+# endif // Q_OS_MAC
 #endif
+
+// Desktops, apart from Mac OS X prior to 10.7 can support OpenGL 3
+#if !defined(QT_OPENGL_ES_2)
+# if !defined(Q_OS_MAC) || (defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
+#  define QT_OPENGL_3
+# endif
 #endif
 
 QT_BEGIN_NAMESPACE

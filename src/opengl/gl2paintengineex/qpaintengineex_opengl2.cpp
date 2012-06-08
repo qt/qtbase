@@ -86,6 +86,12 @@
 
 #include <QDebug>
 
+// ####TODO Properly #ifdef this class to use #define symbols actually defined
+// by OpenGL/ES includes
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
+
 QT_BEGIN_NAMESPACE
 
 
@@ -176,6 +182,12 @@ void QGL2PaintEngineExPrivate::useSimpleShader()
     if (matrixDirty)
         updateMatrix();
 }
+
+// ####TODO Properly #ifdef this class to use #define symbols actually defined
+// by OpenGL/ES includes
+#ifndef GL_MIRRORED_REPEAT_IBM
+#define GL_MIRRORED_REPEAT_IBM 0x8370
+#endif
 
 void QGL2PaintEngineExPrivate::updateBrushTexture()
 {
@@ -1826,7 +1838,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 #endif
 
     if (srgbFrameBufferEnabled)
-        glDisable(FRAMEBUFFER_SRGB_EXT);
+        glDisable(GL_FRAMEBUFFER_SRGB);
 
 }
 

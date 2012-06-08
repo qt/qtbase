@@ -72,6 +72,32 @@ QT_BEGIN_NAMESPACE
 #define QT_CHECK_GLERROR() {}
 #endif
 
+// ####TODO Properly #ifdef this class to use #define symbols actually defined
+// by OpenGL/ES includes
+#ifndef GL_MAX_SAMPLES
+#define GL_MAX_SAMPLES 0x8D57
+#endif
+
+#ifndef GL_RENDERBUFFER_SAMPLES
+#define GL_RENDERBUFFER_SAMPLES 0x8CAB
+#endif
+
+#ifndef GL_DEPTH24_STENCIL8
+#define GL_DEPTH24_STENCIL8 0x88F0
+#endif
+
+#ifndef GL_DEPTH_COMPONENT24
+#define GL_DEPTH_COMPONENT24 0x81A6
+#endif
+
+#ifndef GL_READ_FRAMEBUFFER
+#define GL_READ_FRAMEBUFFER 0x8CA8
+#endif
+
+#ifndef GL_DRAW_FRAMEBUFFER
+#define GL_DRAW_FRAMEBUFFER 0x8CA9
+#endif
+
 /*!
     \class QOpenGLFramebufferObjectFormat
     \brief The QOpenGLFramebufferObjectFormat class specifies the format of an OpenGL
@@ -338,21 +364,31 @@ bool QOpenGLFramebufferObjectPrivate::checkFramebufferStatus(QOpenGLContext *ctx
         qDebug("QOpenGLFramebufferObject: Framebuffer incomplete, duplicate attachment.");
         break;
 #endif
+#ifdef GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS
     case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
         qDebug("QOpenGLFramebufferObject: Framebuffer incomplete, attached images must have same dimensions.");
         break;
+#endif
+#ifdef GL_FRAMEBUFFER_INCOMPLETE_FORMATS
     case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
         qDebug("QOpenGLFramebufferObject: Framebuffer incomplete, attached images must have same format.");
         break;
+#endif
+#ifdef GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
     case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
         qDebug("QOpenGLFramebufferObject: Framebuffer incomplete, missing draw buffer.");
         break;
+#endif
+#ifdef GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER
     case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
         qDebug("QOpenGLFramebufferObject: Framebuffer incomplete, missing read buffer.");
         break;
+#endif
+#ifdef GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE
     case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
         qDebug("QOpenGLFramebufferObject: Framebuffer incomplete, attachments must have same number of samples per pixel.");
         break;
+#endif
     default:
         qDebug() <<"QOpenGLFramebufferObject: An undefined error has occurred: "<< status;
         break;

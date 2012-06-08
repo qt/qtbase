@@ -90,7 +90,7 @@ void QGLPaintDevice::beginPaint()
 
     if (m_previousFBO != m_thisFBO) {
         ctx->d_ptr->current_fbo = m_thisFBO;
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_thisFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_thisFBO);
     }
 
     // Set the default fbo for the context to m_thisFBO so that
@@ -108,7 +108,7 @@ void QGLPaintDevice::ensureActiveTarget()
 
     if (ctx->d_ptr->current_fbo != m_thisFBO) {
         ctx->d_ptr->current_fbo = m_thisFBO;
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_thisFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_thisFBO);
     }
 
     ctx->d_ptr->default_fbo = m_thisFBO;
@@ -120,7 +120,7 @@ void QGLPaintDevice::endPaint()
     QGLContext *ctx = context();
     if (m_previousFBO != ctx->d_func()->current_fbo) {
         ctx->d_ptr->current_fbo = m_previousFBO;
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_previousFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_previousFBO);
     }
 
     ctx->d_ptr->default_fbo = 0;

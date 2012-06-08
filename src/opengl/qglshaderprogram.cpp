@@ -232,8 +232,10 @@ bool QGLShaderPrivate::create()
         GLuint shader;
         if (shaderType == QGLShader::Vertex)
             shader = glCreateShader(GL_VERTEX_SHADER);
+#if !defined(QT_OPENGL_ES_2)
         else if (shaderType == QGLShader::Geometry)
             shader = glCreateShader(GL_GEOMETRY_SHADER_EXT);
+#endif
         else
             shader = glCreateShader(GL_FRAGMENT_SHADER);
         if (!shader) {
@@ -880,6 +882,7 @@ bool QGLShaderProgram::link()
             return true;
     }
 
+#if !defined(QT_OPENGL_ES_2)
     // Set up the geometry shader parameters
     if (glProgramParameteriEXT) {
         foreach (QGLShader *shader, d->shaders) {
@@ -894,6 +897,7 @@ bool QGLShaderProgram::link()
             }
         }
     }
+#endif
 
     glLinkProgram(program);
     value = 0;
@@ -3114,8 +3118,10 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x4 *
 */
 int QGLShaderProgram::maxGeometryOutputVertices() const
 {
-    GLint n;
+    GLint n = 0;
+#if !defined(QT_OPENGL_ES_2)
     glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &n);
+#endif
     return n;
 }
 

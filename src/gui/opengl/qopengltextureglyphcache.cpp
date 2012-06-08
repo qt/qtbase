@@ -325,7 +325,12 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
 
     glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
     if (mask.format() == QImage::Format_RGB32) {
+#if defined(QT_OPENGL_ES_2)
+        // ###TODO Ensure extension is actually present on ES2
+        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA_EXT, GL_UNSIGNED_BYTE, mask.bits());
+#else
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
+#endif
     } else {
         // glTexSubImage2D() might cause some garbage to appear in the texture if the mask width is
         // not a multiple of four bytes. The bug appeared on a computer with 32-bit Windows Vista

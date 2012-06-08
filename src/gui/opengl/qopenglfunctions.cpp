@@ -128,10 +128,6 @@ QT_BEGIN_NAMESPACE
     except those like \c{glDrawArrays()}, \c{glViewport()}, and
     \c{glBindTexture()} that don't have portability issues.
 
-    Including the header for QOpenGLFunctions will also define all of
-    the OpenGL/ES 2.0 macro constants that are not already defined by
-    the system's OpenGL headers, such as \c{GL_TEXTURE1} above.
-
     The hasOpenGLFeature() and openGLFeatures() functions can be used
     to determine if the OpenGL implementation has a major OpenGL/ES 2.0
     feature.  For example, the following checks if non power of two

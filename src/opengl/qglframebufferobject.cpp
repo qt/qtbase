@@ -76,6 +76,32 @@ extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 #define QT_CHECK_GLERROR() {}
 #endif
 
+// ####TODO Properly #ifdef this class to use #define symbols actually defined
+// by OpenGL/ES includes
+#ifndef GL_MAX_SAMPLES
+#define GL_MAX_SAMPLES 0x8D57
+#endif
+
+#ifndef GL_RENDERBUFFER_SAMPLES
+#define GL_RENDERBUFFER_SAMPLES 0x8CAB
+#endif
+
+#ifndef GL_DEPTH24_STENCIL8
+#define GL_DEPTH24_STENCIL8 0x88F0
+#endif
+
+#ifndef GL_DEPTH_COMPONENT24
+#define GL_DEPTH_COMPONENT24 0x81A6
+#endif
+
+#ifndef GL_READ_FRAMEBUFFER
+#define GL_READ_FRAMEBUFFER 0x8CA8
+#endif
+
+#ifndef GL_DRAW_FRAMEBUFFER
+#define GL_DRAW_FRAMEBUFFER 0x8CA9
+#endif
+
 /*!
     \class QGLFramebufferObjectFormat
     \brief The QGLFramebufferObjectFormat class specifies the format of an OpenGL
@@ -359,41 +385,51 @@ bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
     QGL_FUNCP_CONTEXT;
     if (!ctx)
         return false;   // Context no longer exists.
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT);
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     switch(status) {
     case GL_NO_ERROR:
-    case GL_FRAMEBUFFER_COMPLETE_EXT:
+    case GL_FRAMEBUFFER_COMPLETE:
         return true;
         break;
-    case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+    case GL_FRAMEBUFFER_UNSUPPORTED:
         qDebug("QGLFramebufferObject: Unsupported framebuffer format.");
         break;
-    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
         qDebug("QGLFramebufferObject: Framebuffer incomplete attachment.");
         break;
-    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
         qDebug("QGLFramebufferObject: Framebuffer incomplete, missing attachment.");
         break;
-#ifdef GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT_EXT
-    case GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT_EXT:
+#ifdef GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT
+    case GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT:
         qDebug("QGLFramebufferObject: Framebuffer incomplete, duplicate attachment.");
         break;
 #endif
-    case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+#ifdef GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS
+    case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
         qDebug("QGLFramebufferObject: Framebuffer incomplete, attached images must have same dimensions.");
         break;
-    case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+#endif
+#ifdef GL_FRAMEBUFFER_INCOMPLETE_FORMATS
+    case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
         qDebug("QGLFramebufferObject: Framebuffer incomplete, attached images must have same format.");
         break;
-    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+#endif
+#ifdef GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
+    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
         qDebug("QGLFramebufferObject: Framebuffer incomplete, missing draw buffer.");
         break;
-    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+#endif
+#ifdef GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER
+    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
         qDebug("QGLFramebufferObject: Framebuffer incomplete, missing read buffer.");
         break;
-    case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT:
+#endif
+#ifdef GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE
+    case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
         qDebug("QGLFramebufferObject: Framebuffer incomplete, attachments must have same number of samples per pixel.");
         break;
+#endif
     default:
         qDebug() <<"QGLFramebufferObject: An undefined error has occurred: "<< status;
         break;
@@ -440,7 +476,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     QT_RESET_GLERROR(); // reset error state
     GLuint fbo = 0;
     glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
     GLuint texture = 0;
     GLuint color_buffer = 0;
@@ -470,7 +506,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                 target, texture, 0);
 
         QT_CHECK_GLERROR();
@@ -481,29 +517,29 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     } else {
         mipmap = false;
         GLint maxSamples;
-        glGetIntegerv(GL_MAX_SAMPLES_EXT, &maxSamples);
+        glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
 
         samples = qBound(0, int(samples), int(maxSamples));
 
         glGenRenderbuffers(1, &color_buffer);
-        glBindRenderbuffer(GL_RENDERBUFFER_EXT, color_buffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, color_buffer);
         if (glRenderbufferStorageMultisampleEXT && samples > 0) {
-            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
+            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
                 internal_format, size.width(), size.height());
         } else {
             samples = 0;
-            glRenderbufferStorage(GL_RENDERBUFFER_EXT, internal_format,
+            glRenderbufferStorage(GL_RENDERBUFFER, internal_format,
                 size.width(), size.height());
         }
 
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                                     GL_RENDERBUFFER_EXT, color_buffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                     GL_RENDERBUFFER, color_buffer);
 
         QT_CHECK_GLERROR();
         valid = checkFramebufferStatus();
 
         if (valid)
-            glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_SAMPLES_EXT, &samples);
+            glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_SAMPLES, &samples);
     }
 
     // In practice, a combined depth-stencil buffer is supported by all desktop platforms, while a
@@ -515,20 +551,20 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         // depth and stencil buffer needs another extension
         glGenRenderbuffers(1, &depth_buffer);
         Q_ASSERT(!glIsRenderbuffer(depth_buffer));
-        glBindRenderbuffer(GL_RENDERBUFFER_EXT, depth_buffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
         Q_ASSERT(glIsRenderbuffer(depth_buffer));
         if (samples != 0 && glRenderbufferStorageMultisampleEXT)
-            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
-                GL_DEPTH24_STENCIL8_EXT, size.width(), size.height());
+            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
+                GL_DEPTH24_STENCIL8, size.width(), size.height());
         else
-            glRenderbufferStorage(GL_RENDERBUFFER_EXT,
-                GL_DEPTH24_STENCIL8_EXT, size.width(), size.height());
+            glRenderbufferStorage(GL_RENDERBUFFER,
+                GL_DEPTH24_STENCIL8, size.width(), size.height());
 
         stencil_buffer = depth_buffer;
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                     GL_RENDERBUFFER_EXT, depth_buffer);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                                     GL_RENDERBUFFER_EXT, stencil_buffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                     GL_RENDERBUFFER, depth_buffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                     GL_RENDERBUFFER, stencil_buffer);
 
         valid = checkFramebufferStatus();
         if (!valid) {
@@ -542,36 +578,36 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     {
         glGenRenderbuffers(1, &depth_buffer);
         Q_ASSERT(!glIsRenderbuffer(depth_buffer));
-        glBindRenderbuffer(GL_RENDERBUFFER_EXT, depth_buffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
         Q_ASSERT(glIsRenderbuffer(depth_buffer));
         if (samples != 0 && glRenderbufferStorageMultisampleEXT) {
 #ifdef QT_OPENGL_ES
             if (QGLExtensions::glExtensions() & QGLExtensions::Depth24) {
-                glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
+                glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
                     GL_DEPTH_COMPONENT24_OES, size.width(), size.height());
             } else {
-                glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
+                glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
                     GL_DEPTH_COMPONENT16, size.width(), size.height());
             }
 #else
-            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
+            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
                 GL_DEPTH_COMPONENT, size.width(), size.height());
 #endif
         } else {
 #ifdef QT_OPENGL_ES
             if (QGLExtensions::glExtensions() & QGLExtensions::Depth24) {
-                glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24_OES, 
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24_OES,
                                         size.width(), size.height());
             } else {
-                glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16, 
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16,
                                         size.width(), size.height());
             }
 #else
-            glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, size.width(), size.height());
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, size.width(), size.height());
 #endif
         }
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                     GL_RENDERBUFFER_EXT, depth_buffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                     GL_RENDERBUFFER, depth_buffer);
         valid = checkFramebufferStatus();
         if (!valid) {
             glDeleteRenderbuffers(1, &depth_buffer);
@@ -582,27 +618,27 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     if (stencil_buffer == 0 && (attachment == QGLFramebufferObject::CombinedDepthStencil)) {
         glGenRenderbuffers(1, &stencil_buffer);
         Q_ASSERT(!glIsRenderbuffer(stencil_buffer));
-        glBindRenderbuffer(GL_RENDERBUFFER_EXT, stencil_buffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, stencil_buffer);
         Q_ASSERT(glIsRenderbuffer(stencil_buffer));
         if (samples != 0 && glRenderbufferStorageMultisampleEXT) {
 #ifdef QT_OPENGL_ES
-            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
-                GL_STENCIL_INDEX8_EXT, size.width(), size.height());
+            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
+                GL_STENCIL_INDEX8, size.width(), size.height());
 #else
-            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
+            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
                 GL_STENCIL_INDEX, size.width(), size.height());
 #endif
         } else {
 #ifdef QT_OPENGL_ES
-            glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX8_EXT,
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8,
                                   size.width(), size.height());
 #else
-            glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX,
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX,
                                   size.width(), size.height());
 #endif
         }
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                                  GL_RENDERBUFFER_EXT, stencil_buffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                  GL_RENDERBUFFER, stencil_buffer);
         valid = checkFramebufferStatus();
         if (!valid) {
             glDeleteRenderbuffers(1, &stencil_buffer);
@@ -621,7 +657,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         fbo_attachment = QGLFramebufferObject::NoAttachment;
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_ptr->current_fbo);
     if (valid) {
         fbo_guard = createSharedResourceGuard(ctx, fbo, freeFramebufferFunc);
         if (color_buffer)
@@ -947,7 +983,7 @@ bool QGLFramebufferObject::bind()
         qWarning("QGLFramebufferObject::bind() called from incompatible context");
     }
 #endif
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, d->fbo());
+    glBindFramebuffer(GL_FRAMEBUFFER, d->fbo());
     d->valid = d->checkFramebufferStatus();
     if (d->valid && current)
         current->d_ptr->current_fbo = d->fbo();
@@ -983,7 +1019,7 @@ bool QGLFramebufferObject::release()
 
     if (current) {
         current->d_ptr->current_fbo = current->d_ptr->default_fbo;
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, current->d_ptr->default_fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, current->d_ptr->default_fbo);
     }
 
     return true;
@@ -1094,7 +1130,7 @@ bool QGLFramebufferObject::bindDefault()
             return false;
 
         ctx->d_ptr->current_fbo = ctx->d_ptr->default_fbo;
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->default_fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_ptr->default_fbo);
 #ifdef QT_DEBUG
     } else {
         qWarning("QGLFramebufferObject::bindDefault() called without current context.");
@@ -1316,14 +1352,14 @@ void QGLFramebufferObject::blitFramebuffer(QGLFramebufferObject *target, const Q
     const int ty0 = th - (targetRect.top() + targetRect.height());
     const int ty1 = th - targetRect.top();
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, source ? source->handle() : 0);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, target ? target->handle() : 0);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, source ? source->handle() : 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target ? target->handle() : 0);
 
     glBlitFramebufferEXT(sx0, sy0, sx1, sy1,
                          tx0, ty0, tx1, ty1,
                          buffers, filter);
 
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_ptr->current_fbo);
 }
 
 QT_END_NAMESPACE

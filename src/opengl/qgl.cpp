@@ -1760,11 +1760,22 @@ struct DDSFormat {
 #define FOURCC_DXT4  0x34545844
 #define FOURCC_DXT5  0x35545844
 
+// ####TODO Properly #ifdef this class to use #define symbols actually defined
+// by system GL includes
 #ifndef GL_COMPRESSED_RGB_S3TC_DXT1_EXT
 #define GL_COMPRESSED_RGB_S3TC_DXT1_EXT   0x83F0
+#endif
+
+#ifndef GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
 #define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT  0x83F1
-#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT  0x83F2
-#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT  0x83F3
+#endif
+
+#ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
+#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
+#endif
+
+#ifndef GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83F3
 #endif
 
 #ifndef GL_GENERATE_MIPMAP_SGIS
@@ -2145,6 +2156,12 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 }
 
 // #define QGL_BIND_TEXTURE_DEBUG
+
+// ####TODO Properly #ifdef this file to use #define symbols actually defined
+// by OpenGL/ES includes
+#ifndef GL_UNSIGNED_INT_8_8_8_8_REV
+#define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
+#endif
 
 // map from Qt's ARGB endianness-dependent format to GL's big-endian RGBA layout
 static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
@@ -4729,6 +4746,12 @@ void QGLExtensionMatcher::init(const char *str)
     }
 }
 
+// ####TODO Properly #ifdef this class to use #define symbols actually defined
+// by OpenGL/ES includes
+#ifndef GL_FRAMEBUFFER_SRGB_CAPABLE_EXT
+#define GL_FRAMEBUFFER_SRGB_CAPABLE_EXT 0x8DBA
+#endif
+
 /*
     Returns the GL extensions for the current context.
 */
@@ -4805,7 +4828,7 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
 
     {
         GLboolean srgbCapableFramebuffers;
-        glGetBooleanv(FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgbCapableFramebuffers);
+        glGetBooleanv(GL_FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgbCapableFramebuffers);
         if (srgbCapableFramebuffers)
             glExtensions |= SRGBFrameBuffer;
     }

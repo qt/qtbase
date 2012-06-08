@@ -89,6 +89,12 @@
 
 #include <QDebug>
 
+// ####TODO Properly #ifdef this class to use #define symbols actually defined
+// by OpenGL/ES includes
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
+
 QT_BEGIN_NAMESPACE
 
 

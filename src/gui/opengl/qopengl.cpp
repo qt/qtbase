@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qopengl.h"
 #include "qopengl_p.h"
 
 #include "qopenglcontext.h"
@@ -46,10 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined(QT_OPENGL_3)
 typedef const GLubyte * (QOPENGLF_APIENTRYP qt_glGetStringi)(GLenum, GLuint);
-
-#ifndef GL_NUM_EXTENSIONS
-#define GL_NUM_EXTENSIONS 0x821D
 #endif
 
 QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
@@ -60,6 +59,9 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
         QByteArray ba(extensionStr);
         QList<QByteArray> extensions = ba.split(' ');
         m_extensions = extensions.toSet();
+#if !defined(QT_OPENGL_3)
+    }
+#else
     } else {
         // clear error state
         while (glGetError()) {}
@@ -80,6 +82,7 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
             }
         }
     }
+#endif
 }
 
 QT_END_NAMESPACE

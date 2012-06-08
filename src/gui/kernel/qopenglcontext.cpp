@@ -588,10 +588,6 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
     else if (!QOpenGLContextPrivate::toggleMakeCurrentTracker(this, false))
         qWarning() << "QOpenGLContext::swapBuffers() called without corresponding makeCurrent()";
 
-#ifndef GL_FRAMEBUFFER_BINDING
-#define GL_FRAMEBUFFER_BINDING 0x8CA6
-#endif
-
     GLint framebufferBinding = 0;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &framebufferBinding);
 
