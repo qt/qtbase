@@ -767,9 +767,10 @@ QString QDate::toString(Qt::DateFormat f) const
         {
             if (year() < 0 || year() > 9999)
                 return QString();
+            QString year(QString::number(y).rightJustified(4, QLatin1Char('0')));
             QString month(QString::number(m).rightJustified(2, QLatin1Char('0')));
             QString day(QString::number(d).rightJustified(2, QLatin1Char('0')));
-            return QString::number(y) + QLatin1Char('-') + month + QLatin1Char('-') + day;
+            return year + QLatin1Char('-') + month + QLatin1Char('-') + day;
         }
     }
 }

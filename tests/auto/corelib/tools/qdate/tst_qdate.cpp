@@ -47,7 +47,6 @@ class tst_QDate : public QObject
 {
     Q_OBJECT
 private slots:
-    void toString();
     void isNull_data();
     void isNull();
     void isValid_data();
@@ -86,6 +85,8 @@ private slots:
     void fromStringFormat();
     void toStringFormat_data();
     void toStringFormat();
+    void toStringDateFormat_data();
+    void toStringDateFormat();
     void isLeapYear();
     void yearsZeroToNinetyNine();
     void negativeYear() const;
@@ -106,6 +107,7 @@ private:
 };
 
 Q_DECLARE_METATYPE(QDate)
+Q_DECLARE_METATYPE(Qt::DateFormat)
 
 void tst_QDate::isNull_data()
 {
@@ -960,6 +962,33 @@ void tst_QDate::toStringFormat()
     QCOMPARE( t.toString( format ), str );
 }
 
+void tst_QDate::toStringDateFormat_data()
+{
+    QTest::addColumn<QDate>("date");
+    QTest::addColumn<Qt::DateFormat>("format");
+    QTest::addColumn<QString>("expectedStr");
+
+    QTest::newRow("data0") << QDate(1,1,1) << Qt::ISODate << QString("0001-01-01");
+    QTest::newRow("data1") << QDate(11,1,1) << Qt::ISODate << QString("0011-01-01");
+    QTest::newRow("data2") << QDate(111,1,1) << Qt::ISODate << QString("0111-01-01");
+    QTest::newRow("data3") << QDate(1974,12,1) << Qt::ISODate << QString("1974-12-01");
+}
+
+void tst_QDate::toStringDateFormat()
+{
+    QFETCH(QDate, date);
+    QFETCH(Qt::DateFormat, format);
+    QFETCH(QString, expectedStr);
+
+    QCOMPARE(date.toString(Qt::SystemLocaleShortDate), QLocale::system().toString(date, QLocale::ShortFormat));
+    QCOMPARE(date.toString(Qt::LocaleDate), QLocale().toString(date, QLocale::ShortFormat));
+    QLocale::setDefault(QLocale::German);
+    QCOMPARE(date.toString(Qt::SystemLocaleShortDate), QLocale::system().toString(date, QLocale::ShortFormat));
+    QCOMPARE(date.toString(Qt::LocaleDate), QLocale().toString(date, QLocale::ShortFormat));
+
+    QCOMPARE(date.toString(format), expectedStr);
+}
+
 void tst_QDate::isLeapYear()
 {
     QVERIFY(QDate::isLeapYear(-4801));
@@ -1053,19 +1082,6 @@ void tst_QDate::yearsZeroToNinetyNine()
     }
 }
 
-void tst_QDate::toString()
-{
-    QDate date(1974,12,1);
-    QCOMPARE(date.toString(Qt::SystemLocaleDate),
-                QLocale::system().toString(date, QLocale::ShortFormat));
-    QCOMPARE(date.toString(Qt::LocaleDate),
-                QLocale().toString(date, QLocale::ShortFormat));
-    QLocale::setDefault(QLocale::German);
-    QCOMPARE(date.toString(Qt::SystemLocaleDate),
-                QLocale::system().toString(date, QLocale::ShortFormat));
-    QCOMPARE(date.toString(Qt::LocaleDate),
-                QLocale().toString(date, QLocale::ShortFormat));
-}
 
 void tst_QDate::negativeYear() const
 {
