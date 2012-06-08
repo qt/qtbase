@@ -87,19 +87,22 @@ ArthurFrame::ArthurFrame(QWidget *parent)
 #ifdef QT_OPENGL_SUPPORT
 void ArthurFrame::enableOpenGL(bool use_opengl)
 {
-    m_use_opengl = use_opengl;
+    if (m_use_opengl == use_opengl)
+        return;
 
-    if (!glw) {
+    if (!glw && use_opengl) {
         glw = new GLWidget(this);
         glw->setAutoFillBackground(false);
         glw->disableAutoBufferSwap();
         QApplication::postEvent(this, new QResizeEvent(size(), size()));
     }
 
+    m_use_opengl = use_opengl;
     if (use_opengl) {
         glw->show();
     } else {
-        glw->hide();
+        if (glw)
+            glw->hide();
     }
 
     update();
