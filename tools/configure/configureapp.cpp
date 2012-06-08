@@ -2603,9 +2603,12 @@ void Configure::detectArch()
         // find the executable that was generated
         QFile exe("arch.exe");
         if (!exe.open(QFile::ReadOnly)) { // no Text, this is binary
-            cout << "Could not find output file: " << qPrintable(exe.errorString()) << endl;
-            dictionary["DONE"] = "error";
-            return;
+            exe.setFileName("arch");
+            if (!exe.open(QFile::ReadOnly)) {
+                cout << "Could not find output file: " << qPrintable(exe.errorString()) << endl;
+                dictionary["DONE"] = "error";
+                return;
+            }
         }
         QByteArray exeContents = exe.readAll();
         exe.close();
