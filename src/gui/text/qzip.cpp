@@ -53,6 +53,10 @@
 
 #include <zlib.h>
 
+// Zip standard version for archives handled by this API
+// (actually, the only basic support of this version is implemented but it is enough for now)
+#define ZIP_VERSION 20
+
 #if defined(Q_OS_WIN)
 #  undef S_IFREG
 #  define S_IFREG 0100000
@@ -82,6 +86,13 @@
 #  define S_IROTH 0004
 #  define S_IWOTH 0002
 #  define S_IXOTH 0001
+#endif
+
+#ifndef FILE_ATTRIBUTE_READONLY
+#  define FILE_ATTRIBUTE_READONLY 0x1
+#endif
+#ifndef FILE_ATTRIBUTE_DIRECTORY
+#  define FILE_ATTRIBUTE_DIRECTORY 0x10
 #endif
 
 #if 0
@@ -295,6 +306,68 @@ static QDateTime readMSDosDate(const uchar *src)
     return QDateTime(QDate(tm_year, tm_mon, tm_mday), QTime(tm_hour, tm_min, tm_sec));
 }
 
+// for details, see http://www.pkware.com/documents/casestudies/APPNOTE.TXT
+
+enum HostOS {
+    HostFAT      = 0,
+    HostAMIGA    = 1,
+    HostVMS      = 2,  // VAX/VMS
+    HostUnix     = 3,
+    HostVM_CMS   = 4,
+    HostAtari    = 5,  // what if it's a minix filesystem? [cjh]
+    HostHPFS     = 6,  // filesystem used by OS/2 (and NT 3.x)
+    HostMac      = 7,
+    HostZ_System = 8,
+    HostCPM      = 9,
+    HostTOPS20   = 10, // pkzip 2.50 NTFS
+    HostNTFS     = 11, // filesystem used by Windows NT
+    HostQDOS     = 12, // SMS/QDOS
+    HostAcorn    = 13, // Archimedes Acorn RISC OS
+    HostVFAT     = 14, // filesystem used by Windows 95, NT
+    HostMVS      = 15,
+    HostBeOS     = 16, // hybrid POSIX/database filesystem
+    HostTandem   = 17,
+    HostOS400    = 18,
+    HostOSX      = 19
+};
+
+enum GeneralPurposeFlag {
+    Encrypted = 0x01,
+    AlgTune1 = 0x02,
+    AlgTune2 = 0x04,
+    HasDataDescriptor = 0x08,
+    PatchedData = 0x20,
+    StrongEncrypted = 0x40,
+    Utf8Names = 0x0800,
+    CentralDirectoryEncrypted = 0x2000
+};
+
+enum CompressionMethod {
+    CompressionMethodStored = 0,
+    CompressionMethodShrunk = 1,
+    CompressionMethodReduced1 = 2,
+    CompressionMethodReduced2 = 3,
+    CompressionMethodReduced3 = 4,
+    CompressionMethodReduced4 = 5,
+    CompressionMethodImploded = 6,
+    CompressionMethodReservedTokenizing = 7, // reserved for tokenizing
+    CompressionMethodDeflated = 8,
+    CompressionMethodDeflated64 = 9,
+    CompressionMethodPKImploding = 10,
+
+    CompressionMethodBZip2 = 12,
+
+    CompressionMethodLZMA = 14,
+
+    CompressionMethodTerse = 18,
+    CompressionMethodLz77 = 19,
+
+    CompressionMethodJpeg = 96,
+    CompressionMethodWavPack = 97,
+    CompressionMethodPPMd = 98,
+    CompressionMethodWzAES = 99
+};
+
 struct LocalFileHeader
 {
     uchar signature[4]; //  0x04034b50
@@ -416,17 +489,52 @@ public:
 void QZipPrivate::fillFileInfo(int index, QZipReader::FileInfo &fileInfo) const
 {
     FileHeader header = fileHeaders.at(index);
+    quint32 mode = readUInt(header.h.external_file_attributes);
+    const HostOS hostOS = HostOS(readUShort(header.h.version_made) >> 8);
+    switch (hostOS) {
+    case HostUnix:
+        mode = (mode >> 16) & 0xffff;
+        if (S_ISDIR(mode))
+            fileInfo.isDir = true;
+        else if (S_ISREG(mode))
+            fileInfo.isFile = true;
+        else if (S_ISLNK(mode))
+            fileInfo.isSymLink = true;
+        fileInfo.permissions = modeToPermissions(mode);
+        break;
+    case HostFAT:
+    case HostNTFS:
+    case HostHPFS:
+    case HostVFAT:
+        fileInfo.permissions |= QFile::ReadOwner | QFile::ReadUser | QFile::ReadGroup | QFile::ReadOther;
+        if ((mode & FILE_ATTRIBUTE_READONLY) == 0)
+            fileInfo.permissions |= QFile::WriteOwner | QFile::WriteUser | QFile::WriteGroup | QFile::WriteOther;
+        if ((mode & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY) {
+            fileInfo.isDir = true;
+            fileInfo.permissions |= QFile::ExeOwner | QFile::ExeUser | QFile::ExeGroup | QFile::ExeOther;
+        } else {
+            fileInfo.isFile = true;
+        }
+        break;
+    default:
+        qWarning("QZip: Zip entry format at %d is not supported.", index);
+        return; // we don't support anything else
+    }
+
+    ushort general_purpose_bits = readUShort(header.h.general_purpose_bits);
     // if bit 11 is set, the filename and comment fields must be encoded using UTF-8
-    const bool inUtf8 = (readUShort(header.h.general_purpose_bits) & 0x0800) != 0;
+    const bool inUtf8 = (general_purpose_bits & Utf8Names) != 0;
     fileInfo.filePath = inUtf8 ? QString::fromUtf8(header.file_name) : QString::fromLocal8Bit(header.file_name);
-    const quint32 mode = (qFromLittleEndian<quint32>(&header.h.external_file_attributes[0]) >> 16) & 0xFFFF;
-    fileInfo.isDir = S_ISDIR(mode);
-    fileInfo.isFile = S_ISREG(mode);
-    fileInfo.isSymLink = S_ISLNK(mode);
-    fileInfo.permissions = modeToPermissions(mode);
     fileInfo.crc = readUInt(header.h.crc_32);
     fileInfo.size = readUInt(header.h.uncompressed_size);
     fileInfo.lastModified = readMSDosDate(header.h.last_mod_file);
+
+    // fix the file path, if broken (convert separators, eat leading and trailing ones)
+    fileInfo.filePath = QDir::fromNativeSeparators(fileInfo.filePath);
+    while (!fileInfo.filePath.isEmpty() && (fileInfo.filePath.at(0) == QLatin1Char('.') || fileInfo.filePath.at(0) == QLatin1Char('/')))
+        fileInfo.filePath = fileInfo.filePath.mid(1);
+    while (!fileInfo.filePath.isEmpty() && fileInfo.filePath.at(fileInfo.filePath.size() - 1) == QLatin1Char('/'))
+        fileInfo.filePath.chop(1);
 }
 
 class QZipReaderPrivate : public QZipPrivate
@@ -596,12 +704,12 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
     memset(&header.h, 0, sizeof(CentralFileHeader));
     writeUInt(header.h.signature, 0x02014b50);
 
-    writeUShort(header.h.version_needed, 0x14);
+    writeUShort(header.h.version_needed, ZIP_VERSION);
     writeUInt(header.h.uncompressed_size, contents.length());
     writeMSDosDate(header.h.last_mod_file, QDateTime::currentDateTime());
     QByteArray data = contents;
     if (compression == QZipWriter::AlwaysCompress) {
-        writeUShort(header.h.compression_method, 8);
+        writeUShort(header.h.compression_method, CompressionMethodDeflated);
 
        ulong len = contents.length();
         // shamelessly copied form zlib
@@ -632,19 +740,23 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
     writeUInt(header.h.crc_32, crc_32);
 
     // if bit 11 is set, the filename and comment fields must be encoded using UTF-8
-    ushort general_purpose_bits = 0x0800; // always use utf-8
+    ushort general_purpose_bits = Utf8Names; // always use utf-8
     writeUShort(header.h.general_purpose_bits, general_purpose_bits);
 
-    const bool inUtf8 = (general_purpose_bits & 0x0800) != 0;
+    const bool inUtf8 = (general_purpose_bits & Utf8Names) != 0;
     header.file_name = inUtf8 ? fileName.toUtf8() : fileName.toLocal8Bit();
     if (header.file_name.size() > 0xffff) {
-        qWarning("QZip: Filename too long, chopping it to 65535 characters");
-        header.file_name = header.file_name.left(0xffff);
+        qWarning("QZip: Filename is too long, chopping it to 65535 bytes");
+        header.file_name = header.file_name.left(0xffff); // ### don't break the utf-8 sequence, if any
+    }
+    if (header.file_comment.size() + header.file_name.size() > 0xffff) {
+        qWarning("QZip: File comment is too long, chopping it to 65535 bytes");
+        header.file_comment.truncate(0xffff - header.file_name.size()); // ### don't break the utf-8 sequence, if any
     }
     writeUShort(header.h.file_name_length, header.file_name.length());
     //h.extra_field_length[2];
 
-    writeUShort(header.h.version_made, 3 << 8);
+    writeUShort(header.h.version_made, HostUnix << 8);
     //uchar internal_file_attributes[2];
     //uchar external_file_attributes[4];
     quint32 mode = permissionsToMode(permissions);
@@ -862,6 +974,13 @@ QByteArray QZipReader::fileData(const QString &fileName) const
 
     FileHeader header = d->fileHeaders.at(i);
 
+    ushort version_needed = readUShort(header.h.version_needed);
+    if (version_needed > ZIP_VERSION) {
+        qWarning("QZip: .ZIP specification version %d implementationis needed to extract the data.", version_needed);
+        return QByteArray();
+    }
+
+    ushort general_purpose_bits = readUShort(header.h.general_purpose_bits);
     int compressed_size = readUInt(header.h.compressed_size);
     int uncompressed_size = readUInt(header.h.uncompressed_size);
     int start = readUInt(header.h.offset_local_header);
@@ -876,13 +995,18 @@ QByteArray QZipReader::fileData(const QString &fileName) const
     int compression_method = readUShort(lh.compression_method);
     //qDebug("file=%s: compressed_size=%d, uncompressed_size=%d", fileName.toLocal8Bit().data(), compressed_size, uncompressed_size);
 
+    if ((general_purpose_bits & Encrypted) != 0) {
+        qWarning("QZip: Unsupported encryption method is needed to extract the data.");
+        return QByteArray();
+    }
+
     //qDebug("file at %lld", d->device->pos());
     QByteArray compressed = d->device->read(compressed_size);
-    if (compression_method == 0) {
+    if (compression_method == CompressionMethodStored) {
         // no compression
         compressed.truncate(uncompressed_size);
         return compressed;
-    } else if (compression_method == 8) {
+    } else if (compression_method == CompressionMethodDeflated) {
         // Deflate
         //qDebug("compressed=%d", compressed.size());
         compressed.truncate(compressed_size);
@@ -912,7 +1036,8 @@ QByteArray QZipReader::fileData(const QString &fileName) const
         } while (res == Z_BUF_ERROR);
         return baunzip;
     }
-    qWarning() << "QZip: Unknown compression method";
+
+    qWarning("QZip: Unsupported compression method %d is needed to extract the data.", compression_method);
     return QByteArray();
 }
 

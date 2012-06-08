@@ -98,7 +98,7 @@ void tst_QZip::basicUnpack()
 
     QCOMPARE(zip.fileData("test/test.txt"), QByteArray("content\n"));
 
-    fi = files.at(-1);
+    fi = zip.entryInfoAt(-1);
     QVERIFY(!fi.isValid());
 }
 
