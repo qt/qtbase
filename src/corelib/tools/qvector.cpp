@@ -39,14 +39,6 @@
 **
 ****************************************************************************/
 
-#include "qvector.h"
-#include "qtools_p.h"
-
-#include <string.h>
-#include <stdlib.h>
-
-QT_BEGIN_NAMESPACE
-
 /*!
     \class QVector
     \brief The QVector class is a template class that provides a dynamic array.
@@ -989,5 +981,3 @@ QT_BEGIN_NAMESPACE
 
     \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
-
-QT_END_NAMESPACE
