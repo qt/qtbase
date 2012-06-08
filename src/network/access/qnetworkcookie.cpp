@@ -466,7 +466,7 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
         }
         if (!d->path.isEmpty()) {
             result += "; path=";
-            result += QUrl::toPercentEncoding(d->path, "/");
+            result += d->path.toUtf8();
         }
     }
     return result;
@@ -954,8 +954,15 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                     }
                     //if unparsed, ignore the attribute but not the whole cookie (RFC6265 section 5.2.2)
                 } else if (field.first == "path") {
-                    QString path = QUrl::fromPercentEncoding(field.second);
-                    cookie.setPath(path);
+                    if (field.second.startsWith('/')) {
+                        // ### we should treat cookie paths as an octet sequence internally
+                        // However RFC6265 says we should assume UTF-8 for presentation as a string
+                        cookie.setPath(QString::fromUtf8(field.second));
+                    } else {
+                        // if the path doesn't start with '/' then set the default path (RFC6265 section 5.2.4)
+                        // and also IETF test case path0030 which has valid and empty path in the same cookie
+                        cookie.setPath(QString());
+                    }
                 } else if (field.first == "secure") {
                     cookie.setSecure(true);
                 } else if (field.first == "httponly") {

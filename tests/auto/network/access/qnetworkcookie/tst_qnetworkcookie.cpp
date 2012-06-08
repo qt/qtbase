@@ -235,20 +235,24 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     QTest::newRow("path9") << "a=b;path=/foo" << cookie;
 
     // some weird paths:
-    cookie.setPath("/with spaces");
+    cookie.setPath("/with%20spaces");
     QTest::newRow("path-with-spaces") << "a=b;path=/with%20spaces" << cookie;
     QTest::newRow("path-with-spaces2") << "a=b; path=/with%20spaces " << cookie;
-    cookie.setPath("\"/with spaces\"");
-    QTest::newRow("path-with-spaces3") << "a=b; path=\"/with spaces\"" << cookie;
-    QTest::newRow("path-with-spaces4") << "a=b; path = \"/with spaces\" " << cookie;
+    cookie.setPath(QString());
+    QTest::newRow("invalid-path-with-spaces3") << "a=b; path=\"/with spaces\"" << cookie;
+    QTest::newRow("invalid-path-with-spaces4") << "a=b; path = \"/with spaces\" " << cookie;
+    cookie.setPath("/with spaces");
+    QTest::newRow("path-with-spaces5") << "a=b; path=/with spaces" << cookie;
+    QTest::newRow("path-with-spaces6") << "a=b; path = /with spaces " << cookie;
 
     cookie.setPath("/with\"Quotes");
-    QTest::newRow("path-with-quotes") << "a=b; path = /with%22Quotes" << cookie;
-    cookie.setPath("\"/with\\\"Quotes\"");
-    QTest::newRow("path-with-quotes2") << "a=b; path = \"/with\\\"Quotes\"" << cookie;
+    QTest::newRow("path-with-quotes") << "a=b; path = /with\"Quotes" << cookie;
+    cookie.setPath(QString());
+    QTest::newRow("invalid-path-with-quotes2") << "a=b; path = \"/with\\\"Quotes\"" << cookie;
 
     cookie.setPath(QString::fromUtf8("/R\303\251sum\303\251"));
     QTest::newRow("path-with-utf8") << QString::fromUtf8("a=b;path=/R\303\251sum\303\251") << cookie;
+    cookie.setPath("/R%C3%A9sum%C3%A9");
     QTest::newRow("path-with-utf8-2") << "a=b;path=/R%C3%A9sum%C3%A9" << cookie;
 
     cookie.setPath(QString());
@@ -649,12 +653,21 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     QTest::newRow("invalid-06") << "=b" << list;
     QTest::newRow("invalid-07") << ";path=/" << list;
 
+    // these should be accepted by RFC6265 but ignoring the expires field
     // reason: malformed expiration date string
-    QTest::newRow("invalid-08") << "a=b;expires=" << list;
-    QTest::newRow("invalid-09") << "a=b;expires=foobar" << list;
-    QTest::newRow("invalid-10") << "a=b;expires=foobar, abc" << list;
-    QTest::newRow("invalid-11") << "a=b;expires=foobar, dd-mmm-yyyy hh:mm:ss GMT; path=/" << list;
-    QTest::newRow("invalid-12") << "a=b;expires=foobar, 32-Caz-1999 24:01:60 GMT; path=/" << list;
+    QNetworkCookie datelessCookie;
+    datelessCookie.setName("a");
+    datelessCookie.setValue("b");
+    list << datelessCookie;
+    QTest::newRow("expiration-empty") << "a=b;expires=" << list;
+    QTest::newRow("expiration-invalid-01") << "a=b;expires=foobar" << list;
+    QTest::newRow("expiration-invalid-02") << "a=b;expires=foobar, abc" << list;
+    QTest::newRow("expiration-invalid-03") << "a=b; expires=123" << list; // used to ASSERT
+    datelessCookie.setPath("/");
+    list.clear();
+    list << datelessCookie;
+    QTest::newRow("expiration-invalid-04") << "a=b;expires=foobar, dd-mmm-yyyy hh:mm:ss GMT; path=/" << list;
+    QTest::newRow("expiration-invalid-05") << "a=b;expires=foobar, 32-Caz-1999 24:01:60 GMT; path=/" << list;
 
     // cookies obtained from the network:
     QNetworkCookie cookie;
@@ -697,7 +710,6 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     cookie.setDomain("!@#$%^&*();:."); // the ';' is actually problematic, because it is a separator
     list = QList<QNetworkCookie>();
     QTest::newRow("domain-non-alpha-numeric") << "NonAlphNumDomName=NonAlphNumDomValue; domain=!@#$%^&*()" << list;
-    QTest::newRow("expiration-3digit1") << "a=b; expires=123" << list; // used to ASSERT
 }
 
 void tst_QNetworkCookie::parseMultipleCookies()

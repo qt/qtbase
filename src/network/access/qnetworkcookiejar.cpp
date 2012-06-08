@@ -140,11 +140,21 @@ void QNetworkCookieJar::setAllCookies(const QList<QNetworkCookie> &cookieList)
 
 static inline bool isParentPath(QString path, QString reference)
 {
-    if (!path.endsWith(QLatin1Char('/')))
-        path += QLatin1Char('/');
-    if (!reference.endsWith(QLatin1Char('/')))
-        reference += QLatin1Char('/');
-    return path.startsWith(reference);
+    if (path.startsWith(reference)) {
+        //The cookie-path and the request-path are identical.
+        if (path.length() == reference.length())
+            return true;
+        //The cookie-path is a prefix of the request-path, and the last
+        //character of the cookie-path is %x2F ("/").
+        if (reference.endsWith('/'))
+            return true;
+        //The cookie-path is a prefix of the request-path, and the first
+        //character of the request-path that is not included in the cookie-
+        //path is a %x2F ("/") character.
+        if (path.at(reference.length()) == '/')
+            return true;
+    }
+    return false;
 }
 
 static inline bool isParentDomain(QString domain, QString reference)
