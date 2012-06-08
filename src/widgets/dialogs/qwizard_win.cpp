@@ -545,7 +545,7 @@ void QVistaHelper::mousePressEvent(QMouseEvent *event)
 {
     change = noChange;
 
-    if (wizard->windowState() & Qt::WindowMaximized) {
+    if (event->button() != Qt::LeftButton || wizard->windowState() & Qt::WindowMaximized) {
         event->ignore();
         return;
     }
