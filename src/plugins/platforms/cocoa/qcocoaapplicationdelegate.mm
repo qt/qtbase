@@ -76,10 +76,12 @@
 
 #import "qcocoaapplicationdelegate.h"
 #import "qnswindowdelegate.h"
+#import "qcocoamenuloader.h"
 #include <qevent.h>
 #include <qurl.h>
 #include <qdebug.h>
 #include <qguiapplication.h>
+#include <private/qguiapplication_p.h>
 #include "qt_mac_p.h"
 #include <QtGui/QWindowSystemInterface>
 
@@ -169,28 +171,52 @@ static void cleanupCocoaApplicationDelegate()
     return [[qtMenuLoader retain] autorelease];
 }
 
-// This function will only be called when NSApp is actually running. Before
-// that, the kAEQuitApplication Apple event will be sent to
-// QApplicationPrivate::globalAppleEventProcessor in qapplication_mac.mm
+- (BOOL) canQuit
+{
+    [[NSApp mainMenu] cancelTracking];
+
+    bool handle_quit = true;
+    NSMenuItem *quitMenuItem = [[[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate] menuLoader] quitMenuItem];
+    if (!QGuiApplicationPrivate::instance()->modalWindowList.isEmpty()
+        && [quitMenuItem isEnabled]) {
+        int visible = 0;
+        const QWindowList tlws = QGuiApplication::topLevelWindows();
+        for (int i = 0; i < tlws.size(); ++i) {
+            if (tlws.at(i)->isVisible())
+                ++visible;
+        }
+        handle_quit = (visible <= 1);
+    }
+
+    if (handle_quit) {
+        QCloseEvent ev;
+        QGuiApplication::sendEvent(qGuiApp, &ev);
+        if (ev.isAccepted()) {
+            return YES;
+        }
+    }
+
+    return NO;
+}
+
+// This function will only be called when NSApp is actually running.
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    Q_UNUSED(sender);
-/*
     // The reflection delegate gets precedence
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationShouldTerminate:)]) {
         return [reflectionDelegate applicationShouldTerminate:sender];
     }
 
-    if (qtPrivate->canQuit()) {
+    if ([self canQuit]) {
         if (!startedQuit) {
             startedQuit = true;
-            qAppInstance()->quit();
+            QGuiApplication::exit(0);
             startedQuit = false;
         }
     }
 
-    if (qtPrivate->threadData->eventLoops.size() == 0) {
+    if (QGuiApplicationPrivate::instance()->threadData->eventLoops.isEmpty()) {
         // INVARIANT: No event loop is executing. This probably
         // means that Qt is used as a plugin, or as a part of a native
         // Cocoa application. In any case it should be fine to
@@ -199,8 +225,6 @@ static void cleanupCocoaApplicationDelegate()
     }
 
     return NSTerminateCancel;
-*/
-    return NSTerminateNow;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
