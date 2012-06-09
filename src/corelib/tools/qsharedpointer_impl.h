@@ -87,6 +87,8 @@ template<typename T> inline void qt_sharedpointer_cast_check(T *) { }
 template <class T> class QWeakPointer;
 template <class T> class QSharedPointer;
 
+class QVariant;
+
 template <class X, class T>
 QSharedPointer<X> qSharedPointerCast(const QSharedPointer<T> &ptr);
 template <class X, class T>
@@ -258,6 +260,9 @@ namespace QtSharedPointer {
         ~ExternalRefCountWithContiguousData() Q_DECL_EQ_DELETE;
         Q_DISABLE_COPY(ExternalRefCountWithContiguousData)
     };
+
+    Q_CORE_EXPORT QWeakPointer<QObject> weakPointerFromVariant_internal(const QVariant &variant);
+    Q_CORE_EXPORT QSharedPointer<QObject> sharedPointerFromVariant_internal(const QVariant &variant);
 } // namespace QtSharedPointer
 
 template <class T> class QSharedPointer
@@ -816,8 +821,21 @@ qobject_cast(const QWeakPointer<T> &src)
 {
     return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type, T>(src);
 }
-#endif
 
+template<typename T>
+QWeakPointer<typename QtPrivate::QEnableIf<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, T>::Type>
+qWeakPointerFromVariant(const QVariant &variant)
+{
+    return QWeakPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).data()));
+}
+template<typename T>
+QSharedPointer<typename QtPrivate::QEnableIf<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, T>::Type>
+qSharedPointerFromVariant(const QVariant &variant)
+{
+    return qSharedPointerObjectCast<T>(QtSharedPointer::sharedPointerFromVariant_internal(variant));
+}
+
+#endif
 
 template<typename T> Q_DECLARE_TYPEINFO_BODY(QWeakPointer<T>, Q_MOVABLE_TYPE);
 template<typename T> Q_DECLARE_TYPEINFO_BODY(QSharedPointer<T>, Q_MOVABLE_TYPE);

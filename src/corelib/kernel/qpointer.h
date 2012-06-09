@@ -50,6 +50,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+class QVariant;
 
 class QPointerBase
 {
@@ -183,6 +184,13 @@ template<class T>
 inline bool operator!= (int i, const QPointer<T> &p)
 { Q_ASSERT(i == 0); return !i && !p.isNull(); }
 #endif
+
+template<typename T>
+QPointer<T>
+qPointerFromVariant(const QVariant &variant)
+{
+    return QPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).data()));
+}
 
 QT_END_NAMESPACE
 

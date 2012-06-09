@@ -105,6 +105,8 @@ private slots:
     void invalidConstructs_data();
     void invalidConstructs();
 
+    void qvariantCast();
+
 public slots:
     void cleanup() { safetyCheck(); }
 
@@ -1850,6 +1852,75 @@ void tst_QSharedPointer::invalidConstructs()
     if (!result) {
         qWarning("External code testing failed\nCode:\n%s\n", body.constData());
         QFAIL("Fail");
+    }
+}
+
+void tst_QSharedPointer::qvariantCast()
+{
+    QSharedPointer<QFile> sp = QSharedPointer<QFile>::create();
+    sp->setObjectName("A test name");
+    QVariant v = QVariant::fromValue(sp);
+
+    {
+        QSharedPointer<QObject> other = qSharedPointerFromVariant<QObject>(v);
+        QCOMPARE(other->objectName(), QString::fromLatin1("A test name"));
+    }
+    {
+        QSharedPointer<QIODevice> other = qSharedPointerFromVariant<QIODevice>(v);
+        QCOMPARE(other->objectName(), QString::fromLatin1("A test name"));
+    }
+    {
+        QSharedPointer<QFile> other = qSharedPointerFromVariant<QFile>(v);
+        QCOMPARE(other->objectName(), QString::fromLatin1("A test name"));
+    }
+    {
+        QSharedPointer<QThread> other = qSharedPointerFromVariant<QThread>(v);
+        QVERIFY(!other);
+    }
+    // Intentionally does not compile.
+//     QSharedPointer<int> sop = qSharedPointerFromVariant<int>(v);
+
+    v = QVariant::fromValue(sp.toWeakRef());
+
+    {
+        QWeakPointer<QObject> other = qWeakPointerFromVariant<QObject>(v);
+        QCOMPARE(other.data()->objectName(), QString::fromLatin1("A test name"));
+    }
+    {
+        QWeakPointer<QIODevice> other = qWeakPointerFromVariant<QIODevice>(v);
+        QCOMPARE(other.data()->objectName(), QString::fromLatin1("A test name"));
+    }
+    {
+        QWeakPointer<QFile> other = qWeakPointerFromVariant<QFile>(v);
+        QCOMPARE(other.data()->objectName(), QString::fromLatin1("A test name"));
+    }
+    {
+        QWeakPointer<QThread> other = qWeakPointerFromVariant<QThread>(v);
+        QVERIFY(!other);
+    }
+
+    // Intentionally does not compile.
+//     QWeakPointer<int> sop = qWeakPointerFromVariant<int>(v);
+
+    QWeakPointer<QFile> tracking = new QFile;
+    tracking.data()->setObjectName("A test name");
+    v = QVariant::fromValue(tracking);
+
+    {
+        QWeakPointer<QObject> other = qWeakPointerFromVariant<QObject>(v);
+        QCOMPARE(other.data()->objectName(), QString::fromLatin1("A test name"));
+    }
+    {
+        QWeakPointer<QIODevice> other = qWeakPointerFromVariant<QIODevice>(v);
+        QCOMPARE(other.data()->objectName(), QString::fromLatin1("A test name"));
+    }
+    {
+        QWeakPointer<QFile> other = qWeakPointerFromVariant<QFile>(v);
+        QCOMPARE(other.data()->objectName(), QString::fromLatin1("A test name"));
+    }
+    {
+        QWeakPointer<QThread> other = qWeakPointerFromVariant<QThread>(v);
+        QVERIFY(!other);
     }
 }
 

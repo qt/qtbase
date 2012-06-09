@@ -63,6 +63,8 @@ private slots:
     void disconnect();
     void castDuringDestruction();
     void threadSafety();
+
+    void qvariantCast();
 };
 
 void tst_QPointer::constructors()
@@ -347,6 +349,41 @@ void tst_QPointer::threadSafety()
     owner.quit();
     owner.wait();
 }
+
+void tst_QPointer::qvariantCast()
+{
+    QPointer<QFile> tracking = new QFile;
+    tracking->setObjectName("A test name");
+    QVariant v = QVariant::fromValue(tracking);
+
+    {
+        QPointer<QObject> other = qPointerFromVariant<QObject>(v);
+        QCOMPARE(other->objectName(), QString::fromLatin1("A test name"));
+    }
+    {
+        QPointer<QIODevice> other = qPointerFromVariant<QIODevice>(v);
+        QCOMPARE(other->objectName(), QString::fromLatin1("A test name"));
+    }
+    {
+        QPointer<QFile> other = qPointerFromVariant<QFile>(v);
+        QCOMPARE(other->objectName(), QString::fromLatin1("A test name"));
+    }
+    {
+        QPointer<QThread> other = qPointerFromVariant<QThread>(v);
+        QVERIFY(!other);
+    }
+    {
+        QPointer<QFile> toBeDeleted = new QFile;
+        QVariant deletedVariant = QVariant::fromValue(toBeDeleted);
+        delete toBeDeleted;
+        QPointer<QObject> deleted = qPointerFromVariant<QObject>(deletedVariant);
+        QVERIFY(!deleted);
+    }
+
+    // Intentionally does not compile.
+//     QPointer<int> sop = qPointerFromVariant<int>(v);
+}
+
 
 
 QTEST_MAIN(tst_QPointer)
