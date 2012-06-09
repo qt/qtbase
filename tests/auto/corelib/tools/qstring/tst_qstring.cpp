@@ -1882,6 +1882,9 @@ void tst_QString::toCaseFolded()
     QCOMPARE( QString("`ABYZ{").toCaseFolded(), QString("`abyz{"));
     QCOMPARE( QString("`abyz{").toCaseFolded(), QString("`abyz{"));
 
+    QCOMPARE( QString(1, QChar(0xa77d)).toCaseFolded(), QString(1, QChar(0x1d79)));
+    QCOMPARE( QString(1, QChar(0xa78d)).toCaseFolded(), QString(1, QChar(0x0265)));
+
     QString lower, upper;
     upper += QChar(QChar::highSurrogate(0x10400));
     upper += QChar(QChar::lowSurrogate(0x10400));
