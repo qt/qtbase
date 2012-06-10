@@ -413,8 +413,7 @@ bool QFontMetrics::inFontUcs4(uint ucs4) const
     Q_ASSERT(engine != 0);
     if (engine->type() == QFontEngine::Box)
         return false;
-    QString utf16 = QString::fromUcs4(&ucs4, 1);
-    return engine->canRender(utf16.data(), utf16.length());
+    return engine->canRender(ucs4);
 }
 
 /*!
@@ -1274,8 +1273,7 @@ bool QFontMetricsF::inFontUcs4(uint ucs4) const
     Q_ASSERT(engine != 0);
     if (engine->type() == QFontEngine::Box)
         return false;
-    QString utf16 = QString::fromUcs4(&ucs4, 1);
-    return engine->canRender(utf16.data(), utf16.length());
+    return engine->canRender(ucs4);
 }
 
 /*!

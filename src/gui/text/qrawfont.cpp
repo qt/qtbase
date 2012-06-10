@@ -620,17 +620,15 @@ bool QRawFont::supportsCharacter(QChar character) const
 }
 
 /*!
+    \overload
+
    Returns true if the font has a glyph that corresponds to the UCS-4 encoded character \a ucs4.
 
    \sa supportedWritingSystems()
 */
-bool QRawFont::supportsCharacter(quint32 ucs4) const
+bool QRawFont::supportsCharacter(uint ucs4) const
 {
-    if (!d->isValid())
-        return false;
-
-    QString str = QString::fromUcs4(&ucs4, 1);
-    return d->fontEngine->canRender(str.constData(), str.size());
+    return d->isValid() && d->fontEngine->canRender(ucs4);
 }
 
 // qfontdatabase.cpp

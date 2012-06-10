@@ -225,6 +225,18 @@ public:
     virtual const char *name() const = 0;
 
     virtual bool canRender(const QChar *string, int len) = 0;
+    inline bool canRender(uint ucs4) {
+        QChar utf16[2];
+        int utf16len = 1;
+        if (QChar::requiresSurrogates(ucs4)) {
+            utf16[0] = QChar::highSurrogate(ucs4);
+            utf16[1] = QChar::lowSurrogate(ucs4);
+            ++utf16len;
+        } else {
+            utf16[0] = QChar(ucs4);
+        }
+        return canRender(utf16, utf16len);
+    }
 
     virtual Type type() const = 0;
 

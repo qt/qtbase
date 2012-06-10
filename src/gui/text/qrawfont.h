@@ -126,7 +126,7 @@ public:
                       qreal pixelSize,
                       QFont::HintingPreference hintingPreference);
 
-    bool supportsCharacter(quint32 ucs4) const;
+    bool supportsCharacter(uint ucs4) const;
     bool supportsCharacter(QChar character) const;
     QList<QFontDatabase::WritingSystem> supportedWritingSystems() const;
 
