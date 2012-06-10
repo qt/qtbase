@@ -172,16 +172,12 @@ void QEvdevMouseHandler::readMouseData()
                 posChanged = true;
             } else if (data->code == ABS_WHEEL) { // vertical scroll
                 // data->value: 1 == up, -1 == down
-                int delta = 120 * data->value;
-                QWindowSystemInterface::handleWheelEvent(0, QPoint(m_x, m_y),
-                                                         QPoint(m_x, m_y),
-                                                         delta, Qt::Vertical);
+                const int delta = 120 * data->value;
+                emit handleWheelEvent(delta, Qt::Vertical);
             } else if (data->code == ABS_THROTTLE) { // horizontal scroll
                 // data->value: 1 == right, -1 == left
-                int delta = 120 * -data->value;
-                QWindowSystemInterface::handleWheelEvent(0, QPoint(m_x, m_y),
-                                                         QPoint(m_x, m_y),
-                                                         delta, Qt::Horizontal);
+                const int delta = 120 * -data->value;
+                emit handleWheelEvent(delta, Qt::Horizontal);
             }
         } else if (data->type == EV_KEY && data->code == BTN_TOUCH) {
             // We care about touchpads only, not touchscreens -> don't map to button press.

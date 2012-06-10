@@ -60,6 +60,7 @@ public:
 
 signals:
     void handleMouseEvent(int x, int y, Qt::MouseButtons buttons);
+    void handleWheelEvent(int delta, Qt::Orientation orientation);
 
 private slots:
     void readMouseData();

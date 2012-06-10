@@ -132,6 +132,16 @@ void QEvdevMouseManager::handleMouseEvent(int x, int y, Qt::MouseButtons buttons
 #endif
 }
 
+void QEvdevMouseManager::handleWheelEvent(int delta, Qt::Orientation orientation)
+{
+    QPoint pos(m_x + m_xoffset, m_y + m_yoffset);
+    QWindowSystemInterface::handleWheelEvent(0, pos, pos, delta, orientation);
+
+#ifdef QT_QPA_MOUSEMANAGER_DEBUG
+    qDebug("mouse wheel event %dx%d %d %d", pos.x(), pos.y(), delta, int(orientation));
+#endif
+}
+
 void QEvdevMouseManager::addMouse(const QString &deviceNode)
 {
 #ifdef QT_QPA_MOUSEMANAGER_DEBUG
@@ -142,6 +152,7 @@ void QEvdevMouseManager::addMouse(const QString &deviceNode)
     handler = QEvdevMouseHandler::create(deviceNode, m_spec);
     if (handler) {
         connect(handler, SIGNAL(handleMouseEvent(int, int, Qt::MouseButtons)), this, SLOT(handleMouseEvent(int, int, Qt::MouseButtons)));
+        connect(handler, SIGNAL(handleWheelEvent(int, Qt::Orientation)), this, SLOT(handleWheelEvent(int, Qt::Orientation)));
         m_mice.insert(deviceNode, handler);
     } else {
         qWarning("Failed to open mouse");

@@ -63,6 +63,7 @@ public:
 
 public slots:
     void handleMouseEvent(int x, int y, Qt::MouseButtons buttons);
+    void handleWheelEvent(int delta, Qt::Orientation orientation);
 
 private slots:
     void addMouse(const QString &deviceNode = QString());
