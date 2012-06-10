@@ -72,7 +72,7 @@ public:
     QByteArray widthArray() const;
     QByteArray createToUnicodeMap() const;
     QVector<int> getReverseMap() const;
-    QByteArray glyphName(unsigned int glyph, const QVector<int> reverseMap) const;
+    QByteArray glyphName(unsigned int glyph, const QVector<int> &reverseMap) const;
 
     static QByteArray glyphName(unsigned short unicode, bool symbol);
 

@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static const char * const agl =
+static const char glyph_names[] =
 ".notdef\0space\0exclam\0quotedbl\0numbersign\0dollar\0percent\0ampersand\0"
 "quotesingle\0parenleft\0parenright\0asterisk\0plus\0comma\0hyphen\0period\0"
 "slash\0zero\0one\0two\0three\0four\0five\0six\0seven\0eight\0nine\0colon\0"
@@ -99,7 +99,17 @@ static const char * const agl =
 "sigma\0tau\0upsilon\0phi\0chi\0psi\0omega\0iotadieresis\0upsilondieresis\0"
 ;
 
-static const struct { quint16 u; quint16 index; } unicode_to_aglindex[] = {
+struct AGLEntry {
+    unsigned short uc;
+    unsigned short index;
+};
+
+inline bool operator<(unsigned short uc, AGLEntry entry)
+{ return uc < entry.uc; }
+inline bool operator<(AGLEntry entry, unsigned short uc)
+{ return entry.uc < uc; }
+
+static const AGLEntry unicode_to_agl_map[] = {
     {0x0000, 0}, {0x0020, 8}, {0x0021, 14}, {0x0022, 21},
     {0x0023, 30}, {0x0024, 41}, {0x0025, 48}, {0x0026, 56},
     {0x0027, 66}, {0x0028, 78}, {0x0029, 88}, {0x002A, 99},
@@ -206,8 +216,10 @@ static const struct { quint16 u; quint16 index; } unicode_to_aglindex[] = {
     {0x03C5, 3104}, {0x03C6, 3112}, {0x03C7, 3116}, {0x03C8, 3120},
     {0x03C9, 3124}, {0x03CA, 3130}, {0x03CB, 3143}, {0x03CC, 3159},
     {0x03CD, 3172}, {0x03CE, 3185}, {0x03D1, 3196}, {0x03D2, 3203},
-    {0x03D5, 3212}, {0x03D6, 3217}, {0xFFFF, 3224}
+    {0x03D5, 3212}, {0x03D6, 3217}
 };
+
+enum { unicode_to_agl_map_size = sizeof(unicode_to_agl_map) / sizeof(unicode_to_agl_map[0]) };
 
 // This map is used for symbol fonts to get the correct glyph names for the latin range
 static const unsigned short symbol_map[0x100] = {
@@ -245,7 +257,7 @@ static const unsigned short symbol_map[0x100] = {
     0x25ca, 0x2329, 0xf8e8, 0xf8e9, 0xf8ea, 0x2211, 0xf8eb, 0xf8ec,
     0xf8ed, 0xf8ee, 0xf8ef, 0xf8f0, 0xf8f1, 0xf8f2, 0xf8f3, 0xf8f4,
     0x0000, 0x232a, 0x222b, 0x2320, 0xf8f5, 0x2321, 0xf8f6, 0xf8f7,
-    0xf8f8, 0xf8f9, 0xf8fa, 0xf8fb, 0xf8fc, 0xf8fd, 0xf8fe, 0x0000,
+    0xf8f8, 0xf8f9, 0xf8fa, 0xf8fb, 0xf8fc, 0xf8fd, 0xf8fe, 0x0000
 };
 
 // ---------------------------- PS/PDF helper methods -----------------------------------
@@ -256,11 +268,9 @@ QByteArray QFontSubset::glyphName(unsigned short unicode, bool symbol)
         // map from latin1 to symbol
         unicode = symbol_map[unicode];
 
-    int l = 0;
-    while(unicode_to_aglindex[l].u < unicode)
-        l++;
-    if (unicode_to_aglindex[l].u == unicode)
-        return agl + unicode_to_aglindex[l].index;
+    const AGLEntry *r = qBinaryFind(unicode_to_agl_map, unicode_to_agl_map + unicode_to_agl_map_size, unicode);
+    if (r != unicode_to_agl_map + unicode_to_agl_map_size)
+        return glyph_names + r->index;
 
     char buffer[8];
     buffer[0] = 'u';
@@ -270,7 +280,7 @@ QByteArray QFontSubset::glyphName(unsigned short unicode, bool symbol)
     return buffer;
 }
 
-QByteArray QFontSubset::glyphName(unsigned int glyph, const QVector<int> reverseMap) const
+QByteArray QFontSubset::glyphName(unsigned int glyph, const QVector<int> &reverseMap) const
 {
     uint glyphIndex = glyph_indices[glyph];
 
@@ -357,10 +367,7 @@ static void checkRanges(QPdf::ByteStream &ts, QByteArray &ranges, int &nranges)
 
 QVector<int> QFontSubset::getReverseMap() const
 {
-    QVector<int> reverseMap;
-    reverseMap.resize(0x10000);
-    for (uint i = 0; i < 0x10000; ++i)
-        reverseMap[i] = 0;
+    QVector<int> reverseMap(0x10000, 0);
     QGlyphLayoutArray<10> glyphs;
     for (uint uc = 0; uc < 0x10000; ++uc) {
         QChar ch(uc);
