@@ -98,6 +98,7 @@ static bool highlighting = false;
 static bool showInternal = false;
 static bool obsoleteLinks = false;
 static QStringList defines;
+static QStringList dependModules;
 static QStringList indexDirs;
 static QHash<QString, Tree *> trees;
 
@@ -110,6 +111,8 @@ static void printHelp()
                              "Options:\n"
                              "    -D<name>       "
                              "Define <name> as a macro while parsing sources\n"
+                             "    -depends       "
+                             "Specify dependant modules\n"
                              "    -help          "
                              "Display this information and exit\n"
                              "    -highlighting  "
@@ -250,7 +253,7 @@ static void processQdocconfFile(const QString &fileName)
      */
     QStringList indexFiles = config.getStringList(CONFIG_INDEXES);
 
-    QStringList dependModules = config.getStringList(CONFIG_DEPENDS);
+    dependModules += config.getStringList(CONFIG_DEPENDS);
 
     if (dependModules.size() > 0) {
         if (indexDirs.size() > 0) {
@@ -515,6 +518,10 @@ int main(int argc, char **argv)
         else if (opt.startsWith("-D")) {
             QString define = opt.mid(2);
             defines += define;
+        }
+        else if (opt == "-depends") {
+            dependModules += argv[i];
+            i++;
         }
         else if (opt == "-highlighting") {
             highlighting = true;
