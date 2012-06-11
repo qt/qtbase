@@ -342,8 +342,14 @@ void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
     if (QApplicationPrivate::instance()->modalState() && !qt_try_modal(m_widget, event->type()))
         return;
 
-    QObject *receiver = focusObject();
-
+    QObject *receiver = 0;
+    if (QApplicationPrivate::inPopupMode()) {
+        QWidget *popup = QApplication::activePopupWidget();
+        QWidget *popupFocusWidget = popup->focusWidget();
+        receiver = popupFocusWidget ? popupFocusWidget : popup;
+    }
+    if (!receiver)
+        receiver = focusObject();
     QGuiApplication::sendSpontaneousEvent(receiver, event);
 }
 

@@ -3972,7 +3972,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     \snippet code/src_gui_kernel_qapplication.cpp 13
 */
 
-bool QApplicationPrivate::inPopupMode() const
+bool QApplicationPrivate::inPopupMode()
 {
     return QApplicationPrivate::popupWidgets != 0;
 }

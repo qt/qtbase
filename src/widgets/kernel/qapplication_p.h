@@ -170,7 +170,7 @@ public:
     static void x11_initialize_style();
 #endif
 
-    bool inPopupMode() const;
+    static bool inPopupMode();
     void closePopup(QWidget *popup);
     void openPopup(QWidget *popup);
     static void setFocusWidget(QWidget *focus, Qt::FocusReason reason);
