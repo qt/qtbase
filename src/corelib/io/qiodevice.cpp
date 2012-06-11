@@ -789,8 +789,10 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
             readSoFar += lastReadChunkSize;
             // fast exit when satisfied by buffer
             if (lastReadChunkSize == maxSize && !(d->openMode & Text)) {
-                if (d->buffer.isEmpty())
+                if (d->buffer.isEmpty()) {
+                    d->buffer.clear();
                     readData(data, 0);
+                }
                 return readSoFar;
             }
 

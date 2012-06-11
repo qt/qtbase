@@ -78,8 +78,11 @@ public:
         delete [] buf;
     }
     void clear() {
-        first = buf;
         len = 0;
+        delete [] buf;
+        buf = 0;
+        first = buf;
+        capacity = 0;
     }
     int size() const {
         return len;
@@ -129,10 +132,9 @@ public:
         }
     }
     QByteArray readAll() {
-        char* f = first;
-        int l = len;
+        QByteArray retVal(first, len);
         clear();
-        return QByteArray(f, l);
+        return retVal;
     }
     int readLine(char* target, int size) {
         int r = qMin(size, len);
