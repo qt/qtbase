@@ -156,6 +156,8 @@ public:
     const DitaRefList& ditamap() const;
 
     const Location &location() const;
+    const Location& startLocation() const;
+    const Location& endLocation() const;
     bool isEmpty() const;
     const QString& source() const;
     const Text& body() const;

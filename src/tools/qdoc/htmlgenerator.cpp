@@ -4070,9 +4070,7 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
                 out() << "<td class=\"tblQmlPropNode\"><p>";
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
 
-                if (!qpn->isReadOnlySet())
-                    qpn->setReadOnly(!qpn->isWritable(tree_));
-                if (qpn->isReadOnly())
+                if (!qpn->isWritable(tree_))
                     out() << "<span class=\"qmlreadonly\">read-only</span>";
                 if (qpn->isDefault())
                     out() << "<span class=\"qmldefault\">default</span>";

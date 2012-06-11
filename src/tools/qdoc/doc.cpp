@@ -1626,6 +1626,9 @@ void DocParser::parse(const QString& source,
     priv->text.stripFirstAtom();
 }
 
+/*!
+  Returns the current location.
+ */
 Location &DocParser::location()
 {
     while (!openedInputs.isEmpty() && openedInputs.top() <= pos) {
@@ -2866,6 +2869,23 @@ const Location &Doc::location() const
 {
     static const Location dummy;
     return priv == 0 ? dummy : priv->start_loc;
+}
+
+/*!
+  Returns the starting location of a qdoc comment.
+ */
+const Location& Doc::startLocation() const
+{
+    return location();
+}
+
+/*!
+  Returns the ending location of a qdoc comment.
+ */
+const Location& Doc::endLocation() const
+{
+    static const Location dummy;
+    return priv == 0 ? dummy : priv->end_loc;
 }
 
 const QString &Doc::source() const

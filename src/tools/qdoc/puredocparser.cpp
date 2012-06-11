@@ -78,8 +78,10 @@ void PureDocParser::parseSourceFile(const Location& location,
                                     Tree *tree)
 {
     QFile in(filePath);
+    currentFile_ = filePath;
     if (!in.open(QIODevice::ReadOnly)) {
         location.error(tr("Can't open source file '%1' (%2)").arg(filePath).arg(strerror(errno)));
+        currentFile_.clear();
         return;
     }
     createOutputSubdirectory(location, filePath);
@@ -98,6 +100,7 @@ void PureDocParser::parseSourceFile(const Location& location,
 
     processQdocComments();
     in.close();
+    currentFile_.clear();
 }
 
 /*!
@@ -158,7 +161,7 @@ bool PureDocParser::processQdocComments()
                 if ((topic == COMMAND_QMLPROPERTY) ||
                         (topic == COMMAND_QMLATTACHEDPROPERTY)) {
                     Doc nodeDoc = doc;
-                    Node* node = processTopicCommandGroup(topic,args);
+                    Node* node = processTopicCommandGroup(nodeDoc,topic,args);
                     if (node != 0) {
                         nodes.append(node);
                         docs.append(nodeDoc);

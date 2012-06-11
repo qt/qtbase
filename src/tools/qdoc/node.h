@@ -436,8 +436,8 @@ public:
     void setServiceName(const QString& value) { sname = value; }
     QmlClassNode* qmlElement() { return qmlelement; }
     void setQmlElement(QmlClassNode* qcn) { qmlelement = qcn; }
-    virtual bool isAbstract() const { return abstract; }
-    virtual void setAbstract(bool b) { abstract = b; }
+    virtual bool isAbstract() const { return abstract_; }
+    virtual void setAbstract(bool b) { abstract_ = b; }
     PropertyNode* findPropertyNode(const QString& name);
     QmlClassNode* findQmlBaseNode();
 
@@ -446,7 +446,7 @@ private:
     QList<RelatedClass> derived;
     QList<RelatedClass> ignoredBases;
     bool hidden;
-    bool abstract;
+    bool abstract_;
     QString sname;
     QmlClassNode* qmlelement;
 };
@@ -543,10 +543,12 @@ public:
     virtual void clearCurrentChild();
     virtual const ImportList* importList() const { return &importList_; }
     virtual void setImportList(const ImportList& il) { importList_ = il; }
-    virtual bool isAbstract() const { return abstract; }
-    virtual void setAbstract(bool b) { abstract = b; }
+    virtual bool isAbstract() const { return abstract_; }
+    virtual void setAbstract(bool b) { abstract_ = b; }
     const FakeNode* qmlBase() const { return base_; }
     void resolveInheritance(Tree* tree);
+    void requireCppClass() { cnodeRequired_ = true; }
+    bool cppClassRequired() const { return cnodeRequired_; }
     static void addInheritedBy(const QString& base, Node* sub);
     static void subclasses(const QString& base, NodeList& subs);
     static void terminate();
@@ -560,7 +562,8 @@ public:
     static QMap<QString, QmlClassNode*> qmlModuleMemberMap_;
 
 private:
-    bool abstract;
+    bool abstract_;
+    bool cnodeRequired_;
     ClassNode*    cnode_;
     FakeNode*     base_;
     ImportList          importList_;
@@ -641,7 +644,6 @@ public:
     const QString& element() const { return static_cast<QmlPropGroupNode*>(parent())->element(); }
     void appendQmlPropNode(QmlPropertyNode* p) { qmlPropNodes_.append(p); }
     const NodeList& qmlPropNodes() const { return qmlPropNodes_; }
-    void setQPropertyFlag() { qproperty_ = true; }
 
 private:
     QString type_;
@@ -649,7 +651,6 @@ private:
     FlagValue   designable_;
     bool    isdefault_;
     bool    attached_;
-    bool        qproperty_;
     FlagValue   readOnly_;
     NodeList qmlPropNodes_;
 };

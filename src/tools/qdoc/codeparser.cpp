@@ -418,4 +418,28 @@ void CodeParser::createOutputSubdirectory(const Location& location,
     }
 }
 
+/*!
+  Returns true if the file being parsed is a .h file.
+ */
+bool CodeParser::isParsingH() const
+{
+    return currentFile_.endsWith(".h");
+}
+
+/*!
+  Returns true if the file being parsed is a .cpp file.
+ */
+bool CodeParser::isParsingCpp() const
+{
+    return currentFile_.endsWith(".cpp");
+}
+
+/*!
+  Returns true if the file being parsed is a .qdoc file.
+ */
+bool CodeParser::isParsingQdoc() const
+{
+    return currentFile_.endsWith(".qdoc");
+}
+
 QT_END_NAMESPACE

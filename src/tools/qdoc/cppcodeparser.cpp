@@ -210,8 +210,10 @@ void CppCodeParser::parseHeaderFile(const Location& location,
                                     Tree *tree)
 {
     QFile in(filePath);
+    currentFile_ = filePath;
     if (!in.open(QIODevice::ReadOnly)) {
         location.error(tr("Cannot open C++ header file '%1'").arg(filePath));
+        currentFile_.clear();
         return;
     }
     createOutputSubdirectory(location, filePath);
@@ -228,6 +230,7 @@ void CppCodeParser::parseHeaderFile(const Location& location,
 
     if (fileLocation.fileName() == "qiterator.h")
         parseQiteratorDotH(location, filePath);
+    currentFile_.clear();
 }
 
 /*!
@@ -242,8 +245,10 @@ void CppCodeParser::parseSourceFile(const Location& location,
                                     Tree *tree)
 {
     QFile in(filePath);
+    currentFile_ = filePath;
     if (!in.open(QIODevice::ReadOnly)) {
         location.error(tr("Cannot open C++ source file '%1' (%2)").arg(filePath).arg(strerror(errno)));
+        currentFile_.clear();
         return;
     }
     createOutputSubdirectory(location, filePath);
@@ -262,6 +267,7 @@ void CppCodeParser::parseSourceFile(const Location& location,
 
     matchDocsAndStuff();
     in.close();
+    currentFile_.clear();
 }
 
 /*!
@@ -479,7 +485,7 @@ QSet<QString> CppCodeParser::topicCommands()
 }
 
 /*!
-  Process the topic \a command in context \a doc with argument \a arg.
+  Process the topic \a command found in the \a doc with argument \a arg.
  */
 Node* CppCodeParser::processTopicCommand(const Doc& doc,
                                          const QString& command,
@@ -492,7 +498,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
 
         if (!makeFunctionNode(arg.first, &parentPath, &clone) &&
                 !makeFunctionNode("void " + arg.first, &parentPath, &clone)) {
-            arg.second.warning(tr("Invalid syntax in '\\%1'").arg(COMMAND_FN));
+            doc.startLocation().warning(tr("Invalid syntax in '\\%1'").arg(COMMAND_FN));
         }
         else {
             if (!activeNamespaces_.isEmpty()) {
@@ -543,7 +549,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
 
         if (makeFunctionNode(arg.first, &parentPath, &func, tree_->root())) {
             if (!parentPath.isEmpty()) {
-                arg.second.warning(tr("Invalid syntax in '\\%1'").arg(COMMAND_MACRO));
+                doc.startLocation().warning(tr("Invalid syntax in '\\%1'").arg(COMMAND_MACRO));
                 delete func;
                 func = 0;
             }
@@ -563,7 +569,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         else if (QRegExp("[A-Za-z_][A-Za-z0-9_]+").exactMatch(arg.first)) {
             func = new FunctionNode(tree_->root(), arg.first);
             func->setAccess(Node::Public);
-            func->setLocation(arg.second);
+            func->setLocation(doc.startLocation());
             func->setMetaness(FunctionNode::MacroWithoutParams);
         }
         else {
@@ -635,39 +641,39 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
     else if (command == COMMAND_EXAMPLE) {
         if (Config::generateExamples) {
             ExampleNode* en = new ExampleNode(tree_->root(), arg.first);
-            en->setLocation(arg.second);
+            en->setLocation(doc.startLocation());
             createExampleFileNodes(en);
             return en;
         }
     }
     else if (command == COMMAND_EXTERNALPAGE) {
         FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::ExternalPage, Node::ArticlePage);
-        fn->setLocation(arg.second);
+        fn->setLocation(doc.startLocation());
         return fn;
     }
     else if (command == COMMAND_FILE) {
         FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::File, Node::NoPageType);
-        fn->setLocation(arg.second);
+        fn->setLocation(doc.startLocation());
         return fn;
     }
     else if (command == COMMAND_GROUP) {
         FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::Group, Node::OverviewPage);
-        fn->setLocation(arg.second);
+        fn->setLocation(doc.startLocation());
         return fn;
     }
     else if (command == COMMAND_HEADERFILE) {
         FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::HeaderFile, Node::ApiPage);
-        fn->setLocation(arg.second);
+        fn->setLocation(doc.startLocation());
         return fn;
     }
     else if (command == COMMAND_MODULE) {
         FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::Module, Node::OverviewPage);
-        fn->setLocation(arg.second);
+        fn->setLocation(doc.startLocation());
         return fn;
     }
     else if (command == COMMAND_QMLMODULE) {
         FakeNode* fn = FakeNode::lookupQmlModuleNode(tree_, arg);
-        fn->setLocation(arg.second);
+        fn->setLocation(doc.startLocation());
         return fn;
     }
     else if (command == COMMAND_PAGE) {
@@ -708,7 +714,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             fn = new DitaMapNode(tree_->root(), args[0]);
         else
             fn = new FakeNode(tree_->root(), args[0], Node::Page, ptype);
-        fn->setLocation(arg.second);
+        fn->setLocation(doc.startLocation());
         if (ncn) {
             ncn->addCollision(fn);
         }
@@ -716,7 +722,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
     }
     else if (command == COMMAND_DITAMAP) {
         FakeNode* fn = new DitaMapNode(tree_->root(), arg.first);
-        fn->setLocation(arg.second);
+        fn->setLocation(doc.startLocation());
         return fn;
     }
     else if (command == COMMAND_QMLCLASS) {
@@ -738,14 +744,27 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
          */
         NameCollisionNode* ncn = tree_->checkForCollision(names[0]);
         QmlClassNode* qcn = new QmlClassNode(tree_->root(), names[0], classNode);
-        qcn->setLocation(arg.second);
+        qcn->setLocation(doc.startLocation());
+        if (isParsingCpp() || isParsingQdoc()) {
+            qcn->requireCppClass();
+            if (names.size() < 2) {
+                QString msg = "C++ class name not specified for class documented as "
+                    "QML type: '\\qmlclass " + arg.first + " <class name>'";
+                doc.startLocation().warning(tr(msg.toLatin1().data()));
+            }
+            else if (!classNode) {
+                QString msg = "C++ class not found in any .h file for class documented "
+                    "as QML type: '\\qmlclass " + arg.first + "'";
+                doc.startLocation().warning(tr(msg.toLatin1().data()));
+            }
+        }
         if (ncn)
             ncn->addCollision(qcn);
         return qcn;
     }
     else if (command == COMMAND_QMLBASICTYPE) {
         QmlBasicTypeNode* n = new QmlBasicTypeNode(tree_->root(), arg.first);
-        n->setLocation(arg.second);
+        n->setLocation(doc.startLocation());
         return n;
     }
     else if ((command == COMMAND_QMLSIGNAL) ||
@@ -780,7 +799,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                                                     attached,
                                                     command);
                 if (fn)
-                    fn->setLocation(arg.second);
+                    fn->setLocation(doc.startLocation());
                 return fn;
             }
         }
@@ -891,12 +910,14 @@ bool CppCodeParser::splitQmlMethodArg(const QString& arg,
 }
 
 /*!
-  Process the topic \a command group with arguments \a args.
+  Process the topic \a command group found in the \a doc with arguments \a args.
 
   Currently, this function is called only for \e{qmlproperty}
   and \e{qmlattachedproperty}.
  */
-Node *CppCodeParser::processTopicCommandGroup(const QString& command, const ArgList& args)
+Node* CppCodeParser::processTopicCommandGroup(const Doc& doc,
+                                              const QString& command,
+                                              const ArgList& args)
 {
     QmlPropGroupNode* qmlPropGroup = 0;
     if ((command == COMMAND_QMLPROPERTY) ||
@@ -914,46 +935,30 @@ Node *CppCodeParser::processTopicCommandGroup(const QString& command, const ArgL
             qmlClass = tree_->findQmlClassNode(module,element);
             if (qmlClass) {
                 qmlPropGroup = new QmlPropGroupNode(qmlClass,property); //,attached);
-                qmlPropGroup->setLocation(location());
+                qmlPropGroup->setLocation(doc.startLocation());
             }
         }
         if (qmlPropGroup) {
-            const PropertyNode *correspondingProperty = 0;
             if (qmlClass->hasProperty(property)) {
-                location().warning(tr("QML property documented multiple times: '%1'").arg(arg));
+                doc.startLocation().warning(tr("QML property documented multiple times: '%1'").arg(arg));
             }
             else {
-                ClassNode *correspondingClass = static_cast<QmlClassNode*>(qmlPropGroup->parent())->classNode();
                 QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlPropGroup,property,type,attached);
-                qmlPropNode->setLocation(location());
-                qmlPropNode->setQPropertyFlag();
-
-                if (correspondingClass) {
-                    correspondingProperty = qmlPropNode->correspondingProperty(tree_);
-                }
-                if (correspondingProperty) {
-                    bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
-                    qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));
-                }
+                qmlPropNode->setLocation(doc.startLocation());
             }
             ++argsIter;
             while (argsIter != args.constEnd()) {
                 arg = argsIter->first;
                 if (splitQmlPropertyArg(arg,type,module,element,property)) {
                     if (qmlClass->hasProperty(property)) {
-                        location().warning(tr("QML property documented multiple times: '%1'").arg(arg));
+                        doc.startLocation().warning(tr("QML property documented multiple times: '%1'").arg(arg));
                     }
                     else {
                         QmlPropertyNode* qmlPropNode = new QmlPropertyNode(qmlPropGroup,
                                                                            property,
                                                                            type,
                                                                            attached);
-                        qmlPropNode->setLocation(location());
-                        qmlPropNode->setQPropertyFlag();
-                        if (correspondingProperty) {
-                            bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
-                            qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));
-                        }
+                        qmlPropNode->setLocation(doc.startLocation());
                     }
                 }
                 ++argsIter;
@@ -2256,7 +2261,7 @@ bool CppCodeParser::matchDocsAndStuff()
                 if ((topic == COMMAND_QMLPROPERTY) ||
                         (topic == COMMAND_QMLATTACHEDPROPERTY)) {
                     Doc nodeDoc = doc;
-                    Node *node = processTopicCommandGroup(topic,args);
+                    Node *node = processTopicCommandGroup(nodeDoc, topic,args);
                     if (node != 0) {
                         nodes.append(node);
                         docs.append(nodeDoc);

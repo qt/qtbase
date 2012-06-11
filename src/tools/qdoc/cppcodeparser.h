@@ -86,10 +86,12 @@ public:
 
 protected:
     virtual QSet<QString> topicCommands();
-    virtual Node *processTopicCommand(const Doc& doc,
+    virtual Node* processTopicCommand(const Doc& doc,
                                       const QString& command,
                                       const ArgLocPair& arg);
-    virtual Node *processTopicCommandGroup(const QString& command, const ArgList& args);
+    virtual Node *processTopicCommandGroup(const Doc& doc,
+                                           const QString& command,
+                                           const ArgList& args);
     bool splitQmlPropertyArg(const QString& arg,
                              QString& type,
                              QString& module,

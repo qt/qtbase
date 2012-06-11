@@ -142,8 +142,10 @@ void QmlCodeParser::parseSourceFile(const Location& location,
                                     Tree *tree)
 {
     QFile in(filePath);
+    currentFile_ = filePath;
     if (!in.open(QIODevice::ReadOnly)) {
         location.error(tr("Cannot open QML file '%1'").arg(filePath));
+        currentFile_.clear();
         return;
     }
     createOutputSubdirectory(location, filePath);
@@ -176,6 +178,7 @@ void QmlCodeParser::parseSourceFile(const Location& location,
                            << ": QML syntax error at col " << msg.loc.startColumn
                            << ": " << qPrintable(msg.message);
     }
+    currentFile_.clear();
 }
 
 /*!

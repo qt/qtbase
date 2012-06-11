@@ -75,6 +75,11 @@ public:
     virtual void doneParsingHeaderFiles(Tree *tree);
     virtual void doneParsingSourceFiles(Tree *tree) = 0;
 
+    bool isParsingH() const;
+    bool isParsingCpp() const;
+    bool isParsingQdoc() const;
+    const QString& currentFile() const { return currentFile_; }
+
     void createOutputSubdirectory(const Location& location, const QString& filePath);
 
     static void initialize(const Config& config);
@@ -95,6 +100,7 @@ protected:
     static void extractPageLinkAndDesc(const QString& arg,
                                        QString* link,
                                        QString* desc);
+    QString currentFile_;
 
 private:
     static QString currentSubDir_;

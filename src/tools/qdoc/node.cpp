@@ -1331,7 +1331,7 @@ ClassNode::ClassNode(InnerNode *parent, const QString& name)
     : InnerNode(Class, parent, name)
 {
     hidden = false;
-    abstract = false;
+    abstract_ = false;
     qmlelement = 0;
     setPageType(ApiPage);
 }
@@ -2043,7 +2043,8 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
                            const QString& name,
                            ClassNode* cn)
     : FakeNode(parent, name, QmlClass, Node::ApiPage),
-      abstract(false),
+      abstract_(false),
+      cnodeRequired_(false),
       cnode_(cn),
       base_(0)
 {
@@ -2160,10 +2161,10 @@ bool Node::setQmlModule(const ArgLocPair& arg)
             return true;
         }
         else
-            arg.second.warning(tr("Minor version number missing for '\\qmlmodule' or '\\inqmlmodule'; 0 assumed."));
+            arg.second.warning(tr("Minor version number must be included in second arg of '\\qmlmodule' and '\\inqmlmodule'; '.0' assumed."));
     }
     else
-        arg.second.warning(tr("Module version number missing for '\\qmlmodule' or '\\inqmlmodule'; 1.0 assumed."));
+        arg.second.warning(tr("Module version number 'major.minor' must be second arg of '\\qmlmodule' and '\\inqmlmodule'; '1.0' assumed."));
     return false;
 }
 
@@ -2305,7 +2306,6 @@ QmlPropertyNode::QmlPropertyNode(QmlPropGroupNode *parent,
       designable_(FlagValueDefault),
       isdefault_(false),
       attached_(attached),
-      qproperty_(false),
       readOnly_(FlagValueDefault)
 {
     setPageType(ApiPage);
@@ -2325,7 +2325,6 @@ QmlPropertyNode::QmlPropertyNode(QmlClassNode *parent,
       designable_(FlagValueDefault),
       isdefault_(false),
       attached_(attached),
-      qproperty_(false),
       readOnly_(FlagValueDefault)
 {
     setPageType(ApiPage);
@@ -2352,32 +2351,63 @@ QmlPropertyNode::QmlPropertyNode(QmlPropertyNode* parent,
       designable_(FlagValueDefault),
       isdefault_(false),
       attached_(attached),
-      qproperty_(false),
       readOnly_(FlagValueDefault)
 {
     setPageType(ApiPage);
 }
 
+#if 0
+    const PropertyNode *correspondingProperty = 0;
+    ClassNode *correspondingClass = static_cast<QmlClassNode*>(qmlPropGroup->parent())->classNode();
+    if (correspondingClass) {
+        correspondingProperty = qmlPropNode->correspondingProperty(tree_);
+    }
+    if (correspondingProperty) {
+        bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
+        qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));
+    }
+
+    if (correspondingProperty) {
+        bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
+        qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));
+    }
+#endif
 /*!
   Returns true if a QML property or attached property is
-  read-only. The algorithm for figuring this out is long
+  not read-only. The algorithm for figuring this out is long
   amd tedious and almost certainly will break. It currently
-  doesn't work for qmlproperty bool PropertyChanges::explicit,
-  because the tokenizer gets confused on "explicit".
+  doesn't work for the qmlproperty:
+
+  \code
+      bool PropertyChanges::explicit,
+  \endcode
+
+  ...because the tokenizer gets confused on \e{explicit}.
  */
 bool QmlPropertyNode::isWritable(Tree* tree)
 {
     if (readOnly_ != FlagValueDefault)
         return !fromFlagValue(readOnly_, false);
 
-    if (qproperty_) {
-        PropertyNode* pn = correspondingProperty(tree);
-        if (pn)
-            return pn->isWritable();
-
-        location().warning(tr("Can't detect if QML property %1::%2::%3 is read-only; "
-                              "writable assumed.")
-                           .arg(qmlModuleIdentifier()).arg(qmlTypeName()).arg(name()));
+    QmlClassNode* qcn = qmlClassNode();
+    if (qcn) {
+        if (qcn->cppClassRequired()) {
+            if (qcn->classNode()) {
+                PropertyNode* pn = correspondingProperty(tree);
+                if (pn)
+                    return pn->isWritable();
+                else
+                    location().warning(tr("No Q_PROPERTY for QML property %1::%2::%3 "
+                                          "in C++ class documented as QML type: "
+                                          "(property not found in the C++ class or its base classes)")
+                                       .arg(qmlModuleIdentifier()).arg(qmlTypeName()).arg(name()));
+            }
+            else
+                location().warning(tr("No Q_PROPERTY for QML property %1::%2::%3 "
+                                      "in C++ class documented as QML type: "
+                                      "(C++ class not specified or not found).")
+                                   .arg(qmlModuleIdentifier()).arg(qmlTypeName()).arg(name()));
+        }
     }
     return true;
 }
