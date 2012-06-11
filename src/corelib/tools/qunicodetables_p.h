@@ -64,25 +64,26 @@ QT_BEGIN_NAMESPACE
 namespace QUnicodeTables {
 
     struct Properties {
-        ushort category         : 8; /* 5 needed */
-        ushort line_break_class : 8; /* 6 needed */
-        ushort direction        : 8; /* 5 needed */
+        ushort category         : 8; /* 5 used */
+        ushort direction        : 8; /* 5 used */
         ushort combiningClass   : 8;
         ushort joining          : 2;
-        signed short digitValue : 6; /* 5 needed */
-        ushort unicodeVersion   : 4;
-        ushort lowerCaseSpecial : 1;
-        ushort upperCaseSpecial : 1;
-        ushort titleCaseSpecial : 1;
-        ushort caseFoldSpecial  : 1;
+        signed short digitValue : 6; /* 5 used */
         signed short mirrorDiff    : 16;
         signed short lowerCaseDiff : 16;
         signed short upperCaseDiff : 16;
         signed short titleCaseDiff : 16;
         signed short caseFoldDiff  : 16;
-        ushort graphemeBreak    : 8; /* 4 needed */
-        ushort wordBreak        : 8; /* 4 needed */
-        ushort sentenceBreak    : 8; /* 4 needed */
+        ushort lowerCaseSpecial : 1;
+        ushort upperCaseSpecial : 1;
+        ushort titleCaseSpecial : 1;
+        ushort caseFoldSpecial  : 1;
+        ushort unicodeVersion   : 4;
+        ushort graphemeBreak    : 8; /* 4 used */
+        ushort wordBreak        : 8; /* 4 used */
+        ushort sentenceBreak    : 8; /* 4 used */
+        ushort line_break_class : 8; /* 6 used */
+        ushort script           : 8; /* 5 used */
     };
     Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4);
     Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2);
@@ -259,23 +260,23 @@ namespace QUnicodeTables {
 
 
     Q_CORE_EXPORT GraphemeBreak QT_FASTCALL graphemeBreakClass(uint ucs4);
-    inline int graphemeBreakClass(QChar ch)
+    inline GraphemeBreak graphemeBreakClass(QChar ch)
     { return graphemeBreakClass(ch.unicode()); }
 
     Q_CORE_EXPORT WordBreak QT_FASTCALL wordBreakClass(uint ucs4);
-    inline int wordBreakClass(QChar ch)
+    inline WordBreak wordBreakClass(QChar ch)
     { return wordBreakClass(ch.unicode()); }
 
     Q_CORE_EXPORT SentenceBreak QT_FASTCALL sentenceBreakClass(uint ucs4);
-    inline int sentenceBreakClass(QChar ch)
+    inline SentenceBreak sentenceBreakClass(QChar ch)
     { return sentenceBreakClass(ch.unicode()); }
 
     Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);
-    inline int lineBreakClass(QChar ch)
+    inline LineBreakClass lineBreakClass(QChar ch)
     { return lineBreakClass(ch.unicode()); }
 
-    Q_CORE_EXPORT int QT_FASTCALL script(uint ucs4);
-    inline int script(QChar ch)
+    Q_CORE_EXPORT Script QT_FASTCALL script(uint ucs4);
+    inline Script script(QChar ch)
     { return script(ch.unicode()); }
 
 } // namespace QUnicodeTables
