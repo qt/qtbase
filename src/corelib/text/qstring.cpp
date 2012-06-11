@@ -100,7 +100,7 @@
 #define ULLONG_MAX quint64_C(18446744073709551615)
 #endif
 
-#define IS_RAW_DATA(d) (!(d)->isMutable())
+#define IS_RAW_DATA(d) ((d)->flags & QArrayData::RawDataType)
 
 QT_BEGIN_NAMESPACE
 
@@ -2265,14 +2265,14 @@ void QString::resize(int size)
     if (size < 0)
         size = 0;
 
-    if (IS_RAW_DATA(d) && !d->ref.isShared() && size < d->size) {
+    if (!d->ref.isShared() && !d->isMutable() && size < d->size) {
         d->size = size;
         return;
     }
 
-    if (d->ref.isShared() || uint(size) + 1u > d->allocatedCapacity())
+    if (d->needsDetach() || size > capacity())
         reallocData(uint(size) + 1u, true);
-    if (d->flags & Data::AllocatedDataType) {
+    if (d->isMutable()) {
         d->size = size;
         d->data()[size] = '\0';
     }
@@ -2353,7 +2353,7 @@ void QString::reallocData(uint alloc, bool grow)
     if (grow)
         allocOptions |= QArrayData::GrowsForward;
 
-    if (d->ref.isShared() || IS_RAW_DATA(d)) {
+    if (d->needsDetach()) {
         Data *x = Data::allocate(alloc, allocOptions);
         Q_CHECK_PTR(x);
         x->size = qMin(int(alloc) - 1, d->size);
@@ -2658,7 +2658,7 @@ QString &QString::append(const QString &str)
         if (d == Data::sharedNull()) {
             operator=(str);
         } else {
-            if (d->ref.isShared() || d->size + str.d->size > capacity())
+            if (d->needsDetach() || d->size + str.d->size > capacity())
                 reallocData(uint(d->size + str.d->size) + 1u, true);
             memcpy(d->data() + d->size, str.d->data(), str.d->size * sizeof(QChar));
             d->size += str.d->size;
@@ -2696,7 +2696,7 @@ QString &QString::append(QLatin1String str)
     const char *s = str.latin1();
     if (s) {
         int len = str.size();
-        if (d->ref.isShared() || d->size + len > capacity())
+        if (d->needsDetach() || d->size + len > capacity())
             reallocData(uint(d->size + len) + 1u, true);
         ushort *i = d->data() + d->size;
         qt_from_latin1(i, s, uint(len));
@@ -2743,7 +2743,7 @@ QString &QString::append(QLatin1String str)
 */
 QString &QString::append(QChar ch)
 {
-    if (d->ref.isShared() || d->size + 1 > capacity())
+    if (d->needsDetach() || d->size + 1 > capacity())
         reallocData(uint(d->size) + 2u, true);
     d->data()[d->size++] = ch.unicode();
     d->data()[d->size] = '\0';
@@ -6457,7 +6457,7 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
 
 const ushort *QString::utf16() const
 {
-    if (IS_RAW_DATA(d)) {
+    if (!d->isMutable()) {
         // ensure '\0'-termination for ::fromRawData strings
         const_cast<QString*>(this)->reallocData(uint(d->size) + 1u);
     }

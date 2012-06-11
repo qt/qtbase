@@ -56,6 +56,7 @@ struct Q_CORE_EXPORT QArrayData
         CapacityReserved     = 0x0010,  //!< the capacity was reserved by the user, try to keep it
         GrowsForward         = 0x0020,  //!< allocate with eyes towards growing through append()
         GrowsBackwards       = 0x0040,  //!< allocate with eyes towards growing through prepend()
+        Mutable              = 0x0080,  //!< the data can be changed; doesn't say anything about the header
 
         /// this option is used by the Q_ARRAY_LITERAL and similar macros
         StaticDataFlags = RawDataType,
@@ -102,7 +103,16 @@ struct Q_CORE_EXPORT QArrayData
     // follow COW principles.
     bool isMutable() const
     {
-        return flags & AllocatedDataType;
+        return flags & Mutable;
+    }
+
+    // Returns true if a detach is necessary before modifying the data
+    // This method is intentionally not const: if you want to know whether
+    // detaching is necessary, you should be in a non-const function already
+    bool needsDetach()
+    {
+        // ### optimize me -- this currently requires 3 conditionals!
+        return !isMutable() || ref.isShared();
     }
 
     size_t detachCapacity(size_t newSize) const

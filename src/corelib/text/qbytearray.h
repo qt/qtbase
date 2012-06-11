@@ -495,7 +495,7 @@ inline const char *QByteArray::data() const
 inline const char *QByteArray::constData() const
 { return d->data(); }
 inline void QByteArray::detach()
-{ if (d->ref.isShared() || !d->isMutable()) reallocData(uint(d->size) + 1u, d->detachFlags()); }
+{ if (d->needsDetach()) reallocData(uint(d->size) + 1u, d->detachFlags()); }
 inline bool QByteArray::isDetached() const
 { return !d->ref.isShared(); }
 inline QByteArray::QByteArray(const QByteArray &a) noexcept : d(a.d)
@@ -506,7 +506,7 @@ inline int QByteArray::capacity() const
 
 inline void QByteArray::reserve(int asize)
 {
-    if (d->ref.isShared() || asize > capacity()) {
+    if (d->needsDetach() || asize > capacity()) {
         reallocData(qMax(uint(size()), uint(asize)) + 1u, d->detachFlags() | Data::CapacityReserved);
     } else {
         d->flags |= Data::CapacityReserved;
@@ -515,7 +515,9 @@ inline void QByteArray::reserve(int asize)
 
 inline void QByteArray::squeeze()
 {
-    if (d->ref.isShared() || d->size < capacity()) {
+    if ((d->flags & Data::CapacityReserved) == 0)
+        return;
+    if (d->needsDetach() || d->size < capacity()) {
         reallocData(uint(d->size) + 1u, d->detachFlags() & ~Data::CapacityReserved);
     } else {
         d->flags &= ~Data::CapacityReserved;

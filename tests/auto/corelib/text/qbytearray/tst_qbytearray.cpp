@@ -2163,7 +2163,7 @@ void tst_QByteArray::movablity()
     const int newSize = size + 2;
     const bool newIsEmpty = false;
     const bool newIsNull = false;
-    const int newCapacity = 16;
+    const int newCapacity = memSpace.capacity();
 
     // move back memSpace -> array
     array.~QByteArray();

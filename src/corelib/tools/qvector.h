@@ -390,10 +390,11 @@ inline QVector<T>::QVector(const QVector<T> &v)
 template <typename T>
 void QVector<T>::detach()
 {
+    // ### check whether this is still required
     if (d->ref.isStatic())
         return;
 
-    if (!isDetached())
+    if (d->needsDetach())
         realloc(d->allocatedCapacity(), d->detachFlags());
     Q_ASSERT(isDetached());
 }

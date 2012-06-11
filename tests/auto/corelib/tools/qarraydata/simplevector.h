@@ -159,7 +159,7 @@ public:
         if (size() == newSize)
             return;
 
-        if (d.needsDetach() || newSize > capacity()) {
+        if (d->needsDetach() || newSize > capacity()) {
             SimpleVector detached(Data::allocate(
                         d->detachCapacity(newSize), d->detachFlags()));
             if (newSize) {
@@ -195,7 +195,7 @@ public:
             return;
 
         T *const begin = d->begin();
-        if (d.needsDetach()
+        if (d->needsDetach()
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
                         d->detachCapacity(size() + (last - first)),
@@ -216,7 +216,7 @@ public:
         if (first == last)
             return;
 
-        if (d.needsDetach()
+        if (d->needsDetach()
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
                         d->detachCapacity(size() + (last - first)),
@@ -256,7 +256,7 @@ public:
         const iterator begin = d->begin();
         const iterator where = begin + position;
         const iterator end = begin + d->size;
-        if (d.needsDetach()
+        if (d->needsDetach()
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
                         d->detachCapacity(size() + (last - first)),
@@ -294,7 +294,7 @@ public:
         const T *const begin = d->begin();
         const T *const end = begin + d->size;
 
-        if (d.needsDetach()) {
+        if (d->needsDetach()) {
             SimpleVector detached(Data::allocate(
                         d->detachCapacity(size() - (last - first)),
                         d->detachFlags()));

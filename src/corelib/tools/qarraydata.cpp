@@ -222,7 +222,7 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         return nullptr;
 
     size_t allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
-    options |= ArrayOption(AllocatedDataType);
+    options |= AllocatedDataType | Mutable;
     QArrayData *header = allocateData(allocSize, options);
     if (header) {
         quintptr data = (quintptr(header) + sizeof(QArrayData) + alignment - 1)
@@ -252,6 +252,7 @@ QArrayData *QArrayData::reallocateUnaligned(QArrayData *data, size_t objectSize,
     options |= ArrayOption(AllocatedDataType);
     size_t headerSize = sizeof(QArrayData);
     size_t allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
+    options |= AllocatedDataType | Mutable;
     QArrayData *header = reallocateData(data, allocSize, options);
     if (header)
         header->alloc = capacity;

@@ -126,11 +126,6 @@ public:
         return d;
     }
 
-    bool needsDetach() const
-    {
-        return (!d->isMutable() || d->ref.isShared());
-    }
-
     void swap(QArrayDataPointer &other) noexcept
     {
         qSwap(d, other.d);
@@ -144,7 +139,7 @@ public:
 
     bool detach()
     {
-        if (needsDetach()) {
+        if (d->needsDetach()) {
             Data *copy = clone(d->detachFlags());
             QArrayDataPointer old(d);
             d = copy;
