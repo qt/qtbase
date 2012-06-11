@@ -56,8 +56,13 @@ QT_BEGIN_HEADER
 #  include <vxWorksCommon.h>
 #  include <taskLib.h>
 #else
+#if defined(_WRS_KERNEL)
 extern "C" int taskLock();
 extern "C" int taskUnlock();
+#else
+inline int taskLock() { return 0; }
+inline int taskUnlock() { return 0; }
+#endif
 #endif
 
 
