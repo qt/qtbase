@@ -161,22 +161,6 @@ struct QByteArrayDataPtr
     }()) \
     /**/
 
-#elif defined(Q_CC_GNU)
-// We need to create a QByteArrayData in the .rodata section of memory
-// and the only way to do that is to create a "static const" variable.
-// To do that, we need the __extension__ {( )} trick which only GCC supports
-
-#  define QByteArrayLiteral(str) \
-    QByteArray(__extension__ ({ \
-        enum { Size = sizeof(str) - 1 }; \
-        static const QStaticByteArrayData<Size> qbytearray_literal = { \
-            Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(Size), \
-            str }; \
-        QByteArrayDataPtr holder = { qbytearray_literal.data_ptr() }; \
-        holder; \
-    })) \
-    /**/
-
 #endif
 
 #ifndef QByteArrayLiteral
