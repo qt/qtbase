@@ -5663,6 +5663,8 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positio
     By default, QPainter draws text anti-aliased.
 
     \note The y-position is used as the baseline of the font.
+
+    \sa setFont(), setPen()
 */
 
 void QPainter::drawText(const QPointF &p, const QString &str)
@@ -5918,6 +5920,7 @@ void QPainter::drawText(const QRect &r, int flags, const QString &str, QRect *br
 
     \note The y-position is used as the baseline of the font.
 
+    \sa setFont(), setPen()
 */
 
 /*!
@@ -5990,6 +5993,8 @@ void QPainter::drawText(const QRectF &r, int flags, const QString &str, QRectF *
     By default, QPainter draws text anti-aliased.
 
     \note The y-coordinate of \a rectangle is used as the top of the font.
+
+    \sa setFont(), setPen()
 */
 
 /*!
@@ -6004,6 +6009,7 @@ void QPainter::drawText(const QRectF &r, int flags, const QString &str, QRectF *
 
     \note The y-position is used as the baseline of the font.
 
+    \sa setFont(), setPen()
 */
 
 /*!
@@ -6038,7 +6044,7 @@ void QPainter::drawText(const QRectF &r, int flags, const QString &str, QRectF *
 
     \note The y-position is used as the top of the font.
 
-    \sa Qt::AlignmentFlag, Qt::TextFlag
+    \sa Qt::AlignmentFlag, Qt::TextFlag, setFont(), setPen()
 */
 
 /*!
@@ -6052,6 +6058,8 @@ void QPainter::drawText(const QRectF &r, int flags, const QString &str, QRectF *
     By default, QPainter draws text anti-aliased.
 
     \note The y-coordinate of \a rectangle is used as the top of the font.
+
+    \sa setFont(), setPen()
 */
 void QPainter::drawText(const QRectF &r, const QString &text, const QTextOption &o)
 {
