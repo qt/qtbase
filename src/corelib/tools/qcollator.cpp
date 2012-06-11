@@ -565,7 +565,7 @@ QStringList QCollator::indexCharacters() const
         if (U_FAILURE(status)) {
             d->indexCharacters = englishIndexCharacters();
         } else {
-            QString chars = QString::fromUtf16(val, len);
+            QString chars(reinterpret_cast<const QChar *>(val), len);
             chars.remove('[');
             chars.remove(']');
             chars.remove('{');
