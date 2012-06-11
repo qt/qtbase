@@ -3292,6 +3292,9 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     QEvent::TouchCancel. Reimplement QWidget::event() or QAbstractScrollArea::viewportEvent() for
     widgets and QGraphicsItem::sceneEvent() for items in a graphics view to receive touch events.
 
+    Unlike widgets, QWindows receive touch events always, there is no need to opt in. When working
+    directly with a QWindow, it is enough to reimplement QWindow::touchEvent().
+
     The QEvent::TouchUpdate and QEvent::TouchEnd events are sent to the widget or item that
     accepted the QEvent::TouchBegin event. If the QEvent::TouchBegin event is not accepted and not
     filtered by an event filter, then no further touch events are sent until the next
@@ -3307,6 +3310,12 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     this list may be empty, for example in case of a QEvent::TouchCancel event. Information about
     each touch point can be retrieved using the QTouchEvent::TouchPoint class. The
     Qt::TouchPointState enum describes the different states that a touch point may have.
+
+    \note The list of touchPoints() will never be partial: A touch event will always contain a touch
+    point for each existing physical touch contacts targetting the window or widget to which the
+    event is sent. For instance, assuming that all touches target the same window or widget, an
+    event with a condition of touchPoints().count()==2 is guaranteed to imply that the number of
+    fingers touching the touchscreen or touchpad is exactly two.
 
     \section1 Event Delivery and Propagation
 
