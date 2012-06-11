@@ -154,8 +154,12 @@ static void generateDataFromFile(const QString &fname)
             bool ok = true;
             uint ucs4 = part.toInt(&ok, 16);
             QVERIFY(ok && ucs4 > 0);
-            QVERIFY(!QChar::requiresSurrogates(ucs4));
-            testString.append(QChar(ucs4));
+            if (QChar::requiresSurrogates(ucs4)) {
+                testString.append(QChar::highSurrogate(ucs4));
+                testString.append(QChar::lowSurrogate(ucs4));
+            } else {
+                testString.append(QChar(ucs4));
+            }
         }
         QVERIFY(!testString.isEmpty());
         QVERIFY(!expectedBreakPositions.isEmpty());
