@@ -3065,6 +3065,40 @@ static qint64 streamCurrentPosition(FILE *f)
     return 0;
 }
 
+class MessageHandler {
+public:
+    MessageHandler(QtMessageHandler messageHandler = handler)
+    {
+        ok = true;
+        oldMessageHandler = qInstallMessageHandler(messageHandler);
+    }
+
+    ~MessageHandler()
+    {
+        qInstallMessageHandler(oldMessageHandler);
+    }
+
+    static bool testPassed()
+    {
+        return ok;
+    }
+protected:
+    static void handler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+    {
+        if (msg == QString::fromLatin1("QIODevice::seek: Cannot call seek on a sequential device"))
+            ok = false;
+        // Defer to old message handler.
+        if (oldMessageHandler)
+            oldMessageHandler(type, context, msg);
+    }
+
+    static QtMessageHandler oldMessageHandler;
+    static bool ok;
+};
+
+bool MessageHandler::ok = true;
+QtMessageHandler MessageHandler::oldMessageHandler = 0;
+
 void tst_QFile::openStandardStreamsFileDescriptors()
 {
 #ifdef Q_OS_WINCE
@@ -3073,6 +3107,9 @@ void tst_QFile::openStandardStreamsFileDescriptors()
     //it does not have functions to simply open them like below .
     QSKIP("Opening standard streams on Windows CE via descriptor not implemented");
 #endif
+
+    // Check that QIODevice::seek() isn't called when opening a sequential device (QFile).
+    MessageHandler msgHandler;
 
     {
         QFile in;
@@ -3094,6 +3131,8 @@ void tst_QFile::openStandardStreamsFileDescriptors()
         QCOMPARE( err.pos(), streamCurrentPosition(STDERR_FILENO) );
         QCOMPARE( err.size(), streamExpectedSize(STDERR_FILENO) );
     }
+
+    QVERIFY(msgHandler.testPassed());
 }
 
 void tst_QFile::openStandardStreamsBufferedStreams()
@@ -3101,6 +3140,9 @@ void tst_QFile::openStandardStreamsBufferedStreams()
 #ifdef Q_OS_WINCE
     QSKIP("Not tested on Windows CE.");
 #endif
+    // Check that QIODevice::seek() isn't called when opening a sequential device (QFile).
+    MessageHandler msgHandler;
+
     // Using streams
     {
         QFile in;
@@ -3122,6 +3164,8 @@ void tst_QFile::openStandardStreamsBufferedStreams()
         QCOMPARE( err.pos(), streamCurrentPosition(stderr) );
         QCOMPARE( err.size(), streamExpectedSize(QT_FILENO(stderr)) );
     }
+
+    QVERIFY(msgHandler.testPassed());
 }
 
 void tst_QFile::writeNothing()

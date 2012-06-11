@@ -902,12 +902,12 @@ bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
     }
     if (d->openExternalFile(mode, fh, handleFlags)) {
         QIODevice::open(mode);
-        if (mode & Append) {
-            seek(size());
-        } else {
+        if (!(mode & Append) && !isSequential()) {
             qint64 pos = (qint64)QT_FTELL(fh);
-            if (pos != -1)
-                seek(pos);
+            if (pos != -1) {
+                // Skip redundant checks in QFileDevice::seek().
+                QIODevice::seek(pos);
+            }
         }
         return true;
     }
@@ -960,12 +960,12 @@ bool QFile::open(int fd, OpenMode mode, FileHandleFlags handleFlags)
     }
     if (d->openExternalFile(mode, fd, handleFlags)) {
         QIODevice::open(mode);
-        if (mode & Append) {
-            seek(size());
-        } else {
+        if (!(mode & Append) && !isSequential()) {
             qint64 pos = (qint64)QT_LSEEK(fd, QT_OFF_T(0), SEEK_CUR);
-            if (pos != -1)
-                seek(pos);
+            if (pos != -1) {
+                // Skip redundant checks in QFileDevice::seek().
+                QIODevice::seek(pos);
+            }
         }
         return true;
     }
