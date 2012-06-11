@@ -123,7 +123,7 @@ template<int N> struct QStaticByteArrayData
 
     QByteArrayData *data_ptr() const
     {
-        Q_ASSERT(ba.ref.isStatic());
+        Q_ASSERT(ba.isStatic());
         return const_cast<QByteArrayData *>(&ba);
     }
 };
@@ -469,7 +469,7 @@ public:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QByteArray::Base64Options)
 
 inline QByteArray::QByteArray() noexcept : d(Data::sharedNull()) { }
-inline QByteArray::~QByteArray() { if (!d->ref.deref()) Data::deallocate(d); }
+inline QByteArray::~QByteArray() { if (!d->deref()) Data::deallocate(d); }
 inline int QByteArray::size() const
 { return d->size; }
 
@@ -497,9 +497,9 @@ inline const char *QByteArray::constData() const
 inline void QByteArray::detach()
 { if (d->needsDetach()) reallocData(uint(d->size) + 1u, d->detachFlags()); }
 inline bool QByteArray::isDetached() const
-{ return !d->ref.isShared(); }
+{ return !d->isShared(); }
 inline QByteArray::QByteArray(const QByteArray &a) noexcept : d(a.d)
-{ d->ref.ref(); }
+{ d->ref(); }
 
 inline int QByteArray::capacity() const
 { int realCapacity = d->constAllocatedCapacity(); return realCapacity ? realCapacity - 1 : 0; }

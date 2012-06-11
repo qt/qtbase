@@ -66,7 +66,7 @@ QBinaryJsonValue::QBinaryJsonValue(QBinaryJsonPrivate::MutableData *data,
     case QJsonValue::String: {
         QString s = v.toString(parent);
         stringData = s.data_ptr();
-        stringData->ref.ref();
+        stringData->ref();
         break;
     }
     case QJsonValue::Array:
@@ -82,7 +82,7 @@ QBinaryJsonValue::QBinaryJsonValue(QBinaryJsonPrivate::MutableData *data,
 QBinaryJsonValue::QBinaryJsonValue(QString string)
     : stringData(*reinterpret_cast<QStringData **>(&string)), t(QJsonValue::String)
 {
-    stringData->ref.ref();
+    stringData->ref();
 }
 
 QBinaryJsonValue::QBinaryJsonValue(const QBinaryJsonArray &a)
@@ -101,7 +101,7 @@ QBinaryJsonValue::QBinaryJsonValue(const QBinaryJsonObject &o)
 
 QBinaryJsonValue::~QBinaryJsonValue()
 {
-    if (t == QJsonValue::String && stringData && !stringData->ref.deref())
+    if (t == QJsonValue::String && stringData && !stringData->deref())
         free(stringData);
 
     if (d && !d->ref.deref())
@@ -134,7 +134,7 @@ QString QBinaryJsonValue::toString() const
 {
     if (t != QJsonValue::String)
         return QString();
-    stringData->ref.ref(); // the constructor below doesn't add a ref.
+    stringData->ref(); // the constructor below doesn't add a ref.
     QStringDataPtr holder = { stringData };
     return QString(holder);
 }

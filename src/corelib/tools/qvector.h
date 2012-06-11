@@ -89,7 +89,7 @@ public:
     explicit QVector(int size);
     QVector(int size, const T &t);
     inline QVector(const QVector<T> &v);
-    inline ~QVector() { if (!d->ref.deref()) freeData(d); }
+    inline ~QVector() { if (!d->deref()) freeData(d); }
     QVector<T> &operator=(const QVector<T> &v);
     QVector(QVector<T> &&other) noexcept : d(other.d) { other.d = Data::sharedNull(); }
     QVector<T> &operator=(QVector<T> &&other) noexcept
@@ -114,17 +114,17 @@ public:
     void reserve(int size);
     inline void squeeze()
     {
-        if (d->size < int(d->alloc)) {
+        if (d->size < int(d->allocatedCapacity())) {
             if (!d->size) {
                 *this = QVector<T>();
                 return;
             }
-            realloc(d->size, QArrayData::ArrayOptions(d->flags));
+            realloc(d->size, d->detachFlags());
         }
     }
 
     inline void detach();
-    inline bool isDetached() const { return !d->ref.isShared(); }
+    inline bool isDetached() const { return !d->isShared(); }
 
     inline bool isSharedWith(const QVector<T> &other) const { return d == other.d; }
 
@@ -365,7 +365,7 @@ void QVector<T>::destruct(T *from, T *to)
 template <typename T>
 inline QVector<T>::QVector(const QVector<T> &v)
 {
-    if (v.d->ref.ref()) {
+    if (v.d->ref()) {
         d = v.d;
     } else {
         if (v.d->flags & Data::CapacityReserved) {
@@ -391,7 +391,7 @@ template <typename T>
 void QVector<T>::detach()
 {
     // ### check whether this is still required
-    if (d->ref.isStatic())
+    if (d->isStatic())
         return;
 
     if (d->needsDetach())
@@ -581,14 +581,14 @@ void QVector<T>::realloc(int aalloc, QArrayData::ArrayOptions options)
     Q_ASSERT(aalloc >= d->size);
     Data *x = d;
 
-    const bool isShared = d->ref.isShared();
+    const bool isShared = d->isShared();
 
     QT_TRY {
         // allocate memory
         x = Data::allocate(aalloc, options);
         Q_CHECK_PTR(x);
         // aalloc is bigger then 0 so it is not [un]sharedEmpty
-        Q_ASSERT(!x->ref.isStatic());
+        Q_ASSERT(!x->isStatic());
         x->size = d->size;
 
         T *srcBegin = d->begin();
@@ -621,7 +621,7 @@ void QVector<T>::realloc(int aalloc, QArrayData::ArrayOptions options)
     }
 
     Q_ASSERT(d != x);
-    if (!d->ref.deref()) {
+    if (!d->deref()) {
         if (!QTypeInfoQuery<T>::isRelocatable || !aalloc || (isShared && QTypeInfo<T>::isComplex)) {
             // data was copy constructed, we need to call destructors
             // or if !alloc we did nothing to the old 'd'.
@@ -701,7 +701,7 @@ void QVector<T>::removeLast()
     Q_ASSERT(!isEmpty());
     Q_ASSERT(d->allocatedCapacity());
 
-    if (d->ref.isShared())
+    if (d->isShared())
         detach();
     --d->size;
     if (QTypeInfo<T>::isComplex)

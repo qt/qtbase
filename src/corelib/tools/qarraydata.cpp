@@ -183,7 +183,7 @@ static QArrayData *allocateData(size_t allocSize, uint options)
 {
     QArrayData *header = static_cast<QArrayData *>(::malloc(allocSize));
     if (header) {
-        header->ref.atomic.storeRelaxed(1);
+        header->ref_.atomic.storeRelaxed(1);
         header->flags = options;
         header->size = 0;
     }
@@ -247,7 +247,7 @@ QArrayData *QArrayData::reallocateUnaligned(QArrayData *data, size_t objectSize,
 {
     Q_ASSERT(data);
     Q_ASSERT(data->isMutable());
-    Q_ASSERT(!data->ref.isShared());
+    Q_ASSERT(!data->isShared());
 
     options |= ArrayOption(AllocatedDataType);
     size_t headerSize = sizeof(QArrayData);
@@ -267,7 +267,7 @@ void QArrayData::deallocate(QArrayData *data, size_t objectSize,
             && !(alignment & (alignment - 1)));
     Q_UNUSED(objectSize) Q_UNUSED(alignment)
 
-    Q_ASSERT_X(data == 0 || !data->ref.isStatic(), "QArrayData::deallocate",
+    Q_ASSERT_X(data == 0 || !data->isStatic(), "QArrayData::deallocate",
                "Static data cannot be deleted");
     ::free(data);
 }

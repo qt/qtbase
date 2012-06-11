@@ -94,7 +94,7 @@ struct QStaticStringData
 
     QStringData *data_ptr() const
     {
-        Q_ASSERT(str.ref.isStatic());
+        Q_ASSERT(str.isStatic());
         return const_cast<QStringData *>(static_cast<const QStringData*>(&str));
     }
 };

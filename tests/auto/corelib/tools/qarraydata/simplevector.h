@@ -85,8 +85,8 @@ public:
     bool isNull() const { return d.isNull(); }
     bool isEmpty() const { return this->empty(); }
 
-    bool isStatic() const { return d->ref.isStatic(); }
-    bool isShared() const { return d->ref.isShared(); }
+    bool isStatic() const { return d->isStatic(); }
+    bool isShared() const { return d->isShared(); }
     bool isSharedWith(const SimpleVector &other) const { return d == other.d; }
 
     size_t size() const { return d->size; }
@@ -141,7 +141,7 @@ public:
         if (n <= capacity()) {
             if (d->flags & Data::CapacityReserved)
                 return;
-            if (!d->ref.isShared()) {
+            if (!d->isShared()) {
                 d->flags |= Data::CapacityReserved;
                 return;
             }

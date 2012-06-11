@@ -1184,8 +1184,8 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 */
 QByteArray &QByteArray::operator=(const QByteArray & other) noexcept
 {
-    other.d->ref.ref();
-    if (!d->ref.deref())
+    other.d->ref();
+    if (!d->deref())
         Data::deallocate(d);
     d = other.d;
     return *this;
@@ -1215,8 +1215,8 @@ QByteArray &QByteArray::operator=(const char *str)
         memcpy(x->data(), str, fullLen); // include null terminator
         x->size = len;
     }
-    x->ref.ref();
-    if (!d->ref.deref())
+    x->ref();
+    if (!d->deref())
          Data::deallocate(d);
     d = x;
     return *this;
@@ -1755,12 +1755,12 @@ void QByteArray::resize(int size)
     if (size < 0)
         size = 0;
 
-    if (!d->ref.isShared() && !d->isMutable() && size < d->size) {
+    if (!d->isShared() && !d->isMutable() && size < d->size) {
         d->size = size;
         return;
     }
 
-    if (d->size == 0 && d->ref.isStatic()) {
+    if (d->size == 0 && d->isStatic()) {
         //
         // Optimize the idiom:
         //    QByteArray a;
@@ -1811,7 +1811,7 @@ void QByteArray::reallocData(uint alloc, Data::ArrayOptions options)
         x->size = qMin(int(alloc) - 1, d->size);
         ::memcpy(x->data(), d->data(), x->size);
         x->data()[x->size] = '\0';
-        if (!d->ref.deref())
+        if (!d->deref())
             Data::deallocate(d);
         d = x;
     } else {
@@ -1869,7 +1869,7 @@ QByteArray QByteArray::nulTerminated() const
 
 QByteArray &QByteArray::prepend(const QByteArray &ba)
 {
-    if (d->size == 0 && d->ref.isStatic() && !IS_RAW_DATA(ba.d)) {
+    if (d->size == 0 && d->isStatic() && !IS_RAW_DATA(ba.d)) {
         *this = ba;
     } else if (ba.d->size != 0) {
         QByteArray tmp = *this;
@@ -1961,7 +1961,7 @@ QByteArray &QByteArray::prepend(char ch)
 
 QByteArray &QByteArray::append(const QByteArray &ba)
 {
-    if (d->size == 0 && d->ref.isStatic() && !IS_RAW_DATA(ba.d)) {
+    if (d->size == 0 && d->isStatic() && !IS_RAW_DATA(ba.d)) {
         *this = ba;
     } else if (ba.d->size != 0) {
         if (d->needsDetach() || d->size + ba.d->size > capacity())
@@ -3239,7 +3239,7 @@ QByteArray QByteArray::toUpper_helper(QByteArray &a)
 
 void QByteArray::clear()
 {
-    if (!d->ref.deref())
+    if (!d->deref())
         Data::deallocate(d);
     d = Data::sharedNull();
 }
@@ -4471,7 +4471,7 @@ QByteArray &QByteArray::setRawData(const char *data, uint size)
 {
     if (!data || !size) {
         clear();
-    } else if (d->ref.isShared() || (d->flags & Data::RawDataType) == 0) {
+    } else if (d->isShared() || (d->flags & Data::RawDataType) == 0) {
         *this = fromRawData(data, size);
     } else {
         d->size = size;

@@ -37,8 +37,8 @@ struct SharedNullVerifier
 {
     SharedNullVerifier()
     {
-        Q_ASSERT(QArrayData::shared_null[0].ref.isStatic());
-        Q_ASSERT(QArrayData::shared_null[0].ref.isShared());
+        Q_ASSERT(QArrayData::shared_null[0].isStatic());
+        Q_ASSERT(QArrayData::shared_null[0].isShared());
     }
 };
 
@@ -86,24 +86,24 @@ void tst_QArrayData::referenceCounting()
         // Reference counting initialized to 1 (owned)
         QArrayData array = { { Q_BASIC_ATOMIC_INITIALIZER(1) }, QArrayData::DefaultRawFlags, 0, 0, 0 };
 
-        QCOMPARE(array.ref.atomic.loadRelaxed(), 1);
+        QCOMPARE(array.ref_.atomic.loadRelaxed(), 1);
 
-        QVERIFY(!array.ref.isStatic());
+        QVERIFY(!array.isStatic());
 
-        QVERIFY(array.ref.ref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), 2);
+        QVERIFY(array.ref());
+        QCOMPARE(array.ref_.atomic.loadRelaxed(), 2);
 
-        QVERIFY(array.ref.deref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), 1);
+        QVERIFY(array.deref());
+        QCOMPARE(array.ref_.atomic.loadRelaxed(), 1);
 
-        QVERIFY(array.ref.ref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), 2);
+        QVERIFY(array.ref());
+        QCOMPARE(array.ref_.atomic.loadRelaxed(), 2);
 
-        QVERIFY(array.ref.deref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), 1);
+        QVERIFY(array.deref());
+        QCOMPARE(array.ref_.atomic.loadRelaxed(), 1);
 
-        QVERIFY(!array.ref.deref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), 0);
+        QVERIFY(!array.deref());
+        QCOMPARE(array.ref_.atomic.loadRelaxed(), 0);
 
         // Now would be a good time to free/release allocated data
     }
@@ -111,15 +111,15 @@ void tst_QArrayData::referenceCounting()
         // Reference counting initialized to -1 (static read-only data)
         QArrayData array = { Q_REFCOUNT_INITIALIZE_STATIC, QArrayData::StaticDataFlags, 0, 0, 0 };
 
-        QCOMPARE(array.ref.atomic.loadRelaxed(), -1);
+        QCOMPARE(array.ref_.atomic.loadRelaxed(), -1);
 
-        QVERIFY(array.ref.isStatic());
+        QVERIFY(array.isStatic());
 
-        QVERIFY(array.ref.ref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), -1);
+        QVERIFY(array.ref());
+        QCOMPARE(array.ref_.atomic.loadRelaxed(), -1);
 
-        QVERIFY(array.ref.deref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), -1);
+        QVERIFY(array.deref());
+        QCOMPARE(array.ref_.atomic.loadRelaxed(), -1);
 
     }
 }
@@ -129,26 +129,23 @@ void tst_QArrayData::sharedNullEmpty()
     QArrayData *null = const_cast<QArrayData *>(QArrayData::shared_null);
     QArrayData *empty = QArrayData::allocate(1, alignof(QArrayData), 0);
 
-    QVERIFY(null->ref.isStatic());
-    QVERIFY(null->ref.isShared());
+    QVERIFY(null->isStatic());
+    QVERIFY(null->isShared());
 
-    QVERIFY(empty->ref.isStatic());
-    QVERIFY(empty->ref.isShared());
+    QVERIFY(empty->isStatic());
+    QVERIFY(empty->isShared());
 
-    QCOMPARE(null->ref.atomic.loadRelaxed(), -1);
-    QCOMPARE(empty->ref.atomic.loadRelaxed(), -1);
+    QCOMPARE(null->ref_.atomic.loadRelaxed(), -1);
+    QCOMPARE(empty->ref_.atomic.loadRelaxed(), -1);
 
-    QVERIFY(null->ref.ref());
-    QVERIFY(empty->ref.ref());
+    QCOMPARE(null->ref_.atomic.loadRelaxed(), -1);
+    QCOMPARE(empty->ref_.atomic.loadRelaxed(), -1);
 
-    QCOMPARE(null->ref.atomic.loadRelaxed(), -1);
-    QCOMPARE(empty->ref.atomic.loadRelaxed(), -1);
+    QVERIFY(null->deref());
+    QVERIFY(empty->deref());
 
-    QVERIFY(null->ref.deref());
-    QVERIFY(empty->ref.deref());
-
-    QCOMPARE(null->ref.atomic.loadRelaxed(), -1);
-    QCOMPARE(empty->ref.atomic.loadRelaxed(), -1);
+    QCOMPARE(null->ref_.atomic.loadRelaxed(), -1);
+    QCOMPARE(empty->ref_.atomic.loadRelaxed(), -1);
 
     QVERIFY(null != empty);
 

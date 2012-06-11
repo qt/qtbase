@@ -67,7 +67,7 @@ struct Q_CORE_EXPORT QArrayData
     };
     Q_DECLARE_FLAGS(ArrayOptions, ArrayOption)
 
-    QtPrivate::RefCount ref;
+    QtPrivate::RefCount ref_;
     uint flags;
     int size;
     uint alloc;
@@ -82,6 +82,16 @@ struct Q_CORE_EXPORT QArrayData
     inline size_t constAllocatedCapacity() const
     {
         return alloc;
+    }
+
+    bool ref()
+    {
+        return ref_.ref();
+    }
+
+    bool deref()
+    {
+        return ref_.deref();
     }
 
     void *data()
@@ -106,13 +116,23 @@ struct Q_CORE_EXPORT QArrayData
         return flags & Mutable;
     }
 
+    bool isStatic() const
+    {
+        return ref_.isStatic();
+    }
+
+    bool isShared() const
+    {
+        return ref_.isShared();
+    }
+
     // Returns true if a detach is necessary before modifying the data
     // This method is intentionally not const: if you want to know whether
     // detaching is necessary, you should be in a non-const function already
     bool needsDetach()
     {
         // ### optimize me -- this currently requires 3 conditionals!
-        return !isMutable() || ref.isShared();
+        return !isMutable() || isShared();
     }
 
     size_t detachCapacity(size_t newSize) const
@@ -290,7 +310,7 @@ struct QTypedArrayData
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QTypedArrayData *result = static_cast<QTypedArrayData *>(prepareRawData(options));
         if (result) {
-            Q_ASSERT(!result->ref.isShared()); // No shared empty, please!
+            Q_ASSERT(!result->isShared()); // No shared empty, please!
 
             result->offset = reinterpret_cast<const char *>(data)
                 - reinterpret_cast<const char *>(result);
