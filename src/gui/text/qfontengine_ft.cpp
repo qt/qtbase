@@ -1774,7 +1774,10 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
     QFontEngineFT::Glyph *glyph;
     if (cacheEnabled) {
         QFontEngineFT::QGlyphSet *gset = &defaultGlyphSet;
+        QFontEngine::HintStyle hintStyle = default_hint_style;
         if (t.type() >= QTransform::TxScale) {
+            // disable hinting if the glyphs are transformed
+            default_hint_style = HintNone;
             if (t.isAffine())
                 gset = loadTransformedGlyphSet(t);
             else
@@ -1790,9 +1793,11 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
 
         if (!gset || gset->outline_drawing || !loadGlyph(gset, glyphIndex, subPixelPosition,
                                                          neededFormat)) {
+            default_hint_style = hintStyle;
             return QFontEngine::lockedAlphaMapForGlyph(glyphIndex, subPixelPosition, neededFormat, t,
                                                        offset);
         }
+        default_hint_style = hintStyle;
 
         glyph = gset->getGlyph(glyphIndex, subPixelPosition);
     } else {
