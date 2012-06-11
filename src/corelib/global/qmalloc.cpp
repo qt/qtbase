@@ -55,8 +55,6 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT void *qMalloc(size_t size) Q_ALLOC_SIZE(1);
 Q_CORE_EXPORT void qFree(void *ptr);
 Q_CORE_EXPORT void *qRealloc(void *ptr, size_t size) Q_ALLOC_SIZE(2);
-Q_CORE_EXPORT void *qMemCopy(void *dest, const void *src, size_t n);
-Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 #endif
 
 

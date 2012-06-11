@@ -78,6 +78,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !QT_DEPRECATED_SINCE(5, 0)
+// Make sure they're defined to be exported
+Q_CORE_EXPORT void *qMemCopy(void *dest, const void *src, size_t n);
+Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
+#endif
 
 /*!
     \class QFlag
