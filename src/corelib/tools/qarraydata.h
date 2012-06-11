@@ -315,14 +315,6 @@ struct QArrayDataPointerRef
             return StaticWrapper::get();                                        \
         }())                                                                    \
     /**/
-#elif defined(Q_CC_GNU)
-// Hide array within GCC's __extension__ {( )} block
-#define Q_ARRAY_LITERAL(Type, ...)                                              \
-    __extension__ ({                                                            \
-            Q_ARRAY_LITERAL_IMPL(Type, __VA_ARGS__)                             \
-            ref;                                                                \
-        })                                                                      \
-    /**/
 #endif
 #endif // defined(Q_COMPILER_VARIADIC_MACROS)
 

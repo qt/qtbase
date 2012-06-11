@@ -167,22 +167,6 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
     }()) \
     /**/
 
-# elif defined(Q_CC_GNU)
-// We need to create a QStringData in the .rodata section of memory
-// and the only way to do that is to create a "static const" variable.
-// To do that, we need the __extension__ {( )} trick which only GCC supports
-
-#  define QStringLiteral(str) \
-    QString(__extension__ ({ \
-        enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
-        static const QStaticStringData<Size> qstring_literal = { \
-            Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
-            QT_UNICODE_LITERAL(str) }; \
-        QStringDataPtr holder = { qstring_literal.data_ptr() }; \
-        holder; \
-    })) \
-    /**/
-
 # endif
 #endif // QT_NO_UNICODE_LITERAL
 
