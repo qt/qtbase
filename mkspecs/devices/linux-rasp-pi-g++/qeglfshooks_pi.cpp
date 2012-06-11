@@ -201,7 +201,7 @@ public:
         eglMakeCurrent(m_screen->display(), EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     }
 
-    void changeCursor(QCursor *cursor, QWindow *window) {
+    void changeCursor(QCursor *cursor, QWindow *window) Q_DECL_OVERRIDE {
         if (!setCurrentCursor(cursor))
             return;
 
@@ -214,18 +214,19 @@ public:
         drawInLayer();
     }
 
-    void setPos(const QPoint &pos) {
+    void setPos(const QPoint &pos) Q_DECL_OVERRIDE {
         m_pos = pos;
         moveDispmanxLayer(m_window, cursorRect().topLeft());
     }
 
-    void pointerEvent(const QMouseEvent &event) {
+    void pointerEvent(const QMouseEvent &event) Q_DECL_OVERRIDE {
         if (event.type() != QEvent::MouseMove)
             return;
         m_pos = event.pos();
         moveDispmanxLayer(m_window, cursorRect().topLeft());
     }
-    void paintOnScreen() { }
+
+    void paintOnScreen() Q_DECL_OVERRIDE { }
 private:
     EGLConfig m_config;
     EGLContext m_context;

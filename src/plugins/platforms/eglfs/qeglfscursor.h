@@ -57,11 +57,11 @@ public:
     QEglFSCursor(QEglFSScreen *screen);
     ~QEglFSCursor();
 
-    void changeCursor(QCursor *cursor, QWindow *widget);
-    void pointerEvent(const QMouseEvent &event);
+    void changeCursor(QCursor *cursor, QWindow *widget) Q_DECL_OVERRIDE;
+    void pointerEvent(const QMouseEvent &event) Q_DECL_OVERRIDE;
 
-    QPoint pos() const;
-    void setPos(const QPoint &pos);
+    QPoint pos() const Q_DECL_OVERRIDE;
+    void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
 
     QRect cursorRect() const;
 
