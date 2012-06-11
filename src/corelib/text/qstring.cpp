@@ -2677,7 +2677,7 @@ QString &QString::append(const QString &str)
 QString &QString::append(const QChar *str, int len)
 {
     if (str && len > 0) {
-        if (d->isShared() || uint(d->size + len) + 1u > d->allocatedCapacity())
+        if (d->needsDetach() || uint(d->size + len) + 1u > d->allocatedCapacity())
             reallocData(uint(d->size + len) + 1u, true);
         memcpy(d->data() + d->size, str, len * sizeof(QChar));
         d->size += len;

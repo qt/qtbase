@@ -153,11 +153,11 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wmissing-field-initializers")
 
 const QArrayData QArrayData::shared_null[2] = {
-    { Q_REFCOUNT_INITIALIZE_STATIC, QArrayData::StaticDataFlags, 0, 0, sizeof(QArrayData) }, // shared null
+    { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0, 0, sizeof(QArrayData) }, // shared null
     /* zero initialized terminator */};
 
 static const QArrayData emptyNotNullShared[2] = {
-    { Q_REFCOUNT_INITIALIZE_STATIC, QArrayData::StaticDataFlags, 0, 0, sizeof(QArrayData) }, // shared empty
+    { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0, 0, sizeof(QArrayData) }, // shared empty
     /* zero initialized terminator */};
 
 QT_WARNING_POP
@@ -183,7 +183,7 @@ static QArrayData *allocateData(size_t allocSize, uint options)
 {
     QArrayData *header = static_cast<QArrayData *>(::malloc(allocSize));
     if (header) {
-        header->ref_.atomic.storeRelaxed(1);
+        header->ref_.storeRelaxed(1);
         header->flags = options;
         header->size = 0;
     }
@@ -222,7 +222,8 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         return nullptr;
 
     size_t allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
-    options |= AllocatedDataType | Mutable;
+    options |= AllocatedDataType | MutableData;
+    options &= ~ImmutableHeader;
     QArrayData *header = allocateData(allocSize, options);
     if (header) {
         quintptr data = (quintptr(header) + sizeof(QArrayData) + alignment - 1)
@@ -249,10 +250,10 @@ QArrayData *QArrayData::reallocateUnaligned(QArrayData *data, size_t objectSize,
     Q_ASSERT(data->isMutable());
     Q_ASSERT(!data->isShared());
 
-    options |= ArrayOption(AllocatedDataType);
     size_t headerSize = sizeof(QArrayData);
     size_t allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
-    options |= AllocatedDataType | Mutable;
+    options |= AllocatedDataType | MutableData;
+    options &= ~ImmutableHeader;
     QArrayData *header = reallocateData(data, allocSize, options);
     if (header)
         header->alloc = capacity;

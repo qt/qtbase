@@ -56,18 +56,19 @@ struct Q_CORE_EXPORT QArrayData
         CapacityReserved     = 0x0010,  //!< the capacity was reserved by the user, try to keep it
         GrowsForward         = 0x0020,  //!< allocate with eyes towards growing through append()
         GrowsBackwards       = 0x0040,  //!< allocate with eyes towards growing through prepend()
-        Mutable              = 0x0080,  //!< the data can be changed; doesn't say anything about the header
+        MutableData          = 0x0080,  //!< the data can be changed; doesn't say anything about the header
+        ImmutableHeader      = 0x0100,  //!< the header is static, it can't be changed
 
         /// this option is used by the Q_ARRAY_LITERAL and similar macros
-        StaticDataFlags = RawDataType,
+        StaticDataFlags = RawDataType | ImmutableHeader,
         /// this option is used by the allocate() function
-        DefaultAllocationFlags = 0,
+        DefaultAllocationFlags = MutableData,
         /// this option is used by the prepareRawData() function
         DefaultRawFlags = 0
     };
     Q_DECLARE_FLAGS(ArrayOptions, ArrayOption)
 
-    QtPrivate::RefCount ref_;
+    QBasicAtomicInt ref_;
     uint flags;
     int size;
     uint alloc;
@@ -84,13 +85,19 @@ struct Q_CORE_EXPORT QArrayData
         return alloc;
     }
 
+    /// Returns true if sharing took place
     bool ref()
     {
-        return ref_.ref();
+        if (!isStatic())
+            ref_.ref();
+        return true;
     }
 
+    /// Returns false if deallocation is necessary
     bool deref()
     {
+        if (isStatic())
+            return true;
         return ref_.deref();
     }
 
@@ -113,17 +120,17 @@ struct Q_CORE_EXPORT QArrayData
     // follow COW principles.
     bool isMutable() const
     {
-        return flags & Mutable;
+        return flags & MutableData;
     }
 
     bool isStatic() const
     {
-        return ref_.isStatic();
+        return flags & ImmutableHeader;
     }
 
     bool isShared() const
     {
-        return ref_.isShared();
+        return ref_.loadRelaxed() != 1;
     }
 
     // Returns true if a detach is necessary before modifying the data
@@ -131,7 +138,7 @@ struct Q_CORE_EXPORT QArrayData
     // detaching is necessary, you should be in a non-const function already
     bool needsDetach()
     {
-        // ### optimize me -- this currently requires 3 conditionals!
+        // requires two conditionals
         return !isMutable() || isShared();
     }
 
@@ -354,7 +361,7 @@ struct QArrayDataPointerRef
 };
 
 #define Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset) \
-    { Q_REFCOUNT_INITIALIZE_STATIC, QArrayData::StaticDataFlags, size, 0, offset } \
+    { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, size, 0, offset } \
     /**/
 
 #define Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(type, size) \

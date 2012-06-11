@@ -701,7 +701,7 @@ void QVector<T>::removeLast()
     Q_ASSERT(!isEmpty());
     Q_ASSERT(d->allocatedCapacity());
 
-    if (d->isShared())
+    if (d->needsDetach())
         detach();
     --d->size;
     if (QTypeInfo<T>::isComplex)
