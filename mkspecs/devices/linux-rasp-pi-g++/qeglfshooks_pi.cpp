@@ -294,7 +294,7 @@ QSize QEglFSPiHooks::screenSize() const
 
 EGLNativeWindowType QEglFSPiHooks::createNativeWindow(const QSize &size)
 {
-    return createDispmanxLayer(QPoint(0, 0), size, 0, DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS);
+    return createDispmanxLayer(QPoint(0, 0), size, 1, DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS);
 }
 
 void QEglFSPiHooks::destroyNativeWindow(EGLNativeWindowType window)
