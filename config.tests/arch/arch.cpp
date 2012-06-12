@@ -182,7 +182,7 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 " sse3"
 #endif
 #ifdef __SSSE3__
-// Supplemental SSE3, Intel Core 2, AMD "Bulldozer"
+// Supplemental SSE3, Intel Core 2 ("Merom"), AMD "Bulldozer"
 " ssse3"
 #endif
 #ifdef __SSE4A__
@@ -190,7 +190,7 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 " sse4a"
 #endif
 #ifdef __SSE4_1__
-// SSE 4.1, Intel Core-i7 ("Nehalem"), AMD "Bulldozer"
+// SSE 4.1, Intel Core2 45nm shrink ("Penryn"), AMD "Bulldozer"
 " sse4.1"
 #endif
 #ifdef __SSE4_2__
