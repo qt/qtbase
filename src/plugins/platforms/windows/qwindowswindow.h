@@ -122,7 +122,8 @@ public:
         OpenGLSurface = 0x10,
         OpenGLDoubleBuffered = 0x20,
         OpenGlPixelFormatInitialized = 0x40,
-        BlockedByModal = 0x80
+        BlockedByModal = 0x80,
+        SizeGripOperation = 0x100
     };
 
     struct WindowData
@@ -172,6 +173,8 @@ public:
 
     virtual bool setKeyboardGrabEnabled(bool grab);
     virtual bool setMouseGrabEnabled(bool grab);
+
+    virtual bool startSystemResize(const QPoint &pos, Qt::Corner corner);
 
     Qt::WindowState windowState_sys() const;
     Qt::WindowStates windowStates_sys() const;

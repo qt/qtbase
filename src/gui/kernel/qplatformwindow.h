@@ -117,6 +117,8 @@ public:
 
     virtual void windowEvent(QEvent *event);
 
+    virtual bool startSystemResize(const QPoint &pos, Qt::Corner corner);
+
 protected:
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 private:

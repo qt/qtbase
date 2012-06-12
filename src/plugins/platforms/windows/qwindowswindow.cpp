@@ -1402,6 +1402,32 @@ void QWindowsWindow::setMouseGrabEnabled_sys(bool grab)
     }
 }
 
+static inline DWORD cornerToWinOrientation(Qt::Corner corner)
+{
+    switch (corner) {
+    case Qt::TopLeftCorner:
+        return 0xf004; // SZ_SIZETOPLEFT;
+    case Qt::TopRightCorner:
+        return 0xf005; // SZ_SIZETOPRIGHT
+    case Qt::BottomLeftCorner:
+        return 0xf007; // SZ_SIZEBOTTOMLEFT
+    case Qt::BottomRightCorner:
+        return 0xf008; // SZ_SIZEBOTTOMRIGHT
+    }
+    return 0;
+}
+
+bool QWindowsWindow::startSystemResize(const QPoint &, Qt::Corner corner)
+{
+    if (!GetSystemMenu(m_data.hwnd, FALSE))
+        return false;
+
+    ReleaseCapture();
+    PostMessage(m_data.hwnd, WM_SYSCOMMAND, cornerToWinOrientation(corner), 0);
+    setFlag(SizeGripOperation);
+    return true;
+}
+
 #ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
 void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {

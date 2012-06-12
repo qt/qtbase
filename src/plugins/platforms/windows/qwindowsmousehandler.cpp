@@ -151,6 +151,16 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         return true;
     }
     compressMouseMove(&msg);
+    // Eat mouse move after size grip drag.
+    if (msg.message == WM_MOUSEMOVE) {
+        QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+        if (platformWindow->testFlag(QWindowsWindow::SizeGripOperation)) {
+            MSG mouseMsg;
+            while (PeekMessage(&mouseMsg, platformWindow->handle(), WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) ;
+            platformWindow->clearFlag(QWindowsWindow::SizeGripOperation);
+            return true;
+        }
+    }
     const QPoint client(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
     // Enter new window: track to generate leave event.
     if (m_windowUnderMouse != window) {

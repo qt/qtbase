@@ -336,6 +336,23 @@ void QPlatformWindow::windowEvent(QEvent *event)
 }
 
 /*!
+    Reimplement this method to start a system size grip drag
+    operation if the system supports it and return true to indicate
+    success.
+    It is called from the mouse press event handler of the size grip.
+
+    The default implementation is empty and does nothing with \a pos
+    and \a corner.
+*/
+
+bool QPlatformWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
+{
+    Q_UNUSED(pos)
+    Q_UNUSED(corner)
+    return false;
+}
+
+/*!
     \class QPlatformWindow
     \since 4.8
     \internal

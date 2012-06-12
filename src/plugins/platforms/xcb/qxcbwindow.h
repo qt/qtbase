@@ -107,6 +107,10 @@ public:
 
     QSurfaceFormat format() const;
 
+#ifdef XCB_USE_XLIB
+    bool startSystemResize(const QPoint &pos, Qt::Corner corner);
+#endif // XCB_USE_XLIB
+
     xcb_window_t xcb_window() const { return m_window; }
     uint depth() const { return m_depth; }
     QImage::Format imageFormat() const { return m_imageFormat; }
