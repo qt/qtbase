@@ -55,7 +55,7 @@ QT_FORWARD_DECLARE_CLASS(QCFString)
 QT_FORWARD_DECLARE_CLASS(QString)
 
 
-QT_USE_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_TRANSLATION
 static const char *application_menu_strings[] = {
@@ -125,7 +125,7 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
     }
 }
 
-
+QT_END_NAMESPACE
 
 @implementation QT_MANGLE_NAMESPACE(QCocoaMenuLoader)
 

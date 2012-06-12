@@ -98,7 +98,7 @@ Q_DECLARE_METATYPE(QNetworkProxy)
 Q_DECLARE_METATYPE(QList<QNetworkProxy>)
 
 QT_FORWARD_DECLARE_CLASS(QTcpSocket)
-QT_FORWARD_DECLARE_CLASS(SocketPair)
+class SocketPair;
 
 class tst_QTcpSocket : public QObject
 {

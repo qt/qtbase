@@ -92,6 +92,10 @@
 - (NSArray *)mergeable;
 @end
 
+QT_BEGIN_NAMESPACE
+
 void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader);
+
+QT_END_NAMESPACE
 
 #endif // QCOCOAMENULOADER_P_H

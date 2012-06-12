@@ -48,6 +48,9 @@
 #include "qcocoamenu.h"
 
 @class NSMenu;
+
+QT_BEGIN_NAMESPACE
+
 class QCocoaWindow;
 
 class QCocoaMenuBar : public QPlatformMenuBar
@@ -78,5 +81,7 @@ private:
     NSMenu *m_nativeMenu;
     QCocoaWindow *m_window;
 };
+
+QT_END_NAMESPACE
 
 #endif
