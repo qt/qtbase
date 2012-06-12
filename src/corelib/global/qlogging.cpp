@@ -644,15 +644,6 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 /*!
     \internal
 */
-static void qDefaultMessageHandler2(QtMsgType type, const QMessageLogContext &context,
-                                   const char *buf)
-{
-    qDefaultMessageHandler(type, context, QString::fromLocal8Bit(buf));
-}
-
-/*!
-    \internal
-*/
 static void qDefaultMsgHandler(QtMsgType type, const char *buf)
 {
     QMessageLogContext emptyContext;

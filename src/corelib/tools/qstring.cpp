@@ -3927,7 +3927,7 @@ QByteArray QString::toLatin1() const
     \sa fromAscii(), toLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
 */
 
-#if !defined(Q_OS_MAC) && defined(Q_OS_UNIX)
+#if !defined(Q_OS_MAC) && defined(Q_OS_UNIX) && !defined(QT_USE_ICU)
 static QByteArray toLocal8Bit_helper(const QChar *data, int length)
 {
 #ifndef QT_NO_TEXTCODEC
