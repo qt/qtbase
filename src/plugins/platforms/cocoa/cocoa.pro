@@ -96,6 +96,8 @@ INSTALLS += target
 # The Qt plugin loader will dlopen both if found, causing duplicate
 # Objective-c class definitions for the classes defined in the plugin.
 contains(QT_CONFIG,release):CONFIG -= debug
+contains(QT_CONFIG,debug_and_release):CONFIG -= debug_and_release
+contains(QT_CONFIG,build_all):CONFIG -= build_all
 
 # Acccessibility debug support
 # DEFINES += QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR

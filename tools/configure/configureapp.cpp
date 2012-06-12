@@ -2194,11 +2194,11 @@ void Configure::generateOutputVars()
     bool buildAll = (dictionary[ "BUILDALL" ] == "yes");
     if (build == "debug") {
         if (buildAll)
-            qtConfig += "release";
+            qtConfig += "debug_and_release build_all release";
         qtConfig += "debug";
     } else if (build == "release") {
         if (buildAll)
-            qtConfig += "debug";
+            qtConfig += "debug_and_release build_all debug";
         qtConfig += "release";
     }
 

@@ -39,7 +39,13 @@ win32:!wince*:DLLDESTDIR = $$[QT_INSTALL_PREFIX]/bin
 CONFIG          += qt warn_on depend_includepath
 CONFIG          += qmake_cache target_qt
 CONFIG          -= fix_output_dirs
-win32|mac:!macx-xcode:CONFIG += debug_and_release
+
+# If Qt was configured with -debug-and-release then build the module the same way
+if(win32|mac):!wince*:!macx-xcode {
+    contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
+    contains(QT_CONFIG, build_all):CONFIG += build_all
+}
+
 linux*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
 !isEmpty(DESTDIR):CONFIG += create_cmake
@@ -47,7 +53,6 @@ linux*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 unix:contains(QT_CONFIG, reduce_relocations):CONFIG += bsymbolic_functions
 contains(QT_CONFIG, largefile):CONFIG += largefile
-contains(QT_CONFIG, build_all):CONFIG += build_all
 contains(QT_CONFIG, separate_debug_info):CONFIG += separate_debug_info
 contains(QT_CONFIG, separate_debug_info_nocopy):CONFIG += separate_debug_info_nocopy
 contains(QT_CONFIG, c++11):CONFIG += c++11
@@ -56,9 +61,7 @@ contains(QT_CONFIG, c++11):CONFIG += c++11
 mac:!static:contains(QT_CONFIG, qt_framework) {
    #QMAKE_FRAMEWORK_VERSION = 4.0
    CONFIG += lib_bundle qt_no_framework_direct_includes qt_framework
-   CONFIG(debug, debug|release) {
-      !build_pass:CONFIG += build_all
-   } else { #release
+   CONFIG(release, debug|release) {
       !debug_and_release|build_pass {
           CONFIG -= qt_install_headers #no need to install these as well
           FRAMEWORK_HEADERS.version = Versions

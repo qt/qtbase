@@ -6,7 +6,10 @@ isEmpty(QT_MAJOR_VERSION) {
 }
 CONFIG += qt plugin
 
-win32|mac:!wince*:!win32-msvc:!macx-xcode:CONFIG += debug_and_release
+if(win32|mac):!wince*:!macx-xcode {
+    contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
+    contains(QT_CONFIG, build_all):CONFIG += build_all
+}
 TARGET = $$qtLibraryTarget($$TARGET)
 contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 contains(QT_CONFIG, separate_debug_info):CONFIG += separate_debug_info
