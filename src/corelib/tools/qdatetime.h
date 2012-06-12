@@ -46,15 +46,6 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qsharedpointer.h>
 
-// windows.h defines these identifiers, so undefine it
-// ### figure out where in Qt we include it too soon
-#ifdef max
-# undef max
-#endif
-#ifdef min
-# undef min
-#endif
-
 #include <limits>
 
 QT_BEGIN_HEADER

@@ -43,7 +43,7 @@
 #include <QString>
 
 #ifdef Q_OS_WIN
-#   include <windows.h>
+#   include <qt_windows.h>
 #else
 #   include <sys/stat.h>
 #   include <sys/types.h>

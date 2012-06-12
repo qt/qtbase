@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#include <qt_windows.h>
+
 #include <ocidl.h>
 #include <olectl.h>
 
