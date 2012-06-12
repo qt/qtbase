@@ -1584,6 +1584,9 @@ void QPrinter::setMargins(const Margins &m)
 {
     Q_D(QPrinter);
 
+    // set margins also to super class
+    QPagedPaintDevice::setMargins(m);
+
     const qreal multiplier = 72./25.4;
     QList<QVariant> margins;
     margins << (m.left * multiplier) << (m.top * multiplier)
