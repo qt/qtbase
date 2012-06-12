@@ -73,7 +73,7 @@ Calculator::Calculator(QWidget *parent)
     }
 
     Button *pointButton = createButton(tr("."), SLOT(pointClicked()));
-    Button *changeSignButton = createButton(tr("\261"), SLOT(changeSignClicked()));
+    Button *changeSignButton = createButton(tr("\302\261"), SLOT(changeSignClicked()));
 
     Button *backspaceButton = createButton(tr("Backspace"), SLOT(backspaceClicked()));
     Button *clearButton = createButton(tr("Clear"), SLOT(clear()));
@@ -84,13 +84,13 @@ Calculator::Calculator(QWidget *parent)
     Button *setMemoryButton = createButton(tr("MS"), SLOT(setMemory()));
     Button *addToMemoryButton = createButton(tr("M+"), SLOT(addToMemory()));
 
-    Button *divisionButton = createButton(tr("\367"), SLOT(multiplicativeOperatorClicked()));
-    Button *timesButton = createButton(tr("\327"), SLOT(multiplicativeOperatorClicked()));
+    Button *divisionButton = createButton(tr("\303\267"), SLOT(multiplicativeOperatorClicked()));
+    Button *timesButton = createButton(tr("\303\227"), SLOT(multiplicativeOperatorClicked()));
     Button *minusButton = createButton(tr("-"), SLOT(additiveOperatorClicked()));
     Button *plusButton = createButton(tr("+"), SLOT(additiveOperatorClicked()));
 
     Button *squareRootButton = createButton(tr("Sqrt"), SLOT(unaryOperatorClicked()));
-    Button *powerButton = createButton(tr("x\262"), SLOT(unaryOperatorClicked()));
+    Button *powerButton = createButton(tr("x\302\262"), SLOT(unaryOperatorClicked()));
     Button *reciprocalButton = createButton(tr("1/x"), SLOT(unaryOperatorClicked()));
     Button *equalButton = createButton(tr("="), SLOT(equalClicked()));
 //! [4]
@@ -165,7 +165,7 @@ void Calculator::unaryOperatorClicked()
             return;
         }
         result = sqrt(operand);
-    } else if (clickedOperator == tr("x\262")) {
+    } else if (clickedOperator == tr("x\302\262")) {
         result = pow(operand, 2.0);
     } else if (clickedOperator == tr("1/x")) {
         if (operand == 0.0) {
@@ -384,9 +384,9 @@ bool Calculator::calculate(double rightOperand, const QString &pendingOperator)
         sumSoFar += rightOperand;
     } else if (pendingOperator == tr("-")) {
         sumSoFar -= rightOperand;
-    } else if (pendingOperator == tr("\327")) {
+    } else if (pendingOperator == tr("\303\227")) {
         factorSoFar *= rightOperand;
-    } else if (pendingOperator == tr("\367")) {
+    } else if (pendingOperator == tr("\303\267")) {
 	if (rightOperand == 0.0)
 	    return false;
 	factorSoFar /= rightOperand;

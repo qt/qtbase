@@ -64,7 +64,7 @@ Window::Window()
 
         operationComboBoxes[i] = new QComboBox;
         operationComboBoxes[i]->addItem(tr("No transformation"));
-        operationComboBoxes[i]->addItem(tr("Rotate by 60\xB0"));
+        operationComboBoxes[i]->addItem(tr("Rotate by 60\xC2\xB0"));
         operationComboBoxes[i]->addItem(tr("Scale to 75%"));
         operationComboBoxes[i]->addItem(tr("Translate by (50, 50)"));
 

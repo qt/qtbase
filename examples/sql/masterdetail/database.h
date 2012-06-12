@@ -84,7 +84,7 @@ static bool createConnection()
     query.exec("insert into albums values(4, 'Stray Dogs', 2, 2003)");
     query.exec("insert into albums values(5, "
         "'One day you`ll dance for me, New York City', 2, 2004)");
-    query.exec("insert into albums values(6, 'Ompa Til Du D\xf8r', 3, 2001)");
+    query.exec("insert into albums values(6, 'Ompa Til Du D\xc3\xb8r', 3, 2001)");
     query.exec("insert into albums values(7, 'Evig Pint', 3, 2002)");
     query.exec("insert into albums values(8, 'Maestro', 3, 2005)");
 

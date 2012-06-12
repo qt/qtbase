@@ -184,7 +184,7 @@ Window::Window()
     rotationAngleSpinBox = new QSpinBox;
     rotationAngleSpinBox->setRange(0, 359);
     rotationAngleSpinBox->setWrapping(true);
-    rotationAngleSpinBox->setSuffix("\xB0");
+    rotationAngleSpinBox->setSuffix(QLatin1String("\xB0"));
 
     rotationAngleLabel = new QLabel(tr("&Rotation Angle:"));
     rotationAngleLabel->setBuddy(rotationAngleSpinBox);
