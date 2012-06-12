@@ -94,6 +94,11 @@ static const struct {
     { 0, 0 }
 };
 
+bool creationTimeBefore(const QFileInfo &fi1, const QFileInfo &fi2)
+{
+    return fi1.lastModified() < fi2.lastModified();
+}
+
 static bool highlighting = false;
 static bool showInternal = false;
 static bool obsoleteLinks = false;
@@ -280,30 +285,32 @@ static void processQdocconfFile(const QString &fileName)
             }
             for (int i = 0; i < dependModules.size(); i++) {
                 QString indexToAdd;
-                QMultiMap<uint, QFileInfo> foundIndices;
+                QList<QFileInfo> foundIndices;
                 for (int j = 0; j < indexDirs.size(); j++) {
                     QString fileToLookFor = indexDirs[j] + QLatin1Char('/') + dependModules[i] +
                             QLatin1Char('/') + dependModules[i] + QLatin1String(".index");
                     if (QFile::exists(fileToLookFor)) {
                         QFileInfo tempFileInfo(fileToLookFor);
-                        foundIndices.insert(tempFileInfo.lastModified().toTime_t(), tempFileInfo);
+                        if (!foundIndices.contains(tempFileInfo))
+                            foundIndices.append(tempFileInfo);
                     }
                 }
+                qSort(foundIndices.begin(), foundIndices.end(), creationTimeBefore);
                 if (foundIndices.size() > 1) {
                     /*
                         QDoc should always use the last entry in the multimap when there are
                         multiple index files for a module, since the last modified file has the
                         highest UNIX timestamp.
                     */
-                    qDebug() << "Multiple indices found for dependency:" << dependModules[i];
-                    qDebug() << "Using" << foundIndices.value(
-                                    foundIndices.keys()[foundIndices.size() - 1]).absoluteFilePath()
+                    qDebug() << "Multiple indices found for dependency:" << dependModules[i] << "\nFound:";
+                    for (int k = 0; k < foundIndices.size(); k++)
+                        qDebug() << foundIndices[k].absoluteFilePath();
+                    qDebug() << "Using" << foundIndices[foundIndices.size() - 1].absoluteFilePath()
                             << "as index for" << dependModules[i];
-                    indexToAdd = foundIndices.value(
-                                      foundIndices.keys()[foundIndices.size() - 1]).absoluteFilePath();
+                    indexToAdd = foundIndices[foundIndices.size() - 1].absoluteFilePath();
                 }
                 else if (foundIndices.size() == 1) {
-                    indexToAdd = foundIndices.value(foundIndices.keys()[0]).absoluteFilePath();
+                    indexToAdd = foundIndices[0].absoluteFilePath();
                 }
                 else {
                     qDebug() << "No indices for" << dependModules[i] <<
