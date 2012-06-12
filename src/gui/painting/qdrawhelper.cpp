@@ -56,7 +56,7 @@
 #include <private/qpainter_p.h>
 #include <private/qdrawhelper_x86_p.h>
 #include <private/qdrawhelper_neon_p.h>
-#ifdef QT_COMPILER_SUPPORTS_MIPS_DSP
+#if defined(QT_COMPILER_SUPPORTS_MIPS_DSP) || defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
 #include <private/qdrawhelper_mips_dsp_p.h>
 #endif
 #include <private/qmath_p.h>
