@@ -47,6 +47,7 @@
 #include <QtCore/QString>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMetaType>
+#include <QtCore/QTimer>
 
 #include <private/qsocks5socketengine_p.h>
 #include <qhostinfo.h>
@@ -89,6 +90,10 @@ private slots:
    // void tcpLoopbackPerformance();
     void passwordAuth();
     void passwordAuth2();
+    void fragmentation_data();
+    void fragmentation();
+    void incomplete_data();
+    void incomplete();
 
 protected slots:
     void tcpSocketNonBlocking_hostFound();
@@ -112,14 +117,45 @@ private:
     qint64 bytesAvailable;
 };
 
+class MiniSocks5ResponseHandler : public QObject
+{
+    Q_OBJECT
+public:
+    QQueue<QByteArray> responses;
+    QTcpSocket *client;
+
+    MiniSocks5ResponseHandler(QQueue<QByteArray> r, QTcpSocket *c, int autoResponseTime)
+        : responses(r), client(c)
+    {
+        client->setParent(this);
+        connect(client, SIGNAL(disconnected()), SLOT(deleteLater()));
+        connect(client, SIGNAL(readyRead()), SLOT(sendNextResponse()));
+        if (autoResponseTime)
+            QTimer::singleShot(autoResponseTime, this, SLOT(sendNextResponse()));
+    }
+
+private slots:
+    void sendNextResponse()
+    {
+        // WARNING
+        // this assumes that the client command is received in its entirety
+        // should be ok, since SOCKSv5 commands are rather small
+        if (responses.isEmpty())
+            client->disconnectFromHost();
+        else
+            client->write(responses.dequeue());
+    }
+};
+
 class MiniSocks5Server: public QTcpServer
 {
     Q_OBJECT
 public:
     QQueue<QByteArray> responses;
+    int autoResponseTime;
 
-    MiniSocks5Server(const QQueue<QByteArray> r)
-        : responses(r)
+    MiniSocks5Server(const QQueue<QByteArray> r, int t = 0)
+        : responses(r), autoResponseTime(t)
     {
         listen();
         connect(this, SIGNAL(newConnection()), SLOT(handleNewConnection()));
@@ -129,23 +165,7 @@ private slots:
     void handleNewConnection()
     {
         QTcpSocket *client = nextPendingConnection();
-        connect(client, SIGNAL(readyRead()), SLOT(handleClientCommand()));
-        client->setProperty("pendingResponses", QVariant::fromValue(responses));
-    }
-
-    void handleClientCommand()
-    {
-        // WARNING
-        // this assumes that the client command is received in its entirety
-        // should be ok, since SOCKSv5 commands are rather small
-        QTcpSocket *client = static_cast<QTcpSocket *>(sender());
-        QQueue<QByteArray> pendingResponses =
-            qvariant_cast<QQueue<QByteArray> >(client->property("pendingResponses"));
-        if (pendingResponses.isEmpty())
-            client->disconnectFromHost();
-        else
-            client->write(pendingResponses.dequeue());
-        client->setProperty("pendingResponses", QVariant::fromValue(pendingResponses));
+        new MiniSocks5ResponseHandler(responses, client, autoResponseTime);
     }
 };
 
@@ -964,6 +984,105 @@ void tst_QSocks5SocketEngine::passwordAuth2()
     QVERIFY(socketDevice.read(&c, sizeof(c)) == -1);
     QVERIFY(socketDevice.error() == QAbstractSocket::RemoteHostClosedError);
     QVERIFY(socketDevice.state() == QAbstractSocket::UnconnectedState);
+}
+
+void tst_QSocks5SocketEngine::fragmentation_data()
+{
+    QTest::addColumn<QQueue<QByteArray> >("responses");
+
+    QByteArray authMethodNone = QByteArray::fromRawData("\5\0", 2);
+    QByteArray authMethodBasic = QByteArray::fromRawData("\5\2", 2);
+    QByteArray authSuccess = QByteArray::fromRawData("\1\0", 2);
+    QByteArray connectResponseIPv4 = QByteArray::fromRawData("\5\0\0\1\1\2\3\4\5\6", 10);
+    QByteArray connectResponseIPv6 = QByteArray::fromRawData("\5\0\0\4\x01\x23\x45\x67\x89\xab\xcd\xef\x01\x23\x45\x67\x89\xab\xcd\xef\5\6", 22);
+
+    QQueue<QByteArray> responses;
+    responses << authMethodNone.left(1) << authMethodNone.mid(1) << connectResponseIPv4;
+    QTest::newRow("auth-method") << responses;
+
+    responses.clear();
+    responses << authMethodBasic << authSuccess.left(1) << authSuccess.mid(1) << connectResponseIPv4;
+    QTest::newRow("auth-response") << responses;
+
+    for (int i = 1; i < connectResponseIPv4.length() - 1; i++) {
+        responses.clear();
+        responses << authMethodNone << connectResponseIPv4.left(i) << connectResponseIPv4.mid(i);
+        QTest::newRow(qPrintable(QString("connect-response-ipv4-") + QString::number(i))) << responses;
+    }
+
+    for (int i = 1; i < connectResponseIPv6.length() - 1; i++) {
+        responses.clear();
+        responses << authMethodNone << connectResponseIPv6.left(i) << connectResponseIPv6.mid(i);
+        QTest::newRow(qPrintable(QString("connect-response-ipv6-") + QString::number(i))) << responses;
+    }
+}
+
+void tst_QSocks5SocketEngine::fragmentation()
+{
+    QFETCH(QQueue<QByteArray>, responses);
+    MiniSocks5Server server(responses, 500);
+
+    QTcpSocket socket;
+    socket.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, "localhost", server.serverPort(), "user", "password"));
+    socket.connectToHost("0.1.2.3", 12345);
+
+    connect(&socket, SIGNAL(connected()),
+            &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(socket.localAddress() == QHostAddress("1.2.3.4") || socket.localAddress() == QHostAddress("0123:4567:89ab:cdef:0123:4567:89ab:cdef"));
+    QVERIFY(socket.localPort() == 0x0506);
+}
+
+void tst_QSocks5SocketEngine::incomplete_data()
+{
+    QTest::addColumn<QQueue<QByteArray> >("responses");
+
+    QByteArray authMethodNone = QByteArray::fromRawData("\5\0", 2);
+    QByteArray authMethodBasic = QByteArray::fromRawData("\5\2", 2);
+    QByteArray authSuccess = QByteArray::fromRawData("\1\0", 2);
+    QByteArray connectResponseIPv4 = QByteArray::fromRawData("\5\0\0\1\1\2\3\4\5\6", 10);
+    QByteArray connectResponseIPv6 = QByteArray::fromRawData("\5\0\0\4\x01\x23\x45\x67\x89\xab\xcd\xef\x01\x23\x45\x67\x89\xab\xcd\xef\5\6", 22);
+
+    QQueue<QByteArray> responses;
+    responses << authMethodNone.left(1);
+    QTest::newRow("auth-method") << responses;
+
+    responses.clear();
+    responses << authMethodBasic << authSuccess.left(1);
+    QTest::newRow("auth-response") << responses;
+
+    for (int i = 1; i < connectResponseIPv4.length() - 1; i++) {
+        responses.clear();
+        responses << authMethodNone << connectResponseIPv4.left(i);
+        QTest::newRow(qPrintable(QString("connect-response-ipv4-") + QString::number(i))) << responses;
+    }
+
+    for (int i = 1; i < connectResponseIPv6.length() - 1; i++) {
+        responses.clear();
+        responses << authMethodNone << connectResponseIPv6.left(i);
+        QTest::newRow(qPrintable(QString("connect-response-ipv6-") + QString::number(i))) << responses;
+    }
+}
+
+void tst_QSocks5SocketEngine::incomplete()
+{
+    QFETCH(QQueue<QByteArray>, responses);
+    MiniSocks5Server server(responses, 500);
+
+    QTcpSocket socket;
+    socket.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, "127.0.0.1", server.serverPort(), "user", "password"));
+    socket.connectToHost("0.1.2.3", 12345);
+
+    connect(&socket, SIGNAL(connected()),
+            &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)),
+            &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(70);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(socket.error(), QAbstractSocket::ProxyConnectionClosedError);
 }
 
 //----------------------------------------------------------------------------------

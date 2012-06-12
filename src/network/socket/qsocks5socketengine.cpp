@@ -213,11 +213,12 @@ static bool qt_socks5_set_host_name_and_port(const QString &hostname, quint16 po
 
 /*
    retrives the host address in buf at pos and updates pos.
+   return 1 if OK, 0 if need more data, -1 if error
    if the func fails the value of the address and the pos is undefined
 */
-static bool qt_socks5_get_host_address_and_port(const QByteArray &buf, QHostAddress *pAddress, quint16 *pPort, int *pPos)
+static int qt_socks5_get_host_address_and_port(const QByteArray &buf, QHostAddress *pAddress, quint16 *pPort, int *pPos)
 {
-    bool ret = false;
+    int ret = -1;
     int pos = *pPos;
     const unsigned char *pBuf = reinterpret_cast<const unsigned char*>(buf.constData());
     QHostAddress address;
@@ -225,27 +226,28 @@ static bool qt_socks5_get_host_address_and_port(const QByteArray &buf, QHostAddr
 
     if (buf.size() - pos < 1) {
         QSOCKS5_DEBUG << "need more data address/port";
-        return false;
+        return 0;
     }
     if (pBuf[pos] == S5_IP_V4) {
         pos++;
         if (buf.size() - pos < 4) {
             QSOCKS5_DEBUG << "need more data for ip4 address";
-            return false;
+            return 0;
         }
         address.setAddress(qFromBigEndian<quint32>(&pBuf[pos]));
         pos += 4;
-        ret = true;
+        ret = 1;
     } else if (pBuf[pos] == S5_IP_V6) {
         pos++;
         if (buf.size() - pos < 16) {
             QSOCKS5_DEBUG << "need more data for ip6 address";
-            return false;
+            return 0;
         }
         QIPv6Address add;
         for (int i = 0; i < 16; ++i)
             add[i] = buf[pos++];
-        ret = true;
+        address.setAddress(add);
+        ret = 1;
     } else if (pBuf[pos] == S5_DOMAINNAME){
         // just skip it
         pos++;
@@ -253,19 +255,19 @@ static bool qt_socks5_get_host_address_and_port(const QByteArray &buf, QHostAddr
         pos += uchar(pBuf[pos]);
     } else {
         QSOCKS5_DEBUG << "invalid address type" << (int)pBuf[pos];
-        ret = false;
+        ret = -1;
     }
 
-    if (ret) {
+    if (ret == 1) {
         if (buf.size() - pos < 2) {
             QSOCKS5_DEBUG << "need more data for port";
-            return false;
+            return 0;
         }
         port = qFromBigEndian<quint16>(&pBuf[pos]);
         pos += 2;
     }
 
-    if (ret) {
+    if (ret == 1) {
         QSOCKS5_DEBUG << "got [" << address << ':' << port << ']';
         *pAddress = address;
         *pPort = port;
@@ -848,16 +850,20 @@ void QSocks5SocketEnginePrivate::parseRequestMethodReply()
         QSOCKS5_DEBUG << "unSeal failed, needs more data";
         return;
     }
+
+    inBuf.prepend(receivedHeaderFragment);
+    receivedHeaderFragment.clear();
     QSOCKS5_DEBUG << dump(inBuf);
-    if (inBuf.size() < 2) {
+    if (inBuf.size() < 3) {
         QSOCKS5_DEBUG << "need more data for request reply header .. put this data somewhere";
+        receivedHeaderFragment = inBuf;
         return;
     }
 
     QHostAddress address;
     quint16 port = 0;
 
-    if (inBuf.at(0) != S5_VERSION_5 || inBuf.length() < 3 || inBuf.at(2) != 0x00) {
+    if (inBuf.at(0) != S5_VERSION_5 || inBuf.at(2) != 0x00) {
         QSOCKS5_DEBUG << "socks protocol error";
         setErrorState(SocksError);
     } else if (inBuf.at(1) != S5_SUCCESS) {
@@ -873,9 +879,14 @@ void QSocks5SocketEnginePrivate::parseRequestMethodReply()
     } else {
         // connection success, retrieve the remote addresses
         int pos = 3;
-        if (!qt_socks5_get_host_address_and_port(inBuf, &address, &port, &pos)) {
+        int err = qt_socks5_get_host_address_and_port(inBuf, &address, &port, &pos);
+        if (err == -1) {
             QSOCKS5_DEBUG << "error getting address";
             setErrorState(SocksError);
+        } else if (err == 0) {
+            //need more data
+            receivedHeaderFragment = inBuf;
+            return;
         } else {
             inBuf.remove(0, pos);
             for (int i = inBuf.size() - 1; i >= 0 ; --i)
@@ -1310,7 +1321,7 @@ void QSocks5SocketEnginePrivate::_q_udpSocketReadNotification()
             QSOCKS5_D_DEBUG << "don't support fragmentation yet disgarding";
             return;
         }
-        if (!qt_socks5_get_host_address_and_port(inBuf, &datagram.address, &datagram.port, &pos)) {
+        if (qt_socks5_get_host_address_and_port(inBuf, &datagram.address, &datagram.port, &pos) != 1) {
             QSOCKS5_D_DEBUG << "failed to get address from datagram disgarding";
             return;
         }

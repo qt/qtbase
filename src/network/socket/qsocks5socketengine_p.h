@@ -270,6 +270,7 @@ public:
 #endif
     QSocks5BindData *bindData;
     QString peerName;
+    QByteArray receivedHeaderFragment;
 
     mutable bool readNotificationActivated;
     mutable bool writeNotificationActivated;
