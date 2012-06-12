@@ -274,6 +274,9 @@ void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, Er
     case InvalidProxyTypeString:
         socketErrorString = QNativeSocketEngine::tr("The proxy type is invalid for this operation");
         break;
+    case TemporaryErrorString:
+        socketErrorString = QNativeSocketEngine::tr("Temporary error");
+        break;
     case UnknownSocketErrorString:
         socketErrorString = QNativeSocketEngine::tr("Unknown error");
         break;

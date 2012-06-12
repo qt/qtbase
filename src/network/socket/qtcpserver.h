@@ -85,6 +85,9 @@ public:
     QAbstractSocket::SocketError serverError() const;
     QString errorString() const;
 
+    void pauseAccepting();
+    void resumeAccepting();
+
 #ifndef QT_NO_NETWORKPROXY
     void setProxy(const QNetworkProxy &networkProxy);
     QNetworkProxy proxy() const;
@@ -96,6 +99,7 @@ protected:
 
 Q_SIGNALS:
     void newConnection();
+    void acceptError(QAbstractSocket::SocketError socketError);
 
 private:
     Q_DISABLE_COPY(QTcpServer)

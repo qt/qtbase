@@ -99,6 +99,7 @@ public:
         OperationError,
         SslInternalError,                       /* 20 */
         SslInvalidUserDataError,
+        TemporaryError,
 
         UnknownSocketError = -1
     };

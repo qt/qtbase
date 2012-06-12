@@ -234,6 +234,7 @@ public:
         PortInuseErrorString,
         NotSocketErrorString,
         InvalidProxyTypeString,
+        TemporaryErrorString,
 
         UnknownSocketErrorString = -1
     };

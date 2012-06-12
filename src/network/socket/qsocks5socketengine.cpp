@@ -1453,13 +1453,15 @@ int QSocks5SocketEngine::accept()
 
     QSOCKS5_Q_DEBUG << "accept()";
 
-    if (d->socks5State == QSocks5SocketEnginePrivate::BindSuccess) {
+    qintptr sd = -1;
+    switch (d->socks5State) {
+    case QSocks5SocketEnginePrivate::BindSuccess:
         QSOCKS5_Q_DEBUG << "BindSuccess adding" << d->socketDescriptor << "to the bind store";
         d->data->controlSocket->disconnect();
         d->data->controlSocket->setParent(0);
         d->bindData->localAddress = d->localAddress;
         d->bindData->localPort = d->localPort;
-        qintptr sd = d->socketDescriptor;
+        sd = d->socketDescriptor;
         socks5BindStore()->add(sd, d->bindData);
         d->data = 0;
         d->bindData = 0;
@@ -1468,9 +1470,15 @@ int QSocks5SocketEngine::accept()
         // reset state and local port/address
         d->socks5State = QSocks5SocketEnginePrivate::Uninitialized; // ..??
         d->socketState = QAbstractSocket::UnconnectedState;
-        return sd;
+        break;
+    case QSocks5SocketEnginePrivate::ControlSocketError:
+        setError(QAbstractSocket::ProxyProtocolError, QLatin1String("Control socket error"));
+        break;
+    default:
+        setError(QAbstractSocket::ProxyProtocolError, QLatin1String("SOCKS5 proxy error"));
+        break;
     }
-    return -1;
+    return sd;
 }
 
 void QSocks5SocketEngine::close()

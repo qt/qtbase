@@ -321,6 +321,8 @@
            probably the result of a bad installation or misconfiguration of the library.
     \value SslInvalidUserDataError Invalid data(certificate, key, cypher, etc.) was
            provided and its use resulted in an error in the SSL library.
+    \value TemporaryError A temporary error occurred(e.g., operation would block and socket
+           is non-blocking).
 
     \value UnknownSocketError An unidentified error occurred.
     \sa QAbstractSocket::error()

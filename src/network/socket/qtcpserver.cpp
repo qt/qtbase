@@ -90,6 +90,15 @@
     \sa hasPendingConnections(), nextPendingConnection()
 */
 
+/*! \fn void QTcpServer::acceptError(QAbstractSocket::SocketError socketError)
+    \since 5.0
+
+    This signal is emitted when accepting a new connection results in an error.
+    The \a socketError parameter describes the type of error that occurred.
+
+    \sa pauseAccepting(), resumeAccepting()
+*/
+
 #include "qtcpserver.h"
 #include "private/qobject_p.h"
 #include "qalgorithms.h"
@@ -209,8 +218,15 @@ void QTcpServerPrivate::readNotification()
         }
 
         int descriptor = socketEngine->accept();
-        if (descriptor == -1)
+        if (descriptor == -1) {
+            if (socketEngine->error() != QAbstractSocket::TemporaryError) {
+                q->pauseAccepting();
+                serverSocketError = socketEngine->error();
+                serverSocketErrorString = socketEngine->errorString();
+                emit q->acceptError(serverSocketError);
+            }
             break;
+        }
 #if defined (QTCPSERVER_DEBUG)
         qDebug("QTcpServerPrivate::_q_processIncomingConnection() accepted socket %i", descriptor);
 #endif
@@ -648,6 +664,30 @@ QAbstractSocket::SocketError QTcpServer::serverError() const
 QString QTcpServer::errorString() const
 {
     return d_func()->serverSocketErrorString;
+}
+
+/*!
+    \since 5.0
+
+    Pauses accepting new connections. Queued connections will remain in queue.
+
+    \sa resumeAccepting()
+*/
+void QTcpServer::pauseAccepting()
+{
+    d_func()->socketEngine->setReadNotificationEnabled(false);
+}
+
+/*!
+    \since 5.0
+
+    Resumes accepting new connections.
+
+    \sa pauseAccepting()
+*/
+void QTcpServer::resumeAccepting()
+{
+    d_func()->socketEngine->setReadNotificationEnabled(true);
 }
 
 #ifndef QT_NO_NETWORKPROXY

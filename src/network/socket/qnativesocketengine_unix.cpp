@@ -588,6 +588,46 @@ bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 int QNativeSocketEnginePrivate::nativeAccept()
 {
     int acceptedDescriptor = qt_safe_accept(socketDescriptor, 0, 0);
+    if (acceptedDescriptor == -1) {
+        switch (errno) {
+        case EBADF:
+        case EOPNOTSUPP:
+            setError(QAbstractSocket::UnsupportedSocketOperationError, InvalidSocketErrorString);
+            break;
+        case ECONNABORTED:
+            setError(QAbstractSocket::NetworkError, RemoteHostClosedErrorString);
+            break;
+        case EFAULT:
+        case ENOTSOCK:
+            setError(QAbstractSocket::SocketResourceError, NotSocketErrorString);
+            break;
+        case EPROTONOSUPPORT:
+        case EPROTO:
+        case EAFNOSUPPORT:
+        case EINVAL:
+            setError(QAbstractSocket::UnsupportedSocketOperationError, ProtocolUnsupportedErrorString);
+            break;
+        case ENFILE:
+        case EMFILE:
+        case ENOBUFS:
+        case ENOMEM:
+            setError(QAbstractSocket::SocketResourceError, ResourceErrorString);
+            break;
+        case EACCES:
+        case EPERM:
+            setError(QAbstractSocket::SocketAccessError, AccessErrorString);
+            break;
+#if EAGAIN != EWOULDBLOCK
+        case EWOULDBLOCK:
+#endif
+        case EAGAIN:
+            setError(QAbstractSocket::TemporaryError, TemporaryErrorString);
+            break;
+        default:
+            setError(QAbstractSocket::UnknownSocketError, UnknownSocketErrorString);
+            break;
+        }
+    }
 
     return acceptedDescriptor;
 }

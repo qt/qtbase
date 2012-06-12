@@ -121,6 +121,8 @@ private slots:
 
     void linkLocal();
 
+    void eagainBlockingAccept();
+
 private:
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkSession *networkSession;
@@ -951,6 +953,25 @@ void tst_QTcpServer::linkLocal()
 
     qDeleteAll(clients);
     qDeleteAll(servers);
+}
+
+void tst_QTcpServer::eagainBlockingAccept()
+{
+    QTcpServer server;
+    server.listen(QHostAddress::LocalHost, 7896);
+
+    // Receiving a new connection causes TemporaryError, but shouldn't pause accepting.
+    QTcpSocket s;
+    s.connectToHost(QHostAddress::LocalHost, 7896);
+    QSignalSpy spy(&server, SIGNAL(newConnection()));
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 500);
+    s.close();
+
+    // To test try again, should connect just fine.
+    s.connectToHost(QHostAddress::LocalHost, 7896);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 500);
+    s.close();
+    server.close();
 }
 
 QTEST_MAIN(tst_QTcpServer)
