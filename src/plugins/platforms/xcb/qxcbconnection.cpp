@@ -98,6 +98,7 @@ static int nullErrorHandler(Display *, XErrorEvent *)
 
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char *displayName)
     : m_connection(0)
+    , m_primaryScreen(0)
     , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
     , m_nativeInterface(nativeInterface)
 #ifdef XCB_USE_XINPUT2_MAEMO
@@ -115,8 +116,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     , has_randr_extension(false)
     , has_input_shape(false)
 {
-    m_primaryScreen = 0;
-
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
     if (dpy) {
@@ -167,7 +166,14 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
 
     int screenNumber = 0;
     while (it.rem) {
-        m_screens << new QXcbScreen(this, it.data, screenNumber++);
+        QXcbScreen *screen = new QXcbScreen(this, it.data, screenNumber);
+        // make sure the primary screen appears first since it is used by QGuiApplication::primaryScreen()
+        if (m_primaryScreen == screenNumber) {
+            m_screens.prepend(screen);
+        } else {
+            m_screens.append(screen);
+        }
+        ++screenNumber;
         xcb_screen_next(&it);
     }
 
