@@ -82,6 +82,7 @@ class QMakeProject
     bool need_restart;
     bool own_prop;
     bool backslashWarned;
+    QString project_build_root;
     QString conffile;
     QString superfile;
     QString cachefile;
@@ -136,6 +137,7 @@ public:
     QStringList userTestFunctions() { return testFunctions.keys(); }
 
     QString projectFile();
+    QString buildRoot() const { return project_build_root; }
     QString confFile() const { return conffile; }
     QString cacheFile() const { return cachefile; }
     QString specDir() const { return real_spec; }

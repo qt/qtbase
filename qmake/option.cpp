@@ -556,6 +556,11 @@ bool Option::postProcessProject(QMakeProject *project)
     Option::lex_mod = project->first("QMAKE_MOD_LEX");
     Option::yacc_mod = project->first("QMAKE_MOD_YACC");
     Option::dir_sep = project->first("QMAKE_DIR_SEP");
+
+    if (Option::output_dir.startsWith(project->buildRoot()))
+        Option::mkfile::cachefile_depth =
+                Option::output_dir.mid(project->buildRoot().length()).count('/');
+
     return true;
 }
 

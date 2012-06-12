@@ -1333,9 +1333,9 @@ QMakeProject::read(uchar cmd)
       if (base_vars.isEmpty()) {
         QString superdir;
         QString project_root;
-        QString project_build_root;
         QStringList qmakepath;
         QStringList qmakefeatures;
+        project_build_root.clear();
         if (Option::mkfile::do_cache) {        // parse the cache
             QHash<QString, QStringList> cache;
             QString rdir = Option::output_dir;
@@ -1402,10 +1402,6 @@ QMakeProject::read(uchar cmd)
             }
             qmakepath = cache.value(QLatin1String("QMAKEPATH"));
             qmakefeatures = cache.value(QLatin1String("QMAKEFEATURES"));
-
-            if (Option::output_dir.startsWith(project_build_root))
-                Option::mkfile::cachefile_depth =
-                        Option::output_dir.mid(project_build_root.length()).count('/');
 
             if (!superfile.isEmpty())
                 vars["_QMAKE_SUPER_CACHE_"] << superfile;
