@@ -108,11 +108,11 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 #if defined(QT_STATICPLUGIN)
 
 #  define QT_MOC_EXPORT_PLUGIN(PLUGINCLASS) \
-    static QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance() \
+    static QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance_##PLUGINCLASS() \
     Q_PLUGIN_INSTANCE(PLUGINCLASS) \
-    static const char *qt_plugin_query_metadata() { return (const char *)qt_pluginMetaData; } \
+    static const char *qt_plugin_query_metadata_##PLUGINCLASS() { return (const char *)qt_pluginMetaData; } \
     const QT_PREPEND_NAMESPACE(QStaticPlugin) qt_static_plugin_##PLUGINCLASS() { \
-        QT_PREPEND_NAMESPACE(QStaticPlugin) plugin = { qt_plugin_instance, qt_plugin_query_metadata }; \
+        QT_PREPEND_NAMESPACE(QStaticPlugin) plugin = { qt_plugin_instance_##PLUGINCLASS, qt_plugin_query_metadata_##PLUGINCLASS}; \
         return plugin; \
     }
 
