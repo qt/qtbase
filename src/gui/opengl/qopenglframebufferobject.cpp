@@ -384,7 +384,7 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
 
-    funcs.initializeGLFunctions();
+    funcs.initializeOpenGLFunctions();
 
     if (!funcs.hasOpenGLFeature(QOpenGLFunctions::Framebuffers))
         return;

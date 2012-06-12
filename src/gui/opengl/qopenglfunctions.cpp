@@ -446,10 +446,10 @@ bool QOpenGLExtensions::hasOpenGLExtension(QOpenGLExtensions::OpenGLExtension ex
 
     After calling this function, the QOpenGLFunctions object can only be
     used with the current context and other contexts that share with it.
-    Call initializeGLFunctions() again to change the object's context
+    Call initializeOpenGLFunctions() again to change the object's context
     association.
 */
-void QOpenGLFunctions::initializeGLFunctions()
+void QOpenGLFunctions::initializeOpenGLFunctions()
 {
     d_ptr = qt_gl_functions();
 }

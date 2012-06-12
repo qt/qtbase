@@ -594,7 +594,7 @@ bool QOpenGLShaderProgram::init()
     QOpenGLContext *context = const_cast<QOpenGLContext *>(QOpenGLContext::currentContext());
     if (!context)
         return false;
-    d->glfuncs->initializeGLFunctions();
+    d->glfuncs->initializeOpenGLFunctions();
     GLuint program = d->glfuncs->glCreateProgram();
     if (!program) {
         qWarning() << "QOpenGLShaderProgram: could not create shader program";

@@ -224,7 +224,11 @@ public:
     QOpenGLFunctions::OpenGLFeatures openGLFeatures() const;
     bool hasOpenGLFeature(QOpenGLFunctions::OpenGLFeature feature) const;
 
-    void initializeGLFunctions();
+    void initializeOpenGLFunctions();
+
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED void initializeGLFunctions() { initializeOpenGLFunctions(); }
+#endif
 
     void glActiveTexture(GLenum texture);
     void glAttachShader(GLuint program, GLuint shader);

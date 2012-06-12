@@ -1924,7 +1924,7 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->ctx = QOpenGLContext::currentContext();
     d->ctx->d_func()->active_engine = this;
 
-    d->funcs.initializeGLFunctions();
+    d->funcs.initializeOpenGLFunctions();
 
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         d->vertexAttributeArraysEnabledState[i] = false;
