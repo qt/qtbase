@@ -1255,26 +1255,26 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
 void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::WheelEvent *e)
 {
-    if (!e->window)
-        return;
-
+    QWindow *window = e->window.data();
     QPointF globalPoint = e->globalPos;
+
+    if (!window) {
+        window = QGuiApplication::topLevelAt(globalPoint.toPoint());
+        if (!window)
+            return;
+    }
+
     QGuiApplicationPrivate::lastCursorPosition = globalPoint;
     modifier_buttons = e->modifiers;
 
-    QWindow *window = e->window.data();
+    if (window->d_func()->blockedByModalWindow) {
+        // a modal window is blocking this window, don't allow wheel events through
+        return;
+    }
 
-    if (window) {
-        if (window->d_func()->blockedByModalWindow) {
-            // a modal window is blocking this window, don't allow wheel events through
-            return;
-        }
-
-         QWheelEvent ev(e->localPos, e->globalPos, e->pixelDelta, e->angleDelta, e->qt4Delta, e->qt4Orientation, buttons, e->modifiers);
-         ev.setTimestamp(e->timestamp);
-         QGuiApplication::sendSpontaneousEvent(window, &ev);
-         return;
-     }
+     QWheelEvent ev(e->localPos, e->globalPos, e->pixelDelta, e->angleDelta, e->qt4Delta, e->qt4Orientation, buttons, e->modifiers);
+     ev.setTimestamp(e->timestamp);
+     QGuiApplication::sendSpontaneousEvent(window, &ev);
 }
 
 // Remember, Qt convention is:  keyboard state is state *before*
