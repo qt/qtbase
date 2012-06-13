@@ -109,7 +109,7 @@ void tst_QDnsLookup::lookup_data()
     QTest::newRow("ptr-empty") << int(QDnsLookup::PTR) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("ptr-notfound") << int(QDnsLookup::PTR) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
     // FIXME: we need PTR records in the troll.no domain
-    QTest::newRow("ptr-ascii") << int(QDnsLookup::PTR) << "168.52.238.87.in-addr.arpa" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "gitorious.org" << "" << QByteArray();
+    QTest::newRow("ptr-ascii") << int(QDnsLookup::PTR) << "8.8.8.8.in-addr.arpa" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "google-public-dns-a.google.com" << "" << QByteArray();
 
     QTest::newRow("srv-empty") << int(QDnsLookup::SRV) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("srv-notfound") << int(QDnsLookup::SRV) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
