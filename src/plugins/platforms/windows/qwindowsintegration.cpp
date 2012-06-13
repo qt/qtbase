@@ -398,6 +398,7 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
     case QPlatformIntegration::KeyboardInputInterval:
     case QPlatformIntegration::ShowIsFullScreen:
     case QPlatformIntegration::PasswordMaskDelay:
+    case QPlatformIntegration::StartDragVelocity:
         break; // Not implemented
     case QPlatformIntegration::FontSmoothingGamma:
         return QVariant(QWindowsFontDatabase::fontSmoothingGamma());

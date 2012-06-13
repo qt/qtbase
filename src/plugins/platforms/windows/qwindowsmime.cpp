@@ -150,7 +150,8 @@ static bool qt_write_dibv5(QDataStream &s, QImage image)
     //depth will be always 32
     int bpl_bmp = image.width()*4;
 
-    BMP_BITMAPV5HEADER bi ={0};
+    BMP_BITMAPV5HEADER bi;
+    ZeroMemory(&bi, sizeof(bi));
     bi.bV5Size          = sizeof(BMP_BITMAPV5HEADER);
     bi.bV5Width         = image.width();
     bi.bV5Height        = image.height();

@@ -306,7 +306,7 @@ bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
 {
     bool value = false;
     if (vistaState() == VistaAero) {
-        WIZ_MARGINS mar = {0};
+        WIZ_MARGINS mar = {0, 0, 0, 0};
         if (type == NormalTitleBar)
             mar.cyTopHeight = 0;
         else
@@ -639,13 +639,14 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
 
 HFONT QVistaHelper::getCaptionFont(HANDLE hTheme)
 {
-    LOGFONT lf = {0};
+    LOGFONT lf = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
     if (!hTheme)
         pGetThemeSysFont(hTheme, WIZ_TMT_CAPTIONFONT, &lf);
     else
     {
-        NONCLIENTMETRICS ncm = {sizeof(NONCLIENTMETRICS)};
+        NONCLIENTMETRICS ncm;
+        ncm.cbSize = sizeof(NONCLIENTMETRICS);
         SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, false);
         lf = ncm.lfMessageFont;
     }
@@ -662,7 +663,8 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
         // Set up a memory DC and bitmap that we'll draw into
         HDC dcMem;
         HBITMAP bmp;
-        BITMAPINFO dib = {{0}};
+        BITMAPINFO dib;
+        ZeroMemory(&dib, sizeof(dib));
         dcMem = CreateCompatibleDC(hdc);
 
         dib.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -680,7 +682,8 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
         HFONT hOldFont = (HFONT)SelectObject(dcMem, (HGDIOBJ) hCaptionFont);
  
         // Draw the text!
-        WIZ_DTTOPTS dto = { sizeof(WIZ_DTTOPTS) };
+        WIZ_DTTOPTS dto;
+        dto.dwSize = sizeof(WIZ_DTTOPTS);
         const UINT uFormat = WIZ_DT_SINGLELINE|WIZ_DT_CENTER|WIZ_DT_VCENTER|WIZ_DT_NOPREFIX;
         RECT rctext ={0,0, rect.width(), rect.height()};
 
@@ -708,7 +711,8 @@ bool QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
         // Set up a memory DC and bitmap that we'll draw into
         HDC dcMem;
         HBITMAP bmp;
-        BITMAPINFO dib = {{0}};
+        BITMAPINFO dib;
+        ZeroMemory(&dib, sizeof(dib));
         dcMem = CreateCompatibleDC(hdc);
 
         dib.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);

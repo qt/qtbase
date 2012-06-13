@@ -466,7 +466,7 @@ QRect QSystemTrayIconSys::findIconGeometry(const int iconId)
         if (currentIconHandle == m_hwnd &&
             currentIconId == iconId && !isHidden) {
             SendMessage(trayHandle, TB_GETITEMRECT, toolbarButton , (LPARAM)data);
-            RECT iconRect = {0, 0};
+            RECT iconRect = {0, 0, 0, 0};
             if(ReadProcessMemory(trayProcess, data, &iconRect, sizeof(RECT), &numBytes)) {
                 MapWindowPoints(trayHandle, NULL, (LPPOINT)&iconRect, 2);
                 QRect geometry(iconRect.left + 1, iconRect.top + 1,
