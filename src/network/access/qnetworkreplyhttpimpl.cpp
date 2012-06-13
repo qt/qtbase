@@ -620,7 +620,6 @@ void QNetworkReplyHttpImplPrivate::postRequest()
         // At some point we could switch to having multiple threads if it makes sense.
         managerPrivate->httpThread = new QThread();
         managerPrivate->httpThread->setObjectName(QStringLiteral("httpThread"));
-        QObject::connect(managerPrivate->httpThread, SIGNAL(finished()), managerPrivate->httpThread, SLOT(deleteLater()));
         managerPrivate->httpThread->start();
 
         thread = managerPrivate->httpThread;
@@ -917,9 +916,12 @@ void QNetworkReplyHttpImplPrivate::postRequest()
             replyDownloadData(delegate->synchronousDownloadData);
         }
 
-        // End the thread. It will delete itself from the finished() signal
         thread->quit();
         thread->wait(5000);
+        if (thread->isFinished())
+            delete thread;
+        else
+            QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
 
         finished();
     } else {
