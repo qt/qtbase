@@ -58,6 +58,8 @@ template <class T>
 struct QPodArrayOps
     : QTypedArrayData<T>
 {
+    typedef T parameter_type;
+
     void appendInitialize(size_t newSize)
     {
         Q_ASSERT(this->isMutable());
@@ -81,7 +83,7 @@ struct QPodArrayOps
         this->size += e - b;
     }
 
-    void copyAppend(size_t n, const T &t)
+    void copyAppend(size_t n, parameter_type t)
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
@@ -145,6 +147,8 @@ template <class T>
 struct QGenericArrayOps
     : QTypedArrayData<T>
 {
+    typedef const T &parameter_type;
+
     void appendInitialize(size_t newSize)
     {
         Q_ASSERT(this->isMutable());
@@ -172,7 +176,7 @@ struct QGenericArrayOps
         }
     }
 
-    void copyAppend(size_t n, const T &t)
+    void copyAppend(size_t n, parameter_type t)
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
