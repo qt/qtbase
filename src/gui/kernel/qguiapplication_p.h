@@ -168,6 +168,7 @@ public:
     QWindowList modalWindowList;
     static void showModalWindow(QWindow *window);
     static void hideModalWindow(QWindow *window);
+    static void updateBlockedStatus(QWindow *window);
     virtual bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const;
 
     static Qt::MouseButtons buttons;

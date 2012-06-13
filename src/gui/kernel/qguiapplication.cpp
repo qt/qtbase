@@ -402,18 +402,30 @@ QWindow *QGuiApplication::modalWindow()
     return QGuiApplicationPrivate::self->modalWindowList.first();
 }
 
-void QGuiApplicationPrivate::showModalWindow(QWindow *window)
+void QGuiApplicationPrivate::updateBlockedStatus(QWindow *window)
 {
-    self->modalWindowList.prepend(window);
+    bool shouldBeBlocked = false;
+    if (window->windowType() != Qt::Tool && !self->modalWindowList.isEmpty())
+        shouldBeBlocked = self->isWindowBlocked(window);
+
+    if (shouldBeBlocked != window->d_func()->blockedByModalWindow) {
+        QEvent e(shouldBeBlocked ? QEvent::WindowBlocked : QEvent::WindowUnblocked);
+
+        window->d_func()->blockedByModalWindow = shouldBeBlocked;
+        QGuiApplication::sendEvent(window, &e);
+    }
+}
+
+void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
+{
+    self->modalWindowList.prepend(modal);
 
     QEvent e(QEvent::WindowBlocked);
     QWindowList windows = QGuiApplication::topLevelWindows();
     for (int i = 0; i < windows.count(); ++i) {
         QWindow *window = windows.at(i);
-        if (!window->d_func()->blockedByModalWindow && window->windowType() != Qt::Tool && self->isWindowBlocked(window)) {
-            window->d_func()->blockedByModalWindow = true;
-            QGuiApplication::sendEvent(window, &e);
-        }
+        if (!window->d_func()->blockedByModalWindow)
+            updateBlockedStatus(window);
     }
 }
 
@@ -425,10 +437,8 @@ void QGuiApplicationPrivate::hideModalWindow(QWindow *window)
     QWindowList windows = QGuiApplication::topLevelWindows();
     for (int i = 0; i < windows.count(); ++i) {
         QWindow *window = windows.at(i);
-        if (window->d_func()->blockedByModalWindow && window->windowType() != Qt::Tool && !self->isWindowBlocked(window)) {
-            window->d_func()->blockedByModalWindow = false;
-            QGuiApplication::sendEvent(window, &e);
-        }
+        if (window->d_func()->blockedByModalWindow)
+            updateBlockedStatus(window);
     }
 }
 

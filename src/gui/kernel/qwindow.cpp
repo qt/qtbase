@@ -360,6 +360,8 @@ void QWindow::setParent(QWindow *parent)
     }
 
     d->parentWindow = parent;
+
+    QGuiApplicationPrivate::updateBlockedStatus(this);
 }
 
 /*!
@@ -784,6 +786,8 @@ void QWindow::setTransientParent(QWindow *parent)
 {
     Q_D(QWindow);
     d->transientParent = parent;
+
+    QGuiApplicationPrivate::updateBlockedStatus(this);
 }
 
 /*!
