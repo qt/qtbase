@@ -13,4 +13,5 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/pixelator
 INSTALLS += target sources
 
-QT += widgets printsupport
+QT += widgets
+!isEmpty(QT.printsupport.name): QT += printsupport

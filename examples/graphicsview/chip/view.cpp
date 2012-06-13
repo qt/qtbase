@@ -42,13 +42,13 @@
 #include "view.h"
 
 #include <QtWidgets>
+#ifndef QT_NO_PRINTER
 #include <QPrinter>
 #include <QPrintDialog>
-
+#endif
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL>
 #endif
-
 #include <qmath.h>
 
 void GraphicsView::wheelEvent(QWheelEvent *e)

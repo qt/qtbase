@@ -53,8 +53,6 @@
 #include <QFontDatabase>
 #include <QMenu>
 #include <QMenuBar>
-#include <QPrintDialog>
-#include <QPrinter>
 #include <QTextCodec>
 #include <QTextEdit>
 #include <QToolBar>
@@ -64,8 +62,12 @@
 #include <QtDebug>
 #include <QCloseEvent>
 #include <QMessageBox>
-#include <QPrintPreviewDialog>
 #include <QMimeData>
+#ifndef QT_NO_PRINTER
+#include <QPrintDialog>
+#include <QPrinter>
+#include <QPrintPreviewDialog>
+#endif
 
 #ifdef Q_OS_MAC
 const QString rsrcPath = ":/images/mac";

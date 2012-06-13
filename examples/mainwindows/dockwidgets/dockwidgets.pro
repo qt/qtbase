@@ -9,6 +9,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES dockwidgets.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows/dockwidgets
 INSTALLS += target sources
 
-QT += widgets printsupport
+QT += widgets
+!isEmpty(QT.printsupport.name): QT += printsupport
 
 simulator: warning(This example might not fully work on Simulator platform)

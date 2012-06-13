@@ -42,7 +42,9 @@
 #define IMAGEVIEWER_H
 
 #include <QMainWindow>
+#ifndef QT_NO_PRINTER
 #include <QPrinter>
+#endif
 
 QT_BEGIN_NAMESPACE
 class QAction;

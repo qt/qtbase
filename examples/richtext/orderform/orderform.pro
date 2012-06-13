@@ -10,4 +10,5 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS orderform.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/richtext/orderform
 INSTALLS += target sources
 
-QT += widgets printsupport
+QT += widgets
+!isEmpty(QT.printsupport.name): QT += printsupport

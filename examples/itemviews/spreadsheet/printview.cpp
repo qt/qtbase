@@ -40,7 +40,10 @@
 ****************************************************************************/
 
 #include "printview.h"
+
+#ifndef QT_NO_PRINTER
 #include <QPrinter>
+#endif
 #include <QStyleOptionViewItem>
 
 PrintView::PrintView()

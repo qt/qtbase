@@ -39,8 +39,10 @@
 ****************************************************************************/
 
 #include <QtWidgets>
+#ifndef QT_NO_PRINTER
 #include <QPrinter>
 #include <QPrintDialog>
+#endif
 
 #include "detailsdialog.h"
 #include "mainwindow.h"

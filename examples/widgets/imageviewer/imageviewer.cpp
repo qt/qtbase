@@ -39,7 +39,9 @@
 ****************************************************************************/
 
 #include <QtWidgets>
+#ifndef QT_NO_PRINTER
 #include <QPrintDialog>
+#endif
 
 #include "imageviewer.h"
 

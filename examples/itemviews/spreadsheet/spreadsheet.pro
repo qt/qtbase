@@ -1,4 +1,5 @@
-QT += widgets printsupport
+QT += widgets
+!isEmpty(QT.printsupport.name): QT += printsupport
 #unix:contains(QT_CONFIG, dbus):QT += dbus widgets
 
 HEADERS += printview.h spreadsheet.h spreadsheetdelegate.h spreadsheetitem.h

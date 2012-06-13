@@ -40,7 +40,10 @@
 
 //! [0]
 #include <QtWidgets>
+#ifndef QT_NO_PRINTDIALOG
 #include <QtPrintSupport>
+#endif
+
 #include "mainwindow.h"
 //! [0]
 

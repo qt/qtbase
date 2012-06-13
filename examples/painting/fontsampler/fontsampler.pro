@@ -9,4 +9,5 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS fontsampler.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/fontsampler
 INSTALLS += target sources
 
-QT += widgets printsupport
+QT += widgets
+!isEmpty(QT.printsupport.name): QT += printsupport

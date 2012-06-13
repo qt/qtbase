@@ -12,6 +12,7 @@ INSTALLS += target sources
 wince*: {
    DEPLOYMENT_PLUGIN += qjpeg qgif
 }
-QT += widgets printsupport
+QT += widgets
+!isEmpty(QT.printsupport.name): QT += printsupport
 
 simulator: warning(This example might not fully work on Simulator platform)
