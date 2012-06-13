@@ -1,4 +1,4 @@
-!no_qt_module_warning:if(!contains(QMAKE_INTERNAL_INCLUDED_FILES, .*qmodule\\\\.pri)|isEmpty(QMAKE_QT_MODULE_PRI_LOADED)) {
+!no_qt_module_warning:!contains(QMAKE_INTERNAL_INCLUDED_FILES, .*qmodule\\.pri) {
     QMAKE_ACTUAL_PRO_FILE = $$basename(_PRO_FILE_)
     isEmpty(QMAKE_ACTUAL_PRO_FILE): QMAKE_ACTUAL_PRO_FILE=.pro
     warning("You should probably load(qt_module) first in $$QMAKE_ACTUAL_PRO_FILE for $$TARGET, as it also load()s qt_module_config.")

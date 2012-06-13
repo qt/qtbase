@@ -3,11 +3,9 @@
     !exists($$QMAKE_QT_MODULE)|!include($$QMAKE_QT_MODULE, "", true) {
         error("Cannot load qmodule.pri!")
     } else {
-        QMAKE_QT_MODULE_PRI_LOADED = 1
         debug(1, "Loaded qmodule.pri from ($$QMAKE_QT_MODULE)")
     }
 } else {
-    QMAKE_QT_MODULE_PRI_LOADED = 1  # covers 'preloading' from .qmake.cache
     debug(1, "Not loading qmodule.pri twice")
 }
 
