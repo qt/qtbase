@@ -500,7 +500,7 @@ private:
     QString stripMarkup(const QString& src) const;
     Node* collectNodesByTypeAndSubtype(const InnerNode* parent);
     void writeDitaRefs(const DitaRefList& ditarefs);
-    void writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle);
+    void writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle, Node* headingnode = 0);
     bool isDuplicate(NodeMultiMap* nmm, const QString& key, Node* node);
     void debugPara(const QString& t);
 

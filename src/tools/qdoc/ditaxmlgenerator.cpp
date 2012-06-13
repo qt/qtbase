@@ -6053,14 +6053,22 @@ void DitaXmlGenerator::writeDitaMap(Tree *tree)
     writeTopicrefs(pageTypeMaps[Node::FAQPage], "FAQs");
     writeTopicrefs(pageTypeMaps[Node::ArticlePage], "Articles");
     writeTopicrefs(nodeSubtypeMaps[Node::Example], "Examples");
-    writeTopicrefs(nodeSubtypeMaps[Node::QmlClass], "QML types");
-    writeTopicrefs(nodeTypeMaps[Node::Class], "C++ classes");
+    if (nodeSubtypeMaps[Node::QmlModule]->size() > 1)
+        writeTopicrefs(nodeSubtypeMaps[Node::QmlModule], "QML modules");
+    if (nodeSubtypeMaps[Node::QmlModule]->size() == 1)
+        writeTopicrefs(nodeSubtypeMaps[Node::QmlClass], "QML types", nodeSubtypeMaps[Node::QmlModule]->values()[0]);
+    else
+        writeTopicrefs(nodeSubtypeMaps[Node::QmlClass], "QML types");
+    writeTopicrefs(nodeSubtypeMaps[Node::QmlBasicType], "QML basic types");
+    if (nodeSubtypeMaps[Node::Module]->size() > 1)
+        writeTopicrefs(nodeSubtypeMaps[Node::Module], "Modules");
+    if (nodeSubtypeMaps[Node::Module]->size() == 1)
+        writeTopicrefs(nodeTypeMaps[Node::Class], "C++ classes", nodeSubtypeMaps[Node::Module]->values()[0]);
+    else
+        writeTopicrefs(nodeTypeMaps[Node::Class], "C++ classes");
     writeTopicrefs(nodeTypeMaps[Node::Namespace], "C++ namespaces");
     writeTopicrefs(nodeSubtypeMaps[Node::HeaderFile], "Header files");
-    writeTopicrefs(nodeSubtypeMaps[Node::Module], "Modules");
     writeTopicrefs(nodeSubtypeMaps[Node::Group], "Groups");
-    writeTopicrefs(nodeSubtypeMaps[Node::QmlModule], "QML modules");
-    writeTopicrefs(nodeSubtypeMaps[Node::QmlBasicType], "QML basic types");
 
     writeEndTag(); // </topicref>
     endSubPage();
@@ -6119,12 +6127,14 @@ void DitaXmlGenerator::writeDitaRefs(const DitaRefList& ditarefs)
     }
 }
 
-void DitaXmlGenerator::writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle)
+void DitaXmlGenerator::writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle, Node* headingnode)
 {
     if (!nmm || nmm->isEmpty())
         return;
     writeStartTag(DT_topicref);
     xmlWriter().writeAttribute("navtitle",navtitle);
+    if (headingnode)
+        xmlWriter().writeAttribute("href",fileName(headingnode));
     NodeMultiMap::iterator i;
     NodeMultiMap *ditaMaps = pageTypeMaps[Node::DitaMapPage];
 
