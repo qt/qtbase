@@ -44,6 +44,7 @@
 
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QByteArray>
+#include <QtCore/QIODevice>
 #include <QtNetwork/QNetworkRequest>
 
 QT_BEGIN_HEADER

@@ -42,6 +42,8 @@
 #ifndef QWIDGETITEMDATA_P_H
 #define QWIDGETITEMDATA_P_H
 
+#include <QtCore/qdatastream.h>
+
 //
 //  W A R N I N G
 //  -------------

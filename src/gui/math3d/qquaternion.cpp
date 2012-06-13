@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qquaternion.h"
+#include <QtCore/qdatastream.h>
 #include <QtCore/qmath.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qdebug.h>

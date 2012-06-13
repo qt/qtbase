@@ -42,6 +42,7 @@
 #include "qvector3d.h"
 #include "qvector2d.h"
 #include "qvector4d.h"
+#include <QtCore/qdatastream.h>
 #include <QtCore/qmath.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qdebug.h>

@@ -44,7 +44,7 @@
 
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qiodevice.h>
-#include <QtCore/qglobal.h>
+#include <QtCore/qpair.h>
 
 #ifdef Status
 #error qdatastream.h must be included before any header file that defines Status
@@ -413,6 +413,22 @@ Q_OUTOFLINE_TEMPLATE QDataStream &operator<<(QDataStream &out, const QMap<Key, T
     }
     return out;
 }
+
+#ifndef QT_NO_DATASTREAM
+template <class T1, class T2>
+inline QDataStream& operator>>(QDataStream& s, QPair<T1, T2>& p)
+{
+    s >> p.first >> p.second;
+    return s;
+}
+
+template <class T1, class T2>
+inline QDataStream& operator<<(QDataStream& s, const QPair<T1, T2>& p)
+{
+    s << p.first << p.second;
+    return s;
+}
+#endif
 
 #endif // QT_NO_DATASTREAM
 

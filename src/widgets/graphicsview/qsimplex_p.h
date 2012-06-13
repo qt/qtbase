@@ -55,6 +55,7 @@
 
 #include <QtCore/qhash.h>
 #include <QtCore/qpair.h>
+#include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
 

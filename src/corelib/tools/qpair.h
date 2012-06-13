@@ -42,7 +42,7 @@
 #ifndef QPAIR_H
 #define QPAIR_H
 
-#include <QtCore/qdatastream.h>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
 
@@ -116,22 +116,6 @@ Q_OUTOFLINE_TEMPLATE QPair<T1, T2> qMakePair(const T1 &x, const T2 &y)
 {
     return QPair<T1, T2>(x, y);
 }
-
-#ifndef QT_NO_DATASTREAM
-template <class T1, class T2>
-inline QDataStream& operator>>(QDataStream& s, QPair<T1, T2>& p)
-{
-    s >> p.first >> p.second;
-    return s;
-}
-
-template <class T1, class T2>
-inline QDataStream& operator<<(QDataStream& s, const QPair<T1, T2>& p)
-{
-    s << p.first << p.second;
-    return s;
-}
-#endif
 
 QT_END_NAMESPACE
 

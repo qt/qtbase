@@ -42,6 +42,7 @@
 #include "qabstractnetworkcache.h"
 #include "qabstractnetworkcache_p.h"
 
+#include <qdatastream.h>
 #include <qdatetime.h>
 #include <qurl.h>
 
