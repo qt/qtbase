@@ -278,7 +278,6 @@ static int CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
 void QWindowsFontDatabaseFT::populateFontDatabase()
 {
     m_families.clear();
-    QPlatformFontDatabase::populateFontDatabase();
     populate(); // Called multiple times.
     // Work around EnumFontFamiliesEx() not listing the system font, see below.
     const QString sysFontFamily = QGuiApplication::font().family();

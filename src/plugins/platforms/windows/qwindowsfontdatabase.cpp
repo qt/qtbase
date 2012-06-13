@@ -1075,7 +1075,6 @@ void QWindowsFontDatabase::populateFontDatabase()
 {
     m_families.clear();
     removeApplicationFonts();
-    QPlatformFontDatabase::populateFontDatabase();
     populate(); // Called multiple times.
     // Work around EnumFontFamiliesEx() not listing the system font, see below.
     const QString sysFontFamily = QGuiApplication::font().family();
