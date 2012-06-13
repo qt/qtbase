@@ -18,6 +18,10 @@ list(APPEND Qt5Core_INCLUDE_DIRS \"$${CMAKE_DATA_DIR}mkspecs/default\")
 !!ENDIF
 
 !!IF !isEmpty(CMAKE_ADD_FPIE_FLAGS)
+# Targets using Qt need to use the POSITION_INDEPENDENT_CODE property. The
+# Qt5_POSITION_INDEPENDENT_CODE variable is used in the # qt5_use_module
+# macro to add it.
+set(Qt5_POSITION_INDEPENDENT_CODE True)
 set(Qt5Core_EXECUTABLE_COMPILE_FLAGS \"-fPIE\")
 !!ENDIF
 

@@ -223,16 +223,21 @@ if (NOT CMAKE_VERSION VERSION_LESS 2.8.8)
             set_property(TARGET ${_target} APPEND PROPERTY INCLUDE_DIRECTORIES ${Qt5${_module}_INCLUDE_DIRS})
             set_property(TARGET ${_target} APPEND PROPERTY COMPILE_DEFINITIONS ${Qt5${_module}_COMPILE_DEFINITIONS})
 
-            # We can't just append to the COMPILE_FLAGS property. That creats a ';' separated list
-            # which breaks the compile commmand line.
-            # Ensure non-duplication here manually instead.
-            get_property(_target_type TARGET ${_target} PROPERTY TYPE)
-            if ("${_target_type}" STREQUAL "EXECUTABLE" AND Qt5${_module}_EXECUTABLE_COMPILE_FLAGS)
-              get_target_property(_flags ${_target} COMPILE_FLAGS)
-              string(FIND "${_flags}" "${Qt5${_module}_EXECUTABLE_COMPILE_FLAGS}" _find_result)
-              if (NOT _find_result)
-                set_target_properties(${_target} PROPERTIES COMPILE_FLAGS "${_flags} ${Qt5${_module}_EXECUTABLE_COMPILE_FLAGS}")
-              endif()
+            if (Qt5_POSITION_INDEPENDENT_CODE)
+                set_property(TARGET ${_target} PROPERTY POSITION_INDEPENDENT_CODE ${Qt5_POSITION_INDEPENDENT_CODE})
+                if (CMAKE_VERSION VERSION_LESS 2.8.9)
+                    # We can't just append to the COMPILE_FLAGS property. That creats a ';' separated list
+                    # which breaks the compile commmand line.
+                    # Ensure non-duplication here manually instead.
+                    get_property(_target_type TARGET ${_target} PROPERTY TYPE)
+                    if ("${_target_type}" STREQUAL "EXECUTABLE" AND Qt5${_module}_EXECUTABLE_COMPILE_FLAGS)
+                        get_target_property(_flags ${_target} COMPILE_FLAGS)
+                        string(FIND "${_flags}" "${Qt5${_module}_EXECUTABLE_COMPILE_FLAGS}" _find_result)
+                        if (NOT _find_result)
+                            set_target_properties(${_target} PROPERTIES COMPILE_FLAGS "${_flags} ${Qt5${_module}_EXECUTABLE_COMPILE_FLAGS}")
+                        endif()
+                    endif()
+                endif()
             endif()
         endforeach()
     endfunction()
