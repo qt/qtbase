@@ -1,7 +1,7 @@
 !no_qt_module_warning:!contains(QMAKE_INTERNAL_INCLUDED_FILES, .*qmodule\\.pri) {
     QMAKE_ACTUAL_PRO_FILE = $$basename(_PRO_FILE_)
     isEmpty(QMAKE_ACTUAL_PRO_FILE): QMAKE_ACTUAL_PRO_FILE=.pro
-    warning("You should probably load(qt_build_config) first in $$QMAKE_ACTUAL_PRO_FILE for $$TARGET, as it also load()s qt_module_config.")
+    warning("You should probably load(qt_build_config) first in $$QMAKE_ACTUAL_PRO_FILE for $$TARGET, as the latter also load()s qt_module_config.")
     message("Not doing so may lead to qt_module_config.prf overriding compiler/linker options in your .pro file.")
     message("Ignore this warning with CONFIG+=no_qt_module_warning if you know what you are doing.")
     unset(QMAKE_ACTUAL_PRO_FILE)
