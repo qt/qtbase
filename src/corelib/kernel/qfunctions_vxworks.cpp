@@ -46,7 +46,9 @@
 #include "qplatformdefs.h"
 #include "qfunctions_vxworks.h"
 
+#if defined(_WRS_KERNEL)
 #include <vmLib.h>
+#endif
 #include <selectLib.h>
 #include <ioLib.h>
 
@@ -118,7 +120,11 @@ int gettimeofday(struct timeval *tv, void /*struct timezone*/ *)
 // neither getpagesize() or sysconf(_SC_PAGESIZE) are available
 int getpagesize()
 {
+#if defined(_WRS_KERNEL)
     return vmPageSizeGet();
+#else
+    return sysconf(_SC_PAGESIZE);
+#endif
 }
 
 // symlinks are not supported (lstat is now just a call to stat - see qplatformdefs.h)
