@@ -72,26 +72,9 @@ QImage::Format QEglFSHooks::screenFormat() const
     return screenDepth() == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
 }
 
-QSurfaceFormat QEglFSHooks::defaultSurfaceFormat() const
+QSurfaceFormat QEglFSHooks::surfaceFormatFor(const QSurfaceFormat &inputFormat) const
 {
-    QSurfaceFormat format;
-    if (screenDepth() == 16) {
-        format.setDepthBufferSize(16);
-        format.setRedBufferSize(5);
-        format.setGreenBufferSize(6);
-        format.setBlueBufferSize(5);
-    } else {
-        format.setDepthBufferSize(24);
-        format.setStencilBufferSize(8);
-        format.setRedBufferSize(8);
-        format.setGreenBufferSize(8);
-        format.setBlueBufferSize(8);
-    }
-
-    static int samples = qgetenv("QT_QPA_EGLFS_MULTISAMPLE").toInt();
-    format.setSamples(samples);
-
-    return format;
+    return inputFormat;
 }
 
 EGLNativeWindowType QEglFSHooks::createNativeWindow(const QSize &size)

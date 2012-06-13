@@ -61,6 +61,8 @@ QEglFSWindow::QEglFSWindow(QWindow *w)
 #endif
 
     setWindowState(Qt::WindowFullScreen);
+
+    create();
 }
 
 QEglFSWindow::~QEglFSWindow()
@@ -70,19 +72,17 @@ QEglFSWindow::~QEglFSWindow()
 
 void QEglFSWindow::create()
 {
-    if (m_window) {
-        return;
-    }
+    Q_ASSERT(!m_window);
 
     EGLDisplay display = (static_cast<QEglFSScreen *>(window()->screen()->handle()))->display();
-    QSurfaceFormat platformFormat = hooks->defaultSurfaceFormat();
+    QSurfaceFormat platformFormat = hooks->surfaceFormatFor(window()->requestedFormat());
     EGLConfig config = q_configFromGLFormat(display, platformFormat);
+    m_format = q_glFormatFromConfig(display, config);
     m_window = hooks->createNativeWindow(hooks->screenSize());
     m_surface = eglCreateWindowSurface(display, config, m_window, NULL);
     if (m_surface == EGL_NO_SURFACE) {
-        qWarning("Could not create the egl surface: error = 0x%x\n", eglGetError());
         eglTerminate(display);
-        qFatal("EGL error");
+        qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", eglGetError());
     }
 }
 
@@ -122,7 +122,7 @@ WId QEglFSWindow::winId() const
 
 QSurfaceFormat QEglFSWindow::format() const
 {
-    return hooks->defaultSurfaceFormat();
+    return m_format;
 }
 
 QT_END_NAMESPACE

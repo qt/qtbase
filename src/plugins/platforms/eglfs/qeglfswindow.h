@@ -69,6 +69,7 @@ private:
     WId m_winid;
     EGLSurface m_surface;
     EGLNativeWindowType m_window;
+    QSurfaceFormat m_format;
 };
 QT_END_NAMESPACE
 #endif // QEGLFSWINDOW_H

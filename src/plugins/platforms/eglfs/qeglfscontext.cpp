@@ -50,15 +50,12 @@ QT_BEGIN_NAMESPACE
 
 QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share,
                              EGLDisplay display, EGLenum eglApi)
-    : QEGLPlatformContext(format, share, display, eglApi)
+    : QEGLPlatformContext(hooks->surfaceFormatFor(format), share, display, eglApi)
 {
 }
 
 bool QEglFSContext::makeCurrent(QPlatformSurface *surface)
 {
-    // create the native window surface. this makes sure that
-    // we create surfaces only for painted widgets (unlike QDesktopWidget)
-    (static_cast<QEglFSWindow *>(surface))->create();
     return QEGLPlatformContext::makeCurrent(surface);
 }
 
