@@ -145,7 +145,7 @@ inline void QUrl::removeAllEncodedQueryItems(const QByteArray &key)
 
 inline void QUrl::setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &qry)
 {
-    QUrlQuery q(*this);
+    QUrlQuery q;
     QList<QPair<QByteArray, QByteArray> >::ConstIterator it = qry.constBegin();
     for ( ; it != qry.constEnd(); ++it)
         q.addQueryItem(QString::fromUtf8(it->first), QString::fromUtf8(it->second));
