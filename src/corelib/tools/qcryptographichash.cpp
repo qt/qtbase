@@ -140,10 +140,10 @@ public:
   \value Md4 Generate an MD4 hash sum
   \value Md5 Generate an MD5 hash sum
   \value Sha1 Generate an SHA-1 hash sum
-  \value Sha224 Generate an SHA-224 hash sum
-  \value Sha256 Generate an SHA-256 hash sum
-  \value Sha384 Generate an SHA-384 hash sum
-  \value Sha512 Generate an SHA-512 hash sum
+  \value Sha224 Generate an SHA-224 hash sum. Introduced in Qt 5.0
+  \value Sha256 Generate an SHA-256 hash sum. Introduced in Qt 5.0
+  \value Sha384 Generate an SHA-384 hash sum. Introduced in Qt 5.0
+  \value Sha512 Generate an SHA-512 hash sum. Introduced in Qt 5.0
 */
 
 /*!
@@ -238,6 +238,7 @@ void QCryptographicHash::addData(const QByteArray &data)
 /*!
   Reads the data from the open QIODevice \a device until it ends
   and hashes it. Returns true if reading was successful.
+  \since 5.0
  */
 bool QCryptographicHash::addData(QIODevice* device)
 {
