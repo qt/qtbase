@@ -326,10 +326,9 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     \brief The QPalette class contains color groups for each widget state.
 
+    \inmodule QtGui
     \ingroup appearance
     \ingroup shared
-    \ingroup painting
-
 
     A palette consists of three color groups: \e Active, \e Disabled,
     and \e Inactive. All widgets in Qt contain a palette and

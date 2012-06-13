@@ -62,6 +62,7 @@ public:
     \reentrant
 
     \brief The QTextList class provides a decorated list of items in a QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 

@@ -32,13 +32,11 @@
   \ingroup groups
 */
 
+
 /*!
   \page printing.html
   \title Printing with Qt
   \ingroup qt-graphics
-
-  \previouspage Styling
-  \contentspage The Paint System
 
   \brief A guide to producing printed output with Qt's paint system and widgets.
 

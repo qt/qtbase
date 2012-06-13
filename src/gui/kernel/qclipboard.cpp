@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QClipboard
     \brief The QClipboard class provides access to the window system clipboard.
+    \inmodule QtGui
 
     The clipboard offers a simple mechanism to copy and paste data
     between applications.

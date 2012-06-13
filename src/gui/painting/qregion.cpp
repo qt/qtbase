@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
     \class QRegion
     \brief The QRegion class specifies a clip region for a painter.
 
+    \inmodule QtGui
     \ingroup painting
     \ingroup shared
 

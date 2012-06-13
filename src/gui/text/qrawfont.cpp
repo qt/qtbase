@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
    \class QRawFont
    \brief The QRawFont class provides access to a single physical instance of a font.
    \since 4.8
+    \inmodule QtGui
 
    \ingroup text
    \mainclass

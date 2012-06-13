@@ -166,6 +166,7 @@ static void qt_debug_path(const QPainterPath &path)
     \class QPainterPath
     \ingroup painting
     \ingroup shared
+    \inmodule QtGui
 
     \brief The QPainterPath class provides a container for painting operations,
     enabling graphical shapes to be constructed and reused.
@@ -349,6 +350,7 @@ static void qt_debug_path(const QPainterPath &path)
 
 /*!
     \class QPainterPath::Element
+    \inmodule QtGui
 
     \brief The QPainterPath::Element class specifies the position and
     type of a subpath.
@@ -2477,6 +2479,7 @@ void qt_path_stroke_cubic_to(qfixed c1x, qfixed c1y,
     \since 4.1
     \class QPainterPathStroker
     \ingroup painting
+    \inmodule QtGui
 
     \brief The QPainterPathStroker class is used to generate fillable
     outlines for a given painter path.

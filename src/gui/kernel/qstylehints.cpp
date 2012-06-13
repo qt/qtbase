@@ -54,6 +54,7 @@ static inline QVariant hint(QPlatformIntegration::StyleHint h)
     \class QStyleHints
     \since 5.0
     \brief The QStyleHints contains platform specific hints and settings.
+    \inmodule QtGui
  */
 QStyleHints::QStyleHints()
     : QObject()

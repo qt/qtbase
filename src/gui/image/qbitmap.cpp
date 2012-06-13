@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QBitmap
+    \inmodule QtGui
     \brief The QBitmap class provides monochrome (1-bit depth) pixmaps.
 
     \ingroup painting

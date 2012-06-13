@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The QTextLength class encapsulates the different types of length
     used in a QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -465,6 +466,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     \brief The QTextFormat class provides formatting information for a
     QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
     \ingroup shared
@@ -1256,6 +1258,7 @@ bool QTextFormat::operator==(const QTextFormat &rhs) const
 
     \brief The QTextCharFormat class provides formatting information for
     characters in a QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -1894,6 +1897,7 @@ QFont QTextCharFormat::font() const
 
     \brief The QTextBlockFormat class provides formatting information for
     blocks of text in a QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -2256,6 +2260,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
 
     \brief The QTextListFormat class provides formatting information for
     lists in a QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -2416,6 +2421,7 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
 
     \brief The QTextFrameFormat class provides formatting information for
     frames in a QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -2742,6 +2748,7 @@ qreal QTextFrameFormat::rightMargin() const
 
     \brief The QTextTableFormat class provides formatting information for
     tables in a QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -2948,6 +2955,7 @@ QTextTableFormat::QTextTableFormat(const QTextFormat &fmt)
 
     \brief The QTextImageFormat class provides formatting information for
     images in a QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -3259,6 +3267,7 @@ QTextTableCellFormat::QTextTableCellFormat(const QTextFormat &fmt)
 
     \brief The QTextTableCellFormat class provides formatting information for
     table cells in a QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 

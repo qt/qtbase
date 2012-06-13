@@ -230,6 +230,7 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
 /*!
     \class QSyntaxHighlighter
     \reentrant
+    \inmodule QtGui
 
     \brief The QSyntaxHighlighter class allows you to define syntax
     highlighting rules, and in addition you can use the class to query

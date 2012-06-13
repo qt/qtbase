@@ -261,6 +261,7 @@ struct QBrushDataPointerDeleter
     \class QBrush
     \ingroup painting
     \ingroup shared
+    \inmodule QtGui
 
     \brief The QBrush class defines the fill pattern of shapes drawn
     by QPainter.
@@ -1171,6 +1172,7 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
     \class QGradient
     \ingroup painting
     \ingroup shared
+    \inmodule QtGui
 
     \brief The QGradient class is used in combination with QBrush to
     specify gradient fills.
@@ -1526,6 +1528,7 @@ bool QGradient::operator==(const QGradient &gradient) const
 /*!
     \class QLinearGradient
     \ingroup painting
+    \inmodule QtGui
 
     \brief The QLinearGradient class is used in combination with QBrush to
     specify a linear gradient brush.
@@ -1705,6 +1708,7 @@ void QLinearGradient::setFinalStop(const QPointF &stop)
 /*!
     \class QRadialGradient
     \ingroup painting
+    \inmodule QtGui
 
     \brief The QRadialGradient class is used in combination with QBrush to
     specify a radial gradient brush.
@@ -2087,6 +2091,7 @@ void QRadialGradient::setFocalPoint(const QPointF &focalPoint)
 /*!
     \class QConicalGradient
     \ingroup painting
+    \inmodule QtGui
 
     \brief The QConicalGradient class is used in combination with QBrush to
     specify a conical gradient brush.

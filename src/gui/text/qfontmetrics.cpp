@@ -65,6 +65,7 @@ extern void qt_format_text(const QFont& font, const QRectF &_r,
 /*!
     \class QFontMetrics
     \reentrant
+    \inmodule QtGui
 
     \brief The QFontMetrics class provides font metrics information.
 
@@ -937,6 +938,7 @@ int QFontMetrics::lineWidth() const
 /*!
     \class QFontMetricsF
     \reentrant
+    \inmodule QtGui
 
     \brief The QFontMetricsF class provides font metrics information.
 

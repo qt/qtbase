@@ -78,6 +78,72 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
 }
 
 /*!
+    \page qwidget-styling.html
+    \title Styling
+
+    Qt's built-in widgets use the QStyle class to perform nearly all
+    of their drawing.  QStyle is an abstract base class that
+    encapsulates the look and feel of a GUI, and can be used to make
+    the widgets look exactly like the equivalent native widgets or to
+    give the widgets a custom look.
+
+    Qt provides a set of QStyle subclasses that emulate the native
+    look of the different platforms supported by Qt (QWindowsStyle,
+    QMacStyle, QMotifStyle, etc.). These styles are built into the
+    QtGui library, other styles can be made available using Qt's
+    plugin mechansim.
+
+    Most functions for drawing style elements take four arguments:
+
+    \list
+    \li an enum value specifying which graphical element to draw
+    \li a QStyleOption object specifying how and where to render that element
+    \li a QPainter object that should be used to draw the element
+    \li a QWidget object on which the drawing is performed (optional)
+    \endlist
+
+    The style gets all the information it needs to render the
+    graphical element from the QStyleOption class. The widget is
+    passed as the last argument in case the style needs it to perform
+    special effects (such as animated default buttons on Mac OS X),
+    but it isn't mandatory. In fact, QStyle can be used to draw on any
+    paint device (not just widgets), in which case the widget argument
+    is a zero pointer.
+
+    \image paintsystem-stylepainter.png
+
+    The paint system also provides the QStylePainter class inheriting
+    from QPainter.  QStylePainter is a convenience class for drawing
+    QStyle elements inside a widget, and extends QPainter with a set
+    of high-level drawing functions implemented on top of QStyle's
+    API. The advantage of using QStylePainter is that the parameter
+    lists get considerably shorter.
+
+    \table 100%
+    \row
+    \li \inlineimage paintsystem-icon.png
+    \li \b QIcon
+
+    The QIcon class provides scalable icons in different modes and states.
+
+    QIcon can generate pixmaps reflecting an icon's state, mode and
+    size. These pixmaps are generated from the set of pixmaps
+    made available to the icon, and are used by Qt widgets to show an
+    icon representing a particular action.
+
+    The rendering of a QIcon object is handled by the QIconEngine
+    class. Each icon has a corresponding icon engine that is
+    responsible for drawing the icon with a requested size, mode and
+    state.
+
+    \endtable
+    
+    For more information about widget styling and appearance, see the
+    \l{Styles and Style Aware Widgets}.
+*/
+
+
+/*!
     \class QStyle
     \brief The QStyle class is an abstract base class that encapsulates the look and feel of a GUI.
 
@@ -322,7 +388,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     control over size of header items and row and column sizes.
 
     \sa QStyleOption, QStylePainter, {Styles Example},
-        {Styles and Style Aware Widgets}, QStyledItemDelegate
+        {Styles and Style Aware Widgets}, QStyledItemDelegate, {Styling}
 */
 
 /*!

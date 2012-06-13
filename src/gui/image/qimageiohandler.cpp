@@ -44,6 +44,7 @@
     \brief The QImageIOHandler class defines the common image I/O
     interface for all image formats in Qt.
     \reentrant
+    \inmodule QtGui
 
     Qt uses QImageIOHandler for reading and writing images through
     QImageReader and QImageWriter. You can also derive from this class
@@ -160,6 +161,7 @@
 
 /*!
     \class QImageIOPlugin
+    \inmodule QtGui
     \brief The QImageIOPlugin class defines an interface for writing
     an image format plugin.
     \reentrant

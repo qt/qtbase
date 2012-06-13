@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
     \since 4.6
     \ingroup painting
     \ingroup painting-3D
+    \inmodule QtGui
 
     The QGenericMatrix template has three parameters:
 

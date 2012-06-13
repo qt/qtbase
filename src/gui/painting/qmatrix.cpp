@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
     \obsolete
 
     \ingroup painting
+    \inmodule QtGui
 
     A matrix specifies how to translate, scale, shear or rotate the
     coordinate system, and is typically used when rendering graphics.

@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
     \class QOpenGLPaintDevice
     \brief The QOpenGLPaintDevice class enables painting to an OpenGL context using QPainter.
     \since 5.0
+    \inmodule QtGui
 
     \ingroup painting-3D
 

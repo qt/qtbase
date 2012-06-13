@@ -926,6 +926,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \brief The QPainter class performs low-level painting on widgets and
     other paint devices.
 
+    \inmodule QtGui
     \ingroup painting
 
     \reentrant
@@ -7764,6 +7765,7 @@ void QPainterState::init(QPainter *p) {
 /*!
     \class QPaintEngineState
     \since 4.1
+    \inmodule QtGui
 
     \brief The QPaintEngineState class provides information about the
     active paint engine's current state.
@@ -8306,6 +8308,7 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
 /*!
     \since 4.7
     \class QPainter::PixmapFragment
+    \inmodule QtGui
 
     \brief This class is used in conjunction with the
     QPainter::drawPixmapFragments() function to specify how a pixmap, or

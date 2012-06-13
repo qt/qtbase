@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
     \brief The QOpenGLShaderProgram class allows OpenGL shader programs to be linked and used.
     \since 5.0
     \ingroup painting-3D
+    \inmodule QtGui
 
     \section1 Introduction
 
@@ -127,6 +128,7 @@ QT_BEGIN_NAMESPACE
     \brief The QOpenGLShader class allows OpenGL shaders to be compiled.
     \since 5.0
     \ingroup painting-3D
+    \inmodule QtGui
 
     This class supports shaders written in the OpenGL Shading Language (GLSL)
     and in the OpenGL/ES Shading Language (GLSL/ES).

@@ -76,6 +76,7 @@ QT_BEGIN_NAMESPACE
     \class QOpenGLFramebufferObjectFormat
     \brief The QOpenGLFramebufferObjectFormat class specifies the format of an OpenGL
     framebuffer object.
+    \inmodule QtGui
 
     \since 5.0
 
@@ -645,6 +646,7 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
     \class QOpenGLFramebufferObject
     \brief The QOpenGLFramebufferObject class encapsulates an OpenGL framebuffer object.
     \since 5.0
+    \inmodule QtGui
 
     \ingroup painting-3D
 

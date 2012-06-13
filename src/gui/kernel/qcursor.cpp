@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
     \brief The QCursor class provides a mouse cursor with an arbitrary
     shape.
 
+    \inmodule QtGui
     \ingroup appearance
     \ingroup shared
 

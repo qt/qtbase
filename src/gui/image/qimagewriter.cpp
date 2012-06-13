@@ -44,6 +44,7 @@
     \brief The QImageWriter class provides a format independent interface
     for writing images to files or other devices.
 
+    \inmodule QtGui
     \reentrant
     \ingroup painting
     \ingroup io

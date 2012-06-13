@@ -49,10 +49,9 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QPixmapCache
+    \inmodule QtGui
 
     \brief The QPixmapCache class provides an application-wide cache for pixmaps.
-
-    \ingroup painting
 
     This class is a tool for optimized drawing with QPixmap. You can
     use it to store temporary pixmaps that are expensive to generate
@@ -97,6 +96,7 @@ static int cache_limit = 10240; // 10 MB cache limit for desktop
     \class QPixmapCache::Key
     \brief The QPixmapCache::Key class can be used for efficient access
     to the QPixmapCache.
+    \inmodule QtGui
     \since 4.6
 
     Use QPixmapCache::insert() to receive an instance of Key generated

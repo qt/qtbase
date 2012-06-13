@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QSurface
+    \inmodule QtGui
     \since 5.0
     \brief The QSurface class is an abstraction of renderable surfaces in Qt.
 

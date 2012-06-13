@@ -153,6 +153,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     by shortcuts.
 
     \ingroup shared
+    \inmodule QtGui
 
 
     In its most common form, a key sequence describes a combination of

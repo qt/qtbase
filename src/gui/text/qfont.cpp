@@ -344,6 +344,7 @@ QFontEngineData::~QFontEngineData()
     \ingroup appearance
     \ingroup shared
     \ingroup richtext-processing
+    \inmodule QtGui
 
 
     When you create a QFont object you specify various attributes that
@@ -2208,6 +2209,7 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     \reentrant
 
     \brief The QFontInfo class provides general information about fonts.
+    \inmodule QtGui
 
     \ingroup appearance
     \ingroup shared

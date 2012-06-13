@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
     \brief The QVector3D class represents a vector or vertex in 3D space.
     \since 4.6
     \ingroup painting-3D
+    \inmodule QtGui
 
     Vectors are one of the main building blocks of 3D representation and
     drawing.  They consist of three coordinates, traditionally called

@@ -67,6 +67,7 @@ public:
 
 
 /*! \class QPdfWriter
+    \inmodule QtGui
 
     \brief The QPdfWriter class is a class to generate PDFs
     that can be used as a paint device.

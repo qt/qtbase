@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
     \brief The QMatrix4x4 class represents a 4x4 transformation matrix in 3D space.
     \since 4.6
     \ingroup painting-3D
+    \inmodule QtGui
 
     The QMatrix4x4 class in general is treated as a row-major matrix, in that the
     constructors and operator() functions take data in row-major format, as is

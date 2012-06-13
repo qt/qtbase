@@ -88,6 +88,7 @@ static void qt_polygon_isect_line(const QPointF &p1, const QPointF &p2, const QP
     \class QPolygon
     \brief The QPolygon class provides a vector of points using
     integer precision.
+    \inmodule QtGui
 
     \reentrant
 
@@ -481,6 +482,7 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
     \class QPolygonF
     \brief The QPolygonF class provides a vector of points using
     floating point precision.
+    \inmodule QtGui
 
     \reentrant
     \ingroup painting

@@ -60,6 +60,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The QTextObject class is a base class for different kinds
     of objects that can group parts of a QTextDocument together.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -182,6 +183,7 @@ QTextDocumentPrivate *QTextObject::docHandle() const
 
     \brief The QTextBlockGroup class provides a container for text blocks within
     a QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -304,6 +306,7 @@ QTextFrameLayoutData::~QTextFrameLayoutData()
     \reentrant
 
     \brief The QTextFrame class represents a frame in a QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -599,6 +602,7 @@ void QTextFramePrivate::remove_me()
     \brief The iterator class provides an iterator for reading
     the contents of a QTextFrame.
 
+    \inmodule QtGui
     \ingroup richtext-processing
 
     A frame consists of an arbitrary sequence of \l{QTextBlock}s and
@@ -798,6 +802,7 @@ QTextFrame::iterator &QTextFrame::iterator::operator--()
     \reentrant
 
     \brief The QTextBlockUserData class is used to associate custom data with blocks of text.
+    \inmodule QtGui
     \since 4.1
 
     \ingroup richtext-processing
@@ -829,6 +834,7 @@ QTextBlockUserData::~QTextBlockUserData()
 
     \brief The QTextBlock class provides a container for text fragments in a
     QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -929,6 +935,7 @@ bool QTextBlock::isValid() const
 
     \brief The QTextBlock::iterator class provides an iterator for reading
     the contents of a QTextBlock.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -1577,6 +1584,7 @@ QTextBlock::iterator &QTextBlock::iterator::operator--()
 
     \brief The QTextFragment class holds a piece of text in a
     QTextDocument with a single QTextCharFormat.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 

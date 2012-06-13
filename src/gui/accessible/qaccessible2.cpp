@@ -62,6 +62,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessibleTextInterface
     \internal
+    \inmodule QtGui
 
     \ingroup accessibility
 
@@ -182,6 +183,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessibleEditableTextInterface
     \ingroup accessibility
+    \inmodule QtGui
     \internal
 
     \brief The QAccessibleEditableTextInterface class implements support for objects with editable text.
@@ -249,6 +251,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QAccessibleSimpleEditableTextInterface
+    \inmodule QtGui
     \ingroup accessibility
     \internal
 
@@ -262,6 +265,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QAccessibleValueInterface
+    \inmodule QtGui
     \ingroup accessibility
     \internal
 
@@ -315,6 +319,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QAccessibleImageInterface
+    \inmodule QtGui
     \ingroup accessibility
     \internal
     \preliminary
@@ -327,6 +332,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QAccessibleTableCellInterface
+    \inmodule QtGui
     \ingroup accessibility
     \internal
 

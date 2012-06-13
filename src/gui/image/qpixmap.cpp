@@ -1192,6 +1192,7 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
 
 /*!
     \class QPixmap
+    \inmodule QtGui
 
     \brief The QPixmap class is an off-screen image representation
     that can be used as a paint device.

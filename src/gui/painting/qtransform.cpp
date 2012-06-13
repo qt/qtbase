@@ -96,6 +96,7 @@ QT_BEGIN_NAMESPACE
     \brief The QTransform class specifies 2D transformations of a coordinate system.
     \since 4.3
     \ingroup painting
+    \inmodule QtGui
 
     A transformation specifies how to translate, scale, shear, rotate
     or project the coordinate system, and is typically used when

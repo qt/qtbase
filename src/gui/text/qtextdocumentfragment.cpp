@@ -255,6 +255,7 @@ void QTextDocumentFragmentPrivate::insert(QTextCursor &_cursor) const
     \class QTextDocumentFragment
     \reentrant
 
+    \inmodule QtGui
     \brief The QTextDocumentFragment class represents a piece of formatted text
     from a QTextDocument.
 

@@ -71,7 +71,7 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     \brief The QPicture class is a paint device that records and
     replays QPainter commands.
 
-    \ingroup painting
+    \inmodule QtGui
     \ingroup shared
 
 

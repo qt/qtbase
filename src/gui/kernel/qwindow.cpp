@@ -65,6 +65,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QWindow
+    \inmodule QtGui
     \since 5.0
     \brief The QWindow class represents a window in the underlying windowing system.
 

@@ -46,6 +46,7 @@
     \brief The QImageReader class provides a format independent interface
     for reading images from files or other devices.
 
+    \inmodule QtGui
     \reentrant
     \ingroup painting
     \ingroup io

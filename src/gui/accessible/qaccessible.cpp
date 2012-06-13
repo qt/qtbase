@@ -126,6 +126,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessible::State
 
+    \inmodule QtGui
+
     This structure defines bit flags that indicate
     the state of an accessible object. The values are:
 

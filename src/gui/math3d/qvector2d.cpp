@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
     \since 4.6
     \ingroup painting
     \ingroup painting-3D
+    \inmodule QtGui
 
     The QVector2D class can also be used to represent vertices in 2D space.
     We therefore do not need to provide a separate vertex class.

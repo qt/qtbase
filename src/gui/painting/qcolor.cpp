@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup painting
     \ingroup appearance
+    \inmodule QtGui
 
 
     A color is normally specified in terms of RGB (red, green, and

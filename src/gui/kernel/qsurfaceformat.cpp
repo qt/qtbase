@@ -113,6 +113,7 @@ public:
     \class QSurfaceFormat
     \since 5.0
     \brief The QSurfaceFormat class represents the format of a QSurface.
+    \inmodule QtGui
 
     The format includes the size of the color buffers, red, green, and blue;
     the size of the alpha buffer; the size of the depth and stencil buffers;

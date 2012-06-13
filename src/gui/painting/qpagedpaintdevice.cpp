@@ -82,6 +82,7 @@ static const struct {
 
 /*!
     \class QPagedPaintDevice
+    \inmodule QtGui
 
     \brief The QPagedPaintDevice class is a represents a paintdevice that supports
     multiple pages.

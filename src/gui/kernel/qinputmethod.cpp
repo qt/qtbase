@@ -67,6 +67,7 @@ QInputMethod::~QInputMethod()
 /*!
     \class QInputMethod
     \brief The QInputMethod class provides access to the active text input method.
+    \inmodule QtGui
 
     QInputMethod is used by the text editors for integrating to the platform text input
     methods and more commonly by application views for querying various text input method-related

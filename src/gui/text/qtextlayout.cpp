@@ -74,6 +74,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The QTextLayout::FormatRange structure is used to apply extra formatting information
     for a specified area in the text layout's content.
+    \inmodule QtGui
 
     \sa QTextLayout::setAdditionalFormats(), QTextLayout::draw()
 */
@@ -99,6 +100,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The QTextInlineObject class represents an inline object in
     a QTextLayout.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -254,6 +256,7 @@ Qt::LayoutDirection QTextInlineObject::textDirection() const
     \reentrant
 
     \brief The QTextLayout class is used to lay out and render text.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -1317,6 +1320,7 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
     \reentrant
 
     \brief The QTextLine class represents a line of text inside a QTextLayout.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 

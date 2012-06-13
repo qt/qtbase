@@ -1157,6 +1157,7 @@ QString QFontDatabase::styleString(const QFontInfo &fontInfo)
 /*!
     \class QFontDatabase
     \threadsafe
+    \inmodule QtGui
 
     \brief The QFontDatabase class provides information about the fonts available in the underlying window system.
 

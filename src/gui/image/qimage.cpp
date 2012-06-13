@@ -266,6 +266,7 @@ bool QImageData::checkForAlphaPixels() const
 /*!
     \class QImage
 
+    \inmodule QtGui
     \ingroup painting
     \ingroup shared
 

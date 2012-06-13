@@ -68,6 +68,7 @@ public:
 /*!
     \class QBackingStore
     \since 5.0
+    \inmodule QtGui
 
     \brief The QBackingStore class provides the drawing area for top-level windows.
 */

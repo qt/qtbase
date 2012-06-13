@@ -52,6 +52,7 @@ typedef QPenPrivate QPenData;
 
 /*!
     \class QPen
+    \inmodule QtGui
     \ingroup painting
     \ingroup shared
 

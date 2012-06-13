@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QTextItem
+    \inmodule QtGui
 
     \brief The QTextItem class provides all the information required to draw
     text in a custom paint engine.
@@ -146,6 +147,7 @@ QFont QTextItem::font() const
 /*!
   \class QPaintEngine
   \ingroup painting
+    \inmodule QtGui
 
   \brief The QPaintEngine class provides an abstract definition of how
   QPainter draws to a given device on a given platform.

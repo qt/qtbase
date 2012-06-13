@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QValidator
     \brief The QValidator class provides validation of input text.
+    \inmodule QtGui
 
     The class itself is abstract. Two subclasses, \l QIntValidator and
     \l QDoubleValidator, provide basic numeric-range checking, and \l
@@ -300,6 +301,7 @@ void QValidator::fixup(QString &) const
     \class QIntValidator
     \brief The QIntValidator class provides a validator that ensures
     a string contains a valid integer within a specified range.
+    \inmodule QtGui
 
     Example of use:
 
@@ -541,6 +543,7 @@ public:
 
     \brief The QDoubleValidator class provides range checking of
     floating-point numbers.
+    \inmodule QtGui
 
     QDoubleValidator provides an upper bound, a lower bound, and a
     limit on the number of digits after the decimal point. It does not
@@ -793,6 +796,7 @@ QDoubleValidator::Notation QDoubleValidator::notation() const
     \class QRegExpValidator
     \brief The QRegExpValidator class is used to check a string
     against a regular expression.
+    \inmodule QtGui
 
     QRegExpValidator uses a regular expression (regexp) to
     determine whether an input string is \l Acceptable, \l

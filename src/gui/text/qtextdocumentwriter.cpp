@@ -75,6 +75,7 @@ public:
     \class QTextDocumentWriter
 
     \brief The QTextDocumentWriter class provides a format-independent interface for writing a QTextDocument to files or other devices.
+    \inmodule QtGui
 
     \ingroup richtext-processing
     \ingroup io

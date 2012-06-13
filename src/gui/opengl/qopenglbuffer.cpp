@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
     \brief The QOpenGLBuffer class provides functions for creating and managing OpenGL buffer objects.
     \since 5.0
     \ingroup painting-3D
+    \inmodule QtGui
 
     Buffer objects are created in the OpenGL server so that the
     client application can avoid uploading vertices, indices,

@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
     \brief The QVector4D class represents a vector or vertex in 4D space.
     \since 4.6
     \ingroup painting-3D
+    \inmodule QtGui
 
     The QVector4D class can also be used to represent vertices in 4D space.
     We therefore do not need to provide a separate vertex class.

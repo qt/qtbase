@@ -78,8 +78,6 @@
         \li \l{Drawing and Filling}
         \li \l{Coordinate System}
         \li \l{Reading and Writing Image Files}
-        \li \l{Styling}
-        \li \l{Printing with Qt}
     \endlist
 
     \section1 Classes for Painting
@@ -88,11 +86,6 @@
 
     \annotatedlist painting
 
-    Alternatively, Qt provides the QtOpenGL module, offering classes
-    that makes it easy to use OpenGL in Qt applications. Among others,
-    the module provides an OpenGL widget class that can be used just
-    like any other Qt widget, except that it opens an OpenGL display
-    buffer where the OpenGL API can be used to render the contents.
 */
 
 
@@ -108,18 +101,12 @@
     The QPaintDevice class is the base class of objects that can be
     painted, i.e. QPainter can draw on any QPaintDevice
     subclass. QPaintDevice's drawing capabilities are currently
-    implemented by the QWidget, QImage, QPixmap, QGLWidget,
-    QGLPixelBuffer, QPicture and QPrinter subclasses.
+    implemented by the QImage, QPixmap, QGLPixelBuffer, QPicture and
+    QPrinter subclasses.
 
     \image paintsystem-devices.png
 
     \table 100%
-    \row \li \b Widget
-
-    The QWidget class is the base class of all user interface
-    objects. The widget is the atom of the user interface: it receives
-    mouse, keyboard and other events from the window system, and
-    paints a representation of itself on the screen.
 
     \row \li \b Image
 
@@ -152,40 +139,13 @@
     Qt also provides the QBitmap convenience class, inheriting
     QPixmap. QBitmap guarantees monochrome (1-bit depth) pixmaps, and
     is mainly used for creating custom QCursor and QBrush objects,
-    constructing QRegion objects, and for setting masks for pixmaps
-    and widgets.
+    constructing QRegion objects.
 
-    \row \li \b {OpenGL Widget}
+    \row \li \b {OpenGL Paint Device}
 
-    As mentioned previously, Qt provides the QtOpenGL module offering
-    classes that makes it easy to use OpenGL in Qt applications. For
-    example, the QGLWidget enables the OpenGL API for
-    rendering.
-
-    But QGLWidget is also a QWidget subclass, and can be used by
-    QPainter as any other paint device. One huge benefit from this is
-    that it enables Qt to utilize the high performance of OpenGL for
-    most drawing operations, such as transformations and pixmap
-    drawing.
-
-    \row \li \b {Pixel Buffer}
-
-    The QtOpenGL module also provides the QGLPixelBuffer class which
-    inherits QPaintDevice directly.
-
-    QGLPixelBuffer encapsulates an OpenGL pbuffer. Rendering into a
-    pbuffer is normally done using full hardware acceleration which
-    can be significantly faster than rendering into a QPixmap.
-
-    \row \li \b {Framebuffer Object}
-
-    The QtOpenGL module also provides the QGLFramebufferObject class
-    which inherits QPaintDevice directly.
-
-    QGLFramebufferObject encapsulates an OpenGL framebuffer object.
-    Framebuffer objects can also be used for off-screen rendering, and
-    offer several advantages over pixel buffers for this purpose.
-    These are described in the QGLFramebufferObject class documentation.
+    As mentioned previously, Qt is offering classes that makes it easy
+    to use OpenGL in Qt applications. For example, the QOpenGLPaintDevice
+    enables the OpenGL API for rendering with QPainter.
 
     \row \li \b {Picture}
 
@@ -199,23 +159,7 @@
     Qt provides the QPicture::load() and QPicture::save() functions
     as well as streaming operators for loading and saving pictures.
 
-    \row \li \b {Printer}
 
-    The QPrinter class is a paint device that paints on a printer. On
-    Windows or Mac OS X, QPrinter uses the built-in printer
-    drivers. On X11, QPrinter generates postscript and sends that to
-    lpr, lp, or another print program. QPrinter can also print to any
-    other QPrintEngine object.
-
-    The QPrintEngine class defines an interface for how QPrinter
-    interacts with a given printing subsystem. The common case when
-    creating your own print engine, is to derive from both
-    QPaintEngine and QPrintEngine.
-
-    The output format is by default determined by the platform the
-    printer is running on, but by explicitly setting the output format
-    to QPrinter::PdfFormat, QPrinter will generate its output as a PDF
-    file.
 
     \row \li \b {Custom Backends}
 
@@ -229,43 +173,6 @@
     
     \endtable
 
-    \section1 Selecting the Painting Backend
-
-    Since Qt 4.5, it is possible to replace the paint engines and paint
-    devices used for widgets, pixmaps and the offscreen double buffer. By
-    default the backends are:
-
-    \table
-        \row
-            \li Windows
-            \li Software Rasterizer
-        \row
-            \li X11
-            \li X11
-        \row
-            \li Mac OS X
-            \li CoreGraphics
-        \row
-            \li Embedded
-            \li Software Rasterizer
-    \endtable
-
-    Passing a command line parameter to the application, such as,
-    \c{-graphicssystem raster}, specifies that Qt should use the software
-    rasterizer for this application. The Software rasterizer is fully
-    supported on all platforms.
-
-    \code
-      > analogclock -graphicssystem raster
-    \endcode
-
-    There is also a \c{-graphicssystem opengl} mode that uses OpenGL for
-    all drawing. Currently, this engine is experimental as it does not draw
-    everything correctly.
-
-    Qt also supports being configured using \c {-graphicssystem
-    raster|opengl} in which case all applications will use the
-    specified graphics system for its graphics.
 */
 
 /*!
@@ -360,12 +267,6 @@
     colors are mapped to hardware using the QColormap class). For more
     information, see the QColor class documentation.
 
-    When creating a new widget, it is recommend to use the colors in
-    the widget's palette rather than hard-coding specific colors. All
-    widgets in Qt contain a palette and use their palette to draw
-    themselves. A widget's palette is represented by the QPalette
-    class which contains color groups for each widget state.
-
     The available fill patterns are described by the Qt::BrushStyle
     enum. These include basic patterns spanning from uniform color to
     very sparse pattern, various line combinations, gradient fills and
@@ -398,7 +299,6 @@
 
     \previouspage Coordinate System
     \contentspage The Paint System
-    \nextpage Styling
 
     The most common way to read images is through QImage and QPixmap's
     constructors, or by calling the QImage::load() and QPixmap::load()
@@ -446,71 +346,3 @@
     and start using it.
 */
 
-/*!
-    \page paintsystem-styling.html
-    \title Styling
-
-    \previouspage Reading and Writing Image Files
-    \contentspage The Paint System
-    \nextpage Printing with Qt
-
-    Qt's built-in widgets use the QStyle class to perform nearly all
-    of their drawing.  QStyle is an abstract base class that
-    encapsulates the look and feel of a GUI, and can be used to make
-    the widgets look exactly like the equivalent native widgets or to
-    give the widgets a custom look.
-
-    Qt provides a set of QStyle subclasses that emulate the native
-    look of the different platforms supported by Qt (QWindowsStyle,
-    QMacStyle, QMotifStyle, etc.). These styles are built into the
-    QtGui library, other styles can be made available using Qt's
-    plugin mechansim.
-
-    Most functions for drawing style elements take four arguments:
-
-    \list
-    \li an enum value specifying which graphical element to draw
-    \li a QStyleOption object specifying how and where to render that element
-    \li a QPainter object that should be used to draw the element
-    \li a QWidget object on which the drawing is performed (optional)
-    \endlist
-
-    The style gets all the information it needs to render the
-    graphical element from the QStyleOption class. The widget is
-    passed as the last argument in case the style needs it to perform
-    special effects (such as animated default buttons on Mac OS X),
-    but it isn't mandatory. In fact, QStyle can be used to draw on any
-    paint device (not just widgets), in which case the widget argument
-    is a zero pointer.
-
-    \image paintsystem-stylepainter.png
-
-    The paint system also provides the QStylePainter class inheriting
-    from QPainter.  QStylePainter is a convenience class for drawing
-    QStyle elements inside a widget, and extends QPainter with a set
-    of high-level drawing functions implemented on top of QStyle's
-    API. The advantage of using QStylePainter is that the parameter
-    lists get considerably shorter.
-
-    \table 100%
-    \row
-    \li \inlineimage paintsystem-icon.png
-    \li \b QIcon
-
-    The QIcon class provides scalable icons in different modes and states.
-
-    QIcon can generate pixmaps reflecting an icon's state, mode and
-    size. These pixmaps are generated from the set of pixmaps
-    made available to the icon, and are used by Qt widgets to show an
-    icon representing a particular action.
-
-    The rendering of a QIcon object is handled by the QIconEngine
-    class. Each icon has a corresponding icon engine that is
-    responsible for drawing the icon with a requested size, mode and
-    state.
-
-    \endtable
-    
-    For more information about widget styling and appearance, see the
-    \l{Styles and Style Aware Widgets}.
-*/

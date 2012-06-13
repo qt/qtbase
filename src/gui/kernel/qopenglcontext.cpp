@@ -77,6 +77,7 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
 
 /*!
     \class QOpenGLContext
+    \inmodule QtGui
     \since 5.0
     \brief The QOpenGLContext represents a native OpenGL context, enabling
            OpenGL rendering on a QSurface.
@@ -632,6 +633,7 @@ void QOpenGLContext::deleteQGLContext()
     \since 5.0
     \brief The QOpenGLContextGroup represents a group of contexts sharing
     OpenGL resources.
+    \inmodule QtGui
 
     QOpenGLContextGroup is automatically created and managed by QOpenGLContext
     instances.  Its purpose is to identify all the contexts that are sharing
@@ -746,6 +748,7 @@ void QOpenGLContextGroupPrivate::deletePendingResources(QOpenGLContext *ctx)
     that are shared between OpenGL contexts (like textures, framebuffer
     objects, shader programs, etc), and clean them up in a safe way when
     they're no longer needed.
+    \inmodule QtGui
 
     The QOpenGLSharedResource instance should never be deleted, instead free()
     should be called when it's no longer needed. Thus it will be put on a queue
@@ -799,6 +802,8 @@ void QOpenGLSharedResource::free()
     QOpenGLSharedResource to be used to track a single OpenGL object with a
     GLuint identifier. The constructor takes a function pointer to a function
     that will be used to free the resource if and when necessary.
+    \inmodule QtGui
+
 */
 void QOpenGLSharedResourceGuard::freeResource(QOpenGLContext *context)
 {
@@ -820,6 +825,7 @@ void QOpenGLSharedResourceGuard::freeResource(QOpenGLContext *context)
     QOpenGLContext *. To get an instance for a given context one calls
     T *QOpenGLMultiGroupSharedResource::value<T>(context), where T is a sub-class
     of QOpenGLSharedResource.
+    \inmodule QtGui
 
     You should not call free() on QOpenGLSharedResources owned by a
     QOpenGLMultiGroupSharedResource instance.

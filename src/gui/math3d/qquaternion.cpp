@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
     \brief The QQuaternion class represents a quaternion consisting of a vector and scalar.
     \since 4.6
     \ingroup painting-3D
+    \inmodule QtGui
 
     Quaternions are used to represent rotations in 3D space, and
     consist of a 3D rotation axis specified by the x, y, and z

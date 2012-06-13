@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
     \class QGlyphRun
     \brief The QGlyphRun class provides direct access to the internal glyphs in a font.
     \since 4.8
+    \inmodule QtGui
 
     \ingroup text
     \mainclass

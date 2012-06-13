@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The QAbstractTextDocumentLayout class is an abstract base
     class used to implement custom layouts for QTextDocuments.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -80,6 +81,7 @@ QT_BEGIN_NAMESPACE
     \brief The QTextObjectInterface class allows drawing of
            custom text objects in \l{QTextDocument}s.
     \since 4.5
+    \inmodule QtGui
 
     A text object describes the structure of one or more elements in a
     text document; for instance, images imported from HTML are
@@ -289,6 +291,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAbstractTextDocumentLayout::PaintContext
     \reentrant
+    \inmodule QtGui
 
     \brief The QAbstractTextDocumentLayout::PaintContext class is a convenience
     class defining the parameters used when painting a document's layout.
@@ -353,6 +356,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAbstractTextDocumentLayout::Selection
     \reentrant
+    \inmodule QtGui
 
     \brief The QAbstractTextDocumentLayout::Selection class is a convenience
     class defining the parameters of a selection.

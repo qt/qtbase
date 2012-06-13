@@ -42,12 +42,12 @@
     painter uses to draw onto different types of devices.
 
     The QPaintDevice class is the base class of objects that can be
-    painted: Its drawing capabilities are inherited by the QWidget,
-    QPixmap, QPicture, QImage, and QPrinter classes. The default
-    coordinate system of a paint device has its origin at the top-left
-    corner. The \e x values increase to the right and the \e y values
-    increase downwards. The default unit is one pixel on pixel-based
-    devices and one point (1/72 of an inch) on printers.
+    painted: Its drawing capabilities are inherited by the
+    QOpenGLPaintDevice, QImage, QPixmap and QPicture classes. The
+    default coordinate system of a paint device has its origin at the
+    top-left corner. The \e x values increase to the right and the \e
+    y values increase downwards. The default unit is one pixel on
+    pixel-based devices and one point (1/72 of an inch) on printers.
 
     The mapping of the logical QPainter coordinates to the physical
     QPaintDevice coordinates are handled by QPainter's transformation
@@ -195,12 +195,10 @@
     \endtable
 
     You can also twist the coordinate system around the origin using
-    the QPainter::shear() function. See the \l {painting/affine}{Affine
-    Transformations} example for a visualization of a sheared coordinate
-    system. All the transformation operations operate on QPainter's
-    transformation matrix that you can retrieve using the
-    QPainter::worldTransform() function. A matrix transforms a point
-    in the plane to another point.
+    the QPainter::shear() function. All the transformation operations
+    operate on QPainter's transformation matrix that you can retrieve
+    using the QPainter::worldTransform() function. A matrix transforms
+    a point in the plane to another point.
 
     If you need the same transformations over and over, you can also
     use QTransform objects and the QPainter::worldTransform() and
@@ -224,12 +222,6 @@
     \li
     The Analog Clock example shows how to draw the contents of a
     custom widget using QPainter's transformation matrix.
-
-    Qt's example directory provides a complete walk-through of the
-    example. Here, we will only review the example's \l
-    {QWidget::paintEvent()}{paintEvent()} function to see how we can
-    use the transformation matrix (i.e. QPainter's matrix functions)
-    to draw the clock's face.
 
     We recommend compiling and running this example before you read
     any further. In particular, try resizing the window to different
@@ -282,15 +274,6 @@
     rotated in a way which isn't very useful, but we're done with
     painting so that doesn't matter.
     \endtable
-
-    For a demonstation of Qt's ability to perform affine
-    transformations on painting operations, see the \l
-    {painting/affine}{Affine Transformations} example which allows the user
-    to experiment with the transformation operations.  See also the \l
-    {painting/transformations}{Transformations} example which shows
-    how transformations influence the way that QPainter renders
-    graphics primitives. In particular, it shows how the order of
-    transformations affects the result.
 
     For more information about the transformation matrix, see the
     QTransform documentation.
@@ -457,5 +440,9 @@
     \endtable
     \endomit
 
-    \sa {Analog Clock Example}, {Transformations Example}
+    \sa {Analog Clock Example}
 */
+
+/*
+    ### DOC-TODO: rewrite analog clock to be QWindow based
+ */

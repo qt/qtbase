@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QInputEvent
     \ingroup events
+    \inmodule QtGui
 
     \brief The QInputEvent class is the base class for events that
     describe user input.
@@ -450,6 +451,7 @@ QHoverEvent::~QHoverEvent()
 /*!
     \class QWheelEvent
     \brief The QWheelEvent class contains parameters that describe a wheel event.
+    \inmodule QtGui
 
     \ingroup events
 
@@ -944,6 +946,7 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
     \class QFocusEvent
     \brief The QFocusEvent class contains event parameters for widget focus
     events.
+    \inmodule QtGui
 
     \ingroup events
 
@@ -1005,6 +1008,7 @@ Qt::FocusReason QFocusEvent::reason() const
 /*!
     \class QPaintEvent
     \brief The QPaintEvent class contains event parameters for paint events.
+    \inmodule QtGui
 
     \ingroup events
 
@@ -1076,6 +1080,7 @@ QPaintEvent::~QPaintEvent()
 /*!
     \class QMoveEvent
     \brief The QMoveEvent class contains event parameters for move events.
+    \inmodule QtGui
 
     \ingroup events
 
@@ -1119,6 +1124,7 @@ QMoveEvent::~QMoveEvent()
     \class QExposeEvent
     \since 5.0
     \brief The QExposeEvent class contains event parameters for expose events.
+    \inmodule QtGui
 
     \ingroup events
 
@@ -1143,6 +1149,7 @@ QExposeEvent::~QExposeEvent()
 /*!
     \class QResizeEvent
     \brief The QResizeEvent class contains event parameters for resize events.
+    \inmodule QtGui
 
     \ingroup events
 
@@ -1187,6 +1194,7 @@ QResizeEvent::~QResizeEvent()
     \brief The QCloseEvent class contains parameters that describe a close event.
 
     \ingroup events
+    \inmodule QtGui
 
     Close events are sent to widgets that the user wants to close,
     usually by choosing "Close" from the window menu, or by clicking
@@ -1249,6 +1257,7 @@ QCloseEvent::~QCloseEvent()
 /*!
    \class QIconDragEvent
    \brief The QIconDragEvent class indicates that a main icon drag has begun.
+    \inmodule QtGui
 
    \ingroup events
 
@@ -1280,6 +1289,7 @@ QIconDragEvent::~QIconDragEvent()
 /*!
     \class QContextMenuEvent
     \brief The QContextMenuEvent class contains parameters that describe a context menu event.
+    \inmodule QtGui
 
     \ingroup events
 
@@ -1437,6 +1447,7 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
 /*!
     \class QInputMethodEvent
     \brief The QInputMethodEvent class provides parameters for input method events.
+    \inmodule QtGui
 
     \ingroup events
 
@@ -1735,6 +1746,7 @@ void QInputMethodEvent::setCommitString(const QString &commitString, int replace
 /*!
     \class QInputMethodQueryEvent
     \since 5.0
+    \inmodule QtGui
 
     \brief This event is sent by the input context to input objects.
 
@@ -1802,6 +1814,7 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
 /*!
     \class QTabletEvent
     \brief The QTabletEvent class contains parameters that describe a Tablet event.
+    \inmodule QtGui
 
     \ingroup events
 
@@ -2191,6 +2204,7 @@ QDragMoveEvent::~QDragMoveEvent()
     \class QDropEvent
     \ingroup events
     \ingroup draganddrop
+    \inmodule QtGui
 
     \brief The QDropEvent class provides an event which is sent when a
     drag and drop action is completed.
@@ -2357,6 +2371,7 @@ void QDropEvent::setDropAction(Qt::DropAction action)
 
     \ingroup events
     \ingroup draganddrop
+    \inmodule QtGui
 
     A widget must accept this event in order to receive the \l
     {QDragMoveEvent}{drag move events} that are sent while the drag
@@ -2399,6 +2414,7 @@ QDragEnterEvent::~QDragEnterEvent()
 
     \ingroup events
     \ingroup draganddrop
+    \inmodule QtGui
 
     A widget will receive drag move events repeatedly while the drag
     is within its boundaries, if it accepts
@@ -2426,6 +2442,7 @@ QDragEnterEvent::~QDragEnterEvent()
 
     \ingroup events
     \ingroup draganddrop
+    \inmodule QtGui
 
     This event is always preceded by a QDragEnterEvent and a series
     of \l{QDragMoveEvent}s. It is not sent if a QDropEvent is sent
@@ -2458,6 +2475,7 @@ QDragLeaveEvent::~QDragLeaveEvent()
 
     \ingroup events
     \ingroup helpsystem
+    \inmodule QtGui
 
     This event can be intercepted in applications to provide tooltips
     or "What's This?" help for custom widgets. The type() can be
@@ -2543,6 +2561,7 @@ QHelpEvent::~QHelpEvent()
 
     \ingroup events
     \ingroup helpsystem
+    \inmodule QtGui
 
     Status tips can be set on a widget using the
     QWidget::setStatusTip() function.  They are shown in the status
@@ -2612,6 +2631,7 @@ QStatusTipEvent::~QStatusTipEvent()
 
     \ingroup events
     \ingroup helpsystem
+    \inmodule QtGui
 
     \sa QWhatsThis, QHelpEvent, QStatusTipEvent
 */
@@ -2649,6 +2669,7 @@ QWhatsThisClickedEvent::~QWhatsThisClickedEvent()
     when a QAction is added, removed, or changed.
 
     \ingroup events
+    \inmodule QtGui
 
     Actions can be added to widgets using QWidget::addAction(). This
     generates an \l ActionAdded event, which you can handle to provide
@@ -2703,6 +2724,7 @@ QActionEvent::~QActionEvent()
     \brief The QHideEvent class provides an event which is sent after a widget is hidden.
 
     \ingroup events
+    \inmodule QtGui
 
     This event is sent just before QWidget::hide() returns, and also
     when a top-level window has been hidden (iconified) by the user.
@@ -2735,6 +2757,7 @@ QHideEvent::~QHideEvent()
     \brief The QShowEvent class provides an event that is sent when a widget is shown.
 
     \ingroup events
+    \inmodule QtGui
 
     There are two kinds of show events: show events caused by the
     window system (spontaneous), and internal show events. Spontaneous (QEvent::spontaneous())
@@ -2765,6 +2788,7 @@ QShowEvent::~QShowEvent()
     sent when there is a request to open a file or a URL.
 
     \ingroup events
+    \inmodule QtGui
 
     File open events will be sent to the QApplication::instance()
     when the operating system requests that a file or URL should be opened.
@@ -2844,6 +2868,7 @@ bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
     sent whenever a the toolbar button is clicked on Mac OS X.
 
     \ingroup events
+    \inmodule QtGui
 
     The QToolBarChangeEvent is sent when the toolbar button is clicked. On Mac
     OS X, this is the long oblong button on the right side of the window
@@ -3199,6 +3224,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
     the user presses a key combination.
 
     \ingroup events
+    \inmodule QtGui
 
     Normally you don't need to use this class directly; QShortcut
     provides a higher-level interface to handle shortcut keys.
@@ -3233,6 +3259,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
 /*!
     \class QWindowStateChangeEvent
     \ingroup events
+    \inmodule QtGui
 
     \brief The QWindowStateChangeEvent class provides the window state before a
     window state change.
@@ -3270,6 +3297,7 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     \since 4.6
     \ingroup events
     \ingroup touch
+    \inmodule QtGui
 
     \section1 Enabling Touch Events
 
@@ -3526,6 +3554,7 @@ QTouchEvent::~QTouchEvent()
 /*! \class QTouchEvent::TouchPoint
     \brief The TouchPoint class provides information about a touch point in a QTouchEvent.
     \since 4.6
+    \inmodule QtGui
 */
 
 /*! \enum QTouchEvent::TouchPoint::InfoFlags
@@ -4001,6 +4030,7 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
     \class QScrollPrepareEvent
     \since 4.8
     \ingroup events
+    \inmodule QtGui
 
     \brief The QScrollPrepareEvent class is send in preparation of a scrolling.
 
@@ -4100,6 +4130,7 @@ void QScrollPrepareEvent::setContentPos(const QPointF &pos)
     \class QScrollEvent
     \since 4.8
     \ingroup events
+    \inmodule QtGui
 
     \brief The QScrollEvent class is send when scrolling.
 

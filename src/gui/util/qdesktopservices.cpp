@@ -98,6 +98,7 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     \brief The QDesktopServices class provides methods for accessing common desktop services.
     \since 4.2
     \ingroup desktop
+    \inmodule QtGui
 
     Many desktop environments provide services that can be used by applications to
     perform common tasks, such as opening a web page, in a way that is both consistent

@@ -217,6 +217,7 @@ QTextCodec *Qt::codecForHtml(const QByteArray &ba)
 /*!
     \class QTextDocument
     \reentrant
+    \inmodule QtGui
 
     \brief The QTextDocument class holds formatted text that can be
     viewed and edited using a QTextEdit.

@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QDrag
+    \inmodule QtGui
     \brief The QDrag class provides support for MIME-based drag and drop data
     transfer.
 

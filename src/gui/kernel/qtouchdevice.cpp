@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
     \brief The QTouchDevice class describes the device from with touch events originate.
     \since 5.0
     \ingroup touch
+    \inmodule QtGui
 
     Each QTouchEvent contains a QTouchDevice pointer to allow accessing
     device-specific properties like type and capabilities. It is the

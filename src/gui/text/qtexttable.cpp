@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The QTextTableCell class represents the properties of a
     cell in a QTextTable.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -498,6 +499,7 @@ void QTextTablePrivate::update() const
     \reentrant
 
     \brief The QTextTable class represents a table in a QTextDocument.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 

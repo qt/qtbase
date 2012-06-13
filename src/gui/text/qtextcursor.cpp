@@ -880,6 +880,7 @@ QTextLayout *QTextCursorPrivate::blockLayout(QTextBlock &block) const{
 /*!
     \class QTextCursor
     \reentrant
+    \inmodule QtGui
 
     \brief The QTextCursor class offers an API to access and modify QTextDocuments.
 

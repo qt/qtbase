@@ -205,6 +205,7 @@ QList<QTextOption::Tab> QTextOption::tabs() const
 
     \brief The QTextOption class provides a description of general rich text
     properties.
+    \inmodule QtGui
 
     \ingroup richtext-processing
 
@@ -359,6 +360,7 @@ QList<QTextOption::Tab> QTextOption::tabs() const
 /*!
     \class QTextOption::Tab
     \since 4.4
+    \inmodule QtGui
     Each tab definition is represented by this struct.
 */
 
