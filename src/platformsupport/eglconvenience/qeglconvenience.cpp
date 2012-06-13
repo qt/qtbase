@@ -256,11 +256,10 @@ EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format,
             eglGetConfigAttrib(display, configs[index], EGL_GREEN_SIZE, &green);
             eglGetConfigAttrib(display, configs[index], EGL_BLUE_SIZE, &blue);
             eglGetConfigAttrib(display, configs[index], EGL_ALPHA_SIZE, &alpha);
-            if (red == confAttrRed &&
-                    green == confAttrGreen &&
-                    blue == confAttrBlue &&
-                    (confAttrAlpha == 0 ||
-                     alpha == confAttrAlpha)) {
+            if ((confAttrRed == 0 || red == confAttrRed) &&
+                (confAttrGreen == 0 || green == confAttrGreen) &&
+                (confAttrBlue == 0 || blue == confAttrBlue) &&
+                (confAttrAlpha == 0 || alpha == confAttrAlpha)) {
                 cfg = configs[index];
                 delete [] configs;
                 return cfg;
