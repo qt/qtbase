@@ -1451,7 +1451,7 @@ bool QGraphicsWidget::event(QEvent *event)
             windowFrameEvent(event);
             // Filter out hover events if they were sent to us only because of the
             // decoration (special case in QGraphicsScenePrivate::dispatchHoverEvent).
-            if (!acceptsHoverEvents())
+            if (!acceptHoverEvents())
                 return true;
         }
         break;

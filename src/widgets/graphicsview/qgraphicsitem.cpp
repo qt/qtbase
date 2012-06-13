@@ -1806,7 +1806,7 @@ static void _q_qgraphicsItemSetFlag(QGraphicsItem *item, QGraphicsItem::Graphics
         return;
     }
     item->setFlag(flag, enabled);
-    foreach (QGraphicsItem *child, item->children())
+    foreach (QGraphicsItem *child, item->childItems())
         _q_qgraphicsItemSetFlag(child, flag, enabled);
 }
 
