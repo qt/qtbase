@@ -47,7 +47,6 @@ HEADERS +=  \
         tools/qvector.h \
         tools/qversionnumber.h
 
-
 SOURCES += \
         tools/qarraydata.cpp \
         tools/qbitarray.cpp \

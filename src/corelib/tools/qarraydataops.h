@@ -150,7 +150,7 @@ struct QPodArrayOps
         this->size += (e - b);
     }
 
-    void insert(T *where, size_t n, T t)
+    void insert(T *where, size_t n, parameter_type t)
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
@@ -162,6 +162,19 @@ struct QPodArrayOps
         while (n--)
             *where++ = t;
     }
+
+    void insert(T *where, T &&t)
+    {
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(where >= this->begin() && where <= this->end());
+        Q_ASSERT(this->allocatedCapacity() - this->size >= 1);
+
+        ::memmove(static_cast<void *>(where + 1), static_cast<void *>(where),
+                  (static_cast<const T*>(this->end()) - where) * sizeof(T));
+        this->size += 1;
+        new (where) T(std::move(t));
+    }
+
 
     void erase(T *b, T *e)
     {
@@ -369,7 +382,7 @@ struct QGenericArrayOps
         }
     }
 
-    void insert(T *where, size_t n, T t)
+    void insert(T *where, size_t n, parameter_type t)
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(where >= this->begin() && where <= this->end());
@@ -429,6 +442,33 @@ struct QGenericArrayOps
             --n, --writeIter;
             *writeIter = t;
         }
+    }
+
+    void insert(T *where, T &&t)
+    {
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(where >= this->begin() && where <= this->end());
+        Q_ASSERT(this->allocatedCapacity() - this->size >= 1);
+
+        // Array may be truncated at where in case of exceptions
+        T *const end = this->end();
+
+        if (where != end) {
+            // Move elements in array
+            T *readIter = end - 1;
+            T *writeIter = end;
+            new (writeIter) T(std::move(*readIter));
+            while (readIter > where) {
+                --readIter;
+                --writeIter;
+                *writeIter = std::move(*readIter);
+            }
+            *where = std::move(t);
+        } else {
+            new (where) T(std::move(t));
+        }
+
+        ++this->size;
     }
 
     void erase(T *b, T *e)
@@ -554,7 +594,7 @@ struct QMovableArrayOps
         this->size += (e - b);
     }
 
-    void insert(T *where, size_t n, T t)
+    void insert(T *where, size_t n, parameter_type t)
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(where >= this->begin() && where <= this->end());
@@ -618,6 +658,9 @@ struct QMovableArrayOps
         this->size += n;
     }
 
+    // use moving insert
+    using QGenericArrayOps<T>::insert;
+
     void erase(T *b, T *e)
     {
         Q_ASSERT(this->isMutable());
@@ -627,7 +670,7 @@ struct QMovableArrayOps
 
         struct Mover
         {
-            Mover(T *&start, const T *finish, uint &sz)
+            Mover(T *&start, const T *finish, int &sz)
                 : destination(start)
                 , source(start)
                 , n(finish - start)
@@ -644,7 +687,7 @@ struct QMovableArrayOps
             T *&destination;
             const T *const source;
             size_t n;
-            uint &size;
+            int &size;
         } mover(e, this->end(), this->size);
 
         // destroy the elements we're erasing

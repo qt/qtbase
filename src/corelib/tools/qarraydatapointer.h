@@ -215,7 +215,7 @@ protected:
     T *ptr;
 
 public:
-    uint size;
+    int size;
 };
 
 template <class T>

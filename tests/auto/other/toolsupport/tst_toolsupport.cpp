@@ -97,14 +97,14 @@ void tst_toolsupport::offsets_data()
     {
         QTestData &data = QTest::newRow("sizeof(QObjectData)")
                 << sizeof(QObjectData);
-        data << 28 << 48; // vptr + 3 ptr + 2 int + ptr
+        data << 36 << 64; // vptr + 2 ptr + (2*ptr + int) + 2 int + ptr
     }
 
 #if RUN_MEMBER_OFFSET_TEST
     {
         QTestData &data = QTest::newRow("QObjectPrivate::extraData")
                 << pmm_to_offsetof(&QObjectPrivate::extraData);
-        data << 28 << 48;    // sizeof(QObjectData)
+        data << 36 << 64;    // sizeof(QObjectData)
     }
 
     {
@@ -126,9 +126,9 @@ void tst_toolsupport::offsets_data()
 #ifdef Q_PROCESSOR_X86
         // x86 32-bit has weird alignment rules. Refer to QtPrivate::AlignOf in
         // qglobal.h for more details.
-        data << 152 << 224;
+        data << 176 << 272;
 #else
-        data << 156 << 224;
+        data << 180 << 272;
 #endif
     }
 #endif

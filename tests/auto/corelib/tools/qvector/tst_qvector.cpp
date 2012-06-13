@@ -104,7 +104,7 @@ private:
 
     static void check(const State state1, const State state2)
     {
-        QCOMPARE(state1, state2);
+        QCOMPARE(int(state1), int(state2));
     }
 };
 
@@ -174,7 +174,7 @@ private:
     {
         // check if c object has been moved
         QCOMPARE(c, c->that);
-        QCOMPARE(c->state, Constructed);
+        QCOMPARE(int(c->state), int(Constructed));
     }
 };
 QAtomicInt Custom::counter = 0;
@@ -724,16 +724,12 @@ void tst_QVector::capacity() const
     myvec.remove(3);
     myvec.remove(3);
     myvec.remove(3);
-    // TODO: is this a safe assumption? presumably it won't release memory until shrink(), but can we asser that is true?
-    QVERIFY(myvec.capacity() >= 6);
     myvec.squeeze();
     QVERIFY(myvec.capacity() >= 3);
 
     myvec.remove(0);
     myvec.remove(0);
     myvec.remove(0);
-    // TODO: as above note
-    QVERIFY(myvec.capacity() >= 3);
     myvec.squeeze();
     QVERIFY(myvec.capacity() == 0);
 }
