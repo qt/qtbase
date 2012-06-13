@@ -42,7 +42,12 @@
 #if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
 // Compiler claims to support C++11, trust it
 #else
-#  error "__cplusplus must be >= 201103L"
+#  error "__cplusplus must be >= 201103L, or __GXX_EXPERIMENTAL_CXX0X__ must be defined"
+#endif
+
+#include <utility>
+#if defined(__clang__) && !defined(_LIBCPP_VERSION)
+#  error "C++11 with clang requires libc++ runtime"
 #endif
 
 int main(int, char **) { return 0; }
