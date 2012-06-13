@@ -454,7 +454,6 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
             break;
         case EAGAIN:
             setError(QAbstractSocket::UnfinishedSocketOperationError, InvalidSocketErrorString);
-            setError(QAbstractSocket::SocketResourceError, ResourceErrorString);
             break;
         case EACCES:
         case EPERM:
