@@ -374,7 +374,7 @@ public:
     int length() const { return d->size; }
     bool isNull() const;
 
-    Q_DECL_CONSTEXPR inline QByteArray(QByteArrayDataPtr dd)
+    inline QByteArray(QByteArrayDataPtr dd)
         : d(reinterpret_cast<Data *>(dd.ptr))
     {
     }
