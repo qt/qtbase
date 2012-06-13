@@ -1107,7 +1107,7 @@ void Moc::parsePluginData(ClassDef *def)
                 msg += "Plugin Metadata file ";
                 msg += lexem();
                 msg += " does not exist. Declaration will be ignored";
-                warning(msg.constData());
+                error(msg.constData());
                 return;
             }
             QFile file(fi.canonicalFilePath());
