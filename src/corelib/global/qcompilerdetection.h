@@ -451,6 +451,7 @@
  *  N2672           Q_COMPILER_INITIALIZER_LISTS
  *  N2658 N2927     Q_COMPILER_LAMBDA   (v1.0 and above only)
  *  N2756           Q_COMPILER_NONSTATIC_MEMBER_INIT
+ *  N2855 N3050     Q_COMPILER_NOEXCEPT
  *  N2431           Q_COMPILER_NULLPTR
  *  N2930           Q_COMPILER_RANGE_FOR
  *  N2442           Q_COMPILER_RAW_STRINGS
@@ -554,6 +555,9 @@
 #    if __has_feature(cxx_lambdas)
 #      define Q_COMPILER_LAMBDA
 #    endif
+#    if __has_feature(cxx_noexcept)
+#      define Q_COMPILER_NOEXCEPT
+#    endif
 #    if __has_feature(cxx_nonstatic_member_init)
 #      define Q_COMPILER_NONSTATIC_MEMBER_INIT
 #    endif
@@ -631,6 +635,7 @@
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 406
        /* C++11 features supported in GCC 4.6: */
 #      define Q_COMPILER_CONSTEXPR
+#      define Q_COMPILER_NOEXCEPT
 #      define Q_COMPILER_NULLPTR
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #      define Q_COMPILER_RANGE_FOR
@@ -700,6 +705,14 @@
 # define Q_DECL_OVERRIDE
 # define Q_DECL_FINAL
 # define Q_DECL_FINAL_CLASS
+#endif
+
+#ifdef Q_COMPILER_NOEXCEPT
+# define Q_DECL_NOEXCEPT noexcept
+# define Q_DECL_NOEXCEPT_EXPR(x) noexcept(x)
+#else
+# define Q_DECL_NOEXCEPT
+# define Q_DECL_NOEXCEPT_EXPR(x)
 #endif
 
 #if defined(Q_COMPILER_ALIGNOF) && !defined(Q_ALIGNOF)
