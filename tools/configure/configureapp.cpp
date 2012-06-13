@@ -3700,7 +3700,7 @@ void Configure::generateMakefiles()
                     QTextStream txt(&file);
                     txt << "all:\n";
                     txt << "\t" << args.join(" ") << "\n";
-                    txt << "\t\"$(MAKE)\" -$(MAKEFLAGS) -f " << it->target << "\n";
+                    txt << "\t$(MAKE) -$(MAKEFLAGS) -f " << it->target << "\n";
                     txt << "first: all\n";
                     txt << "qmake:\n";
                     txt << "\t" << args.join(" ") << "\n";
