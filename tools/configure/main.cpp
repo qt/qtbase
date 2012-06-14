@@ -68,6 +68,12 @@ int runConfigure( int argc, char** argv )
     if (!app.isOk())
         return 3;
 
+    app.generateQConfigCpp();
+
+    app.buildQmake();
+    if (!app.isOk())
+        return 3;
+
     // Auto-detect modules and settings.
     app.autoDetection();
 
@@ -88,8 +94,6 @@ int runConfigure( int argc, char** argv )
 	app.generateConfigfiles();
     if( !app.isDone() )
 	app.generateHeaders();
-    if( !app.isDone() )
-	app.buildQmake();
     // must be done after buildQmake()
     if (!app.isDone())
         app.detectArch();

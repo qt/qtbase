@@ -64,6 +64,8 @@ public:
 
     QString defaultTo(const QString &option);
     bool checkAvailability(const QString &part);
+    void generateQConfigCpp();
+    void buildQmake();
     void autoDetection();
     bool verifyConfiguration();
 
@@ -73,7 +75,6 @@ public:
     void generateBuildKey();
     void generateCachefile();
     void displayConfig();
-    void buildQmake();
 #endif
     void generateMakefiles();
     void appendMakeItem(int inList, const QString &item);
