@@ -77,9 +77,10 @@ QSurfaceFormat QEglFSHooks::surfaceFormatFor(const QSurfaceFormat &inputFormat) 
     return inputFormat;
 }
 
-EGLNativeWindowType QEglFSHooks::createNativeWindow(const QSize &size)
+EGLNativeWindowType QEglFSHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
 {
     Q_UNUSED(size);
+    Q_UNUSED(format);
     return 0;
 }
 

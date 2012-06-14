@@ -52,7 +52,7 @@ public:
     virtual void platformDestroy();
     virtual EGLNativeDisplayType platformDisplay() const;
     virtual QSize screenSize() const;
-    virtual EGLNativeWindowType createNativeWindow(const QSize &size);
+    virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
     virtual void destroyNativeWindow(EGLNativeWindowType window);
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
 };
@@ -84,8 +84,10 @@ QSize QEglFSX11Hooks::screenSize() const
     return QSize(env.at(0).toInt(), env.at(1).toInt());
 }
 
-EGLNativeWindowType QEglFSX11Hooks::createNativeWindow(const QSize &size)
+EGLNativeWindowType QEglFSX11Hooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
 {
+    Q_UNUSED(format);
+
     Window root = DefaultRootWindow(display);
     XSetWindowAttributes swa;
     memset(&swa, 0, sizeof(swa));

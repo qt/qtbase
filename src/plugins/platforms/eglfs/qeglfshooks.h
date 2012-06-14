@@ -62,7 +62,7 @@ public:
     virtual int screenDepth() const;
     virtual QImage::Format screenFormat() const;
     virtual QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const;
-    virtual EGLNativeWindowType createNativeWindow(const QSize &size);
+    virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
     virtual void destroyNativeWindow(EGLNativeWindowType window);
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
     virtual QEglFSCursor *createCursor(QEglFSScreen *screen) const;

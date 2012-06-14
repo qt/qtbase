@@ -54,7 +54,7 @@ class QEglFS8726MHooks : public QEglFSHooks
 {
 public:
     virtual QSize screenSize() const;
-    virtual EGLNativeWindowType createNativeWindow(const QSize &size);
+    virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
     virtual void destroyNativeWindow(EGLNativeWindowType window);
 };
 
@@ -75,8 +75,10 @@ QSize QEglFS8726MHooks::screenSize() const
     return QSize(vinfo.xres, vinfo.yres);
 }
 
-EGLNativeWindowType QEglFS8726MHooks::createNativeWindow(const QSize &size)
+EGLNativeWindowType QEglFS8726MHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
 {
+    Q_UNUSED(format);
+
     fbdev_window *window = new fbdev_window;
     window->width = size.width();
     window->height = size.height();

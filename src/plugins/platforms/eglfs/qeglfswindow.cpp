@@ -78,7 +78,7 @@ void QEglFSWindow::create()
     QSurfaceFormat platformFormat = hooks->surfaceFormatFor(window()->requestedFormat());
     EGLConfig config = q_configFromGLFormat(display, platformFormat);
     m_format = q_glFormatFromConfig(display, config);
-    m_window = hooks->createNativeWindow(hooks->screenSize());
+    m_window = hooks->createNativeWindow(hooks->screenSize(), m_format);
     m_surface = eglCreateWindowSurface(display, config, m_window, NULL);
     if (m_surface == EGL_NO_SURFACE) {
         eglTerminate(display);
