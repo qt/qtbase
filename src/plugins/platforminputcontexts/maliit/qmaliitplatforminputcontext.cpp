@@ -172,7 +172,7 @@ public:
     bool correctionEnabled;
     QRect keyboardRect;
     QString preedit;
-    QWeakPointer<QWindow> window;
+    QPointer<QWindow> window;
     QMaliitPlatformInputContext *q;
 };
 
