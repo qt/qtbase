@@ -52,11 +52,11 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
 class QBitArray;
 class QByteArray;
 class QString;
 class QStringRef;
+class QLatin1String;
 
 inline uint qHash(char key, uint seed = 0) { return uint(key) ^ seed; }
 inline uint qHash(uchar key, uint seed = 0) { return uint(key) ^ seed; }
