@@ -67,7 +67,15 @@ static QByteArray combinePath(const QByteArray &infile, const QByteArray &outfil
 {
     QFileInfo inFileInfo(QDir::current(), QFile::decodeName(infile));
     QFileInfo outFileInfo(QDir::current(), QFile::decodeName(outfile));
-    return QFile::encodeName(outFileInfo.dir().relativeFilePath(inFileInfo.filePath()));
+    const QByteArray relativePath = QFile::encodeName(outFileInfo.dir().relativeFilePath(inFileInfo.filePath()));
+#ifdef Q_OS_WIN
+    // It's a system limitation.
+    // It depends on the Win API function which is used by the program to open files.
+    // cl apparently uses the functions that have the MAX_PATH limitation.
+    if (outFileInfo.dir().absolutePath().length() + relativePath.length() + 1 >= 260)
+        return QFile::encodeName(inFileInfo.absoluteFilePath());
+#endif
+    return relativePath;
 }
 
 
