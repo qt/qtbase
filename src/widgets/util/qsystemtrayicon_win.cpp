@@ -75,9 +75,12 @@ struct Q_NOTIFYICONIDENTIFIER {
     GUID guidItem;
 };
 
+#ifndef NIN_KEYSELECT
+#    define NIN_KEYSELECT (WM_USER + 1)
+#endif
+
 #ifdef Q_CC_MINGW
 #    define NIN_SELECT (WM_USER + 0)
-#    define NIN_KEYSELECT (WM_USER + 1)
 #    define NIN_BALLOONTIMEOUT (WM_USER + 4)
 #    define NIN_BALLOONUSERCLICK (WM_USER + 5)
 #    define NIF_SHOWTIP 0x00000080
