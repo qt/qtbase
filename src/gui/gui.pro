@@ -35,7 +35,7 @@ win32:!contains(QT_CONFIG, directwrite) {
     DEFINES += QT_NO_DIRECTWRITE
 }
 
-*-g++*|linux-icc*|*-clang|*-qcc* {
+*-g++*|linux-icc*|*-clang*|*-qcc* {
         sse2 {
             sse2_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
             sse2_compiler.commands += $$QMAKE_CFLAGS_SSE2
