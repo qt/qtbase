@@ -731,7 +731,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         return invalidCompressedData();
     }
 
-    QScopedPointer<QByteArray::Data, QByteArrayDataDeleter> d(QByteArray::Data::allocate(expectedSize + 1));
+    QScopedPointer<QByteArray::Data, QByteArrayDataDeleter> d(QByteArray::Data::allocate(expectedSize + 1).first);
     if (Q_UNLIKELY(d.data() == nullptr))
         return invalidCompressedData();
 
@@ -764,7 +764,8 @@ QByteArray qUncompress(const uchar* data, int nbytes)
                 return invalidCompressedData();
             } else {
                 // grow the block
-                QByteArray::Data *p = QByteArray::Data::reallocateUnaligned(d.data(), len + 1);
+                char *dataPointer = d->data();
+                QByteArray::Data *p = QByteArray::Data::reallocateUnaligned(d.data(), dataPointer, len + 1).first;
                 if (Q_UNLIKELY(p == nullptr))
                     return invalidCompressedData();
                 d.take();   // don't free
@@ -1204,7 +1205,7 @@ QByteArray &QByteArray::operator=(const char *str)
     if (!str) {
         x = Data::sharedNull();
     } else if (!*str) {
-        x = Data::allocate(0);
+        x = Data::allocate(0).first;
     } else {
         const int len = int(strlen(str));
         const int fullLen = len + 1;
@@ -1693,9 +1694,9 @@ QByteArray::QByteArray(const char *data, int size)
         if (size < 0)
             size = int(strlen(data));
         if (!size) {
-            d = Data::allocate(0);
+            d = Data::allocate(0).first;
         } else {
-            d = Data::allocate(uint(size) + 1u);
+            d = Data::allocate(uint(size) + 1u).first;
             Q_CHECK_PTR(d);
             d->size = size;
             memcpy(d->data(), data, size);
@@ -1714,9 +1715,9 @@ QByteArray::QByteArray(const char *data, int size)
 QByteArray::QByteArray(int size, char ch)
 {
     if (size <= 0) {
-        d = Data::allocate(0);
+        d = Data::allocate(0).first;
     } else {
-        d = Data::allocate(uint(size) + 1u);
+        d = Data::allocate(uint(size) + 1u).first;
         Q_CHECK_PTR(d);
         d->size = size;
         memset(d->data(), ch, size);
@@ -1732,7 +1733,7 @@ QByteArray::QByteArray(int size, char ch)
 
 QByteArray::QByteArray(int size, Qt::Initialization)
 {
-    d = Data::allocate(uint(size) + 1u);
+    d = Data::allocate(uint(size) + 1u).first;
     Q_CHECK_PTR(d);
     d->size = size;
     d->data()[size] = '\0';
@@ -1769,7 +1770,7 @@ void QByteArray::resize(int size)
         // which is used in place of the Qt 3 idiom:
         //    QByteArray a(sz);
         //
-        Data *x = Data::allocate(uint(size) + 1u);
+        Data *x = Data::allocate(uint(size) + 1u).first;
         Q_CHECK_PTR(x);
         x->size = size;
         x->data()[size] = '\0';
@@ -1806,7 +1807,7 @@ QByteArray &QByteArray::fill(char ch, int size)
 void QByteArray::reallocData(uint alloc, Data::ArrayOptions options)
 {
     if (d->needsDetach()) {
-        Data *x = Data::allocate(alloc, options);
+        Data *x = Data::allocate(alloc, options).first;
         Q_CHECK_PTR(x);
         x->size = qMin(int(alloc) - 1, d->size);
         ::memcpy(x->data(), d->data(), x->size);
@@ -1815,7 +1816,7 @@ void QByteArray::reallocData(uint alloc, Data::ArrayOptions options)
             Data::deallocate(d);
         d = x;
     } else {
-        Data *x = Data::reallocateUnaligned(d, alloc, options);
+        Data *x = Data::reallocateUnaligned(d, d->data(), alloc, options).first;
         Q_CHECK_PTR(x);
         d = x;
     }
@@ -3130,7 +3131,7 @@ QByteArray QByteArray::mid(int pos, int len) const
         return QByteArray();
     case QContainerImplHelper::Empty:
     {
-        QByteArrayDataPtr empty = { Data::allocate(0) };
+        QByteArrayDataPtr empty = { Data::allocate(0).first };
         return QByteArray(empty);
     }
     case QContainerImplHelper::Full:
@@ -4444,9 +4445,9 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
     if (!data) {
         x = Data::sharedNull();
     } else if (!size) {
-        x = Data::allocate(0);
+        x = Data::allocate(0).first;
     } else {
-        x = Data::fromRawData(data, size);
+        x = Data::fromRawData(data, size).ptr;
         Q_CHECK_PTR(x);
     }
     QByteArrayDataPtr dataPtr = { x };

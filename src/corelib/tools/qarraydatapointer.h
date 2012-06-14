@@ -52,26 +52,38 @@ private:
     typedef QArrayDataOps<T> DataOps;
 
 public:
+    typedef typename Data::iterator iterator;
+    typedef typename Data::const_iterator const_iterator;
+
     QArrayDataPointer() noexcept
-        : d(Data::sharedNull())
+        : d(Data::sharedNull()), b(Data::sharedNullData()), size(0)
     {
     }
 
     QArrayDataPointer(const QArrayDataPointer &other)
-        : d(other.d->ref()
-            ? other.d
-            : other.clone(other.d->cloneFlags()))
+        : d(other.d), b(other.b), size(other.size)
+    {
+        if (!other.d->ref()) {
+            // must clone
+            QPair<Data *, T *> pair = other.clone(other.d->cloneFlags());
+            d = pair.first;
+            b = pair.second;
+        }
+    }
+
+    QArrayDataPointer(Data *header, T *data, size_t n = 0)
+        : d(header), b(data), size(n)
     {
     }
 
-    explicit QArrayDataPointer(QTypedArrayData<T> *ptr)
-        : d(ptr)
+    explicit QArrayDataPointer(QPair<QTypedArrayData<T> *, T *> data, size_t n = 0)
+        : d(data.first), b(data.second), size(n)
     {
-        Q_CHECK_PTR(ptr);
+        Q_CHECK_PTR(d);
     }
 
     QArrayDataPointer(QArrayDataPointerRef<T> ref)
-        : d(ref.ptr)
+        : d(ref.ptr), b(ref.data), size(ref.size)
     {
     }
 
@@ -83,7 +95,7 @@ public:
     }
 
     QArrayDataPointer(QArrayDataPointer &&other) noexcept
-        : d(other.d)
+        : d(other.d), b(other.b), size(other.size)
     {
         other.d = Data::sharedNull();
     }
@@ -95,16 +107,28 @@ public:
         return *this;
     }
 
-    DataOps &operator*() const
+    DataOps &operator*()
     {
         Q_ASSERT(d);
-        return *static_cast<DataOps *>(d);
+        return *static_cast<DataOps *>(this);
     }
 
-    DataOps *operator->() const
+    DataOps *operator->()
     {
         Q_ASSERT(d);
-        return static_cast<DataOps *>(d);
+        return static_cast<DataOps *>(this);
+    }
+
+    const DataOps &operator*() const
+    {
+        Q_ASSERT(d);
+        return *static_cast<const DataOps *>(this);
+    }
+
+    const DataOps *operator->() const
+    {
+        Q_ASSERT(d);
+        return static_cast<const DataOps *>(this);
     }
 
     ~QArrayDataPointer()
@@ -121,62 +145,92 @@ public:
         return d == Data::sharedNull();
     }
 
-    Data *data() const
-    {
-        return d;
-    }
+    T *data() { return b; }
+    const T *data() const { return b; }
+
+    iterator begin() { return data(); }
+    iterator end() { return data() + size; }
+    const_iterator begin() const { return data(); }
+    const_iterator end() const { return data() + size; }
+    const_iterator constBegin() const { return data(); }
+    const_iterator constEnd() const { return data() + size; }
 
     void swap(QArrayDataPointer &other) noexcept
     {
         qSwap(d, other.d);
+        qSwap(b, other.b);
+        qSwap(size, other.size);
     }
 
     void clear()
     {
-        QArrayDataPointer tmp(d);
+        QArrayDataPointer tmp(d, b, size);
         d = Data::sharedNull();
+        b = reinterpret_cast<T *>(d);
+        size = 0;
     }
 
     bool detach()
     {
         if (d->needsDetach()) {
-            Data *copy = clone(d->detachFlags());
-            QArrayDataPointer old(d);
-            d = copy;
+            QPair<Data *, T *> copy = clone(d->detachFlags());
+            QArrayDataPointer old(d, b, size);
+            d = copy.first;
+            b = copy.second;
             return true;
         }
 
         return false;
     }
 
+    // forwards from QArrayData
+    int allocatedCapacity() { return d->allocatedCapacity(); }
+    int constAllocatedCapacity() const { return d->constAllocatedCapacity(); }
+    int refCounterValue() const { return d->refCounterValue(); }
+    bool ref() { return d->ref(); }
+    bool deref() { return d->deref(); }
+    bool isMutable() const { return d->isMutable(); }
+    bool isStatic() const { return d->isStatic(); }
+    bool isShared() const { return d->isShared(); }
+    bool needsDetach() const { return d->needsDetach(); }
+    size_t detachCapacity(size_t newSize) const { return d->detachCapacity(newSize); }
+    typename Data::ArrayOptions &flags() { return reinterpret_cast<typename Data::ArrayOptions &>(d->flags); }
+    typename Data::ArrayOptions flags() const { return typename Data::ArrayOption(d->flags); }
+    typename Data::ArrayOptions detachFlags() const { return d->detachFlags(); }
+    typename Data::ArrayOptions cloneFlags() const { return d->cloneFlags(); }
+
 private:
-    Q_REQUIRED_RESULT Data *clone(QArrayData::ArrayOptions options) const
+    Q_REQUIRED_RESULT QPair<Data *, T *> clone(QArrayData::ArrayOptions options) const
     {
-        Data *x = Data::allocate(d->detachCapacity(d->size), options);
-        Q_CHECK_PTR(x);
-        QArrayDataPointer copy(x);
+        QPair<Data *, T *> pair = Data::allocate(d->detachCapacity(size),
+                    options);
+        Q_CHECK_PTR(pair.first);
+        QArrayDataPointer copy(pair.first, pair.second, 0);
+        if (size)
+            copy->copyAppend(begin(), end());
 
-        if (d->size)
-            copy->copyAppend(d->begin(), d->end());
-
-        Data *result = copy.d;
+        pair.first = copy.d;
         copy.d = Data::sharedNull();
-        return result;
+        return pair;
     }
 
     Data *d;
+    T *b;
+
+public:
+    uint size;
 };
 
 template <class T>
 inline bool operator==(const QArrayDataPointer<T> &lhs, const QArrayDataPointer<T> &rhs)
 {
-    return lhs.data() == rhs.data();
+    return lhs.data() == rhs.data() && lhs.size == rhs.size;
 }
 
 template <class T>
 inline bool operator!=(const QArrayDataPointer<T> &lhs, const QArrayDataPointer<T> &rhs)
 {
-    return lhs.data() != rhs.data();
+    return lhs.data() != rhs.data() || lhs.size != rhs.size;
 }
 
 template <class T>

@@ -369,11 +369,11 @@ inline QVector<T>::QVector(const QVector<T> &v)
         d = v.d;
     } else {
         if (v.d->flags & Data::CapacityReserved) {
-            d = Data::allocate(v.d->allocatedCapacity());
+            d = Data::allocate(v.d->allocatedCapacity()).first;
             Q_CHECK_PTR(d);
             d->flags |= Data::CapacityReserved;
         } else {
-            d = Data::allocate(v.d->size);
+            d = Data::allocate(v.d->size).first;
             Q_CHECK_PTR(d);
         }
         if (v.d->size) {
@@ -394,9 +394,10 @@ void QVector<T>::detach()
     if (d->isStatic())
         return;
 
-    if (d->needsDetach())
+    if (d->needsDetach()) {
         realloc(d->allocatedCapacity(), d->detachFlags());
-    Q_ASSERT(isDetached());
+        Q_ASSERT(isDetached());
+    }
 }
 
 template <typename T>
@@ -497,7 +498,7 @@ QVector<T>::QVector(int asize)
 {
     Q_ASSERT_X(asize >= 0, "QVector::QVector", "Size must be greater than or equal to 0.");
     if (Q_LIKELY(asize > 0)) {
-        d = Data::allocate(asize);
+        d = Data::allocate(asize).first;
         Q_CHECK_PTR(d);
         d->size = asize;
         defaultConstruct(d->begin(), d->end());
@@ -511,7 +512,7 @@ QVector<T>::QVector(int asize, const T &t)
 {
     Q_ASSERT_X(asize >= 0, "QVector::QVector", "Size must be greater than or equal to 0.");
     if (asize > 0) {
-        d = Data::allocate(asize);
+        d = Data::allocate(asize).first;
         Q_CHECK_PTR(d);
         d->size = asize;
         T* i = d->end();
@@ -531,7 +532,7 @@ template <typename T>
 QVector<T>::QVector(std::initializer_list<T> args)
 {
     if (args.size() > 0) {
-        d = Data::allocate(args.size());
+        d = Data::allocate(args.size()).first;
         Q_CHECK_PTR(d);
         // std::initializer_list<T>::iterator is guaranteed to be
         // const T* ([support.initlist]/1), so can be memcpy'ed away from by copyConstruct
@@ -585,7 +586,8 @@ void QVector<T>::realloc(int aalloc, QArrayData::ArrayOptions options)
 
     QT_TRY {
         // allocate memory
-        x = Data::allocate(aalloc, options);
+        auto pair = Data::allocate(aalloc, options);
+        x = pair.first;
         Q_CHECK_PTR(x);
         // aalloc is bigger then 0 so it is not [un]sharedEmpty
         Q_ASSERT(!x->isStatic());
@@ -749,7 +751,7 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, T &&t)
     Q_ASSERT_X(isValidIterator(before),  "QVector::insert", "The specified iterator argument 'before' is invalid");
 
     const auto offset = std::distance(d->begin(), before);
-    if (!isDetached() || d->size + 1 > int(d->alloc))
+    if (!isDetached() || d->size + 1 > int(d->allocatedCapacity()))
         realloc(d->size + 1, QArrayData::GrowsForward);
     if (!QTypeInfoQuery<T>::isRelocatable) {
         T *i = d->end();

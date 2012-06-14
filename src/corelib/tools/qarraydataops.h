@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+template <class T> struct QArrayDataPointer;
+
 namespace QtPrivate {
 
 QT_WARNING_PUSH
@@ -56,7 +58,7 @@ QT_WARNING_DISABLE_GCC("-Wstringop-overflow")
 
 template <class T>
 struct QPodArrayOps
-    : QTypedArrayData<T>
+        : public QArrayDataPointer<T>
 {
     typedef T parameter_type;
 
@@ -148,7 +150,7 @@ QT_WARNING_POP
 
 template <class T>
 struct QGenericArrayOps
-    : QTypedArrayData<T>
+        : public QArrayDataPointer<T>
 {
     typedef const T &parameter_type;
 

@@ -2109,9 +2109,9 @@ QString::QString(const QChar *unicode, int size)
                 ++size;
         }
         if (!size) {
-            d = Data::allocate(0);
+            d = Data::allocate(0).first;
         } else {
-            d = Data::allocate(size + 1);
+            d = Data::allocate(size + 1).first;
             Q_CHECK_PTR(d);
             d->size = size;
             memcpy(d->data(), unicode, size * sizeof(QChar));
@@ -2129,9 +2129,9 @@ QString::QString(const QChar *unicode, int size)
 QString::QString(int size, QChar ch)
 {
    if (size <= 0) {
-        d = Data::allocate(0);
+        d = Data::allocate(0).first;
     } else {
-        d = Data::allocate(size + 1);
+        d = Data::allocate(size + 1).first;
         Q_CHECK_PTR(d);
         d->size = size;
         d->data()[size] = '\0';
@@ -2151,7 +2151,7 @@ QString::QString(int size, QChar ch)
 */
 QString::QString(int size, Qt::Initialization)
 {
-    d = Data::allocate(size + 1);
+    d = Data::allocate(size + 1).first;
     Q_CHECK_PTR(d);
     d->size = size;
     d->data()[size] = '\0';
@@ -2169,7 +2169,7 @@ QString::QString(int size, Qt::Initialization)
 */
 QString::QString(QChar ch)
 {
-    d = Data::allocate(2);
+    d = Data::allocate(2).first;
     Q_CHECK_PTR(d);
     d->size = 1;
     d->data()[0] = ch.unicode();
@@ -2354,7 +2354,7 @@ void QString::reallocData(uint alloc, bool grow)
         allocOptions |= QArrayData::GrowsForward;
 
     if (d->needsDetach()) {
-        Data *x = Data::allocate(alloc, allocOptions);
+        Data *x = Data::allocate(alloc, allocOptions).first;
         Q_CHECK_PTR(x);
         x->size = qMin(int(alloc) - 1, d->size);
         ::memcpy(x->data(), d->data(), x->size * sizeof(QChar));
@@ -2363,7 +2363,7 @@ void QString::reallocData(uint alloc, bool grow)
             Data::deallocate(d);
         d = x;
     } else {
-        Data *p = Data::reallocateUnaligned(d, alloc, allocOptions);
+        Data *p = Data::reallocateUnaligned(d, d->data(), alloc, allocOptions).first;
         Q_CHECK_PTR(p);
         d = p;
     }
@@ -4898,7 +4898,7 @@ QString QString::mid(int position, int n) const
         return QString();
     case QContainerImplHelper::Empty:
     {
-        QStringDataPtr empty = { Data::allocate(0) };
+        QStringDataPtr empty = { Data::allocate(0).first };
         return QString(empty);
     }
     case QContainerImplHelper::Full:
@@ -5354,11 +5354,11 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
     if (!str) {
         d = Data::sharedNull();
     } else if (size == 0 || (!*str && size < 0)) {
-        d = Data::allocate(0);
+        d = Data::allocate(0).first;
     } else {
         if (size < 0)
             size = qstrlen(str);
-        d = Data::allocate(size + 1);
+        d = Data::allocate(size + 1).first;
         Q_CHECK_PTR(d);
         d->size = size;
         d->data()[size] = '\0';
@@ -5418,7 +5418,7 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
     if (!str)
         return QString();
     if (size == 0 || (!*str && size < 0)) {
-        QStringDataPtr empty = { Data::allocate(0) };
+        QStringDataPtr empty = { Data::allocate(0).first };
         return QString(empty);
     }
 #if QT_CONFIG(textcodec)
@@ -9124,9 +9124,9 @@ QString QString::fromRawData(const QChar *unicode, int size)
     if (!unicode) {
         x = Data::sharedNull();
     } else if (!size) {
-        x = Data::allocate(0);
+        x = Data::allocate(0).first;
     } else {
-        x = Data::fromRawData(reinterpret_cast<const ushort *>(unicode), size);
+        x = Data::fromRawData(reinterpret_cast<const ushort *>(unicode), size).ptr;
         Q_CHECK_PTR(x);
     }
     QStringDataPtr dataPtr = { x };

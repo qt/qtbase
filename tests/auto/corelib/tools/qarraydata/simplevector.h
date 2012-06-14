@@ -76,12 +76,23 @@ public:
     {
     }
 
-    explicit SimpleVector(Data *ptr)
-        : d(ptr)
+    template <size_t N>
+    explicit SimpleVector(QStaticArrayData<T, N> &ptr)
+        : d(static_cast<Data *>(&ptr.header), ptr.data, N)
     {
     }
 
-    bool empty() const { return d->size == 0; }
+    SimpleVector(Data *header, T *data, size_t len = 0)
+        : d(header, data, len)
+    {
+    }
+
+    explicit SimpleVector(QPair<Data*, T*> ptr, size_t len = 0)
+        : d(ptr, len)
+    {
+    }
+
+    bool empty() const { return d.size == 0; }
     bool isNull() const { return d.isNull(); }
     bool isEmpty() const { return this->empty(); }
 
@@ -89,8 +100,8 @@ public:
     bool isShared() const { return d->isShared(); }
     bool isSharedWith(const SimpleVector &other) const { return d == other.d; }
 
-    size_t size() const { return d->size; }
-    size_t capacity() const { return d->allocatedCapacity(); }
+    size_t size() const { return d.size; }
+    size_t capacity() const { return d->constAllocatedCapacity(); }
 
     iterator begin() { detach(); return d->begin(); }
     iterator end() { detach(); return d->end(); }
@@ -139,10 +150,10 @@ public:
             return;
 
         if (n <= capacity()) {
-            if (d->flags & Data::CapacityReserved)
+            if (d->flags() & Data::CapacityReserved)
                 return;
             if (!d->isShared()) {
-                d->flags |= Data::CapacityReserved;
+                d->flags() |= Data::CapacityReserved;
                 return;
             }
         }
