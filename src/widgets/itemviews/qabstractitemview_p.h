@@ -270,10 +270,17 @@ public:
     }
 
     inline QAbstractItemDelegate *delegateForIndex(const QModelIndex &index) const {
-	QAbstractItemDelegate *del;
-	if ((del = rowDelegates.value(index.row(), 0))) return del;
-	if ((del = columnDelegates.value(index.column(), 0))) return del;
-	return itemDelegate;
+        QMap<int, QPointer<QAbstractItemDelegate> >::ConstIterator it;
+
+        it = rowDelegates.find(index.row());
+        if (it != rowDelegates.end())
+            return it.value();
+
+        it = columnDelegates.find(index.column());
+        if (it != columnDelegates.end())
+            return it.value();
+
+        return itemDelegate;
     }
 
     inline bool isIndexValid(const QModelIndex &index) const {
