@@ -637,13 +637,6 @@ void tst_QChar::mirroredChar()
     QVERIFY(QChar(0x301A).mirroredChar() == QChar(0x301B));
     QVERIFY(QChar(0x301B).hasMirrored());
     QVERIFY(QChar(0x301B).mirroredChar() == QChar(0x301A));
-
-    if (QChar::currentUnicodeVersion() <= QChar::Unicode_5_0) {
-        QVERIFY(!QChar(0x201C).hasMirrored());
-        QVERIFY(QChar(0x201C).mirroredChar() != QChar(0x201D));
-        QVERIFY(!QChar(0x201D).hasMirrored());
-        QVERIFY(QChar(0x201D).mirroredChar() != QChar(0x201C));
-    }
 }
 
 void tst_QChar::decomposition()
