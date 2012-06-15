@@ -52,7 +52,11 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#if defined(_WRS_KERNEL)
 #include <sys/times.h>
+#else
+#include <sys/time.h>
+#endif
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -100,10 +104,14 @@ int rand_r(unsigned int * /*seedp*/);
 // no usleep() support
 int usleep(unsigned int);
 
+#if defined(VXWORKS_DKM) || defined(VXWORKS_RTP)
+int gettimeofday(struct timeval *, void *);
+#else
 // gettimeofday() is declared, but is missing from the library.
 // It IS however defined in the Curtis-Wright X11 libraries, so
 // we have to make the symbol 'weak'
 int gettimeofday(struct timeval *tv, void /*struct timezone*/ *) __attribute__((weak));
+#endif
 
 // neither getpagesize() or sysconf(_SC_PAGESIZE) are available
 int getpagesize();

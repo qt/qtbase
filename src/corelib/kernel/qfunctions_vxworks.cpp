@@ -92,7 +92,7 @@ int usleep(unsigned int usec)
 // gettimeofday() is declared, but is missing from the library
 // It IS however defined in the Curtis-Wright X11 libraries, so
 // we have to make the symbol 'weak'
-#if defined(Q_CC_DIAB)
+#if defined(Q_CC_DIAB) && !defined(VXWORKS_DKM) && !defined(VXWORKS_RTP)
 #  pragma weak gettimeofday
 #endif
 int gettimeofday(struct timeval *tv, void /*struct timezone*/ *)
