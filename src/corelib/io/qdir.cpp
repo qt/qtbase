@@ -1464,6 +1464,7 @@ bool QDir::rmpath(const QString &dirPath) const
 }
 
 /*!
+    \since 5.0
     Removes the directory, including all its contents.
 
     Returns true if successful, otherwise false.
