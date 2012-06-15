@@ -113,7 +113,7 @@ QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
     }
 #elif defined(Q_OS_VXWORKS)
     char name[20];
-    qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdCurrent));
+    qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdSelf()));
 
     // make sure there is no pipe with this name
     pipeDevDelete(name, true);
@@ -159,7 +159,7 @@ QEventDispatcherUNIXPrivate::~QEventDispatcherUNIXPrivate()
     close(thread_pipe[0]);
 
     char name[20];
-    qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdCurrent));
+    qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdSelf()));
 
     pipeDevDelete(name, true);
 #else
