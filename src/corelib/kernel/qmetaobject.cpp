@@ -2056,20 +2056,8 @@ bool QMetaMethod::invoke(QObject *object,
         const char *retType = typeName();
         if (qstrcmp(returnValue.name(), retType) != 0) {
             // normalize the return value as well
-            // the trick here is to make a function signature out of the return type
-            // so that we can call normalizedSignature() and avoid duplicating code
-            QByteArray unnormalized;
-            int len = qstrlen(returnValue.name());
-
-            unnormalized.reserve(len + 3);
-            unnormalized = "_(";        // the function is called "_"
-            unnormalized.append(returnValue.name());
-            unnormalized.append(')');
-
-            QByteArray normalized = QMetaObject::normalizedSignature(unnormalized.constData());
-            normalized.truncate(normalized.length() - 1); // drop the ending ')'
-
-            if (qstrcmp(normalized.constData() + 2, retType) != 0)
+            QByteArray normalized = QMetaObject::normalizedType(returnValue.name());
+            if (qstrcmp(normalized.constData(), retType) != 0)
                 return false;
         }
     }
