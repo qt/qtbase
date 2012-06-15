@@ -63,9 +63,10 @@
     For application developers writing user interfaces, Qt provides
     higher level API's, like Qt Quick, that are much more suitable
     than the enablers found in the Qt GUI module. 
+    than the enablers found in the Qt GUI module.
 
 
-    
+
     \section1 Application Windows
 
     The most important classes in the Qt GUI module are
@@ -73,7 +74,7 @@
     content on screen, will need to make use of these. QGuiApplication
     contains the main event loop, where all events from the window
     system and other sources are processed and dispatched. It also
-    handles the application's initialization and finalization. 
+    handles the application's initialization and finalization.
 
     The \l QWindow class represents a window in the underlying
     windowing system. It provides a number of virtual functions to
@@ -83,16 +84,16 @@
 
 
     \section1 2D Graphics
- 
+
     The Qt GUI module contains classes for 2D graphics, imaging, fonts
     and advanced typography.
-    
+
     A \l QWindow created with the surface type \l
     {QSurface::RasterSurface} can be used in combination with \l
     {QBackingStore} and \l {QPainter}, Qt's highly optimized 2D vector
     graphics API. QPainter supports drawing lines, polygons, vector
     paths, images and text. For more information, see \l{Paint
-    System}.
+    System} and \l {Raster Window Example}.
 
     Qt can load and save images using the \l QImage and \l QPixmap
     classes. By default, Qt supports the most common image formats
@@ -109,7 +110,7 @@
 
 
     \section1 OpenGL and OpenGL ES integration
-    
+
     QWindow supports rendering using desktop OpenGL, OpenGL ES 1.1 and
     OpenGL ES 2.0, depending on what the platform supports. OpenGL
     rendering is enabled by setting the QWindow's surface type to
@@ -126,7 +127,6 @@
     be used in combination with \l QPainter and \l QOpenGLPaintDevice
     to have OpenGL hardware accellerated 2D graphics, by sacrificing
     some of the visual quality.
-    
 
 
 
@@ -147,14 +147,6 @@
 
 
 /*
-
-    ### DOC-TODO: link under AppWindows to hello-world for QWindow in
-        examples/gui/windows/hello-qtgui. (Idea: QWindow which
-        reimplements mouseEvent() to exit)
-
-    ### DOC-TODO: link under Painting to hello-raster for QWindow
-        in examples/gui/graphics/rasterwindow. Idea: QWindow with BS
-        which draws a rotating rectangle with some text underneath.
 
     ### DOC-TODO: link under OpenGL to hello-opengl for QWindow in
         examples/gui/opengl/openglwindow. Idea: QWindow which draws a
