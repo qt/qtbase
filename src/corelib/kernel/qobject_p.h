@@ -92,6 +92,7 @@ public:
     static void (*parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *);
     static void (*signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **);
     static int  (*receivers)(QAbstractDeclarativeData *, const QObject *, int);
+    static bool (*isSignalConnected)(QAbstractDeclarativeData *, const QObject *, int);
 };
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData
@@ -224,6 +225,8 @@ inline bool QObjectPrivate::isSignalConnected(uint signal_index) const
 {
     return signal_index >= sizeof(connectedSignals) * 8
         || (connectedSignals[signal_index >> 5] & (1 << (signal_index & 0x1f))
+        || (declarativeData && QAbstractDeclarativeData::isSignalConnected
+            && QAbstractDeclarativeData::isSignalConnected(declarativeData, q_func(), signal_index))
         || qt_signal_spy_callback_set.signal_begin_callback
         || qt_signal_spy_callback_set.signal_end_callback);
 }

@@ -174,6 +174,7 @@ void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject 
 void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
 void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = 0;
 int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QObject *, int) = 0;
+bool (*QAbstractDeclarativeData::isSignalConnected)(QAbstractDeclarativeData *, const QObject *, int) = 0;
 
 QObjectData::~QObjectData() {}
 
@@ -2182,13 +2183,13 @@ int QObject::receivers(const char *signal) const
             return 0;
         }
 
+        if (!d->isSignalConnected(signal_index))
+            return receivers;
+
         if (d->declarativeData && QAbstractDeclarativeData::receivers) {
             receivers += QAbstractDeclarativeData::receivers(d->declarativeData, this,
                                                              signal_index);
         }
-
-        if (!d->isSignalConnected(signal_index))
-            return receivers;
 
         QMutexLocker locker(signalSlotLock(this));
         if (d->connectionLists) {
@@ -3285,12 +3286,12 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
 {
     int signal_index = signalOffset + local_signal_index;
 
+    if (!sender->d_func()->isSignalConnected(signal_index))
+        return; // nothing connected to these signals, and no spy
+
     if (sender->d_func()->declarativeData && QAbstractDeclarativeData::signalEmitted)
         QAbstractDeclarativeData::signalEmitted(sender->d_func()->declarativeData, sender, 
                                                 signal_index, argv);
-
-    if (!sender->d_func()->isSignalConnected(signal_index))
-        return; // nothing connected to these signals, and no spy
 
     if (sender->d_func()->blockSig)
         return;
