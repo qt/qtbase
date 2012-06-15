@@ -129,8 +129,8 @@ public:
 
     inline int horizontalOffset() const
         { return (q_func()->isRightToLeft() ? (hbar->maximum() - hbar->value()) : hbar->value()); }
-    int verticalOffset(int topBlock, int topLine) const;
-    int verticalOffset() const;
+    qreal verticalOffset(int topBlock, int topLine) const;
+    qreal verticalOffset() const;
 
     inline void sendControlEvent(QEvent *e)
         { control->processEvent(e, QPointF(horizontalOffset(), verticalOffset()), viewport); }
@@ -154,6 +154,7 @@ public:
     uint clickCausedFocus : 1;
 
     int topLine;
+    qreal topLineFracture; // for non-int sized fonts
 
     void setTopLine(int visualTopLine, int dx = 0);
     void setTopBlock(int newTopBlock, int newTopLine, int dx = 0);

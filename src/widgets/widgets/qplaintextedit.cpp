@@ -471,7 +471,7 @@ void QPlainTextEditControl::insertFromMimeData(const QMimeData *source) {
         ed->insertFromMimeData(source);
 }
 
-int QPlainTextEditPrivate::verticalOffset(int topBlock, int topLine) const
+qreal QPlainTextEditPrivate::verticalOffset(int topBlock, int topLine) const
 {
     qreal offset = 0;
     QTextDocument *doc = control->document();
@@ -491,12 +491,12 @@ int QPlainTextEditPrivate::verticalOffset(int topBlock, int topLine) const
     }
     if (topBlock == 0 && topLine == 0)
         offset -= doc->documentMargin(); // top margin
-    return (int)offset;
+    return offset;
 }
 
 
-int QPlainTextEditPrivate::verticalOffset() const {
-    return verticalOffset(control->topBlock, topLine);
+qreal QPlainTextEditPrivate::verticalOffset() const {
+    return verticalOffset(control->topBlock, topLine) + topLineFracture;
 }
 
 
@@ -642,8 +642,10 @@ void QPlainTextEditPrivate::setTopBlock(int blockNumber, int lineNumber, int dx)
     if (viewport->updatesEnabled() && viewport->isVisible()) {
         int dy = 0;
         if (doc->findBlockByNumber(control->topBlock).isValid()) {
-            dy = (int)(-q->blockBoundingGeometry(block).y())
-                 + verticalOffset() - verticalOffset(blockNumber, lineNumber);
+            qreal realdy = -q->blockBoundingGeometry(block).y()
+                    + verticalOffset() - verticalOffset(blockNumber, lineNumber);
+            dy = (int)realdy;
+            topLineFracture = realdy - dy;
         }
         control->topBlock = blockNumber;
         topLine = lineNumber;
@@ -652,14 +654,17 @@ void QPlainTextEditPrivate::setTopBlock(int blockNumber, int lineNumber, int dx)
         vbar->setValue(block.firstLineNumber() + lineNumber);
         vbar->blockSignals(vbarSignalsBlocked);
 
-        if (dx || dy)
+        if (dx || dy) {
             viewport->scroll(q->isRightToLeft() ? -dx : dx, dy);
-        else
+        } else {
             viewport->update();
+            topLineFracture = 0;
+        }
         emit q->updateRequest(viewport->rect(), dy);
     } else {
         control->topBlock = blockNumber;
         topLine = lineNumber;
+        topLineFracture = 0;
     }
 
 }
@@ -699,7 +704,7 @@ void QPlainTextEditPrivate::ensureVisible(int position, bool center, bool forceC
 
         int l = 0;
         int lineCount = block.layout()->lineCount();
-        int voffset = verticalOffset(block.blockNumber(), 0);
+        qreal voffset = verticalOffset(block.blockNumber(), 0);
         while (l < lineCount) {
             QRectF lineRect = block.layout()->lineAt(l).naturalTextRect();
             if (h - voffset - lineRect.top() <= height)
@@ -731,7 +736,7 @@ QPlainTextEditPrivate::QPlainTextEditPrivate()
       tabChangesFocus(false),
       lineWrap(QPlainTextEdit::WidgetWidth),
       wordWrap(QTextOption::WrapAtWordBoundaryOrAnywhere),
-      clickCausedFocus(0),topLine(0), 
+      clickCausedFocus(0),topLine(0),topLineFracture(0),
       pageUpDownLastCursorYIsValid(false)
 {
     showCursorOnInitialShow = true;
@@ -808,7 +813,7 @@ void QPlainTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
         return;
     }
     const int xOffset = horizontalOffset();
-    const int yOffset = verticalOffset();
+    const int yOffset = (int)verticalOffset();
     const QRect visibleRect(xOffset, yOffset, viewport->width(), viewport->height());
 
     QRect r = contentsRect.adjusted(-1, -1, 1, 1).intersected(visibleRect).toAlignedRect();
@@ -1333,7 +1338,7 @@ QTextCursor QPlainTextEdit::textCursor() const
 QString QPlainTextEdit::anchorAt(const QPoint &pos) const
 {
     Q_D(const QPlainTextEdit);
-    int cursorPos = d->control->hitTest(pos + QPoint(d->horizontalOffset(),
+    int cursorPos = d->control->hitTest(pos + QPointF(d->horizontalOffset(),
                                                      d->verticalOffset()),
                                         Qt::ExactHit);
     if (cursorPos < 0)
@@ -1436,7 +1441,7 @@ void QPlainTextEdit::clear()
 {
     Q_D(QPlainTextEdit);
     // clears and sets empty content
-    d->control->topBlock = d->topLine = 0;
+    d->control->topBlock = d->topLine = d->topLineFracture = 0;
     d->control->clear();
 }
 
@@ -1822,6 +1827,7 @@ static void fillBackground(QPainter *p, const QRectF &rect, QBrush brush, QRectF
 */
 void QPlainTextEdit::paintEvent(QPaintEvent *e)
 {
+    Q_D(QPlainTextEdit);
     QPainter painter(viewport());
     Q_ASSERT(qobject_cast<QPlainTextDocumentLayout*>(document()->documentLayout()));
 
@@ -2232,7 +2238,7 @@ QRect QPlainTextEdit::cursorRect(const QTextCursor &cursor) const
         return QRect();
 
     QRect r = d->control->cursorRect(cursor).toRect();
-    r.translate(-d->horizontalOffset(),-d->verticalOffset());
+    r.translate(-d->horizontalOffset(),-(int)d->verticalOffset());
     return r;
 }
 
@@ -2244,7 +2250,7 @@ QRect QPlainTextEdit::cursorRect() const
 {
     Q_D(const QPlainTextEdit);
     QRect r = d->control->cursorRect().toRect();
-    r.translate(-d->horizontalOffset(),-d->verticalOffset());
+    r.translate(-d->horizontalOffset(),-(int)d->verticalOffset());
     return r;
 }
 
