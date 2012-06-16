@@ -512,7 +512,7 @@ public:
     // special constructor that is enabled only if X derives from QObject
 #if QT_DEPRECATED_SINCE(5, 0)
     template <class X>
-    QT_DEPRECATED inline QWeakPointer(X *ptr) : d(ptr ? d->getAndRef(ptr) : 0), value(ptr)
+    QT_DEPRECATED inline QWeakPointer(X *ptr) : d(ptr ? Data::getAndRef(ptr) : 0), value(ptr)
     { }
 #endif
 #endif
