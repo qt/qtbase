@@ -247,59 +247,59 @@ static void initJoiningMap()
 }
 
 
-static const char *grapheme_break_string =
-    "enum GraphemeBreak {\n"
-    "    GraphemeBreakOther,\n"
-    "    GraphemeBreakCR,\n"
-    "    GraphemeBreakLF,\n"
-    "    GraphemeBreakControl,\n"
-    "    GraphemeBreakExtend,\n"
-    "    GraphemeBreakPrepend,\n"
-    "    GraphemeBreakSpacingMark,\n"
-    "    GraphemeBreakL,\n"
-    "    GraphemeBreakV,\n"
-    "    GraphemeBreakT,\n"
-    "    GraphemeBreakLV,\n"
-    "    GraphemeBreakLVT\n"
+static const char *grapheme_break_class_string =
+    "enum GraphemeBreakClass {\n"
+    "    GraphemeBreak_Other,\n"
+    "    GraphemeBreak_CR,\n"
+    "    GraphemeBreak_LF,\n"
+    "    GraphemeBreak_Control,\n"
+    "    GraphemeBreak_Extend,\n"
+    "    GraphemeBreak_Prepend,\n"
+    "    GraphemeBreak_SpacingMark,\n"
+    "    GraphemeBreak_L,\n"
+    "    GraphemeBreak_V,\n"
+    "    GraphemeBreak_T,\n"
+    "    GraphemeBreak_LV,\n"
+    "    GraphemeBreak_LVT\n"
     "};\n\n";
 
-enum GraphemeBreak {
-    GraphemeBreakOther,
-    GraphemeBreakCR,
-    GraphemeBreakLF,
-    GraphemeBreakControl,
-    GraphemeBreakExtend,
-    GraphemeBreakPrepend,
-    GraphemeBreakSpacingMark,
-    GraphemeBreakL,
-    GraphemeBreakV,
-    GraphemeBreakT,
-    GraphemeBreakLV,
-    GraphemeBreakLVT
+enum GraphemeBreakClass {
+    GraphemeBreak_Other,
+    GraphemeBreak_CR,
+    GraphemeBreak_LF,
+    GraphemeBreak_Control,
+    GraphemeBreak_Extend,
+    GraphemeBreak_Prepend,
+    GraphemeBreak_SpacingMark,
+    GraphemeBreak_L,
+    GraphemeBreak_V,
+    GraphemeBreak_T,
+    GraphemeBreak_LV,
+    GraphemeBreak_LVT
 
     , GraphemeBreak_Unassigned
 };
 
-static QHash<QByteArray, GraphemeBreak> grapheme_break_map;
+static QHash<QByteArray, GraphemeBreakClass> grapheme_break_map;
 
 static void initGraphemeBreak()
 {
     struct GraphemeBreakList {
-        GraphemeBreak brk;
+        GraphemeBreakClass brk;
         const char *name;
     } breaks[] = {
-        { GraphemeBreakOther, "Other" },
-        { GraphemeBreakCR, "CR" },
-        { GraphemeBreakLF, "LF" },
-        { GraphemeBreakControl, "Control" },
-        { GraphemeBreakExtend, "Extend" },
-        { GraphemeBreakPrepend, "Prepend" },
-        { GraphemeBreakSpacingMark, "SpacingMark" },
-        { GraphemeBreakL, "L" },
-        { GraphemeBreakV, "V" },
-        { GraphemeBreakT, "T" },
-        { GraphemeBreakLV, "LV" },
-        { GraphemeBreakLVT, "LVT" },
+        { GraphemeBreak_Other, "Other" },
+        { GraphemeBreak_CR, "CR" },
+        { GraphemeBreak_LF, "LF" },
+        { GraphemeBreak_Control, "Control" },
+        { GraphemeBreak_Extend, "Extend" },
+        { GraphemeBreak_Prepend, "Prepend" },
+        { GraphemeBreak_SpacingMark, "SpacingMark" },
+        { GraphemeBreak_L, "L" },
+        { GraphemeBreak_V, "V" },
+        { GraphemeBreak_T, "T" },
+        { GraphemeBreak_LV, "LV" },
+        { GraphemeBreak_LVT, "LVT" },
         { GraphemeBreak_Unassigned, 0 }
     };
     GraphemeBreakList *d = breaks;
@@ -310,60 +310,60 @@ static void initGraphemeBreak()
 }
 
 
-static const char *word_break_string =
-    "enum WordBreak {\n"
-    "    WordBreakOther,\n"
-    "    WordBreakCR,\n"
-    "    WordBreakLF,\n"
-    "    WordBreakNewline,\n"
-    "    WordBreakFormat,\n"
-    "    WordBreakKatakana,\n"
-    "    WordBreakALetter,\n"
-    "    WordBreakMidNumLet,\n"
-    "    WordBreakMidLetter,\n"
-    "    WordBreakMidNum,\n"
-    "    WordBreakNumeric,\n"
-    "    WordBreakExtendNumLet\n"
+static const char *word_break_class_string =
+    "enum WordBreakClass {\n"
+    "    WordBreak_Other,\n"
+    "    WordBreak_CR,\n"
+    "    WordBreak_LF,\n"
+    "    WordBreak_Newline,\n"
+    "    WordBreak_Extend,\n"
+    "    WordBreak_Katakana,\n"
+    "    WordBreak_ALetter,\n"
+    "    WordBreak_MidNumLet,\n"
+    "    WordBreak_MidLetter,\n"
+    "    WordBreak_MidNum,\n"
+    "    WordBreak_Numeric,\n"
+    "    WordBreak_ExtendNumLet\n"
     "};\n\n";
 
-enum WordBreak {
-    WordBreakOther,
-    WordBreakCR,
-    WordBreakLF,
-    WordBreakNewline,
-    WordBreakFormat,
-    WordBreakKatakana,
-    WordBreakALetter,
-    WordBreakMidNumLet,
-    WordBreakMidLetter,
-    WordBreakMidNum,
-    WordBreakNumeric,
-    WordBreakExtendNumLet
+enum WordBreakClass {
+    WordBreak_Other,
+    WordBreak_CR,
+    WordBreak_LF,
+    WordBreak_Newline,
+    WordBreak_Extend,
+    WordBreak_Katakana,
+    WordBreak_ALetter,
+    WordBreak_MidNumLet,
+    WordBreak_MidLetter,
+    WordBreak_MidNum,
+    WordBreak_Numeric,
+    WordBreak_ExtendNumLet
 
     , WordBreak_Unassigned
 };
 
-static QHash<QByteArray, WordBreak> word_break_map;
+static QHash<QByteArray, WordBreakClass> word_break_map;
 
 static void initWordBreak()
 {
     struct WordBreakList {
-        WordBreak brk;
+        WordBreakClass brk;
         const char *name;
     } breaks[] = {
-        { WordBreakOther, "Other" },
-        { WordBreakCR, "CR" },
-        { WordBreakLF, "LF" },
-        { WordBreakNewline, "Newline" },
-        { WordBreakFormat, "Extend" },
-        { WordBreakFormat, "Format" },
-        { WordBreakKatakana, "Katakana" },
-        { WordBreakALetter, "ALetter" },
-        { WordBreakMidNumLet, "MidNumLet" },
-        { WordBreakMidLetter, "MidLetter" },
-        { WordBreakMidNum, "MidNum" },
-        { WordBreakNumeric, "Numeric" },
-        { WordBreakExtendNumLet, "ExtendNumLet" },
+        { WordBreak_Other, "Other" },
+        { WordBreak_CR, "CR" },
+        { WordBreak_LF, "LF" },
+        { WordBreak_Newline, "Newline" },
+        { WordBreak_Extend, "Extend" },
+        { WordBreak_Extend, "Format" },
+        { WordBreak_Katakana, "Katakana" },
+        { WordBreak_ALetter, "ALetter" },
+        { WordBreak_MidNumLet, "MidNumLet" },
+        { WordBreak_MidLetter, "MidLetter" },
+        { WordBreak_MidNum, "MidNum" },
+        { WordBreak_Numeric, "Numeric" },
+        { WordBreak_ExtendNumLet, "ExtendNumLet" },
         { WordBreak_Unassigned, 0 }
     };
     WordBreakList *d = breaks;
@@ -374,66 +374,66 @@ static void initWordBreak()
 }
 
 
-static const char *sentence_break_string =
-    "enum SentenceBreak {\n"
-    "    SentenceBreakOther,\n"
-    "    SentenceBreakCR,\n"
-    "    SentenceBreakLF,\n"
-    "    SentenceBreakSep,\n"
-    "    SentenceBreakFormat,\n"
-    "    SentenceBreakSp,\n"
-    "    SentenceBreakLower,\n"
-    "    SentenceBreakUpper,\n"
-    "    SentenceBreakOLetter,\n"
-    "    SentenceBreakNumeric,\n"
-    "    SentenceBreakATerm,\n"
-    "    SentenceBreakSContinue,\n"
-    "    SentenceBreakSTerm,\n"
-    "    SentenceBreakClose\n"
+static const char *sentence_break_class_string =
+    "enum SentenceBreakClass {\n"
+    "    SentenceBreak_Other,\n"
+    "    SentenceBreak_CR,\n"
+    "    SentenceBreak_LF,\n"
+    "    SentenceBreak_Sep,\n"
+    "    SentenceBreak_Extend,\n"
+    "    SentenceBreak_Sp,\n"
+    "    SentenceBreak_Lower,\n"
+    "    SentenceBreak_Upper,\n"
+    "    SentenceBreak_OLetter,\n"
+    "    SentenceBreak_Numeric,\n"
+    "    SentenceBreak_ATerm,\n"
+    "    SentenceBreak_SContinue,\n"
+    "    SentenceBreak_STerm,\n"
+    "    SentenceBreak_Close\n"
     "};\n\n";
 
-enum SentenceBreak {
-    SentenceBreakOther,
-    SentenceBreakCR,
-    SentenceBreakLF,
-    SentenceBreakSep,
-    SentenceBreakFormat,
-    SentenceBreakSp,
-    SentenceBreakLower,
-    SentenceBreakUpper,
-    SentenceBreakOLetter,
-    SentenceBreakNumeric,
-    SentenceBreakATerm,
-    SentenceBreakSContinue,
-    SentenceBreakSTerm,
-    SentenceBreakClose
+enum SentenceBreakClass {
+    SentenceBreak_Other,
+    SentenceBreak_CR,
+    SentenceBreak_LF,
+    SentenceBreak_Sep,
+    SentenceBreak_Extend,
+    SentenceBreak_Sp,
+    SentenceBreak_Lower,
+    SentenceBreak_Upper,
+    SentenceBreak_OLetter,
+    SentenceBreak_Numeric,
+    SentenceBreak_ATerm,
+    SentenceBreak_SContinue,
+    SentenceBreak_STerm,
+    SentenceBreak_Close
 
     , SentenceBreak_Unassigned
 };
 
-static QHash<QByteArray, SentenceBreak> sentence_break_map;
+static QHash<QByteArray, SentenceBreakClass> sentence_break_map;
 
 static void initSentenceBreak()
 {
     struct SentenceBreakList {
-        SentenceBreak brk;
+        SentenceBreakClass brk;
         const char *name;
     } breaks[] = {
-        { SentenceBreakOther, "Other" },
-        { SentenceBreakCR, "CR" },
-        { SentenceBreakLF, "LF" },
-        { SentenceBreakSep, "Sep" },
-        { SentenceBreakFormat, "Extend" },
-        { SentenceBreakFormat, "Format" },
-        { SentenceBreakSp, "Sp" },
-        { SentenceBreakLower, "Lower" },
-        { SentenceBreakUpper, "Upper" },
-        { SentenceBreakOLetter, "OLetter" },
-        { SentenceBreakNumeric, "Numeric" },
-        { SentenceBreakATerm, "ATerm" },
-        { SentenceBreakSContinue, "SContinue" },
-        { SentenceBreakSTerm, "STerm" },
-        { SentenceBreakClose, "Close" },
+        { SentenceBreak_Other, "Other" },
+        { SentenceBreak_CR, "CR" },
+        { SentenceBreak_LF, "LF" },
+        { SentenceBreak_Sep, "Sep" },
+        { SentenceBreak_Extend, "Extend" },
+        { SentenceBreak_Extend, "Format" },
+        { SentenceBreak_Sp, "Sp" },
+        { SentenceBreak_Lower, "Lower" },
+        { SentenceBreak_Upper, "Upper" },
+        { SentenceBreak_OLetter, "OLetter" },
+        { SentenceBreak_Numeric, "Numeric" },
+        { SentenceBreak_ATerm, "ATerm" },
+        { SentenceBreak_SContinue, "SContinue" },
+        { SentenceBreak_STerm, "STerm" },
+        { SentenceBreak_Close, "Close" },
         { SentenceBreak_Unassigned, 0 }
     };
     SentenceBreakList *d = breaks;
@@ -548,10 +548,10 @@ static const char *property_string =
     "    ushort titleCaseSpecial    : 1;\n"
     "    ushort caseFoldSpecial     : 1;\n"
     "    ushort unicodeVersion      : 4;\n"
-    "    ushort graphemeBreak       : 8; /* 4 used */\n"
-    "    ushort wordBreak           : 8; /* 4 used */\n"
-    "    ushort sentenceBreak       : 8; /* 4 used */\n"
-    "    ushort line_break_class    : 8; /* 6 used */\n"
+    "    ushort graphemeBreakClass  : 8; /* 4 used */\n"
+    "    ushort wordBreakClass      : 8; /* 4 used */\n"
+    "    ushort sentenceBreakClass  : 8; /* 4 used */\n"
+    "    ushort lineBreakClass      : 8; /* 6 used */\n"
     "    ushort script              : 8; /* 5 used */\n"
     "};\n\n"
     "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4);\n"
@@ -559,16 +559,16 @@ static const char *property_string =
     "\n";
 
 static const char *methods =
-    "Q_CORE_EXPORT GraphemeBreak QT_FASTCALL graphemeBreakClass(uint ucs4);\n"
-    "inline GraphemeBreak graphemeBreakClass(QChar ch)\n"
+    "Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4);\n"
+    "inline GraphemeBreakClass graphemeBreakClass(QChar ch)\n"
     "{ return graphemeBreakClass(ch.unicode()); }\n"
     "\n"
-    "Q_CORE_EXPORT WordBreak QT_FASTCALL wordBreakClass(uint ucs4);\n"
-    "inline WordBreak wordBreakClass(QChar ch)\n"
+    "Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4);\n"
+    "inline WordBreakClass wordBreakClass(QChar ch)\n"
     "{ return wordBreakClass(ch.unicode()); }\n"
     "\n"
-    "Q_CORE_EXPORT SentenceBreak QT_FASTCALL sentenceBreakClass(uint ucs4);\n"
-    "inline SentenceBreak sentenceBreakClass(QChar ch)\n"
+    "Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4);\n"
+    "inline SentenceBreakClass sentenceBreakClass(QChar ch)\n"
     "{ return sentenceBreakClass(ch.unicode()); }\n"
     "\n"
     "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);\n"
@@ -599,10 +599,10 @@ struct PropertyFlags {
                 && upperCaseSpecial == o.upperCaseSpecial
                 && titleCaseSpecial == o.titleCaseSpecial
                 && caseFoldSpecial == o.caseFoldSpecial
-                && graphemeBreak == o.graphemeBreak
-                && wordBreak == o.wordBreak
-                && sentenceBreak == o.sentenceBreak
-                && line_break_class == o.line_break_class
+                && graphemeBreakClass == o.graphemeBreakClass
+                && wordBreakClass == o.wordBreakClass
+                && sentenceBreakClass == o.sentenceBreakClass
+                && lineBreakClass == o.lineBreakClass
                 && script == o.script
             );
     }
@@ -626,10 +626,10 @@ struct PropertyFlags {
     bool upperCaseSpecial;
     bool titleCaseSpecial;
     bool caseFoldSpecial;
-    GraphemeBreak graphemeBreak;
-    WordBreak wordBreak;
-    SentenceBreak sentenceBreak;
-    LineBreakClass line_break_class;
+    GraphemeBreakClass graphemeBreakClass;
+    WordBreakClass wordBreakClass;
+    SentenceBreakClass sentenceBreakClass;
+    LineBreakClass lineBreakClass;
     int script;
 };
 
@@ -702,7 +702,7 @@ struct UnicodeData {
             p.direction = QChar::DirR;
         }
 
-        p.line_break_class = LineBreak_AL; // XX -> AL
+        p.lineBreakClass = LineBreak_AL; // XX -> AL
         // LineBreak.txt
         // The unassigned code points that default to "ID" include ranges in the following blocks:
         //     [U+3400..U+4DBF, U+4E00..U+9FFF, U+F900..U+FAFF, U+20000..U+2A6DF, U+2A700..U+2B73F, U+2B740..U+2B81F, U+2F800..U+2FA1F, U+20000..U+2FFFD, U+30000..U+3FFFD]
@@ -715,7 +715,7 @@ struct UnicodeData {
             || (codepoint >= 0x2F800 && codepoint <= 0x2FA1F)
             || (codepoint >= 0x20000 && codepoint <= 0x2FFFD)
             || (codepoint >= 0x30000 && codepoint <= 0x3FFFD)) {
-            p.line_break_class = LineBreak_ID;
+            p.lineBreakClass = LineBreak_ID;
         }
 
         mirroredChar = 0;
@@ -732,9 +732,9 @@ struct UnicodeData {
         p.upperCaseSpecial = 0;
         p.titleCaseSpecial = 0;
         p.caseFoldSpecial = 0;
-        p.graphemeBreak = GraphemeBreakOther;
-        p.wordBreak = WordBreakOther;
-        p.sentenceBreak = SentenceBreakOther;
+        p.graphemeBreakClass = GraphemeBreak_Other;
+        p.wordBreakClass = WordBreak_Other;
+        p.sentenceBreakClass = SentenceBreak_Other;
         p.script = 0; // Common
         propertyIndex = -1;
         excludedComposition = false;
@@ -1299,7 +1299,7 @@ static void readLineBreak()
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData &d = UnicodeData::valueRef(codepoint);
-            d.p.line_break_class = lb;
+            d.p.lineBreakClass = lb;
         }
     }
 }
@@ -1506,13 +1506,13 @@ static void readGraphemeBreak()
             Q_ASSERT(ok);
         }
 
-        GraphemeBreak brk = grapheme_break_map.value(l[1], GraphemeBreak_Unassigned);
+        GraphemeBreakClass brk = grapheme_break_map.value(l[1], GraphemeBreak_Unassigned);
         if (brk == GraphemeBreak_Unassigned)
             qFatal("unassigned grapheme break class: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
-            ud.p.graphemeBreak = brk;
+            ud.p.graphemeBreakClass = brk;
         }
     }
 }
@@ -1557,13 +1557,13 @@ static void readWordBreak()
             Q_ASSERT(ok);
         }
 
-        WordBreak brk = word_break_map.value(l[1], WordBreak_Unassigned);
+        WordBreakClass brk = word_break_map.value(l[1], WordBreak_Unassigned);
         if (brk == WordBreak_Unassigned)
             qFatal("unassigned word break class: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
-            ud.p.wordBreak = brk;
+            ud.p.wordBreakClass = brk;
         }
     }
 }
@@ -1608,13 +1608,13 @@ static void readSentenceBreak()
             Q_ASSERT(ok);
         }
 
-        SentenceBreak brk = sentence_break_map.value(l[1], SentenceBreak_Unassigned);
+        SentenceBreakClass brk = sentence_break_map.value(l[1], SentenceBreak_Unassigned);
         if (brk == SentenceBreak_Unassigned)
             qFatal("unassigned sentence break class: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
-            ud.p.sentenceBreak = brk;
+            ud.p.sentenceBreakClass = brk;
         }
     }
 }
@@ -2183,17 +2183,17 @@ static QByteArray createPropertyInfo()
 //     "        ushort unicodeVersion      : 4;\n"
         out += QByteArray::number( p.age );
         out += ", ";
-//     "        ushort graphemeBreak       : 8; /* 4 used */\n"
-//     "        ushort wordBreak           : 8; /* 4 used */\n"
-//     "        ushort sentenceBreak       : 8; /* 4 used */\n"
-//     "        ushort line_break_class    : 8; /* 6 used */\n"
-        out += QByteArray::number( p.graphemeBreak );
+//     "        ushort graphemeBreakClass  : 8; /* 4 used */\n"
+//     "        ushort wordBreakClass      : 8; /* 4 used */\n"
+//     "        ushort sentenceBreakClass  : 8; /* 4 used */\n"
+//     "        ushort lineBreakClass      : 8; /* 6 used */\n"
+        out += QByteArray::number( p.graphemeBreakClass );
         out += ", ";
-        out += QByteArray::number( p.wordBreak );
+        out += QByteArray::number( p.wordBreakClass );
         out += ", ";
-        out += QByteArray::number( p.sentenceBreak );
+        out += QByteArray::number( p.sentenceBreakClass );
         out += ", ";
-        out += QByteArray::number( p.line_break_class );
+        out += QByteArray::number( p.lineBreakClass );
         out += ", ";
 //     "        ushort script              : 8; /* 5 used */\n"
         out += QByteArray::number( p.script );
@@ -2225,24 +2225,24 @@ static QByteArray createPropertyInfo()
            "    return qGetProp(ucs2);\n"
            "}\n\n";
 
-    out += "Q_CORE_EXPORT GraphemeBreak QT_FASTCALL graphemeBreakClass(uint ucs4)\n"
+    out += "Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4)\n"
            "{\n"
-           "    return (GraphemeBreak)qGetProp(ucs4)->graphemeBreak;\n"
+           "    return (GraphemeBreakClass)qGetProp(ucs4)->graphemeBreakClass;\n"
            "}\n"
            "\n"
-           "Q_CORE_EXPORT WordBreak QT_FASTCALL wordBreakClass(uint ucs4)\n"
+           "Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4)\n"
            "{\n"
-           "    return (WordBreak)qGetProp(ucs4)->wordBreak;\n"
+           "    return (WordBreakClass)qGetProp(ucs4)->wordBreakClass;\n"
            "}\n"
            "\n"
-           "Q_CORE_EXPORT SentenceBreak QT_FASTCALL sentenceBreakClass(uint ucs4)\n"
+           "Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4)\n"
            "{\n"
-           "    return (SentenceBreak)qGetProp(ucs4)->sentenceBreak;\n"
+           "    return (SentenceBreakClass)qGetProp(ucs4)->sentenceBreakClass;\n"
            "}\n"
            "\n"
            "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4)\n"
            "{\n"
-           "    return (LineBreakClass)qGetProp(ucs4)->line_break_class;\n"
+           "    return (LineBreakClass)qGetProp(ucs4)->lineBreakClass;\n"
            "}\n"
            "\n"
            "Q_CORE_EXPORT Script QT_FASTCALL script(uint ucs4)\n"
@@ -2819,9 +2819,9 @@ int main(int, char **)
     f.write("namespace QUnicodeTables {\n\n");
     f.write(property_string);
     f.write(scriptEnumDeclaration);
-    f.write(grapheme_break_string);
-    f.write(word_break_string);
-    f.write(sentence_break_string);
+    f.write(grapheme_break_class_string);
+    f.write(word_break_class_string);
+    f.write(sentence_break_class_string);
     f.write(line_break_class_string);
     f.write(methods);
     f.write("} // namespace QUnicodeTables\n\n"

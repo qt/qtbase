@@ -79,10 +79,10 @@ struct Properties {
     ushort titleCaseSpecial    : 1;
     ushort caseFoldSpecial     : 1;
     ushort unicodeVersion      : 4;
-    ushort graphemeBreak       : 8; /* 4 used */
-    ushort wordBreak           : 8; /* 4 used */
-    ushort sentenceBreak       : 8; /* 4 used */
-    ushort line_break_class    : 8; /* 6 used */
+    ushort graphemeBreakClass  : 8; /* 4 used */
+    ushort wordBreakClass      : 8; /* 4 used */
+    ushort sentenceBreakClass  : 8; /* 4 used */
+    ushort lineBreakClass      : 8; /* 6 used */
     ushort script              : 8; /* 5 used */
 };
 
@@ -196,51 +196,51 @@ enum Script {
     Takri = Common
 };
 
-enum GraphemeBreak {
-    GraphemeBreakOther,
-    GraphemeBreakCR,
-    GraphemeBreakLF,
-    GraphemeBreakControl,
-    GraphemeBreakExtend,
-    GraphemeBreakPrepend,
-    GraphemeBreakSpacingMark,
-    GraphemeBreakL,
-    GraphemeBreakV,
-    GraphemeBreakT,
-    GraphemeBreakLV,
-    GraphemeBreakLVT
+enum GraphemeBreakClass {
+    GraphemeBreak_Other,
+    GraphemeBreak_CR,
+    GraphemeBreak_LF,
+    GraphemeBreak_Control,
+    GraphemeBreak_Extend,
+    GraphemeBreak_Prepend,
+    GraphemeBreak_SpacingMark,
+    GraphemeBreak_L,
+    GraphemeBreak_V,
+    GraphemeBreak_T,
+    GraphemeBreak_LV,
+    GraphemeBreak_LVT
 };
 
-enum WordBreak {
-    WordBreakOther,
-    WordBreakCR,
-    WordBreakLF,
-    WordBreakNewline,
-    WordBreakFormat,
-    WordBreakKatakana,
-    WordBreakALetter,
-    WordBreakMidNumLet,
-    WordBreakMidLetter,
-    WordBreakMidNum,
-    WordBreakNumeric,
-    WordBreakExtendNumLet
+enum WordBreakClass {
+    WordBreak_Other,
+    WordBreak_CR,
+    WordBreak_LF,
+    WordBreak_Newline,
+    WordBreak_Extend,
+    WordBreak_Katakana,
+    WordBreak_ALetter,
+    WordBreak_MidNumLet,
+    WordBreak_MidLetter,
+    WordBreak_MidNum,
+    WordBreak_Numeric,
+    WordBreak_ExtendNumLet
 };
 
-enum SentenceBreak {
-    SentenceBreakOther,
-    SentenceBreakCR,
-    SentenceBreakLF,
-    SentenceBreakSep,
-    SentenceBreakFormat,
-    SentenceBreakSp,
-    SentenceBreakLower,
-    SentenceBreakUpper,
-    SentenceBreakOLetter,
-    SentenceBreakNumeric,
-    SentenceBreakATerm,
-    SentenceBreakSContinue,
-    SentenceBreakSTerm,
-    SentenceBreakClose
+enum SentenceBreakClass {
+    SentenceBreak_Other,
+    SentenceBreak_CR,
+    SentenceBreak_LF,
+    SentenceBreak_Sep,
+    SentenceBreak_Extend,
+    SentenceBreak_Sp,
+    SentenceBreak_Lower,
+    SentenceBreak_Upper,
+    SentenceBreak_OLetter,
+    SentenceBreak_Numeric,
+    SentenceBreak_ATerm,
+    SentenceBreak_SContinue,
+    SentenceBreak_STerm,
+    SentenceBreak_Close
 };
 
 // see http://www.unicode.org/reports/tr14/tr14-28.html
@@ -255,16 +255,16 @@ enum LineBreakClass {
     LineBreak_SG, LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK
 };
 
-Q_CORE_EXPORT GraphemeBreak QT_FASTCALL graphemeBreakClass(uint ucs4);
-inline GraphemeBreak graphemeBreakClass(QChar ch)
+Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4);
+inline GraphemeBreakClass graphemeBreakClass(QChar ch)
 { return graphemeBreakClass(ch.unicode()); }
 
-Q_CORE_EXPORT WordBreak QT_FASTCALL wordBreakClass(uint ucs4);
-inline WordBreak wordBreakClass(QChar ch)
+Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4);
+inline WordBreakClass wordBreakClass(QChar ch)
 { return wordBreakClass(ch.unicode()); }
 
-Q_CORE_EXPORT SentenceBreak QT_FASTCALL sentenceBreakClass(uint ucs4);
-inline SentenceBreak sentenceBreakClass(QChar ch)
+Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4);
+inline SentenceBreakClass sentenceBreakClass(QChar ch)
 { return sentenceBreakClass(ch.unicode()); }
 
 Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);
