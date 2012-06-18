@@ -54,8 +54,6 @@ class QMakeProperty
 {
     QSettings *settings;
     void initSettings();
-    QString keyBase(bool =true) const;
-    QString value(QString, bool just_check);
 
     QHash<QString, QString> m_values;
 
@@ -64,7 +62,7 @@ public:
     ~QMakeProperty();
 
     bool hasValue(QString);
-    QString value(QString v) { return value(v, false); }
+    QString value(const QString &);
     void setValue(QString, const QString &);
     void remove(const QString &);
 
