@@ -294,11 +294,9 @@ QEvent::QEvent(const QEvent &other)
     : d(other.d), t(other.t), posted(other.posted), spont(other.spont),
       m_accept(other.m_accept)
 {
-    if (t != QEvent::DeferredDelete) {
-        // if QEventPrivate becomes available, make sure to implement a
-        // virtual QEventPrivate *clone() const; function so we can copy here
-        Q_ASSERT_X(!d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
-    }
+    // if QEventPrivate becomes available, make sure to implement a
+    // virtual QEventPrivate *clone() const; function so we can copy here
+    Q_ASSERT_X(!d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
 }
 
 /*!
@@ -310,11 +308,10 @@ QEvent::QEvent(const QEvent &other)
  */
 QEvent &QEvent::operator=(const QEvent &other)
 {
-    if (t != QEvent::DeferredDelete) {
-        // if QEventPrivate becomes available, make sure to implement a
-        // virtual QEventPrivate *clone() const; function so we can copy here
-        Q_ASSERT_X(!other.d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
-    }
+    // if QEventPrivate becomes available, make sure to implement a
+    // virtual QEventPrivate *clone() const; function so we can copy here
+    Q_ASSERT_X(!other.d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
+
     t = other.t;
     posted = other.posted;
     spont = other.spont;
@@ -331,8 +328,7 @@ QEvent::~QEvent()
 {
     if (posted && QCoreApplication::instance())
         QCoreApplicationPrivate::removePostedEvent(this);
-    if (t != QEvent::DeferredDelete)
-        Q_ASSERT_X(!d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
+    Q_ASSERT_X(!d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
 }
 
 
