@@ -3041,6 +3041,30 @@ void tst_QFile::openDirectory()
     f1.close();
 }
 
+static qint64 streamExpectedSize(int fd)
+{
+    QT_STATBUF sb;
+    if (QT_FSTAT(fd, &sb) != -1)
+        return sb.st_size;
+    return 0;
+}
+
+static qint64 streamCurrentPosition(int fd)
+{
+    QT_OFF_T pos = QT_LSEEK(fd, 0, SEEK_CUR);
+    if (pos != -1)
+        return pos;
+    return 0;
+}
+
+static qint64 streamCurrentPosition(FILE *f)
+{
+    QT_OFF_T pos = QT_FTELL(f);
+    if (pos != -1)
+        return pos;
+    return 0;
+}
+
 void tst_QFile::openStandardStreamsFileDescriptors()
 {
 #ifdef Q_OS_WINCE
@@ -3049,69 +3073,54 @@ void tst_QFile::openStandardStreamsFileDescriptors()
     //it does not have functions to simply open them like below .
     QSKIP("Opening standard streams on Windows CE via descriptor not implemented");
 #endif
-    /* in/out/err.isSequential() are only true when run in a console (CI);
-     * it is false when they are redirected from/to files.
-     * Prevent failures in case someone runs tests with stdout/stderr redirected. */
 
     {
         QFile in;
         in.open(STDIN_FILENO, QIODevice::ReadOnly);
-        if (!in.isSequential())
-            QSKIP("Standard input redirected.");
-        QCOMPARE( in.pos(), (qint64)0 );
-        QCOMPARE( in.size(), (qint64)0 );
+        QCOMPARE( in.pos(), streamCurrentPosition(STDIN_FILENO) );
+        QCOMPARE( in.size(), streamExpectedSize(STDIN_FILENO) );
     }
 
     {
         QFile out;
         QVERIFY(out.open(STDOUT_FILENO, QIODevice::WriteOnly));
-        if (!out.isSequential())
-            QSKIP("Standard output redirected.");
-        QCOMPARE( out.pos(), (qint64)0 );
-        QCOMPARE( out.size(), (qint64)0 );
+        QCOMPARE( out.pos(), streamCurrentPosition(STDOUT_FILENO) );
+        QCOMPARE( out.size(), streamExpectedSize(STDOUT_FILENO) );
     }
 
     {
         QFile err;
         err.open(STDERR_FILENO, QIODevice::WriteOnly);
-        if (!err.isSequential())
-            QSKIP("Standard error redirected.");
-        QCOMPARE( err.pos(), (qint64)0 );
-        QCOMPARE( err.size(), (qint64)0 );
+        QCOMPARE( err.pos(), streamCurrentPosition(STDERR_FILENO) );
+        QCOMPARE( err.size(), streamExpectedSize(STDERR_FILENO) );
     }
 }
 
 void tst_QFile::openStandardStreamsBufferedStreams()
 {
-#ifndef Q_OS_UNIX
-    QSKIP("Unix only test.");
+#ifdef Q_OS_WINCE
+    QSKIP("Not tested on Windows CE.");
 #endif
     // Using streams
     {
         QFile in;
         in.open(stdin, QIODevice::ReadOnly);
-        if (!in.isSequential())
-            QSKIP("Standard input redirected.");
-        QCOMPARE( in.pos(), (qint64)0 );
-        QCOMPARE( in.size(), (qint64)0 );
+        QCOMPARE( in.pos(), streamCurrentPosition(stdin) );
+        QCOMPARE( in.size(), streamExpectedSize(QT_FILENO(stdin)) );
     }
 
     {
         QFile out;
         out.open(stdout, QIODevice::WriteOnly);
-        if (!out.isSequential())
-            QSKIP("Standard output redirected.");
-        QCOMPARE( out.pos(), (qint64)0 );
-        QCOMPARE( out.size(), (qint64)0 );
+        QCOMPARE( out.pos(), streamCurrentPosition(stdout) );
+        QCOMPARE( out.size(), streamExpectedSize(QT_FILENO(stdout)) );
     }
 
     {
         QFile err;
         err.open(stderr, QIODevice::WriteOnly);
-        if (!err.isSequential())
-            QSKIP("Standard error redirected.");
-        QCOMPARE( err.pos(), (qint64)0 );
-        QCOMPARE( err.size(), (qint64)0 );
+        QCOMPARE( err.pos(), streamCurrentPosition(stderr) );
+        QCOMPARE( err.size(), streamExpectedSize(QT_FILENO(stderr)) );
     }
 }
 
