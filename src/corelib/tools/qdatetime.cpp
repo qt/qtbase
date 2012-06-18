@@ -52,6 +52,7 @@
 #include <locale.h>
 #endif
 
+#include <cmath>
 #include <time.h>
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
@@ -1764,6 +1765,99 @@ int QTime::msecsTo(const QTime &t) const
 */
 
 #ifndef QT_NO_DATESTRING
+
+// These anonymous functions tidy up QDateTime::fromString()
+// and avoid confusion of reponsibility between it and QTime::fromString().
+namespace {
+inline bool isMidnight(int hour, int minute, int second, int msec)
+{
+    return hour == 24 && minute == 0 && second == 0 && msec == 0;
+}
+
+QTime fromStringImpl(const QString &s, Qt::DateFormat f, bool &isMidnight24)
+{
+    if (s.isEmpty()) {
+        // Return a null time.
+        return QTime();
+    }
+
+    switch (f) {
+    case Qt::SystemLocaleDate:
+    case Qt::SystemLocaleShortDate:
+    case Qt::SystemLocaleLongDate:
+    {
+        QLocale::FormatType formatType(Qt::SystemLocaleLongDate ? QLocale::LongFormat : QLocale::ShortFormat);
+        return QTime::fromString(s, QLocale::system().timeFormat(formatType));
+    }
+    case Qt::LocaleDate:
+    case Qt::DefaultLocaleShortDate:
+    case Qt::DefaultLocaleLongDate:
+    {
+        QLocale::FormatType formatType(f == Qt::DefaultLocaleLongDate ? QLocale::LongFormat : QLocale::ShortFormat);
+        return QTime::fromString(s, QLocale().timeFormat(formatType));
+    }
+    case Qt::TextDate:
+    case Qt::ISODate:
+    {
+        bool ok = true;
+        const int hour(s.mid(0, 2).toInt(&ok));
+        if (!ok)
+            return QTime();
+        const int minute(s.mid(3, 2).toInt(&ok));
+        if (!ok)
+            return QTime();
+        if (f == Qt::ISODate) {
+            if (s.size() == 5) {
+                // Do not need to specify seconds if using ISO format.
+                return QTime(hour, minute, 0, 0);
+            } else if ((s.size() > 6 && s[5] == QLatin1Char(',')) || s[5] == QLatin1Char('.')) {
+                // Possibly specifying fraction of a minute.
+
+                // We only want 5 digits worth of fraction of minute. This follows the existing
+                // behaviour that determines how milliseconds are read; 4 millisecond digits are
+                // read and then rounded to 3. If we read at most 5 digits for fraction of minute,
+                // the maximum amount of millisecond digits it will expand to once converted to
+                // seconds is 4. E.g. 12:34,99999 will expand to 12:34:59.9994. The milliseconds
+                // will then be rounded up AND clamped to 999.
+                const QString minuteFractionStr(QLatin1String("0.") + s.mid(6, 5));
+                const float minuteFraction = minuteFractionStr.toFloat(&ok);
+                if (!ok)
+                    return QTime();
+                const float secondWithMs = minuteFraction * 60;
+                const float second = std::floor(secondWithMs);
+                const float millisecond = 1000 * (secondWithMs - second);
+                const int millisecondRounded = qMin(qRound(millisecond), 999);
+
+                if (isMidnight(hour, minute, second, millisecondRounded)) {
+                    isMidnight24 = true;
+                    return QTime(0, 0, 0, 0);
+                }
+
+                return QTime(hour, minute, second, millisecondRounded);
+            }
+        }
+
+        const int second(s.mid(6, 2).toInt(&ok));
+        if (!ok)
+            return QTime();
+        const QString msec_s(QLatin1String("0.") + s.mid(9, 4));
+        const double msec(msec_s.toDouble(&ok));
+        if (!ok)
+            return QTime(hour, minute, second, 0);
+
+        if (f == Qt::ISODate) {
+            if (isMidnight(hour, minute, second, msec)) {
+                isMidnight24 = true;
+                return QTime(0, 0, 0, 0);
+            }
+        }
+        return QTime(hour, minute, second, qMin(qRound(msec * 1000.0), 999));
+    }
+    }
+}
+}
+
+
 /*!
     \fn QTime QTime::fromString(const QString &string, Qt::DateFormat format)
 
@@ -1778,46 +1872,8 @@ int QTime::msecsTo(const QTime &t) const
 */
 QTime QTime::fromString(const QString& s, Qt::DateFormat f)
 {
-    if (s.isEmpty()) {
-        QTime t;
-        t.mds = NullTime;
-        return t;
-    }
-
-    switch (f) {
-    case Qt::SystemLocaleDate:
-    case Qt::SystemLocaleShortDate:
-    case Qt::SystemLocaleLongDate:
-        return fromString(s, QLocale::system().timeFormat(f == Qt::SystemLocaleLongDate ? QLocale::LongFormat
-                                                                                        : QLocale::ShortFormat));
-    case Qt::LocaleDate:
-    case Qt::DefaultLocaleShortDate:
-    case Qt::DefaultLocaleLongDate:
-        return fromString(s, QLocale().timeFormat(f == Qt::DefaultLocaleLongDate ? QLocale::LongFormat
-                                                                                 : QLocale::ShortFormat));
-    default:
-        {
-            bool ok = true;
-            const int hour(s.mid(0, 2).toInt(&ok));
-            if (!ok)
-                return QTime();
-            const int minute(s.mid(3, 2).toInt(&ok));
-            if (!ok)
-                return QTime();
-            if (f == Qt::ISODate && s.size() == 5) {
-                // Do not need to specify seconds if using ISO format.
-                return QTime(hour, minute, 0, 0);
-            }
-            const int second(s.mid(6, 2).toInt(&ok));
-            if (!ok)
-                return QTime();
-            const QString msec_s(QLatin1String("0.") + s.mid(9, 4));
-            const float msec(msec_s.toFloat(&ok));
-            if (!ok)
-                return QTime(hour, minute, second, 0);
-            return QTime(hour, minute, second, qMin(qRound(msec * 1000.0), 999));
-        }
-    }
+    bool unused;
+    return fromStringImpl(s, f, unused);
 }
 
 /*!
@@ -3246,11 +3302,12 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
             }
         }
 
-        QTime time(QTime::fromString(tmp, Qt::ISODate));
-        if (!time.isValid() && tmp == QString::fromLatin1("24:00:00")) {
+        bool isMidnight24 = false;
+        // Might be end of day (24:00, including variants), which QTime considers invalid.
+        QTime time(fromStringImpl(tmp, Qt::ISODate, isMidnight24));
+        if (isMidnight24) {
             // ISO 8601 (section 4.2.3) says that 24:00 is equivalent to 00:00 the next day.
             date = date.addDays(1);
-            // Don't need to correct time since QDateTime constructor will do it for us.
         }
 
         return QDateTime(date, time, ts);

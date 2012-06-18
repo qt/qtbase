@@ -1270,25 +1270,76 @@ void tst_QDateTime::fromStringDateFormat_data()
     // No time specified - defaults to Qt::LocalTime.
     QTest::newRow("data16") << QString::fromLatin1("2002-10-01")
         << Qt::ISODate << QDateTime(QDate(2002, 10, 1), QTime(0, 0, 0, 0)) << Qt::LocalTime;
-    QTest::newRow("ISO date") << QString::fromLatin1("2005-06-28T07:57:30.0010000000Z")
+    QTest::newRow("ISO") << QString::fromLatin1("2005-06-28T07:57:30.0010000000Z")
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 1)) << Qt::UTC;
-    QTest::newRow("ISO date with comma 1") << QString::fromLatin1("2005-06-28T07:57:30,0040000000Z")
+    QTest::newRow("ISO with comma 1") << QString::fromLatin1("2005-06-28T07:57:30,0040000000Z")
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 4)) << Qt::UTC;
-    QTest::newRow("ISO date with comma 2") << QString::fromLatin1("2005-06-28T07:57:30,0015Z")
+    QTest::newRow("ISO with comma 2") << QString::fromLatin1("2005-06-28T07:57:30,0015Z")
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 2)) << Qt::UTC;
-    QTest::newRow("ISO date with comma 3") << QString::fromLatin1("2005-06-28T07:57:30,0014Z")
+    QTest::newRow("ISO with comma 3") << QString::fromLatin1("2005-06-28T07:57:30,0014Z")
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 1)) << Qt::UTC;
-    QTest::newRow("ISO date with comma 4") << QString::fromLatin1("2005-06-28T07:57:30,1Z")
+    QTest::newRow("ISO with comma 4") << QString::fromLatin1("2005-06-28T07:57:30,1Z")
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 100)) << Qt::UTC;
-    QTest::newRow("ISO date with comma 5") << QString::fromLatin1("2005-06-28T07:57:30,11")
+    QTest::newRow("ISO with comma 5") << QString::fromLatin1("2005-06-28T07:57:30,11")
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 110)) << Qt::LocalTime;
-    // Should be next day according to ISO 8601 section 4.2.3.
-    QTest::newRow("ISO date 24:00") << QString::fromLatin1("2012-06-04T24:00:00")
+    // 24:00:00 Should be next day according to ISO 8601 section 4.2.3.
+    QTest::newRow("ISO 24:00") << QString::fromLatin1("2012-06-04T24:00:00")
         << Qt::ISODate << QDateTime(QDate(2012, 6, 5), QTime(0, 0, 0, 0)) << Qt::LocalTime;
-    QTest::newRow("ISO date 24:00 end of month") << QString::fromLatin1("2012-06-30T24:00:00")
+    QTest::newRow("ISO 24:00 end of month") << QString::fromLatin1("2012-06-30T24:00:00")
         << Qt::ISODate << QDateTime(QDate(2012, 7, 1), QTime(0, 0, 0, 0)) << Qt::LocalTime;
-    QTest::newRow("ISO date 24:00 end of month and year") << QString::fromLatin1("2012-12-31T24:00:00")
+    QTest::newRow("ISO 24:00 end of year") << QString::fromLatin1("2012-12-31T24:00:00")
         << Qt::ISODate << QDateTime(QDate(2013, 1, 1), QTime(0, 0, 0, 0)) << Qt::LocalTime;
+    QTest::newRow("ISO 24:00, fract ms") << QString::fromLatin1("2012-01-01T24:00:00.000")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 2), QTime(0, 0, 0, 0)) << Qt::LocalTime;
+    QTest::newRow("ISO 24:00 end of year, fract ms") << QString::fromLatin1("2012-12-31T24:00:00.000")
+        << Qt::ISODate << QDateTime(QDate(2013, 1, 1), QTime(0, 0, 0, 0)) << Qt::LocalTime;
+    // Test fractional seconds.
+    QTest::newRow("ISO .0 of a second (period)") << QString::fromLatin1("2012-01-01T08:00:00.0")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0)) << Qt::LocalTime;
+    QTest::newRow("ISO .00 of a second (period)") << QString::fromLatin1("2012-01-01T08:00:00.00")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0)) << Qt::LocalTime;
+    QTest::newRow("ISO .000 of a second (period)") << QString::fromLatin1("2012-01-01T08:00:00.000")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0)) << Qt::LocalTime;
+    QTest::newRow("ISO .1 of a second (comma)") << QString::fromLatin1("2012-01-01T08:00:00,1")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 100)) << Qt::LocalTime;
+    QTest::newRow("ISO .99 of a second (comma)") << QString::fromLatin1("2012-01-01T08:00:00,99")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 990)) << Qt::LocalTime;
+    QTest::newRow("ISO .998 of a second (comma)") << QString::fromLatin1("2012-01-01T08:00:00,998")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 998)) << Qt::LocalTime;
+    QTest::newRow("ISO .999 of a second (comma)") << QString::fromLatin1("2012-01-01T08:00:00,999")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 999)) << Qt::LocalTime;
+    QTest::newRow("ISO .3335 of a second (comma)") << QString::fromLatin1("2012-01-01T08:00:00,3335")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 334)) << Qt::LocalTime;
+    QTest::newRow("ISO .333333 of a second (comma)") << QString::fromLatin1("2012-01-01T08:00:00,333333")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 333)) << Qt::LocalTime;
+    QTest::newRow("ISO .00009 of a second (period)") << QString::fromLatin1("2012-01-01T08:00:00.00009")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0)) << Qt::LocalTime;
+    QTest::newRow("ISO no fract specified") << QString::fromLatin1("2012-01-01T08:00:00.")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0)) << Qt::LocalTime;
+    // Test invalid characters (should ignore invalid characters at end of string).
+    QTest::newRow("ISO invalid character at end") << QString::fromLatin1("2012-01-01T08:00:00!")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0)) << Qt::LocalTime;
+    QTest::newRow("ISO invalid character at front") << QString::fromLatin1("!2012-01-01T08:00:00")
+        << Qt::ISODate << invalidDateTime() << Qt::LocalTime;
+    QTest::newRow("ISO invalid character both ends") << QString::fromLatin1("!2012-01-01T08:00:00!")
+        << Qt::ISODate << invalidDateTime() << Qt::LocalTime;
+    QTest::newRow("ISO invalid character at front, 2 at back") << QString::fromLatin1("!2012-01-01T08:00:00..")
+        << Qt::ISODate << invalidDateTime() << Qt::LocalTime;
+    QTest::newRow("ISO invalid character 2 at front") << QString::fromLatin1("!!2012-01-01T08:00:00")
+        << Qt::ISODate << invalidDateTime() << Qt::LocalTime;
+    // Test fractional minutes.
+    QTest::newRow("ISO .0 of a minute (period)") << QString::fromLatin1("2012-01-01T08:00.0")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0)) << Qt::LocalTime;
+    QTest::newRow("ISO .8 of a minute (period)") << QString::fromLatin1("2012-01-01T08:00.8")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 48, 0)) << Qt::LocalTime;
+    QTest::newRow("ISO .99999 of a minute (period)") << QString::fromLatin1("2012-01-01T08:00.99999")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 59, 999)) << Qt::LocalTime;
+    QTest::newRow("ISO .0 of a minute (comma)") << QString::fromLatin1("2012-01-01T08:00,0")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0)) << Qt::LocalTime;
+    QTest::newRow("ISO .8 of a minute (comma)") << QString::fromLatin1("2012-01-01T08:00,8")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 48, 0)) << Qt::LocalTime;
+    QTest::newRow("ISO .99999 of a minute (comma)") << QString::fromLatin1("2012-01-01T08:00,99999")
+        << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 59, 999)) << Qt::LocalTime;
 }
 
 void tst_QDateTime::fromStringDateFormat()
