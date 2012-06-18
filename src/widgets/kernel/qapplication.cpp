@@ -2480,6 +2480,8 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
 
     const bool graphicsWidget = nativeWidget->testAttribute(Qt::WA_DontShowOnScreen);
 
+    bool widgetUnderMouse = QRectF(receiver->rect()).contains(event->localPos());
+
     if (*buttonDown) {
         if (!graphicsWidget) {
             // Register the widget that shall receive a leave event
@@ -2489,7 +2491,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
             if (event->type() == QEvent::MouseButtonRelease && !event->buttons())
                 *buttonDown = 0;
         }
-    } else if (lastMouseReceiver) {
+    } else if (lastMouseReceiver && widgetUnderMouse) {
         // Dispatch enter/leave if we move:
         // 1) from an alien widget to another alien widget or
         //    from a native widget to an alien widget (first OR case)

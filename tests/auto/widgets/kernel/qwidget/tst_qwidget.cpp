@@ -68,6 +68,7 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qscreen.h>
 #include <qmenubar.h>
+#include <qcompleter.h>
 #include <qtableview.h>
 #include <qtreewidget.h>
 
@@ -170,6 +171,7 @@ private slots:
     void palettePropagation();
     void palettePropagation2();
     void enabledPropagation();
+    void popupEnterLeave();
 #ifndef QT_NO_DRAGANDDROP
     void acceptDropsPropagation();
 #endif
@@ -4723,6 +4725,51 @@ public:
             break;                                                      \
         }                                                               \
     }                                                                   \
+}
+
+void tst_QWidget::popupEnterLeave()
+{
+    QWidget parent;
+    parent.setWindowFlags(Qt::FramelessWindowHint);
+    parent.setGeometry(10, 10, 200, 100);
+
+    ColorWidget alien(&parent, Qt::black);
+    alien.setGeometry(0, 0, 10, 10);
+    alien.show();
+
+    parent.show();
+
+    QTest::qWaitForWindowShown(parent.windowHandle());
+
+    QWindowSystemInterface::handleMouseEvent(parent.windowHandle(), QPointF(5, 5), QPointF(), Qt::LeftButton, Qt::NoModifier);
+    QTest::qWait(100);
+    QWindowSystemInterface::handleMouseEvent(parent.windowHandle(), QPointF(5, 5), QPointF(), Qt::NoButton, Qt::NoModifier);
+    QTest::qWait(100);
+
+    QStringList wordList;
+    wordList << "alpha" << "omega" << "omicron" << "zeta";
+
+    QLineEdit popup(&parent);
+
+    QCompleter completer(wordList);
+    completer.setCaseSensitivity(Qt::CaseInsensitive);
+    popup.setCompleter(&completer);
+    popup.setWindowFlags(Qt::Popup);
+    popup.setGeometry(20, 20, 80, 20);
+
+    popup.show();
+
+    QTest::qWaitForWindowShown(popup.windowHandle());
+
+    QTest::qWait(100);
+
+    QWindowSystemInterface::handleMouseEvent(popup.windowHandle(), QPointF(-5, -5), QPointF(), Qt::LeftButton, Qt::NoModifier);
+    QTest::qWait(100);
+    QWindowSystemInterface::handleMouseEvent(popup.windowHandle(), QPointF(-5, -5), QPointF(), Qt::NoButton, Qt::NoModifier);
+    QTest::qWait(100);
+
+    QTest::qWait(1000);
+    QVERIFY(!popup.underMouse());
 }
 
 void tst_QWidget::moveChild_data()
