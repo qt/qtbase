@@ -386,6 +386,12 @@ void tst_QCommandLinkButton::setAccel()
     // The shortcut will not be activated unless the button is in a active
     // window and has focus
     testWidget->setFocus();
+
+    // QWidget::isActiveWindow() can report window active before application
+    // has handled the asynchronous activation event on platforms that have
+    // implemented QPlatformWindow::isActive(), so process events to sync up.
+    QApplication::instance()->processEvents();
+
     for (int i = 0; !testWidget->isActiveWindow() && i < 1000; ++i) {
         testWidget->activateWindow();
         QApplication::instance()->processEvents();

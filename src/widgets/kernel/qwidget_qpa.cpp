@@ -667,7 +667,14 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 
 void QWidgetPrivate::setFocus_sys()
 {
-
+    Q_Q(QWidget);
+    // Embedded native widget may have taken the focus; get it back to toplevel if that is the case
+    if (QWindow *nativeWindow = q->window()->windowHandle()) {
+        if (nativeWindow != QGuiApplication::focusWindow()
+            && q->testAttribute(Qt::WA_WState_Created)) {
+            nativeWindow->requestActivateWindow();
+        }
+    }
 }
 
 void QWidgetPrivate::raise_sys()

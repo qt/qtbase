@@ -152,6 +152,7 @@ public:
     void addWindow(HWND, QWindowsWindow *w);
     void removeWindow(HWND);
 
+    QWindowsWindow *findClosestPlatformWindow(HWND) const;
     QWindowsWindow *findPlatformWindow(HWND) const;
     QWindow *findWindow(HWND) const;
     QWindowsWindow *findPlatformWindowAt(HWND parent, const QPoint &screenPoint,

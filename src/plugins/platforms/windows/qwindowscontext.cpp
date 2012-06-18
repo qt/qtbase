@@ -551,6 +551,22 @@ QWindowsWindow *QWindowsContext::findPlatformWindow(HWND hwnd) const
     return d->m_windows.value(hwnd);
 }
 
+QWindowsWindow *QWindowsContext::findClosestPlatformWindow(HWND hwnd) const
+{
+    QWindowsWindow *window = d->m_windows.value(hwnd);
+
+    // Requested hwnd may also be a child of a platform window in case of embedded native windows.
+    // Find the closest parent that has a platform window.
+    if (!window) {
+        for (HWND w = hwnd; w; w = GetParent(w)) {
+            if (window = d->m_windows.value(w))
+                return window;
+        }
+    }
+
+    return window;
+}
+
 QWindow *QWindowsContext::findWindow(HWND hwnd) const
 {
     if (const QWindowsWindow *bw = findPlatformWindow(hwnd))
@@ -871,8 +887,8 @@ void QWindowsContext::handleFocusEvent(QtWindows::WindowsEventType et,
     } else {
         // Focus out: Is the next window known and different
         // from the receiving the focus out.
-        if (const HWND nextActiveHwnd = GetActiveWindow())
-            if (QWindowsWindow *nextActivePlatformWindow = findPlatformWindow(nextActiveHwnd))
+        if (const HWND nextActiveHwnd = GetFocus())
+            if (QWindowsWindow *nextActivePlatformWindow = findClosestPlatformWindow(nextActiveHwnd))
                 if (nextActivePlatformWindow != platformWindow)
                     nextActiveWindow = nextActivePlatformWindow->window();
     }

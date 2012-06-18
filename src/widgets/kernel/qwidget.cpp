@@ -6207,16 +6207,6 @@ bool QWidget::isActiveWindow() const
     }
 #endif
 
-#ifdef Q_WS_MAC
-    extern bool qt_mac_is_macdrawer(const QWidget *); //qwidget_mac.cpp
-    if(qt_mac_is_macdrawer(tlw) &&
-       tlw->parentWidget() && tlw->parentWidget()->isActiveWindow())
-        return true;
-
-    extern bool qt_mac_insideKeyWindow(const QWidget *); //qwidget_mac.cpp
-    if (QApplication::testAttribute(Qt::AA_MacPluginApplication) && qt_mac_insideKeyWindow(tlw))
-        return true;
-#endif
     if(style()->styleHint(QStyle::SH_Widget_ShareActivation, 0, this)) {
         if(tlw->windowType() == Qt::Tool &&
            !tlw->isModal() &&
@@ -6230,14 +6220,18 @@ bool QWidget::isActiveWindow() const
                 return true;
         }
     }
-#if defined(Q_WS_WIN32)
-    HWND active = GetActiveWindow();
-    if (!tlw->testAttribute(Qt::WA_WState_Created))
-        return false;
-    return active == tlw->internalWinId() || ::IsChild(active, tlw->internalWinId());
-#else
+
+    // Check if platform adaptation thinks the window is active. This is necessary for
+    // example in case of ActiveQt servers that are embedded into another application.
+    // Those are separate processes that are not part of the parent application Qt window/widget
+    // hierarchy, so they need to rely on native methods to determine if they are part of the
+    // active window.
+    if (const QWindow *w = tlw->windowHandle()) {
+        if (w->handle())
+            return w->handle()->isActive();
+    }
+
     return false;
-#endif
 }
 
 /*!
