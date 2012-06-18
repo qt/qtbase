@@ -49,15 +49,6 @@
 
 #include <bcm_host.h>
 
-#if 0 //fb size query
-#include <stdio.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <linux/fb.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 static DISPMANX_DISPLAY_HANDLE_T dispman_display = 0;
@@ -268,29 +259,9 @@ void QEglFSPiHooks::platformDestroy()
 
 QSize QEglFSPiHooks::screenSize() const
 {
-    //both mechanisms work
-#if 1
     uint32_t width, height;
     graphics_get_display_size(0 /* LCD */, &width, &height);
     return QSize(width, height);
-#else
-    int fd = open("/dev/fb0", O_RDONLY);
-    if (fd == -1) {
-        fprintf(stderr, "Failed to open fb to detect screen resolution!\n");
-        return QSize();
-    }
-
-    struct fb_var_screeninfo vinfo;
-    if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) = -1) {
-        fprintf(stderr, "Could not query screen info variable\n");
-        close(fd);
-        return QSize();
-    }
-
-    close(fd);
-
-    return QSize(vinfo.xres, vinfo.yres);
-#endif
 }
 
 EGLNativeWindowType QEglFSPiHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
