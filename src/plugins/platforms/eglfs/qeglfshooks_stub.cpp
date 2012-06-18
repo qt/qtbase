@@ -41,6 +41,11 @@
 
 #include "qeglfshooks.h"
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <linux/fb.h>
+#include <sys/ioctl.h>
+
 QT_BEGIN_NAMESPACE
 
 void QEglFSHooks::platformInit()
@@ -58,13 +63,48 @@ EGLNativeDisplayType QEglFSHooks::platformDisplay() const
 
 QSize QEglFSHooks::screenSize() const
 {
-    return QSize();
+    static QSize size;
+
+    if (size.isEmpty()) {
+        struct fb_var_screeninfo vinfo;
+        int fd = open("/dev/fb0", O_RDONLY);
+
+        if (fd != -1) {
+            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
+                qWarning("Could not query variable screen info.");
+            else
+                size = QSize(vinfo.xres, vinfo.yres);
+
+            close(fd);
+        } else {
+            qWarning("Failed to open /dev/fb0 to detect screen resolution.");
+        }
+    }
+
+    return size;
 }
 
 int QEglFSHooks::screenDepth() const
 {
     static int depth = qgetenv("QT_QPA_EGLFS_DEPTH").toInt();
-    return depth == 16 ? 16 : 32;
+
+    if (depth == 0) {
+        struct fb_var_screeninfo vinfo;
+        int fd = open("/dev/fb0", O_RDONLY);
+
+        if (fd != -1) {
+            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
+                qWarning("Could not query variable screen info.");
+            else
+                depth = vinfo.bits_per_pixel;
+
+            close(fd);
+        } else {
+            qWarning("Failed to open /dev/fb0 to detect screen depth.");
+        }
+    }
+
+    return depth == 0 ? 32 : depth;
 }
 
 QImage::Format QEglFSHooks::screenFormat() const
