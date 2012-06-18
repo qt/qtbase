@@ -583,6 +583,8 @@ QStringList QMakeProject::qmakeFeaturePaths()
     QStringList feature_bases;
     if (!cached_build_root.isEmpty())
         feature_bases << cached_build_root;
+    if (!cached_source_root.isEmpty())
+        feature_bases << cached_source_root;
     QStringList qmakepath = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEPATH")));
     qmakepath += cached_qmakepath;
     foreach (const QString &path, qmakepath)
