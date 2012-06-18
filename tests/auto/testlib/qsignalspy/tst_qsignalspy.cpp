@@ -157,6 +157,7 @@ signals:
     void sig2(const QDateTime &dt);
     void sig3(QObject *o);
     void sig4(QChar c);
+    void sig5(const QVariant &v);
 };
 
 void tst_QSignalSpy::spyWithBasicQtClasses()
@@ -168,6 +169,14 @@ void tst_QSignalSpy::spyWithBasicQtClasses()
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).count(), 1);
     QCOMPARE(spy.at(0).at(0).toString(), QString("bubu"));
+
+    QSignalSpy spy2(&obj, SIGNAL(sig5(QVariant)));
+    QVariant val(45);
+    emit obj.sig5(val);
+    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(spy2.at(0).count(), 1);
+    QCOMPARE(spy2.at(0).at(0), val);
+    QCOMPARE(qvariant_cast<QVariant>(spy2.at(0).at(0)), val);
 }
 
 void tst_QSignalSpy::spyWithQtClasses()

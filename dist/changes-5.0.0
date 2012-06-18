@@ -499,6 +499,11 @@ QTestLib
 --------
 * [QTBUG-20615] Autotests can now log test output to multiple destinations
   and log formats simultaneously.
+* [QTBUG-21645] QSignalSpy now handles QVariant signal parameters more
+  intuitively; the QVariant value is copied directly, instead of being
+  wrapped inside a new QVariant. This means that calling
+  qvariant_cast<QVariant>() on the QSignalSpy item (to "unwrap" the value)
+  is no longer required (but still works).
 
 QtSql
 -----

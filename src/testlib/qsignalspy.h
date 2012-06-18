@@ -147,7 +147,10 @@ private:
         QList<QVariant> list;
         for (int i = 0; i < args.count(); ++i) {
             QMetaType::Type type = static_cast<QMetaType::Type>(args.at(i));
-            list << QVariant(type, a[i + 1]);
+            if (type == QMetaType::QVariant)
+                list << *reinterpret_cast<QVariant *>(a[i + 1]);
+            else
+                list << QVariant(type, a[i + 1]);
         }
         append(list);
 
