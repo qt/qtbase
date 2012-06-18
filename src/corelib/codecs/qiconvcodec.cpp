@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#ifndef QT_NO_ICONV
+
 #include "qiconvcodec_p.h"
 #include "qtextcodec_p.h"
 #include <qlibrary.h>
@@ -553,3 +555,5 @@ iconv_t QIconvCodec::createIconv_t(const char *to, const char *from)
 }
 
 QT_END_NAMESPACE
+
+#endif /* #ifndef QT_NO_ICONV */

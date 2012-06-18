@@ -960,6 +960,13 @@ Requires: TEXTCODEC
 Name: Big Codecs
 SeeAlso: ???
 
+Feature: ICONV
+Description: Supports conversions between text encodings using iconv.
+Section: Internationalization
+Requires: TEXTCODEC
+Name: iconv
+SeeAlso: ???
+
 # Networking
 
 Feature: HOSTINFO

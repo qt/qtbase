@@ -115,6 +115,9 @@
 // QImage::createHeuristicMask()
 //#define QT_NO_IMAGE_HEURISTIC_MASK
 
+// Image Text
+//#define QT_NO_IMAGE_TEXT
+
 // QLCDNumber
 //#define QT_NO_LCDNUMBER
 
@@ -284,9 +287,19 @@
 #define QT_NO_FILESYSTEMMODEL
 #endif
 
+// File Transfer Protocol
+#if !defined(QT_NO_FTP) && (defined(QT_NO_TEXTDATE))
+#define QT_NO_FTP
+#endif
+
 // Hyper Text Transfer Protocol
 #if !defined(QT_NO_HTTP) && (defined(QT_NO_HOSTINFO))
 #define QT_NO_HTTP
+#endif
+
+// iconv
+#if !defined(QT_NO_ICONV) && (defined(QT_NO_TEXTCODEC))
+#define QT_NO_ICONV
 #endif
 
 // QLibrary
@@ -369,11 +382,6 @@
 #define QT_NO_XMLSTREAMWRITER
 #endif
 
-// Bearer Management
-#if !defined(QT_NO_BEARERMANAGEMENT) && (defined(QT_NO_LIBRARY) || defined(QT_NO_PROPERTIES))
-#define QT_NO_BEARERMANAGEMENT
-#endif
-
 // Context menu
 #if !defined(QT_NO_CONTEXTMENU) && (defined(QT_NO_MENU))
 #define QT_NO_CONTEXTMENU
@@ -382,11 +390,6 @@
 // QtDBus module
 #if !defined(QT_NO_DBUS) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_DOM))
 #define QT_NO_DBUS
-#endif
-
-// File Transfer Protocol
-#if !defined(QT_NO_FTP) && (defined(QT_NO_TEXTDATE))
-#define QT_NO_FTP
 #endif
 
 // QInputContext
@@ -472,6 +475,11 @@
 // QStyleSheetStyle
 #if !defined(QT_NO_STYLE_STYLESHEET) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_PROPERTIES) || defined(QT_NO_CSSPARSER))
 #define QT_NO_STYLE_STYLESHEET
+#endif
+
+// Bearer Management
+#if !defined(QT_NO_BEARERMANAGEMENT) && (defined(QT_NO_LIBRARY) || defined(QT_NO_NETWORKINTERFACE) || defined(QT_NO_PROPERTIES))
+#define QT_NO_BEARERMANAGEMENT
 #endif
 
 // QColorDialog
