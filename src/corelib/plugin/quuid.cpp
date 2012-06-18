@@ -986,10 +986,15 @@ QUuid QUuid::createUuid()
     guid; otherwise returns false.
 */
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_NO_QUUID_STRING)
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QUuid &id)
 {
+#ifndef QT_NO_QUUID_STRING
     dbg.nospace() << "QUuid(" << id.toString() << ')';
+#else
+    Q_UNUSED(id)
+    dbg.nospace() << "QUuid(QT_NO_QUUID_STRING)";
+#endif
     return dbg.space();
 }
 #endif
