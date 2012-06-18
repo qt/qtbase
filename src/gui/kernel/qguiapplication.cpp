@@ -1162,7 +1162,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     QPointF localPoint = e->localPos;
     QPointF globalPoint = e->globalPos;
 
-    if (!window) {
+    if (e->nullWindow) {
         window = QGuiApplication::topLevelAt(globalPoint.toPoint());
         if (window) {
             QPointF delta = globalPoint - globalPoint.toPoint();
@@ -1207,59 +1207,60 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         }
     }
 
-    if (window) {
-        if (window->d_func()->blockedByModalWindow) {
-            // a modal window is blocking this window, don't allow mouse events through
+    if (!window)
+        return;
+
+    if (window->d_func()->blockedByModalWindow) {
+        // a modal window is blocking this window, don't allow mouse events through
+        return;
+    }
+
+    QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers);
+    ev.setTimestamp(e->timestamp);
+#ifndef QT_NO_CURSOR
+    if (const QScreen *screen = window->screen())
+        if (QPlatformCursor *cursor = screen->handle()->cursor())
+            cursor->pointerEvent(ev);
+#endif
+    QGuiApplication::sendSpontaneousEvent(window, &ev);
+    if (!e->synthetic && !ev.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {
+        if (!m_fakeTouchDevice) {
+            m_fakeTouchDevice = new QTouchDevice;
+            QWindowSystemInterface::registerTouchDevice(m_fakeTouchDevice);
+        }
+        QList<QWindowSystemInterface::TouchPoint> points;
+        QWindowSystemInterface::TouchPoint point;
+        point.id = 1;
+        point.area = QRectF(globalPoint.x() - 2, globalPoint.y() - 2, 4, 4);
+
+        // only translate left button related events to
+        // avoid strange touch event sequences when several
+        // buttons are pressed
+        if (type == QEvent::MouseButtonPress && button == Qt::LeftButton) {
+            point.state = Qt::TouchPointPressed;
+        } else if (type == QEvent::MouseButtonRelease && button == Qt::LeftButton) {
+            point.state = Qt::TouchPointReleased;
+        } else if (type == QEvent::MouseMove && (buttons & Qt::LeftButton)) {
+            point.state = Qt::TouchPointMoved;
+        } else {
             return;
         }
 
-        QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers);
-        ev.setTimestamp(e->timestamp);
-#ifndef QT_NO_CURSOR
-        if (const QScreen *screen = window->screen())
-            if (QPlatformCursor *cursor = screen->handle()->cursor())
-                cursor->pointerEvent(ev);
-#endif
-        QGuiApplication::sendSpontaneousEvent(window, &ev);
-        if (!e->synthetic && !ev.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {
-            if (!m_fakeTouchDevice) {
-                m_fakeTouchDevice = new QTouchDevice;
-                QWindowSystemInterface::registerTouchDevice(m_fakeTouchDevice);
-            }
-            QList<QWindowSystemInterface::TouchPoint> points;
-            QWindowSystemInterface::TouchPoint point;
-            point.id = 1;
-            point.area = QRectF(globalPoint.x() - 2, globalPoint.y() - 2, 4, 4);
+        points << point;
 
-            // only translate left button related events to
-            // avoid strange touch event sequences when several
-            // buttons are pressed
-            if (type == QEvent::MouseButtonPress && button == Qt::LeftButton) {
-                point.state = Qt::TouchPointPressed;
-            } else if (type == QEvent::MouseButtonRelease && button == Qt::LeftButton) {
-                point.state = Qt::TouchPointReleased;
-            } else if (type == QEvent::MouseMove && (buttons & Qt::LeftButton)) {
-                point.state = Qt::TouchPointMoved;
-            } else {
-                return;
-            }
+        QEvent::Type type;
+        QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type);
 
-            points << point;
-
-            QEvent::Type type;
-            QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type);
-
-            QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
-            fake.synthetic = true;
-            processTouchEvent(&fake);
-        }
-        if (doubleClick) {
-            mousePressButton = Qt::NoButton;
-            QMouseEvent dblClickEvent(QEvent::MouseButtonDblClick, localPoint, localPoint, globalPoint,
-                                      button, buttons, e->modifiers);
-            dblClickEvent.setTimestamp(e->timestamp);
-            QGuiApplication::sendSpontaneousEvent(window, &dblClickEvent);
-        }
+        QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
+        fake.synthetic = true;
+        processTouchEvent(&fake);
+    }
+    if (doubleClick) {
+        mousePressButton = Qt::NoButton;
+        QMouseEvent dblClickEvent(QEvent::MouseButtonDblClick, localPoint, localPoint, globalPoint,
+                                  button, buttons, e->modifiers);
+        dblClickEvent.setTimestamp(e->timestamp);
+        QGuiApplication::sendSpontaneousEvent(window, &dblClickEvent);
     }
 }
 
@@ -1267,12 +1268,18 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
 {
     QWindow *window = e->window.data();
     QPointF globalPoint = e->globalPos;
+    QPointF localPoint = e->localPos;
 
-    if (!window) {
+    if (e->nullWindow) {
         window = QGuiApplication::topLevelAt(globalPoint.toPoint());
-        if (!window)
-            return;
+        if (window) {
+            QPointF delta = globalPoint - globalPoint.toPoint();
+            localPoint = window->mapFromGlobal(globalPoint.toPoint()) + delta;
+        }
     }
+
+    if (!window)
+        return;
 
     QGuiApplicationPrivate::lastCursorPosition = globalPoint;
     modifier_buttons = e->modifiers;
@@ -1282,7 +1289,7 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
         return;
     }
 
-     QWheelEvent ev(e->localPos, e->globalPos, e->pixelDelta, e->angleDelta, e->qt4Delta, e->qt4Orientation, buttons, e->modifiers);
+     QWheelEvent ev(localPoint, globalPoint, e->pixelDelta, e->angleDelta, e->qt4Delta, e->qt4Orientation, buttons, e->modifiers);
      ev.setTimestamp(e->timestamp);
      QGuiApplication::sendSpontaneousEvent(window, &ev);
 }
@@ -1478,7 +1485,7 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
     // subsequent events up to the release are delivered to that same window.
     // If window is given, just send to that.
     if (type == QEvent::TabletPress) {
-        if (!window) {
+        if (e->nullWindow) {
             window = QGuiApplication::topLevelAt(e->global.toPoint());
             localValid = false;
         }
@@ -1486,7 +1493,7 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
             return;
         tabletPressTarget = window;
     } else {
-        if (!window) {
+        if (e->nullWindow) {
             window = tabletPressTarget;
             localValid = false;
         }
