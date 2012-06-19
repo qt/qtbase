@@ -38,9 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qwindowsysteminterface_qpa.h"
+#include "qwindowsysteminterface.h"
 #include <qpa/qplatformwindow.h>
-#include "qwindowsysteminterface_qpa_p.h"
+#include "qwindowsysteminterface_p.h"
 #include "private/qguiapplication_p.h"
 #include "private/qevent_p.h"
 #include "private/qtouchdevice_p.h"

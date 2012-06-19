@@ -54,7 +54,7 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qwindowsysteminterface_qpa.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qapplication.h>

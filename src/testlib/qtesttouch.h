@@ -51,7 +51,7 @@
 #include <QtTest/qtestassert.h>
 #include <QtTest/qtestsystem.h>
 #include <QtTest/qtestspontaneevent.h>
-#include <QtGui/QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 #include <QtCore/qmap.h>
 #include <QtGui/qevent.h>
 #ifdef QT_WIDGETS_LIB

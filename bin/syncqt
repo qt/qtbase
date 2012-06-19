@@ -88,6 +88,7 @@ normalizePath(\$qtbasedir) if (defined $qtbasedir);
 
 # will be defined based on the modules sync.profile
 our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %modulepris, %explicitheaders, %deprecatedheaders);
+our @qpa_headers = ();
 
 # global variables (modified by options)
 my $isunix = 0;
@@ -584,6 +585,15 @@ sub locateSyncProfile
     }
 }
 
+sub isQpaHeader
+{
+    my ($header) = @_;
+    foreach my $qpa_header (@qpa_headers) {
+        return 1 if ($header =~ $qpa_header);
+    }
+    return 0;
+}
+
 # check if this is an in-source build, and if so use that as the basedir too
 $basedir = locateSyncProfile($out_basedir);
 if ($basedir) {
@@ -910,7 +920,7 @@ foreach my $lib (@modules_to_sync) {
                         #figure out if it is a public header
                         my $public_header = $header;
                         my $qpa_header = 0;
-                        if($public_header =~ /^qplatform/) {
+                        if(isQpaHeader($public_header)) {
                             $public_header = 0;
                             $qpa_header = 1;
                         } elsif($allheadersprivate || $public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
@@ -1200,7 +1210,7 @@ if($check_includes) {
                         my $public_header = $header;
                         if($public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
                             $public_header = 0;
-                        } elsif ($public_header =~ /^qplatform/) {
+                        } elsif (isQpaHeader($public_header)) {
                             $public_header = 0;
                         } else {
                             foreach (@ignore_for_master_contents) {

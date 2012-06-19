@@ -56,7 +56,7 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qwindowsysteminterface_qpa.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qwidget.h>

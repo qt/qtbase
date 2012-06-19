@@ -38,10 +38,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QWINDOWSYSTEMINTERFACE_QPA_P_H
-#define QWINDOWSYSTEMINTERFACE_QPA_P_H
+#ifndef QWINDOWSYSTEMINTERFACE_P_H
+#define QWINDOWSYSTEMINTERFACE_P_H
 
-#include "qwindowsysteminterface_qpa.h"
+#include "qwindowsysteminterface.h"
 
 #include <QElapsedTimer>
 #include <QPointer>
@@ -338,4 +338,4 @@ public:
 QT_END_HEADER
 QT_END_NAMESPACE
 
-#endif // QWINDOWSYSTEMINTERFACE_QPA_P_H
+#endif // QWINDOWSYSTEMINTERFACE_P_H

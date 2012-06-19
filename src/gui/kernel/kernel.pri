@@ -8,8 +8,8 @@ KERNEL_P= kernel
 HEADERS += \
         kernel/qgenericpluginfactory_qpa.h \
         kernel/qgenericplugin_qpa.h \
-        kernel/qwindowsysteminterface_qpa.h \
-        kernel/qwindowsysteminterface_qpa_p.h \
+        kernel/qwindowsysteminterface.h \
+        kernel/qwindowsysteminterface_p.h \
         kernel/qplatformintegration.h \
         kernel/qplatformdrag.h \
         kernel/qplatformscreen.h \
