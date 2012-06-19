@@ -86,6 +86,7 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
         qDebug() << __FUNCTION__ << window << offset << br;
     QWindowsWindow *rw = QWindowsWindow::baseWindowOf(window);
 
+#ifndef Q_OS_WINCE
     if (rw->format().hasAlpha() && (window->windowFlags() & Qt::FramelessWindowHint)) {
         const long wl = GetWindowLong(rw->handle(), GWL_EXSTYLE);
         if ((wl & WS_EX_LAYERED) == 0)
@@ -104,6 +105,7 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
         UPDATELAYEREDWINDOWINFO info = {sizeof(info), NULL, &ptDst, &size, m_image->hdc(), &ptSrc, 0, &blend, ULW_ALPHA, &dirty};
         QWindowsContext::user32dll.updateLayeredWindowIndirect(rw->handle(), &info);
     } else {
+#endif
         const HDC dc = rw->getDC();
         if (!dc) {
             qErrnoWarning("%s: GetDC failed", __FUNCTION__);
@@ -114,7 +116,9 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
                     m_image->hdc(), br.x() + offset.x(), br.y() + offset.y(), SRCCOPY))
             qErrnoWarning("%s: BitBlt failed", __FUNCTION__);
         rw->releaseDC();
+#ifndef Q_OS_WINCE
     }
+#endif
 
     // Write image for debug purposes.
     if (QWindowsContext::verboseBackingStore > 2) {
