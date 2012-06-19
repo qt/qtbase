@@ -176,23 +176,31 @@ function(QT5_ADD_RESOURCES outfiles )
         get_filename_component(infile ${it} ABSOLUTE)
         get_filename_component(rc_path ${infile} PATH)
         set(outfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}.cxx)
-        #  parse file for dependencies
-        #  all files are absolute paths or relative to the location of the qrc file
-        file(READ "${infile}" _RC_FILE_CONTENTS)
-        string(REGEX MATCHALL "<file[^<]+" _RC_FILES "${_RC_FILE_CONTENTS}")
+
         set(_RC_DEPENDS)
-        foreach(_RC_FILE ${_RC_FILES})
-            string(REGEX REPLACE "^<file[^>]*>" "" _RC_FILE "${_RC_FILE}")
-            if(NOT IS_ABSOLUTE "${_RC_FILE}")
-                set(_RC_FILE "${rc_path}/${_RC_FILE}")
-            endif()
-            set(_RC_DEPENDS ${_RC_DEPENDS} "${_RC_FILE}")
-        endforeach()
-        # Since this cmake function is doing the dependency scanning for these files,
-        # let's make a configured file and add it as a dependency so cmake is run
-        # again when dependencies need to be recomputed.
-        qt5_make_output_file("${infile}" "" "qrc.depends" out_depends)
-        configure_file("${infile}" "${out_depends}" COPY_ONLY)
+        if(EXISTS "${infile}")
+            #  parse file for dependencies
+            #  all files are absolute paths or relative to the location of the qrc file
+            file(READ "${infile}" _RC_FILE_CONTENTS)
+            string(REGEX MATCHALL "<file[^<]+" _RC_FILES "${_RC_FILE_CONTENTS}")
+            foreach(_RC_FILE ${_RC_FILES})
+                string(REGEX REPLACE "^<file[^>]*>" "" _RC_FILE "${_RC_FILE}")
+                if(NOT IS_ABSOLUTE "${_RC_FILE}")
+                    set(_RC_FILE "${rc_path}/${_RC_FILE}")
+                endif()
+                set(_RC_DEPENDS ${_RC_DEPENDS} "${_RC_FILE}")
+            endforeach()
+            # Since this cmake macro is doing the dependency scanning for these files,
+            # let's make a configured file and add it as a dependency so cmake is run
+            # again when dependencies need to be recomputed.
+            qt5_make_output_file("${infile}" "" "qrc.depends" out_depends)
+            configure_file("${infile}" "${out_depends}" COPY_ONLY)
+        else()
+            # The .qrc file does not exist (yet). Let's add a dependency and hope
+            # that it will be generated later
+            set(out_depends)
+        endif()
+
         add_custom_command(OUTPUT ${outfile}
                            COMMAND ${QT_RCC_EXECUTABLE}
                            ARGS ${rcc_options} -name ${outfilename} -o ${outfile} ${infile}
