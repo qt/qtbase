@@ -48,7 +48,7 @@
 
 #include <QtCore/qchar.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/qrefcount.h>
+#include <QtCore/qarraydata.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstringliteral.h>
 #include <QtCore/qstringalgorithms.h>
@@ -246,9 +246,8 @@ qsizetype QStringView::lastIndexOf(QLatin1String s, qsizetype from, Qt::CaseSens
 
 class Q_CORE_EXPORT QString
 {
+    typedef QTypedArrayData<ushort> Data;
 public:
-    typedef QStringData Data;
-
     inline QString() noexcept;
     explicit QString(const QChar *unicode, int size = -1);
     QString(QChar c);
@@ -259,12 +258,13 @@ public:
     QString &operator=(QChar c);
     QString &operator=(const QString &) noexcept;
     QString &operator=(QLatin1String latin1);
-    inline QString(QString && other) noexcept : d(other.d) { other.d = Data::sharedNull(); }
+    inline QString(QString &&other) noexcept : d(std::move(other.d))
+    { other.d.d = Data::sharedNull(); other.d.b = Data::sharedNullData(); other.d.size = 0; }
     inline QString &operator=(QString &&other) noexcept
     { qSwap(d, other.d); return *this; }
     inline void swap(QString &other) noexcept { qSwap(d, other.d); }
-    inline int size() const { return d->size; }
-    inline int count() const { return d->size; }
+    inline int size() const { return d.size; }
+    inline int count() const { return d.size; }
     inline int length() const;
     inline bool isEmpty() const;
     void resize(int size);
@@ -285,7 +285,7 @@ public:
 
     inline void detach();
     inline bool isDetached() const;
-    inline bool isSharedWith(const QString &other) const { return d == other.d; }
+    inline bool isSharedWith(const QString &other) const { return d.d == other.d.d; }
     void clear();
 
     inline const QChar at(int i) const;
@@ -540,10 +540,10 @@ public:
     inline QString &prepend(QLatin1String s) { return insert(0, s); }
 
     inline QString &operator+=(QChar c) {
-        if (d->needsDetach() || d->size + 1 > capacity())
-            reallocData(uint(d->size) + 2u, true);
-        d->data()[d->size++] = c.unicode();
-        d->data()[d->size] = '\0';
+        if (d.d->needsDetach() || int(d.size + 1) > capacity())
+            reallocData(uint(d.size) + 2u, true);
+        d.b[d.size++] = c.unicode();
+        d.b[d.size] = '\0';
         return *this;
     }
 
@@ -656,8 +656,7 @@ public:
     // note - this are all inline so we can benefit from strlen() compile time optimizations
     static inline QString fromLatin1(const char *str, int size = -1)
     {
-        QStringDataPtr dataPtr = { fromLatin1_helper(str, (str && size == -1) ? int(strlen(str)) : size) };
-        return QString(dataPtr);
+        return QString(fromLatin1_helper(str, (str && size == -1)  ? int(strlen(str)) : size));
     }
     static inline QString fromUtf8(const char *str, int size = -1)
     {
@@ -908,17 +907,17 @@ public:
     struct Null { };
     QT_DEPRECATED_X("use QString()")
     static const Null null;
-    inline QString(const Null &): d(Data::sharedNull()) {}
+    inline QString(const Null &) { d.d = Data::sharedNull(); d.b = Data::sharedNullData(); d.size = 0; }
     inline QString &operator=(const Null &) { *this = QString(); return *this; }
 #endif
-    inline bool isNull() const { return d == Data::sharedNull(); }
+    inline bool isNull() const { return d.d == Data::sharedNull(); }
 
 
     bool isSimpleText() const;
     bool isRightToLeft() const;
 
     QString(int size, Qt::Initialization);
-    Q_DECL_CONSTEXPR inline QString(QStringDataPtr dd) : d(dd.ptr) {}
+    explicit QString(QStringPrivate dd) : d(dd) {}
 
 private:
 #if defined(QT_NO_CAST_FROM_ASCII)
@@ -930,7 +929,7 @@ private:
     QString &operator=(const QByteArray &a);
 #endif
 
-    Data *d;
+    QStringPrivate d;
 
     friend inline bool operator==(QChar, const QString &) noexcept;
     friend inline bool operator< (QChar, const QString &) noexcept;
@@ -968,8 +967,8 @@ private:
     static QString trimmed_helper(QString &str);
     static QString simplified_helper(const QString &str);
     static QString simplified_helper(QString &str);
-    static Data *fromLatin1_helper(const char *str, int size = -1);
-    static Data *fromAscii_helper(const char *str, int size = -1);
+    static QStringPrivate fromLatin1_helper(const char *str, int size = -1);
+    static QStringPrivate fromAscii_helper(const char *str, int size = -1);
     static QString fromUtf8_helper(const char *str, int size);
     static QString fromLocal8Bit_helper(const char *, int size);
     static QByteArray toLatin1_helper(const QString &);
@@ -1005,7 +1004,7 @@ private:
     }
 
 public:
-    typedef Data * DataPtr;
+    typedef QStringPrivate DataPtr;
     inline DataPtr &data_ptr() { return d; }
 };
 
@@ -1021,31 +1020,31 @@ QString QStringView::toString() const
 inline QString::QString(QLatin1String aLatin1) : d(fromLatin1_helper(aLatin1.latin1(), aLatin1.size()))
 { }
 inline int QString::length() const
-{ return d->size; }
+{ return d.size; }
 inline const QChar QString::at(int i) const
-{ Q_ASSERT(uint(i) < uint(size())); return QChar(d->data()[i]); }
+{ Q_ASSERT(uint(i) < uint(size())); return QChar(d.b[i]); }
 inline const QChar QString::operator[](int i) const
-{ Q_ASSERT(uint(i) < uint(size())); return QChar(d->data()[i]); }
+{ Q_ASSERT(uint(i) < uint(size())); return QChar(d.b[i]); }
 inline bool QString::isEmpty() const
-{ return d->size == 0; }
+{ return d.size == 0; }
 inline const QChar *QString::unicode() const
-{ return reinterpret_cast<const QChar*>(d->data()); }
+{ return reinterpret_cast<const QChar*>(d.b); }
 inline const QChar *QString::data() const
-{ return reinterpret_cast<const QChar*>(d->data()); }
+{ return reinterpret_cast<const QChar*>(d.b); }
 inline QChar *QString::data()
-{ detach(); return reinterpret_cast<QChar*>(d->data()); }
+{ detach(); return reinterpret_cast<QChar*>(d.b); }
 inline const QChar *QString::constData() const
-{ return reinterpret_cast<const QChar*>(d->data()); }
+{ return reinterpret_cast<const QChar*>(d.b); }
 inline void QString::detach()
-{ if (d->needsDetach()) reallocData(uint(d->size) + 1u); }
+{ if (d.d->needsDetach()) reallocData(d.size + 1u); }
 inline bool QString::isDetached() const
-{ return !d->isShared(); }
+{ return !d.d->isShared(); }
 inline void QString::clear()
 { if (!isNull()) *this = QString(); }
 inline QString::QString(const QString &other) noexcept : d(other.d)
-{ Q_ASSERT(&other != this); d->ref(); }
+{ Q_ASSERT(&other != this); d.d->ref(); }
 inline int QString::capacity() const
-{ int realCapacity = d->constAllocatedCapacity(); return realCapacity ? realCapacity - 1 : 0; }
+{ int realCapacity = d.d->constAllocatedCapacity(); return realCapacity ? realCapacity - 1 : 0; }
 inline QString &QString::setNum(short n, int base)
 { return setNum(qlonglong(n), base); }
 inline QString &QString::setNum(ushort n, int base)
@@ -1150,8 +1149,8 @@ public:
     inline operator QChar() const
     {
         using namespace QtPrivate::DeprecatedRefClassBehavior;
-        if (Q_LIKELY(i < s.d->size))
-            return QChar(s.d->data()[i]);
+        if (Q_LIKELY(i < s.size()))
+            return QChar(s.constData()[i]);
 #ifdef QT_DEBUG
         warn(WarningType::OutOfRange, EmittingClass::QCharRef);
 #endif
@@ -1160,7 +1159,7 @@ public:
     inline QCharRef &operator=(QChar c)
     {
         using namespace QtPrivate::DeprecatedRefClassBehavior;
-        if (Q_UNLIKELY(i >= s.d->size)) {
+        if (Q_UNLIKELY(i >= s.size())) {
 #ifdef QT_DEBUG
             warn(WarningType::OutOfRange, EmittingClass::QCharRef);
 #endif
@@ -1172,7 +1171,7 @@ public:
 #endif
             s.detach();
         }
-        s.d->data()[i] = c.unicode();
+        s.d.b[i] = c.unicode();
         return *this;
     }
 
@@ -1254,27 +1253,27 @@ inline void QCharRef::setRow(uchar arow) { QChar(*this).setRow(arow); }
 inline void QCharRef::setCell(uchar acell) { QChar(*this).setCell(acell); }
 
 
-inline QString::QString() noexcept : d(Data::sharedNull()) {}
-inline QString::~QString() { if (!d->deref()) Data::deallocate(d); }
+inline QString::QString() noexcept { d.d = Data::sharedNull(); d.b = Data::sharedNullData(); d.size = 0; }
+inline QString::~QString() { if (!d.d->deref()) Data::deallocate(d.d); }
 
 inline void QString::reserve(int asize)
 {
-    if (d->needsDetach() || asize >= capacity())
+    if (d.d->needsDetach() || asize >= capacity())
         reallocData(qMax(asize, size()) + 1u);
 
     // we're not shared anymore, for sure
-    d->flags |= Data::CapacityReserved;
+    d.d->flags |= Data::CapacityReserved;
 }
 
 inline void QString::squeeze()
 {
-    if ((d->flags & Data::CapacityReserved) == 0)
+    if ((d.d->flags & Data::CapacityReserved) == 0)
         return;
-    if (d->needsDetach() || d->size < capacity())
-        reallocData(uint(d->size) + 1u);
+    if (d.d->needsDetach() || int(d.size) < capacity())
+        reallocData(uint(d.size) + 1u);
 
     // we're not shared anymore, for sure
-    d->flags &= ~Data::CapacityReserved;
+    d.d->flags &= ~Data::CapacityReserved;
 }
 
 inline QString &QString::setUtf16(const ushort *autf16, int asize)
@@ -1284,21 +1283,21 @@ inline QCharRef QString::operator[](int i)
 inline QCharRef QString::front() { return operator[](0); }
 inline QCharRef QString::back() { return operator[](size() - 1); }
 inline QString::iterator QString::begin()
-{ detach(); return reinterpret_cast<QChar*>(d->data()); }
+{ detach(); return reinterpret_cast<QChar*>(d.b); }
 inline QString::const_iterator QString::begin() const
-{ return reinterpret_cast<const QChar*>(d->data()); }
+{ return reinterpret_cast<const QChar*>(d.b); }
 inline QString::const_iterator QString::cbegin() const
-{ return reinterpret_cast<const QChar*>(d->data()); }
+{ return reinterpret_cast<const QChar*>(d.b); }
 inline QString::const_iterator QString::constBegin() const
-{ return reinterpret_cast<const QChar*>(d->data()); }
+{ return reinterpret_cast<const QChar*>(d.b); }
 inline QString::iterator QString::end()
-{ detach(); return reinterpret_cast<QChar*>(d->data() + d->size); }
+{ detach(); return reinterpret_cast<QChar*>(d.b + d.size); }
 inline QString::const_iterator QString::end() const
-{ return reinterpret_cast<const QChar*>(d->data() + d->size); }
+{ return reinterpret_cast<const QChar*>(d.b + d.size); }
 inline QString::const_iterator QString::cend() const
-{ return reinterpret_cast<const QChar*>(d->data() + d->size); }
+{ return reinterpret_cast<const QChar*>(d.b + d.size); }
 inline QString::const_iterator QString::constEnd() const
-{ return reinterpret_cast<const QChar*>(d->data() + d->size); }
+{ return reinterpret_cast<const QChar*>(d.b + d.size); }
 #if QT_STRINGVIEW_LEVEL < 2
 inline bool QString::contains(const QString &s, Qt::CaseSensitivity cs) const
 { return indexOf(s, 0, cs) != -1; }
@@ -1525,7 +1524,8 @@ inline QString QString::fromStdU32String(const std::u32string &s)
 inline std::u32string QString::toStdU32String() const
 {
     std::u32string u32str(length(), char32_t(0));
-    int len = toUcs4_helper(d->data(), length(), reinterpret_cast<uint*>(&u32str[0]));
+    int len = toUcs4_helper(reinterpret_cast<const ushort *>(constData()), length(),
+                            reinterpret_cast<uint*>(&u32str[0]));
     u32str.resize(len);
     return u32str;
 }
@@ -1657,7 +1657,7 @@ public:
     inline const QChar *unicode() const
     {
         if (!m_string)
-            return reinterpret_cast<const QChar *>(QString::Data::sharedNull()->data());
+            return reinterpret_cast<const QChar *>(QString::Data::sharedNullData());
         return m_string->unicode() + m_position;
     }
     inline const QChar *data() const { return unicode(); }
