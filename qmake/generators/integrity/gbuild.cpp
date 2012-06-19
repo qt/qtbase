@@ -213,7 +213,6 @@ GBuildMakefileGenerator::write()
         dllbase += DLLOFFSET;
     }
 
-    warn_msg(WarnParser, Option::output.fileName().toLocal8Bit().constData());
     QTextStream t(&Option::output);
     QString primaryTarget(project->values("QMAKE_CXX").at(0));
 
@@ -427,7 +426,6 @@ GBuildMakefileGenerator::openOutput(QFile &file, const QString &build) const
         outputName += QDir::separator();
         outputName += fileInfo(project->projectFile()).baseName();
         outputName += projectSuffix();
-        warn_msg(WarnParser, outputName.toLocal8Bit().constData());
         file.setFileName(outputName);
     }
     debug_msg(1, "file is %s", file.fileName().toLatin1().constData());
