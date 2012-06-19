@@ -80,7 +80,7 @@ void QEmulationPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 
     if (s->bgMode == Qt::OpaqueMode) {
         Qt::BrushStyle style = brush.style();
-        if (style >= Qt::Dense1Pattern && style <= Qt::DiagCrossPattern)
+        if ((style >= Qt::Dense1Pattern && style <= Qt::DiagCrossPattern) || (style == Qt::TexturePattern ))
             real_engine->fill(path, s->bgBrush);
     }
 
