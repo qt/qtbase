@@ -9,8 +9,6 @@ wince* {
    addFiles.path = .
    DEPLOYMENT += addFiles
 } else {
-   DEFINES += SRCDIR=\\\"$$PWD\\\"
-
    TESTDATA += baseline/*
 }
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

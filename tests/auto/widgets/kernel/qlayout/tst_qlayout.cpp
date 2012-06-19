@@ -152,7 +152,7 @@ void tst_QLayout::smartMaxSize()
 {
     QVector<int> expectedWidths; 
 
-    QFile f(QLatin1String(SRCDIR "/baseline/smartmaxsize"));
+    QFile f(QFINDTESTDATA("baseline/smartmaxsize"));
 
     QCOMPARE(f.open(QIODevice::ReadOnly | QIODevice::Text), true);
 
