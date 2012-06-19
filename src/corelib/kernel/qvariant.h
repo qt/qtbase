@@ -396,7 +396,7 @@ class Q_CORE_EXPORT QVariant
     struct Private
     {
         inline Private() noexcept : type(Invalid), is_shared(false), is_null(true)
-        { data.ptr = nullptr; }
+        {}
 
         // Internal constructor for initialized variants.
         explicit inline Private(uint variantType) noexcept
@@ -412,6 +412,7 @@ class Q_CORE_EXPORT QVariant
 #endif
         union Data
         {
+            void *threeptr[3] = { nullptr, nullptr, nullptr };
             char c;
             uchar uc;
             short s;

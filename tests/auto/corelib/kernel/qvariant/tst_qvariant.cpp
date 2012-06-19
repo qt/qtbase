@@ -3614,8 +3614,7 @@ Q_DECLARE_METATYPE(Convertible);
 
 struct BigConvertible {
     double d;
-    double dummy;
-    double dummy2;
+    double dummy[sizeof(QVariant) / sizeof(double)];
     operator int() const { return (int)d; }
     operator double() const { return d; }
     operator QString() const { return QString::number(d); }
