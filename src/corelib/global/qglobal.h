@@ -1193,7 +1193,7 @@ Q_CORE_EXPORT int qrand();
 #  define Q_OF_ELF
 #endif
 
-#if !defined(QT_BOOTSTRAPPED) && defined(QT_REDUCE_RELOCATIONS) && defined(__ELF__) && !defined(__PIC__)
+#if !defined(QT_BOOTSTRAPPED) && defined(QT_REDUCE_RELOCATIONS) && defined(__ELF__) && !defined(__PIC__) && !defined(__PIE__)
 #  error "You must build your code with position independent code if Qt was built with -reduce-relocations. "\
          "Compile your code with -fPIC or -fPIE."
 #endif
