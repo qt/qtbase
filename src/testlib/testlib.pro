@@ -1,11 +1,10 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET = QtTest
-QPRO_PWD = $$PWD
 QT = core-private
+CONFIG += exceptions
 
-CONFIG += module exceptions
-MODULE_PRI = ../modules/qt_testlib.pri
+MODULE_CONFIG = console testlib_defines
 
 INCLUDEPATH += .
 unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
@@ -59,7 +58,6 @@ SOURCES = qtestcase.cpp \
     qxunittestlogger.cpp
 DEFINES *= QT_NO_CAST_TO_ASCII \
     QT_NO_CAST_FROM_ASCII \
-    QTESTLIB_MAKEDLL \
     QT_NO_DATASTREAM
 embedded:QMAKE_CXXFLAGS += -fno-rtti
 wince*::LIBS += libcmt.lib \
@@ -82,8 +80,6 @@ mac {
 }
 
 load(qt_module_config)
-
-HEADERS += $$QT_SOURCE_TREE/src/testlib/qttestversion.h
 
 QMAKE_TARGET_PRODUCT = QTestLib
 QMAKE_TARGET_DESCRIPTION = Qt \

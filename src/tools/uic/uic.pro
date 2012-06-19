@@ -1,10 +1,9 @@
+option(host_build)
 TEMPLATE = app
 TARGET = uic
 
 DESTDIR = ../../../bin
 DEFINES += QT_UIC
-INCLUDEPATH += .
-DEPENDPATH += .
 
 include(uic.pri)
 include(cpp/cpp.pri)

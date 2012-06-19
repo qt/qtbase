@@ -1,4 +1,4 @@
-CONFIG *= moc thread
+CONFIG *= thread
 
 #handle defines
 win32 {
@@ -36,9 +36,6 @@ plugin { #Qt plugins
       QMAKE_CXXFLAGS += /nmignore:*:qt_plugin_query_verification_data
    }
 }
-
-#handle includes
-INCLUDEPATH = $$QMAKE_INCDIR_QT $$INCLUDEPATH #prepending prevents us from picking up "stale" includes
 
 QT_PLUGIN_VERIFY = QTPLUGIN DEPLOYMENT_PLUGIN
 for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
@@ -101,7 +98,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
 
         # Only link against plugin in static builds
         isEqual(QT_CURRENT_VERIFY, QTPLUGIN): {
-            !isEmpty(QT_PLUGINPATH): LIBS *= -L$$[QT_INSTALL_PLUGINS]/$$QT_PLUGINPATH
+            !isEmpty(QT_PLUGINPATH): LIBS *= -L$$[QT_INSTALL_PLUGINS/get]/$$QT_PLUGINPATH
                 LIBS += $$QT_LINKAGE
             # if the plugin is linked statically there is no need to deploy it
             DEPLOYMENT_PLUGIN -= $$QT_CURRENT_VERIFY
@@ -111,7 +108,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
             CONFIG(debug, debug|release): QT_ITEM = $${QTPLUG}d4.dll
             else: QT_ITEM = $${QTPLUG}4.dll
 
-            eval(qt_additional_plugin_$${QTPLUG}.files = $$[QT_INSTALL_PLUGINS]/$${QT_PLUGINPATH}/$${QT_ITEM})
+            eval(qt_additional_plugin_$${QTPLUG}.files = $$[QT_INSTALL_PLUGINS/get]/$${QT_PLUGINPATH}/$${QT_ITEM})
             eval(qt_additional_plugin_$${QTPLUG}.path = $${QT_PLUGINPATH})
 
             DEPLOYMENT *= qt_additional_plugin_$${QTPLUG}
@@ -119,11 +116,26 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
     }
 }
 
-
-
-#specific module settings
-!isEmpty(QT_BUILD_TREE):QMAKE_LIBDIR = $$QT_BUILD_TREE/lib $$QMAKE_LIBDIR #as above, prepending prevents us from picking up "stale" libs
-QMAKE_LIBDIR += $$QMAKE_LIBDIR_QT
+qtestlib {
+    warning("CONFIG+=qtestlib is deprecated. Use QT+=testlib instead.")
+    QT += testlib
+}
+qdbus {
+    warning("CONFIG+=qdbus is deprecated. Use QT+=dbus instead.")
+    QT += dbus
+}
+help {
+    warning("CONFIG+=help is deprecated. Use QT+=help instead.")
+    QT += help-private   # sic!
+}
+designer {
+    warning("CONFIG+=desiger is deprecated. Use QT+=designer instead.")
+    QT += designer
+}
+uitools {
+    warning("CONFIG+=uitools is deprecated. Use QT+=uitools instead.")
+    QT += uitools
+}
 
 # Figure out from which modules we're wanting to use the private headers
 unset(using_privates)
@@ -134,16 +146,18 @@ for(QTLIB, QT) {
         want_var = QT.$${QTLIBRAW}.want_private
         $$want_var = UsePrivate
         using_privates = true
+        NEWQT += $$eval(QT.$${QTLIBRAW}.private_depends)
     }
     NEWQT += $$QTLIBRAW
 }
 # Topological resolution of modules based on their QT.<module>.depends variable
 QT = $$resolve_depends(NEWQT, "QT.")
 # Finally actually add the modules
+unset(BAD_QT)
 for(QTLIB, QT) {
     QTLIBNAME = $$eval(QT.$${QTLIB}.name)
     isEmpty(QTLIBNAME) {
-        message("Warning: unknown QT module: $$QTLIB")
+        BAD_QT += $$QTLIB
         next()
     }
 
@@ -154,17 +168,12 @@ for(QTLIB, QT) {
 
     qtAddModule($$QTLIB, $$eval(QT.$${QTLIB}.want_private))
 }
+!isEmpty(BAD_QT):error("Unknown module(s) in QT: $$BAD_QT")
 
 !isEmpty(using_privates):!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
     message("This project is using private headers and will therefore be tied to this specific Qt module build version.")
     message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
     message("This is not a bug, but a result of using Qt internals. You have been warned!")
-}
-
-qt_compat {
-   !qt_compat_no_warning:QTDIR_build:warning(***USE of COMPAT inside of QTDIR!**) #just for us
-   INCLUDEPATH *= $$QT.core.includes
-   DEFINES *= QT_COMPAT
 }
 
 wince*:static:gui {

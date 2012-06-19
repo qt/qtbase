@@ -90,7 +90,8 @@ public:
     };
     static QString location(LibraryLocation); // ### Qt 6: consider renaming it to path()
 #ifdef QT_BUILD_QMAKE
-    static QString rawLocation(LibraryLocation);
+    enum PathGroup { FinalPaths, EffectivePaths };
+    static QString rawLocation(LibraryLocation, PathGroup);
 #endif
 
 private:

@@ -101,7 +101,6 @@ bool writeToFile(const char* text, const QString &filename)
 
 Configure::Configure(int& argc, char** argv)
 {
-    useUnixSeparators = false;
     // Default values for indentation
     optionIndent = 4;
     descIndent   = 25;
@@ -164,7 +163,8 @@ Configure::Configure(int& argc, char** argv)
             if (syncqt_bat.open(QFile::WriteOnly | QFile::Text)) {
                 QTextStream stream(&syncqt_bat);
                 stream << "@echo off" << endl
-                       << "call " << fixSeparators(sourcePath) << fixSeparators("/bin/syncqt.bat -qtdir \"") << fixSeparators(buildPath) << "\" %*" << endl;
+                       << "call " << QDir::toNativeSeparators(sourcePath + "/bin/syncqt.bat")
+                       << " -qtdir \"" << QDir::toNativeSeparators(buildPath) << "\" %*" << endl;
                 syncqt_bat.close();
             }
         }
@@ -189,9 +189,9 @@ Configure::Configure(int& argc, char** argv)
     }
 
     defaultBuildParts << QStringLiteral("libs") << QStringLiteral("examples");
-    dictionary[ "QT_SOURCE_TREE" ]    = fixSeparators(sourcePath);
-    dictionary[ "QT_BUILD_TREE" ]     = fixSeparators(buildPath);
-    dictionary[ "QT_INSTALL_PREFIX" ] = fixSeparators(installPath);
+    dictionary[ "QT_SOURCE_TREE" ]    = sourcePath;
+    dictionary[ "QT_BUILD_TREE" ]     = buildPath;
+    dictionary[ "QT_INSTALL_PREFIX" ] = installPath;
 
     dictionary[ "QMAKESPEC" ] = getenv("QMAKESPEC");
     if (dictionary[ "QMAKESPEC" ].size() == 0) {
@@ -338,19 +338,26 @@ Configure::~Configure()
     }
 }
 
-QString Configure::fixSeparators(const QString &somePath, bool escape)
+QString Configure::formatPath(const QString &path)
 {
-    if (useUnixSeparators)
-        return QDir::fromNativeSeparators(somePath);
-    QString ret = QDir::toNativeSeparators(somePath);
-    return escape ? escapeSeparators(ret) : ret;
+    QString ret = QDir::cleanPath(path);
+    // This amount of quoting is deemed sufficient. ™
+    if (ret.contains(QLatin1Char(' '))) {
+        ret.prepend(QLatin1Char('"'));
+        ret.append(QLatin1Char('"'));
+    }
+    return ret;
 }
 
-QString Configure::escapeSeparators(const QString &somePath)
+QString Configure::formatPaths(const QStringList &paths)
 {
-    QString out = somePath;
-    out.replace(QLatin1Char('\\'), QLatin1String("\\\\"));
-    return out;
+    QString ret;
+    foreach (const QString &path, paths) {
+        if (!ret.isEmpty())
+            ret += QLatin1Char(' ');
+        ret += formatPath(path);
+    }
+    return ret;
 }
 
 // We could use QDir::homePath() + "/.qt-license", but
@@ -1126,7 +1133,7 @@ void Configure::parseCmdLine()
     }
 
     // Ensure that QMAKESPEC exists in the mkspecs folder
-    const QString mkspecPath = fixSeparators(sourcePath + "/mkspecs");
+    const QString mkspecPath(sourcePath + "/mkspecs");
     QDirIterator itMkspecs(mkspecPath, QDir::AllDirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     QStringList mkspecs;
 
@@ -1211,8 +1218,6 @@ void Configure::parseCmdLine()
             dictionary[ "CE_CRT" ] = "no";
         }
     }
-
-    useUnixSeparators = (dictionary["QMAKESPEC"] == "win32-g++");
 
     // Allow tests for private classes to be compiled against internal builds
     if (dictionary["BUILDDEV"] == "yes")
@@ -2360,10 +2365,10 @@ void Configure::generateOutputVars()
         qtConfig += "accessibility";
 
     if (!qmakeLibs.isEmpty())
-        qmakeVars += "LIBS           += " + escapeSeparators(qmakeLibs.join(" "));
+        qmakeVars += "LIBS           += " + formatPaths(qmakeLibs);
 
     if (!dictionary["QT_LFLAGS_SQLITE"].isEmpty())
-        qmakeVars += "QT_LFLAGS_SQLITE += " + escapeSeparators(dictionary["QT_LFLAGS_SQLITE"]);
+        qmakeVars += "QT_LFLAGS_SQLITE += " + formatPath(dictionary["QT_LFLAGS_SQLITE"]);
 
     if (dictionary[ "OPENGL" ] == "yes")
         qtConfig += "opengl";
@@ -2452,25 +2457,25 @@ void Configure::generateOutputVars()
         qipempty = true;
 
     if (!dictionary[ "QT_INSTALL_DOCS" ].size())
-        dictionary[ "QT_INSTALL_DOCS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/doc");
+        dictionary[ "QT_INSTALL_DOCS" ] = qipempty ? "" : dictionary[ "QT_INSTALL_PREFIX" ] + "/doc";
     if (!dictionary[ "QT_INSTALL_HEADERS" ].size())
-        dictionary[ "QT_INSTALL_HEADERS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/include");
+        dictionary[ "QT_INSTALL_HEADERS" ] = qipempty ? "" : dictionary[ "QT_INSTALL_PREFIX" ] + "/include";
     if (!dictionary[ "QT_INSTALL_LIBS" ].size())
-        dictionary[ "QT_INSTALL_LIBS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/lib");
+        dictionary[ "QT_INSTALL_LIBS" ] = qipempty ? "" : dictionary[ "QT_INSTALL_PREFIX" ] + "/lib";
     if (!dictionary[ "QT_INSTALL_BINS" ].size())
-        dictionary[ "QT_INSTALL_BINS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/bin");
+        dictionary[ "QT_INSTALL_BINS" ] = qipempty ? "" : dictionary[ "QT_INSTALL_PREFIX" ] + "/bin";
     if (!dictionary[ "QT_INSTALL_PLUGINS" ].size())
-        dictionary[ "QT_INSTALL_PLUGINS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/plugins");
+        dictionary[ "QT_INSTALL_PLUGINS" ] = qipempty ? "" : dictionary[ "QT_INSTALL_PREFIX" ] + "/plugins";
     if (!dictionary[ "QT_INSTALL_IMPORTS" ].size())
-        dictionary[ "QT_INSTALL_IMPORTS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/imports");
+        dictionary[ "QT_INSTALL_IMPORTS" ] = qipempty ? "" : dictionary[ "QT_INSTALL_PREFIX" ] + "/imports";
     if (!dictionary[ "QT_INSTALL_DATA" ].size())
-        dictionary[ "QT_INSTALL_DATA" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ]);
+        dictionary[ "QT_INSTALL_DATA" ] = qipempty ? "" : dictionary[ "QT_INSTALL_PREFIX" ];
     if (!dictionary[ "QT_INSTALL_TRANSLATIONS" ].size())
-        dictionary[ "QT_INSTALL_TRANSLATIONS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/translations");
+        dictionary[ "QT_INSTALL_TRANSLATIONS" ] = qipempty ? "" : dictionary[ "QT_INSTALL_PREFIX" ] + "/translations";
     if (!dictionary[ "QT_INSTALL_EXAMPLES" ].size())
-        dictionary[ "QT_INSTALL_EXAMPLES" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/examples");
+        dictionary[ "QT_INSTALL_EXAMPLES" ] = qipempty ? "" : dictionary[ "QT_INSTALL_PREFIX" ] + "/examples";
     if (!dictionary[ "QT_INSTALL_TESTS" ].size())
-        dictionary[ "QT_INSTALL_TESTS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/tests");
+        dictionary[ "QT_INSTALL_TESTS" ] = qipempty ? "" : dictionary[ "QT_INSTALL_PREFIX" ] + "/tests";
 
     bool haveHpx = false;
     if (dictionary[ "QT_HOST_PREFIX" ].isEmpty())
@@ -2478,21 +2483,21 @@ void Configure::generateOutputVars()
     else
         haveHpx = true;
     if (dictionary[ "QT_HOST_BINS" ].isEmpty())
-        dictionary[ "QT_HOST_BINS" ] = haveHpx ? fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/bin") : dictionary[ "QT_INSTALL_BINS" ];
+        dictionary[ "QT_HOST_BINS" ] = haveHpx ? dictionary[ "QT_HOST_PREFIX" ] + "/bin" : dictionary[ "QT_INSTALL_BINS" ];
     if (dictionary[ "QT_HOST_DATA" ].isEmpty())
         dictionary[ "QT_HOST_DATA" ] = haveHpx ? dictionary[ "QT_HOST_PREFIX" ] : dictionary[ "QT_INSTALL_DATA" ];
 
     if (dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("linux"))
         dictionary[ "QMAKE_RPATHDIR" ] = dictionary[ "QT_INSTALL_LIBS" ];
 
-    qmakeVars += QString("OBJECTS_DIR     = ") + fixSeparators("tmp/obj/" + dictionary[ "QMAKE_OUTDIR" ], true);
-    qmakeVars += QString("MOC_DIR         = ") + fixSeparators("tmp/moc/" + dictionary[ "QMAKE_OUTDIR" ], true);
-    qmakeVars += QString("RCC_DIR         = ") + fixSeparators("tmp/rcc/" + dictionary["QMAKE_OUTDIR"], true);
+    qmakeVars += QString("OBJECTS_DIR     = ") + formatPath("tmp/obj/" + dictionary["QMAKE_OUTDIR"]);
+    qmakeVars += QString("MOC_DIR         = ") + formatPath("tmp/moc/" + dictionary["QMAKE_OUTDIR"]);
+    qmakeVars += QString("RCC_DIR         = ") + formatPath("tmp/rcc/" + dictionary["QMAKE_OUTDIR"]);
 
     if (!qmakeDefines.isEmpty())
         qmakeVars += QString("DEFINES        += ") + qmakeDefines.join(" ");
     if (!qmakeIncludes.isEmpty())
-        qmakeVars += QString("INCLUDEPATH    += ") + escapeSeparators(qmakeIncludes.join(" "));
+        qmakeVars += QString("INCLUDEPATH    += ") + formatPaths(qmakeIncludes);
     if (!opensslLibs.isEmpty())
         qmakeVars += opensslLibs;
     else if (dictionary[ "OPENSSL" ] == "linked")
@@ -2503,7 +2508,7 @@ void Configure::generateOutputVars()
     {
         QStringList lflagsTDS;
         if (!sybase.isEmpty())
-            lflagsTDS += QString("-L") + fixSeparators(sybase.section("=", 1) + "/lib");
+            lflagsTDS += QString("-L") + formatPath(sybase.section("=", 1) + "/lib");
         if (!sybaseLibs.isEmpty())
             lflagsTDS += sybaseLibs.section("=", 1);
         if (!lflagsTDS.isEmpty())
@@ -2574,33 +2579,33 @@ void Configure::generateCachefile()
         QTextStream moduleStream(&moduleFile);
 
         moduleStream << "#paths" << endl;
-        moduleStream << "QT_BUILD_TREE   = " << fixSeparators(dictionary[ "QT_BUILD_TREE" ], true) << endl;
-        moduleStream << "QT_SOURCE_TREE  = " << fixSeparators(dictionary[ "QT_SOURCE_TREE" ], true) << endl;
+        moduleStream << "QT_BUILD_TREE   = " << formatPath(dictionary["QT_BUILD_TREE"]) << endl;
+        moduleStream << "QT_SOURCE_TREE  = " << formatPath(dictionary["QT_SOURCE_TREE"]) << endl;
         moduleStream << "QT_BUILD_PARTS  = " << buildParts.join(" ") << endl << endl;
 
-        //so that we can build without an install first (which would be impossible)
-        moduleStream << "#local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR" << endl;
-        moduleStream << "QMAKE_INCDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/include", true) << endl;
-        moduleStream << "QMAKE_LIBDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/lib", true) << endl;
-
-
-        QString targetSpec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : dictionary[ "QMAKESPEC" ];
-        QString mkspec_path = fixSeparators(sourcePath + "/mkspecs/" + targetSpec);
-        if (QFile::exists(mkspec_path))
-            moduleStream << "QMAKESPEC       = " << escapeSeparators(mkspec_path) << endl;
+        QString hostSpec = dictionary[ "QMAKESPEC" ];
+        QString targetSpec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : hostSpec;
+        QString xmkspec_path = sourcePath + "/mkspecs/" + targetSpec;
+        if (QFile::exists(xmkspec_path))
+            moduleStream << "XQMAKESPEC      = " << xmkspec_path << endl;
         else
-            moduleStream << "QMAKESPEC       = " << fixSeparators(targetSpec, true) << endl;
+            moduleStream << "XQMAKESPEC      = " << targetSpec << endl;
+        QString mkspec_path = sourcePath + "/mkspecs/" + hostSpec;
+        if (QFile::exists(mkspec_path))
+            moduleStream << "QMAKESPEC       = " << mkspec_path << endl;
+        else
+            moduleStream << "QMAKESPEC       = " << hostSpec << endl;
 
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
             moduleStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;
 
         if (dictionary["CETEST"] == "yes") {
-            moduleStream << "QT_CE_RAPI_INC  = " << fixSeparators(dictionary[ "QT_CE_RAPI_INC" ], true) << endl;
-            moduleStream << "QT_CE_RAPI_LIB  = " << fixSeparators(dictionary[ "QT_CE_RAPI_LIB" ], true) << endl;
+            moduleStream << "QT_CE_RAPI_INC  = " << formatPath(dictionary["QT_CE_RAPI_INC"]) << endl;
+            moduleStream << "QT_CE_RAPI_LIB  = " << formatPath(dictionary["QT_CE_RAPI_LIB"]) << endl;
         }
 
         moduleStream << "#Qt for Windows CE c-runtime deployment" << endl
-                     << "QT_CE_C_RUNTIME = " << fixSeparators(dictionary[ "CE_CRT" ], true) << endl;
+                     << "QT_CE_C_RUNTIME = " << formatPath(dictionary["CE_CRT"]) << endl;
 
         if (dictionary["CE_SIGNATURE"] != QLatin1String("no"))
             moduleStream << "DEFAULT_SIGNATURE=" << dictionary["CE_SIGNATURE"] << endl;
@@ -2658,14 +2663,14 @@ void Configure::detectArch()
 {
     QString oldpwd = QDir::currentPath();
 
-    QString newpwd = fixSeparators(QString("%1/config.tests/arch").arg(buildPath));
+    QString newpwd = QString("%1/config.tests/arch").arg(buildPath);
     if (!QDir().exists(newpwd) && !QDir().mkpath(newpwd)) {
-        cout << "Failed to create directory " << qPrintable(newpwd) << endl;
+        cout << "Failed to create directory " << qPrintable(QDir::toNativeSeparators(newpwd)) << endl;
         dictionary["DONE"] = "error";
         return;
     }
     if (!QDir::setCurrent(newpwd)) {
-        cout << "Failed to change working directory to " << qPrintable(newpwd) << endl;
+        cout << "Failed to change working directory to " << qPrintable(QDir::toNativeSeparators(newpwd)) << endl;
         dictionary["DONE"] = "error";
         return;
     }
@@ -2682,9 +2687,10 @@ void Configure::detectArch()
         QString subarchKey = data.subarchKey;
 
         // run qmake
-        QString command =
-                fixSeparators(QString("%1/bin/qmake.exe -spec %2 %3/config.tests/arch/arch.pro 2>&1")
-                              .arg(buildPath, qmakespec, sourcePath));
+        QString command = QString("%1 -spec %2 %3 2>&1")
+            .arg(QDir::toNativeSeparators(buildPath + "/bin/qmake.exe"),
+                 QDir::toNativeSeparators(qmakespec),
+                 QDir::toNativeSeparators(sourcePath + "/config.tests/arch/arch.pro"));
         Environment::execute(command);
 
         // compile
@@ -2756,22 +2762,23 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
 {
     QString oldpwd = QDir::currentPath();
 
-    QString newpwd = fixSeparators(QString("%1/config.tests/%2").arg(buildPath, projectPath));
+    QString newpwd = QString("%1/config.tests/%2").arg(buildPath, projectPath);
     if (!QDir().exists(newpwd) && !QDir().mkpath(newpwd)) {
-        cout << "Failed to create directory " << qPrintable(newpwd) << endl;
+        cout << "Failed to create directory " << qPrintable(QDir::toNativeSeparators(newpwd)) << endl;
         dictionary["DONE"] = "error";
         return false;
     }
     if (!QDir::setCurrent(newpwd)) {
-        cout << "Failed to change working directory to " << qPrintable(newpwd) << endl;
+        cout << "Failed to change working directory to " << qPrintable(QDir::toNativeSeparators(newpwd)) << endl;
         dictionary["DONE"] = "error";
         return false;
     }
 
     // run qmake
-    QString command =
-            fixSeparators(QString("%1/bin/qmake.exe %2/config.tests/%3 %4 2>&1")
-                          .arg(buildPath, sourcePath, projectPath, extraOptions));
+    QString command = QString("%1 %2 %3 2>&1")
+        .arg(QDir::toNativeSeparators(buildPath + "/bin/qmake.exe"),
+             QDir::toNativeSeparators(sourcePath + "/config.tests/" + projectPath),
+             extraOptions);
     int code = 0;
     QString output = Environment::execute(command, &code);
     //cout << output << endl;
@@ -2853,7 +2860,7 @@ void Configure::generateQConfigPri()
         }
 
         if (!dictionary["QMAKE_RPATHDIR"].isEmpty())
-            configStream << "QMAKE_RPATHDIR += " << dictionary["QMAKE_RPATHDIR"] << endl;
+            configStream << "QMAKE_RPATHDIR += " << formatPath(dictionary["QMAKE_RPATHDIR"]) << endl;
 
         if (!dictionary["QT_LIBINFIX"].isEmpty())
             configStream << "QT_LIBINFIX = " << dictionary["QT_LIBINFIX"] << endl;
@@ -2865,12 +2872,9 @@ void Configure::generateQConfigPri()
             const QString angleDir = dictionary.value(QStringLiteral("ANGLE_DIR"));
             if (!angleDir.isEmpty()) {
                 configStream
-                    << "QMAKE_INCDIR_OPENGL_ES2 = "
-                    << fixSeparators(angleDir + QStringLiteral("/include"), true) << '\n'
-                    << "QMAKE_LIBDIR_OPENGL_ES2_DEBUG = "
-                    << fixSeparators(angleDir + QStringLiteral("/lib/Debug"), true) << '\n'
-                    << "QMAKE_LIBDIR_OPENGL_ES2_RELEASE = "
-                    << fixSeparators(angleDir + QStringLiteral("/lib/Release"), true) + '\n';
+                    << "QMAKE_INCDIR_OPENGL_ES2 = " << angleDir << "/include\n"
+                    << "QMAKE_LIBDIR_OPENGL_ES2_DEBUG = " << angleDir << "/lib/Debug\n"
+                    << "QMAKE_LIBDIR_OPENGL_ES2_RELEASE = " << angleDir << "/lib/Release\n";
             }
         }
 
@@ -3109,7 +3113,8 @@ void Configure::generateConfigfiles()
     }
 
     QString spec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : dictionary["QMAKESPEC"];
-    if (!copySpec("default", "", spec))
+    if (!copySpec("default", "", spec)
+        || !copySpec("default-host", "host ", dictionary["QMAKESPEC"]))
         return;
 
     // Generate the new qconfig.cpp file
@@ -3127,25 +3132,25 @@ void Configure::generateConfigfiles()
                   << "static const char qt_configure_installation          [11  + 12] = \"qt_instdate=" << QDate::currentDate().toString(Qt::ISODate) << "\";" << endl
                   << endl
                   << "static const char qt_configure_prefix_path_strs[][12 + 512] = {" << endl
-                  << "    \"qt_prfxpath=" << escapeSeparators(dictionary["QT_INSTALL_PREFIX"]) << "\"," << endl
-                  << "    \"qt_docspath=" << escapeSeparators(dictionary["QT_INSTALL_DOCS"]) << "\","  << endl
-                  << "    \"qt_hdrspath=" << escapeSeparators(dictionary["QT_INSTALL_HEADERS"]) << "\","  << endl
-                  << "    \"qt_libspath=" << escapeSeparators(dictionary["QT_INSTALL_LIBS"]) << "\","  << endl
-                  << "    \"qt_binspath=" << escapeSeparators(dictionary["QT_INSTALL_BINS"]) << "\","  << endl
-                  << "    \"qt_plugpath=" << escapeSeparators(dictionary["QT_INSTALL_PLUGINS"]) << "\","  << endl
-                  << "    \"qt_impspath=" << escapeSeparators(dictionary["QT_INSTALL_IMPORTS"]) << "\","  << endl
-                  << "    \"qt_datapath=" << escapeSeparators(dictionary["QT_INSTALL_DATA"]) << "\","  << endl
-                  << "    \"qt_trnspath=" << escapeSeparators(dictionary["QT_INSTALL_TRANSLATIONS"]) << "\"," << endl
-                  << "    \"qt_xmplpath=" << escapeSeparators(dictionary["QT_INSTALL_EXAMPLES"]) << "\","  << endl
-                  << "    \"qt_tstspath=" << escapeSeparators(dictionary["QT_INSTALL_TESTS"]) << "\","  << endl
+                  << "    \"qt_prfxpath=" << formatPath(dictionary["QT_INSTALL_PREFIX"]) << "\"," << endl
+                  << "    \"qt_docspath=" << formatPath(dictionary["QT_INSTALL_DOCS"]) << "\","  << endl
+                  << "    \"qt_hdrspath=" << formatPath(dictionary["QT_INSTALL_HEADERS"]) << "\","  << endl
+                  << "    \"qt_libspath=" << formatPath(dictionary["QT_INSTALL_LIBS"]) << "\","  << endl
+                  << "    \"qt_binspath=" << formatPath(dictionary["QT_INSTALL_BINS"]) << "\","  << endl
+                  << "    \"qt_plugpath=" << formatPath(dictionary["QT_INSTALL_PLUGINS"]) << "\","  << endl
+                  << "    \"qt_impspath=" << formatPath(dictionary["QT_INSTALL_IMPORTS"]) << "\","  << endl
+                  << "    \"qt_datapath=" << formatPath(dictionary["QT_INSTALL_DATA"]) << "\","  << endl
+                  << "    \"qt_trnspath=" << formatPath(dictionary["QT_INSTALL_TRANSLATIONS"]) << "\"," << endl
+                  << "    \"qt_xmplpath=" << formatPath(dictionary["QT_INSTALL_EXAMPLES"]) << "\","  << endl
+                  << "    \"qt_tstspath=" << formatPath(dictionary["QT_INSTALL_TESTS"]) << "\","  << endl
                   << "#ifdef QT_BUILD_QMAKE" << endl
-                  << "    \"qt_ssrtpath=" << escapeSeparators(dictionary["CFG_SYSROOT"]) << "\"," << endl
-                  << "    \"qt_hpfxpath=" << escapeSeparators(dictionary["QT_HOST_PREFIX"]) << "\"," << endl
-                  << "    \"qt_hbinpath=" << escapeSeparators(dictionary["QT_HOST_BINS"]) << "\"," << endl
-                  << "    \"qt_hdatpath=" << escapeSeparators(dictionary["QT_HOST_DATA"]) << "\"," << endl
+                  << "    \"qt_ssrtpath=" << formatPath(dictionary["CFG_SYSROOT"]) << "\"," << endl
+                  << "    \"qt_hpfxpath=" << formatPath(dictionary["QT_HOST_PREFIX"]) << "\"," << endl
+                  << "    \"qt_hbinpath=" << formatPath(dictionary["QT_HOST_BINS"]) << "\"," << endl
+                  << "    \"qt_hdatpath=" << formatPath(dictionary["QT_HOST_DATA"]) << "\"," << endl
                   << "#endif" << endl
                   << "};" << endl
-                  //<< "static const char qt_configure_settings_path_str [256] = \"qt_stngpath=" << escapeSeparators(dictionary["QT_INSTALL_SETTINGS"]) << "\";" << endl
+                  //<< "static const char qt_configure_settings_path_str [256] = \"qt_stngpath=" << formatPath(dictionary["QT_INSTALL_SETTINGS"]) << "\";" << endl
                   << endl
                   << "/* strlen( \"qt_lcnsxxxx\") == 12 */" << endl
                   << "#define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12;" << endl
@@ -3287,19 +3292,19 @@ void Configure::displayConfig()
     sout << "    SQLite2................." << dictionary[ "SQL_SQLITE2" ] << endl;
     sout << "    InterBase..............." << dictionary[ "SQL_IBASE" ] << endl << endl;
 
-    sout << "Sources are in.............." << dictionary[ "QT_SOURCE_TREE" ] << endl;
-    sout << "Build is done in............" << dictionary[ "QT_BUILD_TREE" ] << endl;
-    sout << "Install prefix.............." << dictionary[ "QT_INSTALL_PREFIX" ] << endl;
-    sout << "Headers installed to........" << dictionary[ "QT_INSTALL_HEADERS" ] << endl;
-    sout << "Libraries installed to......" << dictionary[ "QT_INSTALL_LIBS" ] << endl;
-    sout << "Plugins installed to........" << dictionary[ "QT_INSTALL_PLUGINS" ] << endl;
-    sout << "Imports installed to........" << dictionary[ "QT_INSTALL_IMPORTS" ] << endl;
-    sout << "Binaries installed to......." << dictionary[ "QT_INSTALL_BINS" ] << endl;
-    sout << "Docs installed to..........." << dictionary[ "QT_INSTALL_DOCS" ] << endl;
-    sout << "Data installed to..........." << dictionary[ "QT_INSTALL_DATA" ] << endl;
-    sout << "Translations installed to..." << dictionary[ "QT_INSTALL_TRANSLATIONS" ] << endl;
-    sout << "Examples installed to......." << dictionary[ "QT_INSTALL_EXAMPLES" ] << endl;
-    sout << "Tests installed to.........." << dictionary[ "QT_INSTALL_TESTS" ] << endl;
+    sout << "Sources are in.............." << QDir::toNativeSeparators(dictionary["QT_SOURCE_TREE"]) << endl;
+    sout << "Build is done in............" << QDir::toNativeSeparators(dictionary["QT_BUILD_TREE"]) << endl;
+    sout << "Install prefix.............." << QDir::toNativeSeparators(dictionary["QT_INSTALL_PREFIX"]) << endl;
+    sout << "Headers installed to........" << QDir::toNativeSeparators(dictionary["QT_INSTALL_HEADERS"]) << endl;
+    sout << "Libraries installed to......" << QDir::toNativeSeparators(dictionary["QT_INSTALL_LIBS"]) << endl;
+    sout << "Plugins installed to........" << QDir::toNativeSeparators(dictionary["QT_INSTALL_PLUGINS"]) << endl;
+    sout << "Imports installed to........" << QDir::toNativeSeparators(dictionary["QT_INSTALL_IMPORTS"]) << endl;
+    sout << "Binaries installed to......." << QDir::toNativeSeparators(dictionary["QT_INSTALL_BINS"]) << endl;
+    sout << "Docs installed to..........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_DOCS"]) << endl;
+    sout << "Data installed to..........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_DATA"]) << endl;
+    sout << "Translations installed to..." << QDir::toNativeSeparators(dictionary["QT_INSTALL_TRANSLATIONS"]) << endl;
+    sout << "Examples installed to......." << QDir::toNativeSeparators(dictionary["QT_INSTALL_EXAMPLES"]) << endl;
+    sout << "Tests installed to.........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_TESTS"]) << endl;
 
     if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith(QLatin1String("wince"))) {
         sout << "Using c runtime detection..." << dictionary[ "CE_CRT" ] << endl;
@@ -3471,6 +3476,17 @@ void Configure::buildQmake()
         }
         QDir::setCurrent(pwd);
     }
+
+    // Generate qt.conf
+    QFile confFile(buildPath + "/bin/qt.conf");
+    if (confFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
+        QTextStream confStream(&confFile);
+        confStream << "[EffectivePaths]" << endl
+                   << "Prefix=.." << endl;
+
+        confStream.flush();
+        confFile.close();
+    }
 }
 #endif
 
@@ -3621,10 +3637,10 @@ void Configure::generateMakefiles()
                           || dictionary["VCPROJFILES"] == "yes");
             while (generate) {
                 QString pwd = QDir::currentPath();
-                QString dirPath = fixSeparators(buildPath + dirName);
+                QString dirPath = buildPath + dirName;
                 QStringList args;
 
-                args << fixSeparators(buildPath + "/bin/qmake");
+                args << buildPath + "/bin/qmake";
 
                 if (doDsp) {
                     if (dictionary[ "DEPENDENCIES" ] == "no")
@@ -3636,7 +3652,6 @@ void Configure::generateMakefiles()
                     printf("Generating Makefiles...\n");
                     generate = false; // Now Makefiles will be done
                 }
-                // don't pass -spec - .qmake.cache has it already
                 args << "-r";
                 args << (sourcePath + "/qtbase.pro");
                 args << "-o";
@@ -3644,7 +3659,7 @@ void Configure::generateMakefiles()
                 if (!dictionary[ "QMAKEADDITIONALARGS" ].isEmpty())
                     args << dictionary[ "QMAKEADDITIONALARGS" ];
 
-                QDir::setCurrent(fixSeparators(dirPath));
+                QDir::setCurrent(dirPath);
                 if (int exitCode = Environment::execute(args, QStringList(), QStringList())) {
                     cout << "Qmake failed, return code " << exitCode  << endl << endl;
                     dictionary[ "DONE" ] = "error";
@@ -3658,7 +3673,7 @@ void Configure::generateMakefiles()
                     if (it->directory == "tools/configure")
                         continue; // don't overwrite our own Makefile
 
-                    QString dirPath = fixSeparators(it->directory + "/");
+                    QString dirPath = it->directory + '/';
                     QString projectName = it->proFile;
                     QString makefileName = buildPath + "/" + dirPath + it->target;
 
@@ -3669,30 +3684,29 @@ void Configure::generateMakefiles()
 
                     QStringList args;
 
-                    args << fixSeparators(buildPath + "/bin/qmake");
+                    args << QDir::toNativeSeparators(buildPath + "/bin/qmake.exe");
                     args << sourcePath + "/" + dirPath + projectName;
                     args << dictionary[ "QMAKE_ALL_ARGS" ];
 
-                    cout << "For " << qPrintable(dirPath + projectName) << endl;
+                    cout << "For " << qPrintable(QDir::toNativeSeparators(dirPath + projectName)) << endl;
                     args << "-o";
                     args << it->target;
-                    args << "-spec";
-                    args << spec;
                     if (!dictionary[ "QMAKEADDITIONALARGS" ].isEmpty())
                         args << dictionary[ "QMAKEADDITIONALARGS" ];
 
-                    QDir::setCurrent(fixSeparators(dirPath));
+                    QDir::setCurrent(dirPath);
 
                     QFile file(makefileName);
                     if (!file.open(QFile::WriteOnly | QFile::Text)) {
                         printf("failed on dirPath=%s, makefile=%s\n",
-                            qPrintable(dirPath), qPrintable(makefileName));
+                               qPrintable(QDir::toNativeSeparators(dirPath)),
+                               qPrintable(QDir::toNativeSeparators(makefileName)));
                         continue;
                     }
                     QTextStream txt(&file);
                     txt << "all:\n";
                     txt << "\t" << args.join(" ") << "\n";
-                    txt << "\t\"$(MAKE)\" -$(MAKEFLAGS) -f " << it->target << "\n";
+                    txt << "\t$(MAKE) -$(MAKEFLAGS) -f " << it->target << "\n";
                     txt << "first: all\n";
                     txt << "qmake:\n";
                     txt << "\t" << args.join(" ") << "\n";

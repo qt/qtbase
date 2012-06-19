@@ -1,15 +1,10 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET     = QtGui
-QPRO_PWD   = $$PWD
 QT = core-private
+MODULE_CONFIG = opengl
 
-CONFIG += module
-MODULE_PRI = ../modules/qt_gui.pri
-
-DEFINES   += QT_BUILD_GUI_LIB QT_NO_USING_NAMESPACE
-
-unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
+DEFINES   += QT_NO_USING_NAMESPACE
 
 load(qt_module_config)
 
@@ -20,8 +15,6 @@ load(qt_module_config)
 testcocoon {
     load(testcocoon)
 }
-
-HEADERS += $$QT_SOURCE_TREE/src/gui/qtguiversion.h
 
 QMAKE_DOCS = $$PWD/doc/qtgui.qdocconf
 QMAKE_DOCS_INDEX = ../../doc

@@ -103,8 +103,6 @@ UnixMakefileGenerator::init()
         MakefileGenerator::init();
         if(project->isEmpty("MAKEFILE"))
             project->values("MAKEFILE").append("Makefile");
-        if(project->values("QMAKE_INTERNAL_QMAKE_DEPS").indexOf("qmake_all") == -1)
-            project->values("QMAKE_INTERNAL_QMAKE_DEPS").append("qmake_all");
         return; /* subdirs is done */
     }
 

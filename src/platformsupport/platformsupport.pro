@@ -1,25 +1,11 @@
-load(qt_module)
+load(qt_build_config)
 TARGET     = QtPlatformSupport
-QPRO_PWD   = $$PWD
-QT         += core-private gui-private
-TEMPLATE   = lib
-DESTDIR    = $$QT.gui.libs
+QT         = core-private gui-private
 
-CONFIG += module
 CONFIG += staticlib
 mac:LIBS += -lz -framework CoreFoundation -framework Carbon
 
-MODULE_PRI = ../modules/qt_platformsupport.pri
-
-DEFINES += QT_BUILD_PLATFORMSUPPORT_LIB
-
 load(qt_module_config)
-
-unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
-
-include(../qbase.pri)
-
-HEADERS += $$PWD/qtplatformsupportversion.h
 
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h

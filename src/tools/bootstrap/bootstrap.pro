@@ -1,3 +1,4 @@
+option(host_build)
 TEMPLATE = lib
 TARGET = bootstrap
 CONFIG += staticlib
@@ -30,8 +31,8 @@ win32:DEFINES += QT_NODLL
 
 INCLUDEPATH += $$QT_BUILD_TREE/include \
             $$QT_BUILD_TREE/include/QtCore \
-            $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION \
-            $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION/QtCore
+            $$QT_BUILD_TREE/include/QtCore/$$QT_VERSION \
+            $$QT_BUILD_TREE/include/QtCore/$$QT_VERSION/QtCore
 
 DEPENDPATH += $$INCLUDEPATH \
               ../../corelib/global \

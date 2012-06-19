@@ -1,23 +1,14 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET     = QtOpenGL
-QPRO_PWD   = $$PWD
 QT         = core-private gui-private widgets-private
 
-CONFIG += module
-MODULE_PRI = ../modules/qt_opengl.pri
-
-DEFINES   += QT_BUILD_OPENGL_LIB
 DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x63000000
 solaris-cc*:QMAKE_CXXFLAGS_RELEASE -= -O2
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
-unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
-
 load(qt_module_config)
-
-HEADERS += $$QT_SOURCE_TREE/src/opengl/qtopenglversion.h
 
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1

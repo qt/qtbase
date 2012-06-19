@@ -1,7 +1,4 @@
-TEMPLATE = app
 TARGET = tst_bench_qdiriterator
-DEPENDPATH += .
-INCLUDEPATH += .
 
 QT = core testlib
 

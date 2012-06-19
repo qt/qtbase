@@ -1,21 +1,12 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET	   = QtSql
-QPRO_PWD   = $$PWD
 QT         = core-private
 
-CONFIG += module
-MODULE_PRI = ../modules/qt_sql.pri
-
-DEFINES += QT_BUILD_SQL_LIB
 DEFINES += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x62000000
 
-unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
-
 load(qt_module_config)
-
-HEADERS += $$QT_SOURCE_TREE/src/sql/qtsqlversion.h
 
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h

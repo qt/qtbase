@@ -54,7 +54,11 @@
 #include <qstack.h>
 #include <qdebug.h>
 #ifdef Q_OS_UNIX
+#include <time.h>
+#include <utime.h>
+#include <errno.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <sys/utsname.h>
 #elif defined(Q_OS_WIN32)
 #include <windows.h>
@@ -74,10 +78,12 @@ QT_BEGIN_NAMESPACE
 
 //expand functions
 enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST,
-                  E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
-                  E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
-                  E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_REPLACE,
-                  E_SIZE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS };
+                  E_SPRINTF, E_FORMAT_NUMBER, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
+                  E_FIND, E_SYSTEM, E_UNIQUE, E_REVERSE, E_QUOTE, E_ESCAPE_EXPAND,
+                  E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_VAL_ESCAPE, E_REPLACE,
+                  E_SIZE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS, E_ENUMERATE_VARS,
+                  E_SHADOWED, E_ABSOLUTE_PATH, E_RELATIVE_PATH, E_CLEAN_PATH, E_NATIVE_PATH,
+                  E_SHELL_QUOTE };
 QHash<QString, ExpandFunc> qmake_expandFunctions()
 {
     static QHash<QString, ExpandFunc> *qmake_expand_functions = 0;
@@ -92,6 +98,7 @@ QHash<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("eval", E_EVAL);
         qmake_expand_functions->insert("list", E_LIST);
         qmake_expand_functions->insert("sprintf", E_SPRINTF);
+        qmake_expand_functions->insert("format_number", E_FORMAT_NUMBER);
         qmake_expand_functions->insert("join", E_JOIN);
         qmake_expand_functions->insert("split", E_SPLIT);
         qmake_expand_functions->insert("basename", E_BASENAME);
@@ -100,17 +107,26 @@ QHash<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("find", E_FIND);
         qmake_expand_functions->insert("system", E_SYSTEM);
         qmake_expand_functions->insert("unique", E_UNIQUE);
+        qmake_expand_functions->insert("reverse", E_REVERSE);
         qmake_expand_functions->insert("quote", E_QUOTE);
         qmake_expand_functions->insert("escape_expand", E_ESCAPE_EXPAND);
         qmake_expand_functions->insert("upper", E_UPPER);
         qmake_expand_functions->insert("lower", E_LOWER);
         qmake_expand_functions->insert("re_escape", E_RE_ESCAPE);
+        qmake_expand_functions->insert("val_escape", E_VAL_ESCAPE);
         qmake_expand_functions->insert("files", E_FILES);
         qmake_expand_functions->insert("prompt", E_PROMPT);
         qmake_expand_functions->insert("replace", E_REPLACE);
         qmake_expand_functions->insert("size", E_SIZE);
         qmake_expand_functions->insert("sort_depends", E_SORT_DEPENDS);
         qmake_expand_functions->insert("resolve_depends", E_RESOLVE_DEPENDS);
+        qmake_expand_functions->insert("enumerate_vars", E_ENUMERATE_VARS);
+        qmake_expand_functions->insert("shadowed", E_SHADOWED);
+        qmake_expand_functions->insert("absolute_path", E_ABSOLUTE_PATH);
+        qmake_expand_functions->insert("relative_path", E_RELATIVE_PATH);
+        qmake_expand_functions->insert("clean_path", E_CLEAN_PATH);
+        qmake_expand_functions->insert("native_path", E_NATIVE_PATH);
+        qmake_expand_functions->insert("shell_quote", E_SHELL_QUOTE);
     }
     return *qmake_expand_functions;
 }
@@ -118,8 +134,9 @@ QHash<QString, ExpandFunc> qmake_expandFunctions()
 enum TestFunc { T_REQUIRES=1, T_GREATERTHAN, T_LESSTHAN, T_EQUALS,
                 T_EXISTS, T_EXPORT, T_CLEAR, T_UNSET, T_EVAL, T_CONFIG, T_SYSTEM,
                 T_RETURN, T_BREAK, T_NEXT, T_DEFINED, T_CONTAINS, T_INFILE,
-                T_COUNT, T_ISEMPTY, T_INCLUDE, T_LOAD, T_DEBUG, T_ERROR,
-                T_MESSAGE, T_WARNING, T_IF, T_OPTION };
+                T_COUNT, T_ISEMPTY, T_INCLUDE, T_LOAD,
+                T_DEBUG, T_ERROR, T_MESSAGE, T_WARNING, T_LOG,
+                T_IF, T_OPTION, T_CACHE, T_MKPATH, T_WRITE_FILE, T_TOUCH };
 QHash<QString, TestFunc> qmake_testFunctions()
 {
     static QHash<QString, TestFunc> *qmake_test_functions = 0;
@@ -153,7 +170,12 @@ QHash<QString, TestFunc> qmake_testFunctions()
         qmake_test_functions->insert("error", T_ERROR);
         qmake_test_functions->insert("message", T_MESSAGE);
         qmake_test_functions->insert("warning", T_WARNING);
+        qmake_test_functions->insert("log", T_LOG);
         qmake_test_functions->insert("option", T_OPTION);
+        qmake_test_functions->insert("cache", T_CACHE);
+        qmake_test_functions->insert("mkpath", T_MKPATH);
+        qmake_test_functions->insert("write_file", T_WRITE_FILE);
+        qmake_test_functions->insert("touch", T_TOUCH);
     }
     return *qmake_test_functions;
 }
@@ -163,6 +185,21 @@ struct parser_info {
     int line_no;
     bool from_file;
 } parser;
+
+static QString cached_source_root;
+static QString cached_build_root;
+static QStringList cached_qmakepath;
+static QStringList cached_qmakefeatures;
+
+static QStringList *all_feature_roots[2] = { 0, 0 };
+
+static void
+invalidateFeatureRoots()
+{
+    for (int i = 0; i < 2; i++)
+        if (all_feature_roots[i])
+            all_feature_roots[i]->clear();
+}
 
 static QString remove_quotes(const QString &arg)
 {
@@ -528,7 +565,7 @@ static void qmake_error_msg(const QString &msg)
    1) features/(unix|win32|macx)/
    2) features/
 */
-QStringList qmake_feature_paths(QMakeProperty *prop=0)
+QStringList qmake_feature_paths(QMakeProperty *prop, bool host_build)
 {
     const QString mkspecs_concat = QLatin1String("/mkspecs");
     const QString base_concat = QLatin1String("/features");
@@ -551,36 +588,26 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         concat << base_concat;
     }
 
-    QStringList feature_roots;
-    QByteArray mkspec_path = qgetenv("QMAKEFEATURES");
-    if(!mkspec_path.isNull())
-        feature_roots += splitPathList(QString::fromLocal8Bit(mkspec_path));
+    QStringList feature_roots = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEFEATURES")));
+    feature_roots += cached_qmakefeatures;
     if(prop)
         feature_roots += splitPathList(prop->value("QMAKEFEATURES"));
-    if(!Option::mkfile::cachefile.isEmpty()) {
-        QString path;
-        int last_slash = Option::mkfile::cachefile.lastIndexOf(QLatin1Char('/'));
-        if(last_slash != -1)
-            path = Option::normalizePath(Option::mkfile::cachefile.left(last_slash), false);
+    if (!cached_build_root.isEmpty())
         for(QStringList::Iterator concat_it = concat.begin();
             concat_it != concat.end(); ++concat_it)
-            feature_roots << (path + (*concat_it));
-    }
-    QByteArray qmakepath = qgetenv("QMAKEPATH");
-    if (!qmakepath.isNull()) {
-        const QStringList lst = splitPathList(QString::fromLocal8Bit(qmakepath));
-        for(QStringList::ConstIterator it = lst.begin(); it != lst.end(); ++it) {
-            for(QStringList::Iterator concat_it = concat.begin();
-                concat_it != concat.end(); ++concat_it)
-                    feature_roots << ((*it) + mkspecs_concat + (*concat_it));
-        }
-    }
-    if(!Option::mkfile::qmakespec.isEmpty()) {
+            feature_roots << (cached_build_root + (*concat_it));
+    QStringList qmakepath = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEPATH")));
+    qmakepath += cached_qmakepath;
+    foreach (const QString &path, qmakepath)
+        foreach (const QString &cat, concat)
+            feature_roots << (path + mkspecs_concat + cat);
+    QString *specp = host_build ? &Option::mkfile::qmakespec : &Option::mkfile::xqmakespec;
+    if (!specp->isEmpty()) {
         // The spec is already platform-dependent, so no subdirs here.
-        feature_roots << Option::mkfile::qmakespec + base_concat;
+        feature_roots << *specp + base_concat;
 
         // Also check directly under the root directory of the mkspecs collection
-        QFileInfo specfi(Option::mkfile::qmakespec);
+        QFileInfo specfi(*specp);
         QDir specrootdir(specfi.absolutePath());
         while (!specrootdir.isRoot()) {
             const QString specrootpath = specrootdir.path();
@@ -596,26 +623,37 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
     }
     for(QStringList::Iterator concat_it = concat.begin();
         concat_it != concat.end(); ++concat_it)
-        feature_roots << (QLibraryInfo::location(QLibraryInfo::HostDataPath) +
+        feature_roots << (QLibraryInfo::rawLocation(QLibraryInfo::HostDataPath,
+                                                    QLibraryInfo::EffectivePaths) +
                           mkspecs_concat + (*concat_it));
     feature_roots.removeDuplicates();
     return feature_roots;
+}
+
+QStringList qmake_mkspec_paths()
+{
+    QStringList ret;
+    const QString concat = QLatin1String("/mkspecs");
+
+    QStringList qmakepath = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEPATH")));
+    qmakepath += cached_qmakepath;
+    foreach (const QString &path, qmakepath)
+        ret << (path + concat);
+    if (!cached_build_root.isEmpty())
+        ret << cached_build_root + concat;
+    if (!cached_source_root.isEmpty())
+        ret << cached_source_root + concat;
+    ret << QLibraryInfo::rawLocation(QLibraryInfo::HostDataPath, QLibraryInfo::EffectivePaths) + concat;
+    ret.removeDuplicates();
+
+    return ret;
 }
 
 QMakeProject::~QMakeProject()
 {
     if(own_prop)
         delete prop;
-    for(QHash<QString, FunctionBlock*>::iterator it = replaceFunctions.begin(); it != replaceFunctions.end(); ++it) {
-        if(!it.value()->deref())
-            delete it.value();
-    }
-    replaceFunctions.clear();
-    for(QHash<QString, FunctionBlock*>::iterator it = testFunctions.begin(); it != testFunctions.end(); ++it) {
-        if(!it.value()->deref())
-            delete it.value();
-    }
-    testFunctions.clear();
+    cleanup();
 }
 
 
@@ -630,7 +668,21 @@ QMakeProject::init(QMakeProperty *p)
         own_prop = false;
     }
     recursive = false;
+    host_build = false;
     reset();
+}
+
+void
+QMakeProject::cleanup()
+{
+    for (QHash<QString, FunctionBlock*>::iterator it = replaceFunctions.begin(); it != replaceFunctions.end(); ++it)
+        if (!it.value()->deref())
+            delete it.value();
+    replaceFunctions.clear();
+    for (QHash<QString, FunctionBlock*>::iterator it = testFunctions.begin(); it != testFunctions.end(); ++it)
+        if (!it.value()->deref())
+            delete it.value();
+    testFunctions.clear();
 }
 
 // Duplicate project. It is *not* allowed to call the complex read() functions on the copy.
@@ -638,6 +690,7 @@ QMakeProject::QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *_
 {
     init(p->properties());
     vars = _vars ? *_vars : p->variables();
+    host_build = p->host_build;
     for(QHash<QString, FunctionBlock*>::iterator it = p->replaceFunctions.begin(); it != p->replaceFunctions.end(); ++it) {
         it.value()->ref();
         replaceFunctions.insert(it.key(), it.value());
@@ -657,6 +710,7 @@ QMakeProject::reset()
     iterator = 0;
     function = 0;
     backslashWarned = false;
+    need_restart = false;
 }
 
 bool
@@ -1164,8 +1218,6 @@ QMakeProject::parse(const QString &t, QHash<QString, QStringList> &place, int nu
         }
         if(var == "REQUIRES") // special case to get communicated to backends!
             doProjectCheckReqs(vallist, place);
-        else if (var == "_QMAKE_CACHE_")
-            Option::mkfile::cachefile = varlist.isEmpty() ? QString() : varlist.at(0);
     }
     return true;
 }
@@ -1205,6 +1257,8 @@ QMakeProject::read(QTextStream &file, QHash<QString, QStringList> &place)
                 }
                 s = "";
                 numLines = 0;
+                if (need_restart)
+                    break;
             }
         }
     }
@@ -1250,7 +1304,7 @@ QMakeProject::read(const QString &file, QHash<QString, QStringList> &place)
         if(!using_stdin)
             qfile.close();
     }
-    if(scope_blocks.count() != 1) {
+    if (!need_restart && scope_blocks.count() != 1) {
         qmake_error_msg("Unterminated conditional block at end of file");
         ret = false;
     }
@@ -1269,6 +1323,7 @@ QMakeProject::read(const QString &project, uchar cmd)
 bool
 QMakeProject::read(uchar cmd)
 {
+  again:
     if ((cmd & ReadSetup) && base_vars.isEmpty()) {
         // hack to get the Option stuff in there
         base_vars["QMAKE_EXT_CPP"] = Option::cpp_ext;
@@ -1278,13 +1333,147 @@ QMakeProject::read(uchar cmd)
         if(!Option::user_template_prefix.isEmpty())
             base_vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
 
+        QString superdir;
+        QString project_root;
+        QString project_build_root;
+        QStringList qmakepath;
+        QStringList qmakefeatures;
         if (Option::mkfile::do_cache) {        // parse the cache
-            if (Option::output_dir.startsWith(Option::mkfile::project_build_root))
+            QHash<QString, QStringList> cache;
+            QString rdir = Option::output_dir;
+            forever {
+                QFileInfo qfi(rdir, QLatin1String(".qmake.super"));
+                if (qfi.exists()) {
+                    superfile = qfi.filePath();
+                    if (!read(superfile, cache))
+                        return false;
+                    superdir = rdir;
+                    break;
+                }
+                QFileInfo qdfi(rdir);
+                if (qdfi.isRoot())
+                    break;
+                rdir = qdfi.path();
+            }
+            if (Option::mkfile::cachefile.isEmpty())  { //find it as it has not been specified
+                QString sdir = qmake_getpwd();
+                QString dir = Option::output_dir;
+                forever {
+                    QFileInfo qsfi(sdir, QLatin1String(".qmake.conf"));
+                    if (qsfi.exists()) {
+                        conffile = qsfi.filePath();
+                        if (!read(conffile, cache))
+                            return false;
+                    }
+                    QFileInfo qfi(dir, QLatin1String(".qmake.cache"));
+                    if (qfi.exists()) {
+                        cachefile = qfi.filePath();
+                        if (!read(cachefile, cache))
+                            return false;
+                    }
+                    if (!conffile.isEmpty() || !cachefile.isEmpty()) {
+                        project_root = sdir;
+                        project_build_root = dir;
+                        break;
+                    }
+                    if (dir == superdir)
+                        goto no_cache;
+                    QFileInfo qsdfi(sdir);
+                    QFileInfo qdfi(dir);
+                    if (qsdfi.isRoot() || qdfi.isRoot())
+                        goto no_cache;
+                    sdir = qsdfi.path();
+                    dir = qdfi.path();
+                }
+            } else {
+                QFileInfo fi(Option::mkfile::cachefile);
+                cachefile = QDir::cleanPath(fi.absoluteFilePath());
+                if (!read(cachefile, cache))
+                    return false;
+                project_build_root = QDir::cleanPath(fi.absolutePath());
+                // This intentionally bypasses finding a source root,
+                // as the result would be more or less arbitrary.
+            }
+
+            if (Option::mkfile::xqmakespec.isEmpty() && !cache["XQMAKESPEC"].isEmpty())
+                Option::mkfile::xqmakespec = cache["XQMAKESPEC"].first();
+            if (Option::mkfile::qmakespec.isEmpty() && !cache["QMAKESPEC"].isEmpty()) {
+                Option::mkfile::qmakespec = cache["QMAKESPEC"].first();
+                if (Option::mkfile::xqmakespec.isEmpty())
+                    Option::mkfile::xqmakespec = Option::mkfile::qmakespec;
+            }
+            qmakepath = cache.value(QLatin1String("QMAKEPATH"));
+            qmakefeatures = cache.value(QLatin1String("QMAKEFEATURES"));
+
+            if (Option::output_dir.startsWith(project_build_root))
                 Option::mkfile::cachefile_depth =
-                        Option::output_dir.mid(Option::mkfile::project_build_root.length()).count('/');
+                        Option::output_dir.mid(project_build_root.length()).count('/');
         }
+      no_cache:
+
+        // Look for mkspecs/ in source and build. First to win determines the root.
+        QString sdir = qmake_getpwd();
+        QString dir = Option::output_dir;
+        while (dir != project_build_root) {
+            if ((dir != sdir && QFileInfo(sdir, QLatin1String("mkspecs")).isDir())
+                    || QFileInfo(dir, QLatin1String("mkspecs")).isDir()) {
+                if (dir != sdir)
+                    project_root = sdir;
+                project_build_root = dir;
+                break;
+            }
+            if (dir == superdir)
+                break;
+            QFileInfo qsdfi(sdir);
+            QFileInfo qdfi(dir);
+            if (qsdfi.isRoot() || qdfi.isRoot())
+                break;
+            sdir = qsdfi.path();
+            dir = qdfi.path();
+        }
+
+        if (qmakepath != cached_qmakepath || qmakefeatures != cached_qmakefeatures
+            || project_build_root != cached_build_root) { // No need to check source dir, as it goes in sync
+            cached_source_root = project_root;
+            cached_build_root = project_build_root;
+            cached_qmakepath = qmakepath;
+            cached_qmakefeatures = qmakefeatures;
+            invalidateFeatureRoots();
+        }
+
         {             // parse mkspec
-            QString qmakespec = Option::mkfile::qmakespec;
+            QString *specp = host_build ? &Option::mkfile::qmakespec : &Option::mkfile::xqmakespec;
+            QString qmakespec = *specp;
+            if (qmakespec.isEmpty())
+                qmakespec = host_build ? "default-host" : "default";
+            if (QDir::isRelativePath(qmakespec)) {
+                    QStringList mkspec_roots = qmake_mkspec_paths();
+                    debug_msg(2, "Looking for mkspec %s in (%s)", qmakespec.toLatin1().constData(),
+                              mkspec_roots.join("::").toLatin1().constData());
+                    bool found_mkspec = false;
+                    for (QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
+                        QString mkspec = (*it) + QLatin1Char('/') + qmakespec;
+                        if (QFile::exists(mkspec)) {
+                            found_mkspec = true;
+                            *specp = qmakespec = mkspec;
+                            break;
+                        }
+                    }
+                    if (!found_mkspec) {
+                        fprintf(stderr, "Could not find mkspecs for your QMAKESPEC(%s) after trying:\n\t%s\n",
+                                qmakespec.toLatin1().constData(), mkspec_roots.join("\n\t").toLatin1().constData());
+                        return false;
+                    }
+            }
+
+            // We do this before reading the spec, so it can use module and feature paths from
+            // here without resorting to tricks. This is the only planned use case anyway.
+            if (!superfile.isEmpty()) {
+                debug_msg(1, "Project super cache file: reading %s", superfile.toLatin1().constData());
+                read(superfile, base_vars);
+            }
+
+            // parse qmake configuration
             while(qmakespec.endsWith(QLatin1Char('/')))
                 qmakespec.truncate(qmakespec.length()-1);
             QString spec = qmakespec + QLatin1String("/qmake.conf");
@@ -1295,9 +1484,13 @@ QMakeProject::read(uchar cmd)
             }
             validateModes();
 
-            if(Option::mkfile::do_cache && !Option::mkfile::cachefile.isEmpty()) {
-                debug_msg(1, "QMAKECACHE file: reading %s", Option::mkfile::cachefile.toLatin1().constData());
-                read(Option::mkfile::cachefile, base_vars);
+            if (!conffile.isEmpty()) {
+                debug_msg(1, "Project config file: reading %s", conffile.toLatin1().constData());
+                read(conffile, base_vars);
+            }
+            if (!cachefile.isEmpty()) {
+                debug_msg(1, "QMAKECACHE file: reading %s", cachefile.toLatin1().constData());
+                read(cachefile, base_vars);
             }
         }
     }
@@ -1347,6 +1540,11 @@ QMakeProject::read(uchar cmd)
             pfile += Option::pro_ext;
         if(!read(pfile, vars))
             return false;
+        if (need_restart) {
+            base_vars.clear();
+            cleanup();
+            goto again;
+        }
     }
 
     if (cmd & ReadSetup) {
@@ -1443,7 +1641,7 @@ QMakeProject::resolveSpec(QString *spec, const QString &qmakespec)
 {
     if (spec->isEmpty()) {
         *spec = QFileInfo(qmakespec).fileName();
-        if (*spec == "default") {
+        if (*spec == "default" || *spec == "default-host") {
 #ifdef Q_OS_UNIX
             char buffer[1024];
             int l = readlink(qmakespec.toLatin1().constData(), buffer, 1023);
@@ -1492,9 +1690,14 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QHash<QString, QStrin
         return Option::target_mode == Option::TARG_WIN_MODE;
     }
 
+    if (x == "host_build")
+        return host_build ? "true" : "false";
+
     //mkspecs
-    static QString spec;
-    resolveSpec(&spec, Option::mkfile::qmakespec);
+    static QString hspec, xspec;
+    resolveSpec(&hspec, Option::mkfile::qmakespec);
+    resolveSpec(&xspec, Option::mkfile::xqmakespec);
+    const QString &spec = host_build ? hspec : xspec;
     QRegExp re(x, Qt::CaseSensitive, QRegExp::Wildcard);
     if((regex && re.exactMatch(spec)) || (!regex && spec == x))
         return true;
@@ -1546,17 +1749,18 @@ QMakeProject::doProjectTest(QString func, const QString &params,
 QMakeProject::IncludeStatus
 QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QStringList> &place)
 {
-    enum { UnknownFormat, ProFormat, JSFormat } format = UnknownFormat;
     if(flags & IncludeFlagFeature) {
         if(!file.endsWith(Option::prf_ext))
             file += Option::prf_ext;
         validateModes(); // init dir_sep
         if(file.indexOf(QLatin1Char('/')) == -1 || !QFile::exists(file)) {
-            static QStringList *feature_roots = 0;
+            QStringList *&feature_roots = all_feature_roots[host_build];
             if(!feature_roots) {
-                feature_roots = new QStringList(qmake_feature_paths(prop));
+                feature_roots = new QStringList;
                 qmakeAddCacheClear(qmakeDeleteCacheClear<QStringList>, (void**)&feature_roots);
             }
+            if (feature_roots->isEmpty())
+                *feature_roots = qmake_feature_paths(prop, host_build);
             debug_msg(2, "Looking for feature '%s' in (%s)", file.toLatin1().constData(),
 			feature_roots->join("::").toLatin1().constData());
             int start_root = 0;
@@ -1576,18 +1780,13 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
             }
             for(int root = start_root; root < feature_roots->size(); ++root) {
                 QString prf(feature_roots->at(root) + QLatin1Char('/') + file);
-                if(QFile::exists(prf + Option::js_ext)) {
-                    format = JSFormat;
-                    file = prf + Option::js_ext;
-                    break;
-                } else if(QFile::exists(prf)) {
-                    format = ProFormat;
+                if (QFile::exists(prf)) {
                     file = prf;
-                    break;
+                    goto foundf;
                 }
             }
-            if(format == UnknownFormat)
-                return IncludeNoExist;
+            return IncludeNoExist;
+          foundf: ;
         }
         if(place["QMAKE_INTERNAL_INCLUDED_FEATURES"].indexOf(file) != -1)
             return IncludeFeatureAlreadyLoaded;
@@ -1605,19 +1804,13 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
             testName += file;
             if(QFile::exists(testName)) {
                 file = testName;
-                break;
+                goto foundi;
             }
         }
-    }
-    if(format == UnknownFormat) {
-        if(QFile::exists(file)) {
-            if(file.endsWith(Option::js_ext))
-                format = JSFormat;
-            else
-                format = ProFormat;
-        } else {
-            return IncludeNoExist;
-        }
+        return IncludeNoExist;
+      foundi: ;
+    } else if (!QFile::exists(file)) {
+        return IncludeNoExist;
     }
     if(Option::mkfile::do_preprocess) //nice to see this first..
         fprintf(stderr, "#switching file %s(%s) - %s:%d\n", (flags & IncludeFlagFeature) ? "load" : "include",
@@ -1637,10 +1830,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
     }
     bool parsed = false;
     parser_info pi = parser;
-    if(format == JSFormat) {
-        warn_msg(WarnParser, "%s:%d: QtScript support disabled for %s.",
-                 pi.file.toLatin1().constData(), pi.line_no, orig_file.toLatin1().constData());
-    } else {
+    {
         if(flags & (IncludeFlagNewProject|IncludeFlagNewParser)) {
             // The "project's variables" are used in other places (eg. export()) so it's not
             // possible to use "place" everywhere. Instead just set variables and grab them later
@@ -1674,6 +1864,199 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
         return IncludeParseFailure;
     return IncludeSuccess;
 }
+
+static void
+subAll(QStringList *val, const QStringList &diffval)
+{
+    foreach (const QString &dv, diffval)
+        val->removeAll(dv);
+}
+
+inline static
+bool isSpecialChar(ushort c)
+{
+    // Chars that should be quoted (TM). This includes:
+#ifdef Q_OS_WIN
+    // - control chars & space
+    // - the shell meta chars "&()<>^|
+    // - the potential separators ,;=
+    static const uchar iqm[] = {
+        0xff, 0xff, 0xff, 0xff, 0x45, 0x13, 0x00, 0x78,
+        0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x10
+    };
+#else
+    static const uchar iqm[] = {
+        0xff, 0xff, 0xff, 0xff, 0xdf, 0x07, 0x00, 0xd8,
+        0x00, 0x00, 0x00, 0x38, 0x01, 0x00, 0x00, 0x78
+    }; // 0-32 \'"$`<>|;&(){}*?#!~[]
+#endif
+
+    return (c < sizeof(iqm) * 8) && (iqm[c / 8] & (1 << (c & 7)));
+}
+
+inline static
+bool hasSpecialChars(const QString &arg)
+{
+    for (int x = arg.length() - 1; x >= 0; --x)
+        if (isSpecialChar(arg.unicode()[x].unicode()))
+            return true;
+    return false;
+}
+
+static QString
+shellQuote(const QString &arg)
+{
+    if (!arg.length())
+        return QString::fromLatin1("\"\"");
+
+    QString ret(arg);
+    if (hasSpecialChars(ret)) {
+#ifdef Q_OS_WIN
+        // Quotes are escaped and their preceding backslashes are doubled.
+        // It's impossible to escape anything inside a quoted string on cmd
+        // level, so the outer quoting must be "suspended".
+        ret.replace(QRegExp(QLatin1String("(\\\\*)\"")), QLatin1String("\"\\1\\1\\^\"\""));
+        // The argument must not end with a \ since this would be interpreted
+        // as escaping the quote -- rather put the \ behind the quote: e.g.
+        // rather use "foo"\ than "foo\"
+        int i = ret.length();
+        while (i > 0 && ret.at(i - 1) == QLatin1Char('\\'))
+            --i;
+        ret.insert(i, QLatin1Char('"'));
+        ret.prepend(QLatin1Char('"'));
+#else // Q_OS_WIN
+        ret.replace(QLatin1Char('\''), QLatin1String("'\\''"));
+        ret.prepend(QLatin1Char('\''));
+        ret.append(QLatin1Char('\''));
+#endif // Q_OS_WIN
+    }
+    return ret;
+}
+
+static QString
+quoteValue(const QString &val)
+{
+    QString ret;
+    ret.reserve(val.length());
+    bool quote = val.isEmpty();
+    bool escaping = false;
+    for (int i = 0, l = val.length(); i < l; i++) {
+        QChar c = val.unicode()[i];
+        ushort uc = c.unicode();
+        if (uc < 32) {
+            if (!escaping) {
+                escaping = true;
+                ret += QLatin1String("$$escape_expand(");
+            }
+            switch (uc) {
+            case '\r':
+                ret += QLatin1String("\\\\r");
+                break;
+            case '\n':
+                ret += QLatin1String("\\\\n");
+                break;
+            case '\t':
+                ret += QLatin1String("\\\\t");
+                break;
+            default:
+                ret += QString::fromLatin1("\\\\x%1").arg(uc, 2, 16, QLatin1Char('0'));
+                break;
+            }
+        } else {
+            if (escaping) {
+                escaping = false;
+                ret += QLatin1Char(')');
+            }
+            switch (uc) {
+            case '\\':
+                ret += QLatin1String("\\\\");
+                break;
+            case '"':
+                ret += QLatin1String("\\\"");
+                break;
+            case '\'':
+                ret += QLatin1String("\\'");
+                break;
+            case '$':
+                ret += QLatin1String("\\$");
+                break;
+            case '#':
+                ret += QLatin1String("$${LITERAL_HASH}");
+                break;
+            case 32:
+                quote = true;
+                // fallthrough
+            default:
+                ret += c;
+                break;
+            }
+        }
+    }
+    if (escaping)
+        ret += QLatin1Char(')');
+    if (quote) {
+        ret.prepend(QLatin1Char('"'));
+        ret.append(QLatin1Char('"'));
+    }
+    return ret;
+}
+
+static bool
+writeFile(const QString &name, QIODevice::OpenMode mode, const QString &contents, QString *errStr)
+{
+    QByteArray bytes = contents.toLocal8Bit();
+    QFile cfile(name);
+    if (!(mode & QIODevice::Append) && cfile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        if (cfile.readAll() == bytes)
+            return true;
+        cfile.close();
+    }
+    if (!cfile.open(mode | QIODevice::WriteOnly | QIODevice::Text)) {
+        *errStr = cfile.errorString();
+        return false;
+    }
+    cfile.write(bytes);
+    cfile.close();
+    if (cfile.error() != QFile::NoError) {
+        *errStr = cfile.errorString();
+        return false;
+    }
+    return true;
+}
+
+static QByteArray
+getCommandOutput(const QString &args)
+{
+    QByteArray out;
+    if (FILE *proc = QT_POPEN(args.toLatin1().constData(), "r")) {
+        while (!feof(proc)) {
+            char buff[10 * 1024];
+            int read_in = int(fread(buff, 1, sizeof(buff), proc));
+            if (!read_in)
+                break;
+            out += QByteArray(buff, read_in);
+        }
+        QT_PCLOSE(proc);
+    }
+    return out;
+}
+
+#ifdef Q_OS_WIN
+static QString windowsErrorCode()
+{
+    wchar_t *string = 0;
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+                  NULL,
+                  GetLastError(),
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  (LPWSTR)&string,
+                  0,
+                  NULL);
+    QString ret = QString::fromWCharArray(string);
+    LocalFree((HLOCAL)string);
+    return ret;
+}
+#endif
 
 QStringList
 QMakeProject::doProjectExpand(QString func, const QString &params,
@@ -1818,19 +2201,33 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         } else {
             QString file = Option::normalizePath(args[0]);
 
+            bool blob = false;
+            bool lines = false;
             bool singleLine = true;
-            if(args.count() > 1)
-                singleLine = (args[1].toLower() == "true");
-
+            if (args.count() > 1) {
+                if (!args.at(1).compare(QLatin1String("false"), Qt::CaseInsensitive))
+                    singleLine = false;
+                else if (!args.at(1).compare(QLatin1String("blob"), Qt::CaseInsensitive))
+                    blob = true;
+                else if (!args.at(1).compare(QLatin1String("lines"), Qt::CaseInsensitive))
+                    lines = true;
+            }
             QFile qfile(file);
             if(qfile.open(QIODevice::ReadOnly)) {
                 QTextStream stream(&qfile);
-                while(!stream.atEnd()) {
-                    ret += split_value_list(stream.readLine().trimmed());
-                    if(!singleLine)
-                        ret += "\n";
+                if (blob) {
+                    ret += stream.readAll();
+                } else {
+                    while (!stream.atEnd()) {
+                        if (lines) {
+                            ret += stream.readLine();
+                        } else {
+                            ret += split_value_list(stream.readLine().trimmed());
+                            if (!singleLine)
+                                ret += "\n";
+                        }
+                    }
                 }
-                qfile.close();
             }
         }
         break; }
@@ -1897,6 +2294,79 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             ret = split_value_list(tmp);
         }
         break; }
+    case E_FORMAT_NUMBER:
+        if (args.count() > 2) {
+            fprintf(stderr, "%s:%d: format_number(number[, options...]) requires one or two arguments.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        } else {
+            int ibase = 10;
+            int obase = 10;
+            int width = 0;
+            bool zeropad = false;
+            bool leftalign = false;
+            enum { DefaultSign, PadSign, AlwaysSign } sign = DefaultSign;
+            if (args.count() >= 2) {
+                foreach (const QString &opt, split_value_list(args.at(1))) {
+                    if (opt.startsWith(QLatin1String("ibase="))) {
+                        ibase = opt.mid(6).toInt();
+                    } else if (opt.startsWith(QLatin1String("obase="))) {
+                        obase = opt.mid(6).toInt();
+                    } else if (opt.startsWith(QLatin1String("width="))) {
+                        width = opt.mid(6).toInt();
+                    } else if (opt == QLatin1String("zeropad")) {
+                        zeropad = true;
+                    } else if (opt == QLatin1String("padsign")) {
+                        sign = PadSign;
+                    } else if (opt == QLatin1String("alwayssign")) {
+                        sign = AlwaysSign;
+                    } else if (opt == QLatin1String("leftalign")) {
+                        leftalign = true;
+                    } else {
+                        fprintf(stderr, "%s:%d: format_number(): invalid format option %s.\n",
+                                parser.file.toLatin1().constData(), parser.line_no,
+                                opt.toLatin1().constData());
+                        goto formfail;
+                    }
+                }
+            }
+            if (args.at(0).contains(QLatin1Char('.'))) {
+                fprintf(stderr, "%s:%d: format_number(): floats are currently not supported.\n",
+                        parser.file.toLatin1().constData(), parser.line_no);
+                break;
+            }
+            bool ok;
+            qlonglong num = args.at(0).toLongLong(&ok, ibase);
+            if (!ok) {
+                fprintf(stderr, "%s:%d: format_number(): malformed number %s for base %d.\n",
+                        parser.file.toLatin1().constData(), parser.line_no,
+                        args.at(0).toLatin1().constData(), ibase);
+                break;
+            }
+            QString outstr;
+            if (num < 0) {
+                num = -num;
+                outstr = QLatin1Char('-');
+            } else if (sign == AlwaysSign) {
+                outstr = QLatin1Char('+');
+            } else if (sign == PadSign) {
+                outstr = QLatin1Char(' ');
+            }
+            QString numstr = QString::number(num, obase);
+            int space = width - outstr.length() - numstr.length();
+            if (space <= 0) {
+                outstr += numstr;
+            } else if (leftalign) {
+                outstr += numstr + QString(space, QLatin1Char(' '));
+            } else if (zeropad) {
+                outstr += QString(space, QLatin1Char('0')) + numstr;
+            } else {
+                outstr.prepend(QString(space, QLatin1Char(' ')));
+                outstr += numstr;
+            }
+            ret += outstr;
+        }
+      formfail:
+        break;
     case E_JOIN: {
         if(args.count() < 1 || args.count() > 4) {
             fprintf(stderr, "%s:%d: join(var, glue, before, after) requires four"
@@ -1991,26 +2461,33 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             fprintf(stderr, "%s:%d system(execut) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         } else {
-            char buff[256];
+            bool blob = false;
+            bool lines = false;
             bool singleLine = true;
-            if(args.count() > 1)
-                singleLine = (args[1].toLower() == "true");
-            QString output;
-            FILE *proc = QT_POPEN(args[0].toLatin1().constData(), "r");
-            while(proc && !feof(proc)) {
-                int read_in = int(fread(buff, 1, 255, proc));
-                if(!read_in)
-                    break;
-                for(int i = 0; i < read_in; i++) {
-                    if((singleLine && buff[i] == '\n') || buff[i] == '\t')
-                        buff[i] = ' ';
-                }
-                buff[read_in] = '\0';
-                output += buff;
+            if (args.count() > 1) {
+                if (!args.at(1).compare(QLatin1String("false"), Qt::CaseInsensitive))
+                    singleLine = false;
+                else if (!args.at(1).compare(QLatin1String("blob"), Qt::CaseInsensitive))
+                    blob = true;
+                else if (!args.at(1).compare(QLatin1String("lines"), Qt::CaseInsensitive))
+                    lines = true;
             }
-            ret += split_value_list(output);
-            if(proc)
-                QT_PCLOSE(proc);
+            QByteArray bytes = getCommandOutput(args.at(0));
+            if (lines) {
+                QTextStream stream(bytes);
+                while (!stream.atEnd())
+                    ret += stream.readLine();
+            } else {
+                QString output = QString::fromLocal8Bit(bytes);
+                if (blob) {
+                    ret += output;
+                } else {
+                    output.replace(QLatin1Char('\t'), QLatin1Char(' '));
+                    if (singleLine)
+                        output.replace(QLatin1Char('\n'), QLatin1Char(' '));
+                    ret += split_value_list(output);
+                }
+            }
         }
         break; }
     case E_UNIQUE: {
@@ -2025,6 +2502,17 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             }
         }
         break; }
+    case E_REVERSE:
+        if (args.count() != 1) {
+            fprintf(stderr, "%s:%d reverse(var) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        } else {
+            QStringList var = values(args.first(), place);
+            for (int i = 0; i < var.size() / 2; i++)
+                var.swap(i, var.size() - i - 1);
+            ret += var;
+        }
+        break;
     case E_QUOTE:
         ret = args;
         break;
@@ -2064,6 +2552,17 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         for(int i = 0; i < args.size(); ++i)
             ret += QRegExp::escape(args[i]);
         break; }
+    case E_VAL_ESCAPE:
+        if (args.count() != 1) {
+            fprintf(stderr, "%s:%d val_escape(var) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        } else {
+            QStringList vals = values(args.at(0), place);
+            ret.reserve(vals.length());
+            foreach (const QString &str, vals)
+                ret += quoteValue(str);
+        }
+        break;
     case E_UPPER:
     case E_LOWER: {
         for(int i = 0; i < args.size(); ++i) {
@@ -2181,6 +2680,53 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             }
         }
         break; }
+    case E_ENUMERATE_VARS:
+        ret += place.keys();
+        break;
+    case E_SHADOWED: {
+        QString val = QDir::cleanPath(QFileInfo(args.at(0)).absoluteFilePath());
+        if (Option::mkfile::source_root.isEmpty())
+            ret += val;
+        else if (val.startsWith(Option::mkfile::source_root))
+            ret += Option::mkfile::build_root + val.mid(Option::mkfile::source_root.length());
+        break; }
+    case E_ABSOLUTE_PATH:
+        if (args.count() > 2)
+            fprintf(stderr, "%s:%d absolute_path(path[, base]) requires one or two arguments.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        else
+            ret += QDir::cleanPath(QDir(args.count() > 1 ? args.at(1) : QString())
+                                   .absoluteFilePath(args.at(0)));
+        break;
+    case E_RELATIVE_PATH:
+        if (args.count() > 2)
+            fprintf(stderr, "%s:%d relative_path(path[, base]) requires one or two arguments.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        else
+            ret += QDir::cleanPath(QDir(args.count() > 1 ? args.at(1) : QString())
+                                   .relativeFilePath(args.at(0)));
+        break;
+    case E_CLEAN_PATH:
+        if (args.count() != 1)
+            fprintf(stderr, "%s:%d clean_path(path) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        else
+            ret += QDir::cleanPath(args.at(0));
+        break;
+    case E_NATIVE_PATH:
+        if (args.count() != 1)
+            fprintf(stderr, "%s:%d native_path(path) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        else
+            ret += Option::fixPathToTargetOS(args.at(0), false);
+        break;
+    case E_SHELL_QUOTE:
+        if (args.count() != 1)
+            fprintf(stderr, "%s:%d shell_quote(args) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        else
+            ret += shellQuote(args.at(0));
+        break;
     default: {
         fprintf(stderr, "%s:%d: Unknown replace function: %s\n",
                 parser.file.toLatin1().constData(), parser.line_no,
@@ -2448,6 +2994,8 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
                    return testFunctions.contains(args[0]);
                else if(args[1] == "replace")
                    return replaceFunctions.contains(args[0]);
+               else if(args[1] == "var")
+                   return place.contains(args[0]);
                fprintf(stderr, "%s:%d: defined(function, type): unexpected type [%s].\n",
                        parser.file.toLatin1().constData(), parser.line_no,
                        args[1].toLatin1().constData());
@@ -2623,6 +3171,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
         QString msg = fixEnvVariables(args[1]);
         debug_msg(args[0].toInt(), "Project DEBUG: %s", msg.toLatin1().constData());
         return true; }
+    case T_LOG:
     case T_ERROR:
     case T_MESSAGE:
     case T_WARNING: {
@@ -2632,13 +3181,17 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
             return false;
         }
         QString msg = fixEnvVariables(args.first());
-        fprintf(stderr, "Project %s: %s\n", func.toUpper().toLatin1().constData(), msg.toLatin1().constData());
-        if(func == "error")
+        if (func_t == T_LOG) {
+            fputs(msg.toLatin1().constData(), stderr);
+        } else {
+            fprintf(stderr, "Project %s: %s\n", func.toUpper().toLatin1().constData(), msg.toLatin1().constData());
+            if (func == "error")
 #if defined(QT_BUILD_QMAKE_LIBRARY)
-            return false;
+                return false;
 #else
-            exit(2);
+                exit(2);
 #endif
+        }
         return true; }
     case T_OPTION:
         if (args.count() != 1) {
@@ -2648,6 +3201,11 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
         }
         if (args.first() == "recursive") {
             recursive = true;
+        } else if (args.first() == "host_build") {
+            if (!host_build && isActiveConfig("cross_compile")) {
+                host_build = true;
+                need_restart = true;
+            }
         } else {
             fprintf(stderr, "%s:%d: unrecognized option() argument '%s'.\n",
                     parser.file.toLatin1().constData(), parser.line_no,
@@ -2655,6 +3213,238 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
             return false;
         }
         return true;
+    case T_CACHE: {
+        if (args.count() > 3) {
+            fprintf(stderr, "%s:%d: cache(var, [set|add|sub] [transient] [super], [srcvar]) requires one to three arguments.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+            return false;
+        }
+        bool persist = true;
+        bool super = false;
+        enum { CacheSet, CacheAdd, CacheSub } mode = CacheSet;
+        QString srcvar;
+        if (args.count() >= 2) {
+            foreach (const QString &opt, split_value_list(args.at(1))) {
+                if (opt == QLatin1String("transient")) {
+                    persist = false;
+                } else if (opt == QLatin1String("super")) {
+                    super = true;
+                } else if (opt == QLatin1String("set")) {
+                    mode = CacheSet;
+                } else if (opt == QLatin1String("add")) {
+                    mode = CacheAdd;
+                } else if (opt == QLatin1String("sub")) {
+                    mode = CacheSub;
+                } else {
+                    fprintf(stderr, "%s:%d: cache(): invalid flag %s.\n",
+                            parser.file.toLatin1().constData(), parser.line_no,
+                            opt.toLatin1().constData());
+                    return false;
+                }
+            }
+            if (args.count() >= 3) {
+                srcvar = args.at(2);
+            } else if (mode != CacheSet) {
+                fprintf(stderr, "%s:%d: cache(): modes other than 'set' require a source variable.\n",
+                        parser.file.toLatin1().constData(), parser.line_no);
+                return false;
+            }
+        }
+        QString varstr;
+        QString dstvar = args.at(0);
+        if (!dstvar.isEmpty()) {
+            if (srcvar.isEmpty())
+                srcvar = dstvar;
+            if (!place.contains(srcvar)) {
+                fprintf(stderr, "%s:%d: variable %s is not defined.\n",
+                        parser.file.toLatin1().constData(), parser.line_no,
+                        srcvar.toLatin1().constData());
+                return false;
+            }
+            // The current ("native") value can differ from the cached value, e.g., the current
+            // CONFIG will typically have more values than the cached one. Therefore we deal with
+            // them separately.
+            const QStringList diffval = values(srcvar, place);
+            const QStringList oldval = base_vars.value(dstvar);
+            QStringList newval;
+            if (mode == CacheSet) {
+                newval = diffval;
+            } else {
+                newval = oldval;
+                if (mode == CacheAdd)
+                    newval += diffval;
+                else
+                    subAll(&newval, diffval);
+            }
+            // We assume that whatever got the cached value to be what it is now will do so
+            // the next time as well, so it is OK that the early exit here will skip the
+            // persisting as well.
+            if (oldval == newval)
+                return true;
+            base_vars[dstvar] = newval;
+            do {
+                if (dstvar == "QMAKEPATH")
+                    cached_qmakepath = newval;
+                else if (dstvar == "QMAKEFEATURES")
+                    cached_qmakefeatures = newval;
+                else
+                    break;
+                invalidateFeatureRoots();
+            } while (false);
+            if (!persist)
+                return true;
+            varstr = dstvar;
+            if (mode == CacheAdd)
+                varstr += QLatin1String(" +=");
+            else if (mode == CacheSub)
+                varstr += QLatin1String(" -=");
+            else
+                varstr += QLatin1String(" =");
+            if (diffval.count() == 1) {
+                varstr += QLatin1Char(' ');
+                varstr += quoteValue(diffval.at(0));
+            } else if (!diffval.isEmpty()) {
+                foreach (const QString &vval, diffval) {
+                    varstr += QLatin1String(" \\\n    ");
+                    varstr += quoteValue(vval);
+                }
+            }
+            varstr += QLatin1Char('\n');
+        }
+        QString fn;
+        if (super) {
+            if (superfile.isEmpty()) {
+                superfile = Option::output_dir + QLatin1String("/.qmake.super");
+                printf("Info: creating super cache file %s\n", superfile.toLatin1().constData());
+            }
+            fn = superfile;
+        } else {
+            if (cachefile.isEmpty()) {
+                cachefile = Option::output_dir + QLatin1String("/.qmake.cache");
+                printf("Info: creating cache file %s\n", cachefile.toLatin1().constData());
+                if (cached_build_root.isEmpty()) {
+                    cached_build_root = Option::output_dir;
+                    cached_source_root = values("_PRO_FILE_PWD_", place).first();
+                    if (cached_source_root == cached_build_root)
+                        cached_source_root.clear();
+                    invalidateFeatureRoots();
+                }
+            }
+            fn = cachefile;
+        }
+        QFileInfo qfi(fn);
+        if (!QDir::current().mkpath(qfi.path())) {
+            fprintf(stderr, "%s:%d: ERROR creating cache directory %s\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    qfi.path().toLatin1().constData());
+            return false;
+        }
+        QString errStr;
+        if (!writeFile(fn, QIODevice::Append, varstr, &errStr)) {
+            fprintf(stderr, "ERROR writing cache file %s: %s\n",
+                    fn.toLatin1().constData(), errStr.toLatin1().constData());
+#if defined(QT_BUILD_QMAKE_LIBRARY)
+            return false;
+#else
+            exit(2);
+#endif
+        }
+        return true; }
+    case T_MKPATH:
+        if (args.count() != 1) {
+            fprintf(stderr, "%s:%d: mkpath(name) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+            return false;
+        }
+        if (!QDir::current().mkpath(args.at(0))) {
+            fprintf(stderr, "%s:%d: ERROR creating directory %s\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    QDir::toNativeSeparators(args.at(0)).toLatin1().constData());
+            return false;
+        }
+        return true;
+    case T_WRITE_FILE: {
+        if (args.count() > 3) {
+            fprintf(stderr, "%s:%d: write_file(name, [content var, [append]]) requires one to three arguments.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+            return false;
+        }
+        QIODevice::OpenMode mode = QIODevice::Truncate;
+        QString contents;
+        if (args.count() >= 2) {
+            QStringList vals = values(args.at(1), place);
+            if (!vals.isEmpty())
+                contents = vals.join(QLatin1String("\n")) + QLatin1Char('\n');
+            if (args.count() >= 3)
+                if (!args.at(2).compare(QLatin1String("append"), Qt::CaseInsensitive))
+                    mode = QIODevice::Append;
+        }
+        QFileInfo qfi(args.at(0));
+        if (!QDir::current().mkpath(qfi.path())) {
+            fprintf(stderr, "%s:%d: ERROR creating directory %s\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    qfi.path().toLatin1().constData());
+            return false;
+        }
+        QString errStr;
+        if (!writeFile(args.at(0), mode, contents, &errStr)) {
+            fprintf(stderr, "%s:%d ERROR writing %s: %s\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    args.at(0).toLatin1().constData(), errStr.toLatin1().constData());
+            return false;
+        }
+        return true; }
+    case T_TOUCH: {
+        if (args.count() != 2) {
+            fprintf(stderr, "%s:%d: touch(file, reffile) requires two arguments.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+            return false;
+        }
+#ifdef Q_OS_UNIX
+        struct stat st;
+        if (stat(args.at(1).toLocal8Bit().constData(), &st)) {
+            fprintf(stderr, "%s:%d: ERROR: cannot stat() reference file %s: %s.\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    args.at(1).toLatin1().constData(), strerror(errno));
+            return false;
+        }
+        struct utimbuf utb;
+        utb.actime = time(0);
+        utb.modtime = st.st_mtime;
+        if (utime(args.at(0).toLocal8Bit().constData(), &utb)) {
+            fprintf(stderr, "%s:%d: ERROR: cannot touch %s: %s.\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    args.at(0).toLatin1().constData(), strerror(errno));
+            return false;
+        }
+#else
+        HANDLE rHand = CreateFile((wchar_t*)args.at(1).utf16(),
+                                  GENERIC_READ, FILE_SHARE_READ,
+                                  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (rHand == INVALID_HANDLE_VALUE) {
+            fprintf(stderr, "%s:%d: ERROR: cannot open() reference file %s: %s.\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    args.at(1).toLatin1().constData(),
+                    windowsErrorCode().toLatin1().constData());
+            return false;
+        }
+        FILETIME ft;
+        GetFileTime(rHand, 0, 0, &ft);
+        CloseHandle(rHand);
+        HANDLE wHand = CreateFile((wchar_t*)args.at(0).utf16(),
+                                  GENERIC_WRITE, FILE_SHARE_READ,
+                                  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (wHand == INVALID_HANDLE_VALUE) {
+            fprintf(stderr, "%s:%d: ERROR: cannot open %s: %s.\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    args.at(0).toLatin1().constData(),
+                    windowsErrorCode().toLatin1().constData());
+            return false;
+        }
+        SetFileTime(wHand, 0, 0, &ft);
+        CloseHandle(wHand);
+#endif
+        break; }
     default:
         fprintf(stderr, "%s:%d: Unknown test function: %s\n", parser.file.toLatin1().constData(), parser.line_no,
                 func.toLatin1().constData());
@@ -2968,7 +3758,11 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
     } else if(var == QLatin1String("_QMAKE_CACHE_")) {
         var = ".BUILTIN." + var;
         if(Option::mkfile::do_cache)
-            place[var] = QStringList(Option::mkfile::cachefile);
+            place[var] = QStringList(cachefile);
+    } else if(var == QLatin1String("_QMAKE_SUPER_CACHE_")) {
+        var = ".BUILTIN." + var;
+        if(Option::mkfile::do_cache && !superfile.isEmpty())
+            place[var] = QStringList(superfile);
     } else if(var == QLatin1String("TEMPLATE")) {
         if(!Option::user_template.isEmpty()) {
             var = ".BUILTIN.USER." + var;
@@ -3067,11 +3861,11 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
         }
     } else if (var == QLatin1String("QMAKE_QMAKE")) {
         if (place[var].isEmpty())
-            place[var] = QStringList(Option::fixPathToTargetOS(
+            place[var] = QStringList(
                 !Option::qmake_abslocation.isEmpty()
                     ? Option::qmake_abslocation
-                    : QLibraryInfo::location(QLibraryInfo::HostBinariesPath) + "/qmake",
-                false));
+                    : QLibraryInfo::rawLocation(QLibraryInfo::HostBinariesPath,
+                                                QLibraryInfo::EffectivePaths) + "/qmake");
     }
 #if defined(Q_OS_WIN32) && defined(Q_CC_MSVC)
       else if(var.startsWith(QLatin1String("QMAKE_TARGET."))) {

@@ -1,19 +1,11 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET     = QtPrintSupport
-QPRO_PWD   = $$PWD
 QT = core-private gui-private widgets-private
 
-CONFIG += module
-MODULE_PRI = ../modules/qt_printsupport.pri
-
-DEFINES   += QT_BUILD_PRINTSUPPORT_LIB QT_NO_USING_NAMESPACE
-
-unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
+DEFINES   += QT_NO_USING_NAMESPACE
 
 load(qt_module_config)
-
-HEADERS += $$QT_SOURCE_TREE/src/printsupport/qtprintsupportversion.h
 
 QMAKE_DOCS = $$PWD/doc/qtprintsupport.qdocconf
 QMAKE_DOCS_INDEX = ../../doc

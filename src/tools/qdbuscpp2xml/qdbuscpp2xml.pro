@@ -1,4 +1,4 @@
-
+option(host_build)
 TEMPLATE = app
 TARGET = qdbuscpp2xml
 
@@ -6,13 +6,10 @@ DESTDIR = ../../../bin
 
 include(../moc/moc.pri)
 
-INCLUDEPATH += .
-DEPENDPATH += .
-
 INCLUDEPATH += $$QT_BUILD_TREE/include \
                    $$QT_BUILD_TREE/include/QtDBus \
-                   $$QT_BUILD_TREE/include/QtDBus/$$QT.dbus.VERSION \
-                   $$QT_BUILD_TREE/include/QtDBus/$$QT.dbus.VERSION/QtDBus \
+                   $$QT_BUILD_TREE/include/QtDBus/$$QT_VERSION \
+                   $$QT_BUILD_TREE/include/QtDBus/$$QT_VERSION/QtDBus \
                    $$QT_SOURCE_TREE/src/dbus
 
 QMAKE_CXXFLAGS += $$QT_CFLAGS_DBUS

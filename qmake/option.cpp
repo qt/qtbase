@@ -54,7 +54,6 @@ QT_BEGIN_NAMESPACE
 //convenience
 const char *Option::application_argv0 = 0;
 QString Option::prf_ext;
-QString Option::js_ext;
 QString Option::prl_ext;
 QString Option::libtool_ext;
 QString Option::pkgcfg_ext;
@@ -68,7 +67,6 @@ QString Option::obj_ext;
 QString Option::lex_ext;
 QString Option::yacc_ext;
 QString Option::pro_ext;
-QString Option::mmp_ext;
 QString Option::dir_sep;
 QString Option::dirlist_sep;
 QString Option::h_moc_mod;
@@ -107,6 +105,7 @@ QStringList Option::projfile::project_dirs;
 
 //QMAKE_GENERATE_MAKEFILE stuff
 QString Option::mkfile::qmakespec;
+QString Option::mkfile::xqmakespec;
 int Option::mkfile::cachefile_depth = -1;
 bool Option::mkfile::do_deps = true;
 bool Option::mkfile::do_mocs = true;
@@ -114,11 +113,12 @@ bool Option::mkfile::do_dep_heuristics = true;
 bool Option::mkfile::do_preprocess = false;
 bool Option::mkfile::do_stub_makefile = false;
 bool Option::mkfile::do_cache = true;
-QString Option::mkfile::project_root;
-QString Option::mkfile::project_build_root;
+QString Option::mkfile::source_root;
+QString Option::mkfile::build_root;
 QString Option::mkfile::cachefile;
 QStringList Option::mkfile::project_files;
 QString Option::mkfile::qmakespec_commandline;
+QString Option::mkfile::xqmakespec_commandline;
 
 static Option::QMAKE_MODE default_mode(QString progname)
 {
@@ -329,6 +329,9 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                     } else if(opt == "platform" || opt == "spec") {
                         Option::mkfile::qmakespec = cleanSpec(argv[++x]);
                         Option::mkfile::qmakespec_commandline = argv[x];
+                    } else if (opt == "xplatform" || opt == "xspec") {
+                        Option::mkfile::xqmakespec = cleanSpec(argv[++x]);
+                        Option::mkfile::xqmakespec_commandline = argv[x];
                     } else {
                         fprintf(stderr, "***Unknown option -%s\n", opt.toLatin1().constData());
                         return Option::QMAKE_CMDLINE_SHOW_USAGE | Option::QMAKE_CMDLINE_ERROR;
@@ -383,6 +386,9 @@ Option::parseCommandLine(int argc, char **argv, int skip)
     if (!user_configs.isEmpty())
         Option::before_user_vars += "CONFIG += " + user_configs.join(" ");
 
+    if (Option::mkfile::xqmakespec.isEmpty())
+        Option::mkfile::xqmakespec = Option::mkfile::qmakespec;
+
     return Option::QMAKE_CMDLINE_SUCCESS;
 }
 
@@ -414,7 +420,6 @@ Option::init(int argc, char **argv)
     Option::libtool_ext = ".la";
     Option::pkgcfg_ext = ".pc";
     Option::prf_ext = ".prf";
-    Option::js_ext = ".js";
     Option::ui_ext = ".ui";
     Option::h_ext << ".h" << ".hpp" << ".hh" << ".hxx";
     Option::c_ext << ".c";
@@ -430,7 +435,6 @@ Option::init(int argc, char **argv)
     Option::lex_ext = ".l";
     Option::yacc_ext = ".y";
     Option::pro_ext = ".pro";
-    Option::mmp_ext = ".mmp";
 #ifdef Q_OS_WIN
     Option::dirlist_sep = ";";
     Option::shellPath = detectShellPath();
@@ -538,8 +542,13 @@ Option::init(int argc, char **argv)
     //last chance for defaults
     if(Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
         Option::qmake_mode == Option::QMAKE_GENERATE_PRL) {
-        if(Option::mkfile::qmakespec.isNull() || Option::mkfile::qmakespec.isEmpty())
+        if (Option::mkfile::xqmakespec.isEmpty())
+            Option::mkfile::xqmakespec = QString::fromLocal8Bit(qgetenv("XQMAKESPEC").constData());
+        if (Option::mkfile::qmakespec.isEmpty()) {
             Option::mkfile::qmakespec = QString::fromLocal8Bit(qgetenv("QMAKESPEC").constData());
+            if (Option::mkfile::xqmakespec.isEmpty())
+                Option::mkfile::xqmakespec = Option::mkfile::qmakespec;
+        }
 
         //try REALLY hard to do it for them, lazy..
         if(Option::mkfile::project_files.isEmpty()) {
@@ -583,106 +592,27 @@ void Option::applyHostMode()
    }
 }
 
-QStringList Option::mkspecPaths()
+void Option::prepareProject(const QString &pfile)
 {
-    QStringList ret;
-    const QString concat = QLatin1String("/mkspecs");
-
-    QByteArray qmakepath = qgetenv("QMAKEPATH");
-    if (!qmakepath.isEmpty()) {
-        const QStringList lst = splitPathList(QString::fromLocal8Bit(qmakepath));
-        for (QStringList::ConstIterator it = lst.begin(); it != lst.end(); ++it)
-            ret << ((*it) + concat);
-    }
-    if (!Option::mkfile::project_build_root.isEmpty())
-        ret << Option::mkfile::project_build_root + concat;
-    if (!Option::mkfile::project_root.isEmpty())
-        ret << Option::mkfile::project_root + concat;
-    ret << QLibraryInfo::location(QLibraryInfo::HostDataPath) + concat;
-    ret.removeDuplicates();
-    return ret;
-}
-
-bool Option::resolveSpec(QString *spec)
-{
-    QString qmakespec = fixEnvVariables(*spec);
-    if (qmakespec.isEmpty())
-        qmakespec = "default";
-    if (QDir::isRelativePath(qmakespec)) {
-        QStringList mkspec_roots = mkspecPaths();
-        debug_msg(2, "Looking for mkspec %s in (%s)", qmakespec.toLatin1().constData(),
-                  mkspec_roots.join("::").toLatin1().constData());
-        for (QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
-            QString mkspec = (*it) + QLatin1Char('/') + qmakespec;
-            if (QFile::exists(mkspec)) {
-                *spec = mkspec;
-                return true;
-            }
-        }
-        fprintf(stderr, "Could not find mkspecs for your QMAKESPEC(%s) after trying:\n\t%s\n",
-                qmakespec.toLatin1().constData(), mkspec_roots.join("\n\t").toLatin1().constData());
-            return false;
-    }
-    return true;
-}
-
-bool Option::prepareProject(const QString &pfile)
-{
-    mkfile::project_build_root.clear();
-    if (mkfile::do_cache) {
-        if (mkfile::cachefile.isEmpty())  { //find it as it has not been specified
-            QDir dir(output_dir);
-            while (!dir.exists(QLatin1String(".qmake.cache")))
-                if (dir.isRoot() || !dir.cdUp())
-                    goto no_cache;
-            mkfile::cachefile = dir.filePath(QLatin1String(".qmake.cache"));
-            mkfile::project_build_root = dir.path();
-        } else {
-            QFileInfo fi(mkfile::cachefile);
-            mkfile::cachefile = QDir::cleanPath(fi.absoluteFilePath());
-            mkfile::project_build_root = QDir::cleanPath(fi.absolutePath());
-        }
-
-        if (mkfile::qmakespec.isEmpty()) {
-            QMakeProject cproj;
-            if (!cproj.read(mkfile::cachefile, QMakeProject::ReadProFile))
-                return false;
-            mkfile::qmakespec = cproj.first(QLatin1String("QMAKESPEC"));
-        }
-    }
-  no_cache:
-
     QString srcpath = (pfile != "-")
             ? QDir::cleanPath(QFileInfo(pfile).absolutePath()) : qmake_getpwd();
-    if (srcpath != output_dir || mkfile::project_build_root.isEmpty()) {
-        QDir srcdir(srcpath);
-        QDir dstdir(output_dir);
-        do {
-            if (!mkfile::project_build_root.isEmpty()) {
-                // If we already know the build root, just match up the source root with it.
-                if (dstdir.path() == mkfile::project_build_root) {
-                    mkfile::project_root = srcdir.path();
-                    break;
-                }
-            } else {
-                // Look for mkspecs/ in source and build. First to win determines the root.
-                if (dstdir.exists("mkspecs") || srcdir.exists("mkspecs")) {
-                    mkfile::project_build_root = dstdir.path();
-                    mkfile::project_root = srcdir.path();
-                    if (mkfile::project_root == mkfile::project_build_root)
-                        mkfile::project_root.clear();
-                    break;
-                }
-            }
-        } while (!srcdir.isRoot() && srcdir.cdUp() && !dstdir.isRoot() && dstdir.cdUp());
+    if (srcpath != output_dir) {
+        if (!srcpath.endsWith(QLatin1Char('/')))
+            srcpath += QLatin1Char('/');
+        QString dstpath = output_dir;
+        if (!dstpath.endsWith(QLatin1Char('/')))
+            dstpath += QLatin1Char('/');
+        int srcLen = srcpath.length();
+        int dstLen = dstpath.length();
+        int lastSl = 0;
+        while (++lastSl, srcpath.at(--srcLen) == dstpath.at(--dstLen))
+            if (srcpath.at(srcLen) == QLatin1Char('/'))
+                lastSl = 1;
+        mkfile::source_root = srcpath.left(srcLen + lastSl);
+        mkfile::build_root = dstpath.left(dstLen + lastSl);
     } else {
-        mkfile::project_root.clear();
+        mkfile::source_root.clear();
     }
-
-    if (!resolveSpec(&Option::mkfile::qmakespec))
-        return false;
-
-    return true;
 }
 
 bool Option::postProcessProject(QMakeProject *project)
