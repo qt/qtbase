@@ -456,7 +456,7 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
                         new (dst++) T(*srcBegin++);
                     }
                 } else {
-                    ::memcpy(dst, srcBegin, (srcEnd - srcBegin) * sizeof(T));
+                    ::memcpy(static_cast<void *>(dst), srcBegin, (srcEnd - srcBegin) * sizeof(T));
                     dst += srcEnd - srcBegin;
 
                     // destruct unused / not moved data
