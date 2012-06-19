@@ -624,7 +624,7 @@ bool qt_write_dib(QDataStream &s, QImage image)
 
     if (nbits == 1 || nbits == 8) {                // direct output
         for (y=image.height()-1; y>=0; y--) {
-            if (d->write((char*)image.scanLine(y), bpl) == -1)
+            if (d->write((char*)image.constScanLine(y), bpl) == -1)
                 return false;
         }
         return true;
@@ -632,12 +632,12 @@ bool qt_write_dib(QDataStream &s, QImage image)
 
     uchar *buf        = new uchar[bpl_bmp];
     uchar *b, *end;
-    register uchar *p;
+    register const uchar *p;
 
     memset(buf, 0, bpl_bmp);
     for (y=image.height()-1; y>=0; y--) {        // write the image bits
         if (nbits == 4) {                        // convert 8 -> 4 bits
-            p = image.scanLine(y);
+            p = image.constScanLine(y);
             b = buf;
             end = b + image.width()/2;
             while (b < end) {
@@ -647,8 +647,8 @@ bool qt_write_dib(QDataStream &s, QImage image)
             if (image.width() & 1)
                 *b = *p << 4;
         } else {                                // 32 bits
-            QRgb *p   = (QRgb *)image.scanLine(y);
-            QRgb *end = p + image.width();
+            const QRgb *p   = (const QRgb *)image.constScanLine(y);
+            const QRgb *end = p + image.width();
             b = buf;
             while (p < end) {
                 *b++ = qBlue(*p);
