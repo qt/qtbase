@@ -101,6 +101,10 @@ Q_DECLARE_METATYPE(QTime);
 Q_DECLARE_METATYPE(QList<int>);
 
 #if defined(Q_OS_WINCE)
+#ifndef SPI_GETPLATFORMTYPE
+#define SPI_GETPLATFORMTYPE 257
+#endif
+
 bool qt_wince_is_platform(const QString &platformString) {
     wchar_t tszPlatform[64];
     if (SystemParametersInfo(SPI_GETPLATFORMTYPE,
