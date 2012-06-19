@@ -599,7 +599,7 @@ bool QTextLayout::cacheEnabled() const
     Sets the visual cursor movement style to the given \a style. If the
     QTextLayout is backed by a document, you can ignore this and use the option
     in QTextDocument, this option is for widgets like QLineEdit or custom
-    widgets without a QTextDocument. Default value is QTextCursor::Logical.
+    widgets without a QTextDocument. Default value is Qt::LogicalMoveStyle.
 
     \sa cursorMoveStyle()
 */
