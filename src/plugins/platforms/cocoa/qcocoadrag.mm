@@ -42,8 +42,113 @@
 #include "qcocoadrag.h"
 #include "qmacmime.h"
 #include "qmacclipboard.h"
+#include "qcocoahelpers.h"
 
 QT_BEGIN_NAMESPACE
+
+QCocoaDrag::QCocoaDrag() :
+    m_drag(0)
+{
+    m_lastEvent = 0;
+    m_lastView = 0;
+}
+
+void QCocoaDrag::setLastMouseEvent(NSEvent *event, NSView *view)
+{
+    m_lastEvent = event;
+    m_lastView = view;
+}
+
+QMimeData *QCocoaDrag::platformDropData()
+{
+    if (m_drag)
+        return m_drag->mimeData();
+
+    return 0;
+}
+
+Qt::DropAction QCocoaDrag::defaultAction(Qt::DropActions possibleActions,
+                                           Qt::KeyboardModifiers modifiers) const
+{
+    Qt::DropAction default_action = Qt::IgnoreAction;
+
+    if (currentDrag()) {
+        default_action = currentDrag()->defaultAction();
+        possibleActions = currentDrag()->supportedActions();
+    }
+
+    if (default_action == Qt::IgnoreAction) {
+        //This means that the drag was initiated by QDrag::start and we need to
+        //preserve the old behavior
+        default_action = Qt::CopyAction;
+    }
+
+    if (modifiers & Qt::ControlModifier && modifiers & Qt::AltModifier)
+        default_action = Qt::LinkAction;
+    else if (modifiers & Qt::AltModifier)
+        default_action = Qt::CopyAction;
+    else if (modifiers & Qt::ControlModifier)
+        default_action = Qt::MoveAction;
+
+#ifdef QDND_DEBUG
+    qDebug("possible actions : %s", dragActionsToString(possibleActions).latin1());
+#endif
+
+    // Check if the action determined is allowed
+    if (!(possibleActions & default_action)) {
+        if (possibleActions & Qt::CopyAction)
+            default_action = Qt::CopyAction;
+        else if (possibleActions & Qt::MoveAction)
+            default_action = Qt::MoveAction;
+        else if (possibleActions & Qt::LinkAction)
+            default_action = Qt::LinkAction;
+        else
+            default_action = Qt::IgnoreAction;
+    }
+
+#ifdef QDND_DEBUG
+    qDebug("default action : %s", dragActionsToString(default_action).latin1());
+#endif
+
+    return default_action;
+}
+
+
+Qt::DropAction QCocoaDrag::drag(QDrag *o)
+{
+    m_drag = o;
+    m_executed_drop_action = Qt::IgnoreAction;
+
+    NSImage *nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(m_drag->pixmap()));
+
+    QMacPasteboard dragBoard((CFStringRef) NSDragPboard, QMacPasteboardMime::MIME_DND);
+    m_drag->mimeData()->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray("dummy"));
+    dragBoard.setMimeData(m_drag->mimeData());
+
+    NSPoint event_location = [m_lastEvent locationInWindow];
+    NSPoint local_point = [m_lastView convertPoint:event_location fromView:nil];
+    local_point.x -= m_drag->hotSpot().x();
+    CGFloat flippedY = m_drag->pixmap().height() - m_drag->hotSpot().y();
+    local_point.y += flippedY;
+    NSSize mouseOffset = NSMakeSize(0.0, 0.0);
+    NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+
+    [m_lastView dragImage:nsimage
+        at:local_point
+        offset:mouseOffset
+        event:m_lastEvent
+        pasteboard:pboard
+        source:m_lastView
+        slideBack:YES];
+
+    m_drag = 0;
+    return m_executed_drop_action;
+}
+
+void QCocoaDrag::setAcceptedAction(Qt::DropAction act)
+{
+    m_executed_drop_action = act;
+}
 
 QCocoaDropData::QCocoaDropData(NSPasteboard *pasteboard)
 {

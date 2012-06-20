@@ -104,7 +104,7 @@ public:
     virtual Qt::DropAction drag(QDrag *m_drag) = 0;
     void updateAction(Qt::DropAction action);
 
-    Qt::DropAction defaultAction(Qt::DropActions possibleActions, Qt::KeyboardModifiers modifiers) const;
+    virtual Qt::DropAction defaultAction(Qt::DropActions possibleActions, Qt::KeyboardModifiers modifiers) const;
 
     static QPixmap defaultPixmap();
 

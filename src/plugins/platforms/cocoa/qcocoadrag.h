@@ -51,10 +51,29 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaDrag : public QSimpleDrag
+class QCocoaDrag : public QPlatformDrag
 {
 public:
+    QCocoaDrag();
+
+    virtual QMimeData *platformDropData();
+    virtual Qt::DropAction drag(QDrag *m_drag);
+
+    virtual Qt::DropAction defaultAction(Qt::DropActions possibleActions,
+                                               Qt::KeyboardModifiers modifiers) const;
+
+    /**
+    * to meet NSView dragImage:at guarantees, we need to record the original
+    * event and view when handling an event in QNSView
+    */
+    void setLastMouseEvent(NSEvent *event, NSView *view);
+
+    void setAcceptedAction(Qt::DropAction act);
 private:
+    QDrag *m_drag;
+    NSEvent *m_lastEvent;
+    NSView *m_lastView;
+    Qt::DropAction m_executed_drop_action;
 };
 
 class QCocoaDropData : public QInternalMimeData

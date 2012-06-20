@@ -49,10 +49,12 @@
 #include "qcocoaautoreleasepool.h"
 #include "qmultitouch_mac_p.h"
 #include "qcocoadrag.h"
+#include <qpa/qplatformintegration.h>
 
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QTextFormat>
 #include <QtCore/QDebug>
+#include <private/qguiapplication_p.h>
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
 #include <accessibilityinspector.h>
@@ -301,6 +303,10 @@ static QTouchDevice *touchDevice = 0;
         qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
     }
     ulong timestamp = [theEvent timestamp] * 1000;
+
+    QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+    nativeDrag->setLastMouseEvent(theEvent, self);
+
     QWindowSystemInterface::handleMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons);
 }
 
@@ -980,6 +986,18 @@ static QTouchDevice *touchDevice = 0;
     }
 }
 
+- (NSDragOperation) draggingSourceOperationMaskForLocal:(BOOL)isLocal
+{
+    Q_UNUSED(isLocal);
+    QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+    return qt_mac_mapDropActions(nativeDrag->currentDrag()->supportedActions());
+}
+
+- (BOOL) ignoreModifierKeysWhileDragging
+{
+    return NO;
+}
+
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
 {
     return [self handleDrag : sender];
@@ -997,6 +1015,9 @@ static QTouchDevice *touchDevice = 0;
     QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
     Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
     QCocoaDropData mimeData([sender draggingPasteboard]);
+
+    // update these so selecting move/copy/link works
+    QGuiApplicationPrivate::modifier_buttons = [self convertKeyModifiers: [[NSApp currentEvent] modifierFlags]];
 
     QPlatformDragQtResponse response = QWindowSystemInterface::handleDrag(m_window, &mimeData, qt_windowPoint, qtAllowed);
     return qt_mac_mapDropAction(response.acceptedAction());
@@ -1021,6 +1042,25 @@ static QTouchDevice *touchDevice = 0;
 
     QPlatformDropQtResponse response = QWindowSystemInterface::handleDrop(m_window, &mimeData, qt_windowPoint, qtAllowed);
     return response.isAccepted();
+}
+
+- (void)draggedImage:(NSImage*) img endedAt:(NSPoint) point operation:(NSDragOperation) operation
+{
+    QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+    nativeDrag->setAcceptedAction(qt_mac_mapNSDragOperation(operation));
+
+// keep our state, and QGuiApplication state (buttons member) in-sync,
+// or future mouse events will be processed incorrectly
+    m_buttons &= QFlag(~int(Qt::LeftButton));
+
+    NSPoint windowPoint = [self convertPoint: point fromView: nil];
+    QPoint qtWindowPoint(point.x, point.y);
+
+    NSWindow *window = [self window];
+    NSPoint screenPoint = [window convertBaseToScreen :point];
+    QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
+
+    QWindowSystemInterface::handleMouseEvent(m_window, qtWindowPoint, qtScreenPoint, m_buttons);
 }
 
 @end
