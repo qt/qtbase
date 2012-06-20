@@ -87,6 +87,8 @@ static const int blueFrameWidth =  2;  // with of line edit focus frame
 #include <qvarlengtharray.h>
 #include <limits.h>
 #include <private/qstylehelper_p.h>
+#include <qpa/qplatformtheme.h>
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -5340,11 +5342,12 @@ int QPlastiqueStyle::styleHint(StyleHint hint, const QStyleOption *option, const
     case SH_Menu_SubMenuPopupDelay:
         ret = 96; // from Plastik
         break;
-#ifdef Q_WS_X11
     case SH_DialogButtonBox_ButtonsHaveIcons:
-        ret = true;
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+            ret = theme->themeHint(QPlatformTheme::DialogButtonBoxButtonsHaveIcons).toBool();
+        else
+            ret = true;
         break;
-#endif
 #ifndef Q_OS_WIN
     case SH_Menu_AllowActiveAndDisabled:
         ret = false;
