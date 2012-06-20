@@ -299,7 +299,7 @@ private slots:
 
 public slots:
     void slotWithArray(const double[3]) {}
-    void slotWithNamedArray(const double namedArray[3]) {}
+    void slotWithNamedArray(const double namedArray[3]) { Q_UNUSED(namedArray); }
     void slotWithMultiArray(const double[3][4]) {}
 
     short int shortIntProperty() { return 0; }
@@ -1458,8 +1458,8 @@ class QTBUG_17635_InvokableAndProperty : public QObject
 public:
     Q_PROPERTY(int numberOfEggs READ numberOfEggs)
     Q_PROPERTY(int numberOfChickens READ numberOfChickens)
-    Q_INVOKABLE QString getEgg(int index) { return QString::fromLatin1("Egg"); }
-    Q_INVOKABLE QString getChicken(int index) { return QString::fromLatin1("Chicken"); }
+    Q_INVOKABLE QString getEgg(int index) { Q_UNUSED(index); return QString::fromLatin1("Egg"); }
+    Q_INVOKABLE QString getChicken(int index) { Q_UNUSED(index); return QString::fromLatin1("Chicken"); }
     int numberOfEggs() { return 2; }
     int numberOfChickens() { return 4; }
 };
