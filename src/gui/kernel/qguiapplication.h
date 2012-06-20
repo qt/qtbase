@@ -94,9 +94,6 @@ public:
 
     static QWindow *modalWindow();
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    static QT_DEPRECATED QWindow *activeWindow() { return focusWindow(); }
-#endif
     static QWindow *focusWindow();
     static QObject *focusObject();
 
