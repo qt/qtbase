@@ -1,5 +1,6 @@
 CONFIG += testcase
 CONFIG += parallel_test
+win32:testcase.timeout = 900 # this testcase can be slow on Windows
 
 QT += widgets widgets-private
 QT += core-private gui testlib
