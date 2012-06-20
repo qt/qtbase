@@ -1117,7 +1117,7 @@ QImage QImage::copy(const QRect& r) const
         // Qt for Embedded Linux can create images with non-default bpl
         // make sure we don't crash.
         if (image.d->nbytes != d->nbytes) {
-            int bpl = image.bytesPerLine();
+            int bpl = qMin(bytesPerLine(), image.bytesPerLine());
             for (int i = 0; i < height(); i++)
                 memcpy(image.scanLine(i), scanLine(i), bpl);
         } else
