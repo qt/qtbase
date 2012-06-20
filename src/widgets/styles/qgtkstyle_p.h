@@ -263,6 +263,7 @@ typedef Display* (*Ptr_gdk_x11_drawable_get_xdisplay) ( GdkDrawable *);
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_FILEDIALOG
 typedef QStringList (*_qt_filedialog_open_filenames_hook)(QWidget * parent, const QString &caption, const QString &dir,
                                                           const QString &filter, QString *selectedFilter, QFileDialog::Options options);
 typedef QString (*_qt_filedialog_open_filename_hook)     (QWidget * parent, const QString &caption, const QString &dir,
@@ -276,6 +277,7 @@ extern Q_WIDGETS_EXPORT _qt_filedialog_open_filename_hook qt_filedialog_open_fil
 extern Q_WIDGETS_EXPORT _qt_filedialog_open_filenames_hook qt_filedialog_open_filenames_hook;
 extern Q_WIDGETS_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook;
 extern Q_WIDGETS_EXPORT _qt_filedialog_existing_directory_hook qt_filedialog_existing_directory_hook;
+#endif //!QT_NO_FILEDIALOG
 
 class QGtkStylePrivate;
 
@@ -342,6 +344,7 @@ public:
     static QString getThemeName();
     virtual int getSpinboxArrowSize() const;
 
+#ifndef QT_NO_FILEDIALOG
     static void setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *parent,
             const QString &dir, const QString &filter, QString *selectedFilter,
             QFileDialog::Options options, bool isSaveDialog = false,
@@ -354,6 +357,7 @@ public:
     static QString openDirectory(QWidget *parent, const QString &caption, const QString &dir, QFileDialog::Options options);
     static QStringList openFilenames(QWidget *parent, const QString &caption, const QString &dir, const QString &filter,
                                     QString *selectedFilter, QFileDialog::Options options);
+#endif
     static QIcon getFilesystemIcon(const QFileInfo &);
 
     static Ptr_gtk_container_forall gtk_container_forall;

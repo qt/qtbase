@@ -908,6 +908,7 @@ QStringList QGtkStylePrivate::extract_filter(const QString &rawFilter)
 
 extern QStringList qt_make_filter_list(const QString &filter);
 
+#ifndef QT_NO_FILEDIALOG
 void QGtkStylePrivate::setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *parent,
                                 const QString &dir, const QString &filter, QString *selectedFilter,
                                 QFileDialog::Options options, bool isSaveDialog,
@@ -1115,6 +1116,7 @@ QString QGtkStylePrivate::saveFilename(QWidget *parent, const QString &caption, 
     gtk_widget_destroy (gtkFileChooser);
     return filename;
 }
+#endif
 
 QIcon QGtkStylePrivate::getFilesystemIcon(const QFileInfo &info)
 {

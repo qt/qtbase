@@ -336,10 +336,12 @@ void QGtkStyle::polish(QApplication *app)
         QApplicationPrivate::setSystemFont(d->getThemeFont());
         d->applyCustomPaletteHash();
         if (!d->isKDE4Session()) {
+#ifndef QT_NO_FILEDIALOG
             qt_filedialog_open_filename_hook = &QGtkStylePrivate::openFilename;
             qt_filedialog_save_filename_hook = &QGtkStylePrivate::saveFilename;
             qt_filedialog_open_filenames_hook = &QGtkStylePrivate::openFilenames;
             qt_filedialog_existing_directory_hook = &QGtkStylePrivate::openDirectory;
+#endif
             qApp->installEventFilter(&d->filter);
         }
     }
@@ -357,10 +359,12 @@ void QGtkStyle::unpolish(QApplication *app)
 
     if (app->desktopSettingsAware() && d->isThemeAvailable()
         && !d->isKDE4Session()) {
+#ifndef QT_NO_FILEDIALOG
         qt_filedialog_open_filename_hook = 0;
         qt_filedialog_save_filename_hook = 0;
         qt_filedialog_open_filenames_hook = 0;
         qt_filedialog_existing_directory_hook = 0;
+#endif
         qApp->removeEventFilter(&d->filter);
     }
 }
@@ -386,8 +390,10 @@ void QGtkStyle::polish(QWidget *widget)
             || qobject_cast<QSpinBox*>(widget)
             || qobject_cast<QHeaderView*>(widget))
         widget->setAttribute(Qt::WA_Hover);
+#ifndef QT_NO_TREEVIEW
     else if (QTreeView *tree = qobject_cast<QTreeView *> (widget))
         tree->viewport()->setAttribute(Qt::WA_Hover);
+#endif
 }
 
 /*!
