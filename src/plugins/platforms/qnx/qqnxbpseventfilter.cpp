@@ -101,12 +101,22 @@ void QQnxBpsEventFilter::installOnEventDispatcher(QAbstractEventDispatcher *disp
 
 void QQnxBpsEventFilter::registerForScreenEvents(QQnxScreen *screen)
 {
+    if (!m_screenEventHandler) {
+        qWarning("QQNX: trying to register for screen events, but no handler provided.");
+        return;
+    }
+
     if (screen_request_events(screen->nativeContext()) != BPS_SUCCESS)
         qWarning("QQNX: failed to register for screen events on screen %p", screen->nativeContext());
 }
 
 void QQnxBpsEventFilter::unregisterForScreenEvents(QQnxScreen *screen)
 {
+    if (!m_screenEventHandler) {
+        qWarning("QQNX: trying to unregister for screen events, but no handler provided.");
+        return;
+    }
+
     if (screen_stop_events(screen->nativeContext()) != BPS_SUCCESS)
         qWarning("QQNX: failed to unregister for screen events on screen %p", screen->nativeContext());
 }
@@ -144,6 +154,11 @@ bool QQnxBpsEventFilter::bpsEventFilter(bps_event_t *event)
     qBpsEventFilterDebug() << Q_FUNC_INFO << "event=" << event << "domain=" << eventDomain;
 
     if (eventDomain == screen_get_domain()) {
+        if (!m_screenEventHandler) {
+            qWarning("QQNX: registered for screen events, but no handler provided.");
+            return false;
+        }
+
         screen_event_t screenEvent = screen_event_get_event(event);
         return m_screenEventHandler->handleEvent(screenEvent);
     }

@@ -156,8 +156,7 @@ QQnxIntegration::QQnxIntegration()
 #endif
 
     // Create/start event thread
-    // Not on BlackBerry, it has specialised event dispatcher which also handles screen events
-#if !defined(Q_OS_BLACKBERRY)
+#if defined(QQNX_SCREENEVENTTHREAD)
     m_screenEventThread = new QQnxScreenEventThread(m_screenContext, m_screenEventHandler);
     m_screenEventThread->start();
 #endif
@@ -184,7 +183,8 @@ QQnxIntegration::QQnxIntegration()
 
 #if defined(Q_OS_BLACKBERRY)
     QQnxVirtualKeyboardBps* virtualKeyboardBps = new QQnxVirtualKeyboardBps;
-    m_bpsEventFilter = new QQnxBpsEventFilter(m_navigatorEventHandler, m_screenEventHandler, virtualKeyboardBps);
+    m_bpsEventFilter = new QQnxBpsEventFilter(m_navigatorEventHandler,
+            (m_screenEventThread ? 0 : m_screenEventHandler), virtualKeyboardBps);
     m_bpsEventFilter->installOnEventDispatcher(m_eventDispatcher);
 
     m_virtualKeyboard = virtualKeyboardBps;
@@ -198,7 +198,7 @@ QQnxIntegration::QQnxIntegration()
     // create the displays first.
     createDisplays();
 
-#if defined(Q_OS_BLACKBERRY)
+#if !defined(QQNX_SCREENEVENTTHREAD) && defined(Q_OS_BLACKBERRY)
     // Register for screen domain events with bps
     Q_FOREACH (QQnxScreen *screen, m_screens)
         m_bpsEventFilter->registerForScreenEvents(screen);
@@ -241,13 +241,15 @@ QQnxIntegration::~QQnxIntegration()
 #endif
     delete m_navigatorEventHandler;
 
-#if !defined(Q_OS_BLACKBERRY)
+#if defined(QQNX_SCREENEVENTTHREAD)
     // Stop/destroy screen event thread
     delete m_screenEventThread;
-#else
+#elif defined(Q_OS_BLACKBERRY)
     Q_FOREACH (QQnxScreen *screen, m_screens)
         m_bpsEventFilter->unregisterForScreenEvents(screen);
+#endif
 
+#if defined(Q_OS_BLACKBERRY)
     delete m_bpsEventFilter;
 #endif
 
