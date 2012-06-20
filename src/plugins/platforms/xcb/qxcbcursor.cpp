@@ -543,6 +543,7 @@ void QXcbCursor::setPos(const QPoint &pos)
     xcb_window_t root;
     getPosAndRoot(conn, &root, 0);
     xcb_warp_pointer(conn, XCB_NONE, root, 0, 0, 0, 0, pos.x(), pos.y());
+    xcb_flush(conn);
 }
 
 QT_END_NAMESPACE
