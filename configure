@@ -919,19 +919,8 @@ while [ "$#" -gt 0 ]; do
         VAR=`echo $1 | sed "s,^-no-\(.*\),\1,"`
         VAL=no
         ;;
-    #Qt style yes options
-    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-directfb|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-pkg-config|-force-pkg-config|-icu|-force-asserts|-testcocoon|-c++11)
-        VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
-        VAL=yes
-        ;;
     #Qt style options that pass an argument
-    -qconfig)
-        CFG_QCONFIG="$VAL"
-        VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
-        shift
-        VAL=$1
-        ;;
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1068,9 +1057,10 @@ while [ "$#" -gt 0 ]; do
         VAR="add_warn"
         VAL="$1"
         ;;
+    #General options, including Qt style yes options
     -*)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
-        VAL="unknown"
+        VAL="yes"
         ;;
     *)
         UNKNOWN_ARG=yes
@@ -3491,8 +3481,9 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     mv -f "$QMAKE_QCONFIG_H" "$QCONFIG_H"
 
     #mkspecs/default is used as a (gasp!) default mkspec so QMAKESPEC needn't be set once configured
-    rm -rf mkspecs/default
+    rm -rf mkspecs/default mkspecs/default-host
     ln -s `echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default
+    ln -s `echo $QMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default-host
     mkdir -p "$outpath/qmake" || exit
     # fix makefiles
     for mkfile in GNUmakefile Makefile; do
@@ -3605,6 +3596,16 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     [ '!' -z "$OLD_QCONFIG_H" ] && mv -f "${OLD_QCONFIG_H}.old" "$OLD_QCONFIG_H" #put back qconfig.h
     [ "$QMAKE_BUILD_ERROR" = "yes" ] && exit 2
 fi # Build qmake
+
+#-------------------------------------------------------------------------------
+# create a qt.conf for the Qt build tree itself
+#-------------------------------------------------------------------------------
+
+QTCONFFILE="$outpath/bin/qt.conf"
+cat > "$QTCONFFILE" <<EOF
+[EffectivePaths]
+Prefix=..
+EOF
 
 #-------------------------------------------------------------------------------
 # Detect pkg-config
@@ -5895,10 +5896,6 @@ QT_SOURCE_TREE = \$\$quote($relpath)
 QT_BUILD_TREE = \$\$quote($outpath)
 QT_BUILD_PARTS = $CFG_BUILD_PARTS
 
-#local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR
-QMAKE_INCDIR_QT  = \$\$QT_BUILD_TREE/include
-QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
-
 include(\$\$PWD/mkspecs/qmodule.pri)
 CONFIG += dylib depend_includepath fix_output_dirs no_private_qt_headers_warning QTDIR_build
 
@@ -5906,9 +5903,14 @@ EOF
 
 #dump the qmake spec
 if [ -d "$outpath/mkspecs/$XPLATFORM" ]; then
-   echo "QMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$XPLATFORM" >> "$CACHEFILE.tmp"
+   echo "XQMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$XPLATFORM" >> "$CACHEFILE.tmp"
 else
-   echo "QMAKESPEC = $XPLATFORM" >> "$CACHEFILE.tmp"
+   echo "XQMAKESPEC = $XPLATFORM" >> "$CACHEFILE.tmp"
+fi
+if [ -d "$outpath/mkspecs/$PLATFORM" ]; then
+   echo "QMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$PLATFORM" >> "$CACHEFILE.tmp"
+else
+   echo "QMAKESPEC = $PLATFORM" >> "$CACHEFILE.tmp"
 fi
 
 # replace .qmake.cache if it differs from the newly created temp file
@@ -6119,231 +6121,48 @@ EXEC=""
 # build makefiles based on the configuration
 #-------------------------------------------------------------------------------
 
-echo "Finding project files. Please wait..."
 if [ "$CFG_NOPROCESS" != "yes" ]; then
-    "$outpath/bin/qmake" -prl -r "${relpath}/qtbase.pro"
-    if [ -f "${relpath}/qtbase.pro" ]; then
-        mkfile="${outpath}/Makefile"
-        [ -f "$mkfile" ] && chmod +w "$mkfile"
-        QTDIR="$outpath" "$outpath/bin/qmake" -spec "$XQMAKESPEC" "${relpath}/qtbase.pro" -o "$mkfile"
-    fi
-fi
+    echo "Creating makefiles. Please wait..."
+    "$outpath/bin/qmake" -r ${OPT_FAST+CONFIG+=fast} "$relpath"
+    echo "Done"
 
-# .projects      -> projects to process
-# .projects.1    -> qt and moc
-# .projects.2    -> subdirs and libs
-# .projects.3    -> the rest
-rm -f .projects .projects.1 .projects.2 .projects.3
+    if [ "$OPT_FAST" = "yes" ]; then
+        PART_ROOTS=
+        for part in $CFG_BUILD_PARTS; do
+            case "$part" in
+            examples|tests) PART_ROOTS="$PART_ROOTS $part" ;;
+            esac
+        done
+        if [ "x$PART_ROOTS" != "x" ]; then
+            echo
+            echo "Creating stub makefiles. Please wait..."
+            QMAKE="$outpath/bin/qmake"
+            [ "$CFG_DEBUG_RELEASE" = "no" ] && first_tgt="first_target: first" || first_tgt=
+            (cd "$relpath" && find $PART_ROOTS -name '*.pro') | grep -v /testdata/ | while read p; do
+                d=${p%/*}
+                test -f "$outpath/$d/Makefile" && continue
+                echo "  for $relpath/$p"
 
-QMAKE_PROJECTS=`find "$relpath/." -name '*.pro' -print | sed 's-/\./-/-'`
-if [ -z "$AWK" ]; then
-    for p in `echo $QMAKE_PROJECTS`; do
-        echo "$p" >> .projects
-    done
-else
-    cat >projects.awk <<EOF
-BEGIN {
-    files = 0
-    target_file = ""
-    input_file = ""
-
-    first = "./.projects.1.tmp"
-    second = "./.projects.2.tmp"
-    third = "./.projects.3.tmp"
-}
-
-FNR == 1 {
-    if ( input_file ) {
-        if ( ! target_file )
-            target_file = third
-        print input_file >target_file
-    }
-
-    matched_target = 0
-    template_lib = 0
-    input_file = FILENAME
-    target_file = ""
-}
-
-/^(TARGET.*=)/ {
-    if ( \$3 == "moc" || \$3 ~ /^Qt/ ) {
-        target_file = first
-        matched_target = 1
-    } else if ( \$3 == "lrelease" || \$3 == "qm_phony_target" ) {
-        target_file = second
-        matched_target = 1
-    }
-}
-
-matched_target == 0 && /^(TEMPLATE.*=)/ {
-    if ( \$3 == "subdirs" )
-        target_file = second
-    else if ( \$3 == "lib" )
-        template_lib = 1
-    else
-        target_file = third
-}
-
-matched_target == 0 && template_lib == 1 && /^(CONFIG.*=)/ {
-    if ( \$0 ~ /plugin/ )
-        target_file = third
-    else
-        target_file = second
-}
-
-END {
-    if ( input_file ) {
-        if ( ! target_file )
-            target_file = third
-        print input_file >>target_file
-    }
-}
-
-EOF
-
-    rm -f .projects.all
-    for p in `echo $QMAKE_PROJECTS`; do
-       echo "$p" >> .projects.all
-    done
-
-    # if you get errors about the length of the command line to awk, change the -l arg
-    # to split below
-    split -l 100 .projects.all .projects.all.
-    for p in .projects.all.*; do
-       "$AWK" -f projects.awk `cat $p`
-       [ -f .projects.1.tmp ] && cat .projects.1.tmp >> .projects.1
-       [ -f .projects.2.tmp ] && cat .projects.2.tmp >> .projects.2
-       [ -f .projects.3.tmp ] && cat .projects.3.tmp >> .projects.3
-       rm -f .projects.1.tmp .projects.2.tmp .projects.3.tmp $p
-    done
-    rm -f .projects.all* projects.awk
-
-    [ -f .projects.1 ] && cat .projects.1 >>.projects
-    [ -f .projects.2 ] && cat .projects.2 >>.projects
-    rm -f .projects.1 .projects.2
-    if [ -f .projects.3 ] && [ "$OPT_FAST" = "no" ]; then
-       cat .projects.3 >>.projects
-       rm -f .projects.3
-    fi
-fi
-# don't sort Qt and MOC in with the other project files
-# also work around a segfaulting uniq(1)
-if [ -f .sorted.projects.2 ]; then
-    sort .sorted.projects.2 > .sorted.projects.2.new
-    mv -f .sorted.projects.2.new .sorted.projects.2
-    cat .sorted.projects.2 >> .sorted.projects.1
-fi
-[ -f .sorted.projects.1 ] && sort .sorted.projects.1 >> .sorted.projects
-rm -f .sorted.projects.2 .sorted.projects.1
-
-NORM_PROJECTS=0
-FAST_PROJECTS=0
-if [ -f .projects ]; then
-   uniq .projects >.tmp
-   mv -f .tmp .projects
-   NORM_PROJECTS=`cat .projects | wc -l | sed -e "s, ,,g"`
-fi
-if [ -f .projects.3 ]; then
-   uniq .projects.3 >.tmp
-   mv -f .tmp .projects.3
-   FAST_PROJECTS=`cat .projects.3 | wc -l | sed -e "s, ,,g"`
-fi
-echo "  `expr $NORM_PROJECTS + $FAST_PROJECTS` projects found."
-echo
-
-PART_ROOTS=
-for part in $CFG_BUILD_PARTS; do
-    case "$part" in
-    tools) PART_ROOTS="$PART_ROOTS tools" ;;
-    libs) PART_ROOTS="$PART_ROOTS src" ;;
-    translations) PART_ROOTS="$PART_ROOTS translations" ;;
-    examples) PART_ROOTS="$PART_ROOTS examples" ;;
-    *) ;;
-    esac
-done
-
-if [ "$CFG_DEV" = "yes" ]; then
-    PART_ROOTS="$PART_ROOTS tests"
-fi
-
-echo "Creating makefiles. Please wait..."
-for file in .projects .projects.3; do
-    [ '!' -f "$file" ] && continue
-    for a in `cat $file`; do
-        IN_ROOT=no
-	for r in $PART_ROOTS; do
-	    if echo "$a" | grep "^$r" >/dev/null 2>&1 || echo "$a" | grep "^$relpath/$r" >/dev/null 2>&1; then
-		IN_ROOT=yes
-		break
-            fi
-	done
-        [ "$IN_ROOT" = "no" ] && continue
-
-        case $a in
-        *winmain/winmain.pro)
-            if [ "$CFG_NOPROCESS" = "yes" ] || [ "$XPLATFORM_MINGW" != "yes" ]; then
-                continue
-            fi
-            SPEC=$XQMAKESPEC ;;
-        */qmake/qmake.pro) continue ;;
-        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*tools/qdoc*|*tools/qdbusxml2cpp*|*tools/qdbuscpp2xml*) SPEC=$QMAKESPEC ;;
-        *) if [ "$CFG_NOPROCESS" = "yes" ]; then
-              continue
-           else
-              SPEC=$XQMAKESPEC
-           fi;;
-        esac
-        dir=`dirname "$a" | sed -e "s;$sepath;.;g"`
-        test -d "$dir" || mkdir -p "$dir"
-        OUTDIR="$outpath/$dir"
-        if [ -f "${OUTDIR}/Makefile" ] && [ "$OPT_FAST" = "yes" ]; then
-            # fast configure - the makefile exists, skip it
-            # since the makefile exists, it was generated by qmake, which means we
-            # can skip it, since qmake has a rule to regenerate the makefile if the .pro
-            # file changes...
-            [ "$OPT_VERBOSE" = "yes" ] && echo "  skipping $a"
-            continue;
-        fi
-        QMAKE_SPEC_ARGS="-spec $SPEC"
-        echo $ECHO_N "  for $a$ECHO_C"
-
-        QMAKE="$outpath/bin/qmake"
-	QMAKE_ARGS="$QMAKE_SWITCHES $QMAKE_SPEC_ARGS"
-        if [ "$file" = ".projects.3" ]; then
-            echo " (fast)"
-
-            cat >"${OUTDIR}/Makefile" <<EOF
-# ${OUTDIR}/Makefile: generated by configure
+                mkdir -p "$outpath/$d" || exit
+                cat > "$outpath/$d/Makefile" <<EOF || exit
+# $outpath/$d/Makefile: generated by configure
 #
 # WARNING: This makefile will be replaced with a real makefile.
 # All changes made to this file will be lost.
-EOF
-            [ "$CFG_DEBUG_RELEASE" = "no" ] && echo "first_target: first" >>${OUTDIR}/Makefile
 
-            cat >>"${OUTDIR}/Makefile" <<EOF
 QMAKE = "$QMAKE"
+
+$first_tgt
 all clean install qmake first Makefile: FORCE
-	\$(QMAKE) $QMAKE_ARGS -o "$OUTDIR" "$a"
-	cd "$OUTDIR"
+	\$(QMAKE) $QMAKE_SWITCHES "$relpath/$p"
 	\$(MAKE) \$@
-
 FORCE:
-
 EOF
-        else
-            if [ "$OPT_VERBOSE" = "yes" ]; then
-                echo " (`basename $SPEC`)"
-                echo "$QMAKE" $QMAKE_ARGS -o "$OUTDIR" "$a"
-	    else
-		echo
-            fi
-
-            [ -f "${OUTDIR}/Makefile" ] && chmod +w "${OUTDIR}/Makefile"
-            QTDIR="$outpath" "$QMAKE" $QMAKE_ARGS -o "$OUTDIR" "$a"
-       fi
-    done
-done
-rm -f .projects .projects.3
+            done || exit
+            echo "Done"
+        fi
+    fi
+fi
 
 #-------------------------------------------------------------------------------
 # check for platforms that we don't yet know about

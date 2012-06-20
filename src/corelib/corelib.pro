@@ -1,20 +1,17 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET	   = QtCore
-QPRO_PWD   = $$PWD
 QT         =
+CONFIG    += exceptions
 
-CONFIG += module exceptions
 MODULE = core     # not corelib, as per project file
-MODULE_PRI = ../modules/qt_core.pri
+MODULE_CONFIG = moc resources
 
-DEFINES   += QT_BUILD_CORE_LIB QT_NO_USING_NAMESPACE
+DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x67000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 load(qt_module_config)
-
-HEADERS += $$QT_SOURCE_TREE/src/corelib/qtcoreversion.h
 
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
 QMAKE_DOCS_INDEX = ../../doc
@@ -50,3 +47,27 @@ QMAKE_LIBS += $$QMAKE_LIBS_CORE
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtCore.dynlist
 
 contains(DEFINES,QT_EVAL):include(eval.pri)
+
+load(moc)
+load(resources)
+
+moc_dir.name = moc_location
+moc_dir.variable = QMAKE_MOC
+
+rcc_dir.name = rcc_location
+rcc_dir.variable = QMAKE_RCC
+
+QMAKE_PKGCONFIG_VARIABLES += moc_dir rcc_dir
+
+# These are aliens, but Linguist installs no own module, and it fits here best.
+
+qtPrepareTool(QMAKE_LUPDATE, lupdate)
+qtPrepareTool(QMAKE_LRELEASE, lrelease)
+
+lupdate_dir.name = lupdate_location
+lupdate_dir.variable = QMAKE_LUPDATE
+
+lrelease_dir.name = lrelease_location
+lrelease_dir.variable = QMAKE_LRELEASE
+
+QMAKE_PKGCONFIG_VARIABLES += lupdate_dir lrelease_dir

@@ -1,4 +1,4 @@
-!contains(TEMPLATE,subdirs) {
+have_target {
 
 check.files                =
 check.path                 = .
@@ -128,7 +128,7 @@ contains(INSTALLS, target) {
     }
 }
 
-}
+} # have_target
 
 defineTest(installTestHelperApp) {
     # args: relativeSource, relativeDestination, targetName

@@ -1,24 +1,17 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET     = QtWidgets
-QPRO_PWD   = $$PWD
-QT = core core-private gui gui-private platformsupport-private
+QT = core-private gui-private
+MODULE_CONFIG = uic
 
-CONFIG += module
-MODULE_PRI = ../modules/qt_widgets.pri
-
-DEFINES   += QT_BUILD_WIDGETS_LIB QT_NO_USING_NAMESPACE
+DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
-
-unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
-
-HEADERS += $$QT_SOURCE_TREE/src/widgets/qtwidgetsversion.h
 
 QMAKE_DOCS = $$PWD/doc/qtwidgets.qdocconf
 QMAKE_DOCS_INDEX = ../../doc
 
-include(../qbase.pri)
+load(qt_module_config)
 
 #platforms
 mac:include(kernel/mac.pri)
@@ -56,3 +49,10 @@ INCLUDEPATH += ../3rdparty/harfbuzz/src
 win32:!contains(QT_CONFIG, directwrite) {
     DEFINES += QT_NO_DIRECTWRITE
 }
+
+load(uic)
+
+uic_dir.name = uic_location
+uic_dir.variable = QMAKE_UIC
+
+QMAKE_PKGCONFIG_VARIABLES += uic_dir

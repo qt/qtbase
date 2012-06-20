@@ -21,15 +21,15 @@ contains(PROJECTS, qmake) {
 }
 contains(PROJECTS, libs) {
     PROJECTS -= libs
-    include(src/src.pro)
+    SUBDIRS += src
 }
 contains(PROJECTS, examples) {
     PROJECTS -= examples
-    SUBDIRS += examples
+    !fast:SUBDIRS += examples
 }
 contains(PROJECTS, tests) {
     PROJECTS -= tests
-    SUBDIRS += module_qtbase_tests
+    !fast:SUBDIRS += module_qtbase_tests
 }
 !isEmpty(PROJECTS) {
     message(Unknown PROJECTS: $$PROJECTS)
@@ -118,15 +118,17 @@ INSTALLS += configtests
 mkspecs.path = $$[QT_HOST_DATA]/mkspecs
 mkspecs.files = $$OUT_PWD/mkspecs/qconfig.pri $$OUT_PWD/mkspecs/qmodule.pri $$OUT_PWD/mkspecs/qdevice.pri $$files($$PWD/mkspecs/*)
 mkspecs.files -= $$PWD/mkspecs/modules
-unix { 
-   DEFAULT_QMAKESPEC = $$QMAKESPEC
-   DEFAULT_QMAKESPEC ~= s,^.*mkspecs/,,g
-   mkspecs.commands += $(DEL_FILE) $(INSTALL_ROOT)$$mkspecs.path/default; $(SYMLINK) $$DEFAULT_QMAKESPEC $(INSTALL_ROOT)$$mkspecs.path/default
-   mkspecs.files -= $$PWD/mkspecs/default
-}
-win32:!equals(OUT_PWD, $$PWD) {
+unix {
+    DEFAULT_QMAKESPEC = $$replace(QMAKESPEC, ^.*mkspecs/, )
+    DEFAULT_XQMAKESPEC = $$replace(XQMAKESPEC, ^.*mkspecs/, )
+    mkspecs.commands = \
+        $(DEL_FILE) $(INSTALL_ROOT)$$mkspecs.path/default-host $(INSTALL_ROOT)$$mkspecs.path/default; \
+        $(SYMLINK) $$DEFAULT_QMAKESPEC $(INSTALL_ROOT)$$mkspecs.path/default-host && \
+        $(SYMLINK) $$DEFAULT_XQMAKESPEC $(INSTALL_ROOT)$$mkspecs.path/default
+    mkspecs.files -= $$PWD/mkspecs/default-host $$PWD/mkspecs/default
+} else:!equals(OUT_PWD, $$PWD) {
     # When shadow building on Windows, the default mkspec only exists in the build tree.
-    mkspecs.files += $$OUT_PWD/mkspecs/default
+    mkspecs.files += $$OUT_PWD/mkspecs/default-host $$OUT_PWD/mkspecs/default
 }
 INSTALLS += mkspecs
 

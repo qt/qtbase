@@ -1,9 +1,6 @@
 QT += widgets testlib
 
-TEMPLATE = app
 TARGET = tst_bench_qanimation
-DEPENDPATH += .
-INCLUDEPATH += .
 
 CONFIG += release
 #CONFIG += debug

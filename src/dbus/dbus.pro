@@ -1,14 +1,11 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET = QtDBus
-QPRO_PWD = $$PWD
 QT = core-private
+CONFIG += link_pkgconfig
+MODULE_CONFIG = dbusadaptors dbusinterfaces
 
-CONFIG += link_pkgconfig module
-MODULE_PRI = ../modules/qt_dbus.pri
-
-DEFINES += QT_BUILD_DBUS_LIB \
-    DBUS_API_SUBJECT_TO_CHANGE
+DEFINES += DBUS_API_SUBJECT_TO_CHANGE
 QMAKE_CXXFLAGS += $$QT_CFLAGS_DBUS
 contains(QT_CONFIG, dbus-linked) { 
     LIBS_PRIVATE += $$QT_LIBS_DBUS
@@ -16,12 +13,6 @@ contains(QT_CONFIG, dbus-linked) {
 }
 
 # INCLUDEPATH += .
-unix|win32-g++* {
-    QMAKE_PKGCONFIG_DESCRIPTION = Qt \
-        DBus \
-        module
-    QMAKE_PKGCONFIG_REQUIRES = QtCore
-}
 win32 { 
     wince*:LIBS_PRIVATE += -lws2
     else:LIBS_PRIVATE += -lws2_32 \
@@ -32,8 +23,6 @@ win32 {
     else:LIBS_PRIVATE += -ldbus-1
 }
 load(qt_module_config)
-
-HEADERS += $$QT_SOURCE_TREE/src/dbus/qtdbusversion.h
 
 QMAKE_DOCS = $$PWD/doc/qtdbus.qdocconf
 QMAKE_DOCS_INDEX = ../../doc

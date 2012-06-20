@@ -57,7 +57,6 @@ use File::Path 'mkpath';
 use File::Spec::Functions qw/ :ALL /;
 use File::Temp qw/ :POSIX /;
 use Cwd;
-use Cwd 'abs_path';
 use Config;
 
 # Which file to look for the %configtests variable in
@@ -77,9 +76,8 @@ my $generator = $ARGV[3];
 
 our %configtests;
 
-my $absOutDir = abs_path($out_basedir);
-my $qmakeCachePath = catfile($absOutDir, '.qmake.cache');
-my $configLogPath = catfile($absOutDir, 'config.log');
+my $qmakeCachePath = catfile($out_basedir, '.qmake.cache');
+my $configLogPath = catfile($out_basedir, 'config.log');
 
 my $QMAKE = catfile($qtbasedir, "bin", ($^O =~ /win32/i) ? 'qmake.exe' : 'qmake');
 if (!-x $QMAKE) {
@@ -241,13 +239,13 @@ sub executeTest {
 
     my @QMAKEARGS = ('CONFIG-=debug_and_release', 'CONFIG-=app_bundle');
 
-    my $testOutDir = catdir($absOutDir, 'config.tests', $testName);
+    my $testOutDir = catdir($out_basedir, 'config.tests', $testName);
 
     # Since we might be cross compiling, look for barename (Linux) and .exe (Win32/Symbian)
     my $testOutFile1 = catfile($testOutDir, "$testName.exe");
     my $testOutFile2 = catfile($testOutDir, $testName);
 
-    if (abs_path($basedir) eq abs_path($out_basedir)) {
+    if ($basedir eq $out_basedir) {
         chdir $testOutDir or die "\nUnable to change to config test directory ($testOutDir): $!\n";
     } else { # shadow build
         if (! -e $testOutDir) {
@@ -315,7 +313,7 @@ loadConfigTests();
 # Only do this step for modules that have config tests
 # (qtbase doesn't). We try to preserve existing contents (and furthermore
 # only write to .qmake.cache if the tests change)
-if (abs_path($out_basedir) ne abs_path($qtbasedir)) {
+if ($out_basedir ne $qtbasedir) {
     # Read any existing content
     my $existingContents = fileContents($qmakeCachePath);
     my %oldTestResults;

@@ -250,7 +250,8 @@ void tst_qmake::subdir_via_pro_file_extra_target()
 void tst_qmake::functions()
 {
     QString workDir = base_path + "/testdata/functions";
-    QVERIFY( test_compiler.qmake( workDir, "functions" ));
+    QString buildDir = base_path + "/testdata/functions_build";
+    QVERIFY( test_compiler.qmake( workDir, "functions", buildDir ));
 }
 
 void tst_qmake::operators()

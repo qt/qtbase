@@ -1,117 +1,92 @@
 TEMPLATE = subdirs
 
-# this order is important
-unset(SRC_SUBDIRS)
-win32:SRC_SUBDIRS += src_winmain
-!wince*:include(tools/tools.pro)
-SRC_SUBDIRS += src_corelib
-SRC_SUBDIRS += src_network src_sql src_gui src_xml src_testlib src_platformsupport src_widgets
-!wince*:SRC_SUBDIRS += src_printsupport
-nacl: SRC_SUBDIRS -= src_network src_testlib
-contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
-contains(QT_CONFIG, concurrent):SRC_SUBDIRS += src_concurrent
-
-contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
-
-contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
-SRC_SUBDIRS += src_plugins
+src_tools.subdir = $$PWD/tools
+src_tools.target = sub-tools
 
 src_winmain.subdir = $$PWD/winmain
 src_winmain.target = sub-winmain
+src_winmain.depends = sub-corelib  # just for the module .pri file
+
 src_corelib.subdir = $$PWD/corelib
 src_corelib.target = sub-corelib
+
 src_xml.subdir = $$PWD/xml
 src_xml.target = sub-xml
+src_xml.depends = src_corelib
+
 src_dbus.subdir = $$PWD/dbus
 src_dbus.target = sub-dbus
-src_gui.subdir = $$PWD/gui
-src_gui.target = sub-gui
-src_sql.subdir = $$PWD/sql
-src_sql.target = sub-sql
-src_network.subdir = $$PWD/network
-src_network.target = sub-network
-src_opengl.subdir = $$PWD/opengl
-src_opengl.target = sub-opengl
-src_plugins.subdir = $$PWD/plugins
-src_plugins.target = sub-plugins
-src_widgets.subdir = $$PWD/widgets
-src_widgets.target = sub-widgets
-!wince*: {
-    src_printsupport.subdir = $$PWD/printsupport
-    src_printsupport.target = sub-printsupport
-}
-src_testlib.subdir = $$PWD/testlib
-src_testlib.target = sub-testlib
-src_platformsupport.subdir = $$PWD/platformsupport
-src_platformsupport.target = sub-platformsupport
+src_dbus.depends = src_corelib
+
 src_concurrent.subdir = $$PWD/concurrent
 src_concurrent.target = sub-concurrent
+src_concurrent.depends = src_corelib
 
+src_sql.subdir = $$PWD/sql
+src_sql.target = sub-sql
+src_sql.depends = src_corelib
 
-#CONFIG += ordered
-!wince*:!ordered {
-   src_corelib.depends = src_tools_moc src_tools_rcc
-   src_gui.depends = src_corelib
-   src_printsupport.depends = src_corelib src_gui src_widgets
-   src_platformsupport.depends = src_corelib src_gui src_network
-   src_widgets.depends = src_corelib src_gui src_tools_uic
-   src_xml.depends = src_corelib
-   src_concurrent.depends = src_corelib
-   src_dbus.depends = src_corelib
-   src_network.depends = src_corelib
-   src_opengl.depends = src_gui src_widgets
-   src_sql.depends = src_corelib
-   src_testlib.depends = src_corelib src_gui src_widgets
-   src_plugins.depends = src_gui src_sql src_xml src_platformsupport
+src_network.subdir = $$PWD/network
+src_network.target = sub-network
+src_network.depends = src_corelib
+
+src_testlib.subdir = $$PWD/testlib
+src_testlib.target = sub-testlib
+src_testlib.depends = src_corelib   # src_gui & src_widgets are not build-depends
+
+src_gui.subdir = $$PWD/gui
+src_gui.target = sub-gui
+src_gui.depends = src_corelib
+
+src_platformsupport.subdir = $$PWD/platformsupport
+src_platformsupport.target = sub-platformsupport
+src_platformsupport.depends = src_corelib src_gui src_network
+
+src_widgets.subdir = $$PWD/widgets
+src_widgets.target = sub-widgets
+src_widgets.depends = src_corelib src_gui
+
+src_opengl.subdir = $$PWD/opengl
+src_opengl.target = sub-opengl
+src_opengl.depends = src_gui src_widgets
+
+src_printsupport.subdir = $$PWD/printsupport
+src_printsupport.target = sub-printsupport
+src_printsupport.depends = src_corelib src_gui src_widgets
+
+src_plugins.subdir = $$PWD/plugins
+src_plugins.target = sub-plugins
+src_plugins.depends = src_sql src_xml src_network src_platformsupport
+
+# this order is important
+!wince* {
+    SUBDIRS += src_tools
+    src_corelib.depends += src_tools
 }
-
-contains(QT_CONFIG, no-widgets): SRC_SUBDIRS -= src_opengl src_widgets src_printsupport
-
-# This creates a sub-src rule
-sub_src_target.CONFIG = recursive
-sub_src_target.recurse = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
-sub_src_target.target = sub-src
-sub_src_target.recurse_target =
-QMAKE_EXTRA_TARGETS += sub_src_target
-
-# This gives us a top level debug/release
-for(subname, SRC_SUBDIRS) {
-   subdir = $$subname
-   !isEmpty($${subname}.subdir):subdir = $$eval($${subname}.subdir)
-   subpro = $$subdir/$${basename(subdir)}.pro
-   !exists($$subpro):next()
-   subtarget = $$replace(subdir, [^A-Za-z0-9], _)
-   reg_src = $$replace(QT_SOURCE_TREE, \\\\, \\\\)
-   subdir = $$replace(subdir, $$reg_src, $$QT_BUILD_TREE)
-   subdir = $$replace(subdir, /, $$QMAKE_DIR_SEP)
-   subdir = $$replace(subdir, \\\\, $$QMAKE_DIR_SEP)
-   include($$subpro, SUB)
-   !isEqual(subname, src_tools_bootstrap):if(isEqual(SUB.TEMPLATE, lib) | isEqual(SUB.TEMPLATE, subdirs)):!separate_debug_info {
-       #debug
-       debug-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS
-       debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) debug)
-       EXTRA_DEBUG_TARGETS += debug-$${subtarget}
-       QMAKE_EXTRA_TARGETS += debug-$${subtarget}
-       #release
-       release-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_RELEASE_TARGETS
-       release-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) release)
-       EXTRA_RELEASE_TARGETS += release-$${subtarget}
-       QMAKE_EXTRA_TARGETS += release-$${subtarget}
-    } else { #do not have a real debug target/release
-       #debug
-       debug-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS
-       debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) first)
-       EXTRA_DEBUG_TARGETS += debug-$${subtarget}
-       QMAKE_EXTRA_TARGETS += debug-$${subtarget}
-       #release
-       release-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_RELEASE_TARGETS
-       release-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) first)
-       EXTRA_RELEASE_TARGETS += release-$${subtarget}
-       QMAKE_EXTRA_TARGETS += release-$${subtarget}
-   }
+SUBDIRS += src_corelib
+win32:SUBDIRS += src_winmain
+SUBDIRS += src_network src_sql src_xml src_testlib
+contains(QT_CONFIG, dbus) {
+    SUBDIRS += src_dbus
+    src_plugins.depends += src_dbus
 }
-debug.depends = $$EXTRA_DEBUG_TARGETS
-release.depends = $$EXTRA_RELEASE_TARGETS
-QMAKE_EXTRA_TARGETS += debug release
+contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
+!contains(QT_CONFIG, no-gui) {
+    SUBDIRS += src_gui
+    src_plugins.depends += src_gui
+    !contains(QT_CONFIG, no-widgets) {
+        SUBDIRS += src_platformsupport src_widgets
+        src_plugins.depends += src_platformsupport src_widgets
+        contains(QT_CONFIG, opengl(es1|es2)?) {
+            SUBDIRS += src_opengl
+            src_plugins.depends += src_opengl
+        }
+        !wince* {
+            SUBDIRS += src_printsupport
+            src_plugins.depends += src_printsupport
+        }
+    }
+}
+SUBDIRS += src_plugins
 
-SUBDIRS += $$SRC_SUBDIRS
+nacl: SUBDIRS -= src_network src_testlib

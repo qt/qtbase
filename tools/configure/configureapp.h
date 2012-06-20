@@ -157,9 +157,8 @@ private:
     int descIndent;
     int outputWidth;
 
-    bool useUnixSeparators;
-    QString fixSeparators(const QString &somePath, bool escape = false);
-    QString escapeSeparators(const QString &somePath);
+    QString formatPath(const QString &path);
+    QString formatPaths(const QStringList &paths);
     bool filesDiffer(const QString &file1, const QString &file2);
 
     bool findFile(const QString &fileName);

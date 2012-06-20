@@ -1,3 +1,0 @@
-QT += sql
-
-qtAddModule(help, true)

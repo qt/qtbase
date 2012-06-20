@@ -1,20 +1,13 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET     = QtConcurrent
-QPRO_PWD   = $$PWD
 QT         = core-private
+CONFIG    += exceptions
 
-CONFIG += module exceptions
-MODULE_PRI = ../modules/qt_concurrent.pri
-
-DEFINES   += QT_BUILD_CONCURRENT_LIB QT_NO_USING_NAMESPACE
+DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x66000000
 
-unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
-
 load(qt_module_config)
-
-HEADERS += $$QT_SOURCE_TREE/src/concurrent/qtconcurrentversion.h
 
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 

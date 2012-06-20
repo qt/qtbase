@@ -1,4 +1,3 @@
-defined(qtPrepareTool)|load(qt_functions) ### Qt 5: see default_pre.prf
 qtPrepareTool(QMAKE_UIC3, uic3)
 qtPrepareTool(QMAKE_UIC, uic)
 
@@ -32,13 +31,6 @@ isEmpty(QMAKE_MOD_UIC):QMAKE_MOD_UIC = ui_
     contains(QMAKE_HOST.os,Windows):ui_dir_short ~= s,^.:,/,
     contains(ui_dir_short, ^[/\\\\].*):INCLUDEPATH += $$UI_HEADERS_DIR
     else:INCLUDEPATH += $$OUT_PWD/$$UI_HEADERS_DIR
-}
-
-# Backwards compatibility: Make shadow builds with default UI_DIR work
-# if the user did not add the source dir explicitly.
-equals(UI_DIR, .) {
-    CONFIG -= include_source_dir
-    CONFIG = include_source_dir $$CONFIG
 }
 
 uic3 {

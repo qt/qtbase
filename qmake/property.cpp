@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QStringList qmake_mkspec_paths(); //project.cpp
+
 static const struct {
     const char *name;
     QLibraryInfo::LibraryLocation loc;
@@ -77,7 +79,8 @@ QMakeProperty::QMakeProperty() : settings(0)
 {
     for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++) {
         QString name = QString::fromLatin1(propList[i].name);
-        QString val = QLibraryInfo::rawLocation(propList[i].loc);
+        m_values[name + "/get"] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::EffectivePaths);
+        QString val = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::FinalPaths);
         if (!propList[i].raw) {
             m_values[name] = QLibraryInfo::location(propList[i].loc);
             name += "/raw";
@@ -115,7 +118,7 @@ QMakeProperty::value(QString v, bool just_check)
     if (!val.isNull())
         return val;
     else if(v == "QMAKE_MKSPECS")
-        return Option::mkspecPaths().join(Option::dirlist_sep);
+        return qmake_mkspec_paths().join(Option::dirlist_sep);
     else if(v == "QMAKE_VERSION")
         return qmake_version();
 #ifdef QT_VERSION_STR
@@ -212,9 +215,12 @@ QMakeProperty::exec()
             foreach (QString prop, specialProps) {
                 QString val = value(prop);
                 QString pval = value(prop + "/raw");
+                QString gval = value(prop + "/get");
                 fprintf(stdout, "%s:%s\n", prop.toLatin1().constData(), val.toLatin1().constData());
                 if (!pval.isEmpty() && pval != val)
                     fprintf(stdout, "%s/raw:%s\n", prop.toLatin1().constData(), pval.toLatin1().constData());
+                if (!gval.isEmpty() && gval != (pval.isEmpty() ? val : pval))
+                    fprintf(stdout, "%s/get:%s\n", prop.toLatin1().constData(), gval.toLatin1().constData());
             }
             return true;
         }

@@ -1,20 +1,12 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET     = QtXml
-QPRO_PWD   = $$PWD
 QT         = core-private
 
-CONFIG += module
-MODULE_PRI = ../modules/qt_xml.pri
-
-DEFINES   += QT_BUILD_XML_LIB QT_NO_USING_NAMESPACE
+DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x61000000
 
-unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
-
 load(qt_module_config)
-
-HEADERS += $$QT_SOURCE_TREE/src/xml/qtxmlversion.h
 
 QMAKE_DOCS = $$PWD/doc/qtxml.qdocconf
 QMAKE_DOCS_INDEX = ../../doc

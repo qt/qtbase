@@ -31,42 +31,6 @@
     "qtconcurrentmap.h" => "QtConcurrentMap",
     "qtconcurrentfilter.h" => "QtConcurrentFilter",
     "qtconcurrentrun.h" => "QtConcurrentRun",
-    "qtcoreversion.h" => "QtCoreVersion",
-    "qtdbusversion.h" => "QtDBusVersion",
-    "qtguiversion.h" => "QtGuiVersion",
-    "qtnetworkversion.h" => "QtNetworkVersion",
-    "qtopenglversion.h" => "QtOpenGLVersion",
-    "qtsqlversion.h" => "QtSqlVersion",
-    "qttestversion.h" => "QtTestVersion",
-    "qtxmlversion.h" => "QtXmlVersion",
-    "qtwidgetsversion.h" => "QtWidgetsVersion",
-    "qtprintsupportversion.h" => "QtPrintSupportVersion",
-    "qtconcurrentversion.h" => "QtConcurrentVersion",
-    "qtplatformsupportversion.h" => "QtPlatformSupportVersion",
-);
-%mastercontent = (
-    "core" => "#include <QtCore/QtCore>\n",
-    "gui" => "#include <QtGui/QtGui>\n",
-    "printsupport" => "#include <QtPrintSupport/QtPrintSupport>\n",
-    "widgets" => "#include <QtWidgets/QtWidgets>\n",
-    "network" => "#include <QtNetwork/QtNetwork>\n",
-    "opengl" => "#include <QtOpenGL/QtOpenGL>\n",
-    "xml" => "#include <QtXml/QtXml>\n",
-    "concurrent" => "#include <QtConcurrent/QtConcurrent>\n",
-);
-%modulepris = (
-    "QtCore" => "$basedir/src/modules/qt_core.pri",
-    "QtDBus" => "$basedir/src/modules/qt_dbus.pri",
-    "QtGui" => "$basedir/src/modules/qt_gui.pri",
-    "QtPrintSupport" => "$basedir/src/modules/qt_printsupport.pri",
-    "QtWidgets" => "$basedir/src/modules/qt_widgets.pri",
-    "QtNetwork" => "$basedir/src/modules/qt_network.pri",
-    "QtOpenGL" => "$basedir/src/modules/qt_opengl.pri",
-    "QtSql" => "$basedir/src/modules/qt_sql.pri",
-    "QtTest" => "$basedir/src/modules/qt_testlib.pri",
-    "QtXml" => "$basedir/src/modules/qt_xml.pri",
-    "QtConcurrent" => "$basedir/src/modules/qt_concurrent.pri",
-    "QtPlatformSupport" => "$basedir/src/modules/qt_platformsupport.pri",
 );
 %deprecatedheaders = (
     "QtGui" =>  {
@@ -152,11 +116,11 @@
     }
 );
 
-@ignore_for_master_contents = ( "qt.h", "qpaintdevicedefs.h" );
 @ignore_for_include_check = ( "qsystemdetection.h", "qcompilerdetection.h", "qprocessordetection.h" );
 @ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qt_windows.h" );
 @ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h" );
 @ignore_for_qt_module_check = ( "$modules{QtCore}/arch", "$modules{QtCore}/global", "$modules{QtTest}", "$modules{QtDBus}" );
+%inject_headers = ( "$basedir/src/corelib/global" => [ "qconfig.h" ] );
 # Module dependencies.
 # Every module that is required to build this module should have one entry.
 # Each of the module version specifiers can take one of the following values:

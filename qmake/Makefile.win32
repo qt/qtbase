@@ -61,7 +61,7 @@ OBJS        = project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw
               makefiledeps.obj metamakefile.obj xmloutput.obj pbuilder_pbx.obj \
               borland_bmake.obj msvc_nmake.obj msvc_vcproj.obj msvc_vcxproj.obj \
               msvc_objectmodel.obj msbuild_objectmodel.obj registry.obj \
-              gbuild.obj
+              gbuild.obj cesdkhandler.obj
 
 !IFDEF QMAKE_OPENSOURCE_EDITION
 CFLAGS      = $(CFLAGS) -DQMAKE_OPENSOURCE_EDITION

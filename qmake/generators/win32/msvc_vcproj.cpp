@@ -649,12 +649,15 @@ nextfile:
     t << _slnProjConfBeg;
     for(QList<VcsolutionDepend*>::Iterator it = solution_cleanup.begin(); it != solution_cleanup.end(); ++it) {
         QString platform = is64Bit ? "x64" : "Win32";
+        QString xplatform = platform;
         if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
-            platform = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
-        t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag1).arg(platform) << platform;
-        t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag2).arg(platform) << platform;
-        t << "\n\t\t" << (*it)->uuid << QString(_slnProjRelConfTag1).arg(platform) << platform;
-        t << "\n\t\t" << (*it)->uuid << QString(_slnProjRelConfTag2).arg(platform) << platform;
+            xplatform = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
+        if (!project->isHostBuild())
+            platform = xplatform;
+        t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag1).arg(xplatform) << platform;
+        t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag2).arg(xplatform) << platform;
+        t << "\n\t\t" << (*it)->uuid << QString(_slnProjRelConfTag1).arg(xplatform) << platform;
+        t << "\n\t\t" << (*it)->uuid << QString(_slnProjRelConfTag2).arg(xplatform) << platform;
     }
     t << _slnProjConfEnd;
     t << _slnExtSections;
@@ -858,7 +861,7 @@ void VcprojGenerator::initProject()
     }
 
     vcProject.Keyword = project->first("VCPROJ_KEYWORD");
-    if (project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
+    if (project->isHostBuild() || project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
         vcProject.PlatformName = (is64Bit ? "x64" : "Win32");
     } else {
         vcProject.PlatformName = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
@@ -922,7 +925,7 @@ void VcprojGenerator::initConfiguration()
     if (conf.Name.isEmpty())
         conf.Name = isDebug ? "Debug" : "Release";
     conf.ConfigurationName = conf.Name;
-    if (project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
+    if (project->isHostBuild() || project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
         conf.Name += (is64Bit ? "|x64" : "|Win32");
     } else {
         conf.Name += "|" + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
@@ -948,7 +951,7 @@ void VcprojGenerator::initConfiguration()
     initPreBuildEventTools();
     initPostBuildEventTools();
     // Only deploy for CE projects
-    if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
+    if (!project->isHostBuild() && !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
         initDeploymentTool();
     initPreLinkEventTools();
 
@@ -1084,7 +1087,7 @@ void VcprojGenerator::initPostBuildEventTools()
 
     QString signature = !project->isEmpty("SIGNATURE_FILE") ? var("SIGNATURE_FILE") : var("DEFAULT_SIGNATURE");
     bool useSignature = !signature.isEmpty() && !project->isActiveConfig("staticlib") &&
-                        !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH");
+                        !project->isHostBuild() && !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH");
     if (useSignature) {
         conf.postBuild.CommandLine.prepend(
                 QLatin1String("signtool sign /F ") + signature + QLatin1String(" \"$(TargetPath)\""));
@@ -1572,21 +1575,6 @@ QString VcprojGenerator::fixFilename(QString ofile) const
         }
     }
     return ofile;
-}
-
-QString VcprojGenerator::findTemplate(QString file)
-{
-    QString ret;
-    if(!exists((ret = file)) &&
-       !exists((ret = QString(Option::mkfile::qmakespec + "/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc.net/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc2002/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc2003/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc2005/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc2008/" + file))))
-        return "";
-    debug_msg(1, "Generator: MSVC.NET: Found template \'%s\'", ret.toLatin1().constData());
-    return ret;
 }
 
 void VcprojGenerator::outputVariables()

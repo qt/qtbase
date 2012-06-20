@@ -72,7 +72,6 @@ void warn_msg(QMakeWarn t, const char *fmt, ...);
 struct Option
 {
     //simply global convenience
-    static QString js_ext;
     static QString libtool_ext;
     static QString pkgcfg_ext;
     static QString prf_ext;
@@ -94,7 +93,6 @@ struct Option
     static QString dirlist_sep;
     static QString sysenv_mod;
     static QString pro_ext;
-    static QString mmp_ext;
     static QString res_ext;
     static char field_sep;
     static const char *application_argv0;
@@ -109,8 +107,7 @@ struct Option
     //both of these must be called..
     static int init(int argc=0, char **argv=0); //parse cmdline
     static void applyHostMode();
-    static QStringList mkspecPaths();
-    static bool prepareProject(const QString &pfile);
+    static void prepareProject(const QString &pfile);
     static bool postProcessProject(QMakeProject *);
 
     enum StringFixFlags {
@@ -198,27 +195,28 @@ struct Option
     //QMAKE_GENERATE_MAKEFILE options
     struct mkfile {
         static QString qmakespec;
+        static QString xqmakespec;
         static bool do_cache;
         static bool do_deps;
         static bool do_mocs;
         static bool do_dep_heuristics;
         static bool do_preprocess;
         static bool do_stub_makefile;
-        static QString project_root;
-        static QString project_build_root;
+        static QString source_root;
+        static QString build_root;
         static QString cachefile;
         static int cachefile_depth;
         static QStringList project_files;
         static QString qmakespec_commandline;
+        static QString xqmakespec_commandline;
     };
 
 private:
     static int parseCommandLine(int, char **, int=0);
-    static bool resolveSpec(QString *spec);
 };
 
 inline QString fixEnvVariables(const QString &x) { return Option::fixString(x, Option::FixEnvVars); }
-inline QStringList splitPathList(const QString &paths) { return paths.split(Option::dirlist_sep); }
+inline QStringList splitPathList(const QString &paths) { return paths.isEmpty() ? QStringList() : paths.split(Option::dirlist_sep); }
 
 QT_END_NAMESPACE
 

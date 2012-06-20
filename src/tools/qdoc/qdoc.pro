@@ -1,3 +1,4 @@
+option(host_build)
 TEMPLATE = app
 TARGET = qdoc
 
@@ -11,8 +12,8 @@ DEFINES += QT_NO_TRANSLATION
 INCLUDEPATH += $$QT_SOURCE_TREE/src/tools/qdoc \
                $$QT_SOURCE_TREE/src/tools/qdoc/qmlparser \
                $$QT_BUILD_TREE/include/QtXml \
-               $$QT_BUILD_TREE/include/QtXml/$$QT.xml.VERSION \
-               $$QT_BUILD_TREE/include/QtXml/$$QT.xml.VERSION/QtXml
+               $$QT_BUILD_TREE/include/QtXml/$$QT_VERSION \
+               $$QT_BUILD_TREE/include/QtXml/$$QT_VERSION/QtXml
 
 DEPENDPATH += $$QT_SOURCE_TREE/src/tools/qdoc \
               $$QT_SOURCE_TREE/src/tools/qdoc/qmlparser \
