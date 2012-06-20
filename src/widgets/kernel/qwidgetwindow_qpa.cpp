@@ -162,7 +162,7 @@ bool QWidgetWindow::event(QEvent *event)
     case QEvent::DragMove:
     case QEvent::Drop:
         handleDragEvent(event);
-        break;
+        return true;
 #endif
 
     case QEvent::Expose:
