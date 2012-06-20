@@ -1970,9 +1970,6 @@ FatalSignalHandler::FatalSignalHandler()
 
     for (int i = 0; fatalSignals[i]; ++i) {
         sigaction(fatalSignals[i], &act, &oldact);
-#ifndef Q_WS_QWS
-        // Don't overwrite any non-default handlers
-        // however, we need to replace the default QWS handlers
         if (
 #ifdef SA_SIGINFO
             oldact.sa_flags & SA_SIGINFO ||
@@ -1980,7 +1977,6 @@ FatalSignalHandler::FatalSignalHandler()
             oldact.sa_handler != SIG_DFL) {
             sigaction(fatalSignals[i], &oldact, 0);
         } else
-#endif
         {
             sigaddset(&handledSignals, fatalSignals[i]);
         }

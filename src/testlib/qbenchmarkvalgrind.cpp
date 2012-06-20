@@ -195,13 +195,6 @@ bool QBenchmarkValgrindUtils::runCallgrindSubProcess(const QStringList &origAppA
          << QLatin1String("--quiet")
          << execFile << QLatin1String("-callgrindchild");
 
-#if (defined Q_WS_QWS)
-    // While running the child process, we aren't processing events, and hence aren't
-    // acting as the QWS server. Therefore it's necessary to tell the child to act
-    // as its own server instead of connecting to us.
-    args << QLatin1String("-qws");
-#endif
-
     // pass on original arguments that make sense (e.g. avoid wasting time producing output
     // that will be ignored anyway) ...
     for (int i = 1; i < origAppArgs.size(); ++i) {
