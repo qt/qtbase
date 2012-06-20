@@ -133,7 +133,7 @@ static gboolean timerSourcePrepareHelper(GTimerSource *src, gint *timeout)
 {
     timeval tv = { 0l, 0l };
     if (!(src->processEventsFlags & QEventLoop::X11ExcludeTimers) && src->timerList.timerWait(tv))
-        *timeout = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+        *timeout = (tv.tv_sec * 1000) + ((tv.tv_usec + 999) / 1000);
     else
         *timeout = -1;
 
