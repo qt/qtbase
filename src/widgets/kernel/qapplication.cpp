@@ -56,6 +56,7 @@
 #include "qlayout.h"
 #include "qsessionmanager.h"
 #include "qstyle.h"
+#include "qstyleoption.h"
 #include "qstylefactory.h"
 #include "qtextcodec.h"
 #include "qtranslator.h"
