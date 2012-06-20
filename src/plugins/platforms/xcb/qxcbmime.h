@@ -51,7 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_DRAGANDDROP
+#if !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
 
 class QXcbMime : public QInternalMimeData {
     Q_OBJECT
@@ -69,7 +69,8 @@ public:
                                         const QList<xcb_atom_t> &atoms, QByteArray *requestedEncoding);
 };
 
-#endif // QT_NO_DRAGANDDROP
+#endif // !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
+
 
 QT_END_NAMESPACE
 

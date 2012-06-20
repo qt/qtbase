@@ -69,7 +69,7 @@ class QEventLoop;
 class QMouseEvent;
 class QPlatformDrag;
 
-#ifndef QT_NO_DRAGANDDROP
+#if !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
 
 class Q_GUI_EXPORT QInternalMimeData : public QMimeData
 {
@@ -94,6 +94,10 @@ protected:
     virtual QStringList formats_sys() const = 0;
     virtual QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const = 0;
 };
+
+#endif // !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
+
+#ifndef QT_NO_DRAGANDDROP
 
 class QDragPrivate : public QObjectPrivate
 {

@@ -54,7 +54,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_DRAGANDDROP
+#if !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
 
 QXcbMime::QXcbMime()
     : QInternalMimeData()
@@ -291,6 +291,6 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
     return 0;
 }
 
-#endif // QT_NO_DRAGANDDROP
+#endif // !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
 
 QT_END_NAMESPACE
