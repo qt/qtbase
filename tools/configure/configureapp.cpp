@@ -231,6 +231,15 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QML_DEBUG" ]       = "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
     dictionary[ "DIRECTWRITE" ]     = "no";
+    dictionary[ "NIS" ]             = "no";
+    dictionary[ "NEON" ]            = "no";
+    dictionary[ "LARGE_FILE" ]      = "no";
+    dictionary[ "FONT_CONFIG" ]     = "no";
+    dictionary[ "POSIX_IPC" ]       = "no";
+    dictionary[ "QT_GLIB" ]         = "no";
+
+    //Only used when cross compiling.
+    dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
 
     QString version;
     QFile qglobal_h(sourcePath + "/src/corelib/global/qglobal.h");
@@ -559,6 +568,8 @@ void Configure::parseCmdLine()
             dictionary[ "FREETYPE" ] = "no";
         else if (configCmdLine.at(i) == "-qt-freetype")
             dictionary[ "FREETYPE" ] = "yes";
+        else if (configCmdLine.at(i) == "-system-freetype")
+            dictionary[ "FREETYPE" ] = "system";
 
         // CE- C runtime --------------------------------------------
         else if (configCmdLine.at(i) == "-crt") {
@@ -1123,6 +1134,60 @@ void Configure::parseCmdLine()
             dictionary["DIRECTWRITE"] = "no";
         }
 
+        else if (configCmdLine.at(i) == "-nis") {
+            dictionary["NIS"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-nis") {
+            dictionary["NIS"] = "no";
+        }
+
+        else if (configCmdLine.at(i) == "-cups") {
+            dictionary["QT_CUPS"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-cups") {
+            dictionary["QT_CUPS"] = "no";
+        }
+
+        else if (configCmdLine.at(i) == "-iconv") {
+            dictionary["QT_ICONV"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-iconv") {
+            dictionary["QT_ICONV"] = "no";
+        } else if (configCmdLine.at(i) == "-sun-iconv") {
+            dictionary["QT_ICONV"] = "sun";
+        } else if (configCmdLine.at(i) == "-gnu-iconv") {
+            dictionary["QT_ICONV"] = "gnu";
+        }
+
+        else if (configCmdLine.at(i) == "-neon") {
+            dictionary["NEON"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-neon") {
+            dictionary["NEON"] = "no";
+        }
+
+        else if (configCmdLine.at(i) == "-largefile") {
+            dictionary["LARGE_FILE"] = "yes";
+        }
+
+        else if (configCmdLine.at(i) == "-fontconfig") {
+            dictionary["FONT_CONFIG"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-fontconfig") {
+            dictionary["FONT_CONFIG"] = "no";
+        }
+
+        else if (configCmdLine.at(i) == "-posix-ipc") {
+            dictionary["POSIX_IPC"] = "yes";
+        }
+
+        else if (configCmdLine.at(i) == "-glib") {
+            dictionary["QT_GLIB"] = "yes";
+        }
+
+        else if (configCmdLine.at(i) == "-sysconfdir") {
+            ++i;
+            if (i == argCount)
+                break;
+
+            dictionary["QT_INSTALL_SETTINGS"] = configCmdLine.at(i);
+        }
+
         else {
             dictionary[ "HELP" ] = "yes";
             cout << "Unknown option " << configCmdLine.at(i) << endl;
@@ -1401,6 +1466,11 @@ void Configure::desc(const char *mark_option, const char *mark, const char *opti
 */
 void Configure::applySpecSpecifics()
 {
+    if (!dictionary[ "XQMAKESPEC" ].isEmpty()) {
+        //Disable building tools, docs and translations when cross compiling.
+        nobuildParts << "docs" << "translations" << "tools";
+    }
+
     if (dictionary[ "XQMAKESPEC" ].startsWith("wince")) {
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
@@ -1520,7 +1590,11 @@ bool Configure::displayHelp()
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
                     "[-no-webkit] [-webkit] [-webkit-debug]\n"
-                    "[-no-directwrite] [-directwrite] [-no-widgets] [-icu]\n\n", 0, 7);
+                    "[-no-directwrite] [-directwrite] [-no-widgets] [-icu]\n"
+                    "[-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]\n"
+                    "[-iconv] [-sun-iconv] [-gnu-iconv] [-neon] [-no-neon]\n"
+                    "[-largefile] [-font-config] [-no-fontconfig] [-posix-ipc]\n"
+                    "[-glib] [-sysconfdir <dir>]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1617,6 +1691,28 @@ bool Configure::displayHelp()
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
         desc(                   "-sysroot <dir>",       "Sets <dir> as the target compiler's and qmake's sysroot.");
 
+        desc("NIS",  "no",      "-no-nis",              "Do not build NIS support.");
+        desc("NIS",  "yes",     "-nis",                 "Build NIS support.");
+
+        desc("NEON", "yes",     "-neon",                "Enable the use of NEON instructions.");
+        desc("NEON", "no",      "-no-neon",             "Do not enable the use of NEON instructions.");
+
+        desc("QT_ICONV",    "disable", "-no-iconv",     "Do not enable support for iconv(3).");
+        desc("QT_ICONV",    "yes",     "-iconv",        "Enable support for iconv(3).");
+        desc("QT_ICONV",    "yes",     "-sun-iconv",    "Enable support for iconv(3) using sun-iconv.");
+        desc("QT_ICONV",    "yes",     "-gnu-iconv",    "Enable support for iconv(3) using gnu-libiconv");
+
+        desc("LARGE_FILE",  "yes",     "-largefile",    "Enables Qt to access files larger than 4 GB.");
+
+        desc("FONT_CONFIG", "yes",     "-fontconfig",   "Build with FontConfig support.");
+        desc("FONT_CONFIG", "no",      "-no-fontconfig" "Do not build with FontConfig support.");
+
+        desc("POSIX_IPC",   "yes",     "-posix-ipc",    "Enable POSIX IPC.");
+
+        desc("QT_GLIB",     "yes",     "-glib",         "Enable Glib support.");
+
+        desc("QT_INSTALL_SETTINGS", "auto", "-sysconfdir", "Settings used by Qt programs will be looked for in <dir>.");
+
 #if !defined(EVAL)
         desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}");
         desc(                   "-qtlibinfix <infix>",  "Renames all Qt* libs to Qt*<infix>\n");
@@ -1653,6 +1749,7 @@ bool Configure::displayHelp()
 
         desc("FREETYPE", "no",   "-no-freetype",        "Do not compile in Freetype2 support.");
         desc("FREETYPE", "yes",  "-qt-freetype",        "Use the libfreetype bundled with Qt.");
+        desc("FREETYPE", "yes",  "-system-freetype",    "Use the libfreetype provided by the system.");
 #endif
         // Qt\Windows only options go below here --------------------------------------------------------------------------------
         desc("Qt for Windows only:\n\n");
@@ -2247,6 +2344,8 @@ void Configure::generateOutputVars()
     // Text rendering --------------------------------------------------
     if (dictionary[ "FREETYPE" ] == "yes")
         qtConfig += "freetype";
+    else if (dictionary[ "FREETYPE" ] == "system")
+        qtConfig += "system-freetype";
 
     // Styles -------------------------------------------------------
     if (dictionary[ "STYLE_WINDOWS" ] == "yes")
@@ -2418,6 +2517,30 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "NATIVE_GESTURES" ] == "yes")
         qtConfig += "native-gestures";
+
+    qtConfig += "qpa";
+
+    if (dictionary["NIS"] == "yes")
+        qtConfig += "nis";
+
+    if (dictionary["QT_CUPS"] == "yes")
+        qtConfig += "cups";
+
+    if (dictionary["QT_ICONV"] == "yes")
+        qtConfig += "iconv";
+    else if (dictionary["QT_ICONV"] == "sun")
+        qtConfig += "sun-libiconv";
+    else if (dictionary["QT_ICONV"] == "gnu")
+        qtConfig += "gnu-libiconv";
+
+    if (dictionary["FONT_CONFIG"] == "yes") {
+        qtConfig += "fontconfig";
+        qmakeVars += "QMAKE_CFLAGS_FONTCONFIG =";
+        qmakeVars += "QMAKE_LIBS_FONTCONFIG   = -lfreetype -lfontconfig";
+    }
+
+    if (dictionary["QT_GLIB"] == "yes")
+        qtConfig += "glib";
 
     // We currently have no switch for QtConcurrent, so add it unconditionally.
     qtConfig += "concurrent";
@@ -2637,6 +2760,10 @@ void Configure::generateCachefile()
             moduleStream << " avx2";
         if (dictionary[ "IWMMXT" ] == "yes")
             moduleStream << " iwmmxt";
+        if (dictionary[ "NEON" ] == "yes")
+            moduleStream << " neon";
+        if (dictionary[ "LARGE_FILE" ] == "yes")
+            moduleStream << " largefile";
         moduleStream << endl;
 
         moduleStream.flush();
@@ -3047,6 +3174,19 @@ void Configure::generateConfigfiles()
         if (dictionary["SQL_SQLITE2"] == "yes")      qconfigList += "QT_SQL_SQLITE2";
         if (dictionary["SQL_IBASE"] == "yes")        qconfigList += "QT_SQL_IBASE";
 
+        if (dictionary["POSIX_IPC"] == "yes")        qconfigList += "QT_POSIX_IPC";
+
+        if (dictionary["FONT_CONFIG"] == "no")       qconfigList += "QT_NO_FONTCONFIG";
+
+        if (dictionary["NIS"] == "yes")
+            qconfigList += "QT_NIS";
+        else
+            qconfigList += "QT_NO_NIS";
+
+        if (dictionary["LARGE_FILE"] == "yes")
+            tmpStream << "#define QT_LARGEFILE_SUPPORT 64" << endl;
+
+
         qconfigList.sort();
         for (int i = 0; i < qconfigList.count(); ++i)
             tmpStream << addDefine(qconfigList.at(i));
@@ -3149,14 +3289,20 @@ void Configure::generateConfigfiles()
                   << "    \"qt_hbinpath=" << formatPath(dictionary["QT_HOST_BINS"]) << "\"," << endl
                   << "    \"qt_hdatpath=" << formatPath(dictionary["QT_HOST_DATA"]) << "\"," << endl
                   << "#endif" << endl
-                  << "};" << endl
-                  //<< "static const char qt_configure_settings_path_str [256] = \"qt_stngpath=" << formatPath(dictionary["QT_INSTALL_SETTINGS"]) << "\";" << endl
-                  << endl
+                  << "};" << endl;
+
+        if ((platform() != WINDOWS) && (platform() != WINDOWS_CE))
+            tmpStream << "static const char qt_configure_settings_path_str [256 + 12] = \"qt_stngpath=" << formatPath(dictionary["QT_INSTALL_SETTINGS"]) << "\";" << endl;
+
+        tmpStream << endl
                   << "/* strlen( \"qt_lcnsxxxx\") == 12 */" << endl
                   << "#define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12;" << endl
-                  << "#define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12;" << endl
-                  //<< "#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;" << endl
-                  << endl;
+                  << "#define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12;" << endl;
+
+        if ((platform() != WINDOWS) && (platform() != WINDOWS_CE))
+            tmpStream << "#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;" << endl;
+
+        tmpStream << endl;
 
         tmpStream.flush();
         tmpFile2.flush();
@@ -3247,8 +3393,13 @@ void Configure::displayConfig()
     sout << "SSE4.2 support.............." << dictionary[ "SSE4_2" ] << endl;
     sout << "AVX support................." << dictionary[ "AVX" ] << endl;
     sout << "AVX2 support................" << dictionary[ "AVX2" ] << endl;
+    sout << "NEON support................" << dictionary[ "NEON" ] << endl;
     sout << "IWMMXT support.............." << dictionary[ "IWMMXT" ] << endl;
     sout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
+    sout << "Large File support.........." << dictionary[ "LARGE_FILE" ] << endl;
+    sout << "NIS support................." << dictionary[ "NIS" ] << endl;
+    sout << "Iconv support..............." << dictionary[ "QT_ICONV" ] << endl;
+    sout << "Glib support................" << dictionary[ "QT_GLIB" ] << endl;
     if (dictionary.value(QStringLiteral("OPENGL_ES_2")) == QStringLiteral("yes")) {
         const QString angleDir = dictionary.value(QStringLiteral("ANGLE_DIR"));
         if (!angleDir.isEmpty())
