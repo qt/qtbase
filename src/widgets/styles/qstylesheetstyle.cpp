@@ -5827,10 +5827,6 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
         return;
 
     w->data->fnt = font;
-#if defined(Q_WS_X11)
-    // make sure the font set on this widget is associated with the correct screen
-    //w->data->fnt.x11SetScreen(w->d_func()->xinfo.screen());
-#endif
 
     QEvent e(QEvent::FontChange);
     QApplication::sendEvent(w, &e);
