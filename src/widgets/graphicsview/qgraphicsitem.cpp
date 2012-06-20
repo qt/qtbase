@@ -5554,7 +5554,7 @@ void QGraphicsItemPrivate::clearSubFocus(QGraphicsItem *rootItem, QGraphicsItem 
     \internal
 
     Sets the focusProxy pointer to 0 for all items that have this item as their
-    focusProxy. ### Qt 5: Use QPointer instead.
+    focusProxy.
 */
 void QGraphicsItemPrivate::resetFocusProxy()
 {
