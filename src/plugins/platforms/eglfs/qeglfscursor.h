@@ -83,10 +83,9 @@ protected:
         QSize size; // size of the cursor
         QPoint hotSpot;
         QImage customCursorImage;
+        QPoint pos; // current cursor position
         uint customCursorTexture;
     } m_cursor;
-
-    QPoint m_pos; // current cursor position
 
 private:
     void createShaderPrograms();

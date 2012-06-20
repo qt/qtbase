@@ -50,7 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 QEglFSCursor::QEglFSCursor(QEglFSScreen *screen)
-    : m_screen(screen), m_pos(0, 0), m_program(0), m_vertexCoordEntry(0), m_textureCoordEntry(0), m_textureEntry(0)
+    : m_screen(screen), m_program(0), m_vertexCoordEntry(0), m_textureCoordEntry(0), m_textureEntry(0)
 {
     initCursorAtlas();
 
@@ -224,23 +224,23 @@ bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
 
 void QEglFSCursor::update(const QRegion &rgn)
 {
-    QWindowSystemInterface::handleSynchronousExposeEvent(m_screen->topLevelAt(m_pos), rgn);
+    QWindowSystemInterface::handleSynchronousExposeEvent(m_screen->topLevelAt(m_cursor.pos), rgn);
 }
 
 QRect QEglFSCursor::cursorRect() const
 {
-    return QRect(m_pos - m_cursor.hotSpot, m_cursor.size);
+    return QRect(m_cursor.pos - m_cursor.hotSpot, m_cursor.size);
 }
 
 QPoint QEglFSCursor::pos() const
 {
-    return m_pos;
+    return m_cursor.pos;
 }
 
 void QEglFSCursor::setPos(const QPoint &pos)
 {
     const QRect oldCursorRect = cursorRect();
-    m_pos = pos;
+    m_cursor.pos = pos;
     update(oldCursorRect | cursorRect());
 }
 
@@ -249,7 +249,7 @@ void QEglFSCursor::pointerEvent(const QMouseEvent &event)
     if (event.type() != QEvent::MouseMove)
         return;
     const QRect oldCursorRect = cursorRect();
-    m_pos = event.pos();
+    m_cursor.pos = event.pos();
     update(oldCursorRect | cursorRect());
 }
 

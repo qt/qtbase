@@ -206,14 +206,14 @@ public:
     }
 
     void setPos(const QPoint &pos) Q_DECL_OVERRIDE {
-        m_pos = pos;
+        m_cursor.pos = pos;
         moveDispmanxLayer(m_window, cursorRect().topLeft());
     }
 
     void pointerEvent(const QMouseEvent &event) Q_DECL_OVERRIDE {
         if (event.type() != QEvent::MouseMove)
             return;
-        m_pos = event.pos();
+        m_cursor.pos = event.pos();
         moveDispmanxLayer(m_window, cursorRect().topLeft());
     }
 
