@@ -242,7 +242,7 @@ void QMessageBoxPrivate::init(const QString &title, const QString &text)
     label->setOpenExternalLinks(true);
 #if defined(Q_WS_MAC)
     label->setContentsMargins(16, 0, 0, 0);
-#elif !defined(Q_WS_QWS)
+#else
     label->setContentsMargins(2, 0, 0, 0);
     label->setIndent(9);
 #endif
@@ -307,7 +307,7 @@ void QMessageBoxPrivate::updateSize()
         return;
 
     QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
-#if defined(Q_WS_QWS) || defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE)
     // the width of the screen, less the window border.
     int hardLimit = screenSize.width() - (q->frameGeometry().width() - q->geometry().width());
 #else
@@ -318,8 +318,6 @@ void QMessageBoxPrivate::updateSize()
 #endif
 #ifdef Q_WS_MAC
     int softLimit = qMin(screenSize.width()/2, 420);
-#elif defined(Q_WS_QWS)
-    int softLimit = qMin(hardLimit, 500);
 #else
     // note: ideally on windows, hard and soft limits but it breaks compat
 #ifndef Q_OS_WINCE

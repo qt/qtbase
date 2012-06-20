@@ -207,7 +207,7 @@ bool QDockWidgetLayout::nativeWindowDeco() const
 
 bool QDockWidgetLayout::nativeWindowDeco(bool floating) const
 {
-#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_WINCE)
+#if defined(Q_WS_X11) || defined(Q_OS_WINCE)
     Q_UNUSED(floating);
     return false;
 #else

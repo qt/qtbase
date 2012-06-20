@@ -100,11 +100,6 @@ extern QSysInfo::WinVersion qt_winver;
 #elif defined (Q_OS_MAC)
 extern QSysInfo::MacVersion qt_macver;
 #endif
-#if defined(Q_WS_QWS)
-class QWSManager;
-class QDirectPainter;
-struct QWSServerCleaner { ~QWSServerCleaner(); };
-#endif
 
 typedef QHash<QByteArray, QFont> FontHash;
 FontHash *qt_app_fonts_hash();
@@ -131,9 +126,6 @@ public:
     static bool x11_apply_settings();
 #endif
     static void reset_instance_pointer();
-#elif defined(Q_WS_QWS)
-    static bool qws_apply_settings();
-    static QWidget *findWidget(const QObjectList&, const QPoint &, bool rec);
 #endif
 #ifdef Q_OS_WINCE
     static int autoMaximizeThreshold;
@@ -227,19 +219,6 @@ public:
 
 #if defined(Q_WS_X11)
     static void applyX11SpecificCommandLineArguments(QWidget *main_widget);
-#elif defined(Q_WS_QWS)
-    static void applyQWSSpecificCommandLineArguments(QWidget *main_widget);
-#endif
-
-#ifdef Q_WS_QWS
-    QPointer<QWSManager> last_manager;
-    QWSServerCleaner qwsServerCleaner;
-# ifndef QT_NO_DIRECTPAINTER
-    QHash<WId, QDirectPainter *> *directPainters;
-# endif
-    QRect maxWindowRect(const QScreen *screen) const { return maxWindowRects[screen]; }
-    void setMaxWindowRect(const QScreen *screen, int screenNo, const QRect &rect);
-    void setScreenTransformation(QScreen *screen, int screenNo, int transformation);
 #endif
 
     static QApplicationPrivate *instance() { return self; }
@@ -316,10 +295,6 @@ public:
 
     QPixmap applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const;
 private:
-#ifdef Q_WS_QWS
-    QHash<const QScreen*, QRect> maxWindowRects;
-#endif
-
     static QApplicationPrivate *self;
 
     static void giveFocusAccordingToFocusPolicy(QWidget *w,
