@@ -2200,6 +2200,8 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
     \since 4.6
     \obsolete
 
+    This function is obsolete. Reimplement roleNames() instead.
+
     Sets the model's role names to \a roleNames.
 
     This function allows mapping of role identifiers to role property names in
