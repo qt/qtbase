@@ -624,6 +624,9 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 /*!
     \property QGuiApplication::platformName
     \brief The name of the underlying platform plugin.
+
+    Examples: "xcb" (for X11), "Cocoa" (for Mac OS X), "windows", "qnx",
+       "directfb", "kms", "MinimalEgl", "LinuxFb", "EglFS", "OpenWFD"...
 */
 
 QString QGuiApplication::platformName()
