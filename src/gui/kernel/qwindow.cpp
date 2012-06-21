@@ -76,7 +76,7 @@ QT_BEGIN_NAMESPACE
     Windows can potentially use a lot of memory. A usual measurement is
     width times height times color depth. A window might also include multiple
     buffers to support double and triple buffering, as well as depth and stencil
-    buffers. To release a window's memory resources, the destroy() function.
+    buffers. To release a window's memory resources, call the destroy() function.
 
     \section1 Window and content orientation
 
