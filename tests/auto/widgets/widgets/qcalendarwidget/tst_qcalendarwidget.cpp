@@ -73,6 +73,8 @@ private slots:
     void setWeekdayFormat();
     void showPrevNext_data();
     void showPrevNext();
+
+    void firstDayOfWeek();
 };
 
 // Testing get/set functions
@@ -359,6 +361,42 @@ void tst_QCalendarWidget::showPrevNext()
         //the selectedDate should not have changed
         QCOMPARE(calWidget.selectedDate(), dateOrigin);
     }
+}
+
+void tst_QCalendarWidget::firstDayOfWeek()
+{
+    // Ensure the default locale is chosen.
+    QCalendarWidget calendar;
+    QLocale locale;
+    QCOMPARE(calendar.firstDayOfWeek(), locale.firstDayOfWeek());
+
+    QLocale germanLocale(QLocale::German);
+    QLocale::setDefault(germanLocale);
+    QCalendarWidget germanLocaleCalendar;
+    QCOMPARE(germanLocaleCalendar.firstDayOfWeek(), germanLocale.firstDayOfWeek());
+
+    // Ensure calling setLocale works as well.
+    QLocale frenchLocale(QLocale::French);
+    calendar.setLocale(frenchLocale);
+    QCOMPARE(calendar.firstDayOfWeek(), frenchLocale.firstDayOfWeek());
+
+    // Ensure that widget-specific locale takes precedence over default.
+    QLocale::setDefault(QLocale::English);
+    QCOMPARE(calendar.firstDayOfWeek(), frenchLocale.firstDayOfWeek());
+
+    // Ensure that setting the locale of parent widget has an effect.
+    QWidget* parent = new QWidget;
+    calendar.setParent(parent);
+    QLocale hausaLocale(QLocale::Hausa);
+    parent->setLocale(hausaLocale);
+    QCOMPARE(calendar.firstDayOfWeek(), hausaLocale.firstDayOfWeek());
+
+    // Ensure that widget-specific locale takes precedence over parent.
+    calendar.setLocale(germanLocale);
+    // Sanity check...
+    QCOMPARE(calendar.locale(), germanLocale);
+    QCOMPARE(parent->locale(), hausaLocale);
+    QCOMPARE(calendar.firstDayOfWeek(), germanLocale.firstDayOfWeek());
 }
 
 QTEST_MAIN(tst_QCalendarWidget)

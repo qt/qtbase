@@ -941,7 +941,7 @@ QCalendarModel::QCalendarModel(QObject *parent)
     m_maximumDate = QDate(7999, 12, 31);
     m_shownYear = m_date.year();
     m_shownMonth = m_date.month();
-    m_firstDay = Qt::Sunday;
+    m_firstDay = QLocale().firstDayOfWeek();
     m_horizontalHeaderFormat = QCalendarWidget::ShortDayNames;
     m_weekNumbersShown = true;
     m_firstColumn = 1;
@@ -1987,7 +1987,7 @@ void QCalendarWidgetPrivate::_q_editingFinished()
     A newly created calendar widget uses abbreviated day names, and
     both Saturdays and Sundays are marked in red. The calendar grid is
     not visible. The week numbers are displayed, and the first column
-    day is Sunday.
+    day is the first day of the week for the calendar's locale.
 
     The notation of the days can be altered to a single letter
     abbreviations ("M" for "Monday") by setting the
@@ -2696,7 +2696,8 @@ void QCalendarWidget::setSelectionMode(SelectionMode mode)
     \property QCalendarWidget::firstDayOfWeek
     \brief a value identifying the day displayed in the first column.
 
-    By default, the day displayed in the first column is Sunday
+    By default, the day displayed in the first column
+    is the first day of the week for the calendar's locale.
 */
 
 void QCalendarWidget::setFirstDayOfWeek(Qt::DayOfWeek dayOfWeek)
@@ -2997,6 +2998,7 @@ bool QCalendarWidget::event(QEvent *event)
         case QEvent::LayoutDirectionChange:
             d->updateButtonIcons();
         case QEvent::LocaleChange:
+            d->m_model->setFirstColumnDay(locale().firstDayOfWeek());
             d->cachedSizeHint = QSize();
             d->updateMonthMenuNames();
             d->updateNavigationBar();

@@ -67,7 +67,10 @@ Window::Window()
 
 void Window::localeChanged(int index)
 {
-    calendar->setLocale(localeCombo->itemData(index).toLocale());
+    const QLocale newLocale(localeCombo->itemData(index).toLocale());
+    calendar->setLocale(newLocale);
+    int newLocaleFirstDayIndex = firstDayCombo->findData(newLocale.firstDayOfWeek());
+    firstDayCombo->setCurrentIndex(newLocaleFirstDayIndex);
 }
 
 //! [1]
