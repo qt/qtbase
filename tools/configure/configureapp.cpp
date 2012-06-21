@@ -233,7 +233,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "DIRECTWRITE" ]     = "no";
     dictionary[ "NIS" ]             = "no";
     dictionary[ "NEON" ]            = "no";
-    dictionary[ "LARGE_FILE" ]      = "no";
+    dictionary[ "LARGE_FILE" ]      = "yes";
     dictionary[ "FONT_CONFIG" ]     = "no";
     dictionary[ "POSIX_IPC" ]       = "no";
     dictionary[ "QT_GLIB" ]         = "no";
