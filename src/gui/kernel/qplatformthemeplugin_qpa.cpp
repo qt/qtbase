@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
     \preliminary
     \ingroup qpa
 
-    \brief The QPlatformScreen class provides an abstraction for theme plugins.
+    \brief The QPlatformThemePlugin class provides an abstraction for theme plugins.
  */
 QPlatformThemePlugin::QPlatformThemePlugin(QObject *parent)
     : QObject(parent)
