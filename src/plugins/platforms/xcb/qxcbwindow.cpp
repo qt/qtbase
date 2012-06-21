@@ -1670,37 +1670,32 @@ void QXcbWindow::setCursor(xcb_cursor_t cursor)
     xcb_flush(xcb_connection());
 }
 
-#ifdef XCB_USE_XLIB
-
 bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
 {
     const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
     if (!connection()->wmSupport()->isSupportedByWM(moveResize))
         return false;
-    XEvent xev;
-    xev.xclient.type = ClientMessage;
-    xev.xclient.message_type = moveResize;
-    Display *display = (Display *)connection()->xlib_display();
-    xev.xclient.display = display;
-    xev.xclient.window = xcb_window();
-    xev.xclient.format = 32;
+    xcb_client_message_event_t xev;
+    xev.response_type = XCB_CLIENT_MESSAGE;
+    xev.type = moveResize;
+    xev.window = xcb_window();
+    xev.format = 32;
     const QPoint globalPos = window()->mapToGlobal(pos);
-    xev.xclient.data.l[0] = globalPos.x();
-    xev.xclient.data.l[1] = globalPos.y();
+    xev.data.data32[0] = globalPos.x();
+    xev.data.data32[1] = globalPos.y();
     const bool bottom = corner == Qt::BottomRightCorner || corner == Qt::BottomLeftCorner;
     const bool left = corner == Qt::BottomLeftCorner || corner == Qt::TopLeftCorner;
     if (bottom)
-        xev.xclient.data.l[2] = left ? 6 : 4; // bottomleft/bottomright
+        xev.data.data32[2] = left ? 6 : 4; // bottomleft/bottomright
     else
-        xev.xclient.data.l[2] = left ? 0 : 2; // topleft/topright
-    xev.xclient.data.l[3] = Button1;
-    xev.xclient.data.l[4] = 0;
-    XUngrabPointer(display, CurrentTime);
-    XSendEvent(display, m_screen->root(), False,
-               SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+        xev.data.data32[2] = left ? 0 : 2; // topleft/topright
+    xev.data.data32[3] = Button1;
+    xev.data.data32[4] = 0;
+    xcb_ungrab_pointer(connection()->xcb_connection(), XCB_CURRENT_TIME);
+    xcb_send_event(connection()->xcb_connection(), false, m_screen->root(),
+                   XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
+                   (const char *)&xev);
     return true;
 }
-
-#endif // XCB_USE_XLIB
 
 QT_END_NAMESPACE
