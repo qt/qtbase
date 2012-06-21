@@ -25,11 +25,11 @@ contains(PROJECTS, libs) {
 }
 contains(PROJECTS, examples) {
     PROJECTS -= examples
-    !fast:SUBDIRS += examples
+    SUBDIRS += examples
 }
 contains(PROJECTS, tests) {
     PROJECTS -= tests
-    !fast:SUBDIRS += module_qtbase_tests
+    SUBDIRS += module_qtbase_tests
 }
 !isEmpty(PROJECTS) {
     message(Unknown PROJECTS: $$PROJECTS)
