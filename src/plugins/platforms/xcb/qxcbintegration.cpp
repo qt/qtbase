@@ -43,6 +43,8 @@
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
+#include "qxcbcursor.h"
+#include "qxcbkeyboard.h"
 #include "qxcbbackingstore.h"
 #include "qxcbnativeinterface.h"
 #include "qxcbclipboard.h"
@@ -255,6 +257,14 @@ QPlatformAccessibility *QXcbIntegration::accessibility() const
 QPlatformServices *QXcbIntegration::services() const
 {
     return m_services.data();
+}
+
+Qt::KeyboardModifiers QXcbIntegration::queryKeyboardModifiers() const
+{
+    int keybMask = 0;
+    QXcbConnection* conn = m_connections.at(0);
+    QXcbCursor::queryPointer(conn->xcb_connection(), 0, 0, &keybMask);
+    return conn->keyboard()->translateModifiers(keybMask);
 }
 
 QStringList QXcbIntegration::themeNames() const

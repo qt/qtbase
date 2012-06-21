@@ -506,7 +506,7 @@ xcb_cursor_t QXcbCursor::createBitmapCursor(QCursor *cursor)
     return c;
 }
 
-static void getPosAndRoot(xcb_connection_t *conn, xcb_window_t *rootWin, QPoint *pos)
+void QXcbCursor::queryPointer(xcb_connection_t *conn, xcb_window_t *rootWin, QPoint *pos, int *keybMask)
 {
     if (pos)
         *pos = QPoint();
@@ -521,6 +521,8 @@ static void getPosAndRoot(xcb_connection_t *conn, xcb_window_t *rootWin, QPoint 
                 *pos = QPoint(reply->root_x, reply->root_y);
             if (rootWin)
                 *rootWin = root;
+            if (keybMask)
+                *keybMask = reply->mask;
             free(reply);
             return;
         }
@@ -533,7 +535,7 @@ static void getPosAndRoot(xcb_connection_t *conn, xcb_window_t *rootWin, QPoint 
 QPoint QXcbCursor::pos() const
 {
     QPoint p;
-    getPosAndRoot(xcb_connection(), 0, &p);
+    queryPointer(xcb_connection(), 0, &p);
     return p;
 }
 
@@ -541,7 +543,7 @@ void QXcbCursor::setPos(const QPoint &pos)
 {
     xcb_connection_t *conn = xcb_connection();
     xcb_window_t root;
-    getPosAndRoot(conn, &root, 0);
+    queryPointer(conn, &root, 0);
     xcb_warp_pointer(conn, XCB_NONE, root, 0, 0, 0, 0, pos.x(), pos.y());
     xcb_flush(conn);
 }
