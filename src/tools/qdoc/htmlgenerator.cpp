@@ -4250,7 +4250,7 @@ void HtmlGenerator::generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* marke
 }
 
 /*!
-  Output the "[QmlGraphicsXxx is instantiated by QML element Xxx]"
+  Output the "[QmlGraphicsXxx is instantiated by QML Type Xxx]"
   line for the class, if there should be one.
 
   If there is no QML element, or if the class node status
@@ -4266,7 +4266,7 @@ void HtmlGenerator::generateInstantiatedBy(ClassNode* cn, CodeMarker* marker)
         text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
         text << Atom(Atom::String, cn->name());
         text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
-        text << " is instantiated by QML element ";
+        text << " is instantiated by QML Type ";
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
         text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
         text << Atom(Atom::String, qcn->name());
