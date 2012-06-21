@@ -92,6 +92,14 @@ static const char propertiesInterfaceXml[] =
     "    </method>\n"
     "  </interface>\n";
 
+static const char peerInterfaceXml[] =
+    "  <interface name=\"org.freedesktop.DBus.Peer\">\n"
+    "    <method name=\"Ping\"/>\n"
+    "    <method name=\"GetMachineId\">\n"
+    "      <arg name=\"machine_uuid\" type=\"s\" direction=\"out\"/>\n"
+    "    </method>\n"
+    "  </interface>\n";
+
 static QString generateSubObjectXml(QObject *object)
 {
     QString retval;
@@ -165,6 +173,7 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
     }
 
     xml_data += QLatin1String( introspectableInterfaceXml );
+    xml_data += QLatin1String( peerInterfaceXml );
 
     if (node.flags & QDBusConnection::ExportChildObjects) {
         xml_data += generateSubObjectXml(node.obj);
