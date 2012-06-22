@@ -52,6 +52,48 @@ extern "C" void qt_memfill32_asm_mips_dsp(quint32 *dest, quint32 value, int coun
 
 extern "C" void comp_func_SourceOver_asm_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha);
 
+extern "C" void comp_func_solid_DestinationOver_dsp_asm_x2(uint *dest, int length, uint color);
+
+extern "C" void comp_func_solid_Source_dsp_asm_x2(uint *dest, int length, uint color, uint const_alpha);
+
+extern "C" void comp_func_DestinationOver_dsp_asm_x2(uint *dest, const uint *src, int length, uint const_alpha);
+
+extern "C" void comp_func_solid_SourceIn_dsp_asm_x2(uint *dest, int length, uint color, uint const_alpha);
+
+extern "C" void comp_func_SourceIn_dsp_asm_x2(uint *dest, const uint *src, int length, uint const_alpha);
+
+extern "C" void comp_func_solid_DestinationIn_dsp_asm_x2(uint *dest, int length, uint a);
+
+extern "C" void comp_func_DestinationIn_dsp_asm_x2(uint *dest, const uint *src, int length, uint const_alpha);
+
+extern "C" void comp_func_DestinationOut_dsp_asm_x2(uint *dest, const uint *src, int length, uint const_alpha);
+
+extern "C" void comp_func_solid_SourceAtop_dsp_asm_x2(uint *dest, int length, uint color, uint const_alpha);
+
+extern "C" void comp_func_SourceAtop_dsp_asm_x2(uint *dest, const uint *src, int length, uint const_alpha);
+
+extern "C" void comp_func_solid_DestinationAtop_dsp_asm_x2(uint *dest, int length, uint color, uint const_alpha);
+
+extern "C" void comp_func_DestinationAtop_dsp_asm_x2(uint *dest, const uint *src, int length, uint const_alpha);
+
+extern "C" void comp_func_solid_XOR_dsp_asm_x2(uint *dest, int length, uint color, uint const_alpha);
+
+extern "C" void comp_func_XOR_dsp_asm_x2(uint *dest, const uint *src, int length, uint const_alpha);
+
+extern "C" void comp_func_solid_SourceOut_dsp_asm_x2(uint *dest, int length, uint color, uint const_alpha);
+
+extern "C" void comp_func_SourceOut_dsp_asm_x2(uint *dest, const uint *src, int length, uint const_alpha);
+
+extern "C" void comp_func_Source_dsp_asm_x2(uint *dest, const uint *src, int length, uint const_alpha);
+
+extern "C" void qt_blend_argb32_on_argb32_mips_dsp_asm_x2(uint *dest, const uint *src, int length, uint const_alpha);
+
+extern "C" void qt_blend_argb32_on_argb32_const_alpha_256_mips_dsp_asm(uint *dest, const uint *src, int length);
+
+extern "C" uint * destfetchARGB32_asm_mips_dsp(uint *buffer, const uint *data, int length);
+
+extern "C" uint * qt_destStoreARGB32_asm_mips_dsp(uint *buffer, const uint *data, int length);
+
 void qt_blend_argb32_on_argb32_mips_dsp(uchar *destPixels, int dbpl,
                                       const uchar *srcPixels, int sbpl,
                                       int w, int h,
@@ -70,6 +112,46 @@ uint * QT_FASTCALL qt_destFetchARGB32_mips_dsp(uint *buffer,
 
 void QT_FASTCALL qt_destStoreARGB32_mips_dsp(QRasterBuffer *rasterBuffer, int x, int y,
                                              const uint *buffer, int length);
+
+void QT_FASTCALL comp_func_solid_Source_mips_dsp(uint *dest, int length, uint color, uint const_alpha);
+
+void QT_FASTCALL comp_func_solid_SourceOver_mips_dsp(uint *dest, int length, uint color, uint const_alpha);
+
+void QT_FASTCALL comp_func_solid_DestinationOver_mips_dsp(uint *dest, int length, uint color, uint const_alpha);
+
+void QT_FASTCALL comp_func_solid_SourceOver_mips_dsp(uint *dest, int length, uint color, uint const_alpha);
+
+void QT_FASTCALL comp_func_solid_DestinationOver_mips_dsp(uint *dest, int length, uint color, uint const_alpha);
+
+void QT_FASTCALL comp_func_DestinationOver_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha);
+
+void QT_FASTCALL comp_func_solid_SourceIn_mips_dsp(uint *dest, int length, uint color, uint const_alpha);
+
+void QT_FASTCALL comp_func_SourceIn_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha);
+
+void QT_FASTCALL comp_func_solid_DestinationIn_mips_dsp(uint *dest, int length, uint color, uint const_alpha);
+
+void QT_FASTCALL comp_func_DestinationIn_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha);
+
+void QT_FASTCALL comp_func_solid_DestinationOut_mips_dsp(uint *dest, int length, uint color, uint const_alpha);
+
+void QT_FASTCALL comp_func_DestinationOut_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha);
+
+void QT_FASTCALL comp_func_solid_SourceAtop_mips_dsp(uint *dest, int length, uint color, uint const_alpha);
+
+void QT_FASTCALL comp_func_SourceAtop_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha);
+
+void QT_FASTCALL comp_func_solid_DestinationAtop_mips_dsp(uint *dest, int length, uint color, uint const_alpha);
+
+void QT_FASTCALL comp_func_DestinationAtop_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha);
+
+void QT_FASTCALL comp_func_solid_XOR_mips_dsp(uint *dest, int length, uint color, uint const_alpha);
+
+void QT_FASTCALL comp_func_solid_SourceOut_mips_dsp(uint *dest, int length, uint color, uint const_alpha);
+
+void QT_FASTCALL comp_func_SourceOut_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha);
+
+void QT_FASTCALL comp_func_XOR_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha);
 
 #endif // QT_COMPILER_SUPPORTS_MIPS_DSP
 

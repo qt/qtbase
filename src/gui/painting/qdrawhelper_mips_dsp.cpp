@@ -45,24 +45,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(QT_COMPILER_SUPPORTS_MIPS_DSP)
-
-extern "C" uint INTERPOLATE_PIXEL_255_asm_mips_dsp(uint x, uint a, uint y, uint b);
-
-extern "C"  uint BYTE_MUL_asm_mips_dsp(uint x, uint a);
-
-extern "C" uint * destfetchARGB32_asm_mips_dsp(uint *buffer, const uint *data, int length);
-
-extern "C" uint * qt_destStoreARGB32_asm_mips_dsp(uint *buffer, const uint *data, int length);
-
-#if defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
-
-extern "C" uint INTERPOLATE_PIXEL_255_asm_mips_dspr2(uint x, uint a, uint y, uint b);
-
-extern "C" uint BYTE_MUL_asm_mips_dspr2(uint x, uint a);
-
-#endif // QT_COMPILER_SUPPORTS_MIPS_DSPR2
-
 void qt_blend_argb32_on_argb32_mips_dsp(uchar *destPixels, int dbpl,
                                       const uchar *srcPixels, int sbpl,
                                       int w, int h,
@@ -80,32 +62,21 @@ void qt_blend_argb32_on_argb32_mips_dsp(uchar *destPixels, int dbpl,
     uint *dst = (uint *) destPixels;
     if (const_alpha == 256) {
         for (int y=0; y<h; ++y) {
-            for (int x=0; x<w; ++x) {
-                uint s = src[x];
-                if (s >= 0xff000000)
-                    dst[x] = s;
-                else if (s != 0)
-#if !defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
-                    dst[x] = s + BYTE_MUL_asm_mips_dsp(dst[x], qAlpha(~s));
-#else
-                    dst[x] = s + BYTE_MUL_asm_mips_dspr2(dst[x], qAlpha(~s));
-#endif
-            }
+            qt_blend_argb32_on_argb32_const_alpha_256_mips_dsp_asm(dst, src, w);
             dst = (quint32 *)(((uchar *) dst) + dbpl);
             src = (const quint32 *)(((const uchar *) src) + sbpl);
         }
     } else if (const_alpha != 0) {
         const_alpha = (const_alpha * 255) >> 8;
         for (int y=0; y<h; ++y) {
-            for (int x=0; x<w; ++x) {
-#if !defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
-                uint s = BYTE_MUL_asm_mips_dsp(src[x], const_alpha);
-                dst[x] = s + BYTE_MUL_asm_mips_dsp(dst[x], qAlpha(~s));
-#else
-                uint s = BYTE_MUL_asm_mips_dspr2(src[x], const_alpha);
-                dst[x] = s + BYTE_MUL_asm_mips_dspr2(dst[x], qAlpha(~s));
-#endif
+            if (h%2 > 0) {
+                uint s = BYTE_MUL(src[0], const_alpha);
+                dst[0] = s + BYTE_MUL(dst[0], qAlpha(~s));
+                h--;
+                dst++;
+                src++;
             }
+            qt_blend_argb32_on_argb32_mips_dsp_asm_x2(dst, src, h, const_alpha);
             dst = (quint32 *)(((uchar *) dst) + dbpl);
             src = (const quint32 *)(((const uchar *) src) + sbpl);
         }
@@ -145,13 +116,13 @@ void comp_func_Source_mips_dsp(uint *dest, const uint *src, int length, uint con
         ::memcpy(dest, src, length * sizeof(uint));
     } else {
         int ialpha = 255 - const_alpha;
-        for (int i = 0; i < length; ++i) {
-#if !defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
-            dest[i] = INTERPOLATE_PIXEL_255_asm_mips_dsp(src[i], const_alpha, dest[i], ialpha);
-#else
-            dest[i] = INTERPOLATE_PIXEL_255_asm_mips_dspr2(src[i], const_alpha, dest[i], ialpha);
-#endif
+        if (length%2 > 0) {
+            dest[0] = INTERPOLATE_PIXEL_255(src[0], const_alpha, dest[0], ialpha);
+            length--;
+            dest++;
+            src++;
         }
+        comp_func_Source_dsp_asm_x2(dest, src, length, const_alpha);
     }
 }
 
@@ -171,6 +142,285 @@ void QT_FASTCALL qt_destStoreARGB32_mips_dsp(QRasterBuffer *rasterBuffer, int x,
     qt_destStoreARGB32_asm_mips_dsp(data, buffer, length);
 }
 
-#endif // QT_COMPILER_SUPPORTS_MIPS_DSP
+void QT_FASTCALL comp_func_solid_SourceOver_mips_dsp(uint *dest, int length, uint color, uint const_alpha)
+{
+    if (const_alpha != 255)
+        color = BYTE_MUL(color, const_alpha);
+    if (length%2 > 0) {
+        dest[0] = color + BYTE_MUL(dest[0], qAlpha(~color));
+        length--;
+        dest++;
+    }
+    comp_func_solid_Source_dsp_asm_x2(dest, length, color, qAlpha(~color));
+}
+
+void QT_FASTCALL comp_func_solid_DestinationOver_mips_dsp(uint *dest, int length, uint color, uint const_alpha)
+{
+    if (const_alpha != 255)
+        color = BYTE_MUL(color, const_alpha);
+    if (length%2 > 0) {
+        uint d = dest[0];
+        dest[0] = d + BYTE_MUL(color, qAlpha(~d));
+        length--;
+        dest++;
+    }
+    comp_func_solid_DestinationOver_dsp_asm_x2(dest, length, color);
+}
+
+void QT_FASTCALL comp_func_DestinationOver_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha)
+{
+    if (length%2 > 0) {
+        if (const_alpha == 255) {
+            uint d = dest[0];
+            dest[0] = d + BYTE_MUL(src[0], qAlpha(~d));
+        } else {
+            uint d = dest[0];
+            uint s = BYTE_MUL(src[0], const_alpha);
+            dest[0] = d + BYTE_MUL(s, qAlpha(~d));
+        }
+        length--;
+        dest++;
+        src++;
+    }
+    comp_func_DestinationOver_dsp_asm_x2(dest, src, length, const_alpha);
+}
+
+void QT_FASTCALL comp_func_solid_SourceIn_mips_dsp(uint *dest, int length, uint color, uint const_alpha)
+{
+    if (length%2 > 0) {
+        if (const_alpha == 255) {
+            dest[0] = BYTE_MUL(color, qAlpha(dest[0]));
+        } else {
+            uint tmp_color = BYTE_MUL(color, const_alpha);
+            uint cia = 255 - const_alpha;
+            uint d = dest[0];
+            dest[0] = INTERPOLATE_PIXEL_255(tmp_color, qAlpha(d), d, cia);
+        }
+        length--;
+        dest++;
+    }
+    comp_func_solid_SourceIn_dsp_asm_x2(dest, length, color, const_alpha);
+}
+
+void QT_FASTCALL comp_func_SourceIn_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha)
+{
+    if (length%2 > 0) {
+        if (const_alpha == 255) {
+            dest[0] = BYTE_MUL(src[0], qAlpha(dest[0]));
+        } else {
+            uint cia = 255 - const_alpha;
+            uint d = dest[0];
+            uint s = BYTE_MUL(src[0], const_alpha);
+            dest[0] = INTERPOLATE_PIXEL_255(s, qAlpha(d), d, cia);
+        }
+        length--;
+        dest++;
+        src++;
+    }
+    comp_func_SourceIn_dsp_asm_x2(dest, src, length, const_alpha);
+}
+
+void QT_FASTCALL comp_func_solid_DestinationIn_mips_dsp(uint *dest, int length, uint color, uint const_alpha)
+{
+    uint a = qAlpha(color);
+    if (const_alpha != 255) {
+        a = BYTE_MUL(a, const_alpha) + 255 - const_alpha;
+    }
+    if (length%2 > 0) {
+        dest[0] = BYTE_MUL(dest[0], a);
+        length--;
+        dest++;
+    }
+    comp_func_solid_DestinationIn_dsp_asm_x2(dest, length, a);
+}
+
+void QT_FASTCALL comp_func_DestinationIn_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha)
+{
+    if (length%2 > 0) {
+        if (const_alpha == 255) {
+            dest[0] = BYTE_MUL(dest[0], qAlpha(src[0]));
+        } else {
+            int cia = 255 - const_alpha;
+            uint a = BYTE_MUL(qAlpha(src[0]), const_alpha) + cia;
+            dest[0] = BYTE_MUL(dest[0], a);
+        }
+    length--;
+    src++;
+    dest++;
+    }
+    comp_func_DestinationIn_dsp_asm_x2(dest, src, length, const_alpha);
+}
+
+void QT_FASTCALL comp_func_solid_DestinationOut_mips_dsp(uint *dest, int length, uint color, uint const_alpha)
+{
+    uint a = qAlpha(~color);
+    if (const_alpha != 255) {
+        a = BYTE_MUL(a, const_alpha) + 255 - const_alpha;
+    }
+    if (length%2 > 0) {
+        dest[0] = BYTE_MUL(dest[0], a);
+        length--;
+        dest++;
+    }
+    comp_func_solid_DestinationIn_dsp_asm_x2(dest, length, a);
+}
+
+void QT_FASTCALL comp_func_DestinationOut_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha)
+{
+    if (length%2 > 0) {
+        if (const_alpha == 255) {
+            dest[0] = BYTE_MUL(dest[0], qAlpha(~src[0]));
+        } else {
+            int cia = 255 - const_alpha;
+            uint sia = BYTE_MUL(qAlpha(~src[0]), const_alpha) + cia;
+            dest[0] = BYTE_MUL(dest[0], sia);
+        }
+        length--;
+        dest++;
+        src++;
+    }
+    comp_func_DestinationOut_dsp_asm_x2(dest, src, length, const_alpha);
+}
+
+void QT_FASTCALL comp_func_solid_SourceAtop_mips_dsp(uint *dest, int length, uint color, uint const_alpha)
+{
+    if (const_alpha != 255) {
+        color = BYTE_MUL(color, const_alpha);
+    }
+    uint sia = qAlpha(~color);
+    if (length%2 > 0) {
+        dest[0] = INTERPOLATE_PIXEL_255(color, qAlpha(dest[0]), dest[0], sia);
+        length--;
+        dest++;
+    }
+    comp_func_solid_SourceAtop_dsp_asm_x2(dest, length, color, sia);
+}
+
+void QT_FASTCALL comp_func_SourceAtop_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha)
+{
+    if (length%2 > 0) {
+        if (const_alpha == 255) {
+            uint s = src[0];
+            uint d = dest[0];
+            dest[0] = INTERPOLATE_PIXEL_255(s, qAlpha(d), d, qAlpha(~s));
+        } else {
+            uint s = BYTE_MUL(src[0], const_alpha);
+            uint d = dest[0];
+            dest[0] = INTERPOLATE_PIXEL_255(s, qAlpha(d), d, qAlpha(~s));
+        }
+        length--;
+        dest++;
+        src++;
+    }
+    comp_func_SourceAtop_dsp_asm_x2(dest, src, length, const_alpha);
+}
+
+
+void QT_FASTCALL comp_func_solid_DestinationAtop_mips_dsp(uint *dest, int length, uint color, uint const_alpha)
+{
+    uint a = qAlpha(color);
+    if (const_alpha != 255) {
+        color = BYTE_MUL(color, const_alpha);
+        a = qAlpha(color) + 255 - const_alpha;
+    }
+    if (length%2 > 0) {
+        uint d = dest[0];
+        dest[0] = INTERPOLATE_PIXEL_255(d, a, color, qAlpha(~d));
+        length--;
+        dest++;
+    }
+    comp_func_solid_DestinationAtop_dsp_asm_x2(dest, length, color, a);
+}
+
+void QT_FASTCALL comp_func_DestinationAtop_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha)
+{
+    if (length%2 > 0) {
+        if (const_alpha == 255) {
+            uint s = src[0];
+            uint d = dest[0];
+            dest[0] = INTERPOLATE_PIXEL_255(d, qAlpha(s), s, qAlpha(~d));
+        } else {
+            int cia = 255 - const_alpha;
+            uint s = BYTE_MUL(src[0], const_alpha);
+            uint d = dest[0];
+            uint a = qAlpha(s) + cia;
+            dest[0] = INTERPOLATE_PIXEL_255(d, a, s, qAlpha(~d));
+        }
+        length--;
+        dest++;
+        src++;
+    }
+    comp_func_DestinationAtop_dsp_asm_x2(dest, src, length, const_alpha);
+}
+
+void QT_FASTCALL comp_func_solid_XOR_mips_dsp(uint *dest, int length, uint color, uint const_alpha)
+{
+    if (const_alpha != 255)
+        color = BYTE_MUL(color, const_alpha);
+    uint sia = qAlpha(~color);
+
+     if (length%2 > 0) {
+        uint d = dest[0];
+        dest[0] = INTERPOLATE_PIXEL_255(color, qAlpha(~d), d, sia);
+        length--;
+        dest++;
+    }
+    comp_func_solid_XOR_dsp_asm_x2(dest, length, color, sia);
+}
+
+void QT_FASTCALL comp_func_XOR_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha)
+{
+    if (length%2 > 0) {
+        if (const_alpha == 255) {
+            uint d = dest[0];
+            uint s = src[0];
+            dest[0] = INTERPOLATE_PIXEL_255(s, qAlpha(~d), d, qAlpha(~s));
+        } else {
+            uint d = dest[0];
+            uint s = BYTE_MUL(src[0], const_alpha);
+            dest[0] = INTERPOLATE_PIXEL_255(s, qAlpha(~d), d, qAlpha(~s));
+        }
+        length--;
+        dest++;
+        src++;
+    }
+    comp_func_XOR_dsp_asm_x2(dest, src, length, const_alpha);
+}
+
+void QT_FASTCALL comp_func_solid_SourceOut_mips_dsp(uint *dest, int length, uint color, uint const_alpha)
+{
+    if (length%2 > 0) {
+        if (const_alpha == 255) {
+            dest[0] = BYTE_MUL(color, qAlpha(~dest[0]));
+        } else {
+            uint tmp_color = BYTE_MUL(color, const_alpha);
+            int cia = 255 - const_alpha;
+            uint d = dest[0];
+            dest[0] = INTERPOLATE_PIXEL_255(tmp_color, qAlpha(~d), d, cia);
+        }
+        length--;
+        dest++;
+    }
+    comp_func_solid_SourceOut_dsp_asm_x2(dest, length, color, const_alpha);
+}
+
+void QT_FASTCALL comp_func_SourceOut_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha)
+{
+    if (length%2 > 0) {
+        if (const_alpha == 255) {
+            dest[0] = BYTE_MUL(src[0], qAlpha(~dest[0]));
+        } else {
+            int cia = 255 - const_alpha;
+            uint s = BYTE_MUL(src[0], const_alpha);
+            uint d = dest[0];
+            dest[0] = INTERPOLATE_PIXEL_255(s, qAlpha(~d), d, cia);
+        }
+        length--;
+        dest++;
+        src++;
+    }
+    comp_func_SourceOut_dsp_asm_x2(dest, src, length, const_alpha);
+}
+
 
 QT_END_NAMESPACE

@@ -41,59 +41,6 @@
 
 #include "qt_mips_asm_dsp.h"
 
-LEAF_MIPS_DSPR2(INTERPOLATE_PIXEL_255_asm_mips_dspr2)
-/*
- * a0 - uint x (First value to multiply)
- * a1 - uint a (Multiplicator byte for first value)
- * a2 - uint y (Second value to multiply)
- * a3 - uint b (Multiplicator byte for second value)
- */
-
-    .set reorder
-    replv.ph          a1, a1
-    replv.ph          a3, a3
-    li                t8, 8388736
-    muleu_s.ph.qbl    t0, a0, a1
-    muleu_s.ph.qbl    t1, a2, a3
-    muleu_s.ph.qbr    t2, a0, a1
-    muleu_s.ph.qbr    t3, a2, a3
-    addu.ph           t4, t0, t1
-    addu.ph           t5, t2, t3
-    preceu.ph.qbla    t0, t4
-    addu              t1, t0, t8
-    addu              t1, t4, t1
-    preceu.ph.qbla    t6, t5
-    addu              t7, t6, t8
-    addu              t7, t5, t7
-    precrq.qb.ph      t2, t1, t7
-    move              v0, t2
-    j                 ra
-
-END(INTERPOLATE_PIXEL_255_asm_mips_dspr2)
-
-LEAF_MIPS_DSPR2(BYTE_MUL_asm_mips_dspr2)
-/*
- * a0 - uint x (Value to multiply)
- * a1 - uint a (Multiplicator byte)
- */
-
-    .set reorder
-    replv.ph          a1, a1              /* a1 = 0x00a00a */
-    li                t4, 8388736         /* t4 = 0x800080 */
-    muleu_s.ph.qbl    t0, a0, a1
-    muleu_s.ph.qbr    t2, a0, a1
-    preceu.ph.qbla    t1, t0
-    addu              t0, t0, t1
-    addu              t0, t0, t4
-    preceu.ph.qbla    t3, t2
-    addu              t2, t2, t3
-    addu              t2, t2, t4
-    precrq.qb.ph      t4, t0, t2
-    move              v0, t4
-    j                 ra
-
-END(BYTE_MUL_asm_mips_dspr2)
-
 LEAF_MIPS_DSPR2(qConvertRgb16To32_asm_mips_dspr2)
 /*
  * a0 - dst (a8r8g8b8)

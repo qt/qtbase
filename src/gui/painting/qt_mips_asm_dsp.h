@@ -110,4 +110,140 @@ LEAF_MIPS32R2(symbol)                                   \
                 .end    function;                       \
                 .size   function,.-function
 
+/*
+ * BYTE_MUL operation on two pixels (in_1 and in_2) with two
+ * multiplicator bytes, repl_a1 and repl_a2, which should be
+ * prepered with:
+ *   replv.ph   repl_a1, a1
+ *   replv.ph   repl_a2, a2
+ * to became such as:
+ *   repl_a1 = | 00 | a1 | 00 | a1 |
+ *   repl_a2 = | 00 | a2 | 00 | a2 |
+ *
+ * rounding_factor must have following value:
+ *   li    rounding_factor, 0x00800080
+ *
+ * scratch(n) - temporary registers
+ *
+ * in_const: 1 -> (default) causes that in_1, in_2
+ *           registers will remain unchanged after usage
+ *           0 -> (or anything different then 1) causes
+ *           that registers repl_a1, repl_a2 remain
+ *           unchanged after usage
+ */
+.macro BYTE_MUL_x2 in_1, in_2, out_1, out_2                 \
+                   repl_a1, repl_a2, rounding_factor,       \
+                   scratch1, scratch2, scratch3, scratch4,  \
+                   in_const = 1
+    muleu_s.ph.qbl    \scratch1, \in_1,     \repl_a1
+    muleu_s.ph.qbr    \scratch2, \in_1,     \repl_a1
+    muleu_s.ph.qbl    \scratch3, \in_2,     \repl_a2
+    muleu_s.ph.qbr    \scratch4, \in_2,     \repl_a2
+
+.if \in_const == 1
+    preceu.ph.qbla    \repl_a1,  \scratch1
+    preceu.ph.qbla    \repl_a2,  \scratch2
+    preceu.ph.qbla    \out_1,    \scratch3
+    preceu.ph.qbla    \out_2,    \scratch4
+
+    addu              \scratch1,  \repl_a1, \scratch1
+    addu              \scratch2,  \repl_a2, \scratch2
+.else
+    preceu.ph.qbla    \in_1,      \scratch1
+    preceu.ph.qbla    \in_2,      \scratch2
+    preceu.ph.qbla    \out_1,     \scratch3
+    preceu.ph.qbla    \out_2,     \scratch4
+
+    addu              \scratch1,  \in_1,    \scratch1
+    addu              \scratch2,  \in_2,    \scratch2
+.endif
+
+    addu              \out_1,     \out_1,   \scratch3
+    addu              \out_2,     \out_2,   \scratch4
+
+    addu              \scratch1,  \scratch1, \rounding_factor
+    addu              \scratch2,  \scratch2, \rounding_factor
+    addu              \scratch3,  \out_1,    \rounding_factor
+    addu              \scratch4,  \out_2,    \rounding_factor
+
+    precrq.qb.ph      \out_1,     \scratch1, \scratch2
+    precrq.qb.ph      \out_2,     \scratch3, \scratch4
+
+.endm
+
+/*
+ * BYTE_MUL operation on one pixel (in_1) with
+ * multiplicator byte, repl_a1, which should be
+ * prepered with:
+ *   replv.ph   repl_a1, a1
+ * to became such as:
+ *   repl_a1 = | 00 | a1 | 00 | a1 |
+ *
+ * rounding_factor must have following value:
+ *   li    rounding_factor, 0x00800080
+ *
+ * scratch(n) - temporary registers
+ */
+.macro BYTE_MUL in_1, out_1,                            \
+                repl_a1, rounding_factor,               \
+                scratch1, scratch2, scratch3, scratch4
+    muleu_s.ph.qbl    \scratch1, \in_1,     \repl_a1
+    muleu_s.ph.qbr    \scratch2, \in_1,     \repl_a1
+
+    preceu.ph.qbla    \scratch3, \scratch1
+    preceu.ph.qbla    \scratch4, \scratch2
+
+    addu              \scratch1, \scratch1, \scratch3
+    addu              \scratch1, \scratch1, \rounding_factor
+
+    addu              \scratch2, \scratch2, \scratch4
+    addu              \scratch2, \scratch2, \rounding_factor
+
+    precrq.qb.ph      \out_1,    \scratch1, \scratch2
+
+.endm
+
+/*
+ * macro for INTERPOLATE_PIXEL_255 operation
+ * in_1 - First value to multiply
+ * mul_1 - Multiplicator byte for first value
+ * in_2 - Second value to multiply
+ * mul_2 - Multiplicator byte for second value
+ * rounding_factor and andi_factor should be prepared
+ * as:
+ *     li     rounding_factor, 0x00800080
+ *     li     andi_factor,     0xff00ff00
+ * scratch(n) - temporary registers
+ */
+.macro INTERPOLATE_PIXEL_255 in_1, mul_1,                            \
+                             in_2, mul_2,                            \
+                             out_1,                                  \
+                             rounding_factor, andi_factor            \
+                             scratch1, scratch2, scratch3, scratch4
+# x part
+    preceu.ph.qbra    \scratch1, \in_1
+    preceu.ph.qbra    \scratch2, \in_2
+    mul               \scratch1, \scratch1, \mul_1
+    mul               \scratch2, \scratch2, \mul_2
+# x>>8 part
+    preceu.ph.qbla    \scratch3, \in_1
+    preceu.ph.qbla    \scratch4, \in_2
+    mul               \scratch3, \scratch3, \mul_1
+    mul               \scratch4, \scratch4, \mul_2
+# x part
+    addu              \scratch1, \scratch1, \scratch2
+    preceu.ph.qbla    \scratch2, \scratch1
+    addu              \scratch1, \scratch1, \scratch2
+    addu              \scratch1, \scratch1, \rounding_factor
+    preceu.ph.qbla    \scratch1, \scratch1
+# x>>8 part
+    addu              \scratch3, \scratch3, \scratch4
+    preceu.ph.qbla    \scratch4, \scratch3
+    addu              \scratch3, \scratch3, \scratch4
+    addu              \scratch3, \scratch3, \rounding_factor
+    and               \scratch3, \scratch3, \andi_factor
+
+    or                \out_1,    \scratch1, \scratch3
+.endm
+
 #endif //QT_MIPS_DSP_H__
