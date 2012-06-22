@@ -51,9 +51,11 @@
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 
+#if !defined(QT_NO_EVDEV)
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
 #include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
 #include <QtPlatformSupport/private/qevdevtouch_p.h>
+#endif
 
 #include <qpa/qplatformwindow.h>
 #include <QtGui/QSurfaceFormat>
@@ -72,9 +74,11 @@ QEglFSIntegration::QEglFSIntegration()
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
 
+#if !defined(QT_NO_EVDEV)
     new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
     new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
+#endif
 
     hooks->platformInit();
 
