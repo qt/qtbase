@@ -67,6 +67,7 @@ public:
                              LRESULT *result);
 
     static inline Qt::MouseButtons keyStateToMouseButtons(int);
+    static inline Qt::KeyboardModifiers keyStateToModifiers(int);
     static inline int mouseButtonsToKeyState(Qt::MouseButtons);
 
     QWindow *windowUnderMouse() const { return m_windowUnderMouse.data(); }
@@ -94,6 +95,16 @@ Qt::MouseButtons QWindowsMouseHandler::keyStateToMouseButtons(int wParam)
     if (wParam & MK_XBUTTON2)
         mb |= Qt::XButton2;
     return mb;
+}
+
+Qt::KeyboardModifiers QWindowsMouseHandler::keyStateToModifiers(int wParam)
+{
+    Qt::KeyboardModifiers mods(Qt::NoModifier);
+    if (wParam & MK_CONTROL)
+      mods |= Qt::ControlModifier;
+    if (wParam & MK_SHIFT)
+      mods |= Qt::ShiftModifier;
+    return mods;
 }
 
 int QWindowsMouseHandler::mouseButtonsToKeyState(Qt::MouseButtons mb)

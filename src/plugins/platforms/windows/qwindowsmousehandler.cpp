@@ -196,6 +196,8 @@ bool QWindowsMouseHandler::translateMouseWheelEvent(QWindow *window, HWND,
                                                     MSG msg, LRESULT *)
 {
     const Qt::MouseButtons buttons = keyStateToMouseButtons((int)msg.wParam);
+    const Qt::KeyboardModifiers mods = keyStateToModifiers((int)msg.wParam);
+
     int delta;
     if (msg.message == WM_MOUSEWHEEL || msg.message == WM_MOUSEHWHEEL)
         delta = (short) HIWORD (msg.wParam);
@@ -224,7 +226,7 @@ bool QWindowsMouseHandler::translateMouseWheelEvent(QWindow *window, HWND,
     QWindowSystemInterface::handleWheelEvent(receiver,
                                              QWindowsGeometryHint::mapFromGlobal(receiver, globalPos),
                                              globalPos,
-                                             delta, orientation);
+                                             delta, orientation, mods);
     return true;
 }
 
