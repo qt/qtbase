@@ -537,7 +537,8 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
         // check for explicit indication of close or the implicit connection close of HTTP/1.0
         connectionCloseEnabled = (connectionHeaderField.toLower().contains("close") ||
             headerField("proxy-connection").toLower().contains("close")) ||
-            (majorVersion == 1 && minorVersion == 0 && connectionHeaderField.isEmpty());
+            (majorVersion == 1 && minorVersion == 0 &&
+            (connectionHeaderField.isEmpty() && !headerField("proxy-connection").toLower().contains("keep-alive")));
 
 #ifndef QT_NO_COMPRESS
         if (autoDecompress && isCompressed()) {
