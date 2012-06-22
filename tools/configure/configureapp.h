@@ -74,7 +74,6 @@ public:
     void generateCachefile();
     void displayConfig();
     void buildQmake();
-    void buildHostTools();
 #endif
     void generateMakefiles();
     void appendMakeItem(int inList, const QString &item);

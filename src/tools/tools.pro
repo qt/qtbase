@@ -21,7 +21,7 @@ contains(QT_CONFIG, dbus) {
     src_tools_qdbuscpp2xml.target = sub-qdbuscpp2xml
 }
 
-!wince*:!ordered {
+!ordered {
     # Set dependencies for each subdir
     src_tools_moc.depends = src_tools_bootstrap
     src_tools_rcc.depends = src_tools_bootstrap

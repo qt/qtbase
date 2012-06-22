@@ -9,6 +9,7 @@ src_winmain.depends = sub-corelib  # just for the module .pri file
 
 src_corelib.subdir = $$PWD/corelib
 src_corelib.target = sub-corelib
+src_corelib.depends = src_tools
 
 src_xml.subdir = $$PWD/xml
 src_xml.target = sub-xml
@@ -59,11 +60,7 @@ src_plugins.target = sub-plugins
 src_plugins.depends = src_sql src_xml src_network src_platformsupport
 
 # this order is important
-!wince* {
-    SUBDIRS += src_tools
-    src_corelib.depends += src_tools
-}
-SUBDIRS += src_corelib
+SUBDIRS += src_tools src_corelib
 win32:SUBDIRS += src_winmain
 SUBDIRS += src_network src_sql src_xml src_testlib
 contains(QT_CONFIG, dbus) {

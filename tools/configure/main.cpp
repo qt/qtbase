@@ -102,8 +102,6 @@ int runConfigure( int argc, char** argv )
     if( !app.isDone() )
 	app.generateMakefiles();
     if( !app.isDone() )
-	app.buildHostTools();
-    if( !app.isDone() )
 	app.showSummary();
     if( !app.isOk() )
 	return 2;
