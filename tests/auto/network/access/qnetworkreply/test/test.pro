@@ -15,5 +15,5 @@ TESTDATA += ../empty ../rfc3252.txt ../resource ../bigfile ../*.jpg ../certs \
             ../index.html ../smb-file.txt
 
 win32:CONFIG += insignificant_test # QTBUG-24226
-load(testcase) # for target.path and installTestHelperApp()
-installTestHelperApp("../echo/echo",echo,echo)
+
+TEST_HELPER_INSTALLS = ../echo/echo

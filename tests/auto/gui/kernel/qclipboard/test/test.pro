@@ -15,6 +15,6 @@ wince* {
   DEPLOYMENT += rsc reg_resource
 }
 
-load(testcase) # for target.path and installTestHelperApp()
-installTestHelperApp("../copier/copier",copier,copier)
-installTestHelperApp("../paster/paster",paster,paster)
+TEST_HELPER_INSTALLS = \
+    ../copier/copier \
+    ../paster/paster

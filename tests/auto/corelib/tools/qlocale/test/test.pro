@@ -14,7 +14,6 @@ win32 {
     }
 }
 
-load(testcase) # for target.path and installTestHelperApp()
-installTestHelperApp("../syslocaleapp/syslocaleapp",syslocaleapp,syslocaleapp)
+TEST_HELPER_INSTALLS = ../syslocaleapp/syslocaleapp
 
 win32:CONFIG+= insignificant_test # QTBUG-25284

@@ -15,5 +15,4 @@ CONFIG(debug_and_release) {
   DESTDIR = ..
 }
 
-load(testcase) # for target.path and installTestHelperApp()
-installTestHelperApp("../lackey/lackey",lackey,lackey)
+TEST_HELPER_INSTALLS = ../lackey/lackey
