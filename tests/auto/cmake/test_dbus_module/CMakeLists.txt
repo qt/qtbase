@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-project(pass9)
+project(test_dbus_module)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5DBus REQUIRED)

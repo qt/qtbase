@@ -44,6 +44,6 @@
 int main(int argc, char **argv)
 {
     // Compile error if the resource file was not created.
-    Q_INIT_RESOURCE(pass11);
+    Q_INIT_RESOURCE(test_add_resources_delyed_file);
     return 0;
 }

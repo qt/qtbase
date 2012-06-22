@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-project(pass8)
+project(test_qtmainwin_library)
 
 find_package(Qt5Core REQUIRED)
 

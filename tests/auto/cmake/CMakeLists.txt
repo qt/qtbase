@@ -1,6 +1,6 @@
 
 # This is an automatic test for the CMake configuration files.
-# To run it,
+# To run it manually,
 # 1) mkdir build   # Create a build directory
 # 2) cd build
 # 3) cmake ..      # Run cmake on this directory.
@@ -8,20 +8,29 @@
 #
 # The expected output is something like:
 #
-#     Start 1: pass1
-# 1/7 Test #1: pass1 ............................   Passed    4.25 sec
-#     Start 2: pass2
-# 2/7 Test #2: pass2 ............................   Passed    2.00 sec
-#     Start 3: pass3
-# 3/7 Test #3: pass3 ............................   Passed    2.85 sec
-#     Start 4: fail4
-# 4/7 Test #4: fail4 ............................   Passed    1.88 sec
-#     Start 5: fail5
-# 5/7 Test #5: fail5 ............................   Passed    1.36 sec
-#     Start 6: pass_needsquoting_6
-# 6/7 Test #6: pass_needsquoting_6 ..............   Passed    2.88 sec
-#     Start 7: pass7
-# 7/7 Test #7: pass7 ............................   Passed    0.93 sec
+#       Start  1: test_use_modules_function
+#  1/11 Test  #1: test_use_modules_function ........   Passed    3.36 sec
+#       Start  2: test_wrap_cpp_and_resources
+#  2/11 Test  #2: test_wrap_cpp_and_resources ......   Passed    1.41 sec
+#       Start  3: test_dependent_modules
+#  3/11 Test  #3: test_dependent_modules ...........   Passed    2.22 sec
+#       Start  4: test_add_resource_options
+#  4/11 Test  #4: test_add_resource_options ........   Passed    0.16 sec
+#       Start  5: test_wrap_cpp_options
+#  5/11 Test  #5: test_wrap_cpp_options ............   Passed    0.36 sec
+#       Start  6: test_needsquoting_dirname
+#  6/11 Test  #6: test_needsquoting_dirname ........   Passed    2.20 sec
+#       Start  7: test_platform_defs_include
+#  7/11 Test  #7: test_platform_defs_include .......   Passed    0.28 sec
+#       Start  8: test_qtmainwin_library
+#  8/11 Test  #8: test_qtmainwin_library ...........   Passed    1.27 sec
+#       Start  9: test_dbus_module
+#  9/11 Test  #9: test_dbus_module .................   Passed    3.46 sec
+#       Start 10: test_multiple_find_package
+# 10/11 Test #10: test_multiple_find_package .......   Passed    0.07 sec
+#       Start 11: test_add_resources_delyed_file
+# 11/11 Test #11: test_add_resources_delyed_file ...   Passed    0.38 sec
+#
 #
 # Note that if Qt is not installed, or if it is installed to a
 # non-standard prefix, the environment variable CMAKE_PREFIX_PATH
@@ -80,22 +89,22 @@ endmacro()
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS 2.8.8)
     # Requires INCLUDE_DIRECTORIES target property in CMake 2.8.8
-    expect_pass(pass1)
+    expect_pass(test_use_modules_function)
 else()
-    message("CMake version older than 2.8.8 (Found ${CMAKE_VERSION}). Not running test \"pass1\"")
+    message("CMake version older than 2.8.8 (Found ${CMAKE_VERSION}). Not running test \"test_use_modules_function\"")
 endif()
-expect_pass(pass2)
-expect_pass(pass3)
-expect_fail(fail4)
-expect_fail(fail5)
-expect_pass("pass(needsquoting)6")
-expect_pass(pass7)
-expect_pass(pass8)
+expect_pass(test_wrap_cpp_and_resources)
+expect_pass(test_dependent_modules)
+expect_fail(test_add_resource_options)
+expect_fail(test_wrap_cpp_options)
+expect_pass("test(needsquoting)dirname")
+expect_pass(test_platform_defs_include)
+expect_pass(test_qtmainwin_library)
 
 # If QtDBus has been installed then run the tests for its macros.
 find_package(Qt5DBus QUIET)
 if (Qt5DBus_FOUND AND NOT APPLE)
-    expect_pass(pass9)
+    expect_pass(test_dbus_module)
 endif()
-expect_pass(pass10)
-expect_pass(pass11)
+expect_pass(test_multiple_find_package)
+expect_pass(test_add_resources_delyed_file)

@@ -51,6 +51,6 @@ int main(int argc, char **argv)
 {
     MyObject myObject;
     // Compile error if the resource file was not created.
-    Q_INIT_RESOURCE(pass2);
+    Q_INIT_RESOURCE(test_wrap_cpp_and_resources);
     return 0;
 }

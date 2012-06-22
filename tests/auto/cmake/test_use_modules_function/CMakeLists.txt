@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-project(pass1)
+project(test_use_modules_function)
 
 set(CMAKE_AUTOMOC ON)
 
