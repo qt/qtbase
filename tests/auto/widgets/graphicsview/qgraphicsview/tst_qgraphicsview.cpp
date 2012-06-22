@@ -4576,6 +4576,9 @@ void tst_QGraphicsView::hoverLeave()
 
     QCursor::setPos(1,1);
     QTest::qWait(200);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-26274 - behaviour regression", Abort);
+#endif
     QVERIFY(item->receivedLeaveEvent);
     QCOMPARE(item->leaveWidget, view.viewport());
 }
