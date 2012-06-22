@@ -33,9 +33,6 @@ macx {
 else:unix:      check.commands += ./$(QMAKE_TARGET)
 else:           check.commands += $(DESTDIR_TARGET)
 
-# For Qt/Embedded, run every test app as a QWS server
-embedded:       check.commands += -qws
-
 # Allow for custom arguments to tests
 check.commands += $(TESTARGS)
 
