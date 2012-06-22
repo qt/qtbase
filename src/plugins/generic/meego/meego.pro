@@ -12,4 +12,4 @@ SOURCES = qmeegointegration.cpp \
 HEADERS = qmeegointegration.h \
           contextkitproperty.h
 
-QT = core-private gui-private dbus
+QT = core-private gui-private dbus gui-private

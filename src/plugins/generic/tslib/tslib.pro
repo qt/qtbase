@@ -10,6 +10,8 @@ HEADERS	= qtslib.h
 SOURCES	= main.cpp \
 	qtslib.cpp
 
+QT += gui-private
+
 LIBS += -lts
 
 OTHER_FILES += tslib.json

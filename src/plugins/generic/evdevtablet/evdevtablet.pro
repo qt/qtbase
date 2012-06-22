@@ -7,7 +7,7 @@ INSTALLS += target
 
 SOURCES = main.cpp
 
-QT += core-private platformsupport-private
+QT += core-private platformsupport-private gui-private
 
 OTHER_FILES += \
     evdevtablet.json
