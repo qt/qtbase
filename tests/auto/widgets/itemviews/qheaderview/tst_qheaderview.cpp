@@ -230,6 +230,7 @@ private slots:
     void insertTest();
     void mixedTests();
     void resizeToContentTest();
+    void testStreamWithHide();
 
 protected:
     void setupTestData(bool use_reset_model = false);
@@ -2696,6 +2697,27 @@ void tst_QHeaderView::resizeToContentTest()
 
     const int precalced_results[] =  { -1523279360, -1523279360, -1347156568, 1, 1719705216, 1719705216, 12500 };
     calculateAndCheck(__LINE__, precalced_results);
+}
+
+void tst_QHeaderView::testStreamWithHide()
+{
+#ifndef QT_NO_DATASTREAM
+    m_tableview->setVerticalHeader(view);
+    m_tableview->setModel(model);
+    view->setDefaultSectionSize(25);
+    view->hideSection(2);
+    view->swapSections(1, 2);
+
+    QByteArray s = view->saveState();
+    view->swapSections(1, 2);
+    view->setDefaultSectionSize(30); // To make sure our precalced data are correct.
+    view->restoreState(s);
+
+    const int precalced_results[] =  { -1116614432, -1528653200, -1914165644, 244434607, -1111214068, 750357900, 75};
+    calculateAndCheck(__LINE__, precalced_results);
+#else
+    QSKIP("Datastream required for testStreamWithHide. Skipping this test.");
+#endif
 }
 
 QTEST_MAIN(tst_QHeaderView)
