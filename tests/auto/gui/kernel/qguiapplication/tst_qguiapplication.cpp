@@ -50,6 +50,7 @@ class tst_QGuiApplication: public QObject
     Q_OBJECT
 
 private slots:
+    void displayName();
     void focusObject();
     void allWindows();
     void topLevelWindows();
@@ -59,6 +60,18 @@ private slots:
     void modalWindow();
     void quitOnLastWindowClosed();
 };
+
+void tst_QGuiApplication::displayName()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication") };
+    QGuiApplication app(argc, argv);
+    QCOMPARE(::qAppName(), QString::fromLatin1("tst_qguiapplication"));
+    QCOMPARE(QGuiApplication::applicationName(), QString::fromLatin1("tst_qguiapplication"));
+    QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("tst_qguiapplication"));
+    QGuiApplication::setApplicationDisplayName("The GUI Application");
+    QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("The GUI Application"));
+}
 
 class DummyWindow : public QWindow
 {

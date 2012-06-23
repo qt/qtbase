@@ -119,6 +119,7 @@ enum ApplicationResourceFlags
 static unsigned applicationResourceFlags = 0;
 
 QString *QGuiApplicationPrivate::platform_name = 0;
+QString *QGuiApplicationPrivate::displayName = 0;
 
 QPalette *QGuiApplicationPrivate::app_pal = 0;        // default application palette
 
@@ -369,6 +370,8 @@ QGuiApplication::~QGuiApplication()
 
     delete QGuiApplicationPrivate::platform_name;
     QGuiApplicationPrivate::platform_name = 0;
+    delete QGuiApplicationPrivate::displayName;
+    QGuiApplicationPrivate::displayName = 0;
 }
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
@@ -379,6 +382,30 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
 {
     self = this;
     application_type = QCoreApplication::GuiClient;
+}
+
+/*!
+    \property QGuiApplication::applicationDisplayName
+    \brief the user-visible name of this application
+    \since 5.0
+
+    This name is shown to the user, for instance in window titles.
+    It can be translated, if necessary.
+
+    If not set, the application display name defaults to the application name.
+
+    \sa applicationName
+*/
+void QGuiApplication::setApplicationDisplayName(const QString &name)
+{
+    if (!QGuiApplicationPrivate::displayName)
+        QGuiApplicationPrivate::displayName = new QString;
+    *QGuiApplicationPrivate::displayName = name;
+}
+
+QString QGuiApplication::applicationDisplayName()
+{
+    return QGuiApplicationPrivate::displayName ? *QGuiApplicationPrivate::displayName : applicationName();
 }
 
 /*!

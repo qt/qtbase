@@ -74,6 +74,7 @@ class QStyleHints;
 class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
 {
     Q_OBJECT
+    Q_PROPERTY(QString applicationDisplayName READ applicationDisplayName WRITE setApplicationDisplayName)
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection)
     Q_PROPERTY(QString platformName READ platformName STORED false)
     Q_PROPERTY(bool quitOnLastWindowClosed  READ quitOnLastWindowClosed WRITE setQuitOnLastWindowClosed)
@@ -81,6 +82,9 @@ class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
 public:
     QGuiApplication(int &argc, char **argv, int = ApplicationFlags);
     virtual ~QGuiApplication();
+
+    static void setApplicationDisplayName(const QString &name);
+    static QString applicationDisplayName();
 
     static QWindowList allWindows();
     static QWindowList topLevelWindows();

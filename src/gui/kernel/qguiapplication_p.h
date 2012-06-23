@@ -164,6 +164,7 @@ public:
     static QGuiApplicationPrivate *instance() { return self; }
 
     static QString *platform_name;
+    static QString *displayName;
 
     QWindowList modalWindowList;
     static void showModalWindow(QWindow *window);
