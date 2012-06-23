@@ -2200,7 +2200,7 @@ static void shiftConstraints(const QList<QSimplexConstraint *> &constraints, qre
     for (int i = 0; i < constraints.count(); ++i) {
         QSimplexConstraint *c = constraints.at(i);
         qreal multiplier = 0;
-        foreach (qreal v, c->variables.values()) {
+        foreach (qreal v, c->variables) {
             multiplier += v;
         }
         c->constant += multiplier * amount;
