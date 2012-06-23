@@ -141,7 +141,7 @@ QString QBenchmarkValgrindUtils::getNewestFileName()
     QFileInfo lastFileInfo;
     const QString pattern = QString::fromLatin1("%1.(\\d+)").arg(base);
     QRegExp rx(pattern);
-    foreach (QFileInfo fileInfo, fiList) {
+    foreach (const QFileInfo &fileInfo, fiList) {
         const int index = rx.indexIn(fileInfo.fileName());
         Q_ASSERT(index == 0);
         Q_UNUSED(index);
@@ -172,7 +172,7 @@ void QBenchmarkValgrindUtils::cleanup()
         << base // overall summary
         << QString::fromLatin1("%1.*").arg(base); // individual dumps
     QFileInfoList fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
-    foreach (QFileInfo fileInfo, fiList) {
+    foreach (const QFileInfo &fileInfo, fiList) {
         const bool removeOk = QFile::remove(fileInfo.fileName());
         Q_ASSERT(removeOk);
         Q_UNUSED(removeOk);

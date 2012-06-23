@@ -577,7 +577,7 @@ int main(int argc, char **argv)
     /*
       Main loop.
      */
-    foreach (QString qf, qdocFiles) {
+    foreach (const QString &qf, qdocFiles) {
         //qDebug() << "PROCESSING:" << qf;
         processQdocconfFile(qf);
     }

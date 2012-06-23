@@ -57,7 +57,7 @@ static bool ignoreProxyFor(const QNetworkProxyQuery &query)
 {
     const QList<QByteArray> noProxyTokens = qgetenv("no_proxy").split(',');
 
-    foreach (const QByteArray rawToken, noProxyTokens) {
+    foreach (const QByteArray &rawToken, noProxyTokens) {
         QByteArray token = rawToken.trimmed();
         QString peerHostName = query.peerHostName();
 

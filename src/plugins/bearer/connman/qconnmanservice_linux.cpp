@@ -313,7 +313,7 @@ QStringList QConnmanManagerInterface::getServices()
 
 QString QConnmanManagerInterface::getPathForTechnology(const QString &name)
 {
-    foreach(const QString path, getTechnologies()) {
+    foreach (const QString &path, getTechnologies()) {
         if(path.contains(name)) {
             return path;
         }

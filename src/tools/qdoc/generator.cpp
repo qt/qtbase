@@ -1729,7 +1729,7 @@ void Generator::initialize(const Config &config)
 
     QStringList prefixes = config.getStringList(CONFIG_OUTPUTPREFIXES);
     if (!prefixes.isEmpty()) {
-        foreach (QString prefix, prefixes)
+        foreach (const QString &prefix, prefixes)
             outputPrefixes[prefix] = config.getString(
                         CONFIG_OUTPUTPREFIXES + Config::dot + prefix);
     } else

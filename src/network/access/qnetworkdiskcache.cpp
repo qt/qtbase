@@ -195,7 +195,7 @@ QIODevice *QNetworkDiskCache::prepare(const QNetworkCacheMetaData &metaData)
         return 0;
     }
 
-    foreach (QNetworkCacheMetaData::RawHeader header, metaData.rawHeaders()) {
+    foreach (const QNetworkCacheMetaData::RawHeader &header, metaData.rawHeaders()) {
         if (header.first.toLower() == "content-length") {
             qint64 size = header.second.toInt();
             if (size > (maximumCacheSize() * 3)/4)
@@ -636,7 +636,7 @@ bool QCacheItem::canCompress() const
 {
     bool sizeOk = false;
     bool typeOk = false;
-    foreach (QNetworkCacheMetaData::RawHeader header, metaData.rawHeaders()) {
+    foreach (const QNetworkCacheMetaData::RawHeader &header, metaData.rawHeaders()) {
         if (header.first.toLower() == "content-length") {
             qint64 size = header.second.toLongLong();
             if (size > MAX_COMPRESSION_SIZE)

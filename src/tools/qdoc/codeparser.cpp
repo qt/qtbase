@@ -170,7 +170,7 @@ CodeParser *CodeParser::parserForHeaderFile(const QString &filePath)
     while (p != parsers.constEnd()) {
 
         QStringList headerPatterns = (*p)->headerFileNameFilter();
-        foreach (QString pattern, headerPatterns) {
+        foreach (const QString &pattern, headerPatterns) {
             QRegExp re(pattern, Qt::CaseInsensitive, QRegExp::Wildcard);
             if (re.exactMatch(fileName))
                 return *p;
@@ -188,7 +188,7 @@ CodeParser *CodeParser::parserForSourceFile(const QString &filePath)
     while (p != parsers.constEnd()) {
 
         QStringList sourcePatterns = (*p)->sourceFileNameFilter();
-        foreach (QString pattern, sourcePatterns) {
+        foreach (const QString &pattern, sourcePatterns) {
             QRegExp re(pattern, Qt::CaseInsensitive, QRegExp::Wildcard);
             if (re.exactMatch(fileName))
                 return *p;

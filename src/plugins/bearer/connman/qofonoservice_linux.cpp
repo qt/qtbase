@@ -79,7 +79,7 @@ QList <QDBusObjectPath> QOfonoManagerInterface::getModems()
 QDBusObjectPath QOfonoManagerInterface::currentModem()
 {
     QList<QDBusObjectPath> modems = getModems();
-    foreach(const QDBusObjectPath modem, modems) {
+    foreach (const QDBusObjectPath &modem, modems) {
         QOfonoModemInterface device(modem.path());
         if(device.isPowered() && device.isOnline())
         return modem;;

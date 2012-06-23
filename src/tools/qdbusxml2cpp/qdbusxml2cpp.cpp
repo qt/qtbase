@@ -561,7 +561,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
        << includeList
        << "#include <QtDBus/QtDBus>" << endl;
 
-    foreach (QString include, includes) {
+    foreach (const QString &include, includes) {
         hs << "#include \"" << include << "\"" << endl;
         if (headerName.isEmpty())
             cs << "#include \"" << include << "\"" << endl;
@@ -869,7 +869,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
            << "#include <QtCore/QVariant>" << endl;
     hs << "#include <QtDBus/QtDBus>" << endl;
 
-    foreach (QString include, includes) {
+    foreach (const QString &include, includes) {
         hs << "#include \"" << include << "\"" << endl;
         if (headerName.isEmpty())
             cs << "#include \"" << include << "\"" << endl;

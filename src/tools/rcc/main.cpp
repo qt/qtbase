@@ -78,7 +78,7 @@ void dumpRecursive(const QDir &dir, QTextStream &out)
 {
     QFileInfoList entries = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot
                                               | QDir::NoSymLinks);
-    foreach (QFileInfo entry, entries) {
+    foreach (const QFileInfo &entry, entries) {
         if (entry.isDir()) {
             dumpRecursive(entry.filePath(), out);
         } else {

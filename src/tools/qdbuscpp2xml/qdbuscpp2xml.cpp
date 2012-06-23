@@ -269,7 +269,7 @@ QString qDBusInterfaceFromClassDef(const ClassDef *mo)
 {
     QString interface;
 
-    foreach (ClassInfoDef cid, mo->classInfoList) {
+    foreach (const ClassInfoDef &cid, mo->classInfoList) {
         if (cid.name == QCLASSINFO_DBUS_INTERFACE)
             return QString::fromUtf8(cid.value);
     }

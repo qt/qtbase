@@ -90,7 +90,7 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
         if (m_deviceDiscovery) {
             // scan and add already connected keyboards
             QStringList devices = m_deviceDiscovery->scanConnectedDevices();
-            foreach (QString device, devices) {
+            foreach (const QString &device, devices) {
                 addMouse(device);
             }
 
