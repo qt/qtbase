@@ -1691,7 +1691,7 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QHash<QString, QStrin
     }
 
     if (x == "host_build")
-        return host_build ? "true" : "false";
+        return host_build;
 
     //mkspecs
     static QString hspec, xspec;
