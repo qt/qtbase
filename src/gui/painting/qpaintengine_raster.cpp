@@ -2097,17 +2097,6 @@ void QRasterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap, cons
     }
 }
 
-// assumes that rect has positive width and height
-static inline const QRect toRect_normalized(const QRectF &rect)
-{
-    const int x = qRound(rect.x());
-    const int y = qRound(rect.y());
-    const int w = int(rect.width() + qreal(0.5));
-    const int h = int(rect.height() + qreal(0.5));
-
-    return QRect(x, y, w, h);
-}
-
 static inline int fast_ceil_positive(const qreal &v)
 {
     const int iv = int(v);
