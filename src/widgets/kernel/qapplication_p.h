@@ -135,7 +135,6 @@ public:
 
 
     void createEventDispatcher();
-    QString appName() const;
     static void dispatchEnterLeave(QWidget *enter, QWidget *leave);
 
     //modality

@@ -71,7 +71,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static QString appName;
 static QString appFont;
 static bool popupGrabOk = false;
 static QPointer<QWidget> autoGrabber;
@@ -79,11 +78,6 @@ extern QWidget *qt_button_down;
 extern QWidget *qt_popup_down;
 extern bool qt_replay_popup_mouse_event;
 int openPopupCount = 0;
-
-QString QApplicationPrivate::appName() const
-{
-    return QT_PREPEND_NAMESPACE(appName);
-}
 
 void QApplicationPrivate::createEventDispatcher()
 {
@@ -456,7 +450,6 @@ void qt_init(QApplicationPrivate *priv, int type)
     if (const QPalette *toolTipPalette = QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::ToolTipPalette))
         QToolTip::setPalette(*toolTipPalette);
     QApplicationPrivate::initializeWidgetFontHash();
-    qApp->setObjectName(appName);
 }
 
 #ifdef Q_OS_WIN

@@ -101,6 +101,7 @@ private slots:
 
     void args_data();
     void args();
+    void appName();
 
     void lastWindowClosed();
     void quitOnLastWindowClosed();
@@ -487,6 +488,16 @@ void tst_QApplication::args()
     QCOMPARE( argv_out, args_out );
 
     delete [] argv;
+}
+
+void tst_QApplication::appName()
+{
+    char argv0[] = "tst_qapplication";
+    char *argv[] = { argv0, 0 };
+    int argc = 1;
+    QApplication app(argc, argv);
+    QCOMPARE(::qAppName(), QString::fromLatin1("tst_qapplication"));
+    QCOMPARE(QCoreApplication::applicationName(), QString::fromLatin1("tst_qapplication"));
 }
 
 class CloseWidget : public QWidget

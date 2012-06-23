@@ -187,21 +187,28 @@ void tst_QWidget_window::tst_windowFilePathAndwindowTitle_data()
     QTest::addColumn<QString>("finalTitleAfter");
 
     QString validPath = QApplication::applicationFilePath();
-    QString appName = QLatin1String("Killer App");
     QString fileNameOnly = QFileInfo(validPath).fileName() + QLatin1String("[*]");
-    QString fileAndApp = fileNameOnly + QLatin1String(" ") + QChar(0x2014) + QLatin1String(" ") + appName;
+    QString fileAndSep = fileNameOnly + QLatin1String(" ") + QChar(0x2014) + QLatin1String(" ");
     QString windowTitle = QLatin1String("Here is a Window Title");
 
-    QTest::newRow("never Set Title nor AppName") << false << false << validPath << QString() << windowTitle << fileNameOnly << fileNameOnly;
-    QTest::newRow("set title after only, but no AppName") << false << true << validPath << QString() << windowTitle << fileNameOnly << windowTitle;
+    QString defaultPlatString =
+#if 0 // was ifdef Q_OS_MAC, but that code is disabled in qwidget.cpp and caption handling should move to QPA anyway
+        fileNameOnly;
+#else
+        fileAndSep + "tst_qwidget_window"; // default app name in Qt5
+#endif
+
+    QTest::newRow("never Set Title nor AppName") << false << false << validPath << QString() << windowTitle << defaultPlatString << defaultPlatString;
+    QTest::newRow("set title after only, but no AppName") << false << true << validPath << QString() << windowTitle << defaultPlatString << windowTitle;
     QTest::newRow("set title before only, not AppName") << true << false << validPath << QString() << windowTitle << windowTitle << windowTitle;
     QTest::newRow("always set title, not appName") << true << true << validPath << QString() << windowTitle << windowTitle << windowTitle;
 
+    QString appName = QLatin1String("Killer App");
     QString platString =
-#ifdef Q_OS_MAC
+#if 0 // was ifdef Q_OS_MAC, but that code is disabled in qwidget.cpp and caption handling should move to QPA anyway
         fileNameOnly;
 #else
-        fileAndApp;
+        fileAndSep + appName;
 #endif
 
     QTest::newRow("never Set Title, yes AppName") << false << false << validPath << appName << windowTitle << platString << platString;
@@ -233,20 +240,13 @@ void tst_QWidget_window::tst_windowFilePathAndwindowTitle()
         widget.setWindowTitle(indyWindowTitle);
     }
     widget.setWindowFilePath(filePath);
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("never Set Title, yes AppName", "QTBUG-23682", Continue);
-    QEXPECT_FAIL("set title after only, yes AppName", "QTBUG-23682", Continue);
-#endif
-    QCOMPARE(finalTitleBefore, widget.windowTitle());
+    QCOMPARE(widget.windowTitle(), finalTitleBefore);
     QCOMPARE(widget.windowFilePath(), filePath);
 
     if (setWindowTitleAfter) {
         widget.setWindowTitle(indyWindowTitle);
     }
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("never Set Title, yes AppName", "QTBUG-23682", Continue);
-#endif
-    QCOMPARE(finalTitleAfter, widget.windowTitle());
+    QCOMPARE(widget.windowTitle(), finalTitleAfter);
     QCOMPARE(widget.windowFilePath(), filePath);
 }
 

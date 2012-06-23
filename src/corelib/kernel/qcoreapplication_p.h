@@ -78,7 +78,7 @@ public:
 
     void _q_initializeProcessManager();
 
-    virtual QString appName() const;
+    QString appName() const;
     virtual void createEventDispatcher();
     static void removePostedEvent(QEvent *);
 #ifdef Q_OS_WIN
