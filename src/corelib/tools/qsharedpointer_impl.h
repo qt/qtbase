@@ -261,8 +261,10 @@ namespace QtSharedPointer {
         Q_DISABLE_COPY(ExternalRefCountWithContiguousData)
     };
 
+#ifndef QT_NO_QOBJECT
     Q_CORE_EXPORT QWeakPointer<QObject> weakPointerFromVariant_internal(const QVariant &variant);
     Q_CORE_EXPORT QSharedPointer<QObject> sharedPointerFromVariant_internal(const QVariant &variant);
+#endif
 } // namespace QtSharedPointer
 
 template <class T> class QSharedPointer
