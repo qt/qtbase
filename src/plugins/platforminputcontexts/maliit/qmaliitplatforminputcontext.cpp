@@ -551,10 +551,8 @@ QMaliitPlatformInputContextPrivate::QMaliitPlatformInputContextPrivate(QMaliitPl
     , correctionEnabled(false)
     , q(qq)
 {
-    if (!connection.isConnected()) {
-        qDebug("QMaliitPlatformInputContext: not connected.");
+    if (!connection.isConnected())
         return;
-    }
 
     server = new ComMeegoInputmethodUiserver1Interface(QStringLiteral(""), QStringLiteral("/com/meego/inputmethod/uiserver1"), connection);
     adaptor = new Inputcontext1Adaptor(qq);

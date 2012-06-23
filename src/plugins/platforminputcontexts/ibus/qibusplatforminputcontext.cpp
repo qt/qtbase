@@ -272,10 +272,8 @@ QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
       context(0),
       valid(false)
 {
-    if (!connection || !connection->isConnected()) {
-        qDebug("QIBusPlatformInputContext: not connected.");
+    if (!connection || !connection->isConnected())
         return;
-    }
 
     bus = new QIBusProxy(QLatin1String("org.freedesktop.IBus"),
                          QLatin1String("/org/freedesktop/IBus"),
@@ -333,12 +331,8 @@ QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
                QLatin1String(QDBusConnection::localMachineId()) +
                QLatin1Char('-') + QString::fromLocal8Bit(host) + QLatin1Char('-') + QString::fromLocal8Bit(displayNumber));
 
-    if (!file.exists()) {
-        qWarning("QIBusPlatformInputContext: ibus config file '%s' does not exist.", qPrintable(file.fileName()));
+    if (!file.open(QFile::ReadOnly))
         return 0;
-    }
-
-    file.open(QFile::ReadOnly);
 
     QByteArray address;
     int pid = -1;
