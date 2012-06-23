@@ -72,20 +72,10 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringList QIconEnginePlugin::keys() const
-
-    Returns
-
-    \sa create()
-*/
-
-/*!
     \fn QIconEngine* QIconEnginePlugin::create(const QString& filename)
 
     Creates and returns a QIconEngine object for the icon with the given
     \a filename.
-
-    \sa keys()
 */
 
 /*!
