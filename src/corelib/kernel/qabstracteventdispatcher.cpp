@@ -41,6 +41,7 @@
 
 #include "qabstracteventdispatcher.h"
 #include "qabstracteventdispatcher_p.h"
+#include "qabstractnativeeventfilter.h"
 
 #include "qthread.h"
 #include <private/qthread_p.h>
@@ -370,87 +371,96 @@ void QAbstractEventDispatcher::closingDown()
 */
 
 /*!
-    \typedef QAbstractEventDispatcher::EventFilter
+    Installs an event filter \a filterObj for all native event filters
+    received by the application.
 
-    Typedef for a function with the signature
+    The event filter \a filterObj receives events via its nativeEventFilter()
+    function, which is called for all events received by all threads.
 
-    \snippet code/src_corelib_kernel_qabstracteventdispatcher.cpp 0
-
-    Note that the type of the \a message is platform dependent. The
-    following table shows the \a {message}'s type on Windows, Mac, and
-    X11. You can do a static cast to these types.
-
-    \table
-        \header
-            \li Platform
-            \li type
-        \row
-            \li Windows
-            \li MSG
-        \row
-            \li X11
-            \li XEvent
-        \row
-            \li Mac
-            \li NSEvent
-    \endtable
-
-    
-
-    \sa setEventFilter(), filterEvent()
-*/
-
-/*!
-    Replaces the event filter function for this
-    QAbstractEventDispatcher with \a filter and returns the replaced
-    event filter function. Only the current event filter function is
-    called. If you want to use both filter functions, save the
-    replaced EventFilter in a place where yours can call it.
-
-    The event filter function set here is called for all messages
-    taken from the system event loop before the event is dispatched to
-    the respective target, including the messages not meant for Qt
-    objects.
-
-    The event filter function should return true if the message should
+    The nativeEventFilter() function should return true if the event should
     be filtered, (i.e. stopped). It should return false to allow
-    processing the message to continue.
+    normal Qt processing to continue: the native event can then be translated
+    into a QEvent and handled by the standard Qt \l{QEvent} {event} filtering,
+    e.g. QObject::installEventFilter().
 
-    By default, no event filter function is set (i.e., this function
-    returns a null EventFilter the first time it is called).
+    If multiple event filters are installed, the filter that was installed last
+    is activated first.
+
+    \note The filter function set here receives native messages,
+    i.e. MSG or XEvent structs.
+
+    For maximum portability, you should always try to use QEvents
+    and QObject::installEventFilter() whenever possible.
+
+    \sa QObject::installEventFilter()
+
+    \since 5.0
 */
-QAbstractEventDispatcher::EventFilter QAbstractEventDispatcher::setEventFilter(EventFilter filter)
+void QAbstractEventDispatcher::installNativeEventFilter(QAbstractNativeEventFilter *filterObj)
 {
     Q_D(QAbstractEventDispatcher);
-    EventFilter oldFilter = d->event_filter;
-    d->event_filter = filter;
-    return oldFilter;
+
+    // clean up unused items in the list
+    d->eventFilters.removeAll(0);
+    d->eventFilters.removeAll(filterObj);
+    d->eventFilters.prepend(filterObj);
 }
 
 /*!
-    Sends \a message through the event filter that was set by
-    setEventFilter().  If no event filter has been set, this function
-    returns false; otherwise, this function returns the result of the
-    event filter function.
+    Removes an event filter object \a obj from this object. The
+    request is ignored if such an event filter has not been installed.
+
+    All event filters for this object are automatically removed when
+    this object is destroyed.
+
+    It is always safe to remove an event filter, even during event
+    filter activation (i.e. from the nativeEventFilter() function).
+
+    \sa installNativeEventFilter(), QAbstractNativeEventFilter
+    \since 5.0
+*/
+void QAbstractEventDispatcher::removeNativeEventFilter(QAbstractNativeEventFilter *filterObj)
+{
+    Q_D(QAbstractEventDispatcher);
+    for (int i = 0; i < d->eventFilters.count(); ++i) {
+        if (d->eventFilters.at(i) == filterObj) {
+            d->eventFilters[i] = 0;
+            break;
+        }
+    }
+}
+
+/*!
+    Sends \a message through the event filters that were set by
+    installNativeEventFilter().  This function returns true as soon as an
+    event filter returns true, and false otherwise to indicate that
+    the processing of the event should continue.
 
     Subclasses of QAbstractEventDispatcher \e must call this function
     for \e all messages received from the system to ensure
     compatibility with any extensions that may be used in the
     application.
 
-    Note that the type of \a message is platform dependent. See 
-    QAbstractEventDispatcher::EventFilter for details.
+    Note that the type of \a message is platform dependent. See
+    QAbstractNativeEventFilter for details.
 
-    \sa setEventFilter()
+    \sa installNativeEventFilter()
+    \since 5.0
 */
-bool QAbstractEventDispatcher::filterEvent(void *message)
+bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, void *message, long *result)
 {
     Q_D(QAbstractEventDispatcher);
-    if (d->event_filter) {
+    if (!d->eventFilters.isEmpty()) {
         // Raise the loopLevel so that deleteLater() calls in or triggered
         // by event_filter() will be processed from the main event loop.
         QScopedLoopLevelCounter loopLevelCounter(d->threadData);
-        return d->event_filter(message);
+        for (int i = 0; i < d->eventFilters.size(); ++i) {
+            QAbstractNativeEventFilter *filter = d->eventFilters.at(i);
+            if (!filter)
+                continue;
+            if (filter->nativeEventFilter(eventType, message, result))
+                return true;
+        }
     }
     return false;
 }

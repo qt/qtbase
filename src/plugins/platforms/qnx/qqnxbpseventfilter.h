@@ -44,6 +44,7 @@
 
 #include <QObject>
 #include <QHash>
+#include <QAbstractNativeEventFilter>
 
 #include <bps/dialog.h>
 
@@ -58,7 +59,7 @@ class QQnxScreen;
 class QQnxScreenEventHandler;
 class QQnxVirtualKeyboardBps;
 
-class QQnxBpsEventFilter : public QObject
+class QQnxBpsEventFilter : public QObject, public QAbstractNativeEventFilter
 {
     Q_OBJECT
 public:
@@ -76,8 +77,7 @@ public:
     void unregisterForDialogEvents(QQnxFileDialogHelper *dialog);
 
 private:
-    static bool dispatcherEventFilter(void *message);
-    bool bpsEventFilter(bps_event_t *event);
+    bool nativeEventFilter(const QByteArray &eventType, void *message, long *result) Q_DECL_OVERRIDE;
 
     bool handleNavigatorEvent(bps_event_t *event);
 

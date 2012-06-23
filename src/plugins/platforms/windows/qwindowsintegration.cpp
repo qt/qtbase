@@ -102,8 +102,6 @@ public:
 #endif
     virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
     virtual void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *bs);
-    virtual EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter)
-        { return QWindowsContext::instance()->setEventFilter(eventType, filter); }
 
     Q_INVOKABLE void *createMessageWindow(const QString &classNameTemplate,
                                           const QString &windowName,

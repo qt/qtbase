@@ -71,6 +71,7 @@
 #include <qcompleter.h>
 #include <qtableview.h>
 #include <qtreewidget.h>
+#include <qabstractnativeeventfilter.h>
 
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsProxyWidget>
@@ -5505,16 +5506,17 @@ void tst_QWidget::minAndMaxSizeWithX11BypassWindowManagerHint()
     }
 }
 
-class ShowHideShowWidget : public QWidget
+class ShowHideShowWidget : public QWidget, public QAbstractNativeEventFilter
 {
     Q_OBJECT
 
     int state;
 public:
     bool gotExpectedMapNotify;
+    bool gotExpectedGlobalEvent;
 
     ShowHideShowWidget()
-        : state(0), gotExpectedMapNotify(false)
+        : state(0), gotExpectedMapNotify(false), gotExpectedGlobalEvent(false)
     {
         startTimer(1000);
     }
@@ -5531,16 +5533,29 @@ public:
         }
     }
 
-    bool nativeEvent(const QByteArray &eventType, void *message, long *)
+    bool isMapNotify(const QByteArray &eventType, void *message)
     {
         enum { XCB_MAP_NOTIFY = 19 };
-
         if (state == 1 && eventType == QByteArrayLiteral("xcb_generic_event_t")) {
             // XCB events have a uint8 response_type member at the beginning.
             const unsigned char responseType = *(const unsigned char *)(message);
-            if ((responseType & ~0x80) == XCB_MAP_NOTIFY)
-                gotExpectedMapNotify = true;
+            return ((responseType & ~0x80) == XCB_MAP_NOTIFY);
         }
+        return false;
+    }
+
+    bool nativeEvent(const QByteArray &eventType, void *message, long *)
+    {
+        if (isMapNotify(eventType, message))
+            gotExpectedMapNotify = true;
+        return false;
+    }
+
+    // QAbstractNativeEventFilter interface
+    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, long *) Q_DECL_OVERRIDE
+    {
+        if (isMapNotify(eventType, message))
+            gotExpectedGlobalEvent = true;
         return false;
     }
 
@@ -5554,6 +5569,8 @@ void tst_QWidget::showHideShowX11()
         QSKIP("This test is for X11 only.");
 
     ShowHideShowWidget w;
+    qApp->installNativeEventFilter(&w);
+
     w.show();
     w.hide();
 
@@ -5561,6 +5578,7 @@ void tst_QWidget::showHideShowX11()
     connect(&w, SIGNAL(done()), &eventLoop, SLOT(quit()));
     eventLoop.exec();
 
+    QVERIFY(w.gotExpectedGlobalEvent);
     QVERIFY(w.gotExpectedMapNotify);
 }
 

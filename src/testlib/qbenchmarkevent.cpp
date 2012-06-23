@@ -46,8 +46,10 @@
 
 QT_BEGIN_NAMESPACE
 
-QAbstractEventDispatcher::EventFilter oldEventFilter = 0;
-qint64 QBenchmarkEvent::eventCounter = 0;
+QBenchmarkEvent::QBenchmarkEvent()
+    : eventCounter(0)
+{
+}
 
 QBenchmarkEvent::~QBenchmarkEvent()
 {
@@ -55,21 +57,19 @@ QBenchmarkEvent::~QBenchmarkEvent()
 
 void QBenchmarkEvent::start()
 {
-    QBenchmarkEvent::eventCounter = 0;
-    QAbstractEventDispatcher *parent = QAbstractEventDispatcher::instance();
-    oldEventFilter = parent->setEventFilter(QBenchmarkEvent::eventCountingMechanism);
+    eventCounter = 0;
+    QAbstractEventDispatcher::instance()->installNativeEventFilter(this);
 }
 
 qint64 QBenchmarkEvent::checkpoint()
 {
-    return QBenchmarkEvent::eventCounter;
+    return eventCounter;
 }
 
 qint64 QBenchmarkEvent::stop()
 {
-    QAbstractEventDispatcher *parent = QAbstractEventDispatcher::instance();
-    parent->setEventFilter(oldEventFilter);
-    return QBenchmarkEvent::eventCounter;
+    QAbstractEventDispatcher::instance()->removeNativeEventFilter(this);
+    return eventCounter;
 }
 
 // It's very tempting to simply reject a measurement if 0 events
@@ -98,10 +98,13 @@ QTest::QBenchmarkMetric QBenchmarkEvent::metricType()
 }
 
 // This could be done in a much better way, this is just the beginning.
-bool QBenchmarkEvent::eventCountingMechanism(void *message)
+bool QBenchmarkEvent::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
 {
+    Q_UNUSED(eventType);
     Q_UNUSED(message);
-    QBenchmarkEvent::eventCounter++;
+    Q_UNUSED(result);
+
+    eventCounter++;
     return false;
 }
 

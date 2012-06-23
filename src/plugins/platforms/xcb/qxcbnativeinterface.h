@@ -61,11 +61,6 @@ public:
         EglContext
     };
 
-    enum EventFilterType {
-        GenericEventFilter,
-        EventFilterCount
-    };
-
     QXcbNativeInterface();
 
     void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context);
@@ -74,8 +69,6 @@ public:
     NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource);
 
     inline const QByteArray &genericEventFilterType() const { return m_genericEventFilterType; }
-    EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter);
-    EventFilter eventFilter(EventFilterType type) const { return m_eventFilters[type]; }
 
     void *displayForWindow(QWindow *window);
     void *eglDisplayForWindow(QWindow *window);
@@ -86,7 +79,6 @@ public:
 
 private:
     const QByteArray m_genericEventFilterType;
-    EventFilter m_eventFilters[EventFilterCount];
 
     static QXcbScreen *qPlatformScreenForWindow(QWindow *window);
 };

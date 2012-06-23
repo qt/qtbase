@@ -90,13 +90,7 @@ void QQnxBpsEventFilter::installOnEventDispatcher(QAbstractEventDispatcher *disp
     if (navigator_request_events(0) != BPS_SUCCESS)
         qWarning("QQNX: failed to register for navigator events");
 
-    QAbstractEventDispatcher::EventFilter previousEventFilter = dispatcher->setEventFilter(dispatcherEventFilter);
-
-    // the QPA plugin creates the event dispatcher so we are the first event
-    // filter assert on that just in case somebody adds another event filter
-    // in the QQnxIntegration constructor instead of adding a new section in here
-    Q_ASSERT(previousEventFilter == 0);
-    Q_UNUSED(previousEventFilter);
+    dispatcher->installNativeEventFilter(this);
 }
 
 void QQnxBpsEventFilter::registerForScreenEvents(QQnxScreen *screen)
@@ -137,19 +131,11 @@ void QQnxBpsEventFilter::unregisterForDialogEvents(QQnxFileDialogHelper *dialog)
         qWarning("QQNX: attempting to unregister dialog that was not registered");
 }
 
-bool QQnxBpsEventFilter::dispatcherEventFilter(void *message)
+bool QQnxBpsEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
 {
-    qBpsEventFilterDebug() << Q_FUNC_INFO;
-
-    if (s_instance == 0)
-        return false;
-
+    Q_UNUSED(eventType);
+    Q_UNUSED(result);
     bps_event_t *event = static_cast<bps_event_t *>(message);
-    return s_instance->bpsEventFilter(event);
-}
-
-bool QQnxBpsEventFilter::bpsEventFilter(bps_event_t *event)
-{
     const int eventDomain = bps_event_get_domain(event);
     qBpsEventFilterDebug() << Q_FUNC_INFO << "event=" << event << "domain=" << eventDomain;
 

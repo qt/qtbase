@@ -270,7 +270,6 @@ QXcbWindow *QXcbConnection::platformWindowFromId(xcb_window_t id)
 { \
     event_t *e = (event_t *)event; \
     if (QXcbWindow *platformWindow = platformWindowFromId(e->windowMember))  { \
-        long result = 0; \
         handled = QWindowSystemInterface::handleNativeEvent(platformWindow->window(), m_nativeInterface->genericEventFilterType(), event, &result); \
         if (!handled) \
             platformWindow->handler(e); \
@@ -282,7 +281,6 @@ break;
 { \
     event_t *e = (event_t *)event; \
     if (QXcbWindow *platformWindow = platformWindowFromId(e->event)) { \
-        long result = 0; \
         handled = QWindowSystemInterface::handleNativeEvent(platformWindow->window(), m_nativeInterface->genericEventFilterType(), event, &result); \
         if (!handled) \
             m_keyboard->handler(platformWindow, e); \
@@ -543,10 +541,9 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         m_callLog.remove(0, i);
     }
 #endif
-    bool handled = false;
 
-    if (QPlatformNativeInterface::EventFilter filter = m_nativeInterface->eventFilter(QXcbNativeInterface::GenericEventFilter))
-        handled = filter(event, 0);
+    long result = 0;
+    bool handled = QCoreApplication::instance()->filterNativeEvent(m_nativeInterface->genericEventFilterType(), event, &result);
 
     uint response_type = event->response_type & ~0x80;
 

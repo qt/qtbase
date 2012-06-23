@@ -45,6 +45,7 @@
 #include "../qbearerengine_impl.h"
 
 #include <QAbstractEventDispatcher>
+#include <QAbstractNativeEventFilter>
 
 #ifndef QT_NO_BEARERMANAGEMENT
 
@@ -55,7 +56,7 @@ QT_BEGIN_NAMESPACE
 class QNetworkConfigurationPrivate;
 class QNetworkSessionPrivate;
 
-class QBBEngine : public QBearerEngineImpl
+class QBBEngine : public QBearerEngineImpl, public QAbstractNativeEventFilter
 {
     Q_OBJECT
 
@@ -82,6 +83,8 @@ public:
 
     bool requiresPolling() const Q_DECL_OVERRIDE;
 
+    bool nativeEventFilter(const QByteArray &eventType, void *message, long *result) Q_DECL_OVERRIDE;
+
 protected:
     void updateConfiguration(const char *interface);
     void removeConfiguration(const QString &id);
@@ -90,13 +93,7 @@ private Q_SLOTS:
     void doRequestUpdate();
 
 private:
-    static bool filterEvent(void *message);
-
-    void filterEvent(bps_event_t *event);
-
     QHash<QString, QString> configurationInterface;
-
-    QAbstractEventDispatcher::EventFilter previousEventFilter;
 
     mutable QMutex pollingMutex;
 

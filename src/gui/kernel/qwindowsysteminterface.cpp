@@ -518,11 +518,6 @@ bool QWindowSystemInterface::sendWindowSystemEvents(QAbstractEventDispatcher *ev
             break;
         }
 
-        if (eventDispatcher->filterEvent(event)) {
-            delete event;
-            continue;
-        }
-
         nevents++;
 
         QGuiApplicationPrivate::processWindowSystemEvent(event);
@@ -554,7 +549,6 @@ QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *w, const QMi
     \brief Passes a native event identified by \a eventType to the \a window.
 
     \note This function can only be called from the GUI thread.
-    \sa QPlatformNativeInterface::setEventFilter()
 */
 
 bool QWindowSystemInterface::handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result)

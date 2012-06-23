@@ -49,7 +49,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
+class QAbstractNativeEventFilter;
 class QAbstractEventDispatcherPrivate;
 class QSocketNotifier;
 
@@ -111,9 +111,12 @@ public:
     virtual void startingUp();
     virtual void closingDown();
 
-    typedef bool(*EventFilter)(void *message);
-    EventFilter setEventFilter(EventFilter filter);
-    bool filterEvent(void *message);
+    void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);
+    void removeNativeEventFilter(QAbstractNativeEventFilter *filterObj);
+    bool filterNativeEvent(const QByteArray &eventType, void *message, long *result);
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED bool filterEvent(void *message) { return filterNativeEvent("", message, 0); }
+#endif
 
 Q_SIGNALS:
     void aboutToBlock();

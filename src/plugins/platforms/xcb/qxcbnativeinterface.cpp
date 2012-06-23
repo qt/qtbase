@@ -80,7 +80,6 @@ QXcbNativeInterface::QXcbNativeInterface() :
     m_genericEventFilterType(QByteArrayLiteral("xcb_generic_event_t"))
 
 {
-    qFill(m_eventFilters, m_eventFilters + EventFilterCount, EventFilter(0));
 }
 
 void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context)
@@ -140,21 +139,6 @@ QPlatformNativeInterface::NativeResourceForContextFunction QXcbNativeInterface::
         return eglContextForContext;
     }
     return 0;
-}
-
-QPlatformNativeInterface::EventFilter QXcbNativeInterface::setEventFilter(const QByteArray &eventType, QPlatformNativeInterface::EventFilter filter)
-{
-    int type = -1;
-    if (eventType == m_genericEventFilterType)
-        type = GenericEventFilter;
-    if (type == -1) {
-        qWarning("QXcbNativeInterface: %s: Attempt to set invalid event filter type '%s'.",
-                 Q_FUNC_INFO, eventType.constData());
-        return 0;
-    }
-    const EventFilter oldFilter = m_eventFilters[type];
-    m_eventFilters[type] = filter;
-    return oldFilter;
 }
 
 QXcbScreen *QXcbNativeInterface::qPlatformScreenForWindow(QWindow *window)

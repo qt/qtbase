@@ -389,6 +389,14 @@ QtCore
 * QEvent::AccessibilityPrepare, AccessibilityHelp and AccessibilityDescription removed:
   * The enum values simply didn't make sense in the first place and should simply be dropped.
 
+* Filtering of native events (QCoreApplication::setEventFilter, as well as
+  QApplication::x11EventFilter/macEventFilter/qwsEventFilter) have been replaced
+  with QCoreApplication::installNativeEventFilter and removeNativeEventFilter,
+  for an API much closer to QEvent filtering. Note that the native events that can be
+  filtered this way depend on which QPA backend is chosen, at runtime. On X11, XEvents are
+  not used anymore, and have been replaced with xcb_generic_event_t due to the switch to
+  XCB, which requires porting the application code to XCB as well.
+
 * [QTBUG-23529] QHash is now more resilient to a family of denial of service
   attacks exploiting algorithmic complexity, by supporting two-arguments overloads
   of the qHash() hashing function.

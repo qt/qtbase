@@ -122,7 +122,6 @@ QT_BEGIN_NAMESPACE
 
 QBBEngine::QBBEngine(QObject *parent) :
     QBearerEngineImpl(parent),
-    previousEventFilter(0),
     pollingRequired(false),
     initialized(false)
 {
@@ -130,7 +129,6 @@ QBBEngine::QBBEngine(QObject *parent) :
 
 QBBEngine::~QBBEngine()
 {
-    QAbstractEventDispatcher::instance()->setEventFilter(previousEventFilter);
 }
 
 
@@ -173,8 +171,7 @@ void QBBEngine::initialize()
         const QMutexLocker locker(&pollingMutex);
         pollingRequired = true;
     } else {
-        previousEventFilter =
-            QAbstractEventDispatcher::instance()->setEventFilter(filterEvent);
+        QAbstractEventDispatcher::instance()->installEventFilter(this);
     }
 
     doRequestUpdate();
@@ -288,32 +285,21 @@ bool QBBEngine::requiresPolling() const
     return pollingRequired;
 }
 
-bool QBBEngine::filterEvent(void *message)
+bool QBBEngine::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
 {
+    Q_UNUSED(eventType);
+    Q_UNUSED(result);
+
     bps_event_t * const event = static_cast<bps_event_t *>(message);
 
     Q_ASSERT(event);
 
-    QBBEngine *self = instanceStorage()->localData()->instance;
-
-    Q_ASSERT(self);
-
-    if (bps_event_get_domain(event) == netstatus_get_domain())
-        self->filterEvent(event);
-
-    if (self->previousEventFilter)
-        return self->previousEventFilter(message);
+    if (bps_event_get_domain(event) == netstatus_get_domain()) {
+        qBearerDebug() << Q_FUNC_INFO << "got update request.";
+        doRequestUpdate();
+    }
 
     return false;
-}
-
-void QBBEngine::filterEvent(bps_event_t *event)
-{
-    Q_UNUSED(event);
-
-    qBearerDebug() << Q_FUNC_INFO << "got update request.";
-
-    doRequestUpdate();
 }
 
 void QBBEngine::updateConfiguration(const char *interface)
@@ -421,4 +407,3 @@ void QBBEngine::removeConfiguration(const QString &id)
 QT_END_NAMESPACE
 
 #endif // QT_NO_BEARERMANAGEMENT
-

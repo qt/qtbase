@@ -286,7 +286,6 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     , origArgv(new char *[aargc])
 #endif
     , application_type(0)
-    , eventFilter(0)
     , in_exec(false)
     , aboutToQuitEmitted(false)
     , threadData_clean(false)
@@ -765,7 +764,7 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
   do not change the focus widget.
   \endlist
 
-  \sa QObject::event(), installEventFilter()
+  \sa QObject::event(), installNativeEventFilter()
 */
 
 bool QCoreApplication::notify(QObject *receiver, QEvent *event)
@@ -2140,80 +2139,94 @@ void QCoreApplication::removeLibraryPath(const QString &path)
 #endif //QT_NO_LIBRARY
 
 /*!
-    \typedef QCoreApplication::EventFilter
+    Sends \a message through the event filters that were set by
+    installNativeEventFilter().  This function returns true as soon as an
+    event filter returns true, and false otherwise to indicate that
+    the processing of the event should continue.
 
-    A function with the following signature that can be used as an
-    event filter:
+    Subclasses of QAbstractEventDispatcher \e must call this function
+    for \e all messages received from the system to ensure
+    compatibility with any extensions that may be used in the
+    application.
 
-    \snippet code/src_corelib_kernel_qcoreapplication.cpp 3
+    Note that the type of \a message is platform dependent. See
+    QAbstractNativeEventFilter for details.
 
-    \sa setEventFilter()
+    \sa installNativeEventFilter()
+    \since 5.0
+
+    \internal
+    This method only exists for the Windows event dispatcher to call the winEventFilter virtual.
+    Every other platform can just use QAbstractNativeEventFilter::filterNativeEvent directly.
 */
+bool QCoreApplication::filterNativeEvent(const QByteArray &eventType, void *message, long *result)
+{
+    if (result)
+        *result = 0;
+#ifdef Q_OS_WIN
+    if (winEventFilter(reinterpret_cast<MSG *>(message), result))
+        return true;
+#endif
+    QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
+    if (dispatcher)
+        return dispatcher->filterNativeEvent(eventType, message, result);
+    return false;
+}
+
 
 /*!
-    \fn EventFilter QCoreApplication::setEventFilter(EventFilter filter)
+    Installs an event filter \a filterObj for all native events
+    received by the application in the main thread.
 
-    Replaces the event filter function for the QCoreApplication with
-    \a filter and returns the pointer to the replaced event filter
-    function. Only the current event filter function is called. If you
-    want to use both filter functions, save the replaced EventFilter
-    in a place where yours can call it.
+    The event filter \a filterObj receives events via its nativeEventFilter()
+    function, which is called for all native events received in the main thread.
 
-    The event filter function set here is called for all messages
-    received by all threads meant for all Qt objects. It is \e not
-    called for messages that are not meant for Qt objects.
-
-    The event filter function should return true if the message should
+    The nativeEventFilter() function should return true if the event should
     be filtered, (i.e. stopped). It should return false to allow
-    processing the message to continue.
+    normal Qt processing to continue: the native event can then be translated
+    into a QEvent and handled by the standard Qt \l{QEvent} {event} filtering,
+    e.g. QObject::installEventFilter().
 
-    By default, no event filter function is set (i.e., this function
-    returns a null EventFilter the first time it is called).
+    If multiple event filters are installed, the filter that was
+    installed last is activated first.
 
     \note The filter function set here receives native messages,
-    i.e. MSG or XEvent structs, that are going to Qt objects. It is
-    called by QCoreApplication::filterEvent(). If the filter function
-    returns false to indicate the message should be processed further,
-    the native message can then be translated into a QEvent and
-    handled by the standard Qt \l{QEvent} {event} filering, e.g.
-    QObject::installEventFilter().
+    i.e. MSG or XCB event structs.
 
-    \note The filter function set here is different form the filter
-    function set via QAbstractEventDispatcher::setEventFilter(), which
-    gets all messages received by its thread, even messages meant for
-    objects that are not handled by Qt.
+    For maximum portability, you should always try to use QEvents
+    and QObject::installEventFilter() whenever possible.
 
-    \sa QObject::installEventFilter(), QAbstractEventDispatcher::setEventFilter()
+    \sa QObject::installEventFilter()
+
+    \since 5.0
 */
-QCoreApplication::EventFilter
-QCoreApplication::setEventFilter(QCoreApplication::EventFilter filter)
+void QCoreApplication::installNativeEventFilter(QAbstractNativeEventFilter *filterObj)
 {
-    Q_D(QCoreApplication);
-    EventFilter old = d->eventFilter;
-    d->eventFilter = filter;
-    return old;
+    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance(QCoreApplicationPrivate::theMainThread);
+    if (!filterObj || !eventDispatcher)
+        return;
+    eventDispatcher->installNativeEventFilter(filterObj);
 }
 
 /*!
-    Sends \a message through the event filter that was set by
-    setEventFilter(). If no event filter has been set, this function
-    returns false; otherwise, this function returns the result of the
-    event filter function in the \a result parameter.
+    Removes an event filter object \a obj from this object. The
+    request is ignored if such an event filter has not been installed.
 
-    \sa setEventFilter()
+    All event filters for this object are automatically removed when
+    this object is destroyed.
+
+    It is always safe to remove an event filter, even during event
+    filter activation (i.e. from the nativeEventFilter() function).
+
+    \sa installNativeEventFilter(), QAbstractNativeEventFilter
+    \since 5.0
 */
-bool QCoreApplication::filterEvent(void *message, long *result)
+void QCoreApplication::removeNativeEventFilter(QAbstractNativeEventFilter *filterObj)
 {
-    Q_D(QCoreApplication);
-    if (result)
-        *result = 0;
-    if (d->eventFilter)
-        return d->eventFilter(message, result);
-#ifdef Q_OS_WIN
-    return winEventFilter(reinterpret_cast<MSG *>(message), result);
-#else
-    return false;
-#endif
+    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
+    if (!filterObj || !eventDispatcher)
+        return;
+    eventDispatcher->removeNativeEventFilter(filterObj);
 }
 
 /*!

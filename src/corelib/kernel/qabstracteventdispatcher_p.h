@@ -65,9 +65,9 @@ class Q_CORE_EXPORT QAbstractEventDispatcherPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QAbstractEventDispatcher)
 public:
     inline QAbstractEventDispatcherPrivate()
-        : event_filter(0)
     { }
-    QAbstractEventDispatcher::EventFilter event_filter;
+
+    QList<QAbstractNativeEventFilter *> eventFilters;
 
     static int allocateTimerId();
     static void releaseTimerId(int id);

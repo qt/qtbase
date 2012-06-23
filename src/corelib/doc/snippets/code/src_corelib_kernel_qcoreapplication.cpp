@@ -57,7 +57,7 @@ foreach (const QString &path, app.libraryPaths())
 
 
 //! [3]
-bool myEventFilter(void *message, long *result);
+
 //! [3]
 
 

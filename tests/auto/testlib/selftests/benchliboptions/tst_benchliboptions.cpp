@@ -88,9 +88,9 @@ void tst_BenchlibOptions::threeEvents()
 {
     QAbstractEventDispatcher* ed = QAbstractEventDispatcher::instance();
     QBENCHMARK {
-        ed->filterEvent(0);
-        ed->filterEvent(0);
-        ed->filterEvent(0);
+        ed->filterNativeEvent("", 0, 0);
+        ed->filterNativeEvent("", 0, 0);
+        ed->filterNativeEvent("", 0, 0);
     }
 }
 

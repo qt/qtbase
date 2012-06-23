@@ -240,13 +240,6 @@ QWindowsContext *QWindowsContext::m_instance = 0;
 typedef QHash<HWND, QWindowsWindow *> HandleBaseWindowHash;
 
 struct QWindowsContextPrivate {
-    typedef QPlatformNativeInterface::EventFilter EventFilter;
-
-    enum EventFilterType
-    {
-        GenericWindowsEventFilter,
-        EventFilterTypeCount
-    };
 
     QWindowsContextPrivate();
 
@@ -262,7 +255,6 @@ struct QWindowsContextPrivate {
     QSharedPointer<QWindowCreationContext> m_creationContext;
     const HRESULT m_oleInitializeResult;
     const QByteArray m_eventType;
-    EventFilter m_eventFilters[EventFilterTypeCount];
     QWindow *m_lastActiveWindow;
 };
 
@@ -289,7 +281,6 @@ QWindowsContextPrivate::QWindowsContextPrivate() :
         m_systemInfo |= QWindowsContext::SI_RTL_Extensions;
         m_keyMapper.setUseRTLExtensions(true);
     }
-    qFill(m_eventFilters, m_eventFilters + EventFilterTypeCount, EventFilter(0));
 }
 
 QWindowsContext::QWindowsContext() :
@@ -695,27 +686,6 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
 }
 
 /*!
-     \brief Set event filter.
-
-     \sa QWindowsNativeInterface
-*/
-
-QWindowsContext::EventFilter QWindowsContext::setEventFilter(const QByteArray &eventType, EventFilter filter)
-{
-    int eventFilterType = -1;
-    if (eventType == d->m_eventType)
-        eventFilterType = QWindowsContextPrivate::GenericWindowsEventFilter;
-    if (eventFilterType < 0) {
-        qWarning("%s: Attempt to set unsupported event filter '%s'.",
-                 __FUNCTION__, eventType.constData());
-        return 0;
-    }
-    const EventFilter previous = d->m_eventFilters[eventFilterType];
-    d->m_eventFilters[eventFilterType] = filter;
-    return previous;
-}
-
-/*!
      \brief Main windows procedure registered for windows.
 
      \sa QWindowsGuiEventDispatcher
@@ -736,11 +706,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     msg.pt.y = GET_Y_LPARAM(lParam);
 
     long filterResult = 0;
-    if (d->m_eventFilters[QWindowsContextPrivate::GenericWindowsEventFilter]) {
-        if (d->m_eventFilters[QWindowsContextPrivate::GenericWindowsEventFilter](&msg, &filterResult)) {
-            *result = LRESULT(filterResult);
-            return true;
-        }
+    QCoreApplication* coreApp = QCoreApplication::instance();
+    if (coreApp && coreApp->filterNativeEvent(d->m_eventType, &msg, &filterResult)) {
+        *result = LRESULT(filterResult);
+        return true;
     }
     // Events without an associated QWindow or events we are not interested in.
     switch (et) {

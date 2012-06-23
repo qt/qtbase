@@ -87,7 +87,7 @@ void tst_BenchlibEventCounter::events()
     QAbstractEventDispatcher* ed = QAbstractEventDispatcher::instance();
     QBENCHMARK {
         for (int i = 0; i < eventCount; ++i) {
-            ed->filterEvent(0);
+            ed->filterNativeEvent("", 0, 0);
         }
     }
 }

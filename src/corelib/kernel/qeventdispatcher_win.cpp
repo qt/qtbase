@@ -359,7 +359,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         if (message == WM_TIMER)
             KillTimer(hwnd, wp);
         return 0;
-    } else if (app->filterEvent(&msg, &result)) {
+    } else if (app->filterNativeEvent(QByteArrayLiteral("windows_dispatcher_MSG"), &msg, &result)) {
         return result;
     }
 

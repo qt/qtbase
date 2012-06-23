@@ -61,6 +61,7 @@ class QTranslator;
 class QPostEventList;
 class QStringList;
 class QAbstractEventDispatcher;
+class QAbstractNativeEventFilter;
 
 #define qApp QCoreApplication::instance()
 
@@ -159,9 +160,9 @@ public:
     static void watchUnixSignal(int signal, bool watch);
 #endif
 
-    typedef bool (*EventFilter)(void *message, long *result);
-    EventFilter setEventFilter(EventFilter filter);
-    bool filterEvent(void *message, long *result);
+    void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);
+    void removeNativeEventFilter(QAbstractNativeEventFilter *filterObj);
+    bool filterNativeEvent(const QByteArray &eventType, void *message, long *result);
 
     static bool isQuitLockEnabled();
     static void setQuitLockEnabled(bool enabled);

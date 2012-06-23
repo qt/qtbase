@@ -121,8 +121,6 @@ public:
 #endif
     uint application_type;
 
-    QCoreApplication::EventFilter eventFilter;
-
     bool in_exec;
     bool aboutToQuitEmitted;
     bool threadData_clean;

@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtTest module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,44 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef QBENCHMARKEVENT_P_H
-#define QBENCHMARKEVENT_P_H
+#ifndef QABSTRACTNATIVEEVENTFILTER_H
+#define QABSTRACTNATIVEEVENTFILTER_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/qnamespace.h>
 
-#include <QtTest/private/qbenchmarkmeasurement_p.h>
-#include <QAbstractEventDispatcher>
-#include <QObject>
-#include <QAbstractNativeEventFilter>
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QBenchmarkEvent : public QBenchmarkMeasurerBase, public QAbstractNativeEventFilter
+class QAbstractNativeEventFilterPrivate;
+
+class Q_CORE_EXPORT QAbstractNativeEventFilter
 {
 public:
-    QBenchmarkEvent();
-    ~QBenchmarkEvent();
-    void start();
-    qint64 checkpoint();
-    qint64 stop();
-    bool isMeasurementAccepted(qint64 measurement);
-    int adjustIterationCount(int suggestion);
-    int adjustMedianCount(int suggestion);
-    bool repeatCount() { return 1; }
-    QTest::QBenchmarkMetric metricType();
-    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, long *result);
-    qint64 eventCounter;
+    QAbstractNativeEventFilter();
+    virtual ~QAbstractNativeEventFilter();
+
+    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, long *result) = 0;
+
+private:
+    Q_DISABLE_COPY(QAbstractNativeEventFilter)
+    QAbstractNativeEventFilterPrivate *d;
 };
 
 QT_END_NAMESPACE
 
-#endif // QBENCHMARKEVENT_H
+QT_END_HEADER
+
+#endif /* QABSTRACTNATIVEEVENTFILTER_H */

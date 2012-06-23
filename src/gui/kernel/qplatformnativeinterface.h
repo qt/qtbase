@@ -88,9 +88,6 @@ public:
     virtual QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const;
     virtual void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value);
 
-    typedef bool (*EventFilter)(void *message, long *result);
-    virtual EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter);
-
 Q_SIGNALS:
     void windowPropertyChanged(QPlatformWindow *window, const QString &propertyName);
 };
