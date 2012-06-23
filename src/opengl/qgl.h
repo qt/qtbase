@@ -423,8 +423,6 @@ public:
 
     static QImage convertToGLFormat(const QImage& img);
 
-    void setMouseTracking(bool enable);
-
     const QGLColormap & colormap() const;
     void  setColormap(const QGLColormap & map);
 

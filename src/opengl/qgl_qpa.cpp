@@ -336,11 +336,6 @@ void QGLWidgetPrivate::cleanupColormaps()
 {
 }
 
-void QGLWidget::setMouseTracking(bool enable)
-{
-    Q_UNUSED(enable);
-}
-
 bool QGLWidget::event(QEvent *e)
 {
     return QWidget::event(e);
