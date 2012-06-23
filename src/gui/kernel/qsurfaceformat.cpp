@@ -68,6 +68,7 @@ public:
         , stencilSize(-1)
         , swapBehavior(QSurfaceFormat::DefaultSwapBehavior)
         , numSamples(-1)
+        , renderableType(QSurfaceFormat::DefaultRenderableType)
         , profile(QSurfaceFormat::NoProfile)
         , major(2)
         , minor(0)
@@ -85,6 +86,7 @@ public:
           stencilSize(other->stencilSize),
           swapBehavior(other->swapBehavior),
           numSamples(other->numSamples),
+          renderableType(other->renderableType),
           profile(other->profile),
           major(other->major),
           minor(other->minor)
@@ -101,6 +103,7 @@ public:
     int stencilSize;
     QSurfaceFormat::SwapBehavior swapBehavior;
     int numSamples;
+    QSurfaceFormat::RenderableType renderableType;
     QSurfaceFormat::OpenGLContextProfile profile;
     int major;
     int minor;
@@ -476,6 +479,29 @@ void QSurfaceFormat::setAlphaBufferSize(int size)
         detach();
         d->alphaBufferSize = size;
     }
+}
+
+/*!
+    Sets the desired renderable type.
+
+    Chooses between desktop OpenGL, OpenGL ES, and OpenVG.
+*/
+void QSurfaceFormat::setRenderableType(RenderableType type)
+{
+    if (d->renderableType != type) {
+        detach();
+        d->renderableType = type;
+    }
+}
+
+/*!
+    Gets the renderable type.
+
+    Chooses between desktop OpenGL, OpenGL ES, and OpenVG.
+*/
+QSurfaceFormat::RenderableType QSurfaceFormat::renderableType() const
+{
+    return d->renderableType;
 }
 
 /*!

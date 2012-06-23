@@ -47,6 +47,18 @@
 
 #include <EGL/egl.h>
 
+static inline void bindApi(const QSurfaceFormat &format)
+{
+    if (format.renderableType() == QSurfaceFormat::OpenVG)
+        eglBindAPI(EGL_OPENVG_API);
+#ifdef EGL_VERSION_1_4
+    else if (format.renderableType() == QSurfaceFormat::OpenGL)
+        eglBindAPI(EGL_OPENGL_API);
+#endif
+    else
+        eglBindAPI(EGL_OPENGL_ES_API);
+}
+
 QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                                          EGLenum eglApi)
     : m_eglDisplay(display)
@@ -61,7 +73,7 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     contextAttrs.append(format.majorVersion());
     contextAttrs.append(EGL_NONE);
 
-    eglBindAPI(m_eglApi);
+    bindApi(m_format);
     m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, m_shareContext, contextAttrs.constData());
     if (m_eglContext == EGL_NO_CONTEXT && m_shareContext != EGL_NO_CONTEXT) {
         m_shareContext = 0;
@@ -76,7 +88,7 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::makeCurrent: %p\n",this);
 #endif
-    eglBindAPI(m_eglApi);
+    bindApi(m_format);
 
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
 
@@ -121,7 +133,7 @@ void QEGLPlatformContext::doneCurrent()
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::doneCurrent:%p\n",this);
 #endif
-    eglBindAPI(m_eglApi);
+    bindApi(m_format);
     bool ok = eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     if (!ok)
         qWarning("QEGLPlatformContext::doneCurrent(): eglError: %d, this: %p \n", eglGetError(), this);
@@ -132,7 +144,7 @@ void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::swapBuffers:%p\n",this);
 #endif
-    eglBindAPI(m_eglApi);
+    bindApi(m_format);
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
     bool ok = eglSwapBuffers(m_eglDisplay, eglSurface);
     if (!ok)
@@ -144,7 +156,7 @@ void (*QEGLPlatformContext::getProcAddress(const QByteArray &procName)) ()
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::getProcAddress%p\n",this);
 #endif
-    eglBindAPI(m_eglApi);
+    bindApi(m_format);
     return eglGetProcAddress(procName.constData());
 }
 

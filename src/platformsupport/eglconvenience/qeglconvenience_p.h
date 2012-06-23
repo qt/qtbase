@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format);
 bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes);
 EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format, bool highestPixelFormat = false, int surfaceType = EGL_WINDOW_BIT);
-QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config);
+QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, const QSurfaceFormat &referenceFormat = QSurfaceFormat());
 bool q_hasEglExtension(EGLDisplay display,const char* extensionName);
 void q_printEglConfig(EGLDisplay display, EGLConfig config);
 

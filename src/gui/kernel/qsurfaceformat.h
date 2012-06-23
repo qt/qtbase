@@ -68,6 +68,13 @@ public:
         TripleBuffer
     };
 
+    enum RenderableType {
+        DefaultRenderableType = 0x0,
+        OpenGL                = 0x1,
+        OpenGLES              = 0x2,
+        OpenVG                = 0x4
+    };
+
     enum OpenGLContextProfile {
         NoProfile,
         CoreProfile,
@@ -105,6 +112,9 @@ public:
 
     void setProfile(OpenGLContextProfile profile);
     OpenGLContextProfile profile() const;
+
+    void setRenderableType(RenderableType type);
+    RenderableType renderableType() const;
 
     void setMajorVersion(int majorVersion);
     int majorVersion() const;

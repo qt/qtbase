@@ -218,7 +218,17 @@ EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format,
     configureAttributes.append(surfaceType);
 
     configureAttributes.append(EGL_RENDERABLE_TYPE);
-    configureAttributes.append(format.majorVersion() == 1 ? EGL_OPENGL_ES_BIT : EGL_OPENGL_ES2_BIT);
+    if (format.renderableType() == QSurfaceFormat::OpenVG)
+        configureAttributes.append(EGL_OPENVG_BIT);
+#ifdef EGL_VERSION_1_4
+    else if (format.renderableType() == QSurfaceFormat::OpenGL)
+        configureAttributes.append(EGL_OPENGL_BIT);
+#endif
+    else if (format.majorVersion() == 1)
+        configureAttributes.append(EGL_OPENGL_ES_BIT);
+    else
+        configureAttributes.append(EGL_OPENGL_ES2_BIT);
+
     configureAttributes.append(EGL_NONE);
 
     do {
@@ -271,7 +281,7 @@ EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format,
     return 0;
 }
 
-QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config)
+QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, const QSurfaceFormat &referenceFormat)
 {
     QSurfaceFormat format;
     EGLint redSize     = 0;
@@ -281,6 +291,7 @@ QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config)
     EGLint depthSize   = 0;
     EGLint stencilSize = 0;
     EGLint sampleCount = 0;
+    EGLint renderableType = 0;
 
     eglGetConfigAttrib(display, config, EGL_RED_SIZE,     &redSize);
     eglGetConfigAttrib(display, config, EGL_GREEN_SIZE,   &greenSize);
@@ -289,6 +300,16 @@ QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config)
     eglGetConfigAttrib(display, config, EGL_DEPTH_SIZE,   &depthSize);
     eglGetConfigAttrib(display, config, EGL_STENCIL_SIZE, &stencilSize);
     eglGetConfigAttrib(display, config, EGL_SAMPLES,      &sampleCount);
+    eglGetConfigAttrib(display, config, EGL_RENDERABLE_TYPE, &renderableType);
+
+    if (referenceFormat.renderableType() == QSurfaceFormat::OpenVG && (renderableType & EGL_OPENVG_BIT))
+        format.setRenderableType(QSurfaceFormat::OpenVG);
+#ifdef EGL_VERSION_1_4
+    else if (referenceFormat.renderableType() == QSurfaceFormat::OpenGL && (renderableType & EGL_OPENGL_BIT))
+        format.setRenderableType(QSurfaceFormat::OpenGL);
+#endif
+    else
+        format.setRenderableType(QSurfaceFormat::OpenGLES);
 
     format.setRedBufferSize(redSize);
     format.setGreenBufferSize(greenSize);
