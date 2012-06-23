@@ -253,8 +253,6 @@ tst_QTextStream::tst_QTextStream()
 
 void tst_QTextStream::initTestCase()
 {
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
-
     testFileName = tempDir.path() + "/testfile";
 
     // chdir into the testdata dir and refer to our helper apps with relative paths
@@ -1108,6 +1106,9 @@ void tst_QTextStream::stillOpenWhenAtEnd()
 #ifdef Q_OS_WINCE
     QSKIP("Qt/CE: Cannot test network on emulator");
 #endif
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
+
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(socket.waitForReadyRead(5000));

@@ -70,7 +70,6 @@ private slots:
 
 void tst_QIODevice::initTestCase()
 {
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 // Testing get/set functions
@@ -96,6 +95,9 @@ void tst_QIODevice::constructing_QTcpSocket()
 #if defined(Q_OS_WINCE) && defined(WINCE_EMULATOR_TEST)
     QSKIP("Networking tests in a WinCE emulator are unstable");
 #endif
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
+
     QTcpSocket socket;
     QIODevice *device = &socket;
 
@@ -256,6 +258,8 @@ void tst_QIODevice::unget()
             result = QByteArray("ZXCV");
             lineResult = "ZXCV";
         } else {
+            if (!QtNetworkSettings::verifyTestNetworkSettings())
+                QSKIP("No network test server available");
             socket.connectToHost(QtNetworkSettings::serverName(), 80);
             socket.write("GET / HTTP/1.0\r\n\r\n");
             QVERIFY(socket.waitForReadyRead());
