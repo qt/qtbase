@@ -24,6 +24,8 @@ SUBDIRS=\
     qtemporaryfile \
     qtextstream \
     qurl \
+    qurlinternal \
+    qurlquery \
     qwinoverlappedionotifier \
 
 !win32|wince* {
