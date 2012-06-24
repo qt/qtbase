@@ -288,6 +288,7 @@ work
 
 #generated module def and version header files
 mkspecs/modules/qt_*.pri
+mkspecs/modules-inst/
 mkspecs/qmodule.pri
 
 #unit tests libs/plugins
