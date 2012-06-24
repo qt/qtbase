@@ -76,6 +76,7 @@ macx {
     }
 } else:win32 {
     CMAKE_WINDOWS_BUILD = "true"
+    CMAKE_FIND_OTHER_LIBRARY_BUILD = "true"
     CMAKE_BIN_SUFFIX = ".exe"
 
     CMAKE_LIB_FILE_LOCATION_DEBUG = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}d$$eval(QT.$${MODULE}.MAJOR_VERSION).dll
