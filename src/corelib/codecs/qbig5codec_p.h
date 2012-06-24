@@ -92,42 +92,6 @@ public:
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
 };
 
-#ifdef Q_OS_UNIX
-class Q_CORE_EXPORT QFontBig5Codec : public QTextCodec
-{
-public:
-    QFontBig5Codec();
-
-    static QByteArray _name();
-    static QList<QByteArray> _aliases() { return QList<QByteArray>(); }
-    static int _mibEnum();
-
-    QByteArray name() const { return _name(); }
-    QList<QByteArray> aliases() const { return _aliases(); }
-    int mibEnum() const { return _mibEnum(); }
-
-    QString convertToUnicode(const char *, int, ConverterState *) const;
-    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
-};
-
-class Q_CORE_EXPORT QFontBig5hkscsCodec : public QTextCodec
-{
-public:
-    QFontBig5hkscsCodec();
-
-    static QByteArray _name();
-    static QList<QByteArray> _aliases() { return QList<QByteArray>(); }
-    static int _mibEnum();
-
-    QByteArray name() const { return _name(); }
-    QList<QByteArray> aliases() const { return _aliases(); }
-    int mibEnum() const { return _mibEnum(); }
-
-    QString convertToUnicode(const char *, int, ConverterState *) const;
-    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
-};
-#endif // Q_OS_UNIX
-
 #endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE

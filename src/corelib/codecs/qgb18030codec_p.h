@@ -109,60 +109,6 @@ public:
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
 };
 
-#ifdef Q_OS_UNIX
-
-class QFontGb2312Codec : public QTextCodec
-{
-public:
-    QFontGb2312Codec();
-
-    static QByteArray _name();
-    static QList<QByteArray> _aliases() { return QList<QByteArray>(); }
-    static int _mibEnum();
-
-    QByteArray name() const { return _name(); }
-    int mibEnum() const { return _mibEnum(); }
-
-    QString convertToUnicode(const char *, int, ConverterState *) const;
-    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
-};
-
-
-class QFontGbkCodec : public QTextCodec
-{
-public:
-    QFontGbkCodec();
-
-    static QByteArray _name();
-    static QList<QByteArray> _aliases() { return QList<QByteArray>(); }
-    static int _mibEnum();
-
-    QByteArray name() const { return _name(); }
-    QList<QByteArray> aliases() const { return _aliases(); }
-    int mibEnum() const { return _mibEnum(); }
-
-    QString convertToUnicode(const char *, int, ConverterState *) const;
-    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
-};
-
-class QFontGb18030_0Codec : public QTextCodec
-{
-public:
-    QFontGb18030_0Codec();
-
-    static QByteArray _name();
-    static QList<QByteArray> _aliases() { return QList<QByteArray>(); }
-    static int _mibEnum();
-
-    QByteArray name() const { return _name(); }
-    QList<QByteArray> aliases() const { return _aliases(); }
-    int mibEnum() const { return _mibEnum(); }
-
-    QString convertToUnicode(const char *, int, ConverterState *) const;
-    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
-};
-#endif // Q_OS_UNIX
-
 #endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE

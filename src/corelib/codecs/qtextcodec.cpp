@@ -71,10 +71,6 @@
 #    include "qeuckrcodec_p.h"
 #    include "qbig5codec_p.h"
 #  endif // !Q_OS_INTEGRITY
-#  ifdef Q_OS_UNIX
-#    include "qfontlaocodec_p.h"
-#    include "qfontjpcodec_p.h"
-#  endif
 #endif // !QT_BOOTSTRAPPED && !QT_NO_BIG_CODECS
 #include "qlocale.h"
 #include "qmutex.h"
@@ -672,17 +668,6 @@ static void setup()
         (void)new QSimpleTextCodec(i);
 
 #  if !defined(QT_BOOTSTRAPPED) && !defined(QT_NO_BIG_CODECS)
-#    ifdef Q_OS_UNIX
-    (void)new QFontLaoCodec;
-    (void)new QFontGb2312Codec;
-    (void)new QFontGbkCodec;
-    (void)new QFontGb18030_0Codec;
-    (void)new QFontJis0208Codec;
-    (void)new QFontJis0201Codec;
-    (void)new QFontKsc5601Codec;
-    (void)new QFontBig5hkscsCodec;
-    (void)new QFontBig5Codec;
-#    endif // Q_OS_UNIX
 
 #    ifndef Q_OS_INTEGRITY
     (void)new QGb18030Codec;

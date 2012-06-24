@@ -189,54 +189,6 @@ QByteArray QEucKrCodec::_name()
 }
 
 
-#ifdef Q_OS_UNIX
-QFontKsc5601Codec::QFontKsc5601Codec()
-{
-}
-
-
-QByteArray QFontKsc5601Codec::_name()
-{
-    return "ksc5601.1987-0";
-}
-
-
-int QFontKsc5601Codec::_mibEnum()
-{
-    return 36;
-}
-
-
-QString QFontKsc5601Codec::convertToUnicode(const char*, int, ConverterState *) const
-{
-    return QString();
-}
-
-QByteArray QFontKsc5601Codec::convertFromUnicode(const QChar *uc, int len,  ConverterState *) const
-{
-    QByteArray result;
-    result.resize(len * 2);
-    uchar *rdata = (uchar *) result.data();
-    const QChar *ucp = uc;
-
-    for (int i = 0; i < len; i++) {
-        QChar ch(*ucp++);
-        ch = qt_UnicodeToKsc5601(ch.unicode());
-
-        if (! ch.isNull()) {
-            *rdata++ = ch.row() & 0x7f ;
-            *rdata++ = ch.cell() & 0x7f;
-        } else {
-            //white square
-            *rdata++ = 0x21;
-            *rdata++ = 0x60;
-        }
-    }
-
-    return result;
-}
-#endif // Q_OS_UNIX
-
 // code converter wrapper
 
 static unsigned short ksc2unicode (unsigned short code);

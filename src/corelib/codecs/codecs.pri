@@ -13,8 +13,7 @@ HEADERS += \
     codecs/qjiscodec_p.h \
     codecs/qsjiscodec_p.h \
     codecs/qeuckrcodec_p.h \
-    codecs/qbig5codec_p.h \
-    codecs/qfontjpcodec_p.h
+    codecs/qbig5codec_p.h
 
 SOURCES += \
     codecs/qisciicodec.cpp \
@@ -29,12 +28,9 @@ SOURCES += \
     codecs/qjiscodec.cpp \
     codecs/qsjiscodec.cpp \
     codecs/qeuckrcodec.cpp \
-    codecs/qbig5codec.cpp \
-    codecs/qfontjpcodec.cpp
+    codecs/qbig5codec.cpp
 
 unix {
-	SOURCES += codecs/qfontlaocodec.cpp
-
         contains(QT_CONFIG,iconv) {
                 HEADERS += codecs/qiconvcodec_p.h
                 SOURCES += codecs/qiconvcodec.cpp
