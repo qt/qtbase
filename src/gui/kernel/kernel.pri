@@ -16,6 +16,8 @@ HEADERS += \
         kernel/qplatformscreen_p.h \
         kernel/qplatforminputcontext.h \
         kernel/qplatforminputcontext_p.h \
+        kernel/qplatforminputcontextfactory_p.h \
+        kernel/qplatforminputcontextplugin_p.h \
         kernel/qplatformintegrationfactory_p.h \
         kernel/qplatformintegrationplugin.h \
         kernel/qplatformtheme.h\
@@ -67,6 +69,8 @@ SOURCES += \
         kernel/qgenericpluginfactory_qpa.cpp \
         kernel/qgenericplugin_qpa.cpp \
         kernel/qwindowsysteminterface_qpa.cpp \
+        kernel/qplatforminputcontextfactory_qpa.cpp \
+        kernel/qplatforminputcontextplugin_qpa.cpp \
         kernel/qplatforminputcontext_qpa.cpp \
         kernel/qplatformintegration_qpa.cpp \
         kernel/qplatformdrag_qpa.cpp \

@@ -3,7 +3,7 @@ load(qt_plugin)
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforminputcontexts
 
-QT += dbus platformsupport-private gui-private
+QT += dbus gui-private
 SOURCES += $$PWD/qibusplatforminputcontext.cpp \
            $$PWD/qibusproxy.cpp \
            $$PWD/qibusinputcontextproxy.cpp \

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINPUTCONTEXTFACTORY_H
-#define QPLATFORMINPUTCONTEXTFACTORY_H
+#ifndef QPLATFORMINPUTCONTEXTPLUGIN_H
+#define QPLATFORMINPUTCONTEXTPLUGIN_H
 
 //
 //  W A R N I N G
@@ -53,7 +53,8 @@
 // We mean it.
 //
 
-#include <QtCore/qstringlist.h>
+#include <QtCore/qplugin.h>
+#include <QtCore/qfactoryinterface.h>
 
 QT_BEGIN_HEADER
 
@@ -62,17 +63,20 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformInputContext;
 
-class QPlatformInputContextFactory
+#define QPlatformInputContextFactoryInterface_iid "org.qt-project.Qt.QPlatformInputContextFactoryInterface"
+
+class Q_GUI_EXPORT QPlatformInputContextPlugin : public QObject
 {
+    Q_OBJECT
 public:
-    static QStringList keys();
-    static QPlatformInputContext *create(const QString &key);
-    static QPlatformInputContext *create();
+    explicit QPlatformInputContextPlugin(QObject *parent = 0);
+    ~QPlatformInputContextPlugin();
+
+    virtual QPlatformInputContext *create(const QString &key, const QStringList &paramList) = 0;
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QPLATFORMINPUTCONTEXTFACTORY_H
-
+#endif // QPLATFORMINPUTCONTEXTPLUGIN_H
