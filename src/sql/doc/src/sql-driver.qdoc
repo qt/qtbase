@@ -817,7 +817,7 @@
 
     To implement a Qt SQL driver as a plugin (so that it is
     recognized and loaded by the Qt library at runtime), the driver
-    must use the Q_EXPORT_PLUGIN2() macro. Read \l{How to Create Qt
+    must use the Q_PLUGIN_METADATA() macro. Read \l{How to Create Qt
     Plugins} for more information on this. You can also check out how
     this is done in the SQL plugins that are provided with Qt in
     \c{QTDIR/src/plugins/sqldrivers} and \c{QTDIR/src/sql/drivers}.

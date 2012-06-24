@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     Constructs an picture format plugin with the given \a parent.
-    This is invoked automatically by the Q_EXPORT_PLUGIN2() macro.
+    This is invoked automatically by the moc generated code that exports the plugin.
 */
 QPictureFormatPlugin::QPictureFormatPlugin(QObject *parent)
     : QObject(parent)

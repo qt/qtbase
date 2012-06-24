@@ -3825,7 +3825,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
     See the \l{tools/plugandpaintplugins/basictools}{Plug & Paint
     Basic Tools} example for details.
 
-    \sa Q_DECLARE_INTERFACE(), Q_EXPORT_PLUGIN2(), {How to Create Qt Plugins}
+    \sa Q_DECLARE_INTERFACE(), Q_PLUGIN_METADATA(), {How to Create Qt Plugins}
 */
 
 /*!

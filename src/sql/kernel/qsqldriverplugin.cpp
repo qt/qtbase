@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     Constructs a SQL driver plugin and sets the parent to \a parent.
-    This is invoked automatically by the Q_EXPORT_PLUGIN2() macro.
+    This is invoked automatically by the moc generated code that exports the plugin.
 */
 
 QSqlDriverPlugin::QSqlDriverPlugin(QObject *parent)

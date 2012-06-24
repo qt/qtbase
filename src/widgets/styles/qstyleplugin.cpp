@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
     Constructs a style plugin with the given \a parent.
 
     Note that this constructor is invoked automatically by the
-    Q_EXPORT_PLUGIN2() macro, so there is no need for calling it
+    moc generated code that exports the plugin, so there is no need for calling it
     explicitly.
 */
 QStylePlugin::QStylePlugin(QObject *parent)

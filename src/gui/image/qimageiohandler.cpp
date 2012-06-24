@@ -514,7 +514,7 @@ int QImageIOHandler::nextImageDelay() const
 
 /*!
     Constructs an image plugin with the given \a parent. This is
-    invoked automatically by the Q_EXPORT_PLUGIN2() macro.
+    invoked automatically by the moc generated code that exports the plugin.
 */
 QImageIOPlugin::QImageIOPlugin(QObject *parent)
     : QObject(parent)
