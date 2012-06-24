@@ -1102,7 +1102,7 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
 
     bool filtered = false;
     if (inputContext) {
-        QKeyEvent event(type, qtcode, modifiers, string, isAutoRepeat);
+        QKeyEvent event(type, qtcode, modifiers, code, sym, state, string.left(count), isAutoRepeat, count);
         event.setTimestamp(time);
         filtered = inputContext->filterEvent(&event);
     }
@@ -1130,7 +1130,7 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
         }
 
         if (!filtered && inputContext) {
-            QKeyEvent event(QEvent::KeyPress, qtcode, modifiers, string, isAutoRepeat);
+            QKeyEvent event(QEvent::KeyPress, qtcode, modifiers, code, sym, state, string.left(count), isAutoRepeat, count);
             event.setTimestamp(time);
             filtered = inputContext->filterEvent(&event);
         }
