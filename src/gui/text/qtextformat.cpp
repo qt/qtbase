@@ -3129,7 +3129,6 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
 
     The stretch factor is only applied to outline fonts. The stretch factor is ignored for bitmap fonts.
 
-    NOTE: QFont cannot stretch XLFD fonts. When loading XLFD fonts on X11, the stretch factor is matched against a predefined set of values for the SETWIDTH_NAME field of the XLFD.
     \sa fontStretch()
 */
 

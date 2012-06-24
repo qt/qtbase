@@ -2417,12 +2417,10 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
             if (feForEllipsis->type() == QFontEngine::Mac)
                 feForEllipsis = fe;
 
-            // the lookup can be really slow when we use XLFD fonts
-            if (feForEllipsis->type() != QFontEngine::XLFD
-                && feForEllipsis->canRender(&ellipsisChar, 1)) {
-                    int nGlyphs = 1;
-                    feForEllipsis->stringToCMap(&ellipsisChar, 1, &ellipsisGlyph, &nGlyphs, 0);
-                }
+            if (feForEllipsis->canRender(&ellipsisChar, 1)) {
+                int nGlyphs = 1;
+                feForEllipsis->stringToCMap(&ellipsisChar, 1, &ellipsisGlyph, &nGlyphs, 0);
+            }
         }
 
         if (ellipsisGlyph.glyphs[0]) {

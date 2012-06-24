@@ -322,8 +322,7 @@ struct  QtFontFamily
         Unknown         = 0,
         Supported       = 1,
         UnsupportedFT  = 2,
-        UnsupportedXLFD = 4,
-        Unsupported     = UnsupportedFT | UnsupportedXLFD
+        Unsupported     = UnsupportedFT
     };
 
     QtFontFamily(const QString &n)
@@ -724,7 +723,7 @@ struct QtFontDesc
 
 static void match(int script, const QFontDef &request,
                   const QString &family_name, const QString &foundry_name, int force_encoding_id,
-                  QtFontDesc *desc, const QList<int> &blacklistedFamilies = QList<int>(), bool forceXLFD=false);
+                  QtFontDesc *desc, const QList<int> &blacklistedFamilies = QList<int>());
 
 static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDef *fontDef, bool multi)
 {
@@ -965,8 +964,7 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
             PitchMismatch       = 0x4000,
             StyleMismatch       = 0x2000,
             BitmapScaledPenalty = 0x1000,
-            EncodingMismatch    = 0x0002,
-            XLFDPenalty         = 0x0001
+            EncodingMismatch    = 0x0002
         };
         if (pitch != '*') {
 #if !defined(QWS) && defined(Q_OS_MAC)
@@ -1025,7 +1023,7 @@ static bool matchFamilyName(const QString &familyName, QtFontFamily *f)
 */
 static void match(int script, const QFontDef &request,
                   const QString &family_name, const QString &foundry_name, int force_encoding_id,
-                  QtFontDesc *desc, const QList<int> &blacklistedFamilies, bool forceXLFD)
+                  QtFontDesc *desc, const QList<int> &blacklistedFamilies)
 {
     Q_UNUSED(force_encoding_id);
 
@@ -1056,7 +1054,6 @@ static void match(int script, const QFontDef &request,
 
     unsigned int score = ~0u;
 
-    Q_UNUSED(forceXLFD);
     load(family_name, script);
 
     QFontDatabasePrivate *db = privateDb();

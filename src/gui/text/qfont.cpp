@@ -549,9 +549,7 @@ QFontEngineData::~QFontEngineData()
 
     Returns the name of the font within the underlying window system.
 
-    On X11, this function will return an empty string if Qt is built with
-    FontConfig support; otherwise the XLFD (X Logical Font Description) is
-    returned.
+    On X11, this function will return an empty string.
 
     Using the return value of this function is usually \e not \e
     portable.
@@ -562,11 +560,7 @@ QFontEngineData::~QFontEngineData()
 /*!
     \fn void QFont::setRawName(const QString &name)
 
-    Sets a font by its system specific name. The function is
-    particularly useful under X, where system font settings (for
-    example X resources) are usually available in XLFD (X Logical Font
-    Description) form only. You can pass an XLFD as \a name to this
-    function.
+    Sets a font by its system specific name.
 
     A font set with setRawName() is still a full-featured QFont. It can
     be queried (for example with italic()) or modified (for example with
@@ -574,10 +568,6 @@ QFontEngineData::~QFontEngineData()
 
     If Qt's internal font database cannot resolve the raw name, the
     font becomes a raw font with \a name as its family.
-
-    Note that the present implementation does not handle wildcards in
-    XLFDs well, and that font aliases (file \c fonts.alias in the font
-    directory on X11) are not supported.
 
     \sa rawName(), setRawMode(), setFamily()
 */
@@ -1424,10 +1414,6 @@ int QFont::stretch() const
 
     The stretch factor is only applied to outline fonts.  The stretch
     factor is ignored for bitmap fonts.
-
-    NOTE: QFont cannot stretch XLFD fonts.  When loading XLFD fonts on
-    X11, the stretch factor is matched against a predefined set of
-    values for the SETWIDTH_NAME field of the XLFD.
 
     \sa stretch(), QFont::Stretch
 */

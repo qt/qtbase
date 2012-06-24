@@ -91,9 +91,6 @@ public:
         Box,
         Multi,
 
-        // X11 types
-        XLFD,
-
         // MS Windows types
         Win,
 

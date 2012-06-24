@@ -474,14 +474,9 @@ private:
     friend class QFontEngineFT;
     friend class QFontEngineMac;
     friend class QFontEngineWin;
-    friend class QFontEngineXLFD;
-    friend class QWSManager;
     friend class QPaintEngine;
     friend class QPaintEngineExPrivate;
     friend class QOpenGLPaintEngine;
-    friend class QVGPaintEngine;
-    friend class QX11PaintEngine;
-    friend class QX11PaintEnginePrivate;
     friend class QWin32PaintEngine;
     friend class QWin32PaintEnginePrivate;
     friend class QRasterPaintEngine;
