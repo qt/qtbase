@@ -113,6 +113,7 @@ out = "easy \"less easy\" sca\$\${LITERAL_HASH}ry crazy\$\$escape_expand(\\\\t\\
 testReplace($$val_escape(in), $$out, "val_escape")
 
 testReplace($$shadowed($$PWD/something), $$OUT_PWD/something, "shadowed")
+testReplace($$shadowed($$PWD), $$OUT_PWD, "shadowed (take 2)")
 
 #format_number
 spc = " "

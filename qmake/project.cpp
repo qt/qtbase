@@ -2685,10 +2685,13 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         break;
     case E_SHADOWED: {
         QString val = QDir::cleanPath(QFileInfo(args.at(0)).absoluteFilePath());
-        if (Option::mkfile::source_root.isEmpty())
+        if (Option::mkfile::source_root.isEmpty()) {
             ret += val;
-        else if (val.startsWith(Option::mkfile::source_root))
+        } else if (val.startsWith(Option::mkfile::source_root)
+                   && (val.length() == Option::mkfile::source_root.length()
+                       || val.at(Option::mkfile::source_root.length()) == QLatin1Char('/'))) {
             ret += Option::mkfile::build_root + val.mid(Option::mkfile::source_root.length());
+        }
         break; }
     case E_ABSOLUTE_PATH:
         if (args.count() > 2)

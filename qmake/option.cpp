@@ -604,10 +604,10 @@ void Option::prepareProject(const QString &pfile)
             dstpath += QLatin1Char('/');
         int srcLen = srcpath.length();
         int dstLen = dstpath.length();
-        int lastSl = 0;
+        int lastSl = -1;
         while (++lastSl, srcpath.at(--srcLen) == dstpath.at(--dstLen))
             if (srcpath.at(srcLen) == QLatin1Char('/'))
-                lastSl = 1;
+                lastSl = 0;
         mkfile::source_root = srcpath.left(srcLen + lastSl);
         mkfile::build_root = dstpath.left(dstLen + lastSl);
     } else {
