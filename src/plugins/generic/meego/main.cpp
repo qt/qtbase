@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 
 class QMeeGoIntegrationPlugin : public QGenericPlugin
 {
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface")
 public:
     QMeeGoIntegrationPlugin();
 
@@ -63,7 +64,5 @@ QObject* QMeeGoIntegrationPlugin::create(const QString &key, const QString &spec
         return new QMeeGoIntegration();
     return 0;
 }
-
-Q_EXPORT_PLUGIN2(qmeegointegrationplugin, QMeeGoIntegrationPlugin)
 
 QT_END_NAMESPACE

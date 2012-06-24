@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 
 class QLinuxFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface")
 public:
     QPlatformIntegration *create(const QString&, const QStringList&);
 };
@@ -58,7 +59,5 @@ QPlatformIntegration* QLinuxFbIntegrationPlugin::create(const QString& system, c
 
     return 0;
 }
-
-Q_EXPORT_PLUGIN2(linuxfb, QLinuxFbIntegrationPlugin)
 
 QT_END_NAMESPACE
