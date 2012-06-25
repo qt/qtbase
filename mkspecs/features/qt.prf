@@ -149,6 +149,7 @@ for(QTLIB, QT) {
         NEWQT += $$eval(QT.$${QTLIBRAW}.private_depends)
     }
     NEWQT += $$QTLIBRAW
+    contains(QT.$${QTLIBRAW}.CONFIG, auto_use_privates): CONFIG += auto_use_privates
 }
 # Topological resolution of modules based on their QT.<module>.depends variable
 QT = $$resolve_depends(NEWQT, "QT.")
@@ -170,7 +171,7 @@ for(QTLIB, QT) {
 }
 !isEmpty(BAD_QT):error("Unknown module(s) in QT: $$BAD_QT")
 
-!isEmpty(using_privates):!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
+!isEmpty(using_privates):!auto_use_privates:!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
     message("This project is using private headers and will therefore be tied to this specific Qt module build version.")
     message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
     message("This is not a bug, but a result of using Qt internals. You have been warned!")

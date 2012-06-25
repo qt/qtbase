@@ -51,7 +51,7 @@ defineTest(qtAddModule) {
     }
 
     INCLUDEPATH *= $$MODULE_INCLUDES
-    isEqual(2, UsePrivate) { # Tests function parameter 2 ($$2) being equal to 'UsePrivate'
+    auto_use_privates|isEqual(2, UsePrivate) { # Tests function parameter 2 ($$2) being equal to 'UsePrivate'
         # This adds both
         #     <module privates include path>/
         # and <module privates include path>/<module name>
