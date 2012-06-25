@@ -338,23 +338,21 @@ void tst_QHeaderView::getSetCheck()
 
     // int QHeaderView::defaultSectionSize()
     // void QHeaderView::setDefaultSectionSize(int)
+    obj1.setDefaultSectionSize(-1);
+    QVERIFY(obj1.defaultSectionSize() >= 0);
     obj1.setDefaultSectionSize(0);
     QCOMPARE(0, obj1.defaultSectionSize());
-    obj1.setDefaultSectionSize(INT_MIN);
-    QCOMPARE(INT_MIN, obj1.defaultSectionSize());
     obj1.setDefaultSectionSize(INT_MAX);
     QCOMPARE(INT_MAX, obj1.defaultSectionSize());
-    // ### the test above does not make sense for values below 0
 
     // int QHeaderView::minimumSectionSize()
     // void QHeaderView::setMinimumSectionSize(int)
+    obj1.setMinimumSectionSize(-1);
+    QVERIFY(obj1.minimumSectionSize() >= 0);
     obj1.setMinimumSectionSize(0);
     QCOMPARE(0, obj1.minimumSectionSize());
-    obj1.setMinimumSectionSize(INT_MIN);
-    QCOMPARE(INT_MIN, obj1.minimumSectionSize());
     obj1.setMinimumSectionSize(INT_MAX);
     QCOMPARE(INT_MAX, obj1.minimumSectionSize());
-    // ### the test above does not make sense for values below 0
 
     // int QHeaderView::offset()
     // void QHeaderView::setOffset(int)

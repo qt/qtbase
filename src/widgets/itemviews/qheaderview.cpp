@@ -1469,6 +1469,8 @@ int QHeaderView::defaultSectionSize() const
 void QHeaderView::setDefaultSectionSize(int size)
 {
     Q_D(QHeaderView);
+    if (size < 0)
+        return;
     d->setDefaultSectionSize(size);
 }
 
@@ -1502,6 +1504,8 @@ int QHeaderView::minimumSectionSize() const
 void QHeaderView::setMinimumSectionSize(int size)
 {
     Q_D(QHeaderView);
+    if (size < 0)
+        return;
     d->minimumSectionSize = size;
 }
 
