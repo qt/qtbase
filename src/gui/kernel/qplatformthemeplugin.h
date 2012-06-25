@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformTheme;
 
-#define QPlatformThemeFactoryInterface_iid "org.qt-project.Qt.QPlatformThemeFactoryInterface"
+#define QPlatformThemeFactoryInterface_iid "org.qt-project.Qt.QPA.QPlatformThemeFactoryInterface.5.1"
 
 class Q_GUI_EXPORT QPlatformThemePlugin : public QObject
 {

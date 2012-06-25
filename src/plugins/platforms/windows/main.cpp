@@ -105,7 +105,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface" FILE "windows.json")
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.1" FILE "windows.json")
 public:
     QPlatformIntegration *create(const QString&, const QStringList&);
 };
