@@ -64,7 +64,7 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
     ([]() noexcept -> QString { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QArrayData qstring_literal = { \
-            Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, Size, 0, sizeof(QArrayData) \
+            Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 \
         }; \
         QStringPrivate holder = {  \
             const_cast<QArrayData *>(&qstring_literal), \

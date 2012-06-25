@@ -83,7 +83,7 @@ void tst_QArrayData::referenceCounting()
 {
     {
         // Reference counting initialized to 1 (owned)
-        QArrayData array = { Q_BASIC_ATOMIC_INITIALIZER(1), QArrayData::DefaultRawFlags, 0, 0, 0 };
+        QArrayData array = { Q_BASIC_ATOMIC_INITIALIZER(1), QArrayData::DefaultRawFlags, 0 };
 
         QCOMPARE(array.ref_.loadRelaxed(), 1);
 
@@ -108,7 +108,7 @@ void tst_QArrayData::referenceCounting()
     }
     {
         // Reference counting initialized to -1 (static read-only data)
-        QArrayData array = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0, 0, 0 };
+        QArrayData array = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 };
 
         QCOMPARE(array.ref_.loadRelaxed(), -1);
 
@@ -156,9 +156,9 @@ void tst_QArrayData::sharedNullEmpty()
 
 void tst_QArrayData::simpleVector()
 {
-    QArrayData data0 = { Q_REFCOUNT_INITIALIZE_STATIC, QArrayData::StaticDataFlags, 0, 0, 0 };
+    QArrayData data0 = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 };
     QStaticArrayData<int, 7> data1 = {
-            Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(int, 7),
+            { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 },
             { 0, 1, 2, 3, 4, 5, 6 }
         };
 
@@ -429,7 +429,7 @@ void tst_QArrayData::simpleVectorReserve_data()
     QTest::newRow("non-empty") << SimpleVector<int>(5, 42) << size_t(5) << size_t(5);
 
     static const QStaticArrayData<int, 15> array = {
-        Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(int, 15),
+        { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 },
         { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 } };
     const QArrayDataPointerRef<int> p = {
          static_cast<QTypedArrayData<int> *>(
@@ -589,10 +589,6 @@ void tst_QArrayData::reallocate()
     QFETCH(size_t, alignment);
     QFETCH(QArrayData::ArrayOptions, allocateOptions);
     QFETCH(bool, isCapacityReserved);
-
-    // Maximum alignment that can be requested is that of QArrayData,
-    // otherwise, we can't use reallocate().
-    Q_ASSERT(alignment <= alignof(QArrayData));
 
     // Minimum alignment that can be requested is that of QArrayData.
     // Typically, this alignment is sizeof(void *) and ensured by malloc.

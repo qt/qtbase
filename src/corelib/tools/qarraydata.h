@@ -73,10 +73,7 @@ struct Q_CORE_EXPORT QArrayData
 
     QBasicAtomicInt ref_;
     uint flags;
-    int size;
     uint alloc;
-
-    qptrdiff offset; // in bytes from beginning of header
 
     inline size_t allocatedCapacity()
     {
@@ -102,20 +99,6 @@ struct Q_CORE_EXPORT QArrayData
         if (isStatic())
             return true;
         return ref_.deref();
-    }
-
-    void *data()
-    {
-        Q_ASSERT(size == 0
-                || offset < 0 || size_t(offset) >= sizeof(QArrayData));
-        return reinterpret_cast<char *>(this) + offset;
-    }
-
-    const void *data() const
-    {
-        Q_ASSERT(size == 0
-                || offset < 0 || size_t(offset) >= sizeof(QArrayData));
-        return reinterpret_cast<const char *>(this) + offset;
     }
 
     // This refers to array data mutability, not "header data" represented by
@@ -188,7 +171,6 @@ struct Q_CORE_EXPORT QArrayData
     static void *sharedNullData()
     {
         QArrayData *const null = const_cast<QArrayData *>(&shared_null[1]);
-        Q_ASSERT(sharedNull()->data() == null);
         return null;
     }
 };
@@ -292,16 +274,6 @@ struct QTypedArrayData
     typedef const T* const_iterator;
 #endif
 
-    T *data() { return static_cast<T *>(QArrayData::data()); }
-    const T *data() const { return static_cast<const T *>(QArrayData::data()); }
-
-    iterator begin(iterator = iterator()) { return data(); }
-    iterator end(iterator = iterator()) { return data() + size; }
-    const_iterator begin(const_iterator = const_iterator()) const { return data(); }
-    const_iterator end(const_iterator = const_iterator()) const { return data() + size; }
-    const_iterator constBegin(const_iterator = const_iterator()) const { return data(); }
-    const_iterator constEnd(const_iterator = const_iterator()) const { return data() + size; }
-
     class AlignmentDummy { QArrayData header; T data; };
 
     Q_REQUIRED_RESULT static QPair<QTypedArrayData *, T *> allocate(size_t capacity,
@@ -341,9 +313,6 @@ struct QTypedArrayData
         };
         if (result.ptr) {
             Q_ASSERT(!result.ptr->isShared()); // No shared empty, please!
-            result.ptr->offset = reinterpret_cast<const char *>(data)
-                - reinterpret_cast<const char *>(result.ptr);
-            result.ptr->size = int(n);
         }
         return result;
     }
@@ -366,15 +335,6 @@ struct QTypedArrayData
         return static_cast<T *>(QArrayData::sharedNullData());
     }
 };
-
-#define Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset) \
-    { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, size, 0, offset } \
-    /**/
-
-#define Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(type, size) \
-    Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size,\
-        ((sizeof(QArrayData) + (alignof(type) - 1)) & ~(alignof(type) - 1) )) \
-    /**/
 
 ////////////////////////////////////////////////////////////////////////////////
 //  Q_ARRAY_LITERAL
@@ -411,16 +371,15 @@ struct QTypedArrayData
     Q_ARRAY_LITERAL_CHECK_LITERAL_TYPE(Type);                                   \
                                                                                 \
     /* Portable compile-time array size computation */                          \
-    Q_CONSTEXPR Type data[] = { __VA_ARGS__ }; Q_UNUSED(data);                  \
+    static Type const data[] = { __VA_ARGS__ };                                 \
     enum { Size = sizeof(data) / sizeof(data[0]) };                             \
                                                                                 \
-    static const QStaticArrayData<Type, Size> literal = {                       \
-        Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(Type, Size), { __VA_ARGS__ } };  \
+    static const QArrayData literal = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 };          \
                                                                                 \
     QArrayDataPointerRef<Type> ref =                                            \
         { static_cast<QTypedArrayData<Type> *>(                                 \
-            const_cast<QArrayData *>(&literal.header)),                         \
-          const_cast<Type *>(literal.data),                                     \
+            const_cast<QArrayData *>(&literal)),                                \
+          const_cast<Type *>(data),                                             \
           Size };                                                               \
     /**/
 
