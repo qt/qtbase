@@ -2288,8 +2288,8 @@ void QString::resize(int size)
 
     if (d.d->needsDetach() || size > capacity())
         reallocData(uint(size) + 1u, true);
+    d.size = size;
     if (d.d->isMutable()) {
-        d.size = size;
         d.b[size] = '\0';
     }
 }
@@ -5170,23 +5170,23 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
 
     // Swap the d pointers.
     // Kids, avert your eyes. Don't try this at home.
-    QArrayData *ba_d = s.d.d;
+    QByteArrayData ba_d = {
+        s.d.d,
+        reinterpret_cast<char *>(s.d.b),
+        length
+    };
 
     // multiply the allocated capacity by sizeof(ushort)
-    ba_d->alloc *= sizeof(ushort);
+    ba_d.d->alloc *= sizeof(ushort);
 
     // reset ourselves to QString()
     s.d = QString().d;
 
     // do the in-place conversion
-    uchar *dst = reinterpret_cast<uchar *>(ba_d->data());
-    qt_to_latin1(dst, data, length);
-    dst[length] = '\0';
-
-    QByteArrayDataPtr badptr = { ba_d };
-    return QByteArray(badptr);
+    qt_to_latin1(reinterpret_cast<uchar *>(ba_d.b), data, length);
+    ba_d.b[length] = '\0';
+    return QByteArray(ba_d);
 }
-
 
 /*!
     \fn QByteArray QString::toLatin1() const

@@ -149,36 +149,17 @@ private slots:
     void stdString();
 };
 
-static const struct StaticByteArrays {
-    struct Standard {
-        QByteArrayData data;
-        const char string[8];
-    } standard;
-    struct NotNullTerminated {
-        QByteArrayData data;
-        const char string[8];
-    } notNullTerminated;
-    struct Shifted {
-        QByteArrayData data;
-        const char dummy;  // added to change offset of string
-        const char string[8];
-    } shifted;
-    struct ShiftedNotNullTerminated {
-        QByteArrayData data;
-        const char dummy;  // added to change offset of string
-        const char string[8];
-    } shiftedNotNullTerminated;
-
-} statics = {{Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(4), "data"}
-             ,{Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(4), "dataBAD"}
-             ,{Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(4, sizeof(QByteArrayData) + sizeof(char)), 0, "data"}
-             ,{Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(4, sizeof(QByteArrayData) + sizeof(char)), 0, "dataBAD"}
-            };
-
-static const QByteArrayDataPtr staticStandard = { const_cast<QByteArrayData *>(&statics.standard.data) };
-static const QByteArrayDataPtr staticNotNullTerminated = { const_cast<QByteArrayData *>(&statics.notNullTerminated.data) };
-static const QByteArrayDataPtr staticShifted = { const_cast<QByteArrayData *>(&statics.shifted.data) };
-static const QByteArrayDataPtr staticShiftedNotNullTerminated = { const_cast<QByteArrayData *>(&statics.shiftedNotNullTerminated.data) };
+static const QArrayData staticDataFlags = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 };
+static const QByteArrayData staticStandard = {
+    static_cast<QTypedArrayData<char> *>(const_cast<QArrayData *>(&staticDataFlags)),
+    const_cast<char *>("data"),
+    4
+};
+static const QByteArrayData staticNotNullTerminated = {
+    static_cast<QTypedArrayData<char> *>(const_cast<QArrayData *>(&staticDataFlags)),
+    const_cast<char *>("dataBAD"),
+    4
+};
 
 template <class T> const T &verifyZeroTermination(const T &t) { return t; }
 
@@ -189,8 +170,7 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
     QByteArray::DataPtr baDataPtr = const_cast<QByteArray &>(ba).data_ptr();
 
     // Skip if isStatic() or fromRawData(), as those offer no guarantees
-    if (baDataPtr->isStatic()
-            || baDataPtr->offset != QByteArray().data_ptr()->offset)
+    if (baDataPtr.d->isStatic() || baDataPtr.d->flags & QArrayData::RawDataType)
         return ba;
 
     int baSize = ba.size();
@@ -201,7 +181,7 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
                 .arg(baTerminator, 2, 16, QChar('0')).toLatin1();
 
     // Skip mutating checks on shared strings
-    if (baDataPtr->isShared())
+    if (baDataPtr.d->isShared())
         return ba;
 
     const char *baData = ba.constData();
@@ -951,9 +931,7 @@ void tst_QByteArray::prependExtended_data()
     QTest::addColumn<QByteArray>("array");
     QTest::newRow("literal") << QByteArray(QByteArrayLiteral("data"));
     QTest::newRow("standard") << QByteArray(staticStandard);
-    QTest::newRow("shifted") << QByteArray(staticShifted);
     QTest::newRow("notNullTerminated") << QByteArray(staticNotNullTerminated);
-    QTest::newRow("shiftedNotNullTerminated") << QByteArray(staticShiftedNotNullTerminated);
     QTest::newRow("non static data") << QByteArray("data");
     QTest::newRow("from raw data") << QByteArray::fromRawData("data", 4);
     QTest::newRow("from raw data not terminated") << QByteArray::fromRawData("dataBAD", 4);
@@ -2019,14 +1997,6 @@ void tst_QByteArray::repeated_data() const
         << QByteArray(staticStandard)
         << QByteArray("datadatadatadata")
         << 4;
-    QTest::newRow("static shifted not null terminated")
-        << QByteArray(staticShiftedNotNullTerminated)
-        << QByteArray("datadatadatadata")
-        << 4;
-    QTest::newRow("static shifted")
-        << QByteArray(staticShifted)
-        << QByteArray("datadatadatadata")
-        << 4;
 }
 
 void tst_QByteArray::byteRefDetaching() const
@@ -2198,8 +2168,7 @@ void tst_QByteArray::literals()
 
     QVERIFY(str.length() == 4);
     QVERIFY(str == "abcd");
-    QVERIFY(str.data_ptr()->isStatic());
-    QVERIFY(str.data_ptr()->offset == sizeof(QByteArrayData));
+    QVERIFY(str.data_ptr().d->isStatic());
 
     const char *s = str.constData();
     QByteArray str2 = str;

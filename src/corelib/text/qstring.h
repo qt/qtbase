@@ -263,8 +263,8 @@ public:
     inline QString &operator=(QString &&other) noexcept
     { qSwap(d, other.d); return *this; }
     inline void swap(QString &other) noexcept { qSwap(d, other.d); }
-    inline int size() const { return d.size; }
-    inline int count() const { return d.size; }
+    inline int size() const { return int(d.size); }
+    inline int count() const { return int(d.size); }
     inline int length() const;
     inline bool isEmpty() const;
     void resize(int size);
@@ -1020,7 +1020,7 @@ QString QStringView::toString() const
 inline QString::QString(QLatin1String aLatin1) : d(fromLatin1_helper(aLatin1.latin1(), aLatin1.size()))
 { }
 inline int QString::length() const
-{ return d.size; }
+{ return int(d.size); }
 inline const QChar QString::at(int i) const
 { Q_ASSERT(uint(i) < uint(size())); return QChar(d.b[i]); }
 inline const QChar QString::operator[](int i) const
@@ -1259,7 +1259,7 @@ inline QString::~QString() { if (!d.d->deref()) Data::deallocate(d.d); }
 inline void QString::reserve(int asize)
 {
     if (d.d->needsDetach() || asize >= capacity())
-        reallocData(qMax(asize, size()) + 1u);
+        reallocData(uint(qMax(asize, size())) + 1u);
 
     // we're not shared anymore, for sure
     d.d->flags |= Data::CapacityReserved;
@@ -1273,7 +1273,7 @@ inline void QString::squeeze()
         reallocData(uint(d.size) + 1u);
 
     // we're not shared anymore, for sure
-    d.d->flags &= ~Data::CapacityReserved;
+    d.d->flags &= uint(~Data::CapacityReserved);
 }
 
 inline QString &QString::setUtf16(const ushort *autf16, int asize)

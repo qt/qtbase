@@ -199,11 +199,6 @@ struct QPodArrayOps
 
     bool compare(const T *begin1, const T *begin2, size_t n) const
     {
-        // only use memcmp for fundamental types or pointers.
-        // Other types could have padding in the data structure or custom comparison
-        // operators that would break the comparison using memcmp
-        if (QArrayDataPointer<T>::pass_parameter_by_value)
-            return ::memcmp(begin1, begin2, n * sizeof(T)) == 0;
         const T *end1 = begin1 + n;
         while (begin1 != end1) {
             if (*begin1 == *begin2)
