@@ -230,6 +230,14 @@ QT_BEGIN_NAMESPACE
     In the member function documentation, \e{d pointer} always refers
     to the internal pointer to the shared data object.
 
+    \section1 Optimize performance for usage in Qt Containers
+
+    You should consider marking your implicitly shared class as a movable type
+    using the Q_DECLARE_TYPEINFO() macro if it resembles the \c Employee class
+    above and uses a QSharedDataPointer or QExplicitlySharedDataPointer as the
+    only member. This can improve performance and memory efficiency when using
+    Qt's \l{container classes}.
+
     \sa QSharedData, QExplicitlySharedDataPointer, QScopedPointer, QSharedPointer
 */
 
