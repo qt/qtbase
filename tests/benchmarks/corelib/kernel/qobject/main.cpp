@@ -61,6 +61,7 @@ private slots:
     void dynamic_property_benchmark();
     void connect_disconnect_benchmark_data();
     void connect_disconnect_benchmark();
+    void receiver_destroyed_benchmark();
 };
 
 struct Functor {
@@ -233,6 +234,15 @@ void QObjectBenchmark::connect_disconnect_benchmark()
                 QObject::disconnect(QObject::connect(&obj, &QAbstractItemView::viewportEntered, functor));
             }
         } break;
+    }
+}
+
+void QObjectBenchmark::receiver_destroyed_benchmark()
+{
+    Object sender;
+    QBENCHMARK {
+        Object receiver;
+        QObject::connect(&sender, &Object::signal0, &receiver, &Object::slot0);
     }
 }
 

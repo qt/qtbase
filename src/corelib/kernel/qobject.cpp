@@ -831,9 +831,11 @@ QObject::~QObject()
             if (senderLists)
                 senderLists->dirty = true;
 
+            int signal_index = node->signal_index;
             node = node->next;
             if (needToUnlock)
                 m->unlock();
+            sender->disconnectNotify(QMetaObjectPrivate::signal(sender->metaObject(), signal_index));
         }
     }
 
@@ -3021,6 +3023,7 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender,
 
     QScopedPointer<QObjectPrivate::Connection> c(new QObjectPrivate::Connection);
     c->sender = s;
+    c->signal_index = signal_index;
     c->receiver = r;
     c->method_relative = method_index;
     c->method_offset = method_offset;
@@ -4188,6 +4191,7 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
 
     QScopedPointer<QObjectPrivate::Connection> c(new QObjectPrivate::Connection);
     c->sender = s;
+    c->signal_index = signal_index;
     c->receiver = r;
     c->slotObj = slotObj;
     c->connectionType = type;

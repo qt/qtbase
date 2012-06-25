@@ -978,8 +978,26 @@ void tst_QObject::disconnectNotify_receiverDestroyed()
     QVERIFY(QObject::connect((SenderObject*)s, SIGNAL(signal1()), (ReceiverObject*)r, SLOT(slot1())));
 
     delete r;
-    // disconnectNotify() is not called, but it probably should be.
-    QVERIFY(s->disconnectedSignals.isEmpty());
+    QCOMPARE(s->disconnectedSignals.count(), 1);
+    QCOMPARE(s->disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal1));
+
+    s->disconnectedSignals.clear();
+    r = new NotifyObject;
+
+    QVERIFY(QObject::connect((SenderObject*)s, SIGNAL(signal3()), (ReceiverObject*)r, SLOT(slot3())));
+
+    delete r;
+    QCOMPARE(s->disconnectedSignals.count(), 1);
+    QCOMPARE(s->disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal3));
+
+    s->disconnectedSignals.clear();
+    r = new NotifyObject;
+
+    QVERIFY(QObject::connect((SenderObject*)s, SIGNAL(destroyed()), (ReceiverObject*)r, SLOT(slot3())));
+
+    delete r;
+    QCOMPARE(s->disconnectedSignals.count(), 1);
+    QCOMPARE(s->disconnectedSignals.at(0), QMetaMethod::fromSignal(&QObject::destroyed));
 
     delete s;
 }
