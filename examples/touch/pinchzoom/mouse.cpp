@@ -63,7 +63,7 @@ Mouse::Mouse()
     : angle(0), speed(0), mouseEyeDirection(0),
       color(qrand() % 256, qrand() % 256, qrand() % 256)
 {
-    rotate(qrand() % (360 * 16));
+    setTransform(QTransform().rotate(qrand() % (360 * 16)), true);
     startTimer(1000 / 33);
 }
 //! [0]
@@ -193,7 +193,7 @@ void Mouse::timerEvent(QTimerEvent *)
     qreal dx = ::sin(angle) * 10;
     mouseEyeDirection = (qAbs(dx / 5) < 1) ? 0 : dx / 5;
 
-    rotate(dx);
+    setTransform(QTransform().rotate(dx), true);
     setPos(mapToParent(0, -(3 + sin(speed) * 3)));
 }
 //! [11]

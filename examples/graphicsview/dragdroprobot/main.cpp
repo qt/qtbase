@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     }
 
     Robot *robot = new Robot;
-    robot->scale(1.2, 1.2);
+    robot->setTransform(QTransform::fromScale(1.2, 1.2), true);
     robot->setPos(0, -20);
     scene.addItem(robot);
 //! [1]

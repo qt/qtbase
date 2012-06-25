@@ -91,9 +91,9 @@ void ImageItem::setFrame(int frame)
     adjust();
     QPointF center = boundingRect().center();
 
-    translate(center.x(), center.y());
-    scale(1 + frame / 330.0, 1 + frame / 330.0);
-    translate(-center.x(), -center.y());
+    setTransform(QTransform::fromTranslate(center.x(), center.y()), true);
+    setTransform(QTransform::fromScale(1 + frame / 330.0, 1 + frame / 330.0), true);
+    setTransform(QTransform::fromTranslate(-center.x(), -center.y()), true);
 }
 //! [3]
 

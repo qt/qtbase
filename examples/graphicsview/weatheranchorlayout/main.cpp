@@ -91,7 +91,7 @@ public:
 
     void setGeometry (const QRectF &rect)
     {
-        original->scale(rect.width() / r.width(), rect.height() / r.height());
+        original->setTransform(QTransform::fromScale(rect.width() / r.width(), rect.height() / r.height()), true);
         original->setPos(rect.x(), rect.y());
         r = rect;
     }
