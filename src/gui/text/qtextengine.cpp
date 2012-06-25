@@ -110,7 +110,7 @@ private:
         QScriptItemArray::Iterator iter = m_items.end();
         do {
             iter--;
-            if (iter->analysis.flags < QScriptAnalysis::TabOrObject)
+            if (iter->analysis.flags < QScriptAnalysis::LineOrParagraphSeparator)
                 iter->analysis.flags = flags;
         } while (iter->position > start);
     }

@@ -112,6 +112,7 @@ private slots:
     void tabsForRtl();
     void tabHeight();
     void capitalization_allUpperCase();
+    void capitalization_allUpperCase_newline();
     void capitalization_allLowerCase();
     void capitalization_smallCaps();
     void capitalization_capitalize();
@@ -1668,6 +1669,28 @@ void tst_QTextLayout::capitalization_allUpperCase()
     engine->itemize();
     QCOMPARE(engine->layoutData->items.count(), 1);
     QVERIFY(engine->layoutData->items.at(0).analysis.flags == QScriptAnalysis::Uppercase);
+}
+
+void tst_QTextLayout::capitalization_allUpperCase_newline()
+{
+    QFont font(testFont);
+    font.setCapitalization(QFont::AllUppercase);
+
+    QString tmp = "hello\nworld!";
+    tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
+
+    QTextLayout layout(tmp, font);
+    layout.setCacheEnabled(true);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QTextEngine *engine = layout.engine();
+    engine->itemize();
+    QCOMPARE(engine->layoutData->items.count(), 3);
+    QVERIFY(engine->layoutData->items.at(0).analysis.flags == QScriptAnalysis::Uppercase);
+    QVERIFY(engine->layoutData->items.at(1).analysis.flags == QScriptAnalysis::LineOrParagraphSeparator);
+    QVERIFY(engine->layoutData->items.at(2).analysis.flags == QScriptAnalysis::Uppercase);
 }
 
 void tst_QTextLayout::capitalization_allLowerCase()
