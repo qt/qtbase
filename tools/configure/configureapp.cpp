@@ -350,7 +350,7 @@ Configure::~Configure()
 QString Configure::formatPath(const QString &path)
 {
     QString ret = QDir::cleanPath(path);
-    // This amount of quoting is deemed sufficient. ™
+    // This amount of quoting is deemed sufficient.
     if (ret.contains(QLatin1Char(' '))) {
         ret.prepend(QLatin1Char('"'));
         ret.append(QLatin1Char('"'));
