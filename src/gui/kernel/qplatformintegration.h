@@ -85,8 +85,8 @@ public:
         OpenGL = 2,
         ThreadedOpenGL = 3,
         SharedGraphicsCache = 4,
-        BufferQueueingOpenGL = 5
-
+        BufferQueueingOpenGL = 5,
+        WindowMasks = 6
     };
 
     virtual ~QPlatformIntegration() { }

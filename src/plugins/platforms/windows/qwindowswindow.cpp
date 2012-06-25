@@ -53,6 +53,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
+#include <QtGui/QRegion>
 #include <private/qwindow_p.h>
 #include <QtGui/QWindowSystemInterface>
 
@@ -1342,6 +1343,49 @@ void QWindowsWindow::setOpacity(qreal level)
         if (m_data.hwnd)
             setWindowOpacity(m_data.hwnd, m_data.flags, level);
     }
+}
+
+static inline HRGN createRectRegion(const QRect &r)
+{
+    return CreateRectRgn(r.left(), r.top(), r.x() + r.width(), r.y() + r.height());
+}
+
+static inline void addRectToWinRegion(const QRect &rect, HRGN *winRegion)
+{
+    if (const HRGN rectRegion = createRectRegion(rect)) {
+        HRGN result = CreateRectRgn(0, 0, 0, 0);
+        if (CombineRgn(result, *winRegion, rectRegion, RGN_OR)) {
+            DeleteObject(winRegion);
+            *winRegion = result;
+        }
+        DeleteObject(rectRegion);
+    }
+}
+
+static HRGN qRegionToWinRegion(const QRegion &region)
+{
+    const QVector<QRect> rects = region.rects();
+    if (rects.isEmpty())
+        return NULL;
+    const int rectCount = rects.size();
+    if (rectCount == 1)
+        return createRectRegion(region.boundingRect());
+    HRGN hRegion = createRectRegion(rects.front());
+    for (int i = 1; i < rectCount; ++i)
+        addRectToWinRegion(rects.at(i), &hRegion);
+    return hRegion;
+}
+
+void QWindowsWindow::setMask(const QRegion &region)
+{
+    if (region.isEmpty()) {
+         SetWindowRgn(m_data.hwnd, 0, true);
+         return;
+    }
+    const HRGN winRegion = qRegionToWinRegion(region);
+    // SetWindowRgn takes ownership.
+    if (!SetWindowRgn(m_data.hwnd, winRegion, true))
+        DeleteObject(winRegion);
 }
 
 void QWindowsWindow::requestActivateWindow()

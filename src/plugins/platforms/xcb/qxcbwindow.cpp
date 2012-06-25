@@ -44,6 +44,7 @@
 #include <QtDebug>
 #include <QScreen>
 #include <QtGui/QIcon>
+#include <QtGui/QRegion>
 
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
@@ -97,6 +98,9 @@
 #ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#ifndef QT_NO_SHAPE
+#  include <X11/extensions/shape.h>
+#endif // QT_NO_SHAPE
 #endif
 
 #ifdef XCB_USE_XINPUT2_MAEMO
@@ -1697,5 +1701,55 @@ bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
                    (const char *)&xev);
     return true;
 }
+
+#if defined(XCB_USE_XLIB) && !defined(QT_NO_SHAPE)
+
+static inline XRectangle qRectToX11Rectangle(const QRect &r)
+{
+    XRectangle result;
+    result.x = qMax(SHRT_MIN, r.x());
+    result.y = qMax(SHRT_MIN, r.y());
+    result.width = qMin((int)USHRT_MAX, r.width());
+    result.height = qMin((int)USHRT_MAX, r.height());
+    return result;
+}
+
+static inline Region qRegionToX11Region(const QRegion &region)
+{
+    if (region.isEmpty())
+        return None;
+    Region result = XCreateRegion();
+    if (!result)
+        return None;
+    const QVector<QRect> rects = region.rects();
+    if (rects.size() == 1) {
+        XRectangle xrect = qRectToX11Rectangle(region.boundingRect());
+        XUnionRectWithRegion(&xrect, result, result);
+    } else {
+        foreach (const QRect &r, rects) {
+            XRectangle xrect = qRectToX11Rectangle(r);
+            XUnionRectWithRegion(&xrect, result, result);
+        }
+    }
+    return result;
+}
+
+
+void QXcbWindow::setMask(const QRegion &region)
+{
+
+    Display *display = (Display *)connection()->xlib_display();
+    if (region.isEmpty()) {
+        XShapeCombineMask(display, xcb_window(),
+                          ShapeBounding, 0, 0,
+                          None, ShapeSet);
+    } else {
+        XShapeCombineRegion(display, xcb_window(),
+                            ShapeBounding, 0, 0,
+                            qRegionToX11Region(region), ShapeSet);
+    }
+}
+
+#endif // XCB_USE_XLIB && !QT_NO_SHAPE
 
 QT_END_NAMESPACE

@@ -168,6 +168,7 @@ public:
     virtual QMargins frameMargins() const;
 
     virtual void setOpacity(qreal level);
+    virtual void setMask(const QRegion &region);
     qreal opacity() const { return m_opacity; }
     virtual void requestActivateWindow();
 

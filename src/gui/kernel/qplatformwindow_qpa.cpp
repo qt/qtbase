@@ -242,6 +242,16 @@ void QPlatformWindow::setOpacity(qreal level)
 }
 
 /*!
+  Reimplement to  be able to let Qt set the mask of a window
+*/
+
+void QPlatformWindow::setMask(const QRegion &region)
+{
+    Q_UNUSED(region);
+    qWarning("This plugin does not support setting window masks");
+}
+
+/*!
   Reimplement to let Qt be able to request activation/focus for a window
 
   Some window systems will probably not have callbacks for this functionality,

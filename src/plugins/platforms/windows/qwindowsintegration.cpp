@@ -265,6 +265,8 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
         return true;
 #  endif // QT_OPENGL_ES_2
 #endif // !QT_NO_OPENGL
+    case WindowMasks:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }

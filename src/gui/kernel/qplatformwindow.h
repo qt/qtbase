@@ -68,6 +68,7 @@ class QPlatformScreen;
 class QPlatformWindowPrivate;
 class QWindow;
 class QIcon;
+class QRegion;
 
 class Q_GUI_EXPORT QPlatformWindow : public QPlatformSurface
 {
@@ -105,6 +106,7 @@ public:
     virtual void propagateSizeHints();
 
     virtual void setOpacity(qreal level);
+    virtual void setMask(const QRegion &region);
     virtual void requestActivateWindow();
 
     virtual void handleContentOrientationChange(Qt::ScreenOrientation orientation);

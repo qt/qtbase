@@ -203,6 +203,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case ThreadedPixmaps: return true;
     case OpenGL: return true;
     case ThreadedOpenGL: return false;
+    case WindowMasks: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

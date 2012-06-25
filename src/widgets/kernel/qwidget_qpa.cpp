@@ -50,6 +50,7 @@
 #include <qpa/qplatformwindow.h>
 #include "QtGui/qsurfaceformat.h"
 #include <qpa/qplatformopenglcontext.h>
+#include <qpa/qplatformintegration.h>
 #include "QtGui/private/qwindow_p.h"
 
 #include <qpa/qplatformcursor.h>
@@ -929,10 +930,24 @@ void QWidgetPrivate::registerDropSite(bool on)
     Q_UNUSED(on);
 }
 
-void QWidgetPrivate::setMask_sys(const QRegion &region)
+void QWidgetPrivate::setMask_sys(const QRegion &regionIn)
 {
-    Q_UNUSED(region);
-    // XXX
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowMasks)) {
+        qWarning("%s: Not supported on %s.", Q_FUNC_INFO, qPrintable(QGuiApplication::platformName()));
+        return;
+    }
+    Q_Q(QWidget);
+    QRegion region = regionIn;
+    QWindow *window = q->windowHandle();
+    if (!window) {
+        if (QWidget *nativeParent = q->nativeParentWidget()) {
+            window = nativeParent->windowHandle();
+            region.translate(q->mapTo(nativeParent, QPoint(0, 0)));
+        }
+    }
+    if (window)
+        if (QPlatformWindow *platformWindow = window->handle())
+            platformWindow->setMask(region);
 }
 
 void QWidgetPrivate::updateFrameStrut()

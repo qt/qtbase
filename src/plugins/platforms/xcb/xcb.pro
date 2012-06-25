@@ -45,6 +45,7 @@ contains(QT_CONFIG, xcb-poll-for-queued-event) {
 # needed by GLX, Xcursor, XLookupString, ...
 contains(QT_CONFIG, xcb-xlib) {
     DEFINES += XCB_USE_XLIB
+    !contains(DEFINES, QT_NO_SHAPE):LIBS += -lXext
     LIBS += -lX11 -lX11-xcb
 
     linux-g++-maemo {
