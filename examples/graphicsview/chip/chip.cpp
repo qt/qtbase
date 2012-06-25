@@ -51,7 +51,7 @@ Chip::Chip(const QColor &color, int x, int y)
     setZValue((x + y) % 2);
 
     setFlags(ItemIsSelectable | ItemIsMovable);
-    setAcceptsHoverEvents(true);
+    setAcceptHoverEvents(true);
 }
 
 QRectF Chip::boundingRect() const

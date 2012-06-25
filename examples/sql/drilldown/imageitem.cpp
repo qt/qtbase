@@ -46,7 +46,7 @@ ImageItem::ImageItem(int id, const QPixmap &pixmap, QGraphicsItem *parent,
     : QGraphicsPixmapItem(pixmap, parent, scene)
 {
     recordId = id;
-    setAcceptsHoverEvents(true);
+    setAcceptHoverEvents(true);
 
     timeLine.setDuration(150);
     timeLine.setFrameRange(0, 150);
