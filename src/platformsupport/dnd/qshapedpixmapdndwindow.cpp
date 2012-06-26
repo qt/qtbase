@@ -50,6 +50,9 @@ QShapedPixmapWindow::QShapedPixmapWindow()
     : QWindow(),
       m_backingStore(0)
 {
+    QSurfaceFormat format;
+    format.setAlphaBufferSize(8);
+    setFormat(format);
     setSurfaceType(RasterSurface);
     setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint |
                    Qt::X11BypassWindowManagerHint | Qt::WindowTransparentForInput);
@@ -67,6 +70,7 @@ void QShapedPixmapWindow::render()
 
     {
         QPainter p(device);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
         p.drawPixmap(0, 0, m_pixmap);
     }
 

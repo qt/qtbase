@@ -465,7 +465,6 @@ void QXcbDrag::move(const QMouseEvent *me)
         move.window = target;
         move.format = 32;
         move.type = atom(QXcbAtom::XdndPosition);
-        move.window = target;
         move.data.data32[0] = connection()->clipboard()->owner();
         move.data.data32[1] = 0; // flags
         move.data.data32[2] = (globalPos.x() << 16) + globalPos.y();
