@@ -1,5 +1,5 @@
 # Load generated qdevice.pri
-DEVICE_PRI = $$[QMAKE_HOST_DATA/get]/mkspecs/qdevice.pri
+DEVICE_PRI = $$[QT_HOST_DATA/get]/mkspecs/qdevice.pri
 exists($$DEVICE_PRI):include($$DEVICE_PRI)
 unset(DEVICE_PRI)
 
