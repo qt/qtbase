@@ -77,7 +77,6 @@ QT_BEGIN_NAMESPACE
 namespace QTest
 {
 
-#ifdef QT_WIDGETS_LIB
 template<>
 inline bool qCompare(QIcon const &t1, QIcon const &t2, const char *actual, const char *expected,
                     const char *file, int line)
@@ -86,7 +85,6 @@ inline bool qCompare(QIcon const &t1, QIcon const &t2, const char *actual, const
     return qCompare<void *>(*reinterpret_cast<void * const *>(&t1),
                    *reinterpret_cast<void * const *>(&t2), actual, expected, file, line);
 }
-#endif
 
 template<>
 inline bool qCompare(QImage const &t1, QImage const &t2,
