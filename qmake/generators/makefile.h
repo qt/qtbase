@@ -189,9 +189,10 @@ protected:
     bool mkdir(const QString &dir) const;
     QString mkdir_p_asstring(const QString &dir, bool escape=true) const;
 
+    QString specdir();
+
     //subclasses can use these to query information about how the generator was "run"
     QString buildArgs(const QString &outdir=QString());
-    QString specdir(const QString &outdir = QString(), int host_build = -1);
     QString fixifySpecdir(const QString &spec, const QString &outdir);
 
     virtual QStringList &findDependencies(const QString &file);

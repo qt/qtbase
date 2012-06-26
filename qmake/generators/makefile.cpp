@@ -3072,14 +3072,11 @@ QStringList
 }
 
 QString
-MakefileGenerator::specdir(const QString &outdir, int host_build)
+MakefileGenerator::specdir()
 {
-#if 0
-    if(!spec.isEmpty())
-        return spec;
-#endif
-    spec = fileFixify((host_build >= 0 ? bool(host_build) : project->isHostBuild())
-                      ? Option::mkfile::qmakespec : Option::mkfile::xqmakespec, outdir);
+    if (spec.isEmpty())
+        spec = fileFixify(project->isHostBuild()
+                          ? Option::mkfile::qmakespec : Option::mkfile::xqmakespec);
     return spec;
 }
 
