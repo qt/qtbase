@@ -649,6 +649,9 @@ Qt for Windows CE
 *                          Plugins                                         *
 ****************************************************************************
 - The text codecs that were previously plugins are now built into QtCore.
+- Code using Q_EXPORT_PLUGIN macros will no longer compile. Use
+  Q_PLUGIN_METADATA instead. Note that this requires that the class
+  be default-constructible.
 
 ****************************************************************************
 *                   Important Behavior Changes                             *

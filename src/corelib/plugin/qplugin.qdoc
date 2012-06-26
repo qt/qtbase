@@ -77,6 +77,8 @@
 
     See the \l{tools/plugandpaint}{Plug & Paint} example for details.
 
+    Note that the class this macro appears on must be default-constructible
+
     \sa Q_DECLARE_INTERFACE(), {How to Create Qt Plugins}
 */
 
