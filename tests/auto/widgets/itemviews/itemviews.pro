@@ -11,8 +11,6 @@ SUBDIRS=\
    qitemview \
    qlistview \
    qlistwidget \
-   qstandarditem \
-   qstandarditemmodel \
    qtableview \
    qtablewidget \
    qtreeview \

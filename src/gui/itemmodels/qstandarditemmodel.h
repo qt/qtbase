@@ -62,7 +62,7 @@ template <class T> class QList;
 class QStandardItemModel;
 
 class QStandardItemPrivate;
-class Q_WIDGETS_EXPORT QStandardItem
+class Q_GUI_EXPORT QStandardItem
 {
 public:
     QStandardItem();
@@ -314,7 +314,7 @@ inline void QStandardItem::appendRow(QStandardItem *aitem)
 
 class QStandardItemModelPrivate;
 
-class Q_WIDGETS_EXPORT QStandardItemModel : public QAbstractItemModel
+class Q_GUI_EXPORT QStandardItemModel : public QAbstractItemModel
 {
     Q_OBJECT
     Q_PROPERTY(int sortRole READ sortRole WRITE setSortRole)
@@ -444,8 +444,8 @@ inline bool QStandardItemModel::insertColumn(int acolumn, const QModelIndex &apa
 { return QAbstractItemModel::insertColumn(acolumn, aparent); }
 
 #ifndef QT_NO_DATASTREAM
-Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &in, QStandardItem &item);
-Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &out, const QStandardItem &item);
+Q_GUI_EXPORT QDataStream &operator>>(QDataStream &in, QStandardItem &item);
+Q_GUI_EXPORT QDataStream &operator<<(QDataStream &out, const QStandardItem &item);
 #endif
 
 #endif // QT_NO_STANDARDITEMMODEL

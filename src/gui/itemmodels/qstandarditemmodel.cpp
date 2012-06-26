@@ -189,14 +189,14 @@ void QStandardItemPrivate::setItemData(const QMap<int, QVariant> &roles)
     Q_Q(QStandardItem);
 
     //let's build the vector of new values
-    QVector<QWidgetItemData> newValues;
+    QVector<QStandardItemData> newValues;
     QMap<int, QVariant>::const_iterator it;
     for (it = roles.begin(); it != roles.end(); ++it) {
         QVariant value = it.value();
         if (value.isValid()) {
             int role = it.key();
             role = (role == Qt::EditRole) ? Qt::DisplayRole : role;
-            QWidgetItemData wid(role,it.value());
+            QStandardItemData wid(role,it.value());
             newValues.append(wid);
         }
     }
@@ -214,7 +214,7 @@ void QStandardItemPrivate::setItemData(const QMap<int, QVariant> &roles)
 const QMap<int, QVariant> QStandardItemPrivate::itemData() const
 {
     QMap<int, QVariant> result;
-    QVector<QWidgetItemData>::const_iterator it;
+    QVector<QStandardItemData>::const_iterator it;
     for (it = values.begin(); it != values.end(); ++it)
         result.insert((*it).role, (*it).value);
     return result;
@@ -614,7 +614,7 @@ void QStandardItemModelPrivate::columnsRemoved(QStandardItem *parent,
     QStandardItemModel class.
     \since 4.2
     \ingroup model-view
-    \inmodule QtWidgets
+    \inmodule QtGui
 
     Items usually contain text, icons, or checkboxes.
 
@@ -812,7 +812,7 @@ void QStandardItem::setData(const QVariant &value, int role)
 {
     Q_D(QStandardItem);
     role = (role == Qt::EditRole) ? Qt::DisplayRole : role;
-    QVector<QWidgetItemData>::iterator it;
+    QVector<QStandardItemData>::iterator it;
     for (it = d->values.begin(); it != d->values.end(); ++it) {
         if ((*it).role == role) {
             if (value.isValid()) {
@@ -827,7 +827,7 @@ void QStandardItem::setData(const QVariant &value, int role)
             return;
         }
     }
-    d->values.append(QWidgetItemData(role, value));
+    d->values.append(QStandardItemData(role, value));
     if (d->model)
         d->model->d_func()->itemChanged(this);
 }
@@ -843,7 +843,7 @@ QVariant QStandardItem::data(int role) const
 {
     Q_D(const QStandardItem);
     role = (role == Qt::EditRole) ? Qt::DisplayRole : role;
-    QVector<QWidgetItemData>::const_iterator it;
+    QVector<QStandardItemData>::const_iterator it;
     for (it = d->values.begin(); it != d->values.end(); ++it) {
         if ((*it).role == role)
             return (*it).value;
@@ -1954,7 +1954,7 @@ QDataStream &operator<<(QDataStream &out, const QStandardItem &item)
     \class QStandardItemModel
     \brief The QStandardItemModel class provides a generic model for storing custom data.
     \ingroup model-view
-    \inmodule QtWidgets
+    \inmodule QtGui
 
     QStandardItemModel can be used as a repository for standard Qt
     data types. It is one of the \l {Model/View Classes} and is part

@@ -44,7 +44,7 @@
 #include "modeltest.h"
 
 #include <QtCore/QCoreApplication>
-#include <QtWidgets/QStandardItem>
+#include <QtGui/QStandardItem>
 #include <QtWidgets/QTreeView>
 #include <QtWidgets/QTableView>
 

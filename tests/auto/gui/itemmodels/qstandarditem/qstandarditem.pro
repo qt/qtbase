@@ -1,7 +1,7 @@
 CONFIG += testcase
 CONFIG += parallel_test
 TARGET = tst_qstandarditem
-QT += widgets testlib
+QT += gui testlib
 SOURCES  += tst_qstandarditem.cpp
 
 

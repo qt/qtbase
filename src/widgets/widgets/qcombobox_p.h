@@ -59,7 +59,7 @@
 #include "QtWidgets/qabstractslider.h"
 #include "QtWidgets/qapplication.h"
 #include "QtWidgets/qitemdelegate.h"
-#include "QtWidgets/qstandarditemmodel.h"
+#include "QtGui/qstandarditemmodel.h"
 #include "QtWidgets/qlineedit.h"
 #include "QtWidgets/qlistview.h"
 #include "QtGui/qpainter.h"

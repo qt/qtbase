@@ -28,6 +28,7 @@ include(util/util.pri)
 include(math3d/math3d.pri)
 include(opengl/opengl.pri)
 include(animation/animation.pri)
+include(itemmodels/itemmodels.pri)
 
 QMAKE_LIBS += $$QMAKE_LIBS_GUI
 

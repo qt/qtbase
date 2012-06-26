@@ -57,7 +57,6 @@
 
 #ifndef QT_NO_STANDARDITEMMODEL
 
-#include <private/qwidgetitemdata_p.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qstack.h>
@@ -65,6 +64,34 @@
 #include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
+
+class QStandardItemData
+{
+public:
+    inline QStandardItemData() : role(-1) {}
+    inline QStandardItemData(int r, QVariant v) : role(r), value(v) {}
+    int role;
+    QVariant value;
+    inline bool operator==(const QStandardItemData &other) const { return role == other.role && value == other.value; }
+};
+
+#ifndef QT_NO_DATASTREAM
+
+inline QDataStream &operator>>(QDataStream &in, QStandardItemData &data)
+{
+    in >> data.role;
+    in >> data.value;
+    return in;
+}
+
+inline QDataStream &operator<<(QDataStream &out, const QStandardItemData &data)
+{
+    out << data.role;
+    out << data.value;
+    return out;
+}
+
+#endif // QT_NO_DATASTREAM
 
 class QStandardItemPrivate
 {
@@ -126,7 +153,7 @@ public:
 
     QStandardItemModel *model;
     QStandardItem *parent;
-    QVector<QWidgetItemData> values;
+    QVector<QStandardItemData> values;
     QVector<QStandardItem*> children;
     int rows;
     int columns;

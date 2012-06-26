@@ -93,7 +93,11 @@
         "qplatformmenu_qpa.h" => "qpa/qplatformmenu.h",
         "QPlatformMenu" => "qpa/qplatformmenu.h",
         "QPlatformMenuAction" => "qpa/qplatformmenu.h",
-        "QPlatformMenuBar" => "qpa/qplatformmenu.h"
+        "QPlatformMenuBar" => "qpa/qplatformmenu.h",
+        "QStandardItem" => "QtGui/QStandardItem",
+        "QStandardItemModel" => "QtGui/QStandardItemModel",
+        "qstandarditem.h" => "QtGui/qstandarditem.h",
+        "qstandarditemmodel.h" => "QtGui/qstandarditemmodel.h"
     },
     "QtPrintSupport" => {
         "qplatformprintersupport_qpa.h" => "qpa/qplatformprintersupport.h",
