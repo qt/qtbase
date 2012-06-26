@@ -1693,7 +1693,7 @@ bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
         xev.data.data32[2] = left ? 6 : 4; // bottomleft/bottomright
     else
         xev.data.data32[2] = left ? 0 : 2; // topleft/topright
-    xev.data.data32[3] = Button1;
+    xev.data.data32[3] = XCB_BUTTON_INDEX_1;
     xev.data.data32[4] = 0;
     xcb_ungrab_pointer(connection()->xcb_connection(), XCB_CURRENT_TIME);
     xcb_send_event(connection()->xcb_connection(), false, m_screen->root(),
