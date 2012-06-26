@@ -782,8 +782,10 @@ QStandardItem::~QStandardItem()
 
 /*!
   Returns the item's parent item, or 0 if the item has no parent.
+  \note For toplevel items parent() returns 0. To receive toplevel
+  item's parent use QStandardItemModel::invisibleRootItem() instead.
 
-  \sa child()
+  \sa child(), QStandardItemModel::invisibleRootItem()
 */
 QStandardItem *QStandardItem::parent() const
 {
