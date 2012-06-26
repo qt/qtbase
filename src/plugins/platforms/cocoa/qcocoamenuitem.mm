@@ -114,7 +114,7 @@ void QCocoaMenuItem::setText(const QString &text)
     m_text = qt_mac_removeAmpersandEscapes(text);
 }
 
-void QCocoaMenuItem::setIcon(const QImage &icon)
+void QCocoaMenuItem::setIcon(const QIcon &icon)
 {
     m_icon = icon;
 }
@@ -306,8 +306,9 @@ NSMenuItem *QCocoaMenuItem::sync()
     }
 
     if (!m_icon.isNull()) {
-        NSImage *img = qt_mac_cgimage_to_nsimage(qt_mac_image_to_cgimage(m_icon));
+        NSImage *img = static_cast<NSImage *>(qt_mac_create_nsimage(m_icon.pixmap(16, QIcon::Normal)));
         [m_native setImage: img];
+        [img release];
     }
 
     [m_native setState:m_checked ?  NSOnState : NSOffState];

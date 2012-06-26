@@ -69,7 +69,7 @@ public:
         { return m_tag; }
 
     void setText(const QString &text);
-    void setIcon(const QImage &icon);
+    void setIcon(const QIcon &icon);
     void setMenu(QPlatformMenu *menu);
     void setVisible(bool isVisible);
     void setIsSeparator(bool isSeparator);
@@ -97,7 +97,7 @@ private:
 
     NSMenuItem *m_native;
     QString m_text;
-    QImage m_icon;
+    QIcon m_icon;
     QCocoaMenu *m_menu;
     bool m_isVisible;
     bool m_enabled;

@@ -2830,7 +2830,8 @@ void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* item)
 {
     item->setText(action->text());
     item->setIsSeparator(action->isSeparator());
-//  item->setIcon(action->icon());
+    if (action->isIconVisibleInMenu())
+        item->setIcon(action->icon());
     item->setVisible(action->isVisible());
     item->setShortcut(action->shortcut());
     item->setChecked(action->isChecked());

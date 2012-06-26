@@ -55,6 +55,7 @@
 #include <QtCore/qpointer.h>
 #include <QtGui/QFont>
 #include <QtGui/QKeySequence>
+#include <QtGui/QIcon>
 
 QT_BEGIN_HEADER
 
@@ -73,7 +74,7 @@ public:
     virtual quintptr tag()const = 0;
 
     virtual void setText(const QString &text) = 0;
-    virtual void setIcon(const QImage &icon) = 0;
+    virtual void setIcon(const QIcon &icon) = 0;
     virtual void setMenu(QPlatformMenu *menu) = 0;
     virtual void setVisible(bool isVisible) = 0;
     virtual void setIsSeparator(bool isSeparator) = 0;
