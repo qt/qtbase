@@ -457,12 +457,6 @@ public:
     inline int replacementStart() const { return replace_from; }
     inline int replacementLength() const { return replace_length; }
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline void setTentativeCommitString(const QString &string)
-    { tentativeCommit = string;  }
-    QT_DEPRECATED inline const QString &tentativeCommitString() const { return tentativeCommit; }
-#endif
-
     QInputMethodEvent(const QInputMethodEvent &other);
 
 private:
@@ -471,7 +465,6 @@ private:
     QString commit;
     int replace_from;
     int replace_length;
-    QString tentativeCommit;
 };
 Q_DECLARE_TYPEINFO(QInputMethodEvent::Attribute, Q_MOVABLE_TYPE);
 
