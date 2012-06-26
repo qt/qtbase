@@ -65,7 +65,7 @@ SOURCES += \
         kernel/qapplication_qpa.cpp \
         kernel/qdesktopwidget_qpa.cpp \
         kernel/qwidget_qpa.cpp \
-        kernel/qwidgetwindow_qpa.cpp
+        kernel/qwidgetwindow.cpp
 
 
 # TODO

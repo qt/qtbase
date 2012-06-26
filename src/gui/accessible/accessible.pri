@@ -12,7 +12,7 @@ contains(QT_CONFIG, accessibility) {
         accessible/qaccessible2.cpp \
         accessible/qaccessibleobject.cpp \
         accessible/qaccessibleplugin.cpp \
-        accessible/qplatformaccessibility_qpa.cpp
+        accessible/qplatformaccessibility.cpp
 
     HEADERS += accessible/qaccessiblebridge.h
     SOURCES += accessible/qaccessiblebridge.cpp

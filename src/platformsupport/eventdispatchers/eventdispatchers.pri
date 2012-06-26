@@ -1,6 +1,6 @@
 unix {
 SOURCES +=\
-    $$PWD/qunixeventdispatcher_qpa.cpp\
+    $$PWD/qunixeventdispatcher.cpp\
     $$PWD/qgenericunixeventdispatcher.cpp\
 
 HEADERS +=\

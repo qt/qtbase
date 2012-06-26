@@ -86,7 +86,7 @@ contains(QT_CONFIG, directwrite) {
 SOURCES += \
       text/qfont_qpa.cpp \
       text/qfontengine_qpa.cpp \
-      text/qplatformfontdatabase_qpa.cpp \
+      text/qplatformfontdatabase.cpp \
       text/qrawfont_qpa.cpp
 
 HEADERS += \

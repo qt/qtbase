@@ -17,7 +17,7 @@ SOURCES += \
         $$PWD/qprinter.cpp \
         $$PWD/qprinterinfo.cpp \
         $$PWD/qplatformprintplugin.cpp \
-        $$PWD/qplatformprintersupport_qpa.cpp
+        $$PWD/qplatformprintersupport.cpp
 
 win32 {
         HEADERS += \

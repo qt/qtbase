@@ -83,7 +83,7 @@ SOURCES += \
         painting/qstroker.cpp \
         painting/qtextureglyphcache.cpp \
         painting/qtransform.cpp \
-        painting/qplatformbackingstore_qpa.cpp \
+        painting/qplatformbackingstore.cpp \
         painting/qpaintbuffer.cpp \
         painting/qpathsimplifier.cpp
 

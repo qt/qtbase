@@ -18,7 +18,7 @@ HEADERS += \
 
 SOURCES += \
         util/qsystemtrayicon.cpp \
-        util/qcolormap_qpa.cpp \
+        util/qcolormap.cpp \
         util/qcompleter.cpp \
         util/qscroller.cpp \
         util/qscrollerproperties.cpp \
