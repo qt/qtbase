@@ -46,6 +46,7 @@
 #include <X11/keysym.h>
 #include <QtGui/QWindowSystemInterface>
 #include <QtCore/QTextCodec>
+#include <QtCore/QMetaMethod>
 #include <private/qguiapplication_p.h>
 #include <stdio.h>
 
@@ -1054,16 +1055,22 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     QByteArray chars;
     xcb_keysym_t sym = lookupString(window, state, code, type, &chars);
     QPlatformInputContext *inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    QMetaMethod method;
 
     if (inputContext) {
+        int methodIndex = inputContext->metaObject()->indexOfMethod("x11FilterEvent(uint,uint,uint,bool)");
+        if (methodIndex != -1)
+            method = inputContext->metaObject()->method(methodIndex);
+    }
+
+    if (method.isValid()) {
         bool retval = false;
-        if (inputContext->metaObject()->indexOfMethod("x11FilterEvent(uint,uint,uint,bool)") != -1)
-            QMetaObject::invokeMethod(inputContext, "x11FilterEvent", Qt::DirectConnection,
-                                      Q_RETURN_ARG(bool, retval),
-                                      Q_ARG(uint, sym),
-                                      Q_ARG(uint, code),
-                                      Q_ARG(uint, state),
-                                      Q_ARG(bool, type == QEvent::KeyPress));
+        method.invoke(inputContext, Qt::DirectConnection,
+                      Q_RETURN_ARG(bool, retval),
+                      Q_ARG(uint, sym),
+                      Q_ARG(uint, code),
+                      Q_ARG(uint, state),
+                      Q_ARG(bool, type == QEvent::KeyPress));
         if (retval)
             return;
     }
@@ -1105,7 +1112,16 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     if (isAutoRepeat && type == QEvent::KeyRelease) {
         // since we removed it from the event queue using checkEvent we need to send the key press here
         filtered = false;
-        if (inputContext) {
+        if (method.isValid()) {
+            method.invoke(inputContext, Qt::DirectConnection,
+                          Q_RETURN_ARG(bool, filtered),
+                          Q_ARG(uint, sym),
+                          Q_ARG(uint, code),
+                          Q_ARG(uint, state),
+                          Q_ARG(bool, true));
+        }
+
+        if (!filtered && inputContext) {
             QKeyEvent event(QEvent::KeyPress, qtcode, modifiers, string, isAutoRepeat);
             event.setTimestamp(time);
             filtered = inputContext->filterEvent(&event);
