@@ -1,24 +1,24 @@
-CONFIG = qt thread
+VAR = qt thread
 
-CONFIG += debug
-!contains( CONFIG, debug ) {
+VAR += debug
+!contains( VAR, debug ) {
    message( "FAILED: +=" )
 }
 
-CONFIG -= thread
-contains( CONFIG, thread ) {
+VAR -= thread
+contains( VAR, thread ) {
    message( "FAILED: -=" )
 }
 
-CONFIG = thread
-CONFIG *= thread
-!count( CONFIG, 1 ) {
+VAR = thread
+VAR *= thread
+!count( VAR, 1 ) {
    message( "FAILED: *=" )
 }
 
-CONFIG = thread QT_DLL debug
-CONFIG ~= s/QT_+/Q_
-!contains( CONFIG, Q_DLL ) {
+VAR = thread QT_DLL debug
+VAR ~= s/QT_+/Q_
+!contains( VAR, Q_DLL ) {
    message( "FAILED: ~=" )
 }
 
