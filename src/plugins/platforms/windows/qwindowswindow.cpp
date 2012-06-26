@@ -1244,6 +1244,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             if (newStates & Qt::WindowActive)
                 swpf |= SWP_NOACTIVATE;
             SetWindowPos(m_data.hwnd, HWND_TOP, r.left(), r.top(), r.width(), r.height(), swpf);
+            QWindowSystemInterface::handleSynchronousGeometryChange(window(), r);
         } else {
             // Restore saved state.
             unsigned newStyle = m_savedStyle ? m_savedStyle : style();
