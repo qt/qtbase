@@ -2160,6 +2160,13 @@ MakefileGenerator::writeMakefile(QTextStream &t)
     return true;
 }
 
+QString MakefileGenerator::fixifySpecdir(const QString &spec, const QString &outdir)
+{
+    if (QFileInfo(spec).isAbsolute())
+        return fileFixify(spec, outdir);
+    return spec;
+}
+
 QString MakefileGenerator::buildArgs(const QString &outdir)
 {
     QString ret;
@@ -2186,9 +2193,9 @@ QString MakefileGenerator::buildArgs(const QString &outdir)
     if(!Option::mkfile::do_dep_heuristics)
         ret += " -nodependheuristics";
     if(!Option::mkfile::qmakespec_commandline.isEmpty())
-        ret += " -spec " + specdir(outdir, 1);
+        ret += " -spec " + fixifySpecdir(Option::mkfile::qmakespec, outdir);
     if (!Option::mkfile::xqmakespec_commandline.isEmpty())
-        ret += " -xspec " + specdir(outdir, 0);
+        ret += " -xspec " + fixifySpecdir(Option::mkfile::xqmakespec, outdir);
     if (Option::target_mode_overridden) {
         if (Option::target_mode == Option::TARG_MACX_MODE)
             ret += " -macx";
