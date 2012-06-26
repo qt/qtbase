@@ -3073,8 +3073,7 @@ QString
 MakefileGenerator::specdir()
 {
     if (spec.isEmpty())
-        spec = fileFixify(project->isHostBuild()
-                          ? Option::mkfile::qmakespec : Option::mkfile::xqmakespec);
+        spec = fileFixify(project->specDir());
     return spec;
 }
 

@@ -136,6 +136,7 @@ public:
     QString projectFile();
     QString confFile() const { return conffile; }
     QString cacheFile() const { return cachefile; }
+    QString specDir() const { return real_spec; }
     inline QMakeProperty *properties() { return prop; }
 
     bool doProjectTest(QString str, QHash<QString, QStringList> &place);
