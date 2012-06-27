@@ -96,6 +96,7 @@ public:
     void raise();
     void lower();
     void requestActivateWindow();
+    Qt::WindowState setWindowState(Qt::WindowState state);
 
     void gainedFocus();
 
@@ -137,6 +138,8 @@ private:
     QList<QQnxWindow*> m_childWindows;
     QQnxWindow *m_parentWindow;
     bool m_visible;
+    QRect m_unmaximizedGeometry;
+    Qt::WindowState m_windowState;
 };
 
 QT_END_NAMESPACE

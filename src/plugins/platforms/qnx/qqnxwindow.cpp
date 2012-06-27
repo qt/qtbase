@@ -72,7 +72,8 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
 #endif
       m_screen(0),
       m_parentWindow(0),
-      m_visible(true)
+      m_visible(true),
+      m_windowState(Qt::WindowNoState)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window << ", size =" << window->size();
     int result;
@@ -133,6 +134,10 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
 
     // Add window to plugin's window mapper
     QQnxIntegration::addWindow(m_window, window);
+
+    // setWindowState() does not get called when the platform window hasn't been created yet, so
+    // make sure to apply the inital window state here
+    setWindowState(window->windowState());
 }
 
 QQnxWindow::~QQnxWindow()
@@ -539,6 +544,39 @@ void QQnxWindow::requestActivateWindow()
 
     // Notify that we gained focus.
     gainedFocus();
+}
+
+
+Qt::WindowState QQnxWindow::setWindowState(Qt::WindowState state)
+{
+    qWindowDebug() << Q_FUNC_INFO << "state =" << state;
+
+    // Prevent two calls with Qt::WindowFullScreen from changing m_unmaximizedGeometry
+    if (m_windowState == state)
+        return state;
+
+    switch (state) {
+
+    // WindowMinimized is not supported - navigator does not have an API to minimize a window
+    // WindowActive is not an accepted parameter according to the docs
+    case Qt::WindowMinimized:
+    case Qt::WindowActive:
+        return m_windowState;
+
+    case Qt::WindowMaximized:
+    case Qt::WindowFullScreen:
+        m_unmaximizedGeometry = geometry();
+        setGeometry(state == Qt::WindowMaximized ? m_screen->availableGeometry() : m_screen->geometry());
+        break;
+
+    case Qt::WindowNoState:
+        if (m_unmaximizedGeometry.isValid())
+            setGeometry(m_unmaximizedGeometry);
+        break;
+    }
+
+    m_windowState = state;
+    return state;
 }
 
 void QQnxWindow::gainedFocus()
