@@ -45,6 +45,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
