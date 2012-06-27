@@ -3817,59 +3817,59 @@ static QString getFmtString(const QString& f, const QTime* dt = 0, const QDate* 
 // Parses the format string and uses getFmtString to get the values for the tokens. Ret
 static QString fmtDateTime(const QString& f, const QTime* dt, const QDate* dd)
 {
-    const QLatin1Char quote('\'');
+    QString buf;
+
     if (f.isEmpty())
-        return QString();
+        return buf;
     if (dt && !dt->isValid())
-        return QString();
+        return buf;
     if (dd && !dd->isValid())
-        return QString();
+        return buf;
 
     const bool ap = hasUnquotedAP(f);
 
-    QString buf;
     QString frm;
-    QChar status(QLatin1Char('0'));
+    uint status = '0';
 
-    for (int i = 0; i < (int)f.length(); ++i) {
-        if (f.at(i) == quote) {
-            if (status == quote) {
-                if (i > 0 && f.at(i - 1) == quote)
-                    buf += QLatin1Char('\'');
-                status = QLatin1Char('0');
+    for (int i = 0, n = f.length(); i < n; ++i) {
+        const QChar c = f.at(i);
+        const uint cc = c.unicode();
+        if (cc == '\'') {
+            if (status == cc) {
+                if (i > 0 && f.at(i - 1).unicode() == cc)
+                    buf += c;
+                status = '0';
             } else {
                 if (!frm.isEmpty()) {
                     buf += getFmtString(frm, dt, dd, ap);
                     frm.clear();
                 }
-                status = quote;
+                status = cc;
             }
-        } else if (status == quote) {
-            buf += f.at(i);
-        } else if (f.at(i) == status) {
-            if ((ap) && ((f.at(i) == QLatin1Char('P')) || (f.at(i) == QLatin1Char('p'))))
-                status = QLatin1Char('0');
-            frm += f.at(i);
+        } else if (status == '\'') {
+            buf += c;
+        } else if (c == status) {
+            if (ap && (cc == 'P' || cc == 'p'))
+                status = '0';
+            frm += c;
         } else {
             buf += getFmtString(frm, dt, dd, ap);
             frm.clear();
-            if ((f.at(i) == QLatin1Char('h')) || (f.at(i) == QLatin1Char('m'))
-                || (f.at(i) == QLatin1Char('H'))
-                || (f.at(i) == QLatin1Char('s')) || (f.at(i) == QLatin1Char('z'))) {
-                status = f.at(i);
-                frm += f.at(i);
-            } else if ((f.at(i) == QLatin1Char('d')) || (f.at(i) == QLatin1Char('M')) || (f.at(i) == QLatin1Char('y'))) {
-                status = f.at(i);
-                frm += f.at(i);
-            } else if ((ap) && (f.at(i) == QLatin1Char('A'))) {
-                status = QLatin1Char('P');
-                frm += f.at(i);
-            } else  if((ap) && (f.at(i) == QLatin1Char('a'))) {
-                status = QLatin1Char('p');
-                frm += f.at(i);
+            if (cc == 'h' || cc == 'm' || cc == 'H' || cc == 's' || cc == 'z') {
+                status = cc;
+                frm += c;
+            } else if (cc == 'd' || cc == 'M' || cc == 'y') {
+                status = cc;
+                frm += c;
+            } else if (ap && cc == 'A') {
+                status = 'P';
+                frm += c;
+            } else  if (ap && cc == 'a') {
+                status = 'p';
+                frm += c;
             } else {
-                buf += f.at(i);
-                status = QLatin1Char('0');
+                buf += c;
+                status = '0';
             }
         }
     }
