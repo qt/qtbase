@@ -1377,11 +1377,11 @@ QMakeProject::read(uchar cmd)
                         break;
                     }
                     if (dir == superdir)
-                        goto no_cache;
+                        break;
                     QFileInfo qsdfi(sdir);
                     QFileInfo qdfi(dir);
                     if (qsdfi.isRoot() || qdfi.isRoot())
-                        goto no_cache;
+                        break;
                     sdir = qsdfi.path();
                     dir = qdfi.path();
                 }
@@ -1410,7 +1410,6 @@ QMakeProject::read(uchar cmd)
             if (!cachefile.isEmpty())
                 vars["_QMAKE_CACHE_"] << cachefile;
         }
-      no_cache:
 
         // Look for mkspecs/ in source and build. First to win determines the root.
         QString sdir = qmake_getpwd();
