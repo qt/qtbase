@@ -57,6 +57,7 @@
 #include "qvariant.h"
 #include "qwidget.h"
 #include "qstyleoption.h"
+#include "qstylehints.h"
 #ifndef QT_NO_ACCESSIBILITY
 # include "qaccessible.h"
 #endif
@@ -2793,7 +2794,7 @@ void QWidget::showFullScreen()
 
     setWindowState((windowState() & ~(Qt::WindowMinimized | Qt::WindowMaximized))
                    | Qt::WindowFullScreen);
-    show();
+    setVisible(true);
     activateWindow();
 }
 
@@ -6909,15 +6910,22 @@ void QWidget::setUpdatesEnabled(bool enable)
     d->setUpdatesEnabled_helper(enable);
 }
 
-/*!  \fn void QWidget::show()
-
+/*!
     Shows the widget and its child widgets. This function is
-    equivalent to setVisible(true).
+    equivalent to setVisible(true) in the normal case, and equivalent
+    to showFullScreen() if the QStyleHints::showIsFullScreen() hint
+    is true.
 
     \sa raise(), showEvent(), hide(), setVisible(), showMinimized(), showMaximized(),
     showNormal(), isVisible()
 */
-
+void QWidget::show()
+{
+    if (isWindow() && qApp->styleHints()->showIsFullScreen())
+        showFullScreen();
+    else
+        setVisible(true);
+}
 
 /*! \internal
 
@@ -7091,8 +7099,7 @@ void QWidgetPrivate::show_helper()
     data.in_show = false;  // reset qws optimization
 }
 
-/*! \fn void QWidget::hide()
-
+/*!
     Hides the widget. This function is equivalent to
     setVisible(false).
 
@@ -7103,6 +7110,10 @@ void QWidgetPrivate::show_helper()
 
     \sa hideEvent(), isHidden(), show(), setVisible(), isVisible(), close()
 */
+void QWidget::hide()
+{
+    setVisible(false);
+}
 
 /*!\internal
  */
@@ -7313,11 +7324,13 @@ void QWidget::setVisible(bool visible)
     }
 }
 
-/*!\fn void QWidget::setHidden(bool hidden)
-
+/*!
     Convenience function, equivalent to setVisible(!\a hidden).
 */
-
+void QWidget::setHidden(bool hidden)
+{
+    setVisible(!hidden);
+}
 
 void QWidgetPrivate::_q_showIfNotHidden()
 {

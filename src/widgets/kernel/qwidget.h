@@ -465,9 +465,9 @@ public Q_SLOTS:
     // Widget management functions
 
     virtual void setVisible(bool visible);
-    inline void setHidden(bool hidden) { setVisible(!hidden); }
-    inline void show() { setVisible(true); }
-    inline void hide() { setVisible(false); }
+    void setHidden(bool hidden);
+    void show();
+    void hide();
 
     void showMinimized();
     void showMaximized();
