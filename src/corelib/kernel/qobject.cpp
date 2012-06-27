@@ -2214,7 +2214,7 @@ int QObject::receivers(const char *signal) const
     \a signal must be a signal member of this object, otherwise the behaviour
     is undefined.
 
-    \snippet code/src_corelib_kernel_qobject.cpp 21
+    \snippet code/src_corelib_kernel_qobject.cpp 49
 
     As the code snippet above illustrates, you can use this function
     to avoid emitting a signal that nobody listens to.
