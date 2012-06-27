@@ -189,7 +189,7 @@ void tst_QSslSocket_onDemandCertificates_member::proxyAuthenticationRequired(con
 
 void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMethods()
 {
-    QString host("qt.nokia.com");
+    QString host("codereview.qt-project.org");
 
     // not using any root certs -> should not work
     QSslSocketPtr socket2 = newSocket();
@@ -202,7 +202,6 @@ void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMe
     QSslSocketPtr socket = newSocket();
     this->socket = socket.data();
     socket->connectToHostEncrypted(host, 443);
-    QEXPECT_FAIL("", "QTBUG-20983 fails", Abort);
     QVERIFY2(socket->waitForEncrypted(), qPrintable(socket->errorString()));
 
     // not using any root certs again -> should not work

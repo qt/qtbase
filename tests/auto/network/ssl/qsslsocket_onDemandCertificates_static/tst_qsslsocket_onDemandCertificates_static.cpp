@@ -189,7 +189,7 @@ void tst_QSslSocket_onDemandCertificates_static::proxyAuthenticationRequired(con
 
 void tst_QSslSocket_onDemandCertificates_static::onDemandRootCertLoadingStaticMethods()
 {
-    QString host("qt.nokia.com");
+    QString host("codereview.qt-project.org");
 
     // not using any root certs -> should not work
     QSslSocket::setDefaultCaCertificates(QList<QSslCertificate>());
@@ -203,7 +203,6 @@ void tst_QSslSocket_onDemandCertificates_static::onDemandRootCertLoadingStaticMe
     QSslSocketPtr socket2 = newSocket();
     this->socket = socket2.data();
     socket2->connectToHostEncrypted(host, 443);
-    QEXPECT_FAIL("", "QTBUG-20983 fails", Abort);
     QVERIFY2(socket2->waitForEncrypted(), qPrintable(socket2->errorString()));
 
     // not using any root certs again -> should not work
