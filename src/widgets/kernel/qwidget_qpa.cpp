@@ -151,6 +151,9 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     // Check children and create windows for them if necessary
     q_createNativeChildrenAndSetParent(q);
 
+    if (extra && !extra->mask.isEmpty())
+        setMask_sys(extra->mask);
+
     // If widget is already shown, set window visible, too
     if (q->isVisible())
         win->setVisible(true);

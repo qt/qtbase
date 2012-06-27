@@ -1392,6 +1392,13 @@ void QWindowsWindow::setMask(const QRegion &region)
          return;
     }
     const HRGN winRegion = qRegionToWinRegion(region);
+
+    // Mask is in client area coordinates, so offset it in case we have a frame
+    if (window()->isTopLevel()) {
+        const QMargins margins = frameMargins();
+        OffsetRgn(winRegion, margins.left(), margins.top());
+    }
+
     // SetWindowRgn takes ownership.
     if (!SetWindowRgn(m_data.hwnd, winRegion, true))
         DeleteObject(winRegion);
