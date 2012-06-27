@@ -123,7 +123,8 @@ public:
         OpenGLDoubleBuffered = 0x20,
         OpenGlPixelFormatInitialized = 0x40,
         BlockedByModal = 0x80,
-        SizeGripOperation = 0x100
+        SizeGripOperation = 0x100,
+        FrameStrutEventsEnabled = 0x200
     };
 
     struct WindowData
@@ -177,6 +178,9 @@ public:
     virtual bool setMouseGrabEnabled(bool grab);
 
     virtual bool startSystemResize(const QPoint &pos, Qt::Corner corner);
+
+    void setFrameStrutEventsEnabled(bool enabled);
+    bool frameStrutEventsEnabled() const { return testFlag(FrameStrutEventsEnabled); }
 
     Qt::WindowState windowState_sys() const;
     Qt::WindowStates windowStates_sys() const;

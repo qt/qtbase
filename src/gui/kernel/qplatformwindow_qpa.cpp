@@ -374,6 +374,29 @@ bool QPlatformWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
 }
 
 /*!
+    Reimplement this method to set whether frame strut events
+    should be sent to \a enabled.
+
+    \sa frameStrutEventsEnabled
+*/
+
+void QPlatformWindow::setFrameStrutEventsEnabled(bool enabled)
+{
+    if (enabled)
+        qWarning("This plugin does not support frame strut events.");
+}
+
+/*!
+    Reimplement this method to return whether
+    frame strut events are enabled.
+*/
+
+bool QPlatformWindow::frameStrutEventsEnabled() const
+{
+    return false;
+}
+
+/*!
     \class QPlatformWindow
     \since 4.8
     \internal

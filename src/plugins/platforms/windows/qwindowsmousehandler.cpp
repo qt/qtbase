@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qwindowsmousehandler.h"
+#include "qwindowskeymapper.h"
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
 #include "qwindowsintegration.h"
@@ -130,14 +131,37 @@ QWindowsMouseHandler::QWindowsMouseHandler() :
 {
 }
 
+Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()
+{
+    Qt::MouseButtons result = 0;
+    const bool mouseSwapped = GetSystemMetrics(SM_SWAPBUTTON);
+    if (GetAsyncKeyState(VK_LBUTTON) < 0)
+        result |= mouseSwapped ? Qt::RightButton: Qt::LeftButton;
+    if (GetAsyncKeyState(VK_RBUTTON) < 0)
+        result |= mouseSwapped ? Qt::LeftButton : Qt::RightButton;
+    if (GetAsyncKeyState(VK_MBUTTON) < 0)
+        result |= Qt::MidButton;
+    return result;
+}
+
 bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                                                QtWindows::WindowsEventType et,
                                                MSG msg, LRESULT *result)
 {
-    if (et & QtWindows::NonClientEventFlag)
-        return false;
     if (et == QtWindows::MouseWheelEvent)
         return translateMouseWheelEvent(window, hwnd, msg, result);
+
+    const QPoint winEventPosition(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+    if (et & QtWindows::NonClientEventFlag) {
+        const QPoint globalPosition = winEventPosition;
+        const QPoint clientPosition = QWindowsGeometryHint::mapFromGlobal(hwnd, globalPosition);
+        const Qt::MouseButtons buttons = QWindowsMouseHandler::queryMouseButtons();
+        QWindowSystemInterface::handleFrameStrutMouseEvent(window, clientPosition,
+                                                           globalPosition, buttons,
+                                                           QWindowsKeyMapper::queryKeyboardModifiers());
+        return false; // Allow further event processing (dragging of windows).
+    }
+
     *result = 0;
     if (msg.message == WM_MOUSELEAVE) {
         // When moving out of a child, MouseMove within parent is received first
@@ -161,7 +185,6 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
             return true;
         }
     }
-    const QPoint client(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
     // Enter new window: track to generate leave event.
     if (m_windowUnderMouse != window) {
         // The tracking on m_windowUnderMouse might still be active and
@@ -186,9 +209,11 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
             qWarning("TrackMouseEvent failed.");
 #endif // !Q_OS_WINCE
     }
-    QWindowSystemInterface::handleMouseEvent(window, client,
-                                             QWindowsGeometryHint::mapToGlobal(hwnd, client),
-                                             keyStateToMouseButtons((int)msg.wParam));
+    const QPoint clientPosition = winEventPosition;
+    QWindowSystemInterface::handleMouseEvent(window, clientPosition,
+                                             QWindowsGeometryHint::mapToGlobal(hwnd, clientPosition),
+                                             keyStateToMouseButtons((int)msg.wParam),
+                                             QWindowsKeyMapper::queryKeyboardModifiers());
     return true;
 }
 

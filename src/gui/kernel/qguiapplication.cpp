@@ -1098,6 +1098,7 @@ bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArra
 void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
 {
     switch(e->type) {
+    case QWindowSystemInterfacePrivate::FrameStrutMouse:
     case QWindowSystemInterfacePrivate::Mouse:
         QGuiApplicationPrivate::processMouseEvent(static_cast<QWindowSystemInterfacePrivate::MouseEvent *>(e));
         break;
@@ -1179,9 +1180,10 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     QEvent::Type type;
     // move first
     Qt::MouseButtons stateChange = e->buttons ^ buttons;
+    const bool frameStrut = e->type == QWindowSystemInterfacePrivate::FrameStrutMouse;
     if (e->globalPos != QGuiApplicationPrivate::lastCursorPosition && (stateChange != Qt::NoButton)) {
         QWindowSystemInterfacePrivate::MouseEvent * newMouseEvent =
-                new QWindowSystemInterfacePrivate::MouseEvent(e->window.data(), e->timestamp, e->localPos, e->globalPos, e->buttons, e->modifiers);
+                new QWindowSystemInterfacePrivate::MouseEvent(e->window.data(), e->timestamp, e->type, e->localPos, e->globalPos, e->buttons, e->modifiers);
         QWindowSystemInterfacePrivate::windowSystemEventQueue.prepend(newMouseEvent); // just in case the move triggers a new event loop
         stateChange = Qt::NoButton;
     }
@@ -1204,7 +1206,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     bool doubleClick = false;
 
     if (QGuiApplicationPrivate::lastCursorPosition != globalPoint) {
-        type = QEvent::MouseMove;
+        type = frameStrut ? QEvent::NonClientAreaMouseMove : QEvent::MouseMove;
         QGuiApplicationPrivate::lastCursorPosition = globalPoint;
         if (qAbs(globalPoint.x() - mousePressX) > mouse_double_click_distance||
             qAbs(globalPoint.y() - mousePressY) > mouse_double_click_distance)
@@ -1226,14 +1228,14 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         if (button & e->buttons) {
             ulong doubleClickInterval = static_cast<ulong>(qApp->styleHints()->mouseDoubleClickInterval());
             doubleClick = e->timestamp - mousePressTime < doubleClickInterval && button == mousePressButton;
-            type = QEvent::MouseButtonPress;
+            type = frameStrut ? QEvent::NonClientAreaMouseButtonPress : QEvent::MouseButtonPress;
             mousePressTime = e->timestamp;
             mousePressButton = button;
             const QPoint point = QGuiApplicationPrivate::lastCursorPosition.toPoint();
             mousePressX = point.x();
             mousePressY = point.y();
         } else {
-            type = QEvent::MouseButtonRelease;
+            type = frameStrut ? QEvent::NonClientAreaMouseButtonRelease : QEvent::MouseButtonRelease;
         }
     }
 
@@ -1253,7 +1255,9 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
             cursor->pointerEvent(ev);
 #endif
     QGuiApplication::sendSpontaneousEvent(window, &ev);
-    if (!e->synthetic && !ev.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {
+    if (!e->synthetic && !ev.isAccepted()
+        && !frameStrut
+        && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {
         if (!m_fakeTouchDevice) {
             m_fakeTouchDevice = new QTouchDevice;
             QWindowSystemInterface::registerTouchDevice(m_fakeTouchDevice);
@@ -1287,7 +1291,8 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     }
     if (doubleClick) {
         mousePressButton = Qt::NoButton;
-        QMouseEvent dblClickEvent(QEvent::MouseButtonDblClick, localPoint, localPoint, globalPoint,
+        const QEvent::Type doubleClickType = frameStrut ? QEvent::NonClientAreaMouseButtonDblClick : QEvent::MouseButtonDblClick;
+        QMouseEvent dblClickEvent(doubleClickType, localPoint, localPoint, globalPoint,
                                   button, buttons, e->modifiers);
         dblClickEvent.setTimestamp(e->timestamp);
         QGuiApplication::sendSpontaneousEvent(window, &dblClickEvent);

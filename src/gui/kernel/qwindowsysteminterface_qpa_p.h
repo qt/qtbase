@@ -60,6 +60,7 @@ public:
         ActivatedWindow,
         WindowStateChanged,
         Mouse,
+        FrameStrutMouse,
         Wheel,
         Key,
         Touch,
@@ -156,6 +157,9 @@ public:
         MouseEvent(QWindow * w, ulong time, const QPointF & local, const QPointF & global,
                    Qt::MouseButtons b, Qt::KeyboardModifiers mods)
             : InputEvent(w, time, Mouse, mods), localPos(local), globalPos(global), buttons(b) { }
+        MouseEvent(QWindow * w, ulong time, EventType t, const QPointF & local, const QPointF & global,
+                   Qt::MouseButtons b, Qt::KeyboardModifiers mods)
+            : InputEvent(w, time, t, mods), localPos(local), globalPos(global), buttons(b) { }
         QPointF localPos;
         QPointF globalPos;
         Qt::MouseButtons buttons;

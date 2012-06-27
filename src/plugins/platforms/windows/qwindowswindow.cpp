@@ -1489,6 +1489,15 @@ bool QWindowsWindow::startSystemResize(const QPoint &, Qt::Corner corner)
     return true;
 }
 
+void QWindowsWindow::setFrameStrutEventsEnabled(bool enabled)
+{
+    if (enabled) {
+        setFlag(FrameStrutEventsEnabled);
+    } else {
+        clearFlag(FrameStrutEventsEnabled);
+    }
+}
+
 #ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
 void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {

@@ -817,9 +817,12 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #endif
     case QtWindows::ExposeEvent:
         return platformWindow->handleWmPaint(hwnd, message, wParam, lParam);
+    case QtWindows::NonClientMouseEvent:
+        if (platformWindow->frameStrutEventsEnabled())
+            return d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
+        break;
     case QtWindows::MouseWheelEvent:
     case QtWindows::MouseEvent:
-    case QtWindows::NonClientMouseEvent:
     case QtWindows::LeaveEvent:
         return d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
     case QtWindows::TouchEvent:

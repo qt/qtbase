@@ -74,6 +74,7 @@ protected:
     void handleEnterLeaveEvent(QEvent *);
     void handleKeyEvent(QKeyEvent *);
     void handleMouseEvent(QMouseEvent *);
+    void handleNonClientAreaMouseEvent(QMouseEvent *);
     void handleTouchEvent(QTouchEvent *);
     void handleMoveEvent(QMoveEvent *);
     void handleResizeEvent(QResizeEvent *);

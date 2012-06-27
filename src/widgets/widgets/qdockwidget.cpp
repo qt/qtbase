@@ -48,12 +48,14 @@
 #include <qdrawutil.h>
 #include <qevent.h>
 #include <qfontmetrics.h>
+#include <qwindow.h>
 #include <qmainwindow.h>
 #include <qrubberband.h>
 #include <qstylepainter.h>
 #include <qtoolbutton.h>
 #include <qdebug.h>
 
+#include <qpa/qplatformwindow.h>
 #include <private/qwidgetresizehandler_p.h>
 
 #include "qdockwidget_p.h"
@@ -1051,6 +1053,11 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
                 emit q->dockLocationChanged(mwlayout->dockWidgetArea(q));
         }
     }
+
+    if (unplug && floating && nativeDeco)
+        if (const QWindow *window = q->windowHandle())
+            if (QPlatformWindow *platformWindow = window->handle())
+                platformWindow->setFrameStrutEventsEnabled(true);
 
     resizer->setActive(QWidgetResizeHandler::Resize, !unplug && floating && !nativeDeco);
 }

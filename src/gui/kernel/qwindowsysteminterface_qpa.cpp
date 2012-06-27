@@ -149,6 +149,21 @@ void QWindowSystemInterface::handleMouseEvent(QWindow *w, ulong timestamp, const
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
+{
+    const unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleFrameStrutMouseEvent(w, time, local, global, b, mods);
+}
+
+void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
+{
+    QWindowSystemInterfacePrivate::MouseEvent * e =
+            new QWindowSystemInterfacePrivate::MouseEvent(w, timestamp,
+                                                          QWindowSystemInterfacePrivate::FrameStrutMouse,
+                                                          local, global, b, mods);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
 bool QWindowSystemInterface::tryHandleSynchronousShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
                                                                const QString & text, bool autorep, ushort count)
 {

@@ -70,6 +70,7 @@ public:
     static inline Qt::KeyboardModifiers keyStateToModifiers(int);
     static inline int mouseButtonsToKeyState(Qt::MouseButtons);
 
+    static Qt::MouseButtons queryMouseButtons();
     QWindow *windowUnderMouse() const { return m_windowUnderMouse.data(); }
 
 private:

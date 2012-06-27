@@ -137,6 +137,13 @@ bool QWidgetWindow::event(QEvent *event)
         handleMouseEvent(static_cast<QMouseEvent *>(event));
         return true;
 
+    case QEvent::NonClientAreaMouseMove:
+    case QEvent::NonClientAreaMouseButtonPress:
+    case QEvent::NonClientAreaMouseButtonRelease:
+    case QEvent::NonClientAreaMouseButtonDblClick:
+        handleNonClientAreaMouseEvent(static_cast<QMouseEvent *>(event));
+        return true;
+
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
@@ -206,6 +213,11 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
         QApplicationPrivate::dispatchEnterLeave(m_widget, 0);
         qt_last_mouse_receiver = m_widget;
     }
+}
+
+void QWidgetWindow::handleNonClientAreaMouseEvent(QMouseEvent *e)
+{
+    QApplication::sendSpontaneousEvent(m_widget, e);
 }
 
 void QWidgetWindow::handleMouseEvent(QMouseEvent *event)

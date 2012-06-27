@@ -122,6 +122,9 @@ public:
 
     virtual bool startSystemResize(const QPoint &pos, Qt::Corner corner);
 
+    virtual void setFrameStrutEventsEnabled(bool enabled);
+    virtual bool frameStrutEventsEnabled() const;
+
 protected:
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 private:
