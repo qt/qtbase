@@ -670,7 +670,7 @@ void QWidgetPrivate::setFocus_sys()
 void QWidgetPrivate::raise_sys()
 {
     Q_Q(QWidget);
-    if (q->isWindow()) {
+    if (q->isWindow() || q->testAttribute(Qt::WA_NativeWindow)) {
         q->windowHandle()->raise();
     }
 }
@@ -678,7 +678,7 @@ void QWidgetPrivate::raise_sys()
 void QWidgetPrivate::lower_sys()
 {
     Q_Q(QWidget);
-    if (q->isWindow()) {
+    if (q->isWindow() || q->testAttribute(Qt::WA_NativeWindow)) {
         Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
         q->windowHandle()->lower();
     } else if (QWidget *p = q->parentWidget()) {
