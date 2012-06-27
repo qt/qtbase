@@ -1885,7 +1885,7 @@ void QStateMachine::removeState(QAbstractState *state)
 /*!
   Returns whether this state machine is running.
 
-  start(), stop()
+  \sa start(), stop()
 */
 bool QStateMachine::isRunning() const
 {
