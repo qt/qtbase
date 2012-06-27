@@ -240,6 +240,10 @@ void QQnxScreen::setRotation(int rotation)
             QWindowSystemInterface::handleScreenGeometryChange(screen(), m_currentGeometry);
             resizeMaximizedWindows();
         }
+
+        // Flush everything, so that the windows rotations are applied properly.
+        // Needed for non-maximized windows
+        screen_flush_context( m_screenContext, 0 );
     }
 }
 
