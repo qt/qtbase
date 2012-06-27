@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
   machine.start();
   \endcode
 
-  \sa QStateMachine::finished(), QState::finished()
+  \sa QState::finished()
 */
 
 class QFinalStatePrivate : public QAbstractStatePrivate
