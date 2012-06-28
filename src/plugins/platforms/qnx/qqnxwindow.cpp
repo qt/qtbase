@@ -219,10 +219,8 @@ void QQnxWindow::setGeometry(const QRect &rect)
         offset = rect.topLeft();
         offset -= oldGeometry.topLeft();
 
-        QList<QQnxWindow*>::iterator it;
-        for (it = m_childWindows.begin(); it != m_childWindows.end(); it++) {
-            (*it)->setOffset(offset);
-        }
+        Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
+            childWindow->setOffset(offset);
     }
 }
 
@@ -246,10 +244,8 @@ void QQnxWindow::setOffset(const QPoint &offset)
         qFatal("QQnxWindow: failed to set window position, errno=%d", errno);
     }
 
-    QList<QQnxWindow*>::iterator it;
-    for (it = m_childWindows.begin(); it != m_childWindows.end(); it++) {
-        (*it)->setOffset(offset);
-    }
+    Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
+        childWindow->setOffset(offset);
 }
 
 void QQnxWindow::setVisible(bool visible)
@@ -281,10 +277,8 @@ void QQnxWindow::updateVisibility(bool parentVisible)
         qFatal("QQnxWindow: failed to set window visibility, errno=%d", errno);
     }
 
-    QList<QQnxWindow *>::iterator it;
-    for (it = m_childWindows.begin(); it != m_childWindows.end(); it++) {
-        (*it)->updateVisibility(m_visible && parentVisible);
-    }
+    Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
+        childWindow->updateVisibility(m_visible && parentVisible);
 }
 
 void QQnxWindow::setOpacity(qreal level)
@@ -453,12 +447,11 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
         qFatal("QQnxWindow: failed to join window group, errno=%d", errno);
     }
 
-    QList<QQnxWindow*>::iterator it;
-    for (it = m_childWindows.begin(); it != m_childWindows.end(); it++) {
+    Q_FOREACH (QQnxWindow *childWindow, m_childWindows) {
         // Only subwindows and tooltips need necessarily be moved to another display with the window.
         if ((window()->windowType() & Qt::WindowType_Mask) == Qt::SubWindow ||
             (window()->windowType() & Qt::WindowType_Mask) == Qt::ToolTip)
-            (*it)->setScreen(platformScreen);
+            childWindow->setScreen(platformScreen);
     }
 
     m_screen->updateHierarchy();
@@ -619,10 +612,8 @@ void QQnxWindow::updateZorder(int &topZorder)
     if (result != 0)
         qFatal("QQnxWindow: failed to set window z-order=%d, errno=%d, mWindow=%p", topZorder, errno, m_window);
 
-    QList<QQnxWindow*>::const_iterator it;
-
-    for (it = m_childWindows.begin(); it != m_childWindows.end(); it++)
-        (*it)->updateZorder(topZorder);
+    Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
+        childWindow->updateZorder(topZorder);
 }
 
 void QQnxWindow::copyBack(const QRegion &region, int dx, int dy, bool flush)
