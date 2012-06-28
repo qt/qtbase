@@ -97,6 +97,8 @@ private slots:
     void changeTitleWhileDoubleClickingTab();
 
     void taskQTBUG_10052_widgetLayoutWhenMoving();
+
+    void tabBarClicked();
 };
 
 // Testing get/set functions
@@ -650,6 +652,46 @@ void tst_QTabBar::taskQTBUG_10052_widgetLayoutWhenMoving()
     tabBar.moveTab(0, 1);
     QTRY_VERIFY(w1.moved);
     QVERIFY(w2.moved);
+}
+
+void tst_QTabBar::tabBarClicked()
+{
+    QTabBar tabBar;
+    tabBar.addTab("0");
+    QSignalSpy clickSpy(&tabBar, SIGNAL(tabBarClicked(int)));
+    QSignalSpy doubleClickSpy(&tabBar, SIGNAL(tabBarDoubleClicked(int)));
+
+    QCOMPARE(clickSpy.count(), 0);
+    QCOMPARE(doubleClickSpy.count(), 0);
+
+    Qt::MouseButton button = Qt::LeftButton;
+    while (button <= Qt::MaxMouseButton) {
+        const QPoint tabPos = tabBar.tabRect(0).center();
+
+        QTest::mouseClick(&tabBar, button, 0, tabPos);
+        QCOMPARE(clickSpy.count(), 1);
+        QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), 0);
+        QCOMPARE(doubleClickSpy.count(), 0);
+
+        QTest::mouseDClick(&tabBar, button, 0, tabPos);
+        QCOMPARE(clickSpy.count(), 0);
+        QCOMPARE(doubleClickSpy.count(), 1);
+        QCOMPARE(doubleClickSpy.takeFirst().takeFirst().toInt(), 0);
+
+        const QPoint barPos(tabBar.tabRect(0).right() + 5, tabBar.tabRect(0).center().y());
+
+        QTest::mouseClick(&tabBar, button, 0, barPos);
+        QCOMPARE(clickSpy.count(), 1);
+        QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), -1);
+        QCOMPARE(doubleClickSpy.count(), 0);
+
+        QTest::mouseDClick(&tabBar, button, 0, barPos);
+        QCOMPARE(clickSpy.count(), 0);
+        QCOMPARE(doubleClickSpy.count(), 1);
+        QCOMPARE(doubleClickSpy.takeFirst().takeFirst().toInt(), -1);
+
+        button = Qt::MouseButton(button << 1);
+    }
 }
 
 QTEST_MAIN(tst_QTabBar)

@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <qtabwidget.h>
+#include <qtabbar.h>
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qlabel.h>
@@ -110,6 +111,7 @@ class tst_QTabWidget:public QObject {
     void minimumSizeHint();
     void heightForWidth_data();
     void heightForWidth();
+    void tabBarClicked();
 
   private:
     int addPage();
@@ -666,6 +668,46 @@ void tst_QTabWidget::heightForWidth()
     delete window;
 }
 
+void tst_QTabWidget::tabBarClicked()
+{
+    QTabWidget tabWidget;
+    tabWidget.addTab(new QWidget(&tabWidget), "0");
+    QSignalSpy clickSpy(&tabWidget, SIGNAL(tabBarClicked(int)));
+    QSignalSpy doubleClickSpy(&tabWidget, SIGNAL(tabBarDoubleClicked(int)));
+
+    QCOMPARE(clickSpy.count(), 0);
+    QCOMPARE(doubleClickSpy.count(), 0);
+
+    QTabBar &tabBar = *tabWidget.tabBar();
+    Qt::MouseButton button = Qt::LeftButton;
+    while (button <= Qt::MaxMouseButton) {
+        const QPoint tabPos = tabBar.tabRect(0).center();
+
+        QTest::mouseClick(&tabBar, button, 0, tabPos);
+        QCOMPARE(clickSpy.count(), 1);
+        QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), 0);
+        QCOMPARE(doubleClickSpy.count(), 0);
+
+        QTest::mouseDClick(&tabBar, button, 0, tabPos);
+        QCOMPARE(clickSpy.count(), 0);
+        QCOMPARE(doubleClickSpy.count(), 1);
+        QCOMPARE(doubleClickSpy.takeFirst().takeFirst().toInt(), 0);
+
+        const QPoint barPos(tabBar.tabRect(0).right() + 5, tabBar.tabRect(0).center().y());
+
+        QTest::mouseClick(&tabBar, button, 0, barPos);
+        QCOMPARE(clickSpy.count(), 1);
+        QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), -1);
+        QCOMPARE(doubleClickSpy.count(), 0);
+
+        QTest::mouseDClick(&tabBar, button, 0, barPos);
+        QCOMPARE(clickSpy.count(), 0);
+        QCOMPARE(doubleClickSpy.count(), 1);
+        QCOMPARE(doubleClickSpy.takeFirst().takeFirst().toInt(), -1);
+
+        button = Qt::MouseButton(button << 1);
+    }
+}
 
 QTEST_MAIN(tst_QTabWidget)
 #include "tst_qtabwidget.moc"

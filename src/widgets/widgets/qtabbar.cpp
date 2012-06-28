@@ -329,6 +329,26 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
     \sa moveTab()
 */
 
+/*!
+    \fn void QTabBar::tabBarClicked(int index)
+
+    This signal is emitted when user clicks on a tab at an \a index.
+
+    \a index is the index of a clicked tab, or -1 if no tab is under the cursor.
+
+    \since 5.2
+*/
+
+/*!
+    \fn void QTabBar::tabBarDoubleClicked(int index)
+
+    This signal is emitted when the user double clicks on a tab at \a index.
+
+    \a index refers to the tab clicked, or -1 if no tab is under the cursor.
+
+    \since 5.2
+*/
+
 int QTabBarPrivate::extraWidth() const
 {
     Q_Q(const QTabBar);
@@ -1703,11 +1723,37 @@ void QTabBarPrivate::moveTab(int index, int offset)
     q_func()->update();
 }
 
+
+/*!
+    \reimp
+*/
+void QTabBar::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    Q_D(QTabBar);
+
+    const QPoint pos = event->pos();
+    const bool isEventInCornerButtons = (!d->leftB->isHidden() && d->leftB->geometry().contains(pos))
+                                     || (!d->rightB->isHidden() && d->rightB->geometry().contains(pos));
+    if (!isEventInCornerButtons) {
+        const int index = tabAt(pos);
+        emit tabBarDoubleClicked(index);
+    }
+}
+
 /*!\reimp
 */
 void QTabBar::mousePressEvent(QMouseEvent *event)
 {
     Q_D(QTabBar);
+
+    const QPoint pos = event->pos();
+    const bool isEventInCornerButtons = (!d->leftB->isHidden() && d->leftB->geometry().contains(pos))
+                                     || (!d->rightB->isHidden() && d->rightB->geometry().contains(pos));
+    if (!isEventInCornerButtons) {
+        const int index = d->indexAtPos(pos);
+        emit tabBarClicked(index);
+    }
+
     if (event->button() != Qt::LeftButton) {
         event->ignore();
         return;

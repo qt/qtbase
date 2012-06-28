@@ -173,6 +173,8 @@ Q_SIGNALS:
     void currentChanged(int index);
     void tabCloseRequested(int index);
     void tabMoved(int from, int to);
+    void tabBarClicked(int index);
+    void tabBarDoubleClicked(int index);
 
 protected:
     virtual QSize tabSizeHint(int index) const;
@@ -186,6 +188,7 @@ protected:
     void showEvent(QShowEvent *);
     void hideEvent(QHideEvent *);
     void paintEvent(QPaintEvent *);
+    void mouseDoubleClickEvent(QMouseEvent *);
     void mousePressEvent (QMouseEvent *);
     void mouseMoveEvent (QMouseEvent *);
     void mouseReleaseEvent (QMouseEvent *);

@@ -151,6 +151,8 @@ public Q_SLOTS:
 Q_SIGNALS:
     void currentChanged(int index);
     void tabCloseRequested(int index);
+    void tabBarClicked(int index);
+    void tabBarDoubleClicked(int index);
 
 protected:
     virtual void tabInserted(int index);
