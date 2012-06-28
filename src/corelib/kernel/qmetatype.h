@@ -739,11 +739,11 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
         if (!metatype_id.load()) { \
             QVarLengthArray<char, 24> name; \
-            name.append(#SINGLE_ARG_TEMPLATE, sizeof(#SINGLE_ARG_TEMPLATE) - 1); \
+            name.append(#SINGLE_ARG_TEMPLATE, int(sizeof(#SINGLE_ARG_TEMPLATE)) - 1); \
             name.append('<'); \
             const char *tName = QMetaType::typeName(qMetaTypeId<T>()); \
             Q_ASSERT(tName); \
-            name.append(tName, strlen(tName)); \
+            name.append(tName, int(strlen(tName))); \
             if (name.last() == '>') \
                 name.append(' '); \
             name.append('>'); \
