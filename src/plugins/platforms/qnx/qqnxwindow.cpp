@@ -211,7 +211,7 @@ void QQnxWindow::setGeometry(const QRect &rect)
             m_platformOpenGLContext->makeCurrent(this);
     }
 
-    QWindowSystemInterface::handleGeometryChange(window(), rect);
+    QWindowSystemInterface::handleSynchronousGeometryChange(window(), rect);
 
     // Now move all children.
     QPoint offset;
