@@ -165,9 +165,8 @@ void QQnxWindow::setGeometry(const QRect &rect)
                    << ", (" << rect.x() << "," << rect.y()
                    << "," << rect.width() << "," << rect.height() << ")";
 
-    QRect oldGeometry = geometry();
-
     // Call base class method
+    QRect oldGeometry = QPlatformWindow::geometry();
     QPlatformWindow::setGeometry(rect);
 
     // Set window geometry equal to widget geometry
@@ -195,20 +194,17 @@ void QQnxWindow::setGeometry(const QRect &rect)
         qFatal("QQnxWindow: failed to set window source size, errno=%d", errno);
     }
 
-    if (m_platformOpenGLContext != 0 && bufferSize() != rect.size()) {
-        bool restoreCurrent = false;
-
-        if (m_platformOpenGLContext->isCurrent()) {
-            m_platformOpenGLContext->doneCurrent();
-            restoreCurrent = true;
-        }
-
-        m_platformOpenGLContext->destroySurface();
-        setBufferSize(rect.size());
-        m_platformOpenGLContext->createSurface(this);
-
-        if (restoreCurrent)
-            m_platformOpenGLContext->makeCurrent(this);
+    // If this is an OpenGL window we need to request that the GL context updates
+    // the EGLsurface on which it is rendering. The surface will be recreated the
+    // next time QQnxGLContext::makeCurrent() is called.
+    {
+        // We want the setting of the atomic bool in the GL context to be atomic with
+        // setting m_requestedBufferSize and therefore extended the scope to include
+        // that test.
+        const QMutexLocker locker(&m_mutex);
+        m_requestedBufferSize = rect.size();
+        if (m_platformOpenGLContext != 0 && bufferSize() != rect.size())
+            m_platformOpenGLContext->requestSurfaceChange();
     }
 
     QWindowSystemInterface::handleSynchronousGeometryChange(window(), rect);
@@ -298,9 +294,16 @@ bool QQnxWindow::isExposed() const
     return m_visible;
 }
 
+QSize QQnxWindow::requestedBufferSize() const
+{
+    const QMutexLocker locker(&m_mutex);
+    return m_requestedBufferSize;
+}
+
 void QQnxWindow::setBufferSize(const QSize &size)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window() << "size =" << size;
+
     // Set window buffer size
     errno = 0;
     int val[2] = { size.width(), size.height() };
@@ -310,7 +313,7 @@ void QQnxWindow::setBufferSize(const QSize &size)
     }
 
     // Create window buffers if they do not exist
-    if (!hasBuffers()) {
+    if (m_bufferSize.isEmpty()) {
 #ifndef QT_NO_OPENGL
         // Get pixel format from EGL config if using OpenGL;
         // otherwise inherit pixel format of window's screen
@@ -341,11 +344,15 @@ void QQnxWindow::setBufferSize(const QSize &size)
     m_currentBufferIndex = -1;
     m_previousDirty = QRegion();
     m_scrolled = QRegion();
+
+    const QMutexLocker locker(&m_mutex);
+    m_requestedBufferSize = QSize();
 }
 
 QQnxBuffer &QQnxWindow::renderBuffer()
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window();
+
     // Check if render buffer is invalid
     if (m_currentBufferIndex == -1) {
         // Get all buffers available for rendering

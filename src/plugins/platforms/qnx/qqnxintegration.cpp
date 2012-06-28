@@ -279,12 +279,16 @@ bool QQnxIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     qIntegrationDebug() << Q_FUNC_INFO;
     switch (cap) {
-    case ThreadedPixmaps: return true;
+    case ThreadedPixmaps:
+        return true;
 #if defined(QT_OPENGL_ES)
     case OpenGL:
+    case ThreadedOpenGL:
+    case BufferQueueingOpenGL:
         return true;
 #endif
-    default: return QPlatformIntegration::hasCapability(cap);
+    default:
+        return QPlatformIntegration::hasCapability(cap);
     }
 }
 

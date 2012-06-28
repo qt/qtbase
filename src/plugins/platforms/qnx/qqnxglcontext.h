@@ -44,6 +44,7 @@
 
 #include <qpa/qplatformopenglcontext.h>
 #include <QtGui/QSurfaceFormat>
+#include <QtCore/QAtomicInt>
 #include <QtCore/QSize>
 
 #include <EGL/egl.h>
@@ -60,6 +61,8 @@ public:
 
     static void initialize();
     static void shutdown();
+
+    void requestSurfaceChange();
 
     bool makeCurrent(QPlatformSurface *surface);
     void doneCurrent();
@@ -83,6 +86,8 @@ private:
     EGLConfig m_eglConfig;
     EGLContext m_eglContext;
     EGLSurface m_eglSurface;
+
+    QAtomicInt m_newSurfaceRequested;
 
     static EGLint *contextAttrs();
 };

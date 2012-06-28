@@ -47,6 +47,7 @@
 #include "qqnxbuffer.h"
 
 #include <QtGui/QImage>
+#include <QtCore/QMutex>
 
 #ifndef QT_NO_OPENGL
 #include <EGL/egl.h>
@@ -81,6 +82,9 @@ public:
 
     WId winId() const { return (WId)m_window; }
     screen_window_t nativeHandle() const { return m_window; }
+
+    // Called by QQnxGLContext::createSurface()
+    QSize requestedBufferSize() const;
 
     void setBufferSize(const QSize &size);
     QSize bufferSize() const { return m_bufferSize; }
@@ -140,6 +144,15 @@ private:
     bool m_visible;
     QRect m_unmaximizedGeometry;
     Qt::WindowState m_windowState;
+
+    // This mutex is used to protect access to the m_requestedBufferSize
+    // member. This member is used in conjunction with QQnxGLContext::requestNewSurface()
+    // to coordinate recreating the EGL surface which involves destroying any
+    // existing EGL surface; resizing the native window buffers; and creating a new
+    // EGL surface. All of this has to be done from the thread that is calling
+    // QQnxGLContext::makeCurrent()
+    mutable QMutex m_mutex;
+    QSize m_requestedBufferSize;
 };
 
 QT_END_NAMESPACE

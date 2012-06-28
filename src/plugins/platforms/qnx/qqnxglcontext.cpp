@@ -88,7 +88,8 @@ static EGLenum checkEGLError(const char *msg)
 QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
     : QPlatformOpenGLContext(),
       m_glContext(glContext),
-      m_eglSurface(EGL_NO_SURFACE)
+      m_eglSurface(EGL_NO_SURFACE),
+      m_newSurfaceRequested(true)   // Create a surface the first time makeCurrent() is called
 {
     qGLContextDebug() << Q_FUNC_INFO;
     QSurfaceFormat format = m_glContext->format();
@@ -201,6 +202,12 @@ void QQnxGLContext::shutdown()
     eglTerminate(ms_eglDisplay);
 }
 
+void QQnxGLContext::requestSurfaceChange()
+{
+    qGLContextDebug() << Q_FUNC_INFO;
+    m_newSurfaceRequested.testAndSetRelease(false, true);
+}
+
 bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
 {
     qGLContextDebug() << Q_FUNC_INFO;
@@ -213,8 +220,12 @@ bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
         qFatal("QQNXQBBWindow: failed to set EGL API, err=%d", eglGetError());
     }
 
-    if (m_eglSurface == EGL_NO_SURFACE)
+    if (m_newSurfaceRequested.testAndSetOrdered(true, false)) {
+        qGLContextDebug() << "New EGL surface requested";
+        doneCurrent();
+        destroySurface();
         createSurface(surface);
+    }
 
     eglResult = eglMakeCurrent(ms_eglDisplay, m_eglSurface, m_eglSurface, m_eglContext);
     if (eglResult != EGL_TRUE) {
@@ -302,14 +313,13 @@ void QQnxGLContext::createSurface(QPlatformSurface *surface)
         qFatal("QQNX: unable to create EGLSurface without a QQnxWindow");
     }
 
-    // If the platform window does not yet have any buffers, we create
-    // a temporary set of buffers with a size of 1x1 pixels. This will
-    // suffice until such time as the platform window has obtained
-    // buffers of the proper size
-    if (!platformWindow->hasBuffers()) {
-        platformWindow->setPlatformOpenGLContext(this);
-        platformWindow->setBufferSize(platformWindow->geometry().size());
-    }
+    // Link the window and context
+    platformWindow->setPlatformOpenGLContext(this);
+
+    // Fetch the surface size from the window and update
+    // the window's buffers before we create the EGL surface
+    const QSize surfaceSize = platformWindow->requestedBufferSize();
+    platformWindow->setBufferSize(surfaceSize);
 
     // Obtain the native handle for our window
     screen_window_t handle = platformWindow->nativeHandle();
