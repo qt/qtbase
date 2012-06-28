@@ -44,18 +44,6 @@
 
 #ifndef QT_NO_OPENGL
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the QtGui module.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qopengl.h>
 #include <QtGui/qopenglcontext.h>
