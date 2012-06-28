@@ -1212,7 +1212,10 @@ void tst_QDateTime::operator_eqeq()
     bool notEqual = dt1 != dt2;
     QCOMPARE(notEqual, !expectEqual);
 
-    if (checkEuro) {
+    if (equal)
+        QVERIFY(qHash(dt1) == qHash(dt2));
+
+    if (checkEuro && europeanTimeZone) {
         QVERIFY(dt1.toUTC() == dt2);
         QVERIFY(dt1 == dt2.toLocalTime());
     }

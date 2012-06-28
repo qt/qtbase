@@ -712,6 +712,8 @@ void tst_QDate::operator_eq_eq()
     bool notEqual = d1 != d2;
     QCOMPARE(notEqual, !expectEqual);
 
+    if (equal)
+        QVERIFY(qHash(d1) == qHash(d2));
 }
 
 void tst_QDate::operator_lt()

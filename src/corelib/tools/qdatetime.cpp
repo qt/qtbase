@@ -4067,6 +4067,43 @@ QDebug operator<<(QDebug dbg, const QDateTime &date)
 }
 #endif
 
+/*! \fn uint qHash(const QDateTime &key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+uint qHash(const QDateTime &key, uint seed)
+{
+    // Use to toMSecsSinceEpoch instead of individual qHash functions for
+    // QDate/QTime/spec/offset because QDateTime::operator== converts both arguments
+    // to the same timezone. If we don't, qHash would return different hashes for
+    // two QDateTimes that are equivalent once converted to the same timezone.
+    return qHash(key.toMSecsSinceEpoch(), seed);
+}
+
+/*! \fn uint qHash(const QDate &key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+uint qHash(const QDate &key, uint seed)
+{
+    return qHash(key.toJulianDay(), seed);
+}
+
+/*! \fn uint qHash(const QTime &key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+uint qHash(const QTime &key, uint seed)
+{
+    return QTime(0, 0, 0, 0).msecsTo(key) ^ seed;
+}
+
 #ifndef QT_BOOTSTRAPPED
 
 /*!

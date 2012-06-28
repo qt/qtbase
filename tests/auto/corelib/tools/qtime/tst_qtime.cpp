@@ -370,6 +370,8 @@ void tst_QTime::operator_eq_eq()
     bool notEqual = t1 != t2;
     QCOMPARE(notEqual, !expectEqual);
 
+    if (equal)
+        QVERIFY(qHash(t1) == qHash(t2));
 }
 
 void tst_QTime::operator_lt()

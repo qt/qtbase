@@ -288,6 +288,10 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QTime &);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QDateTime &);
 #endif
 
+Q_CORE_EXPORT uint qHash(const QDateTime &key, uint seed = 0);
+Q_CORE_EXPORT uint qHash(const QDate &key, uint seed = 0);
+Q_CORE_EXPORT uint qHash(const QTime &key, uint seed = 0);
+
 QT_END_NAMESPACE
 
 QT_END_HEADER
