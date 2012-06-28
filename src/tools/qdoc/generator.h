@@ -96,6 +96,7 @@ public:
     static void initialize(const Config& config);
     static const QString& outputDir() { return outDir_; }
     static void terminate();
+    static void writeOutFileNames();
 
 protected:
     virtual void beginSubPage(const InnerNode* node, const QString& fileName);

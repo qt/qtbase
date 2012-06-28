@@ -211,6 +211,25 @@ void Generator::appendSortedQmlNames(Text& text,
     }
 }
 
+QMultiMap<QString,QString> outFileNames;
+
+/*!
+  For debugging qdoc.
+ */
+void Generator::writeOutFileNames()
+{
+    QFile* files = new QFile("/Users/msmith/depot/qt5/qtdoc/outputlist.txt");
+    files->open(QFile::WriteOnly);
+    QTextStream* filesout = new QTextStream(files);
+    QMultiMap<QString,QString>::ConstIterator i = outFileNames.begin();
+    while (i != outFileNames.end()) {
+        (*filesout) << i.key() << "\n";
+        ++i;
+    }
+    filesout->flush();
+    files->close();
+}
+
 /*!
   Creates the file named \a fileName in the output directory.
   Attaches a QTextStream to the created file, which is written
@@ -222,6 +241,7 @@ void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
     if (!node->outputSubdirectory().isEmpty())
         path += node->outputSubdirectory() + QLatin1Char('/');
     path += fileName;
+    outFileNames.insert(fileName,fileName);
     QFile* outFile = new QFile(path);
     if (!outFile->open(QFile::WriteOnly))
         node->location().fatal(tr("Cannot open output file '%1'").arg(outFile->fileName()));

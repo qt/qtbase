@@ -348,32 +348,43 @@ static void processQdocconfFile(const QString &fileName)
 
     headerList = config.getAllFiles(CONFIG_HEADERS,CONFIG_HEADERDIRS,excludedDirs,excludedFiles);
     QMap<QString,QString> headers;
-    for (int i=0; i<headerList.size(); ++i)
+    QMultiMap<QString,QString> headerFileNames;
+    for (int i=0; i<headerList.size(); ++i) {
         headers.insert(headerList[i],headerList[i]);
+        QString t = headerList[i].mid(headerList[i].lastIndexOf('/')+1);
+        headerFileNames.insert(t,t);
+    }
 
     sourceList = config.getAllFiles(CONFIG_SOURCES,CONFIG_SOURCEDIRS,excludedDirs,excludedFiles);
     QMap<QString,QString> sources;
-    for (int i=0; i<sourceList.size(); ++i)
+    QMultiMap<QString,QString> sourceFileNames;
+    for (int i=0; i<sourceList.size(); ++i) {
         sources.insert(sourceList[i],sourceList[i]);
-    QFile* files = new QFile("/Users/msmith/depot/qt5/qtdoc/files.out");
+        QString t = sourceList[i].mid(sourceList[i].lastIndexOf('/')+1);
+        sourceFileNames.insert(t,t);
+    }
+
+#if 0
+    QFile* files = new QFile("/Users/msmith/depot/qt5/qtdoc/inputlist.txt");
     files->open(QFile::WriteOnly);
     QTextStream* filesout = new QTextStream(files);
-#if 0
+
     {
-        QSet<QString>::ConstIterator i = headers.begin();
-        while (i != headers.end()) {
-            //(*filesout) << (*i).mid((*i).lastIndexOf('/')+1) << "\n";
+        QMultiMap<QString,QString>::ConstIterator i = headerFileNames.begin();
+        while (i != headerFileNames.end()) {
+            (*filesout) << i.key() << "\n";
             ++i;
         }
-        i = sources.begin();
-        while (i != sources.end()) {
-            //(*filesout) << (*i).mid((*i).lastIndexOf('/')+1) << "\n";
+        i = sourceFileNames.begin();
+        while (i != sourceFileNames.end()) {
+            (*filesout) << i.key() << "\n";
             ++i;
         }
     }
-    //filesout->flush();
-    //files->close();
+    filesout->flush();
+    files->close();
 #endif
+
     /*
       Parse each header file in the set using the appropriate parser and add it
       to the big tree.
@@ -388,7 +399,6 @@ static void processQdocconfFile(const QString &fileName)
             ++parsed;
             codeParser->parseHeaderFile(config.location(), h.key(), tree);
             usedParsers.insert(codeParser);
-            (*filesout) << (h.key()).mid((h.key()).lastIndexOf('/')+1) << "\n";
         }
         ++h;
     }
@@ -409,12 +419,9 @@ static void processQdocconfFile(const QString &fileName)
             ++parsed;
             codeParser->parseSourceFile(config.location(), s.key(), tree);
             usedParsers.insert(codeParser);
-            (*filesout) << s.key().mid((s.key()).lastIndexOf('/')+1) << "\n";
         }
         ++s;
     }
-    filesout->flush();
-    files->close();
 
     foreach (CodeParser *codeParser, usedParsers)
         codeParser->doneParsingSourceFiles(tree);
@@ -451,6 +458,8 @@ static void processQdocconfFile(const QString &fileName)
     if (!tagFile.isEmpty()) {
         tree->generateTagFile(tagFile);
     }
+
+    //Generator::writeOutFileNames();
 
     tree->setVersion(QString());
     Generator::terminate();

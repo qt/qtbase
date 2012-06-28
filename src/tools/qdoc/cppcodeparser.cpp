@@ -2268,6 +2268,19 @@ bool CppCodeParser::matchDocsAndStuff()
                     }
                 }
                 else {
+                    if (topicCommandsUsed.count() > 1) {
+                        QString topics;
+                        QSet<QString>::ConstIterator t = topicCommandsUsed.constBegin();
+                        while (t != topicCommandsUsed.constEnd()) {
+                            topics += " \\" + *t + ",";
+                            ++t;
+                        }
+                        topics[topics.lastIndexOf(',')] = '.';
+                        int i = topics.lastIndexOf(',');
+                        topics[i] = ' ';
+                        topics.insert(i+1,"and");
+                        doc.location().warning(tr("Multiple topic commands found in comment: %1").arg(topics));
+                    }
                     ArgList::ConstIterator a = args.constBegin();
                     while (a != args.constEnd()) {
                         Doc nodeDoc = doc;
