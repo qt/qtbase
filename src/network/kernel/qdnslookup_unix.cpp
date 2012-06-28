@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_LIBRARY
+
 typedef int (*dn_expand_proto)(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
 static dn_expand_proto local_dn_expand = 0;
 typedef void (*res_nclose_proto)(res_state);
@@ -318,5 +320,18 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
         answerIndex++;
     }
 }
+
+#else
+
+void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, QDnsLookupReply *reply)
+{
+    Q_UNUSED(requestType)
+    Q_UNUSED(requestName)
+    reply->error = QDnsLookup::ResolverError;
+    reply->errorString = tr("Resolver library can't be loaded: No runtime library loading support");
+    return;
+}
+
+#endif /* ifndef QT_NO_LIBRARY */
 
 QT_END_NAMESPACE
