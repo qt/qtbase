@@ -57,7 +57,6 @@
 
 #include <unistd.h>
 
-
 // We are hot - unistd.h should have turned on the specific APIs we requested
 
 #include <features.h>
@@ -83,7 +82,7 @@
 #endif
 
 #define QT_USE_XOPEN_LFS_EXTENSIONS
-#include "../../common/posix/qplatformdefs.h"
+#include "../common/posix/qplatformdefs.h"
 
 #undef QT_SOCKLEN_T
 
@@ -97,6 +96,5 @@
 #define QT_SNPRINTF		::snprintf
 #define QT_VSNPRINTF		::vsnprintf
 #endif
-
 
 #endif // QPLATFORMDEFS_H
