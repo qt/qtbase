@@ -728,8 +728,17 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
     else if (command == COMMAND_QMLCLASS) {
         ClassNode* classNode = 0;
         QStringList names = arg.first.split(QLatin1Char(' '));
-        if (names.size() > 1)
-            classNode = tree_->findClassNode(names[1].split("::"));
+        bool ignoreCppClass = false;
+        if (names.size() > 1) {
+            /*
+              If the second argument of the \\qmlclass command is 0 we should ignore the C++ class.
+              The second argument should only be 0 when you are documenting QML in a .qdoc file.
+             */
+            if (names[1] != "0")
+                classNode = tree_->findClassNode(names[1].split("::"));
+            else
+                ignoreCppClass = true;
+        }
 
         /*
           Search for a node with the same name. If there is one,
@@ -746,17 +755,18 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         QmlClassNode* qcn = new QmlClassNode(tree_->root(), names[0], classNode);
         qcn->setLocation(doc.startLocation());
         if (isParsingCpp() || isParsingQdoc()) {
-            qcn->requireCppClass();
-            if (names.size() < 2) {
-                QString msg = "C++ class name not specified for class documented as "
-                    "QML type: '\\qmlclass " + arg.first + " <class name>'";
-                doc.startLocation().warning(tr(msg.toLatin1().data()));
-            }
-            else if (!classNode) {
-                QString msg = "C++ class not found in any .h file for class documented "
+            QString msg;
+            if (names.size() < 2)
+                msg = "C++ class name not specified for class documented as "
+                    "QML type: '\\qmlclass " + arg.first + " <class name>'."
+                    " '0' should be used as second argument if there is no C++ class.";
+            else if (!classNode && !ignoreCppClass)
+                msg = "C++ class not found in any .h file for class documented "
                     "as QML type: '\\qmlclass " + arg.first + "'";
+            else if (!ignoreCppClass)
+                qcn->requireCppClass();
+            if (!msg.isEmpty())
                 doc.startLocation().warning(tr(msg.toLatin1().data()));
-            }
         }
         if (ncn)
             ncn->addCollision(qcn);
