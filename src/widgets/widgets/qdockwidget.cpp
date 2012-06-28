@@ -207,13 +207,18 @@ bool QDockWidgetLayout::nativeWindowDeco() const
     return nativeWindowDeco(parentWidget()->isWindow());
 }
 
+static bool isXcb()
+{
+    static const bool xcb = !QGuiApplication::platformName().compare(QLatin1String("xcb"), Qt::CaseInsensitive);
+    return xcb;
+}
+
 bool QDockWidgetLayout::nativeWindowDeco(bool floating) const
 {
-#if defined(Q_WS_X11) || defined(Q_OS_WINCE)
-    Q_UNUSED(floating);
+#ifdef Q_OS_WINCE
     return false;
 #else
-    return floating && item_list[QDockWidgetLayout::TitleBar] == 0;
+    return !isXcb() && (floating && item_list[QDockWidgetLayout::TitleBar] == 0);
 #endif
 }
 
@@ -750,19 +755,19 @@ void QDockWidgetPrivate::endDrag(bool abort)
                 if (state->ownWidgetItem)
                     delete state->widgetItem;
                 mwLayout->restore();
-#ifdef Q_WS_X11
-                // get rid of the X11BypassWindowManager window flag and activate the resizer
-                Qt::WindowFlags flags = q->windowFlags();
-                flags &= ~Qt::X11BypassWindowManagerHint;
-                q->setWindowFlags(flags);
-                resizer->setActive(QWidgetResizeHandler::Resize, true);
-                q->show();
-#else
-                QDockWidgetLayout *myLayout
-                    = qobject_cast<QDockWidgetLayout*>(layout);
-                resizer->setActive(QWidgetResizeHandler::Resize,
-                                    myLayout->widgetForRole(QDockWidgetLayout::TitleBar) != 0);
-#endif
+                if (isXcb()) {
+                    // get rid of the X11BypassWindowManager window flag and activate the resizer
+                    Qt::WindowFlags flags = q->windowFlags();
+                    flags &= ~Qt::X11BypassWindowManagerHint;
+                    q->setWindowFlags(flags);
+                    resizer->setActive(QWidgetResizeHandler::Resize, true);
+                    q->show();
+                } else {
+                    QDockWidgetLayout *myLayout
+                            = qobject_cast<QDockWidgetLayout*>(layout);
+                    resizer->setActive(QWidgetResizeHandler::Resize,
+                                       myLayout->widgetForRole(QDockWidgetLayout::TitleBar) != 0);
+                }
                 undockedGeometry = q->geometry();
                 q->activateWindow();
             } else {
