@@ -1854,6 +1854,8 @@ QTime fromStringImpl(const QString &s, Qt::DateFormat f, bool &isMidnight24)
         return QTime(hour, minute, second, qMin(qRound(msec * 1000.0), 999));
     }
     }
+    Q_UNREACHABLE();
+    return QTime();
 }
 }
 
