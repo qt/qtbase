@@ -104,6 +104,7 @@ private slots:
     void secsTo();
     void msecsTo_data();
     void msecsTo();
+    void operator_eqeq_data();
     void operator_eqeq();
     void currentDateTime();
     void currentDateTimeUtc();
@@ -1145,10 +1146,54 @@ void tst_QDateTime::daylightSavingsTimeChange()
     QCOMPARE(dt.time(), QTime(0, 0, 1));
 }
 
+void tst_QDateTime::operator_eqeq_data()
+{
+    QTest::addColumn<QDateTime>("dt1");
+    QTest::addColumn<QDateTime>("dt2");
+    QTest::addColumn<bool>("expectEqual");
+    QTest::addColumn<bool>("checkEuro");
+
+    QDateTime dateTime1(QDate(2012, 6, 20), QTime(14, 33, 2, 500));
+    QDateTime dateTime1a = dateTime1.addMSecs(1);
+    QDateTime dateTime2(QDate(2012, 20, 6), QTime(14, 33, 2, 500));
+    QDateTime dateTime2a = dateTime2.addMSecs(-1);
+    QDateTime dateTime3(QDate(1970, 1, 1), QTime(0, 0, 0, 0), Qt::UTC);
+    QDateTime dateTime3a = dateTime3.addDays(1);
+    QDateTime dateTime3b = dateTime3.addDays(-1);
+    // Ensure that different times may be equal when considering timezone.
+    QDateTime dateTime3c(dateTime3.addSecs(3600));
+    dateTime3c.setUtcOffset(3600);
+    QDateTime dateTime3d(dateTime3.addSecs(-3600));
+    dateTime3d.setUtcOffset(-3600);
+    // Convert from UTC to local.
+    QDateTime dateTime3e(dateTime3.date(), dateTime3.time());
+
+    QTest::newRow("data0") << dateTime1 << dateTime1 << true << false;
+    QTest::newRow("data1") << dateTime2 << dateTime2 << true << false;
+    QTest::newRow("data2") << dateTime1a << dateTime1a << true << false;
+    QTest::newRow("data3") << dateTime1 << dateTime2 << false << false;
+    QTest::newRow("data4") << dateTime1 << dateTime1a << false << false;
+    QTest::newRow("data5") << dateTime2 << dateTime2a << false << false;
+    QTest::newRow("data6") << dateTime2 << dateTime3 << false << false;
+    QTest::newRow("data7") << dateTime3 << dateTime3a << false << false;
+    QTest::newRow("data8") << dateTime3 << dateTime3b << false << false;
+    QTest::newRow("data9") << dateTime3a << dateTime3b << false << false;
+    QTest::newRow("data10") << dateTime3 << dateTime3c << true << false;
+    QTest::newRow("data11") << dateTime3 << dateTime3d << true << false;
+    QTest::newRow("data12") << dateTime3c << dateTime3d << true << false;
+    QTest::newRow("data13") << dateTime3 << dateTime3e << false << false;
+    if (europeanTimeZone) {
+        QTest::newRow("data14") << QDateTime(QDate(2004, 1, 2), QTime(2, 2, 3), Qt::LocalTime)
+             << QDateTime(QDate(2004, 1, 2), QTime(1, 2, 3), Qt::UTC) << true << true;
+    }
+}
+
 void tst_QDateTime::operator_eqeq()
 {
-    QDateTime dt1(QDate(2004, 1, 2), QTime(2, 2, 3), Qt::LocalTime);
-    QDateTime dt2(QDate(2004, 1, 2), QTime(1, 2, 3), Qt::UTC);
+    QFETCH(QDateTime, dt1);
+    QFETCH(QDateTime, dt2);
+    QFETCH(bool, expectEqual);
+    QFETCH(bool, checkEuro);
 
     QVERIFY(dt1 == dt1);
     QVERIFY(!(dt1 != dt1));
@@ -1161,7 +1206,12 @@ void tst_QDateTime::operator_eqeq()
 
     QVERIFY(dt1.toUTC() == dt1.toUTC());
 
-    if (europeanTimeZone) {
+    bool equal = dt1 == dt2;
+    QCOMPARE(equal, expectEqual);
+    bool notEqual = dt1 != dt2;
+    QCOMPARE(notEqual, !expectEqual);
+
+    if (checkEuro) {
         QVERIFY(dt1.toUTC() == dt2);
         QVERIFY(dt1 == dt2.toLocalTime());
     }

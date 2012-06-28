@@ -60,8 +60,8 @@ private slots:
     void addMSecs();
     void addSecs_data();
     void addSecs();
+    void operator_eq_eq_data();
     void operator_eq_eq();
-    void operator_not_eq();
     void operator_lt();
     void operator_gt();
     void operator_lt_eq();
@@ -340,34 +340,36 @@ void tst_QTime::msecsTo()
     QCOMPARE( t1.msecsTo( t2 ), delta );
 }
 
-void tst_QTime::operator_eq_eq()
+void tst_QTime::operator_eq_eq_data()
 {
-    QTime t1(0,0,0,0);
-    QTime t2(0,0,0,0);
-    QVERIFY( t1 == t2 );
+    QTest::addColumn<QTime>("t1");
+    QTest::addColumn<QTime>("t2");
+    QTest::addColumn<bool>("expectEqual");
 
-    t1 = QTime(12,34,56,20);
-    t2 = QTime(12,34,56,20);
-    QVERIFY( t1 == t2 );
+    QTime time1(0, 0, 0, 0);
+    QTime time2 = time1.addMSecs(1);
+    QTime time3 = time1.addMSecs(-1);
+    QTime time4(23, 59, 59, 999);
 
-    t1 = QTime(01,34,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( !(t1 == t2) );
+    QTest::newRow("data0") << time1 << time2 << false;
+    QTest::newRow("data1") << time2 << time3 << false;
+    QTest::newRow("data2") << time4 << time1 << false;
+    QTest::newRow("data3") << time1 << time1 << true;
+    QTest::newRow("data4") << QTime(12,34,56,20) << QTime(12,34,56,20) << true;
+    QTest::newRow("data5") << QTime(01,34,56,20) << QTime(13,34,56,20) << false;
 }
 
-void tst_QTime::operator_not_eq()
+void tst_QTime::operator_eq_eq()
 {
-    QTime t1(0,0,0,0);
-    QTime t2(0,0,0,0);
-    QVERIFY( !(t1 != t2) );
+    QFETCH(QTime, t1);
+    QFETCH(QTime, t2);
+    QFETCH(bool, expectEqual);
 
-    t1 = QTime(12,34,56,20);
-    t2 = QTime(12,34,56,20);
-    QVERIFY( !(t1 != t2) );
+    bool equal = t1 == t2;
+    QCOMPARE(equal, expectEqual);
+    bool notEqual = t1 != t2;
+    QCOMPARE(notEqual, !expectEqual);
 
-    t1 = QTime(01,34,56,20);
-    t2 = QTime(13,34,56,20);
-    QVERIFY( t1 != t2 );
 }
 
 void tst_QTime::operator_lt()

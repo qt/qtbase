@@ -73,8 +73,8 @@ private slots:
     void addYears_data();
     void addYears();
     void daysTo();
+    void operator_eq_eq_data();
     void operator_eq_eq();
-    void operator_not_eq();
     void operator_lt();
     void operator_gt();
     void operator_lt_eq();
@@ -671,32 +671,47 @@ void tst_QDate::daysTo()
     QCOMPARE(zeroDate.daysTo(minDate), minJd);
 }
 
-void tst_QDate::operator_eq_eq()
+void tst_QDate::operator_eq_eq_data()
 {
-    QDate d1(2000,1,2);
-    QDate d2(2000,1,2);
-    QVERIFY( d1 == d2 );
+    QTest::addColumn<QDate>("d1");
+    QTest::addColumn<QDate>("d2");
+    QTest::addColumn<bool>("expectEqual");
 
-    d1 = QDate(2001,12,5);
-    d2 = QDate(2001,12,5);
-    QVERIFY( d1 == d2 );
+    QTest::newRow("data0") << QDate(2000,1,2) << QDate(2000,1,2) << true;
+    QTest::newRow("data1") << QDate(2001,12,5) << QDate(2001,12,5) << true;
+    QTest::newRow("data2") << QDate(2001,12,5) << QDate(2001,12,5) << true;
+    QTest::newRow("data3") << QDate(2001,12,5) << QDate(2002,12,5) << false;
 
-    d2 = QDate(2002,12,5);
-    QVERIFY( !(d1 == d2) );
+    QDate date1(1900, 1, 1);
+    QDate date2 = date1.addDays(1);
+    QDate date3 = date1.addDays(-1);
+    QDate date4 = date1.addMonths(1);
+    QDate date5 = date1.addMonths(-1);
+    QDate date6 = date1.addYears(1);
+    QDate date7 = date1.addYears(-1);
+
+    QTest::newRow("data4") << date2 << date3 << false;
+    QTest::newRow("data5") << date4 << date5 << false;
+    QTest::newRow("data6") << date6 << date7 << false;
+    QTest::newRow("data7") << date1 << date2 << false;
+    QTest::newRow("data8") << date1 << date3 << false;
+    QTest::newRow("data9") << date1 << date4 << false;
+    QTest::newRow("data10") << date1 << date5 << false;
+    QTest::newRow("data11") << date1 << date6 << false;
+    QTest::newRow("data12") << date1 << date7 << false;
 }
 
-void tst_QDate::operator_not_eq()
+void tst_QDate::operator_eq_eq()
 {
-    QDate d1(2000,1,2);
-    QDate d2(2000,1,2);
-    QVERIFY( !(d1 != d2) );
+    QFETCH(QDate, d1);
+    QFETCH(QDate, d2);
+    QFETCH(bool, expectEqual);
 
-    d1 = QDate(2001,12,5);
-    d2 = QDate(2001,12,5);
-    QVERIFY( !(d1 != d2) );
+    bool equal = d1 == d2;
+    QCOMPARE(equal, expectEqual);
+    bool notEqual = d1 != d2;
+    QCOMPARE(notEqual, !expectEqual);
 
-    d2 = QDate(2002,12,5);
-    QVERIFY( d1 != d2 );
 }
 
 void tst_QDate::operator_lt()
