@@ -64,6 +64,7 @@
 #include "qpagedpaintdevice.h"
 #include "private/qpagedpaintdevice_p.h"
 #include "qtextdocumentwriter.h"
+#include "qstylehints.h"
 #include "private/qtextcursor_p.h"
 
 #include <qtextformat.h>
@@ -94,12 +95,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-#ifndef QT_NO_CONTEXTMENU
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
-extern bool qt_use_rtl_extensions;
-#endif
-#endif
 
 // could go into QTextCursor...
 static QTextLine currentTextLine(const QTextCursor &cursor)
@@ -2181,11 +2176,7 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
         a->setEnabled(!d->doc->isEmpty());
     }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
-    if ((d->interactionFlags & Qt::TextEditable) && qt_use_rtl_extensions) {
-#else
-    if (d->interactionFlags & Qt::TextEditable) {
-#endif
+    if ((d->interactionFlags & Qt::TextEditable) && qApp->styleHints()->useRtlExtensions()) {
         menu->addSeparator();
         QUnicodeControlCharacterMenu *ctrlCharacterMenu = new QUnicodeControlCharacterMenu(this, menu);
         menu->addMenu(ctrlCharacterMenu);

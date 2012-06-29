@@ -65,6 +65,7 @@ public:
     bool showIsFullScreen() const;
     int passwordMaskDelay() const;
     qreal fontSmoothingGamma() const;
+    bool useRtlExtensions() const;
 
 private:
     friend class QGuiApplication;

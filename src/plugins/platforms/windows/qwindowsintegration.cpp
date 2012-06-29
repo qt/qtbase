@@ -408,6 +408,8 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
         if (const int ms = GetDoubleClickTime())
             return QVariant(ms);
         break;
+    case QPlatformIntegration::UseRtlExtensions:
+        return QVariant(d->m_context.useRTLExtensions());
     }
     return QPlatformIntegration::styleHint(hint);
 }

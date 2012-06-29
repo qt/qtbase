@@ -50,6 +50,7 @@
 #include "qdrawutil.h"
 #include "qevent.h"
 #include "qfontmetrics.h"
+#include "qstylehints.h"
 #include "qmenu.h"
 #include "qpainter.h"
 #include "qpixmap.h"
@@ -1992,10 +1993,6 @@ void QLineEdit::contextMenuEvent(QContextMenuEvent *event)
     }
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
-    extern bool qt_use_rtl_extensions;
-#endif
-
 /*!  This function creates the standard context menu which is shown
         when the user clicks on the line edit with the right mouse
         button. It is called from the default contextMenuEvent() handler.
@@ -2055,11 +2052,7 @@ QMenu *QLineEdit::createStandardContextMenu()
     d->selectAllAction = action;
     connect(action, SIGNAL(triggered()), SLOT(selectAll()));
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
-    if (!d->control->isReadOnly() && qt_use_rtl_extensions) {
-#else
-    if (!d->control->isReadOnly()) {
-#endif
+    if (!d->control->isReadOnly() && qApp->styleHints()->useRtlExtensions()) {
         popup->addSeparator();
         QUnicodeControlCharacterMenu *ctrlCharacterMenu = new QUnicodeControlCharacterMenu(this, popup);
         popup->addMenu(ctrlCharacterMenu);

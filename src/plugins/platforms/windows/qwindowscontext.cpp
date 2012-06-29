@@ -335,6 +335,11 @@ unsigned QWindowsContext::systemInfo() const
     return d->m_systemInfo;
 }
 
+bool QWindowsContext::useRTLExtensions() const
+{
+    return d->m_keyMapper.useRTLExtensions();
+}
+
 void QWindowsContext::setWindowCreationContext(const QSharedPointer<QWindowCreationContext> &ctx)
 {
     d->m_creationContext = ctx;

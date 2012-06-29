@@ -298,6 +298,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return qreal(1.7);
     case StartDragVelocity:
         return 0; // no limit
+    case UseRtlExtensions:
+        return QVariant(false);
     }
 
     return 0;

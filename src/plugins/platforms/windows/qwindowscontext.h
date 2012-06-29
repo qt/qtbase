@@ -172,6 +172,8 @@ public:
     // Returns a combination of SystemInfoFlags
     unsigned systemInfo() const;
 
+    bool useRTLExtensions() const;
+
     QWindowsMimeConverter &mimeConverter() const;
     QWindowsScreenManager &screenManager();
 #ifndef Q_OS_WINCE

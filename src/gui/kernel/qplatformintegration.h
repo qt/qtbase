@@ -133,7 +133,8 @@ public:
         ShowIsFullScreen,
         PasswordMaskDelay,
         FontSmoothingGamma,
-        StartDragVelocity
+        StartDragVelocity,
+        UseRtlExtensions
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

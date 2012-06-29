@@ -112,4 +112,9 @@ qreal QStyleHints::fontSmoothingGamma() const
     return hint(QPlatformIntegration::FontSmoothingGamma).toReal();
 }
 
+bool QStyleHints::useRtlExtensions() const
+{
+    return hint(QPlatformIntegration::UseRtlExtensions).toBool();
+}
+
 QT_END_NAMESPACE
