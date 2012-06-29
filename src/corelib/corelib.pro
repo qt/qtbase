@@ -71,3 +71,15 @@ lrelease_dir.name = lrelease_location
 lrelease_dir.variable = QMAKE_LRELEASE
 
 QMAKE_PKGCONFIG_VARIABLES += lupdate_dir lrelease_dir
+
+ctest_macros_file.input = $$PWD/Qt5CTestMacros.cmake
+ctest_macros_file.output = $$DESTDIR/cmake/Qt5Core/Qt5CTestMacros.cmake
+ctest_macros_file.config = verbatim
+
+QMAKE_SUBSTITUTES += ctest_macros_file
+
+ctest_qt5_module_files.files += $$ctest_macros_file.output
+
+ctest_qt5_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5Core
+
+INSTALLS += ctest_qt5_module_files

@@ -65,3 +65,7 @@ set_target_properties(Qt5::WinMain PROPERTIES
 )
 !!ENDIF
 !!ENDIF
+
+get_filename_component(_Qt5CoreConfigDir ${CMAKE_CURRENT_LIST_FILE} PATH)
+
+set(_Qt5CTestMacros \"${_Qt5CoreConfigDir}/Qt5CTestMacros.cmake\")
