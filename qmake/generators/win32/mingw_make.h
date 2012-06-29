@@ -57,7 +57,6 @@ protected:
     bool writeMakefile(QTextStream &);
     void init();
 private:
-    bool isWindowsShell() const;
     void writeMingwParts(QTextStream &);
     void writeIncPart(QTextStream &t);
     void writeLibsPart(QTextStream &t);

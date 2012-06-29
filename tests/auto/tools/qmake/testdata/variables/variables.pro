@@ -1,14 +1,14 @@
-CONFIG = 1 2 3 4 5
-JOINEDCONFIG = $$join( CONFIG, "-GLUE-", "-BEFORE-", "-AFTER-" )
-!contains( JOINEDCONFIG, -BEFORE-1-GLUE-2-GLUE-3-GLUE-4-GLUE-5-AFTER- ) {
-   message( "FAILED: join [$$JOINEDCONFIG != -BEFORE-1-GLUE-2-GLUE-3-GLUE-4-GLUE-5-AFTER-]" )
+VAR = 1 2 3 4 5
+JOINEDVAR = $$join( VAR, "-GLUE-", "-BEFORE-", "-AFTER-" )
+!contains( JOINEDVAR, -BEFORE-1-GLUE-2-GLUE-3-GLUE-4-GLUE-5-AFTER- ) {
+   message( "FAILED: join [$$JOINEDVAR != -BEFORE-1-GLUE-2-GLUE-3-GLUE-4-GLUE-5-AFTER-]" )
 }
 
 # To test member we need to use join
-NEWCONFIG = $$member( CONFIG, 4 ) $$member( CONFIG, 3 ) $$member( CONFIG, 2 ) 
-JOINEDNEWCONFIG = $$join( NEWCONFIG, "-" )
-!contains( JOINEDNEWCONFIG, 5-4-3 ) {
-  message( "FAILED: member [$$JOINEDNEWCONFIG != 5-4-3]" )
+NEWVAR = $$member( VAR, 4 ) $$member( VAR, 3 ) $$member( VAR, 2 )
+JOINEDNEWVAR = $$join( NEWVAR, "-" )
+!contains( JOINEDNEWVAR, 5-4-3 ) {
+  message( "FAILED: member [$$JOINEDNEWVAR != 5-4-3]" )
 }
 
 

@@ -213,7 +213,6 @@ GBuildMakefileGenerator::write()
         dllbase += DLLOFFSET;
     }
 
-    warn_msg(WarnParser, Option::output.fileName().toLocal8Bit().constData());
     QTextStream t(&Option::output);
     QString primaryTarget(project->values("QMAKE_CXX").at(0));
 
@@ -259,8 +258,8 @@ GBuildMakefileGenerator::write()
         t << "\t-Iwork\n";
         t << "\t-Llib\n";
         t << "\t";
-        QStringList &l = project->values("QMAKE_CXXFLAGS");
-        for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
+        const QStringList &l = project->values("QMAKE_CXXFLAGS");
+        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
             if ((*it).startsWith("-"))
                 t << "\n" << "\t" << (*it);
             else
@@ -285,8 +284,8 @@ GBuildMakefileGenerator::write()
             if (isnativebin && (i == 0))
                 continue;
             t << "\t";
-            QStringList &l = project->values(src[i]);
-            for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
+            const QStringList &l = project->values(src[i]);
+            for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
                 if ((*it).startsWith("-"))
                     t << "\n" << "\t" << (*it);
                 else
@@ -298,8 +297,8 @@ GBuildMakefileGenerator::write()
 
     /* first subdirectories/subprojects */
     {
-        QStringList &l = project->values("SUBDIRS");
-        for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
+        const QStringList &l = project->values("SUBDIRS");
+        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
             QString gpjname((*it));
             /* avoid native tools */
             if (nativebins.contains(gpjname.section("_", -1)))
@@ -319,9 +318,10 @@ GBuildMakefileGenerator::write()
     }
 
     {
-        QStringList &l = project->values("RESOURCES");
-        for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-            QString tmpstr((*it).replace(pathtoremove, ""));
+        const QStringList &l = project->values("RESOURCES");
+        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
+            QString tmpstr(*it);
+            tmpstr.remove(pathtoremove);
             t << tmpstr << "\t[Qt Resource]\n";
             tmpstr = tmpstr.section(".", -2, -1).section(QDir::separator(), -1);
             tmpstr.remove(".qrc");
@@ -332,9 +332,10 @@ GBuildMakefileGenerator::write()
         }
     }
     {
-        QStringList &l = project->values("FORMS");
-        for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-            QString tmpstr((*it).replace(pathtoremove, ""));
+        const QStringList &l = project->values("FORMS");
+        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
+            QString tmpstr(*it);
+            tmpstr.remove(pathtoremove);
             t << tmpstr << "\t[Qt Dialog]\n";
             tmpstr = tmpstr.section(".", 0, 0).section(QDir::separator(), -1);
             tmpstr.insert(tmpstr.lastIndexOf(QDir::separator()) + 1, "ui_");
@@ -347,22 +348,22 @@ GBuildMakefileGenerator::write()
     /* source files for this project */
     QString src[] = { "HEADERS", "SOURCES", QString() };
     for (int i = 0; !src[i].isNull(); i++) {
-        QStringList &l = project->values(src[i]);
-        for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
+        const QStringList &l = project->values(src[i]);
+        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
             if ((*it).isEmpty())
                 continue;
             /* native tools aren't preprocessed */
             if (!isnativebin)
                 t << writeOne((*it), pathtoremove);
             else
-                t << (*it).remove(pathtoremove) << "\n";
+                t << QString(*it).remove(pathtoremove) << "\n";
         }
     }
     t << "\n";
 
     {
-        QStringList &l = project->values("GENERATED_SOURCES");
-        for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
+        const QStringList &l = project->values("GENERATED_SOURCES");
+        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
             t << "work/" << (*it).section(QDir::separator(), -1) << "\n";
         }
     }
@@ -425,7 +426,6 @@ GBuildMakefileGenerator::openOutput(QFile &file, const QString &build) const
         outputName += QDir::separator();
         outputName += fileInfo(project->projectFile()).baseName();
         outputName += projectSuffix();
-        warn_msg(WarnParser, outputName.toLocal8Bit().constData());
         file.setFileName(outputName);
     }
     debug_msg(1, "file is %s", file.fileName().toLatin1().constData());

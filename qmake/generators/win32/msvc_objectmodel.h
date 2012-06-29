@@ -475,7 +475,7 @@ protected:
     virtual ~VCToolBase(){}
     virtual bool parseOption(const char* option) = 0;
 public:
-    void parseOptions(QStringList& options) {
+    void parseOptions(const QStringList& options) {
         for (QStringList::ConstIterator it=options.begin(); (it!=options.end()); it++)
             parseOption((*it).toLatin1().constData());
     }

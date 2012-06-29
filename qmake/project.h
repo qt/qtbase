@@ -78,19 +78,20 @@ class QMakeProject
     FunctionBlock *function;
     QHash<QString, FunctionBlock*> testFunctions, replaceFunctions;
 
-    bool recursive;
     bool host_build;
     bool need_restart;
     bool own_prop;
     bool backslashWarned;
+    QString project_build_root;
     QString conffile;
     QString superfile;
     QString cachefile;
+    QString real_spec, short_spec;
     QString pfile;
     QMakeProperty *prop;
     void reset();
     QStringList extra_configs;
-    QHash<QString, QStringList> vars, base_vars, extra_vars;
+    QHash<QString, QStringList> vars, init_vars, base_vars, extra_vars;
     bool parse(const QString &text, QHash<QString, QStringList> &place, int line_count=1);
 
     enum IncludeStatus {
@@ -113,9 +114,11 @@ class QMakeProject
     QStringList doVariableReplaceExpand(const QString &str, QHash<QString, QStringList> &place, bool *ok=0);
     void init(QMakeProperty *);
     void cleanup();
+    void loadDefaults();
+    void setupProject();
     QStringList &values(const QString &v, QHash<QString, QStringList> &place);
-    void validateModes();
-    void resolveSpec(QString *spec, const QString &qmakespec);
+    QStringList magicValues(const QString &v, const QHash<QString, QStringList> &place) const;
+    QStringList qmakeFeaturePaths();
 
 public:
     QMakeProject(QMakeProperty *p = 0) { init(p); }
@@ -134,8 +137,10 @@ public:
     QStringList userTestFunctions() { return testFunctions.keys(); }
 
     QString projectFile();
+    QString buildRoot() const { return project_build_root; }
     QString confFile() const { return conffile; }
     QString cacheFile() const { return cachefile; }
+    QString specDir() const { return real_spec; }
     inline QMakeProperty *properties() { return prop; }
 
     bool doProjectTest(QString str, QHash<QString, QStringList> &place);
@@ -160,14 +165,17 @@ public:
     bool isActiveConfig(const QString &x, bool regex=false,
                         QHash<QString, QStringList> *place=NULL);
 
-    bool isSet(const QString &v); // No compat mapping, no magic variables
-    bool isEmpty(const QString &v); // With compat mapping, but no magic variables
-    QStringList &values(const QString &v); // With compat mapping and magic variables
-    QString first(const QString &v); // ditto
-    int intValue(const QString &v, int defaultValue = 0); // ditto
-    QHash<QString, QStringList> &variables(); // No compat mapping and magic, obviously
+    bool isSet(const QString &v) const { return vars.contains(v); }
+    bool isEmpty(const QString &v) const;
+    QStringList values(const QString &v) const { return vars[v]; }
+    QStringList &values(const QString &v) { return vars[v]; }
+    QString first(const QString &v) const;
+    int intValue(const QString &v, int defaultValue = 0) const;
+    const QHash<QString, QStringList> &variables() const { return vars; }
+    QHash<QString, QStringList> &variables() { return vars; }
 
-    bool isRecursive() const { return recursive; }
+    void dump() const;
+
     bool isHostBuild() const { return host_build; }
 
 protected:
@@ -185,13 +193,7 @@ inline QString QMakeProject::projectFile()
     return pfile;
 }
 
-inline QStringList &QMakeProject::values(const QString &v)
-{ return values(v, vars); }
-
-inline bool QMakeProject::isSet(const QString &v)
-{ return vars.contains(v); }
-
-inline QString QMakeProject::first(const QString &v)
+inline QString QMakeProject::first(const QString &v) const
 {
     const QStringList vals = values(v);
     if(vals.isEmpty())
@@ -199,7 +201,7 @@ inline QString QMakeProject::first(const QString &v)
     return vals.first();
 }
 
-inline int QMakeProject::intValue(const QString &v, int defaultValue)
+inline int QMakeProject::intValue(const QString &v, int defaultValue) const
 {
     const QString str = first(v);
     if (!str.isEmpty()) {
@@ -210,9 +212,6 @@ inline int QMakeProject::intValue(const QString &v, int defaultValue)
     }
     return defaultValue;
 }
-
-inline QHash<QString, QStringList> &QMakeProject::variables()
-{ return vars; }
 
 QT_END_NAMESPACE
 

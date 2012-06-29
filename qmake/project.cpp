@@ -254,6 +254,8 @@ static QString varMap(const QString &x)
         ret = "QMAKE_FRAMEWORKPATH";
     else if(ret == "QMAKE_FRAMEWORKDIR_FLAGS")
         ret = "QMAKE_FRAMEWORKPATH_FLAGS";
+    else if(ret == "IN_PWD")
+        ret = "PWD";
     else
         return ret;
     warn_msg(WarnDeprecated, "%s:%d: Variable %s is deprecated; use %s instead.",
@@ -565,69 +567,57 @@ static void qmake_error_msg(const QString &msg)
    1) features/(unix|win32|macx)/
    2) features/
 */
-QStringList qmake_feature_paths(QMakeProperty *prop, bool host_build)
+QStringList QMakeProject::qmakeFeaturePaths()
 {
     const QString mkspecs_concat = QLatin1String("/mkspecs");
     const QString base_concat = QLatin1String("/features");
     QStringList concat;
-    {
-        switch(Option::target_mode) {
-        case Option::TARG_MACX_MODE:                     //also a unix
-            concat << base_concat + QLatin1String("/mac");
-            concat << base_concat + QLatin1String("/macx");
-            concat << base_concat + QLatin1String("/unix");
-            break;
-        default: // Can't happen, just make the compiler shut up
-        case Option::TARG_UNIX_MODE:
-            concat << base_concat + QLatin1String("/unix");
-            break;
-        case Option::TARG_WIN_MODE:
-            concat << base_concat + QLatin1String("/win32");
-            break;
-        }
-        concat << base_concat;
-    }
+    foreach (const QString &sfx, values("QMAKE_PLATFORM"))
+        concat << base_concat + QLatin1Char('/') + sfx;
+    concat << base_concat;
 
     QStringList feature_roots = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEFEATURES")));
     feature_roots += cached_qmakefeatures;
     if(prop)
         feature_roots += splitPathList(prop->value("QMAKEFEATURES"));
+    QStringList feature_bases;
     if (!cached_build_root.isEmpty())
-        for(QStringList::Iterator concat_it = concat.begin();
-            concat_it != concat.end(); ++concat_it)
-            feature_roots << (cached_build_root + (*concat_it));
+        feature_bases << cached_build_root;
+    if (!cached_source_root.isEmpty())
+        feature_bases << cached_source_root;
     QStringList qmakepath = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEPATH")));
     qmakepath += cached_qmakepath;
     foreach (const QString &path, qmakepath)
-        foreach (const QString &cat, concat)
-            feature_roots << (path + mkspecs_concat + cat);
-    QString *specp = host_build ? &Option::mkfile::qmakespec : &Option::mkfile::xqmakespec;
-    if (!specp->isEmpty()) {
+        feature_bases << (path + mkspecs_concat);
+    if (!real_spec.isEmpty()) {
         // The spec is already platform-dependent, so no subdirs here.
-        feature_roots << *specp + base_concat;
+        feature_roots << real_spec + base_concat;
 
         // Also check directly under the root directory of the mkspecs collection
-        QFileInfo specfi(*specp);
+        QFileInfo specfi(real_spec);
         QDir specrootdir(specfi.absolutePath());
         while (!specrootdir.isRoot()) {
             const QString specrootpath = specrootdir.path();
             if (specrootpath.endsWith(mkspecs_concat)) {
                 if (QFile::exists(specrootpath + base_concat))
-                    for (QStringList::Iterator concat_it = concat.begin();
-                         concat_it != concat.end(); ++concat_it)
-                        feature_roots << (specrootpath + (*concat_it));
+                    feature_bases << specrootpath;
                 break;
             }
             specrootdir.cdUp();
         }
     }
-    for(QStringList::Iterator concat_it = concat.begin();
-        concat_it != concat.end(); ++concat_it)
-        feature_roots << (QLibraryInfo::rawLocation(QLibraryInfo::HostDataPath,
-                                                    QLibraryInfo::EffectivePaths) +
-                          mkspecs_concat + (*concat_it));
+    feature_bases << (QLibraryInfo::rawLocation(QLibraryInfo::HostDataPath,
+                                                QLibraryInfo::EffectivePaths) + mkspecs_concat);
+    foreach (const QString &fb, feature_bases)
+        foreach (const QString &cc, concat)
+            feature_roots << (fb + cc);
     feature_roots.removeDuplicates();
-    return feature_roots;
+
+    QStringList ret;
+    foreach (const QString &root, feature_roots)
+        if (QFileInfo(root).exists())
+            ret << root;
+    return ret;
 }
 
 QStringList qmake_mkspec_paths()
@@ -649,6 +639,23 @@ QStringList qmake_mkspec_paths()
     return ret;
 }
 
+static void
+setTemplate(QStringList &varlist)
+{
+    if (!Option::user_template.isEmpty()) { // Don't permit override
+        varlist = QStringList(Option::user_template);
+    } else {
+        if (varlist.isEmpty())
+            varlist << "app";
+        else
+            varlist.erase(varlist.begin() + 1, varlist.end());
+    }
+    if (!Option::user_template_prefix.isEmpty()
+        && !varlist.first().startsWith(Option::user_template_prefix)) {
+        varlist.first().prepend(Option::user_template_prefix);
+    }
+}
+
 QMakeProject::~QMakeProject()
 {
     if(own_prop)
@@ -667,7 +674,6 @@ QMakeProject::init(QMakeProperty *p)
         prop = p;
         own_prop = false;
     }
-    recursive = false;
     host_build = false;
     reset();
 }
@@ -1119,14 +1125,6 @@ QMakeProject::parse(const QString &t, QHash<QString, QStringList> &place, int nu
 
     doVariableReplace(var, place);
     var = varMap(var); //backwards compatibility
-    if(!var.isEmpty() && Option::mkfile::do_preprocess) {
-        static QString last_file("*none*");
-        if(parser.file != last_file) {
-            fprintf(stdout, "#file %s:%d\n", parser.file.toLatin1().constData(), parser.line_no);
-            last_file = parser.file;
-        }
-        fprintf(stdout, "%s %s %s\n", var.toLatin1().constData(), op.toLatin1().constData(), vals.toLatin1().constData());
-    }
 
     if(vals.contains('=') && numLines > 1)
         warn_msg(WarnParser, "Possible accidental line continuation: {%s} at %s:%d",
@@ -1218,6 +1216,8 @@ QMakeProject::parse(const QString &t, QHash<QString, QStringList> &place, int nu
         }
         if(var == "REQUIRES") // special case to get communicated to backends!
             doProjectCheckReqs(vallist, place);
+        else if (var == QLatin1String("TEMPLATE"))
+            setTemplate(varlist);
     }
     return true;
 }
@@ -1289,6 +1289,7 @@ QMakeProject::read(const QString &file, QHash<QString, QStringList> &place)
         qmake_setpwd(QFileInfo(filename).absolutePath());
     }
     if(ret) {
+        place["PWD"] = QStringList(qmake_getpwd());
         parser_info pi = parser;
         parser.from_file = true;
         parser.file = filename;
@@ -1324,20 +1325,19 @@ bool
 QMakeProject::read(uchar cmd)
 {
   again:
-    if ((cmd & ReadSetup) && base_vars.isEmpty()) {
-        // hack to get the Option stuff in there
-        base_vars["QMAKE_EXT_CPP"] = Option::cpp_ext;
-        base_vars["QMAKE_EXT_C"] = Option::c_ext;
-        base_vars["QMAKE_EXT_H"] = Option::h_ext;
-        base_vars["QMAKE_SH"] = Option::shellPath;
-        if(!Option::user_template_prefix.isEmpty())
-            base_vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
-
+    if (init_vars.isEmpty()) {
+        loadDefaults();
+        init_vars = vars;
+    } else {
+        vars = init_vars;
+    }
+    if (cmd & ReadSetup) {
+      if (base_vars.isEmpty()) {
         QString superdir;
         QString project_root;
-        QString project_build_root;
         QStringList qmakepath;
         QStringList qmakefeatures;
+        project_build_root.clear();
         if (Option::mkfile::do_cache) {        // parse the cache
             QHash<QString, QStringList> cache;
             QString rdir = Option::output_dir;
@@ -1405,9 +1405,10 @@ QMakeProject::read(uchar cmd)
             qmakepath = cache.value(QLatin1String("QMAKEPATH"));
             qmakefeatures = cache.value(QLatin1String("QMAKEFEATURES"));
 
-            if (Option::output_dir.startsWith(project_build_root))
-                Option::mkfile::cachefile_depth =
-                        Option::output_dir.mid(project_build_root.length()).count('/');
+            if (!superfile.isEmpty())
+                vars["_QMAKE_SUPER_CACHE_"] << superfile;
+            if (!cachefile.isEmpty())
+                vars["_QMAKE_CACHE_"] << cachefile;
         }
       no_cache:
 
@@ -1470,32 +1471,48 @@ QMakeProject::read(uchar cmd)
             // here without resorting to tricks. This is the only planned use case anyway.
             if (!superfile.isEmpty()) {
                 debug_msg(1, "Project super cache file: reading %s", superfile.toLatin1().constData());
-                read(superfile, base_vars);
+                read(superfile, vars);
             }
 
             // parse qmake configuration
+            doProjectInclude("spec_pre", IncludeFlagFeature, vars);
             while(qmakespec.endsWith(QLatin1Char('/')))
                 qmakespec.truncate(qmakespec.length()-1);
             QString spec = qmakespec + QLatin1String("/qmake.conf");
             debug_msg(1, "QMAKESPEC conf: reading %s", spec.toLatin1().constData());
-            if(!read(spec, base_vars)) {
+            if (!read(spec, vars)) {
                 fprintf(stderr, "Failure to read QMAKESPEC conf file %s.\n", spec.toLatin1().constData());
                 return false;
             }
-            validateModes();
+#ifdef Q_OS_UNIX
+            real_spec = QFileInfo(qmakespec).canonicalFilePath();
+#else
+            // We can't resolve symlinks as they do on Unix, so configure.exe puts the source of the
+            // qmake.conf at the end of the default/qmake.conf in the QMAKESPEC_ORG variable.
+            QString orig_spec = first(QLatin1String("QMAKESPEC_ORIGINAL"));
+            real_spec = orig_spec.isEmpty() ? qmakespec : orig_spec;
+#endif
+            short_spec = QFileInfo(real_spec).fileName();
+            doProjectInclude("spec_post", IncludeFlagFeature, vars);
+            // The spec extends the feature search path, so invalidate the cache.
+            invalidateFeatureRoots();
 
             if (!conffile.isEmpty()) {
                 debug_msg(1, "Project config file: reading %s", conffile.toLatin1().constData());
-                read(conffile, base_vars);
+                read(conffile, vars);
             }
             if (!cachefile.isEmpty()) {
                 debug_msg(1, "QMAKECACHE file: reading %s", cachefile.toLatin1().constData());
-                read(cachefile, base_vars);
+                read(cachefile, vars);
             }
         }
-    }
 
-    vars = base_vars; // start with the base
+        base_vars = vars;
+      } else {
+        vars = base_vars; // start with the base
+      }
+        setupProject();
+    }
 
     for (QHash<QString, QStringList>::ConstIterator it = extra_vars.constBegin();
          it != extra_vars.constEnd(); ++it)
@@ -1505,10 +1522,6 @@ QMakeProject::read(uchar cmd)
         debug_msg(1, "Processing default_pre: %s", vars["CONFIG"].join("::").toLatin1().constData());
         doProjectInclude("default_pre", IncludeFlagFeature, vars);
     }
-
-    //get a default
-    if(pfile != "-" && vars["TARGET"].isEmpty())
-        vars["TARGET"].append(QFileInfo(pfile).baseName());
 
     //before commandline
     if (cmd & ReadSetup) {
@@ -1598,72 +1611,100 @@ QMakeProject::read(uchar cmd)
     return true;
 }
 
-void QMakeProject::validateModes()
+void
+QMakeProject::setupProject()
 {
-    if (Option::host_mode == Option::HOST_UNKNOWN_MODE
-        || Option::target_mode == Option::TARG_UNKNOWN_MODE) {
-        Option::HOST_MODE host_mode;
-        Option::TARG_MODE target_mode;
-        const QStringList &gen = base_vars.value("MAKEFILE_GENERATOR");
-        if (gen.isEmpty()) {
-            fprintf(stderr, "%s:%d: Using OS scope before setting MAKEFILE_GENERATOR\n",
-                            parser.file.toLatin1().constData(), parser.line_no);
-        } else if (MetaMakefileGenerator::modesForGenerator(gen.first(),
-                                                            &host_mode, &target_mode)) {
-            if (Option::host_mode == Option::HOST_UNKNOWN_MODE) {
-                Option::host_mode = host_mode;
-                Option::applyHostMode();
-            }
-
-            if (Option::target_mode == Option::TARG_UNKNOWN_MODE) {
-                const QStringList &tgt = base_vars.value("TARGET_PLATFORM");
-                if (!tgt.isEmpty()) {
-                    const QString &os = tgt.first();
-                    if (os == "unix")
-                        Option::target_mode = Option::TARG_UNIX_MODE;
-                    else if (os == "macx")
-                        Option::target_mode = Option::TARG_MACX_MODE;
-                    else if (os == "win32")
-                        Option::target_mode = Option::TARG_WIN_MODE;
-                    else
-                        fprintf(stderr, "Unknown target platform specified: %s\n",
-                                os.toLatin1().constData());
-                } else {
-                    Option::target_mode = target_mode;
-                }
-            }
-        }
-    }
+    setTemplate(vars["TEMPLATE"]);
+    if (pfile != "-")
+        vars["TARGET"] << QFileInfo(pfile).baseName();
+    vars["_PRO_FILE_"] << pfile;
+    vars["_PRO_FILE_PWD_"] << (pfile.isEmpty() ? qmake_getpwd() : QFileInfo(pfile).absolutePath());
+    vars["OUT_PWD"] << Option::output_dir;
 }
 
 void
-QMakeProject::resolveSpec(QString *spec, const QString &qmakespec)
+QMakeProject::loadDefaults()
 {
-    if (spec->isEmpty()) {
-        *spec = QFileInfo(qmakespec).fileName();
-        if (*spec == "default" || *spec == "default-host") {
-#ifdef Q_OS_UNIX
-            char buffer[1024];
-            int l = readlink(qmakespec.toLatin1().constData(), buffer, 1023);
-            if (l != -1) {
-                buffer[l] = '\0';
-                *spec = QString::fromLatin1(buffer);
-#else
-            // We can't resolve symlinks as they do on Unix, so configure.exe puts the source of the
-            // qmake.conf at the end of the default/qmake.conf in the QMAKESPEC_ORG variable.
-            const QStringList &spec_org = base_vars["QMAKESPEC_ORIGINAL"];
-            if (spec_org.isEmpty()) {
-                // try again the next time around
-                *spec = QString();
-            } else {
-                *spec = spec_org.at(0);
-#endif
-                int lastSlash = spec->lastIndexOf(QLatin1Char('/'));
-                if (lastSlash != -1)
-                    spec->remove(0, lastSlash + 1);
-            }
-        }
+    vars["LITERAL_WHITESPACE"] << QLatin1String("\t");
+    vars["LITERAL_DOLLAR"] << QLatin1String("$");
+    vars["LITERAL_HASH"] << QLatin1String("#");
+    vars["DIR_SEPARATOR"] << Option::dir_sep;
+    vars["DIRLIST_SEPARATOR"] << Option::dirlist_sep;
+    vars["QMAKE_QMAKE"] << Option::qmake_abslocation;
+    vars["_DATE_"] << QDateTime::currentDateTime().toString();
+#if defined(Q_OS_WIN32)
+    vars["QMAKE_HOST.os"] << QString::fromLatin1("Windows");
+
+    DWORD name_length = 1024;
+    wchar_t name[1024];
+    if (GetComputerName(name, &name_length))
+        vars["QMAKE_HOST.name"] << QString::fromWCharArray(name);
+
+    QSysInfo::WinVersion ver = QSysInfo::WindowsVersion;
+    vars["QMAKE_HOST.version"] << QString::number(ver);
+    QString verStr;
+    switch (ver) {
+    case QSysInfo::WV_Me: verStr = QLatin1String("WinMe"); break;
+    case QSysInfo::WV_95: verStr = QLatin1String("Win95"); break;
+    case QSysInfo::WV_98: verStr = QLatin1String("Win98"); break;
+    case QSysInfo::WV_NT: verStr = QLatin1String("WinNT"); break;
+    case QSysInfo::WV_2000: verStr = QLatin1String("Win2000"); break;
+    case QSysInfo::WV_2003: verStr = QLatin1String("Win2003"); break;
+    case QSysInfo::WV_XP: verStr = QLatin1String("WinXP"); break;
+    case QSysInfo::WV_VISTA: verStr = QLatin1String("WinVista"); break;
+    default: verStr = QLatin1String("Unknown"); break;
     }
+    vars["QMAKE_HOST.version_string"] << verStr;
+
+    SYSTEM_INFO info;
+    GetSystemInfo(&info);
+    QString archStr;
+    switch (info.wProcessorArchitecture) {
+# ifdef PROCESSOR_ARCHITECTURE_AMD64
+    case PROCESSOR_ARCHITECTURE_AMD64:
+        archStr = QLatin1String("x86_64");
+        break;
+# endif
+    case PROCESSOR_ARCHITECTURE_INTEL:
+        archStr = QLatin1String("x86");
+        break;
+    case PROCESSOR_ARCHITECTURE_IA64:
+# ifdef PROCESSOR_ARCHITECTURE_IA32_ON_WIN64
+    case PROCESSOR_ARCHITECTURE_IA32_ON_WIN64:
+# endif
+        archStr = QLatin1String("IA64");
+        break;
+    default:
+        archStr = QLatin1String("Unknown");
+        break;
+    }
+    vars["QMAKE_HOST.arch"] << archStr;
+
+# if defined(Q_CC_MSVC)
+    QString paths = QString::fromLocal8Bit(qgetenv("PATH"));
+    QString vcBin64 = QString::fromLocal8Bit(qgetenv("VCINSTALLDIR"));
+    if (!vcBin64.endsWith('\\'))
+        vcBin64.append('\\');
+    vcBin64.append("bin\\amd64");
+    QString vcBinX86_64 = QString::fromLocal8Bit(qgetenv("VCINSTALLDIR"));
+    if (!vcBinX86_64.endsWith('\\'))
+        vcBinX86_64.append('\\');
+    vcBinX86_64.append("bin\\x86_amd64");
+    if (paths.contains(vcBin64,Qt::CaseInsensitive) || paths.contains(vcBinX86_64,Qt::CaseInsensitive))
+        vars["QMAKE_TARGET.arch"] << QString::fromLatin1("x86_64");
+    else
+        vars["QMAKE_TARGET.arch"] << QString::fromLatin1("x86");
+# endif
+#elif defined(Q_OS_UNIX)
+    struct utsname name;
+    if (!uname(&name)) {
+        vars["QMAKE_HOST.os"] << QString::fromLocal8Bit(name.sysname);
+        vars["QMAKE_HOST.name"] << QString::fromLocal8Bit(name.nodename);
+        vars["QMAKE_HOST.version"] << QString::fromLocal8Bit(name.release);
+        vars["QMAKE_HOST.version_string"] << QString::fromLocal8Bit(name.version);
+        vars["QMAKE_HOST.arch"] << QString::fromLocal8Bit(name.machine);
+    }
+#endif
 }
 
 bool
@@ -1678,28 +1719,12 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QHash<QString, QStrin
     else if(x == "false")
         return false;
 
-    if (x == "unix") {
-        validateModes();
-        return Option::target_mode == Option::TARG_UNIX_MODE
-               || Option::target_mode == Option::TARG_MACX_MODE;
-    } else if (x == "macx" || x == "mac") {
-        validateModes();
-        return Option::target_mode == Option::TARG_MACX_MODE;
-    } else if (x == "win32") {
-        validateModes();
-        return Option::target_mode == Option::TARG_WIN_MODE;
-    }
-
     if (x == "host_build")
         return host_build;
 
     //mkspecs
-    static QString hspec, xspec;
-    resolveSpec(&hspec, Option::mkfile::qmakespec);
-    resolveSpec(&xspec, Option::mkfile::xqmakespec);
-    const QString &spec = host_build ? hspec : xspec;
     QRegExp re(x, Qt::CaseSensitive, QRegExp::Wildcard);
-    if((regex && re.exactMatch(spec)) || (!regex && spec == x))
+    if ((regex && re.exactMatch(short_spec)) || (!regex && short_spec == x))
         return true;
 
     //simple matching
@@ -1752,15 +1777,14 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
     if(flags & IncludeFlagFeature) {
         if(!file.endsWith(Option::prf_ext))
             file += Option::prf_ext;
-        validateModes(); // init dir_sep
-        if(file.indexOf(QLatin1Char('/')) == -1 || !QFile::exists(file)) {
+        {
             QStringList *&feature_roots = all_feature_roots[host_build];
             if(!feature_roots) {
                 feature_roots = new QStringList;
                 qmakeAddCacheClear(qmakeDeleteCacheClear<QStringList>, (void**)&feature_roots);
             }
             if (feature_roots->isEmpty())
-                *feature_roots = qmake_feature_paths(prop, host_build);
+                *feature_roots = qmakeFeaturePaths();
             debug_msg(2, "Looking for feature '%s' in (%s)", file.toLatin1().constData(),
 			feature_roots->join("::").toLatin1().constData());
             int start_root = 0;
@@ -1791,8 +1815,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
         if(place["QMAKE_INTERNAL_INCLUDED_FEATURES"].indexOf(file) != -1)
             return IncludeFeatureAlreadyLoaded;
         place["QMAKE_INTERNAL_INCLUDED_FEATURES"].append(file);
-    }
-    if(QDir::isRelativePath(file)) {
+    } else if (QDir::isRelativePath(file)) {
         QStringList include_roots;
         if(Option::output_dir != qmake_getpwd())
             include_roots << qmake_getpwd();
@@ -1812,10 +1835,6 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
     } else if (!QFile::exists(file)) {
         return IncludeNoExist;
     }
-    if(Option::mkfile::do_preprocess) //nice to see this first..
-        fprintf(stderr, "#switching file %s(%s) - %s:%d\n", (flags & IncludeFlagFeature) ? "load" : "include",
-                file.toLatin1().constData(),
-                parser.file.toLatin1().constData(), parser.line_no);
     debug_msg(1, "Project Parser: %s'ing file %s.", (flags & IncludeFlagFeature) ? "load" : "include",
               file.toLatin1().constData());
 
@@ -1860,6 +1879,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
     }
     parser = pi;
     qmake_setpwd(oldpwd);
+    place["PWD"] = QStringList(qmake_getpwd());
     if(!parsed)
         return IncludeParseFailure;
     return IncludeSuccess;
@@ -3202,9 +3222,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
                     parser.file.toLatin1().constData(), parser.line_no);
             return false;
         }
-        if (args.first() == "recursive") {
-            recursive = true;
-        } else if (args.first() == "host_build") {
+        if (args.first() == "host_build") {
             if (!host_build && isActiveConfig("cross_compile")) {
                 host_build = true;
                 need_restart = true;
@@ -3319,12 +3337,14 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
             if (superfile.isEmpty()) {
                 superfile = Option::output_dir + QLatin1String("/.qmake.super");
                 printf("Info: creating super cache file %s\n", superfile.toLatin1().constData());
+                vars["_QMAKE_SUPER_CACHE_"] << superfile;
             }
             fn = superfile;
         } else {
             if (cachefile.isEmpty()) {
                 cachefile = Option::output_dir + QLatin1String("/.qmake.cache");
                 printf("Info: creating cache file %s\n", cachefile.toLatin1().constData());
+                vars["_QMAKE_CACHE_"] << cachefile;
                 if (cached_build_root.isEmpty()) {
                     cached_build_root = Option::output_dir;
                     cached_source_root = values("_PRO_FILE_PWD_", place).first();
@@ -3642,7 +3662,7 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QHash<QString, QString
                 } else if(var_type == FUNCTION) {
                     replacement = doProjectExpand(var, args, place);
                 } else if(var_type == VAR) {
-                    replacement = values(var, place);
+                    replacement = magicValues(var, place);
                 }
                 if(!(replaced++) && start_var)
                     current = str.left(start_var);
@@ -3717,188 +3737,44 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QHash<QString, QString
     return ret;
 }
 
-QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringList> &place)
+QStringList QMakeProject::magicValues(const QString &_var, const QHash<QString, QStringList> &place) const
 {
     QString var = varMap(_var);
-    if(var == QLatin1String("LITERAL_WHITESPACE")) { //a real space in a token)
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(QLatin1String("\t"));
-    } else if(var == QLatin1String("LITERAL_DOLLAR")) { //a real $
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(QLatin1String("$"));
-    } else if(var == QLatin1String("LITERAL_HASH")) { //a real #
-        var = ".BUILTIN." + var;
-        place[var] = QStringList("#");
-    } else if(var == QLatin1String("OUT_PWD")) { //the out going dir
-        var = ".BUILTIN." + var;
-        place[var] =  QStringList(Option::output_dir);
-    } else if(var == QLatin1String("PWD") ||  //current working dir (of _FILE_)
-              var == QLatin1String("IN_PWD")) {
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(qmake_getpwd());
-    } else if(var == QLatin1String("DIR_SEPARATOR")) {
-        validateModes();
-        var = ".BUILTIN." + var;
-        place[var] =  QStringList(Option::dir_sep);
-    } else if(var == QLatin1String("DIRLIST_SEPARATOR")) {
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(Option::dirlist_sep);
-    } else if(var == QLatin1String("_LINE_")) { //parser line number
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(QString::number(parser.line_no));
+    if (var == QLatin1String("_LINE_")) { //parser line number
+        return QStringList(QString::number(parser.line_no));
     } else if(var == QLatin1String("_FILE_")) { //parser file
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(parser.file);
-    } else if(var == QLatin1String("_DATE_")) { //current date/time
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(QDateTime::currentDateTime().toString());
-    } else if(var == QLatin1String("_PRO_FILE_")) {
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(pfile);
-    } else if(var == QLatin1String("_PRO_FILE_PWD_")) {
-        var = ".BUILTIN." + var;
-        place[var] = QStringList(pfile.isEmpty() ? qmake_getpwd() : QFileInfo(pfile).absolutePath());
-    } else if(var == QLatin1String("_QMAKE_CACHE_")) {
-        var = ".BUILTIN." + var;
-        if(Option::mkfile::do_cache)
-            place[var] = QStringList(cachefile);
-    } else if(var == QLatin1String("_QMAKE_SUPER_CACHE_")) {
-        var = ".BUILTIN." + var;
-        if(Option::mkfile::do_cache && !superfile.isEmpty())
-            place[var] = QStringList(superfile);
-    } else if(var == QLatin1String("TEMPLATE")) {
-        if(!Option::user_template.isEmpty()) {
-            var = ".BUILTIN.USER." + var;
-            place[var] =  QStringList(Option::user_template);
-        } else {
-            QString orig_template, real_template;
-            if(!place[var].isEmpty())
-                orig_template = place[var].first();
-            real_template = orig_template.isEmpty() ? "app" : orig_template;
-            if(!Option::user_template_prefix.isEmpty() && !orig_template.startsWith(Option::user_template_prefix))
-                real_template.prepend(Option::user_template_prefix);
-            if(real_template != orig_template) {
-                var = ".BUILTIN." + var;
-                place[var] = QStringList(real_template);
-            }
-        }
-    } else if(var.startsWith(QLatin1String("QMAKE_HOST."))) {
-        QString ret, type = var.mid(11);
-#if defined(Q_OS_WIN32)
-        if(type == "os") {
-            ret = "Windows";
-        } else if(type == "name") {
-            DWORD name_length = 1024;
-            wchar_t name[1024];
-            if (GetComputerName(name, &name_length))
-                ret = QString::fromWCharArray(name);
-        } else if(type == "version" || type == "version_string") {
-            QSysInfo::WinVersion ver = QSysInfo::WindowsVersion;
-            if(type == "version")
-                ret = QString::number(ver);
-            else if(ver == QSysInfo::WV_Me)
-                ret = "WinMe";
-            else if(ver == QSysInfo::WV_95)
-                ret = "Win95";
-            else if(ver == QSysInfo::WV_98)
-                ret = "Win98";
-            else if(ver == QSysInfo::WV_NT)
-                ret = "WinNT";
-            else if(ver == QSysInfo::WV_2000)
-                ret = "Win2000";
-            else if(ver == QSysInfo::WV_2000)
-                ret = "Win2003";
-            else if(ver == QSysInfo::WV_XP)
-                ret = "WinXP";
-            else if(ver == QSysInfo::WV_VISTA)
-                ret = "WinVista";
-            else
-                ret = "Unknown";
-        } else if(type == "arch") {
-            SYSTEM_INFO info;
-            GetSystemInfo(&info);
-            switch(info.wProcessorArchitecture) {
-#ifdef PROCESSOR_ARCHITECTURE_AMD64
-            case PROCESSOR_ARCHITECTURE_AMD64:
-                ret = "x86_64";
-                break;
-#endif
-            case PROCESSOR_ARCHITECTURE_INTEL:
-                ret = "x86";
-                break;
-            case PROCESSOR_ARCHITECTURE_IA64:
-#ifdef PROCESSOR_ARCHITECTURE_IA32_ON_WIN64
-            case PROCESSOR_ARCHITECTURE_IA32_ON_WIN64:
-#endif
-                ret = "IA64";
-                break;
-            default:
-                ret = "Unknown";
-                break;
-            }
-        }
-#elif defined(Q_OS_UNIX)
-        struct utsname name;
-        if(!uname(&name)) {
-            if(type == "os")
-                ret = name.sysname;
-            else if(type == "name")
-                ret = name.nodename;
-            else if(type == "version")
-                ret = name.release;
-            else if(type == "version_string")
-                ret = name.version;
-            else if(type == "arch")
-                ret = name.machine;
-        }
-#endif
-        var = ".BUILTIN.HOST." + type;
-        place[var] = QStringList(ret);
-    } else if (var == QLatin1String("QMAKE_DIR_SEP")) {
-        if (place[var].isEmpty())
-            return values("DIR_SEPARATOR", place);
-    } else if (var == QLatin1String("QMAKE_EXT_OBJ")) {
-        if (place[var].isEmpty()) {
-            var = ".BUILTIN." + var;
-            place[var] = QStringList(Option::obj_ext);
-        }
-    } else if (var == QLatin1String("QMAKE_QMAKE")) {
-        if (place[var].isEmpty())
-            place[var] = QStringList(
-                !Option::qmake_abslocation.isEmpty()
-                    ? Option::qmake_abslocation
-                    : QLibraryInfo::rawLocation(QLibraryInfo::HostBinariesPath,
-                                                QLibraryInfo::EffectivePaths) + "/qmake");
+        return QStringList(parser.file);
     }
-#if defined(Q_OS_WIN32) && defined(Q_CC_MSVC)
-      else if(var.startsWith(QLatin1String("QMAKE_TARGET."))) {
-            QString ret, type = var.mid(13);
-            if(type == "arch") {
-                QString paths = QString::fromLocal8Bit(qgetenv("PATH"));
-                QString vcBin64 = QString::fromLocal8Bit(qgetenv("VCINSTALLDIR"));
-                if (!vcBin64.endsWith('\\'))
-                    vcBin64.append('\\');
-                vcBin64.append("bin\\amd64");
-                QString vcBinX86_64 = QString::fromLocal8Bit(qgetenv("VCINSTALLDIR"));
-                if (!vcBinX86_64.endsWith('\\'))
-                    vcBinX86_64.append('\\');
-                vcBinX86_64.append("bin\\x86_amd64");
-                if(paths.contains(vcBin64,Qt::CaseInsensitive) || paths.contains(vcBinX86_64,Qt::CaseInsensitive))
-                    ret = "x86_64";
-                else
-                    ret = "x86";
-            }
-            place[var] = QStringList(ret);
-    }
-#endif
-    //qDebug("REPLACE [%s]->[%s]", qPrintable(var), qPrintable(place[var].join("::")));
     return place[var];
 }
 
-bool QMakeProject::isEmpty(const QString &v)
+QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringList> &place)
 {
-    QHash<QString, QStringList>::ConstIterator it = vars.constFind(varMap(v));
+    QString var = varMap(_var);
+    return place[var];
+}
+
+bool QMakeProject::isEmpty(const QString &v) const
+{
+    QHash<QString, QStringList>::ConstIterator it = vars.constFind(v);
     return it == vars.constEnd() || it->isEmpty();
+}
+
+void
+QMakeProject::dump() const
+{
+    QStringList out;
+    for (QHash<QString, QStringList>::ConstIterator it = vars.begin(); it != vars.end(); ++it) {
+        if (!it.key().startsWith('.')) {
+            QString str = it.key() + " =";
+            foreach (const QString &v, it.value())
+                str += ' ' + quoteValue(v);
+            out << str;
+        }
+    }
+    out.sort();
+    foreach (const QString &v, out)
+        puts(qPrintable(v));
 }
 
 QT_END_NAMESPACE

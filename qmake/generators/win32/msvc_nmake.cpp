@@ -59,8 +59,8 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
 {
     writeHeader(t);
     if(!project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty()) {
-        QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
-        for(QStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
+        const QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
+        for (QStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
             t << *it << " ";
         t << "all first clean:" << "\n\t"
           << "@echo \"Some of the required modules ("
@@ -332,8 +332,8 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         }
         QString srcs[] = { QString("SOURCES"), QString("GENERATED_SOURCES"), QString() };
         for(int x = 0; !srcs[x].isNull(); x++) {
-            QStringList &l = project->values(srcs[x]);
-            for(QStringList::Iterator sit = l.begin(); sit != l.end(); ++sit) {
+            const QStringList &l = project->values(srcs[x]);
+            for (QStringList::ConstIterator sit = l.begin(); sit != l.end(); ++sit) {
                 QString sep = "\\";
                 if((*sit).indexOf(sep) == -1)
                     sep = "/";

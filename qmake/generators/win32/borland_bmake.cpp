@@ -57,7 +57,7 @@ BorlandMakefileGenerator::writeMakefile(QTextStream &t)
 {
     writeHeader(t);
     if(!project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty()) {
-        QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
+        const QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
         for(QStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
             t << *it << " ";
         t << "all first clean:" << "\n\t"
