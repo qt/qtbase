@@ -39,7 +39,7 @@ win32:!contains(QT_CONFIG, directwrite) {
 *-g++*|linux-icc*|*-clang*|*-qcc* {
         sse2 {
             sse2_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
-            sse2_compiler.commands += $$QMAKE_CFLAGS_SSE2
+            !contains(QT_CPU_FEATURES, sse2):sse2_compiler.commands += $$QMAKE_CFLAGS_SSE2
             sse2_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             sse2_compiler.dependency_type = TYPE_C
             sse2_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -51,7 +51,7 @@ win32:!contains(QT_CONFIG, directwrite) {
         }
         ssse3 {
             ssse3_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
-            ssse3_compiler.commands += $$QMAKE_CFLAGS_SSSE3
+            !contains(QT_CPU_FEATURES, ssse3):ssse3_compiler.commands += $$QMAKE_CFLAGS_SSSE3
             ssse3_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             ssse3_compiler.dependency_type = TYPE_C
             ssse3_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -63,7 +63,7 @@ win32:!contains(QT_CONFIG, directwrite) {
         }
         avx {
             avx_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
-            avx_compiler.commands += $$QMAKE_CFLAGS_AVX
+            !contains(QT_CPU_FEATURES, avx):avx_compiler.commands += $$QMAKE_CFLAGS_AVX
             avx_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             avx_compiler.dependency_type = TYPE_C
             avx_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -79,7 +79,7 @@ win32:!contains(QT_CONFIG, directwrite) {
             DRAWHELPER_NEON_ASM_FILES = $$NEON_ASM
 
             neon_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
-            neon_compiler.commands += $$QMAKE_CFLAGS_NEON
+            !contains(QT_CPU_FEATURES, neon):neon_compiler.commands += $$QMAKE_CFLAGS_NEON
             neon_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             neon_compiler.dependency_type = TYPE_C
             neon_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -132,7 +132,7 @@ win32:!contains(QT_CONFIG, directwrite) {
 } else:win32-msvc* {
         sse2 {
             sse2_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
-            sse2_compiler.commands += $$QMAKE_CFLAGS_SSE2
+            !contains(QT_CPU_FEATURES, sse2):sse2_compiler.commands += $$QMAKE_CFLAGS_SSE2
             sse2_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT}
             sse2_compiler.dependency_type = TYPE_C
             sse2_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -144,7 +144,9 @@ win32:!contains(QT_CONFIG, directwrite) {
         }
         ssse3 {
             ssse3_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
-            ssse3_compiler.commands += $$QMAKE_CFLAGS_SSSE3
+            # MSVC doesn't have an option for SSSE3 specifically, so check if SSE2 is
+            # already enabled instead
+            !contains(QT_CPU_FEATURES, sse2):ssse3_compiler.commands += $$QMAKE_CFLAGS_SSSE3
             ssse3_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT}
             ssse3_compiler.dependency_type = TYPE_C
             ssse3_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -156,7 +158,7 @@ win32:!contains(QT_CONFIG, directwrite) {
         }
         avx {
             avx_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS) -D_M_AVX
-            avx_compiler.commands += $$QMAKE_CFLAGS_AVX
+            !contains(QT_CPU_FEATURES, avx):avx_compiler.commands += $$QMAKE_CFLAGS_AVX
             avx_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT}
             avx_compiler.dependency_type = TYPE_C
             avx_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
