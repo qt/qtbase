@@ -173,8 +173,10 @@ int runQMake(int argc, char **argv)
                 exit_val = 3;
                 continue;
             }
-            if(Option::mkfile::do_preprocess) //no need to create makefile
-                continue;
+            if (Option::mkfile::do_preprocess) {
+                project.dump();
+                continue; //no need to create makefile
+            }
         }
 
         bool success = true;

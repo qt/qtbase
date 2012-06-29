@@ -67,9 +67,7 @@ public:
 
     static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
     static QString execute(const QString &command, int *returnCode = 0);
-    static bool cpdir(const QString &srcDir,
-                      const QString &destDir,
-                      const QString &includeSrcDir = QString());
+    static bool cpdir(const QString &srcDir, const QString &destDir);
     static bool rmdir(const QString &name);
 
 private:

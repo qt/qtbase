@@ -60,7 +60,6 @@ QString Option::pkgcfg_ext;
 QString Option::ui_ext;
 QStringList Option::h_ext;
 QString Option::cpp_moc_ext;
-QString Option::h_moc_ext;
 QStringList Option::cpp_ext;
 QStringList Option::c_ext;
 QString Option::obj_ext;
@@ -70,10 +69,8 @@ QString Option::pro_ext;
 QString Option::dir_sep;
 QString Option::dirlist_sep;
 QString Option::h_moc_mod;
-QString Option::cpp_moc_mod;
 QString Option::yacc_mod;
 QString Option::lex_mod;
-QString Option::sysenv_mod;
 QString Option::res_ext;
 char Option::field_sep;
 
@@ -86,15 +83,11 @@ int Option::warn_level = WarnLogic | WarnDeprecated;
 int Option::debug_level = 0;
 QFile Option::output;
 QString Option::output_dir;
-Option::QMAKE_RECURSIVE Option::recursive = Option::QMAKE_RECURSIVE_DEFAULT;
+bool Option::recursive = false;
 QStringList Option::before_user_vars;
 QStringList Option::after_user_vars;
 QString Option::user_template;
 QString Option::user_template_prefix;
-QStringList Option::shellPath;
-Option::HOST_MODE Option::host_mode = Option::HOST_UNKNOWN_MODE;
-Option::TARG_MODE Option::target_mode = Option::TARG_UNKNOWN_MODE;
-bool Option::target_mode_overridden = false;
 
 //QMAKE_*_PROPERTY stuff
 QStringList Option::prop::properties;
@@ -232,7 +225,7 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             if(x == 1) {
                 bool specified = true;
                 if(opt == "project") {
-                    Option::recursive = Option::QMAKE_RECURSIVE_YES;
+                    Option::recursive = true;
                     Option::qmake_mode = Option::QMAKE_GENERATE_PROJECT;
                 } else if(opt == "prl") {
                     Option::mkfile::do_deps = false;
@@ -261,23 +254,10 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                 Option::user_template = argv[++x];
             } else if(opt == "tp" || opt == "template_prefix") {
                 Option::user_template_prefix = argv[++x];
-            } else if(opt == "macx") {
-                fprintf(stderr, "-macx is deprecated.\n");
-                Option::host_mode = HOST_MACX_MODE;
-                Option::target_mode = TARG_MACX_MODE;
-                Option::target_mode_overridden = true;
             } else if(opt == "unix") {
-                fprintf(stderr, "-unix is deprecated.\n");
-                Option::host_mode = HOST_UNIX_MODE;
-                Option::target_mode = TARG_UNIX_MODE;
-                Option::target_mode_overridden = true;
+                Option::dir_sep = "/";
             } else if(opt == "win32") {
-                fprintf(stderr, "-win32 is deprecated.\n");
-                Option::host_mode = HOST_WIN_MODE;
-                Option::target_mode = TARG_WIN_MODE;
-                Option::target_mode_overridden = true;
-            } else if(opt == "integrity") {
-                Option::target_mode = TARG_INTEGRITY_MODE;
+                Option::dir_sep = "\\";
             } else if(opt == "d") {
                 Option::debug_level++;
             } else if(opt == "version" || opt == "v" || opt == "-version") {
@@ -303,9 +283,9 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             } else if(opt == "Wnone") {
                 Option::warn_level = WarnNone;
             } else if(opt == "r" || opt == "recursive") {
-                Option::recursive = Option::QMAKE_RECURSIVE_YES;
+                Option::recursive = true;
             } else if(opt == "nr" || opt == "norecursive") {
-                Option::recursive = Option::QMAKE_RECURSIVE_NO;
+                Option::recursive = false;
             } else if(opt == "config") {
                 user_configs += argv[++x];
             } else {
@@ -322,7 +302,6 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                     } else if(opt == "nodependheuristics") {
                         Option::mkfile::do_dep_heuristics = false;
                     } else if(opt == "E") {
-                        fprintf(stderr, "-E is deprecated. Use -d instead.\n");
                         Option::mkfile::do_preprocess = true;
                     } else if(opt == "cache") {
                         Option::mkfile::cachefile = argv[++x];
@@ -392,58 +371,19 @@ Option::parseCommandLine(int argc, char **argv, int skip)
     return Option::QMAKE_CMDLINE_SUCCESS;
 }
 
-#ifdef Q_OS_WIN
-static QStringList detectShellPath()
-{
-    QStringList paths;
-    QString path = qgetenv("PATH");
-    QStringList pathlist = path.toLower().split(";");
-    for (int i = 0; i < pathlist.count(); i++) {
-        QString maybeSh = pathlist.at(i) + "/sh.exe";
-        if (QFile::exists(maybeSh)) {
-            paths.append(maybeSh);
-        }
-    }
-    return paths;
-}
-#endif
-
 int
 Option::init(int argc, char **argv)
 {
     Option::application_argv0 = 0;
-    Option::cpp_moc_mod = "";
-    Option::h_moc_mod = "moc_";
-    Option::lex_mod = "_lex";
-    Option::yacc_mod = "_yacc";
-    Option::prl_ext = ".prl";
-    Option::libtool_ext = ".la";
-    Option::pkgcfg_ext = ".pc";
     Option::prf_ext = ".prf";
-    Option::ui_ext = ".ui";
-    Option::h_ext << ".h" << ".hpp" << ".hh" << ".hxx";
-    Option::c_ext << ".c";
-#ifndef Q_OS_WIN
-    Option::h_ext << ".H";
-#endif
-    Option::cpp_moc_ext = ".moc";
-    Option::h_moc_ext = ".cpp";
-    Option::cpp_ext << ".cpp" << ".cc" << ".cxx";
-#ifndef Q_OS_WIN
-    Option::cpp_ext << ".C";
-#endif
-    Option::lex_ext = ".l";
-    Option::yacc_ext = ".y";
     Option::pro_ext = ".pro";
 #ifdef Q_OS_WIN
+    Option::dir_sep = "\\";
     Option::dirlist_sep = ";";
-    Option::shellPath = detectShellPath();
-    Option::res_ext = ".res";
 #else
+    Option::dir_sep = "/";
     Option::dirlist_sep = ":";
-    Option::shellPath = QStringList("sh");
 #endif
-    Option::sysenv_mod = "QMAKE_ENV_";
     Option::field_sep = ' ';
 
     if(argc && argv) {
@@ -482,6 +422,14 @@ Option::init(int argc, char **argv)
         }
         if(!Option::qmake_abslocation.isNull())
             Option::qmake_abslocation = QDir::cleanPath(Option::qmake_abslocation);
+        else // This is rather unlikely to ever happen on a modern system ...
+            Option::qmake_abslocation = QLibraryInfo::rawLocation(QLibraryInfo::HostBinariesPath,
+                                                                  QLibraryInfo::EffectivePaths) +
+#ifdef Q_OS_WIN
+                    "/qmake.exe";
+#else
+                    "/qmake";
+#endif
     } else {
         Option::qmake_mode = Option::QMAKE_GENERATE_MAKEFILE;
     }
@@ -562,34 +510,9 @@ Option::init(int argc, char **argv)
             }
 #endif
         }
-    } else if (Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT) {
-#if defined(Q_OS_MAC)
-        Option::host_mode = Option::HOST_MACX_MODE;
-        Option::target_mode = Option::TARG_MACX_MODE;
-#elif defined(Q_OS_UNIX)
-        Option::host_mode = Option::HOST_UNIX_MODE;
-        Option::target_mode = Option::TARG_UNIX_MODE;
-#else
-        Option::host_mode = Option::HOST_WIN_MODE;
-        Option::target_mode = Option::TARG_WIN_MODE;
-#endif
     }
 
-    //defaults for globals
-    if (Option::host_mode != Option::HOST_UNKNOWN_MODE)
-        applyHostMode();
     return QMAKE_CMDLINE_SUCCESS;
-}
-
-void Option::applyHostMode()
-{
-   if (Option::host_mode == Option::HOST_WIN_MODE) {
-       Option::dir_sep = "\\";
-       Option::obj_ext = ".obj";
-   } else {
-       Option::dir_sep = "/";
-       Option::obj_ext = ".o";
-   }
 }
 
 void Option::prepareProject(const QString &pfile)
@@ -617,54 +540,27 @@ void Option::prepareProject(const QString &pfile)
 
 bool Option::postProcessProject(QMakeProject *project)
 {
-    Option::cpp_ext = project->variables()["QMAKE_EXT_CPP"];
-    if(cpp_ext.isEmpty())
-        cpp_ext << ".cpp"; //something must be there
-    Option::h_ext = project->variables()["QMAKE_EXT_H"];
-    if(h_ext.isEmpty())
-        h_ext << ".h";
-    Option::c_ext = project->variables()["QMAKE_EXT_C"];
-    if(c_ext.isEmpty())
-        c_ext << ".c"; //something must be there
+    Option::cpp_ext = project->values("QMAKE_EXT_CPP");
+    Option::h_ext = project->values("QMAKE_EXT_H");
+    Option::c_ext = project->values("QMAKE_EXT_C");
+    Option::res_ext = project->first("QMAKE_EXT_RES");
+    Option::pkgcfg_ext = project->first("QMAKE_EXT_PKGCONFIG");
+    Option::libtool_ext = project->first("QMAKE_EXT_LIBTOOL");
+    Option::prl_ext = project->first("QMAKE_EXT_PRL");
+    Option::ui_ext = project->first("QMAKE_EXT_UI");
+    Option::cpp_moc_ext = project->first("QMAKE_EXT_CPP_MOC");
+    Option::lex_ext = project->first("QMAKE_EXT_LEX");
+    Option::yacc_ext = project->first("QMAKE_EXT_YACC");
+    Option::obj_ext = project->first("QMAKE_EXT_OBJ");
+    Option::h_moc_mod = project->first("QMAKE_H_MOD_MOC");
+    Option::lex_mod = project->first("QMAKE_MOD_LEX");
+    Option::yacc_mod = project->first("QMAKE_MOD_YACC");
+    Option::dir_sep = project->first("QMAKE_DIR_SEP");
 
-    if(!project->isEmpty("QMAKE_EXT_RES"))
-        Option::res_ext = project->first("QMAKE_EXT_RES");
-    if(!project->isEmpty("QMAKE_EXT_PKGCONFIG"))
-        Option::pkgcfg_ext = project->first("QMAKE_EXT_PKGCONFIG");
-    if(!project->isEmpty("QMAKE_EXT_LIBTOOL"))
-        Option::libtool_ext = project->first("QMAKE_EXT_LIBTOOL");
-    if(!project->isEmpty("QMAKE_EXT_PRL"))
-        Option::prl_ext = project->first("QMAKE_EXT_PRL");
-    if(!project->isEmpty("QMAKE_EXT_PRF"))
-        Option::prf_ext = project->first("QMAKE_EXT_PRF");
-    if(!project->isEmpty("QMAKE_EXT_JS"))
-        Option::prf_ext = project->first("QMAKE_EXT_JS");
-    if(!project->isEmpty("QMAKE_EXT_UI"))
-        Option::ui_ext = project->first("QMAKE_EXT_UI");
-    if(!project->isEmpty("QMAKE_EXT_CPP_MOC"))
-        Option::cpp_moc_ext = project->first("QMAKE_EXT_CPP_MOC");
-    if(!project->isEmpty("QMAKE_EXT_H_MOC"))
-        Option::h_moc_ext = project->first("QMAKE_EXT_H_MOC");
-    if(!project->isEmpty("QMAKE_EXT_LEX"))
-        Option::lex_ext = project->first("QMAKE_EXT_LEX");
-    if(!project->isEmpty("QMAKE_EXT_YACC"))
-        Option::yacc_ext = project->first("QMAKE_EXT_YACC");
-    if(!project->isEmpty("QMAKE_EXT_OBJ"))
-        Option::obj_ext = project->first("QMAKE_EXT_OBJ");
-    if(!project->isEmpty("QMAKE_H_MOD_MOC"))
-        Option::h_moc_mod = project->first("QMAKE_H_MOD_MOC");
-    if(!project->isEmpty("QMAKE_CPP_MOD_MOC"))
-        Option::cpp_moc_mod = project->first("QMAKE_CPP_MOD_MOC");
-    if(!project->isEmpty("QMAKE_MOD_LEX"))
-        Option::lex_mod = project->first("QMAKE_MOD_LEX");
-    if(!project->isEmpty("QMAKE_MOD_YACC"))
-        Option::yacc_mod = project->first("QMAKE_MOD_YACC");
-    if(!project->isEmpty("QMAKE_DIR_SEP"))
-        Option::dir_sep = project->first("QMAKE_DIR_SEP");
-    if(!project->isEmpty("QMAKE_DIRLIST_SEP"))
-        Option::dirlist_sep = project->first("QMAKE_DIRLIST_SEP");
-    if(!project->isEmpty("QMAKE_MOD_SYSTEM_ENV"))
-        Option::sysenv_mod = project->first("QMAKE_MOD_SYSTEM_ENV");
+    if (Option::output_dir.startsWith(project->buildRoot()))
+        Option::mkfile::cachefile_depth =
+                Option::output_dir.mid(project->buildRoot().length()).count('/');
+
     return true;
 }
 

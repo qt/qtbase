@@ -1,17 +1,17 @@
-CONFIG = qt thread
+VAR = qt thread
 
 defineTest(testReplace) {
     !isEqual(1, $$2):message("FAILED: $$3: got $$1, expected $${2}.")
 }
 
 #count
-!count( CONFIG, 2 ) {
-   message( "FAILED: count function: $$CONFIG" )
+!count( VAR, 2 ) {
+   message( "FAILED: count function: $$VAR" )
 }
 
 #contains
-!contains( CONFIG, thread ) {
-   message( "FAILED: contains function: $$CONFIG" )
+!contains( VAR, thread ) {
+   message( "FAILED: contains function: $$VAR" )
 }
 
 #exists
@@ -20,8 +20,8 @@ defineTest(testReplace) {
 }
 
 #isEmpty
-isEmpty( CONFIG ) {
-   message( "FAILED: isEmpty function: $CONFIG" )
+isEmpty( VAR ) {
+   message( "FAILED: isEmpty function: $VAR" )
 }
 
 #files

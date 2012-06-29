@@ -80,18 +80,15 @@ struct Option
     static QStringList h_ext;
     static QStringList cpp_ext;
     static QStringList c_ext;
-    static QString h_moc_ext;
     static QString cpp_moc_ext;
     static QString obj_ext;
     static QString lex_ext;
     static QString yacc_ext;
     static QString h_moc_mod;
-    static QString cpp_moc_mod;
     static QString lex_mod;
     static QString yacc_mod;
     static QString dir_sep;
     static QString dirlist_sep;
-    static QString sysenv_mod;
     static QString pro_ext;
     static QString res_ext;
     static char field_sep;
@@ -106,7 +103,6 @@ struct Option
 
     //both of these must be called..
     static int init(int argc=0, char **argv=0); //parse cmdline
-    static void applyHostMode();
     static void prepareProject(const QString &pfile);
     static bool postProcessProject(QMakeProject *);
 
@@ -169,17 +165,9 @@ struct Option
     static QString output_dir;
     static int debug_level;
     static int warn_level;
-    enum QMAKE_RECURSIVE { QMAKE_RECURSIVE_DEFAULT, QMAKE_RECURSIVE_YES, QMAKE_RECURSIVE_NO };
-    static QMAKE_RECURSIVE recursive;
+    static bool recursive;
     static QStringList before_user_vars, after_user_vars;
-    enum HOST_MODE { HOST_UNKNOWN_MODE, HOST_UNIX_MODE, HOST_WIN_MODE, HOST_MACX_MODE };
-    static HOST_MODE host_mode;
-    enum TARG_MODE { TARG_UNKNOWN_MODE, TARG_UNIX_MODE, TARG_WIN_MODE, TARG_MACX_MODE,
-                     TARG_INTEGRITY_MODE };
-    static TARG_MODE target_mode;
-    static bool target_mode_overridden;
     static QString user_template, user_template_prefix;
-    static QStringList shellPath;
 
     //QMAKE_*_PROPERTY options
     struct prop {

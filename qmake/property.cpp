@@ -104,15 +104,7 @@ void QMakeProperty::initSettings()
 }
 
 QString
-QMakeProperty::keyBase(bool version) const
-{
-    if (version)
-        return QString(qmake_version()) + "/";
-    return QString();
-}
-
-QString
-QMakeProperty::value(QString v, bool just_check)
+QMakeProperty::value(const QString &v)
 {
     QString val = m_values.value(v);
     if (!val.isNull())
@@ -127,56 +119,31 @@ QMakeProperty::value(QString v, bool just_check)
 #endif
 
     initSettings();
-    int slash = v.lastIndexOf('/');
-    QVariant var = settings->value(keyBase(slash == -1) + v);
-    bool ok = var.isValid();
-    QString ret = var.toString();
-    if(!ok) {
-        QString version = qmake_version();
-        if(slash != -1) {
-            version = v.left(slash-1);
-            v = v.mid(slash+1);
-        }
-        settings->beginGroup(keyBase(false));
-        QStringList subs = settings->childGroups();
-        settings->endGroup();
-        subs.sort();
-        for (int x = subs.count() - 1; x >= 0; x--) {
-            QString s = subs[x];
-            if(s.isEmpty() || s > version)
-                continue;
-            var = settings->value(keyBase(false) + s + "/" + v);
-            ok = var.isValid();
-            ret = var.toString();
-            if (ok) {
-                if(!just_check)
-                    debug_msg(1, "Fell back from %s -> %s for '%s'.", version.toLatin1().constData(),
-                              s.toLatin1().constData(), v.toLatin1().constData());
-                return ret;
-            }
-        }
-    }
-    return ok ? ret : QString();
+    if (!settings->contains(v))
+        return settings->value("2.01a/" + v).toString(); // Backwards compat
+    return settings->value(v).toString();
 }
 
 bool
 QMakeProperty::hasValue(QString v)
 {
-    return !value(v, true).isNull();
+    return !value(v).isNull();
 }
 
 void
 QMakeProperty::setValue(QString var, const QString &val)
 {
     initSettings();
-    settings->setValue(keyBase() + var, val);
+    settings->setValue(var, val);
+    settings->remove("2.01a/" + var); // Backwards compat
 }
 
 void
 QMakeProperty::remove(const QString &var)
 {
     initSettings();
-    settings->remove(keyBase() + var);
+    settings->remove(var);
+    settings->remove("2.01a/" + var); // Backwards compat
 }
 
 bool
@@ -186,23 +153,14 @@ QMakeProperty::exec()
     if(Option::qmake_mode == Option::QMAKE_QUERY_PROPERTY) {
         if(Option::prop::properties.isEmpty()) {
             initSettings();
-            settings->beginGroup(keyBase(false));
-            QStringList subs = settings->childGroups();
+            QStringList keys = settings->childKeys();
+            settings->beginGroup("2.01a");
+            keys += settings->childKeys();
             settings->endGroup();
-            subs.sort();
-            for(int x = subs.count() - 1; x >= 0; x--) {
-                QString s = subs[x];
-                if(s.isEmpty())
-                    continue;
-                settings->beginGroup(keyBase(false) + s);
-                QStringList keys = settings->childKeys();
-                settings->endGroup();
-                for(QStringList::ConstIterator it2 = keys.begin(); it2 != keys.end(); it2++) {
-                    QString ret = settings->value(keyBase(false) + s + "/" + (*it2)).toString();
-                    if(s != qmake_version())
-                        fprintf(stdout, "%s/", s.toLatin1().constData());
-                    fprintf(stdout, "%s:%s\n", (*it2).toLatin1().constData(), ret.toLatin1().constData());
-                }
+            keys.removeDuplicates();
+            foreach (const QString &key, keys) {
+                QString val = settings->value(settings->contains(key) ? key : "2.01a/" + key).toString();
+                fprintf(stdout, "%s:%s\n", qPrintable(key), qPrintable(val));
             }
             QStringList specialProps;
             for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++)

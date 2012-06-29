@@ -454,21 +454,12 @@ QString Environment::execute(const QString &command, int *returnCode)
 /*!
     Copies the \a srcDir contents into \a destDir.
 
-    If \a includeSrcDir is not empty, any files with 'h', 'prf', or 'conf' suffixes
-    will not be copied over from \a srcDir. Instead a new file will be created
-    in \a destDir with the same name and that file will include a file with the
-    same name from the \a includeSrcDir using relative path and appropriate
-    syntax for the file type.
-
     Returns true if copying was successful.
 */
-bool Environment::cpdir(const QString &srcDir,
-                        const QString &destDir,
-                        const QString &includeSrcDir)
+bool Environment::cpdir(const QString &srcDir, const QString &destDir)
 {
     QString cleanSrcName = QDir::cleanPath(srcDir);
     QString cleanDstName = QDir::cleanPath(destDir);
-    QString cleanIncludeName = QDir::cleanPath(includeSrcDir);
 
 #ifdef CONFIGURE_DEBUG_CP_DIR
     qDebug() << "Attempt to cpdir " << cleanSrcName << "->" << cleanDstName;
@@ -480,59 +471,21 @@ bool Environment::cpdir(const QString &srcDir,
 
     bool result = true;
     QDir dir = QDir(cleanSrcName);
-    QDir destinationDir = QDir(cleanDstName);
     QFileInfoList allEntries = dir.entryInfoList(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot);
     for (int i = 0; result && (i < allEntries.count()); ++i) {
         QFileInfo entry = allEntries.at(i);
 	bool intermediate = true;
         if (entry.isDir()) {
-            QString newIncSrcDir;
-            if (!includeSrcDir.isEmpty())
-                newIncSrcDir = QString("%1/%2").arg(cleanIncludeName).arg(entry.fileName());
-
             intermediate = cpdir(QString("%1/%2").arg(cleanSrcName).arg(entry.fileName()),
-                                 QString("%1/%2").arg(cleanDstName).arg(entry.fileName()),
-                                 newIncSrcDir);
+                                 QString("%1/%2").arg(cleanDstName).arg(entry.fileName()));
         } else {
             QString destFile = QString("%1/%2").arg(cleanDstName).arg(entry.fileName());
 #ifdef CONFIGURE_DEBUG_CP_DIR
 	    qDebug() << "About to cp (file)" << entry.absoluteFilePath() << "->" << destFile;
 #endif
 	    QFile::remove(destFile);
-            QString suffix = entry.suffix();
-            if (!includeSrcDir.isEmpty() && (suffix == "prf" || suffix == "conf" || suffix == "h")) {
-                QString relativeIncludeFilePath = QString("%1/%2").arg(cleanIncludeName).arg(entry.fileName());
-                relativeIncludeFilePath = destinationDir.relativeFilePath(relativeIncludeFilePath);
-#ifdef CONFIGURE_DEBUG_CP_DIR
-                qDebug() << "...instead generate relative include to" << relativeIncludeFilePath;
-#endif
-                QFile currentFile(destFile);
-                if (currentFile.open(QFile::WriteOnly | QFile::Text)) {
-                    QTextStream fileStream;
-                    fileStream.setDevice(&currentFile);
-
-                    if (suffix == "prf" || suffix == "conf") {
-                        if (entry.fileName() == "qmake.conf") {
-                            // While QMAKESPEC_ORIGINAL being relative or absolute doesn't matter for the
-                            // primary use of this variable by qmake to identify the original mkspec, the
-                            // variable is also used for few special cases where the absolute path is required.
-                            // Conversely, the include of the original qmake.conf must be done using relative path,
-                            // as some Qt binary deployments are done in a manner that doesn't allow for patching
-                            // the paths at the installation time.
-                            fileStream << "QMAKESPEC_ORIGINAL=" << cleanSrcName << endl << endl;
-                        }
-                        fileStream << "include(" << relativeIncludeFilePath << ")" << endl << endl;
-                    } else if (suffix == "h") {
-                        fileStream << "#include \"" << relativeIncludeFilePath << "\"" << endl << endl;
-                    }
-
-                    fileStream.flush();
-                    currentFile.close();
-                }
-            } else {
-                intermediate = QFile::copy(entry.absoluteFilePath(), destFile);
-                SetFileAttributes((wchar_t*)destFile.utf16(), FILE_ATTRIBUTE_NORMAL);
-            }
+            intermediate = QFile::copy(entry.absoluteFilePath(), destFile);
+            SetFileAttributes((wchar_t*)destFile.utf16(), FILE_ATTRIBUTE_NORMAL);
         }
 	if(!intermediate) {
 	    qDebug() << "cpdir: Failure for " << entry.fileName() << entry.isDir();

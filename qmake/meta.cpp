@@ -142,8 +142,8 @@ QMakeMetaInfo::readLibtoolFile(const QString &f)
         dirf = "";
     else if(!dirf.isEmpty() && !dirf.endsWith(Option::output_dir))
         dirf += QLatin1Char('/');
-    QHash<QString, QStringList> &v = proj.variables();
-    for(QHash<QString, QStringList>::Iterator it = v.begin(); it != v.end(); ++it) {
+    const QHash<QString, QStringList> &v = proj.variables();
+    for (QHash<QString, QStringList>::ConstIterator it = v.begin(); it != v.end(); ++it) {
         QStringList lst = it.value();
         if(lst.count() == 1 && (lst.first().startsWith("'") || lst.first().startsWith("\"")) &&
            lst.first().endsWith(QString(lst.first()[0])))

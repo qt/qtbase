@@ -77,7 +77,7 @@ ProjectGenerator::init()
     verifyCompilers();
 
     project->read(QMakeProject::ReadFeatures);
-    project->variables()["CONFIG"].clear();
+    project->values("CONFIG").clear();
 
     QHash<QString, QStringList> &v = project->variables();
     QString templ = Option::user_template.isEmpty() ? QString("app") : Option::user_template;
@@ -105,7 +105,7 @@ ProjectGenerator::init()
                     add_depend = true;
                     if(dir.right(1) != Option::dir_sep)
                         dir += Option::dir_sep;
-                    if(Option::recursive == Option::QMAKE_RECURSIVE_YES) {
+                    if (Option::recursive) {
                         QStringList files = QDir(dir).entryList(QDir::Files);
                         for(int i = 0; i < (int)files.count(); i++) {
                             if(files[i] != "." && files[i] != "..")
@@ -132,7 +132,7 @@ ProjectGenerator::init()
                     dir = regex.left(s+1);
                     regex = regex.right(regex.length() - (s+1));
                 }
-                if(Option::recursive == Option::QMAKE_RECURSIVE_YES) {
+                if (Option::recursive) {
                     QStringList entries = QDir(dir).entryList(QDir::Dirs);
                     for(int i = 0; i < (int)entries.count(); i++) {
                         if(entries[i] != "." && entries[i] != "..") {
@@ -187,7 +187,7 @@ ProjectGenerator::init()
                                 subdirs.append(nd);
                         }
                     }
-                    if(Option::recursive == Option::QMAKE_RECURSIVE_YES) {
+                    if (Option::recursive) {
                         QStringList dirs = QDir(newdir).entryList(QDir::Dirs);
                         for(int i = 0; i < (int)dirs.count(); i++) {
                             QString nd = fileFixify(newdir + QDir::separator() + dirs[i]);
@@ -224,8 +224,7 @@ ProjectGenerator::init()
                                 }
                             }
                         }
-                        if(Option::recursive == Option::QMAKE_RECURSIVE_YES
-                           && !knownDirs.contains(newdir, Qt::CaseInsensitive))
+                        if (Option::recursive && !knownDirs.contains(newdir, Qt::CaseInsensitive))
                             knownDirs.append(newdir);
                     }
                 }
@@ -297,13 +296,13 @@ ProjectGenerator::init()
     }
 
     //strip out files that are actually output from internal compilers (ie temporary files)
-    const QStringList &quc = project->variables()["QMAKE_EXTRA_COMPILERS"];
+    const QStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
     for(QStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
-        QString tmp_out = project->variables()[(*it) + ".output"].first();
+        QString tmp_out = project->first((*it) + ".output");
         if(tmp_out.isEmpty())
             continue;
 
-        QStringList var_out = project->variables()[(*it) + ".variable_out"];
+        QStringList var_out = project->values((*it) + ".variable_out");
         bool defaults = var_out.isEmpty();
         for(int i = 0; i < var_out.size(); ++i) {
             QString v = var_out.at(i);
@@ -317,15 +316,15 @@ ProjectGenerator::init()
             var_out << "HEADERS";
             var_out << "FORMS";
         }
-        const QStringList &tmp = project->variables()[(*it) + ".input"];
+        const QStringList &tmp = project->values((*it) + ".input");
         for(QStringList::ConstIterator it2 = tmp.begin(); it2 != tmp.end(); ++it2) {
-            QStringList &inputs = project->variables()[(*it2)];
+            QStringList &inputs = project->values(*it2);
             for(QStringList::Iterator input = inputs.begin(); input != inputs.end(); ++input) {
                 QString path = replaceExtraCompilerVariables(tmp_out, (*input), QString());
                 path = fixPathToQmake(path).section('/', -1);
                 for(int i = 0; i < var_out.size(); ++i) {
                     QString v = var_out.at(i);
-                    QStringList &list = project->variables()[v];
+                    QStringList &list = project->values(v);
                     for(int src = 0; src < list.size(); ) {
                         if(list[src] == path || list[src].endsWith("/" + path))
                             list.removeAt(src);
@@ -356,7 +355,7 @@ ProjectGenerator::writeMakefile(QTextStream &t)
         QString ofn = QFileInfo(static_cast<QFile *>(t.device())->fileName()).completeBaseName();
         if (ofn.isEmpty() || ofn == "-")
             ofn = "unknown";
-        project->variables()["TARGET_ASSIGN"] = QStringList(ofn);
+        project->values("TARGET_ASSIGN") = QStringList(ofn);
 
         t << getWritableVar("TARGET_ASSIGN")
           << getWritableVar("CONFIG", false)
@@ -384,8 +383,8 @@ ProjectGenerator::addConfig(const QString &cfg, bool add)
     QString where = "CONFIG";
     if(!add)
         where = "CONFIG_REMOVE";
-    if(!project->variables()[where].contains(cfg)) {
-        project->variables()[where] += cfg;
+    if (!project->values(where).contains(cfg)) {
+        project->values(where) += cfg;
         return true;
     }
     return false;
@@ -439,7 +438,7 @@ ProjectGenerator::addFile(QString file)
 
     QString newfile = fixPathToQmake(fileFixify(file));
 
-    QStringList &endList = project->variables()[where];
+    QStringList &endList = project->values(where);
     if(!endList.contains(newfile, Qt::CaseInsensitive)) {
         endList += newfile;
         return true;
@@ -450,7 +449,7 @@ ProjectGenerator::addFile(QString file)
 QString
 ProjectGenerator::getWritableVar(const QString &v, bool)
 {
-    QStringList &vals = project->variables()[v];
+    QStringList &vals = project->values(v);
     if(vals.isEmpty())
         return "";
 

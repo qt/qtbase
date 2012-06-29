@@ -104,7 +104,7 @@ BuildsMetaMakefileGenerator::init()
         return false;
     init_flag = true;
 
-    const QStringList &builds = project->variables()["BUILDS"];
+    const QStringList &builds = project->values("BUILDS");
     bool use_single_build = builds.isEmpty();
     if(builds.count() > 1 && Option::output.fileName() == "-") {
         use_single_build = true;
@@ -214,17 +214,6 @@ BuildsMetaMakefileGenerator::write(const QString &oldpwd)
             if(!ret)
                 Option::output.remove();
         }
-
-        // debugging
-        if(Option::debug_level) {
-            debug_msg(1, "Dumping all variables:");
-            QHash<QString, QStringList> &vars = project->variables();
-            for(QHash<QString, QStringList>::Iterator it = vars.begin(); it != vars.end(); ++it) {
-                if(!it.key().startsWith(".") && !it.value().isEmpty())
-                    debug_msg(1, "%s === %s", it.key().toLatin1().constData(),
-                              it.value().join(" :: ").toLatin1().constData());
-            }
-        }
     }
     return ret;
 }
@@ -292,14 +281,7 @@ SubdirsMetaMakefileGenerator::init()
     init_flag = true;
     bool hasError = false;
 
-    // It might make sense to bequeath the CONFIG option to the recursed
-    // projects. OTOH, one would most likely have it in all projects anyway -
-    // either through a qmakespec, a .qmake.cache or explicitly - as otherwise
-    // running qmake in a subdirectory would have a different auto-recurse
-    // setting than in parent directories.
-    bool recurse = Option::recursive == Option::QMAKE_RECURSIVE_YES
-                   || (Option::recursive == Option::QMAKE_RECURSIVE_DEFAULT
-                       && project->isRecursive());
+    bool recurse = Option::recursive;
     if (recurse && project->isActiveConfig("dont_recurse"))
         recurse = false;
     if(recurse) {
@@ -347,7 +329,7 @@ SubdirsMetaMakefileGenerator::init()
             qmake_setpwd(sub->input_dir);
             Option::output_dir = sub->output_dir;
             bool tmpError = !sub_proj->read(subdir.fileName());
-            if(!sub_proj->variables()["QMAKE_FAILED_REQUIREMENTS"].isEmpty()) {
+            if (!sub_proj->isEmpty("QMAKE_FAILED_REQUIREMENTS")) {
                 fprintf(stderr, "Project file(%s) not recursed because all requirements not met:\n\t%s\n",
                         subdir.fileName().toLatin1().constData(),
                         sub_proj->values("QMAKE_FAILED_REQUIREMENTS").join(" ").toLatin1().constData());
@@ -514,44 +496,5 @@ MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &na
 
 #endif // QT_QMAKE_PARSER_ONLY
 
-bool
-MetaMakefileGenerator::modesForGenerator(const QString &gen,
-        Option::HOST_MODE *host_mode, Option::TARG_MODE *target_mode)
-{
-    if (gen == "UNIX") {
-#ifdef Q_OS_MAC
-        *host_mode = Option::HOST_MACX_MODE;
-        *target_mode = Option::TARG_MACX_MODE;
-#elif defined(Q_OS_WIN)
-        *host_mode = Option::HOST_WIN_MODE;
-        *target_mode = Option::TARG_UNIX_MODE;
-#else
-        *host_mode = Option::HOST_UNIX_MODE;
-        *target_mode = Option::TARG_UNIX_MODE;
-#endif
-    } else if (gen == "MSVC.NET" || gen == "BMAKE" || gen == "MSBUILD") {
-        *host_mode = Option::HOST_WIN_MODE;
-        *target_mode = Option::TARG_WIN_MODE;
-    } else if (gen == "MINGW") {
-#if defined(Q_OS_MAC)
-        *host_mode = Option::HOST_MACX_MODE;
-#elif defined(Q_OS_UNIX)
-        *host_mode = Option::HOST_UNIX_MODE;
-#else
-        *host_mode = Option::HOST_WIN_MODE;
-#endif
-        *target_mode = Option::TARG_WIN_MODE;
-    } else if (gen == "PROJECTBUILDER" || gen == "XCODE") {
-        *host_mode = Option::HOST_MACX_MODE;
-        *target_mode = Option::TARG_MACX_MODE;
-    } else if (gen == "GBUILD") {
-        *host_mode = Option::HOST_UNIX_MODE;
-        *target_mode = Option::TARG_INTEGRITY_MODE;
-    } else {
-        fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
-        return false;
-    }
-    return true;
-}
 
 QT_END_NAMESPACE

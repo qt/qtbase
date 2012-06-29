@@ -51,19 +51,10 @@ QT_BEGIN_NAMESPACE
 
 MingwMakefileGenerator::MingwMakefileGenerator() : Win32MakefileGenerator(), init_flag(false)
 {
-    if (Option::shellPath.isEmpty())
+    if (isWindowsShell())
         quote = "\"";
     else
         quote = "'";
-}
-
-bool MingwMakefileGenerator::isWindowsShell() const
-{
-#ifdef Q_OS_WIN
-    return Option::shellPath.isEmpty();
-#else
-    return Win32MakefileGenerator::isWindowsShell();
-#endif
 }
 
 QString MingwMakefileGenerator::escapeDependencyPath(const QString &path) const
@@ -91,8 +82,8 @@ bool MingwMakefileGenerator::findLibraries(const QString &where)
 
     QList<QMakeLocalFileName> dirs;
     {
-        QStringList &libpaths = project->values("QMAKE_LIBDIR");
-        for(QStringList::Iterator libpathit = libpaths.begin();
+        const QStringList &libpaths = project->values("QMAKE_LIBDIR");
+        for (QStringList::ConstIterator libpathit = libpaths.begin();
             libpathit != libpaths.end(); ++libpathit)
             dirs.append(QMakeLocalFileName((*libpathit)));
     }
@@ -148,7 +139,7 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
 
         if(Option::mkfile::do_stub_makefile) {
             t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
-            QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
+            const QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
             for(QStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
                 t << *it << " ";
             t << "first all clean install distclean uninstall: qmake" << endl
@@ -344,8 +335,8 @@ void MingwMakefileGenerator::writeIncPart(QTextStream &t)
 {
     t << "INCPATH       = ";
 
-    QStringList &incs = project->values("INCLUDEPATH");
-    for(QStringList::Iterator incit = incs.begin(); incit != incs.end(); ++incit) {
+    const QStringList &incs = project->values("INCLUDEPATH");
+    for (QStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
         QString inc = (*incit);
         inc.replace(QRegExp("\\\\$"), "");
         inc.replace(QRegExp("\""), "");
