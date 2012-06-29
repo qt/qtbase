@@ -348,9 +348,6 @@
 #ifndef QT_NO_QWS_SOUNDSERVER
 #  define QT_NO_QWS_SOUNDSERVER
 #endif
-#ifndef QT_NO_SXE
-#  define QT_NO_SXE
-#endif
 #ifndef QT_NO_QWS_PROPERTIES
 #  define QT_NO_QWS_PROPERTIES
 #endif

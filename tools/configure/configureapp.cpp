@@ -1514,7 +1514,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "DBUS"]                 = "no";
         dictionary[ "QT_QWS_DEPTH" ]        = "4 8 16 24 32";
-        dictionary[ "QT_SXE" ]              = "no";
         dictionary[ "QT_INOTIFY" ]          = "no";
         dictionary[ "QT_CUPS" ]             = "no";
         dictionary[ "QT_GLIB" ]             = "no";
@@ -3210,9 +3209,6 @@ void Configure::generateConfigfiles()
 
         if (dictionary[ "QT_INOTIFY" ] == "no")
           tmpStream<<"#define QT_NO_INOTIFY"<<endl;
-
-        if (dictionary[ "QT_SXE" ] == "no")
-          tmpStream<<"#define QT_NO_SXE"<<endl;
 
         tmpStream<<"#define QT_QPA_DEFAULT_PLATFORM_NAME \"" << qpaPlatformName() << "\""<<endl;
 
