@@ -1,5 +1,6 @@
 CONFIG += testcase
 CONFIG += parallel_test
+CONFIG -= app_bundle debug_and_release_target
 QT = core-private core network testlib
 TARGET = ../tst_qfile
 SOURCES = ../tst_qfile.cpp

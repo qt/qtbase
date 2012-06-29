@@ -1,6 +1,7 @@
 CONFIG += testcase
 testcase.timeout = 600 # this test is slow
 CONFIG += parallel_test
+CONFIG -= app_bundle debug_and_release_target
 QT -= gui
 SOURCES  += ../tst_qnetworkreply.cpp
 TARGET = ../tst_qnetworkreply
