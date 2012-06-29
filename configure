@@ -108,6 +108,21 @@ QMakeVar()
     echo "$2" "$eq" "$3" >> "$QMAKE_VARS_FILE"
 }
 
+shellArgumentListToQMakeListHelper()
+{
+    local retval
+    for arg in "$@"; do retval="$retval \"$arg\""; done
+    echo "$retval"
+}
+
+# Convert a string usable on a shell command line into word-by-word quoted
+# qmake list.
+shellArgumentListToQMakeList()
+{
+    # eval is needed for the shell to interpret the backslash escape sequences
+    eval shellArgumentListToQMakeListHelper "$@"
+}
+
 # Helper function for getQMakeConf. It parses include statements in
 # qmake.conf and prints out the expanded file
 getQMakeConf1()
@@ -4518,9 +4533,9 @@ elif [ "$CFG_OPENGL" = "es2" ]; then
         QMAKE_LIBDIR_OPENGL_ES2=`$PKG_CONFIG --libs-only-L glesv2 2>/dev/null | sed -e 's,^-L,,g' -e 's, -L, ,g'`
         QMAKE_LIBS_OPENGL_ES2=`$PKG_CONFIG --libs glesv2 2>/dev/null`
         QMAKE_CFLAGS_OPENGL_ES2=`$PKG_CONFIG --cflags glesv2 2>/dev/null`
-        QMakeVar set QMAKE_INCDIR_OPENGL_ES2 "$QMAKE_INCDIR_OPENGL_ES2"
-        QMakeVar set QMAKE_LIBDIR_OPENGL_ES2 "$QMAKE_LIBDIR_OPENGL_ES2"
-        QMakeVar set QMAKE_LIBS_OPENGL_ES2 "$QMAKE_LIBS_OPENGL_ES2"
+        QMakeVar set QMAKE_INCDIR_OPENGL_ES2 "`shellArgumentListToQMakeList "$QMAKE_INCDIR_OPENGL_ES2"`"
+        QMakeVar set QMAKE_LIBDIR_OPENGL_ES2 "`shellArgumentListToQMakeList "$QMAKE_LIBDIR_OPENGL_ES2"`"
+        QMakeVar set QMAKE_LIBS_OPENGL_ES2 "`shellArgumentListToQMakeList "$QMAKE_LIBS_OPENGL_ES2"`"
     fi
 
     "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS $QMAKE_LIBS_OPENGL_ES2 $QMAKE_CFLAGS_OPENGL_ES2
@@ -5809,7 +5824,7 @@ fi
 
 if [ -n "$QMAKE_INCDIR_OPENGL_ES2" ]; then
     echo "#Qt opengl include path" >> "$QTCONFIG.tmp"
-    echo "QMAKE_INCDIR_OPENGL_ES2 = \"$QMAKE_INCDIR_OPENGL_ES2\"" >> "$QTCONFIG.tmp"
+    echo "QMAKE_INCDIR_OPENGL_ES2 = `shellArgumentListToQMakeList "$QMAKE_INCDIR_OPENGL_ES2"`" >> "$QTCONFIG.tmp"
 fi
 
 # replace qconfig.pri if it differs from the newly created temp file
