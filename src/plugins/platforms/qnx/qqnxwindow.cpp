@@ -214,11 +214,8 @@ void QQnxWindow::setGeometry(const QRect &rect)
     QWindowSystemInterface::handleSynchronousGeometryChange(window(), rect);
 
     // Now move all children.
-    QPoint offset;
     if (!oldGeometry.isEmpty()) {
-        offset = rect.topLeft();
-        offset -= oldGeometry.topLeft();
-
+        const QPoint offset = rect.topLeft() - oldGeometry.topLeft();
         Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
             childWindow->setOffset(offset);
     }
