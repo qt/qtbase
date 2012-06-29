@@ -93,8 +93,10 @@ bin/qmlconv*
 bin/qmldebugger*
 bin/qml*
 bin/qttracereplay*
+bin/qt.conf
 configure.cache
 config.status
+config.summary
 mkspecs/default
 mkspecs/qconfig.pri
 mkspecs/qdevice.pri
