@@ -174,11 +174,22 @@ bool QWindowSystemInterface::tryHandleSynchronousShortcutEvent(QWindow *w, int k
 bool QWindowSystemInterface::tryHandleSynchronousShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
                                                                const QString & text, bool autorep, ushort count)
 {
+#ifndef QT_NO_SHORTCUT
     QGuiApplicationPrivate::modifier_buttons = mods;
 
     QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, text, autorep, count);
     qevent.setTimestamp(timestamp);
     return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(w, &qevent);
+#else
+    Q_UNUSED(w)
+    Q_UNUSED(timestamp)
+    Q_UNUSED(k)
+    Q_UNUSED(mods)
+    Q_UNUSED(text)
+    Q_UNUSED(autorep)
+    Q_UNUSED(count)
+    return false;
+#endif
 }
 
 bool QWindowSystemInterface::tryHandleSynchronousExtendedShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
@@ -193,11 +204,25 @@ bool QWindowSystemInterface::tryHandleSynchronousExtendedShortcutEvent(QWindow *
                                                                        quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
                                                                        const QString &text, bool autorep, ushort count)
 {
+#ifndef QT_NO_SHORTCUT
     QGuiApplicationPrivate::modifier_buttons = mods;
 
     QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
     qevent.setTimestamp(timestamp);
     return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(w, &qevent);
+#else
+    Q_UNUSED(w)
+    Q_UNUSED(timestamp)
+    Q_UNUSED(k)
+    Q_UNUSED(mods)
+    Q_UNUSED(nativeScanCode)
+    Q_UNUSED(nativeVirtualKey)
+    Q_UNUSED(nativeModifiers)
+    Q_UNUSED(text)
+    Q_UNUSED(autorep)
+    Q_UNUSED(count)
+    return false;
+#endif
 }
 
 
