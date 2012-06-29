@@ -26,18 +26,14 @@ isEmpty(CMAKE_VERSION) {
         isEmpty(VERSION_OK) {
             message("cmake $$CMAKE_VERSION is too old for this test.")
         } else {
-            SET = set
-            equals(QMAKE_DIR_SEP, "/"):SET = export
-
             CMAKE_BUILD_TYPE = Debug
             CONFIG(release, debug|release):CMAKE_BUILD_TYPE = Release
 
             BUILD_DIR = $$replace($$list($$OUT_PWD/build), /, $$QMAKE_DIR_SEP)
 
             check.commands = \
-                cd . && $$SET CMAKE_PREFIX_PATH=$$[QT_INSTALL_PREFIX] && \
                 $(MKDIR) $$BUILD_DIR && cd $$BUILD_DIR && \
-                cmake $$_PRO_FILE_PWD_ -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} && \
+                cmake $$_PRO_FILE_PWD_ -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=\"$$[QT_INSTALL_PREFIX]\" && \
                 $(TESTRUNNER) ctest --output-on-failure
 
         }
