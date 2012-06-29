@@ -1,5 +1,5 @@
 CONFIG += testcase
 CONFIG += parallel_test
 TARGET = tst_qabstractproxymodel
-QT += widgets testlib
+QT += testlib
 SOURCES  += tst_qabstractproxymodel.cpp
