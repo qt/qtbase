@@ -99,6 +99,7 @@ void tst_MacGui::scrollbarPainting()
 
     QPixmap pixmap = grabWindowContents(&colorWidget);
 
+    QEXPECT_FAIL("", "QTBUG-26371", Abort);
     QVERIFY(isContent(pixmap.toImage(), verticalScrollbar.geometry(), GuiTester::Horizontal));
     QVERIFY(isContent(pixmap.toImage(), horizontalScrollbar.geometry(), GuiTester::Vertical));
 }
@@ -221,6 +222,7 @@ void tst_MacGui::spinBoxArrowButtons()
 
     // Set focus by clicking the less button.
     QAccessibleInterface *lessInterface = wn.find(QAccessible::Name, "Less", &spinBox);
+    QEXPECT_FAIL("", "QTBUG-26372", Abort);
     QVERIFY(lessInterface);
     const int delay = 500;
     clickLater(lessInterface, Qt::LeftButton, delay);

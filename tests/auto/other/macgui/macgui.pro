@@ -7,5 +7,3 @@ HEADERS += guitest.h
 QT = core-private widgets-private testlib
 
 requires(mac)
-
-CONFIG+=insignificant_test  # QTBUG-20984, fails unstably
