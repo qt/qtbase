@@ -480,7 +480,7 @@ static void getLineBreaks(const ushort *string, quint32 len, HB_CharAttributes *
         switch (LB::breakTable[cls][ncls < QUnicodeTables::LineBreak_SA ? ncls : QUnicodeTables::LineBreak_AL]) {
         case LB::DirectBreak:
             lineBreakType = HB_Break;
-            if (lucs4 == 0x00ad) // soft hyphen
+            if (lucs4 == QChar::SoftHyphen)
                 lineBreakType = HB_SoftHyphen;
             break;
         case LB::IndirectBreak:

@@ -550,7 +550,7 @@ void tst_QTextBoundaryFinder::isAtSoftHyphen_data()
     QTest::addColumn<QList<int> >("expectedBreakPositions");
 
     QString testString = QString::fromUtf8("I a-m break-able");
-    testString.replace(QLatin1Char('-'), QChar(0x00AD));
+    testString.replace(QLatin1Char('-'), QChar(QChar::SoftHyphen));
     QList<int> expectedBreakPositions;
     expectedBreakPositions << 0 << 2 << 4 << 6 << 12 << 16;
     QTest::newRow("Soft Hyphen") << testString << expectedBreakPositions;
@@ -564,7 +564,7 @@ void tst_QTextBoundaryFinder::isAtSoftHyphen()
     doTestData(testString, expectedBreakPositions, QTextBoundaryFinder::Line);
 
     QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Line, testString);
-    for (int i = 0; (i = testString.indexOf(QChar(0x00AD), i)) != -1; ++i) {
+    for (int i = 0; (i = testString.indexOf(QChar(QChar::SoftHyphen), i)) != -1; ++i) {
         QVERIFY(expectedBreakPositions.contains(i + 1));
         boundaryFinder.setPosition(i + 1);
         QVERIFY(boundaryFinder.isAtBoundary());

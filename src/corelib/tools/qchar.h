@@ -72,6 +72,7 @@ public:
         CarriageReturn = 0x000d,
         Space = 0x0020,
         Nbsp = 0x00a0,
+        SoftHyphen = 0x00ad,
         ReplacementCharacter = 0xfffd,
         ObjectReplacementCharacter = 0xfffc,
         ByteOrderMark = 0xfeff,

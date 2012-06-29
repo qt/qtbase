@@ -3220,7 +3220,7 @@ QScriptItem &QTextLineItemIterator::next()
     }
     // show soft-hyphen at line-break
     if (si->position + itemLength >= lineEnd
-        && eng->layoutData->string.at(lineEnd - 1) == 0x00ad)
+        && eng->layoutData->string.at(lineEnd - 1).unicode() == QChar::SoftHyphen)
         glyphs.attributes[glyphsEnd - 1].dontPrint = false;
 
     itemWidth = 0;
