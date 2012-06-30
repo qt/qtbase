@@ -3201,9 +3201,7 @@ MakefileGenerator::writePkgConfigFile()
     t << "exec_prefix=${prefix}\n"
       << "libdir=" << pkgConfigFixPath(libDir) << "\n"
       << "includedir=" << pkgConfigFixPath(includeDir) << endl;
-    // non-standard entry. Provides useful info normally only
-    // contained in the internal .qmake.cache file
-    t << varGlue("CONFIG", "qt_config=", " ", "") << endl;
+    t << endl;
 
     //extra PKGCONFIG variables
     const QStringList &pkgconfig_vars = project->values("QMAKE_PKGCONFIG_VARIABLES");
