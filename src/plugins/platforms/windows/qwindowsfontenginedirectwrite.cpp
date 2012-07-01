@@ -47,6 +47,7 @@
 
 #include <QtCore/QSettings>
 #include <QtCore/QtEndian>
+#include <QtCore/QVarLengthArray>
 
 #include <dwrite.h>
 #include <d2d1.h>
@@ -680,39 +681,38 @@ void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
         hr = fontFamily->GetFamilyNames(&familyNames);
 
     UINT32 index = 0;
-    BOOL exists = false;
-
-    wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
 
     if (SUCCEEDED(hr)) {
-        int defaultLocaleSuccess = GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH);
+        BOOL exists = false;
 
+        wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
+        int defaultLocaleSuccess = GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH);
         if (defaultLocaleSuccess)
             hr = familyNames->FindLocaleName(localeName, &index, &exists);
 
         if (SUCCEEDED(hr) && !exists)
             hr = familyNames->FindLocaleName(L"en-us", &index, &exists);
+
+        if (!exists)
+            index = 0;
     }
 
-    if (!exists)
-        index = 0;
+    // Get the family name.
+    if (SUCCEEDED(hr)) {
+        UINT32 length = 0;
 
-    UINT32 length = 0;
-    if (SUCCEEDED(hr))
         hr = familyNames->GetStringLength(index, &length);
 
-    wchar_t *name = new (std::nothrow) wchar_t[length+1];
-    if (name == NULL)
-        hr = E_OUTOFMEMORY;
+        if (SUCCEEDED(hr)) {
+            QVarLengthArray<wchar_t, 128> name(length+1);
 
-    // Get the family name.
-    if (SUCCEEDED(hr))
-        hr = familyNames->GetString(index, name, length + 1);
+            hr = familyNames->GetString(index, name.data(), name.size());
 
-    if (SUCCEEDED(hr))
-        fontDef.family = QString::fromWCharArray(name);
+            if (SUCCEEDED(hr))
+                fontDef.family = QString::fromWCharArray(name.constData());
+        }
+    }
 
-    delete[] name;
     if (familyNames != NULL)
         familyNames->Release();
 
