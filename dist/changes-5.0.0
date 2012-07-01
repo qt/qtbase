@@ -567,6 +567,11 @@ sqlite
 'true' and 'false'. Sqlite does not have a boolean column type and it is
 customary to use integer. QTBUG-23895
 
+postgres
+--------
+* the error message returned in QSqlError::text() has the SQLSTATE error code
+appended in parantheses.
+
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
