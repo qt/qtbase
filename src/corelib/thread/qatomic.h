@@ -61,10 +61,14 @@ class QAtomicInt : public QBasicAtomicInt
 {
 public:
     // Non-atomic API
+#ifdef Q_BASIC_ATOMIC_HAS_CONSTRUCTORS
+    constexpr QAtomicInt(int value = 0) Q_DECL_NOTHROW : QBasicAtomicInt(value) {}
+#else
     inline QAtomicInt(int value = 0) Q_DECL_NOTHROW
     {
         _q_value = value;
     }
+#endif
 
     inline QAtomicInt(const QAtomicInt &other) Q_DECL_NOTHROW
     {
@@ -115,10 +119,14 @@ template <typename T>
 class QAtomicPointer : public QBasicAtomicPointer<T>
 {
 public:
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+    constexpr QAtomicPointer(T *value = 0) Q_DECL_NOTHROW : QBasicAtomicPointer<T>(value) {}
+#else
     inline QAtomicPointer(T *value = 0) Q_DECL_NOTHROW
     {
         this->store(value);
     }
+#endif
     inline QAtomicPointer(const QAtomicPointer<T> &other) Q_DECL_NOTHROW
     {
         this->store(other.load());
@@ -159,6 +167,10 @@ public:
 
 #if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406) && !defined(Q_CC_INTEL)
 # pragma GCC diagnostic pop
+#endif
+
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+#  undef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
 #endif
 
 /*!
