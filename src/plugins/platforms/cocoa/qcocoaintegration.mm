@@ -88,6 +88,67 @@ QCocoaScreen::~QCocoaScreen()
     delete m_cursor;
 }
 
+extern CGContextRef qt_mac_cg_context(const QPaintDevice *pdev);
+
+QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height) const
+{
+    // TODO window should be handled
+    Q_UNUSED(window)
+
+    const int maxDisplays = 128; // 128 displays should be enough for everyone.
+    CGDirectDisplayID displays[maxDisplays];
+    CGDisplayCount displayCount;
+    CGRect cgRect;
+
+    if (width < 0 || height < 0) {
+        // get all displays
+        cgRect = CGRectInfinite;
+    } else {
+        cgRect = CGRectMake(x, y, width, height);
+    }
+    const CGDisplayErr err = CGGetDisplaysWithRect(cgRect, maxDisplays, displays, &displayCount);
+
+    if (err && displayCount == 0)
+        return QPixmap();
+
+    // calculate pixmap size
+    QSize windowSize(width, height);
+    if (width < 0 || height < 0) {
+        QRect windowRect;
+        for (uint i = 0; i < displayCount; ++i) {
+            const CGRect cgRect = CGDisplayBounds(displays[i]);
+            QRect qRect(cgRect.origin.x, cgRect.origin.y, cgRect.size.width, cgRect.size.height);
+            windowRect = windowRect.united(qRect);
+        }
+        if (width < 0)
+            windowSize.setWidth(windowRect.width());
+        if (height < 0)
+            windowSize.setHeight(windowRect.height());
+    }
+
+    QPixmap windowPixmap(windowSize);
+    windowPixmap.fill(Qt::transparent);
+
+    for (uint i = 0; i < displayCount; ++i) {
+        const CGRect bounds = CGDisplayBounds(displays[i]);
+        int w = (width < 0 ? bounds.size.width : width);
+        int h = (height < 0 ? bounds.size.height : height);
+        QRect displayRect = QRect(x, y, w, h);
+        QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displays[i],
+            CGRectMake(displayRect.x(), displayRect.y(), displayRect.width(), displayRect.height()));
+        QPixmap pix(w, h);
+        pix.fill(Qt::transparent);
+        CGRect rect = CGRectMake(0, 0, w, h);
+        CGContextRef ctx = qt_mac_cg_context(&pix);
+        qt_mac_drawCGImage(ctx, &rect, image);
+        CGContextRelease(ctx);
+
+        QPainter painter(&windowPixmap);
+        painter.drawPixmap(bounds.origin.x, bounds.origin.y, pix);
+    }
+    return windowPixmap;
+}
+
 QCocoaIntegration::QCocoaIntegration()
     : mFontDb(new QCoreTextFontDatabase())
     , mEventDispatcher(new QCocoaEventDispatcher())

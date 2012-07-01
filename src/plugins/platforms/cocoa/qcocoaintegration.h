@@ -61,6 +61,8 @@ public:
     QCocoaScreen(int screenIndex);
     ~QCocoaScreen();
 
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+
     QRect geometry() const { return m_geometry; }
     QRect availableGeometry() const { return m_availableGeometry; }
     int depth() const { return m_depth; }

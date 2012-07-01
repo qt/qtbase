@@ -226,7 +226,7 @@ CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
         CGContextRef ret = 0;
 
         QPlatformPixmap *data = const_cast<QPixmap *>(pm)->data_ptr().data();
-        if (data->classId() == QPlatformPixmap::RasterClass) {
+        if (data && data->classId() == QPlatformPixmap::RasterClass) {
             QImage *image = data->buffer();
             ret = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
                                         8, image->bytesPerLine(), colorspace, flags);
