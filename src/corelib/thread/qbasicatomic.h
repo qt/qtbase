@@ -118,6 +118,10 @@ QT_END_HEADER
 
 // New atomics
 
+#if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
+# define QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+#endif
+
 template <typename T>
 class QBasicAtomicInteger
 {
@@ -179,7 +183,7 @@ public:
     T fetchAndAddOrdered(T valueToAdd) Q_DECL_NOTHROW
     { return Ops::fetchAndAddOrdered(_q_value, valueToAdd); }
 
-#if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
     QBasicAtomicInteger() = default;
     constexpr QBasicAtomicInteger(T value) Q_DECL_NOTHROW : _q_value(value) {}
     QBasicAtomicInteger(const QBasicAtomicInteger &) = delete;
@@ -243,7 +247,7 @@ public:
     Type fetchAndAddOrdered(qptrdiff valueToAdd) Q_DECL_NOTHROW
     { return Ops::fetchAndAddOrdered(_q_value, valueToAdd); }
 
-#if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
     QBasicAtomicPointer() = default;
     constexpr QBasicAtomicPointer(Type value) Q_DECL_NOTHROW : _q_value(value) {}
     QBasicAtomicPointer(const QBasicAtomicPointer &) = delete;
