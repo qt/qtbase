@@ -536,17 +536,17 @@ template <typename T>
 struct QMetaTypeId2
 {
     enum { Defined = QMetaTypeId<T>::Defined };
-    static inline int qt_metatype_id() { return QMetaTypeId<T>::qt_metatype_id(); }
+    static inline Q_DECL_CONSTEXPR int qt_metatype_id() { return QMetaTypeId<T>::qt_metatype_id(); }
 };
 
 namespace QtPrivate {
     template <typename T, bool Defined = QMetaTypeId2<T>::Defined>
     struct QMetaTypeIdHelper {
-        static inline int qt_metatype_id()
+        static inline Q_DECL_CONSTEXPR int qt_metatype_id()
         { return QMetaTypeId2<T>::qt_metatype_id(); }
     };
     template <typename T> struct QMetaTypeIdHelper<T, false> {
-        static inline int qt_metatype_id()
+        static inline Q_DECL_CONSTEXPR int qt_metatype_id()
         { return -1; }
     };
 
@@ -624,7 +624,7 @@ void qRegisterMetaTypeStreamOperators(const char *typeName
 #endif // QT_NO_DATASTREAM
 
 template <typename T>
-inline int qMetaTypeId(
+inline Q_DECL_CONSTEXPR int qMetaTypeId(
 #ifndef qdoc
     T * /* dummy */ = 0
 #endif
@@ -713,7 +713,7 @@ inline int qRegisterMetaTypeStreamOperators()
     template<> struct QMetaTypeId2<TYPE> \
     { \
         enum { Defined = 1, MetaType = QMetaType::NAME }; \
-        static inline int qt_metatype_id() { return QMetaType::NAME; } \
+        static inline Q_DECL_CONSTEXPR int qt_metatype_id() { return QMetaType::NAME; } \
     }; \
     QT_END_NAMESPACE
 

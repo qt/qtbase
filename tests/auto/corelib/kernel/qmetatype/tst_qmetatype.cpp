@@ -107,6 +107,7 @@ private slots:
     void saveAndLoadBuiltin();
     void saveAndLoadCustom();
     void metaObject();
+    void constexprMetaTypeIds();
 };
 
 struct Foo { int i; };
@@ -1630,6 +1631,46 @@ void tst_QMetaType::metaObject()
     QCOMPARE(QMetaType(::qMetaTypeId<QFile*>()).metaObject(), &QFile::staticMetaObject);
     QCOMPARE(QMetaType(::qMetaTypeId<MyObject*>()).metaObject(), &MyObject::staticMetaObject);
     QCOMPARE(QMetaType(QMetaType::Int).metaObject(), static_cast<const QMetaObject *>(0));
+}
+
+#define METATYPE_ID_FUNCTION(Type, MetaTypeId, Name) \
+  case ::qMetaTypeId< Name >(): metaType = MetaTypeIdStruct<MetaTypeId>::Value;
+
+template<int>
+struct MetaTypeIdStruct
+{
+};
+
+#define METATYPE_ID_STRUCT(Type, MetaTypeId, Name) \
+template<> \
+struct MetaTypeIdStruct< ::qMetaTypeId< Name >()> \
+{ \
+    enum { Value = ::qMetaTypeId< Name >() }; \
+};
+
+#if defined(Q_COMPILER_CONSTEXPR)
+QT_FOR_EACH_STATIC_TYPE(METATYPE_ID_STRUCT)
+
+template<int i = ::qMetaTypeId<int>()>
+struct MetaTypeIdStructDefaultTemplateValue
+{
+  enum { Value };
+};
+#endif
+
+void tst_QMetaType::constexprMetaTypeIds()
+{
+    int id = 0;
+    int metaType;
+
+    switch(id) {
+#if defined(Q_COMPILER_CONSTEXPR)
+      QT_FOR_EACH_STATIC_TYPE(METATYPE_ID_FUNCTION)
+      metaType = MetaTypeIdStructDefaultTemplateValue<>::Value;
+#endif
+    default:;
+    }
+    Q_UNUSED(metaType);
 }
 
 // Compile-time test, it should be possible to register function pointer types
