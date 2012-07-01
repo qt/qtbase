@@ -70,7 +70,7 @@
 
 // #define USE_NATIVE_COLOR_DIALOG /* Testing purposes only */
 
-#ifdef Q_CC_MINGW /* Add missing declarations for MinGW */
+#if defined(Q_CC_MINGW) && __MINGW64_VERSION_MAJOR < 3  /* Add missing declarations for MinGW */
 
 /* Constants obtained by running the below stream operator for
  * CLSID, IID on the constants in the Windows SDK libraries. */
@@ -116,7 +116,7 @@ typedef struct _COMDLG_FILTERSPEC
 #define FOS_DEFAULTNOMINIMODE  0x20000000
 #define FOS_FORCEPREVIEWPANEON 0x40000000
 
-#if !defined(__MINGW64_VERSION_MAJOR) || (__MINGW64_VERSION_MAJOR < 2)
+#if __MINGW64_VERSION_MAJOR < 2
 typedef int GETPROPERTYSTOREFLAGS;
 #define GPS_DEFAULT               0x00000000
 #define GPS_HANDLERPROPERTIESONLY 0x00000001
@@ -305,7 +305,7 @@ public:
     STDMETHOD(ApplyProperties)(THIS_ IShellItem *psi, IPropertyStore *pStore, HWND hwnd, IFileOperationProgressSink *pSink) PURE;
 };
 
-#endif // Q_CC_MINGW
+#endif // defined(Q_CC_MINGW) && __MINGW64_VERSION_MAJOR < 3
 
 QT_BEGIN_NAMESPACE
 
