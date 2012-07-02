@@ -123,7 +123,7 @@ protected:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_BUILTIN_METATYPE(QDBusConnectionInterface::RegisterServiceReply, UInt)
+Q_DECLARE_BUILTIN_METATYPE(UInt, QMetaType::UInt, QDBusConnectionInterface::RegisterServiceReply)
 
 QT_END_HEADER
 

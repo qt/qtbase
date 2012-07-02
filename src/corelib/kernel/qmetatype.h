@@ -708,12 +708,13 @@ inline int qRegisterMetaTypeStreamOperators()
     };                                                                  \
     QT_END_NAMESPACE
 
-#define Q_DECLARE_BUILTIN_METATYPE(TYPE, NAME) \
+
+#define Q_DECLARE_BUILTIN_METATYPE(TYPE, METATYPEID, NAME) \
     QT_BEGIN_NAMESPACE \
-    template<> struct QMetaTypeId2<TYPE> \
+    template<> struct QMetaTypeId2<NAME> \
     { \
-        enum { Defined = 1, MetaType = QMetaType::NAME }; \
-        static inline Q_DECL_CONSTEXPR int qt_metatype_id() { return QMetaType::NAME; } \
+        enum { Defined = 1, MetaType = METATYPEID }; \
+        static inline Q_DECL_CONSTEXPR int qt_metatype_id() { return METATYPEID; } \
     }; \
     QT_END_NAMESPACE
 
@@ -946,12 +947,7 @@ inline const QMetaObject *QMetaType::metaObject() const
 QT_END_NAMESPACE
 
 
-#define QT_DECLARE_BUILTIN_METATYPE_ITER(MetaTypeName, MetaTypeId, Name) \
-    Q_DECLARE_BUILTIN_METATYPE(Name, MetaTypeName)
-
-QT_FOR_EACH_STATIC_TYPE(QT_DECLARE_BUILTIN_METATYPE_ITER)
-
-#undef QT_DECLARE_BUILTIN_METATYPE_ITER
+QT_FOR_EACH_STATIC_TYPE(Q_DECLARE_BUILTIN_METATYPE)
 
 
 QT_END_HEADER
