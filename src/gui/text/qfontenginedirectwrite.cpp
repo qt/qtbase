@@ -225,6 +225,8 @@ QFixed QFontEngineDirectWrite::lineThickness() const
 
 bool QFontEngineDirectWrite::getSfntTableData(uint tag, uchar *buffer, uint *length) const
 {
+    bool ret = false;
+
     if (m_directWriteFontFace) {
         DWORD t = qbswap<quint32>(tag);
 
@@ -237,26 +239,22 @@ bool QFontEngineDirectWrite::getSfntTableData(uint tag, uchar *buffer, uint *len
                     );
 
         if (SUCCEEDED(hr)) {
-            if (!exists)
-                return false;
-
-            if (buffer == 0) {
-                *length = tableSize;
-                return true;
-            } else if (*length < tableSize) {
-                return false;
+            if (exists) {
+                if (!buffer) {
+                    *length = tableSize;
+                    ret = true;
+                } else if (*length >= tableSize) {
+                    memcpy(buffer, tableData, tableSize);
+                    ret = true;
+                }
             }
-
-            memcpy(buffer, tableData, tableSize);
             m_directWriteFontFace->ReleaseFontTable(tableContext);
-
-            return true;
         } else {
             qErrnoWarning("QFontEngineDirectWrite::getSfntTableData: TryGetFontTable failed");
         }
     }
 
-    return false;
+    return ret;
 }
 
 QFixed QFontEngineDirectWrite::emSquareSize() const
