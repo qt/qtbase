@@ -12,3 +12,5 @@ CONFIG += qpa/genericunixfontdatabase
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
+
+OTHER_FILES += linuxfb.json
