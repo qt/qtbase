@@ -999,14 +999,17 @@ QDebug operator<<(QDebug dbg, const QUuid &id)
 }
 #endif
 
-/**
-    Returns a hash of the QUuid
- */
-uint qHash(const QUuid &uuid)
+/*!
+    \since 5.0
+    \relates QUuid
+    Returns a hash of the UUID \a uuid, using \a seed to seed the calculation.
+*/
+uint qHash(const QUuid &uuid, uint seed)
 {
     return uuid.data1 ^ uuid.data2 ^ (uuid.data3 << 16)
-     ^ ((uuid.data4[0] << 24) | (uuid.data4[1] << 16) | (uuid.data4[2] << 8) | uuid.data4[3])
-     ^ ((uuid.data4[4] << 24) | (uuid.data4[5] << 16) | (uuid.data4[6] << 8) | uuid.data4[7]);
+            ^ ((uuid.data4[0] << 24) | (uuid.data4[1] << 16) | (uuid.data4[2] << 8) | uuid.data4[3])
+            ^ ((uuid.data4[4] << 24) | (uuid.data4[5] << 16) | (uuid.data4[6] << 8) | uuid.data4[7])
+            ^ seed;
 }
 
 

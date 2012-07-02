@@ -134,15 +134,15 @@ public:
     bool isValid() const;
 private:
     QPersistentModelIndexData *d;
-    friend uint qHash(const QPersistentModelIndex &);
+    friend uint qHash(const QPersistentModelIndex &, uint seed = 0);
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QPersistentModelIndex &);
 #endif
 };
 Q_DECLARE_SHARED(QPersistentModelIndex)
 
-inline uint qHash(const QPersistentModelIndex &index)
-{ return qHash(index.d); }
+inline uint qHash(const QPersistentModelIndex &index, uint seed)
+{ return qHash(index.d, seed); }
 
 
 #ifndef QT_NO_DEBUG_STREAM

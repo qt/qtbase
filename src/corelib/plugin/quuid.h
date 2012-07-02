@@ -227,7 +227,7 @@ Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QUuid &);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QUuid &);
 #endif
 
-Q_CORE_EXPORT uint qHash(const QUuid &uuid);
+Q_CORE_EXPORT uint qHash(const QUuid &uuid, uint seed = 0);
 
 QT_END_NAMESPACE
 

@@ -1,3 +1,4 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
@@ -570,104 +571,139 @@ void QHashData::checkSanity()
 #endif
 
 /*!
-    \fn uint qHash(const QPair<T1, T2> &key)
-    \since 4.3
+    \fn uint qHash(const QPair<T1, T2> &key, uint seed = 0)
+    \since 5.0
     \relates QHash
     
-    Returns the hash value for the \a key.
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
 
     Types \c T1 and \c T2 must be supported by qHash().
 */
 
-/*! \fn uint qHash(char key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(uchar key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(signed char key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(ushort key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(short key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(uint key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(int key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(ulong key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(long key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(quint64 key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(qint64 key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(QChar key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(const QByteArray &key, uint seed = 0)
-    \fn uint qHash(const QBitArray &key, uint seed = 0)
-    \fn uint qHash(const QString &key, uint seed = 0)
-    \fn uint qHash(const QStringRef &key, uint seed = 0)
-    \fn uint qHash(QLatin1String key, uint seed = 0)
-
+/*! \fn uint qHash(char key, uint seed = 0)
     \relates QHash
     \since 5.0
 
-    Returns the hash value for the \a key, using \a seed to
-    seed the calculation.
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(const T *key)
+/*! \fn uint qHash(uchar key, uint seed = 0)
     \relates QHash
+    \since 5.0
 
-    Returns the hash value for the \a key.
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(signed char key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(ushort key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(short key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(uint key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(int key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(ulong key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(long key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(quint64 key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(qint64 key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(QChar key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(const QByteArray &key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(const QBitArray &key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(const QString &key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(const QStringRef &key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(QLatin1String key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(const T *key, uint seed = 0)
+    \relates QHash
+    \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
 /*!

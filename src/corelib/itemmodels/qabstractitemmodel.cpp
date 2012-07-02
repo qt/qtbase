@@ -3517,11 +3517,13 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 */
 
 /*!
-    \fn uint qHash(const QPersistentModelIndex &index)
-    \since 4.5
+    \fn uint qHash(const QPersistentModelIndex &index, uint seed = 0)
+    \since 5.0
+    \relates QPersistentModelIndex
 
-    Returns a hash of the QPersistentModelIndex
- */
+    Returns a hash of the QPersistentModelIndex \a index, using \a seed to
+    seed the calculation.
+*/
 
 
 /*!
