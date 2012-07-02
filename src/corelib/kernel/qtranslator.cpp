@@ -286,7 +286,7 @@ class QTranslatorPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QTranslator)
 public:
-    enum { Contexts = 0x2f, Hashes = 0x42, Messages = 0x69, NumerusRules = 0x88 };
+    enum { Contexts = 0x2f, Hashes = 0x42, Messages = 0x69, NumerusRules = 0x88, Dependencies = 0x96 };
 
     QTranslatorPrivate() :
 #if defined(QT_USE_MMAP)
@@ -302,6 +302,9 @@ public:
     char *unmapPointer;     // owned memory (mmap or new)
     quint32 unmapLength;
 
+    // used if the translator has dependencies
+    QList<QTranslator*> subTranslators;
+
     // Pointers and offsets into unmapPointer[unmapLength] array, or user
     // provided data array
     const uchar *messageArray;
@@ -313,8 +316,8 @@ public:
     uint contextLength;
     uint numerusRulesLength;
 
-    bool do_load(const QString &filename);
-    bool do_load(const uchar *data, int len);
+    bool do_load(const QString &filename, const QString &directory);
+    bool do_load(const uchar *data, int len, const QString &directory);
     QString do_translate(const char *context, const char *sourceText, const char *comment,
                          int n) const;
     void clear();
@@ -506,10 +509,10 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     }
 
     // realname is now the fully qualified name of a readable file.
-    return d->do_load(realname);
+    return d->do_load(realname, directory);
 }
 
-bool QTranslatorPrivate::do_load(const QString &realname)
+bool QTranslatorPrivate::do_load(const QString &realname, const QString &directory)
 {
     QTranslatorPrivate *d = this;
     bool ok = false;
@@ -567,7 +570,7 @@ bool QTranslatorPrivate::do_load(const QString &realname)
         }
     }
 
-    if (ok && d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength))
+    if (ok && d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength, directory))
         return true;
 
 #if defined(QT_USE_MMAP)
@@ -723,7 +726,7 @@ bool QTranslator::load(const QLocale & locale,
     Q_D(QTranslator);
     d->clear();
     QString fname = find_translation(locale, filename, prefix, directory, suffix);
-    return !fname.isEmpty() && d->do_load(fname);
+    return !fname.isEmpty() && d->do_load(fname, directory);
 }
 
 /*!
@@ -735,8 +738,11 @@ bool QTranslator::load(const QLocale & locale,
 
   The data is not copied. The caller must be able to guarantee that \a data
   will not be deleted or modified.
+
+  \a directory is only used to specify the base directory when loading the dependencies
+  of a QM file. If the file does not have dependencies, this argument is ignored.
 */
-bool QTranslator::load(const uchar *data, int len)
+bool QTranslator::load(const uchar *data, int len, const QString &directory)
 {
     Q_D(QTranslator);
     d->clear();
@@ -744,7 +750,7 @@ bool QTranslator::load(const uchar *data, int len)
     if (!data || len < MagicLength || memcmp(data, magic, MagicLength))
         return false;
 
-    return d->do_load(data, len);
+    return d->do_load(data, len, directory);
 }
 
 static quint8 read8(const uchar *data)
@@ -762,13 +768,14 @@ static quint32 read32(const uchar *data)
     return qFromBigEndian<quint32>(data);
 }
 
-bool QTranslatorPrivate::do_load(const uchar *data, int len)
+bool QTranslatorPrivate::do_load(const uchar *data, int len, const QString &directory)
 {
     bool ok = true;
     const uchar *end = data + len;
 
     data += MagicLength;
 
+    QStringList dependencies;
     while (data < end - 4) {
         quint8 tag = read8(data++);
         quint32 blockLen = read32(data);
@@ -792,15 +799,39 @@ bool QTranslatorPrivate::do_load(const uchar *data, int len)
         } else if (tag == QTranslatorPrivate::NumerusRules) {
             numerusRulesArray = data;
             numerusRulesLength = blockLen;
+        } else if (tag == QTranslatorPrivate::Dependencies) {
+            QDataStream stream(QByteArray::fromRawData((const char*)data, blockLen));
+            QString dep;
+            while (!stream.atEnd()) {
+                stream >> dep;
+                dependencies.append(dep);
+            }
         }
 
         data += blockLen;
     }
 
-    if (!offsetArray || !messageArray)
+    if (dependencies.isEmpty() && (!offsetArray || !messageArray))
         ok = false;
-    if (!isValidNumerusRules(numerusRulesArray, numerusRulesLength))
+    if (ok && !isValidNumerusRules(numerusRulesArray, numerusRulesLength))
         ok = false;
+    if (ok) {
+        const int dependenciesCount = dependencies.count();
+        subTranslators.reserve(dependenciesCount);
+        for (int i = 0 ; i < dependenciesCount; ++i) {
+            QTranslator *translator = new QTranslator;
+            subTranslators.append(translator);
+            ok = translator->load(dependencies.at(i), directory);
+            if (!ok)
+                break;
+        }
+
+        // In case some dependencies fail to load, unload all the other ones too.
+        if (!ok) {
+            qDeleteAll(subTranslators);
+            subTranslators.clear();
+        }
+    }
 
     if (!ok) {
         messageArray = 0;
@@ -893,8 +924,11 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
     if (comment == 0)
         comment = "";
 
+    uint numerus = 0;
+    size_t numItems = 0;
+
     if (!offsetLength)
-        return QString();
+        goto searchDependencies;
 
     /*
         Check if the context belongs to this QTranslator. If many
@@ -920,11 +954,10 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
         }
     }
 
-    size_t numItems = offsetLength / (2 * sizeof(quint32));
+    numItems = offsetLength / (2 * sizeof(quint32));
     if (!numItems)
-        return QString();
+        goto searchDependencies;
 
-    uint numerus = 0;
     if (n >= 0)
         numerus = numerusHelper(n, numerusRulesArray, numerusRulesLength);
 
@@ -971,6 +1004,13 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
             break;
         comment = "";
     }
+
+searchDependencies:
+    foreach (QTranslator *translator, subTranslators) {
+        QString tn = translator->translate(context, sourceText, comment, n);
+        if (!tn.isNull())
+            return tn;
+    }
     return QString();
 }
 
@@ -1003,6 +1043,9 @@ void QTranslatorPrivate::clear()
     contextLength = 0;
     offsetLength = 0;
     numerusRulesLength = 0;
+
+    qDeleteAll(subTranslators);
+    subTranslators.clear();
 
     if (QCoreApplicationPrivate::isTranslatorInstalled(q))
         QCoreApplication::postEvent(QCoreApplication::instance(),
@@ -1039,7 +1082,7 @@ bool QTranslator::isEmpty() const
 {
     Q_D(const QTranslator);
     return !d->unmapPointer && !d->unmapLength && !d->messageArray &&
-           !d->offsetArray && !d->contextArray;
+           !d->offsetArray && !d->contextArray && d->subTranslators.isEmpty();
 }
 
 QT_END_NAMESPACE

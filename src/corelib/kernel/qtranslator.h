@@ -76,7 +76,7 @@ public:
               const QString & prefix = QString(),
               const QString & directory = QString(),
               const QString & suffix = QString());
-    bool load(const uchar *data, int len);
+    bool load(const uchar *data, int len, const QString &directory = QString());
 
 private:
     Q_DISABLE_COPY(QTranslator)
