@@ -1827,7 +1827,6 @@ static void fillBackground(QPainter *p, const QRectF &rect, QBrush brush, QRectF
 */
 void QPlainTextEdit::paintEvent(QPaintEvent *e)
 {
-    Q_D(QPlainTextEdit);
     QPainter painter(viewport());
     Q_ASSERT(qobject_cast<QPlainTextDocumentLayout*>(document()->documentLayout()));
 
