@@ -480,6 +480,8 @@ CtorTestClass::CtorTestClass(QObject *parent)
 
 CtorTestClass::CtorTestClass(int, int, int) {}
 
+class PrivatePropertyTest;
+
 class tst_Moc : public QObject
 {
     Q_OBJECT
@@ -487,9 +489,15 @@ class tst_Moc : public QObject
     Q_PROPERTY(bool user1 READ user1 USER true )
     Q_PROPERTY(bool user2 READ user2 USER false)
     Q_PROPERTY(bool user3 READ user3 USER userFunction())
+    Q_PROPERTY(QString member1 MEMBER sMember)
+    Q_PROPERTY(QString member2 MEMBER sMember READ member2)
+    Q_PROPERTY(QString member3 MEMBER sMember WRITE setMember3)
+    Q_PROPERTY(QString member4 MEMBER sMember NOTIFY member4Changed)
+    Q_PROPERTY(QString member5 MEMBER sMember NOTIFY member5Changed)
+    Q_PROPERTY(QString member6 MEMBER sConst CONSTANT)
 
 public:
-    inline tst_Moc() {}
+    inline tst_Moc() : sConst("const") {}
 
 private slots:
     void initTestCase();
@@ -546,6 +554,9 @@ private slots:
     void cxx11Enums_data();
     void cxx11Enums();
     void returnRefs();
+    void memberProperties_data();
+    void memberProperties();
+
     void privateSignalConnection();
     void finalClasses_data();
     void finalClasses();
@@ -565,6 +576,8 @@ signals:
     void sigWithCustomType(const MyStruct);
     void constSignal1() const;
     void constSignal2(int arg) const;
+    void member4Changed();
+    void member5Changed(const QString &newVal);
 
 private:
     bool user1() { return true; };
@@ -572,10 +585,15 @@ private:
     bool user3() { return false; };
     bool userFunction(){ return false; };
     template <class T> void revisions_T();
+    QString member2() const { return sMember; }
+    void setMember3( const QString &sVal ) { sMember = sVal; }
 
 private:
     QString qtIncludePath;
     class PrivateClass;
+    QString sMember;
+    const QString sConst;
+    PrivatePropertyTest *pPPTest;
 };
 
 void tst_Moc::initTestCase()
@@ -1164,25 +1182,38 @@ class PrivatePropertyTest : public QObject
     Q_PRIVATE_PROPERTY(d, int bar READ bar WRITE setBar)
     Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, int plop READ plop WRITE setPlop)
     Q_PRIVATE_PROPERTY(PrivatePropertyTest::d_func(), int baz READ baz WRITE setBaz)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub MEMBER mBlub)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub2 MEMBER mBlub READ blub)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub3 MEMBER mBlub WRITE setBlub)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub4 MEMBER mBlub NOTIFY blub4Changed)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub5 MEMBER mBlub NOTIFY blub5Changed)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub6 MEMBER mConst CONSTANT)
     class MyDPointer {
     public:
-        MyDPointer() : mBar(0), mPlop(0) {}
+        MyDPointer() : mConst("const"), mBar(0), mPlop(0) {}
         int bar() { return mBar ; }
         void setBar(int value) { mBar = value; }
         int plop() { return mPlop ; }
         void setPlop(int value) { mPlop = value; }
         int baz() { return mBaz ; }
         void setBaz(int value) { mBaz = value; }
+        QString blub() const { return mBlub; }
+        void setBlub(const QString &value) { mBlub = value; }
+        QString mBlub;
+        const QString mConst;
     private:
         int mBar;
         int mPlop;
         int mBaz;
     };
 public:
-    PrivatePropertyTest() : mFoo(0), d (new MyDPointer) {}
+    PrivatePropertyTest(QObject *parent = 0) : QObject(parent), mFoo(0), d (new MyDPointer) {}
     int foo() { return mFoo ; }
     void setFoo(int value) { mFoo = value; }
     MyDPointer *d_func() {return d;}
+signals:
+    void blub4Changed();
+    void blub5Changed(const QString &newBlub);
 private:
     int mFoo;
     MyDPointer *d;
@@ -1236,7 +1267,7 @@ void tst_Moc::warnOnPropertyWithoutREAD()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, QString(SRCDIR) +
-                QString("/warn-on-property-without-read.h:46: Warning: Property declaration foo has no READ accessor function. The property will be invalid.\n"));
+                QString("/warn-on-property-without-read.h:46: Warning: Property declaration foo has no READ accessor function or associated MEMBER variable. The property will be invalid.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1640,7 +1671,7 @@ void tst_Moc::warnings_data()
         << QStringList()
         << 0
         << QString("IGNORE_ALL_STDOUT")
-        << QString("standard input:1: Warning: Property declaration x has no READ accessor function. The property will be invalid.");
+        << QString("standard input:1: Warning: Property declaration x has no READ accessor function or associated MEMBER variable. The property will be invalid.");
 
     // Passing "-nn" should NOT suppress the warning
     QTest::newRow("Invalid property warning with -nn")
@@ -1648,7 +1679,7 @@ void tst_Moc::warnings_data()
         << (QStringList() << "-nn")
         << 0
         << QString("IGNORE_ALL_STDOUT")
-        << QString("standard input:1: Warning: Property declaration x has no READ accessor function. The property will be invalid.");
+        << QString("standard input:1: Warning: Property declaration x has no READ accessor function or associated MEMBER variable. The property will be invalid.");
 
     // Passing "-nw" should suppress the warning
     QTest::newRow("Invalid property warning with -nw")
@@ -1780,6 +1811,86 @@ void tst_Moc::returnRefs()
     QVERIFY(mobj->indexOfMethod("myInvokableReturningConstRef()") != -1);
     // Those two functions are copied from the qscriptextqobject test in qtscript
     // they used to cause miscompilation of the moc generated file.
+}
+
+void tst_Moc::memberProperties_data()
+{
+    QTest::addColumn<int>("object");
+    QTest::addColumn<QString>("property");
+    QTest::addColumn<QString>("signal");
+    QTest::addColumn<QString>("writeValue");
+    QTest::addColumn<bool>("expectedWriteResult");
+    QTest::addColumn<QString>("expectedReadResult");
+
+    pPPTest = new PrivatePropertyTest( this );
+
+    QTest::newRow("MEMBER property")
+            << 0 << "member1" << "" << "abc" << true << "abc";
+    QTest::newRow("MEMBER property with READ function")
+            << 0 << "member2" << "" << "def" << true << "def";
+    QTest::newRow("MEMBER property with WRITE function")
+            << 0 << "member3" << "" << "ghi" << true << "ghi";
+    QTest::newRow("MEMBER property with NOTIFY")
+            << 0 << "member4" << "member4Changed()" << "lmn" << true << "lmn";
+    QTest::newRow("MEMBER property with NOTIFY(value)")
+            << 0 << "member5" << "member5Changed(const QString&)" << "opq" << true << "opq";
+    QTest::newRow("MEMBER property with CONSTANT")
+            << 0 << "member6" << "" << "test" << false << "const";
+    QTest::newRow("private MEMBER property")
+            << 1 << "blub" << "" << "abc" << true << "abc";
+    QTest::newRow("private MEMBER property with READ function")
+            << 1 << "blub2" << "" << "def" << true << "def";
+    QTest::newRow("private MEMBER property with WRITE function")
+            << 1 << "blub3" << "" << "ghi" << true << "ghi";
+    QTest::newRow("private MEMBER property with NOTIFY")
+            << 1 << "blub4" << "blub4Changed()" << "jkl" << true << "jkl";
+    QTest::newRow("private MEMBER property with NOTIFY(value)")
+            << 1 << "blub5" << "blub5Changed(const QString&)" << "mno" << true << "mno";
+    QTest::newRow("private MEMBER property with CONSTANT")
+            << 1 << "blub6" << "" << "test" << false << "const";
+}
+
+void tst_Moc::memberProperties()
+{
+    QFETCH(int, object);
+    QFETCH(QString, property);
+    QFETCH(QString, signal);
+    QFETCH(QString, writeValue);
+    QFETCH(bool, expectedWriteResult);
+    QFETCH(QString, expectedReadResult);
+
+    QObject *pObj = (object == 0) ? this : static_cast<QObject*>(pPPTest);
+
+    QString sSignalDeclaration;
+    if (!signal.isEmpty())
+        sSignalDeclaration = QString(SIGNAL(%1)).arg(signal);
+    else
+        QTest::ignoreMessage(QtWarningMsg, "QSignalSpy: Not a valid signal, use the SIGNAL macro");
+    QSignalSpy notifySpy(pObj, sSignalDeclaration.toLatin1().constData());
+
+    int index = pObj->metaObject()->indexOfProperty(property.toLatin1().constData());
+    QVERIFY(index != -1);
+    QMetaProperty prop = pObj->metaObject()->property(index);
+
+    QCOMPARE(prop.write(pObj, writeValue), expectedWriteResult);
+
+    QVariant readValue = prop.read(pObj);
+    QCOMPARE(readValue.toString(), expectedReadResult);
+
+    if (!signal.isEmpty())
+    {
+        QCOMPARE(notifySpy.count(), 1);
+        if (prop.notifySignal().parameterNames().size() > 0) {
+            QList<QVariant> arguments = notifySpy.takeFirst();
+            QCOMPARE(arguments.size(), 1);
+            QCOMPARE(arguments.at(0).toString(), expectedReadResult);
+        }
+
+        notifySpy.clear();
+        // a second write with the same value should not cause the signal to be emitted again
+        QCOMPARE(prop.write(pObj, writeValue), expectedWriteResult);
+        QCOMPARE(notifySpy.count(), 0);
+    }
 }
 
 class SignalConnectionTester : public QObject

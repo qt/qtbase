@@ -1059,6 +1059,12 @@ void Moc::createPropertyDef(PropertyDef &propDef)
                 v2 = "()";
         }
         switch (l[0]) {
+        case 'M':
+            if (l == "MEMBER")
+                propDef.member = v;
+            else
+                error(2);
+            break;
         case 'R':
             if (l == "READ")
                 propDef.read = v;
@@ -1099,11 +1105,11 @@ void Moc::createPropertyDef(PropertyDef &propDef)
             error(2);
         }
     }
-    if (propDef.read.isNull()) {
+    if (propDef.read.isNull() && propDef.member.isNull()) {
         QByteArray msg;
         msg += "Property declaration ";
         msg += propDef.name;
-        msg += " has no READ accessor function. The property will be invalid.";
+        msg += " has no READ accessor function or associated MEMBER variable. The property will be invalid.";
         warning(msg.constData());
     }
     if (propDef.constant && !propDef.write.isNull()) {
@@ -1515,7 +1521,7 @@ void Moc::checkProperties(ClassDef *cdef)
     //
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         PropertyDef &p = cdef->propertyList[i];
-        if (p.read.isEmpty())
+        if (p.read.isEmpty() && p.member.isEmpty())
             continue;
         for (int j = 0; j < cdef->publicList.count(); ++j) {
             const FunctionDef &f = cdef->publicList.at(j);

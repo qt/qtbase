@@ -719,7 +719,9 @@ void Generator::generateProperties()
         uint flags = Invalid;
         if (!isBuiltinType(p.type))
             flags |= EnumOrFlag;
-        if (!p.read.isEmpty())
+        if (!p.member.isEmpty() && !p.constant)
+            flags |= Writable;
+        if (!p.read.isEmpty() || !p.member.isEmpty())
             flags |= Readable;
         if (!p.write.isEmpty()) {
             flags |= Writable;
@@ -893,12 +895,12 @@ void Generator::generateMetacall()
         bool needUser = false;
         for (int i = 0; i < cdef->propertyList.size(); ++i) {
             const PropertyDef &p = cdef->propertyList.at(i);
-            needGet |= !p.read.isEmpty();
+            needGet |= !p.read.isEmpty() || !p.member.isEmpty();
             if (!p.read.isEmpty())
                 needTempVarForGet |= (p.gspec != PropertyDef::PointerSpec
                                       && p.gspec != PropertyDef::ReferenceSpec);
 
-            needSet |= !p.write.isEmpty();
+            needSet |= !p.write.isEmpty() || (!p.member.isEmpty() && !p.constant);
             needReset |= !p.reset.isEmpty();
             needDesignable |= p.designable.endsWith(')');
             needScriptable |= p.scriptable.endsWith(')');
@@ -917,7 +919,7 @@ void Generator::generateMetacall()
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
                 const PropertyDef &p = cdef->propertyList.at(propindex);
-                if (p.read.isEmpty())
+                if (p.read.isEmpty() && p.member.isEmpty())
                     continue;
                 QByteArray prefix;
                 if (p.inPrivateClass.size()) {
@@ -933,9 +935,12 @@ void Generator::generateMetacall()
                 else if (cdef->enumDeclarations.value(p.type, false))
                     fprintf(out, "        case %d: *reinterpret_cast<int*>(_v) = QFlag(%s%s()); break;\n",
                             propindex, prefix.constData(), p.read.constData());
-                else
+                else if (!p.read.isEmpty())
                     fprintf(out, "        case %d: *reinterpret_cast< %s*>(_v) = %s%s(); break;\n",
                             propindex, p.type.constData(), prefix.constData(), p.read.constData());
+                else
+                    fprintf(out, "        case %d: *reinterpret_cast< %s*>(_v) = %s%s; break;\n",
+                            propindex, p.type.constData(), prefix.constData(), p.member.constData());
             }
             fprintf(out, "        }\n");
         }
@@ -952,7 +957,9 @@ void Generator::generateMetacall()
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
                 const PropertyDef &p = cdef->propertyList.at(propindex);
-                if (p.write.isEmpty())
+                if (p.constant)
+                    continue;
+                if (p.write.isEmpty() && p.member.isEmpty())
                     continue;
                 QByteArray prefix;
                 if (p.inPrivateClass.size()) {
@@ -962,9 +969,25 @@ void Generator::generateMetacall()
                 if (cdef->enumDeclarations.value(p.type, false)) {
                     fprintf(out, "        case %d: %s%s(QFlag(*reinterpret_cast<int*>(_v))); break;\n",
                             propindex, prefix.constData(), p.write.constData());
-                } else {
+                } else if (!p.write.isEmpty()) {
                     fprintf(out, "        case %d: %s%s(*reinterpret_cast< %s*>(_v)); break;\n",
                             propindex, prefix.constData(), p.write.constData(), p.type.constData());
+                } else {
+                    fprintf(out, "        case %d:\n", propindex);
+                    fprintf(out, "            if (%s%s != *reinterpret_cast< %s*>(_v)) {\n",
+                            prefix.constData(), p.member.constData(), p.type.constData());
+                    fprintf(out, "                %s%s = *reinterpret_cast< %s*>(_v);\n",
+                            prefix.constData(), p.member.constData(), p.type.constData());
+                    if (!p.notify.isEmpty() && p.notifyId != -1) {
+                        const FunctionDef &f = cdef->signalList.at(p.notifyId);
+                        if (f.arguments.size() == 0)
+                            fprintf(out, "                emit %s();\n", p.notify.constData());
+                        else if (f.arguments.size() == 1 && f.arguments.at(0).normalizedType == p.type)
+                            fprintf(out, "                emit %s(%s%s);\n",
+                                    p.notify.constData(), prefix.constData(), p.member.constData());
+                    }
+                    fprintf(out, "            }\n");
+                    fprintf(out, "            break;\n");
                 }
             }
             fprintf(out, "        }\n");

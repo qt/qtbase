@@ -53,16 +53,22 @@
 
     \snippet code/doc_src_properties.cpp 1
 
+    Here is an example showing how to export member variables as Qt
+    properties using the \c MEMBER keyword.
+    Note that a \c NOTIFY signal must be specified to allow QML property bindings.
+
+    \snippet code/doc_src_properties.cpp 8
+
     A property behaves like a class data member, but it has additional
     features accessible through the \l {Meta-Object System}.
 
     \list 
 
-    \li A \c READ accessor function is required. It is for reading the
-    property value. Ideally, a const function is used for this purpose,
-    and it must return either the property's type or a pointer or
-    reference to that type. e.g., QWidget::focus is a read-only property
-    with \c READ function, QWidget::hasFocus().
+    \li A \c READ accessor function is required if no \c MEMBER variable was
+    specified. It is for reading the property value. Ideally, a const function
+    is used for this purpose, and it must return either the property's type or a
+    pointer or reference to that type. e.g., QWidget::focus is a read-only
+    property with \c READ function, QWidget::hasFocus().
 
     \li A \c WRITE accessor function is optional. It is for setting the
     property value. It must return void and must take exactly one
@@ -70,6 +76,13 @@
     to that type. e.g., QWidget::enabled has the \c WRITE function
     QWidget::setEnabled().  Read-only properties do not need \c WRITE
     functions. e.g., QWidget::focus has no \c WRITE function.
+
+    \li A \c MEMBER variable association is required if no \c READ accessor
+    function is specified. This makes the given member variable
+    readable and writable without the need of creating \c READ and \c WRITE accessor
+    functions. It's still possible to use \c READ or \c WRITE accessor functions in
+    addition to \c MEMBER variable association (but not both), if you need to
+    control the variable access.
 
     \li A \c RESET function is optional. It is for setting the property
     back to its context specific default value. e.g., QWidget::cursor
@@ -82,6 +95,9 @@
     \li A \c NOTIFY signal is optional. If defined, it should specify one
     existing signal in that class that is emitted whenever the value
     of the property changes.
+    \c NOTIFY signals for \c MEMBER variables must take zero or one parameter,
+    which must be of the same type as the property. The parameter will take the
+    new value of the property.
 
     \li A \c REVISION number is optional. If included, it defines
     the property and its notifier signal to be used in a particular
