@@ -1,14 +1,13 @@
-TARGET = qlinuxfbgraphicssystem
+TARGET = qlinuxfb
 load(qt_plugin)
 
 DESTDIR = $$QT.gui.plugins/platforms
 
 QT += core-private gui-private platformsupport-private
 
-SOURCES = main.cpp qlinuxfbintegration.cpp
-HEADERS = qlinuxfbintegration.h
+SOURCES = main.cpp qlinuxfbintegration.cpp qlinuxfbscreen.cpp
+HEADERS = qlinuxfbintegration.h qlinuxfbscreen.h
 
-include(../../../platformsupport/fb_base/fb_base.pri)
 CONFIG += qpa/genericunixfontdatabase
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms

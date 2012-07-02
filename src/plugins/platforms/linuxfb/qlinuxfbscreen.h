@@ -39,83 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QLINUXFBINTEGRATION_H
-#define QLINUXFBINTEGRATION_H
-
-#include <qpa/qplatformintegration.h>
+#ifndef QLINUXFBSCREEN_H
+#define QLINUXFBSCREEN_H
 
 #include <QtPlatformSupport/private/qfbscreen_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QLinuxFbIntegrationPrivate;
-struct fb_cmap;
-struct fb_var_screeninfo;
-struct fb_fix_screeninfo;
-class QAbstractEventDispatcher;
-class QLinuxFbScreen;
+class QPainter;
 
-class QLinuxFbIntegration : public QPlatformIntegration
+class QLinuxFbScreen : public QFbScreen
 {
+    Q_OBJECT
 public:
-    QLinuxFbIntegration();
-    ~QLinuxFbIntegration();
+    QLinuxFbScreen(uchar * d, int w, int h, int lstep, QImage::Format screenFormat);
+    void setGeometry(QRect rect);
+    void setFormat(QImage::Format format);
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-
-    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-    QPlatformFontDatabase *fontDatabase() const;
+public slots:
+    QRegion doRedraw();
 
 private:
-    QLinuxFbScreen *mPrimaryScreen;
-    QList<QPlatformScreen *> mScreens;
-    QLinuxFbIntegrationPrivate *d_ptr;
+    QImage *mFbScreenImage;
+    uchar *data;
+    int bytesPerLine;
 
-    enum PixelType { NormalPixel, BGRPixel };
-
-    QRgb screenclut[256];
-    int screencols;
-
-    uchar * data;
-
-    QImage::Format screenFormat;
-    int w;
-    int lstep;
-    int h;
-    int d;
-    PixelType pixeltype;
-    bool grayscale;
-
-    int dw;
-    int dh;
-
-    int size;               // Screen size
-    int mapsize;       // Total mapped memory
-
-    int displayId;
-
-    int physWidth;
-    int physHeight;
-
-    bool canaccel;
-    int dataoffset;
-    int cacheStart;
-
-    bool connect(const QString &displaySpec);
-    bool initDevice();
-    void setPixelFormat(struct fb_var_screeninfo);
-    void createPalette(fb_cmap &cmap, fb_var_screeninfo &vinfo, fb_fix_screeninfo &finfo);
-    void blank(bool on);
-    QPlatformFontDatabase *fontDb;
+    QPainter *compositePainter;
 };
 
 QT_END_NAMESPACE
 
-#endif // QLINUXFBINTEGRATION_H
+#endif // QLINUXFBSCREEN_H
 

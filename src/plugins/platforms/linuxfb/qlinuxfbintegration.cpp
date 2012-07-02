@@ -40,9 +40,14 @@
 ****************************************************************************/
 
 #include "qlinuxfbintegration.h"
-#include "../fb_base/fb_base.h"
-#include "qgenericunixfontdatabase.h"
+#include "qlinuxfbscreen.h"
+
+#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtPlatformSupport/private/qfbbackingstore_p.h>
+#include <QtPlatformSupport/private/qfbwindow_p.h>
+#include <QtPlatformSupport/private/qfbcursor_p.h>
+
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
 #include <qimage.h>
@@ -797,21 +802,20 @@ QPlatformPixmap *QLinuxFbIntegration::createPlatformPixmap(QPlatformPixmap::Pixe
     return new QRasterPlatformPixmap(type);
 }
 
-QWindowSurface *QLinuxFbIntegration::createWindowSurface(QWidget *widget, WId) const
+QPlatformBackingStore *QLinuxFbIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    QFbWindowSurface * surface =
-        new QFbWindowSurface(mPrimaryScreen, widget);
+    QFbBackingStore *surface = new QFbBackingStore(mPrimaryScreen, window);
     return surface;
 }
 
-QPlatformWindow *QLinuxFbIntegration::createPlatformWindow(QWidget *widget, WId /*winId*/) const
+QPlatformWindow *QLinuxFbIntegration::createPlatformWindow(QWindow *window) const
 {
-    QFbWindow *w = new QFbWindow(widget);
+    QFbWindow *w = new QFbWindow(window);
     mPrimaryScreen->addWindow(w);
     return w;
 }
 
-QAbstractEventDispatcher *QMinimalIntegration::createEventDispatcher() const
+QAbstractEventDispatcher *QLinuxFbIntegration::guiThreadEventDispatcher() const
 {
     return createUnixEventDispatcher();
 }
@@ -821,61 +825,4 @@ QPlatformFontDatabase *QLinuxFbIntegration::fontDatabase() const
     return fontDb;
 }
 
-QLinuxFbScreen::QLinuxFbScreen(uchar * d, int w,
-    int h, int lstep, QImage::Format screenFormat) : compositePainter(0)
-{
-    data = d;
-    mGeometry = QRect(0,0,w,h);
-    bytesPerLine = lstep;
-    mFormat = screenFormat;
-    mDepth = 16;
-    mScreenImage = new QImage(mGeometry.width(), mGeometry.height(),
-                              mFormat);
-    mFbScreenImage = new QImage(data, mGeometry.width(), mGeometry.height(),
-                              bytesPerLine, mFormat);
-    cursor = new QPlatformSoftwareCursor(this);
-}
-
-void QLinuxFbScreen::setGeometry(QRect rect)
-{
-    mGeometry = rect;
-    delete mFbScreenImage;
-    mFbScreenImage = new QImage(data, mGeometry.width(), mGeometry.height(),
-                           bytesPerLine, mFormat);
-    delete compositePainter;
-    compositePainter = 0;
-
-    delete mScreenImage;
-    mScreenImage = new QImage(mGeometry.width(), mGeometry.height(),
-                              mFormat);
-}
-
-void QLinuxFbScreen::setFormat(QImage::Format format)
-{
-    mFormat = format;
-    delete mFbScreenImage;
-    mFbScreenImage = new QImage(data, mGeometry.width(), mGeometry.height(),
-                             bytesPerLine, mFormat);
-    delete compositePainter;
-    compositePainter = 0;
-
-    delete mScreenImage;
-    mScreenImage = new QImage(mGeometry.width(), mGeometry.height(),
-                              mFormat);
-}
-
-QRegion QLinuxFbScreen::doRedraw()
-{
-    QRegion touched;
-    touched = QFbScreen::doRedraw();
-
-    if (!compositePainter) {
-        compositePainter = new QPainter(mFbScreenImage);
-    }
-
-    QVector<QRect> rects = touched.rects();
-    for (int i = 0; i < rects.size(); i++)
-        compositePainter->drawImage(rects[i], *mScreenImage, rects[i]);
-    return touched;
-}
 QT_END_NAMESPACE
