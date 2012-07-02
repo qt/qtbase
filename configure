@@ -747,6 +747,7 @@ CFG_XCB=auto
 CFG_XCB_LIMITED=yes
 CFG_EGLFS=auto
 CFG_DIRECTFB=auto
+CFG_LINUXFB=auto
 CFG_LIBUDEV=auto
 CFG_OBSOLETE_WAYLAND=no
 CFG_EVDEV=auto
@@ -1656,6 +1657,13 @@ while [ "$#" -gt 0 ]; do
     directfb)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_DIRECTFB="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    linuxfb)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_LINUXFB="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2848,6 +2856,15 @@ if [ "$OPT_HELP" = "yes" ]; then
         DFBY="*"
         DFBN=" "
     fi
+
+    if [ "$CFG_LINUXFB" = "no" ]; then
+        LFBY=" "
+        LFBN="*"
+    else
+        LFBY="*"
+        LFBN=" "
+    fi
+
     if [ "$CFG_XINPUT2" = "no" ]; then
         X2Y=" "
         X2N="*"
@@ -3139,6 +3156,9 @@ Additional options:
 
  $DFBN  -no-directfb ....... Do not compile DirectFB support.
  $DFBY  -directfb .......... Compile DirectFB support.
+
+ $LFBN  -no-linuxfb ........ Do not compile Linux Framebuffer support.
+ $LFBY  -linuxfb ........... Compile Linux Framebuffer support.
 
     -qpa <name> ......... Sets the default QPA platform (e.g xcb, cocoa, windows).
 
@@ -4592,6 +4612,7 @@ fi
 ORIG_CFG_XCB="$CFG_XCB"
 ORIG_CFG_EGLFS="$CFG_EGLFS"
 ORIG_CFG_DIRECTFB="$CFG_DIRECTFB"
+ORIG_CFG_LINUXFB="$CFG_LINUXFB"
 
 if [ "$CFG_LIBUDEV" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libudev 2>/dev/null; then
@@ -4717,6 +4738,20 @@ if [ "$CFG_DIRECTFB" != "no" ]; then
     fi
 fi
 
+if [ "$CFG_LINUXFB" != "no" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/qpa/linuxfb" "LinuxFB" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
+        CFG_LINUXFB=yes
+    elif [ "$CFG_LINUXFB" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+        echo " Linux Framebuffer support cannot be enabled due to functionality tests!"
+        echo " Turn on verbose messaging (-v) to $0 to see the final report."
+        echo " If you believe this message is in error you may use the continue"
+        echo " switch (-continue) to $0 to continue."
+        exit 101
+    else
+        CFG_LINUXFB=no
+    fi
+fi
+
 # Detect libxkbcommon
 if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
     QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
@@ -4790,6 +4825,9 @@ if [ "$CFG_DIRECTFB" = "yes" ]; then
     QMakeVar set QMAKE_CFLAGS_DIRECTFB "$QMAKE_CFLAGS_DIRECTFB"
     QMakeVar set QMAKE_LIBS_DIRECTFB "$QMAKE_LIBS_DIRECTFB"
 fi
+if [ "$CFG_LINUXFB" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG linuxfb"
+fi
 
 if [ "$BUILD_ON_MAC" = "yes" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
@@ -4800,9 +4838,9 @@ if [ "$BUILD_ON_MAC" = "yes" ]; then
 fi
 
 if [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ]; then
-    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ]; then
+    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ]; then
         if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
-            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] ); then
+            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] ); then
         echo "No QPA platform plugin enabled!"
         echo " If you really want to build without a QPA platform plugin you must pass"
         echo " -no-qpa-platform-guard to configure. Doing this will"
@@ -6093,6 +6131,7 @@ if [ "$XPLATFORM_MAEMO" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
 fi
 echo "EGLFS support .......... $CFG_EGLFS"
 echo "DirectFB support ....... $CFG_DIRECTFB"
+echo "LinuxFB support ........ $CFG_LINUXFB"
 echo
 
 # complain about not being able to use dynamic plugins if we are using a static build

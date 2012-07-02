@@ -22,3 +22,5 @@ contains(QT_CONFIG, eglfs) {
 contains(QT_CONFIG, directfb) {
     SUBDIRS += directfb
 }
+
+contains(QT_CONFIG, linuxfb): SUBDIRS += linuxfb
