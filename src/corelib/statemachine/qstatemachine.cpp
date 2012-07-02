@@ -751,7 +751,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
                 }
             }
             if (!found) {
-                assn.object->setProperty(assn.propertyName, assn.value);
+                assn.write();
             }
         }
     }
@@ -840,7 +840,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
             const QList<QPropertyAssignment> &assignments = it.value();
             for (int i = 0; i < assignments.size(); ++i) {
                 const QPropertyAssignment &assn = assignments.at(i);
-                assn.object->setProperty(assn.propertyName, assn.value);
+                assn.write();
             }
         }
     }
@@ -1133,8 +1133,7 @@ void QStateMachinePrivate::_q_animationFinished()
 #ifndef QT_NO_PROPERTIES
     // Set the final property value.
     QPropertyAssignment assn = propertyForAnimation.take(anim);
-    Q_ASSERT(assn.object != 0);
-    assn.object->setProperty(assn.propertyName, assn.value);
+    assn.write();
     if (!assn.explicitlySet)
         unregisterRestorable(assn.object, assn.propertyName);
 #endif

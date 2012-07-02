@@ -72,6 +72,7 @@ struct QPropertyAssignment
         {}
 
     bool objectDeleted() const { return !object; }
+    void write() const { Q_ASSERT(object != 0); object->setProperty(propertyName, value); }
 
     QPointer<QObject> object;
     QByteArray propertyName;
