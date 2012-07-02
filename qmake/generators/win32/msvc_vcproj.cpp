@@ -1174,9 +1174,8 @@ void VcprojGenerator::initDeploymentTool()
             // create output path
             devicePath = Option::fixPathToLocalOS(QDir::cleanPath(targetPath + QLatin1Char('\\') + devicePath));
         }
-        // foreach d in item.sources
-        // ### Qt 5: remove .sources, inconsistent with INSTALLS
-        foreach(QString source, project->values(item + ".sources") + project->values(item + ".files")) {
+        // foreach d in item.files
+        foreach (QString source, project->values(item + ".files")) {
             QString itemDevicePath = devicePath;
             source = Option::fixPathToLocalOS(source);
             QString nameFilter;
