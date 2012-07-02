@@ -7844,7 +7844,8 @@ public:
 
 private slots:
     void slotTimer() {
-        const QImage im = grab(QRect(QPoint(0, 0), size())).toImage();
+        QScreen *screen = windowHandle()->screen();
+        const QImage im = screen->grabWindow(internalWinId(), 0, 0, -1, -1).toImage();
         color = im.pixel(1, 1);
         accept();
     }
