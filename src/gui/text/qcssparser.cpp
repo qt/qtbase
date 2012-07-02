@@ -702,6 +702,7 @@ static ColorData parseColorValue(QCss::Value v)
     }
 
     bool rgb = lst.at(0).startsWith(QLatin1String("rgb"));
+    bool rgba = lst.at(0).startsWith(QLatin1String("rgba"));
 
     Parser p(lst.at(1));
     if (!p.testExpr())
@@ -723,7 +724,14 @@ static ColorData parseColorValue(QCss::Value v)
     int v1 = colorDigits.at(0).variant.toInt();
     int v2 = colorDigits.at(2).variant.toInt();
     int v3 = colorDigits.at(4).variant.toInt();
-    int alpha = colorDigits.count() >= 7 ? colorDigits.at(6).variant.toInt() : 255;
+    int alpha = 255;
+    if (colorDigits.count() >= 7) {
+        int alphaValue = colorDigits.at(6).variant.toInt();
+        if (rgba && alphaValue <= 1)
+            alpha = colorDigits.at(6).variant.toReal() * 255.;
+        else
+            alpha = alphaValue;
+    }
 
     return rgb ? QColor::fromRgb(v1, v2, v3, alpha)
                : QColor::fromHsv(v1, v2, v3, alpha);

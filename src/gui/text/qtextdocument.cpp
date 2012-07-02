@@ -1990,6 +1990,25 @@ static QTextFormat formatDifference(const QTextFormat &from, const QTextFormat &
     return diff;
 }
 
+static QString colorValue(QColor color)
+{
+    QString result;
+
+    if (color.alpha() == 255) {
+        result = color.name();
+    } else if (color.alpha()) {
+        QString alphaValue = QString::number(color.alphaF(), 'f', 6).remove(QRegExp(QLatin1String("\\.?0*$")));
+        result = QString::fromLatin1("rgba(%1,%2,%3,%4)").arg(color.red())
+                                                         .arg(color.green())
+                                                         .arg(color.blue())
+                                                         .arg(alphaValue);
+    } else {
+        result = QLatin1String("transparent");
+    }
+
+    return result;
+}
+
 QTextHtmlExporter::QTextHtmlExporter(const QTextDocument *_doc)
     : doc(_doc), fragmentMarkers(false)
 {
@@ -2186,7 +2205,7 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
     if (format.foreground() != defaultCharFormat.foreground()
         && format.foreground().style() != Qt::NoBrush) {
         html += QLatin1String(" color:");
-        html += format.foreground().color().name();
+        html += colorValue(format.foreground().color());
         html += QLatin1Char(';');
         attributesEmitted = true;
     }
@@ -2194,7 +2213,7 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
     if (format.background() != defaultCharFormat.background()
         && format.background().style() == Qt::SolidPattern) {
         html += QLatin1String(" background-color:");
-        html += format.background().color().name();
+        html += colorValue(format.background().color());
         html += QLatin1Char(';');
         attributesEmitted = true;
     }
@@ -2729,7 +2748,7 @@ void QTextHtmlExporter::emitBackgroundAttribute(const QTextFormat &format)
     } else {
         const QBrush &brush = format.background();
         if (brush.style() == Qt::SolidPattern) {
-            emitAttribute("bgcolor", brush.color().name());
+            emitAttribute("bgcolor", colorValue(brush.color()));
         } else if (brush.style() == Qt::TexturePattern) {
             const bool isPixmap = qHasPixmapTexture(brush);
             const qint64 cacheKey = isPixmap ? brush.texture().cacheKey() : brush.textureImage().cacheKey();
@@ -2937,7 +2956,7 @@ void QTextHtmlExporter::emitFrameStyle(const QTextFrameFormat &format, FrameType
 
     if (format.borderBrush() != defaultFormat.borderBrush()) {
         html += QLatin1String(" border-color:");
-        html += format.borderBrush().color().name();
+        html += colorValue(format.borderBrush().color());
         html += QLatin1Char(';');
     }
 

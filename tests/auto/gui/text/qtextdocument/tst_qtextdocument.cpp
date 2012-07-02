@@ -110,6 +110,8 @@ private slots:
     void setFragmentMarkersInHtmlExport();
 
     void toHtmlBodyBgColor();
+    void toHtmlBodyBgColorRgba();
+    void toHtmlBodyBgColorTransparent();
     void toHtmlRootFrameProperties();
     void capitalizationHtmlInExport();
     void wordspacingHtmlExport();
@@ -897,6 +899,32 @@ void tst_QTextDocument::toHtml_data()
     {
         CREATE_DOC_AND_CURSOR();
 
+        QTextBlockFormat fmt;
+        fmt.setBackground(QColor(255, 0, 0, 51));
+        cursor.insertBlock(fmt);
+        cursor.insertText("Blah");
+
+        QTest::newRow("bgcolor-rgba") << QTextDocumentFragment(&doc)
+                                      << QString("EMPTYBLOCK") +
+                                         QString("<p OPENDEFAULTBLOCKSTYLE background-color:rgba(255,0,0,0.2);\">Blah</p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextBlockFormat fmt;
+        fmt.setBackground(QColor(255, 0, 0, 0));
+        cursor.insertBlock(fmt);
+        cursor.insertText("Blah");
+
+        QTest::newRow("bgcolor-transparent") << QTextDocumentFragment(&doc)
+                                             << QString("EMPTYBLOCK") +
+                                                QString("<p OPENDEFAULTBLOCKSTYLE background-color:transparent;\">Blah</p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
         QTextCharFormat fmt;
         fmt.setFontWeight(40);
         cursor.insertText("Blah", fmt);
@@ -943,11 +971,55 @@ void tst_QTextDocument::toHtml_data()
         CREATE_DOC_AND_CURSOR();
 
         QTextCharFormat fmt;
+        fmt.setForeground(QColor(0, 255, 0, 51));
+        cursor.insertText("Blah", fmt);
+
+        QTest::newRow("color-rgba") << QTextDocumentFragment(&doc)
+                                    << QString("<p DEFAULTBLOCKSTYLE><span style=\" color:rgba(0,255,0,0.2);\">Blah</span></p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextCharFormat fmt;
+        fmt.setForeground(QColor(0, 255, 0, 0));
+        cursor.insertText("Blah", fmt);
+
+        QTest::newRow("color-transparent") << QTextDocumentFragment(&doc)
+                                           << QString("<p DEFAULTBLOCKSTYLE><span style=\" color:transparent;\">Blah</span></p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextCharFormat fmt;
         fmt.setBackground(QColor("#00ff00"));
         cursor.insertText("Blah", fmt);
 
         QTest::newRow("span-bgcolor") << QTextDocumentFragment(&doc)
                             << QString("<p DEFAULTBLOCKSTYLE><span style=\" background-color:#00ff00;\">Blah</span></p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextCharFormat fmt;
+        fmt.setBackground(QColor(0, 255, 0, 51));
+        cursor.insertText("Blah", fmt);
+
+        QTest::newRow("span-bgcolor-rgba") << QTextDocumentFragment(&doc)
+                                           << QString("<p DEFAULTBLOCKSTYLE><span style=\" background-color:rgba(0,255,0,0.2);\">Blah</span></p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextCharFormat fmt;
+        fmt.setBackground(QColor(0, 255, 0, 0));
+        cursor.insertText("Blah", fmt);
+
+        QTest::newRow("span-bgcolor-transparent") << QTextDocumentFragment(&doc)
+                                                  << QString("<p DEFAULTBLOCKSTYLE><span style=\" background-color:transparent;\">Blah</span></p>");
     }
 
     {
@@ -1698,6 +1770,56 @@ void tst_QTextDocument::toHtmlBodyBgColor()
             "</style></head>"
             "<body style=\" font-family:'%1'; font-size:%2pt; font-weight:%3; font-style:%4;\""
             " bgcolor=\"#0000ff\">\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</p>"
+            "</body></html>");
+
+    expectedHtml = expectedHtml.arg(defaultFont.family()).arg(defaultFont.pointSizeF()).arg(defaultFont.weight() * 8).arg((defaultFont.italic() ? "italic" : "normal"));
+
+    QCOMPARE(doc.toHtml(), expectedHtml);
+}
+
+void tst_QTextDocument::toHtmlBodyBgColorRgba()
+{
+    CREATE_DOC_AND_CURSOR();
+
+    cursor.insertText("Blah");
+
+    QTextFrameFormat fmt = doc.rootFrame()->frameFormat();
+    fmt.setBackground(QColor(255, 0, 0, 51));
+    doc.rootFrame()->setFrameFormat(fmt);
+
+    QString expectedHtml("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
+            "\"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+            "p, li { white-space: pre-wrap; }\n"
+            "</style></head>"
+            "<body style=\" font-family:'%1'; font-size:%2pt; font-weight:%3; font-style:%4;\""
+            " bgcolor=\"rgba(255,0,0,0.2)\">\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</p>"
+            "</body></html>");
+
+    expectedHtml = expectedHtml.arg(defaultFont.family()).arg(defaultFont.pointSizeF()).arg(defaultFont.weight() * 8).arg((defaultFont.italic() ? "italic" : "normal"));
+
+    QCOMPARE(doc.toHtml(), expectedHtml);
+}
+
+void tst_QTextDocument::toHtmlBodyBgColorTransparent()
+{
+    CREATE_DOC_AND_CURSOR();
+
+    cursor.insertText("Blah");
+
+    QTextFrameFormat fmt = doc.rootFrame()->frameFormat();
+    fmt.setBackground(QColor(255, 0, 0, 0));
+    doc.rootFrame()->setFrameFormat(fmt);
+
+    QString expectedHtml("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
+            "\"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+            "p, li { white-space: pre-wrap; }\n"
+            "</style></head>"
+            "<body style=\" font-family:'%1'; font-size:%2pt; font-weight:%3; font-style:%4;\""
+            " bgcolor=\"transparent\">\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</p>"
             "</body></html>");
 

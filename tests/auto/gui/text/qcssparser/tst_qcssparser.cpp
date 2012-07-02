@@ -855,6 +855,7 @@ void tst_QCssParser::colorValue_data()
     QTest::newRow("functional1") << "color: rgb(21, 45, 73)" << QColor(21, 45, 73);
     QTest::newRow("functional2") << "color: rgb(100%, 0%, 100%)" << QColor(0xff, 0, 0xff);
     QTest::newRow("rgba") << "color: rgba(10, 20, 30, 40)" << QColor(10, 20, 30, 40);
+    QTest::newRow("rgbaf") << "color: rgba(10, 20, 30, 0.5)" << QColor(10, 20, 30, 127);
     QTest::newRow("rgb") << "color: rgb(10, 20, 30, 40)" << QColor(10, 20, 30, 40);
     QTest::newRow("hsl") << "color: hsv(10, 20, 30)" << QColor::fromHsv(10, 20, 30, 255);
     QTest::newRow("hsla") << "color: hsva(10, 20, 30, 40)" << QColor::fromHsv(10, 20, 30, 40);
