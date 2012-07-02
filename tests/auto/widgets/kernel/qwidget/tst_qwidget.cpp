@@ -1701,22 +1701,18 @@ void tst_QWidget::activation()
     widget2.showMinimized();
     QTest::qWait(waitTime);
 
-    QEXPECT_FAIL("", "QTBUG-26418", Continue);
     QVERIFY(qApp->activeWindow() == &widget1);
     widget2.showMaximized();
     QTest::qWait(waitTime);
     QVERIFY(qApp->activeWindow() == &widget2);
     widget2.showMinimized();
     QTest::qWait(waitTime);
-    QEXPECT_FAIL("", "QTBUG-26418", Continue);
     QVERIFY(qApp->activeWindow() == &widget1);
     widget2.showNormal();
     QTest::qWait(waitTime);
-#if 0 // QTBUG-26418, widget2 is always set to active
 #ifndef Q_OS_WINCE
     if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA)
         QEXPECT_FAIL("", "MS introduced new behavior after XP", Continue);
-#endif
 #endif
     QTest::qWait(waitTime);
     QVERIFY(qApp->activeWindow() == &widget2);
