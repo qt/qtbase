@@ -4692,7 +4692,7 @@ if [ "$CFG_DIRECTFB" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists directfb 2>/dev/null; then
         QMAKE_CFLAGS_DIRECTFB=`$PKG_CONFIG --cflags directfb 2>/dev/null`
         QMAKE_LIBS_DIRECTFB=`$PKG_CONFIG --libs directfb 2>/dev/null`
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/directfb" "DirectFB" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS $QMAKE_CFLAGS_DIRECTFB $QMAKE_LIBS_DIRECTFB; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/qpa/directfb" "DirectFB" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS $QMAKE_CFLAGS_DIRECTFB $QMAKE_LIBS_DIRECTFB; then
             CFG_DIRECTFB=yes
         elif [ "$CFG_DIRECTFB" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo " DirectFB support cannot be enabled due to functionality tests!"
