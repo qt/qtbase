@@ -116,19 +116,19 @@ INSTALLS += configtests
 
 #mkspecs
 mkspecs.path = $$[QT_HOST_DATA]/mkspecs
-mkspecs.files = $$OUT_PWD/mkspecs/qconfig.pri $$OUT_PWD/mkspecs/qmodule.pri $$OUT_PWD/mkspecs/qdevice.pri $$files($$PWD/mkspecs/*)
+mkspecs.files = \
+    $$OUT_PWD/mkspecs/qconfig.pri $$OUT_PWD/mkspecs/qmodule.pri $$OUT_PWD/mkspecs/qdevice.pri \
+    $$files($$PWD/mkspecs/*)   # $$OUT_PWD contains only symlinks under Unix
 mkspecs.files -= $$PWD/mkspecs/modules
-unix {
-    DEFAULT_QMAKESPEC = $$replace(QMAKESPEC, ^.*mkspecs/, )
-    DEFAULT_XQMAKESPEC = $$replace(XQMAKESPEC, ^.*mkspecs/, )
-    mkspecs.commands = \
-        $(DEL_FILE) $(INSTALL_ROOT)$$mkspecs.path/default-host $(INSTALL_ROOT)$$mkspecs.path/default; \
-        $(SYMLINK) $$DEFAULT_QMAKESPEC $(INSTALL_ROOT)$$mkspecs.path/default-host && \
-        $(SYMLINK) $$DEFAULT_XQMAKESPEC $(INSTALL_ROOT)$$mkspecs.path/default
-    mkspecs.files -= $$PWD/mkspecs/default-host $$PWD/mkspecs/default
-} else:!equals(OUT_PWD, $$PWD) {
-    # When shadow building on Windows, the default mkspec only exists in the build tree.
+!equals(OUT_PWD, $$PWD) {
+    # When shadow building, the default mkspecs only exist in the build tree.
     mkspecs.files += $$OUT_PWD/mkspecs/default-host $$OUT_PWD/mkspecs/default
+}
+!equals(QMAKE_HOST.os, Linux) {
+    # MacOS' (and maybe others') cp command is too daft to honor -f when copying symlinks.
+    mkspecs_pre.commands = rm -f $$[QT_HOST_DATA]/mkspecs/default-host $$[QT_HOST_DATA]/mkspecs/default
+    QMAKE_EXTRA_TARGETS += mkspecs_pre
+    mkspecs.depends += mkspecs_pre
 }
 INSTALLS += mkspecs
 
