@@ -77,12 +77,6 @@ SOURCES += \
     text/qglyphrun.cpp \
     text/qdistancefield.cpp
 
-contains(QT_CONFIG, directwrite) {
-    LIBS_PRIVATE += -ldwrite
-    HEADERS += text/qfontenginedirectwrite_p.h
-    SOURCES += text/qfontenginedirectwrite.cpp
-}
-
 SOURCES += \
       text/qfont_qpa.cpp \
       text/qfontengine_qpa.cpp \
