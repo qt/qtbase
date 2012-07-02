@@ -187,6 +187,8 @@ private slots:
 
     void testIncrementReceivers();
     void initialStateIsEnteredBeforeStartedEmitted();
+    void deletePropertyAssignmentObjectBeforeEntry();
+    void deletePropertyAssignmentObjectBeforeRestore();
 };
 
 class TestState : public QState
@@ -4019,6 +4021,56 @@ void tst_QStateMachine::initialStateIsEnteredBeforeStartedEmitted()
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
     machine.start();
     QTRY_COMPARE(finishedSpy.count(), 1);
+}
+
+void tst_QStateMachine::deletePropertyAssignmentObjectBeforeEntry()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+
+    QObject *o1 = new QObject;
+    s1->assignProperty(o1, "objectName", "foo");
+    delete o1;
+    QObject *o2 = new QObject;
+    s1->assignProperty(o2, "objectName", "bar");
+
+    machine.start();
+    // Shouldn't crash
+    QTRY_VERIFY(machine.configuration().contains(s1));
+
+    QCOMPARE(o2->objectName(), QString::fromLatin1("bar"));
+    delete o2;
+}
+
+void tst_QStateMachine::deletePropertyAssignmentObjectBeforeRestore()
+{
+    QStateMachine machine;
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+    QState *s2 = new QState(&machine);
+    s1->addTransition(new EventTransition(QEvent::User, s2));
+
+    QObject *o1 = new QObject;
+    s1->assignProperty(o1, "objectName", "foo");
+    QObject *o2 = new QObject;
+    s1->assignProperty(o2, "objectName", "bar");
+
+    QVERIFY(o1->objectName().isEmpty());
+    QVERIFY(o2->objectName().isEmpty());
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s1));
+    QCOMPARE(o1->objectName(), QString::fromLatin1("foo"));
+    QCOMPARE(o2->objectName(), QString::fromLatin1("bar"));
+
+    delete o1;
+    machine.postEvent(new QEvent(QEvent::User));
+    // Shouldn't crash
+    QTRY_VERIFY(machine.configuration().contains(s2));
+
+    QVERIFY(o2->objectName().isEmpty());
+    delete o2;
 }
 
 QTEST_MAIN(tst_QStateMachine)

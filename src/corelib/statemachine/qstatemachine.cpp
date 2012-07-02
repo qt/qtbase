@@ -176,6 +176,10 @@ QT_BEGIN_NAMESPACE
 
 // #define QSTATEMACHINE_DEBUG
 
+template <class T>
+static uint qHash(const QPointer<T> &p)
+{ return qHash(p.data()); }
+
 QStateMachinePrivate::QStateMachinePrivate()
 {
     isMachine = true;
@@ -666,14 +670,20 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
         if (!s)
             continue;
 
-        QList<QPropertyAssignment> assignments = QStatePrivate::get(s)->propertyAssignments;
-        for (int j = 0; j < assignments.size(); ++j) {
-            const QPropertyAssignment &assn = assignments.at(j);
-            if (globalRestorePolicy == QStateMachine::RestoreProperties) {
-                registerRestorable(assn.object, assn.propertyName);
+        {
+            QList<QPropertyAssignment> &assignments = QStatePrivate::get(s)->propertyAssignments;
+            for (int j = 0; j < assignments.size(); ++j) {
+                const QPropertyAssignment &assn = assignments.at(j);
+                if (assn.objectDeleted()) {
+                    assignments.removeAt(j--);
+                } else {
+                    if (globalRestorePolicy == QStateMachine::RestoreProperties) {
+                        registerRestorable(assn.object, assn.propertyName);
+                    }
+                    pendingRestorables.remove(RestorableId(assn.object, assn.propertyName));
+                    propertyAssignmentsForState[s].append(assn);
+                }
             }
-            pendingRestorables.remove(RestorableId(assn.object, assn.propertyName));
-            propertyAssignmentsForState[s].append(assn);
         }
 
         // Remove pending restorables for all parent states to avoid restoring properties
@@ -681,12 +691,16 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
         // assign a property which is assigned by the parent, it inherits the parent's assignment.
         QState *parentState = s;
         while ((parentState = parentState->parentState()) != 0) {
-            assignments = QStatePrivate::get(parentState)->propertyAssignments;
+            QList<QPropertyAssignment> &assignments = QStatePrivate::get(parentState)->propertyAssignments;
             for (int j=0; j<assignments.size(); ++j) {
                 const QPropertyAssignment &assn = assignments.at(j);
-                int c = pendingRestorables.remove(RestorableId(assn.object, assn.propertyName));
-                if (c > 0)
-                    propertyAssignmentsForState[s].append(assn);                
+                if (assn.objectDeleted()) {
+                    assignments.removeAt(j--);
+                } else {
+                    int c = pendingRestorables.remove(RestorableId(assn.object, assn.propertyName));
+                    if (c > 0)
+                        propertyAssignmentsForState[s].append(assn);
+                }
             }
         }
     }
@@ -967,6 +981,10 @@ QList<QPropertyAssignment> QStateMachinePrivate::restorablesToPropertyList(const
     QHash<RestorableId, QVariant>::const_iterator it;
     for (it = restorables.constBegin(); it != restorables.constEnd(); ++it) {
 //        qDebug() << "restorable:" << it.key().first << it.key().second << it.value();
+        if (!it.key().first) {
+            // Property object was deleted
+            continue;
+        }
         result.append(QPropertyAssignment(it.key().first, it.key().second, it.value(), /*explicitlySet=*/false));
     }
     return result;

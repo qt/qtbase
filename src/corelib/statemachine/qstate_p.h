@@ -57,6 +57,7 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qpointer.h>
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
@@ -69,7 +70,10 @@ struct QPropertyAssignment
                         const QVariant &v, bool es = true)
         : object(o), propertyName(n), value(v), explicitlySet(es)
         {}
-    QObject *object;
+
+    bool objectDeleted() const { return !object; }
+
+    QPointer<QObject> object;
     QByteArray propertyName;
     QVariant value;
     bool explicitlySet;

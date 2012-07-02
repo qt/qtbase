@@ -60,6 +60,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qpair.h>
+#include <QtCore/qpointer.h>
 #include <QtCore/qset.h>
 #include <QtCore/qvector.h>
 #include <private/qfreelist_p.h>
@@ -183,7 +184,7 @@ public:
     void cancelAllDelayedEvents();
     
 #ifndef QT_NO_PROPERTIES
-    typedef QPair<QObject *, QByteArray> RestorableId;
+    typedef QPair<QPointer<QObject>, QByteArray> RestorableId;
     QHash<RestorableId, QVariant> registeredRestorables;
     void registerRestorable(QObject *object, const QByteArray &propertyName);
     void unregisterRestorable(QObject *object, const QByteArray &propertyName);
