@@ -176,6 +176,10 @@
 #define VREFRESH 116
 #endif
 
+#ifndef SM_SWAPBUTTON
+#define SM_SWAPBUTTON 23
+#endif
+
 // application defines
 #define SPI_SETNONCLIENTMETRICS 72
 #define SPI_SETICONTITLELOGFONT 0x0022
