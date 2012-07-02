@@ -57,6 +57,7 @@ class QItemSelection;
 class Q_CORE_EXPORT QAbstractProxyModel : public QAbstractItemModel
 {
     Q_OBJECT
+    Q_PROPERTY(QAbstractItemModel* sourceModel READ sourceModel WRITE setSourceModel NOTIFY sourceModelChanged)
 
 public:
     explicit QAbstractProxyModel(QObject *parent = 0);
@@ -93,6 +94,9 @@ public:
     QMimeData* mimeData(const QModelIndexList &indexes) const;
     QStringList mimeTypes() const;
     Qt::DropActions supportedDropActions() const;
+
+Q_SIGNALS:
+    void sourceModelChanged();
 
 protected:
     QAbstractProxyModel(QAbstractProxyModelPrivate &, QObject *parent);

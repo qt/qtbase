@@ -122,16 +122,19 @@ QAbstractProxyModel::~QAbstractProxyModel()
 void QAbstractProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
     Q_D(QAbstractProxyModel);
-    if (d->model)
-        disconnect(d->model, SIGNAL(destroyed()), this, SLOT(_q_sourceModelDestroyed()));
+    if (sourceModel != d->model) {
+        if (d->model)
+            disconnect(d->model, SIGNAL(destroyed()), this, SLOT(_q_sourceModelDestroyed()));
 
-    if (sourceModel) {
-        d->model = sourceModel;
-        connect(d->model, SIGNAL(destroyed()), this, SLOT(_q_sourceModelDestroyed()));
-    } else {
-        d->model = QAbstractItemModelPrivate::staticEmptyModel();
+        if (sourceModel) {
+            d->model = sourceModel;
+            connect(d->model, SIGNAL(destroyed()), this, SLOT(_q_sourceModelDestroyed()));
+        } else {
+            d->model = QAbstractItemModelPrivate::staticEmptyModel();
+        }
+        d->roleNames = d->model->roleNames();
+        emit sourceModelChanged();
     }
-    d->roleNames = d->model->roleNames();
 }
 
 /*!

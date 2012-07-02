@@ -283,14 +283,24 @@ void tst_QAbstractProxyModel::revert()
 // public void setSourceModel(QAbstractItemModel* sourceModel)
 void tst_QAbstractProxyModel::setSourceModel()
 {
+    qRegisterMetaType<QAbstractItemModel*>();
+
     SubQAbstractProxyModel model;
+
+    QCOMPARE(model.property("sourceModel"), QVariant::fromValue<QAbstractItemModel*>(0));
     QStandardItemModel *sourceModel = new QStandardItemModel(&model);
     model.setSourceModel(sourceModel);
     QCOMPARE(model.sourceModel(), static_cast<QAbstractItemModel*>(sourceModel));
 
+    QCOMPARE(model.property("sourceModel").value<QObject*>(), static_cast<QObject*>(sourceModel));
+    QCOMPARE(model.property("sourceModel").value<QAbstractItemModel*>(), sourceModel);
+
     QStandardItemModel *sourceModel2 = new QStandardItemModel(&model);
     model.setSourceModel(sourceModel2);
     QCOMPARE(model.sourceModel(), static_cast<QAbstractItemModel*>(sourceModel2));
+
+    QCOMPARE(model.property("sourceModel").value<QObject*>(), static_cast<QObject*>(sourceModel2));
+    QCOMPARE(model.property("sourceModel").value<QAbstractItemModel*>(), sourceModel2);
 
     delete sourceModel2;
     QCOMPARE(model.sourceModel(), static_cast<QAbstractItemModel*>(0));
