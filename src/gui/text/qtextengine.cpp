@@ -1123,7 +1123,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
             shaper_item.advances = reinterpret_cast<HB_Fixed *>(g.advances_x);
             shaper_item.offsets = reinterpret_cast<HB_FixedPoint *>(g.offsets);
 
-            if (shaper_item.glyphIndicesPresent) {
+            if (engineIdx != 0 && shaper_item.glyphIndicesPresent) {
                 for (hb_uint32 i = 0; i < shaper_item.initialGlyphCount; ++i)
                     shaper_item.glyphs[i] &= 0x00ffffff;
             }
@@ -1136,14 +1136,16 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
         QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos, shaper_item.num_glyphs);
         moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
 
-        for (hb_uint32 i = 0; i < shaper_item.num_glyphs; ++i)
-            g.glyphs[i] = g.glyphs[i] | (engineIdx << 24);
-
         for (hb_uint32 i = 0; i < shaper_item.item.length; ++i)
             shaper_item.log_clusters[i] += glyph_pos;
 
         if (kerningEnabled && !shaper_item.kerning_applied)
-            font->doKerning(&g, option.useDesignMetrics() ? QFlag(QTextEngine::DesignMetrics) : QFlag(0));
+            actualFontEngine->doKerning(&g, option.useDesignMetrics() ? QFlag(QTextEngine::DesignMetrics) : QFlag(0));
+
+        if (engineIdx != 0) {
+            for (hb_uint32 i = 0; i < shaper_item.num_glyphs; ++i)
+                g.glyphs[i] |= (engineIdx << 24);
+        }
 
         glyph_pos += shaper_item.num_glyphs;
     }
