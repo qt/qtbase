@@ -4763,8 +4763,12 @@ QPixmap QWidget::grab(const QRect &rectangle)
     const QWidget::RenderFlags renderFlags = QWidget::DrawWindowBackground | QWidget::DrawChildren | QWidget::IgnoreMask;
 
     QRect r(rectangle);
-    if (r.width() < 0 || r.height() < 0)
+    if (r.width() < 0 || r.height() < 0) {
+        // For grabbing widgets that haven't been shown yet,
+        // we trigger the layouting mechanism to determine the widget's size.
         r = d->prepareToRender(QRegion(), renderFlags).boundingRect();
+        r.setTopLeft(rectangle.topLeft());
+    }
 
     if (!r.intersects(rect()))
         return QPixmap();
