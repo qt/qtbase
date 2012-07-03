@@ -113,7 +113,7 @@ load(qt_module_headers)
 #other
 TEMPLATE         = lib
 DESTDIR          = $$eval(QT.$${MODULE}.libs)
-win32:!wince*:DLLDESTDIR = $$[QT_INSTALL_PREFIX]/bin
+win32:!wince*: DLLDESTDIR = $$eval(QT.$${MODULE}.bins)
 
 CONFIG          += qt warn_on depend_includepath
 CONFIG          += qmake_cache target_qt
