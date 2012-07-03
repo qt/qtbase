@@ -614,11 +614,14 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
 }
 
 QImage QWindowsFontEngineDirectWrite::alphaRGBMapForGlyph(glyph_t t,
-                                                   QFixed subPixelPosition,
-                                                   int margin,
-                                                   const QTransform &xform)
+                                                          QFixed subPixelPosition,
+                                                          const QTransform &xform)
 {
-    QImage mask = imageForGlyph(t, subPixelPosition, margin, xform);
+    QImage mask = imageForGlyph(t,
+                                subPixelPosition,
+                                glyphMargin(QFontEngineGlyphCache::Raster_RGBMask),
+                                xform);
+
     return mask.depth() == 32
            ? mask
            : mask.convertToFormat(QImage::Format_RGB32);
