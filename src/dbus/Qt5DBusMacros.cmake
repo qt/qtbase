@@ -35,9 +35,9 @@ include(MacroAddFileDependencies)
 
 function(QT5_ADD_DBUS_INTERFACE _sources _interface _basename)
     get_filename_component(_infile ${_interface} ABSOLUTE)
-    set(_header ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.h)
-    set(_impl   ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.cpp)
-    set(_moc    ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.moc)
+    set(_header "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.h")
+    set(_impl   "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.cpp")
+    set(_moc    "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.moc")
 
     get_source_file_property(_nonamespace ${_interface} NO_NAMESPACE)
     if(_nonamespace)
@@ -56,16 +56,16 @@ function(QT5_ADD_DBUS_INTERFACE _sources _interface _basename)
         set(_params ${_params} -i ${_include})
     endif()
 
-    add_custom_command(OUTPUT ${_impl} ${_header}
+    add_custom_command(OUTPUT "${_impl}" "${_header}"
         COMMAND ${QT_DBUSXML2CPP_EXECUTABLE} ${_params} -p ${_basename} ${_infile}
         DEPENDS ${_infile} VERBATIM)
 
-    set_source_files_properties(${_impl} PROPERTIES SKIP_AUTOMOC TRUE)
+    set_source_files_properties("${_impl}" PROPERTIES SKIP_AUTOMOC TRUE)
 
-    qt5_generate_moc(${_header} ${_moc})
+    qt5_generate_moc("${_header}" "${_moc}")
 
-    list(APPEND ${_sources} ${_impl} ${_header} ${_moc})
-    macro_add_file_dependencies(${_impl} ${_moc})
+    list(APPEND ${_sources} "${_impl}" "${_header}" "${_moc}")
+    macro_add_file_dependencies("${_impl}" "${_moc}")
     set(${_sources} ${${_sources}} PARENT_SCOPE)
 endfunction()
 
@@ -129,26 +129,26 @@ function(QT5_ADD_DBUS_ADAPTOR _sources _xml_file _include _parentClass) # _optio
     endif()
 
     set(_optionalClassName "${ARGV5}")
-    set(_header ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.h)
-    set(_impl   ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.cpp)
-    set(_moc    ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.moc)
+    set(_header "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.h")
+    set(_impl   "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.cpp")
+    set(_moc    "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.moc")
 
     if(_optionalClassName)
-        add_custom_command(OUTPUT ${_impl} ${_header}
+        add_custom_command(OUTPUT "${_impl}" "${_header}"
           COMMAND ${QT_DBUSXML2CPP_EXECUTABLE} -m -a ${_basename} -c ${_optionalClassName} -i ${_include} -l ${_parentClass} ${_infile}
           DEPENDS ${_infile} VERBATIM
         )
     else()
-        add_custom_command(OUTPUT ${_impl} ${_header}
+        add_custom_command(OUTPUT "${_impl}" "${_header}"
           COMMAND ${QT_DBUSXML2CPP_EXECUTABLE} -m -a ${_basename} -i ${_include} -l ${_parentClass} ${_infile}
           DEPENDS ${_infile} VERBATIM
         )
     endif()
 
-    qt5_generate_moc(${_header} ${_moc})
-    set_source_files_properties(${_impl} PROPERTIES SKIP_AUTOMOC TRUE)
-    macro_add_file_dependencies(${_impl} ${_moc})
+    qt5_generate_moc("${_header}" "${_moc}")
+    set_source_files_properties("${_impl}" PROPERTIES SKIP_AUTOMOC TRUE)
+    macro_add_file_dependencies("${_impl}" "${_moc}")
 
-    list(APPEND ${_sources} ${_impl} ${_header} ${_moc})
+    list(APPEND ${_sources} "${_impl}" "${_header}" "${_moc}")
     set(${_sources} ${${_sources}} PARENT_SCOPE)
 endfunction()
