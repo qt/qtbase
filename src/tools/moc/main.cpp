@@ -167,7 +167,7 @@ int runMoc(int _argc, char **_argv)
     bool autoInclude = true;
     bool defaultInclude = true;
     Preprocessor pp;
-    Moc moc(pp);
+    Moc moc;
     pp.macros["Q_MOC_RUN"];
     pp.macros["__cplusplus"];
     QByteArray filename;

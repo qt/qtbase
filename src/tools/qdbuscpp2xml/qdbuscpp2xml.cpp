@@ -71,6 +71,7 @@ static const char docTypeHeader[] =
 
 #include "moc.h"
 #include "generator.h"
+#include "preprocessor.h"
 
 #define PROGRAMNAME     "qdbuscpp2xml"
 #define PROGRAMVERSION  "0.2"
@@ -414,7 +415,7 @@ int main(int argc, char **argv)
         }
 
         Preprocessor pp;
-        Moc moc(pp);
+        Moc moc;
         pp.macros["Q_MOC_RUN"];
         pp.macros["__cplusplus"];
 

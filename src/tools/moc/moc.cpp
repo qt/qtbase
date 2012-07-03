@@ -302,9 +302,7 @@ void Moc::parseFunctionArguments(FunctionDef *def)
             arg.rightType += lexem();
         }
         arg.normalizedType = normalizeType(QByteArray(arg.type.name + ' ' + arg.rightType));
-        arg.normalizedType = getTypeSubstitution(arg.normalizedType);
         arg.typeNameForCast = normalizeType(QByteArray(noRef(arg.type.name) + "(*)" + arg.rightType));
-        arg.typeNameForCast = getTypeSubstitution(arg.typeNameForCast);
         if (test(EQ))
             arg.isDefault = true;
         def->arguments += arg;
@@ -414,7 +412,6 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
     }
 
     def->normalizedType = normalizeType(def->type.name);
-    def->normalizedType = getTypeSubstitution(def->normalizedType);
 
     if (!test(RPAREN)) {
         parseFunctionArguments(def);
@@ -513,7 +510,6 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
     }
 
     def->normalizedType = normalizeType(def->type.name);
-    def->normalizedType = getTypeSubstitution(def->normalizedType);
 
     if (!test(RPAREN)) {
         parseFunctionArguments(def);
@@ -970,7 +966,6 @@ void Moc::createPropertyDef(PropertyDef &propDef)
       QVariant.
     */
     type = normalizeType(type);
-    type = getTypeSubstitution(type);
     if (type == "QMap")
         type = "QMap<QString,QVariant>";
     else if (type == "QValueList")
@@ -1244,8 +1239,7 @@ void Moc::parseInterfaces(ClassDef *def)
         }
         // resolve from classnames to interface ids
         for (int i = 0; i < iface.count(); ++i) {
-            QByteArray className = getTypeSubstitution(iface.at(i).className);
-            QByteArray iid = interface2IdMap.value(className);
+            const QByteArray iid = interface2IdMap.value(iface.at(i).className);
             if (iid.isEmpty())
                 error("Undefined interface");
 
@@ -1503,107 +1497,6 @@ void Moc::checkProperties(ClassDef *cdef)
     }
 }
 
-QByteArray Moc::getSubstitution(const QByteArray &token) const
-{
-    Macros::ConstIterator it = preprocessor.macros.find(token);
-    if (it != preprocessor.macros.end() && it->symbols.count() == 1) {
-        // We can only handle substitutions that result in a single symbol
-        return it->symbols.at(0).lexem();
-    }
-
-    return QByteArray();
-}
-
-QByteArray Moc::getTokenSubstitution(const QByteArray &token) const
-{
-    QByteArray result = token;
-
-    QSet<QByteArray> used;
-
-    // Process substitution chain until no replacement exists
-    QByteArray substitution = getSubstitution(result);
-    while (!substitution.isEmpty()) {
-        used.insert(result);
-        result = substitution;
-
-        if (used.contains(result)) {
-            break;
-        }
-
-        substitution = getSubstitution(result);
-    }
-
-    return result;
-}
-
-QByteArray Moc::getWordSubstitution(const QByteArray &word) const
-{
-    QByteArray result;
-
-    // A word can contain multiple components separated by '*'
-    int startIndex = 0;
-    do {
-        int index = word.indexOf('*', startIndex);
-        if (index == -1) {
-            result.append(getTokenSubstitution(word.mid(startIndex)));
-        } else {
-            result.append(getTokenSubstitution(word.mid(startIndex, (index - startIndex))));
-            result.append('*');
-        }
-
-        startIndex = index + 1;
-    } while (startIndex != 0);
-
-    return result;
-}
-
-QByteArray Moc::getNameSubstitution(const QByteArray &name) const
-{
-    QByteArray result;
-
-    // Parse multiple tokens in this name independently
-    int startIndex = 0;
-    do {
-        int index = name.indexOf(' ', startIndex);
-        if (index == -1) {
-            result.append(getWordSubstitution(name.mid(startIndex)));
-        } else {
-            result.append(getWordSubstitution(name.mid(startIndex, (index - startIndex))));
-            result.append(' ');
-        }
-
-        startIndex = index + 1;
-    } while (startIndex != 0);
-
-    return result;
-}
-
-QByteArray Moc::getTypeSubstitution(const QByteArray &typeName) const
-{
-    int index = typeName.indexOf('<');
-    if (index != -1) {
-        QByteArray templateName = typeName.left(index);
-
-        int lastIndex = typeName.lastIndexOf('>');
-        if (lastIndex > index) {
-            QByteArray result = getNameSubstitution(templateName);
-
-            // Parse the interior type independently
-            QByteArray parameter = typeName.mid(index + 1, (lastIndex - index - 1));
-            QByteArray interior = getTypeSubstitution(parameter);
-            if (interior.endsWith('>')) {
-                interior.append(' ');
-            }
-            result.append('<').append(interior).append(typeName.mid(lastIndex));
-            return result;
-        } else {
-            // Something is broken; return the input unmodified
-            return typeName;
-        }
-    }
-
-    return getNameSubstitution(typeName);
-}
 
 
 QT_END_NAMESPACE
