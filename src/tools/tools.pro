@@ -2,7 +2,7 @@ TEMPLATE = subdirs
 
 TOOLS_SUBDIRS = src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_qdoc
 contains(QT_CONFIG, dbus): TOOLS_SUBDIRS += src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
-!contains(QT_CONFIG, no-gui): TOOLS_SUBDIRS += src_tools_uic
+!contains(QT_CONFIG, no-widgets): TOOLS_SUBDIRS += src_tools_uic
 # Set subdir and respective target name
 src_tools_bootstrap.subdir = $$PWD/bootstrap
 src_tools_bootstrap.target = sub-tools-bootstrap
