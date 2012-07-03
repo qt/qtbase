@@ -5806,7 +5806,7 @@ fi
 
 if [ -n "$CFG_SYSROOT" ]; then
     echo "# sysroot" >>"$QTCONFIG.tmp"
-    echo `basename "$XQMAKESPEC"` \{ >>"$QTCONFIG.tmp"
+    echo "!host_build {" >>"$QTCONFIG.tmp"
     echo "    QMAKE_CFLAGS    += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
     echo "    QMAKE_CXXFLAGS  += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
     echo "    QMAKE_LFLAGS    += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"

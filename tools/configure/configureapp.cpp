@@ -2940,10 +2940,9 @@ void Configure::generateQConfigPri()
                      << "QT_PATCH_VERSION = " << dictionary["VERSION_PATCH"] << endl;
 
         if (!dictionary["CFG_SYSROOT"].isEmpty()) {
-            QString targetSpec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : dictionary[ "QMAKESPEC" ];
             configStream << endl
                          << "# sysroot" << endl
-                         << targetSpec << " {" << endl
+                         << "!host_build {" << endl
                          << "    QMAKE_CFLAGS    += --sysroot=$$[QT_SYSROOT]" << endl
                          << "    QMAKE_CXXFLAGS  += --sysroot=$$[QT_SYSROOT]" << endl
                          << "    QMAKE_LFLAGS    += --sysroot=$$[QT_SYSROOT]" << endl
