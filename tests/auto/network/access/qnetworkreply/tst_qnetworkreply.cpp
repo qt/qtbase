@@ -1408,7 +1408,9 @@ void tst_QNetworkReply::cleanup()
     cookieJar->setAllCookies(QList<QNetworkCookie>());
 
     // disconnect manager signals
+#ifndef QT_NO_SSL
     manager.disconnect(SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)));
+#endif
     manager.disconnect(SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 }
