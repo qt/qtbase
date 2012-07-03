@@ -5,4 +5,4 @@ indirect.output = $$OUT_PWD/sub/indirect_test.txt
 
 copy.input = $$PWD/copy.txt
 copy.output = $$OUT_PWD/copy_test.txt
-copy.config = verbatim
+copy.CONFIG = verbatim

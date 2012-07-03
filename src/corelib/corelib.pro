@@ -74,7 +74,7 @@ QMAKE_PKGCONFIG_VARIABLES += lupdate_dir lrelease_dir
 
 ctest_macros_file.input = $$PWD/Qt5CTestMacros.cmake
 ctest_macros_file.output = $$DESTDIR/cmake/Qt5Core/Qt5CTestMacros.cmake
-ctest_macros_file.config = verbatim
+ctest_macros_file.CONFIG = verbatim
 
 QMAKE_SUBSTITUTES += ctest_macros_file
 

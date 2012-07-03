@@ -508,7 +508,7 @@ MakefileGenerator::init()
                 outn = fileFixify(inn.left(inn.length()-3), qmake_getpwd(), Option::output_dir);
             }
 
-            QString confign = subs.at(i) + ".config";
+            QString confign = subs.at(i) + ".CONFIG";
             bool verbatim  = false;
             if (v.contains(confign))
                 verbatim = v[confign].contains(QLatin1String("verbatim"));

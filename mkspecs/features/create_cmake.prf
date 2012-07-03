@@ -167,7 +167,7 @@ exists($$cmake_macros_file.input) {
     CMAKE_MODULE_MACROS = "true"
 
     cmake_macros_file.output = $$DESTDIR/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}Macros.cmake
-    cmake_macros_file.config = verbatim
+    cmake_macros_file.CONFIG = verbatim
 
     QMAKE_SUBSTITUTES += cmake_macros_file
 
