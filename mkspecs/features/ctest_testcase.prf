@@ -32,7 +32,7 @@ isEmpty(CMAKE_VERSION) {
             BUILD_DIR = $$replace($$list($$OUT_PWD/build), /, $$QMAKE_DIR_SEP)
 
             for(d, $$list($$split($$list($$[QMAKE_MKSPECS]), $$DIRLIST_SEPARATOR))) {
-                CMAKE_PREFIX_PATH *= $$dirname($$d)
+                CMAKE_PREFIX_PATH *= $$dirname(d)
             }
 
             check.commands = \
