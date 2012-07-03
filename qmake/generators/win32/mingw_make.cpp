@@ -462,22 +462,6 @@ void MingwMakefileGenerator::writeRcFilePart(QTextStream &t)
     }
 }
 
-void MingwMakefileGenerator::processPrlVariable(const QString &var, const QStringList &l)
-{
-    if (var == "QMAKE_PRL_LIBS") {
-        QString where = "QMAKE_LIBS";
-        if (!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
-            where = project->first("QMAKE_INTERNAL_PRL_LIBS");
-        QStringList &out = project->values(where);
-        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-            out.removeAll((*it));
-            out.append((*it));
-        }
-    } else {
-        Win32MakefileGenerator::processPrlVariable(var, l);
-    }
-}
-
 QStringList &MingwMakefileGenerator::findDependencies(const QString &file)
 {
     QStringList &aList = MakefileGenerator::findDependencies(file);

@@ -64,7 +64,6 @@ private:
     void writeObjectsPart(QTextStream &t);
     void writeBuildRulesPart(QTextStream &t);
     void writeRcFilePart(QTextStream &t);
-    void processPrlVariable(const QString &var, const QStringList &l);
 
     QStringList &findDependencies(const QString &file);
     
