@@ -661,6 +661,18 @@
 //#      define Q_COMPILER_INITIALIZER_LISTS
 #endif
 
+#if defined(Q_OS_BLACKBERRY) || defined(Q_OS_QNX)
+#  include <utility>
+#  if defined(_YVALS) || defined(_LIBCPP_VER)
+// QNX: libcpp (Dinkumware-based) doesn't have the <initializer_list>
+// header, so the feature is useless, even if the compiler supports
+// it. Disable.
+#    ifdef Q_COMPILER_INITIALIZER_LISTS
+#      undef Q_COMPILER_INITIALIZER_LISTS
+#    endif
+#  endif
+#endif // Q_OS_BLACKBERRY || Q_OS_QNX
+
 /*
  * C++11 keywords and expressions
  */
