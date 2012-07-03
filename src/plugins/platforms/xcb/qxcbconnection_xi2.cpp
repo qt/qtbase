@@ -41,7 +41,7 @@
 
 #include "qxcbconnection.h"
 #include "qxcbwindow.h"
-#include <QtGui/QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 
 #ifdef XCB_USE_XINPUT2
 

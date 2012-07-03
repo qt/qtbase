@@ -54,7 +54,7 @@
 #include "qwindowstheme.h"
 
 #include <QtGui/QWindow>
-#include <QtGui/QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <QtGui/QGuiApplication>
 

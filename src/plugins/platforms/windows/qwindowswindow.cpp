@@ -55,7 +55,7 @@
 #include <QtGui/QWindow>
 #include <QtGui/QRegion>
 #include <private/qwindow_p.h>
-#include <QtGui/QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <QtCore/QDebug>
 

@@ -50,7 +50,7 @@
 #include "qmultitouch_mac_p.h"
 #include "qcocoadrag.h"
 
-#include <QtGui/QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QTextFormat>
 #include <QtCore/QDebug>
 

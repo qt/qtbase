@@ -42,7 +42,7 @@
 #include "qkmswindow.h"
 #include "qkmsscreen.h"
 
-#include <QtGui/QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 QT_BEGIN_NAMESPACE
 
 QKmsWindow::QKmsWindow(QWindow *window)

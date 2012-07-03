@@ -58,8 +58,8 @@
 #include <qpa/qplatformtheme.h>
 
 #include <qdebug.h>
-#include <QWindowSystemInterface>
-#include "private/qwindowsysteminterface_qpa_p.h"
+#include <qpa/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface_p.h>
 #include <qpa/qplatformintegration.h>
 
 #include "qdesktopwidget_qpa_p.h"

@@ -55,7 +55,7 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QPainter>
 #include <QtGui/QGuiApplication>
-#include <QtGui/private/qwindowsysteminterface_qpa_p.h>
+#include <qpa/qwindowsysteminterface_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 
 #include <QtCore/QDebug>

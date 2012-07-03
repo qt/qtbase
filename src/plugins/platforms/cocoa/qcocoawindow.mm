@@ -47,7 +47,7 @@
 #include "qnsview.h"
 #include <QtCore/private/qcore_mac_p.h>
 #include <qwindow.h>
-#include <QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformscreen.h>
 
 #include <Cocoa/Cocoa.h>

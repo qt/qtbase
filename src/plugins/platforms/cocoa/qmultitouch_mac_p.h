@@ -57,7 +57,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include <QtGui/QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 #include <qhash.h>
 #include <QtCore>
 

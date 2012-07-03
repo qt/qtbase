@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qevdevtablet_p.h"
-#include <QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 #include <QStringList>
 #include <QSocketNotifier>
 #include <QGuiApplication>

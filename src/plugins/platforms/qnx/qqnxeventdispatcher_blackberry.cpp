@@ -41,7 +41,7 @@
 
 #include "qqnxeventdispatcher_blackberry.h"
 
-#include <QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 #include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE

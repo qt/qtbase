@@ -68,7 +68,7 @@
 #endif
 
 #include <qpa/qplatformnativeinterface.h>
-#include <QtGui/QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QBackingStore>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>

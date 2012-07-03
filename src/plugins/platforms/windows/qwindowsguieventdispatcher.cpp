@@ -42,7 +42,7 @@
 #include "qwindowsguieventdispatcher.h"
 #include "qwindowscontext.h"
 
-#include <QtGui/QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <QtCore/QStack>
 #include <QtCore/QDebug>

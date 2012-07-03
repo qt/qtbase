@@ -44,7 +44,7 @@
 
 #include <QtCore/QThread>
 #include <QtCore/QDebug>
-#include <QtGui/QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <errno.h>
 

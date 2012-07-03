@@ -44,7 +44,7 @@
 #include <QStringList>
 #include <QGuiApplication>
 #include <QScreen>
-#include <QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 
 //#define QT_QPA_MOUSEMANAGER_DEBUG
 

@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qeglfscursor.h"
-#include <QtGui/qwindowsysteminterface_qpa.h>
+#include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QOpenGLContext>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonArray>

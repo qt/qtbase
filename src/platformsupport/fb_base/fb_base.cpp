@@ -44,7 +44,7 @@
 #include <qdebug.h>
 #include <qbitmap.h>
 #include <qpa/qplatformcursor.h>
-#include <QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 
 QPlatformSoftwareCursor::QPlatformSoftwareCursor(QPlatformScreen *scr)
         : QPlatformCursor(scr), currentRect(QRect()), prevRect(QRect())
