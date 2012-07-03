@@ -819,7 +819,7 @@ void tst_QTextLayout::horizontalAlignmentMultiline_data()
 {
     qreal width = TESTFONT_SIZE * 8;
 
-    QString linebreakText("^%$&\u2028^%&*^$");
+    const QString linebreakText = QStringLiteral("^%$&") + QChar(0x2028) + QStringLiteral("^%&*^$");
     QString wrappingText("^%$&^%&*^$");
     QString wrappingWhitespaceText("^%$&        ^%&*^$");
 
@@ -956,21 +956,7 @@ void tst_QTextLayout::horizontalAlignmentMultiline()
     qDebug() << firstLine.textLength() << firstLine.naturalTextRect() << lastLine.naturalTextRect();
 
     QRectF rect = firstLine.naturalTextRect();
-
-#ifdef Q_OS_WIN
-    QEXPECT_FAIL("ltr linebreak ralign", "QTBUG-25924 fails on Windows", Abort);
-    QEXPECT_FAIL("ltr linebreak calign", "QTBUG-25924 fails on Windows", Abort);
-    QEXPECT_FAIL("rtl linebreak ralign", "QTBUG-25924 fails on Windows", Abort);
-    QEXPECT_FAIL("rtl linebreak calign", "QTBUG-25924 fails on Windows", Abort);
-#endif
-
     QCOMPARE(rect.left(), firstLeft);
-
-#ifdef Q_OS_WIN
-    QEXPECT_FAIL("ltr linebreak lalign", "QTBUG-25924 fails on Windows", Abort);
-    QEXPECT_FAIL("rtl linebreak lalign", "QTBUG-25924 fails on Windows", Abort);
-#endif
-
     QCOMPARE(rect.right(), firstRight);
 
     rect = lastLine.naturalTextRect();
