@@ -1,0 +1,55 @@
+TEMPLATE = app
+
+CONFIG += qt warn_on console
+CONFIG -= app_bundle
+
+build_all:!build_pass {
+    CONFIG -= build_all
+    CONFIG += release
+}
+
+target.path = $$[QT_INSTALL_BINS]
+INSTALLS += target
+
+# If we are doing a prefix build, create a "module" pri which enables
+# qtPrepareTool() to work with the non-installed build.
+!build_pass:!exists($$[QT_INSTALL_PREFIX]/.qmake.cache) {
+
+    isEmpty(TARGET):TARGET = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
+    isEmpty(MODULE):MODULE = $$TARGET
+
+    MODULE_DEPENDS = $$replace(QT, -private$, )
+
+    # Find the module's source root dir.
+    MODULE_PROFILE_DIR = $$_PRO_FILE_PWD_
+    for(ever) {
+        exists($$MODULE_PROFILE_DIR/sync.profile):break()
+        nmpri = $$dirname(MODULE_PROFILE_DIR)
+        equals(nmpri, $$MODULE_PROFILE_DIR): \
+            error("No sync.profile found. This does not look like a Qt module source tree.")
+        MODULE_PROFILE_DIR = $$nmpri
+        unset(nmpri)
+    }
+
+    isEmpty(MODULE_BASE_DIR): MODULE_BASE_DIR = $$MODULE_PROFILE_DIR
+    MODULE_BASE_OUTDIR = $$shadowed($$MODULE_BASE_DIR)
+    isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$MODULE_BASE_OUTDIR
+
+    TOOL_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_$${MODULE}.pri
+
+    TOOL_PRI_CONT = \
+        "QT_TOOL.$${MODULE}.binary = $$absolute_path($$DESTDIR, $$OUT_PWD)/$$TARGET" \
+        "QT_TOOL.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")"
+    write_file($$TOOL_PRI, TOOL_PRI_CONT)|error("Aborting.")
+
+    # Then, inject the new tool into the current cache state
+    !contains(QMAKE_INTERNAL_INCLUDED_FILES, $$TOOL_PRI) { # before the actual include()!
+        added = $$TOOL_PRI
+        cache(QMAKE_INTERNAL_INCLUDED_FILES, add transient, added)
+        unset(added)
+    }
+    include($$TOOL_PRI)
+    for(var, $$list(binary depends)): \
+        cache(QT_TOOL.$${MODULE}.$$var, transient)
+
+}
