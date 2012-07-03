@@ -2234,56 +2234,6 @@ void tst_QWidget::reparent()
 
     QCOMPARE(child.geometry().topLeft(), childPos);
     QTRY_COMPARE(childTLW.pos(), tlwPos);
-
-    // This following part of the test only makes sense on Windows.
-#ifdef Q_OS_WIN
-    QWidget childTLWChild(&childTLW);
-    childTLWChild.setObjectName("childTLWChild");
-
-    QWidget grandChild(&child);
-    grandChild.setObjectName("grandChild");
-    grandChild.setGeometry(10, 10, 160, 110);
-    QPalette pal3;
-    pal3.setColor(grandChild.backgroundRole(), Qt::red);
-    grandChild.setPalette(pal3);
-    //grandChild.setPaletteBackgroundColor(Qt::red);
-
-    QWidget grandChildTLW(&grandChild, Qt::Window);
-    grandChildTLW.setObjectName("grandChildTLW");
-    grandChildTLW.setGeometry(200, 200, 50, 50);
-    QPalette pal4;
-    pal4.setColor(grandChildTLW.backgroundRole(), Qt::yellow);
-    grandChildTLW.setPalette(pal4);
-    //grandChildTLW.setPaletteBackgroundColor(Qt::yellow);
-
-    QWidget grandChildTLWChild(&grandChildTLW);
-    grandChildTLWChild.setObjectName("grandChildTLWChild");
-
-    QVERIFY(IsWindow(winHandleOf(&childTLW)));
-    QVERIFY(IsWindow(winHandleOf(&childTLWChild)));
-    QVERIFY(IsWindow(winHandleOf(&grandChildTLW)));
-    QVERIFY(IsWindow(winHandleOf(&grandChildTLWChild)));
-
-    parent.show();
-
-    QVERIFY(IsWindow(winHandleOf(&childTLW)));
-    QVERIFY(IsWindow(winHandleOf(&childTLWChild)));
-    QVERIFY(IsWindow(winHandleOf(&grandChildTLW)));
-    QVERIFY(IsWindow(winHandleOf(&grandChildTLWChild)));
-
-    child.setParent(&parent);
-    child.move(10,10);
-    child.show();
-
-    // this appears to stabelize results
-    qApp->processEvents();
-
-    QVERIFY(IsWindow(winHandleOf(&childTLW)));
-    QVERIFY(IsWindow(winHandleOf(&childTLWChild)));
-
-    QVERIFY(IsWindow(winHandleOf(&grandChildTLW)));
-    QVERIFY(IsWindow(winHandleOf(&grandChildTLWChild)));
-#endif
 }
 
 // Qt/Embedded does it differently.
