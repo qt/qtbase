@@ -69,11 +69,11 @@ contains(QT_CONFIG, dbus) {
 }
 contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
 !contains(QT_CONFIG, no-gui) {
-    SUBDIRS += src_gui
-    src_plugins.depends += src_gui
+    SUBDIRS += src_gui src_platformsupport
+    src_plugins.depends += src_gui src_platformsupport
     !contains(QT_CONFIG, no-widgets) {
-        SUBDIRS += src_platformsupport src_widgets
-        src_plugins.depends += src_platformsupport src_widgets
+        SUBDIRS += src_widgets
+        src_plugins.depends += src_widgets
         contains(QT_CONFIG, opengl(es1|es2)?) {
             SUBDIRS += src_opengl
             src_plugins.depends += src_opengl
