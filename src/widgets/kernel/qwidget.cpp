@@ -267,10 +267,12 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #ifndef QT_NO_IM
       , inheritsInputMethodHints(0)
 #endif
+#if defined(Q_OS_WIN)
+      , noPaintOnScreen(0)
+#endif
 #if defined(Q_WS_X11)
       , picture(0)
 #elif defined(Q_WS_WIN)
-      , noPaintOnScreen(0)
   #ifndef QT_NO_GESTURES
       , nativeGesturePanEnabled(0)
   #endif
@@ -9939,10 +9941,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     Q_ASSERT_X(sizeof(d->high_attributes)*8 >= (Qt::WA_AttributeCount - sizeof(uint)*8),
                "QWidget::setAttribute(WidgetAttribute, bool)",
                "QWidgetPrivate::high_attributes[] too small to contain all attributes in WidgetAttribute");
-#ifdef Q_WS_WIN
-    // ### Don't use PaintOnScreen+paintEngine() to do native painting in 5.0
+#ifdef Q_OS_WIN
+    // ### Don't use PaintOnScreen+paintEngine() to do native painting in some future release
     if (attribute == Qt::WA_PaintOnScreen && on && !inherits("QGLWidget")) {
-        // see qwidget_win.cpp, ::paintEngine for details
+        // see qwidget_qpa.cpp, ::paintEngine for details
         paintEngine();
         if (d->noPaintOnScreen)
             return;

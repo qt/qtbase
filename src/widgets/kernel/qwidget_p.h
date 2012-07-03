@@ -694,6 +694,9 @@ public:
 #endif
 
     // *************************** Platform specific ************************************
+#if defined(Q_OS_WIN)
+    uint noPaintOnScreen : 1; // see qwidget_qpa.cpp ::paintEngine()
+#endif
 #if defined(Q_WS_X11) // <----------------------------------------------------------- X11
     Qt::HANDLE picture;
     static QWidget *mouseGrabber;
@@ -708,7 +711,6 @@ public:
     QPoint mapToGlobal(const QPoint &pos) const;
     QPoint mapFromGlobal(const QPoint &pos) const;
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
-    uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()
 #ifndef QT_NO_GESTURES
     uint nativeGesturePanEnabled : 1;
 #endif

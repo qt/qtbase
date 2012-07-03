@@ -980,6 +980,25 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
 QPaintEngine *QWidget::paintEngine() const
 {
     qWarning("QWidget::paintEngine: Should no longer be called");
+
+#ifdef Q_OS_WIN
+    // We set this bit which is checked in setAttribute for
+    // Qt::WA_PaintOnScreen. We do this to allow these two scenarios:
+    //
+    // 1. Users accidentally set Qt::WA_PaintOnScreen on X and port to
+    // Windows which would mean suddenly their widgets stop working.
+    //
+    // 2. Users set paint on screen and subclass paintEngine() to
+    // return 0, in which case we have a "hole" in the backingstore
+    // allowing use of GDI or DirectX directly.
+    //
+    // 1 is WRONG, but to minimize silent failures, we have set this
+    // bit to ignore the setAttribute call. 2. needs to be
+    // supported because its our only means of embedding native
+    // graphics stuff.
+    const_cast<QWidgetPrivate *>(d_func())->noPaintOnScreen = 1;
+#endif
+
     return 0; //##### @@@
 }
 
