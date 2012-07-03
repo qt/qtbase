@@ -2710,8 +2710,8 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
         x += eng->offsetInLigature(si, pos, end, glyph_pos);
     }
 
-    if (eng->option.wrapMode() != QTextOption::NoWrap && x > line.width)
-        x = line.width;
+    if (eng->option.wrapMode() != QTextOption::NoWrap && x > line.x + line.width)
+        x = line.x + line.width;
     if (eng->option.wrapMode() != QTextOption::NoWrap && x < 0)
         x = 0;
 
