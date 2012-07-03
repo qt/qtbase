@@ -225,7 +225,7 @@ void tst_QTcpServer::clientServerLoop()
     QTcpSocket client;
 
     QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.serverAddress() == QHostAddress::Any) && !(server.serverAddress() == QHostAddress::AnyIPv6))
+    if (!(server.serverAddress() == QHostAddress::Any) && !(server.serverAddress() == QHostAddress::AnyIPv6) && !(server.serverAddress() == QHostAddress::AnyIPv4))
         serverAddress = server.serverAddress();
 
     client.connectToHost(serverAddress, server.serverPort());
