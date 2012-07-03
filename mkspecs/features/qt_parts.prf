@@ -1,0 +1,44 @@
+load(qt_build_config)
+
+TEMPLATE = subdirs
+
+sub_src.subdir = src
+sub_src.target = sub-src
+SUBDIRS = sub_src
+
+exists(tools/tools.pro) {
+    sub_tools.subdir = tools
+    sub_tools.target = sub-tools
+    sub_tools.depends = sub_src
+    !contains(QT_BUILD_PARTS, tools): sub_tools.CONFIG = no_default_target no_default_install
+    SUBDIRS += sub_tools
+}
+
+exists(examples/examples.pro) {
+    sub_examples.subdir = examples
+    sub_examples.target = sub-examples
+    sub_examples.depends = sub_src
+    !contains(QT_BUILD_PARTS, examples): sub_examples.CONFIG = no_default_target no_default_install
+    SUBDIRS += sub_examples
+}
+
+# Some modules still have these
+exists(demos/demos.pro) {
+    sub_demos.subdir = examples
+    sub_demos.target = sub-examples
+    sub_demos.depends = sub_src
+    !contains(QT_BUILD_PARTS, examples): sub_demos.CONFIG = no_default_target no_default_install
+    SUBDIRS += sub_demos
+}
+
+exists(tests/tests.pro) {
+    sub_tests.subdir = tests
+    sub_tests.target = sub-tests
+    sub_tests.depends = sub_src   # The tests may have a run-time only dependency on tools
+    sub_tests.CONFIG = no_default_install
+    !contains(QT_BUILD_PARTS, tests): sub_tests.CONFIG += no_default_target
+    SUBDIRS += sub_tests
+}
+
+QT_BUILD_PARTS -= libs tools examples tests
+!isEmpty(QT_BUILD_PARTS): warning("Unknown build part(s): $$QT_BUILD_PARTS")

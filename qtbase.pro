@@ -2,38 +2,9 @@
 # Main projectfile
 #####################################################################
 
-CONFIG += ordered
-TEMPLATE = subdirs
+load(qt_parts)
 
 cross_compile: CONFIG += nostrip
-
-module_qtbase_tests.subdir = tests
-module_qtbase_tests.target = module-qtbase-tests
-module_qtbase_tests.depends = module_qtbase_src
-module_qtbase_tests.CONFIG = no_default_install
-
-#process the projects
-PROJECTS=$$eval($$list($$lower($$unique(QT_BUILD_PARTS))))
-# note that the order matters for these blocks!
-contains(PROJECTS, qmake) {
-    PROJECTS -= qmake
-    # nothing to be done
-}
-contains(PROJECTS, libs) {
-    PROJECTS -= libs
-    SUBDIRS += src
-}
-contains(PROJECTS, examples) {
-    PROJECTS -= examples
-    SUBDIRS += examples
-}
-contains(PROJECTS, tests) {
-    PROJECTS -= tests
-    SUBDIRS += module_qtbase_tests
-}
-!isEmpty(PROJECTS) {
-    message(Unknown PROJECTS: $$PROJECTS)
-}
 
 confclean.depends += clean
 confclean.commands =
