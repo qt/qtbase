@@ -1968,6 +1968,7 @@ void tst_QTextLayout::cursorInLigatureWithMultipleLines()
     layout.endLayout();
 
     // The second line will be "finish", with "fi" as a ligature
+    QEXPECT_FAIL("", "QTBUG-26403", Abort);
     QVERIFY(line.cursorToX(0) != line.cursorToX(1));
 }
 
