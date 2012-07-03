@@ -44,7 +44,23 @@
 
 #ifndef QT_NO_STANDARDPATHS
 
+#include <qstring.h>
+
 QT_BEGIN_NAMESPACE
+
+static bool qsp_testMode = false;
+
+void QStandardPaths::enableTestMode(bool testMode)
+{
+    qsp_testMode = testMode;
+}
+
+static QString testModeInsert() {
+    if (qsp_testMode)
+        return QStringLiteral("/.qttest");
+    else
+        return QStringLiteral("");
+}
 
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
@@ -55,6 +71,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
 
     switch (type) {
     case DataLocation:
+        return QDir::homePath() + testModeInsert();
     case DesktopLocation:
     case HomeLocation:
         return QDir::homePath();
@@ -63,11 +80,11 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         return QDir::tempPath();
     case CacheLocation:
     case GenericCacheLocation:
-        return QDir::homePath() + QLatin1String("/Cache");
+        return QDir::homePath() + testModeInsert() + QLatin1String("/Cache");
     case ConfigLocation:
-        return QDir::homePath() + QLatin1String("/Settings");
+        return QDir::homePath() + testModeInsert() + QLatin1String("/Settings");
     case GenericDataLocation:
-        return sharedRoot + QLatin1String("/misc");
+        return sharedRoot + testModeInsert() + QLatin1String("/misc");
     case DocumentsLocation:
         return sharedRoot + QLatin1String("/documents");
     case PicturesLocation:
