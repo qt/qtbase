@@ -495,6 +495,8 @@ bool QState::event(QEvent *e)
     if ((e->type() == QEvent::ChildAdded) || (e->type() == QEvent::ChildRemoved)) {
         d->childStatesListNeedsRefresh = true;
         d->transitionsListNeedsRefresh = true;
+        if ((e->type() == QEvent::ChildRemoved) && (static_cast<QChildEvent *>(e)->child() == d->initialState))
+            d->initialState = 0;
     }
     return QAbstractState::event(e);
 }

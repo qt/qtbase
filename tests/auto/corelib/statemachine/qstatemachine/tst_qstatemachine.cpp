@@ -189,6 +189,7 @@ private slots:
     void initialStateIsEnteredBeforeStartedEmitted();
     void deletePropertyAssignmentObjectBeforeEntry();
     void deletePropertyAssignmentObjectBeforeRestore();
+    void deleteInitialState();
 };
 
 class TestState : public QState
@@ -4071,6 +4072,18 @@ void tst_QStateMachine::deletePropertyAssignmentObjectBeforeRestore()
 
     QVERIFY(o2->objectName().isEmpty());
     delete o2;
+}
+
+void tst_QStateMachine::deleteInitialState()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+    delete s1;
+    QTest::ignoreMessage(QtWarningMsg, "QStateMachine::start: No initial state set for machine. Refusing to start.");
+    machine.start();
+    // Shouldn't crash
+    QCoreApplication::processEvents();
 }
 
 QTEST_MAIN(tst_QStateMachine)
