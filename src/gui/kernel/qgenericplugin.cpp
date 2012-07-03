@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qgenericplugin_qpa.h"
+#include "qgenericplugin.h"
 
 #ifndef QT_NO_LIBRARY
 
@@ -48,12 +48,9 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QGenericPlugin
     \ingroup plugins
-    \ingroup qpa
 
     \brief The QGenericPlugin class is an abstract base class for
-    window-system related plugins in Qt QPA.
-
-    Note that this class is only available in Qt QPA.
+    plugins.
 
     A mouse plugin can be created by subclassing
     QGenericPlugin and reimplementing the pure virtual create()

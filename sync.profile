@@ -90,7 +90,11 @@
         "QPlatformWindow" => "qpa/qplatformwindow.h",
         "qwindowsysteminterface_qpa.h" => "qpa/qwindowsysteminterface.h",
         "QWindowSystemInterface" => "qpa/qwindowsysteminterface.h",
-        "qwindowsysteminterface_qpa_p.h" => "qpa/qwindowsysteminterface_p.h"
+        "qwindowsysteminterface_qpa_p.h" => "qpa/qwindowsysteminterface_p.h",
+        "qgenericpluginfactory_qpa.h" => "QtGui/qgenericpluginfactory.h",
+        "qgenericplugin_qpa.h" => "QtGui/qgenericplugin.h",
+        "QGenericPlugin" => "QtGui/QGenericPlugin",
+        "QGenericPluginFactory" => "QtGui/QGenericPluginFactory"
     },
     "QtWidgets" => {
         "qplatformmenu_qpa.h" => "qpa/qplatformmenu.h",

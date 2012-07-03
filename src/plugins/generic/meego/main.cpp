@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <qgenericplugin_qpa.h>
+#include <QtGui/qgenericplugin.h>
 #include "qmeegointegration.h"
 
 QT_BEGIN_NAMESPACE

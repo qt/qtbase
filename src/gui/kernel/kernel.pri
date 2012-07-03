@@ -6,8 +6,8 @@ PRECOMPILED_HEADER = kernel/qt_gui_pch.h
 
 KERNEL_P= kernel
 HEADERS += \
-        kernel/qgenericpluginfactory_qpa.h \
-        kernel/qgenericplugin_qpa.h \
+        kernel/qgenericpluginfactory.h \
+        kernel/qgenericplugin.h \
         kernel/qwindowsysteminterface.h \
         kernel/qwindowsysteminterface_p.h \
         kernel/qplatformintegration.h \

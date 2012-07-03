@@ -65,8 +65,8 @@
 #include <private/qscreen_p.h>
 #include <private/qdrawhelper_p.h>
 
+#include <QtGui/qgenericpluginfactory.h>
 #include <qpa/qplatformintegration.h>
-#include <QtGui/QGenericPluginFactory>
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputpanel.h>
 #include <QtGui/qpixmapcache.h>

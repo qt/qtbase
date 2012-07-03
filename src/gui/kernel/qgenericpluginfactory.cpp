@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qgenericpluginfactory_qpa.h"
+#include "qgenericpluginfactory.h"
 
 #include "qguiapplication.h"
 #include "private/qfactoryloader_p.h"
@@ -60,12 +60,9 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 
 /*!
     \class QGenericPluginFactory
-    \ingroup qpa
+    \ingroup plugins
 
-    \brief The QGenericPluginFactory class creates window-system
-    related plugin drivers in Qt QPA.
-
-    Note that this class is only available in Qt QPA.
+    \brief The QGenericPluginFactory class creates plugin drivers.
 
     \sa QGenericPlugin
 */

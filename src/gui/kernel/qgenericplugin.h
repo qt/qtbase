@@ -39,28 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QGENERICPLUGINFACTORY_QPA_H
-#define QGENERICPLUGINFACTORY_QPA_H
+#ifndef QGENERICPLUGIN_H
+#define QGENERICPLUGIN_H
 
-#include <QtCore/qstringlist.h>
+#include <QtCore/qplugin.h>
+#include <QtCore/qfactoryinterface.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 
-class QString;
-class QObject;
+#ifndef QT_NO_LIBRARY
 
-class Q_GUI_EXPORT QGenericPluginFactory
+#define QGenericPluginFactoryInterface_iid "org.qt-project.Qt.QGenericPluginFactoryInterface"
+
+class Q_GUI_EXPORT QGenericPlugin : public QObject
 {
+    Q_OBJECT
 public:
-    static QStringList keys();
-    static QObject *create(const QString&, const QString &);
+    explicit QGenericPlugin(QObject *parent = 0);
+    ~QGenericPlugin();
+
+    virtual QObject* create(const QString& name, const QString &spec) = 0;
 };
+
+#endif // QT_NO_LIBRARY
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QGENERICPLUGINFACTORY_QPA_H
+#endif // QGENERICPLUGIN_H

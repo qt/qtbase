@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <qgenericplugin_qpa.h>
+#include <QtGui/qgenericplugin.h>
 #include <QtPlatformSupport/private/qevdevtablet_p.h>
 
 QT_BEGIN_NAMESPACE

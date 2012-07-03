@@ -51,7 +51,6 @@
 #include "private/qwidget_p.h"
 #include "private/qevent_p.h"
 
-#include "qgenericpluginfactory_qpa.h"
 #include <qpa/qplatformintegrationfactory_p.h>
 #include <qdesktopwidget.h>
 #include <qpa/qplatformcursor.h>
