@@ -3125,11 +3125,13 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
 #endif
-    /// ### fixme: Check platforms
-    QEXPECT_FAIL("", "Window mask not implemented on Lighthouse QTBUG-22326", Continue);
+    if (!QGuiApplication::platformName().compare(QLatin1String("cocoa"), Qt::CaseInsensitive))
+        QEXPECT_FAIL("", "Window mask not implemented on Mac QTBUG-22326", Continue);
 
-    QTRY_COMPARE(QApplication::widgetAt(100,100)->objectName(), w1->objectName());
-    QTRY_COMPARE(QApplication::widgetAt(101,101)->objectName(), w2->objectName());
+    QTRY_VERIFY((wr = QApplication::widgetAt(100,100)));
+    QTRY_COMPARE(wr->objectName(), w1->objectName());
+    QTRY_VERIFY((wr = QApplication::widgetAt(101,101)));
+    QTRY_COMPARE(wr->objectName(), w2->objectName());
 
     QBitmap bitmap(w2->size());
     QPainter p(&bitmap);
@@ -3143,8 +3145,8 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
 #endif
-    /// ### fixme: Check platforms
-    QEXPECT_FAIL("", "Window mask not implemented on Lighthouse  QTBUG-22326", Continue);
+    if (!QGuiApplication::platformName().compare(QLatin1String("cocoa"), Qt::CaseInsensitive))
+        QEXPECT_FAIL("", "Window mask not implemented on Mac QTBUG-22326", Continue);
     QTRY_VERIFY(QApplication::widgetAt(100,100) == w1);
     QTRY_VERIFY(QApplication::widgetAt(101,101) == w2);
 
