@@ -161,6 +161,40 @@ void QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context)
     threadContext->context = context;
 }
 
+int QOpenGLContextPrivate::maxTextureSize()
+{
+    if (max_texture_size != -1)
+        return max_texture_size;
+
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+
+#if defined(QT_OPENGL_ES)
+    return max_texture_size;
+#else
+    GLenum proxy = GL_PROXY_TEXTURE_2D;
+
+    GLint size;
+    GLint next = 64;
+    glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
+    if (size == 0) {
+        return max_texture_size;
+    }
+    do {
+        size = next;
+        next = size * 2;
+
+        if (next > max_texture_size)
+            break;
+        glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
+    } while (next > size);
+
+    max_texture_size = size;
+    return max_texture_size;
+#endif
+}
+
 /*!
     Returns the last context which called makeCurrent in the current thread,
     or 0, if no context is current.

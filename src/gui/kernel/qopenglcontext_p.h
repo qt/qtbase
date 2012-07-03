@@ -189,6 +189,7 @@ public:
         , surface(0)
         , functions(0)
         , current_fbo(0)
+        , max_texture_size(-1)
         , workaround_brokenFBOReadBack(false)
         , workaround_brokenTexSubImage(false)
         , active_engine(0)
@@ -213,6 +214,7 @@ public:
     QOpenGLFunctions *functions;
 
     GLuint current_fbo;
+    GLint max_texture_size;
 
     bool workaround_brokenFBOReadBack;
     bool workaround_brokenTexSubImage;
@@ -221,7 +223,7 @@ public:
 
     static void setCurrentContext(QOpenGLContext *context);
 
-    int maxTextureSize() const { return 1024; }
+    int maxTextureSize();
 
 #if !defined(QT_NO_DEBUG)
     static bool toggleMakeCurrentTracker(QOpenGLContext *context, bool value)
