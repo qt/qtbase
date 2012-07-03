@@ -338,6 +338,8 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
             BOOL handleFlags = SetHandleInformation((HANDLE)socket, HANDLE_FLAG_INHERIT, 0);
 #ifdef QNATIVESOCKETENGINE_DEBUG
             qDebug() << "QNativeSocketEnginePrivate::createNewSocket - set inheritable" << handleFlags;
+#else
+            Q_UNUSED(handleFlags);
 #endif
         }
 #endif
