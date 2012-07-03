@@ -1186,6 +1186,7 @@ QMakeProject::parse(const QString &t, QHash<QString, QStringList> &place, int nu
         }
 
         if(op == "=") {
+#if 0 // This is way too noisy
             if(!varlist.isEmpty()) {
                 bool send_warning = false;
                 if(var != "TEMPLATE" && var != "TARGET") {
@@ -1202,6 +1203,7 @@ QMakeProject::parse(const QString &t, QHash<QString, QStringList> &place, int nu
                     warn_msg(WarnParser, "Operator=(%s) clears variables previously set: %s:%d",
                              var.toLatin1().constData(), parser.file.toLatin1().constData(), parser.line_no);
             }
+#endif
             varlist.clear();
         }
         for(QStringList::ConstIterator valit = vallist.begin();
