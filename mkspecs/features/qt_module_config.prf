@@ -130,7 +130,7 @@ linux*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 QT += $$QT_PRIVATE
 unset(QT_PRIVATE)
 
-!isEmpty(DESTDIR):CONFIG += create_cmake
+!build_pass:!isEmpty(DESTDIR):CONFIG += create_cmake
 
 contains(TARGET, QtAddOn.*): \
     DEFINES += QT_BUILD_ADDON_$${ucmodule}_LIB
