@@ -563,14 +563,14 @@ void tst_QObject::findChildren()
     QTimer t121(&o12);
     QTimer emptyname(&o);
 
-    o.setObjectName("o");
-    o1.setObjectName("o1");
-    o2.setObjectName("o2");
-    o11.setObjectName("o11");
-    o12.setObjectName("o12");
-    o111.setObjectName("o111");
-    t1.setObjectName("t1");
-    t121.setObjectName("t121");
+    Q_SET_OBJECT_NAME(o);
+    Q_SET_OBJECT_NAME(o1);
+    Q_SET_OBJECT_NAME(o2);
+    Q_SET_OBJECT_NAME(o11);
+    Q_SET_OBJECT_NAME(o12);
+    Q_SET_OBJECT_NAME(o111);
+    Q_SET_OBJECT_NAME(t1);
+    Q_SET_OBJECT_NAME(t121);
     emptyname.setObjectName("");
 
     QObject *op = 0;

@@ -4023,6 +4023,19 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 */
 
 /*!
+    \macro Q_SET_OBJECT_NAME(Object)
+    \relates QObject
+    \since 5.0
+
+    This macro assigns \a Object the objectName "Object".
+
+    It doesn't matter whether \a Object is a pointer or not, the
+    macro figures that out by itself.
+
+    \sa QObject::objectName()
+*/
+
+/*!
     \typedef QObjectList
     \relates QObject
 

@@ -524,6 +524,12 @@ template <class T> inline const char * qobject_interface_iid()
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QObject *);
 #endif
 
+namespace QtPrivate {
+    inline QObject & deref_for_methodcall(QObject &o) { return  o; }
+    inline QObject & deref_for_methodcall(QObject *o) { return *o; }
+}
+#define Q_SET_OBJECT_NAME(obj) QT_PREPEND_NAMESPACE(QtPrivate)::deref_for_methodcall(obj).setObjectName(QLatin1String(#obj))
+
 QT_END_NAMESPACE
 
 QT_END_HEADER
