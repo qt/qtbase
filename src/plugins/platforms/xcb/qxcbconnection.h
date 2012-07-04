@@ -51,6 +51,7 @@
 #include <QThread>
 #include <QVector>
 #include <QVarLengthArray>
+#include <qpa/qwindowsysteminterface.h>
 
 #ifndef QT_NO_TABLETEVENT
 #include <QTabletEvent>
@@ -58,6 +59,11 @@
 
 #ifdef XCB_USE_XINPUT2_MAEMO
 struct XInput2MaemoData;
+#elif XCB_USE_XINPUT2
+#ifdef XI_TouchBeginMask
+#define XCB_USE_XINPUT22    // XI 2.2 adds multi-point touch support
+#endif
+struct XInput2DeviceData;
 #endif
 
 //#define Q_XCB_DEBUG
@@ -397,6 +403,7 @@ private:
 #ifdef XCB_USE_XINPUT2
     void initializeXInput2();
     void finalizeXInput2();
+    XInput2DeviceData *deviceForId(int id);
     void xi2HandleEvent(xcb_ge_event_t *event);
     int m_xiOpCode, m_xiEventBase, m_xiErrorBase;
 #ifndef QT_NO_TABLETEVENT
@@ -417,7 +424,7 @@ private:
     };
     void xi2QueryTabletData(void *dev, TabletData *tabletData); // use no XI stuff in headers
     void xi2SetupTabletDevices();
-    void xi2HandleTabletEvent(void *event, TabletData *tabletData);
+    bool xi2HandleTabletEvent(void *event, TabletData *tabletData);
     void xi2ReportTabletEvent(const TabletData &tabletData, void *event);
     QVector<TabletData> m_tabletData;
 #endif
@@ -459,6 +466,9 @@ private:
     QXcbEventReader *m_reader;
 #ifdef XCB_USE_XINPUT2_MAEMO
     XInput2MaemoData *m_xinputData;
+#elif defined(XCB_USE_XINPUT2)
+    QHash<int, QWindowSystemInterface::TouchPoint> m_touchPoints;
+    QHash<int, XInput2DeviceData*> m_touchDevices;
 #endif
 #ifdef XCB_USE_DRI2
     uint32_t m_dri2_major;
