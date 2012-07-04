@@ -378,7 +378,8 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
     executeTransitionContent(event, enabledTransitions);
     QList<QAbstractState*> enteredStates = enterStates(event, enabledTransitions);
 #ifndef QT_NO_PROPERTIES
-    applyProperties(enabledTransitions, exitedStates, enteredStates);
+    if (!enteredStates.isEmpty()) // Ignore transitions with no targets
+        applyProperties(enabledTransitions, exitedStates, enteredStates);
 #endif
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": configuration after entering states:" << configuration;
@@ -662,6 +663,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
 #else
     Q_Q(QStateMachine);
 #endif
+    Q_ASSERT(!enteredStates.isEmpty());
     // Process the property assignments of the entered states.
     QHash<QAbstractState*, QList<QPropertyAssignment> > propertyAssignmentsForState;
     QHash<RestorableId, QVariant> pendingRestorables = registeredRestorables;
@@ -705,11 +707,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
         }
     }
     if (!pendingRestorables.isEmpty()) {
-        QAbstractState *s;
-        if (!enteredStates.isEmpty())
-            s = enteredStates.last(); // ### handle if parallel
-        else
-            s = 0;
+        QAbstractState *s = enteredStates.last(); // ### handle if parallel
         propertyAssignmentsForState[s] << restorablesToPropertyList(pendingRestorables);
     }
 

@@ -191,6 +191,8 @@ private slots:
     void deletePropertyAssignmentObjectBeforeRestore();
     void deleteInitialState();
     void setPropertyAfterRestore();
+    void transitionWithNoTarget_data();
+    void transitionWithNoTarget();
 };
 
 class TestState : public QState
@@ -4128,6 +4130,59 @@ void tst_QStateMachine::setPropertyAfterRestore()
     machine.postEvent(new QEvent(QEvent::User));
     QTRY_VERIFY(machine.configuration().contains(s4));
     QCOMPARE(object->property("a").toInt(), 3); // restored
+
+    delete object;
+}
+
+void tst_QStateMachine::transitionWithNoTarget_data()
+{
+    QTest::addColumn<int>("restorePolicy");
+    QTest::newRow("DontRestoreProperties") << int(QStateMachine::DontRestoreProperties);
+    QTest::newRow("RestoreProperties") << int(QStateMachine::RestoreProperties);
+}
+
+void tst_QStateMachine::transitionWithNoTarget()
+{
+    QFETCH(int, restorePolicy);
+
+    QStateMachine machine;
+    machine.setGlobalRestorePolicy(static_cast<QStateMachine::RestorePolicy>(restorePolicy));
+
+    QObject *object = new QObject;
+    object->setProperty("a", 1);
+
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+    s1->assignProperty(object, "a", 2);
+    EventTransition *t1 = new EventTransition(QEvent::User, /*target=*/0);
+    s1->addTransition(t1);
+
+    QSignalSpy s1EnteredSpy(s1, SIGNAL(entered()));
+    QSignalSpy s1ExitedSpy(s1, SIGNAL(exited()));
+    QSignalSpy t1TriggeredSpy(t1, SIGNAL(triggered()));
+
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s1));
+    QCOMPARE(s1EnteredSpy.count(), 1);
+    QCOMPARE(s1ExitedSpy.count(), 0);
+    QCOMPARE(t1TriggeredSpy.count(), 0);
+    QCOMPARE(object->property("a").toInt(), 2);
+
+    object->setProperty("a", 3);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_COMPARE(t1TriggeredSpy.count(), 1);
+    QCOMPARE(s1EnteredSpy.count(), 1);
+    QCOMPARE(s1ExitedSpy.count(), 0);
+    // the assignProperty should not be re-executed, nor should the old value
+    // be restored
+    QCOMPARE(object->property("a").toInt(), 3);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_COMPARE(t1TriggeredSpy.count(), 2);
+    QCOMPARE(s1EnteredSpy.count(), 1);
+    QCOMPARE(s1ExitedSpy.count(), 0);
+    QCOMPARE(object->property("a").toInt(), 3);
 
     delete object;
 }
