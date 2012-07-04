@@ -841,6 +841,8 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
             for (int i = 0; i < assignments.size(); ++i) {
                 const QPropertyAssignment &assn = assignments.at(i);
                 assn.write();
+                if (!assn.explicitlySet)
+                    unregisterRestorable(assn.object, assn.propertyName);
             }
         }
     }

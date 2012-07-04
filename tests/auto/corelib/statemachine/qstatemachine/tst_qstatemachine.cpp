@@ -190,6 +190,7 @@ private slots:
     void deletePropertyAssignmentObjectBeforeEntry();
     void deletePropertyAssignmentObjectBeforeRestore();
     void deleteInitialState();
+    void setPropertyAfterRestore();
 };
 
 class TestState : public QState
@@ -4084,6 +4085,51 @@ void tst_QStateMachine::deleteInitialState()
     machine.start();
     // Shouldn't crash
     QCoreApplication::processEvents();
+}
+
+void tst_QStateMachine::setPropertyAfterRestore()
+{
+    QStateMachine machine;
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+
+    QObject *object = new QObject(&machine);
+    object->setProperty("a", 1);
+
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+    s1->assignProperty(object, "a", 2);
+
+    QState *s2 = new QState(&machine);
+    s1->addTransition(new EventTransition(QEvent::User, s2));
+
+    QState *s3 = new QState(&machine);
+    s3->assignProperty(object, "a", 4);
+    s2->addTransition(new EventTransition(QEvent::User, s3));
+
+    QState *s4 = new QState(&machine);
+    s3->addTransition(new EventTransition(QEvent::User, s4));
+
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s1));
+    QCOMPARE(object->property("a").toInt(), 2);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s2));
+    QCOMPARE(object->property("a").toInt(), 1); // restored
+
+    // Set property outside of state machine; this is the value
+    // that should be remembered in the next transition
+    object->setProperty("a", 3);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s3));
+    QCOMPARE(object->property("a").toInt(), 4);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s4));
+    QCOMPARE(object->property("a").toInt(), 3); // restored
+
+    delete object;
 }
 
 QTEST_MAIN(tst_QStateMachine)
