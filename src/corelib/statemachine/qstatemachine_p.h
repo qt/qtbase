@@ -142,10 +142,6 @@ public:
                           QSet<QAbstractState*> &statesToEnter,
                           QSet<QAbstractState*> &statesForDefaultEntry);
 
-    void applyProperties(const QList<QAbstractTransition*> &transitionList,
-                         const QList<QAbstractState*> &exitedStates,
-                         const QList<QAbstractState*> &enteredStates);
-
     static QState *toStandardState(QAbstractState *state);
     static const QState *toStandardState(const QAbstractState *state);
     static QFinalState *toFinalState(QAbstractState *state);
@@ -184,6 +180,10 @@ public:
     void cancelAllDelayedEvents();
     
 #ifndef QT_NO_PROPERTIES
+    void applyProperties(const QList<QAbstractTransition*> &transitionList,
+                         const QList<QAbstractState*> &exitedStates,
+                         const QList<QAbstractState*> &enteredStates);
+
     typedef QPair<QPointer<QObject>, QByteArray> RestorableId;
     QHash<RestorableId, QVariant> registeredRestorables;
     void registerRestorable(QObject *object, const QByteArray &propertyName);

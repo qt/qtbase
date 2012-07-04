@@ -62,6 +62,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_PROPERTIES
+
 struct QPropertyAssignment
 {
     QPropertyAssignment()
@@ -79,6 +81,8 @@ struct QPropertyAssignment
     QVariant value;
     bool explicitlySet;
 };
+
+#endif // QT_NO_PROPERTIES
 
 class QAbstractTransition;
 class QHistoryState;
@@ -109,7 +113,9 @@ public:
     mutable bool transitionsListNeedsRefresh;
     mutable QList<QAbstractTransition*> transitionsList;
 
+#ifndef QT_NO_PROPERTIES
     QList<QPropertyAssignment> propertyAssignments;
+#endif
 };
 
 QT_END_NAMESPACE
