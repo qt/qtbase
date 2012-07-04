@@ -960,15 +960,6 @@ bool QToolButton::event(QEvent *event)
     return QAbstractButton::event(event);
 }
 
-/*! \internal
- */
-QToolButton::QToolButton(QToolButtonPrivate &dd, QWidget *parent)
-    :QAbstractButton(dd, parent)
-{
-    Q_D(QToolButton);
-    d->init();
-}
-
 /*!
     \fn void QToolButton::setPixmap(const QPixmap &pixmap)
 

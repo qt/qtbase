@@ -108,7 +108,6 @@ Q_SIGNALS:
     void triggered(QAction *);
 
 protected:
-    QToolButton(QToolButtonPrivate &, QWidget* parent);
     bool event(QEvent *e);
     void mousePressEvent(QMouseEvent *);
     void mouseReleaseEvent(QMouseEvent *);
