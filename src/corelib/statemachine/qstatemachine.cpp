@@ -743,8 +743,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
             for (it = propertyAssignmentsForState.constBegin(); it != propertyAssignmentsForState.constEnd(); ++it) {
                 const QList<QPropertyAssignment> &assignments = it.value();
                 for (int k = 0; k < assignments.size(); ++k) {
-                    if ((assignments.at(k).object == assn.object)
-                        && (assignments.at(k).propertyName == assn.propertyName)) {
+                    if (assignments.at(k).hasTarget(assn.object, assn.propertyName)) {
                         found = true;
                         break;
                     }

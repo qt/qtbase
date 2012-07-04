@@ -242,7 +242,7 @@ void QState::assignProperty(QObject *object, const char *name,
     }
     for (int i = 0; i < d->propertyAssignments.size(); ++i) {
         QPropertyAssignment &assn = d->propertyAssignments[i];
-        if ((assn.object == object) && (assn.propertyName == name)) {
+        if (assn.hasTarget(object, name)) {
             assn.value = value;
             return;
         }

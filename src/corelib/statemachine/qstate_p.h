@@ -75,6 +75,8 @@ struct QPropertyAssignment
 
     bool objectDeleted() const { return !object; }
     void write() const { Q_ASSERT(object != 0); object->setProperty(propertyName, value); }
+    bool hasTarget(QObject *o, const QByteArray &pn) const
+    { return object == o && propertyName == pn; }
 
     QPointer<QObject> object;
     QByteArray propertyName;
