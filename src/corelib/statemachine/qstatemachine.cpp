@@ -757,20 +757,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
     }
 
     // Find the animations to use for the state change.
-    QList<QAbstractAnimation*> selectedAnimations;
-    if (animated) {
-        for (int i = 0; i < transitionList.size(); ++i) {
-            QAbstractTransition *transition = transitionList.at(i);
-
-            selectedAnimations << transition->animations();
-            selectedAnimations << defaultAnimationsForSource.values(transition->sourceState());
-
-            QList<QAbstractState *> targetStates = transition->targetStates();
-            for (int j=0; j<targetStates.size(); ++j) 
-                selectedAnimations << defaultAnimationsForTarget.values(targetStates.at(j));
-        }
-        selectedAnimations << defaultAnimations;
-    }
+    QList<QAbstractAnimation *> selectedAnimations = selectAnimations(transitionList);
 
     // Initialize animations from property assignments.
     for (int i = 0; i < selectedAnimations.size(); ++i) {
@@ -1151,6 +1138,25 @@ void QStateMachinePrivate::_q_animationFinished()
         animationsForState.erase(it);
         QStatePrivate::get(toStandardState(state))->emitPropertiesAssigned();
     }
+}
+
+QList<QAbstractAnimation *> QStateMachinePrivate::selectAnimations(const QList<QAbstractTransition *> &transitionList) const
+{
+    QList<QAbstractAnimation *> selectedAnimations;
+    if (animated) {
+        for (int i = 0; i < transitionList.size(); ++i) {
+            QAbstractTransition *transition = transitionList.at(i);
+
+            selectedAnimations << transition->animations();
+            selectedAnimations << defaultAnimationsForSource.values(transition->sourceState());
+
+            QList<QAbstractState *> targetStates = transition->targetStates();
+            for (int j=0; j<targetStates.size(); ++j)
+                selectedAnimations << defaultAnimationsForTarget.values(targetStates.at(j));
+        }
+        selectedAnimations << defaultAnimations;
+    }
+    return selectedAnimations;
 }
 
 #endif // !QT_NO_ANIMATION

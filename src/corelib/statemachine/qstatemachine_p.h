@@ -228,6 +228,7 @@ public:
     QMultiHash<QAbstractState *, QAbstractAnimation *> defaultAnimationsForSource;
     QMultiHash<QAbstractState *, QAbstractAnimation *> defaultAnimationsForTarget;
 
+    QList<QAbstractAnimation *> selectAnimations(const QList<QAbstractTransition *> &transitionList) const;
 #endif // QT_NO_ANIMATION
 
     QSignalEventGenerator *signalEventGenerator;
