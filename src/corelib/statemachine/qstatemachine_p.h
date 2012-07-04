@@ -135,9 +135,13 @@ public:
     void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
     bool isPreempted(const QAbstractState *s, const QSet<QAbstractTransition*> &transitions) const;
     QSet<QAbstractTransition*> selectTransitions(QEvent *event) const;
-    QList<QAbstractState*> exitStates(QEvent *event, const QList<QAbstractTransition*> &transitionList);
+    void exitStates(QEvent *event, const QList<QAbstractState *> &statesToExit_sorted);
+    QList<QAbstractState*> computeStatesToExit(const QList<QAbstractTransition*> &enabledTransitions);
     void executeTransitionContent(QEvent *event, const QList<QAbstractTransition*> &transitionList);
-    QList<QAbstractState*> enterStates(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions);
+    void enterStates(QEvent *event, const QList<QAbstractState*> &statesToEnter_sorted,
+                     const QSet<QAbstractState*> &statesForDefaultEntry);
+    QList<QAbstractState*> computeStatesToEnter(const QList<QAbstractTransition*> &enabledTransitions,
+                                                QSet<QAbstractState*> &statesForDefaultEntry);
     void addStatesToEnter(QAbstractState *s, QState *root,
                           QSet<QAbstractState*> &statesToEnter,
                           QSet<QAbstractState*> &statesForDefaultEntry);

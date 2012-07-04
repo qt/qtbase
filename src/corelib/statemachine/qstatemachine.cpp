@@ -371,12 +371,15 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
     qDebug() << q_func() << ": begin microstep( enabledTransitions:" << enabledTransitions << ')';
     qDebug() << q_func() << ": configuration before exiting states:" << configuration;
 #endif
-    QList<QAbstractState*> exitedStates = exitStates(event, enabledTransitions);
+    QList<QAbstractState*> exitedStates = computeStatesToExit(enabledTransitions);
+    QSet<QAbstractState*> statesForDefaultEntry;
+    QList<QAbstractState*> enteredStates = computeStatesToEnter(enabledTransitions, statesForDefaultEntry);
+    exitStates(event, exitedStates);
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": configuration after exiting states:" << configuration;
 #endif
     executeTransitionContent(event, enabledTransitions);
-    QList<QAbstractState*> enteredStates = enterStates(event, enabledTransitions);
+    enterStates(event, enteredStates, statesForDefaultEntry);
 #ifndef QT_NO_PROPERTIES
     if (!enteredStates.isEmpty()) // Ignore transitions with no targets
         applyProperties(enabledTransitions, exitedStates, enteredStates);
@@ -387,9 +390,8 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
 #endif
 }
 
-QList<QAbstractState*> QStateMachinePrivate::exitStates(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions)
+QList<QAbstractState*> QStateMachinePrivate::computeStatesToExit(const QList<QAbstractTransition*> &enabledTransitions)
 {
-//    qDebug() << "exitStates(" << enabledTransitions << ')';
     QSet<QAbstractState*> statesToExit;
 //    QSet<QAbstractState*> statesToSnapshot;
     for (int i = 0; i < enabledTransitions.size(); ++i) {
@@ -403,7 +405,7 @@ QList<QAbstractState*> QStateMachinePrivate::exitStates(QEvent *event, const QLi
             setError(QStateMachine::NoCommonAncestorForTransitionError, t->sourceState());
             lst = pendingErrorStates.toList();
             lst.prepend(t->sourceState());
-            
+
             lca = findLCA(lst);
             Q_ASSERT(lca != 0);
         }
@@ -419,6 +421,11 @@ QList<QAbstractState*> QStateMachinePrivate::exitStates(QEvent *event, const QLi
     }
     QList<QAbstractState*> statesToExit_sorted = statesToExit.toList();
     qSort(statesToExit_sorted.begin(), statesToExit_sorted.end(), stateExitLessThan);
+    return statesToExit_sorted;
+}
+
+void QStateMachinePrivate::exitStates(QEvent *event, const QList<QAbstractState*> &statesToExit_sorted)
+{
     for (int i = 0; i < statesToExit_sorted.size(); ++i) {
         QAbstractState *s = statesToExit_sorted.at(i);
         if (QState *grp = toStandardState(s)) {
@@ -452,7 +459,6 @@ QList<QAbstractState*> QStateMachinePrivate::exitStates(QEvent *event, const QLi
         configuration.remove(s);
         QAbstractStatePrivate::get(s)->emitExited();
     }
-    return statesToExit_sorted;
 }
 
 void QStateMachinePrivate::executeTransitionContent(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions)
@@ -467,15 +473,10 @@ void QStateMachinePrivate::executeTransitionContent(QEvent *event, const QList<Q
     }
 }
 
-QList<QAbstractState*> QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions)
+QList<QAbstractState*> QStateMachinePrivate::computeStatesToEnter(const QList<QAbstractTransition *> &enabledTransitions,
+                                                                  QSet<QAbstractState *> &statesForDefaultEntry)
 {
-#ifdef QSTATEMACHINE_DEBUG
-    Q_Q(QStateMachine);
-#endif
-//    qDebug() << "enterStates(" << enabledTransitions << ')';
     QSet<QAbstractState*> statesToEnter;
-    QSet<QAbstractState*> statesForDefaultEntry;
-
     if (pendingErrorStates.isEmpty()) {
         for (int i = 0; i < enabledTransitions.size(); ++i) {
             QAbstractTransition *t = enabledTransitions.at(i);
@@ -486,12 +487,12 @@ QList<QAbstractState*> QStateMachinePrivate::enterStates(QEvent *event, const QL
             QState *lca = findLCA(lst);
             for (int j = 1; j < lst.size(); ++j) {
                 QAbstractState *s = lst.at(j);
-			    addStatesToEnter(s, lca, statesToEnter, statesForDefaultEntry);
+                addStatesToEnter(s, lca, statesToEnter, statesForDefaultEntry);
                 if (isParallel(lca)) {
                     QList<QAbstractState*> lcac = QStatePrivate::get(lca)->childStates();
                     foreach (QAbstractState* child,lcac) {
                         if (!statesToEnter.contains(child))
-                            addStatesToEnter(child,lca,statesToEnter,statesForDefaultEntry);                    
+                            addStatesToEnter(child,lca,statesToEnter,statesForDefaultEntry);
                     }
                 }
             }
@@ -509,7 +510,15 @@ QList<QAbstractState*> QStateMachinePrivate::enterStates(QEvent *event, const QL
 
     QList<QAbstractState*> statesToEnter_sorted = statesToEnter.toList();
     qSort(statesToEnter_sorted.begin(), statesToEnter_sorted.end(), stateEntryLessThan);
+    return statesToEnter_sorted;
+}
 
+void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState*> &statesToEnter_sorted,
+                                       const QSet<QAbstractState*> &statesForDefaultEntry)
+{
+#ifdef QSTATEMACHINE_DEBUG
+    Q_Q(QStateMachine);
+#endif
     for (int i = 0; i < statesToEnter_sorted.size(); ++i) {
         QAbstractState *s = statesToEnter_sorted.at(i);
 #ifdef QSTATEMACHINE_DEBUG
@@ -563,7 +572,6 @@ QList<QAbstractState*> QStateMachinePrivate::enterStates(QEvent *event, const QL
         }
     }
 //    qDebug() << "configuration:" << configuration.toList();
-    return statesToEnter_sorted;
 }
 
 void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
@@ -1241,7 +1249,10 @@ void QStateMachinePrivate::_q_start()
 
     QEvent nullEvent(QEvent::None);
     executeTransitionContent(&nullEvent, transitions);
-    QList<QAbstractState*> enteredStates = enterStates(&nullEvent, transitions);
+    QSet<QAbstractState*> statesForDefaultEntry;
+    QList<QAbstractState*> enteredStates = computeStatesToEnter(transitions,
+                                                                statesForDefaultEntry);
+    enterStates(&nullEvent, enteredStates, statesForDefaultEntry);
 #ifndef QT_NO_PROPERTIES
     applyProperties(transitions, QList<QAbstractState*>() << start,
                     enteredStates);
