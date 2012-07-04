@@ -122,6 +122,9 @@ macro(_populate_imported_target_properties Configuration LIB_LOCATION IMPLIB_LOC
 !!ELSE
         \"IMPORTED_LOCATION_${Configuration}\" \"$${CMAKE_LIB_DIR}$${LIB_LOCATION}\"
 !!ENDIF
+!!IF !isEmpty(CMAKE_LIB_SONAME)
+        \"IMPORTED_SONAME_${Configuration}\" "$${CMAKE_LIB_SONAME}"
+!!ENDIF
     )
     if(IMPLIB_LOCATION)
         set_target_properties(Qt5::$${CMAKE_MODULE_NAME} PROPERTIES
