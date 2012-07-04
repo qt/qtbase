@@ -198,8 +198,9 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         if (QWindowsContext::verboseEvents)
             qDebug() << "Entering " << window;
         QWindowsWindow::baseWindowOf(window)->applyCursor();
-#ifndef Q_OS_WINCE
+//#ifndef Q_OS_WINCE
         QWindowSystemInterface::handleEnterEvent(window);
+#ifndef Q_OS_WINCE
         TRACKMOUSEEVENT tme;
         tme.cbSize = sizeof(TRACKMOUSEEVENT);
         tme.dwFlags = TME_LEAVE;

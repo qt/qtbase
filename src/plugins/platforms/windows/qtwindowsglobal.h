@@ -85,6 +85,7 @@ enum WindowsEventType // Simplify event types
     FocusOutEvent = WindowEventFlag + 18,
     MouseEvent = MouseEventFlag + 1,
     MouseWheelEvent = MouseEventFlag + 2,
+    CursorEvent = MouseEventFlag + 3,
     TouchEvent = TouchEventFlag + 1,
     NonClientMouseEvent = NonClientEventFlag + MouseEventFlag + 1,
     KeyEvent = KeyEventFlag + 1,
@@ -124,6 +125,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
     case WM_ACTIVATE:
         return  LOWORD(wParamIn) == WA_INACTIVE ?
             QtWindows::DeactivateWindowEvent : QtWindows::ActivateWindowEvent;
+    case WM_SETCURSOR:
+        return QtWindows::CursorEvent;
     case WM_MOUSELEAVE:
         return QtWindows::MouseEvent;
     case WM_MOUSEWHEEL:

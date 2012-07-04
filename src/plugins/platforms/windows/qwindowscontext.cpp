@@ -837,6 +837,17 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         if (platformWindow->frameStrutEventsEnabled())
             return d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
         break;
+/* the mouse tracking on windows already handles the reset of the cursor
+ * and does not like somebody else handling it.
+ * on WINCE its necessary to handle this event to get the correct cursor
+ */
+#ifdef Q_OS_WINCE
+    case QtWindows::CursorEvent:
+        {
+            QWindowsWindow::baseWindowOf(platformWindow->window())->applyCursor();
+            return true;
+        }
+#endif
     case QtWindows::MouseWheelEvent:
     case QtWindows::MouseEvent:
     case QtWindows::LeaveEvent:

@@ -295,6 +295,7 @@ HCURSOR QWindowsCursor::createSystemCursor(const QCursor &c)
         }
         const int n = qMax(1, bbits.width() / 8);
         const int h = bbits.height();
+#if !defined(Q_OS_WINCE)
         QScopedArrayPointer<uchar> xBits(new uchar[h * n]);
         QScopedArrayPointer<uchar> xMask(new uchar[h * n]);
         int x = 0;
@@ -315,6 +316,53 @@ HCURSOR QWindowsCursor::createSystemCursor(const QCursor &c)
         }
         return CreateCursor(GetModuleHandle(0), hx, hy, bbits.width(), bbits.height(),
                             xBits.data(), xMask.data());
+#elif defined(GWES_ICONCURS) // Q_WS_WINCE
+        // Windows CE only supports fixed cursor size.
+        int sysW = GetSystemMetrics(SM_CXCURSOR);
+        int sysH = GetSystemMetrics(SM_CYCURSOR);
+        int sysN = qMax(1, sysW / 8);
+        uchar* xBits = new uchar[sysH * sysN];
+        uchar* xMask = new uchar[sysH * sysN];
+        int x = 0;
+        for (int i = 0; i < sysH; ++i) {
+            if (i >= h) {
+                memset(&xBits[x] , 255, sysN);
+                memset(&xMask[x] ,   0, sysN);
+                x += sysN;
+            } else {
+                int fillWidth = n > sysN ? sysN : n;
+                uchar *bits = bbits.scanLine(i);
+                uchar *mask = mbits.scanLine(i);
+                for (int j = 0; j < fillWidth; ++j) {
+                    uchar b = bits[j];
+                    uchar m = mask[j];
+                    if (invb)
+                        b ^= 0xFF;
+                    if (invm)
+                        m ^= 0xFF;
+                    xBits[x] = ~m;
+                    xMask[x] = b ^ m;
+                    ++x;
+                }
+                for (int j = fillWidth; j < sysN; ++j ) {
+                    xBits[x] = 255;
+                    xMask[x] = 0;
+                    ++x;
+                }
+            }
+        }
+
+        HCURSOR hcurs = CreateCursor(qWinAppInst(), hx, hy, sysW, sysH,
+                                   xBits, xMask);
+        delete [] xBits;
+        delete [] xMask;
+        return hcurs;
+#else
+        Q_UNUSED(n);
+        Q_UNUSED(h);
+        return 0;
+#endif
+
     }
     case Qt::DragCopyCursor:
     case Qt::DragMoveCursor:
@@ -326,7 +374,11 @@ HCURSOR QWindowsCursor::createSystemCursor(const QCursor &c)
         qWarning("%s: Invalid cursor shape %d", __FUNCTION__, cshape);
         return 0;
     }
+#ifdef Q_OS_WINCE
+    return LoadCursor(0, sh);
+#else
     return (HCURSOR)LoadImage(0, sh, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+#endif
 }
 
 /*!
