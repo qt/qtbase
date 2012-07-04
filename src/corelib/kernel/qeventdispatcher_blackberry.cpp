@@ -42,6 +42,7 @@
 #include "qeventdispatcher_blackberry_p.h"
 #include "qsocketnotifier.h"
 #include "qdebug.h"
+#include "qelapsedtimer.h"
 
 #include <bps/bps.h>
 #include <bps/event.h>
@@ -265,15 +266,31 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
     if (timeout)
         timeout_ms = (timeout->tv_sec * 1000) + (timeout->tv_usec / 1000);
 
-    // wait for event or file to be ready
-    bps_event_t *event = NULL;
-    result = bps_get_event(&event, timeout_ms);
-    if (result != BPS_SUCCESS)
-        qWarning("QEventDispatcherBlackberry::select: bps_get_event() failed");
+    QElapsedTimer timer;
+    timer.start();
 
-    // pass all received events through filter - except IO ready events
-    if (event && bps_event_get_domain(event) != bpsIOReadyDomain)
-        filterEvent((void*)event);
+    do {
+        // wait for event or file to be ready
+        bps_event_t *event = NULL;
+
+        // \TODO Remove this when bps is fixed
+        // BPS has problems respecting timeouts.
+        // Replace the bps_get_event statement
+        // with the following commented version
+        // once bps is fixed.
+        // result = bps_get_event(&event, timeout_ms);
+        result = bps_get_event(&event, 0);
+
+        if (result != BPS_SUCCESS)
+            qWarning("QEventDispatcherBlackberry::select: bps_get_event() failed");
+
+        if (!event)
+            break;
+
+        // pass all received events through filter - except IO ready events
+        if (event && bps_event_get_domain(event) != bpsIOReadyDomain)
+            filterEvent((void*)event);
+    } while (timer.elapsed() < timeout_ms);
 
     // \TODO Remove this when bps is fixed (see comment above)
     result = bps_remove_fd(d->thread_pipe[0]);
