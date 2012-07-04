@@ -22,4 +22,4 @@ x11 {
 
 !wince*:win32: LIBS += -luser32 -lgdi32
 
-CONFIG+=insignificant_test # QTBUG-25300, QTBUG-23695
+mac:CONFIG+=insignificant_test # QTBUG-25300, QTBUG-23695
