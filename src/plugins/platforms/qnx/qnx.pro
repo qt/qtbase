@@ -17,9 +17,9 @@ contains(QT_CONFIG, opengles2) {
 CONFIG(blackberry) {
     CONFIG += qqnx_pps
 
-    # Comment this to enable screen event handling
-    # through the event dispatcher.
-    DEFINES += QQNX_SCREENEVENTTHREAD
+    # Unomment this to enable screen event handling
+    # through a dedicated thread.
+    # DEFINES += QQNX_SCREENEVENTTHREAD
 } else {
     DEFINES += QQNX_SCREENEVENTTHREAD
 }
