@@ -23,6 +23,7 @@ SUBDIRS=\
     qmargins \
     qpair \
     qpoint \
+    qpointf \
     qqueue \
     qrect \
     qregexp \

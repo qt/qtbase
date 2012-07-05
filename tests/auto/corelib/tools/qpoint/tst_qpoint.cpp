@@ -41,7 +41,6 @@
 
 #include <QtTest/QtTest>
 
-#include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qpoint.h>
 
@@ -49,84 +48,302 @@ class tst_QPoint : public QObject
 {
     Q_OBJECT
 private slots:
-    void getSetCheck();
-    void division();
+    void isNull();
 
+    void manhattanLength_data();
     void manhattanLength();
+
+    void getSet_data();
+    void getSet();
+
+    void rx();
+    void ry();
+
+    void operator_add_data();
+    void operator_add();
+
+    void operator_subtract_data();
+    void operator_subtract();
+
+    void operator_multiply_data();
+    void operator_multiply();
+
+    void operator_divide_data();
+    void operator_divide();
+
+    void operator_unary_minus_data();
+    void operator_unary_minus();
+
+    void operator_eq_data();
+    void operator_eq();
+
+#ifndef QT_NO_DATASTREAM
+    void stream_data();
+    void stream();
+#endif
 };
+
+void tst_QPoint::isNull()
+{
+    QPoint point(0, 0);
+    QVERIFY(point.isNull());
+    ++point.rx();
+    QVERIFY(!point.isNull());
+    point.rx() -= 2;
+    QVERIFY(!point.isNull());
+}
+
+void tst_QPoint::manhattanLength_data()
+{
+    QTest::addColumn<QPoint>("point");
+    QTest::addColumn<int>("expected");
+
+    QTest::newRow("(0, 0)") << QPoint(0, 0) << 0;
+    QTest::newRow("(10, 0)") << QPoint(10, 0) << 10;
+    QTest::newRow("(0, 10)") << QPoint(0, 10) << 10;
+    QTest::newRow("(10, 20)") << QPoint(10, 20) << 30;
+    QTest::newRow("(-10, -20)") << QPoint(-10, -20) << 30;
+}
 
 void tst_QPoint::manhattanLength()
 {
-    {
-        QPoint p(10, 20);
-        QCOMPARE(p.manhattanLength(), 30);
-    }
-    {
-        QPointF p(10., 20.);
-        QCOMPARE(p.manhattanLength(), 30.);
-    }
-    {
-        QPointF p(10.1, 20.2);
-        QCOMPARE(p.manhattanLength(), 30.3);
-    }
+    QFETCH(QPoint, point);
+    QFETCH(int, expected);
+
+    QCOMPARE(point.manhattanLength(), expected);
 }
 
-// Testing get/set functions
-void tst_QPoint::getSetCheck()
+void tst_QPoint::getSet_data()
 {
-    QPoint obj1;
-    // int QPoint::x()
-    // void QPoint::setX(int)
-    obj1.setX(0);
-    QCOMPARE(0, obj1.x());
-    obj1.setX(INT_MIN);
-    QCOMPARE(INT_MIN, obj1.x());
-    obj1.setX(INT_MAX);
-    QCOMPARE(INT_MAX, obj1.x());
+    QTest::addColumn<int>("i");
 
-    // int QPoint::y()
-    // void QPoint::setY(int)
-    obj1.setY(0);
-    QCOMPARE(0, obj1.y());
-    obj1.setY(INT_MIN);
-    QCOMPARE(INT_MIN, obj1.y());
-    obj1.setY(INT_MAX);
-    QCOMPARE(INT_MAX, obj1.y());
-
-    QPointF obj2;
-    // qreal QPointF::x()
-    // void QPointF::setX(qreal)
-    obj2.setX(0.0);
-    QCOMPARE(0.0, obj2.x());
-    obj2.setX(1.1);
-    QCOMPARE(1.1, obj2.x());
-
-    // qreal QPointF::y()
-    // void QPointF::setY(qreal)
-    obj2.setY(0.0);
-    QCOMPARE(0.0, obj2.y());
-    obj2.setY(1.1);
-    QCOMPARE(1.1, obj2.y());
+    QTest::newRow("0") << 0;
+    QTest::newRow("INT_MIN") << INT_MIN;
+    QTest::newRow("INT_MAX") << INT_MAX;
 }
 
-static inline qreal dot(const QPointF &a, const QPointF &b)
+void tst_QPoint::getSet()
 {
-    return a.x() * b.x() + a.y() * b.y();
+    QFETCH(int, i);
+
+    QPoint point;
+    point.setX(i);
+    QCOMPARE(point.x(), i);
+
+    point.setY(i);
+    QCOMPARE(point.y(), i);
 }
 
-void tst_QPoint::division()
+void tst_QPoint::rx()
 {
-    {
-        QPointF p(1e-14, 1e-14);
-        p = p / sqrt(dot(p, p));
-        qFuzzyCompare(dot(p, p), 1);
-    }
-    {
-        QPointF p(1e-14, 1e-14);
-        p /= sqrt(dot(p, p));
-        qFuzzyCompare(dot(p, p), 1);
-    }
+    const QPoint originalPoint(-1, 0);
+    QPoint point(originalPoint);
+    ++point.rx();
+    QCOMPARE(point.x(), originalPoint.x() + 1);
 }
+
+void tst_QPoint::ry()
+{
+    const QPoint originalPoint(0, -1);
+    QPoint point(originalPoint);
+    ++point.ry();
+    QCOMPARE(point.y(), originalPoint.y() + 1);
+}
+
+void tst_QPoint::operator_add_data()
+{
+    QTest::addColumn<QPoint>("point1");
+    QTest::addColumn<QPoint>("point2");
+    QTest::addColumn<QPoint>("expected");
+
+    QTest::newRow("(0, 0) + (0, 0)") << QPoint(0, 0) << QPoint(0, 0) << QPoint(0, 0);
+    QTest::newRow("(0, 9) + (1, 0)") << QPoint(0, 9) << QPoint(1, 0) << QPoint(1, 9);
+    QTest::newRow("(INT_MIN, 0) + (1, 0)") << QPoint(INT_MIN, 0) << QPoint(1, 0) << QPoint(INT_MIN + 1, 0);
+    QTest::newRow("(INT_MAX, 0) + (-1, 0)") << QPoint(INT_MAX, 0) << QPoint(-1, 0) << QPoint(INT_MAX - 1, 0);
+}
+
+void tst_QPoint::operator_add()
+{
+    QFETCH(QPoint, point1);
+    QFETCH(QPoint, point2);
+    QFETCH(QPoint, expected);
+
+    QCOMPARE(point1 + point2, expected);
+    point1 += point2;
+    QCOMPARE(point1, expected);
+}
+
+void tst_QPoint::operator_subtract_data()
+{
+    QTest::addColumn<QPoint>("point1");
+    QTest::addColumn<QPoint>("point2");
+    QTest::addColumn<QPoint>("expected");
+
+    QTest::newRow("(0, 0) - (0, 0)") << QPoint(0, 0) << QPoint(0, 0) << QPoint(0, 0);
+    QTest::newRow("(0, 9) - (1, 0)") << QPoint(0, 9) << QPoint(1, 0) << QPoint(-1, 9);
+    QTest::newRow("(INT_MAX, 0) - (1, 0)") << QPoint(INT_MAX, 0) << QPoint(1, 0) << QPoint(INT_MAX - 1, 0);
+    QTest::newRow("(INT_MIN, 0) - (-1, 0)") << QPoint(INT_MIN, 0) << QPoint(-1, 0) << QPoint(INT_MIN - -1, 0);
+}
+
+void tst_QPoint::operator_subtract()
+{
+    QFETCH(QPoint, point1);
+    QFETCH(QPoint, point2);
+    QFETCH(QPoint, expected);
+
+    QCOMPARE(point1 - point2, expected);
+    point1 -= point2;
+    QCOMPARE(point1, expected);
+}
+
+enum PrimitiveType { Int, Float, Double };
+
+Q_DECLARE_METATYPE(PrimitiveType)
+
+void tst_QPoint::operator_multiply_data()
+{
+    QTest::addColumn<QPoint>("point");
+    QTest::addColumn<double>("factorAsDouble");
+    QTest::addColumn<PrimitiveType>("type");
+    QTest::addColumn<QPoint>("expected");
+
+    QTest::newRow("(0, 0) * 0.0") << QPoint(0, 0) << 0.0 << Double << QPoint(0, 0);
+    QTest::newRow("(INT_MIN, 1) * 0.5") << QPoint(INT_MIN, 1) << 0.5 << Double << QPoint(qRound(INT_MIN * 0.5), 1);
+    QTest::newRow("(INT_MAX, 2) * 0.5") << QPoint(INT_MAX, 2) << 0.5 << Double << QPoint(qRound(INT_MAX * 0.5), 1);
+
+    QTest::newRow("(0, 0) * 0") << QPoint(0, 0) << 0.0 << Int << QPoint(0, 0);
+    QTest::newRow("(INT_MIN + 1, 0) * -1") << QPoint(INT_MIN + 1, 0) << -1.0 << Int << QPoint((INT_MIN + 1) * -1, 0);
+    QTest::newRow("(INT_MAX, 0) * -1") << QPoint(INT_MAX, 0) << -1.0 << Int << QPoint(INT_MAX  * -1, 0);
+
+    QTest::newRow("(0, 0) * 0.0f") << QPoint(0, 0) << 0.0 << Float << QPoint(0, 0);
+    QTest::newRow("(INT_MIN, 0) * -0.5f") << QPoint(INT_MIN, 0) << -0.5 << Float << QPoint(qRound(INT_MIN * -0.5f), 0);
+}
+
+template<typename T>
+void multiplyTest(QPoint point, double factor, const QPoint &expected)
+{
+    T factorAsT = static_cast<T>(factor);
+
+    QCOMPARE(point * factorAsT, expected);
+    // Test with reversed argument version.
+    QCOMPARE(factorAsT * point, expected);
+    point *= factorAsT;
+    QCOMPARE(point, expected);
+}
+
+void tst_QPoint::operator_multiply()
+{
+    QFETCH(QPoint, point);
+    QFETCH(double, factorAsDouble);
+    QFETCH(PrimitiveType, type);
+    QFETCH(QPoint, expected);
+
+    if (type == Int)
+        multiplyTest<int>(point, factorAsDouble, expected);
+    else if (type == Float)
+        multiplyTest<float>(point, factorAsDouble, expected);
+    else if (type == Double)
+        multiplyTest<double>(point, factorAsDouble, expected);
+}
+
+void tst_QPoint::operator_divide_data()
+{
+    QTest::addColumn<QPoint>("point");
+    QTest::addColumn<qreal>("divisor");
+    QTest::addColumn<QPoint>("expected");
+
+    QTest::newRow("(0, 0) / 1") << QPoint(0, 0) << qreal(1) << QPoint(0, 0);
+    QTest::newRow("(0, 9) / 2") << QPoint(0, 9) << qreal(2) << QPoint(0, 5);
+    QTest::newRow("(INT_MAX, 0) / 2") << QPoint(INT_MAX, 0) << qreal(2) << QPoint(qRound(INT_MAX / qreal(2)), 0);
+    QTest::newRow("(INT_MIN, 0) / -1.5") << QPoint(INT_MIN, 0) << qreal(-1.5) << QPoint(qRound(INT_MIN / qreal(-1.5)), 0);
+}
+
+void tst_QPoint::operator_divide()
+{
+    QFETCH(QPoint, point);
+    QFETCH(qreal, divisor);
+    QFETCH(QPoint, expected);
+
+    QCOMPARE(point / divisor, expected);
+    point /= divisor;
+    QCOMPARE(point, expected);
+}
+
+void tst_QPoint::operator_unary_minus_data()
+{
+    QTest::addColumn<QPoint>("point");
+    QTest::addColumn<QPoint>("expected");
+
+    QTest::newRow("-(0, 0)") << QPoint(0, 0) << QPoint(0, 0);
+    QTest::newRow("-(-1, 0)") << QPoint(-1, 0) << QPoint(1, 0);
+    QTest::newRow("-(0, -1)") << QPoint(0, -1) << QPoint(0, 1);
+    QTest::newRow("-(-INT_MAX, INT_MAX)") << QPoint(-INT_MAX, INT_MAX) << QPoint(INT_MAX, -INT_MAX);
+}
+
+void tst_QPoint::operator_unary_minus()
+{
+    QFETCH(QPoint, point);
+    QFETCH(QPoint, expected);
+
+    QCOMPARE(-point, expected);
+}
+
+void tst_QPoint::operator_eq_data()
+{
+    QTest::addColumn<QPoint>("point1");
+    QTest::addColumn<QPoint>("point2");
+    QTest::addColumn<bool>("expectEqual");
+
+    QTest::newRow("(0, 0) == (0, 0)") << QPoint(0, 0) << QPoint(0, 0) << true;
+    QTest::newRow("(-1, 0) == (-1, 0)") << QPoint(-1, 0) << QPoint(-1, 0) << true;
+    QTest::newRow("(-1, 0) != (0, 0)") << QPoint(-1, 0) << QPoint(0, 0) << false;
+    QTest::newRow("(-1, 0) != (0, -1)") << QPoint(-1, 0) << QPoint(0, -1) << false;
+    QTest::newRow("(1, 99999) != (-1, 99999)") << QPoint(1, 99999) << QPoint(-1, 99999) << false;
+    QTest::newRow("(INT_MIN, INT_MIN) == (INT_MIN, INT_MIN)") << QPoint(INT_MIN, INT_MIN) << QPoint(INT_MIN, INT_MIN) << true;
+    QTest::newRow("(INT_MAX, INT_MAX) == (INT_MAX, INT_MAX)") << QPoint(INT_MAX, INT_MAX) << QPoint(INT_MAX, INT_MAX) << true;
+}
+
+void tst_QPoint::operator_eq()
+{
+    QFETCH(QPoint, point1);
+    QFETCH(QPoint, point2);
+    QFETCH(bool, expectEqual);
+
+    bool equal = point1 == point2;
+    QCOMPARE(equal, expectEqual);
+    bool notEqual = point1 != point2;
+    QCOMPARE(notEqual, !expectEqual);
+}
+
+#ifndef QT_NO_DATASTREAM
+void tst_QPoint::stream_data()
+{
+    QTest::addColumn<QPoint>("point");
+
+    QTest::newRow("(0, 0)") << QPoint(0, 0);
+    QTest::newRow("(-1, 1)") << QPoint(-1, 1);
+    QTest::newRow("(1, -1)") << QPoint(1, -1);
+    QTest::newRow("(INT_MIN, INT_MAX)") << QPoint(INT_MIN, INT_MAX);
+}
+
+void tst_QPoint::stream()
+{
+    QFETCH(QPoint, point);
+
+    QBuffer tmp;
+    QVERIFY(tmp.open(QBuffer::ReadWrite));
+    QDataStream stream(&tmp);
+    // Ensure that stream returned is the same stream we inserted into.
+    QDataStream &insertionStreamRef(stream << point);
+    QVERIFY(&insertionStreamRef == &stream);
+
+    tmp.seek(0);
+    QPoint pointFromStream;
+    QDataStream &extractionStreamRef(stream >> pointFromStream);
+    QVERIFY(&extractionStreamRef == &stream);
+    QCOMPARE(pointFromStream, point);
+}
+#endif
 
 QTEST_MAIN(tst_QPoint)
 #include "tst_qpoint.moc"
