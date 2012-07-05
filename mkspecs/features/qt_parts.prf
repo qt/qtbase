@@ -24,8 +24,8 @@ exists($$_PRO_FILE_PWD_/examples/examples.pro) {
 
 # Some modules still have these
 exists($$_PRO_FILE_PWD_/demos/demos.pro) {
-    sub_demos.subdir = examples
-    sub_demos.target = sub-examples
+    sub_demos.subdir = demos
+    sub_demos.target = sub-demos
     sub_demos.depends = sub_src
     !contains(QT_BUILD_PARTS, examples): sub_demos.CONFIG = no_default_target no_default_install
     SUBDIRS += sub_demos
