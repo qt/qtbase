@@ -1350,6 +1350,13 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
         if (isWindow() && !testAttribute(Qt::WA_SetWindowIcon))
             d->setWindowIcon_sys();
     }
+
+    // Frame strut update needed in cases where there are native widgets such as QGLWidget,
+    // as those force native window creation on their ancestors before they are shown.
+    // If the strut is not updated, any subsequent move of the top level window before show
+    // will cause window frame to be ignored when positioning the window.
+    // Note that this only helps on platforms that handle window creation synchronously.
+    d->updateFrameStrut();
 }
 
 /*!
