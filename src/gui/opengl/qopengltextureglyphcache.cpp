@@ -83,7 +83,6 @@ QOpenGLTextureGlyphCache::~QOpenGLTextureGlyphCache()
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
     qDebug(" -> ~QOpenGLTextureGlyphCache() %p.", this);
 #endif
-    delete m_blitProgram;
 }
 
 void QOpenGLTextureGlyphCache::createTextureData(int width, int height)
