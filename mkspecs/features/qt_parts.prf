@@ -6,7 +6,7 @@ sub_src.subdir = src
 sub_src.target = sub-src
 SUBDIRS = sub_src
 
-exists(tools/tools.pro) {
+exists($$_PRO_FILE_PWD_/tools/tools.pro) {
     sub_tools.subdir = tools
     sub_tools.target = sub-tools
     sub_tools.depends = sub_src
@@ -14,7 +14,7 @@ exists(tools/tools.pro) {
     SUBDIRS += sub_tools
 }
 
-exists(examples/examples.pro) {
+exists($$_PRO_FILE_PWD_/examples/examples.pro) {
     sub_examples.subdir = examples
     sub_examples.target = sub-examples
     sub_examples.depends = sub_src
@@ -23,7 +23,7 @@ exists(examples/examples.pro) {
 }
 
 # Some modules still have these
-exists(demos/demos.pro) {
+exists($$_PRO_FILE_PWD_/demos/demos.pro) {
     sub_demos.subdir = examples
     sub_demos.target = sub-examples
     sub_demos.depends = sub_src
@@ -31,7 +31,7 @@ exists(demos/demos.pro) {
     SUBDIRS += sub_demos
 }
 
-exists(tests/tests.pro) {
+exists($$_PRO_FILE_PWD_/tests/tests.pro) {
     sub_tests.subdir = tests
     sub_tests.target = sub-tests
     sub_tests.depends = sub_src   # The tests may have a run-time only dependency on tools
