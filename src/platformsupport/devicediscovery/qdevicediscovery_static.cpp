@@ -51,6 +51,20 @@
 #include <linux/input.h>
 #include <fcntl.h>
 
+/* android (and perhaps some other linux-derived stuff) don't define everything
+ * in linux/input.h, so we'll need to do that ourselves.
+ */
+#ifndef KEY_CNT
+#define KEY_CNT                 (KEY_MAX+1)
+#endif
+#ifndef REL_CNT
+#define REL_CNT                 (REL_MAX+1)
+#endif
+#ifndef ABS_CNT
+#define ABS_CNT                 (ABS_MAX+1)
+#endif
+
+
 //#define QT_QPA_DEVICE_DISCOVERY_DEBUG
 
 #ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG

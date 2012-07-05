@@ -57,8 +57,29 @@ extern "C" {
 
 QT_BEGIN_NAMESPACE
 
+/* android (and perhaps some other linux-derived stuff) don't define everything
+ * in linux/input.h, so we'll need to do that ourselves.
+ */
+#ifndef ABS_MT_TOUCH_MAJOR
+#define ABS_MT_TOUCH_MAJOR      0x30    /* Major axis of touching ellipse */
+#endif
+#ifndef ABS_MT_POSITION_X
+#define ABS_MT_POSITION_X 0x35    /* Center X ellipse position */
+#endif
+#ifndef ABS_MT_POSITION_Y
+#define ABS_MT_POSITION_Y       0x36    /* Center Y ellipse position */
+#endif
 #ifndef ABS_MT_SLOT
 #define ABS_MT_SLOT 0x2f
+#endif
+#ifndef ABS_CNT
+#define ABS_CNT                 (ABS_MAX+1)
+#endif
+#ifndef ABS_MT_TRACKING_ID
+#define ABS_MT_TRACKING_ID      0x39    /* Unique ID of initiated contact */
+#endif
+#ifndef SYN_MT_REPORT
+#define SYN_MT_REPORT           2
 #endif
 
 class QEvdevTouchScreenData
