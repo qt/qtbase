@@ -58,7 +58,6 @@ public:
 
     virtual QPaintDevice *paintDevice() { return &mImage; }
     virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    virtual bool scroll(const QRegion &area, int dx, int dy);
 
     virtual void beginPaint(const QRegion &region);
     virtual void endPaint(const QRegion &region);

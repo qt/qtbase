@@ -51,7 +51,6 @@ QT_BEGIN_NAMESPACE
 QFbBackingStore::QFbBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
 {
-    mImage = QImage(window->size(), window->screen()->handle()->format());
     (static_cast<QFbWindow *>(window->handle()))->setBackingStore(this);
 }
 
@@ -67,18 +66,12 @@ void QFbBackingStore::flush(QWindow *window, const QRegion &region, const QPoint
     (static_cast<QFbWindow *>(window->handle()))->repaint(region);
 }
 
-void QFbBackingStore::resize(const QSize &size, const QRegion &region)
+void QFbBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
-    Q_UNUSED(region);
-    // change the widget's QImage if this is a resize
+    Q_UNUSED(staticContents);
+
     if (mImage.size() != size)
         mImage = QImage(size, window()->screen()->handle()->format());
-    // QPlatformBackingStore::resize(size);
-}
-
-bool QFbBackingStore::scroll(const QRegion &area, int dx, int dy)
-{
-    return QPlatformBackingStore::scroll(area, dx, dy);
 }
 
 void QFbBackingStore::beginPaint(const QRegion &region)
