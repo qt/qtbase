@@ -2373,57 +2373,6 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         QChar common(idx);
         commonPrefix = common;
         commonPrefixLen = 1;
-
-#if 0
-        /*
-          The algorithm below eventually failed, so it was replaced
-          with the simple (perhaps too simple) algorithm above.
-
-          The caller didn't pass in a common prefix, so get the common
-          prefix by looking at the class names of the first and last
-          classes in the class map. Discard any namespace names and
-          just use the bare class names. For Qt, the prefix is "Q".
-
-          Note that the algorithm used here to derive the common prefix
-          from the first and last classes in alphabetical order (QAccel
-          and QXtWidget in Qt 2.1), fails if either class name does not
-          begin with Q.
-        */
-        QString first;
-        QString last;
-        NodeMap::const_iterator iter = classMap.constBegin();
-        while (iter != classMap.constEnd()) {
-            if (!iter.key().contains("::")) {
-                first = iter.key();
-                break;
-            }
-            ++iter;
-        }
-
-        if (first.isEmpty())
-            first = classMap.constBegin().key();
-
-        iter = classMap.constEnd();
-        while (iter != classMap.constBegin()) {
-            --iter;
-            if (!iter.key().contains("::")) {
-                last = iter.key();
-                break;
-            }
-        }
-
-        if (last.isEmpty())
-            last = classMap.constBegin().key();
-
-        if (classMap.size() > 1) {
-            while (commonPrefixLen < first.length() + 1 &&
-                   commonPrefixLen < last.length() + 1 &&
-                   first[commonPrefixLen] == last[commonPrefixLen])
-                ++commonPrefixLen;
-        }
-
-        commonPrefix = first.left(commonPrefixLen);
-#endif
     }
 
     /*

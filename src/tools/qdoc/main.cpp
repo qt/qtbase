@@ -364,27 +364,6 @@ static void processQdocconfFile(const QString &fileName)
         sourceFileNames.insert(t,t);
     }
 
-#if 0
-    QFile* files = new QFile("/Users/msmith/depot/qt5/qtdoc/inputlist.txt");
-    files->open(QFile::WriteOnly);
-    QTextStream* filesout = new QTextStream(files);
-
-    {
-        QMultiMap<QString,QString>::ConstIterator i = headerFileNames.begin();
-        while (i != headerFileNames.end()) {
-            (*filesout) << i.key() << "\n";
-            ++i;
-        }
-        i = sourceFileNames.begin();
-        while (i != sourceFileNames.end()) {
-            (*filesout) << i.key() << "\n";
-            ++i;
-        }
-    }
-    filesout->flush();
-    files->close();
-#endif
-
     /*
       Parse each header file in the set using the appropriate parser and add it
       to the big tree.

@@ -608,10 +608,6 @@ QString DitaXmlGenerator::lookupGuid(QString text)
     QMap<QString, QString>::const_iterator i = name2guidMap.constFind(text);
     if (i != name2guidMap.constEnd())
         return i.value();
-#if 0
-    QString t = QUuid::createUuid().toString();
-    QString guid = "id-" + t.mid(1,t.length()-2);
-#endif
     QString guid = Node::cleanId(text);
     name2guidMap.insert(text,guid);
     return guid;
@@ -631,10 +627,6 @@ QString DitaXmlGenerator::lookupGuid(const QString& fileName, const QString& tex
     GuidMap::const_iterator i = gm->constFind(text);
     if (i != gm->constEnd())
         return i.value();
-#if 0
-    QString t = QUuid::createUuid().toString();
-    QString guid = "id-" + t.mid(1,t.length()-2);
-#endif
     QString guid = Node::cleanId(text);
     gm->insert(text,guid);
     return guid;
@@ -764,13 +756,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     static bool in_para = false;
     QString guid, hc, attr;
 
-#if 0
-    // Leave this here for debugging.
-    if (outFileName() == "modules.dita") {
-        QString comment = "ATOM:" + atom->typeString();
-        xmlWriter().writeComment(comment);
-    }
-#endif
     switch (atom->type()) {
     case Atom::AbstractLeft:
         break;
@@ -1568,14 +1553,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::SectionLeft:
-#if 0
-        if (inApiDesc) {
-            writeEndTag(); // </apiDesc>
-            inApiDesc = false;
-        }
-#endif
         enterSection("details",QString());
-        //writeGuidAttribute(Doc::canonicalTitle(Text::sectionHeading(atom).toString()));
         break;
     case Atom::SectionRight:
         leaveSection();
@@ -1876,15 +1854,6 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         writeEndTag(); // <cxxClassDefinition>
 
         enterDesc(DT_apiDesc,QString(),title);
-#if 0
-        // To be removed, if really not needed.
-        Text brief = nsn->doc().briefText(); // zzz
-        if (!brief.isEmpty()) {
-            writeStartTag(DT_p);
-            generateText(brief, nsn, marker);
-            writeEndTag(); // </p>
-        }
-#endif
         generateStatus(nsn, marker);
         generateThreadSafeness(nsn, marker);
         generateSince(nsn, marker);
@@ -2012,15 +1981,6 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         writeEndTag(); // <cxxClassDefinition>
 
         enterDesc(DT_apiDesc,QString(),title);
-#if 0
-        // To be removed, if really not needed.
-        Text brief = cn->doc().briefText(); // zzz
-        if (!brief.isEmpty()) {
-            writeStartTag(DT_p);
-            generateText(brief, cn, marker);
-            writeEndTag(); // </p>
-        }
-#endif
         generateStatus(cn, marker);
         generateInherits(cn, marker);
         generateInheritedBy(cn, marker);
@@ -2138,15 +2098,6 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
 
         writeStartTag(DT_cxxClassDetail);
         enterDesc(DT_apiDesc,QString(),title);
-#if 0
-        // To be removed, if really not needed.
-        Text brief = fn->doc().briefText(); // zzz
-        if (!brief.isEmpty()) {
-            writeStartTag(DT_p);
-            generateText(brief, fn, marker);
-            writeEndTag(); // </p>
-        }
-#endif
         generateStatus(fn, marker);
         generateThreadSafeness(fn, marker);
         generateSince(fn, marker);
@@ -2265,15 +2216,6 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         generateQmlSince(qcn);
 
         enterDesc(DT_apiDesc,QString(),title);
-#if 0
-        // To be removed, if really not needed.
-        Text brief = qcn->doc().briefText(); // zzz
-        if (!brief.isEmpty()) {
-            writeStartTag(DT_p);
-            generateText(brief, qcn, marker);
-            writeEndTag(); // </p>
-        }
-#endif
         enterSection(QString(), QString());
         generateBody(qcn, marker);
         if (cn) {
@@ -3026,57 +2968,6 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
         QChar common(idx);
         commonPrefix = common;
         commonPrefixLen = 1;
-
-#if 0
-        /*
-          The algorithm below eventually failed, so it was replaced
-          with the simple (perhaps too simple) algorithm above.
-
-          The caller didn't pass in a common prefix, so get the common
-          prefix by looking at the class names of the first and last
-          classes in the class map. Discard any namespace names and
-          just use the bare class names. For Qt, the prefix is "Q".
-
-          Note that the algorithm used here to derive the common prefix
-          from the first and last classes in alphabetical order (QAccel
-          and QXtWidget in Qt 2.1), fails if either class name does not
-          begin with Q.
-        */
-        QString first;
-        QString last;
-        NodeMap::const_iterator iter = classMap.constBegin();
-        while (iter != classMap.constEnd()) {
-            if (!iter.key().contains("::")) {
-                first = iter.key();
-                break;
-            }
-            ++iter;
-        }
-
-        if (first.isEmpty())
-            first = classMap.constBegin().key();
-
-        iter = classMap.constEnd();
-        while (iter != classMap.constBegin()) {
-            --iter;
-            if (!iter.key().contains("::")) {
-                last = iter.key();
-                break;
-            }
-        }
-
-        if (last.isEmpty())
-            last = classMap.constBegin().key();
-
-        if (classMap.size() > 1) {
-            while (commonPrefixLen < first.length() + 1 &&
-                   commonPrefixLen < last.length() + 1 &&
-                   first[commonPrefixLen] == last[commonPrefixLen])
-                ++commonPrefixLen;
-        }
-
-        commonPrefix = first.left(commonPrefixLen);
-#endif
     }
 
     /*
@@ -3316,13 +3207,6 @@ void DitaXmlGenerator::generateQmlItem(const Node* node,
     }
     marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"),
                    "<i>\\1<sub>\\2</sub></i>");
-#if 0
-    marked.replace("<@param>", "<i>");
-    marked.replace("</@param>", "</i>");
-
-    marked.replace("<@extra>", "<tt>");
-    marked.replace("</@extra>", "</tt>");
-#endif
     if (summary) {
         marked.remove("<@type>");
         marked.remove("</@type>");
@@ -3542,10 +3426,6 @@ QString DitaXmlGenerator::getMarkedUpSynopsis(const Node* node,
     }
     marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"),
                    "<i> \\1<sub>\\2</sub></i>");
-#if 0
-    marked.replace("<@param>","<i>");
-    marked.replace("</@param>","</i>");
-#endif
     if (style == CodeMarker::Summary) {
         marked.remove("<@name>");   // was "<b>"
         marked.remove("</@name>");  // was "</b>"
@@ -3556,12 +3436,6 @@ QString DitaXmlGenerator::getMarkedUpSynopsis(const Node* node,
         extraRegExp.setMinimal(true);
         marked.remove(extraRegExp);
     }
-#if 0
-    else {
-        marked.replace("<@extra>","<tt>");
-        marked.replace("</@extra>","</tt>");
-    }
-#endif
 
     if (style != CodeMarker::Detailed) {
         marked.remove("<@type>");
@@ -3870,16 +3744,6 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& ) //outp
         else if (ch == QLatin1Char('"')) {
             APPEND("&quot;");
         }
-#if 0
-        else if ((outputEncoding == "ISO-8859-1" && ch.unicode() > 0x007F) ||
-                 (ch == QLatin1Char('*') && i + 1 < n && string.at(i) == QLatin1Char('/')) ||
-                 (ch == QLatin1Char('.') && i > 2 && string.at(i - 2) == QLatin1Char('.'))) {
-            // we escape '*/' and the last dot in 'e.g.' and 'i.e.' for the Javadoc generator
-            APPEND("&#x");
-            xml += QString::number(ch.unicode(), 16);
-            xml += QLatin1Char(';');
-        }
-#endif
         else {
             if (!xml.isEmpty())
                 xml += ch;
@@ -3901,20 +3765,6 @@ QString DitaXmlGenerator::fileBase(const Node* node) const
 {
     QString result;
     result = Generator::fileBase(node);
-#if 0
-    if (!node->isInnerNode()) {
-        switch (node->status()) {
-        case Node::Compat:
-            result += "-qt3";
-            break;
-        case Node::Obsolete:
-            result += "-obsolete";
-            break;
-        default:
-            ;
-        }
-    }
-#endif
     return result;
 }
 

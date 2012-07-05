@@ -532,13 +532,6 @@ QString Node::guid() const
     return uuid_;
 }
 
-#if 0
-// fossil
-QUuid quuid = QUuid::createUuid();
-QString t = quuid.toString();
-uuid = "id-" + t.mid(1,t.length()-2);
-#endif
-
 /*!
   Composes a string to be used as an href attribute in DITA
   XML. It is composed of the file name and the UUID separated
@@ -2356,22 +2349,6 @@ QmlPropertyNode::QmlPropertyNode(QmlPropertyNode* parent,
     setPageType(ApiPage);
 }
 
-#if 0
-    const PropertyNode *correspondingProperty = 0;
-    ClassNode *correspondingClass = static_cast<QmlClassNode*>(qmlPropGroup->parent())->classNode();
-    if (correspondingClass) {
-        correspondingProperty = qmlPropNode->correspondingProperty(tree_);
-    }
-    if (correspondingProperty) {
-        bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
-        qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));
-    }
-
-    if (correspondingProperty) {
-        bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
-        qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));
-    }
-#endif
 /*!
   Returns true if a QML property or attached property is
   not read-only. The algorithm for figuring this out is long

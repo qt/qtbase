@@ -532,23 +532,7 @@ void CodeMarker::append(QList<Section>& sectionList, const FastSection& fs, bool
 
 static QString encode(const QString &string)
 {
-#if 0
-    QString result = string;
-
-    for (int i = string.size() - 1; i >= 0; --i) {
-        uint ch = string.at(i).unicode();
-        if (ch > 0xFF)
-            ch = '?';
-        if ((ch - '0') >= 10 && (ch - 'a') >= 26 && (ch - 'A') >= 26
-                && ch != '/' && ch != '(' && ch != ')' && ch != ',' && ch != '*'
-                && ch != '&' && ch != '_' && ch != '<' && ch != '>' && ch != ':'
-                && ch != '~')
-            result.replace(i, 1, QString("%") + QString("%1").arg(ch, 2, 16));
-    }
-    return result;
-#else
     return string;
-#endif
 }
 
 QStringList CodeMarker::macRefsForNode(Node *node)
@@ -558,12 +542,6 @@ QStringList CodeMarker::macRefsForNode(Node *node)
     case Node::Class:
     {
         const ClassNode *classe = static_cast<const ClassNode *>(node);
-#if 0
-        if (!classe->templateStuff().isEmpty()) {
-            result += QLatin1String("tmplt/");
-        }
-        else
-#endif
         {
             result += QLatin1String("cl/");
         }
@@ -598,11 +576,6 @@ QStringList CodeMarker::macRefsForNode(Node *node)
         if (func->metaness() == FunctionNode::MacroWithParams
                 || func->metaness() == FunctionNode::MacroWithoutParams) {
             result += QLatin1String("macro/");
-#if 0
-        }
-        else if (!func->templateStuff().isEmpty()) {
-            result += QLatin1String("ftmplt/");
-#endif
         }
         else if (func->isStatic()) {
             result += QLatin1String("clm/");
@@ -617,23 +590,6 @@ QStringList CodeMarker::macRefsForNode(Node *node)
         result += macName(func);
         if (result.endsWith(QLatin1String("()")))
             result.chop(2);
-#if 0
-        // this code is too clever for the Xcode documentation
-        // browser and/or pbhelpindexer
-        if (!isMacro) {
-            result += QLatin1Char('/') + QLatin1String(QMetaObject::normalizedSignature(func->returnType().toLatin1().constData())) + "/(";
-            const QList<Parameter> &params = func->parameters();
-            for (int i = 0; i < params.count(); ++i) {
-                QString type = params.at(i).leftType() +
-                        params.at(i).rightType();
-                type = QLatin1String(QMetaObject::normalizedSignature(type.toLatin1().constData()));
-                if (i != 0)
-                    result += QLatin1Char(',');
-                result += type;
-            }
-            result += QLatin1Char(')');
-        }
-#endif
     }
         break;
     case Node::Variable:

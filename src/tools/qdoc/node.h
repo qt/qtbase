@@ -270,15 +270,6 @@ private:
     Status status_;
     bool indexNodeFlag_;
 
-#if 0
-    //ifdef Q_WS_WIN
-    //else
-    Type nodeType_ : 4;
-    Access access_ : 2;
-    ThreadSafeness safeness_ : 2;
-    PageType pageType_ : 4;
-    Status status_ : 3;
-#endif
     InnerNode* parent_;
     InnerNode* relatesTo_;
     QString name_;

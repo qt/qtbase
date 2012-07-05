@@ -1985,16 +1985,6 @@ void DocParser::parseAlso()
     }
 }
 
-//static bool debug = false;
-#if 0
-if (type == Atom::DivLeft)
-debug = true;
-if (debug)
-qDebug() << type << string;
-if (type == Atom::DivRight)
-debug = false;
-#endif
-
 void DocParser::append(Atom::Type type, const QString &string)
 {
     Atom::Type lastType = priv->text.lastAtom()->type();

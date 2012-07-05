@@ -215,15 +215,6 @@ void Config::unload(const QString& fileName)
     QStringMultiMap::ConstIterator v = stringValueMap.constBegin();
     while (v != stringValueMap.constEnd()) {
         qDebug() << v.key() << " = " << v.value();
-#if 0
-        if (v.key().startsWith(varDot)) {
-            QString subVar = v.key().mid(varDot.length());
-            int dot = subVar.indexOf(QLatin1Char('.'));
-            if (dot != -1)
-                subVar.truncate(dot);
-            t.insert(subVar,v.value());
-        }
-#endif
         ++v;
     }
     qDebug() << "fileName:" << fileName;
