@@ -85,7 +85,6 @@
 
 #include "qopenglengineshadermanager_p.h"
 #include "qopengl2pexvertexarray_p.h"
-#include "qopengltriangulatingstroker_p.h"
 #include "qopengltextureglyphcache_p.h"
 
 #include <QDebug>

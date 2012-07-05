@@ -22,7 +22,7 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qopenglpaintengine_p.h \
                opengl/qopenglengineshadersource_p.h \
                opengl/qopenglcustomshaderstage_p.h \
-               opengl/qopengltriangulatingstroker_p.h \
+               opengl/qtriangulatingstroker_p.h \
                opengl/qopengltextureglyphcache_p.h \
                opengl/qopenglshadercache_p.h \
                opengl/qopenglshadercache_meego_p.h \
@@ -41,7 +41,7 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qopengl2pexvertexarray.cpp \
                opengl/qopenglpaintengine.cpp \
                opengl/qopenglcustomshaderstage.cpp \
-               opengl/qopengltriangulatingstroker.cpp \
+               opengl/qtriangulatingstroker.cpp \
                opengl/qopengltextureglyphcache.cpp \
                opengl/qtriangulator.cpp
 

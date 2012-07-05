@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -51,7 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTriangulatingStroker
+class Q_GUI_EXPORT QTriangulatingStroker
 {
 public:
     QTriangulatingStroker() : m_vertices(0) {}
@@ -92,7 +92,7 @@ private:
     Qt::PenCapStyle m_cap_style;
 };
 
-class QDashedStrokeProcessor
+class Q_GUI_EXPORT QDashedStrokeProcessor
 {
 public:
     QDashedStrokeProcessor();

@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -515,7 +515,7 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
 
     float curvynessAdd, curvynessMul;
 
-    // simplfy pens that are thin in device size (2px wide or less)
+    // simplify pens that are thin in device size (2px wide or less)
     if (width < 2.5 && (cosmetic || m_inv_scale == 1)) {
         curvynessAdd = 0.5;
         curvynessMul = CURVE_FLATNESS / m_inv_scale;

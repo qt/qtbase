@@ -82,7 +82,6 @@
 
 #include "qglengineshadermanager_p.h"
 #include "qgl2pexvertexarray_p.h"
-#include "qtriangulatingstroker_p.h"
 #include "qtextureglyphcache_gl_p.h"
 
 #include <QDebug>
