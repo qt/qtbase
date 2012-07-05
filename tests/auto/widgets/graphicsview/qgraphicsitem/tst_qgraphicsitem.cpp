@@ -11116,7 +11116,7 @@ void tst_QGraphicsItem::doNotMarkFullUpdateIfNotInScene()
         view.showFullScreen();
     else
         view.show();
-    QTest::qWaitForWindowShown(view.windowHandle());
+    QTest::qWaitForWindowActive(view.windowHandle());
     view.activateWindow();
     QTRY_VERIFY(view.isActiveWindow());
     QTRY_VERIFY(view.repaints >= 1);

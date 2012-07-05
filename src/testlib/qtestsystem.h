@@ -120,10 +120,12 @@ namespace QTest
         return window->isExposed();
     }
 
-    inline static bool qWaitForWindowShown(QWindow *window, int timeout = 1000)
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED inline static bool qWaitForWindowShown(QWindow *window, int timeout = 1000)
     {
-        return qWaitForWindowActive(window, timeout);
+        return qWaitForWindowExposed(window, timeout);
     }
+#endif // QT_DEPRECATED_SINCE(6, 0)
 }
 
 QT_END_NAMESPACE
