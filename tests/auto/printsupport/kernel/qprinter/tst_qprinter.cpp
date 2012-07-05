@@ -653,6 +653,9 @@ void tst_QPrinter::valuePreservation()
 
         printer.setCollateCopies(!status);
         printer.setOutputFormat(newFormat);
+#ifdef Q_OS_MAC
+        QEXPECT_FAIL("","QTBUG-26430", Abort);
+#endif
         QCOMPARE(printer.collateCopies(), !status);
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.collateCopies(), !status);
