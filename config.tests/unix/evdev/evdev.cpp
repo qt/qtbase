@@ -42,13 +42,10 @@
 #include <linux/input.h>
 
 enum {
-    e1 = ABS_MT_POSITION_X,
-    e2 = ABS_MT_TRACKING_ID,
-    e3 = ABS_PRESSURE,
-    e4 = ABS_X,
-    e5 = REL_X,
-    e6 = SYN_REPORT,
-    e7 = SYN_MT_REPORT
+    e1 = ABS_PRESSURE,
+    e2 = ABS_X,
+    e3 = REL_X,
+    e4 = SYN_REPORT,
 };
 
 int main()
