@@ -53,7 +53,7 @@ class QWindow;
 class QFbBackingStore : public QPlatformBackingStore
 {
 public:
-    QFbBackingStore(QFbScreen *screen, QWindow *window);
+    QFbBackingStore(QWindow *window);
     ~QFbBackingStore();
 
     virtual QPaintDevice *paintDevice() { return &mImage; }
@@ -63,14 +63,13 @@ public:
     virtual void beginPaint(const QRegion &region);
     virtual void endPaint(const QRegion &region);
 
+    virtual void resize(const QSize &size, const QRegion &region);
+
     const QImage image() { return mImage; }
-    void resize(const QSize &size, const QRegion &region);
 
 protected:
     friend class QFbWindow;
-    QFbWindow *platformWindow;
 
-    QFbScreen *mScreen;
     QImage mImage;
 };
 

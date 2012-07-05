@@ -804,8 +804,7 @@ QPlatformPixmap *QLinuxFbIntegration::createPlatformPixmap(QPlatformPixmap::Pixe
 
 QPlatformBackingStore *QLinuxFbIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    QFbBackingStore *surface = new QFbBackingStore(mPrimaryScreen, window);
-    return surface;
+    return new QFbBackingStore(window);
 }
 
 QPlatformWindow *QLinuxFbIntegration::createPlatformWindow(QWindow *window) const

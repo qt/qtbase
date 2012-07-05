@@ -91,7 +91,7 @@ Qt::WindowFlags QFbWindow::windowFlags() const
 }
 
 QFbWindow::QFbWindow(QWindow *window)
-    : QPlatformWindow(window), visibleFlag(false)
+    : QPlatformWindow(window), mBackingStore(0), visibleFlag(false)
 {
     static QAtomicInt winIdGenerator(1);
     windowId = winIdGenerator.fetchAndAddRelaxed(1);

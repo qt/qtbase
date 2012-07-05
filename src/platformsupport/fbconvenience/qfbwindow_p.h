@@ -68,13 +68,15 @@ public:
 
     WId winId() const { return windowId; }
 
+    void setBackingStore(QFbBackingStore *store) { mBackingStore = store; }
+    QFbBackingStore *backingStore() const { return mBackingStore; }
+
     virtual void repaint(const QRegion&);
 
 protected:
     friend class QFbScreen;
-    friend class QFbBackingStore;
 
-    QFbBackingStore *surface;
+    QFbBackingStore *mBackingStore;
     QList<QFbScreen *> mScreens;
     QRect oldGeometry;
     bool visibleFlag;

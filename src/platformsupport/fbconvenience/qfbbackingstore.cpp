@@ -44,17 +44,15 @@
 #include "qfbscreen_p.h"
 
 #include <qpa/qplatformwindow.h>
+#include <QtGui/qscreen.h>
 
 QT_BEGIN_NAMESPACE
 
-QFbBackingStore::QFbBackingStore(QFbScreen *screen, QWindow *window)
-    : QPlatformBackingStore(window),
-      mScreen(screen)
+QFbBackingStore::QFbBackingStore(QWindow *window)
+    : QPlatformBackingStore(window)
 {
-    mImage = QImage(window->size(), mScreen->format());
-
-    platformWindow = static_cast<QFbWindow*>(window->handle());
-    platformWindow->surface = this;
+    mImage = QImage(window->size(), window->screen()->handle()->format());
+    (static_cast<QFbWindow *>(window->handle()))->setBackingStore(this);
 }
 
 QFbBackingStore::~QFbBackingStore()
@@ -66,7 +64,7 @@ void QFbBackingStore::flush(QWindow *window, const QRegion &region, const QPoint
     Q_UNUSED(window);
     Q_UNUSED(offset);
 
-    platformWindow->repaint(region);
+    (static_cast<QFbWindow *>(window->handle()))->repaint(region);
 }
 
 void QFbBackingStore::resize(const QSize &size, const QRegion &region)
@@ -74,7 +72,7 @@ void QFbBackingStore::resize(const QSize &size, const QRegion &region)
     Q_UNUSED(region);
     // change the widget's QImage if this is a resize
     if (mImage.size() != size)
-        mImage = QImage(size, mScreen->format());
+        mImage = QImage(size, window()->screen()->handle()->format());
     // QPlatformBackingStore::resize(size);
 }
 
