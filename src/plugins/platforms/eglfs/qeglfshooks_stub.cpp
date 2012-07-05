@@ -66,6 +66,16 @@ QSize QEglFSHooks::screenSize() const
     static QSize size;
 
     if (size.isEmpty()) {
+        int width = qgetenv("QT_QPA_EGLFS_WIDTH").toInt();
+        int height = qgetenv("QT_QPA_EGLFS_HEIGHT").toInt();
+
+        if (width && height) {
+            // no need to read fb0
+            size.setWidth(width);
+            size.setHeight(height);
+            return size;
+        }
+
         struct fb_var_screeninfo vinfo;
         int fd = open("/dev/fb0", O_RDONLY);
 
@@ -79,6 +89,12 @@ QSize QEglFSHooks::screenSize() const
         } else {
             qWarning("Failed to open /dev/fb0 to detect screen resolution.");
         }
+
+        // override fb0 from environment var setting
+        if (width)
+            size.setWidth(width);
+        if (height)
+            size.setHeight(height);
     }
 
     return size;
