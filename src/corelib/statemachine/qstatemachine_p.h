@@ -135,11 +135,18 @@ public:
     void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
     bool isPreempted(const QAbstractState *s, const QSet<QAbstractTransition*> &transitions) const;
     QSet<QAbstractTransition*> selectTransitions(QEvent *event) const;
-    void exitStates(QEvent *event, const QList<QAbstractState *> &statesToExit_sorted);
+    void exitStates(QEvent *event, const QList<QAbstractState *> &statesToExit_sorted,
+                    const QHash<QAbstractState*, QList<QPropertyAssignment> > &assignmentsForEnteredStates);
     QList<QAbstractState*> computeStatesToExit(const QList<QAbstractTransition*> &enabledTransitions);
     void executeTransitionContent(QEvent *event, const QList<QAbstractTransition*> &transitionList);
-    void enterStates(QEvent *event, const QList<QAbstractState*> &statesToEnter_sorted,
-                     const QSet<QAbstractState*> &statesForDefaultEntry);
+    void enterStates(QEvent *event, const QList<QAbstractState*> &exitedStates_sorted,
+                     const QList<QAbstractState*> &statesToEnter_sorted,
+                     const QSet<QAbstractState*> &statesForDefaultEntry,
+                     QHash<QAbstractState *, QList<QPropertyAssignment> > &propertyAssignmentsForState
+#ifndef QT_NO_ANIMATION
+                     , const QList<QAbstractAnimation*> &selectedAnimations
+#endif
+                     );
     QList<QAbstractState*> computeStatesToEnter(const QList<QAbstractTransition*> &enabledTransitions,
                                                 QSet<QAbstractState*> &statesForDefaultEntry);
     void addStatesToEnter(QAbstractState *s, QState *root,
@@ -184,17 +191,20 @@ public:
     void cancelAllDelayedEvents();
     
 #ifndef QT_NO_PROPERTIES
-    void applyProperties(const QList<QAbstractTransition*> &transitionList,
-                         const QList<QAbstractState*> &exitedStates,
-                         const QList<QAbstractState*> &enteredStates);
-
     typedef QPair<QPointer<QObject>, QByteArray> RestorableId;
-    QHash<RestorableId, QVariant> registeredRestorables;
-    void registerRestorable(QObject *object, const QByteArray &propertyName);
-    void unregisterRestorable(QObject *object, const QByteArray &propertyName);
-    bool hasRestorable(QObject *object, const QByteArray &propertyName) const;
-    QVariant restorableValue(QObject *object, const QByteArray &propertyName) const;
+    QHash<QAbstractState*, QHash<RestorableId, QVariant> > registeredRestorablesForState;
+    bool hasRestorable(QAbstractState *state, QObject *object, const QByteArray &propertyName) const;
+    QVariant savedValueForRestorable(const QList<QAbstractState*> &exitedStates_sorted,
+                                     QObject *object, const QByteArray &propertyName) const;
+    void registerRestorable(QAbstractState *state, QObject *object, const QByteArray &propertyName,
+                            const QVariant &value);
+    void unregisterRestorables(const QList<QAbstractState*> &states, QObject *object,
+                               const QByteArray &propertyName);
     QList<QPropertyAssignment> restorablesToPropertyList(const QHash<RestorableId, QVariant> &restorables) const;
+    QHash<RestorableId, QVariant> computePendingRestorables(const QList<QAbstractState*> &statesToExit_sorted) const;
+    QHash<QAbstractState*, QList<QPropertyAssignment> > computePropertyAssignments(
+            const QList<QAbstractState*> &statesToEnter_sorted,
+            QHash<RestorableId, QVariant> &pendingRestorables) const;
 #endif
 
     State state;
@@ -233,6 +243,11 @@ public:
     QMultiHash<QAbstractState *, QAbstractAnimation *> defaultAnimationsForTarget;
 
     QList<QAbstractAnimation *> selectAnimations(const QList<QAbstractTransition *> &transitionList) const;
+    void terminateActiveAnimations(QAbstractState *state,
+            const QHash<QAbstractState*, QList<QPropertyAssignment> > &assignmentsForEnteredStates);
+    void initializeAnimations(QAbstractState *state, const QList<QAbstractAnimation*> &selectedAnimations,
+                              const QList<QAbstractState *> &exitedStates_sorted,
+                              QHash<QAbstractState *, QList<QPropertyAssignment> > &assignmentsForEnteredStates);
 #endif // QT_NO_ANIMATION
 
     QSignalEventGenerator *signalEventGenerator;

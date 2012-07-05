@@ -193,6 +193,15 @@ private slots:
     void setPropertyAfterRestore();
     void transitionWithNoTarget_data();
     void transitionWithNoTarget();
+
+    void restorePropertiesSimple();
+    void restoreProperties2();
+    void restoreProperties3();
+    void restoreProperties4();
+    void restorePropertiesSelfTransition();
+    void changeStateWhileAnimatingProperty();
+    void propertiesAreAssignedBeforeEntryCallbacks_data();
+    void propertiesAreAssignedBeforeEntryCallbacks();
 };
 
 class TestState : public QState
@@ -4185,6 +4194,440 @@ void tst_QStateMachine::transitionWithNoTarget()
     QCOMPARE(object->property("a").toInt(), 3);
 
     delete object;
+}
+
+class PropertyObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int prop READ prop WRITE setProp)
+public:
+    PropertyObject(QObject *parent = 0)
+        : QObject(parent), m_propValue(0), m_propWriteCount(0)
+    {}
+    int prop() const { return m_propValue; }
+    void setProp(int value) { m_propValue = value; ++m_propWriteCount; }
+    int propWriteCount() const { return m_propWriteCount; }
+private:
+    int m_propValue;
+    int m_propWriteCount;
+};
+
+void tst_QStateMachine::restorePropertiesSimple()
+{
+    QStateMachine machine;
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+
+    PropertyObject *po = new PropertyObject;
+    po->setProp(2);
+    QCOMPARE(po->propWriteCount(), 1);
+
+    QState *s1 = new QState(&machine);
+    s1->assignProperty(po, "prop", 4);
+    machine.setInitialState(s1);
+
+    QState *s2 = new QState(&machine);
+    s1->addTransition(new EventTransition(QEvent::User, s2));
+
+    QState *s3 = new QState(&machine);
+    s3->assignProperty(po, "prop", 6);
+    s2->addTransition(new EventTransition(QEvent::User, s3));
+
+    QState *s4 = new QState(&machine);
+    s4->assignProperty(po, "prop", 8);
+    s3->addTransition(new EventTransition(QEvent::User, s4));
+
+    QState *s5 = new QState(&machine);
+    s4->addTransition(new EventTransition(QEvent::User, s5));
+
+    QState *s6 = new QState(&machine);
+    s5->addTransition(new EventTransition(QEvent::User, s6));
+
+    machine.start();
+
+    QTRY_VERIFY(machine.configuration().contains(s1));
+    QCOMPARE(po->propWriteCount(), 2);
+    QCOMPARE(po->prop(), 4);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s2));
+    QCOMPARE(po->propWriteCount(), 3);
+    QCOMPARE(po->prop(), 2); // restored
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s3));
+    QCOMPARE(po->propWriteCount(), 4);
+    QCOMPARE(po->prop(), 6);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s4));
+    QCOMPARE(po->propWriteCount(), 5);
+    QCOMPARE(po->prop(), 8);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s5));
+    QCOMPARE(po->propWriteCount(), 6);
+    QCOMPARE(po->prop(), 2); // restored
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s6));
+    QCOMPARE(po->propWriteCount(), 6);
+
+    delete po;
+}
+
+void tst_QStateMachine::restoreProperties2()
+{
+    QStateMachine machine;
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+
+    PropertyObject *po = new PropertyObject;
+    po->setProp(2);
+    QCOMPARE(po->propWriteCount(), 1);
+
+    QState *s1 = new QState(&machine);
+    s1->assignProperty(po, "prop", 4);
+    machine.setInitialState(s1);
+
+    QState *s11 = new QState(s1);
+    s1->setInitialState(s11);
+
+    QState *s12 = new QState(s1);
+    s11->addTransition(new EventTransition(QEvent::User, s12));
+
+    QState *s13 = new QState(s1);
+    s13->assignProperty(po, "prop", 6);
+    s12->addTransition(new EventTransition(QEvent::User, s13));
+
+    QState *s14 = new QState(s1);
+    s14->assignProperty(po, "prop", 8);
+    s13->addTransition(new EventTransition(QEvent::User, s14));
+
+    QState *s15 = new QState(s1);
+    s14->addTransition(new EventTransition(QEvent::User, s15));
+
+    QState *s16 = new QState(s1);
+    s15->addTransition(new EventTransition(QEvent::User, s16));
+
+    QState *s2 = new QState(&machine);
+    s2->assignProperty(po, "prop", 10);
+    s16->addTransition(new EventTransition(QEvent::User, s2));
+
+    QState *s3 = new QState(&machine);
+    s2->addTransition(new EventTransition(QEvent::User, s3));
+
+    machine.start();
+
+    QTRY_VERIFY(machine.configuration().contains(s11));
+    QCOMPARE(po->propWriteCount(), 2);
+    QCOMPARE(po->prop(), 4);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s12));
+    QCOMPARE(po->propWriteCount(), 2);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s13));
+    QCOMPARE(po->propWriteCount(), 3);
+    QCOMPARE(po->prop(), 6);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s14));
+    QCOMPARE(po->propWriteCount(), 4);
+    QCOMPARE(po->prop(), 8);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s15));
+    QCOMPARE(po->propWriteCount(), 5);
+    QCOMPARE(po->prop(), 4); // restored s1
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s16));
+    QCOMPARE(po->propWriteCount(), 5);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s2));
+    QCOMPARE(po->propWriteCount(), 6);
+    QCOMPARE(po->prop(), 10);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s3));
+    QCOMPARE(po->propWriteCount(), 7);
+    QCOMPARE(po->prop(), 2); // restored original
+
+    delete po;
+}
+
+void tst_QStateMachine::restoreProperties3()
+{
+    QStateMachine machine;
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+
+    PropertyObject *po = new PropertyObject;
+    po->setProp(2);
+    QCOMPARE(po->propWriteCount(), 1);
+
+    QState *s1 = new QState(&machine);
+    s1->assignProperty(po, "prop", 4);
+    machine.setInitialState(s1);
+
+    QState *s11 = new QState(s1);
+    s11->assignProperty(po, "prop", 6);
+    s1->setInitialState(s11);
+
+    QState *s12 = new QState(s1);
+    s11->addTransition(new EventTransition(QEvent::User, s12));
+
+    QState *s13 = new QState(s1);
+    s13->assignProperty(po, "prop", 8);
+    s12->addTransition(new EventTransition(QEvent::User, s13));
+
+    QState *s2 = new QState(&machine);
+    s13->addTransition(new EventTransition(QEvent::User, s2));
+
+    machine.start();
+
+    QTRY_VERIFY(machine.configuration().contains(s11));
+    QCOMPARE(po->propWriteCount(), 3);
+    QCOMPARE(po->prop(), 6); // s11
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s12));
+    QCOMPARE(po->propWriteCount(), 4);
+    QCOMPARE(po->prop(), 4); // restored s1
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s13));
+    QCOMPARE(po->propWriteCount(), 5);
+    QCOMPARE(po->prop(), 8);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s2));
+    QCOMPARE(po->propWriteCount(), 6);
+    QCOMPARE(po->prop(), 2); // restored original
+
+    delete po;
+}
+
+// QTBUG-20362
+void tst_QStateMachine::restoreProperties4()
+{
+    QStateMachine machine;
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+
+    PropertyObject *po1 = new PropertyObject;
+    po1->setProp(2);
+    QCOMPARE(po1->propWriteCount(), 1);
+    PropertyObject *po2 = new PropertyObject;
+    po2->setProp(4);
+    QCOMPARE(po2->propWriteCount(), 1);
+
+    QState *s1 = new QState(&machine);
+    s1->setChildMode(QState::ParallelStates);
+    machine.setInitialState(s1);
+
+    QState *s11 = new QState(s1);
+    QState *s111 = new QState(s11);
+    s111->assignProperty(po1, "prop", 6);
+    s11->setInitialState(s111);
+
+    QState *s112 = new QState(s11);
+    s112->assignProperty(po1, "prop", 8);
+    s111->addTransition(new EventTransition(QEvent::User, s112));
+
+    QState *s12 = new QState(s1);
+    QState *s121 = new QState(s12);
+    s121->assignProperty(po2, "prop", 10);
+    s12->setInitialState(s121);
+
+    QState *s122 = new QState(s12);
+    s122->assignProperty(po2, "prop", 12);
+    s121->addTransition(new EventTransition(static_cast<QEvent::Type>(QEvent::User+1), s122));
+
+    QState *s2 = new QState(&machine);
+    s112->addTransition(new EventTransition(QEvent::User, s2));
+
+    machine.start();
+
+    QTRY_VERIFY(machine.configuration().contains(s1));
+    QVERIFY(machine.configuration().contains(s11));
+    QVERIFY(machine.configuration().contains(s111));
+    QVERIFY(machine.configuration().contains(s12));
+    QVERIFY(machine.configuration().contains(s121));
+    QCOMPARE(po1->propWriteCount(), 2);
+    QCOMPARE(po1->prop(), 6);
+    QCOMPARE(po2->propWriteCount(), 2);
+    QCOMPARE(po2->prop(), 10);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s112));
+    QCOMPARE(po1->propWriteCount(), 3);
+    QCOMPARE(po1->prop(), 8);
+    QCOMPARE(po2->propWriteCount(), 2);
+
+    machine.postEvent(new QEvent(static_cast<QEvent::Type>(QEvent::User+1)));
+    QTRY_VERIFY(machine.configuration().contains(s122));
+    QCOMPARE(po1->propWriteCount(), 3);
+    QCOMPARE(po2->propWriteCount(), 3);
+    QCOMPARE(po2->prop(), 12);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s2));
+    QCOMPARE(po1->propWriteCount(), 4);
+    QCOMPARE(po1->prop(), 2); // restored original
+    QCOMPARE(po2->propWriteCount(), 4);
+    QCOMPARE(po2->prop(), 4); // restored original
+
+    delete po1;
+    delete po2;
+}
+
+void tst_QStateMachine::restorePropertiesSelfTransition()
+{
+    QStateMachine machine;
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+
+    PropertyObject *po = new PropertyObject;
+    po->setProp(2);
+    QCOMPARE(po->propWriteCount(), 1);
+
+    QState *s1 = new QState(&machine);
+    s1->assignProperty(po, "prop", 4);
+    s1->addTransition(new EventTransition(QEvent::User, s1));
+    machine.setInitialState(s1);
+
+    QState *s2 = new QState(&machine);
+    s1->addTransition(new EventTransition(static_cast<QEvent::Type>(QEvent::User+1), s2));
+
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s1));
+    QCOMPARE(po->propWriteCount(), 2);
+    QCOMPARE(po->prop(), 4);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_COMPARE(po->propWriteCount(), 3);
+    QCOMPARE(po->prop(), 4);
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_COMPARE(po->propWriteCount(), 4);
+    QCOMPARE(po->prop(), 4);
+
+    machine.postEvent(new QEvent(static_cast<QEvent::Type>(QEvent::User+1)));
+    QTRY_VERIFY(machine.configuration().contains(s2));
+    QCOMPARE(po->propWriteCount(), 5);
+    QCOMPARE(po->prop(), 2); // restored
+
+    delete po;
+}
+
+void tst_QStateMachine::changeStateWhileAnimatingProperty()
+{
+    QStateMachine machine;
+    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+
+    QObject *o1 = new QObject;
+    o1->setProperty("x", 10.);
+    QObject *o2 = new QObject;
+    o2->setProperty("y", 20.);
+
+    QState *group = new QState(&machine);
+    machine.setInitialState(group);
+
+    QState *s0 = new QState(group);
+    group->setInitialState(s0);
+
+    QState *s1 = new QState(group);
+    s1->assignProperty(o1, "x", 15.);
+    QPropertyAnimation *a1 = new QPropertyAnimation(o1, "x", s1);
+    a1->setDuration(800);
+    machine.addDefaultAnimation(a1);
+    group->addTransition(new EventTransition(QEvent::User, s1));
+
+    QState *s2 = new QState(group);
+    s2->assignProperty(o2, "y", 25.);
+    QPropertyAnimation *a2 = new QPropertyAnimation(o2, "y", s2);
+    a2->setDuration(800);
+    machine.addDefaultAnimation(a2);
+    group->addTransition(new EventTransition(static_cast<QEvent::Type>(QEvent::User+1), s2));
+
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s0));
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s1));
+    QCOREAPPLICATION_EXEC(400);
+    machine.postEvent(new QEvent(static_cast<QEvent::Type>(QEvent::User+1)));
+    QTRY_VERIFY(machine.configuration().contains(s2));
+    QCOREAPPLICATION_EXEC(300);
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s1));
+    QCOREAPPLICATION_EXEC(200);
+    machine.postEvent(new QEvent(static_cast<QEvent::Type>(QEvent::User+1)));
+    QTRY_VERIFY(machine.configuration().contains(s2));
+    QCOREAPPLICATION_EXEC(100);
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s1));
+
+    QTRY_COMPARE(o1->property("x").toDouble(), 15.);
+    QTRY_COMPARE(o2->property("y").toDouble(), 20.);
+
+    delete o1;
+    delete o2;
+}
+
+class AssignPropertyTestState : public QState
+{
+    Q_OBJECT
+public:
+    AssignPropertyTestState(QState *parent = 0)
+        : QState(parent), onEntryPassed(false), enteredPassed(false)
+    { QObject::connect(this, SIGNAL(entered()), this, SLOT(onEntered())); }
+
+    virtual void onEntry(QEvent *)
+    { onEntryPassed = property("wasAssigned").toBool(); }
+
+    bool onEntryPassed;
+    bool enteredPassed;
+
+private Q_SLOTS:
+    void onEntered()
+    { enteredPassed = property("wasAssigned").toBool(); }
+};
+
+void tst_QStateMachine::propertiesAreAssignedBeforeEntryCallbacks_data()
+{
+    QTest::addColumn<int>("restorePolicy");
+    QTest::newRow("DontRestoreProperties") << int(QStateMachine::DontRestoreProperties);
+    QTest::newRow("RestoreProperties") << int(QStateMachine::RestoreProperties);
+}
+
+void tst_QStateMachine::propertiesAreAssignedBeforeEntryCallbacks()
+{
+    QFETCH(int, restorePolicy);
+
+    QStateMachine machine;
+    machine.setGlobalRestorePolicy(static_cast<QStateMachine::RestorePolicy>(restorePolicy));
+
+    AssignPropertyTestState *s1 = new AssignPropertyTestState(&machine);
+    s1->assignProperty(s1, "wasAssigned", true);
+    machine.setInitialState(s1);
+
+    AssignPropertyTestState *s2 = new AssignPropertyTestState(&machine);
+    s2->assignProperty(s2, "wasAssigned", true);
+    s1->addTransition(new EventTransition(QEvent::User, s2));
+
+    QVERIFY(!s1->property("wasAssigned").toBool());
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s1));
+
+    QVERIFY(s1->onEntryPassed);
+    QVERIFY(s1->enteredPassed);
+
+    QVERIFY(!s2->property("wasAssigned").toBool());
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s2));
+
+    QVERIFY(s2->onEntryPassed);
+    QVERIFY(s2->enteredPassed);
 }
 
 QTEST_MAIN(tst_QStateMachine)

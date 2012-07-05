@@ -81,7 +81,7 @@ struct QPropertyAssignment
     QPointer<QObject> object;
     QByteArray propertyName;
     QVariant value;
-    bool explicitlySet;
+    bool explicitlySet; // false means the property is being restored to its old value
 };
 
 #endif // QT_NO_PROPERTIES
