@@ -133,6 +133,15 @@ void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
     return result;
 }
 
+QPlatformNativeInterface::NativeResourceForContextFunction QXcbNativeInterface::nativeResourceFunctionForContext(const QByteArray &resource)
+{
+    QByteArray lowerCaseResource = resource.toLower();
+    if (lowerCaseResource == "get_egl_context") {
+        return eglContextForContext;
+    }
+    return 0;
+}
+
 QPlatformNativeInterface::EventFilter QXcbNativeInterface::setEventFilter(const QByteArray &eventType, QPlatformNativeInterface::EventFilter filter)
 {
     int type = -1;
