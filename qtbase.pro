@@ -95,8 +95,8 @@ mkspecs.files -= $$PWD/mkspecs/modules
     # When shadow building, the default mkspecs only exist in the build tree.
     mkspecs.files += $$OUT_PWD/mkspecs/default-host $$OUT_PWD/mkspecs/default
 }
-!equals(QMAKE_HOST.os, Linux) {
-    # MacOS' (and maybe others') cp command is too daft to honor -f when copying symlinks.
+!equals(QMAKE_HOST.os, Linux):!equals(QMAKE_HOST.os, Windows) {
+    # MacOS' (and maybe other Unixes') cp command is too daft to honor -f when copying symlinks.
     mkspecs_pre.commands = rm -f $$[QT_HOST_DATA]/mkspecs/default-host $$[QT_HOST_DATA]/mkspecs/default
     QMAKE_EXTRA_TARGETS += mkspecs_pre
     mkspecs.depends += mkspecs_pre
