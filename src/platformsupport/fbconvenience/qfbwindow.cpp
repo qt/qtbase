@@ -42,53 +42,9 @@
 #include "qfbwindow_p.h"
 #include "qfbscreen_p.h"
 
+#include <QtGui/QScreen>
+
 QT_BEGIN_NAMESPACE
-
-void QFbWindow::setGeometry(const QRect &rect)
-{
-// store previous geometry for screen update
-    oldGeometry = geometry();
-
-
-    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
-    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
-    while (i != end) {
-        (*i)->invalidateRectCache();
-        ++i;
-    }
-//###    QWindowSystemInterface::handleGeometryChange(window(), rect);
-
-    QPlatformWindow::setGeometry(rect);
-}
-
-void QFbWindow::setVisible(bool visible)
-{
-    visibleFlag = visible;
-    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
-    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
-    while (i != end) {
-        (*i)->invalidateRectCache();
-        (*i)->setDirty(geometry());
-        ++i;
-    }
-}
-
-Qt::WindowFlags QFbWindow::setWindowFlags(Qt::WindowFlags type)
-{
-    flags = type;
-    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
-    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
-    while (i != end) {
-        (*i)->invalidateRectCache();
-        ++i;
-    }
-    return flags;
-}
-
-Qt::WindowFlags QFbWindow::windowFlags() const
-{
-    return flags;
-}
 
 QFbWindow::QFbWindow(QWindow *window)
     : QPlatformWindow(window), mBackingStore(0), visibleFlag(false)
@@ -99,32 +55,52 @@ QFbWindow::QFbWindow(QWindow *window)
 
 QFbWindow::~QFbWindow()
 {
-    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
-    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
-    while (i != end) {
-        (*i)->removeWindow(this);
-        ++i;
-    }
+    platformScreen()->removeWindow(this);
+}
+
+QFbScreen *QFbWindow::platformScreen() const
+{
+    return static_cast<QFbScreen *>(window()->screen()->handle());
+}
+
+void QFbWindow::setGeometry(const QRect &rect)
+{
+    // store previous geometry for screen update
+    oldGeometry = geometry();
+
+    platformScreen()->invalidateRectCache();
+    //### QWindowSystemInterface::handleGeometryChange(window(), rect);
+
+    QPlatformWindow::setGeometry(rect);
+}
+
+void QFbWindow::setVisible(bool visible)
+{
+    visibleFlag = visible;
+    platformScreen()->invalidateRectCache();
+    platformScreen()->setDirty(geometry());
+}
+
+Qt::WindowFlags QFbWindow::setWindowFlags(Qt::WindowFlags type)
+{
+    flags = type;
+    platformScreen()->invalidateRectCache();
+    return flags;
+}
+
+Qt::WindowFlags QFbWindow::windowFlags() const
+{
+    return flags;
 }
 
 void QFbWindow::raise()
 {
-    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
-    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
-    while (i != end) {
-        (*i)->raise(this);
-        ++i;
-    }
+    platformScreen()->raise(this);
 }
 
 void QFbWindow::lower()
 {
-    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
-    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
-    while (i != end) {
-        (*i)->lower(this);
-        ++i;
-    }
+    platformScreen()->lower(this);
 }
 
 void QFbWindow::repaint(const QRegion &region)
@@ -136,20 +112,13 @@ void QFbWindow::repaint(const QRegion &region)
                       currentGeometry.top() + dirtyClient.top(),
                       dirtyClient.width(),
                       dirtyClient.height());
-    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
-    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
     QRect oldGeometryLocal = oldGeometry;
     oldGeometry = currentGeometry;
-    while (i != end) {
-        // If this is a move, redraw the previous location
-        if (oldGeometryLocal != currentGeometry) {
-            (*i)->setDirty(oldGeometryLocal);
-        }
-        (*i)->setDirty(dirtyRegion);
-        ++i;
-    }
+    // If this is a move, redraw the previous location
+    if (oldGeometryLocal != currentGeometry)
+        platformScreen()->setDirty(oldGeometryLocal);
+    platformScreen()->setDirty(dirtyRegion);
 }
-
 
 QT_END_NAMESPACE
 

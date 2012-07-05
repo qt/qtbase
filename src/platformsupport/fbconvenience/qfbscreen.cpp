@@ -252,7 +252,6 @@ QRegion QFbScreen::doRedraw()
 void QFbScreen::addWindow(QFbWindow *surface)
 {
     windowStack.prepend(surface);
-    surface->mScreens.append(this);
     invalidateRectCache();
     setDirty(surface->geometry());
 }
@@ -260,7 +259,6 @@ void QFbScreen::addWindow(QFbWindow *surface)
 void QFbScreen::removeWindow(QFbWindow * surface)
 {
     windowStack.removeOne(surface);
-    surface->mScreens.removeOne(this);
     invalidateRectCache();
     setDirty(surface->geometry());
 }

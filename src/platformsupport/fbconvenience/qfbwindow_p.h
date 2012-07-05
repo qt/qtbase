@@ -71,13 +71,14 @@ public:
     void setBackingStore(QFbBackingStore *store) { mBackingStore = store; }
     QFbBackingStore *backingStore() const { return mBackingStore; }
 
+    QFbScreen *platformScreen() const;
+
     virtual void repaint(const QRegion&);
 
 protected:
     friend class QFbScreen;
 
     QFbBackingStore *mBackingStore;
-    QList<QFbScreen *> mScreens;
     QRect oldGeometry;
     bool visibleFlag;
     Qt::WindowFlags flags;
