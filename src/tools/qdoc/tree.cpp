@@ -948,7 +948,7 @@ void Tree::readIndexFile(const QString& path)
         else {
             // Use a fake directory, since we will copy the output to a sub directory of
             // installDir when using "make install". This is just for a proper relative path.
-            QDir installDir(Config::installDir + "/outputdir");
+            QDir installDir(path.section('/', 0, -3) + "/outputdir");
             indexUrl = installDir.relativeFilePath(path).section('/', 0, -2);
         }
 
