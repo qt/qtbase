@@ -72,6 +72,14 @@ void QTriangulatingStroker::endCapOrJoinClosed(const qreal *start, const qreal *
     m_vertices.add(y);
 }
 
+static inline void skipDuplicatePoints(const qreal **pts, const qreal *endPts)
+{
+    while ((*pts + 2) < endPts && float((*pts)[0]) == float((*pts)[2])
+           && float((*pts)[1]) == float((*pts)[3]))
+    {
+        *pts += 2;
+    }
+}
 
 void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, const QRectF &)
 {
@@ -149,67 +157,86 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
     Qt::PenCapStyle cap = m_cap_style;
 
     if (!types) {
-        // skip duplicate points
-        while((pts + 2) < endPts && pts[0] == pts[2] && pts[1] == pts[3])
-            pts += 2;
+        skipDuplicatePoints(&pts, endPts);
         if ((pts + 2) == endPts)
             return;
 
         startPts = pts;
 
-        bool endsAtStart = startPts[0] == *(endPts-2) && startPts[1] == *(endPts-1);
+        bool endsAtStart = float(startPts[0]) == float(endPts[-2])
+                && float(startPts[1]) == float(endPts[-1]);
 
         if (endsAtStart || path.hasImplicitClose())
             m_cap_style = Qt::FlatCap;
         moveTo(pts);
         m_cap_style = cap;
         pts += 2;
+        skipDuplicatePoints(&pts, endPts);
         lineTo(pts);
         pts += 2;
+        skipDuplicatePoints(&pts, endPts);
         while (pts < endPts) {
-            if (m_cx != pts[0] || m_cy != pts[1]) {
-                join(pts);
-                lineTo(pts);
-            }
+            join(pts);
+            lineTo(pts);
             pts += 2;
+            skipDuplicatePoints(&pts, endPts);
         }
-
         endCapOrJoinClosed(startPts, pts-2, path.hasImplicitClose(), endsAtStart);
 
     } else {
         bool endsAtStart = false;
+        QPainterPath::ElementType previousType = QPainterPath::MoveToElement;
+        const qreal *previousPts = pts;
         while (pts < endPts) {
             switch (*types) {
             case QPainterPath::MoveToElement: {
-                if (pts != path.points())
-                    endCapOrJoinClosed(startPts, pts-2, path.hasImplicitClose(), endsAtStart);
+                if (previousType != QPainterPath::MoveToElement)
+                    endCapOrJoinClosed(startPts, previousPts, path.hasImplicitClose(), endsAtStart);
 
                 startPts = pts;
+                skipDuplicatePoints(&startPts, endPts); // Skip duplicates to find correct normal.
+                if (startPts + 2 >= endPts)
+                    return; // Nothing to see here...
+
                 int end = (endPts - pts) / 2;
                 int i = 2; // Start looking to ahead since we never have two moveto's in a row
                 while (i<end && types[i] != QPainterPath::MoveToElement) {
                     ++i;
                 }
-                endsAtStart = startPts[0] == pts[i*2 - 2] && startPts[1] == pts[i*2 - 1];
+                endsAtStart = float(startPts[0]) == float(pts[i*2 - 2])
+                        && float(startPts[1]) == float(pts[i*2 - 1]);
                 if (endsAtStart || path.hasImplicitClose())
                     m_cap_style = Qt::FlatCap;
 
-                moveTo(pts);
+                moveTo(startPts);
                 m_cap_style = cap;
+                previousType = QPainterPath::MoveToElement;
+                previousPts = pts;
                 pts+=2;
                 ++types;
                 break; }
             case QPainterPath::LineToElement:
-                if (*(types - 1) != QPainterPath::MoveToElement)
-                    join(pts);
-                lineTo(pts);
+                if (float(m_cx) != float(pts[0]) || float(m_cy) != float(pts[1])) {
+                    if (previousType != QPainterPath::MoveToElement)
+                        join(pts);
+                    lineTo(pts);
+                    previousType = QPainterPath::LineToElement;
+                    previousPts = pts;
+                }
                 pts+=2;
                 ++types;
                 break;
             case QPainterPath::CurveToElement:
-                if (*(types - 1) != QPainterPath::MoveToElement)
-                    join(pts);
-                cubicTo(pts);
+                if (float(m_cx) != float(pts[0]) || float(m_cy) != float(pts[1])
+                        || float(pts[0]) != float(pts[2]) || float(pts[1]) != float(pts[3])
+                        || float(pts[2]) != float(pts[4]) || float(pts[3]) != float(pts[5]))
+                {
+                    if (previousType != QPainterPath::MoveToElement)
+                        join(pts);
+                    cubicTo(pts);
+                    previousType = QPainterPath::CurveToElement;
+                    previousPts = pts + 4;
+                }
                 pts+=6;
                 types+=3;
                 break;
@@ -219,7 +246,8 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
             }
         }
 
-        endCapOrJoinClosed(startPts, pts-2, path.hasImplicitClose(), endsAtStart);
+        if (previousType != QPainterPath::MoveToElement)
+            endCapOrJoinClosed(startPts, previousPts, path.hasImplicitClose(), endsAtStart);
     }
 }
 

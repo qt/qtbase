@@ -65,6 +65,7 @@ private slots:
     void fboHandleNulledAfterContextDestroyed();
     void openGLPaintDevice();
     void aboutToBeDestroyed();
+    void QTBUG15621_triangulatingStrokerDivZero();
 };
 
 struct SharedResourceTracker
@@ -535,5 +536,79 @@ void tst_QOpenGL::aboutToBeDestroyed()
     QCOMPARE(spy.size(), 1);
 }
 
+void tst_QOpenGL::QTBUG15621_triangulatingStrokerDivZero()
+{
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(__x86_64__)
+    QSKIP("QTBUG-22617");
+#endif
+
+    QWindow window;
+    window.setSurfaceType(QWindow::OpenGLSurface);
+    window.setGeometry(0, 0, 128, 128);
+    window.create();
+
+    QOpenGLContext ctx;
+    ctx.create();
+    ctx.makeCurrent(&window);
+
+    if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QOpenGLFramebufferObject not supported on this platform");
+
+    QOpenGLFramebufferObject fbo(128, 128);
+    fbo.bind();
+
+    QOpenGLPaintDevice device(128, 128);
+
+    // QTBUG-15621 is only a problem when qreal is double, but do the test anyway.
+    qreal delta = sizeof(qreal) == sizeof(float) ? 1e-4 : 1e-8;
+    QVERIFY(128 != 128 + delta);
+
+    QPainterPath path;
+    path.moveTo(16 + delta, 16);
+    path.moveTo(16, 16);
+
+    path.lineTo(16 + delta, 16); // Short lines to check for division by zero.
+    path.lineTo(112 - delta, 16);
+    path.lineTo(112, 16);
+
+    path.quadTo(112, 16, 112, 16 + delta);
+    path.quadTo(112, 64, 112, 112 - delta);
+    path.quadTo(112, 112, 112, 112);
+
+    path.cubicTo(112, 112, 112, 112, 112 - delta, 112);
+    path.cubicTo(80, 112, 48, 112, 16 + delta, 112);
+    path.cubicTo(16 + delta, 112, 16 + delta, 112, 16, 112);
+
+    path.closeSubpath();
+
+    QPen pen(Qt::red, 28, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+
+    QPainter p(&device);
+    p.fillRect(QRect(0, 0, 128, 128), Qt::blue);
+    p.strokePath(path, pen);
+    p.end();
+    QImage image = fbo.toImage().convertToFormat(QImage::Format_RGB32);
+
+    const QRgb red = 0xffff0000;
+    const QRgb blue = 0xff0000ff;
+
+    QCOMPARE(image.pixel(8, 8), red);
+    QCOMPARE(image.pixel(119, 8), red);
+    QCOMPARE(image.pixel(8, 119), red);
+    QCOMPARE(image.pixel(119, 119), red);
+
+    QCOMPARE(image.pixel(0, 0), blue);
+    QCOMPARE(image.pixel(127, 0), blue);
+    QCOMPARE(image.pixel(0, 127), blue);
+    QCOMPARE(image.pixel(127, 127), blue);
+
+    QCOMPARE(image.pixel(32, 32), blue);
+    QCOMPARE(image.pixel(95, 32), blue);
+    QCOMPARE(image.pixel(32, 95), blue);
+    QCOMPARE(image.pixel(95, 95), blue);
+}
+
+
 QTEST_MAIN(tst_QOpenGL)
+
 #include "tst_qopengl.moc"

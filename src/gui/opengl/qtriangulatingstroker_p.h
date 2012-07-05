@@ -123,6 +123,7 @@ inline void QTriangulatingStroker::normalVector(float x1, float y1, float x2, fl
 {
     float dx = x2 - x1;
     float dy = y2 - y1;
+    Q_ASSERT(dx != 0 || dy != 0);
 
     float pw;
 
