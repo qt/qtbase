@@ -174,6 +174,7 @@ static const struct {
     { "AnnotatedList", Atom::AnnotatedList },
     { "AutoLink", Atom::AutoLink },
     { "BaseName", Atom::BaseName },
+    { "br", Atom::BR},
     { "BriefLeft", Atom::BriefLeft },
     { "BriefRight", Atom::BriefRight },
     { "C", Atom::C },

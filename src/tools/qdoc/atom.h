@@ -61,6 +61,7 @@ public:
         AnnotatedList,
         AutoLink,
         BaseName,
+        BR,
         BriefLeft,
         BriefRight,
         C,

@@ -82,6 +82,7 @@ enum {
     CMD_BADCODE,
     CMD_BASENAME,
     CMD_BOLD,
+    CMD_BR,
     CMD_BRIEF,
     CMD_C,
     CMD_CAPTION,
@@ -199,6 +200,7 @@ static struct {
     { "badcode", CMD_BADCODE, 0 },
     { "basename", CMD_BASENAME, 0 }, // ### don't document for now
     { "bold", CMD_BOLD, 0 },
+    { "br", CMD_BR, 0 },
     { "brief", CMD_BRIEF, 0 },
     { "c", CMD_C, 0 },
     { "caption", CMD_CAPTION, 0 },
@@ -643,6 +645,10 @@ void DocParser::parse(const QString& source,
                 case CMD_BASENAME:
                     leavePara();
                     insertBaseName(getArgument());
+                    break;
+                case CMD_BR:
+                    leavePara();
+                    append(Atom::BR);
                     break;
                 case CMD_BOLD:
                     location().warning(tr("'\\bold' is deprecated. Use '\\b'"));

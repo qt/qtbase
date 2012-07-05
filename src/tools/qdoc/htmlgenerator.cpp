@@ -760,6 +760,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
     }
         break;
+    case Atom::BR:
+        out() << "<br />\n";
+        break;
     case Atom::HR:
         out() << "<hr />\n";
         break;

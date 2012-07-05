@@ -1277,6 +1277,9 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
     }
         break;
+    case Atom::BR:
+        // DITA XML can't do <br>
+        break;
     case Atom::HR: //<p outputclass="horizontal-rule" />
         writeStartTag(DT_p);
         xmlWriter().writeAttribute("outputclass","horizontal-rule");
