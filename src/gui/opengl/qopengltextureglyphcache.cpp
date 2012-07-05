@@ -269,6 +269,9 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
     if (pex != 0) {
         glViewport(0, 0, pex->width, pex->height);
         pex->updateClipScissorTest();
+    } else {
+        m_blitProgram->disableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
+        m_blitProgram->disableAttributeArray(int(QT_TEXTURE_COORDS_ATTR));
     }
 }
 
