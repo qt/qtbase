@@ -57,11 +57,8 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
                           (QPlatformIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
 #endif
 
-QPlatformIntegration *QPlatformIntegrationFactory::create(const QString& key, const QString &platformPluginPath)
+QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platform, const QStringList &paramList, const QString &platformPluginPath)
 {
-    QStringList paramList = key.split(QLatin1Char(':'));
-    const QString platform = paramList.takeFirst().toLower();
-
 #ifndef QT_NO_LIBRARY
     // Try loading the plugin from platformPluginPath first:
     if (!platformPluginPath.isEmpty()) {

@@ -665,18 +665,11 @@ QString QGuiApplication::platformName()
 static void init_platform(const QString &pluginArgument, const QString &platformPluginPath)
 {
     // Split into platform name and arguments
-    QString name;
-    QStringList arguments;
-    foreach (const QString &token, pluginArgument.split(QLatin1Char(':'))) {
-        if (name.isEmpty()) {
-            name = token;
-        } else {
-            arguments.push_back(token);
-        }
-    }
+    QStringList arguments = pluginArgument.split(QLatin1Char(':'));
+    const QString name = arguments.takeFirst().toLower();
 
    // Create the platform integration.
-    QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, platformPluginPath);
+    QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, arguments, platformPluginPath);
     if (QGuiApplicationPrivate::platform_integration) {
         QGuiApplicationPrivate::platform_name = new QString(name);
     } else {
