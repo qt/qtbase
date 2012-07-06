@@ -293,6 +293,8 @@ private:
     template<typename T> void detach() const;
 };
 
+Q_DECLARE_METATYPE(QVector<int>);
+
 template<typename T> struct SimpleValue
 {
     static T at(int index)
@@ -2025,8 +2027,6 @@ void tst_QVector::const_shared_null()
     v2.setSharable(true);
     QVERIFY(!v2.isDetached());
 }
-
-Q_DECLARE_METATYPE(QVector<int>);
 
 template<typename T>
 void tst_QVector::setSharable_data() const

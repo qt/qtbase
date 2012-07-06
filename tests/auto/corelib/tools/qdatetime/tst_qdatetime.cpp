@@ -141,6 +141,7 @@ Q_DECLARE_METATYPE(QDateTime)
 Q_DECLARE_METATYPE(QDate)
 Q_DECLARE_METATYPE(QTime)
 Q_DECLARE_METATYPE(Qt::TimeSpec)
+Q_DECLARE_METATYPE(Qt::DateFormat)
 
 tst_QDateTime::tst_QDateTime()
 {
@@ -1625,8 +1626,6 @@ void tst_QDateTime::utcOffsetLessThan() const
     QVERIFY(dt1 < dt2);
     QVERIFY(!(dt2 < dt1));
 }
-
-Q_DECLARE_METATYPE(Qt::DateFormat)
 
 QTEST_APPLESS_MAIN(tst_QDateTime)
 #include "tst_qdatetime.moc"

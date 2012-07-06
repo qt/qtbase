@@ -151,6 +151,10 @@ protected:
     mutable QDBusArgumentPrivate *d;
 };
 
+QT_END_NAMESPACE
+Q_DECLARE_METATYPE(QDBusArgument)
+QT_BEGIN_NAMESPACE
+
 template<typename T> inline T qdbus_cast(const QDBusArgument &arg
 #ifndef Q_QDOC
 , T * = 0
@@ -395,8 +399,6 @@ inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantHash &map)
 
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QDBusArgument)
 
 QT_END_HEADER
 
