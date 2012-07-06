@@ -158,7 +158,7 @@
 
     \section1 How QDoc Works
 
-    QDoc begins by reading the configuarion file you specified on the
+    QDoc begins by reading the configuration file you specified on the
     command line. It stores all the variables from the configuration
     file for later use. One of the first variables it uses is \c
     {outputformats}. This variable tells QDoc which output generators
@@ -210,12 +210,12 @@
     \li \l {Markup Commands}
     \endlist
 
-    Topic commands identify the elememt you are documenting, e.g. a C++
+    Topic commands identify the element you are documenting, e.g. a C++
     class, function, or type, an example, or an extra page of text
-    that doesn't map to an underlying C++ elememnt.
+    that doesn't map to an underlying C++ element.
 
     Context commands tell QDoc how the element being documented
-    relates to other documented elememnts, e.g. next and previous page
+    relates to other documented elements, e.g. next and previous page
     links or inclusion in page groups or library modules. Context
     commands can also provide information about the documented element
     that QDoc can't get from the source files, e.g. whether the
@@ -1528,7 +1528,7 @@
     \section1 \\printline
 
     The \\printline command expands to the line from the current
-    position to the next non-blank line of the current souce file.
+    position to the next non-blank line of the current source file.
 
     To ensure that the documentation remains synchronized with the
     source file, a substring of the line must be specified as an
@@ -4846,7 +4846,7 @@
     types and macros that are declared in a header file but not in a
     namespace. The argument is the name of the header file.  The HTML
     page is written to a \c {.html} file constructed from the header
-    file aregument.
+    file argument.
 
     The documentation for a function, type, or macro that is declared
     in the header file being documented is included in the header file
@@ -4910,7 +4910,7 @@
     \target macro-command
     \section1 \\macro
 
-    The \\macro command is for documententin a C++ macro. The argument
+    The \\macro command is for documenting a C++ macro. The argument
     is the macro in one of three styles: function-like macros like
     Q_ASSERT(), declaration-style macros like Q_PROPERTY(), and macros
     without parentheses like Q_OBJECT.
@@ -5235,7 +5235,7 @@
     of the class that defines the property.
 
     The \\property command comment typically includes a \l
-    {brief-command} {\\brief} command. Forproperties the \l
+    {brief-command} {\\brief} command. For properties the \l
     {brief-command} {\\brief} command's argument is a sentence
     fragment that will be included in a one line description of the
     property. The command follows the same rules for the \l
@@ -5596,7 +5596,7 @@
 
     The \\typedef command is for documenting a C++ typedef. The
     argument is the name of the typedef. The documentation for
-    the typedef will be included in the refernece documentation
+    the typedef will be included in the reference documentation
     for the class, namespace, or header file in which the typedef
     is declared. To relat the \\typedef to a class, namespace, or
     header file, the \\typedef comment must contain a
@@ -6189,7 +6189,7 @@
     The command must stand on its own line.
 
     QDoc ignores the documentation as well as the documented item,
-    when generating the associated class reference documenation.
+    when generating the associated class reference documentation.
 
     \code
     / *!
