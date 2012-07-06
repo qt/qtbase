@@ -333,10 +333,13 @@ bool QLinuxFbScreen::initialize(const QStringList &args)
     QString fbDevice, ttyDevice;
     QSize userMmSize;
     QRect userGeometry;
+    bool doSwitchToGraphicsMode = true;
 
     // Parse arguments
     foreach (const QString &arg, args) {
-        if (sizeRx.indexIn(arg) != -1)
+        if (arg == QLatin1String("nographicsmodeswitch"))
+            doSwitchToGraphicsMode = false;
+        else if (sizeRx.indexIn(arg) != -1)
             userGeometry.setSize(QSize(sizeRx.cap(1).toInt(), sizeRx.cap(2).toInt()));
         else if (offsetRx.indexIn(arg) != -1)
             userGeometry.setTopLeft(QPoint(offsetRx.cap(1).toInt(), offsetRx.cap(2).toInt()));
@@ -399,7 +402,7 @@ bool QLinuxFbScreen::initialize(const QStringList &args)
     if (mTtyFd == -1)
         qWarning() << "Failed to open tty" << strerror(errno);
 
-    if (!switchToGraphicsMode(mTtyFd, &mOldTtyMode))
+    if (doSwitchToGraphicsMode && !switchToGraphicsMode(mTtyFd, &mOldTtyMode))
         qWarning() << "Failed to set graphics mode" << strerror(errno);
 
     blankScreen(mFbFd, false);
