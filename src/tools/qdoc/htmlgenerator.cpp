@@ -2527,16 +2527,10 @@ void HtmlGenerator::generateFunctionIndex(const Node *relative,
     char nextLetter = 'a';
     char currentLetter;
 
-#if 1
     out() << "<ul>\n";
-#endif
     QMap<QString, NodeMap >::ConstIterator f = funcIndex.constBegin();
     while (f != funcIndex.constEnd()) {
-#if 1
         out() << "<li>";
-#else
-        out() << "<p>";
-#endif
         out() << protectEnc(f.key()) << ':';
 
         currentLetter = f.key()[0].unicode();
@@ -2551,17 +2545,11 @@ void HtmlGenerator::generateFunctionIndex(const Node *relative,
             generateFullName((*s)->parent(), relative, marker, *s);
             ++s;
         }
-#if 1
         out() << "</li>";
-#else
-        out() << "</p>";
-#endif
         out() << '\n';
         ++f;
     }
-#if 1
     out() << "</ul>\n";
-#endif
 }
 
 void HtmlGenerator::generateLegaleseList(const Node *relative,
@@ -3377,12 +3365,6 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
                   node, not the file for node.
                  */
                 fn = fileName(relative);
-#if DEBUG_ABSTRACT
-                qDebug() << "ABSTRACT:" << node->parent()->name()
-                         << node->name() << relative->name()
-                         << node->parent()->type() << node->parent()->subType()
-                         << relative->type() << relative->subType() << outFileName();
-#endif
             }
         }
     }

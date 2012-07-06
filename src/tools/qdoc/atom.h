@@ -48,8 +48,6 @@
 
 #include <qstringlist.h>
 
-#define QDOC_QML
-
 QT_BEGIN_NAMESPACE
 
 class Atom

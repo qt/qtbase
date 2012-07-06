@@ -3860,12 +3860,6 @@ QString DitaXmlGenerator::linkForNode(const Node* node, const Node* relative)
                   node, not the file for node.
                  */
                 fn = fileName(relative);
-#if DEBUG_ABSTRACT
-                qDebug() << "ABSTRACT:" << node->parent()->name()
-                         << node->name() << relative->name()
-                         << node->parent()->type() << node->parent()->subType()
-                         << relative->type() << relative->subType() << outFileName();
-#endif
             }
         }
     }
