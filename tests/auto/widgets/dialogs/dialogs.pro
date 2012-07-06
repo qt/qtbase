@@ -14,6 +14,8 @@ SUBDIRS=\
    qsidebar \
    qwizard \
 
+!wince*:SUBDIRS -= qabstractprintdialog
+
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
           qsidebar \
 

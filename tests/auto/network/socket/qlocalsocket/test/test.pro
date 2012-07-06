@@ -25,17 +25,3 @@ CONFIG(debug_and_release) {
   DESTDIR = ..
 }
 
-wince* {
-    additionalFiles.files = ../lackey/lackey.exe
-    additionalFiles.path = lackey
-}
-
-wince* {
-    scriptFiles.files = ../lackey/scripts/*.js
-    scriptFiles.path = lackey/scripts
-    DEPLOYMENT += additionalFiles scriptFiles
-    QT += script    # for easy deployment of QtScript
-    
-    requires(contains(QT_CONFIG,script))
-}
-
