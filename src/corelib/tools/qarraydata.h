@@ -286,7 +286,7 @@ struct QArrayDataPointerRef
 
 #define Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(type, size) \
     Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size,\
-        (sizeof(QArrayData) + (Q_ALIGNOF(type) - 1) & ~(Q_ALIGNOF(type) - 1) )) \
+        ((sizeof(QArrayData) + (Q_ALIGNOF(type) - 1)) & ~(Q_ALIGNOF(type) - 1) )) \
     /**/
 
 ////////////////////////////////////////////////////////////////////////////////
