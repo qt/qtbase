@@ -26,6 +26,7 @@
     "qdebug.h" => "QtDebug",
     "qevent.h" => "QtEvents",
     "qnamespace.h" => "Qt",
+    "qnumeric.h" => "QtNumeric",
     "qssl.h" => "QSsl",
     "qtest.h" => "QTest",
     "qtconcurrentmap.h" => "QtConcurrentMap",
