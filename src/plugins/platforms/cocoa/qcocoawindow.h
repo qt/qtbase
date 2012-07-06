@@ -118,7 +118,10 @@ public:
     void windowDidMove();
     void windowDidResize();
     void windowWillClose();
-    bool windowIsPopupType() const;
+    bool windowIsPopupType(Qt::WindowType type = Qt::Widget) const;
+
+    NSInteger windowLevel(Qt::WindowFlags flags);
+    NSUInteger windowStyleMask(Qt::WindowFlags flags);
 
     void setCurrentContext(QCocoaGLContext *context);
     QCocoaGLContext *currentContext() const;
