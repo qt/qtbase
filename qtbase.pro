@@ -76,8 +76,8 @@ INSTALLS += qmake
 
 #syncqt
 syncqt.path = $$[QT_HOST_BINS]
-syncqt.files = $$OUT_PWD/bin/syncqt
-win32:syncqt.files = $$OUT_PWD/bin/syncqt.bat
+syncqt.files = $$PWD/bin/syncqt
+win32:syncqt.files += $$PWD/bin/syncqt.bat
 INSTALLS += syncqt
 
 #qtmodule-configtests
