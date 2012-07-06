@@ -1354,7 +1354,7 @@
 
     \row
         \li \b{\c alternate-background-color} \target alternate-background-color-prop
-        \li \l{#Brush}{Brush} \BR
+        \li \l{#Brush}{Brush} \br
         \li The \l{QAbstractItemView::alternatingRowColors}
            {alternate background color} used in QAbstractItemView subclasses.
 
@@ -1405,7 +1405,7 @@
 
     \row
         \li \c background-color \target background-color-prop
-        \li \l{#Brush}{Brush} \BR
+        \li \l{#Brush}{Brush} \br
         \li The background color used for the widget.
 
            Examples:
@@ -1581,22 +1581,22 @@
 
     \row
         \li \c border-top-color
-        \li \l{#Brush}{Brush} \BR
+        \li \l{#Brush}{Brush} \br
         \li The color of the border's top edge.
 
     \row
         \li \c border-right-color
-        \li \l{#Brush}{Brush} \BR
+        \li \l{#Brush}{Brush} \br
         \li The color of the border's right edge.
 
     \row
         \li \c border-bottom-color
-        \li \l{#Brush}{Brush} \BR
+        \li \l{#Brush}{Brush} \br
         \li The color of the border's bottom edge.
 
     \row
         \li \c border-left-color
-        \li \l{#Brush}{Brush} \BR
+        \li \l{#Brush}{Brush} \br
         \li The color of the border's left edge.
 
     \row
@@ -1791,7 +1791,7 @@
 
     \row
         \li \b{\c color} \target color-prop
-        \li \l{#Brush}{Brush} \BR
+        \li \l{#Brush}{Brush} \br
         \li The color used to render text.
 
            This property is supported by all widgets that respect
@@ -1892,7 +1892,7 @@
 
     \row
         \li \b{\c gridline-color}* \target gridline-color-prop
-        \li \l{#Color}{Color} \BR
+        \li \l{#Color}{Color} \br
         \li The color of the grid line in a QTableView.
 
            If this property is not specified, it defaults to the
@@ -2218,7 +2218,7 @@
 
     \row
         \li \b{\c position} \target position-prop
-        \li \c relative \BR
+        \li \c relative \br
            | \c absolute
         \li Whether offsets specified using \l{Qt Style Sheets Reference#left-prop}{left},
            \l{#right-prop}{right}, \l{Qt Style Sheets Reference#top-prop}{top}, and
@@ -2250,7 +2250,7 @@
 
     \row
         \li \b{\c selection-background-color*} \target selection-background-color-prop
-        \li \l{#Brush}{Brush} \BR
+        \li \l{#Brush}{Brush} \br
         \li The background of selected text or items.
 
            This property is supported by all widgets that respect
@@ -2269,7 +2269,7 @@
 
     \row
         \li \b{\c selection-color*} \target selection-color-prop
-        \li \l{#Brush}{Brush} \BR
+        \li \l{#Brush}{Brush} \br
         \li The foreground of selected text or items.
 
            This property is supported by all widgets that respect
@@ -2370,9 +2370,9 @@
 
     \row
         \li \b{\c text-decoration}
-        \li \c none \BR
-           \c underline \BR
-           \c overline \BR
+        \li \c none \br
+           \c underline \br
+           \c overline \br
            \c line-through
         \li Additional text effects
 
@@ -2662,10 +2662,10 @@
 
     \row
         \li \b Alignment \target Alignment
-        \li \{ \c top \BR
-           | \c bottom \BR
-           | \c left \BR
-           | \c right \BR
+        \li \{ \c top \br
+           | \c bottom \br
+           | \c left \br
+           | \c right \br
            | \c center \}*
         \li Horizontal and/or vertical alignment.
 
@@ -2675,15 +2675,15 @@
 
     \row
         \li \b Attachment \target Attachment
-        \li \{ \c scroll \BR
+        \li \{ \c scroll \br
            | \c fixed \}*
         \li Scroll or fixed attachment.
 
     \row
         \li \b Background \target Background
-        \li \{ \l{#Brush}{Brush} \BR
-           | \l{#Url}{Url} \BR
-           | \l{#Repeat}{Repeat} \BR
+        \li \{ \l{#Brush}{Brush} \br
+           | \l{#Url}{Url} \br
+           | \l{#Repeat}{Repeat} \br
            | \l{#Alignment}{Alignment} \}*
         \li A sequence of \l{#Brush}{Brush}, \l{#Url}{Url},
            \l{#Repeat}{Repeat}, and \l{#Alignment}{Alignment}.
@@ -2699,15 +2699,15 @@
 
     \row
         \li \b Border \target Border
-        \li \{ \l{#Border Style}{Border Style} \BR
-           | \l{#Length}{Length} \BR
+        \li \{ \l{#Border Style}{Border Style} \br
+           | \l{#Length}{Length} \br
            | \l{#Brush}{Brush} \}*
         \li Shorthand border property.
 
     \row
         \li \b{Border Image} \target Border Image
-        \li \c none \BR
-           | \l{Url} \l{Number}\{4\} \BR (\c stretch | \c repeat){0,2}
+        \li \c none \br
+           | \l{Url} \l{Number}\{4\} \br (\c stretch | \c repeat){0,2}
         \li A border image is an image that is composed of nine parts
            (top left, top center, top right, center left, center,
            center right, bottom left, bottom center, and bottom
@@ -2722,16 +2722,16 @@
 
     \row
         \li \b{Border Style} \target Border Style
-        \li \c dashed \BR
-           | \c dot-dash \BR
-           | \c dot-dot-dash \BR
-           | \c dotted \BR
-           | \c double \BR
-           | \c groove \BR
-           | \c inset \BR
-           | \c outset \BR
-           | \c ridge \BR
-           | \c solid \BR
+        \li \c dashed \br
+           | \c dot-dash \br
+           | \c dot-dot-dash \br
+           | \c dotted \br
+           | \c double \br
+           | \c groove \br
+           | \c inset \br
+           | \c outset \br
+           | \c ridge \br
+           | \c solid \br
            | \c none
         \li Specifies the pattern used to draw a border.
            See the \l{http://www.w3.org/TR/css3-background/#border-style}
@@ -2769,19 +2769,19 @@
 
     \row
         \li \b{Brush} \target Brush
-        \li \l{#Color}{Color} \BR
-           | \l{Gradient} \BR
+        \li \l{#Color}{Color} \br
+           | \l{Gradient} \br
            | \l{PaletteRole}
         \li Specifies a Color or a Gradient or an entry in the Palette.
 
     \row
         \li \b{Color} \target Color
-        \li \tt{rgb(\e{r}, \e{g}, \e{b})} \BR
-           | \tt{rgba(\e{r}, \e{g}, \e{b}, \e{a})} \BR
-           | \tt{hsv(\e{h}, \e{s}, \e{v})} \BR
-           | \tt{hsva(\e{h}, \e{s}, \e{v}, \e{a})} \BR
-           | \tt{#\e{rrggbb}} \BR
-           | \l{QColor::setNamedColor()}{Color Name} \BR
+        \li \tt{rgb(\e{r}, \e{g}, \e{b})} \br
+           | \tt{rgba(\e{r}, \e{g}, \e{b}, \e{a})} \br
+           | \tt{hsv(\e{h}, \e{s}, \e{v})} \br
+           | \tt{hsva(\e{h}, \e{s}, \e{v}, \e{a})} \br
+           | \tt{#\e{rrggbb}} \br
+           | \l{QColor::setNamedColor()}{Color Name} \br
         \li Specifies a color as RGB (red, green, blue) or RGBA
            (red, green, blue, alpha) or HSV (hue, saturation, value) or HSVA
            (hue, saturation, value, alpha) or a named color. The \c rgb() or \c rgba()
@@ -2809,25 +2809,25 @@
 
     \row
         \li \b{Font Style} \target Font Style
-        \li \c normal \BR
-           | \c italic \BR
+        \li \c normal \br
+           | \c italic \br
            | \c oblique
         \li The style of a font.
 
     \row
         \li \b{Font Weight} \target Font Weight
-        \li \c normal \BR
-           | \c bold \BR
-           | \c 100 \BR
-           | \c 200 \BR
-           ... \BR
+        \li \c normal \br
+           | \c bold \br
+           | \c 100 \br
+           | \c 200 \br
+           ... \br
            | \c 900
         \li The weight of a font.
 
     \row
         \li \b{Gradient} \target Gradient
-        \li \c qlineargradient \BR
-           | \c qradialgradient \BR
+        \li \c qlineargradient \br
+           | \c qradialgradient \br
            | \c qconicalgradient
         \li Specifies gradient fills. There are three types of gradient fills:
 
@@ -2889,9 +2889,9 @@
 
     \row
         \li \b{Origin} \target Origin
-        \li \c margin \BR
-           | \c border \BR
-           | \c padding \BR
+        \li \c margin \br
+           | \c border \br
+           | \c padding \br
            | \c content
         \li Indicates which of four rectangles to use.
 
@@ -2909,23 +2909,23 @@
 
     \row
         \li \b{PaletteRole} \target PaletteRole
-        \li \c alternate-base \BR
-              | \c base \BR
-              | \c bright-text \BR
-              | \c button \BR
-              | \c button-text \BR
-              | \c dark \BR
-              | \c highlight \BR
-              | \c highlighted-text \BR
-              | \c light \BR
-              | \c link \BR
-              | \c link-visited \BR
-              | \c mid \BR
-              | \c midlight \BR
-              | \c shadow \BR
-              | \c text \BR
-              | \c window \BR
-              | \c window-text \BR
+        \li \c alternate-base \br
+              | \c base \br
+              | \c bright-text \br
+              | \c button \br
+              | \c button-text \br
+              | \c dark \br
+              | \c highlight \br
+              | \c highlighted-text \br
+              | \c light \br
+              | \c link \br
+              | \c link-visited \br
+              | \c mid \br
+              | \c midlight \br
+              | \c shadow \br
+              | \c text \br
+              | \c window \br
+              | \c window-text \br
         \li These values correspond the \l{QPalette::ColorRole}{Color roles}
            in the widget's QPalette.
 
@@ -2943,9 +2943,9 @@
 
     \row
         \li \b{Repeat} \target Repeat
-        \li \c repeat-x \BR
-           | \c repeat-y \BR
-           | \c repeat \BR
+        \li \c repeat-x \br
+           | \c repeat-y \br
+           | \c repeat \br
            | \c no-repeat
         \li A value indicating the nature of repetition.
 

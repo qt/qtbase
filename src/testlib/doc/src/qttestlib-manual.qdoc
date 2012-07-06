@@ -187,19 +187,19 @@
     The following command line options determine how test results are reported:
 
     \list
-    \li \c -o \e{filename,format} \BR
+    \li \c -o \e{filename,format} \br
     write output to the specified file, in the specified format (one of
     \c txt, \c xml, \c lightxml or \c xunitxml).  The special filename \c -
     may be used to log to standard output.
-    \li \c -o \e filename \BR
+    \li \c -o \e filename \br
     write output to the specified file.
-    \li \c -txt \BR
+    \li \c -txt \br
     outputs results in plain text.
-    \li \c -xml \BR
+    \li \c -xml \br
     outputs results as an XML document.
-    \li \c -lightxml \BR
+    \li \c -lightxml \br
     outputs results as a stream of XML tags.
-    \li \c -xunitxml \BR
+    \li \c -xunitxml \br
     outputs results as an Xunit XML document.
     \endlist
 
@@ -221,15 +221,15 @@
     in test logs:
 
     \list
-    \li \c -silent \BR
+    \li \c -silent \br
     silent output, only shows fatal errors, test failures and minimal status messages.
-    \li \c -v1 \BR
+    \li \c -v1 \br
     verbose output; shows when each test function is entered.
     (This option only affects plain text output.)
-    \li \c -v2 \BR
+    \li \c -v2 \br
     extended verbose output; shows each \l QCOMPARE() and \l QVERIFY().
     (This option affects all output formats and implies \c -v1 for plain text output.)
-    \li \c -vs \BR
+    \li \c -vs \br
     shows every signal that gets emitted and the slot invocations resulting from those signals.
     (This option affects all output formats.)
     \endlist
@@ -239,25 +239,25 @@
     The following command-line options influence how tests are run:
 
     \list
-    \li \c -functions \BR
+    \li \c -functions \br
     outputs all test functions available in the test, then quits.
-    \li \c -datatags \BR
+    \li \c -datatags \br
     outputs all data tags available in the test.
     A global data tag is preceded by ' __global__ '.
-    \li \c -eventdelay \e ms \BR
+    \li \c -eventdelay \e ms \br
     if no delay is specified for keyboard or mouse simulation
     (\l QTest::keyClick(),
     \l QTest::mouseClick() etc.), the value from this parameter
     (in milliseconds) is substituted.
-    \li \c -keydelay \e ms \BR
+    \li \c -keydelay \e ms \br
     like -eventdelay, but only influences keyboard simulation and not mouse
     simulation.
-    \li \c -mousedelay \e ms \BR
+    \li \c -mousedelay \e ms \br
     like -eventdelay, but only influences mouse simulation and not keyboard
     simulation.
-    \li \c -maxwarnings \e number\BR
+    \li \c -maxwarnings \e number\br
     sets the maximum number of warnings to output. 0 for unlimited, defaults to 2000.
-    \li \c -nocrashhandler \BR
+    \li \c -nocrashhandler \br
     disables the crash handler on Unix platforms.
     \endlist
 
@@ -266,26 +266,26 @@
     The following command line options control benchmark testing:
 
     \list
-    \li \c -callgrind \BR
+    \li \c -callgrind \br
     use callgrind to time benchmarks (Linux only).
-    \li \c -tickcounter \BR
+    \li \c -tickcounter \br
     use CPU tick counters to time benchmarks.
-    \li \c -eventcounter \BR
+    \li \c -eventcounter \br
     counts events received during benchmarks.
-    \li \c -minimumvalue \e n \BR
+    \li \c -minimumvalue \e n \br
     sets the minimum acceptable measurement value.
-    \li \c -iterations \e n \BR
+    \li \c -iterations \e n \br
     sets the number of accumulation iterations.
-    \li \c -median \e n \BR
+    \li \c -median \e n \br
     sets the number of median iterations.
-    \li \c -vb \BR
+    \li \c -vb \br
     output verbose benchmarking information.
     \endlist
 
     \section4 Miscellaneous Options
 
     \list
-    \li \c -help \BR
+    \li \c -help \br
     outputs the possible command line arguments and give some useful help.
     \endlist
 
@@ -369,19 +369,19 @@
     The following commands are also included:
 
     \list
-    \li \c -debug \BR
+    \li \c -debug \br
     Test version compiled in debug mode.
-    \li \c -release \BR
+    \li \c -release \br
     Test version compiled in release mode.
-    \li \c -libpath \e path \BR
+    \li \c -libpath \e path \br
     Target path to copy Qt libraries to.
-    \li \c -qt-delete \BR
+    \li \c -qt-delete \br
     Delete Qt libraries after execution.
-    \li \c -project-delete \BR
+    \li \c -project-delete \br
     Delete project files after execution.
-    \li \c -delete \BR
+    \li \c -delete \br
     Delete project and Qt libraries after execution.
-    \li \c -conf \BR
+    \li \c -conf \br
     Specifies a qt.conf file to be deployed to remote directory.
     \endlist
 
