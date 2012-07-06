@@ -71,6 +71,9 @@ private slots:
     void operator_divide_data();
     void operator_divide();
 
+    void operator_unary_plus_data();
+    void operator_unary_plus();
+
     void operator_unary_minus_data();
     void operator_unary_minus();
 
@@ -267,6 +270,18 @@ void tst_QPoint::operator_divide()
     QCOMPARE(point / divisor, expected);
     point /= divisor;
     QCOMPARE(point, expected);
+}
+
+void tst_QPoint::operator_unary_plus_data()
+{
+    operator_unary_minus_data();
+}
+
+void tst_QPoint::operator_unary_plus()
+{
+    QFETCH(QPoint, point);
+    // Should be a NOOP.
+    QCOMPARE(+point, point);
 }
 
 void tst_QPoint::operator_unary_minus_data()

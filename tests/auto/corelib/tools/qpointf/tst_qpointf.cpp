@@ -76,6 +76,9 @@ private slots:
     void operator_divide();
     void division();
 
+    void operator_unary_plus_data();
+    void operator_unary_plus();
+
     void operator_unary_minus_data();
     void operator_unary_minus();
 
@@ -281,6 +284,18 @@ void tst_QPointF::division()
         p /= sqrt(dot(p, p));
         qFuzzyCompare(dot(p, p), 1);
     }
+}
+
+void tst_QPointF::operator_unary_plus_data()
+{
+    operator_unary_minus_data();
+}
+
+void tst_QPointF::operator_unary_plus()
+{
+    QFETCH(QPointF, point);
+    // Should be a NOOP.
+    QCOMPARE(+point, point);
 }
 
 void tst_QPointF::operator_unary_minus_data()

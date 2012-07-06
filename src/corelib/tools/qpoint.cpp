@@ -326,6 +326,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn const QPoint operator+(const QPoint &point)
+    \relates QPoint
+    \since 5.0
+
+    Returns \a point unmodified.
+*/
+
+/*!
     \fn const QPoint operator-(const QPoint &point)
     \overload
     \relates QPoint
@@ -661,6 +669,14 @@ QDebug operator<<(QDebug d, const QPointF &p)
     \overload
 
     Returns a copy of the given \a point, multiplied by the given \a factor.
+*/
+
+/*!
+    \fn const QPointF operator+(const QPointF &point)
+    \relates QPointF
+    \since 5.0
+
+    Returns \a point unmodified.
 */
 
 /*!

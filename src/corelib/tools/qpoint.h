@@ -86,6 +86,7 @@ public:
     friend Q_DECL_CONSTEXPR inline const QPoint operator*(double, const QPoint &);
     friend Q_DECL_CONSTEXPR inline const QPoint operator*(const QPoint &, int);
     friend Q_DECL_CONSTEXPR inline const QPoint operator*(int, const QPoint &);
+    friend Q_DECL_CONSTEXPR inline const QPoint operator+(const QPoint &);
     friend Q_DECL_CONSTEXPR inline const QPoint operator-(const QPoint &);
     friend Q_DECL_CONSTEXPR inline const QPoint operator/(const QPoint &, qreal);
 
@@ -182,6 +183,9 @@ Q_DECL_CONSTEXPR inline const QPoint operator*(double factor, const QPoint &p)
 Q_DECL_CONSTEXPR inline const QPoint operator*(int factor, const QPoint &p)
 { return QPoint(p.xp*factor, p.yp*factor); }
 
+Q_DECL_CONSTEXPR inline const QPoint operator+(const QPoint &p)
+{ return p; }
+
 Q_DECL_CONSTEXPR inline const QPoint operator-(const QPoint &p)
 { return QPoint(-p.xp, -p.yp); }
 
@@ -235,6 +239,7 @@ public:
     friend Q_DECL_CONSTEXPR inline const QPointF operator-(const QPointF &, const QPointF &);
     friend Q_DECL_CONSTEXPR inline const QPointF operator*(qreal, const QPointF &);
     friend Q_DECL_CONSTEXPR inline const QPointF operator*(const QPointF &, qreal);
+    friend Q_DECL_CONSTEXPR inline const QPointF operator+(const QPointF &);
     friend Q_DECL_CONSTEXPR inline const QPointF operator-(const QPointF &);
     friend Q_DECL_CONSTEXPR inline const QPointF operator/(const QPointF &, qreal);
 
@@ -353,6 +358,11 @@ Q_DECL_CONSTEXPR inline const QPointF operator*(const QPointF &p, qreal c)
 Q_DECL_CONSTEXPR inline const QPointF operator*(qreal c, const QPointF &p)
 {
     return QPointF(p.xp*c, p.yp*c);
+}
+
+Q_DECL_CONSTEXPR inline const QPointF operator+(const QPointF &p)
+{
+    return p;
 }
 
 Q_DECL_CONSTEXPR inline const QPointF operator-(const QPointF &p)
