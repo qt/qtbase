@@ -56,7 +56,7 @@ QPlatformIntegration* QLinuxFbIntegrationPlugin::create(const QString& system, c
 {
     Q_UNUSED(paramList);
     if (system.toLower() == "linuxfb")
-        return new QLinuxFbIntegration;
+        return new QLinuxFbIntegration(paramList);
 
     return 0;
 }

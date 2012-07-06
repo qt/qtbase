@@ -64,32 +64,26 @@ public:
     virtual QImage::Format format() const { return mFormat; }
     virtual QSizeF physicalSize() const { return mPhysicalSize; }
 
-    virtual void setGeometry(QRect rect);
-    virtual void setDepth(int depth);
-    virtual void setFormat(QImage::Format format);
-    virtual void setPhysicalSize(QSize size);
-
-    virtual void setDirty(const QRect &rect);
-
-    virtual void removeWindow(QFbWindow * surface);
-    virtual void addWindow(QFbWindow * surface);
-    virtual void raise(QPlatformWindow * surface);
-    virtual void lower(QPlatformWindow * surface);
     virtual QWindow *topLevelAt(const QPoint & p) const;
 
-    QImage * image() const { return mScreenImage; }
-    QPaintDevice * paintDevice() const { return mScreenImage; }
-
-protected:
-    QList<QFbWindow *> windowStack;
-    QRegion repaintRegion;
-    QFbCursor * cursor;
-    QTimer redrawTimer;
+    // compositor api
+    virtual void addWindow(QFbWindow *window);
+    virtual void removeWindow(QFbWindow *window);
+    virtual void raise(QPlatformWindow *window);
+    virtual void lower(QPlatformWindow *window);
+    virtual void setDirty(const QRect &rect);
 
 protected slots:
     virtual QRegion doRedraw();
 
 protected:
+    void initializeCompositor();
+
+    QList<QFbWindow *> windowStack;
+    QRegion repaintRegion;
+    QTimer redrawTimer;
+
+    QFbCursor *mCursor;
     QRect mGeometry;
     int mDepth;
     QImage::Format mFormat;
@@ -97,11 +91,12 @@ protected:
     QImage *mScreenImage;
 
 private:
-    QPainter *compositePainter;
+    void invalidateRectCache() { isUpToDate = false; }
     void generateRects();
+
+    QPainter *mCompositePainter;
     QList<QPair<QRect, int> > cachedRects;
 
-    void invalidateRectCache() { isUpToDate = false; }
     friend class QFbWindow;
     bool isUpToDate;
 };

@@ -47,24 +47,34 @@
 QT_BEGIN_NAMESPACE
 
 class QPainter;
+class QFbCursor;
 
 class QLinuxFbScreen : public QFbScreen
 {
     Q_OBJECT
 public:
-    QLinuxFbScreen(uchar * d, int w, int h, int lstep, QImage::Format screenFormat);
-    void setGeometry(QRect rect);
-    void setFormat(QImage::Format format);
+    QLinuxFbScreen();
+    ~QLinuxFbScreen();
+
+    bool initialize(const QStringList &args);
 
 public slots:
     QRegion doRedraw();
 
 private:
-    QImage *mFbScreenImage;
-    uchar *data;
-    int bytesPerLine;
+    int mFbFd;
+    int mTtyFd;
 
-    QPainter *compositePainter;
+    QImage mFbScreenImage;
+    int mBytesPerLine;
+    int mOldTtyMode;
+
+    struct {
+        uchar *data;
+        int offset, size;
+    } mMmap;
+
+    QPainter *mBlitter;
 };
 
 QT_END_NAMESPACE

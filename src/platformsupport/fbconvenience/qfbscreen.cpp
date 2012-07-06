@@ -48,9 +48,20 @@
 
 QT_BEGIN_NAMESPACE
 
-QFbScreen::QFbScreen() : cursor(0), mGeometry(), mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0), compositePainter(0), isUpToDate(false)
+QFbScreen::QFbScreen() : mCursor(0), mGeometry(), mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0), mCompositePainter(0), isUpToDate(false)
+{
+}
+
+QFbScreen::~QFbScreen()
+{
+    delete mCompositePainter;
+    delete mScreenImage;
+}
+
+void QFbScreen::initializeCompositor()
 {
     mScreenImage = new QImage(mGeometry.size(), mFormat);
+
     redrawTimer.setSingleShot(true);
     redrawTimer.setInterval(0);
     connect(&redrawTimer, SIGNAL(timeout()), this, SLOT(doRedraw()));
@@ -91,42 +102,6 @@ QWindow *QFbScreen::topLevelAt(const QPoint & p) const
     }
 #endif
     return 0;
-}
-
-
-void QFbScreen::setGeometry(QRect rect)
-{
-    delete mScreenImage;
-    mGeometry = rect;
-    mScreenImage = new QImage(mGeometry.size(), mFormat);
-    delete compositePainter;
-    compositePainter = 0;
-    invalidateRectCache();
-}
-
-void QFbScreen::setDepth(int depth)
-{
-    mDepth = depth;
-}
-
-void QFbScreen::setPhysicalSize(QSize size)
-{
-    mPhysicalSize = size;
-}
-
-void QFbScreen::setFormat(QImage::Format format)
-{
-    mFormat = format;
-    delete mScreenImage;
-    mScreenImage = new QImage(mGeometry.size(), mFormat);
-    delete compositePainter;
-    compositePainter = 0;
-}
-
-QFbScreen::~QFbScreen()
-{
-    delete compositePainter;
-    delete mScreenImage;
 }
 
 void QFbScreen::setDirty(const QRect &rect)
@@ -171,18 +146,16 @@ void QFbScreen::generateRects()
     return;
 }
 
-
-
 QRegion QFbScreen::doRedraw()
 {
     QPoint screenOffset = mGeometry.topLeft();
 
     QRegion touchedRegion;
-    if (cursor && cursor->isDirty() && cursor->isOnScreen()) {
-        QRect lastCursor = cursor->dirtyRect();
+    if (mCursor && mCursor->isDirty() && mCursor->isOnScreen()) {
+        QRect lastCursor = mCursor->dirtyRect();
         repaintRegion += lastCursor;
     }
-    if (repaintRegion.isEmpty() && (!cursor || !cursor->isDirty())) {
+    if (repaintRegion.isEmpty() && (!mCursor || !mCursor->isDirty())) {
         return touchedRegion;
     }
 
@@ -191,8 +164,8 @@ QRegion QFbScreen::doRedraw()
     if (!isUpToDate)
         generateRects();
 
-    if (!compositePainter)
-        compositePainter = new QPainter(mScreenImage);
+    if (!mCompositePainter)
+        mCompositePainter = new QPainter(mScreenImage);
     for (int rectIndex = 0; rectIndex < repaintRegion.rectCount(); rectIndex++) {
         QRegion rectRegion = rects[rectIndex];
 
@@ -210,7 +183,7 @@ QRegion QFbScreen::doRedraw()
             foreach (QRect rect, intersect.rects()) {
                 bool firstLayer = true;
                 if (layer == -1) {
-                    compositePainter->fillRect(rect, Qt::black);
+                    mCompositePainter->fillRect(rect, Qt::black);
                     firstLayer = false;
                     layer = windowStack.size() - 1;
                 }
@@ -223,7 +196,7 @@ QRegion QFbScreen::doRedraw()
                     QRect windowRect = windowStack[layerIndex]->geometry().translated(-screenOffset);
                     QRect windowIntersect = rect.translated(-windowRect.left(),
                                                             -windowRect.top());
-                    compositePainter->drawImage(rect, windowStack[layerIndex]->backingStore()->image(),
+                    mCompositePainter->drawImage(rect, windowStack[layerIndex]->backingStore()->image(),
                                                 windowIntersect);
                     if (firstLayer) {
                         firstLayer = false;
@@ -234,8 +207,8 @@ QRegion QFbScreen::doRedraw()
     }
 
     QRect cursorRect;
-    if (cursor && (cursor->isDirty() || repaintRegion.intersects(cursor->lastPainted()))) {
-        cursorRect = cursor->drawCursor(*compositePainter);
+    if (mCursor && (mCursor->isDirty() || repaintRegion.intersects(mCursor->lastPainted()))) {
+        cursorRect = mCursor->drawCursor(*mCompositePainter);
         touchedRegion += cursorRect;
     }
     touchedRegion += repaintRegion;

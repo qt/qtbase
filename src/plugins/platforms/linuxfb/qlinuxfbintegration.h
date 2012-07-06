@@ -44,21 +44,16 @@
 
 #include <qpa/qplatformintegration.h>
 
-#include <QtPlatformSupport/private/qfbscreen_p.h>
-
 QT_BEGIN_NAMESPACE
 
 class QLinuxFbIntegrationPrivate;
-struct fb_cmap;
-struct fb_var_screeninfo;
-struct fb_fix_screeninfo;
 class QAbstractEventDispatcher;
 class QLinuxFbScreen;
 
 class QLinuxFbIntegration : public QPlatformIntegration
 {
 public:
-    QLinuxFbIntegration();
+    QLinuxFbIntegration(const QStringList &paramList);
     ~QLinuxFbIntegration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
@@ -67,52 +62,13 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
+    QList<QPlatformScreen *> screens() const;
     QPlatformFontDatabase *fontDatabase() const;
 
 private:
-    QLinuxFbScreen *mPrimaryScreen;
-    QList<QPlatformScreen *> mScreens;
-    QLinuxFbIntegrationPrivate *d_ptr;
-
-    enum PixelType { NormalPixel, BGRPixel };
-
-    QRgb screenclut[256];
-    int screencols;
-
-    uchar * data;
-
-    QImage::Format screenFormat;
-    int w;
-    int lstep;
-    int h;
-    int d;
-    PixelType pixeltype;
-    bool grayscale;
-
-    int dw;
-    int dh;
-
-    int size;               // Screen size
-    int mapsize;       // Total mapped memory
-
-    int displayId;
-
-    int physWidth;
-    int physHeight;
-
-    bool canaccel;
-    int dataoffset;
-    int cacheStart;
-
-    bool connect(const QString &displaySpec);
-    bool initDevice();
-    void setPixelFormat(struct fb_var_screeninfo);
-    void createPalette(fb_cmap &cmap, fb_var_screeninfo &vinfo, fb_fix_screeninfo &finfo);
-    void blank(bool on);
-    QPlatformFontDatabase *fontDb;
+    QLinuxFbScreen *m_primaryScreen;
+    QPlatformFontDatabase *m_fontDb;
+    QAbstractEventDispatcher *m_eventDispatcher;
 };
 
 QT_END_NAMESPACE
