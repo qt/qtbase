@@ -246,6 +246,7 @@ private:
     inline QRect frameGeometry_sys() const;
     inline QRect geometry_sys() const;
     inline WindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
+    inline bool isFullScreen_sys() const;
     inline void setWindowState_sys(Qt::WindowState newState);
     inline void setParent_sys(const QPlatformWindow *parent) const;
     inline void setMouseGrabEnabled_sys(bool grab);

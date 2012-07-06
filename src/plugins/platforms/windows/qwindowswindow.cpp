@@ -980,7 +980,7 @@ void QWindowsWindow::handleResized(int wParam)
         break;
     case SIZE_RESTORED:
         if (m_windowState != Qt::WindowNoState)
-            handleWindowStateChange(Qt::WindowNoState);
+            handleWindowStateChange(isFullScreen_sys() ? Qt::WindowFullScreen : Qt::WindowNoState);
         handleGeometryChange();
         break;
     }
@@ -1170,7 +1170,7 @@ Qt::WindowState QWindowsWindow::windowState_sys() const
         return Qt::WindowMinimized;
     if (IsZoomed(m_data.hwnd))
         return Qt::WindowMaximized;
-    if (geometry_sys() == window()->screen()->geometry())
+    if (isFullScreen_sys())
         return Qt::WindowFullScreen;
     return Qt::WindowNoState;
 }
@@ -1181,6 +1181,11 @@ Qt::WindowStates QWindowsWindow::windowStates_sys() const
     if (GetActiveWindow() == m_data.hwnd)
         result |= Qt::WindowActive;
     return result;
+}
+
+bool QWindowsWindow::isFullScreen_sys() const
+{
+    return geometry_sys() == window()->screen()->geometry();
 }
 
 /*!
