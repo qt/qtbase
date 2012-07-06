@@ -517,7 +517,7 @@
     to the QtQuick2 module while there is also a QtQuick1 module for the older
     types introduced in Qt 4.
 
-    Modules affect the way Qdoc link and relate the types. The
+    Modules affect the way QDoc link and relate the types. The
     \l{qmlclass-command}{\\qmlclass} topic command must have an
     \l{inqmlmodule-command}{\\inqmlmodule} context command to relate the
     type to a module. Similarly, a \l{qmlmodule-command}{\\qmlmodule} topic

@@ -154,7 +154,7 @@
     file also contains other information for QDoc.
 
     See \l{The QDoc Configuration File} for a instructions on how to
-    build a Qdoc configuration file.
+    build a QDoc configuration file.
 
     \section1 How QDoc Works
 
