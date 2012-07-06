@@ -2345,7 +2345,9 @@ static const char *pcreCompileErrorCodes[] =
     QT_TRANSLATE_NOOP("QRegularExpression", "\\N is not supported in a class"),
     QT_TRANSLATE_NOOP("QRegularExpression", "too many forward references"),
     QT_TRANSLATE_NOOP("QRegularExpression", "disallowed Unicode code point (>= 0xd800 && <= 0xdfff)"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "invalid UTF-16 string")
+    QT_TRANSLATE_NOOP("QRegularExpression", "invalid UTF-16 string"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "name is too long in (*MARK), (*PRUNE), (*SKIP), or (*THEN)"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "character value in \\u.... sequence is too large")
 };
 #endif // #if 0
 
