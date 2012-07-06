@@ -1501,9 +1501,6 @@ void Configure::applySpecSpecifics()
             dictionary[ "IWMMXT" ] = "yes";
             dictionary[ "DIRECTSHOW" ] = "yes";
         }
-        dictionary[ "QT_HOST_PREFIX" ]      = dictionary[ "QT_INSTALL_PREFIX" ];
-        dictionary[ "QT_INSTALL_PREFIX" ]   = "";
-
     } else if (dictionary[ "XQMAKESPEC" ].startsWith("linux")) { //TODO actually wrong.
       //TODO
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
