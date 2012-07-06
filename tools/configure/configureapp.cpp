@@ -2672,7 +2672,7 @@ void Configure::generateCachefile()
         moduleStream << "#paths" << endl;
         moduleStream << "QT_BUILD_TREE   = " << formatPath(dictionary["QT_BUILD_TREE"]) << endl;
         moduleStream << "QT_SOURCE_TREE  = " << formatPath(dictionary["QT_SOURCE_TREE"]) << endl;
-        moduleStream << "QT_BUILD_PARTS  = " << buildParts.join(" ") << endl << endl;
+        moduleStream << "QT_BUILD_PARTS += " << buildParts.join(" ") << endl << endl;
 
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
             moduleStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;

@@ -5849,7 +5849,7 @@ fi
 QTMODULE="$outpath/mkspecs/qmodule.pri"
 
 echo "CONFIG += $QMAKE_CONFIG create_prl link_prl" >> "$QTMODULE.tmp"
-echo "QT_BUILD_PARTS = $CFG_BUILD_PARTS" >> "$QTMODULE.tmp"
+echo "QT_BUILD_PARTS += $CFG_BUILD_PARTS" >> "$QTMODULE.tmp"
 
 # Ensure we can link to uninistalled libraries
 if [ "$BUILD_ON_MAC" != "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ] && linkerSupportsFlag -rpath-link "$outpath/lib"; then
