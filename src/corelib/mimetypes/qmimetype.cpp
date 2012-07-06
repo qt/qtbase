@@ -349,8 +349,8 @@ QStringList QMimeType::allAncestors() const
 }
 
 /*!
-    \fn QStringList QMimeType::suffixes() const;
     Returns the known suffixes for the MIME type.
+    No leading dot is included, so for instance this would return "jpg", "jpeg" for image/jpeg.
  */
 QStringList QMimeType::suffixes() const
 {
@@ -371,8 +371,9 @@ QStringList QMimeType::suffixes() const
 }
 
 /*!
-    \fn QString QMimeType::preferredSuffix() const;
     Returns the preferred suffix for the MIME type.
+    No leading dot is included, so for instance this would return "pdf" for application/pdf.
+    The return value can be empty, for mime types which do not have any suffixes associated.
  */
 QString QMimeType::preferredSuffix() const
 {
