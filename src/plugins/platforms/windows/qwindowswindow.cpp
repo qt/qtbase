@@ -1139,6 +1139,7 @@ QWindowsWindow::WindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt
 
     WindowData result = m_data;
     result.flags = creationData.flags;
+    result.embedded = creationData.embedded;
     setFlag(FrameDirty);
     return result;
 }
