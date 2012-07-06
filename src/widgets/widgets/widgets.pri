@@ -25,6 +25,8 @@ HEADERS += \
         widgets/qframe.h \
         widgets/qframe_p.h \
         widgets/qgroupbox.h \
+        widgets/qkeysequenceedit.h \
+        widgets/qkeysequenceedit_p.h \
         widgets/qlabel.h \
         widgets/qlabel_p.h \
         widgets/qlcdnumber.h \
@@ -99,6 +101,7 @@ SOURCES += \
         widgets/qfontcombobox.cpp \
         widgets/qframe.cpp \
         widgets/qgroupbox.cpp \
+        widgets/qkeysequenceedit.cpp \
         widgets/qlabel.cpp \
         widgets/qlcdnumber.cpp \
         widgets/qlineedit_p.cpp \

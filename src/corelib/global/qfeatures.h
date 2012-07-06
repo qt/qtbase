@@ -115,6 +115,9 @@
 // Image Text
 //#define QT_NO_IMAGE_TEXT
 
+// QKeySequenceEdit
+//#define QT_NO_KEYSEQUENCEEDIT
+
 // QLCDNumber
 //#define QT_NO_LCDNUMBER
 
@@ -304,6 +307,11 @@
 // QImageIOPlugin
 #if !defined(QT_NO_IMAGEFORMATPLUGIN) && (defined(QT_NO_LIBRARY))
 #define QT_NO_IMAGEFORMATPLUGIN
+#endif
+
+// QKeySequenceEdit
+#if !defined(QT_NO_KEYSEQUENCEEDIT) && (defined(QT_NO_SHORTCUT))
+#define QT_NO_KEYSEQUENCEEDIT
 #endif
 
 // QLocalServer
