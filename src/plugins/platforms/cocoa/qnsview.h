@@ -88,6 +88,7 @@ QT_END_NAMESPACE
 - (void)otherMouseDown:(NSEvent *)theEvent;
 - (void)otherMouseDragged:(NSEvent *)theEvent;
 - (void)otherMouseUp:(NSEvent *)theEvent;
+- (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent;
 
 - (int) convertKeyCode : (QChar)keyCode;
 - (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags;

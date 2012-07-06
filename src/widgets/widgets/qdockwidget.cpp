@@ -943,17 +943,10 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
         case QEvent::NonClientAreaMouseMove:
             if (state == 0 || !state->dragging)
                 break;
+
+#ifndef Q_OS_MAC
             if (state->nca) {
                 endDrag();
-            }
-#ifdef Q_OS_MAC
-            else { // workaround for lack of mouse-grab on Mac
-                QMainWindowLayout *layout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q->parentWidget()));
-                Q_ASSERT(layout != 0);
-
-                q->move(event->globalPos() - state->pressPos);
-                if (!state->ctrlDrag)
-                    layout->hover(state->widgetItem, event->globalPos());
             }
 #endif
             break;

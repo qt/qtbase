@@ -310,6 +310,39 @@ static QTouchDevice *touchDevice = 0;
     QWindowSystemInterface::handleMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons);
 }
 
+- (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent
+{
+    // get m_buttons in sync
+    NSEventType ty = [theEvent type];
+    switch (ty) {
+    case NSLeftMouseDown:
+        m_buttons |= Qt::LeftButton;
+        break;
+    case NSLeftMouseUp:
+         m_buttons &= QFlag(~int(Qt::LeftButton));
+         break;
+    case NSRightMouseDown:
+        m_buttons |= Qt::RightButton;
+        break;
+    case NSRightMouseUp:
+        m_buttons &= QFlag(~int(Qt::RightButton));
+        break;
+    default:
+        break;
+    }
+
+    NSWindow *window = [self window];
+    int windowHeight = [window frame].size.height;
+    NSPoint windowPoint = [theEvent locationInWindow];
+    NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil];
+    QPoint qtWindowPoint = QPoint(windowPoint.x, windowHeight - windowPoint.y);
+    NSPoint screenPoint = [window convertBaseToScreen : windowPoint];
+    QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
+
+    ulong timestamp = [theEvent timestamp] * 1000;
+    QWindowSystemInterface::handleFrameStrutMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons);
+}
+
 - (void)mouseDown:(NSEvent *)theEvent
 {
     if (m_platformWindow->m_activePopupWindow) {

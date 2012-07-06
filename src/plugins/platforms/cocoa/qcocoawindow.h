@@ -55,12 +55,14 @@ class QT_PREPEND_NAMESPACE(QCocoaWindow);
     @public QCocoaWindow *m_cocoaPlatformWindow;
 }
 
+- (void)clearPlatformWindow;
 - (BOOL)canBecomeKeyWindow;
 @end
 
 @interface QNSPanel : NSPanel {
     @public QT_PREPEND_NAMESPACE(QCocoaWindow) *m_cocoaPlatformWindow;
 }
+- (void)clearPlatformWindow;
 - (BOOL)canBecomeKeyWindow;
 @end
 
@@ -105,6 +107,7 @@ public:
     void setOpacity(qreal level);
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
+    QMargins frameMargins() const;
 
     WId winId() const;
     void setParent(const QPlatformWindow *window);
@@ -121,6 +124,10 @@ public:
     QCocoaGLContext *currentContext() const;
 
     bool setWindowModified(bool modified) Q_DECL_OVERRIDE;
+
+    void setFrameStrutEventsEnabled(bool enabled);
+    bool frameStrutEventsEnabled() const
+        { return m_frameStrutEventsEnabled; }
 
     void setMenubar(QCocoaMenuBar *mb);
     QCocoaMenuBar *menubar() const;
@@ -152,6 +159,7 @@ public: // for QNSView
     QCocoaMenuBar *m_menubar;
 
     bool m_hasModalSession;
+    bool m_frameStrutEventsEnabled;
 };
 
 QT_END_NAMESPACE
