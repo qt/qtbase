@@ -718,14 +718,15 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     // Set arguments as dynamic properties on the native interface as
     // boolean 'foo' or strings: 'foo=bar'
     if (!arguments.isEmpty()) {
-        QObject *nativeInterface = QGuiApplicationPrivate::platform_integration->nativeInterface();
-        foreach (const QString &argument, arguments) {
-            const int equalsPos = argument.indexOf(QLatin1Char('='));
-            const QByteArray name =
-                equalsPos != -1 ? argument.left(equalsPos).toUtf8() : argument.toUtf8();
-            const QVariant value =
-                equalsPos != -1 ? QVariant(argument.mid(equalsPos + 1)) : QVariant(true);
-            nativeInterface->setProperty(name.constData(), value);
+        if (QObject *nativeInterface = QGuiApplicationPrivate::platform_integration->nativeInterface()) {
+            foreach (const QString &argument, arguments) {
+                const int equalsPos = argument.indexOf(QLatin1Char('='));
+                const QByteArray name =
+                    equalsPos != -1 ? argument.left(equalsPos).toUtf8() : argument.toUtf8();
+                const QVariant value =
+                    equalsPos != -1 ? QVariant(argument.mid(equalsPos + 1)) : QVariant(true);
+                nativeInterface->setProperty(name.constData(), value);
+            }
         }
     }
 #endif
