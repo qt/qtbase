@@ -94,6 +94,8 @@ void PreviewWindow::setWindowFlags(Qt::WindowFlags flags)
         text += "\n| Qt::X11BypassWindowManagerHint";
     if (flags & Qt::FramelessWindowHint)
         text += "\n| Qt::FramelessWindowHint";
+    if (flags & Qt::NoDropShadowWindowHint)
+        text += "\n| Qt::NoDropShadowWindowHint";
     if (flags & Qt::WindowTitleHint)
         text += "\n| Qt::WindowTitleHint";
     if (flags & Qt::WindowSystemMenuHint)

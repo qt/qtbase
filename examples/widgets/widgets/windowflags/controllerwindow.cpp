@@ -99,6 +99,8 @@ void ControllerWindow::updatePreview()
         flags |= Qt::X11BypassWindowManagerHint;
     if (framelessWindowCheckBox->isChecked())
         flags |= Qt::FramelessWindowHint;
+    if (windowNoShadowCheckBox->isChecked())
+        flags |= Qt::NoDropShadowWindowHint;
     if (windowTitleCheckBox->isChecked())
         flags |= Qt::WindowTitleHint;
     if (windowSystemMenuCheckBox->isChecked())
@@ -171,6 +173,7 @@ void ControllerWindow::createHintsGroupBox()
     x11BypassWindowManagerCheckBox =
             createCheckBox(tr("X11 bypass window manager"));
     framelessWindowCheckBox = createCheckBox(tr("Frameless window"));
+    windowNoShadowCheckBox = createCheckBox(tr("No drop shadow"));
     windowTitleCheckBox = createCheckBox(tr("Window title"));
     windowSystemMenuCheckBox = createCheckBox(tr("Window system menu"));
     windowMinimizeButtonCheckBox = createCheckBox(tr("Window minimize button"));
@@ -187,8 +190,9 @@ void ControllerWindow::createHintsGroupBox()
     layout->addWidget(msWindowsFixedSizeDialogCheckBox, 0, 0);
     layout->addWidget(x11BypassWindowManagerCheckBox, 1, 0);
     layout->addWidget(framelessWindowCheckBox, 2, 0);
-    layout->addWidget(windowTitleCheckBox, 3, 0);
-    layout->addWidget(windowSystemMenuCheckBox, 4, 0);
+    layout->addWidget(windowNoShadowCheckBox, 3, 0);
+    layout->addWidget(windowTitleCheckBox, 4, 0);
+    layout->addWidget(windowSystemMenuCheckBox, 5, 0);
     layout->addWidget(windowMinimizeButtonCheckBox, 0, 1);
     layout->addWidget(windowMaximizeButtonCheckBox, 1, 1);
     layout->addWidget(windowCloseButtonCheckBox, 2, 1);
@@ -196,7 +200,7 @@ void ControllerWindow::createHintsGroupBox()
     layout->addWidget(windowShadeButtonCheckBox, 4, 1);
     layout->addWidget(windowStaysOnTopCheckBox, 5, 1);
     layout->addWidget(windowStaysOnBottomCheckBox, 6, 1);
-    layout->addWidget(customizeWindowHintCheckBox, 5, 0);
+    layout->addWidget(customizeWindowHintCheckBox, 6, 0);
     hintsGroupBox->setLayout(layout);
 }
 //! [6]

@@ -122,6 +122,7 @@ public:
 
     NSInteger windowLevel(Qt::WindowFlags flags);
     NSUInteger windowStyleMask(Qt::WindowFlags flags);
+    void setWindowShadow(Qt::WindowFlags flags);
 
     void setCurrentContext(QCocoaGLContext *context);
     QCocoaGLContext *currentContext() const;

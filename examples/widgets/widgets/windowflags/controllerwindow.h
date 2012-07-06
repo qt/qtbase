@@ -88,6 +88,7 @@ private:
     QCheckBox *msWindowsFixedSizeDialogCheckBox;
     QCheckBox *x11BypassWindowManagerCheckBox;
     QCheckBox *framelessWindowCheckBox;
+    QCheckBox *windowNoShadowCheckBox;
     QCheckBox *windowTitleCheckBox;
     QCheckBox *windowSystemMenuCheckBox;
     QCheckBox *windowMinimizeButtonCheckBox;

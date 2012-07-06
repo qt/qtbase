@@ -312,7 +312,8 @@ public:
         WindowOkButtonHint = 0x00080000,
         WindowCancelButtonHint = 0x00100000,
         WindowSoftkeysVisibleHint = 0x40000000,
-        WindowSoftkeysRespondHint = 0x80000000
+        WindowSoftkeysRespondHint = 0x80000000,
+        NoDropShadowWindowHint = 0x40000000
     };
 
     Q_DECLARE_FLAGS(WindowFlags, WindowType)

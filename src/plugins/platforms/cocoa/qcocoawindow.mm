@@ -370,6 +370,12 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     return styleMask;
 }
 
+void QCocoaWindow::setWindowShadow(Qt::WindowFlags flags)
+{
+    bool keepShadow = !(flags & Qt::NoDropShadowWindowHint);
+    [m_nsWindow setHasShadow:(keepShadow ? YES : NO)];
+}
+
 Qt::WindowFlags QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     if (m_nsWindow) {
@@ -377,6 +383,7 @@ Qt::WindowFlags QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         NSInteger level = this->windowLevel(flags);
         [m_nsWindow setStyleMask:styleMask];
         [m_nsWindow setLevel:level];
+        setWindowShadow(flags);
     }
 
     m_windowFlags = flags;
@@ -625,6 +632,7 @@ NSWindow * QCocoaWindow::createNSWindow()
                                          defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up
                                                     // before the window is shown and needs a proper window.).
         window->m_cocoaPlatformWindow = this;
+        setWindowShadow(flags);
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {

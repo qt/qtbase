@@ -1175,9 +1175,6 @@
     to this top level window. This attribute has no effect on non-X11
     platforms.
 
-    \value WA_MacNoShadow Since Qt 4.8, this attribute disables drop shadows
-    for this top level window. Only affects Cocoa builds of Qt for Mac OS X.
-
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys
@@ -1208,6 +1205,7 @@
     \omitvalue WA_SetWindowModality
     \omitvalue WA_WState_WindowOpacitySet
     \omitvalue WA_WState_AcceptedTouchBeginEvent
+    \omitvalue WA_MacNoShadow
 */
 
 /*! \typedef Qt::HANDLE
@@ -1967,6 +1965,8 @@
            system. On X11, the result of the flag is dependent on the window manager and its
            ability to understand Motif and/or NETWM hints. Most existing
            modern window managers can handle this.
+
+    \value NoDropShadowWindowHint  Disables window drop shadow on supporting platforms.
 
     The \c CustomizeWindowHint flag is used to enable customization of
     the window controls. This flag must be set to allow the \c
