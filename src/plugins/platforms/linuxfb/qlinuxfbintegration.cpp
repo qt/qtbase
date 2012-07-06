@@ -89,9 +89,7 @@ QPlatformBackingStore *QLinuxFbIntegration::createPlatformBackingStore(QWindow *
 
 QPlatformWindow *QLinuxFbIntegration::createPlatformWindow(QWindow *window) const
 {
-    QFbWindow *w = new QFbWindow(window);
-    m_primaryScreen->addWindow(w);
-    return w;
+    return new QFbWindow(window);
 }
 
 QAbstractEventDispatcher *QLinuxFbIntegration::guiThreadEventDispatcher() const
