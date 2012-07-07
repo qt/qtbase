@@ -69,8 +69,8 @@ public:
     // compositor api
     virtual void addWindow(QFbWindow *window);
     virtual void removeWindow(QFbWindow *window);
-    virtual void raise(QPlatformWindow *window);
-    virtual void lower(QPlatformWindow *window);
+    virtual void raise(QFbWindow *window);
+    virtual void lower(QFbWindow *window);
     virtual void setDirty(const QRect &rect);
 
 protected slots:

@@ -52,7 +52,7 @@ QFbWindow::QFbWindow(QWindow *window)
     static QAtomicInt winIdGenerator(1);
     windowId = winIdGenerator.fetchAndAddRelaxed(1);
 
-    platformScreen()->addWindow(window);
+    platformScreen()->addWindow(this);
 }
 
 QFbWindow::~QFbWindow()

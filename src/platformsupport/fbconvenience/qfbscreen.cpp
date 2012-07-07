@@ -67,26 +67,38 @@ void QFbScreen::initializeCompositor()
     connect(&redrawTimer, SIGNAL(timeout()), this, SLOT(doRedraw()));
 }
 
-void QFbScreen::raise(QPlatformWindow * surface)
+void QFbScreen::addWindow(QFbWindow *window)
 {
-    QFbWindow *s = static_cast<QFbWindow *>(surface);
-    int index = windowStack.indexOf(s);
+    windowStack.prepend(window);
+    invalidateRectCache();
+    setDirty(window->geometry());
+}
+
+void QFbScreen::removeWindow(QFbWindow *window)
+{
+    windowStack.removeOne(window);
+    invalidateRectCache();
+    setDirty(window->geometry());
+}
+
+void QFbScreen::raise(QFbWindow *window)
+{
+    int index = windowStack.indexOf(window);
     if (index <= 0)
         return;
     windowStack.move(index, 0);
     invalidateRectCache();
-    setDirty(s->geometry());
+    setDirty(window->geometry());
 }
 
-void QFbScreen::lower(QPlatformWindow * surface)
+void QFbScreen::lower(QFbWindow *window)
 {
-    QFbWindow *s = static_cast<QFbWindow *>(surface);
-    int index = windowStack.indexOf(s);
+    int index = windowStack.indexOf(window);
     if (index == -1 || index == (windowStack.size() - 1))
         return;
     windowStack.move(index, windowStack.size() - 1);
     invalidateRectCache();
-    setDirty(s->geometry());
+    setDirty(window->geometry());
 }
 
 QWindow *QFbScreen::topLevelAt(const QPoint & p) const
@@ -220,20 +232,6 @@ QRegion QFbScreen::doRedraw()
 
 
     return touchedRegion;
-}
-
-void QFbScreen::addWindow(QFbWindow *surface)
-{
-    windowStack.prepend(surface);
-    invalidateRectCache();
-    setDirty(surface->geometry());
-}
-
-void QFbScreen::removeWindow(QFbWindow * surface)
-{
-    windowStack.removeOne(surface);
-    invalidateRectCache();
-    setDirty(surface->geometry());
 }
 
 QT_END_NAMESPACE
