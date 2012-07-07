@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+
 QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share)
     : QPlatformOpenGLContext()
     , m_screen(screen)
@@ -80,8 +82,48 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
             m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, 0, TRUE);
         }
 
-        if (m_context)
+        // Resolve entry point for glXCreateContextAttribsARB
+        glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
+        glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
+
+        if (glXCreateContextAttribsARB != 0) {
+
+            QVector<int> contextAttributes;
+            contextAttributes << GLX_CONTEXT_MAJOR_VERSION_ARB << m_format.majorVersion()
+                              << GLX_CONTEXT_MINOR_VERSION_ARB << m_format.minorVersion();
+
+            if (m_format.majorVersion() >= 3 || (m_format.majorVersion() == 3 && m_format.minorVersion() > 1)) {
+                if (m_format.profile() == QSurfaceFormat::CoreProfile) {
+                    contextAttributes << GLX_CONTEXT_FLAGS_ARB << GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB
+                                      << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
+                } else {
+                    contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+                }
+            }
+
+            contextAttributes << None;
+
+            GLXContext context = 0;
+            context = glXCreateContextAttribsARB(DISPLAY_FROM_XCB(screen), config, m_shareContext, true, contextAttributes.data());
+            if (!m_context && m_shareContext) {
+                // re-try without a shared glx context
+                m_shareContext = 0;
+                context = glXCreateContextAttribsARB(DISPLAY_FROM_XCB(screen), config, 0, true, contextAttributes.data());
+            }
+
+            // Set this as our context and destroy the old context
+            if (context) {
+                glXMakeCurrent(DISPLAY_FROM_XCB(screen), 0, 0);
+                glXDestroyContext(DISPLAY_FROM_XCB(screen), m_context);
+                m_context = context;
+            }
+        }
+
+        if (m_context) {
             m_format = qglx_surfaceFormatFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
+            m_format.setMajorVersion(format.majorVersion());
+            m_format.setMinorVersion(format.minorVersion());
+        }
     } else {
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen), screen->screenNumber(), &m_format);
         if (!visualInfo)
