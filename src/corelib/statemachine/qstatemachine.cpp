@@ -1468,17 +1468,14 @@ void QStateMachinePrivate::goToState(QAbstractState *targetState)
     if (configuration.contains(targetState))
         return;
 
+    Q_ASSERT(state == Running);
     QState *sourceState = 0;
-    if (state == Running) {
-        QSet<QAbstractState*>::const_iterator it;
-        for (it = configuration.constBegin(); it != configuration.constEnd(); ++it) {
-            sourceState = toStandardState(*it);
-            if (sourceState != 0)
-                break;
-        }
-    } else {
-        sourceState = startState();
-    }    
+    QSet<QAbstractState*>::const_iterator it;
+    for (it = configuration.constBegin(); it != configuration.constEnd(); ++it) {
+        sourceState = toStandardState(*it);
+        if (sourceState != 0)
+            break;
+    }
 
     Q_ASSERT(sourceState != 0);
     // Reuse previous GoToStateTransition in case of several calls to
