@@ -193,6 +193,7 @@ private slots:
     void setPropertyAfterRestore();
     void transitionWithNoTarget_data();
     void transitionWithNoTarget();
+    void initialStateIsFinal();
 
     void restorePropertiesSimple();
     void restoreProperties2();
@@ -4194,6 +4195,17 @@ void tst_QStateMachine::transitionWithNoTarget()
     QCOMPARE(object->property("a").toInt(), 3);
 
     delete object;
+}
+
+void tst_QStateMachine::initialStateIsFinal()
+{
+    QStateMachine machine;
+    QFinalState *f = new QFinalState(&machine);
+    machine.setInitialState(f);
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(f));
+    QTRY_COMPARE(finishedSpy.count(), 1);
 }
 
 class PropertyObject : public QObject

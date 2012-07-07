@@ -1341,6 +1341,9 @@ void QStateMachinePrivate::_q_start()
 #ifndef QT_NO_ANIMATION
     QList<QAbstractAnimation*> selectedAnimations = selectAnimations(transitions);
 #endif
+    // enterStates() will set stopProcessingReason to Finished if a final
+    // state is entered.
+    stopProcessingReason = EventQueueEmpty;
     enterStates(&nullEvent, exitedStates, enteredStates, statesForDefaultEntry,
                 assignmentsForEnteredStates
 #ifndef QT_NO_ANIMATION
@@ -1355,7 +1358,15 @@ void QStateMachinePrivate::_q_start()
 
     emit q->started();
 
-    _q_process();
+    if (stopProcessingReason == Finished) {
+        // The state machine immediately reached a final state.
+        processingScheduled = false;
+        state = NotRunning;
+        unregisterAllTransitions();
+        emit q->finished();
+    } else {
+        _q_process();
+    }
 }
 
 void QStateMachinePrivate::_q_process()
