@@ -4355,12 +4355,41 @@ QByteArray QByteArray::fromHex(const QByteArray &hexEncoded)
 */
 QByteArray QByteArray::toHex() const
 {
-    QByteArray hex(d->size * 2, Qt::Uninitialized);
+    return toHex('\0');
+}
+
+/*! \overload
+    \since 5.9
+
+    Returns a hex encoded copy of the byte array. The hex encoding uses the numbers 0-9 and
+    the letters a-f.
+
+    If \a separator is not '\0', the separator character is inserted between the hex bytes.
+
+    Example:
+    \code
+        QByteArray macAddress = QByteArray::fromHex("123456abcdef");
+        macAddress.toHex(':'); // returns "12:34:56:ab:cd:ef"
+        macAddress.toHex(0);   // returns "123456abcdef"
+    \endcode
+
+    \sa fromHex()
+*/
+QByteArray QByteArray::toHex(char separator) const
+{
+    if (!d->size)
+        return QByteArray();
+
+    const int length = separator ? (d->size * 3 - 1) : (d->size * 2);
+    QByteArray hex(length, Qt::Uninitialized);
     char *hexData = hex.data();
     const uchar *data = (const uchar *)d->data();
-    for (int i = 0; i < d->size; ++i) {
-        hexData[i*2] = QtMiscUtils::toHexLower(data[i] >> 4);
-        hexData[i*2+1] = QtMiscUtils::toHexLower(data[i] & 0xf);
+    for (int i = 0, o = 0; i < d->size; ++i) {
+        hexData[o++] = QtMiscUtils::toHexLower(data[i] >> 4);
+        hexData[o++] = QtMiscUtils::toHexLower(data[i] & 0xf);
+
+        if ((separator) && (o < length))
+            hexData[o++] = separator;
     }
     return hex;
 }

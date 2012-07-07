@@ -1443,61 +1443,97 @@ void tst_QByteArray::appendAfterFromRawData()
 void tst_QByteArray::toFromHex_data()
 {
     QTest::addColumn<QByteArray>("str");
+    QTest::addColumn<char>("sep");
     QTest::addColumn<QByteArray>("hex");
     QTest::addColumn<QByteArray>("hex_alt1");
 
-    QTest::newRow("Qt is great!")
+    QTest::newRow("Qt is great! (default)")
         << QByteArray("Qt is great!")
+        << '\0'
         << QByteArray("517420697320677265617421")
         << QByteArray("51 74 20 69 73 20 67 72 65 61 74 21");
 
+    QTest::newRow("Qt is great! (with space)")
+        << QByteArray("Qt is great!")
+        << ' '
+        << QByteArray("51 74 20 69 73 20 67 72 65 61 74 21")
+        << QByteArray("51 74 20 69 73 20 67 72 65 61 74 21");
+
+    QTest::newRow("Qt is great! (with minus)")
+        << QByteArray("Qt is great!")
+        << '-'
+        << QByteArray("51-74-20-69-73-20-67-72-65-61-74-21")
+        << QByteArray("51-74-20-69-73-20-67-72-65-61-74-21");
+
     QTest::newRow("Qt is so great!")
         << QByteArray("Qt is so great!")
+        << '\0'
         << QByteArray("517420697320736f20677265617421")
         << QByteArray("51 74 20 69 73 20 73 6f 20 67 72 65 61 74 21");
 
     QTest::newRow("default-constructed")
         << QByteArray()
+        << '\0'
+        << QByteArray()
+        << QByteArray();
+
+    QTest::newRow("default-constructed (with space)")
+        << QByteArray()
+        << ' '
         << QByteArray()
         << QByteArray();
 
     QTest::newRow("empty")
         << QByteArray("")
+        << '\0'
+        << QByteArray("")
+        << QByteArray("");
+
+    QTest::newRow("empty (with space)")
+        << QByteArray("")
+        << ' '
         << QByteArray("")
         << QByteArray("");
 
     QTest::newRow("array-of-null")
         << QByteArray("\0", 1)
+        << '\0'
         << QByteArray("00")
         << QByteArray("0");
 
     QTest::newRow("no-leading-zero")
         << QByteArray("\xf")
+        << '\0'
         << QByteArray("0f")
         << QByteArray("f");
 
     QTest::newRow("single-byte")
         << QByteArray("\xaf")
+        << '\0'
         << QByteArray("af")
         << QByteArray("xaf");
 
     QTest::newRow("no-leading-zero")
         << QByteArray("\xd\xde\xad\xc0\xde")
+        << '\0'
         << QByteArray("0ddeadc0de")
         << QByteArray("ddeadc0de");
 
     QTest::newRow("garbage")
         << QByteArray("\xC\xde\xeC\xea\xee\xDe\xee\xee")
+        << '\0'
         << QByteArray("0cdeeceaeedeeeee")
         << QByteArray("Code less. Create more. Deploy everywhere.");
 
     QTest::newRow("under-defined-1")
         << QByteArray("\x1\x23")
+        << '\0'
         << QByteArray("0123")
         << QByteArray("x123");
 
     QTest::newRow("under-defined-2")
         << QByteArray("\x12\x34")
+        << '\0'
         << QByteArray("1234")
         << QByteArray("x1234");
 }
@@ -1505,11 +1541,18 @@ void tst_QByteArray::toFromHex_data()
 void tst_QByteArray::toFromHex()
 {
     QFETCH(QByteArray, str);
+    QFETCH(char,       sep);
     QFETCH(QByteArray, hex);
     QFETCH(QByteArray, hex_alt1);
 
-    {
+    if (sep == 0) {
         const QByteArray th = str.toHex();
+        QCOMPARE(th.size(), hex.size());
+        QCOMPARE(th, hex);
+    }
+
+    {
+        const QByteArray th = str.toHex(sep);
         QCOMPARE(th.size(), hex.size());
         QCOMPARE(th, hex);
     }
