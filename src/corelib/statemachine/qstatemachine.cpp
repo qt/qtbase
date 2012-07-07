@@ -186,7 +186,6 @@ QStateMachinePrivate::QStateMachinePrivate()
     isMachine = true;
 
     state = NotRunning;
-    _startState = 0;
     processing = false;
     processingScheduled = false;
     stop = false;
@@ -511,9 +510,11 @@ QList<QAbstractState*> QStateMachinePrivate::computeStatesToEnter(const QList<QA
             QList<QAbstractState*> lst = t->targetStates();
             if (lst.isEmpty())
                 continue;
-            lst.prepend(t->sourceState());
+            QAbstractState *src = t->sourceState();
+            if (src)
+                lst.prepend(src);
             QState *lca = findLCA(lst);
-            for (int j = 1; j < lst.size(); ++j) {
+            for (int j = src ? 1 : 0; j < lst.size(); ++j) {
                 QAbstractState *s = lst.at(j);
                 addStatesToEnter(s, lca, statesToEnter, statesForDefaultEntry);
                 if (isParallel(lca)) {
@@ -1282,16 +1283,6 @@ void QStateMachinePrivate::initializeAnimations(QAbstractState *state, const QLi
 
 namespace {
 
-class StartState : public QState
-{
-public:
-    StartState(QState *parent)
-        : QState(parent) {}
-protected:
-    void onEntry(QEvent *) {}
-    void onExit(QEvent *) {}
-};
-
 class InitialTransition : public QAbstractTransition
 {
 public:
@@ -1304,20 +1295,6 @@ protected:
 };
 
 } // namespace
-
-QState *QStateMachinePrivate::startState()
-{
-    Q_Q(QStateMachine);
-    if (_startState == 0)
-        _startState = new StartState(q);
-    return _startState;
-}
-
-void QStateMachinePrivate::removeStartState()
-{
-    delete _startState;
-    _startState = 0;
-}
 
 void QStateMachinePrivate::clearHistory()
 {
@@ -1348,22 +1325,13 @@ void QStateMachinePrivate::_q_start()
     state = Running;
     processingScheduled = true; // we call _q_process() below
 
-    QState *start = startState();
-    Q_ASSERT(start != 0);
-
-    QList<QAbstractTransition*> transitions = QStatePrivate::get(start)->transitions();
-
-    // If a transition has already been added, then we skip this step, as the
-    // initial transition in that case has been overridden.
-    if (transitions.isEmpty()) {
-        QAbstractTransition *initialTransition = new InitialTransition(initial);
-        start->addTransition(initialTransition);
-        transitions.append(initialTransition);
-    }
+    QList<QAbstractTransition*> transitions;
+    QAbstractTransition *initialTransition = new InitialTransition(initial);
+    transitions.append(initialTransition);
 
     QEvent nullEvent(QEvent::None);
     executeTransitionContent(&nullEvent, transitions);
-    QList<QAbstractState*> exitedStates = QList<QAbstractState*>() << start;
+    QList<QAbstractState*> exitedStates = QList<QAbstractState*>();
     QSet<QAbstractState*> statesForDefaultEntry;
     QList<QAbstractState*> enteredStates = computeStatesToEnter(transitions,
                                                                 statesForDefaultEntry);
@@ -1379,7 +1347,7 @@ void QStateMachinePrivate::_q_start()
                 , selectedAnimations
 #endif
                 );
-    removeStartState();
+    delete initialTransition;
 
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": initial configuration:" << configuration;

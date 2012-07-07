@@ -127,9 +127,6 @@ public:
 
     QState *rootState() const;
 
-    QState *startState();
-    void removeStartState();
-
     void clearHistory();
 
     void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
@@ -208,7 +205,6 @@ public:
 #endif
 
     State state;
-    QState *_startState;
     bool processing;
     bool processingScheduled;
     bool stop;
