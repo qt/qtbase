@@ -639,10 +639,17 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
     {
         QSet<QAbstractState*>::const_iterator it;
         for (it = configuration.constBegin(); it != configuration.constEnd(); ++it) {
-            if (isFinal(*it) && (*it)->parentState() == rootState()) {
-                processing = false;
-                stopProcessingReason = Finished;
-                break;
+            if (isFinal(*it)) {
+                QState *parent = (*it)->parentState();
+                if (((parent == rootState())
+                     && (rootState()->childMode() == QState::ExclusiveStates))
+                    || ((parent->parentState() == rootState())
+                        && (rootState()->childMode() == QState::ParallelStates)
+                        && isInFinalState(rootState()))) {
+                    processing = false;
+                    stopProcessingReason = Finished;
+                    break;
+                }
             }
         }
     }
@@ -754,8 +761,7 @@ bool QStateMachinePrivate::isCompound(const QAbstractState *s) const
     // Don't treat the machine as compound if it's a sub-state of this machine
     if (isMachine && (group != rootState()))
         return false;
-    return (!isParallel(group) && !QStatePrivate::get(group)->childStates().isEmpty())
-        || isMachine;
+    return (!isParallel(group) && !QStatePrivate::get(group)->childStates().isEmpty());
 }
 
 bool QStateMachinePrivate::isAtomic(const QAbstractState *s) const
@@ -1286,16 +1292,26 @@ QAbstractTransition *QStateMachinePrivate::createInitialTransition() const
     class InitialTransition : public QAbstractTransition
     {
     public:
-        InitialTransition(QAbstractState *target)
+        InitialTransition(const QList<QAbstractState *> &targets)
             : QAbstractTransition()
-        { setTargetState(target); }
+        { setTargetStates(targets); }
     protected:
         virtual bool eventTest(QEvent *) { return true; }
         virtual void onTransition(QEvent *) {}
     };
 
-    Q_ASSERT(rootState() != 0);
-    return new InitialTransition(rootState()->initialState());
+    QState *root = rootState();
+    Q_ASSERT(root != 0);
+    QList<QAbstractState *> targets;
+    switch (root->childMode()) {
+    case QState::ExclusiveStates:
+        targets.append(root->initialState());
+        break;
+    case QState::ParallelStates:
+        targets = QStatePrivate::get(root)->childStates();
+        break;
+    }
+    return new InitialTransition(targets);
 }
 
 void QStateMachinePrivate::clearHistory()
@@ -2039,7 +2055,7 @@ void QStateMachine::start()
 {
     Q_D(QStateMachine);
 
-    if (initialState() == 0) {
+    if ((childMode() == QState::ExclusiveStates) && (initialState() == 0)) {
         qWarning("QStateMachine::start: No initial state set for machine. Refusing to start.");
         return;
     }

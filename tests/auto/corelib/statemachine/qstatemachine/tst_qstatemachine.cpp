@@ -1912,11 +1912,16 @@ void tst_QStateMachine::parallelRootState()
 
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
     QVERIFY(startedSpy.isValid());
-    QTest::ignoreMessage(QtWarningMsg, "QStateMachine::start: No initial state set for machine. Refusing to start.");
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QVERIFY(finishedSpy.isValid());
     machine.start();
-    QCoreApplication::processEvents();
-    QEXPECT_FAIL("", "parallel root state is not supported (QTBUG-22931)", Continue);
-    QCOMPARE(startedSpy.count(), 1);
+    QTRY_COMPARE(startedSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 4);
+    QVERIFY(machine.configuration().contains(s1));
+    QVERIFY(machine.configuration().contains(s1_f));
+    QVERIFY(machine.configuration().contains(s2));
+    QVERIFY(machine.configuration().contains(s2_f));
+    QTRY_COMPARE(finishedSpy.count(), 1);
 }
 
 void tst_QStateMachine::allSourceToTargetConfigurations()
