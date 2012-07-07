@@ -56,7 +56,7 @@ public:
     ~QFbWindow();
 
     virtual void setVisible(bool visible);
-    virtual bool isVisible() { return visibleFlag; }
+    virtual bool isVisible() { return mVisible; }
 
     virtual void raise();
     virtual void lower();
@@ -66,7 +66,7 @@ public:
     virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
     virtual Qt::WindowFlags windowFlags() const;
 
-    WId winId() const { return windowId; }
+    WId winId() const { return mWindowId; }
 
     void setBackingStore(QFbBackingStore *store) { mBackingStore = store; }
     QFbBackingStore *backingStore() const { return mBackingStore; }
@@ -79,11 +79,11 @@ protected:
     friend class QFbScreen;
 
     QFbBackingStore *mBackingStore;
-    QRect oldGeometry;
-    bool visibleFlag;
-    Qt::WindowFlags flags;
+    QRect mOldGeometry;
+    bool mVisible;
+    Qt::WindowFlags mWindowFlags;
 
-    WId windowId;
+    WId mWindowId;
 };
 
 QT_END_NAMESPACE

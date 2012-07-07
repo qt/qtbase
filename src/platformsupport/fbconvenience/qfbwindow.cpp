@@ -47,10 +47,10 @@
 QT_BEGIN_NAMESPACE
 
 QFbWindow::QFbWindow(QWindow *window)
-    : QPlatformWindow(window), mBackingStore(0), visibleFlag(false)
+    : QPlatformWindow(window), mBackingStore(0), mVisible(false)
 {
     static QAtomicInt winIdGenerator(1);
-    windowId = winIdGenerator.fetchAndAddRelaxed(1);
+    mWindowId = winIdGenerator.fetchAndAddRelaxed(1);
 
     platformScreen()->addWindow(this);
 }
@@ -68,7 +68,7 @@ QFbScreen *QFbWindow::platformScreen() const
 void QFbWindow::setGeometry(const QRect &rect)
 {
     // store previous geometry for screen update
-    oldGeometry = geometry();
+    mOldGeometry = geometry();
 
     platformScreen()->invalidateRectCache();
     //### QWindowSystemInterface::handleGeometryChange(window(), rect);
@@ -78,21 +78,21 @@ void QFbWindow::setGeometry(const QRect &rect)
 
 void QFbWindow::setVisible(bool visible)
 {
-    visibleFlag = visible;
+    mVisible = visible;
     platformScreen()->invalidateRectCache();
     platformScreen()->setDirty(geometry());
 }
 
-Qt::WindowFlags QFbWindow::setWindowFlags(Qt::WindowFlags type)
+Qt::WindowFlags QFbWindow::setWindowFlags(Qt::WindowFlags flags)
 {
-    flags = type;
+    mWindowFlags = flags;
     platformScreen()->invalidateRectCache();
-    return flags;
+    return mWindowFlags;
 }
 
 Qt::WindowFlags QFbWindow::windowFlags() const
 {
-    return flags;
+    return mWindowFlags;
 }
 
 void QFbWindow::raise()
@@ -114,11 +114,11 @@ void QFbWindow::repaint(const QRegion &region)
                       currentGeometry.top() + dirtyClient.top(),
                       dirtyClient.width(),
                       dirtyClient.height());
-    QRect oldGeometryLocal = oldGeometry;
-    oldGeometry = currentGeometry;
+    QRect mOldGeometryLocal = mOldGeometry;
+    mOldGeometry = currentGeometry;
     // If this is a move, redraw the previous location
-    if (oldGeometryLocal != currentGeometry)
-        platformScreen()->setDirty(oldGeometryLocal);
+    if (mOldGeometryLocal != currentGeometry)
+        platformScreen()->setDirty(mOldGeometryLocal);
     platformScreen()->setDirty(dirtyRegion);
 }
 

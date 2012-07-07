@@ -79,9 +79,9 @@ protected slots:
 protected:
     void initializeCompositor();
 
-    QList<QFbWindow *> windowStack;
-    QRegion repaintRegion;
-    QTimer redrawTimer;
+    QList<QFbWindow *> mWindowStack;
+    QRegion mRepaintRegion;
+    QTimer mRedrawTimer;
 
     QFbCursor *mCursor;
     QRect mGeometry;
@@ -91,14 +91,14 @@ protected:
     QImage *mScreenImage;
 
 private:
-    void invalidateRectCache() { isUpToDate = false; }
+    void invalidateRectCache() { mIsUpToDate = false; }
     void generateRects();
 
     QPainter *mCompositePainter;
-    QList<QPair<QRect, int> > cachedRects;
+    QList<QPair<QRect, int> > mCachedRects;
 
     friend class QFbWindow;
-    bool isUpToDate;
+    bool mIsUpToDate;
 };
 
 QT_END_NAMESPACE
