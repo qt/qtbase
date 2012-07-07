@@ -128,6 +128,7 @@ public:
     QState *rootState() const;
 
     void clearHistory();
+    QAbstractTransition *createInitialTransition() const;
 
     void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
     bool isPreempted(const QAbstractState *s, const QSet<QAbstractTransition*> &transitions) const;

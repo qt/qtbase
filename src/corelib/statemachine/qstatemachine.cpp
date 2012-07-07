@@ -1281,20 +1281,22 @@ void QStateMachinePrivate::initializeAnimations(QAbstractState *state, const QLi
 
 #endif // !QT_NO_ANIMATION
 
-namespace {
-
-class InitialTransition : public QAbstractTransition
+QAbstractTransition *QStateMachinePrivate::createInitialTransition() const
 {
-public:
-    InitialTransition(QAbstractState *target)
-        : QAbstractTransition()
-    { setTargetState(target); }
-protected:
-    virtual bool eventTest(QEvent *) { return true; }
-    virtual void onTransition(QEvent *) {}
-};
+    class InitialTransition : public QAbstractTransition
+    {
+    public:
+        InitialTransition(QAbstractState *target)
+            : QAbstractTransition()
+        { setTargetState(target); }
+    protected:
+        virtual bool eventTest(QEvent *) { return true; }
+        virtual void onTransition(QEvent *) {}
+    };
 
-} // namespace
+    Q_ASSERT(rootState() != 0);
+    return new InitialTransition(rootState()->initialState());
+}
 
 void QStateMachinePrivate::clearHistory()
 {
@@ -1310,8 +1312,6 @@ void QStateMachinePrivate::_q_start()
 {
     Q_Q(QStateMachine);
     Q_ASSERT(state == Starting);
-    Q_ASSERT(rootState() != 0);
-    QAbstractState *initial = rootState()->initialState();
     configuration.clear();
     qDeleteAll(internalEventQueue);
     internalEventQueue.clear();
@@ -1326,7 +1326,7 @@ void QStateMachinePrivate::_q_start()
     processingScheduled = true; // we call _q_process() below
 
     QList<QAbstractTransition*> transitions;
-    QAbstractTransition *initialTransition = new InitialTransition(initial);
+    QAbstractTransition *initialTransition = createInitialTransition();
     transitions.append(initialTransition);
 
     QEvent nullEvent(QEvent::None);
