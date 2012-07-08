@@ -528,7 +528,7 @@ QDebug operator<<(QDebug d, const QPointF &p)
 /*!
     \fn qreal QPointF::x() const
 
-    Returns the x-coordinate of this point.
+    Returns the x coordinate of this point.
 
     \sa setX(), rx()
 */
@@ -536,7 +536,7 @@ QDebug operator<<(QDebug d, const QPointF &p)
 /*!
     \fn qreal QPointF::y() const
 
-    Returns the y-coordinate of this point.
+    Returns the y coordinate of this point.
 
     \sa setY(), ry()
 */
