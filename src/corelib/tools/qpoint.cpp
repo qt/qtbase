@@ -295,6 +295,11 @@ QT_BEGIN_NAMESPACE
     \relates QPoint
 
     Returns a copy of the given \a point multiplied by the given \a factor.
+
+    Note that the result is rounded to the nearest integer as points
+    are held as integers. Use QPointF for floating point accuracy.
+
+    \sa QPoint::operator*=()
 */
 
 /*!
@@ -303,6 +308,11 @@ QT_BEGIN_NAMESPACE
     \relates QPoint
 
     Returns a copy of the given \a point multiplied by the given \a factor.
+
+    Note that the result is rounded to the nearest integer as points
+    are held as integers. Use QPointF for floating point accuracy.
+
+    \sa QPoint::operator*=()
 */
 
 /*!
@@ -311,6 +321,8 @@ QT_BEGIN_NAMESPACE
     \relates QPoint
 
     Returns a copy of the given \a point multiplied by the given \a factor.
+
+    \sa QPoint::operator*=()
 */
 
 /*!
