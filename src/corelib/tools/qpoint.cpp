@@ -91,9 +91,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QPoint::QPoint(int x, int y)
+    \fn QPoint::QPoint(int xpos, int ypos)
 
-    Constructs a point with the given coordinates (\a x, \a  y).
+    Constructs a point with the given coordinates (\a xpos, \a ypos).
 
     \sa setX(), setY()
 */
@@ -495,9 +495,9 @@ QDebug operator<<(QDebug d, const QPointF &p)
 */
 
 /*!
-    \fn QPointF::QPointF(qreal x, qreal y)
+    \fn QPointF::QPointF(qreal xpos, qreal ypos)
 
-    Constructs a point with the given coordinates (\a x, \a y).
+    Constructs a point with the given coordinates (\a xpos, \a ypos).
 
     \sa setX(), setY()
 */
