@@ -70,11 +70,11 @@ public:
     inline QPoint &operator+=(const QPoint &p);
     inline QPoint &operator-=(const QPoint &p);
 
-    inline QPoint &operator*=(float c);
-    inline QPoint &operator*=(double c);
-    inline QPoint &operator*=(int c);
+    inline QPoint &operator*=(float factor);
+    inline QPoint &operator*=(double factor);
+    inline QPoint &operator*=(int factor);
 
-    inline QPoint &operator/=(qreal c);
+    inline QPoint &operator/=(qreal divisor);
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QPoint &, const QPoint &);
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QPoint &, const QPoint &);
@@ -143,14 +143,14 @@ inline QPoint &QPoint::operator+=(const QPoint &p)
 inline QPoint &QPoint::operator-=(const QPoint &p)
 { xp-=p.xp; yp-=p.yp; return *this; }
 
-inline QPoint &QPoint::operator*=(float c)
-{ xp = qRound(xp*c); yp = qRound(yp*c); return *this; }
+inline QPoint &QPoint::operator*=(float factor)
+{ xp = qRound(xp*factor); yp = qRound(yp*factor); return *this; }
 
-inline QPoint &QPoint::operator*=(double c)
-{ xp = qRound(xp*c); yp = qRound(yp*c); return *this; }
+inline QPoint &QPoint::operator*=(double factor)
+{ xp = qRound(xp*factor); yp = qRound(yp*factor); return *this; }
 
-inline QPoint &QPoint::operator*=(int c)
-{ xp = xp*c; yp = yp*c; return *this; }
+inline QPoint &QPoint::operator*=(int factor)
+{ xp = xp*factor; yp = yp*factor; return *this; }
 
 Q_DECL_CONSTEXPR inline bool operator==(const QPoint &p1, const QPoint &p2)
 { return p1.xp == p2.xp && p1.yp == p2.yp; }
@@ -164,23 +164,23 @@ Q_DECL_CONSTEXPR inline const QPoint operator+(const QPoint &p1, const QPoint &p
 Q_DECL_CONSTEXPR inline const QPoint operator-(const QPoint &p1, const QPoint &p2)
 { return QPoint(p1.xp-p2.xp, p1.yp-p2.yp); }
 
-Q_DECL_CONSTEXPR inline const QPoint operator*(const QPoint &p, float c)
-{ return QPoint(qRound(p.xp*c), qRound(p.yp*c)); }
+Q_DECL_CONSTEXPR inline const QPoint operator*(const QPoint &p, float factor)
+{ return QPoint(qRound(p.xp*factor), qRound(p.yp*factor)); }
 
-Q_DECL_CONSTEXPR inline const QPoint operator*(const QPoint &p, double c)
-{ return QPoint(qRound(p.xp*c), qRound(p.yp*c)); }
+Q_DECL_CONSTEXPR inline const QPoint operator*(const QPoint &p, double factor)
+{ return QPoint(qRound(p.xp*factor), qRound(p.yp*factor)); }
 
-Q_DECL_CONSTEXPR inline const QPoint operator*(const QPoint &p, int c)
-{ return QPoint(p.xp*c, p.yp*c); }
+Q_DECL_CONSTEXPR inline const QPoint operator*(const QPoint &p, int factor)
+{ return QPoint(p.xp*factor, p.yp*factor); }
 
-Q_DECL_CONSTEXPR inline const QPoint operator*(float c, const QPoint &p)
-{ return QPoint(qRound(p.xp*c), qRound(p.yp*c)); }
+Q_DECL_CONSTEXPR inline const QPoint operator*(float factor, const QPoint &p)
+{ return QPoint(qRound(p.xp*factor), qRound(p.yp*factor)); }
 
-Q_DECL_CONSTEXPR inline const QPoint operator*(double c, const QPoint &p)
-{ return QPoint(qRound(p.xp*c), qRound(p.yp*c)); }
+Q_DECL_CONSTEXPR inline const QPoint operator*(double factor, const QPoint &p)
+{ return QPoint(qRound(p.xp*factor), qRound(p.yp*factor)); }
 
-Q_DECL_CONSTEXPR inline const QPoint operator*(int c, const QPoint &p)
-{ return QPoint(p.xp*c, p.yp*c); }
+Q_DECL_CONSTEXPR inline const QPoint operator*(int factor, const QPoint &p)
+{ return QPoint(p.xp*factor, p.yp*factor); }
 
 Q_DECL_CONSTEXPR inline const QPoint operator-(const QPoint &p)
 { return QPoint(-p.xp, -p.yp); }
@@ -360,16 +360,16 @@ Q_DECL_CONSTEXPR inline const QPointF operator-(const QPointF &p)
     return QPointF(-p.xp, -p.yp);
 }
 
-inline QPointF &QPointF::operator/=(qreal c)
+inline QPointF &QPointF::operator/=(qreal divisor)
 {
-    xp/=c;
-    yp/=c;
+    xp/=divisor;
+    yp/=divisor;
     return *this;
 }
 
-Q_DECL_CONSTEXPR inline const QPointF operator/(const QPointF &p, qreal c)
+Q_DECL_CONSTEXPR inline const QPointF operator/(const QPointF &p, qreal divisor)
 {
-    return QPointF(p.xp/c, p.yp/c);
+    return QPointF(p.xp/divisor, p.yp/divisor);
 }
 
 Q_DECL_CONSTEXPR inline QPoint QPointF::toPoint() const
