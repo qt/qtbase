@@ -1,0 +1,67 @@
+load(qt_build_config)
+
+TEMPLATE = lib
+CONFIG += plugin
+
+isEmpty(CXX_MODULE) {
+    CXX_MODULE = $$TARGET
+    TARGET = declarative_$${TARGET}
+}
+isEmpty(TARGETPATH): TARGETPATH = $$eval(QT.$${CXX_MODULE}.name)
+DESTDIR = $$eval(QT.$${CXX_MODULE}.imports)/$$TARGETPATH
+isEmpty(VERSION): VERSION = $$eval(QT.$${CXX_MODULE}.VERSION_MAJOR).$$eval(QT.$${CXX_MODULE}.VERSION_MINOR)
+
+QMLDIRFILE = $$_PRO_FILE_PWD_/qmldir
+fq_qml_files = $$QMLDIRFILE
+
+QMLTYPEFILE = $$_PRO_FILE_PWD_/plugins.qmltypes
+exists($$QMLTYPEFILE): fq_qml_files += $$QMLTYPEFILE
+
+for(qmlf, QML_FILES): fq_qml_files += $$absolute_path($$qmlf, $$_PRO_FILE_PWD_)
+
+# plugins.qmltypes is used by Qt Creator for syntax highlighting and the QML code model.  It needs
+# to be regenerated whenever the QML elements exported by the plugin change.  This cannot be done
+# automatically at compile time because qmlplugindump does not support some QML features and it may
+# not be possible when cross-compiling.
+#
+# To regenerate run 'make qmltypes' which will update the plugins.qmltypes file in the source
+# directory.  Then review and commit the changes made to plugins.qmltypes.
+#
+!cross_compile {
+    load(resolve_target)
+    qtPrepareTool(QMLPLUGINDUMP, qmlplugindump)
+    qmltypes.target = qmltypes
+    qmltypes.commands = $$QMLPLUGINDUMP $$replace(TARGETPATH, /, .) $$VERSION $$QMAKE_RESOLVED_TARGET > $$QMLTYPEFILE
+    qmltypes.depends = $$QMAKE_RESOLVED_TARGET
+    QMAKE_EXTRA_TARGETS += qmltypes
+}
+
+# Only for Qt Creator's project view
+OTHER_FILES += $$fq_qml_files
+
+# These bizarre rules copy the files to the build directory
+
+qmlfiles2build.input = fq_qml_files
+qmlfiles2build.output = $$DESTDIR/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+!contains(TEMPLATE, vc.*): qmlfiles2build.variable_out = PRE_TARGETDEPS
+qmlfiles2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+qmlfiles2build.name = COPY ${QMAKE_FILE_IN}
+qmlfiles2build.CONFIG = no_link no_clean
+
+QMAKE_EXTRA_COMPILERS += qmlfiles2build
+
+# Install rules
+
+target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
+
+qmldir.files = $$fq_qml_files
+qmldir.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
+
+INSTALLS += target qmldir
+
+# Some final setup
+
+TARGET = $$qtLibraryTarget($$TARGET)
+contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
+
+load(qt_targets)
