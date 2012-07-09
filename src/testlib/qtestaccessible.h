@@ -53,6 +53,7 @@
     QVERIFY(QTestAccessibility::verifyEvent(event))
 
 #include <QtCore/qlist.h>
+#include <QtCore/qdebug.h>
 #include <QtGui/qaccessible.h>
 #include <QtGui/qguiapplication.h>
 
@@ -137,11 +138,17 @@ public:
     static EventList events() { return eventList(); }
     static bool verifyEvent(QAccessibleEvent *ev)
     {
-        if (eventList().isEmpty())
+        for (int i = 0; eventList().isEmpty() && i < 5; ++i)
+            QTest::qWait(50);
+        if (eventList().isEmpty()) {
+            qWarning("%s: Timeout waiting for accessibility event.", Q_FUNC_INFO);
             return false;
-        QAccessibleEvent *first = eventList().takeFirst();
-        bool res = *first == *ev;
-        delete first;
+        }
+        const bool res = *eventList().first() == *ev;
+        if (!res)
+            qWarning("%s: %s", Q_FUNC_INFO,
+                     qPrintable(msgAccessibilityEventListMismatch(eventList(), ev)));
+        delete eventList().takeFirst();
         return res;
     }
     static bool containsEvent(QAccessibleEvent *event) {
@@ -229,6 +236,22 @@ private:
         static QTestAccessibility *ta = 0;
         return ta;
     }
+
+private:
+    static QString msgAccessibilityEventListMismatch(const EventList &haystack,
+                                                     const QAccessibleEvent *needle)
+    {
+        QString rc;
+        QDebug str = QDebug(&rc).nospace();
+        str << "Event " << needle->object() <<  ", type: "
+           << needle->type() << ", child: " << needle->child()
+           <<  " not found at head of event list of size " << haystack.size() << " :";
+        foreach (const QAccessibleEvent *e, haystack)
+            str << ' ' << e->object() << ", type: "
+                << e->type() << ", child: " << e->child();
+        return rc;
+    }
+
 };
 
 #endif
