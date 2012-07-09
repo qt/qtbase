@@ -545,7 +545,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
     glyphRun.bidiLevel = 0;
     glyphRun.glyphOffsets = &glyphOffset;
 
-    QFixed x = margin - metrics.x.round() + subPixelPosition;
+    QFixed x = margin - metrics.x.floor() + subPixelPosition;
     QFixed y = margin - metrics.y.floor();
 
     DWRITE_MATRIX transform;
