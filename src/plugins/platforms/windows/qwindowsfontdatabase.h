@@ -101,6 +101,7 @@ public:
     static QFont LOGFONT_to_QFont(const LOGFONT& lf, int verticalDPI = 0);
 
     static qreal fontSmoothingGamma();
+    static LOGFONT fontDefToLOGFONT(const QFontDef &fontDef);
 
 private:
     void populate(const QString &family = QString());

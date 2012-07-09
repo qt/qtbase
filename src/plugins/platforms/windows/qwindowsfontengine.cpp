@@ -50,6 +50,7 @@
 #include "qwindowscontext.h"
 #include "qwindowsfontdatabase.h"
 #include "qtwindows_additional.h"
+#include "qwindowsfontenginedirectwrite.h"
 
 #include <QtGui/private/qtextengine_p.h> // glyph_metrics_t
 #include <QtGui/private/qguiapplication_p.h>
@@ -72,6 +73,10 @@
 
 #ifdef Q_OS_WINCE
 #  include "qplatformfunctions_wince.h"
+#endif
+
+#if !defined(QT_NO_DIRECTWRITE)
+#  include <dwrite.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1318,10 +1323,65 @@ void QWindowsMultiFontEngine::loadEngine(int at)
     Q_ASSERT(at < engines.size());
     Q_ASSERT(engines.at(at) == 0);
 
+    QFontEngine *fontEngine = engines.at(0);
+    QSharedPointer<QWindowsFontEngineData> data;
+    LOGFONT lf;
+
+#ifndef QT_NO_DIRECTWRITE
+    if (fontEngine->type() == QFontEngine::DirectWrite) {
+        QWindowsFontEngineDirectWrite *fe = static_cast<QWindowsFontEngineDirectWrite *>(fontEngine);
+        lf = QWindowsFontDatabase::fontDefToLOGFONT(fe->fontDef);
+
+        data = fe->fontEngineData();
+    } else
+#endif
+    {
+        QWindowsFontEngine *fe = static_cast<QWindowsFontEngine*>(fontEngine);
+        lf = fe->logFont();
+
+        data = fe->fontEngineData();
+    }
+
     const QString fam = fallbacks.at(at-1);
-    QWindowsFontEngine *fe = static_cast<QWindowsFontEngine*>(engines.at(0));
-    LOGFONT lf = fe->logFont();
     memcpy(lf.lfFaceName, fam.utf16(), sizeof(wchar_t) * qMin(fam.length() + 1, 32));  // 32 = Windows hard-coded
+
+#ifndef QT_NO_DIRECTWRITE
+    if (fontEngine->type() == QFontEngine::DirectWrite) {
+        const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(QString::fromWCharArray(lf.lfFaceName));
+        memcpy(lf.lfFaceName, nameSubstitute.utf16(),
+               sizeof(wchar_t) * qMin(nameSubstitute.length() + 1, LF_FACESIZE));
+
+        IDWriteFont *directWriteFont = 0;
+        HRESULT hr = data->directWriteGdiInterop->CreateFontFromLOGFONT(&lf, &directWriteFont);
+        if (FAILED(hr)) {
+            qErrnoWarning("%s: CreateFontFromLOGFONT failed", __FUNCTION__);
+        } else {
+            IDWriteFontFace *directWriteFontFace = NULL;
+            HRESULT hr = directWriteFont->CreateFontFace(&directWriteFontFace);
+            if (SUCCEEDED(hr)) {
+                QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
+                                                                                        fontEngine->fontDef.pixelSize,
+                                                                                        data);
+                fedw->setObjectName(QStringLiteral("QWindowsFontEngineDirectWrite_") + fontEngine->fontDef.family);
+
+                fedw->fontDef = fontDef;
+                fedw->ref.ref();
+                engines[at] = fedw;
+
+                if (QWindowsContext::verboseFonts)
+                    qDebug("%s %d %s", __FUNCTION__, at, qPrintable(fam));
+
+                return;
+            } else {
+                qErrnoWarning("%s: CreateFontFace failed", __FUNCTION__);
+            }
+
+        }
+    }
+#endif
+
+    // Get here if original font is not DirectWrite or DirectWrite creation failed for some
+    // reason
     HFONT hfont = CreateFontIndirect(&lf);
 
     bool stockFont = false;
@@ -1329,7 +1389,7 @@ void QWindowsMultiFontEngine::loadEngine(int at)
         hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
         stockFont = true;
     }
-    engines[at] = new QWindowsFontEngine(fam, hfont, stockFont, lf, fe->fontEngineData());
+    engines[at] = new QWindowsFontEngine(fam, hfont, stockFont, lf, data);
     engines[at]->ref.ref();
     engines[at]->fontDef = fontDef;
     if (QWindowsContext::verboseFonts)

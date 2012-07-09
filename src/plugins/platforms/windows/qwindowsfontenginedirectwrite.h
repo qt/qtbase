@@ -99,6 +99,8 @@ public:
     bool canRender(const QChar *string, int len);
     Type type() const;
 
+    const QSharedPointer<QWindowsFontEngineData> &fontEngineData() const { return m_fontEngineData; }
+
     static QString fontNameSubstitute(const QString &familyName);
 
 private:

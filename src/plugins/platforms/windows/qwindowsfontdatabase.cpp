@@ -1594,6 +1594,100 @@ static const char *kr_tryFonts[] = {
 
 static const char **tryFonts = 0;
 
+LOGFONT QWindowsFontDatabase::fontDefToLOGFONT(const QFontDef &request)
+{
+    LOGFONT lf;
+    memset(&lf, 0, sizeof(LOGFONT));
+
+    lf.lfHeight = -qRound(request.pixelSize);
+    lf.lfWidth                = 0;
+    lf.lfEscapement        = 0;
+    lf.lfOrientation        = 0;
+    if (request.weight == 50)
+        lf.lfWeight = FW_DONTCARE;
+    else
+        lf.lfWeight = (request.weight*900)/99;
+    lf.lfItalic         = request.style != QFont::StyleNormal;
+    lf.lfCharSet        = DEFAULT_CHARSET;
+
+    int strat = OUT_DEFAULT_PRECIS;
+    if (request.styleStrategy & QFont::PreferBitmap) {
+        strat = OUT_RASTER_PRECIS;
+#ifndef Q_OS_WINCE
+    } else if (request.styleStrategy & QFont::PreferDevice) {
+        strat = OUT_DEVICE_PRECIS;
+    } else if (request.styleStrategy & QFont::PreferOutline) {
+        strat = OUT_OUTLINE_PRECIS;
+    } else if (request.styleStrategy & QFont::ForceOutline) {
+        strat = OUT_TT_ONLY_PRECIS;
+#endif
+    }
+
+    lf.lfOutPrecision   = strat;
+
+    int qual = DEFAULT_QUALITY;
+
+    if (request.styleStrategy & QFont::PreferMatch)
+        qual = DRAFT_QUALITY;
+#ifndef Q_OS_WINCE
+    else if (request.styleStrategy & QFont::PreferQuality)
+        qual = PROOF_QUALITY;
+#endif
+
+    if (request.styleStrategy & QFont::PreferAntialias) {
+        if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP) {
+            qual = CLEARTYPE_QUALITY;
+        } else {
+            qual = ANTIALIASED_QUALITY;
+        }
+    } else if (request.styleStrategy & QFont::NoAntialias) {
+        qual = NONANTIALIASED_QUALITY;
+    }
+
+    lf.lfQuality        = qual;
+
+    lf.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
+
+    int hint = FF_DONTCARE;
+    switch (request.styleHint) {
+        case QFont::Helvetica:
+            hint = FF_SWISS;
+            break;
+        case QFont::Times:
+            hint = FF_ROMAN;
+            break;
+        case QFont::Courier:
+            hint = FF_MODERN;
+            break;
+        case QFont::OldEnglish:
+            hint = FF_DECORATIVE;
+            break;
+        case QFont::System:
+            hint = FF_MODERN;
+            break;
+        default:
+            break;
+    }
+
+    lf.lfPitchAndFamily = DEFAULT_PITCH | hint;
+
+    QString fam = request.family;
+
+    if (fam.isEmpty())
+        fam = QStringLiteral("MS Sans Serif");
+
+    if ((fam == QStringLiteral("MS Sans Serif"))
+        && (request.style == QFont::StyleItalic || (-lf.lfHeight > 18 && -lf.lfHeight != 24))) {
+        fam = QStringLiteral("Arial"); // MS Sans Serif has bearing problems in italic, and does not scale
+    }
+    if (fam == QStringLiteral("Courier") && !(request.styleStrategy & QFont::PreferBitmap))
+        fam = QStringLiteral("Courier New");
+
+    memcpy(lf.lfFaceName, fam.utf16(), sizeof(wchar_t) * qMin(fam.length() + 1, 32));  // 32 = Windows hard-coded
+
+    return lf;
+}
+
 QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &request,
                                                 HDC fontHdc, int dpi, bool rawMode,
                                                 const QStringList &family_list,
@@ -1645,91 +1739,8 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
         }
         stockFont = true;
     } else {
-        int hint = FF_DONTCARE;
-        switch (request.styleHint) {
-            case QFont::Helvetica:
-                hint = FF_SWISS;
-                break;
-            case QFont::Times:
-                hint = FF_ROMAN;
-                break;
-            case QFont::Courier:
-                hint = FF_MODERN;
-                break;
-            case QFont::OldEnglish:
-                hint = FF_DECORATIVE;
-                break;
-            case QFont::System:
-                hint = FF_MODERN;
-                break;
-            default:
-                break;
-        }
-
-        lf.lfHeight = -qRound(request.pixelSize);
-        lf.lfWidth                = 0;
-        lf.lfEscapement        = 0;
-        lf.lfOrientation        = 0;
-        if (request.weight == 50)
-            lf.lfWeight = FW_DONTCARE;
-        else
-            lf.lfWeight = (request.weight*900)/99;
-        lf.lfItalic         = request.style != QFont::StyleNormal;
-        lf.lfCharSet        = DEFAULT_CHARSET;
-
-        int strat = OUT_DEFAULT_PRECIS;
-        if (request.styleStrategy & QFont::PreferBitmap) {
-            strat = OUT_RASTER_PRECIS;
-#ifndef Q_OS_WINCE
-        } else if (request.styleStrategy & QFont::PreferDevice) {
-            strat = OUT_DEVICE_PRECIS;
-        } else if (request.styleStrategy & QFont::PreferOutline) {
-            strat = OUT_OUTLINE_PRECIS;
-        } else if (request.styleStrategy & QFont::ForceOutline) {
-            strat = OUT_TT_ONLY_PRECIS;
-#endif
-        }
-
-        lf.lfOutPrecision   = strat;
-
-        int qual = DEFAULT_QUALITY;
-
-        if (request.styleStrategy & QFont::PreferMatch)
-            qual = DRAFT_QUALITY;
-#ifndef Q_OS_WINCE
-        else if (request.styleStrategy & QFont::PreferQuality)
-            qual = PROOF_QUALITY;
-#endif
-
-        if (request.styleStrategy & QFont::PreferAntialias) {
-            if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP) {
-                qual = CLEARTYPE_QUALITY;
-                preferClearTypeAA = true;
-            } else {
-                qual = ANTIALIASED_QUALITY;
-            }
-        } else if (request.styleStrategy & QFont::NoAntialias) {
-            qual = NONANTIALIASED_QUALITY;
-        }
-
-        lf.lfQuality        = qual;
-
-        lf.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
-        lf.lfPitchAndFamily = DEFAULT_PITCH | hint;
-
-        QString fam = request.family;
-
-        if(fam.isEmpty())
-            fam = QStringLiteral("MS Sans Serif");
-
-        if ((fam == QStringLiteral("MS Sans Serif"))
-            && (request.style == QFont::StyleItalic || (-lf.lfHeight > 18 && -lf.lfHeight != 24))) {
-            fam = QStringLiteral("Arial"); // MS Sans Serif has bearing problems in italic, and does not scale
-        }
-        if (fam == QStringLiteral("Courier") && !(request.styleStrategy & QFont::PreferBitmap))
-            fam = QStringLiteral("Courier New");
-
-        memcpy(lf.lfFaceName, fam.utf16(), sizeof(wchar_t) * qMin(fam.length() + 1, 32));  // 32 = Windows hard-coded
+        lf = fontDefToLOGFONT(request);
+        preferClearTypeAA = lf.lfQuality == CLEARTYPE_QUALITY;
 
         hfont = CreateFontIndirect(&lf);
         if (!hfont)
