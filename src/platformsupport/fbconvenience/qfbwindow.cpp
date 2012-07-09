@@ -47,7 +47,7 @@
 QT_BEGIN_NAMESPACE
 
 QFbWindow::QFbWindow(QWindow *window)
-    : QPlatformWindow(window), mBackingStore(0), mVisible(false)
+    : QPlatformWindow(window), mBackingStore(0)
 {
     static QAtomicInt winIdGenerator(1);
     mWindowId = winIdGenerator.fetchAndAddRelaxed(1);
@@ -74,13 +74,6 @@ void QFbWindow::setGeometry(const QRect &rect)
     //### QWindowSystemInterface::handleGeometryChange(window(), rect);
 
     QPlatformWindow::setGeometry(rect);
-}
-
-void QFbWindow::setVisible(bool visible)
-{
-    mVisible = visible;
-    platformScreen()->invalidateRectCache();
-    platformScreen()->setDirty(geometry());
 }
 
 Qt::WindowFlags QFbWindow::setWindowFlags(Qt::WindowFlags flags)

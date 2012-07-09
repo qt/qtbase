@@ -201,7 +201,7 @@ QRegion QFbScreen::doRedraw()
                 }
 
                 for (int layerIndex = layer; layerIndex != -1; layerIndex--) {
-                    if (!mWindowStack[layerIndex]->isVisible())
+                    if (!mWindowStack[layerIndex]->window()->isVisible())
                         continue;
                     // if (mWindowStack[layerIndex]->isMinimized())
                     //     continue;

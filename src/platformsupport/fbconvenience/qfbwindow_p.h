@@ -55,9 +55,6 @@ public:
     QFbWindow(QWindow *window);
     ~QFbWindow();
 
-    virtual void setVisible(bool visible);
-    virtual bool isVisible() { return mVisible; }
-
     virtual void raise();
     virtual void lower();
 
@@ -80,7 +77,6 @@ protected:
 
     QFbBackingStore *mBackingStore;
     QRect mOldGeometry;
-    bool mVisible;
     Qt::WindowFlags mWindowFlags;
 
     WId mWindowId;
