@@ -217,8 +217,7 @@ QList<QJsonObject> QFactoryLoader::metaData() const
         if (object.value(QLatin1String("IID")) != QLatin1String(d->iid.constData(), d->iid.size()))
             continue;
 
-        QJsonObject meta = object.value(QLatin1String("MetaData")).toObject();
-            metaData.append(meta);
+        metaData.append(object);
     }
     return metaData;
 }
@@ -246,8 +245,16 @@ QObject *QFactoryLoader::instance(int index) const
 
     index -= d->libraryList.size();
     QVector<QStaticPlugin> staticPlugins = QLibraryPrivate::staticPlugins();
-    if (index < staticPlugins.size())
-        return staticPlugins.at(index).instance();
+    for (int i = 0; i < staticPlugins.count(); ++i) {
+        const char *rawMetaData = staticPlugins.at(i).metaData();
+        QJsonObject object = QLibraryPrivate::fromRawMetaData(rawMetaData).object();
+        if (object.value(QLatin1String("IID")) != QLatin1String(d->iid.constData(), d->iid.size()))
+            continue;
+
+        if (index == 0)
+            return staticPlugins.at(i).instance();
+        --index;
+    }
 
     return 0;
 }
