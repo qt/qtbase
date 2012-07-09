@@ -9,7 +9,6 @@
 load(qt_build_config) # loads qmodule.pri if hasn't been loaded already
 
 isEmpty(MODULE):MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
-isEmpty(TARGET):error("You must set TARGET before include()'ing $${_FILE_}")
 isEmpty(VERSION):VERSION = $$QT_VERSION
 
 # Compile as shared/DLL or static according to the option given to configure

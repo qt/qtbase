@@ -15,7 +15,6 @@ INSTALLS += target
 # qtPrepareTool() to work with the non-installed build.
 !build_pass:!exists($$[QT_INSTALL_PREFIX]/.qmake.cache) {
 
-    isEmpty(TARGET):TARGET = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
     isEmpty(MODULE):MODULE = $$TARGET
 
     MODULE_DEPENDS = $$replace(QT, -private$, )
