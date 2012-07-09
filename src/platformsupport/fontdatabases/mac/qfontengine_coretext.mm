@@ -55,7 +55,7 @@ static float SYNTHETIC_ITALIC_SKEW = tanf(14 * acosf(0) / 90);
 static void loadAdvancesForGlyphs(CTFontRef ctfont,
                                   QVarLengthArray<CGGlyph> &cgGlyphs,
                                   QGlyphLayout *glyphs, int len,
-                                  QTextEngine::ShaperFlags flags,
+                                  QFontEngine::ShaperFlags flags,
                                   const QFontDef &fontDef)
 {
     Q_UNUSED(flags);
@@ -188,7 +188,7 @@ void QCoreTextFontEngine::init()
 }
 
 bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
-                                       int *nglyphs, QTextEngine::ShaperFlags flags) const
+                                       int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
     QCFType<CFStringRef> cfstring;
 
@@ -211,7 +211,7 @@ bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *
     }
 
     *nglyphs = glyph_pos;
-    if (flags & QTextEngine::GlyphIndicesOnly)
+    if (flags & GlyphIndicesOnly)
         return true;
 
     QVarLengthArray<CGSize> advances(glyph_pos);
@@ -536,7 +536,7 @@ QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPo
     return im;
 }
 
-void QCoreTextFontEngine::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const
+void QCoreTextFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags flags) const
 {
     int i, numGlyphs = glyphs->numGlyphs;
     QVarLengthArray<CGGlyph> cgGlyphs(numGlyphs);

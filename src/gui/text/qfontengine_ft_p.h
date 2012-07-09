@@ -226,7 +226,7 @@ private:
     virtual QFixed lineThickness() const;
     virtual QFixed underlinePosition() const;
 
-    void doKerning(QGlyphLayout *, QTextEngine::ShaperFlags) const;
+    void doKerning(QGlyphLayout *, ShaperFlags) const;
 
     inline virtual Type type() const
     { return QFontEngine::Freetype; }
@@ -242,14 +242,13 @@ private:
     virtual void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs,
                           QPainterPath *path, QTextItem::RenderFlags flags);
 
-    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
-                      QTextEngine::ShaperFlags flags) const;
+    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
 
     virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
     virtual glyph_metrics_t boundingBox(glyph_t glyph);
     virtual glyph_metrics_t boundingBox(glyph_t glyph, const QTransform &matrix);
 
-    virtual void recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const;
+    virtual void recalcAdvances(QGlyphLayout *glyphs, ShaperFlags flags) const;
     virtual QImage alphaMapForGlyph(glyph_t g) { return alphaMapForGlyph(g, 0); }
     virtual QImage alphaMapForGlyph(glyph_t, QFixed);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);

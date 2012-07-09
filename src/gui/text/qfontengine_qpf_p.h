@@ -170,8 +170,8 @@ public:
     FaceId faceId() const { return face_id; }
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
 
-    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const;
-    void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const;
+    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
+    void recalcAdvances(QGlyphLayout *, ShaperFlags) const;
 
     void draw(QPaintEngine *p, qreal x, qreal y, const QTextItemInt &si);
     void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags);
@@ -207,7 +207,7 @@ public:
 #if !defined(QT_NO_FREETYPE)
     FT_Face lockFace() const;
     void unlockFace() const;
-    void doKerning(QGlyphLayout *g, QTextEngine::ShaperFlags flags) const;
+    void doKerning(QGlyphLayout *g, ShaperFlags flags) const;
     virtual HB_Error getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints);
     virtual QFixed emSquareSize() const;
 #endif

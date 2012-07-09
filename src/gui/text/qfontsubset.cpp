@@ -201,7 +201,7 @@ QVector<int> QFontSubset::getReverseMap() const
     for (uint uc = 0; uc < 0x10000; ++uc) {
         QChar ch(uc);
         int nglyphs = 10;
-        fontEngine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QTextEngine::GlyphIndicesOnly);
+        fontEngine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly);
         int idx = glyph_indices.indexOf(glyphs.glyphs[0]);
         if (idx >= 0 && !reverseMap.at(idx))
             reverseMap[idx] = uc;

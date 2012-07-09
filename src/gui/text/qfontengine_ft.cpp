@@ -789,7 +789,7 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
     if (set && set->outline_drawing)
         load_flags = FT_LOAD_NO_BITMAP;
 
-    if (default_hint_style == HintNone || (flags & HB_ShaperFlag_UseDesignMetrics) || (set && set->outline_drawing))
+    if (default_hint_style == HintNone || (flags & DesignMetrics) || (set && set->outline_drawing))
         load_flags |= FT_LOAD_NO_HINTING;
     else
         load_flags |= load_target;
@@ -1249,7 +1249,7 @@ qreal QFontEngineFT::minRightBearing() const
         const QChar *ch = (const QChar *)(const void*)char_table;
         QGlyphLayoutArray<char_table_entries> glyphs;
         int ng = char_table_entries;
-        stringToCMap(ch, char_table_entries, &glyphs, &ng, QTextEngine::GlyphIndicesOnly);
+        stringToCMap(ch, char_table_entries, &glyphs, &ng, GlyphIndicesOnly);
         while (--ng) {
             if (glyphs.glyphs[ng]) {
                 glyph_metrics_t gi = const_cast<QFontEngineFT *>(this)->boundingBox(glyphs.glyphs[ng]);
@@ -1271,7 +1271,7 @@ QFixed QFontEngineFT::underlinePosition() const
     return underline_position;
 }
 
-void QFontEngineFT::doKerning(QGlyphLayout *g, QTextEngine::ShaperFlags flags) const
+void QFontEngineFT::doKerning(QGlyphLayout *g, QFontEngine::ShaperFlags flags) const
 {
     if (!kerning_pairs_loaded) {
         kerning_pairs_loaded = true;
@@ -1467,14 +1467,14 @@ void QFontEngineFT::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int
 }
 
 bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
-                                 QTextEngine::ShaperFlags flags) const
+                                 QFontEngine::ShaperFlags flags) const
 {
     if (*nglyphs < len) {
         *nglyphs = len;
         return false;
     }
 
-    bool mirrored = flags & QTextEngine::RightToLeft;
+    bool mirrored = flags & QFontEngine::RightToLeft;
     int glyph_pos = 0;
     if (freetype->symbol_map) {
         FT_Face face = freetype->face;
@@ -1533,20 +1533,18 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
     *nglyphs = glyph_pos;
     glyphs->numGlyphs = glyph_pos;
 
-    if (flags & QTextEngine::GlyphIndicesOnly)
-        return true;
-
-    recalcAdvances(glyphs, flags);
+    if (!(flags & GlyphIndicesOnly))
+        recalcAdvances(glyphs, flags);
 
     return true;
 }
 
-void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const
+void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags flags) const
 {
     FT_Face face = 0;
     bool design = (default_hint_style == HintNone ||
                    default_hint_style == HintLight ||
-                   (flags & HB_ShaperFlag_UseDesignMetrics)) && FT_IS_SCALABLE(freetype->face);
+                   (flags & DesignMetrics)) && FT_IS_SCALABLE(freetype->face);
     for (int i = 0; i < glyphs->numGlyphs; i++) {
         Glyph *g = cacheEnabled ? defaultGlyphSet.getGlyph(glyphs->glyphs[i]) : 0;
         // Since we are passing Format_None to loadGlyph, use same default format logic as loadGlyph

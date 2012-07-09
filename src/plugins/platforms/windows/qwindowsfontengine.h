@@ -89,8 +89,8 @@ public:
     virtual int synthesized() const;
     virtual QFixed emSquareSize() const;
 
-    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const;
-    virtual void recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags) const;
+    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
+    virtual void recalcAdvances(QGlyphLayout *glyphs, ShaperFlags) const;
 
     virtual void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags);
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,

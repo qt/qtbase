@@ -496,7 +496,7 @@ bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *g
 
     QGlyphLayout glyphs;
     glyphs.glyphs = glyphIndexes;
-    return d->fontEngine->stringToCMap(chars, numChars, &glyphs, numGlyphs, QTextEngine::GlyphIndicesOnly);
+    return d->fontEngine->stringToCMap(chars, numChars, &glyphs, numGlyphs, QFontEngine::GlyphIndicesOnly);
 }
 
 /*!

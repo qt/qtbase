@@ -72,7 +72,6 @@ QT_BEGIN_NAMESPACE
 class QChar;
 class QPainterPath;
 
-class QTextEngine;
 struct QGlyphLayout;
 
 #define MAKE_TAG(ch1, ch2, ch3, ch4) (\
@@ -116,6 +115,13 @@ public:
         Format_A32
     };
 
+    enum ShaperFlag {
+        RightToLeft = 0x0001,
+        DesignMetrics = 0x0002,
+        GlyphIndicesOnly = 0x0004
+    };
+    Q_DECLARE_FLAGS(ShaperFlags, ShaperFlag)
+
     QFontEngine();
     virtual ~QFontEngine();
 
@@ -158,14 +164,14 @@ public:
     virtual QFixed emSquareSize() const { return ascent(); }
 
     /* returns 0 as glyph index for non existent glyphs */
-    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const = 0;
+    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const = 0;
 
     /**
      * This is a callback from harfbuzz. The font engine uses the font-system in use to find out the
      * advances of each glyph and set it on the layout.
      */
-    virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const {}
-    virtual void doKerning(QGlyphLayout *, QTextEngine::ShaperFlags) const;
+    virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const {}
+    virtual void doKerning(QGlyphLayout *, ShaperFlags) const;
 
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                                  QPainterPath *path, QTextItem::RenderFlags flags);
@@ -301,6 +307,8 @@ private:
     mutable QLinkedList<GlyphCacheEntry> m_glyphCaches;
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QFontEngine::ShaperFlags)
+
 inline bool operator ==(const QFontEngine::FaceId &f1, const QFontEngine::FaceId &f2)
 {
     return (f1.index == f2.index) && (f1.encoding == f2.encoding) && (f1.filename == f2.filename);
@@ -322,8 +330,8 @@ public:
     QFontEngineBox(int size);
     ~QFontEngineBox();
 
-    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const;
-    virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const;
+    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
+    virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const;
 
     void draw(QPaintEngine *p, qreal x, qreal y, const QTextItemInt &si);
     virtual void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags);
@@ -359,14 +367,13 @@ public:
     explicit QFontEngineMulti(int engineCount);
     ~QFontEngineMulti();
 
-    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
-                      QTextEngine::ShaperFlags flags) const;
+    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
 
     virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
     virtual glyph_metrics_t boundingBox(glyph_t glyph);
 
-    virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const;
-    virtual void doKerning(QGlyphLayout *, QTextEngine::ShaperFlags) const;
+    virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const;
+    virtual void doKerning(QGlyphLayout *, ShaperFlags) const;
     virtual void addOutlineToPath(qreal, qreal, const QGlyphLayout &, QPainterPath *, QTextItem::RenderFlags flags);
     virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0);
 

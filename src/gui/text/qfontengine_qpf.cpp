@@ -541,7 +541,7 @@ bool QFontEngineQPF::getSfntTableData(uint tag, uchar *buffer, uint *length) con
     return false;
 }
 
-bool QFontEngineQPF::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const
+bool QFontEngineQPF::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
     if (!externalCMap && !cmapOffset && renderingFontEngine) {
         if (!renderingFontEngine->stringToCMap(str, len, glyphs, nglyphs, flags))
@@ -563,7 +563,7 @@ bool QFontEngineQPF::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
 
     const uchar *cmap = externalCMap ? externalCMap : (fontData + cmapOffset);
 
-    bool mirrored = flags & QTextEngine::RightToLeft;
+    bool mirrored = flags & RightToLeft;
     int glyph_pos = 0;
     if (symbol) {
         for (int i = 0; i < len; ++i) {
@@ -596,7 +596,7 @@ bool QFontEngineQPF::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
     return true;
 }
 
-void QFontEngineQPF::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags) const
+void QFontEngineQPF::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags) const
 {
 #ifndef QT_NO_FREETYPE
     const_cast<QFontEngineQPF *>(this)->ensureGlyphsLoaded(*glyphs);
@@ -835,7 +835,7 @@ void QFontEngineQPF::unlockFace() const
     freetype->unlock();
 }
 
-void QFontEngineQPF::doKerning(QGlyphLayout *g, QTextEngine::ShaperFlags flags) const
+void QFontEngineQPF::doKerning(QGlyphLayout *g, QFontEngine::ShaperFlags flags) const
 {
     if (!kerning_pairs_loaded) {
         kerning_pairs_loaded = true;

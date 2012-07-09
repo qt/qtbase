@@ -310,13 +310,13 @@ inline unsigned int getChar(const QChar *str, int &i, const int len)
 }
 
 bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
-                                          int *nglyphs, QTextEngine::ShaperFlags flags) const
+                                                 int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
     if (m_directWriteFontFace != 0) {
         QVarLengthArray<UINT32> codePoints(len);
         for (int i=0; i<len; ++i) {
             codePoints[i] = getChar(str, i, len);
-            if (flags & QTextEngine::RightToLeft)
+            if (flags & QFontEngine::RightToLeft)
                 codePoints[i] = QChar::mirroredChar(codePoints[i]);
         }
 
@@ -331,7 +331,7 @@ bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGly
 
             *nglyphs = len;
 
-            if (!(flags & QTextEngine::GlyphIndicesOnly))
+            if (!(flags & GlyphIndicesOnly))
                 recalcAdvances(glyphs, 0);
 
             return true;
@@ -343,7 +343,7 @@ bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGly
     return false;
 }
 
-void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags) const
+void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags) const
 {
     if (m_directWriteFontFace == 0)
         return;

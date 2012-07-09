@@ -849,9 +849,9 @@ static bool stringToGlyphs(HB_ShaperItem *item, QGlyphLayout *glyphs, QFontEngin
 {
     int nGlyphs = item->num_glyphs;
 
-    QTextEngine::ShaperFlags shaperFlags(QTextEngine::GlyphIndicesOnly);
+    QFontEngine::ShaperFlags shaperFlags(QFontEngine::GlyphIndicesOnly);
     if (item->item.bidiLevel % 2)
-        shaperFlags |= QTextEngine::RightToLeft;
+        shaperFlags |= QFontEngine::RightToLeft;
 
     bool result = fontEngine->stringToCMap(reinterpret_cast<const QChar *>(item->string + item->item.pos), item->item.length, glyphs, &nGlyphs, shaperFlags);
     item->num_glyphs = nGlyphs;
@@ -1140,7 +1140,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
             shaper_item.log_clusters[i] += glyph_pos;
 
         if (kerningEnabled && !shaper_item.kerning_applied)
-            actualFontEngine->doKerning(&g, option.useDesignMetrics() ? QFlag(QTextEngine::DesignMetrics) : QFlag(0));
+            actualFontEngine->doKerning(&g, option.useDesignMetrics() ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlags(0));
 
         if (engineIdx != 0) {
             for (hb_uint32 i = 0; i < shaper_item.num_glyphs; ++i)

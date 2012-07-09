@@ -72,8 +72,8 @@ public:
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
     QFixed emSquareSize() const;
 
-    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const;
-    void recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags) const;
+    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
+    void recalcAdvances(QGlyphLayout *glyphs, ShaperFlags) const;
 
     void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                          QPainterPath *path, QTextItem::RenderFlags flags);

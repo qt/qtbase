@@ -742,7 +742,7 @@ bool qt_fontHasNarrowOutlines(QFontEngine *fontEngine)
     glyphs.glyphs = &glyph;
     int numGlyphs;
     QChar *chars = QString(QLatin1String("O")).data();
-    fe->stringToCMap(chars, 1, &glyphs, &numGlyphs, QTextEngine::GlyphIndicesOnly);
+    fe->stringToCMap(chars, 1, &glyphs, &numGlyphs, QFontEngine::GlyphIndicesOnly);
     QImage im = fe->alphaMapForGlyph(glyph, QFixed(), QTransform());
     delete fe;
 

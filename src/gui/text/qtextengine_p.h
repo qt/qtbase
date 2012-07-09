@@ -459,14 +459,6 @@ public:
         WidthOnly = 0x07
     };
 
-    // keep in sync with QAbstractFontEngine::TextShapingFlag!!
-    enum ShaperFlag {
-        RightToLeft = 0x0001,
-        DesignMetrics = 0x0002,
-        GlyphIndicesOnly = 0x0004
-    };
-    Q_DECLARE_FLAGS(ShaperFlags, ShaperFlag)
-
     void invalidate();
     void clearLineData();
 
@@ -727,8 +719,6 @@ struct QTextLineItemIterator
 
     const QTextLayout::FormatRange *selection;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QTextEngine::ShaperFlags)
 
 QT_END_NAMESPACE
 

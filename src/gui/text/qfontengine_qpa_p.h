@@ -165,8 +165,8 @@ public:
     FaceId faceId() const { return face_id; }
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
 
-    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const;
-    void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const;
+    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
+    void recalcAdvances(QGlyphLayout *, ShaperFlags) const;
 
     void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags);
     QImage alphaMapForGlyph(glyph_t t);

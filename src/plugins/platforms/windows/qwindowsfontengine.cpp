@@ -356,19 +356,18 @@ HGDIOBJ QWindowsFontEngine::selectDesignFont() const
     return SelectObject(m_fontEngineData->hdc, designFont);
 }
 
-bool QWindowsFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const
+bool QWindowsFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
     if (*nglyphs < len) {
         *nglyphs = len;
         return false;
     }
 
-    *nglyphs = getGlyphIndexes(str, len, glyphs, flags & QTextEngine::RightToLeft);
+    *nglyphs = getGlyphIndexes(str, len, glyphs, flags & RightToLeft);
 
-    if (flags & QTextEngine::GlyphIndicesOnly)
-        return true;
+    if (!(flags & GlyphIndicesOnly))
+        recalcAdvances(glyphs, flags);
 
-    recalcAdvances(glyphs, flags);
     return true;
 }
 
@@ -382,11 +381,11 @@ inline void calculateTTFGlyphWidth(HDC hdc, UINT glyph, int &width)
 #endif
 }
 
-void QWindowsFontEngine::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const
+void QWindowsFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags flags) const
 {
     HGDIOBJ oldFont = 0;
     HDC hdc = m_fontEngineData->hdc;
-    if (ttf && (flags & QTextEngine::DesignMetrics)) {
+    if (ttf && (flags & DesignMetrics)) {
         for(int i = 0; i < glyphs->numGlyphs; i++) {
             unsigned int glyph = glyphs->glyphs[i];
             if(int(glyph) >= designAdvancesSize) {
