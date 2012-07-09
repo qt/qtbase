@@ -52,11 +52,11 @@ class QFlag
 {
     int i;
 public:
-    inline QFlag(int i);
+    Q_DECL_CONSTEXPR inline QFlag(int i);
     inline operator int() const { return i; }
 };
 
-inline QFlag::QFlag(int ai) : i(ai) {}
+Q_DECL_CONSTEXPR inline QFlag::QFlag(int ai) : i(ai) {}
 
 class QIncompatibleFlag
 {
