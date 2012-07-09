@@ -1783,21 +1783,12 @@ void tst_QWidget::windowState()
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
     QTest::qWait(100);
-#ifdef Q_OS_WIN
-    QEXPECT_FAIL("", "QTBUG-26420", Continue);
-#endif
     VERIFY_STATE((Qt::WindowFullScreen|Qt::WindowMinimized));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMinimized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
     QTest::qWait(100);
-#ifdef Q_OS_WIN
-    QEXPECT_FAIL("", "QTBUG-26420", Continue);
-#endif
     VERIFY_STATE(Qt::WindowFullScreen);
-#ifdef Q_OS_WIN
-    QEXPECT_FAIL("", "QTBUG-26420", Continue);
-#endif
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowFullScreen);
 
     widget1.setWindowState(Qt::WindowNoState);
@@ -1815,10 +1806,6 @@ void tst_QWidget::windowState()
     QTest::qWait(100);
     VERIFY_STATE((Qt::WindowFullScreen|Qt::WindowMaximized));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowFullScreen);
-
-#ifdef Q_OS_WIN
-    QSKIP("QTBUG-26420");
-#endif
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
     QTest::qWait(100);
@@ -2409,7 +2396,6 @@ void tst_QWidget::normalGeometry()
     QTRY_COMPARE(parent.geometry(), geom);
     QTRY_COMPARE(parent.normalGeometry(), geom);
 
-    QSKIP("QTBUG-26420");
     parent.showNormal();
     parent.setWindowState(Qt:: WindowFullScreen | Qt::WindowMaximized);
     parent.setWindowState(Qt::WindowMinimized | Qt:: WindowFullScreen | Qt::WindowMaximized);
