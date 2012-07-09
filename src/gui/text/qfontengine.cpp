@@ -1190,8 +1190,7 @@ bool QFontEngineBox::stringToCMap(const QChar *, int len, QGlyphLayout *glyphs, 
         return false;
     }
 
-    for (int i = 0; i < len; ++i)
-        glyphs->glyphs[i] = 0;
+    memset(glyphs->glyphs, 0, len * sizeof(HB_Glyph));
 
     *nglyphs = len;
     glyphs->numGlyphs = len;
@@ -1385,8 +1384,10 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                 if (engine->type() == Box)
                     continue;
 
-                glyphs->advances_x[glyph_pos] = glyphs->advances_y[glyph_pos] = 0;
-                glyphs->offsets[glyph_pos] = QFixedPoint();
+                if (!(flags & GlyphIndicesOnly)) {
+                    glyphs->advances_x[glyph_pos] = glyphs->advances_y[glyph_pos] = 0;
+                    glyphs->offsets[glyph_pos] = QFixedPoint();
+                }
                 int num = 2;
                 QGlyphLayout offs = glyphs->mid(glyph_pos, num);
                 engine->stringToCMap(str + i, surrogate ? 2 : 1, &offs, &num, flags);
@@ -1411,6 +1412,7 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
 
     *nglyphs = ng;
     glyphs->numGlyphs = ng;
+
     return true;
 }
 

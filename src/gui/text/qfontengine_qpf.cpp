@@ -592,7 +592,10 @@ bool QFontEngineQPF::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
 
     *nglyphs = glyph_pos;
     glyphs->numGlyphs = glyph_pos;
-    recalcAdvances(glyphs, flags);
+
+    if (!(flags & GlyphIndicesOnly))
+        recalcAdvances(glyphs, flags);
+
     return true;
 }
 
