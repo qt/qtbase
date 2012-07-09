@@ -188,7 +188,7 @@ Configure::Configure(int& argc, char** argv)
         }
     }
 
-    defaultBuildParts << QStringLiteral("libs") << QStringLiteral("examples");
+    defaultBuildParts << QStringLiteral("libs") << QStringLiteral("tools") << QStringLiteral("examples");
     dictionary[ "QT_SOURCE_TREE" ]    = sourcePath;
     dictionary[ "QT_BUILD_TREE" ]     = buildPath;
     dictionary[ "QT_INSTALL_PREFIX" ] = installPath;
