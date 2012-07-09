@@ -80,7 +80,7 @@ private:
     double slots;
 };
 
-#define signals protected
+#define signals public
 #define slots
 #define emit
 #undef QT_NO_KEYWORDS
