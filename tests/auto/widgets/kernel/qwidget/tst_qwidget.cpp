@@ -2945,9 +2945,6 @@ void tst_QWidget::saveRestoreGeometry()
         QVERIFY(widget.restoreGeometry(savedGeometry));
         QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
-#ifdef Q_OS_WIN
-        QEXPECT_FAIL("", "QTBUG-26421", Continue);
-#endif
         QTRY_COMPARE(widget.geometry(), geom);
 
         //Restore to full screen

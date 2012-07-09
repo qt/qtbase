@@ -993,7 +993,10 @@ void QWindowsWindow::handleGeometryChange()
 {
     m_data.geometry = geometry_sys();
     QPlatformWindow::setGeometry(m_data.geometry);
-    QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
+    if (testFlag(SynchronousGeometryChangeEvent))
+        QWindowSystemInterface::handleSynchronousGeometryChange(window(), m_data.geometry);
+    else
+        QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
 
     if (QWindowsContext::verboseEvents || QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window() << m_data.geometry;
@@ -1246,7 +1249,11 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             UINT swpf = SWP_FRAMECHANGED;
             if (newStates & Qt::WindowActive)
                 swpf |= SWP_NOACTIVATE;
+            const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
+            setFlag(SynchronousGeometryChangeEvent);
             SetWindowPos(m_data.hwnd, HWND_TOP, r.left(), r.top(), r.width(), r.height(), swpf);
+            if (!wasSync)
+                clearFlag(SynchronousGeometryChangeEvent);
             QWindowSystemInterface::handleSynchronousGeometryChange(window(), r);
         } else if (!(newStates & Qt::WindowMinimized)) {
             // Restore saved state.
@@ -1260,8 +1267,12 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
                 swpf |= SWP_NOACTIVATE;
             if (!m_savedFrameGeometry.isValid())
                 swpf |= SWP_NOSIZE | SWP_NOMOVE;
+            const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
+            setFlag(SynchronousGeometryChangeEvent);
             SetWindowPos(m_data.hwnd, 0, m_savedFrameGeometry.x(), m_savedFrameGeometry.y(),
                          m_savedFrameGeometry.width(), m_savedFrameGeometry.height(), swpf);
+            if (!wasSync)
+                clearFlag(SynchronousGeometryChangeEvent);
             // preserve maximized state
             if (visible)
                 ShowWindow(m_data.hwnd, (newStates & Qt::WindowMaximized) ? max : normal);

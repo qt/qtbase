@@ -124,7 +124,8 @@ public:
         OpenGlPixelFormatInitialized = 0x40,
         BlockedByModal = 0x80,
         SizeGripOperation = 0x100,
-        FrameStrutEventsEnabled = 0x200
+        FrameStrutEventsEnabled = 0x200,
+        SynchronousGeometryChangeEvent = 0x400
     };
 
     struct WindowData
