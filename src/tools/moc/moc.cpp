@@ -309,6 +309,10 @@ void Moc::parseFunctionArguments(FunctionDef *def)
         if (!until(COMMA))
             break;
     }
+
+    if (!def->arguments.isEmpty()
+        && def->arguments.last().normalizedType == "QPrivateSignal")
+        def->isPrivateSignal = true;
 }
 
 bool Moc::testFunctionAttribute(FunctionDef *def)

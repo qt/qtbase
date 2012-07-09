@@ -543,6 +543,8 @@ private slots:
     void cxx11Enums();
     void returnRefs();
 
+    void privateSignalConnection();
+
 signals:
     void sigWithUnsignedArg(unsigned foo);
     void sigWithSignedArg(signed foo);
@@ -1767,6 +1769,374 @@ void tst_Moc::returnRefs()
     // Those two functions are copied from the qscriptextqobject test in qtscript
     // they used to cause miscompilation of the moc generated file.
 }
+
+class SignalConnectionTester : public QObject
+{
+    Q_OBJECT
+public:
+    SignalConnectionTester(QObject *parent = 0)
+      : QObject(parent), testPassed(false)
+    {
+
+    }
+
+public Q_SLOTS:
+    void testSlot()
+    {
+      testPassed = true;
+    }
+    void testSlotWith1Arg(int i)
+    {
+      testPassed = i == 42;
+    }
+    void testSlotWith2Args(int i, const QString &s)
+    {
+      testPassed = i == 42 && s == "Hello";
+    }
+
+public:
+    bool testPassed;
+};
+
+class ClassWithPrivateSignals : public QObject
+{
+    Q_OBJECT
+public:
+    ClassWithPrivateSignals(QObject *parent = 0)
+      : QObject(parent)
+    {
+
+    }
+
+    void emitPrivateSignals()
+    {
+        emit privateSignal1(QPrivateSignal());
+        emit privateSignalWith1Arg(42, QPrivateSignal());
+        emit privateSignalWith2Args(42, "Hello", QPrivateSignal());
+    }
+
+Q_SIGNALS:
+    void privateSignal1(QPrivateSignal);
+    void privateSignalWith1Arg(int arg1, QPrivateSignal);
+    void privateSignalWith2Args(int arg1, const QString &arg2, QPrivateSignal);
+};
+
+class SubClassFromPrivateSignals : public ClassWithPrivateSignals
+{
+    Q_OBJECT
+public:
+    SubClassFromPrivateSignals(QObject *parent = 0)
+      : ClassWithPrivateSignals(parent)
+    {
+
+    }
+
+    void emitProtectedSignals()
+    {
+      // Compile test: All of this intentionally does not compile:
+//         emit privateSignal1();
+//         emit privateSignalWith1Arg(42);
+//         emit privateSignalWith2Args(42, "Hello");
+//
+//         emit privateSignal1(QPrivateSignal());
+//         emit privateSignalWith1Arg(42, QPrivateSignal());
+//         emit privateSignalWith2Args(42, "Hello", QPrivateSignal());
+//
+//         emit privateSignal1(ClassWithPrivateSignals::QPrivateSignal());
+//         emit privateSignalWith1Arg(42, ClassWithPrivateSignals::QPrivateSignal());
+//         emit privateSignalWith2Args(42, "Hello", ClassWithPrivateSignals::QPrivateSignal());
+    }
+};
+
+void tst_Moc::privateSignalConnection()
+{
+    // Function pointer connects. Matching signals and slots
+    {
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, &ClassWithPrivateSignals::privateSignal1, &tester, &SignalConnectionTester::testSlot);
+
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+        tester.testPassed = false;
+        QMetaObject::invokeMethod(&classWithPrivateSignals, "privateSignal1");
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SubClassFromPrivateSignals subClassFromPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&subClassFromPrivateSignals, &ClassWithPrivateSignals::privateSignal1, &tester, &SignalConnectionTester::testSlot);
+
+        QVERIFY(!tester.testPassed);
+
+        subClassFromPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+        tester.testPassed = false;
+        QMetaObject::invokeMethod(&subClassFromPrivateSignals, "privateSignal1");
+        QVERIFY(tester.testPassed);
+    }
+    {
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, &ClassWithPrivateSignals::privateSignalWith1Arg, &tester, &SignalConnectionTester::testSlotWith1Arg);
+
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+        tester.testPassed = false;
+        QMetaObject::invokeMethod(&classWithPrivateSignals, "privateSignalWith1Arg", Q_ARG(int, 42));
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SubClassFromPrivateSignals subClassFromPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&subClassFromPrivateSignals, &ClassWithPrivateSignals::privateSignalWith1Arg, &tester, &SignalConnectionTester::testSlotWith1Arg);
+
+        QVERIFY(!tester.testPassed);
+
+        subClassFromPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+        tester.testPassed = false;
+        QMetaObject::invokeMethod(&subClassFromPrivateSignals, "privateSignalWith1Arg", Q_ARG(int, 42));
+        QVERIFY(tester.testPassed);
+    }
+    {
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, &ClassWithPrivateSignals::privateSignalWith2Args, &tester, &SignalConnectionTester::testSlotWith2Args);
+
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+        tester.testPassed = false;
+        QMetaObject::invokeMethod(&classWithPrivateSignals, "privateSignalWith2Args", Q_ARG(int, 42), Q_ARG(QString, "Hello"));
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SubClassFromPrivateSignals subClassFromPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&subClassFromPrivateSignals, &ClassWithPrivateSignals::privateSignalWith2Args, &tester, &SignalConnectionTester::testSlotWith2Args);
+
+        QVERIFY(!tester.testPassed);
+
+        subClassFromPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+        tester.testPassed = false;
+        QMetaObject::invokeMethod(&subClassFromPrivateSignals, "privateSignalWith2Args", Q_ARG(int, 42), Q_ARG(QString, "Hello"));
+        QVERIFY(tester.testPassed);
+    }
+
+
+    // String based connects. Matching signals and slots
+    {
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, SIGNAL(privateSignal1()), &tester, SLOT(testSlot()));
+
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SubClassFromPrivateSignals subClassFromPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&subClassFromPrivateSignals, SIGNAL(privateSignal1()), &tester, SLOT(testSlot()));
+
+        QVERIFY(!tester.testPassed);
+
+        subClassFromPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, SIGNAL(privateSignalWith1Arg(int)), &tester, SLOT(testSlotWith1Arg(int)));
+
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SubClassFromPrivateSignals subClassFromPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&subClassFromPrivateSignals, SIGNAL(privateSignalWith1Arg(int)), &tester, SLOT(testSlotWith1Arg(int)));
+
+        QVERIFY(!tester.testPassed);
+
+        subClassFromPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, SIGNAL(privateSignalWith2Args(int,QString)), &tester, SLOT(testSlotWith2Args(int,QString)));
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SubClassFromPrivateSignals subClassFromPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&subClassFromPrivateSignals, SIGNAL(privateSignalWith2Args(int,QString)), &tester, SLOT(testSlotWith2Args(int,QString)));
+
+        QVERIFY(!tester.testPassed);
+
+        subClassFromPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+
+    // Function pointer connects. Decayed slot arguments
+    {
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, &ClassWithPrivateSignals::privateSignalWith1Arg, &tester, &SignalConnectionTester::testSlot);
+
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SubClassFromPrivateSignals subClassFromPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&subClassFromPrivateSignals, &ClassWithPrivateSignals::privateSignalWith1Arg, &tester, &SignalConnectionTester::testSlot);
+
+        QVERIFY(!tester.testPassed);
+
+        subClassFromPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, &ClassWithPrivateSignals::privateSignalWith1Arg, &tester, &SignalConnectionTester::testSlotWith1Arg);
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SubClassFromPrivateSignals subClassFromPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&subClassFromPrivateSignals, &ClassWithPrivateSignals::privateSignalWith1Arg, &tester, &SignalConnectionTester::testSlotWith1Arg);
+
+        QVERIFY(!tester.testPassed);
+
+        subClassFromPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, &ClassWithPrivateSignals::privateSignalWith1Arg, &tester, &SignalConnectionTester::testSlot);
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SubClassFromPrivateSignals subClassFromPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&subClassFromPrivateSignals, &ClassWithPrivateSignals::privateSignalWith1Arg, &tester, &SignalConnectionTester::testSlot);
+
+        QVERIFY(!tester.testPassed);
+
+        subClassFromPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+
+    // String based connects. Decayed slot arguments
+    {
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, SIGNAL(privateSignalWith1Arg(int)), &tester, SLOT(testSlot()));
+
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SubClassFromPrivateSignals subClassFromPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&subClassFromPrivateSignals, SIGNAL(privateSignalWith1Arg(int)), &tester, SLOT(testSlot()));
+
+        QVERIFY(!tester.testPassed);
+
+        subClassFromPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, SIGNAL(privateSignalWith2Args(int,QString)), &tester, SLOT(testSlotWith1Arg(int)));
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SubClassFromPrivateSignals subClassFromPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&subClassFromPrivateSignals, SIGNAL(privateSignalWith2Args(int,QString)), &tester, SLOT(testSlotWith1Arg(int)));
+
+        QVERIFY(!tester.testPassed);
+
+        subClassFromPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, SIGNAL(privateSignalWith2Args(int,QString)), &tester, SLOT(testSlot()));
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SubClassFromPrivateSignals subClassFromPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&subClassFromPrivateSignals, SIGNAL(privateSignalWith2Args(int,QString)), &tester, SLOT(testSlot()));
+
+        QVERIFY(!tester.testPassed);
+
+        subClassFromPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+}
+
 
 QTEST_MAIN(tst_Moc)
 #include "tst_moc.moc"

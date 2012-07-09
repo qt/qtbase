@@ -92,7 +92,7 @@ struct FunctionDef
 {
     FunctionDef(): returnTypeIsVolatile(false), access(Private), isConst(false), isVirtual(false), isStatic(false),
                    inlineCode(false), wasCloned(false), isCompat(false), isInvokable(false),
-                   isScriptable(false), isSlot(false), isSignal(false),
+                   isScriptable(false), isSlot(false), isSignal(false), isPrivateSignal(false),
                    isConstructor(false), isDestructor(false), isAbstract(false), revision(0) {}
     Type type;
     QByteArray normalizedType;
@@ -116,6 +116,7 @@ struct FunctionDef
     bool isScriptable;
     bool isSlot;
     bool isSignal;
+    bool isPrivateSignal;
     bool isConstructor;
     bool isDestructor;
     bool isAbstract;

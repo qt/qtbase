@@ -540,7 +540,8 @@ void Generator::registerFunctionStrings(const QList<FunctionDef>& list)
             strreg(f.normalizedType);
         strreg(f.tag);
 
-        for (int j = 0; j < f.arguments.count(); ++j) {
+        int argsCount = f.arguments.count() - (f.isPrivateSignal ? 1 : 0);
+        for (int j = 0; j < argsCount; ++j) {
             const ArgumentDef &a = f.arguments.at(j);
             if (!isBuiltinType(a.normalizedType))
                 strreg(a.normalizedType);
@@ -580,7 +581,7 @@ void Generator::generateFunctions(const QList<FunctionDef>& list, const char *fu
         if (f.revision > 0)
             flags |= MethodRevisioned;
 
-        int argc = f.arguments.count();
+        int argc = f.arguments.count() - (f.isPrivateSignal ? 1 : 0);
         fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x,\n",
             stridx(f.name), argc, paramsIndex, stridx(f.tag), flags);
 
@@ -608,7 +609,8 @@ void Generator::generateFunctionParameters(const QList<FunctionDef>& list, const
         fprintf(out, "    ");
 
         // Types
-        for (int j = -1; j < f.arguments.count(); ++j) {
+        int argsCount = f.arguments.count() - (f.isPrivateSignal ? 1 : 0);
+        for (int j = -1; j < argsCount; ++j) {
             if (j > -1)
                 fputc(' ', out);
             const QByteArray &typeName = (j < 0) ? f.normalizedType : f.arguments.at(j).normalizedType;
@@ -617,7 +619,7 @@ void Generator::generateFunctionParameters(const QList<FunctionDef>& list, const
         }
 
         // Parameter names
-        for (int j = 0; j < f.arguments.count(); ++j) {
+        for (int j = 0; j < argsCount; ++j) {
             const ArgumentDef &arg = f.arguments.at(j);
             fprintf(out, " %4d,", stridx(arg.name));
         }
@@ -1056,11 +1058,18 @@ void Generator::generateStaticMetacall()
                     cdef->classname.constData(), cdef->classname.constData());
             const FunctionDef &f = cdef->constructorList.at(ctorindex);
             int offset = 1;
-            for (int j = 0; j < f.arguments.count(); ++j) {
+
+            int argsCount = f.arguments.count() - (f.isPrivateSignal ? 1 : 0);
+            for (int j = 0; j < argsCount; ++j) {
                 const ArgumentDef &a = f.arguments.at(j);
                 if (j)
                     fprintf(out, ",");
                 fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))", a.typeNameForCast.constData(), offset++);
+            }
+            if (f.isPrivateSignal) {
+                if (argsCount > 0)
+                    fprintf(out, ", ");
+                fprintf(out, "%s", QByteArray(f.arguments.last().normalizedType + "()").constData());
             }
             fprintf(out, ");\n");
             fprintf(out, "            if (_a[0]) *reinterpret_cast<QObject**>(_a[0]) = _r; } break;\n");
@@ -1098,12 +1107,19 @@ void Generator::generateStaticMetacall()
                 fprintf(out, "%s->", f.inPrivateClass.constData());
             fprintf(out, "%s(", f.name.constData());
             int offset = 1;
-            for (int j = 0; j < f.arguments.count(); ++j) {
+
+            int argsCount = f.arguments.count() - (f.isPrivateSignal ? 1 : 0);
+            for (int j = 0; j < argsCount; ++j) {
                 const ArgumentDef &a = f.arguments.at(j);
                 if (j)
                     fprintf(out, ",");
                 fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))",a.typeNameForCast.constData(), offset++);
                 isUsed_a = true;
+            }
+            if (f.isPrivateSignal) {
+                if (argsCount > 0)
+                    fprintf(out, ", ");
+                fprintf(out, "%s", QByteArray(f.arguments.last().normalizedType + "()").constData());
             }
             fprintf(out, ");");
             if (f.normalizedType != "void") {
@@ -1131,11 +1147,18 @@ void Generator::generateStaticMetacall()
             anythingUsed = true;
             fprintf(out, "        {\n");
             fprintf(out, "            typedef %s (%s::*_t)(",f.type.rawName.constData() , cdef->classname.constData());
-            for (int j = 0; j < f.arguments.count(); ++j) {
+
+            int argsCount = f.arguments.count() - (f.isPrivateSignal ? 1 : 0);
+            for (int j = 0; j < argsCount; ++j) {
                 const ArgumentDef &a = f.arguments.at(j);
                 if (j)
                     fprintf(out, ", ");
                 fprintf(out, "%s", QByteArray(a.type.name + ' ' + a.rightType).constData());
+            }
+            if (f.isPrivateSignal) {
+                if (argsCount > 0)
+                    fprintf(out, ", ");
+                fprintf(out, "%s", f.arguments.last().normalizedType.constData());
             }
             if (f.isConst)
                 fprintf(out, ") const;\n");

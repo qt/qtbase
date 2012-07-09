@@ -154,7 +154,8 @@ public: \
     QT_TR_FUNCTIONS \
     virtual int qt_metacall(QMetaObject::Call, int, void **); \
 private: \
-    Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
+    Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
+    struct QPrivateSignal {};
 
 /* qmake ignore Q_OBJECT */
 #define Q_OBJECT_FAKE Q_OBJECT
