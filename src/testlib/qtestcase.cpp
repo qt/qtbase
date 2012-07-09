@@ -82,10 +82,8 @@
 #include <time.h>
 #endif
 
-#ifdef Q_WS_MAC
-#include <Carbon/Carbon.h> // for SetFrontProcess
+#ifdef Q_OS_MAC
 #include <IOKit/pwr_mgt/IOPMLib.h>
-#undef verify
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -2080,7 +2078,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     int callgrindChildExitCode = 0;
 #endif
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     bool macNeedsActivate = qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0);
     IOPMAssertionID powerID;
 #endif
@@ -2095,14 +2093,11 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
 #endif
 
-#ifdef Q_WS_MAC
-    // Starting with Qt 4.4, applications launched from the command line
-    // no longer get focus automatically. Since some tests might depend
-    // on this, call SetFrontProcess here to get the pre 4.4 behavior.
+#ifdef Q_OS_MAC
     if (macNeedsActivate) {
-        ProcessSerialNumber psn = { 0, kCurrentProcess };
-        SetFrontProcess(&psn);
-        IOReturn ok = IOPMAssertionCreate(kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn, &powerID);
+        CFStringRef reasonForActivity= CFSTR("No Display Sleep");
+        IOReturn ok = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn, reasonForActivity, &powerID);
+
         if (ok != kIOReturnSuccess)
             macNeedsActivate = false; // no need to release the assertion on exit.
     }
@@ -2151,7 +2146,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
          }
 
         QTestLog::stopLogging();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
          if (macNeedsActivate) {
              IOPMAssertionRelease(powerID);
          }
@@ -2168,7 +2163,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
     QSignalDumper::endDump();
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
      if (macNeedsActivate) {
          IOPMAssertionRelease(powerID);
      }

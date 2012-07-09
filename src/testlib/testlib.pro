@@ -68,10 +68,7 @@ wince*::LIBS += libcmt.lib \
 mac {
     LIBS += -framework IOKit -framework Security
     !ios {
-      LIBS_PRIVATE += -framework CoreServices
       LIBS += -framework ApplicationServices
-    } else {
-      LIBS_PRIVATE += -framework CoreFoundation
     }
 }
 
