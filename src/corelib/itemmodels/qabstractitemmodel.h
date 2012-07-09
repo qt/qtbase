@@ -249,30 +249,82 @@ Q_SIGNALS:
     void layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>());
     void layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>());
 
-#if !defined(Q_MOC_RUN) && !defined(qdoc)
-private: // can only be emitted by QAbstractItemModel
+    void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last
+#if !defined(qdoc)
+      , QPrivateSignal
 #endif
-    void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last);
-    void rowsInserted(const QModelIndex &parent, int first, int last);
+    );
+    void rowsInserted(const QModelIndex &parent, int first, int last
+#if !defined(qdoc)
+      , QPrivateSignal
+#endif
+    );
 
-    void rowsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
-    void rowsRemoved(const QModelIndex &parent, int first, int last);
+    void rowsAboutToBeRemoved(const QModelIndex &parent, int first, int last
+#if !defined(qdoc)
+      , QPrivateSignal
+#endif
+    );
+    void rowsRemoved(const QModelIndex &parent, int first, int last
+#if !defined(qdoc)
+      , QPrivateSignal
+#endif
+    );
 
-    void columnsAboutToBeInserted(const QModelIndex &parent, int first, int last);
-    void columnsInserted(const QModelIndex &parent, int first, int last);
+    void columnsAboutToBeInserted(const QModelIndex &parent, int first, int last
+#if !defined(qdoc)
+      , QPrivateSignal
+#endif
+    );
+    void columnsInserted(const QModelIndex &parent, int first, int last
+#if !defined(qdoc)
+      , QPrivateSignal
+#endif
+    );
 
-    void columnsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
-    void columnsRemoved(const QModelIndex &parent, int first, int last);
+    void columnsAboutToBeRemoved(const QModelIndex &parent, int first, int last
+#if !defined(qdoc)
+      , QPrivateSignal
+#endif
+    );
+    void columnsRemoved(const QModelIndex &parent, int first, int last
+#if !defined(qdoc)
+      , QPrivateSignal
+#endif
+    );
 
-    void modelAboutToBeReset();
-    void modelReset();
+    void modelAboutToBeReset(
+#if !defined(qdoc)
+      QPrivateSignal
+#endif
+    );
+    void modelReset(
+#if !defined(qdoc)
+      QPrivateSignal
+#endif
+    );
 
-    void rowsAboutToBeMoved( const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationRow );
-    void rowsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int row );
+    void rowsAboutToBeMoved( const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationRow
+#if !defined(qdoc)
+      , QPrivateSignal
+#endif
+    );
+    void rowsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int row
+#if !defined(qdoc)
+      , QPrivateSignal
+#endif
+    );
 
-    void columnsAboutToBeMoved( const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationColumn );
-    void columnsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int column );
-
+    void columnsAboutToBeMoved( const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationColumn
+#if !defined(qdoc)
+      , QPrivateSignal
+#endif
+    );
+    void columnsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int column
+#if !defined(qdoc)
+      , QPrivateSignal
+#endif
+    );
 
 public Q_SLOTS:
     virtual bool submit();

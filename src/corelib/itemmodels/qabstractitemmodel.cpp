@@ -2483,7 +2483,7 @@ void QAbstractItemModel::beginInsertRows(const QModelIndex &parent, int first, i
     Q_ASSERT(last >= first);
     Q_D(QAbstractItemModel);
     d->changes.push(QAbstractItemModelPrivate::Change(parent, first, last));
-    emit rowsAboutToBeInserted(parent, first, last);
+    emit rowsAboutToBeInserted(parent, first, last, QPrivateSignal());
     d->rowsAboutToBeInserted(parent, first, last);
 }
 
@@ -2500,7 +2500,7 @@ void QAbstractItemModel::endInsertRows()
     Q_D(QAbstractItemModel);
     QAbstractItemModelPrivate::Change change = d->changes.pop();
     d->rowsInserted(change.parent, change.first, change.last);
-    emit rowsInserted(change.parent, change.first, change.last);
+    emit rowsInserted(change.parent, change.first, change.last, QPrivateSignal());
 }
 
 /*!
@@ -2537,7 +2537,7 @@ void QAbstractItemModel::beginRemoveRows(const QModelIndex &parent, int first, i
     Q_ASSERT(last >= first);
     Q_D(QAbstractItemModel);
     d->changes.push(QAbstractItemModelPrivate::Change(parent, first, last));
-    emit rowsAboutToBeRemoved(parent, first, last);
+    emit rowsAboutToBeRemoved(parent, first, last, QPrivateSignal());
     d->rowsAboutToBeRemoved(parent, first, last);
 }
 
@@ -2554,7 +2554,7 @@ void QAbstractItemModel::endRemoveRows()
     Q_D(QAbstractItemModel);
     QAbstractItemModelPrivate::Change change = d->changes.pop();
     d->rowsRemoved(change.parent, change.first, change.last);
-    emit rowsRemoved(change.parent, change.first, change.last);
+    emit rowsRemoved(change.parent, change.first, change.last, QPrivateSignal());
 }
 
 /*!
@@ -2699,7 +2699,7 @@ bool QAbstractItemModel::beginMoveRows(const QModelIndex &sourceParent, int sour
     destinationChange.needsAdjust = destinationParent.isValid() && destinationParent.row() >= sourceLast && destinationParent.parent() == sourceParent;
     d->changes.push(destinationChange);
 
-    emit rowsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild);
+    emit rowsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, QPrivateSignal());
     d->itemsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, Qt::Vertical);
     return true;
 }
@@ -2734,7 +2734,7 @@ void QAbstractItemModel::endMoveRows()
 
     d->itemsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first, Qt::Vertical);
 
-    emit rowsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first);
+    emit rowsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first, QPrivateSignal());
 }
 
 /*!
@@ -2784,7 +2784,7 @@ void QAbstractItemModel::beginInsertColumns(const QModelIndex &parent, int first
     Q_ASSERT(last >= first);
     Q_D(QAbstractItemModel);
     d->changes.push(QAbstractItemModelPrivate::Change(parent, first, last));
-    emit columnsAboutToBeInserted(parent, first, last);
+    emit columnsAboutToBeInserted(parent, first, last, QPrivateSignal());
     d->columnsAboutToBeInserted(parent, first, last);
 }
 
@@ -2802,7 +2802,7 @@ void QAbstractItemModel::endInsertColumns()
     Q_D(QAbstractItemModel);
     QAbstractItemModelPrivate::Change change = d->changes.pop();
     d->columnsInserted(change.parent, change.first, change.last);
-    emit columnsInserted(change.parent, change.first, change.last);
+    emit columnsInserted(change.parent, change.first, change.last, QPrivateSignal());
 }
 
 /*!
@@ -2839,7 +2839,7 @@ void QAbstractItemModel::beginRemoveColumns(const QModelIndex &parent, int first
     Q_ASSERT(last >= first);
     Q_D(QAbstractItemModel);
     d->changes.push(QAbstractItemModelPrivate::Change(parent, first, last));
-    emit columnsAboutToBeRemoved(parent, first, last);
+    emit columnsAboutToBeRemoved(parent, first, last, QPrivateSignal());
     d->columnsAboutToBeRemoved(parent, first, last);
 }
 
@@ -2856,7 +2856,7 @@ void QAbstractItemModel::endRemoveColumns()
     Q_D(QAbstractItemModel);
     QAbstractItemModelPrivate::Change change = d->changes.pop();
     d->columnsRemoved(change.parent, change.first, change.last);
-    emit columnsRemoved(change.parent, change.first, change.last);
+    emit columnsRemoved(change.parent, change.first, change.last, QPrivateSignal());
 }
 
 /*!
@@ -2918,7 +2918,7 @@ bool QAbstractItemModel::beginMoveColumns(const QModelIndex &sourceParent, int s
 
     d->itemsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, Qt::Horizontal);
 
-    emit columnsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild);
+    emit columnsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, QPrivateSignal());
     return true;
 }
 
@@ -2952,7 +2952,7 @@ void QAbstractItemModel::endMoveColumns()
 
     d->itemsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first, Qt::Horizontal);
 
-    emit columnsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first);
+    emit columnsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first, QPrivateSignal());
 }
 
 /*!
@@ -3002,7 +3002,7 @@ void QAbstractItemModel::endMoveColumns()
 */
 void QAbstractItemModel::beginResetModel()
 {
-    emit modelAboutToBeReset();
+    emit modelAboutToBeReset(QPrivateSignal());
 }
 
 /*!
@@ -3020,7 +3020,7 @@ void QAbstractItemModel::endResetModel()
 {
     Q_D(QAbstractItemModel);
     d->invalidatePersistentIndexes();
-    emit modelReset();
+    emit modelReset(QPrivateSignal());
 }
 
 /*!

@@ -118,6 +118,8 @@ private slots:
     void testRoleNames();
     void testDragActions();
 
+    void testFunctionPointerSignalConnection();
+
 private:
     DynamicTreeModel *m_model;
 };
@@ -2176,6 +2178,111 @@ void tst_QAbstractItemModel::testDragActions()
     QVERIFY(actions & Qt::CopyAction); // Present by default
     QVERIFY(actions & Qt::MoveAction);
 }
+
+class SignalConnectionTester : public QObject
+{
+    Q_OBJECT
+public:
+    SignalConnectionTester(QObject *parent = 0)
+      : QObject(parent), testPassed(false)
+    {
+
+    }
+
+public Q_SLOTS:
+    void testSlot()
+    {
+      testPassed = true;
+    }
+    void testSlotWithParam_1(const QModelIndex &idx)
+    {
+      testPassed = !idx.isValid();
+    }
+    void testSlotWithParam_2(const QModelIndex &idx, int start)
+    {
+      testPassed = !idx.isValid() && start == 0;
+    }
+    void testSlotWithParam_3(const QModelIndex &idx, int start, int end)
+    {
+      testPassed = !idx.isValid() && start == 0 && end == 1;
+    }
+
+public:
+    bool testPassed;
+};
+
+void tst_QAbstractItemModel::testFunctionPointerSignalConnection()
+{
+    QStringListModel model;
+    {
+        SignalConnectionTester tester;
+        QObject::connect(&model, &QAbstractItemModel::rowsInserted, &tester, &SignalConnectionTester::testSlot);
+
+        QVERIFY(!tester.testPassed);
+
+        model.insertRows(0, 2);
+
+        QVERIFY(tester.testPassed);
+        tester.testPassed = false;
+        QMetaObject::invokeMethod(&model, "rowsInserted", Q_ARG(QModelIndex, QModelIndex()), Q_ARG(int, 0), Q_ARG(int, 1));
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SignalConnectionTester tester;
+        QObject::connect(&model, &QAbstractItemModel::rowsInserted, &tester, &SignalConnectionTester::testSlotWithParam_1);
+
+        QVERIFY(!tester.testPassed);
+
+        model.insertRows(0, 2);
+
+        QVERIFY(tester.testPassed);
+        tester.testPassed = false;
+        QMetaObject::invokeMethod(&model, "rowsInserted", Q_ARG(QModelIndex, QModelIndex()), Q_ARG(int, 0), Q_ARG(int, 1));
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SignalConnectionTester tester;
+        QObject::connect(&model, &QAbstractItemModel::rowsInserted, &tester, &SignalConnectionTester::testSlotWithParam_2);
+
+        QVERIFY(!tester.testPassed);
+
+        model.insertRows(0, 2);
+
+        QVERIFY(tester.testPassed);
+        tester.testPassed = false;
+        QMetaObject::invokeMethod(&model, "rowsInserted", Q_ARG(QModelIndex, QModelIndex()), Q_ARG(int, 0), Q_ARG(int, 1));
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SignalConnectionTester tester;
+        QObject::connect(&model, &QAbstractItemModel::rowsInserted, &tester, &SignalConnectionTester::testSlotWithParam_3);
+
+        QVERIFY(!tester.testPassed);
+
+        model.insertRows(0, 2);
+
+        QVERIFY(tester.testPassed);
+        tester.testPassed = false;
+        QMetaObject::invokeMethod(&model, "rowsInserted", Q_ARG(QModelIndex, QModelIndex()), Q_ARG(int, 0), Q_ARG(int, 1));
+        QVERIFY(tester.testPassed);
+    }
+    {
+        SignalConnectionTester tester;
+        QObject::connect(&model, SIGNAL(rowsInserted(QModelIndex,int,int)), &tester, SLOT(testSlot()));
+
+        QVERIFY(!tester.testPassed);
+
+        model.insertRows(0, 2);
+
+        QVERIFY(tester.testPassed);
+        tester.testPassed = false;
+        QMetaObject::invokeMethod(&model, "rowsInserted", Q_ARG(QModelIndex, QModelIndex()), Q_ARG(int, 0), Q_ARG(int, 1));
+        QVERIFY(tester.testPassed);
+    }
+    // Intentionally does not compile.
+//     model.rowsInserted(QModelIndex(), 0, 0);
+}
+
 
 QTEST_MAIN(tst_QAbstractItemModel)
 #include "tst_qabstractitemmodel.moc"
