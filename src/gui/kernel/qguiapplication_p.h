@@ -62,6 +62,9 @@ class QPlatformIntegration;
 class QPlatformTheme;
 class QPlatformDragQtResponse;
 struct QDrawHelperGammaTables;
+#ifndef QT_NO_DRAGANDDROP
+class QDrag;
+#endif // QT_NO_DRAGANDDROP
 
 class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
 {
@@ -240,8 +243,13 @@ public:
 
 protected:
     virtual void notifyThemeChanged();
+#ifndef QT_NO_DRAGANDDROP
+    virtual void notifyDragStarted(const QDrag *);
+#endif // QT_NO_DRAGANDDROP
 
 private:
+    friend class QDragManager;
+
     void init();
 
     static QGuiApplicationPrivate *self;

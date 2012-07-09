@@ -195,6 +195,9 @@ public:
 
 protected:
     void notifyThemeChanged();
+#ifndef QT_NO_DRAGANDDROP
+    void notifyDragStarted(const QDrag *);
+#endif // QT_NO_DRAGANDDROP
 
 public:
     static QFont *sys_font;

@@ -4503,6 +4503,15 @@ void QApplicationPrivate::notifyThemeChanged()
     initSystemPalette();
 }
 
+#ifndef QT_NO_DRAGANDDROP
+void QApplicationPrivate::notifyDragStarted(const QDrag *drag)
+{
+    // Prevent pickMouseReceiver() from using the widget where the drag was started after a drag operation.
+    QGuiApplicationPrivate::notifyDragStarted(drag);
+    qt_button_down = 0;
+}
+#endif // QT_NO_DRAGANDDROP
+
 #ifndef QT_NO_GESTURES
 QGestureManager* QGestureManager::instance()
 {

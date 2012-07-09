@@ -2527,6 +2527,14 @@ void QGuiApplicationPrivate::notifyThemeChanged()
     }
 }
 
+#ifndef QT_NO_DRAGANDDROP
+void QGuiApplicationPrivate::notifyDragStarted(const QDrag *drag)
+{
+    Q_UNUSED(drag)
+
+}
+#endif
+
 const QDrawHelperGammaTables *QGuiApplicationPrivate::gammaTables()
 {
     QDrawHelperGammaTables *result = m_gammaTables.load();
