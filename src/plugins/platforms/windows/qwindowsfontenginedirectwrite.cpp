@@ -434,6 +434,8 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::boundingBox(glyph_t g)
         QFixed rightSideBearing = DESIGN_TO_LOGICAL(glyphMetrics.rightSideBearing);
         QFixed advanceHeight = DESIGN_TO_LOGICAL(glyphMetrics.advanceHeight);
         QFixed verticalOriginY = DESIGN_TO_LOGICAL(glyphMetrics.verticalOriginY);
+        QFixed topSideBearing = DESIGN_TO_LOGICAL(glyphMetrics.topSideBearing);
+        QFixed bottomSideBearing = DESIGN_TO_LOGICAL(glyphMetrics.bottomSideBearing);
 
         if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
             advanceWidth = advanceWidth.round();
@@ -441,10 +443,13 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::boundingBox(glyph_t g)
         }
 
         QFixed width = advanceWidth - leftSideBearing - rightSideBearing;
-
-        return glyph_metrics_t(-leftSideBearing, -verticalOriginY,
-                               width, m_ascent + m_descent,
-                               advanceWidth, advanceHeight);
+        QFixed height = advanceHeight - topSideBearing - bottomSideBearing;
+        return glyph_metrics_t(leftSideBearing,
+                               -verticalOriginY + topSideBearing,
+                               width,
+                               height,
+                               advanceWidth,
+                               advanceHeight);
     } else {
         qErrnoWarning("%s: GetDesignGlyphMetrics failed", __FUNCTION__);
     }
