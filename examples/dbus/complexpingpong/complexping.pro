@@ -1,5 +1,5 @@
 QT -= gui
-CONFIG += qdbus
+QT += dbus
 
 HEADERS += complexping.h ping-common.h
 SOURCES += complexping.cpp

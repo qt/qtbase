@@ -1,5 +1,4 @@
-QT += widgets
-CONFIG += qdbus
+QT += dbus widgets
 
 # DBUS_ADAPTORS += car.xml
 HEADERS += car.h car_adaptor.h

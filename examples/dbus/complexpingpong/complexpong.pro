@@ -1,5 +1,5 @@
 QT -= gui
-CONFIG += qdbus
+QT += dbus
 
 HEADERS += complexpong.h
 SOURCES += complexpong.cpp

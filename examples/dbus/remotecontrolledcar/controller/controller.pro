@@ -1,5 +1,4 @@
-QT += widgets
-CONFIG += qdbus
+QT += dbus widgets
 
 # DBUS_INTERFACES += car.xml
 FORMS += controller.ui

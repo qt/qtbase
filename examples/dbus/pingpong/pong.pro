@@ -1,5 +1,5 @@
 QT -= gui
-CONFIG += qdbus
+QT += dbus
 
 HEADERS += ping-common.h pong.h
 SOURCES += pong.cpp

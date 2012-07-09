@@ -1,5 +1,5 @@
 QT -= gui
-CONFIG += qdbus
+QT += dbus
 win32:CONFIG += console
 
 SOURCES += listnames.cpp

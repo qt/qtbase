@@ -1,5 +1,4 @@
-CONFIG += qdbus
-QT += widgets
+QT += dbus widgets
 
 HEADERS += chat.h chat_adaptor.h chat_interface.h
 SOURCES += chat.cpp chat_adaptor.cpp chat_interface.cpp
