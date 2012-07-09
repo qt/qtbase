@@ -198,7 +198,7 @@ QString QLocalePrivate::bcp47Name() const
     if (m_data->m_language_id == QLocale::AnyLanguage)
         return QString();
     if (m_data->m_language_id == QLocale::C)
-        return QLatin1String("C");
+        return QStringLiteral("C");
     const unsigned char *lang = language_code_list + 3*(uint(m_data->m_language_id));
     const unsigned char *script =
             (m_data->m_script_id != QLocale::AnyScript ? script_code_list + 4*(uint(m_data->m_script_id)) : 0);
@@ -295,7 +295,7 @@ bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QSt
 
     lang = script = cntry = QString();
 
-    const QString separators = QLatin1String("_-.@");
+    const QString separators = QStringLiteral("_-.@");
     enum ParserState { NoState, LangState, ScriptState, CountryState };
     ParserState state = LangState;
     for (int i = 0; i < length && state != NoState; ) {

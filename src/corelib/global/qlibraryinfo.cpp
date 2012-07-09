@@ -131,7 +131,7 @@ QLibrarySettings::QLibrarySettings()
 
 QSettings *QLibraryInfoPrivate::findConfiguration()
 {
-    QString qtconfig = QLatin1String(":/qt/etc/qt.conf");
+    QString qtconfig = QStringLiteral(":/qt/etc/qt.conf");
 #ifdef QT_BUILD_QMAKE
     if(!QFile::exists(qtconfig))
         qtconfig = qmake_libraryInfoFile();
