@@ -157,7 +157,8 @@ defineTest(qtPrepareTool) {
                 error("Operating system not supported.")
             $$1 = "$$var=$$join(deppath, :)${$$var:+:\$$$var} $$eval($$1)"
         } else {
-            $$1 = "(set PATH=$$join(deppath, ;);%PATH%) & $$eval($$1)"
+            # Escape closing parens when expanding %PATH%, otherwise cmd confuses itself.
+            $$1 = "(set PATH=$$join(deppath, ;);%PATH:)=^)%) & $$eval($$1)"
         }
     }
 
