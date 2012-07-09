@@ -211,6 +211,8 @@ bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *
     }
 
     *nglyphs = glyph_pos;
+    glyphs->numGlyphs = glyph_pos;
+
     if (flags & GlyphIndicesOnly)
         return true;
 

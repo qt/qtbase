@@ -363,6 +363,7 @@ bool QWindowsFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *g
         return false;
     }
 
+    glyphs->numGlyphs = *nglyphs;
     *nglyphs = getGlyphIndexes(str, len, glyphs, flags & RightToLeft);
 
     if (!(flags & GlyphIndicesOnly))
