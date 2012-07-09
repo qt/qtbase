@@ -88,10 +88,11 @@ public:
 #endif
 
 Q_SIGNALS:
-#if !defined(Q_MOC_RUN) && !defined(qdoc)
-private: // can only be emitted by QAbstractTransition
+    void triggered(
+#if !defined(qdoc)
+      QPrivateSignal
 #endif
-    void triggered();
+    );
 
 protected:
     virtual bool eventTest(QEvent *event) = 0;

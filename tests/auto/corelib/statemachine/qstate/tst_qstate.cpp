@@ -57,6 +57,7 @@ private slots:
     void assignPropertyTwice();
     void historyInitialState();
     void transitions();
+    void privateSignals();
 
 private:
     bool functionCalled;
@@ -235,6 +236,126 @@ void tst_QState::transitions()
     QVERIFY(s2.transitions().isEmpty());
     QCOMPARE(s21->transitions().count(), 1);
     QCOMPARE(s21->transitions().first(), t3);
+}
+
+class MyState : public QState
+{
+    Q_OBJECT
+public:
+    MyState(QState *parent = 0)
+      : QState(parent)
+    {
+
+    }
+
+    void emitPrivateSignals()
+    {
+        // These deliberately do not compile
+//         emit entered();
+//         emit exited();
+//
+//         emit entered(QPrivateSignal());
+//         emit exited(QPrivateSignal());
+//
+//         emit entered(QAbstractState::QPrivateSignal());
+//         emit exited(QAbstractState::QPrivateSignal());
+    }
+
+};
+
+class MyTransition : public QSignalTransition
+{
+    Q_OBJECT
+public:
+    MyTransition(QObject * sender, const char * signal, QState *sourceState = 0)
+      : QSignalTransition(sender, signal, sourceState)
+    {
+
+    }
+
+    void emitPrivateSignals()
+    {
+        // These deliberately do not compile
+//         emit triggered();
+//
+//         emit triggered(QPrivateSignal());
+//
+//         emit triggered(QAbstractTransition::QPrivateSignal());
+    }
+};
+
+class SignalConnectionTester : public QObject
+{
+    Q_OBJECT
+public:
+    SignalConnectionTester(QObject *parent = 0)
+      : QObject(parent), testPassed(false)
+    {
+
+    }
+
+public Q_SLOTS:
+    void testSlot()
+    {
+      testPassed = true;
+    }
+
+public:
+    bool testPassed;
+};
+
+class TestTrigger : public QObject
+{
+  Q_OBJECT
+public:
+    TestTrigger(QObject *parent = 0)
+      : QObject(parent)
+    {
+
+    }
+
+    void emitTrigger()
+    {
+        emit trigger();
+    }
+
+signals:
+    void trigger();
+};
+
+void tst_QState::privateSignals()
+{
+    QStateMachine machine;
+
+    QState *s1 = new QState(&machine);
+    MyState *s2 = new MyState(&machine);
+
+    TestTrigger testTrigger;
+
+    MyTransition *t1 = new MyTransition(&testTrigger, SIGNAL(trigger()), s1);
+    s1->addTransition(t1);
+    t1->setTargetState(s2);
+
+    machine.setInitialState(s1);
+    machine.start();
+    QCoreApplication::processEvents();
+
+    SignalConnectionTester s1Tester;
+    SignalConnectionTester s2Tester;
+    SignalConnectionTester t1Tester;
+
+    QObject::connect(s1, &QState::exited, &s1Tester, &SignalConnectionTester::testSlot);
+    QObject::connect(s2, &QState::entered, &s2Tester, &SignalConnectionTester::testSlot);
+    QObject::connect(t1, &QSignalTransition::triggered, &t1Tester, &SignalConnectionTester::testSlot);
+
+    testTrigger.emitTrigger();
+
+    QCoreApplication::processEvents();
+
+    QVERIFY(s1Tester.testPassed);
+    QVERIFY(s2Tester.testPassed);
+    QVERIFY(t1Tester.testPassed);
+
 }
 
 QTEST_MAIN(tst_QState)

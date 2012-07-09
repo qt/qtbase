@@ -145,7 +145,7 @@ QState *QAbstractTransitionPrivate::sourceState() const
 void QAbstractTransitionPrivate::emitTriggered()
 {
     Q_Q(QAbstractTransition);
-    emit q->triggered();
+    emit q->triggered(QAbstractTransition::QPrivateSignal());
 }
 
 /*!

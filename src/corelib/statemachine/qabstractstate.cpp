@@ -119,13 +119,13 @@ void QAbstractStatePrivate::callOnExit(QEvent *e)
 void QAbstractStatePrivate::emitEntered()
 {
     Q_Q(QAbstractState);
-    emit q->entered();
+    emit q->entered(QAbstractState::QPrivateSignal());
 }
 
 void QAbstractStatePrivate::emitExited()
 {
     Q_Q(QAbstractState);
-    emit q->exited();
+    emit q->exited(QAbstractState::QPrivateSignal());
 }
 
 /*!

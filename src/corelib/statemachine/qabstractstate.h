@@ -65,11 +65,16 @@ public:
     QStateMachine *machine() const;
 
 Q_SIGNALS:
-#if !defined(Q_MOC_RUN) && !defined(qdoc)
-private: // can only be emitted by QAbstractState
+    void entered(
+#if !defined(qdoc)
+      QPrivateSignal
 #endif
-    void entered();
-    void exited();
+    );
+    void exited(
+#if !defined(qdoc)
+      QPrivateSignal
+#endif
+    );
 
 protected:
     QAbstractState(QState *parent = 0);
