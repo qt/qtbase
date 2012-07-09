@@ -661,7 +661,8 @@
 //#      define Q_COMPILER_INITIALIZER_LISTS
 #endif
 
-#if defined(Q_OS_BLACKBERRY) || defined(Q_OS_QNX)
+#ifdef __cplusplus
+# if defined(Q_OS_BLACKBERRY) || defined(Q_OS_QNX)
 #  include <utility>
 #  if defined(_YVALS) || defined(_LIBCPP_VER)
 // QNX: libcpp (Dinkumware-based) doesn't have the <initializer_list>
@@ -671,6 +672,7 @@
 #      undef Q_COMPILER_INITIALIZER_LISTS
 #    endif
 #  endif
+# endif
 #endif // Q_OS_BLACKBERRY || Q_OS_QNX
 
 /*
