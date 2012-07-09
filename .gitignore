@@ -98,6 +98,7 @@ configure.cache
 config.status
 config.summary
 mkspecs/default
+mkspecs/default-host
 mkspecs/qconfig.pri
 mkspecs/qdevice.pri
 moc_*.cpp
