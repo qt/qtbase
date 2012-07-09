@@ -453,7 +453,7 @@ int QFontMetrics::leftBearing(QChar ch) const
 
     QGlyphLayoutArray<10> glyphs;
     int nglyphs = 9;
-    engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
+    engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly);
     // ### can nglyphs != 1 happen at all? Not currently I think
     qreal lb;
     engine->getGlyphBearings(glyphs.glyphs[0], &lb);
@@ -488,7 +488,7 @@ int QFontMetrics::rightBearing(QChar ch) const
 
     QGlyphLayoutArray<10> glyphs;
     int nglyphs = 9;
-    engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
+    engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly);
     // ### can nglyphs != 1 happen at all? Not currently I think
     qreal rb;
     engine->getGlyphBearings(glyphs.glyphs[0], 0, &rb);
@@ -706,7 +706,7 @@ QRect QFontMetrics::boundingRect(QChar ch) const
 
     QGlyphLayoutArray<10> glyphs;
     int nglyphs = 9;
-    engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
+    engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly);
     glyph_metrics_t gm = engine->boundingBox(glyphs.glyphs[0]);
     return QRect(qRound(gm.x), qRound(gm.y), qRound(gm.width), qRound(gm.height));
 }
@@ -1324,7 +1324,7 @@ qreal QFontMetricsF::leftBearing(QChar ch) const
 
     QGlyphLayoutArray<10> glyphs;
     int nglyphs = 9;
-    engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
+    engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly);
     // ### can nglyphs != 1 happen at all? Not currently I think
     qreal lb;
     engine->getGlyphBearings(glyphs.glyphs[0], &lb);
@@ -1359,7 +1359,7 @@ qreal QFontMetricsF::rightBearing(QChar ch) const
 
     QGlyphLayoutArray<10> glyphs;
     int nglyphs = 9;
-    engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
+    engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly);
     // ### can nglyphs != 1 happen at all? Not currently I think
     qreal rb;
     engine->getGlyphBearings(glyphs.glyphs[0], 0, &rb);
@@ -1494,7 +1494,7 @@ QRectF QFontMetricsF::boundingRect(QChar ch) const
 
     QGlyphLayoutArray<10> glyphs;
     int nglyphs = 9;
-    engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
+    engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly);
     glyph_metrics_t gm = engine->boundingBox(glyphs.glyphs[0]);
     return QRectF(gm.x.toReal(), gm.y.toReal(), gm.width.toReal(), gm.height.toReal());
 }
