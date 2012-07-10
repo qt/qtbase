@@ -106,10 +106,6 @@
 #    define Q_CC_INTEL
 #  endif
 
-#  if defined(Q_CC_MSVC) && _MSC_VER >= 1400
-#    define Q_COMPILER_VARIADIC_MACROS
-#  endif
-
 /* only defined for MSVC since that's the only compiler that actually optimizes for this */
 /* might get overridden further down when Q_COMPILER_NOEXCEPT is detected */
 #  define Q_DECL_NOTHROW  throw()
@@ -646,7 +642,13 @@
 #  endif
 #endif
 
-#if defined(Q_CC_MSVC) && _MSC_VER >= 1600 && !defined(Q_CC_INTEL)
+#if defined(Q_CC_MSVC) && !defined(Q_CC_INTEL)
+#    if _MSC_VER >= 1400
+       /* C++11 features supported in VC8 = VC2005: */
+#      define Q_COMPILER_VARIADIC_MACROS
+#    endif
+#    if _MSC_VER >= 1600
+       /* C++11 features supported in VC10 = VC2010: */
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_DECLTYPE
@@ -654,7 +656,8 @@
 #      define Q_COMPILER_STATIC_ASSERT
 //  MSVC has std::initilizer_list, but does not support the braces initialization
 //#      define Q_COMPILER_INITIALIZER_LISTS
-#endif
+#    endif
+#endif /* Q_CC_MSVC */
 
 #ifdef __cplusplus
 # if defined(Q_OS_BLACKBERRY) || defined(Q_OS_QNX)
