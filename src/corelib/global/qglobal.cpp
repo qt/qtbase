@@ -3182,4 +3182,60 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \sa Q_DECL_NOTHROW, Q_DECL_NOEXCEPT_EXPR
 */
 
+/*!
+    \macro Q_DECL_OVERRIDE
+    \since 5.0
+    \relates <QtGlobal>
+
+    This macro can be used to declare an overriding virtual
+    function. Use of this markup will allow the compiler to generate
+    an error if the overriding virtual function does not in fact
+    override anything.
+
+    It expands to "override" if your compiler supports that C++11
+    contextual keyword, or to nothing otherwise.
+
+    The macro goes at the end of the function, usually after the
+    \c{const}, if any:
+    \code
+    // generate error if this doesn't actually override anything:
+    virtual void MyWidget::paintEvent(QPaintEvent*) Q_DECL_OVERRIDE;
+    \endcode
+
+    \sa Q_DECL_FINAL
+*/
+
+/*!
+    \macro Q_DECL_FINAL
+    \since 5.0
+    \relates <QtGlobal>
+
+    This macro can be used to declare an overriding virtual or a class
+    as "final", with Java semantics. Further-derived classes can then
+    no longer override this virtual function, or inherit from this
+    class, respectively.
+
+    It expands to "final" if your compiler supports that C++11
+    contextual keyword, or something non-standard if your compiler
+    supports something close enough to the C++11 semantics, or to
+    nothing otherwise.
+
+    The macro goes at the end of the function, usually after the
+    \c{const}, if any:
+    \code
+    // more-derived classes no longer permitted to override this:
+    virtual void MyWidget::paintEvent(QPaintEvent*) Q_DECL_FINAL;
+    \endcode
+
+    For classes, it goes in front of the \c{:} in the class
+    definition, if any:
+    \code
+    class QRect Q_DECL_FINAL { // cannot be derived from
+        // ...
+    };
+    \endcode
+
+    \sa Q_DECL_OVERRIDE
+*/
+
 QT_END_NAMESPACE
