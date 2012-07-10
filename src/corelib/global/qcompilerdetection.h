@@ -715,15 +715,9 @@
 #ifdef Q_COMPILER_EXPLICIT_OVERRIDES
 # define Q_DECL_OVERRIDE override
 # define Q_DECL_FINAL final
-# ifdef  Q_COMPILER_DECLTYPE // required for class-level final to compile in qvariant_p.h
-#  define Q_DECL_FINAL_CLASS final
-# else
-#  define Q_DECL_FINAL_CLASS
-# endif
 #else
 # define Q_DECL_OVERRIDE
 # define Q_DECL_FINAL
-# define Q_DECL_FINAL_CLASS
 #endif
 
 #ifdef Q_COMPILER_NOEXCEPT

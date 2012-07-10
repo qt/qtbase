@@ -271,11 +271,11 @@ class QVariantIsNull
     Q_STATIC_ASSERT(!HasIsNullMethod<SelfTest2>::Value);
     struct SelfTest3 : public SelfTest1 {};
     Q_STATIC_ASSERT(HasIsNullMethod<SelfTest3>::Value);
-    struct SelfTestFinal1 Q_DECL_FINAL_CLASS { bool isNull() const; };
+    struct SelfTestFinal1 Q_DECL_FINAL { bool isNull() const; };
     Q_STATIC_ASSERT(HasIsNullMethod<SelfTestFinal1>::Value);
-    struct SelfTestFinal2 Q_DECL_FINAL_CLASS {};
+    struct SelfTestFinal2 Q_DECL_FINAL {};
     Q_STATIC_ASSERT(!HasIsNullMethod<SelfTestFinal2>::Value);
-    struct SelfTestFinal3 Q_DECL_FINAL_CLASS : public SelfTest1 {};
+    struct SelfTestFinal3 Q_DECL_FINAL : public SelfTest1 {};
     Q_STATIC_ASSERT(HasIsNullMethod<SelfTestFinal3>::Value);
 
     template<typename T, bool HasIsNull = HasIsNullMethod<T>::Value>
