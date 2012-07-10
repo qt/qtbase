@@ -43,7 +43,7 @@
 
 #include "qguiapplication.h"
 #include "private/qfactoryloader_p.h"
-#include "qgenericplugin_qpa.h"
+#include "qgenericplugin.h"
 #include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
