@@ -1758,9 +1758,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
         ttf = tm.tmPitchAndFamily & TMPF_TRUETYPE;
         SelectObject(hdc, oldObj);
 
-        if (!ttf || !useDirectWrite) {
-            useDirectWrite = false;
-
+        if (!useDirectWrite) {
             if (hfont && (!ttf || request.stretch != 100)) {
                 DeleteObject(hfont);
                 if (!res)
