@@ -2122,12 +2122,12 @@ void tst_QProcess::setWorkingDirectory()
 #ifdef Q_OS_WINCE
     QSKIP("Windows CE does not support working directory logic");
 #endif
-    process = new QProcess;
-    process->setWorkingDirectory("test");
-    process->start("testSetWorkingDirectory/testSetWorkingDirectory");
 #ifndef Q_OS_WIN
     QSKIP("setWorkingDirectory will chdir before starting the process on unices");
 #endif
+    process = new QProcess;
+    process->setWorkingDirectory("test");
+    process->start("testSetWorkingDirectory/testSetWorkingDirectory");
     QVERIFY(process->waitForFinished());
 
     QByteArray workingDir = process->readAllStandardOutput();
@@ -2184,6 +2184,7 @@ void tst_QProcess::invalidProgramString()
 //-----------------------------------------------------------------------------
 void tst_QProcess::onlyOneStartedSignal()
 {
+    qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
     QProcess process;
 
     QSignalSpy spyStarted(&process,  SIGNAL(started()));
