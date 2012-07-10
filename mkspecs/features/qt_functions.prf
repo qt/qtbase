@@ -98,9 +98,9 @@ defineTest(qtAddModule) {
     }
     # Only link to this module if a libs directory is set, else this is just a module
     # to give access to sources or include files, and not for linking.
-    !isEmpty(MODULE_LIBS) {
+    !isEmpty(QT.$${1}.libs) { # Use unmodified path, so /usr/lib also works
         !isEmpty(QMAKE_LSB) {
-            QMAKE_LFLAGS *= --lsb-libpath=$$MODULE_LIBS
+            !isEmpty(MODULE_LIBS): QMAKE_LFLAGS *= --lsb-libpath=$$MODULE_LIBS
             QMAKE_LFLAGS *= -L/opt/lsb/lib
             QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
         }
