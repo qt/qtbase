@@ -657,6 +657,13 @@
 //  MSVC has std::initilizer_list, but does not support the braces initialization
 //#      define Q_COMPILER_INITIALIZER_LISTS
 #    endif
+#    if _MSC_VER >= 1700
+       /* C++11 features supported in VC11 = VC2012: */
+#      define Q_COMPILER_EXPLICIT_OVERRIDES
+#      define Q_COMPILER_RANGE_FOR
+#      define Q_COMPILER_CLASS_ENUM
+#      define Q_COMPILER_ATOMICS
+#    endif /* VC 11 */
 #endif /* Q_CC_MSVC */
 
 #ifdef __cplusplus
