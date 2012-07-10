@@ -51,7 +51,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_URLINFO
+#ifndef QT_NO_FTP
 
 class QUrl;
 class QUrlInfoPrivate;
@@ -121,7 +121,7 @@ private:
     QUrlInfoPrivate *d;
 };
 
-#endif // QT_NO_URLINFO
+#endif // QT_NO_FTP
 
 QT_END_NAMESPACE
 
