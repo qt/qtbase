@@ -67,10 +67,10 @@ macx {
         CMAKE_BUILD_IS_FRAMEWORK = "true"
     } else {
         !isEmpty(CMAKE_STATIC_TYPE) {
-            CMAKE_LIB_FILE_LOCATION_DEBUG = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.a
+            CMAKE_LIB_FILE_LOCATION_DEBUG = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}_debug.a
             CMAKE_LIB_FILE_LOCATION_RELEASE = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.a
         } else {
-            CMAKE_LIB_FILE_LOCATION_DEBUG = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.$$eval(QT.$${MODULE}.VERSION).dylib
+            CMAKE_LIB_FILE_LOCATION_DEBUG = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}_debug.$$eval(QT.$${MODULE}.VERSION).dylib
             CMAKE_LIB_FILE_LOCATION_RELEASE = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.$$eval(QT.$${MODULE}.VERSION).dylib
         }
     }
