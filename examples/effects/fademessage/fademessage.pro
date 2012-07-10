@@ -9,7 +9,8 @@ sources.files = $$SOURCES \
     $$HEADERS \
     $$RESOURCES \
     $$FORMS \
-    fademessage.pro
+    fademessage.pro \
+    background.jpg
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/effects/fademessage
 
 

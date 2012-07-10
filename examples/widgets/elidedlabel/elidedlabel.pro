@@ -14,5 +14,8 @@ HEADERS += \
     testwidget.h \
     elidedlabel.h
 
-CONFIG += mobility
-MOBILITY =
+# install
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/elidedlabel
+sources.files = $$SOURCES $$HEADERS *.pro
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/elidedlabel
+INSTALLS += target sources

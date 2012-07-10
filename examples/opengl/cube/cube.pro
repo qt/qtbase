@@ -24,5 +24,10 @@ contains(QT_CONFIG, opengl) {
         fshader.glsl
 }
 
+# install
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/cube
+sources.files = $$SOURCES $$HEADERS $$RESOURCES cube.png *.glsl *.pro
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/cube
+INSTALLS += target sources
 
 simulator: warning(This example might not fully work on Simulator platform)
