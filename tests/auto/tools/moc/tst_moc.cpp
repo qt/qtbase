@@ -72,6 +72,7 @@
 #endif
 #include "cxx11-enums.h"
 #include "cxx11-final-classes.h"
+#include "cxx11-explicit-override-control.h"
 
 QT_USE_NAMESPACE
 
@@ -546,6 +547,8 @@ private slots:
     void privateSignalConnection();
     void finalClasses_data();
     void finalClasses();
+    void explicitOverrideControl_data();
+    void explicitOverrideControl();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -2251,6 +2254,43 @@ void tst_Moc::finalClasses()
     QFETCH(QString, expected);
 
     QCOMPARE(className, expected);
+}
+
+Q_DECLARE_METATYPE(const QMetaObject*);
+
+void tst_Moc::explicitOverrideControl_data()
+{
+    QTest::addColumn<const QMetaObject*>("mo");
+
+#define ADD(x) QTest::newRow(#x) << &x::staticMetaObject
+    ADD(ExplicitOverrideControlFinalQt);
+    ADD(ExplicitOverrideControlFinalCxx11);
+    ADD(ExplicitOverrideControlSealed);
+    ADD(ExplicitOverrideControlOverrideQt);
+    ADD(ExplicitOverrideControlOverrideCxx11);
+    ADD(ExplicitOverrideControlFinalQtOverrideQt);
+    ADD(ExplicitOverrideControlFinalCxx11OverrideCxx11);
+    ADD(ExplicitOverrideControlSealedOverride);
+#undef ADD
+}
+
+void tst_Moc::explicitOverrideControl()
+{
+    QFETCH(const QMetaObject*, mo);
+
+    QVERIFY(mo);
+    QCOMPARE(mo->indexOfMethod("pureSlot0()"), mo->methodOffset() + 0);
+    QCOMPARE(mo->indexOfMethod("pureSlot1()"), mo->methodOffset() + 1);
+    QCOMPARE(mo->indexOfMethod("pureSlot2()"), mo->methodOffset() + 2);
+    QCOMPARE(mo->indexOfMethod("pureSlot3()"), mo->methodOffset() + 3);
+#if 0 // moc doesn't support volatile slots
+    QCOMPARE(mo->indexOfMethod("pureSlot4()"), mo->methodOffset() + 4);
+    QCOMPARE(mo->indexOfMethod("pureSlot5()"), mo->methodOffset() + 5);
+    QCOMPARE(mo->indexOfMethod("pureSlot6()"), mo->methodOffset() + 6);
+    QCOMPARE(mo->indexOfMethod("pureSlot7()"), mo->methodOffset() + 7);
+    QCOMPARE(mo->indexOfMethod("pureSlot8()"), mo->methodOffset() + 8);
+    QCOMPARE(mo->indexOfMethod("pureSlot9()"), mo->methodOffset() + 9);
+#endif
 }
 
 QTEST_MAIN(tst_Moc)
