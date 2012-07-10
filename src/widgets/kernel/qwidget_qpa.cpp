@@ -656,7 +656,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
     data->in_set_window_state = 0;
 
     if (needShow)
-        show();
+        setVisible(true);
 
     if (newstate & Qt::WindowActive)
         activateWindow();

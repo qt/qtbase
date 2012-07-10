@@ -2664,7 +2664,7 @@ void QWidget::showMinimized()
 
     if (!isMin)
         setWindowState((windowState() & ~Qt::WindowActive) | Qt::WindowMinimized);
-    show();
+    setVisible(true);
 }
 
 /*!
@@ -2835,7 +2835,7 @@ void QWidget::showMaximized()
         }
     }
 #endif // Q_WS_MAC
-    show();
+    setVisible(true);
 }
 
 /*!
@@ -2864,7 +2864,7 @@ void QWidget::showNormal()
         }
     }
 #endif // Q_WS_MAC
-    show();
+    setVisible(true);
 }
 
 /*!
