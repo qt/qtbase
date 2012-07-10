@@ -646,6 +646,15 @@
 #    if _MSC_VER >= 1400
        /* C++11 features supported in VC8 = VC2005: */
 #      define Q_COMPILER_VARIADIC_MACROS
+       /* 2005 supports the override and final contextual keywords, in
+        the same positions as the C++11 variants, but 'final' is
+        called 'sealed' instead:
+        http://msdn.microsoft.com/en-us/library/0w2w91tf%28v=vs.80%29.aspx
+        So don't define Q_COMPILER_EXPLICIT_OVERRIDES (since it's not
+        the same as the C++11 version), but define the Q_DECL_* flags
+        accordingly: */
+#      define Q_DECL_OVERRIDE override
+#      define Q_DECL_FINAL sealed
 #    endif
 #    if _MSC_VER >= 1600
        /* C++11 features supported in VC10 = VC2010: */
@@ -659,7 +668,9 @@
 #    endif
 #    if _MSC_VER >= 1700
        /* C++11 features supported in VC11 = VC2012: */
-#      define Q_COMPILER_EXPLICIT_OVERRIDES
+#       undef Q_DECL_OVERRIDE               /* undo 2005/2098 settings... */
+#       undef Q_DECL_FINAL                  /* undo 2005/2008 settings... */
+#      define Q_COMPILER_EXPLICIT_OVERRIDES /* ...and use std C++11 now   */
 #      define Q_COMPILER_RANGE_FOR
 #      define Q_COMPILER_CLASS_ENUM
 #      define Q_COMPILER_ATOMICS
@@ -716,8 +727,12 @@
 # define Q_DECL_OVERRIDE override
 # define Q_DECL_FINAL final
 #else
-# define Q_DECL_OVERRIDE
-# define Q_DECL_FINAL
+# ifndef Q_DECL_OVERRIDE
+#  define Q_DECL_OVERRIDE
+# endif
+# ifndef Q_DECL_FINAL
+#  define Q_DECL_FINAL
+# endif
 #endif
 
 #ifdef Q_COMPILER_NOEXCEPT
