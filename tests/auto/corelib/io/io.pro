@@ -36,7 +36,8 @@ SUBDIRS=\
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qabstractfileengine \
     qfileinfo \
-    qipaddress
+    qipaddress \
+    qurlinternal
 
 win32:!contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qfilesystementry
