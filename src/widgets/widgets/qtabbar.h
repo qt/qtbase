@@ -71,6 +71,7 @@ class Q_WIDGETS_EXPORT QTabBar: public QWidget
     Q_PROPERTY(bool movable READ isMovable WRITE setMovable)
     Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)
     Q_PROPERTY(bool autoHide READ autoHide WRITE setAutoHide)
+    Q_PROPERTY(bool changeCurrentOnDrag READ changeCurrentOnDrag WRITE setChangeCurrentOnDrag)
 
 public:
     explicit QTabBar(QWidget* parent=0);
@@ -170,6 +171,9 @@ public:
     bool autoHide() const;
     void setAutoHide(bool hide);
 
+    bool changeCurrentOnDrag() const;
+    void setChangeCurrentOnDrag(bool change);
+
 public Q_SLOTS:
     void setCurrentIndex(int index);
 
@@ -200,6 +204,7 @@ protected:
 #endif
     void keyPressEvent(QKeyEvent *);
     void changeEvent(QEvent *);
+    void timerEvent(QTimerEvent *event);
     void initStyleOption(QStyleOptionTab *option, int tabIndex) const;
 
 #ifndef QT_NO_ACCESSIBILITY

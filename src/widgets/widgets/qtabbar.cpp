@@ -588,6 +588,16 @@ void QTabBarPrivate::makeVisible(int index)
     }
 }
 
+void QTabBarPrivate::killSwitchTabTimer()
+{
+    Q_Q(QTabBar);
+    if (switchTabTimerId) {
+        q->killTimer(switchTabTimerId);
+        switchTabTimerId = 0;
+    }
+    switchTabCurrentIndex = -1;
+}
+
 void QTabBarPrivate::layoutTab(int index)
 {
     Q_Q(QTabBar);
@@ -1527,6 +1537,26 @@ bool QTabBar::event(QEvent *event)
     } else if (event->type() == QEvent::Move) {
         d->updateMacBorderMetrics();
         return QWidget::event(event);
+
+#ifndef QT_NO_DRAGANDDROP
+    } else if (event->type() == QEvent::DragEnter) {
+        if (d->changeCurrentOnDrag)
+            event->accept();
+    } else if (event->type() == QEvent::DragMove) {
+        if (d->changeCurrentOnDrag) {
+            const int tabIndex = tabAt(static_cast<QDragMoveEvent *>(event)->pos());
+            if (isTabEnabled(tabIndex) && d->switchTabCurrentIndex != tabIndex) {
+                d->switchTabCurrentIndex = tabIndex;
+                if (d->switchTabTimerId)
+                    killTimer(d->switchTabTimerId);
+                d->switchTabTimerId = startTimer(style()->styleHint(QStyle::SH_TabBar_ChangeCurrentDelay));
+            }
+            event->ignore();
+        }
+    } else if (event->type() == QEvent::DragLeave || event->type() == QEvent::Drop) {
+        d->killSwitchTabTimer();
+        event->ignore();
+#endif
     }
     return QWidget::event(event);
 }
@@ -2045,6 +2075,21 @@ void QTabBar::changeEvent(QEvent *event)
 }
 
 /*!
+    \reimp
+*/
+void QTabBar::timerEvent(QTimerEvent *event)
+{
+    Q_D(QTabBar);
+    if (event->timerId() == d->switchTabTimerId) {
+        killTimer(d->switchTabTimerId);
+        d->switchTabTimerId = 0;
+        setCurrentIndex(d->switchTabCurrentIndex);
+        d->switchTabCurrentIndex = -1;
+    }
+    QWidget::timerEvent(event);
+}
+
+/*!
     \property QTabBar::elideMode
     \brief how to elide text in the tab bar
     \since 4.2
@@ -2304,6 +2349,32 @@ void QTabBar::setAutoHide(bool hide)
         d->autoHideTabs();
     else
         setVisible(true);
+}
+
+/*!
+    \property QTabBar::changeCurrentOnDrag
+    \brief If true, then the current tab is automatically changed when dragging
+    over the tabbar.
+    \since 5.4
+
+    \note You should also set acceptDrops property to true to make this feature
+    work.
+
+    By default, this property is false.
+*/
+
+bool QTabBar::changeCurrentOnDrag() const
+{
+    Q_D(const QTabBar);
+    return d->changeCurrentOnDrag;
+}
+
+void QTabBar::setChangeCurrentOnDrag(bool change)
+{
+    Q_D(QTabBar);
+    d->changeCurrentOnDrag = change;
+    if (!change)
+        d->killSwitchTabTimer();
 }
 
 /*!

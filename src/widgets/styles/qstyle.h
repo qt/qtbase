@@ -704,6 +704,7 @@ public:
         SH_Splitter_OpaqueResize,
         SH_ComboBox_UseNativePopup,
         SH_LineEdit_PasswordMaskDelay,
+        SH_TabBar_ChangeCurrentDelay,
         // Add new style hint values here
 
         SH_CustomBase = 0xf0000000

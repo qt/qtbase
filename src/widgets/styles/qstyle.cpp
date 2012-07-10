@@ -1930,6 +1930,10 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SH_Splitter_OpaqueResize Determines if resizing is opaque
            This enum value has been introduced in Qt 5.2
 
+    \value SH_TabBar_ChangeCurrentDelay Determines the delay before the current
+           tab is changed while dragging over the tabbar, in milliseconds. This
+           enum value has been introduced in Qt 5.4
+
     \sa styleHint()
 */
 

@@ -77,7 +77,8 @@ public:
         :currentIndex(-1), pressedIndex(-1), shape(QTabBar::RoundedNorth), layoutDirty(false),
         drawBase(true), scrollOffset(0), elideModeSetByUser(false), useScrollButtonsSetByUser(false), expanding(true), closeButtonOnTabs(false),
         selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false),
-        dragInProgress(false), documentMode(false), autoHide(false), movingTab(0)
+        dragInProgress(false), documentMode(false), autoHide(false), changeCurrentOnDrag(false),
+        switchTabCurrentIndex(-1), switchTabTimerId(0), movingTab(0)
 #ifdef Q_WS_MAC
         , previousPressedIndex(-1)
 #endif
@@ -203,6 +204,10 @@ public:
     bool dragInProgress;
     bool documentMode;
     bool autoHide;
+    bool changeCurrentOnDrag;
+
+    int switchTabCurrentIndex;
+    int switchTabTimerId;
 
     QWidget *movingTab;
 #ifdef Q_WS_MAC
@@ -241,6 +246,8 @@ public:
             optTabBase->rect = rect;
         }
     }
+
+    void killSwitchTabTimer();
 
 };
 

@@ -5109,6 +5109,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_TabBar_CloseButtonPosition:
         ret = QTabBar::RightSide;
         break;
+    case SH_TabBar_ChangeCurrentDelay:
+        ret = 500;
+        break;
 #endif
     case SH_DockWidget_ButtonsHaveFrame:
         ret = true;
