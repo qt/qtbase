@@ -1,7 +1,7 @@
 TEMPLATE = app
 
 CONFIG += qt warn_on console
-CONFIG -= app_bundle
+isEmpty(QMAKE_INFO_PLIST): CONFIG -= app_bundle
 
 build_all:!build_pass {
     CONFIG -= build_all
@@ -35,10 +35,12 @@ INSTALLS += target
     MODULE_BASE_OUTDIR = $$shadowed($$MODULE_BASE_DIR)
     isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$MODULE_BASE_OUTDIR
 
+    load(resolve_target)
+
     TOOL_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_$${MODULE}.pri
 
     TOOL_PRI_CONT = \
-        "QT_TOOL.$${MODULE}.binary = $$absolute_path($$DESTDIR, $$OUT_PWD)/$$TARGET" \
+        "QT_TOOL.$${MODULE}.binary = $$QMAKE_RESOLVED_TARGET" \
         "QT_TOOL.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")"
     write_file($$TOOL_PRI, TOOL_PRI_CONT)|error("Aborting.")
 
