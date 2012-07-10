@@ -12,6 +12,9 @@ CONFIG = lex yacc warn_on debug exceptions $$CONFIG
                 cache(QMAKEMODULES, add super, modpath)
             unset(modpath)
         }
+    } else {
+        # When doing a build without -prefix, put the headers directly into qtbase.
+        isEmpty(MODULE_BASE_OUTDIR): MODULE_BASE_OUTDIR = $$[QT_HOST_DATA]
     }
 
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
