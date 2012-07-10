@@ -80,6 +80,8 @@ public:
     void setPaintFlipped(bool flipped);
     bool paintFlipped() const;
 
+    virtual void ensureActiveTarget();
+
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
 

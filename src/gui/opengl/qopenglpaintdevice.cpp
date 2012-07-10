@@ -244,4 +244,15 @@ bool QOpenGLPaintDevice::paintFlipped() const
     return d_ptr->flipped;
 }
 
+/*!
+    This virtual method is provided as a callback to allow re-binding a
+    target frame buffer object when different QOpenGLPaintDevice instances
+    are issuing draw calls alternately on the same OpenGL context.
+
+    QPainter::beginNativePainting will also trigger this method.
+*/
+void QOpenGLPaintDevice::ensureActiveTarget()
+{
+}
+
 QT_END_NAMESPACE

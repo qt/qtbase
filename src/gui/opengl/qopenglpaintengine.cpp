@@ -2013,6 +2013,8 @@ void QOpenGL2PaintEngineEx::ensureActive()
     }
 
     if (d->needsSync) {
+        d->device->ensureActiveTarget();
+
         d->transferMode(BrushDrawingMode);
         glViewport(0, 0, d->width, d->height);
         d->needsSync = false;
