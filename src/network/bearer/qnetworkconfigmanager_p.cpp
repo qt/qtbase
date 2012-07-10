@@ -383,8 +383,13 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         QFactoryLoader *l = loader();
         const PluginKeyMap keyMap = l->keyMap();
         const PluginKeyMapConstIterator cend = keyMap.constEnd();
+        QStringList addedEngines;
         for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it) {
             const QString &key = it.value();
+            if (addedEngines.contains(key))
+                continue;
+
+            addedEngines.append(key);
             if (QBearerEngine *engine = qLoadPlugin<QBearerEngine, QBearerEnginePlugin>(l, key)) {
                 if (key == QLatin1String("generic"))
                     generic = engine;
