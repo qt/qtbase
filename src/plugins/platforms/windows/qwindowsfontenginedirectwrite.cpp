@@ -242,7 +242,16 @@ void QWindowsFontEngineDirectWrite::collectMetrics()
         m_descent = DESIGN_TO_LOGICAL(metrics.descent);
         m_xHeight = DESIGN_TO_LOGICAL(metrics.xHeight);
         m_lineGap = DESIGN_TO_LOGICAL(metrics.lineGap);
+        m_underlinePosition = DESIGN_TO_LOGICAL(metrics.underlinePosition);
     }
+}
+
+QFixed QWindowsFontEngineDirectWrite::underlinePosition() const
+{
+    if (m_underlinePosition > 0)
+        return m_underlinePosition;
+    else
+        return QFontEngine::underlinePosition();
 }
 
 QFixed QWindowsFontEngineDirectWrite::lineThickness() const

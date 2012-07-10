@@ -69,6 +69,7 @@ public:
     void initFontInfo(const QFontDef &request, int dpi, IDWriteFont *font);
 
     QFixed lineThickness() const;
+    QFixed underlinePosition() const;
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
     QFixed emSquareSize() const;
 
@@ -115,6 +116,7 @@ private:
     IDWriteBitmapRenderTarget *m_directWriteBitmapRenderTarget;
 
     QFixed m_lineThickness;
+    QFixed m_underlinePosition;
     int m_unitsPerEm;
     QFixed m_ascent;
     QFixed m_descent;
