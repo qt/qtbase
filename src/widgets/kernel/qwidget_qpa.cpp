@@ -621,6 +621,9 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         bool supported = windowHandle()->windowState() == newEffectiveState;
 
         if (!supported) {
+            const bool wasResized = testAttribute(Qt::WA_Resized);
+            const bool wasMoved = testAttribute(Qt::WA_Moved);
+
             // undo the effects of the old emulated state
             if (oldEffectiveState == Qt::WindowFullScreen) {
                 setParent(0, d->topData()->savedFlags);
@@ -651,6 +654,11 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                     setGeometry(r);
                 }
             }
+
+            // setWindowState() is not an explicit move/resize, same as the supported == true
+            // case
+            setAttribute(Qt::WA_Resized, wasResized);
+            setAttribute(Qt::WA_Moved, wasMoved);
         }
     }
     data->in_set_window_state = 0;
