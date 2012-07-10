@@ -43,7 +43,7 @@
 
 #include <QDebug>
 #include <QGuiApplication>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 
 #ifdef QQNXNAVIGATOREVENTHANDLER_DEBUG
 #define qNavigatorEventHandlerDebug qDebug

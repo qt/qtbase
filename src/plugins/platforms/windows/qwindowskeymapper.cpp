@@ -45,7 +45,7 @@
 #include "qwindowsguieventdispatcher.h"
 
 #include <QtGui/QWindow>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 #include <QtGui/QKeyEvent>
 
 QT_BEGIN_NAMESPACE

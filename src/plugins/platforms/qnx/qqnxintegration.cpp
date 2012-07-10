@@ -81,7 +81,7 @@
 #endif
 
 #include <qpa/qplatformwindow.h>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 
 #if !defined(QT_NO_OPENGL)
 #include "qqnxglbackingstore.h"

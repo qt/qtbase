@@ -83,7 +83,7 @@
 #include <qguiapplication.h>
 #include <private/qguiapplication_p.h>
 #include "qt_mac_p.h"
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 
 QT_USE_NAMESPACE
 

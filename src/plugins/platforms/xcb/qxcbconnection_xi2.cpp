@@ -43,7 +43,7 @@
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
 #include "qtouchdevice.h"
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 //#define XI2_TOUCH_DEBUG
 #ifdef XI2_TOUCH_DEBUG
 #include <QDebug>

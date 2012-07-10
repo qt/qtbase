@@ -50,7 +50,7 @@
 
 #include <xcb/randr.h>
 
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 

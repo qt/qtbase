@@ -41,7 +41,7 @@
 
 #include "qeglfswindow.h"
 #include "qeglfshooks.h"
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 

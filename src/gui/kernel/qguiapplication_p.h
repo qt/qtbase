@@ -49,8 +49,8 @@
 
 #include <QtCore/private/qthread_p.h>
 
-#include <qpa/qwindowsysteminterface.h>
-#include <qpa/qwindowsysteminterface_p.h>
+#include <QWindowSystemInterface>
+#include "private/qwindowsysteminterface_p.h"
 #include "private/qshortcutmap_p.h"
 #include <qicon.h>
 

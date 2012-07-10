@@ -42,7 +42,7 @@
 #include "qopenwfdwindow.h"
 
 #include "qopenwfdscreen.h"
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 
 QOpenWFDWindow::QOpenWFDWindow(QWindow *window)
     : QPlatformWindow(window)

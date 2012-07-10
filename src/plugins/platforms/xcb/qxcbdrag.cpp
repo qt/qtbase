@@ -54,7 +54,7 @@
 #include <qrect.h>
 #include <qpainter.h>
 
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 
 #include <QtPlatformSupport/private/qshapedpixmapdndwindow_p.h>
 #include <QtPlatformSupport/private/qsimpledrag_p.h>

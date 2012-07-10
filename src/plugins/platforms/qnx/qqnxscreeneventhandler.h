@@ -42,7 +42,7 @@
 #ifndef QQNXSCREENEVENTHANDLER_H
 #define QQNXSCREENEVENTHANDLER_H
 
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 
 #include <screen/screen.h>
 

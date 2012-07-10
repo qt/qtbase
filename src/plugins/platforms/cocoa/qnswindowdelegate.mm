@@ -42,7 +42,7 @@
 #include "qnswindowdelegate.h"
 
 #include <QDebug>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 
 @implementation QNSWindowDelegate
 

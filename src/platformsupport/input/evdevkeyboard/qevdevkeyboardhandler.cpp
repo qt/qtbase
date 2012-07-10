@@ -45,7 +45,7 @@
 
 #include <QSocketNotifier>
 #include <QStringList>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 #include <QCoreApplication>
 #include <private/qcore_unix_p.h>
 

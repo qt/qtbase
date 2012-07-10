@@ -44,7 +44,7 @@
 #ifdef XCB_USE_XINPUT2_MAEMO
 
 #include "qxcbwindow.h"
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/XI2proto.h>
 #include <X11/Xatom.h>

@@ -46,7 +46,7 @@
 #include <QString>
 #include <QList>
 #include <QThread>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 
 QT_BEGIN_HEADER
 

@@ -44,7 +44,7 @@
 #include "qxcbscreen.h"
 #include <xcb/xcb_keysyms.h>
 #include <X11/keysym.h>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 #include <QtCore/QTextCodec>
 #include <QtCore/QMetaMethod>
 #include <private/qguiapplication_p.h>

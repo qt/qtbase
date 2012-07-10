@@ -70,8 +70,8 @@
 #include "private/qcoreapplication_p.h"
 #include "QtCore/qpoint.h"
 #include <QTime>
-#include <qpa/qwindowsysteminterface.h>
-#include <qpa/qwindowsysteminterface_p.h>
+#include <QtGui/qwindowsysteminterface.h>
+#include <private/qwindowsysteminterface_p.h>
 #include <qpa/qplatformintegration.h>
 #include "private/qguiapplication_p.h"
 

@@ -46,7 +46,7 @@
 #include <QPoint>
 #include <QGuiApplication>
 #include <QScreen>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 
 #include <qplatformdefs.h>
 #include <private/qcore_unix_p.h> // overrides QT_OPEN

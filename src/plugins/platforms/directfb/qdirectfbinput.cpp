@@ -44,7 +44,7 @@
 
 #include <QThread>
 #include <QDebug>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 #include <QMouseEvent>
 #include <QEvent>
 

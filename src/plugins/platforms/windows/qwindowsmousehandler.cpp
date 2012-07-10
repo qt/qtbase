@@ -45,7 +45,7 @@
 #include "qwindowswindow.h"
 #include "qwindowsintegration.h"
 
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 

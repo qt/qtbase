@@ -57,7 +57,7 @@
 #include <QtCore/QSysInfo>
 #include <QtGui/QPalette>
 #include <QtGui/QGuiApplication>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 

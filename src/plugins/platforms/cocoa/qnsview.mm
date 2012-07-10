@@ -51,7 +51,7 @@
 #include "qcocoadrag.h"
 #include <qpa/qplatformintegration.h>
 
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qwindowsysteminterface.h>
 #include <QtGui/QTextFormat>
 #include <QtCore/QDebug>
 #include <private/qguiapplication_p.h>
