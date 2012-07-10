@@ -3,7 +3,11 @@ cmake_minimum_required(VERSION 2.8)
 
 project(test_add_resource_options)
 
-find_package(Qt5Core REQUIRED)
+if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/FindPackageHints.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/FindPackageHints.cmake")
+endif()
+
+find_package(Qt5Core REQUIRED HINTS ${Qt5Tests_PREFIX_PATH})
 
 include_directories(${Qt5Core_INCLUDE_DIRS})
 

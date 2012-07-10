@@ -17,6 +17,9 @@ macro(expect_fail _dir)
   string(REPLACE ")" "_" testname "${testname}")
   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}")
   file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${_dir}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}")
+
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/${_dir}/FindPackageHints.cmake" "set(Qt5Tests_PREFIX_PATH \"${CMAKE_PREFIX_PATH}\")")
+
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/CMakeLists.txt"
     "
       cmake_minimum_required(VERSION 2.8)
