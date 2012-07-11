@@ -114,8 +114,8 @@ else:include($$PWD/../../3rdparty/zlib_dependency.pri)
 contains(QT_CONFIG,icu) {
     SOURCES += tools/qlocale_icu.cpp
     DEFINES += QT_USE_ICU
-    win32:LIBS += -licuin -licuuc
-    else:LIBS += -licui18n -licuuc
+    win32:LIBS_PRIVATE += -licuin -licuuc
+    else:LIBS_PRIVATE += -licui18n -licuuc
 }
 
 pcre {
