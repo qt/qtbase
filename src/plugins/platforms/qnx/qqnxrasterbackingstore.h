@@ -74,6 +74,7 @@ private:
 
     QQnxWindow *m_platformWindow;
     QList<ScrollOp> m_scrollOpList;
+    bool m_hasUnflushedPaintOperations;
 };
 
 QT_END_NAMESPACE

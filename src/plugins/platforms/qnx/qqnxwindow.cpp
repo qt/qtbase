@@ -639,6 +639,19 @@ QQnxWindow *QQnxWindow::findWindow(screen_window_t windowHandle)
     return 0;
 }
 
+void QQnxWindow::blitFrom(QQnxWindow *sourceWindow, const QPoint &sourceOffset, const QRegion &targetRegion)
+{
+    if (!sourceWindow || sourceWindow->m_previousBufferIndex == -1 || targetRegion.isEmpty())
+        return;
+
+    qWindowDebug() << Q_FUNC_INFO << window() << sourceWindow->window() << sourceOffset << targetRegion;
+
+    QQnxBuffer &sourceBuffer = sourceWindow->m_buffers[sourceWindow->m_previousBufferIndex];
+    QQnxBuffer &targetBuffer = renderBuffer();
+
+    blitHelper(sourceBuffer, targetBuffer, sourceOffset, QPoint(0, 0), targetRegion, true);
+}
+
 void QQnxWindow::updateZorder(int &topZorder)
 {
     errno = 0;

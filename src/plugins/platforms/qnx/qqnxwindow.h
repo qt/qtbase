@@ -115,6 +115,8 @@ public:
 
     QQnxWindow *findWindow(screen_window_t windowHandle);
 
+    void blitFrom(QQnxWindow *sourceWindow, const QPoint &sourceOffset, const QRegion &targetRegion);
+
 private:
     void removeFromParent();
     void setOffset(const QPoint &setOffset);
