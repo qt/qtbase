@@ -385,6 +385,28 @@ void QQnxWindow::scroll(const QRegion &region, int dx, int dy, bool flush)
 
 void QQnxWindow::post(const QRegion &dirty)
 {
+    // How double-buffering works
+    // --------------------------
+    //
+    // The are two buffers, the previous one and the current one.
+    // The previous buffer always contains the complete, full image of the whole window when it
+    // was last posted.
+    // The current buffer starts with the complete, full image of the second to last posting
+    // of the window.
+    //
+    // During painting, Qt paints on the current buffer. Thus, when Qt has finished painting, the
+    // current buffer contains the second to last image plus the newly painted regions.
+    // Since the second to last image is too old, we copy over the image from the previous buffer, but
+    // only for those regions that Qt didn't paint (because that would overwrite what Qt has just
+    // painted). This is the copyBack() call below.
+    //
+    // After the call to copyBack(), the current buffer contains the complete, full image of the
+    // whole window in its current state, and we call screen_post_window() to make the new buffer
+    // available to libscreen (called "posting"). There, only the regions that Qt painted on are
+    // posted, as nothing else has changed.
+    //
+    // After that, the previous and the current buffers are swapped, and the whole cycle starts anew.
+
     // Check if render buffer exists and something was rendered
     if (m_currentBufferIndex != -1 && !dirty.isEmpty()) {
         qWindowDebug() << Q_FUNC_INFO << "window =" << window();
