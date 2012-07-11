@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qsignalmapper.h"
-#ifndef QT_NO_SIGNALMAPPER
 #include "qhash.h"
 #include "qobject_p.h"
 
@@ -304,6 +303,4 @@ void QSignalMapper::map(QObject *sender)
 QT_END_NAMESPACE
 
 #include "moc_qsignalmapper.cpp"
-
-#endif // QT_NO_SIGNALMAPPER
 

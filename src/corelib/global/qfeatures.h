@@ -175,9 +175,6 @@
 // QShortcut
 //#define QT_NO_SHORTCUT
 
-// QSignalMapper
-//#define QT_NO_SIGNALMAPPER
-
 // QSizeGrip
 //#define QT_NO_SIZEGRIP
 

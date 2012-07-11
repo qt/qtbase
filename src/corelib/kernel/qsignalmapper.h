@@ -48,8 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_SIGNALMAPPER
 class QSignalMapperPrivate;
 
 class Q_CORE_EXPORT QSignalMapper : public QObject
@@ -85,7 +83,6 @@ private:
     Q_DISABLE_COPY(QSignalMapper)
     Q_PRIVATE_SLOT(d_func(), void _q_senderDestroyed())
 };
-#endif // QT_NO_SIGNALMAPPER
 
 QT_END_NAMESPACE
 

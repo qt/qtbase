@@ -520,13 +520,6 @@ Requires:
 Name: Status Tip
 SeeAlso: ???
 
-Feature: SIGNALMAPPER
-Description: Supports bundling of signals from identifiable senders.
-Section: Widgets
-Requires:
-Name: QSignalMapper
-SeeAlso: ???
-
 Feature: WHATSTHIS
 Description: Supports displaying "What's this" help.
 Section: Widgets
