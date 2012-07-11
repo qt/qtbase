@@ -46,8 +46,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QTextStream>
+#include <QFutureSynchronizer>
 #include <QtConcurrent/QtConcurrentRun>
-#include <QtConcurrent/QFuture>
 
 #include <QtTest/QtTest>
 
@@ -752,17 +752,16 @@ void tst_QMimeDatabase::fromThreads()
 {
     QThreadPool::globalInstance()->setMaxThreadCount(20);
     // Note that data-based tests cannot be used here (QTest::fetchData asserts).
-    QList<QFuture<void> > futures;
-    futures << QtConcurrent::run(this, &tst_QMimeDatabase::mimeTypeForName);
-    futures << QtConcurrent::run(this, &tst_QMimeDatabase::aliases);
-    futures << QtConcurrent::run(this, &tst_QMimeDatabase::allMimeTypes);
-    futures << QtConcurrent::run(this, &tst_QMimeDatabase::icons);
-    futures << QtConcurrent::run(this, &tst_QMimeDatabase::inheritance);
-    futures << QtConcurrent::run(this, &tst_QMimeDatabase::knownSuffix);
-    futures << QtConcurrent::run(this, &tst_QMimeDatabase::mimeTypeForFileWithContent);
-    futures << QtConcurrent::run(this, &tst_QMimeDatabase::allMimeTypes); // a second time
-    Q_FOREACH (QFuture<void> f, futures)
-        f.waitForFinished();
+    QFutureSynchronizer<void> sync;
+    sync.addFuture(QtConcurrent::run(this, &tst_QMimeDatabase::mimeTypeForName));
+    sync.addFuture(QtConcurrent::run(this, &tst_QMimeDatabase::aliases));
+    sync.addFuture(QtConcurrent::run(this, &tst_QMimeDatabase::allMimeTypes));
+    sync.addFuture(QtConcurrent::run(this, &tst_QMimeDatabase::icons));
+    sync.addFuture(QtConcurrent::run(this, &tst_QMimeDatabase::inheritance));
+    sync.addFuture(QtConcurrent::run(this, &tst_QMimeDatabase::knownSuffix));
+    sync.addFuture(QtConcurrent::run(this, &tst_QMimeDatabase::mimeTypeForFileWithContent));
+    sync.addFuture(QtConcurrent::run(this, &tst_QMimeDatabase::allMimeTypes)); // a second time
+    // sync dtor blocks waiting for finished
 }
 
 static bool runUpdateMimeDatabase(const QString &path) // TODO make it a QMimeDatabase method?
