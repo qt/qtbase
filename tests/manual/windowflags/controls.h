@@ -121,7 +121,8 @@ class WindowStatesControl : public QGroupBox
     Q_OBJECT
 public:
     enum Flags {
-        WantVisibleCheckBox = 0x1
+        WantVisibleCheckBox = 0x1,
+        WantActiveCheckBox = 0x2
     };
 
     explicit WindowStatesControl(unsigned flags, QWidget *parent= 0);
@@ -131,12 +132,15 @@ public:
 
     bool visibleValue() const;
     void setVisibleValue(bool);
+    bool activeValue() const;
+    void setActiveValue(bool v);
 
 signals:
     void changed();
 
 private:
     QCheckBox *visibleCheckBox;
+    QCheckBox *activeCheckBox;
     QCheckBox *minimizeCheckBox;
     WindowStateControl *stateControl;
 };

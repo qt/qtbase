@@ -42,8 +42,7 @@
 #ifndef PREVIEWWINDOW_H
 #define PREVIEWWINDOW_H
 
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QDialog>
+#include <QDialog>
 
 QT_BEGIN_NAMESPACE
 class QPushButton;

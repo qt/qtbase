@@ -98,6 +98,9 @@ HintControl::HintControl(QWidget *parent)
     layout->addWidget(windowStaysOnBottomCheckBox, 6, 1);
     layout->addWidget(customizeWindowHintCheckBox, 5, 0);
     layout->addWidget(transparentForInputCheckBox, 6, 0);
+#if QT_VERSION < 0x050000
+    transparentForInputCheckBox->setEnabled(false);
+#endif
 }
 
 Qt::WindowFlags HintControl::hints() const
@@ -129,8 +132,10 @@ Qt::WindowFlags HintControl::hints() const
         flags |= Qt::WindowStaysOnBottomHint;
     if (customizeWindowHintCheckBox->isChecked())
         flags |= Qt::CustomizeWindowHint;
+#if QT_VERSION >= 0x050000
     if (transparentForInputCheckBox->isChecked())
         flags |= Qt::WindowTransparentForInput;
+#endif
     return flags;
 }
 
@@ -149,7 +154,9 @@ void HintControl::setHints(Qt::WindowFlags flags)
     windowStaysOnTopCheckBox->setChecked(flags & Qt::WindowStaysOnTopHint);
     windowStaysOnBottomCheckBox->setChecked(flags & Qt::WindowStaysOnBottomHint);
     customizeWindowHintCheckBox->setChecked(flags & Qt::CustomizeWindowHint);
+#if QT_VERSION >= 0x050000
     transparentForInputCheckBox->setChecked(flags & Qt::WindowTransparentForInput);
+#endif
 }
 
 void HintControl::slotCheckBoxChanged()
@@ -220,6 +227,7 @@ void WindowStateControl::setVisibleValue(bool v)
 WindowStatesControl::WindowStatesControl(unsigned flags, QWidget *parent)
     : QGroupBox(tr("States"), parent)
     , visibleCheckBox(0)
+    , activeCheckBox(0)
     , minimizeCheckBox(new QCheckBox(tr("Minimized")))
     , stateControl(new WindowStateControl(0))
 {
@@ -230,6 +238,11 @@ WindowStatesControl::WindowStatesControl(unsigned flags, QWidget *parent)
         visibleCheckBox = new QCheckBox(tr("Visible"));
         connect(visibleCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(changed()));
         layout->addWidget(visibleCheckBox);
+    }
+    if (flags & WantActiveCheckBox) {
+        activeCheckBox = new QCheckBox(tr("Active"));
+        connect(activeCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(changed()));
+        layout->addWidget(activeCheckBox);
     }
     layout->addWidget(minimizeCheckBox);
     layout->addWidget(stateControl);
@@ -242,6 +255,8 @@ Qt::WindowStates WindowStatesControl::states() const
     Qt::WindowStates s = stateControl->state();
     if (minimizeCheckBox->isChecked())
         s |= Qt::WindowMinimized;
+    if (activeValue())
+        s |= Qt::WindowActive;
     return s;
 }
 
@@ -252,6 +267,7 @@ void WindowStatesControl::setStates(Qt::WindowStates s)
     minimizeCheckBox->blockSignals(false);
     s &= ~Qt::WindowMinimized;
     stateControl->setState(Qt::WindowState(int(s)));
+    setActiveValue(s & Qt::WindowActive);
 }
 
 bool WindowStatesControl::visibleValue() const
@@ -265,6 +281,20 @@ void WindowStatesControl::setVisibleValue(bool v)
         visibleCheckBox->blockSignals(true);
         visibleCheckBox->setChecked(v);
         visibleCheckBox->blockSignals(false);
+    }
+}
+
+bool WindowStatesControl::activeValue() const
+{
+    return activeCheckBox && activeCheckBox->isChecked();
+}
+
+void WindowStatesControl::setActiveValue(bool v)
+{
+    if (activeCheckBox) {
+        activeCheckBox->blockSignals(true);
+        activeCheckBox->setChecked(v);
+        activeCheckBox->blockSignals(false);
     }
 }
 

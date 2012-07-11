@@ -269,7 +269,7 @@ private:
 
 WidgetWindowControl::WidgetWindowControl(QWidget *w )
     : BaseWindowControl(w)
-    , m_statesControl(new WindowStatesControl(WindowStatesControl::WantVisibleCheckBox))
+    , m_statesControl(new WindowStatesControl(WindowStatesControl::WantVisibleCheckBox | WindowStatesControl::WantActiveCheckBox))
 {
     setTitle(w->windowTitle());
     m_layout->addWidget(m_statesControl, 2, 0);
@@ -435,6 +435,11 @@ ControllerWidget::ControllerWidget(QWidget *parent)
 
     x += 800;
     m_testWidget->setWindowTitle(tr("TestWidget"));
+    if (args.contains(QLatin1String("-layout"))) {
+        QVBoxLayout *layout = new QVBoxLayout(m_testWidget.data());
+        QLabel *label = new QLabel("Hallo");
+        layout->addWidget(label);
+    }
     m_testWidget->move(x, y);
     m_testWidget->resize(200, 200);
     m_testWidget->show();

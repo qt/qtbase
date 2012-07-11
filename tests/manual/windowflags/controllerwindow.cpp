@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/QMainWindow>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QRadioButton>
-#include <QtWidgets/QCheckBox>
-#include <QtWidgets/QGroupBox>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QHBoxLayout>
+#include <QMainWindow>
+#include <QLabel>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QApplication>
+#include <QHBoxLayout>
 
 #include "controllerwindow.h"
 #include "controls.h"
@@ -75,7 +75,7 @@ ControllerWindow::ControllerWindow()
     hintsControl->setHints(previewWindow->windowFlags());
     connect(hintsControl, SIGNAL(changed(Qt::WindowFlags)), this, SLOT(updatePreview()));
 
-    statesControl = new WindowStatesControl(WindowStatesControl::WantVisibleCheckBox);
+    statesControl = new WindowStatesControl(WindowStatesControl::WantVisibleCheckBox|WindowStatesControl::WantActiveCheckBox);
     statesControl->setStates(previewWindow->windowState());
     statesControl->setVisibleValue(true);
     connect(statesControl, SIGNAL(changed()), this, SLOT(updatePreview()));
@@ -94,7 +94,12 @@ ControllerWindow::ControllerWindow()
     setLayout(mainLayout);
 
     setWindowTitle(tr("Window Flags (Qt version %1, %2)")
-                   .arg(QLatin1String(qVersion()), qApp->platformName()));
+                   .arg(QLatin1String(qVersion()),
+#if QT_VERSION >= 0x050000
+                        qApp->platformName()));
+#else
+                        QLatin1String("<unknown>")));
+#endif
     updatePreview();
 }
 

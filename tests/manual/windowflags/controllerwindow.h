@@ -42,7 +42,7 @@
 #ifndef CONTROLLERWINDOW_H
 #define CONTROLLERWINDOW_H
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 
 #include "previewwindow.h"
 

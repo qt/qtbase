@@ -1,5 +1,3 @@
-QT += widgets
-
 HEADERS       = controllerwindow.h \
                 previewwindow.h \
                 controls.h
@@ -9,4 +7,4 @@ SOURCES       = controllerwindow.cpp \
                 main.cpp \
                 controls.cpp
 
-QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
