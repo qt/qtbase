@@ -135,9 +135,12 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
     // Add window to plugin's window mapper
     QQnxIntegration::addWindow(m_window, window);
 
-    // setWindowState() does not get called when the platform window hasn't been created yet, so
-    // make sure to apply the inital window state here
+    // Qt never calls these setters after creating the window, so we need to do that ourselves here
     setWindowState(window->windowState());
+    if (window->parent())
+        setParent(window->parent()->handle());
+    setGeometry(window->geometry());
+    setVisible(window->isVisible());
 }
 
 QQnxWindow::~QQnxWindow()
