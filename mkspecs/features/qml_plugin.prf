@@ -9,7 +9,7 @@ isEmpty(CXX_MODULE) {
 }
 isEmpty(TARGETPATH): TARGETPATH = $$eval(QT.$${CXX_MODULE}.name)
 DESTDIR = $$eval(QT.$${CXX_MODULE}.imports)/$$TARGETPATH
-isEmpty(VERSION): VERSION = $$eval(QT.$${CXX_MODULE}.VERSION_MAJOR).$$eval(QT.$${CXX_MODULE}.VERSION_MINOR)
+isEmpty(IMPORT_VERSION): IMPORT_VERSION = $$eval(QT.$${CXX_MODULE}.VERSION_MAJOR).$$eval(QT.$${CXX_MODULE}.VERSION_MINOR)
 
 QMLDIRFILE = $$_PRO_FILE_PWD_/qmldir
 fq_qml_files = $$QMLDIRFILE
@@ -31,7 +31,7 @@ for(qmlf, QML_FILES): fq_qml_files += $$absolute_path($$qmlf, $$_PRO_FILE_PWD_)
     load(resolve_target)
     qtPrepareTool(QMLPLUGINDUMP, qmlplugindump)
     qmltypes.target = qmltypes
-    qmltypes.commands = $$QMLPLUGINDUMP $$replace(TARGETPATH, /, .) $$VERSION $$QMAKE_RESOLVED_TARGET > $$QMLTYPEFILE
+    qmltypes.commands = $$QMLPLUGINDUMP $$replace(TARGETPATH, /, .) $$IMPORT_VERSION $$QMAKE_RESOLVED_TARGET > $$QMLTYPEFILE
     qmltypes.depends = $$QMAKE_RESOLVED_TARGET
     QMAKE_EXTRA_TARGETS += qmltypes
 }
