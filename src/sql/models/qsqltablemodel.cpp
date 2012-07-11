@@ -1120,8 +1120,6 @@ bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
     the record will be appended to the end. Calls insertRows() and
     setRecord() internally.
 
-    Only fields where the generated flag is true will be included.
-
     Returns true if the record could be inserted, otherwise false.
 
     Changes are submitted immediately for OnFieldChange and
@@ -1253,8 +1251,16 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
 }
 
 /*!
-    Sets the values at the specified \a row to the values of \a
-    record for fields where generated flag is true.
+    Applies \a values to the \a row in the model. The source and
+    target fields are mapped by field name, not by position in
+    the record.
+
+    Note that the generated flags in \a values are preserved
+    and determine whether the corresponding fields are used when
+    changes are submitted to the database. The caller should
+    remember to set the generated flag to FALSE for fields
+    where the database is meant to supply the value, such as an
+    automatically incremented ID.
 
     For edit strategies OnFieldChange and OnRowChange, a row may
     receive a change only if no other row has a cached change.
@@ -1286,12 +1292,10 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
     typedef QMap<int, int> Map;
     Map map;
     for (int i = 0; i < values.count(); ++i) {
-        if (values.isGenerated(i)) {
-            int idx = d->nameToIndex(values.fieldName(i));
-            if (idx == -1)
-                return false;
-            map[i] = idx;
-        }
+        int idx = d->nameToIndex(values.fieldName(i));
+        if (idx == -1)
+            return false;
+        map[i] = idx;
     }
 
     QSqlTableModelPrivate::ModifiedRow &mrow = d->cache[row];
@@ -1301,8 +1305,12 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
 
     Map::const_iterator i = map.constBegin();
     const Map::const_iterator e = map.constEnd();
-    for ( ; i != e; ++i)
+    for ( ; i != e; ++i) {
          mrow.setValue(i.value(), values.value(i.key()));
+         // mrow.setValue() sets generated to TRUE, but source record should prevail.
+         if (!values.isGenerated(i.key()))
+            mrow.recRef().setGenerated(i.value(), false);
+    }
 
     if (columnCount())
         emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));

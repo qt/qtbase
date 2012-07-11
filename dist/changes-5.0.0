@@ -513,8 +513,9 @@ ignore the rest of the range.
 removed and only if there are no other changed rows.
 
 * setRecord() and insertRecord()
-  -Only use fields where generated flag is set to true. This is
-  is consistent with the meaning of the flag.
+  -The generated flags from the source record are preserved in the model
+  and determine which fields are included when changes are applied to
+  the database.
   -Require all fields to map correctly. Previously fields that didn't
   map were simply ignored.
   -For OnManualSubmit, insertRecord() no longer leaves behind an empty
