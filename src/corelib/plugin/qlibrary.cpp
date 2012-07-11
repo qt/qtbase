@@ -652,7 +652,7 @@ bool QLibraryPrivate::isPlugin()
                 // An exception was thrown when calling qt_plugin_query_verification_data().
                 // This usually happens when plugin is compiled with the /clr compiler flag,
                 // & will only work if the dependencies are loaded & DLLMain() is called.
-                // LoadLibrary() will do this, try once with this & if it fails dont load.
+                // LoadLibrary() will do this, try once with this & if it fails don't load.
                 retryLoadLibrary = !retryLoadLibrary;
             }
 #endif

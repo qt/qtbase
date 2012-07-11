@@ -291,7 +291,7 @@ void TestQtJson::testObjectSimple()
     QVERIFY2(keys.contains("string"), "key string not found");
     QVERIFY2(keys.contains("boolean"), "key boolean not found");
 
-    // if we put a JsonValue into the JsonObject and retreive
+    // if we put a JsonValue into the JsonObject and retrieve
     // it, it should be identical.
     QJsonValue value(QLatin1String("foo"));
     object.insert("value", value);
@@ -340,7 +340,7 @@ void TestQtJson::testArraySimple()
     QCOMPARE(array.at(2).toBool(), true);
     QCOMPARE(array.size(), 3);
 
-    // if we put a JsonValue into the JsonArray and retreive
+    // if we put a JsonValue into the JsonArray and retrieve
     // it, it should be identical.
     QJsonValue value(QLatin1String("foo"));
     array.append(value);

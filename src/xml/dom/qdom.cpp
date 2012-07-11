@@ -3463,10 +3463,10 @@ QDomDocumentTypePrivate::QDomDocumentTypePrivate(QDomDocumentTypePrivate* n, boo
     QDomNodePrivate* p = first;
     while (p) {
         if (p->isEntity())
-            // Dont use normal insert function since we would create infinite recursion
+            // Don't use normal insert function since we would create infinite recursion
             entities->map.insertMulti(p->nodeName(), p);
         if (p->isNotation())
-            // Dont use normal insert function since we would create infinite recursion
+            // Don't use normal insert function since we would create infinite recursion
             notations->map.insertMulti(p->nodeName(), p);
         p = p->next;
     }
@@ -5708,7 +5708,7 @@ static QByteArray encodeEntity(const QByteArray& str)
             len += 4;
             i += 5;
         } else if (d[i] == '&' && i + 1 < len && d[i+1] == '#') {
-            // Dont encode &lt; or &quot; or &custom;.
+            // Don't encode &lt; or &quot; or &custom;.
             // Only encode character references
             tmp.replace(i, 1, "&#38;");
             d = tmp.constData();

@@ -719,7 +719,7 @@ qint64 QHttpNetworkReplyPrivate::uncompressBodyData(QByteDataBuffer *in, QByteDa
 
             int ret = inflate(inflateStrm, Z_NO_FLUSH);
             //All negative return codes are errors, in the context of HTTP compression, Z_NEED_DICT is also an error.
-            // in the case where we get Z_DATA_ERROR this could be because we recieved raw deflate compressed data.
+            // in the case where we get Z_DATA_ERROR this could be because we received raw deflate compressed data.
             if (ret == Z_DATA_ERROR && !triedRawDeflate) {
                 inflateEnd(inflateStrm);
                 triedRawDeflate = true;

@@ -505,7 +505,7 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                         emit reply->dataReadProgress(replyPrivate->totalProgress, replyPrivate->bodyLength);
                     }
                 } else if (haveRead == -1) {
-                    // Some error occured
+                    // Some error occurred
                     connection->d_func()->emitReplyError(socket, reply, QNetworkReply::ProtocolFailure);
                     break;
                 }
@@ -1116,7 +1116,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
             if (socket->bytesAvailable()) {
                 // Read everything from the socket into the reply buffer.
                 // we can ignore the readbuffersize as the data is already
-                // in memory and we will not recieve more data on the socket.
+                // in memory and we will not receive more data on the socket.
                 reply->setReadBufferSize(0);
                 _q_receiveReply();
 #ifndef QT_NO_SSL

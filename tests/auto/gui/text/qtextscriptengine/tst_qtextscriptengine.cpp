@@ -1308,7 +1308,7 @@ void tst_QTextScriptEngine::thaiWithZWJ()
     // But make sure that we don't hide anything else
     QCOMPARE(e->layoutData->items.size(), 11);
     QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(7));  // Thai: The ZWJ and ZWNJ characters are inherited, so should be part of the thai script
-    QCOMPARE(e->layoutData->items[1].num_glyphs, ushort(1));  // Common: The smart quotes cannot be handled by thai, so should be a seperate item
+    QCOMPARE(e->layoutData->items[1].num_glyphs, ushort(1));  // Common: The smart quotes cannot be handled by thai, so should be a separate item
     QCOMPARE(e->layoutData->items[2].num_glyphs, ushort(1));  // Thai: Thai character
     QCOMPARE(e->layoutData->items[3].num_glyphs, ushort(1));  // Common: Ellipsis
     QCOMPARE(e->layoutData->items[4].num_glyphs, ushort(1));  // Thai: Thai character

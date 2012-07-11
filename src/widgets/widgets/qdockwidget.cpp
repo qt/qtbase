@@ -306,7 +306,7 @@ QSize QDockWidgetLayout::sizeFromContent(const QSize &content, bool floating) co
 
     int left, top, right, bottom;
     w->getContentsMargins(&left, &top, &right, &bottom);
-    //we need to substract the contents margin (it will be added by the caller)
+    //we need to subtract the contents margin (it will be added by the caller)
     QSize min = w->minimumSize() - QSize(left + right, top + bottom);
     QSize max = w->maximumSize() - QSize(left + right, top + bottom);
 

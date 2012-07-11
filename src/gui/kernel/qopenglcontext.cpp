@@ -131,7 +131,7 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
     QOpenGLContext internally keeps track of a QOpenGLContextGroup object which
     can be accessed with shareGroup(), and which can be used to find all the
     contexts in a given share group. A share group consists of all contexts that
-    have been succesfully initialized and are sharing with an existing context in
+    have been successfully initialized and are sharing with an existing context in
     the share group. A non-sharing context has a share group consisting of a
     single context.
 

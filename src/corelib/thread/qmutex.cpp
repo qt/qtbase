@@ -369,9 +369,9 @@ bool QBasicMutex::lockInternal(int timeout)
             old_waiters = d->waiters.load();
             if (old_waiters == -QMutexPrivate::BigNumber) {
                 // we are unlocking, and the thread that unlocks is about to change d to 0
-                // we try to aquire the mutex by changing to dummyLocked()
+                // we try to acquire the mutex by changing to dummyLocked()
                 if (d_ptr.testAndSetAcquire(d, dummyLocked())) {
-                    // Mutex aquired
+                    // Mutex acquired
                     Q_ASSERT(d->waiters.load() == -QMutexPrivate::BigNumber || d->waiters.load() == 0);
                     d->waiters.store(0);
                     d->deref();
@@ -450,7 +450,7 @@ void QBasicMutex::unlockInternal()
     d->deref();
 }
 
-//The freelist managment
+//The freelist management
 namespace {
 struct FreeListConstants : QFreeListDefaultConstants {
     enum { BlockCount = 4, MaxIndex=0xffff };
@@ -489,7 +489,7 @@ void QMutexPrivate::release()
     freelist()->release(id);
 }
 
-// atomically substract "value" to the waiters, and remove the QMutexPrivate::BigNumber flag
+// atomically subtract "value" to the waiters, and remove the QMutexPrivate::BigNumber flag
 void QMutexPrivate::derefWaiters(int value)
 {
     int old_waiters;

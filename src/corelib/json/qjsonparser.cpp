@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
 
     This enum describes the type of error that occurred during the parsing of a JSON document.
 
-    \value NoError                  No error occured
+    \value NoError                  No error occurred
     \value UnterminatedObject       An object is not correctly terminated with a closing curly bracket
     \value MissingNameSeparator     A comma separating different items is missing
     \value UnterminatedArray        The array is not correctly terminated with a closing square bracket

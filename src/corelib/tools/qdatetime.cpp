@@ -1767,7 +1767,7 @@ int QTime::msecsTo(const QTime &t) const
 #ifndef QT_NO_DATESTRING
 
 // These anonymous functions tidy up QDateTime::fromString()
-// and avoid confusion of reponsibility between it and QTime::fromString().
+// and avoid confusion of responsibility between it and QTime::fromString().
 namespace {
 inline bool isMidnight(int hour, int minute, int second, int msec)
 {

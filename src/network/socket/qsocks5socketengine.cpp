@@ -1340,7 +1340,7 @@ bool QSocks5SocketEngine::bind(const QHostAddress &addr, quint16 port)
 
     QHostAddress address;
     if (addr.protocol() == QAbstractSocket::AnyIPProtocol)
-        address = QHostAddress::AnyIPv4; //SOCKS5 doesnt support dual stack, and there isn't any implementation of udp on ipv6 yet
+        address = QHostAddress::AnyIPv4; //SOCKS5 doesn't support dual stack, and there isn't any implementation of udp on ipv6 yet
     else
         address = addr;
 

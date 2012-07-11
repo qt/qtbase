@@ -568,7 +568,7 @@ void SessionTab::finished(quint32 errorCode, qint64 dataReceived, QString errorT
     msgBox.exec();
     // Check if the networksession still exists - it may have gone after returning from
     // the modal dialog (in the case that app has been closed, and deleting QHttp will
-    // trigger the done() invokation).
+    // trigger the done() invocation).
     if (m_NetworkSession) {
         sentRecDataLineEdit->setText(QString::number(m_NetworkSession->bytesWritten())+
                                      QString(" / ")+

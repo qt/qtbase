@@ -309,7 +309,7 @@ QT_BEGIN_NAMESPACE
     \li the input cannot possibly match the regular expression;
     \li the input does match the regular expression;
     \li the input does not match the regular expression right now,
-    but it will if more charaters will be added to it.
+    but it will if more characters will be added to it.
     \endlist
 
     Note that these three cases represent exactly the possible states of a
@@ -461,7 +461,7 @@ QT_BEGIN_NAMESPACE
     string, but also at a newline character right before the end of the string;
     that is, the previous pattern matches against the string "this pattern must
     match exactly\\n". Also, the behaviour of both the \c{^} and the \c{$}
-    anchors changes if the MultiLineOption is set either explicitely (as a
+    anchors changes if the MultiLineOption is set either explicitly (as a
     pattern option) or implicitly (as a directive inside the pattern string).
 
     Therefore, in the most general case, you should wrap the pattern between
@@ -688,7 +688,7 @@ QT_BEGIN_NAMESPACE
     \value UseUnicodePropertiesOption
         The meaning of the \c{\w}, \c{\d}, etc., character classes, as well as
         the meaning of their counterparts (\c{\W}, \c{\D}, etc.), is changed
-        from matching ASCII charaters only to matching any character with the
+        from matching ASCII characters only to matching any character with the
         corresponding Unicode property. For instance, \c{\d} is changed to
         match any character with the Unicode Nd (decimal digit) property;
         \c{\w} to match any character with either the Unicode L (letter) or N
@@ -1950,7 +1950,7 @@ bool QRegularExpressionMatch::hasMatch() const
     Returns true if the regular expression partially matched against the
     subject string, or false otherwise.
 
-    \note Only a match that explicitely used the one of the partial match types
+    \note Only a match that explicitly used the one of the partial match types
     can yield a partial match. Still, if such a match succeeds totally, this
     function will return false, while hasMatch() will return true.
 

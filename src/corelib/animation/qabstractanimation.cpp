@@ -856,7 +856,7 @@ qint64 QAnimationDriver::elapsed() const
     \fn QAnimationDriver::started()
 
     This signal is emitted by the animation framework to notify the driver
-    that continous animation has started.
+    that continuous animation has started.
 
     \internal
  */
@@ -865,7 +865,7 @@ qint64 QAnimationDriver::elapsed() const
     \fn QAnimationDriver::stopped()
 
     This signal is emitted by the animation framework to notify the driver
-    that continous animation has stopped.
+    that continuous animation has stopped.
 
     \internal
  */

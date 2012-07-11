@@ -1825,7 +1825,7 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
     \since 5.0
 
     Tells the compiler that the current point cannot be reached by any
-    execution, so it may optimise any code paths leading here as dead code, as
+    execution, so it may optimize any code paths leading here as dead code, as
     well as code continuing from here.
 
     This macro is useful to mark impossible conditions. For example, given the

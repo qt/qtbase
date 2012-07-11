@@ -171,7 +171,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn int QAccessibleTextInterface::characterCount() const
 
-    Returns the lenght of the text (total size including spaces).
+    Returns the length of the text (total size including spaces).
 */
 
 /*!

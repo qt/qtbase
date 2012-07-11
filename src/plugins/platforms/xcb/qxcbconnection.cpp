@@ -72,7 +72,7 @@
 #include <xcb/render.h>
 #endif
 
-#ifdef XCB_USE_EGL //dont pull in eglext prototypes
+#ifdef XCB_USE_EGL //don't pull in eglext prototypes
 #include <EGL/egl.h>
 #endif
 

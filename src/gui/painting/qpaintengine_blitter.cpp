@@ -591,7 +591,7 @@ void QBlitterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const Q
     }
 }
 
-// Overriden methods to lock the graphics memory
+// Overridden methods to lock the graphics memory
 void QBlitterPaintEngine::drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode)
 {
     Q_D(QBlitterPaintEngine);

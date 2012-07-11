@@ -146,7 +146,7 @@ void tst_QNetworkProxyFactory::systemProxyForQuery_data()
     QTest::newRow("ftp-tag") << (int)QNetworkProxyQuery::TcpSocket << QUrl() << QString("ftp") << QString("qt-project.org") << 21 << (int)QNetworkProxy::TunnelingCapability;
     QTest::newRow("https-tag") << (int)QNetworkProxyQuery::TcpSocket << QUrl() << QString("https") << QString("qt-project.org") << 443 << (int)QNetworkProxy::TunnelingCapability;
 #ifdef Q_OS_WIN
-    //in Qt 4.8, "socks" would get the socks proxy, but we dont want to enforce that for all platforms
+    //in Qt 4.8, "socks" would get the socks proxy, but we don't want to enforce that for all platforms
     QTest::newRow("socks-tag") << (int)QNetworkProxyQuery::TcpSocket << QUrl() << QString("socks") << QString("qt-project.org") << 21 <<  (int)(QNetworkProxy::TunnelingCapability | QNetworkProxy::ListeningCapability);
 #endif
     //windows: ssh is not a tag provided by the os, but any tunneling proxy is acceptable

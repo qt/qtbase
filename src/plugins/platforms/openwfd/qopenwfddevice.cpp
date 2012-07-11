@@ -303,7 +303,7 @@ void QOpenWFDDevice::handlePipelineBindSourceComplete()
 
     WFDint overflow = wfdGetEventAttribi(mDevice,mEvent, WFD_EVENT_PIPELINE_BIND_QUEUE_OVERFLOW);
     if (overflow == WFD_TRUE) {
-        qDebug() << "PIPELINE_BIND_QUEUE_OVERFLOW event occured";
+        qDebug() << "PIPELINE_BIND_QUEUE_OVERFLOW event occurred";
     }
 
     WFDint pipelineId = wfdGetEventAttribi(mDevice,mEvent,WFD_EVENT_PIPELINE_BIND_PIPELINE_ID);

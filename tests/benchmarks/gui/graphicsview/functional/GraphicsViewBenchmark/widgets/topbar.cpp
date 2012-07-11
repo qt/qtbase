@@ -142,7 +142,7 @@ void TopBar::resizeEvent(QGraphicsSceneResizeEvent* /*event*/)
         QSize topBarStatusBarLeftSize = m_topBarStatusBarLeft.size();
         QSize topBarStatusBarMiddleSize = m_topBarStatusBarMiddle.size();
         
-        //Location for Title text 5% width, 35% heigth of the background pixmap
+        //Location for Title text 5% width, 35% height of the background pixmap
         m_topBarTitlePoint = QPoint(topBarPixmapSize.width()* 0.05, 
                 topBarPixmapSize.height() * 0.35);
         

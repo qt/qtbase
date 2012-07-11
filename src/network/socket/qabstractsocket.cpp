@@ -970,8 +970,8 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
         qWarning("QAbstractSocketPrivate::_q_startConnecting() received hostInfo for wrong lookup ID %d expected %d", hostInfo.lookupId(), hostLookupId);
     }
 
-    // Only add the addresses for the prefered network layer.
-    // Or all if prefered network layer is not set.
+    // Only add the addresses for the preferred network layer.
+    // Or all if preferred network layer is not set.
     if (preferredNetworkLayerProtocol == QAbstractSocket::UnknownNetworkLayerProtocol || preferredNetworkLayerProtocol == QAbstractSocket::AnyIPProtocol) {
         addresses = hostInfo.addresses();
     } else {

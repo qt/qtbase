@@ -442,7 +442,7 @@ static void recodeAndAppend(QString &to, const QString &input,
     Returns the reconstructed query string, formed from the key-value pairs
     currently stored in this QUrlQuery object and separated by the query
     delimiters chosen for this object. The keys and values are encoded using
-    the options given by the \a encoding paramter.
+    the options given by the \a encoding parameter.
 
     For this function, the only ambiguous delimiter is the hash ("#"), as in
     URLs it is used to separate the query string from the fragment that may

@@ -353,7 +353,7 @@ QVariant QJsonValue::toVariant() const
     \value Object   An object. Use toObject() to convert to a QJsonObject.
     \value Undefined The value is undefined. This is usually returned as an
                     error condition, when trying to read an out of bounds value
-                    in an array or a non existant key in an object.
+                    in an array or a non existent key in an object.
 */
 
 /*!

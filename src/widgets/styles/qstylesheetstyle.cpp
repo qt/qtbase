@@ -2492,7 +2492,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
     QVector<int> finals; // indices in reverse order of each property's final occurrence
 
     {
-        // scan decls for final occurence of each "qproperty"
+        // scan decls for final occurrence of each "qproperty"
         QSet<const QString> propertySet;
         for (int i = decls.count() - 1; i >= 0; --i) {
             const QString property = decls.at(i).d->property;

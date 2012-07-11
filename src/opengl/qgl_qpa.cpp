@@ -409,7 +409,7 @@ QGLContext *QGLContext::fromOpenGLContext(QOpenGLContext *context)
         return reinterpret_cast<QGLContext *>(context->qGLContextHandle());
     }
     QGLContext *glContext = new QGLContext(context);
-    //Dont call create on context. This can cause the platformFormat to be set on the widget, which
+    //Don't call create on context. This can cause the platformFormat to be set on the widget, which
     //will cause the platformWindow to be recreated.
     return glContext;
 }

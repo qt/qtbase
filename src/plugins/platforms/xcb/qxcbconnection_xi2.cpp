@@ -216,7 +216,7 @@ void QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData)
         break;
     case XI_Motion:
         // Report TabletMove only when the stylus is touching the tablet.
-        // No possiblity to report proximity motion (no suitable Qt event exists yet).
+        // No possibility to report proximity motion (no suitable Qt event exists yet).
         if (tabletData->down)
             xi2ReportTabletEvent(*tabletData, xiEvent);
         break;

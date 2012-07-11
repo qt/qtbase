@@ -273,7 +273,7 @@ template <int N> struct QAtomicOpsBySize;
 template <>
 struct QAtomicOpsBySize<4> : QGenericAtomicOps<QAtomicOpsBySize<4> >
 {
-    // The 32-bit Interlocked*() API takes paramters as longs.
+    // The 32-bit Interlocked*() API takes parameters as longs.
     typedef long Type;
 
     static inline bool isReferenceCountingNative() { return true; }

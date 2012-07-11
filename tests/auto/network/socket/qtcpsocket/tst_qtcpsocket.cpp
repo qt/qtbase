@@ -504,7 +504,7 @@ void tst_QTcpSocket::bind_data()
     }
 
     // additionally, try bind to known-bad addresses, and make sure this doesn't work
-    // these ranges are guarenteed to be reserved for 'documentation purposes',
+    // these ranges are guaranteed to be reserved for 'documentation purposes',
     // and thus, should be unused in the real world. Not that I'm assuming the
     // world is full of competent administrators, or anything.
     QStringList knownBad;

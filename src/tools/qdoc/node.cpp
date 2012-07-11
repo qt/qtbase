@@ -2166,7 +2166,7 @@ bool Node::setQmlModule(const ArgLocPair& arg)
   name of some other QML class node. If so, then this node's
   parent will be a NameCollisionNode.This function sets the
   NameCollisionNode's current child to this node. This is
-  important when outputing the documentation for this node,
+  important when outputting the documentation for this node,
   when, for example, the documentation contains a link to
   the page being output. We don't want to generate a link
   to the disambiguation page if we can avoid it, and to be

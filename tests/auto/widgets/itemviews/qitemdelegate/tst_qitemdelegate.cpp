@@ -837,7 +837,7 @@ public:
 
     virtual void destroyEditor(QWidget *editor, const QModelIndex &i) const
     {   // This is a reimplementation of QAbstractItemDelegate::destroyEditor just set the variable m_editor to 0
-        // The only reason we do this is to avoid the not recomended direct delete of editor (destroyEditor uses deleteLater)
+        // The only reason we do this is to avoid the not recommended direct delete of editor (destroyEditor uses deleteLater)
         QItemDelegate::destroyEditor(editor, i); // Allow destroy
         m_editor = 0;                            // but clear the variable
     }

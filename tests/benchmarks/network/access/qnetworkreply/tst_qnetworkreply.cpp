@@ -802,7 +802,7 @@ void tst_qnetworkreply::httpsRequestChain()
     for (int i = 0; i < count; i++)
         helper.requestList.append(request);
 
-    // Warm up DNS cache and then immediatly start HTTP
+    // Warm up DNS cache and then immediately start HTTP
     QHostInfo::lookupHost(QtNetworkSettings::serverName(), &helper, SLOT(doNextRequest()));
     //QHostInfo::lookupHost("www.nokia.com", &helper, SLOT(doNextRequest()));
 

@@ -520,7 +520,7 @@ void tst_qregexp::horribleReplaceJSC()
 {
     QScriptValue r;
     QScriptEngine engine;
-    // the m flag doesnt actually work here; dunno
+    // the m flag doesn't actually work here; dunno
     engine.globalObject().setProperty("s", str2.replace('\n', ' '));
     QScriptValue replaceFunc = engine.evaluate("(function() { return s.replace(/.*#""define ZLIB_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9]+).*/gm, '$1.$2.$3')  } )");
     QVERIFY(replaceFunc.isFunction());

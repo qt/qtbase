@@ -3527,7 +3527,7 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     in >> hiddenSectionSize;
 
     in >> length;
-    int unusedSectionCount; // For compability
+    int unusedSectionCount; // For compatibility
     in >> unusedSectionCount;
     in >> movableSections;
     in >> clickableSections;
@@ -3548,7 +3548,7 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     in >> sectionItems;
     // In Qt4 we had a vector of spans where one span could hold information on more sections.
     // Now we have an itemvector where one items contains information about one section
-    // For backward compability with Qt4 we do the following
+    // For backward compatibility with Qt4 we do the following
     QVector<SectionItem> newSectionItems;
     for (int u = 0; u < sectionItems.count(); ++u) {
         int count = sectionItems.at(u).tmpDataStreamSectionCount;

@@ -77,7 +77,7 @@ public slots:
 
 void tst_qhostinfo::init()
 {
-    // delete the cache so inidividual testcase results are independant from each other
+    // delete the cache so inidividual testcase results are independent from each other
     qt_qhostinfo_clear_cache();
 }
 
