@@ -122,7 +122,9 @@ private:
 
     void fetchBuffers();
 
-    void copyBack(const QRegion &region, int dx, int dy, bool flush=false);
+    // Copies content from the previous buffer (back buffer) to the current buffer (front buffer)
+    void blitPreviousToCurrent(const QRegion &region, int dx, int dy, bool flush=false);
+
     void blitHelper(QQnxBuffer &source, QQnxBuffer &target, const QPoint &sourceOffset,
                     const QPoint &targetOffset, const QRegion &region, bool flush = false);
 

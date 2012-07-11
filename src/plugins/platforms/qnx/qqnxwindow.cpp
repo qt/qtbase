@@ -379,7 +379,7 @@ QQnxBuffer &QQnxWindow::renderBuffer()
 void QQnxWindow::scroll(const QRegion &region, int dx, int dy, bool flush)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window();
-    copyBack(region, dx, dy, flush);
+    blitPreviousToCurrent(region, dx, dy, flush);
     m_scrolled += region;
 }
 
@@ -398,9 +398,9 @@ void QQnxWindow::post(const QRegion &dirty)
     // current buffer contains the second to last image plus the newly painted regions.
     // Since the second to last image is too old, we copy over the image from the previous buffer, but
     // only for those regions that Qt didn't paint (because that would overwrite what Qt has just
-    // painted). This is the copyBack() call below.
+    // painted). This is the copyPreviousToCurrent() call below.
     //
-    // After the call to copyBack(), the current buffer contains the complete, full image of the
+    // After the call to copyPreviousToCurrent(), the current buffer contains the complete, full image of the
     // whole window in its current state, and we call screen_post_window() to make the new buffer
     // available to libscreen (called "posting"). There, only the regions that Qt painted on are
     // posted, as nothing else has changed.
@@ -415,7 +415,7 @@ void QQnxWindow::post(const QRegion &dirty)
         // Copy unmodified region from old render buffer to new render buffer;
         // required to allow partial updates
         QRegion preserve = m_previousDirty - dirty - m_scrolled;
-        copyBack(preserve, 0, 0);
+        blitPreviousToCurrent(preserve, 0, 0);
 
         // Calculate region that changed
         QRegion modified = preserve + dirty + m_scrolled;
@@ -686,7 +686,7 @@ void QQnxWindow::blitHelper(QQnxBuffer &source, QQnxBuffer &target, const QPoint
     }
 }
 
-void QQnxWindow::copyBack(const QRegion &region, int dx, int dy, bool flush)
+void QQnxWindow::blitPreviousToCurrent(const QRegion &region, int dx, int dy, bool flush)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window();
 
