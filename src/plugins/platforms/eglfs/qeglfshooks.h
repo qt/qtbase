@@ -55,6 +55,7 @@ class QEglFSScreen;
 class QEglFSHooks
 {
 public:
+    virtual ~QEglFSHooks() {};
     virtual void platformInit();
     virtual void platformDestroy();
     virtual EGLNativeDisplayType platformDisplay() const;
