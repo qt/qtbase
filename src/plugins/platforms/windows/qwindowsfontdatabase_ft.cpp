@@ -279,20 +279,20 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
     if (!QDir::isAbsolutePath(value))
         value.prepend(QString::fromLocal8Bit(qgetenv("windir") + "\\Fonts\\"));
 
-    QPlatformFontDatabase::registerFont(faceName, foundryName, weight, style, stretch,
+    QPlatformFontDatabase::registerFont(faceName, QString(), foundryName, weight, style, stretch,
         antialias, scalable, size, fixed, writingSystems, createFontFile(value, index));
 
     // add fonts windows can generate for us:
     if (weight <= QFont::DemiBold)
-        QPlatformFontDatabase::registerFont(faceName, foundryName, QFont::Bold, style, stretch,
+        QPlatformFontDatabase::registerFont(faceName, QString(), foundryName, QFont::Bold, style, stretch,
                                             antialias, scalable, size, fixed, writingSystems, createFontFile(value, index));
 
     if (style != QFont::StyleItalic)
-        QPlatformFontDatabase::registerFont(faceName, foundryName, weight, QFont::StyleItalic, stretch,
+        QPlatformFontDatabase::registerFont(faceName, QString(), foundryName, weight, QFont::StyleItalic, stretch,
                                             antialias, scalable, size, fixed, writingSystems, createFontFile(value, index));
 
     if (weight <= QFont::DemiBold && style != QFont::StyleItalic)
-        QPlatformFontDatabase::registerFont(faceName, foundryName, QFont::Bold, QFont::StyleItalic, stretch,
+        QPlatformFontDatabase::registerFont(faceName, QString(), foundryName, QFont::Bold, QFont::StyleItalic, stretch,
                                             antialias, scalable, size, fixed, writingSystems, createFontFile(value, index));
 
     if (!englishName.isEmpty())

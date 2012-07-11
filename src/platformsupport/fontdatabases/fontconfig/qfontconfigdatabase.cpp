@@ -318,6 +318,7 @@ void QFontconfigDatabase::populateFontDatabase()
     FcChar8 *file_value;
     int indexValue;
     FcChar8 *foundry_value;
+    FcChar8 *style_value;
     FcBool scalable;
     FcBool antialias;
 
@@ -325,7 +326,7 @@ void QFontconfigDatabase::populateFontDatabase()
         FcObjectSet *os = FcObjectSetCreate();
         FcPattern *pattern = FcPatternCreate();
         const char *properties [] = {
-            FC_FAMILY, FC_WEIGHT, FC_SLANT,
+            FC_FAMILY, FC_STYLE, FC_WEIGHT, FC_SLANT,
             FC_SPACING, FC_FILE, FC_INDEX,
             FC_LANG, FC_CHARSET, FC_FOUNDRY, FC_SCALABLE, FC_PIXEL_SIZE, FC_WEIGHT,
             FC_WIDTH,
@@ -371,6 +372,8 @@ void QFontconfigDatabase::populateFontDatabase()
             scalable = FcTrue;
         if (FcPatternGetString(fonts->fonts[i], FC_FOUNDRY, 0, &foundry_value) != FcResultMatch)
             foundry_value = 0;
+        if (FcPatternGetString(fonts->fonts[i], FC_STYLE, 0, &style_value) != FcResultMatch)
+            style_value = 0;
         if(FcPatternGetBool(fonts->fonts[i],FC_ANTIALIAS,0,&antialias) != FcResultMatch)
             antialias = true;
 
@@ -438,7 +441,8 @@ void QFontconfigDatabase::populateFontDatabase()
 
         bool fixedPitch = spacing_value >= FC_MONO;
         QFont::Stretch stretch = QFont::Unstretched;
-        QPlatformFontDatabase::registerFont(familyName,QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
+        QString styleName = style_value ? QString::fromUtf8((const char *) style_value) : QString();
+        QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
 //        qDebug() << familyName << (const char *)foundry_value << weight << style << &writingSystems << scalable << true << pixel_size;
     }
 
@@ -462,9 +466,9 @@ void QFontconfigDatabase::populateFontDatabase()
 
     while (f->qtname) {
         QString familyQtName = QString::fromLatin1(f->qtname);
-        registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleNormal,QFont::Unstretched,true,true,0,f->fixed,ws,0);
-        registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleItalic,QFont::Unstretched,true,true,0,f->fixed,ws,0);
-        registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleOblique,QFont::Unstretched,true,true,0,f->fixed,ws,0);
+        registerFont(familyQtName,QString(),QString(),QFont::Normal,QFont::StyleNormal,QFont::Unstretched,true,true,0,f->fixed,ws,0);
+        registerFont(familyQtName,QString(),QString(),QFont::Normal,QFont::StyleItalic,QFont::Unstretched,true,true,0,f->fixed,ws,0);
+        registerFont(familyQtName,QString(),QString(),QFont::Normal,QFont::StyleOblique,QFont::Unstretched,true,true,0,f->fixed,ws,0);
         ++f;
     }
 
