@@ -1033,17 +1033,17 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
             writingSystems.setSupported(ws);
     }
 
-    QPlatformFontDatabase::registerFont(familyName, foundryName, weight,
+    QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, weight,
                                         style, stretch, antialias, scalable, size, fixed, writingSystems, 0);
     // add fonts windows can generate for us:
     if (weight <= QFont::DemiBold)
-        QPlatformFontDatabase::registerFont(familyName, foundryName, QFont::Bold,
+        QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, QFont::Bold,
                                             style, stretch, antialias, scalable, size, fixed, writingSystems, 0);
     if (style != QFont::StyleItalic)
-        QPlatformFontDatabase::registerFont(familyName, foundryName, weight,
+        QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, weight,
                                             QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, 0);
     if (weight <= QFont::DemiBold && style != QFont::StyleItalic)
-        QPlatformFontDatabase::registerFont(familyName, foundryName, QFont::Bold,
+        QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, QFont::Bold,
                                             QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, 0);
 
     if (!englishName.isEmpty())

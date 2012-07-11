@@ -52,7 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GUI_EXPORT  void qt_registerFont(const QString &familyName, const QString &foundryname, int weight,
+Q_GUI_EXPORT  void qt_registerFont(const QString &familyName, const QString &stylename,
+                                   const QString &foundryname, int weight,
                                    QFont::Style style, int stretch, bool antialiased,
                                    bool scalable, int pixelSize, bool fixedPitch,
                                    const QSupportedWritingSystems &writingSystems, void *handle)
@@ -75,7 +76,7 @@ Q_GUI_EXPORT  void qt_registerFont(const QString &familyName, const QString &fou
     }
 
     QtFontFoundry *foundry = f->foundry(foundryname, true);
-    QtFontStyle *fontStyle = foundry->style(styleKey, QString(), true);
+    QtFontStyle *fontStyle = foundry->style(styleKey, stylename, true);
     fontStyle->smoothScalable = scalable;
     fontStyle->antialiased = antialiased;
     QtFontSize *size = fontStyle->pixelSize(pixelSize ? pixelSize : SMOOTH_SCALABLE, true);
