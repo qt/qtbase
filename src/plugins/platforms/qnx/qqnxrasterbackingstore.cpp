@@ -142,11 +142,7 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
 
     qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << window();
 
-    // resize window buffers if surface resized
-    QSize s = window()->size();
-    if (s != m_platformWindow->bufferSize()) {
-        m_platformWindow->setBufferSize(s);
-    }
+    m_platformWindow->adjustBufferSize();
 }
 
 void QQnxRasterBackingStore::endPaint(const QRegion &region)

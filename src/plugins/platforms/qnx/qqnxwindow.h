@@ -86,6 +86,7 @@ public:
     // Called by QQnxGLContext::createSurface()
     QSize requestedBufferSize() const;
 
+    void adjustBufferSize();
     void setBufferSize(const QSize &size);
     QSize bufferSize() const { return m_bufferSize; }
     bool hasBuffers() const { return !m_bufferSize.isEmpty(); }

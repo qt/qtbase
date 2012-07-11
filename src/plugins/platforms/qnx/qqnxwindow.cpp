@@ -303,6 +303,13 @@ QSize QQnxWindow::requestedBufferSize() const
     return m_requestedBufferSize;
 }
 
+void QQnxWindow::adjustBufferSize()
+{
+    const QSize windowSize = window()->size();
+    if (windowSize != bufferSize())
+        setBufferSize(windowSize);
+}
+
 void QQnxWindow::setBufferSize(const QSize &size)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window() << "size =" << size;
