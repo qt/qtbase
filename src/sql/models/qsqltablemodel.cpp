@@ -538,7 +538,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
 
     if (row.op() == QSqlTableModelPrivate::None)
         row = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
-                                                 record(index.row()));
+                                                 QSqlQueryModel::record(index.row()));
 
     row.setValue(index.column(), value);
     emit dataChanged(index, index);
@@ -1044,7 +1044,8 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
             revertRow(idx);
         } else {
             if (mrow.op() == QSqlTableModelPrivate::None)
-                mrow = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Delete, record(idx));
+                mrow = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Delete,
+                                                          QSqlQueryModel::record(idx));
             else
                 mrow.setOp(QSqlTableModelPrivate::Delete);
             if (d->strategy == OnManualSubmit)
@@ -1250,6 +1251,34 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
         return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
 }
 
+QSqlRecord QSqlTableModel::record() const
+{
+    return QSqlQueryModel::record();
+}
+
+/*!
+\reimp
+\since 5.0
+    Returns the record at \a row in the model.
+
+    If \a row is the index of a valid row, the record
+    will be populated with values from that row.
+
+    If the model is not initialized, an empty record will be
+    returned.
+
+    \sa QSqlRecord::isEmpty()
+*/
+QSqlRecord QSqlTableModel::record(int row) const
+{
+    Q_D(const QSqlTableModel);
+
+    if (d->cache.contains(row))
+        return d->cache.value(row).rec();
+
+    return QSqlQueryModel::record(row);
+}
+
 /*!
     Applies \a values to the \a row in the model. The source and
     target fields are mapped by field name, not by position in
@@ -1301,7 +1330,7 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
     QSqlTableModelPrivate::ModifiedRow &mrow = d->cache[row];
     if (mrow.op() == QSqlTableModelPrivate::None)
         mrow = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
-                                                  record(row));
+                                                  QSqlQueryModel::record(row));
 
     Map::const_iterator i = map.constBegin();
     const Map::const_iterator e = map.constEnd();
