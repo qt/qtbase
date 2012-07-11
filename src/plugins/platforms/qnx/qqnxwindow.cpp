@@ -642,64 +642,62 @@ void QQnxWindow::updateZorder(int &topZorder)
         childWindow->updateZorder(topZorder);
 }
 
-void QQnxWindow::copyBack(const QRegion &region, int dx, int dy, bool flush)
+void QQnxWindow::blitHelper(QQnxBuffer &source, QQnxBuffer &target, const QPoint &sourceOffset,
+                            const QPoint &targetOffset, const QRegion &region, bool flush)
 {
-    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
-    int result;
-
-    // Abort if previous buffer is invalid
-    if (m_previousBufferIndex == -1) {
-        return;
-    }
-
-    // Abort if nothing to copy
-    if (region.isEmpty()) {
-        return;
-    }
-
-    QQnxBuffer &currentBuffer = m_buffers[m_currentBufferIndex];
-    QQnxBuffer &previousBuffer = m_buffers[m_previousBufferIndex];
-
     // Break down region into non-overlapping rectangles
-    QVector<QRect> rects = region.rects();
+    const QVector<QRect> rects = region.rects();
     for (int i = rects.size() - 1; i >= 0; i--) {
         // Clip rectangle to bounds of target
-        QRect rect = rects[i].intersected( currentBuffer.rect() );
+        const QRect rect = rects[i].intersected(target.rect());
 
         if (rect.isEmpty())
             continue;
 
         // Setup blit operation
-        int attribs[] = { SCREEN_BLIT_SOURCE_X, rect.x(),
-                          SCREEN_BLIT_SOURCE_Y, rect.y(),
+        int attribs[] = { SCREEN_BLIT_SOURCE_X, rect.x() + sourceOffset.x(),
+                          SCREEN_BLIT_SOURCE_Y, rect.y() + sourceOffset.y(),
                           SCREEN_BLIT_SOURCE_WIDTH, rect.width(),
                           SCREEN_BLIT_SOURCE_HEIGHT, rect.height(),
-                          SCREEN_BLIT_DESTINATION_X, rect.x() + dx,
-                          SCREEN_BLIT_DESTINATION_Y, rect.y() + dy,
+                          SCREEN_BLIT_DESTINATION_X, rect.x() + targetOffset.x(),
+                          SCREEN_BLIT_DESTINATION_Y, rect.y() + targetOffset.y(),
                           SCREEN_BLIT_DESTINATION_WIDTH, rect.width(),
                           SCREEN_BLIT_DESTINATION_HEIGHT, rect.height(),
                           SCREEN_BLIT_END };
 
         // Queue blit operation
         errno = 0;
-        result = screen_blit(m_screenContext, currentBuffer.nativeBuffer(), previousBuffer.nativeBuffer(), attribs);
-        if (result != 0) {
+        const int result = screen_blit(m_screenContext, target.nativeBuffer(),
+                                       source.nativeBuffer(), attribs);
+        if (result != 0)
             qFatal("QQnxWindow: failed to blit buffers, errno=%d", errno);
-        }
     }
 
     // Check if flush requested
     if (flush) {
         // Wait for all blits to complete
         errno = 0;
-        result = screen_flush_blits(m_screenContext, SCREEN_WAIT_IDLE);
-        if (result != 0) {
+        const int result = screen_flush_blits(m_screenContext, SCREEN_WAIT_IDLE);
+        if (result != 0)
             qFatal("QQnxWindow: failed to flush blits, errno=%d", errno);
-        }
 
         // Buffer was modified outside the CPU
-        currentBuffer.invalidateInCache();
+        target.invalidateInCache();
     }
+}
+
+void QQnxWindow::copyBack(const QRegion &region, int dx, int dy, bool flush)
+{
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
+
+    // Abort if previous buffer is invalid or if nothing to copy
+    if (m_previousBufferIndex == -1 || region.isEmpty())
+        return;
+
+    QQnxBuffer &currentBuffer = m_buffers[m_currentBufferIndex];
+    QQnxBuffer &previousBuffer = m_buffers[m_previousBufferIndex];
+
+    blitHelper(previousBuffer, currentBuffer, QPoint(0, 0), QPoint(dx, dy), region, flush);
 }
 
 int QQnxWindow::platformWindowFormatToNativeFormat(const QSurfaceFormat &format)

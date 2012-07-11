@@ -123,6 +123,8 @@ private:
     void fetchBuffers();
 
     void copyBack(const QRegion &region, int dx, int dy, bool flush=false);
+    void blitHelper(QQnxBuffer &source, QQnxBuffer &target, const QPoint &sourceOffset,
+                    const QPoint &targetOffset, const QRegion &region, bool flush = false);
 
     static int platformWindowFormatToNativeFormat(const QSurfaceFormat &format);
 
