@@ -1142,6 +1142,9 @@ bool QReadNotifier::event(QEvent *e)
     if (e->type() == QEvent::SockAct) {
         engine->readNotification();
         return true;
+    } else if (e->type() == QEvent::SockClose) {
+        engine->closeNotification();
+        return true;
     }
     return QSocketNotifier::event(e);
 }

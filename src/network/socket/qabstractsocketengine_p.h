@@ -71,6 +71,7 @@ public:
     virtual ~QAbstractSocketEngineReceiver(){}
     virtual void readNotification()= 0;
     virtual void writeNotification()= 0;
+    virtual void closeNotification()= 0;
     virtual void exceptionNotification()= 0;
     virtual void connectionNotification()= 0;
 #ifndef QT_NO_NETWORKPROXY
@@ -173,6 +174,7 @@ public:
 public Q_SLOTS:
     void readNotification();
     void writeNotification();
+    void closeNotification();
     void exceptionNotification();
     void connectionNotification();
 #ifndef QT_NO_NETWORKPROXY

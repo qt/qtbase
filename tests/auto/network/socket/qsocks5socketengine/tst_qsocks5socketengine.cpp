@@ -108,6 +108,7 @@ protected slots:
 private:
     void readNotification() { }
     void writeNotification() { }
+    void closeNotification() { }
     void exceptionNotification() { }
     void connectionNotification() { }
     QTcpSocket *tcpSocketNonBlocking_socket;

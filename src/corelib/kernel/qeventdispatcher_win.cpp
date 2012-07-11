@@ -377,7 +377,6 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         int type = -1;
         switch (WSAGETSELECTEVENT(lp)) {
         case FD_READ:
-        case FD_CLOSE:
         case FD_ACCEPT:
             type = 0;
             break;
@@ -388,16 +387,24 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         case FD_OOB:
             type = 2;
             break;
+        case FD_CLOSE:
+            type = 3;
+            break;
         }
         if (type >= 0) {
             Q_ASSERT(d != 0);
-            QSNDict *sn_vec[3] = { &d->sn_read, &d->sn_write, &d->sn_except };
+            QSNDict *sn_vec[4] = { &d->sn_read, &d->sn_write, &d->sn_except, &d->sn_read };
             QSNDict *dict = sn_vec[type];
 
             QSockNot *sn = dict ? dict->value(wp) : 0;
             if (sn) {
-                QEvent event(QEvent::SockAct);
-                QCoreApplication::sendEvent(sn->obj, &event);
+                if (type < 3) {
+                    QEvent event(QEvent::SockAct);
+                    QCoreApplication::sendEvent(sn->obj, &event);
+                } else {
+                    QEvent event(QEvent::SockClose);
+                    QCoreApplication::sendEvent(sn->obj, &event);
+                }
             }
         }
         return 0;

@@ -168,6 +168,12 @@ void QAbstractSocketEngine::exceptionNotification()
         receiver->exceptionNotification();
 }
 
+void QAbstractSocketEngine::closeNotification()
+{
+    if (QAbstractSocketEngineReceiver *receiver = d_func()->receiver)
+        receiver->closeNotification();
+}
+
 void QAbstractSocketEngine::connectionNotification()
 {
     if (QAbstractSocketEngineReceiver *receiver = d_func()->receiver)

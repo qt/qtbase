@@ -134,6 +134,7 @@ public:
 
     // from QAbstractSocketEngineReceiver
     void readNotification();
+    void closeNotification() { readNotification(); }
     inline void writeNotification() {}
     inline void exceptionNotification() {}
     inline void connectionNotification() {}

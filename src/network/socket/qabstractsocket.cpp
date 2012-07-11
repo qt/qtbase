@@ -746,6 +746,44 @@ bool QAbstractSocketPrivate::canReadNotification()
 
 /*! \internal
 
+    Slot connected to the close socket notifier. It's called when the
+    socket is closed.
+*/
+void QAbstractSocketPrivate::canCloseNotification()
+{
+    Q_Q(QAbstractSocket);
+
+#if defined (QABSTRACTSOCKET_DEBUG)
+    qDebug("QAbstractSocketPrivate::canCloseNotification()");
+#endif
+
+    qint64 newBytes = 0;
+    if (isBuffered) {
+        // Try to read to the buffer, if the read fail we can close the socket.
+        newBytes = buffer.size();
+        if (!readFromSocket()) {
+            q->disconnectFromHost();
+            return;
+        }
+        newBytes = buffer.size() - newBytes;
+        if (newBytes) {
+            // If there was still some data to be read from the socket
+            // then we could get another FD_READ. The disconnect will
+            // then occur when we read from the socket again and fail
+            // in canReadNotification or by the manually created
+            // closeNotification below.
+            emit q->readyRead();
+
+            QMetaObject::invokeMethod(socketEngine, "closeNotification", Qt::QueuedConnection);
+        }
+    } else if (socketType == QAbstractSocket::TcpSocket && socketEngine) {
+        emit q->readyRead();
+    }
+}
+
+
+/*! \internal
+
     Slot connected to the write socket notifier. It's called during a
     delayed connect or when the socket is ready for writing.
 */
