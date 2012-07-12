@@ -73,13 +73,6 @@ QString MingwMakefileGenerator::getLibTarget()
 
 bool MingwMakefileGenerator::findLibraries()
 {
-    return findLibraries("QMAKE_LIBS") && findLibraries("QMAKE_LIBS_PRIVATE");
-}
-
-bool MingwMakefileGenerator::findLibraries(const QString &where)
-{
-    QStringList &l = project->values(where);
-
     QList<QMakeLocalFileName> dirs;
     {
         const QStringList &libpaths = project->values("QMAKE_LIBDIR");
@@ -88,6 +81,9 @@ bool MingwMakefileGenerator::findLibraries(const QString &where)
             dirs.append(QMakeLocalFileName((*libpathit)));
     }
 
+  const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
+  for (int i = 0; !lflags[i].isNull(); i++) {
+    QStringList &l = project->values(lflags[i]);
     QStringList::Iterator it = l.begin();
     while (it != l.end()) {
         if ((*it).startsWith("-l")) {
@@ -116,6 +112,7 @@ bool MingwMakefileGenerator::findLibraries(const QString &where)
 
         ++it;
     }
+  }
     return true;
 }
 

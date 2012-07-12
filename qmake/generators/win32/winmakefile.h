@@ -66,7 +66,6 @@ protected:
     virtual void writeRcFilePart(QTextStream &t);
 
     int findHighestVersion(const QString &dir, const QString &stem, const QString &ext = QLatin1String("lib"));
-    bool findLibraries(const QString &);
     virtual bool findLibraries();
 
     virtual void processPrlFiles();
@@ -79,9 +78,6 @@ protected:
 
 inline Win32MakefileGenerator::~Win32MakefileGenerator()
 { }
-
-inline bool Win32MakefileGenerator::findLibraries()
-{ return findLibraries("QMAKE_LIBS") && findLibraries("QMAKE_LIBS_PRIVATE"); }
 
 QT_END_NAMESPACE
 

@@ -944,10 +944,7 @@ void
 MakefileGenerator::processPrlVariable(const QString &var, const QStringList &l)
 {
     if(var == "QMAKE_PRL_LIBS") {
-        QString where = "QMAKE_LIBS";
-        if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
-            where = project->first("QMAKE_INTERNAL_PRL_LIBS");
-        QStringList &out = project->values(where);
+        QStringList &out = project->values("QMAKE_LIBS");
         for(QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
             if(out.indexOf((*it)) == -1)
                 out.append((*it));
@@ -969,10 +966,7 @@ MakefileGenerator::processPrlFiles()
     for(bool ret = false; true; ret = false) {
         //read in any prl files included..
         QStringList l_out;
-        QString where = "QMAKE_LIBS";
-        if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
-            where = project->first("QMAKE_INTERNAL_PRL_LIBS");
-        QStringList &l = project->values(where);
+        QStringList &l = project->values("QMAKE_LIBS");
         for(QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
             QString file = (*it);
             if(!processed.contains(file) && processPrlFile(file)) {

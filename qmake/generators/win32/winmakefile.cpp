@@ -104,9 +104,8 @@ Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem
 }
 
 bool
-Win32MakefileGenerator::findLibraries(const QString &where)
+Win32MakefileGenerator::findLibraries()
 {
-    QStringList &l = project->values(where);
     QList<QMakeLocalFileName> dirs;
     {
         const QStringList &libpaths = project->values("QMAKE_LIBDIR");
@@ -114,6 +113,9 @@ Win32MakefileGenerator::findLibraries(const QString &where)
             libpathit != libpaths.end(); ++libpathit)
             dirs.append(QMakeLocalFileName((*libpathit)));
     }
+  const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
+  for (int i = 0; !lflags[i].isNull(); i++) {
+    QStringList &l = project->values(lflags[i]);
     for(QStringList::Iterator it = l.begin(); it != l.end();) {
         QChar quote;
         bool modified_opt = false, remove = false;
@@ -213,6 +215,7 @@ Win32MakefileGenerator::findLibraries(const QString &where)
             ++it;
         }
     }
+  }
     return true;
 }
 
@@ -229,10 +232,7 @@ Win32MakefileGenerator::processPrlFiles()
     for(bool ret = false; true; ret = false) {
         //read in any prl files included..
         QStringList l_out;
-        QString where = "QMAKE_LIBS";
-        if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
-            where = project->first("QMAKE_INTERNAL_PRL_LIBS");
-        QStringList l = project->values(where);
+        QStringList l = project->values("QMAKE_LIBS");
         for(QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
             QString opt = (*it).trimmed();
             if((opt[0] == '\'' || opt[0] == '"') && opt[(int)opt.length()-1] == opt[0])

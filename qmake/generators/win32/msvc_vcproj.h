@@ -92,7 +92,6 @@ protected:
     virtual bool mergeBuildProject(MakefileGenerator *other);
 
     virtual bool openOutput(QFile &file, const QString &build) const;
-    virtual bool findLibraries();
     virtual void outputVariables();
     QString fixFilename(QString ofile) const;
 
@@ -139,11 +138,6 @@ private:
 inline QString VcprojGenerator::defaultMakefile() const
 {
     return project->first("TARGET") + project->first("VCPROJ_EXTENSION");
-}
-
-inline bool VcprojGenerator::findLibraries()
-{
-    return Win32MakefileGenerator::findLibraries("MSVCPROJ_LIBS");
 }
 
 QT_END_NAMESPACE

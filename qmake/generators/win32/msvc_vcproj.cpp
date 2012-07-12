@@ -720,7 +720,7 @@ void VcprojGenerator::init()
     } else if(project->first("TEMPLATE") == "vclib") {
         if(project->isActiveConfig("staticlib")) {
             if (!project->values("RES_FILE").isEmpty())
-                project->values("MSVCPROJ_LIBS") += escapeFilePaths(project->values("RES_FILE"));
+                project->values("QMAKE_LIBS") += escapeFilePaths(project->values("RES_FILE"));
             projectTarget = StaticLib;
         } else
             projectTarget = SharedLib;
@@ -1021,7 +1021,7 @@ void VcprojGenerator::initLinkerTool()
     if (!project->values("DEF_FILE").isEmpty())
         conf.linker.ModuleDefinitionFile = project->first("DEF_FILE");
 
-    foreach(QString libs, project->values("MSVCPROJ_LIBS")) {
+    foreach (QString libs, project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE")) {
         if (libs.left(9).toUpper() == "/LIBPATH:") {
             QStringList l = QStringList(libs);
             conf.linker.parseOptions(l);
@@ -1104,7 +1104,7 @@ void VcprojGenerator::initDeploymentTool()
         // FIXME: This code should actually resolve the libraries from all Qt modules.
         const QString &qtdir = QLibraryInfo::rawLocation(QLibraryInfo::LibrariesPath,
                                                          QLibraryInfo::EffectivePaths);
-        const QStringList &arg = project->values("MSVCPROJ_LIBS");
+        QStringList arg = project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE");
         for (QStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {
             if (it->contains(qtdir)) {
                 QString dllName = *it;
@@ -1460,8 +1460,6 @@ void VcprojGenerator::initExtraCompilerOutputs()
 void VcprojGenerator::initOld()
 {
     // $$QMAKE.. -> $$MSVCPROJ.. -------------------------------------
-    project->values("MSVCPROJ_LIBS") += project->values("QMAKE_LIBS");
-    project->values("MSVCPROJ_LIBS") += project->values("QMAKE_LIBS_PRIVATE");
     const QStringList &incs = project->values("INCLUDEPATH");
     for (QStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
         QString inc = (*incit);
@@ -1499,8 +1497,6 @@ void VcprojGenerator::initOld()
         project->values("MSVCPROJ_COPY_DLL").append(copydll);
         project->values("MSVCPROJ_COPY_DLL_DESC").append(deststr);
     }
-
-    project->values("QMAKE_INTERNAL_PRL_LIBS") << "MSVCPROJ_LIBS";
 
     // Verbose output if "-d -d"...
     outputVariables();
