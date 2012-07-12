@@ -64,9 +64,8 @@ Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem
     if(!exists(bd))
         return -1;
 
-    QString dllStem = stem + QTDLL_POSTFIX;
     QMakeMetaInfo libinfo;
-    bool libInfoRead = libinfo.readLib(bd + Option::dir_sep + dllStem);
+    bool libInfoRead = libinfo.readLib(bd + Option::dir_sep + stem);
 
     // If the library, for which we're trying to find the highest version
     // number, is a static library
@@ -86,7 +85,7 @@ Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem
             dirEntryListCache.insert(bd, entries);
         }
 
-        QRegExp regx(QString("((lib)?%1([0-9]*)).(%2|prl)$").arg(dllStem).arg(ext), Qt::CaseInsensitive);
+        QRegExp regx(QString("((lib)?%1([0-9]*)).(%2|prl)$").arg(stem).arg(ext), Qt::CaseInsensitive);
         for(QStringList::Iterator it = entries.begin(); it != entries.end(); ++it) {
             if(regx.exactMatch((*it))) {
 				if (!regx.cap(3).isEmpty()) {

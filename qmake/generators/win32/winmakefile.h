@@ -46,14 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// In the Qt evaluation and educational version, we have a postfix in the
-// library name (e.g. qtmteval301.dll). QTDLL_POSTFIX is used for this.
-// A script modifies these lines when building eval/edu version, so be careful
-// when changing them.
-#ifndef QTDLL_POSTFIX
-#define QTDLL_POSTFIX ""
-#endif
-
 class Win32MakefileGenerator : public MakefileGenerator
 {
 public:
