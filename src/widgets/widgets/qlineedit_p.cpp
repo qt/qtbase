@@ -181,7 +181,7 @@ void QLineEditPrivate::init(const QString& txt)
     QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),
             q, SLOT(updateMicroFocus()));
     
-    QObject::connect(control, SIGNAL(textChanged(const QString &)),
+    QObject::connect(control, SIGNAL(textChanged(QString)),
             q, SLOT(updateMicroFocus()));
 
     // for now, going completely overboard with updates.
