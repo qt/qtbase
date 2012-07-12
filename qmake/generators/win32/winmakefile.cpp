@@ -764,11 +764,11 @@ void Win32MakefileGenerator::writeLibsPart(QTextStream &t)
         t << "LIBFLAGS      = " << var("QMAKE_LIBFLAGS") << endl;
     } else {
         t << "LINK          = " << var("QMAKE_LINK") << endl;
-        t << "LFLAGS        = ";
+        t << "LFLAGS        = " << var("QMAKE_LFLAGS") << endl;
+        t << "LIBS          = ";
         if(!project->values("QMAKE_LIBDIR").isEmpty())
             writeLibDirPart(t);
-        t << var("QMAKE_LFLAGS") << endl;
-        t << "LIBS          = " << var("QMAKE_LIBS") << " " << var("QMAKE_LIBS_PRIVATE") << endl;
+        t << var("QMAKE_LIBS") << " " << var("QMAKE_LIBS_PRIVATE") << endl;
     }
 }
 
