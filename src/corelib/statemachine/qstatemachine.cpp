@@ -1891,11 +1891,10 @@ void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalInd
 #endif
     const QMetaObject *meta = sender->metaObject();
     QMetaMethod method = meta->method(signalIndex);
-    QList<QByteArray> parameterTypes = method.parameterTypes();
-    int argc = parameterTypes.count();
+    int argc = method.parameterCount();
     QList<QVariant> vargs;
     for (int i = 0; i < argc; ++i) {
-        int type = QMetaType::type(parameterTypes.at(i));
+        int type = method.parameterType(i);
         vargs.append(QVariant(type, argv[i+1]));
     }
 
