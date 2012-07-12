@@ -150,6 +150,9 @@ public:
     void addStatesToEnter(QAbstractState *s, QState *root,
                           QSet<QAbstractState*> &statesToEnter,
                           QSet<QAbstractState*> &statesForDefaultEntry);
+    void addAncestorStatesToEnter(QAbstractState *s, QState *root,
+                                  QSet<QAbstractState*> &statesToEnter,
+                                  QSet<QAbstractState*> &statesForDefaultEntry);
 
     static QState *toStandardState(QAbstractState *state);
     static const QState *toStandardState(const QAbstractState *state);

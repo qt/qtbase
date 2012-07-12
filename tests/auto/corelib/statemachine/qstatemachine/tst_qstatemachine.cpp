@@ -203,6 +203,8 @@ private slots:
     void changeStateWhileAnimatingProperty();
     void propertiesAreAssignedBeforeEntryCallbacks_data();
     void propertiesAreAssignedBeforeEntryCallbacks();
+
+    void multiTargetTransitionInsideParallelStateGroup();
 };
 
 class TestState : public QState
@@ -246,6 +248,9 @@ public:
     EventTransition(QEvent::Type type, QAbstractState *target, QState *parent = 0)
         : QAbstractTransition(parent), m_type(type)
     { setTargetState(target); }
+    EventTransition(QEvent::Type type, const QList<QAbstractState *> &targets, QState *parent = 0)
+        : QAbstractTransition(parent), m_type(type)
+    { setTargetStates(targets); }
 protected:
     virtual bool eventTest(QEvent *e) {
         return (e->type() == m_type);
@@ -4645,6 +4650,40 @@ void tst_QStateMachine::propertiesAreAssignedBeforeEntryCallbacks()
 
     QVERIFY(s2->onEntryPassed);
     QVERIFY(s2->enteredPassed);
+}
+
+// QTBUG-25958
+void tst_QStateMachine::multiTargetTransitionInsideParallelStateGroup()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+
+    QState *s2 = new QState(QState::ParallelStates, &machine);
+
+    QState *s21 = new QState(s2);
+    QState *s211 = new QState(s21);
+    QState *s212 = new QState(s21);
+    s21->setInitialState(s212);
+
+    QState *s22 = new QState(s2);
+    QState *s221 = new QState(s22);
+    QState *s222 = new QState(s22);
+    s22->setInitialState(s222);
+
+    QAbstractTransition *t1 = new EventTransition(QEvent::User, QList<QAbstractState *>() << s211 << s221);
+    s1->addTransition(t1);
+
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s1));
+
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_VERIFY(machine.configuration().contains(s2));
+    QCOMPARE(machine.configuration().size(), 5);
+    QVERIFY(machine.configuration().contains(s21));
+    QVERIFY(machine.configuration().contains(s211));
+    QVERIFY(machine.configuration().contains(s22));
+    QVERIFY(machine.configuration().contains(s221));
 }
 
 QTEST_MAIN(tst_QStateMachine)

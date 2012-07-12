@@ -518,6 +518,10 @@ QList<QAbstractState*> QStateMachinePrivate::computeStatesToEnter(const QList<QA
                 QAbstractState *s = lst.at(j);
                 addStatesToEnter(s, lca, statesToEnter, statesForDefaultEntry);
             }
+            for (int j = src ? 1 : 0; j < lst.size(); ++j) {
+                QAbstractState *s = lst.at(j);
+                addAncestorStatesToEnter(s, lca, statesToEnter, statesForDefaultEntry);
+            }
             if (isParallel(lca)) {
                 QList<QAbstractState*> lcac = QStatePrivate::get(lca)->childStates();
                 foreach (QAbstractState* child,lcac) {
@@ -715,30 +719,36 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
 				return;
 			}
 		}
-		QList<QState*> ancs = properAncestors(s, root);
-		for (int i = 0; i < ancs.size(); ++i) {
-			QState *anc = ancs.at(i);
-			if (!anc->parentState())
-				continue;
-			statesToEnter.insert(anc);
-			if (isParallel(anc)) {
-				QList<QAbstractState*> lst = QStatePrivate::get(anc)->childStates();
-				for (int j = 0; j < lst.size(); ++j) {
-					QAbstractState *child = lst.at(j);
-					bool hasDescendantInList = false;
-					QSet<QAbstractState*>::const_iterator it;
-					for (it = statesToEnter.constBegin(); it != statesToEnter.constEnd(); ++it) {
-						if (isDescendantOf(*it, child)) {
-							hasDescendantInList = true;
-							break;
-						}
-					}
-					if (!hasDescendantInList)
-						addStatesToEnter(child, anc, statesToEnter, statesForDefaultEntry);
-				}
-			}
-		}
 	}
+}
+
+void QStateMachinePrivate::addAncestorStatesToEnter(QAbstractState *s, QState *root,
+                                                    QSet<QAbstractState*> &statesToEnter,
+                                                    QSet<QAbstractState*> &statesForDefaultEntry)
+{
+    QList<QState*> ancs = properAncestors(s, root);
+    for (int i = 0; i < ancs.size(); ++i) {
+        QState *anc = ancs.at(i);
+        if (!anc->parentState())
+            continue;
+        statesToEnter.insert(anc);
+        if (isParallel(anc)) {
+            QList<QAbstractState*> lst = QStatePrivate::get(anc)->childStates();
+            for (int j = 0; j < lst.size(); ++j) {
+                QAbstractState *child = lst.at(j);
+                bool hasDescendantInList = false;
+                QSet<QAbstractState*>::const_iterator it;
+                for (it = statesToEnter.constBegin(); it != statesToEnter.constEnd(); ++it) {
+                    if (isDescendantOf(*it, child)) {
+                        hasDescendantInList = true;
+                        break;
+                    }
+                }
+                if (!hasDescendantInList)
+                    addStatesToEnter(child, anc, statesToEnter, statesForDefaultEntry);
+            }
+        }
+    }
 }
 
 bool QStateMachinePrivate::isFinal(const QAbstractState *s)
@@ -1077,6 +1087,7 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
     if (currentErrorState != 0) {    
         QState *lca = findLCA(QList<QAbstractState*>() << currentErrorState << currentContext);
         addStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
+        addAncestorStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
     } else {
         qWarning("Unrecoverable error detected in running state machine: %s", 
                  qPrintable(errorString));
