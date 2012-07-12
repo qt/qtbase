@@ -1008,7 +1008,6 @@ void VcprojGenerator::initLibrarianTool()
 
 void VcprojGenerator::initLinkerTool()
 {
-    findLibraries(); // Need to add the highest version of the libs
     VCConfiguration &conf = vcProject.Configuration;
     conf.linker.parseOptions(project->values("QMAKE_LFLAGS"));
 
