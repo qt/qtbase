@@ -62,6 +62,19 @@ QT_BEGIN_NAMESPACE
 
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
+#ifndef GLX_CONTEXT_CORE_PROFILE_BIT_ARB
+#define GLX_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
+#endif
+
+#ifndef GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB
+#define GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
+#endif
+
+#ifndef GLX_CONTEXT_PROFILE_MASK_ARB
+#define GLX_CONTEXT_PROFILE_MASK_ARB 0x9126
+#endif
+
+
 QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share)
     : QPlatformOpenGLContext()
     , m_screen(screen)
