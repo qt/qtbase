@@ -205,6 +205,7 @@ private slots:
     void propertiesAreAssignedBeforeEntryCallbacks();
 
     void multiTargetTransitionInsideParallelStateGroup();
+    void signalTransitionNormalizeSignature();
 };
 
 class TestState : public QState
@@ -1996,35 +1997,58 @@ class TestSignalTransition : public QSignalTransition
 {
 public:
     TestSignalTransition(QState *sourceState = 0)
-        : QSignalTransition(sourceState), m_sender(0)
+        : QSignalTransition(sourceState),
+          m_eventTestSender(0), m_eventTestSignalIndex(-1),
+          m_transitionSender(0), m_transitionSignalIndex(-1)
     {}
     TestSignalTransition(QObject *sender, const char *signal,
                          QAbstractState *target)
-        : QSignalTransition(sender, signal), m_sender(0)
+        : QSignalTransition(sender, signal),
+        m_eventTestSender(0), m_eventTestSignalIndex(-1),
+        m_transitionSender(0), m_transitionSignalIndex(-1)
     { setTargetState(target); }
-    QObject *senderReceived() const {
-        return m_sender;
+    QObject *eventTestSenderReceived() const {
+        return m_eventTestSender;
     }
-    int signalIndexReceived() const {
-        return m_signalIndex;
+    int eventTestSignalIndexReceived() const {
+        return m_eventTestSignalIndex;
     }
-    QVariantList argumentsReceived() const {
-        return m_args;
+    QVariantList eventTestArgumentsReceived() const {
+        return m_eventTestArgs;
+    }
+    QObject *transitionSenderReceived() const {
+        return m_transitionSender;
+    }
+    int transitionSignalIndexReceived() const {
+        return m_transitionSignalIndex;
+    }
+    QVariantList transitionArgumentsReceived() const {
+        return m_transitionArgs;
     }
 protected:
     bool eventTest(QEvent *e) {
         if (!QSignalTransition::eventTest(e))
             return false;
         QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
-        m_sender = se->sender();
-        m_signalIndex = se->signalIndex();
-        m_args = se->arguments();
+        m_eventTestSender = se->sender();
+        m_eventTestSignalIndex = se->signalIndex();
+        m_eventTestArgs = se->arguments();
         return true;
     }
+    void onTransition(QEvent *e) {
+        QSignalTransition::onTransition(e);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
+        m_transitionSender = se->sender();
+        m_transitionSignalIndex = se->signalIndex();
+        m_transitionArgs = se->arguments();
+    }
 private:
-    QObject *m_sender;
-    int m_signalIndex;
-    QVariantList m_args;
+    QObject *m_eventTestSender;
+    int m_eventTestSignalIndex;
+    QVariantList m_eventTestArgs;
+    QObject *m_transitionSender;
+    int m_transitionSignalIndex;
+    QVariantList m_transitionArgs;
 };
 
 void tst_QStateMachine::signalTransitions()
@@ -2138,10 +2162,14 @@ void tst_QStateMachine::signalTransitions()
         emitter.emitSignalWithIntArg(123);
 
         QTRY_COMPARE(finishedSpy.count(), 1);
-        QCOMPARE(trans->senderReceived(), (QObject*)&emitter);
-        QCOMPARE(trans->signalIndexReceived(), emitter.metaObject()->indexOfSignal("signalWithIntArg(int)"));
-        QCOMPARE(trans->argumentsReceived().size(), 1);
-        QCOMPARE(trans->argumentsReceived().at(0).toInt(), 123);
+        QCOMPARE(trans->eventTestSenderReceived(), (QObject*)&emitter);
+        QCOMPARE(trans->eventTestSignalIndexReceived(), emitter.metaObject()->indexOfSignal("signalWithIntArg(int)"));
+        QCOMPARE(trans->eventTestArgumentsReceived().size(), 1);
+        QCOMPARE(trans->eventTestArgumentsReceived().at(0).toInt(), 123);
+        QCOMPARE(trans->transitionSenderReceived(), (QObject*)&emitter);
+        QCOMPARE(trans->transitionSignalIndexReceived(), emitter.metaObject()->indexOfSignal("signalWithIntArg(int)"));
+        QCOMPARE(trans->transitionArgumentsReceived().size(), 1);
+        QCOMPARE(trans->transitionArgumentsReceived().at(0).toInt(), 123);
     }
     {
         QStateMachine machine;
@@ -2161,10 +2189,14 @@ void tst_QStateMachine::signalTransitions()
         emitter.emitSignalWithStringArg(testString);
 
         QTRY_COMPARE(finishedSpy.count(), 1);
-        QCOMPARE(trans->senderReceived(), (QObject*)&emitter);
-        QCOMPARE(trans->signalIndexReceived(), emitter.metaObject()->indexOfSignal("signalWithStringArg(QString)"));
-        QCOMPARE(trans->argumentsReceived().size(), 1);
-        QCOMPARE(trans->argumentsReceived().at(0).toString(), testString);
+        QCOMPARE(trans->eventTestSenderReceived(), (QObject*)&emitter);
+        QCOMPARE(trans->eventTestSignalIndexReceived(), emitter.metaObject()->indexOfSignal("signalWithStringArg(QString)"));
+        QCOMPARE(trans->eventTestArgumentsReceived().size(), 1);
+        QCOMPARE(trans->eventTestArgumentsReceived().at(0).toString(), testString);
+        QCOMPARE(trans->transitionSenderReceived(), (QObject*)&emitter);
+        QCOMPARE(trans->transitionSignalIndexReceived(), emitter.metaObject()->indexOfSignal("signalWithStringArg(QString)"));
+        QCOMPARE(trans->transitionArgumentsReceived().size(), 1);
+        QCOMPARE(trans->transitionArgumentsReceived().at(0).toString(), testString);
     }
     {
         QStateMachine machine;
@@ -4684,6 +4716,29 @@ void tst_QStateMachine::multiTargetTransitionInsideParallelStateGroup()
     QVERIFY(machine.configuration().contains(s211));
     QVERIFY(machine.configuration().contains(s22));
     QVERIFY(machine.configuration().contains(s221));
+}
+
+void tst_QStateMachine::signalTransitionNormalizeSignature()
+{
+    QStateMachine machine;
+    QState *s0 = new QState(&machine);
+    machine.setInitialState(s0);
+    QState *s1 = new QState(&machine);
+    SignalEmitter emitter;
+    TestSignalTransition *t0 = new TestSignalTransition(&emitter, SIGNAL( signalWithNoArg( ) ), s1);
+    s0->addTransition(t0);
+
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s0));
+    emitter.emitSignalWithNoArg();
+    QTRY_VERIFY(machine.configuration().contains(s1));
+
+    QCOMPARE(t0->eventTestSenderReceived(), (QObject*)&emitter);
+    QCOMPARE(t0->eventTestSignalIndexReceived(), emitter.metaObject()->indexOfSignal("signalWithNoArg()"));
+    QCOMPARE(t0->eventTestArgumentsReceived().size(), 0);
+    QCOMPARE(t0->transitionSenderReceived(), (QObject*)&emitter);
+    QCOMPARE(t0->transitionSignalIndexReceived(), emitter.metaObject()->indexOfSignal("signalWithNoArg()"));
+    QCOMPARE(t0->transitionArgumentsReceived().size(), 0);
 }
 
 QTEST_MAIN(tst_QStateMachine)

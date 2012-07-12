@@ -1704,6 +1704,7 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
                      meta->className(), signal.constData());
             return;
         }
+        originalSignalIndex = signalIndex;
     }
     // The signal index we actually want to connect to is the one
     // that is going to be sent, i.e. the non-cloned original index.
