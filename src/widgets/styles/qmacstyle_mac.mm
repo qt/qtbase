@@ -2107,25 +2107,29 @@ QMacStyle::QMacStyle()
     d = new QMacStylePrivate(this);
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    d->receiver = [[NotificationReceiver alloc] initWithPrivate:d];
-    NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+        d->receiver = [[NotificationReceiver alloc] initWithPrivate:d];
+        NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
 
-    [[NSNotificationCenter defaultCenter] addObserver:receiver
-        selector:@selector(scrollBarStyleDidChange:)
-        name:NSPreferredScrollerStyleDidChangeNotification
-        object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:receiver
+            selector:@selector(scrollBarStyleDidChange:)
+            name:NSPreferredScrollerStyleDidChangeNotification
+            object:nil];
 
-    d->nsscroller = [[NSScroller alloc] init];
+        d->nsscroller = [[NSScroller alloc] init];
+    }
 #endif
 }
 
 QMacStyle::~QMacStyle()
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    [d->nsscroller release];
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+        [d->nsscroller release];
 
-    NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
-    [[NSNotificationCenter defaultCenter] removeObserver:receiver];
+        NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
+        [[NSNotificationCenter defaultCenter] removeObserver:receiver];
+    }
 #endif
 
     delete qt_mac_backgroundPattern;
