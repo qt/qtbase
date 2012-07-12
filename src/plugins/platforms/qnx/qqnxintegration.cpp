@@ -442,10 +442,10 @@ void QQnxIntegration::createDisplays()
         m_screens.append(screen);
         screenAdded(screen);
 
-        QObject::connect(m_screenEventHandler, SIGNAL(newWindowCreated(void *)),
-                         screen, SLOT(newWindowCreated(void *)));
-        QObject::connect(m_screenEventHandler, SIGNAL(windowClosed(void *)),
-                         screen, SLOT(windowClosed(void *)));
+        QObject::connect(m_screenEventHandler, SIGNAL(newWindowCreated(void*)),
+                         screen, SLOT(newWindowCreated(void*)));
+        QObject::connect(m_screenEventHandler, SIGNAL(windowClosed(void*)),
+                         screen, SLOT(windowClosed(void*)));
 
         QObject::connect(m_navigatorEventHandler, SIGNAL(rotationChanged(int)), screen, SLOT(setRotation(int)));
         QObject::connect(m_navigatorEventHandler, SIGNAL(windowGroupActivated(QByteArray)), screen, SLOT(activateWindowGroup(QByteArray)));
