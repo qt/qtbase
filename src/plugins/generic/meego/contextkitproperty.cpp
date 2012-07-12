@@ -59,8 +59,8 @@ QContextKitProperty::QContextKitProperty(const QString& serviceName, const QStri
                         QLatin1String("org.maemo.contextkit.Property"), QDBusConnection::systemBus())
 {
     propertyInterface.call("Subscribe");
-    connect(&propertyInterface, SIGNAL(ValueChanged(QVariantList, qulonglong)),
-            this, SLOT(cacheValue(QVariantList, qulonglong)));
+    connect(&propertyInterface, SIGNAL(ValueChanged(QVariantList,qulonglong)),
+            this, SLOT(cacheValue(QVariantList,qulonglong)));
 
     QDBusMessage reply = propertyInterface.call("Get");
     if (reply.type() == QDBusMessage::ReplyMessage)
