@@ -1102,9 +1102,12 @@ void VcprojGenerator::initDeploymentTool()
 
     // Only deploy Qt libs for shared build
     if (!project->values("QMAKE_QT_DLL").isEmpty()) {
+        // FIXME: This code should actually resolve the libraries from all Qt modules.
+        const QString &qtdir = QLibraryInfo::rawLocation(QLibraryInfo::LibrariesPath,
+                                                         QLibraryInfo::EffectivePaths);
         const QStringList &arg = project->values("MSVCPROJ_LIBS");
         for (QStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {
-            if (it->contains(project->first("QMAKE_LIBDIR"))) {
+            if (it->contains(qtdir)) {
                 QString dllName = *it;
 
                 if (dllName.contains(QLatin1String("QAxContainer"))
