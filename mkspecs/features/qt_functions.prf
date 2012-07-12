@@ -45,10 +45,8 @@ defineTest(qtAddModule) {
     CONFIG += $$eval(QT.$${1}.CONFIG)
     DEFINES += $$eval(QT.$${1}.DEFINES)
 
-    unix {
-        MODULE_INCLUDES -= /usr/include /usr/local/include
-        MODULE_LIBS -= /usr/lib /usr/local/lib
-    }
+    MODULE_INCLUDES -= $$QMAKE_DEFAULT_INCDIRS
+    MODULE_LIBS -= $$QMAKE_DEFAULT_LIBDIRS
 
     INCLUDEPATH *= $$MODULE_INCLUDES
     auto_use_privates|isEqual(2, UsePrivate) { # Tests function parameter 2 ($$2) being equal to 'UsePrivate'

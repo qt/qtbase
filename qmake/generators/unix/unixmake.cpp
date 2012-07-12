@@ -578,6 +578,8 @@ void
 UnixMakefileGenerator::processPrlFiles()
 {
     QList<QMakeLocalFileName> libdirs, frameworkdirs;
+    foreach (const QString &dlib, project->values("QMAKE_DEFAULT_LIBDIRS"))
+        libdirs.append(QMakeLocalFileName(dlib));
     frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
     const QString lflags[] = { "QMAKE_LIBDIR_FLAGS", "QMAKE_FRAMEWORKPATH_FLAGS", "QMAKE_LFLAGS", "QMAKE_LIBS", QString() };
     for(int i = 0; !lflags[i].isNull(); i++) {
