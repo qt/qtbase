@@ -8,5 +8,5 @@ if(win32-msvc2005*|win32-msvc2008*|win32-msvc2010*):equals(TEMPLATE, "app") {
     QMAKE_LFLAGS += /MANIFEST $$quote(/MANIFESTFILE:\"$${MANIFEST_DIR}\\$${NOPATH_TARGET}.intermediate.manifest\")
     !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$escape_expand(\\n\\t)$$QMAKE_POST_LINK
     QMAKE_POST_LINK = $$quote(mt.exe -nologo -manifest \"$$replace(MANIFEST_DIR,/,\\)\\$${NOPATH_TARGET}.intermediate.manifest\" -outputresource:$(DESTDIR_TARGET);1)$$QMAKE_POST_LINK
-    QMAKE_CLEAN += \"$$replace(MANIFEST_DIR,/,\\)\\$${NOPATH_TARGET}.intermediate.manifest\"
+    QMAKE_CLEAN += $$MANIFEST_DIR/$${NOPATH_TARGET}.intermediate.manifest
 }

@@ -593,12 +593,13 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
             const QString del_statement("-$(DEL_FILE)");
             if(project->isActiveConfig("no_delete_multiple_files")) {
                 for(QStringList::ConstIterator it = list.begin(); it != list.end(); ++it)
-                    t << "\n\t" << del_statement << " " << escapeFilePath((*it));
+                    t << "\n\t" << del_statement << " "
+                      << escapeFilePath(Option::fixPathToTargetOS(*it));
             } else {
                 QString files, file;
                 const int commandlineLimit = 2047; // NT limit, expanded
                 for(QStringList::ConstIterator it = list.begin(); it != list.end(); ++it) {
-                    file = " " + escapeFilePath((*it));
+                    file = " " + escapeFilePath(Option::fixPathToTargetOS(*it));
                     if(del_statement.length() + files.length() +
                        qMax(fixEnvVariables(file).length(), file.length()) > commandlineLimit) {
                         t << "\n\t" << del_statement << files;

@@ -223,6 +223,7 @@ protected:
     //for retrieving values and lists of values
     virtual QString var(const QString &var);
     QString varGlue(const QString &var, const QString &before, const QString &glue, const QString &after);
+    QString fileVarGlue(const QString &var, const QString &before, const QString &glue, const QString &after);
     QString varList(const QString &var);
     QString val(const QStringList &varList);
     QString valGlue(const QStringList &varList, const QString &before, const QString &glue, const QString &after);
