@@ -484,9 +484,7 @@ UnixMakefileGenerator::findLibraries()
                     if(!libdirs.contains(f))
                         libdirs.append(f);
                 } else if(opt.startsWith("-l")) {
-                    if (!project->isEmpty("QMAKE_RVCT_LINKSTYLE")) {
-                        (*it) = opt.mid(2);
-                    } else if (project->isActiveConfig("rvct_linker") || project->isActiveConfig("armcc_linker")) {
+                    if (project->isActiveConfig("rvct_linker") || project->isActiveConfig("armcc_linker")) {
                         (*it) = "lib" + opt.mid(2) + ".so";
                     } else {
                         stub = opt.mid(2);
@@ -535,10 +533,7 @@ UnixMakefileGenerator::findLibraries()
                                     + project->values("QMAKE_PREFIX_SHLIB").first()
                                     + stub + "." + (*extit));
                             if(exists(pathToLib)) {
-                                if (!project->isEmpty("QMAKE_RVCT_LINKSTYLE"))
-                                    (*it) = pathToLib;
-                                else
-                                    (*it) = "-l" + stub;
+                                (*it) = "-l" + stub;
                                 found = true;
                                 break;
                             }
