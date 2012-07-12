@@ -208,6 +208,7 @@ private slots:
     void signalTransitionNormalizeSignature();
     void createSignalTransitionWhenRunning();
     void createEventTransitionWhenRunning();
+    void signalTransitionSenderInDifferentThread();
 };
 
 class TestState : public QState
@@ -4825,6 +4826,62 @@ void tst_QStateMachine::createEventTransitionWhenRunning()
     t3->setEventType(QEvent::Timer);
     t3->setTargetState(s4);
     QTRY_VERIFY(machine.configuration().contains(s4));
+}
+
+class SignalEmitterThread : public QThread
+{
+    Q_OBJECT
+public:
+    SignalEmitterThread(QObject *parent = 0)
+        : QThread(parent)
+    {
+        moveToThread(this);
+    }
+
+Q_SIGNALS:
+    void signal1();
+    void signal2();
+
+public Q_SLOTS:
+    void emitSignals()
+    {
+        emit signal1();
+        emit signal2();
+    }
+};
+
+// QTBUG-19789
+void tst_QStateMachine::signalTransitionSenderInDifferentThread()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+
+    SignalEmitterThread thread;
+    QState *s2 = new QState(&machine);
+    s1->addTransition(&thread, SIGNAL(signal1()), s2);
+
+    QFinalState *s3 = new QFinalState(&machine);
+    s2->addTransition(&thread, SIGNAL(signal2()), s3);
+
+    thread.start();
+    QTRY_VERIFY(thread.isRunning());
+
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s1));
+
+    QMetaObject::invokeMethod(&thread, "emitSignals");
+    // thread emits both signal1() and signal2(), so we should end in s3
+    QTRY_VERIFY(machine.configuration().contains(s3));
+
+    // Run the machine again; transitions should still be registered
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s1));
+    QMetaObject::invokeMethod(&thread, "emitSignals");
+    QTRY_VERIFY(machine.configuration().contains(s3));
+
+    thread.quit();
+    QTRY_VERIFY(thread.wait());
 }
 
 QTEST_MAIN(tst_QStateMachine)

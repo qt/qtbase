@@ -1703,8 +1703,10 @@ void QStateMachinePrivate::unregisterTransition(QAbstractTransition *transition)
 void QStateMachinePrivate::maybeRegisterSignalTransition(QSignalTransition *transition)
 {
     Q_Q(QStateMachine);
-    if ((state == Running) && configuration.contains(transition->sourceState()))
+    if (((state == Running) && configuration.contains(transition->sourceState()))
+            || (transition->senderObject() && (transition->senderObject()->thread() != q->thread()))) {
         registerSignalTransition(transition);
+    }
 }
 
 void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transition)
@@ -1766,11 +1768,15 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
 
 void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transition)
 {
+    Q_Q(QStateMachine);
     int signalIndex = QSignalTransitionPrivate::get(transition)->signalIndex;
     if (signalIndex == -1)
         return; // not registered
-    QSignalTransitionPrivate::get(transition)->signalIndex = -1;
     const QObject *sender = QSignalTransitionPrivate::get(transition)->sender;
+    // Don't unregister if the sender is on another thread
+    if (!sender || (sender->thread() != q->thread()))
+        return;
+    QSignalTransitionPrivate::get(transition)->signalIndex = -1;
     QVector<int> &connectedSignalIndexes = connections[sender];
     Q_ASSERT(connectedSignalIndexes.size() > signalIndex);
     Q_ASSERT(connectedSignalIndexes.at(signalIndex) != 0);
