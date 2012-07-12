@@ -135,8 +135,10 @@ testReplace($$native_path("/crazy/trolls"), "$${DIR_SEPARATOR}crazy$${DIR_SEPARA
 
 testReplace($$absolute_path("crazy/trolls"), "$$PWD/crazy/trolls", "absolute_path")
 testReplace($$absolute_path("crazy/trolls", "/fake/path"), "/fake/path/crazy/trolls", "absolute_path with base")
+testReplace($$absolute_path(""), "$$PWD", "absolute_path of empty")
 testReplace($$relative_path($$_PRO_FILE_PWD_), $$basename($$_PRO_FILE_), "relative_path")
 testReplace($$relative_path("/fake/trolls", "/fake/path"), "../trolls", "relative_path with base")
+testReplace($$relative_path(""), "", "relative_path of empty")
 
 #this test is very rudimentary. the backend function is thoroughly tested in qt creator
 in = "some nasty\" path\\"
