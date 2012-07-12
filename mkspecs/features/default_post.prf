@@ -29,22 +29,14 @@ incredibuild_xge {
 
 breakpad {
     load(resolve_target)
-    win32 {
-        DEBUGFILENAME = $${QMAKE_RESOLVED_TARGET}
-        PDBFILENAME = $$replace(QMAKE_RESOLVED_TARGET, ...$, pdb)
-        DEBUGFILENAME ~= s,/,\\,
-        PDBFILENAME ~= s,/,\\,
-        QMAKE_CLEAN += $$PDBFILENAME  # for the debug case it is hardcoded in qmake
-    } else {
-        DEBUGFILENAME = $$QMAKE_RESOLVED_TARGET
-    }
+    win32: QMAKE_CLEAN += $$replace(QMAKE_RESOLVED_TARGET, ...$, pdb)  # for the debug case it is hardcoded in qmake
 
-    PROJECTPATH = $$OUT_PWD
-    win32:PROJECTPATH ~= s,/,\\,
+    DEBUGFILENAME = $$shell_quote($$native_path(($$QMAKE_RESOLVED_TARGET))
+    PROJECTPATH = $$shell_quote($$native_path($$OUT_PWD))
 
     !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)
-    QMAKE_POST_LINK = $$QMAKE_POST_LINK$$quote($${QT_BREAKPAD_ROOT_PATH}$${QMAKE_DIR_SEP}qtbreakpadsymbols \"$$DEBUGFILENAME\" \"$$PROJECTPATH\")
-    !isEmpty(QMAKE_STRIP):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)$$quote($$QMAKE_STRIP \"$$DEBUGFILENAME\")
+    QMAKE_POST_LINK = $$QMAKE_POST_LINK$$quote($${QT_BREAKPAD_ROOT_PATH}$${QMAKE_DIR_SEP}qtbreakpadsymbols $$DEBUGFILENAME $$PROJECTPATH)
+    !isEmpty(QMAKE_STRIP):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)$$quote($$QMAKE_STRIP $$DEBUGFILENAME)
 }
 
 QMAKE_INCDIR += $$QMAKE_INCDIR_POST

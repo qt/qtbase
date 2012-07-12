@@ -1,5 +1,4 @@
-!contains(DESTDIR, (/|.:[/\\\\]).*):QMAKE_RESOLVED_TARGET = $${OUT_PWD}/
-!isEmpty(DESTDIR):QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${DESTDIR}/
+QMAKE_RESOLVED_TARGET = $$absolute_path($$DESTDIR, $$OUT_PWD)/
 
 win32 {
     QMAKE_RESOLVED_TARGET ~= s,/,\\,
