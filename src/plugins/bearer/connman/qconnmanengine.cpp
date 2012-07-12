@@ -510,7 +510,7 @@ void QConnmanEngine::removeConfiguration(const QString &id)
         QConnmanServiceInterface serv(service);
 
         disconnect(&serv,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
-                   this,SLOT(servicePropertyChangedContext(QString,QString, QDBusVariant)));
+                   this,SLOT(servicePropertyChangedContext(QString,QString,QDBusVariant)));
 
         serviceNetworks.removeOne(service);
 
@@ -533,7 +533,7 @@ void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
         serviceNetworks.append(servicePath);
 
         connect(serv,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
-                this,SLOT(servicePropertyChangedContext(QString,QString, QDBusVariant)));
+                this,SLOT(servicePropertyChangedContext(QString,QString,QDBusVariant)));
         QNetworkConfigurationPrivate* cpPriv = new QNetworkConfigurationPrivate();
 
         QString networkName = serv->getName();

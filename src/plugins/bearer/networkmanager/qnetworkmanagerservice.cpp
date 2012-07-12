@@ -81,10 +81,10 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
     }
     d->valid = true;
     nmDBusHelper = new QNmDBusHelper(this);
-    connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(const QString &,QMap<QString,QVariant>)),
-                    this,SIGNAL(propertiesChanged( const QString &, QMap<QString,QVariant>)));
-    connect(nmDBusHelper,SIGNAL(pathForStateChanged(const QString &, quint32)),
-            this, SIGNAL(stateChanged(const QString&, quint32)));
+    connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(QString,QMap<QString,QVariant>)),
+                    this,SIGNAL(propertiesChanged(QString,QMap<QString,QVariant>)));
+    connect(nmDBusHelper,SIGNAL(pathForStateChanged(QString,quint32)),
+            this, SIGNAL(stateChanged(QString,quint32)));
 
 }
 
@@ -108,7 +108,7 @@ bool QNetworkManagerInterface::setConnections()
                                   QLatin1String(NM_DBUS_PATH),
                                   QLatin1String(NM_DBUS_INTERFACE),
                                   QLatin1String("PropertiesChanged"),
-                                nmDBusHelper,SLOT(slotPropertiesChanged( QMap<QString,QVariant>)))) {
+                                nmDBusHelper,SLOT(slotPropertiesChanged(QMap<QString,QVariant>)))) {
         allOk = true;
     }
     if (!dbusConnection.connect(QLatin1String(NM_DBUS_SERVICE),
@@ -226,14 +226,14 @@ bool QNetworkManagerInterfaceAccessPoint::setConnections()
     bool allOk = false;
     delete nmDBusHelper;
     nmDBusHelper = new QNmDBusHelper(this);
-    connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(const QString &,QMap<QString,QVariant>)),
-            this,SIGNAL(propertiesChanged( const QString &, QMap<QString,QVariant>)));
+    connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(QString,QMap<QString,QVariant>)),
+            this,SIGNAL(propertiesChanged(QString,QMap<QString,QVariant>)));
 
     if(dbusConnection.connect(QLatin1String(NM_DBUS_SERVICE),
                               d->path,
                               QLatin1String(NM_DBUS_INTERFACE_ACCESS_POINT),
                               QLatin1String("PropertiesChanged"),
-                              nmDBusHelper,SLOT(slotPropertiesChanged( QMap<QString,QVariant>))) ) {
+                              nmDBusHelper,SLOT(slotPropertiesChanged(QMap<QString,QVariant>))) ) {
         allOk = true;
 
     }
@@ -333,8 +333,8 @@ bool QNetworkManagerInterfaceDevice::setConnections()
     bool allOk = false;
     delete nmDBusHelper;
     nmDBusHelper = new QNmDBusHelper(this);
-    connect(nmDBusHelper,SIGNAL(pathForStateChanged(const QString &, quint32)),
-            this, SIGNAL(stateChanged(const QString&, quint32)));
+    connect(nmDBusHelper,SIGNAL(pathForStateChanged(QString,quint32)),
+            this, SIGNAL(stateChanged(QString,quint32)));
     if(dbusConnection.connect(QLatin1String(NM_DBUS_SERVICE),
                               d->path,
                               QLatin1String(NM_DBUS_INTERFACE_DEVICE),
@@ -426,13 +426,13 @@ bool QNetworkManagerInterfaceDeviceWired::setConnections()
 
     delete nmDBusHelper;
     nmDBusHelper = new QNmDBusHelper(this);
-    connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(const QString &,QMap<QString,QVariant>)),
-            this,SIGNAL(propertiesChanged( const QString &, QMap<QString,QVariant>)));
+    connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(QString,QMap<QString,QVariant>)),
+            this,SIGNAL(propertiesChanged(QString,QMap<QString,QVariant>)));
     if(dbusConnection.connect(QLatin1String(NM_DBUS_SERVICE),
                               d->path,
                               QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRED),
                               QLatin1String("PropertiesChanged"),
-                              nmDBusHelper,SLOT(slotPropertiesChanged( QMap<QString,QVariant>))) )  {
+                              nmDBusHelper,SLOT(slotPropertiesChanged(QMap<QString,QVariant>))) )  {
         allOk = true;
     }
     return allOk;
@@ -501,20 +501,20 @@ bool QNetworkManagerInterfaceDeviceWireless::setConnections()
     bool allOk = false;
     delete nmDBusHelper;
     nmDBusHelper = new QNmDBusHelper(this);
-    connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(const QString &,QMap<QString,QVariant>)),
-            this,SIGNAL(propertiesChanged( const QString &, QMap<QString,QVariant>)));
+    connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(QString,QMap<QString,QVariant>)),
+            this,SIGNAL(propertiesChanged(QString,QMap<QString,QVariant>)));
 
-    connect(nmDBusHelper, SIGNAL(pathForAccessPointAdded(const QString &,QDBusObjectPath)),
-            this,SIGNAL(accessPointAdded(const QString &,QDBusObjectPath)));
+    connect(nmDBusHelper, SIGNAL(pathForAccessPointAdded(QString,QDBusObjectPath)),
+            this,SIGNAL(accessPointAdded(QString,QDBusObjectPath)));
 
-    connect(nmDBusHelper, SIGNAL(pathForAccessPointRemoved(const QString &,QDBusObjectPath)),
-            this,SIGNAL(accessPointRemoved(const QString &,QDBusObjectPath)));
+    connect(nmDBusHelper, SIGNAL(pathForAccessPointRemoved(QString,QDBusObjectPath)),
+            this,SIGNAL(accessPointRemoved(QString,QDBusObjectPath)));
 
     if(!dbusConnection.connect(QLatin1String(NM_DBUS_SERVICE),
                               d->path,
                               QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRELESS),
                               QLatin1String("AccessPointAdded"),
-                              nmDBusHelper, SLOT(slotAccessPointAdded( QDBusObjectPath )))) {
+                              nmDBusHelper, SLOT(slotAccessPointAdded(QDBusObjectPath)))) {
         allOk = true;
     }
 
@@ -523,7 +523,7 @@ bool QNetworkManagerInterfaceDeviceWireless::setConnections()
                               d->path,
                               QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRELESS),
                               QLatin1String("AccessPointRemoved"),
-                              nmDBusHelper, SLOT(slotAccessPointRemoved( QDBusObjectPath )))) {
+                              nmDBusHelper, SLOT(slotAccessPointRemoved(QDBusObjectPath)))) {
         allOk = true;
     }
 
@@ -532,7 +532,7 @@ bool QNetworkManagerInterfaceDeviceWireless::setConnections()
                               d->path,
                               QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRELESS),
                               QLatin1String("PropertiesChanged"),
-                              nmDBusHelper,SLOT(slotPropertiesChanged( QMap<QString,QVariant>)))) {
+                              nmDBusHelper,SLOT(slotPropertiesChanged(QMap<QString,QVariant>)))) {
         allOk = true;
     }
 
@@ -692,8 +692,8 @@ bool QNetworkManagerSettingsConnection::setConnections()
 
     delete nmDBusHelper;
     nmDBusHelper = new QNmDBusHelper(this);
-    connect(nmDBusHelper, SIGNAL(pathForSettingsRemoved(const QString &)),
-            this,SIGNAL(removed( const QString &)));
+    connect(nmDBusHelper, SIGNAL(pathForSettingsRemoved(QString)),
+            this,SIGNAL(removed(QString)));
 
     if (!dbusConnection.connect(d->service, d->path,
                            QLatin1String(NM_DBUS_IFACE_SETTINGS_CONNECTION), QLatin1String("Removed"),
@@ -835,13 +835,13 @@ bool QNetworkManagerConnectionActive::setConnections()
     bool allOk = false;
     delete nmDBusHelper;
     nmDBusHelper = new QNmDBusHelper(this);
-    connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(const QString &,QMap<QString,QVariant>)),
-            this,SIGNAL(propertiesChanged( const QString &, QMap<QString,QVariant>)));
+    connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(QString,QMap<QString,QVariant>)),
+            this,SIGNAL(propertiesChanged(QString,QMap<QString,QVariant>)));
     if(dbusConnection.connect(QLatin1String(NM_DBUS_SERVICE),
                               d->path,
                               QLatin1String(NM_DBUS_INTERFACE_ACTIVE_CONNECTION),
                               QLatin1String("PropertiesChanged"),
-                              nmDBusHelper,SLOT(slotPropertiesChanged( QMap<QString,QVariant>))) )  {
+                              nmDBusHelper,SLOT(slotPropertiesChanged(QMap<QString,QVariant>))) )  {
         allOk = true;
     }
 

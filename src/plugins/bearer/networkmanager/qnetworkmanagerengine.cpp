@@ -76,7 +76,7 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
     connect(interface, SIGNAL(deviceRemoved(QDBusObjectPath)),
             this, SLOT(deviceRemoved(QDBusObjectPath)));
 #if 0
-    connect(interface, SIGNAL(stateChanged(const QString,quint32)),
+    connect(interface, SIGNAL(stateChanged(QString,quint32)),
             this, SIGNAL(configurationsChanged()));
 #endif
     connect(interface, SIGNAL(activationFinished(QDBusPendingCallWatcher*)),
@@ -418,8 +418,8 @@ void QNetworkManagerEngine::newConnection(const QDBusObjectPath &path,
     connections.append(connection);
 
     connect(connection, SIGNAL(removed(QString)), this, SLOT(removeConnection(QString)));
-    connect(connection, SIGNAL(updated(const QNmSettingsMap&)),
-            this, SLOT(updateConnection(const QNmSettingsMap&)));
+    connect(connection, SIGNAL(updated(QNmSettingsMap)),
+            this, SLOT(updateConnection(QNmSettingsMap)));
 
     const QString service = connection->connectionInterface()->service();
     const QString settingsPath = connection->connectionInterface()->path();

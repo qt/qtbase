@@ -80,7 +80,7 @@ void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
                                QLatin1String(CONNMAN_MANAGER_PATH),
                                QLatin1String(CONNMAN_MANAGER_INTERFACE),
                                QLatin1String("PropertyChanged"),
-                               this,SIGNAL(propertyChanged(const QString &, const QDBusVariant & )))) {
+                               this,SIGNAL(propertyChanged(QString,QDBusVariant)))) {
             qWarning() << "PropertyCHanged not connected";
         }
     }
@@ -91,7 +91,7 @@ void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
                                     QLatin1String(CONNMAN_MANAGER_PATH),
                                     QLatin1String(CONNMAN_MANAGER_INTERFACE),
                                     QLatin1String("StateChanged"),
-                                    this,SIGNAL(stateChanged(const QString&)))) {
+                                    this,SIGNAL(stateChanged(QString)))) {
             qWarning() << "StateChanged not connected";
 
         }
@@ -108,8 +108,8 @@ void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
                                helper,SLOT(propertyChanged(QString,QDBusVariant)));
 
 
-        QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
+        QObject::connect(helper,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
+                this,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)), Qt::UniqueConnection);
     }
 }
 
@@ -426,8 +426,8 @@ void QConnmanServiceInterface::connectNotify(const QMetaMethod &signal)
                                QLatin1String("PropertyChanged"),
                                helper,SLOT(propertyChanged(QString,QDBusVariant)));
 
-        QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
+        QObject::connect(helper,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
+                this,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)), Qt::UniqueConnection);
     }
 }
 
@@ -756,8 +756,8 @@ void QConnmanTechnologyInterface::connectNotify(const QMetaMethod &signal)
                                QLatin1String("PropertyChanged"),
                                helper,SLOT(propertyChanged(QString,QDBusVariant)));
 
-        QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
+        QObject::connect(helper,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
+                this,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)), Qt::UniqueConnection);
     }
 }
 
@@ -827,7 +827,7 @@ void QConnmanAgentInterface::connectNotify(const QMetaMethod &signal)
 //                               this->path(),
 //                               QLatin1String(CONNMAN_NETWORK_INTERFACE),
 //                               QLatin1String("PropertyChanged"),
-//                               this,SIGNAL(propertyChanged(const QString &, QVariant &)));
+//                               this,SIGNAL(propertyChanged(QString,QVariant&)));
 //    }
 }
 
