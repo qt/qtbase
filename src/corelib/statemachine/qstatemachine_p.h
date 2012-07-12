@@ -257,6 +257,7 @@ public:
     QSignalEventGenerator *signalEventGenerator;
 
     QHash<const QObject*, QVector<int> > connections;
+    QMutex connectionsMutex;
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
     QHash<QObject*, QHash<QEvent::Type, int> > qobjectEvents;
 #endif

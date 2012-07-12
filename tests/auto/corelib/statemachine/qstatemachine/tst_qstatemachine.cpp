@@ -209,6 +209,7 @@ private slots:
     void createSignalTransitionWhenRunning();
     void createEventTransitionWhenRunning();
     void signalTransitionSenderInDifferentThread();
+    void signalTransitionRegistrationThreadSafety();
 };
 
 class TestState : public QState
@@ -4879,6 +4880,55 @@ void tst_QStateMachine::signalTransitionSenderInDifferentThread()
     QTRY_VERIFY(machine.configuration().contains(s1));
     QMetaObject::invokeMethod(&thread, "emitSignals");
     QTRY_VERIFY(machine.configuration().contains(s3));
+
+    thread.quit();
+    QTRY_VERIFY(thread.wait());
+}
+
+class SignalTransitionMutatorThread : public QThread
+{
+public:
+    SignalTransitionMutatorThread(QSignalTransition *transition)
+        : m_transition(transition)
+    {}
+    void run()
+    {
+        // Cause repeated registration and unregistration
+        for (int i = 0; i < 50000; ++i) {
+            m_transition->setSenderObject(this);
+            m_transition->setSenderObject(0);
+        }
+    }
+private:
+    QSignalTransition *m_transition;
+};
+
+// Should not crash:
+void tst_QStateMachine::signalTransitionRegistrationThreadSafety()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s1));
+
+    QSignalTransition *t1 = new QSignalTransition();
+    t1->setSignal(SIGNAL(objectNameChanged(QString)));
+    s1->addTransition(t1);
+
+    QSignalTransition *t2 = new QSignalTransition();
+    t2->setSignal(SIGNAL(objectNameChanged(QString)));
+    s1->addTransition(t2);
+
+    SignalTransitionMutatorThread thread(t1);
+    thread.start();
+    QTRY_VERIFY(thread.isRunning());
+
+    // Cause repeated registration and unregistration
+    for (int i = 0; i < 50000; ++i) {
+        t2->setSenderObject(this);
+        t2->setSenderObject(0);
+    }
 
     thread.quit();
     QTRY_VERIFY(thread.wait());

@@ -1739,6 +1739,7 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     while (meta->method(signalIndex).attributes() & QMetaMethod::Cloned)
         --signalIndex;
 
+    connectionsMutex.lock();
     QVector<int> &connectedSignalIndexes = connections[sender];
     if (connectedSignalIndexes.size() <= signalIndex)
         connectedSignalIndexes.resize(signalIndex+1);
@@ -1757,6 +1758,8 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
         }
     }
     ++connectedSignalIndexes[signalIndex];
+    connectionsMutex.unlock();
+
     QSignalTransitionPrivate::get(transition)->signalIndex = signalIndex;
     QSignalTransitionPrivate::get(transition)->originalSignalIndex = originalSignalIndex;
 #ifdef QSTATEMACHINE_DEBUG
@@ -1777,6 +1780,8 @@ void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transit
     if (!sender || (sender->thread() != q->thread()))
         return;
     QSignalTransitionPrivate::get(transition)->signalIndex = -1;
+
+    connectionsMutex.lock();
     QVector<int> &connectedSignalIndexes = connections[sender];
     Q_ASSERT(connectedSignalIndexes.size() > signalIndex);
     Q_ASSERT(connectedSignalIndexes.at(signalIndex) != 0);
@@ -1790,6 +1795,7 @@ void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transit
         if (sum == 0)
             connections.remove(sender);
     }
+    connectionsMutex.unlock();
 }
 
 void QStateMachinePrivate::unregisterAllTransitions()
@@ -1878,7 +1884,11 @@ void QStateMachinePrivate::handleFilteredEvent(QObject *watched, QEvent *event)
 void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalIndex,
                                                   void **argv)
 {
+#ifndef QT_NO_DEBUG
+    connectionsMutex.lock();
     Q_ASSERT(connections[sender].at(signalIndex) != 0);
+    connectionsMutex.unlock();
+#endif
     const QMetaObject *meta = sender->metaObject();
     QMetaMethod method = meta->method(signalIndex);
     QList<QByteArray> parameterTypes = method.parameterTypes();
