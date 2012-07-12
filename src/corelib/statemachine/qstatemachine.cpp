@@ -1660,15 +1660,32 @@ void QStateMachinePrivate::registerTransitions(QAbstractState *state)
     QList<QAbstractTransition*> transitions = QStatePrivate::get(group)->transitions();
     for (int i = 0; i < transitions.size(); ++i) {
         QAbstractTransition *t = transitions.at(i);
-        if (QSignalTransition *st = qobject_cast<QSignalTransition*>(t)) {
-            registerSignalTransition(st);
-        }
-#ifndef QT_NO_STATEMACHINE_EVENTFILTER
-        else if (QEventTransition *oet = qobject_cast<QEventTransition*>(t)) {
-            registerEventTransition(oet);
-        }
-#endif
+        registerTransition(t);
     }
+}
+
+void QStateMachinePrivate::maybeRegisterTransition(QAbstractTransition *transition)
+{
+    if (QSignalTransition *st = qobject_cast<QSignalTransition*>(transition)) {
+        maybeRegisterSignalTransition(st);
+    }
+#ifndef QT_NO_STATEMACHINE_EVENTFILTER
+    else if (QEventTransition *et = qobject_cast<QEventTransition*>(transition)) {
+        maybeRegisterEventTransition(et);
+    }
+#endif
+}
+
+void QStateMachinePrivate::registerTransition(QAbstractTransition *transition)
+{
+    if (QSignalTransition *st = qobject_cast<QSignalTransition*>(transition)) {
+        registerSignalTransition(st);
+    }
+#ifndef QT_NO_STATEMACHINE_EVENTFILTER
+    else if (QEventTransition *oet = qobject_cast<QEventTransition*>(transition)) {
+        registerEventTransition(oet);
+    }
+#endif
 }
 
 void QStateMachinePrivate::unregisterTransition(QAbstractTransition *transition)
@@ -1681,6 +1698,13 @@ void QStateMachinePrivate::unregisterTransition(QAbstractTransition *transition)
         unregisterEventTransition(oet);
     }
 #endif
+}
+
+void QStateMachinePrivate::maybeRegisterSignalTransition(QSignalTransition *transition)
+{
+    Q_Q(QStateMachine);
+    if ((state == Running) && configuration.contains(transition->sourceState()))
+        registerSignalTransition(transition);
 }
 
 void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transition)
@@ -1784,6 +1808,12 @@ void QStateMachinePrivate::unregisterAllTransitions()
 }
 
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
+void QStateMachinePrivate::maybeRegisterEventTransition(QEventTransition *transition)
+{
+    if ((state == Running) && configuration.contains(transition->sourceState()))
+        registerEventTransition(transition);
+}
+
 void QStateMachinePrivate::registerEventTransition(QEventTransition *transition)
 {
     Q_Q(QStateMachine);

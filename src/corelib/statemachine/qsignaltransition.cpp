@@ -131,9 +131,8 @@ void QSignalTransitionPrivate::unregister()
 void QSignalTransitionPrivate::maybeRegister()
 {
     Q_Q(QSignalTransition);
-    if (!machine() || !machine()->configuration().contains(sourceState()))
-        return;
-    QStateMachinePrivate::get(machine())->registerSignalTransition(q);
+    if (QStateMachine *mach = machine())
+        QStateMachinePrivate::get(mach)->maybeRegisterSignalTransition(q);
 }
 
 /*!

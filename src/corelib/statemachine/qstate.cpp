@@ -313,8 +313,8 @@ void QState::addTransition(QAbstractTransition *transition)
             return ;
         }
     }
-    if (machine() != 0 && machine()->configuration().contains(this))
-        QStateMachinePrivate::get(machine())->registerTransitions(this);
+    if (QStateMachine *mach = machine())
+        QStateMachinePrivate::get(mach)->maybeRegisterTransition(transition);
 }
 
 /*!

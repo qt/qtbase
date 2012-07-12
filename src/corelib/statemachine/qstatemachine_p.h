@@ -170,9 +170,13 @@ public:
     void goToState(QAbstractState *targetState);
 
     void registerTransitions(QAbstractState *state);
+    void maybeRegisterTransition(QAbstractTransition *transition);
+    void registerTransition(QAbstractTransition *transition);
+    void maybeRegisterSignalTransition(QSignalTransition *transition);
     void registerSignalTransition(QSignalTransition *transition);
     void unregisterSignalTransition(QSignalTransition *transition);
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
+    void maybeRegisterEventTransition(QEventTransition *transition);
     void registerEventTransition(QEventTransition *transition);
     void unregisterEventTransition(QEventTransition *transition);
     void handleFilteredEvent(QObject *watched, QEvent *event);

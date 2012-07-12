@@ -125,9 +125,8 @@ void QEventTransitionPrivate::unregister()
 void QEventTransitionPrivate::maybeRegister()
 {
     Q_Q(QEventTransition);
-    if (!machine() || !machine()->configuration().contains(sourceState()))
-        return;
-    QStateMachinePrivate::get(machine())->registerEventTransition(q);
+    if (QStateMachine *mach = machine())
+        QStateMachinePrivate::get(mach)->maybeRegisterEventTransition(q);
 }
 
 /*!
