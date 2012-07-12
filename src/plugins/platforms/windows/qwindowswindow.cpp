@@ -1237,6 +1237,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             // Save geometry and style to be restored when fullscreen
             // is turned off again, since on Windows, it is not a real
             // Window state but emulated by changing geometry and style.
+#ifndef Q_OS_WINCE // there is no style under wince
             if (!m_savedStyle) {
                 m_savedStyle = style();
                 if (oldStates & Qt::WindowMinimized) {
@@ -1248,6 +1249,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
                     m_savedFrameGeometry = frameGeometry_sys();
                 }
             }
+#endif
             if (m_savedStyle & WS_SYSMENU)
                 newStyle |= WS_SYSMENU;
             if (visible)
