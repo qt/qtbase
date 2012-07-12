@@ -16,7 +16,7 @@ SUBDIRS += \
     printsupport \
     cmake
 
-!wince*:                                    SUBDIRS -= printsupport
+wince*:                                     SUBDIRS -= printsupport
 cross_compile:                              SUBDIRS -= tools
 !contains(QT_CONFIG, opengl):               SUBDIRS -= opengl
 !unix|embedded|!contains(QT_CONFIG, dbus):  SUBDIRS -= dbus
