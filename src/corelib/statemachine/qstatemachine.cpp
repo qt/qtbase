@@ -1692,6 +1692,8 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     if (!sender)
         return;
     QByteArray signal = QSignalTransitionPrivate::get(transition)->signal;
+    if (signal.isEmpty())
+        return;
     if (signal.startsWith('0'+QSIGNAL_CODE))
         signal.remove(0, 1);
     const QMetaObject *meta = sender->metaObject();
