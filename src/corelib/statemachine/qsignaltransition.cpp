@@ -155,6 +155,7 @@ QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
     Q_D(QSignalTransition);
     d->sender = sender;
     d->signal = signal;
+    d->maybeRegister();
 }
 
 /*!

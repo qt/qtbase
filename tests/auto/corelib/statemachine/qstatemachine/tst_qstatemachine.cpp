@@ -206,6 +206,8 @@ private slots:
 
     void multiTargetTransitionInsideParallelStateGroup();
     void signalTransitionNormalizeSignature();
+    void createSignalTransitionWhenRunning();
+    void createEventTransitionWhenRunning();
 };
 
 class TestState : public QState
@@ -4739,6 +4741,90 @@ void tst_QStateMachine::signalTransitionNormalizeSignature()
     QCOMPARE(t0->transitionSenderReceived(), (QObject*)&emitter);
     QCOMPARE(t0->transitionSignalIndexReceived(), emitter.metaObject()->indexOfSignal("signalWithNoArg()"));
     QCOMPARE(t0->transitionArgumentsReceived().size(), 0);
+}
+
+void tst_QStateMachine::createSignalTransitionWhenRunning()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s1));
+
+    // Create by addTransition()
+    QState *s2 = new QState(&machine);
+    SignalEmitter emitter;
+    QAbstractTransition *t1 = s1->addTransition(&emitter, SIGNAL(signalWithNoArg()), s2);
+    QCOMPARE(t1->sourceState(), s1);
+    emitter.emitSignalWithNoArg();
+    QTRY_VERIFY(machine.configuration().contains(s2));
+
+    // Create by constructor that takes sender, signal, source (parent) state
+    QState *s3 = new QState(&machine);
+    QSignalTransition *t2 = new QSignalTransition(&emitter, SIGNAL(signalWithNoArg()), s2);
+    QCOMPARE(t2->sourceState(), s2);
+    t2->setTargetState(s3);
+    emitter.emitSignalWithNoArg();
+    QTRY_VERIFY(machine.configuration().contains(s3));
+
+    // Create by constructor that takes source (parent) state
+    QState *s4 = new QState(&machine);
+    QSignalTransition *t3 = new QSignalTransition(s3);
+    QCOMPARE(t3->sourceState(), s3);
+    t3->setSenderObject(&emitter);
+    t3->setSignal(SIGNAL(signalWithNoArg()));
+    t3->setTargetState(s4);
+    emitter.emitSignalWithNoArg();
+    QTRY_VERIFY(machine.configuration().contains(s4));
+
+    // Create by constructor without parent, then set the parent
+    QState *s5 = new QState(&machine);
+    QSignalTransition *t4 = new QSignalTransition();
+    t4->setSenderObject(&emitter);
+    t4->setParent(s4);
+    QCOMPARE(t4->sourceState(), s4);
+    t4->setSignal(SIGNAL(signalWithNoArg()));
+    t4->setTargetState(s5);
+    emitter.emitSignalWithNoArg();
+    QTRY_VERIFY(machine.configuration().contains(s5));
+}
+
+void tst_QStateMachine::createEventTransitionWhenRunning()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+    machine.start();
+    QTRY_VERIFY(machine.configuration().contains(s1));
+
+    // Create by constructor that takes event source, type, source (parent) state
+    QState *s2 = new QState(&machine);
+    QObject object;
+    QEventTransition *t1 = new QEventTransition(&object, QEvent::Timer, s1);
+    QCOMPARE(t1->sourceState(), s1);
+    t1->setTargetState(s2);
+
+    object.startTimer(10); // Will cause QEvent::Timer to fire every 10ms
+    QTRY_VERIFY(machine.configuration().contains(s2));
+
+    // Create by constructor that takes source (parent) state
+    QState *s3 = new QState(&machine);
+    QEventTransition *t2 = new QEventTransition(s2);
+    QCOMPARE(t2->sourceState(), s2);
+    t2->setEventSource(&object);
+    t2->setEventType(QEvent::Timer);
+    t2->setTargetState(s3);
+    QTRY_VERIFY(machine.configuration().contains(s3));
+
+    // Create by constructor without parent, then set the parent
+    QState *s4 = new QState(&machine);
+    QEventTransition *t3 = new QEventTransition();
+    t3->setEventSource(&object);
+    t3->setParent(s3);
+    QCOMPARE(t3->sourceState(), s3);
+    t3->setEventType(QEvent::Timer);
+    t3->setTargetState(s4);
+    QTRY_VERIFY(machine.configuration().contains(s4));
 }
 
 QTEST_MAIN(tst_QStateMachine)

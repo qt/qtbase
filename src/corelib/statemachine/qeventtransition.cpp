@@ -150,6 +150,7 @@ QEventTransition::QEventTransition(QObject *object, QEvent::Type type,
     d->registered = false;
     d->object = object;
     d->eventType = type;
+    d->maybeRegister();
 }
 
 /*!
@@ -171,6 +172,7 @@ QEventTransition::QEventTransition(QEventTransitionPrivate &dd, QObject *object,
     d->registered = false;
     d->object = object;
     d->eventType = type;
+    d->maybeRegister();
 }
 
 /*!
