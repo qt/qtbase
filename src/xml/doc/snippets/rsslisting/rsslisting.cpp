@@ -88,11 +88,11 @@ RSSListing::RSSListing(QWidget *parent)
 
     handler = 0;
 
-    connect(&http, SIGNAL(readyRead(const QHttpResponseHeader &)),
-             this, SLOT(readData(const QHttpResponseHeader &)));
+    connect(&http, SIGNAL(readyRead(QHttpResponseHeader)),
+             this, SLOT(readData(QHttpResponseHeader)));
 
-    connect(&http, SIGNAL(requestFinished(int, bool)),
-             this, SLOT(finished(int, bool)));
+    connect(&http, SIGNAL(requestFinished(int,bool)),
+             this, SLOT(finished(int,bool)));
 
     connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(fetch()));
     connect(fetchButton, SIGNAL(clicked()), this, SLOT(fetch()));
@@ -152,8 +152,8 @@ void RSSListing::fetch()
     xmlReader.setErrorHandler(handler);
 //! [0]
 
-    connect(handler, SIGNAL(newItem(QString &, QString &)),
-             this, SLOT(addItem(QString &, QString &)));
+    connect(handler, SIGNAL(newItem(QString&,QString&)),
+             this, SLOT(addItem(QString&,QString&)));
 
     QUrl url(lineEdit->text());
 

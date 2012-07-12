@@ -57,9 +57,9 @@ ButtonWidget::ButtonWidget(QStringList texts, QWidget *parent)
 	gridLayout->addWidget(button, i / 3, i % 3);
     }
 
-    connect(signalMapper, SIGNAL(mapped(const QString &)),
+    connect(signalMapper, SIGNAL(mapped(QString)),
 //! [1] //! [2]
-            this, SIGNAL(clicked(const QString &)));
+            this, SIGNAL(clicked(QString)));
 
     setLayout(gridLayout);
 }

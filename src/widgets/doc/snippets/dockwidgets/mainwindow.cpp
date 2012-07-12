@@ -53,8 +53,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     textBrowser = new QTextBrowser(this);
 
-    connect(headingList, SIGNAL(itemClicked(QListWidgetItem *)),
-            this, SLOT(updateText(QListWidgetItem *)));
+    connect(headingList, SIGNAL(itemClicked(QListWidgetItem*)),
+            this, SLOT(updateText(QListWidgetItem*)));
 
     updateText(headingList->item(0));
     headingList->setCurrentRow(0);

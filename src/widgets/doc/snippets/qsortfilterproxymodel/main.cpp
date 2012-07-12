@@ -65,8 +65,8 @@ int main(int argc, char *argv[])
 
     QLineEdit *patternEditor = new QLineEdit;
     QObject::
-    connect(patternEditor, SIGNAL(textChanged(const QString &)),
-            filterModel, SLOT(setFilterRegExp(const QString &)));
+    connect(patternEditor, SIGNAL(textChanged(QString)),
+            filterModel, SLOT(setFilterRegExp(QString)));
 
     QVBoxLayout *layout = new QVBoxLayout(window);
     layout->addWidget(filteredView);

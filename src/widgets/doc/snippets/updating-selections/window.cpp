@@ -65,11 +65,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     selectionModel = table->selectionModel();
     connect(selectionModel,
-        SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-        this, SLOT(updateSelection(const QItemSelection &, const QItemSelection &)));
+        SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+        this, SLOT(updateSelection(QItemSelection,QItemSelection)));
     connect(selectionModel,
-        SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
-        this, SLOT(changeCurrent(const QModelIndex &, const QModelIndex &)));
+        SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+        this, SLOT(changeCurrent(QModelIndex,QModelIndex)));
 
     statusBar();
     setCentralWidget(table);

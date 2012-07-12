@@ -88,8 +88,8 @@ MainWindow::MainWindow()
     connect(insertAction, SIGNAL(triggered()), this, SLOT(insertItem()));
     connect(removeAction, SIGNAL(triggered()), this, SLOT(removeItem()));
     connect(treeWidget,
-            SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
-            this, SLOT(updateMenus(QTreeWidgetItem *)));
+            SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
+            this, SLOT(updateMenus(QTreeWidgetItem*)));
 
     setupTreeItems();
     updateMenus(treeWidget->currentItem());

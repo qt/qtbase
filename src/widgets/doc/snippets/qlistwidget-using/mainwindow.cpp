@@ -73,8 +73,8 @@ MainWindow::MainWindow()
     connect(insertAction, SIGNAL(triggered()), this, SLOT(insertItem()));
     connect(removeAction, SIGNAL(triggered()), this, SLOT(removeItem()));
     connect(listWidget,
-            SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
-            this, SLOT(updateMenus(QListWidgetItem *)));
+            SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
+            this, SLOT(updateMenus(QListWidgetItem*)));
 
     setupListItems();
     updateMenus(listWidget->currentItem());

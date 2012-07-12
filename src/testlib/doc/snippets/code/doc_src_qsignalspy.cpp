@@ -53,7 +53,7 @@ QVERIFY(arguments.at(0).toBool() == true); // verify the first argument
 
 
 //! [1]
-QSignalSpy spy(myCustomObject, SIGNAL(mySignal(int, QString, double)));
+QSignalSpy spy(myCustomObject, SIGNAL(mySignal(int,QString,double)));
 
 myCustomObject->doSomething(); // trigger emission of the signal
 
