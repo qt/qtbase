@@ -151,8 +151,8 @@ void QEvdevMouseManager::addMouse(const QString &deviceNode)
     QEvdevMouseHandler *handler;
     handler = QEvdevMouseHandler::create(deviceNode, m_spec);
     if (handler) {
-        connect(handler, SIGNAL(handleMouseEvent(int, int, Qt::MouseButtons)), this, SLOT(handleMouseEvent(int, int, Qt::MouseButtons)));
-        connect(handler, SIGNAL(handleWheelEvent(int, Qt::Orientation)), this, SLOT(handleWheelEvent(int, Qt::Orientation)));
+        connect(handler, SIGNAL(handleMouseEvent(int,int,Qt::MouseButtons)), this, SLOT(handleMouseEvent(int,int,Qt::MouseButtons)));
+        connect(handler, SIGNAL(handleWheelEvent(int,Qt::Orientation)), this, SLOT(handleWheelEvent(int,Qt::Orientation)));
         m_mice.insert(deviceNode, handler);
     } else {
         qWarning("Failed to open mouse");
