@@ -815,7 +815,7 @@ void QNetworkReplyHttpImplPrivate::postRequest()
                 q, SLOT(replyDownloadProgressSlot(qint64,qint64)),
                 Qt::QueuedConnection);
         QObject::connect(delegate, SIGNAL(error(QNetworkReply::NetworkError,QString)),
-                q, SLOT(httpError(QNetworkReply::NetworkError, const QString)),
+                q, SLOT(httpError(QNetworkReply::NetworkError,QString)),
                 Qt::QueuedConnection);
 #ifndef QT_NO_SSL
         QObject::connect(delegate, SIGNAL(sslConfigurationChanged(QSslConfiguration)),
@@ -833,7 +833,7 @@ void QNetworkReplyHttpImplPrivate::postRequest()
 #endif
 #ifndef QT_NO_SSL
         QObject::connect(delegate, SIGNAL(sslErrors(QList<QSslError>,bool*,QList<QSslError>*)),
-                q, SLOT(replySslErrors(const QList<QSslError> &, bool *, QList<QSslError> *)),
+                q, SLOT(replySslErrors(QList<QSslError>,bool*,QList<QSslError>*)),
                 Qt::BlockingQueuedConnection);
 #endif
         // This signal we will use to start the request.
@@ -853,8 +853,8 @@ void QNetworkReplyHttpImplPrivate::postRequest()
             delegate->httpRequest.setUploadByteDevice(forwardUploadDevice);
 
             // From main thread to user thread:
-            QObject::connect(q, SIGNAL(haveUploadData(QByteArray, bool, qint64)),
-                             forwardUploadDevice, SLOT(haveDataSlot(QByteArray, bool, qint64)), Qt::QueuedConnection);
+            QObject::connect(q, SIGNAL(haveUploadData(QByteArray,bool,qint64)),
+                             forwardUploadDevice, SLOT(haveDataSlot(QByteArray,bool,qint64)), Qt::QueuedConnection);
             QObject::connect(uploadByteDevice.data(), SIGNAL(readyRead()),
                              forwardUploadDevice, SIGNAL(readyRead()),
                              Qt::QueuedConnection);

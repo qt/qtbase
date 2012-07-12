@@ -297,7 +297,7 @@ void QHttpThreadDelegate::startRequest()
     if (synchronous) {
         connect(httpReply,SIGNAL(headerChanged()), this, SLOT(synchronousHeaderChangedSlot()));
         connect(httpReply,SIGNAL(finished()), this, SLOT(synchronousFinishedSlot()));
-        connect(httpReply,SIGNAL(finishedWithError(QNetworkReply::NetworkError, const QString)),
+        connect(httpReply,SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
                 this, SLOT(synchronousFinishedWithErrorSlot(QNetworkReply::NetworkError,QString)));
 
         connect(httpReply, SIGNAL(authenticationRequired(QHttpNetworkRequest,QAuthenticator*)),
@@ -309,13 +309,13 @@ void QHttpThreadDelegate::startRequest()
     } else if (!synchronous) {
         connect(httpReply,SIGNAL(headerChanged()), this, SLOT(headerChangedSlot()));
         connect(httpReply,SIGNAL(finished()), this, SLOT(finishedSlot()));
-        connect(httpReply,SIGNAL(finishedWithError(QNetworkReply::NetworkError, const QString)),
+        connect(httpReply,SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
                 this, SLOT(finishedWithErrorSlot(QNetworkReply::NetworkError,QString)));
         // some signals are only interesting when normal asynchronous style is used
         connect(httpReply,SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
-        connect(httpReply,SIGNAL(dataReadProgress(qint64, qint64)), this, SLOT(dataReadProgressSlot(qint64,qint64)));
+        connect(httpReply,SIGNAL(dataReadProgress(qint64,qint64)), this, SLOT(dataReadProgressSlot(qint64,qint64)));
 #ifndef QT_NO_SSL
-        connect(httpReply,SIGNAL(sslErrors(const QList<QSslError>)), this, SLOT(sslErrorsSlot(QList<QSslError>)));
+        connect(httpReply,SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(sslErrorsSlot(QList<QSslError>)));
 #endif
 
         // In the asynchronous HTTP case we can just forward those signals

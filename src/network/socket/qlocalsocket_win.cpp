@@ -53,7 +53,7 @@ void QLocalSocketPrivate::init()
     pipeReader = new QWindowsPipeReader(q);
     q->connect(pipeReader, SIGNAL(readyRead()), SIGNAL(readyRead()));
     q->connect(pipeReader, SIGNAL(pipeClosed()), SLOT(_q_pipeClosed()), Qt::QueuedConnection);
-    q->connect(pipeReader, SIGNAL(winError(ulong, const QString &)), SLOT(_q_winError(ulong, const QString &)));
+    q->connect(pipeReader, SIGNAL(winError(ulong,QString)), SLOT(_q_winError(ulong,QString)));
 }
 
 void QLocalSocketPrivate::setErrorString(const QString &function)
