@@ -1746,8 +1746,8 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     if (connectedSignalIndexes.at(signalIndex) == 0) {
         if (!signalEventGenerator)
             signalEventGenerator = new QSignalEventGenerator(q);
-        bool ok = QMetaObject::connect(sender, signalIndex, signalEventGenerator,
-                                       signalEventGenerator->metaObject()->methodOffset());
+        static const int generatorMethodOffset = QSignalEventGenerator::staticMetaObject.methodOffset();
+        bool ok = QMetaObject::connect(sender, signalIndex, signalEventGenerator, generatorMethodOffset);
         if (!ok) {
 #ifdef QSTATEMACHINE_DEBUG
             qDebug() << q << ": FAILED to add signal transition from" << transition->sourceState()
@@ -1787,8 +1787,8 @@ void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transit
     Q_ASSERT(connectedSignalIndexes.at(signalIndex) != 0);
     if (--connectedSignalIndexes[signalIndex] == 0) {
         Q_ASSERT(signalEventGenerator != 0);
-        QMetaObject::disconnect(sender, signalIndex, signalEventGenerator,
-                                signalEventGenerator->metaObject()->methodOffset());
+        static const int generatorMethodOffset = QSignalEventGenerator::staticMetaObject.methodOffset();
+        QMetaObject::disconnect(sender, signalIndex, signalEventGenerator, generatorMethodOffset);
         int sum = 0;
         for (int i = 0; i < connectedSignalIndexes.size(); ++i)
             sum += connectedSignalIndexes.at(i);
