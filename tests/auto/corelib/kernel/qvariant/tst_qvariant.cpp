@@ -68,22 +68,6 @@
 
 #include <limits.h>
 
-Q_DECLARE_METATYPE(qlonglong)
-Q_DECLARE_METATYPE(qulonglong)
-Q_DECLARE_METATYPE(QPointF)
-Q_DECLARE_METATYPE(QRectF)
-Q_DECLARE_METATYPE(QSize)
-Q_DECLARE_METATYPE(QSizeF)
-Q_DECLARE_METATYPE(QLine)
-Q_DECLARE_METATYPE(QLineF)
-Q_DECLARE_METATYPE(QPoint)
-Q_DECLARE_METATYPE(QRect)
-Q_DECLARE_METATYPE(QPixmap)
-Q_DECLARE_METATYPE(QBrush)
-Q_DECLARE_METATYPE(QFont)
-Q_DECLARE_METATYPE(QColor)
-Q_DECLARE_METATYPE(QKeySequence)
-
 class CustomNonQObject;
 
 class tst_QVariant : public QObject
@@ -298,11 +282,6 @@ private:
     CustomNonQObject *customNonQObjectPointer;
     QVector<QObject*> objectPointerTestData;
 };
-
-Q_DECLARE_METATYPE(QDate)
-Q_DECLARE_METATYPE(QTime)
-Q_DECLARE_METATYPE(QDateTime)
-Q_DECLARE_METATYPE(QVariant)
 
 const qlonglong intMax1 = (qlonglong)INT_MAX + 1;
 const qulonglong uintMax1 = (qulonglong)UINT_MAX + 1;
@@ -2702,8 +2681,6 @@ void tst_QVariant::qvariant_cast_QObject_derived()
         QCOMPARE(data.value<CustomQWidget*>(), widget);
     }
 }
-
-Q_DECLARE_METATYPE(qint8);
 
 void tst_QVariant::convertToQUint8() const
 {
