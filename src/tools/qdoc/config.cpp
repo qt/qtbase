@@ -219,7 +219,6 @@ void Config::unload(const QString& fileName)
     }
     qDebug() << "fileName:" << fileName;
 }
-
 /*!
   Joins all the strings in \a values into a single string with the
   individual \a values separated by ' '. Then it inserts the result
@@ -931,11 +930,12 @@ void Config::load(Location location, const QString& fileName)
     }
 }
 
-QStringList Config::getFilesHere(const QString& dir,
+QStringList Config::getFilesHere(const QString& uncleanDir,
                                  const QString& nameFilter,
                                  const QSet<QString> &excludedDirs,
                                  const QSet<QString> &excludedFiles)
 {
+    QString dir = QDir::cleanPath(uncleanDir);
     QStringList result;
     if (excludedDirs.contains(dir))
         return result;

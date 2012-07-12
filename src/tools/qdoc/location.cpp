@@ -60,7 +60,7 @@ QRegExp *Location::spuriousRegExp = 0;
 /*!
   \class Location
 
-  \brief The Location class keeps track of where we are in a file.
+  \brief The Location class provides a way to mark a location in a file.
 
   It maintains a stack of file positions. A file position
   consists of the file path, line number, and column number.
