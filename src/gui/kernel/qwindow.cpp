@@ -145,7 +145,7 @@ QWindow::QWindow(QScreen *targetScreen)
     //screen list is populated.
     Q_ASSERT(d->screen);
 
-    connect(d->screen, SIGNAL(destroyed(QObject *)), this, SLOT(screenDestroyed(QObject *)));
+    connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
     QGuiApplicationPrivate::window_list.prepend(this);
 }
 
@@ -1203,10 +1203,10 @@ void QWindow::setScreen(QScreen *newScreen)
         if (wasCreated)
             destroy();
         if (d->screen)
-            disconnect(d->screen, SIGNAL(destroyed(QObject *)), this, SLOT(screenDestroyed(QObject *)));
+            disconnect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
         d->screen = newScreen;
         if (newScreen) {
-            connect(d->screen, SIGNAL(destroyed(QObject *)), this, SLOT(screenDestroyed(QObject *)));
+            connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
             if (wasCreated)
                 create();
         }
