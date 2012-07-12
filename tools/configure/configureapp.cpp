@@ -239,6 +239,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QT_GLIB" ]         = "no";
     dictionary[ "QT_ICONV" ]        = "auto";
     dictionary[ "QT_CUPS" ]         = "auto";
+    dictionary[ "CFG_GCC_SYSROOT" ] = "yes";
 
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
@@ -1090,6 +1091,9 @@ void Configure::parseCmdLine()
                 break;
             dictionary[ "CFG_SYSROOT" ] = configCmdLine.at(i);
         }
+        else if (configCmdLine.at(i) == "-no-gcc-sysroot") {
+            dictionary[ "CFG_GCC_SYSROOT" ] = "no";
+        }
 
         else if (configCmdLine.at(i) == "-hostprefix") {
             ++i;
@@ -1692,7 +1696,8 @@ bool Configure::displayHelp()
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
         desc(                   "-xplatform <spec>",    "The operating system and compiler you are cross compiling to.\n");
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
-        desc(                   "-sysroot <dir>",       "Sets <dir> as the target compiler's and qmake's sysroot.");
+        desc(                   "-sysroot <dir>",       "Sets <dir> as the target compiler's and qmake's sysroot and also sets pkg-config paths.");
+        desc(                   "-no-gcc-sysroot",      "When using -sysroot, it disables the passing of --sysroot to the compiler ");
 
         desc("NIS",  "no",      "-no-nis",              "Do not build NIS support.");
         desc("NIS",  "yes",     "-nis",                 "Build NIS support.");
@@ -2957,7 +2962,7 @@ void Configure::generateQConfigPri()
                      << "QT_MINOR_VERSION = " << dictionary["VERSION_MINOR"] << endl
                      << "QT_PATCH_VERSION = " << dictionary["VERSION_PATCH"] << endl;
 
-        if (!dictionary["CFG_SYSROOT"].isEmpty()) {
+        if (!dictionary["CFG_SYSROOT"].isEmpty() && dictionary["CFG_GCC_SYSROOT"] == "yes") {
             configStream << endl
                          << "# sysroot" << endl
                          << "!host_build {" << endl

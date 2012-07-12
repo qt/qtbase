@@ -835,6 +835,7 @@ QT_INSTALL_SETTINGS=
 QT_INSTALL_EXAMPLES=
 QT_INSTALL_TESTS=
 CFG_SYSROOT=
+CFG_GCC_SYSROOT="yes"
 QT_HOST_PREFIX=
 QT_HOST_BINS=
 QT_HOST_DATA=
@@ -1172,6 +1173,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     sysroot)
         CFG_SYSROOT="$VAL"
+        ;;
+    gcc-sysroot)
+        CFG_GCC_SYSROOT="$VAL"
         ;;
     bindir)
         QT_INSTALL_BINS="$VAL"
@@ -2536,7 +2540,7 @@ if [ -n "$GCC_MACHINE_DUMP" ]; then
     DeviceVar set GCC_MACHINE_DUMP $($TEST_COMPILER -dumpmachine)
 fi
 
-if [ -n "$CFG_SYSROOT" ]; then
+if [ -n "$CFG_SYSROOT" ] && [ "$CFG_GCC_SYSROOT" = "yes" ]; then
     SYSROOT_FLAG="--sysroot=$CFG_SYSROOT"
 else
     SYSROOT_FLAG=
@@ -3183,7 +3187,8 @@ Additional options:
 
     -xplatform target ... The target platform when cross-compiling.
 
-    -sysroot <dir> ...... Sets <dir> as the target compiler's and qmake's sysroot.
+    -sysroot <dir> ...... Sets <dir> as the target compiler's and qmake's sysroot and also sets pkg-config paths.
+    -no-gcc-sysroot ..... When using -sysroot, it disables the passing of --sysroot to the compiler
 
     -no-feature-<feature> Do not compile in <feature>.
     -feature-<feature> .. Compile in <feature>. The available features
@@ -5910,7 +5915,7 @@ if [ -n "$PKG_CONFIG_SYSROOT_DIR" ] || [ -n "$PKG_CONFIG_LIBDIR" ]; then
     echo >> "$QTCONFIG.tmp"
 fi
 
-if [ -n "$CFG_SYSROOT" ]; then
+if [ -n "$CFG_SYSROOT" ] && [ "$CFG_GCC_SYSROOT" = "yes"]; then
     echo "# sysroot" >>"$QTCONFIG.tmp"
     echo "!host_build {" >>"$QTCONFIG.tmp"
     echo "    QMAKE_CFLAGS    += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
