@@ -683,28 +683,48 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
                 // unfinished operation.
                 int value = 0;
                 QT_SOCKLEN_T valueSize = sizeof(value);
-                if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_ERROR, (char *) &value, &valueSize) == 0) {
-                    if (value == WSAECONNREFUSED) {
-                        setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
-                        socketState = QAbstractSocket::UnconnectedState;
-                        break;
+                bool tryAgain = false;
+                bool errorDetected = false;
+                int tries = 0;
+                do {
+                    if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_ERROR, (char *) &value, &valueSize) == 0) {
+                        if (value == WSAECONNREFUSED) {
+                            setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
+                            socketState = QAbstractSocket::UnconnectedState;
+                            errorDetected = true;
+                            break;
+                        }
+                        if (value == WSAETIMEDOUT) {
+                            setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
+                            socketState = QAbstractSocket::UnconnectedState;
+                            errorDetected = true;
+                            break;
+                        }
+                        if (value == WSAEHOSTUNREACH) {
+                            setError(QAbstractSocket::NetworkError, HostUnreachableErrorString);
+                            socketState = QAbstractSocket::UnconnectedState;
+                            errorDetected = true;
+                            break;
+                        }
+                        if (value == WSAEADDRNOTAVAIL) {
+                            setError(QAbstractSocket::NetworkError, AddressNotAvailableErrorString);
+                            socketState = QAbstractSocket::UnconnectedState;
+                            errorDetected = true;
+                            break;
+                        }
+                        if (value == NOERROR) {
+                            // When we get WSAEWOULDBLOCK the outcome was not known, so a
+                            // NOERROR might indicate that the result of the operation
+                            // is still unknown. We try again to increase the chance that we did
+                            // get the correct result.
+                            tryAgain = !tryAgain;
+                        }
                     }
-                    if (value == WSAETIMEDOUT) {
-                        setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
-                        socketState = QAbstractSocket::UnconnectedState;
-                        break;
-                    }
-                    if (value == WSAEHOSTUNREACH) {
-                        setError(QAbstractSocket::NetworkError, HostUnreachableErrorString);
-                        socketState = QAbstractSocket::UnconnectedState;
-                        break;
-                    }
-                    if (value == WSAEADDRNOTAVAIL) {
-                        setError(QAbstractSocket::NetworkError, AddressNotAvailableErrorString);
-                        socketState = QAbstractSocket::UnconnectedState;
-                        break;
-                    }
-                }
+                    tries++;
+                } while (tryAgain && (tries < 2));
+
+                if (errorDetected)
+                    break;
                 // fall through
             }
             case WSAEINPROGRESS:
