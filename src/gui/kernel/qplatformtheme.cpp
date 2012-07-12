@@ -63,6 +63,30 @@ QT_BEGIN_NAMESPACE
 
     This enum describes the available theme hints.
 
+    \value CursorFlashTime (int) Cursor flash time in ms, overriding
+                                 QPlatformIntegration::styleHint.
+
+    \value KeyboardInputInterval (int) Keyboard input interval in ms, overriding
+                                 QPlatformIntegration::styleHint.
+
+    \value MouseDoubleClickInterval (int) Mouse double click interval in ms,
+                                    overriding QPlatformIntegration::styleHint.
+
+    \value StartDragDistance (int) Start drag distance,
+                             overriding QPlatformIntegration::styleHint.
+
+    \value StartDragTime (int) Start drag time in ms,,
+                               overriding QPlatformIntegration::styleHint.
+
+    \value KeyboardAutoRepeatRate (int) Keyboard auto repeat rate,
+                                  overriding QPlatformIntegration::styleHint.
+
+    \value PasswordMaskDelay (int) Pass word mask delay in ms,,
+                                   overriding QPlatformIntegration::styleHint.
+
+    \value StartDragVelocity (int) Velocity of a drag,
+                                   overriding QPlatformIntegration::styleHint.
+
     \value TextCursorWidth  (int) Determines the width of the text cursor.
 
     \value DropShadow       (bool) Determines whether the drop shadow effect for
@@ -139,7 +163,28 @@ const QFont *QPlatformTheme::font(Font type) const
 
 QVariant QPlatformTheme::themeHint(ThemeHint hint) const
 {
+    return QPlatformTheme::defaultThemeHint(hint);
+}
+
+QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
+{
     switch (hint) {
+    case QPlatformTheme::CursorFlashTime:
+        return QVariant(1000);
+    case QPlatformTheme::KeyboardInputInterval:
+        return QVariant(400);
+    case QPlatformTheme::KeyboardAutoRepeatRate:
+        return QVariant(30);
+    case QPlatformTheme::MouseDoubleClickInterval:
+        return QVariant(400);
+    case QPlatformTheme::StartDragDistance:
+        return QVariant(10);
+    case QPlatformTheme::StartDragTime:
+        return QVariant(500);
+    case QPlatformTheme::PasswordMaskDelay:
+        return QVariant(int(0));
+    case QPlatformTheme::StartDragVelocity:
+        return QVariant(int(0)); // no limit
     case QPlatformTheme::UseFullScreenForPopupMenu:
         return QVariant(false);
     case QPlatformTheme::WindowAutoPlacement:

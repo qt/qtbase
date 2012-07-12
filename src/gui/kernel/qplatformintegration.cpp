@@ -48,6 +48,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <qpa/qplatformscreen_p.h>
+#include <qpa/qplatformtheme.h>
 #include <private/qdnd_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -279,25 +280,25 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
 {
     switch (hint) {
     case CursorFlashTime:
-        return 1000;
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::CursorFlashTime);
     case KeyboardInputInterval:
-        return 400;
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::KeyboardInputInterval);
     case KeyboardAutoRepeatRate:
-        return 30;
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::KeyboardAutoRepeatRate);
     case MouseDoubleClickInterval:
-        return 400;
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::MouseDoubleClickInterval);
     case StartDragDistance:
-        return 10;
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::StartDragDistance);
     case StartDragTime:
-        return 500;
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::StartDragTime);
     case ShowIsFullScreen:
         return false;
     case PasswordMaskDelay:
-        return 0;
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::PasswordMaskDelay);
     case FontSmoothingGamma:
         return qreal(1.7);
     case StartDragVelocity:
-        return 0; // no limit
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::StartDragVelocity);
     case UseRtlExtensions:
         return QVariant(false);
     }

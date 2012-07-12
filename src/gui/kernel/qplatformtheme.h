@@ -72,6 +72,14 @@ class Q_GUI_EXPORT QPlatformTheme
 {
 public:
     enum ThemeHint {
+        CursorFlashTime,
+        KeyboardInputInterval,
+        MouseDoubleClickInterval,
+        StartDragDistance,
+        StartDragTime,
+        KeyboardAutoRepeatRate,
+        PasswordMaskDelay,
+        StartDragVelocity,
         TextCursorWidth,
         DropShadow,
         MaximumScrollBarDragDistance,
@@ -180,6 +188,8 @@ public:
     virtual const QFont *font(Font type = SystemFont) const;
 
     virtual QVariant themeHint(ThemeHint hint) const;
+
+    static QVariant defaultThemeHint(ThemeHint hint);
 };
 
 QT_END_NAMESPACE

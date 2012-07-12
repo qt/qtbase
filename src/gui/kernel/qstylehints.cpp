@@ -41,6 +41,7 @@
 
 #include <qstylehints.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformtheme.h>
 #include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -48,6 +49,17 @@ QT_BEGIN_NAMESPACE
 static inline QVariant hint(QPlatformIntegration::StyleHint h)
 {
     return QGuiApplicationPrivate::platformIntegration()->styleHint(h);
+}
+
+static inline QVariant themeableHint(QPlatformTheme::ThemeHint th,
+                                     QPlatformIntegration::StyleHint ih)
+{
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+        const QVariant themeHint = theme->themeHint(th);
+        if (themeHint.isValid())
+            return themeHint;
+    }
+    return QGuiApplicationPrivate::platformIntegration()->styleHint(ih);
 }
 
 /*!
@@ -64,37 +76,37 @@ QStyleHints::QStyleHints()
 
 int QStyleHints::mouseDoubleClickInterval() const
 {
-    return hint(QPlatformIntegration::MouseDoubleClickInterval).toInt();
+    return themeableHint(QPlatformTheme::MouseDoubleClickInterval, QPlatformIntegration::MouseDoubleClickInterval).toInt();
 }
 
 int QStyleHints::startDragDistance() const
 {
-    return hint(QPlatformIntegration::StartDragDistance).toInt();
+    return themeableHint(QPlatformTheme::StartDragDistance, QPlatformIntegration::StartDragDistance).toInt();
 }
 
 int QStyleHints::startDragTime() const
 {
-    return hint(QPlatformIntegration::StartDragTime).toInt();
+    return themeableHint(QPlatformTheme::StartDragTime, QPlatformIntegration::StartDragTime).toInt();
 }
 
 int QStyleHints::startDragVelocity() const
 {
-    return hint(QPlatformIntegration::StartDragVelocity).toInt();
+    return themeableHint(QPlatformTheme::StartDragVelocity, QPlatformIntegration::StartDragVelocity).toInt();
 }
 
 int QStyleHints::keyboardInputInterval() const
 {
-    return hint(QPlatformIntegration::KeyboardInputInterval).toInt();
+    return themeableHint(QPlatformTheme::KeyboardInputInterval, QPlatformIntegration::KeyboardInputInterval).toInt();
 }
 
 int QStyleHints::keyboardAutoRepeatRate() const
 {
-    return hint(QPlatformIntegration::KeyboardAutoRepeatRate).toInt();
+    return themeableHint(QPlatformTheme::KeyboardAutoRepeatRate, QPlatformIntegration::KeyboardAutoRepeatRate).toInt();
 }
 
 int QStyleHints::cursorFlashTime() const
 {
-    return hint(QPlatformIntegration::CursorFlashTime).toInt();
+    return themeableHint(QPlatformTheme::CursorFlashTime, QPlatformIntegration::CursorFlashTime).toInt();
 }
 
 bool QStyleHints::showIsFullScreen() const
@@ -104,7 +116,7 @@ bool QStyleHints::showIsFullScreen() const
 
 int QStyleHints::passwordMaskDelay() const
 {
-    return hint(QPlatformIntegration::PasswordMaskDelay).toInt();
+    return themeableHint(QPlatformTheme::PasswordMaskDelay, QPlatformIntegration::PasswordMaskDelay).toInt();
 }
 
 qreal QStyleHints::fontSmoothingGamma() const
