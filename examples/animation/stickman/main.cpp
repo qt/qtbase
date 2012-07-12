@@ -93,11 +93,11 @@ int main(int argc, char **argv)
     view.setFocus();
 
     LifeCycle cycle(stickMan, &view);
-    cycle.setDeathAnimation(":/animations/dead");
+    cycle.setDeathAnimation(":/animations/dead.bin");
 
-    cycle.addActivity(":/animations/jumping", Qt::Key_J);
-    cycle.addActivity(":/animations/dancing", Qt::Key_D);
-    cycle.addActivity(":/animations/chilling", Qt::Key_C);
+    cycle.addActivity(":/animations/jumping.bin", Qt::Key_J);
+    cycle.addActivity(":/animations/dancing.bin", Qt::Key_D);
+    cycle.addActivity(":/animations/chilling.bin", Qt::Key_C);
 
     cycle.start();
 
