@@ -104,6 +104,7 @@ private slots:
     void QTBUG11282_insertBeforeMergedEnding_data();
     void QTBUG11282_insertBeforeMergedEnding();
 #endif
+    void QTBUG22011_insertBeforeRowSpan();
 
 private:
     QTextTable *create2x2Table();
@@ -1003,6 +1004,34 @@ void tst_QTextTable::QTBUG11282_insertBeforeMergedEnding()
     delete textEdit;
 }
 #endif
+
+void tst_QTextTable::QTBUG22011_insertBeforeRowSpan()
+{
+    QTextDocument doc;
+    QTextCursor cursor(&doc);
+    QTextTable *table = cursor.insertTable(1,1); // 1x1
+
+    table->appendColumns(1); // 1x2
+    table->appendRows(1); // 2x2
+    table->mergeCells(0, 0, 2, 1); // 2x2
+    table->insertColumns(1, 1); // 2x3
+    table->mergeCells(0, 1, 1, 2); // 2x3
+    table->appendRows(1); // 3x3
+    table->mergeCells(0, 0, 3, 1); // 3x3
+    table->appendRows(1); // 4x3
+    table->insertColumns(1, 1); // 4x4
+    table->mergeCells(0, 1, 1, 3);
+    table->mergeCells(1, 1, 1, 2);
+    table->mergeCells(2, 1, 1, 2);
+    table->mergeCells(3, 0, 1, 2);
+    table->insertColumns(3, 1); // 4x5
+    table->mergeCells(0, 1, 1, 4);
+
+    table->appendColumns(1); // 4x6
+
+    QCOMPARE(table->rows(), 4);
+    QCOMPARE(table->columns(), 6);
+}
 
 QTEST_MAIN(tst_QTextTable)
 #include "tst_qtexttable.moc"

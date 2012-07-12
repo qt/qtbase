@@ -759,10 +759,30 @@ void QTextTable::insertColumns(int pos, int num)
     QList<int> extendedSpans;
     for (int i = 0; i < d->nRows; ++i) {
         int cell;
-        if (i == d->nRows - 1 && pos == d->nCols)
+        if (i == d->nRows - 1 && pos == d->nCols) {
             cell = d->fragment_end;
-        else
-            cell = d->grid[i*d->nCols + pos];
+        } else {
+            int logicalGridIndexBeforePosition = pos > 0
+                                                 ? d->findCellIndex(d->grid[i*d->nCols + pos - 1])
+                                                 : -1;
+
+            // Search for the logical insertion point by skipping past cells which are not the first
+            // cell in a rowspan. This means any cell for which the logical grid index is
+            // less than the logical cell index of the cell before the insertion.
+            int logicalGridIndex;
+            int gridArrayOffset = i*d->nCols + pos;
+            do {
+                cell = d->grid[gridArrayOffset];
+                logicalGridIndex = d->findCellIndex(cell);
+                gridArrayOffset++;
+            } while (logicalGridIndex < logicalGridIndexBeforePosition
+                     && gridArrayOffset < d->nRows*d->nCols);
+
+            if (logicalGridIndex < logicalGridIndexBeforePosition
+                && gridArrayOffset == d->nRows*d->nCols)
+                cell = d->fragment_end;
+        }
+
         if (pos > 0 && pos < d->nCols && cell == d->grid[i*d->nCols + pos - 1]) {
             // cell spans the insertion place, extend it
             if (!extendedSpans.contains(cell)) {
