@@ -2743,9 +2743,11 @@ QUrl QUrl::resolved(const QUrl &relative) const
     // be non strict and allow scheme in relative url
     if (!relative.d->scheme.isEmpty() && relative.d->scheme != d->scheme) {
         t = relative;
+        t.detach();
     } else {
         if (relative.d->hasAuthority()) {
             t = relative;
+            t.detach();
         } else {
             t.d = new QUrlPrivate;
 

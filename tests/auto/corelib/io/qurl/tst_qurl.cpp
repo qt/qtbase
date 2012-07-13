@@ -167,6 +167,11 @@ private slots:
     void setComponents();
     void streaming_data();
     void streaming();
+    void detach();
+    void testThreading();
+
+private:
+    void testThreadingHelper();
 };
 
 // Testing get/set functions
@@ -217,6 +222,8 @@ void tst_QUrl::constructing()
     QVERIFY(url.isEmpty());
     QCOMPARE(url.port(), -1);
     QCOMPARE(url.toString(), QString());
+    QVERIFY(url == url);
+    QVERIFY(!(url < url));
 
     QUrl justHost("qt.nokia.com");
     QVERIFY(!justHost.isEmpty());
@@ -280,6 +287,8 @@ void tst_QUrl::comparison()
     QVERIFY(url2.isValid());
 
     QVERIFY(url1 == url2);
+    QVERIFY(!(url1 < url2));
+    QVERIFY(!(url2 < url1));
 
     // 6.2.2 Syntax-based Normalization
     QUrl url3 = QUrl::fromEncoded("example://a/b/c/%7Bfoo%7D");
@@ -294,6 +303,13 @@ void tst_QUrl::comparison()
     QUrl url6;
     url6.setEncodedQuery("a=%2A");
     QVERIFY(url5 == url6);
+
+    QUrl url7;
+    url7.setEncodedQuery("a=C");
+    QUrl url8;
+    url8.setEncodedQuery("a=c");
+    QVERIFY(url7 != url8);
+    QVERIFY(url7 < url8);
 }
 
 void tst_QUrl::comparison2_data()
@@ -3234,5 +3250,80 @@ void tst_QUrl::streaming()
         QVERIFY(!restored.isValid());
 }
 
+void tst_QUrl::detach()
+{
+    QUrl empty;
+    empty.detach();
+
+    QUrl foo("http://www.kde.org");
+    QUrl foo2 = foo;
+    foo2.detach(); // not that it's needed, given that setHost detaches, of course. But this increases coverage :)
+    foo2.setHost("www.gnome.org");
+    QCOMPARE(foo2.host(), QString("www.gnome.org"));
+    QCOMPARE(foo.host(), QString("www.kde.org"));
+}
+
+// Test accessing the same QUrl from multiple threads concurrently
+// To maximize the chances of a race (and of a report from helgrind), we actually use
+// 10 urls rather than one.
+class UrlStorage
+{
+public:
+    UrlStorage() {
+        m_urls.resize(10);
+        for (int i = 0 ; i < m_urls.size(); ++i)
+            m_urls[i] = QUrl::fromEncoded("http://www.kde.org", QUrl::StrictMode);
+    }
+    QVector<QUrl> m_urls;
+};
+
+static const UrlStorage * s_urlStorage = 0;
+
+void tst_QUrl::testThreadingHelper()
+{
+    const UrlStorage* storage = s_urlStorage;
+    for (int i = 0 ; i < storage->m_urls.size(); ++i ) {
+        const QUrl& u = storage->m_urls.at(i);
+        // QVERIFY/QCOMPARE trigger race conditions in helgrind
+        if (!u.isValid())
+            qFatal("invalid url");
+        if (u.scheme() != QLatin1String("http"))
+            qFatal("invalid scheme");
+        if (!u.toString().startsWith('h'))
+            qFatal("invalid toString");
+        QUrl copy(u);
+        copy.setHost("www.new-host.com");
+        QUrl copy2(u);
+        copy2.setUserName("dfaure");
+        QUrl copy3(u);
+        copy3.setUrl("http://www.new-host.com");
+        QUrl copy4(u);
+        copy4.detach();
+        QUrl copy5(u);
+        QUrl resolved1 = u.resolved(QUrl("index.html"));
+        Q_UNUSED(resolved1);
+        QUrl resolved2 = QUrl("http://www.kde.org").resolved(u);
+        Q_UNUSED(resolved2);
+        QString local = u.toLocalFile();
+        Q_UNUSED(local);
+        QTest::qWait(10); // give time for the other threads to start
+    }
+}
+
+#include <QThreadPool>
+#include <QtConcurrent>
+
+void tst_QUrl::testThreading()
+{
+    s_urlStorage = new UrlStorage;
+    QThreadPool::globalInstance()->setMaxThreadCount(100);
+    QFutureSynchronizer<void> sync;
+    for (int i = 0; i < 100; ++i)
+        sync.addFuture(QtConcurrent::run(this, &tst_QUrl::testThreadingHelper));
+    sync.waitForFinished();
+    delete s_urlStorage;
+}
+
 QTEST_MAIN(tst_QUrl)
+
 #include "tst_qurl.moc"
