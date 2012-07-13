@@ -318,15 +318,6 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
             } else if ((flags & Qt::NoOpaqueDetection) == 0
                        && !const_cast<QImage &>(sourceImage).data_ptr()->checkForAlphaPixels())
             {
-                // image has alpha format but is really opaque, so try to do a
-                // more efficient conversion
-                if (sourceImage.format() == QImage::Format_ARGB32
-                    || sourceImage.format() == QImage::Format_ARGB32_Premultiplied)
-                {
-                    if (!inPlace)
-                        sourceImage.detach();
-                    sourceImage.d->format = QImage::Format_RGB32;
-                }
                 format = opaqueFormat;
             } else {
                 format = alphaFormat;
@@ -334,7 +325,17 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
         }
     }
 
-    if (inPlace && sourceImage.d->convertInPlace(format, flags)) {
+    // image has alpha format but is really opaque, so try to do a
+    // more efficient conversion
+    if (format == QImage::Format_RGB32 && (sourceImage.format() == QImage::Format_ARGB32
+        || sourceImage.format() == QImage::Format_ARGB32_Premultiplied))
+    {
+        image = sourceImage;
+        if (!inPlace)
+            image.detach();
+        if (image.d)
+            image.d->format = QImage::Format_RGB32;
+    } else if (inPlace && sourceImage.d->convertInPlace(format, flags)) {
         image = sourceImage;
     } else {
         image = sourceImage.convertToFormat(format);
