@@ -12,7 +12,6 @@ contains(QT_CONFIG, dbus-linked) {
     DEFINES += QT_LINKED_LIBDBUS
 }
 
-# INCLUDEPATH += .
 win32 { 
     wince*:LIBS_PRIVATE += -lws2
     else:LIBS_PRIVATE += -lws2_32 \

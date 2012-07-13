@@ -6,7 +6,6 @@ CONFIG += exceptions
 
 MODULE_CONFIG = console testlib_defines auto_use_privates
 
-INCLUDEPATH += .
 unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
     Unit \
     Testing \
