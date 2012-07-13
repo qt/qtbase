@@ -476,15 +476,18 @@ UnixMakefileGenerator::findLibraries()
     const QString lflags[] = { "QMAKE_LIBDIR_FLAGS", "QMAKE_FRAMEWORKPATH_FLAGS", "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
     for(int i = 0; !lflags[i].isNull(); i++) {
         QStringList &l = project->values(lflags[i]);
-        for(QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
+        for (QStringList::Iterator it = l.begin(); it != l.end(); ) {
             bool do_suffix = true;
             QString stub, dir, extn, opt = (*it).trimmed();
             if(opt.startsWith("-")) {
                 if(opt.startsWith("-L")) {
                     QString lib = opt.mid(2);
                     QMakeLocalFileName f(lib);
-                    if(!libdirs.contains(f))
-                        libdirs.append(f);
+                    if (libdirs.contains(f)) {
+                        it = l.erase(it);
+                        continue;
+                    }
+                    libdirs.append(f);
                     if (!libArg.isEmpty())
                         *it = libArg + lib;
                 } else if(opt.startsWith("-l")) {
@@ -560,6 +563,7 @@ UnixMakefileGenerator::findLibraries()
                     }
                 }
             }
+            ++it;
         }
     }
     return false;
