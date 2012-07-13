@@ -1489,6 +1489,7 @@ glyph_metrics_t QFontEngineMulti::boundingBox(const QGlyphLayout &glyphs)
 void QFontEngineMulti::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qreal *rightBearing)
 {
     int which = highByte(glyph);
+    ensureEngineAt(which);
     engine(which)->getGlyphBearings(stripped(glyph), leftBearing, rightBearing);
 }
 
