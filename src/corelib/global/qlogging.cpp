@@ -633,12 +633,21 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
                                    const QString &buf)
 {
     QString logMessage = qMessageFormatString(type, context, buf);
-#if defined(Q_OS_WINCE)
-    OutputDebugString(reinterpret_cast<const wchar_t *> (logMessage.utf16()));
-#else
+
+#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
+#if !defined(Q_OS_WINCE)
+    if (usingWinMain)
+#endif
+    {
+        // OutputDebugString is not threadsafe.
+        static QBasicMutex outputDebugStringMutex;
+        QMutexLocker locker(&outputDebugStringMutex);
+        OutputDebugString(reinterpret_cast<const wchar_t *>(logMessage.utf16()));
+        return;
+    }
+#endif // Q_OS_WIN
     fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
     fflush(stderr);
-#endif
 }
 
 /*!
@@ -727,18 +736,6 @@ void qErrnoWarning(int code, const char *msg, ...)
     QMessageLogContext context;
     qt_message_output(QtCriticalMsg, context, buf);
 }
-
-#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-extern Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char *str);
-extern Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogContext &context,
-                                             const QString &str);
-
-void qWinMessageHandler2(QtMsgType t, const QMessageLogContext &context,
-                         const char *str)
-{
-    qWinMessageHandler(t, context, QString::fromLocal8Bit(str));
-}
-#endif
 
 /*!
     \typedef QtMsgHandler
@@ -852,10 +849,6 @@ QtMessageHandler qInstallMessageHandler(QtMessageHandler h)
         messageHandler = qDefaultMessageHandler;
     QtMessageHandler old = messageHandler;
     messageHandler = h;
-#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-    if (!messageHandler && usingWinMain)
-        messageHandler = qWinMessageHandler;
-#endif
     return old;
 }
 
@@ -867,10 +860,6 @@ QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
         msgHandler = qDefaultMsgHandler;
     QtMsgHandler old = msgHandler;
     msgHandler = h;
-#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-    if (!msgHandler && usingWinMain)
-        msgHandler = qWinMsgHandler;
-#endif
     return old;
 }
 

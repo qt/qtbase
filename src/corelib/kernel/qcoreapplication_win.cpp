@@ -125,46 +125,6 @@ QString QCoreApplicationPrivate::appName() const
     return QFileInfo(qAppFileName()).baseName();
 }
 
-class QWinMsgHandlerCriticalSection
-{
-    CRITICAL_SECTION cs;
-public:
-    QWinMsgHandlerCriticalSection()
-    { InitializeCriticalSection(&cs); }
-    ~QWinMsgHandlerCriticalSection()
-    { DeleteCriticalSection(&cs); }
-
-    void lock()
-    { EnterCriticalSection(&cs); }
-    void unlock()
-    { LeaveCriticalSection(&cs); }
-};
-
-// defined in qlogging.cpp
-extern Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type,
-                                                  const QMessageLogContext &context,
-                                                  const QString &str);
-
-Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogContext &context, const QString &str)
-{
-    // cannot use QMutex here, because qWarning()s in the QMutex
-    // implementation may cause this function to recurse
-    static QWinMsgHandlerCriticalSection staticCriticalSection;
-
-    QString message = qMessageFormatString(t, context, str);
-
-    // OutputDebugString is not threadsafe.
-    staticCriticalSection.lock();
-    OutputDebugString((wchar_t*)message.utf16());
-    staticCriticalSection.unlock();
-}
-
-Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char *str)
-{
-    QMessageLogContext emptyContext;
-    qWinMessageHandler(t, emptyContext, QString::fromLocal8Bit(str));
-}
-
 /*****************************************************************************
   qWinMain() - Initializes Windows. Called from WinMain() in qtmain_win.cpp
  *****************************************************************************/
@@ -186,9 +146,6 @@ void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
     }
     already_called = true;
     usingWinMain = true;
-
-    // Install default debug handler
-    qInstallMessageHandler(qWinMessageHandler);
 
     // Create command line
     argv = qWinCmdLine<char>(cmdParam, int(strlen(cmdParam)), argc);
