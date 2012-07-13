@@ -1813,12 +1813,25 @@ public:
         emit privateSignal1(QPrivateSignal());
         emit privateSignalWith1Arg(42, QPrivateSignal());
         emit privateSignalWith2Args(42, "Hello", QPrivateSignal());
+
+        emit privateOverloadedSignal(QPrivateSignal());
+        emit privateOverloadedSignal(42, QPrivateSignal());
+
+        emit overloadedMaybePrivate();
+        emit overloadedMaybePrivate(42, QPrivateSignal());
     }
 
 Q_SIGNALS:
     void privateSignal1(QPrivateSignal);
     void privateSignalWith1Arg(int arg1, QPrivateSignal);
     void privateSignalWith2Args(int arg1, const QString &arg2, QPrivateSignal);
+
+    void privateOverloadedSignal(QPrivateSignal);
+    void privateOverloadedSignal(int, QPrivateSignal);
+
+    void overloadedMaybePrivate();
+    void overloadedMaybePrivate(int, QPrivateSignal);
+
 };
 
 class SubClassFromPrivateSignals : public ClassWithPrivateSignals
@@ -1845,6 +1858,14 @@ public:
 //         emit privateSignal1(ClassWithPrivateSignals::QPrivateSignal());
 //         emit privateSignalWith1Arg(42, ClassWithPrivateSignals::QPrivateSignal());
 //         emit privateSignalWith2Args(42, "Hello", ClassWithPrivateSignals::QPrivateSignal());
+
+//         emit privateOverloadedSignal();
+//         emit privateOverloadedSignal(42);
+
+//         emit overloadedMaybePrivate();
+//         emit overloadedMaybePrivate(42);
+
+
     }
 };
 
@@ -2135,6 +2156,73 @@ void tst_Moc::privateSignalConnection()
 
         QVERIFY(tester.testPassed);
     }
+
+    // Overloaded private signals
+    {
+
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, SIGNAL(privateOverloadedSignal()), &tester, SLOT(testSlot()));
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, SIGNAL(privateOverloadedSignal(int)), &tester, SLOT(testSlotWith1Arg(int)));
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    // We can't use function pointer connections to private signals which are overloaded because we would have to cast in this case to:
+    //   static_cast<void (ClassWithPrivateSignals::*)(int, ClassWithPrivateSignals::QPrivateSignal)>(&ClassWithPrivateSignals::privateOverloadedSignal)
+    // Which doesn't work as ClassWithPrivateSignals::QPrivateSignal is private.
+
+    // Overload with either private or not private signals
+    {
+
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, SIGNAL(overloadedMaybePrivate()), &tester, SLOT(testSlot()));
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals, SIGNAL(privateOverloadedSignal(int)), &tester, SLOT(testSlotWith1Arg(int)));
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    {
+
+        ClassWithPrivateSignals classWithPrivateSignals;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals,
+                         static_cast<void (ClassWithPrivateSignals::*)()>(&ClassWithPrivateSignals::overloadedMaybePrivate),
+                         &tester, &SignalConnectionTester::testSlot);
+        QVERIFY(!tester.testPassed);
+
+        classWithPrivateSignals.emitPrivateSignals();
+
+        QVERIFY(tester.testPassed);
+    }
+    // We can't use function pointer connections to private signals which are overloaded because we would have to cast in this case to:
+    //   static_cast<void (ClassWithPrivateSignals::*)(int, ClassWithPrivateSignals::QPrivateSignal)>(&ClassWithPrivateSignals::overloadedMaybePrivate)
+    // Which doesn't work as ClassWithPrivateSignals::QPrivateSignal is private.
 }
 
 
