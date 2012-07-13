@@ -1034,8 +1034,8 @@ void tst_QStateMachine::customErrorStateNotInGraph()
 void tst_QStateMachine::restoreProperties()
 {
     QStateMachine machine;
-    QCOMPARE(machine.globalRestorePolicy(), QStateMachine::DontRestoreProperties);
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    QCOMPARE(machine.globalRestorePolicy(), QState::DontRestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     QObject *object = new QObject(&machine);
     object->setProperty("a", 1);
@@ -2906,7 +2906,7 @@ void tst_QStateMachine::noInitialStateForInitialState()
 void tst_QStateMachine::globalRestorePolicySetToDontRestore()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::DontRestoreProperties);
+    machine.setGlobalRestorePolicy(QState::DontRestoreProperties);
 
     QObject *propertyHolder = new QObject(&machine);
     propertyHolder->setProperty("a", 1);
@@ -2946,7 +2946,7 @@ void tst_QStateMachine::globalRestorePolicySetToDontRestore()
 void tst_QStateMachine::globalRestorePolicySetToRestore()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     QObject *propertyHolder = new QObject(&machine);
     propertyHolder->setProperty("a", 1);
@@ -3272,7 +3272,7 @@ void tst_QStateMachine::propertiesAssignedSignalTransitionsReuseAnimationGroup()
 void tst_QStateMachine::animatedGlobalRestoreProperty()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     QObject *object = new QObject(&machine);
     object->setProperty("foo", 1.0);
@@ -3621,7 +3621,7 @@ void tst_QStateMachine::parallelStateTransition()
 void tst_QStateMachine::nestedRestoreProperties()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     QObject *propertyHolder = new QObject(&machine);
     propertyHolder->setProperty("foo", 1);
@@ -3673,7 +3673,7 @@ void tst_QStateMachine::nestedRestoreProperties()
 void tst_QStateMachine::nestedRestoreProperties2()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     QObject *propertyHolder = new QObject(&machine);
     propertyHolder->setProperty("foo", 1);
@@ -4107,7 +4107,7 @@ void tst_QStateMachine::deletePropertyAssignmentObjectBeforeEntry()
 void tst_QStateMachine::deletePropertyAssignmentObjectBeforeRestore()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
     QState *s1 = new QState(&machine);
     machine.setInitialState(s1);
     QState *s2 = new QState(&machine);
@@ -4149,7 +4149,7 @@ void tst_QStateMachine::deleteInitialState()
 void tst_QStateMachine::setPropertyAfterRestore()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     QObject *object = new QObject(&machine);
     object->setProperty("a", 1);
@@ -4194,8 +4194,8 @@ void tst_QStateMachine::setPropertyAfterRestore()
 void tst_QStateMachine::transitionWithNoTarget_data()
 {
     QTest::addColumn<int>("restorePolicy");
-    QTest::newRow("DontRestoreProperties") << int(QStateMachine::DontRestoreProperties);
-    QTest::newRow("RestoreProperties") << int(QStateMachine::RestoreProperties);
+    QTest::newRow("DontRestoreProperties") << int(QState::DontRestoreProperties);
+    QTest::newRow("RestoreProperties") << int(QState::RestoreProperties);
 }
 
 void tst_QStateMachine::transitionWithNoTarget()
@@ -4203,7 +4203,7 @@ void tst_QStateMachine::transitionWithNoTarget()
     QFETCH(int, restorePolicy);
 
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(static_cast<QStateMachine::RestorePolicy>(restorePolicy));
+    machine.setGlobalRestorePolicy(static_cast<QState::RestorePolicy>(restorePolicy));
 
     QObject *object = new QObject;
     object->setProperty("a", 1);
@@ -4274,7 +4274,7 @@ private:
 void tst_QStateMachine::restorePropertiesSimple()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     PropertyObject *po = new PropertyObject;
     po->setProp(2);
@@ -4337,7 +4337,7 @@ void tst_QStateMachine::restorePropertiesSimple()
 void tst_QStateMachine::restoreProperties2()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     PropertyObject *po = new PropertyObject;
     po->setProp(2);
@@ -4419,7 +4419,7 @@ void tst_QStateMachine::restoreProperties2()
 void tst_QStateMachine::restoreProperties3()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     PropertyObject *po = new PropertyObject;
     po->setProp(2);
@@ -4471,7 +4471,7 @@ void tst_QStateMachine::restoreProperties3()
 void tst_QStateMachine::restoreProperties4()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     PropertyObject *po1 = new PropertyObject;
     po1->setProp(2);
@@ -4543,7 +4543,7 @@ void tst_QStateMachine::restoreProperties4()
 void tst_QStateMachine::restorePropertiesSelfTransition()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     PropertyObject *po = new PropertyObject;
     po->setProp(2);
@@ -4581,7 +4581,7 @@ void tst_QStateMachine::restorePropertiesSelfTransition()
 void tst_QStateMachine::changeStateWhileAnimatingProperty()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     QObject *o1 = new QObject;
     o1->setProperty("x", 10.);
@@ -4655,8 +4655,8 @@ private Q_SLOTS:
 void tst_QStateMachine::propertiesAreAssignedBeforeEntryCallbacks_data()
 {
     QTest::addColumn<int>("restorePolicy");
-    QTest::newRow("DontRestoreProperties") << int(QStateMachine::DontRestoreProperties);
-    QTest::newRow("RestoreProperties") << int(QStateMachine::RestoreProperties);
+    QTest::newRow("DontRestoreProperties") << int(QState::DontRestoreProperties);
+    QTest::newRow("RestoreProperties") << int(QState::RestoreProperties);
 }
 
 void tst_QStateMachine::propertiesAreAssignedBeforeEntryCallbacks()
@@ -4664,7 +4664,7 @@ void tst_QStateMachine::propertiesAreAssignedBeforeEntryCallbacks()
     QFETCH(int, restorePolicy);
 
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(static_cast<QStateMachine::RestorePolicy>(restorePolicy));
+    machine.setGlobalRestorePolicy(static_cast<QState::RestorePolicy>(restorePolicy));
 
     AssignPropertyTestState *s1 = new AssignPropertyTestState(&machine);
     s1->assignProperty(s1, "wasAssigned", true);

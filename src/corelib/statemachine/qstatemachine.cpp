@@ -159,7 +159,7 @@ QT_BEGIN_NAMESPACE
     \brief the restore policy for states of this state machine.
 
     The default value of this property is
-    QStateMachine::DontRestoreProperties.
+    QState::DontRestoreProperties.
 */
 
 #ifndef QT_NO_ANIMATION
@@ -191,7 +191,7 @@ QStateMachinePrivate::QStateMachinePrivate()
     stop = false;
     stopProcessingReason = EventQueueEmpty;
     error = QStateMachine::NoError;
-    globalRestorePolicy = QStateMachine::DontRestoreProperties;
+    globalRestorePolicy = QState::DontRestoreProperties;
     signalEventGenerator = 0;
 #ifndef QT_NO_ANIMATION
     animated = true;
@@ -575,7 +575,7 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
             QList<QPropertyAssignment> assignments = propertyAssignmentsForState.value(s);
             for (int i = 0; i < assignments.size(); ++i) {
                 const QPropertyAssignment &assn = assignments.at(i);
-                if (globalRestorePolicy == QStateMachine::RestoreProperties) {
+                if (globalRestorePolicy == QState::RestoreProperties) {
                     if (assn.explicitlySet) {
                         if (!hasRestorable(s, assn.object, assn.propertyName)) {
                             QVariant value = savedValueForRestorable(exitedStates_sorted, assn.object, assn.propertyName);
@@ -1250,7 +1250,7 @@ void QStateMachinePrivate::initializeAnimations(QAbstractState *state, const QLi
                     // ### connect to just the top-level animation?
                     QObject::connect(a, SIGNAL(finished()), q, SLOT(_q_animationFinished()), Qt::UniqueConnection);
                 }
-                if ((globalRestorePolicy == QStateMachine::RestoreProperties)
+                if ((globalRestorePolicy == QState::RestoreProperties)
                         && !hasRestorable(state, assn.object, assn.propertyName)) {
                     QVariant value = savedValueForRestorable(exitedStates_sorted, assn.object, assn.propertyName);
                     unregisterRestorables(exitedStates_sorted, assn.object, assn.propertyName);
@@ -1983,32 +1983,6 @@ QStateMachine::~QStateMachine()
 */
 
 /*!
-   \enum QStateMachine::RestorePolicy
-
-   This enum specifies the restore policy type. The restore policy
-   takes effect when the machine enters a state which sets one or more
-   properties. If the restore policy is set to RestoreProperties,
-   the state machine will save the original value of the property before the
-   new value is set.
-
-   Later, when the machine either enters a state which does not set
-   a value for the given property, the property will automatically be restored
-   to its initial value.
-
-   Only one initial value will be saved for any given property. If a value for a property has 
-   already been saved by the state machine, it will not be overwritten until the property has been
-   successfully restored. 
-
-   \value DontRestoreProperties The state machine should not save the initial values of properties
-          and restore them later.
-   \value RestoreProperties The state machine should save the initial values of properties 
-          and restore them later.
-
-   \sa QStateMachine::globalRestorePolicy, QState::assignProperty()
-*/
-
-
-/*!
   Returns the error code of the last error that occurred in the state machine.
 */
 QStateMachine::Error QStateMachine::error() const
@@ -2041,7 +2015,7 @@ void QStateMachine::clearError()
 
    \sa setGlobalRestorePolicy()
 */
-QStateMachine::RestorePolicy QStateMachine::globalRestorePolicy() const
+QState::RestorePolicy QStateMachine::globalRestorePolicy() const
 {
     Q_D(const QStateMachine);
     return d->globalRestorePolicy;
@@ -2049,11 +2023,11 @@ QStateMachine::RestorePolicy QStateMachine::globalRestorePolicy() const
 
 /*!
    Sets the restore policy of the state machine to \a restorePolicy. The default 
-   restore policy is QAbstractState::DontRestoreProperties.
+   restore policy is QState::DontRestoreProperties.
    
    \sa globalRestorePolicy()
 */
-void QStateMachine::setGlobalRestorePolicy(QStateMachine::RestorePolicy restorePolicy) 
+void QStateMachine::setGlobalRestorePolicy(QState::RestorePolicy restorePolicy)
 {
     Q_D(QStateMachine);
     d->globalRestorePolicy = restorePolicy;

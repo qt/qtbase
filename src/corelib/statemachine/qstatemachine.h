@@ -63,8 +63,7 @@ class Q_CORE_EXPORT QStateMachine : public QState
 {
     Q_OBJECT
     Q_PROPERTY(QString errorString READ errorString)
-    Q_PROPERTY(RestorePolicy globalRestorePolicy READ globalRestorePolicy WRITE setGlobalRestorePolicy)
-    Q_ENUMS(RestorePolicy)
+    Q_PROPERTY(QState::RestorePolicy globalRestorePolicy READ globalRestorePolicy WRITE setGlobalRestorePolicy)
 #ifndef QT_NO_ANIMATION
     Q_PROPERTY(bool animated READ isAnimated WRITE setAnimated)
 #endif
@@ -107,11 +106,6 @@ public:
         HighPriority
     };
 
-    enum RestorePolicy {
-        DontRestoreProperties,
-        RestoreProperties
-    };
-
     enum Error {
         NoError, 
         NoInitialStateError,
@@ -141,8 +135,8 @@ public:
     void removeDefaultAnimation(QAbstractAnimation *animation);
 #endif // QT_NO_ANIMATION
 
-    QStateMachine::RestorePolicy globalRestorePolicy() const;
-    void setGlobalRestorePolicy(QStateMachine::RestorePolicy restorePolicy);
+    QState::RestorePolicy globalRestorePolicy() const;
+    void setGlobalRestorePolicy(QState::RestorePolicy restorePolicy);
 
     void postEvent(QEvent *event, EventPriority priority = NormalPriority);
     int postDelayedEvent(QEvent *event, int delay);

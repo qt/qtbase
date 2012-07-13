@@ -146,7 +146,7 @@ int main(int argc, char **argv)
     window.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+    machine.setGlobalRestorePolicy(QState::RestoreProperties);
 
     QState *group = new QState(&machine);
     group->setObjectName("group");

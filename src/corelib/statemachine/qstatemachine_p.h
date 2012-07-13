@@ -224,7 +224,7 @@ public:
     QMutex externalEventMutex;
 
     QStateMachine::Error error;
-    QStateMachine::RestorePolicy globalRestorePolicy;
+    QState::RestorePolicy globalRestorePolicy;
 
     QString errorString;
     QSet<QAbstractState *> pendingErrorStates;
