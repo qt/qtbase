@@ -856,7 +856,7 @@ QT_BEGIN_NAMESPACE
     The code above will wait until the network server is responding for a
     maximum of about 12.5 seconds.
 
-    \sa QTest::qSleep()
+    \sa QTest::qSleep(), QSignalSpy::wait()
 */
 
 /*! \fn bool QTest::qWaitForWindowExposed(QWindow *window, int timeout)

@@ -86,3 +86,12 @@
     \internal
 */
 
+/*! \fn QSignalSpy::wait(int timeout) const
+
+    \since 5.0
+
+    Starts an event loop that runs until the given signal is received.
+    Optionally the event loop can return earlier on a \a timeout (in milliseconds).
+
+    Returns true if the signal was emitted at least once in \a timeout milliseconds, otherwise returns false.
+*/

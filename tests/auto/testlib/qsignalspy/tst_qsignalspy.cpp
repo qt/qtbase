@@ -49,6 +49,9 @@ class tst_QSignalSpy : public QObject
 {
     Q_OBJECT
 
+Q_SIGNALS:
+    void sigFoo();
+
 private slots:
     void spyWithoutArgs();
     void spyWithBasicArgs();
@@ -56,6 +59,12 @@ private slots:
     void spyWithQtClasses();
     void spyWithBasicQtClasses();
     void spyWithQtTypedefs();
+
+    void wait_signalEmitted();
+    void wait_timeout();
+    void wait_signalEmittedLater();
+    void wait_signalEmittedTooLate();
+    void wait_signalEmittedMultipleTimes();
 };
 
 class QtTestObject: public QObject
@@ -217,5 +226,49 @@ void tst_QSignalSpy::spyWithQtTypedefs()
 //    QCOMPARE(spy3.value(0).value(1).toInt(), 45);
 }
 
-QTEST_APPLESS_MAIN(tst_QSignalSpy)
+void tst_QSignalSpy::wait_signalEmitted()
+{
+    QTimer::singleShot(0, this, SIGNAL(sigFoo()));
+    QSignalSpy spy(this, SIGNAL(sigFoo()));
+    QVERIFY(spy.wait(1));
+}
+
+void tst_QSignalSpy::wait_timeout()
+{
+    QSignalSpy spy(this, SIGNAL(sigFoo()));
+    QVERIFY(!spy.wait(1));
+}
+
+void tst_QSignalSpy::wait_signalEmittedLater()
+{
+    QTimer::singleShot(500, this, SIGNAL(sigFoo()));
+    QSignalSpy spy(this, SIGNAL(sigFoo()));
+    QVERIFY(spy.wait(1000));
+}
+
+void tst_QSignalSpy::wait_signalEmittedTooLate()
+{
+    QTimer::singleShot(500, this, SIGNAL(sigFoo()));
+    QSignalSpy spy(this, SIGNAL(sigFoo()));
+    QVERIFY(!spy.wait(200));
+    QTest::qWait(400);
+    QCOMPARE(spy.count(), 1);
+}
+
+void tst_QSignalSpy::wait_signalEmittedMultipleTimes()
+{
+    QTimer::singleShot(100, this, SIGNAL(sigFoo()));
+    QTimer::singleShot(800, this, SIGNAL(sigFoo()));
+    QSignalSpy spy(this, SIGNAL(sigFoo()));
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 1); // we don't wait for the second signal...
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 2);
+    QVERIFY(!spy.wait(1));
+    QTimer::singleShot(10, this, SIGNAL(sigFoo()));
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 3);
+}
+
+QTEST_MAIN(tst_QSignalSpy)
 #include "tst_qsignalspy.moc"

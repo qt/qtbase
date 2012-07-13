@@ -47,6 +47,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qvariant.h>
+#include <QtTest/qtesteventloop.h>
 
 QT_BEGIN_HEADER
 
@@ -59,6 +60,7 @@ class QSignalSpy: public QObject, public QList<QList<QVariant> >
 {
 public:
     QSignalSpy(QObject *obj, const char *aSignal)
+        : m_waiting(false)
     {
 #ifdef Q_CC_BOR
         const int memberOffset = QObject::staticMetaObject.methodCount();
@@ -100,6 +102,15 @@ public:
     inline bool isValid() const { return !sig.isEmpty(); }
     inline QByteArray signal() const { return sig; }
 
+    bool wait(int timeout = 5000)
+    {
+        Q_ASSERT(!m_waiting);
+        const int origCount = count();
+        m_waiting = true;
+        m_loop.enterLoopMSecs(timeout);
+        m_waiting = false;
+        return count() > origCount;
+    }
 
     int qt_metacall(QMetaObject::Call call, int methodId, void **a)
     {
@@ -139,12 +150,18 @@ private:
             list << QVariant(type, a[i + 1]);
         }
         append(list);
+
+        if (m_waiting)
+            m_loop.exitLoop();
     }
 
     // the full, normalized signal name
     QByteArray sig;
     // holds the QMetaType types for the argument list of the signal
     QList<int> args;
+
+    QTestEventLoop m_loop;
+    bool m_waiting;
 };
 
 QT_END_NAMESPACE
