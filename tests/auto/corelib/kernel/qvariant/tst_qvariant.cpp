@@ -43,7 +43,6 @@
 
 #include <qvariant.h>
 #include <qbitarray.h>
-#include <qhostaddress.h>
 #include <qdatetime.h>
 #include <qmap.h>
 #include <qiodevice.h>
@@ -2971,17 +2970,28 @@ void tst_QVariant::timeToDateTime() const
     QVERIFY(!val.toDateTime().isValid());
 }
 
-Q_DECLARE_METATYPE(QHostAddress)
+struct CustomComparable
+{
+    CustomComparable(int value = 0) : myValue(value) {}
+    int myValue;
+
+    bool operator==(const CustomComparable &other) const
+    { return other.myValue == myValue; }
+};
+
+Q_DECLARE_METATYPE(CustomComparable)
 
 void tst_QVariant::copyingUserTypes() const
 {
     QVariant var;
-    QVariant var3;
-    const QHostAddress ha("127.0.0.1");
-    var.setValue(ha);
-    var3 = var;
+    QVariant varCopy;
+    const CustomComparable userType = CustomComparable(42);
+    var.setValue(userType);
+    varCopy = var;
 
-    QCOMPARE(qvariant_cast<QHostAddress>(var3), ha);
+    const CustomComparable copiedType = qvariant_cast<CustomComparable>(varCopy);
+    QCOMPARE(copiedType, userType);
+    QCOMPARE(copiedType.myValue, 42);
 }
 
 void tst_QVariant::convertBoolToByteArray() const
