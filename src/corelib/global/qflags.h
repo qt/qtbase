@@ -62,11 +62,11 @@ class QIncompatibleFlag
 {
     int i;
 public:
-    inline explicit QIncompatibleFlag(int i);
+    Q_DECL_CONSTEXPR inline explicit QIncompatibleFlag(int i);
     inline operator int() const { return i; }
 };
 
-inline QIncompatibleFlag::QIncompatibleFlag(int ai) : i(ai) {}
+Q_DECL_CONSTEXPR inline QIncompatibleFlag::QIncompatibleFlag(int ai) : i(ai) {}
 
 
 #ifndef Q_NO_TYPESAFE_FLAGS
@@ -114,7 +114,7 @@ public:
 typedef QFlags<Enum> Flags;
 
 #define Q_DECLARE_INCOMPATIBLE_FLAGS(Flags) \
-inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) \
+Q_DECL_CONSTEXPR inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) \
 { return QIncompatibleFlag(int(f1) | f2); }
 
 #define Q_DECLARE_OPERATORS_FOR_FLAGS(Flags) \
