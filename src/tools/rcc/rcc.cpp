@@ -535,7 +535,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                                                     child,
                                                     language,
                                                     country,
-                                                    RCCFileInfo::NoFlags,
+                                                    child.isDir() ? RCCFileInfo::Directory : RCCFileInfo::NoFlags,
                                                     compressLevel,
                                                     compressThreshold)
                                         );
