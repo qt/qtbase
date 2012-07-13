@@ -1242,6 +1242,50 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
     d.nospace() << dec;
     d.nospace() << "child=" << ev.child();
     d << " event=" << qAccessibleEventString(ev.type());
+    if (ev.type() == QAccessible::StateChanged) {
+        QAccessible::State changed = static_cast<const QAccessibleStateChangeEvent*>(&ev)->changedStates();
+        d << "State changed:";
+        if (changed.disabled) d << "disabled";
+        if (changed.selected) d << "selected";
+        if (changed.focusable) d << "focusable";
+        if (changed.focused) d << "focused";
+        if (changed.pressed) d << "pressed";
+        if (changed.checkable) d << "checkable";
+        if (changed.checked) d << "checked";
+        if (changed.checkStateMixed) d << "checkStateMixed";
+        if (changed.readOnly) d << "readOnly";
+        if (changed.hotTracked) d << "hotTracked";
+        if (changed.defaultButton) d << "defaultButton";
+        if (changed.expanded) d << "expanded";
+        if (changed.collapsed) d << "collapsed";
+        if (changed.busy) d << "busy";
+        if (changed.expandable) d << "expandable";
+        if (changed.marqueed) d << "marqueed";
+        if (changed.animated) d << "animated";
+        if (changed.invisible) d << "invisible";
+        if (changed.offscreen) d << "offscreen";
+        if (changed.sizeable) d << "sizeable";
+        if (changed.movable) d << "movable";
+        if (changed.selfVoicing) d << "selfVoicing";
+        if (changed.selectable) d << "selectable";
+        if (changed.linked) d << "linked";
+        if (changed.traversed) d << "traversed";
+        if (changed.multiSelectable) d << "multiSelectable";
+        if (changed.extSelectable) d << "extSelectable";
+        if (changed.passwordEdit) d << "passwordEdit"; // used to be Protected
+        if (changed.hasPopup) d << "hasPopup";
+        if (changed.modal) d << "modal";
+
+        // IA2 - we chose to not add some IA2 states for now
+        // Below the ones that seem helpful
+        if (changed.active) d << "active";
+        if (changed.invalid) d << "invalid"; // = defunct
+        if (changed.editable) d << "editable";
+        if (changed.multiLine) d << "multiLine";
+        if (changed.selectableText) d << "selectableText";
+        if (changed.supportsAutoCompletion) d << "supportsAutoCompletion";
+
+    }
     d.nospace() << ")";
     return d.space();
 }
