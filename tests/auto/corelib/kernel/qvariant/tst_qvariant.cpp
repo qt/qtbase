@@ -67,6 +67,15 @@
 
 #include <limits.h>
 
+#include <QLinkedList>
+#include <QRegularExpression>
+#include <QDir>
+#include <QBuffer>
+#include <QFont>
+#include "qnumeric.h"
+
+#include "tst_qvariant_common.h"
+
 class CustomNonQObject;
 
 class tst_QVariant : public QObject
@@ -272,7 +281,6 @@ private slots:
     void saveQt5Stream();
 
     void guiVariantAtExit();
-    void widgetsVariantAtExit();
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -335,38 +343,7 @@ void tst_QVariant::constructor_invalid_data()
     QTest::newRow("0xfffffffff") << uint(0xfffffffff);
     QTest::newRow("LastCoreType + 1") << uint(QMetaType::LastCoreType + 1);
     QVERIFY(!QMetaType::isRegistered(QMetaType::LastCoreType + 1));
-    QTest::newRow("LastGuiType + 1") << uint(QMetaType::LastGuiType + 1);
-    QVERIFY(!QMetaType::isRegistered(QMetaType::LastGuiType + 1));
-    QTest::newRow("LastWidgetsType + 1") << uint(QMetaType::LastWidgetsType + 1);
-    QVERIFY(!QMetaType::isRegistered(QMetaType::LastWidgetsType + 1));
 }
-
-struct MessageHandlerInvalidType
-{
-    MessageHandlerInvalidType()
-        : oldMsgHandler(qInstallMsgHandler(handler))
-    {
-        ok = false;
-    }
-
-    ~MessageHandlerInvalidType()
-    {
-        qInstallMsgHandler(oldMsgHandler);
-    }
-
-    QtMsgHandler oldMsgHandler;
-
-    static void handler(QtMsgType type, const char *txt)
-    {
-        Q_UNUSED(type);
-        QString msg = QString::fromLatin1(txt);
-        // uint(-1) can be platform dependent so we check only beginning of the message.
-        ok = msg.startsWith("Trying to construct an instance of an invalid type, type id:");
-        QVERIFY2(ok, (QString::fromLatin1("Message is not started correctly: '") + msg + '\'').toLatin1().constData());
-    }
-    static bool ok;
-};
-bool MessageHandlerInvalidType::ok;
 
 void tst_QVariant::constructor_invalid()
 {
@@ -441,38 +418,7 @@ void tst_QVariant::swap()
 
 void tst_QVariant::canConvert_data()
 {
-    QTest::addColumn<QVariant>("val");
-    QTest::addColumn<bool>("BitArrayCast");
-    QTest::addColumn<bool>("BitmapCast");
-    QTest::addColumn<bool>("BoolCast");
-    QTest::addColumn<bool>("BrushCast");
-    QTest::addColumn<bool>("ByteArrayCast");
-    QTest::addColumn<bool>("ColorCast");
-    QTest::addColumn<bool>("CursorCast");
-    QTest::addColumn<bool>("DateCast");
-    QTest::addColumn<bool>("DateTimeCast");
-    QTest::addColumn<bool>("DoubleCast");
-    QTest::addColumn<bool>("FontCast");
-    QTest::addColumn<bool>("ImageCast");
-    QTest::addColumn<bool>("IntCast");
-    QTest::addColumn<bool>("InvalidCast");
-    QTest::addColumn<bool>("KeySequenceCast");
-    QTest::addColumn<bool>("ListCast");
-    QTest::addColumn<bool>("LongLongCast");
-    QTest::addColumn<bool>("MapCast");
-    QTest::addColumn<bool>("PaletteCast");
-    QTest::addColumn<bool>("PenCast");
-    QTest::addColumn<bool>("PixmapCast");
-    QTest::addColumn<bool>("PointCast");
-    QTest::addColumn<bool>("RectCast");
-    QTest::addColumn<bool>("RegionCast");
-    QTest::addColumn<bool>("SizeCast");
-    QTest::addColumn<bool>("SizePolicyCast");
-    QTest::addColumn<bool>("StringCast");
-    QTest::addColumn<bool>("StringListCast");
-    QTest::addColumn<bool>("TimeCast");
-    QTest::addColumn<bool>("UIntCast");
-    QTest::addColumn<bool>("ULongLongCast");
+    TST_QVARIANT_CANCONVERT_DATATABLE_HEADERS
 
 
 #ifdef Y
@@ -569,9 +515,6 @@ void tst_QVariant::canConvert_data()
     var = QVariant(QSize());
     QTest::newRow("Size")
         << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N;
-    var = QVariant::fromValue(QSizePolicy());
-    QTest::newRow("SizePolicy")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N;
     var = QVariant(QString());
     QTest::newRow("String")
         << var << N << N << Y << N << Y << Y << N << Y << Y << Y << Y << N << Y << N << Y << N << Y << N << N << N << N << N << N << N << N << N << Y << Y << Y << Y << Y;
@@ -603,71 +546,9 @@ void tst_QVariant::canConvert_data()
 
 void tst_QVariant::canConvert()
 {
-    QFETCH(QVariant, val);
-    QFETCH(bool, BitArrayCast);
-    QFETCH(bool, BitmapCast);
-    QFETCH(bool, BoolCast);
-    QFETCH(bool, BrushCast);
-    QFETCH(bool, ByteArrayCast);
-    QFETCH(bool, ColorCast);
-    QFETCH(bool, CursorCast);
-    QFETCH(bool, DateCast);
-    QFETCH(bool, DateTimeCast);
-    QFETCH(bool, DoubleCast);
-    QFETCH(bool, FontCast);
-    QFETCH(bool, ImageCast);
-    QFETCH(bool, IntCast);
-    QFETCH(bool, InvalidCast);
-    QFETCH(bool, KeySequenceCast);
-    QFETCH(bool, ListCast);
-    QFETCH(bool, LongLongCast);
-    QFETCH(bool, MapCast);
-    QFETCH(bool, PaletteCast);
-    QFETCH(bool, PenCast);
-    QFETCH(bool, PixmapCast);
-    QFETCH(bool, PointCast);
-    QFETCH(bool, RectCast);
-    QFETCH(bool, RegionCast);
-    QFETCH(bool, SizeCast);
-    QFETCH(bool, SizePolicyCast);
-    QFETCH(bool, StringCast);
-    QFETCH(bool, StringListCast);
-    QFETCH(bool, TimeCast);
-    QFETCH(bool, UIntCast);
-    QFETCH(bool, ULongLongCast);
+    TST_QVARIANT_CANCONVERT_FETCH_DATA
 
-    QCOMPARE(val.canConvert(QVariant::BitArray), BitArrayCast);
-    QCOMPARE(val.canConvert(QVariant::Bitmap), BitmapCast);
-    QCOMPARE(val.canConvert(QVariant::Bool), BoolCast);
-    QCOMPARE(val.canConvert(QVariant::Brush), BrushCast);
-    QCOMPARE(val.canConvert(QVariant::ByteArray), ByteArrayCast);
-    QCOMPARE(val.canConvert(QVariant::Color), ColorCast);
-    QCOMPARE(val.canConvert(QVariant::Cursor), CursorCast);
-    QCOMPARE(val.canConvert(QVariant::Date), DateCast);
-    QCOMPARE(val.canConvert(QVariant::DateTime), DateTimeCast);
-    QCOMPARE(val.canConvert(QVariant::Double), DoubleCast);
-    QCOMPARE(val.canConvert(QVariant::Type(QMetaType::Float)), DoubleCast);
-    QCOMPARE(val.canConvert(QVariant::Font), FontCast);
-    QCOMPARE(val.canConvert(QVariant::Image), ImageCast);
-    QCOMPARE(val.canConvert(QVariant::Int), IntCast);
-    QCOMPARE(val.canConvert(QVariant::Invalid), InvalidCast);
-    QCOMPARE(val.canConvert(QVariant::KeySequence), KeySequenceCast);
-    QCOMPARE(val.canConvert(QVariant::List), ListCast);
-    QCOMPARE(val.canConvert(QVariant::LongLong), LongLongCast);
-    QCOMPARE(val.canConvert(QVariant::Map), MapCast);
-    QCOMPARE(val.canConvert(QVariant::Palette), PaletteCast);
-    QCOMPARE(val.canConvert(QVariant::Pen), PenCast);
-    QCOMPARE(val.canConvert(QVariant::Pixmap), PixmapCast);
-    QCOMPARE(val.canConvert(QVariant::Point), PointCast);
-    QCOMPARE(val.canConvert(QVariant::Rect), RectCast);
-    QCOMPARE(val.canConvert(QVariant::Region), RegionCast);
-    QCOMPARE(val.canConvert(QVariant::Size), SizeCast);
-    QCOMPARE(val.canConvert(QVariant::SizePolicy), SizePolicyCast);
-    QCOMPARE(val.canConvert(QVariant::String), StringCast);
-    QCOMPARE(val.canConvert(QVariant::StringList), StringListCast);
-    QCOMPARE(val.canConvert(QVariant::Time), TimeCast);
-    QCOMPARE(val.canConvert(QVariant::UInt), UIntCast);
-    QCOMPARE(val.canConvert(QVariant::ULongLong), ULongLongCast);
+    TST_QVARIANT_CANCONVERT_COMPARE_DATA
 
     // Invalid type ids
     QCOMPARE(val.canConvert(-1), false);
@@ -1577,7 +1458,6 @@ void tst_QVariant::writeToReadFromDataStream_data()
     QTest::newRow( "pointarray_valid" ) << QVariant::fromValue( QPolygon( QRect( 10, 10, 20, 20 ) ) ) << false;
     QTest::newRow( "region_invalid" ) << QVariant::fromValue( QRegion() ) << true;
     QTest::newRow( "region_valid" ) << QVariant::fromValue( QRegion( 10, 10, 20, 20 ) ) << false;
-    QTest::newRow( "sizepolicy_valid" ) << QVariant::fromValue( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) ) << false;
     QTest::newRow( "point_invalid" ) << QVariant::fromValue( QPoint() ) << true;
     QTest::newRow( "point_valid" ) << QVariant::fromValue( QPoint( 10, 10 ) ) << false;
     QTest::newRow( "rect_invalid" ) << QVariant( QRect() ) << true;
@@ -2559,13 +2439,7 @@ class CustomQObject : public QObject {
 public:
     CustomQObject(QObject *parent = 0) : QObject(parent) {}
 };
-class CustomQWidget : public QWidget {
-    Q_OBJECT
-public:
-    CustomQWidget(QWidget *parent = 0) : QWidget(parent) {}
-};
 Q_DECLARE_METATYPE(CustomQObject*)
-Q_DECLARE_METATYPE(CustomQWidget*)
 
 class CustomNonQObject { };
 Q_DECLARE_METATYPE(CustomNonQObject)
@@ -2587,15 +2461,9 @@ void tst_QVariant::qvariant_cast_QObject_data()
     QTest::newRow("from QObject2") << QVariant::fromValue(obj) << true;
     QTest::newRow("from String") << QVariant(QLatin1String("1, 2, 3")) << false;
     QTest::newRow("from int") << QVariant((int) 123) << false;
-    QWidget *widget = new QWidget;
-    widget->setObjectName(QString::fromLatin1("Hello"));
-    QTest::newRow("from QWidget") << QVariant::fromValue(widget) << true;
     CustomQObject *customObject = new CustomQObject(this);
     customObject->setObjectName(QString::fromLatin1("Hello"));
     QTest::newRow("from Derived QObject") << QVariant::fromValue(customObject) << true;
-    CustomQWidget *customWidget = new CustomQWidget;
-    customWidget->setObjectName(QString::fromLatin1("Hello"));
-    QTest::newRow("from Derived QWidget") << QVariant::fromValue(customWidget) << true;
     QTest::newRow("from custom Object") << QVariant::fromValue(CustomNonQObject()) << false;
 
     // Deleted in cleanupTestCase.
@@ -2604,9 +2472,7 @@ void tst_QVariant::qvariant_cast_QObject_data()
 
     // Deleted in cleanupTestCase.
     objectPointerTestData.push_back(obj);
-    objectPointerTestData.push_back(widget);
     objectPointerTestData.push_back(customObject);
-    objectPointerTestData.push_back(customWidget);
 }
 
 void tst_QVariant::qvariant_cast_QObject()
@@ -2656,7 +2522,6 @@ void tst_QVariant::qvariant_cast_QObject_derived()
         QCOMPARE(data.value<QObject *>(), object);
         QCOMPARE(data.value<CustomQObjectDerivedNoMetaType *>(), object);
         QCOMPARE(data.value<CustomQObject *>(), object);
-        QVERIFY(data.value<CustomQWidget*>() == 0);
     }
     {
         CustomQObjectDerived *object = new CustomQObjectDerived(this);
@@ -2667,17 +2532,6 @@ void tst_QVariant::qvariant_cast_QObject_derived()
         QCOMPARE(data.value<QObject *>(), object);
         QCOMPARE(data.value<CustomQObjectDerived *>(), object);
         QCOMPARE(data.value<CustomQObject *>(), object);
-        QVERIFY(data.value<CustomQWidget*>() == 0);
-    }
-    {
-        CustomQWidget customWidget;
-        QWidget *widget = &customWidget;
-        QVariant data = QVariant::fromValue(widget);
-        QVERIFY(data.userType() == QMetaType::QWidgetStar);
-
-        QCOMPARE(data.value<QObject*>(), widget);
-        QCOMPARE(data.value<QWidget*>(), widget);
-        QCOMPARE(data.value<CustomQWidget*>(), widget);
     }
 }
 
@@ -3715,60 +3569,11 @@ void tst_QVariant::saveQVariantFromDataStream(QDataStream::Version version)
     QCOMPARE(recunstructedVariant.userType(), constructedVariant.userType());
 }
 
-class MessageHandler {
-public:
-    MessageHandler(const int typeId, QtMsgHandler msgHandler = handler)
-        : oldMsgHandler(qInstallMsgHandler(msgHandler))
-    {
-        currentId = typeId;
-    }
-
-    ~MessageHandler()
-    {
-        qInstallMsgHandler(oldMsgHandler);
-    }
-
-    bool testPassed() const
-    {
-        return ok;
-    }
-protected:
-    static void handler(QtMsgType, const char *txt)
-    {
-        QString msg = QString::fromLatin1(txt);
-        // Format itself is not important, but basic data as a type name should be included in the output
-        ok = msg.startsWith("QVariant(");
-        QVERIFY2(ok, (QString::fromLatin1("Message is not started correctly: '") + msg + '\'').toLatin1().constData());
-        ok &= (currentId == QMetaType::UnknownType
-             ? msg.contains("Invalid")
-             : msg.contains(QMetaType::typeName(currentId)));
-        QVERIFY2(ok, (QString::fromLatin1("Message doesn't contain type name: '") + msg + '\'').toLatin1().constData());
-        if (currentId == QMetaType::Char || currentId == QMetaType::QChar) {
-            // Chars insert '\0' into the qdebug stream, it is not possible to find a real string length
-            return;
-        }
-        if (QMetaType::typeFlags(currentId) & QMetaType::PointerToQObject) {
-            QByteArray currentName = QMetaType::typeName(currentId);
-            currentName.chop(1);
-            ok &= (msg.contains(", " + currentName) || msg.contains(", 0x0"));
-        }
-        ok &= msg.endsWith(") ");
-        QVERIFY2(ok, (QString::fromLatin1("Message is not correctly finished: '") + msg + '\'').toLatin1().constData());
-
-    }
-
-    QtMsgHandler oldMsgHandler;
-    static int currentId;
-    static bool ok;
-};
-bool MessageHandler::ok;
-int MessageHandler::currentId;
-
 void tst_QVariant::debugStream_data()
 {
     QTest::addColumn<QVariant>("variant");
     QTest::addColumn<int>("typeId");
-    for (int id = 0; id < QMetaType::User; ++id) {
+    for (int id = 0; id < QMetaType::LastGuiType + 1; ++id) {
         const char *tagName = QMetaType::typeName(id);
         if (!tagName)
             continue;
@@ -3839,14 +3644,6 @@ void tst_QVariant::guiVariantAtExit()
     Q_UNUSED(icon);
     Q_UNUSED(image);
     Q_UNUSED(pallete);
-    QVERIFY(true);
-}
-
-void tst_QVariant::widgetsVariantAtExit()
-{
-    // crash test, it should not crash at QGuiApplication exit
-    static QVariant sizePolicy = QSizePolicy();
-    Q_UNUSED(sizePolicy);
     QVERIFY(true);
 }
 
