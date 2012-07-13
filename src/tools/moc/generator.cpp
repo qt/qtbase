@@ -540,7 +540,7 @@ void Generator::registerFunctionStrings(const QList<FunctionDef>& list)
             strreg(f.normalizedType);
         strreg(f.tag);
 
-        int argsCount = f.arguments.count() - (f.isPrivateSignal ? 1 : 0);
+        int argsCount = f.arguments.count();
         for (int j = 0; j < argsCount; ++j) {
             const ArgumentDef &a = f.arguments.at(j);
             if (!isBuiltinType(a.normalizedType))
@@ -581,7 +581,7 @@ void Generator::generateFunctions(const QList<FunctionDef>& list, const char *fu
         if (f.revision > 0)
             flags |= MethodRevisioned;
 
-        int argc = f.arguments.count() - (f.isPrivateSignal ? 1 : 0);
+        int argc = f.arguments.count();
         fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x,\n",
             stridx(f.name), argc, paramsIndex, stridx(f.tag), flags);
 
@@ -609,7 +609,7 @@ void Generator::generateFunctionParameters(const QList<FunctionDef>& list, const
         fprintf(out, "    ");
 
         // Types
-        int argsCount = f.arguments.count() - (f.isPrivateSignal ? 1 : 0);
+        int argsCount = f.arguments.count();
         for (int j = -1; j < argsCount; ++j) {
             if (j > -1)
                 fputc(' ', out);
@@ -1059,7 +1059,7 @@ void Generator::generateStaticMetacall()
             const FunctionDef &f = cdef->constructorList.at(ctorindex);
             int offset = 1;
 
-            int argsCount = f.arguments.count() - (f.isPrivateSignal ? 1 : 0);
+            int argsCount = f.arguments.count();
             for (int j = 0; j < argsCount; ++j) {
                 const ArgumentDef &a = f.arguments.at(j);
                 if (j)
@@ -1069,7 +1069,7 @@ void Generator::generateStaticMetacall()
             if (f.isPrivateSignal) {
                 if (argsCount > 0)
                     fprintf(out, ", ");
-                fprintf(out, "%s", QByteArray(f.arguments.last().normalizedType + "()").constData());
+                fprintf(out, "%s", QByteArray("QPrivateSignal()").constData());
             }
             fprintf(out, ");\n");
             fprintf(out, "            if (_a[0]) *reinterpret_cast<QObject**>(_a[0]) = _r; } break;\n");
@@ -1108,7 +1108,7 @@ void Generator::generateStaticMetacall()
             fprintf(out, "%s(", f.name.constData());
             int offset = 1;
 
-            int argsCount = f.arguments.count() - (f.isPrivateSignal ? 1 : 0);
+            int argsCount = f.arguments.count();
             for (int j = 0; j < argsCount; ++j) {
                 const ArgumentDef &a = f.arguments.at(j);
                 if (j)
@@ -1119,7 +1119,7 @@ void Generator::generateStaticMetacall()
             if (f.isPrivateSignal) {
                 if (argsCount > 0)
                     fprintf(out, ", ");
-                fprintf(out, "%s", QByteArray(f.arguments.last().normalizedType + "()").constData());
+                fprintf(out, "%s", "QPrivateSignal()");
             }
             fprintf(out, ");");
             if (f.normalizedType != "void") {
@@ -1148,7 +1148,7 @@ void Generator::generateStaticMetacall()
             fprintf(out, "        {\n");
             fprintf(out, "            typedef %s (%s::*_t)(",f.type.rawName.constData() , cdef->classname.constData());
 
-            int argsCount = f.arguments.count() - (f.isPrivateSignal ? 1 : 0);
+            int argsCount = f.arguments.count();
             for (int j = 0; j < argsCount; ++j) {
                 const ArgumentDef &a = f.arguments.at(j);
                 if (j)
@@ -1158,7 +1158,7 @@ void Generator::generateStaticMetacall()
             if (f.isPrivateSignal) {
                 if (argsCount > 0)
                     fprintf(out, ", ");
-                fprintf(out, "%s", f.arguments.last().normalizedType.constData());
+                fprintf(out, "%s", "QPrivateSignal");
             }
             if (f.isConst)
                 fprintf(out, ") const;\n");
@@ -1210,6 +1210,9 @@ void Generator::generateSignal(FunctionDef *def,int index)
 
     Q_ASSERT(!def->normalizedType.isEmpty());
     if (def->arguments.isEmpty() && def->normalizedType == "void") {
+        if (def->isPrivateSignal)
+            fprintf(out, "QPrivateSignal");
+
         fprintf(out, ")%s\n{\n"
                 "    QMetaObject::activate(%s, &staticMetaObject, %d, 0);\n"
                 "}\n", constQualifier, thisPtr.constData(), index);
@@ -1223,6 +1226,12 @@ void Generator::generateSignal(FunctionDef *def,int index)
             fprintf(out, ", ");
         fprintf(out, "%s _t%d%s", a.type.name.constData(), offset++, a.rightType.constData());
     }
+    if (def->isPrivateSignal) {
+        if (!def->arguments.isEmpty())
+            fprintf(out, ", ");
+        fprintf(out, "QPrivateSignal");
+    }
+
     fprintf(out, ")%s\n{\n", constQualifier);
     if (def->type.name.size() && def->normalizedType != "void") {
         QByteArray returnType = noRef(def->normalizedType);

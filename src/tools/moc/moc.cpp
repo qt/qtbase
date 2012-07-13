@@ -311,8 +311,10 @@ void Moc::parseFunctionArguments(FunctionDef *def)
     }
 
     if (!def->arguments.isEmpty()
-        && def->arguments.last().normalizedType == "QPrivateSignal")
+        && def->arguments.last().normalizedType == "QPrivateSignal") {
+        def->arguments.removeLast();
         def->isPrivateSignal = true;
+    }
 }
 
 bool Moc::testFunctionAttribute(FunctionDef *def)
