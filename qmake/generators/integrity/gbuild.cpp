@@ -278,7 +278,7 @@ GBuildMakefileGenerator::write()
 
     if (project->first("TEMPLATE") == "app") {
         /* include linker flags if it's an application */
-        QString src[] = { "QMAKE_LFLAGS", "QMAKE_FRAMEWORKPATH_FLAGS", "QMAKE_LIBDIR_FLAGS", "QMAKE_LIBS", "LIBS", QString() };
+        QString src[] = { "QMAKE_LFLAGS", "QMAKE_LIBS", "LIBS", QString() };
         for (int i = 0; !src[i].isNull(); i++) {
             /* skip target libraries for native tools */
             if (isnativebin && (i == 0))

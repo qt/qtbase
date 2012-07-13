@@ -787,8 +787,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     if(!project->isActiveConfig("staticlib")) { //DUMP LIBRARIES
         QStringList &libdirs = project->values("QMAKE_PBX_LIBPATHS"),
               &frameworkdirs = project->values("QMAKE_FRAMEWORKPATH");
-        QString libs[] = { "QMAKE_LFLAGS", "QMAKE_LIBDIR_FLAGS", "QMAKE_FRAMEWORKPATH_FLAGS",
-                           "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
+        QString libs[] = { "QMAKE_LFLAGS", "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
         for(int i = 0; !libs[i].isNull(); i++) {
             tmp = project->values(libs[i]);
             for(int x = 0; x < tmp.count();) {
@@ -1206,8 +1205,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "\t\t\t\t" << writeSettings("OTHER_LDFLAGS",
                                          fixListForOutput("SUBLIBS")
                                          + fixListForOutput("QMAKE_LFLAGS")
-                                         + fixListForOutput("QMAKE_LIBDIR_FLAGS")
-                                         + fixListForOutput("QMAKE_FRAMEWORKPATH_FLAGS")
                                          + fixListForOutput("QMAKE_LIBS")
                                          + fixListForOutput("QMAKE_LIBS_PRIVATE"),
                                          SettingsAsList, 6) << ";" << "\n";
@@ -1404,8 +1401,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << "\t\t\t\t" << writeSettings("OTHER_LDFLAGS",
                                                      fixListForOutput("SUBLIBS")
                                                      + fixListForOutput("QMAKE_LFLAGS")
-                                                     + fixListForOutput("QMAKE_LIBDIR_FLAGS")
-                                                     + fixListForOutput("QMAKE_FRAMEWORKPATH_FLAGS")
                                                      + fixListForOutput("QMAKE_LIBS")
                                                      + fixListForOutput("QMAKE_LIBS_PRIVATE"),
                                                      SettingsAsList, 6) << ";" << "\n";
