@@ -46,38 +46,38 @@
 
 QT_BEGIN_NAMESPACE
 
+class QFbScreen;
+
 class QFbCursor : public QPlatformCursor
 {
 public:
-    QFbCursor(QPlatformScreen * scr);
+    QFbCursor(QFbScreen *screen);
 
     // output methods
     QRect dirtyRect();
-    virtual QRect drawCursor(QPainter & painter);
+    virtual QRect drawCursor(QPainter &painter);
 
     // input methods
-    virtual void pointerEvent(const QMouseEvent & event);
-    virtual void changeCursor(QCursor * widgetCursor, QWindow *window);
+    virtual void pointerEvent(const QMouseEvent &event);
+    virtual void changeCursor(QCursor *widgetCursor, QWindow *window);
 
-    virtual void setDirty() { dirty = true; /* screen->setDirty(QRect()); */ }
-    virtual bool isDirty() { return dirty; }
-    virtual bool isOnScreen() { return onScreen; }
-    virtual QRect lastPainted() { return prevRect; }
-
-protected:
-    QPlatformCursorImage *graphic;
+    virtual void setDirty() { mDirty = true; /* screen->setDirty(QRect()); */ }
+    virtual bool isDirty() const { return mDirty; }
+    virtual bool isOnScreen() const { return mOnScreen; }
+    virtual QRect lastPainted() const { return mPrevRect; }
 
 private:
     void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
     void setCursor(Qt::CursorShape shape);
     void setCursor(const QImage &image, int hotx, int hoty);
-
-    QPlatformScreen *screen;
-    QRect currentRect;      // next place to draw the cursor
-    QRect prevRect;         // last place the cursor was drawn
     QRect getCurrentRect();
-    bool dirty;
-    bool onScreen;
+
+    QFbScreen *mScreen;
+    QRect mCurrentRect;      // next place to draw the cursor
+    QRect mPrevRect;         // last place the cursor was drawn
+    bool mDirty;
+    bool mOnScreen;
+    QPlatformCursorImage *mGraphic;
 };
 
 QT_END_NAMESPACE

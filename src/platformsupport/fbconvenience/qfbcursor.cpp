@@ -40,24 +40,25 @@
 ****************************************************************************/
 
 #include "qfbcursor_p.h"
+#include "qfbscreen_p.h"
 #include <QtGui/QPainter>
 
 QT_BEGIN_NAMESPACE
 
-QFbCursor::QFbCursor(QPlatformScreen *scr)
-        : screen(scr), currentRect(QRect()), prevRect(QRect())
+QFbCursor::QFbCursor(QFbScreen *screen)
+        : mScreen(screen), mCurrentRect(QRect()), mPrevRect(QRect())
 {
-    graphic = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
+    mGraphic = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
     setCursor(Qt::ArrowCursor);
 }
 
 QRect QFbCursor::getCurrentRect()
 {
-    QRect rect = graphic->image()->rect().translated(-graphic->hotspot().x(),
-                                                     -graphic->hotspot().y());
+    QRect rect = mGraphic->image()->rect().translated(-mGraphic->hotspot().x(),
+                                                     -mGraphic->hotspot().y());
     rect.translate(QCursor::pos());
-    QPoint screenOffset = screen->geometry().topLeft();
-    rect.translate(-screenOffset);  // global to local translation
+    QPoint mScreenOffset = mScreen->geometry().topLeft();
+    rect.translate(-mScreenOffset);  // global to local translation
     return rect;
 }
 
@@ -65,54 +66,54 @@ QRect QFbCursor::getCurrentRect()
 void QFbCursor::pointerEvent(const QMouseEvent & e)
 {
     Q_UNUSED(e);
-    QPoint screenOffset = screen->geometry().topLeft();
-    currentRect = getCurrentRect();
+    QPoint mScreenOffset = mScreen->geometry().topLeft();
+    mCurrentRect = getCurrentRect();
     // global to local translation
-    if (onScreen || screen->geometry().intersects(currentRect.translated(screenOffset))) {
+    if (mOnScreen || mScreen->geometry().intersects(mCurrentRect.translated(mScreenOffset))) {
         setDirty();
     }
 }
 
 QRect QFbCursor::drawCursor(QPainter & painter)
 {
-    dirty = false;
-    if (currentRect.isNull())
+    mDirty = false;
+    if (mCurrentRect.isNull())
         return QRect();
 
-    // We need this because the cursor might be dirty due to moving off screen
-    QPoint screenOffset = screen->geometry().topLeft();
+    // We need this because the cursor might be mDirty due to moving off mScreen
+    QPoint mScreenOffset = mScreen->geometry().topLeft();
     // global to local translation
-    if (!currentRect.translated(screenOffset).intersects(screen->geometry()))
+    if (!mCurrentRect.translated(mScreenOffset).intersects(mScreen->geometry()))
         return QRect();
 
-    prevRect = currentRect;
-    painter.drawImage(prevRect, *graphic->image());
-    onScreen = true;
-    return prevRect;
+    mPrevRect = mCurrentRect;
+    painter.drawImage(mPrevRect, *mGraphic->image());
+    mOnScreen = true;
+    return mPrevRect;
 }
 
 QRect QFbCursor::dirtyRect()
 {
-    if (onScreen) {
-        onScreen = false;
-        return prevRect;
+    if (mOnScreen) {
+        mOnScreen = false;
+        return mPrevRect;
     }
     return QRect();
 }
 
 void QFbCursor::setCursor(Qt::CursorShape shape)
 {
-    graphic->set(shape);
+    mGraphic->set(shape);
 }
 
 void QFbCursor::setCursor(const QImage &image, int hotx, int hoty)
 {
-    graphic->set(image, hotx, hoty);
+    mGraphic->set(image, hotx, hoty);
 }
 
 void QFbCursor::setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
 {
-    graphic->set(data, mask, width, height, hotX, hotY);
+    mGraphic->set(data, mask, width, height, hotX, hotY);
 }
 
 void QFbCursor::changeCursor(QCursor * widgetCursor, QWindow *window)
@@ -128,9 +129,9 @@ void QFbCursor::changeCursor(QCursor * widgetCursor, QWindow *window)
         // system cursor
         setCursor(shape);
     }
-    currentRect = getCurrentRect();
-    QPoint screenOffset = screen->geometry().topLeft(); // global to local translation
-    if (onScreen || screen->geometry().intersects(currentRect.translated(screenOffset)))
+    mCurrentRect = getCurrentRect();
+    QPoint mScreenOffset = mScreen->geometry().topLeft(); // global to local translation
+    if (mOnScreen || mScreen->geometry().intersects(mCurrentRect.translated(mScreenOffset)))
         setDirty();
 }
 
