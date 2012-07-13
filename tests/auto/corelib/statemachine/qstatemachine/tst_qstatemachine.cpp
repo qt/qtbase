@@ -210,6 +210,7 @@ private slots:
     void createEventTransitionWhenRunning();
     void signalTransitionSenderInDifferentThread();
     void signalTransitionRegistrationThreadSafety();
+    void childModeConstructor();
 };
 
 class TestState : public QState
@@ -4932,6 +4933,47 @@ void tst_QStateMachine::signalTransitionRegistrationThreadSafety()
 
     thread.quit();
     QTRY_VERIFY(thread.wait());
+}
+
+void tst_QStateMachine::childModeConstructor()
+{
+    {
+        QStateMachine machine(QState::ExclusiveStates);
+        QCOMPARE(machine.childMode(), QState::ExclusiveStates);
+        QVERIFY(machine.parent() == 0);
+        QVERIFY(machine.parentState() == 0);
+    }
+    {
+        QStateMachine machine(QState::ParallelStates);
+        QCOMPARE(machine.childMode(), QState::ParallelStates);
+        QVERIFY(machine.parent() == 0);
+        QVERIFY(machine.parentState() == 0);
+    }
+    {
+        QStateMachine machine(QState::ExclusiveStates, this);
+        QCOMPARE(machine.childMode(), QState::ExclusiveStates);
+        QCOMPARE(machine.parent(), static_cast<QObject *>(this));
+        QVERIFY(machine.parentState() == 0);
+    }
+    {
+        QStateMachine machine(QState::ParallelStates, this);
+        QCOMPARE(machine.childMode(), QState::ParallelStates);
+        QCOMPARE(machine.parent(), static_cast<QObject *>(this));
+        QVERIFY(machine.parentState() == 0);
+    }
+    QState state;
+    {
+        QStateMachine machine(QState::ExclusiveStates, &state);
+        QCOMPARE(machine.childMode(), QState::ExclusiveStates);
+        QCOMPARE(machine.parent(), static_cast<QObject *>(&state));
+        QCOMPARE(machine.parentState(), &state);
+    }
+    {
+        QStateMachine machine(QState::ParallelStates, &state);
+        QCOMPARE(machine.childMode(), QState::ParallelStates);
+        QCOMPARE(machine.parent(), static_cast<QObject *>(&state));
+        QCOMPARE(machine.parentState(), &state);
+    }
 }
 
 QTEST_MAIN(tst_QStateMachine)

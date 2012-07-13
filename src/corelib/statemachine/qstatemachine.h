@@ -120,6 +120,7 @@ public:
     };
 
     explicit QStateMachine(QObject *parent = 0);
+    QStateMachine(QState::ChildMode childMode, QObject *parent = 0);
     ~QStateMachine();
 
     void addState(QAbstractState *state);

@@ -1918,6 +1918,20 @@ QStateMachine::QStateMachine(QObject *parent)
 }
 
 /*!
+  \since 5.0
+
+  Constructs a new state machine with the given \a childMode
+  and \a parent.
+*/
+QStateMachine::QStateMachine(QState::ChildMode childMode, QObject *parent)
+    : QState(*new QStateMachinePrivate, /*parentState=*/0)
+{
+    Q_D(QStateMachine);
+    d->childMode = childMode;
+    setParent(parent); // See comment in constructor above
+}
+
+/*!
   \internal
 */
 QStateMachine::QStateMachine(QStateMachinePrivate &dd, QObject *parent)
