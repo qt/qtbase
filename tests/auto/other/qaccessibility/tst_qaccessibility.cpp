@@ -386,7 +386,8 @@ void tst_QAccessibility::eventTest()
 
     button->show();
     QAccessibleEvent showEvent(button, QAccessible::ObjectShow);
-    QVERIFY_EVENT(&showEvent);
+    // some platforms might send other events first, (such as state change event active=1)
+    QVERIFY(QTestAccessibility::containsEvent(&showEvent));
     button->setFocus(Qt::MouseFocusReason);
     QTestAccessibility::clearEvents();
     QTest::mouseClick(button, Qt::LeftButton, 0);
@@ -400,7 +401,8 @@ void tst_QAccessibility::eventTest()
 
     button->hide();
     QAccessibleEvent hideEvent(button, QAccessible::ObjectHide);
-    QVERIFY_EVENT(&hideEvent);
+    // some platforms might send other events first, (such as state change event active=1)
+    QVERIFY(QTestAccessibility::containsEvent(&hideEvent));
 
     delete button;
 }
@@ -800,18 +802,20 @@ void tst_QAccessibility::mainWindowTest()
     QLatin1String name = QLatin1String("I am the main window");
     mw->setWindowTitle(name);
     QTest::qWaitForWindowShown(mw);
+
+    // The order of events is not really that important.
     QAccessibleEvent show(mw, QAccessible::ObjectShow);
-    QVERIFY_EVENT(&show);
+    QVERIFY(QTestAccessibility::containsEvent(&show));
+    QAccessible::State activeState;
+    activeState.active = true;
+    QAccessibleStateChangeEvent active(mw, activeState);
+    QVERIFY(QTestAccessibility::containsEvent(&active));
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(mw);
     QCOMPARE(iface->text(QAccessible::Name), name);
     QCOMPARE(iface->role(), QAccessible::Window);
     QVERIFY(iface->state().active);
 
-    QAccessible::State activeState;
-    activeState.active = true;
-    QAccessibleStateChangeEvent active(mw, activeState);
-    QVERIFY_EVENT(&active);
 
     delete iface;
     delete mw;
