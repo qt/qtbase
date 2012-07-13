@@ -567,7 +567,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
         const QString msg = QString::fromUtf8("RCC: Warning: No resources in '%1'.\n").arg(fname);
         m_errorDevice->write(msg.toUtf8());
         if (!ignoreErrors && m_format == Binary) {
-            // create dummy entry, otherwise loading qith QResource will crash
+            // create dummy entry, otherwise loading with QResource will crash
             m_root = new RCCFileInfo(QString(), QFileInfo(),
                     QLocale::C, QLocale::AnyCountry, RCCFileInfo::Directory);
         }
