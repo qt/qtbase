@@ -835,8 +835,10 @@ bool RCCResourceLibrary::writeDataBlobs()
                 pending.push(child);
             else {
                 offset = child->writeDataBlob(*this, offset, &errorMessage);
-                if (offset == 0)
+                if (offset == 0) {
                     m_errorDevice->write(errorMessage.toUtf8());
+                    return false;
+                }
             }
         }
     }
