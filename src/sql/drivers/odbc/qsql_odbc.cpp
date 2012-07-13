@@ -54,6 +54,7 @@
 #include <qstringlist.h>
 #include <qvarlengtharray.h>
 #include <qvector.h>
+#include <qmath.h>
 #include <QDebug>
 #include <QSqlQuery>
 
@@ -115,7 +116,7 @@ class QODBCDriverPrivate
 public:
     enum DefaultCase{Lower, Mixed, Upper, Sensitive};
     QODBCDriverPrivate()
-    : hEnv(0), hDbc(0), unicode(false), useSchema(false), disconnectCount(0), isMySqlServer(false),
+    : hEnv(0), hDbc(0), unicode(false), useSchema(false), disconnectCount(0), datetime_precision(19), isMySqlServer(false),
            isMSSqlServer(false), isFreeTDSDriver(false), hasSQLFetchScroll(true),
            hasMultiResultSets(false), isQuoteInitialized(false), quote(QLatin1Char('"'))
     {
@@ -127,6 +128,7 @@ public:
     bool unicode;
     bool useSchema;
     int disconnectCount;
+    int datetime_precision;
     bool isMySqlServer;
     bool isMSSqlServer;
     bool isFreeTDSDriver;
@@ -139,6 +141,7 @@ public:
     void checkHasSQLFetchScroll();
     void checkHasMultiResults();
     void checkSchemaUsage();
+    void checkDateTimePrecision();
     bool setConnectionOptions(const QString& connOpts);
     void splitTableQualifier(const QString &qualifier, QString &catalog,
                              QString &schema, QString &table);
@@ -1395,14 +1398,25 @@ bool QODBCResult::exec()
                 dt->hour = qdt.time().hour();
                 dt->minute = qdt.time().minute();
                 dt->second = qdt.time().second();
-                dt->fraction = qdt.time().msec() * 1000000;
+
+                int precision = d->driverPrivate->datetime_precision - 20; // (20 includes a separating period)
+                if (precision <= 0) {
+                    dt->fraction = 0;
+                } else {
+                    dt->fraction = qdt.time().msec() * 1000000;
+
+                    // (How many leading digits do we want to keep?  With SQL Server 2005, this should be 3: 123000000)
+                    int keep = (int)qPow(10.0, 9 - qMin(9, precision));
+                    dt->fraction /= keep * keep;
+                }
+
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
                                       qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
                                       SQL_C_TIMESTAMP,
                                       SQL_TIMESTAMP,
-                                      19,
-                                      0,
+                                      d->driverPrivate->datetime_precision,
+                                      precision,
                                       (void *) dt,
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
@@ -1887,6 +1901,7 @@ bool QODBCDriver::open(const QString & db,
     d->checkSqlServer();
     d->checkHasSQLFetchScroll();
     d->checkHasMultiResults();
+    d->checkDateTimePrecision();
     setOpen(true);
     setOpenError(false);
     if(d->isMSSqlServer) {
@@ -2120,6 +2135,29 @@ void QODBCDriverPrivate::checkHasMultiResults()
 #else
         hasMultiResultSets = QString::fromUtf8((const char *)driverResponse.constData(), length).startsWith(QLatin1Char('Y'));
 #endif
+}
+
+void QODBCDriverPrivate::checkDateTimePrecision()
+{
+    SQLINTEGER columnSize;
+    SQLHANDLE hStmt;
+
+    SQLRETURN r = SQLAllocHandle(SQL_HANDLE_STMT, hDbc, &hStmt);
+    if (r != SQL_SUCCESS) {
+        return;
+    }
+
+    r = SQLGetTypeInfo(hStmt, SQL_TIMESTAMP);
+    if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
+        r = SQLFetch(hStmt);
+        if ( r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO )
+        {
+            if (SQLGetData(hStmt, 3, SQL_INTEGER, &columnSize, sizeof(columnSize), 0) == SQL_SUCCESS) {
+                datetime_precision = (int)columnSize;
+            }
+        }
+    }
+    SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 }
 
 QSqlResult *QODBCDriver::createResult() const

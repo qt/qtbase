@@ -219,6 +219,8 @@ private slots:
     void QTBUG_16967(); //clean close
     void QTBUG_23895_data() { generic_data("QSQLITE"); }
     void QTBUG_23895(); //sqlite boolean type
+    void QTBUG_2192_data() { generic_data(); }
+    void QTBUG_2192();
 
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
@@ -341,7 +343,8 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName( "task_250026", __FILE__ )
                << qTableName( "task_234422", __FILE__ )
                << qTableName("test141895", __FILE__)
-               << qTableName("qtest_oraOCINumber", __FILE__);
+               << qTableName("qtest_oraOCINumber", __FILE__)
+               << qTableName( "bug2192", __FILE__);
 
     if ( db.driverName().startsWith("QPSQL") )
         tablenames << qTableName("task_233829", __FILE__);
@@ -3355,6 +3358,29 @@ void tst_QSqlQuery::QTBUG_23895()
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 2);
     QVERIFY(!q.next());
+}
+
+void tst_QSqlQuery::QTBUG_2192()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    {
+        const QString tableName(qTableName("bug2192", __FILE__));
+        tst_Databases::safeDropTable( db, tableName );
+
+        QSqlQuery q(db);
+        QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (dt DATETIME)"));
+
+        QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (dt) VALUES (?)"));
+        q.bindValue(0, QVariant(QDateTime(QDate(2012, 7, 4), QTime(23, 59, 59, 999))));
+        QVERIFY_SQL(q, exec());
+
+        // Check if value was stored with at least second precision.
+        QVERIFY_SQL(q, exec("SELECT dt FROM " + tableName));
+        QVERIFY_SQL(q, next());
+        QVERIFY(q.value(0).toDateTime().msecsTo(QDateTime(QDate(2012, 7, 4), QTime(23, 59, 59, 999))) < 1000 );
+    }
 }
 
 void tst_QSqlQuery::oraOCINumber()
