@@ -3821,10 +3821,12 @@ void tst_QVariant::guiVariantAtExit()
     // crash test, it should not crash at QGuiApplication exit
     static QVariant cursor = QCursor();
     static QVariant point = QPoint();
+    static QVariant icon = QIcon();
     static QVariant image = QImage();
     static QVariant pallete = QPalette();
     Q_UNUSED(cursor);
     Q_UNUSED(point);
+    Q_UNUSED(icon);
     Q_UNUSED(image);
     Q_UNUSED(pallete);
     QVERIFY(true);
@@ -3833,9 +3835,7 @@ void tst_QVariant::guiVariantAtExit()
 void tst_QVariant::widgetsVariantAtExit()
 {
     // crash test, it should not crash at QGuiApplication exit
-    static QVariant icon= QIcon();
     static QVariant sizePolicy = QSizePolicy();
-    Q_UNUSED(icon);
     Q_UNUSED(sizePolicy);
     QVERIFY(true);
 }
