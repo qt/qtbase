@@ -353,28 +353,20 @@ void MingwMakefileGenerator::writeLibsPart(QTextStream &t)
         t << "LIBS        =        ";
         if(!project->values("QMAKE_LIBDIR").isEmpty())
             writeLibDirPart(t);
-        if (project->isActiveConfig("rvct_linker")) {
-            t << var("QMAKE_LIBS") << ' '
-              << var("QMAKE_LIBS_PRIVATE") << endl;
-        } else {
-            t << var("QMAKE_LIBS").replace(QRegExp("(\\slib|^lib)")," -l") << ' '
-              << var("QMAKE_LIBS_PRIVATE").replace(QRegExp("(\\slib|^lib)")," -l") << endl;
-        }
+        t << var("QMAKE_LIBS").replace(QRegExp("(\\slib|^lib)")," -l") << ' '
+          << var("QMAKE_LIBS_PRIVATE").replace(QRegExp("(\\slib|^lib)")," -l") << endl;
     }
 }
 
 void MingwMakefileGenerator::writeLibDirPart(QTextStream &t)
 {
     QStringList libDirs = project->values("QMAKE_LIBDIR");
-    QString libArg = QString::fromLatin1("-L");
-    if (project->isActiveConfig("rvct_linker"))
-        libArg = QString::fromLatin1("--userlibpath ");
     for (int i = 0; i < libDirs.size(); ++i) {
         libDirs[i].remove("\"");
         if (libDirs[i].endsWith("\\"))
             libDirs[i].chop(1);
     }
-    t << valGlue(libDirs, libArg+quote, quote+" "+libArg+quote, quote) << " ";
+    t << valGlue(libDirs, "-L" + quote, quote + " -L" + quote, quote) << " ";
 }
 
 void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
