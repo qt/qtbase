@@ -139,18 +139,16 @@ UnixMakefileGenerator::init()
         project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_PREBIND");
     if(!project->isEmpty("QMAKE_INCDIR"))
         project->values("INCLUDEPATH") += project->values("QMAKE_INCDIR");
+    project->values("QMAKE_L_FLAG")
+            << (project->isActiveConfig("rvct_linker") ? "--userlibpath "
+              : project->isActiveConfig("armcc_linker") ? "-L--userlibpath="
+              : "-L");
     if(!project->isEmpty("QMAKE_LIBDIR")) {
         const QStringList &libdirs = project->values("QMAKE_LIBDIR");
         for(int i = 0; i < libdirs.size(); ++i) {
             if(!project->isEmpty("QMAKE_LFLAGS_RPATH") && project->isActiveConfig("rpath_libdirs"))
                 project->values("QMAKE_LFLAGS") += var("QMAKE_LFLAGS_RPATH") + libdirs[i];
-            if (project->isActiveConfig("rvct_linker")) {
-                project->values("QMAKE_LIBDIR_FLAGS") += "--userlibpath " + escapeFilePath(libdirs[i]);
-            } else if (project->isActiveConfig("armcc_linker")) {
-                project->values("QMAKE_LIBDIR_FLAGS") += "-L--userlibpath=" + escapeFilePath(libdirs[i]);
-            } else {
-                project->values("QMAKE_LIBDIR_FLAGS") += "-L" + escapeFilePath(libdirs[i]);
-            }
+            project->values("QMAKE_LIBDIR_FLAGS") += "-L" + escapeFilePath(libdirs[i]);
         }
     }
     if(project->isActiveConfig("macx") && !project->isEmpty("QMAKE_FRAMEWORKPATH")) {
@@ -469,6 +467,9 @@ QStringList
 bool
 UnixMakefileGenerator::findLibraries()
 {
+    QString libArg = project->first("QMAKE_L_FLAG");
+    if (libArg == "-L")
+        libArg.clear();
     QList<QMakeLocalFileName> libdirs, frameworkdirs;
     frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
     frameworkdirs.append(QMakeLocalFileName("/Library/Frameworks"));
@@ -480,9 +481,12 @@ UnixMakefileGenerator::findLibraries()
             QString stub, dir, extn, opt = (*it).trimmed();
             if(opt.startsWith("-")) {
                 if(opt.startsWith("-L")) {
-                    QMakeLocalFileName f(opt.right(opt.length()-2));
+                    QString lib = opt.mid(2);
+                    QMakeLocalFileName f(lib);
                     if(!libdirs.contains(f))
                         libdirs.append(f);
+                    if (!libArg.isEmpty())
+                        *it = libArg + lib;
                 } else if(opt.startsWith("-l")) {
                     if (project->isActiveConfig("rvct_linker") || project->isActiveConfig("armcc_linker")) {
                         (*it) = "lib" + opt.mid(2) + ".so";
@@ -572,6 +576,7 @@ QString linkLib(const QString &file, const QString &libName) {
 void
 UnixMakefileGenerator::processPrlFiles()
 {
+    const QString libArg = project->first("QMAKE_L_FLAG");
     QList<QMakeLocalFileName> libdirs, frameworkdirs;
     foreach (const QString &dlib, project->values("QMAKE_DEFAULT_LIBDIRS"))
         libdirs.append(QMakeLocalFileName(dlib));
@@ -582,8 +587,8 @@ UnixMakefileGenerator::processPrlFiles()
         for(int lit = 0; lit < l.size(); ++lit) {
             QString opt = l.at(lit).trimmed();
             if(opt.startsWith("-")) {
-                if(opt.startsWith("-L")) {
-                    QMakeLocalFileName l(opt.right(opt.length()-2));
+                if (opt.startsWith(libArg)) {
+                    QMakeLocalFileName l(opt.mid(libArg.length()));
                     if(!libdirs.contains(l))
                        libdirs.append(l);
                 } else if(opt.startsWith("-l")) {
@@ -659,7 +664,7 @@ UnixMakefileGenerator::processPrlFiles()
                         }
                     }
 
-                    if(opt.startsWith("-L") ||
+                    if (opt.startsWith(libArg) ||
                        (target_mode == TARG_MACX_MODE && opt.startsWith("-F"))) {
                         if(!lflags[arch].contains(opt))
                             lflags[arch].append(opt);
