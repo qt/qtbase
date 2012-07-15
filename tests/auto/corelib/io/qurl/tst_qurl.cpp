@@ -79,6 +79,8 @@ private slots:
     void toString();
     void toString_constructed_data();
     void toString_constructed();
+    void toAndFromStringList_data();
+    void toAndFromStringList();
     void isParentOf_data();
     void isParentOf();
     void toLocalFile_data();
@@ -939,6 +941,25 @@ void tst_QUrl::toString()
 
     QUrl url(urlString);
     QCOMPARE(url.toString(QUrl::FormattingOptions(options)), string);
+}
+
+void tst_QUrl::toAndFromStringList_data()
+{
+    QTest::addColumn<QStringList>("strings");
+
+    QTest::newRow("empty") << QStringList();
+    QTest::newRow("local") << (QStringList() << "file:///tmp" << "file:///");
+    QTest::newRow("remote") << (QStringList() << "http://qt-project.org");
+}
+
+void tst_QUrl::toAndFromStringList()
+{
+    QFETCH(QStringList, strings);
+
+    const QList<QUrl> urls = QUrl::fromStringList(strings);
+    QCOMPARE(urls.count(), strings.count());
+    const QStringList converted = QUrl::toStringList(urls);
+    QCOMPARE(converted, strings);
 }
 
 //### more tests ... what do we expect ...

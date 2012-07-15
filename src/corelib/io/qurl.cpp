@@ -3765,6 +3765,37 @@ QString QUrl::errorString() const
 }
 
 /*!
+    \since 5.1
+
+    Converts a list of \a urls into a list of QStrings, using toString(\a options).
+*/
+QStringList QUrl::toStringList(const QList<QUrl> &urls, FormattingOptions options)
+{
+    QStringList lst;
+    lst.reserve(urls.size());
+    foreach (const QUrl &url, urls)
+        lst.append(url.toString(options));
+    return lst;
+
+}
+
+/*!
+    \since 5.1
+
+    Converts a list of strings representing \a urls into a list of urls, using QUrl(str, \a mode).
+    Note that this means all strings must be urls, not for instance local paths.
+*/
+QList<QUrl> QUrl::fromStringList(const QStringList &urls, ParsingMode mode)
+{
+    QList<QUrl> lst;
+    lst.reserve(urls.size());
+    foreach (const QString &str, urls) {
+        lst.append(QUrl(str, mode));
+    }
+    return lst;
+}
+
+/*!
     \typedef QUrl::DataPtr
     \internal
 */
