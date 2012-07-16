@@ -65,9 +65,6 @@
 
 #include <QtDebug>
 
-#if defined(Q_WS_X11)
-#  include "private/qt_x11_p.h"
-#endif
 
 
 QT_BEGIN_NAMESPACE

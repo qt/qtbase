@@ -45,10 +45,6 @@
 #include <qapplication.h>
 #include <limits.h>
 
-#ifdef Q_WS_X11
-#include <unistd.h>
-#endif
-
 #include <qspinbox.h>
 #include <qlocale.h>
 #include <qlineedit.h>

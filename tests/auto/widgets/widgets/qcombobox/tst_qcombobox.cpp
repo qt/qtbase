@@ -62,8 +62,6 @@
 #include <qboxlayout.h>
 #ifdef Q_OS_MAC
 #include <qmacstyle_mac.h>
-#elif defined Q_WS_X11
-#include <private/qt_x11_p.h>
 #endif
 
 #include <qstandarditemmodel.h>

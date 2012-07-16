@@ -47,10 +47,6 @@
 
 #include <qlistwidget.h>
 
-#ifdef Q_WS_X11
-#include <X11/Xlib.h>
-#include <QX11Info>
-#endif // Q_WS_X11
 
 class tst_QWidget_window : public QWidget
 {

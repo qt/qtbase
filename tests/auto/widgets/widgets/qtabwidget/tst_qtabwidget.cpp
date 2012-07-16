@@ -55,12 +55,6 @@
 #else
 #define Q_CHECK_PAINTEVENTS
 #endif
-#if defined(Q_WS_X11)
-#  include <private/qt_x11_p.h>
-#  include <qx11info_x11.h>
-#elif defined(Q_WS_QWS)
-# include <qwindowsystem_qws.h>
-#endif
 
 class QTabWidgetChild:public QTabWidget {
   public:

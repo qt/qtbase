@@ -48,9 +48,6 @@
 #if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
 #endif
-#ifdef Q_WS_X11
-#include <private/qt_x11_p.h>
-#endif
 
 static void sendMouseMove(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::NoButton)
 {

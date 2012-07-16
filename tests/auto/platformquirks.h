@@ -48,9 +48,6 @@
 #include <qapplication.h>
 #endif
 
-#ifdef Q_WS_X11
-#include <private/qt_x11_p.h>
-#endif
 
 struct PlatformQuirks
 {

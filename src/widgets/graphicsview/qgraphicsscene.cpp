@@ -250,9 +250,6 @@
 #endif
 #include <private/qapplication_p.h>
 #include <private/qobject_p.h>
-#ifdef Q_WS_X11
-#include <private/qt_x11_p.h>
-#endif
 #include <private/qgraphicseffect_p.h>
 #include <private/qgesturemanager_p.h>
 #include <private/qpathclipper_p.h>

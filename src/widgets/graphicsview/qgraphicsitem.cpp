@@ -756,12 +756,6 @@
 #include <private/qtextengine_p.h>
 #include <private/qwidget_p.h>
 #include <private/qapplication_p.h>
-
-#ifdef Q_WS_X11
-#include <private/qt_x11_p.h>
-#include <private/qpixmap_x11_p.h>
-#endif
-
 #include <private/qgesturemanager_p.h>
 
 #include <math.h>
