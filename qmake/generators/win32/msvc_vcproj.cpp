@@ -697,6 +697,8 @@ void VcprojGenerator::init()
     if (project->values("QMAKESPEC").isEmpty())
         project->values("QMAKESPEC").append(qgetenv("QMAKESPEC"));
 
+    project->values("QMAKE_L_FLAG") << "/LIBPATH:";
+
     processVars();
 
     if(!project->values("VERSION").isEmpty()) {
@@ -1007,13 +1009,6 @@ void VcprojGenerator::initLinkerTool()
 {
     VCConfiguration &conf = vcProject.Configuration;
     conf.linker.parseOptions(project->values("QMAKE_LFLAGS"));
-
-    foreach (const QString &libDir, project->values("QMAKE_LIBDIR")) {
-        if (libDir.startsWith("/LIBPATH:"))
-            conf.linker.AdditionalLibraryDirectories += libDir.mid(9);
-        else
-            conf.linker.AdditionalLibraryDirectories += libDir;
-    }
 
     if (!project->values("DEF_FILE").isEmpty())
         conf.linker.ModuleDefinitionFile = project->first("DEF_FILE");

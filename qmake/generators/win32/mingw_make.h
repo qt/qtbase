@@ -60,7 +60,6 @@ private:
     void writeMingwParts(QTextStream &);
     void writeIncPart(QTextStream &t);
     void writeLibsPart(QTextStream &t);
-    void writeLibDirPart(QTextStream &t);
     void writeObjectsPart(QTextStream &t);
     void writeBuildRulesPart(QTextStream &t);
     void writeRcFilePart(QTextStream &t);

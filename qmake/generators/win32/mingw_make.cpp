@@ -74,13 +74,6 @@ QString MingwMakefileGenerator::getLibTarget()
 bool MingwMakefileGenerator::findLibraries()
 {
     QList<QMakeLocalFileName> dirs;
-    {
-        const QStringList &libpaths = project->values("QMAKE_LIBDIR");
-        for (QStringList::ConstIterator libpathit = libpaths.begin();
-            libpathit != libpaths.end(); ++libpathit)
-            dirs.append(QMakeLocalFileName((*libpathit)));
-    }
-
   const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
   for (int i = 0; !lflags[i].isNull(); i++) {
     QStringList &l = project->values(lflags[i]);
@@ -259,6 +252,8 @@ void MingwMakefileGenerator::init()
 
     project->values("TARGET_PRL").append(project->first("TARGET"));
 
+    project->values("QMAKE_L_FLAG") << "-L";
+
     processVars();
 
     if (!project->values("RES_FILE").isEmpty()) {
@@ -341,23 +336,10 @@ void MingwMakefileGenerator::writeLibsPart(QTextStream &t)
     } else {
         t << "LINK        =        " << var("QMAKE_LINK") << endl;
         t << "LFLAGS        =        " << var("QMAKE_LFLAGS") << endl;
-        t << "LIBS        =        ";
-        if(!project->values("QMAKE_LIBDIR").isEmpty())
-            writeLibDirPart(t);
-        t << var("QMAKE_LIBS").replace(QRegExp("(\\slib|^lib)")," -l") << ' '
+        t << "LIBS        =        "
+          << var("QMAKE_LIBS").replace(QRegExp("(\\slib|^lib)")," -l") << ' '
           << var("QMAKE_LIBS_PRIVATE").replace(QRegExp("(\\slib|^lib)")," -l") << endl;
     }
-}
-
-void MingwMakefileGenerator::writeLibDirPart(QTextStream &t)
-{
-    QStringList libDirs = project->values("QMAKE_LIBDIR");
-    for (int i = 0; i < libDirs.size(); ++i) {
-        libDirs[i].remove("\"");
-        if (libDirs[i].endsWith("\\"))
-            libDirs[i].chop(1);
-    }
-    t << valGlue(libDirs, "-L" + quote, quote + " -L" + quote, quote) << " ";
 }
 
 void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)

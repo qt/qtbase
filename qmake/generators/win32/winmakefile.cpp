@@ -107,12 +107,6 @@ bool
 Win32MakefileGenerator::findLibraries()
 {
     QList<QMakeLocalFileName> dirs;
-    {
-        const QStringList &libpaths = project->values("QMAKE_LIBDIR");
-        for (QStringList::ConstIterator libpathit = libpaths.begin();
-            libpathit != libpaths.end(); ++libpathit)
-            dirs.append(QMakeLocalFileName((*libpathit)));
-    }
   const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
   for (int i = 0; !lflags[i].isNull(); i++) {
     QStringList &l = project->values(lflags[i]);
@@ -222,13 +216,9 @@ Win32MakefileGenerator::findLibraries()
 void
 Win32MakefileGenerator::processPrlFiles()
 {
+    const QString libArg = project->first("QMAKE_L_FLAG");
     QHash<QString, bool> processed;
     QList<QMakeLocalFileName> libdirs;
-    {
-        const QStringList &libpaths = project->values("QMAKE_LIBDIR");
-        for (QStringList::ConstIterator libpathit = libpaths.begin(); libpathit != libpaths.end(); ++libpathit)
-            libdirs.append(QMakeLocalFileName((*libpathit)));
-    }
     for(bool ret = false; true; ret = false) {
         //read in any prl files included..
         QStringList l_out;
@@ -237,13 +227,11 @@ Win32MakefileGenerator::processPrlFiles()
             QString opt = (*it).trimmed();
             if((opt[0] == '\'' || opt[0] == '"') && opt[(int)opt.length()-1] == opt[0])
                 opt = opt.mid(1, opt.length()-2);
-            if(opt.startsWith("/")) {
-                if(opt.startsWith("/LIBPATH:")) {
-                    QMakeLocalFileName l(opt.mid(9));
-                    if(!libdirs.contains(l))
-                        libdirs.append(l);
-                }
-            } else if(!processed.contains(opt)) {
+            if (opt.startsWith(libArg)) {
+                QMakeLocalFileName l(opt.mid(libArg.length()));
+                if (!libdirs.contains(l))
+                    libdirs.append(l);
+            } else if (!opt.startsWith("/") && !processed.contains(opt)) {
                 if(processPrlFile(opt)) {
                     processed.insert(opt, true);
                     ret = true;
@@ -336,13 +324,19 @@ void Win32MakefileGenerator::processVars()
     if(!(*incDir_it).isEmpty())
         (*incDir_it) = Option::fixPathToTargetOS((*incDir_it), false, false);
     }
+
+    QString libArg = project->first("QMAKE_L_FLAG");
+    QStringList libs;
     QStringList &libDir = project->values("QMAKE_LIBDIR");
     for(QStringList::Iterator libDir_it = libDir.begin(); libDir_it != libDir.end(); ++libDir_it) {
-    if(!(*libDir_it).isEmpty())
-        (*libDir_it) = Option::fixPathToTargetOS((*libDir_it), false, false);
+        if (!(*libDir_it).isEmpty()) {
+            (*libDir_it).remove("\"");
+            if ((*libDir_it).endsWith("\\"))
+                (*libDir_it).chop(1);
+            libs << libArg + escapeFilePath(Option::fixPathToTargetOS((*libDir_it), false, false));
+        }
     }
-
-    project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
+    project->values("QMAKE_LIBS") += libs + escapeFilePaths(project->values("LIBS"));
     project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
 
     if (project->values("TEMPLATE").contains("app")) {
@@ -768,19 +762,8 @@ void Win32MakefileGenerator::writeLibsPart(QTextStream &t)
     } else {
         t << "LINK          = " << var("QMAKE_LINK") << endl;
         t << "LFLAGS        = " << var("QMAKE_LFLAGS") << endl;
-        t << "LIBS          = ";
-        if(!project->values("QMAKE_LIBDIR").isEmpty())
-            writeLibDirPart(t);
-        t << var("QMAKE_LIBS") << " " << var("QMAKE_LIBS_PRIVATE") << endl;
+        t << "LIBS          = " << var("QMAKE_LIBS") << " " << var("QMAKE_LIBS_PRIVATE") << endl;
     }
-}
-
-void Win32MakefileGenerator::writeLibDirPart(QTextStream &t)
-{
-    QStringList libDirs = project->values("QMAKE_LIBDIR");
-    for (int i = 0; i < libDirs.size(); ++i)
-        libDirs[i].remove("\"");
-    t << valGlue(libDirs,"-L\"","\" -L\"","\"") << " ";
 }
 
 void Win32MakefileGenerator::writeObjectsPart(QTextStream &t)

@@ -243,6 +243,8 @@ void NmakeMakefileGenerator::init()
         return;
     }
 
+    project->values("QMAKE_L_FLAG") << "/LIBPATH:";
+
     processVars();
 
     if (!project->values("RES_FILE").isEmpty()) {
@@ -292,14 +294,6 @@ void NmakeMakefileGenerator::init()
         project->values("QMAKE_CLEAN").append("vc*.pdb");
         project->values("QMAKE_CLEAN").append("vc*.idb");
     }
-}
-
-void NmakeMakefileGenerator::writeLibDirPart(QTextStream &t)
-{
-    QStringList libDirs = project->values("QMAKE_LIBDIR");
-    for (int i = 0; i < libDirs.size(); ++i)
-        libDirs[i].remove("\"");
-    t << valGlue(libDirs,"/LIBPATH:\"","\" /LIBPATH:\"","\"") << " ";
 }
 
 void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
