@@ -1271,10 +1271,9 @@ void QWidgetTextControlPrivate::keyPressEvent(QKeyEvent *e)
     }
     else if (e == QKeySequence::Paste) {
         QClipboard::Mode mode = QClipboard::Clipboard;
-#ifdef Q_WS_X11
+        if (QGuiApplication::platformName() == QLatin1String("xcb"))
         if (e->modifiers() == (Qt::CTRL | Qt::SHIFT) && e->key() == Qt::Key_Insert)
             mode = QClipboard::Selection;
-#endif
         q->paste(mode);
     }
 #endif

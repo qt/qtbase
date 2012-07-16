@@ -62,9 +62,6 @@
 # include <qaccessible.h>
 #endif
 
-#if defined(Q_WS_X11)
-#include <limits.h>
-#endif
 
 //#define QABSTRACTSPINBOX_QSBDEBUG
 #ifdef QABSTRACTSPINBOX_QSBDEBUG
@@ -1014,16 +1011,15 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
         return;
 #endif
 
-#ifdef Q_WS_X11 // only X11
     case Qt::Key_U:
-        if (event->modifiers() & Qt::ControlModifier) {
+        if (event->modifiers() & Qt::ControlModifier
+            && QGuiApplication::platformName() == QLatin1String("xcb")) { // only X11
             event->accept();
             if (!isReadOnly())
                 clear();
             return;
         }
         break;
-#endif
 
     case Qt::Key_End:
     case Qt::Key_Home:

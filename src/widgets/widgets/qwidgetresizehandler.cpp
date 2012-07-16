@@ -253,14 +253,14 @@ void QWidgetResizeHandler::mouseMoveEvent(QMouseEvent *e)
     QPoint p = globalPos + invertedMoveOffset;
     QPoint pp = globalPos - moveOffset;
 
-#ifdef Q_WS_X11
     // Workaround for window managers which refuse to move a tool window partially offscreen.
-    QRect desktop = QApplication::desktop()->availableGeometry(widget);
-    pp.rx() = qMax(pp.x(), desktop.left());
-    pp.ry() = qMax(pp.y(), desktop.top());
-    p.rx() = qMin(p.x(), desktop.right());
-    p.ry() = qMin(p.y(), desktop.bottom());
-#endif
+    if (QGuiApplication::platformName() == QLatin1String("xcb")) {
+        const QRect desktop = QApplication::desktop()->availableGeometry(widget);
+        pp.rx() = qMax(pp.x(), desktop.left());
+        pp.ry() = qMax(pp.y(), desktop.top());
+        p.rx() = qMin(p.x(), desktop.right());
+        p.ry() = qMin(p.y(), desktop.bottom());
+    }
 
     QSize ms = qSmartMinSize(childWidget);
     int mw = ms.width();
