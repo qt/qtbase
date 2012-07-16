@@ -172,6 +172,13 @@ static int shadowWidth = 6;   // also used as '5' and '6' and even '8' below
 static const int vMargin = 8;
 static const int hMargin = 12;
 
+static inline bool dropShadow()
+{
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+        return theme->themeHint(QPlatformTheme::DropShadow).toBool();
+    return false;
+}
+
 QWhatsThat::QWhatsThat(const QString& txt, QWidget* parent, QWidget *showTextFor)
     : QWidget(parent, Qt::Popup),
       widget(showTextFor), pressed(false), text(txt)
@@ -218,9 +225,7 @@ QWhatsThat::QWhatsThat(const QString& txt, QWidget* parent, QWidget *showTextFor
                                         + Qt::TextWordWrap + Qt::TextExpandTabs,
                                         text);
     }
-    shadowWidth =
-        QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::DropShadow).toBool() ?
-        0 : 6;
+    shadowWidth = dropShadow() ? 0 : 6;
     resize(r.width() + 2*hMargin + shadowWidth, r.height() + 2*vMargin + shadowWidth);
 }
 
@@ -289,18 +294,7 @@ void QWhatsThat::keyPressEvent(QKeyEvent*)
 
 void QWhatsThat::paintEvent(QPaintEvent*)
 {
-    bool drawShadow = true;
-#if defined(Q_WS_WIN)
-    if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-        && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
-    {
-        BOOL shadow;
-        SystemParametersInfo(SPI_GETDROPSHADOW, 0, &shadow, 0);
-        drawShadow = !shadow;
-    }
-#elif defined(Q_WS_MAC)
-    drawShadow = false; // never draw it on OS X or QWS, as we get it for free
-#endif
+    const bool drawShadow = dropShadow();
 
     QRect r = rect();
     r.adjust(0, 0, -1, -1);
