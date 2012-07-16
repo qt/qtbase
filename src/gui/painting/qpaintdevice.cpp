@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
 
 QPaintDevice::QPaintDevice()
 {
+    reserved = 0;
     painters = 0;
 }
 
