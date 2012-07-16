@@ -553,7 +553,9 @@ bool QWindowsGeometryHint::validSize(const QSize &s) const
 QMargins QWindowsGeometryHint::frame(DWORD style, DWORD exStyle)
 {
     RECT rect = {0,0,0,0};
+#ifndef Q_OS_WINCE
     style &= ~(WS_OVERLAPPED); // Not permitted, see docs.
+#endif
     if (!AdjustWindowRectEx(&rect, style, FALSE, exStyle))
         qErrnoWarning("%s: AdjustWindowRectEx failed", __FUNCTION__);
     const QMargins result(qAbs(rect.left), qAbs(rect.top),
