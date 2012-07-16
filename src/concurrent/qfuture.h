@@ -272,6 +272,6 @@ QFuture<void> qToVoidFuture(const QFuture<T> &future)
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#endif // QT_NO_CONCURRENT
+#endif // QT_NO_QFUTURE
 
 #endif // QFUTURE_H
