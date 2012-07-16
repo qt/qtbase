@@ -111,8 +111,6 @@ void QFileDevicePrivate::setError(QFileDevice::FileError err, int errNum)
     \value ResizeError      The file could not be resized.
     \value PermissionsError The file could not be accessed.
     \value CopyError        The file could not be copied.
-
-    \omitvalue ConnectError
 */
 
 /*!

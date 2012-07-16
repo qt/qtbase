@@ -2534,8 +2534,6 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \value SystemScope  Store settings in a global location, so that
                         all users on the same machine access the same
                         set of settings.
-    \omitvalue User
-    \omitvalue Global
 
     \sa setPath()
 */

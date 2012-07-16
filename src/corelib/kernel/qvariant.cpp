@@ -1052,9 +1052,6 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
 
     \value UserType Base value for user-defined types.
 
-    \omitvalue CString
-    \omitvalue ColorGroup
-    \omitvalue IconSet
     \omitvalue LastGuiType
     \omitvalue LastCoreType
     \omitvalue LastType

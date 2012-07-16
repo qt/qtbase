@@ -1095,10 +1095,7 @@ QDir::Filters QDir::filter() const
                    files are included)
     \value CaseSensitive  The filter should be case sensitive.
 
-    \omitvalue DefaultFilter
     \omitvalue TypeMask
-    \omitvalue All
-    \omitvalue RWEMask
     \omitvalue AccessMask
     \omitvalue PermissionMask
     \omitvalue NoFilter
@@ -1175,7 +1172,6 @@ QDir::SortFlags QDir::sorting() const
     \value LocaleAware Sort items appropriately using the current locale settings.
 
     \omitvalue SortByMask
-    \omitvalue DefaultSort
 
     You can only specify one of the first four.
 
