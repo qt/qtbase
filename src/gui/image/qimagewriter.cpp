@@ -691,6 +691,8 @@ void supportedImageHandlerFormats(QFactoryLoader *loader,
     \row    \li JPG    \li Joint Photographic Experts Group
     \row    \li JPEG   \li Joint Photographic Experts Group
     \row    \li PNG    \li Portable Network Graphics
+    \row    \li PBM    \li Portable Bitmap
+    \row    \li PGM    \li Portable Graymap
     \row    \li PPM    \li Portable Pixmap
     \row    \li XBM    \li X11 Bitmap
     \row    \li XPM    \li X11 Pixmap
@@ -710,7 +712,7 @@ QList<QByteArray> QImageWriter::supportedImageFormats()
     QSet<QByteArray> formats;
     formats << "bmp";
 #ifndef QT_NO_IMAGEFORMAT_PPM
-    formats << "ppm";
+    formats << "pbm" << "pgm" << "ppm";
 #endif
 #ifndef QT_NO_IMAGEFORMAT_XBM
     formats << "xbm";
