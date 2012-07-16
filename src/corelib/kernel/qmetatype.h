@@ -221,7 +221,7 @@ public:
 #else
     // If we are using QDoc it fakes the Type enum looks like this.
     enum Type {
-        Void = 0, Bool = 1, Int = 2, UInt = 3, LongLong = 4, ULongLong = 5,
+        UnknownType = 0, Bool = 1, Int = 2, UInt = 3, LongLong = 4, ULongLong = 5,
         Double = 6, Long = 32, Short = 33, Char = 34, ULong = 35, UShort = 36,
         UChar = 37, Float = 38,
         VoidStar = 31,
@@ -234,6 +234,7 @@ public:
         QJsonValue = 45, QJsonObject = 46, QJsonArray = 47, QJsonDocument = 48,
         SChar = 49,
         QObjectStar = 39, QWidgetStar = 40,
+        Void = 43,
         QVariantMap = 8, QVariantList = 9, QVariantHash = 28,
         QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,
         QIcon = 69, QImage = 70, QPolygon = 71, QRegion = 72, QBitmap = 73,
