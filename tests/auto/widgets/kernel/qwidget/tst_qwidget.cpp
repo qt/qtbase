@@ -1927,12 +1927,17 @@ void tst_QWidget::showFullScreen()
 
     plain.showFullScreen();
     QVERIFY(plain.windowState() & Qt::WindowFullScreen);
+    QVERIFY(plain.windowHandle());
+    QVERIFY(plain.windowHandle()->screen());
+    const QRect expectedFullScreenGeometry = plain.windowHandle()->screen()->geometry();
+    QTRY_COMPARE(plain.geometry(), expectedFullScreenGeometry);
 
     plain.showNormal();
     QVERIFY(!(plain.windowState() & Qt::WindowFullScreen));
 
     layouted.showFullScreen();
     QVERIFY(layouted.windowState() & Qt::WindowFullScreen);
+    QTRY_COMPARE(layouted.geometry(), expectedFullScreenGeometry);
 
     layouted.showNormal();
     QVERIFY(!(layouted.windowState() & Qt::WindowFullScreen));
@@ -1945,6 +1950,7 @@ void tst_QWidget::showFullScreen()
     layouted.showFullScreen();
     QVERIFY(layouted.isFullScreen());
     QVERIFY(layouted.isVisible());
+    QTRY_COMPARE(layouted.geometry(), expectedFullScreenGeometry);
 
     layouted.hide();
     QVERIFY(layouted.isFullScreen());
@@ -1953,6 +1959,7 @@ void tst_QWidget::showFullScreen()
     layouted.showFullScreen();
     QVERIFY(layouted.isFullScreen());
     QVERIFY(layouted.isVisible());
+    QTRY_COMPARE(layouted.geometry(), expectedFullScreenGeometry);
 
     layouted.showMinimized();
     QVERIFY(layouted.isMinimized());
@@ -1962,6 +1969,7 @@ void tst_QWidget::showFullScreen()
     QVERIFY(!layouted.isMinimized());
     QVERIFY(layouted.isFullScreen());
     QVERIFY(layouted.isVisible());
+    QTRY_COMPARE(layouted.geometry(), expectedFullScreenGeometry);
 
     layouted.showMinimized();
     QVERIFY(layouted.isMinimized());
@@ -1971,12 +1979,14 @@ void tst_QWidget::showFullScreen()
     QVERIFY(!layouted.isMinimized());
     QVERIFY(layouted.isFullScreen());
     QVERIFY(layouted.isVisible());
+    QTRY_COMPARE(layouted.geometry(), expectedFullScreenGeometry);
 
     {
         QWidget frame;
         QWidget widget(&frame);
         widget.showFullScreen();
         QVERIFY(widget.isFullScreen());
+        QTRY_COMPARE(layouted.geometry(), expectedFullScreenGeometry);
     }
 }
 
