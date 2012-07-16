@@ -748,6 +748,7 @@ CFG_XCB_LIMITED=yes
 CFG_EGLFS=auto
 CFG_DIRECTFB=auto
 CFG_LINUXFB=auto
+CFG_KMS=auto
 CFG_LIBUDEV=auto
 CFG_OBSOLETE_WAYLAND=no
 CFG_EVDEV=auto
@@ -1664,6 +1665,13 @@ while [ "$#" -gt 0 ]; do
     linuxfb)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_LINUXFB="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    kms)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_KMS="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2865,6 +2873,14 @@ if [ "$OPT_HELP" = "yes" ]; then
         LFBN=" "
     fi
 
+    if [ "$CFG_KMS" = "no" ]; then
+        KMSY=" "
+        KMSN="*"
+    else
+        KMSY="*"
+        KMSN=" "
+    fi
+
     if [ "$CFG_XINPUT2" = "no" ]; then
         X2Y=" "
         X2N="*"
@@ -3159,6 +3175,9 @@ Additional options:
 
  $LFBN  -no-linuxfb ........ Do not compile Linux Framebuffer support.
  $LFBY  -linuxfb ........... Compile Linux Framebuffer support.
+
+ $KMSN  -no-kms ............ Do not compile KMS support.
+ $KMSY  -kms ............... Compile KMS support (Requires EGL and OpenGL ES 2 support).
 
     -qpa <name> ......... Sets the default QPA platform (e.g xcb, cocoa, windows).
 
@@ -4001,6 +4020,17 @@ if [ "$CFG_EGLFS" = "yes" ]; then
     CFG_EGL=yes
 fi
 
+if [ "$CFG_KMS" = "yes" ]; then
+    if [ "$CFG_EGL" = "no" ]; then
+        echo "The KMS plugin requires EGL support and cannot be built"
+        exit 101
+    fi
+    if [ "$CFG_OPENGL" != "es2" ]; then
+        echo "The KMS plugin requires OpenGL ES 2 support and cannot be built"
+        exit 101
+    fi
+fi
+
 # auto-detect SQL-modules support
 for _SQLDR in $CFG_SQL_AVAILABLE; do
         case $_SQLDR in
@@ -4616,6 +4646,7 @@ ORIG_CFG_XCB="$CFG_XCB"
 ORIG_CFG_EGLFS="$CFG_EGLFS"
 ORIG_CFG_DIRECTFB="$CFG_DIRECTFB"
 ORIG_CFG_LINUXFB="$CFG_LINUXFB"
+ORIG_CFG_KMS="$CFG_KMS"
 
 if [ "$CFG_LIBUDEV" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libudev 2>/dev/null; then
@@ -4755,6 +4786,20 @@ if [ "$CFG_LINUXFB" != "no" ]; then
     fi
 fi
 
+if [ "$CFG_KMS" != "no" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/qpa/kms" "KMS" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
+        CFG_KMS=yes
+    elif [ "$CFG_KMS" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+        echo " KMS support cannot be enabled due to functionality tests!"
+        echo " Turn on verbose messaging (-v) to $0 to see the final report."
+        echo " If you believe this message is in error you may use the continue"
+        echo " switch (-continue) to $0 to continue."
+        exit 101
+    else
+        CFG_KMS=no
+    fi
+fi
+
 # Detect libxkbcommon
 if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
     QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
@@ -4801,6 +4846,14 @@ if [ "$CFG_EGLFS" != "no" ]; then
     fi
 fi
 
+if [ "$CFG_KMS" = "yes" ]; then
+    if [ "$CFG_OPENGL" = "es2" ] && [ "$CFG_EGL" = "yes" ]; then
+        CFG_KMS="yes"
+    else
+        CFG_KMS="no"
+    fi
+fi
+
 # Determine the default QPA platform
 if [ -z "$QT_QPA_DEFAULT_PLATFORM" ]; then
     # check the mkspec
@@ -4831,6 +4884,9 @@ fi
 if [ "$CFG_LINUXFB" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG linuxfb"
 fi
+if [ "$CFG_KMS" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG kms"
+fi
 
 if [ "$BUILD_ON_MAC" = "yes" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
@@ -4841,9 +4897,9 @@ if [ "$BUILD_ON_MAC" = "yes" ]; then
 fi
 
 if [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ]; then
-    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ]; then
+    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_KMS" = "no" ]; then
         if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
-            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] ); then
+            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_KMS" = "auto" ] ); then
         echo "No QPA platform plugin enabled!"
         echo " If you really want to build without a QPA platform plugin you must pass"
         echo " -no-qpa-platform-guard to configure. Doing this will"
@@ -6135,6 +6191,7 @@ fi
 echo "EGLFS support .......... $CFG_EGLFS"
 echo "DirectFB support ....... $CFG_DIRECTFB"
 echo "LinuxFB support ........ $CFG_LINUXFB"
+echo "KMS support ............ $CFG_KMS"
 echo
 
 # complain about not being able to use dynamic plugins if we are using a static build
