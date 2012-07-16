@@ -67,7 +67,7 @@ CONFIG -= qt
 
 #qmake
 qmake.path = $$[QT_HOST_BINS]
-win32 {
+equals(QMAKE_HOST.os, Windows) {
    qmake.files = $$OUT_PWD/bin/qmake.exe
 } else {
    qmake.files = $$OUT_PWD/bin/qmake
@@ -77,7 +77,7 @@ INSTALLS += qmake
 #syncqt
 syncqt.path = $$[QT_HOST_BINS]
 syncqt.files = $$PWD/bin/syncqt
-win32:syncqt.files += $$PWD/bin/syncqt.bat
+equals(QMAKE_HOST.os, Windows):syncqt.files += $$PWD/bin/syncqt.bat
 INSTALLS += syncqt
 
 #mkspecs
