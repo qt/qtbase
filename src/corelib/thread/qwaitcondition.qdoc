@@ -165,7 +165,7 @@
        wait timed out.
     \endlist
 
-    The \a lcokedReadWriteLock will be returned to the same locked
+    The \a lockedReadWriteLock will be returned to the same locked
     state. This function is provided to allow the atomic transition
     from the locked state to the wait state.
 
