@@ -2176,18 +2176,6 @@
 */
 
 /*!
-  \enum Qt::AnchorAttribute
-
-  An anchor has one or more of the following attributes:
-
-  \value AnchorName the name attribute of the anchor. This attribute is
-  used when scrolling to an anchor in the document.
-
-  \value AnchorHref the href attribute of the anchor. This attribute is
-  used when a link is clicked to determine what content to load.
-*/
-
-/*!
     \enum Qt::SortOrder
 
     This enum describes how the items in a widget are sorted.
