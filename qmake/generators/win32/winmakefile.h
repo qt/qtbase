@@ -69,10 +69,10 @@ protected:
     virtual bool findLibraries();
 
     virtual void processPrlFiles();
-    virtual void processVars();
+    void processVars();
     virtual void fixTargetExt();
-    virtual void processRcFileVar();
-    virtual void processFileTagsVar();
+    void processRcFileVar();
+    void processFileTagsVar();
     virtual QString getLibTarget();
 };
 
