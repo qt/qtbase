@@ -93,9 +93,6 @@ QT_BEGIN_NAMESPACE
     types and the specialized classes for each type are as follows:
 
     \value None                             Not an event.
-    \value AccessibilityDescription         Used to query accessibility description texts (QAccessibleEvent).
-    \value AccessibilityHelp                Used to query accessibility help texts (QAccessibleEvent).
-    \value AccessibilityPrepare             Accessibility information is requested.
     \value ActionAdded                      A new action has been added (QActionEvent).
     \value ActionChanged                    An action has been changed (QActionEvent).
     \value ActionRemoved                    An action has been removed (QActionEvent).
