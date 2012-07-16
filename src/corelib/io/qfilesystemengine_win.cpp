@@ -1060,9 +1060,19 @@ QString QFileSystemEngine::tempPath()
 {
     QString ret;
     wchar_t tempPath[MAX_PATH];
-    DWORD len = GetTempPath(MAX_PATH, tempPath);
+    const DWORD len = GetTempPath(MAX_PATH, tempPath);
+#ifdef Q_OS_WINCE
     if (len)
         ret = QString::fromWCharArray(tempPath, len);
+#else
+    if (len) { // GetTempPath() can return short names, expand.
+        wchar_t longTempPath[MAX_PATH];
+        const DWORD longLen = GetLongPathName(tempPath, longTempPath, MAX_PATH);
+        ret = longLen && longLen < MAX_PATH ?
+              QString::fromWCharArray(longTempPath, longLen) :
+              QString::fromWCharArray(tempPath, len);
+    }
+#endif
     if (!ret.isEmpty()) {
         while (ret.endsWith(QLatin1Char('\\')))
             ret.chop(1);

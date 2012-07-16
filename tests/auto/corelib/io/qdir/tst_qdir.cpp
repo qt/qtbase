@@ -1370,6 +1370,8 @@ void tst_QDir::tempPath()
 #elif defined(Q_OS_WIN)
     if (path.length() > 3)      // root dir = "c:/"; "//" is not really valid...
         QVERIFY(!path.endsWith('/'));
+    QVERIFY2(!path.contains(QLatin1Char('~')),
+             qPrintable(QString::fromLatin1("Temp path (%1) must not be a short name.").arg(path)));
 #endif
 }
 
