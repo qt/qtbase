@@ -70,7 +70,6 @@ private:
     QString preCompHeaderOut;
 
     virtual bool findLibraries();
-    void fixTargetExt();
 
     bool init_flag;
     QString objectsLinkLine;

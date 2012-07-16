@@ -70,7 +70,7 @@ protected:
 
     virtual void processPrlFiles();
     void processVars();
-    virtual void fixTargetExt();
+    void fixTargetExt();
     void processRcFileVar();
     void processFileTagsVar();
     virtual QString getLibTarget();

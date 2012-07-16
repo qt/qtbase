@@ -290,6 +290,9 @@ void MingwMakefileGenerator::init()
         project->values("QMAKE_LFLAGS").append(QString("-Wl,") + escapeFilePath(defFileName));
     }
 
+    if (project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib")
+        project->values("QMAKE_LFLAGS").append("-static");
+
     MakefileGenerator::init();
 
     // precomp
@@ -318,14 +321,6 @@ void MingwMakefileGenerator::init()
     if(project->isActiveConfig("dll")) {
         project->values("QMAKE_CLEAN").append(project->first("MINGW_IMPORT_LIB"));
     }
-}
-
-void MingwMakefileGenerator::fixTargetExt()
-{
-    if (project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
-        project->values("QMAKE_LFLAGS").append("-static");
-    }
-    Win32MakefileGenerator::fixTargetExt();
 }
 
 void MingwMakefileGenerator::writeIncPart(QTextStream &t)
