@@ -61,7 +61,6 @@
     \value AlignRight Aligns with the right edge.
     \value AlignHCenter Centers horizontally in the available space.
     \value AlignJustify Justifies the text in the available space.
-    \omitvalue AlignAuto
 
     The vertical flags are:
 
@@ -436,8 +435,6 @@
     \value RadialGradientPattern  Radial gradient (set using a dedicated QBrush constructor).
     \value TexturePattern  Custom pattern (see QBrush::setTexture()).
 
-    \omitvalue CustomPattern
-
     \sa QBrush
 */
 
@@ -461,25 +458,15 @@
     \value TextHideMnemonic Same as Qt::TextShowMnemonic but doesn't draw
            the underlines.
     \value TextDontPrint Treat this text as "hidden" and don't print it.
-    \value IncludeTrailingSpaces When this option is set,
+    \value TextIncludeTrailingSpaces When this option is set,
            QTextLine::naturalTextWidth() and naturalTextRect() will
            return a value that includes the width of trailing spaces in the
            text; otherwise this width is excluded.
-    \value TextIncludeTrailingSpaces Same as IncludeTrailingSpaces
     \value TextJustificationForced Ensures that text lines are justified.
 
     \omitvalue TextLongestVariant Ensures that the longest variant is always used
            when computing the size of a multi-variant string. (Internal)
     \omitvalue TextBypassShaping
-    \omitvalue BreakAnywhere
-    \omitvalue DontClip
-    \omitvalue DontPrint
-    \omitvalue ExpandTabs
-    \omitvalue IncludeTrailingSpaces
-    \omitvalue NoAccel
-    \omitvalue ShowPrefix
-    \omitvalue SingleLine
-    \omitvalue WordBreak
     \omitvalue TextForceLeftToRight
     \omitvalue TextForceRightToLeft
 
@@ -743,10 +730,6 @@
                                        rectangle as small as possible
                                        outside a given rectangle,
                                        preserving the aspect ratio.
-
-    \omitvalue ScaleFree
-    \omitvalue ScaleMin
-    \omitvalue ScaleMax
 
     \sa QSize::scale(), QImage::scaled()
 */
@@ -1240,9 +1223,7 @@
     \value Key_Escape
     \value Key_Tab
     \value Key_Backtab
-    \omitvalue Key_BackTab
     \value Key_Backspace
-    \omitvalue Key_BackSpace
     \value Key_Return
     \value Key_Enter     Typically located on the keypad.
     \value Key_Insert
@@ -1258,9 +1239,7 @@
     \value Key_Right
     \value Key_Down
     \value Key_PageUp
-    \omitvalue Key_Prior
     \value Key_PageDown
-    \omitvalue Key_Next
     \value Key_Shift
     \value Key_Control    On Mac OS X, this corresponds to the Command keys.
     \value Key_Meta       On Mac OS X, this corresponds to the Control keys.
@@ -1449,37 +1428,7 @@
     \value Key_Yacute
     \value Key_THORN
     \value Key_ssharp
-    \omitvalue Key_agrave
-    \omitvalue Key_aacute
-    \omitvalue Key_acircumflex
-    \omitvalue Key_atilde
-    \omitvalue Key_adiaeresis
-    \omitvalue Key_aring
-    \omitvalue Key_ae
-    \omitvalue Key_ccedilla
-    \omitvalue Key_egrave
-    \omitvalue Key_eacute
-    \omitvalue Key_ecircumflex
-    \omitvalue Key_ediaeresis
-    \omitvalue Key_igrave
-    \omitvalue Key_iacute
-    \omitvalue Key_icircumflex
-    \omitvalue Key_idiaeresis
-    \omitvalue Key_eth
-    \omitvalue Key_ntilde
-    \omitvalue Key_ograve
-    \omitvalue Key_oacute
-    \omitvalue Key_ocircumflex
-    \omitvalue Key_otilde
-    \omitvalue Key_odiaeresis
     \value Key_division
-    \omitvalue Key_oslash
-    \omitvalue Key_ugrave
-    \omitvalue Key_uacute
-    \omitvalue Key_ucircumflex
-    \omitvalue Key_udiaeresis
-    \omitvalue Key_yacute
-    \omitvalue Key_thorn
     \value Key_ydiaeresis
     \value Key_Multi_key
     \value Key_Codeinput
@@ -1548,7 +1497,6 @@
     \value Key_MediaPlay    A key setting the state of the media player to play
     \value Key_MediaStop    A key setting the state of the media player to stop
     \value Key_MediaPrevious
-    \omitvalue Key_MediaPrev
     \value Key_MediaNext
     \value Key_MediaRecord
     \value Key_MediaPause   A key setting the state of the media player to pause (\note not the pause/break key)
@@ -1771,11 +1719,6 @@
     \value TopRightCorner    The top-right corner of the rectangle.
     \value BottomLeftCorner  The bottom-left corner of the rectangle.
     \value BottomRightCorner The bottom-right corner of the rectangle.
-
-    \omitvalue TopLeft
-    \omitvalue TopRight
-    \omitvalue BottomLeft
-    \omitvalue BottomRight
 */
 
 /*!
@@ -2103,52 +2046,6 @@
     \value WindowType_Mask  A mask for extracting the window type
                             part of the window flags.
 
-    Obsolete flags:
-
-    \value WMouseNoMask         Use Qt::WA_MouseNoMask instead.
-    \value WDestructiveClose    Use Qt::WA_DeleteOnClose instead.
-    \value WStaticContents      Use Qt::WA_StaticContents instead.
-    \value WGroupLeader         No longer needed.
-    \value WShowModal           Use QWidget::windowModality instead.
-    \value WNoMousePropagation  Use Qt::WA_NoMousePropagation instead.
-    \value WType_TopLevel       Use Qt::Window instead.
-    \value WType_Dialog         Use Qt::Dialog instead.
-    \value WType_Popup          Use Qt::Popup instead.
-    \value WType_Desktop        Use Qt::Desktop instead.
-    \value WType_Mask           Use Qt::WindowType_Mask instead.
-
-    \value WStyle_Customize     No longer needed.
-    \value WStyle_NormalBorder  No longer needed.
-    \value WStyle_DialogBorder  Use Qt::MSWindowsFixedSizeDialogHint instead.
-    \value WStyle_NoBorder      Use Qt::FramelessWindowHint instead.
-    \value WStyle_Title         Use Qt::WindowTitleHint instead.
-    \value WStyle_SysMenu       Use Qt::WindowSystemMenuHint instead.
-    \value WStyle_Minimize      Use Qt::WindowMinimizeButtonHint instead.
-    \value WStyle_Maximize      Use Qt::WindowMaximizeButtonHint instead.
-    \value WStyle_MinMax        Use Qt::WindowMinMaxButtonsHint instead.
-    \value WStyle_Tool          Use Qt::Tool instead.
-    \value WStyle_StaysOnTop    Use Qt::WindowStaysOnTopHint instead.
-    \value WStyle_ContextHelp   Use Qt::WindowContextHelpButtonHint instead.
-
-    \value WPaintDesktop        No longer needed.
-    \value WPaintClever         No longer needed.
-
-    \value WX11BypassWM         Use Qt::X11BypassWindowManagerHint instead.
-    \value WWinOwnDC            Use Qt::MSWindowsOwnDC instead.
-    \value WMacSheet            Use Qt::Sheet instead.
-    \value WMacDrawer           Use Qt::Drawer instead.
-
-    \value WStyle_Splash        Use Qt::SplashScreen instead.
-
-    \value WNoAutoErase         No longer needed.
-    \value WRepaintNoErase      No longer needed.
-    \value WNorthWestGravity    Use Qt::WA_StaticContents instead.
-    \value WType_Modal          Use Qt::Dialog and QWidget::windowModality instead.
-    \value WStyle_Dialog        Use Qt::Dialog instead.
-    \value WStyle_NoBorderEx    Use Qt::FramelessWindowHint instead.
-    \value WResizeNoErase       No longer needed.
-    \value WMacNoSheet          No longer needed.
-
     \sa QWidget::windowFlags, {Window Flags Example}
 */
 
@@ -2185,9 +2082,6 @@
 
     \value DescendingOrder The items are sorted descending e.g. starts with
     'ZZZ' ends with 'AAA' in Latin-1 locales
-
-    \omitvalue Ascending
-    \omitvalue Descending
 */
 
 /*!
@@ -2367,23 +2261,6 @@
     \value BitmapCursor
     \omitvalue LastCursor
     \omitvalue CustomCursor
-
-    \omitvalue arrowCursor
-    \omitvalue upArrowCursor
-    \omitvalue crossCursor
-    \omitvalue waitCursor
-    \omitvalue ibeamCursor
-    \omitvalue sizeVerCursor
-    \omitvalue sizeHorCursor
-    \omitvalue sizeBDiagCursor
-    \omitvalue sizeFDiagCursor
-    \omitvalue sizeAllCursor
-    \omitvalue blankCursor
-    \omitvalue splitVCursor
-    \omitvalue splitHCursor
-    \omitvalue pointingHandCursor
-    \omitvalue forbiddenCursor
-    \omitvalue whatsThisCursor
 */
 
 /*!
