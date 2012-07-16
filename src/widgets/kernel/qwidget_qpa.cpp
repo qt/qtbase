@@ -612,6 +612,10 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
     Qt::WindowState newEffectiveState = effectiveState(newstate);
     Qt::WindowState oldEffectiveState = effectiveState(oldstate);
     if (isWindow() && newEffectiveState != oldEffectiveState) {
+        // Ensure the initial size is valid, since we store it as normalGeometry below.
+        if (!testAttribute(Qt::WA_Resized) && !isVisible())
+            adjustSize();
+
         d->createTLExtra();
         if (oldEffectiveState == Qt::WindowNoState)
             d->topData()->normalGeometry = geometry();
