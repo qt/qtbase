@@ -49,8 +49,16 @@
 #include "qpixmap.h"
 #include "qtextdocument.h"
 #include "qtextcursor.h"
+#include <QtGui/qwindow.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qelapsedtimer.h>
 #include <private/qwidget_p.h>
+
+#ifdef Q_OS_WIN
+#  include <QtCore/qt_windows.h>
+#else
+#  include <time.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -217,18 +225,37 @@ void QSplashScreen::clearMessage()
     repaint();
 }
 
+// A copy of QTestLib's qWaitForWindowExposed() and qSleep().
+inline static bool waitForWindowExposed(QWindow *window, int timeout = 1000)
+{
+    enum { TimeOutMs = 10 };
+    QElapsedTimer timer;
+    timer.start();
+    while (!window->isExposed()) {
+        const int remaining = timeout - int(timer.elapsed());
+        if (remaining <= 0)
+            break;
+        QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
+        QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+#ifdef Q_OS_WIN
+        Sleep(uint(TimeOutMs));
+#else
+        struct timespec ts = { TimeOutMs / 1000, (TimeOutMs % 1000) * 1000 * 1000 };
+        nanosleep(&ts, NULL);
+#endif
+    }
+    return window->isExposed();
+}
+
 /*!
     Makes the splash screen wait until the widget \a mainWin is displayed
     before calling close() on itself.
 */
+
 void QSplashScreen::finish(QWidget *mainWin)
 {
-    if (mainWin) {
-#if defined(Q_WS_X11)
-        extern void qt_x11_wait_for_window_manager(QWidget *mainWin, bool);
-        qt_x11_wait_for_window_manager(mainWin, false);
-#endif
-    }
+    if (mainWin && mainWin->windowHandle())
+        waitForWindowExposed(mainWin->windowHandle());
     close();
 }
 
