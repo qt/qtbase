@@ -288,9 +288,7 @@ private slots:
     void setTabShape();
     void setTabPosition_data();
     void setTabPosition();
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
     void nativeSubWindows();
-#endif
     void task_209615();
     void task_236750();
 
@@ -2599,9 +2597,12 @@ void tst_QMdiArea::setTabPosition()
     qApp->setLayoutDirection(originalLayoutDirection);
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
 void tst_QMdiArea::nativeSubWindows()
 {
+    const QString platformName = QGuiApplication::platformName();
+    if (platformName != QLatin1String("xcb") && platformName != QLatin1String("windows"))
+        QSKIP(qPrintable(QString::fromLatin1("nativeSubWindows() does not work on this platform (%1).").arg(platformName)));
+
     { // Add native widgets after show.
     QMdiArea mdiArea;
     mdiArea.addSubWindow(new QWidget);
@@ -2616,7 +2617,8 @@ void tst_QMdiArea::nativeSubWindows()
 
     QWidget *nativeWidget = new QWidget;
     QVERIFY(nativeWidget->winId()); // enforce native window.
-    mdiArea.addSubWindow(nativeWidget);
+    QMdiSubWindow *subWin = mdiArea.addSubWindow(nativeWidget);
+    QVERIFY(subWin->internalWinId());
 
     // The viewport and all the sub-windows must be native.
     QVERIFY(mdiArea.viewport()->internalWinId());
@@ -2687,7 +2689,6 @@ void tst_QMdiArea::nativeSubWindows()
     }
 #endif
 }
-#endif
 
 void tst_QMdiArea::task_209615()
 {
