@@ -231,7 +231,7 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
     \fn void QLineEdit::textEdited(const QString &text)
 
     This signal is emitted whenever the text is edited. The \a text
-    argument is the next text.
+    argument is the new text.
 
     Unlike textChanged(), this signal is not emitted when the text is
     changed programmatically, for example, by calling setText().
