@@ -149,16 +149,17 @@ void tst_QFont::exactMatch()
     font = QFont( "BogusFont", 33 );
     QVERIFY( !font.exactMatch() );
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     QSKIP("Exact matching on windows misses a lot because of the sample chars");
 #endif
 
-#ifdef Q_WS_X11
-    QVERIFY(QFont("sans").exactMatch());
-    QVERIFY(QFont("sans-serif").exactMatch());
-    QVERIFY(QFont("serif").exactMatch());
-    QVERIFY(QFont("monospace").exactMatch());
-#endif
+
+    if (QGuiApplication::platformName() == QLatin1String("xcb")) {
+        QVERIFY(QFont("sans").exactMatch());
+        QVERIFY(QFont("sans-serif").exactMatch());
+        QVERIFY(QFont("serif").exactMatch());
+        QVERIFY(QFont("monospace").exactMatch());
+    }
 
     QSKIP("This test is bogus on Unix with support for font aliases in fontconfig");
 
@@ -201,7 +202,7 @@ void tst_QFont::exactMatch()
                             continue;
                         }
 
-#ifdef Q_WS_WIN32
+#ifdef Q_OS_WIN
                         if (font.family().startsWith("MS ") || fontinfo.family().startsWith("MS ")) {
                             /* qDebug("Family matching skipped for MS-Alias font: %s, fontinfo: %s",
                                font.family().latin1(), fontinfo.family().latin1());

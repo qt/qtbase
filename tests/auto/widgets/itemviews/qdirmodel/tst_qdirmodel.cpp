@@ -288,7 +288,7 @@ void tst_QDirModel::mkdir_data()
     QTest::newRow("outOfTreeDirName") << QString(QDir::currentPath() + "/test5") << false << false;
 
     // Directory names only illegal on Windows
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     QTest::newRow("illegalDirName") << QString("*") << false << false;
     QTest::newRow("illegalDirName2") << QString("|") << false << false;
     QTest::newRow("onlySpace") << QString(" ") << false << false;

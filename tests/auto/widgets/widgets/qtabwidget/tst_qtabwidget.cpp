@@ -571,7 +571,7 @@ void tst_QTabWidget::paintEventCount()
     static const int MaxInitialPaintCount =
 #if defined(Q_OS_WINCE)
         4;
-#elif defined(Q_WS_WIN)
+#elif defined(Q_OS_WIN)
         2;
 #elif defined(Q_OS_MAC)
         5;

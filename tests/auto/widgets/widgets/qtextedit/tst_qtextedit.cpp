@@ -992,7 +992,7 @@ void tst_QTextEdit::undoRedo()
     QCOMPARE(ed->toPlainText(), QString());
     ed->redo();
     QCOMPARE(ed->toPlainText(), QString("abc d"));
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     // shortcut for undo
     QTest::keyClick(ed, Qt::Key_Backspace, Qt::AltModifier);
     QCOMPARE(ed->toPlainText(), QString());

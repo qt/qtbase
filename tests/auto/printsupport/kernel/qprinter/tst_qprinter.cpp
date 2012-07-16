@@ -901,7 +901,7 @@ void tst_QPrinter::errorReporting()
     p.setOutputFormat(QPrinter::PdfFormat);
     QCOMPARE(p.isValid(), true);
     QPainter painter;
-#ifndef Q_WS_WIN
+#ifndef Q_OS_WIN
     // not sure how to choose a never-writable file on windows.  But its QFile behavior anyway, so lets rely on it failing elsewhere
     p.setOutputFileName("/foobar/nonwritable.pdf");
     QCOMPARE(painter.begin(&p), false); // it should check the output file is writable

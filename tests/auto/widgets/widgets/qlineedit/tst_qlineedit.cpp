@@ -2582,7 +2582,7 @@ void tst_QLineEdit::setValidator_QIntValidator()
 void tst_QLineEdit::frame_data()
 {
 #ifndef NO_PIXMAP_TESTS
-#if defined Q_WS_WIN
+#if defined Q_OS_WIN
     QTest::addColumn<QPixmap>("noFrame");
     QTest::addColumn<QPixmap>("useFrame");
 
@@ -2598,7 +2598,7 @@ void tst_QLineEdit::frame()
     testWidget->setFrame(false);
     // verify that the editor is shown without a frame
 #ifndef NO_PIXMAP_TESTS
-#if defined Q_WS_WIN
+#if defined Q_OS_WIN
     QTEST(testWidget, "noFrame");
 #endif
 #endif
@@ -2607,7 +2607,7 @@ void tst_QLineEdit::frame()
     testWidget->setFrame(true);
     // verify that the editor is shown with a frame
 #ifndef NO_PIXMAP_TESTS
-#if defined Q_WS_WIN
+#if defined Q_OS_WIN
     QTEST(testWidget, "useFrame");
 #endif
 #endif
@@ -2617,7 +2617,7 @@ void tst_QLineEdit::frame()
 void tst_QLineEdit::setAlignment_data()
 {
 #ifndef NO_PIXMAP_TESTS
-#if defined Q_WS_WIN
+#if defined Q_OS_WIN
     QTest::addColumn<QPixmap>("left");
     QTest::addColumn<QPixmap>("right");
     QTest::addColumn<QPixmap>("hcenter");
@@ -2635,7 +2635,7 @@ void tst_QLineEdit::setAlignment()
     testWidget->setText("left");
     testWidget->setAlignment(Qt::AlignLeft);
 #ifndef NO_PIXMAP_TESTS
-#if defined Q_WS_WIN
+#if defined Q_OS_WIN
     QTEST(testWidget, "left");
 #endif
 #endif
@@ -2644,7 +2644,7 @@ void tst_QLineEdit::setAlignment()
     testWidget->setText("hcenter");
     testWidget->setAlignment(Qt::AlignHCenter);
 #ifndef NO_PIXMAP_TESTS
-#if defined Q_WS_WIN
+#if defined Q_OS_WIN
     QTEST(testWidget, "hcenter");
 #endif
 #endif
@@ -2653,7 +2653,7 @@ void tst_QLineEdit::setAlignment()
     testWidget->setText("right");
     testWidget->setAlignment(Qt::AlignRight);
 #ifndef NO_PIXMAP_TESTS
-#if defined Q_WS_WIN
+#if defined Q_OS_WIN
     QTEST(testWidget, "right");
 #endif
 #endif

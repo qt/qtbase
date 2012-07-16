@@ -79,7 +79,7 @@
 #include <QMacStyle>
 #endif
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #include <QWindowsXPStyle>
 #include <QWindowsVistaStyle>
 #endif
@@ -211,7 +211,7 @@ void tst_QStyle::testStyleFactory()
 #ifndef QT_NO_STYLE_MOTIF
     QVERIFY(keys.contains("Motif"));
 #endif
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP &&
         (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
         QVERIFY(keys.contains("WindowsXP"));
@@ -416,7 +416,7 @@ void tst_QStyle::testWindowsStyle()
 #ifndef QT_NO_STYLE_WINDOWSXP
 void tst_QStyle::testWindowsXPStyle()
 {
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     QWindowsXPStyle xpstyle;
     QVERIFY(testAllFunctions(&xpstyle));
     lineUpLayoutTest(&xpstyle);
@@ -442,7 +442,7 @@ QImage readImage(const QString &fileName)
 
 void tst_QStyle::testWindowsVistaStyle()
 {
-#if defined(Q_WS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
+#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
     QWindowsVistaStyle vistastyle;
     QVERIFY(testAllFunctions(&vistastyle));
 
