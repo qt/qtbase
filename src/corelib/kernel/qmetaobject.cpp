@@ -48,7 +48,6 @@
 #include <qdatastream.h>
 #include <qstringlist.h>
 #include <qthread.h>
-#include <qvarlengtharray.h>
 #include <qvariant.h>
 #include <qhash.h>
 #include <qdebug.h>

@@ -58,6 +58,7 @@
 #ifndef QT_NO_QOBJECT
 #include <private/qobject_p.h> // For QObjectPrivate::Connection
 #endif
+#include <QtCore/qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -159,7 +160,6 @@ private:
     QByteArray _name;
 };
 
-template <class T, int> class QVarLengthArray;
 typedef QVarLengthArray<QArgumentType, 10> QArgumentTypeArray;
 
 class QMetaMethodPrivate;
