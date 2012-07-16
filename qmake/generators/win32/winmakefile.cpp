@@ -342,6 +342,9 @@ void Win32MakefileGenerator::processVars()
         (*libDir_it) = Option::fixPathToTargetOS((*libDir_it), false, false);
     }
 
+    project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
+    project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
+
     if (project->values("TEMPLATE").contains("app")) {
         project->values("QMAKE_CFLAGS") += project->values("QMAKE_CFLAGS_APP");
         project->values("QMAKE_CXXFLAGS") += project->values("QMAKE_CXXFLAGS_APP");

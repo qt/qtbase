@@ -265,10 +265,6 @@ void MingwMakefileGenerator::init()
         project->values("QMAKE_LIBS") += escapeFilePaths(project->values("RES_FILE"));
     }
 
-    // LIBS defined in Profile comes first for gcc
-    project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
-    project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
-
     QString targetfilename = project->values("TARGET").first();
     QStringList &configs = project->values("CONFIG");
 

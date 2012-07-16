@@ -699,9 +699,6 @@ void VcprojGenerator::init()
 
     processVars();
 
-    project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
-    project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
-
     if(!project->values("VERSION").isEmpty()) {
         QString version = project->values("VERSION")[0];
         int firstDot = version.indexOf(".");
