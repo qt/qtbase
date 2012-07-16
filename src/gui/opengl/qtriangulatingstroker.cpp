@@ -231,8 +231,10 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
                         || float(pts[0]) != float(pts[2]) || float(pts[1]) != float(pts[3])
                         || float(pts[2]) != float(pts[4]) || float(pts[3]) != float(pts[5]))
                 {
-                    if (previousType != QPainterPath::MoveToElement)
-                        join(pts);
+                    if (float(m_cx) != float(pts[0]) || float(m_cy) != float(pts[1])) {
+                        if (previousType != QPainterPath::MoveToElement)
+                            join(pts);
+                    }
                     cubicTo(pts);
                     previousType = QPainterPath::CurveToElement;
                     previousPts = pts + 4;
