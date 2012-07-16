@@ -2061,31 +2061,17 @@ void QWidgetPrivate::updateIsOpaque()
 
 void QWidgetPrivate::setOpaque(bool opaque)
 {
-    if (isOpaque == opaque)
-        return;
-    isOpaque = opaque;
-#ifdef Q_WS_MAC
-    macUpdateIsOpaque();
-#endif
-#ifdef Q_WS_X11
-    x11UpdateIsOpaque();
-#endif
-#ifdef Q_WS_WIN
-    winUpdateIsOpaque();
-#endif
+    if (isOpaque != opaque) {
+        isOpaque = opaque;
+        updateIsTranslucent();
+    }
 }
 
 void QWidgetPrivate::updateIsTranslucent()
 {
-#ifdef Q_WS_MAC
-    macUpdateIsOpaque();
-#endif
-#ifdef Q_WS_X11
-    x11UpdateIsOpaque();
-#endif
-#ifdef Q_WS_WIN
-    winUpdateIsOpaque();
-#endif
+    Q_Q(QWidget);
+    if (QWindow *window = q->windowHandle())
+        window->setOpacity(isOpaque ? qreal(1.0) : qreal(0.0));
 }
 
 static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrush &brush)
