@@ -1718,6 +1718,8 @@ static inline xcb_rectangle_t qRectToXCBRectangle(const QRect &r)
 
 void QXcbWindow::setMask(const QRegion &region)
 {
+    if (!connection()->hasXShape())
+        return;
     if (region.isEmpty()) {
         xcb_shape_mask(connection()->xcb_connection(), XCB_SHAPE_SO_SET,
                        XCB_SHAPE_SK_BOUNDING, xcb_window(), 0, 0, XCB_NONE);
