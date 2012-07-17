@@ -112,10 +112,8 @@ void QKmsCursor::changeCursor(QCursor *widgetCursor, QWindow *window)
     }
 
     //EGLImage needs to contain sprite before calling this:
-    gbm_bo *bufferObject = gbm_bo_create_from_egl_image(m_graphicsBufferManager,
-                                                        m_screen->device()->eglDisplay(),
-                                                        m_eglImage, 64, 64,
-                                                        GBM_BO_USE_CURSOR_64X64);
+    gbm_bo *bufferObject = gbm_bo_import(m_graphicsBufferManager, GBM_BO_IMPORT_EGL_IMAGE,
+                                         m_eglImage, GBM_BO_USE_CURSOR_64X64);
     quint32 handle = gbm_bo_get_handle(bufferObject).u32;
 
     gbm_bo_destroy(bufferObject);

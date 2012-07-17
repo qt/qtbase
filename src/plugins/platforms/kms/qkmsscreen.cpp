@@ -201,7 +201,7 @@ void QKmsScreen::performPageFlip()
 
     uint32_t width = gbm_bo_get_width(m_next_bo);
     uint32_t height = gbm_bo_get_height(m_next_bo);
-    uint32_t stride = gbm_bo_get_pitch(m_next_bo);
+    uint32_t stride = gbm_bo_get_stride(m_next_bo);
     uint32_t handle = gbm_bo_get_handle(m_next_bo).u32;
 
     uint32_t fb_id;
