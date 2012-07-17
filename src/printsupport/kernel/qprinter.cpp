@@ -55,9 +55,6 @@
 
 #include <private/qpagedpaintdevice_p.h>
 
-#if defined(Q_WS_X11)
-#include <private/qt_x11_p.h>
-#endif
 
 #ifndef QT_NO_PDF
 #include "qprintengine_pdf_p.h"
@@ -514,11 +511,7 @@ QPrinter::QPrinter(const QPrinterInfo& printer, PrinterMode mode)
 
 void QPrinterPrivate::init(QPrinter::PrinterMode mode)
 {
-#if !defined(Q_WS_X11)
     if (!QCoreApplication::instance()) {
-#else
-    if (!QCoreApplication::instance() || !X11) {
-#endif
         qFatal("QPrinter: Must construct a QApplication before a QPaintDevice");
         return;
     }
@@ -712,11 +705,8 @@ void QPrinter::setPrinterName(const QString &name)
 bool QPrinter::isValid() const
 {
     Q_D(const QPrinter);
-#if defined(Q_WS_X11)
-    if (!qApp || !X11) {
+    if (!qApp)
         return false;
-    }
-#endif
     return d->validPrinter;
 }
 

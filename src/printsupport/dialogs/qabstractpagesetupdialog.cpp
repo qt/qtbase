@@ -44,7 +44,7 @@
 
 #ifndef QT_NO_PRINTDIALOG
 
-#include <QtCore/qcoreapplication.h>
+#include <QtGui/qguiapplication.h>
 #include <QtPrintSupport/qprinter.h>
 
 QT_BEGIN_NAMESPACE
@@ -106,10 +106,8 @@ void QAbstractPageSetupDialogPrivate::setPrinter(QPrinter *newPrinter)
         printer = new QPrinter;
         ownsPrinter = true;
     }
-#ifndef Q_WS_X11
-    if (printer->outputFormat() != QPrinter::NativeFormat)
+    if (printer->outputFormat() != QPrinter::NativeFormat && QGuiApplication::platformName() == QLatin1String("xcb"))
         qWarning("QPageSetupDialog: Cannot be used on non-native printers");
-#endif
 }
 
 /*!
