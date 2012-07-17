@@ -4215,6 +4215,9 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                     if [ -n "$PKG_CONFIG" ]; then
                         QT_CFLAGS_SQLITE=`$PKG_CONFIG --cflags sqlite3 2>/dev/null`
                         QT_LFLAGS_SQLITE=`$PKG_CONFIG --libs sqlite3 2>/dev/null`
+                    else
+                        QT_CFLAGS_SQLITE=
+                        QT_LFLAGS_SQLITE="-lsqlite3 -lz"
                     fi
                     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/sqlite "SQLite" $QT_LFLAGS_SQLITE $L_FLAGS $QT_CFLAGS_SQLITE $I_FLAGS $D_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                         if [ "$CFG_SQL_sqlite" = "auto" ]; then

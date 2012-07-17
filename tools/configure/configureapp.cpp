@@ -2010,11 +2010,17 @@ bool Configure::checkAvailability(const QString &part)
         available = true; // Built in, we have a fork
     else if (part == "SQL_SQLITE_LIB") {
         if (dictionary[ "SQL_SQLITE_LIB" ] == "system") {
-            available = findFile("sqlite3.h") && findFile("sqlite3.lib");
-            if (available)
-                dictionary[ "QT_LFLAGS_SQLITE" ] += "sqlite3.lib";
-        } else
+            if ((platform() == QNX) || (platform() == BLACKBERRY)) {
+                available = true;
+                dictionary[ "QT_LFLAGS_SQLITE" ] += "-lsqlite3 -lz";
+            } else {
+                available = findFile("sqlite3.h") && findFile("sqlite3.lib");
+                if (available)
+                    dictionary[ "QT_LFLAGS_SQLITE" ] += "sqlite3.lib";
+            }
+        } else {
             available = true;
+        }
     } else if (part == "SQL_SQLITE2")
         available = findFile("sqlite.h") && findFile("sqlite.lib");
     else if (part == "SQL_IBASE")
