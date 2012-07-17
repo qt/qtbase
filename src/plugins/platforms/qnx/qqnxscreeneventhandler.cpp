@@ -427,23 +427,6 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
             qScreenEventDebug() << Q_FUNC_INFO << "Qt touch, w =" << w
                                 << ", p=(" << pos[0] << "," << pos[1]
                                 << "), t=" << type;
-
-            // convert primary touch to mouse event
-            if (touchId == 0) {
-
-                // convert point to local coordinates
-                QPoint globalPoint(pos[0], pos[1]);
-                QPoint localPoint(windowPos[0], windowPos[1]);
-
-                // map touch state to button state
-                Qt::MouseButtons buttons = (qnxType == SCREEN_EVENT_MTOUCH_RELEASE) ? Qt::NoButton : Qt::LeftButton;
-
-                // inject event into Qt
-                QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons);
-                qScreenEventDebug() << Q_FUNC_INFO << "Qt mouse, w =" << w
-                                    << ", (" << localPoint.x() << "," << localPoint.y()
-                                    << "), b =" << buttons;
-            }
         }
     }
 }
