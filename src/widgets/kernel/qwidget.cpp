@@ -9486,7 +9486,6 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         desktopWidget = parent;
     bool newParent = (parent != parentWidget()) || !wasCreated || desktopWidget;
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_MAC)
     if (newParent && parent && !desktopWidget) {
         if (testAttribute(Qt::WA_NativeWindow) && !qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings)
 #ifdef Q_WS_MAC
@@ -9499,7 +9498,6 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         else if (parent->d_func()->nativeChildrenForced() || parent->testAttribute(Qt::WA_PaintOnScreen))
             setAttribute(Qt::WA_NativeWindow);
     }
-#endif
 
     if (wasCreated) {
         if (!testAttribute(Qt::WA_WState_Hidden)) {

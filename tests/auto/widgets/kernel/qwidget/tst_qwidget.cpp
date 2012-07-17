@@ -7174,14 +7174,8 @@ void tst_QWidget::alienWidgets()
 
         topLevel.show();
         QVERIFY(topLevel.internalWinId());
-        if (m_platform == QStringLiteral("xcb") || m_platform == QStringLiteral("windows"))
-            QEXPECT_FAIL("", "QTBUG-26424", Continue);
         QVERIFY(widget->testAttribute(Qt::WA_NativeWindow));
-        if (m_platform == QStringLiteral("xcb") || m_platform == QStringLiteral("windows"))
-            QEXPECT_FAIL("", "QTBUG-26424", Continue);
         QVERIFY(child->internalWinId());
-        if (m_platform == QStringLiteral("xcb") || m_platform == QStringLiteral("windows"))
-            QEXPECT_FAIL("", "QTBUG-26424", Continue);
         QVERIFY(child->testAttribute(Qt::WA_NativeWindow));
         QVERIFY(!child->testAttribute(Qt::WA_PaintOnScreen));
         QVERIFY(!dummy->internalWinId());

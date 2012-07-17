@@ -259,8 +259,6 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     if (!(f&Qt::Window) && (oldFlags&Qt::Window) && !q->testAttribute(Qt::WA_NativeWindow)) {
         //qDebug() << "setParent_sys() change from toplevel";
         q->destroy();
-    } else if (newparent && wasCreated) {
-        q->createWinId();
     }
 
     adjustFlags(f, q);
@@ -268,6 +266,9 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     q->setAttribute(Qt::WA_WState_Created, false);
     q->setAttribute(Qt::WA_WState_Visible, false);
     q->setAttribute(Qt::WA_WState_Hidden, false);
+
+    if (newparent && wasCreated && (q->testAttribute(Qt::WA_NativeWindow) || (f & Qt::Window)))
+        q->createWinId();
 
     if (q->isWindow() || (!newparent || newparent->isVisible()) || explicitlyHidden)
         q->setAttribute(Qt::WA_WState_Hidden);
