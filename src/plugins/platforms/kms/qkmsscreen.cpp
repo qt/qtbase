@@ -71,6 +71,7 @@ QKmsScreen::QKmsScreen(QKmsDevice *device, int connectorId)
       m_depth(32),
       m_format(QImage::Format_Invalid),
       m_refreshTime(16000),
+      m_eglWindowSurface(EGL_NO_SURFACE),
       m_modeSet(false)
 {
     m_cursor = new QKmsCursor(this);
@@ -80,6 +81,13 @@ QKmsScreen::QKmsScreen(QKmsDevice *device, int connectorId)
 QKmsScreen::~QKmsScreen()
 {
     delete m_cursor;
+    drmModeSetCrtc(m_device->fd(), m_oldCrtc->crtc_id, m_oldCrtc->buffer_id,
+                   m_oldCrtc->x, m_oldCrtc->y,
+                   &m_connectorId, 1, &m_oldCrtc->mode);
+    drmModeFreeCrtc(m_oldCrtc);
+    if (m_eglWindowSurface != EGL_NO_SURFACE)
+        eglDestroySurface(m_device->eglDisplay(), m_eglWindowSurface);
+    gbm_surface_destroy(m_gbmSurface);
 }
 
 QRect QKmsScreen::geometry() const
