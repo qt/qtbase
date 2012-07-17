@@ -439,7 +439,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
                  kCFPreferencesAnyApplication,
                  kCFPreferencesCurrentUser,
                  kCFPreferencesAnyHost);
-        const int cnt = CFArrayGetCount(languages);
+        const int cnt = languages == NULL ? 0 : CFArrayGetCount(languages);
         QStringList result;
         result.reserve(cnt);
         for (int i = 0; i < cnt; ++i) {
