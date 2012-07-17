@@ -912,18 +912,19 @@ void QUnixPrintWidgetPrivate::applyPrinterProperties(QPrinter *p)
             cur += QLatin1Char('/');
         if (cur.left(home.length()) != home)
             cur = home;
-#ifdef Q_WS_X11
-        if (p->docName().isEmpty()) {
-            cur += QLatin1String("print.pdf");
-        } else {
-            QRegExp re(QString::fromLatin1("(.*)\\.\\S+"));
-            if (re.exactMatch(p->docName()))
-                cur += re.cap(1);
-            else
-                cur += p->docName();
-            cur += QLatin1String(".pdf");
-        }
-#endif
+        if (QGuiApplication::platformName() == QLatin1String("xcb")) {
+            if (p->docName().isEmpty()) {
+                cur += QLatin1String("print.pdf");
+            } else {
+                QRegExp re(QString::fromLatin1("(.*)\\.\\S+"));
+                if (re.exactMatch(p->docName()))
+                    cur += re.cap(1);
+                else
+                    cur += p->docName();
+                cur += QLatin1String(".pdf");
+            }
+        } // xcb
+
         widget.filename->setText(cur);
     }
     else
