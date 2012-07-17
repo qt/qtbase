@@ -515,12 +515,12 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
                 }
             }
             x+=blitWidth;
-            if (x >= transformedRect.right()) {
+            if (qFuzzyCompare(x, transformedRect.right())) {
                 x = transformedRect.x();
                 srcX = startX;
                 srcY = 0;
                 y += blitHeight;
-                if (y >= transformedRect.bottom())
+                if (qFuzzyCompare(y, transformedRect.bottom()))
                     rectIsFilled = true;
             } else
                 srcX = 0;
