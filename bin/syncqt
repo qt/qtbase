@@ -807,9 +807,6 @@ foreach my $lib (@modules_to_sync) {
     my $pri_install_pfiles = "";
     my $pri_install_qpafiles = "";
 
-    push @{$inject_headers{$dir}}, lc($lib)."version.h";
-    $classnames{lc($lib)."version.h"} = $lib."Version";
-
     #remove the old files
     if($remove_stale) {
         my %injections = ();
@@ -1084,6 +1081,13 @@ foreach my $lib (@modules_to_sync) {
         if ($verbose_level < 3) {
             print " }\n" unless ($first);
         }
+
+        # module version header
+        my $vheader = "$out_basedir/include/$lib/".lc($lib)."version.h";
+        my $VHeader = "$out_basedir/include/$lib/${lib}Version";
+        syncHeader($lib, $VHeader, $vheader, 0);
+        $pri_install_files .= fixPaths($vheader, $dir) . " ";
+        $pri_install_classes .= fixPaths($VHeader, $dir) . " ";
 
         # KDE-Compat master header for Phonon
         if ($lib eq "phonon") {
