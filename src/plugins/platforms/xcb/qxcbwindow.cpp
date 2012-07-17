@@ -64,6 +64,9 @@
 #include <xcb/xcb_icccm.h>
 #undef class
 #include <xcb/xfixes.h>
+#ifndef QT_NO_SHAPE
+#  include <xcb/shape.h>
+#endif // QT_NO_SHAPE
 
 // xcb-icccm 3.8 support
 #ifdef XCB_ICCCM_NUM_WM_SIZE_HINTS_ELEMENTS
@@ -98,9 +101,6 @@
 #ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#ifndef QT_NO_SHAPE
-#  include <X11/extensions/shape.h>
-#endif // QT_NO_SHAPE
 #endif
 
 #if defined(XCB_USE_XINPUT2_MAEMO) || defined(XCB_USE_XINPUT2)
@@ -1704,11 +1704,11 @@ bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
     return true;
 }
 
-#if defined(XCB_USE_XLIB) && !defined(QT_NO_SHAPE)
+#if !defined(QT_NO_SHAPE)
 
-static inline XRectangle qRectToX11Rectangle(const QRect &r)
+static inline xcb_rectangle_t qRectToXCBRectangle(const QRect &r)
 {
-    XRectangle result;
+    xcb_rectangle_t result;
     result.x = qMax(SHRT_MIN, r.x());
     result.y = qMax(SHRT_MIN, r.y());
     result.width = qMin((int)USHRT_MAX, r.width());
@@ -1716,42 +1716,21 @@ static inline XRectangle qRectToX11Rectangle(const QRect &r)
     return result;
 }
 
-static inline Region qRegionToX11Region(const QRegion &region)
-{
-    if (region.isEmpty())
-        return None;
-    Region result = XCreateRegion();
-    if (!result)
-        return None;
-    const QVector<QRect> rects = region.rects();
-    if (rects.size() == 1) {
-        XRectangle xrect = qRectToX11Rectangle(region.boundingRect());
-        XUnionRectWithRegion(&xrect, result, result);
-    } else {
-        foreach (const QRect &r, rects) {
-            XRectangle xrect = qRectToX11Rectangle(r);
-            XUnionRectWithRegion(&xrect, result, result);
-        }
-    }
-    return result;
-}
-
-
 void QXcbWindow::setMask(const QRegion &region)
 {
-
-    Display *display = (Display *)connection()->xlib_display();
     if (region.isEmpty()) {
-        XShapeCombineMask(display, xcb_window(),
-                          ShapeBounding, 0, 0,
-                          None, ShapeSet);
+        xcb_shape_mask(connection()->xcb_connection(), XCB_SHAPE_SO_SET,
+                       XCB_SHAPE_SK_BOUNDING, xcb_window(), 0, 0, XCB_NONE);
     } else {
-        XShapeCombineRegion(display, xcb_window(),
-                            ShapeBounding, 0, 0,
-                            qRegionToX11Region(region), ShapeSet);
+        QVector<xcb_rectangle_t> rects;
+        foreach (const QRect &r, region.rects())
+            rects.push_back(qRectToXCBRectangle(r));
+        xcb_shape_rectangles(connection()->xcb_connection(), XCB_SHAPE_SO_SET,
+                             XCB_SHAPE_SK_BOUNDING, XCB_CLIP_ORDERING_UNSORTED,
+                             xcb_window(), 0, 0, rects.size(), &rects[0]);
     }
 }
 
-#endif // XCB_USE_XLIB && !QT_NO_SHAPE
+#endif // !QT_NO_SHAPE
 
 QT_END_NAMESPACE

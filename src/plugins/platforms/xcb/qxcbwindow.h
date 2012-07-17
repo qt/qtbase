@@ -109,9 +109,9 @@ public:
 
     bool startSystemResize(const QPoint &pos, Qt::Corner corner);
 
-#if defined(XCB_USE_XLIB) && !defined(QT_NO_SHAPE)
+#if !defined(QT_NO_SHAPE)
     void setMask(const QRegion &region);
-#endif // XCB_USE_XLIB && !QT_NO_SHAPE
+#endif // !QT_NO_SHAPE
 
     xcb_window_t xcb_window() const { return m_window; }
     uint depth() const { return m_depth; }
