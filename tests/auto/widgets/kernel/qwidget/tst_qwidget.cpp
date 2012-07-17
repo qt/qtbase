@@ -385,6 +385,8 @@ private slots:
     void nativeChildFocus();
     void grab();
 
+    void touchEventSynthesizedMouseEvent();
+
 private:
     bool ensureScreenSize(int width, int height);
     QWidget *testWidget;
@@ -9281,6 +9283,164 @@ void tst_QWidget::grab()
         expected = widget2.grab(QRect());
 
         QVERIFY(lenientCompare(actual, expected));
+    }
+}
+
+class TouchMouseWidget : public QWidget {
+public:
+    explicit TouchMouseWidget(QWidget *parent = 0)
+        : QWidget(parent),
+          m_touchEventCount(0),
+          m_acceptTouch(false),
+          m_mouseEventCount(0),
+          m_acceptMouse(true)
+    {
+        resize(200, 200);
+    }
+
+    void setAcceptTouch(bool accept)
+    {
+        m_acceptTouch = accept;
+        setAttribute(Qt::WA_AcceptTouchEvents, accept);
+    }
+
+    void setAcceptMouse(bool accept)
+    {
+        m_acceptMouse = accept;
+    }
+
+protected:
+    bool event(QEvent *e)
+    {
+        switch (e->type()) {
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+        case QEvent::TouchEnd:
+            ++m_touchEventCount;
+            if (m_acceptTouch)
+                e->accept();
+            else
+                e->ignore();
+            return true;
+
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseMove:
+        case QEvent::MouseButtonRelease:
+            ++m_mouseEventCount;
+            if (m_acceptMouse)
+                e->accept();
+            else
+                e->ignore();
+            return true;
+
+        default:
+            return QWidget::event(e);
+        }
+    }
+
+public:
+    int m_touchEventCount;
+    bool m_acceptTouch;
+    int m_mouseEventCount;
+    bool m_acceptMouse;
+};
+
+void tst_QWidget::touchEventSynthesizedMouseEvent()
+{
+    {
+        // Simple case, we ignore the touch events, we get mouse events instead
+        QTouchDevice *device = new QTouchDevice;
+        device->setType(QTouchDevice::TouchScreen);
+        QWindowSystemInterface::registerTouchDevice(device);
+
+        TouchMouseWidget widget;
+        widget.show();
+        QVERIFY(QTest::qWaitForWindowExposed(widget.windowHandle()));
+        QCOMPARE(widget.m_touchEventCount, 0);
+        QCOMPARE(widget.m_mouseEventCount, 0);
+
+        QTest::touchEvent(&widget, device).press(0, QPoint(10, 10), &widget);
+        QCOMPARE(widget.m_touchEventCount, 0);
+        QCOMPARE(widget.m_mouseEventCount, 1);
+        QTest::touchEvent(&widget, device).move(0, QPoint(15, 15), &widget);
+        QCOMPARE(widget.m_touchEventCount, 0);
+        QCOMPARE(widget.m_mouseEventCount, 2);
+        QTest::touchEvent(&widget, device).release(0, QPoint(20, 20), &widget);
+        QCOMPARE(widget.m_touchEventCount, 0);
+        QCOMPARE(widget.m_mouseEventCount, 3);
+    }
+
+    {
+        // We accept the touch events, no mouse event is generated
+        QTouchDevice *device = new QTouchDevice;
+        device->setType(QTouchDevice::TouchScreen);
+        QWindowSystemInterface::registerTouchDevice(device);
+
+        TouchMouseWidget widget;
+        widget.setAcceptTouch(true);
+        widget.show();
+        QVERIFY(QTest::qWaitForWindowExposed(widget.windowHandle()));
+        QCOMPARE(widget.m_touchEventCount, 0);
+        QCOMPARE(widget.m_mouseEventCount, 0);
+
+        QTest::touchEvent(&widget, device).press(0, QPoint(10, 10), &widget);
+        QCOMPARE(widget.m_touchEventCount, 1);
+        QCOMPARE(widget.m_mouseEventCount, 0);
+        QTest::touchEvent(&widget, device).move(0, QPoint(15, 15), &widget);
+        QCOMPARE(widget.m_touchEventCount, 2);
+        QCOMPARE(widget.m_mouseEventCount, 0);
+        QTest::touchEvent(&widget, device).release(0, QPoint(20, 20), &widget);
+        QCOMPARE(widget.m_touchEventCount, 3);
+        QCOMPARE(widget.m_mouseEventCount, 0);
+    }
+
+    {
+        // Parent accepts touch events, child ignore both mouse and touch
+        // We should see propagation of the TouchBegin
+        QTouchDevice *device = new QTouchDevice;
+        device->setType(QTouchDevice::TouchScreen);
+        QWindowSystemInterface::registerTouchDevice(device);
+
+        TouchMouseWidget parent;
+        parent.setAcceptTouch(true);
+        TouchMouseWidget child(&parent);
+        child.setAcceptMouse(false);
+        parent.show();
+        QVERIFY(QTest::qWaitForWindowExposed(parent.windowHandle()));
+        QCOMPARE(parent.m_touchEventCount, 0);
+        QCOMPARE(parent.m_mouseEventCount, 0);
+        QCOMPARE(child.m_touchEventCount, 0);
+        QCOMPARE(child.m_mouseEventCount, 0);
+
+        QTest::touchEvent(parent.window(), device).press(0, QPoint(10, 10), &child);
+        QCOMPARE(parent.m_touchEventCount, 1);
+        QCOMPARE(parent.m_mouseEventCount, 0);
+        QCOMPARE(child.m_touchEventCount, 0);
+        QCOMPARE(child.m_mouseEventCount, 1); // Attempt at mouse event before propagation
+    }
+
+    {
+        // Parent accepts mouse events, child ignore both mouse and touch
+        // We should see propagation of the TouchBegin into a MouseButtonPress
+        QTouchDevice *device = new QTouchDevice;
+        device->setType(QTouchDevice::TouchScreen);
+        QWindowSystemInterface::registerTouchDevice(device);
+
+        TouchMouseWidget parent;
+        TouchMouseWidget child(&parent);
+        child.setAcceptMouse(false);
+        parent.show();
+        QVERIFY(QTest::qWaitForWindowExposed(parent.windowHandle()));
+        QCOMPARE(parent.m_touchEventCount, 0);
+        QCOMPARE(parent.m_mouseEventCount, 0);
+        QCOMPARE(child.m_touchEventCount, 0);
+        QCOMPARE(child.m_mouseEventCount, 0);
+
+        QTest::touchEvent(parent.window(), device).press(0, QPoint(10, 10), &child);
+        QCOMPARE(parent.m_touchEventCount, 0);
+        QCOMPARE(parent.m_mouseEventCount, 1);
+        QCOMPARE(child.m_touchEventCount, 0);
+        QCOMPARE(child.m_mouseEventCount, 1); // Attempt at mouse event before propagation
     }
 }
 

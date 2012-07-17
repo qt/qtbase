@@ -3412,6 +3412,25 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
         break;
 #endif
+
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    {
+        QWidget *widget = static_cast<QWidget *>(receiver);
+        QTouchEvent *touchEvent = static_cast<QTouchEvent *>(e);
+        const bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
+
+        touchEvent->setTarget(widget);
+        touchEvent->setAccepted(acceptTouchEvents);
+
+        res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
+
+        // If the touch event wasn't accepted, synthesize a mouse event and see if the widget wants it.
+        if (!touchEvent->isAccepted())
+            res = d->translateTouchToMouse(widget, touchEvent);
+        break;
+    }
+
     case QEvent::TouchBegin:
     // Note: TouchUpdate and TouchEnd events are never propagated
     {
@@ -3432,6 +3451,15 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             touchEvent->setAccepted(acceptTouchEvents);
             QPointer<QWidget> p = widget;
             res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
+
+            // If the touch event wasn't accepted, synthesize a mouse event and see if the widget wants it.
+            if (!touchEvent->isAccepted()) {
+                res = d->translateTouchToMouse(widget, touchEvent);
+                eventAccepted = touchEvent->isAccepted();
+                if (eventAccepted)
+                    break;
+            }
+
             eventAccepted = touchEvent->isAccepted();
             if (p.isNull()) {
                 // widget was deleted
@@ -4355,6 +4383,68 @@ QWidget *QApplicationPrivate::findClosestTouchPointTarget(QTouchDevice *device, 
         ++it;
     }
     return static_cast<QWidget *>(closestTarget);
+}
+
+class WidgetAttributeSaver
+{
+public:
+    explicit WidgetAttributeSaver(QWidget *widget, Qt::WidgetAttribute attribute, bool forcedValue)
+        : m_widget(widget),
+          m_attribute(attribute),
+          m_savedValue(widget->testAttribute(attribute))
+    {
+        widget->setAttribute(attribute, forcedValue);
+    }
+
+    ~WidgetAttributeSaver()
+    {
+        m_widget->setAttribute(m_attribute, m_savedValue);
+    }
+
+private:
+    QWidget * const m_widget;
+    const Qt::WidgetAttribute m_attribute;
+    const bool m_savedValue;
+};
+
+bool QApplicationPrivate::translateTouchToMouse(QWidget *widget, QTouchEvent *event)
+{
+    Q_Q(QApplication);
+
+    Q_FOREACH (const QTouchEvent::TouchPoint &p, event->touchPoints()) {
+        const QEvent::Type eventType = (p.state() & Qt::TouchPointPressed) ? QEvent::MouseButtonPress
+                                     : (p.state() & Qt::TouchPointReleased) ? QEvent::MouseButtonRelease
+                                     : (p.state() & Qt::TouchPointMoved) ? QEvent::MouseMove
+                                     : QEvent::None;
+
+        if (eventType == QEvent::None)
+            continue;
+
+        const QPoint pos = widget->mapFromGlobal(p.scenePos().toPoint());
+
+        QMouseEvent mouseEvent(eventType, pos,
+                               Qt::LeftButton, Qt::LeftButton,
+                               event->modifiers());
+        mouseEvent.setAccepted(true);
+        mouseEvent.setTimestamp(event->timestamp());
+
+        // Make sure our synthesized mouse event doesn't propagate
+        // we want to control the propagation ourself to get a chance to
+        // deliver a proper touch event higher up in the hierarchy if that
+        // widget doesn't pick up the mouse event either.
+        WidgetAttributeSaver saver(widget, Qt::WA_NoMousePropagation, true);
+
+        // Note it has to be a spontaneous event if we want the focus management
+        // and input method support to behave properly. Quite some of the code
+        // related to those aspect check for the spontaneous flag.
+        const bool res = q->sendSpontaneousEvent(widget, &mouseEvent);
+        event->setAccepted(mouseEvent.isAccepted());
+
+        if (mouseEvent.isAccepted())
+            return res;
+    }
+
+    return false;
 }
 
 void QApplicationPrivate::translateRawTouchEvent(QWidget *window,

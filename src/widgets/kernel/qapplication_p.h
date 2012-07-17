@@ -290,6 +290,7 @@ public:
     QWidget *findClosestTouchPointTarget(QTouchDevice *device, const QPointF &screenPos);
     void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
     void removeTouchPoint(int touchPointId);
+    bool translateTouchToMouse(QWidget *widget, QTouchEvent *event);
     static void translateRawTouchEvent(QWidget *widget,
                                        QTouchDevice *device,
                                        const QList<QTouchEvent::TouchPoint> &touchPoints,
