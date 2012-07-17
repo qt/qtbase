@@ -1962,13 +1962,8 @@ bool QOCIResult::exec()
         return false;
     }
 
-    if (stmtType == OCI_STMT_SELECT) {
-        iters = 0;
-        mode = OCI_DEFAULT;
-    } else {
-        iters = 1;
-        mode = d->transaction ? OCI_DEFAULT : OCI_COMMIT_ON_SUCCESS;
-    }
+    iters = stmtType == OCI_STMT_SELECT ? 0 : 1;
+    mode = d->transaction ? OCI_DEFAULT : OCI_COMMIT_ON_SUCCESS;
 
     // bind placeholders
     if (boundValueCount() > 0
