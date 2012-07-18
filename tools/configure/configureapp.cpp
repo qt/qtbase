@@ -1980,7 +1980,7 @@ bool Configure::checkAvailability(const QString &part)
 {
     bool available = false;
     if (part == "STYLE_WINDOWSXP")
-        available = findFile("uxtheme.h");
+        available = (platform() == WINDOWS) && findFile("uxtheme.h");
 
     else if (part == "ZLIB")
         available = findFile("zlib.h");
