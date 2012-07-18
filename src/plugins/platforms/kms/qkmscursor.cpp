@@ -59,6 +59,12 @@ QKmsCursor::QKmsCursor(QKmsScreen *screen)
     m_cursorImage = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
 }
 
+QKmsCursor::~QKmsCursor()
+{
+    drmModeSetCursor(m_screen->device()->fd(), m_screen->crtcId(),
+                     0, 0, 0);
+}
+
 void QKmsCursor::pointerEvent(const QMouseEvent &event)
 {
     int status = drmModeMoveCursor(m_screen->device()->fd(),

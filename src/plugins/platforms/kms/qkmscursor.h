@@ -58,6 +58,7 @@ class QKmsCursor : public QPlatformCursor
 {
 public:
     QKmsCursor(QKmsScreen *screen);
+    ~QKmsCursor();
 
     void pointerEvent(const QMouseEvent &event);
     void changeCursor(QCursor *widgetCursor, QWindow *window);
