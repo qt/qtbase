@@ -1985,7 +1985,7 @@ bool QAbstractItemModel::removeColumns(int, int, const QModelIndex &)
 /*!
     On models that support this, moves \a count rows starting with the given
     \a sourceRow under parent \a sourceParent to row \a destinationChild under
-    \a parent \a destinationParent.
+    parent \a destinationParent.
 
     Returns true if the rows were successfully moved; otherwise returns
     false.
@@ -2006,7 +2006,7 @@ bool QAbstractItemModel::moveRows(const QModelIndex &, int , int , const QModelI
 /*!
     On models that support this, moves \a count columns starting with the given
     \a sourceColumn under parent \a sourceParent to column \a destinationChild under
-    \a parent \a destinationParent.
+    parent \a destinationParent.
 
     Returns true if the columns were successfully moved; otherwise returns
     false.
@@ -2203,7 +2203,7 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
 }
 
 /*!
-    \fn void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &theRoleNames)
+    \fn void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
     \since 4.6
     \obsolete
 
