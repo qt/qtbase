@@ -2094,9 +2094,6 @@
 
     \value IntersectClip Intersects the current clip path/rect/region
     with the one supplied in the function call.
-
-    \value UniteClip Unites the current clip path/rect/region with the
-    one supplied in the function call.
 */
 
 /*!
