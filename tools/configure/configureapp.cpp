@@ -3211,11 +3211,6 @@ void Configure::generateConfigfiles()
         tmpFile.close();
     }
 
-    QString spec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : dictionary["QMAKESPEC"];
-    if (!copySpec("default", "", spec)
-        || !copySpec("default-host", "host ", dictionary["QMAKESPEC"]))
-        return;
-
     QTemporaryFile tmpFile3;
     if (tmpFile3.open()) {
         tmpStream.setDevice(&tmpFile3);
@@ -3635,6 +3630,15 @@ void Configure::buildQmake()
         confStream.flush();
         confFile.close();
     }
+
+    //create default mkspecs
+    QString spec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : dictionary["QMAKESPEC"];
+    if (!copySpec("default", "", spec)
+        || !copySpec("default-host", "host ", dictionary["QMAKESPEC"])) {
+        cout << "Error installing default mkspecs" << endl << endl;
+        exit(EXIT_FAILURE);
+    }
+
 }
 #endif
 
