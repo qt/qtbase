@@ -52,7 +52,7 @@
 #include "controls.h"
 
 //! [0]
-ControllerWindow::ControllerWindow()
+ControllerWindow::ControllerWindow() : previewWidget(0)
 {
     parentWindow = new QMainWindow;
     parentWindow->setWindowTitle(tr("Preview parent window"));
@@ -60,7 +60,9 @@ ControllerWindow::ControllerWindow()
     parentWindow->setCentralWidget(label);
 
     previewWindow = new PreviewWindow;
+    previewWindow->installEventFilter(this);
     previewDialog = new PreviewDialog;
+    previewDialog->installEventFilter(this);
 
     createTypeGroupBox();
 
@@ -69,6 +71,11 @@ ControllerWindow::ControllerWindow()
 
     QHBoxLayout *bottomLayout = new QHBoxLayout;
     bottomLayout->addStretch();
+
+    QPushButton *updateControlsButton = new QPushButton(tr("&Update"));
+    connect(updateControlsButton, SIGNAL(clicked()), this, SLOT(updateStateControl()));
+
+    bottomLayout->addWidget(updateControlsButton);
     bottomLayout->addWidget(quitButton);
 
     hintsControl = new HintControl;
@@ -103,45 +110,58 @@ ControllerWindow::ControllerWindow()
     updatePreview();
 }
 
+bool ControllerWindow::eventFilter(QObject *o, QEvent *e)
+{
+    if (e->type() == QEvent::WindowStateChange)
+        updateStateControl();
+    return false;
+}
+
+void ControllerWindow::updateStateControl()
+{
+    if (previewWidget)
+        statesControl->setStates(previewWidget->windowState());
+}
+
 void ControllerWindow::updatePreview()
 {
     const Qt::WindowFlags flags = typeControl->type() | hintsControl->hints();
 
     previewWindow->hide();
     previewDialog->hide();
-    QWidget *widget = 0;
+
     if (previewWidgetButton->isChecked())
-        widget = previewWindow;
+        previewWidget = previewWindow;
     else
-        widget = previewDialog;
+        previewWidget = previewDialog;
 
     if (modalWindowCheckBox->isChecked()) {
         parentWindow->show();
-        widget->setWindowModality(Qt::WindowModal);
-        widget->setParent(parentWindow);
+        previewWidget->setWindowModality(Qt::WindowModal);
+        previewWidget->setParent(parentWindow);
     } else {
-        widget->setWindowModality(Qt::NonModal);
-        widget->setParent(0);
+        previewWidget->setWindowModality(Qt::NonModal);
+        previewWidget->setParent(0);
         parentWindow->hide();
     }
 
-    widget->setWindowFlags(flags);
+    previewWidget->setWindowFlags(flags);
 
     if (fixedSizeWindowCheckBox->isChecked()) {
-        widget->setFixedSize(300, 300);
+        previewWidget->setFixedSize(300, 300);
     } else {
-        widget->setFixedSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        previewWidget->setFixedSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     }
 
-    QPoint pos = widget->pos();
+    QPoint pos = previewWidget->pos();
     if (pos.x() < 0)
         pos.setX(0);
     if (pos.y() < 0)
         pos.setY(0);
-    widget->move(pos);
+    previewWidget->move(pos);
 
-    widget->setWindowState(statesControl->states());
-    widget->setVisible(statesControl->visibleValue());
+    previewWidget->setWindowState(statesControl->states());
+    previewWidget->setVisible(statesControl->visibleValue());
 }
 
 void ControllerWindow::createTypeGroupBox()

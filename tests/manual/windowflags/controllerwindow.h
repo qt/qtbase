@@ -67,8 +67,11 @@ class ControllerWindow : public QWidget
 public:
     ControllerWindow();
 
+    virtual bool eventFilter(QObject *o, QEvent *e);
+
 private slots:
     void updatePreview();
+    void updateStateControl();
 
 private:
     void createTypeGroupBox();
@@ -78,6 +81,7 @@ private:
     QMainWindow *parentWindow;
     PreviewWindow *previewWindow;
     PreviewDialog *previewDialog;
+    QWidget *previewWidget;
     QGroupBox *widgetTypeGroupBox;
     QGroupBox *additionalOptionsGroupBox;
     TypeControl *typeControl;
