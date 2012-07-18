@@ -137,7 +137,7 @@ void QBasicTimer::start(int msec, QObject *obj)
     given \a timerType. See Qt::TimerType for information on the different
     timer types.
 
-    The given \a object will receive timer events.
+    \a obj will receive timer events.
 
     \sa stop(), isActive(), QObject::timerEvent(), Qt::TimerType
  */
