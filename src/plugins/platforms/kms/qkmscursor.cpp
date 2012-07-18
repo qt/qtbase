@@ -47,7 +47,8 @@ QT_BEGIN_NAMESPACE
 
 QKmsCursor::QKmsCursor(QKmsScreen *screen)
     : m_screen(screen),
-      m_graphicsBufferManager(screen->device()->gbmDevice())
+      m_graphicsBufferManager(screen->device()->gbmDevice()),
+      m_moved(false)
 {
     gbm_bo *bo = gbm_bo_create(m_graphicsBufferManager, 64, 64,
                                GBM_BO_FORMAT_ARGB8888,
@@ -67,6 +68,7 @@ QKmsCursor::~QKmsCursor()
 
 void QKmsCursor::pointerEvent(const QMouseEvent &event)
 {
+    m_moved = true;
     int status = drmModeMoveCursor(m_screen->device()->fd(),
                                    m_screen->crtcId(),
                                    event.globalX(),
@@ -79,6 +81,9 @@ void QKmsCursor::pointerEvent(const QMouseEvent &event)
 void QKmsCursor::changeCursor(QCursor *widgetCursor, QWindow *window)
 {
     Q_UNUSED(window)
+
+    if (!m_moved)
+        drmModeMoveCursor(m_screen->device()->fd(), m_screen->crtcId(), 0, 0);
 
     if (widgetCursor->shape() != Qt::BitmapCursor) {
         m_cursorImage->set(widgetCursor->shape());

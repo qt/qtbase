@@ -68,6 +68,7 @@ private:
     gbm_device *m_graphicsBufferManager;
     EGLImageKHR m_eglImage;
     QPlatformCursorImage *m_cursorImage;
+    bool m_moved;
 };
 
 QT_END_NAMESPACE
