@@ -237,6 +237,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "FONT_CONFIG" ]     = "no";
     dictionary[ "POSIX_IPC" ]       = "no";
     dictionary[ "QT_GLIB" ]         = "no";
+    dictionary[ "QT_ICONV" ]        = "auto";
 
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
@@ -2093,6 +2094,8 @@ bool Configure::checkAvailability(const QString &part)
         available = true;
     } else if (part == "DIRECTWRITE") {
         available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
+    } else if (part == "ICONV") {
+        available = tryCompileProject("unix/iconv") || tryCompileProject("unix/gnu-libiconv");
     }
 
     return available;
@@ -2191,6 +2194,10 @@ void Configure::autoDetection()
     // Detection of IncrediBuild buildconsole
     if (dictionary["INCREDIBUILD_XGE"] == "auto")
         dictionary["INCREDIBUILD_XGE"] = checkAvailability("INCREDIBUILD_XGE") ? "yes" : "no";
+
+    // Detection of iconv support
+    if (dictionary["QT_ICONV"] == "auto")
+        dictionary["QT_ICONV"] = checkAvailability("ICONV") ? "yes" : "no";
 
     // Mark all unknown "auto" to the default value..
     for (QMap<QString,QString>::iterator i = dictionary.begin(); i != dictionary.end(); ++i) {
