@@ -164,7 +164,7 @@ QT_BEGIN_NAMESPACE
     \fn QDataStream &operator<<(QDataStream &stream, const QMargins &m)
     \relates QMargins
 
-    Writes the given \a margin to the given \a stream and returns a
+    Writes margin \a m to the given \a stream and returns a
     reference to the stream.
 
     \sa {Serializing Qt Data Types}
@@ -180,7 +180,7 @@ QDataStream &operator<<(QDataStream &s, const QMargins &m)
     \fn QDataStream &operator>>(QDataStream &stream, QMargins &m)
     \relates QMargins
 
-    Reads a margin from the given \a stream into the given \a margin
+    Reads a margin from the given \a stream into margin \a m
     and returns a reference to the stream.
 
     \sa {Serializing Qt Data Types}
