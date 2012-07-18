@@ -620,7 +620,7 @@ void QMdiAreaTabBar::contextMenuEvent(QContextMenuEvent *event)
         subWindowPrivate->setVisible(QMdiSubWindowPrivate::ResizeAction, false);
         subWindowPrivate->setVisible(QMdiSubWindowPrivate::MinimizeAction, false);
         subWindowPrivate->setVisible(QMdiSubWindowPrivate::MaximizeAction, false);
-        subWindowPrivate->setVisible(QMdiSubWindowPrivate::MaximizeAction, false);
+        subWindowPrivate->setVisible(QMdiSubWindowPrivate::RestoreAction, false);
         subWindowPrivate->setVisible(QMdiSubWindowPrivate::StayOnTopAction, false);
     }
 
