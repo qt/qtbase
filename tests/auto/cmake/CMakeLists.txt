@@ -74,3 +74,16 @@ if (NOT WIN32)
 endif()
 expect_pass(test_private_includes)
 expect_pass(test_modules)
+expect_pass(test_testlib_definitions)
+
+expect_fail(test_testlib_no_link_gui)
+expect_fail(test_testlib_no_link_widgets)
+
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
+    "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_gui/test_testlib_no_link_gui/"
+)
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
+    "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_widgets/test_testlib_no_link_widgets/"
+)
