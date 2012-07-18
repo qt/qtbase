@@ -340,7 +340,7 @@ void QMetaType::registerStreamOperators(int idx, SaveOperator saveOp,
 #endif // QT_NO_DATASTREAM
 
 /*!
-    Returns the type name associated with the given \a type, or 0 if no
+    Returns the type name associated with the given \a typeId, or 0 if no
     matching type was found. The returned pointer must not be deleted.
 
     \sa type(), isRegistered(), Type
