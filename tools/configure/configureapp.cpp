@@ -238,6 +238,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "POSIX_IPC" ]       = "no";
     dictionary[ "QT_GLIB" ]         = "no";
     dictionary[ "QT_ICONV" ]        = "auto";
+    dictionary[ "QT_CUPS" ]         = "auto";
 
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
@@ -2096,6 +2097,8 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
     } else if (part == "ICONV") {
         available = tryCompileProject("unix/iconv") || tryCompileProject("unix/gnu-libiconv");
+    } else if (part == "CUPS") {
+        available = (platform() != WINDOWS) && (platform() != WINDOWS_CE) && tryCompileProject("unix/cups");
     }
 
     return available;
@@ -2198,6 +2201,10 @@ void Configure::autoDetection()
     // Detection of iconv support
     if (dictionary["QT_ICONV"] == "auto")
         dictionary["QT_ICONV"] = checkAvailability("ICONV") ? "yes" : "no";
+
+    // Detection of iconv support
+    if (dictionary["QT_CUPS"] == "auto")
+        dictionary["QT_CUPS"] = checkAvailability("CUPS") ? "yes" : "no";
 
     // Mark all unknown "auto" to the default value..
     for (QMap<QString,QString>::iterator i = dictionary.begin(); i != dictionary.end(); ++i) {
@@ -3304,6 +3311,7 @@ void Configure::displayConfig()
     sout << "NIS support................." << dictionary[ "NIS" ] << endl;
     sout << "Iconv support..............." << dictionary[ "QT_ICONV" ] << endl;
     sout << "Glib support................" << dictionary[ "QT_GLIB" ] << endl;
+    sout << "CUPS support................" << dictionary[ "QT_CUPS" ] << endl;
     if (dictionary.value(QStringLiteral("OPENGL_ES_2")) == QStringLiteral("yes")) {
         const QString angleDir = dictionary.value(QStringLiteral("ANGLE_DIR"));
         if (!angleDir.isEmpty())
