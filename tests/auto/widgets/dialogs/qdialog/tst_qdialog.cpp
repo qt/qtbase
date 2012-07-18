@@ -76,7 +76,6 @@ private slots:
     void toolDialogPosition();
     void deleteMainDefault();
     void deleteInExec();
-    void throwInExec();
     void showSizeGrip();
     void setVisible();
     void reject();
@@ -422,59 +421,6 @@ void tst_QDialog::deleteInExec()
     QMetaObject::invokeMethod(dialog, "deleteLater", Qt::QueuedConnection);
     QCOMPARE(dialog->exec(), int(QDialog::Rejected));
 }
-
-#ifndef QT_NO_EXCEPTIONS
-class QDialogTestException : public std::exception { };
-
-class ExceptionDialog : public QDialog
-{
-    Q_OBJECT
-public:
-    ExceptionDialog() : QDialog(0) { }
-public slots:
-    void throwException()
-    {
-        QDialogTestException e;
-        throw e;
-    }
-};
-
-void tst_QDialog::throwInExec()
-{
-#if defined(Q_OS_MAC) || (defined(Q_OS_WINCE) && defined(_ARM_))
-    QSKIP("Throwing exceptions in exec() is not supported on this platform.");
-#endif
-#if defined(Q_OS_LINUX)
-    // C++ exceptions can't be passed through glib callbacks.  Skip the test if
-    // we're using the glib event loop.
-    QByteArray dispatcher = QAbstractEventDispatcher::instance()->metaObject()->className();
-    if (dispatcher.contains("Glib")) {
-        QSKIP(
-            qPrintable(QString(
-                "Throwing exceptions in exec() won't work if %1 event dispatcher is used.\n"
-                "Try running with QT_NO_GLIB=1 in environment."
-            ).arg(QString::fromLatin1(dispatcher)))
-        );
-    }
-#endif
-
-    int caughtExceptions = 0;
-    try {
-        ExceptionDialog dialog;
-        QMetaObject::invokeMethod(&dialog, "throwException", Qt::QueuedConnection);
-        QMetaObject::invokeMethod(&dialog, "reject", Qt::QueuedConnection);
-        (void) dialog.exec();
-    } catch(...) {
-        ++caughtExceptions;
-    }
-    QCOMPARE(caughtExceptions, 1);
-}
-#else
-void tst_QDialog::throwInExec()
-{
-    QSKIP("Exceptions are disabled");
-}
-#endif //QT_NO_EXCEPTIONS
 
 // From Task 124269
 void tst_QDialog::showSizeGrip()
