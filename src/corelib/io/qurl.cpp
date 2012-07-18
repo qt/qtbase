@@ -2823,7 +2823,7 @@ QString QUrl::toLocalFile() const
 }
 
 /*!
-    \since 4.7
+    \since 4.8
     Returns true if this URL is pointing to a local file path. A URL is a
     local file path if the scheme is "file".
 
