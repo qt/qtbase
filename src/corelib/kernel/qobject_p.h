@@ -193,6 +193,11 @@ public:
     int signalIndex(const char *signalName, const QMetaObject **meta = 0) const;
     inline bool isSignalConnected(uint signalIdx) const;
 
+    // To allow abitrary objects to call connectNotify()/disconnectNotify() without making
+    // the API public in QObject. This is used by QQmlNotifierEndpoint.
+    inline void connectNotify(const QMetaMethod &signal);
+    inline void disconnectNotify(const QMetaMethod &signal);
+
 public:
     ExtraData *extraData;    // extra data set by the user
     QThreadData *threadData; // id of the thread that owns the object
@@ -250,6 +255,16 @@ inline void QObjectPrivate::resetCurrentSender(QObject *receiver,
     // if we've recursed, we need to tell the caller about the objects deletion
     if (previousSender)
         previousSender->ref = currentSender->ref;
+}
+
+inline void QObjectPrivate::connectNotify(const QMetaMethod &signal)
+{
+    q_ptr->connectNotify(signal);
+}
+
+inline void QObjectPrivate::disconnectNotify(const QMetaMethod &signal)
+{
+    q_ptr->disconnectNotify(signal);
 }
 
 
