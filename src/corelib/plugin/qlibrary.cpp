@@ -96,13 +96,22 @@ static QBasicMutex qt_library_mutex;
     name in the constructor, or set it explicitly with setFileName().
     When loading the library, QLibrary searches in all the
     system-specific library locations (e.g. \c LD_LIBRARY_PATH on
-    Unix), unless the file name has an absolute path. If the file
-    cannot be found, QLibrary tries the name with different
-    platform-specific file suffixes, like ".so" on Unix, ".dylib" on
-    the Mac, or ".dll" on Windows. This makes it possible
-    to specify shared libraries that are only identified by their
-    basename (i.e. without their suffix), so the same code will work
-    on different operating systems.
+    Unix), unless the file name has an absolute path.
+
+    If the file name is an absolute path then an attempt is made to
+    load this path first. If the file cannot be found, QLibrary tries
+    the name with different platform-specific file prefixes, like
+    "lib" on Unix and Mac, and suffixes, like ".so" on Unix, ".dylib"
+    on the Mac, or ".dll" on Windows.
+
+    If the file path is not absolute then QLibrary modifies the search
+    order to try the system-specific prefixes and suffixes first,
+    followed by the file path specified.
+
+    This makes it possible to specify shared libraries that are only
+    identified by their basename (i.e. without their suffix), so the
+    same code will work on different operating systems yet still
+    minimise the number of attempts to find the library.
 
     The most important functions are load() to dynamically load the
     library file, isLoaded() to check whether loading was successful,

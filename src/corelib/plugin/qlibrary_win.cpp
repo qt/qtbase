@@ -45,6 +45,7 @@
 #include "qdir.h"
 #include "qfileinfo.h"
 #include "qdir.h"
+#include <private/qfilesystementry_p.h>
 
 #if defined(QT_NO_LIBRARY) && defined(Q_OS_WIN)
 #undef QT_NO_LIBRARY
@@ -59,46 +60,72 @@ extern QString qt_error_string(int code);
 
 bool QLibraryPrivate::load_sys()
 {
-#ifdef Q_OS_WINCE
-    QString attempt = QFileInfo(fileName).absoluteFilePath();
-#else
-    QString attempt = fileName;
-#endif
-
     //avoid 'Bad Image' message box
     UINT oldmode = SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX);
-    pHnd = LoadLibrary((wchar_t*)QDir::toNativeSeparators(attempt).utf16());
 
-    if (pluginState != IsAPlugin) {
+    // We make the following attempts at locating the library:
+    //
+    // WinCE
+    // if (absolute)
+    //     fileName
+    //     fileName + ".dll"
+    // else
+    //     fileName + ".dll"
+    //     fileName
+    //     QFileInfo(fileName).absoluteFilePath()
+    //
+    // Windows
+    // if (absolute)
+    //     fileName
+    //     fileName + ".dll"
+    // else
+    //     fileName + ".dll"
+    //     fileName
+    //
+    // NB If it's a plugin we do not ever try the ".dll" extension
+    QStringList attempts;
+
+    if (pluginState != IsAPlugin)
+        attempts.append(fileName + QLatin1String(".dll"));
+
+    // If the fileName is an absolute path we try that first, otherwise we
+    // use the system-specific suffix first
+    QFileSystemEntry fsEntry(fileName);
+    if (fsEntry.isAbsolute()) {
+        attempts.prepend(fileName);
+    } else {
+        attempts.append(fileName);
 #if defined(Q_OS_WINCE)
-        if (!pHnd && ::GetLastError() == ERROR_MOD_NOT_FOUND) {
-            QString secondAttempt = fileName;
-            pHnd = LoadLibrary((wchar_t*)QDir::toNativeSeparators(secondAttempt).utf16());
-        }
+        attempts.append(QFileInfo(fileName).absoluteFilePath());
 #endif
-        if (!pHnd && ::GetLastError() == ERROR_MOD_NOT_FOUND) {
-            attempt += QLatin1String(".dll");
-            pHnd = LoadLibrary((wchar_t*)QDir::toNativeSeparators(attempt).utf16());
-        }
+    }
+
+    Q_FOREACH (const QString &attempt, attempts) {
+        pHnd = LoadLibrary((wchar_t*)QDir::toNativeSeparators(attempt).utf16());
+
+        // If we have a handle or the last error is something other than "unable
+        // to find the module", then bail out
+        if (pHnd || ::GetLastError() != ERROR_MOD_NOT_FOUND)
+            break;
     }
 
     SetErrorMode(oldmode);
     if (!pHnd) {
         errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName).arg(qt_error_string());
-    }
-    if (pHnd) {
+    } else {
+        // Query the actual name of the library that was loaded
         errorString.clear();
 
         wchar_t buffer[MAX_PATH];
         ::GetModuleFileName(pHnd, buffer, MAX_PATH);
-        attempt = QString::fromWCharArray(buffer);
 
-        const QDir dir =  QFileInfo(fileName).dir();
-        const QString realfilename = attempt.mid(attempt.lastIndexOf(QLatin1Char('\\')) + 1);
+        QString moduleFileName = QString::fromWCharArray(buffer);
+        moduleFileName.remove(0, 1 + moduleFileName.lastIndexOf(QLatin1Char('\\')));
+        const QDir dir(fsEntry.path());
         if (dir.path() == QLatin1String("."))
-            qualifiedFileName = realfilename;
+            qualifiedFileName = moduleFileName;
         else
-            qualifiedFileName = dir.filePath(realfilename);
+            qualifiedFileName = dir.filePath(moduleFileName);
     }
     return (pHnd != 0);
 }
