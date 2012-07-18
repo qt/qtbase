@@ -309,10 +309,8 @@ void tst_QGraphicsSceneIndex::clear()
 
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(250);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    qApp->setActiveWindow(&view);
     scene.clear();
 
     // Make sure the index is re-generated after QGraphicsScene::clear();

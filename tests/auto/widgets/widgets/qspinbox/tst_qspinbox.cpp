@@ -919,13 +919,10 @@ void tst_QSpinBox::specialValue()
     spin.setMaximum(100);
     spin.setValue(50);
     topWidget.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&topWidget);
-#endif
-    QTest::qWait(100);
     //make sure we have the focus (even if editingFinished fails)
     qApp->setActiveWindow(&topWidget);
     topWidget.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&topWidget));
     spin.setFocus();
 
     QTest::keyClick(&spin, Qt::Key_Return);

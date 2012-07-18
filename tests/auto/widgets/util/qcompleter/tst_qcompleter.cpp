@@ -1384,13 +1384,8 @@ void tst_QCompleter::task253125_lineEditCompletion()
     edit.setCompleter(completer);
     edit.show();
     edit.setFocus();
-
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&edit);
-#endif
-    QTest::qWait(10);
     QApplication::setActiveWindow(&edit);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&edit));
+    QVERIFY(QTest::qWaitForWindowActive(&edit));
 
     QTest::keyClick(&edit, 'i');
     QCOMPARE(edit.completer()->currentCompletion(), QString("iota"));
@@ -1421,14 +1416,8 @@ void tst_QCompleter::task247560_keyboardNavigation()
     edit.setCompleter(&completer);
     edit.show();
     edit.setFocus();
-
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&edit);
-#endif
-
-    QTest::qWait(10);
     QApplication::setActiveWindow(&edit);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&edit));
+    QVERIFY(QTest::qWaitForWindowActive(&edit));
 
     QTest::keyClick(&edit, 'r');
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
@@ -1469,8 +1458,8 @@ void tst_QCompleter::QTBUG_14292_filesystem()
 
     edit.show();
     QApplication::setActiveWindow(&edit);
-    QTest::qWaitForWindowShown(&edit);
-    QTRY_VERIFY(QApplication::activeWindow() == &edit);
+    QVERIFY(QTest::qWaitForWindowActive(&edit));
+    QCOMPARE(QApplication::activeWindow(), &edit);
     edit.setFocus();
     QTRY_VERIFY(edit.hasFocus());
 

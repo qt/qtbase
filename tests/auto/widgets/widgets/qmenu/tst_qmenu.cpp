@@ -553,8 +553,8 @@ void tst_QMenu::tearOff()
     QVERIFY(menu->isTearOffEnabled());
 
     widget.show();
-    QTest::qWaitForWindowShown(&widget);
     widget.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
     menu->popup(QPoint(0,0));
     QTest::qWait(50);
     QVERIFY(!menu->isTearOffMenuVisible());

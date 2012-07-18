@@ -179,10 +179,7 @@ void tst_QGraphicsEffectSource::initTestCase()
     scene->addItem(item);
     view = new QGraphicsView(scene);
     view->show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(view);
-#endif
-    QTest::qWait(200);
+    QVERIFY(QTest::qWaitForWindowActive(view));
 }
 
 void tst_QGraphicsEffectSource::cleanupTestCase()

@@ -529,9 +529,7 @@ void tst_QToolBar::actionGeometry()
     tb.addAction(&action4);
 
     tb.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&tb);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&tb));
 
     QList<QToolBarExtension *> extensions = tb.findChildren<QToolBarExtension *>();
 
@@ -853,9 +851,7 @@ void tst_QToolBar::actionTriggered()
     tb.addAction(&action4);
 
     tb.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&tb);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&tb));
 
     QList<QToolBarExtension *> extensions = tb.findChildren<QToolBarExtension *>();
 

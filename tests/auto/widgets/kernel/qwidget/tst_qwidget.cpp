@@ -4874,7 +4874,8 @@ void tst_QWidget::showAndMoveChild()
     parent.setGeometry(desktopDimensions);
     parent.setPalette(Qt::red);
     parent.show();
-    QTest::qWaitForWindowShown(&parent);
+    qApp->setActiveWindow(&parent);
+    QVERIFY(QTest::qWaitForWindowActive(&parent));
     QTest::qWait(10);
 
     const QPoint tlwOffset = parent.geometry().topLeft();
@@ -4976,25 +4977,23 @@ void tst_QWidget::multipleToplevelFocusCheck()
 
     w1.resize(200, 200);
     w1.show();
-    QTest::qWaitForWindowShown(&w1);
+    QVERIFY(QTest::qWaitForWindowExposed(&w1));
     w2.resize(200,200);
     w2.show();
-    QTest::qWaitForWindowShown(&w2);
-
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowExposed(&w2));
 
     QApplication::setActiveWindow(&w1);
     w1.activateWindow();
-    QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
+    QVERIFY(QTest::qWaitForWindowActive(&w1));
+    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
     QTest::qWait(50);
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 
     w2.activateWindow();
     QApplication::setActiveWindow(&w2);
-    QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
+    QVERIFY(QTest::qWaitForWindowActive(&w2));
+    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
     QTest::mouseClick(&w2, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), (QWidget *)0);
 
@@ -5003,15 +5002,15 @@ void tst_QWidget::multipleToplevelFocusCheck()
 
     w1.activateWindow();
     QApplication::setActiveWindow(&w1);
-    QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
+    QVERIFY(QTest::qWaitForWindowActive(&w1));
+    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 
     w2.activateWindow();
     QApplication::setActiveWindow(&w2);
-    QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
+    QVERIFY(QTest::qWaitForWindowActive(&w2));
+    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
     QTest::mouseClick(&w2, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), (QWidget *)0);
 }
@@ -7531,7 +7530,8 @@ void tst_QWidget::resizeInPaintEvent()
     QWidget window;
     UpdateWidget widget(&window);
     window.show();
-    QTest::qWaitForWindowShown(&window);
+    qApp->setActiveWindow(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
     QTRY_VERIFY(widget.numPaintEvents > 0);
 
     widget.reset();
@@ -8132,7 +8132,8 @@ void tst_QWidget::setClearAndResizeMask()
     UpdateWidget topLevel;
     topLevel.resize(150, 150);
     topLevel.show();
-    QTest::qWaitForWindowShown(&topLevel);
+    qApp->setActiveWindow(&topLevel);
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
     QTRY_VERIFY(topLevel.numPaintEvents > 0);
     topLevel.reset();
 
@@ -8919,6 +8920,7 @@ void tst_QWidget::focusProxyAndInputMethods()
     toplevel->show();
     QTest::qWaitForWindowShown(toplevel);
     QApplication::setActiveWindow(toplevel);
+    QVERIFY(QTest::qWaitForWindowActive(toplevel));
     QVERIFY(toplevel->hasFocus());
     QVERIFY(child->hasFocus());
 

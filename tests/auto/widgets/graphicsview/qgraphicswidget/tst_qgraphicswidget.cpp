@@ -1112,11 +1112,8 @@ void tst_QGraphicsWidget::initStyleOption()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
     QApplication::setActiveWindow(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     view.setAlignment(Qt::AlignTop | Qt::AlignLeft);
     SubQGraphicsWidget *widget = new SubQGraphicsWidget;
@@ -1139,7 +1136,7 @@ void tst_QGraphicsWidget::initStyleOption()
     if (underMouse) {
         view.resize(300, 300);
         view.show();
-        QTest::qWaitForWindowShown(&view);
+        QVERIFY(QTest::qWaitForWindowActive(&view));
         sendMouseMove(view.viewport(), view.mapFromScene(widget->mapToScene(widget->boundingRect().center())));
     }
 
@@ -1441,11 +1438,8 @@ void tst_QGraphicsWidget::setTabOrder()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
     QApplication::setActiveWindow(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QGraphicsWidget *lastItem = 0;
     QTest::ignoreMessage(QtWarningMsg, "QGraphicsWidget::setTabOrder(0, 0) is undefined");
@@ -1647,8 +1641,7 @@ void tst_QGraphicsWidget::verifyFocusChain()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     {
         // parent/child focus
@@ -1722,7 +1715,7 @@ void tst_QGraphicsWidget::verifyFocusChain()
         scene.addItem(w1_2);
         window->show();
         QApplication::setActiveWindow(window);
-        QTest::qWaitForWindowShown(window);
+        QVERIFY(QTest::qWaitForWindowActive(window));
 
         lineEdit->setFocus();
         QTRY_VERIFY(lineEdit->hasFocus());
@@ -1771,9 +1764,8 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowExposed(view.windowHandle());
     QApplication::setActiveWindow(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     // delete item in focus chain with no focus and verify chain
     SubQGraphicsWidget *parent = new SubQGraphicsWidget(0, Qt::Window);
@@ -2080,9 +2072,7 @@ void tst_QGraphicsWidget::task236127_bspTreeIndexFails()
 
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QTRY_VERIFY(!scene.itemAt(25, 25));
     widget->setGeometry(0, 112, 360, 528);
@@ -2101,9 +2091,7 @@ void tst_QGraphicsWidget::defaultSize()
 
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QSizeF initialSize = widget->size();
 
     widget->resize(initialSize);
@@ -2975,7 +2963,7 @@ void tst_QGraphicsWidget::respectHFW()
 
     view->show();
     window->setGeometry(0, 0, 70, 70);
-    QTest::qWaitForWindowShown(view);
+    QVERIFY(QTest::qWaitForWindowActive(view));
 
     {   // here we go - simulate a interactive resize of the window
         QTest::mouseMove(view, view->mapFromScene(71, 71)); // bottom right corner
@@ -3141,7 +3129,8 @@ void tst_QGraphicsWidget::initialShow()
         view.showFullScreen();
     else
         view.show();
-    QTest::qWaitForWindowShown(&view);
+    qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     scene.addItem(widget);
 
@@ -3170,7 +3159,8 @@ void tst_QGraphicsWidget::initialShow2()
     dummyView->setWindowFlags(Qt::X11BypassWindowManagerHint);
     EventSpy paintSpy(dummyView->viewport(), QEvent::Paint);
     dummyView->show();
-    QTest::qWaitForWindowShown(dummyView);
+    qApp->setActiveWindow(dummyView);
+    QVERIFY(QTest::qWaitForWindowActive(dummyView));
     const int expectedRepaintCount = paintSpy.count();
     delete dummyView;
     dummyView = 0;
@@ -3184,7 +3174,8 @@ void tst_QGraphicsWidget::initialShow2()
     QGraphicsView view(&scene);
     view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
 #if defined(Q_OS_WIN) || defined(UBUNTU_LUCID)
     QEXPECT_FAIL("", "QTBUG-20778", Abort);

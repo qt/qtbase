@@ -3360,9 +3360,8 @@ void tst_QTreeView::task224091_appendColumns()
     treeView->setModel(model);
     topLevel->show();
     treeView->resize(50,50);
-
-    QTest::qWaitForWindowShown(treeView);
-    qApp->processEvents();
+    qApp->setActiveWindow(topLevel);
+    QVERIFY(QTest::qWaitForWindowActive(topLevel));
 
     QList<QStandardItem *> projlist;
     for (int k = 0; k < 10; ++k)
@@ -3846,8 +3845,8 @@ void tst_QTreeView::keyboardNavigationWithDisabled()
     view.resize(200, view.visualRect(model.index(0,0)).height()*10);
     topLevel.show();
     QApplication::setActiveWindow(&topLevel);
-    QTest::qWaitForWindowShown(&topLevel);
-    QTRY_VERIFY(topLevel.isActiveWindow());
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
+    QVERIFY(topLevel.isActiveWindow());
 
     view.setCurrentIndex(model.index(1, 0));
     QTest::keyClick(view.viewport(), Qt::Key_Up);

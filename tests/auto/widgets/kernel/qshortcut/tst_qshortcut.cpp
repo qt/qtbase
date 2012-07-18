@@ -1004,9 +1004,7 @@ void tst_QShortcut::context()
     layout->addWidget(other1);
     layout->addWidget(other2);
     myBox.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&myBox);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&myBox));
 
     setupShortcut(other1, "ActiveWindow", TriggerSlot1, QKeySequence("Alt+1"), Qt::WindowShortcut);
     setupShortcut(other2, "Focus",        TriggerSlot2, QKeySequence("Alt+2"), Qt::WidgetShortcut);
@@ -1076,11 +1074,7 @@ void tst_QShortcut::context()
     other2->activateWindow();
     other2->setFocus(); // ###
     qApp->syncX();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(other2);
-#endif
-    QTest::qWait(100);
-    QCOMPARE(qApp->activeWindow(), other2->window());
+    QTRY_COMPARE(qApp->activeWindow(), other2->window());
     QCOMPARE(qApp->focusWidget(), (QWidget *)other2);
 
     currentResult = NoResult;
@@ -1097,14 +1091,6 @@ void tst_QShortcut::context()
     QCOMPARE(other2->toPlainText(), QString(""));
 
     clearAllShortcuts();
-    delete other1;
-    delete other2;
-    edit->activateWindow();
-    qApp->syncX();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(edit);
-#endif
-    QTest::qWait(100);
 }
 
 // ------------------------------------------------------------------

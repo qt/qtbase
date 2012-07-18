@@ -242,9 +242,7 @@ void tst_QTreeWidget::initTestCase()
 
     testWidget = new CustomTreeWidget();
     testWidget->show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(testWidget);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(testWidget));
 }
 
 void tst_QTreeWidget::cleanupTestCase()
@@ -459,7 +457,7 @@ void tst_QTreeWidget::editItem()
     QTreeWidget tree;
     populate(&tree, topLevelItems, new TreeItem(QStringList() << "1" << "2"));
     tree.show();
-    QTest::qWaitForWindowShown(&tree);
+    QVERIFY(QTest::qWaitForWindowActive(&tree));
 
     QSignalSpy itemChangedSpy(
         &tree, SIGNAL(itemChanged(QTreeWidgetItem*,int)));

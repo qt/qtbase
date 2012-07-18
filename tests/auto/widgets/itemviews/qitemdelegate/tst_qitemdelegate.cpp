@@ -460,9 +460,7 @@ void tst_QItemDelegate::font()
     TestItemDelegate *delegate = new TestItemDelegate(&table);
     table.setItemDelegate(delegate);
     table.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&table);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&table));
 
     QTableWidgetItem *item = new QTableWidgetItem;
     item->setText(itemText);
@@ -993,11 +991,8 @@ void tst_QItemDelegate::decoration()
     TestItemDelegate delegate;
     table.setItemDelegate(&delegate);
     table.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&table);
-#endif
     QApplication::setActiveWindow(&table);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&table));
+    QVERIFY(QTest::qWaitForWindowActive(&table));
 
     QVariant value;
     switch ((QVariant::Type)type) {

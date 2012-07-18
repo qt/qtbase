@@ -798,10 +798,11 @@ void tst_QAccessibility::mainWindowTest()
     QMainWindow *mw = new QMainWindow;
     mw->resize(300, 200);
     mw->show(); // triggers layout
+    qApp->setActiveWindow(mw);
 
     QLatin1String name = QLatin1String("I am the main window");
     mw->setWindowTitle(name);
-    QTest::qWaitForWindowShown(mw);
+    QVERIFY(QTest::qWaitForWindowActive(mw));
 
     // The order of events is not really that important.
     QAccessibleEvent show(mw, QAccessible::ObjectShow);
@@ -1638,10 +1639,8 @@ void tst_QAccessibility::mdiSubWindowTest()
     QMdiArea mdiArea;
     mdiArea.show();
     qApp->setActiveWindow(&mdiArea);
-#if defined(Q_OS_UNIX)
-    QCoreApplication::processEvents();
-    QTest::qWait(150);
-#endif
+    QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
+
 
     const int subWindowCount =  5;
     for (int i = 0; i < subWindowCount; ++i) {

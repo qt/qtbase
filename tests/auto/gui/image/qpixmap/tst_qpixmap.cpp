@@ -733,10 +733,7 @@ void tst_QPixmap::grabWindow()
     QWidget w;
     w.resize(640, 480);
     w.show();
-    QTest::qWait(100);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&w);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QVERIFY(QPixmap::grabWindow(w.winId()).isNull() == false);
 
     QWidget child(&w);
@@ -744,14 +741,12 @@ void tst_QPixmap::grabWindow()
     child.setPalette(Qt::red);
     child.setAutoFillBackground(true);
     child.show();
-    QTest::qWait(100);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&child);
-#endif
-
-    QPixmap grabWindowPixmap = QPixmap::grabWindow(child.winId());
-    QPixmap grabWidgetPixmap = QPixmap::grabWidget(&child);
-    lenientCompare(grabWindowPixmap, grabWidgetPixmap);
+    QTest::qWait(20);
+    const QPixmap grabWidgetPixmap = QPixmap::grabWidget(&child);
+    const WId childWinId = child.winId(); // Create native child
+    QVERIFY(QTest::qWaitForWindowExposed(child.windowHandle()));
+    const QPixmap grabWindowPixmap = QPixmap::grabWindow(childWinId);
+    QVERIFY(lenientCompare(grabWindowPixmap, grabWidgetPixmap));
 #endif
 }
 

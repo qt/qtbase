@@ -3338,8 +3338,8 @@ void tst_QLineEdit::task174640_editingFinished()
     mw.show();
     QApplication::setActiveWindow(&mw);
     mw.activateWindow();
-    QTest::qWaitForWindowShown(&mw);
-    QTRY_COMPARE(&mw, QApplication::activeWindow());
+    QVERIFY(QTest::qWaitForWindowActive(&mw));
+    QCOMPARE(&mw, QApplication::activeWindow());
 
     QSignalSpy editingFinishedSpy(le1, SIGNAL(editingFinished()));
 
@@ -3448,10 +3448,7 @@ void tst_QLineEdit::task229938_dontEmitChangedWhenTextIsNotChanged()
     QLineEdit lineEdit;
     lineEdit.setMaxLength(5);
     lineEdit.show();
-#ifdef Q_WS_X11
-    // to be safe and avoid failing setFocus with window managers
-    qt_x11_wait_for_window_manager(&lineEdit);
-#endif
+    QTest::qWaitForWindowExposed(&lineEdit); // to be safe and avoid failing setFocus with window managers
     lineEdit.setFocus();
     QSignalSpy changedSpy(&lineEdit, SIGNAL(textChanged(QString)));
     QTest::qWait(200);
@@ -3648,8 +3645,8 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
     le.addAction(&action);
 
     le.show();
-    QTest::qWaitForWindowShown(&le);
     QApplication::setActiveWindow(&le);
+    QVERIFY(QTest::qWaitForWindowActive(&le));
     le.setFocus();
     QTRY_VERIFY(le.hasFocus());
 

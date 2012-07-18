@@ -321,7 +321,7 @@ void tst_QGraphicsEffect::draw()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(item->numRepaints > 0);
     item->reset();
 
@@ -707,7 +707,8 @@ void tst_QGraphicsEffect::prepareGeometryChangeInvalidateCache()
         view.showFullScreen();
     else
         view.show();
-    QTest::qWaitForWindowShown(&view);
+    qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(item->nbPaint >= 1);
 
     item->nbPaint = 0;
@@ -738,7 +739,8 @@ void tst_QGraphicsEffect::itemHasNoContents()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(child->nbPaint >= 1);
 
     CustomEffect *effect = new CustomEffect;

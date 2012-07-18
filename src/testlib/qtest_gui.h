@@ -150,10 +150,6 @@ inline bool qCompare(QPixmap const &t1, QPixmap const &t2, const char *actual, c
 
 }
 
-#ifdef Q_WS_X11
-extern void qt_x11_wait_for_window_manager(QWidget *w);
-#endif
-
 QT_END_NAMESPACE
 
 QT_END_HEADER

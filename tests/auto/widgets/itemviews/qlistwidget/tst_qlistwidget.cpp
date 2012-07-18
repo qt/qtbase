@@ -1523,12 +1523,7 @@ void tst_QListWidget::fastScroll()
     // Make sure the widget gets the first full repaint. On
     // some WMs, we'll get two (first inactive exposure, then
     // active exposure.
-    QTest::qWaitForWindowShown(&widget);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&widget);
-#endif
-    QApplication::processEvents();
-    QTest::qWait(500);
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
 
     QSize itemSize = widget.visualItemRect(widget.item(0)).size();
     QVERIFY(!itemSize.isEmpty());
@@ -1671,7 +1666,8 @@ void tst_QListWidget::QTBUG14363_completerWithAnyKeyPressedEditTriggers()
     new QListWidgetItem(QLatin1String("completer"), &listWidget);
 	listWidget.show();
     listWidget.setCurrentItem(item);
-    QTest::qWaitForWindowShown(&listWidget);
+    qApp->setActiveWindow(&listWidget);
+    QVERIFY(QTest::qWaitForWindowActive(&listWidget));
     listWidget.setFocus();
     QCOMPARE(qApp->focusWidget(), &listWidget);
 

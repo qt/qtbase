@@ -468,6 +468,7 @@ void tst_QFiledialog::completer()
     QNonNativeFileDialog fd(0,QString("Test it"),startPath);
     fd.setOptions(QFileDialog::DontUseNativeDialog);
     fd.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&fd));
     QVERIFY(fd.isVisible());
     QFileSystemModel *model = qFindChild<QFileSystemModel*>(&fd, "qt_filesystem_model");
     QVERIFY(model);

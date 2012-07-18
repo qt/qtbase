@@ -88,11 +88,8 @@ public:
     void changeEvent(QEvent *event)
     {
         QWidget::changeEvent(event);
-        if (isWindow() && event->type() == QEvent::WindowStateChange) {
-#ifdef Q_WS_X11
-            qt_x11_wait_for_window_manager(this);
-#endif
-        }
+        if (isWindow() && event->type() == QEvent::WindowStateChange)
+            QVERIFY(QTest::qWaitForWindowExposed(this));
     }
 };
 

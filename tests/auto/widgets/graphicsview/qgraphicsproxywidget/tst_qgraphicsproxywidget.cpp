@@ -406,9 +406,7 @@ void tst_QGraphicsProxyWidget::setWidget()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QPointer<SubQGraphicsProxyWidget> proxy = new SubQGraphicsProxyWidget;
     SubQGraphicsProxyWidget parentProxy;
     scene.addItem(proxy);
@@ -787,8 +785,7 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     if (hasScene) {
         scene.addItem(proxy);
         proxy->show();
@@ -835,7 +832,7 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
     QApplication::setActiveWindow(&view);
     view.activateWindow();
     view.setFocus();
-    QTest::qWaitForWindowShown(&view);
+    QTest::qWaitForWindowActive(&view);
     QTRY_VERIFY(view.isVisible());
     QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
@@ -968,9 +965,8 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     //do not let the window manager move the window while we are moving the mouse on it
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     EventLogger *widget = new EventLogger;
@@ -1314,9 +1310,7 @@ void tst_QGraphicsProxyWidget::wheelEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     WheelWidget *wheelWidget = new WheelWidget();
     wheelWidget->setFixedSize(400, 400);
@@ -1489,7 +1483,7 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
 
     View view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.npaints >= 1);
     QTest::qWait(20);
     widget->paintEventRegion = QRegion();
@@ -2051,8 +2045,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     window.show();
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWaitForWindowShown(&window);
-    QTRY_COMPARE(QApplication::activeWindow(), &window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
 
     leftDial->setFocus();
     QApplication::processEvents();
@@ -2526,9 +2519,7 @@ void tst_QGraphicsProxyWidget::popup_subwidget()
 
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     box->showPopup();
 
@@ -2609,7 +2600,8 @@ void tst_QGraphicsProxyWidget::tooltip_basic()
     QGraphicsView view(&scene);
     view.setFixedSize(200, 200);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     {
         QHelpEvent helpEvent(QEvent::ToolTip, view.viewport()->rect().topLeft(),
                              view.viewport()->mapToGlobal(view.viewport()->rect().topLeft()));
@@ -2772,9 +2764,8 @@ void tst_QGraphicsProxyWidget::windowOpacity()
 
     QApplication::setActiveWindow(&view);
     view.show();
-    QTest::qWaitForWindowShown(&view);
-    QApplication::sendPostedEvents();
-    QTRY_VERIFY(view.isActiveWindow());
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(view.isActiveWindow());
 
     qRegisterMetaType<QList<QRectF> >("QList<QRectF>");
     QSignalSpy signalSpy(&scene, SIGNAL(changed(const QList<QRectF> &)));
@@ -3260,9 +3251,7 @@ void tst_QGraphicsProxyWidget::dragDrop()
 
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QMimeData data;
     data.setText("hei");
@@ -3367,9 +3356,7 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     QGraphicsProxyWidget *proxy = scene.addWidget(new QPushButton("Hello World"));
     View view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(view.npaints > 0);
     // Wait a bit to clear all pending paint events
     QTest::qWait(10);
@@ -3450,8 +3437,8 @@ void tst_QGraphicsProxyWidget::inputMethod()
     lineEdit->setAttribute(Qt::WA_InputMethodEnabled, true);
     QGraphicsProxyWidget *proxy = scene.addWidget(w);
     view.show();
-    QTest::qWaitForWindowShown(&view);
-    QTRY_VERIFY(!(proxy->flags() & QGraphicsItem::ItemAcceptsInputMethod));
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(!(proxy->flags() & QGraphicsItem::ItemAcceptsInputMethod));
     lineEdit->setFocus();
     QVERIFY((proxy->flags() & QGraphicsItem::ItemAcceptsInputMethod));
 }
@@ -3471,11 +3458,8 @@ void tst_QGraphicsProxyWidget::clickFocus()
         view.setFrameStyle(0);
         view.resize(300, 300);
         view.show();
-#ifdef Q_WS_X11
-        qt_x11_wait_for_window_manager(&view);
-#endif
         QApplication::setActiveWindow(&view);
-        QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
+        QVERIFY(QTest::qWaitForWindowActive(&view));
 
         QVERIFY(!proxy->hasFocus());
         QVERIFY(!proxy->widget()->hasFocus());

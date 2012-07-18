@@ -274,10 +274,8 @@ void tst_QApplication::alert()
     app.alert(&widget, 100);
     widget.show();
     widget2.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&widget);
-    qt_x11_wait_for_window_manager(&widget2);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QVERIFY(QTest::qWaitForWindowExposed(&widget2));
     QTest::qWait(100);
     app.alert(&widget, -1);
     app.alert(&widget, 250);

@@ -172,9 +172,7 @@ void tst_QStatusBar::setSizeGripEnabled()
     QPointer<QStatusBar> statusBar = mainWindow.statusBar();
     QVERIFY(statusBar);
     mainWindow.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mainWindow);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
     QTRY_VERIFY(statusBar->isVisible());
     QPointer<QSizeGrip> sizeGrip = qFindChild<QSizeGrip *>(statusBar);
@@ -203,9 +201,7 @@ void tst_QStatusBar::setSizeGripEnabled()
 #ifndef Q_OS_MAC // Work around Lion fullscreen issues on CI system - QTQAINFRA-506
     mainWindow.showFullScreen();
 #endif
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mainWindow);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
     qApp->processEvents();
 
     mainWindow.setStatusBar(new QStatusBar(&mainWindow));
@@ -265,15 +261,15 @@ void tst_QStatusBar::QTBUG4334_hiddenOnMaximizedWindow()
     statusbar.setSizeGripEnabled(true);
     main.setStatusBar(&statusbar);
     main.showMaximized();
-    QTest::qWaitForWindowShown(&main);
+    QVERIFY(QTest::qWaitForWindowActive(&main));
 #ifndef Q_OS_MAC
     QVERIFY(!statusbar.findChild<QSizeGrip*>()->isVisible());
 #endif
     main.showNormal();
-    QTest::qWaitForWindowShown(&main);
+    QVERIFY(QTest::qWaitForWindowExposed(&main));
     QVERIFY(statusbar.findChild<QSizeGrip*>()->isVisible());
     main.showFullScreen();
-    QTest::qWaitForWindowShown(&main);
+    QVERIFY(QTest::qWaitForWindowExposed(&main));
     QVERIFY(!statusbar.findChild<QSizeGrip*>()->isVisible());
 }
 

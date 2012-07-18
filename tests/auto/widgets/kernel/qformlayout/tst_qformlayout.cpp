@@ -348,9 +348,7 @@ void tst_QFormLayout::contentsRect()
     w.setLayout(&form);
     form.addRow("Label", new QPushButton(&w));
     w.show();
-/*#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&w);     // wait for the show
-#endif*/
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     int l, t, r, b;
     form.getContentsMargins(&l, &t, &r, &b);
     QRect geom = form.geometry();

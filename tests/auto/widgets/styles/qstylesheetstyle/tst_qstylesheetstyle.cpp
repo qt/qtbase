@@ -1347,7 +1347,8 @@ void tst_QStyleSheetStyle::toolTip()
     wid4->setObjectName("wid4");
 
     w.show();
-    QTest::qWait(100);
+    qApp->setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QColor normalToolTip = qApp->palette().toolTipBase().color();
     QList<QWidget *> widgets;

@@ -46,13 +46,13 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qelapsedtimer.h>
 #include <QtGui/QWindow>
+#ifdef QT_WIDGETS_LIB
+#  include <QtWidgets/QWidget>
+#endif
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-
-
-class QWidget;
 
 namespace QTest
 {
@@ -67,13 +67,6 @@ namespace QTest
             QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
             QTest::qSleep(10);
         } while (timer.elapsed() < ms);
-    }
-
-    inline static bool qWaitForWindowShown(QWidget *window)
-    {
-        Q_UNUSED(window);
-        qWait(200);
-        return true;
     }
 
     inline static bool qWaitForWindowActive(QWindow *window, int timeout = 1000)
@@ -120,11 +113,34 @@ namespace QTest
         return window->isExposed();
     }
 
+#ifdef QT_WIDGETS_LIB
+    inline static bool qWaitForWindowActive(QWidget *widget, int timeout = 1000)
+    {
+        if (QWindow *window = widget->windowHandle())
+            return qWaitForWindowActive(window, timeout);
+        return false;
+    }
+
+    inline static bool qWaitForWindowExposed(QWidget *widget, int timeout = 1000)
+    {
+        if (QWindow *window = widget->windowHandle())
+            return qWaitForWindowExposed(window, timeout);
+        return false;
+    }
+#endif
+
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED inline static bool qWaitForWindowShown(QWindow *window, int timeout = 1000)
     {
         return qWaitForWindowExposed(window, timeout);
     }
+
+#  ifdef QT_WIDGETS_LIB
+    QT_DEPRECATED inline static bool qWaitForWindowShown(QWidget *widget, int timeout = 1000)
+    {
+        return qWaitForWindowExposed(widget, timeout);
+    }
+#  endif // QT_WIDGETS_LIB
 #endif // QT_DEPRECATED_SINCE(6, 0)
 }
 

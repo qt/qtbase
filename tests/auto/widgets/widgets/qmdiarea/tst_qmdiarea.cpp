@@ -464,12 +464,8 @@ void tst_QMdiArea::subWindowActivated2()
         mdiArea.addSubWindow(new QWidget);
     QCOMPARE(spy.count(), 0);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
-    QTest::qWaitForWindowShown(&mdiArea);
     mdiArea.activateWindow();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
 
     QTRY_COMPARE(spy.count(), 5);
     QCOMPARE(mdiArea.activeSubWindow(), mdiArea.subWindowList().back());
@@ -503,10 +499,7 @@ void tst_QMdiArea::subWindowActivated2()
     spy.clear();
 
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
     QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
@@ -517,13 +510,11 @@ void tst_QMdiArea::subWindowActivated2()
     // Check that we only emit _one_ signal and the active window
     // is unchanged after showMinimized/showNormal.
     mdiArea.showMinimized();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#elif defined (Q_OS_MAC)
+#if defined (Q_OS_MAC)
     if (!macHasAccessToWindowsServer())
         QEXPECT_FAIL("", "showMinimized doesn't really minimize if you don't have access to the server", Abort);
 #endif
-    QTest::qWait(10);
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 #if defined(Q_WS_QWS)
     QEXPECT_FAIL("", "task 168682", Abort);
 #endif
@@ -538,11 +529,11 @@ void tst_QMdiArea::subWindowActivated2()
     QCOMPARE(mdiArea.currentSubWindow(), activeSubWindow);
     spy.clear();
 
+    // For this test, the QMdiArea widget must be active after minimizing and
+    // showing it again. QMdiArea has no active sub window if it is inactive itself.
+    qApp->setActiveWindow(&mdiArea);
     mdiArea.showNormal();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
     QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
@@ -998,11 +989,8 @@ void tst_QMdiArea::activeSubWindow()
     mainWindow.addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
 
     mainWindow.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mainWindow);
-#endif
-
     qApp->setActiveWindow(&mainWindow);
+    QVERIFY(QTest::qWaitForWindowActive(&mainWindow));
     QCOMPARE(mdiArea->activeSubWindow(), subWindow);
     QCOMPARE(qApp->focusWidget(), (QWidget *)subWindowLineEdit);
 
@@ -1022,9 +1010,7 @@ void tst_QMdiArea::activeSubWindow()
 
     QLineEdit dummyTopLevel;
     dummyTopLevel.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&dummyTopLevel);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&dummyTopLevel));
 
     qApp->setActiveWindow(&dummyTopLevel);
     QCOMPARE(mdiArea->activeSubWindow(), subWindow);
@@ -1047,9 +1033,7 @@ void tst_QMdiArea::currentSubWindow()
 {
     QMdiArea mdiArea;
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     for (int i = 0; i < 5; ++i)
         mdiArea.addSubWindow(new QLineEdit)->show();
@@ -1065,9 +1049,7 @@ void tst_QMdiArea::currentSubWindow()
 
     QLineEdit dummyTopLevel;
     dummyTopLevel.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&dummyTopLevel);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&dummyTopLevel));
 
     // Move focus to another top-level and check that we still
     // have an active window.
@@ -1130,9 +1112,7 @@ void tst_QMdiArea::addAndRemoveWindows()
     QMdiArea workspace(&topLevel);
     workspace.resize(800, 600);
     topLevel.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
     { // addSubWindow with large widget
     QCOMPARE(workspace.subWindowList().count(), 0);
@@ -1605,9 +1585,7 @@ void tst_QMdiArea::tileSubWindows()
     if (PlatformQuirks::isAutoMaximizing())
         workspace.setWindowFlags(workspace.windowFlags() | Qt::X11BypassWindowManagerHint);
     workspace.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
     const int windowCount = 10;
     for (int i = 0; i < windowCount; ++i) {
@@ -1784,9 +1762,7 @@ void tst_QMdiArea::tileSubWindows()
     QCOMPARE(vBar->minimum(), 0);
 
     workspace.tileSubWindows();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&workspace));
     qApp->processEvents();
 
     QTRY_VERIFY(workspace.size() != QSize(150, 150));
@@ -1799,9 +1775,7 @@ void tst_QMdiArea::cascadeAndTileSubWindows()
     QMdiArea workspace;
     workspace.resize(400, 400);
     workspace.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
     const int windowCount = 10;
     QList<QMdiSubWindow *> windows;
@@ -1867,10 +1841,7 @@ void tst_QMdiArea::resizeMaximizedChildWindows()
     QWidget topLevel;
     QMdiArea workspace(&topLevel);
     topLevel.show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
     workspace.resize(startSize, startSize);
     workspace.setOption(QMdiArea::DontMaximizeSubWindowOnActivation);
     QSize workspaceSize = workspace.size();
@@ -1932,9 +1903,7 @@ void tst_QMdiArea::dontMaximizeSubWindowOnActivation()
 {
     QMdiArea mdiArea;
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
     qApp->setActiveWindow(&mdiArea);
 
     // Add one maximized window.
@@ -2040,9 +2009,7 @@ void tst_QMdiArea::delayedPlacement()
 
     mdiArea.resize(window3->minimumSizeHint().width() * 3, 400);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     QCOMPARE(window1->geometry().topLeft(), QPoint(0, 0));
     QCOMPARE(window2->geometry().topLeft(), window1->geometry().topRight() + QPoint(1, 0));
@@ -2058,9 +2025,7 @@ void tst_QMdiArea::iconGeometryInMenuBar()
     QMdiSubWindow *subWindow = mdiArea->addSubWindow(new QWidget);
     mainWindow.setCentralWidget(mdiArea);
     mainWindow.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mainWindow);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
     subWindow->showMaximized();
     QVERIFY(subWindow->isMaximized());
@@ -2108,18 +2073,13 @@ void tst_QMdiArea::resizeTimer()
     QMdiArea mdiArea;
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QWidget);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
-    QTest::qWaitForWindowShown(&mdiArea);
+    QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
 
 #ifndef Q_OS_WINCE
     int time = 250;
 #else
     int time = 1000;
 #endif
-
-    QTest::qWait(time);
 
     EventSpy timerEventSpy(subWindow, QEvent::Timer);
     QCOMPARE(timerEventSpy.count(), 0);
@@ -2149,9 +2109,7 @@ void tst_QMdiArea::updateScrollBars()
     QMdiSubWindow *subWindow2 = mdiArea.addSubWindow(new QWidget);
 
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
     qApp->processEvents();
 
     QScrollBar *hbar = mdiArea.horizontalScrollBar();
@@ -2178,9 +2136,7 @@ void tst_QMdiArea::updateScrollBars()
 
     // We still shouldn't get any scroll bars.
     mdiArea.resize(mdiArea.size() - QSize(20, 20));
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
     qApp->processEvents();
     QVERIFY(subWindow1->isMaximized());
     QVERIFY(!hbar->isVisible());
@@ -2272,9 +2228,7 @@ void tst_QMdiArea::setActivationOrder()
     QCOMPARE(mdiArea.subWindowList(activationOrder), subWindows);
 
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     for (int i = 0; i < subWindows.count(); ++i) {
         mdiArea.activateNextSubWindow();
@@ -2333,9 +2287,7 @@ void tst_QMdiArea::tabBetweenSubWindows()
         subWindows << mdiArea.addSubWindow(new QLineEdit);
 
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     qApp->setActiveWindow(&mdiArea);
     QWidget *focusWidget = subWindows.back()->widget();
@@ -2389,9 +2341,7 @@ void tst_QMdiArea::setViewMode()
     }
 
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     QMdiSubWindow *activeSubWindow = mdiArea.activeSubWindow();
     const QList<QMdiSubWindow *> subWindows = mdiArea.subWindowList();
@@ -2553,9 +2503,7 @@ void tst_QMdiArea::setTabShape()
     QMdiArea mdiArea;
     mdiArea.addSubWindow(new QWidget);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     // Default.
     QCOMPARE(mdiArea.tabShape(), QTabWidget::Rounded);
@@ -2601,9 +2549,7 @@ void tst_QMdiArea::setTabPosition()
     QMdiArea mdiArea;
     mdiArea.addSubWindow(new QWidget);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     // Make sure there are no margins.
     mdiArea.setContentsMargins(0, 0, 0, 0);
@@ -2661,9 +2607,7 @@ void tst_QMdiArea::nativeSubWindows()
     mdiArea.addSubWindow(new QWidget);
     mdiArea.addSubWindow(new QWidget);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     // No native widgets.
     QVERIFY(!mdiArea.viewport()->internalWinId());
@@ -2694,9 +2638,7 @@ void tst_QMdiArea::nativeSubWindows()
     (void)nativeWidget->winId();
     mdiArea.addSubWindow(nativeWidget);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     // The viewport and all the sub-windows must be native.
     QVERIFY(mdiArea.viewport()->internalWinId());
@@ -2709,9 +2651,7 @@ void tst_QMdiArea::nativeSubWindows()
     mdiArea.addSubWindow(new QWidget);
     mdiArea.addSubWindow(new QWidget);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     QMdiSubWindow *nativeSubWindow = mdiArea.subWindowList().last();
     QVERIFY(!nativeSubWindow->internalWinId());
@@ -2734,9 +2674,7 @@ void tst_QMdiArea::nativeSubWindows()
     mdiArea.addSubWindow(new QWidget);
     mdiArea.addSubWindow(new QWidget);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     const QGLContext *context = glViewport->context();
     if (!context || !context->isValid())

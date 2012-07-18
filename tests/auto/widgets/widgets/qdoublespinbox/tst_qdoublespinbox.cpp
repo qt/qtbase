@@ -1066,9 +1066,9 @@ void tst_QDoubleSpinBox::taskQTBUG_5008_textFromValueAndValidate()
     spinbox.activateWindow();
     spinbox.setFocus();
     QApplication::setActiveWindow(&spinbox);
-    QTest::qWaitForWindowShown(&spinbox);
+    QVERIFY(QTest::qWaitForWindowActive(&spinbox));
+    QCOMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());
     QTRY_VERIFY(spinbox.hasFocus());
-    QTRY_COMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());
     QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
     spinbox.lineEdit()->setCursorPosition(2); //just after the first thousand separator
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_0); // let's insert a 0

@@ -906,10 +906,7 @@ void tst_QGridLayout::minMaxSize()
         }
 
         m_toplevel->show();
-#if defined(Q_WS_X11)
-        qt_x11_wait_for_window_manager(m_toplevel);     // wait for the show
-#endif
-        QTest::qWait(40);
+        QVERIFY(QTest::qWaitForWindowExposed(m_toplevel));
         m_toplevel->adjustSize();
         QTest::qWait(240);                              // wait for the implicit adjustSize
         // If the following fails we might have to wait longer.
@@ -1462,9 +1459,7 @@ void tst_QGridLayout::layoutSpacingImplementation()
     widget->setParent(&toplevel);
     widget->resize(widget->sizeHint());
     toplevel.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&toplevel);     // wait for the show
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
 
     QLayout *layout = widget->layout();
     QVERIFY(layout);
@@ -1586,9 +1581,7 @@ void tst_QGridLayout::contentsRect()
     w.setLayout(&grid);
     grid.addWidget(new QPushButton(&w));
     w.show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&w);     // wait for the show
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     int l, t, r, b;
     grid.getContentsMargins(&l, &t, &r, &b);
     QRect geom = grid.geometry();

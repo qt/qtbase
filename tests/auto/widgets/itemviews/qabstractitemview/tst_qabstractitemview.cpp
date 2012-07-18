@@ -761,9 +761,7 @@ static void sendMouseMove(QWidget *widget, QPoint pos = QPoint())
     QMouseEvent event(QEvent::MouseMove, pos, widget->mapToGlobal(pos), Qt::NoButton, 0, 0);
     QCursor::setPos(widget->mapToGlobal(pos));
     qApp->processEvents();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(widget);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(widget));
     QApplication::sendEvent(widget, &event);
 }
 
@@ -920,10 +918,8 @@ void tst_QAbstractItemView::dragAndDrop()
 
         widget.show();
         view.show();
-#if defined(Q_WS_X11)
-        qt_x11_wait_for_window_manager(&widget);
-        qt_x11_wait_for_window_manager(&view);
-#endif
+        QVERIFY(QTest::qWaitForWindowExposed(&widget));
+        QVERIFY(QTest::qWaitForWindowExposed(&view));
 
         widget.dragAndDrop(&view, dropAction);
         if (model.dropAction() == dropAction
@@ -965,9 +961,7 @@ void tst_QAbstractItemView::dragAndDropOnChild()
         view.setFixedSize(size, size);
         view.move(int(size * 1.5), int(size * 1.5));
         view.show();
-#if defined(Q_WS_X11)
-        qt_x11_wait_for_window_manager(&view);
-#endif
+        QVERIFY(QTest::qWaitForWindowExposed(&view));
 
         view.dragAndDrop(view.visualRect(parent).center(),
                          view.visualRect(child).center());
@@ -1046,8 +1040,8 @@ void tst_QAbstractItemView::setItemDelegate()
         }
     }
     v.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&v));
 #ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&v);
     QCursor::setPos(v.geometry().center());
     QApplication::syncX();
 #endif

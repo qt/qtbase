@@ -352,9 +352,7 @@ void tst_QDockWidget::setFloating()
     mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
 
     mw.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mw);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mw));
 
     QVERIFY(!dw.isFloating());
 
@@ -719,9 +717,7 @@ void tst_QDockWidget::task165177_deleteFocusWidget()
     QLineEdit *ledit = new QLineEdit;
     dw->setWidget(ledit);
     mw.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mw);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mw));
     qApp->processEvents();
     dw->setFloating(true);
     delete ledit;
@@ -760,19 +756,15 @@ void tst_QDockWidget::task169808_setFloating()
 	mw.addDockWidget(Qt::LeftDockWidgetArea, dw);
 	dw->setFloating(true);
 	mw.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mw);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mw));
 
     QCOMPARE(dw->widget()->size(), dw->widget()->sizeHint());
 
     //and now we try to test if the contents margin is taken into account
     dw->widget()->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	dw->setFloating(false);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mw);
-#endif
-    QTest::qWait(100); //leave time processing events
+    QVERIFY(QTest::qWaitForWindowExposed(&mw));
+    qApp->processEvents(); //leave time processing events
 
 
     const QSize oldSize = dw->size();
@@ -780,10 +772,8 @@ void tst_QDockWidget::task169808_setFloating()
 
     dw->setContentsMargins(margin, margin, margin, margin);
 
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mw);
-#endif
-    QTest::qWait(100); //leave time processing events
+    QVERIFY(QTest::qWaitForWindowExposed(&mw));
+    qApp->processEvents(); //leave time processing events
 
     //widget size shouldn't have changed
     QCOMPARE(dw->widget()->size(), dw->widget()->sizeHint());

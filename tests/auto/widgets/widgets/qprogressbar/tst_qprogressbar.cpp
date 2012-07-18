@@ -219,9 +219,7 @@ void tst_QProgressBar::setMinMaxRepaint()
     pbar.setMaximum(10);
     pbar.setFormat("%v");
     pbar.show();
-    QTest::qWaitForWindowShown(&pbar);
-
-    QApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowActive(&pbar));
 
     // No repaint when setting minimum to the current minimum
     pbar.repainted = false;

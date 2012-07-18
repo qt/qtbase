@@ -2095,11 +2095,8 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
     correctBox.addItems(finalContent);
     correctBox.show();
 
-    QCoreApplication::processEvents();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&box);
-    qt_x11_wait_for_window_manager(&correctBox);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&box));
+    QVERIFY(QTest::qWaitForWindowExposed(&correctBox));
 
     // box should be resized to the same size as correctBox
     QTRY_COMPARE(box.size(), correctBox.size());

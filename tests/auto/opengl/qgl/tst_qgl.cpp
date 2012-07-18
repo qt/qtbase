@@ -848,6 +848,8 @@ void tst_QGL::graphicsViewClipping()
     scene.addWidget(widget)->setPos(0, 0);
 
     QGraphicsView view(&scene);
+    // Use Qt::Tool as fully decorated windows have a minimum width of 160 on Windows.
+    view.setWindowFlags(view.windowFlags() | Qt::Tool);
     view.setBackgroundBrush(Qt::white);
 #ifdef Q_WS_QWS
     view.setWindowFlags(Qt::FramelessWindowHint);
@@ -857,16 +859,14 @@ void tst_QGL::graphicsViewClipping()
     QGLWidget *viewport = new QGLWidget;
     view.setViewport(viewport);
     view.show();
+    qApp->setActiveWindow(&view);
 
     if (!viewport->isValid())
         return;
 
     scene.setSceneRect(view.viewport()->rect());
 
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(500);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QImage image = viewport->grabFrameBuffer();
     QImage expected = image;
@@ -966,9 +966,7 @@ void tst_QGL::glWidgetWithAlpha()
 {
     QGLWidget* w = new QGLWidget(QGLFormat(QGL::AlphaChannel));
     w->show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(w);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(w));
 
     delete w;
 }
@@ -1044,10 +1042,7 @@ void tst_QGL::glWidgetRendering()
     w.resize(256, 128);
     w.show();
 
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&w);
-#endif
-    QTest::qWait(200);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     QVERIFY(w.beginOk);
     QVERIFY(w.engineType == QPaintEngine::OpenGL || w.engineType == QPaintEngine::OpenGL2);
@@ -1287,10 +1282,7 @@ void tst_QGL::glFBOUseInGLWidget()
     w.resize(100, 100);
     w.show();
 
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&w);
-#endif
-    QTest::qWait(200);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     QVERIFY(w.widgetPainterBeginOk);
     QVERIFY(w.fboPainterBeginOk);
@@ -1325,32 +1317,23 @@ void tst_QGL::glWidgetReparent()
     grandParentWidget.setGeometry(0, 100, 200, 200);
     grandParentWidget.show();
 
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(widget);
-    qt_x11_wait_for_window_manager(&parentWidget);
-#endif
-    QTest::qWait(200);
+    QVERIFY(QTest::qWaitForWindowExposed(widget));
+    QVERIFY(QTest::qWaitForWindowExposed(&grandParentWidget));
 
     QVERIFY(parentWidget.children().count() == 1); // The layout
 
     // Now both widgets should be created & shown, time to re-parent:
     parentLayout.addWidget(widget);
 
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&parentWidget);
-#endif
-    QTest::qWait(200);
+    QVERIFY(QTest::qWaitForWindowExposed(&grandParentWidget));
 
     QVERIFY(parentWidget.children().count() == 2); // Layout & glwidget
     QVERIFY(parentWidget.children().contains(widget));
-    QVERIFY(widget->height() > 30);
+    QTRY_VERIFY(widget->height() > 30);
 
     delete widget;
 
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&parentWidget);
-#endif
-    QTest::qWait(200);
+    QVERIFY(QTest::qWaitForWindowExposed(&grandParentWidget));
 
     QVERIFY(parentWidget.children().count() == 1); // The layout
 
@@ -1359,10 +1342,7 @@ void tst_QGL::glWidgetReparent()
     widget = new GLWidget;
     parentLayout.addWidget(widget);
 
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&parentWidget);
-#endif
-    QTest::qWait(200);
+    QVERIFY(QTest::qWaitForWindowExposed(&grandParentWidget));
 
     QVERIFY(parentWidget.children().count() == 2); // Layout & glwidget
     QVERIFY(parentWidget.children().contains(widget));
@@ -1676,10 +1656,7 @@ void tst_QGL::replaceClipping()
     glw.resize(300, 300);
     glw.show();
 
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&glw);
-#endif
-    QTest::qWait(200);
+    QVERIFY(QTest::qWaitForWindowExposed(&glw));
 
     QImage reference(300, 300, QImage::Format_RGB32);
     QPainter referencePainter(&reference);
@@ -1793,10 +1770,7 @@ void tst_QGL::clipTest()
     glw.resize(220, 220);
     glw.show();
 
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&glw);
-#endif
-    QTest::qWait(200);
+    QVERIFY(QTest::qWaitForWindowExposed(&glw));
 
     QImage reference(glw.size(), QImage::Format_RGB32);
     QPainter referencePainter(&reference);

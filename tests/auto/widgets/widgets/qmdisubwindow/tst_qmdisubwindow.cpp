@@ -64,9 +64,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-#if defined(Q_WS_X11)
-extern void qt_x11_wait_for_window_manager(QWidget *w);
-#endif
 #if !defined(Q_WS_WIN)
 extern bool qt_tab_all_widgets;
 #endif
@@ -254,9 +251,7 @@ void tst_QMdiSubWindow::minimumSize()
     QMdiSubWindow *subWindow1 = mdiArea.addSubWindow(new QWidget);
     subWindow1->setMinimumSize(1000, 1000);
     mdiArea.show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
     QCOMPARE(subWindow1->size(), QSize(1000, 1000));
 
     // Check that we respect the minimum size set on the internal widget.
@@ -322,9 +317,7 @@ void tst_QMdiSubWindow::setWindowState()
     QMdiSubWindow *window = qobject_cast<QMdiSubWindow *>(workspace.addSubWindow(new QLineEdit));
     window->show();
     workspace.show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
     QWidget *testWidget = 0;
     for (int iteration = 0; iteration < 2; ++iteration) {
@@ -535,9 +528,7 @@ void tst_QMdiSubWindow::emittingOfSignals()
 
     window->setParent(0);
     window->showNormal();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(window);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(window));
     qApp->processEvents();
 
     spy.clear();
@@ -555,9 +546,7 @@ void tst_QMdiSubWindow::showShaded()
     window->resize(300, 300);
     qApp->processEvents();
     workspace.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
     QVERIFY(!window->isShaded());
     QVERIFY(!window->isMaximized());
@@ -652,9 +641,7 @@ void tst_QMdiSubWindow::showNormal()
     qApp->processEvents();
     workspace.show();
     window->show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
     QRect originalGeometry = window->geometry();
     QVERIFY(QMetaObject::invokeMethod(window, slot.data()));
@@ -718,9 +705,7 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
     qApp->processEvents();
     workspace.resize(workspaceSize);
     workspace.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
     QWidget *mouseReceiver = 0;
     if (window->style()->inherits("QMacStyle"))
@@ -918,9 +903,7 @@ void tst_QMdiSubWindow::setWindowFlags()
     qApp->processEvents();
     workspace.show();
     window->show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
     window->setWindowFlags(windowType | customFlags);
     QCOMPARE(window->windowType(), expectedWindowType);
@@ -1387,9 +1370,7 @@ void tst_QMdiSubWindow::resizeEvents()
     QMdiArea *mdiArea = new QMdiArea;
     mainWindow.setCentralWidget(mdiArea);
     mainWindow.show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&mainWindow);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
     QMdiSubWindow *window = mdiArea->addSubWindow(new QTextEdit);
     window->show();
@@ -1464,9 +1445,7 @@ void tst_QMdiSubWindow::hideAndShow()
     QMenuBar *menuBar = mainWindow.menuBar();
     mainWindow.setCentralWidget(tabWidget);
     mainWindow.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mainWindow);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
     QVERIFY(!menuBar->cornerWidget(Qt::TopRightCorner));
     QMdiSubWindow *subWindow = mdiArea->addSubWindow(new QTextEdit);
@@ -1559,9 +1538,7 @@ void tst_QMdiSubWindow::keepWindowMaximizedState()
     QMdiArea mdiArea;
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QTextEdit);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     subWindow->showMaximized();
     QVERIFY(subWindow->isMaximized());
@@ -1600,9 +1577,7 @@ void tst_QMdiSubWindow::explicitlyHiddenWidget()
     textEdit->hide();
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(textEdit);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     QVERIFY(subWindow->isVisible());
     QVERIFY(!textEdit->isVisible());
@@ -1673,9 +1648,7 @@ void tst_QMdiSubWindow::fixedMinMaxSize()
     QMdiArea mdiArea;
     mdiArea.setGeometry(0, 0, 640, 480);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     const QSize minimumSize = QSize(250, 150);
     const QSize maximumSize = QSize(300, 200);
@@ -1744,9 +1717,7 @@ void tst_QMdiSubWindow::replaceMenuBarWhileMaximized()
     mainWindow.setCentralWidget(mdiArea);
     QMenuBar *menuBar = mainWindow.menuBar();
     mainWindow.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mainWindow);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
     qApp->processEvents();
 
@@ -1803,9 +1774,7 @@ void tst_QMdiSubWindow::closeOnDoubleClick()
     QMdiArea mdiArea;
     QPointer<QMdiSubWindow> subWindow = mdiArea.addSubWindow(new QWidget);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     subWindow->showSystemMenu();
     QTest::qWait(200);
@@ -1831,9 +1800,8 @@ void tst_QMdiSubWindow::setFont()
     subWindow->resize(300, 100);
     subWindow->setWindowTitle(QLatin1String("Window title"));
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
+
 
     const QFont originalFont = QApplication::font("QMdiSubWindowTitleBar");
     QStyleOptionTitleBar opt;
@@ -1870,9 +1838,7 @@ void tst_QMdiSubWindow::task_188849()
     QMdiSubWindow *subWindow = mdiArea->addSubWindow(new QWidget);
     mainWindow.setCentralWidget(mdiArea);
     mainWindow.show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&mainWindow);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
     // QMdiSubWindow will now try to show its buttons in the menu bar.
     // Without checking that the menu bar is actually a QMenuBar
@@ -2015,9 +1981,7 @@ void tst_QMdiSubWindow::task_226929()
 {
     QMdiArea mdiArea;
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     QMdiSubWindow *sub1 = mdiArea.addSubWindow(new QTextEdit);
     sub1->showMinimized();
