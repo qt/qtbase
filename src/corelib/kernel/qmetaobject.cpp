@@ -2426,7 +2426,7 @@ const char* QMetaEnum::valueToKey(int value) const
     the \a keys using the OR operator, or -1 if \a keys is not
     defined. Note that the strings in \a keys must be '|'-separated.
 
-    If \a key is not defined, *\a{ok} is set to false; otherwise
+    If \a keys is not defined, *\a{ok} is set to false; otherwise
     *\a{ok} is set to true.
 
     \sa isFlag(), valueToKey(), valueToKeys()
