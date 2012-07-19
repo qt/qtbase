@@ -47,6 +47,8 @@ int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
 
-    QPlatformScreen *handle = app.screens().first()->handle();
+    QPlatformScreen *screenHandle = app.screens().first()->handle();
+    screenHandle->geometry();
+
     return 0;
 }
