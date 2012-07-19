@@ -104,11 +104,11 @@ equals(QMAKE_DIR_SEP, /) {
     QDOC = $$replace(QDOC, "/", "\\")
 }
 
-html-docs.commands = cd \"$$QT_BUILD_TREE/doc\" && $$QDOC $$QT_SOURCE_TREE/tools/qdoc/doc/config/qdoc.qdocconf
-html-docs.files = $$QT_BUILD_TREE/doc/html
+html-docs.commands = $$QDOC $$PWD/doc/config/qdoc.qdocconf
+html-docs.files = $$PWD/doc/html
 
-qch-docs.commands = cd \"$$QT_BUILD_TREE/doc\" && $$QHELPGENERATOR $$QT_BUILD_TREE/tools/qdoc/doc/html/qdoc.qhp -o $$QT_BUILD_TREE/tools/qdoc/doc/qch/qdoc.qch
-qch-docs.files = $$QT_BUILD_TREE/tools/qdoc/doc/qch
+qch-docs.commands = $$QHELPGENERATOR $$PWD/doc/html/qdoc.qhp -o $$PWD/doc/qch/qdoc.qch
+qch-docs.files = $$PWD/doc/qch
 qch-docs.path = $$[QT_INSTALL_DOCS]
 qch-docs.CONFIG += no_check_exist directory
 

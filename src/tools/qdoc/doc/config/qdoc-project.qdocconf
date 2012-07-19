@@ -3,15 +3,13 @@ include(macros.qdocconf)
 include(qt-cpp-ignore.qdocconf)
 include(qt-defines.qdocconf)
 
-indexes = $$MODULE_BUILD_TREE/doc/html/qt.index
-
 sourceencoding = UTF-8
 outputencoding = UTF-8
 naturallanguage = en_US
 
 project          = QDoc
-description      = QDoc3 Manual
-url = http://doc.qt.nokia.com/qdoc
+description      = QDoc Manual
+url = http://doc-snapshot.qt-project.org/qdoc
 
 sources.fileextensions = "*.cpp *.qdoc *.mm *.qml"
 headers.fileextensions = "*.h *.ch *.h++ *.hh *.hpp *.hxx"
@@ -28,8 +26,8 @@ exampledirs = .. \
 imagedirs = ../../../doc/src/templates/images \
             images
 
-outputdir = $$MODULE_BUILD_TREE/tools/qdoc/doc/html
-tagfile = $$MODULE_BUILD_TREE/tools/qdoc/doc/html/qdoc.tags
+outputdir = ../html
+tagfile = ../html/qdoc.tags
 
 qhp.projects            = QDoc
 
