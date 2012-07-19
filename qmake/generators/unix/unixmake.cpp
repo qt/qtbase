@@ -538,8 +538,9 @@ UnixMakefileGenerator::findLibraries()
                             }
                         }
                     } else {
-                        if(exists(project->values("QMAKE_PREFIX_SHLIB").first() + stub + "." + (*extit))) {
-                            (*it) = project->values("QMAKE_PREFIX_SHLIB").first() + stub + "." + (*extit);
+                        QString lib = dir + project->values("QMAKE_PREFIX_SHLIB").first() + stub + "." + (*extit);
+                        if (exists(lib)) {
+                            (*it) = lib;
                             found = true;
                             break;
                         }
