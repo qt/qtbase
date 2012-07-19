@@ -2678,6 +2678,25 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
     return tabWidth;
 }
 
+namespace {
+class FormatRangeComparatorByStart {
+    const QList<QTextLayout::FormatRange> &list;
+public:
+    FormatRangeComparatorByStart(const QList<QTextLayout::FormatRange> &list) : list(list) { }
+    bool operator()(int a, int b) {
+        return list.at(a).start < list.at(b).start;
+    }
+};
+class FormatRangeComparatorByEnd {
+    const QList<QTextLayout::FormatRange> &list;
+public:
+    FormatRangeComparatorByEnd(const QList<QTextLayout::FormatRange> &list) : list(list) { }
+    bool operator()(int a, int b) {
+        return list.at(a).start + list.at(a).length < list.at(b).start + list.at(b).length;
+    }
+};
+}
+
 void QTextEngine::resolveAdditionalFormats() const
 {
     if (!specialData || specialData->addFormats.isEmpty()
@@ -2689,9 +2708,53 @@ void QTextEngine::resolveAdditionalFormats() const
 
     specialData->resolvedFormatIndices.clear();
     QVector<int> indices(layoutData->items.count());
+
+
+    QVarLengthArray<int, 64> addFormatSortedByStart;
+    addFormatSortedByStart.reserve(specialData->addFormats.count());
+    for (int i = 0; i < specialData->addFormats.count(); ++i)
+        addFormatSortedByStart.append(i);
+    QVarLengthArray<int, 64> addFormatSortedByEnd = addFormatSortedByStart;
+    qSort(addFormatSortedByStart.begin(), addFormatSortedByStart.end(),
+          FormatRangeComparatorByStart(specialData->addFormats));
+    qSort(addFormatSortedByEnd.begin(), addFormatSortedByEnd.end(),
+          FormatRangeComparatorByEnd(specialData->addFormats));
+
+    QVarLengthArray<int, 16>  currentFormats;
+    const int *startIt = addFormatSortedByStart.constBegin();
+    const int *endIt = addFormatSortedByEnd.constBegin();
+
     for (int i = 0; i < layoutData->items.count(); ++i) {
-        QTextCharFormat f = format(&layoutData->items.at(i));
-        indices[i] = collection->indexForFormat(f);
+        const QScriptItem *si = &layoutData->items.at(i);
+        int end = si->position + length(si);
+
+        while (startIt != addFormatSortedByStart.end() &&
+            specialData->addFormats.at(*startIt).start <= si->position) {
+            currentFormats.insert(qUpperBound(currentFormats.begin(), currentFormats.end(), *startIt),
+                                  *startIt);
+            ++startIt;
+        }
+        while (endIt != addFormatSortedByEnd.end() &&
+            specialData->addFormats.at(*endIt).start + specialData->addFormats.at(*endIt).length < end) {
+            currentFormats.remove(qBinaryFind(currentFormats, *endIt) - currentFormats.begin());
+            ++endIt;
+        }
+        QTextCharFormat format;
+        const QTextFormatCollection *formats = 0;
+        if (block.docHandle()) {
+            formats = this->formats();
+            format = formats->charFormat(formatIndex(si));
+        }
+        foreach (int cur, currentFormats) {
+            const QTextLayout::FormatRange &r = specialData->addFormats.at(cur);
+            Q_ASSERT (r.start <= si->position && r.start + r.length >= end);
+            if (!specialData->addFormatIndices.isEmpty()) {
+                format.merge(formats->format(specialData->addFormatIndices.at(cur)));
+            } else {
+                format.merge(r.format);
+            }
+        }
+        indices[i] = collection->indexForFormat(format);
     }
     specialData->resolvedFormatIndices = indices;
 }
