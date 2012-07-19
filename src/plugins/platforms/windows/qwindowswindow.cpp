@@ -981,8 +981,9 @@ void QWindowsWindow::handleResized(int wParam)
         handleGeometryChange();
         break;
     case SIZE_RESTORED:
-        if (m_windowState != Qt::WindowNoState)
-            handleWindowStateChange(isFullScreen_sys() ? Qt::WindowFullScreen : Qt::WindowNoState);
+        bool fullScreen = isFullScreen_sys();
+        if ((m_windowState != Qt::WindowNoState) || fullScreen)
+            handleWindowStateChange(fullScreen ? Qt::WindowFullScreen : Qt::WindowNoState);
         handleGeometryChange();
         break;
     }
@@ -1166,25 +1167,6 @@ Qt::WindowState QWindowsWindow::setWindowState(Qt::WindowState state)
     return state;
 }
 
-Qt::WindowState QWindowsWindow::windowState_sys() const
-{
-    if (IsIconic(m_data.hwnd))
-        return Qt::WindowMinimized;
-    if (IsZoomed(m_data.hwnd))
-        return Qt::WindowMaximized;
-    if (isFullScreen_sys())
-        return Qt::WindowFullScreen;
-    return Qt::WindowNoState;
-}
-
-Qt::WindowStates QWindowsWindow::windowStates_sys() const
-{
-    Qt::WindowStates result = windowState_sys();
-    if (GetActiveWindow() == m_data.hwnd)
-        result |= Qt::WindowActive;
-    return result;
-}
-
 bool QWindowsWindow::isFullScreen_sys() const
 {
     return geometry_sys() == window()->screen()->geometry();
@@ -1203,11 +1185,11 @@ bool QWindowsWindow::isFullScreen_sys() const
 
 void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
 {
-    const Qt::WindowStates oldStates = windowStates_sys();
+    const Qt::WindowStates oldStates = m_windowState;
     // Maintain the active flag as the platform window API does not
     // use it.
     Qt::WindowStates newStates = newState;
-    if (oldStates & Qt::WindowActive)
+    if (isActive())
         newStates |=  Qt::WindowActive;
     if (oldStates == newStates)
         return;
@@ -1239,19 +1221,21 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             // Save geometry and style to be restored when fullscreen
             // is turned off again, since on Windows, it is not a real
             // Window state but emulated by changing geometry and style.
-#ifndef Q_OS_WINCE // there is no style under wince
             if (!m_savedStyle) {
                 m_savedStyle = style();
+#ifndef Q_OS_WINCE
                 if (oldStates & Qt::WindowMinimized) {
                     WINDOWPLACEMENT wp;
                     wp.length = sizeof(WINDOWPLACEMENT);
                     if (GetWindowPlacement(m_data.hwnd, &wp))
                         m_savedFrameGeometry = qrectFromRECT(wp.rcNormalPosition);
                 } else {
-                    m_savedFrameGeometry = frameGeometry_sys();
-                }
-            }
 #endif
+                    m_savedFrameGeometry = frameGeometry_sys();
+#ifndef Q_OS_WINCE
+                }
+#endif
+            }
             if (m_savedStyle & WS_SYSMENU)
                 newStyle |= WS_SYSMENU;
             if (visible)

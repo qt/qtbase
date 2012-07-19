@@ -182,9 +182,6 @@ public:
     void setFrameStrutEventsEnabled(bool enabled);
     bool frameStrutEventsEnabled() const { return testFlag(FrameStrutEventsEnabled); }
 
-    Qt::WindowState windowState_sys() const;
-    Qt::WindowStates windowStates_sys() const;
-
 #ifdef QT_OPENGL_ES_2
     EGLSurface eglSurfaceHandle() const { return m_eglSurface;}
     EGLSurface ensureEglSurfaceHandle(const QWindowsEGLStaticContextPtr &staticContext, EGLConfig config);
