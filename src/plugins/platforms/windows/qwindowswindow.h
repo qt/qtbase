@@ -125,7 +125,8 @@ public:
         BlockedByModal = 0x80,
         SizeGripOperation = 0x100,
         FrameStrutEventsEnabled = 0x200,
-        SynchronousGeometryChangeEvent = 0x400
+        SynchronousGeometryChangeEvent = 0x400,
+        WithinSetStyle = 0x800
     };
 
     struct WindowData

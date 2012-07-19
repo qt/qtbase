@@ -991,6 +991,9 @@ void QWindowsWindow::handleResized(int wParam)
 
 void QWindowsWindow::handleGeometryChange()
 {
+    //Prevent recursive resizes for Windows CE
+    if (testFlag(WithinSetStyle))
+        return;
     m_data.geometry = geometry_sys();
     QPlatformWindow::setGeometry(m_data.geometry);
     if (testFlag(SynchronousGeometryChangeEvent))
@@ -1295,8 +1298,10 @@ void QWindowsWindow::setStyle(unsigned s) const
 {
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window() << debugWinStyle(s);
+    setFlag(WithinSetStyle);
     setFlag(FrameDirty);
     SetWindowLongPtr(m_data.hwnd, GWL_STYLE, s);
+    clearFlag(WithinSetStyle);
 }
 
 void QWindowsWindow::setExStyle(unsigned s) const
