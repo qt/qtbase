@@ -198,11 +198,10 @@ void tst_QWidgetsVariant::qvariant_cast_QObject()
         QCOMPARE(data.userType(), int(QMetaType::QObjectStar));
 
         QVERIFY(data.canConvert<QWidget*>());
-        QVERIFY(data.canConvert(QMetaType::QWidgetStar));
         QVERIFY(data.canConvert(::qMetaTypeId<QWidget*>()));
         QVERIFY(data.value<QWidget*>());
-        QVERIFY(data.convert(QMetaType::QWidgetStar));
-        QCOMPARE(data.userType(), int(QMetaType::QWidgetStar));
+        QVERIFY(data.convert(qMetaTypeId<QWidget*>()));
+        QCOMPARE(data.userType(), qMetaTypeId<QWidget*>());
     } else {
         QVERIFY(!data.canConvert<QObject*>());
         QVERIFY(!data.canConvert(QMetaType::QObjectStar));
@@ -219,7 +218,7 @@ void tst_QWidgetsVariant::qvariant_cast_QObject_derived()
     CustomQWidget customWidget;
     QWidget *widget = &customWidget;
     QVariant data = QVariant::fromValue(widget);
-    QVERIFY(data.userType() == QMetaType::QWidgetStar);
+    QVERIFY(data.userType() == qMetaTypeId<QWidget*>());
 
     QCOMPARE(data.value<QObject*>(), widget);
     QCOMPARE(data.value<QWidget*>(), widget);

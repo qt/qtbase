@@ -113,8 +113,7 @@ QT_BEGIN_NAMESPACE
     F(QJsonDocument, 48, QJsonDocument) \
 
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
-    F(QObjectStar, 39, QObject*) \
-    F(QWidgetStar, 40, QWidget*) \
+    F(QObjectStar, 39, QObject*)
 
 #define QT_FOR_EACH_STATIC_CORE_TEMPLATE(F)\
     F(QVariantMap, 8, QVariantMap) \
@@ -233,7 +232,7 @@ public:
         QRegularExpression = 44,
         QJsonValue = 45, QJsonObject = 46, QJsonArray = 47, QJsonDocument = 48,
         SChar = 49,
-        QObjectStar = 39, QWidgetStar = 40,
+        QObjectStar = 39,
         Void = 43,
         QVariantMap = 8, QVariantList = 9, QVariantHash = 28,
         QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,
@@ -448,11 +447,6 @@ namespace QtPrivate
     {
         enum { Value = true };
     };
-    template<>
-    struct IsPointerToTypeDerivedFromQObject<QWidget*>
-    {
-        enum { Value = true };
-    };
 
     template<typename T>
     struct IsPointerToTypeDerivedFromQObject<T*>
@@ -478,14 +472,6 @@ namespace QtPrivate
     struct MetaObjectForType<T*, /* isPointerToTypeDerivedFromQObject = */ true>
     {
         static inline const QMetaObject *value() { return &T::staticMetaObject; }
-    };
-
-    Q_CORE_EXPORT const QMetaObject *metaObjectForQWidget();
-
-    template<>
-    struct MetaObjectForType<QWidget*, /* isPointerToTypeDerivedFromQObject = */ true>
-    {
-        static const QMetaObject *value() { return metaObjectForQWidget(); }
     };
 
     template<typename T>

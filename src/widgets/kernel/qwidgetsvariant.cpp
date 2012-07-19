@@ -152,12 +152,11 @@ static const QMetaTypeInterface qVariantWidgetsHelper[] = {
 }  // namespace
 
 extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeWidgetsHelper;
-extern Q_CORE_EXPORT const QMetaObject *qMetaObjectWidgetsHelper;
 
 void qRegisterWidgetsVariant()
 {
+    qRegisterMetaType<QWidget*>();
     qMetaTypeWidgetsHelper = qVariantWidgetsHelper;
-    qMetaObjectWidgetsHelper = &QWidget::staticMetaObject;
     QVariantPrivate::registerHandler(QModulesPrivate::Widgets, &widgets_handler);
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterWidgetsVariant)

@@ -1074,8 +1074,7 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
 
     Usually, you never have to use this constructor, use QVariant::fromValue()
     instead to construct variants from the pointer types represented by
-    \c QMetaType::VoidStar, \c QMetaType::QObjectStar and
-    \c QMetaType::QWidgetStar.
+    \c QMetaType::VoidStar, and \c QMetaType::QObjectStar.
 
     \sa QVariant::fromValue(), Type
 */
@@ -2724,7 +2723,6 @@ bool QVariant::canConvert(int targetTypeId) const
         case QMetaType::Short:
         case QMetaType::UShort:
             return qCanConvertMatrix[QVariant::Int] & (1 << currentType) || currentType == QVariant::Int;
-        case QMetaType::QWidgetStar:
         case QMetaType::QObjectStar:
             return canConvertMetaObject(currentType, targetTypeId, d.data.o);
         default:

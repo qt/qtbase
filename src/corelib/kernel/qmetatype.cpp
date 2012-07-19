@@ -165,7 +165,6 @@ struct DefinedTypesFilter {
     \value UChar \c{unsigned char}
     \value Float \c float
     \value QObjectStar QObject *
-    \value QWidgetStar QWidget *
     \value QVariant QVariant
 
     \value QCursor QCursor
@@ -604,7 +603,7 @@ int QMetaType::registerNormalizedTypedef(const NS(QByteArray) &normalizedTypeNam
 bool QMetaType::isRegistered(int type)
 {
     // predefined type
-    if ((type >= FirstCoreType && type <= LastCoreType)
+    if ((type >= FirstCoreType && type <= LastCoreType && type != 40) // 40 is the type that QWidgetStar used to be
         || (type >= FirstGuiType && type <= LastGuiType)
         || (type >= FirstWidgetsType && type <= LastWidgetsType)) {
         return true;
@@ -693,7 +692,6 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::Void:
     case QMetaType::VoidStar:
     case QMetaType::QObjectStar:
-    case QMetaType::QWidgetStar:
     case QMetaType::QModelIndex:
     case QMetaType::QJsonValue:
     case QMetaType::QJsonObject:
@@ -911,7 +909,6 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::Void:
     case QMetaType::VoidStar:
     case QMetaType::QObjectStar:
-    case QMetaType::QWidgetStar:
     case QMetaType::QModelIndex:
     case QMetaType::QJsonValue:
     case QMetaType::QJsonObject:

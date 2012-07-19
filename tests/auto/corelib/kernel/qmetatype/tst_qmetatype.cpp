@@ -498,9 +498,6 @@ template<> struct TestValueFactory<QMetaType::Float> {
 template<> struct TestValueFactory<QMetaType::QObjectStar> {
     static QObject * *create() { return new QObject *(0); }
 };
-template<> struct TestValueFactory<QMetaType::QWidgetStar> {
-    static QWidget * *create() { return new QWidget *(0); }
-};
 template<> struct TestValueFactory<QMetaType::VoidStar> {
     static void * *create() { return new void *(0); }
 };
