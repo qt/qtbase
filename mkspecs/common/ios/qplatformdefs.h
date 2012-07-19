@@ -94,7 +94,4 @@
 #define QT_SNPRINTF             ::snprintf
 #define QT_VSNPRINTF            ::vsnprintf
 
-#define QT_GUI_DRAG_DISTANCE    12
-#define QT_GUI_DOUBLE_CLICK_DISTANCE 12
-
 #endif // QPLATFORMDEFS_H
