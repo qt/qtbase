@@ -475,6 +475,7 @@ UnixMakefileGenerator::findLibraries()
     if (libArg == "-L")
         libArg.clear();
     QList<QMakeLocalFileName> libdirs;
+    int libidx = 0;
     foreach (const QString &dlib, project->values("QMAKE_DEFAULT_LIBDIRS"))
         libdirs.append(QMakeLocalFileName(dlib));
     const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
@@ -490,7 +491,7 @@ UnixMakefileGenerator::findLibraries()
                         it = l.erase(it);
                         continue;
                     }
-                    libdirs.append(f);
+                    libdirs.insert(libidx++, f);
                     if (!libArg.isEmpty())
                         *it = libArg + lib;
                 } else if(opt.startsWith("-l")) {
@@ -577,6 +578,7 @@ UnixMakefileGenerator::processPrlFiles()
 {
     const QString libArg = project->first("QMAKE_L_FLAG");
     QList<QMakeLocalFileName> libdirs, frameworkdirs;
+    int libidx = 0, fwidx = 0;
     foreach (const QString &dlib, project->values("QMAKE_DEFAULT_LIBDIRS"))
         libdirs.append(QMakeLocalFileName(dlib));
     frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
@@ -590,7 +592,7 @@ UnixMakefileGenerator::processPrlFiles()
                 if (opt.startsWith(libArg)) {
                     QMakeLocalFileName l(opt.mid(libArg.length()));
                     if(!libdirs.contains(l))
-                       libdirs.append(l);
+                       libdirs.insert(libidx++, l);
                 } else if(opt.startsWith("-l")) {
                     QString lib = opt.right(opt.length() - 2);
                     for(int dep_i = 0; dep_i < libdirs.size(); ++dep_i) {
@@ -600,7 +602,7 @@ UnixMakefileGenerator::processPrlFiles()
                             if(exists(la) && QFile::exists(lfn.local() + Option::dir_sep + ".libs")) {
                                 QString dot_libs = lfn.real() + Option::dir_sep + ".libs";
                                 l.append("-L" + dot_libs);
-                                libdirs.append(QMakeLocalFileName(dot_libs));
+                                libdirs.insert(libidx++, QMakeLocalFileName(dot_libs));
                             }
                         }
 
@@ -617,7 +619,7 @@ UnixMakefileGenerator::processPrlFiles()
                 } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-F")) {
                     QMakeLocalFileName f(opt.right(opt.length()-2));
                     if(!frameworkdirs.contains(f))
-                        frameworkdirs.append(f);
+                        frameworkdirs.insert(fwidx++, f);
                 } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-framework")) {
                     if(opt.length() > 11)
                         opt = opt.mid(11);
