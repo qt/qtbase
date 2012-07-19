@@ -626,9 +626,8 @@ UnixMakefileGenerator::processPrlFiles()
                     else
                         opt = l.at(++lit);
                     opt = opt.trimmed();
-                    const QList<QMakeLocalFileName> dirs = frameworkdirs + libdirs;
-                    for(int dep_i = 0; dep_i < dirs.size(); ++dep_i) {
-                        QString prl = dirs[dep_i].local() + "/" + opt + ".framework/" + opt + Option::prl_ext;
+                    foreach (const QMakeLocalFileName &dir, frameworkdirs) {
+                        QString prl = dir.local() + "/" + opt + ".framework/" + opt + Option::prl_ext;
                         if(processPrlFile(prl))
                             break;
                     }
