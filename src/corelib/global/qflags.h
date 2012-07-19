@@ -53,7 +53,7 @@ class QFlag
     int i;
 public:
     Q_DECL_CONSTEXPR inline QFlag(int i);
-    inline operator int() const { return i; }
+    Q_DECL_CONSTEXPR inline operator int() const { return i; }
 };
 
 Q_DECL_CONSTEXPR inline QFlag::QFlag(int ai) : i(ai) {}
@@ -63,7 +63,7 @@ class QIncompatibleFlag
     int i;
 public:
     Q_DECL_CONSTEXPR inline explicit QIncompatibleFlag(int i);
-    inline operator int() const { return i; }
+    Q_DECL_CONSTEXPR inline operator int() const { return i; }
 };
 
 Q_DECL_CONSTEXPR inline QIncompatibleFlag::QIncompatibleFlag(int ai) : i(ai) {}
@@ -85,7 +85,7 @@ public:
 #endif
     Q_DECL_CONSTEXPR inline QFlags(Enum f) : i(f) {}
     Q_DECL_CONSTEXPR inline QFlags(Zero = 0) : i(0) {}
-    inline QFlags(QFlag f) : i(f) {}
+    Q_DECL_CONSTEXPR inline QFlags(QFlag f) : i(f) {}
 
     inline QFlags &operator&=(int mask) { i &= mask; return *this; }
     inline QFlags &operator&=(uint mask) { i &= mask; return *this; }
@@ -107,7 +107,7 @@ public:
 
     Q_DECL_CONSTEXPR inline bool operator!() const { return !i; }
 
-    inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == int(f) ); }
+    Q_DECL_CONSTEXPR inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == int(f) ); }
 };
 
 #define Q_DECLARE_FLAGS(Flags, Enum)\
