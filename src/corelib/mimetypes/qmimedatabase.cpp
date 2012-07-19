@@ -339,7 +339,7 @@ QMimeType QMimeDatabase::mimeTypeForName(const QString &nameOrAlias) const
     file contents are used to determine the MIME type. This is equivalent to
     calling mimeTypeForData with a QFile as input device.
 
-    In all cases, the \a fileName can also include an absolute or relative path.
+    \a fileInfo may refer to an absolute or relative path.
 
     \sa isDefault, mimeTypeForData
 */
