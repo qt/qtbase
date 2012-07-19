@@ -475,6 +475,8 @@ UnixMakefileGenerator::findLibraries()
     if (libArg == "-L")
         libArg.clear();
     QList<QMakeLocalFileName> libdirs;
+    foreach (const QString &dlib, project->values("QMAKE_DEFAULT_LIBDIRS"))
+        libdirs.append(QMakeLocalFileName(dlib));
     const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
     for(int i = 0; !lflags[i].isNull(); i++) {
         QStringList &l = project->values(lflags[i]);
