@@ -107,7 +107,27 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \variable QJsonParseError::error
+
+    Contains the type of the parse error. Is equal to QJsonParseError::NoError if the document
+    was parsed correctly.
+
+    \sa ParseError, errorString()
+*/
+
+
+/*!
+    \variable QJsonParseError::offset
+
+    Contains the offset in the input string where the parse error occurred.
+
+    \sa error, errorString()
+*/
+
+/*!
   Returns the human-readable message appropriate to the reported JSON parsing error.
+
+  \sa error
  */
 QString QJsonParseError::errorString() const
 {

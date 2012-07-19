@@ -255,6 +255,60 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
 }
 
 /*!
+    \fn bool QJsonValue::isNull() const
+
+    Returns true if the value is null.
+*/
+
+/*!
+    \fn bool QJsonValue::isBool() const
+
+    Returns true if the value contains a boolean.
+
+    \sa toBool()
+ */
+
+/*!
+    \fn bool QJsonValue::isDouble() const
+
+    Returns true if the value contains a double.
+
+    \sa toDouble()
+ */
+
+/*!
+    \fn bool QJsonValue::isString() const
+
+    Returns true if the value contains a string.
+
+    \sa toString()
+ */
+
+/*!
+    \fn bool QJsonValue::isArray() const
+
+    Returns true if the value contains an array.
+
+    \sa toArray()
+ */
+
+/*!
+    \fn bool QJsonValue::isObject() const
+
+    Returns true if the value contains an object.
+
+    \sa toObject()
+ */
+
+/*!
+    \fn bool QJsonValue::isUndefined() const
+
+    Returns true if the value is undefined. This can happen in certain
+    error cases as e.g. accessing a non existing key in a QJsonObject.
+ */
+
+
+/*!
     Converts \a variant to a QJsonValue and returns it.
 
     The conversion will convert QVariant types as follows:
@@ -369,7 +423,7 @@ QJsonValue::Type QJsonValue::type() const
 /*!
     Converts the value to a bool and returns it.
 
-    If type() is not bool, the defaultValue will be returned.
+    If type() is not bool, the \a defaultValue will be returned.
  */
 bool QJsonValue::toBool(bool defaultValue) const
 {
@@ -381,7 +435,7 @@ bool QJsonValue::toBool(bool defaultValue) const
 /*!
     Converts the value to a double and returns it.
 
-    If type() is not Double, the defaultValue will be returned.
+    If type() is not Double, the \a defaultValue will be returned.
  */
 double QJsonValue::toDouble(double defaultValue) const
 {
@@ -393,7 +447,7 @@ double QJsonValue::toDouble(double defaultValue) const
 /*!
     Converts the value to a QString and returns it.
 
-    If type() is not String, the defaultValue will be returned.
+    If type() is not String, the \a defaultValue will be returned.
  */
 QString QJsonValue::toString(const QString &defaultValue) const
 {
@@ -407,7 +461,7 @@ QString QJsonValue::toString(const QString &defaultValue) const
 /*!
     Converts the value to an array and returns it.
 
-    If type() is not Array, the defaultValue will be returned.
+    If type() is not Array, the \a defaultValue will be returned.
  */
 QJsonArray QJsonValue::toArray(const QJsonArray &defaultValue) const
 {
@@ -432,7 +486,7 @@ QJsonArray QJsonValue::toArray() const
 /*!
     Converts the value to an object and returns it.
 
-    If type() is not Object, the defaultValue will be returned.
+    If type() is not Object, the \a defaultValue will be returned.
  */
 QJsonObject QJsonValue::toObject(const QJsonObject &defaultValue) const
 {

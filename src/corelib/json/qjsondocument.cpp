@@ -176,7 +176,7 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
 
  Returns a QJsonDocument representing the data.
 
- \sa rawData, fromBinaryData, isNull, DataValidation
+ \sa rawData(), fromBinaryData(), isNull(), DataValidation
  */
 QJsonDocument QJsonDocument::fromRawData(const char *data, int size, DataValidation validation)
 {
@@ -198,7 +198,7 @@ QJsonDocument QJsonDocument::fromRawData(const char *data, int size, DataValidat
 
 /*!
   Returns the raw binary representation of the data
-  \a size will contain the size of the \a data.
+  \a size will contain the size of the returned data.
 
   This method is useful to e.g. stream the JSON document
   in it's binary form to a file.
@@ -220,7 +220,7 @@ const char *QJsonDocument::rawData(int *size) const
  By default the data is validated. If the \a data is not valid, the method returns
  a null document.
 
- \sa toBinaryData, fromRawData, isNull, DataValidation
+ \sa toBinaryData(), fromRawData(), isNull(), DataValidation
  */
 QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidation validation)
 {
@@ -260,7 +260,7 @@ QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidati
  QVariant::List or QVariant::StringList, the returned document
  document is invalid.
 
- \sa toVariant
+ \sa toVariant()
  */
 QJsonDocument QJsonDocument::fromVariant(const QVariant &variant)
 {
@@ -281,7 +281,7 @@ QJsonDocument QJsonDocument::fromVariant(const QVariant &variant)
  The returned variant will be a QVariantList if the document is
  a QJsonArray and a QVariantMap if the document is a QJsonObject.
 
- \sa fromVariant, QJsonValue::toVariant()
+ \sa fromVariant(), QJsonValue::toVariant()
  */
 QVariant QJsonDocument::toVariant() const
 {
@@ -297,7 +297,7 @@ QVariant QJsonDocument::toVariant() const
 /*!
  Converts the QJsonDocument to a UTF-8 encoded JSON document.
 
- \sa fromJson
+ \sa fromJson()
  */
 QByteArray QJsonDocument::toJson() const
 {
@@ -316,10 +316,15 @@ QByteArray QJsonDocument::toJson() const
 
 /*!
  Parses a UTF-8 encoded JSON document and creates a QJsonDocument
- from it. isNull() will return \c false if no error was encountered during
+ from it.
+
+ \a json contains the json document to be parsed.
+
+ The optional \a error variable can be used to pass in a QJsonParseError data
+ structure that will contain information about possible errors encountered during
  parsing.
 
- \sa toJson
+ \sa toJson(), QJsonParseError
  */
 QJsonDocument QJsonDocument::fromJson(const QByteArray &json, QJsonParseError *error)
 {
@@ -348,7 +353,7 @@ bool QJsonDocument::isEmpty() const
  or computers. fromBinaryData() can be used to convert it back into a
  JSON document.
 
- \sa fromBinaryData
+ \sa fromBinaryData()
  */
 QByteArray QJsonDocument::toBinaryData() const
 {
@@ -392,7 +397,7 @@ bool QJsonDocument::isObject() const
     Returns an empty object if the document contains an
     array.
 
-    \sa isObject, array, setObject
+    \sa isObject(), array(), setObject()
  */
 QJsonObject QJsonDocument::object() const
 {
@@ -410,7 +415,7 @@ QJsonObject QJsonDocument::object() const
     Returns an empty array if the document contains an
     object.
 
-    \sa isArray, object, setArray
+    \sa isArray(), object(), setArray()
  */
 QJsonArray QJsonDocument::array() const
 {
@@ -425,7 +430,7 @@ QJsonArray QJsonDocument::array() const
 /*!
     Sets \a object as the main object of this document.
 
-    \sa setArray, object
+    \sa setArray(), object()
  */
 void QJsonDocument::setObject(const QJsonObject &object)
 {
@@ -452,7 +457,7 @@ void QJsonDocument::setObject(const QJsonObject &object)
 /*!
     Sets \a array as the main object of this document.
 
-    \sa setObject, array
+    \sa setObject(), array()
  */
 void QJsonDocument::setArray(const QJsonArray &array)
 {

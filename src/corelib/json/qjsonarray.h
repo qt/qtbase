@@ -179,7 +179,7 @@ public:
     inline const_iterator end() const { return const_iterator(this, size()); }
     inline const_iterator constEnd() const { return const_iterator(this, size()); }
     iterator insert(iterator before, const QJsonValue &value) { insert(before.i, value); return before; }
-    iterator erase(iterator pos) { removeAt(pos.i); return pos; }
+    iterator erase(iterator it) { removeAt(it.i); return it; }
 
     // more Qt
     typedef iterator Iterator;

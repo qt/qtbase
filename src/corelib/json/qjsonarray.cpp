@@ -74,6 +74,60 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \typedef QJsonArray::Iterator
+
+    Qt-style synonym for QJsonArray::iterator.
+*/
+
+/*!
+    \typedef QJsonArray::ConstIterator
+
+    Qt-style synonym for QJsonArray::const_iterator.
+*/
+
+/*!
+    \typedef QJsonArray::size_type
+
+    Typedef for int. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QJsonArray::value_type
+
+    Typedef for QJsonValue. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QJsonArray::difference_type
+
+    Typedef for int. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QJsonArray::pointer
+
+    Typedef for QJsonValue *. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QJsonArray::const_pointer
+
+    Typedef for const QJsonValue *. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QJsonArray::reference
+
+    Typedef for QJsonValue &. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QJsonArray::const_reference
+
+    Typedef for const QJsonValue &. Provided for STL compatibility.
+*/
+
+/*!
     Creates an empty array.
  */
 QJsonArray::QJsonArray()
@@ -137,7 +191,7 @@ QJsonArray &QJsonArray::operator =(const QJsonArray &other)
 
     The values in \a list will be converted to JSON values.
 
-    \sa toVariantList, QJsonValue::fromString
+    \sa toVariantList(), QJsonValue::fromVariant()
  */
 QJsonArray QJsonArray::fromStringList(const QStringList &list)
 {
@@ -152,7 +206,7 @@ QJsonArray QJsonArray::fromStringList(const QStringList &list)
 
     The QVariant values in \a list will be converted to JSON values.
 
-    \sa toVariantList, QJsonValue::fromVariant
+    \sa toVariantList(), QJsonValue::fromVariant()
  */
 QJsonArray QJsonArray::fromVariantList(const QVariantList &list)
 {
@@ -191,9 +245,17 @@ int QJsonArray::size() const
 }
 
 /*!
+    \fn QJsonArray::count() const
+
+    Same as size().
+
+    \sa size()
+*/
+
+/*!
     Returns \c true if the object is empty. This is the same as size() == 0.
 
-    \sa size
+    \sa size()
  */
 bool QJsonArray::isEmpty() const
 {
@@ -222,7 +284,7 @@ QJsonValue QJsonArray::at(int i) const
 
     Same as \c at(0).
 
-    \sa at
+    \sa at()
  */
 QJsonValue QJsonArray::first() const
 {
@@ -234,7 +296,7 @@ QJsonValue QJsonArray::first() const
 
     Same as \c{at(size() - 1)}.
 
-    \sa at
+    \sa at()
  */
 QJsonValue QJsonArray::last() const
 {
@@ -288,7 +350,7 @@ void QJsonArray::removeAt(int i)
     the array can be empty, call isEmpty() before calling this
     function.
 
-    \sa removeAt(), takeFirst()
+    \sa removeAt(), removeLast()
 */
 
 /*! \fn void QJsonArray::removeLast()
@@ -298,7 +360,7 @@ void QJsonArray::removeAt(int i)
     empty. If the array can be empty, call isEmpty() before calling
     this function.
 
-    \sa removeAt(), takeLast()
+    \sa removeAt(), removeFirst()
 */
 
 /*!
@@ -352,6 +414,24 @@ void QJsonArray::insert(int i, const QJsonValue &value)
     if (valueSize)
         QJsonPrivate::Value::copyData(value, (char *)a + valueOffset, compressed);
 }
+
+/*!
+    \fn QJsonArray::iterator QJsonArray::insert(iterator before, const QJsonValue &value)
+
+    Inserts \a value before the position pointed to by \a before, and returns an iterator
+    pointing to the newly inserted item.
+
+    \sa erase(), insert()
+*/
+
+/*!
+    \fn QJsonArray::iterator QJsonArray::erase(iterator it)
+
+    Removes the item pointed to by \a it, and returns an iterator pointing to the
+    next item.
+
+    \sa removeAt()
+*/
 
 /*!
     Replaces the item at index position \a i with \a value. \a i must
@@ -410,7 +490,7 @@ bool QJsonArray::contains(const QJsonValue &value) const
     the assignment will apply to the character in the QJsonArray of QJsonObject
     from which you got the reference.
 
-    \sa at(), value()
+    \sa at()
  */
 QJsonValueRef QJsonArray::operator [](int i)
 {
@@ -775,7 +855,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     aware that any non-const function call performed on the QJsonArray
     will render all existing iterators undefined.
 
-    \sa QJsonArray::iterator, QJsonArrayIterator
+    \sa QJsonArray::iterator
 */
 
 /*! \fn QJsonArray::const_iterator::const_iterator()

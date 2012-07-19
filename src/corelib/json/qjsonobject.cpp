@@ -72,6 +72,37 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \typedef QJsonObject::Iterator
+
+    Qt-style synonym for QJsonObject::iterator.
+*/
+
+/*!
+    \typedef QJsonObject::ConstIterator
+
+    Qt-style synonym for QJsonObject::const_iterator.
+*/
+
+/*!
+    \typedef QJsonObject::key_type
+
+    Typedef for QString. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QJsonObject::mapped_type
+
+    Typedef for QJsonValue. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QJsonObject::size_type
+
+    Typedef for int. Provided for STL compatibility.
+*/
+
+
+/*!
     Constructs an empty JSON object
 
     \sa isEmpty()
@@ -754,7 +785,7 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
     Multiple iterators can be used on the same object. Existing iterators
     will however become dangling if the object gets modified.
 
-    \sa QJsonObject::iterator, QJsonObjectIterator
+    \sa QJsonObject::iterator
 */
 
 /*! \typedef QJsonObject::const_iterator::difference_type
@@ -818,6 +849,7 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 */
 
 /*! \fn bool QJsonObject::const_iterator::operator==(const const_iterator &other) const
+    \fn bool QJsonObject::const_iterator::operator==(const iterator &other) const
 
     Returns \c true if \a other points to the same item as this
     iterator; otherwise returns \c false.
@@ -826,6 +858,7 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 */
 
 /*! \fn bool QJsonObject::const_iterator::operator!=(const const_iterator &other) const
+    \fn bool QJsonObject::const_iterator::operator!=(const iterator &other) const
 
     Returns \c true if \a other points to a different item than this
     iterator; otherwise returns \c false.
@@ -982,16 +1015,6 @@ void QJsonObject::setValueAt(int i, const QJsonValue &val)
     QJsonPrivate::Entry *e = o->entryAt(i);
     insert(e->key(), val);
 }
-
-/*! \typedef QJsonObject::Iterator
-
-    Qt-style synonym for QJsonObject::iterator.
-*/
-
-/*! \typedef QJsonObject::ConstIterator
-
-    Qt-style synonym for QJsonObject::const_iterator.
-*/
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QJsonObject &o)
