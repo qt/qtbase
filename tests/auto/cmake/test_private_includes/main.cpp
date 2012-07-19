@@ -42,6 +42,7 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <qpa/qplatformscreen.h>
+#include <QtGui/qpa/qplatformpixmap.h>
 
 int main(int argc, char **argv)
 {
@@ -49,6 +50,10 @@ int main(int argc, char **argv)
 
     QPlatformScreen *screenHandle = app.screens().first()->handle();
     screenHandle->geometry();
+
+    QPixmap pixmap;
+    QPlatformPixmap *pixmapHandle = pixmap.handle();
+    pixmapHandle->width();
 
     return 0;
 }
