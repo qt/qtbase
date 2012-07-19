@@ -1029,34 +1029,36 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         }
     }
     else if (command == COMMAND_REIMP) {
-        if (node != 0 && node->type() == Node::Function) {
-            FunctionNode *func = (FunctionNode *) node;
-            const FunctionNode *from = func->reimplementedFrom();
-            if (from == 0) {
-                doc.location().warning(
-                            tr("Cannot find base function for '\\%1' in %2()")
-                            .arg(COMMAND_REIMP).arg(node->name()),
-                            tr("The function either doesn't exist in any base class "
-                               "with the same signature or it exists but isn't virtual."));
+        if (node->parent() && !node->parent()->isInternal()) {
+            if (node != 0 && node->type() == Node::Function) {
+                FunctionNode *func = (FunctionNode *) node;
+                const FunctionNode *from = func->reimplementedFrom();
+                if (from == 0) {
+                    doc.location().warning(tr("Cannot find base function for '\\%1' in %2()")
+                                           .arg(COMMAND_REIMP).arg(node->name()),
+                                           tr("The function either doesn't exist in any "
+                                              "base class with the same signature or it "
+                                              "exists but isn't virtual."));
+                }
+                /*
+                  Ideally, we would enable this check to warn whenever
+                  \reimp is used incorrectly, and only make the node
+                  internal if the function is a reimplementation of
+                  another function in a base class.
+                */
+                else if (from->access() == Node::Private
+                         || from->parent()->access() == Node::Private) {
+                    doc.location().warning(tr("'\\%1' in %2() should be '\\internal' "
+                                              "because its base function is private "
+                                              "or internal").arg(COMMAND_REIMP).arg(node->name()));
+                }
+                func->setReimp(true);
             }
-            /*
-              Ideally, we would enable this check to warn whenever
-              \reimp is used incorrectly, and only make the node
-              internal if the function is a reimplementation of
-              another function in a base class.
-            */
-            else if (from->access() == Node::Private
-                     || from->parent()->access() == Node::Private) {
-                doc.location().warning(tr("'\\%1' in %2() should be '\\internal' because its base function is private or internal")
-                                       .arg(COMMAND_REIMP).arg(node->name()));
+            else {
+                doc.location().warning(tr("Ignored '\\%1' in %2")
+                                       .arg(COMMAND_REIMP)
+                                       .arg(node->name()));
             }
-
-            func->setReimp(true);
-        }
-        else {
-            doc.location().warning(tr("Ignored '\\%1' in %2")
-                                   .arg(COMMAND_REIMP)
-                                   .arg(node->name()));
         }
     }
     else if (command == COMMAND_RELATES) {
