@@ -4101,8 +4101,8 @@ void qDeleteInEventHandler(QObject *o)
     \threadsafe
     \overload connect()
 
-    Creates a connection of the given \a type from the \a signal in
-    the \a sender object to the \a functor and returns a handle to the connection
+    Creates a connection from \a signal in
+    \a sender object to \a functor, and returns a handle to the connection
 
     The signal must be a function declared as a signal in the header.
     The slot function can be any function or functor that can be connected
