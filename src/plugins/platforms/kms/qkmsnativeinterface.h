@@ -56,8 +56,11 @@ public:
 
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 
+    NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource);
+
     void *eglDisplayForWindow(QWindow *window);
     void *eglContextForWindow(QWindow *window);
+    static void *eglContextForContext(QOpenGLContext *context);
 
 private:
     static QKmsScreen *qPlatformScreenForWindow(QWindow *window);

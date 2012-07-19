@@ -44,6 +44,8 @@
 #include "qkmsdevice.h"
 
 #include "qscreen.h"
+#include "qkmscontext.h"
+#include <QOpenGLContext>
 
 class QKmsResourceMap : public QMap<QByteArray, QKmsNativeInterface::ResourceType>
 {
@@ -76,6 +78,17 @@ void *QKmsNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
     return result;
 }
 
+QPlatformNativeInterface::NativeResourceForContextFunction QKmsNativeInterface::nativeResourceFunctionForContext(const QByteArray &resource)
+{
+    QByteArray lowerCaseResource = resource.toLower();
+    if (lowerCaseResource == "get_egl_context") {
+        return eglContextForContext;
+    }
+    return 0;
+}
+
+
+
 void *QKmsNativeInterface::eglDisplayForWindow(QWindow *window)
 {
     QKmsScreen *screen = qPlatformScreenForWindow(window);
@@ -96,4 +109,13 @@ QKmsScreen *QKmsNativeInterface::qPlatformScreenForWindow(QWindow *window)
 {
     QScreen *screen = window ? window->screen() : QGuiApplication::primaryScreen();
     return static_cast<QKmsScreen *>(screen->handle());
+}
+
+void *QKmsNativeInterface::eglContextForContext(QOpenGLContext *context)
+{
+    Q_ASSERT(context);
+
+    QKmsContext *eglPlatformContext = static_cast<QKmsContext *>(context->handle());
+
+    return eglPlatformContext->eglContext();
 }
