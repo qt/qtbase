@@ -152,20 +152,23 @@ static QTextCodec *setupLocaleMapper()
         // already setup
         return globalData->codecForLocale;
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    globalData->codecForLocale = QTextCodec::codecForName("System");
-#else
-
 #if !defined(QT_BOOTSTRAPPED)
     QCoreApplicationPrivate::initLocale();
 #endif
+
+#if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
+    globalData->codecForLocale = QTextCodec::codecForName("System");
+#elif defined(Q_OS_MAC) || defined(Q_OS_IOS) || defined(Q_OS_LINUX_ANDROID) || defined(Q_OS_QNX)
+    globalData->codecForLocale = QTextCodec::codecForName("UTF-8");
+#else
+
     // First try getting the codecs name from nl_langinfo and see
     // if we have a builtin codec for it.
     // Only fall back to using iconv if we can't find a builtin codec
     // This is because the builtin utf8 codec is around 5 times faster
     // then the using QIconvCodec
 
-#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_OSF) && !defined(Q_OS_LINUX_ANDROID)
+#if defined (_XOPEN_UNIX) && !defined(Q_OS_OSF)
     char *charset = nl_langinfo(CODESET);
     if (charset)
         globalData->codecForLocale = QTextCodec::codecForName(charset);
@@ -237,7 +240,6 @@ static QTextCodec *setupLocaleMapper()
     }
 
     // If everything failed, we default to 8859-1
-    // We could perhaps default to 8859-15.
     if (!globalData->codecForLocale)
         globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-1");
 #endif
