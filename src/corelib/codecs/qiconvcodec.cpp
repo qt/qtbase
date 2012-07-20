@@ -93,6 +93,10 @@ QT_BEGIN_NAMESPACE
 QIconvCodec::QIconvCodec()
     : utf16Codec(0)
 {
+}
+
+void QIconvCodec::init() const
+{
     utf16Codec = QTextCodec::codecForMib(1015);
     Q_ASSERT_X(utf16Codec != 0,
                "QIconvCodec::convertToUnicode",
@@ -203,7 +207,7 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
 
     if (!*pstate) {
         // first time, create the state
-        iconv_t cd = QIconvCodec::createIconv_t(UTF16, 0);
+        iconv_t cd = createIconv_t(UTF16, 0);
         if (cd == reinterpret_cast<iconv_t>(-1)) {
             static int reported = 0;
             if (!reported++) {
@@ -348,7 +352,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     QThreadStorage<QIconvCodec::IconvState *> *ts = fromUnicodeState();
     IconvState *&state = ts ? ts->localData() : temporaryState;
     if (!state) {
-        iconv_t cd = QIconvCodec::createIconv_t(0, UTF16);
+        iconv_t cd = createIconv_t(0, UTF16);
         if (cd != reinterpret_cast<iconv_t>(-1)) {
             if (!setByteOrder(cd)) {
                 perror("QIconvCodec::convertFromUnicode: using Latin-1 for conversion, iconv failed for BOM");
@@ -460,9 +464,12 @@ int QIconvCodec::mibEnum() const
     return 0;
 }
 
-iconv_t QIconvCodec::createIconv_t(const char *to, const char *from)
+iconv_t QIconvCodec::createIconv_t(const char *to, const char *from) const
 {
     Q_ASSERT((to == 0 && from != 0) || (to != 0 && from == 0));
+
+    if (!utf16Codec)
+        init();
 
     iconv_t cd = (iconv_t) -1;
 #if defined(__GLIBC__) || defined(GNU_LIBICONV) || defined(Q_OS_QNX)

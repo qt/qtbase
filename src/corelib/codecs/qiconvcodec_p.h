@@ -80,7 +80,8 @@ public:
     QByteArray name() const;
     int mibEnum() const;
 
-    static iconv_t createIconv_t(const char *to, const char *from);
+    void init() const;
+    iconv_t createIconv_t(const char *to, const char *from) const;
 
     class IconvState
     {
