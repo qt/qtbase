@@ -65,12 +65,15 @@
 
 #include "qutfcodec_p.h"
 #include "qlatincodec_p.h"
+
 #if !defined(QT_BOOTSTRAPPED)
-#  include "qsimplecodec_p.h"
-#endif
-#if !defined(QT_BOOTSTRAPPED) && !defined(QT_NO_BIG_CODECS)
 #  include "qtsciicodec_p.h"
 #  include "qisciicodec_p.h"
+#if defined(QT_USE_ICU)
+#include "qicucodec_p.h"
+#else
+#  include "qsimplecodec_p.h"
+#if !defined(QT_NO_BIG_CODECS)
 #  ifndef Q_OS_INTEGRITY
 #    include "qgb18030codec_p.h"
 #    include "qeucjpcodec_p.h"
@@ -79,7 +82,11 @@
 #    include "qeuckrcodec_p.h"
 #    include "qbig5codec_p.h"
 #  endif // !Q_OS_INTEGRITY
-#endif // !QT_BOOTSTRAPPED && !QT_NO_BIG_CODECS
+#endif // !QT_NO_BIG_CODECS
+
+#endif // QT_USE_ICU
+#endif // QT_BOOTSTRAPPED
+
 #include "qmutex.h"
 
 #include <stdlib.h>
@@ -140,6 +147,9 @@ static QTextCodec *checkForCodec(const QByteArray &name) {
 #endif
 
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive));
+QMutex *qTextCodecsMutex() { return textCodecsMutex(); }
+
+static void setup();
 
 // this returns the codec the method sets up as locale codec to
 // avoid a race condition in codecForLocale() when
@@ -147,10 +157,12 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive));
 static QTextCodec *setupLocaleMapper()
 {
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
+
     QMutexLocker locker(textCodecsMutex());
     if (globalData->codecForLocale)
         // already setup
         return globalData->codecForLocale;
+    setup();
 
 #if !defined(QT_BOOTSTRAPPED)
     QCoreApplicationPrivate::initLocale();
@@ -250,6 +262,10 @@ static QTextCodec *setupLocaleMapper()
 static void setup()
 {
 #if !defined(QT_NO_CODECS) && !defined(QT_BOOTSTRAPPED)
+    (void)new QTsciiCodec;
+    for (int i = 0; i < 9; ++i)
+        (void)new QIsciiCodec(i);
+#if !defined(QT_USE_ICU)
     for (int i = 0; i < QSimpleTextCodec::numSimpleCodecs; ++i)
         (void)new QSimpleTextCodec(i);
 
@@ -268,13 +284,14 @@ static void setup()
     (void)new QBig5hkscsCodec;
 #    endif // !Q_OS_INTEGRITY
 
-    (void)new QTsciiCodec;
-    for (int i = 0; i < 9; ++i)
-        (void)new QIsciiCodec(i);
 #  endif // !QT_NO_BIG_CODECS
 #endif // !QT_NO_CODECS && !QT_BOOTSTRAPPED
+#endif
 
 #if !defined(QT_BOOTSTRAPPED)
+#if !defined(QT_NO_ICONV)
+    (void) new QIconvCodec;
+#endif
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     (void) new QWindowsLocalCodec;
 #endif // Q_OS_WIN32
@@ -493,9 +510,12 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
     QMutexLocker locker(textCodecsMutex());
 
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    if (!globalData)
+        return 0;
     if (globalData->allCodecs.isEmpty())
         setup();
 
+#ifndef QT_USE_ICU
     QTextCodecCache *cache = &globalData->codecCache;
     QTextCodec *codec;
     if (cache) {
@@ -521,6 +541,9 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
     }
 
     return 0;
+#else
+    return QIcuCodec::codecForName(name);
+#endif
 }
 
 
@@ -533,6 +556,8 @@ QTextCodec* QTextCodec::codecForMib(int mib)
     QMutexLocker locker(textCodecsMutex());
 
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    if (!globalData)
+        return 0;
     if (globalData->allCodecs.isEmpty())
         setup();
 
@@ -556,6 +581,10 @@ QTextCodec* QTextCodec::codecForMib(int mib)
         }
     }
 
+#ifdef QT_USE_ICU
+    return QIcuCodec::codecForMib(mib);
+#endif
+
     return 0;
 }
 
@@ -570,6 +599,9 @@ QTextCodec* QTextCodec::codecForMib(int mib)
 */
 QList<QByteArray> QTextCodec::availableCodecs()
 {
+#ifdef QT_USE_ICU
+    return QIcuCodec::availableCodecs();
+#else
     QMutexLocker locker(textCodecsMutex());
 
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
@@ -584,6 +616,7 @@ QList<QByteArray> QTextCodec::availableCodecs()
     }
 
     return codecs;
+#endif
 }
 
 /*!
@@ -594,6 +627,9 @@ QList<QByteArray> QTextCodec::availableCodecs()
 */
 QList<int> QTextCodec::availableMibs()
 {
+#ifdef QT_USE_ICU
+    return QIcuCodec::availableMibs();
+#else
     QMutexLocker locker(textCodecsMutex());
 
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
@@ -606,6 +642,7 @@ QList<int> QTextCodec::availableMibs()
         codecs += globalData->allCodecs.at(i)->mibEnum();
 
     return codecs;
+#endif
 }
 
 /*!
@@ -638,6 +675,8 @@ void QTextCodec::setCodecForLocale(QTextCodec *c)
 QTextCodec* QTextCodec::codecForLocale()
 {
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    if (!globalData)
+        return 0;
 
     QTextCodec *codec = globalData->codecForLocale;
     if (!globalData->codecForLocale)

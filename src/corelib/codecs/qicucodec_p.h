@@ -39,8 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QCOREGLOBALDATA_P_H
-#define QCOREGLOBALDATA_P_H
+#ifndef QICUCODEC_P_H
+#define QICUCODEC_P_H
+
+#include "QtCore/qtextcodec.h"
 
 //
 //  W A R N I N G
@@ -53,33 +55,37 @@
 // We mean it.
 //
 
-#include "QtCore/qmap.h"
-#include "QtCore/qstringlist.h"
-#include "QtCore/qreadwritelock.h"
-#include "QtCore/qhash.h"
-#include "QtCore/qbytearray.h"
-#include "QtCore/qtextcodec.h"
-#include "QtCore/qmutex.h"
+extern "C" {
+    typedef struct UConverter UConverter;
+}
 
 QT_BEGIN_NAMESPACE
 
-typedef QHash<QByteArray, QTextCodec *> QTextCodecCache;
+class QIcuCodec : public QTextCodec
+{
+public:
+    static QList<QByteArray> availableCodecs();
+    static QList<int> availableMibs();
 
-struct QCoreGlobalData {
-    QCoreGlobalData();
-    ~QCoreGlobalData();
+    static QTextCodec *codecForName(const char *name);
+    static QTextCodec *codecForMib(int mib);
 
-    QMap<QString, QStringList> dirSearchPaths;
-    QReadWriteLock dirSearchPathsLock;
+    QString convertToUnicode(const char *, int, ConverterState *) const;
+    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
 
-    QList<QTextCodec*> allCodecs;
-    QTextCodec *codecForLocale;
-    QTextCodecCache codecCache;
+    QByteArray name() const;
+    QList<QByteArray> aliases() const;
+    int mibEnum() const;
 
-    static QCoreGlobalData *instance();
+private:
+    QIcuCodec(const char *name);
+    ~QIcuCodec();
+
+    UConverter *getConverter(QTextCodec::ConverterState *state) const;
+
+    const char *m_name;
 };
 
-
 QT_END_NAMESPACE
-#endif // QCOREGLOBALDATA_P_H
 
+#endif
