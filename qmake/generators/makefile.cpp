@@ -896,9 +896,12 @@ MakefileGenerator::processPrlFile(QString &file)
                 debug_msg(2, "Ignored meta file %s [%s]", real_meta_file.toLatin1().constData(), libinfo.type().toLatin1().constData());
             } else {
                 ret = true;
-                QHash<QString, QStringList> &vars = libinfo.variables();
-                for(QHash<QString, QStringList>::Iterator it = vars.begin(); it != vars.end(); ++it)
-                    processPrlVariable(it.key(), it.value());
+                project->values("QMAKE_CURRENT_PRL_LIBS") = libinfo.values("QMAKE_PRL_LIBS");
+                QStringList &defs = project->values("DEFINES");
+                const QStringList &prl_defs = project->values("PRL_EXPORT_DEFINES");
+                foreach (const QString &def, libinfo.values("QMAKE_PRL_DEFINES"))
+                    if (!defs.contains(def) && prl_defs.contains(def))
+                        defs.append(def);
                 if(try_replace_file && !libinfo.isEmpty("QMAKE_PRL_TARGET")) {
                     QString dir;
                     int slsh = real_meta_file.lastIndexOf(Option::dir_sep);
@@ -937,21 +940,6 @@ MakefileGenerator::filterIncludedFiles(const QString &var)
             input = inputs.erase(input);
         else
             ++input;
-    }
-}
-
-void
-MakefileGenerator::processPrlVariable(const QString &var, const QStringList &l)
-{
-    if(var == "QMAKE_PRL_LIBS") {
-        project->values("QMAKE_CURRENT_PRL_LIBS") += l;
-    } else if(var == "QMAKE_PRL_DEFINES") {
-        QStringList &out = project->values("DEFINES");
-        for(QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-            if(out.indexOf((*it)) == -1 &&
-               project->values("PRL_EXPORT_DEFINES").indexOf((*it)) == -1)
-                out.append((*it));
-        }
     }
 }
 
