@@ -275,11 +275,6 @@ inline bool IsIconic( HWND /*hWnd*/ )
     return false;
 }
 
-inline bool IsZoomed( HWND /*hWnd*/ )
-{
-    return true;
-}
-
 inline int AddFontResourceExW( LPCWSTR /*name*/, DWORD /*fl*/, PVOID /*res*/)
 {
     return 0;
