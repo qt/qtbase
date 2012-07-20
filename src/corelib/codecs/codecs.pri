@@ -46,3 +46,7 @@ unix {
                 DEFINES += GNU_LIBICONV
         }
 }
+win32 {
+    SOURCES += codecs/qwindowscodec.cpp
+    HEADERS += codecs/qwindowscodec_p.h
+}

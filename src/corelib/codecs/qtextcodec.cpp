@@ -53,8 +53,13 @@
 #include <private/qcoreapplication_p.h>
 #endif
 
+#if !defined(QT_BOOTSTRAPPED)
 #ifdef Q_OS_UNIX
 #  include "qiconvcodec_p.h"
+#endif
+#ifdef Q_OS_WIN
+#  include "qwindowscodec_p.h"
+#endif
 #endif
 
 #include "qutfcodec_p.h"
@@ -82,14 +87,6 @@
 #if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_OSF) && !defined(Q_OS_LINUX_ANDROID)
 # include <langinfo.h>
 #endif
-
-#ifdef Q_OS_WIN
-#  include <qt_windows.h>
-#  if defined(Q_OS_WINCE)
-#    define QT_NO_SETLOCALE
-#  endif
-#endif
-
 
 // enabling this is not exception safe!
 // #define Q_DEBUG_TEXTCODEC
@@ -186,215 +183,7 @@ bool QTextCodec::validCodecs()
 }
 
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-class QWindowsLocalCodec: public QTextCodec
-{
-public:
-    QWindowsLocalCodec();
-    ~QWindowsLocalCodec();
-
-    QString convertToUnicode(const char *, int, ConverterState *) const;
-    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
-    QString convertToUnicodeCharByChar(const char *chars, int length, ConverterState *state) const;
-
-    QByteArray name() const;
-    int mibEnum() const;
-
-};
-
-QWindowsLocalCodec::QWindowsLocalCodec()
-{
-}
-
-QWindowsLocalCodec::~QWindowsLocalCodec()
-{
-}
-
-QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, ConverterState *state) const
-{
-    const char *mb = chars;
-    int mblen = length;
-
-    if (!mb || !mblen)
-        return QString();
-
-    QVarLengthArray<wchar_t, 4096> wc(4096);
-    int len;
-    QString sp;
-    bool prepend = false;
-    char state_data = 0;
-    int remainingChars = 0;
-
-    //save the current state information
-    if (state) {
-        state_data = (char)state->state_data[0];
-        remainingChars = state->remainingChars;
-    }
-
-    //convert the pending charcter (if available)
-    if (state && remainingChars) {
-        char prev[3] = {0};
-        prev[0] = state_data;
-        prev[1] = mb[0];
-        remainingChars = 0;
-        len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-                                    prev, 2, wc.data(), wc.length());
-        if (len) {
-            prepend = true;
-            sp.append(QChar(wc[0]));
-            mb++;
-            mblen--;
-            wc[0] = 0;
-        }
-    }
-
-    while (!(len=MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS,
-                mb, mblen, wc.data(), wc.length()))) {
-        int r = GetLastError();
-        if (r == ERROR_INSUFFICIENT_BUFFER) {
-                const int wclen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-                                    mb, mblen, 0, 0);
-                wc.resize(wclen);
-        } else if (r == ERROR_NO_UNICODE_TRANSLATION) {
-            //find the last non NULL character
-            while (mblen > 1  && !(mb[mblen-1]))
-                mblen--;
-            //check whether,  we hit an invalid character in the middle
-            if ((mblen <= 1) || (remainingChars && state_data))
-                return convertToUnicodeCharByChar(chars, length, state);
-            //Remove the last character and try again...
-            state_data = mb[mblen-1];
-            remainingChars = 1;
-            mblen--;
-        } else {
-            // Fail.
-            qWarning("MultiByteToWideChar: Cannot convert multibyte text");
-            break;
-        }
-    }
-
-    if (len <= 0)
-        return QString();
-
-    if (wc[len-1] == 0) // len - 1: we don't want terminator
-        --len;
-
-    //save the new state information
-    if (state) {
-        state->state_data[0] = (char)state_data;
-        state->remainingChars = remainingChars;
-    }
-    QString s((QChar*)wc.data(), len);
-    if (prepend) {
-        return sp+s;
-    }
-    return s;
-}
-
-QString QWindowsLocalCodec::convertToUnicodeCharByChar(const char *chars, int length, ConverterState *state) const
-{
-    if (!chars || !length)
-        return QString();
-
-    int copyLocation = 0;
-    int extra = 2;
-    if (state && state->remainingChars) {
-        copyLocation = state->remainingChars;
-        extra += copyLocation;
-    }
-    int newLength = length + extra;
-    char *mbcs = new char[newLength];
-    //ensure that we have a NULL terminated string
-    mbcs[newLength-1] = 0;
-    mbcs[newLength-2] = 0;
-    memcpy(&(mbcs[copyLocation]), chars, length);
-    if (copyLocation) {
-        //copy the last character from the state
-        mbcs[0] = (char)state->state_data[0];
-        state->remainingChars = 0;
-    }
-    const char *mb = mbcs;
-#ifndef Q_OS_WINCE
-    const char *next = 0;
-    QString s;
-    while((next = CharNextExA(CP_ACP, mb, 0)) != mb) {
-        wchar_t wc[2] ={0};
-        int charlength = next - mb;
-        int len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS, mb, charlength, wc, 2);
-        if (len>0) {
-            s.append(QChar(wc[0]));
-        } else {
-            int r = GetLastError();
-            //check if the character being dropped is the last character
-            if (r == ERROR_NO_UNICODE_TRANSLATION && mb == (mbcs+newLength -3) && state) {
-                state->remainingChars = 1;
-                state->state_data[0] = (char)*mb;
-            }
-        }
-        mb = next;
-    }
-#else
-    QString s;
-    int size = mbstowcs(NULL, mb, length);
-    if (size < 0) {
-        Q_ASSERT("Error in CE TextCodec");
-        return QString();
-    }
-    wchar_t* ws = new wchar_t[size + 2];
-    ws[size +1] = 0;
-    ws[size] = 0;
-    size = mbstowcs(ws, mb, length);
-    for (int i=0; i< size; i++)
-        s.append(QChar(ws[i]));
-    delete [] ws;
-#endif
-    delete [] mbcs;
-    return s;
-}
-
-QByteArray QWindowsLocalCodec::convertFromUnicode(const QChar *ch, int uclen, ConverterState *) const
-{
-    if (!ch)
-        return QByteArray();
-    if (uclen == 0)
-        return QByteArray("");
-    BOOL used_def;
-    QByteArray mb(4096, 0);
-    int len;
-    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const wchar_t*)ch, uclen,
-                mb.data(), mb.size()-1, 0, &used_def)))
-    {
-        int r = GetLastError();
-        if (r == ERROR_INSUFFICIENT_BUFFER) {
-            mb.resize(1+WideCharToMultiByte(CP_ACP, 0,
-                                (const wchar_t*)ch, uclen,
-                                0, 0, 0, &used_def));
-                // and try again...
-        } else {
-#ifndef QT_NO_DEBUG
-            // Fail.
-            qWarning("WideCharToMultiByte: Cannot convert multibyte text (error %d): %s (UTF-8)",
-                r, QString(ch, uclen).toLocal8Bit().data());
-#endif
-            break;
-        }
-    }
-    mb.resize(len);
-    return mb;
-}
-
-
-QByteArray QWindowsLocalCodec::name() const
-{
-    return "System";
-}
-
-int QWindowsLocalCodec::mibEnum() const
-{
-    return 0;
-}
-
-#else
+#if !defined(Q_OS_WIN32) && !defined(Q_OS_WINCE)
 
 /* locale names mostly copied from XFree86 */
 static const char * const iso8859_2locales[] = {
@@ -688,9 +477,11 @@ static void setup()
 #  endif // !QT_BOOTSTRAPPED && !QT_NO_BIG_CODECS
 #endif // QT_NO_CODECS
 
+#if !defined(QT_BOOTSTRAPPED)
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     (void) new QWindowsLocalCodec;
 #endif // Q_OS_WIN32
+#endif
 
     (void)new QUtf16Codec;
     (void)new QUtf16BECodec;
