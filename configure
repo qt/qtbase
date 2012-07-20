@@ -837,8 +837,8 @@ CFG_REDUCE_RELOCATIONS=auto
 CFG_ACCESSIBILITY=auto
 CFG_IWMMXT=no
 CFG_NEON=auto
-CFG_MIPS_DSP=yes
-CFG_MIPS_DSPR2=yes
+CFG_MIPS_DSP=auto
+CFG_MIPS_DSPR2=auto
 CFG_CLOCK_GETTIME=auto
 CFG_CLOCK_MONOTONIC=auto
 CFG_MREMAP=auto
@@ -3994,17 +3994,25 @@ elif [ "$CFG_ARCH" != "arm" ]; then
 fi
 
 # detect mips_dsp support
-if [ "${CFG_ARCH}" = "mips" ] && [ "${CFG_MIPS_DSP}" = "yes" ]; then
-  CFG_MIPS_DSP=yes
+if [ "$CFG_ARCH" = "mips" ] && [ "${CFG_MIPS_DSP}" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mips_dsp "mips_dsp" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
+        CFG_MIPS_DSP=yes
     else
-  CFG_MIPS_DSP=no
+        CFG_MIPS_DSP=no
+    fi
+elif [ "$CFG_ARCH" != "mips" ]; then
+    CFG_MIPS_DSP=no
 fi
 
 # detect mips_dspr2 support
-if [ "${CFG_ARCH}" = "mips" ] && [ "${CFG_MIPS_DSPR2}" = "yes" ]; then
-  CFG_MIPS_DSPR2=yes
+if [ "$CFG_ARCH" = "mips" ] && [ "${CFG_MIPS_DSPR2}" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mips_dspr2 "mips_dspr2" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
+        CFG_MIPS_DSPR2=yes
     else
-  CFG_MIPS_DSPR2=no
+        CFG_MIPS_DSPR2=no
+    fi
+elif [ "$CFG_ARCH" != "mips" ]; then
+    CFG_MIPS_DSPR2=no
 fi
 
 [ "$XPLATFORM_MINGW" = "yes" ] && QMakeVar add styles "windowsxp windowsvista"

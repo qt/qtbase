@@ -229,7 +229,12 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 #endif
 
 // -- MIPS --
-// Wikipedia says there are extensions, but GCC installs no headers
+# if __mips_dsp
+" dsp"
+# endif
+# if __mips_dspr2
+" dspr2"
+# endif
 
 // -- POWER, PowerPC --
 #ifdef __ALTIVEC__
