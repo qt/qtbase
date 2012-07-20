@@ -2537,7 +2537,7 @@ void tst_QWizard::task161658_alignments()
     int idx = wizard.addPage(&page);
     wizard.setStartId(idx);
     wizard.show();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowExposed(&wizard));
 
     foreach (QLabel *subtitleLabel, qFindChildren<QLabel *>(&wizard)) {
         if (subtitleLabel->text().startsWith("SUBTITLE#")) {
@@ -2569,7 +2569,8 @@ void tst_QWizard::task177022_setFixedSize()
     QCOMPARE(wiz.maximumHeight(), height);
 
     wiz.show();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowExposed(&wiz));
+
     QCOMPARE(wiz.size(), QSize(width, height));
     QCOMPARE(wiz.minimumWidth(), width);
     QCOMPARE(wiz.minimumHeight(), height);
@@ -2601,7 +2602,8 @@ void tst_QWizard::task248107_backButton()
     wizard.addPage(&page4);
 
     wizard.show();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowExposed(&wizard));
+
     QCOMPARE(wizard.currentPage(), &page1);
 
     QTest::mouseClick(wizard.button(QWizard::NextButton), Qt::LeftButton);

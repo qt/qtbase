@@ -286,7 +286,7 @@ void tst_QFiledialog::filesSelectedSignal()
     QSignalSpy spyFilesSelected(&fd, SIGNAL(filesSelected(const QStringList &)));
 
     fd.show();
-    QTest::qWait(500);
+    QVERIFY(QTest::qWaitForWindowExposed(&fd));
     QListView *listView = qFindChild<QListView*>(&fd, "listView");
     QVERIFY(listView);
 
@@ -938,7 +938,7 @@ void tst_QFiledialog::selectFiles()
     QString temporary = QDir::tempPath() + QLatin1String("/blah");
     dialog->selectFile(temporary);
     dialog->show();
-    QTest::qWait(500);
+    QVERIFY(QTest::qWaitForWindowExposed(dialog));
     QLineEdit *lineEdit = qFindChild<QLineEdit*>(dialog, "fileNameEdit");
     QVERIFY(lineEdit);
     QCOMPARE(lineEdit->text(),QLatin1String("blah"));
@@ -1012,9 +1012,9 @@ void tst_QFiledialog::focus()
     fd.setDirectory(QDir::currentPath());
     fd.show();
     QApplication::setActiveWindow(&fd);
-    QTest::qWaitForWindowShown(&fd);
-    QTRY_COMPARE(fd.isVisible(), true);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
+    QVERIFY(QTest::qWaitForWindowActive(&fd));
+    QCOMPARE(fd.isVisible(), true);
+    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
     qApp->processEvents();
 
     // make sure the tests work with focus follows mouse

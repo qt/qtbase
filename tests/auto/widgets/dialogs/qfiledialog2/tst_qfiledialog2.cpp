@@ -1104,14 +1104,14 @@ void tst_QFileDialog2::QTBUG4419_lineEditSelectAll()
 
     fd.show();
     QApplication::setActiveWindow(&fd);
-    QTest::qWaitForWindowShown(&fd);
-    QTRY_COMPARE(fd.isVisible(), true);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
+    QVERIFY(QTest::qWaitForWindowActive(&fd));
+    QCOMPARE(fd.isVisible(), true);
+    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
 
-    QTest::qWait(250);
     QLineEdit *lineEdit = qFindChild<QLineEdit*>(&fd, "fileNameEdit");
+    QVERIFY(lineEdit);
 
-    QCOMPARE(tempPath + QChar('/') + lineEdit->text(), t->fileName());
+    QTRY_COMPARE(tempPath + QChar('/') + lineEdit->text(), t->fileName());
     QCOMPARE(tempPath + QChar('/') + lineEdit->selectedText(), t->fileName());
 }
 
@@ -1147,9 +1147,9 @@ void tst_QFileDialog2::QTBUG6558_showDirsOnly()
     fd.show();
 
     QApplication::setActiveWindow(&fd);
-    QTest::qWaitForWindowShown(&fd);
-    QTRY_COMPARE(fd.isVisible(), true);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
+    QVERIFY(QTest::qWaitForWindowActive(&fd));
+    QCOMPARE(fd.isVisible(), true);
+    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
 
     QFileSystemModel *model = qFindChild<QFileSystemModel*>(&fd, "qt_filesystem_model");
     QTRY_COMPARE(model->rowCount(model->index(dir.absolutePath())), 2);
@@ -1195,9 +1195,9 @@ void tst_QFileDialog2::QTBUG4842_selectFilterWithHideNameFilterDetails()
     fd.show();
 
     QApplication::setActiveWindow(&fd);
-    QTest::qWaitForWindowShown(&fd);
-    QTRY_COMPARE(fd.isVisible(), true);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
+    QVERIFY(QTest::qWaitForWindowActive(&fd));
+    QCOMPARE(fd.isVisible(), true);
+    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
 
     QComboBox *filters = qFindChild<QComboBox*>(&fd, "fileTypeCombo");
     //We compare the current combobox text with the stripped version
@@ -1211,9 +1211,9 @@ void tst_QFileDialog2::QTBUG4842_selectFilterWithHideNameFilterDetails()
     fd2.show();
 
     QApplication::setActiveWindow(&fd2);
-    QTest::qWaitForWindowShown(&fd2);
-    QTRY_COMPARE(fd2.isVisible(), true);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd2));
+    QVERIFY(QTest::qWaitForWindowActive(&fd2));
+    QCOMPARE(fd2.isVisible(), true);
+    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd2));
 
     QComboBox *filters2 = qFindChild<QComboBox*>(&fd2, "fileTypeCombo");
     //We compare the current combobox text with the non stripped version
@@ -1228,9 +1228,9 @@ void tst_QFileDialog2::dontShowCompleterOnRoot()
     fd.show();
 
     QApplication::setActiveWindow(&fd);
-    QTest::qWaitForWindowShown(&fd);
-    QTRY_COMPARE(fd.isVisible(), true);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
+    QVERIFY(QTest::qWaitForWindowActive(&fd));
+    QCOMPARE(fd.isVisible(), true);
+    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
 
     fd.setDirectory("");
     QLineEdit *lineEdit = qFindChild<QLineEdit*>(&fd, "fileNameEdit");

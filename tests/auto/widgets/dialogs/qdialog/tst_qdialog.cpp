@@ -524,23 +524,23 @@ void tst_QDialog::reject()
 {
     TestRejectDialog dialog;
     dialog.show();
-    QTest::qWaitForWindowShown(&dialog);
-    QTRY_VERIFY(dialog.isVisible());
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+    QVERIFY(dialog.isVisible());
     dialog.reject();
     QTRY_VERIFY(!dialog.isVisible());
     QCOMPARE(dialog.called, 1);
 
     dialog.show();
-    QTest::qWaitForWindowShown(&dialog);
-    QTRY_VERIFY(dialog.isVisible());
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+    QVERIFY(dialog.isVisible());
     QVERIFY(dialog.close());
     QTRY_VERIFY(!dialog.isVisible());
     QCOMPARE(dialog.called, 2);
 
     dialog.cancelReject = true;
     dialog.show();
-    QTest::qWaitForWindowShown(&dialog);
-    QTRY_VERIFY(dialog.isVisible());
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+    QVERIFY(dialog.isVisible());
     dialog.reject();
     QTRY_VERIFY(dialog.isVisible());
     QCOMPARE(dialog.called, 3);
