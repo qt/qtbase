@@ -55,7 +55,7 @@
 #include "private/qcoreglobaldata_p.h"
 
 #if !defined(QT_BOOTSTRAPPED)
-#ifdef Q_OS_UNIX
+#if !defined(QT_NO_ICONV)
 #  include "qiconvcodec_p.h"
 #endif
 #ifdef Q_OS_WIN
