@@ -383,6 +383,25 @@ void tst_QMetaType::typeName()
     FOR_EACH_PRIMITIVE_METATYPE(F) \
     FOR_EACH_COMPLEX_CORE_METATYPE(F) \
 
+namespace {
+    template <typename T>
+    struct static_assert_trigger {
+        Q_STATIC_ASSERT(( QMetaTypeId2<T>::IsBuiltIn ));
+        enum { value = true };
+    };
+}
+
+#define CHECK_BUILTIN(MetaTypeName, MetaTypeId, RealType) static_assert_trigger< RealType >::value &&
+Q_STATIC_ASSERT(( FOR_EACH_CORE_METATYPE(CHECK_BUILTIN) true ));
+#undef CHECK_BUILTIN
+Q_STATIC_ASSERT(( QMetaTypeId2<QList<QVariant> >::IsBuiltIn));
+Q_STATIC_ASSERT(( QMetaTypeId2<QMap<QString,QVariant> >::IsBuiltIn));
+Q_STATIC_ASSERT(( QMetaTypeId2<QObject*>::IsBuiltIn));
+Q_STATIC_ASSERT((!QMetaTypeId2<tst_QMetaType*>::IsBuiltIn)); // QObject subclass
+Q_STATIC_ASSERT((!QMetaTypeId2<QList<int> >::IsBuiltIn));
+Q_STATIC_ASSERT((!QMetaTypeId2<QMap<int,int> >::IsBuiltIn));
+Q_STATIC_ASSERT((!QMetaTypeId2<QMetaType::Type>::IsBuiltIn));
+
 template <int ID>
 struct MetaEnumToType {};
 

@@ -87,6 +87,20 @@ private slots:
     F(QVector4D, QVector4D) \
     F(QQuaternion, QQuaternion)
 
+namespace {
+    template <typename T>
+    struct static_assert_trigger {
+        Q_STATIC_ASSERT(( QMetaTypeId2<T>::IsBuiltIn ));
+        enum { value = true };
+    };
+}
+
+#define CHECK_BUILTIN(TYPE, ID) static_assert_trigger< TYPE >::value &&
+Q_STATIC_ASSERT(( FOR_EACH_GUI_METATYPE(CHECK_BUILTIN) true ));
+#undef CHECK_BUILTIN
+Q_STATIC_ASSERT((!QMetaTypeId2<QList<QPen> >::IsBuiltIn));
+Q_STATIC_ASSERT((!QMetaTypeId2<QMap<QString,QPen> >::IsBuiltIn));
+
 template <int ID>
 struct MetaEnumToType {};
 

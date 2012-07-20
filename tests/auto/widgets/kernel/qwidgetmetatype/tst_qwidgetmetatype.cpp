@@ -67,6 +67,12 @@ public:
   }
 };
 
+Q_STATIC_ASSERT(( QMetaTypeId2<QSizePolicy>::IsBuiltIn));
+Q_STATIC_ASSERT(( QMetaTypeId2<QWidget*>::IsBuiltIn));
+Q_STATIC_ASSERT((!QMetaTypeId2<QList<QSizePolicy> >::IsBuiltIn));
+Q_STATIC_ASSERT((!QMetaTypeId2<QMap<QString,QSizePolicy> >::IsBuiltIn));
+
+
 void tst_QWidgetMetaType::metaObject()
 {
     QCOMPARE(QMetaType::metaObjectForType(QMetaType::QWidgetStar), &QWidget::staticMetaObject);

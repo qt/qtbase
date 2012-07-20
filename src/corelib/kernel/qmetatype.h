@@ -539,7 +539,7 @@ struct QMetaTypeId : public QMetaTypeIdQObject<T>
 template <typename T>
 struct QMetaTypeId2
 {
-    enum { Defined = QMetaTypeId<T>::Defined };
+    enum { Defined = QMetaTypeId<T>::Defined, IsBuiltIn=false };
     static inline Q_DECL_CONSTEXPR int qt_metatype_id() { return QMetaTypeId<T>::qt_metatype_id(); }
 };
 
@@ -717,7 +717,7 @@ inline int qRegisterMetaTypeStreamOperators()
     QT_BEGIN_NAMESPACE \
     template<> struct QMetaTypeId2<NAME> \
     { \
-        enum { Defined = 1, MetaType = METATYPEID }; \
+        enum { Defined = 1, IsBuiltIn = true, MetaType = METATYPEID };   \
         static inline Q_DECL_CONSTEXPR int qt_metatype_id() { return METATYPEID; } \
     }; \
     QT_END_NAMESPACE
