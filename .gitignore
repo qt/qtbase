@@ -146,6 +146,7 @@ tst_*
 tst_*.log
 tst_*.debug
 tst_*~
+tests/auto/cmake/build
 
 # xemacs temporary files
 *.flc
