@@ -127,7 +127,7 @@ help {
     QT += help-private   # sic!
 }
 designer {
-    warning("CONFIG+=desiger is deprecated. Use QT+=designer instead.")
+    warning("CONFIG+=designer is deprecated. Use QT+=designer instead.")
     QT += designer
 }
 uitools {
