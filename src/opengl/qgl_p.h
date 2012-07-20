@@ -377,12 +377,16 @@ private:
     QGLContext *m_ctx;
 };
 
+QT_END_NAMESPACE
+Q_DECLARE_METATYPE(GLuint)
+QT_BEGIN_NAMESPACE
+
 class Q_OPENGL_EXPORT QGLTextureDestroyer : public QObject
 {
     Q_OBJECT
 public:
     QGLTextureDestroyer() : QObject() {
-        qRegisterMetaType<GLuint>("GLuint");
+        qRegisterMetaType<GLuint>();
         connect(this, SIGNAL(freeTexture(QGLContext *, QPlatformPixmap *, GLuint)),
                 this, SLOT(freeTexture_slot(QGLContext *, QPlatformPixmap *, GLuint)));
     }
