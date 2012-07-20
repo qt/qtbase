@@ -706,8 +706,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     msg.pt.y = GET_Y_LPARAM(lParam);
 
     long filterResult = 0;
-    QCoreApplication* coreApp = QCoreApplication::instance();
-    if (coreApp && coreApp->filterNativeEvent(d->m_eventType, &msg, &filterResult)) {
+    QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
+    if (dispatcher && dispatcher->filterNativeEvent(d->m_eventType, &msg, &filterResult)) {
         *result = LRESULT(filterResult);
         return true;
     }

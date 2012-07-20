@@ -2139,42 +2139,6 @@ void QCoreApplication::removeLibraryPath(const QString &path)
 #endif //QT_NO_LIBRARY
 
 /*!
-    Sends \a message through the event filters that were set by
-    installNativeEventFilter().  This function returns true as soon as an
-    event filter returns true, and false otherwise to indicate that
-    the processing of the event should continue.
-
-    Subclasses of QAbstractEventDispatcher \e must call this function
-    for \e all messages received from the system to ensure
-    compatibility with any extensions that may be used in the
-    application.
-
-    Note that the type of \a message is platform dependent. See
-    QAbstractNativeEventFilter for details.
-
-    \sa installNativeEventFilter()
-    \since 5.0
-
-    \internal
-    This method only exists for the Windows event dispatcher to call the winEventFilter virtual.
-    Every other platform can just use QAbstractNativeEventFilter::filterNativeEvent directly.
-*/
-bool QCoreApplication::filterNativeEvent(const QByteArray &eventType, void *message, long *result)
-{
-    if (result)
-        *result = 0;
-#ifdef Q_OS_WIN
-    if (winEventFilter(reinterpret_cast<MSG *>(message), result))
-        return true;
-#endif
-    QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
-    if (dispatcher)
-        return dispatcher->filterNativeEvent(eventType, message, result);
-    return false;
-}
-
-
-/*!
     Installs an event filter \a filterObj for all native events
     received by the application in the main thread.
 

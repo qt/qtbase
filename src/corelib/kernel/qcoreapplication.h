@@ -152,17 +152,12 @@ public:
 
     static void flush();
 
-#if defined(Q_OS_WIN)
-    virtual bool winEventFilter(MSG *message, long *result);
-#endif
-
 #if defined(Q_OS_UNIX)
     static void watchUnixSignal(int signal, bool watch);
 #endif
 
     void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);
     void removeNativeEventFilter(QAbstractNativeEventFilter *filterObj);
-    bool filterNativeEvent(const QByteArray &eventType, void *message, long *result);
 
     static bool isQuitLockEnabled();
     static void setQuitLockEnabled(bool enabled);

@@ -353,13 +353,13 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
     msg.message = message;
     msg.wParam = wp;
     msg.lParam = lp;
-    QCoreApplication *app = QCoreApplication::instance();
+    QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
     long result;
-    if (!app) {
+    if (!dispatcher) {
         if (message == WM_TIMER)
             KillTimer(hwnd, wp);
         return 0;
-    } else if (app->filterNativeEvent(QByteArrayLiteral("windows_dispatcher_MSG"), &msg, &result)) {
+    } else if (dispatcher->filterNativeEvent(QByteArrayLiteral("windows_dispatcher_MSG"), &msg, &result)) {
         return result;
     }
 

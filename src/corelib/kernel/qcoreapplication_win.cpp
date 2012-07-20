@@ -157,21 +157,6 @@ void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
     Q_UNUSED(prevInstance);
 }
 
-/*!
-    The message procedure calls this function for every message
-    received. Reimplement this function if you want to process window
-    messages \a msg that are not processed by Qt. If you don't want
-    the event to be processed by Qt, then return true and set \a result
-    to the value that the window procedure should return. Otherwise
-    return false.
-*/
-bool QCoreApplication::winEventFilter(MSG *msg, long *result)        // Windows event filter
-{
-    Q_UNUSED(msg);
-    Q_UNUSED(result);
-    return false;
-}
-
 void QCoreApplicationPrivate::removePostedTimerEvent(QObject *object, int timerId)
 {
     QThreadData *data = object->d_func()->threadData;

@@ -543,7 +543,8 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 #endif
 
     long result = 0;
-    bool handled = QCoreApplication::instance()->filterNativeEvent(m_nativeInterface->genericEventFilterType(), event, &result);
+    QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
+    bool handled = dispatcher && dispatcher->filterNativeEvent(m_nativeInterface->genericEventFilterType(), event, &result);
 
     uint response_type = event->response_type & ~0x80;
 
