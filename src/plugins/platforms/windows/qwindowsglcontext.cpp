@@ -526,8 +526,7 @@ static QSurfaceFormat
         qErrnoWarning("%s: wglGetPixelFormatAttribIVARB() failed for basic parameters.", __FUNCTION__);
         return result;
     }
-    if (iValues[0])
-        result.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    result.setSwapBehavior(iValues[0] ? QSurfaceFormat::DoubleBuffer : QSurfaceFormat::SingleBuffer);
     result.setDepthBufferSize(iValues[1]);
     result.setRedBufferSize(iValues[3]);
     result.setGreenBufferSize(iValues[4]);
