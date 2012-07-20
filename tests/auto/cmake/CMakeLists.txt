@@ -28,8 +28,8 @@
 #  9/11 Test  #9: test_dbus_module .................   Passed    3.46 sec
 #       Start 10: test_multiple_find_package
 # 10/11 Test #10: test_multiple_find_package .......   Passed    0.07 sec
-#       Start 11: test_add_resources_delyed_file
-# 11/11 Test #11: test_add_resources_delyed_file ...   Passed    0.38 sec
+#       Start 11: test_add_resources_delayed_file
+# 11/11 Test #11: test_add_resources_delayed_file ..   Passed    0.38 sec
 #
 #
 # Note that if Qt is not installed, or if it is installed to a
@@ -67,5 +67,5 @@ if (Qt5DBus_FOUND AND NOT APPLE)
     expect_pass(test_dbus_module)
 endif()
 expect_pass(test_multiple_find_package)
-expect_pass(test_add_resources_delyed_file)
+expect_pass(test_add_resources_delayed_file)
 expect_pass(test_private_includes)
