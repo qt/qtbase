@@ -221,7 +221,6 @@ Win32MakefileGenerator::processPrlFiles()
     QList<QMakeLocalFileName> libdirs;
     for(bool ret = false; true; ret = false) {
         //read in any prl files included..
-        QStringList l_out;
         QStringList l = project->values("QMAKE_LIBS");
         for(QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
             QString opt = (*it).trimmed();
@@ -255,12 +254,8 @@ Win32MakefileGenerator::processPrlFiles()
                     }
                 }
             }
-            if(!opt.isEmpty())
-                l_out.append(opt);
         }
-        if(ret)
-            l = l_out;
-        else
+        if (!ret)
             break;
     }
 }
