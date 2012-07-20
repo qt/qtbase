@@ -218,7 +218,7 @@ Win32MakefileGenerator::processPrlFiles()
 {
     const QString libArg = project->first("QMAKE_L_FLAG");
     QList<QMakeLocalFileName> libdirs;
-    const QString lflags[] = { "QMAKE_LIBS", QString() };
+    const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
     for (int i = 0; !lflags[i].isNull(); i++) {
         QStringList &l = project->values(lflags[i]);
         for (int lit = 0; lit < l.size(); ++lit) {
