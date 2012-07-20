@@ -52,6 +52,7 @@
 #if !defined(QT_BOOTSTRAPPED)
 #include <private/qcoreapplication_p.h>
 #endif
+#include "private/qcoreglobaldata_p.h"
 
 #if !defined(QT_BOOTSTRAPPED)
 #ifdef Q_OS_UNIX
@@ -63,8 +64,10 @@
 #endif
 
 #include "qutfcodec_p.h"
-#include "qsimplecodec_p.h"
 #include "qlatincodec_p.h"
+#if !defined(QT_BOOTSTRAPPED)
+#  include "qsimplecodec_p.h"
+#endif
 #if !defined(QT_BOOTSTRAPPED) && !defined(QT_NO_BIG_CODECS)
 #  include "qtsciicodec_p.h"
 #  include "qisciicodec_p.h"
@@ -77,9 +80,7 @@
 #    include "qbig5codec_p.h"
 #  endif // !Q_OS_INTEGRITY
 #endif // !QT_BOOTSTRAPPED && !QT_NO_BIG_CODECS
-#include "qlocale.h"
 #include "qmutex.h"
-#include "qhash.h"
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -88,15 +89,7 @@
 # include <langinfo.h>
 #endif
 
-// enabling this is not exception safe!
-// #define Q_DEBUG_TEXTCODEC
-
 QT_BEGIN_NAMESPACE
-
-//Cache for QTextCodec::codecForName and codecForMib.
-typedef QHash<QByteArray, QTextCodec *> QTextCodecCache;
-Q_GLOBAL_STATIC(QTextCodecCache, qTextCodecCache)
-
 
 static char qtolower(register char c)
 { if (c >= 'A' && c <= 'Z') return c + 0x20; return c; }
@@ -132,56 +125,6 @@ static bool nameMatch(const QByteArray &name, const QByteArray &test)
            ++h;
     return (*h == '\0');
 }
-
-
-static QList<QTextCodec*> *all = 0;
-#ifdef Q_DEBUG_TEXTCODEC
-static bool destroying_is_ok = false;
-#endif
-
-static QTextCodec *localeMapper = 0;
-
-class QTextCodecCleanup
-{
-public:
-    ~QTextCodecCleanup();
-};
-
-/*
-    Deletes all the created codecs. This destructor is called just
-    before exiting to delete any QTextCodec objects that may be lying
-    around.
-*/
-QTextCodecCleanup::~QTextCodecCleanup()
-{
-    if (!all)
-        return;
-
-#ifdef Q_DEBUG_TEXTCODEC
-    destroying_is_ok = true;
-#endif
-
-    QList<QTextCodec *> *myAll = all;
-    all = 0; // Otherwise the d'tor destroys the iterator
-    for (QList<QTextCodec *>::const_iterator it = myAll->constBegin()
-            ; it != myAll->constEnd(); ++it) {
-        delete *it;
-    }
-    delete myAll;
-    localeMapper = 0;
-
-#ifdef Q_DEBUG_TEXTCODEC
-    destroying_is_ok = false;
-#endif
-}
-
-Q_GLOBAL_STATIC(QTextCodecCleanup, createQTextCodecCleanup)
-
-bool QTextCodec::validCodecs()
-{
-    return true;
-}
-
 
 #if !defined(Q_OS_WIN32) && !defined(Q_OS_WINCE)
 
@@ -299,13 +242,21 @@ static QTextCodec *checkForCodec(const QByteArray &name) {
 }
 #endif
 
-/* the next two functions are implicitely thread safe,
-   as they are only called by setup() which uses a mutex.
-*/
-static void setupLocaleMapper()
+Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive));
+
+// this returns the codec the method sets up as locale codec to
+// avoid a race condition in codecForLocale() when
+// setCodecForLocale(0) is called at the same time.
+static QTextCodec *setupLocaleMapper()
 {
+    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    QMutexLocker locker(textCodecsMutex());
+    if (globalData->codecForLocale)
+        // already setup
+        return globalData->codecForLocale;
+
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    localeMapper = QTextCodec::codecForName("System");
+    globalData->codecForLocale = QTextCodec::codecForName("System");
 #else
 
 #if !defined(QT_BOOTSTRAPPED)
@@ -320,17 +271,17 @@ static void setupLocaleMapper()
 #if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_OSF) && !defined(Q_OS_LINUX_ANDROID)
     char *charset = nl_langinfo(CODESET);
     if (charset)
-        localeMapper = QTextCodec::codecForName(charset);
+        globalData->codecForLocale = QTextCodec::codecForName(charset);
 #endif
 #if !defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
-    if (!localeMapper) {
+    if (!globalData->codecForLocale) {
         // no builtin codec for the locale found, let's try using iconv
         (void) new QIconvCodec();
-        localeMapper = QTextCodec::codecForName("System");
+        globalData->codecForLocale = QTextCodec::codecForName("System");
     }
 #endif
 
-    if (!localeMapper) {
+    if (!globalData->codecForLocale) {
         // Very poorly defined and followed standards causes lots of
         // code to try to get all the cases... This logic is
         // duplicated in QIconvCodec, so if you change it here, change
@@ -366,97 +317,83 @@ static void setupLocaleMapper()
         // 1. CODESET from ctype if it contains a .CODESET part (e.g. en_US.ISO8859-15)
         int indexOfDot = ctype.indexOf('.');
         if (indexOfDot != -1)
-            localeMapper = checkForCodec( ctype.mid(indexOfDot + 1) );
+            globalData->codecForLocale = checkForCodec( ctype.mid(indexOfDot + 1) );
 
         // 2. CODESET from lang if it contains a .CODESET part
-        if (!localeMapper) {
+        if (!globalData->codecForLocale) {
             indexOfDot = lang.indexOf('.');
             if (indexOfDot != -1)
-                localeMapper = checkForCodec( lang.mid(indexOfDot + 1) );
+                globalData->codecForLocale = checkForCodec( lang.mid(indexOfDot + 1) );
         }
 
         // 3. ctype (maybe the locale is named "ISO-8859-1" or something)
-        if (!localeMapper && !ctype.isEmpty() && ctype != "C")
-            localeMapper = checkForCodec(ctype);
+        if (!globalData->codecForLocale && !ctype.isEmpty() && ctype != "C")
+            globalData->codecForLocale = checkForCodec(ctype);
 
         // 4. locale (ditto)
-        if (!localeMapper && !lang.isEmpty())
-            localeMapper = checkForCodec(lang);
+        if (!globalData->codecForLocale && !lang.isEmpty())
+            globalData->codecForLocale = checkForCodec(lang);
 
         // 5. "@euro"
-        if ((!localeMapper && ctype.contains("@euro")) || lang.contains("@euro"))
-            localeMapper = checkForCodec("ISO 8859-15");
+        if ((!globalData->codecForLocale && ctype.contains("@euro")) || lang.contains("@euro"))
+            globalData->codecForLocale = checkForCodec("ISO 8859-15");
 
         // 6. guess locale from ctype unless ctype is "C"
         // 7. guess locale from lang
         const QByteArray &try_by_name = (!ctype.isEmpty() && ctype != "C") ? lang : ctype;
 
         // Now do the guessing.
-        if (!lang.isEmpty() && !localeMapper && !try_by_name.isEmpty()) {
+        if (!lang.isEmpty() && !globalData->codecForLocale && !try_by_name.isEmpty()) {
             if (try_locale_list(iso8859_15locales, lang))
-                localeMapper = QTextCodec::codecForName("ISO 8859-15");
+                globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-15");
             else if (try_locale_list(iso8859_2locales, lang))
-                localeMapper = QTextCodec::codecForName("ISO 8859-2");
+                globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-2");
             else if (try_locale_list(iso8859_3locales, lang))
-                localeMapper = QTextCodec::codecForName("ISO 8859-3");
+                globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-3");
             else if (try_locale_list(iso8859_4locales, lang))
-                localeMapper = QTextCodec::codecForName("ISO 8859-4");
+                globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-4");
             else if (try_locale_list(iso8859_5locales, lang))
-                localeMapper = QTextCodec::codecForName("ISO 8859-5");
+                globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-5");
             else if (try_locale_list(iso8859_6locales, lang))
-                localeMapper = QTextCodec::codecForName("ISO 8859-6");
+                globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-6");
             else if (try_locale_list(iso8859_7locales, lang))
-                localeMapper = QTextCodec::codecForName("ISO 8859-7");
+                globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-7");
             else if (try_locale_list(iso8859_8locales, lang))
-                localeMapper = QTextCodec::codecForName("ISO 8859-8-I");
+                globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-8-I");
             else if (try_locale_list(iso8859_9locales, lang))
-                localeMapper = QTextCodec::codecForName("ISO 8859-9");
+                globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-9");
             else if (try_locale_list(iso8859_13locales, lang))
-                localeMapper = QTextCodec::codecForName("ISO 8859-13");
+                globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-13");
             else if (try_locale_list(tis_620locales, lang))
-                localeMapper = QTextCodec::codecForName("ISO 8859-11");
+                globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-11");
             else if (try_locale_list(koi8_ulocales, lang))
-                localeMapper = QTextCodec::codecForName("KOI8-U");
+                globalData->codecForLocale = QTextCodec::codecForName("KOI8-U");
             else if (try_locale_list(cp_1251locales, lang))
-                localeMapper = QTextCodec::codecForName("CP 1251");
+                globalData->codecForLocale = QTextCodec::codecForName("CP 1251");
             else if (try_locale_list(pt_154locales, lang))
-                localeMapper = QTextCodec::codecForName("PT 154");
+                globalData->codecForLocale = QTextCodec::codecForName("PT 154");
             else if (try_locale_list(probably_koi8_rlocales, lang))
-                localeMapper = ru_RU_hack(lang.constData());
+                globalData->codecForLocale = ru_RU_hack(lang.constData());
         }
 
     }
 
     // If everything failed, we default to 8859-1
     // We could perhaps default to 8859-15.
-    if (!localeMapper)
-        localeMapper = QTextCodec::codecForName("ISO 8859-1");
+    if (!globalData->codecForLocale)
+        globalData->codecForLocale = QTextCodec::codecForName("ISO 8859-1");
 #endif
+    return globalData->codecForLocale;
 }
-
-#ifndef QT_NO_THREAD
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive));
-#endif
 
 // textCodecsMutex need to be locked to enter this function
 static void setup()
 {
-    if (all)
-        return;
-
-#ifdef Q_DEBUG_TEXTCODEC
-    if (destroying_is_ok)
-        qWarning("QTextCodec: Creating new codec during codec cleanup");
-#endif
-    all = new QList<QTextCodec*>;
-    // create the cleanup object to cleanup all codecs on exit
-    (void) createQTextCodecCleanup();
-
-#ifndef QT_NO_CODECS
+#if !defined(QT_NO_CODECS) && !defined(QT_BOOTSTRAPPED)
     for (int i = 0; i < QSimpleTextCodec::numSimpleCodecs; ++i)
         (void)new QSimpleTextCodec(i);
 
-#  if !defined(QT_BOOTSTRAPPED) && !defined(QT_NO_BIG_CODECS)
+#  if !defined(QT_NO_BIG_CODECS)
 
 #    ifndef Q_OS_INTEGRITY
     (void)new QGb18030Codec;
@@ -474,8 +411,8 @@ static void setup()
     (void)new QTsciiCodec;
     for (int i = 0; i < 9; ++i)
         (void)new QIsciiCodec(i);
-#  endif // !QT_BOOTSTRAPPED && !QT_NO_BIG_CODECS
-#endif // QT_NO_CODECS
+#  endif // !QT_NO_BIG_CODECS
+#endif // !QT_NO_CODECS && !QT_BOOTSTRAPPED
 
 #if !defined(QT_BOOTSTRAPPED)
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
@@ -492,9 +429,6 @@ static void setup()
     (void)new QLatin15Codec;
     (void)new QLatin1Codec;
     (void)new QUtf8Codec;
-
-    if (!localeMapper)
-        setupLocaleMapper();
 }
 
 /*!
@@ -662,11 +596,9 @@ QTextCodec::ConverterState::~ConverterState()
 */
 QTextCodec::QTextCodec()
 {
-#ifndef QT_NO_THREAD
     QMutexLocker locker(textCodecsMutex());
-#endif
-    setup();
-    all->prepend(this);
+
+    QCoreGlobalData::instance()->allCodecs.prepend(this);
 }
 
 
@@ -678,19 +610,6 @@ QTextCodec::QTextCodec()
 */
 QTextCodec::~QTextCodec()
 {
-#ifdef Q_DEBUG_TEXTCODEC
-    if (!destroying_is_ok)
-        qWarning("QTextCodec::~QTextCodec: Called by application");
-#endif
-    if (all) {
-#ifndef QT_NO_THREAD
-        QMutexLocker locker(textCodecsMutex());
-#endif
-        all->removeAll(this);
-        QTextCodecCache *cache = qTextCodecCache();
-        if (cache)
-            cache->clear();
-    }
 }
 
 /*!
@@ -711,15 +630,13 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
     if (name.isEmpty())
         return 0;
 
-#ifndef QT_NO_THREAD
     QMutexLocker locker(textCodecsMutex());
-#endif
-    setup();
 
-    if (!validCodecs())
-        return 0;
+    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    if (globalData->allCodecs.isEmpty())
+        setup();
 
-    QTextCodecCache *cache = qTextCodecCache();
+    QTextCodecCache *cache = &globalData->codecCache;
     QTextCodec *codec;
     if (cache) {
         codec = cache->value(name);
@@ -727,8 +644,8 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
             return codec;
     }
 
-    for (int i = 0; i < all->size(); ++i) {
-        QTextCodec *cursor = all->at(i);
+    for (int i = 0; i < globalData->allCodecs.size(); ++i) {
+        QTextCodec *cursor = globalData->allCodecs.at(i);
         if (nameMatch(cursor->name(), name)) {
             if (cache)
                 cache->insert(name, cursor);
@@ -753,16 +670,15 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
 */
 QTextCodec* QTextCodec::codecForMib(int mib)
 {
-#ifndef QT_NO_THREAD
     QMutexLocker locker(textCodecsMutex());
-#endif
-    setup();
 
-    if (!validCodecs())
-        return 0;
+    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    if (globalData->allCodecs.isEmpty())
+        setup();
 
     QByteArray key = "MIB: " + QByteArray::number(mib);
-    QTextCodecCache *cache = qTextCodecCache();
+
+    QTextCodecCache *cache = &globalData->codecCache;
     QTextCodec *codec;
     if (cache) {
         codec = cache->value(key);
@@ -771,8 +687,8 @@ QTextCodec* QTextCodec::codecForMib(int mib)
     }
 
     QList<QTextCodec*>::ConstIterator i;
-    for (int i = 0; i < all->size(); ++i) {
-        QTextCodec *cursor = all->at(i);
+    for (int i = 0; i < globalData->allCodecs.size(); ++i) {
+        QTextCodec *cursor = globalData->allCodecs.at(i);
         if (cursor->mibEnum() == mib) {
             if (cache)
                 cache->insert(key, cursor);
@@ -794,24 +710,18 @@ QTextCodec* QTextCodec::codecForMib(int mib)
 */
 QList<QByteArray> QTextCodec::availableCodecs()
 {
-#ifndef QT_NO_THREAD
     QMutexLocker locker(textCodecsMutex());
-#endif
-    setup();
+
+    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    if (globalData->allCodecs.isEmpty())
+        setup();
 
     QList<QByteArray> codecs;
 
-    if (!validCodecs())
-        return codecs;
-
-    for (int i = 0; i < all->size(); ++i) {
-        codecs += all->at(i)->name();
-        codecs += all->at(i)->aliases();
+    for (int i = 0; i < globalData->allCodecs.size(); ++i) {
+        codecs += globalData->allCodecs.at(i)->name();
+        codecs += globalData->allCodecs.at(i)->aliases();
     }
-
-#ifndef QT_NO_THREAD
-    locker.unlock();
-#endif
 
     return codecs;
 }
@@ -824,27 +734,23 @@ QList<QByteArray> QTextCodec::availableCodecs()
 */
 QList<int> QTextCodec::availableMibs()
 {
-#ifndef QT_NO_THREAD
     QMutexLocker locker(textCodecsMutex());
-#endif
-    setup();
+
+    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    if (globalData->allCodecs.isEmpty())
+        setup();
 
     QList<int> codecs;
 
-    if (!validCodecs())
-        return codecs;
-
-    for (int i = 0; i < all->size(); ++i)
-        codecs += all->at(i)->mibEnum();
-
-#ifndef QT_NO_THREAD
-    locker.unlock();
-#endif
+    for (int i = 0; i < globalData->allCodecs.size(); ++i)
+        codecs += globalData->allCodecs.at(i)->mibEnum();
 
     return codecs;
 }
 
 /*!
+    \nonreentrant
+
     Set the codec to \a c; this will be returned by
     codecForLocale(). If \a c is a null pointer, the codec is reset to
     the default.
@@ -856,12 +762,7 @@ QList<int> QTextCodec::availableMibs()
 */
 void QTextCodec::setCodecForLocale(QTextCodec *c)
 {
-#ifndef QT_NO_THREAD
-    QMutexLocker locker(textCodecsMutex());
-#endif
-    localeMapper = c;
-    if (!localeMapper)
-        setupLocaleMapper();
+    QCoreGlobalData::instance()->codecForLocale = c;
 }
 
 /*!
@@ -876,18 +777,13 @@ void QTextCodec::setCodecForLocale(QTextCodec *c)
 
 QTextCodec* QTextCodec::codecForLocale()
 {
-    if (!validCodecs())
-        return 0;
+    QCoreGlobalData *globalData = QCoreGlobalData::instance();
 
-    if (localeMapper)
-        return localeMapper;
+    QTextCodec *codec = globalData->codecForLocale;
+    if (!globalData->codecForLocale)
+        codec = setupLocaleMapper();
 
-#ifndef QT_NO_THREAD
-    QMutexLocker locker(textCodecsMutex());
-#endif
-    setup();
-
-    return localeMapper;
+    return codec;
 }
 
 

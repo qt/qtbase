@@ -129,8 +129,7 @@ protected:
     virtual ~QTextCodec();
 
 private:
-    friend class QTextCodecCleanup;
-    static bool validCodecs();
+    friend struct QCoreGlobalData;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextCodec::ConversionFlags)
 

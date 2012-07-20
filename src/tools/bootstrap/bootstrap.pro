@@ -42,7 +42,6 @@ DEPENDPATH += $$INCLUDEPATH \
 
 SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \
-           ../../corelib/codecs/qsimplecodec.cpp \
            ../../corelib/codecs/qtextcodec.cpp \
            ../../corelib/codecs/qutfcodec.cpp \
            ../../corelib/global/qglobal.cpp \
@@ -64,6 +63,7 @@ SOURCES += \
            ../../corelib/io/qfiledevice.cpp \
            ../../corelib/io/qtemporaryfile.cpp \
            ../../corelib/io/qtextstream.cpp \
+           ../../corelib/kernel/qcoreglobaldata.cpp \
            ../../corelib/kernel/qmetatype.cpp \
            ../../corelib/kernel/qvariant.cpp \
            ../../corelib/kernel/qsystemerror.cpp \

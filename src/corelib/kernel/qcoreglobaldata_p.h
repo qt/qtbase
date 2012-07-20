@@ -56,12 +56,24 @@
 #include "QtCore/qmap.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qreadwritelock.h"
+#include "QtCore/qhash.h"
+#include "QtCore/qbytearray.h"
+#include "QtCore/qtextcodec.h"
 
 QT_BEGIN_NAMESPACE
 
+typedef QHash<QByteArray, QTextCodec *> QTextCodecCache;
+
 struct QCoreGlobalData {
+    QCoreGlobalData();
+    ~QCoreGlobalData();
+
     QMap<QString, QStringList> dirSearchPaths;
     QReadWriteLock dirSearchPathsLock;
+
+    QList<QTextCodec*> allCodecs;
+    QTextCodec *codecForLocale;
+    QTextCodecCache codecCache;
 
     static QCoreGlobalData *instance();
 };
