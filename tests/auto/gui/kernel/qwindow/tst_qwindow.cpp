@@ -420,7 +420,7 @@ void tst_QWindow::testInputEvents()
     InputTestWindow window;
     window.setGeometry(80, 80, 40, 40);
     window.show();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     QWindowSystemInterface::handleKeyEvent(&window, QEvent::KeyPress, Qt::Key_A, Qt::NoModifier);
     QWindowSystemInterface::handleKeyEvent(&window, QEvent::KeyRelease, Qt::Key_A, Qt::NoModifier);
@@ -478,7 +478,7 @@ void tst_QWindow::touchToMouseTranslation()
     window.ignoreTouch = true;
     window.setGeometry(80, 80, 40, 40);
     window.show();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     QList<QWindowSystemInterface::TouchPoint> points;
     QWindowSystemInterface::TouchPoint tp1, tp2;
@@ -554,7 +554,7 @@ void tst_QWindow::mouseToTouchTranslation()
     window.ignoreMouse = true;
     window.setGeometry(80, 80, 40, 40);
     window.show();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::LeftButton);
     QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::NoButton);
@@ -603,7 +603,7 @@ void tst_QWindow::mouseToTouchLoop()
     window.ignoreTouch = true;
     window.setGeometry(80, 80, 40, 40);
     window.show();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::LeftButton);
     QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::NoButton);
@@ -618,7 +618,7 @@ void tst_QWindow::touchCancel()
     InputTestWindow window;
     window.setGeometry(80, 80, 40, 40);
     window.show();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     QList<QWindowSystemInterface::TouchPoint> points;
     QWindowSystemInterface::TouchPoint tp1;
@@ -678,7 +678,7 @@ void tst_QWindow::touchCancelWithTouchToMouse()
     window.ignoreTouch = true;
     window.setGeometry(80, 80, 40, 40);
     window.show();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     QList<QWindowSystemInterface::TouchPoint> points;
     QWindowSystemInterface::TouchPoint tp1;
@@ -757,9 +757,9 @@ void tst_QWindow::activateAndClose()
     for (int i = 0; i < 10; ++i)  {
        QWindow window;
        window.show();
-       QTest::qWaitForWindowShown(&window);
        window.requestActivateWindow();
-       QTRY_COMPARE(qGuiApp->focusWindow(), &window);
+       QVERIFY(QTest::qWaitForWindowActive(&window));
+       QCOMPARE(qGuiApp->focusWindow(), &window);
     }
 }
 
@@ -770,7 +770,7 @@ void tst_QWindow::mouseEventSequence()
     InputTestWindow window;
     window.setGeometry(80, 80, 40, 40);
     window.show();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     ulong timestamp = 0;
     QPointF local(12, 34);
@@ -892,7 +892,7 @@ void tst_QWindow::inputReentrancy()
 
     window.setGeometry(80, 80, 40, 40);
     window.show();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     // Queue three events.
     QPointF local(12, 34);

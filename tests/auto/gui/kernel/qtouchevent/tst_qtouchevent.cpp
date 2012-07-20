@@ -1503,7 +1503,7 @@ void tst_QTouchEvent::testQGuiAppDelivery()
     QWindow *w = new QWindow;
     w->setGeometry(100, 100, 100, 100);
     w->show();
-    QTest::qWaitForWindowShown(w);
+    QVERIFY(QTest::qWaitForWindowExposed(w));
 
     WindowTouchEventFilter filter;
     w->installEventFilter(&filter);
@@ -1563,7 +1563,7 @@ void tst_QTouchEvent::testMultiDevice()
     QWindow *w = new QWindow;
     w->setGeometry(100, 100, 100, 100);
     w->show();
-    QTest::qWaitForWindowShown(w);
+    QVERIFY(QTest::qWaitForWindowExposed(w));
 
     WindowTouchEventFilter filter;
     w->installEventFilter(&filter);

@@ -1078,7 +1078,7 @@ void tst_QGraphicsScene::addItem()
         CustomView view;
         view.setScene(&scene);
         view.show();
-        QTest::qWaitForWindowShown(view.windowHandle());
+        QVERIFY(QTest::qWaitForWindowExposed(&view));
         qApp->processEvents();
         view.repaints = 0;
 
@@ -1606,10 +1606,9 @@ void tst_QGraphicsScene::hoverEvents_siblings()
     view.rotate(10);
     view.scale(1.7, 1.7);
     view.show();
-    QTest::qWaitForWindowShown(view.windowHandle());
     qApp->setActiveWindow(&view);
     view.activateWindow();
-    QTest::qWait(70);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QCursor::setPos(view.mapToGlobal(QPoint(-5, -5)));
 
@@ -2737,8 +2736,8 @@ void tst_QGraphicsScene::contextMenuEvent()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(view.windowHandle());
     view.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     view.centerOn(item);
 
     {
@@ -2771,7 +2770,7 @@ void tst_QGraphicsScene::contextMenuEvent_ItemIgnoresTransformations()
     QGraphicsView view(&scene, &topLevel);
     view.resize(200, 200);
     topLevel.show();
-    QTest::qWaitForWindowShown(topLevel.windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
     {
         QPoint pos(50, 50);

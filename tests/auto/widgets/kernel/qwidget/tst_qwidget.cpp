@@ -1645,8 +1645,7 @@ void tst_QWidget::setTabOrder()
     container.show();
     container.activateWindow();
     qApp->setActiveWindow(&container);
-    QTest::qWaitForWindowShown(container.windowHandle());
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(&container));
 
     QTRY_VERIFY(lastEdit->hasFocus());
     container.tab();
@@ -3085,7 +3084,7 @@ void tst_QWidget::restoreVersion1Geometry()
         widgetToSave.move(expectedPosition);
         widgetToSave.resize(expectedSize);
         widgetToSave.show();
-        QTest::qWaitForWindowShown(widget.windowHandle());
+        QVERIFY(QTest::qWaitForWindowExposed(&widget));
         QTest::qWait(500); // stabilize
         widgetToSave.setWindowState(Qt::WindowStates(expectedWindowState));
         QTest::qWait(500); // stabilize
@@ -4768,7 +4767,7 @@ void tst_QWidget::popupEnterLeave()
 
     parent.show();
 
-    QTest::qWaitForWindowShown(parent.windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
 
     QWindowSystemInterface::handleMouseEvent(parent.windowHandle(), QPointF(5, 5), QPointF(), Qt::LeftButton, Qt::NoModifier);
     QTest::qWait(100);
@@ -4788,7 +4787,7 @@ void tst_QWidget::popupEnterLeave()
 
     popup.show();
 
-    QTest::qWaitForWindowShown(popup.windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(&popup));
 
     QTest::qWait(100);
 
@@ -5491,7 +5490,7 @@ void tst_QWidget::minAndMaxSizeWithX11BypassWindowManagerHint()
     QCOMPARE(widget.size(), newMaximumSize);
 
     widget.show();
-    QTest::qWaitForWindowShown(widget.windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QCOMPARE(widget.size(), newMaximumSize);
     }
 
@@ -5503,7 +5502,7 @@ void tst_QWidget::minAndMaxSizeWithX11BypassWindowManagerHint()
     QCOMPARE(widget.size(), newMinimumSize);
 
     widget.show();
-    QTest::qWaitForWindowShown(widget.windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QCOMPARE(widget.size(), newMinimumSize);
     }
 }
@@ -6909,7 +6908,7 @@ void tst_QWidget::moveWindowInShowEvent()
 
     // show it
     widget.show();
-    QTest::qWaitForWindowShown(widget.windowHandle());
+    QVERIFY(QTest::qWaitForWindowShown(&widget));
     QTest::qWait(100);
     // it should have moved
     QCOMPARE(widget.pos(), position);
@@ -7052,7 +7051,7 @@ void tst_QWidget::alienWidgets()
     QWidget greatGrandChild(&grandChild);
     parent.show();
 
-    QTest::qWaitForWindowShown(parent.windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
 
     // Verify that the WA_WState_Created attribute is set
     // and the top-level is the only native window.
@@ -7501,7 +7500,7 @@ void tst_QWidget::sendUpdateRequestImmediately()
     UpdateWidget updateWidget;
     updateWidget.show();
 
-    QTest::qWaitForWindowShown(updateWidget.windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(&updateWidget));
 
     qApp->processEvents();
     updateWidget.reset();
@@ -7586,7 +7585,7 @@ void tst_QWidget::opaqueChildren()
     greatGrandChild.setAutoFillBackground(true); // Opaque child widget.
 
     widget.show();
-    QTest::qWaitForWindowShown(widget.windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QTest::qWait(100);
 
     // Child, grandChild and greatGrandChild are outside the ancestor clip.
@@ -7740,7 +7739,7 @@ void tst_QWidget::immediateRepaintAfterInvalidateBuffer()
 
     QWidget *widget = new UpdateWidget;
     widget->show();
-    QTest::qWaitForWindowShown(widget->windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(widget));
     QTest::qWait(200);
 
     static_cast<UpdateWidget *>(widget)->numPaintEvents = 0;
@@ -8097,7 +8096,7 @@ void tst_QWidget::translucentWidget()
     const QPoint labelPos = qApp->desktop()->availableGeometry().topLeft();
     label.move(labelPos);
     label.show();
-    QTest::qWaitForWindowShown(label.windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(&label));
     QTest::qWait(200);
 
     QPixmap widgetSnapshot;
@@ -8484,7 +8483,7 @@ void tst_QWidget::syntheticEnterLeave()
     window.show();
     window.raise();
 
-    QTest::qWaitForWindowShown(window.windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
     QTest::qWait(300);
 
 #define RESET_EVENT_COUNTS \
@@ -8587,7 +8586,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      SELChild child(&parent);
      child.resize(200, 200);
      parent.show();
-     QTest::qWaitForWindowShown(parent.windowHandle());
+     QVERIFY(QTest::qWaitForWindowExposed(&parent));
      QTest::qWait(150);
 
      QCursor::setPos(child.mapToGlobal(QPoint(100, 100)));
@@ -8689,7 +8688,7 @@ void tst_QWidget::updateOnDestroyedSignal()
     child->setPalette(Qt::red);
 
     widget.show();
-    QTest::qWaitForWindowShown(widget.windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QTest::qWait(200);
 
     // Please do not crash.

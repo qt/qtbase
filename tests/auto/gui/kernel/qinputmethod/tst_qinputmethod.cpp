@@ -313,7 +313,7 @@ void tst_qinputmethod::inputMethodAccepted()
 
     DummyWindow window;
     window.show();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
     window.requestActivateWindow();
     QTRY_COMPARE(qApp->focusWindow(), &window);
     window.setFocusObject(&disabledItem);

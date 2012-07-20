@@ -107,9 +107,9 @@ void tst_QGuiApplication::focusObject()
 
 
     // verify active window focus propagates to qguiapplication
-    QTest::qWaitForWindowShown(&window1);
     window1.requestActivateWindow();
-    QTRY_COMPARE(app.focusWindow(), &window1);
+    QVERIFY(QTest::qWaitForWindowActive(&window1));
+    QCOMPARE(app.focusWindow(), &window1);
 
     window1.setFocusObject(&obj1);
     QCOMPARE(app.focusObject(), &obj1);
@@ -124,7 +124,7 @@ void tst_QGuiApplication::focusObject()
     window2.setFocusObject(&obj3);
     QCOMPARE(app.focusObject(), &obj2); // not yet changed
     window2.show();
-    QTest::qWaitForWindowShown(&window2);
+    QVERIFY(QTest::qWaitForWindowExposed(&window2));
     QTRY_COMPARE(app.focusWindow(), &window2);
     QCOMPARE(app.focusObject(), &obj3);
     QCOMPARE(spy.count(), 1);
@@ -241,8 +241,8 @@ void tst_QGuiApplication::changeFocusWindow()
     FocusChangeWindow window1, window2;
     window1.show();
     window2.show();
-    QTest::qWaitForWindowShown(&window1);
-    QTest::qWaitForWindowShown(&window2);
+    QVERIFY(QTest::qWaitForWindowExposed(&window1));
+    QVERIFY(QTest::qWaitForWindowExposed(&window2));
     window1.requestActivateWindow();
     QTRY_COMPARE(app.focusWindow(), &window1);
 
@@ -259,7 +259,7 @@ void tst_QGuiApplication::keyboardModifiers()
 
     QWindow *window = new QWindow;
     window->show();
-    QTest::qWaitForWindowShown(window);
+    QVERIFY(QTest::qWaitForWindowExposed(window));
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
 
     // mouse events
@@ -378,8 +378,8 @@ void tst_QGuiApplication::modalWindow()
     // show the 2 windows, nothing is blocked
     window1->show();
     window2->show();
-    QTest::qWaitForWindowShown(window1);
-    QTest::qWaitForWindowShown(window2);
+    QVERIFY(QTest::qWaitForWindowExposed(window1));
+    QVERIFY(QTest::qWaitForWindowExposed(window2));
     QCOMPARE(app.modalWindow(), static_cast<QWindow *>(0));
     QCOMPARE(window1->blocked, 0);
     QCOMPARE(window2->blocked, 0);
