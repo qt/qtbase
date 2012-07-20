@@ -80,6 +80,8 @@ Q_SIGNALS:
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QBearerEngineImpl::ConnectionError)
+
 #endif // QT_NO_BEARERMANAGEMENT
 
 #endif // QBEARERENGINE_IMPL_H

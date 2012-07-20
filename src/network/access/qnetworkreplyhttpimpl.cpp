@@ -63,8 +63,6 @@
 
 #include <string.h>             // for strchr
 
-Q_DECLARE_METATYPE(QSharedPointer<char>)
-
 QT_BEGIN_NAMESPACE
 
 class QNetworkProxy;

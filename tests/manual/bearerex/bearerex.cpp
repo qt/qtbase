@@ -45,8 +45,6 @@
 #include <QtNetwork>
 #include <QtWidgets>
 
-Q_DECLARE_METATYPE(QNetworkConfiguration)
-
 BearerEx::BearerEx(QWidget* parent)
      : QMainWindow(parent)
 {

@@ -57,7 +57,6 @@ QT_USE_NAMESPACE
 //#define QNETWORKSESSION_MANUAL_TESTS 1
 
 #ifndef QT_NO_BEARERMANAGEMENT
-Q_DECLARE_METATYPE(QNetworkConfiguration)
 Q_DECLARE_METATYPE(QNetworkConfiguration::Type)
 #endif
 

@@ -180,6 +180,8 @@ private:
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QNetworkReply::NetworkError)
+
 QT_END_HEADER
 
 #endif

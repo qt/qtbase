@@ -138,6 +138,8 @@ private:
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QSslConfiguration)
+
 QT_END_HEADER
 
 #endif

@@ -96,14 +96,14 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
     state = QNetworkSession::Invalid;
     lastError = QNetworkSession::UnknownSessionError;
 
-    qRegisterMetaType<QBearerEngineImpl::ConnectionError>("QBearerEngineImpl::ConnectionError");
+    qRegisterMetaType<QBearerEngineImpl::ConnectionError>();
 
     switch (publicConfig.type()) {
     case QNetworkConfiguration::InternetAccessPoint:
         activeConfig = publicConfig;
         engine = getEngineFromId(activeConfig.identifier());
         if (engine) {
-            qRegisterMetaType<QNetworkConfigurationPrivatePointer>("QNetworkConfigurationPrivatePointer");
+            qRegisterMetaType<QNetworkConfigurationPrivatePointer>();
             connect(engine, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
                     this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)),
                     Qt::QueuedConnection);

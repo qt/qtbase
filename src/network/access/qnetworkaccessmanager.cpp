@@ -407,20 +407,20 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
 {
     ensureInitialized();
 
-    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+    qRegisterMetaType<QNetworkReply::NetworkError>();
 #ifndef QT_NO_NETWORKPROXY
-    qRegisterMetaType<QNetworkProxy>("QNetworkProxy");
+    qRegisterMetaType<QNetworkProxy>();
 #endif
 #ifndef QT_NO_SSL
-    qRegisterMetaType<QList<QSslError> >("QList<QSslError>");
-    qRegisterMetaType<QSslConfiguration>("QSslConfiguration");
+    qRegisterMetaType<QList<QSslError> >();
+    qRegisterMetaType<QSslConfiguration>();
 #endif
-    qRegisterMetaType<QList<QPair<QByteArray,QByteArray> > >("QList<QPair<QByteArray,QByteArray> >");
+    qRegisterMetaType<QList<QPair<QByteArray,QByteArray> > >();
 #ifndef QT_NO_HTTP
-    qRegisterMetaType<QHttpNetworkRequest>("QHttpNetworkRequest");
+    qRegisterMetaType<QHttpNetworkRequest>();
 #endif
-    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
-    qRegisterMetaType<QSharedPointer<char> >("QSharedPointer<char>");
+    qRegisterMetaType<QNetworkReply::NetworkError>();
+    qRegisterMetaType<QSharedPointer<char> >();
 }
 
 /*!

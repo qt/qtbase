@@ -47,6 +47,7 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qmetatype.h>
 
 QT_BEGIN_HEADER
 
@@ -124,6 +125,8 @@ private:
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QNetworkConfiguration)
 
 QT_END_HEADER
 

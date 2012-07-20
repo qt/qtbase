@@ -159,7 +159,7 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
         return -1;
     }
 
-    qRegisterMetaType<QHostInfo>("QHostInfo");
+    qRegisterMetaType<QHostInfo>();
 
     int id = theIdCounter.fetchAndAddRelaxed(1); // generate unique ID
 

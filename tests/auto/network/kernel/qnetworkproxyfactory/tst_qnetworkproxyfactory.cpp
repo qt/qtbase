@@ -55,9 +55,6 @@
 #include <QNetworkRequest>
 #include <QList>
 
-Q_DECLARE_METATYPE(QNetworkConfiguration);
-Q_DECLARE_METATYPE(QList<QNetworkProxy>);
-
 #include <QThread>
 
 class tst_QNetworkProxyFactory : public QObject {

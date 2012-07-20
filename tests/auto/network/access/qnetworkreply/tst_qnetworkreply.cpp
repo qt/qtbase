@@ -78,7 +78,10 @@
 #include <QtNetwork/private/qnetworksession_p.h>
 #endif
 #ifdef QT_BUILD_INTERNAL
+#include <QtNetwork/private/qnetworkreplyimpl_p.h> // implicitly included by qnetworkaccessmanager_p.h currently, but don't rely on that being true forever
 #include <QtNetwork/private/qnetworkaccessmanager_p.h>
+#else
+Q_DECLARE_METATYPE(QSharedPointer<char>)
 #endif
 
 #ifdef Q_OS_UNIX
@@ -89,19 +92,12 @@
 
 #include "../../../network-settings.h"
 
-Q_DECLARE_METATYPE(QSharedPointer<char>)
 Q_DECLARE_METATYPE(QNetworkReply*)
 Q_DECLARE_METATYPE(QAuthenticator*)
-Q_DECLARE_METATYPE(QNetworkProxy)
 Q_DECLARE_METATYPE(QNetworkProxyQuery)
-Q_DECLARE_METATYPE(QList<QNetworkProxy>)
-Q_DECLARE_METATYPE(QNetworkReply::NetworkError)
 Q_DECLARE_METATYPE(QBuffer*)
 Q_DECLARE_METATYPE(QHttpMultiPart *)
 Q_DECLARE_METATYPE(QList<QFile*>) // for multiparts
-#ifndef QT_NO_SSL
-Q_DECLARE_METATYPE(QSslConfiguration)
-#endif
 
 typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 

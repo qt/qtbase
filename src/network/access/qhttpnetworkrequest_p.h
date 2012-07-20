@@ -155,6 +155,8 @@ public:
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QHttpNetworkRequest)
+
 #endif // QT_NO_HTTP
 
 

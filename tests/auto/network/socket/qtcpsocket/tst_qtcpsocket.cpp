@@ -92,11 +92,6 @@
 
 #include "../../../network-settings.h"
 
-Q_DECLARE_METATYPE(QAbstractSocket::SocketError)
-Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
-Q_DECLARE_METATYPE(QNetworkProxy)
-Q_DECLARE_METATYPE(QList<QNetworkProxy>)
-
 QT_FORWARD_DECLARE_CLASS(QTcpSocket)
 class SocketPair;
 

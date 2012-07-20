@@ -57,10 +57,6 @@
 
 #include "../../../network-settings.h"
 
-#ifndef QT_NO_BEARERMANAGEMENT
-Q_DECLARE_METATYPE(QNetworkConfiguration)
-#endif
-
 class tst_QFtp : public QObject
 {
     Q_OBJECT

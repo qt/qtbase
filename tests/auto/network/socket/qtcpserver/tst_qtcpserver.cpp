@@ -68,8 +68,6 @@
 #include <qhostinfo.h>
 
 #include <QNetworkProxy>
-Q_DECLARE_METATYPE(QNetworkProxy)
-Q_DECLARE_METATYPE(QList<QNetworkProxy>)
 
 #include <QNetworkSession>
 #include <QNetworkConfiguration>

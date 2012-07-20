@@ -125,7 +125,7 @@ void QHttpNetworkConnectionChannel::init()
     // will then emit a signal to the user of QNetworkReply
     // but cannot be caught because the user did not have a chance yet
     // to connect to QNetworkReply's signals.
-    qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
+    qRegisterMetaType<QAbstractSocket::SocketError>();
     QObject::connect(socket, SIGNAL(disconnected()),
                      this, SLOT(_q_disconnected()),
                      Qt::QueuedConnection);

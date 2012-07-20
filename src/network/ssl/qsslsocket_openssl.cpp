@@ -60,10 +60,6 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QLibrary> // for loading the security lib for the CA store
 
-#ifdef Q_OS_WIN
-Q_DECLARE_METATYPE(QSslCertificate);
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_MAC) && !defined(Q_OS_IOS)

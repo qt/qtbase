@@ -52,8 +52,6 @@
 
 #include <QtCore/QCoreApplication>
 
-Q_DECLARE_METATYPE(QSharedPointer<char>)
-
 QT_BEGIN_NAMESPACE
 
 inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
@@ -1134,7 +1132,7 @@ QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
     setUrl(req.url());
     setOperation(op);
 
-    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+    qRegisterMetaType<QNetworkReply::NetworkError>();
 
     QString msg = QCoreApplication::translate("QNetworkAccessManager",
                                               "Network access is disabled.");

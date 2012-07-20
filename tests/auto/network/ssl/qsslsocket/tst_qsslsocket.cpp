@@ -63,15 +63,12 @@
 
 #include "../../../network-settings.h"
 
-Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
-Q_DECLARE_METATYPE(QAbstractSocket::SocketError)
 #ifndef QT_NO_SSL
 Q_DECLARE_METATYPE(QSslSocket::SslMode)
 typedef QList<QSslError::SslError> SslErrorList;
 Q_DECLARE_METATYPE(SslErrorList)
 Q_DECLARE_METATYPE(QSslError)
 Q_DECLARE_METATYPE(QSsl::SslProtocol)
-Q_DECLARE_METATYPE(QSslConfiguration)
 #endif
 
 #if defined Q_OS_HPUX && defined Q_CC_GNU

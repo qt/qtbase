@@ -746,7 +746,6 @@ void tst_QHttpNetworkConnection::ignoresslerror()
 #endif
 
 #ifdef QT_NO_SSL
-Q_DECLARE_METATYPE(QNetworkReply::NetworkError)
 void tst_QHttpNetworkConnection::nossl_data()
 {
     QTest::addColumn<QString>("protocol");

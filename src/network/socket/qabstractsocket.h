@@ -238,6 +238,9 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug, QAbstractSocket::SocketState);
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
+Q_DECLARE_METATYPE(QAbstractSocket::SocketError)
+
 QT_END_HEADER
 
 #endif // QABSTRACTSOCKET_H
