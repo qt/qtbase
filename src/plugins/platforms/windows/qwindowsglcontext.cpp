@@ -384,13 +384,13 @@ static int choosePixelFormat(HDC hdc,
     iAttributes[i++] = 24;
     switch (format.swapBehavior()) {
     case QSurfaceFormat::DefaultSwapBehavior:
-    case QSurfaceFormat::TripleBuffer:
         break;
     case QSurfaceFormat::SingleBuffer:
         iAttributes[i++] = WGL_DOUBLE_BUFFER_ARB;
         iAttributes[i++] = FALSE;
         break;
     case QSurfaceFormat::DoubleBuffer:
+    case QSurfaceFormat::TripleBuffer:
         iAttributes[i++] = WGL_DOUBLE_BUFFER_ARB;
         iAttributes[i++] = TRUE;
         break;
