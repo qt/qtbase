@@ -2196,7 +2196,7 @@ void tst_QTextEdit::noWrapBackgrounds()
     layout->addWidget(&edit);
     topLevel.show();
 
-    QImage img = QPixmap::grabWidget(edit.viewport()).toImage();
+    const QImage img = edit.viewport()->grab().toImage();
     QCOMPARE(img, img.mirrored(true, false));
 }
 

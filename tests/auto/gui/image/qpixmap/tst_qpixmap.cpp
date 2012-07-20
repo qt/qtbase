@@ -444,7 +444,7 @@ void tst_QPixmap::fill_data()
     if (pm.x11PictureHandle()) {
 #elif defined (Q_OS_WINCE)
     QPixmap pixmap(1,1);
-    if (QPixmap::grabWidget(QApplication::desktop()).depth() >= 24) {
+    if (QApplication::desktop()->grab().depth() >= 24) {
 #else
     QPixmap pixmap(1, 1); {
 #endif
@@ -742,7 +742,7 @@ void tst_QPixmap::grabWindow()
     child.setAutoFillBackground(true);
     child.show();
     QTest::qWait(20);
-    const QPixmap grabWidgetPixmap = QPixmap::grabWidget(&child);
+    const QPixmap grabWidgetPixmap = child.grab();
     const WId childWinId = child.winId(); // Create native child
     QVERIFY(QTest::qWaitForWindowExposed(child.windowHandle()));
     const QPixmap grabWindowPixmap = QPixmap::grabWindow(childWinId);

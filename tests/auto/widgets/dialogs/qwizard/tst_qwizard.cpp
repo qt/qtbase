@@ -56,7 +56,7 @@
 
 static QImage grabWidget(QWidget *window)
 {
-    return QPixmap::grabWidget(window).toImage();
+    return window->grab().toImage();
 }
 
 class tst_QWizard : public QObject
@@ -1794,8 +1794,8 @@ public:
 
     QImage createImage() const
     {
-        return QPixmap::grabWidget(const_cast<TestWizard *>(this))
-            .toImage().convertToFormat(QImage::Format_ARGB32);
+        return const_cast<TestWizard *>(this)->grab()
+               .toImage().convertToFormat(QImage::Format_ARGB32);
     }
 
     QString operationsDescription() const { return opsDescr; }

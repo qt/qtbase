@@ -271,7 +271,7 @@ void tst_QStyle::drawItemPixmap()
     testWidget->show();
 
     QPixmap p(QString(SRCDIR) + "/task_25863.png", "PNG");
-    QPixmap actualPix = QPixmap::grabWidget(testWidget);
+    const QPixmap actualPix = testWidget->grab();
 
     QCOMPARE(actualPix, p);
     testWidget->hide();
@@ -473,7 +473,7 @@ qDebug("TEST PAINTING");
     menu.show();
     menu.addAction(new QAction("Test 1", &menu));
     menu.addAction(new QAction("Test 2", &menu));
-    QPixmap pixmap = QPixmap::grabWidget(&menu);
+    QPixmap pixmap = menu.grab();
     comparePixmap(fileName, pixmap);
 
     //Push button
@@ -481,7 +481,7 @@ qDebug("TEST PAINTING");
     QPushButton button("OK");
     button.setStyle(style);
     button.show();
-    pixmap = QPixmap::grabWidget(&button);
+    pixmap = button.grab();
     button.hide();
     comparePixmap(fileName, pixmap);
 
@@ -490,7 +490,7 @@ qDebug("TEST PAINTING");
     QRadioButton radiobutton("Check");
     radiobutton.setStyle(style);
     radiobutton.show();
-    pixmap = QPixmap::grabWidget(&radiobutton);
+    pixmap = radiobutton.grab();
     radiobutton.hide();
     comparePixmap(fileName, pixmap);
 
@@ -501,7 +501,7 @@ qDebug("TEST PAINTING");
     combobox.addItem("Test 1");
     combobox.addItem("Test 2");
     combobox.show();
-    pixmap = QPixmap::grabWidget(&combobox);
+    pixmap = combobox.grab();
     combobox.hide();
     comparePixmap(fileName, pixmap);
 
@@ -511,7 +511,7 @@ qDebug("TEST PAINTING");
     spinbox.setLocale(QLocale(QLocale::English, QLocale::UnitedStates));
     spinbox.setStyle(style);
     spinbox.show();
-    pixmap = QPixmap::grabWidget(&spinbox);
+    pixmap = spinbox.grab();
     spinbox.hide();
     comparePixmap(fileName, pixmap);
     QLocale::setDefault(QLocale::system());
@@ -521,7 +521,7 @@ qDebug("TEST PAINTING");
     QSlider slider;
     slider.setStyle(style);
     slider.show();
-    pixmap = QPixmap::grabWidget(&slider);
+    pixmap = slider.grab();
     slider.hide();
     comparePixmap(fileName, pixmap);
 
@@ -530,7 +530,7 @@ qDebug("TEST PAINTING");
     QLineEdit lineedit("Test text");
     lineedit.setStyle(style);
     lineedit.show();
-    pixmap = QPixmap::grabWidget(&lineedit);
+    pixmap = lineedit.grab();
     lineedit.hide();
     comparePixmap(fileName, pixmap);
 
@@ -541,7 +541,7 @@ qDebug("TEST PAINTING");
     mdiArea.resize(200, 200);
     mdiArea.setStyle(style);
     mdiArea.show();
-    pixmap = QPixmap::grabWidget(&mdiArea);
+    pixmap = mdiArea.grab();
     mdiArea.hide();
     comparePixmap(fileName, pixmap);
 
@@ -553,7 +553,7 @@ qDebug("TEST PAINTING");
     tb.setIcon(style->standardPixmap(QStyle::SP_DirHomeIcon));
     tb.setStyle(style);
     tb.show();
-    pixmap = QPixmap::grabWidget(&tb);
+    pixmap = tb.grab();
     tb.hide();
     comparePixmap(fileName, pixmap);
 
@@ -772,7 +772,7 @@ void tst_QStyle::testDrawingShortcuts()
         DrawTextStyle *dts = new DrawTextStyle;
         w.show();
         tb->setStyle(dts);
-        QPixmap::grabWidget(tb);
+        tb->grab();
         QStyleOptionToolButton sotb;
         sotb.initFrom(tb);
         bool showMnemonic = dts->styleHint(QStyle::SH_UnderlineShortcut, &sotb, tb);
@@ -787,7 +787,7 @@ void tst_QStyle::testDrawingShortcuts()
         w.addWidget(tb);
         w.show();
         tb->setStyle(dts);
-        QPixmap::grabWidget(tb);
+        tb->grab();
         QStyleOptionToolButton sotb;
         sotb.initFrom(tb);
         bool showMnemonic = dts->styleHint(QStyle::SH_UnderlineShortcut, &sotb, tb);

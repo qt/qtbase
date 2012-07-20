@@ -71,7 +71,7 @@ void tst_BaselineExample::testBasicUsage()
     b.resize(100, 50);
     b.show();
     QTest::qWaitForWindowShown(&b);
-    QImage img1 = QPixmap::grabWidget(&b).toImage();
+    QImage img1 = b.grab().toImage();
     QVERIFY(!img1.isNull());
 
     // Compare it to baseline on server:
@@ -85,11 +85,11 @@ void tst_BaselineExample::testMultipleImages()
     b.resize(100, 50);
     b.show();
     QTest::qWaitForWindowShown(&b);
-    QBASELINE_CHECK(QPixmap::grabWidget(&b).toImage(), "text1");
+    QBASELINE_CHECK(b.grab().toImage(), "text1");
 
     b.setText("Kick me!");
     QTest::qWait(50);
-    QBASELINE_CHECK(QPixmap::grabWidget(&b).toImage(), "text2");
+    QBASELINE_CHECK(b.grab().toImage(), "text2");
 }
 
 
@@ -111,7 +111,7 @@ void tst_BaselineExample::testDataDriven()
     b.resize(100, 50);
     b.show();
     QTest::qWaitForWindowShown(&b);
-    QBASELINE_TEST(QPixmap::grabWidget(&b).toImage());
+    QBASELINE_TEST(b.grab().toImage());
 }
 
 
@@ -137,7 +137,7 @@ void tst_BaselineExample::testDataDrivenChecksum()
     b.resize(100, 50);
     b.show();
     QTest::qWaitForWindowShown(&b);
-    QBASELINE_TEST(QPixmap::grabWidget(&b).toImage());
+    QBASELINE_TEST(b.grab().toImage());
 }
 
 
