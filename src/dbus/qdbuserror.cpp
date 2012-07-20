@@ -250,6 +250,16 @@ static inline QDBusError::ErrorType get(const char *name)
     \value InvalidInterface     The interface is invalid.
 */
 
+/*!
+    \internal
+    Constructs a QDBusError that represents no error.
+*/
+QDBusError::QDBusError()
+    : code(NoError)
+{
+
+}
+
 #ifndef QT_BOOTSTRAPPED
 /*!
     \internal

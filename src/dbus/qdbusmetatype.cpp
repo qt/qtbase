@@ -105,15 +105,15 @@ void QDBusMetaTypeId::init()
     // set the guard variable at the end
     if (!initialized) {
 #ifndef QT_BOOTSTRAPPED
-        // register our types with QtCore
-        message = qRegisterMetaType<QDBusMessage>("QDBusMessage");
-        error = qRegisterMetaType<QDBusError>("QDBusError");
+        // register our types with QtCore (calling qMetaTypeId<T>() does this implicitly)
+        message = qMetaTypeId<QDBusMessage>();
+        error = qMetaTypeId<QDBusError>();
 #endif
-        argument = qRegisterMetaType<QDBusArgument>("QDBusArgument");
-        variant = qRegisterMetaType<QDBusVariant>("QDBusVariant");
-        objectpath = qRegisterMetaType<QDBusObjectPath>("QDBusObjectPath");
-        signature = qRegisterMetaType<QDBusSignature>("QDBusSignature");
-        unixfd = qRegisterMetaType<QDBusUnixFileDescriptor>("QDBusUnixFileDescriptor");
+        argument = qMetaTypeId<QDBusArgument>();
+        variant = qMetaTypeId<QDBusVariant>();
+        objectpath = qMetaTypeId<QDBusObjectPath>();
+        signature = qMetaTypeId<QDBusSignature>();
+        unixfd = qMetaTypeId<QDBusUnixFileDescriptor>();
 
 #ifndef QDBUS_NO_SPECIALTYPES
         // and register QtCore's with us

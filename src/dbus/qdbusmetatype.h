@@ -84,7 +84,7 @@ int qDBusRegisterMetaType(
     void (*mf)(QDBusArgument &, const T *) = qDBusMarshallHelper<T>;
     void (*df)(const QDBusArgument &, T *) = qDBusDemarshallHelper<T>;
 
-    int id = qRegisterMetaType<T>(); // make sure it's registered
+    int id = qMetaTypeId<T>(); // make sure it's registered
     QDBusMetaType::registerMarshallOperators(id,
         reinterpret_cast<QDBusMetaType::MarshallFunction>(mf),
         reinterpret_cast<QDBusMetaType::DemarshallFunction>(df));

@@ -95,8 +95,9 @@ public:
 #endif
     };
 
+    QDBusError();
 #ifndef QT_BOOTSTRAPPED
-    explicit QDBusError(const DBusError *error = 0);
+    explicit QDBusError(const DBusError *error);
     /*implicit*/ QDBusError(const QDBusMessage& msg);
 #endif
     QDBusError(ErrorType error, const QString &message);
@@ -125,6 +126,8 @@ Q_DBUS_EXPORT QDebug operator<<(QDebug, const QDBusError &);
 #endif
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QDBusError)
 
 QT_END_HEADER
 
