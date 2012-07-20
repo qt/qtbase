@@ -394,6 +394,7 @@ int runMoc(int _argc, char **_argv)
     }
 
     moc.currentFilenames.push(filename);
+    moc.includes = pp.includes;
 
     // 1. preprocess
     moc.symbols = pp.preprocessed(moc.filename, in);

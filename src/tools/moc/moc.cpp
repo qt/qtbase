@@ -1103,6 +1103,18 @@ void Moc::parsePluginData(ClassDef *def)
             next(STRING_LITERAL);
             QByteArray metaDataFile = unquotedLexem();
             QFileInfo fi(QFileInfo(QString::fromLocal8Bit(currentFilenames.top().constData())).dir(), QString::fromLocal8Bit(metaDataFile.constData()));
+            for (int j = 0; j < includes.size() && !fi.exists(); ++j) {
+                const IncludePath &p = includes.at(j);
+                if (p.isFrameworkPath)
+                    continue;
+
+                fi.setFile(QString::fromLocal8Bit(p.path.constData()), QString::fromLocal8Bit(metaDataFile.constData()));
+                // try again, maybe there's a file later in the include paths with the same name
+                if (fi.isDir()) {
+                    fi = QFileInfo();
+                    continue;
+                }
+            }
             if (!fi.exists()) {
                 QByteArray msg;
                 msg += "Plugin Metadata file ";

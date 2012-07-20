@@ -56,6 +56,15 @@ public:
     bool displayWarnings;
     bool displayNotes;
 
+    struct IncludePath
+    {
+        inline explicit IncludePath(const QByteArray &_path)
+            : path(_path), isFrameworkPath(false) {}
+        QByteArray path;
+        bool isFrameworkPath;
+    };
+    QList<IncludePath> includes;
+
     QStack<QByteArray> currentFilenames;
 
     inline bool hasNext() const { return (index < symbols.size()); }

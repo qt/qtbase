@@ -69,14 +69,6 @@ class Preprocessor : public Parser
 public:
     Preprocessor(){}
     static bool preprocessOnly;
-    struct IncludePath
-    {
-        inline explicit IncludePath(const QByteArray &_path)
-            : path(_path), isFrameworkPath(false) {}
-        QByteArray path;
-        bool isFrameworkPath;
-    };
-    QList<IncludePath> includes;
     QList<QByteArray> frameworks;
     QSet<QByteArray> preprocessedIncludes;
     Macros macros;
