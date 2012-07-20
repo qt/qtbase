@@ -213,7 +213,7 @@ protected:
     QString prlFileName(bool fixify=true);
     void writePrlFile();
     bool processPrlFile(QString &);
-    virtual void processPrlVariable(const QString &, const QStringList &);
+    void processPrlVariable(const QString &, const QStringList &);
     virtual void processPrlFiles();
     virtual void writePrlFile(QTextStream &);
 

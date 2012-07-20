@@ -388,15 +388,6 @@ UnixMakefileGenerator::init()
     }
 }
 
-void
-UnixMakefileGenerator::processPrlVariable(const QString &var, const QStringList &l)
-{
-    if(var == "QMAKE_PRL_LIBS") {
-        project->values("QMAKE_CURRENT_PRL_LIBS") += l;
-    } else
-        MakefileGenerator::processPrlVariable(var, l);
-}
-
 QStringList
 &UnixMakefileGenerator::findDependencies(const QString &file)
 {

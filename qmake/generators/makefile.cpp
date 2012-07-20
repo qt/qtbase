@@ -944,11 +944,7 @@ void
 MakefileGenerator::processPrlVariable(const QString &var, const QStringList &l)
 {
     if(var == "QMAKE_PRL_LIBS") {
-        QStringList &out = project->values("QMAKE_LIBS");
-        for(QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-            if(out.indexOf((*it)) == -1)
-                out.append((*it));
-        }
+        project->values("QMAKE_CURRENT_PRL_LIBS") += l;
     } else if(var == "QMAKE_PRL_DEFINES") {
         QStringList &out = project->values("DEFINES");
         for(QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {

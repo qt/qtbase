@@ -61,7 +61,6 @@ protected:
     virtual bool doPrecompiledHeaders() const { return project->isActiveConfig("precompile_header"); }
     virtual bool doDepends() const { return !Option::mkfile::do_stub_makefile && MakefileGenerator::doDepends(); }
     virtual QString defaultInstall(const QString &);
-    virtual void processPrlVariable(const QString &, const QStringList &);
     virtual void processPrlFiles();
 
     virtual bool findLibraries();

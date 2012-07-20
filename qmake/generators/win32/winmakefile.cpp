@@ -217,24 +217,20 @@ void
 Win32MakefileGenerator::processPrlFiles()
 {
     const QString libArg = project->first("QMAKE_L_FLAG");
-    QHash<QString, bool> processed;
     QList<QMakeLocalFileName> libdirs;
-    for(bool ret = false; true; ret = false) {
-        //read in any prl files included..
-        QStringList l = project->values("QMAKE_LIBS");
-        for(QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-            QString opt = (*it).trimmed();
+    const QString lflags[] = { "QMAKE_LIBS", QString() };
+    for (int i = 0; !lflags[i].isNull(); i++) {
+        QStringList &l = project->values(lflags[i]);
+        for (int lit = 0; lit < l.size(); ++lit) {
+            QString opt = l.at(lit).trimmed();
             if((opt[0] == '\'' || opt[0] == '"') && opt[(int)opt.length()-1] == opt[0])
                 opt = opt.mid(1, opt.length()-2);
             if (opt.startsWith(libArg)) {
                 QMakeLocalFileName l(opt.mid(libArg.length()));
                 if (!libdirs.contains(l))
                     libdirs.append(l);
-            } else if (!opt.startsWith("/") && !processed.contains(opt)) {
-                if(processPrlFile(opt)) {
-                    processed.insert(opt, true);
-                    ret = true;
-                } else if(QDir::isRelativePath(opt) || opt.startsWith("-l")) {
+            } else if (!opt.startsWith("/")) {
+                if (!processPrlFile(opt) && (QDir::isRelativePath(opt) || opt.startsWith("-l"))) {
                     QString tmp;
                     if (opt.startsWith("-l"))
                         tmp = opt.mid(2);
@@ -242,21 +238,16 @@ Win32MakefileGenerator::processPrlFiles()
                         tmp = opt;
                     for(QList<QMakeLocalFileName>::Iterator it = libdirs.begin(); it != libdirs.end(); ++it) {
                         QString prl = (*it).local() + Option::dir_sep + tmp;
-                        // the original is used as the key
-                        QString orgprl = prl;
-                        if(processed.contains(prl)) {
+                        if (processPrlFile(prl))
                             break;
-                        } else if(processPrlFile(prl)) {
-                            processed.insert(orgprl, true);
-                            ret = true;
-                            break;
-                        }
                     }
                 }
             }
+            QStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
+            for (int prl = 0; prl < prl_libs.size(); ++prl)
+                l.insert(lit + prl + 1, prl_libs.at(prl));
+            prl_libs.clear();
         }
-        if (!ret)
-            break;
     }
 }
 
