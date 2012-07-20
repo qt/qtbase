@@ -962,25 +962,7 @@ MakefileGenerator::processPrlVariable(const QString &var, const QStringList &l)
 void
 MakefileGenerator::processPrlFiles()
 {
-    QHash<QString, bool> processed;
-    for(bool ret = false; true; ret = false) {
-        //read in any prl files included..
-        QStringList l_out;
-        QStringList &l = project->values("QMAKE_LIBS");
-        for(QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-            QString file = (*it);
-            if(!processed.contains(file) && processPrlFile(file)) {
-                processed.insert(file, true);
-                ret = true;
-            }
-            if(!file.isEmpty())
-                l_out.append(file);
-        }
-        if(ret)
-            l = l_out;
-        else
-            break;
-    }
+    qFatal("MakefileGenerator::processPrlFiles() called!");
 }
 
 void
