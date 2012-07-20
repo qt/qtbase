@@ -2114,10 +2114,8 @@ QDataStream &operator>>(QDataStream &stream, QPaintBufferCacheEntryV2 &entry)
 
 static void qRegisterPaintBufferMetaTypes()
 {
-    qRegisterMetaType<QPaintBufferCacheEntry>();
-    qRegisterMetaTypeStreamOperators<QPaintBufferCacheEntry>("QPaintBufferCacheEntry");
-    qRegisterMetaType<QPaintBufferCacheEntryV2>();
-    qRegisterMetaTypeStreamOperators<QPaintBufferCacheEntryV2>("QPaintBufferCacheEntryV2");
+    qRegisterMetaTypeStreamOperators<QPaintBufferCacheEntry>();
+    qRegisterMetaTypeStreamOperators<QPaintBufferCacheEntryV2>();
 }
 
 Q_CONSTRUCTOR_FUNCTION(qRegisterPaintBufferMetaTypes)
