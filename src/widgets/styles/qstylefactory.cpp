@@ -200,7 +200,6 @@ QStringList QStyleFactory::keys()
     QStringList list;
 #ifndef QT_NO_LIBRARY
     typedef QMultiMap<int, QString> PluginKeyMap;
-    typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
     const PluginKeyMap keyMap = loader()->keyMap();
     const PluginKeyMap::const_iterator cend = keyMap.constEnd();
