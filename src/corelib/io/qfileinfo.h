@@ -45,6 +45,7 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qshareddata.h>
+#include <QtCore/qmetatype.h>
 
 QT_BEGIN_HEADER
 
@@ -155,6 +156,9 @@ Q_DECLARE_SHARED(QFileInfo)
 typedef QList<QFileInfo> QFileInfoList;
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QFileInfo)
+#define QT_QFILEINFO_METATYPE_DEFINED
 
 QT_END_HEADER
 

@@ -130,7 +130,6 @@ void tst_QFileIconProvider::iconType()
     QVERIFY(!provider.icon(type).isNull());
 }
 
-Q_DECLARE_METATYPE(QFileInfo)
 void tst_QFileIconProvider::iconInfo_data()
 {
     QTest::addColumn<QFileInfo>("info");

@@ -1937,7 +1937,7 @@ void QFileSystemModelPrivate::_q_resolvedName(const QString &fileName, const QSt
 void QFileSystemModelPrivate::init()
 {
     Q_Q(QFileSystemModel);
-    qRegisterMetaType<QList<QPair<QString,QFileInfo> > >("QList<QPair<QString,QFileInfo> >");
+    qRegisterMetaType<QList<QPair<QString,QFileInfo> > >();
     q->connect(&fileInfoGatherer, SIGNAL(newListOfFiles(QString,QStringList)),
                q, SLOT(_q_directoryChanged(QString,QStringList)));
     q->connect(&fileInfoGatherer, SIGNAL(updates(QString,QList<QPair<QString,QFileInfo> >)),
