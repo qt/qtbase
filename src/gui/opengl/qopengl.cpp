@@ -46,11 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QOpenGLExtensionMatcher::QOpenGLExtensionMatcher(const char *str)
-{
-    init(str);
-}
-
 typedef const GLubyte * (QOPENGLF_APIENTRYP qt_glGetStringi)(GLenum, GLuint);
 
 #ifndef GL_NUM_EXTENSIONS
@@ -62,7 +57,9 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
     const char *extensionStr = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
 
     if (extensionStr) {
-        init(extensionStr);
+        QByteArray ba(extensionStr);
+        QList<QByteArray> extensions = ba.split(' ');
+        m_extensions = extensions.toSet();
     } else {
         // clear error state
         while (glGetError()) {}
@@ -79,32 +76,10 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
 
             for (int i = 0; i < numExtensions; ++i) {
                 const char *str = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
-
-                m_offsets << m_extensions.size();
-
-                while (*str != 0)
-                    m_extensions.append(*str++);
-                m_extensions.append(' ');
+                m_extensions.insert(str);
             }
         }
     }
 }
-
-void QOpenGLExtensionMatcher::init(const char *str)
-{
-    m_extensions = str;
-
-    // make sure extension string ends with a space
-    if (!m_extensions.endsWith(' '))
-        m_extensions.append(' ');
-
-    int index = 0;
-    int next = 0;
-    while ((next = m_extensions.indexOf(' ', index)) >= 0) {
-        m_offsets << index;
-        index = next + 1;
-    }
-}
-
 
 QT_END_NAMESPACE

@@ -44,9 +44,7 @@
 
 #include <qopengl.h>
 #include <private/qopenglcontext_p.h>
-
-#include <qthreadstorage.h>
-#include <qcache.h>
+#include <QtCore/qset.h>
 
 QT_BEGIN_HEADER
 
@@ -55,29 +53,17 @@ QT_BEGIN_NAMESPACE
 class QOpenGLExtensionMatcher
 {
 public:
-    QOpenGLExtensionMatcher(const char *str);
     QOpenGLExtensionMatcher();
 
-    bool match(const char *str) const {
-        int str_length = qstrlen(str);
-
-        Q_ASSERT(str);
-        Q_ASSERT(str_length > 0);
-        Q_ASSERT(str[str_length-1] != ' ');
-
-        for (int i = 0; i < m_offsets.size(); ++i) {
-            const char *extension = m_extensions.constData() + m_offsets.at(i);
-            if (qstrncmp(extension, str, str_length) == 0 && extension[str_length] == ' ')
-                return true;
-        }
-        return false;
+    bool match(const QByteArray &extension) const
+    {
+        return m_extensions.contains(extension);
     }
 
-private:
-    void init(const char *str);
+    QSet<QByteArray> extensions() const { return m_extensions; }
 
-    QByteArray m_extensions;
-    QVector<int> m_offsets;
+private:
+    QSet<QByteArray> m_extensions;
 };
 
 QT_END_NAMESPACE
