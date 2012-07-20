@@ -46,8 +46,6 @@
 #include "dynamictreemodel.h"
 #include "qidentityproxymodel.h"
 
-Q_DECLARE_METATYPE(QModelIndex)
-
 class tst_QIdentityProxyModel : public QObject
 {
     Q_OBJECT
@@ -81,8 +79,6 @@ tst_QIdentityProxyModel::tst_QIdentityProxyModel()
 
 void tst_QIdentityProxyModel::initTestCase()
 {
-    qRegisterMetaType<QModelIndex>("QModelIndex");
-
     m_model = new QStandardItemModel(0, 1);
     m_proxy = new QIdentityProxyModel();
 }

@@ -45,8 +45,6 @@
 #include "modelstotest.cpp"
 #include <QMetaType>
 
-Q_DECLARE_METATYPE(QModelIndex)
-
 /*!
     See modelstotest.cpp for instructions on how to have your model tested with these tests.
 
@@ -599,7 +597,6 @@ void tst_QItemModel::setData()
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
     QVERIFY(currentModel);
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     QSignalSpy spy(currentModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)));
     QVERIFY(spy.isValid());
     QCOMPARE(currentModel->setData(QModelIndex(), QVariant()), false);
@@ -841,7 +838,6 @@ void tst_QItemModel::remove()
 
     // When a row or column is removed there should be two signals.
     // Watch to make sure they are emitted and get the row/column count when they do get emitted by connecting them to a slot
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     QSignalSpy columnsAboutToBeRemovedSpy(currentModel, SIGNAL(columnsAboutToBeRemoved( const QModelIndex &, int , int )));
     QSignalSpy rowsAboutToBeRemovedSpy(currentModel, SIGNAL(rowsAboutToBeRemoved( const QModelIndex &, int , int )));
     QSignalSpy columnsRemovedSpy(currentModel, SIGNAL(columnsRemoved( const QModelIndex &, int, int )));
@@ -1184,7 +1180,6 @@ void tst_QItemModel::insert()
 
     // When a row or column is inserted there should be two signals.
     // Watch to make sure they are emitted and get the row/column count when they do get emitted by connecting them to a slot
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     QSignalSpy columnsAboutToBeInsertedSpy(currentModel, SIGNAL(columnsAboutToBeInserted( const QModelIndex &, int , int )));
     QSignalSpy rowsAboutToBeInsertedSpy(currentModel, SIGNAL(rowsAboutToBeInserted( const QModelIndex &, int , int )));
     QSignalSpy columnsInsertedSpy(currentModel, SIGNAL(columnsInserted( const QModelIndex &, int, int )));

@@ -47,8 +47,6 @@
 
 #include "dynamictreemodel.h"
 
-Q_DECLARE_METATYPE(QModelIndex)
-
 /*!
     Note that this doesn't test models, but any functionality that QAbstractItemModel should provide
  */
@@ -57,7 +55,6 @@ class tst_QAbstractItemModel : public QObject
     Q_OBJECT
 
 public slots:
-    void initTestCase();
     void init();
     void cleanup();
 
@@ -338,16 +335,6 @@ bool QtTestModel::canDropMimeData(const QMimeData *data, Qt::DropAction action,
     // We then arbitrarily decide to only allow drops on odd rows.
     // A filesystem view/model might be able to drop onto (writable) directories.
     return row % 2 == 0;
-}
-
-/**
- * The source Model *must* be initialized before the _data function, since the _data function uses QModelIndexes to reference the items in the tables.
- * Therefore, we must initialize it globally.
- */
-
-void tst_QAbstractItemModel::initTestCase()
-{
-    qRegisterMetaType<QModelIndex>("QModelIndex");
 }
 
 void tst_QAbstractItemModel::init()
