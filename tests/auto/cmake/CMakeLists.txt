@@ -67,6 +67,10 @@ if (Qt5DBus_FOUND AND NOT APPLE)
     expect_pass(test_dbus_module)
 endif()
 expect_pass(test_multiple_find_package)
-expect_pass(test_add_resources_delayed_file)
+if (NOT WIN32)
+    # Currently broken on windows. Reported upstream:
+    # http://public.kitware.com/Bug/view.php?id=13392
+    expect_pass(test_add_resources_delayed_file)
+endif()
 expect_pass(test_private_includes)
 expect_pass(test_modules)
