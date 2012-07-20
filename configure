@@ -2541,7 +2541,7 @@ if [ -n "$CFG_SYSROOT" ]; then
 else
     SYSROOT_FLAG=
 fi
-export SYSROOT_FLAG    # used by config.tests/unix/compile.test
+export SYSROOT_FLAG    # used by config.tests/unix/{compile.test,arch.test}
 
 # auto-detect precompiled header support
 if [ "$CFG_PRECOMPILE" = "auto" ]; then
@@ -3752,9 +3752,9 @@ fi
 # determine the target and host architectures
 #-------------------------------------------------------------------------------
 
-# Use config.tests/arch/arch.pro to has the compiler tell us what the target architecture is
+# Use config.tests/arch/arch.pro to have the compiler tell us what the target architecture is
 OUTFILE=$outpath/arch.result
-"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG"
+"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG" $MAC_CONFIG_TEST_COMMANDLINE
 if [ $? -eq 0 ]; then
     eval `cat "$OUTFILE"`
 else
@@ -3767,7 +3767,7 @@ rm -f "$OUTFILE" 2>/dev/null
 
 if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
     # Do the same test again, using the host compiler
-    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG_HOST"
+    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG_HOST" $MAC_CONFIG_TEST_COMMANDLINE
     if [ $? -eq 0 ]; then
         eval `cat "$OUTFILE"`
     else
