@@ -233,7 +233,11 @@ void QKmsScreen::performPageFlip()
                                          fb_id,
                                          DRM_MODE_PAGE_FLIP_EVENT, this);
     if (pageFlipStatus)
+    {
         qWarning("Pageflip status: %d", pageFlipStatus);
+        gbm_surface_release_buffer(m_gbmSurface, m_next_bo);
+        m_next_bo = 0;
+    }
 }
 
 void QKmsScreen::handlePageFlipped()
