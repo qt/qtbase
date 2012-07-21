@@ -136,6 +136,7 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
             m_format = qglx_surfaceFormatFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
             m_format.setMajorVersion(format.majorVersion());
             m_format.setMinorVersion(format.minorVersion());
+            m_format.setProfile(format.profile());
         }
     } else {
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen), screen->screenNumber(), &m_format);
