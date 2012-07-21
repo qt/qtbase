@@ -47,17 +47,28 @@
 
 QT_BEGIN_NAMESPACE
 
+class QOpenGLContext;
+class QOpenGLShaderProgram;
+
 class QKmsBackingStore : public QPlatformBackingStore
 {
 public:
     QKmsBackingStore(QWindow *window);
+    ~QKmsBackingStore();
 
     QPaintDevice *paintDevice();
+
+    void beginPaint(const QRegion &);
+    void endPaint();
+
     void flush(QWindow *window, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size, const QRegion &staticContents);
 
 private:
+    QOpenGLContext *m_context;
     QImage m_image;
+    uint m_texture;
+    QOpenGLShaderProgram *m_program;
 };
 
 QT_END_NAMESPACE
