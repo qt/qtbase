@@ -129,7 +129,7 @@ macro(_populate_imported_target_properties Configuration LIB_LOCATION IMPLIB_LOC
         \"IMPORTED_LOCATION_${Configuration}\" \"$${CMAKE_LIB_DIR}$${LIB_LOCATION}\"
 !!ENDIF
 !!IF !isEmpty(CMAKE_LIB_SONAME)
-        \"IMPORTED_SONAME_${Configuration}\" "$${CMAKE_LIB_SONAME}"
+        \"IMPORTED_SONAME_${Configuration}\" \"$${CMAKE_LIB_SONAME}\"
 !!ENDIF
     )
     if(NOT \"${IMPLIB_LOCATION}\" STREQUAL \"\")
