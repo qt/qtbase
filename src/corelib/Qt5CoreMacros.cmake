@@ -108,13 +108,13 @@ macro(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options)
         string(REPLACE ";" "\n" _moc_parameters "${_moc_parameters}")
         file(WRITE ${_moc_parameters_file} "${_moc_parameters}")
         add_custom_command(OUTPUT ${outfile}
-                           COMMAND ${QT_MOC_EXECUTABLE} @${_moc_outfile_name}_parameters
+                           COMMAND ${Qt5Core_MOC_EXECUTABLE} @${_moc_outfile_name}_parameters
                            DEPENDS ${infile}
                            ${_moc_working_dir}
                            VERBATIM)
     else()
         add_custom_command(OUTPUT ${outfile}
-                           COMMAND ${QT_MOC_EXECUTABLE}
+                           COMMAND ${Qt5Core_MOC_EXECUTABLE}
                            ARGS ${moc_flags} ${moc_options} -o ${outfile} ${infile}
                            DEPENDS ${infile} VERBATIM)
     endif()
@@ -202,7 +202,7 @@ function(QT5_ADD_RESOURCES outfiles )
         endif()
 
         add_custom_command(OUTPUT ${outfile}
-                           COMMAND ${QT_RCC_EXECUTABLE}
+                           COMMAND ${Qt5Core_RCC_EXECUTABLE}
                            ARGS ${rcc_options} -name ${outfilename} -o ${outfile} ${infile}
                            MAIN_DEPENDENCY ${infile}
                            DEPENDS ${_RC_DEPENDS} "${out_depends}" VERBATIM)

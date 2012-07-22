@@ -56,7 +56,7 @@ function(QT5_WRAP_UI outfiles )
         get_filename_component(infile ${it} ABSOLUTE)
         set(outfile ${CMAKE_CURRENT_BINARY_DIR}/ui_${outfile}.h)
         add_custom_command(OUTPUT ${outfile}
-          COMMAND ${QT_UIC_EXECUTABLE}
+          COMMAND ${Qt5Widgets_UIC_EXECUTABLE}
           ARGS ${ui_options} -o ${outfile} ${infile}
           MAIN_DEPENDENCY ${infile} VERBATIM)
         list(APPEND ${outfiles} ${outfile})
