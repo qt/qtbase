@@ -98,6 +98,9 @@ QAbstractNativeEventFilter::~QAbstractNativeEventFilter()
 
     On Mac, \a eventType is set to "mac_generic_NSEvent", and the \a message can be casted to an EventRef.
 
+    On Blackberry (not plain QNX) \a eventType is set to "bps_event_t", and the \a message can be casted
+    to a bps_event_t pointer.
+
     Example:
     \snippet code/src_corelib_kernel_qabstractnativeeventfilter.cpp 0
 */

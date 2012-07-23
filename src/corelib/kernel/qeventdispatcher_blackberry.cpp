@@ -289,7 +289,7 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
 
         // pass all received events through filter - except IO ready events
         if (event && bps_event_get_domain(event) != bpsIOReadyDomain)
-            filterEvent((void*)event);
+            filterNativeEvent(QByteArrayLiteral("bps_event_t"), static_cast<void*>(event), 0);
     } while (timer.elapsed() < timeout_ms);
 
     // \TODO Remove this when bps is fixed (see comment above)
