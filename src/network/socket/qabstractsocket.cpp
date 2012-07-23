@@ -223,7 +223,7 @@
     The \a socketState parameter is the new state.
 
     QAbstractSocket::SocketState is not a registered metatype, so for queued
-    connections, you will have to register it with Q_REGISTER_METATYPE() and
+    connections, you will have to register it with Q_DECLARE_METATYPE() and
     qRegisterMetaType().
 
     \sa state(), {Creating Custom Qt Types}
