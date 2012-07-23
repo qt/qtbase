@@ -2244,8 +2244,8 @@ qulonglong QVariant::toULongLong(bool *ok) const
     Returns true if the variant has type() \l Bool, \l Char, \l Double,
     \l Int, \l LongLong, \l UInt, or \l ULongLong and the value is
     non-zero, or if the variant has type \l String or \l ByteArray and
-    its lower-case content is not empty, "0" or "false"; otherwise
-    returns false.
+    its lower-case content is not one of the following: empty, "0"
+    or "false"; otherwise returns false.
 
     \sa canConvert(), convert()
 */
