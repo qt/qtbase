@@ -46,6 +46,7 @@
 #include "qtwindows_additional.h"
 
 #include <QtCore/QPair>
+#include <QtCore/QEventLoop>
 #include <QtCore/private/qeventdispatcher_win_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -55,16 +56,14 @@ class QWindowsGuiEventDispatcher : public QEventDispatcherWin32
     Q_OBJECT
 public:
     explicit QWindowsGuiEventDispatcher(QObject *parent = 0);
-    ~QWindowsGuiEventDispatcher();
-
-    typedef QPair<QAbstractEventDispatcher *, QEventLoop::ProcessEventsFlags> DispatchContext;
-
-    static DispatchContext currentDispatchContext();
 
     static const char *windowsMessageName(UINT msg);
 
     virtual bool QT_ENSURE_STACK_ALIGNED_FOR_SSE processEvents(QEventLoop::ProcessEventsFlags flags);
     virtual void sendPostedEvents();
+
+private:
+    QEventLoop::ProcessEventsFlags m_flags;
 };
 
 QT_END_NAMESPACE

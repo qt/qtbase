@@ -499,7 +499,7 @@ void QWindowSystemInterface::handleSynchronousExposeEvent(QWindow *tlw, const QR
     QGuiApplicationPrivate::processWindowSystemEvent(&e); // send event immediately.
 }
 
-bool QWindowSystemInterface::sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags)
+bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
 {
     int nevents = 0;
 

@@ -64,35 +64,18 @@ QT_BEGIN_NAMESPACE
     \ingroup qt-lighthouse-win
 */
 
-typedef QStack<QWindowsGuiEventDispatcher::DispatchContext> DispatchContextStack;
-
-Q_GLOBAL_STATIC(DispatchContextStack, dispatchContextStack)
-
 QWindowsGuiEventDispatcher::QWindowsGuiEventDispatcher(QObject *parent) :
-    QEventDispatcherWin32(parent)
+    QEventDispatcherWin32(parent), m_flags(0)
 {
-    setObjectName(QStringLiteral("QWindowsGuiEventDispatcher_0x") + QString::number((quintptr)this, 16));
-    if (QWindowsContext::verboseEvents)
-        qDebug("%s %s", __FUNCTION__, qPrintable(objectName()));
-    dispatchContextStack()->push(DispatchContext(this, QEventLoop::AllEvents));
-}
-
-QWindowsGuiEventDispatcher::~QWindowsGuiEventDispatcher()
-{
-    if (QWindowsContext::verboseEvents)
-        qDebug("%s %s", __FUNCTION__, qPrintable(objectName()));
-    if (!dispatchContextStack()->isEmpty())
-        dispatchContextStack()->pop();
+    setObjectName(QStringLiteral("QWindowsGuiEventDispatcher"));
 }
 
 bool QWindowsGuiEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    DispatchContextStack &stack = *dispatchContextStack();
+    m_flags = flags;
     if (QWindowsContext::verboseEvents > 2)
-        qDebug(">%s %s %d", __FUNCTION__, qPrintable(objectName()), stack.size());
-    stack.push(DispatchContext(this, flags));
+        qDebug(">%s %s %d", __FUNCTION__, qPrintable(objectName()), int(flags));
     const bool rc = QEventDispatcherWin32::processEvents(flags);
-    stack.pop();
     if (QWindowsContext::verboseEvents > 2)
         qDebug("<%s %s returns %d", __FUNCTION__, qPrintable(objectName()), rc);
     return rc;
@@ -100,19 +83,7 @@ bool QWindowsGuiEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags fl
 
 void QWindowsGuiEventDispatcher::sendPostedEvents()
 {
-    QWindowsGuiEventDispatcher::DispatchContext context = currentDispatchContext();
-    Q_ASSERT(context.first != 0);
-    QWindowSystemInterface::sendWindowSystemEvents(context.first, context.second);
-}
-
-QWindowsGuiEventDispatcher::DispatchContext QWindowsGuiEventDispatcher::currentDispatchContext()
-{
-    const DispatchContextStack &stack = *dispatchContextStack();
-    if (stack.isEmpty()) {
-        qWarning("%s: No dispatch context", __FUNCTION__);
-        return DispatchContext(0, 0);
-    }
-    return stack.top();
+    QWindowSystemInterface::sendWindowSystemEvents(m_flags);
 }
 
 // Helpers for printing debug output for WM_* messages.

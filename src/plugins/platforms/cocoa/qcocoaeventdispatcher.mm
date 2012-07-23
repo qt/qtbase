@@ -1032,7 +1032,7 @@ void QCocoaEventDispatcherPrivate::processPostedEvents()
     int serial = serialNumber.load();
     if (!threadData->canWait || (serial != lastSerial)) {
         lastSerial = serial;
-        QWindowSystemInterface::sendWindowSystemEvents(q_func(), QEventLoop::AllEvents);
+        QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
     }
 }
 
