@@ -6530,7 +6530,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
     can be accessed using the various QDom classes. All QDom classes
     only \e reference objects in the internal tree. The internal
     objects in the DOM tree will get deleted once the last QDom
-    object referencing them and the QDomDocument itself are deleted.
+    object referencing them or the QDomDocument itself is deleted.
 
     Creation of elements, text nodes, etc. is done using the various
     factory functions provided in this class. Using the default
