@@ -737,9 +737,10 @@ QImage::QImage()
     fill() to fill the image with an appropriate pixel value before
     drawing onto it with QPainter.
 */
-QImage::QImage(int width, int height, Format format)
+QImage::QImage(int width, int height, Format format, QColorProfile *profile)
     : QPaintDevice()
 {
+    Q_UNUSED(profile);
     d = QImageData::create(QSize(width, height), format, 0);
 }
 
@@ -752,9 +753,10 @@ QImage::QImage(int width, int height, Format format)
     fill() to fill the image with an appropriate pixel value before
     drawing onto it with QPainter.
 */
-QImage::QImage(const QSize &size, Format format)
+QImage::QImage(const QSize &size, Format format, QColorProfile *profile)
     : QPaintDevice()
 {
+    Q_UNUSED(profile);
     d = QImageData::create(size, format, 0);
 }
 
@@ -820,9 +822,10 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
     initially empty and must be sufficiently expanded with
     setColorCount() or setColorTable() before the image is used.
 */
-QImage::QImage(uchar* data, int width, int height, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
+QImage::QImage(uchar* data, int width, int height, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo, QColorProfile *profile)
     : QPaintDevice()
 {
+    Q_UNUSED(profile);
     d = QImageData::create(data, width, height, 0, format, false, cleanupFunction, cleanupInfo);
 }
 
@@ -851,9 +854,10 @@ QImage::QImage(uchar* data, int width, int height, Format format, QImageCleanupF
     constructing a QImage from raw data, without the possibility of the raw
     data being changed.
 */
-QImage::QImage(const uchar* data, int width, int height, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
+QImage::QImage(const uchar* data, int width, int height, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo, QColorProfile *profile)
     : QPaintDevice()
 {
+    Q_UNUSED(profile);
     d = QImageData::create(const_cast<uchar*>(data), width, height, 0, format, true, cleanupFunction, cleanupInfo);
 }
 
@@ -874,9 +878,10 @@ QImage::QImage(const uchar* data, int width, int height, Format format, QImageCl
     initially empty and must be sufficiently expanded with
     setColorCount() or setColorTable() before the image is used.
 */
-QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
+QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo, QColorProfile *profile)
     :QPaintDevice()
 {
+    Q_UNUSED(profile);
     d = QImageData::create(data, width, height, bytesPerLine, format, false, cleanupFunction, cleanupInfo);
 }
 
@@ -906,9 +911,10 @@ QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format form
     data being changed.
 */
 
-QImage::QImage(const uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
+QImage::QImage(const uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo, QColorProfile *profile)
     :QPaintDevice()
 {
+    Q_UNUSED(profile);
     d = QImageData::create(const_cast<uchar*>(data), width, height, bytesPerLine, format, true, cleanupFunction, cleanupInfo);
 }
 
