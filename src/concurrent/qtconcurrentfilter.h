@@ -104,7 +104,6 @@ namespace QtConcurrent {
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
 ThreadEngineStarter<void> filterInternal(Sequence &sequence, KeepFunctor keep, ReduceFunctor reduce)
 {
-    typedef typename Sequence::const_iterator Iterator;
     typedef FilterKernel<Sequence, KeepFunctor, ReduceFunctor> KernelType;
     return startThreadEngine(new KernelType(sequence, keep, reduce));
 }
