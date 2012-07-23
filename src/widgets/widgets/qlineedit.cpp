@@ -1089,8 +1089,7 @@ QMargins QLineEdit::textMargins() const
     instead of, or in conjunction with masks; see setValidator().
 
     Unset the mask and return to normal QLineEdit operation by passing
-    an empty string ("") or just calling setInputMask() with no
-    arguments.
+    an empty string ("").
 
     The table below shows the characters that can be used in an input mask.
     A space character, the default character for a blank, is needed for cases
