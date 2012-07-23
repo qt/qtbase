@@ -2249,6 +2249,8 @@ QTransform::operator QVariant() const
     Returns true if the matrix represents some kind of a
     rotating transformation, otherwise returns false.
 
+    \note A rotation transformation of 180 degrees and/or 360 degrees is treated as a scaling transformation.
+
     \sa reset()
 */
 
