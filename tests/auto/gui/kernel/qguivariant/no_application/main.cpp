@@ -46,21 +46,21 @@
 
 
 
-class tst_QGuiVariant : public QObject
+class tst_QGuiVariantNoApplication : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QGuiVariant();
+    tst_QGuiVariantNoApplication();
 
 private slots:
     void variantWithoutApplication();
 };
 
-tst_QGuiVariant::tst_QGuiVariant()
+tst_QGuiVariantNoApplication::tst_QGuiVariantNoApplication()
 {}
 
-void tst_QGuiVariant::variantWithoutApplication()
+void tst_QGuiVariantNoApplication::variantWithoutApplication()
 {
     QVariant v = QString("red");
 
@@ -68,5 +68,5 @@ void tst_QGuiVariant::variantWithoutApplication()
 }
 
 
-QTEST_APPLESS_MAIN(tst_QGuiVariant)
-#include "tst_qguivariant.moc"
+QTEST_APPLESS_MAIN(tst_QGuiVariantNoApplication)
+#include "main.moc"
