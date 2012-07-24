@@ -179,7 +179,11 @@ public:
 
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
+    static void flushWindowSystemEvents();
     static int windowSystemEventsQueued();
+
+private:
+    static bool sendWindowSystemEventsImplementation(QEventLoop::ProcessEventsFlags flags);
 };
 
 QT_END_NAMESPACE

@@ -1984,6 +1984,8 @@ void tst_QWidget::showFullScreen()
     QVERIFY(layouted.isFullScreen());
 
     layouted.showFullScreen();
+    if (m_platform == QStringLiteral("windows"))
+        QEXPECT_FAIL("", "QTBUG-26424", Continue);
     QVERIFY(!layouted.isMinimized());
     QVERIFY(layouted.isFullScreen());
     QVERIFY(layouted.isVisible());
@@ -3987,8 +3989,6 @@ void tst_QWidget::update()
 #ifdef Q_OS_MAC
     QEXPECT_FAIL(0, "Cocoa compositor says to paint this twice.", Continue);
 #endif
-    if (m_platform == QStringLiteral("windows"))
-        QEXPECT_FAIL("", "QTBUG-26424", Continue);
     QTRY_COMPARE(w.numPaintEvents, 1);
 
     QCOMPARE(w.visibleRegion(), QRegion(w.rect()));
@@ -7594,8 +7594,6 @@ void tst_QWidget::doubleRepaint()
    widget.show();
    QVERIFY(QTest::qWaitForWindowExposed(&widget));
    QTest::qWait(10);
-   if (m_platform == QStringLiteral("windows"))
-       QEXPECT_FAIL("", "QTBUG-26424", Continue);
    QTRY_COMPARE(widget.numPaintEvents, expectedRepaints);
    widget.numPaintEvents = 0;
 

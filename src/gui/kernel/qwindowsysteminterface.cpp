@@ -110,8 +110,8 @@ void QWindowSystemInterface::handleGeometryChange(QWindow *tlw, const QRect &new
 
 void QWindowSystemInterface::handleSynchronousGeometryChange(QWindow *tlw, const QRect &newRect)
 {
-    QWindowSystemInterfacePrivate::GeometryChangeEvent e(tlw,newRect);
-    QGuiApplicationPrivate::processWindowSystemEvent(&e); // send event immediately.
+    handleGeometryChange(tlw, newRect);
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 void QWindowSystemInterface::handleCloseEvent(QWindow *tlw)
@@ -126,8 +126,8 @@ void QWindowSystemInterface::handleCloseEvent(QWindow *tlw)
 void QWindowSystemInterface::handleSynchronousCloseEvent(QWindow *tlw)
 {
     if (tlw) {
-        QWindowSystemInterfacePrivate::CloseEvent e(tlw);
-        QGuiApplicationPrivate::processWindowSystemEvent(&e);
+        handleCloseEvent(tlw);
+        QWindowSystemInterface::flushWindowSystemEvents();
     }
 }
 
@@ -495,16 +495,24 @@ void QWindowSystemInterface::handleExposeEvent(QWindow *tlw, const QRegion &regi
 
 void QWindowSystemInterface::handleSynchronousExposeEvent(QWindow *tlw, const QRegion &region)
 {
-    QWindowSystemInterfacePrivate::ExposeEvent e(tlw, region);
-    QGuiApplicationPrivate::processWindowSystemEvent(&e); // send event immediately.
+    QWindowSystemInterface::handleExposeEvent(tlw, region);
+    QWindowSystemInterface::flushWindowSystemEvents();
+}
+
+void QWindowSystemInterface::flushWindowSystemEvents()
+{
+    sendWindowSystemEventsImplementation(QEventLoop::AllEvents);
 }
 
 bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    int nevents = 0;
+    QCoreApplication::sendPostedEvents(); // handle gui and posted events
+    return sendWindowSystemEventsImplementation(flags);
+}
 
-    // handle gui and posted events
-    QCoreApplication::sendPostedEvents();
+bool QWindowSystemInterface::sendWindowSystemEventsImplementation(QEventLoop::ProcessEventsFlags flags)
+{
+    int nevents = 0;
 
     while (true) {
         QWindowSystemInterfacePrivate::WindowSystemEvent *event;
@@ -608,6 +616,5 @@ void QWindowSystemInterface::handleTabletLeaveProximityEvent(int device, int poi
     ulong time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleTabletLeaveProximityEvent(time, device, pointerType, uid);
 }
-
 
 QT_END_NAMESPACE
