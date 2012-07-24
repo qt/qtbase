@@ -639,7 +639,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId(
 }
 
 template <typename T>
-inline int qRegisterMetaType(
+inline Q_DECL_CONSTEXPR int qRegisterMetaType(
 #if !defined(qdoc) && !defined(Q_CC_SUN)
     T * dummy = 0
 #endif

@@ -1681,8 +1681,16 @@ void tst_QMetaType::metaObject()
 #define METATYPE_ID_FUNCTION(Type, MetaTypeId, Name) \
   case ::qMetaTypeId< Name >(): metaType = MetaTypeIdStruct<MetaTypeId>::Value;
 
+#define REGISTER_METATYPE_FUNCTION(Type, MetaTypeId, Name) \
+  case qRegisterMetaType< Name >(): metaType = RegisterMetaTypeStruct<MetaTypeId>::Value;
+
 template<int>
 struct MetaTypeIdStruct
+{
+};
+
+template<int>
+struct RegisterMetaTypeStruct
 {
 };
 
@@ -1693,11 +1701,25 @@ struct MetaTypeIdStruct< ::qMetaTypeId< Name >()> \
     enum { Value = ::qMetaTypeId< Name >() }; \
 };
 
+#define REGISTER_METATYPE_STRUCT(Type, MetaTypeId, Name) \
+template<> \
+struct RegisterMetaTypeStruct<qRegisterMetaType< Name >()> \
+{ \
+    enum { Value = qRegisterMetaType< Name >() }; \
+};
+
 #if defined(Q_COMPILER_CONSTEXPR)
 QT_FOR_EACH_STATIC_TYPE(METATYPE_ID_STRUCT)
+QT_FOR_EACH_STATIC_TYPE(REGISTER_METATYPE_STRUCT)
 
 template<int i = ::qMetaTypeId<int>()>
 struct MetaTypeIdStructDefaultTemplateValue
+{
+  enum { Value };
+};
+
+template<int i = qRegisterMetaType<int>()>
+struct RegisterMetaTypeStructDefaultTemplateValue
 {
   enum { Value };
 };
@@ -1712,6 +1734,14 @@ void tst_QMetaType::constexprMetaTypeIds()
 #if defined(Q_COMPILER_CONSTEXPR)
       QT_FOR_EACH_STATIC_TYPE(METATYPE_ID_FUNCTION)
       metaType = MetaTypeIdStructDefaultTemplateValue<>::Value;
+#endif
+    default:;
+    }
+
+    switch (id) {
+#if defined(Q_COMPILER_CONSTEXPR)
+      QT_FOR_EACH_STATIC_TYPE(REGISTER_METATYPE_FUNCTION)
+      metaType = RegisterMetaTypeStructDefaultTemplateValue<>::Value;
 #endif
     default:;
     }
