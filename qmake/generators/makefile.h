@@ -68,7 +68,7 @@ struct ReplaceExtraCompilerCacheKey
     bool operator==(const ReplaceExtraCompilerCacheKey &f) const;
     inline uint hashCode() const {
         if(!hash)
-            hash = qHash(var) | qHash(in) | qHash(out) /*| qHash(pwd)*/;
+            hash = qHash(var) ^ qHash(in) ^ qHash(out) /*^ qHash(pwd)*/;
         return hash;
     }
 };

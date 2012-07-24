@@ -73,7 +73,7 @@ struct FixStringCacheKey
     }
     inline uint hashCode() const {
         if(!hash)
-            hash = qHash(string) | qHash(flags) /*| qHash(pwd)*/;
+            hash = qHash(string) ^ qHash(flags) /*^ qHash(pwd)*/;
         return hash;
     }
 };
@@ -98,7 +98,7 @@ struct FileInfoCacheKey
     }
     inline uint hashCode() const {
         if(!hash)
-            hash = qHash(file) /*| qHash(pwd)*/;
+            hash = qHash(file) /*^ qHash(pwd)*/;
         return hash;
     }
     inline bool isRelativePath(const QString &file) {
