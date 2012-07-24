@@ -96,7 +96,6 @@ Q_DECLARE_SHARED(QDBusUnixFileDescriptor)
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QDBusUnixFileDescriptor)
-Q_DECLARE_METATYPE(QList<QDBusUnixFileDescriptor>)
 
 QT_END_HEADER
 

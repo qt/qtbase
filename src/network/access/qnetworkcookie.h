@@ -119,7 +119,6 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug, const QNetworkCookie &);
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkCookie)
-Q_DECLARE_METATYPE(QList<QNetworkCookie>)
 
 QT_END_HEADER
 

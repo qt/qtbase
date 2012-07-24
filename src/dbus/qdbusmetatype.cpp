@@ -64,15 +64,6 @@
 # define DBUS_TYPE_UNIX_FD_AS_STRING "h"
 #endif
 
-Q_DECLARE_METATYPE(QList<bool>)
-Q_DECLARE_METATYPE(QList<short>)
-Q_DECLARE_METATYPE(QList<ushort>)
-Q_DECLARE_METATYPE(QList<int>)
-Q_DECLARE_METATYPE(QList<uint>)
-Q_DECLARE_METATYPE(QList<qlonglong>)
-Q_DECLARE_METATYPE(QList<qulonglong>)
-Q_DECLARE_METATYPE(QList<double>)
-
 QT_BEGIN_NAMESPACE
 
 class QDBusCustomTypeInfo

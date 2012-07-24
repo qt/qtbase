@@ -153,8 +153,6 @@ protected:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QSharedPointer<QNetworkSession>)
-
 #endif // QT_NO_BEARERMANAGEMENT
 
 #endif // QNETWORKSESSIONPRIVATE_H

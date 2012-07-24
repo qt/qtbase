@@ -324,8 +324,6 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsScene::SceneLayers)
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QGraphicsScene *)
-
 QT_END_HEADER
 
 #endif
