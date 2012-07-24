@@ -83,7 +83,7 @@
 
     The subwindows are sorted by the current
     \l{QMdiArea::}{WindowOrder}. This is used for the subWindowList()
-    and for activateNextSubWindow() and acivatePreviousSubWindow().
+    and for activateNextSubWindow() and activatePreviousSubWindow().
     Also, it is used when cascading or tiling the windows with
     cascadeSubWindows() and tileSubWindows().
 
