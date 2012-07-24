@@ -2732,6 +2732,10 @@ QString QApplication::sessionKey() const
     all visible top-level widgets. If any event was rejected, the shutdown is
     canceled.
 
+    \note The default implementation emits the commitDataRequest() signal,
+    hence commitDataRequest() should be emitted when commitData() is
+    reimplemented.
+
     \sa isSessionRestored(), sessionId(), saveState(), {Session Management}
 */
 #ifndef QT_NO_SESSIONMANAGER
