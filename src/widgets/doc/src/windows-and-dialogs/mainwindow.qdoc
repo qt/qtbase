@@ -56,13 +56,13 @@
     window in the application, the \e{primary window}.
 
     In addition, a QWidget that has a parent can become a window by setting the 
-    \l{Qt::WindowType}{Qt::WA_Window} flag. Depending on the window management system
+    Qt::Window flag. Depending on the window management system
     such \e{secondary windows} are usually stacked on top of their respective parent
     window, and not have a task bar entry of their own.
 
-    The QMainWindow and the QDialog classes set the Qt::WA_Window flag in their
-    constructor, as they are designed to be used as windows and provide facilities
-    that are not wanted for child widgets.
+    The QMainWindow class sets the Qt::Window flag in its constructor,
+    as it is designed to be used as a window and provides facilities that are
+    not wanted for child widgets.
 
     \section1 Main Windows and Dialogs
 
