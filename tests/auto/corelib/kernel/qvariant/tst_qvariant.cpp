@@ -64,6 +64,8 @@
 #include <qvector4d.h>
 #include <qquaternion.h>
 #include <qdebug.h>
+#include <qjsondocument.h>
+
 
 #include <limits.h>
 
@@ -2990,8 +2992,8 @@ void tst_QVariant::toIntFromDouble() const
 
 void tst_QVariant::setValue()
 {
-    QTransform t; //we just take a value so that we're sure that it will be shared
-    QVariant v1 = t;
+    QJsonDocument t; //we just take a value so that we're sure that it will be shared
+    QVariant v1 = QVariant::fromValue(t);
     QVERIFY( v1.isDetached() );
     QVariant v2 = v1;
     QVERIFY( !v1.isDetached() );
