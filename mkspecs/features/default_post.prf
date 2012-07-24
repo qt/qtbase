@@ -31,7 +31,7 @@ breakpad {
     load(resolve_target)
     win32: QMAKE_CLEAN += $$replace(QMAKE_RESOLVED_TARGET, ...$, pdb)  # for the debug case it is hardcoded in qmake
 
-    DEBUGFILENAME = $$shell_quote($$native_path(($$QMAKE_RESOLVED_TARGET))
+    DEBUGFILENAME = $$shell_quote($$native_path($$QMAKE_RESOLVED_TARGET))
     PROJECTPATH = $$shell_quote($$native_path($$OUT_PWD))
 
     !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)
