@@ -64,9 +64,9 @@ static inline int moduleForType(const uint typeId)
 {
     if (typeId <= QMetaType::LastCoreType)
         return Core;
-    if (typeId <= QMetaType::LastGuiType)
+    if (typeId >= QMetaType::FirstGuiType && typeId <= QMetaType::LastGuiType)
         return Gui;
-    if (typeId <= QMetaType::LastWidgetsType)
+    if (typeId >= QMetaType::FirstWidgetsType && typeId <= QMetaType::LastWidgetsType)
         return Widgets;
     return Unknown;
 }
