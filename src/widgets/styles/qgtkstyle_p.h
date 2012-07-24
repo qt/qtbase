@@ -78,7 +78,6 @@ typedef unsigned long XID;
 
 QT_BEGIN_NAMESPACE
 
-// ### Qt 4.7 - merge with QLatin1Literal
 class QHashableLatin1Literal
 {
 public:
