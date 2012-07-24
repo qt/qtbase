@@ -41,7 +41,6 @@
 
 #include <QtTest/QtTest>
 
-#include <qdebug.h>
 #include <qpoint.h>
 
 class tst_QPointF : public QObject
