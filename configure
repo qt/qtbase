@@ -841,7 +841,6 @@ CFG_GETIFADDRS=auto
 CFG_INOTIFY=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
-MAC_CONFIG_TEST_COMMANDLINE=  # used to make the configure tests run with the correct arch's and SDK settings
 CFG_MAC_HARFBUZZ=no
 CFG_PREFIX_INSTALL=yes
 CFG_SDK=
@@ -2567,9 +2566,11 @@ if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG force_debug_info"
 fi
 
-# pass on $CFG_SDK to the configure tests.
-if [ '!' -z "$CFG_SDK" ]; then
-    MAC_CONFIG_TEST_COMMANDLINE="$MAC_CONFIG_TEST_COMMANDLINE -sdk $CFG_SDK"
+# pass on $CFG_SDK to the arch/configure tests.
+if [ -n "$CFG_SDK" ]; then
+    MAC_SDK_FLAG="-sdk $CFG_SDK"
+else
+    MAC_SDK_FLAG=
 fi
 
 # find the default framework value
@@ -3796,7 +3797,7 @@ compileTest()
     path=config.tests/$1
     name=$2
     shift 2
-    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS $MAC_CONFIG_TEST_COMMANDLINE "$@"
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS $MAC_SDK_FLAG "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -3805,7 +3806,7 @@ compileTest()
 
 # Use config.tests/arch/arch.pro to have the compiler tell us what the target architecture is
 OUTFILE=$outpath/arch.result
-"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG" $MAC_CONFIG_TEST_COMMANDLINE
+"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG" $MAC_SDK_FLAG
 if [ $? -eq 0 ]; then
     eval `cat "$OUTFILE"`
 else
@@ -3818,7 +3819,7 @@ rm -f "$OUTFILE" 2>/dev/null
 
 if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
     # Do the same test again, using the host compiler
-    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG_HOST" $MAC_CONFIG_TEST_COMMANDLINE
+    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG_HOST" $MAC_SDK_FLAG
     if [ $? -eq 0 ]; then
         eval `cat "$OUTFILE"`
     else
