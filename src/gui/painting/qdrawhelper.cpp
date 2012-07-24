@@ -268,7 +268,7 @@ QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
     { 6, 12, 6,  6, 6,  0, 6, 18,  true, QPixelLayout::BPP24, convertToARGB32PM, convertFromARGB32PM }, // Format_ARGB6666_Premultiplied
     { 5, 10, 5,  5, 5,  0, 0,  0, false, QPixelLayout::BPP16, convertToRGB32, convertFromARGB32PM }, // Format_RGB555
     { 5, 18, 5, 13, 5,  8, 8,  0,  true, QPixelLayout::BPP24, convertToARGB32PM, convertFromARGB32PM }, // Format_ARGB8555_Premultiplied
-    { 8,  0, 8,  8, 8, 16, 0,  0, false, QPixelLayout::BPP24, convertToRGB32, convertFromARGB32PM }, // Format_RGB888
+    { 8, 16, 8,  8, 8,  0, 0,  0, false, QPixelLayout::BPP24, convertToRGB32, convertFromARGB32PM }, // Format_RGB888
     { 4,  8, 4,  4, 4,  0, 0,  0, false, QPixelLayout::BPP16, convertToRGB32, convertFromARGB32PM }, // Format_RGB444
     { 4,  8, 4,  4, 4,  0, 4, 12,  true, QPixelLayout::BPP16, convertToARGB32PM, convertFromARGB32PM } // Format_ARGB4444_Premultiplied
 };

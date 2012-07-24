@@ -444,6 +444,10 @@ QtGui
 * QOpenGLPaintDevice has been added to be able to use QPainter to render into
   the currently bound context.
 
+* Behavioral change in QImage::fill() on an image with format Format_RGB888:
+  For consistency with RGB32 and other 32-bit formats, function now expects
+  image data in RGB layout as opposed to BGR layout.
+
 QtWidgets
 ---------
 * QInputContext removed as well as related getters and setters on QWidget and QApplication.

@@ -677,14 +677,14 @@ struct quint24 {
 
 inline quint24::quint24(uint value)
 {
-    data[0] = uchar(value);
+    data[0] = uchar(value >> 16);
     data[1] = uchar(value >> 8);
-    data[2] = uchar(value >> 16);
+    data[2] = uchar(value);
 }
 
 inline quint24::operator uint() const
 {
-    return data[0] | (data[1] << 8) | (data[2] << 16);
+    return data[2] | (data[1] << 8) | (data[0] << 16);
 }
 
 template <class T>

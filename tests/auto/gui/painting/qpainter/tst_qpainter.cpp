@@ -3172,7 +3172,7 @@ void tst_QPainter::drawImage_task258776()
     QImage src(16, 16, QImage::Format_RGB888);
     QImage dest(33, 33, QImage::Format_RGB888);
     src.fill(0x00ff00);
-    dest.fill(0x0000ff);
+    dest.fill(0xff0000);
 
     QPainter painter(&dest);
     painter.drawImage(QRectF(0.499, 0.499, 32, 32), src, QRectF(0, 0, 16, 16));

@@ -137,6 +137,8 @@ private slots:
 
     void fillColorWithAlpha();
 
+    void fillRGB888();
+
     void rgbSwapped_data();
     void rgbSwapped();
 
@@ -1047,11 +1049,11 @@ void tst_QImage::setPixel_data()
     QTest::newRow("ARGB8555_Premultiplied blue") << int(QImage::Format_ARGB8555_Premultiplied)
                                    << 0xff0000ff << 0x001fffu;
     QTest::newRow("RGB888 red") << int(QImage::Format_RGB888)
-                                << 0xffff0000 << 0x0000ffu;
+                                << 0xffff0000 << 0xff0000u;
     QTest::newRow("RGB888 green") << int(QImage::Format_RGB888)
                                   << 0xff00ff00 << 0x00ff00u;
     QTest::newRow("RGB888 blue") << int(QImage::Format_RGB888)
-                                 << 0xff0000ff << 0xff0000u;
+                                 << 0xff0000ff << 0x0000ffu;
 }
 
 void tst_QImage::setPixel()
@@ -1870,6 +1872,21 @@ void tst_QImage::fillColorWithAlpha()
     QImage argb32pm(1, 1, QImage::Format_ARGB32_Premultiplied);
     argb32pm.fill(QColor(255, 0, 0, 127));
     QCOMPARE(argb32pm.pixel(0, 0), 0x7f7f0000u);
+}
+
+void tst_QImage::fillRGB888()
+{
+    QImage expected(1, 1, QImage::Format_RGB888);
+    QImage actual(1, 1, QImage::Format_RGB888);
+
+    for (int c = Qt::black; c < Qt::transparent; ++c) {
+        QColor color = QColor(Qt::GlobalColor(c));
+
+        expected.fill(color);
+        actual.fill(color.rgba());
+
+        QCOMPARE(actual.pixel(0, 0), expected.pixel(0, 0));
+    }
 }
 
 void tst_QImage::rgbSwapped_data()
