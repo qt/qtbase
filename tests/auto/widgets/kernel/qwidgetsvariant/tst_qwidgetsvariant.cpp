@@ -69,6 +69,8 @@ private slots:
     void debugStream_data();
     void debugStream();
 
+    void implicitConstruction();
+
     void widgetsVariantAtExit();
 };
 
@@ -252,6 +254,28 @@ void tst_QWidgetsVariant::widgetsVariantAtExit()
     static QVariant sizePolicy = QSizePolicy();
     Q_UNUSED(sizePolicy);
     QVERIFY(true);
+}
+
+
+void tst_QWidgetsVariant::implicitConstruction()
+{
+    // This is a compile-time test
+    QVariant v;
+
+#define FOR_EACH_WIDGETS_CLASS(F) \
+    F(SizePolicy) \
+
+#define CONSTRUCT(TYPE) \
+    { \
+        Q##TYPE t; \
+        v = t; \
+        QVERIFY(true); \
+    }
+
+    FOR_EACH_WIDGETS_CLASS(CONSTRUCT)
+
+#undef CONSTRUCT
+#undef FOR_EACH_WIDGETS_CLASS
 }
 
 QTEST_MAIN(tst_QWidgetsVariant)

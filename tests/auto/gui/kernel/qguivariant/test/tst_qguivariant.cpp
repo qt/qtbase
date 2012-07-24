@@ -59,6 +59,8 @@
 #include <qvector3d.h>
 #include <qvector4d.h>
 #include <qquaternion.h>
+#include <qtextdocument.h>
+#include <qtextformat.h>
 #include <qfont.h>
 
 #include "tst_qvariant_common.h"
@@ -117,6 +119,8 @@ private slots:
 
     void debugStream_data();
     void debugStream();
+
+    void implicitConstruction();
 
     void guiVariantAtExit();
 };
@@ -624,6 +628,49 @@ void tst_QGuiVariant::debugStream()
     MessageHandler msgHandler(typeId);
     qDebug() << variant;
     QVERIFY(msgHandler.testPassed());
+}
+
+void tst_QGuiVariant::implicitConstruction()
+{
+    // This is a compile-time test
+    QVariant v;
+
+#define FOR_EACH_GUI_CLASS(F) \
+    F(Font) \
+    F(Pixmap) \
+    F(Brush) \
+    F(Color) \
+    F(Palette) \
+    F(Icon) \
+    F(Image) \
+    F(Polygon) \
+    F(Region) \
+    F(Bitmap) \
+    F(Cursor) \
+    F(KeySequence) \
+    F(Pen) \
+    F(TextLength) \
+    F(TextFormat) \
+    F(Matrix) \
+    F(Transform) \
+    F(Matrix4x4) \
+    F(Vector2D) \
+    F(Vector3D) \
+    F(Vector4D) \
+    F(Quaternion) \
+    F(PolygonF) \
+
+#define CONSTRUCT(TYPE) \
+    { \
+        Q##TYPE t; \
+        v = t; \
+        QVERIFY(true); \
+    }
+
+    FOR_EACH_GUI_CLASS(CONSTRUCT)
+
+#undef CONSTRUCT
+#undef FOR_EACH_GUI_CLASS
 }
 
 void tst_QGuiVariant::guiVariantAtExit()

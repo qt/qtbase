@@ -990,4 +990,9 @@ QPolygonF QPolygonF::subtracted(const QPolygonF &r) const
     return subject.subtracted(clip).toFillPolygon();
 }
 
+QPolygonF::operator QVariant() const
+{
+    return QVariant(QMetaType::QPolygonF, this);
+}
+
 QT_END_NAMESPACE

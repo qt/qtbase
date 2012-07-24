@@ -234,6 +234,8 @@ private slots:
     void loadQt5Stream();
     void saveQt5Stream_data();
     void saveQt5Stream();
+
+    void implicitConstruction();
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -3252,6 +3254,54 @@ void tst_QVariant::debugStreamType()
     MessageHandlerType msgHandler(typeId);
     qDebug() << QVariant::Type(typeId);
     QVERIFY(msgHandler.testPassed());
+}
+
+void tst_QVariant::implicitConstruction()
+{
+    // This is a compile-time test
+    QVariant v;
+
+#define FOR_EACH_CORE_CLASS(F) \
+    F(Char) \
+    F(String) \
+    F(StringList) \
+    F(ByteArray) \
+    F(BitArray) \
+    F(Date) \
+    F(Time) \
+    F(DateTime) \
+    F(Url) \
+    F(Locale) \
+    F(Rect) \
+    F(RectF) \
+    F(Size) \
+    F(SizeF) \
+    F(Line) \
+    F(LineF) \
+    F(Point) \
+    F(PointF) \
+    F(RegExp) \
+    F(EasingCurve) \
+    F(Uuid) \
+    F(ModelIndex) \
+    F(RegularExpression) \
+    F(JsonValue) \
+    F(JsonObject) \
+    F(JsonArray) \
+    F(JsonDocument) \
+
+#define CONSTRUCT(TYPE) \
+    { \
+        Q##TYPE t; \
+        v = t; \
+        t = v.to##TYPE(); \
+        QVERIFY(true); \
+    }
+
+    FOR_EACH_CORE_CLASS(CONSTRUCT)
+
+#undef CONSTRUCT
+#undef FOR_EACH_CORE_CLASS
 }
 
 QTEST_MAIN(tst_QVariant)

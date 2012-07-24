@@ -142,6 +142,8 @@ public:
     /*implicit*/ QPolygonF(const QPolygon &a);
     inline void swap(QPolygonF &other) { QVector<QPointF>::swap(other); } // prevent QVector<QPointF><->QPolygonF swaps
 
+    operator QVariant() const;
+
     inline void translate(qreal dx, qreal dy);
     void translate(const QPointF &offset);
 

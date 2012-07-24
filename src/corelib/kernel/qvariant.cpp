@@ -1228,6 +1228,48 @@ QVariant::QVariant(const char *val)
 */
 
 /*!
+    \since 5.0
+    \fn QVariant::QVariant(const QUuid &val)
+
+    Constructs a new variant with an uuid value, \a val.
+*/
+
+/*!
+    \since 5.0
+    \fn QVariant::QVariant(const QModelIndex &val)
+
+    Constructs a new variant with an modelIndex value, \a val.
+*/
+
+/*!
+    \since 5.0
+    \fn QVariant::QVariant(const QJsonValue &val)
+
+    Constructs a new variant with a json value, \a val.
+*/
+
+/*!
+    \since 5.0
+    \fn QVariant::QVariant(const QJsonObject &val)
+
+    Constructs a new variant with a json object value, \a val.
+*/
+
+/*!
+    \since 5.0
+    \fn QVariant::QVariant(const QJsonArray &val)
+
+    Constructs a new variant with a json array value, \a val.
+*/
+
+/*!
+    \since 5.0
+    \fn QVariant::QVariant(const QJsonDocument &val)
+
+    Constructs a new variant with a json document value, \a val.
+*/
+
+/*!
   \fn QVariant::QVariant(const QByteArray &val)
 
     Constructs a new variant with a bytearray value, \a val.
@@ -1448,6 +1490,12 @@ QVariant::QVariant(const QLocale &l) { d.is_null = false; d.type = Locale; v_con
 QVariant::QVariant(const QRegExp &regExp) { d.is_null = false; d.type = RegExp; v_construct<QRegExp>(&d, regExp); }
 #ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QRegularExpression &re) { d.is_null = false; d.type = QMetaType::QRegularExpression; v_construct<QRegularExpression>(&d, re); }
+QVariant::QVariant(const QUuid &uuid) { d.is_null = false; d.type = QMetaType::QUuid; v_construct<QUuid>(&d, uuid); }
+QVariant::QVariant(const QModelIndex &modelIndex) { d.is_null = false; d.type = QMetaType::QModelIndex; v_construct<QModelIndex>(&d, modelIndex); }
+QVariant::QVariant(const QJsonValue &jsonValue) { d.is_null = false; d.type = QMetaType::QJsonValue; v_construct<QJsonValue>(&d, jsonValue); }
+QVariant::QVariant(const QJsonObject &jsonObject) { d.is_null = false; d.type = QMetaType::QJsonObject; v_construct<QJsonObject>(&d, jsonObject); }
+QVariant::QVariant(const QJsonArray &jsonArray) { d.is_null = false; d.type = QMetaType::QJsonArray; v_construct<QJsonArray>(&d, jsonArray); }
+QVariant::QVariant(const QJsonDocument &jsonDocument) { d.is_null = false; d.type = QMetaType::QJsonDocument; v_construct<QJsonDocument>(&d, jsonDocument); }
 #endif // QT_BOOTSTRAPPED
 #endif // QT_NO_REGEXP
 
@@ -2127,6 +2175,84 @@ QRegularExpression QVariant::toRegularExpression() const
     return qVariantToHelper<QRegularExpression>(d, handlerManager);
 }
 #endif
+
+/*!
+    \since 5.0
+
+    Returns the variant as a QUuid if the variant has type() \l
+    QUuid; otherwise returns a default constructed QUuid.
+
+    \sa canConvert(), convert()
+*/
+QUuid QVariant::toUuid() const
+{
+    return qVariantToHelper<QUuid>(d, handlerManager);
+}
+
+/*!
+    \since 5.0
+
+    Returns the variant as a QModelIndex if the variant has type() \l
+    QModelIndex; otherwise returns a default constructed QModelIndex.
+
+    \sa canConvert(), convert()
+*/
+QModelIndex QVariant::toModelIndex() const
+{
+    return qVariantToHelper<QModelIndex>(d, handlerManager);
+}
+
+/*!
+    \since 5.0
+
+    Returns the variant as a QJsonValue if the variant has type() \l
+    QJsonValue; otherwise returns a default constructed QJsonValue.
+
+    \sa canConvert(), convert()
+*/
+QJsonValue QVariant::toJsonValue() const
+{
+    return qVariantToHelper<QJsonValue>(d, handlerManager);
+}
+
+/*!
+    \since 5.0
+
+    Returns the variant as a QJsonObject if the variant has type() \l
+    QJsonObject; otherwise returns a default constructed QJsonObject.
+
+    \sa canConvert(), convert()
+*/
+QJsonObject QVariant::toJsonObject() const
+{
+    return qVariantToHelper<QJsonObject>(d, handlerManager);
+}
+
+/*!
+    \since 5.0
+
+    Returns the variant as a QJsonArray if the variant has type() \l
+    QJsonArray; otherwise returns a default constructed QJsonArray.
+
+    \sa canConvert(), convert()
+*/
+QJsonArray QVariant::toJsonArray() const
+{
+    return qVariantToHelper<QJsonArray>(d, handlerManager);
+}
+
+/*!
+    \since 5.0
+
+    Returns the variant as a QJsonDocument if the variant has type() \l
+    QJsonDocument; otherwise returns a default constructed QJsonDocument.
+
+    \sa canConvert(), convert()
+*/
+QJsonDocument QVariant::toJsonDocument() const
+{
+    return qVariantToHelper<QJsonDocument>(d, handlerManager);
+}
 #endif
 
 /*!

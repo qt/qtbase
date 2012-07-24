@@ -247,6 +247,12 @@ class Q_CORE_EXPORT QVariant
 #ifndef QT_BOOTSTRAPPED
     QVariant(const QUrl &url);
     QVariant(const QEasingCurve &easing);
+    QVariant(const QUuid &uuid);
+    QVariant(const QModelIndex &modelIndex);
+    QVariant(const QJsonValue &jsonValue);
+    QVariant(const QJsonObject &jsonObject);
+    QVariant(const QJsonArray &jsonArray);
+    QVariant(const QJsonDocument &jsonDocument);
 #endif
 
     QVariant& operator=(const QVariant &other);
@@ -314,6 +320,12 @@ class Q_CORE_EXPORT QVariant
 #ifndef QT_BOOTSTRAPPED
     QUrl toUrl() const;
     QEasingCurve toEasingCurve() const;
+    QUuid toUuid() const;
+    QModelIndex toModelIndex() const;
+    QJsonValue toJsonValue() const;
+    QJsonObject toJsonObject() const;
+    QJsonArray toJsonArray() const;
+    QJsonDocument toJsonDocument() const;
 #endif
 
 #ifndef QT_NO_DATASTREAM
