@@ -2283,23 +2283,12 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         }
         break; }
     case E_EVAL: {
-        if(args.count() < 1 || args.count() > 2) {
+        if (args.count() != 1) {
             fprintf(stderr, "%s:%d: eval(variable) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
 
         } else {
-            const QHash<QString, QStringList> *source = &place;
-            if(args.count() == 2) {
-                if(args.at(1) == "Global") {
-                    source = &vars;
-                } else if(args.at(1) == "Local") {
-                    source = &place;
-                } else {
-                    fprintf(stderr, "%s:%d: unexpected source to eval.\n", parser.file.toLatin1().constData(),
-                            parser.line_no);
-                }
-            }
-            ret += source->value(args.at(0));
+            ret += place.value(args.at(0));
         }
         break; }
     case E_LIST: {
