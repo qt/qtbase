@@ -358,6 +358,10 @@ void QItemEditorFactory::setDefaultFactory(QItemEditorFactory *factory)
 
     Destroys the editor creator object.
 */
+QItemEditorCreatorBase::~QItemEditorCreatorBase()
+{
+
+}
 
 /*!
     \fn QWidget *QItemEditorCreatorBase::createWidget(QWidget *parent) const

@@ -59,7 +59,7 @@ class QWidget;
 class Q_WIDGETS_EXPORT QItemEditorCreatorBase
 {
 public:
-    virtual ~QItemEditorCreatorBase() {}
+    virtual ~QItemEditorCreatorBase();
 
     virtual QWidget *createWidget(QWidget *parent) const = 0;
     virtual QByteArray valuePropertyName() const = 0;
