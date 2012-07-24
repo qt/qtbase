@@ -276,7 +276,7 @@ void MainWindow::createActions()
     connect(setLineSpacingAct, SIGNAL(triggered()), this, SLOT(setLineSpacing()));
 
     setParagraphSpacingAct = new QAction(tr("Set &Paragraph Spacing..."), this);
-    setLineSpacingAct->setStatusTip(tr("Change the gap between paragraphs"));
+    setParagraphSpacingAct->setStatusTip(tr("Change the gap between paragraphs"));
     connect(setParagraphSpacingAct, SIGNAL(triggered()),
             this, SLOT(setParagraphSpacing()));
 
