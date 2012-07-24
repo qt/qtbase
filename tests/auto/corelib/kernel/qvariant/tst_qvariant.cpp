@@ -3638,12 +3638,12 @@ void tst_QVariant::guiVariantAtExit()
     static QVariant point = QPoint();
     static QVariant icon = QIcon();
     static QVariant image = QImage();
-    static QVariant pallete = QPalette();
+    static QVariant palette = QPalette();
     Q_UNUSED(cursor);
     Q_UNUSED(point);
     Q_UNUSED(icon);
     Q_UNUSED(image);
-    Q_UNUSED(pallete);
+    Q_UNUSED(palette);
     QVERIFY(true);
 }
 
