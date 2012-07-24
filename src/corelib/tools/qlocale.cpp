@@ -646,7 +646,7 @@ QLocale::QLocale(const QString &name)
 
 /*!
     Constructs a QLocale object initialized with the default locale. If
-    no default locale was set using setDefaultLocale(), this locale will
+    no default locale was set using setDefault(), this locale will
     be the same as the one returned by system().
 
     \sa setDefault()

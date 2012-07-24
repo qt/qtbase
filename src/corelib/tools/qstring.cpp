@@ -7104,7 +7104,7 @@ QString QString::arg(char a, int fieldWidth, QChar fillChar) const
 
   The '%' can be followed by an 'L', in which case the sequence is
   replaced with a localized representation of \a a. The conversion
-  uses the default locale, set by QLocale::setDefaultLocale(). If no
+  uses the default locale, set by QLocale::setDefault(). If no
   default locale was specified, the "C" locale is used.
 
   If \a fillChar is '0' (the number 0, ASCII 48), this function will
