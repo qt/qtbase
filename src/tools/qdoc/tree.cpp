@@ -1493,7 +1493,7 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
     QString href = node->outputSubdirectory();
     if (!href.isEmpty())
         href.append(QLatin1Char('/'));
-    href.append(Generator::fullDocumentLocation(node));
+    href.append(gen_->fullDocumentLocation(node));
     writer.writeAttribute("href", href);
     if ((node->type() != Node::Fake) && (!node->isQmlNode()))
         writer.writeAttribute("location", node->location().fileName());
@@ -1928,12 +1928,14 @@ void Tree::generateIndexSections(QXmlStreamWriter& writer,
 void Tree::generateIndex(const QString& fileName,
                          const QString& url,
                          const QString& title,
+                         Generator* g,
                          bool generateInternalNodes)
 {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text))
         return ;
 
+    gen_ = g;
     QXmlStreamWriter writer(&file);
     writer.setAutoFormatting(true);
     writer.writeStartDocument();
@@ -2006,7 +2008,7 @@ void Tree::generateTagFileCompounds(QXmlStreamWriter& writer, const InnerNode* i
 
         if (node->type() == Node::Class) {
             writer.writeTextElement("name", node->fullDocumentName());
-            writer.writeTextElement("filename", Generator::fullDocumentLocation(node,true));
+            writer.writeTextElement("filename", gen_->fullDocumentLocation(node,true));
 
             // Classes contain information about their base classes.
             const ClassNode* classNode = static_cast<const ClassNode*>(node);
@@ -2024,7 +2026,7 @@ void Tree::generateTagFileCompounds(QXmlStreamWriter& writer, const InnerNode* i
             generateTagFileCompounds(writer, static_cast<const InnerNode*>(node));
         } else {
             writer.writeTextElement("name", node->fullDocumentName());
-            writer.writeTextElement("filename", Generator::fullDocumentLocation(node,true));
+            writer.writeTextElement("filename", gen_->fullDocumentLocation(node,true));
 
             // Recurse to write all members.
             generateTagFileMembers(writer, static_cast<const InnerNode*>(node));
@@ -2143,7 +2145,7 @@ void Tree::generateTagFileMembers(QXmlStreamWriter& writer, const InnerNode* inn
                                         "virtual " + functionNode->returnType());
 
             writer.writeTextElement("name", objName);
-            QStringList pieces = Generator::fullDocumentLocation(node,true).split(QLatin1Char('#'));
+            QStringList pieces = gen_->fullDocumentLocation(node,true).split(QLatin1Char('#'));
             writer.writeTextElement("anchorfile", pieces[0]);
             writer.writeTextElement("anchor", pieces[1]);
 
@@ -2182,7 +2184,7 @@ void Tree::generateTagFileMembers(QXmlStreamWriter& writer, const InnerNode* inn
             const PropertyNode* propertyNode = static_cast<const PropertyNode*>(node);
             writer.writeAttribute("type", propertyNode->dataType());
             writer.writeTextElement("name", objName);
-            QStringList pieces = Generator::fullDocumentLocation(node,true).split(QLatin1Char('#'));
+            QStringList pieces = gen_->fullDocumentLocation(node,true).split(QLatin1Char('#'));
             writer.writeTextElement("anchorfile", pieces[0]);
             writer.writeTextElement("anchor", pieces[1]);
             writer.writeTextElement("arglist", "");
@@ -2194,7 +2196,7 @@ void Tree::generateTagFileMembers(QXmlStreamWriter& writer, const InnerNode* inn
         {
             const EnumNode* enumNode = static_cast<const EnumNode*>(node);
             writer.writeTextElement("name", objName);
-            QStringList pieces = Generator::fullDocumentLocation(node).split(QLatin1Char('#'));
+            QStringList pieces = gen_->fullDocumentLocation(node).split(QLatin1Char('#'));
             writer.writeTextElement("anchor", pieces[1]);
             writer.writeTextElement("arglist", "");
             writer.writeEndElement(); // member
@@ -2218,7 +2220,7 @@ void Tree::generateTagFileMembers(QXmlStreamWriter& writer, const InnerNode* inn
             else
                 writer.writeAttribute("type", "");
             writer.writeTextElement("name", objName);
-            QStringList pieces = Generator::fullDocumentLocation(node,true).split(QLatin1Char('#'));
+            QStringList pieces = gen_->fullDocumentLocation(node,true).split(QLatin1Char('#'));
             writer.writeTextElement("anchorfile", pieces[0]);
             writer.writeTextElement("anchor", pieces[1]);
             writer.writeTextElement("arglist", "");

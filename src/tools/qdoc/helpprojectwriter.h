@@ -52,6 +52,7 @@
 QT_BEGIN_NAMESPACE
 
 class Tree;
+class Generator;
 typedef QPair<QString, const Node*> QStringNodePair;
 
 struct SubProject
@@ -85,10 +86,12 @@ struct HelpProject
 class HelpProjectWriter
 {
 public:
-    HelpProjectWriter(const Config &config, const QString &defaultFileName);
+    HelpProjectWriter(const Config &config,
+                      const QString &defaultFileName,
+                      Generator* g);
     void addExtraFile(const QString &file);
     void addExtraFiles(const QSet<QString> &files);
-    void generate(const Tree *tre);
+    void generate(const Tree *t);
 
 private:
     void generateProject(HelpProject &project);
@@ -101,6 +104,7 @@ private:
     void readSelectors(SubProject &subproject, const QStringList &selectors);
 
     const Tree *tree;
+    Generator* gen_;
 
     QString outputDir;
     QList<HelpProject> projects;

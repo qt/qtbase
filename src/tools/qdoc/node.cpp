@@ -505,6 +505,7 @@ Node::ThreadSafeness Node::inheritedThreadSafeness() const
     return safeness_;
 }
 
+#if 0
 /*!
   Returns the sanitized file name without the path.
   If the the file is an html file, the html suffix
@@ -520,7 +521,7 @@ QString Node::fileBase() const
     base.replace(QLatin1Char(' '), QLatin1Char('-'));
     return base.toLower();
 }
-
+#endif
 /*!
   Returns this node's Universally Unique IDentifier as a
   QString. Creates the UUID first, if it has not been created.
@@ -530,29 +531,6 @@ QString Node::guid() const
     if (uuid_.isEmpty())
         uuid_ = idForNode();
     return uuid_;
-}
-
-/*!
-  Composes a string to be used as an href attribute in DITA
-  XML. It is composed of the file name and the UUID separated
-  by a '#'. If this node is a class node, the file name is
-  taken from this node; if this node is a function node, the
-  file name is taken from the parent node of this node.
- */
-QString Node::ditaXmlHref()
-{
-    QString href;
-    if ((type() == Function) ||
-            (type() == Property) ||
-            (type() == Variable)) {
-        href = parent()->fileBase();
-    }
-    else {
-        href = fileBase();
-    }
-    if (!href.endsWith(".xml") && !href.endsWith(".dita"))
-        href += ".dita";
-    return href + QLatin1Char('#') + guid();
 }
 
 /*!
@@ -2086,6 +2064,7 @@ QmlClassNode* QmlClassNode::lookupQmlTypeNode(const QString& qmid, const QString
     return qmlModuleMemberMap_.value(qmid + "::" + name);
 }
 
+#if 0
 /*!
   The base file name for this kind of node has "qml_"
   prepended to it.
@@ -2096,7 +2075,7 @@ QString QmlClassNode::fileBase() const
 {
     return Node::fileBase();
 }
-
+#endif
 /*!
   Record the fact that QML class \a base is inherited by
   QML class \a sub.

@@ -210,8 +210,8 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     codeIndent = config.getInt(CONFIG_CODEINDENT);
 
     helpProjectWriter = new HelpProjectWriter(config,
-                                              project.toLower() +
-                                              ".qhp");
+                                              project.toLower() + ".qhp",
+                                              this);
 
     // Documentation template handling
     headerScripts = config.getString(HtmlGenerator::format() + Config::dot +
@@ -3838,7 +3838,7 @@ void HtmlGenerator::generateIndex(const QString &fileBase,
                                   const QString &url,
                                   const QString &title)
 {
-    tree_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index", url, title);
+    tree_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index", url, title, this);
 }
 
 void HtmlGenerator::generateStatus(const Node *node, CodeMarker *marker)
@@ -4318,7 +4318,7 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         }
         writer.writeStartElement(element);
         writer.writeAttribute("name", en->title());
-        QString docUrl = manifestDir + en->fileBase() + ".html";
+        QString docUrl = manifestDir + fileBase(en) + ".html";
         writer.writeAttribute("docUrl", docUrl);
         QStringList proFiles;
         foreach (const Node* child, en->childNodes()) {

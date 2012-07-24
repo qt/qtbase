@@ -52,7 +52,10 @@
 
 QT_BEGIN_NAMESPACE
 
-HelpProjectWriter::HelpProjectWriter(const Config &config, const QString &defaultFileName)
+HelpProjectWriter::HelpProjectWriter(const Config &config,
+                                     const QString &defaultFileName,
+                                     Generator* g)
+    : gen_(g)
 {
     // The output directory should already have been checked by the calling
     // generator.
@@ -211,7 +214,7 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
         details << node->name();
         details << node->name();
     }
-    details << Generator::fullDocumentLocation(node,true);
+    details << gen_->fullDocumentLocation(node,true);
     return details;
 }
 
@@ -271,12 +274,12 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
 
     case Node::Class:
         project.keywords.append(keywordDetails(node));
-        project.files.insert(Generator::fullDocumentLocation(node,true));
+        project.files.insert(gen_->fullDocumentLocation(node,true));
         break;
 
     case Node::Namespace:
         project.keywords.append(keywordDetails(node));
-        project.files.insert(Generator::fullDocumentLocation(node,true));
+        project.files.insert(gen_->fullDocumentLocation(node,true));
         break;
 
     case Node::Enum:
@@ -296,7 +299,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                 details << item.name(); // "name"
                 details << item.name(); // "id"
             }
-            details << Generator::fullDocumentLocation(node,true);
+            details << gen_->fullDocumentLocation(node,true);
             project.keywords.append(details);
         }
     }
@@ -328,7 +331,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
 
         if (node->relates()) {
             project.memberStatus[node->relates()].insert(node->status());
-            project.files.insert(Generator::fullDocumentLocation(node->relates(),true));
+            project.files.insert(gen_->fullDocumentLocation(node->relates(),true));
         } else if (node->parent())
             project.memberStatus[node->parent()].insert(node->status());
     }
@@ -342,7 +345,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
         // Use the location of any associated enum node in preference
         // to that of the typedef.
         if (enumNode)
-            typedefDetails[2] = Generator::fullDocumentLocation(enumNode,true);
+            typedefDetails[2] = gen_->fullDocumentLocation(enumNode,true);
 
         project.keywords.append(typedefDetails);
     }
@@ -350,7 +353,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
 
     case Node::Variable:
     {
-        QString location = Generator::fullDocumentLocation(node,true);
+        QString location = gen_->fullDocumentLocation(node,true);
         project.files.insert(location.left(location.lastIndexOf(QLatin1Char('#'))));
         project.keywords.append(keywordDetails(node));
     }
@@ -370,35 +373,18 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                             QStringList details;
                             details << keyword->string()
                                     << keyword->string()
-                                    << Generator::fullDocumentLocation(node,true) +
+                                    << gen_->fullDocumentLocation(node,true) +
                                        QLatin1Char('#') + Doc::canonicalTitle(keyword->string());
                             project.keywords.append(details);
                         } else
                             fakeNode->doc().location().warning(
-                                        tr("Bad keyword in %1").arg(Generator::fullDocumentLocation(node,true))
+                                        tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node,true))
                                         );
                     }
                 }
                 project.keywords.append(keywordDetails(node));
             }
-            /*
-                if (fakeNode->doc().hasTableOfContents()) {
-                    foreach (const Atom *item, fakeNode->doc().tableOfContents()) {
-                        QString title = Text::sectionHeading(item).toString();
-                        if (!title.isEmpty()) {
-                            QStringList details;
-                            details << title
-                                    << title
-                                    << HtmlGenerator::fullDocumentLocation(node,true) +
-                                    QLatin1Char('#') + Doc::canonicalTitle(title);
-                            project.keywords.append(details);
-                        } else
-                            fakeNode->doc().location().warning(
-                             tr("Bad contents item in %1").arg(HtmlGenerator::fullDocumentLocation(node,true)));
-                    }
-                }
-*/
-            project.files.insert(Generator::fullDocumentLocation(node,true));
+            project.files.insert(gen_->fullDocumentLocation(node,true));
         }
         break;
     }
@@ -467,9 +453,9 @@ void HelpProjectWriter::generateSections(HelpProject &project,
     }
 }
 
-void HelpProjectWriter::generate(const Tree *tre)
+void HelpProjectWriter::generate(const Tree *t)
 {
-    this->tree = tre;
+    this->tree = t;
     for (int i = 0; i < projects.size(); ++i)
         generateProject(projects[i]);
 }
@@ -477,7 +463,7 @@ void HelpProjectWriter::generate(const Tree *tre)
 void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer,
                                   const Node *node)
 {
-    QString href = Generator::fullDocumentLocation(node,true);
+    QString href = gen_->fullDocumentLocation(node,true);
     QString objName = node->name();
 
     switch (node->type()) {
@@ -628,12 +614,12 @@ void HelpProjectWriter::generateProject(HelpProject &project)
         node = tree->findNode(QStringList("index.html"));
     QString indexPath;
     if (node)
-        indexPath = Generator::fullDocumentLocation(node,true);
+        indexPath = gen_->fullDocumentLocation(node,true);
     else
         indexPath = "index.html";
     writer.writeAttribute("ref", indexPath);
     writer.writeAttribute("title", project.indexTitle);
-    project.files.insert(Generator::fullDocumentLocation(rootNode));
+    project.files.insert(gen_->fullDocumentLocation(rootNode));
 
     generateSections(project, writer, rootNode);
 
@@ -671,7 +657,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
                             const FakeNode *page = tree->findFakeNodeByTitle(atom->string());
                             writer.writeStartElement("section");
-                            QString indexPath = Generator::fullDocumentLocation(page,true);
+                            QString indexPath = gen_->fullDocumentLocation(page,true);
                             writer.writeAttribute("ref", indexPath);
                             writer.writeAttribute("title", atom->string());
                             project.files.insert(indexPath);
@@ -696,7 +682,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
             if (!name.isEmpty()) {
                 writer.writeStartElement("section");
-                QString indexPath = Generator::fullDocumentLocation(tree->findFakeNodeByTitle(subproject.indexTitle),true);
+                QString indexPath = gen_->fullDocumentLocation(tree->findFakeNodeByTitle(subproject.indexTitle),true);
                 writer.writeAttribute("ref", indexPath);
                 writer.writeAttribute("title", subproject.title);
                 project.files.insert(indexPath);

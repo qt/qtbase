@@ -284,6 +284,29 @@ QString DitaXmlGenerator::ditaTags[] =
     ""
 };
 
+/*!
+  Composes a string to be used as an href attribute in DITA
+  XML. It is composed of the file name and the UUID separated
+  by a '#'. If this node is a class node, the file name is
+  taken from this node; if this node is a function node, the
+  file name is taken from the parent node of this node.
+ */
+QString DitaXmlGenerator::ditaXmlHref(Node* n)
+{
+    QString href;
+    if ((n->type() == Node::Function) ||
+            (n->type() == Node::Property) ||
+            (n->type() == Node::Variable)) {
+        href = fileBase(n->parent());
+    }
+    else {
+        href = fileBase(n);
+    }
+    if (!href.endsWith(".xml") && !href.endsWith(".dita"))
+        href += ".dita";
+    return href + QLatin1Char('#') + n->guid();
+}
+
 void DitaXmlGenerator::debugPara(const QString& t)
 {
     writeStartTag(DT_p);
@@ -4218,7 +4241,7 @@ void DitaXmlGenerator::generateIndex(const QString& fileBase,
                                      const QString& url,
                                      const QString& title)
 {
-    tree_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index", url, title);
+    tree_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index", url, title, this);
 }
 
 void DitaXmlGenerator::generateStatus(const Node* node, CodeMarker* marker)
@@ -4907,7 +4930,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
                 FunctionNode* rfn = (FunctionNode*)fn->reimplementedFrom();
                 if (rfn && !rfn->isInternal()) {
                     writeStartTag(DT_cxxFunctionReimplemented);
-                    xmlWriter().writeAttribute("href",rfn->ditaXmlHref());
+                    xmlWriter().writeAttribute("href",ditaXmlHref(rfn));
                     writeCharacters(marker->plainFullName(rfn));
                     writeEndTag(); // </cxxFunctionReimplemented>
                 }
@@ -5299,7 +5322,7 @@ void DitaXmlGenerator::writeProperties(const Section& s,
             if (pn->overriddenFrom() != 0) {
                 PropertyNode* opn = (PropertyNode*)pn->overriddenFrom();
                 writeStartTag(DT_cxxVariableReimplemented);
-                xmlWriter().writeAttribute("href",opn->ditaXmlHref());
+                xmlWriter().writeAttribute("href",ditaXmlHref(opn));
                 writeCharacters(marker->plainFullName(opn));
                 writeEndTag(); // </cxxVariableReimplemented>
             }
@@ -5461,7 +5484,7 @@ void DitaXmlGenerator::writeMacros(const Section& s,
                 if (fn->reimplementedFrom() != 0) {
                     FunctionNode* rfn = (FunctionNode*)fn->reimplementedFrom();
                     writeStartTag(DT_cxxDefineReimplemented);
-                    xmlWriter().writeAttribute("href",rfn->ditaXmlHref());
+                    xmlWriter().writeAttribute("href",ditaXmlHref(rfn));
                     writeCharacters(marker->plainFullName(rfn));
                     writeEndTag(); // </cxxDefineReimplemented>
                 }

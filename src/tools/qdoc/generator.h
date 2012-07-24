@@ -89,9 +89,10 @@ public:
     virtual void initializeGenerator(const Config &config);
     virtual void terminateGenerator();
 
+    QString fullDocumentLocation(const Node *node, bool subdir = false);
+
     static const QString& baseDir() { return baseDir_; }
     static Generator *currentGenerator() { return currentGenerator_; }
-    static QString fullDocumentLocation(const Node *node, bool subdir = false);
     static Generator *generatorForFormat(const QString& format);
     static void initialize(const Config& config);
     static const QString& outputDir() { return outDir_; }

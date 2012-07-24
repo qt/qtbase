@@ -503,6 +503,7 @@ private:
     void writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle, Node* headingnode = 0);
     bool isDuplicate(NodeMultiMap* nmm, const QString& key, Node* node);
     void debugPara(const QString& t);
+    QString ditaXmlHref(Node* n);
 
 private:
     /*

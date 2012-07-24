@@ -52,6 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class Generator;
 class QStringList;
 class TreePrivate;
 
@@ -148,6 +149,7 @@ public:
     void generateIndex(const QString &fileName,
                        const QString &url,
                        const QString &title,
+                       Generator* g,
                        bool generateInternalNodes = false);
     void generateTagFileCompounds(QXmlStreamWriter &writer,
                                   const InnerNode *inner);
@@ -155,7 +157,6 @@ public:
                                 const InnerNode *inner);
     void generateTagFile(const QString &fileName);
     void addExternalLink(const QString &url, const Node *relative);
-    QString fullDocumentLocation(const Node *node) const;
     void resolveQmlInheritance();
 
 private:
@@ -173,6 +174,7 @@ private:
 private:
     NamespaceNode roo;
     QString vers;
+    Generator* gen_;
     TreePrivate *priv;
 };
 

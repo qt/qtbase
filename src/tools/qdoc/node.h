@@ -227,9 +227,8 @@ public:
 
     void clearRelated() { relatesTo_ = 0; }
 
-    virtual QString fileBase() const;
+    //virtual QString fileBase() const;
     QString guid() const;
-    QString ditaXmlHref();
     QString extractClassName(const QString &string) const;
     virtual QString qmlTypeName() const { return name_; }
     virtual QString qmlModuleName() const { return qmlModuleName_; }
@@ -529,7 +528,7 @@ public:
     virtual bool isQmlNode() const { return true; }
     virtual bool isQtQuickNode() const { return (qmlModuleName() == QLatin1String("QtQuick")); }
     virtual ClassNode* classNode() { return cnode_; }
-    virtual QString fileBase() const;
+    //virtual QString fileBase() const;
     virtual void setCurrentChild();
     virtual void clearCurrentChild();
     virtual const ImportList* importList() const { return &importList_; }

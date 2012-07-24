@@ -497,15 +497,15 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
         // The root namespace has no name - check for this before creating
         // an attribute containing the location of any documentation.
 
-        if (!node->fileBase().isEmpty())
-            parentName = node->fileBase() + QLatin1Char('.') + currentGenerator()->fileExtension();
+        if (!fileBase(node).isEmpty())
+            parentName = fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
         else
             return QString();
     }
     else if (node->type() == Node::Fake) {
         if ((node->subType() == Node::QmlClass) ||
                 (node->subType() == Node::QmlBasicType)) {
-            QString fb = node->fileBase();
+            QString fb = fileBase(node);
             if (fb.startsWith(Generator::outputPrefix(QLatin1String("QML"))))
                 return fb + QLatin1Char('.') + currentGenerator()->fileExtension();
             else {
@@ -515,13 +515,14 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
                     mq = mq.toLower() + QLatin1Char('-');
                 }
                 return fdl+ Generator::outputPrefix(QLatin1String("QML")) + mq +
-                        node->fileBase() + QLatin1Char('.') + currentGenerator()->fileExtension();
+                        fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
             }
         }
-        else
-            parentName = node->fileBase() + QLatin1Char('.') + currentGenerator()->fileExtension();
+        else {
+            parentName = fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
+        }
     }
-    else if (node->fileBase().isEmpty())
+    else if (fileBase(node).isEmpty())
         return QString();
 
     Node *parentNode = 0;
@@ -534,8 +535,9 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
             parentNode = parentNode->parent();
             parentName = fullDocumentLocation(parentNode);
         }
-        else
+        else {
             parentName = fullDocumentLocation(node->parent());
+        }
     }
 
     switch (node->type()) {
@@ -544,17 +546,13 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
         if (parentNode && !parentNode->name().isEmpty()) {
             parentName.remove(QLatin1Char('.') + currentGenerator()->fileExtension());
             parentName +=  QLatin1Char('-')
-                    + node->fileBase().toLower() + QLatin1Char('.') + currentGenerator()->fileExtension();
+                    + fileBase(node).toLower() + QLatin1Char('.') + currentGenerator()->fileExtension();
         } else {
-            parentName = node->fileBase() + QLatin1Char('.') + currentGenerator()->fileExtension();
+            parentName = fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
         }
         break;
     case Node::Function:
     {
-        /*
-                  Functions can be destructors, overloaded, or
-                  have associated properties.
-                */
         const FunctionNode *functionNode =
                 static_cast<const FunctionNode *>(node);
 
@@ -569,14 +567,13 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
                     + QLatin1Char('-') + QString::number(functionNode->overloadNumber());
         else
             anchorRef = QLatin1Char('#') + functionNode->name();
-    }
-
-        /*
-              Use node->name() instead of node->fileBase() as
-              the latter returns the name in lower-case. For
-              HTML anchors, we need to preserve the case.
-            */
         break;
+    }
+    /*
+      Use node->name() instead of fileBase(node) as
+      the latter returns the name in lower-case. For
+      HTML anchors, we need to preserve the case.
+    */
     case Node::Enum:
         anchorRef = QLatin1Char('#') + node->name() + "-enum";
         break;
@@ -604,10 +601,10 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
     case Node::Fake:
     {
         /*
-              Use node->fileBase() for fake nodes because they are represented
+              Use fileBase(node) for fake nodes because they are represented
               by pages whose file names are lower-case.
             */
-        parentName = node->fileBase();
+        parentName = fileBase(node);
         parentName.replace(QLatin1Char('/'), QLatin1Char('-')).replace(QLatin1Char('.'), QLatin1Char('-'));
         parentName += QLatin1Char('.') + currentGenerator()->fileExtension();
     }
