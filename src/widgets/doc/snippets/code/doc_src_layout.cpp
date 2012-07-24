@@ -56,7 +56,7 @@ public:
     void addItem(QLayoutItem *item);
     QSize sizeHint() const;
     QSize minimumSize() const;
-	QLayoutItem *count() const;
+    int count() const;
     QLayoutItem *itemAt(int) const;
     QLayoutItem *takeAt(int);
     void setGeometry(const QRect &rect);
@@ -73,7 +73,7 @@ private:
 //! [1]
 
 //! [2]
-QLayoutItem *CardLayout::count() const
+int CardLayout::count() const
 {
 	// QList::size() returns the number of QLayoutItems in the list
     return list.size();
