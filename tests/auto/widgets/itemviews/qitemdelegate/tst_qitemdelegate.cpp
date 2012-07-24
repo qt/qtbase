@@ -1312,7 +1312,7 @@ void tst_QItemDelegate::QTBUG4435_keepSelectionOnCheck()
     view.setItemDelegate(new TestItemDelegate);
     view.show();
     view.selectAll();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QStyleOptionViewItem option;
     option.rect = view.visualRect(model.index(0, 0));
     // mimic QStyledItemDelegate::initStyleOption logic

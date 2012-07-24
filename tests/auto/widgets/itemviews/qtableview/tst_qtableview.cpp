@@ -690,8 +690,8 @@ void tst_QTableView::keyboardNavigation()
     view.setCurrentIndex(index);
 
     view.show();
-    QTest::qWaitForWindowShown(&view);
     qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     int row = rowCount - 1;
     int column = columnCount - 1;
@@ -2591,8 +2591,7 @@ void tst_QTableView::scrollTo()
     // resizing to this size will ensure that there can ONLY_BE_ONE_CELL inside the view.
     QSize forcedSize(columnWidth * 2, rowHeight * 2);
     view.resize(forcedSize);
-    QTest::qWaitForWindowShown(&view);
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
     QTRY_COMPARE(view.size(), forcedSize);
 
     view.setModel(&model);
@@ -2746,7 +2745,7 @@ void tst_QTableView::indexAt()
     QtTestTableView view(&toplevel);
 
     toplevel.show();
-    QTest::qWaitForWindowShown(&toplevel);
+    QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
 
     //some styles change the scroll mode in their polish
     view.setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
@@ -3350,13 +3349,12 @@ void tst_QTableView::tabFocus()
 
     window.show();
     QApplication::setActiveWindow(&window);
-    QTest::qWaitForWindowShown(&window);
     window.setFocus();
-    QTest::qWait(100);
     window.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
 
     // window
-    QTRY_VERIFY(window.hasFocus());
+    QVERIFY(window.hasFocus());
     QVERIFY(!view->hasFocus());
     QVERIFY(!edit->hasFocus());
 
@@ -3482,7 +3480,7 @@ void tst_QTableView::selectionSignal()
     view.setModel(&model);
     view.resize(200, 200);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(model.index(2, 0)).center());
 }
 
@@ -3536,7 +3534,7 @@ void tst_QTableView::task173773_updateVerticalHeader()
     view.setModel(&proxyModel);
     view.setSortingEnabled(true);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     view.sortByColumn(0, Qt::AscendingOrder);
     QTest::qWait(100);
@@ -3601,7 +3599,7 @@ void tst_QTableView::task240266_veryBigColumn()
     table.setColumnWidth(1, 100); //normal column
     table.setColumnWidth(2, 9000); //very big column
     table.show();
-    QTest::qWaitForWindowShown(&table);
+    QVERIFY(QTest::qWaitForWindowExposed(&table));
 
     //some styles change the scroll mode in their polish
     table.setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
@@ -3682,7 +3680,7 @@ void tst_QTableView::mouseWheel()
         view.setColumnWidth(c, 100);
     topLevel.show();
 
-    QTest::qWaitForWindowShown(&topLevel);
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
     view.setModel(&model);
 
@@ -3743,7 +3741,7 @@ void tst_QTableView::task259308_scrollVerticalHeaderSwappedSections()
     tv.verticalHeader()->swapSections(0, model.rowCount() - 1);
     tv.setCurrentIndex(model.index(model.rowCount() - 1, 0));
 
-    QTest::qWaitForWindowShown(&tv);
+    QVERIFY(QTest::qWaitForWindowExposed(&tv));
     QTest::keyClick(&tv, Qt::Key_PageUp);   // PageUp won't scroll when at top
     QTRY_COMPARE(tv.rowAt(0), tv.verticalHeader()->logicalIndex(0));
 
@@ -3949,7 +3947,7 @@ void tst_QTableView::changeHeaderData()
     QStandardItemModel model(5,5);
     view.setModel(&model);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QString text = "long long long text";
     const int textWidth = view.verticalHeader()->fontMetrics().width(text);
@@ -3967,7 +3965,7 @@ void tst_QTableView::taskQTBUG_5237_wheelEventOnHeader()
     QStandardItemModel model(500,5);
     view.setModel(&model);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     int sbValueBefore = view.verticalScrollBar()->value();
     QHeaderView *header = view.verticalHeader();
@@ -4013,7 +4011,7 @@ void tst_QTableView::taskQTBUG_8585_crashForNoGoodReason()
     w.setModel(&model);
     connect(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), &w, SLOT(onDataChanged()));
     w.show();
-    QTest::qWaitForWindowShown(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     for (int i = 0; i < 10; i++)
     {
         QTest::mouseMove(w.viewport(), QPoint(50, 20));
@@ -4038,7 +4036,7 @@ void tst_QTableView::taskQTBUG_7774_RtoLVisualRegionForSelection()
     view.setModel(&model);
     view.setLayoutDirection(Qt::RightToLeft);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QItemSelectionRange range(model.index(2, 0), model.index(2, model.columnCount() - 1));
     QItemSelection selection;

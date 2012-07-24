@@ -1077,8 +1077,8 @@ void tst_QCompleter::multipleWidgets()
     QWidget window;
     window.show();
     QApplication::setActiveWindow(&window);
-    QTest::qWaitForWindowShown(&window);
-    QTRY_VERIFY(qApp->activeWindow() == &window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(qApp->activeWindow() == &window);
 
     QFocusEvent focusIn(QEvent::FocusIn);
     QFocusEvent focusOut(QEvent::FocusOut);
@@ -1494,8 +1494,8 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QWidget w;
     w.show();
     QApplication::setActiveWindow(&w);
-    QTest::qWaitForWindowShown(&w);
-    QTRY_VERIFY(!edit.hasFocus() && !comp.popup()->hasFocus());
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+    QVERIFY(!edit.hasFocus() && !comp.popup()->hasFocus());
 
     QVERIFY(fs.createDirectory(tmpDir.filePath("hemo")));
     //there is no reason creating a file should open a popup, it did in Qt 4.7.0

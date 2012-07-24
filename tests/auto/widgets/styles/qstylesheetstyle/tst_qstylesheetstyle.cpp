@@ -771,8 +771,8 @@ void tst_QStyleSheetStyle::focusColors()
         frame.setLayout(layout);
 
         frame.show();
-        QTest::qWaitForWindowShown(&frame);
         QApplication::setActiveWindow(&frame);
+        QVERIFY(QTest::qWaitForWindowActive(&frame));
         widget->setFocus();
         QApplication::processEvents();
 
@@ -831,9 +831,8 @@ void tst_QStyleSheetStyle::hoverColors()
         QCursor::setPos(QPoint(0,0));
 #endif
 
-        QTest::qWaitForWindowShown(&frame);
         QApplication::setActiveWindow(&frame);
-        QTest::qWait(60);
+        QVERIFY(QTest::qWaitForWindowActive(&frame));
         //move the mouse inside the widget, it should be colored
         QTest::mouseMove ( widget, QPoint(6,6));
         QTest::qWait(60);
@@ -946,7 +945,7 @@ void tst_QStyleSheetStyle::background()
         QWidget* widget = widgets[c];
 
         widget->show();
-        QTest::qWaitForWindowShown(widget);
+        QVERIFY(QTest::qWaitForWindowExposed(widget));
 
         QImage image(widget->width(), widget->height(), QImage::Format_ARGB32);
         widget->render(&image);
@@ -969,8 +968,7 @@ void tst_QStyleSheetStyle::tabAlignement()
     tabWidget.addTab(new QLabel("tab1"),"tab1");
     tabWidget.resize(QSize(400,400));
     topLevel.show();
-    QTest::qWaitForWindowShown(&tabWidget);
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
     QTabBar *bar = qFindChild<QTabBar*>(&tabWidget);
     QVERIFY(bar);
     //check the tab is on the right
@@ -1292,7 +1290,7 @@ void tst_QStyleSheetStyle::emptyStyleSheet()
     layout.addWidget(new QGroupBox("some text", &w));
 
     w.show();
-    QTest::qWaitForWindowShown(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     //workaround the fact that the label sizehint is one pixel different the first time.
     label.setIndent(0); //force to recompute the sizeHint:
     w.setFocus();
@@ -1481,8 +1479,8 @@ void tst_QStyleSheetStyle::complexWidgetFocus()
     frame.setLayout(layout);
 
     frame.show();
-    QTest::qWaitForWindowShown(&frame);
     QApplication::setActiveWindow(&frame);
+    QVERIFY(QTest::qWaitForWindowActive(&frame));
     foreach (QWidget *widget, widgets) {
         widget->setFocus();
         QApplication::processEvents();
@@ -1558,10 +1556,9 @@ void tst_QStyleSheetStyle::task232085_spinBoxLineEditBg()
     frame.setLayout(layout);
 
     frame.show();
-    QTest::qWaitForWindowShown(&frame);
     QApplication::setActiveWindow(&frame);
     spinbox->setFocus();
-    QApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowActive(&frame));
 
     QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
     frame.render(&image);
@@ -1633,7 +1630,7 @@ void tst_QStyleSheetStyle::QTBUG11658_cachecrash()
     w = new Widget();
     w->show();
 
-    QTest::qWaitForWindowShown(w);
+    QVERIFY(QTest::qWaitForWindowExposed(w));
     delete w;
     qApp->setStyleSheet(QString());
 }
@@ -1652,7 +1649,7 @@ void tst_QStyleSheetStyle::QTBUG15910_crashNullWidget()
     } w;
     w.setStyleSheet("* { background-color: white; color:black; border 3px solid yellow }");
     w.show();
-    QTest::qWaitForWindowShown(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 }
 
 

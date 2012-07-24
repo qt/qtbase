@@ -1628,7 +1628,7 @@ void tst_QListWidget::QTBUG8086_currentItemChangedOnClick()
 
     QSignalSpy spy(&list, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)));
 
-    QTest::qWaitForWindowShown(&win);
+    QVERIFY(QTest::qWaitForWindowExposed(&win));
 
     QCOMPARE(spy.count(), 0);
 

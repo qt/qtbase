@@ -1492,9 +1492,9 @@ void tst_QHeaderView::focusPolicy()
     widget.show();
     widget.setFocus(Qt::OtherFocusReason);
     QApplication::setActiveWindow(&widget);
-    QTest::qWaitForWindowShown(&widget);
     widget.activateWindow();
-    QTRY_VERIFY(widget.hasFocus());
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+    QVERIFY(widget.hasFocus());
     QVERIFY(!widget.header()->hasFocus());
 
     widget.setFocusPolicy(Qt::NoFocus);
@@ -2158,7 +2158,7 @@ void tst_QHeaderView::QTBUG12268_hiddenMovedSectionSorting()
     view.horizontalHeader()->moveSection(0,2);
     view.setColumnHidden(1, true);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QCOMPARE(view.horizontalHeader()->hiddenSectionCount(), 1);
     QTest::mouseClick(view.horizontalHeader()->viewport(), Qt::LeftButton);
     QCOMPARE(view.horizontalHeader()->hiddenSectionCount(), 1);
@@ -2239,7 +2239,7 @@ void tst_QHeaderView::initialSortOrderRole()
     view.setSortingEnabled(true);
     view.sortByColumn(0, Qt::AscendingOrder);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     const int column1Pos = view.horizontalHeader()->sectionViewportPosition(1) + 5; // +5 not to be on the handle
     QTest::mouseClick(view.horizontalHeader()->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(column1Pos, 0));

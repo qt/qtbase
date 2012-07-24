@@ -1403,7 +1403,7 @@ void tst_QTouchEvent::crashInQGraphicsSceneAfterNotHandlingTouchBegin()
     view.setScene(&scene);
 
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QPoint centerPos = view.mapFromScene(rect->boundingRect().center());
     // Touch the button
@@ -1429,7 +1429,7 @@ void tst_QTouchEvent::touchBeginWithGraphicsWidget()
 
     view.resize(200, 200);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     view.fitInView(scene.sceneRect());
 
     QTest::touchEvent(&view, touchScreenDevice)

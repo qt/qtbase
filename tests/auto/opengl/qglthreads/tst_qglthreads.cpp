@@ -151,7 +151,7 @@ void tst_QGLThreads::swapInThread()
     widget.setThread(&thread);
     widget.show();
 
-    QTest::qWaitForWindowShown(&widget);
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     thread.start();
 
     while (thread.isRunning()) {
@@ -259,7 +259,7 @@ void tst_QGLThreads::textureUploadInThread()
     connect(&thread, SIGNAL(createdAndUploaded(QImage)), &display, SLOT(receiveImage(QImage)));
 
     display.show();
-    QTest::qWaitForWindowShown(&display);
+    QVERIFY(QTest::qWaitForWindowActive(&display));
 
     thread.start();
 
@@ -436,7 +436,7 @@ void tst_QGLThreads::renderInThread()
     SceneRenderingThread thread(&widget);
 
     widget.show();
-    QTest::qWaitForWindowShown(&widget);
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     widget.doneCurrent();
 
     thread.start();
@@ -470,7 +470,7 @@ public:
     GLWidgetWrapper() {
         widget.resize(150, 150);
         widget.show();
-        QTest::qWaitForWindowShown(&widget);
+        QTest::qWaitForWindowExposed(&widget);
         widget.doneCurrent();
     }
     QPaintDevice *realPaintDevice() { return &widget; }

@@ -70,7 +70,7 @@ void tst_BaselineExample::testBasicUsage()
     QPushButton b("Press me!");
     b.resize(100, 50);
     b.show();
-    QTest::qWaitForWindowShown(&b);
+    QVERIFY(QTest::qWaitForWindowExposed(&b));
     QImage img1 = b.grab().toImage();
     QVERIFY(!img1.isNull());
 
@@ -84,7 +84,7 @@ void tst_BaselineExample::testMultipleImages()
     QPushButton b("Press me!");
     b.resize(100, 50);
     b.show();
-    QTest::qWaitForWindowShown(&b);
+    QVERIFY(QTest::qWaitForWindowExposed(&b));
     QBASELINE_CHECK(b.grab().toImage(), "text1");
 
     b.setText("Kick me!");
@@ -110,7 +110,7 @@ void tst_BaselineExample::testDataDriven()
     QPushButton b(label);
     b.resize(100, 50);
     b.show();
-    QTest::qWaitForWindowShown(&b);
+    QVERIFY(QTest::qWaitForWindowExposed(&b));
     QBASELINE_TEST(b.grab().toImage());
 }
 
@@ -136,7 +136,7 @@ void tst_BaselineExample::testDataDrivenChecksum()
     QPushButton b(label);
     b.resize(100, 50);
     b.show();
-    QTest::qWaitForWindowShown(&b);
+    QVERIFY(QTest::qWaitForWindowExposed(&b));
     QBASELINE_TEST(b.grab().toImage());
 }
 

@@ -617,7 +617,7 @@ void tst_QListView::indexAt()
     view2.setWrapping(true);
     // We really want to make sure it is shown, because the layout won't be known until it is shown
     view2.show();
-    QTest::qWaitForWindowShown(&view2);
+    QVERIFY(QTest::qWaitForWindowExposed(&view2));
     QTRY_VERIFY(view2.m_shown);
 
     QVERIFY(view2.m_index.isValid());
@@ -770,7 +770,7 @@ void tst_QListView::hideFirstRow()
     view.setUniformItemSizes(true);
     view.setRowHidden(0,true);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTest::qWait(10);
 }
 
@@ -789,7 +789,7 @@ void tst_QListView::batchedMode()
     view.setBatchSize(2);
     view.resize(200,400);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTest::qWait(100);
 
 #if defined(Q_OS_WINCE)
@@ -1150,8 +1150,7 @@ void tst_QListView::selection()
 #endif
 
     topLevel.show();
-    QTest::qWaitForWindowShown(&v);
-    QApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
     v.setSelection(selectionRect, QItemSelectionModel::ClearAndSelect);
 
@@ -1203,7 +1202,7 @@ void tst_QListView::scrollTo()
     lv.setModel(&model);
     lv.setFixedSize(100, 200);
     topLevel.show();
-    QTest::qWaitForWindowShown(&topLevel);
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
     //by default, the list view scrolls per item and has no wrapping
     QModelIndex index = model.index(6,0);
@@ -1571,7 +1570,7 @@ void tst_QListView::task248430_crashWith0SizedItem()
     QStringListModel model(QStringList() << QLatin1String("item1") << QString());
     view.setModel(&model);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTest::qWait(20);
 }
 
@@ -1584,7 +1583,7 @@ void tst_QListView::task250446_scrollChanged()
     QVERIFY(index.isValid());
     view.setCurrentIndex(index);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     const int scrollValue = view.verticalScrollBar()->maximum();
     view.verticalScrollBar()->setValue(scrollValue);
     QCOMPARE(view.verticalScrollBar()->value(), scrollValue);
@@ -1641,8 +1640,9 @@ void tst_QListView::task254449_draggingItemToNegativeCoordinates()
     list.setModel(&model);
     list.setViewMode(QListView::IconMode);
     list.show();
-    QTest::qWaitForWindowShown(&list);
     list.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&list));
+
 
     class MyItemDelegate : public QStyledItemDelegate
     {
@@ -1717,7 +1717,7 @@ void tst_QListView::shiftSelectionWithNonUniformItemSizes()
         view.setViewMode(QListView::IconMode);
         view.setModel(&model);
         view.show();
-        QTest::qWaitForWindowShown(&view);
+        QVERIFY(QTest::qWaitForWindowExposed(&view));
 
         // Verfify that item sizes are non-uniform
         QVERIFY(view.sizeHintForIndex(model.index(0, 0)).height() > view.sizeHintForIndex(model.index(1, 0)).height());
@@ -1747,7 +1747,7 @@ void tst_QListView::shiftSelectionWithNonUniformItemSizes()
         view.setViewMode(QListView::IconMode);
         view.setModel(&model);
         view.show();
-        QTest::qWaitForWindowShown(&view);
+        QVERIFY(QTest::qWaitForWindowExposed(&view));
 
         // Verfify that item sizes are non-uniform
         QVERIFY(view.sizeHintForIndex(model.index(0, 0)).width() > view.sizeHintForIndex(model.index(1, 0)).width());
@@ -1806,8 +1806,8 @@ void tst_QListView::task262152_setModelColumnNavigate()
 
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
     QTest::keyClick(&view, Qt::Key_Down);
     QTest::qWait(30);
     QTRY_COMPARE(view.currentIndex(), model.index(1,1));
@@ -1856,7 +1856,7 @@ void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
 
     //QTBUG-7929  should not crash
     topLevel.show();
-    QTest::qWaitForWindowShown(&topLevel);
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
     QScrollBar *bar = view.flow() == QListView::TopToBottom
             ? view.verticalScrollBar() : view.horizontalScrollBar();
 
@@ -1884,7 +1884,7 @@ void tst_QListView::taskQTBUG_633_changeModelData()
 
     view.setModel(&model);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     model.setData( model.index(1, 0), QLatin1String("long long text"));
     QTest::qWait(100); //leave time for relayouting the items
     QRect rectLongText = view.visualRect(model.index(1,0));
@@ -1926,7 +1926,7 @@ void tst_QListView::taskQTBUG_2678_spacingAndWrappedText()
     w.setWordWrap(true);
     w.setSpacing(10);
     w.show();
-    QTest::qWaitForWindowShown(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QCOMPARE(w.horizontalScrollBar()->minimum(), w.horizontalScrollBar()->maximum());
 }
 
@@ -1943,7 +1943,7 @@ void tst_QListView::taskQTBUG_5877_skippingItemInPageDownUp()
     vu.setModel(&model);
     vu.show();
 
-    QTest::qWaitForWindowShown(&vu);
+    QVERIFY(QTest::qWaitForWindowExposed(&vu));
 
     int itemHeight = vu.visualRect(model.index(0, 0)).height();
     int visibleRowCount = vu.viewport()->height() / itemHeight;
@@ -1988,7 +1988,7 @@ void tst_QListView::taskQTBUG_9455_wrongScrollbarRanges()
     const int spacing = 40;
     w.setSpacing(spacing);
     w.show();
-    QTest::qWaitForWindowShown(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QCOMPARE(w.verticalScrollBar()->maximum(), w.contentsSize().height() - w.viewport()->geometry().height());
 }
 
@@ -2034,7 +2034,7 @@ void tst_QListView::taskQTBUG_12308_artihmeticException()
         item->setHidden(true);
     }
     lw.show();
-    QTest::qWaitForWindowShown(&lw);
+    QVERIFY(QTest::qWaitForWindowExposed(&lw));
     // No crash, it's all right.
 }
 
@@ -2067,7 +2067,7 @@ void tst_QListView::taskQTBUG_12308_wrongFlowLayout()
             item->setHidden(true);
     }
     lw.show();
-    QTest::qWaitForWindowShown(&lw);
+    QVERIFY(QTest::qWaitForWindowExposed(&lw));
 }
 
 void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems_data()
@@ -2092,7 +2092,7 @@ void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems()
     model.setStringList(list);
     lv.setModel(&model);
     lv.show();
-    QTest::qWaitForWindowShown(&lv);
+    QVERIFY(QTest::qWaitForWindowExposed(&lv));
 
     // Save first item rect for reference
     QRect firstItemRect = lv.visualRect(model.index(0, 0));

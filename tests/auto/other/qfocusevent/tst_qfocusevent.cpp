@@ -135,6 +135,7 @@ void tst_QFocusEvent::initTestCase()
     //qApp->setMainWidget( testFocusWidget ); Qt4
     testFocusWidget->resize( 200,100 );
     testFocusWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(testFocusWidget));
 // Applications don't get focus when launched from the command line on Mac.
 #ifdef Q_OS_MAC
     testFocusWidget->raise();
@@ -159,19 +160,10 @@ void tst_QFocusEvent::initWidget()
 {
     // On X11 we have to ensure the event was processed before doing any checking, on Windows
     // this is processed straight away.
-    QApplication::setActiveWindow(childFocusWidgetOne);
-
-    for (int i = 0; i < 1000; ++i) {
-	if (childFocusWidgetOne->isActiveWindow() && childFocusWidgetOne->hasFocus())
-	    break;
-	childFocusWidgetOne->activateWindow();
-	childFocusWidgetOne->setFocus();
-	qApp->processEvents();
-	QTest::qWait(100);
-    }
-
-    // The first lineedit should have focus
-    QVERIFY( childFocusWidgetOne->hasFocus() );
+    QApplication::setActiveWindow(testFocusWidget);
+    childFocusWidgetOne->setFocus(); // The first lineedit should have focus
+    QVERIFY(QTest::qWaitForWindowActive(testFocusWidget));
+    QTRY_VERIFY(childFocusWidgetOne->hasFocus());
 
     childFocusWidgetOne->focusInEventRecieved = false;
     childFocusWidgetOne->focusInEventGotFocus = false;
@@ -362,7 +354,7 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
     d->show();
     d->activateWindow(); // ### CDE
     QApplication::setActiveWindow(d);
-    QTest::qWaitForWindowShown(d);
+    QVERIFY(QTest::qWaitForWindowActive(d));
 
     QTRY_VERIFY(childFocusWidgetOne->focusOutEventRecieved);
     QVERIFY(childFocusWidgetOne->focusOutEventLostFocus);
@@ -381,6 +373,8 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("", "QTBUG-22815", Abort);
 #endif
+    if (QGuiApplication::platformName() == QStringLiteral("xcb"))
+        QSKIP("QTBUG-22815 - This test is unstable on this platform");
     QTRY_VERIFY(childFocusWidgetOne->focusInEventRecieved);
     QVERIFY(childFocusWidgetOne->focusInEventGotFocus);
 

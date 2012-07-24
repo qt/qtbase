@@ -1040,13 +1040,12 @@ void tst_QAbstractItemView::setItemDelegate()
         }
     }
     v.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&v));
 #ifdef Q_WS_X11
     QCursor::setPos(v.geometry().center());
     QApplication::syncX();
 #endif
-    QTest::qWait(20);
     QApplication::setActiveWindow(&v);
+    QVERIFY(QTest::qWaitForWindowActive(&v));
 
     QModelIndex index = model.index(cellToEdit.y(), cellToEdit.x());
     v.edit(index);
@@ -1453,8 +1452,8 @@ void tst_QAbstractItemView::QTBUG6407_extendedSelection()
 
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
 
     view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
     QTest::qWait(20);
@@ -1492,7 +1491,7 @@ void tst_QAbstractItemView::QTBUG6753_selectOnSelection()
     table.show();
     table.setSelectionMode(QAbstractItemView::ExtendedSelection);
     table.selectAll();
-    QTest::qWaitForWindowShown(&table);
+    QVERIFY(QTest::qWaitForWindowExposed(&table));
     QModelIndex item = table.model()->index(1,1);
     QRect itemRect = table.visualRect(item);
     QTest::mouseMove(table.viewport(), itemRect.center());

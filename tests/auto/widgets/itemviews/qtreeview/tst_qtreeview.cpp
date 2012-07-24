@@ -916,7 +916,7 @@ void tst_QTreeView::iconSize()
 
     view.show();
     view.update();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(view.repainted);
     QCOMPARE(view.iconSize(), QSize());
 
@@ -3302,7 +3302,7 @@ void tst_QTreeView::task216717_updateChildren()
             bool refreshed;
     } tree;
     tree.show();
-    QTest::qWaitForWindowShown(&tree);
+    QVERIFY(QTest::qWaitForWindowExposed(&tree));
     tree.refreshed = false;
     QTreeWidgetItem *parent = new QTreeWidgetItem(QStringList() << "parent");
     tree.addTopLevelItem(parent);
@@ -3591,7 +3591,7 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
     QStandardItemModel model;
     tree.setModel(&model);
     tree.show();
-    QTest::qWaitForWindowShown(&tree);
+    QVERIFY(QTest::qWaitForWindowExposed(&tree));
     QList<QStandardItem *> items;
     for(int i=0; i<100; ++i){
         items << new QStandardItem(QString::fromLatin1("item %1").arg(i));
@@ -3646,7 +3646,7 @@ void tst_QTreeView::task239271_addRowsWithFirstColumnHidden()
 
     view.hideColumn(0);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     delegate.paintedIndexes.clear();
     QStandardItem sub1("sub1"), sub11("sub11");
     root0.appendRow(QList<QStandardItem*>() << &sub1 << &sub11);
@@ -3748,8 +3748,8 @@ void tst_QTreeView::doubleClickedWithSpans()
     view.setFirstColumnSpanned(0, QModelIndex(), true);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_VERIFY(view.isActiveWindow());
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(view.isActiveWindow());
 
     QPoint p(10, 10);
     QCOMPARE(view.indexAt(p), model.index(0, 0));
@@ -3820,7 +3820,7 @@ void tst_QTreeView::taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint()
     view.painted = 0;
     view.doCompare = false;
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(view.painted > 0);
 
     QTest::qWait(100);  // This one is needed to make the test fail before the patch.
@@ -3980,7 +3980,7 @@ void tst_QTreeView::taskQTBUG_11466_keyboardNavigationRegression()
     model.bindView(&treeView);
     treeView.expandAll();
     treeView.show();
-    QTest::qWaitForWindowShown(&treeView);
+    QVERIFY(QTest::qWaitForWindowExposed(&treeView));
 
     QTest::keyPress(treeView.viewport(), Qt::Key_Down);
     QTest::qWait(10);
@@ -3995,7 +3995,7 @@ void tst_QTreeView::taskQTBUG_13567_removeLastItemRegression()
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);
     view.setModel(&model);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     view.scrollToBottom();
     QTest::qWait(10);

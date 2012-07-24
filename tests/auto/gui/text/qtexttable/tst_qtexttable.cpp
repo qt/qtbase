@@ -994,7 +994,7 @@ void tst_QTextTable::QTBUG11282_insertBeforeMergedEnding()
     QTextEdit *textEdit = new QTextEdit;
     textEdit->setDocument(doc);
     textEdit->show();
-    QTest::qWaitForWindowShown(textEdit);
+    QVERIFY(QTest::qWaitForWindowExposed(textEdit));
     table->mergeCells(0,merge.at(0), merge.at(1), merge.at(2));
     //Don't crash !
     table->insertColumns(insert.at(0), insert.at(1));
