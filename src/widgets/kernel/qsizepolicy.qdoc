@@ -324,6 +324,11 @@
     Sets the horizontal stretch factor of the size policy to the given \a
     stretchFactor. \a stretchFactor must be in the range [0,255].
 
+    When two widgets are adjacent to each other in a horizontal layout,
+    setting the horizontal stretch factor of the widget on the left to 2
+    and the factor of widget on the right to 1 will ensure that the widget
+    on the left will always be twice the size of the one on the right.
+
     \sa horizontalStretch(), setVerticalStretch(), setHorizontalPolicy()
 */
 
@@ -332,6 +337,12 @@
 
     Sets the vertical stretch factor of the size policy to the given
     \a stretchFactor. \a stretchFactor must be in the range [0,255].
+
+    When two widgets are adjacent to each other in a vertical layout,
+    setting the vertical stretch factor of the widget on the top to 2
+    and the factor of widget on the bottom to 1 will ensure that
+    the widget on the top will always be twice the size of the one
+    on the bottom.
 
     \sa verticalStretch(), setHorizontalStretch(), setVerticalPolicy()
 */
