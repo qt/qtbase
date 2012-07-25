@@ -31,8 +31,8 @@ breakpad {
     load(resolve_target)
     win32: QMAKE_CLEAN += $$replace(QMAKE_RESOLVED_TARGET, ...$, pdb)  # for the debug case it is hardcoded in qmake
 
-    DEBUGFILENAME = $$shell_quote($$native_path($$QMAKE_RESOLVED_TARGET))
-    PROJECTPATH = $$shell_quote($$native_path($$OUT_PWD))
+    DEBUGFILENAME = $$shell_quote($$shell_path($$QMAKE_RESOLVED_TARGET))
+    PROJECTPATH = $$shell_quote($$shell_path($$OUT_PWD))
 
     !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)
     QMAKE_POST_LINK = $$QMAKE_POST_LINK$$quote($${QT_BREAKPAD_ROOT_PATH}$${QMAKE_DIR_SEP}qtbreakpadsymbols $$DEBUGFILENAME $$PROJECTPATH)

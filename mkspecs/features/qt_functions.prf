@@ -137,12 +137,12 @@ defineTest(qtPrepareTool) {
             }
         }
     }
-    $$1 = $$native_path($$eval($$1))
+    $$1 = $$shell_path($$eval($$1))
 
     deps = $$resolve_depends(QT_TOOL.$${2}.depends, "QT.")
     !isEmpty(deps) {
         for(dep, deps): \
-            deppath += $$native_path($$eval(QT.$${dep}.libs))
+            deppath += $$shell_path($$eval(QT.$${dep}.libs))
         deppath = $$unique(deppath)
         equals(QMAKE_DIR_SEP, /) {
             equals(QMAKE_HOST.os, Windows): \

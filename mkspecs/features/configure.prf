@@ -44,7 +44,7 @@ defineTest(qtCompileTest) {
 
     test_dir = $$QMAKE_CONFIG_TESTS_DIR/$$1
     test_out_dir = $$shadowed($$test_dir)
-    test_cmd_base = "cd $$shell_quote($$native_path($$test_out_dir)) &&"
+    test_cmd_base = "cd $$system_quote($$system_path($$test_out_dir)) &&"
 
     # Disable qmake features which are typically counterproductive for tests
     qmake_configs = "\"CONFIG -= qt debug_and_release app_bundle lib_bundle\""
@@ -54,7 +54,7 @@ defineTest(qtCompileTest) {
 
     mkpath($$test_out_dir)|error("Aborting.")
 
-    qtRunLoggedCommand("$$test_cmd_base $$shell_quote($$native_path($$QMAKE_QMAKE)) $$qmake_configs $$shell_quote($$test_dir)") {
+    qtRunLoggedCommand("$$test_cmd_base $$system_quote($$system_path($$QMAKE_QMAKE)) $$qmake_configs $$shell_quote($$test_dir)") {
         qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE") {
             log("yes$$escape_expand(\\n)")
             msg = "test $$1 succeeded"

@@ -131,7 +131,8 @@ testReplace($$format_number(13, width=5 padsign zeropad), " 0013", "zero-padded 
 
 testReplace($$clean_path("c:$${DIR_SEPARATOR}crazy//path/../trolls"), "c:/crazy/trolls", "clean_path")
 
-testReplace($$native_path("/crazy/trolls"), "$${DIR_SEPARATOR}crazy$${DIR_SEPARATOR}trolls", "native_path")
+testReplace($$shell_path("/crazy/trolls"), "$${QMAKE_DIR_SEP}crazy$${QMAKE_DIR_SEP}trolls", "shell_path")
+testReplace($$system_path("/crazy/trolls"), "$${DIR_SEPARATOR}crazy$${DIR_SEPARATOR}trolls", "system_path")
 
 testReplace($$absolute_path("crazy/trolls"), "$$PWD/crazy/trolls", "absolute_path")
 testReplace($$absolute_path("crazy/trolls", "/fake/path"), "/fake/path/crazy/trolls", "absolute_path with base")
@@ -142,10 +143,17 @@ testReplace($$relative_path(""), "", "relative_path of empty")
 
 #this test is very rudimentary. the backend function is thoroughly tested in qt creator
 in = "some nasty\" path\\"
-win32: \
-    out = "\"some nasty\"\\^\"\" path\"\\"
+out_cmd = "\"some nasty\"\\^\"\" path\"\\"
+out_sh = "'some nasty\" path\\'"
+equals(QMAKE_HOST.os, Windows): \
+    out = $$out_cmd
 else: \
-    out = "'some nasty\" path\\'"
+    out = $$out_sh
+testReplace($$system_quote($$in), $$out, "system_quote")
+!equals(QMAKE_DIR_SEP, /): \
+    out = $$out_cmd
+else: \
+    out = $$out_sh
 testReplace($$shell_quote($$in), $$out, "shell_quote")
 
 testReplace($$reverse($$list(one two three)), three two one, "reverse")

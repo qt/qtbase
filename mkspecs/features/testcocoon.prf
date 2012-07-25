@@ -25,7 +25,7 @@ TESTCOCOON_COVERAGE_OPTIONS = \
 # is built directly in target.path and there is no need to move the csmes.
 !isEmpty(DESTDIR):contains(TEMPLATE, lib) {
     !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$escape_expand(\\n\\t)$$QMAKE_POST_LINK
-    QMAKE_POST_LINK = -$(MOVE) $${TARGET_BASENAME}.csmes $$native_path($${QMAKE_RESOLVED_TARGET}.csmes)$$QMAKE_POST_LINK
+    QMAKE_POST_LINK = -$(MOVE) $${TARGET_BASENAME}.csmes $$shell_path($${QMAKE_RESOLVED_TARGET}.csmes)$$QMAKE_POST_LINK
 }
 
 QMAKE_CLEAN +=  *.csexe *.csmes

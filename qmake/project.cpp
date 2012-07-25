@@ -82,8 +82,8 @@ enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST
                   E_FIND, E_SYSTEM, E_UNIQUE, E_REVERSE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_VAL_ESCAPE, E_REPLACE,
                   E_SIZE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS, E_ENUMERATE_VARS,
-                  E_SHADOWED, E_ABSOLUTE_PATH, E_RELATIVE_PATH, E_CLEAN_PATH, E_NATIVE_PATH,
-                  E_SHELL_QUOTE };
+                  E_SHADOWED, E_ABSOLUTE_PATH, E_RELATIVE_PATH, E_CLEAN_PATH,
+                  E_SYSTEM_PATH, E_SHELL_PATH, E_SYSTEM_QUOTE, E_SHELL_QUOTE };
 QHash<QString, ExpandFunc> qmake_expandFunctions()
 {
     static QHash<QString, ExpandFunc> *qmake_expand_functions = 0;
@@ -125,7 +125,9 @@ QHash<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("absolute_path", E_ABSOLUTE_PATH);
         qmake_expand_functions->insert("relative_path", E_RELATIVE_PATH);
         qmake_expand_functions->insert("clean_path", E_CLEAN_PATH);
-        qmake_expand_functions->insert("native_path", E_NATIVE_PATH);
+        qmake_expand_functions->insert("system_path", E_SYSTEM_PATH);
+        qmake_expand_functions->insert("shell_path", E_SHELL_PATH);
+        qmake_expand_functions->insert("system_quote", E_SYSTEM_QUOTE);
         qmake_expand_functions->insert("shell_quote", E_SHELL_QUOTE);
     }
     return *qmake_expand_functions;
@@ -1498,6 +1500,8 @@ QMakeProject::read(uchar cmd)
             doProjectInclude("spec_post", IncludeFlagFeature, vars);
             // The spec extends the feature search path, so invalidate the cache.
             invalidateFeatureRoots();
+            // The MinGW and x-build specs may change the separator; $$shell_{path,quote}() need it
+            Option::dir_sep = first(QLatin1String("QMAKE_DIR_SEP"));
 
             if (!conffile.isEmpty()) {
                 debug_msg(1, "Project config file: reading %s", conffile.toLatin1().constData());
@@ -1895,10 +1899,41 @@ subAll(QStringList *val, const QStringList &diffval)
 }
 
 inline static
-bool isSpecialChar(ushort c)
+bool hasSpecialChars(const QString &arg, const uchar (&iqm)[16])
+{
+    for (int x = arg.length() - 1; x >= 0; --x) {
+        ushort c = arg.unicode()[x].unicode();
+        if ((c < sizeof(iqm) * 8) && (iqm[c / 8] & (1 << (c & 7))))
+            return true;
+    }
+    return false;
+}
+
+static QString
+shellQuoteUnix(const QString &arg)
 {
     // Chars that should be quoted (TM). This includes:
-#ifdef Q_OS_WIN
+    static const uchar iqm[] = {
+        0xff, 0xff, 0xff, 0xff, 0xdf, 0x07, 0x00, 0xd8,
+        0x00, 0x00, 0x00, 0x38, 0x01, 0x00, 0x00, 0x78
+    }; // 0-32 \'"$`<>|;&(){}*?#!~[]
+
+    if (!arg.length())
+        return QString::fromLatin1("\"\"");
+
+    QString ret(arg);
+    if (hasSpecialChars(ret, iqm)) {
+        ret.replace(QLatin1Char('\''), QLatin1String("'\\''"));
+        ret.prepend(QLatin1Char('\''));
+        ret.append(QLatin1Char('\''));
+    }
+    return ret;
+}
+
+static QString
+shellQuoteWin(const QString &arg)
+{
+    // Chars that should be quoted (TM). This includes:
     // - control chars & space
     // - the shell meta chars "&()<>^|
     // - the potential separators ,;=
@@ -1906,34 +1941,12 @@ bool isSpecialChar(ushort c)
         0xff, 0xff, 0xff, 0xff, 0x45, 0x13, 0x00, 0x78,
         0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x10
     };
-#else
-    static const uchar iqm[] = {
-        0xff, 0xff, 0xff, 0xff, 0xdf, 0x07, 0x00, 0xd8,
-        0x00, 0x00, 0x00, 0x38, 0x01, 0x00, 0x00, 0x78
-    }; // 0-32 \'"$`<>|;&(){}*?#!~[]
-#endif
 
-    return (c < sizeof(iqm) * 8) && (iqm[c / 8] & (1 << (c & 7)));
-}
-
-inline static
-bool hasSpecialChars(const QString &arg)
-{
-    for (int x = arg.length() - 1; x >= 0; --x)
-        if (isSpecialChar(arg.unicode()[x].unicode()))
-            return true;
-    return false;
-}
-
-static QString
-shellQuote(const QString &arg)
-{
     if (!arg.length())
         return QString::fromLatin1("\"\"");
 
     QString ret(arg);
-    if (hasSpecialChars(ret)) {
-#ifdef Q_OS_WIN
+    if (hasSpecialChars(ret, iqm)) {
         // Quotes are escaped and their preceding backslashes are doubled.
         // It's impossible to escape anything inside a quoted string on cmd
         // level, so the outer quoting must be "suspended".
@@ -1946,11 +1959,6 @@ shellQuote(const QString &arg)
             --i;
         ret.insert(i, QLatin1Char('"'));
         ret.prepend(QLatin1Char('"'));
-#else // Q_OS_WIN
-        ret.replace(QLatin1Char('\''), QLatin1String("'\\''"));
-        ret.prepend(QLatin1Char('\''));
-        ret.append(QLatin1Char('\''));
-#endif // Q_OS_WIN
     }
     return ret;
 }
@@ -2738,19 +2746,39 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         else
             ret += QDir::cleanPath(args.at(0));
         break;
-    case E_NATIVE_PATH:
+    case E_SYSTEM_PATH:
         if (args.count() != 1)
-            fprintf(stderr, "%s:%d native_path(path) requires one argument.\n",
+            fprintf(stderr, "%s:%d system_path(path) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        else
+            ret += Option::fixPathToLocalOS(args.at(0), false);
+        break;
+    case E_SHELL_PATH:
+        if (args.count() != 1)
+            fprintf(stderr, "%s:%d shell_path(path) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         else
             ret += Option::fixPathToTargetOS(args.at(0), false);
+        break;
+    case E_SYSTEM_QUOTE:
+        if (args.count() != 1)
+            fprintf(stderr, "%s:%d system_quote(args) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        else
+#ifdef Q_OS_WIN
+            ret += shellQuoteWin(args.at(0));
+#else
+            ret += shellQuoteUnix(args.at(0));
+#endif
         break;
     case E_SHELL_QUOTE:
         if (args.count() != 1)
             fprintf(stderr, "%s:%d shell_quote(args) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
+        else if (Option::dir_sep.at(0) != QLatin1Char('/'))
+            ret += shellQuoteWin(args.at(0));
         else
-            ret += shellQuote(args.at(0));
+            ret += shellQuoteUnix(args.at(0));
         break;
     default: {
         fprintf(stderr, "%s:%d: Unknown replace function: %s\n",
