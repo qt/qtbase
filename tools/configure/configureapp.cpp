@@ -2202,7 +2202,7 @@ void Configure::autoDetection()
     if (dictionary["QT_ICONV"] == "auto")
         dictionary["QT_ICONV"] = checkAvailability("ICONV") ? "yes" : "no";
 
-    // Detection of iconv support
+    // Detection of cups support
     if (dictionary["QT_CUPS"] == "auto")
         dictionary["QT_CUPS"] = checkAvailability("CUPS") ? "yes" : "no";
 
