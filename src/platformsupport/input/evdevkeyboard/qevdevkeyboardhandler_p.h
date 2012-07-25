@@ -170,7 +170,8 @@ private slots:
 private:
     void unloadKeymap();
     bool loadKeymap(const QString &file);
-    void processKeyEvent(int unicode, int keycode, Qt::KeyboardModifiers modifiers, bool isPress, bool autoRepeat);
+    void processKeyEvent(int nativecode, int unicode, int qtcode,
+                         Qt::KeyboardModifiers modifiers, bool isPress, bool autoRepeat);
     void switchLed(int, bool);
 
     QString m_device;

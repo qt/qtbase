@@ -215,9 +215,12 @@ void QEvdevKeyboardHandler::readKeycode()
     }
 }
 
-void QEvdevKeyboardHandler::processKeyEvent(int unicode, int keycode, Qt::KeyboardModifiers modifiers, bool isPress, bool autoRepeat)
+void QEvdevKeyboardHandler::processKeyEvent(int nativecode, int unicode, int qtcode,
+                                            Qt::KeyboardModifiers modifiers, bool isPress, bool autoRepeat)
 {
-    QWindowSystemInterface::handleKeyEvent(0, ( isPress ? QEvent::KeyPress : QEvent::KeyRelease ), keycode, modifiers, QString( unicode ), autoRepeat );
+    QWindowSystemInterface::handleExtendedKeyEvent(0, (isPress ? QEvent::KeyPress : QEvent::KeyRelease),
+                                                   qtcode, modifiers, nativecode + 8, 0, int(modifiers),
+                                                   QString(unicode), autoRepeat);
 }
 
 QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint16 keycode, bool pressed, bool autorepeat)
@@ -396,7 +399,7 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
 #endif
 
             // send the result to the server
-            processKeyEvent(unicode, qtcode & ~modmask, Qt::KeyboardModifiers(qtcode & modmask), pressed, autorepeat);
+            processKeyEvent(keycode, unicode, qtcode & ~modmask, Qt::KeyboardModifiers(qtcode & modmask), pressed, autorepeat);
         }
     }
     return result;
