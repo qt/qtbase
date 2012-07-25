@@ -107,7 +107,9 @@ QPlatformOpenGLContext *QKmsIntegration::createPlatformOpenGLContext(QOpenGLCont
 
 QPlatformWindow *QKmsIntegration::createPlatformWindow(QWindow *window) const
 {
-    return new QKmsWindow(window);
+    QKmsWindow *w = new QKmsWindow(window);
+    w->requestActivateWindow();
+    return w;
 }
 
 QPlatformBackingStore *QKmsIntegration::createPlatformBackingStore(QWindow *window) const
