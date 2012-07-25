@@ -182,7 +182,7 @@ static void qt_message(QtMsgType msgType, const QMessageLogContext &context, con
 
     \sa qDebug()
 */
-void QMessageLogger::debug(const char *msg, ...)
+void QMessageLogger::debug(const char *msg, ...) const
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -197,7 +197,7 @@ void QMessageLogger::debug(const char *msg, ...)
 
     \sa qDebug(), QDebug
 */
-QDebug QMessageLogger::debug()
+QDebug QMessageLogger::debug() const
 {
     QDebug dbg = QDebug(QtDebugMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
@@ -212,7 +212,7 @@ QDebug QMessageLogger::debug()
 
     \sa QNoDebug, qDebug()
 */
-QNoDebug QMessageLogger::noDebug()
+QNoDebug QMessageLogger::noDebug() const
 {
     return QNoDebug();
 }
@@ -226,7 +226,7 @@ QNoDebug QMessageLogger::noDebug()
 
     \sa qWarning()
 */
-void QMessageLogger::warning(const char *msg, ...)
+void QMessageLogger::warning(const char *msg, ...) const
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -240,7 +240,7 @@ void QMessageLogger::warning(const char *msg, ...)
 
     \sa qWarning(), QDebug
 */
-QDebug QMessageLogger::warning()
+QDebug QMessageLogger::warning() const
 {
     QDebug dbg = QDebug(QtWarningMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
@@ -257,7 +257,7 @@ QDebug QMessageLogger::warning()
 
     \sa qCritical()
 */
-void QMessageLogger::critical(const char *msg, ...)
+void QMessageLogger::critical(const char *msg, ...) const
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -271,7 +271,7 @@ void QMessageLogger::critical(const char *msg, ...)
 
     \sa qCritical(), QDebug
 */
-QDebug QMessageLogger::critical()
+QDebug QMessageLogger::critical() const
 {
     QDebug dbg = QDebug(QtCriticalMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
@@ -287,7 +287,7 @@ QDebug QMessageLogger::critical()
 
     \sa qFatal()
 */
-void QMessageLogger::fatal(const char *msg, ...)  Q_DECL_NOTHROW
+void QMessageLogger::fatal(const char *msg, ...) const Q_DECL_NOTHROW
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list

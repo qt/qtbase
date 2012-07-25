@@ -93,22 +93,22 @@ public:
     Q_DECL_CONSTEXPR QMessageLogger(const char *file, int line, const char *function, const char *category)
         : context(file, line, function, category) {}
 
-    void debug(const char *msg, ...)
+    void debug(const char *msg, ...) const
 #if defined(Q_CC_GNU) && !defined(__INSURE__)
     __attribute__ ((format (printf, 2, 3)))
 #endif
     ;
-    void noDebug(const char *, ...)
+    void noDebug(const char *, ...) const
 #if defined(Q_CC_GNU) && !defined(__INSURE__)
     __attribute__ ((format (printf, 2, 3)))
 #endif
     {}
-    void warning(const char *msg, ...)
+    void warning(const char *msg, ...) const
 #if defined(Q_CC_GNU) && !defined(__INSURE__)
     __attribute__ ((format (printf, 2, 3)))
 #endif
     ;
-    void critical(const char *msg, ...)
+    void critical(const char *msg, ...) const
 #if defined(Q_CC_GNU) && !defined(__INSURE__)
     __attribute__ ((format (printf, 2, 3)))
 #endif
@@ -117,18 +117,18 @@ public:
 #ifndef Q_CC_MSVC
     Q_NORETURN
 #endif
-    void fatal(const char *msg, ...) Q_DECL_NOTHROW
+    void fatal(const char *msg, ...) const Q_DECL_NOTHROW
 #if defined(Q_CC_GNU) && !defined(__INSURE__)
     __attribute__ ((format (printf, 2, 3)))
 #endif
     ;
 
 #ifndef QT_NO_DEBUG_STREAM
-    QDebug debug();
-    QDebug warning();
-    QDebug critical();
+    QDebug debug() const;
+    QDebug warning() const;
+    QDebug critical() const;
 
-    QNoDebug noDebug();
+    QNoDebug noDebug() const;
 #endif // QT_NO_DEBUG_STREAM
 
 private:
