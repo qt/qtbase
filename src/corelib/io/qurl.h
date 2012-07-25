@@ -337,7 +337,7 @@ Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOpt
 { return QUrl::FormattingOptions(f1) | f2; }
 Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption f1, QUrl::FormattingOptions f2)
 { return f2 | f1; }
-inline QIncompatibleFlag operator|(QUrl::UrlFormattingOption f1, int f2)
+Q_DECL_CONSTEXPR inline QIncompatibleFlag operator|(QUrl::UrlFormattingOption f1, int f2)
 { return QIncompatibleFlag(int(f1) | f2); }
 
 // add operators for OR'ing the two types of flags
