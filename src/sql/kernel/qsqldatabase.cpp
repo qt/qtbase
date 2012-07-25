@@ -433,7 +433,7 @@ void QSqlDatabasePrivate::disable()
     transactions. \note When using transactions, you must start the
     transaction before you create your query.
 
-    If an error occurrs, lastError() will return information about it.
+    If an error occurs, lastError() will return information about it.
 
     Get the names of the available SQL drivers with drivers().  Check
     for the presence of a particular driver with isDriverAvailable().

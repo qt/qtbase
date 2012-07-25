@@ -688,7 +688,7 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     defined \l ButtonRole.
 
     \value Ok An "OK" button defined with the \l AcceptRole.
-    \value Open A "Open" button defined with the \l AcceptRole.
+    \value Open An "Open" button defined with the \l AcceptRole.
     \value Save A "Save" button defined with the \l AcceptRole.
     \value Cancel A "Cancel" button defined with the \l RejectRole.
     \value Close A "Close" button defined with the \l RejectRole.

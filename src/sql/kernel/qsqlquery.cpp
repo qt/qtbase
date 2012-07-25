@@ -769,7 +769,7 @@ bool QSqlQuery::isValid() const
   Returns true if the query is \e{active}. An active QSqlQuery is one
   that has been \l{QSqlQuery::exec()} {exec()'d} successfully but not
   yet finished with.  When you are finished with an active query, you
-  can make make the query inactive by calling finish() or clear(), or
+  can make the query inactive by calling finish() or clear(), or
   you can delete the QSqlQuery instance.
 
   \note Of particular interest is an active query that is a \c{SELECT}
