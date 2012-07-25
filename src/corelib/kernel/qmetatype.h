@@ -252,7 +252,8 @@ public:
         IsEnumeration = 0x10,
         SharedPointerToQObject = 0x20,
         WeakPointerToQObject = 0x40,
-        TrackingPointerToQObject = 0x80
+        TrackingPointerToQObject = 0x80,
+        WasDeclaredAsMetaType = 0x100
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
@@ -563,12 +564,19 @@ namespace QtPrivate {
                      | (Q_IS_ENUM(T) ? QMetaType::IsEnumeration : 0)
              };
     };
+
+    template<typename T, bool defined>
+    struct MetaTypeDefinedHelper
+    {
+        enum DefinedType { Defined = defined };
+    };
 }
 
 template <typename T>
 int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName
 #ifndef qdoc
     , T * dummy = 0
+    , typename QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::DefinedType defined = QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::Defined
 #endif
 )
 {
@@ -580,6 +588,10 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
         return QMetaType::registerNormalizedTypedef(normalizedTypeName, typedefOf);
 
     QMetaType::TypeFlags flags(QtPrivate::QMetaTypeTypeFlags<T>::Flags);
+
+    if (defined)
+        flags |= QMetaType::WasDeclaredAsMetaType;
+
     return QMetaType::registerNormalizedType(normalizedTypeName,
                                    QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Delete,
                                    QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Create,
@@ -594,6 +606,7 @@ template <typename T>
 int qRegisterMetaType(const char *typeName
 #ifndef qdoc
     , T * dummy = 0
+    , typename QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::DefinedType defined = QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::Defined
 #endif
 )
 {
@@ -602,7 +615,7 @@ int qRegisterMetaType(const char *typeName
 #else
     QT_PREPEND_NAMESPACE(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
 #endif
-    return qRegisterNormalizedMetaType<T>(normalizedTypeName, dummy);
+    return qRegisterNormalizedMetaType<T>(normalizedTypeName, dummy, defined);
 }
 
 #ifndef QT_NO_DATASTREAM
