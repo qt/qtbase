@@ -1439,20 +1439,14 @@ void tst_QCompleter::task247560_keyboardNavigation()
 void tst_QCompleter::QTBUG_14292_filesystem()
 {
     FileSystem fs;
-    QDir tmpDir = QDir::currentPath();
 
-    qsrand(QTime::currentTime().msec());
-    QString d = "tst_QCompleter_" + QString::number(qrand());
-    QVERIFY(fs.createDirectory(tmpDir.filePath(d)));
-
-    QVERIFY(tmpDir.cd(d));
-    QVERIFY(fs.createDirectory(tmpDir.filePath("hello")));
-    QVERIFY(fs.createDirectory(tmpDir.filePath("holla")));
+    QVERIFY(fs.createDirectory(QStringLiteral("hello")));
+    QVERIFY(fs.createDirectory(QStringLiteral("holla")));
 
     QLineEdit edit;
     QCompleter comp;
     QFileSystemModel model;
-    model.setRootPath(tmpDir.path());
+    model.setRootPath(fs.path());
     comp.setModel(&model);
     edit.setCompleter(&comp);
 
@@ -1464,7 +1458,7 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QTRY_VERIFY(edit.hasFocus());
 
     QVERIFY(!comp.popup()->isVisible());
-    edit.setText(tmpDir.path());
+    edit.setText(fs.path());
     QTest::keyClick(&edit, '/');
     QTRY_VERIFY(comp.popup()->isVisible());
     QCOMPARE(comp.popup()->model()->rowCount(), 2);
@@ -1475,12 +1469,12 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QCOMPARE(comp.popup()->model()->rowCount(), 1);
     QTest::keyClick(&edit, 'r');
     QTRY_VERIFY(!comp.popup()->isVisible());
-    QVERIFY(fs.createDirectory(tmpDir.filePath("hero")));
+    QVERIFY(fs.createDirectory(QStringLiteral("hero")));
     QTRY_VERIFY(comp.popup()->isVisible());
     QCOMPARE(comp.popup()->model()->rowCount(), 1);
     QTest::keyClick(comp.popup(), Qt::Key_Escape);
     QTRY_VERIFY(!comp.popup()->isVisible());
-    QVERIFY(fs.createDirectory(tmpDir.filePath("nothingThere")));
+    QVERIFY(fs.createDirectory(QStringLiteral("nothingThere")));
     //there is no reason creating a file should open a popup, it did in Qt 4.7.0
     QTest::qWait(60);
     QVERIFY(!comp.popup()->isVisible());
@@ -1497,7 +1491,7 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QVERIFY(QTest::qWaitForWindowActive(&w));
     QVERIFY(!edit.hasFocus() && !comp.popup()->hasFocus());
 
-    QVERIFY(fs.createDirectory(tmpDir.filePath("hemo")));
+    QVERIFY(fs.createDirectory(QStringLiteral("hemo")));
     //there is no reason creating a file should open a popup, it did in Qt 4.7.0
     QTest::qWait(60);
     QVERIFY(!comp.popup()->isVisible());

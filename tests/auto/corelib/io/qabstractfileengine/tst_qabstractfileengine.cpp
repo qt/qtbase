@@ -878,11 +878,12 @@ void tst_QAbstractFileEngine::mounting()
     FileEngineHandler handler;
 
     QFETCH(QString, fileName);
+    const QString absName = fs.absoluteFilePath(fileName);
 
-    QVERIFY(QFileInfo(fileName).isDir());
-    QDir dir(fileName);
+    QVERIFY(QFileInfo(absName).isDir());
+    QDir dir(absName);
     QCOMPARE(dir.entryList(), (QStringList() << "bar" << "foo"));
-    QDir dir2;
+    QDir dir2(fs.path());
     bool found = false;
     foreach (QFileInfo info, dir2.entryInfoList()) {
         if (info.fileName() == QLatin1String("test.tar")) {

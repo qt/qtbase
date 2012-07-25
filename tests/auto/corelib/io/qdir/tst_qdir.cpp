@@ -1540,25 +1540,26 @@ void tst_QDir::updateFileLists()
     //  Test setup
 
     FileSystem fs;
+    const QString dirName = QStringLiteral("update-file-lists");
 
-    QVERIFY( fs.createDirectory("update-file-lists") );
-    QVERIFY( fs.createFile("update-file-lists/file1.txt") );
-    QVERIFY( fs.createFile("update-file-lists/file2.doc") );
+    QVERIFY( fs.createDirectory(dirName));
+    QVERIFY( fs.createFile(dirName + QStringLiteral("/file1.txt")) );
+    QVERIFY( fs.createFile(dirName + QStringLiteral("/file2.doc")) );
 
-    QVERIFY( fs.createDirectory("update-file-lists/sub-dir1") );
-    QVERIFY( fs.createFile("update-file-lists/sub-dir1/file3.txt") );
-    QVERIFY( fs.createFile("update-file-lists/sub-dir1/file4.doc") );
-    QVERIFY( fs.createFile("update-file-lists/sub-dir1/file5.txt") );
+    QVERIFY( fs.createDirectory(dirName + QStringLiteral("/sub-dir1")) );
+    QVERIFY( fs.createFile(dirName + QStringLiteral("/sub-dir1/file3.txt")) );
+    QVERIFY( fs.createFile(dirName + QStringLiteral("/sub-dir1/file4.doc")) );
+    QVERIFY( fs.createFile(dirName + QStringLiteral("/sub-dir1/file5.txt")) );
 
-    QVERIFY( fs.createDirectory("update-file-lists/sub-dir2") );
-    QVERIFY( fs.createFile("update-file-lists/sub-dir2/file6.txt") );
-    QVERIFY( fs.createFile("update-file-lists/sub-dir2/file7.txt") );
-    QVERIFY( fs.createFile("update-file-lists/sub-dir2/file8.doc") );
-    QVERIFY( fs.createFile("update-file-lists/sub-dir2/file9.doc") );
+    QVERIFY( fs.createDirectory(dirName + QStringLiteral("/sub-dir2")) );
+    QVERIFY( fs.createFile(dirName + QStringLiteral("/sub-dir2/file6.txt")) );
+    QVERIFY( fs.createFile(dirName + QStringLiteral("/sub-dir2/file7.txt")) );
+    QVERIFY( fs.createFile(dirName + QStringLiteral("/sub-dir2/file8.doc")) );
+    QVERIFY( fs.createFile(dirName + QStringLiteral("/sub-dir2/file9.doc")) );
 
     //  Actual test
 
-    QDir dir("update-file-lists");
+    QDir dir(fs.absoluteFilePath(dirName));
 
 #if defined(Q_OS_WINCE)
     //no . and .. on these OS.
@@ -1577,7 +1578,7 @@ void tst_QDir::updateFileLists()
     QCOMPARE(dir.count(), uint(4));
     QCOMPARE(dir.entryInfoList().size(), 4);
 
-    dir.setPath("update-file-lists/sub-dir1");
+    dir.setPath(fs.absoluteFilePath(dirName + QStringLiteral("/sub-dir1")));
 
     QCOMPARE(dir.entryInfoList().size(), 3);
     QCOMPARE(dir.count(), uint(3));
@@ -1589,7 +1590,7 @@ void tst_QDir::updateFileLists()
     QCOMPARE(dir.entryList().size(), 2);
     QCOMPARE(dir.count(), uint(2));
 
-    dir.setPath("update-file-lists");
+    dir.setPath(fs.absoluteFilePath(dirName));
     dir = QDir(dir.path(),
             "*.txt",
             QDir::Name | QDir::DirsLast,
@@ -1608,7 +1609,7 @@ void tst_QDir::updateFileLists()
     QCOMPARE(dir.entryList(), QStringList() << "sub-dir1" << "sub-dir2" << "file1.txt");
 
     {
-        QVERIFY( fs.createFile("update-file-lists/extra-file.txt") );
+        QVERIFY( fs.createFile(dirName + QStringLiteral("/extra-file.txt")) );
 
         QDir dir2(dir);
 

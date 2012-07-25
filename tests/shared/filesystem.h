@@ -38,13 +38,14 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-// Helper functions for creating file-system hierarchies and cleaning up.
 
 #ifndef QT_TESTS_SHARED_FILESYSTEM_H_INCLUDED
 #define QT_TESTS_SHARED_FILESYSTEM_H_INCLUDED
 
 #include <QString>
 #include <QStringList>
+#include <QTemporaryDir>
+#include <QScopedPointer>
 #include <QDir>
 #include <QFile>
 
@@ -60,54 +61,37 @@
 #endif
 #endif
 
-struct FileSystem
+// QTemporaryDir-based helper class for creating file-system hierarchies and cleaning up.
+class FileSystem
 {
-    ~FileSystem()
-    {
-        Q_FOREACH(QString fileName, createdFiles)
-            QFile::remove(fileName);
+    Q_DISABLE_COPY(FileSystem)
+public:
+    FileSystem() : m_temporaryDir(FileSystem::tempFilePattern()) {}
 
-        Q_FOREACH(QString dirName, createdDirectories)
-            currentDir.rmdir(dirName);
-    }
+    QString path() const { return m_temporaryDir.path(); }
+    QString absoluteFilePath(const QString &fileName) const { return path() + QLatin1Char('/') + fileName; }
 
-    bool createDirectory(const QString &dirName)
+    bool createDirectory(const QString &relativeDirName)
     {
-        if (currentDir.mkdir(dirName)) {
-            createdDirectories.prepend(dirName);
-            return true;
+        if (m_temporaryDir.isValid()) {
+            QDir dir(m_temporaryDir.path());
+            return dir.mkpath(relativeDirName);
         }
         return false;
     }
 
-    bool createFile(const QString &fileName)
+    bool createFile(const QString &relativeFileName)
     {
-        QFile file(fileName);
-        if (file.open(QIODevice::WriteOnly)) {
-            createdFiles << fileName;
-            return true;
-        }
-        return false;
+        QScopedPointer<QFile> file(openFileForWrite(relativeFileName));
+        return !file.isNull();
     }
 
-    qint64 createFileWithContent(const QString &fileName)
+    qint64 createFileWithContent(const QString &relativeFileName)
     {
-        QFile file(fileName);
-        if (file.open(QIODevice::WriteOnly)) {
-            createdFiles << fileName;
-            return file.write(fileName.toUtf8());
-        }
-        return -1;
+        QScopedPointer<QFile> file(openFileForWrite(relativeFileName));
+        return file.isNull() ? qint64(-1) : file->write(relativeFileName.toUtf8());
     }
 
-    bool createLink(const QString &destination, const QString &linkName)
-    {
-        if (QFile::link(destination, linkName)) {
-            createdFiles << linkName;
-            return true;
-        }
-        return false;
-    }
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     static void createNtfsJunction(QString target, QString linkName)
     {
@@ -163,10 +147,30 @@ struct FileSystem
 #endif
 
 private:
-    QDir currentDir;
+    static QString tempFilePattern()
+    {
+        QString result = QDir::tempPath();
+        if (!result.endsWith(QLatin1Char('/')))
+            result.append(QLatin1Char('/'));
+        result += QStringLiteral("qt-test-filesystem-");
+        result += QCoreApplication::applicationName();
+        result += QStringLiteral("-XXXXXX");
+        return result;
+    }
 
-    QStringList createdDirectories;
-    QStringList createdFiles;
+    QFile *openFileForWrite(const QString &fileName) const
+    {
+        if (m_temporaryDir.isValid()) {
+            const QString absName = absoluteFilePath(fileName);
+            QScopedPointer<QFile> file(new QFile(absName));
+            if (file->open(QIODevice::WriteOnly))
+                return file.take();
+            qWarning("Cannot open '%s' for writing: %s", qPrintable(absName), qPrintable(file->errorString()));
+        }
+        return 0;
+    }
+
+    QTemporaryDir m_temporaryDir;
 };
 
 #endif // include guard
