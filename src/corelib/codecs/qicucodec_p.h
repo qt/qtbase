@@ -67,6 +67,8 @@ public:
     static QList<QByteArray> availableCodecs();
     static QList<int> availableMibs();
 
+    static QTextCodec *defaultCodec();
+
     static QTextCodec *codecForName(const char *name);
     static QTextCodec *codecForMib(int mib);
 

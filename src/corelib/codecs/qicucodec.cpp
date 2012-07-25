@@ -372,7 +372,6 @@ QList<QByteArray> QIcuCodec::availableCodecs()
 
     // handled by Qt and not in ICU:
     codecs += "TSCII";
-    codecs += "System";
 
     return codecs;
 }
@@ -387,6 +386,21 @@ QList<int> QIcuCodec::availableMibs()
     mibs += 2107; // TSCII
 
     return mibs;
+}
+
+QTextCodec *QIcuCodec::defaultCodec()
+{
+    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    if (!globalData)
+        return 0;
+    QTextCodec *c = globalData->codecForLocale.loadAcquire();
+    if (c)
+        return c;
+
+    const char *name = ucnv_getDefaultName();
+    c = codecForName(name);
+    globalData->codecForLocale.storeRelease(c);
+    return c;
 }
 
 static inline bool nameMatch(const QByteArray &a, const char *b)

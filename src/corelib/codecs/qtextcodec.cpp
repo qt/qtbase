@@ -54,15 +54,6 @@
 #endif
 #include "private/qcoreglobaldata_p.h"
 
-#if !defined(QT_BOOTSTRAPPED)
-#if !defined(QT_NO_ICONV)
-#  include "qiconvcodec_p.h"
-#endif
-#ifdef Q_OS_WIN
-#  include "qwindowscodec_p.h"
-#endif
-#endif
-
 #include "qutfcodec_p.h"
 #include "qlatincodec_p.h"
 
@@ -72,6 +63,12 @@
 #if defined(QT_USE_ICU)
 #include "qicucodec_p.h"
 #else
+#if !defined(QT_NO_ICONV)
+#  include "qiconvcodec_p.h"
+#endif
+#ifdef Q_OS_WIN
+#  include "qwindowscodec_p.h"
+#endif
 #  include "qsimplecodec_p.h"
 #if !defined(QT_NO_BIG_CODECS)
 #  ifndef Q_OS_INTEGRITY
@@ -173,10 +170,12 @@ static QTextCodec *setupLocaleMapper()
     QCoreApplicationPrivate::initLocale();
 #endif
 
-#if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
-    locale = QTextCodec::codecForName("System");
-#elif defined(Q_OS_MAC) || defined(Q_OS_IOS) || defined(Q_OS_LINUX_ANDROID) || defined(Q_OS_QNX)
+#if defined(Q_OS_MAC) || defined(Q_OS_IOS) || defined(Q_OS_LINUX_ANDROID) || defined(Q_OS_QNX)
     locale = QTextCodec::codecForName("UTF-8");
+#elif defined(QT_USE_ICU)
+    locale = QIcuCodec::defaultCodec();
+#elif defined(Q_OS_WIN) || defined(Q_OS_WINCE)
+    locale = QTextCodec::codecForName("System");
 #else
 
     // First try getting the codecs name from nl_langinfo and see
@@ -287,13 +286,13 @@ static void setup()
     (void)new QBig5Codec;
     (void)new QBig5hkscsCodec;
 #  endif // !QT_NO_BIG_CODECS && !Q_OS_INTEGRITY
-#endif // QT_USE_ICU
 #if !defined(QT_NO_ICONV)
     (void) new QIconvCodec;
 #endif
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     (void) new QWindowsLocalCodec;
 #endif // Q_OS_WIN32
+#endif // QT_USE_ICU
 #endif // !QT_NO_CODECS && !QT_BOOTSTRAPPED
 
     (void)new QUtf16Codec;
