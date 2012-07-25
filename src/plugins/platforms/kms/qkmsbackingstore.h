@@ -69,6 +69,7 @@ private:
     QImage m_image;
     uint m_texture;
     QOpenGLShaderProgram *m_program;
+    QRegion m_dirty;
 };
 
 QT_END_NAMESPACE
