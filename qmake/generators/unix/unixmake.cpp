@@ -474,14 +474,11 @@ UnixMakefileGenerator::findLibraries()
     QString libArg = project->first("QMAKE_L_FLAG");
     if (libArg == "-L")
         libArg.clear();
-    QList<QMakeLocalFileName> libdirs, frameworkdirs;
-    frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
-    frameworkdirs.append(QMakeLocalFileName("/Library/Frameworks"));
+    QList<QMakeLocalFileName> libdirs;
     const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
     for(int i = 0; !lflags[i].isNull(); i++) {
         QStringList &l = project->values(lflags[i]);
         for (QStringList::Iterator it = l.begin(); it != l.end(); ) {
-            bool do_suffix = true;
             QString stub, dir, extn, opt = (*it).trimmed();
             if(opt.startsWith("-")) {
                 if(opt.startsWith("-L")) {
@@ -500,19 +497,10 @@ UnixMakefileGenerator::findLibraries()
                     } else {
                         stub = opt.mid(2);
                     }
-                } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-F")) {
-                    frameworkdirs.append(QMakeLocalFileName(opt.right(opt.length()-2)));
                 } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-framework")) {
-                    if(opt.length() > 11) {
-                        opt = opt.mid(11);
-                    } else {
+                    if (opt.length() == 10)
                         ++it;
-                        opt = (*it);
-                    }
-                    do_suffix = false;
-                    extn = "";
-                    dir = "/System/Library/Frameworks/" + opt + ".framework/";
-                    stub = opt;
+                    // Skip
                 }
             } else {
                 extn = dir = "";
@@ -529,7 +517,7 @@ UnixMakefileGenerator::findLibraries()
                 }
             }
             if(!stub.isEmpty()) {
-                if(do_suffix && !project->isEmpty("QMAKE_" + stub.toUpper() + "_SUFFIX"))
+                if (!project->isEmpty("QMAKE_" + stub.toUpper() + "_SUFFIX"))
                     stub += project->first("QMAKE_" + stub.toUpper() + "_SUFFIX");
                 bool found = false;
                 QStringList extens;
