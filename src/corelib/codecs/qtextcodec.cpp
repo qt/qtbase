@@ -370,8 +370,6 @@ QTextCodec::ConverterState::~ConverterState()
     \li JIS X 0208
     \li KOI8-R
     \li KOI8-U
-    \li MuleLao-1
-    \li ROMAN8
     \li \l{Shift-JIS Text Codec}{Shift-JIS}
     \li TIS-620
     \li \l{TSCII Text Codec}{TSCII}
@@ -383,8 +381,10 @@ QTextCodec::ConverterState::~ConverterState()
     \li UTF-32BE
     \li UTF-32LE
     \li Windows-1250 to 1258
-    \li WINSAMI2
     \endlist
+
+    If Qt is compiled with ICU support enabled, most codecs supported by
+    ICU will also be available to the application.
 
     QTextCodecs can be used as follows to convert some locally encoded
     string to Unicode. Suppose you have some string encoded in Russian
