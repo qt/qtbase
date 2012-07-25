@@ -560,9 +560,7 @@ void tst_QMenu::tearOff()
     QVERIFY(!menu->isTearOffMenuVisible());
 
     QTest::mouseClick(menu, Qt::LeftButton, 0, QPoint(3, 3), 10);
-    QTest::qWait(100);
-
-    QVERIFY(menu->isTearOffMenuVisible());
+    QTRY_VERIFY(menu->isTearOffMenuVisible());
     QPointer<QMenu> torn = 0;
     foreach (QWidget *w, QApplication::allWidgets()) {
         if (w->inherits("QTornOffMenu")) {
