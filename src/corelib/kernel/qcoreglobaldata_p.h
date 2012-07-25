@@ -73,7 +73,7 @@ struct QCoreGlobalData {
     QReadWriteLock dirSearchPathsLock;
 
     QList<QTextCodec*> allCodecs;
-    QTextCodec *codecForLocale;
+    QAtomicPointer<QTextCodec> codecForLocale;
     QTextCodecCache codecCache;
 
     static QCoreGlobalData *instance();
