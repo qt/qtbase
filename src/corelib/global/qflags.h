@@ -43,6 +43,7 @@
 #define QFLAGS_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qtypeinfo.h>
 
 QT_BEGIN_HEADER
 
@@ -55,6 +56,7 @@ public:
     Q_DECL_CONSTEXPR inline QFlag(int i);
     Q_DECL_CONSTEXPR inline operator int() const { return i; }
 };
+Q_DECLARE_TYPEINFO(QFlag, Q_PRIMITIVE_TYPE);
 
 Q_DECL_CONSTEXPR inline QFlag::QFlag(int ai) : i(ai) {}
 
@@ -65,6 +67,7 @@ public:
     Q_DECL_CONSTEXPR inline explicit QIncompatibleFlag(int i);
     Q_DECL_CONSTEXPR inline operator int() const { return i; }
 };
+Q_DECLARE_TYPEINFO(QIncompatibleFlag, Q_PRIMITIVE_TYPE);
 
 Q_DECL_CONSTEXPR inline QIncompatibleFlag::QIncompatibleFlag(int ai) : i(ai) {}
 
