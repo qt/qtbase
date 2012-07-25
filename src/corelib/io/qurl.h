@@ -113,6 +113,9 @@ public:
     inline bool testFlag(E2 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
 };
 
+template<typename E1, typename E2>
+class QTypeInfo<QUrlTwoFlags<E1, E2> > : public QTypeInfoMerger<QUrlTwoFlags<E1, E2>, E1, E2> {};
+
 class Q_CORE_EXPORT QUrl
 {
 public:
