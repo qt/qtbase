@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include "qisciicodec_p.h"
+#include "qtextcodec_p.h"
 #include "qlist.h"
 
 #ifndef QT_NO_BIG_CODECS
@@ -59,16 +60,25 @@ struct Codecs {
 };
 
 static const Codecs codecs [] = {
-    { "Iscii-Dev", 0x900 },
-    { "Iscii-Bng", 0x980 },
-    { "Iscii-Pnj", 0xa00 },
-    { "Iscii-Gjr", 0xa80 },
-    { "Iscii-Ori", 0xb00 },
-    { "Iscii-Tml", 0xb80 },
-    { "Iscii-Tlg", 0xc00 },
-    { "Iscii-Knd", 0xc80 },
-    { "Iscii-Mlm", 0xd00 }
+    { "iscii-dev", 0x900 },
+    { "iscii-bng", 0x980 },
+    { "iscii-pnj", 0xa00 },
+    { "iscii-gjr", 0xa80 },
+    { "iscii-ori", 0xb00 },
+    { "iscii-tml", 0xb80 },
+    { "iscii-tlg", 0xc00 },
+    { "iscii-knd", 0xc80 },
+    { "iscii-mlm", 0xd00 }
 };
+
+QTextCodec *QIsciiCodec::create(const char *name)
+{
+    for (int i = 0; i < 9; ++i) {
+        if (!qstricmp(name, codecs[i].name))
+            return new QIsciiCodec(i);
+    }
+    return 0;
+}
 
 QIsciiCodec::~QIsciiCodec()
 {

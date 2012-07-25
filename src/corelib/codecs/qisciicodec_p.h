@@ -64,6 +64,8 @@ public:
     explicit QIsciiCodec(int i) : idx(i) {}
     ~QIsciiCodec();
 
+    static QTextCodec *create(const char *name);
+
     QByteArray name() const;
     int mibEnum() const;
 
