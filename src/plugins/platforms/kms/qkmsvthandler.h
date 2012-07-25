@@ -39,51 +39,24 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_KMS_H
-#define QPLATFORMINTEGRATION_KMS_H
+#ifndef QKMSVTHANDLER_H
+#define QKMSVTHANDLER_H
 
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformnativeinterface.h>
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 
-class QKmsScreen;
-class QKmsDevice;
-class QKmsUdevListener;
-class QKmsUdevDRMHandler;
-class QKmsVTHandler;
-
-class QKmsIntegration : public QPlatformIntegration
+class QKmsVTHandler : public QObject
 {
+    Q_OBJECT
+
 public:
-    QKmsIntegration();
-    ~QKmsIntegration();
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-
-    QPlatformNativeInterface *nativeInterface() const;
-
-    void addScreen(QKmsScreen *screen);
-    QObject *createDevice(const char *);
+    QKmsVTHandler(QObject *parent = 0);
+    ~QKmsVTHandler();
 
 private:
-    QStringList findDrmDevices();
-
-    QList<QPlatformScreen *> m_screens;
-    QList<QKmsDevice *> m_devices;
-    QPlatformFontDatabase *m_fontDatabase;
-    QAbstractEventDispatcher *m_eventDispatcher;
-    QPlatformNativeInterface *m_nativeInterface;
-    QKmsUdevListener *m_udevListener;
-    QKmsUdevDRMHandler *m_drmHandler;
-    QKmsVTHandler *m_vtHandler;
+    int m_tty;
+    int m_oldKbdMode;
 };
 
 QT_END_NAMESPACE

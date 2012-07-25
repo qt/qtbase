@@ -48,6 +48,7 @@
 #include "qkmsnativeinterface.h"
 #include "qkmsudevlistener.h"
 #include "qkmsudevdrmhandler.h"
+#include "qkmsvthandler.h"
 
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
@@ -66,6 +67,7 @@ QKmsIntegration::QKmsIntegration()
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
     setenv("EGL_PLATFORM", "drm",1);
+    m_vtHandler = new QKmsVTHandler;
     m_drmHandler = new QKmsUdevDRMHandler(this);
     m_udevListener->addHandler(m_drmHandler);
 }
@@ -80,6 +82,7 @@ QKmsIntegration::~QKmsIntegration()
     }
     delete m_fontDatabase;
     delete m_udevListener;
+    delete m_vtHandler;
 }
 
 QObject *QKmsIntegration::createDevice(const char *path)

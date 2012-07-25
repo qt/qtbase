@@ -39,53 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_KMS_H
-#define QPLATFORMINTEGRATION_KMS_H
+#include <qkmsvthandler.h>
+#include <sys/ioctl.h>
+#include <linux/vt.h>
+#include <linux/kd.h>
+#include <QDebug>
 
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformnativeinterface.h>
+#ifdef K_OFF
+#define KBD_OFF_MODE K_OFF
+#else
+#define KBD_OFF_MODE K_RAW
+#endif
 
 QT_BEGIN_NAMESPACE
 
-class QKmsScreen;
-class QKmsDevice;
-class QKmsUdevListener;
-class QKmsUdevDRMHandler;
-class QKmsVTHandler;
-
-class QKmsIntegration : public QPlatformIntegration
+QKmsVTHandler::QKmsVTHandler(QObject *parent)
+    : QObject(parent), m_tty(-1)
 {
-public:
-    QKmsIntegration();
-    ~QKmsIntegration();
+    if (!isatty(0))
+        return;
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+    m_tty = 0;
 
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    ioctl(m_tty, KDGKBMODE, &m_oldKbdMode);
+    if (!qgetenv("QT_KMS_TTYKBD").toInt())
+        ioctl(m_tty, KDSKBMODE, KBD_OFF_MODE);
+}
 
-    QPlatformFontDatabase *fontDatabase() const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+QKmsVTHandler::~QKmsVTHandler()
+{
+    if (m_tty == -1)
+        return;
 
-    QPlatformNativeInterface *nativeInterface() const;
-
-    void addScreen(QKmsScreen *screen);
-    QObject *createDevice(const char *);
-
-private:
-    QStringList findDrmDevices();
-
-    QList<QPlatformScreen *> m_screens;
-    QList<QKmsDevice *> m_devices;
-    QPlatformFontDatabase *m_fontDatabase;
-    QAbstractEventDispatcher *m_eventDispatcher;
-    QPlatformNativeInterface *m_nativeInterface;
-    QKmsUdevListener *m_udevListener;
-    QKmsUdevDRMHandler *m_drmHandler;
-    QKmsVTHandler *m_vtHandler;
-};
+    ioctl(m_tty, KDSKBMODE, m_oldKbdMode);
+}
 
 QT_END_NAMESPACE
-
-#endif
