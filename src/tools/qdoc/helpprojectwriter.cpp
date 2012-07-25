@@ -77,6 +77,7 @@ HelpProjectWriter::HelpProjectWriter(const Config &config,
         project.indexTitle = config.getString(prefix + "indexTitle");
         project.indexRoot = config.getString(prefix + "indexRoot");
         project.filterAttributes = config.getStringList(prefix + "filterAttributes").toSet();
+        project.includeIndexNodes = config.getBool(prefix + "includeIndexNodes");
         QSet<QString> customFilterNames = config.subVars(prefix + "customFilters");
         foreach (const QString &filterName, customFilterNames) {
             QString name = config.getString(prefix + "customFilters" + Config::dot + filterName + Config::dot + "name");
@@ -222,7 +223,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                                         QXmlStreamWriter & /* writer */,
                                         const Node *node)
 {
-    if (!node->url().isEmpty())
+    if (!node->url().isEmpty() && !(project.includeIndexNodes && !node->url().startsWith("http")))
         return false;
 
     if (node->access() == Node::Private || node->status() == Node::Internal)

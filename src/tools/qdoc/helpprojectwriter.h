@@ -81,6 +81,7 @@ struct HelpProject
     QSet<QString> excluded;
     QMap<QString, SubProject> subprojects;
     QHash<const Node *, QSet<Node::Status> > memberStatus;
+    bool includeIndexNodes;
 };
 
 class HelpProjectWriter
