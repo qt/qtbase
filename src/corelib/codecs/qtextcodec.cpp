@@ -95,19 +95,19 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive));
+QMutex *qTextCodecsMutex() { return textCodecsMutex(); }
+
+#if !defined(QT_USE_ICU)
 static char qtolower(register char c)
 { if (c >= 'A' && c <= 'Z') return c + 0x20; return c; }
 static bool qisalnum(register char c)
 { return (c >= '0' && c <= '9') || ((c | 0x20) >= 'a' && (c | 0x20) <= 'z'); }
 
-static bool nameMatch(const QByteArray &name, const QByteArray &test)
+bool qTextCodecNameMatch(const char *n, const char *h)
 {
-    // if they're the same, return a perfect score
-    if (qstricmp(name.constData(), test.constData()) == 0)
+    if (qstricmp(n, h) == 0)
         return true;
-
-    const char *n = name.constData();
-    const char *h = test.constData();
 
     // if the letters and numbers are the same, we have a match
     while (*n != '\0') {
@@ -130,6 +130,7 @@ static bool nameMatch(const QByteArray &name, const QByteArray &test)
     return (*h == '\0');
 }
 
+
 #if !defined(Q_OS_WIN32) && !defined(Q_OS_WINCE)
 static QTextCodec *checkForCodec(const QByteArray &name) {
     QTextCodec *c = QTextCodec::codecForName(name);
@@ -143,9 +144,6 @@ static QTextCodec *checkForCodec(const QByteArray &name) {
 }
 #endif
 
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive));
-QMutex *qTextCodecsMutex() { return textCodecsMutex(); }
-
 static void setup();
 
 // this returns the codec the method sets up as locale codec to
@@ -155,10 +153,7 @@ static QTextCodec *setupLocaleMapper()
 {
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
 
-    QTextCodec *locale = globalData->codecForLocale.loadAcquire();
-    if (locale)
-        // already setup
-        return locale;
+    QTextCodec *locale = 0;
 
     {
         QMutexLocker locker(textCodecsMutex());
@@ -170,10 +165,8 @@ static QTextCodec *setupLocaleMapper()
     QCoreApplicationPrivate::initLocale();
 #endif
 
-#if defined(Q_OS_MAC) || defined(Q_OS_IOS) || defined(Q_OS_LINUX_ANDROID) || defined(Q_OS_QNX)
+#if defined(QT_LOCALE_IS_UTF8)
     locale = QTextCodec::codecForName("UTF-8");
-#elif defined(QT_USE_ICU)
-    locale = QIcuCodec::defaultCodec();
 #elif defined(Q_OS_WIN) || defined(Q_OS_WINCE)
     locale = QTextCodec::codecForName("System");
 #else
@@ -263,14 +256,18 @@ static QTextCodec *setupLocaleMapper()
     return locale;
 }
 
+
 // textCodecsMutex need to be locked to enter this function
 static void setup()
 {
+    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    if (!globalData->allCodecs.isEmpty())
+        return;
+
 #if !defined(QT_NO_CODECS) && !defined(QT_BOOTSTRAPPED)
     (void)new QTsciiCodec;
     for (int i = 0; i < 9; ++i)
         (void)new QIsciiCodec(i);
-#if !defined(QT_USE_ICU)
     for (int i = 0; i < QSimpleTextCodec::numSimpleCodecs; ++i)
         (void)new QSimpleTextCodec(i);
 
@@ -292,7 +289,6 @@ static void setup()
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     (void) new QWindowsLocalCodec;
 #endif // Q_OS_WIN32
-#endif // QT_USE_ICU
 #endif // !QT_NO_CODECS && !QT_BOOTSTRAPPED
 
     (void)new QUtf16Codec;
@@ -305,6 +301,9 @@ static void setup()
     (void)new QLatin1Codec;
     (void)new QUtf8Codec;
 }
+#else
+static void setup() {}
+#endif // QT_USE_ICU
 
 /*!
     \enum QTextCodec::ConversionFlag
@@ -510,7 +509,6 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
     if (!globalData)
         return 0;
-    if (globalData->allCodecs.isEmpty())
         setup();
 
 #ifndef QT_USE_ICU
@@ -524,14 +522,14 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
 
     for (int i = 0; i < globalData->allCodecs.size(); ++i) {
         QTextCodec *cursor = globalData->allCodecs.at(i);
-        if (nameMatch(cursor->name(), name)) {
+        if (qTextCodecNameMatch(cursor->name(), name)) {
             if (cache)
                 cache->insert(name, cursor);
             return cursor;
         }
         QList<QByteArray> aliases = cursor->aliases();
         for (int y = 0; y < aliases.size(); ++y)
-            if (nameMatch(aliases.at(y), name)) {
+            if (qTextCodecNameMatch(aliases.at(y), name)) {
                 if (cache)
                     cache->insert(name, cursor);
                 return cursor;
@@ -677,8 +675,13 @@ QTextCodec* QTextCodec::codecForLocale()
         return 0;
 
     QTextCodec *codec = globalData->codecForLocale.loadAcquire();
-    if (!codec)
+    if (!codec) {
+#ifdef QT_USE_ICU
+        codec = QIcuCodec::defaultCodec();
+#else
         codec = setupLocaleMapper();
+#endif
+    }
 
     return codec;
 }
@@ -1062,7 +1065,7 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCo
 */
 QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba)
 {
-    return codecForHtml(ba, QTextCodec::codecForMib(/*Latin 1*/ 4));
+    return codecForHtml(ba, QTextCodec::codecForName("ISO-8859-1"));
 }
 
 /*!

@@ -60,6 +60,10 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_TEXTCODEC
 
+#if defined(Q_OS_MAC) || defined(Q_OS_IOS) || defined(Q_OS_LINUX_ANDROID) || defined(Q_OS_QNX)
+#define QT_LOCALE_IS_UTF8
+#endif
+
 typedef void (*QTextCodecStateFreeFunction)(QTextCodec::ConverterState*);
 
 struct QTextCodecUnalignedPointer
@@ -76,6 +80,8 @@ struct QTextCodecUnalignedPointer
         memcpy(dst, &data, sizeof(data));
     }
 };
+
+bool qTextCodecNameMatch(const char *a, const char *b);
 
 #else
 

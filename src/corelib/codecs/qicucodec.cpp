@@ -41,6 +41,10 @@
 
 #include "qicucodec_p.h"
 #include "qtextcodec_p.h"
+#include "qutfcodec_p.h"
+#include "qlatincodec_p.h"
+#include "qtsciicodec_p.h"
+#include "qisciicodec_p.h"
 #include "private/qcoreglobaldata_p.h"
 #include "qdebug.h"
 
@@ -53,6 +57,11 @@ extern QMutex *qTextCodecsMutex();
 static void qIcuCodecStateFree(QTextCodec::ConverterState *state)
 {
     ucnv_close(static_cast<UConverter *>(state->d));
+}
+
+bool qTextCodecNameMatch(const char *n, const char *h)
+{
+    return ucnv_compareNames(n, h) == 0;
 }
 
 /* The list below is generated from http://www.iana.org/assignments/character-sets/
@@ -341,6 +350,33 @@ static const char mibToNameTable[] =
     "windows-1258\0"
     "TIS-620\0";
 
+static QTextCodec *loadQtCodec(const char *name)
+{
+    if (!strcmp(name, "UTF-8"))
+        return new QUtf8Codec;
+    if (!strcmp(name, "UTF-16"))
+        return new QUtf16Codec;
+    if (!strcmp(name, "ISO-8859-1"))
+        return new QLatin1Codec;
+    if (!strcmp(name, "UTF-16BE"))
+        return new QUtf16BECodec;
+    if (!strcmp(name, "UTF-16LE"))
+        return new QUtf16LECodec;
+    if (!strcmp(name, "UTF-32"))
+        return new QUtf32Codec;
+    if (!strcmp(name, "UTF-32BE"))
+        return new QUtf32BECodec;
+    if (!strcmp(name, "UTF-32LE"))
+        return new QUtf32LECodec;
+    if (!strcmp(name, "TSCII"))
+        return new QTsciiCodec;
+    if (!qstrnicmp(name, "iscii", 5))
+        return QIsciiCodec::create(name);
+
+    return 0;
+}
+
+
 QList<QByteArray> QIcuCodec::availableCodecs()
 {
     QList<QByteArray> codecs;
@@ -397,14 +433,16 @@ QTextCodec *QIcuCodec::defaultCodec()
     if (c)
         return c;
 
+#if defined(QT_LOCALE_IS_UTF8)
+    const char *name = "UTF-8";
+#else
     const char *name = ucnv_getDefaultName();
+#endif
     c = codecForName(name);
     globalData->codecForLocale.storeRelease(c);
     return c;
 }
 
-static inline bool nameMatch(const QByteArray &a, const char *b)
-{ return a == b; }
 
 QTextCodec *QIcuCodec::codecForName(const char *name)
 {
@@ -449,19 +487,23 @@ QTextCodec *QIcuCodec::codecForName(const char *name)
 
     for (int i = 0; i < globalData->allCodecs.size(); ++i) {
         QTextCodec *cursor = globalData->allCodecs.at(i);
-        if (nameMatch(cursor->name(), standardName)) {
+        if (qTextCodecNameMatch(cursor->name(), standardName)) {
             if (cache)
                 cache->insert(standardName, cursor);
             return cursor;
         }
         QList<QByteArray> aliases = cursor->aliases();
         for (int y = 0; y < aliases.size(); ++y)
-            if (nameMatch(aliases.at(y), standardName)) {
+            if (qTextCodecNameMatch(aliases.at(y), standardName)) {
                 if (cache)
                     cache->insert(standardName, cursor);
                 return cursor;
             }
     }
+
+    QTextCodec *c = loadQtCodec(standardName);
+    if (c)
+        return c;
 
     if (qt_only)
         return 0;
@@ -476,7 +518,7 @@ QTextCodec *QIcuCodec::codecForName(const char *name)
     ucnv_close(conv);
 
 
-    QTextCodec *c = new QIcuCodec(standardName);
+    c = new QIcuCodec(standardName);
     if (cache)
         cache->insert(standardName, c);
     return c;
@@ -628,7 +670,7 @@ QList<QByteArray> QIcuCodec::aliases() const
 int QIcuCodec::mibEnum() const
 {
     for (int i = 0; i < mibToNameSize; ++i) {
-        if (m_name == (mibToNameTable + mibToName[i].index))
+        if (qTextCodecNameMatch(m_name, (mibToNameTable + mibToName[i].index)))
             return mibToName[i].mib;
     }
 

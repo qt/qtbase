@@ -74,7 +74,7 @@ static const Codecs codecs [] = {
 QTextCodec *QIsciiCodec::create(const char *name)
 {
     for (int i = 0; i < 9; ++i) {
-        if (!qstricmp(name, codecs[i].name))
+        if (qTextCodecNameMatch(name, codecs[i].name))
             return new QIsciiCodec(i);
     }
     return 0;
