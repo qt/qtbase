@@ -1436,17 +1436,101 @@ void tst_QCompleter::task247560_keyboardNavigation()
     QCOMPARE(edit.text(), QString("row 3 column 1"));
 }
 
+// Helpers for QTBUG_14292_filesystem: Recursion helper for below recurseTreeModel
+template <class Function>
+bool recurseTreeModelIndex(const QModelIndex &idx, Function f, int depth = 0)
+{
+    if (f(idx, depth))
+        return true;
+    const int rowCount = idx.model()->rowCount(idx);
+    for (int row = 0; row < rowCount; ++row)
+        if (recurseTreeModelIndex(idx.child(row, 0), f, depth + 1))
+            return true;
+    return false;
+}
+
+// Function to recurse over a tree model applying a function
+// taking index and depth, returning true to terminate recursion.
+
+template <class Function>
+bool recurseTreeModel(const QAbstractItemModel &m, Function f)
+{
+    const int rowCount = m.rowCount(QModelIndex());
+    for (int row = 0; row < rowCount; ++row)
+        if (recurseTreeModelIndex(m.index(row, 0, QModelIndex()), f))
+            return true;
+    return false;
+}
+
+// Function applicable to the above recurseTreeModel() to search for a data item.
+class SearchFunction
+{
+public:
+    SearchFunction(const QString &needle, int role = Qt::DisplayRole) :
+        m_needle(needle), m_role(role) {}
+
+    bool operator()(const QModelIndex &idx, int /* depth */) const
+        { return idx.data(m_role).toString() == m_needle; }
+
+private:
+    const QString m_needle;
+    const int m_role;
+};
+
+// Function applicable to the above recurseTreeModel() for debug output
+// of a model.
+class DebugFunction
+{
+public:
+    DebugFunction(QDebug d) : m_d(d) {}
+
+    bool operator()(const QModelIndex &idx, int depth)
+    {
+        for (int i = 0; i < 4 * depth; ++i)
+            m_d << ' ';
+        m_d << idx.data(QFileSystemModel::FileNameRole).toString()
+            << '\n';
+        return false;
+    }
+private:
+    QDebug m_d;
+};
+
+QDebug operator<<(QDebug d, const QAbstractItemModel &m)
+{
+    QDebug dns = d.nospace();
+    dns << '\n';
+    recurseTreeModel(m, DebugFunction(dns));
+    return d;
+}
+
+static const char testDir1[] = "hello";
+static const char testDir2[] = "holla";
+
+// Helper for QTBUG_14292_filesystem, checking whether both
+// test directories are seen by the file system model for usage
+// with QTRY_VERIFY.
+
+static inline bool testFileSystemReady(const QAbstractItemModel &model)
+{
+    return recurseTreeModel(model, SearchFunction(QLatin1String(testDir1), QFileSystemModel::FileNameRole))
+           && recurseTreeModel(model, SearchFunction(QLatin1String(testDir2), QFileSystemModel::FileNameRole));
+}
+
 void tst_QCompleter::QTBUG_14292_filesystem()
 {
+    // This test tests whether the creation of subdirectories
+    // does not cause completers based on file system models
+    // to pop up the completion list due to file changed signals.
     FileSystem fs;
+    QFileSystemModel model;
+    model.setRootPath(fs.path());
 
-    QVERIFY(fs.createDirectory(QStringLiteral("hello")));
-    QVERIFY(fs.createDirectory(QStringLiteral("holla")));
+    QVERIFY(fs.createDirectory(QLatin1String(testDir1)));
+    QVERIFY(fs.createDirectory(QLatin1String(testDir2)));
 
     QLineEdit edit;
     QCompleter comp;
-    QFileSystemModel model;
-    model.setRootPath(fs.path());
     comp.setModel(&model);
     edit.setCompleter(&comp);
 
@@ -1457,6 +1541,10 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     edit.setFocus();
     QTRY_VERIFY(edit.hasFocus());
 
+    // Wait for all file system model slots/timers to trigger
+    // until the model sees the subdirectories.
+    QTRY_VERIFY(testFileSystemReady(model));
+    // But this should not cause the combo to pop up.
     QVERIFY(!comp.popup()->isVisible());
     edit.setText(fs.path());
     QTest::keyClick(&edit, '/');
