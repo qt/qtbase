@@ -54,10 +54,9 @@
 
 QT_BEGIN_HEADER
 
-QT_BEGIN_NAMESPACE
-
-
 #ifndef QT_NO_SSL
+
+QT_BEGIN_NAMESPACE
 
 class QDateTime;
 class QIODevice;
@@ -154,11 +153,11 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslCertificate &certific
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QSslCertificate::SubjectInfo info);
 #endif
 
-#endif // QT_NO_SSL
-
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QSslCertificate)
+
+#endif // QT_NO_SSL
 
 QT_END_HEADER
 

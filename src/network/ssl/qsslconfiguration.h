@@ -63,10 +63,9 @@
 
 QT_BEGIN_HEADER
 
-QT_BEGIN_NAMESPACE
-
-
 #ifndef QT_NO_SSL
+
+QT_BEGIN_NAMESPACE
 
 template<typename T> class QList;
 class QSslCertificate;
@@ -134,11 +133,11 @@ private:
     QSharedDataPointer<QSslConfigurationPrivate> d;
 };
 
-#endif  // QT_NO_SSL
-
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QSslConfiguration)
+
+#endif  // QT_NO_SSL
 
 QT_END_HEADER
 
