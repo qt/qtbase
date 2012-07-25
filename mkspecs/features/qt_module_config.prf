@@ -119,7 +119,7 @@ CONFIG          += qmake_cache target_qt
 CONFIG          -= fix_output_dirs
 
 # If Qt was configured with -debug-and-release then build the module the same way
-if(win32|mac):!wince*:!macx-xcode {
+if(win32|mac):!macx-xcode {
     contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }

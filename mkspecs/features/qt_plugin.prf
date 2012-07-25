@@ -2,7 +2,7 @@ TEMPLATE = lib
 isEmpty(VERSION):VERSION = $$QT_VERSION
 CONFIG += qt plugin
 
-if(win32|mac):!wince*:!macx-xcode {
+if(win32|mac):!macx-xcode {
     contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
