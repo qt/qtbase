@@ -628,7 +628,6 @@ static void testCreateHelper()
 template<>
 void testCreateHelper<QMetaType::Void>()
 {
-    typedef MetaEnumToType<QMetaType::Void>::Type Type;
     void *actual = QMetaType::create(QMetaType::Void);
     if (DefaultValueTraits<QMetaType::Void>::IsInitialized) {
         QVERIFY(DefaultValueFactory<QMetaType::Void>::create());
@@ -968,13 +967,12 @@ static void testConstructHelper()
 template<>
 void testConstructHelper<QMetaType::Void>()
 {
-    typedef MetaEnumToType<QMetaType::Void>::Type Type;
     /*int size = */ QMetaType::sizeOf(QMetaType::Void);
     void *storage = 0;
     void *actual = QMetaType::construct(QMetaType::Void, storage, /*copy=*/0);
     QCOMPARE(actual, storage);
     if (DefaultValueTraits<QMetaType::Void>::IsInitialized) {
-        /*Type *expected = */ DefaultValueFactory<QMetaType::Void>::create();
+        QVERIFY(DefaultValueFactory<QMetaType::Void>::create());
     }
     QMetaType::destruct(QMetaType::Void, actual);
     qFreeAligned(storage);
