@@ -174,7 +174,7 @@
 */
 
 /*!
-    \enum QUrl::FormattingOptions
+    \enum QUrl::UrlFormattingOption
 
     The formatting options define how the URL is formatted when written out
     as text.
@@ -204,7 +204,7 @@
 */
 
 /*!
-    \enum QUrl::ComponentFormattingOptions
+    \enum QUrl::ComponentFormattingOption
     \since 5.0
 
     The component formatting options define how the components of an URL will
@@ -232,7 +232,7 @@
     \value EncodeReserved  Leave the US-ASCII reserved characters in their encoded
                            forms.
 
-    \value DecodeReseved   Decode the US-ASCII reserved characters.
+    \value DecodeReserved   Decode the US-ASCII reserved characters.
 
     \value FullyEncoded    Leave all characters in their properly-encoded form,
                            as this component would appear as part of a URL. When
@@ -1651,7 +1651,7 @@ QString QUrl::scheme() const
     use the delimiter characters as non-delimiters (e.g., a password containing
     a '@').
 
-    \sa setUserInfo, setHost, setPort
+    \sa setUserInfo(), setHost(), setPort()
 */
 void QUrl::setAuthority(const QString &authority, ParsingMode mode)
 {
@@ -1941,7 +1941,7 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
     All other flags are ignored. Host names cannot contain control or percent
     characters, so the returned value can be considered fully decoded.
 
-    \sa setHost(), idnWhiteList(), setIdnWhiteList(), authority()
+    \sa setHost(), idnWhitelist(), setIdnWhitelist(), authority()
 */
 QString QUrl::host(ComponentFormattingOptions options) const
 {
@@ -2260,6 +2260,9 @@ bool QUrl::hasFragment() const
     Note that the return value is prefixed with a '.' unless the
     URL does not contain a valid TLD, in which case the function returns
     an empty string.
+
+    If \a options includes EncodeUnicode, the returned string will be in
+    ASCII Compatible Encoding.
 */
 QString QUrl::topLevelDomain(ComponentFormattingOptions options) const
 {
@@ -2996,7 +2999,9 @@ QString QUrl::errorString() const
     \relates QHash
     \since 5.0
 
-    Returns the hash value for the \a url.
+    Returns the hash value for the \a url. If specified, \a seed is used to
+    initialize the hash.
+
 */
 uint qHash(const QUrl &url, uint seed)
 {

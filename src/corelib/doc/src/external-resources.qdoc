@@ -45,3 +45,18 @@
     \externalpage http://www.iso.org/iso/catalogue_detail?csnumber=40874
     \title ISO 8601
 */
+
+/*!
+    \externalpage http://www.ietf.org/rfc/rfc3986.txt
+    \title RFC 3986
+*/
+
+/*!
+    \externalpage http://www.ietf.org/rfc/rfc1738.txt
+    \title RFC 1738
+*/
+
+/*!
+    \externalpage http://www.ietf.org/rfc/rfc3941.txt
+    \title RFC 3491
+*/
