@@ -335,11 +335,6 @@ void MainWindow::setupDockWidgets(const QMap<QString, QSize> &customSizeHints)
             connect(swatch, SIGNAL(topLevelChanged(bool)), titlebar, SLOT(updateMask()));
             connect(swatch, SIGNAL(featuresChanged(QDockWidget::DockWidgetFeatures)), titlebar, SLOT(updateMask()), Qt::QueuedConnection);
 
-#ifdef Q_WS_QWS
-            QPalette pal = palette();
-            pal.setBrush(backgroundRole(), QColor(0,0,0,0));
-            swatch->setPalette(pal);
-#endif
         }
 
         QString name = QString::fromLatin1(sets[i].name);

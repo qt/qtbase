@@ -2264,9 +2264,6 @@ void tst_QGraphicsItem::zValue()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QApplication::processEvents();
-#ifdef Q_WS_QWS
-    QApplication::sendPostedEvents(); //glib workaround
-#endif
 
     QTRY_VERIFY(!_paintedItems.isEmpty());
     QVERIFY((_paintedItems.size() % 4) == 0);

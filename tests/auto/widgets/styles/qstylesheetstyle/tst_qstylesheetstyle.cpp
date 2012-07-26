@@ -750,13 +750,6 @@ void tst_QStyleSheetStyle::focusColors()
     widgets << combobox;
     widgets << new QLabel("TESTING TESTING");
 
-#ifdef Q_WS_QWS
-    // QWS has its own special focus logic which is slightly different
-    // and I don't dare change it at this point, because someone will
-    // be relying on it. It means that setFocus() on a NoFocus widget (i.e.
-    // a QLabel) will not work before the window is activated.
-    widgets[2]->setFocusPolicy(Qt::StrongFocus);
-#endif
 
     foreach (QWidget *widget, widgets) {
         QDialog frame;
@@ -826,10 +819,6 @@ void tst_QStyleSheetStyle::hoverColors()
         frame.setLayout(layout);
 
         frame.show();
-#ifdef Q_WS_QWS
-//QWS does not implement enter/leave when windows are shown underneath the cursor
-        QCursor::setPos(QPoint(0,0));
-#endif
 
         QApplication::setActiveWindow(&frame);
         QVERIFY(QTest::qWaitForWindowActive(&frame));

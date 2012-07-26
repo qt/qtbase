@@ -134,9 +134,6 @@ void tst_QToolButton::triggered()
     tb.setMenu(menu);
     tb.setDefaultAction(def);
 
-#ifdef Q_WS_QWS
-    QApplication::processEvents(); //wait for the window system to show the tool button
-#endif
 
     def->trigger();
     QCOMPARE(spy.count(),1);

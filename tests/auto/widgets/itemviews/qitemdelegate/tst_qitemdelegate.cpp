@@ -468,9 +468,6 @@ void tst_QItemDelegate::font()
     table.setItem(0, 0, item);
 
     QApplication::processEvents();
-#ifdef Q_WS_QWS
-    QApplication::sendPostedEvents(); //glib workaround
-#endif
 
     QTRY_COMPARE(delegate->displayText, item->text());
     if (properties.contains("italic")) {

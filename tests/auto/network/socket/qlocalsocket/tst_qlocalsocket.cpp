@@ -763,18 +763,12 @@ void tst_QLocalSocket::processConnection()
     QStringList serverArguments = QStringList() << SRCDIR "lackey/scripts/server.js" << QString::number(processes);
     QProcess producer;
     producer.setProcessChannelMode(QProcess::ForwardedChannels);
-#ifdef Q_WS_QWS
-    serverArguments << "-qws";
-#endif
     QList<QProcess*> consumers;
     producer.start("lackey/lackey", serverArguments);
     QVERIFY2(producer.waitForStarted(-1), qPrintable(producer.errorString()));
     QTest::qWait(2000);
     for (int i = 0; i < processes; ++i) {
        QStringList arguments = QStringList() << SRCDIR "lackey/scripts/client.js";
-#ifdef Q_WS_QWS
-       arguments << "-qws";
-#endif
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
         consumers.append(p);

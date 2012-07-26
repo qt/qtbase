@@ -513,9 +513,6 @@ void tst_QMdiArea::subWindowActivated2()
         QEXPECT_FAIL("", "showMinimized doesn't really minimize if you don't have access to the server", Abort);
 #endif
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
-#if defined(Q_WS_QWS)
-    QEXPECT_FAIL("", "task 168682", Abort);
-#endif
 #ifdef Q_OS_WINCE
     QSKIP("Not fixed yet. See Task 197453");
 #endif

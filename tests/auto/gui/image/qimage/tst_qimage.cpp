@@ -171,14 +171,14 @@ void tst_QImage::swap()
 void tst_QImage::create()
 {
     bool cr = true;
-#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE)
     QT_TRY {
 #endif
 	//QImage image(7000000, 7000000, 8, 256, QImage::IgnoreEndian);
     QImage image(7000000, 7000000, QImage::Format_Indexed8);
     image.setColorCount(256);
         cr = !image.isNull();
-#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE)
     } QT_CATCH (...) {
     }
 #endif

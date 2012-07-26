@@ -2951,8 +2951,8 @@ protected:
 
 void tst_QGraphicsWidget::respectHFW()
 {
-#if defined(Q_OS_WINCE) || defined(Q_OS_MAC) || defined(Q_WS_QWS)
-    qDebug("This test is platform dependent, it fails on wince, mac and qws. Please fix.");
+#if defined(Q_OS_WINCE) || defined(Q_OS_MAC)
+    QSKIP("This test is platform dependent, it fails on wince and mac. Please fix.");
 #else
     QGraphicsScene scene;
     HFWWidget *window = new HFWWidget;

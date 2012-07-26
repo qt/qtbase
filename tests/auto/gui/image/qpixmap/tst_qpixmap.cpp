@@ -63,9 +63,6 @@
 #include <windows.h>
 #endif
 
-#ifdef Q_WS_QWS
-#include <qscreen_qws.h>
-#endif
 
 Q_DECLARE_METATYPE(QImage::Format)
 

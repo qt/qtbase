@@ -851,9 +851,6 @@ void tst_QGL::graphicsViewClipping()
     // Use Qt::Tool as fully decorated windows have a minimum width of 160 on Windows.
     view.setWindowFlags(view.windowFlags() | Qt::Tool);
     view.setBackgroundBrush(Qt::white);
-#ifdef Q_WS_QWS
-    view.setWindowFlags(Qt::FramelessWindowHint);
-#endif
     view.resize(2*size, 2*size);
 
     QGLWidget *viewport = new QGLWidget;
@@ -1036,9 +1033,6 @@ public:
 void tst_QGL::glWidgetRendering()
 {
     GLWidget w;
-#ifdef Q_WS_QWS
-    w.setWindowFlags(Qt::FramelessWindowHint);
-#endif
     w.resize(256, 128);
     w.show();
 
@@ -1276,9 +1270,6 @@ void tst_QGL::glFBOUseInGLWidget()
         QSKIP("QGLFramebufferObject not supported on this platform");
 
     FBOUseInGLWidget w;
-#ifdef Q_WS_QWS
-    w.setWindowFlags(Qt::FramelessWindowHint);
-#endif
     w.resize(100, 100);
     w.show();
 
@@ -1650,9 +1641,6 @@ protected:
 void tst_QGL::replaceClipping()
 {
     ReplaceClippingGLWidget glw;
-#ifdef Q_WS_QWS
-    glw.setWindowFlags(Qt::FramelessWindowHint);
-#endif
     glw.resize(300, 300);
     glw.show();
 
@@ -1764,9 +1752,6 @@ protected:
 void tst_QGL::clipTest()
 {
     ClipTestGLWidget glw;
-#ifdef Q_WS_QWS
-    glw.setWindowFlags(Qt::FramelessWindowHint);
-#endif
     glw.resize(220, 220);
     glw.show();
 

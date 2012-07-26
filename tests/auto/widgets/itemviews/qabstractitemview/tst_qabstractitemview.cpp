@@ -896,9 +896,6 @@ void tst_QAbstractItemView::dragAndDrop()
 {
     // From Task 137729
 
-#ifdef Q_WS_QWS
-    QSKIP("Embedded drag-and-drop not good enough yet...");
-#endif
 
     const int attempts = 10;
     int successes = 0;
@@ -937,9 +934,6 @@ void tst_QAbstractItemView::dragAndDrop()
 
 void tst_QAbstractItemView::dragAndDropOnChild()
 {
-#ifdef Q_WS_QWS
-    QSKIP("Embedded drag-and-drop not good enough yet...");
-#endif
 
     const int attempts = 10;
     int successes = 0;
