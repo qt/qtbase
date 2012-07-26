@@ -74,8 +74,8 @@
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatforminputcontext_p.h>
 
-#include <QtGui/qwindowsysteminterface.h>
-#include <private/qwindowsysteminterface_p.h>
+#include <qpa/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface_p.h>
 #include "private/qwindow_p.h"
 #include "private/qcursor_p.h"
 

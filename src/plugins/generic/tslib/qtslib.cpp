@@ -46,7 +46,7 @@
 #include <QSocketNotifier>
 #include <QStringList>
 #include <QPoint>
-#include <QtGui/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <Qt>
 

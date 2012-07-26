@@ -42,7 +42,7 @@
 #include "qplatformwindow.h"
 #include "qplatformwindow_p.h"
 
-#include <QtGui/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qscreen.h>
 

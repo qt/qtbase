@@ -51,7 +51,7 @@
 #include <QThread>
 #include <QVector>
 #include <QVarLengthArray>
-#include <QtGui/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #ifndef QT_NO_TABLETEVENT
 #include <QTabletEvent>

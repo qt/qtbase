@@ -89,6 +89,9 @@
         "QPlatformThemePlugin" => "qpa/qplatformthemeplugin.h",
         "qplatformwindow_qpa.h" => "qpa/qplatformwindow.h",
         "QPlatformWindow" => "qpa/qplatformwindow.h",
+        "qwindowsysteminterface_qpa.h" => "qpa/qwindowsysteminterface.h",
+        "QWindowSystemInterface" => "qpa/qwindowsysteminterface.h",
+        "qwindowsysteminterface_qpa_p.h" => "qpa/qwindowsysteminterface_p.h",
         "qgenericpluginfactory_qpa.h" => "QtGui/qgenericpluginfactory.h",
         "qgenericplugin_qpa.h" => "QtGui/qgenericplugin.h",
         "QGenericPlugin" => "QtGui/QGenericPlugin",
@@ -121,7 +124,7 @@
     }
 );
 
-@qpa_headers = ( qr/^qplatform/ );
+@qpa_headers = ( qr/^qplatform/, qr/^qwindowsystem/ );
 @ignore_for_include_check = ( "qsystemdetection.h", "qcompilerdetection.h", "qprocessordetection.h" );
 @ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qt_windows.h" );
 @ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h" );

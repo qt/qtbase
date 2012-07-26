@@ -69,7 +69,7 @@
 #include <windows.h>
 #endif
 
-#include <QtGui/QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 
 
 QT_BEGIN_NAMESPACE

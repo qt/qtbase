@@ -47,7 +47,7 @@
 #include "qqnxscreen.h"
 
 #include <QtGui/QWindow>
-#include <QtGui/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <QtCore/QDebug>
 

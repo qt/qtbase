@@ -42,7 +42,7 @@
 #include <QtGui>
 #include <QtWidgets>
 #include <QtTest>
-#include <QtGui/QWindowSystemInterface>
+#include <qpa/qwindowsysteminterface.h>
 
 // #include <QDebug>
 

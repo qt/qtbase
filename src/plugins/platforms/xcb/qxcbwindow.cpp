@@ -94,7 +94,7 @@
 #include <private/qwindow_p.h>
 
 #include <qpa/qplatformbackingstore.h>
-#include <QtGui/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <stdio.h>
 

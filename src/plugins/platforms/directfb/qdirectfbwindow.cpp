@@ -44,7 +44,7 @@
 #include "qdirectfbinput.h"
 #include "qdirectfbscreen.h"
 
-#include <QtGui/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <directfb.h>
 

@@ -45,7 +45,7 @@
 #include <QDBusConnection>
 #include <QDBusArgument>
 #include <qguiapplication.h>
-#include <QtGui/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface.h>
 
 QMeeGoIntegration::QMeeGoIntegration()
     : screenTopEdge(QStringLiteral("com.nokia.SensorService"), QStringLiteral("Screen.TopEdge"))

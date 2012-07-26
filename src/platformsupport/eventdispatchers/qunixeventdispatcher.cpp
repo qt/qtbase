@@ -44,7 +44,7 @@
 #include "qunixeventdispatcher_qpa_p.h"
 #include "private/qguiapplication_p.h"
 
-#include <QtGui/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface.h>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QAtomicInt>
 #include <QtCore/QSemaphore>

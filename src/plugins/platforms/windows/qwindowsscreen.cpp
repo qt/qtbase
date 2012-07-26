@@ -50,7 +50,7 @@
 
 #include <QtGui/QPixmap>
 #include <QtGui/QGuiApplication>
-#include <QtGui/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QScreen>
 
 #include <QtCore/QDebug>
