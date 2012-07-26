@@ -497,6 +497,9 @@ Tree::findUnambiguousTarget(const QString& target, Atom *&atom, const Node* rela
     int numBestTargets = 0;
     QList<Target> bestTargetList;
 
+    if (priv == 0)
+        return 0;
+
     for (int pass = 0; pass < NumSuffixes; ++pass) {
         TargetHash::const_iterator i = priv->targetHash.constFind(Doc::canonicalTitle(target + suffixes[pass]));
         if (i != priv->targetHash.constEnd()) {
@@ -523,7 +526,7 @@ Tree::findUnambiguousTarget(const QString& target, Atom *&atom, const Node* rela
                 if (relative && !relative->qmlModuleIdentifier().isEmpty()) {
                     for (int i=0; i<bestTargetList.size(); ++i) {
                         const Node* n = bestTargetList.at(i).node;
-                        if (relative->qmlModuleIdentifier() == n->qmlModuleIdentifier()) {
+                        if (n && relative->qmlModuleIdentifier() == n->qmlModuleIdentifier()) {
                             atom = bestTargetList.at(i).atom;
                             return n;
                         }
