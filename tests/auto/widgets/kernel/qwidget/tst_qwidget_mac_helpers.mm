@@ -44,7 +44,7 @@
 
 #include "tst_qwidget_mac_helpers.h"
 #include <QApplication>
-#include <QPlatformNativeInterface>
+#include <qpa/qplatformnativeinterface.h>
 #include <private/qcore_mac_p.h>
 
 #include <Cocoa/Cocoa.h>
