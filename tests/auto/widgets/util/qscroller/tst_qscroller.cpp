@@ -42,6 +42,8 @@
 #include <QtGui>
 #include <QtWidgets>
 #include <QtTest>
+#include <QtGui/QWindowSystemInterface>
+
 // #include <QDebug>
 
 class tst_QScrollerWidget : public QWidget

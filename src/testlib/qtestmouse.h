@@ -54,7 +54,6 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qwindowsysteminterface.h>
 
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qapplication.h>
@@ -65,6 +64,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
 namespace QTest
 {
@@ -108,24 +108,24 @@ namespace QTest
         switch (action)
         {
             case MousePress:
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),button,stateKey);
+                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),button,stateKey);
                 lastButton = button;
                 break;
             case MouseRelease:
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton,stateKey);
+                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton,stateKey);
                 lastButton = Qt::NoButton;
                 break;
             case MouseDClick:
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),button,stateKey);
+                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),button,stateKey);
                 qWait(10);
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton,stateKey);
+                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton,stateKey);
                 qWait(20);
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),button,stateKey);
+                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),button,stateKey);
                 qWait(10);
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton,stateKey);
+                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton,stateKey);
                 break;
             case MouseMove:
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),lastButton,stateKey);
+                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),lastButton,stateKey);
                 // No QCursor::setPos() call here. That could potentially result in mouse events sent by the windowing system
                 // which is highly undesired here. Tests must avoid relying on QCursor.
                 break;

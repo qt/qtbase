@@ -4,7 +4,7 @@ TARGET = QtTest
 QT = core-private
 CONFIG += exceptions
 
-MODULE_CONFIG = console testlib_defines auto_use_privates
+MODULE_CONFIG = console testlib_defines
 
 unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
     Unit \

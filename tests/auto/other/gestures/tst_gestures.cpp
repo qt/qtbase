@@ -52,6 +52,7 @@
 #include <qgraphicswidget.h>
 #include <qgraphicsview.h>
 #include <qmainwindow.h>
+#include <QtGui/QWindowSystemInterface>
 
 #include <qdebug.h>
 

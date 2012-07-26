@@ -51,7 +51,6 @@
 #include <QtTest/qtestassert.h>
 #include <QtTest/qtestsystem.h>
 #include <QtTest/qtestspontaneevent.h>
-#include <QtGui/qwindowsysteminterface.h>
 #include <QtCore/qmap.h>
 #include <QtGui/qevent.h>
 #ifdef QT_WIDGETS_LIB
@@ -61,6 +60,10 @@
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
+
+Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
+                                const QList<QTouchEvent::TouchPoint> &points,
+                                Qt::KeyboardModifiers mods = Qt::NoModifier);
 
 
 namespace QTest
@@ -131,12 +134,12 @@ namespace QTest
             if (!points.isEmpty()) {
                 if (targetWindow)
                 {
-                    QWindowSystemInterface::handleTouchEvent(targetWindow, device, touchPointList(points.values()));
+                    qt_handleTouchEvent(targetWindow, device, points.values());
                 }
 #ifdef QT_WIDGETS_LIB
                 else if (targetWidget)
                 {
-                    QWindowSystemInterface::handleTouchEvent(targetWidget->windowHandle(), device, touchPointList(points.values()));
+                    qt_handleTouchEvent(targetWidget->windowHandle(), device, points.values());
                 }
 #endif
             }
@@ -146,31 +149,7 @@ namespace QTest
             points.clear();
         }
 
-        static QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)
-        {
-            QWindowSystemInterface::TouchPoint p;
-            p.id = pt.id();
-            p.flags = pt.flags();
-            p.normalPosition = pt.normalizedPos();
-            p.area = pt.screenRect();
-            p.pressure = pt.pressure();
-            p.state = pt.state();
-            p.velocity = pt.velocity();
-            p.rawPositions = pt.rawScreenPositions();
-            return p;
-        }
-        static QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QList<QTouchEvent::TouchPoint>& pointList)
-        {
-            QList<struct QWindowSystemInterface::TouchPoint> newList;
-
-            Q_FOREACH (QTouchEvent::TouchPoint p, pointList)
-            {
-                newList.append(touchPoint(p));
-            }
-            return newList;
-        }
-
-    private:
+private:
 #ifdef QT_WIDGETS_LIB
         QTouchEventSequence(QWidget *widget, QTouchDevice *aDevice, bool autoCommit)
             : targetWidget(widget), targetWindow(0), device(aDevice), commitWhenDestroyed(autoCommit)

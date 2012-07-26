@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <qwindow.h>
+#include <QtGui/QWindowSystemInterface>
 
 #include <QtTest/QtTest>
 

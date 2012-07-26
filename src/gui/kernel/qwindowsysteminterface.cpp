@@ -617,4 +617,44 @@ void QWindowSystemInterface::handleTabletLeaveProximityEvent(int device, int poi
     handleTabletLeaveProximityEvent(time, device, pointerType, uid);
 }
 
+Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier) {
+    QWindowSystemInterface::handleMouseEvent(w, local, global,  b,  mods);
+}
+
+Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
+{
+    QWindowSystemInterface::handleKeyEvent(w, t, k, mods, text, autorep, count);
+}
+
+static QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)
+{
+    QWindowSystemInterface::TouchPoint p;
+    p.id = pt.id();
+    p.flags = pt.flags();
+    p.normalPosition = pt.normalizedPos();
+    p.area = pt.screenRect();
+    p.pressure = pt.pressure();
+    p.state = pt.state();
+    p.velocity = pt.velocity();
+    p.rawPositions = pt.rawScreenPositions();
+    return p;
+}
+static QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QList<QTouchEvent::TouchPoint>& pointList)
+{
+    QList<struct QWindowSystemInterface::TouchPoint> newList;
+
+    Q_FOREACH (QTouchEvent::TouchPoint p, pointList)
+    {
+        newList.append(touchPoint(p));
+    }
+    return newList;
+}
+
+Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
+                                const QList<QTouchEvent::TouchPoint> &points,
+                                Qt::KeyboardModifiers mods = Qt::NoModifier)
+{
+    QWindowSystemInterface::handleTouchEvent(w, device, touchPointList(points), mods);
+}
+
 QT_END_NAMESPACE

@@ -56,7 +56,6 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qwindowsysteminterface.h>
 
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qwidget.h>
@@ -67,6 +66,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
 
 namespace QTest
 {
@@ -77,7 +77,7 @@ namespace QTest
     {
         QEvent::Type type;
         type = press ? QEvent::KeyPress : QEvent::KeyRelease;
-        QWindowSystemInterface::handleKeyEvent(window, type, code, modifier, text, repeat, delay);
+        qt_handleKeyEvent(window, type, code, modifier, text, repeat, delay);
 #ifdef QT_MAC_USE_COCOA
         QTest::qWait(20);
 #else
