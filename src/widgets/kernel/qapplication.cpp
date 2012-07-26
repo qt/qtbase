@@ -4424,7 +4424,7 @@ bool QApplicationPrivate::translateTouchToMouse(QWidget *widget, QTouchEvent *ev
         if (eventType == QEvent::None)
             continue;
 
-        const QPoint pos = widget->mapFromGlobal(p.scenePos().toPoint());
+        const QPoint pos = widget->mapFromGlobal(p.screenPos().toPoint());
 
         QMouseEvent mouseEvent(eventType, pos,
                                Qt::LeftButton, Qt::LeftButton,

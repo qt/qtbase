@@ -9326,6 +9326,7 @@ protected:
         case QEvent::MouseMove:
         case QEvent::MouseButtonRelease:
             ++m_mouseEventCount;
+            m_lastMouseEventPos = static_cast<QMouseEvent *>(e)->localPos();
             if (m_acceptMouse)
                 e->accept();
             else
@@ -9342,6 +9343,7 @@ public:
     bool m_acceptTouch;
     int m_mouseEventCount;
     bool m_acceptMouse;
+    QPointF m_lastMouseEventPos;
 };
 
 void tst_QWidget::touchEventSynthesizedMouseEvent()
@@ -9361,12 +9363,15 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
         QTest::touchEvent(&widget, device).press(0, QPoint(10, 10), &widget);
         QCOMPARE(widget.m_touchEventCount, 0);
         QCOMPARE(widget.m_mouseEventCount, 1);
+        QCOMPARE(widget.m_lastMouseEventPos, QPointF(10, 10));
         QTest::touchEvent(&widget, device).move(0, QPoint(15, 15), &widget);
         QCOMPARE(widget.m_touchEventCount, 0);
         QCOMPARE(widget.m_mouseEventCount, 2);
+        QCOMPARE(widget.m_lastMouseEventPos, QPointF(15, 15));
         QTest::touchEvent(&widget, device).release(0, QPoint(20, 20), &widget);
         QCOMPARE(widget.m_touchEventCount, 0);
         QCOMPARE(widget.m_mouseEventCount, 3);
+        QCOMPARE(widget.m_lastMouseEventPos, QPointF(20, 20));
     }
 
     {
@@ -9403,6 +9408,7 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
         TouchMouseWidget parent;
         parent.setAcceptTouch(true);
         TouchMouseWidget child(&parent);
+        child.move(5, 5);
         child.setAcceptMouse(false);
         parent.show();
         QVERIFY(QTest::qWaitForWindowExposed(parent.windowHandle()));
@@ -9416,6 +9422,7 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
         QCOMPARE(parent.m_mouseEventCount, 0);
         QCOMPARE(child.m_touchEventCount, 0);
         QCOMPARE(child.m_mouseEventCount, 1); // Attempt at mouse event before propagation
+        QCOMPARE(child.m_lastMouseEventPos, QPointF(10, 10));
     }
 
     {
@@ -9427,6 +9434,7 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
 
         TouchMouseWidget parent;
         TouchMouseWidget child(&parent);
+        child.move(5, 5);
         child.setAcceptMouse(false);
         parent.show();
         QVERIFY(QTest::qWaitForWindowExposed(parent.windowHandle()));
@@ -9438,8 +9446,10 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
         QTest::touchEvent(parent.window(), device).press(0, QPoint(10, 10), &child);
         QCOMPARE(parent.m_touchEventCount, 0);
         QCOMPARE(parent.m_mouseEventCount, 1);
+        QCOMPARE(parent.m_lastMouseEventPos, QPointF(15, 15));
         QCOMPARE(child.m_touchEventCount, 0);
         QCOMPARE(child.m_mouseEventCount, 1); // Attempt at mouse event before propagation
+        QCOMPARE(child.m_lastMouseEventPos, QPointF(10, 10));
     }
 }
 
