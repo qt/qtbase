@@ -38,60 +38,13 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-#include <QtGui>
+#! [3]
+CONFIG += release
+#! [3]
 
-//! [0]
-class MyStylePlugin : public QStylePlugin
-{
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QStyleFactoryInterface" FILE mystyleplugin.json)
-public:
-    MyStylePlugin(QObject *parent = 0);
 
-    QStyle *create(const QString &key);
-};
-//! [0]
-
-class RocketStyle : public QCommonStyle
-{
-public:
-    RocketStyle() {};
-
-};
-
-class StarBusterStyle : public QCommonStyle
-{
-public:
-    StarBusterStyle() {};
-};
-
-MyStylePlugin::MyStylePlugin(QObject *parent)
-    : QStylePlugin(parent)
-{
-}
-
-QStringList MyStylePlugin::keys() const
-{
-    return QStringList() << "Rocket" << "StarBuster";
-}
-
-//! [1]
-QStyle *MyStylePlugin::create(const QString &key)
-{
-    QString lcKey = key.toLower();
-    if (lcKey == "rocket") {
-        return new RocketStyle;
-    } else if (lcKey == "starbuster") {
-        return new StarBusterStyle;
-    }
-    return 0;
-}
-//! [1]
-
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
-    MyStylePlugin plugin;
-    return app.exec();
-}
+#! [5]
+QTPLUGIN     += qjpeg \
+                qgif \
+                qkrcodecs
+#! [5]

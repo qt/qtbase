@@ -57,15 +57,17 @@ QT_BEGIN_NAMESPACE
 
     Writing a style plugin is achieved by subclassing this base class,
     reimplementing the pure virtual create() function, and
-    exporting the class using the Q_PLUGIN_METADATA() macro. See \l
-    {How to Create Qt Plugins} for details.
+    exporting the class using the Q_PLUGIN_METADATA() macro.
 
-    The json metadata file for the plugin needs to contain information
-    about the names of the styles the plugins supports as follows:
+    \snippet qstyleplugin/main.cpp 0
 
-    \code
-    { "Keys": [ "mystyle" ] }
-    \endcode
+    The json metadata file \c mystyleplugin.json for the plugin needs
+    to contain information about the names of the styles the plugins
+    supports as follows:
+
+    \quotefile qstyleplugin/mystyleplugin.json
+
+    See \l {How to Create Qt Plugins} for details.
 
     \sa QStyleFactory, QStyle
 */
@@ -79,10 +81,7 @@ QT_BEGIN_NAMESPACE
     The style key is usually the class name of the required
     style. Note that the keys are case insensitive. For example:
 
-    \snippet qstyleplugin/main.cpp 0
-    \codeline
     \snippet qstyleplugin/main.cpp 1
-    \snippet qstyleplugin/main.cpp 2
 
     \sa keys()
 */

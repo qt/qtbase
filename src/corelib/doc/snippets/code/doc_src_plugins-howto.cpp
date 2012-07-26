@@ -38,60 +38,47 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-#include <QtGui>
-
 //! [0]
 class MyStylePlugin : public QStylePlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QStyleFactoryInterface" FILE mystyleplugin.json)
 public:
-    MyStylePlugin(QObject *parent = 0);
-
     QStyle *create(const QString &key);
 };
 //! [0]
 
-class RocketStyle : public QCommonStyle
-{
-public:
-    RocketStyle() {};
-
-};
-
-class StarBusterStyle : public QCommonStyle
-{
-public:
-    StarBusterStyle() {};
-};
-
-MyStylePlugin::MyStylePlugin(QObject *parent)
-    : QStylePlugin(parent)
-{
-}
-
-QStringList MyStylePlugin::keys() const
-{
-    return QStringList() << "Rocket" << "StarBuster";
-}
 
 //! [1]
+#include "mystyleplugin.h"
+
 QStyle *MyStylePlugin::create(const QString &key)
 {
-    QString lcKey = key.toLower();
-    if (lcKey == "rocket") {
-        return new RocketStyle;
-    } else if (lcKey == "starbuster") {
-        return new StarBusterStyle;
-    }
+    if (key.toLower() == "mystyle")
+        return new MyStyle;
     return 0;
 }
+
 //! [1]
+
+
+//! [2]
+QApplication::setStyle(QStyleFactory::create("MyStyle"));
+//! [2]
+
+
+//! [4]
+#include <QApplication>
+#include <QtPlugin>
+
+Q_IMPORT_PLUGIN(qjpeg)
+Q_IMPORT_PLUGIN(qgif)
+Q_IMPORT_PLUGIN(qkrcodecs)
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    MyStylePlugin plugin;
+    ...
     return app.exec();
 }
+//! [4]
