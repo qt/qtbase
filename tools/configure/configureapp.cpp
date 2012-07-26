@@ -1520,7 +1520,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "MOUSE_DRIVERS" ]       = "pc linuxtp";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "DBUS"]                 = "no";
-        dictionary[ "QT_QWS_DEPTH" ]        = "4 8 16 24 32";
         dictionary[ "QT_INOTIFY" ]          = "no";
         dictionary[ "QT_CUPS" ]             = "no";
         dictionary[ "QT_GLIB" ]             = "no";
@@ -3185,40 +3184,6 @@ void Configure::generateConfigfiles()
         qconfigList.sort();
         for (int i = 0; i < qconfigList.count(); ++i)
             tmpStream << addDefine(qconfigList.at(i));
-
-        if (dictionary["EMBEDDED"] == "yes")
-        {
-            // Check for keyboard, mouse, gfx.
-            QStringList kbdDrivers = dictionary["KBD_DRIVERS"].split(" ");;
-            QStringList allKbdDrivers;
-            allKbdDrivers<<"tty"<<"usb"<<"sl5000"<<"yopy"<<"vr41xx"<<"qvfb"<<"um";
-            foreach (const QString &kbd, allKbdDrivers) {
-                if (!kbdDrivers.contains(kbd))
-                    tmpStream<<"#define QT_NO_QWS_KBD_"<<kbd.toUpper()<<endl;
-            }
-
-            QStringList mouseDrivers = dictionary["MOUSE_DRIVERS"].split(" ");
-            QStringList allMouseDrivers;
-            allMouseDrivers << "pc"<<"bus"<<"linuxtp"<<"yopy"<<"vr41xx"<<"tslib"<<"qvfb";
-            foreach (const QString &mouse, allMouseDrivers) {
-                if (!mouseDrivers.contains(mouse))
-                    tmpStream<<"#define QT_NO_QWS_MOUSE_"<<mouse.toUpper()<<endl;
-            }
-
-            QStringList gfxDrivers = dictionary["GFX_DRIVERS"].split(" ");
-            QStringList allGfxDrivers;
-            allGfxDrivers<<"linuxfb"<<"transformed"<<"qvfb"<<"multiscreen"<<"ahi";
-            foreach (const QString &gfx, allGfxDrivers) {
-                if (!gfxDrivers.contains(gfx))
-                    tmpStream<<"#define QT_NO_QWS_"<<gfx.toUpper()<<endl;
-            }
-
-            tmpStream<<"#define Q_WS_QWS"<<endl;
-
-            QStringList depths = dictionary[ "QT_QWS_DEPTH" ].split(" ");
-            foreach (const QString &depth, depths)
-              tmpStream<<"#define QT_QWS_DEPTH_"+depth<<endl;
-        }
 
         if (dictionary[ "QT_CUPS" ] == "no")
           tmpStream<<"#define QT_NO_CUPS"<<endl;
