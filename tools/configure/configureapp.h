@@ -141,6 +141,8 @@ private:
     QStringList qmakeIncludes;
     QStringList qmakeLibs;
     QString opensslLibs;
+    QString opensslLibsDebug;
+    QString opensslLibsRelease;
     QString psqlLibs;
     QString sybase;
     QString sybaseLibs;
