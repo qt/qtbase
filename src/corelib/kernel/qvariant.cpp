@@ -3039,4 +3039,9 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \internal
 */
 
+/*!
+    \fn const DataPtr &QVariant::data_ptr() const
+    \internal
+*/
+
 QT_END_NAMESPACE
