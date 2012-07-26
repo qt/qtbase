@@ -19,7 +19,9 @@ VPATH += $$QT_SOURCE_TREE/src/corelib/global \
          $$QT_SOURCE_TREE/src/corelib/codecs \
          $$QT_SOURCE_TREE/src/corelib/plugin \
          $$QT_SOURCE_TREE/src/corelib/xml \
-         $$QT_SOURCE_TREE/src/corelib/io
+         $$QT_SOURCE_TREE/src/corelib/io \
+         $$QT_SOURCE_TREE/tools/shared/windows
+
 INCLUDEPATH += . \
            generators \
            generators/unix \
@@ -30,6 +32,7 @@ INCLUDEPATH += . \
            $$QT_SOURCE_TREE/include/QtCore \
            $$QT_SOURCE_TREE/include/QtCore/$$QT_VERSION \
            $$QT_SOURCE_TREE/include/QtCore/$$QT_VERSION/QtCore \
+           $$QT_SOURCE_TREE/tools/shared \
            $$QT_SOURCE_TREE/qmake
 
 include(qmake.pri)
