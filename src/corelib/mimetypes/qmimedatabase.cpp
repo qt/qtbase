@@ -341,7 +341,7 @@ QMimeType QMimeDatabase::mimeTypeForName(const QString &nameOrAlias) const
 
     \a fileInfo may refer to an absolute or relative path.
 
-    \sa isDefault, mimeTypeForData
+    \sa QMimeType::isDefault(), mimeTypeForData()
 */
 QMimeType QMimeDatabase::mimeTypeForFile(const QFileInfo &fileInfo, MatchMode mode) const
 {
@@ -426,7 +426,7 @@ QMimeType QMimeDatabase::mimeTypeForFile(const QString &fileName, MatchMode mode
     when determining the MIME type, use mimeTypeForFile() or
     mimeTypeForFileNameAndData() instead.
 
-    \sa mimeTypeForFile
+    \sa mimeTypeForFile()
 */
 QList<QMimeType> QMimeDatabase::mimeTypesForFileName(const QString &fileName) const
 {
@@ -585,5 +585,31 @@ QList<QMimeType> QMimeDatabase::allMimeTypes() const
 
     return d->allMimeTypes();
 }
+
+/*!
+    \enum QMimeDatabase::MatchMode
+
+    This enum specifies how matching a file to a MIME type is performed.
+
+    \value MatchDefault Both the file name and content are used to look for a match
+
+    \value MatchExtension Only the file name is used to look for a match
+
+    \value MatchContent The file content is used to look for a match
+*/
+
+/*!
+    \fn QMimeType QMimeDatabase::mimeTypeForNameAndData(const QString &fileName, QIODevice *device) const
+    \obsolete
+
+    This function is replaced by \l mimeTypeForFileNameAndData()
+*/
+
+/*!
+    \fn QMimeType QMimeDatabase::mimeTypeForNameAndData(const QString &fileName, const QByteArray &data) const
+    \obsolete
+
+    This function is replaced by \l mimeTypeForFileNameAndData()
+*/
 
 QT_END_NAMESPACE
