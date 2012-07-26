@@ -3109,9 +3109,6 @@ void Configure::generateConfigfiles()
             tmpStream << endl;
         }
 
-        // ### For compatibility only, should be removed later.
-        tmpStream << endl << "#define Q_WS_QPA" << endl;
-
         tmpStream << endl << "// Compile time features" << endl;
 
         QStringList qconfigList;
