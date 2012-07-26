@@ -241,7 +241,7 @@ public:
         QMatrix = 79, QTransform = 80, QMatrix4x4 = 81, QVector2D = 82,
         QVector3D = 83, QVector4D = 84, QQuaternion = 85, QPolygonF = 86,
         QSizePolicy = 121,
-        User = 256
+        User = 1024
     };
 #endif
 
