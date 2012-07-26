@@ -227,7 +227,6 @@ public:
 
     void clearRelated() { relatesTo_ = 0; }
 
-    //virtual QString fileBase() const;
     QString guid() const;
     QString extractClassName(const QString &string) const;
     virtual QString qmlTypeName() const { return name_; }
@@ -236,6 +235,7 @@ public:
     virtual QString qmlModuleIdentifier() const { return qmlModuleName_ + qmlModuleVersionMajor_; }
     virtual bool setQmlModule(const ArgLocPair& );
     virtual ClassNode* classNode() { return 0; }
+    virtual void setClassNode(ClassNode* ) { }
     virtual void clearCurrentChild() { }
     virtual const ImportList* importList() const { return 0; }
     virtual void setImportList(const ImportList& ) { }
@@ -521,14 +521,12 @@ private:
 class QmlClassNode : public FakeNode
 {
 public:
-    QmlClassNode(InnerNode* parent,
-                 const QString& name,
-                 ClassNode* cn);
+    QmlClassNode(InnerNode* parent, const QString& name);
     virtual ~QmlClassNode();
     virtual bool isQmlNode() const { return true; }
     virtual bool isQtQuickNode() const { return (qmlModuleName() == QLatin1String("QtQuick")); }
     virtual ClassNode* classNode() { return cnode_; }
-    //virtual QString fileBase() const;
+    virtual void setClassNode(ClassNode* cn) { cnode_ = cn; }
     virtual void setCurrentChild();
     virtual void clearCurrentChild();
     virtual const ImportList* importList() const { return &importList_; }

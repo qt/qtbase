@@ -474,6 +474,7 @@ QSet<QString> CppCodeParser::topicCommands()
                            << COMMAND_TYPEDEF
                            << COMMAND_VARIABLE
                            << COMMAND_QMLCLASS
+                           << COMMAND_QMLTYPE
                            << COMMAND_QMLPROPERTY
                            << COMMAND_QMLATTACHEDPROPERTY
                            << COMMAND_QMLSIGNAL
@@ -725,11 +726,29 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         fn->setLocation(doc.startLocation());
         return fn;
     }
-    else if (command == COMMAND_QMLCLASS) {
+    else if ((command == COMMAND_QMLCLASS) || (command == COMMAND_QMLTYPE)) {
+        if (command == COMMAND_QMLCLASS)
+            doc.startLocation().warning(tr("\\qmlclass is deprecated; use \\qmltype instead"));
         ClassNode* classNode = 0;
         QStringList names = arg.first.split(QLatin1Char(' '));
-        if (names.size() > 1)
-            classNode = tree_->findClassNode(names[1].split("::"));
+        if (names.size() > 1) {
+            if (names[1] != "0")
+                doc.startLocation().warning(tr("\\qmltype no longer has a 2nd argument; "
+                                               "use '\\instantiates <class>' in \\qmltype "
+                                               "comments instead"));
+            else
+                doc.startLocation().warning(tr("The 0 arg is no longer used for indicating "
+                                               "that the QML type does not instantiate a "
+                                               "C++ class"));
+            /*
+              If the second argument of the \\qmlclass command
+              is 0 we should ignore the C++ class. The second
+              argument should only be 0 when you are documenting
+              QML in a .qdoc file.
+             */
+            if (names[1] != "0")
+                classNode = tree_->findClassNode(names[1].split("::"));
+        }
 
         /*
           Search for a node with the same name. If there is one,
@@ -743,8 +762,11 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
           node and return that one.
          */
         NameCollisionNode* ncn = tree_->checkForCollision(names[0]);
-        QmlClassNode* qcn = new QmlClassNode(tree_->root(), names[0], classNode);
+        QmlClassNode* qcn = new QmlClassNode(tree_->root(), names[0]);
+        qcn->setClassNode(classNode);
         qcn->setLocation(doc.startLocation());
+#if 0
+        // to be removed if \qmltype and \instantiates work ok
         if (isParsingCpp() || isParsingQdoc()) {
             qcn->requireCppClass();
             if (names.size() < 2) {
@@ -758,6 +780,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                 doc.startLocation().warning(tr(msg.toLatin1().data()));
             }
         }
+#endif
         if (ncn)
             ncn->addCollision(qcn);
         return qcn;
@@ -984,6 +1007,7 @@ QSet<QString> CppCodeParser::otherMetaCommands()
                                 << COMMAND_INDEXPAGE
                                 << COMMAND_STARTPAGE
                                 << COMMAND_QMLINHERITS
+                                << COMMAND_QMLINSTANTIATES
                                 << COMMAND_QMLDEFAULT
                                 << COMMAND_QMLREADONLY
                                 << COMMAND_QMLABSTRACT;
@@ -1109,6 +1133,17 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
                 QmlClassNode::addInheritedBy(arg,node);
             }
         }
+    }
+    else if (command == COMMAND_QMLINSTANTIATES) {
+        if ((node->type() == Node::Fake) && (node->subType() == Node::QmlClass)) {
+            ClassNode* classNode = tree_->findClassNode(arg.split("::"));
+            if (classNode)
+                node->setClassNode(classNode);
+            else
+                doc.location().warning(tr("C++ class %1 not found: \\instantiates %1").arg(arg));
+        }
+        else
+            doc.location().warning(tr("\\instantiates is only allowed in \\qmltype"));
     }
     else if (command == COMMAND_QMLDEFAULT) {
         if (node->type() == Node::QmlProperty) {

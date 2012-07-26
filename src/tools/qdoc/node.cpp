@@ -2006,17 +2006,13 @@ QMap<QString, QmlClassNode*> QmlClassNode::qmlModuleMemberMap_;
 /*!
   Constructs a Qml class node (i.e. a Fake node with the
   subtype QmlClass. The new node has the given \a parent
-  and \a name and is associated with the C++ class node
-  specified by \a cn which may be null if the the Qml
-  class node is not associated with a C++ class node.
+  and \a name.
  */
-QmlClassNode::QmlClassNode(InnerNode *parent,
-                           const QString& name,
-                           ClassNode* cn)
+QmlClassNode::QmlClassNode(InnerNode *parent, const QString& name)
     : FakeNode(parent, name, QmlClass, Node::ApiPage),
       abstract_(false),
       cnodeRequired_(false),
-      cnode_(cn),
+      cnode_(0),
       base_(0)
 {
     int i = 0;

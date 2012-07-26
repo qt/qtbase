@@ -62,10 +62,12 @@ QT_BEGIN_NAMESPACE
 
 #define COMMAND_QMLABSTRACT             Doc::alias(QLatin1String("qmlabstract"))
 #define COMMAND_QMLCLASS                Doc::alias(QLatin1String("qmlclass"))
+#define COMMAND_QMLTYPE                 Doc::alias(QLatin1String("qmltype"))
 #define COMMAND_QMLMODULE               Doc::alias(QLatin1String("qmlmodule"))
 #define COMMAND_QMLPROPERTY             Doc::alias(QLatin1String("qmlproperty"))
 #define COMMAND_QMLATTACHEDPROPERTY     Doc::alias(QLatin1String("qmlattachedproperty"))
 #define COMMAND_QMLINHERITS             Doc::alias(QLatin1String("inherits"))
+#define COMMAND_QMLINSTANTIATES         Doc::alias(QLatin1String("instantiates"))
 #define COMMAND_INQMLMODULE             Doc::alias(QLatin1String("inqmlmodule"))
 #define COMMAND_QMLSIGNAL               Doc::alias(QLatin1String("qmlsignal"))
 #define COMMAND_QMLATTACHEDSIGNAL       Doc::alias(QLatin1String("qmlattachedsignal"))
@@ -269,7 +271,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
         }
         if (!topic.isEmpty()) {
             args = doc.metaCommandArgs(topic);
-            if (topic == COMMAND_QMLCLASS) {
+            if ((topic == COMMAND_QMLCLASS) || (topic == COMMAND_QMLTYPE)) {
                 // do nothing.
             }
             else if (topic == COMMAND_QMLPROPERTY) {
@@ -389,7 +391,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiObjectDefinition *definition)
     nestingLevel++;
 
     if (current->type() == Node::Namespace) {
-        QmlClassNode *component = new QmlClassNode(current, name, 0);
+        QmlClassNode *component = new QmlClassNode(current, name);
         component->setTitle(name);
         component->setImportList(importList);
 

@@ -68,10 +68,12 @@ QT_BEGIN_NAMESPACE
 
 #define COMMAND_QMLABSTRACT             Doc::alias("qmlabstract")
 #define COMMAND_QMLCLASS                Doc::alias("qmlclass")
+#define COMMAND_QMLTYPE                 Doc::alias("qmltype")
 #define COMMAND_QMLMODULE               Doc::alias("qmlmodule")
 #define COMMAND_QMLPROPERTY             Doc::alias("qmlproperty")
 #define COMMAND_QMLATTACHEDPROPERTY     Doc::alias("qmlattachedproperty")
 #define COMMAND_QMLINHERITS             Doc::alias("inherits")
+#define COMMAND_QMLINSTANTIATES         Doc::alias("instantiates")
 #define COMMAND_INQMLMODULE             Doc::alias("inqmlmodule")
 #define COMMAND_QMLSIGNAL               Doc::alias("qmlsignal")
 #define COMMAND_QMLATTACHEDSIGNAL       Doc::alias("qmlattachedsignal")
@@ -196,6 +198,7 @@ QSet<QString> QmlCodeParser::topicCommands()
 {
     return QSet<QString>() << COMMAND_VARIABLE
                            << COMMAND_QMLCLASS
+                           << COMMAND_QMLTYPE
                            << COMMAND_QMLPROPERTY
                            << COMMAND_QMLATTACHEDPROPERTY
                            << COMMAND_QMLSIGNAL
