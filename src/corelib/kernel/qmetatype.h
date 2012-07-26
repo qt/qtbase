@@ -789,11 +789,11 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
             name.append('<'); \
             const char *tName = QMetaType::typeName(qMetaTypeId<T>()); \
             Q_ASSERT(tName); \
-            name.append(tName, strlen(tName)); \
+            name.append(tName, int(strlen(tName))); \
             name.append(','); \
             const char *uName = QMetaType::typeName(qMetaTypeId<U>()); \
             Q_ASSERT(uName); \
-            name.append(uName, strlen(uName)); \
+            name.append(uName, int(strlen(uName))); \
             if (name.last() == '>') \
                 name.append(' '); \
             name.append('>'); \
