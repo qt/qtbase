@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
   It is used to parse the query strings found in URLs like the following:
 
-  \img qurl-querystring.png
+  \image qurl-querystring.png
 
   Query strings like the above are used to transmit options in the URL and are
   usually decoded into multiple key-value pairs. The one above would contain
@@ -451,7 +451,7 @@ static void recodeAndAppend(QString &to, const QString &input,
     The order of the key-value pairs in the returned string is exactly the same
     as in the original query.
 
-    \sa setQuery(), QUrl::setQuery(), QUrl::fragment(), \l{#Encoding}{Encoding}
+    \sa setQuery(), QUrl::setQuery(), QUrl::fragment(), {encoding}{Encoding}
 */
 QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
 {
@@ -507,7 +507,7 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
     and between key-value pairs in the URL's query string. The default
     value delimiter is '=' and the default pair delimiter is '&'.
 
-    \img qurl-querystring.png
+    \image qurl-querystring.png
 
     \a valueDelimiter will be used for separating keys from values,
     and \a pairDelimiter will be used to separate key-value pairs.
@@ -590,7 +590,7 @@ void QUrlQuery::setQueryItems(const QList<QPair<QString, QString> > &query)
     elements is the same as the one found in the query string or set with
     setQueryItems().
 
-    \sa setQueryItems(), \l{#Encoding}{Encoding}
+    \sa setQueryItems(), {encoding}{Encoding}
 */
 QList<QPair<QString, QString> > QUrlQuery::queryItems(QUrl::ComponentFormattingOptions encoding) const
 {
@@ -648,7 +648,7 @@ void QUrlQuery::addQueryItem(const QString &key, const QString &value)
     one found, in the order they were present in the query string or added
     using addQueryItem().
 
-    \sa addQueryItem(), allQueryItemValues(), \l{#Encoding}{Encoding}
+    \sa addQueryItem(), allQueryItemValues(), {encoding}{Encoding}
 */
 QString QUrlQuery::queryItemValue(const QString &key, QUrl::ComponentFormattingOptions encoding) const
 {
@@ -735,4 +735,27 @@ void QUrlQuery::removeAllQueryItems(const QString &key)
     \sa setQueryDelimiters(), queryPairDelimiter(), defaultQueryValueDelimiter()
 */
 
+/*!
+    \typedef QUrlQuery::DataPtr
+    \internal
+*/
+
+/*!
+    \fn DataPtr &QUrlQuery::data_ptr()
+    \internal
+*/
+
+/*!
+    \fn QString QUrlQuery::toString(QUrl::ComponentFormattingOptions encoding = QUrl::PrettyDecoded) const
+
+    Returns this QUrlQuery as a QString. \a encoding can be used to specify the URL string encoding of the return value.
+*/
+
+/*!
+    \fn bool QUrlQuery::operator!=(const QUrlQuery &other) const
+
+    Returns true if \a other is not equal to this QUrlQuery. Otherwise, returns false.
+
+    \sa operator==()
+*/
 QT_END_NAMESPACE
