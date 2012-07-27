@@ -359,7 +359,7 @@ static int qt_gl_resolve_extensions()
             extensions |= QOpenGLExtensions::FramebufferMultisample;
         if (extensionMatcher.match("GL_EXT_framebuffer_blit"))
             extensions |= QOpenGLExtensions::FramebufferBlit;
-        if (extensionMatcher.match("GL_EXT_pakced_depth_stencil"))
+        if (extensionMatcher.match("GL_EXT_packed_depth_stencil"))
             extensions |= QOpenGLExtensions::PackedDepthStencil;
     }
 #endif
