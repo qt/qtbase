@@ -403,8 +403,9 @@ void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
 {
 #ifndef QT_NO_LIBRARY
     QStringList *app_libpaths = coreappdata()->app_libpaths;
-    Q_ASSERT(app_libpaths);
-    QString app_location( QCoreApplication::applicationFilePath() );
+    if (!app_libpaths)
+        coreappdata()->app_libpaths = app_libpaths = new QStringList;
+    QString app_location = QCoreApplication::applicationFilePath();
     app_location.truncate(app_location.lastIndexOf(QLatin1Char('/')));
     app_location = QDir(app_location).canonicalPath();
     if (QFile::exists(app_location) && !app_libpaths->contains(app_location))
@@ -589,12 +590,8 @@ void QCoreApplication::init()
     d->threadData->eventDispatcher = QCoreApplicationPrivate::eventDispatcher;
 
 #ifndef QT_NO_LIBRARY
-    if (!coreappdata()->app_libpaths) {
-        // make sure that library paths is initialized
-        libraryPaths();
-    } else {
+    if (coreappdata()->app_libpaths)
         d->appendApplicationPathToLibraryPaths();
-    }
 #endif
 
 #ifdef QT_EVAL
