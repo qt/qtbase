@@ -59,30 +59,17 @@ void QSystemSemaphorePrivate::setErrorString(const QString &function)
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
 }
 
-/*!
-    \internal
-
-    Setup unix_key
- */
 key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
 {
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
     return -1;
 }
 
-/*!
-    \internal
-
-    Cleanup the unix_key
- */
 void QSystemSemaphorePrivate::cleanHandle()
 {
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
 }
 
-/*!
-    \internal
- */
 bool QSystemSemaphorePrivate::modifySemaphore(int count)
 {
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";

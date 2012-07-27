@@ -60,11 +60,6 @@ void QSharedMemoryPrivate::setErrorString(const QString &function)
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
 }
 
-/*!
-    \internal
-
-    If not already made create the handle used for accessing the shared memory.
-*/
 key_t QSharedMemoryPrivate::handle()
 {
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
@@ -74,15 +69,6 @@ key_t QSharedMemoryPrivate::handle()
 #endif // QT_NO_SHAREDMEMORY
 
 #if !(defined(QT_NO_SHAREDMEMORY) && defined(QT_NO_SYSTEMSEMAPHORE))
-/*!
-    \internal
-    Creates the unix file if needed.
-    returns true if the unix file was created.
-
-    -1 error
-     0 already existed
-     1 created
-  */
 int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
 {
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
