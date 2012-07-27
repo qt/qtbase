@@ -120,7 +120,7 @@ QT_BEGIN_NAMESPACE
     \value Drop                             A drag and drop operation is completed (QDropEvent).
     \value EnabledChange                    Widget's enabled state has changed.
     \value Enter                            Mouse enters widget's boundaries.
-    \value EnterEditFocus                   An editor widget gains focus for editing.
+    \value EnterEditFocus                   An editor widget gains focus for editing. QT_KEYPAD_NAVIGATION must be defined.
     \value EnterWhatsThisMode               Send to toplevel widgets when the application enters "What's This?" mode.
     \value Expose                           Sent to a window when its on-screen contents are invalidated and need to be flushed from the backing store.
     \value FileOpen                         File open request (QFileOpenEvent).
@@ -159,7 +159,7 @@ QT_BEGIN_NAMESPACE
     \value LayoutDirectionChange            The direction of layouts changed.
     \value LayoutRequest                    Widget layout needs to be redone.
     \value Leave                            Mouse leaves widget's boundaries.
-    \value LeaveEditFocus                   An editor widget loses focus for editing.
+    \value LeaveEditFocus                   An editor widget loses focus for editing. QT_KEYPAD_NAVIGATION must be defined.
     \value LeaveWhatsThisMode               Send to toplevel widgets when the application leaves "What's This?" mode.
     \value LocaleChange                     The system locale has changed.
     \value NonClientAreaMouseButtonDblClick A mouse double click occurred outside the client area.
