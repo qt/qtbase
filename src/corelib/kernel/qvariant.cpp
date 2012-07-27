@@ -2553,8 +2553,11 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
 {
 #ifndef QT_BOOTSTRAPPED
     QMetaType toType(toId);
-    if ((QMetaType::typeFlags(fromId) & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject))
+    if ((QMetaType::typeFlags(fromId) & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject)) {
+        if (!fromObject)
+            return true;
         return canConvertMetaObject(fromObject->metaObject(), toType.metaObject());
+    }
 #else
     Q_UNUSED(fromId);
     Q_UNUSED(toId);

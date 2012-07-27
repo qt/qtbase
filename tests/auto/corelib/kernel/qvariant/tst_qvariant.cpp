@@ -2100,39 +2100,47 @@ void tst_QVariant::qvariant_cast_QObject_data()
 {
     QTest::addColumn<QVariant>("data");
     QTest::addColumn<bool>("success");
+    QTest::addColumn<bool>("isNull");
     QObject *obj = new QObject;
     obj->setObjectName(QString::fromLatin1("Hello"));
-    QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, &obj) << true;
-    QTest::newRow("from QObject2") << QVariant::fromValue(obj) << true;
-    QTest::newRow("from String") << QVariant(QLatin1String("1, 2, 3")) << false;
-    QTest::newRow("from int") << QVariant((int) 123) << false;
+    QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, &obj) << true << false;
+    QTest::newRow("from QObject2") << QVariant::fromValue(obj) << true << false;
+    QTest::newRow("from String") << QVariant(QLatin1String("1, 2, 3")) << false << false;
+    QTest::newRow("from int") << QVariant((int) 123) << false << false;
     CustomQObject *customObject = new CustomQObject(this);
     customObject->setObjectName(QString::fromLatin1("Hello"));
-    QTest::newRow("from Derived QObject") << QVariant::fromValue(customObject) << true;
-    QTest::newRow("from custom Object") << QVariant::fromValue(CustomNonQObject()) << false;
+    QTest::newRow("from Derived QObject") << QVariant::fromValue(customObject) << true << false;
+    QTest::newRow("from custom Object") << QVariant::fromValue(CustomNonQObject()) << false << false;
 
     // Deleted in cleanupTestCase.
     customNonQObjectPointer = new CustomNonQObject;
-    QTest::newRow("from custom ObjectStar") << QVariant::fromValue(customNonQObjectPointer) << false;
+    QTest::newRow("from custom ObjectStar") << QVariant::fromValue(customNonQObjectPointer) << false << false;
 
     // Deleted in cleanupTestCase.
     objectPointerTestData.push_back(obj);
     objectPointerTestData.push_back(customObject);
+
+    QTest::newRow("null QObject") << QVariant::fromValue<QObject*>(0) << true << true;
+    QTest::newRow("null derived QObject") << QVariant::fromValue<CustomQObject*>(0) << true << true;
+    QTest::newRow("null custom object") << QVariant::fromValue<CustomNonQObject*>(0) << false << true;
+    QTest::newRow("null int") << QVariant::fromValue<int>(0) << false << true;
 }
 
 void tst_QVariant::qvariant_cast_QObject()
 {
     QFETCH(QVariant, data);
     QFETCH(bool, success);
+    QFETCH(bool, isNull);
 
     QObject *o = qvariant_cast<QObject *>(data);
-    QCOMPARE(o != 0, success);
+    QCOMPARE(o != 0, success && !isNull);
     if (success) {
-        QCOMPARE(o->objectName(), QString::fromLatin1("Hello"));
+        if (!isNull)
+            QCOMPARE(o->objectName(), QString::fromLatin1("Hello"));
         QVERIFY(data.canConvert<QObject*>());
         QVERIFY(data.canConvert(QMetaType::QObjectStar));
         QVERIFY(data.canConvert(::qMetaTypeId<QObject*>()));
-        QVERIFY(data.value<QObject*>());
+        QCOMPARE(data.value<QObject*>() == 0, isNull);
         QVERIFY(data.convert(QMetaType::QObjectStar));
         QCOMPARE(data.userType(), int(QMetaType::QObjectStar));
     } else {
