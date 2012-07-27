@@ -3810,8 +3810,9 @@ void Configure::generateMakefiles()
                     txt << "\t" << args.join(" ") << "\n";
                     txt << "\t$(MAKE) -$(MAKEFLAGS) -f " << it->target << "\n";
                     txt << "first: all\n";
-                    txt << "qmake:\n";
+                    txt << "qmake: FORCE\n";
                     txt << "\t" << args.join(" ") << "\n";
+                    txt << "FORCE:\n";
                 }
             }
         }
