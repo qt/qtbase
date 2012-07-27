@@ -43,7 +43,7 @@
 
     \section1 QML Class
 
-    The QML types use the \l{qmlclass-command}{\\qmlclass} to document the
+    The QML types use the \l{qmltype-command}{\\qmltype} to document the
     type. In addition, they have the \l{inmodule-command}{\\inmodule}
     command in order for QDoc to associate them to the \c UIComponents module.
 

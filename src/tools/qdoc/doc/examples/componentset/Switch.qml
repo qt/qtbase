@@ -41,7 +41,7 @@
 import QtQuick 1.0
 
 /*!
-    \qmlclass ToggleSwitch
+    \qmltype ToggleSwitch
     \inqmlmodule UIComponents 1.0
     \brief A component that can be turned on or off
 

@@ -3525,9 +3525,10 @@
            * /
            \endcode
 
-    This generates a list of all the classes in the \e{draganddrop} group.
-    A class in the \e{draganddrop} group will have the \\ingroup command
-    in its \\class or \\qmlclass comment.
+    This generates a list of all the C++ classes and/or QML types in
+    the \e{draganddrop} group. A C++ class or QML type in the
+    \e{draganddrop} group will have \e{\\ingroup draganddrop} in its
+    \e{\\class} or \e{\\qmltype} comment.
 
 
     \target generatelist-command
@@ -5428,6 +5429,9 @@
     \target qmlclass-command
     \section1 \\qmlclass
 
+    This command is deprecated. Use \l{qmltype-command} {\\qmltype}
+    instead.
+
     The \\qmlclass command is for documenting a QML type that is
     instantiated by a C++ class. The command has two arguments. The
     first argument is the name of the QML type. The second argument
@@ -5469,6 +5473,82 @@
     command. And if a type is a member of a group of QML
     types, it should also include one or more \l{ingroup-command}
     {\\ingroup} commands.
+
+    \target qmlmethod-command
+    \section1 \\qmlmethod
+
+    The \\qmlmethod command is for documenting a QML method. The
+    argument is the complete method signature, including return
+    type and parameter names and types.
+
+    \code
+    / *!
+        \qmlmethod void TextInput::select(int start, int end)
+
+        Causes the text from \a start to \a end to be selected.
+
+        If either start or end is out of range, the selection is not changed.
+
+        After calling this, selectionStart will become the lesser and
+        selectionEnd will become the greater (regardless of the order
+        passed to this method).
+
+       \sa selectionStart, selectionEnd
+    * /
+    \endcode
+
+    QDoc includes this documentation on the element refence page for the
+    \l{http://doc.qt.nokia.com/4.7/qml-textinput.html#select-method}
+    {TextInput} element.
+
+    \target qmltype-command
+    \section1 \\qmltype
+
+    The \\qmltype command is for documenting a QML type. The command
+    has one argument, which is the name of the QML type.
+
+    If the QML type is instantiated by a C++ class, that class must be
+    specified using the \l{instantiates-command} {\\instantiates}
+    context command.
+
+    \code
+    / *!
+        \qmltype Transform
+        \instantiates QGraphicsTransform
+        \ingroup qml-transform-elements
+        \since 4.7
+        \brief The Transform elements provide a way to build
+        advanced transformations on Items.
+
+        The Transform element is a base type which cannot be
+        instantiated directly.  The concrete Transform types are:
+
+        \list
+          \li \l Rotation
+          \li \l Scale
+          \li \l Translate
+        \endlist
+
+        The Transform elements let you create and control advanced
+        transformations that can be configured independently using
+        specialized properties.
+
+        You can assign any number of Transform elements to an \l
+        Item. Each Transform is applied in order, one at a time.
+
+    * /
+    \endcode
+
+    The example generates the \l
+    {http://doc.qt.nokia.com/4.7/qml-transform.html} {QML Transform}
+    page. The \e{\\qmltype} comment includes \l{instantiates-command}
+    {\\instantiates} to specify that a Transform is instantiated by
+    the C++ class QGraphicsTransform. A \\qmltype comment should
+    always include a \l {since-command} {\\since} command, because all
+    QML types are new. It should also include a \l{brief-command}
+    {\\brief} description. And if a QML type is a member of a group of
+    QML types, the \\qmltype comment should include one or more
+    \l{ingroup-command} {\\ingroup} commands.
 
     \target qmlmethod-command
     \section1 \\qmlmethod
@@ -5579,7 +5659,7 @@
     colons (\c{::}).
 
     \code
-        \qmlclass ClickableButton
+        \qmltype ClickableButton
         \inqmlmodule ClickableComponents
 
         A clickable button that responds to the \c click() event.
@@ -5590,6 +5670,36 @@
 
     The \l{componentset}{UIComponents} example demonstrates proper usage of
     QDoc commands to document QML types and QML modules.
+
+    \target instantiates-command
+    \section1 \\instantiates
+
+    The \\instantiates command is used in the \l{qmltype-command} {QML
+    type} comment of an elemental QML type to specify the name of the
+    C++ class that instantiates the QML type.
+
+    If the QML type is not instantiated by a C++ class, this command
+    is not used.
+
+    \code
+    / *!
+        \qmltype Transform
+        \instantiates QGraphicsTransform
+        \ingroup qml-transform-elements
+        \since 4.7
+        \brief The Transform elements provide a way to build
+        advanced transformations on Items.
+
+        The Transform element is a base type which cannot be
+        instantiated directly.
+    * /
+    \endcode
+
+    The example generates the \l
+    {http://doc.qt.nokia.com/4.7/qml-transform.html} {QML Transform}
+    page. The \e{\\qmltype} comment includes \l{instantiates-command}
+    {\\instantiates} to specify that a Transform is instantiated by
+    the C++ class QGraphicsTransform. A \\qmltype comment should
 
     \target typedef-command
     \section1 \\typedef
@@ -6522,12 +6632,13 @@
 
     The \\inherits command is for documenting that one QML type
     inherits some other QML type. It must be included in the
-    inheriting element's \l{qmlclass-command}{\\qmlclass} comment.
+    inheriting element's \l{qmltype-command}{\\qmltype} comment.
     The argument is the name of the inherited QML type.
 
     \code
     / *!
-        \qmlclass PauseAnimation QDeclarativePauseAnimation
+        \qmltype PauseAnimation
+        \instantiates QDeclarativePauseAnimation
         \ingroup qml-animation-transition
         \since 4.7
         \inherits Animation
@@ -8686,12 +8797,14 @@
     \li \l {13-qdoc-commands-topics.html#qmlattachedproperty-command} {\\qmlattachedproperty}
     \li \l {13-qdoc-commands-topics.html#qmlattachedsignal-command} {\\qmlattachedsignal}
     \li \l {13-qdoc-commands-topics.html#qmlbasictype-command} {\\qmlbasictype}
-    \li \l {13-qdoc-commands-topics.html#qmlclass-command} {\\qmlclass}
+    \li \l {13-qdoc-commands-topics.html#qmlclass-command} {\\qmlclass} \span {class="newStuff"} {(deprecated, use \\qmltype)}
+    \li \l {13-qdoc-commands-topics.html#qmltype-command} {\\qmltype}  \span {class="newStuff"} {(new 27/7/2012)}
     \li \l {13-qdoc-commands-topics.html#qmlmethod-command} {\\qmlmethod}
     \li \l {13-qdoc-commands-topics.html#qmlproperty-command} {\\qmlproperty}
     \li \l {13-qdoc-commands-topics.html#qmlsignal-command} {\\qmlsignal}
     \li \l {13-qdoc-commands-topics.html#qmlmodule-command} {\\qmlmodule}
     \li \l {13-qdoc-commands-topics.html#inqmlmodule-command} {\\inqmlmodule}
+    \li \l {13-qdoc-commands-topics.html#instantiates-command} {\\instantiates} \span {class="newStuff"} {(new 27/7/2012)}
     \li \l {11-qdoc-commands-specialcontent.html#quotation-command} {\\quotation}
     \li \l {07-0-qdoc-commands-includingexternalcode.html#quotefile-command} {\\quotefile}
     \li \l {07-0-qdoc-commands-includingexternalcode.html#quotefromfile-command} {\\quotefromfile}

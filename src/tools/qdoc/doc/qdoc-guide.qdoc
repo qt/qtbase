@@ -295,7 +295,7 @@
     \list
         \li \l{enum-command}{\\enum} - for enumeration documentation
         \li \l{class-command}{\\class} - for C++ class documentation
-        \li \l{qmlclass-command}{\\qmlclass} - for QML type documentation
+        \li \l{qmltype-command}{\\qmltype} - for QML type documentation
         \li \l{page-command}{\\page} - for creating a page.
     \endlist
 
@@ -453,13 +453,14 @@
     \li \l{qmlattachedproperty-command}{\\qmlattachedproperty}
     \li \l{qmlattachedsignal-command}{\\qmlattachedsignal}
     \li \l{qmlbasictype-command}{\\qmlbasictype}
-    \li \l{qmlclass-command}{\\qmlclass} - creates a QML type documentation
+    \li \l{qmltype-command}{\\qmltype} - creates a QML type documentation
     \li \l{qmlmethod-command}{\\qmlmethod}
     \li \l{qmlproperty-command}{\\qmlproperty}
     \li \l{qmlsignal-command}{\\qmlsignal}
     \li \l{inherits-command}{\\inherits}
     \li \l{qmlmodule-command}{\\qmlmodule}
     \li \l{inqmlmodule-command}{\\inqmlmodule}
+    \li \l{instantiates-command}{\\instantiates}
 
     \endlist
 
@@ -467,18 +468,20 @@
     the \l{qdoc-input-output-dir}{fileextension} variable.
 
     To document a QML type, start by creating a QDoc comment that uses the
-    \l{qmlclass-command} {\\qmlclass} command as its topic command.
+    \l{qmltype-command} {\\qmltype} command as its topic command.
 
     \section3 QML Parser
 
     If your QML type is defined in a \e qml file, document it there.
     If your QML type is represented by a C++ class, document it in the
-    \e cpp file for that C++ class. Don't document a QML type in a
-    \e{cpp} file if the QML type is defined in a \e{qml} file.
+    \e cpp file for that C++ class and include an
+    \l{instantiates-command}{\\instantiates} command to specify the
+    name of the C++ class. Don't document a QML type in a \e{cpp} file
+    if the QML type is defined in a \e{qml} file.
 
     When documenting a QML type in a \e{qml} file, place each QDoc
     comment directly above the entity to which the comment applies.
-    For example, place the QDoc comment containing the \e{\\qmlclass}
+    For example, place the QDoc comment containing the \e{\\qmltype}
     command (the topic comment) directly above the outer QML type in
     the \e{qml} file. Place the comment for documenting a QML property
     directly above the property declaration, and so on for QML signal
@@ -504,8 +507,8 @@
     does not use the QML parser to parse these files (the C++ parser
     is used), so these QML QDoc comments can appear anywhere in the
     \e{cpp} file. Note that QML QDoc comments in \e cpp files \e must
-    use the QML topic commands. i.e., the \l{qmlclass-command}
-    {\\qmlclass} command \e must appear in the QDoc comment for the
+    use the QML topic commands. i.e., the \l{qmltype-command}
+    {\\qmltype} command \e must appear in the QDoc comment for the
     QML type, and a \l{qmlproperty-command} {\\qmlproperty} command \e
     must appear in each QML property QDoc comment.
 
@@ -517,14 +520,15 @@
     to the QtQuick2 module while there is also a QtQuick1 module for the older
     types introduced in Qt 4.
 
-    Modules affect the way QDoc link and relate the types. The
-    \l{qmlclass-command}{\\qmlclass} topic command must have an
-    \l{inqmlmodule-command}{\\inqmlmodule} context command to relate the
-    type to a module. Similarly, a \l{qmlmodule-command}{\\qmlmodule} topic
-    command must exist in a separate \c .qdoc file to create the overview page
-    for the module. The overview page will list the related types.
+    QML modules allow grouping QML types. The \l{qmltype-command}
+    {\\qmltype} topic command must have an \l{inqmlmodule-command}
+    {\\inqmlmodule} context command to relate the type to a QML
+    module. Similarly, a \l{qmlmodule-command}{\\qmlmodule} topic
+    command must exist in a separate \c{.qdoc} file to create the
+    overview page for the module. The overview page will list the
+    QML types of the QML module.
 
-    The links to the QML types, must therefore, also contain the module name.
+    The links to the QML types must therefore also contain the module name.
     For example, if a type called \c TabWidget is in the \c UIComponents
     module, it must be linked as \c {UIComponents::TabWidget}.
 

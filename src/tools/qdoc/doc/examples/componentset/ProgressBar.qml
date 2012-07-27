@@ -41,7 +41,7 @@
 import QtQuick 1.0
 
 /*!
-    \qmlclass ProgressBar
+    \qmltype ProgressBar
     \inqmlmodule UIComponents 1.0
     \brief A component that shows the progress of an event
 
