@@ -52,6 +52,7 @@ private slots:
     void warningWithoutDebug() const;
     void criticalWithoutDebug() const;
     void debugWithBool() const;
+    void debugNoSpaces() const;
     void veryLongWarningMessage() const;
     void qDebugQStringRef() const;
     void qDebugQLatin1String() const;
@@ -147,6 +148,26 @@ void tst_QDebug::debugWithBool() const
     QCOMPARE(QString::fromLatin1(s_file), file);
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
+}
+
+void tst_QDebug::debugNoSpaces() const
+{
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        QVERIFY(d.autoInsertSpaces());
+        d.setAutoInsertSpaces(false);
+        QVERIFY(!d.autoInsertSpaces());
+        d << "  ";
+        d.setAutoInsertSpaces(true);
+        QVERIFY(d.autoInsertSpaces());
+        d << "foo";
+        d.nospace();
+        d << "key=" << "value";
+        d.space();
+        d << 1 << 2;
+    }
+    QCOMPARE(s_msg, QString::fromLatin1("  foo key=value 1 2 "));
 }
 
 void tst_QDebug::veryLongWarningMessage() const

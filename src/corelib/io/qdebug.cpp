@@ -162,6 +162,24 @@
 */
 
 /*!
+    \fn bool QDebug::autoInsertSpaces()
+
+    Returns true if this QDebug instance will automatically insert spaces
+    between writes.
+
+    \since 5.0
+*/
+
+/*!
+    \fn void QDebug::setAutoInsertSpaces(bool b)
+
+    Enables automatic insertion of spaces between writes if \a b is true; otherwise
+    automatic insertion of spaces is disabled.
+
+    \since 5.0
+*/
+
+/*!
     \fn QDebug &QDebug::operator<<(QChar t)
 
     Writes the character, \a t, to the stream and returns a reference to the

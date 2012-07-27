@@ -97,6 +97,9 @@ public:
     inline QDebug &nospace() { stream->space = false; return *this; }
     inline QDebug &maybeSpace() { if (stream->space) stream->ts << ' '; return *this; }
 
+    bool autoInsertSpaces() const { return stream->space; }
+    void setAutoInsertSpaces(bool b) { stream->space = b; }
+
     inline QDebug &operator<<(QChar t) { stream->ts << '\'' << t << '\''; return maybeSpace(); }
     inline QDebug &operator<<(bool t) { stream->ts << (t ? "true" : "false"); return maybeSpace(); }
     inline QDebug &operator<<(char t) { stream->ts << t; return maybeSpace(); }
