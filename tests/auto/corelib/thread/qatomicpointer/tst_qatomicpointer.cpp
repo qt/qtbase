@@ -69,6 +69,7 @@ private slots:
     void fetchAndAdd();
 
     void constAndVolatile();
+    void forwardDeclared();
 private:
     static void warningFreeHelper();
 };
@@ -645,6 +646,22 @@ void tst_QAtomicPointer::constAndVolatile()
     constAndVolatile_helper<const void>();
     constAndVolatile_helper<volatile void>();
     constAndVolatile_helper<const volatile void>();
+}
+
+struct ForwardDeclared;
+struct ContainsForwardDeclared
+{
+    QAtomicPointer<ForwardDeclared> ptr;
+};
+
+void tst_QAtomicPointer::forwardDeclared()
+{
+    // this is just a compilation test
+    QAtomicPointer<ForwardDeclared> ptr;
+    ContainsForwardDeclared cfd;
+    Q_UNUSED(ptr);
+    Q_UNUSED(cfd);
+    QVERIFY(true);
 }
 
 QTEST_APPLESS_MAIN(tst_QAtomicPointer)
