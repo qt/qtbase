@@ -156,7 +156,7 @@ bool QEventLoop::processEvents(ProcessEventsFlags flags)
     QTimer with 0 timeout. More sophisticated idle processing schemes
     can be achieved using processEvents().
 
-    \sa QApplication::quit(), exit(), processEvents()
+    \sa QCoreApplication::quit(), exit(), processEvents()
 */
 int QEventLoop::exec(ProcessEventsFlags flags)
 {
@@ -297,6 +297,9 @@ void QEventLoop::wakeUp()
 }
 
 
+/*!
+    \reimp
+*/
 bool QEventLoop::event(QEvent *event)
 {
     if (event->type() == QEvent::Quit) {
@@ -401,7 +404,7 @@ QEventLoopLocker::QEventLoopLocker()
 }
 
 /*!
-    Creates an event locker operating on the \p loop.
+    Creates an event locker operating on the \a loop.
 
     This particular QEventLoop will quit when there are no more QEventLoopLockers operating on it.
 
@@ -414,7 +417,7 @@ QEventLoopLocker::QEventLoopLocker(QEventLoop *loop)
 }
 
 /*!
-    Creates an event locker operating on the \p thread.
+    Creates an event locker operating on the \a thread.
 
     This particular QThread will quit when there are no more QEventLoopLockers operating on it.
 
