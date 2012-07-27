@@ -138,8 +138,8 @@
     Writes a space character to the debug stream and returns a reference to
     the stream.
 
-    The stream will record that the last character sent to the stream was a
-    space.
+    The stream remembers that automatic insertion of spaces is
+    enabled for future writes.
 
     \sa nospace(), maybeSpace()
 */
@@ -147,8 +147,7 @@
 /*!
     \fn QDebug &QDebug::nospace()
 
-    Clears the stream's internal flag that records whether the last character
-    was a space and returns a reference to the stream.
+    Disables automatic insertion of spaces and returns a reference to the stream.
 
     \sa space(), maybeSpace()
 */
@@ -156,11 +155,8 @@
 /*!
     \fn QDebug &QDebug::maybeSpace()
 
-    Writes a space character to the debug stream, depending on the last
-    character sent to the stream, and returns a reference to the stream.
-
-    If the last character was a space character, this function writes a space
-    character to the stream; otherwise, no characters are written to the stream.
+    Writes a space character to the debug stream, depending on the current
+    setting for automatic insertion of spaces, and returns a reference to the stream.
 
     \sa space(), nospace()
 */
