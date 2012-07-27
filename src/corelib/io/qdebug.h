@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QDebug
 {
     friend class QMessageLogger;
+    friend class QDebugStateSaverPrivate;
     struct Stream {
         Stream(QIODevice *device) : ts(device), ref(1), type(QtDebugMsg), space(true), message_output(false) {}
         Stream(QString *string) : ts(string, QIODevice::WriteOnly), ref(1), type(QtDebugMsg), space(true), message_output(false) {}
@@ -131,6 +132,17 @@ public:
 };
 
 Q_DECLARE_SHARED(QDebug)
+
+class QDebugStateSaverPrivate;
+class Q_CORE_EXPORT QDebugStateSaver
+{
+public:
+    QDebugStateSaver(QDebug &dbg);
+    ~QDebugStateSaver();
+private:
+    Q_DISABLE_COPY(QDebugStateSaver)
+    QScopedPointer<QDebugStateSaverPrivate> d;
+};
 
 class QNoDebug
 {

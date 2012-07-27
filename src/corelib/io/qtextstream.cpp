@@ -226,12 +226,10 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 */
 
 #include "qtextstream.h"
+#include "private/qtextstream_p.h"
 #include "qbuffer.h"
 #include "qfile.h"
 #include "qnumeric.h"
-#ifndef QT_NO_TEXTCODEC
-#include "qtextcodec.h"
-#endif
 #ifndef Q_OS_WINCE
 #include <locale.h>
 #endif
@@ -315,119 +313,7 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_QOBJECT
-class QDeviceClosedNotifier : public QObject
-{
-    Q_OBJECT
-public:
-    inline QDeviceClosedNotifier()
-    { }
-
-    inline void setupDevice(QTextStream *stream, QIODevice *device)
-    {
-        disconnect();
-        if (device)
-            connect(device, SIGNAL(aboutToClose()), this, SLOT(flushStream()));
-        this->stream = stream;
-    }
-
-public Q_SLOTS:
-    inline void flushStream() { stream->flush(); }
-
-private:
-    QTextStream *stream;
-};
-#endif
-
 //-------------------------------------------------------------------
-class QTextStreamPrivate
-{
-    Q_DECLARE_PUBLIC(QTextStream)
-public:
-    QTextStreamPrivate(QTextStream *q_ptr);
-    ~QTextStreamPrivate();
-    void reset();
-
-    // device
-    QIODevice *device;
-#ifndef QT_NO_QOBJECT
-    QDeviceClosedNotifier deviceClosedNotifier;
-#endif
-    bool deleteDevice;
-
-    // string
-    QString *string;
-    int stringOffset;
-    QIODevice::OpenMode stringOpenMode;
-
-#ifndef QT_NO_TEXTCODEC
-    // codec
-    QTextCodec *codec;
-    QTextCodec::ConverterState readConverterState;
-    QTextCodec::ConverterState writeConverterState;
-    QTextCodec::ConverterState *readConverterSavedState;
-    bool autoDetectUnicode;
-#endif
-
-    // i/o
-    enum TokenDelimiter {
-        Space,
-        NotSpace,
-        EndOfLine
-    };
-
-    QString read(int maxlen);
-    bool scan(const QChar **ptr, int *tokenLength,
-              int maxlen, TokenDelimiter delimiter);
-    inline const QChar *readPtr() const;
-    inline void consumeLastToken();
-    inline void consume(int nchars);
-    void saveConverterState(qint64 newPos);
-    void restoreToSavedConverterState();
-    int lastTokenSize;
-
-    // Return value type for getNumber()
-    enum NumberParsingStatus {
-        npsOk,
-        npsMissingDigit,
-        npsInvalidPrefix
-    };
-
-    inline bool getChar(QChar *ch);
-    inline void ungetChar(QChar ch);
-    NumberParsingStatus getNumber(qulonglong *l);
-    bool getReal(double *f);
-
-    inline void write(const QString &data);
-    inline void putString(const QString &ch, bool number = false);
-    void putNumber(qulonglong number, bool negative);
-
-    // buffers
-    bool fillReadBuffer(qint64 maxBytes = -1);
-    void resetReadBuffer();
-    void flushWriteBuffer();
-    QString writeBuffer;
-    QString readBuffer;
-    int readBufferOffset;
-    int readConverterSavedStateOffset; //the offset between readBufferStartDevicePos and that start of the buffer
-    qint64 readBufferStartDevicePos;
-
-    // streaming parameters
-    int realNumberPrecision;
-    int integerBase;
-    int fieldWidth;
-    QChar padChar;
-    QTextStream::FieldAlignment fieldAlignment;
-    QTextStream::RealNumberNotation realNumberNotation;
-    QTextStream::NumberFlags numberFlags;
-
-    // status
-    QTextStream::Status status;
-
-    QLocale locale;
-
-    QTextStream *q_ptr;
-};
 
 /*!
     \internal
@@ -481,10 +367,7 @@ static void copyConverterStateHelper(QTextCodec::ConverterState *dest,
 }
 #endif
 
-/*!
-    \internal
-*/
-void QTextStreamPrivate::reset()
+void QTextStreamPrivate::Params::reset()
 {
     realNumberPrecision = 6;
     integerBase = 0;
@@ -493,6 +376,14 @@ void QTextStreamPrivate::reset()
     fieldAlignment = QTextStream::AlignRight;
     realNumberNotation = QTextStream::SmartNotation;
     numberFlags = 0;
+}
+
+/*!
+    \internal
+*/
+void QTextStreamPrivate::reset()
+{
+    params.reset();
 
     device = 0;
     deleteDevice = false;
@@ -985,15 +876,17 @@ inline void QTextStreamPrivate::putString(const QString &s, bool number)
     QString tmp = s;
 
     // handle padding
-    int padSize = fieldWidth - s.size();
+    int padSize = params.fieldWidth - s.size();
     if (padSize > 0) {
-        QString pad(padSize, padChar);
-        if (fieldAlignment == QTextStream::AlignLeft) {
-            tmp.append(QString(padSize, padChar));
-        } else if (fieldAlignment == QTextStream::AlignRight
-                   || fieldAlignment == QTextStream::AlignAccountingStyle) {
-            tmp.prepend(QString(padSize, padChar));
-            if (fieldAlignment == QTextStream::AlignAccountingStyle && number) {
+        QString pad(padSize, params.padChar);
+        switch (params.fieldAlignment) {
+        case QTextStream::AlignLeft:
+            tmp.append(pad);
+            break;
+        case QTextStream::AlignRight:
+        case QTextStream::AlignAccountingStyle:
+            tmp.prepend(pad);
+            if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
                 const QChar sign = s.size() > 0 ? s.at(0) : QChar();
                 if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
                     QChar *data = tmp.data();
@@ -1001,9 +894,11 @@ inline void QTextStreamPrivate::putString(const QString &s, bool number)
                     data[0] = sign;
                 }
            }
-        } else if (fieldAlignment == QTextStream::AlignCenter) {
-            tmp.prepend(QString(padSize/2, padChar));
-            tmp.append(QString(padSize - padSize/2, padChar));
+            break;
+        case QTextStream::AlignCenter:
+            tmp.prepend(QString(padSize/2, params.padChar));
+            tmp.append(QString(padSize - padSize/2, params.padChar));
+            break;
         }
     }
 
@@ -1175,13 +1070,7 @@ void QTextStream::reset()
 {
     Q_D(QTextStream);
 
-    d->realNumberPrecision = 6;
-    d->integerBase = 0;
-    d->fieldWidth = 0;
-    d->padChar = QLatin1Char(' ');
-    d->fieldAlignment = QTextStream::AlignRight;
-    d->realNumberNotation = QTextStream::SmartNotation;
-    d->numberFlags = 0;
+    d->params.reset();
 }
 
 /*!
@@ -1400,7 +1289,7 @@ QString *QTextStream::string() const
 void QTextStream::setFieldAlignment(FieldAlignment mode)
 {
     Q_D(QTextStream);
-    d->fieldAlignment = mode;
+    d->params.fieldAlignment = mode;
 }
 
 /*!
@@ -1411,7 +1300,7 @@ void QTextStream::setFieldAlignment(FieldAlignment mode)
 QTextStream::FieldAlignment QTextStream::fieldAlignment() const
 {
     Q_D(const QTextStream);
-    return d->fieldAlignment;
+    return d->params.fieldAlignment;
 }
 
 /*!
@@ -1432,7 +1321,7 @@ QTextStream::FieldAlignment QTextStream::fieldAlignment() const
 void QTextStream::setPadChar(QChar ch)
 {
     Q_D(QTextStream);
-    d->padChar = ch;
+    d->params.padChar = ch;
 }
 
 /*!
@@ -1443,7 +1332,7 @@ void QTextStream::setPadChar(QChar ch)
 QChar QTextStream::padChar() const
 {
     Q_D(const QTextStream);
-    return d->padChar;
+    return d->params.padChar;
 }
 
 /*!
@@ -1461,7 +1350,7 @@ QChar QTextStream::padChar() const
 void QTextStream::setFieldWidth(int width)
 {
     Q_D(QTextStream);
-    d->fieldWidth = width;
+    d->params.fieldWidth = width;
 }
 
 /*!
@@ -1472,7 +1361,7 @@ void QTextStream::setFieldWidth(int width)
 int QTextStream::fieldWidth() const
 {
     Q_D(const QTextStream);
-    return d->fieldWidth;
+    return d->params.fieldWidth;
 }
 
 /*!
@@ -1486,7 +1375,7 @@ int QTextStream::fieldWidth() const
 void QTextStream::setNumberFlags(NumberFlags flags)
 {
     Q_D(QTextStream);
-    d->numberFlags = flags;
+    d->params.numberFlags = flags;
 }
 
 /*!
@@ -1497,7 +1386,7 @@ void QTextStream::setNumberFlags(NumberFlags flags)
 QTextStream::NumberFlags QTextStream::numberFlags() const
 {
     Q_D(const QTextStream);
-    return d->numberFlags;
+    return d->params.numberFlags;
 }
 
 /*!
@@ -1513,7 +1402,7 @@ QTextStream::NumberFlags QTextStream::numberFlags() const
 void QTextStream::setIntegerBase(int base)
 {
     Q_D(QTextStream);
-    d->integerBase = base;
+    d->params.integerBase = base;
 }
 
 /*!
@@ -1525,7 +1414,7 @@ void QTextStream::setIntegerBase(int base)
 int QTextStream::integerBase() const
 {
     Q_D(const QTextStream);
-    return d->integerBase;
+    return d->params.integerBase;
 }
 
 /*!
@@ -1539,7 +1428,7 @@ int QTextStream::integerBase() const
 void QTextStream::setRealNumberNotation(RealNumberNotation notation)
 {
     Q_D(QTextStream);
-    d->realNumberNotation = notation;
+    d->params.realNumberNotation = notation;
 }
 
 /*!
@@ -1550,7 +1439,7 @@ void QTextStream::setRealNumberNotation(RealNumberNotation notation)
 QTextStream::RealNumberNotation QTextStream::realNumberNotation() const
 {
     Q_D(const QTextStream);
-    return d->realNumberNotation;
+    return d->params.realNumberNotation;
 }
 
 /*!
@@ -1567,10 +1456,10 @@ void QTextStream::setRealNumberPrecision(int precision)
     Q_D(QTextStream);
     if (precision < 0) {
         qWarning("QTextStream::setRealNumberPrecision: Invalid precision (%d)", precision);
-        d->realNumberPrecision = 6;
+        d->params.realNumberPrecision = 6;
         return;
     }
-    d->realNumberPrecision = precision;
+    d->params.realNumberPrecision = precision;
 }
 
 /*!
@@ -1582,7 +1471,7 @@ void QTextStream::setRealNumberPrecision(int precision)
 int QTextStream::realNumberPrecision() const
 {
     Q_D(const QTextStream);
-    return d->realNumberPrecision;
+    return d->params.realNumberPrecision;
 }
 
 /*!
@@ -1722,7 +1611,7 @@ QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong
     consumeLastToken();
 
     // detect int encoding
-    int base = integerBase;
+    int base = params.integerBase;
     if (base == 0) {
         QChar ch;
         if (!getChar(&ch))
@@ -2300,6 +2189,7 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
     QString result;
 
     unsigned flags = 0;
+    const QTextStream::NumberFlags numberFlags = params.numberFlags;
     if (numberFlags & QTextStream::ShowBase)
         flags |= QLocalePrivate::ShowBase;
     if (numberFlags & QTextStream::ForceSign)
@@ -2315,7 +2205,7 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
         flags |= QLocalePrivate::ThousandsGroup;
 
     const QLocalePrivate *dd = locale.d;
-    int base = integerBase ? integerBase : 10;
+    int base = params.integerBase ? params.integerBase : 10;
     if (negative && base == 10) {
         result = dd->longLongToString(-static_cast<qlonglong>(number), -1,
                                       base, -1, flags);
@@ -2330,7 +2220,7 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
         result = dd->unsLongLongToString(number, -1, base, -1, flags);
         // workaround for backward compatibility - in octal form with
         // ShowBase flag set zero should be written as '00'
-        if (number == 0 && base == 8 && numberFlags & QTextStream::ShowBase
+        if (number == 0 && base == 8 && params.numberFlags & QTextStream::ShowBase
             && result == QLatin1String("0")) {
             result.prepend(QLatin1Char('0'));
         }
@@ -2524,7 +2414,7 @@ QTextStream &QTextStream::operator<<(double f)
         flags |= QLocalePrivate::Alternate;
 
     const QLocalePrivate *dd = d->locale.d;
-    QString num = dd->doubleToString(f, d->realNumberPrecision, form, -1, flags);
+    QString num = dd->doubleToString(f, d->params.realNumberPrecision, form, -1, flags);
     d->putString(num, true);
     return *this;
 }
@@ -2605,13 +2495,13 @@ QTextStream &QTextStream::operator<<(const void *ptr)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    int oldBase = d->integerBase;
-    NumberFlags oldFlags = d->numberFlags;
-    d->integerBase = 16;
-    d->numberFlags |= ShowBase;
+    const int oldBase = d->params.integerBase;
+    const NumberFlags oldFlags = d->params.numberFlags;
+    d->params.integerBase = 16;
+    d->params.numberFlags |= ShowBase;
     d->putNumber(reinterpret_cast<quintptr>(ptr), false);
-    d->integerBase = oldBase;
-    d->numberFlags = oldFlags;
+    d->params.integerBase = oldBase;
+    d->params.numberFlags = oldFlags;
     return *this;
 }
 
@@ -3129,8 +3019,4 @@ QLocale QTextStream::locale() const
 }
 
 QT_END_NAMESPACE
-
-#ifndef QT_NO_QOBJECT
-#include "qtextstream.moc"
-#endif
 

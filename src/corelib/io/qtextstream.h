@@ -194,6 +194,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QTextStream)
+    friend class QDebugStateSaverPrivate;
 
     QScopedPointer<QTextStreamPrivate> d_ptr;
 };

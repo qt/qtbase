@@ -22,6 +22,7 @@ HEADERS +=  \
         io/qprocess.h \
         io/qprocess_p.h \
         io/qtextstream.h \
+        io/qtextstream_p.h \
         io/qtemporarydir.h \
         io/qtemporaryfile.h \
         io/qtemporaryfile_p.h \
