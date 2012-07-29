@@ -1,6 +1,5 @@
 TEMPLATE=subdirs
 SUBDIRS=\
-   qabstractprintdialog \
    qcolordialog \
    qdialog \
    qerrormessage \
@@ -13,8 +12,6 @@ SUBDIRS=\
    qprogressdialog \
    qsidebar \
    qwizard \
-
-wince*|!qtHaveModule(printsupport):SUBDIRS -= qabstractprintdialog
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
           qsidebar \
