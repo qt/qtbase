@@ -325,6 +325,8 @@ information about a particular change.
 
 - QThread::terminated() has been removed, since its emission cannot be guaranteed.
 
+- QPrintEngine - Removed the PPK_SuppressSystemPrintStatus key as no longer used.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

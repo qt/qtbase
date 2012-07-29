@@ -1974,10 +1974,6 @@ QPrinter::PrintRange QPrinter::printRange() const
     \value PPK_SupportedResolutions A list of integer QVariants
     describing the set of supported resolutions that the printer has.
 
-    \value PPK_SuppressSystemPrintStatus Suppress the built-in dialog for showing
-    printing progress. As of 4.1 this only has effect on Mac OS X where, by default,
-    a status dialog is shown.
-
     \value PPK_WindowsPageSize An integer specifying a DM_PAPER entry
     on Windows.
 

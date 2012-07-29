@@ -642,8 +642,6 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
             d->state = QPrinter::Idle;
         }
         break; }
-    case PPK_SuppressSystemPrintStatus:
-        break;
     case PPK_CustomPaperSize:
     {
         PMOrientation orientation;
