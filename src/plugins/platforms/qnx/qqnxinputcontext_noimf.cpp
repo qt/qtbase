@@ -44,7 +44,6 @@
 
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>
-#include <QtWidgets/QAbstractSpinBox>
 
 #ifdef QQNXINPUTCONTEXT_DEBUG
 #define qInputContextDebug qDebug
@@ -164,7 +163,7 @@ void QQnxInputContext::setFocusObject(QObject *object)
         if (m_inputPanelVisible)
             hideInputPanel();
     } else {
-        if (qobject_cast<QAbstractSpinBox*>(object))
+        if (object->inherits("QAbstractSpinBox"))
             m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
         else
             m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);

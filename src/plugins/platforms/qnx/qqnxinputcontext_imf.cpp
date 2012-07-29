@@ -43,9 +43,6 @@
 #include "qqnxeventthread.h"
 #include "qqnxabstractvirtualkeyboard.h"
 
-#include <QtWidgets/QAbstractSpinBox>
-#include <QtWidgets/QAction>
-
 #include <QtGui/QGuiApplication>
 #include <QtGui/QInputMethodEvent>
 #include <QtGui/QTextCharFormat>
@@ -1562,7 +1559,7 @@ void QQnxInputContext::setFocusObject(QObject *object)
         if (m_inputPanelVisible)
             hideInputPanel();
     } else {
-        if (qobject_cast<QAbstractSpinBox*>(object))
+        if (object->inherits("QAbstractSpinBox"))
             m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
         else
             m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);
