@@ -1654,26 +1654,47 @@ void tst_QArrayData::grow()
     SimpleVector<int> vector;
 
     QCOMPARE(vector.size(), size_t(0));
+    QCOMPARE(vector.capacity(), size_t(0));
 
-    size_t previousCapacity = vector.capacity();
+    size_t previousCapacity = 0;
     size_t allocations = 0;
-    for (size_t i = 1; i <=  (1 << 20); ++i) {
+    for (size_t i = 1; i < (1 << 20); ++i) {
         int source[1] = { int(i) };
         vector.append(source, source + 1);
         QCOMPARE(vector.size(), i);
         if (vector.capacity() != previousCapacity) {
+            // Don't re-allocate until necessary
+            QVERIFY(previousCapacity < i);
+
             previousCapacity = vector.capacity();
             ++allocations;
+
+            // Going element-wise is slow under valgrind
+            if (previousCapacity - i > 10) {
+                i = previousCapacity - 5;
+                vector.back() = -i;
+                vector.resize(i);
+
+                // It's still not the time to re-allocate
+                QCOMPARE(vector.capacity(), previousCapacity);
+            }
         }
     }
-    QCOMPARE(vector.size(), size_t(1 << 20));
+    QVERIFY(vector.size() >= size_t(1 << 20));
 
     // QArrayData::Grow prevents excessive allocations on a growing container
     QVERIFY(allocations > 20 / 2);
     QVERIFY(allocations < 20 * 2);
 
-    for (size_t i = 0; i < (1 << 20); ++i)
-        QCOMPARE(const_(vector).at(i), int(i + 1));
+    for (size_t i = 0; i < vector.size(); ++i) {
+        int value = const_(vector).at(i);
+        if (value < 0) {
+            i = -value;
+            continue;
+        }
+
+        QCOMPARE(value, int(i + 1));
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QArrayData)
