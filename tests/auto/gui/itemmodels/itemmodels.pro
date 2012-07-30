@@ -1,4 +1,7 @@
 TEMPLATE=subdirs
 SUBDIRS= \
     qstandarditem \
-    qstandarditemmodel \
+    qstandarditemmodel
+
+isEmpty(QT.widgets.name):SUBDIRS -= \
+    qstandarditemmodel
