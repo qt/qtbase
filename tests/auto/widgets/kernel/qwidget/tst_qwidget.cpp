@@ -7148,7 +7148,7 @@ void tst_QWidget::alienWidgets()
         child.setAttribute(Qt::WA_DontCreateNativeAncestors);
         window.show();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
-        QVERIFY(child.testAttribute(Qt::WA_Mapped));
+        QTRY_VERIFY(child.testAttribute(Qt::WA_Mapped));
         widget.hide();
         QTRY_VERIFY(!child.testAttribute(Qt::WA_Mapped));
     }
