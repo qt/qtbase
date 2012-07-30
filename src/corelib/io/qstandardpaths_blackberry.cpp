@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Research In Motion
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
