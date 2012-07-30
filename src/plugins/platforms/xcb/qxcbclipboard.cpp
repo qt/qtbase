@@ -81,6 +81,8 @@ public:
         }
     }
 
+    void reset() { formatList.clear(); }
+
 protected:
     QStringList formats_sys() const
     {
@@ -257,6 +259,9 @@ QMimeData * QXcbClipboard::mimeData(QClipboard::Mode mode)
         return 0;
 
     xcb_window_t clipboardOwner = getSelectionOwner(atomForMode(mode));
+    if (clipboardOwner == XCB_NONE)
+        return 0;
+
     if (clipboardOwner == owner()) {
         return m_clientClipboard[mode];
     } else {
@@ -269,20 +274,18 @@ QMimeData * QXcbClipboard::mimeData(QClipboard::Mode mode)
 
 void QXcbClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
 {
-    if (mode > QClipboard::Selection)
+    if ((mode > QClipboard::Selection) || (mimeData(mode) == data))
         return;
 
     xcb_atom_t modeAtom = atomForMode(mode);
-
-    if (m_clientClipboard[mode] == data)
-        return;
-
     xcb_window_t newOwner = XCB_NONE;
 
-    if (m_clientClipboard[QClipboard::Clipboard] != m_clientClipboard[QClipboard::Selection])
-        delete m_clientClipboard[mode];
-    m_clientClipboard[mode] = 0;
-    m_timestamp[mode] = XCB_CURRENT_TIME;
+    if (m_clientClipboard[mode]) {
+        if (m_clientClipboard[QClipboard::Clipboard] != m_clientClipboard[QClipboard::Selection])
+            delete m_clientClipboard[mode];
+        m_clientClipboard[mode] = 0;
+        m_timestamp[mode] = XCB_CURRENT_TIME;
+    }
 
     if (data) {
         newOwner = owner();
@@ -294,7 +297,7 @@ void QXcbClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
     xcb_set_selection_owner(xcb_connection(), newOwner, modeAtom, connection()->time());
 
     if (getSelectionOwner(modeAtom) != newOwner) {
-        qWarning("QXcbClipboard::setData: Cannot set X11 selection owner");
+        qWarning("QXcbClipboard::setMimeData: Cannot set X11 selection owner");
     }
 
     emitChanged(mode);
@@ -434,14 +437,18 @@ void QXcbClipboard::handleSelectionClearRequest(xcb_selection_clear_event_t *eve
 //          XGetSelectionOwner(dpy, XA_PRIMARY),
 //          xevent->xselectionclear.time, d->timestamp);
 
-//    if (!waiting_for_data) {
-    setMimeData(0, mode);
-    emitChanged(mode);
-//    } else {
-//        pending_selection_changed = true;
-//        if (! pending_timer_id)
-//            pending_timer_id = QApplication::clipboard()->startTimer(0);
-//    }
+    xcb_window_t newOwner = getSelectionOwner(event->selection);
+
+    /* If selection ownership was given up voluntarily from QClipboard::clear(), then we do nothing here
+    since its already handled in setMimeData. Otherwise, the event must have come from another client
+    as a result of a call to xcb_set_selection_owner in which case we need to delete the local mime data
+    */
+    if (newOwner != XCB_NONE) {
+        if (m_clientClipboard[QClipboard::Clipboard] != m_clientClipboard[QClipboard::Selection])
+            delete m_clientClipboard[mode];
+        m_clientClipboard[mode] = 0;
+        m_timestamp[mode] = XCB_CURRENT_TIME;
+    }
 }
 
 void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
@@ -482,9 +489,9 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
         return;
     }
 
-    xcb_atom_t xa_targets = atom(QXcbAtom::TARGETS);
-    xcb_atom_t xa_multiple = atom(QXcbAtom::MULTIPLE);
-    xcb_atom_t xa_timestamp = atom(QXcbAtom::TIMESTAMP);
+    xcb_atom_t targetsAtom = atom(QXcbAtom::TARGETS);
+    xcb_atom_t multipleAtom = atom(QXcbAtom::MULTIPLE);
+    xcb_atom_t timestampAtom = atom(QXcbAtom::TIMESTAMP);
 
     struct AtomPair { xcb_atom_t target; xcb_atom_t property; } *multi = 0;
     xcb_atom_t multi_type = XCB_NONE;
@@ -493,7 +500,7 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
     int imulti = -1;
     bool multi_writeback = false;
 
-    if (req->target == xa_multiple) {
+    if (req->target == multipleAtom) {
         QByteArray multi_data;
         if (req->property == XCB_NONE
             || !clipboardReadProperty(req->requestor, req->property, false, &multi_data,
@@ -526,7 +533,7 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
         xcb_atom_t ret = XCB_NONE;
         if (target == XCB_NONE || property == XCB_NONE) {
             ;
-        } else if (target == xa_timestamp) {
+        } else if (target == timestampAtom) {
             if (m_timestamp[mode] != XCB_CURRENT_TIME) {
                 xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, req->requestor,
                                     property, XCB_ATOM_INTEGER, 32, 1, &m_timestamp[mode]);
@@ -534,7 +541,7 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
             } else {
                 qWarning("QXcbClipboard: Invalid data timestamp");
             }
-        } else if (target == xa_targets) {
+        } else if (target == targetsAtom) {
             ret = sendTargetsSelection(d, req->requestor, property);
         } else {
             ret = sendSelection(d, target, req->requestor, property);
@@ -570,8 +577,13 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
 void QXcbClipboard::handleXFixesSelectionRequest(xcb_xfixes_selection_notify_event_t *event)
 {
     QClipboard::Mode mode = modeForAtom(event->selection);
-    if (event->owner != owner() && m_clientClipboard[mode] && m_timestamp[mode] < event->selection_timestamp) {
-        setMimeData(0, mode);
+    // here we care only about the xfixes events that come from non Qt processes
+    if (event->owner != XCB_NONE && event->owner != owner()) {
+        if (!m_xClipboard[mode]) {
+            m_xClipboard[mode] = new QXcbClipboardMime(mode, this);
+        } else {
+            m_xClipboard[mode]->reset();
+        }
         emitChanged(mode);
     }
 }
