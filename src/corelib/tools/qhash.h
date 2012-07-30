@@ -103,14 +103,14 @@ template <class T> inline uint qHash(const T *key, uint seed = 0)
 #pragma warning( pop )
 #endif
 
+template<typename T> inline uint qHash(const T &t, uint seed) { return (qHash(t) ^ seed); }
+
 template <typename T1, typename T2> inline uint qHash(const QPair<T1, T2> &key, uint seed = 0)
 {
     uint h1 = qHash(key.first, seed);
     uint h2 = qHash(key.second, seed);
     return ((h1 << 16) | (h1 >> 16)) ^ h2 ^ seed;
 }
-
-template<typename T> inline uint qHash(const T &t, uint seed) { return (qHash(t) ^ seed); }
 
 struct Q_CORE_EXPORT QHashData
 {
