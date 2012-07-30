@@ -349,12 +349,10 @@ void tst_QStackedLayout::keepFocusAfterSetCurrent()
 
     testWidget->show();
     QApplication::setActiveWindow(testWidget);
-    QTest::qWaitForWindowShown(testWidget);
-    QApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowActive(testWidget));
 
     edit1->setFocus();
     edit1->activateWindow();
-    QTest::qWait(25);
 
     QTRY_VERIFY(edit1->hasFocus());
 

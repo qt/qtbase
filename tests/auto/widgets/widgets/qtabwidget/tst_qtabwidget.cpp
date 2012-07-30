@@ -612,7 +612,7 @@ void tst_QTabWidget::minimumSizeHint()
     tw.addTab(page, QLatin1String("page1"));
 
     tw.show();
-    QTest::qWaitForWindowShown(&tw);
+    QVERIFY(QTest::qWaitForWindowExposed(&tw));
     tw.resize(tw.minimumSizeHint());
 
     QSize minSize = label->minimumSizeHint();
@@ -660,7 +660,7 @@ void tst_QTabWidget::heightForWidth()
     window->resize(160, h);
     window->show();
 
-    QTest::qWaitForWindowShown(window);
+    QVERIFY(QTest::qWaitForWindowExposed(window));
     QVERIFY(label->height() >= label->heightForWidth(label->width()));
 
     delete window;

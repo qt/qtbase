@@ -636,7 +636,7 @@ void tst_QMdiArea::changeWindowTitle()
     mw->setCentralWidget( ws );
     mw->menuBar();
     mw->show();
-    QTest::qWaitForWindowShown(mw);
+    QVERIFY(QTest::qWaitForWindowExposed(mw));
 
     QWidget *widget = new QWidget( ws );
     widget->setWindowTitle( wc );
@@ -656,8 +656,7 @@ void tst_QMdiArea::changeWindowTitle()
     mw->hide();
     qApp->processEvents();
     mw->show();
-    qApp->processEvents();
-    QTest::qWaitForWindowShown(mw);
+    QVERIFY(QTest::qWaitForWindowExposed(mw));
 
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );

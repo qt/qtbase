@@ -260,7 +260,7 @@ void tst_QBoxLayout::taskQTBUG_7103_minMaxWidthNotRespected()
     QWidget widget;
     widget.setLayout(layout);
     widget.show();
-    QTest::qWaitForWindowShown(&widget);
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
     int height = label->height();
 

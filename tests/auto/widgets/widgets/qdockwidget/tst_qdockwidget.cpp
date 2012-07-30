@@ -825,7 +825,7 @@ void tst_QDockWidget::taskQTBUG_1665_closableChanged()
 {
     QDockWidget dock;
     dock.show();
-    QTest::qWaitForWindowShown(&dock);
+    QVERIFY(QTest::qWaitForWindowExposed(&dock));
 
     QDockWidgetLayout *l = qobject_cast<QDockWidgetLayout*>(dock.layout());
 
@@ -850,10 +850,10 @@ void tst_QDockWidget::taskQTBUG_9758_undockedGeometry()
     dock1.hide();
     dock2.hide();
     window.show();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
     dock1.setFloating(true);
     dock1.show();
-    QTest::qWaitForWindowShown(&dock1);
+    QVERIFY(QTest::qWaitForWindowExposed(&dock1));
 
     QVERIFY(dock1.x() >= 0);
     QVERIFY(dock1.y() >= 0);

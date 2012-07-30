@@ -216,9 +216,8 @@ void tst_QShortcut::initTestCase()
     mainW->setFixedSize( 100, 100 );
     mainW->setCentralWidget( edit );
     mainW->show();
-    QTest::qWaitForWindowShown(mainW);
     mainW->activateWindow();
-    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowActive(mainW));
     connect( mainW->statusBar(), SIGNAL(messageChanged(const QString&)),
 	     this, SLOT(statusMessage(const QString&)) );
 }

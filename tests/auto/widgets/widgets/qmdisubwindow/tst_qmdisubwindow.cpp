@@ -985,7 +985,7 @@ void tst_QMdiSubWindow::setSystemMenu()
     mainWindow.setCentralWidget(mdiArea);
     mainWindow.menuBar();
     mainWindow.show();
-    QTest::qWaitForWindowShown(&mainWindow);
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
     QTest::qWait(60);
 
 
@@ -1626,7 +1626,7 @@ void tst_QMdiSubWindow::resizeTimer()
     QMdiArea mdiArea;
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QWidget);
     mdiArea.show();
-    QTest::qWaitForWindowShown(&mdiArea);
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
     QTest::qWait(300);
 
 

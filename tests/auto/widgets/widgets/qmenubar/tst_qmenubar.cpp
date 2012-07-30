@@ -241,8 +241,8 @@ void tst_QMenuBar::initTestCase()
 
     initSimpleMenubar();
     mw->show();
-    QTest::qWaitForWindowShown(mw);
     mw->activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(mw));
 
     menu1 = new QtTestSlot( mw );
     menu2 = new QtTestSlot( mw );
@@ -1239,11 +1239,11 @@ void tst_QMenuBar::taskQTBUG4965_escapeEaten()
     menu.addAction("quit", &menubar, SLOT(close()), QKeySequence("ESC"));
     menubar.show();
     QApplication::setActiveWindow(&menubar);
-    QTest::qWaitForWindowShown(&menubar);
+    QVERIFY(QTest::qWaitForWindowExposed(&menubar));
     menubar.setActiveAction(first);
     QTRY_VERIFY(menu.isVisible());
     QCOMPARE(menubar.activeAction(), first);
-    QTest::qWaitForWindowShown(&menu);
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Escape);
     QVERIFY(!menu.isVisible());
     QTRY_VERIFY(menubar.hasFocus());

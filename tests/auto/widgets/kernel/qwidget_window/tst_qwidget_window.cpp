@@ -292,7 +292,7 @@ void tst_QWidget_window::tst_showWithoutActivating()
 #else
     QWidget w;
     w.show();
-    QTest::qWaitForWindowShown(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QApplication::processEvents();
 
     QApplication::clipboard();
@@ -321,7 +321,7 @@ void tst_QWidget_window::tst_paintEventOnSecondShow()
 
     w.reset();
     w.show();
-    QTest::qWaitForWindowShown(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QApplication::processEvents();
     QTRY_VERIFY(w.paintEventReceived);
 }

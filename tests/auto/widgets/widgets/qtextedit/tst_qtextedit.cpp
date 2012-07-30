@@ -2236,7 +2236,7 @@ void tst_QTextEdit::taskQTBUG_7902_contextMenuCrash()
 {
     QTextEdit *w = new QTextEdit;
     w->show();
-    QTest::qWaitForWindowShown(w);
+    QVERIFY(QTest::qWaitForWindowExposed(w));
 
     QTimer ti;
     w->connect(&ti, SIGNAL(timeout()), w, SLOT(deleteLater()));

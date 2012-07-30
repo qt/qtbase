@@ -584,7 +584,7 @@ void tst_QCommandLinkButton::heightForWithWithIcon()
     layout->addStretch();
     mainWin.setLayout(layout);
     mainWin.showMaximized();
-    QTest::qWaitForWindowShown(&mainWin);
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWin));
     QVERIFY(largeIconButton->height() > 68);  //enough room for the icon
 
 }

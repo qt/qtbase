@@ -412,7 +412,7 @@ void tst_QGraphicsEffect::opacity()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(effect->numRepaints > 0);
     QCOMPARE(effect->m_opacity, qreal(0.5));
 }
@@ -551,7 +551,7 @@ void tst_QGraphicsEffect::drawPixmapItem()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(effect->repaints >= 1);
 
     item->rotate(180);
@@ -593,7 +593,7 @@ void tst_QGraphicsEffect::deviceCoordinateTranslateCaching()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QTRY_VERIFY(item->numRepaints >= 1);
     int numRepaints = item->numRepaints;
@@ -619,7 +619,7 @@ void tst_QGraphicsEffect::inheritOpacity()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QTRY_VERIFY(item->numRepaints >= 1);
 
@@ -679,7 +679,7 @@ void tst_QGraphicsEffect::childrenVisibilityShouldInvalidateCache()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(parent.nbPaint >= 1);
     //we set an effect on the parent
     parent.setGraphicsEffect(new QGraphicsDropShadowEffect(&parent));

@@ -166,7 +166,7 @@ void tst_QButtonGroup::arrowKeyNavigation()
 
     dlg.show();
     qApp->setActiveWindow(&dlg);
-    QTest::qWaitForWindowShown(&dlg);
+    QVERIFY(QTest::qWaitForWindowActive(&dlg));
 
     bt1.setFocus();
 
@@ -386,7 +386,7 @@ void tst_QButtonGroup::task106609()
     buttons->addButton(radio3, 3);
     vbox->addWidget(radio3);
     dlg.show();
-    QTest::qWaitForWindowShown(&dlg);
+    QVERIFY(QTest::qWaitForWindowExposed(&dlg));
 
     qRegisterMetaType<QAbstractButton*>("QAbstractButton*");
     QSignalSpy spy1(buttons, SIGNAL(buttonClicked(QAbstractButton*)));

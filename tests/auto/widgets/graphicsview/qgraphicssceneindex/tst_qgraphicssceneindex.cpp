@@ -276,9 +276,7 @@ void tst_QGraphicsSceneIndex::removeItems()
     view.resize(600, 600);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-
-    QApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     scene.removeItem(widgetChild1);
 

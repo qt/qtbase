@@ -147,7 +147,7 @@ void tst_QGraphicsLayout::compressLayoutRequest()
     scene.addItem(tw);
     view.show();
 
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QGraphicsLinearLayout *lout = new QGraphicsLinearLayout(tw);
     for (int i = 0; i < 4; ++i) {
         QGraphicsWidget *gw = new QGraphicsWidget(tw);

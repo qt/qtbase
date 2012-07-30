@@ -680,7 +680,7 @@ void tst_QGraphicsWidget::fontPropagatesResolveToChildren()
     QGraphicsView view;
     view.setScene(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QCOMPARE(font.resolve(), uint(QFont::StyleResolved));
     QCOMPARE(root->font().resolve(), uint(QFont::StyleResolved));
@@ -715,7 +715,7 @@ void tst_QGraphicsWidget::fontPropagatesResolveToGrandChildren()
     QGraphicsView view;
     view.setScene(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QCOMPARE(font.resolve(), uint(QFont::StyleResolved));
     QCOMPARE(grandChild1->font().resolve(), uint(QFont::StyleResolved));
@@ -751,7 +751,7 @@ void tst_QGraphicsWidget::fontPropagatesResolveViaNonWidget()
     QGraphicsView view;
     view.setScene(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QCOMPARE(font.resolve(), uint(QFont::StyleResolved));
     QCOMPARE(grandChild1->font().resolve(), uint(QFont::StyleResolved));
@@ -787,7 +787,7 @@ void tst_QGraphicsWidget::fontPropagatesResolveFromScene()
     QGraphicsView view;
     view.setScene(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QCOMPARE(font.resolve(), uint(QFont::StyleResolved));
     QCOMPARE(root->font().resolve(), uint(QFont::StyleResolved));
@@ -835,7 +835,7 @@ void tst_QGraphicsWidget::fontPropagatesResolveInParentChange()
     QGraphicsView view;
     view.setScene(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QVERIFY(grandChild1->font().italic());
     QVERIFY(!grandChild1->font().bold());
@@ -1228,7 +1228,7 @@ void tst_QGraphicsWidget::layoutDirection()
     widget.setLayoutDirection(layoutDirection);
     QCOMPARE(widget.testAttribute(Qt::WA_SetLayoutDirection), true);
     view->show();
-    QTest::qWaitForWindowShown(view);
+    QVERIFY(QTest::qWaitForWindowExposed(view));
     for (int i = 0; i < children.count(); ++i) {
         QTRY_COMPARE(children[i]->layoutDirection(), layoutDirection);
         QTRY_COMPARE(children[i]->testAttribute(Qt::WA_SetLayoutDirection), false);
@@ -1501,8 +1501,8 @@ void tst_QGraphicsWidget::setTabOrderAndReparent()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
     int i;
     QGraphicsWidget *w1, *w2, *w3, *w4;
@@ -2623,7 +2623,7 @@ void tst_QGraphicsWidget::painterStateProtectionOnWindowFrame()
     QGraphicsView view(&scene);
     scene.addItem(widget);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 }
 
 class ProxyStyle : public QCommonStyle
@@ -2827,7 +2827,7 @@ void tst_QGraphicsWidget::ensureClipping()
     QGraphicsView view(&scene);
     view.setOptimizationFlag(QGraphicsView::IndirectPainting);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QList<QGraphicsItem *> expected;
     expected << clipWidget << childWidget << childitem;
@@ -3033,7 +3033,7 @@ void tst_QGraphicsWidget::addChildInpolishEvent()
     QGraphicsView view(&scene);
     view.resize(200, 200);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_COMPARE(PolishWidget::numberOfPolish, 2);
 }
 
@@ -3055,7 +3055,7 @@ void tst_QGraphicsWidget::polishEvent()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     // Make sure the item is painted.
     QTRY_VERIFY(widget->events.contains(QEvent::Paint));
@@ -3233,7 +3233,7 @@ void tst_QGraphicsWidget::itemChangeEvents()
     QGraphicsWidget *parent = new QGraphicsWidget;
     scene.addItem(parent);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     TestGraphicsWidget *item = new TestGraphicsWidget;
     item->setParentItem(parent);
@@ -3275,7 +3275,7 @@ void tst_QGraphicsWidget::itemSendGeometryPosChangesDeactivated()
     QGraphicsWidget *item = new QGraphicsWidget;
     scene.addItem(item);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     item->setGeometry(QRectF(0, 0, 50, 50));
     QTRY_COMPARE(item->geometry(), QRectF(0, 0, 50, 50));
 

@@ -403,7 +403,7 @@ void tst_QLabel::task226479_movieResize()
     label.show();
     QMovie *movie = new QMovie( &label );
     label.setMovie(movie);
-    QTest::qWaitForWindowShown(&label);
+    QVERIFY(QTest::qWaitForWindowExposed(&label));
     movie->setFileName(QFINDTESTDATA("red.png"));
     movie->start();
     QTest::qWait(50);
@@ -478,7 +478,7 @@ void tst_QLabel::unicodeText()
     layout->setMargin(8);
     frame.setLayout(layout);
     frame.show();
-    QTest::qWaitForWindowShown(&frame);
+    QVERIFY(QTest::qWaitForWindowExposed(&frame));
     QVERIFY(frame.isVisible());  // was successfully sized and shown
     testWidget->show();
 }
@@ -519,7 +519,7 @@ void tst_QLabel::mnemonic()
     hbox->addWidget(new QLineEdit);
     w.setLayout(hbox);
     w.show();
-    QTest::qWaitForWindowShown(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     QLabelPrivate *d = static_cast<QLabelPrivate *>(QObjectPrivate::get(lab));
     QVERIFY(d->control);
@@ -555,7 +555,7 @@ void tst_QLabel::taskQTBUG_7902_contextMenuCrash()
     QLabel *w = new QLabel("Test or crash?");
     w->setTextInteractionFlags(Qt::TextSelectableByMouse);
     w->show();
-    QTest::qWaitForWindowShown(w);
+    QVERIFY(QTest::qWaitForWindowExposed(w));
 
     QTimer ti;
     w->connect(&ti, SIGNAL(timeout()), w, SLOT(deleteLater()));

@@ -644,7 +644,7 @@ void tst_QTabBar::taskQTBUG_10052_widgetLayoutWhenMoving()
     tabBar.setTabButton(1, QTabBar::RightSide, &w2);
 
     tabBar.show();
-    QTest::qWaitForWindowShown(&tabBar);
+    QVERIFY(QTest::qWaitForWindowExposed(&tabBar));
     w1.moved = w2.moved = false;
     tabBar.moveTab(0, 1);
     QTRY_VERIFY(w1.moved);

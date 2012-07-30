@@ -1559,7 +1559,7 @@ void tst_QGraphicsItem::selected()
     view.setFixedSize(250, 250);
     view.show();
 
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     qApp->processEvents();
     qApp->processEvents();
 
@@ -1688,7 +1688,7 @@ void tst_QGraphicsItem::selected_textItem()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTest::qWait(20);
 
     QTRY_VERIFY(!text->isSelected());
@@ -3369,7 +3369,7 @@ void tst_QGraphicsItem::childrenBoundingRect()
     QGraphicsView view(&scene);
     view.show();
 
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTest::qWait(30);
 
     QCOMPARE(parent->childrenBoundingRect(), QRectF(-500, -100, 600, 800));
@@ -3470,7 +3470,7 @@ void tst_QGraphicsItem::childrenBoundingRect4()
     QGraphicsView view(&scene);
     view.show();
 
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     // Try to mess up the cached bounding rect.
     rect->childrenBoundingRect();
@@ -3494,7 +3494,7 @@ void tst_QGraphicsItem::childrenBoundingRect5()
     QGraphicsView view(&scene);
     view.show();
 
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     // Try to mess up the cached bounding rect.
     QRectF expectedChildrenBoundingRect = parent->boundingRect();
@@ -3529,8 +3529,7 @@ void tst_QGraphicsItem::group()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
-    QApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QGraphicsItemGroup *group = new QGraphicsItemGroup;
     group->setSelected(true);
@@ -3767,7 +3766,7 @@ void tst_QGraphicsItem::handlesChildEvents()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTest::qWait(20);
 
     // Pull out the items, closest item first
@@ -3891,7 +3890,7 @@ void tst_QGraphicsItem::handlesChildEvents2()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QApplication::processEvents();
 
     QMouseEvent event(QEvent::MouseButtonPress, view.mapFromScene(5, 5),
@@ -3980,7 +3979,7 @@ void tst_QGraphicsItem::filtersChildEvents()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTest::qWait(20);
 
     QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
@@ -4051,7 +4050,7 @@ void tst_QGraphicsItem::filtersChildEvents2()
     QGraphicsView view(&scene);
     view.show();
 
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QApplication::processEvents();
 
     QMouseEvent event(QEvent::MouseButtonPress, view.mapFromScene(5, 5),
@@ -4099,7 +4098,7 @@ void tst_QGraphicsItem::ensureVisible()
     QGraphicsView view(&scene);
     view.setFixedSize(300, 300);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     for (int i = 0; i < 25; ++i) {
         view.scale(qreal(1.06), qreal(1.06));
@@ -5014,7 +5013,7 @@ void tst_QGraphicsItem::sceneEventFilter()
     QGraphicsTextItem *ti3 = anotherScene->addText("This is a test #3");
     gv.setScene(anotherScene);
     gv.show();
-    QTest::qWaitForWindowShown(&gv);
+    QVERIFY(QTest::qWaitForWindowExposed(&gv));
     QTest::qWait(25);
     ti->installSceneEventFilter(ti2);
     ti3->installSceneEventFilter(ti);
@@ -5072,7 +5071,7 @@ void tst_QGraphicsItem::paint()
         view.showFullScreen();
     else
         view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QApplication::processEvents();
 #ifdef Q_OS_WIN32
     //we try to switch the desktop: if it fails, we skip the test
@@ -5088,7 +5087,7 @@ void tst_QGraphicsItem::paint()
     QGraphicsScene scene2;
     QGraphicsView view2(&scene2);
     view2.show();
-    QTest::qWaitForWindowShown(&view2);
+    QVERIFY(QTest::qWaitForWindowExposed(&view2));
     QTest::qWait(25);
 
     PaintTester tester2;
@@ -6094,7 +6093,7 @@ void tst_QGraphicsItem::untransformable()
     view.setBackgroundBrush(QBrush(Qt::black, Qt::DiagCrossPattern));
 #endif
 
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
     for (int i = 0; i < 10; ++i) {
         QPoint center = view.viewport()->rect().center();
@@ -6157,7 +6156,7 @@ void tst_QGraphicsItem::contextMenuEventPropagation()
     view.setAlignment(Qt::AlignLeft | Qt::AlignTop);
     view.show();
     view.resize(200, 200);
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTest::qWait(20);
 
     QContextMenuEvent event(QContextMenuEvent::Mouse, QPoint(10, 10),
@@ -6259,7 +6258,7 @@ void tst_QGraphicsItem::task141694_textItemEnsureVisible()
     QGraphicsView view(&scene);
     view.setFixedSize(200, 200);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     view.ensureVisible(-1000, -1000, 5, 5);
     int hscroll = view.horizontalScrollBar()->value();
@@ -6433,7 +6432,7 @@ void tst_QGraphicsItem::ensureUpdateOnTextItem()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTest::qWait(25);
     TextItem *text1 = new TextItem(QLatin1String("123"));
     scene.addItem(text1);
@@ -6860,7 +6859,7 @@ void tst_QGraphicsItem::itemStacksBehindParent()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(!paintedItems.isEmpty());
     QTest::qWait(100);
     paintedItems.clear();
@@ -6958,7 +6957,7 @@ void tst_QGraphicsItem::nestedClipping()
     QGraphicsView view(&scene);
     view.setOptimizationFlag(QGraphicsView::IndirectPainting);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTest::qWait(25);
 
     QList<QGraphicsItem *> expected;
@@ -7173,7 +7172,7 @@ void tst_QGraphicsItem::cacheMode()
     view.resize(150, 150);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     // Increase the probability of window activation
     // not causing another repaint of test items.
@@ -7367,7 +7366,7 @@ void tst_QGraphicsItem::cacheMode2()
     view.resize(150, 150);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     // Increase the probability of window activation
     // not causing another repaint of test items.
@@ -7444,7 +7443,7 @@ void tst_QGraphicsItem::updateCachedItemAfterMove()
     scene.addItem(tester);
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QTest::qWait(12);
     QTRY_VERIFY(tester->repaints > 0);
@@ -7870,7 +7869,7 @@ void tst_QGraphicsItem::itemUsesExtendedStyleOption()
     topLevel.setWindowFlags(Qt::X11BypassWindowManagerHint);
     rect->startTrack = false;
     topLevel.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
     QTest::qWait(60);
     rect->startTrack = true;
     rect->update(10, 10, 10, 10);
@@ -9059,8 +9058,9 @@ void tst_QGraphicsItem::ensureDirtySceneTransform()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     //We move the parent
     parent->move();
@@ -9349,8 +9349,9 @@ void tst_QGraphicsItem::QTBUG_4233_updateCachedWithSceneRect()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(QApplication::activeWindow(), (QWidget *)&view);
 
     QTRY_COMPARE(tester->repaints, 1);
 
@@ -10427,7 +10428,7 @@ void tst_QGraphicsItem::textItem_shortcuts()
     item->setFlag(QGraphicsItem::ItemIsFocusable);
     item->setTextInteractionFlags(Qt::TextEditorInteraction);
     w.show();
-    QTest::qWaitForWindowShown(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     item->setFocus();
     QTRY_VERIFY(item->hasFocus());
@@ -10589,7 +10590,7 @@ void tst_QGraphicsItem::focusHandling()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QApplication::setActiveWindow(&view);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
@@ -10674,7 +10675,7 @@ void tst_QGraphicsItem::touchEventPropagation()
     QGraphicsView view(&scene);
     view.setSceneRect(touchEventReceiver->boundingRect());
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QCOMPARE(touchEventReceiver->touchBeginEventCount, 0);
 
@@ -10710,7 +10711,7 @@ void tst_QGraphicsItem::deviceCoordinateCache_simpleRotations()
 
     MyGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(view.repaints > 0);
 
     QGraphicsItemCache *itemCache = QGraphicsItemPrivate::get(item)->extraItemCache();
@@ -10790,7 +10791,7 @@ void tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     scene.addItem(i);
     QApplication::processEvents();
     QTRY_VERIFY(i->painted);
@@ -11126,8 +11127,8 @@ void tst_QGraphicsItem::itemDiesDuringDraggingOperation()
     scene.addItem(item);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(QApplication::activeWindow(), (QWidget *)&view);
     QGraphicsSceneDragDropEvent dragEnter(QEvent::GraphicsSceneDragEnter);
     dragEnter.setScenePos(item->boundingRect().center());
     QApplication::sendEvent(&scene, &dragEnter);
@@ -11153,8 +11154,8 @@ void tst_QGraphicsItem::QTBUG_12112_focusItem()
 
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(QApplication::activeWindow(), (QWidget *)&view);
 
     QVERIFY(item1->focusItem());
     QVERIFY(!item2->focusItem());
@@ -11238,7 +11239,7 @@ void tst_QGraphicsItem::QTBUG_16374_crashInDestructor()
     scene.addItem(&win);
 
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 }
 
 void tst_QGraphicsItem::QTBUG_20699_focusScopeCrash()
@@ -11258,7 +11259,7 @@ void tst_QGraphicsItem::QTBUG_20699_focusScopeCrash()
     fi->setFocus();
 
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     fi->setParentItem(fi2);
     fi->setFocus();

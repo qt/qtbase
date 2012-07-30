@@ -746,7 +746,7 @@ void tst_QSpinBox::editingFinished()
 
     testFocusWidget->show();
     QApplication::setActiveWindow(testFocusWidget);
-    QTest::qWaitForWindowShown(testFocusWidget);
+    QVERIFY(QTest::qWaitForWindowActive(testFocusWidget));
     box->activateWindow();
     box->setFocus();
 
@@ -971,7 +971,7 @@ void tst_QSpinBox::sizeHint()
     sizeHint_SpinBox *spinBox = new sizeHint_SpinBox;
     layout->addWidget(spinBox);
     widget->show();
-    QTest::qWaitForWindowShown(widget);
+    QVERIFY(QTest::qWaitForWindowExposed(widget));
 
     // Prefix
     spinBox->sizeHintRequests = 0;
@@ -1023,8 +1023,8 @@ void tst_QSpinBox::taskQTBUG_5008_textFromValueAndValidate()
     spinbox.activateWindow();
     spinbox.setFocus();
     QApplication::setActiveWindow(&spinbox);
-    QTest::qWaitForWindowShown(&spinbox);
-    QTRY_VERIFY(spinbox.hasFocus());
+    QVERIFY(QTest::qWaitForWindowActive(&spinbox));
+    QVERIFY(spinbox.hasFocus());
     QTRY_COMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());
     QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
     spinbox.lineEdit()->setCursorPosition(2); //just after the first thousand separator

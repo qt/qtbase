@@ -339,7 +339,7 @@ void tst_QGraphicsLinearLayout::alignment()
         widget->resize(newSize);
     view.show();
     widget->show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QApplication::processEvents();
 
     int x = 0;
@@ -669,7 +669,7 @@ void tst_QGraphicsLinearLayout::invalidate()
     view.show();
     widget->show();
     //QTest::qWait(1000);
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     qApp->processEvents();
     layout.layoutRequest = 0;
 
@@ -1158,7 +1158,7 @@ void tst_QGraphicsLinearLayout::testStretch()
 
     //view->setSceneRect(-50, -50, 800, 800);
     //view->show();
-    //QTest::qWaitForWindowShown(view);
+    //QVERIFY(QTest::qWaitForWindowExposed(view));
     //QTest::qWait(5000);
     QCOMPARE(form->geometry().size(), QSizeF(600,600));
     QCOMPARE(w1->geometry(), QRectF(0, 0, 100, 100));

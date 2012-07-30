@@ -704,7 +704,7 @@ void tst_QGridLayout::spacingsAndMargins()
     toplevel.show();
     toplevel.adjustSize();
     QApplication::processEvents();
-    QTest::qWaitForWindowShown(&toplevel);
+    QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
 
     QSize topsize = toplevel.size();
     QSize minimumsize = vbox.totalMinimumSize();

@@ -1684,7 +1684,7 @@ void tst_QMainWindow::QTBUG2774_stylechange()
     mw.setCentralWidget(central);
     dockw->resize(10,10);
     mw.show();
-    QTest::qWaitForWindowShown(&mw);
+    QVERIFY(QTest::qWaitForWindowExposed(&mw));
     int centralOriginalWidth = central->width();
 
     QVERIFY(!mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height() - 3)));

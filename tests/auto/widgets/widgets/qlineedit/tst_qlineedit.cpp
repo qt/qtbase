@@ -368,7 +368,7 @@ void tst_QLineEdit::initTestCase()
 
     testWidget->resize(200,50);
     testWidget->show();
-    QTest::qWaitForWindowShown(testWidget);
+    QVERIFY(QTest::qWaitForWindowExposed(testWidget));
     QApplication::setActiveWindow(testWidget);
     QTRY_VERIFY(testWidget->hasFocus());
 
@@ -3362,7 +3362,7 @@ void tst_QLineEdit::task174640_editingFinished()
     testMenu1->addAction("foo");
     testMenu1->addAction("bar");
     testMenu1->show();
-    QTest::qWaitForWindowShown(testMenu1);
+    QVERIFY(QTest::qWaitForWindowExposed(testMenu1));
     QTest::qWait(20);
     mw.activateWindow();
 
@@ -3374,7 +3374,7 @@ void tst_QLineEdit::task174640_editingFinished()
     testMenu2->addAction("foo2");
     testMenu2->addAction("bar2");
     testMenu2->show();
-    QTest::qWaitForWindowShown(testMenu2);
+    QVERIFY(QTest::qWaitForWindowExposed(testMenu2));
     QTest::qWait(20);
     mw.activateWindow();
     delete testMenu2;
@@ -3431,8 +3431,8 @@ void tst_QLineEdit::task210502_caseInsensitiveInlineCompletion()
     completer.setCompletionMode(QCompleter::InlineCompletion);
     lineEdit.setCompleter(&completer);
     lineEdit.show();
-    QTest::qWaitForWindowShown(&lineEdit);
     QApplication::setActiveWindow(&lineEdit);
+    QVERIFY(QTest::qWaitForWindowActive(&lineEdit));
     lineEdit.setFocus();
     QTRY_VERIFY(lineEdit.hasFocus());
     QTest::keyPress(&lineEdit, 'a');
@@ -3616,7 +3616,7 @@ void tst_QLineEdit::taskQTBUG_7902_contextMenuCrash()
     // Would pass before the associated commit, but left as a guard.
     QLineEdit *w = new QLineEdit;
     w->show();
-    QTest::qWaitForWindowShown(w);
+    QVERIFY(QTest::qWaitForWindowExposed(w));
 
     QTimer ti;
     w->connect(&ti, SIGNAL(timeout()), w, SLOT(deleteLater()));
@@ -3667,7 +3667,7 @@ void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
 
     le.show();
     QApplication::setActiveWindow(&le);
-    QTest::qWaitForWindowShown(&le);
+    QVERIFY(QTest::qWaitForWindowActive(&le));
     le.setFocus();
     QTRY_VERIFY(le.hasFocus());
     le.selectAll();
@@ -3685,7 +3685,7 @@ void tst_QLineEdit::QTBUG13520_textNotVisible()
     LineEdit le;
     le.setAlignment( Qt::AlignRight | Qt::AlignVCenter);
     le.show();
-    QTest::qWaitForWindowShown(&le);
+    QVERIFY(QTest::qWaitForWindowExposed(&le));
     le.setText("01-ST16-01SIL-MPL001wfgsdfgsdgsdfgsdfgsdfgsdfgsdfg");
     le.setCursorPosition(0);
     QTest::qWait(100); //just make sure we get he lineedit correcly painted
@@ -3714,7 +3714,7 @@ void tst_QLineEdit::QTBUG7174_inputMaskCursorBlink()
     edit.setText(QLatin1String("AAAA"));
     edit.show();
     QRect cursorRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
-    QTest::qWaitForWindowShown(&edit);
+    QVERIFY(QTest::qWaitForWindowExposed(&edit));
     edit.updateRegion = QRegion();
     QTest::qWait(QApplication::cursorFlashTime());
     QVERIFY(edit.updateRegion.contains(cursorRect));

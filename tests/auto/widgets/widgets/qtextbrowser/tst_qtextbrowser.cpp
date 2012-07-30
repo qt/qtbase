@@ -55,11 +55,10 @@ public:
     inline TestBrowser() : htmlLoadAttempts(0) {
         show();
         QApplication::setActiveWindow(this);
-        QTest::qWaitForWindowShown(this);
         activateWindow();
         setFocus();
-        QTest::qWait(50);
-        QTRY_VERIFY(hasFocus());
+        QVERIFY(QTest::qWaitForWindowActive(this));
+        QVERIFY(hasFocus());
     }
 
     virtual QVariant loadResource(int type, const QUrl &name);

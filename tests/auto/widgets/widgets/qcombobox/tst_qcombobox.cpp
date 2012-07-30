@@ -1977,7 +1977,7 @@ void tst_QComboBox::task190351_layout()
         list->addItem(QLatin1String("list") + QString::number(i));
 
     listCombo.show();
-    QTest::qWaitForWindowShown(&listCombo);
+    QVERIFY(QTest::qWaitForWindowExposed(&listCombo));
     QTRY_VERIFY(listCombo.isVisible());
     listCombo.setCurrentIndex(70);
     listCombo.showPopup();
@@ -2116,7 +2116,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
     comboBox.setGeometry(desktopSize.width() - (desktopSize.width() / 4), (desktopSize.width() / 4), (desktopSize.width() / 2), (desktopSize.width() / 4));
 
     comboBox.show();
-    QTest::qWaitForWindowShown(&comboBox);
+    QVERIFY(QTest::qWaitForWindowExposed(&comboBox));
     QTRY_VERIFY(comboBox.isVisible());
     comboBox.showPopup();
     QTRY_VERIFY(comboBox.view());
@@ -2436,8 +2436,8 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
         combo.addItem( QString::number(i));
     combo.show();
     QApplication::setActiveWindow(&combo);
-    QTest::qWaitForWindowShown(&combo);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
+    QVERIFY(QTest::qWaitForWindowActive(&combo));
+    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
     QCOMPARE(combo.currentText(), QLatin1String("0"));
 
@@ -2502,7 +2502,7 @@ void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
 
     w.show();
     QApplication::setActiveWindow(&w);
-    QTest::qWaitForWindowShown(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
     cb.clearEditText();
     cb.setFocus();
     QApplication::processEvents();

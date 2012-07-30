@@ -3138,8 +3138,8 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusableItems()
     widget.show();
     qApp->setActiveWindow(&widget);
     widget.activateWindow();
-    QTest::qWaitForWindowShown(&widget);
-    QTRY_VERIFY(view->hasFocus());
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+    QVERIFY(view->hasFocus());
     QTRY_VERIFY(scene.isActive());
     QVERIFY(view->viewport()->hasFocus());
     QVERIFY(scene.hasFocus());
@@ -3219,8 +3219,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusWidgets()
     widget.show();
     qApp->setActiveWindow(&widget);
     widget.activateWindow();
-    QTest::qWaitForWindowShown(&widget);
-    QApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
 
     dial1->setFocus();
     QTRY_VERIFY(dial1->hasFocus());
@@ -3259,7 +3258,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusWidgets()
     widget.show();
     qApp->setActiveWindow(&widget);
     widget.activateWindow();
-    QTest::qWaitForWindowShown(&widget);
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
     QTRY_VERIFY(widget1->hasFocus());
 }
 
@@ -3303,7 +3302,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithNestedFocusWidgets()
     widget.show();
     qApp->setActiveWindow(&widget);
     widget.activateWindow();
-    QTest::qWaitForWindowShown(&widget);
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
 
     dial1->setFocus();
     QTRY_VERIFY(dial1->hasFocus());
@@ -3388,8 +3387,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithNestedFocusWidgets()
     widget.show();
     qApp->setActiveWindow(&widget);
     widget.activateWindow();
-    QTest::qWaitForWindowShown(&widget);
-    QApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
     QTRY_VERIFY(widget1->hasFocus());
 }
 
@@ -4181,8 +4179,8 @@ void tst_QGraphicsScene::isActive()
 
         toplevel3.show();
         QApplication::setActiveWindow(&toplevel3);
-        QTest::qWaitForWindowShown(&toplevel3);
-        QTRY_COMPARE(QApplication::activeWindow(), &toplevel3);
+        QVERIFY(QTest::qWaitForWindowActive(&toplevel3));
+        QCOMPARE(QApplication::activeWindow(), &toplevel3);
 
         QVERIFY(scene1.isActive());
         QVERIFY(!scene2.isActive());
@@ -4350,7 +4348,7 @@ void tst_QGraphicsScene::taskQT657_paintIntoCacheWithTransparentParts()
     proxy->rotate(15);
 
     view->show();
-    QTest::qWaitForWindowShown(view);
+    QVERIFY(QTest::qWaitForWindowExposed(view));
     view->repaints = 0;
     proxy->update(10, 10, 10, 10);
     QTest::qWait(50);
@@ -4396,7 +4394,7 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         backItem->rotate(15);
 
         view->show();
-        QTest::qWaitForWindowShown(view);
+        QVERIFY(QTest::qWaitForWindowExposed(view));
         view->repaints = 0;
         rectItem->update(10, 10, 10, 10);
         QTest::qWait(50);
@@ -4438,7 +4436,7 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         rectItem->rotate(15);
 
         view->show();
-        QTest::qWaitForWindowShown(view);
+        QVERIFY(QTest::qWaitForWindowExposed(view));
         view->repaints = 0;
         rectItem->update(10, 10, 10, 10);
         QTest::qWait(50);
@@ -4479,7 +4477,7 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         rectItem->rotate(15);
 
         view->show();
-        QTest::qWaitForWindowShown(view);
+        QVERIFY(QTest::qWaitForWindowExposed(view));
         view->repaints = 0;
         rectItem->update(10, 10, 10, 10);
         QTest::qWait(50);
@@ -4581,8 +4579,8 @@ void tst_QGraphicsScene::taskQTBUG_16401_focusItem()
     rect->setFlag(QGraphicsItem::ItemIsFocusable);
 
     view.show();
-    QTest::qWaitForWindowShown(&view);
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QVERIFY(!scene.focusItem());
 

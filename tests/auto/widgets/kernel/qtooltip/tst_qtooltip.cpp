@@ -106,9 +106,7 @@ void tst_QToolTip::task183679()
     Widget_task183679 widget;
     widget.show();
     QApplication::setActiveWindow(&widget);
-    QTest::qWaitForWindowShown(&widget);
-    QTest::qWait(30);
-
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
 
     widget.showDelayedToolTip(100);
     QTest::qWait(300);

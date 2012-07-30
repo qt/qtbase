@@ -1088,8 +1088,8 @@ void tst_QGraphicsProxyWidget::keyPressEvent()
     view.show();
     view.viewport()->setFocus();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
@@ -1129,8 +1129,8 @@ void tst_QGraphicsProxyWidget::keyReleaseEvent()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
@@ -1173,8 +1173,8 @@ void tst_QGraphicsProxyWidget::mouseDoubleClickEvent()
     view.show();
 
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
@@ -1217,7 +1217,7 @@ void tst_QGraphicsProxyWidget::mousePressReleaseEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
@@ -1279,8 +1279,8 @@ void tst_QGraphicsProxyWidget::paintEvent()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_VERIFY(view.isActiveWindow());
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(view.isActiveWindow());
 
     SubQGraphicsProxyWidget proxy;
 
@@ -1289,7 +1289,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
     //this bug prevents the widget from being updated
 
     w->show();
-    QTest::qWaitForWindowShown(w);
+    QVERIFY(QTest::qWaitForWindowExposed(w));
     QApplication::processEvents();
     QTest::qWait(30);
     proxy.setWidget(w);
@@ -1691,7 +1691,7 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleWidget()
     window.show();
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
 
     leftDial->setFocus();
     QApplication::processEvents();
@@ -1775,7 +1775,7 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
     window.show();
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
 
     leftDial->setFocus();
     QApplication::processEvents();
@@ -1908,7 +1908,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
     window.show();
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWaitForWindowShown(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
 
     leftDial->setFocus();
     QApplication::processEvents();
@@ -2219,8 +2219,8 @@ void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
     window.show();
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWaitForWindowShown(&window);
-    QTRY_COMPARE(QApplication::activeWindow(), &window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QCOMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
     QApplication::processEvents();
@@ -2291,8 +2291,8 @@ void tst_QGraphicsProxyWidget::setFocus_simpleTwoWidgets()
     window.show();
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWaitForWindowShown(&window);
-    QTRY_COMPARE(QApplication::activeWindow(), &window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QCOMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
     QApplication::processEvents();
@@ -2370,8 +2370,8 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
     window.show();
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWaitForWindowShown(&window);
-    QTRY_COMPARE(QApplication::activeWindow(), &window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QCOMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
     QApplication::processEvents();
@@ -2461,7 +2461,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
     QCOMPARE(box->pos(), QPoint());
     QCOMPARE(proxy->pos(), QPointF());
 
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTest::qWait(125);
     QApplication::processEvents();
 
@@ -2556,9 +2556,8 @@ void tst_QGraphicsProxyWidget::changingCursor_basic()
     proxy->show();
     scene.addItem(proxy);
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QApplication::processEvents();
-    QTRY_VERIFY(view.isActiveWindow());
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(view.isActiveWindow());
 
     // in
     QTest::mouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
@@ -2967,7 +2966,7 @@ void tst_QGraphicsProxyWidget::dontCrashWhenDie()
 {
     MainWidget *w = new MainWidget();
     w->show();
-    QTest::qWaitForWindowShown(w);
+    QVERIFY(QTest::qWaitForWindowExposed(w));
     QTest::qWait(100);
     QTest::mouseMove(w->view->viewport(), w->view->mapFromScene(w->widget->mapToScene(w->widget->boundingRect().center())));
     delete w->item;
@@ -3120,7 +3119,7 @@ void tst_QGraphicsProxyWidget::actionsContextMenu()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     view.setFocus();
     QTRY_VERIFY(view.hasFocus());
 
@@ -3627,8 +3626,8 @@ void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
     view.resize(600, 600);
     QApplication::setActiveWindow(&view);
     view.show();
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(QApplication::activeWindow(), &view);
     QCursor::setPos(view.mapToGlobal(view.mapFromScene(scene.topButton->boundingRect().center())));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(scene.topButton->scenePos()));
     QTRY_COMPARE(scene.hoverButton->hoverLeaveReceived, true);

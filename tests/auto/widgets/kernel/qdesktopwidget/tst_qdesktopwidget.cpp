@@ -125,7 +125,7 @@ void tst_QDesktopWidget::screenNumberForQWidget()
 
     QWidget widget;
     widget.show();
-    QTest::qWaitForWindowShown(&widget);
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QVERIFY(widget.isVisible());
 
     int widgetScreen = desktop.screenNumber(&widget);
@@ -169,7 +169,7 @@ void tst_QDesktopWidget::screenGeometry()
     QVERIFY(r.isNull());
     QWidget widget;
     widget.show();
-    QTest::qWaitForWindowShown(&widget);
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     r = desktopWidget->screenGeometry(&widget);
 
     QRect total;

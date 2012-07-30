@@ -429,10 +429,10 @@ void tst_QMenu::overrideMenuAction()
     m->addAction(aQuit);
 
     w.show();
-    QTest::qWaitForWindowShown(&w);
     QApplication::setActiveWindow(&w);
     w.setFocus();
-    QTRY_VERIFY(w.hasFocus());
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+    QVERIFY(w.hasFocus());
 
     //test of the action inside the menu
     QTest::keyClick(&w, Qt::Key_X, Qt::ControlModifier);
@@ -467,7 +467,7 @@ void tst_QMenu::statusTip()
 
     w.addToolBar(&tb);
     w.show();
-    QTest::qWaitForWindowShown(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     QRect rect1 = tb.actionGeometry(&a);
     QToolButton *btn = qobject_cast<QToolButton*>(tb.childAt(rect1.center()));
@@ -583,20 +583,20 @@ void tst_QMenu::layoutDirection()
 
     QMenu menu(&win);
     menu.show();
-    QTest::qWaitForWindowShown(&menu);
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QCOMPARE(menu.layoutDirection(), Qt::RightToLeft);
     menu.close();
 
     menu.setParent(0);
     menu.show();
-    QTest::qWaitForWindowShown(&menu);
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QCOMPARE(menu.layoutDirection(), QApplication::layoutDirection());
     menu.close();
 
     //now the menubar
     QAction *action = win.menuBar()->addMenu(&menu);
     win.menuBar()->setActiveAction(action);
-    QTest::qWaitForWindowShown(&menu);
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QCOMPARE(menu.layoutDirection(), Qt::RightToLeft);
 }
 
@@ -784,7 +784,7 @@ void tst_QMenu::task258920_mouseBorder()
     QAction *action = menu.addAction("test");
 
     menu.popup(QApplication::desktop()->availableGeometry().center());
-    QTest::qWaitForWindowShown(&menu);
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QTest::qWait(100);
     QRect actionRect = menu.actionGeometry(action);
     QTest::mouseMove(&menu, actionRect.center());
@@ -834,7 +834,7 @@ void tst_QMenu::pushButtonPopulateOnAboutToShow()
     desiredGeometry.moveTopLeft(QPoint(10, screen.bottom()-b.height()-5));
 
     b.setGeometry(desiredGeometry);
-    QTest::qWaitForWindowShown(&b);
+    QVERIFY(QTest::qWaitForWindowExposed(&b));
 
     if (b.geometry() != desiredGeometry) {
         // We are trying to put the button very close to the edge of the screen,
@@ -868,7 +868,7 @@ void tst_QMenu::QTBUG7907_submenus_autoselect()
     menu.addMenu(&set1);
     menu.addMenu(&set2);
     menu.show();
-    QTest::qWaitForWindowShown(&menu);
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QTest::mouseClick(&menu, Qt::LeftButton, Qt::NoModifier, QPoint(5,5) );
     QTest::qWait(500);
     QVERIFY(!subset.isVisible());
@@ -883,7 +883,7 @@ void tst_QMenu::QTBUG7411_submenus_activate()
     sub1.setTitle("&sub1");
     QAction *act1 = menu.addMenu(&sub1);
     menu.show();
-    QTest::qWaitForWindowShown(&menu);
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
     menu.setActiveAction(act);
     QTest::keyPress(&menu, Qt::Key_Down);
     QCOMPARE(menu.activeAction(), act1);
@@ -906,7 +906,7 @@ public:
     {
         m_currentIndex = index;
         popup(QPoint());
-        QTest::qWaitForWindowShown(this);
+        QVERIFY(QTest::qWaitForWindowExposed(this));
         setActiveAction(dialogActions[index]);
         QTimer::singleShot(500, this, SLOT(checkVisibility()));
         QTest::keyClick(this, Qt::Key_Enter); //activation

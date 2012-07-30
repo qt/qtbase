@@ -165,7 +165,7 @@ void tst_QProgressBar::format()
     bar.setRange(0, 10);
     bar.setValue(1);
     bar.show();
-    QTest::qWaitForWindowShown(&bar);
+    QVERIFY(QTest::qWaitForWindowExposed(&bar));
 
     QTest::qWait(20);
     bar.repainted = false;
@@ -201,7 +201,7 @@ void tst_QProgressBar::setValueRepaint()
     pbar.setMaximum(10);
     pbar.setFormat("%v");
     pbar.show();
-    QTest::qWaitForWindowShown(&pbar);
+    QVERIFY(QTest::qWaitForWindowExposed(&pbar));
 
     QApplication::processEvents();
     for (int i = pbar.minimum(); i < pbar.maximum(); ++i) {

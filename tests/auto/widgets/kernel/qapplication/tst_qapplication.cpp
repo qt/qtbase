@@ -765,7 +765,7 @@ public:
         messageBox->setDefaultButton(QMessageBox::Save);
 
         messageBox->show();
-        QTest::qWaitForWindowShown(messageBox);
+        QVERIFY(QTest::qWaitForWindowExposed(messageBox));
 
         // verify that all windows are visible
         foreach (QWidget *w, qApp->topLevelWidgets())
@@ -797,7 +797,7 @@ void tst_QApplication::closeAllWindows()
     // show all windows
     foreach (QWidget *w, app.topLevelWidgets()) {
         w->show();
-        QTest::qWaitForWindowShown(w);
+        QVERIFY(QTest::qWaitForWindowExposed(w));
     }
     // verify that they are visible
     foreach (QWidget *w, app.topLevelWidgets())
@@ -815,7 +815,7 @@ void tst_QApplication::closeAllWindows()
     // show all windows
     foreach (QWidget *w, app.topLevelWidgets()) {
         w->show();
-        QTest::qWaitForWindowShown(w);
+        QVERIFY(QTest::qWaitForWindowExposed(w));
     }
     // close the last window to open the prompt (eventloop recurses)
     promptOnCloseWidget->close();
@@ -1917,7 +1917,7 @@ void tst_QApplication::touchEventPropagation()
         window.show(); // Must have an explicitly specified QWindow for handleTouchEvent,
                        // passing 0 would result in using topLevelAt() which is not ok in this case
                        // as the screen position in the point is bogus.
-        QTest::qWaitForWindowShown(&window);
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
         // QPA always takes screen positions and since we map the TouchPoint back to QPA's structure first,
         // we must ensure there is a screen position in the TouchPoint that maps to a local 0, 0.
         pressedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
@@ -1971,7 +1971,7 @@ void tst_QApplication::touchEventPropagation()
         TouchEventPropagationTestWidget widget(&window);
         widget.setObjectName("2. widget");
         window.show();
-        QTest::qWaitForWindowShown(&window);
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
         pressedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
         releasedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
 
