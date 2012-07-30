@@ -16,3 +16,6 @@ TRUSTED_BENCHMARKS += \
     painting/qtracebench
 
 include(../trusted-benchmarks.pri)
+
+isEmpty(QT.widgets.name): SUBDIRS -= \
+    itemviews

@@ -7,3 +7,10 @@ SUBDIRS = \
         qgraphicsscene \
         qgraphicsview \
         qgraphicswidget
+
+isEmpty(QT.widgets.name): SUBDIRS -= \
+    qgraphicsanchorlayout \
+    qgraphicsitem \
+    qgraphicsscene \
+    qgraphicsview \
+    qgraphicswidget

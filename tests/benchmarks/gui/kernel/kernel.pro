@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS = \
+!isEmpty(QT.widgets.name):SUBDIRS = \
         qapplication \
         qwidget

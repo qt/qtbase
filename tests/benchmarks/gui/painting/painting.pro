@@ -5,3 +5,8 @@ SUBDIRS = \
         qtransform \
         qtracebench \
         qtbench
+
+isEmpty(QT.widgets.name): SUBDIRS -= \
+    qpainter \
+    qtracebench \
+    qtbench
