@@ -608,26 +608,9 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
     bytes_left = reply->bytes_after;
     free(reply);
 
-    int  offset = 0, buffer_offset = 0, format_inc = 1, proplen = bytes_left;
+    int  offset = 0, buffer_offset = 0;
 
-    switch (*format) {
-    case 8:
-    default:
-        format_inc = sizeof(char) / 1;
-        break;
-
-    case 16:
-        format_inc = sizeof(short) / 2;
-        proplen *= sizeof(short) / 2;
-        break;
-
-    case 32:
-        format_inc = sizeof(long) / 4;
-        proplen *= sizeof(long) / 4;
-        break;
-    }
-
-    int newSize = proplen;
+    int newSize = bytes_left;
     buffer->resize(newSize);
 
     bool ok = (buffer->size() == newSize);
@@ -650,13 +633,11 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
             char *data = (char *)xcb_get_property_value(reply);
             int length = xcb_get_property_value_length(reply);
 
-            offset += length / (32 / *format);
-            length *= format_inc * (*format) / 8;
-
             // Here we check if we get a buffer overflow and tries to
             // recover -- this shouldn't normally happen, but it doesn't
             // hurt to be defensive
             if ((int)(buffer_offset + length) > buffer->size()) {
+                qWarning("QXcbClipboard: buffer overflow");
                 length = buffer->size() - buffer_offset;
 
                 // escape loop
@@ -666,6 +647,10 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
             memcpy(buffer->data() + buffer_offset, data, length);
             buffer_offset += length;
 
+            if (bytes_left) {
+                // offset is specified in 32-bit multiples
+                offset += length / 4;
+            }
             free(reply);
         }
     }
