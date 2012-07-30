@@ -6,10 +6,7 @@ CONFIG += static
 CONFIG += console qtinc 
 CONFIG -= qt
 CONFIG += exceptions_off
-build_all:!build_pass {
-    CONFIG -= build_all
-    CONFIG += release
-}
+!build_pass:contains(QT_CONFIG, build_all):CONFIG += release
 mac:CONFIG -= app_bundle incremental
 
 DEFINES += \

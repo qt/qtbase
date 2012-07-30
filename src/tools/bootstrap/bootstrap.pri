@@ -1,9 +1,6 @@
 CONFIG 	       += console qtinc
 CONFIG         -= qt
-build_all:!build_pass {
-    CONFIG -= build_all
-    CONFIG += release
-}
+!build_pass:contains(QT_CONFIG, build_all):CONFIG += release
 CONFIG     -= app_bundle
 CONFIG += exceptions_off
 
