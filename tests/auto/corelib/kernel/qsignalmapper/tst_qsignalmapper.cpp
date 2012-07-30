@@ -42,7 +42,6 @@
 #include <QtTest/QtTest>
 
 #include <qsignalmapper.h>
-#include <qspinbox.h>
 
 class tst_QSignalMapper : public QObject
 {
@@ -58,7 +57,12 @@ public slots:
     void myslot(int id);
     void myslot(const QString &str);
 
+signals:
+    void mysignal(int);
+
 public:
+    void emit_mysignal(int);
+
     int id;
     QString str;
 };
@@ -73,37 +77,42 @@ void QtTestObject::myslot(const QString &str)
     this->str = str;
 }
 
+void QtTestObject::emit_mysignal(int value)
+{
+    emit mysignal(value);
+}
+
 void tst_QSignalMapper::mapped()
 {
     QSignalMapper mapper(0);
 
     QtTestObject target;
-    QSpinBox spinBox1(0);
-    QSpinBox spinBox2(0);
-    QSpinBox spinBox3(0);
+    QtTestObject src1;
+    QtTestObject src2;
+    QtTestObject src3;
 
-    connect(&spinBox1, SIGNAL(valueChanged(int)), &mapper, SLOT(map()));
-    connect(&spinBox2, SIGNAL(valueChanged(int)), &mapper, SLOT(map()));
-    connect(&spinBox3, SIGNAL(valueChanged(int)), &mapper, SLOT(map()));
+    connect(&src1, SIGNAL(mysignal(int)), &mapper, SLOT(map()));
+    connect(&src2, SIGNAL(mysignal(int)), &mapper, SLOT(map()));
+    connect(&src3, SIGNAL(mysignal(int)), &mapper, SLOT(map()));
 
-    mapper.setMapping(&spinBox1, 7);
-    mapper.setMapping(&spinBox1, 1);
-    mapper.setMapping(&spinBox2, 2);
-    mapper.setMapping(&spinBox2, "two");
-    mapper.setMapping(&spinBox3, "three");
+    mapper.setMapping(&src1, 7);
+    mapper.setMapping(&src1, 1);
+    mapper.setMapping(&src2, 2);
+    mapper.setMapping(&src2, "two");
+    mapper.setMapping(&src3, "three");
 
     connect(&mapper, SIGNAL(mapped(int)), &target, SLOT(myslot(int)));
     connect(&mapper, SIGNAL(mapped(const QString &)), &target, SLOT(myslot(const QString &)));
 
-    spinBox1.setValue(20);
+    src1.emit_mysignal(20);
     QVERIFY(target.id == 1);
     QVERIFY(target.str.isEmpty());
 
-    spinBox2.setValue(20);
+    src2.emit_mysignal(20);
     QVERIFY(target.id == 2);
     QVERIFY(target.str == "two");
 
-    spinBox3.setValue(20);
+    src3.emit_mysignal(20);
     QVERIFY(target.id == 2);
     QVERIFY(target.str == "three");
 }
