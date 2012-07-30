@@ -8933,7 +8933,7 @@ void tst_QWidget::setGraphicsEffect()
 
 void tst_QWidget::activateWindow()
 {
-    // Test case for task 260685
+    // Test case for QTBUG-26711
 
     // Create first mainwindow and set it active
     QScopedPointer<QMainWindow> mainwindow(new QMainWindow);
