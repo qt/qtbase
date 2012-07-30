@@ -140,7 +140,7 @@ private:
     static bool isDeepEqual(const QDomNode &n1, const QDomNode &n2);
     static bool isFakeXMLDeclaration(const QDomNode &node);
 
-    QList<QByteArray> m_excludedCodecs;
+    QList<QByteArray> m_testCodecs;
 };
 
 Q_DECLARE_METATYPE(QList<QVariant>)
@@ -473,15 +473,17 @@ void tst_QDom::save()
 
 void tst_QDom::initTestCase()
 {
-    QString testFile = QFINDTESTDATA("testdata/excludedCodecs.txt");
+    QString testFile = QFINDTESTDATA("testdata/testCodecs.txt");
     if (testFile.isEmpty())
-        QFAIL("Cannot find testdata/excludedCodecs.txt");
+        QFAIL("Cannot find testdata/testCodecs.txt");
     QFile file(testFile);
     QVERIFY(file.open(QIODevice::ReadOnly|QIODevice::Text));
 
     QByteArray codecName;
 
-    m_excludedCodecs = file.readAll().split('\n');
+    m_testCodecs = file.readAll().split('\n');
+    if (m_testCodecs.last().isEmpty())
+        m_testCodecs.removeLast();
 
 }
 
@@ -497,14 +499,9 @@ void tst_QDom::saveWithSerialization() const
     // Read the document
     QVERIFY(doc.setContent(&f));
 
-    const QList<QByteArray> codecs(QTextCodec::availableCodecs());
     QByteArray codecName;
 
-    foreach(codecName, codecs) {
-
-        /* Avoid codecs that can't handle the files we have. */
-        if(m_excludedCodecs.contains(codecName.toLower()))
-            continue;
+    foreach (codecName, m_testCodecs) {
 
         /* Write out doc in the specified codec. */
         QByteArray storage;
@@ -513,8 +510,7 @@ void tst_QDom::saveWithSerialization() const
 
         QTextStream s(&writeDevice);
         QTextCodec *codec = QTextCodec::codecForName(codecName);
-        QVERIFY2(codec, qPrintable(QString::fromLatin1("Failed to load codec %1, even though it was in QTextCodec::availableCodecs()")
-                                   .arg(QString::fromLatin1(codecName.constData()))));
+        QVERIFY2(codec, qPrintable(QString::fromLatin1("Failed to load codec %1").arg(QString::fromLatin1(codecName.constData()))));
         s.setCodec(codec);
 
         doc.save(s, 0, QDomNode::EncodingFromTextStream);

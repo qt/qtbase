@@ -1,0 +1,6 @@
+utf-8
+utf-16
+utf-16be
+utf-16le
+utf-32
+gb18030
