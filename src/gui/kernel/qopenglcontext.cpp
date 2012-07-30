@@ -567,7 +567,8 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
     if (framebufferBinding != platformFramebuffer)
         qWarning() << "QOpenGLContext::swapBuffers() called with non-default framebuffer object bound";
 #endif
-
+    if (surface->format().swapBehavior() == QSurfaceFormat::SingleBuffer)
+        glFlush();
     d->platformGLContext->swapBuffers(surfaceHandle);
 }
 
