@@ -162,12 +162,7 @@ public:
         SceneModal
     };
 
-    QGraphicsItem(QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                  // ### obsolete argument
-                  , QGraphicsScene *scene = 0
-#endif
-        );
+    QGraphicsItem(QGraphicsItem *parent = 0);
     virtual ~QGraphicsItem();
 
     QGraphicsScene *scene() const;
@@ -460,8 +455,7 @@ protected:
     virtual QVariant extension(const QVariant &variant) const;
 
 protected:
-    QGraphicsItem(QGraphicsItemPrivate &dd,
-                  QGraphicsItem *parent, QGraphicsScene *scene);
+    QGraphicsItem(QGraphicsItemPrivate &dd, QGraphicsItem *parent);
     QScopedPointer<QGraphicsItemPrivate> d_ptr;
 
     void addToIndex();
@@ -599,7 +593,7 @@ Q_SIGNALS:
     void heightChanged();
 
 protected:
-    QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene);
+    QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent);
 private:
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;
@@ -610,12 +604,7 @@ class QAbstractGraphicsShapeItemPrivate;
 class Q_WIDGETS_EXPORT QAbstractGraphicsShapeItem : public QGraphicsItem
 {
 public:
-    QAbstractGraphicsShapeItem(QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                               // ### obsolete argument
-                               , QGraphicsScene *scene = 0
-#endif
-        );
+    QAbstractGraphicsShapeItem(QGraphicsItem *parent = 0);
     ~QAbstractGraphicsShapeItem();
 
     QPen pen() const;
@@ -629,7 +618,7 @@ public:
 
 protected:
     QAbstractGraphicsShapeItem(QAbstractGraphicsShapeItemPrivate &dd,
-                               QGraphicsItem *parent, QGraphicsScene *scene);
+                               QGraphicsItem *parent);
 
 private:
     Q_DISABLE_COPY(QAbstractGraphicsShapeItem)
@@ -640,18 +629,8 @@ class QGraphicsPathItemPrivate;
 class Q_WIDGETS_EXPORT QGraphicsPathItem : public QAbstractGraphicsShapeItem
 {
 public:
-    QGraphicsPathItem(QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                      // ### obsolete argument
-                      , QGraphicsScene *scene = 0
-#endif
-        );
-    QGraphicsPathItem(const QPainterPath &path, QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                      // ### obsolete argument
-                      , QGraphicsScene *scene = 0
-#endif
-        );
+    QGraphicsPathItem(QGraphicsItem *parent = 0);
+    QGraphicsPathItem(const QPainterPath &path, QGraphicsItem *parent = 0);
     ~QGraphicsPathItem();
 
     QPainterPath path() const;
@@ -683,24 +662,9 @@ class QGraphicsRectItemPrivate;
 class Q_WIDGETS_EXPORT QGraphicsRectItem : public QAbstractGraphicsShapeItem
 {
 public:
-    QGraphicsRectItem(QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                      // ### obsolete argument
-                      , QGraphicsScene *scene = 0
-#endif
-        );
-    QGraphicsRectItem(const QRectF &rect, QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                      // ### obsolete argument
-                      , QGraphicsScene *scene = 0
-#endif
-        );
-    QGraphicsRectItem(qreal x, qreal y, qreal w, qreal h, QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                      // ### obsolete argument
-                      , QGraphicsScene *scene = 0
-#endif
-        );
+    QGraphicsRectItem(QGraphicsItem *parent = 0);
+    QGraphicsRectItem(const QRectF &rect, QGraphicsItem *parent = 0);
+    QGraphicsRectItem(qreal x, qreal y, qreal w, qreal h, QGraphicsItem *parent = 0);
     ~QGraphicsRectItem();
 
     QRectF rect() const;
@@ -736,24 +700,9 @@ class QGraphicsEllipseItemPrivate;
 class Q_WIDGETS_EXPORT QGraphicsEllipseItem : public QAbstractGraphicsShapeItem
 {
 public:
-    QGraphicsEllipseItem(QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                         // ### obsolete argument
-                         , QGraphicsScene *scene = 0
-#endif
-        );
-    QGraphicsEllipseItem(const QRectF &rect, QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                         // ### obsolete argument
-                         , QGraphicsScene *scene = 0
-#endif
-        );
-    QGraphicsEllipseItem(qreal x, qreal y, qreal w, qreal h, QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                         // ### obsolete argument
-                         , QGraphicsScene *scene = 0
-#endif
-        );
+    QGraphicsEllipseItem(QGraphicsItem *parent = 0);
+    QGraphicsEllipseItem(const QRectF &rect, QGraphicsItem *parent = 0);
+    QGraphicsEllipseItem(qreal x, qreal y, qreal w, qreal h, QGraphicsItem *parent = 0);
     ~QGraphicsEllipseItem();
 
     QRectF rect() const;
@@ -795,19 +744,9 @@ class QGraphicsPolygonItemPrivate;
 class Q_WIDGETS_EXPORT QGraphicsPolygonItem : public QAbstractGraphicsShapeItem
 {
 public:
-    QGraphicsPolygonItem(QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                         // ### obsolete argument
-                         , QGraphicsScene *scene = 0
-#endif
-        );
+    QGraphicsPolygonItem(QGraphicsItem *parent = 0);
     QGraphicsPolygonItem(const QPolygonF &polygon,
-                         QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                         // ### obsolete argument
-                         , QGraphicsScene *scene = 0
-#endif
-        );
+                         QGraphicsItem *parent = 0);
     ~QGraphicsPolygonItem();
 
     QPolygonF polygon() const;
@@ -842,24 +781,9 @@ class QGraphicsLineItemPrivate;
 class Q_WIDGETS_EXPORT QGraphicsLineItem : public QGraphicsItem
 {
 public:
-    QGraphicsLineItem(QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                      // ### obsolete argument
-                      , QGraphicsScene *scene = 0
-#endif
-        );
-    QGraphicsLineItem(const QLineF &line, QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                      // ### obsolete argument
-                      , QGraphicsScene *scene = 0
-#endif
-        );
-    QGraphicsLineItem(qreal x1, qreal y1, qreal x2, qreal y2, QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                      // ### obsolete argument
-                      , QGraphicsScene *scene = 0
-#endif
-        );
+    QGraphicsLineItem(QGraphicsItem *parent = 0);
+    QGraphicsLineItem(const QLineF &line, QGraphicsItem *parent = 0);
+    QGraphicsLineItem(qreal x1, qreal y1, qreal x2, qreal y2, QGraphicsItem *parent = 0);
     ~QGraphicsLineItem();
 
     QPen pen() const;
@@ -902,18 +826,8 @@ public:
         HeuristicMaskShape
     };
 
-    QGraphicsPixmapItem(QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                        // ### obsolete argument
-                        , QGraphicsScene *scene = 0
-#endif
-        );
-    QGraphicsPixmapItem(const QPixmap &pixmap, QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                        // ### obsolete argument
-                        , QGraphicsScene *scene = 0
-#endif
-        );
+    QGraphicsPixmapItem(QGraphicsItem *parent = 0);
+    QGraphicsPixmapItem(const QPixmap &pixmap, QGraphicsItem *parent = 0);
     ~QGraphicsPixmapItem();
 
     QPixmap pixmap() const;
@@ -964,18 +878,8 @@ class Q_WIDGETS_EXPORT QGraphicsTextItem : public QGraphicsObject
     QDOC_PROPERTY(QTextCursor textCursor READ textCursor WRITE setTextCursor)
 
 public:
-    QGraphicsTextItem(QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                      // ### obsolete argument
-                      , QGraphicsScene *scene = 0
-#endif
-        );
-    QGraphicsTextItem(const QString &text, QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                      // ### obsolete argument
-                      , QGraphicsScene *scene = 0
-#endif
-        );
+    QGraphicsTextItem(QGraphicsItem *parent = 0);
+    QGraphicsTextItem(const QString &text, QGraphicsItem *parent = 0);
     ~QGraphicsTextItem();
 
     QString toHtml() const;
@@ -1065,18 +969,8 @@ class QGraphicsSimpleTextItemPrivate;
 class Q_WIDGETS_EXPORT QGraphicsSimpleTextItem : public QAbstractGraphicsShapeItem
 {
 public:
-    QGraphicsSimpleTextItem(QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                            // ### obsolete argument
-                            , QGraphicsScene *scene = 0
-#endif
-        );
-    QGraphicsSimpleTextItem(const QString &text, QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                            // ### obsolete argument
-                            , QGraphicsScene *scene = 0
-#endif
-        );
+    QGraphicsSimpleTextItem(QGraphicsItem *parent = 0);
+    QGraphicsSimpleTextItem(const QString &text, QGraphicsItem *parent = 0);
     ~QGraphicsSimpleTextItem();
 
     void setText(const QString &text);
@@ -1111,12 +1005,7 @@ class QGraphicsItemGroupPrivate;
 class Q_WIDGETS_EXPORT QGraphicsItemGroup : public QGraphicsItem
 {
 public:
-    QGraphicsItemGroup(QGraphicsItem *parent = 0
-#ifndef Q_QDOC
-                       // ### obsolete argument
-                       , QGraphicsScene *scene = 0
-#endif
-        );
+    QGraphicsItemGroup(QGraphicsItem *parent = 0);
     ~QGraphicsItemGroup();
 
     void addToGroup(QGraphicsItem *item);

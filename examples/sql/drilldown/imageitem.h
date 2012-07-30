@@ -50,8 +50,7 @@ class ImageItem : public QObject, public QGraphicsPixmapItem
     Q_OBJECT
 
 public:
-    ImageItem(int id, const QPixmap &pixmap, QGraphicsItem *parent = 0,
-              QGraphicsScene *scene = 0);
+    ImageItem(int id, const QPixmap &pixmap, QGraphicsItem *parent = 0);
 
     void adjust();
     int id();

@@ -61,7 +61,7 @@ public:
     enum { Type = UserType + 4 };
 
     Arrow(DiagramItem *startItem, DiagramItem *endItem,
-      QGraphicsItem *parent = 0, QGraphicsScene *scene = 0);
+      QGraphicsItem *parent = 0);
 
     int type() const
         { return Type; }

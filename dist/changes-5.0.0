@@ -459,6 +459,10 @@ QtWidgets
     those classes are now QDate and QTime respectively, not QDateTime as they have been
     for the 4.7 and 4.8 releases.
 
+* QGraphicsItem and derived classes - Passing a QGraphicsScene in the items constructor
+  is no longer supported. Construct the item without a scene and then call
+  QGraphicsScene::addItem() to add the item to the scene.
+
 QtNetwork
 ---------
 * QHostAddress::isLoopback() API added. Returns true if the address is

@@ -42,9 +42,8 @@
 
 #include "diagramitem.h"
 
-DiagramItem::DiagramItem(DiagramType diagramType, QGraphicsItem *item,
-                         QGraphicsScene *scene)
-    : QGraphicsPolygonItem(item, scene)
+DiagramItem::DiagramItem(DiagramType diagramType, QGraphicsItem *item)
+    : QGraphicsPolygonItem(item)
 {
     if (diagramType == Box) {
         boxPolygon << QPointF(0, 0) << QPointF(0, 30) << QPointF(30, 30)

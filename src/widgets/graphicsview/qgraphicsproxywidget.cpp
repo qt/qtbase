@@ -501,7 +501,7 @@ QPointF QGraphicsProxyWidgetPrivate::mapToReceiver(const QPointF &pos, const QWi
     to QGraphicsItem's constructor.
 */
 QGraphicsProxyWidget::QGraphicsProxyWidget(QGraphicsItem *parent, Qt::WindowFlags wFlags)
-    : QGraphicsWidget(*new QGraphicsProxyWidgetPrivate, parent, 0, wFlags)
+    : QGraphicsWidget(*new QGraphicsProxyWidgetPrivate, parent, wFlags)
 {
     Q_D(QGraphicsProxyWidget);
     d->init();

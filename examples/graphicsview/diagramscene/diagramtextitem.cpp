@@ -44,8 +44,8 @@
 #include "diagramscene.h"
 
 //! [0]
-DiagramTextItem::DiagramTextItem(QGraphicsItem *parent, QGraphicsScene *scene)
-    : QGraphicsTextItem(parent, scene)
+DiagramTextItem::DiagramTextItem(QGraphicsItem *parent)
+    : QGraphicsTextItem(parent)
 {
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);

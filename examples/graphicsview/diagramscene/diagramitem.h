@@ -68,7 +68,7 @@ public:
     enum DiagramType { Step, Conditional, StartEnd, Io };
 
     DiagramItem(DiagramType diagramType, QMenu *contextMenu,
-        QGraphicsItem *parent = 0, QGraphicsScene *scene = 0);
+        QGraphicsItem *parent = 0);
 
     void removeArrow(Arrow *arrow);
     void removeArrows();

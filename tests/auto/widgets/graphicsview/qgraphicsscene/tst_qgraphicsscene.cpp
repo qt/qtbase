@@ -3465,7 +3465,8 @@ void tst_QGraphicsScene::task139782_containsItemBoundingRect()
 {
     // The item in question has a scene bounding rect of (10, 10, 50, 50)
     QGraphicsScene scene(0.0, 0.0, 200.0, 200.0);
-    QGraphicsRectItem *item = new QGraphicsRectItem(0.0, 0.0, 50.0, 50.0, 0, &scene);
+    QGraphicsRectItem *item = new QGraphicsRectItem(0.0, 0.0, 50.0, 50.0, 0);
+    scene.addItem(item);
     item->setPos(10.0, 10.0);
 
     // The (0, 0, 50, 50) scene rect should not include the item's bounding rect

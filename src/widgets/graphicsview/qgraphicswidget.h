@@ -223,7 +223,7 @@ protected:
     virtual void ungrabMouseEvent(QEvent *event);
     virtual void grabKeyboardEvent(QEvent *event);
     virtual void ungrabKeyboardEvent(QEvent *event);
-    QGraphicsWidget(QGraphicsWidgetPrivate &, QGraphicsItem *parent, QGraphicsScene *, Qt::WindowFlags wFlags = 0);
+    QGraphicsWidget(QGraphicsWidgetPrivate &, QGraphicsItem *parent, Qt::WindowFlags wFlags = 0);
 
 private:
     Q_DISABLE_COPY(QGraphicsWidget)

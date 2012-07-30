@@ -41,9 +41,8 @@
 #include "imageitem.h"
 
 //! [0]
-ImageItem::ImageItem(int id, const QPixmap &pixmap, QGraphicsItem *parent,
-                     QGraphicsScene *scene)
-    : QGraphicsPixmapItem(pixmap, parent, scene)
+ImageItem::ImageItem(int id, const QPixmap &pixmap, QGraphicsItem *parent)
+    : QGraphicsPixmapItem(pixmap, parent)
 {
     recordId = id;
     setAcceptHoverEvents(true);

@@ -2200,7 +2200,8 @@ void tst_QGraphicsItem::setMatrix()
     qRegisterMetaType<QList<QRectF> >("QList<QRectF>");
     QSignalSpy spy(&scene, SIGNAL(changed(QList<QRectF>)));
     QRectF unrotatedRect(-12, -34, 56, 78);
-    QGraphicsRectItem item(unrotatedRect, 0, &scene);
+    QGraphicsRectItem item(unrotatedRect, 0);
+    scene.addItem(&item);
     scene.update(scene.sceneRect());
     QApplication::instance()->processEvents();
 
@@ -2467,10 +2468,13 @@ void tst_QGraphicsItem::collidesWith_item()
 
     {
         QGraphicsScene scene;
-        QGraphicsRectItem rect(20, 20, 100, 100, 0, &scene);
-        QGraphicsRectItem rect2(40, 40, 50, 50, 0, &scene);
+        QGraphicsRectItem rect(20, 20, 100, 100, 0);
+        scene.addItem(&rect);
+        QGraphicsRectItem rect2(40, 40, 50, 50, 0);
+        scene.addItem(&rect2);
         rect2.setZValue(1);
-        QGraphicsLineItem line(0, 0, 200, 200, 0, &scene);
+        QGraphicsLineItem line(0, 0, 200, 200, 0);
+        scene.addItem(&line);
         line.setZValue(2);
 
         QCOMPARE(scene.items().size(), 3);
@@ -6244,7 +6248,7 @@ public slots:
     void newTextItem()
     {
         // Add a text item
-        QGraphicsItem *item = new QGraphicsTextItem("This item will not ensure that it's visible", 0, this);
+        QGraphicsItem *item = new QGraphicsTextItem("This item will not ensure that it's visible", 0);
         item->setPos(.0, .0);
         item->show();
     }
