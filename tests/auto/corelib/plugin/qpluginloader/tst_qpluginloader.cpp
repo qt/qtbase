@@ -109,6 +109,7 @@ private slots:
     void loadDebugObj();
     void loadCorruptElf();
     void loadGarbage();
+    void reloadPlugin();
 };
 
 void tst_QPluginLoader::errorString()
@@ -289,6 +290,29 @@ void tst_QPluginLoader::loadGarbage()
         QVERIFY(lib.errorString() != QString("Unknown error"));
     }
 #endif
+}
+
+void tst_QPluginLoader::reloadPlugin()
+{
+    QPluginLoader loader;
+    loader.setFileName( sys_qualifiedLibraryName("theplugin"));     //a plugin
+    loader.load(); // not recommended, instance() should do the job.
+    PluginInterface *instance = qobject_cast<PluginInterface*>(loader.instance());
+    QVERIFY(instance);
+    QCOMPARE(instance->pluginName(), QLatin1String("Plugin ok"));
+
+    QSignalSpy spy(loader.instance(), SIGNAL(destroyed()));
+    QVERIFY(spy.isValid());
+    QVERIFY(loader.unload());   // refcount reached 0, did really unload
+    QCOMPARE(spy.count(), 1);
+
+    // reload plugin
+    QVERIFY(loader.load());
+    QVERIFY(loader.isLoaded());
+
+    PluginInterface *instance2 = qobject_cast<PluginInterface*>(loader.instance());
+    QVERIFY(instance2);
+    QCOMPARE(instance2->pluginName(), QLatin1String("Plugin ok"));
 }
 
 QTEST_MAIN(tst_QPluginLoader)

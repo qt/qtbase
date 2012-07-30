@@ -429,6 +429,7 @@ bool QLibraryPrivate::unload()
                     libraryRefCount.deref();
             }
             pHnd = 0;
+            instance = 0;
         }
     }
 
