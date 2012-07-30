@@ -102,7 +102,7 @@ public:
 class QCP949Codec : public QTextCodec {
 public:
     static QByteArray _name();
-    static QList<QByteArray> _aliases() { return QList<QByteArray>(); }
+    static QList<QByteArray> _aliases();
     static int _mibEnum();
 
     QByteArray name() const { return _name(); }

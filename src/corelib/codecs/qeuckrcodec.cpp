@@ -137,8 +137,6 @@ QString QEucKrCodec::convertToUnicode(const char* chars, int len, ConverterState
     QString result;
     for (int i=0; i<len; i++) {
         uchar ch = chars[i];
-        if (ch == 0)
-            break;
         switch (nbuf) {
         case 0:
             if (ch < 0x80) {
@@ -3346,7 +3344,14 @@ int QCP949Codec::_mibEnum()
 
 QByteArray QCP949Codec::_name()
 {
-  return "cp949";
+    return "windows-949";
+}
+
+QList<QByteArray> QCP949Codec::_aliases()
+{
+    QList<QByteArray> aliases;
+    aliases += "CP949";
+    return aliases;
 }
 
 /*!
@@ -3448,8 +3453,6 @@ QString QCP949Codec::convertToUnicode(const char* chars, int len, ConverterState
     QString result;
     for (int i=0; i<len; i++) {
         uchar ch = chars[i];
-        if (ch == 0)
-            break;
         switch (nbuf) {
         case 0:
             if (ch < 0x80) {
