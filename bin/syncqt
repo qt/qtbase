@@ -1150,7 +1150,8 @@ if($check_includes) {
                     push @subdirs, "$subdir/$t" if(-d "$subdir/$t" && !($t eq ".") &&
                                                    !($t eq "..") && !($t eq ".obj") &&
                                                    !($t eq ".moc") && !($t eq ".rcc") &&
-                                                   !($t eq ".uic") && !($t eq "build"));
+                                                   !($t eq ".uic") && !($t eq "build") &&
+                                                   !($t eq "doc"));
                 }
                 closedir DIR;
             }
