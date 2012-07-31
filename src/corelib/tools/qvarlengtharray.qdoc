@@ -119,6 +119,7 @@
 */
 
 /*! \fn int QVarLengthArray::length() const
+    \since 5.0
 
     Same as size().
 
