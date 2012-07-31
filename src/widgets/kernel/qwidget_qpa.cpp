@@ -439,8 +439,10 @@ QWidget *QWidget::keyboardGrabber()
 
 void QWidget::activateWindow()
 {
-    if (windowHandle())
-        windowHandle()->requestActivateWindow();
+    QWindow *const wnd = window()->windowHandle();
+
+    if (wnd)
+        wnd->requestActivateWindow();
 }
 
 // Position top level windows at the center, avoid showing
