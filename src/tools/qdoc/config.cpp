@@ -315,7 +315,7 @@ QSet<QString> Config::getStringSet(const QString& var) const
 /*!
   First, this function looks up the configuration variable \a var
   in the location map and, if found, sets the internal variable
-  \c{lastLoc} the Location that \a var maps to.
+  \c{lastLoc} to the Location that \a var maps to.
 
   Then it looks up the configuration variable \a var in the string
   list map, and returns the string list that \a var maps to.
@@ -468,6 +468,22 @@ QStringList Config::getAllFiles(const QString &filesVar,
     QStringList dirs = getStringList(dirsVar);
 
     QString nameFilter = getString(filesVar + dot + QLatin1String(CONFIG_FILEEXTENSIONS));
+
+    QStringList::ConstIterator d = dirs.constBegin();
+    while (d != dirs.constEnd()) {
+        result += getFilesHere(*d, nameFilter, excludedDirs, excludedFiles);
+        ++d;
+    }
+    return result;
+}
+
+QStringList Config::getExampleQdocFiles()
+{
+    QStringList result;
+    QSet<QString> excludedDirs;
+    QSet<QString> excludedFiles;
+    QStringList dirs = getStringList("exampledirs");
+    QString nameFilter = " *.qdoc";
 
     QStringList::ConstIterator d = dirs.constBegin();
     while (d != dirs.constEnd()) {

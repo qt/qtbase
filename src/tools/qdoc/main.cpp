@@ -363,6 +363,16 @@ static void processQdocconfFile(const QString &fileName)
         QString t = sourceList[i].mid(sourceList[i].lastIndexOf('/')+1);
         sourceFileNames.insert(t,t);
     }
+    /*
+      Find all the qdoc files in the example dirs, and add
+      them to the source files to be parsed.
+     */
+    QStringList exampleQdocList = config.getExampleQdocFiles();
+    for (int i=0; i<exampleQdocList.size(); ++i) {
+        sources.insert(exampleQdocList[i],exampleQdocList[i]);
+        QString t = exampleQdocList[i].mid(exampleQdocList[i].lastIndexOf('/')+1);
+        sourceFileNames.insert(t,t);
+    }
 
     /*
       Parse each header file in the set using the appropriate parser and add it

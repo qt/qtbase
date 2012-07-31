@@ -85,7 +85,7 @@ public:
                             const QString& dirsVar,
                             const QSet<QString> &excludedDirs = QSet<QString>(),
                             const QSet<QString> &excludedFiles = QSet<QString>());
-
+    QStringList getExampleQdocFiles();
     static QStringList getFilesHere(const QString& dir,
                                     const QString& nameFilter,
                                     const QSet<QString> &excludedDirs = QSet<QString>(),
