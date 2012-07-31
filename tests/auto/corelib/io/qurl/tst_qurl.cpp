@@ -1833,9 +1833,8 @@ void tst_QUrl::strictParser_data()
     QTest::addColumn<QString>("input");
     QTest::addColumn<QString>("needle");
 
-    // cannot test bad schemes here, as they are parsed as paths instead
-    //QTest::newRow("invalid-scheme") << "ht%://example.com" << "Invalid scheme";
-    //QTest::newRow("empty-scheme") << ":/" << "Empty scheme";
+    QTest::newRow("invalid-scheme") << "ht%://example.com" << "Invalid scheme";
+    QTest::newRow("empty-scheme") << ":/" << "Empty scheme";
 
     QTest::newRow("invalid-user1") << "http://bad<user_name>@ok-hostname" << "Invalid user name";
     QTest::newRow("invalid-user2") << "http://bad%@ok-hostname" << "Invalid user name";
@@ -1870,6 +1869,7 @@ void tst_QUrl::strictParser()
     QFETCH(QString, needle);
 
     QUrl url(input, QUrl::StrictMode);
+    QEXPECT_FAIL("empty-scheme", "QUrl does not forbid paths with a colon before the first slash yet", Abort);
     QVERIFY(!url.isValid());
     QVERIFY(!url.errorString().isEmpty());
     if (!url.errorString().contains(needle))
@@ -3038,6 +3038,9 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("invalid-scheme-2") << QUrl("http://example.com")
                                       << int(Scheme) << "http%40" << Tolerant << false
                                       << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-scheme-3") << QUrl("http://example.com")
+                                      << int(Scheme) << "http%61" << Strict << false
+                                      << PrettyDecoded << "" << "";
 
     QTest::newRow("invalid-host-1") << QUrl("http://example.com")
                                     << int(Host) << "-not-valid-" << Tolerant << false
@@ -3047,6 +3050,10 @@ void tst_QUrl::setComponents_data()
                                     << PrettyDecoded << "" << "";
 
     // -- test decoded behaviour --
+    // '%' characters are not permitted in the scheme, this tests that it fails to set anything
+    QTest::newRow("invalid-scheme-encode") << QUrl("http://example.com")
+                                           << int(Scheme) << "http%61" << Decoded << false
+                                           << PrettyDecoded << "" << "";
     QTest::newRow("userinfo-encode") << QUrl("http://example.com")
                                      << int(UserInfo) << "h%61llo:world@" << Decoded << true
                                      << PrettyDecoded << "h%2561llo:world@" << "http://h%2561llo:world%40@example.com";
@@ -3104,6 +3111,7 @@ void tst_QUrl::setComponents()
 
     switch (component) {
     case Scheme:
+        // scheme is only parsed in strict mode
         copy.setScheme(newValue);
         QCOMPARE(copy.scheme(), output);
         break;

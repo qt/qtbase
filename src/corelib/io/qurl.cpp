@@ -656,7 +656,7 @@ inline void QUrlPrivate::appendQuery(QString &appendTo, QUrl::FormattingOptions 
 
 // setXXX functions
 
-bool QUrlPrivate::setScheme(const QString &value, int len, bool decoded)
+bool QUrlPrivate::setScheme(const QString &value, int len)
 {
     // schemes are strictly RFC-compliant:
     //    scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
@@ -686,19 +686,6 @@ bool QUrlPrivate::setScheme(const QString &value, int len, bool decoded)
             continue;
         if (p[i] == '+' || p[i] == '-' || p[i] == '.')
             continue;
-
-        if (p[i] == '%') {
-            // found a percent-encoded sign
-            // if we haven't decoded yet, decode and try again
-            errorSupplement = '%';
-            if (decoded)
-                return false;
-
-            QString decodedScheme;
-            if (qt_urlRecode(decodedScheme, value.constData(), value.constData() + len, 0, 0) == 0)
-                return false;
-            return setScheme(decodedScheme, decodedScheme.length(), true);
-        }
 
         // found something else
         errorSupplement = p[i];
@@ -1581,7 +1568,7 @@ void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
 
 /*!
     Sets the scheme of the URL to \a scheme. As a scheme can only
-    contain ASCII characters, no conversion or encoding is done on the
+    contain ASCII characters, no conversion or decoding is done on the
     input. It must also start with an ASCII letter.
 
     The scheme describes the type (or protocol) of the URL. It's
