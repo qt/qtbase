@@ -128,13 +128,13 @@ QT_BEGIN_NAMESPACE
     is missing and whether it's used in requests or replies.
 
     \value HttpStatusCodeAttribute
-        Replies only, type: QVariant::Int (no default)
+        Replies only, type: QMetaType::Int (no default)
         Indicates the HTTP status code received from the HTTP server
         (like 200, 304, 404, 401, etc.). If the connection was not
         HTTP-based, this attribute will not be present.
 
     \value HttpReasonPhraseAttribute
-        Replies only, type: QVariant::ByteArray (no default)
+        Replies only, type: QMetaType::QByteArray (no default)
         Indicates the HTTP reason phrase as received from the HTTP
         server (like "Ok", "Found", "Not Found", "Access Denied",
         etc.) This is the human-readable representation of the status
@@ -142,7 +142,7 @@ QT_BEGIN_NAMESPACE
         attribute will not be present.
 
     \value RedirectionTargetAttribute
-        Replies only, type: QVariant::Url (no default)
+        Replies only, type: QMetaType::QUrl (no default)
         If present, it indicates that the server is redirecting the
         request to a different URL. The Network Access API does not by
         default follow redirections: it's up to the application to
@@ -152,12 +152,12 @@ QT_BEGIN_NAMESPACE
         to create an absolute URL out of it.
 
     \value ConnectionEncryptedAttribute
-        Replies only, type: QVariant::Bool (default: false)
+        Replies only, type: QMetaType::Bool (default: false)
         Indicates whether the data was obtained through an encrypted
         (secure) connection.
 
     \value CacheLoadControlAttribute
-        Requests only, type: QVariant::Int (default: QNetworkRequest::PreferNetwork)
+        Requests only, type: QMetaType::Int (default: QNetworkRequest::PreferNetwork)
         Controls how the cache should be accessed. The possible values
         are those of QNetworkRequest::CacheLoadControl. Note that the
         default QNetworkAccessManager implementation does not support
@@ -165,7 +165,7 @@ QT_BEGIN_NAMESPACE
         backends to modify their requests (for example, for caching proxies).
 
     \value CacheSaveControlAttribute
-        Requests only, type: QVariant::Bool (default: true)
+        Requests only, type: QMetaType::Bool (default: true)
         Controls if the data obtained should be saved to cache for
         future uses. If the value is false, the data obtained will not
         be automatically cached. If true, data may be cached, provided
@@ -173,35 +173,35 @@ QT_BEGIN_NAMESPACE
         being used).
 
     \value SourceIsFromCacheAttribute
-        Replies only, type: QVariant::Bool (default: false)
+        Replies only, type: QMetaType::Bool (default: false)
         Indicates whether the data was obtained from cache
         or not.
 
     \value DoNotBufferUploadDataAttribute
-        Requests only, type: QVariant::Bool (default: false)
+        Requests only, type: QMetaType::Bool (default: false)
         Indicates whether the QNetworkAccessManager code is
         allowed to buffer the upload data, e.g. when doing a HTTP POST.
         When using this flag with sequential upload data, the ContentLengthHeader
         header must be set.
 
     \value HttpPipeliningAllowedAttribute
-        Requests only, type: QVariant::Bool (default: false)
+        Requests only, type: QMetaType::Bool (default: false)
         Indicates whether the QNetworkAccessManager code is
         allowed to use HTTP pipelining with this request.
 
     \value HttpPipeliningWasUsedAttribute
-        Replies only, type: QVariant::Bool
+        Replies only, type: QMetaType::Bool
         Indicates whether the HTTP pipelining was used for receiving
         this reply.
 
     \value CustomVerbAttribute
-       Requests only, type: QVariant::ByteArray
+       Requests only, type: QMetaType::QByteArray
        Holds the value for the custom HTTP verb to send (destined for usage
        of other verbs than GET, POST, PUT and DELETE). This verb is set
        when calling QNetworkAccessManager::sendCustomRequest().
 
     \value CookieLoadControlAttribute
-        Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
+        Requests only, type: QMetaType::Int (default: QNetworkRequest::Automatic)
         Indicates whether to send 'Cookie' headers in the request.
         This attribute is set to false by QtWebKit when creating a cross-origin
         XMLHttpRequest where withCredentials has not been set explicitly to true by the
@@ -210,7 +210,7 @@ QT_BEGIN_NAMESPACE
         (This value was introduced in 4.7.)
 
     \value CookieSaveControlAttribute
-        Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
+        Requests only, type: QMetaType::Int (default: QNetworkRequest::Automatic)
         Indicates whether to save 'Cookie' headers received from the server in reply
         to the request.
         This attribute is set to false by QtWebKit when creating a cross-origin
@@ -220,7 +220,7 @@ QT_BEGIN_NAMESPACE
         (This value was introduced in 4.7.)
 
     \value AuthenticationReuseAttribute
-        Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
+        Requests only, type: QMetaType::Int (default: QNetworkRequest::Automatic)
         Indicates whether to use cached authorization credentials in the request,
         if available. If this is set to QNetworkRequest::Manual and the authentication
         mechanism is 'Basic' or 'Digest', Qt will not send an an 'Authorization' HTTP
@@ -238,7 +238,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue SynchronousRequestAttribute
 
     \value BackgroundRequestAttribute
-        Type: QVariant::Bool (default: false)
+        Type: QMetaType::Bool (default: false)
         Indicates that this is a background transfer, rather than a user initiated
         transfer. Depending on the platform, background transfers may be subject
         to different policies.
@@ -694,8 +694,8 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
         return value.toByteArray();
 
     case QNetworkRequest::LocationHeader:
-        switch (value.type()) {
-        case QVariant::Url:
+        switch (value.userType()) {
+        case QMetaType::QUrl:
             return value.toUrl().toEncoded();
 
         default:
@@ -703,9 +703,9 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
         }
 
     case QNetworkRequest::LastModifiedHeader:
-        switch (value.type()) {
-        case QVariant::Date:
-        case QVariant::DateTime:
+        switch (value.userType()) {
+        case QMetaType::QDate:
+        case QMetaType::QDateTime:
             // generate RFC 1123/822 dates:
             return QNetworkHeadersPrivate::toHttpDate(value.toDateTime());
 
