@@ -1842,6 +1842,7 @@ void tst_QUrl::strictParser_data()
     QTest::newRow("invalid-password") << "http://user:pass\x7F@ok-hostname" << "Invalid password";
 
     QTest::newRow("invalid-regname") << "http://bad<hostname>" << "Hostname contains invalid characters";
+    QTest::newRow("invalid-regname-2") << "http://b%61d" << "Hostname contains invalid characters";
     QTest::newRow("invalid-ipv6") << "http://[:::]" << "Invalid IPv6 address";
     QTest::newRow("invalid-ipvfuture-1") << "http://[v7]" << "Invalid IPvFuture address";
     QTest::newRow("invalid-ipvfuture-2") << "http://[v7.]" << "Invalid IPvFuture address";
@@ -2006,6 +2007,13 @@ void tst_QUrl::tolerantParser()
         url.setUrl("http://strange<username>@hostname/", QUrl::TolerantMode);
         QVERIFY(url.isValid());
         QCOMPARE(QString(url.toEncoded()), QString("http://strange%3Cusername%3E@hostname/"));
+    }
+
+    {
+        QUrl url;
+        url.setUrl("http://en%63o%64%65%64.hostname/", QUrl::TolerantMode);
+        QVERIFY(url.isValid());
+        QCOMPARE(url.toString(), QString("http://encoded.hostname/"));
     }
 }
 
@@ -3045,6 +3053,15 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("invalid-host-1") << QUrl("http://example.com")
                                     << int(Host) << "-not-valid-" << Tolerant << false
                                     << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-host-2") << QUrl("http://example.com")
+                                    << int(Host) << "%31%30.%30.%30.%31" << Strict << false
+                                    << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-authority-1") << QUrl("http://example.com")
+                                         << int(Authority) << "-not-valid-" << Tolerant << false
+                                         << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-authority-2") << QUrl("http://example.com")
+                                         << int(Authority) << "%31%30.%30.%30.%31" << Strict << false
+                                         << PrettyDecoded << "" << "";
     QTest::newRow("invalid-path-1") << QUrl("/relative")
                                     << int(Path) << "c:/" << Strict << false
                                     << PrettyDecoded << "" << "";
@@ -3063,10 +3080,13 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("password-encode") << QUrl("http://example.com")
                                      << int(Password) << "h%61llo:world@" << Decoded << true
                                      << PrettyDecoded << "h%2561llo:world@" << "http://:h%2561llo:world%40@example.com";
-    // '%' characters are not permitted in the hostname, this tests that it fails to set anything
+    // '%' characters are not permitted in the hostname, these test that it fails to set anything
     QTest::newRow("invalid-host-encode") << QUrl("http://example.com")
                                          << int(Host) << "ex%61mple.com" << Decoded << false
                                          << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-authority-encode") << QUrl("http://example.com")
+                                              << int(Authority) << "ex%61mple.com" << Decoded << false
+                                              << PrettyDecoded << "" << "";
     QTest::newRow("path-encode") << QUrl("http://example.com/foo")
                                  << int(Path) << "bar%23" << Decoded << true
                                  << PrettyDecoded << "bar%2523" << "http://example.com/bar%2523";
@@ -3140,6 +3160,11 @@ void tst_QUrl::setComponents()
     case Host:
         copy.setHost(newValue, QUrl::ParsingMode(parsingMode));
         QCOMPARE(copy.host(QUrl::ComponentFormattingOptions(encoding)), output);
+        break;
+
+    case Authority:
+        copy.setAuthority(newValue, QUrl::ParsingMode(parsingMode));
+        QCOMPARE(copy.authority(QUrl::ComponentFormattingOptions(encoding)), output);
         break;
 
     case Query:

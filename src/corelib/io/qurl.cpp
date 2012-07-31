@@ -708,7 +708,7 @@ bool QUrlPrivate::setScheme(const QString &value, int len)
     return true;
 }
 
-bool QUrlPrivate::setAuthority(const QString &auth, int from, int end)
+bool QUrlPrivate::setAuthority(const QString &auth, int from, int end, QUrl::ParsingMode mode)
 {
     sectionHasError &= ~Authority;
     sectionIsPresent &= ~Authority;
@@ -768,7 +768,7 @@ bool QUrlPrivate::setAuthority(const QString &auth, int from, int end)
         port = -1;
     }
 
-    return setHost(auth, from, qMin<uint>(end, colonIndex)) && !(sectionHasError & Port);
+    return setHost(auth, from, qMin<uint>(end, colonIndex), mode) && !(sectionHasError & Port);
 }
 
 void QUrlPrivate::setUserInfo(const QString &userInfo, int from, int end)
@@ -955,7 +955,7 @@ static bool parseIp6(QString &host, const QChar *begin, const QChar *end)
     return true;
 }
 
-bool QUrlPrivate::setHost(const QString &value, int from, int iend, bool maybePercentEncoded)
+bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl::ParsingMode mode)
 {
     const QChar *begin = value.constData() + from;
     const QChar *end = value.constData() + iend;
@@ -1020,7 +1020,7 @@ bool QUrlPrivate::setHost(const QString &value, int from, int iend, bool maybePe
 
     // check for percent-encoding first
     QString s;
-    if (maybePercentEncoded && qt_urlRecode(s, begin, end, QUrl::DecodeReserved, 0)) {
+    if (mode == QUrl::TolerantMode && qt_urlRecode(s, begin, end, QUrl::DecodeReserved, 0)) {
         // something was decoded
         // anything encoded left?
         if (s.contains(QChar(0x25))) { // '%'
@@ -1030,7 +1030,7 @@ bool QUrlPrivate::setHost(const QString &value, int from, int iend, bool maybePe
         }
 
         // recurse
-        return setHost(s, 0, s.length(), false);
+        return setHost(s, 0, s.length(), QUrl::StrictMode);
     }
 
     s = qt_ACE_do(QString::fromRawData(begin, len), NormalizeAce);
@@ -1111,7 +1111,7 @@ void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode)
             }
         }
 
-        setAuthority(url, hierStart + 2, authorityEnd);
+        setAuthority(url, hierStart + 2, authorityEnd, parsingMode);
 
         // even if we failed to set the authority properly, let's try to recover
         pathStart = authorityEnd;
@@ -1649,7 +1649,7 @@ void QUrl::setAuthority(const QString &authority, ParsingMode mode)
         mode = TolerantMode;
     }
 
-    d->setAuthority(data, 0, data.length());
+    d->setAuthority(data, 0, data.length(), mode);
     if (authority.isNull()) {
         // QUrlPrivate::setAuthority cleared almost everything
         // but it leaves the Host bit set
@@ -1893,7 +1893,7 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
         mode = TolerantMode;
     }
 
-    if (d->setHost(data, 0, data.length())) {
+    if (d->setHost(data, 0, data.length(), mode)) {
         if (host.isNull())
             d->sectionIsPresent &= ~QUrlPrivate::Host;
     } else if (!data.startsWith(QLatin1Char('['))) {
@@ -1902,7 +1902,7 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
         ushort oldSupplement = d->errorSupplement;
         data.prepend(QLatin1Char('['));
         data.append(QLatin1Char(']'));
-        if (!d->setHost(data, 0, data.length())) {
+        if (!d->setHost(data, 0, data.length(), mode)) {
             // failed again: choose if this was an IPv6 error or not
             if (!data.contains(QLatin1Char(':'))) {
                 d->errorCode = oldCode;

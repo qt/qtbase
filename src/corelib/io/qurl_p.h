@@ -123,11 +123,11 @@ public:
 
     // the "end" parameters are like STL iterators: they point to one past the last valid element
     bool setScheme(const QString &value, int len);
-    bool setAuthority(const QString &auth, int from, int end);
+    bool setAuthority(const QString &auth, int from, int end, QUrl::ParsingMode mode);
     void setUserInfo(const QString &userInfo, int from, int end);
     void setUserName(const QString &value, int from, int end);
     void setPassword(const QString &value, int from, int end);
-    bool setHost(const QString &value, int from, int end, bool maybePercentEncoded = true);
+    bool setHost(const QString &value, int from, int end, QUrl::ParsingMode mode);
     void setPath(const QString &value, int from, int end);
     void setQuery(const QString &value, int from, int end);
     void setFragment(const QString &value, int from, int end);
