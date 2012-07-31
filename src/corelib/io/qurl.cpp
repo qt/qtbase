@@ -563,7 +563,7 @@ inline void QUrlPrivate::appendAuthority(QString &appendTo, QUrl::FormattingOpti
 
 inline void QUrlPrivate::appendUserInfo(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
-    if (Q_LIKELY(userName.isEmpty() && password.isEmpty()))
+    if (Q_LIKELY(!hasUserInfo()))
         return;
 
     const ushort *userNameActions;

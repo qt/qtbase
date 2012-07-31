@@ -2991,15 +2991,21 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("userinfo-empty") << QUrl("http://user:pass@example.com")
                                     << int(UserInfo) << "" << Tolerant << true
                                     << PrettyDecoded << "" << "http://@example.com";
+    QTest::newRow("userinfo-colon") << QUrl("http://user@example.com")
+                                    << int(UserInfo) << ":" << Tolerant << true
+                                    << PrettyDecoded << ":" << "http://:@example.com";
     QTest::newRow("username-null") << QUrl("http://user@example.com")
                                    << int(UserName) << QString() << Tolerant << true
                                    << PrettyDecoded << QString() << "http://example.com";
     QTest::newRow("username-empty") << QUrl("http://user@example.com")
                                     << int(UserName) << "" << Tolerant << true
                                     << PrettyDecoded << "" << "http://@example.com";
-    QTest::newRow("username-empty-path-nonempty") << QUrl("http://user:pass@example.com")
-                                    << int(UserName) << "" << Tolerant << true
-                                    << PrettyDecoded << "" << "http://:pass@example.com";
+    QTest::newRow("username-empty-password-nonempty") << QUrl("http://user:pass@example.com")
+                                                      << int(UserName) << "" << Tolerant << true
+                                                      << PrettyDecoded << "" << "http://:pass@example.com";
+    QTest::newRow("username-empty-password-empty") << QUrl("http://user:@example.com")
+                                                      << int(UserName) << "" << Tolerant << true
+                                                      << PrettyDecoded << "" << "http://:@example.com";
     QTest::newRow("password-null") << QUrl("http://user:pass@example.com")
                                    << int(Password) << QString() << Tolerant << true
                                    << PrettyDecoded << QString() << "http://user@example.com";
