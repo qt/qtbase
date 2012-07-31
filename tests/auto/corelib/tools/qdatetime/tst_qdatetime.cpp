@@ -895,6 +895,14 @@ void tst_QDateTime::daysTo()
 void tst_QDateTime::secsTo_data()
 {
     addSecs_data();
+
+    QTest::newRow("disregard milliseconds #1")
+        << QDateTime(QDate(2012, 3, 7), QTime(0, 58, 0, 0)) << 60
+        << QDateTime(QDate(2012, 3, 7), QTime(0, 59, 0, 400));
+
+    QTest::newRow("disregard milliseconds #2")
+        << QDateTime(QDate(2012, 3, 7), QTime(0, 59, 0, 0)) << 60
+        << QDateTime(QDate(2012, 3, 7), QTime(1, 0, 0, 400));
 }
 
 void tst_QDateTime::secsTo()

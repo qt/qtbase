@@ -1655,7 +1655,10 @@ int QTime::secsTo(const QTime &t) const
     if (!isValid() || !t.isValid())
         return 0;
 
-    return (t.ds() - ds()) / 1000;
+    // Truncate milliseconds as we do not want to consider them.
+    int ourSeconds = ds() / 1000;
+    int theirSeconds = t.ds() / 1000;
+    return theirSeconds - ourSeconds;
 }
 
 /*!
