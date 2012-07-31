@@ -693,7 +693,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     m_data(data),
     m_flags(0),
     m_hdc(0),
-    m_windowState(aWindow->windowState()),
+    m_windowState(Qt::WindowNoState),
     m_opacity(1.0),
     m_mouseGrab(false),
     m_cursor(QWindowsScreen::screenOf(aWindow)->windowsCursor()->standardWindowCursor()),
@@ -721,6 +721,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
             break;
         }
     }
+    setWindowState(aWindow->windowState());
 }
 
 QWindowsWindow::~QWindowsWindow()
