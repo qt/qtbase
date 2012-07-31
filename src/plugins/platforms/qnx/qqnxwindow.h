@@ -118,6 +118,7 @@ public:
     void blitFrom(QQnxWindow *sourceWindow, const QPoint &sourceOffset, const QRegion &targetRegion);
 
 private:
+    QRect setGeometryHelper(const QRect &rect);
     void removeFromParent();
     void setOffset(const QPoint &setOffset);
     void updateVisibility(bool parentVisible);

@@ -139,7 +139,7 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
     setWindowState(window->windowState());
     if (window->parent())
         setParent(window->parent()->handle());
-    setGeometry(window->geometry());
+    setGeometryHelper(window->geometry());
     setVisible(window->isVisible());
 }
 
@@ -163,6 +163,34 @@ QQnxWindow::~QQnxWindow()
 }
 
 void QQnxWindow::setGeometry(const QRect &rect)
+{
+    const QRect oldGeometry = setGeometryHelper(rect);
+
+    // If this is an OpenGL window we need to request that the GL context updates
+    // the EGLsurface on which it is rendering. The surface will be recreated the
+    // next time QQnxGLContext::makeCurrent() is called.
+    {
+        // We want the setting of the atomic bool in the GL context to be atomic with
+        // setting m_requestedBufferSize and therefore extended the scope to include
+        // that test.
+        const QMutexLocker locker(&m_mutex);
+        m_requestedBufferSize = rect.size();
+        if (m_platformOpenGLContext != 0 && bufferSize() != rect.size())
+            m_platformOpenGLContext->requestSurfaceChange();
+    }
+
+    // Send a geometry change event to Qt (triggers resizeEvent() in QWindow/QWidget)
+    QWindowSystemInterface::handleSynchronousGeometryChange(window(), rect);
+
+    // Now move all children.
+    if (!oldGeometry.isEmpty()) {
+        const QPoint offset = rect.topLeft() - oldGeometry.topLeft();
+        Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
+            childWindow->setOffset(offset);
+    }
+}
+
+QRect QQnxWindow::setGeometryHelper(const QRect &rect)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window()
                    << ", (" << rect.x() << "," << rect.y()
@@ -197,27 +225,7 @@ void QQnxWindow::setGeometry(const QRect &rect)
         qFatal("QQnxWindow: failed to set window source size, errno=%d", errno);
     }
 
-    // If this is an OpenGL window we need to request that the GL context updates
-    // the EGLsurface on which it is rendering. The surface will be recreated the
-    // next time QQnxGLContext::makeCurrent() is called.
-    {
-        // We want the setting of the atomic bool in the GL context to be atomic with
-        // setting m_requestedBufferSize and therefore extended the scope to include
-        // that test.
-        const QMutexLocker locker(&m_mutex);
-        m_requestedBufferSize = rect.size();
-        if (m_platformOpenGLContext != 0 && bufferSize() != rect.size())
-            m_platformOpenGLContext->requestSurfaceChange();
-    }
-
-    QWindowSystemInterface::handleSynchronousGeometryChange(window(), rect);
-
-    // Now move all children.
-    if (!oldGeometry.isEmpty()) {
-        const QPoint offset = rect.topLeft() - oldGeometry.topLeft();
-        Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
-            childWindow->setOffset(offset);
-    }
+    return oldGeometry;
 }
 
 void QQnxWindow::setOffset(const QPoint &offset)
