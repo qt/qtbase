@@ -2,11 +2,7 @@ TARGET = qnx
 include(../../qpluginbase.pri)
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
-QT += platformsupport platformsupport-private widgets-private
-
-contains(QT_CONFIG, opengles2) {
-    QT += opengl opengl-private
-}
+QT += platformsupport platformsupport-private
 
 # Uncomment this to build with support for IMF once it becomes available in the BBNDK
 #CONFIG += qqnx_imf
@@ -80,11 +76,9 @@ HEADERS =   main.h \
 LIBS += -lscreen
 
 contains(QT_CONFIG, opengles2) {
-    SOURCES += qqnxglcontext.cpp \
-               qqnxglbackingstore.cpp
+    SOURCES += qqnxglcontext.cpp
 
-    HEADERS += qqnxglcontext.h \
-               qqnxglbackingstore.h
+    HEADERS += qqnxglcontext.h
 
     LIBS += -lEGL
 }

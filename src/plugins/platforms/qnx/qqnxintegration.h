@@ -107,10 +107,6 @@ public:
 
     QVariant styleHint(StyleHint hint) const;
 
-#if !defined(QT_NO_OPENGL)
-    bool paintUsingOpenGL() const { return m_paintUsingOpenGL; }
-#endif
-
     QPlatformServices *services() const;
 
 #if defined(Q_OS_BLACKBERRY)
@@ -139,9 +135,6 @@ private:
 #endif
     QQnxServices *m_services;
     QPlatformFontDatabase *m_fontDatabase;
-#if !defined(QT_NO_OPENGL)
-    bool m_paintUsingOpenGL;
-#endif
     QAbstractEventDispatcher *m_eventDispatcher;
 #if defined(Q_OS_BLACKBERRY)
     QQnxBpsEventFilter *m_bpsEventFilter;

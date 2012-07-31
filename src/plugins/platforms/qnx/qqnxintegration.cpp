@@ -84,9 +84,7 @@
 #include <QtGui/qwindowsysteminterface.h>
 
 #if !defined(QT_NO_OPENGL)
-#include "qqnxglbackingstore.h"
 #include "qqnxglcontext.h"
-
 #include <QtGui/QOpenGLContext>
 #endif
 
@@ -117,9 +115,6 @@ QQnxIntegration::QQnxIntegration()
 #endif
     , m_services(0)
     , m_fontDatabase(new QGenericUnixFontDatabase())
-#if !defined(QT_NO_OPENGL)
-    , m_paintUsingOpenGL(false)
-#endif
 #if defined(Q_OS_BLACKBERRY)
     , m_eventDispatcher(new QQnxEventDispatcherBlackberry())
     , m_bpsEventFilter(0)
@@ -301,12 +296,7 @@ QPlatformWindow *QQnxIntegration::createPlatformWindow(QWindow *window) const
 QPlatformBackingStore *QQnxIntegration::createPlatformBackingStore(QWindow *window) const
 {
     qIntegrationDebug() << Q_FUNC_INFO;
-#if !defined(QT_NO_OPENGL)
-    if (paintUsingOpenGL())
-        return new QQnxGLBackingStore(window);
-    else
-#endif
-        return new QQnxRasterBackingStore(window);
+    return new QQnxRasterBackingStore(window);
 }
 
 #if !defined(QT_NO_OPENGL)
