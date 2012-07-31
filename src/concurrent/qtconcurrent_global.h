@@ -44,6 +44,9 @@
 
 #include <QtCore/qglobal.h>
 
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
+
 #ifdef QT_NO_CONCURRENT
 #  define QT_NO_QFUTURE
 #endif
@@ -57,5 +60,8 @@
 #else
 #  define Q_CONCURRENT_EXPORT
 #endif
+
+QT_END_NAMESPACE
+QT_END_HEADER
 
 #endif // include guard

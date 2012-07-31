@@ -61,4 +61,10 @@
 #  define Q_IS_ENUM(x) QtPrivate::is_enum<x>::value
 #endif
 
+// shut up syncqt
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
+QT_END_NAMESPACE
+QT_END_HEADER
+
 #endif // QISENUM_H
