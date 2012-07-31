@@ -529,8 +529,8 @@ void tst_QMdiArea::subWindowActivated2()
 
     // For this test, the QMdiArea widget must be active after minimizing and
     // showing it again. QMdiArea has no active sub window if it is inactive itself.
-    qApp->setActiveWindow(&mdiArea);
     mdiArea.showNormal();
+    mdiArea.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
     QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
