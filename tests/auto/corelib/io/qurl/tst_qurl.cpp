@@ -1397,6 +1397,7 @@ void tst_QUrl::compat_decode_data()
     QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QString("http://qt.nokia.com");
     QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt%20nokia%20com") << QString("http://qt nokia com");
     QTest::newRow("EmptyString") << QByteArray("") << QString("");
+    QTest::newRow("NulByte") << QByteArray("C%00%0A") << QString::fromLatin1("C\0\n", 3);
     QTest::newRow("Task27166") << QByteArray("Fran%C3%A7aise") << QString::fromUtf8("Française");
 }
 
@@ -1419,6 +1420,7 @@ void tst_QUrl::compat_encode_data()
     QTest::newRow("HTTPUrl") << QString("http://qt.nokia.com") << QByteArray("http%3A//qt.nokia.com");
     QTest::newRow("HTTPUrlEncoded") << QString("http://qt nokia com") << QByteArray("http%3A//qt%20nokia%20com");
     QTest::newRow("EmptyString") << QString("") << QByteArray("");
+    QTest::newRow("NulByte") << QString::fromLatin1("C\0\n", 3) << QByteArray("C%00%0A");
     QTest::newRow("Task27166") << QString::fromUtf8("Française") << QByteArray("Fran%C3%A7aise");
 }
 
@@ -1427,7 +1429,7 @@ void tst_QUrl::compat_encode()
     QFETCH(QString, decodedString);
     QFETCH(QByteArray, encodedString);
 
-    QCOMPARE(QUrl::toPercentEncoding(decodedString, "/.").constData(), encodedString.constData());
+    QCOMPARE(QUrl::toPercentEncoding(decodedString, "/."), encodedString);
 }
 
 

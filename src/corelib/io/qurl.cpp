@@ -2516,7 +2516,8 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
 */
 QString QUrl::fromPercentEncoding(const QByteArray &input)
 {
-    return QString::fromUtf8(QByteArray::fromPercentEncoding(input));
+    QByteArray ba = QByteArray::fromPercentEncoding(input);
+    return QString::fromUtf8(ba, ba.size());
 }
 
 /*!
