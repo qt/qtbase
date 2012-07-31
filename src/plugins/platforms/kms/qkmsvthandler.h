@@ -55,6 +55,10 @@ public:
     ~QKmsVTHandler();
 
 private:
+    void cleanup();
+    static void crashHandler();
+
+    static QKmsVTHandler *self;
     int m_tty;
     int m_oldKbdMode;
 };

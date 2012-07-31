@@ -40,10 +40,11 @@
 ****************************************************************************/
 
 #include <qkmsvthandler.h>
+#include <QtCore/private/qcrashhandler_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <sys/ioctl.h>
 #include <linux/vt.h>
 #include <linux/kd.h>
-#include <QDebug>
 
 #ifdef K_OFF
 #define KBD_OFF_MODE K_OFF
@@ -53,25 +54,47 @@
 
 QT_BEGIN_NAMESPACE
 
+QKmsVTHandler *QKmsVTHandler::self = 0;
+
 QKmsVTHandler::QKmsVTHandler(QObject *parent)
     : QObject(parent), m_tty(-1)
 {
+    Q_ASSERT(!self);
+    self = this;
+
     if (!isatty(0))
         return;
 
     m_tty = 0;
 
     ioctl(m_tty, KDGKBMODE, &m_oldKbdMode);
-    if (!qgetenv("QT_KMS_TTYKBD").toInt())
+    if (!qgetenv("QT_KMS_TTYKBD").toInt()) {
         ioctl(m_tty, KDSKBMODE, KBD_OFF_MODE);
+        QGuiApplicationPrivate *appd = QGuiApplicationPrivate::instance();
+        Q_ASSERT(appd);
+        QSegfaultHandler::initialize(appd->argv, appd->argc);
+        QSegfaultHandler::installCrashHandler(crashHandler);
+    }
 }
 
 QKmsVTHandler::~QKmsVTHandler()
+{
+    self->cleanup();
+    self = 0;
+}
+
+void QKmsVTHandler::cleanup()
 {
     if (m_tty == -1)
         return;
 
     ioctl(m_tty, KDSKBMODE, m_oldKbdMode);
+}
+
+void QKmsVTHandler::crashHandler()
+{
+    Q_ASSERT(self);
+    self->cleanup();
 }
 
 QT_END_NAMESPACE
