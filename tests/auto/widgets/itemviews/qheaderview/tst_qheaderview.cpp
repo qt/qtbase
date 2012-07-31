@@ -420,7 +420,6 @@ void tst_QHeaderView::init()
     view->setModel(model);
     QCOMPARE(spy.count(), 1);
     view->resize(200,200);
-    topLevel->show();
 }
 
 void tst_QHeaderView::cleanup()
@@ -431,6 +430,8 @@ void tst_QHeaderView::cleanup()
     view = 0;
     delete model;
     model = 0;
+    delete topLevel;
+    topLevel = 0;
 }
 
 void tst_QHeaderView::noModel()
@@ -558,6 +559,7 @@ void tst_QHeaderView::stretch()
     view->setStretchLastSection(true);
     QCOMPARE(view->stretchLastSection(), true);
     topLevel->show();
+    QVERIFY(QTest::qWaitForWindowExposed(topLevel));
     QCOMPARE(view->width(), viewSize.width());
     QCOMPARE(view->visualIndexAt(view->viewport()->height() - 5), 3);
 
@@ -724,6 +726,7 @@ void tst_QHeaderView::visualIndexAt()
 
     view->setStretchLastSection(true);
     topLevel->show();
+    QVERIFY(QTest::qWaitForWindowExposed(topLevel));
 
     for (int i = 0; i < hidden.count(); ++i)
         view->setSectionHidden(hidden.at(i), true);
@@ -745,6 +748,7 @@ void tst_QHeaderView::length()
 #endif
     view->setStretchLastSection(true);
     topLevel->show();
+    QVERIFY(QTest::qWaitForWindowExposed(topLevel));
 
     //minimumSectionSize should be the size of the last section of the widget is not tall enough
     int length = view->minimumSectionSize();
@@ -757,6 +761,7 @@ void tst_QHeaderView::length()
 
     view->setStretchLastSection(false);
     topLevel->show();
+    QVERIFY(QTest::qWaitForWindowExposed(topLevel));
 
     QVERIFY(length != view->length());
 
@@ -808,6 +813,7 @@ void tst_QHeaderView::logicalIndexAt()
     QCOMPARE(view->logicalIndexAt(1), 0);
 
     topLevel->show();
+    QVERIFY(QTest::qWaitForWindowExposed(topLevel));
     view->setStretchLastSection(true);
     // First item
     QCOMPARE(view->logicalIndexAt(0), 0);
@@ -1111,6 +1117,7 @@ void  tst_QHeaderView::resizeWithResizeModes()
         view->setSectionResizeMode(i, (QHeaderView::ResizeMode)modes.at(i));
     }
     topLevel->show();
+    QVERIFY(QTest::qWaitForWindowExposed(topLevel));
     view->resize(size, size);
     for (int j = 0; j < expected.count(); ++j)
         QCOMPARE(view->sectionSize(j), expected.at(j));
@@ -1209,6 +1216,7 @@ void tst_QHeaderView::resizeSection()
     view->resize(400, 400);
 
     topLevel->show();
+    QVERIFY(QTest::qWaitForWindowExposed(topLevel));
     view->setSectionsMovable(true);
     view->setStretchLastSection(false);
 
