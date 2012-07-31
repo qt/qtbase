@@ -319,6 +319,10 @@ void QQnxGLContext::createSurface(QPlatformSurface *surface)
     // Fetch the surface size from the window and update
     // the window's buffers before we create the EGL surface
     const QSize surfaceSize = platformWindow->requestedBufferSize();
+    if (!surfaceSize.isValid()) {
+        qFatal("QQNX: Trying to create 0 size EGL surface. "
+               "Please set a valid window size before calling QOpenGLContext::makeCurrent()");
+    }
     platformWindow->setBufferSize(surfaceSize);
 
     // Obtain the native handle for our window
