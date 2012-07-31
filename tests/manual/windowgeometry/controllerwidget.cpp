@@ -442,7 +442,15 @@ ControllerWidget::ControllerWidget(QWidget *parent)
     }
     m_testWidget->move(x, y);
     m_testWidget->resize(200, 200);
-    m_testWidget->show();
+
+    if (args.contains(QLatin1String("-widgetminimized"), Qt::CaseInsensitive))
+        m_testWidget->showMinimized();
+    else if (args.contains(QLatin1String("-widgetmaximized"), Qt::CaseInsensitive))
+        m_testWidget->showMaximized();
+    else if (args.contains(QLatin1String("-widgetfullscreen"), Qt::CaseInsensitive))
+        m_testWidget->showFullScreen();
+    else
+        m_testWidget->show();
 
 #if QT_VERSION >= 0x050000
     x += 300;
@@ -451,7 +459,14 @@ ControllerWidget::ControllerWidget(QWidget *parent)
                                  | Qt::WindowTitleHint);
     m_testWindow->setFramePos(QPoint(x, y));
     m_testWindow->resize(200, 200);
-    m_testWindow->show();
+    if (args.contains(QLatin1String("-windowminimized"), Qt::CaseInsensitive))
+        m_testWindow->showMinimized();
+    else if (args.contains(QLatin1String("-windowmaximized"), Qt::CaseInsensitive))
+        m_testWindow->showMaximized();
+    else if (args.contains(QLatin1String("-windowfullscreen"), Qt::CaseInsensitive))
+        m_testWindow->showFullScreen();
+    else
+        m_testWindow->show();
     m_testWindow->setWindowTitle(tr("TestWindow"));
 #endif
 
