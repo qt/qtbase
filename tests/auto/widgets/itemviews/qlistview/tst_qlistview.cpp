@@ -136,6 +136,8 @@ private slots:
     void taskQTBUG_21115_scrollToAndHiddenItems();
     void draggablePaintPairs_data();
     void draggablePaintPairs();
+    void taskQTBUG_21804_hiddenItemsAndScrollingWithKeys_data();
+    void taskQTBUG_21804_hiddenItemsAndScrollingWithKeys();
 };
 
 // Testing get/set functions
@@ -2156,6 +2158,55 @@ void tst_QListView::draggablePaintPairs()
     }
 }
 
+void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys_data()
+{
+    QTest::addColumn<int>("flow");
+    QTest::newRow("flow TopToBottom") << static_cast<int>(QListView::TopToBottom);
+    QTest::newRow("flow LeftToRight") << static_cast<int>(QListView::LeftToRight);
+}
+
+void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
+{
+    QFETCH(int, flow);
+
+    // create some items to show
+    QStringListModel model;
+    QStringList list;
+    for (int i = 0; i < 60; i++)
+        list << QString::number(i);
+    model.setStringList(list);
+
+    // create listview
+    QListView lv;
+    lv.setFlow(static_cast<QListView::Flow>(flow));
+    lv.setModel(&model);
+    lv.show();
+    QTest::qWaitForWindowShown(&lv);
+
+    // hide every odd number row
+    for (int i = 1; i < model.rowCount(); i+=2)
+        lv.setRowHidden(i, true);
+
+    // scroll forward and check that selected item is visible always
+    for (int i = 0; i < model.rowCount()/2; i++) {
+        if (flow == QListView::TopToBottom)
+            QTest::keyClick(&lv, Qt::Key_Down);
+        else
+            QTest::keyClick(&lv, Qt::Key_Right);
+        QTest::qWait(100);
+        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+    }
+
+    // scroll backward
+    for (int i = 0; i < model.rowCount()/2; i++) {
+        if (flow == QListView::TopToBottom)
+            QTest::keyClick(&lv, Qt::Key_Up);
+        else
+            QTest::keyClick(&lv, Qt::Key_Left);
+        QTest::qWait(100);
+        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+    }
+}
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"

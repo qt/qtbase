@@ -2533,13 +2533,21 @@ int QListModeViewBase::perItemScrollToValue(int index, int scrollValue, int view
 {
     if (index < 0)
         return scrollValue;
+
+    QVector<int> visibleFlowPositions;
+    visibleFlowPositions.reserve(flowPositions.count() - 1);
+    for (int i = 0; i < flowPositions.count() - 1; i++) { // flowPositions count is +1 larger than actual row count
+        if (!isHidden(i))
+            visibleFlowPositions.append(flowPositions.at(i));
+    }
+
     if (!wrap) {
         int topIndex = index;
         const int bottomIndex = topIndex;
-        const int bottomCoordinate = flowPositions.at(index);
+        const int bottomCoordinate = visibleFlowPositions.at(index);
 
         while (topIndex > 0 &&
-            (bottomCoordinate - flowPositions.at(topIndex-1) + itemExtent) <= (viewportSize)) {
+               (bottomCoordinate - visibleFlowPositions.at(topIndex - 1) + itemExtent) <= (viewportSize)) {
             topIndex--;
         }
 
@@ -2559,7 +2567,7 @@ int QListModeViewBase::perItemScrollToValue(int index, int scrollValue, int view
                                            ? Qt::Horizontal : Qt::Vertical);
         if (flowOrientation == orientation) { // scrolling in the "flow" direction
             // ### wrapped scrolling in the flow direction
-            return flowPositions.at(index); // ### always pixel based for now
+            return visibleFlowPositions.at(index); // ### always pixel based for now
         } else if (!segmentStartRows.isEmpty()) { // we are scrolling in the "segment" direction
             int segment = qBinarySearch<int>(segmentStartRows, index, 0, segmentStartRows.count() - 1);
             int leftSegment = segment;
