@@ -1335,6 +1335,28 @@ void QStateMachinePrivate::clearHistory()
     }
 }
 
+/*!
+  \internal
+
+  Registers all signal transitions whose sender object lives in another thread.
+
+  Normally, signal transitions are lazily registered (when a state becomes
+  active). But if the sender is in a different thread, the transition must be
+  registered early to keep the state machine from "dropping" signals; e.g.,
+  a second (transition-bound) signal could be emitted on the sender thread
+  before the state machine gets to process the first signal.
+*/
+void QStateMachinePrivate::registerMultiThreadedSignalTransitions()
+{
+    Q_Q(QStateMachine);
+    QList<QSignalTransition*> transitions = rootState()->findChildren<QSignalTransition*>();
+    for (int i = 0; i < transitions.size(); ++i) {
+        QSignalTransition *t = transitions.at(i);
+        if ((t->machine() == q) && t->senderObject() && (t->senderObject()->thread() != q->thread()))
+            registerSignalTransition(t);
+    }
+}
+
 void QStateMachinePrivate::_q_start()
 {
     Q_Q(QStateMachine);
@@ -1345,6 +1367,8 @@ void QStateMachinePrivate::_q_start()
     qDeleteAll(externalEventQueue);
     externalEventQueue.clear();
     clearHistory();
+
+    registerMultiThreadedSignalTransitions();
 
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": starting";
@@ -1703,8 +1727,8 @@ void QStateMachinePrivate::unregisterTransition(QAbstractTransition *transition)
 void QStateMachinePrivate::maybeRegisterSignalTransition(QSignalTransition *transition)
 {
     Q_Q(QStateMachine);
-    if (((state == Running) && configuration.contains(transition->sourceState()))
-            || (transition->senderObject() && (transition->senderObject()->thread() != q->thread()))) {
+    if ((state == Running) && (configuration.contains(transition->sourceState())
+            || (transition->senderObject() && (transition->senderObject()->thread() != q->thread())))) {
         registerSignalTransition(transition);
     }
 }
@@ -1771,14 +1795,10 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
 
 void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transition)
 {
-    Q_Q(QStateMachine);
     int signalIndex = QSignalTransitionPrivate::get(transition)->signalIndex;
     if (signalIndex == -1)
         return; // not registered
     const QObject *sender = QSignalTransitionPrivate::get(transition)->sender;
-    // Don't unregister if the sender is on another thread
-    if (!sender || (sender->thread() != q->thread()))
-        return;
     QSignalTransitionPrivate::get(transition)->signalIndex = -1;
 
     connectionsMutex.lock();

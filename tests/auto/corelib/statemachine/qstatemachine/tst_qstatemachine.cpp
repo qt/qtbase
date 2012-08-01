@@ -209,6 +209,7 @@ private slots:
     void createSignalTransitionWhenRunning();
     void createEventTransitionWhenRunning();
     void signalTransitionSenderInDifferentThread();
+    void signalTransitionSenderInDifferentThread2();
     void signalTransitionRegistrationThreadSafety();
     void childModeConstructor();
 };
@@ -4890,6 +4891,43 @@ void tst_QStateMachine::signalTransitionSenderInDifferentThread()
     QTRY_VERIFY(machine.configuration().contains(s1));
     QMetaObject::invokeMethod(&thread, "emitSignals");
     QTRY_VERIFY(machine.configuration().contains(s3));
+
+    thread.quit();
+    QTRY_VERIFY(thread.wait());
+}
+
+void tst_QStateMachine::signalTransitionSenderInDifferentThread2()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+
+    QState *s2 = new QState(&machine);
+    SignalEmitter emitter;
+    // At the time of the transition creation, the machine and the emitter
+    // are both in the same thread.
+    s1->addTransition(&emitter, SIGNAL(signalWithNoArg()), s2);
+
+    QFinalState *s3 = new QFinalState(&machine);
+    s2->addTransition(&emitter, SIGNAL(signalWithDefaultArg()), s3);
+
+    QThread thread;
+    // Move the machine and its states to a secondary thread, but let the
+    // SignalEmitter stay in the main thread.
+    machine.moveToThread(&thread);
+
+    thread.start();
+    QTRY_VERIFY(thread.isRunning());
+
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+
+    emitter.emitSignalWithNoArg();
+    // The second emission should not get "lost".
+    emitter.emitSignalWithDefaultArg();
+    QTRY_COMPARE(finishedSpy.count(), 1);
 
     thread.quit();
     QTRY_VERIFY(thread.wait());

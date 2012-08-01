@@ -175,6 +175,7 @@ public:
     void maybeRegisterSignalTransition(QSignalTransition *transition);
     void registerSignalTransition(QSignalTransition *transition);
     void unregisterSignalTransition(QSignalTransition *transition);
+    void registerMultiThreadedSignalTransitions();
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
     void maybeRegisterEventTransition(QEventTransition *transition);
     void registerEventTransition(QEventTransition *transition);
