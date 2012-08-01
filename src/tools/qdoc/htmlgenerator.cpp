@@ -1846,7 +1846,10 @@ void HtmlGenerator::generateHeader(const QString& title,
     // Include style sheet and script links.
     out() << headerStyles;
     out() << headerScripts;
-    out() << endHeader;
+    if (endHeader.isEmpty())
+        out() << "</head>\n<body>\n";
+    else
+        out() << endHeader;
 
 #ifdef GENERATE_MAC_REFS
     if (mainPage)
