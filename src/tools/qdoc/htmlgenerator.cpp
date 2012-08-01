@@ -177,7 +177,7 @@ void HtmlGenerator::initializeGenerator(const Config &config)
 
     outputEncoding = config.getString(CONFIG_OUTPUTENCODING);
     if (outputEncoding.isEmpty())
-        outputEncoding = QLatin1String("ISO-8859-1");
+        outputEncoding = QLatin1String("UTF-8");
     outputCodec = QTextCodec::codecForName(outputEncoding.toLocal8Bit());
 
     naturalLanguage = config.getString(CONFIG_NATURALLANGUAGE);
