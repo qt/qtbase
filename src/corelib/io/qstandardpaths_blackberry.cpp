@@ -55,6 +55,11 @@ void QStandardPaths::enableTestMode(bool testMode)
     qsp_testMode = testMode;
 }
 
+bool QStandardPaths::isTestModeEnabled()
+{
+    return qsp_testMode;
+}
+
 static QString testModeInsert() {
     if (qsp_testMode)
         return QStringLiteral("/.qttest");

@@ -116,6 +116,11 @@ void QStandardPaths::enableTestMode(bool testMode)
     qsp_testMode = testMode;
 }
 
+bool QStandardPaths::isTestModeEnabled()
+{
+        return qsp_testMode;
+}
+
 static void appendOrganizationAndApp(QString &path)
 {
     const QString org = QCoreApplication::organizationName();

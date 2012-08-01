@@ -159,7 +159,9 @@ void tst_qstandardpaths::testCustomLocations()
 
 void tst_qstandardpaths::enableTestMode()
 {
+    QVERIFY(!QStandardPaths::isTestModeEnabled());
     QStandardPaths::enableTestMode(true);
+    QVERIFY(QStandardPaths::isTestModeEnabled());
 
 #ifdef Q_XDG_PLATFORM
     setCustomLocations(); // for the global config dir

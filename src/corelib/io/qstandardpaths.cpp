@@ -333,6 +333,15 @@ QString QStandardPaths::displayName(StandardLocation type)
   On Windows, everything goes to a "qttest" directory under Application Data.
 */
 
+
+/*!
+  \fn void QStandardPaths::isTestModeEnabled()
+
+  \internal
+
+  Returns true if test mode is enabled in QStandardPaths; otherwise returns false.
+*/
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_STANDARDPATHS

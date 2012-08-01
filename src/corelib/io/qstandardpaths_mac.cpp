@@ -97,6 +97,11 @@ void QStandardPaths::enableTestMode(bool testMode)
     qsp_testMode = testMode;
 }
 
+bool QStandardPaths::isTestModeEnabled()
+{
+    return qsp_testMode;
+}
+
 /*
     Constructs a full unicode path from a FSRef.
 */

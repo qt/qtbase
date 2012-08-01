@@ -92,6 +92,11 @@ void QStandardPaths::enableTestMode(bool testMode)
     qsp_testMode = testMode;
 }
 
+bool QStandardPaths::isTestModeEnabled()
+{
+    return qsp_testMode;
+}
+
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
     QString result;
