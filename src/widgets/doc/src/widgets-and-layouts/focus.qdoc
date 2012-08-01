@@ -51,7 +51,7 @@
 
     \list 1
 
-    \li The user presses \key Tab (or \key Shift+Tab).
+    \li The user presses \uicontrol Tab (or \uicontrol Shift+Tab).
     \li The user clicks a widget.
     \li The user presses a keyboard shortcut.
     \li The user uses the mouse wheel.
@@ -65,36 +65,36 @@
 
     \section2 Tab or Shift+Tab
 
-    Pressing \key Tab is by far the most common way to move focus
+    Pressing \uicontrol Tab is by far the most common way to move focus
     using the keyboard. (Sometimes in data-entry applications Enter
-    does the same as \key{Tab}; this can easily be achieved in Qt by
+    does the same as \uicontrol{Tab}; this can easily be achieved in Qt by
     implementing an \l{The Event System}{event filter}.)
 
-    Pressing \key Tab, in all window systems in common use today,
+    Pressing \uicontrol Tab, in all window systems in common use today,
     moves the keyboard focus to the next widget in a circular
-    per-window list. \key Tab moves focus along the circular list in
-    one direction, \key Shift+Tab in the other. The order in which
-    \key Tab presses move from widget to widget is called the tab order.
+    per-window list. \uicontrol Tab moves focus along the circular list in
+    one direction, \uicontrol Shift+Tab in the other. The order in which
+    \uicontrol Tab presses move from widget to widget is called the tab order.
 
     You can customize the tab order using QWidget::setTabOrder(). (If
-    you don't, \key Tab generally moves focus in the order of widget
+    you don't, \uicontrol Tab generally moves focus in the order of widget
     construction.) \l{Qt Designer} provides a means of visually
     changing the tab order.
 
-    Since pressing \key Tab is so common, most widgets that can have focus
+    Since pressing \uicontrol Tab is so common, most widgets that can have focus
     should support tab focus. The major exception is widgets that are
     rarely used, and where there is some keyboard accelerator or error
     handler that moves the focus.
 
     For example, in a data entry dialog, there might be a field that
     is only necessary in one per cent of all cases. In such a dialog,
-    \key Tab could skip this field, and the dialog could use one of
+    \uicontrol Tab could skip this field, and the dialog could use one of
     these mechanisms: 
 
     \list 1
 
     \li If the program can determine whether the field is needed, it can
-    move focus there when the user finishes entry and presses \gui OK, or when
+    move focus there when the user finishes entry and presses \uicontrol OK, or when
     the user presses Enter after finishing the other fields. Alternately,
     include the field in the tab order but disable it. Enable it if it
     becomes appropriate in view of what the user has set in the other
@@ -105,22 +105,22 @@
 
     \endlist
 
-    Another exception to \key Tab support is text-entry widgets that
+    Another exception to \uicontrol Tab support is text-entry widgets that
     must support the insertion of tabs; almost all text editors fall
-    into this class. Qt treats \key Ctrl+Tab as \key Tab and \key
-    Ctrl+Shift+Tab as \key Shift+Tab, and such widgets can
+    into this class. Qt treats \uicontrol Ctrl+Tab as \uicontrol Tab and \uicontrol
+    Ctrl+Shift+Tab as \uicontrol Shift+Tab, and such widgets can
     reimplement QWidget::event() and handle Tab before calling
     QWidget::event() to get normal processing of all other keys.
-    However, since some systems use \key Ctrl+Tab for other purposes,
-    and many users aren't aware of \key Ctrl+Tab anyway, this isn't a
+    However, since some systems use \uicontrol Ctrl+Tab for other purposes,
+    and many users aren't aware of \uicontrol Ctrl+Tab anyway, this isn't a
     complete solution.
 
     \section2 The User Clicks a Widget
 
-    This is perhaps even more common than pressing \key Tab on
+    This is perhaps even more common than pressing \uicontrol Tab on
     computers with a mouse or other pointing device.
 
-    Clicking to move the focus is slightly more powerful than \key
+    Clicking to move the focus is slightly more powerful than \uicontrol
     Tab. While it moves the focus \e to a widget, for editor widgets
     it also moves the text cursor (the widget's internal focus) to
     the spot where the mouse is clicked.
@@ -152,10 +152,10 @@
 
     We advise supporting shortcut focus for all widgets that the user
     may want to jump to. For example, a tab dialog can have keyboard
-    shortcuts for each of its pages, so the user can press e.g. \key
+    shortcuts for each of its pages, so the user can press e.g. \uicontrol
     Alt+P to step to the \underline{P}rinting page. It is easy to
     overdo this: there are only a few keys, and it's also important
-    to provide keyboard shortcuts for commands. \key Alt+P is also
+    to provide keyboard shortcuts for commands. \uicontrol Alt+P is also
     used for Paste, Play, Print, and Print Here in the \l{Standard
     Accelerator Keys} list, for example.
 

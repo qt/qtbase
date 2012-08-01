@@ -72,7 +72,7 @@
 
     \snippet examples/itemviews/simplewidgetmapper/window.cpp Set up the mapper
 
-    We also connect the mapper to the \gui{Next} and \gui{Previous} buttons
+    We also connect the mapper to the \uicontrol{Next} and \uicontrol{Previous} buttons
     via its \l{QDataWidgetMapper::}{toNext()} and
     \l{QDataWidgetMapper::}{toPrevious()} slots. The mapper's
     \l{QDataWidgetMapper::}{currentIndexChanged()} signal is connected to the
@@ -106,8 +106,8 @@
 
     \snippet examples/itemviews/simplewidgetmapper/window.cpp Slot for updating the buttons
 
-    If the mapper is referring to the first row in the model, the \gui{Previous}
-    button is disabled. Similarly, the \gui{Next} button is disabled if the
+    If the mapper is referring to the first row in the model, the \uicontrol{Previous}
+    button is disabled. Similarly, the \uicontrol{Next} button is disabled if the
     mapper reaches the last row in the model.
 
     \section1 More Complex Mappings

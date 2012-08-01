@@ -45,11 +45,11 @@
     \image scribble-example.png Screenshot of the Scribble example
 
     With the Scribble application the users can draw an image.  The
-    \gui File menu gives the users the possibility to open and edit an
+    \uicontrol File menu gives the users the possibility to open and edit an
     existing image file, save an image and exit the application. While
-    drawing, the \gui Options menu allows the users to to choose the
+    drawing, the \uicontrol Options menu allows the users to to choose the
     pen color and pen width, as well as clear the screen. In addition
-    the \gui Help menu provides the users with information about the
+    the \uicontrol Help menu provides the users with information about the
     Scribble example in particular, and about Qt in general.
 
     The example consists of two classes:
@@ -266,7 +266,7 @@
     We use the boolean \c maybeSave() function to check if there are
     any unsaved changes. If there are unsaved changes, we give the
     user the opportunity to save these changes. The function returns
-    \c false if the user clicks \gui Cancel. We use the \c saveFile()
+    \c false if the user clicks \uicontrol Cancel. We use the \c saveFile()
     function to let the user save the image currently displayed in
     the scribble area.
 
@@ -282,7 +282,7 @@
     \snippet examples/widgets/scribble/mainwindow.cpp 2
 
     Close events are sent to widgets that the users want to close,
-    usually by clicking \gui{File|Exit} or by clicking the \gui X
+    usually by clicking \uicontrol{File|Exit} or by clicking the \uicontrol X
     title bar button. By reimplementing the event handler, we can
     intercept attempts to close the application.
 
@@ -291,7 +291,7 @@
     maybeSave() function. If \c maybeSave() returns true, there are
     no modifications or the users successfully saved them, and we
     accept the event. The application can then terminate normally. If
-    \c maybeSave() returns false, the user clicked \gui Cancel, so we
+    \c maybeSave() returns false, the user clicked \uicontrol Cancel, so we
     "ignore" the event, leaving the application unaffected by it.
 
     \snippet examples/widgets/scribble/mainwindow.cpp 3
@@ -305,7 +305,7 @@
     \snippet examples/widgets/scribble/mainwindow.cpp 5
     \snippet examples/widgets/scribble/mainwindow.cpp 6
 
-    The \c save() slot is called when the users choose the \gui {Save
+    The \c save() slot is called when the users choose the \uicontrol {Save
     As} menu entry, and then choose an entry from the format menu. The
     first thing we need to do is to find out which action sent the
     signal using QObject::sender(). This function returns the sender
@@ -346,7 +346,7 @@
     value by 1).
 
     The boolean \c ok variable will be set to \c true if the user
-    clicked \gui OK and to \c false if the user pressed \gui Cancel.
+    clicked \uicontrol OK and to \c false if the user pressed \uicontrol Cancel.
 
     \snippet examples/widgets/scribble/mainwindow.cpp 11
     \snippet examples/widgets/scribble/mainwindow.cpp 12
@@ -359,7 +359,7 @@
 
     In the \c createAction() function we create the actions
     representing the menu entries and connect them to the appropriate
-    slots. In particular we create the actions found in the \gui
+    slots. In particular we create the actions found in the \uicontrol
     {Save As} sub-menu. We use QImageWriter::supportedImageFormats()
     to get a list of the supported formats (as a QList<QByteArray>).
 
@@ -374,13 +374,13 @@
 
     In the \c createMenu() function, we add the previously created
     format actions to the \c saveAsMenu. Then we add the rest of the
-    actions as well as the \c saveAsMenu sub-menu to the \gui File,
-    \gui Options and \gui Help menus.
+    actions as well as the \c saveAsMenu sub-menu to the \uicontrol File,
+    \uicontrol Options and \uicontrol Help menus.
 
     The QMenu class provides a menu widget for use in menu bars,
     context menus, and other popup menus. The QMenuBar class provides
     a horizontal menu bar with a list of pull-down \l{QMenu}s. At the
-    end we put the \gui File and \gui Options menus in the \c
+    end we put the \uicontrol File and \uicontrol Options menus in the \c
     {MainWindow}'s menu bar, which we retrieve using the
     QMainWindow::menuBar() function.
 
@@ -401,11 +401,11 @@
 
     If the user chooses to save, we call the private \c saveFile()
     function. For simplicitly, we use PNG as the file format; the
-    user can always press \gui Cancel and save the file using another
+    user can always press \uicontrol Cancel and save the file using another
     format.
 
     The \c maybeSave() function returns \c false if the user clicks
-    \gui Cancel; otherwise it returns \c true.
+    \uicontrol Cancel; otherwise it returns \c true.
 
     \snippet examples/widgets/scribble/mainwindow.cpp 19
     \snippet examples/widgets/scribble/mainwindow.cpp 20

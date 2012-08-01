@@ -67,7 +67,7 @@
 
   Although QPrinter objects can be constructed and set up without requiring user
   input, printing is often performed as a result of a request by the user;
-  for example, when the user selects the \gui{File|Print...} menu item in a GUI
+  for example, when the user selects the \uicontrol{File|Print...} menu item in a GUI
   application. In such cases, a newly-constructed QPrinter object is supplied to
   a QPrintDialog, allowing the user to specify the printer to use, paper size, and
   other printing properties.

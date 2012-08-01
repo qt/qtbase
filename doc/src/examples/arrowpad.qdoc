@@ -113,7 +113,7 @@
     languages. "Ctrl+Q" is a good choice for Quit in English, but a
     Dutch translator might want to use "Ctrl+A" (for Afsluiten) and a
     German translator "Strg+E" (for Beenden). When using \c tr() for
-    \key Ctrl key accelerators, the two argument form should be used
+    \uicontrol Ctrl key accelerators, the two argument form should be used
     with the second argument describing the function that the
     accelerator performs.
 
@@ -157,7 +157,7 @@
          \endlist
     \endlist
 
-    It's quickest to press \key{Alt+D} (which clicks the \gui {Done \& Next}
+    It's quickest to press \uicontrol{Alt+D} (which clicks the \uicontrol {Done \& Next}
     button) after typing each translation, since this marks the
     translation as done and moves on to the next source text.
 
@@ -183,7 +183,7 @@
     files into QM files. We could use \e {Qt Linguist} as we've done
     before; however using the command line tool \c lrelease ensures that
     \e all the QM files for the application are created without us
-    having to remember to load and \gui File|Release each one
+    having to remember to load and \uicontrol File|Release each one
     individually from \e {Qt Linguist}.
 
     Type

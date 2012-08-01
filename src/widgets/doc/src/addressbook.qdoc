@@ -276,8 +276,8 @@
 
     We also declare two private QString objects, \c oldName and \c oldAddress.
     These objects are needed to hold the name and address of the contact that
-    was last displayed, before the user clicked \gui Add. So, when the user clicks
-    \gui Cancel, we can revert to displaying the details of the last contact.
+    was last displayed, before the user clicked \uicontrol Add. So, when the user clicks
+    \uicontrol Cancel, we can revert to displaying the details of the last contact.
 
     \section1 Implementing the AddressBook Class
 
@@ -298,7 +298,7 @@
     The \c addButton is displayed by invoking the \l{QPushButton::show()}
     {show()} function, while the \c submitButton and \c cancelButton are
     hidden by invoking \l{QPushButton::hide()}{hide()}. These two push
-    buttons will only be displayed when the user clicks \gui Add and this is
+    buttons will only be displayed when the user clicks \uicontrol Add and this is
     handled by the \c addContact() function discussed below.
 
     \snippet tutorials/addressbook/part2/addressbook.cpp connecting signals and slots
@@ -342,7 +342,7 @@
     \list 1
     \li We extract the contact's details from \c nameLine and \c addressText
     and store them in QString objects. We also validate to make sure that the
-    user did not click \gui Submit with empty input fields; otherwise, a
+    user did not click \uicontrol Submit with empty input fields; otherwise, a
     QMessageBox is displayed to remind the user for a name and address.
 
     \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part1
@@ -377,7 +377,7 @@
     \snippet tutorials/addressbook/part2/addressbook.cpp cancel
 
     The general idea behind adding a contact is to give the user the
-    flexibility to click \gui Submit or \gui Cancel at any time. The flowchart below
+    flexibility to click \uicontrol Submit or \uicontrol Cancel at any time. The flowchart below
     further explains this concept:
 
     \image addressbook-tutorial-part2-add-flowchart.png
@@ -673,11 +673,11 @@
     We define a public function, \c getFindText(), to be used by classes that
     instantiate \c FindDialog. This function allows these classes to obtain the
     search string entered by the user. A public slot, \c findClicked(), is also
-    defined to handle the search string when the user clicks the \gui Find
+    defined to handle the search string when the user clicks the \uicontrol Find
     button.
 
     Lastly, we define the private variables, \c findButton, \c lineEdit
-    and \c findText, corresponding to the \gui Find button, the line edit
+    and \c findText, corresponding to the \uicontrol Find button, the line edit
     into which the user types the search string, and an internal string
     used to store the search string for later use.
 
@@ -702,7 +702,7 @@
     \image addressbook-tutorial-part5-signals-and-slots.png
 
     In \c findClicked(), we validate \c lineEdit to ensure that the user
-    did not click the \gui Find button without entering a contact's name. Then, we set
+    did not click the \uicontrol Find button without entering a contact's name. Then, we set
     \c findText to the search string, extracted from \c lineEdit. After that,
     we clear the contents of \c lineEdit and hide the dialog.
 
@@ -726,7 +726,7 @@
     \snippet tutorials/addressbook/part5/addressbook.h include finddialog's header
 
     So far, all our address book features have a QPushButton and a
-    corresponding slot. Similarly, for the \gui Find feature we have
+    corresponding slot. Similarly, for the \uicontrol Find feature we have
     \c findButton and \c findContact().
 
     The \c findButton is declared as a private variable and the
@@ -821,8 +821,8 @@
     In our constructor, we instantiate \c loadButton and \c saveButton.
     Ideally, it would be more user-friendly to set the push buttons' labels
     to "Load contacts from a file" and "Save contacts to a file". However, due
-    to the size of our other push buttons, we set the labels to \gui{Load...}
-    and \gui{Save...}. Fortunately, Qt provides a simple way to set tooltips with
+    to the size of our other push buttons, we set the labels to \uicontrol{Load...}
+    and \uicontrol{Save...}. Fortunately, Qt provides a simple way to set tooltips with
     \l{QWidget::setToolTip()}{setToolTip()} and we use it in the following way
     for our push buttons:
 

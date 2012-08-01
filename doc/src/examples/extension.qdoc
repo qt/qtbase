@@ -38,13 +38,13 @@
     The Extension application is a dialog that allows the user to
     perform a simple search as well as a more advanced search.
 
-    The simple search has two options: \gui {Match case} and \gui
+    The simple search has two options: \uicontrol {Match case} and \uicontrol
     {Search from start}. The advanced search options include the
-    possibilities to search for \gui {Whole words}, \gui {Search
-    backward} and \gui {Search selection}. Only the simple search is
+    possibilities to search for \uicontrol {Whole words}, \uicontrol {Search
+    backward} and \uicontrol {Search selection}. Only the simple search is
     visible when the application starts. The advanced search options
     are located in the application's extension part, and can be made
-    visible by pressing the \gui More button:
+    visible by pressing the \uicontrol More button:
 
     \image extension_more.png Screenshot of the Extension example
 
@@ -65,8 +65,8 @@
     widgets: We need a QLineEdit with an associated QLabel to let the
     user type a word to search for, we need several  \l
     {QCheckBox}{QCheckBox}es to facilitate the search options, and we
-    need three \l {QPushButton}{QPushButton}s: the \gui Find button to
-    start a search and the \gui More button to enable an advanced search.
+    need three \l {QPushButton}{QPushButton}s: the \uicontrol Find button to
+    start a search and the \uicontrol More button to enable an advanced search.
     Finally, we need a QWidget representing the application's extension
     part.
 
@@ -80,13 +80,13 @@
     \snippet examples/dialogs/extension/finddialog.cpp 0
 
     We give the options and buttons a shortcut key using the &
-    character. In the \gui {Find what} option's case, we also need to
+    character. In the \uicontrol {Find what} option's case, we also need to
     use the QLabel::setBuddy() function to make the shortcut key work
     as expected; then, when the user presses the shortcut key
     indicated by the label, the keyboard focus is transferred to the
     label's buddy widget, the QLineEdit.
 
-    We set the \gui Find button's default property to true, using the
+    We set the \uicontrol Find button's default property to true, using the
     QPushButton::setDefault() function. Then the push button will be
     pressed if the user presses the Enter (or Return) key. Note that a
     QDialog can only have one default button.
@@ -99,7 +99,7 @@
 
     \snippet examples/dialogs/extension/finddialog.cpp 3
 
-    Now that the extension widget is created, we can connect the \gui
+    Now that the extension widget is created, we can connect the \uicontrol
     More button's \l{QAbstractButton::toggled()}{toggled()} signal to
     the extension widget's \l{QWidget::setVisible()}{setVisible()} slot.
 
@@ -110,9 +110,9 @@
     the status is true the widget is shown, otherwise the widget is
     hidden.
 
-    Since we made the \gui More button checkable when we created it,
+    Since we made the \uicontrol More button checkable when we created it,
     the connection makes sure that the extension widget is shown
-    depending on the state of \gui More button.
+    depending on the state of \uicontrol More button.
 
     We also put the check boxes associated with the advanced
     search options into a layout we install on the extension widget.

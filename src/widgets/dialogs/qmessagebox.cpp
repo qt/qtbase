@@ -649,33 +649,33 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
 
     \section1 Default and Escape Keys
 
-    The default button (i.e., the button activated when \key Enter is
+    The default button (i.e., the button activated when \uicontrol Enter is
     pressed) can be specified using setDefaultButton(). If a default
     button is not specified, QMessageBox tries to find one based on
     the \l{ButtonRole} {button roles} of the buttons used in the
     message box.
 
-    The escape button (the button activated when \key Esc is pressed)
+    The escape button (the button activated when \uicontrol Esc is pressed)
     can be specified using setEscapeButton().  If an escape button is
     not specified, QMessageBox tries to find one using these rules:
 
     \list 1
 
     \li If there is only one button, it is the button activated when
-    \key Esc is pressed.
+    \uicontrol Esc is pressed.
 
     \li If there is a \l Cancel button, it is the button activated when
-    \key Esc is pressed.
+    \uicontrol Esc is pressed.
 
     \li If there is exactly one button having either
        \l{QMessageBox::RejectRole} {the Reject role} or the
        \l{QMessageBox::NoRole} {the No role}, it is the button
-       activated when \key Esc is pressed.
+       activated when \uicontrol Esc is pressed.
 
     \endlist
 
     When an escape button can't be determined using these rules,
-    pressing \key Esc has no effect.
+    pressing \uicontrol Esc has no effect.
 
     \sa QDialogButtonBox, {fowler}{GUI Design Handbook: Message Box}, {Standard Dialogs Example}, {Application Example}
 */
@@ -932,7 +932,7 @@ QAbstractButton *QMessageBox::button(StandardButton which) const
     \endlist
 
     When an escape button could not be automatically detected, pressing
-    \key Esc has no effect.
+    \uicontrol Esc has no effect.
 
     \sa addButton()
 */
@@ -945,7 +945,7 @@ QAbstractButton *QMessageBox::escapeButton() const
 /*!
     \since 4.2
 
-    Sets the button that gets activated when the \key Escape key is
+    Sets the button that gets activated when the \uicontrol Escape key is
     pressed to \a button.
 
     \sa addButton(), clickedButton()
@@ -960,7 +960,7 @@ void QMessageBox::setEscapeButton(QAbstractButton *button)
 /*!
     \since 4.3
 
-    Sets the buttons that gets activated when the \key Escape key is
+    Sets the buttons that gets activated when the \uicontrol Escape key is
     pressed to \a button.
 
     \sa addButton(), clickedButton()
@@ -1019,7 +1019,7 @@ void QMessageBoxPrivate::detectEscapeButton()
     \since 4.2
 
     Returns the button that was clicked by the user,
-    or 0 if the user hit the \key Esc key and
+    or 0 if the user hit the \uicontrol Esc key and
     no \l{setEscapeButton()}{escape button} was set.
 
     If exec() hasn't been called yet, returns 0.
@@ -1518,13 +1518,13 @@ static QMessageBox::StandardButton showNewMessageBox(QWidget *parent,
     \a text in front of the specified \a parent widget.
 
     The standard \a buttons are added to the message box.
-    \a defaultButton specifies the button used when \key Enter is pressed.
+    \a defaultButton specifies the button used when \uicontrol Enter is pressed.
     \a defaultButton must refer to a button that was given in \a buttons.
     If \a defaultButton is QMessageBox::NoButton, QMessageBox
     chooses a suitable default automatically.
 
     Returns the identity of the standard button that was clicked. If
-    \key Esc was pressed instead, the \l{Default and Escape Keys}
+    \uicontrol Esc was pressed instead, the \l{Default and Escape Keys}
     {escape button} is returned.
 
     The message box is an \l{Qt::ApplicationModal}{application modal}
@@ -1552,13 +1552,13 @@ QMessageBox::StandardButton QMessageBox::information(QWidget *parent, const QStr
     text in front of the specified \a parent widget.
 
     The standard \a buttons are added to the message box. \a
-    defaultButton specifies the button used when \key Enter is
+    defaultButton specifies the button used when \uicontrol Enter is
     pressed. \a defaultButton must refer to a button that was given in \a buttons.
     If \a defaultButton is QMessageBox::NoButton, QMessageBox
     chooses a suitable default automatically.
 
     Returns the identity of the standard button that was clicked. If
-    \key Esc was pressed instead, the \l{Default and Escape Keys}
+    \uicontrol Esc was pressed instead, the \l{Default and Escape Keys}
     {escape button} is returned.
 
     The message box is an \l{Qt::ApplicationModal} {application modal}
@@ -1584,13 +1584,13 @@ QMessageBox::StandardButton QMessageBox::question(QWidget *parent, const QString
     text in front of the specified \a parent widget.
 
     The standard \a buttons are added to the message box. \a
-    defaultButton specifies the button used when \key Enter is
+    defaultButton specifies the button used when \uicontrol Enter is
     pressed. \a defaultButton must refer to a button that was given in \a buttons.
     If \a defaultButton is QMessageBox::NoButton, QMessageBox
     chooses a suitable default automatically.
 
     Returns the identity of the standard button that was clicked. If
-    \key Esc was pressed instead, the \l{Default and Escape Keys}
+    \uicontrol Esc was pressed instead, the \l{Default and Escape Keys}
     {escape button} is returned.
 
     The message box is an \l{Qt::ApplicationModal} {application modal}
@@ -1616,13 +1616,13 @@ QMessageBox::StandardButton QMessageBox::warning(QWidget *parent, const QString 
     text in front of the specified \a parent widget.
 
     The standard \a buttons are added to the message box. \a
-    defaultButton specifies the button used when \key Enter is
+    defaultButton specifies the button used when \uicontrol Enter is
     pressed. \a defaultButton must refer to a button that was given in \a buttons.
     If \a defaultButton is QMessageBox::NoButton, QMessageBox
     chooses a suitable default automatically.
 
     Returns the identity of the standard button that was clicked. If
-    \key Esc was pressed instead, the \l{Default and Escape Keys}
+    \uicontrol Esc was pressed instead, the \l{Default and Escape Keys}
     {escape button} is returned.
 
     The message box is an \l{Qt::ApplicationModal} {application modal}
@@ -1958,7 +1958,7 @@ void QMessageBoxPrivate::retranslateStrings()
     pressed).
 
     One of the buttons can be OR-ed with the QMessageBox::Escape flag
-    to make it the cancel or close button (clicked when \key Esc is
+    to make it the cancel or close button (clicked when \uicontrol Esc is
     pressed).
 
     \snippet dialogs/dialogs.cpp 2
@@ -2045,8 +2045,8 @@ int QMessageBox::information(QWidget *parent, const QString &title, const QStrin
     default button; pressing Return or Enter is the same as clicking
     the default button. It defaults to 0 (the first button). \a
     escapeButtonNumber is the index of the escape button; pressing
-    \key Esc is the same as clicking this button. It defaults to -1;
-    supply 0, 1 or 2 to make pressing \key Esc equivalent to clicking
+    \uicontrol Esc is the same as clicking this button. It defaults to -1;
+    supply 0, 1 or 2 to make pressing \uicontrol Esc equivalent to clicking
     the relevant button.
 
     The message box is an \l{Qt::ApplicationModal} {application modal}

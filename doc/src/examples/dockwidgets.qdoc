@@ -155,7 +155,7 @@
 
     \snippet examples/mainwindows/dockwidgets/mainwindow.cpp 5
 
-    If the focus is in the QTextEdit, pressing \key Ctrl+Z undoes as
+    If the focus is in the QTextEdit, pressing \uicontrol Ctrl+Z undoes as
     expected. But for the user's convenience we provide an
     application-wide undo function that simply calls the QTextEdit's
     undo: this means that the user can undo regardless of where the

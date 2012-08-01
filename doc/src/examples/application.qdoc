@@ -152,7 +152,7 @@
     \snippet examples/mainwindows/application/mainwindow.cpp 12
 
     In \c saveAs(), we start by popping up a QFileDialog asking the
-    user to provide a name. If the user clicks \gui{Cancel}, the
+    user to provide a name. If the user clicks \uicontrol{Cancel}, the
     returned file name is empty, and we do nothing.
 
     \snippet examples/mainwindows/application/mainwindow.cpp 13
@@ -212,7 +212,7 @@
     \snippet examples/mainwindows/application/mainwindow.cpp 23
     \snippet examples/mainwindows/application/mainwindow.cpp 24
 
-    The \gui{Edit|Cut} and \gui{Edit|Copy} actions must be available
+    The \uicontrol{Edit|Cut} and \uicontrol{Edit|Copy} actions must be available
     only when the QPlainTextEdit contains selected text. We disable them
     by default and connect the QPlainTextEdit::copyAvailable() signal to
     the QAction::setEnabled() slot, ensuring that the actions are
@@ -291,15 +291,15 @@
     The \c maybeSave() function is called to save pending changes. If
     there are pending changes, it pops up a QMessageBox giving the
     user to save the document. The options are QMessageBox::Yes,
-    QMessageBox::No, and QMessageBox::Cancel. The \gui{Yes} button is
+    QMessageBox::No, and QMessageBox::Cancel. The \uicontrol{Yes} button is
     made the default button (the button that is invoked when the user
-    presses \key{Return}) using the QMessageBox::Default flag; the
-    \gui{Cancel} button is made the escape button (the button that is
-    invoked when the user presses \key{Esc}) using the
+    presses \uicontrol{Return}) using the QMessageBox::Default flag; the
+    \uicontrol{Cancel} button is made the escape button (the button that is
+    invoked when the user presses \uicontrol{Esc}) using the
     QMessageBox::Escape flag.
 
     The \c maybeSave() function returns \c true in all cases, except
-    when the user clicks \gui{Cancel}. The caller must check the
+    when the user clicks \uicontrol{Cancel}. The caller must check the
     return value and stop whatever it was doing if the return value
     is \c false.
 

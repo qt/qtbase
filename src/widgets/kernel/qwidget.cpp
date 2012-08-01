@@ -629,7 +629,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     \list
         \li  keyPressEvent() is called whenever a key is pressed, and again when
             a key has been held down long enough for it to auto-repeat. The
-            \key Tab and \key Shift+Tab keys are only passed to the widget if
+            \uicontrol Tab and \uicontrol Shift+Tab keys are only passed to the widget if
             they are not used by the focus-change mechanisms. To force those
             keys to be processed by your widget, you must reimplement
             QWidget::event().
@@ -652,7 +652,7 @@ void QWidget::setAutoFillBackground(bool enabled)
         \li  keyReleaseEvent() is called whenever a key is released and while it
             is held down (if the key is auto-repeating). In that case, the
             widget will receive a pair of key release and key press event for
-            every repeat. The \key Tab and \key Shift+Tab keys are only passed
+            every repeat. The \uicontrol Tab and \uicontrol Shift+Tab keys are only passed
             to the widget if they are not used by the focus-change mechanisms.
             To force those keys to be processed by your widget, you must
             reimplement QWidget::event().
@@ -674,7 +674,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     for QEvent::Type. To handle these events, you need to reimplement event()
     directly.
 
-    The default implementation of event() handles \key Tab and \key Shift+Tab
+    The default implementation of event() handles \uicontrol Tab and \uicontrol Shift+Tab
     (to move the keyboard focus), and passes on most of the other events to
     one of the more specialized handlers above.
 
@@ -6079,7 +6079,7 @@ void QWidget::clearFocus()
     \fn bool QWidget::focusNextChild()
 
     Finds a new widget to give the keyboard focus to, as appropriate
-    for \key Tab, and returns true if it can find a new widget, or
+    for \uicontrol Tab, and returns true if it can find a new widget, or
     false if it can't.
 
     \sa focusPreviousChild()
@@ -6089,7 +6089,7 @@ void QWidget::clearFocus()
     \fn bool QWidget::focusPreviousChild()
 
     Finds a new widget to give the keyboard focus to, as appropriate
-    for \key Shift+Tab, and returns true if it can find a new widget,
+    for \uicontrol Shift+Tab, and returns true if it can find a new widget,
     or false if it can't.
 
     \sa focusNextChild()

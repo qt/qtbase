@@ -843,7 +843,7 @@ QKeyEvent::~QKeyEvent()
     after the event occurred.
 
     \warning This function cannot always be trusted. The user can
-    confuse it by pressing both \key{Shift} keys simultaneously and
+    confuse it by pressing both \uicontrol{Shift} keys simultaneously and
     releasing one of them, for example.
 
     \sa QApplication::keyboardModifiers()
@@ -952,7 +952,7 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
 
     Focus events are sent to widgets when the keyboard input focus
     changes. Focus events occur due to mouse actions, key presses
-    (such as \gui{Tab} or \gui{Backtab}), the window system, popup
+    (such as \uicontrol{Tab} or \uicontrol{Backtab}), the window system, popup
     menus, keyboard shortcuts, or other application-specific reasons.
     The reason for a particular focus event is returned by reason()
     in the appropriate event handler.
@@ -1198,7 +1198,7 @@ QResizeEvent::~QResizeEvent()
 
     Close events are sent to widgets that the user wants to close,
     usually by choosing "Close" from the window menu, or by clicking
-    the \gui{X} title bar button. They are also sent when you call
+    the \uicontrol{X} title bar button. They are also sent when you call
     QWidget::close() to close a widget programmatically.
 
     Close events contain a flag that indicates whether the receiver
@@ -1880,7 +1880,7 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
   x and y axes respectively.
 
   \a keyState specifies which keyboard modifiers are pressed (e.g.,
-  \key{Ctrl}).
+  \uicontrol{Ctrl}).
 
   The \a uniqueID parameter contains the unique ID for the current device.
 

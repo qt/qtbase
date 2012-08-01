@@ -98,7 +98,7 @@
     \snippet examples/dialogs/licensewizard/licensewizard.cpp 5
     \snippet examples/dialogs/licensewizard/licensewizard.cpp 6
 
-    We configure the QWizard to show a \gui Help button, which is
+    We configure the QWizard to show a \uicontrol Help button, which is
     connected to our \c showHelp() slot. We also set the
     \l{QWizard::}{LogoPixmap} for all pages that have a header (i.e.,
     \c EvaluatePage, \c RegisterPage, and \c DetailsPage).
@@ -109,7 +109,7 @@
     \snippet examples/dialogs/licensewizard/licensewizard.cpp 13
 
     In \c showHelp(), we display help texts that are appropriate for
-    the current page. If the user clicks \gui Help twice for the same
+    the current page. If the user clicks \uicontrol Help twice for the same
     page, we say, "Sorry, I already gave what help I could. Maybe you
     should try asking a human?"
 
@@ -136,7 +136,7 @@
     \snippet examples/dialogs/licensewizard/licensewizard.cpp 19
 
     The \c nextId() function returns the ID for \c EvaluatePage if
-    the \gui{Evaluate the product for 30 days} option is checked;
+    the \uicontrol{Evaluate the product for 30 days} option is checked;
     otherwise it returns the ID for \c RegisterPage.
 
     \section1 The EvaluatePage Class
@@ -159,7 +159,7 @@
     layouts. The fields are created with an asterisk (\c
     *) next to their name. This makes them \l{mandatory fields}, that
     is, fields that must be filled before the user can press the
-    \gui Next button (\gui Continue on Mac OS X). The fields' values
+    \uicontrol Next button (\uicontrol Continue on Mac OS X). The fields' values
     can be accessed from any other page using QWizardPage::field().
 
     Resetting the page amounts to clearing the two text fields.
@@ -201,13 +201,13 @@
 
     \snippet examples/dialogs/licensewizard/licensewizard.cpp 28
 
-    We want to display a \gui Print button in the wizard when the \c
+    We want to display a \uicontrol Print button in the wizard when the \c
     ConclusionPage is up. One way to accomplish this is to reimplement
     QWidget::setVisible():
 
     \list
     \li If the page is shown, we set the \l{QWizard::}{CustomButton1} button's
-       text to \gui{\underline{P}rint}, we enable the \l{QWizard::}{HaveCustomButton1}
+       text to \uicontrol{\underline{P}rint}, we enable the \l{QWizard::}{HaveCustomButton1}
        option, and we connect the QWizard's \l{QWizard::}{customButtonClicked()}
        signal to our \c printButtonClicked() slot.
     \li If the page is hidden, we disable the \l{QWizard::}{HaveCustomButton1}

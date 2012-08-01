@@ -45,25 +45,25 @@
     \image imageviewer-example.png Screenshot of the Image Viewer example
 
     With the Image Viewer application, the users can view an image of
-    their choice. The \gui File menu gives the user the possibility
+    their choice. The \uicontrol File menu gives the user the possibility
     to:
 
     \list
-    \li \gui{Open...} - Open an image file
-    \li \gui{Print...} - Print an image
-    \li \gui{Exit} - Exit the application
+    \li \uicontrol{Open...} - Open an image file
+    \li \uicontrol{Print...} - Print an image
+    \li \uicontrol{Exit} - Exit the application
     \endlist
 
-    Once an image is loaded, the \gui View menu allows the users to:
+    Once an image is loaded, the \uicontrol View menu allows the users to:
 
     \list
-    \li \gui{Zoom In} - Scale the image up by 25%
-    \li \gui{Zoom Out} - Scale the image down by 25%
-    \li \gui{Normal Size} - Show the image at its original size
-    \li \gui{Fit to Window} - Stretch the image to occupy the entire window
+    \li \uicontrol{Zoom In} - Scale the image up by 25%
+    \li \uicontrol{Zoom Out} - Scale the image down by 25%
+    \li \uicontrol{Normal Size} - Show the image at its original size
+    \li \uicontrol{Fit to Window} - Stretch the image to occupy the entire window
     \endlist
 
-    In addition the \gui Help menu provides the users with information
+    In addition the \uicontrol Help menu provides the users with information
     about the Image Viewer example in particular, and about Qt in
     general.
 
@@ -78,7 +78,7 @@
     We use \c createActions() and \c createMenus() when constructing
     the \c ImageViewer widget. We use the \c updateActions() function
     to update the menu entries when a new image is loaded, or when
-    the \gui {Fit to Window} option is toggled. The zoom slots use \c
+    the \uicontrol {Fit to Window} option is toggled. The zoom slots use \c
     scaleImage() to perform the zooming. In turn, \c
     scaleImage() uses \c adjustScrollBar() to preserve the focal point after
     scaling an image.
@@ -91,7 +91,7 @@
 
     We set \c {imageLabel}'s size policy to \l
     {QSizePolicy::Ignored}{ignored}, making the users able to scale
-    the image to whatever size they want when the \gui {Fit to Window}
+    the image to whatever size they want when the \uicontrol {Fit to Window}
     option is turned on. Otherwise, the default size polizy (\l
     {QSizePolicy::Preferred}{preferred}) will make scroll bars appear
     when the scroll area becomes smaller than the label's minimum size
@@ -115,7 +115,7 @@
     In the \c open() slot, we show a file dialog to the user. The
     easiest way to create a QFileDialog is to use the static
     convenience functions. QFileDialog::getOpenFileName() returns an
-    existing file selected by the user. If the user presses \gui
+    existing file selected by the user. If the user presses \uicontrol
     Cancel, QFileDialog returns an empty string.
 
     Unless the file name is a empty string, we check if the file's
@@ -130,7 +130,7 @@
     messages arranged along two axes: severity (question,
     information, warning and critical) and complexity (the number of
     necessary response buttons). In this particular example an
-    information message with an \gui OK button (the default) is
+    information message with an \uicontrol OK button (the default) is
     sufficient, since the message is part of a normal operation.
 
     \snippet examples/widgets/imageviewer/imageviewer.cpp 3
@@ -138,11 +138,11 @@
 
     If the format is supported, we display the image in \c imageLabel
     by setting the label's \l {QLabel::pixmap}{pixmap}. Then we enable
-    the \gui Print and \gui {Fit to Window} menu entries and update
-    the rest of the view menu entries. The \gui Open and \gui Exit
+    the \uicontrol Print and \uicontrol {Fit to Window} menu entries and update
+    the rest of the view menu entries. The \uicontrol Open and \uicontrol Exit
     entries are enabled by default.
 
-    If the \gui {Fit to Window} option is turned off, the
+    If the \uicontrol {Fit to Window} option is turned off, the
     QScrollArea::widgetResizable property is \c false and it is
     our responsibility (not QScrollArea's) to give the QLabel a
     reasonable size based on its contents. We call
@@ -164,7 +164,7 @@
 
     In release mode, the macro simply disappear. The mode can be set
     in the application's \c .pro file. One way to do so is to add an
-    option to \gui qmake when building the application:
+    option to \uicontrol qmake when building the application:
 
     \snippet doc/src/snippets/code/doc_src_examples_imageviewer.qdoc 2
 
@@ -192,8 +192,8 @@
 
     We implement the zooming slots using the private \c scaleImage()
     function. We set the scaling factors to 1.25 and 0.8,
-    respectively. These factor values ensure that a \gui {Zoom In}
-    action and a \gui {Zoom Out} action will cancel each other (since
+    respectively. These factor values ensure that a \uicontrol {Zoom In}
+    action and a \uicontrol {Zoom Out} action will cancel each other (since
     1.25 * 0.8 == 1), and in that way the normal image size can be
     restored using the zooming features.
 
@@ -221,10 +221,10 @@
     \snippet examples/widgets/imageviewer/imageviewer.cpp 14
 
     The \c fitToWindow() slot is called each time the user toggled
-    the \gui {Fit to Window} option. If the slot is called to turn on
+    the \uicontrol {Fit to Window} option. If the slot is called to turn on
     the option, we tell the scroll area to resize its child widget
     with the QScrollArea::setWidgetResizable() function. Then we
-    disable the \gui {Zoom In}, \gui {Zoom Out} and \gui {Normal
+    disable the \uicontrol {Zoom In}, \uicontrol {Zoom Out} and \uicontrol {Normal
     Size} menu entries using the private \c updateActions() function.
 
     If the \l {QScrollArea::widgetResizable} property is set to \c
@@ -240,7 +240,7 @@
     label's minimum size hint.
 
     The screenshots below shows an image in its normal size, and the
-    same image with the \gui {Fit to window} option turned on.
+    same image with the \uicontrol {Fit to window} option turned on.
     Enlarging the window will stretch the image further, as shown in
     the third screenshot.
 
@@ -279,7 +279,7 @@
     \snippet examples/widgets/imageviewer/imageviewer.cpp 20
 
     In the private \c createMenu() function, we add the previously
-    created actions to the \gui File, \gui View and \gui Help menus.
+    created actions to the \uicontrol File, \uicontrol View and \uicontrol Help menus.
 
     The QMenu class provides a menu widget for use in menu bars,
     context menus, and other popup menus. The QMenuBar class provides
@@ -292,8 +292,8 @@
     \snippet examples/widgets/imageviewer/imageviewer.cpp 22
 
     The private \c updateActions() function enables or disables the
-    \gui {Zoom In}, \gui {Zoom Out} and \gui {Normal Size} menu
-    entries depending on whether the \gui {Fit to Window} option is
+    \uicontrol {Zoom In}, \uicontrol {Zoom Out} and \uicontrol {Normal Size} menu
+    entries depending on whether the \uicontrol {Fit to Window} option is
     turned on or off.
 
     \snippet examples/widgets/imageviewer/imageviewer.cpp 23

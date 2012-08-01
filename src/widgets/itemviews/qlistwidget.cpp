@@ -1259,7 +1259,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     activated when the user clicks or double clicks on it, depending on the
     system configuration. It is also activated when the user presses the
     activation key (on Windows and X11 this is the \uicontrol Return key, on Mac OS
-    X it is \key{Ctrl+0}).
+    X it is \uicontrol{Ctrl+0}).
 */
 
 /*!

@@ -41,8 +41,8 @@
     \list
     \li Dragging the red circle in the centre of each drawing moves it to a new position.
     \li Dragging the displaced red circle causes the current drawing to be rotated about the
-       central circle. Rotation can also be controlled with the \key Rotate slider.
-    \li Scaling is controlled with the \key Scale slider.
-    \li Each drawing can be sheared with the \key Shear slider.
+       central circle. Rotation can also be controlled with the \uicontrol Rotate slider.
+    \li Scaling is controlled with the \uicontrol Scale slider.
+    \li Each drawing can be sheared with the \uicontrol Shear slider.
     \endlist
 */

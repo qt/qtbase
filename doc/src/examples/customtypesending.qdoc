@@ -105,7 +105,7 @@
     concerned with the type, we can simplify the signatures of both the
     signal and slot when we make the connection.
 
-    When the user clicks on the \gui{Send message} button in either window,
+    When the user clicks on the \uicontrol{Send message} button in either window,
     the message shown will be emitted in a signal that the other window will
     receive and display.
 

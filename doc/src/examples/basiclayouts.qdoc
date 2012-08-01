@@ -122,7 +122,7 @@
     \snippet examples/layouts/basiclayouts/dialog.cpp 6
 
     In the private \c createMenu() function we create a menu bar, and
-    add a pull-down \gui File menu containing an \gui Exit option.
+    add a pull-down \uicontrol File menu containing an \uicontrol Exit option.
 
     \snippet examples/layouts/basiclayouts/dialog.cpp 7
 

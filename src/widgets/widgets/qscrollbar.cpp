@@ -118,7 +118,7 @@ QT_BEGIN_NAMESPACE
     The length of the slider is usually related to the value of the page step,
     and typically represents the proportion of the document area shown in a
     scrolling view. The page step is the amount that the value changes by
-    when the user presses the \key{Page Up} and \key{Page Down} keys, and is
+    when the user presses the \uicontrol{Page Up} and \uicontrol{Page Down} keys, and is
     set with setPageStep(). Smaller changes to the value defined by the
     line step are made using the cursor keys, and this quantity is set with
     \l{QAbstractSlider::}{setSingleStep()}.

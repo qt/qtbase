@@ -287,7 +287,7 @@
 
     Then we create the \c RenderArea widgets that will render their
     shapes with coordinate tranformations. By default the applied
-    operation is \gui {No Transformation}, i.e. the shapes are
+    operation is \uicontrol {No Transformation}, i.e. the shapes are
     rendered within the default coordinate system. We create and
     initialize the associated \l {QComboBox}es with items
     corresponding to the various transformation operations decribed by

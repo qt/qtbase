@@ -194,7 +194,7 @@
 
     \snippet examples/sql/drilldown/informationwindow.cpp 6
 
-    The \c revert() slot is triggered whenever the user hits the \gui
+    The \c revert() slot is triggered whenever the user hits the \uicontrol
     Revert button.
 
     Since we set the QDataWidgetMapper::ManualSubmit submit policy,
@@ -207,7 +207,7 @@
     \snippet examples/sql/drilldown/informationwindow.cpp 7
 
     Likewise, the \c submit() slot is triggered whenever the users
-    decide to submit their changes by pressing the \gui Submit button.
+    decide to submit their changes by pressing the \uicontrol Submit button.
 
     We use QDataWidgetMapper's \l {QDataWidgetMapper::}{submit()} slot
     to submit all changes from the mapped widgets to the model,
@@ -228,12 +228,12 @@
     The \c createButtons() function is provided for convenience, i.e.,
     to simplify the constructor.
 
-    We make the \gui Close button the default button, i.e., the button
-    that is pressed when the user presses \gui Enter, and connect its
+    We make the \uicontrol Close button the default button, i.e., the button
+    that is pressed when the user presses \uicontrol Enter, and connect its
     \l {QPushButton::}{clicked()} signal to the widget's \l
     {QWidget::}{close()} slot. As mentioned above closing the window
-    only hides the widget; it is not deleted. We also connect the \gui
-    Submit and \gui Revert buttons to the corresponding \c submit()
+    only hides the widget; it is not deleted. We also connect the \uicontrol
+    Submit and \uicontrol Revert buttons to the corresponding \c submit()
     and \c revert() slots.
 
     \snippet examples/sql/drilldown/informationwindow.cpp 9
@@ -247,8 +247,8 @@
     automatically using the appropriate layout for the user's desktop
     environment.
 
-    Most buttons for a dialog follow certain roles. We give the \gui
-    Submit and \gui Revert buttons the \l
+    Most buttons for a dialog follow certain roles. We give the \uicontrol
+    Submit and \uicontrol Revert buttons the \l
     {QDialogButtonBox::ButtonRole}{reset} role, i.e., indicating that
     pressing the button resets the fields to the default values (in
     our case the information contained in the database). The \l

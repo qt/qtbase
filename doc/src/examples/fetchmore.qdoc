@@ -34,7 +34,7 @@
 
     \image fetchmore-example.png
 
-    The user of the example can enter a directory in the \gui
+    The user of the example can enter a directory in the \uicontrol
     Directory line edit. The contents of the directory will
     be listed in the list view below.
 

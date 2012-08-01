@@ -405,7 +405,7 @@
 
     \snippet examples/widgets/styles/widgetgallery.cpp 0
 
-    We start by creating child widgets. The \gui Style combobox is
+    We start by creating child widgets. The \uicontrol Style combobox is
     initialized with all the styles known to QStyleFactory, in
     addition to \c NorwegianWood. The \c create...() functions are
     private functions that set up the various parts of the \c
@@ -414,9 +414,9 @@
     \snippet examples/widgets/styles/widgetgallery.cpp 1
     \snippet examples/widgets/styles/widgetgallery.cpp 2
 
-    We connect the \gui Style combobox to the \c changeStyle()
-    private slot, the \gui{Use style's standard palette} check box to
-    the \c changePalette() slot, and the \gui{Disable widgets} check
+    We connect the \uicontrol Style combobox to the \c changeStyle()
+    private slot, the \uicontrol{Use style's standard palette} check box to
+    the \c changePalette() slot, and the \uicontrol{Disable widgets} check
     box to the child widgets'
     \l{QWidget::setDisabled()}{setDisabled()} slot.
 
@@ -435,7 +435,7 @@
     \snippet examples/widgets/styles/widgetgallery.cpp 7
     \snippet examples/widgets/styles/widgetgallery.cpp 8
 
-    If the user turns the \gui{Use style's standard palette} on, the
+    If the user turns the \uicontrol{Use style's standard palette} on, the
     current style's \l{QStyle::standardPalette()}{standard palette}
     is used; otherwise, the system's default palette is honored.
 

@@ -67,7 +67,7 @@
     \li The \c saveScreenshot() slot saves the last screenshot.
     \li The \c shootScreen() slot takes the screenshot.
     \li The \c updateCheckBox() slot enables or disables the
-       \gui {Hide This Window} option.
+       \uicontrol {Hide This Window} option.
     \endlist
 
     We also declare some private functions: We use the \c
@@ -127,8 +127,8 @@
     requests a new screenshot; but the slot only prepares a new
     screenshot.
 
-    First we see if the \gui {Hide This Window} option is checked, if
-    it is we hide the \c Screenshot widget. Then we disable the \gui
+    First we see if the \uicontrol {Hide This Window} option is checked, if
+    it is we hide the \c Screenshot widget. Then we disable the \uicontrol
     {New Screenshot} button, to make sure the user only can request
     one screenshot at a time.
 
@@ -136,12 +136,12 @@
     and single-shot timers. We set the timer to time out only once,
     using the static QTimer::singleShot() function. This function
     calls the private \c shootScreen() slot after the time interval
-    specified by the \gui {Screenshot Delay} option. It is \c
+    specified by the \uicontrol {Screenshot Delay} option. It is \c
     shootScreen() that actually performs the screenshot.
 
     \snippet examples/desktop/screenshot/screenshot.cpp 3
 
-    The \c saveScreenshot() slot is called when the user push the \gui
+    The \c saveScreenshot() slot is called when the user push the \uicontrol
     Save button, and it presents a file dialog using the QFileDialog
     class.
 
@@ -184,19 +184,19 @@
     QWidget::winID().
 
     We update the screenshot preview label using the private \c
-    updateScreenshotLabel() function. Then we enable the \gui {New
+    updateScreenshotLabel() function. Then we enable the \uicontrol {New
     Screenshot} button, and finally we make the \c Screenshot widget
     visible if it was hidden during the screenshot.
 
     \snippet examples/desktop/screenshot/screenshot.cpp 6
 
-    The \gui {Hide This Window} option is enabled or disabled
+    The \uicontrol {Hide This Window} option is enabled or disabled
     depending on the delay of the screenshot. If there is no delay,
     the application window cannot be hidden and the option's checkbox
     is disabled.
 
     The \c updateCheckBox() slot is called whenever the user changes
-    the delay using the \gui {Screenshot Delay} option.
+    the delay using the \uicontrol {Screenshot Delay} option.
 
     \snippet examples/desktop/screenshot/screenshot.cpp 7
 
@@ -204,9 +204,9 @@
     constructor.
 
     First we create a group box that will contain all of the options'
-    widgets. Then we create a QSpinBox and a QLabel for the \gui
+    widgets. Then we create a QSpinBox and a QLabel for the \uicontrol
     {Screenshot Delay} option, and connect the spinbox to the \c
-    updateCheckBox() slot. Finally, we create a QCheckBox for the \gui
+    updateCheckBox() slot. Finally, we create a QCheckBox for the \uicontrol
     {Hide This Window} option, add all the options' widgets to a
     QGridLayout and install the layout on the group box.
 

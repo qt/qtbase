@@ -67,7 +67,7 @@
 
     The first spin box shows the simplest way to use QSpinBox. It accepts values
     from -20 to 20, the current value can be increased or decreased by 1 with
-    either the arrow buttons or \key{Up} and \key{Down} keys, and the default
+    either the arrow buttons or \uicontrol{Up} and \uicontrol{Down} keys, and the default
     value is 0.
 
     The second spin box uses a larger step size and displays a suffix to
@@ -77,8 +77,8 @@
 
     This spin box also displays a
     \l{QAbstractSpinBox::specialValueText}{special value} instead of the minimum
-    value defined for it. This means that it will never show \gui{0%}, but will
-    display \gui{Automatic} when the minimum value is selected.
+    value defined for it. This means that it will never show \uicontrol{0%}, but will
+    display \uicontrol{Automatic} when the minimum value is selected.
 
     The third spin box shows how a prefix can be used:
 
@@ -99,7 +99,7 @@
 
     The first spin box is a QDateEdit widget that is able to accept dates
     within a given range specified using QDate values. The arrow buttons and
-    \key{Up} and \key{Down} keys can be used to increase and decrease the
+    \uicontrol{Up} and \uicontrol{Down} keys can be used to increase and decrease the
     values for year, month, and day when the cursor is in the relevant section.
 
     The second spin box is a QTimeEdit widget:

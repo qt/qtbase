@@ -146,16 +146,16 @@
     {QDialogButtonBox}{addButton()} function, the button's role must
     be specified using the QDialogButtonBox::ButtonRole
     enum. Alternatively, QDialogButtonBox provides several standard
-    buttons (e.g. \gui OK, \gui Cancel, \gui Save) that you can
+    buttons (e.g. \uicontrol OK, \uicontrol Cancel, \uicontrol Save) that you can
     use. They exist as flags so you can OR them together in the
     constructor.
 
     \snippet examples/sql/cachedtable/tableeditor.cpp 3
 
-    We connect the \gui Quit button to the table editor's \l
-    {QWidget::close()}{close()} slot, and the \gui Submit button to
+    We connect the \uicontrol Quit button to the table editor's \l
+    {QWidget::close()}{close()} slot, and the \uicontrol Submit button to
     our private \c submit() slot. The latter slot will take care of
-    the data transactions. Finally, we connect the \gui Revert button
+    the data transactions. Finally, we connect the \uicontrol Revert button
     to our model's \l {QSqlTableModel::revertAll()}{revertAll()} slot,
     reverting all pending changes (i.e., restoring the original data).
 
@@ -167,7 +167,7 @@
 
     \snippet examples/sql/cachedtable/tableeditor.cpp 5
 
-    The \c submit() slot is called whenever the users hit the \gui
+    The \c submit() slot is called whenever the users hit the \uicontrol
     Submit button to save their changes.
 
     First, we begin a transaction on the database using the

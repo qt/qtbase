@@ -704,11 +704,11 @@
     par les classes qui instancient \c FindDialog, ce qui leur permet d'obtenir
     le texte entré par l'utilisateur. Un slot public, \c findClicked(), est
     défini pour prendre en charge le texte lorsque l'utilisateur clique sur
-    le bouton \gui Find.
+    le bouton \uicontrol Find.
 
     Finalement, nous définissons les variables privées \c findButton,
     \c lineEdit et \c findText, qui correspondent respectivement au bouton
-    \gui Find, au champ de texte dans lequel l'utilisateur tape le texte
+    \uicontrol Find, au champ de texte dans lequel l'utilisateur tape le texte
     à rechercher, et à une variable interne stockant le texte pour une
     utilisation ultérieure.
 
@@ -733,7 +733,7 @@
     \image addressbook-tutorial-part5-signals-and-slots.png
 
     Dans \c findClicked(), nous validons le champ de texte pour nous
-    assurer que l'utilisateur n'a pas cliqué sur le bouton \gui Find sans
+    assurer que l'utilisateur n'a pas cliqué sur le bouton \uicontrol Find sans
     avoir entré un nom de contact. Ensuite, nous stockons le texte du champ
     d'entrée \c lineEdit dans \c findText. Et finalement nous vidons le
     contenu de \c lineEdit et cachons la boîte de dialogue.
@@ -759,7 +759,7 @@
 
     Jusqu'ici, toutes les fonctionnalités du carnet d'adresses ont un
     QPushButton et un slot correspondant. De la même façon, pour la
-    fonctionnalité \gui Find, nous avons \c findButton et \c findContact().
+    fonctionnalité \uicontrol Find, nous avons \c findButton et \c findContact().
 
     Le \c findButton est déclaré comme une variable privée et la
     méthode \c findContact() est déclarée comme un slot public.
@@ -856,7 +856,7 @@
     Idéalement, l'interface serait plus conviviale avec des boutons
     affichant "Load contacts from a file" et "Save contacts to a file". Mais
     compte tenu de la dimension des autres boutons, on initialise les labels
-    des boutons à \gui{Load...} et \gui{Save...}. Heureusement, Qt offre une
+    des boutons à \uicontrol{Load...} et \uicontrol{Save...}. Heureusement, Qt offre une
     façon simple d'ajouter des info-bulles avec
     \l{QWidget::setToolTip()}{setToolTip()}, et nous l'exploitons de la façon
     suivante pour nos boutons:

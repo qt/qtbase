@@ -43,7 +43,7 @@
     specified directory, matching a specified file name (using wild
     cards if appropriate) and containing a specified text.
 
-    The user is provided with a \gui Browse option, and the result of
+    The user is provided with a \uicontrol Browse option, and the result of
     the search is displayed in a table with the names of the files
     found and their sizes. In addition the application provides a
     total count of the files found.
@@ -59,7 +59,7 @@
     We need two private slots: The \c browse() slot is called whenever
     the user wants to browse for a directory to search in, and the \c
     find() slot is called whenever the user requests a search to be
-    performed by pressing the \gui Find button.
+    performed by pressing the \uicontrol Find button.
 
     In addition we declare several private functions: We use the \c
     findFiles() function to search for files matching the user's
@@ -109,7 +109,7 @@
     \snippet examples/dialogs/findfiles/window.cpp 3
 
     The \c find() slot is called whenever the user requests a new
-    search by pressing the \gui Find button.
+    search by pressing the \uicontrol Find button.
 
     First we eliminate any previous search results by setting the
     table widgets row count to zero. Then we retrieve the

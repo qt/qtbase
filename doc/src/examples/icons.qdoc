@@ -99,23 +99,23 @@
     dependent, but most of the styles have the same values: Only the
     Macintosh style differ by using 32 pixels, instead of 16 pixels,
     for toolbar buttons. You can navigate between the available styles
-    using the \gui View menu.
+    using the \uicontrol View menu.
 
     \image icons-view-menu.png Screenshot of the View menu
 
-    The \gui View menu also provide the option to make the application
-    guess the icon state and mode from an image's file name. The \gui
+    The \uicontrol View menu also provide the option to make the application
+    guess the icon state and mode from an image's file name. The \uicontrol
     File menu provide the options of adding an image and removing all
     images. These last options are also available through a context
     menu that appears if you press the right mouse button within the
-    table of image files. In addition, the \gui File menu provide an
-    \gui Exit option, and the \gui Help menu provide information about
+    table of image files. In addition, the \uicontrol File menu provide an
+    \uicontrol Exit option, and the \uicontrol Help menu provide information about
     the example and about Qt.
 
     \image icons_find_normal.png Screenshot of the Find Files
 
     The screenshot above shows the application with one image file
-    loaded. The \gui {Guess Image Mode/State} is enabled and the
+    loaded. The \uicontrol {Guess Image Mode/State} is enabled and the
     style is Plastique.
 
     When QIcon is provided with only one available pixmap, that
@@ -127,7 +127,7 @@
 
     The next screenshot shows the application with an additional file
     loaded, providing QIcon with two available pixmaps. Note that the
-    new image file's mode is set to disabled. When rendering the \gui
+    new image file's mode is set to disabled. When rendering the \uicontrol
     Disabled mode pixmaps, Qt will now use the new image. We can see
     the difference: The generated disabled pixmap in the first
     screenshot is slightly darker than the pixmap with the originally
@@ -451,7 +451,7 @@
     \snippet examples/widgets/icons/mainwindow.cpp 17
 
     Then we create the second and third items in the row making the
-    default mode Normal and the default state Off. But if the \gui
+    default mode Normal and the default state Off. But if the \uicontrol
     {Guess Image Mode/State} option is checked, and the file name
     contains "_act", "_dis", or "_sel", the modes are changed to
     Active, Disabled, or Selected. And if the file name contains
@@ -605,7 +605,7 @@
     \snippet examples/widgets/icons/mainwindow.cpp 29
 
     In the \c createMenu() function, we add the previously created
-    actions to the \gui File, \gui View and \gui Help menus.
+    actions to the \uicontrol File, \uicontrol View and \uicontrol Help menus.
 
     The QMenu class provides a menu widget for use in menu bars,
     context menus, and other popup menus. We put each menu in the
@@ -621,7 +621,7 @@
     meaning that the \l{QAction}s associated with the widget should
     appear in its context menu.
 
-    Then we add the \gui{Add Image} and \gui{Remove All Images}
+    Then we add the \uicontrol{Add Image} and \uicontrol{Remove All Images}
     actions to the table widget. They will then appear in the table
     widget's context menu.
 
@@ -692,7 +692,7 @@
     characters. If the first and second numbers of the spin box value
     differ (e.g., "16 x 24"), we use the first number.
 
-    When the user presses \key Enter, QSpinBox first calls
+    When the user presses \uicontrol Enter, QSpinBox first calls
     QSpinBox::valueFromText() to interpret the text typed by the
     user, then QSpinBox::textFromValue() to present it in a canonical
     format (e.g., "16 x 16").

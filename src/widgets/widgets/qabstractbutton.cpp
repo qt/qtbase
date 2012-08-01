@@ -88,8 +88,8 @@ Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets;
 
     \snippet code/src_gui_widgets_qabstractbutton.cpp 0
 
-    The \key Alt+C shortcut is assigned to the button, i.e., when the
-    user presses \key Alt+C the button will call animateClick(). See
+    The \uicontrol Alt+C shortcut is assigned to the button, i.e., when the
+    user presses \uicontrol Alt+C the button will call animateClick(). See
     the \l {QShortcut#mnemonic}{QShortcut} documentation for details
     (to display an actual ampersand, use '&&').
 

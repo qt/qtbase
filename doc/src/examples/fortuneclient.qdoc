@@ -90,13 +90,13 @@
     \dots
     \snippet examples/network/fortuneclient/client.cpp 5
 
-    Clicking the \gui{Get Fortune} button will invoke the \c
+    Clicking the \uicontrol{Get Fortune} button will invoke the \c
     requestNewFortune() slot:
 
     \snippet examples/network/fortuneclient/client.cpp 6
 
     In this slot, we initialize \c blockSize to 0, preparing to read a new block
-    of data.  Because we allow the user to click \gui{Get Fortune} before the
+    of data.  Because we allow the user to click \uicontrol{Get Fortune} before the
     previous connection finished closing, we start off by aborting the
     previous connection by calling QTcpSocket::abort(). (On an unconnected
     socket, this function does nothing.) We then proceed to connecting to the

@@ -145,10 +145,10 @@
 
     You should now see the text "QPushButton" in the top left pane.
     Double-click it, then click on "Hello world!" and enter "Orbis, te
-    saluto!" in the \gui Translation pane (the middle right of the
+    saluto!" in the \uicontrol Translation pane (the middle right of the
     window). Don't forget the exclamation mark!
 
-    Click the \gui Done checkbox and choose \gui File|Save from the
+    Click the \uicontrol Done checkbox and choose \uicontrol File|Save from the
     menu bar. The TS file will no longer contain
 
     \snippet doc/src/snippets/code/doc_src_examples_hellotr.qdoc 3
@@ -165,8 +165,8 @@
     by using the command line program \c lrelease which will produce one
     QM file for each of the TS files listed in the project file.
     Generate \c hellotr_la.qm from \c hellotr_la.ts by choosing
-    \gui File|Release from \e {Qt Linguist}'s menu bar and pressing
-    \gui Save in the file save dialog that pops up. Now run the \c hellotr
+    \uicontrol File|Release from \e {Qt Linguist}'s menu bar and pressing
+    \uicontrol Save in the file save dialog that pops up. Now run the \c hellotr
     program again. This time the button will be labelled "Orbis, te
     saluto!".
 

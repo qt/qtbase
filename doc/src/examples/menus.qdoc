@@ -91,8 +91,8 @@
     into widgets.
 
     In some situations it is useful to group actions together, e.g.,
-    we have a \gui {Left Align} action, a \gui {Right Align} action, a
-    \gui {Justify} action, and a \gui {Center} action, and we want
+    we have a \uicontrol {Left Align} action, a \uicontrol {Right Align} action, a
+    \uicontrol {Justify} action, and a \uicontrol {Center} action, and we want
     only one of these actions to be active at any one time. One simple
     way of achieving this is to group the actions together in an
     action group using the QActionGroup class.
@@ -141,7 +141,7 @@
     using the provided convenience functions.
 
     In the \c createActions() function, we first create a \c newAct
-    action. We make \gui Ctrl+N its shortcut using the
+    action. We make \uicontrol Ctrl+N its shortcut using the
     QAction::setShortcut() function, and we set its status tip using the
     QAction::setStatusTip() function (the status tip is displayed on all
     status bars provided by the action's top-level parent widget). We
@@ -154,8 +154,8 @@
     \snippet examples/mainwindows/menus/mainwindow.cpp 7
 
 
-    Once we have created the \gui {Left Align}, \gui {Right Align},
-    \gui {Justify}, and a \gui {Center} actions, we can also create
+    Once we have created the \uicontrol {Left Align}, \uicontrol {Right Align},
+    \uicontrol {Justify}, and a \uicontrol {Center} actions, we can also create
     the previously mentioned action group.
 
     Each action is added to the group using QActionGroup's \l
@@ -191,8 +191,8 @@
 
     \snippet examples/mainwindows/menus/mainwindow.cpp 12
 
-    Note the \gui Format menu. First of all, it is added as a submenu
-    to the \gui Edit Menu using QMenu's \l
+    Note the \uicontrol Format menu. First of all, it is added as a submenu
+    to the \uicontrol Edit Menu using QMenu's \l
     {QMenu::addMenu()}{addMenu()} function. Secondly, take a look at the
     alignment actions: In the \c createActions() function we added the
     \c leftAlignAct, \c rightAlignAct, \c justifyAct and \c centerAct
@@ -208,7 +208,7 @@
     ignores these events).
 
     Whenever we receive such an event, we create a menu containing the
-    \gui Cut, \gui Copy and \gui Paste actions. Context menus can be
+    \uicontrol Cut, \uicontrol Copy and \uicontrol Paste actions. Context menus can be
     executed either asynchronously using the \l {QMenu::}{popup()}
     function or synchronously using the \l {QMenu::}{exec()}
     function. In this example, we have chosen to show the menu using

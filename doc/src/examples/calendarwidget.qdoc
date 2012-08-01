@@ -118,7 +118,7 @@
 
     \snippet examples/widgets/calendarwidget/window.cpp 9
 
-    The \gui Preview group box contains only one widget: the
+    The \uicontrol Preview group box contains only one widget: the
     QCalendarWidget. We set it up, connect its
     \l{QCalendarWidget::}{currentPageChanged()} signal to our \c
     reformatCalendarPage() slot to make sure that every new page gets
@@ -131,7 +131,7 @@
     \snippet examples/widgets/calendarwidget/window.cpp 10
     \dots
 
-    We start with the setup of the \gui{Week starts on} combobox.
+    We start with the setup of the \uicontrol{Week starts on} combobox.
     This combobox controls which day should be displayed as the first
     day of the week.
 
@@ -159,8 +159,8 @@
 
     \snippet examples/widgets/calendarwidget/window.cpp 13
 
-    In this function, we create the \gui {Minimum Date}, \gui {Maximum Date},
-    and \gui {Current Date} editor widgets,
+    In this function, we create the \uicontrol {Minimum Date}, \uicontrol {Maximum Date},
+    and \uicontrol {Current Date} editor widgets,
     which control the calendar's minimum, maximum, and selected dates.
     The calendar's minimum and maximum dates have already been
     set in \c createPrivewGroupBox(); we can then set the widgets
@@ -175,28 +175,28 @@
     \l{QCalendarWidget::}{setSelectedDate()} slot. When the calendar's
     selected date changes, either as a result of a user action or
     programmatically, our \c selectedDateChanged() slot updates
-    the \gui {Current Date} editor. We also need to react when the user
-    changes the \gui{Minimum Date} and \gui{Maximum Date} editors.
+    the \uicontrol {Current Date} editor. We also need to react when the user
+    changes the \uicontrol{Minimum Date} and \uicontrol{Maximum Date} editors.
 
     Here is the \c createTextFormatsGroup() function:
 
     \snippet examples/widgets/calendarwidget/window.cpp 16
 
-    We set up the \gui {Weekday Color} and \gui {Weekend Color} comboboxes
+    We set up the \uicontrol {Weekday Color} and \uicontrol {Weekend Color} comboboxes
     using \c createColorCombo(), which instantiates a QComboBox and
     populates it with colors ("Red", "Blue", etc.).
 
     \snippet examples/widgets/calendarwidget/window.cpp 17
 
-    The \gui {Header Text Format} combobox lets the user change the
+    The \uicontrol {Header Text Format} combobox lets the user change the
     text format (bold, italic, or plain) used for horizontal and
-    vertical headers. The \gui {First Friday in blue} and \gui {May 1
+    vertical headers. The \uicontrol {First Friday in blue} and \uicontrol {May 1
     in red} check box affect the rendering of specific dates.
 
     \snippet examples/widgets/calendarwidget/window.cpp 18
 
     We connect the check boxes and comboboxes to various private
-    slots. The \gui {First Friday in blue} and \gui {May 1 in red}
+    slots. The \uicontrol {First Friday in blue} and \uicontrol {May 1 in red}
     check boxes are both connected to \c reformatCalendarPage(),
     which is also called when the calendar switches month.
 
@@ -216,12 +216,12 @@
     standard colors. The second argument to QComboBox::addItem()
     is a QVariant storing user data (in this case, QColor objects).
 
-    This function was used to set up the \gui {Weekday Color}
-    and \gui {Weekend Color} comboboxes.
+    This function was used to set up the \uicontrol {Weekday Color}
+    and \uicontrol {Weekend Color} comboboxes.
 
     \snippet examples/widgets/calendarwidget/window.cpp 1
 
-    When the user changes the \gui {Week starts on} combobox's
+    When the user changes the \uicontrol {Week starts on} combobox's
     value, \c firstDayChanged() is invoked with the index of the
     combobox's new value. We retrieve the custom data item
     associated with the new current item using
@@ -233,13 +233,13 @@
 
     \snippet examples/widgets/calendarwidget/window.cpp 2
 
-    The \c selectedDateChanged() updates the \gui{Current Date}
+    The \c selectedDateChanged() updates the \uicontrol{Current Date}
     editor to reflect the current state of the QCalendarWidget.
 
     \snippet examples/widgets/calendarwidget/window.cpp 3
 
     When the user changes the minimum date, we tell the
-    QCalenderWidget. We also update the \gui {Maximum Date} editor,
+    QCalenderWidget. We also update the \uicontrol {Maximum Date} editor,
     because if the new minimum date is later than the current maximum
     date, QCalendarWidget will automatically adapt its maximum date
     to avoid a contradicting state.
@@ -270,7 +270,7 @@
 
     The \c reformatHeaders() slot is called when the user
     changes the text format of
-    the headers. We compare the current text of the \gui {Header Text Format}
+    the headers. We compare the current text of the \uicontrol {Header Text Format}
     combobox to determine which format to apply. (An alternative would
     have been to store \l{QTextCharFormat} values alongside the combobox
     items.)

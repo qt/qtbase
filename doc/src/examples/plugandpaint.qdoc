@@ -147,8 +147,8 @@
     \snippet examples/tools/plugandpaint/mainwindow.cpp 4
 
     The \c loadPlugins() function is called from the \c MainWindow
-    constructor to detect plugins and update the \gui{Brush},
-    \gui{Shapes}, and \gui{Filters} menus. We start by handling static
+    constructor to detect plugins and update the \uicontrol{Brush},
+    \uicontrol{Shapes}, and \uicontrol{Filters} menus. We start by handling static
     plugins (available through QPluginLoader::staticInstances())
 
     To the application that uses the plugin, a Qt plugin is simply a
@@ -183,8 +183,8 @@
 
     \snippet examples/tools/plugandpaint/mainwindow.cpp 9
 
-    At the end, we enable or disable the \gui{Brush}, \gui{Shapes},
-    and \gui{Filters} menus based on whether they contain any items.
+    At the end, we enable or disable the \uicontrol{Brush}, \uicontrol{Shapes},
+    and \uicontrol{Filters} menus based on whether they contain any items.
 
     \snippet examples/tools/plugandpaint/mainwindow.cpp 10
 
@@ -198,7 +198,7 @@
     \snippet examples/tools/plugandpaint/mainwindow.cpp 3
 
     The \c aboutPlugins() slot is called on startup and can be
-    invoked at any time through the \gui{About Plugins} action. It
+    invoked at any time through the \uicontrol{About Plugins} action. It
     pops up a \c PluginDialog, providing information about the loaded
     plugins.
 
@@ -214,7 +214,7 @@
     \snippet examples/tools/plugandpaint/mainwindow.cpp 0
 
     The \c changeBrush() slot is invoked when the user chooses one of
-    the brushes from the \gui{Brush} menu. We start by finding out
+    the brushes from the \uicontrol{Brush} menu. We start by finding out
     which action invoked the slot using QObject::sender(). Then we
     get the \c BrushInterface out of the plugin (which we
     conveniently passed as the QAction's parent) and we call \c
@@ -225,7 +225,7 @@
     \snippet examples/tools/plugandpaint/mainwindow.cpp 1
 
     The \c insertShape() is invoked when the use chooses one of the
-    shapes from the \gui{Shapes} menu. We retrieve the QAction that
+    shapes from the \uicontrol{Shapes} menu. We retrieve the QAction that
     invoked the slot, then the \c ShapeInterface associated with that
     QAction, and finally we call \c ShapeInterface::generateShape()
     to obtain a QPainterPath.
@@ -359,8 +359,8 @@
     \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 0
 
     The \c brushes() function returns a list of brushes provided by
-    this plugin. We provide three brushes: \gui{Pencil}, \gui{Air
-    Brush}, and \gui{Random Letters}.
+    this plugin. We provide three brushes: \uicontrol{Pencil}, \uicontrol{Air
+    Brush}, and \uicontrol{Random Letters}.
 
     \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 1
 
@@ -377,15 +377,15 @@
     Then comes the brush-dependent part of the code:
 
     \list
-    \li If the brush is \gui{Pencil}, we just call
+    \li If the brush is \uicontrol{Pencil}, we just call
        QPainter::drawLine() with the current QPen.
 
-    \li If the brush is \gui{Air Brush}, we start by setting the
+    \li If the brush is \uicontrol{Air Brush}, we start by setting the
        painter's QBrush to Qt::Dense6Pattern to obtain a dotted
        pattern. Then we draw a circle filled with that QBrush several
        times, resulting in a thick line.
 
-    \li If the brush is \gui{Random Letters}, we draw a random letter
+    \li If the brush is \uicontrol{Random Letters}, we draw a random letter
        at the new cursor position. Most of the code is for setting
        the font to be bold and larger than the default font and for
        computing an appropriate bounding rect.
@@ -403,8 +403,8 @@
 
     \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 5
 
-    The plugin provides three shapes: \gui{Circle}, \gui{Star}, and
-    \gui{Text...}. The three dots after \gui{Text} are there because
+    The plugin provides three shapes: \uicontrol{Circle}, \uicontrol{Star}, and
+    \uicontrol{Text...}. The three dots after \uicontrol{Text} are there because
     the shape pops up a dialog asking for more information. We know
     that the shape names will end up in a menu, so we include the
     three dots in the shape name.
@@ -416,15 +416,15 @@
     \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 6
 
     The \c generateShape() creates a QPainterPath for the specified
-    shape. If the shape is \gui{Text}, we pop up a QInputDialog to
+    shape. If the shape is \uicontrol{Text}, we pop up a QInputDialog to
     let the user enter some text.
 
     \section1 Implementation of the Filter Interface
 
     \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 7
 
-    The plugin provides three filters: \gui{Invert Pixels}, \gui{Swap
-    RGB}, and \gui{Grayscale}.
+    The plugin provides three filters: \uicontrol{Invert Pixels}, \uicontrol{Swap
+    RGB}, and \uicontrol{Grayscale}.
 
     \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 8
 
@@ -433,7 +433,7 @@
     is to convert the image to a 32-bit RGB format, to ensure that
     the algorithms will work as expected. For example,
     QImage::invertPixels(), which is used to implement the
-    \gui{Invert Pixels} filter, gives counterintuitive results for
+    \uicontrol{Invert Pixels} filter, gives counterintuitive results for
     8-bit images, because they invert the indices into the color
     table instead of inverting the color table's entries.
 

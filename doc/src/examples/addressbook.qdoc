@@ -46,7 +46,7 @@
     The address book contains 5 classes: \c MainWindow,
     \c AddressWidget, \c TableModel, \c NewAddressTab and
     \c AddDialog. The \c MainWindow class uses \c AddressWidget as
-    its central widget and provides \gui File and \gui Tools menus.
+    its central widget and provides \uicontrol File and \uicontrol Tools menus.
 
     \image addressbook-classes.png Diagram for Address Book Example
 
@@ -223,8 +223,8 @@
     \l{QItemSelectionModel::selectionChanged()}{selectionChanged}
     signal that is connected to \c{AddressWidget}'s
     \c selectionChanged() signal. This signal to signal connection
-    is necessary to enable the \gui{Edit Entry...} and
-    \gui{Remove Entry} actions in \c MainWindow's Tools menu. This
+    is necessary to enable the \uicontrol{Edit Entry...} and
+    \uicontrol{Remove Entry} actions in \c MainWindow's Tools menu. This
     connection is further explained in \c MainWindow's
     implementation.
 
@@ -241,7 +241,7 @@
     \c newAddressTab to  insert data without having to popup a dialog.
 
     The first \c addEntry() function is a slot connected to the
-    \c MainWindow's \gui{Add Entry...} action. This function creates an
+    \c MainWindow's \uicontrol{Add Entry...} action. This function creates an
     \c AddDialog object and then calls the second \c addEntry()
     function to actually add the contact to \c table.
 
@@ -359,8 +359,8 @@
 
     \snippet itemviews/addressbook/adddialog.cpp 0
 
-    To give the dialog the desired behavior, we connect the \gui OK
-    and \gui Cancel buttons to the dialog's \l{QDialog::}{accept()} and
+    To give the dialog the desired behavior, we connect the \uicontrol OK
+    and \uicontrol Cancel buttons to the dialog's \l{QDialog::}{accept()} and
     \l{QDialog::}{reject()} slots. Since the dialog only acts as a
     container for name and address information, we do not need to
     implement any other functions for it.
@@ -379,9 +379,9 @@
     \snippet itemviews/addressbook/mainwindow.h 0
 
     The \c MainWindow class uses an \c AddressWidget as its central
-    widget and provides the File menu with \gui Open, \gui Close and
-    \gui Exit actions, as well as the \gui Tools menu with
-    \gui{Add Entry...}, \gui{Edit Entry...} and \gui{Remove Entry}
+    widget and provides the File menu with \uicontrol Open, \uicontrol Close and
+    \uicontrol Exit actions, as well as the \uicontrol Tools menu with
+    \uicontrol{Add Entry...}, \uicontrol{Edit Entry...} and \uicontrol{Remove Entry}
     actions.
 
 
@@ -393,9 +393,9 @@
 
     \snippet itemviews/addressbook/mainwindow.cpp 0
 
-    The \c createMenus() function sets up the \gui File and
-    \gui Tools menus, connecting the actions to their respective slots.
-    Both the \gui{Edit Entry...} and \gui{Remove Entry} actions are
+    The \c createMenus() function sets up the \uicontrol File and
+    \uicontrol Tools menus, connecting the actions to their respective slots.
+    Both the \uicontrol{Edit Entry...} and \uicontrol{Remove Entry} actions are
     disabled by default as such actions cannot be carried out on an empty
     address book. They are only enabled when one or more contacts
     are added.
@@ -413,18 +413,18 @@
     the \l{QFileDialog::getOpenFileName()}{open file dialog}. The chosen
     file has to be a custom \c{.dat} file that contains address book
     contacts. This function is a slot connected to \c openAct in the
-    \gui File menu.
+    \uicontrol File menu.
 
     \snippet itemviews/addressbook/mainwindow.cpp 2
 
     The \c saveFile() function allows the user to save a file with
     the \l{QFileDialog::getSaveFileName()}{save file dialog}. This function
-    is a slot connected to \c saveAct in the \gui File menu.
+    is a slot connected to \c saveAct in the \uicontrol File menu.
 
     \snippet itemviews/addressbook/mainwindow.cpp 3
 
     The \c updateActions() function enables and disables
-    \gui{Edit Entry...} and \gui{Remove Entry} depending on the contents of
+    \uicontrol{Edit Entry...} and \uicontrol{Remove Entry} depending on the contents of
     the address book. If the address book is empty, these actions
     are disabled; otherwise, they are enabled. This function is a slot
     is connected to the \c AddressWidget's \c selectionChanged()

@@ -2402,7 +2402,7 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     This signal is emitted when the user activates an item by single-
     or double-clicking (depending on the platform, i.e. on the
     QStyle::SH_ItemView_ActivateItemOnSingleClick style hint) or
-    pressing a special key (e.g., \key Enter).
+    pressing a special key (e.g., \uicontrol Enter).
 
     The specified \a item is the item that was clicked, or 0 if no
     item was clicked. The \a column is the item's column that was

@@ -43,10 +43,10 @@
     The example provides a render area, displaying the currently
     active shape, and lets the user manipulate the rendered shape and
     its appearance using the QPainter parameters: The user can change
-    the active shape (\gui Shape), and modify the QPainter's pen (\gui
-    {Pen Width}, \gui {Pen Style}, \gui {Pen Cap}, \gui {Pen Join}),
-    brush (\gui {Brush Style}) and render hints (\gui
-    Antialiasing). In addition the user can rotate a shape (\gui
+    the active shape (\uicontrol Shape), and modify the QPainter's pen (\uicontrol
+    {Pen Width}, \uicontrol {Pen Style}, \uicontrol {Pen Cap}, \uicontrol {Pen Join}),
+    brush (\uicontrol {Brush Style}) and render hints (\uicontrol
+    Antialiasing). In addition the user can rotate a shape (\uicontrol
     Transformations); behind the scenes we use QPainter's ability to
     manipulate the coordinate system to perform the rotation.
 
@@ -86,7 +86,7 @@
     \snippet examples/painting/basicdrawing/window.cpp 1
 
     First we create the \c RenderArea widget that will render the
-    currently active shape. Then we create the \gui Shape combobox,
+    currently active shape. Then we create the \uicontrol Shape combobox,
     and add the associated items (i.e. the different shapes a QPainter
     can draw).
 
@@ -101,7 +101,7 @@
     the shape is drawn as smoothly as possible although perhaps not
     mathematically correct.
 
-    We create a QSpinBox for the \gui {Pen Width} parameter.
+    We create a QSpinBox for the \uicontrol {Pen Width} parameter.
 
     \snippet examples/painting/basicdrawing/window.cpp 3
 
@@ -112,8 +112,8 @@
     two lines join when multiple connected lines are drawn. The cap
     and join only apply to lines with a width of 1 pixel or greater.
 
-    We create \l {QComboBox}es for each of the \gui {Pen Style}, \gui
-    {Pen Cap} and \gui {Pen Join} parameters, and adds the associated
+    We create \l {QComboBox}es for each of the \uicontrol {Pen Style}, \uicontrol
+    {Pen Cap} and \uicontrol {Pen Join} parameters, and adds the associated
     items (i.e the values of the Qt::PenStyle, Qt::PenCapStyle and
     Qt::PenJoinStyle enums respectively).
 
@@ -124,7 +124,7 @@
     the painter to not fill shapes. The standard style for filling is
     Qt::SolidPattern.
 
-    We create a QComboBox for the \gui {Brush Style} parameter, and add
+    We create a QComboBox for the \uicontrol {Brush Style} parameter, and add
     the associated items (i.e. the values of the Qt::BrushStyle enum).
 
     \snippet examples/painting/basicdrawing/window.cpp 5
@@ -136,11 +136,11 @@
     flags to QPainter that may or may not be respected by any given
     engine.
 
-    We simply create a QCheckBox for the \gui Antialiasing option.
+    We simply create a QCheckBox for the \uicontrol Antialiasing option.
 
     \snippet examples/painting/basicdrawing/window.cpp 7
 
-    The \gui Transformations option implies a manipulation of the
+    The \uicontrol Transformations option implies a manipulation of the
     coordinate system that will appear as if the rendered shape is
     rotated in three dimensions.
 
@@ -289,7 +289,7 @@
 
     \snippet examples/painting/basicdrawing/renderarea.cpp 0
 
-    We set its shape to be a \gui Polygon, its antialiased property to
+    We set its shape to be a \uicontrol Polygon, its antialiased property to
     be false and we load an image into the widget's pixmap
     variable. In the end we set the widget's background role, defining
     the brush from the widget's \l {QWidget::palette}{palette} that
@@ -356,10 +356,10 @@
     draw the various shapes.
 
     We create a vector of four \l {QPoint}s. We use this vector to
-    render the \gui Points, \gui Polyline and \gui Polygon
+    render the \uicontrol Points, \uicontrol Polyline and \uicontrol Polygon
     shapes. Then we create a QRect, defining a rectangle in the plane,
     which we use as the bounding rectangle for all the shapes excluding
-    the \gui Path and the \gui Pixmap.
+    the \uicontrol Path and the \uicontrol Pixmap.
 
     We also create a QPainterPath. The QPainterPath class provides a
     container for painting operations, enabling graphical shapes to be
@@ -371,13 +371,13 @@
     straight line and a Bezier curve.
 
     In addition we define a start angle and an arc length that we will
-    use when drawing the \gui Arc, \gui Chord and \gui Pie shapes.
+    use when drawing the \uicontrol Arc, \uicontrol Chord and \uicontrol Pie shapes.
 
     \snippet examples/painting/basicdrawing/renderarea.cpp 9
 
     We create a QPainter for the \c RenderArea widget, and set the
     painters pen and brush according to the \c RenderArea's pen and
-    brush. If the \gui Antialiasing parameter option is checked, we
+    brush. If the \uicontrol Antialiasing parameter option is checked, we
     also set the painter's render hints. QPainter::Antialiasing
     indicates that the engine should antialias edges of primitives if
     possible.
@@ -399,7 +399,7 @@
 
     \snippet examples/painting/basicdrawing/renderarea.cpp 11
 
-    If the \gui Transformations parameter option is checked, we do an
+    If the \uicontrol Transformations parameter option is checked, we do an
     additional translation of the coordinate system before we rotate
     the coordinate system 60 degrees clockwise using the
     QPainter::rotate() function and scale it down in size using the
@@ -448,7 +448,7 @@
     We could translate the coordinate system back using
     QPainter::translate() instead of saving the painter state. But
     since we in addition to translating the coordinate system (when
-    the \gui Transformation parameter option is checked) both rotate
+    the \uicontrol Transformation parameter option is checked) both rotate
     and scale the coordinate system, the easiest solution is to save
     the current painter state.
 */

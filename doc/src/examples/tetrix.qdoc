@@ -41,13 +41,13 @@
     If more than one row is filled, the blocks on each row are removed, and the
     player earns extra points.
 
-    The \gui{Left} cursor key moves the current piece one space to the left, the
-    \gui{Right} cursor key moves it one space to the right, the \gui{Up} cursor
-    key rotates the piece counter-clockwise by 90 degrees, and the \gui{Down}
+    The \uicontrol{Left} cursor key moves the current piece one space to the left, the
+    \uicontrol{Right} cursor key moves it one space to the right, the \uicontrol{Up} cursor
+    key rotates the piece counter-clockwise by 90 degrees, and the \uicontrol{Down}
     cursor key rotates the piece clockwise by 90 degrees.
 
-    To avoid waiting for a piece to fall to the bottom of the board, press \gui{D}
-    to immediately move the piece down by one row, or press the \gui{Space} key to
+    To avoid waiting for a piece to fall to the bottom of the board, press \uicontrol{D}
+    to immediately move the piece down by one row, or press the \uicontrol{Space} key to
     drop it as close to the bottom of the board as possible.
 
     This example shows how a simple game can be created using only three classes:
@@ -104,10 +104,10 @@
     These buttons are configured so that they never receive the keyboard focus;
     we want the keyboard focus to remain with the \c TetrixBoard instance so that
     it receives all the keyboard events. Nonetheless, the buttons will still respond
-    to \key{Alt} key shortcuts.
+    to \uicontrol{Alt} key shortcuts.
 
-    We connect \l{QAbstractButton::}{clicked()} signals from the \gui{Start}
-    and \gui{Pause} buttons to the board, and from the \gui{Quit} button to the
+    We connect \l{QAbstractButton::}{clicked()} signals from the \uicontrol{Start}
+    and \uicontrol{Pause} buttons to the board, and from the \uicontrol{Quit} button to the
     application's \l{QApplication::}{quit()} slot.
 
     \snippet examples/widgets/tetrix/tetrixwindow.cpp 4
@@ -345,7 +345,7 @@
     \c pieceDropped() function so that the player's score can be updated.
 
     The \c oneLineDown() function is used to move the current piece down by one row
-    (line), either when the user presses the \gui{D} key or when the piece is
+    (line), either when the user presses the \uicontrol{D} key or when the piece is
     scheduled to move:
 
     \snippet examples/widgets/tetrix/tetrixboard.cpp 21

@@ -144,18 +144,18 @@
     toward the slider's minimum. This can be useful if the \e
     appearance of a slider is inverted: Some users might expect the
     keys to still work the same way on the value, whereas others
-    might expect \key PageUp to mean "up" on the screen.
+    might expect \uicontrol PageUp to mean "up" on the screen.
 
     Note that for horizontal and vertical scroll bars, the key
-    bindings are inverted by default: \key PageDown increases the
-    current value, and \key PageUp decreases it.
+    bindings are inverted by default: \uicontrol PageDown increases the
+    current value, and \uicontrol PageUp decreases it.
 
     \snippet examples/widgets/sliders/window.cpp 5
     \snippet examples/widgets/sliders/window.cpp 6
 
     Then we create the spin boxes. QSpinBox allows the user to choose
     a value by clicking the up and down buttons or pressing the \key
-    Up and \key Down keys on the keyboard to modify the value
+    Up and \uicontrol Down keys on the keyboard to modify the value
     currently displayed. The user can also type in the value
     manually. The spin boxes control the minimum, maximum and current
     values for the QSlider, QScrollBar, and QDial widgets.

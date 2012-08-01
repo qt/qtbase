@@ -57,12 +57,12 @@
     reimplemented to handle mouse events on the calculator's display.
 
     Buttons are grouped in categories according to their behavior.
-    For example, all the digit buttons (labeled \gui 0 to \gui 9)
+    For example, all the digit buttons (labeled \uicontrol 0 to \uicontrol 9)
     append a digit to the current operand. For these, we connect
     multiple buttons to the same slot (e.g., \c digitClicked()). The
-    categories are digits, unary operators (\gui{Sqrt}, \gui{x\unicode{178}},
-    \gui{1/x}), additive operators (\gui{+}, \gui{-}), and
-    multiplicative operators (\gui{\unicode{215}}, \gui{\unicode{247}}). The other buttons
+    categories are digits, unary operators (\uicontrol{Sqrt}, \uicontrol{x\unicode{178}},
+    \uicontrol{1/x}), additive operators (\uicontrol{+}, \uicontrol{-}), and
+    multiplicative operators (\uicontrol{\unicode{215}}, \uicontrol{\unicode{247}}). The other buttons
     have their own slots.
 
     \snippet examples/widgets/calculator/calculator.h 1
@@ -72,7 +72,7 @@
     widget construction. \c abortOperation() is called whenever a
     division by zero occurs or when a square root operation is
     applied to a negative number. \c calculate() applies a binary
-    operator (\gui{+}, \gui{-}, \gui{\unicode{215}}, or \gui{\unicode{247}}).
+    operator (\uicontrol{+}, \uicontrol{-}, \uicontrol{\unicode{215}}, or \uicontrol{\unicode{247}}).
 
     \snippet examples/widgets/calculator/calculator.h 3
     \snippet examples/widgets/calculator/calculator.h 4
@@ -86,10 +86,10 @@
 
     \list
     \li \c sumInMemory contains the value stored in the calculator's memory
-       (using \gui{MS}, \gui{M+}, or \gui{MC}).
+       (using \uicontrol{MS}, \uicontrol{M+}, or \uicontrol{MC}).
     \li \c sumSoFar stores the value accumulated so far. When the user
-       clicks \gui{=}, \c sumSoFar is recomputed and shown on the
-       display. \gui{Clear All} resets \c sumSoFar to zero.
+       clicks \uicontrol{=}, \c sumSoFar is recomputed and shown on the
+       display. \uicontrol{Clear All} resets \c sumSoFar to zero.
     \li \c factorSoFar stores a temporary value when doing
         multiplications and divisions.
     \li \c pendingAdditiveOperator stores the last additive operator
@@ -101,9 +101,9 @@
     \endlist
 
     Additive and multiplicative operators are treated differently
-    because they have different precedences. For example, \gui{1 + 2 \unicode{247}
-    3} is interpreted as \gui{1 + (2 \unicode{247} 3)} because \gui{\unicode{247}} has higher
-    precedence than \gui{+}.
+    because they have different precedences. For example, \uicontrol{1 + 2 \unicode{247}
+    3} is interpreted as \uicontrol{1 + (2 \unicode{247} 3)} because \uicontrol{\unicode{247}} has higher
+    precedence than \uicontrol{+}.
 
     The table below shows the evolution of the calculator state as
     the user enters a mathematical expression.
@@ -111,17 +111,17 @@
     \table
     \header \li User Input            \li Display  \li Sum so Far \li Add. Op. \li Factor so Far \li Mult. Op. \li Waiting for Operand?
     \row    \li                       \li 0        \li 0          \li          \li               \li           \li \c true
-    \row    \li \gui{1}               \li 1        \li 0          \li          \li               \li           \li \c false
-    \row    \li \gui{1 +}             \li 1        \li 1          \li \gui{+}  \li               \li           \li \c true
-    \row    \li \gui{1 + 2}           \li 2        \li 1          \li \gui{+}  \li               \li           \li \c false
-    \row    \li \gui{1 + 2 \unicode{247}}         \li 2        \li 1          \li \gui{+}  \li 2             \li \gui{\unicode{247}}   \li \c true
-    \row    \li \gui{1 + 2 \unicode{247} 3}       \li 3        \li 1          \li \gui{+}  \li 2             \li \gui{\unicode{247}}   \li \c false
-    \row    \li \gui{1 + 2 \unicode{247} 3 -}     \li 1.66667  \li 1.66667    \li \gui{-}  \li               \li           \li \c true
-    \row    \li \gui{1 + 2 \unicode{247} 3 - 4}   \li 4        \li 1.66667    \li \gui{-}  \li               \li           \li \c false
-    \row    \li \gui{1 + 2 \unicode{247} 3 - 4 =} \li -2.33333 \li 0          \li          \li               \li           \li \c true
+    \row    \li \uicontrol{1}               \li 1        \li 0          \li          \li               \li           \li \c false
+    \row    \li \uicontrol{1 +}             \li 1        \li 1          \li \uicontrol{+}  \li               \li           \li \c true
+    \row    \li \uicontrol{1 + 2}           \li 2        \li 1          \li \uicontrol{+}  \li               \li           \li \c false
+    \row    \li \uicontrol{1 + 2 \unicode{247}}         \li 2        \li 1          \li \uicontrol{+}  \li 2             \li \uicontrol{\unicode{247}}   \li \c true
+    \row    \li \uicontrol{1 + 2 \unicode{247} 3}       \li 3        \li 1          \li \uicontrol{+}  \li 2             \li \uicontrol{\unicode{247}}   \li \c false
+    \row    \li \uicontrol{1 + 2 \unicode{247} 3 -}     \li 1.66667  \li 1.66667    \li \uicontrol{-}  \li               \li           \li \c true
+    \row    \li \uicontrol{1 + 2 \unicode{247} 3 - 4}   \li 4        \li 1.66667    \li \uicontrol{-}  \li               \li           \li \c false
+    \row    \li \uicontrol{1 + 2 \unicode{247} 3 - 4 =} \li -2.33333 \li 0          \li          \li               \li           \li \c true
     \endtable
 
-    Unary operators, such as \gui Sqrt, require no special handling;
+    Unary operators, such as \uicontrol Sqrt, require no special handling;
     they can be applied immediately since the operand is already
     known when the operator button is clicked.
 
@@ -190,7 +190,7 @@
     the operator using QToolButton::text().
 
     The slot needs to consider two situations in particular. If \c
-    display contains "0" and the user clicks the \gui{0} button, it
+    display contains "0" and the user clicks the \uicontrol{0} button, it
     would be silly to show "00". And if the calculator is in
     a state where it is waiting for a new operand,
     the new digit is the first digit of that new operand; in that case,
@@ -207,8 +207,8 @@
     extracted from the button's text and stored in \c
     clickedOperator. The operand is obtained from \c display.
 
-    Then we perform the operation. If \gui Sqrt is applied to a
-    negative number or \gui{1/x} to zero, we call \c
+    Then we perform the operation. If \uicontrol Sqrt is applied to a
+    negative number or \uicontrol{1/x} to zero, we call \c
     abortOperation(). If everything goes well, we display the result
     of the operation in the line edit and we set \c waitingForOperand
     to \c true. This ensures that if the user types a new digit, the
@@ -219,7 +219,7 @@
     \snippet examples/widgets/calculator/calculator.cpp 11
 
     The \c additiveOperatorClicked() slot is called when the user
-    clicks the \gui{+} or \gui{-} button.
+    clicks the \uicontrol{+} or \uicontrol{-} button.
 
     Before we can actually do something about the clicked operator,
     we must handle any pending operations. We start with the
@@ -229,15 +229,15 @@
     \snippet examples/widgets/calculator/calculator.cpp 12
     \snippet examples/widgets/calculator/calculator.cpp 13
 
-    If \gui{\unicode{215}} or \gui{\unicode{247}} has been clicked earlier, without clicking
-    \gui{=} afterward, the current value in the display is the right
-    operand of the \gui{\unicode{215}} or \gui{\unicode{247}} operator and we can finally
+    If \uicontrol{\unicode{215}} or \uicontrol{\unicode{247}} has been clicked earlier, without clicking
+    \uicontrol{=} afterward, the current value in the display is the right
+    operand of the \uicontrol{\unicode{215}} or \uicontrol{\unicode{247}} operator and we can finally
     perform the operation and update the display.
 
     \snippet examples/widgets/calculator/calculator.cpp 14
     \snippet examples/widgets/calculator/calculator.cpp 15
 
-    If \gui{+} or \gui{-} has been clicked earlier, \c sumSoFar is
+    If \uicontrol{+} or \uicontrol{-} has been clicked earlier, \c sumSoFar is
     the left operand and the current value in the display is the
     right operand of the operator. If there is no pending additive
     operator, \c sumSoFar is simply set to be the text in the
@@ -287,7 +287,7 @@
     \snippet examples/widgets/calculator/calculator.cpp 28
 
     The \c clear() slot resets the current operand to zero. It is
-    equivalent to clicking \gui Backspace enough times to erase the
+    equivalent to clicking \uicontrol Backspace enough times to erase the
     entire operand.
 
     \snippet examples/widgets/calculator/calculator.cpp 30
@@ -363,7 +363,7 @@
 
     This ensures that with most fonts, the digit and operator buttons
     will be square, without truncating the text on the
-    \gui{Backspace}, \gui{Clear}, and \gui{Clear All} buttons.
+    \uicontrol{Backspace}, \uicontrol{Clear}, and \uicontrol{Clear All} buttons.
 
     The screenshot below shows how the \c Calculator widget would
     look like if we \e didn't set the horizontal size policy to

@@ -132,7 +132,7 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     scheme to the default behavior.
 
     This system makes it easy to implement a help system, for example. Help could be
-    provided in labels and text browsers using \gui{help://myapplication/mytopic}
+    provided in labels and text browsers using \uicontrol{help://myapplication/mytopic}
     URLs, and by registering a handler it becomes possible to display the help text
     inside the application:
 

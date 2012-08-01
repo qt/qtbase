@@ -147,7 +147,7 @@
     are obsolete. This is because these texts appeared in \c tr() calls that
     have been replaced by new calls with two arguments. The second pair has
     "two-sided" as their comment, and the third pair has "colors" as their
-    comment. The comments are shown in the \gui {Source text and comments}
+    comment. The comments are shown in the \uicontrol {Source text and comments}
     area in \e {Qt Linguist}.
 
     Second, the translation text "Ativado" and "Desativado" have been
@@ -184,7 +184,7 @@
     dialogs. You could also add them to the example files, e.g. \c
     mainwindow.cpp and \c printpanel.cpp are appropriate files. Run \c
     lupdate and then start \e {Qt Linguist} and load in \c trollprint_pt.ts.
-    You should see the comments in the \gui {Source text and comments} area
+    You should see the comments in the \uicontrol {Source text and comments} area
     as you browse through the list of source texts.
 
     Sometimes, particularly with large programs, it can be difficult for
@@ -241,7 +241,7 @@
 
     Go over the translations in \c MainWindow and mark these as "done".
     Translate "\<b\>TROLL PRINT\</b\>" as "\<b\>TROLL IMPRIMIR\</b\>".
-    When you're translating "Two-sided", press the \gui {Guess Again}
+    When you're translating "Two-sided", press the \uicontrol {Guess Again}
     button to translate "Two-sided", but change the "2" into "Dois".
 
     Save and quit, then run \c lrelease. The Portuguese version
@@ -249,9 +249,9 @@
 
     \image linguist-trollprint_11_pt.png
 
-    Choose \gui{Ajuda|Sobre} (\gui{Help|About}) to see the about box.
+    Choose \uicontrol{Ajuda|Sobre} (\uicontrol{Help|About}) to see the about box.
 
-    If you choose \gui {Ajuda|Sobre Qt} (\gui {Help|About Qt}), you'll get
+    If you choose \uicontrol {Ajuda|Sobre Qt} (\uicontrol {Help|About Qt}), you'll get
     an English dialog. Oops! Qt itself needs to be translated. See
     \l{Internationalization with Qt} for details.
 

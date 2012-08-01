@@ -88,7 +88,7 @@
     In the constructor we first create the preview window. Then we
     create the group boxes containing the available window flags using
     the private \c createTypeGroupBox() and \c createHintsGroupBox()
-    functions. In addition we create a \gui Quit button. We put the
+    functions. In addition we create a \uicontrol Quit button. We put the
     button and a stretchable space in a separate layout to make the
     button appear in the \c WindowFlag widget's right bottom corner.
 
@@ -181,7 +181,7 @@
     read-only text editor. It is also provided with a QPushbutton that
     closes the window.
 
-    We reimplement the constructor to create the \gui Close button and
+    We reimplement the constructor to create the \uicontrol Close button and
     the text editor, and the QWidget::setWindowFlags() function to
     display the names of the window flags.
 
@@ -202,7 +202,7 @@
     breaks were guaranteed, using another QTextEdit::LineWrapMode
     would perhaps make more sense.
 
-    Then we create the \gui Close button, and put both the widgets
+    Then we create the \uicontrol Close button, and put both the widgets
     into a QVBoxLayout before we set the window title.
 
     \snippet examples/widgets/windowflags/previewwindow.cpp 1

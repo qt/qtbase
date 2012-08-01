@@ -68,7 +68,7 @@
     and their respective labels. The label for \c offersCheckBox is set and the
     \c setupItemsTable() function is invoked to setup and populate
     \c itemsTable. The QDialogButtonBox object, \c buttonBox, is instantiated
-    with \gui OK and \gui Cancel buttons. This \c buttonBox's \c accepted() and
+    with \uicontrol OK and \uicontrol Cancel buttons. This \c buttonBox's \c accepted() and
     \c rejected() signals are connected to the \c verify() and \c reject()
     slots in \c DetailsDialog.
 

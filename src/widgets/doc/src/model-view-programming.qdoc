@@ -851,7 +851,7 @@
 
     The behavior of the spin box could be adjusted to make it more user
     friendly. In the default event filter supplied by QItemDelegate, if
-    the user hits \key Return to confirm their choice in the spin box,
+    the user hits \uicontrol Return to confirm their choice in the spin box,
     the delegate commits the value to the model and closes the spin box.
     We can change this behavior by installing our own event filter on the
     spin box, and provide editing hints that suit our needs; for example,

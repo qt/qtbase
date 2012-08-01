@@ -110,7 +110,7 @@
     We return (1, 1) as the size hint for a header item. If we
     didn't, the headers would default to a larger size, preventing
     us from displaying really small items (which can be specified
-    using the \gui{Pixel size} combobox).
+    using the \uicontrol{Pixel size} combobox).
 
     \section1 PixelDelegate Class Definition
 
@@ -221,7 +221,7 @@
     We also set the minimum section size to 1 on the headers. If we
     didn't, the headers would default to a larger size, preventing
     us from displaying really small items (which can be specified
-    using the \gui{Pixel size} combobox).
+    using the \uicontrol{Pixel size} combobox).
 
     The custom delegate is constructed with the main window as its parent, so
     that it will be deleted correctly later, and we set it on the table view.
@@ -251,5 +251,5 @@
     \snippet examples/itemviews/pixelator/mainwindow.cpp 6
 
     We explicitly resize the columns and rows to match the
-    \gui{Pixel size} combobox.
+    \uicontrol{Pixel size} combobox.
 */

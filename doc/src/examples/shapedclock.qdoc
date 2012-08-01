@@ -40,8 +40,8 @@
     allowing specially-shaped windows to be created. In this example, we use this feature
     to create a circular window containing an analog clock.
 
-    Since this example's window does not provide a \gui File menu or a close
-    button, we provide a context menu with an \gui Exit entry so that the example
+    Since this example's window does not provide a \uicontrol File menu or a close
+    button, we provide a context menu with an \uicontrol Exit entry so that the example
     can be closed. Click the right mouse button over the window to open this menu.
 
     \section1 ShapedClock Class Definition

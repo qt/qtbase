@@ -215,11 +215,11 @@ int QDialPrivate::valueFromPoint(const QPoint &p) const
     subtractPage() available as slots.
 
     The dial's keyboard interface is fairly simple: The
-    \key{left}/\key{up} and \key{right}/\key{down} arrow keys adjust
+    \uicontrol{left}/\uicontrol{up} and \uicontrol{right}/\uicontrol{down} arrow keys adjust
     the dial's \l {QAbstractSlider::value} {value} by the defined
-    \l {QAbstractSlider::singleStep} {singleStep}, \key{Page Up} and
-    \key{Page Down} by the defined \l {QAbstractSlider::pageStep}
-    {pageStep}, and the \key Home and \key End keys set the value to
+    \l {QAbstractSlider::singleStep} {singleStep}, \uicontrol{Page Up} and
+    \uicontrol{Page Down} by the defined \l {QAbstractSlider::pageStep}
+    {pageStep}, and the \uicontrol Home and \uicontrol End keys set the value to
     the defined \l {QAbstractSlider::minimum} {minimum} and
     \l {QAbstractSlider::maximum} {maximum} values.
 

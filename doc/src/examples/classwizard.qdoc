@@ -74,8 +74,8 @@
     \li The fifth page is a conclusion page.
     \endlist
 
-    Although the program is just an example, if you press \gui Finish
-    (\gui Done on Mac OS X), actual C++ source files will actually be
+    Although the program is just an example, if you press \uicontrol Finish
+    (\uicontrol Done on Mac OS X), actual C++ source files will actually be
     generated.
 
     \section1 The ClassWizard Class
@@ -85,7 +85,7 @@
     \snippet examples/dialogs/classwizard/classwizard.h 0
 
     The class reimplements QDialog's \l{QDialog::}{accept()} slot.
-    This slot is called when the user clicks \gui{Finish}.
+    This slot is called when the user clicks \uicontrol{Finish}.
 
     Here's the constructor:
 
@@ -108,7 +108,7 @@
     \snippet examples/dialogs/classwizard/classwizard.cpp 5
     \snippet examples/dialogs/classwizard/classwizard.cpp 6
 
-    If the user clicks \gui Finish, we extract the information from
+    If the user clicks \uicontrol Finish, we extract the information from
     the various pages using QWizard::field() and generate the files.
     The code is long and tedious (and has barely anything to do with
     noble art of designing wizards), so most of it is skipped here.
@@ -157,7 +157,7 @@
     layouts. The \c className field is created with an asterisk (\c
     *) next to its name. This makes it a \l{mandatory field}, that
     is, a field that must be filled before the user can press the
-    \gui Next button (\gui Continue on Mac OS X). The fields' values
+    \uicontrol Next button (\uicontrol Continue on Mac OS X). The fields' values
     can be accessed from any other page using QWizardPage::field(),
     or from the wizard code using QWizard::field().
 
