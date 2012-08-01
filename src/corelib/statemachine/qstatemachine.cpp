@@ -274,8 +274,8 @@ bool QStateMachinePrivate::stateEntryLessThan(QAbstractState *s1, QAbstractState
 bool QStateMachinePrivate::stateExitLessThan(QAbstractState *s1, QAbstractState *s2)
 {
     if (s1->parent() == s2->parent()) {
-        return s1->parent()->children().indexOf(s1)
-            < s2->parent()->children().indexOf(s2);
+        return s2->parent()->children().indexOf(s2)
+            < s1->parent()->children().indexOf(s1);
     } else if (isDescendantOf(s1, s2)) {
         return true;
     } else if (isDescendantOf(s2, s1)) {
@@ -285,7 +285,7 @@ bool QStateMachinePrivate::stateExitLessThan(QAbstractState *s1, QAbstractState 
         QStateMachinePrivate *mach = QStateMachinePrivate::get(s1->machine());
         QState *lca = mach->findLCA(QList<QAbstractState*>() << s1 << s2);
         Q_ASSERT(lca != 0);
-        return (indexOfDescendant(lca, s1) < indexOfDescendant(lca, s2));
+        return (indexOfDescendant(lca, s2) < indexOfDescendant(lca, s1));
     }
 }
 

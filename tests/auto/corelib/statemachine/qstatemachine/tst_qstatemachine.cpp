@@ -222,6 +222,8 @@ public:
     };
     TestState(QState *parent)
         : QState(parent) {}
+    TestState(ChildMode mode)
+        : QState(mode) {}
     QList<QPair<int, Event> > events;
 protected:
     virtual void onEntry(QEvent *) {
@@ -1857,7 +1859,7 @@ void tst_QStateMachine::parallelStates()
 {
     QStateMachine machine;
 
-    QState *s1 = new QState(QState::ParallelStates);
+    TestState *s1 = new TestState(QState::ParallelStates);
     QCOMPARE(s1->childMode(), QState::ParallelStates);
       TestState *s1_1 = new TestState(s1);
         QState *s1_1_1 = new QState(s1_1);
@@ -1891,19 +1893,26 @@ void tst_QStateMachine::parallelStates()
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(s2));
 
+    QCOMPARE(s1->events.count(), 2);
+    // s1 is entered
+    QCOMPARE(s1->events.at(0).first, 0);
+    QCOMPARE(s1->events.at(0).second, TestState::Entry);
     // s1_1 is entered
     QCOMPARE(s1_1->events.count(), 2);
-    QCOMPARE(s1_1->events.at(0).first, 0);
+    QCOMPARE(s1_1->events.at(0).first, 1);
     QCOMPARE(s1_1->events.at(0).second, TestState::Entry);
     // s1_2 is entered
-    QCOMPARE(s1_2->events.at(0).first, 1);
+    QCOMPARE(s1_2->events.at(0).first, 2);
     QCOMPARE(s1_2->events.at(0).second, TestState::Entry);
-    // s1_1 is exited
-    QCOMPARE(s1_1->events.at(1).first, 2);
-    QCOMPARE(s1_1->events.at(1).second, TestState::Exit);
     // s1_2 is exited
     QCOMPARE(s1_2->events.at(1).first, 3);
     QCOMPARE(s1_2->events.at(1).second, TestState::Exit);
+    // s1_1 is exited
+    QCOMPARE(s1_1->events.at(1).first, 4);
+    QCOMPARE(s1_1->events.at(1).second, TestState::Exit);
+    // s1 is exited
+    QCOMPARE(s1->events.at(1).first, 5);
+    QCOMPARE(s1->events.at(1).second, TestState::Exit);
 }
 
 void tst_QStateMachine::parallelRootState()
