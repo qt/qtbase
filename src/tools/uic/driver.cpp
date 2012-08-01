@@ -69,7 +69,9 @@ QString Driver::findOrInsertWidget(DomWidget *ui_widget)
 QString Driver::findOrInsertSpacer(DomSpacer *ui_spacer)
 {
     if (!m_spacers.contains(ui_spacer)) {
-        const QString name = ui_spacer->hasAttributeName() ? ui_spacer->attributeName() : QString();
+        QString name;
+        if (ui_spacer->hasAttributeName())
+            name = ui_spacer->attributeName();
         m_spacers.insert(ui_spacer, unique(name, QLatin1String("QSpacerItem")));
     }
 
@@ -79,7 +81,9 @@ QString Driver::findOrInsertSpacer(DomSpacer *ui_spacer)
 QString Driver::findOrInsertLayout(DomLayout *ui_layout)
 {
     if (!m_layouts.contains(ui_layout)) {
-        const QString name = ui_layout->hasAttributeName() ? ui_layout->attributeName() : QString();
+        QString name;
+        if (ui_layout->hasAttributeName())
+            name = ui_layout->attributeName();
         m_layouts.insert(ui_layout, unique(name, ui_layout->attributeClass()));
     }
 
