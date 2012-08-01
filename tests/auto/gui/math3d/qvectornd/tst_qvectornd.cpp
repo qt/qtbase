@@ -162,6 +162,11 @@ void tst_QVectorND::create2()
     QCOMPARE(null.y(), (qreal)0.0f);
     QVERIFY(null.isNull());
 
+    QVector2D nullNegativeZero(qreal(-0.0), qreal(-0.0));
+    QCOMPARE(nullNegativeZero.x(), (qreal)-0.0f);
+    QCOMPARE(nullNegativeZero.y(), (qreal)-0.0f);
+    QVERIFY(nullNegativeZero.isNull());
+
     QVector2D v1(1.0f, 2.5f);
     QCOMPARE(v1.x(), (qreal)1.0f);
     QCOMPARE(v1.y(), (qreal)2.5f);
@@ -251,6 +256,12 @@ void tst_QVectorND::create3()
     QCOMPARE(null.y(), (qreal)0.0f);
     QCOMPARE(null.z(), (qreal)0.0f);
     QVERIFY(null.isNull());
+
+    QVector3D nullNegativeZero(qreal(-0.0), qreal(-0.0), qreal(-0.0));
+    QCOMPARE(nullNegativeZero.x(), (qreal)-0.0f);
+    QCOMPARE(nullNegativeZero.y(), (qreal)-0.0f);
+    QCOMPARE(nullNegativeZero.z(), (qreal)-0.0f);
+    QVERIFY(nullNegativeZero.isNull());
 
     QVector3D v1(1.0f, 2.5f, -89.25f);
     QCOMPARE(v1.x(), (qreal)1.0f);
@@ -378,6 +389,13 @@ void tst_QVectorND::create4()
     QCOMPARE(null.z(), (qreal)0.0f);
     QCOMPARE(null.w(), (qreal)0.0f);
     QVERIFY(null.isNull());
+
+    QVector4D nullNegativeZero(qreal(-0.0), qreal(-0.0), qreal(-0.0), qreal(-0.0));
+    QCOMPARE(nullNegativeZero.x(), (qreal)-0.0f);
+    QCOMPARE(nullNegativeZero.y(), (qreal)-0.0f);
+    QCOMPARE(nullNegativeZero.z(), (qreal)-0.0f);
+    QCOMPARE(nullNegativeZero.w(), (qreal)-0.0f);
+    QVERIFY(nullNegativeZero.isNull());
 
     QVector4D v1(1.0f, 2.5f, -89.25f, 34.0f);
     QCOMPARE(v1.x(), (qreal)1.0f);

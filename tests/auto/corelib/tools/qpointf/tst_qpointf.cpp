@@ -111,6 +111,11 @@ void tst_QPointF::isNull()
     QVERIFY(!point.isNull());
     point.rx() -= 2;
     QVERIFY(!point.isNull());
+
+    QPointF nullNegativeZero(qreal(-0.0), qreal(-0.0));
+    QCOMPARE(nullNegativeZero.x(), (qreal)-0.0f);
+    QCOMPARE(nullNegativeZero.y(), (qreal)-0.0f);
+    QVERIFY(nullNegativeZero.isNull());
 }
 
 void tst_QPointF::manhattanLength_data()

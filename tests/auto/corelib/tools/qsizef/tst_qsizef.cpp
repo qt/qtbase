@@ -48,6 +48,9 @@ class tst_QSizeF : public QObject
 {
     Q_OBJECT
 private slots:
+    void isNull_data();
+    void isNull();
+
     void scale();
 
     void expandedTo();
@@ -59,6 +62,34 @@ private slots:
     void transpose_data();
     void transpose();
 };
+
+void tst_QSizeF::isNull_data()
+{
+    QTest::addColumn<qreal>("width");
+    QTest::addColumn<qreal>("height");
+    QTest::addColumn<bool>("isNull");
+
+    QTest::newRow("0, 0") << qreal(0.0) << qreal(0.0) << true;
+    QTest::newRow("-0, -0") << qreal(-0.0) << qreal(-0.0) << true;
+    QTest::newRow("0, -0") << qreal(0) << qreal(-0.0) << true;
+    QTest::newRow("-0, 0") << qreal(-0.0) << qreal(0) << true;
+    QTest::newRow("-0.1, 0") << qreal(-0.1) << qreal(0) << false;
+    QTest::newRow("0, -0.1") << qreal(0) << qreal(-0.1) << false;
+    QTest::newRow("0.1, 0") << qreal(0.1) << qreal(0) << false;
+    QTest::newRow("0, 0.1") << qreal(0) << qreal(0.1) << false;
+}
+
+void tst_QSizeF::isNull()
+{
+    QFETCH(qreal, width);
+    QFETCH(qreal, height);
+    QFETCH(bool, isNull);
+
+    QSizeF size(width, height);
+    QCOMPARE(size.width(), width);
+    QCOMPARE(size.height(), height);
+    QCOMPARE(size.isNull(), isNull);
+}
 
 void tst_QSizeF::scale() {
     QSizeF t1(10.4, 12.8);

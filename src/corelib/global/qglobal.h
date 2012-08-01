@@ -813,7 +813,7 @@ Q_DECL_CONSTEXPR static inline bool qFuzzyIsNull(float f)
 /*
    This function tests a double for a null value. It doesn't
    check whether the actual value is 0 or close to 0, but whether
-   it is binary 0.
+   it is binary 0, disregarding sign.
 */
 static inline bool qIsNull(double d)
 {
@@ -823,13 +823,13 @@ static inline bool qIsNull(double d)
     };
     U val;
     val.d = d;
-    return val.u == quint64(0);
+    return (val.u & Q_UINT64_C(0x7fffffffffffffff)) == 0;
 }
 
 /*
    This function tests a float for a null value. It doesn't
    check whether the actual value is 0 or close to 0, but whether
-   it is binary 0.
+   it is binary 0, disregarding sign.
 */
 static inline bool qIsNull(float f)
 {
@@ -839,7 +839,7 @@ static inline bool qIsNull(float f)
     };
     U val;
     val.f = f;
-    return val.u == 0u;
+    return (val.u & 0x7fffffff) == 0;
 }
 
 /*

@@ -116,6 +116,13 @@ void tst_QQuaternion::create()
     QCOMPARE(identity.scalar(), (qreal)1.0f);
     QVERIFY(identity.isIdentity());
 
+    QQuaternion negativeZeroIdentity(qreal(1.0), qreal(-0.0), qreal(-0.0), qreal(-0.0));
+    QCOMPARE(negativeZeroIdentity.x(), qreal(-0.0));
+    QCOMPARE(negativeZeroIdentity.y(), qreal(-0.0));
+    QCOMPARE(negativeZeroIdentity.z(), qreal(-0.0));
+    QCOMPARE(negativeZeroIdentity.scalar(), qreal(1.0));
+    QVERIFY(negativeZeroIdentity.isIdentity());
+
     QQuaternion v1(34.0f, 1.0f, 2.5f, -89.25f);
     QCOMPARE(v1.x(), (qreal)1.0f);
     QCOMPARE(v1.y(), (qreal)2.5f);

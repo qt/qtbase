@@ -72,6 +72,12 @@ void tst_QGlobal::qIsNull()
 
     QVERIFY(!::qIsNull(d));
     QVERIFY(!::qIsNull(f));
+
+    d = -0.0;
+    f = -0.0f;
+
+    QVERIFY(::qIsNull(d));
+    QVERIFY(::qIsNull(f));
 }
 
 void tst_QGlobal::for_each()
