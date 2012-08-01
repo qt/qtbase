@@ -2128,11 +2128,7 @@ bool Node::setQmlModule(const ArgLocPair& arg)
             qmlModuleVersionMinor_ = dotSplit[1];
             return true;
         }
-        else
-            arg.second.warning(tr("Minor version number must be included in second arg of '\\qmlmodule' and '\\inqmlmodule'; '.0' assumed."));
     }
-    else
-        arg.second.warning(tr("Module version number 'major.minor' must be second arg of '\\qmlmodule' and '\\inqmlmodule'; '1.0' assumed."));
     return false;
 }
 
