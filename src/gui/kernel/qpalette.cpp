@@ -404,7 +404,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 /*!
     \enum QPalette::ColorRole
 
-    \img palette.png Color Roles
+    \image palette.png Color Roles
 
     The ColorRole enum defines the different symbolic color roles used
     in current GUIs.

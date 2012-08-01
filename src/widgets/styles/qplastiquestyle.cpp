@@ -1024,7 +1024,7 @@ QPlastiqueStylePrivate::~QPlastiqueStylePrivate()
     that closely resembles the Plastik style, introduced by Sandro Giessl in
     KDE 3.2.
 
-    \img qplastiquestyle.png
+    \image qplastiquestyle.png
     \sa QWindowsXPStyle, QMacStyle, QWindowsStyle, QCDEStyle, QMotifStyle
 */
 

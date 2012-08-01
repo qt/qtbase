@@ -507,7 +507,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
   selected item. If the widget can be toggled, the "On" mode might be
   used to draw a different icon.
 
-  \img icon.png QIcon
+  \image icon.png QIcon
 
   \sa {fowler}{GUI Design Handbook: Iconic Label}, {Icons Example}
 */

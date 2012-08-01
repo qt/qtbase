@@ -214,12 +214,12 @@
     If we have three widgets laid out using a QHBoxLayout with no stretch
     factors set we will get a layout like this:
 
-    \img layout1.png Three widgets in a row
+    \image layout1.png Three widgets in a row
 
     If we apply stretch factors to each widget, they will be laid out in
     proportion (but never less than their minimum size hint), e.g.
 
-    \img layout2.png Three widgets with different stretch factors in a row
+    \image layout2.png Three widgets with different stretch factors in a row
 
 
     \section1 Custom Widgets in Layouts

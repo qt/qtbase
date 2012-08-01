@@ -447,7 +447,7 @@ void QInputDialogPrivate::_q_currentRowChanged(const QModelIndex &newIndex,
     The \c ok variable is set to true if the user clicks \uicontrol OK; otherwise it
     is set to false.
 
-    \img inputdialogs.png Input Dialogs
+    \image inputdialogs.png Input Dialogs
 
     The \l{dialogs/standarddialogs}{Standard Dialogs} example shows how to use
     QInputDialog as well as other built-in Qt dialogs.

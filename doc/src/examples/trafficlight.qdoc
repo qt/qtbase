@@ -59,7 +59,7 @@
     timer, and as we shall see the timeout is used to transition from one
     LightState to another. Here is the statechart for the light state:
 
-    \img trafficlight-example1.png
+    \image trafficlight-example1.png
     \omit
     \caption This is a caption
     \endomit
@@ -73,7 +73,7 @@
     yellow-to-green. The same process repeats through the other states.
     This is what the statechart looks like:
 
-    \img trafficlight-example2.png
+    \image trafficlight-example2.png
     \omit
     \caption This is a caption
     \endomit

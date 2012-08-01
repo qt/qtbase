@@ -34,7 +34,7 @@
 
     The statechart for calculating the factorial looks as follows:
 
-    \img factorial-example.png
+    \image factorial-example.png
     \omit
     \caption This is a caption
     \endomit

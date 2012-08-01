@@ -161,7 +161,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     native widgets. The diagram below shows a QComboBox in eight
     different styles.
 
-    \img qstyle-comboboxes.png Eight combo boxes
+    \image qstyle-comboboxes.png Eight combo boxes
 
     Topics:
 

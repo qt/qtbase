@@ -123,7 +123,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     view coordinates and scene coordinates, and to find items on the scene
     using view coordinates.
 
-    \img graphicsview-view.png
+    \image graphicsview-view.png
 
     \sa QGraphicsScene, QGraphicsItem, QGraphicsSceneEvent
 */

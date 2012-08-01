@@ -868,7 +868,7 @@ QTextBlockUserData::~QTextBlockUserData()
     compares two blocks for inequality, and \l operator<() determines whether
     a block precedes another in the same document.
 
-    \img qtextblock-sequence.png
+    \image qtextblock-sequence.png
 
     \sa QTextBlockFormat, QTextCharFormat, QTextFragment
  */
@@ -1602,7 +1602,7 @@ QTextBlock::iterator &QTextBlock::iterator::operator--()
     of the sentence, the second will contain the text from the middle, and the
     third takes the text from the end of the sentence.
 
-    \img qtextfragment-split.png
+    \image qtextfragment-split.png
 
     A fragment's text and character format can be obtained with the text()
     and charFormat() functions. The length() function gives the length of

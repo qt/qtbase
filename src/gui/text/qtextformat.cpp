@@ -2446,7 +2446,7 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
     frame's padding(). This scheme is similar to the box model used by Cascading
     Style Sheets for HTML pages.
 
-    \img qtextframe-style.png
+    \image qtextframe-style.png
 
     The position() of a frame is set using setPosition() and determines how it
     is located relative to the surrounding text.

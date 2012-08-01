@@ -112,7 +112,7 @@ QT_BEGIN_NAMESPACE
     the appropriate help text is shown. The mode is left when help is
     given or when the user presses Esc.
 
-    \img whatsthis.png
+    \image whatsthis.png
 
     You can enter "What's This?" mode programmatically with
     enterWhatsThisMode(), check the mode with inWhatsThisMode(), and

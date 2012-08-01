@@ -70,16 +70,16 @@
 
     \table
     \row
-    \li{2,1} \img graphicseffect-plain.png
+    \li{2,1} \image graphicseffect-plain.png
     \row
-    \li \img graphicseffect-blur.png
-    \li \img graphicseffect-colorize.png
+    \li \image graphicseffect-blur.png
+    \li \image graphicseffect-colorize.png
     \row
-    \li \img graphicseffect-opacity.png
-    \li \img graphicseffect-drop-shadow.png
+    \li \image graphicseffect-opacity.png
+    \li \image graphicseffect-drop-shadow.png
     \endtable
 
-    \img graphicseffect-widget.png
+    \image graphicseffect-widget.png
 
     For more information on how to use each effect, refer to the specific
     effect's documentation.
@@ -600,7 +600,7 @@ void QGraphicsEffect::sourceChanged(ChangeFlags flags)
 
     By default, the color is light blue (QColor(0, 0, 192)).
 
-    \img graphicseffect-colorize.png
+    \image graphicseffect-colorize.png
 
     \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsOpacityEffect
 */
@@ -729,7 +729,7 @@ void QGraphicsColorizeEffect::draw(QPainter *painter)
     By default, the blur radius is 5 pixels. The blur radius is specified in
     device coordinates.
 
-    \img graphicseffect-blur.png
+    \image graphicseffect-blur.png
 
     \sa QGraphicsDropShadowEffect, QGraphicsColorizeEffect, QGraphicsOpacityEffect
 */
@@ -892,7 +892,7 @@ void QGraphicsBlurEffect::draw(QPainter *painter)
     of 8 pixels towards the lower right. The drop shadow offset is specified
     in device coordinates.
 
-    \img graphicseffect-drop-shadow.png
+    \image graphicseffect-drop-shadow.png
 
     \sa QGraphicsBlurEffect, QGraphicsColorizeEffect, QGraphicsOpacityEffect
 */
@@ -1084,7 +1084,7 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter)
 
     By default, the opacity is 0.7.
 
-    \img graphicseffect-opacity.png
+    \image graphicseffect-opacity.png
 
     \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsColorizeEffect
 */

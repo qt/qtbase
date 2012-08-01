@@ -575,19 +575,19 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
 
     \table
     \row
-    \li \img qmessagebox-quest.png
+    \li \image qmessagebox-quest.png
     \li \l Question
     \li For asking a question during normal operations.
     \row
-    \li \img qmessagebox-info.png
+    \li \image qmessagebox-info.png
     \li \l Information
     \li For reporting information about normal operations.
     \row
-    \li \img qmessagebox-warn.png
+    \li \image qmessagebox-warn.png
     \li \l Warning
     \li For reporting non-critical errors.
     \row
-    \li \img qmessagebox-crit.png
+    \li \image qmessagebox-crit.png
     \li \l Critical
     \li For reporting critical errors.
     \endtable

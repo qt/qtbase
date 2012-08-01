@@ -109,7 +109,7 @@
     the painter handle transformations is often easier than performing
     manual calculations just to draw the contents of a custom widget.
 
-    \img analogclock-viewport.png
+    \image analogclock-viewport.png
 
     We draw the hour hand first, using a formula that rotates the coordinate
     system counterclockwise by a number of degrees determined by the current

@@ -87,7 +87,7 @@ QT_BEGIN_NAMESPACE
     documentation. QCDEStyle provides overloads for drawControl() and
     drawPrimitive() which are documented here.
 
-    \img qcdestyle.png
+    \image qcdestyle.png
     \sa QWindowsXPStyle, QMacStyle, QWindowsStyle, QPlastiqueStyle, QMotifStyle
 */
 

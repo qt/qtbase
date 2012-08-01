@@ -80,7 +80,7 @@
     reimplementations of QStyle functions; see QStyle for their
     documentation.
 
-    \img qmacstyle.png
+    \image qmacstyle.png
     \sa QWindowsXPStyle, QWindowsStyle, QPlastiqueStyle, QCDEStyle, QMotifStyle
 */
 

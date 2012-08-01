@@ -35,7 +35,7 @@
     This example implements a statechart where two states communicate by
     posting events to the state machine. The state chart looks as follows:
 
-    \img pingpong-example.png
+    \image pingpong-example.png
     \omit
     \caption This is a caption
     \endomit

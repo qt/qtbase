@@ -566,7 +566,7 @@
     between the second and third result, and returns the second result; and
     so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 

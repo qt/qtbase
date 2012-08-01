@@ -97,7 +97,7 @@ static const int motifCheckMarkSpace    = 16;
   but with some minor improvements. The Motif style is Qt's default
   GUI style on Unix platforms.
 
-  \img qmotifstyle.png
+  \image qmotifstyle.png
   \sa QWindowsXPStyle, QMacStyle, QWindowsStyle, QPlastiqueStyle, QCDEStyle
 */
 

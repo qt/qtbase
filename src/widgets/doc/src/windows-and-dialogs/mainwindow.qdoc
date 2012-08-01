@@ -113,7 +113,7 @@
     widget's client geometry.
 
     This diagram shows most of the functions in use:
-    \img geometry.png Geometry diagram
+    \image geometry.png Geometry diagram
 
     \section2 X11 Peculiarities
 

@@ -123,7 +123,7 @@ void QActionGroupPrivate::_q_actionHovered()
     exclusive by default, only one of the actions in the group is
     checked at any one time.
 
-    \img qactiongroup-align.png Alignment options in a QMenu
+    \image qactiongroup-align.png Alignment options in a QMenu
 
     A QActionGroup emits an triggered() signal when one of its
     actions is chosen. Each action in an action group emits its

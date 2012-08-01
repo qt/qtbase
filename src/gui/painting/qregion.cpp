@@ -775,7 +775,7 @@ QRegion QRegion::intersect(const QRect &r) const
 
     Returns a region which is the union of this region and \a r.
 
-    \img runion.png Region Union
+    \image runion.png Region Union
 
     The figure shows the union of two elliptical regions.
 
@@ -812,7 +812,7 @@ QRegion QRegion::intersect(const QRect &r) const
 
     Returns a region which is the intersection of this region and \a r.
 
-    \img rintersect.png Region Intersection
+    \image rintersect.png Region Intersection
 
     The figure shows the intersection of two elliptical regions.
 
@@ -832,7 +832,7 @@ QRegion QRegion::intersect(const QRect &r) const
 
     Returns a region which is \a r subtracted from this region.
 
-    \img rsubtract.png Region Subtraction
+    \image rsubtract.png Region Subtraction
 
     The figure shows the result when the ellipse on the right is
     subtracted from the ellipse on the left (\c {left - right}).
@@ -854,7 +854,7 @@ QRegion QRegion::intersect(const QRect &r) const
     Returns a region which is the exclusive or (XOR) of this region
     and \a r.
 
-    \img rxor.png Region XORed
+    \image rxor.png Region XORed
 
     The figure shows the exclusive or of two elliptical regions.
 

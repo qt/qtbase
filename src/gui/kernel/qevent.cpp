@@ -1977,7 +1977,7 @@ QTabletEvent::~QTabletEvent()
     Positive values are towards the tablet's physical right. The angle
     is in the range -60 to +60 degrees.
 
-    \img qtabletevent-tilt.png
+    \image qtabletevent-tilt.png
 
     \sa yTilt()
 */

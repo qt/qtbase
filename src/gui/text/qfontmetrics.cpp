@@ -551,7 +551,7 @@ int QFontMetrics::width(const QString &text, int len, int flags) const
 /*!
     \overload
 
-    \img bearings.png Bearings
+    \image bearings.png Bearings
 
     Returns the logical width of character \a ch in pixels. This is a
     distance appropriate for drawing a subsequent character after \a
@@ -1391,7 +1391,7 @@ qreal QFontMetricsF::width(const QString &text) const
 /*!
     \overload
 
-    \img bearings.png Bearings
+    \image bearings.png Bearings
 
     Returns the logical width of character \a ch in pixels. This is a
     distance appropriate for drawing a subsequent character after \a

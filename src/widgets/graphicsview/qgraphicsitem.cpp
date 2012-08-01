@@ -132,7 +132,7 @@
     local coordinates). Parent items propagate both their position and their
     transformation to all children.
 
-    \img graphicsview-parentchild.png
+    \image graphicsview-parentchild.png
 
     \target Transformations
     \section1 Transformations
@@ -9134,7 +9134,7 @@ QVariant QGraphicsPolygonItem::extension(const QVariant &variant) const
     returns the current line. By default the line is black with a
     width of 0, but you can change this by calling setPen().
 
-    \img graphicsview-lineitem.png
+    \image graphicsview-lineitem.png
 
     QGraphicsLineItem uses the line and the pen width to provide a reasonable
     implementation of boundingRect(), shape(), and contains(). The paint()
@@ -9779,7 +9779,7 @@ QVariant QGraphicsPixmapItem::extension(const QVariant &variant) const
 
     \note In order to align HTML text in the center, the item's text width must be set.
 
-    \img graphicsview-textitem.png
+    \image graphicsview-textitem.png
 
     \note QGraphicsTextItem accepts \l{QGraphicsItem::acceptHoverEvents()}{hover events}
           by default. You can change this with \l{QGraphicsItem::}{setAcceptHoverEvents()}.
@@ -10696,7 +10696,7 @@ void QGraphicsSimpleTextItemPrivate::updateBoundingRect()
     QGraphicsSimpleText does not display rich text; instead, you can use
     QGraphicsTextItem, which provides full text control capabilities.
 
-    \img graphicsview-simpletextitem.png
+    \image graphicsview-simpletextitem.png
 
     \sa QGraphicsTextItem, QGraphicsPathItem, QGraphicsRectItem,
     QGraphicsEllipseItem, QGraphicsPixmapItem, QGraphicsPolygonItem,

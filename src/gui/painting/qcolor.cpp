@@ -153,7 +153,7 @@ QT_BEGIN_NAMESPACE
 
     The code above produces the following output:
 
-    \img alphafill.png
+    \image alphafill.png
 
     The alpha channel of a color can be retrieved and set using the
     alpha() and setAlpha() functions if its value is an integer, and
@@ -170,7 +170,7 @@ QT_BEGIN_NAMESPACE
     variety of color names; the static colorNames() function returns a
     QStringList color names that QColor knows about.
 
-    \img qt-colors.png Qt Colors
+    \image qt-colors.png Qt Colors
 
     Additionally, the Qt::color0, Qt::color1 and Qt::transparent colors
     are used for special purposes.
