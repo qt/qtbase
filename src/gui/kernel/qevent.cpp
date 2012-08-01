@@ -553,9 +553,9 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
 
     The \a pos provides the location of the mouse cursor
     within the window. The position in global coordinates is specified
-    by \a globalPos. \pixelDelta contains the scrolling distance
+    by \a globalPos. \a pixelDelta contains the scrolling distance
     in pixels on screen, \a angleDelta contains the wheel rotation distance.
-    \pixelDelta is optional and can be null.
+    \a pixelDelta is optional and can be null.
 
     \a modifiers holds the keyboard modifier flags at the time of the event.
 

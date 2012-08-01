@@ -55,7 +55,7 @@
     \class QEasingCurve
     \since 4.6
     \ingroup animation
-    \captionief The QEasingCurve class provides easing curves for controlling animation.
+    \caption The QEasingCurve class provides easing curves for controlling animation.
 
     Easing curves describe a function that controls how the speed of the interpolation
     between 0 and 1 should be. Easing curves allow transitions from
