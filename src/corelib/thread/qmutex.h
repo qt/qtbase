@@ -116,8 +116,11 @@ public:
         Q_ASSERT_X((reinterpret_cast<quintptr>(m) & quintptr(1u)) == quintptr(0),
                    "QMutexLocker", "QMutex pointer is misaligned");
         val = quintptr(m);
-        // relock() here ensures that we call QMutex::lock() instead of QBasicMutex::lock()
-        relock();
+        if (Q_LIKELY(m)) {
+            // call QMutex::lock() instead of QBasicMutex::lock()
+            static_cast<QMutex *>(m)->lock();
+            val |= 1;
+        }
     }
     inline ~QMutexLocker() { unlock(); }
 
