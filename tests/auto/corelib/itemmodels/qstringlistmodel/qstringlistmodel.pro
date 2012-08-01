@@ -4,3 +4,4 @@ TARGET = tst_qstringlistmodel
 QT = core testlib
 HEADERS += qmodellistener.h
 SOURCES += tst_qstringlistmodel.cpp
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

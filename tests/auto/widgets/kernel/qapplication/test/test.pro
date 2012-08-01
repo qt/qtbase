@@ -15,3 +15,4 @@ win32: !wince*: SUBPROGRAMS += wincmdline
 for(file, SUBPROGRAMS): TEST_HELPER_INSTALLS += "../$${file}/$${file}"
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

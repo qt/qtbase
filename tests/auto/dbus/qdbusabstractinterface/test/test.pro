@@ -11,3 +11,4 @@ TARGET = ../tst_qdbusabstractinterface
 
 QT = core testlib
 QT += dbus
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

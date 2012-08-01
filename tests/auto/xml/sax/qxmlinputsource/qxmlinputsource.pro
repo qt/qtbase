@@ -5,3 +5,4 @@ QT += core xml network testlib
 QT -= gui
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

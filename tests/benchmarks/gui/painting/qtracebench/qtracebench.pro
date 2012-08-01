@@ -10,3 +10,4 @@ RESOURCES += qtracebench.qrc
 
 SOURCES += tst_qtracebench.cpp
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

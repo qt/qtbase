@@ -5,3 +5,4 @@ HEADERS += common.h
 SOURCES += tst_qtextdocument.cpp 
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

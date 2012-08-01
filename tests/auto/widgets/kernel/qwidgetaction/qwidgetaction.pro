@@ -5,3 +5,4 @@ QT += widgets testlib
 SOURCES += tst_qwidgetaction.cpp 
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

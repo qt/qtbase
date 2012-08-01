@@ -22,3 +22,4 @@ VAR ~= s/QT_+/Q_
    message( "FAILED: ~=" )
 }
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

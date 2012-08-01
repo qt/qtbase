@@ -7,3 +7,4 @@ SOURCES = tst_qsocketnotifier.cpp
 requires(contains(QT_CONFIG,private_tests))
 
 include(../../../network/socket/platformsocketengine/platformsocketengine.pri)
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

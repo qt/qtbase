@@ -10,3 +10,4 @@ OTHER_FILES = Info_mac.plist
 QT += gui widgets widgets-private gui-private core-private
 
 QT += declarative
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

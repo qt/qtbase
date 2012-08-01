@@ -8,3 +8,4 @@ QT += core-private gui-private
 SOURCES += tst_qlabel.cpp
 
 TESTDATA += testdata/* *.png
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

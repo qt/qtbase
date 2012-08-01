@@ -9,3 +9,4 @@ INCLUDEPATH += ../
 HEADERS +=  
 SOURCES += tst_qplaintextedit.cpp 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

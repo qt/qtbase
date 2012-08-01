@@ -9,3 +9,4 @@ QT += testlib
 SOURCES += tst_qdrag.cpp
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

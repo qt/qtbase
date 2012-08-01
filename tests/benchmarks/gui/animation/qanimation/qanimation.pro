@@ -14,3 +14,4 @@ SOURCES += main.cpp \
 HEADERS += dummyobject.h \
            dummyanimation.h \
            rectanimation.h
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

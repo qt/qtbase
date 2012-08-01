@@ -12,3 +12,4 @@ win32-borland: DEFINES += WIN32_BORLAND
 # This is testdata for the tst_qpluginloader test.
 target.path = $$[QT_INSTALL_TESTS]/tst_qpluginloader/bin
 INSTALLS += target
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

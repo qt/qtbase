@@ -9,3 +9,4 @@ requires(contains(QT_CONFIG,opengl))
 QT += opengl widgets testlib
 
 SOURCES += tst_qglbuffer.cpp
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

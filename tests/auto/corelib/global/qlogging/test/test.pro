@@ -5,3 +5,4 @@ QT = core testlib
 SOURCES = ../tst_qlogging.cpp
 
 TEST_HELPER_INSTALLS = ../app/app
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

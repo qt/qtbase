@@ -9,3 +9,4 @@ QT += widgets testlib
 SOURCES += tst_qprogressdialog.cpp
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

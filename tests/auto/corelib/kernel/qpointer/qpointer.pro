@@ -4,3 +4,4 @@ TARGET = tst_qpointer
 QT += testlib
 !contains(QT_CONFIG, no-widgets): QT += widgets
 SOURCES = tst_qpointer.cpp
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

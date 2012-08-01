@@ -5,3 +5,4 @@ QT += widgets testlib
 SOURCES  += tst_qabstractslider.cpp
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

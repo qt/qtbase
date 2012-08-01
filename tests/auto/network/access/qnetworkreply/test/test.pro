@@ -17,3 +17,4 @@ TESTDATA += ../empty ../rfc3252.txt ../resource ../bigfile ../*.jpg ../certs \
 win32:CONFIG += insignificant_test # QTBUG-24226
 
 TEST_HELPER_INSTALLS = ../echo/echo
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

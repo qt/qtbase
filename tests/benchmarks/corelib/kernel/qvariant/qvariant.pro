@@ -6,3 +6,4 @@ CONFIG += release
 
 
 SOURCES += tst_qvariant.cpp
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

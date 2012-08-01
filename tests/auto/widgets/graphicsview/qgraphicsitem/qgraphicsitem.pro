@@ -6,3 +6,4 @@ SOURCES  += tst_qgraphicsitem.cpp
 DEFINES += QT_NO_CAST_TO_ASCII
 
 win32:!wince*: LIBS += -luser32
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

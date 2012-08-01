@@ -6,3 +6,4 @@ SOURCES		= test_file.cpp \
 RESOURCES = test.qrc
 TARGET		= simple_app
 DESTDIR		= ./
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

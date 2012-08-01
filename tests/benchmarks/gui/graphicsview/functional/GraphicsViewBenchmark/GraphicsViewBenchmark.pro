@@ -68,3 +68,4 @@ SOURCES += main.cpp \
 TARGET = tst_GraphicsViewBenchmark
 RESOURCES += GraphicsViewBenchmark.qrc
 INCLUDEPATH += widgets
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

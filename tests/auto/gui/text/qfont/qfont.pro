@@ -6,3 +6,4 @@ QT += testlib
 SOURCES  += tst_qfont.cpp
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

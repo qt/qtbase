@@ -13,3 +13,4 @@ HEADERS = forwarddeclared.h \
 TESTDATA += forwarddeclared.cpp forwarddeclared.h
 
 include(externaltests.pri)
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

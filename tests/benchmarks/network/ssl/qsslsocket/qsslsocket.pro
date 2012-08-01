@@ -7,3 +7,4 @@ QT += network testlib
 CONFIG += release
 
 SOURCES += tst_qsslsocket.cpp
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

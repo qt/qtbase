@@ -4,3 +4,4 @@ QT = core testlib
 SOURCES = tst_qcryptographichash.cpp
 
 TESTDATA += data/*
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

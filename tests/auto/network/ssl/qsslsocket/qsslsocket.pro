@@ -34,3 +34,4 @@ wince* {
 linux-*:system(". /etc/lsb-release && [ $DISTRIB_CODENAME = oneiric ]"):DEFINES+=UBUNTU_ONEIRIC  # QTBUG-24234
 
 requires(contains(QT_CONFIG,private_tests))
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

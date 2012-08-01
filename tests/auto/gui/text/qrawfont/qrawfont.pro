@@ -10,3 +10,4 @@ SOURCES += \
 INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/harfbuzz/src
 
 TESTDATA += testfont_bold_italic.ttf  testfont.ttf
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

@@ -13,3 +13,4 @@ wince*: {
 	LIBS += -lws2_32
 }
 }
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

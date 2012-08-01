@@ -4,3 +4,4 @@ CONFIG += console
 
 win32:!win32-g++*:!equals(TEMPLATE_PREFIX, "vc"):QMAKE_CXXFLAGS += /GS-
 DESTDIR = ./
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

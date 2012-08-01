@@ -12,3 +12,4 @@ win32 {
     }
 }
 TESTDATA += ../*.txt
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

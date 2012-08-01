@@ -8,3 +8,4 @@ QT = core network testlib
 
 SOURCES += tst_qabstractsocket.cpp
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

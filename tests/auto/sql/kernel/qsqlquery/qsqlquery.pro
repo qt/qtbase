@@ -13,3 +13,4 @@ wince*: {
    DEPLOYMENT += plugFiles
    LIBS += -lws2
 }
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

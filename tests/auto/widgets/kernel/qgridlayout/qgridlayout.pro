@@ -10,3 +10,4 @@ FORMS           += sortdialog.ui
 
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

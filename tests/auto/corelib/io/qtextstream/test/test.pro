@@ -20,3 +20,4 @@ TESTDATA += \
     ../qtextstream.qrc \
     ../tst_qtextstream.cpp \
     ../resources
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

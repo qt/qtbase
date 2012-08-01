@@ -18,3 +18,4 @@ SOURCES += atWrapperAutotest.cpp atWrapper.cpp
 TARGET = tst_atwrapper
 
 #include($$COMMON_FOLDER/common.pri)
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

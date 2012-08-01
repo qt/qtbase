@@ -12,3 +12,4 @@ RESOURCES += images.qrc
 include($$PWD/../../../baselineserver/shared/qbaselinetest.pri)
 
 TESTDATA += scripts/*
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

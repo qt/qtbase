@@ -22,3 +22,4 @@ runtime_resource_install.CONFIG = no_check_exist
 runtime_resource_install.files = $$OUT_PWD/$${runtime_resource.target}
 runtime_resource_install.path = $${target.path}
 INSTALLS += runtime_resource_install
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

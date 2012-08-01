@@ -17,3 +17,4 @@ wince*: {
 
    DEPLOYMENT += testData
 }
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

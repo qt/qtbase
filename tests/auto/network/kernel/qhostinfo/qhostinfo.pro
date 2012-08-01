@@ -12,3 +12,4 @@ wince*: {
 }
 
 linux-*:CONFIG+=insignificant_test    # QTBUG-23837 - test is unstable
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

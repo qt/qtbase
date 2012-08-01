@@ -8,3 +8,4 @@ TARGET = tst_qsqlerror
 QT = core sql testlib
 
 SOURCES += tst_qsqlerror.cpp
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

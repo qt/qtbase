@@ -9,3 +9,4 @@ SOURCES += tst_macnativeevents.cpp
 
 requires(mac)
 CONFIG += insignificant_test # QTBUG-22775
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

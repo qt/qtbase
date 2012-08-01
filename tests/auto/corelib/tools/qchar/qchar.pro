@@ -4,3 +4,4 @@ QT = core-private testlib
 SOURCES = tst_qchar.cpp
 
 TESTDATA += NormalizationTest.txt
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

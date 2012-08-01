@@ -6,3 +6,4 @@ CONFIG -= debug_and_release_target
 
 
 TARGET = benchlibwalltime
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

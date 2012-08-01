@@ -28,3 +28,4 @@ contains(QT_CONFIG, dbus){
     DEFINES += WITH_DBUS
     QT += dbus
 }
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

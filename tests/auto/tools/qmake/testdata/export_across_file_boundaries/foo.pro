@@ -15,3 +15,4 @@ O_BAR=$$fromfile(oink.pri,BAR)
 
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

@@ -7,3 +7,4 @@ HEADERS += guitest.h
 QT = core-private widgets-private testlib
 
 requires(mac)
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

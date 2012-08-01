@@ -14,3 +14,4 @@ win32 {
     DESTDIR = release
   }
 }
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

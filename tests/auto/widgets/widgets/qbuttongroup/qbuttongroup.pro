@@ -5,3 +5,4 @@ SOURCES  += tst_qbuttongroup.cpp
 
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

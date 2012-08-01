@@ -13,3 +13,4 @@ CONFIG(debug_and_release_target) {
 } else {
     DESTDIR = ..
 }
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

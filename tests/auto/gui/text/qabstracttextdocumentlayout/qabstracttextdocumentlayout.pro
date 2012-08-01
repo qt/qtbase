@@ -9,3 +9,4 @@ QT += testlib
 SOURCES += tst_qabstracttextdocumentlayout.cpp
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

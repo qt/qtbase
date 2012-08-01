@@ -4,3 +4,4 @@ TARGET = tst_qfontmetrics
 QT += testlib
 SOURCES  += tst_qfontmetrics.cpp
 RESOURCES += testfont.qrc
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

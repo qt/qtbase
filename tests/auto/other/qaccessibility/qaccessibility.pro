@@ -19,3 +19,4 @@ win32 {
     }
     LIBS += -loleacc -loleaut32 -lole32
 }
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

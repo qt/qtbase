@@ -5,3 +5,4 @@ QT = core testlib
 SOURCES = tst_qplugin.cpp
 
 TESTDATA += plugins/*
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

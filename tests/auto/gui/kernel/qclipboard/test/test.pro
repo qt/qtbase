@@ -18,3 +18,4 @@ wince* {
 TEST_HELPER_INSTALLS = \
     ../copier/copier \
     ../paster/paster
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

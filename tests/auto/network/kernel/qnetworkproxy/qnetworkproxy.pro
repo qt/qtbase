@@ -7,3 +7,4 @@ TARGET = tst_qnetworkproxy
 QT = core network testlib
 
 SOURCES += tst_qnetworkproxy.cpp
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

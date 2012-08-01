@@ -11,3 +11,4 @@ x11 {
 }
 
 win32|linux-*:CONFIG+=insignificant_test # QTBUG-22560
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

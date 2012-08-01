@@ -4,3 +4,4 @@ QT += widgets testlib
 SOURCES  += tst_qabstractbutton.cpp
 
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

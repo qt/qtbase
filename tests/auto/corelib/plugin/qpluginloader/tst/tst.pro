@@ -14,3 +14,4 @@ win32 {
 }
 
 TESTDATA += ../elftest
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

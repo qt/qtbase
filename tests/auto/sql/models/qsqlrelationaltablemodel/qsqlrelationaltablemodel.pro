@@ -16,3 +16,4 @@ wince*: {
         LIBS += ws2_32.lib
    }
 }
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

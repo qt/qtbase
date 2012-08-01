@@ -16,3 +16,4 @@ SOURCES += tst_baselineexample.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 include($$PWD/../../../baselineserver/shared/qbaselinetest.pri)
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

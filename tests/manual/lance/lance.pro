@@ -15,3 +15,4 @@ RESOURCES += icons.qrc \
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2):QT += opengl
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
