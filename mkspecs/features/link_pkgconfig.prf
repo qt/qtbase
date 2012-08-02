@@ -1,24 +1,32 @@
 PKG_CONFIG = $$pkgConfigExecutable()
 
-for(PKGCONFIG_LIB, $$list($$unique(PKGCONFIG))) {
-    # don't proceed if the .pro asks for a package we don't have!
-    !packagesExist($$PKGCONFIG_LIB):error("Package $$PKGCONFIG_LIB not found")
+# qmake supports no empty list elements, so the outer loop is a bit arcane
+pkgsfx =
+for(ever) {
+    pkgvar = PKGCONFIG$$pkgsfx
+    libvar = LIBS$$pkgsfx
+    for(PKGCONFIG_LIB, $$list($$unique($$pkgvar))) {
+        # don't proceed if the .pro asks for a package we don't have!
+        !packagesExist($$PKGCONFIG_LIB):error("Package $$PKGCONFIG_LIB not found")
 
-    PKGCONFIG_CFLAGS = $$system($$PKG_CONFIG --cflags $$PKGCONFIG_LIB)
+        PKGCONFIG_CFLAGS = $$system($$PKG_CONFIG --cflags $$PKGCONFIG_LIB)
 
-    PKGCONFIG_INCLUDEPATH = $$find(PKGCONFIG_CFLAGS, ^-I.*)
-    PKGCONFIG_INCLUDEPATH ~= s/^-I(.*)/\\1/g
+        PKGCONFIG_INCLUDEPATH = $$find(PKGCONFIG_CFLAGS, ^-I.*)
+        PKGCONFIG_INCLUDEPATH ~= s/^-I(.*)/\\1/g
 
-    PKGCONFIG_DEFINES = $$find(PKGCONFIG_CFLAGS, ^-D.*)
-    PKGCONFIG_DEFINES ~= s/^-D(.*)/\\1/g
+        PKGCONFIG_DEFINES = $$find(PKGCONFIG_CFLAGS, ^-D.*)
+        PKGCONFIG_DEFINES ~= s/^-D(.*)/\\1/g
 
-    PKGCONFIG_CFLAGS ~= s/^-[ID].*//g
+        PKGCONFIG_CFLAGS ~= s/^-[ID].*//g
 
-    INCLUDEPATH *= $$PKGCONFIG_INCLUDEPATH
-    DEFINES *= $$PKGCONFIG_DEFINES
+        INCLUDEPATH *= $$PKGCONFIG_INCLUDEPATH
+        DEFINES *= $$PKGCONFIG_DEFINES
 
-    QMAKE_CXXFLAGS += $$PKGCONFIG_CFLAGS
-    QMAKE_CFLAGS += $$PKGCONFIG_CFLAGS
-    LIBS += $$system($$PKG_CONFIG --libs $$PKGCONFIG_LIB)
+        QMAKE_CXXFLAGS += $$PKGCONFIG_CFLAGS
+        QMAKE_CFLAGS += $$PKGCONFIG_CFLAGS
+        $$libvar += $$system($$PKG_CONFIG --libs $$PKGCONFIG_LIB)
+    }
+    !isEmpty(pkgsfx): break()
+    pkgsfx = _PRIVATE
 }
 
