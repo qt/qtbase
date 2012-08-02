@@ -21,8 +21,11 @@ for(entry, $$list($$unique($${GROUP}S))) {
 }
 
 # funny indent to avoid re-indentation in next commit
+        hdr_flags = $$eval(QDBUSXML2CPP_$${dbus_TYPE}_HEADER_FLAGS)
+        src_flags = $$eval(QDBUSXML2CPP_$${dbus_TYPE}_SOURCE_FLAGS)
+
     dthc = $${group}_header.commands
-    $$dthc = $$QMAKE_QDBUSXML2CPP $$qdbusxml2cpp_option ${QMAKE_FILE_OUT}: ${QMAKE_FILE_IN}
+    $$dthc = $$QMAKE_QDBUSXML2CPP $$hdr_flags $$qdbusxml2cpp_option ${QMAKE_FILE_OUT}: ${QMAKE_FILE_IN}
     dtho = $${group}_header.output
     $$dtho = ${QMAKE_FUNC_FILE_IN_qdbusOutputBasename}_$${dbus_type}.h
     dthn = $${group}_header.name
@@ -33,7 +36,7 @@ for(entry, $$list($$unique($${GROUP}S))) {
     $$dthi = $$input_list
 
     dtsc = $${group}_source.commands
-    $$dtsc = $$QMAKE_QDBUSXML2CPP -i ${QMAKE_FILE_OUT_BASE}.h $$qdbusxml2cpp_option :${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
+    $$dtsc = $$QMAKE_QDBUSXML2CPP -i ${QMAKE_FILE_OUT_BASE}.h $$src_flags $$qdbusxml2cpp_option :${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
     dtso = $${group}_source.output
     $$dtso = ${QMAKE_FUNC_FILE_IN_qdbusOutputBasename}_$${dbus_type}.cpp
     dtsn = $${group}_source.name
