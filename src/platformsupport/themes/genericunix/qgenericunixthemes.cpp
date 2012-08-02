@@ -82,6 +82,23 @@ void ResourceHelper::clear()
 
 const char *QGenericUnixTheme::name = "generic";
 
+// Default system font, corresponding to the value returned by 4.8 for
+// XRender/FontConfig which we can now assume as default.
+static const char defaultSystemFontNameC[] = "Sans Serif";
+enum { defaultSystemFontSize = 9 };
+
+QGenericUnixTheme::QGenericUnixTheme()
+    : m_systemFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize)
+{
+}
+
+const QFont *QGenericUnixTheme::font(Font type) const
+{
+    if (type == QPlatformTheme::SystemFont)
+        return &m_systemFont;
+    return 0;
+}
+
 // Helper to return the icon theme paths from XDG.
 QStringList QGenericUnixTheme::xdgIconThemePaths()
 {
@@ -250,7 +267,11 @@ void QKdeTheme::refresh()
     }
 
     // Read system font, ignore 'fixed' 'smallestReadableFont'
-    m_resources.fonts[SystemFont] = readKdeFontSetting(kdeSettings, QStringLiteral("font"));
+    if (QFont *systemFont = readKdeFontSetting(kdeSettings, QStringLiteral("font"))) {
+        m_resources.fonts[SystemFont] = systemFont;
+    } else {
+        m_resources.fonts[SystemFont] = new QFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize);
+    }
 }
 
 QString QKdeTheme::globalSettingsFile() const
@@ -340,6 +361,11 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
 
 const char *QGnomeTheme::name = "gnome";
 
+QGnomeTheme::QGnomeTheme()
+   : m_systemFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize)
+{
+}
+
 QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
@@ -363,6 +389,13 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         break;
     }
     return QPlatformTheme::themeHint(hint);
+}
+
+const QFont *QGnomeTheme::font(Font type) const
+{
+    if (type == QPlatformTheme::SystemFont)
+        return &m_systemFont;
+    return 0;
 }
 
 /*!

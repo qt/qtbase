@@ -45,6 +45,7 @@
 #include <qpa/qplatformtheme.h>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
+#include <QtGui/QFont>
 
 QT_BEGIN_HEADER
 
@@ -65,16 +66,20 @@ public:
 class QGenericUnixTheme : public QPlatformTheme
 {
 public:
-    QGenericUnixTheme() {}
+    QGenericUnixTheme();
 
     static QPlatformTheme *createUnixTheme(const QString &name);
     static QStringList themeNames();
 
+    virtual const QFont *font(Font type) const;
     virtual QVariant themeHint(ThemeHint hint) const;
 
     static QStringList xdgIconThemePaths();
 
     static const char *name;
+
+private:
+    const QFont m_systemFont;
 };
 
 #ifndef QT_NO_SETTINGS
@@ -113,12 +118,14 @@ private:
 class QGnomeTheme : public QPlatformTheme
 {
 public:
-    QGnomeTheme() {}
+    QGnomeTheme();
     virtual QVariant themeHint(ThemeHint hint) const;
+    virtual const QFont *font(Font type) const;
 
     static const char *name;
 
 private:
+    const QFont m_systemFont;
 };
 
 QPlatformTheme *qt_createUnixTheme();
