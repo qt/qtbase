@@ -330,11 +330,11 @@ void CppCodeParser::doneParsingHeaderFiles(Tree *tree)
  */
 void CppCodeParser::doneParsingSourceFiles(Tree *tree)
 {
-    tree->root()->makeUndocumentedChildrenInternal();
     tree->root()->clearCurrentChildPointers();
     tree->root()->normalizeOverloads();
     tree->fixInheritance();
     tree->resolveProperties();
+    tree->root()->makeUndocumentedChildrenInternal();
 }
 
 /*!

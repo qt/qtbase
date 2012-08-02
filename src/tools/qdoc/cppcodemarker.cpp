@@ -578,6 +578,12 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                         isSlot = (func->metaness() == FunctionNode::Slot);
                         isSignal = (func->metaness() == FunctionNode::Signal);
                         isStatic = func->isStatic();
+                        if (func->associatedProperty()) {
+                            if (func->associatedProperty()->status() == Node::Obsolete) {
+                                ++c;
+                                continue;
+                            }
+                        }
                     }
                     else if ((*c)->type() == Node::Variable) {
                         const VariableNode *var = static_cast<const VariableNode *>(*c);
