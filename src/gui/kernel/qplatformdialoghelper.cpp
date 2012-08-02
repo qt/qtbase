@@ -310,7 +310,7 @@ void QColorDialogOptions::setCustomColor(int index, QRgb color)
 {
     if (uint(index) >= uint(QColorDialogStaticData::CustomColorCount))
         return;
-    qColorDialogStaticData()->customSet;
+    qColorDialogStaticData()->customSet = true;
     qColorDialogStaticData()->customRgb[index] = color;
 }
 
