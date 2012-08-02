@@ -76,6 +76,8 @@ public:
 
     inline QPoint &operator/=(qreal divisor);
 
+    Q_DECL_CONSTEXPR static inline int dotProduct(const QPoint &p1, const QPoint &p2);
+
     friend Q_DECL_CONSTEXPR inline bool operator==(const QPoint &, const QPoint &);
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QPoint &, const QPoint &);
     friend Q_DECL_CONSTEXPR inline const QPoint operator+(const QPoint &, const QPoint &);
@@ -152,6 +154,9 @@ inline QPoint &QPoint::operator*=(double factor)
 
 inline QPoint &QPoint::operator*=(int factor)
 { xp = xp*factor; yp = yp*factor; return *this; }
+
+Q_DECL_CONSTEXPR inline int QPoint::dotProduct(const QPoint &p1, const QPoint &p2)
+{ return p1.xp * p2.xp + p1.yp * p2.yp; }
 
 Q_DECL_CONSTEXPR inline bool operator==(const QPoint &p1, const QPoint &p2)
 { return p1.xp == p2.xp && p1.yp == p2.yp; }
@@ -232,6 +237,8 @@ public:
     inline QPointF &operator-=(const QPointF &p);
     inline QPointF &operator*=(qreal c);
     inline QPointF &operator/=(qreal c);
+
+    Q_DECL_CONSTEXPR static inline qreal dotProduct(const QPointF &p1, const QPointF &p2);
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QPointF &, const QPointF &);
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QPointF &, const QPointF &);
@@ -328,6 +335,11 @@ inline QPointF &QPointF::operator-=(const QPointF &p)
 inline QPointF &QPointF::operator*=(qreal c)
 {
     xp*=c; yp*=c; return *this;
+}
+
+Q_DECL_CONSTEXPR inline qreal QPointF::dotProduct(const QPointF &p1, const QPointF &p2)
+{
+    return p1.xp * p2.xp + p1.yp * p2.yp;
 }
 
 Q_DECL_CONSTEXPR inline bool operator==(const QPointF &p1, const QPointF &p2)
