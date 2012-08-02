@@ -3678,10 +3678,6 @@ void Configure::appendMakeItem(int inList, const QString &item)
 void Configure::generateMakefiles()
 {
     if (dictionary[ "NOPROCESS" ] == "no") {
-#if !defined(EVAL)
-        cout << "Creating makefiles in src..." << endl;
-#endif
-
         QString spec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : dictionary[ "QMAKESPEC" ];
         if (spec != "win32-msvc")
             dictionary[ "DSPFILES" ] = "no";
