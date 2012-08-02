@@ -204,7 +204,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QCONFIG" ]         = "full";
     dictionary[ "EMBEDDED" ]        = "no";
     dictionary[ "BUILD_QMAKE" ]     = "yes";
-    dictionary[ "DSPFILES" ]        = "yes";
     dictionary[ "VCPROJFILES" ]     = "yes";
     dictionary[ "QMAKE_INTERNAL" ]  = "no";
     dictionary[ "FAST" ]            = "no";
@@ -784,16 +783,6 @@ void Configure::parseCmdLine()
             dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "no";
 #endif
         // IDE project generation -----------------------------------
-        else if (configCmdLine.at(i) == "-no-dsp")
-            dictionary[ "DSPFILES" ] = "no";
-        else if (configCmdLine.at(i) == "-dsp")
-            dictionary[ "DSPFILES" ] = "yes";
-
-        else if (configCmdLine.at(i) == "-no-vcp")
-            dictionary[ "VCPFILES" ] = "no";
-        else if (configCmdLine.at(i) == "-vcp")
-            dictionary[ "VCPFILES" ] = "yes";
-
         else if (configCmdLine.at(i) == "-no-vcproj")
             dictionary[ "VCPROJFILES" ] = "no";
         else if (configCmdLine.at(i) == "-vcproj")
@@ -1731,9 +1720,6 @@ bool Configure::displayHelp()
 #endif
         // Qt\Windows only options go below here --------------------------------------------------------------------------------
         desc("Qt for Windows only:\n\n");
-
-        desc("DSPFILES", "no",  "-no-dsp",              "Do not generate VC++ .dsp files.");
-        desc("DSPFILES", "yes", "-dsp",                 "Generate VC++ .dsp files, only if spec \"win32-msvc\".\n");
 
         desc("VCPROJFILES", "no", "-no-vcproj",         "Do not generate VC++ .vcproj files.");
         desc("VCPROJFILES", "yes", "-vcproj",           "Generate VC++ .vcproj files, only if platform \"win32-msvc.net\".\n");
@@ -3661,14 +3647,6 @@ void Configure::appendMakeItem(int inList, const QString &item)
     dir.prepend("/src");
     makeList[inList].append(new MakeItem(sourcePath + dir,
         item + ".pro", buildPath + dir + "/Makefile", Lib));
-    if (dictionary[ "DSPFILES" ] == "yes") {
-        makeList[inList].append(new MakeItem(sourcePath + dir,
-            item + ".pro", buildPath + dir + "/" + item + ".dsp", Lib));
-    }
-    if (dictionary[ "VCPFILES" ] == "yes") {
-        makeList[inList].append(new MakeItem(sourcePath + dir,
-            item + ".pro", buildPath + dir + "/" + item + ".vcp", Lib));
-    }
     if (dictionary[ "VCPROJFILES" ] == "yes") {
         makeList[inList].append(new MakeItem(sourcePath + dir,
             item + ".pro", buildPath + dir + "/" + item + ".vcproj", Lib));
@@ -3679,9 +3657,6 @@ void Configure::generateMakefiles()
 {
     if (dictionary[ "NOPROCESS" ] == "no") {
         QString spec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : dictionary[ "QMAKESPEC" ];
-        if (spec != "win32-msvc")
-            dictionary[ "DSPFILES" ] = "no";
-
         if (spec != "win32-msvc.net" && !spec.startsWith("win32-msvc2") && !spec.startsWith(QLatin1String("wince")))
             dictionary[ "VCPROJFILES" ] = "no";
 
@@ -3690,8 +3665,7 @@ void Configure::generateMakefiles()
         if (dictionary["FAST"] != "yes") {
             QString dirName;
             bool generate = true;
-            bool doDsp = (dictionary["DSPFILES"] == "yes" || dictionary["VCPFILES"] == "yes"
-                          || dictionary["VCPROJFILES"] == "yes");
+            bool doDsp = (dictionary["VCPROJFILES"] == "yes");
             while (generate) {
                 QString pwd = QDir::currentPath();
                 QString dirPath = buildPath + dirName;
