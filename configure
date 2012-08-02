@@ -814,7 +814,7 @@ CFG_SILENT=no
 CFG_ALSA=auto
 CFG_PULSEAUDIO=auto
 CFG_COREWLAN=auto
-CFG_NOPROCESS=no
+CFG_PROCESS=yes
 CFG_ICU=auto
 CFG_FORCE_ASSERTS=no
 CFG_PCRE=auto
@@ -1969,10 +1969,13 @@ while [ "$#" -gt 0 ]; do
         CFG_SILENT="$VAL"
         ;;
     dont-process)
-        CFG_NOPROCESS=yes
+        CFG_PROCESS=no
         ;;
     process)
-        CFG_NOPROCESS=no
+        CFG_PROCESS=partial
+        ;;
+    fully-process)
+        CFG_PROCESS=full
         ;;
     audio-backend)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -2984,6 +2987,10 @@ Configure options:
 
  *  -shared ............ Create and use shared Qt libraries.
     -static ............ Create and use static Qt libraries.
+
+ *  -process ........... Generate only a top-level Makefile.
+    -fully-process ..... Generate Makefiles for the entire Qt tree.
+    -dont-process ...... Do not generate any Makefiles.
 
  *  -no-fast ........... Configure Qt normally by generating Makefiles for all
                          project files.
@@ -6185,10 +6192,15 @@ EXEC=""
 # build makefiles based on the configuration
 #-------------------------------------------------------------------------------
 
-if [ "$CFG_NOPROCESS" != "yes" ]; then
-    echo "Creating makefiles. Please wait..."
-    "$outpath/bin/qmake" -r ${OPT_FAST+CONFIG+=fast} "$relpath"
-    echo "Done"
+if [ "$CFG_PROCESS" != "no" ]; then
+
+    if [ "$CFG_PROCESS" = "full" ]; then
+        echo "Creating makefiles. Please wait..."
+        "$outpath/bin/qmake" -r "$relpath"
+        echo "Done"
+    else
+        "$outpath/bin/qmake" "$relpath"
+    fi
 
     if [ "$OPT_FAST" = "yes" ]; then
         PART_ROOTS=

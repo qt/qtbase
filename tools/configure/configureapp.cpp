@@ -207,7 +207,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "VCPROJFILES" ]     = "yes";
     dictionary[ "QMAKE_INTERNAL" ]  = "no";
     dictionary[ "FAST" ]            = "no";
-    dictionary[ "NOPROCESS" ]       = "no";
+    dictionary[ "PROCESS" ]         = "partial";
     dictionary[ "WIDGETS" ]         = "yes";
     dictionary[ "RTTI" ]            = "yes";
     dictionary[ "SSE2" ]            = "auto";
@@ -899,9 +899,11 @@ void Configure::parseCmdLine()
             dictionary[ "BUILD_QMAKE" ] = "yes";
 
         else if (configCmdLine.at(i) == "-dont-process")
-            dictionary[ "NOPROCESS" ] = "yes";
+            dictionary[ "PROCESS" ] = "no";
         else if (configCmdLine.at(i) == "-process")
-            dictionary[ "NOPROCESS" ] = "no";
+            dictionary[ "PROCESS" ] = "partial";
+        else if (configCmdLine.at(i) == "-fully-process")
+            dictionary[ "PROCESS" ] = "full";
 
         else if (configCmdLine.at(i) == "-no-qmake-deps")
             dictionary[ "DEPENDENCIES" ] = "no";
@@ -1724,8 +1726,9 @@ bool Configure::displayHelp()
         desc("BUILD_QMAKE", "no", "-no-qmake",          "Do not compile qmake.");
         desc("BUILD_QMAKE", "yes", "-qmake",            "Compile qmake.\n");
 
-        desc("NOPROCESS", "yes", "-dont-process",       "Do not generate Makefiles/Project files. This will override -no-fast if specified.");
-        desc("NOPROCESS", "no",  "-process",            "Generate Makefiles/Project files.\n");
+        desc("PROCESS", "partial", "-process",          "Generate top-level Makefiles/Project files.\n");
+        desc("PROCESS", "full", "-fully-process",       "Generate Makefiles/Project files for the entire Qt tree.\n");
+        desc("PROCESS", "no", "-dont-process",          "Do not generate Makefiles/Project files. This will override -no-fast if specified.");
 
         desc("RTTI", "no",      "-no-rtti",             "Do not compile runtime type information.");
         desc("RTTI", "yes",     "-rtti",                "Compile runtime type information.\n");
@@ -3561,7 +3564,7 @@ void Configure::buildQmake()
 
 void Configure::findProjects(const QString& dirName)
 {
-    if (dictionary[ "NOPROCESS" ] == "no") {
+    if (dictionary[ "PROCESS" ] != "no") {
         QDir dir(dirName);
         QString entryName;
         int makeListNumber;
@@ -3612,7 +3615,7 @@ void Configure::appendMakeItem(int inList, const QString &item)
 
 void Configure::generateMakefiles()
 {
-    if (dictionary[ "NOPROCESS" ] == "no") {
+    if (dictionary[ "PROCESS" ] != "no") {
         QString spec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : dictionary[ "QMAKESPEC" ];
         if (spec != "win32-msvc.net" && !spec.startsWith("win32-msvc2") && !spec.startsWith(QLatin1String("wince")))
             dictionary[ "VCPROJFILES" ] = "no";
@@ -3640,7 +3643,8 @@ void Configure::generateMakefiles()
                     printf("Generating Makefiles...\n");
                     generate = false; // Now Makefiles will be done
                 }
-                args << "-r";
+                if (dictionary[ "PROCESS" ] == "full")
+                    args << "-r";
                 args << (sourcePath + "/qtbase.pro");
                 args << "-o";
                 args << buildPath;
