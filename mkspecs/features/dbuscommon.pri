@@ -6,23 +6,44 @@ defineReplace(qdbusOutputBasename) {
 }
 
 dbus_TYPE = $$upper($$dbus_type)
-group = dbus_$${dbus_type}
-GROUP = DBUS_$${dbus_TYPE}
-input_list = $${GROUP}_LIST
 
-for(entry, $$list($$unique($${GROUP}S))) {
+groups =
+for(entry, DBUS_$${dbus_TYPE}S) {
 
-    !contains(entry, .*\\w\\.xml$) {
-        warning("Invalid D-BUS $${dbus_type}: '$$entry', please use 'com.mydomain.myinterface.xml' instead.")
-        next()
+    files = $$eval($${entry}.files)
+    isEmpty(files) {
+        files = $$entry
+        group = dbus_$${dbus_type}
+    } else {
+        group = $${entry}_dbus_$${dbus_type}
     }
+    groups *= $$group
 
-    $$input_list += $$entry
+    input_list = $$upper($$group)_LIST
+    for(subent, $$list($$unique(files))) {
+
+        !contains(subent, .*\\w\\.xml$) {
+            warning("Invalid D-BUS $${dbus_type}: '$$subent', please use 'com.mydomain.myinterface.xml' instead.")
+            next()
+        }
+
+        $$input_list += $$subent
+    }
 }
 
-# funny indent to avoid re-indentation in next commit
+for(group, groups) {
+    GROUP = $$upper($$group)
+    input_list = $${GROUP}_LIST
+
+    # qmake does not keep empty elements in lists, so we reverse-engineer the short name
+    grp = $$replace(group, _?dbus_$${dbus_type}\$, )
+    isEmpty(grp) {
         hdr_flags = $$eval(QDBUSXML2CPP_$${dbus_TYPE}_HEADER_FLAGS)
         src_flags = $$eval(QDBUSXML2CPP_$${dbus_TYPE}_SOURCE_FLAGS)
+    } else {
+        hdr_flags = $$eval($${grp}.header_flags)
+        src_flags = $$eval($${grp}.source_flags)
+    }
 
     dthc = $${group}_header.commands
     $$dthc = $$QMAKE_QDBUSXML2CPP $$hdr_flags $$qdbusxml2cpp_option ${QMAKE_FILE_OUT}: ${QMAKE_FILE_IN}
@@ -58,3 +79,4 @@ for(entry, $$list($$unique($${GROUP}S))) {
     $$dtmn = $$moc_header.name
 
     QMAKE_EXTRA_COMPILERS += $${group}_header $${group}_source $${group}_moc
+}
