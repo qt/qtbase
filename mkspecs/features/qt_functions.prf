@@ -99,7 +99,7 @@ defineTest(qtAddModule) {
     !isEmpty(QT.$${1}.libs) { # Use unmodified path, so /usr/lib also works
         !isEmpty(QMAKE_LSB) {
             !isEmpty(MODULE_LIBS): QMAKE_LFLAGS *= --lsb-libpath=$$MODULE_LIBS
-            QMAKE_LFLAGS *= -L/opt/lsb/lib
+            QMAKE_LIBDIR *= /opt/lsb/lib
             QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
         }
         LIBS += $$LINKAGE
