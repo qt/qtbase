@@ -73,7 +73,8 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
       m_screen(0),
       m_parentWindow(0),
       m_visible(true),
-      m_windowState(Qt::WindowNoState)
+      m_windowState(Qt::WindowNoState),
+      m_requestedBufferSize(window->geometry().size())
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window << ", size =" << window->size();
     int result;
