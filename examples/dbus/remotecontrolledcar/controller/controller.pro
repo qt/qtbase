@@ -1,9 +1,9 @@
 QT += dbus widgets
 
-# DBUS_INTERFACES += car.xml
+DBUS_INTERFACES += car.xml
 FORMS += controller.ui
-HEADERS += car_interface.h controller.h
-SOURCES += main.cpp car_interface.cpp controller.cpp
+HEADERS += controller.h
+SOURCES += main.cpp controller.cpp
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dbus/remotecontrolledcar/controller
