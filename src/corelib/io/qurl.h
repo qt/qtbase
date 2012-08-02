@@ -321,7 +321,7 @@ public:
     static QByteArray toAce(const QString &);
     static QStringList idnWhitelist();
     static void setIdnWhitelist(const QStringList &);
-    friend Q_CORE_EXPORT uint qHash(const QUrl &url, uint seed = 0);
+    friend Q_CORE_EXPORT uint qHash(const QUrl &url, uint seed = 0) Q_DECL_NOTHROW;
 
 private:
     QUrlPrivate *d;

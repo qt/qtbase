@@ -93,7 +93,7 @@ QT_BEGIN_NAMESPACE
     (for instance, gcc 4.4 does that even at -O0).
 */
 
-static inline uint hash(const uchar *p, int len, uint seed)
+static inline uint hash(const uchar *p, int len, uint seed) Q_DECL_NOTHROW
 {
     uint h = seed;
 
@@ -103,7 +103,7 @@ static inline uint hash(const uchar *p, int len, uint seed)
     return h;
 }
 
-static inline uint hash(const QChar *p, int len, uint seed)
+static inline uint hash(const QChar *p, int len, uint seed) Q_DECL_NOTHROW
 {
     uint h = seed;
 
@@ -113,22 +113,22 @@ static inline uint hash(const QChar *p, int len, uint seed)
     return h;
 }
 
-uint qHash(const QByteArray &key, uint seed)
+uint qHash(const QByteArray &key, uint seed) Q_DECL_NOTHROW
 {
     return hash(reinterpret_cast<const uchar *>(key.constData()), key.size(), seed);
 }
 
-uint qHash(const QString &key, uint seed)
+uint qHash(const QString &key, uint seed) Q_DECL_NOTHROW
 {
     return hash(key.unicode(), key.size(), seed);
 }
 
-uint qHash(const QStringRef &key, uint seed)
+uint qHash(const QStringRef &key, uint seed) Q_DECL_NOTHROW
 {
     return hash(key.unicode(), key.size(), seed);
 }
 
-uint qHash(const QBitArray &bitArray, uint seed)
+uint qHash(const QBitArray &bitArray, uint seed) Q_DECL_NOTHROW
 {
     int m = bitArray.d.size() - 1;
     uint result = hash(reinterpret_cast<const uchar *>(bitArray.d.constData()), qMax(0, m), seed);
@@ -141,7 +141,7 @@ uint qHash(const QBitArray &bitArray, uint seed)
     return result;
 }
 
-uint qHash(QLatin1String key, uint seed)
+uint qHash(QLatin1String key, uint seed) Q_DECL_NOTHROW
 {
     return hash(reinterpret_cast<const uchar *>(key.data()), key.size(), seed);
 }
@@ -242,7 +242,7 @@ static void qt_initialize_qhash_seed()
 
     This function must *never* change its results.
 */
-uint qt_hash(const QString &key)
+uint qt_hash(const QString &key) Q_DECL_NOTHROW
 {
     const QChar *p = key.unicode();
     int n = key.size();

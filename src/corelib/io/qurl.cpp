@@ -3445,7 +3445,7 @@ QString QUrl::errorString() const
     \relates QHash
     \since 5.0
 */
-uint qHash(const QUrl &url, uint seed)
+uint qHash(const QUrl &url, uint seed) Q_DECL_NOTHROW
 {
     if (!url.d)
         return qHash(-1, seed); // the hash of an unset port (-1)

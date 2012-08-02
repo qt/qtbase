@@ -4097,7 +4097,7 @@ uint qHash(const QDateTime &key, uint seed)
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(const QDate &key, uint seed)
+uint qHash(const QDate &key, uint seed) Q_DECL_NOTHROW
 {
     return qHash(key.toJulianDay(), seed);
 }
@@ -4108,9 +4108,9 @@ uint qHash(const QDate &key, uint seed)
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(const QTime &key, uint seed)
+uint qHash(const QTime &key, uint seed) Q_DECL_NOTHROW
 {
-    return QTime(0, 0, 0, 0).msecsTo(key) ^ seed;
+    return qHash(QTime(0, 0, 0, 0).msecsTo(key), seed);
 }
 
 #ifndef QT_BOOTSTRAPPED

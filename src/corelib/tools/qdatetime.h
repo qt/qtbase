@@ -288,9 +288,11 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QTime &);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QDateTime &);
 #endif
 
+// QDateTime is not noexcept for now -- to be revised once
+// timezone and calendaring support is added
 Q_CORE_EXPORT uint qHash(const QDateTime &key, uint seed = 0);
-Q_CORE_EXPORT uint qHash(const QDate &key, uint seed = 0);
-Q_CORE_EXPORT uint qHash(const QTime &key, uint seed = 0);
+Q_CORE_EXPORT uint qHash(const QDate &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT uint qHash(const QTime &key, uint seed = 0) Q_DECL_NOTHROW;
 
 QT_END_NAMESPACE
 
