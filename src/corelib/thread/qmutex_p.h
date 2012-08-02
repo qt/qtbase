@@ -86,7 +86,7 @@ public:
     QMutexPrivate();
 
     bool wait(int timeout = -1);
-    void wakeUp();
+    void wakeUp() Q_DECL_NOTHROW;
 
     // Conrol the lifetime of the privates
     QAtomicInt refCount;
@@ -115,7 +115,7 @@ public:
     QAtomicInt waiters; //number of thread waiting
     QAtomicInt possiblyUnlocked; //bool saying that a timed wait timed out
     enum { BigNumber = 0x100000 }; //Must be bigger than the possible number of waiters (number of threads)
-    void derefWaiters(int value);
+    void derefWaiters(int value) Q_DECL_NOTHROW;
 
     //platform specific stuff
 #if defined(Q_OS_MAC)
@@ -139,8 +139,8 @@ public:
     uint count;
     QMutex mutex;
 
-    bool lock(int timeout);
-    void unlock();
+    bool lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT;
+    void unlock() Q_DECL_NOTHROW;
 };
 
 QT_END_NAMESPACE

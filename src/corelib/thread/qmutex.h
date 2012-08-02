@@ -53,34 +53,40 @@ QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_THREAD) && !defined(qdoc)
 
+#ifdef Q_OS_LINUX
+# define QT_MUTEX_LOCK_NOEXCEPT Q_DECL_NOTHROW
+#else
+# define QT_MUTEX_LOCK_NOEXCEPT
+#endif
+
 class QMutexData;
 
 class Q_CORE_EXPORT QBasicMutex
 {
 public:
-    inline void lock() {
+    inline void lock() QT_MUTEX_LOCK_NOEXCEPT {
         if (!fastTryLock())
             lockInternal();
     }
 
-    inline void unlock() {
+    inline void unlock() Q_DECL_NOTHROW {
         Q_ASSERT(d_ptr.load()); //mutex must be locked
         if (!d_ptr.testAndSetRelease(dummyLocked(), 0))
             unlockInternal();
     }
 
-    bool tryLock(int timeout = 0) {
+    bool tryLock(int timeout = 0) QT_MUTEX_LOCK_NOEXCEPT {
         return fastTryLock() || lockInternal(timeout);
     }
 
     bool isRecursive();
 
 private:
-    inline bool fastTryLock() {
+    inline bool fastTryLock() Q_DECL_NOTHROW {
         return d_ptr.testAndSetAcquire(0, dummyLocked());
     }
-    bool lockInternal(int timeout = -1);
-    void unlockInternal();
+    bool lockInternal(int timeout = -1) QT_MUTEX_LOCK_NOEXCEPT;
+    void unlockInternal() Q_DECL_NOTHROW;
 
     QBasicAtomicPointer<QMutexData> d_ptr;
     static inline QMutexData *dummyLocked() {
@@ -97,9 +103,9 @@ public:
     explicit QMutex(RecursionMode mode = NonRecursive);
     ~QMutex();
 
-    void lock();
-    bool tryLock(int timeout = 0);
-    void unlock();
+    void lock() QT_MUTEX_LOCK_NOEXCEPT;
+    bool tryLock(int timeout = 0) QT_MUTEX_LOCK_NOEXCEPT;
+    void unlock() Q_DECL_NOTHROW;
 
     using QBasicMutex::isRecursive;
 
@@ -111,7 +117,7 @@ private:
 class Q_CORE_EXPORT QMutexLocker
 {
 public:
-    inline explicit QMutexLocker(QBasicMutex *m)
+    inline explicit QMutexLocker(QBasicMutex *m) QT_MUTEX_LOCK_NOEXCEPT
     {
         Q_ASSERT_X((reinterpret_cast<quintptr>(m) & quintptr(1u)) == quintptr(0),
                    "QMutexLocker", "QMutex pointer is misaligned");
@@ -124,7 +130,7 @@ public:
     }
     inline ~QMutexLocker() { unlock(); }
 
-    inline void unlock()
+    inline void unlock() Q_DECL_NOTHROW
     {
         if ((val & quintptr(1u)) == quintptr(1u)) {
             val &= ~quintptr(1u);
@@ -132,7 +138,7 @@ public:
         }
     }
 
-    inline void relock()
+    inline void relock() QT_MUTEX_LOCK_NOEXCEPT
     {
         if (val) {
             if ((val & quintptr(1u)) == quintptr(0u)) {
@@ -161,8 +167,6 @@ private:
 
     quintptr val;
 };
-
-
 
 #else // QT_NO_THREAD or qdoc
 

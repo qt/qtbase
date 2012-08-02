@@ -104,7 +104,7 @@ bool QMutexPrivate::wait(int timeout)
     return ret;
 }
 
-void QMutexPrivate::wakeUp()
+void QMutexPrivate::wakeUp() Q_DECL_NOTHROW
 {
     report_error(pthread_mutex_lock(&mutex), "QMutex::unlock", "mutex lock");
     wakeup = true;

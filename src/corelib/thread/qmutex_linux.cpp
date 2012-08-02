@@ -87,7 +87,7 @@ static inline int futexFlags()
     return value;
 }
 
-static inline int _q_futex(void *addr, int op, int val, const struct timespec *timeout)
+static inline int _q_futex(void *addr, int op, int val, const struct timespec *timeout) Q_DECL_NOTHROW
 {
     volatile int *int_addr = reinterpret_cast<volatile int *>(addr);
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN && QT_POINTER_SIZE == 8
@@ -106,7 +106,7 @@ static inline QMutexData *dummyFutexValue()
     return reinterpret_cast<QMutexData *>(quintptr(3));
 }
 
-bool QBasicMutex::lockInternal(int timeout)
+bool QBasicMutex::lockInternal(int timeout) Q_DECL_NOTHROW
 {
     QElapsedTimer elapsedTimer;
     if (timeout >= 1)
@@ -147,7 +147,7 @@ bool QBasicMutex::lockInternal(int timeout)
     return true;
 }
 
-void QBasicMutex::unlockInternal()
+void QBasicMutex::unlockInternal() Q_DECL_NOTHROW
 {
     QMutexData *d = d_ptr.load();
     Q_ASSERT(d); //we must be locked

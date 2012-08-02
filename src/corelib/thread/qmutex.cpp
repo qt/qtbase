@@ -68,7 +68,6 @@ QT_BEGIN_NAMESPACE
     - Do not use tryLock with timeout > 0, else you can have a leak (see the ~QMutex destructor)
 */
 
-
 /*!
     \class QMutex
     \inmodule QtCore
@@ -179,7 +178,7 @@ QMutex::~QMutex()
 
     \sa unlock()
 */
-void QMutex::lock()
+void QMutex::lock() QT_MUTEX_LOCK_NOEXCEPT
 {
     QBasicMutex::lock();
 }
@@ -207,7 +206,7 @@ void QMutex::lock()
 
     \sa lock(), unlock()
 */
-bool QMutex::tryLock(int timeout)
+bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
     return QBasicMutex::tryLock(timeout);
 }
@@ -219,7 +218,7 @@ bool QMutex::tryLock(int timeout)
 
     \sa lock()
 */
-void QMutex::unlock()
+void QMutex::unlock() Q_DECL_NOTHROW
 {
     QBasicMutex::unlock();
 }
@@ -332,7 +331,7 @@ bool QBasicMutex::isRecursive() {
 /*!
     \internal helper for lock()
  */
-bool QBasicMutex::lockInternal(int timeout)
+bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
     while (!fastTryLock()) {
         QMutexData *copy = d_ptr.loadAcquire();
@@ -425,7 +424,7 @@ bool QBasicMutex::lockInternal(int timeout)
 /*!
     \internal
 */
-void QBasicMutex::unlockInternal()
+void QBasicMutex::unlockInternal() Q_DECL_NOTHROW
 {
     QMutexData *copy = d_ptr.loadAcquire();
     Q_ASSERT(copy); //we must be locked
@@ -493,7 +492,7 @@ void QMutexPrivate::release()
 }
 
 // atomically subtract "value" to the waiters, and remove the QMutexPrivate::BigNumber flag
-void QMutexPrivate::derefWaiters(int value)
+void QMutexPrivate::derefWaiters(int value) Q_DECL_NOTHROW
 {
     int old_waiters;
     int new_waiters;
@@ -511,7 +510,8 @@ void QMutexPrivate::derefWaiters(int value)
 /*!
    \internal
  */
-bool QRecursiveMutexPrivate::lock(int timeout) {
+bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
+{
     Qt::HANDLE self = QThread::currentThreadId();
     if (owner == self) {
         ++count;
@@ -533,7 +533,7 @@ bool QRecursiveMutexPrivate::lock(int timeout) {
 /*!
    \internal
  */
-void QRecursiveMutexPrivate::unlock()
+void QRecursiveMutexPrivate::unlock() Q_DECL_NOTHROW
 {
     if (count > 0) {
         count--;

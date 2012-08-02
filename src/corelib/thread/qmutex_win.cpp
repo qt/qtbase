@@ -61,7 +61,7 @@ bool QMutexPrivate::wait(int timeout)
     return (WaitForSingleObject(event, timeout < 0 ? INFINITE : timeout) ==  WAIT_OBJECT_0);
 }
 
-void QMutexPrivate::wakeUp()
+void QMutexPrivate::wakeUp() Q_DECL_NOTHROW
 { SetEvent(event); }
 
 QT_END_NAMESPACE
