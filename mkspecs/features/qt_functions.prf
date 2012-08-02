@@ -35,6 +35,7 @@ defineTest(qtAddLibrary) {
     error("No module matching library '$$1' found.")
 }
 
+# qt module, UsePrivate flag, libs variable
 defineTest(qtAddModule) {
     MODULE_NAME = $$eval(QT.$${1}.name)
     MODULE_INCLUDES = $$eval(QT.$${1}.includes)
@@ -102,16 +103,54 @@ defineTest(qtAddModule) {
             QMAKE_LIBDIR *= /opt/lsb/lib
             QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
         }
-        LIBS += $$LINKAGE
+        $$3 += $$LINKAGE
     }
     export(CONFIG)
     export(DEFINES)
-    export(LIBS)
+    export($$3)
     export(INCLUDEPATH)
     export(QMAKE_FRAMEWORKPATH)
     export(QMAKE_LFLAGS)
     export(QMAKE_LIBDIR)
     return(true)
+}
+
+# qt variable, libs variable
+defineTest(qtAddModules) {
+    # Figure out from which modules we're wanting to use the private headers
+    NEWQT =
+    for(QTLIB, $$1) {
+        QTLIBRAW = $$replace(QTLIB, -private$, )
+        !isEqual(QTLIBRAW, $$QTLIB) {
+            want_var = QT.$${QTLIBRAW}.want_private
+            $$want_var = UsePrivate
+            using_privates = true
+            NEWQT += $$eval(QT.$${QTLIBRAW}.private_depends)
+        }
+        NEWQT += $$QTLIBRAW
+        contains(QT.$${QTLIBRAW}.CONFIG, auto_use_privates): CONFIG += auto_use_privates
+    }
+    # Topological resolution of modules based on their QT.<module>.depends variable
+    $$1 = $$resolve_depends(NEWQT, "QT.")
+    # Finally actually add the modules
+    unset(BAD_QT)
+    for(QTLIB, $$1) {
+        QTLIBNAME = $$eval(QT.$${QTLIB}.name)
+        isEmpty(QTLIBNAME) {
+            BAD_QT += $$QTLIB
+            next()
+        }
+
+        target_qt:isEqual(TARGET, $$QTLIBNAME) {
+            warning("$$TARGET cannot have a $$1 of $$QTLIB")
+            next()
+        }
+
+        qtAddModule($$QTLIB, $$eval(QT.$${QTLIB}.want_private), $$2)
+    }
+    !isEmpty(BAD_QT):error("Unknown module(s) in QT: $$BAD_QT")
+
+    export(using_privates)
 }
 
 # variable, default

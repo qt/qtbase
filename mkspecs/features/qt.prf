@@ -135,40 +135,9 @@ uitools {
     QT += uitools
 }
 
-# Figure out from which modules we're wanting to use the private headers
 unset(using_privates)
-NEWQT =
-for(QTLIB, QT) {
-    QTLIBRAW = $$replace(QTLIB, -private$, )
-    !isEqual(QTLIBRAW, $$QTLIB) {
-        want_var = QT.$${QTLIBRAW}.want_private
-        $$want_var = UsePrivate
-        using_privates = true
-        NEWQT += $$eval(QT.$${QTLIBRAW}.private_depends)
-    }
-    NEWQT += $$QTLIBRAW
-    contains(QT.$${QTLIBRAW}.CONFIG, auto_use_privates): CONFIG += auto_use_privates
-}
-# Topological resolution of modules based on their QT.<module>.depends variable
-QT = $$resolve_depends(NEWQT, "QT.")
-# Finally actually add the modules
-unset(BAD_QT)
-for(QTLIB, QT) {
-    QTLIBNAME = $$eval(QT.$${QTLIB}.name)
-    isEmpty(QTLIBNAME) {
-        BAD_QT += $$QTLIB
-        next()
-    }
-
-    target_qt:isEqual(TARGET, $$QTLIBNAME) {
-        warning($$TARGET cannot have a QT of $$QTLIB)
-        next()
-    }
-
-    qtAddModule($$QTLIB, $$eval(QT.$${QTLIB}.want_private))
-}
-!isEmpty(BAD_QT):error("Unknown module(s) in QT: $$BAD_QT")
-
+qtAddModules(QT, LIBS)
+qtAddModules(QT_PRIVATE, LIBS_PRIVATE)
 !isEmpty(using_privates):!auto_use_privates:!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
     message("This project is using private headers and will therefore be tied to this specific Qt module build version.")
     message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
