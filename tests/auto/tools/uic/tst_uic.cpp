@@ -46,6 +46,7 @@
 #include <QtCore/QProcess>
 #include <QtCore/QByteArray>
 #include <QtCore/QLibraryInfo>
+#include <QtCore/QTemporaryDir>
 
 class tst_uic : public QObject
 {
@@ -56,6 +57,9 @@ public:
 
 private Q_SLOTS:
     void initTestCase();
+    void cleanupTestCase();
+
+    void stdOut();
 
     void run();
     void run_data() const;
@@ -63,31 +67,34 @@ private Q_SLOTS:
     void compare();
     void compare_data() const;
 
-    void cleanupTestCase();
-
 private:
-    QString workingDir() const;
-
-    const QString command;
+    const QString m_command;
+    QString m_baseline;
+    QTemporaryDir m_generated;
 };
 
-
 tst_uic::tst_uic()
-    : command(QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/uic"))
+    : m_command(QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/uic"))
 {
+}
+
+static QByteArray msgProcessStartFailed(const QString &command, const QString &why)
+{
+    const QString result = QString::fromLatin1("Could not start %1: %2")
+            .arg(command, why);
+    return result.toLocal8Bit();
 }
 
 void tst_uic::initTestCase()
 {
+    m_baseline = QFINDTESTDATA("baseline");
+    QVERIFY2(!m_baseline.isEmpty(), "Could not find 'baseline'.");
     QProcess process;
-    process.start(command, QStringList(QLatin1String("-help")));
-
-    if (!process.waitForFinished()) {
-        const QString path = QString::fromLocal8Bit(qgetenv("PATH"));
-        QString message = QString::fromLatin1("'%1' could not be found when run from '%2'. Path: '%3' ").
-                          arg(command, QDir::currentPath(), path);
-        QFAIL(qPrintable(message));
-    }
+    process.start(m_command, QStringList(QLatin1String("-help")));
+    QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
+    QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
     // Print version
     const QString out = QString::fromLocal8Bit(process.readAllStandardError()).remove(QLatin1Char('\r'));
     const QStringList outLines = out.split(QLatin1Char('\n'));
@@ -96,11 +103,46 @@ void tst_uic::initTestCase()
                   arg(QString::fromLatin1(__DATE__), QDir::currentPath());
     if (!outLines.empty())
         msg += outLines.front();
-    qDebug() << msg;
-    process.terminate();
+    qDebug("%s", qPrintable(msg));
+}
 
-    QCOMPARE(QFileInfo(QLatin1String(SRCDIR "baseline")).exists(), true);
-    QCOMPARE(QFileInfo(QLatin1String(SRCDIR "generated_ui")).exists(), true);
+void tst_uic::cleanupTestCase()
+{
+    static const char envVar[] = "UIC_KEEP_GENERATED_FILES";
+    if (qgetenv(envVar).isEmpty()) {
+        qDebug("Note: The environment variable '%s' can be set to keep the temporary files for error analysis.", envVar);
+    } else {
+        m_generated.setAutoRemove(false);
+        qDebug("Keeping generated files in '%s'", qPrintable(QDir::toNativeSeparators(m_generated.path())));
+    }
+}
+
+void tst_uic::stdOut()
+{
+#ifdef Q_OS_WIN
+    QSKIP("QTBUG-26730");
+#endif
+    // Checks of everything works when using stdout and whether
+    // the OS file format conventions regarding newlines are met.
+    QDir baseline(m_baseline);
+    const QFileInfoList baselineFiles = baseline.entryInfoList(QStringList(QLatin1String("*.ui")), QDir::Files);
+    QVERIFY(!baselineFiles.isEmpty());
+    QProcess process;
+    process.start(m_command, QStringList(baselineFiles.front().absoluteFilePath()));
+    process.closeWriteChannel();
+    QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
+    QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
+    const QByteArray output = process.readAllStandardOutput();
+    QByteArray expected = "/********************************************************************************";
+#ifdef Q_OS_WIN
+    expected += "\r\n";
+#else
+    expected += '\n';
+#endif
+    expected += "** ";
+    QVERIFY2(output.startsWith(expected), (QByteArray("Got: ") + output.toHex()).constData());
 }
 
 void tst_uic::run()
@@ -109,20 +151,13 @@ void tst_uic::run()
     QFETCH(QString, generatedFile);
 
     QProcess process;
-    process.setWorkingDirectory(workingDir());
-
-    process.start(command, QStringList(originalFile) << QString(QLatin1String("-o"))
-        << generatedFile);
-
+    process.start(m_command, QStringList(originalFile)
+        << QString(QLatin1String("-o")) << generatedFile);
+    QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
+    QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
-
-    if (process.waitForFinished()) {
-        QCOMPARE(process.exitCode(), 0);
-        QCOMPARE(QFileInfo(generatedFile).exists(), true);
-    } else {
-        QString error(QLatin1String("could not generated file: "));
-        QFAIL(error.append(generatedFile).toUtf8().constData());
-    }
+    QCOMPARE(process.exitCode(), 0);
+    QCOMPARE(QFileInfo(generatedFile).exists(), true);
 }
 
 void tst_uic::run_data() const
@@ -130,17 +165,16 @@ void tst_uic::run_data() const
     QTest::addColumn<QString>("originalFile");
     QTest::addColumn<QString>("generatedFile");
 
-    QString cwd = workingDir().append(QDir::separator());
-
-    QDir dir(cwd + QLatin1String("baseline"));
-    QFileInfoList originalFiles = dir.entryInfoList(QStringList("*.ui"), QDir::Files);
-
-    dir.setPath(cwd + QLatin1String("generated_ui"));
-    for (int i = 0; i < originalFiles.count(); ++i) {
-        QTest::newRow(qPrintable(originalFiles.at(i).baseName()))
-            << originalFiles.at(i).absoluteFilePath()
-            << dir.absolutePath() + QDir::separator()
-                + originalFiles.at(i).fileName().append(QLatin1String(".h"));
+    QDir generated(m_generated.path());
+    QDir baseline(m_baseline);
+    const QFileInfoList baselineFiles = baseline.entryInfoList(QStringList("*.ui"), QDir::Files);
+    foreach (const QFileInfo &baselineFile, baselineFiles) {
+        const QString generatedFile = generated.absolutePath()
+            + QLatin1Char('/') + baselineFile.fileName()
+            + QLatin1String(".h");
+        QTest::newRow(qPrintable(baselineFile.baseName()))
+            << baselineFile.absoluteFilePath()
+            << generatedFile;
     }
 }
 
@@ -179,35 +213,16 @@ void tst_uic::compare_data() const
     QTest::addColumn<QString>("originalFile");
     QTest::addColumn<QString>("generatedFile");
 
-    QString cwd = workingDir().append(QDir::separator());
-
-    QDir dir(cwd + QLatin1String("baseline"));
-    QFileInfoList originalFiles = dir.entryInfoList(QStringList("*.h"), QDir::Files);
-
-    dir.setPath(cwd + QLatin1String("generated_ui"));
-    for (int i = 0; i < originalFiles.count(); ++i) {
-        QTest::newRow(qPrintable(originalFiles.at(i).baseName()))
-            << originalFiles.at(i).absoluteFilePath()
-            << dir.absolutePath() + QDir::separator()
-                + originalFiles.at(i).fileName();
+    QDir generated(m_generated.path());
+    QDir baseline(m_baseline);
+    const QFileInfoList baselineFiles = baseline.entryInfoList(QStringList("*.h"), QDir::Files);
+    foreach (const QFileInfo &baselineFile, baselineFiles) {
+        const QString generatedFile = generated.absolutePath()
+                + QLatin1Char('/') + baselineFile.fileName();
+        QTest::newRow(qPrintable(baselineFile.baseName()))
+            << baselineFile.absoluteFilePath()
+            << generatedFile;
     }
-}
-
-void tst_uic::cleanupTestCase()
-{
-    QString cwd = workingDir().append(QDir::separator());
-    QDir dir(cwd.append(QLatin1String("/generated_ui")));
-    QFileInfoList generatedFiles = dir.entryInfoList(QDir::Files);
-
-    foreach (const QFileInfo& fInfo, generatedFiles) {
-        QFile file(fInfo.absoluteFilePath());
-  //      file.remove();
-    }
-}
-
-QString tst_uic::workingDir() const
-{
-    return QDir::cleanPath(SRCDIR);
 }
 
 QTEST_MAIN(tst_uic)
