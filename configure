@@ -2918,32 +2918,7 @@ if [ "$OPT_HELP" = "yes" ]; then
     fi
 
     cat <<EOF
-Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir <dir>]
-        [-docdir <dir>] [-headerdir <dir>] [-plugindir <dir> ] [-importdir <dir>] [-datadir <dir>]
-        [-translationdir <dir>] [-sysconfdir <dir>] [-examplesdir <dir>] [-testsdir <dir>]
-        [-release] [-debug] [-debug-and-release] [-c++11] [-no-c++11]
-        [-developer-build] [-shared] [-static] [-no-fast] [-fast] [-no-largefile]
-        [-largefile] [-no-accessibility] [-accessibility] [-no-sql-<driver>] [-sql-<driver>]
-        [-plugin-sql-<driver>] [-system-sqlite]
-        [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
-        [-qt-zlib] [-system-zlib] [-no-gif] [-no-libpng] [-qt-libpng] [-system-libpng]
-        [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg] [-make <part>]
-        [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
-        [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
-        [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked] [-no-gui]
-        [-no-separate-debug-info] [-no-sse2]
-        [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx] [-no-neon]
-        [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info]
-        [-no-phonon-backend] [-phonon-backend] [-no-media-backend] [-media-backend]
-        [-no-audio-backend] [-audio-backend]
-        [-no-javascript-jit] [-javascript-jit] [-no-qml-debug] [-qml-debug]
-        [-no-optimized-qmake] [-optimized-qmake]
-        [-no-openssl] [-openssl] [-openssl-linked]
-        [-no-gtkstyle] [-gtkstyle]
-        [-qt-pcre] [-system-pcre]
-        [-device <name>] [-device-option <key=value>]
-        [additional platform specific options (see below)]
-
+Usage:  $relconf [options]
 
 Installation options:
 

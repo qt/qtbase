@@ -1571,36 +1571,7 @@ QString Configure::locateFile(const QString &fileName)
 bool Configure::displayHelp()
 {
     if (dictionary[ "HELP" ] == "yes") {
-        desc("Usage: configure\n"
-                    "[-release] [-debug] [-debug-and-release] [-shared] [-static]\n"
-                    "[-no-fast] [-fast] \n"
-                    "[-no-accessibility] [-accessibility] [-no-rtti] [-rtti]\n"
-                    "[-no-sql-<driver>] [-qt-sql-<driver>]\n"
-                    "[-plugin-sql-<driver>] [-system-sqlite]\n"
-                    "[-D <define>] [-I <includepath>] [-L <librarypath>]\n"
-                    "[-help] [-no-dsp] [-dsp] [-no-vcproj] [-vcproj]\n"
-                    "[-no-qmake] [-qmake] [-dont-process] [-process]\n"
-                    "[-no-style-<style>] [-qt-style-<style>] [-redo]\n"
-                    "[-saveconfig <config>] [-loadconfig <config>]\n"
-                    "[-qt-zlib] [-system-zlib] [-qt-pcre] [-system-pcre] [-no-gif]\n"
-                    "[-no-libpng] [-qt-libpng] [-system-libpng]\n"
-                    "[-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
-                    "[-sse2] [-no-sse2] [-sse3] [-no-sse3]\n"
-                    "[-ssse3] [-no-ssse3]\n"
-                    "[-sse4.1] [-no-sse4.1] [-sse4.2] [-no-sse4.2]\n"
-                    "[-avx] [-no-avx] [-avx2] [-no-avx2]\n"
-                    "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
-                    "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
-                    "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
-                    "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
-                    "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
-                    "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
-                    "[-no-webkit] [-webkit] [-webkit-debug]\n"
-                    "[-no-directwrite] [-directwrite] [-no-widgets] [-icu]\n"
-                    "[-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]\n"
-                    "[-iconv] [-sun-iconv] [-gnu-iconv] [-neon] [-no-neon]\n"
-                    "[-largefile] [-font-config] [-no-fontconfig] [-posix-ipc]\n"
-                    "[-glib] [-sysconfdir <dir>]\n\n", 0, 7);
+        desc("Usage: configure [options]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
