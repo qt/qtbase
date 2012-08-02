@@ -478,7 +478,8 @@ UnixMakefileGenerator::findLibraries()
                 if(opt.startsWith("-L")) {
                     QString lib = opt.mid(2);
                     QMakeLocalFileName f(lib);
-                    if (libdirs.contains(f)) {
+                    int idx = libdirs.indexOf(f);
+                    if (idx >= 0 && idx < libidx) {
                         it = l.erase(it);
                         continue;
                     }
