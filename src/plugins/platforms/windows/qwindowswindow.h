@@ -270,6 +270,9 @@ private:
     EGLSurface m_eglSurface;
     QSharedPointer<QWindowsEGLStaticContext> m_staticEglContext;
 #endif
+#ifdef Q_OS_WINCE
+    bool m_previouslyHidden;
+#endif
 };
 
 // Conveniences for window frames.

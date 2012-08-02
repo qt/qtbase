@@ -703,6 +703,9 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
 #ifdef QT_OPENGL_ES_2
    , m_eglSurface(0)
 #endif
+#ifdef Q_OS_WINCE
+  , m_previouslyHidden(false)
+#endif
 {
     if (aWindow->surfaceType() == QWindow::OpenGLSurface)
         setFlag(OpenGLSurface);
@@ -743,6 +746,14 @@ void QWindowsWindow::destroyWindow()
                        __FUNCTION__, m_eglSurface, this);
             eglDestroySurface(m_staticEglContext->display(), m_eglSurface);
             m_eglSurface = 0;
+        }
+#endif
+#ifdef Q_OS_WINCE
+        if ((m_windowState & Qt::WindowFullScreen) && !m_previouslyHidden) {
+            HWND handle = FindWindow(L"HHTaskBar", L"");
+            if (handle) {
+                ShowWindow(handle, SW_SHOW);
+            }
         }
 #endif
         if (m_data.hwnd != GetDesktopWindow())
@@ -1210,6 +1221,18 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
     }
 
     if ((oldState == Qt::WindowFullScreen) != (newState == Qt::WindowFullScreen)) {
+#ifdef Q_OS_WINCE
+        HWND handle = FindWindow(L"HHTaskBar", L"");
+        if (handle) {
+            if (newState == Qt::WindowFullScreen) {
+                BOOL hidden = ShowWindow(handle, SW_HIDE);
+                if (!hidden)
+                    m_previouslyHidden = true;
+            } else if (!m_previouslyHidden){
+                ShowWindow(handle, SW_SHOW);
+            }
+        }
+#endif
         if (newState == Qt::WindowFullScreen) {
 #ifndef Q_FLATTEN_EXPOSE
             UINT newStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
