@@ -1968,13 +1968,6 @@ while [ "$#" -gt 0 ]; do
     silent)
         CFG_SILENT="$VAL"
         ;;
-    phonon-backend)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_PHONON_BACKEND="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     dont-process)
         CFG_NOPROCESS=yes
         ;;
@@ -3014,9 +3007,6 @@ Configure options:
                          [ $CFG_SQL_AVAILABLE ]
 
     -system-sqlite ..... Use sqlite from the operating system.
-
-    -no-phonon-backend.. Do not build the platform phonon plugin.
- +  -phonon-backend..... Build the platform phonon plugin.
 
     -no-javascript-jit . Do not build the JavaScriptCore JIT compiler.
  +  -javascript-jit .... Build the JavaScriptCore JIT compiler.
@@ -4538,11 +4528,6 @@ if [ "$XPLATFORM_MINGW" = "yes" ]; then
 fi # X11/MINGW OpenGL
 
 if [ "$BUILD_ON_MAC" = "yes" ]; then
-    if [ "$CFG_PHONON" != "no" ]; then
-        # Always enable Phonon (unless it was explicitly disabled)
-        CFG_PHONON=yes
-    fi
-
     if [ "$CFG_COREWLAN" = "auto" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/corewlan "CoreWlan" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
             CFG_COREWLAN=yes
@@ -4891,8 +4876,6 @@ if [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_
 fi
     fi
 
-[ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_PHONON" != "no" ] && CFG_PHONON="yes"
-
 # freetype support
 [ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_LIBFREETYPE" = "auto" ] && CFG_LIBFREETYPE=no
 if [ "$CFG_LIBFREETYPE" = "auto" ]; then
@@ -5125,11 +5108,6 @@ fi
 #-------------------------------------------------------------------------------
 
 [ "$CFG_CXX11" = "yes" ] && QT_CONFIG="$QT_CONFIG c++11"
-
-# ### Vestige
-if [ "$CFG_PHONON_BACKEND" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG phonon-backend"
-fi
 
 # disable accessibility
 if [ "$CFG_ACCESSIBILITY" = "no" ]; then

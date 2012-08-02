@@ -222,10 +222,8 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "CE_CRT" ]          = "no";
     dictionary[ "CETEST" ]          = "auto";
     dictionary[ "CE_SIGNATURE" ]    = "no";
-    dictionary[ "PHONON_BACKEND" ]  = "yes";
     dictionary[ "AUDIO_BACKEND" ]   = "auto";
     dictionary[ "WMSDK" ]           = "auto";
-    dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "V8SNAPSHOT" ]      = "auto";
     dictionary[ "QML_DEBUG" ]       = "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
@@ -873,12 +871,6 @@ void Configure::parseCmdLine()
             dictionary[ "AUDIO_BACKEND" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-audio-backend") {
             dictionary[ "AUDIO_BACKEND" ] = "no";
-        } else if (configCmdLine.at(i) == "-no-phonon-backend") {
-            dictionary[ "PHONON_BACKEND" ] = "no";
-        } else if (configCmdLine.at(i) == "-phonon-backend") {
-            dictionary[ "PHONON_BACKEND" ] = "yes";
-        } else if (configCmdLine.at(i) == "-phonon-wince-ds9") {
-            dictionary[ "DIRECTSHOW" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-qml-debug") {
             dictionary[ "QML_DEBUG" ] = "no";
         } else if (configCmdLine.at(i) == "-qml-debug") {
@@ -1492,13 +1484,11 @@ void Configure::applySpecSpecifics()
         dictionary[ "AVX2" ]                = "no";
         dictionary[ "IWMMXT" ]              = "no";
         dictionary[ "CE_CRT" ]              = "yes";
-        dictionary[ "DIRECTSHOW" ]          = "no";
         dictionary[ "LARGE_FILE" ]          = "no";
         // We only apply MMX/IWMMXT for mkspecs we know they work
         if (dictionary[ "XQMAKESPEC" ].startsWith("wincewm")) {
             dictionary[ "MMX" ]    = "yes";
             dictionary[ "IWMMXT" ] = "yes";
-            dictionary[ "DIRECTSHOW" ] = "yes";
         }
     } else if (dictionary[ "XQMAKESPEC" ].startsWith("linux")) { //TODO actually wrong.
       //TODO
@@ -1759,8 +1749,6 @@ bool Configure::displayHelp()
         desc("DBUS", "no",       "-no-dbus",            "Do not compile in D-Bus support");
         desc("DBUS", "yes",      "-dbus",               "Compile in D-Bus support and load libdbus-1 dynamically");
         desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1");
-        desc("PHONON_BACKEND","no", "-no-phonon-backend","Do not compile the platform-specific Phonon backend-plugin");
-        desc("PHONON_BACKEND","yes","-phonon-backend",  "Compile in the platform-specific Phonon backend-plugin");
         desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into QtMultimedia");
         desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into QtMultimedia");
         desc("QML_DEBUG", "no",    "-no-qml-debug",     "Do not build the QML debugging support");
@@ -1807,8 +1795,6 @@ bool Configure::displayHelp()
         desc("CETEST", "no",       "-no-cetest",           "Do not compile Windows CE remote test application");
         desc("CETEST", "yes",      "-cetest",              "Compile Windows CE remote test application");
         desc(                      "-signature <file>",    "Use file for signing the target project");
-
-        desc("DIRECTSHOW", "no",   "-phonon-wince-ds9",    "Enable Phonon Direct Show 9 backend for Windows CE");
         return true;
     }
     return false;
@@ -1998,8 +1984,6 @@ bool Configure::checkAvailability(const QString &part)
         available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "OPENGL_ES_2")
         available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
-    else if (part == "DIRECTSHOW")
-        available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "SSE2")
         available = tryCompileProject("common/sse2");
     else if (part == "SSE3")
@@ -2031,27 +2015,8 @@ bool Configure::checkAvailability(const QString &part)
             cout << "Make sure the environment is set up for compiling with ActiveSync." << endl;
             dictionary[ "DONE" ] = "error";
         }
-    }
-    else if (part == "INCREDIBUILD_XGE")
+    } else if (part == "INCREDIBUILD_XGE") {
         available = findFile("BuildConsole.exe") && findFile("xgConsole.exe");
-    else if (part == "PHONON") {
-        available = findFile("vmr9.h") && findFile("dshow.h") && findFile("dmo.h") && findFile("dmodshow.h")
-            && (findFile("strmiids.lib") || findFile("libstrmiids.a"))
-            && (findFile("dmoguids.lib") || findFile("libdmoguids.a"))
-            && (findFile("msdmo.lib") || findFile("libmsdmo.a"))
-            && findFile("d3d9.h");
-
-        if (!available) {
-            cout << "All the required DirectShow/Direct3D files couldn't be found." << endl
-                 << "Make sure you have either the platform SDK AND the DirectShow SDK or the Windows SDK installed." << endl
-                 << "If you have the DirectShow SDK installed, please make sure that you have run the <path to SDK>\\SetEnv.Cmd script." << endl;
-            if (!findFile("vmr9.h"))  cout << "vmr9.h not found" << endl;
-            if (!findFile("dshow.h")) cout << "dshow.h not found" << endl;
-            if (!findFile("strmiids.lib")) cout << "strmiids.lib not found" << endl;
-            if (!findFile("dmoguids.lib")) cout << "dmoguids.lib not found" << endl;
-            if (!findFile("msdmo.lib")) cout << "msdmo.lib not found" << endl;
-            if (!findFile("d3d9.h")) cout << "d3d9.h not found" << endl;
-        }
     } else if (part == "WMSDK") {
         available = findFile("wmsdk.h");
     } else if (part == "V8SNAPSHOT") {
@@ -2474,10 +2439,6 @@ void Configure::generateOutputVars()
         qtConfig += "egl";
     }
 
-    // ### Vestige
-     if (dictionary["DIRECTSHOW"] == "yes")
-        qtConfig += "directshow";
-
     if (dictionary[ "OPENSSL" ] == "yes")
         qtConfig += "openssl";
     else if (dictionary[ "OPENSSL" ] == "linked")
@@ -2490,10 +2451,6 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "CETEST" ] == "yes")
         qtConfig += "cetest";
-
-    // ### Vestige
-    if (dictionary["PHONON_BACKEND"] == "yes")
-        qtConfig += "phonon-backend";
 
     // ### Vestige
     if (dictionary["AUDIO_BACKEND"] == "yes")
