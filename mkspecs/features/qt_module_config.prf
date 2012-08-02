@@ -51,9 +51,9 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_$${MODULE}.pri
 !build_pass {
 
     # Create a module .pri file
-    !isEmpty(QT_PRIVATE) {
-        contains(QT_PRIVATE, .*-private$):error("QT_PRIVATE may not contain *-private.")
-        module_privdep = "QT.$${MODULE}.private_depends = $$QT_PRIVATE"
+    !isEmpty(QT_FOR_PRIVATE) {
+        contains(QT_FOR_PRIVATE, .*-private$):error("QT_FOR_PRIVATE may not contain *-private.")
+        module_privdep = "QT.$${MODULE}.private_depends = $$QT_FOR_PRIVATE"
     } else {
         module_privdep =
     }
@@ -126,8 +126,8 @@ if(win32|mac):!macx-xcode {
 
 linux*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
-QT += $$QT_PRIVATE
-unset(QT_PRIVATE)
+QT += $$QT_FOR_PRIVATE
+unset(QT_FOR_PRIVATE)
 
 !build_pass:!internal_module:CONFIG += create_cmake
 
