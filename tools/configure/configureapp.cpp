@@ -3713,8 +3713,6 @@ void Configure::generateMakefiles()
                 args << (sourcePath + "/qtbase.pro");
                 args << "-o";
                 args << buildPath;
-                if (!dictionary[ "QMAKEADDITIONALARGS" ].isEmpty())
-                    args << dictionary[ "QMAKEADDITIONALARGS" ];
 
                 QDir::setCurrent(dirPath);
                 if (int exitCode = Environment::execute(args, QStringList(), QStringList())) {
@@ -3743,13 +3741,10 @@ void Configure::generateMakefiles()
 
                     args << QDir::toNativeSeparators(buildPath + "/bin/qmake.exe");
                     args << sourcePath + "/" + dirPath + projectName;
-                    args << dictionary[ "QMAKE_ALL_ARGS" ];
 
                     cout << "For " << qPrintable(QDir::toNativeSeparators(dirPath + projectName)) << endl;
                     args << "-o";
                     args << it->target;
-                    if (!dictionary[ "QMAKEADDITIONALARGS" ].isEmpty())
-                        args << dictionary[ "QMAKEADDITIONALARGS" ];
 
                     QDir::setCurrent(dirPath);
 
