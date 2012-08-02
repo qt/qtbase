@@ -110,6 +110,10 @@
 #    define Q_COMPILER_VARIADIC_MACROS
 #  endif
 
+// make sure that these aren't defined when Q_COMPILER_NOEXCEPT is defined
+#  define Q_DECL_NOEXCEPT  throw()
+#  define Q_DECL_NOEXCEPT_EXPR(x)
+
 #if defined(Q_CC_MSVC) && _MSC_VER >= 1600
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_AUTO_TYPE
@@ -724,7 +728,7 @@
 #ifdef Q_COMPILER_NOEXCEPT
 # define Q_DECL_NOEXCEPT noexcept
 # define Q_DECL_NOEXCEPT_EXPR(x) noexcept(x)
-#else
+#elif !defined(Q_DECL_NOEXCEPT)
 # define Q_DECL_NOEXCEPT
 # define Q_DECL_NOEXCEPT_EXPR(x)
 #endif
