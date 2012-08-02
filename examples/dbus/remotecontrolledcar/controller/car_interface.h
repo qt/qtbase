@@ -62,7 +62,7 @@
 /*
  * Proxy class for interface org.example.Examples.CarInterface
  */
-class ComTrolltechExamplesCarInterfaceInterface: public QDBusAbstractInterface
+class OrgExampleExamplesCarInterfaceInterface: public QDBusAbstractInterface
 {
     Q_OBJECT
 public:
@@ -70,9 +70,9 @@ public:
     { return "org.example.Examples.CarInterface"; }
 
 public:
-    ComTrolltechExamplesCarInterfaceInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);
+    OrgExampleExamplesCarInterfaceInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);
 
-    ~ComTrolltechExamplesCarInterfaceInterface();
+    ~OrgExampleExamplesCarInterfaceInterface();
 
 public Q_SLOTS: // METHODS
     inline QDBusPendingReply<> accelerate()
@@ -103,10 +103,10 @@ Q_SIGNALS: // SIGNALS
     void crashed();
 };
 
-namespace com {
-  namespace trolltech {
+namespace org {
+  namespace example {
     namespace Examples {
-      typedef ::ComTrolltechExamplesCarInterfaceInterface CarInterface;
+      typedef ::OrgExampleExamplesCarInterfaceInterface CarInterface;
     }
   }
 }

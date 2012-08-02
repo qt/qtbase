@@ -62,7 +62,7 @@
 /*
  * Proxy class for interface org.example.chat
  */
-class ComTrolltechChatInterface: public QDBusAbstractInterface
+class OrgExampleChatInterface: public QDBusAbstractInterface
 {
     Q_OBJECT
 public:
@@ -70,9 +70,9 @@ public:
     { return "org.example.chat"; }
 
 public:
-    ComTrolltechChatInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);
+    OrgExampleChatInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);
 
-    ~ComTrolltechChatInterface();
+    ~OrgExampleChatInterface();
 
 public Q_SLOTS: // METHODS
 Q_SIGNALS: // SIGNALS
@@ -80,9 +80,9 @@ Q_SIGNALS: // SIGNALS
     void message(const QString &nickname, const QString &text);
 };
 
-namespace com {
-  namespace trolltech {
-    typedef ::ComTrolltechChatInterface chat;
+namespace org {
+  namespace example {
+    typedef ::OrgExampleChatInterface chat;
   }
 }
 #endif

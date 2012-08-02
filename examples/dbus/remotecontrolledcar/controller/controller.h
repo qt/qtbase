@@ -62,7 +62,7 @@ private slots:
 
 private:
     Ui::Controller ui;
-    com::trolltech::Examples::CarInterface *car;
+    org::example::Examples::CarInterface *car;
 };
 
 #endif

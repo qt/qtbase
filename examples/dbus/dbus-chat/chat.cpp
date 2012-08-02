@@ -62,8 +62,8 @@ ChatMainWindow::ChatMainWindow()
     new ChatAdaptor(this);
     QDBusConnection::sessionBus().registerObject("/", this);
 
-    com::trolltech::chat *iface;
-    iface = new com::trolltech::chat(QString(), QString(), QDBusConnection::sessionBus(), this);
+    org::example::chat *iface;
+    iface = new org::example::chat(QString(), QString(), QDBusConnection::sessionBus(), this);
     //connect(iface, SIGNAL(message(QString,QString)), this, SLOT(messageSlot(QString,QString)));
     QDBusConnection::sessionBus().connect(QString(), QString(), "org.example.chat", "message", this, SLOT(messageSlot(QString,QString)));
     connect(iface, SIGNAL(action(QString,QString)), this, SLOT(actionSlot(QString,QString)));
