@@ -63,8 +63,6 @@ class QStringList;
 class QMatrix;
 class QTransform;
 class QVariant;
-class QColorProfile;
-
 template <class T> class QList;
 template <class T> class QVector;
 
@@ -130,12 +128,12 @@ public:
     };
 
     QImage();
-    QImage(const QSize &size, Format format, QColorProfile *profile = 0);
-    QImage(int width, int height, Format format, QColorProfile *profile = 0);
-    QImage(uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0, QColorProfile *profile = 0);
-    QImage(const uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0, QColorProfile *profile = 0);
-    QImage(uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0, QColorProfile *profile = 0);
-    QImage(const uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0, QColorProfile *profile = 0);
+    QImage(const QSize &size, Format format);
+    QImage(int width, int height, Format format);
+    QImage(uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
+    QImage(const uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
+    QImage(uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
+    QImage(const uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
 
 #ifndef QT_NO_IMAGEFORMAT_XPM
     explicit QImage(const char * const xpm[]);
