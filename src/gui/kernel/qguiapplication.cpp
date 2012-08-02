@@ -432,7 +432,7 @@ QWindow *QGuiApplication::modalWindow()
 void QGuiApplicationPrivate::updateBlockedStatus(QWindow *window)
 {
     bool shouldBeBlocked = false;
-    if (window->windowType() != Qt::Tool && !self->modalWindowList.isEmpty())
+    if ((window->windowType() & Qt::Popup) != Qt::Popup && !self->modalWindowList.isEmpty())
         shouldBeBlocked = self->isWindowBlocked(window);
 
     if (shouldBeBlocked != window->d_func()->blockedByModalWindow) {
