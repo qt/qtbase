@@ -47,11 +47,12 @@ find_package(Qt5Core REQUIRED)
 
 include("${_Qt5CTestMacros}")
 
-if(NOT ${CMAKE_VERSION} VERSION_LESS 2.8.8)
+if(NOT ${CMAKE_VERSION} VERSION_LESS 2.8.9)
     # Requires INCLUDE_DIRECTORIES target property in CMake 2.8.8
+    # and POSITION_INDEPENDENT_CODE target property in 2.8.9
     expect_pass(test_use_modules_function)
 else()
-    message("CMake version older than 2.8.8 (Found ${CMAKE_VERSION}). Not running test \"test_use_modules_function\"")
+    message("CMake version older than 2.8.9 (Found ${CMAKE_VERSION}). Not running test \"test_use_modules_function\"")
 endif()
 expect_pass(test_wrap_cpp_and_resources)
 expect_pass(test_dependent_modules)
