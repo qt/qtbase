@@ -40,18 +40,13 @@
 ****************************************************************************/
 
 #include "qplatformwindow.h"
+#include "qplatformwindow_p.h"
 
 #include <QtGui/qwindowsysteminterface.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qscreen.h>
 
 QT_BEGIN_NAMESPACE
-
-class QPlatformWindowPrivate
-{
-    QRect rect;
-    friend class QPlatformWindow;
-};
 
 /*!
     Constructs a platform window with the given top level window.
