@@ -114,17 +114,6 @@
 #  define Q_DECL_NOEXCEPT  throw()
 #  define Q_DECL_NOEXCEPT_EXPR(x)
 
-#if defined(Q_CC_MSVC) && _MSC_VER >= 1600
-#      define Q_COMPILER_RVALUE_REFS
-#      define Q_COMPILER_AUTO_TYPE
-#      define Q_COMPILER_LAMBDA
-#      define Q_COMPILER_DECLTYPE
-#      define Q_COMPILER_STATIC_ASSERT
-//  MSCV has std::initilizer_list, but do not support the braces initialization
-//#      define Q_COMPILER_INITIALIZER_LISTS
-#  endif
-
-
 #elif defined(__BORLANDC__) || defined(__TURBOC__)
 #  define Q_CC_BOR
 #  define Q_INLINE_TEMPLATE
