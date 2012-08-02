@@ -48,6 +48,8 @@ QT_BEGIN_NAMESPACE
 
 class QKmsWindow : public QPlatformWindow
 {
+    Q_DECLARE_PRIVATE(QPlatformWindow)
+
 public:
     QKmsWindow(QWindow *window);
 

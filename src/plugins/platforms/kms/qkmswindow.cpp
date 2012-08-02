@@ -43,22 +43,25 @@
 #include "qkmsscreen.h"
 
 #include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformwindow_p.h>
+
 QT_BEGIN_NAMESPACE
 
 QKmsWindow::QKmsWindow(QWindow *window)
     : QPlatformWindow(window)
 {
+    Q_D(QPlatformWindow);
     m_screen = QPlatformScreen::platformScreenForWindow(window);
-
     static_cast<QKmsScreen *>(m_screen)->initializeWithFormat(window->requestedFormat());
+    setGeometry(d->rect); // rect is set to window->geometry() in base ctor
 }
 
 void QKmsWindow::setGeometry(const QRect &rect)
 {
-    Q_UNUSED(rect)
-    //All Windows must be fullscreen
+    // All windows must be fullscreen
     QRect fullscreenRect = m_screen->availableGeometry();
-    QWindowSystemInterface::handleGeometryChange(window(), fullscreenRect);
+    if (rect != fullscreenRect)
+        QWindowSystemInterface::handleGeometryChange(window(), fullscreenRect);
 
     QPlatformWindow::setGeometry(fullscreenRect);
 }
