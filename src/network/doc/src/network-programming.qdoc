@@ -34,12 +34,11 @@
 */
 
 /*!
-    \page network-programming.html
-    \title Network Programming
-    \ingroup qt-network
-    \brief An Introduction to Network Programming with Qt
+    \page qtnetwork-programming.html
+    \title Network Programming with Qt
+    \brief Programming applications with networking capabilities
 
-    The QtNetwork module offers classes that allow you to write TCP/IP clients
+    The Qt Network module offers classes that allow you to write TCP/IP clients
     and servers. It offers lower-level classes such as QTcpSocket,
     QTcpServer and QUdpSocket that represent low level network concepts,
     and high level classes such as QNetworkRequest, QNetworkReply and
@@ -52,9 +51,8 @@
 
     \section1 Qt's Classes for Network Programming
 
-    The following classes provide support for network programming in Qt.
-
-    \annotatedlist network
+    The \l{Qt Network - C++ Classes} page contains a list of the C++ classes
+    in Qt Network.
 
     \section1 High Level Network Operations for HTTP and FTP
 

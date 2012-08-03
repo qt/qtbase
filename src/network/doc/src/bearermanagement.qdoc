@@ -29,7 +29,6 @@
 \page bearer-management.html
 
 \title Bearer Management
-\ingroup qt-network
 \brief An API to control the system's connectivity state.
 
 Bearer Management controls the connectivity state of the system so that

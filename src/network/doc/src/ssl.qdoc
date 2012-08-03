@@ -29,7 +29,6 @@
     \page ssl.html
     \title Secure Sockets Layer (SSL) Classes
     \brief Classes for secure communication over network sockets.
-    \ingroup qt-network
 
     \keyword SSL
 

@@ -26,8 +26,44 @@
 ****************************************************************************/
 
 /*!
+    \page qtnetwork-index.html
+    \title Qt Network
+    \brief A module that provides networking capabilities
+
+    Qt Network provides a set of APIs for programming applications that use
+    TCP/IP. Operations such as requests, cookies, and sending data over HTTP
+    are handled by various C++ classes.
+
+    \section1 Getting Started
+
+    To use Qt Network classes,add this directive into the C++ files:
+    \code
+    #include <QtNetwork>
+    \endcode
+    To link against the Qt Network module, add this line to the project file:
+    \code
+    QT += network
+    \endcode
+
+    \section1 Articles and Guides
+
+    These articles contain information about Qt Network setup and about
+    applications with networking capabilities.
+    \list
+    \li \l{Network Programming with Qt} - Programming applications with networking capabilities
+    \li \l{Bearer Management} - An API to control the system's connectivity state
+    \li \l{Secure Sockets Layer (SSL) Classes} - Classes for secure communication over network sockets
+    \endlist
+
+    \section1 API Reference
+    These are links to the API reference materials.
+    \list
+    \li \l{Qt Network - C++ Classes}
+    \endlist
+*/
+/*!
     \module QtNetwork
-    \title QtNetwork Module
+    \title Qt Network - C++ Classes
     \ingroup modules
 
     \brief The QtNetwork module provides classes to make network programming

@@ -28,7 +28,6 @@
 /*!
     \page datastreamformat.html
     \title Serializing Qt Data Types
-    \ingroup qt-network
     \brief Representations of data types that can be serialized by QDataStream.
 
     The \l QDataStream allows you to serialize some of the Qt data types.

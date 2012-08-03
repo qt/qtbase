@@ -28,7 +28,6 @@
 /*!
     \page resources.html
     \title The Qt Resource System
-    \ingroup qt-network
     \brief A platform-independent mechanism for storing binary files in an application.
 
     \keyword resource system
@@ -153,7 +152,7 @@
     argument.
 
     \code
-        rcc -no-compress myresources.qrc 
+        rcc -no-compress myresources.qrc
     \endcode
 
     \c rcc also gives you some control over the compression. You can
