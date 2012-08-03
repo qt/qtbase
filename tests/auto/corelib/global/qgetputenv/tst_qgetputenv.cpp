@@ -53,12 +53,27 @@ private slots:
 
 void tst_QGetPutEnv::getSetCheck()
 {
-    const char* varName = "should_not_exist";
+    const char varName[] = "should_not_exist";
+
+    QVERIFY(!qEnvironmentVariableIsSet(varName));
+    QVERIFY(qEnvironmentVariableIsEmpty(varName));
     QByteArray result = qgetenv(varName);
     QCOMPARE(result, QByteArray());
+
+#ifndef Q_OS_WIN
+    QVERIFY(qputenv(varName, "")); // deletes varName instead of making it empty, on Windows
+
+    QVERIFY(qEnvironmentVariableIsSet(varName));
+    QVERIFY(qEnvironmentVariableIsEmpty(varName));
+#endif
+
     QVERIFY(qputenv(varName, QByteArray("supervalue")));
+
+    QVERIFY(qEnvironmentVariableIsSet(varName));
+    QVERIFY(!qEnvironmentVariableIsEmpty(varName));
     result = qgetenv(varName);
     QVERIFY(result == "supervalue");
+
     qputenv(varName,QByteArray());
 }
 
