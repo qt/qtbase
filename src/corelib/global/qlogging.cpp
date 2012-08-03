@@ -93,6 +93,22 @@ QT_BEGIN_NAMESPACE
 extern bool usingWinMain;
 #endif
 
+#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB) || defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
+static void convert_to_wchar_t_elided(wchar_t *d, size_t space, const char *s) Q_DECL_NOEXCEPT
+{
+    size_t len = qstrlen(s);
+    if (len + 1 > space) {
+        const size_t skip = len - space + 4; // 4 for "..." + '\0'
+        s += skip;
+        for (int i = 0; i < 3; ++i)
+          *d++ = L'.';
+    }
+    while (*s)
+        *d++ = *s++;
+    *d++ = 0;
+}
+#endif
+
 #if !defined(QT_NO_EXCEPTIONS)
 /*!
     \internal
@@ -103,22 +119,26 @@ extern bool usingWinMain;
 static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap) Q_DECL_NOEXCEPT
 {
     char emergency_buf[256] = { '\0' };
-    emergency_buf[255] = '\0';
+    emergency_buf[sizeof emergency_buf - 1] = '\0';
+#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB) || defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
+    wchar_t emergency_bufL[sizeof emergency_buf];
+#endif
+
     if (msg)
-        qvsnprintf(emergency_buf, 255, msg, ap);
+        qvsnprintf(emergency_buf, sizeof emergency_buf - 1, msg, ap);
 
 #if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-#ifdef Q_OS_WINCE
-    OutputDebugStringW(reinterpret_cast<const wchar_t *> (
-                            QString::fromLatin1(emergency_buf).utf16()));
-#else
+# ifdef Q_OS_WINCE
+    convert_to_wchar_t_elided(emergency_bufL, sizeof emergency_buf, emergency_buf);
+    OutputDebugStringW(emergency_bufL);
+# else
     if (usingWinMain) {
         OutputDebugStringA(emergency_buf);
     } else {
         fprintf(stderr, "%s", emergency_buf);
         fflush(stderr);
     }
-#endif
+# endif
 #else
     fprintf(stderr, "%s", emergency_buf);
     fflush(stderr);
@@ -131,10 +151,12 @@ static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap) Q_DECL
         // get the current report mode
         int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
         _CrtSetReportMode(_CRT_ERROR, reportMode);
+# ifndef Q_OS_WINCE // otherwise already converted to wchar_t above
+        convert_to_wchar_t_elided(emergency_bufL, sizeof emergency_buf, emergency_buf);
+# endif
         int ret = _CrtDbgReportW(_CRT_ERROR, _CRT_WIDE(__FILE__), __LINE__,
                                  _CRT_WIDE(QT_VERSION_STR),
-                                 reinterpret_cast<const wchar_t *> (
-                                     QString::fromLatin1(msg).utf16()));
+                                 emergency_bufL);
         if (ret == 1)
             _CrtDbgBreak();
 #endif
@@ -729,12 +751,17 @@ void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, con
                 && qEnvironmentVariableIsSet("QT_FATAL_WARNINGS")) ) {
 
 #if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
+        wchar_t contextFileL[256];
+        // we probably should let the compiler do this for us, by
+        // declaring QMessageLogContext::file to be const wchar_t * in
+        // the first place, but the #ifdefery above is very complex
+        // and we wouldn't be able to change it later on...
+        convert_to_wchar_t_elided(contextFileL, sizeof contextFileL / sizeof *contextFileL, context.file);
         // get the current report mode
         int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
         _CrtSetReportMode(_CRT_ERROR, reportMode);
 
-        int ret = _CrtDbgReportW(_CRT_ERROR, reinterpret_cast<const wchar_t *> (
-                                     QString::fromLatin1(context.file).utf16()),
+        int ret = _CrtDbgReportW(_CRT_ERROR, contextFileL,
                                  context.line, _CRT_WIDE(QT_VERSION_STR),
                                  reinterpret_cast<const wchar_t *> (
                                      message.utf16()));
