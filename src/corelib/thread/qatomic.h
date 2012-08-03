@@ -61,17 +61,17 @@ class QAtomicInt : public QBasicAtomicInt
 {
 public:
     // Non-atomic API
-    inline QAtomicInt(int value = 0)
+    inline QAtomicInt(int value = 0) Q_DECL_NOTHROW
     {
         _q_value = value;
     }
 
-    inline QAtomicInt(const QAtomicInt &other)
+    inline QAtomicInt(const QAtomicInt &other) Q_DECL_NOTHROW
     {
         store(other.load());
     }
 
-    inline QAtomicInt &operator=(const QAtomicInt &other)
+    inline QAtomicInt &operator=(const QAtomicInt &other) Q_DECL_NOTHROW
     {
         this->store(other.load());
         return *this;
@@ -115,16 +115,16 @@ template <typename T>
 class QAtomicPointer : public QBasicAtomicPointer<T>
 {
 public:
-    inline QAtomicPointer(T *value = 0)
+    inline QAtomicPointer(T *value = 0) Q_DECL_NOTHROW
     {
         this->store(value);
     }
-    inline QAtomicPointer(const QAtomicPointer<T> &other)
+    inline QAtomicPointer(const QAtomicPointer<T> &other) Q_DECL_NOTHROW
     {
         this->store(other.load());
     }
 
-    inline QAtomicPointer<T> &operator=(const QAtomicPointer<T> &other)
+    inline QAtomicPointer<T> &operator=(const QAtomicPointer<T> &other) Q_DECL_NOTHROW
     {
         this->store(other.load());
         return *this;

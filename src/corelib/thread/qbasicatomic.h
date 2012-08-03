@@ -129,59 +129,59 @@ public:
     typename Ops::Type _q_value;
 
     // Non-atomic API
-    T load() const { return Ops::load(_q_value); }
-    void store(T newValue) { Ops::store(_q_value, newValue); }
+    T load() const Q_DECL_NOTHROW { return Ops::load(_q_value); }
+    void store(T newValue) Q_DECL_NOTHROW { Ops::store(_q_value, newValue); }
 
     // Atomic API, implemented in qatomic_XXX.h
 
-    T loadAcquire() const { return Ops::loadAcquire(_q_value); }
-    void storeRelease(T newValue) { Ops::storeRelease(_q_value, newValue); }
+    T loadAcquire() const Q_DECL_NOTHROW { return Ops::loadAcquire(_q_value); }
+    void storeRelease(T newValue) Q_DECL_NOTHROW { Ops::storeRelease(_q_value, newValue); }
 
-    static bool isReferenceCountingNative() { return Ops::isReferenceCountingNative(); }
-    static bool isReferenceCountingWaitFree() { return Ops::isReferenceCountingWaitFree(); }
+    static bool isReferenceCountingNative() Q_DECL_NOTHROW { return Ops::isReferenceCountingNative(); }
+    static bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return Ops::isReferenceCountingWaitFree(); }
 
-    bool ref() { return Ops::ref(_q_value); }
-    bool deref() { return Ops::deref(_q_value); }
+    bool ref() Q_DECL_NOTHROW { return Ops::ref(_q_value); }
+    bool deref() Q_DECL_NOTHROW { return Ops::deref(_q_value); }
 
-    static bool isTestAndSetNative() { return Ops::isTestAndSetNative(); }
-    static bool isTestAndSetWaitFree() { return Ops::isTestAndSetWaitFree(); }
+    static bool isTestAndSetNative() Q_DECL_NOTHROW { return Ops::isTestAndSetNative(); }
+    static bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return Ops::isTestAndSetWaitFree(); }
 
-    bool testAndSetRelaxed(T expectedValue, T newValue)
+    bool testAndSetRelaxed(T expectedValue, T newValue) Q_DECL_NOTHROW
     { return Ops::testAndSetRelaxed(_q_value, expectedValue, newValue); }
-    bool testAndSetAcquire(T expectedValue, T newValue)
+    bool testAndSetAcquire(T expectedValue, T newValue) Q_DECL_NOTHROW
     { return Ops::testAndSetAcquire(_q_value, expectedValue, newValue); }
-    bool testAndSetRelease(T expectedValue, T newValue)
+    bool testAndSetRelease(T expectedValue, T newValue) Q_DECL_NOTHROW
     { return Ops::testAndSetRelease(_q_value, expectedValue, newValue); }
-    bool testAndSetOrdered(T expectedValue, T newValue)
+    bool testAndSetOrdered(T expectedValue, T newValue) Q_DECL_NOTHROW
     { return Ops::testAndSetOrdered(_q_value, expectedValue, newValue); }
 
-    static bool isFetchAndStoreNative() { return Ops::isFetchAndStoreNative(); }
-    static bool isFetchAndStoreWaitFree() { return Ops::isFetchAndStoreWaitFree(); }
+    static bool isFetchAndStoreNative() Q_DECL_NOTHROW { return Ops::isFetchAndStoreNative(); }
+    static bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return Ops::isFetchAndStoreWaitFree(); }
 
-    T fetchAndStoreRelaxed(T newValue)
+    T fetchAndStoreRelaxed(T newValue) Q_DECL_NOTHROW
     { return Ops::fetchAndStoreRelaxed(_q_value, newValue); }
-    T fetchAndStoreAcquire(T newValue)
+    T fetchAndStoreAcquire(T newValue) Q_DECL_NOTHROW
     { return Ops::fetchAndStoreAcquire(_q_value, newValue); }
-    T fetchAndStoreRelease(T newValue)
+    T fetchAndStoreRelease(T newValue) Q_DECL_NOTHROW
     { return Ops::fetchAndStoreRelease(_q_value, newValue); }
-    T fetchAndStoreOrdered(T newValue)
+    T fetchAndStoreOrdered(T newValue) Q_DECL_NOTHROW
     { return Ops::fetchAndStoreOrdered(_q_value, newValue); }
 
-    static bool isFetchAndAddNative() { return Ops::isFetchAndAddNative(); }
-    static bool isFetchAndAddWaitFree() { return Ops::isFetchAndAddWaitFree(); }
+    static bool isFetchAndAddNative() Q_DECL_NOTHROW { return Ops::isFetchAndAddNative(); }
+    static bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return Ops::isFetchAndAddWaitFree(); }
 
-    T fetchAndAddRelaxed(T valueToAdd)
+    T fetchAndAddRelaxed(T valueToAdd) Q_DECL_NOTHROW
     { return Ops::fetchAndAddRelaxed(_q_value, valueToAdd); }
-    T fetchAndAddAcquire(T valueToAdd)
+    T fetchAndAddAcquire(T valueToAdd) Q_DECL_NOTHROW
     { return Ops::fetchAndAddAcquire(_q_value, valueToAdd); }
-    T fetchAndAddRelease(T valueToAdd)
+    T fetchAndAddRelease(T valueToAdd) Q_DECL_NOTHROW
     { return Ops::fetchAndAddRelease(_q_value, valueToAdd); }
-    T fetchAndAddOrdered(T valueToAdd)
+    T fetchAndAddOrdered(T valueToAdd) Q_DECL_NOTHROW
     { return Ops::fetchAndAddOrdered(_q_value, valueToAdd); }
 
 #if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
     QBasicAtomicInteger() = default;
-    constexpr QBasicAtomicInteger(T value) : _q_value(value) {}
+    constexpr QBasicAtomicInteger(T value) Q_DECL_NOTHROW : _q_value(value) {}
     QBasicAtomicInteger(const QBasicAtomicInteger &) = delete;
     QBasicAtomicInteger &operator=(const QBasicAtomicInteger &) = delete;
     QBasicAtomicInteger &operator=(const QBasicAtomicInteger &) volatile = delete;
@@ -200,52 +200,52 @@ public:
     AtomicType _q_value;
 
     // Non-atomic API
-    Type load() const { return _q_value; }
-    void store(Type newValue) { _q_value = newValue; }
+    Type load() const Q_DECL_NOTHROW { return _q_value; }
+    void store(Type newValue) Q_DECL_NOTHROW { _q_value = newValue; }
 
     // Atomic API, implemented in qatomic_XXX.h
-    Type loadAcquire() const { return Ops::loadAcquire(_q_value); }
-    void storeRelease(Type newValue) { Ops::storeRelease(_q_value, newValue); }
+    Type loadAcquire() const Q_DECL_NOTHROW { return Ops::loadAcquire(_q_value); }
+    void storeRelease(Type newValue) Q_DECL_NOTHROW { Ops::storeRelease(_q_value, newValue); }
 
-    static bool isTestAndSetNative() { return Ops::isTestAndSetNative(); }
-    static bool isTestAndSetWaitFree() { return Ops::isTestAndSetWaitFree(); }
+    static bool isTestAndSetNative() Q_DECL_NOTHROW { return Ops::isTestAndSetNative(); }
+    static bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return Ops::isTestAndSetWaitFree(); }
 
-    bool testAndSetRelaxed(Type expectedValue, Type newValue)
+    bool testAndSetRelaxed(Type expectedValue, Type newValue) Q_DECL_NOTHROW
     { return Ops::testAndSetRelaxed(_q_value, expectedValue, newValue); }
-    bool testAndSetAcquire(Type expectedValue, Type newValue)
+    bool testAndSetAcquire(Type expectedValue, Type newValue) Q_DECL_NOTHROW
     { return Ops::testAndSetAcquire(_q_value, expectedValue, newValue); }
-    bool testAndSetRelease(Type expectedValue, Type newValue)
+    bool testAndSetRelease(Type expectedValue, Type newValue) Q_DECL_NOTHROW
     { return Ops::testAndSetRelease(_q_value, expectedValue, newValue); }
-    bool testAndSetOrdered(Type expectedValue, Type newValue)
+    bool testAndSetOrdered(Type expectedValue, Type newValue) Q_DECL_NOTHROW
     { return Ops::testAndSetOrdered(_q_value, expectedValue, newValue); }
 
-    static bool isFetchAndStoreNative() { return Ops::isFetchAndStoreNative(); }
-    static bool isFetchAndStoreWaitFree() { return Ops::isFetchAndStoreWaitFree(); }
+    static bool isFetchAndStoreNative() Q_DECL_NOTHROW { return Ops::isFetchAndStoreNative(); }
+    static bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return Ops::isFetchAndStoreWaitFree(); }
 
-    Type fetchAndStoreRelaxed(Type newValue)
+    Type fetchAndStoreRelaxed(Type newValue) Q_DECL_NOTHROW
     { return Ops::fetchAndStoreRelaxed(_q_value, newValue); }
-    Type fetchAndStoreAcquire(Type newValue)
+    Type fetchAndStoreAcquire(Type newValue) Q_DECL_NOTHROW
     { return Ops::fetchAndStoreAcquire(_q_value, newValue); }
-    Type fetchAndStoreRelease(Type newValue)
+    Type fetchAndStoreRelease(Type newValue) Q_DECL_NOTHROW
     { return Ops::fetchAndStoreRelease(_q_value, newValue); }
-    Type fetchAndStoreOrdered(Type newValue)
+    Type fetchAndStoreOrdered(Type newValue) Q_DECL_NOTHROW
     { return Ops::fetchAndStoreOrdered(_q_value, newValue); }
 
-    static bool isFetchAndAddNative() { return Ops::isFetchAndAddNative(); }
-    static bool isFetchAndAddWaitFree() { return Ops::isFetchAndAddWaitFree(); }
+    static bool isFetchAndAddNative() Q_DECL_NOTHROW { return Ops::isFetchAndAddNative(); }
+    static bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return Ops::isFetchAndAddWaitFree(); }
 
-    Type fetchAndAddRelaxed(qptrdiff valueToAdd)
+    Type fetchAndAddRelaxed(qptrdiff valueToAdd) Q_DECL_NOTHROW
     { return Ops::fetchAndAddRelaxed(_q_value, valueToAdd); }
-    Type fetchAndAddAcquire(qptrdiff valueToAdd)
+    Type fetchAndAddAcquire(qptrdiff valueToAdd) Q_DECL_NOTHROW
     { return Ops::fetchAndAddAcquire(_q_value, valueToAdd); }
-    Type fetchAndAddRelease(qptrdiff valueToAdd)
+    Type fetchAndAddRelease(qptrdiff valueToAdd) Q_DECL_NOTHROW
     { return Ops::fetchAndAddRelease(_q_value, valueToAdd); }
-    Type fetchAndAddOrdered(qptrdiff valueToAdd)
+    Type fetchAndAddOrdered(qptrdiff valueToAdd) Q_DECL_NOTHROW
     { return Ops::fetchAndAddOrdered(_q_value, valueToAdd); }
 
 #if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
     QBasicAtomicPointer() = default;
-    constexpr QBasicAtomicPointer(Type value) : _q_value(value) {}
+    constexpr QBasicAtomicPointer(Type value) Q_DECL_NOTHROW : _q_value(value) {}
     QBasicAtomicPointer(const QBasicAtomicPointer &) = delete;
     QBasicAtomicPointer &operator=(const QBasicAtomicPointer &) = delete;
     QBasicAtomicPointer &operator=(const QBasicAtomicPointer &) volatile = delete;
