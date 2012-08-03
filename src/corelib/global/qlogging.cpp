@@ -100,7 +100,7 @@ extern bool usingWinMain;
     everything after character 255, but will work in out of memory situations.
     Stop the execution afterwards.
 */
-static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
+static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap) Q_DECL_NOEXCEPT
 {
     char emergency_buf[256] = { '\0' };
     emergency_buf[255] = '\0';
