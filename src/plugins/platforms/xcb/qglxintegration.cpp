@@ -88,13 +88,6 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
     GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),format);
 
     if (config) {
-        m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, m_shareContext, TRUE);
-        if (!m_context && m_shareContext) {
-            // re-try without a shared glx context
-            m_shareContext = 0;
-            m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, 0, TRUE);
-        }
-
         // Resolve entry point for glXCreateContextAttribsARB
         glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
         glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
@@ -116,19 +109,23 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
 
             contextAttributes << None;
 
-            GLXContext context = 0;
-            context = glXCreateContextAttribsARB(DISPLAY_FROM_XCB(screen), config, m_shareContext, true, contextAttributes.data());
+            m_context = glXCreateContextAttribsARB(DISPLAY_FROM_XCB(screen), config, m_shareContext, true, contextAttributes.data());
             if (!m_context && m_shareContext) {
                 // re-try without a shared glx context
-                m_shareContext = 0;
-                context = glXCreateContextAttribsARB(DISPLAY_FROM_XCB(screen), config, 0, true, contextAttributes.data());
+                m_context = glXCreateContextAttribsARB(DISPLAY_FROM_XCB(screen), config, 0, true, contextAttributes.data());
+                if (m_context)
+                    m_shareContext = 0;
             }
+        }
 
-            // Set this as our context and destroy the old context
-            if (context) {
-                glXMakeCurrent(DISPLAY_FROM_XCB(screen), 0, 0);
-                glXDestroyContext(DISPLAY_FROM_XCB(screen), m_context);
-                m_context = context;
+        // Could not create a context using glXCreateContextAttribsARB, falling back to glXCreateNewContext.
+        if (!m_context) {
+            m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, m_shareContext, TRUE);
+            if (!m_context && m_shareContext) {
+                // re-try without a shared glx context
+                m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, 0, TRUE);
+                if (m_context)
+                    m_shareContext = 0;
             }
         }
 
