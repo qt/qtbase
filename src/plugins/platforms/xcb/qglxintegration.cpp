@@ -105,7 +105,7 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
             contextAttributes << GLX_CONTEXT_MAJOR_VERSION_ARB << m_format.majorVersion()
                               << GLX_CONTEXT_MINOR_VERSION_ARB << m_format.minorVersion();
 
-            if (m_format.majorVersion() >= 3 || (m_format.majorVersion() == 3 && m_format.minorVersion() > 1)) {
+            if (m_format.majorVersion() > 3 || (m_format.majorVersion() == 3 && m_format.minorVersion() > 1)) {
                 if (m_format.profile() == QSurfaceFormat::CoreProfile) {
                     contextAttributes << GLX_CONTEXT_FLAGS_ARB << GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB
                                       << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
