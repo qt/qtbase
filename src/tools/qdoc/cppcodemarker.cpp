@@ -433,14 +433,14 @@ QString CppCodeMarker::markedUpFullName(const Node *node, const Node *relative)
     }
 }
 
-QString CppCodeMarker::markedUpEnumValue(const QString &enumValue,
-                                         const Node *relative)
+QString CppCodeMarker::markedUpEnumValue(const QString &enumValue, const Node *relative)
 {
     const Node *node = relative->parent();
     QString fullName;
     while (node->parent()) {
         fullName.prepend(markedUpName(node));
-        if (node->parent() == relative || node->parent()->name().isEmpty())
+        if (node->parent() == relative || node->parent()->name().isEmpty() ||
+            node->parent()->isCollisionNode())
             break;
         fullName.prepend("<@op>::</@op>");
         node = node->parent();
@@ -564,7 +564,6 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
 
             QStack<const ClassNode *> stack;
             stack.push(classe);
-
             while (!stack.isEmpty()) {
                 const ClassNode *ancestorClass = stack.pop();
 

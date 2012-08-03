@@ -917,10 +917,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         else { // (atom->string() == ATOM_LIST_VALUE)
             // ### Trenton
 
-            out() << "<tr><td class=\"topAlign\"><tt>"
-                  << protectEnc(plainCode(marker->markedUpEnumValue(atom->next()->string(),
-                                                                    relative)))
-                  << "</tt></td><td class=\"topAlign\">";
+            QString t= protectEnc(plainCode(marker->markedUpEnumValue(atom->next()->string(),relative)));
+            out() << "<tr><td class=\"topAlign\"><tt>" << t << "</tt></td><td class=\"topAlign\">";
 
             QString itemValue;
             if (relative->type() == Node::Enum) {
