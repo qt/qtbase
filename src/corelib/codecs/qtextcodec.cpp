@@ -683,7 +683,9 @@ QTextCodec* QTextCodec::codecForLocale()
     QTextCodec *codec = globalData->codecForLocale.loadAcquire();
     if (!codec) {
 #ifdef QT_USE_ICU
+        textCodecsMutex()->lock();
         codec = QIcuCodec::defaultCodecUnlocked();
+        textCodecsMutex()->unlock();
 #else
         // setupLocaleMapper locks as necessary
         codec = setupLocaleMapper();
