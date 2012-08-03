@@ -212,7 +212,7 @@ QDebug QMessageLogger::debug() const
 
     \sa QNoDebug, qDebug()
 */
-QNoDebug QMessageLogger::noDebug() const
+QNoDebug QMessageLogger::noDebug() const Q_DECL_NOTHROW
 {
     return QNoDebug();
 }

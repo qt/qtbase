@@ -128,7 +128,7 @@ public:
     QDebug warning() const;
     QDebug critical() const;
 
-    QNoDebug noDebug() const;
+    QNoDebug noDebug() const Q_DECL_NOTHROW;
 #endif // QT_NO_DEBUG_STREAM
 
 private:
