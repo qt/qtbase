@@ -135,9 +135,6 @@ Q_DECLARE_SHARED(QDebug)
 class QNoDebug
 {
 public:
-    inline QNoDebug(){}
-    inline QNoDebug(const QDebug &){}
-    inline ~QNoDebug(){}
     inline QNoDebug &operator<<(QTextStreamFunction) { return *this; }
     inline QNoDebug &operator<<(QTextStreamManipulator) { return *this; }
     inline QNoDebug &space() { return *this; }
