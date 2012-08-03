@@ -52,8 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-extern QMutex *qTextCodecsMutex();
-
 static void qIcuCodecStateFree(QTextCodec::ConverterState *state)
 {
     ucnv_close(static_cast<UConverter *>(state->d));
@@ -376,7 +374,7 @@ static QTextCodec *loadQtCodec(const char *name)
     return 0;
 }
 
-
+/// \threadsafe
 QList<QByteArray> QIcuCodec::availableCodecs()
 {
     QList<QByteArray> codecs;
@@ -412,6 +410,7 @@ QList<QByteArray> QIcuCodec::availableCodecs()
     return codecs;
 }
 
+/// \threadsafe
 QList<int> QIcuCodec::availableMibs()
 {
     QList<int> mibs;
@@ -424,7 +423,7 @@ QList<int> QIcuCodec::availableMibs()
     return mibs;
 }
 
-QTextCodec *QIcuCodec::defaultCodec()
+QTextCodec *QIcuCodec::defaultCodecUnlocked()
 {
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
     if (!globalData)
@@ -438,13 +437,13 @@ QTextCodec *QIcuCodec::defaultCodec()
 #else
     const char *name = ucnv_getDefaultName();
 #endif
-    c = codecForName(name);
+    c = codecForNameUnlocked(name);
     globalData->codecForLocale.storeRelease(c);
     return c;
 }
 
 
-QTextCodec *QIcuCodec::codecForName(const char *name)
+QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
 {
     // backwards compatibility with Qt 4.x
     if (!qstrcmp(name, "CP949"))
@@ -525,11 +524,11 @@ QTextCodec *QIcuCodec::codecForName(const char *name)
 }
 
 
-QTextCodec *QIcuCodec::codecForMib(int mib)
+QTextCodec *QIcuCodec::codecForMibUnlocked(int mib)
 {
     for (int i = 0; i < mibToNameSize; ++i) {
         if (mibToName[i].mib == mib)
-            return codecForName(mibToNameTable + mibToName[i].index);
+            return codecForNameUnlocked(mibToNameTable + mibToName[i].index);
     }
     return 0;
 }

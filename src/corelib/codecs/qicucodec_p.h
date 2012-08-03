@@ -67,10 +67,10 @@ public:
     static QList<QByteArray> availableCodecs();
     static QList<int> availableMibs();
 
-    static QTextCodec *defaultCodec();
+    static QTextCodec *defaultCodecUnlocked();
 
-    static QTextCodec *codecForName(const char *name);
-    static QTextCodec *codecForMib(int mib);
+    static QTextCodec *codecForNameUnlocked(const char *name);
+    static QTextCodec *codecForMibUnlocked(int mib);
 
     QString convertToUnicode(const char *, int, ConverterState *) const;
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;

@@ -146,6 +146,7 @@ static QTextCodec *checkForCodec(const QByteArray &name) {
 
 static void setup();
 
+// \threadsafe
 // this returns the codec the method sets up as locale codec to
 // avoid a race condition in codecForLocale() when
 // setCodecForLocale(0) is called at the same time.
@@ -495,6 +496,7 @@ QTextCodec::~QTextCodec()
 */
 
 /*!
+    \threadsafe
     Searches all installed QTextCodec objects and returns the one
     which best matches \a name; the match is case-insensitive. Returns
     0 if no codec matching the name \a name could be found.
@@ -538,12 +540,13 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
 
     return 0;
 #else
-    return QIcuCodec::codecForName(name);
+    return QIcuCodec::codecForNameUnlocked(name);
 #endif
 }
 
 
 /*!
+    \threadsafe
     Returns the QTextCodec which matches the
     \l{QTextCodec::mibEnum()}{MIBenum} \a mib.
 */
@@ -578,13 +581,14 @@ QTextCodec* QTextCodec::codecForMib(int mib)
     }
 
 #ifdef QT_USE_ICU
-    return QIcuCodec::codecForMib(mib);
+    return QIcuCodec::codecForMibUnlocked(mib);
 #endif
 
     return 0;
 }
 
 /*!
+    \threadsafe
     Returns the list of all available codecs, by name. Call
     QTextCodec::codecForName() to obtain the QTextCodec for the name.
 
@@ -616,6 +620,7 @@ QList<QByteArray> QTextCodec::availableCodecs()
 }
 
 /*!
+    \threadsafe
     Returns the list of MIBs for all available codecs. Call
     QTextCodec::codecForMib() to obtain the QTextCodec for the MIB.
 
@@ -659,6 +664,7 @@ void QTextCodec::setCodecForLocale(QTextCodec *c)
 }
 
 /*!
+    \threadsafe
     Returns a pointer to the codec most suitable for this locale.
 
     On Windows, the codec will be based on a system locale. On Unix
@@ -677,8 +683,9 @@ QTextCodec* QTextCodec::codecForLocale()
     QTextCodec *codec = globalData->codecForLocale.loadAcquire();
     if (!codec) {
 #ifdef QT_USE_ICU
-        codec = QIcuCodec::defaultCodec();
+        codec = QIcuCodec::defaultCodecUnlocked();
 #else
+        // setupLocaleMapper locks as necessary
         codec = setupLocaleMapper();
 #endif
     }
