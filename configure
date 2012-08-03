@@ -5875,7 +5875,7 @@ if [ -n "$PKG_CONFIG_SYSROOT_DIR" ] || [ -n "$PKG_CONFIG_LIBDIR" ]; then
     echo >> "$QTCONFIG.tmp"
 fi
 
-if [ -n "$CFG_SYSROOT" ] && [ "$CFG_GCC_SYSROOT" = "yes"]; then
+if [ -n "$CFG_SYSROOT" ] && [ "$CFG_GCC_SYSROOT" = "yes" ]; then
     echo "# sysroot" >>"$QTCONFIG.tmp"
     echo "!host_build {" >>"$QTCONFIG.tmp"
     echo "    QMAKE_CFLAGS    += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
