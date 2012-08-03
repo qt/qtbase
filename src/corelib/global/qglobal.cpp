@@ -1913,10 +1913,19 @@ void qBadAlloc()
     QT_THROW(std::bad_alloc());
 }
 
+/* \internal
+   Allows you to call std::terminate() without including <exception>.
+   Called internally from QT_TERMINATE_ON_EXCEPTION
+*/
+Q_NORETURN void qTerminate() Q_DECL_NOTHROW
+{
+    std::terminate();
+}
+
 /*
   The Q_ASSERT macro calls this function when the test fails.
 */
-void qt_assert(const char *assertion, const char *file, int line)
+void qt_assert(const char *assertion, const char *file, int line) Q_DECL_NOTHROW
 {
     qFatal("ASSERT: \"%s\" in file %s, line %d", assertion, file, line);
 }
@@ -1924,7 +1933,7 @@ void qt_assert(const char *assertion, const char *file, int line)
 /*
   The Q_ASSERT_X macro calls this function when the test fails.
 */
-void qt_assert_x(const char *where, const char *what, const char *file, int line)
+void qt_assert_x(const char *where, const char *what, const char *file, int line) Q_DECL_NOTHROW
 {
     qFatal("ASSERT failure in %s: \"%s\", file %s, line %d", where, what, file, line);
 }
@@ -3031,6 +3040,38 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     Q_DECL_NOEXCEPT/Q_DECL_NOEXCEPT_EXPR instead.
 
     \sa Q_DECL_NOEXCEPT, Q_DECL_NOEXCEPT_EXPR
+*/
+
+/*!
+    \macro QT_TERMINATE_ON_EXCEPTION(expr)
+    \relates <QtGlobal>
+    \internal
+
+    In general, use of the Q_DECL_NOEXCEPT macro is preferred over
+    Q_DECL_NOTHROW, because it exhibits well-defined behavior and
+    supports the more powerful Q_DECL_NOEXCEPT_EXPR variant. However,
+    use of Q_DECL_NOTHROW has the advantage that Windows builds
+    benefit on a wide range or compiler versions that do not yet
+    support the C++11 noexcept feature.
+
+    It may therefore be beneficial to use Q_DECL_NOTHROW and emulate
+    the C++11 behavior manually with an embedded try/catch.
+
+    Qt provides the QT_TERMINATE_ON_EXCEPTION(expr) macro for this
+    purpose. It either expands to \c expr (if Qt is compiled without
+    exception support or the compiler supports C++11 noexcept
+    semantics) or to
+    \code
+    try { expr; } catch(...) { qTerminate(); }
+    \endocde
+    otherwise.
+
+    Since this macro expands to just \c expr if the compiler supports
+    C++11 noexcept, expecting the compiler to take over responsibility
+    of calling std::terminate() in that case, it should not be used
+    outside Q_DECL_NOTHROW functions.
+
+    \sa Q_DECL_NOEXCEPT, Q_DECL_NOTHROW, qTerminate()
 */
 
 /*!

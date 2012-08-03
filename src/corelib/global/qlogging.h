@@ -117,7 +117,7 @@ public:
 #ifndef Q_CC_MSVC
     Q_NORETURN
 #endif
-    void fatal(const char *msg, ...)
+    void fatal(const char *msg, ...) Q_DECL_NOTHROW
 #if defined(Q_CC_GNU) && !defined(__INSURE__)
     __attribute__ ((format (printf, 2, 3)))
 #endif

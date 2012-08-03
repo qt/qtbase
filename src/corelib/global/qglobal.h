@@ -546,11 +546,18 @@ inline void qt_noop(void) {}
 #  define QT_CATCH(A) else
 #  define QT_THROW(A) qt_noop()
 #  define QT_RETHROW qt_noop()
+#  define QT_TERMINATE_ON_EXCEPTION(expr) do { expr; } while (0)
 #else
 #  define QT_TRY try
 #  define QT_CATCH(A) catch (A)
 #  define QT_THROW(A) throw A
 #  define QT_RETHROW throw
+Q_NORETURN Q_CORE_EXPORT void qTerminate() Q_DECL_NOTHROW;
+#  ifdef Q_COMPILER_NOEXCEPT
+#    define QT_TERMINATE_ON_EXCEPTION(expr) do { expr; } while (0)
+#  else
+#    define QT_TERMINATE_ON_EXCEPTION(expr) do { try { expr; } catch (...) { qTerminate(); } } while (0)
+#  endif
 #endif
 
 Q_CORE_EXPORT const char *qVersion();
@@ -593,7 +600,7 @@ Q_CORE_EXPORT QString qt_error_string(int errorCode = -1);
 #ifndef Q_CC_MSVC
 Q_NORETURN
 #endif
-Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line);
+Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line) Q_DECL_NOTHROW;
 
 #if !defined(Q_ASSERT)
 #  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
@@ -610,7 +617,7 @@ Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line);
 #ifndef Q_CC_MSVC
 Q_NORETURN
 #endif
-Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *file, int line);
+Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *file, int line) Q_DECL_NOTHROW;
 
 #if !defined(Q_ASSERT_X)
 #  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)

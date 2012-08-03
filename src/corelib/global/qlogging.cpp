@@ -240,11 +240,11 @@ QDebug QMessageLogger::critical()
 #endif
 
 #undef qFatal
-void QMessageLogger::fatal(const char *msg, ...)
+void QMessageLogger::fatal(const char *msg, ...) Q_DECL_NOTHROW
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    qt_message(QtFatalMsg, context, msg, ap);
+    QT_TERMINATE_ON_EXCEPTION(qt_message(QtFatalMsg, context, msg, ap));
 #ifndef Q_CC_MSVC
     Q_UNREACHABLE();
 #endif
