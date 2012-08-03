@@ -108,10 +108,6 @@ template <typename T> struct QAtomicOps
     typedef typename QAtomicAdditiveType<T>::AdditiveT _AdditiveType;
     static const int AddScale = QAtomicAdditiveType<T>::AddScale;
 
-    static void acquireMemoryFence() { }
-    static void releaseMemoryFence() { }
-    static void orderedMemoryFence() { }
-
     static inline
     T load(const Type &_q_value)
     {

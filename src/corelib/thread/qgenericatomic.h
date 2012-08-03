@@ -80,9 +80,17 @@ template <typename BaseClass> struct QGenericAtomicOps
 {
     template <typename T> struct AtomicType { typedef T Type; typedef T *PointerType; };
 
-    static void acquireMemoryFence() { BaseClass::orderedMemoryFence(); }
-    static void releaseMemoryFence() { BaseClass::orderedMemoryFence(); }
-    static void orderedMemoryFence() { }
+    template <typename T> static void acquireMemoryFence(const T &_q_value)
+    {
+        BaseClass::orderedMemoryFence(_q_value);
+    }
+    template <typename T> static void releaseMemoryFence(const T &_q_value)
+    {
+        BaseClass::orderedMemoryFence(_q_value);
+    }
+    template <typename T> static void orderedMemoryFence(const T &)
+    {
+    }
 
     template <typename T> static inline always_inline
     T load(const T &_q_value)
@@ -100,14 +108,14 @@ template <typename BaseClass> struct QGenericAtomicOps
     T loadAcquire(const T &_q_value)
     {
         T tmp = *static_cast<const volatile T *>(&_q_value);
-        BaseClass::acquireMemoryFence();
+        BaseClass::acquireMemoryFence(_q_value);
         return tmp;
     }
 
     template <typename T, typename X> static inline always_inline
     void storeRelease(T &_q_value, X newValue)
     {
-        BaseClass::releaseMemoryFence();
+        BaseClass::releaseMemoryFence(_q_value);
         *static_cast<volatile T *>(&_q_value) = newValue;
     }
 
@@ -140,21 +148,21 @@ template <typename BaseClass> struct QGenericAtomicOps
     bool testAndSetAcquire(T &_q_value, X expectedValue, X newValue)
     {
         bool tmp = BaseClass::testAndSetRelaxed(_q_value, expectedValue, newValue);
-        BaseClass::acquireMemoryFence();
+        BaseClass::acquireMemoryFence(_q_value);
         return tmp;
     }
 
     template <typename T, typename X> static inline always_inline
     bool testAndSetRelease(T &_q_value, X expectedValue, X newValue)
     {
-        BaseClass::releaseMemoryFence();
+        BaseClass::releaseMemoryFence(_q_value);
         return BaseClass::testAndSetRelaxed(_q_value, expectedValue, newValue);
     }
 
     template <typename T, typename X> static inline always_inline
     bool testAndSetOrdered(T &_q_value, X expectedValue, X newValue)
     {
-        BaseClass::orderedMemoryFence();
+        BaseClass::orderedMemoryFence(_q_value);
         return BaseClass::testAndSetRelaxed(_q_value, expectedValue, newValue);
     }
 
@@ -176,21 +184,21 @@ template <typename BaseClass> struct QGenericAtomicOps
     T fetchAndStoreAcquire(T &_q_value, X newValue)
     {
         T tmp = BaseClass::fetchAndStoreRelaxed(_q_value, newValue);
-        BaseClass::acquireMemoryFence();
+        BaseClass::acquireMemoryFence(_q_value);
         return tmp;
     }
 
     template <typename T, typename X> static inline always_inline
     T fetchAndStoreRelease(T &_q_value, X newValue)
     {
-        BaseClass::releaseMemoryFence();
+        BaseClass::releaseMemoryFence(_q_value);
         return BaseClass::fetchAndStoreRelaxed(_q_value, newValue);
     }
 
     template <typename T, typename X> static inline always_inline
     T fetchAndStoreOrdered(T &_q_value, X newValue)
     {
-        BaseClass::orderedMemoryFence();
+        BaseClass::orderedMemoryFence(_q_value);
         return BaseClass::fetchAndStoreRelaxed(_q_value, newValue);
     }
 
@@ -211,21 +219,21 @@ template <typename BaseClass> struct QGenericAtomicOps
     T fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
     {
         T tmp = BaseClass::fetchAndAddRelaxed(_q_value, valueToAdd);
-        BaseClass::acquireMemoryFence();
+        BaseClass::acquireMemoryFence(_q_value);
         return tmp;
     }
 
     template <typename T> static inline always_inline
     T fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
     {
-        BaseClass::releaseMemoryFence();
+        BaseClass::releaseMemoryFence(_q_value);
         return BaseClass::fetchAndAddRelaxed(_q_value, valueToAdd);
     }
 
     template <typename T> static inline always_inline
     T fetchAndAddOrdered(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
     {
-        BaseClass::orderedMemoryFence();
+        BaseClass::orderedMemoryFence(_q_value);
         return BaseClass::fetchAndAddRelaxed(_q_value, valueToAdd);
     }
 };

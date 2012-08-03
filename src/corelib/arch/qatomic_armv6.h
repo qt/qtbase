@@ -77,7 +77,8 @@ template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; }
 
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
-    static void orderedMemoryFence();
+    template <typename T>
+    static void orderedMemoryFence(const T &);
 
     static inline bool isReferenceCountingNative() { return true; }
     template <typename T> static bool ref(T &_q_value);
@@ -705,8 +706,8 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueTo
 
 // common code
 
-template <int size> inline
-void QBasicAtomicOps<size>::orderedMemoryFence()
+template <int size> template <typename T> inline
+void QBasicAtomicOps<size>::orderedMemoryFence(const T &)
 {
     Q_DATA_MEMORY_BARRIER;
 }

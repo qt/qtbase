@@ -140,7 +140,8 @@ template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 
 
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
-    static void orderedMemoryFence();
+    template <typename T>
+    static void orderedMemoryFence(const T &);
 
     template <typename T> static inline
     T loadAcquire(const T &_q_value)
@@ -202,8 +203,8 @@ inline bool _q_ia64_fetchadd_immediate(register int value)
 // intrinsics provided by the Intel C++ Compiler
 #include <ia64intrin.h>
 
-template<int size> inline
-void QBasicAtomicOps<size>::orderedMemoryFence()
+template<int size> template <typename T> inline
+void QBasicAtomicOps<size>::orderedMemoryFence(const T &)
 {
     __memory_barrier();
 }
@@ -332,8 +333,8 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 
 #elif defined(Q_CC_GNU)
 
-template<int size> inline
-void QBasicAtomicOps<size>::orderedMemoryFence()
+template<int size> template <typename T> inline
+void QBasicAtomicOps<size>::orderedMemoryFence(const T &)
 {
     asm volatile("mf" ::: "memory");
 }
@@ -1045,7 +1046,7 @@ bool QBasicAtomicOps<size>::testAndSetRelaxed(T &_q_value, T expectedValue, T ne
 template<int size> template <typename T> inline
 bool QBasicAtomicOps<size>::testAndSetOrdered(T &_q_value, T expectedValue, T newValue)
 {
-    orderedMemoryFence();
+    orderedMemoryFence(_q_value);
     return testAndSetAcquire(_q_value, expectedValue, newValue);
 }
 
@@ -1058,7 +1059,7 @@ T QBasicAtomicOps<size>::fetchAndStoreRelaxed(T &_q_value, T newValue)
 template<int size> template <typename T> inline
 T QBasicAtomicOps<size>::fetchAndStoreRelease(T &_q_value, T newValue)
 {
-    orderedMemoryFence();
+    orderedMemoryFence(_q_value);
     return fetchAndStoreAcquire(_q_value, newValue);
 }
 
@@ -1077,7 +1078,7 @@ T QBasicAtomicOps<size>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiv
 template<int size> template <typename T> inline
 T QBasicAtomicOps<size>::fetchAndAddOrdered(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
 {
-    orderedMemoryFence();
+    orderedMemoryFence(_q_value);
     return fetchAndAddRelease(_q_value, valueToAdd);
 }
 

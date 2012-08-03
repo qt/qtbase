@@ -77,9 +77,12 @@ template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; }
 
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
-    static void acquireMemoryFence();
-    static void releaseMemoryFence();
-    static void orderedMemoryFence();
+    template <typename T>
+    static void acquireMemoryFence(const T &);
+    template <typename T>
+    static void releaseMemoryFence(const T &);
+    template <typename T>
+    static void orderedMemoryFence(const T &);
 
     static inline bool isReferenceCountingNative() { return true; }
     template <typename T> static bool ref(T &_q_value);
@@ -109,20 +112,20 @@ template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
 # error "please set '-march=' to your architecture (e.g., -march=mips32)"
 #endif
 
-template <int size> inline
-void QBasicAtomicOps<size>::acquireMemoryFence()
+template <int size> template <typename T> inline
+void QBasicAtomicOps<size>::acquireMemoryFence(const T &)
 {
     asm volatile ("sync 0x11" ::: "memory");
 }
 
-template <int size> inline
-void QBasicAtomicOps<size>::releaseMemoryFence()
+template <int size> template <typename T> inline
+void QBasicAtomicOps<size>::releaseMemoryFence(const T &)
 {
     asm volatile ("sync 0x12" ::: "memory");
 }
 
-template <int size> inline
-void QBasicAtomicOps<size>::orderedMemoryFence()
+template <int size> template <typename T> inline
+void QBasicAtomicOps<size>::orderedMemoryFence(const T &)
 {
     asm volatile ("sync 0" ::: "memory");
 }

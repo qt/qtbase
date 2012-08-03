@@ -95,7 +95,8 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
         kernel_dmb();
     }
 
-    static void orderedMemoryFence() { _q_dmb(); }
+    template <typename T>
+    static void orderedMemoryFence(const T &) { _q_dmb(); }
 
     template <typename T> static bool ref(T &_q_value);
     template <typename T> static bool deref(T &_q_value);
