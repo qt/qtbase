@@ -170,7 +170,7 @@ Q_CORE_EXPORT QtMessageHandler qInstallMessageHandler(QtMessageHandler);
 
 Q_CORE_EXPORT void qSetMessagePattern(const QString &messagePattern);
 
-QT_END_HEADER
 QT_END_NAMESPACE
+QT_END_HEADER
 
 #endif // QLOGGING_H
