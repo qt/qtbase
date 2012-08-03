@@ -545,6 +545,10 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     addFilters(tempProj, xmlFilter, "Resource Files");
     addFilters(tempProj, xmlFilter, "Source Files");
     addFilters(tempProj, xmlFilter, "Translation Files");
+
+    for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x)
+        addFilters(tempProj, xmlFilter, tempProj.ExtraCompilers.at(x));
+
     xmlFilter << closetag();
 
     outputFilter(tempProj, xml, xmlFilter, "Source Files");
@@ -744,6 +748,10 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
     addFilters(tool, xmlFilter, "Resource Files");
     addFilters(tool, xmlFilter, "Source Files");
     addFilters(tool, xmlFilter, "Translation Files");
+
+    for (int x = 0; x < tool.ExtraCompilers.count(); ++x)
+        addFilters(tool, xmlFilter, tool.ExtraCompilers.at(x));
+
     xmlFilter << closetag();
 
     outputFilter(tool, xml, xmlFilter, "Source Files");
