@@ -1518,6 +1518,12 @@ QMakeProject::read(uchar cmd)
         vars = base_vars; // start with the base
       }
         setupProject();
+    } else if (cmd & ReadFeatures) {
+        // Even when ReadSetup is not set, but ReadFeatures is,
+        // we still need to process spec_pre.prf to load some
+        // default values and other settings.
+        debug_msg(1, "Processing spec_pre (but skipping actual spec): %s", vars["CONFIG"].join("::").toLatin1().constData());
+        doProjectInclude("spec_pre", IncludeFlagFeature, vars);
     }
 
     for (QHash<QString, QStringList>::ConstIterator it = extra_vars.constBegin();

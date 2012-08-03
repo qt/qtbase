@@ -78,6 +78,7 @@ ProjectGenerator::init()
 
     project->read(QMakeProject::ReadFeatures);
     project->values("CONFIG").clear();
+    Option::postProcessProject(project);
 
     QHash<QString, QStringList> &v = project->variables();
     QString templ = Option::user_template.isEmpty() ? QString("app") : Option::user_template;
