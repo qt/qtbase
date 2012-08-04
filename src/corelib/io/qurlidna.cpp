@@ -2358,6 +2358,7 @@ static const char * const idn_whitelist[] = {
     "xn--mgberp4a5d4ar",        // Saudi Arabia
     "xn--wgbh1c"                // Egypt
 };
+static const size_t idn_whitelist_size = sizeof idn_whitelist / sizeof *idn_whitelist;
 
 static QStringList *user_idn_whitelist = 0;
 
@@ -2406,7 +2407,7 @@ static bool qt_is_idn_enabled(const QString &domain)
         return user_idn_whitelist->contains(tldString);
 
     int l = 0;
-    int r = sizeof(idn_whitelist)/sizeof(const char *) - 1;
+    int r = idn_whitelist_size - 1;
     int i = (l + r + 1) / 2;
 
     while (r != l) {
@@ -2558,8 +2559,9 @@ QStringList QUrl::idnWhitelist()
     if (user_idn_whitelist)
         return *user_idn_whitelist;
     QStringList list;
+    list.reserve(idn_whitelist_size);
     unsigned int i = 0;
-    while (i < sizeof(idn_whitelist)/sizeof(const char *)) {
+    while (i < idn_whitelist_size) {
         list << QLatin1String(idn_whitelist[i]);
         ++i;
     }
