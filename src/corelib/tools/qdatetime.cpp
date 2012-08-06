@@ -215,7 +215,7 @@ static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* d
 
     \section2 Range of Valid Dates
 
-    Dates are stored internally as a Julian Day number, an interger count of
+    Dates are stored internally as a Julian Day number, an integer count of
     every day in a contiguous range, with 24 November 4714 BCE in the Gregorian
     calendar being Julian Day 0 (1 January 4713 BCE in the Julian calendar).
     As well as being an efficient and accurate way of storing an absolute date,
@@ -806,8 +806,8 @@ QString QDate::toString(Qt::DateFormat f) const
     \endtable
 
     All other input characters will be ignored. Any sequence of characters that
-    are enclosed in singlequotes will be treated as text and not be used as an
-    expression. Two consecutive singlequotes ("''") are replaced by a singlequote
+    are enclosed in single quotes will be treated as text and not be used as an
+    expression. Two consecutive single quotes ("''") are replaced by a singlequote
     in the output.
 
     Example format strings (assuming that the QDate is the 20 July
@@ -1568,8 +1568,8 @@ QString QTime::toString(Qt::DateFormat format) const
     \endtable
 
     All other input characters will be ignored. Any sequence of characters that
-    are enclosed in singlequotes will be treated as text and not be used as an
-    expression. Two consecutive singlequotes ("''") are replaced by a singlequote
+    are enclosed in single quotes will be treated as text and not be used as an
+    expression. Two consecutive single quotes ("''") are replaced by a singlequote
     in the output.
 
     Example format strings (assuming that the QTime is 14:13:09.042)
@@ -2627,8 +2627,8 @@ QString QDateTime::toString(Qt::DateFormat f) const
     \endtable
 
     All other input characters will be ignored. Any sequence of characters that
-    are enclosed in singlequotes will be treated as text and not be used as an
-    expression. Two consecutive singlequotes ("''") are replaced by a singlequote
+    are enclosed in single quotes will be treated as text and not be used as an
+    expression. Two consecutive single quotes ("''") are replaced by a singlequote
     in the output.
 
     Example format strings (assumed that the QDateTime is 21 May 2001
@@ -3496,7 +3496,7 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
     \endtable
 
     All other input characters will be treated as text. Any sequence
-    of characters that are enclosed in singlequotes will also be
+    of characters that are enclosed in single quotes will also be
     treated as text and not be used as an expression.
 
     \snippet code/src_corelib_tools_qdatetime.cpp 12
