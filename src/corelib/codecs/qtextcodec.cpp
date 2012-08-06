@@ -249,10 +249,10 @@ static QTextCodec *setupLocaleMapper()
             locale = checkForCodec("ISO 8859-15");
     }
 
+#endif
     // If everything failed, we default to 8859-1
     if (!locale)
         locale = QTextCodec::codecForName("ISO 8859-1");
-#endif
     globalData->codecForLocale.storeRelease(locale);
     return locale;
 }
