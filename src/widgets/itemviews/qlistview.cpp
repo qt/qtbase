@@ -2108,10 +2108,16 @@ int QListModeViewBase::verticalScrollToValue(int index, QListView::ScrollHint hi
 {
     if (verticalScrollMode() == QAbstractItemView::ScrollPerItem) {
         int value;
-        if (scrollValueMap.isEmpty())
+        if (scrollValueMap.isEmpty()) {
             value = 0;
-        else
-            value = qBound(0, scrollValueMap.at(verticalScrollBar()->value()), flowPositions.count() - 1);
+        } else {
+            int scrollBarValue = verticalScrollBar()->value();
+            int numHidden = 0;
+            for (int i = 0; i < flowPositions.count() - 1 && i <= scrollBarValue; ++i)
+                if (isHidden(i))
+                    ++numHidden;
+            value = qBound(0, scrollValueMap.at(verticalScrollBar()->value()) - numHidden, flowPositions.count() - 1);
+        }
         if (above)
             hint = QListView::PositionAtTop;
         else if (below)

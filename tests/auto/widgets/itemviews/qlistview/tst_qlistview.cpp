@@ -140,6 +140,7 @@ private slots:
     void taskQTBUG_21804_hiddenItemsAndScrollingWithKeys();
     void spacing_data();
     void spacing();
+    void testScrollToWithHidden();
 };
 
 // Testing get/set functions
@@ -2280,6 +2281,32 @@ void tst_QListView::spacing()
     }
 }
 
+void tst_QListView::testScrollToWithHidden()
+{
+    QListView lv;
+
+    QStringListModel model;
+    QStringList list;
+    for (int i = 0; i < 30; i++)
+        list << QString::number(i);
+    model.setStringList(list);
+    lv.setModel(&model);
+
+    lv.setRowHidden(1, true);
+    lv.setSpacing(5);
+
+    lv.show();
+    QTest::qWaitForWindowExposed(&lv);
+
+    QCOMPARE(lv.verticalScrollBar()->value(), 0);
+
+    lv.scrollTo(model.index(26, 0));
+    int expectedScrollBarValue = lv.verticalScrollBar()->value();
+    QVERIFY(expectedScrollBarValue != 0);
+
+    lv.scrollTo(model.index(25, 0));
+    QCOMPARE(expectedScrollBarValue, lv.verticalScrollBar()->value());
+}
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"
