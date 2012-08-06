@@ -2727,12 +2727,13 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
                                    .absoluteFilePath(args.at(0)));
         break;
     case E_RELATIVE_PATH:
-        if (args.count() > 2)
+        if (args.count() > 2) {
             fprintf(stderr, "%s:%d relative_path(path[, base]) requires one or two arguments.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
-        else
-            ret += QDir::cleanPath(QDir(args.count() > 1 ? args.at(1) : QString())
-                                   .relativeFilePath(args.at(0)));
+        } else {
+            QDir baseDir(args.count() > 1 ? args.at(1) : QString());
+            ret += baseDir.relativeFilePath(baseDir.absoluteFilePath(args.at(0)));
+        }
         break;
     case E_CLEAN_PATH:
         if (args.count() != 1)
