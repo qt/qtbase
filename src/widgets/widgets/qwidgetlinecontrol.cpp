@@ -1279,6 +1279,13 @@ void QWidgetLineControl::internalUndo(int until)
         return;
     cancelPasswordEchoTimer();
     internalDeselect();
+
+    // Undo works only for clearing the line when in any of password the modes
+    if (m_echoMode != QLineEdit::Normal) {
+        clear();
+        return;
+    }
+
     while (m_undoState && m_undoState > until) {
         Command& cmd = m_history[--m_undoState];
         switch (cmd.type) {
@@ -1868,6 +1875,21 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
         event->accept();
 }
 
+bool QWidgetLineControl::isUndoAvailable() const
+{
+    // For security reasons undo is not available in any password mode (NoEcho included)
+    // with the exception that the user can clear the password with undo.
+    return !m_readOnly && m_undoState
+            && (m_echoMode == QLineEdit::Normal || m_history[m_undoState - 1].type == QWidgetLineControl::Insert);
+}
+
+bool QWidgetLineControl::isRedoAvailable() const
+{
+    // Same as with undo. Disabled for password modes.
+    return !m_readOnly
+            && m_echoMode == QLineEdit::Normal
+            && m_undoState < m_history.size();
+}
 
 QT_END_NAMESPACE
 

@@ -287,6 +287,9 @@ private slots:
     void inputMethodQueryImHints_data();
     void inputMethodQueryImHints();
 
+    void undoRedoAndEchoModes_data();
+    void undoRedoAndEchoModes();
+
 protected slots:
     void editingFinished();
 
@@ -3952,6 +3955,69 @@ void tst_QLineEdit::inputMethodQueryImHints()
 
     QVariant value = testWidget->inputMethodQuery(Qt::ImHints);
     QCOMPARE(static_cast<Qt::InputMethodHints>(value.toInt()), hints);
+}
+
+void tst_QLineEdit::undoRedoAndEchoModes_data()
+{
+    QTest::addColumn<int>("echoMode");
+    QTest::addColumn<QStringList>("input");
+    QTest::addColumn<QStringList>("expected");
+
+    QStringList input(QList<QString>() << "aaa" << "bbb" << "ccc");
+
+    QTest::newRow("Normal")
+        << (int) QLineEdit::Normal
+        << input
+        << QStringList(QList<QString>() << "aaa" << "ccc" << "");
+
+    QTest::newRow("NoEcho")
+        << (int) QLineEdit::NoEcho
+        << input
+        << QStringList(QList<QString>() << "" << "" << "");
+
+    QTest::newRow("Password")
+        << (int) QLineEdit::Password
+        << input
+        << QStringList(QList<QString>() << "" << "" << "");
+
+    QTest::newRow("PasswordEchoOnEdit")
+        << (int) QLineEdit::PasswordEchoOnEdit
+        << input
+        << QStringList(QList<QString>() << "" << "" << "");
+}
+
+void tst_QLineEdit::undoRedoAndEchoModes()
+{
+    QFETCH(int, echoMode);
+    QFETCH(QStringList, input);
+    QFETCH(QStringList, expected);
+
+    // create some history for the QLineEdit
+    testWidget->clear();
+    testWidget->setEchoMode(QLineEdit::EchoMode(echoMode));
+    testWidget->insert(input.at(0));
+    testWidget->selectAll();
+    testWidget->backspace();
+    testWidget->insert(input.at(1));
+
+    // test undo
+    QVERIFY(testWidget->isUndoAvailable());
+    testWidget->undo();
+    QCOMPARE(testWidget->text(), expected.at(0));
+    testWidget->insert(input.at(2));
+    testWidget->selectAll();
+    testWidget->backspace();
+    QCOMPARE(testWidget->isUndoAvailable(), echoMode == QLineEdit::Normal);
+    testWidget->undo();
+    QCOMPARE(testWidget->text(), expected.at(1));
+
+    // test redo
+    QCOMPARE(testWidget->isRedoAvailable(), echoMode == QLineEdit::Normal);
+    testWidget->redo();
+    QCOMPARE(testWidget->text(), expected.at(2));
+    QVERIFY(!testWidget->isRedoAvailable());
+    testWidget->redo();
+    QCOMPARE(testWidget->text(), expected.at(2));
 }
 
 QTEST_MAIN(tst_QLineEdit)
