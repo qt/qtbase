@@ -3134,7 +3134,7 @@ void QPainter::shear(qreal sh, qreal sv)
 /*!
     \fn void QPainter::rotate(qreal angle)
 
-    Rotates the coordinate system the given \a angle clockwise.
+    Rotates the coordinate system clockwise. The given \a angle parameter uses degree unit.
 
     \sa setWorldTransform(), {QPainter#Coordinate Transformations}{Coordinate Transformations}
 */
