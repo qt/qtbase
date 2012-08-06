@@ -4222,12 +4222,14 @@ QString DitaXmlGenerator::getLink(const Atom* atom,
           the link must go up to the parent directory and then
           back down into the other subdirectory.
         */
-        if (link.startsWith("images/")) {
-            link.prepend(QString("../"));
-        }
-        else if (*node && relative && (*node != relative)) {
-            if ((*node)->outputSubdirectory() != relative->outputSubdirectory()) {
-                link.prepend(QString("../" + (*node)->outputSubdirectory() + QLatin1Char('/')));
+        if (!baseDir().isEmpty()) {
+            if (link.startsWith("images/")) {
+                link.prepend(QString("../"));
+            }
+            else if (*node && relative && (*node != relative)) {
+                if ((*node)->outputSubdirectory() != relative->outputSubdirectory()) {
+                    link.prepend(QString("../" + (*node)->outputSubdirectory() + QLatin1Char('/')));
+                }
             }
         }
     }
