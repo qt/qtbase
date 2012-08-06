@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 // High-level atomic integer operations
-class Q_CORE_EXPORT QAtomicInt : public QBasicAtomicInt
+class QAtomicInt : public QBasicAtomicInt
 {
 public:
     // Non-atomic API
