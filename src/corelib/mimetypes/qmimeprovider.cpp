@@ -188,7 +188,7 @@ enum {
 bool QMimeBinaryProvider::isValid()
 {
 #if defined(QT_USE_MMAP)
-    if (!qgetenv("QT_NO_MIME_CACHE").isEmpty())
+    if (!qEnvironmentVariableIsEmpty("QT_NO_MIME_CACHE"))
         return false;
 
     Q_ASSERT(m_cacheFiles.isEmpty()); // this method is only ever called once

@@ -126,7 +126,7 @@ static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap) Q_DECL
 
     if (msgType == QtFatalMsg
             || (msgType == QtWarningMsg
-                && (!qgetenv("QT_FATAL_WARNINGS").isNull())) ) {
+                && qEnvironmentVariableIsSet("QT_FATAL_WARNINGS"))) {
 #if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
         // get the current report mode
         int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
@@ -679,7 +679,7 @@ void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, con
 
     if (msgType == QtFatalMsg
             || (msgType == QtWarningMsg
-                && (!qgetenv("QT_FATAL_WARNINGS").isNull())) ) {
+                && qEnvironmentVariableIsSet("QT_FATAL_WARNINGS")) ) {
 
 #if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
         // get the current report mode

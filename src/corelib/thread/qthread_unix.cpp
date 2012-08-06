@@ -256,8 +256,8 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
     data->eventDispatcher = new QEventDispatcherBlackberry;
 #else
 #if !defined(QT_NO_GLIB)
-    if (qgetenv("QT_NO_GLIB").isEmpty()
-        && qgetenv("QT_NO_THREADED_GLIB").isEmpty()
+    if (qEnvironmentVariableIsEmpty("QT_NO_GLIB")
+        && qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB")
         && QEventDispatcherGlib::versionSupported())
         data->eventDispatcher = new QEventDispatcherGlib;
     else

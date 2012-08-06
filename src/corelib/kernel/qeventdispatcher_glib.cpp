@@ -293,7 +293,7 @@ static GSourceFuncs postEventSourceFuncs = {
 QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     : mainContext(context)
 {
-    if (qgetenv("QT_NO_THREADED_GLIB").isEmpty()) {
+    if (qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB")) {
         static QBasicMutex mutex;
         QMutexLocker locker(&mutex);
         if (!g_thread_supported())

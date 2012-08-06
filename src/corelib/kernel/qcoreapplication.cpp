@@ -350,7 +350,7 @@ void QCoreApplicationPrivate::createEventDispatcher()
     eventDispatcher = new QEventDispatcherBlackberry(q);
 #  else
 #  if !defined(QT_NO_GLIB)
-    if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
+    if (qEnvironmentVariableIsEmpty("QT_NO_GLIB") && QEventDispatcherGlib::versionSupported())
         eventDispatcher = new QEventDispatcherGlib(q);
     else
 #  endif
