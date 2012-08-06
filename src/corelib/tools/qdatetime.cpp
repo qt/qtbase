@@ -2765,8 +2765,16 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
 
 /*!
     Returns the number of days from this datetime to the \a other
-    datetime. If the \a other datetime is earlier than this datetime,
+    datetime. The number of days is counted as the number of times
+    midnight is reached between this datetime to the \a other
+    datetime. This means that a 10 minute difference from 23:55 to
+    0:05 the next day counts as one day.
+
+    If the \a other datetime is earlier than this datetime,
     the value returned is negative.
+
+    Example:
+    \snippet code/src_corelib_tools_qdatetime.cpp 15
 
     \sa addDays(), secsTo(), msecsTo()
 */

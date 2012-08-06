@@ -144,3 +144,16 @@ QDateTime dateTime = QDateTime::fromString("130", "Mm"); // invalid
 QDateTime dateTime = QDateTime::fromString("1.30.1", "M.d.s");
 // dateTime is January 30 in 1900 at 00:00:01.
 //! [14]
+
+//! [15]
+QDateTime startDate(QDate(2012, 7, 6), QTime(8, 30, 0));
+QDateTime endDate(QDate(2012, 7, 7), QTime(16, 30, 0));
+qDebug() << "Days from startDate to endDate: " << startDate.daysTo(endDate);
+
+startDate = QDateTime(QDate(2012, 7, 6), QTime(23, 55, 0));
+endDate = QDateTime(QDate(2012, 7, 7), QTime(0, 5, 0));
+qDebug() << "Days from startDate to endDate: " << startDate.daysTo(endDate);
+
+qSwap(startDate, endDate); // Make endDate before startDate.
+qDebug() << "Days from startDate to endDate: " << startDate.daysTo(endDate);
+//! [15]
