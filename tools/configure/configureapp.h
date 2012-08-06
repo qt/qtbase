@@ -143,6 +143,9 @@ private:
     QString opensslLibs;
     QString opensslLibsDebug;
     QString opensslLibsRelease;
+    QString opensslPath;
+    QString dbusPath;
+    QString mysqlPath;
     QString psqlLibs;
     QString sybase;
     QString sybaseLibs;

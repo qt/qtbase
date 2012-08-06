@@ -953,12 +953,18 @@ void Configure::parseCmdLine()
             opensslLibsDebug = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS_RELEASE=")) {
             opensslLibsRelease = configCmdLine.at(i);
+        } else if (configCmdLine.at(i).startsWith("OPENSSL_PATH=")) {
+            opensslPath = QDir::fromNativeSeparators(configCmdLine.at(i));
         } else if (configCmdLine.at(i).startsWith("PSQL_LIBS=")) {
             psqlLibs = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("SYBASE=")) {
             sybase = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("SYBASE_LIBS=")) {
             sybaseLibs = configCmdLine.at(i);
+        } else if (configCmdLine.at(i).startsWith("DBUS_PATH=")) {
+            dbusPath = QDir::fromNativeSeparators(configCmdLine.at(i));
+        } else if (configCmdLine.at(i).startsWith("MYSQL_PATH=")) {
+            mysqlPath = QDir::fromNativeSeparators(configCmdLine.at(i));
         }
 
         else if ((configCmdLine.at(i) == "-override-version") || (configCmdLine.at(i) == "-version-override")){
@@ -2544,7 +2550,14 @@ void Configure::generateOutputVars()
         } else if (opensslLibs.isEmpty()) {
             qmakeVars += QString("OPENSSL_LIBS    = -lssleay32 -llibeay32");
         }
+        if (!opensslPath.isEmpty())
+            qmakeVars += opensslPath;
     }
+    if (dictionary[ "DBUS" ] != "no" && !dbusPath.isEmpty())
+        qmakeVars += dbusPath;
+    if (dictionary[ "SQL_MYSQL" ] != "no" && !mysqlPath.isEmpty())
+        qmakeVars += mysqlPath;
+
     if (!psqlLibs.isEmpty())
         qmakeVars += QString("QT_LFLAGS_PSQL=") + psqlLibs.section("=", 1);
 

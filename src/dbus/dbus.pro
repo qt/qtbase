@@ -5,6 +5,11 @@ QT = core-private
 CONFIG += link_pkgconfig
 MODULE_CONFIG = dbusadaptors dbusinterfaces
 
+!isEmpty(DBUS_PATH) {
+    INCLUDEPATH += $$DBUS_PATH/include
+    QMAKE_LIBDIR += $$DBUS_PATH/lib
+}
+
 DEFINES += DBUS_API_SUBJECT_TO_CHANGE
 QMAKE_CXXFLAGS += $$QT_CFLAGS_DBUS
 contains(QT_CONFIG, dbus-linked) { 

@@ -41,4 +41,9 @@ contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
 
     LIBS_PRIVATE += $$OPENSSL_LIBS
     windows:LIBS += -lcrypt32
+
+    !isEmpty(OPENSSL_PATH) {
+        INCLUDEPATH += $$OPENSSL_PATH/include
+        QMAKE_LIBDIR += $$OPENSSL_PATH/lib
+    }
 }

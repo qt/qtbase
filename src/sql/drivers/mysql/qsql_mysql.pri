@@ -1,6 +1,11 @@
 HEADERS += $$PWD/qsql_mysql.h
 SOURCES += $$PWD/qsql_mysql.cpp
 
+!isEmpty(MYSQL_PATH) {
+    INCLUDEPATH += $$MYSQL_PATH/include
+    QMAKE_LIBDIR += $$MYSQL_PATH/lib
+}
+
 unix {
     isEmpty(QT_LFLAGS_MYSQL) {
         !contains(LIBS, .*mysqlclient.*):!contains(LIBS, .*mysqld.*) {
