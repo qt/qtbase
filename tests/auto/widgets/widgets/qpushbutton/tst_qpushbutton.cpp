@@ -85,6 +85,7 @@ private slots:
     void defaultAndAutoDefault();
     void sizeHint_data();
     void sizeHint();
+    void taskQTBUG_20191_shortcutWithKeypadModifer();
 /*
     void state();
     void group();
@@ -656,6 +657,52 @@ void tst_QPushButton::sizeHint()
 
         QCOMPARE(button1_2->size(), button2_2->size());
     }
+}
+
+void tst_QPushButton::taskQTBUG_20191_shortcutWithKeypadModifer()
+{
+    // setup a dialog with two buttons
+    QPushButton *button1 = new QPushButton("5");
+    QPushButton *button2 = new QPushButton("5 + KeypadModifier");
+    QVBoxLayout *layout = new QVBoxLayout();
+    layout->addWidget(button1);
+    layout->addWidget(button2);
+    QDialog dialog;
+    dialog.setLayout(layout);
+    dialog.show();
+    QTest::qWaitForWindowShown(&dialog);
+    QApplication::setActiveWindow(&dialog);
+
+    // add shortcut '5' to button1 and test with keyboard and keypad '5' keys
+    QSignalSpy spy1(button1, SIGNAL(clicked()));
+    button1->setShortcut(Qt::Key_5);
+    QTest::keyClick(&dialog, Qt::Key_5);
+    QTest::qWait(300);
+    QTest::keyClick(&dialog, Qt::Key_5, Qt::KeypadModifier);
+    QTest::qWait(300);
+    QCOMPARE(spy1.count(), 2);
+
+    // add shortcut 'keypad 5' to button2
+    spy1.clear();
+    QSignalSpy spy2(button2, SIGNAL(clicked()));
+    button2->setShortcut(Qt::Key_5 + Qt::KeypadModifier);
+    QTest::keyClick(&dialog, Qt::Key_5);
+    QTest::qWait(300);
+    QTest::keyClick(&dialog, Qt::Key_5, Qt::KeypadModifier);
+    QTest::qWait(300);
+    QCOMPARE(spy1.count(), 1);
+    QCOMPARE(spy2.count(), 1);
+
+    // remove shortcut from button1
+    spy1.clear();
+    spy2.clear();
+    button1->setShortcut(QKeySequence());
+    QTest::keyClick(&dialog, Qt::Key_5);
+    QTest::qWait(300);
+    QTest::keyClick(&dialog, Qt::Key_5, Qt::KeypadModifier);
+    QTest::qWait(300);
+    QCOMPARE(spy1.count(), 0);
+    QCOMPARE(spy2.count(), 1);
 }
 
 QTEST_MAIN(tst_QPushButton)

@@ -381,6 +381,12 @@ QKeySequence::SequenceMatch QShortcutMap::nextState(QKeyEvent *e)
     d->identicals.resize(0);
 
     result = find(e);
+    if (result == QKeySequence::NoMatch && (e->modifiers() & Qt::KeypadModifier)) {
+        // Try to find a match without keypad modifier
+        QKeyEvent event = *e;
+        event.setModifiers(e->modifiers() & ~Qt::KeypadModifier);
+        result = find(&event);
+    }
     if (result == QKeySequence::NoMatch && e->modifiers() & Qt::ShiftModifier) {
         // If Shift + Key_Backtab, also try Shift + Qt::Key_Tab
         if (e->key() == Qt::Key_Backtab) {
@@ -570,8 +576,7 @@ void QShortcutMap::createNewSequences(QKeyEvent *e, QVector<QKeySequence> &ksl)
                 curKsl.setKey(0, 2);
                 curKsl.setKey(0, 3);
             }
-            // Filtering keycode here with 0xdfffffff to ignore the Keypad modifier
-            curKsl.setKey(possibleKeys.at(pkNum) & 0xdfffffff, index);
+            curKsl.setKey(possibleKeys.at(pkNum), index);
         }
     }
 }
