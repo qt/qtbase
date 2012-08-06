@@ -176,6 +176,12 @@ static void qt_message(QtMsgType msgType, const QMessageLogContext &context, con
 }
 
 #undef qDebug
+/*!
+    Logs a debug message specified with format \a msg. Additional
+    parameters, specified by \a msg, may be used.
+
+    \sa qDebug()
+*/
 void QMessageLogger::debug(const char *msg, ...)
 {
     va_list ap;
@@ -186,6 +192,11 @@ void QMessageLogger::debug(const char *msg, ...)
 
 #ifndef QT_NO_DEBUG_STREAM
 
+/*!
+    Logs a debug message using a QDebug stream
+
+    \sa qDebug(), QDebug
+*/
 QDebug QMessageLogger::debug()
 {
     QDebug dbg = QDebug(QtDebugMsg);
@@ -194,6 +205,13 @@ QDebug QMessageLogger::debug()
     return dbg;
 }
 
+/*!
+    \internal
+
+    Returns a QNoDebug object, which is used to ignore debugging output.
+
+    \sa QNoDebug, qDebug()
+*/
 QNoDebug QMessageLogger::noDebug()
 {
     return QNoDebug();
@@ -202,6 +220,12 @@ QNoDebug QMessageLogger::noDebug()
 #endif
 
 #undef qWarning
+/*!
+    Logs a warning message specified with format \a msg. Additional
+    parameters, specified by \a msg, may be used.
+
+    \sa qWarning()
+*/
 void QMessageLogger::warning(const char *msg, ...)
 {
     va_list ap;
@@ -211,6 +235,11 @@ void QMessageLogger::warning(const char *msg, ...)
 }
 
 #ifndef QT_NO_DEBUG_STREAM
+/*!
+    Logs a debug message using a QDebug stream
+
+    \sa qWarning(), QDebug
+*/
 QDebug QMessageLogger::warning()
 {
     QDebug dbg = QDebug(QtWarningMsg);
@@ -221,6 +250,13 @@ QDebug QMessageLogger::warning()
 #endif
 
 #undef qCritical
+
+/*!
+    Logs a critical message specified with format \a msg. Additional
+    parameters, specified by \a msg, may be used.
+
+    \sa qCritical()
+*/
 void QMessageLogger::critical(const char *msg, ...)
 {
     va_list ap;
@@ -230,6 +266,11 @@ void QMessageLogger::critical(const char *msg, ...)
 }
 
 #ifndef QT_NO_DEBUG_STREAM
+/*!
+    Logs a critical message using a QDebug stream
+
+    \sa qCritical(), QDebug
+*/
 QDebug QMessageLogger::critical()
 {
     QDebug dbg = QDebug(QtCriticalMsg);
@@ -240,7 +281,13 @@ QDebug QMessageLogger::critical()
 #endif
 
 #undef qFatal
-void QMessageLogger::fatal(const char *msg, ...) Q_DECL_NOTHROW
+/*!
+    Logs a fatal message specified with format \a msg. Additional
+    parameters, specified by \a msg, may be used.
+
+    \sa qFatal()
+*/
+void QMessageLogger::fatal(const char *msg, ...)  Q_DECL_NOTHROW
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -807,7 +854,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     Installs a Qt message \a handler which has been defined
     previously. This method is deprecated, use qInstallMessageHandler
     instead.
-    \sa QtMsgHandler, qInstallMessageHandler
+    \sa QtMsgHandler, qInstallMessageHandler()
 */
 /*!
     \fn void qSetMessagePattern(const QString &pattern)
@@ -832,15 +879,15 @@ void qErrnoWarning(int code, const char *msg, ...)
     \row \li \c %{type} \li "debug", "warning", "critical" or "fatal"
     \endtable
 
-    The default pattern is "%{message}".
+    The default \a pattern is "%{message}".
 
-    The pattern can also be changed at runtime by setting the QT_MESSAGE_PATTERN
+    The \a pattern can also be changed at runtime by setting the QT_MESSAGE_PATTERN
     environment variable; if both qSetMessagePattern() is called and QT_MESSAGE_PATTERN is
     set, the environment variable takes precedence.
 
     qSetMessagePattern() has no effect if a custom message handler is installed.
 
-    \sa qInstallMessageHandler, {Debugging Techniques}
+    \sa qInstallMessageHandler(), {Debugging Techniques}
  */
 
 QtMessageHandler qInstallMessageHandler(QtMessageHandler h)
@@ -871,6 +918,10 @@ void qSetMessagePattern(const QString &pattern)
         qMessagePattern()->setPattern(pattern);
 }
 
+/*!
+    Copies context information from \a logContext into this QMessageLogContext
+    \internal
+*/
 void QMessageLogContext::copy(const QMessageLogContext &logContext)
 {
     this->category = logContext.category;
@@ -878,5 +929,49 @@ void QMessageLogContext::copy(const QMessageLogContext &logContext)
     this->line = logContext.line;
     this->function = logContext.function;
 }
+
+/*!
+    \fn QMessageLogger::QMessageLogger()
+
+    Constructs a default QMessageLogger. See the other constructors to specify
+    context information.
+*/
+
+/*!
+    \fn QMessageLogger::QMessageLogger(const char *file, int line, const char *function)
+
+    Constructs a QMessageLogger to record log messages for \a file at \a line
+    in \a function. The is equivalent to QMessageLogger(file, line, function, "default")
+*/
+/*!
+    \fn QMessageLogger::QMessageLogger(const char *file, int line, const char *function, const char *category)
+
+    Constructs a QMessageLogger to record \a category messages for \a file at \a line
+    in \a function.
+*/
+
+/*!
+    \fn void QMessageLogger::noDebug(const char *, ...)
+    \internal
+
+    Ignores logging output
+
+    \sa QNoDebug, qDebug()
+*/
+
+/*!
+    \fn QMessageLogContext::QMessageLogContext()
+    \internal
+
+    Constructs a QMessageLogContext
+*/
+
+/*!
+    \fn QMessageLogContext::QMessageLogContext(const char *fileName, int lineNumber, const char *functionName, const char *categoryName)
+    \internal
+
+    Constructs a QMessageLogContext with for file \a fileName at line
+    \a lineNumber, in function \a functionName, and category \a CategoryName.
+*/
 
 QT_END_NAMESPACE
