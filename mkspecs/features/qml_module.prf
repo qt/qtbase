@@ -12,8 +12,12 @@ OTHER_FILES += $$fq_qml_files
 exists($$[QT_HOST_PREFIX]/.qmake.cache) {
     # These bizarre rules copy the files to the qtbase build directory
 
+    defineReplace(qmlModStripSrcDir) {
+        return($$relative_path($$1, $$_PRO_FILE_PWD_))
+    }
+
     qmlfiles2build.input = fq_qml_files
-    qmlfiles2build.output = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+    qmlfiles2build.output = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH/${QMAKE_FUNC_FILE_IN_qmlModStripSrcDir}
     !contains(TEMPLATE, vc.*): qmlfiles2build.variable_out = PRE_TARGETDEPS
     qmlfiles2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
     qmlfiles2build.name = COPY ${QMAKE_FILE_IN}
@@ -23,6 +27,7 @@ exists($$[QT_HOST_PREFIX]/.qmake.cache) {
 }
 
 # Install rules
+qmldir.base = $$_PRO_FILE_PWD_
 qmldir.files = $$fq_qml_files
 qmldir.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 INSTALLS += qmldir
