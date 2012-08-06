@@ -390,12 +390,12 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway)
  ** QThread
  *************************************************************************/
 
-Qt::HANDLE QThread::currentThreadId()
+Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
 {
     return (Qt::HANDLE)GetCurrentThreadId();
 }
 
-int QThread::idealThreadCount()
+int QThread::idealThreadCount() Q_DECL_NOTHROW
 {
     SYSTEM_INFO sysinfo;
     GetSystemInfo(&sysinfo);

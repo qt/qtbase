@@ -59,9 +59,9 @@ class QAbstractEventDispatcher;
 class Q_CORE_EXPORT QThread : public QObject
 {
 public:
-    static Qt::HANDLE currentThreadId();
+    static Qt::HANDLE currentThreadId() Q_DECL_NOTHROW;
     static QThread *currentThread();
-    static int idealThreadCount();
+    static int idealThreadCount() Q_DECL_NOTHROW;
     static void yieldCurrentThread();
 
     explicit QThread(QObject *parent = 0);
