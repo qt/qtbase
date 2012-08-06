@@ -1270,9 +1270,11 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                     QString cmd;
                     if (installConfigValues.contains("directory")) {
                         cmd = QLatin1String("-$(INSTALL_DIR)");
-                        if (!dst_file.endsWith(Option::dir_sep))
-                            dst_file += Option::dir_sep;
-                        dst_file += fi.fileName();
+                        if (project->isActiveConfig("copy_dir_files")) {
+                            if (!dst_file.endsWith(Option::dir_sep))
+                                dst_file += Option::dir_sep;
+                            dst_file += filestr;
+                        }
                     } else if (installConfigValues.contains("executable")) {
                         cmd = QLatin1String("-$(INSTALL_PROGRAM)");
                     } else {
