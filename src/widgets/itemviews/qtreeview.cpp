@@ -1680,7 +1680,8 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
             style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, painter, this);
             opt.state = oldState;
 
-            drawBranches(painter, branches, index);
+            if (d->indent != 0)
+                drawBranches(painter, branches, index);
             if (setClipRect)
                 painter->restore();
         } else {
