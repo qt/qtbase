@@ -5928,6 +5928,7 @@ void QPainter::drawText(const QRect &r, int flags, const QString &str, QRect *br
     \overload
 
     Draws the given \a text within the provided \a rectangle.
+    The \a rectangle along with alignment \a flags defines the anchors for the \a text.
 
     \table 100%
     \row
