@@ -1049,12 +1049,19 @@ void QSortFilterProxyModelPrivate::filter_changed(const QModelIndex &source_pare
     Mapping *m = it.value();
     QSet<int> rows_removed = handle_filter_changed(m->proxy_rows, m->source_rows, source_parent, Qt::Vertical);
     QSet<int> columns_removed = handle_filter_changed(m->proxy_columns, m->source_columns, source_parent, Qt::Horizontal);
-    QVector<QModelIndex>::iterator it2 = m->mapped_children.end();
-    while (it2 != m->mapped_children.begin()) {
+
+    // We need to iterate over a copy of m->mapped_children because otherwise it may be changed by other code, invalidating
+    // the iterator it2.
+    // The m->mapped_children vector can be appended to when this function recurses for child indexes.
+    // The handle_filter_changed implementation can cause source_parent.parent() to be called, which will create
+    // a mapping (and do appending) while we are invalidating the filter.
+    QVector<QModelIndex> mappedChildren = m->mapped_children;
+    QVector<QModelIndex>::iterator it2 = mappedChildren.end();
+    while (it2 != mappedChildren.begin()) {
         --it2;
         const QModelIndex source_child_index = *it2;
         if (rows_removed.contains(source_child_index.row()) || columns_removed.contains(source_child_index.column())) {
-            it2 = m->mapped_children.erase(it2);
+            it2 = mappedChildren.erase(it2);
             remove_from_mapping(source_child_index);
         } else {
             filter_changed(source_child_index);
