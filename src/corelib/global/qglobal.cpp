@@ -2124,7 +2124,7 @@ QString qt_error_string(int errorCode)
     uses the new replacement function in VC, and calls the standard C
     library's implementation on all other platforms.
 
-    \sa qputenv()
+    \sa qputenv(), qEnvironmentVariableIsSet(), qEnvironmentVariableIsEmpty()
 */
 QByteArray qgetenv(const char *varName)
 {
@@ -2147,10 +2147,9 @@ QByteArray qgetenv(const char *varName)
 
 /*!
     \relates <QtGlobal>
-    \internal
+    \since 5.1
 
-    This function checks whether the environment variable \a varName
-    is empty.
+    Returns whether the environment variable \a varName is empty.
 
     Equivalent to
     \code
@@ -2177,10 +2176,9 @@ bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
 
 /*!
     \relates <QtGlobal>
-    \internal
+    \since 5.1
 
-    This function checks whether the environment variable \a varName
-    is set.
+    Returns whether the environment variable \a varName is set.
 
     Equivalent to
     \code
