@@ -2113,7 +2113,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     lastCalculationUsedSimplex[orientation] = false;
 #endif
 
-    static bool simplificationEnabled = qgetenv("QT_ANCHORLAYOUT_NO_SIMPLIFICATION").isEmpty();
+    static bool simplificationEnabled = qEnvironmentVariableIsEmpty("QT_ANCHORLAYOUT_NO_SIMPLIFICATION");
 
     // Reset the nominal sizes of each anchor based on the current item sizes
     refreshAllSizeHints(orientation);

@@ -1064,10 +1064,10 @@ static QAquaWidgetSize qt_aqua_guess_size(const QWidget *widg, QSize large, QSiz
     }
 
 #ifndef QT_NO_MAINWINDOW
-    if (qobject_cast<QDockWidget *>(widg->window()) || !qgetenv("QWIDGET_ALL_SMALL").isNull()) {
+    if (qobject_cast<QDockWidget *>(widg->window()) || qEnvironmentVariableIsSet("QWIDGET_ALL_SMALL")) {
         //if (small.width() != -1 || small.height() != -1)
         return QAquaSizeSmall;
-    } else if (!qgetenv("QWIDGET_ALL_MINI").isNull()) {
+    } else if (qEnvironmentVariableIsSet("QWIDGET_ALL_MINI")) {
         return QAquaSizeMini;
     }
 #endif
@@ -1126,9 +1126,9 @@ QAquaWidgetSize QMacStylePrivate::aquaSizeConstrain(const QStyleOption *option, 
     if (!widg) {
         if (insz)
             *insz = QSize();
-        if (!qgetenv("QWIDGET_ALL_SMALL").isNull())
+        if (qEnvironmentVariableIsSet("QWIDGET_ALL_SMALL"))
             return QAquaSizeSmall;
-        if (!qgetenv("QWIDGET_ALL_MINI").isNull())
+        if (qEnvironmentVariableIsSet("QWIDGET_ALL_MINI"))
             return QAquaSizeMini;
         return QAquaSizeUnknown;
     }
