@@ -147,7 +147,7 @@ void QMinimalEglScreen::createAndSetPlatformContext()
         m_format = QImage::Format_RGB32;
     }
 
-    if (!qgetenv("QT_QPA_EGLFS_MULTISAMPLE").isEmpty())
+    if (!qEnvironmentVariableIsEmpty("QT_QPA_EGLFS_MULTISAMPLE"))
         platformFormat.setSamples(4);
 
     EGLConfig config = q_configFromGLFormat(m_dpy, platformFormat);

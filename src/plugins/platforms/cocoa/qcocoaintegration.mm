@@ -165,7 +165,7 @@ QCocoaIntegration::QCocoaIntegration()
 
     NSApplication *cocoaApplication = [NSApplication sharedApplication];
 
-    if (qgetenv("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM").isEmpty()) {
+    if (qEnvironmentVariableIsEmpty("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM")) {
         // Applications launched from plain executables (without an app
         // bundle) are "background" applications that does not take keybaord
         // focus or have a dock icon or task switcher entry. Qt Gui apps generally

@@ -204,7 +204,7 @@ QPaintEngine *QBlittablePlatformPixmap::paintEngine() const
 
 #ifdef QT_BLITTER_RASTEROVERLAY
 
-static bool showRasterOverlay = !qgetenv("QT_BLITTER_RASTEROVERLAY").isEmpty();
+static bool showRasterOverlay = !qEnvironmentVariableIsEmpty("QT_BLITTER_RASTEROVERLAY");
 
 void QBlittablePlatformPixmap::mergeOverlay()
 {

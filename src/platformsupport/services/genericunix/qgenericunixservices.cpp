@@ -54,10 +54,10 @@ enum { debug = 0 };
 
 static inline QByteArray detectDesktopEnvironment()
 {
-    if (!qgetenv("KDE_FULL_SESSION").isEmpty())
+    if (!qEnvironmentVariableIsEmpty("KDE_FULL_SESSION"))
         return QByteArray("KDE");
     // GNOME_DESKTOP_SESSION_ID is deprecated for some reason, but still check it
-    if (qgetenv("DESKTOP_SESSION") == "gnome" || !qgetenv("GNOME_DESKTOP_SESSION_ID").isEmpty())
+    if (qgetenv("DESKTOP_SESSION") == "gnome" || !qEnvironmentVariableIsEmpty("GNOME_DESKTOP_SESSION_ID"))
         return QByteArray("GNOME");
     return QByteArray("UNKNOWN");
 }
