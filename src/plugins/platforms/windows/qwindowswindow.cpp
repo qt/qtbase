@@ -1203,7 +1203,7 @@ bool QWindowsWindow::isFullScreen_sys() const
 
 void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
 {
-    const Qt::WindowState &oldState = m_windowState;
+    const Qt::WindowState oldState = m_windowState;
     if (oldState == newState)
         return;
     if (QWindowsContext::verboseWindows)
