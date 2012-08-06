@@ -142,6 +142,14 @@ PlatformInfo PlatformInfo::localHostInfo()
         pi.insert(PI_PulseTestrBranch, QString::fromLatin1(tb));
         pi.setAdHocRun(false);
     }
+    if (!qgetenv("JENKINS_HOME").isEmpty()) {
+        pi.setAdHocRun(false);
+        gb = qgetenv("GIT_BRANCH");
+        if (!gb.isEmpty()) {
+            // FIXME: the string "Pulse" should be eliminated, since that is not the used tool.
+            pi.insert(PI_PulseGitBranch, QString::fromLatin1(gb));
+        }
+    }
 
     return pi;
 }
