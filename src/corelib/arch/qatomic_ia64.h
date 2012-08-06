@@ -141,48 +141,48 @@ template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
     template <typename T>
-    static void orderedMemoryFence(const T &);
+    static void orderedMemoryFence(const T &) Q_DECL_NOTHROW;
 
     template <typename T> static inline
-    T loadAcquire(const T &_q_value)
+    T loadAcquire(const T &_q_value) Q_DECL_NOTHROW
     {
         return *static_cast<const volatile T *>(&_q_value);
     }
 
     template <typename T> static inline
-    void storeRelease(T &_q_value, T newValue)
+    void storeRelease(T &_q_value, T newValue) Q_DECL_NOTHROW
     {
         *static_cast<volatile T *>(&_q_value) = newValue;
     }
-    static inline bool isReferenceCountingNative() { return true; }
-    static inline bool isReferenceCountingWaitFree() { return size == 4 || size == 8; }
-    template <typename T> static bool ref(T &_q_value);
-    template <typename T> static bool deref(T &_q_value);
+    static inline bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return size == 4 || size == 8; }
+    template <typename T> static bool ref(T &_q_value) Q_DECL_NOTHROW;
+    template <typename T> static bool deref(T &_q_value) Q_DECL_NOTHROW;
 
-    static inline bool isTestAndSetNative() { return true; }
-    static inline bool isTestAndSetWaitFree() { return true; }
-    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue);
-    template <typename T> static bool testAndSetAcquire(T &_q_value, T expectedValue, T newValue);
-    template <typename T> static bool testAndSetRelease(T &_q_value, T expectedValue, T newValue);
-    template <typename T> static bool testAndSetOrdered(T &_q_value, T expectedValue, T newValue);
+    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
+    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static bool testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static bool testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static bool testAndSetOrdered(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndStoreNative() { return true; }
-    static inline bool isFetchAndStoreWaitFree() { return true; }
-    template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue);
-    template <typename T> static T fetchAndStoreAcquire(T &_q_value, T newValue);
-    template <typename T> static T fetchAndStoreRelease(T &_q_value, T newValue);
-    template <typename T> static T fetchAndStoreOrdered(T &_q_value, T newValue);
+    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
+    template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static T fetchAndStoreAcquire(T &_q_value, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static T fetchAndStoreRelease(T &_q_value, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static T fetchAndStoreOrdered(T &_q_value, T newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndAddNative() { return true; }
-    static inline bool isFetchAndAddWaitFree() { return false; }
+    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return false; }
     template <typename T> static
-    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd);
+    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
     template <typename T> static
-    T fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd);
+    T fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
     template <typename T> static
-    T fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd);
+    T fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
     template <typename T> static
-    T fetchAndAddOrdered(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd);
+    T fetchAndAddOrdered(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
 };
 
 template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
@@ -334,13 +334,13 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 #elif defined(Q_CC_GNU)
 
 template<int size> template <typename T> inline
-void QBasicAtomicOps<size>::orderedMemoryFence(const T &)
+void QBasicAtomicOps<size>::orderedMemoryFence(const T &) Q_DECL_NOTHROW
 {
     asm volatile("mf" ::: "memory");
 }
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<4>::ref(T &_q_value)
+bool QBasicAtomicOps<4>::ref(T &_q_value) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("fetchadd4.acq %0=%1,1\n"
@@ -351,7 +351,7 @@ bool QBasicAtomicOps<4>::ref(T &_q_value)
 }
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<4>::deref(T &_q_value)
+bool QBasicAtomicOps<4>::deref(T &_q_value) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("fetchadd4.rel %0=%1,-1\n"
@@ -362,7 +362,7 @@ bool QBasicAtomicOps<4>::deref(T &_q_value)
 }
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<8>::ref(T &_q_value)
+bool QBasicAtomicOps<8>::ref(T &_q_value) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("fetchadd8.acq %0=%1,1\n"
@@ -373,7 +373,7 @@ bool QBasicAtomicOps<8>::ref(T &_q_value)
 }
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<8>::deref(T &_q_value)
+bool QBasicAtomicOps<8>::deref(T &_q_value) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("fetchadd8.rel %0=%1,-1\n"
@@ -384,7 +384,7 @@ bool QBasicAtomicOps<8>::deref(T &_q_value)
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<1>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<1>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -397,7 +397,7 @@ bool QBasicAtomicOps<1>::testAndSetAcquire(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<1>::testAndSetRelease(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<1>::testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -410,7 +410,7 @@ bool QBasicAtomicOps<1>::testAndSetRelease(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<2>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<2>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -423,7 +423,7 @@ bool QBasicAtomicOps<2>::testAndSetAcquire(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<2>::testAndSetRelease(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<2>::testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -436,7 +436,7 @@ bool QBasicAtomicOps<2>::testAndSetRelease(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<4>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -449,7 +449,7 @@ bool QBasicAtomicOps<4>::testAndSetAcquire(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::testAndSetRelease(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<4>::testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -462,7 +462,7 @@ bool QBasicAtomicOps<4>::testAndSetRelease(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<8>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<8>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -475,7 +475,7 @@ bool QBasicAtomicOps<8>::testAndSetAcquire(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<8>::testAndSetRelease(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<8>::testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -488,7 +488,7 @@ bool QBasicAtomicOps<8>::testAndSetRelease(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<1>::fetchAndStoreAcquire(T &_q_value, T newValue)
+T QBasicAtomicOps<1>::fetchAndStoreAcquire(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("xchg1 %0=%1,%2\n"
@@ -499,7 +499,7 @@ T QBasicAtomicOps<1>::fetchAndStoreAcquire(T &_q_value, T newValue)
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<2>::fetchAndStoreAcquire(T &_q_value, T newValue)
+T QBasicAtomicOps<2>::fetchAndStoreAcquire(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("xchg2 %0=%1,%2\n"
@@ -510,7 +510,7 @@ T QBasicAtomicOps<2>::fetchAndStoreAcquire(T &_q_value, T newValue)
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<4>::fetchAndStoreAcquire(T &_q_value, T newValue)
+T QBasicAtomicOps<4>::fetchAndStoreAcquire(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("xchg4 %0=%1,%2\n"
@@ -521,7 +521,7 @@ T QBasicAtomicOps<4>::fetchAndStoreAcquire(T &_q_value, T newValue)
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<8>::fetchAndStoreAcquire(T &_q_value, T newValue)
+T QBasicAtomicOps<8>::fetchAndStoreAcquire(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("xchg8 %0=%1,%2\n"
@@ -532,7 +532,7 @@ T QBasicAtomicOps<8>::fetchAndStoreAcquire(T &_q_value, T newValue)
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<1>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<1>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     T ret;
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
@@ -555,7 +555,7 @@ T QBasicAtomicOps<1>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<1>::fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<1>::fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     T ret;
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
@@ -578,7 +578,7 @@ T QBasicAtomicOps<1>::fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<2>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<2>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     T ret;
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
@@ -601,7 +601,7 @@ T QBasicAtomicOps<2>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<2>::fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<2>::fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     T ret;
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
@@ -624,7 +624,7 @@ T QBasicAtomicOps<2>::fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<4>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<4>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     T ret;
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
@@ -659,7 +659,7 @@ T QBasicAtomicOps<4>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<4>::fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<4>::fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     T ret;
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
@@ -694,7 +694,7 @@ T QBasicAtomicOps<4>::fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<8>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<8>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     T ret;
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
@@ -729,7 +729,7 @@ T QBasicAtomicOps<8>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<8>::fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<8>::fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     T ret;
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
@@ -772,41 +772,41 @@ QT_END_INCLUDE_NAMESPACE
 #define FENCE (_Asm_fence)(_UP_CALL_FENCE | _UP_SYS_FENCE | _DOWN_CALL_FENCE | _DOWN_SYS_FENCE)
 
 template <int size> inline
-void QBasicAtomicOps<size>::orderedMemoryFence()
+void QBasicAtomicOps<size>::orderedMemoryFence() Q_DECL_NOTHROW
 {
     _Asm_mf(FENCE);
 }
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<4>::ref(T &_q_value)
+bool QBasicAtomicOps<4>::ref(T &_q_value) Q_DECL_NOTHROW
 {
     return (T)_Asm_fetchadd((_Asm_fasz)_FASZ_W, (_Asm_sem)_SEM_ACQ,
                               &_q_value, 1, (_Asm_ldhint)_LDHINT_NONE, FENCE) != -1;
 }
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<4>::deref(T &_q_value)
+bool QBasicAtomicOps<4>::deref(T &_q_value) Q_DECL_NOTHROW
 {
     return (T)_Asm_fetchadd((_Asm_fasz)_FASZ_W, (_Asm_sem)_SEM_REL,
                               &_q_value, -1, (_Asm_ldhint)_LDHINT_NONE, FENCE) != 1;
 }
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<8>::ref(T &_q_value)
+bool QBasicAtomicOps<8>::ref(T &_q_value) Q_DECL_NOTHROW
 {
     return (T)_Asm_fetchadd((_Asm_fasz)_FASZ_D, (_Asm_sem)_SEM_ACQ,
                               &_q_value, 1, (_Asm_ldhint)_LDHINT_NONE, FENCE) != -1;
 }
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<8>::deref(T &_q_value)
+bool QBasicAtomicOps<8>::deref(T &_q_value) Q_DECL_NOTHROW
 {
     return (T)_Asm_fetchadd((_Asm_fasz)_FASZ_D, (_Asm_sem)_SEM_REL,
                               &_q_value, -1, (_Asm_ldhint)_LDHINT_NONE, FENCE) != 1;
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<1>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<1>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (quint8)expectedValue, FENCE);
     T ret = (T)_Asm_cmpxchg((_Asm_sz)_SZ_B, (_Asm_sem)_SEM_ACQ,
@@ -815,7 +815,7 @@ bool QBasicAtomicOps<1>::testAndSetAcquire(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<1>::testAndSetRelease(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<1>::testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (quint8)expectedValue, FENCE);
     T ret = (T)_Asm_cmpxchg((_Asm_sz)_SZ_B, (_Asm_sem)_SEM_REL,
@@ -824,7 +824,7 @@ bool QBasicAtomicOps<1>::testAndSetRelease(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<2>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<2>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (quint16)expectedValue, FENCE);
     T ret = (T)_Asm_cmpxchg((_Asm_sz)_SZ_H, (_Asm_sem)_SEM_ACQ,
@@ -833,7 +833,7 @@ bool QBasicAtomicOps<2>::testAndSetAcquire(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<2>::testAndSetRelease(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<2>::testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (quint16)expectedValue, FENCE);
     T ret = (T)_Asm_cmpxchg((_Asm_sz)_SZ_H, (_Asm_sem)_SEM_REL,
@@ -842,7 +842,7 @@ bool QBasicAtomicOps<2>::testAndSetRelease(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<4>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (unsigned)expectedValue, FENCE);
     T ret = (T)_Asm_cmpxchg((_Asm_sz)_SZ_W, (_Asm_sem)_SEM_ACQ,
@@ -851,7 +851,7 @@ bool QBasicAtomicOps<4>::testAndSetAcquire(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::testAndSetRelease(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<4>::testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (unsigned)expectedValue, FENCE);
     T ret = (T)_Asm_cmpxchg((_Asm_sz)_SZ_W, (_Asm_sem)_SEM_REL,
@@ -860,7 +860,7 @@ bool QBasicAtomicOps<4>::testAndSetRelease(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<8>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<8>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (quint64)expectedValue, FENCE);
     T ret = (T)_Asm_cmpxchg((_Asm_sz)_SZ_D, (_Asm_sem)_SEM_ACQ,
@@ -869,7 +869,7 @@ bool QBasicAtomicOps<8>::testAndSetAcquire(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<8>::testAndSetRelease(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<8>::testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (quint64)expectedValue, FENCE);
     T ret = (T)_Asm_cmpxchg((_Asm_sz)_SZ_D, (_Asm_sem)_SEM_REL,
@@ -878,35 +878,35 @@ bool QBasicAtomicOps<8>::testAndSetRelease(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<1>::fetchAndStoreAcquire(T &_q_value, T newValue)
+T QBasicAtomicOps<1>::fetchAndStoreAcquire(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     return (T)_Asm_xchg((_Asm_sz)_SZ_B, &_q_value, (quint8)newValue,
                         (_Asm_ldhint)_LDHINT_NONE, FENCE);
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<2>::fetchAndStoreAcquire(T &_q_value, T newValue)
+T QBasicAtomicOps<2>::fetchAndStoreAcquire(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     return (T)_Asm_xchg((_Asm_sz)_SZ_H, &_q_value, (quint16)newValue,
                         (_Asm_ldhint)_LDHINT_NONE, FENCE);
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<4>::fetchAndStoreAcquire(T &_q_value, T newValue)
+T QBasicAtomicOps<4>::fetchAndStoreAcquire(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     return (T)_Asm_xchg((_Asm_sz)_SZ_W, &_q_value, (unsigned)newValue,
                         (_Asm_ldhint)_LDHINT_NONE, FENCE);
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<8>::fetchAndStoreAcquire(T &_q_value, T newValue)
+T QBasicAtomicOps<8>::fetchAndStoreAcquire(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     return (T)_Asm_xchg((_Asm_sz)_SZ_D, &_q_value, (quint64)newValue,
                         (_Asm_ldhint)_LDHINT_NONE, FENCE);
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<1>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<1>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
     // implement the test-and-set loop
@@ -921,7 +921,7 @@ T QBasicAtomicOps<1>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     // implement the test-and-set loop
     register T old, ret;
@@ -935,7 +935,7 @@ T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<2>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<2>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
     // implement the test-and-set loop
@@ -950,7 +950,7 @@ T QBasicAtomicOps<2>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     // implement the test-and-set loop
     register T old, ret;
@@ -964,7 +964,7 @@ T QBasicAtomicOps<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<4>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<4>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
     // implement the test-and-set loop
@@ -979,7 +979,7 @@ T QBasicAtomicOps<4>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     // implement the test-and-set loop
     register T old, ret;
@@ -993,7 +993,7 @@ T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<8>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<8>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
     // implement the test-and-set loop
@@ -1008,7 +1008,7 @@ T QBasicAtomicOps<8>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<8>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<8>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     // implement the test-and-set loop
     register T old, ret;
@@ -1024,59 +1024,59 @@ T QBasicAtomicOps<8>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 #endif
 
 template<int size> template<typename T> inline
-bool QBasicAtomicOps<size>::ref(T &_q_value)
+bool QBasicAtomicOps<size>::ref(T &_q_value) Q_DECL_NOTHROW
 {
     // no fetchadd for 1 or 2 bytes
     return fetchAndAddRelaxed(_q_value, 1) == -1;
 }
 
 template<int size> template<typename T> inline
-bool QBasicAtomicOps<size>::deref(T &_q_value)
+bool QBasicAtomicOps<size>::deref(T &_q_value) Q_DECL_NOTHROW
 {
     // no fetchadd for 1 or 2 bytes
     return fetchAndAddRelaxed(_q_value, -1) == 1;
 }
 
 template<int size> template <typename T> inline
-bool QBasicAtomicOps<size>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<size>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     return testAndSetAcquire(_q_value, expectedValue, newValue);
 }
 
 template<int size> template <typename T> inline
-bool QBasicAtomicOps<size>::testAndSetOrdered(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<size>::testAndSetOrdered(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     orderedMemoryFence(_q_value);
     return testAndSetAcquire(_q_value, expectedValue, newValue);
 }
 
 template<int size> template <typename T> inline
-T QBasicAtomicOps<size>::fetchAndStoreRelaxed(T &_q_value, T newValue)
+T QBasicAtomicOps<size>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     return fetchAndStoreAcquire(_q_value, newValue);
 }
 
 template<int size> template <typename T> inline
-T QBasicAtomicOps<size>::fetchAndStoreRelease(T &_q_value, T newValue)
+T QBasicAtomicOps<size>::fetchAndStoreRelease(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     orderedMemoryFence(_q_value);
     return fetchAndStoreAcquire(_q_value, newValue);
 }
 
 template<int size> template <typename T> inline
-T QBasicAtomicOps<size>::fetchAndStoreOrdered(T &_q_value, T newValue)
+T QBasicAtomicOps<size>::fetchAndStoreOrdered(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     return fetchAndStoreRelease(_q_value, newValue);
 }
 
 template<int size> template <typename T> inline
-T QBasicAtomicOps<size>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<size>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     return fetchAndAddAcquire(_q_value, valueToAdd);
 }
 
 template<int size> template <typename T> inline
-T QBasicAtomicOps<size>::fetchAndAddOrdered(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<size>::fetchAndAddOrdered(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     orderedMemoryFence(_q_value);
     return fetchAndAddRelease(_q_value, valueToAdd);

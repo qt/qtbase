@@ -76,9 +76,9 @@ struct QAtomicOps<int> : QGenericAtomicOps<QAtomicOps<int> >
 {
     typedef int Type;
 
-    static inline bool isTestAndSetNative() { return false; }
-    static inline bool isTestAndSetWaitFree() { return false; }
-    Q_CORE_EXPORT static bool testAndSetRelaxed(int &_q_value, int expectedValue, int newValue);
+    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
+    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
+    Q_CORE_EXPORT static bool testAndSetRelaxed(int &_q_value, int expectedValue, int newValue) Q_DECL_NOTHROW;
 };
 
 template <>
@@ -86,9 +86,9 @@ struct QAtomicOps<void *> : QGenericAtomicOps<QAtomicOps<void *> >
 {
     typedef void *Type;
 
-    static inline bool isTestAndSetNative() { return false; }
-    static inline bool isTestAndSetWaitFree() { return false; }
-    Q_CORE_EXPORT static bool testAndSetRelaxed(void *&_q_value, void *expectedValue, void *newValue);
+    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
+    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
+    Q_CORE_EXPORT static bool testAndSetRelaxed(void *&_q_value, void *expectedValue, void *newValue) Q_DECL_NOTHROW;
 };
 
 template <typename T>
@@ -99,9 +99,9 @@ struct QAtomicOps<T *> : QGenericAtomicOps<QAtomicOps<T *> >
     // helper to strip cv qualifiers
     static inline void *nocv(const T *p) { return const_cast<void *>(static_cast<const volatile void *>(p)); }
 
-    static inline bool isTestAndSetNative() { return false; }
-    static inline bool isTestAndSetWaitFree() { return false; }
-    static inline bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue)
+    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
+    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
+    static inline bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue) Q_DECL_NOTHROW
     {
         // forward to the void* specialization
         void *voidp = nocv(_q_value);

@@ -78,22 +78,22 @@ template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; }
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
     template <typename T>
-    static void orderedMemoryFence(const T &);
+    static void orderedMemoryFence(const T &) Q_DECL_NOTHROW;
 
-    static inline bool isReferenceCountingNative() { return true; }
-    template <typename T> static bool ref(T &_q_value);
-    template <typename T> static bool deref(T &_q_value);
+    static inline bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
+    template <typename T> static bool ref(T &_q_value) Q_DECL_NOTHROW;
+    template <typename T> static bool deref(T &_q_value) Q_DECL_NOTHROW;
 
-    static inline bool isTestAndSetNative() { return true; }
-    static inline bool isTestAndSetWaitFree() { return false; }
-    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue);
+    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
+    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndStoreNative() { return true; }
-    template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue);
+    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
+    template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndAddNative() { return true; }
+    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
     template <typename T> static
-    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd);
+    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
 };
 
 template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
@@ -111,7 +111,7 @@ template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
 #endif
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<4>::ref(T &_q_value)
+bool QBasicAtomicOps<4>::ref(T &_q_value) Q_DECL_NOTHROW
 {
     register T newValue;
     register int result;
@@ -130,7 +130,7 @@ bool QBasicAtomicOps<4>::ref(T &_q_value)
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::deref(T &_q_value)
+bool QBasicAtomicOps<4>::deref(T &_q_value) Q_DECL_NOTHROW
 {
     register T newValue;
     register int result;
@@ -149,7 +149,7 @@ bool QBasicAtomicOps<4>::deref(T &_q_value)
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     register int result;
     asm volatile("0:\n"
@@ -169,7 +169,7 @@ bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue)
+T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     register T originalValue;
     register int result;
@@ -188,7 +188,7 @@ T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue)
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     register T originalValue;
     register T newValue;
@@ -245,7 +245,7 @@ template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 
 #define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<1>::ref(T &_q_value)
+bool QBasicAtomicOps<1>::ref(T &_q_value) Q_DECL_NOTHROW
 {
     register T newValue;
     register int result;
@@ -264,7 +264,7 @@ bool QBasicAtomicOps<1>::ref(T &_q_value)
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<1>::deref(T &_q_value)
+bool QBasicAtomicOps<1>::deref(T &_q_value) Q_DECL_NOTHROW
 {
     register T newValue;
     register int result;
@@ -283,7 +283,7 @@ bool QBasicAtomicOps<1>::deref(T &_q_value)
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     register T result;
     asm volatile("0:\n"
@@ -303,7 +303,7 @@ bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<1>::fetchAndStoreRelaxed(T &_q_value, T newValue)
+T QBasicAtomicOps<1>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     register T originalValue;
     register int result;
@@ -322,7 +322,7 @@ T QBasicAtomicOps<1>::fetchAndStoreRelaxed(T &_q_value, T newValue)
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     register T originalValue;
     register T newValue;
@@ -344,7 +344,7 @@ T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 }
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<2>::ref(T &_q_value)
+bool QBasicAtomicOps<2>::ref(T &_q_value) Q_DECL_NOTHROW
 {
     register T newValue;
     register int result;
@@ -363,7 +363,7 @@ bool QBasicAtomicOps<2>::ref(T &_q_value)
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<2>::deref(T &_q_value)
+bool QBasicAtomicOps<2>::deref(T &_q_value) Q_DECL_NOTHROW
 {
     register T newValue;
     register int result;
@@ -382,7 +382,7 @@ bool QBasicAtomicOps<2>::deref(T &_q_value)
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     register T result;
     asm volatile("0:\n"
@@ -402,7 +402,7 @@ bool QBasicAtomicOps<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<2>::fetchAndStoreRelaxed(T &_q_value, T newValue)
+T QBasicAtomicOps<2>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     register T originalValue;
     register int result;
@@ -421,7 +421,7 @@ T QBasicAtomicOps<2>::fetchAndStoreRelaxed(T &_q_value, T newValue)
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     register T originalValue;
     register T newValue;
@@ -451,7 +451,7 @@ T QBasicAtomicOps<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 // If this is a little-endian build, H and R are the same; otherwise, H and Q are the same.
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<8>::ref(T &_q_value)
+bool QBasicAtomicOps<8>::ref(T &_q_value) Q_DECL_NOTHROW
 {
     register T newValue;
     register int result;
@@ -471,7 +471,7 @@ bool QBasicAtomicOps<8>::ref(T &_q_value)
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<8>::deref(T &_q_value)
+bool QBasicAtomicOps<8>::deref(T &_q_value) Q_DECL_NOTHROW
 {
     register T newValue;
     register int result;
@@ -491,7 +491,7 @@ bool QBasicAtomicOps<8>::deref(T &_q_value)
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     register T result;
     asm volatile("0:\n"
@@ -513,7 +513,7 @@ bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<8>::fetchAndStoreRelaxed(T &_q_value, T newValue)
+T QBasicAtomicOps<8>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     register T originalValue;
     register int result;
@@ -532,7 +532,7 @@ T QBasicAtomicOps<8>::fetchAndStoreRelaxed(T &_q_value, T newValue)
 }
 
 template<> template <typename T> inline
-T QBasicAtomicOps<8>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<8>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     register T originalValue;
     register T newValue;
@@ -577,7 +577,7 @@ T QBasicAtomicOps<8>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 # define Q_COMPILER_MEMORY_BARRIER __schedule_barrier()
 #endif
 
-inline bool QBasicAtomicInt::ref()
+inline bool QBasicAtomicInt::ref() Q_DECL_NOTHROW
 {
     register int newValue;
     register int result;
@@ -592,7 +592,7 @@ inline bool QBasicAtomicInt::ref()
     return newValue != 0;
 }
 
-inline bool QBasicAtomicInt::deref()
+inline bool QBasicAtomicInt::deref() Q_DECL_NOTHROW
 {
     register int newValue;
     register int result;
@@ -607,7 +607,7 @@ inline bool QBasicAtomicInt::deref()
     return newValue != 0;
 }
 
-inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
+inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue) Q_DECL_NOTHROW
 {
     register int result;
     retry:
@@ -621,7 +621,7 @@ inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
     return result == 0;
 }
 
-inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
+inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue) Q_DECL_NOTHROW
 {
     register int originalValue;
     register int result;
@@ -635,7 +635,7 @@ inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
     return originalValue;
 }
 
-inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
+inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd) Q_DECL_NOTHROW
 {
     register int originalValue;
     register int newValue;
@@ -652,7 +652,7 @@ inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
 }
 
 template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
+Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue) Q_DECL_NOTHROW
 {
     register T *result;
     retry:
@@ -667,7 +667,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValu
 }
 
 template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
+Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue) Q_DECL_NOTHROW
 {
     register T *originalValue;
     register int result;
@@ -682,7 +682,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 }
 
 template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd)
+Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd) Q_DECL_NOTHROW
 {
     register T *originalValue;
     register T *newValue;
@@ -707,7 +707,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueTo
 // common code
 
 template <int size> template <typename T> inline
-void QBasicAtomicOps<size>::orderedMemoryFence(const T &)
+void QBasicAtomicOps<size>::orderedMemoryFence(const T &) Q_DECL_NOTHROW
 {
     Q_DATA_MEMORY_BARRIER;
 }

@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 static pthread_mutex_t qAtomicMutex = PTHREAD_MUTEX_INITIALIZER;
 
 Q_CORE_EXPORT
-bool QAtomicOps<int>::testAndSetRelaxed(int &_q_value, int expectedValue, int newValue)
+bool QAtomicOps<int>::testAndSetRelaxed(int &_q_value, int expectedValue, int newValue) Q_DECL_NOTHROW
 {
     bool returnValue = false;
     pthread_mutex_lock(&qAtomicMutex);
@@ -65,7 +65,7 @@ bool QAtomicOps<int>::testAndSetRelaxed(int &_q_value, int expectedValue, int ne
 }
 
 Q_CORE_EXPORT
-bool QAtomicOps<void *>::testAndSetRelaxed(void *&_q_value, void *expectedValue, void *newValue)
+bool QAtomicOps<void *>::testAndSetRelaxed(void *&_q_value, void *expectedValue, void *newValue) Q_DECL_NOTHROW
 {
     bool returnValue = false;
     pthread_mutex_lock(&qAtomicMutex);

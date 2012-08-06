@@ -84,45 +84,45 @@ template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
     typedef T Type;
 
 #ifndef __ia64__
-    static T loadAcquire(const T &_q_value)
+    static T loadAcquire(const T &_q_value) Q_DECL_NOTHROW
     {
         T tmp = _q_value;
         __sync_synchronize();
         return tmp;
     }
 
-    static void storeRelease(T &_q_value, T newValue)
+    static void storeRelease(T &_q_value, T newValue) Q_DECL_NOTHROW
     {
         __sync_synchronize();
         _q_value = newValue;
     }
 #endif
 
-    static bool isTestAndSetNative() { return false; }
-    static bool isTestAndSetWaitFree() { return false; }
-    static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+    static bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
+    static bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
+    static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {
         return __sync_bool_compare_and_swap(&_q_value, expectedValue, newValue);
     }
 
-    static T fetchAndStoreRelaxed(T &_q_value, T newValue)
+    static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return __sync_lock_test_and_set(&_q_value, newValue);
     }
 
-    static T fetchAndStoreRelease(T &_q_value, T newValue)
+    static T fetchAndStoreRelease(T &_q_value, T newValue) Q_DECL_NOTHROW
     {
         __sync_synchronize();
         return __sync_lock_test_and_set(&_q_value, newValue);
     }
 
-    static T fetchAndStoreOrdered(T &_q_value, T newValue)
+    static T fetchAndStoreOrdered(T &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return fetchAndStoreRelease(_q_value, newValue);
     }
 
     static
-    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
         return __sync_fetch_and_add(&_q_value, valueToAdd * QAtomicAdditiveType<T>::AddScale);
     }

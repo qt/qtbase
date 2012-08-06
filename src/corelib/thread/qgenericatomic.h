@@ -80,32 +80,32 @@ template <typename BaseClass> struct QGenericAtomicOps
 {
     template <typename T> struct AtomicType { typedef T Type; typedef T *PointerType; };
 
-    template <typename T> static void acquireMemoryFence(const T &_q_value)
+    template <typename T> static void acquireMemoryFence(const T &_q_value) Q_DECL_NOTHROW
     {
         BaseClass::orderedMemoryFence(_q_value);
     }
-    template <typename T> static void releaseMemoryFence(const T &_q_value)
+    template <typename T> static void releaseMemoryFence(const T &_q_value) Q_DECL_NOTHROW
     {
         BaseClass::orderedMemoryFence(_q_value);
     }
-    template <typename T> static void orderedMemoryFence(const T &)
+    template <typename T> static void orderedMemoryFence(const T &) Q_DECL_NOTHROW
     {
     }
 
     template <typename T> static inline always_inline
-    T load(const T &_q_value)
+    T load(const T &_q_value) Q_DECL_NOTHROW
     {
         return _q_value;
     }
 
     template <typename T, typename X> static inline always_inline
-    void store(T &_q_value, X newValue)
+    void store(T &_q_value, X newValue) Q_DECL_NOTHROW
     {
         _q_value = newValue;
     }
 
     template <typename T> static inline always_inline
-    T loadAcquire(const T &_q_value)
+    T loadAcquire(const T &_q_value) Q_DECL_NOTHROW
     {
         T tmp = *static_cast<const volatile T *>(&_q_value);
         BaseClass::acquireMemoryFence(_q_value);
@@ -113,24 +113,24 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T, typename X> static inline always_inline
-    void storeRelease(T &_q_value, X newValue)
+    void storeRelease(T &_q_value, X newValue) Q_DECL_NOTHROW
     {
         BaseClass::releaseMemoryFence(_q_value);
         *static_cast<volatile T *>(&_q_value) = newValue;
     }
 
-    static inline bool isReferenceCountingNative()
+    static inline bool isReferenceCountingNative() Q_DECL_NOTHROW
     { return BaseClass::isFetchAndAddNative(); }
-    static inline bool isReferenceCountingWaitFree()
+    static inline bool isReferenceCountingWaitFree() Q_DECL_NOTHROW
     { return BaseClass::isFetchAndAddWaitFree(); }
     template <typename T> static inline always_inline
-    bool ref(T &_q_value)
+    bool ref(T &_q_value) Q_DECL_NOTHROW
     {
         return BaseClass::fetchAndAddRelaxed(_q_value, 1) != T(-1);
     }
 
     template <typename T> static inline always_inline
-    bool deref(T &_q_value)
+    bool deref(T &_q_value) Q_DECL_NOTHROW
     {
          return BaseClass::fetchAndAddRelaxed(_q_value, -1) != 1;
     }
@@ -138,14 +138,14 @@ template <typename BaseClass> struct QGenericAtomicOps
 #if 0
     // These functions have no default implementation
     // Archictectures must implement them
-    static inline bool isTestAndSetNative();
-    static inline bool isTestAndSetWaitFree();
+    static inline bool isTestAndSetNative() Q_DECL_NOTHROW;
+    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW;
     template <typename T, typename X> static inline
-    bool testAndSetRelaxed(T &_q_value, X expectedValue, X newValue);
+    bool testAndSetRelaxed(T &_q_value, X expectedValue, X newValue) Q_DECL_NOTHROW;
 #endif
 
     template <typename T, typename X> static inline always_inline
-    bool testAndSetAcquire(T &_q_value, X expectedValue, X newValue)
+    bool testAndSetAcquire(T &_q_value, X expectedValue, X newValue) Q_DECL_NOTHROW
     {
         bool tmp = BaseClass::testAndSetRelaxed(_q_value, expectedValue, newValue);
         BaseClass::acquireMemoryFence(_q_value);
@@ -153,24 +153,24 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T, typename X> static inline always_inline
-    bool testAndSetRelease(T &_q_value, X expectedValue, X newValue)
+    bool testAndSetRelease(T &_q_value, X expectedValue, X newValue) Q_DECL_NOTHROW
     {
         BaseClass::releaseMemoryFence(_q_value);
         return BaseClass::testAndSetRelaxed(_q_value, expectedValue, newValue);
     }
 
     template <typename T, typename X> static inline always_inline
-    bool testAndSetOrdered(T &_q_value, X expectedValue, X newValue)
+    bool testAndSetOrdered(T &_q_value, X expectedValue, X newValue) Q_DECL_NOTHROW
     {
         BaseClass::orderedMemoryFence(_q_value);
         return BaseClass::testAndSetRelaxed(_q_value, expectedValue, newValue);
     }
 
-    static inline bool isFetchAndStoreNative() { return false; }
-    static inline bool isFetchAndStoreWaitFree() { return false; }
+    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return false; }
+    static inline bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return false; }
 
     template <typename T, typename X> static inline always_inline
-    T fetchAndStoreRelaxed(T &_q_value, X newValue)
+    T fetchAndStoreRelaxed(T &_q_value, X newValue) Q_DECL_NOTHROW
     {
         // implement fetchAndStore on top of testAndSet
         Q_FOREVER {
@@ -181,7 +181,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T, typename X> static inline always_inline
-    T fetchAndStoreAcquire(T &_q_value, X newValue)
+    T fetchAndStoreAcquire(T &_q_value, X newValue) Q_DECL_NOTHROW
     {
         T tmp = BaseClass::fetchAndStoreRelaxed(_q_value, newValue);
         BaseClass::acquireMemoryFence(_q_value);
@@ -189,23 +189,23 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T, typename X> static inline always_inline
-    T fetchAndStoreRelease(T &_q_value, X newValue)
+    T fetchAndStoreRelease(T &_q_value, X newValue) Q_DECL_NOTHROW
     {
         BaseClass::releaseMemoryFence(_q_value);
         return BaseClass::fetchAndStoreRelaxed(_q_value, newValue);
     }
 
     template <typename T, typename X> static inline always_inline
-    T fetchAndStoreOrdered(T &_q_value, X newValue)
+    T fetchAndStoreOrdered(T &_q_value, X newValue) Q_DECL_NOTHROW
     {
         BaseClass::orderedMemoryFence(_q_value);
         return BaseClass::fetchAndStoreRelaxed(_q_value, newValue);
     }
 
-    static inline bool isFetchAndAddNative() { return false; }
-    static inline bool isFetchAndAddWaitFree() { return false; }
+    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return false; }
+    static inline bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return false; }
     template <typename T> static inline always_inline
-    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
         // implement fetchAndAdd on top of testAndSet
         Q_FOREVER {
@@ -216,7 +216,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T> static inline always_inline
-    T fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+    T fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
         T tmp = BaseClass::fetchAndAddRelaxed(_q_value, valueToAdd);
         BaseClass::acquireMemoryFence(_q_value);
@@ -224,14 +224,14 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T> static inline always_inline
-    T fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+    T fetchAndAddRelease(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
         BaseClass::releaseMemoryFence(_q_value);
         return BaseClass::fetchAndAddRelaxed(_q_value, valueToAdd);
     }
 
     template <typename T> static inline always_inline
-    T fetchAndAddOrdered(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+    T fetchAndAddOrdered(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
         BaseClass::orderedMemoryFence(_q_value);
         return BaseClass::fetchAndAddRelaxed(_q_value, valueToAdd);

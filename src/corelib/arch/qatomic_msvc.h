@@ -276,49 +276,49 @@ struct QAtomicOpsBySize<4> : QGenericAtomicOps<QAtomicOpsBySize<4> >
     // The 32-bit Interlocked*() API takes parameters as longs.
     typedef long Type;
 
-    static inline bool isReferenceCountingNative() { return true; }
-    static inline bool isReferenceCountingWaitFree() { return true; }
-    static bool ref(long &_q_value);
-    static bool deref(long &_q_value);
+    static inline bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return true; }
+    static bool ref(long &_q_value) Q_DECL_NOTHROW;
+    static bool deref(long &_q_value) Q_DECL_NOTHROW;
 
-    static inline bool isTestAndSetNative() { return true; }
-    static inline bool isTestAndSetWaitFree() { return true; }
-    static bool testAndSetRelaxed(long &_q_value, long expectedValue, long newValue);
+    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
+    static bool testAndSetRelaxed(long &_q_value, long expectedValue, long newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndStoreNative() { return true; }
-    static inline bool isFetchAndStoreWaitFree() { return true; }
-    static long fetchAndStoreRelaxed(long &_q_value, long newValue);
+    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
+    static long fetchAndStoreRelaxed(long &_q_value, long newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndAddNative() { return true; }
-    static inline bool isFetchAndAddWaitFree() { return true; }
-    static long fetchAndAddRelaxed(long &_q_value, QAtomicAdditiveType<long>::AdditiveT valueToAdd);
+    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return true; }
+    static long fetchAndAddRelaxed(long &_q_value, QAtomicAdditiveType<long>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
 };
 
 template <typename T>
 struct QAtomicOps : QAtomicOpsBySize<sizeof(T)>
 { };
 
-inline bool QAtomicOpsBySize<4>::ref(long &_q_value)
+inline bool QAtomicOpsBySize<4>::ref(long &_q_value) Q_DECL_NOTHROW
 {
     return QT_INTERLOCKED_INCREMENT(&_q_value) != 0;
 }
 
-inline bool QAtomicOpsBySize<4>::deref(long &_q_value)
+inline bool QAtomicOpsBySize<4>::deref(long &_q_value) Q_DECL_NOTHROW
 {
     return QT_INTERLOCKED_DECREMENT(&_q_value) != 0;
 }
 
-inline bool QAtomicOpsBySize<4>::testAndSetRelaxed(long &_q_value, long expectedValue, long newValue)
+inline bool QAtomicOpsBySize<4>::testAndSetRelaxed(long &_q_value, long expectedValue, long newValue) Q_DECL_NOTHROW
 {
     return QT_INTERLOCKED_COMPARE_EXCHANGE(&_q_value, newValue, expectedValue) == expectedValue;
 }
 
-inline long QAtomicOpsBySize<4>::fetchAndStoreRelaxed(long &_q_value, long newValue)
+inline long QAtomicOpsBySize<4>::fetchAndStoreRelaxed(long &_q_value, long newValue) Q_DECL_NOTHROW
 {
     return QT_INTERLOCKED_EXCHANGE(&_q_value, newValue);
 }
 
-inline long QAtomicOpsBySize<4>::fetchAndAddRelaxed(long &_q_value, QAtomicAdditiveType<long>::AdditiveT valueToAdd)
+inline long QAtomicOpsBySize<4>::fetchAndAddRelaxed(long &_q_value, QAtomicAdditiveType<long>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     return QT_INTERLOCKED_EXCHANGE_ADD(&_q_value, valueToAdd * QAtomicAdditiveType<long>::AddScale);
 }
@@ -329,33 +329,33 @@ struct QAtomicOps<T *> : QGenericAtomicOps<QAtomicOps<T *> >
 {
     typedef T *Type;
 
-    static inline bool isTestAndSetNative() { return true; }
-    static inline bool isTestAndSetWaitFree() { return true; }
-    static bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue);
+    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
+    static bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndStoreNative() { return true; }
-    static inline bool isFetchAndStoreWaitFree() { return true; }
-    static T *fetchAndStoreRelaxed(T *&_q_value, T *newValue);
+    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
+    static T *fetchAndStoreRelaxed(T *&_q_value, T *newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndAddNative() { return true; }
-    static inline bool isFetchAndAddWaitFree() { return true; }
-    static T *fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd);
+    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return true; }
+    static T *fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd) Q_DECL_NOTHROW;
 };
 
 template <typename T>
-inline bool QAtomicOps<T *>::testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue)
+inline bool QAtomicOps<T *>::testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue) Q_DECL_NOTHROW
 {
     return QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(&_q_value, newValue, expectedValue) == expectedValue;
 }
 
 template <typename T>
-inline T *QAtomicOps<T *>::fetchAndStoreRelaxed(T *&_q_value, T *newValue)
+inline T *QAtomicOps<T *>::fetchAndStoreRelaxed(T *&_q_value, T *newValue) Q_DECL_NOTHROW
 {
     return reinterpret_cast<T *>(QT_INTERLOCKED_EXCHANGE_POINTER(&_q_value, newValue));
 }
 
 template <typename T>
-inline T *QAtomicOps<T *>::fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd)
+inline T *QAtomicOps<T *>::fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd) Q_DECL_NOTHROW
 {
     return reinterpret_cast<T *>(QT_INTERLOCKED_EXCHANGE_ADD_POINTER(&_q_value, valueToAdd * sizeof(T)));
 }

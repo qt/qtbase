@@ -82,13 +82,13 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
 {
     // kernel places a restartable cmpxchg implementation at a fixed address
     template <typename T>
-    static int _q_cmpxchg(T oldval, T newval, volatile T *ptr)
+    static int _q_cmpxchg(T oldval, T newval, volatile T *ptr) Q_DECL_NOTHROW
     {
         typedef int (* kernel_cmpxchg_t)(T oldval, T newval, volatile T *ptr);
         kernel_cmpxchg_t kernel_cmpxchg = *reinterpret_cast<kernel_cmpxchg_t>(0xffff0fc0);
         return kernel_cmpxchg(oldval, newval, ptr);
     }
-    static void _q_dmb()
+    static void _q_dmb() Q_DECL_NOTHROW
     {
         typedef void (* kernel_dmb_t)();
         kernel_dmb_t kernel_dmb = *reinterpret_cast<kernel_dmb_t>(0xffff0fa0);
@@ -96,17 +96,17 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
     }
 
     template <typename T>
-    static void orderedMemoryFence(const T &) { _q_dmb(); }
+    static void orderedMemoryFence(const T &) Q_DECL_NOTHROW { _q_dmb(); }
 
-    template <typename T> static bool ref(T &_q_value);
-    template <typename T> static bool deref(T &_q_value);
+    template <typename T> static bool ref(T &_q_value) Q_DECL_NOTHROW;
+    template <typename T> static bool deref(T &_q_value) Q_DECL_NOTHROW;
 
-    static bool isTestAndSetNative() { return false; }
-    static bool isTestAndSetWaitFree() { return false; }
-    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue);
-    template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue);
+    static bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
+    static bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
+    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
     template <typename T> static
-    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd);
+    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
 };
 
 template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
@@ -115,7 +115,7 @@ template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
 };
 
 template<> template<typename T> inline
-bool QBasicAtomicOps<4>::ref(T &_q_value)
+bool QBasicAtomicOps<4>::ref(T &_q_value) Q_DECL_NOTHROW
 {
     register T originalValue;
     register T newValue;
@@ -127,7 +127,7 @@ bool QBasicAtomicOps<4>::ref(T &_q_value)
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::deref(T &_q_value)
+bool QBasicAtomicOps<4>::deref(T &_q_value) Q_DECL_NOTHROW
 {
     register T originalValue;
     register T newValue;
@@ -139,7 +139,7 @@ bool QBasicAtomicOps<4>::deref(T &_q_value)
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     register T originalValue;
     do {
@@ -153,7 +153,7 @@ bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
 // Fetch and store for integers
 #ifdef Q_CC_RVCT
 template<> template <typename T> inline
-__asm T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue)
+__asm T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     add r2, pc, #0
     bx r2
@@ -165,7 +165,7 @@ __asm T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue)
 }
 #else
 template<> template <typename T> inline
-T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue)
+T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     T originalValue;
     asm volatile("swp %0,%2,[%3]"
@@ -177,7 +177,7 @@ T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue)
 #endif // Q_CC_RVCT
 
 template<> template <typename T> inline
-T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     register T originalValue;
     register T newValue;

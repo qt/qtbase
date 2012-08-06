@@ -109,126 +109,126 @@ template <typename T> struct QAtomicOps
     static const int AddScale = QAtomicAdditiveType<T>::AddScale;
 
     static inline
-    T load(const Type &_q_value)
+    T load(const Type &_q_value) Q_DECL_NOTHROW
     {
         return _q_value.load(std::memory_order_relaxed);
     }
 
     static inline
-    T load(const volatile Type &_q_value)
+    T load(const volatile Type &_q_value) Q_DECL_NOTHROW
     {
         return _q_value.load(std::memory_order_relaxed);
     }
 
     static inline
-    T loadAcquire(const Type &_q_value)
+    T loadAcquire(const Type &_q_value) Q_DECL_NOTHROW
     {
         return _q_value.load(std::memory_order_acquire);
     }
 
     static inline
-    T loadAcquire(const volatile Type &_q_value)
+    T loadAcquire(const volatile Type &_q_value) Q_DECL_NOTHROW
     {
         return _q_value.load(std::memory_order_acquire);
     }
 
     static inline
-    void store(Type &_q_value, T newValue)
+    void store(Type &_q_value, T newValue) Q_DECL_NOTHROW
     {
         _q_value.store(newValue, std::memory_order_relaxed);
     }
 
     static inline
-    void storeRelease(Type &_q_value, T newValue)
+    void storeRelease(Type &_q_value, T newValue) Q_DECL_NOTHROW
     {
         _q_value.store(newValue, std::memory_order_release);
     }
 
-    static inline bool isReferenceCountingNative() { return true; }
-    static inline bool isReferenceCountingWaitFree() { return false; }
+    static inline bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
+    static inline bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return false; }
     static inline bool ref(Type &_q_value)
     {
         return ++_q_value != 0;
     }
 
-    static inline bool deref(Type &_q_value)
+    static inline bool deref(Type &_q_value) Q_DECL_NOTHROW
     {
         return --_q_value != 0;
     }
 
-    static inline bool isTestAndSetNative() { return false; }
-    static inline bool isTestAndSetWaitFree() { return false; }
+    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
+    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
 
     static
-    bool testAndSetRelaxed(Type &_q_value, T expectedValue, T newValue)
+    bool testAndSetRelaxed(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_relaxed);
     }
 
-    static bool testAndSetAcquire(Type &_q_value, T expectedValue, T newValue)
+    static bool testAndSetAcquire(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acquire);
     }
 
-    static bool testAndSetRelease(Type &_q_value, T expectedValue, T newValue)
+    static bool testAndSetRelease(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_release);
     }
 
-    static bool testAndSetOrdered(Type &_q_value, T expectedValue, T newValue)
+    static bool testAndSetOrdered(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acq_rel);
     }
 
-    static inline bool isFetchAndStoreNative() { return false; }
-    static inline bool isFetchAndStoreWaitFree() { return false; }
+    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return false; }
+    static inline bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return false; }
 
-    static T fetchAndStoreRelaxed(Type &_q_value, T newValue)
+    static T fetchAndStoreRelaxed(Type &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.exchange(newValue, std::memory_order_relaxed);
     }
 
-    static T fetchAndStoreAcquire(Type &_q_value, T newValue)
+    static T fetchAndStoreAcquire(Type &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.exchange(newValue, std::memory_order_acquire);
     }
 
-    static T fetchAndStoreRelease(Type &_q_value, T newValue)
+    static T fetchAndStoreRelease(Type &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.exchange(newValue, std::memory_order_release);
     }
 
-    static T fetchAndStoreOrdered(Type &_q_value, T newValue)
+    static T fetchAndStoreOrdered(Type &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.exchange(newValue, std::memory_order_acq_rel);
     }
 
-    static inline bool isFetchAndAddNative() { return false; }
-    static inline bool isFetchAndAddWaitFree() { return false; }
+    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return false; }
+    static inline bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return false; }
 
     static
-    T fetchAndAddRelaxed(Type &_q_value, _AdditiveType valueToAdd)
+    T fetchAndAddRelaxed(Type &_q_value, _AdditiveType valueToAdd) Q_DECL_NOTHROW
     {
         return _q_value.fetch_add(valueToAdd * AddScale,
                                   std::memory_order_relaxed);
     }
 
     static
-    T fetchAndAddAcquire(Type &_q_value, _AdditiveType valueToAdd)
+    T fetchAndAddAcquire(Type &_q_value, _AdditiveType valueToAdd) Q_DECL_NOTHROW
     {
         return _q_value.fetch_add(valueToAdd * AddScale,
                                   std::memory_order_acquire);
     }
 
     static
-    T fetchAndAddRelease(Type &_q_value, _AdditiveType valueToAdd)
+    T fetchAndAddRelease(Type &_q_value, _AdditiveType valueToAdd) Q_DECL_NOTHROW
     {
         return _q_value.fetch_add(valueToAdd * AddScale,
                                   std::memory_order_release);
     }
 
     static
-    T fetchAndAddOrdered(Type &_q_value, _AdditiveType valueToAdd)
+    T fetchAndAddOrdered(Type &_q_value, _AdditiveType valueToAdd) Q_DECL_NOTHROW
     {
         return _q_value.fetch_add(valueToAdd * AddScale,
                                   std::memory_order_acq_rel);
