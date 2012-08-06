@@ -1,0 +1,28 @@
+equals(TEMPLATE, app): TEMPLATE = aux
+
+isEmpty(TARGETPATH): error("Must set TARGETPATH (QML import name)")
+
+fq_qml_files = $$_PRO_FILE_PWD_/qmldir
+
+for(qmlf, QML_FILES): fq_qml_files += $$absolute_path($$qmlf, $$_PRO_FILE_PWD_)
+
+# Only for Qt Creator's project view
+OTHER_FILES += $$fq_qml_files
+
+exists($$[QT_HOST_PREFIX]/.qmake.cache) {
+    # These bizarre rules copy the files to the qtbase build directory
+
+    qmlfiles2build.input = fq_qml_files
+    qmlfiles2build.output = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+    !contains(TEMPLATE, vc.*): qmlfiles2build.variable_out = PRE_TARGETDEPS
+    qmlfiles2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+    qmlfiles2build.name = COPY ${QMAKE_FILE_IN}
+    qmlfiles2build.CONFIG = no_link no_clean
+
+    QMAKE_EXTRA_COMPILERS += qmlfiles2build
+}
+
+# Install rules
+qmldir.files = $$fq_qml_files
+qmldir.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
+INSTALLS += qmldir
