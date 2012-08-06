@@ -1201,7 +1201,6 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
             if(!dst.endsWith(Option::dir_sep))
                 dst += Option::dir_sep;
         }
-        dst = escapeFilePath(dst);
 
         QStringList tmp, uninst = project->values((*it) + ".uninstall");
         //other
