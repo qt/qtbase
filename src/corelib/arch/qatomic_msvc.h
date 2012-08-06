@@ -266,6 +266,9 @@ template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<long> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; };
+#ifdef Q_COMPILER_UNICODE_STRINGS
+template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
+#endif
 
 // No definition, needs specialization
 template <int N> struct QAtomicOpsBySize;

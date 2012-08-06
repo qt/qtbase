@@ -190,6 +190,10 @@ void tst_QAtomicInt::warningFreeHelper()
     warningFreeHelperTemplate<unsigned int, QBasicAtomicInteger<unsigned int> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<int> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<unsigned int> >();
+# ifdef Q_COMPILER_UNICODE_STRINGS
+    warningFreeHelperTemplate<qint16, QBasicAtomicInteger<char32_t> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<char32_t> >();
+# endif
 #endif
 
 #ifdef Q_ATOMIC_INT16_IS_SUPPORTED
@@ -197,6 +201,10 @@ void tst_QAtomicInt::warningFreeHelper()
     warningFreeHelperTemplate<quint16, QBasicAtomicInteger<quint16> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<qint16> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<quint16> >();
+# ifdef Q_COMPILER_UNICODE_STRINGS
+    warningFreeHelperTemplate<qint16, QBasicAtomicInteger<char16_t> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<char16_t> >();
+# endif
 #endif
 
 #ifdef Q_ATOMIC_INT8_IS_SUPPORTED

@@ -133,6 +133,12 @@ template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; 
 template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
 
+# ifdef Q_COMPILER_UNICODE_STRINGS
+template<> struct QAtomicIntegerTraits<char16_t> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
+# endif
+
+
 /*
  * Guide for the inline assembly below:
  *

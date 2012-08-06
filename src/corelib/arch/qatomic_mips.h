@@ -74,6 +74,13 @@ QT_END_HEADER
 
 template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
+#if defined(Q_COMPILER_UNICODE_STRINGS) && !defined(Q_PROCESSOR_MIPS_64)
+// for MIPS32, ensure that char32_t (an uint_least32_t), is 32-bit
+// it's extremely unlikely it won't be on a 32-bit MIPS, but just to be sure
+// For MIPS64, we're sure it works, but the definition is below
+template<> struct QAtomicIntegerTraits<char32_t>
+{ enum { IsInteger = sizeof(char32_t) == sizeof(int) ? 1 : -1 }; };
+#endif
 
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
@@ -240,6 +247,12 @@ T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 
 template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned long long > { enum { IsInteger = 1 }; };
+
+#ifdef Q_COMPILER_UNICODE_STRINGS
+template<> struct QAtomicIntegerTraits<char16_t>
+{ enum { IsInteger = sizeof(char16_t) == sizeof(int) ? 1 : -1 }; };
+template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
+#endif
 
 template<> template<typename T> inline
 bool QBasicAtomicOps<8>::ref(T &_q_value) Q_DECL_NOTHROW
