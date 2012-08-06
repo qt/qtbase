@@ -636,7 +636,8 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
 #endif
     defaultFormat = Format_None;
     embeddedbitmap = false;
-    cacheEnabled = qgetenv("QT_NO_FT_CACHE").isEmpty() || qgetenv("QT_NO_FT_CACHE").toInt() == 0;
+    const QByteArray env = qgetenv("QT_NO_FT_CACHE");
+    cacheEnabled = env.isEmpty() || env.toInt() == 0;
     m_subPixelPositionCount = 4;
 }
 
