@@ -3325,12 +3325,12 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
     if (!sender->d_func()->isSignalConnected(signal_index))
         return; // nothing connected to these signals, and no spy
 
+    if (sender->d_func()->blockSig)
+        return;
+
     if (sender->d_func()->declarativeData && QAbstractDeclarativeData::signalEmitted)
         QAbstractDeclarativeData::signalEmitted(sender->d_func()->declarativeData, sender, 
                                                 signal_index, argv);
-
-    if (sender->d_func()->blockSig)
-        return;
 
     void *empty_argv[] = { 0 };
     if (qt_signal_spy_callback_set.signal_begin_callback != 0) {
