@@ -264,7 +264,7 @@ int main(int argc, char *argv[])
 {
     // rcc uses a QHash to store files in the resource system.
     // we must force a certain hash order when testing or tst_rcc will fail, see QTBUG-25078
-    if (!qgetenv("QT_RCC_TEST").isEmpty() && !qt_qhash_seed.testAndSetRelaxed(-1, 0))
+    if (!qEnvironmentVariableIsEmpty("QT_RCC_TEST") && !qt_qhash_seed.testAndSetRelaxed(-1, 0))
         qFatal("Cannot force QHash seed for testing as requested");
 
     return QT_PREPEND_NAMESPACE(runRcc)(argc, argv);
