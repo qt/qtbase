@@ -463,6 +463,9 @@ QtWidgets
   is no longer supported. Construct the item without a scene and then call
   QGraphicsScene::addItem() to add the item to the scene.
 
+* QAbstractItemView and derived classes only emit the clicked() signal on left click now,
+  instead of on all mouse clicks.
+
 QtNetwork
 ---------
 * QHostAddress::isLoopback() API added. Returns true if the address is

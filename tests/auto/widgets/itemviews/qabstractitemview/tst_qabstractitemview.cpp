@@ -225,6 +225,7 @@ private slots:
     void QTBUG6407_extendedSelection();
     void QTBUG6753_selectOnSelection();
     void testDelegateDestroyEditor();
+    void testClickedSignal();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1508,6 +1509,30 @@ void tst_QAbstractItemView::testDelegateDestroyEditor()
     QVERIFY(delegate.calledVirtualDtor);
 }
 
+void tst_QAbstractItemView::testClickedSignal()
+{
+    QTableWidget view(5, 5);
+
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
+
+    QModelIndex index49 = view.model()->index(49,0);
+    QPoint p = view.visualRect(index49).center();
+    QVERIFY(view.viewport()->rect().contains(p));
+
+    QSignalSpy clickedSpy(&view, SIGNAL(clicked(QModelIndex)));
+
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
+    QCOMPARE(clickedSpy.count(), 1);
+
+    QTest::mouseClick(view.viewport(), Qt::RightButton, 0, p);
+    // We expect that right-clicks do not cause the clicked() signal to
+    // be emitted.
+    QCOMPARE(clickedSpy.count(), 1);
+
+}
 
 QTEST_MAIN(tst_QAbstractItemView)
 #include "tst_qabstractitemview.moc"

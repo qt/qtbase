@@ -522,7 +522,7 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
 /*!
     \fn void QAbstractItemView::clicked(const QModelIndex &index)
 
-    This signal is emitted when a mouse button is clicked. The item
+    This signal is emitted when a mouse button is left-clicked. The item
     the mouse was clicked on is specified by \a index. The signal is
     only emitted when the index is valid.
 
@@ -1859,7 +1859,8 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     setState(NoState);
 
     if (click) {
-        emit clicked(index);
+        if (event->button() == Qt::LeftButton)
+            emit clicked(index);
         if (edited)
             return;
         QStyleOptionViewItemV4 option = d->viewOptionsV4();
