@@ -45,6 +45,8 @@
 
 #include <QElapsedTimer>
 #include <QPointer>
+#include <QMutex>
+#include <QList>
 
 QT_BEGIN_HEADER
 
@@ -323,8 +325,27 @@ public:
         qint64 uid;
     };
 
-    static QList<WindowSystemEvent *> windowSystemEventQueue;
-    static QMutex queueMutex;
+    class WindowSystemEventList {
+        QList<WindowSystemEvent *> impl;
+        mutable QMutex mutex;
+    public:
+        WindowSystemEventList() : impl(), mutex() {}
+        ~WindowSystemEventList()
+        { const QMutexLocker locker(&mutex); qDeleteAll(impl); impl.clear(); }
+
+        void prepend(WindowSystemEvent *e)
+        { const QMutexLocker locker(&mutex); impl.prepend(e); }
+        WindowSystemEvent *takeFirstOrReturnNull()
+        { const QMutexLocker locker(&mutex); return impl.empty() ? 0 : impl.takeFirst(); }
+        void append(WindowSystemEvent *e)
+        { const QMutexLocker locker(&mutex); impl.append(e); }
+        int count() const
+        { const QMutexLocker locker(&mutex); return impl.count(); }
+    private:
+        Q_DISABLE_COPY(WindowSystemEventList);
+    };
+
+    static WindowSystemEventList windowSystemEventQueue;
 
     static int windowSystemEventsQueued();
     static WindowSystemEvent * getWindowSystemEvent();

@@ -58,8 +58,7 @@ QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 // Callback functions for plugins:
 //
 
-QList<QWindowSystemInterfacePrivate::WindowSystemEvent *> QWindowSystemInterfacePrivate::windowSystemEventQueue;
-QMutex QWindowSystemInterfacePrivate::queueMutex;
+QWindowSystemInterfacePrivate::WindowSystemEventList QWindowSystemInterfacePrivate::windowSystemEventQueue;
 
 extern QPointer<QWindow> qt_last_mouse_receiver;
 
@@ -330,29 +329,17 @@ QWindowSystemInterfacePrivate::ExposeEvent::ExposeEvent(QWindow *exposed, const 
 
 int QWindowSystemInterfacePrivate::windowSystemEventsQueued()
 {
-    queueMutex.lock();
-    int ret = windowSystemEventQueue.count();
-    queueMutex.unlock();
-    return ret;
+    return windowSystemEventQueue.count();
 }
 
 QWindowSystemInterfacePrivate::WindowSystemEvent * QWindowSystemInterfacePrivate::getWindowSystemEvent()
 {
-    queueMutex.lock();
-    QWindowSystemInterfacePrivate::WindowSystemEvent *ret;
-    if (windowSystemEventQueue.isEmpty())
-        ret = 0;
-    else
-        ret = windowSystemEventQueue.takeFirst();
-    queueMutex.unlock();
-    return ret;
+    return windowSystemEventQueue.takeFirstOrReturnNull();
 }
 
 void QWindowSystemInterfacePrivate::queueWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *ev)
 {
-    queueMutex.lock();
     windowSystemEventQueue.append(ev);
-    queueMutex.unlock();
 
     QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::qt_qpa_core_dispatcher();
     if (dispatcher)
