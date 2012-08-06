@@ -1084,7 +1084,7 @@ QT_BEGIN_NAMESPACE
 static bool installCoverageTool(const char * appname, const char * testname)
 {
 #ifdef __COVERAGESCANNER__
-    if (!qgetenv("QT_TESTCOCOON_ACTIVE").isEmpty())
+    if (!qEnvironmentVariableIsEmpty("QT_TESTCOCOON_ACTIVE"))
         return false;
     // Set environment variable QT_TESTCOCOON_ACTIVE to prevent an eventual subtest from
     // being considered as a stand-alone test regarding the coverage analysis.
@@ -1162,8 +1162,9 @@ static void invokeMethod(QObject *obj, const char *methodName)
 int defaultEventDelay()
 {
     if (eventDelay == -1) {
-        if (!qgetenv("QTEST_EVENT_DELAY").isEmpty())
-            eventDelay = atoi(qgetenv("QTEST_EVENT_DELAY"));
+        const QByteArray env = qgetenv("QTEST_EVENT_DELAY");
+        if (!env.isEmpty())
+            eventDelay = atoi(env.constData());
         else
             eventDelay = 0;
     }
@@ -1173,8 +1174,9 @@ int defaultEventDelay()
 int Q_TESTLIB_EXPORT defaultMouseDelay()
 {
     if (mouseDelay == -1) {
-        if (!qgetenv("QTEST_MOUSEEVENT_DELAY").isEmpty())
-            mouseDelay = atoi(qgetenv("QTEST_MOUSEEVENT_DELAY"));
+        const QByteArray env = qgetenv("QTEST_MOUSEEVENT_DELAY");
+        if (!env.isEmpty())
+            mouseDelay = atoi(env.constData());
         else
             mouseDelay = defaultEventDelay();
     }
@@ -1184,8 +1186,9 @@ int Q_TESTLIB_EXPORT defaultMouseDelay()
 int Q_TESTLIB_EXPORT defaultKeyDelay()
 {
     if (keyDelay == -1) {
-        if (!qgetenv("QTEST_KEYEVENT_DELAY").isEmpty())
-            keyDelay = atoi(qgetenv("QTEST_KEYEVENT_DELAY").constData());
+        const QByteArray env = qgetenv("QTEST_KEYEVENT_DELAY");
+        if (!env.isEmpty())
+            keyDelay = atoi(env.constData());
         else
             keyDelay = defaultEventDelay();
     }
