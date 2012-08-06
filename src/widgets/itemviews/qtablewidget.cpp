@@ -234,7 +234,7 @@ QTableWidgetItem *QTableModel::takeItem(int row, int column)
 
 QTableWidgetItem *QTableModel::item(int row, int column) const
 {
-    return tableItems.value(tableIndex(row, column));
+    return item(index(row, column));
 }
 
 QTableWidgetItem *QTableModel::item(const QModelIndex &index) const

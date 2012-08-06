@@ -100,6 +100,7 @@ private slots:
     void task231094();
     void task219380_removeLastRow();
     void task262056_sortDuplicate();
+    void itemWithHeaderItems();
 
 private:
     QTableWidget *testWidget;
@@ -1492,6 +1493,21 @@ void tst_QTableWidget::task262056_sortDuplicate()
 
 }
 
+void tst_QTableWidget::itemWithHeaderItems()
+{
+    // Need a separate testcase for this because the tst_QTableWidget::item testcase
+    // does creates QTableWidgetItems for each available cell in the table. We're testing
+    // the case of not all available cells having a QTableWidgetItem set.
+    QTableWidget table(2, 1);
+
+    QTableWidgetItem *item0_0 = new QTableWidgetItem(QTableWidgetItem::UserType);
+    table.setItem(0, 0, item0_0);
+
+    QTableWidgetItem *item1_0 = new QTableWidgetItem(QTableWidgetItem::UserType);
+    table.setItem(1, 0, item1_0);
+
+    QCOMPARE(table.item(0, 1), static_cast<QTableWidgetItem *>(0));
+}
 
 QTEST_MAIN(tst_QTableWidget)
 #include "tst_qtablewidget.moc"
