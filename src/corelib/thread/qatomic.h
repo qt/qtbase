@@ -78,30 +78,30 @@ public:
     }
 
 #ifdef qdoc
-    static bool isReferenceCountingNative();
-    static bool isReferenceCountingWaitFree();
+    static Q_DECL_CONSTEXPR bool isReferenceCountingNative();
+    static Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree();
 
     bool ref();
     bool deref();
 
-    static bool isTestAndSetNative();
-    static bool isTestAndSetWaitFree();
+    static Q_DECL_CONSTEXPR bool isTestAndSetNative();
+    static Q_DECL_CONSTEXPR bool isTestAndSetWaitFree();
 
     bool testAndSetRelaxed(int expectedValue, int newValue);
     bool testAndSetAcquire(int expectedValue, int newValue);
     bool testAndSetRelease(int expectedValue, int newValue);
     bool testAndSetOrdered(int expectedValue, int newValue);
 
-    static bool isFetchAndStoreNative();
-    static bool isFetchAndStoreWaitFree();
+    static Q_DECL_CONSTEXPR bool isFetchAndStoreNative();
+    static Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree();
 
     int fetchAndStoreRelaxed(int newValue);
     int fetchAndStoreAcquire(int newValue);
     int fetchAndStoreRelease(int newValue);
     int fetchAndStoreOrdered(int newValue);
 
-    static bool isFetchAndAddNative();
-    static bool isFetchAndAddWaitFree();
+    static Q_DECL_CONSTEXPR bool isFetchAndAddNative();
+    static Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree();
 
     int fetchAndAddRelaxed(int valueToAdd);
     int fetchAndAddAcquire(int valueToAdd);
@@ -131,24 +131,24 @@ public:
     }
 
 #ifdef qdoc
-    static bool isTestAndSetNative();
-    static bool isTestAndSetWaitFree();
+    static Q_DECL_CONSTEXPR bool isTestAndSetNative();
+    static Q_DECL_CONSTEXPR bool isTestAndSetWaitFree();
 
     bool testAndSetRelaxed(T *expectedValue, T *newValue);
     bool testAndSetAcquire(T *expectedValue, T *newValue);
     bool testAndSetRelease(T *expectedValue, T *newValue);
     bool testAndSetOrdered(T *expectedValue, T *newValue);
 
-    static bool isFetchAndStoreNative();
-    static bool isFetchAndStoreWaitFree();
+    static Q_DECL_CONSTEXPR bool isFetchAndStoreNative();
+    static Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree();
 
     T *fetchAndStoreRelaxed(T *newValue);
     T *fetchAndStoreAcquire(T *newValue);
     T *fetchAndStoreRelease(T *newValue);
     T *fetchAndStoreOrdered(T *newValue);
 
-    static bool isFetchAndAddNative();
-    static bool isFetchAndAddWaitFree();
+    static Q_DECL_CONSTEXPR bool isFetchAndAddNative();
+    static Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree();
 
     T *fetchAndAddRelaxed(qptrdiff valueToAdd);
     T *fetchAndAddAcquire(qptrdiff valueToAdd);

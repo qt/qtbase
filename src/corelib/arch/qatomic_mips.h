@@ -84,18 +84,18 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
     template <typename T>
     static void orderedMemoryFence(const T &) Q_DECL_NOTHROW;
 
-    static inline bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
     template <typename T> static bool ref(T &_q_value) Q_DECL_NOTHROW;
     template <typename T> static bool deref(T &_q_value) Q_DECL_NOTHROW;
 
-    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
     template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
     template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
     template <typename T> static
     T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
 };

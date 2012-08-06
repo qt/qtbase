@@ -276,21 +276,21 @@ struct QAtomicOpsBySize<4> : QGenericAtomicOps<QAtomicOpsBySize<4> >
     // The 32-bit Interlocked*() API takes parameters as longs.
     typedef long Type;
 
-    static inline bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return true; }
     static bool ref(long &_q_value) Q_DECL_NOTHROW;
     static bool deref(long &_q_value) Q_DECL_NOTHROW;
 
-    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
     static bool testAndSetRelaxed(long &_q_value, long expectedValue, long newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
     static long fetchAndStoreRelaxed(long &_q_value, long newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return true; }
     static long fetchAndAddRelaxed(long &_q_value, QAtomicAdditiveType<long>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
 };
 
@@ -329,16 +329,16 @@ struct QAtomicOps<T *> : QGenericAtomicOps<QAtomicOps<T *> >
 {
     typedef T *Type;
 
-    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
     static bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
     static T *fetchAndStoreRelaxed(T *&_q_value, T *newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return true; }
     static T *fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd) Q_DECL_NOTHROW;
 };
 

@@ -101,8 +101,8 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
     template <typename T> static bool ref(T &_q_value) Q_DECL_NOTHROW;
     template <typename T> static bool deref(T &_q_value) Q_DECL_NOTHROW;
 
-    static bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
-    static bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
+    static Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
+    static Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
     template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
     template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
     template <typename T> static

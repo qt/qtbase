@@ -98,8 +98,8 @@ template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
     }
 #endif
 
-    static bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
-    static bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
+    static Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
+    static Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
     static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {
         return __sync_bool_compare_and_swap(&_q_value, expectedValue, newValue);

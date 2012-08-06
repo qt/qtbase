@@ -154,27 +154,27 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
     {
         *static_cast<volatile T *>(&_q_value) = newValue;
     }
-    static inline bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return size == 4 || size == 8; }
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return size == 4 || size == 8; }
     template <typename T> static bool ref(T &_q_value) Q_DECL_NOTHROW;
     template <typename T> static bool deref(T &_q_value) Q_DECL_NOTHROW;
 
-    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
     template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
     template <typename T> static bool testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
     template <typename T> static bool testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
     template <typename T> static bool testAndSetOrdered(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
     template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
     template <typename T> static T fetchAndStoreAcquire(T &_q_value, T newValue) Q_DECL_NOTHROW;
     template <typename T> static T fetchAndStoreRelease(T &_q_value, T newValue) Q_DECL_NOTHROW;
     template <typename T> static T fetchAndStoreOrdered(T &_q_value, T newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return false; }
     template <typename T> static
     T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
     template <typename T> static

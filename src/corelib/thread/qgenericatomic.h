@@ -119,9 +119,9 @@ template <typename BaseClass> struct QGenericAtomicOps
         *static_cast<volatile T *>(&_q_value) = newValue;
     }
 
-    static inline bool isReferenceCountingNative() Q_DECL_NOTHROW
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingNative() Q_DECL_NOTHROW
     { return BaseClass::isFetchAndAddNative(); }
-    static inline bool isReferenceCountingWaitFree() Q_DECL_NOTHROW
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree() Q_DECL_NOTHROW
     { return BaseClass::isFetchAndAddWaitFree(); }
     template <typename T> static inline always_inline
     bool ref(T &_q_value) Q_DECL_NOTHROW
@@ -138,8 +138,8 @@ template <typename BaseClass> struct QGenericAtomicOps
 #if 0
     // These functions have no default implementation
     // Archictectures must implement them
-    static inline bool isTestAndSetNative() Q_DECL_NOTHROW;
-    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW;
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW;
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW;
     template <typename T, typename X> static inline
     bool testAndSetRelaxed(T &_q_value, X expectedValue, X newValue) Q_DECL_NOTHROW;
 #endif
@@ -166,8 +166,8 @@ template <typename BaseClass> struct QGenericAtomicOps
         return BaseClass::testAndSetRelaxed(_q_value, expectedValue, newValue);
     }
 
-    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return false; }
-    static inline bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return false; }
 
     template <typename T, typename X> static inline always_inline
     T fetchAndStoreRelaxed(T &_q_value, X newValue) Q_DECL_NOTHROW
@@ -202,8 +202,8 @@ template <typename BaseClass> struct QGenericAtomicOps
         return BaseClass::fetchAndStoreRelaxed(_q_value, newValue);
     }
 
-    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return false; }
-    static inline bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return false; }
     template <typename T> static inline always_inline
     T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {

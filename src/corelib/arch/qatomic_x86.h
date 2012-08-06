@@ -97,21 +97,21 @@ template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; }
 
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
-    static inline bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return true; }
     template <typename T> static bool ref(T &_q_value) Q_DECL_NOTHROW;
     template <typename T> static bool deref(T &_q_value) Q_DECL_NOTHROW;
 
-    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
     template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
     template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
 
-    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return true; }
     template <typename T> static
     T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
 };
@@ -381,8 +381,8 @@ bool QBasicAtomicOps<8>::deref(T &_q_value) Q_DECL_NOTHROW
 // i386 architecture, emulate 64-bit support via cmpxchg8b
 template <> struct QBasicAtomicOps<8>: QGenericAtomicOps<QBasicAtomicOps<8> >
 {
-    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
     template <typename T> static inline
     bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {

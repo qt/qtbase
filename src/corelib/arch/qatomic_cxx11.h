@@ -144,8 +144,8 @@ template <typename T> struct QAtomicOps
         _q_value.store(newValue, std::memory_order_release);
     }
 
-    static inline bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
-    static inline bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return false; }
     static inline bool ref(Type &_q_value)
     {
         return ++_q_value != 0;
@@ -156,8 +156,8 @@ template <typename T> struct QAtomicOps
         return --_q_value != 0;
     }
 
-    static inline bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
-    static inline bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
 
     static
     bool testAndSetRelaxed(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
@@ -180,8 +180,8 @@ template <typename T> struct QAtomicOps
         return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acq_rel);
     }
 
-    static inline bool isFetchAndStoreNative() Q_DECL_NOTHROW { return false; }
-    static inline bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return false; }
 
     static T fetchAndStoreRelaxed(Type &_q_value, T newValue) Q_DECL_NOTHROW
     {
@@ -203,8 +203,8 @@ template <typename T> struct QAtomicOps
         return _q_value.exchange(newValue, std::memory_order_acq_rel);
     }
 
-    static inline bool isFetchAndAddNative() Q_DECL_NOTHROW { return false; }
-    static inline bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return false; }
 
     static
     T fetchAndAddRelaxed(Type &_q_value, _AdditiveType valueToAdd) Q_DECL_NOTHROW

@@ -161,6 +161,25 @@ static void warningFreeHelperTemplate()
     assemblyMarker<64>(&i);
 }
 
+template <bool> inline void booleanHelper()
+{ }
+
+template <typename Atomic>
+static void constexprFunctionsHelperTemplate()
+{
+#ifdef Q_COMPILER_CONSTEXPR
+    // this is a compile-time test only
+    booleanHelper<Atomic::isReferenceCountingNative()>();
+    booleanHelper<Atomic::isReferenceCountingWaitFree()>();
+    booleanHelper<Atomic::isTestAndSetNative()>();
+    booleanHelper<Atomic::isTestAndSetWaitFree()>();
+    booleanHelper<Atomic::isFetchAndStoreNative()>();
+    booleanHelper<Atomic::isFetchAndStoreWaitFree()>();
+    booleanHelper<Atomic::isFetchAndAddNative()>();
+    booleanHelper<Atomic::isFetchAndAddWaitFree()>();
+#endif
+}
+
 void tst_QAtomicInt::warningFreeHelper()
 {
     qFatal("This code is bogus, and shouldn't be run. We're looking for compiler warnings only.");
@@ -169,23 +188,32 @@ void tst_QAtomicInt::warningFreeHelper()
 #ifdef Q_ATOMIC_INT32_IS_SUPPORTED
     warningFreeHelperTemplate<int, QBasicAtomicInteger<int> >();
     warningFreeHelperTemplate<unsigned int, QBasicAtomicInteger<unsigned int> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<int> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<unsigned int> >();
 #endif
 
 #ifdef Q_ATOMIC_INT16_IS_SUPPORTED
     warningFreeHelperTemplate<qint16, QBasicAtomicInteger<qint16> >();
     warningFreeHelperTemplate<quint16, QBasicAtomicInteger<quint16> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<qint16> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<quint16> >();
 #endif
 
 #ifdef Q_ATOMIC_INT8_IS_SUPPORTED
     warningFreeHelperTemplate<char, QBasicAtomicInteger<char> >();
     warningFreeHelperTemplate<signed char, QBasicAtomicInteger<signed char> >();
     warningFreeHelperTemplate<unsigned char, QBasicAtomicInteger<unsigned char> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<char> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<signed char> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<unsigned char> >();
 #endif
 
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED
 #if !defined(__i386__) || (defined(Q_CC_GNU) && defined(__OPTIMIZE__))
     warningFreeHelperTemplate<qlonglong, QBasicAtomicInteger<qlonglong> >();
     warningFreeHelperTemplate<qulonglong, QBasicAtomicInteger<qulonglong> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<qlonglong> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<qulonglong> >();
 #endif
 #endif
 }
