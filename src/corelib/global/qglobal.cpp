@@ -3014,4 +3014,67 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     otherwise.
 */
 
+/*!
+    \macro Q_DECL_NOTHROW
+    \relates <QtGlobal>
+    \since 5.0
+
+    This macro marks a function as never throwing, under no
+    circumstances. If the function does nevertheless throw, the
+    behaviour is undefined.
+
+    The macro expands to either "throw()", if that has some benefit on
+    the compiler, or to C++11 noexcept, if available, or to nothing
+    otherwise.
+
+    If you need C++11 noexcept semantics, don't use this macro, use
+    Q_DECL_NOEXCEPT/Q_DECL_NOEXCEPT_EXPR instead.
+
+    \sa Q_DECL_NOEXCEPT, Q_DECL_NOEXCEPT_EXPR
+*/
+
+/*!
+    \macro Q_DECL_NOEXCEPT
+    \relates <QtGlobal>
+    \since 5.0
+
+    This macro marks a function as never throwing. If the function
+    does nevertheless throw, the behaviour is defined:
+    std::terminate() is called.
+
+    The macro expands to C++11 noexcept, if available, or to nothing
+    otherwise.
+
+    If you need the operator version of C++11 noexcept, use
+    Q_DECL_NOEXCEPT_EXPR(x).
+
+    If you don't need C++11 noexcept semantics, e.g. because your
+    function can't possibly throw, don't use this macro, use
+    Q_DECL_NOTHROW instead.
+
+    \sa Q_DECL_NOTHROW, Q_DECL_NOEXCEPT_EXPR
+*/
+
+/*!
+    \macro Q_DECL_NOEXCEPT_EXPR(x)
+    \relates <QtGlobal>
+    \since 5.0
+
+    This macro marks a function as non-throwing if \a x is true. If
+    the function does nevertheless throw, the behaviour is defined:
+    std::terminate() is called.
+
+    The macro expands to C++11 noexcept(x), if available, or to
+    nothing otherwise.
+
+    If you need the always-true version of C++11 noexcept, use
+    Q_DECL_NOEXCEPT.
+
+    If you don't need C++11 noexcept semantics, e.g. because your
+    function can't possibly throw, don't use this macro, use
+    Q_DECL_NOTHROW instead.
+
+    \sa Q_DECL_NOTHROW, Q_DECL_NOEXCEPT_EXPR
+*/
+
 QT_END_NAMESPACE

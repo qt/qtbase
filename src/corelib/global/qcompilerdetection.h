@@ -110,9 +110,9 @@
 #    define Q_COMPILER_VARIADIC_MACROS
 #  endif
 
-// make sure that these aren't defined when Q_COMPILER_NOEXCEPT is defined
-#  define Q_DECL_NOEXCEPT  throw()
-#  define Q_DECL_NOEXCEPT_EXPR(x)
+/* only defined for MSVC since that's the only compiler that actually optimizes for this */
+/* might get overridden further down when Q_COMPILER_NOEXCEPT is detected */
+#  define Q_DECL_NOTHROW  throw()
 
 #elif defined(__BORLANDC__) || defined(__TURBOC__)
 #  define Q_CC_BOR
@@ -717,9 +717,15 @@
 #ifdef Q_COMPILER_NOEXCEPT
 # define Q_DECL_NOEXCEPT noexcept
 # define Q_DECL_NOEXCEPT_EXPR(x) noexcept(x)
-#elif !defined(Q_DECL_NOEXCEPT)
+# ifdef Q_DECL_NOTHROW
+#  undef Q_DECL_NOTHROW /* override with C++11 noexcept if available */
+# endif
+#else
 # define Q_DECL_NOEXCEPT
 # define Q_DECL_NOEXCEPT_EXPR(x)
+#endif
+#ifndef Q_DECL_NOTHROW
+# define Q_DECL_NOTHROW Q_DECL_NOEXCEPT
 #endif
 
 #if defined(Q_COMPILER_ALIGNOF) && !defined(Q_ALIGNOF)
