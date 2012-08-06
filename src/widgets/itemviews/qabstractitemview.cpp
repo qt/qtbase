@@ -1845,7 +1845,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     }
 
     bool click = (index == d->pressedIndex && index.isValid());
-    bool selectedClicked = click && (event->button() & Qt::LeftButton) && d->pressedAlreadySelected;
+    bool selectedClicked = click && (event->button() == Qt::LeftButton) && d->pressedAlreadySelected;
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
     bool edited = edit(index, trigger, event);
 
@@ -1892,7 +1892,7 @@ void QAbstractItemView::mouseDoubleClickEvent(QMouseEvent *event)
     // signal handlers may change the model
     QPersistentModelIndex persistent = index;
     emit doubleClicked(persistent);
-    if ((event->button() & Qt::LeftButton) && !edit(persistent, DoubleClicked, event)
+    if ((event->button() == Qt::LeftButton) && !edit(persistent, DoubleClicked, event)
         && !style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, 0, this))
         emit activated(persistent);
 }
