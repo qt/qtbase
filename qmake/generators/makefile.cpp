@@ -1267,7 +1267,6 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                     if(!target.isEmpty())
                         target += "\t";
                     QString dst_file = filePrefixRoot(root, dst);
-                    QFileInfo fi(fileInfo(wild));
                     QString cmd;
                     if (installConfigValues.contains("directory")) {
                         cmd = QLatin1String("-$(INSTALL_DIR)");
@@ -1276,10 +1275,8 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                         dst_file += fi.fileName();
                     } else if (installConfigValues.contains("executable")) {
                         cmd = QLatin1String("-$(INSTALL_PROGRAM)");
-                    } else if (installConfigValues.contains("data")) {
-                        cmd = QLatin1String("-$(INSTALL_FILE)");
                     } else {
-                        cmd = QString(fi.isExecutable() ? "-$(INSTALL_PROGRAM)" : "-$(INSTALL_FILE)");
+                        cmd = QLatin1String("-$(INSTALL_FILE)");
                     }
                     cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file) + "\n";
                     target += cmd;
