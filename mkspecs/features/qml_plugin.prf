@@ -9,7 +9,6 @@ isEmpty(CXX_MODULE) {
 }
 isEmpty(TARGETPATH): TARGETPATH = $$eval(QT.$${CXX_MODULE}.name)
 DESTDIR = $$eval(QT.$${CXX_MODULE}.imports)/$$TARGETPATH
-isEmpty(IMPORT_VERSION): IMPORT_VERSION = $$eval(QT.$${CXX_MODULE}.MAJOR_VERSION).$$eval(QT.$${CXX_MODULE}.MINOR_VERSION)
 
 QMLDIRFILE = $$_PRO_FILE_PWD_/qmldir
 fq_qml_files = $$QMLDIRFILE
@@ -58,6 +57,8 @@ load(qt_targets)
 # directory.  Then review and commit the changes made to plugins.qmltypes.
 #
 !cross_compile {
+    isEmpty(IMPORT_VERSION): IMPORT_VERSION = $$eval(QT.$${CXX_MODULE}.MAJOR_VERSION).$$eval(QT.$${CXX_MODULE}.MINOR_VERSION)
+
     load(resolve_target)
     qtPrepareTool(QMLPLUGINDUMP, qmlplugindump)
     qmltypes.target = qmltypes
