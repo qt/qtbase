@@ -24,10 +24,44 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+/*!
+    \page qtsql-index.html
+    \title Qt SQL
+    \brief A module that provides a driver layer, SQL API layer, and a user
+    interface layer for SQL databases.
+    \ingroup modules
+
+    Qt SQL is an essential module which provides support for SQL databases. Qt
+    SQL's APIs are divided into different layers:
+
+    \list
+    \li Driver layer
+    \li SQL API layer
+    \li User interface layer
+    \endlist
+    The \l{SQL Programming} guide contains information about development using
+    Qt SQL.
+
+    \section1 Getting Started
+    To enable Qt SQL in a project, add this directive into the C++ files:
+    \code
+    #include <QtSQL>
+    \endcode
+    To link against the Qt SQL module, add this line to the project file:
+    \code
+    QT += sql
+    \endcode
+
+    \section1 Reference
+    These are links to the API reference materials.
+    \list
+    \li \l{Qt SQL Module - C++ Classes}{C++ classes}
+    \endlist
+*/
 
 /*!
     \module QtSql
-    \title Qt SQL Module
+    \title Qt SQL Module - C++ Classes
     \ingroup modules
 
     To include the definitions of the module's classes, use the
