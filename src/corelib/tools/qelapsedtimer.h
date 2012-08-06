@@ -59,28 +59,28 @@ public:
         MachAbsoluteTime,
         PerformanceCounter
     };
-    static ClockType clockType();
-    static bool isMonotonic();
+    static ClockType clockType() Q_DECL_NOTHROW;
+    static bool isMonotonic() Q_DECL_NOTHROW;
 
-    void start();
-    qint64 restart();
-    void invalidate();
-    bool isValid() const;
+    void start() Q_DECL_NOTHROW;
+    qint64 restart() Q_DECL_NOTHROW;
+    void invalidate() Q_DECL_NOTHROW;
+    bool isValid() const Q_DECL_NOTHROW;
 
-    qint64 nsecsElapsed() const;
-    qint64 elapsed() const;
-    bool hasExpired(qint64 timeout) const;
+    qint64 nsecsElapsed() const Q_DECL_NOTHROW;
+    qint64 elapsed() const Q_DECL_NOTHROW;
+    bool hasExpired(qint64 timeout) const Q_DECL_NOTHROW;
 
-    qint64 msecsSinceReference() const;
-    qint64 msecsTo(const QElapsedTimer &other) const;
-    qint64 secsTo(const QElapsedTimer &other) const;
+    qint64 msecsSinceReference() const Q_DECL_NOTHROW;
+    qint64 msecsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW;
+    qint64 secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW;
 
-    bool operator==(const QElapsedTimer &other) const
+    bool operator==(const QElapsedTimer &other) const Q_DECL_NOTHROW
     { return t1 == other.t1 && t2 == other.t2; }
-    bool operator!=(const QElapsedTimer &other) const
+    bool operator!=(const QElapsedTimer &other) const Q_DECL_NOTHROW
     { return !(*this == other); }
 
-    friend bool Q_CORE_EXPORT operator<(const QElapsedTimer &v1, const QElapsedTimer &v2);
+    friend bool Q_CORE_EXPORT operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) Q_DECL_NOTHROW;
 
 private:
     qint64 t1;

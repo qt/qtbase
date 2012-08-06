@@ -102,13 +102,13 @@ static inline qint64 fractionAdjustment()
     }
 }
 
-bool QElapsedTimer::isMonotonic()
+bool QElapsedTimer::isMonotonic() Q_DECL_NOTHROW
 {
     unixCheckClockType();
     return monotonicClockAvailable;
 }
 
-QElapsedTimer::ClockType QElapsedTimer::clockType()
+QElapsedTimer::ClockType QElapsedTimer::clockType() Q_DECL_NOTHROW
 {
     unixCheckClockType();
     return monotonicClockAvailable ? MonotonicClock : SystemTime;
@@ -134,7 +134,7 @@ static inline void do_gettime(qint64 *sec, qint64 *frac)
 }
 
 // used in qcore_unix.cpp and qeventdispatcher_unix.cpp
-timeval qt_gettime()
+timeval qt_gettime() Q_DECL_NOTHROW
 {
     qint64 sec, frac;
     do_gettime(&sec, &frac);
@@ -157,17 +157,17 @@ static qint64 elapsedAndRestart(qint64 sec, qint64 frac,
     return sec * Q_INT64_C(1000) + frac / fractionAdjustment();
 }
 
-void QElapsedTimer::start()
+void QElapsedTimer::start() Q_DECL_NOTHROW
 {
     do_gettime(&t1, &t2);
 }
 
-qint64 QElapsedTimer::restart()
+qint64 QElapsedTimer::restart() Q_DECL_NOTHROW
 {
     return elapsedAndRestart(t1, t2, &t1, &t2);
 }
 
-qint64 QElapsedTimer::nsecsElapsed() const
+qint64 QElapsedTimer::nsecsElapsed() const Q_DECL_NOTHROW
 {
     qint64 sec, frac;
     do_gettime(&sec, &frac);
@@ -178,30 +178,30 @@ qint64 QElapsedTimer::nsecsElapsed() const
     return sec * Q_INT64_C(1000000000) + frac;
 }
 
-qint64 QElapsedTimer::elapsed() const
+qint64 QElapsedTimer::elapsed() const Q_DECL_NOTHROW
 {
     qint64 sec, frac;
     return elapsedAndRestart(t1, t2, &sec, &frac);
 }
 
-qint64 QElapsedTimer::msecsSinceReference() const
+qint64 QElapsedTimer::msecsSinceReference() const Q_DECL_NOTHROW
 {
     return t1 * Q_INT64_C(1000) + t2 / fractionAdjustment();
 }
 
-qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
 {
     qint64 secs = other.t1 - t1;
     qint64 fraction = other.t2 - t2;
     return secs * Q_INT64_C(1000) + fraction / fractionAdjustment();
 }
 
-qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
 {
     return other.t1 - t1;
 }
 
-bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2)
+bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) Q_DECL_NOTHROW
 {
     return v1.t1 < v2.t1 || (v1.t1 == v2.t1 && v1.t2 < v2.t2);
 }

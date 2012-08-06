@@ -259,7 +259,7 @@ public:
 #endif
     static QDateTime fromTime_t(uint secsSince1Jan1970UTC);
     static QDateTime fromMSecsSinceEpoch(qint64 msecs);
-    static qint64 currentMSecsSinceEpoch();
+    static qint64 currentMSecsSinceEpoch() Q_DECL_NOTHROW;
 
 private:
     friend class QDateTimePrivate;

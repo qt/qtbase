@@ -125,7 +125,7 @@ int qt_msectime()
     return ticksToNanoseconds(getTickCount()) / 1000000;
 }
 
-QElapsedTimer::ClockType QElapsedTimer::clockType()
+QElapsedTimer::ClockType QElapsedTimer::clockType() Q_DECL_NOTHROW
 {
     resolveLibs();
 
@@ -135,18 +135,18 @@ QElapsedTimer::ClockType QElapsedTimer::clockType()
         return TickCounter;
 }
 
-bool QElapsedTimer::isMonotonic()
+bool QElapsedTimer::isMonotonic() Q_DECL_NOTHROW
 {
     return true;
 }
 
-void QElapsedTimer::start()
+void QElapsedTimer::start() Q_DECL_NOTHROW
 {
     t1 = getTickCount();
     t2 = 0;
 }
 
-qint64 QElapsedTimer::restart()
+qint64 QElapsedTimer::restart() Q_DECL_NOTHROW
 {
     qint64 oldt1 = t1;
     t1 = getTickCount();
@@ -154,35 +154,35 @@ qint64 QElapsedTimer::restart()
     return ticksToNanoseconds(t1 - oldt1) / 1000000;
 }
 
-qint64 QElapsedTimer::nsecsElapsed() const
+qint64 QElapsedTimer::nsecsElapsed() const Q_DECL_NOTHROW
 {
     qint64 elapsed = getTickCount() - t1;
     return ticksToNanoseconds(elapsed);
 }
 
-qint64 QElapsedTimer::elapsed() const
+qint64 QElapsedTimer::elapsed() const Q_DECL_NOTHROW
 {
     qint64 elapsed = getTickCount() - t1;
     return ticksToNanoseconds(elapsed) / 1000000;
 }
 
-qint64 QElapsedTimer::msecsSinceReference() const
+qint64 QElapsedTimer::msecsSinceReference() const Q_DECL_NOTHROW
 {
     return ticksToNanoseconds(t1) / 1000000;
 }
 
-qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
 {
     qint64 difference = other.t1 - t1;
     return ticksToNanoseconds(difference) / 1000000;
 }
 
-qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
 {
     return msecsTo(other) / 1000;
 }
 
-bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2)
+bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) Q_DECL_NOTHROW
 {
     return (v1.t1 - v2.t1) < 0;
 }
