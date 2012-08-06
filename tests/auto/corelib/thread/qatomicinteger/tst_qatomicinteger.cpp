@@ -143,6 +143,9 @@ private Q_SLOTS:
     void assign_data() { addData(); }
     void assign();
 
+    void operatorInteger_data() { addData(); }
+    void operatorInteger();
+
     void loadAcquireStoreRelease_data() { addData(); }
     void loadAcquireStoreRelease();
 
@@ -152,11 +155,29 @@ private Q_SLOTS:
     void testAndSet_data() { addData(); }
     void testAndSet();
 
+    void testAndSet3_data() { addData(); }
+    void testAndSet3();
+
     void fetchAndStore_data() { addData(); }
     void fetchAndStore();
 
     void fetchAndAdd_data() { addData(); }
     void fetchAndAdd();
+
+    void fetchAndSub_data() { addData(); }
+    void fetchAndSub();
+
+    void addSub_data() { addData(); }
+    void addSub();
+
+    void fetchAndOr_data() { addData(); }
+    void fetchAndOr();
+
+    void fetchAndAnd_data() { addData(); }
+    void fetchAndAnd();
+
+    void fetchAndXor_data() { addData(); }
+    void fetchAndXor();
 };
 
 template <bool> inline void booleanHelper() { }
@@ -285,8 +306,12 @@ void tst_QAtomicIntegerXX::assign()
     QCOMPARE(copy.load(), atomic.load());
 
     QAtomicInteger<T> copy2;
-    copy2 = atomic;
+    copy2 = atomic;  // operator=(const QAtomicInteger &)
     QCOMPARE(copy2.load(), atomic.load());
+
+    QAtomicInteger<T> copy2bis;
+    copy2bis = atomic.load(); // operator=(T)
+    QCOMPARE(copy2bis.load(), atomic.load());
 
     // move
     QAtomicInteger<T> copy3;
@@ -296,6 +321,16 @@ void tst_QAtomicIntegerXX::assign()
     QAtomicInteger<T> copy4;
     copy4 = qMove(copy2);
     QCOMPARE(copy4.load(), atomic.load());
+}
+
+void tst_QAtomicIntegerXX::operatorInteger()
+{
+    QFETCH(LargeInt, value);
+
+    QAtomicInteger<T> atomic(value);
+    T val2 = atomic;
+    QCOMPARE(val2, atomic.load());
+    QCOMPARE(val2, T(value));
 }
 
 void tst_QAtomicIntegerXX::loadAcquireStoreRelease()
@@ -327,6 +362,17 @@ void tst_QAtomicIntegerXX::refDeref()
     QCOMPARE(atomic.load(), prevValue);
     QCOMPARE(atomic.ref(), (value != 0));
     QCOMPARE(atomic.load(), T(value));
+
+    QCOMPARE(++atomic, nextValue);
+    QCOMPARE(--atomic, T(value));
+    QCOMPARE(--atomic, prevValue);
+    QCOMPARE(++atomic, T(value));
+
+    QCOMPARE(atomic++, T(value));
+    QCOMPARE(atomic--, nextValue);
+    QCOMPARE(atomic--, T(value));
+    QCOMPARE(atomic++, prevValue);
+    QCOMPARE(atomic.load(), T(value));
 }
 
 void tst_QAtomicIntegerXX::testAndSet()
@@ -357,6 +403,42 @@ void tst_QAtomicIntegerXX::testAndSet()
     QCOMPARE(atomic.loadAcquire(), newValue);
     QVERIFY(!atomic.testAndSetOrdered(value, newValue));
     QVERIFY(atomic.testAndSetOrdered(newValue, value));
+    QCOMPARE(atomic.loadAcquire(), T(value));
+}
+
+void tst_QAtomicIntegerXX::testAndSet3()
+{
+    QFETCH(LargeInt, value);
+    T newValue = ~T(value);
+    T oldValue;
+    QAtomicInteger<T> atomic(value);
+
+    QVERIFY(atomic.testAndSetRelaxed(value, newValue, oldValue));
+    QCOMPARE(atomic.load(), newValue);
+    QVERIFY(!atomic.testAndSetRelaxed(value, newValue, oldValue));
+    QCOMPARE(oldValue, newValue);
+    QVERIFY(atomic.testAndSetRelaxed(newValue, value, oldValue));
+    QCOMPARE(atomic.load(), T(value));
+
+    QVERIFY(atomic.testAndSetAcquire(value, newValue, oldValue));
+    QCOMPARE(atomic.load(), newValue);
+    QVERIFY(!atomic.testAndSetAcquire(value, newValue, oldValue));
+    QCOMPARE(oldValue, newValue);
+    QVERIFY(atomic.testAndSetAcquire(newValue, value, oldValue));
+    QCOMPARE(atomic.load(), T(value));
+
+    QVERIFY(atomic.testAndSetRelease(value, newValue, oldValue));
+    QCOMPARE(atomic.loadAcquire(), newValue);
+    QVERIFY(!atomic.testAndSetRelease(value, newValue, oldValue));
+    QCOMPARE(oldValue, newValue);
+    QVERIFY(atomic.testAndSetRelease(newValue, value, oldValue));
+    QCOMPARE(atomic.loadAcquire(), T(value));
+
+    QVERIFY(atomic.testAndSetOrdered(value, newValue, oldValue));
+    QCOMPARE(atomic.loadAcquire(), newValue);
+    QVERIFY(!atomic.testAndSetOrdered(value, newValue, oldValue));
+    QCOMPARE(oldValue, newValue);
+    QVERIFY(atomic.testAndSetOrdered(newValue, value, oldValue));
     QCOMPARE(atomic.loadAcquire(), T(value));
 }
 
@@ -433,6 +515,304 @@ void tst_QAtomicIntegerXX::fetchAndAdd()
     QCOMPARE(atomic.loadAcquire(), newValue2);
     QCOMPARE(atomic.fetchAndAddOrdered(parcel1), newValue2);
     QCOMPARE(atomic.loadAcquire(), T(value));
+
+    // operator+=
+    QCOMPARE(atomic += parcel1, newValue1);
+    QCOMPARE(atomic += parcel2, T(value));
+    QCOMPARE(atomic += parcel2, newValue2);
+    QCOMPARE(atomic += parcel1, T(value));
+}
+
+void tst_QAtomicIntegerXX::fetchAndSub()
+{
+    QFETCH(LargeInt, value);
+    QAtomicInteger<T> atomic(value);
+
+    // note: this test has undefined behavior for signed max and min
+    T parcel1 = 42;
+    T parcel2 = T(0-parcel1);
+    T newValue1 = T(value) - parcel1;
+    T newValue2 = T(value) - parcel2;
+
+    QCOMPARE(atomic.fetchAndSubRelaxed(parcel1), T(value));
+    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.fetchAndSubRelaxed(parcel2), newValue1);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndSubRelaxed(parcel2), T(value));
+    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.fetchAndSubRelaxed(parcel1), newValue2);
+    QCOMPARE(atomic.load(), T(value));
+
+    QCOMPARE(atomic.fetchAndSubAcquire(parcel1), T(value));
+    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.fetchAndSubAcquire(parcel2), newValue1);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndSubAcquire(parcel2), T(value));
+    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.fetchAndSubAcquire(parcel1), newValue2);
+    QCOMPARE(atomic.load(), T(value));
+
+    QCOMPARE(atomic.fetchAndSubRelease(parcel1), T(value));
+    QCOMPARE(atomic.loadAcquire(), newValue1);
+    QCOMPARE(atomic.fetchAndSubRelease(parcel2), newValue1);
+    QCOMPARE(atomic.loadAcquire(), T(value));
+    QCOMPARE(atomic.fetchAndSubRelease(parcel2), T(value));
+    QCOMPARE(atomic.loadAcquire(), newValue2);
+    QCOMPARE(atomic.fetchAndSubRelease(parcel1), newValue2);
+    QCOMPARE(atomic.loadAcquire(), T(value));
+
+    QCOMPARE(atomic.fetchAndSubOrdered(parcel1), T(value));
+    QCOMPARE(atomic.loadAcquire(), newValue1);
+    QCOMPARE(atomic.fetchAndSubOrdered(parcel2), newValue1);
+    QCOMPARE(atomic.loadAcquire(), T(value));
+    QCOMPARE(atomic.fetchAndSubOrdered(parcel2), T(value));
+    QCOMPARE(atomic.loadAcquire(), newValue2);
+    QCOMPARE(atomic.fetchAndSubOrdered(parcel1), newValue2);
+    QCOMPARE(atomic.loadAcquire(), T(value));
+
+    // operator-=
+    QCOMPARE(atomic -= parcel1, newValue1);
+    QCOMPARE(atomic -= parcel2, T(value));
+    QCOMPARE(atomic -= parcel2, newValue2);
+    QCOMPARE(atomic -= parcel1, T(value));
+}
+
+void tst_QAtomicIntegerXX::addSub()
+{
+    QFETCH(LargeInt, value);
+    QAtomicInteger<T> atomic(value);
+
+    // note: this test has undefined behavior for signed max and min
+    T parcel1 = 42;
+    T parcel2 = T(0-parcel1);
+    T newValue1 = T(value) + parcel1;
+    T newValue2 = T(value) - parcel1;
+
+    QCOMPARE(atomic.fetchAndAddRelaxed(parcel1), T(value));
+    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.fetchAndSubRelaxed(parcel1), newValue1);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndSubRelaxed(parcel1), T(value));
+    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.fetchAndAddRelaxed(parcel1), newValue2);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndAddRelaxed(parcel2), T(value));
+    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.fetchAndSubRelaxed(parcel2), newValue2);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndSubRelaxed(parcel2), T(value));
+    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.fetchAndAddRelaxed(parcel2), newValue1);
+    QCOMPARE(atomic.load(), T(value));
+
+    QCOMPARE(atomic.fetchAndAddAcquire(parcel1), T(value));
+    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.fetchAndSubAcquire(parcel1), newValue1);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndSubAcquire(parcel1), T(value));
+    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.fetchAndAddAcquire(parcel1), newValue2);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndAddAcquire(parcel2), T(value));
+    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.fetchAndSubAcquire(parcel2), newValue2);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndSubAcquire(parcel2), T(value));
+    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.fetchAndAddAcquire(parcel2), newValue1);
+    QCOMPARE(atomic.load(), T(value));
+
+    QCOMPARE(atomic.fetchAndAddRelease(parcel1), T(value));
+    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.fetchAndSubRelease(parcel1), newValue1);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndSubRelease(parcel1), T(value));
+    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.fetchAndAddRelease(parcel1), newValue2);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndAddRelease(parcel2), T(value));
+    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.fetchAndSubRelease(parcel2), newValue2);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndSubRelease(parcel2), T(value));
+    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.fetchAndAddRelease(parcel2), newValue1);
+    QCOMPARE(atomic.load(), T(value));
+
+    QCOMPARE(atomic.fetchAndAddOrdered(parcel1), T(value));
+    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.fetchAndSubOrdered(parcel1), newValue1);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndSubOrdered(parcel1), T(value));
+    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.fetchAndAddOrdered(parcel1), newValue2);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndAddOrdered(parcel2), T(value));
+    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.fetchAndSubOrdered(parcel2), newValue2);
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndSubOrdered(parcel2), T(value));
+    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.fetchAndAddOrdered(parcel2), newValue1);
+    QCOMPARE(atomic.load(), T(value));
+
+    // operator+= and operator-=
+    QCOMPARE(atomic += parcel1, newValue1);
+    QCOMPARE(atomic -= parcel1, T(value));
+    QCOMPARE(atomic -= parcel1, newValue2);
+    QCOMPARE(atomic += parcel1, T(value));
+    QCOMPARE(atomic += parcel2, newValue2);
+    QCOMPARE(atomic -= parcel2, T(value));
+    QCOMPARE(atomic -= parcel2, newValue1);
+    QCOMPARE(atomic += parcel2, T(value));
+}
+
+void tst_QAtomicIntegerXX::fetchAndOr()
+{
+    QFETCH(LargeInt, value);
+    QAtomicInteger<T> atomic(value);
+
+    T zero = 0;
+    T one = 1;
+    T minusOne = T(~0);
+
+    QCOMPARE(atomic.fetchAndOrRelaxed(zero), T(value));
+    QCOMPARE(atomic.fetchAndOrRelaxed(one), T(value));
+    QCOMPARE(atomic.load(), T(value | 1));
+    QCOMPARE(atomic.fetchAndOrRelaxed(minusOne), T(value | 1));
+    QCOMPARE(atomic.load(), minusOne);
+
+    atomic.store(value);
+    QCOMPARE(atomic.fetchAndOrAcquire(zero), T(value));
+    QCOMPARE(atomic.fetchAndOrAcquire(one), T(value));
+    QCOMPARE(atomic.load(), T(value | 1));
+    QCOMPARE(atomic.fetchAndOrAcquire(minusOne), T(value | 1));
+    QCOMPARE(atomic.load(), minusOne);
+
+    atomic.store(value);
+    QCOMPARE(atomic.fetchAndOrRelease(zero), T(value));
+    QCOMPARE(atomic.fetchAndOrRelease(one), T(value));
+    QCOMPARE(atomic.load(), T(value | 1));
+    QCOMPARE(atomic.fetchAndOrRelease(minusOne), T(value | 1));
+    QCOMPARE(atomic.load(), minusOne);
+
+    atomic.store(value);
+    QCOMPARE(atomic.fetchAndOrOrdered(zero), T(value));
+    QCOMPARE(atomic.fetchAndOrOrdered(one), T(value));
+    QCOMPARE(atomic.load(), T(value | 1));
+    QCOMPARE(atomic.fetchAndOrOrdered(minusOne), T(value | 1));
+    QCOMPARE(atomic.load(), minusOne);
+
+    atomic.store(value);
+    QCOMPARE(atomic |= zero, T(value));
+    QCOMPARE(atomic |= one, T(value | 1));
+    QCOMPARE(atomic |= minusOne, minusOne);
+}
+
+void tst_QAtomicIntegerXX::fetchAndAnd()
+{
+    QFETCH(LargeInt, value);
+    QAtomicInteger<T> atomic(value);
+
+    T zero = 0;
+    T f = 0xf;
+    T minusOne = T(~0);
+
+    QCOMPARE(atomic.fetchAndAndRelaxed(minusOne), T(value));
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndAndRelaxed(f), T(value));
+    QCOMPARE(atomic.load(), T(value & 0xf));
+    QCOMPARE(atomic.fetchAndAndRelaxed(zero), T(value & 0xf));
+    QCOMPARE(atomic.load(), zero);
+
+    atomic.store(value);
+    QCOMPARE(atomic.fetchAndAndAcquire(minusOne), T(value));
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndAndAcquire(f), T(value));
+    QCOMPARE(atomic.load(), T(value & 0xf));
+    QCOMPARE(atomic.fetchAndAndAcquire(zero), T(value & 0xf));
+    QCOMPARE(atomic.load(), zero);
+
+    atomic.store(value);
+    QCOMPARE(atomic.fetchAndAndRelease(minusOne), T(value));
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndAndRelease(f), T(value));
+    QCOMPARE(atomic.load(), T(value & 0xf));
+    QCOMPARE(atomic.fetchAndAndRelease(zero), T(value & 0xf));
+    QCOMPARE(atomic.load(), zero);
+
+    atomic.store(value);
+    QCOMPARE(atomic.fetchAndAndOrdered(minusOne), T(value));
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndAndOrdered(f), T(value));
+    QCOMPARE(atomic.load(), T(value & 0xf));
+    QCOMPARE(atomic.fetchAndAndOrdered(zero), T(value & 0xf));
+    QCOMPARE(atomic.load(), zero);
+
+    atomic.store(value);
+    QCOMPARE(atomic &= minusOne, T(value));
+    QCOMPARE(atomic &= f, T(value & 0xf));
+    QCOMPARE(atomic &= zero, zero);
+}
+
+void tst_QAtomicIntegerXX::fetchAndXor()
+{
+    QFETCH(LargeInt, value);
+    QAtomicInteger<T> atomic(value);
+
+    T zero = 0;
+    T pattern = T(Q_UINT64_C(0xcccccccccccccccc));
+    T minusOne = T(~0);
+
+    QCOMPARE(atomic.fetchAndXorRelaxed(zero), T(value));
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndXorRelaxed(pattern), T(value));
+    QCOMPARE(atomic.load(), T(value ^ pattern));
+    QCOMPARE(atomic.fetchAndXorRelaxed(pattern), T(value ^ pattern));
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndXorRelaxed(minusOne), T(value));
+    QCOMPARE(atomic.load(), T(~value));
+    QCOMPARE(atomic.fetchAndXorRelaxed(minusOne), T(~value));
+    QCOMPARE(atomic.load(), T(value));
+
+    QCOMPARE(atomic.fetchAndXorAcquire(zero), T(value));
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndXorAcquire(pattern), T(value));
+    QCOMPARE(atomic.load(), T(value ^ pattern));
+    QCOMPARE(atomic.fetchAndXorAcquire(pattern), T(value ^ pattern));
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndXorAcquire(minusOne), T(value));
+    QCOMPARE(atomic.load(), T(~value));
+    QCOMPARE(atomic.fetchAndXorAcquire(minusOne), T(~value));
+    QCOMPARE(atomic.load(), T(value));
+
+    QCOMPARE(atomic.fetchAndXorRelease(zero), T(value));
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndXorRelease(pattern), T(value));
+    QCOMPARE(atomic.load(), T(value ^ pattern));
+    QCOMPARE(atomic.fetchAndXorRelease(pattern), T(value ^ pattern));
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndXorRelease(minusOne), T(value));
+    QCOMPARE(atomic.load(), T(~value));
+    QCOMPARE(atomic.fetchAndXorRelease(minusOne), T(~value));
+    QCOMPARE(atomic.load(), T(value));
+
+    QCOMPARE(atomic.fetchAndXorOrdered(zero), T(value));
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndXorOrdered(pattern), T(value));
+    QCOMPARE(atomic.load(), T(value ^ pattern));
+    QCOMPARE(atomic.fetchAndXorOrdered(pattern), T(value ^ pattern));
+    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.fetchAndXorOrdered(minusOne), T(value));
+    QCOMPARE(atomic.load(), T(~value));
+    QCOMPARE(atomic.fetchAndXorOrdered(minusOne), T(~value));
+    QCOMPARE(atomic.load(), T(value));
+
+    QCOMPARE(atomic ^= zero, T(value));
+    QCOMPARE(atomic ^= pattern, T(value ^ pattern));
+    QCOMPARE(atomic ^= pattern, T(value));
+    QCOMPARE(atomic ^= minusOne, T(~value));
+    QCOMPARE(atomic ^= minusOne, T(value));
 }
 
 #include "tst_qatomicinteger.moc"

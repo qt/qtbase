@@ -81,6 +81,8 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
     static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
     template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue,
+                                                        T newValue, T *currentValue) Q_DECL_NOTHROW;
 
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
     template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
@@ -159,6 +161,29 @@ bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                    [newValue] "r" (newValue),
                    [_q_value] "r" (&_q_value)
                  : "cc");
+    return result == 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    register T tempValue;
+    register int result;
+    asm volatile("0:\n"
+                 "ldrex %[tempValue], [%[_q_value]]\n"
+                 "eors %[result], %[tempValue], %[expectedValue]\n"
+                 "itt eq\n"
+                 "strexeq %[result], %[newValue], [%[_q_value]]\n"
+                 "teqeq %[result], #1\n"
+                 "beq 0b\n"
+                 : [result] "=&r" (result),
+                   [tempValue] "=&r" (tempValue),
+                   "+m" (_q_value)
+                 : [expectedValue] "r" (expectedValue),
+                   [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    *currentValue = tempValue;
     return result == 0;
 }
 
@@ -291,6 +316,29 @@ bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
+bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    register T tempValue;
+    register T result;
+    asm volatile("0:\n"
+                 "ldrexb %[tempValue], [%[_q_value]]\n"
+                 "eors %[result], %[tempValue], %[expectedValue]\n"
+                 "itt eq\n"
+                 "strexbeq %[result], %[newValue], [%[_q_value]]\n"
+                 "teqeq %[result], #1\n"
+                 "beq 0b\n"
+                 : [result] "=&r" (result),
+                   [tempValue] "=&r" (tempValue),
+                   "+m" (_q_value)
+                 : [expectedValue] "r" (expectedValue),
+                   [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    *currentValue = tempValue;
+    return result == 0;
+}
+
+template<> template <typename T> inline
 T QBasicAtomicOps<1>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     T originalValue;
@@ -386,6 +434,29 @@ bool QBasicAtomicOps<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                    [newValue] "r" (newValue),
                    [_q_value] "r" (&_q_value)
                  : "cc");
+    return result == 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    register T tempValue;
+    register T result;
+    asm volatile("0:\n"
+                 "ldrexh %[tempValue], [%[_q_value]]\n"
+                 "eors %[result], %[tempValue], %[expectedValue]\n"
+                 "itt eq\n"
+                 "strexheq %[result], %[newValue], [%[_q_value]]\n"
+                 "teqeq %[result], #1\n"
+                 "beq 0b\n"
+                 : [result] "=&r" (result),
+                   [tempValue] "=&r" (tempValue),
+                   "+m" (_q_value)
+                 : [expectedValue] "r" (expectedValue),
+                   [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    *currentValue = tempValue;
     return result == 0;
 }
 
@@ -497,6 +568,31 @@ bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                    [newValue] "r" (newValue),
                    [_q_value] "r" (&_q_value)
                  : "cc");
+    return quint32(result) == 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    register T tempValue;
+    register T result;
+    asm volatile("0:\n"
+                 "ldrexd %[tempValue], %H[tempValue], [%[_q_value]]\n"
+                 "eor %[result], %[tempValue], %[expectedValue]\n"
+                 "eor %H[result], %H[tempValue], %H[expectedValue]\n"
+                 "orrs %[result], %[result], %H[result]\n"
+                 "itt eq\n"
+                 "strexdeq %[result], %[newValue], %H[newValue], [%[_q_value]]\n"
+                 "teqeq %[result], #1\n"
+                 "beq 0b\n"
+                 : [result] "=&r" (result),
+                   [tempValue] "=&r" (tempValue),
+                   "+m" (_q_value)
+                 : [expectedValue] "r" (expectedValue),
+                   [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    *currentValue = tempValue;
     return quint32(result) == 0;
 }
 

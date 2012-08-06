@@ -84,7 +84,8 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
 
     static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
-    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static bool
+    testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW;
 
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
     template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
@@ -163,13 +164,13 @@ bool QBasicAtomicOps<4>::deref(T &_q_value) Q_DECL_NOTHROW
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T result;
     T tempValue;
     asm volatile("0:\n"
-                 "ll %[result], %[_q_value]\n"
-                 "xor %[result], %[result], %[expectedValue]\n"
+                 "ll %[tempValue], %[_q_value]\n"
+                 "xor %[result], %[tempValue], %[expectedValue]\n"
                  "bnez %[result], 0f\n"
                  "nop\n"
                  "move %[tempValue], %[newValue]\n"
@@ -183,6 +184,8 @@ bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                  : [expectedValue] "r" (expectedValue),
                    [newValue] "r" (newValue)
                  : "cc", "memory");
+    if (currentValue)
+        *currentValue = tempValue;
     return result == 0;
 }
 
@@ -273,13 +276,13 @@ bool QBasicAtomicOps<8>::deref(T &_q_value) Q_DECL_NOTHROW
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T result;
     T tempValue;
     asm volatile("0:\n"
-                 "lld %[result], %[_q_value]\n"
-                 "xor %[result], %[result], %[expectedValue]\n"
+                 "lld %[tempValue], %[_q_value]\n"
+                 "xor %[result], %[tempValue], %[expectedValue]\n"
                  "bnez %[result], 0f\n"
                  "nop\n"
                  "move %[tempValue], %[newValue]\n"
@@ -293,6 +296,8 @@ bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                  : [expectedValue] "r" (expectedValue),
                    [newValue] "r" (newValue)
                  : "cc", "memory");
+    if (currentValue)
+        *currentValue = tempValue;
     return result == 0;
 }
 

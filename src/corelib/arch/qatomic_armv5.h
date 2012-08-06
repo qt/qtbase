@@ -133,13 +133,16 @@ bool QBasicAtomicOps<4>::deref(T &_q_value) Q_DECL_NOTHROW
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T originalValue;
     do {
         originalValue = _q_value;
-        if (originalValue != expectedValue)
+        if (originalValue != expectedValue) {
+            if (currentValue)
+                *currentValue = originalValue;
             return false;
+        }
     } while (_q_cmpxchg(expectedValue, newValue, &_q_value) != 0);
     return true;
 }

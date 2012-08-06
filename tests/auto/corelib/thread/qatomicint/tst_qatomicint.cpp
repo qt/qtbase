@@ -84,6 +84,8 @@ private slots:
     void fetchAndAdd_data();
     void fetchAndAdd();
 
+    void operators();
+
     // stress tests
     void testAndSet_loop();
     void fetchAndAdd_loop();
@@ -540,6 +542,43 @@ void tst_QAtomicInt::testAndSet()
         QAtomicInt atomic = value;
         QTEST(atomic.testAndSetOrdered(expected, newval) ? 1 : 0, "result");
     }
+
+#ifdef Q_ATOMIC_INT32_IS_SUPPORTED
+    QFETCH(int, result);
+    // the new implementation has the version that loads the current value
+
+    {
+        QAtomicInt atomic = value;
+        int currentval = 0xdeadbeef;
+        QCOMPARE(atomic.testAndSetRelaxed(expected, newval, currentval), result);
+        if (!result)
+            QCOMPARE(currentval, value);
+    }
+
+    {
+        QAtomicInt atomic = value;
+        int currentval = 0xdeadbeef;
+        QCOMPARE(atomic.testAndSetAcquire(expected, newval, currentval), result);
+        if (!result)
+            QCOMPARE(currentval, value);
+    }
+
+    {
+        QAtomicInt atomic = value;
+        int currentval = 0xdeadbeef;
+        QCOMPARE(atomic.testAndSetRelease(expected, newval, currentval), result);
+        if (!result)
+            QCOMPARE(currentval, value);
+    }
+
+    {
+        QAtomicInt atomic = value;
+        int currentval = 0xdeadbeef;
+        QCOMPARE(atomic.testAndSetOrdered(expected, newval, currentval), result);
+        if (!result)
+            QCOMPARE(currentval, value);
+    }
+#endif
 }
 
 void tst_QAtomicInt::isFetchAndStoreNative()
@@ -768,6 +807,58 @@ void tst_QAtomicInt::fetchAndAdd()
         QCOMPARE(result, value1);
         QCOMPARE(atomic.load(), value1 + value2);
     }
+}
+
+void tst_QAtomicInt::operators()
+{
+    {
+        // Test that QBasicAtomicInt also has operator= and cast operators
+        // We've been using them for QAtomicInt elsewhere
+        QBasicAtomicInt atomic = Q_BASIC_ATOMIC_INITIALIZER(0);
+        atomic = 1;
+        QCOMPARE(int(atomic), 1);
+    }
+
+    QAtomicInt atomic = 0;
+    int x = ++atomic;
+    QCOMPARE(int(atomic), x);
+    QCOMPARE(int(atomic), 1);
+
+    x = atomic++;
+    QCOMPARE(int(atomic), x + 1);
+    QCOMPARE(int(atomic), 2);
+
+    x = atomic--;
+    QCOMPARE(int(atomic), x - 1);
+    QCOMPARE(int(atomic), 1);
+
+    x = --atomic;
+    QCOMPARE(int(atomic), x);
+    QCOMPARE(int(atomic), 0);
+
+    x = (atomic += 1);
+    QCOMPARE(int(atomic), x);
+    QCOMPARE(int(atomic), 1);
+
+    x = (atomic -= 1);
+    QCOMPARE(int(atomic), x);
+    QCOMPARE(int(atomic), 0);
+
+    x = (atomic |= 0xf);
+    QCOMPARE(int(atomic), x);
+    QCOMPARE(int(atomic), 0xf);
+
+    x = (atomic &= 0x17);
+    QCOMPARE(int(atomic), x);
+    QCOMPARE(int(atomic), 7);
+
+    x = (atomic ^= 0x14);
+    QCOMPARE(int(atomic), x);
+    QCOMPARE(int(atomic), 0x13);
+
+    x = (atomic ^= atomic);
+    QCOMPARE(int(atomic), x);
+    QCOMPARE(int(atomic), 0);
 }
 
 void tst_QAtomicInt::testAndSet_loop()

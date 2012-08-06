@@ -113,6 +113,17 @@ template <typename X> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<X> >
     }
 
     template <typename T>
+    static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+    {
+        bool tmp = __sync_bool_compare_and_swap(&_q_value, expectedValue, newValue);
+        if (tmp)
+            *currentValue = expectedValue;
+        else
+            *currentValue = _q_value;
+        return tmp;
+    }
+
+    template <typename T>
     static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return __sync_lock_test_and_set(&_q_value, newValue);

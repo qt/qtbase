@@ -310,6 +310,8 @@ template <int N> struct QAtomicOpsBySize : QGenericAtomicOps<QAtomicOpsBySize<N>
     static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
     template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T>
+    static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW;
 
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
@@ -351,6 +353,13 @@ inline bool QAtomicOpsBySize<4>::testAndSetRelaxed(T &_q_value, T expectedValue,
     return QT_INTERLOCKED_FUNCTION(CompareExchange)(atomic(&_q_value), value(newValue), value(expectedValue)) == value(expectedValue);
 }
 
+template<> template <typename T>
+inline bool QAtomicOpsBySize<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    *currentValue = T(QT_INTERLOCKED_FUNCTION(CompareExchange)(atomic(&_q_value), newValue, expectedValue));
+    return *currentValue == expectedValue;
+}
+
 template<> template<typename T>
 inline T QAtomicOpsBySize<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
@@ -380,6 +389,13 @@ template<> template<typename T>
 inline bool QAtomicOpsBySize<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
     return QT_INTERLOCKED_FUNCTION(CompareExchange16)(atomic(&_q_value), value(newValue), value(expectedValue)) == value(expectedValue);
+}
+
+template<> template <typename T>
+inline bool QAtomicOpsBySize<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    *currentValue = T(QT_INTERLOCKED_FUNCTION(CompareExchange16)(atomic(&_q_value), newValue, expectedValue));
+    return *currentValue == expectedValue;
 }
 
 template<> template<typename T>
@@ -414,6 +430,13 @@ inline bool QAtomicOpsBySize<8>::testAndSetRelaxed(T &_q_value, T expectedValue,
     return QT_INTERLOCKED_FUNCTION(CompareExchange64)(atomic(&_q_value), value(newValue), value(expectedValue)) == value(expectedValue);
 }
 
+template<> template <typename T>
+inline bool QAtomicOpsBySize<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    *currentValue = T(QT_INTERLOCKED_FUNCTION(CompareExchange64)(atomic(&_q_value), newValue, expectedValue));
+    return *currentValue == expectedValue;
+}
+
 template<> template<typename T>
 inline T QAtomicOpsBySize<8>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
@@ -436,6 +459,7 @@ struct QAtomicOps<T *> : QGenericAtomicOps<QAtomicOps<T *> >
     static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
     static bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue) Q_DECL_NOTHROW;
+    static bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue, T **currentValue) Q_DECL_NOTHROW;
 
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
@@ -450,6 +474,13 @@ template <typename T>
 inline bool QAtomicOps<T *>::testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue) Q_DECL_NOTHROW
 {
     return QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(&_q_value, newValue, expectedValue) == expectedValue;
+}
+
+template <typename T>
+inline bool QAtomicOps<T *>::testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue, T **currentValue) Q_DECL_NOTHROW
+{
+    *currentValue = reinterpret_cast<T *>(QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(&_q_value, newValue, expectedValue));
+    return *currentValue == expectedValue;
 }
 
 template <typename T>

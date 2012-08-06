@@ -145,6 +145,15 @@ public:
     bool testAndSetOrdered(T expectedValue, T newValue) Q_DECL_NOTHROW
     { return Ops::testAndSetOrdered(_q_value, expectedValue, newValue); }
 
+    bool testAndSetRelaxed(T expectedValue, T newValue, T &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetRelaxed(_q_value, expectedValue, newValue, &currentValue); }
+    bool testAndSetAcquire(T expectedValue, T newValue, T &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetAcquire(_q_value, expectedValue, newValue, &currentValue); }
+    bool testAndSetRelease(T expectedValue, T newValue, T &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetRelease(_q_value, expectedValue, newValue, &currentValue); }
+    bool testAndSetOrdered(T expectedValue, T newValue, T &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetOrdered(_q_value, expectedValue, newValue, &currentValue); }
+
     static Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return Ops::isFetchAndStoreNative(); }
     static Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return Ops::isFetchAndStoreWaitFree(); }
 
@@ -208,6 +217,15 @@ public:
     { return Ops::testAndSetRelease(_q_value, expectedValue, newValue); }
     bool testAndSetOrdered(Type expectedValue, Type newValue) Q_DECL_NOTHROW
     { return Ops::testAndSetOrdered(_q_value, expectedValue, newValue); }
+
+    bool testAndSetRelaxed(Type expectedValue, Type newValue, Type &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetRelaxed(_q_value, expectedValue, newValue, &currentValue); }
+    bool testAndSetAcquire(Type expectedValue, Type newValue, Type &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetAcquire(_q_value, expectedValue, newValue, &currentValue); }
+    bool testAndSetRelease(Type expectedValue, Type newValue, Type &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetRelease(_q_value, expectedValue, newValue, &currentValue); }
+    bool testAndSetOrdered(Type expectedValue, Type newValue, Type &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetOrdered(_q_value, expectedValue, newValue, &currentValue); }
 
     static Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return Ops::isFetchAndStoreNative(); }
     static Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return Ops::isFetchAndStoreWaitFree(); }

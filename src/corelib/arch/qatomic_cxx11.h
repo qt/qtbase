@@ -149,28 +149,40 @@ template <typename X> struct QAtomicOps
     static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
     static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
 
-    template <typename T> static
-    bool testAndSetRelaxed(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+    template <typename T>
+    static bool testAndSetRelaxed(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW
     {
-        return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_relaxed);
+        bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_relaxed);
+        if (currentValue)
+            *currentValue = expectedValue;
+        return tmp;
     }
 
     template <typename T>
-    static bool testAndSetAcquire(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+    static bool testAndSetAcquire(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW
     {
-        return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acquire);
+        bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acquire);
+        if (currentValue)
+            *currentValue = expectedValue;
+        return tmp;
     }
 
     template <typename T>
-    static bool testAndSetRelease(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+    static bool testAndSetRelease(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW
     {
-        return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_release);
+        bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_release);
+        if (currentValue)
+            *currentValue = expectedValue;
+        return tmp;
     }
 
     template <typename T>
-    static bool testAndSetOrdered(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+    static bool testAndSetOrdered(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW
     {
-        return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acq_rel);
+        bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acq_rel);
+        if (currentValue)
+            *currentValue = expectedValue;
+        return tmp;
     }
 
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return false; }

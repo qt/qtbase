@@ -99,6 +99,8 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
     static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
     template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static bool
+    testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW;
 
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
@@ -249,6 +251,36 @@ bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                  : "=a" (newValue), "=qm" (ret), "+m" (_q_value)
                  : "q" (newValue), "0" (expectedValue)
                  : "memory");
+    return ret != 0;
+}
+
+template<int size> template <typename T> inline
+bool QBasicAtomicOps<size>::testAndSetRelaxed(T &_q_value, T expectedValue,
+                                              T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    unsigned char ret;
+    asm volatile("lock\n"
+                 "cmpxchg %3,%2\n"
+                 "sete %1\n"
+                 : "=a" (newValue), "=qm" (ret), "+m" (_q_value)
+                 : "r" (newValue), "0" (expectedValue)
+                 : "memory");
+    *currentValue = newValue;
+    return ret != 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue,
+                                           T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    unsigned char ret;
+    asm volatile("lock\n"
+                 "cmpxchg %3,%2\n"
+                 "sete %1\n"
+                 : "=a" (newValue), "=qm" (ret), "+m" (_q_value)
+                 : "q" (newValue), "0" (expectedValue)
+                 : "memory");
+    *currentValue = newValue;
     return ret != 0;
 }
 

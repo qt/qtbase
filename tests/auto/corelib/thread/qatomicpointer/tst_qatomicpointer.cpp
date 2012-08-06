@@ -70,6 +70,8 @@ private slots:
 
     void constAndVolatile();
     void forwardDeclared();
+
+    void operators();
 private:
     static void warningFreeHelper();
 };
@@ -662,6 +664,57 @@ void tst_QAtomicPointer::forwardDeclared()
     Q_UNUSED(ptr);
     Q_UNUSED(cfd);
     QVERIFY(true);
+}
+
+template <typename T> static void operators_helper()
+{
+    typedef T *Ptr;
+    T array[3] = {};
+    Ptr zero = array;
+    Ptr one = array + 1;
+    Ptr two = array + 2;
+
+    {
+        // Test that QBasicAtomicPointer also has operator= and cast operators
+        // We've been using them for QAtomicPointer<T> elsewhere
+        QBasicAtomicPointer<T> atomic = Q_BASIC_ATOMIC_INITIALIZER(0);
+        atomic = one;
+        QCOMPARE(Ptr(atomic), one);
+    }
+
+    QAtomicPointer<T> atomic = zero;
+    Ptr x = ++atomic;
+    QCOMPARE(Ptr(atomic), x);
+    QCOMPARE(Ptr(atomic), one);
+
+    x = atomic++;
+    QCOMPARE(Ptr(atomic), x + 1);
+    QCOMPARE(Ptr(atomic), two);
+
+    x = atomic--;
+    QCOMPARE(Ptr(atomic), x - 1);
+    QCOMPARE(Ptr(atomic), one);
+
+    x = --atomic;
+    QCOMPARE(Ptr(atomic), x);
+    QCOMPARE(Ptr(atomic), zero);
+
+    x = (atomic += 1);
+    QCOMPARE(Ptr(atomic), x);
+    QCOMPARE(Ptr(atomic), one);
+
+    x = (atomic -= 1);
+    QCOMPARE(Ptr(atomic), x);
+    QCOMPARE(Ptr(atomic), zero);
+}
+
+struct Big { double d[10]; };
+void tst_QAtomicPointer::operators()
+{
+    operators_helper<char>();
+    operators_helper<int>();
+    operators_helper<double>();
+    operators_helper<Big>();
 }
 
 QTEST_APPLESS_MAIN(tst_QAtomicPointer)
