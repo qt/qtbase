@@ -69,7 +69,7 @@ bool qdbus_loadLibDBus()
 #ifndef QT_BOOTSTRAPPED
 #ifdef QT_BUILD_INTERNAL
     // this is to simulate a library load failure for our autotest suite.
-    if (!qgetenv("QT_SIMULATE_DBUS_LIBFAIL").isEmpty())
+    if (!qEnvironmentVariableIsEmpty("QT_SIMULATE_DBUS_LIBFAIL"))
         return false;
 #endif
 
