@@ -19,23 +19,6 @@ exists($$QMLTYPEFILE): fq_qml_files += $$QMLTYPEFILE
 
 for(qmlf, QML_FILES): fq_qml_files += $$absolute_path($$qmlf, $$_PRO_FILE_PWD_)
 
-# plugins.qmltypes is used by Qt Creator for syntax highlighting and the QML code model.  It needs
-# to be regenerated whenever the QML elements exported by the plugin change.  This cannot be done
-# automatically at compile time because qmlplugindump does not support some QML features and it may
-# not be possible when cross-compiling.
-#
-# To regenerate run 'make qmltypes' which will update the plugins.qmltypes file in the source
-# directory.  Then review and commit the changes made to plugins.qmltypes.
-#
-!cross_compile {
-    load(resolve_target)
-    qtPrepareTool(QMLPLUGINDUMP, qmlplugindump)
-    qmltypes.target = qmltypes
-    qmltypes.commands = $$QMLPLUGINDUMP $$replace(TARGETPATH, /, .) $$IMPORT_VERSION $$QMAKE_RESOLVED_TARGET > $$QMLTYPEFILE
-    qmltypes.depends = $$QMAKE_RESOLVED_TARGET
-    QMAKE_EXTRA_TARGETS += qmltypes
-}
-
 # Only for Qt Creator's project view
 OTHER_FILES += $$fq_qml_files
 
@@ -65,3 +48,20 @@ TARGET = $$qtLibraryTarget($$TARGET)
 contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 
 load(qt_targets)
+
+# plugins.qmltypes is used by Qt Creator for syntax highlighting and the QML code model.  It needs
+# to be regenerated whenever the QML elements exported by the plugin change.  This cannot be done
+# automatically at compile time because qmlplugindump does not support some QML features and it may
+# not be possible when cross-compiling.
+#
+# To regenerate run 'make qmltypes' which will update the plugins.qmltypes file in the source
+# directory.  Then review and commit the changes made to plugins.qmltypes.
+#
+!cross_compile {
+    load(resolve_target)
+    qtPrepareTool(QMLPLUGINDUMP, qmlplugindump)
+    qmltypes.target = qmltypes
+    qmltypes.commands = $$QMLPLUGINDUMP $$replace(TARGETPATH, /, .) $$IMPORT_VERSION $$QMAKE_RESOLVED_TARGET > $$QMLTYPEFILE
+    qmltypes.depends = $$QMAKE_RESOLVED_TARGET
+    QMAKE_EXTRA_TARGETS += qmltypes
+}
