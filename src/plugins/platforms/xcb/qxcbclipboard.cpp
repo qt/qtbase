@@ -81,12 +81,20 @@ public:
         }
     }
 
-    void reset() { formatList.clear(); }
+    void reset()
+    {
+        formatList.clear();
+    }
+
+    bool isEmpty() const
+    {
+        return m_clipboard->getSelectionOwner(modeAtom) == XCB_NONE;
+    }
 
 protected:
     QStringList formats_sys() const
     {
-        if (empty())
+        if (isEmpty())
             return QStringList();
 
         if (!formatList.count()) {
@@ -122,7 +130,7 @@ protected:
 
     QVariant retrieveData_sys(const QString &fmt, QVariant::Type requestedType) const
     {
-        if (fmt.isEmpty() || empty())
+        if (fmt.isEmpty() || isEmpty())
             return QByteArray();
 
         (void)formats(); // trigger update of format list
@@ -142,11 +150,6 @@ protected:
         return mimeConvertToFormat(m_clipboard->connection(), fmtatom, m_clipboard->getDataInFormat(modeAtom, fmtatom), fmt, requestedType, encoding);
     }
 private:
-    bool empty() const
-    {
-        return m_clipboard->getSelectionOwner(modeAtom) == XCB_NONE;
-    }
-
 
     xcb_atom_t modeAtom;
     QXcbClipboard *m_clipboard;
@@ -259,9 +262,6 @@ QMimeData * QXcbClipboard::mimeData(QClipboard::Mode mode)
         return 0;
 
     xcb_window_t clipboardOwner = getSelectionOwner(atomForMode(mode));
-    if (clipboardOwner == XCB_NONE)
-        return 0;
-
     if (clipboardOwner == owner()) {
         return m_clientClipboard[mode];
     } else {
@@ -274,7 +274,20 @@ QMimeData * QXcbClipboard::mimeData(QClipboard::Mode mode)
 
 void QXcbClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
 {
-    if ((mode > QClipboard::Selection) || (mimeData(mode) == data))
+    if (mode > QClipboard::Selection)
+        return;
+
+    QXcbClipboardMime *xClipboard = 0;
+    // verify if there is data to be cleared on global X Clipboard.
+    if (!data) {
+        xClipboard = qobject_cast<QXcbClipboardMime *>(mimeData(mode));
+        if (xClipboard) {
+            if (xClipboard->isEmpty())
+                return;
+        }
+    }
+
+    if (!xClipboard && (m_clientClipboard[mode] == data))
         return;
 
     xcb_atom_t modeAtom = atomForMode(mode);
