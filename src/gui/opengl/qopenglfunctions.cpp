@@ -265,10 +265,11 @@ static int qt_gl_resolve_features()
                    QOpenGLFunctions::Multisample |
                    QOpenGLFunctions::StencilSeparate;
     QOpenGLExtensionMatcher extensions;
-    if (extensions.match("GL_OES_texture_npot"))
-        features |= QOpenGLFunctions::NPOTTextures;
     if (extensions.match("GL_IMG_texture_npot"))
         features |= QOpenGLFunctions::NPOTTextures;
+    if (extensions.match("GL_OES_texture_npot"))
+        features |= QOpenGLFunctions::NPOTTextures |
+                    QOpenGLFunctions::NPOTTextureRepeat;
     return features;
 #elif defined(QT_OPENGL_ES)
     int features = QOpenGLFunctions::Multitexture |
