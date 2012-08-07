@@ -124,7 +124,7 @@ void tst_QMacStyle::sizeHints()
     setSize(&w, size);
 
     QLineEdit lineEdit1(&w);
-    QCOMPARE(sh(&lineEdit1).height(), SIZE(22, 19, 16));    // 16 in Builder, 15 in AHIG
+    QCOMPARE(sh(&lineEdit1).height(), SIZE(21, 19, 16));    // 16 in Builder, 15 in AHIG
 
     QProgressBar progress1(&w);
     progress1.setOrientation(Qt::Horizontal);
@@ -135,11 +135,10 @@ void tst_QMacStyle::sizeHints()
     QCOMPARE(sh(&progress1).width(), SIZE(16, 10, 10));   // Builder
 
     QRadioButton radio1("Radio", &w);
-    QEXPECT_FAIL("", "QTBUG-25296", Abort);
-    QCOMPARE(sh(&radio1).height(), SIZE(15, 12, 10));   // Builder
+    QCOMPARE(sh(&radio1).height(), SIZE(14, 12, 10));   // Builder
 
     QCheckBox checkBox1("Switch", &w);
-    QCOMPARE(sh(&checkBox1).height(), SIZE(14, 12, 10));   // Builder
+    QCOMPARE(sh(&checkBox1).height(), SIZE(13, 12, 10));   // Builder
 
     QComboBox comboBox1(&w);
     comboBox1.setEditable(false);
@@ -149,7 +148,7 @@ void tst_QMacStyle::sizeHints()
     QComboBox comboBox2(&w);
     comboBox2.setEditable(true);
     comboBox2.addItem("Foo");
-    QCOMPARE(sh(&comboBox2).height(), SIZE(20, 17, 15));
+    QCOMPARE(sh(&comboBox2).height(), SIZE(22, 17, 15));
 
     // Combos in toolbars use the actual widget rect to
     // avoid faulty clipping:
@@ -227,7 +226,7 @@ void tst_QMacStyle::sizeHints()
 
     // QMacStyle bug: label doesn't react to Small and Mini
     QLabel label1("Blah", &w);
-    QCOMPARE(sh(&label1).height(), SIZE(17, 14, 11));
+    QCOMPARE(sh(&label1).height(), SIZE(16, 14, 11));
 }
 
 void tst_QMacStyle::layoutMargins_data()

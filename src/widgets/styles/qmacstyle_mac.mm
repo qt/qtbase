@@ -1013,7 +1013,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         if (!widg || !qobject_cast<QComboBox *>(widg->parentWidget())) {
             //should I take into account the font dimentions of the lineedit? -Sam
             if (sz == QAquaSizeLarge)
-                ret = QSize(-1, 22);
+                ret = QSize(-1, 21);
             else
                 ret = QSize(-1, 19);
         }
@@ -1392,7 +1392,7 @@ HIRect QMacStylePrivate::comboboxInnerBounds(const HIRect &outerBounds, int butt
     switch (buttonKind){
     case kThemePopupButton:
         innerBounds.origin.x += 2;
-        innerBounds.origin.y += 3;
+        innerBounds.origin.y += 2;
         innerBounds.size.width -= 5;
         innerBounds.size.height -= 6;
         break;
@@ -1410,9 +1410,9 @@ HIRect QMacStylePrivate::comboboxInnerBounds(const HIRect &outerBounds, int butt
         break;
     case kThemeComboBox:
         innerBounds.origin.x += 3;
-        innerBounds.origin.y += 3;
+        innerBounds.origin.y += 2;
         innerBounds.size.width -= 6;
-        innerBounds.size.height -= 6;
+        innerBounds.size.height -= 8;
         break;
     case kThemeComboBoxSmall:
         innerBounds.origin.x += 3;
@@ -1441,7 +1441,7 @@ QRect QMacStylePrivate::comboboxEditBounds(const QRect &outerBounds, const HIThe
     QRect ret = outerBounds;
     switch (bdi.kind){
     case kThemeComboBox:
-        ret.adjust(5, 8, -23, -4);
+        ret.adjust(5, 5, -22, -5);
         break;
     case kThemeComboBoxSmall:
         ret.adjust(4, 5, -18, 0);
@@ -1452,7 +1452,7 @@ QRect QMacStylePrivate::comboboxEditBounds(const QRect &outerBounds, const HIThe
         ret.setHeight(13);
         break;
     case kThemePopupButton:
-        ret.adjust(10, 3, -23, -3);
+        ret.adjust(10, 2, -23, -4);
         break;
     case kThemePopupButtonSmall:
         ret.adjust(9, 3, -20, -3);
@@ -4655,7 +4655,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         if(widget->parentWidget() && qobject_cast<const QComboBox*>(widget->parentWidget()))
             rect.adjust(-1, -2, 0, 0);
         else
-            rect.adjust(-1, 0, 0, +1);
+            rect.adjust(-1, -1, 0, +1);
         break;
     case SE_CheckBoxLayoutItem:
         rect = opt->rect;

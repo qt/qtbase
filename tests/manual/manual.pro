@@ -14,6 +14,7 @@ qgraphicsitemgroup \
 qgraphicslayout/flicker \
 qhttpnetworkconnection \
 qimagereader \
+qlayout \
 qlocale \
 qnetworkaccessmanager/qget \
 qnetworkconfigurationmanager \
