@@ -1202,7 +1202,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                 dst += Option::dir_sep;
         }
 
-        QStringList tmp, uninst = project->values((*it) + ".uninstall");
+        QStringList tmp, uninst;
         //other
         tmp = project->values((*it) + ".extra");
         if(tmp.isEmpty())
@@ -1255,8 +1255,6 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                        !fi.isDir() && fi.isExecutable() && !project->isEmpty("QMAKE_STRIP"))
                         target += QString("\t-") + var("QMAKE_STRIP") + " " +
                                   escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false))) + "\n";
-                    if(!uninst.isEmpty())
-                        uninst.append("\n\t");
                     uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false))));
                     continue;
                 }
@@ -1282,16 +1280,12 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                     }
                     cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file) + "\n";
                     target += cmd;
-                    if(!uninst.isEmpty())
-                        uninst.append("\n\t");
                     uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false))));
                 }
                 for(int x = 0; x < files.count(); x++) {
                     QString file = files[x];
                     if(file == "." || file == "..") //blah
                         continue;
-                    if(!uninst.isEmpty())
-                        uninst.append("\n\t");
                     uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst + file, FileFixifyAbsolute, false))));
                     QFileInfo fi(fileInfo(dirstr + file));
                     if(!target.isEmpty())
@@ -1314,10 +1308,11 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
             }
         }
         //default?
-        if(do_default) {
+        if (do_default)
             target = defaultInstall((*it));
-            uninst = project->values((*it) + ".uninstall");
-        }
+        QString puninst = project->values((*it) + ".uninstall").join(" ");
+        if (!puninst.isEmpty())
+            uninst << puninst;
 
         if(!target.isEmpty() || project->values((*it) + ".CONFIG").indexOf("dummy_install") != -1) {
             if(noBuild || project->values((*it) + ".CONFIG").indexOf("no_build") != -1)
@@ -1343,8 +1338,10 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
             }
             t << target << endl << endl;
             if(!uninst.isEmpty()) {
-                t << "uninstall_" << (*it) << ": FORCE\n\t" << uninst.join(" ")
-                  << "\n\t-$(DEL_DIR) " << filePrefixRoot(root, dst) << " " << endl << endl;
+                t << "uninstall_" << (*it) << ": FORCE";
+                for (int i = uninst.size(); --i >= 0; )
+                    t << "\n\t" << uninst.at(i);
+                t << "\n\t-$(DEL_DIR) " << filePrefixRoot(root, dst) << " " << endl << endl;
             }
             t << endl;
 
