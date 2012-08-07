@@ -75,11 +75,11 @@ QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
 #ifndef QT_NO_FILESYSTEMWATCHER
       watcher(0),
 #endif
-      m_resolveSymlinks(false), m_iconProvider(&defaultProvider)
-{
 #ifdef Q_OS_WIN
-    m_resolveSymlinks = true;
+      m_resolveSymlinks(true),
 #endif
+      m_iconProvider(&defaultProvider)
+{
 #ifndef QT_NO_FILESYSTEMWATCHER
     watcher = new QFileSystemWatcher(this);
     connect(watcher, SIGNAL(directoryChanged(QString)), this, SLOT(list(QString)));
@@ -108,7 +108,11 @@ void QFileInfoGatherer::setResolveSymlinks(bool enable)
 
 bool QFileInfoGatherer::resolveSymlinks() const
 {
+#ifdef Q_OS_WIN
     return m_resolveSymlinks;
+#else
+    return false;
+#endif
 }
 
 void QFileInfoGatherer::setIconProvider(QFileIconProvider *provider)
@@ -233,6 +237,7 @@ QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
     #endif
 #endif
 
+#ifdef Q_OS_WIN
     if (fileInfo.isSymLink() && m_resolveSymlinks) {
         QFileInfo resolvedInfo(fileInfo.symLinkTarget());
         resolvedInfo = resolvedInfo.canonicalFilePath();
@@ -240,6 +245,7 @@ QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
             emit nameResolved(fileInfo.filePath(), resolvedInfo.fileName());
         }
     }
+#endif
     return info;
 }
 
