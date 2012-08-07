@@ -181,9 +181,9 @@ private:
     void fetch(const QFileInfo &info, QElapsedTimer &base, bool &firstTime, QList<QPair<QString, QFileInfo> > &updatedFiles, const QString &path);
     QString translateDriveName(const QFileInfo &drive) const;
 
-    QMutex mutex;
+    mutable QMutex mutex;
     QWaitCondition condition;
-    volatile bool abort;
+    QAtomicInt abort;
 
     QStack<QString> path;
     QStack<QStringList> files;
