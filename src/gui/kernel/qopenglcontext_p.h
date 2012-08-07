@@ -49,7 +49,9 @@
 #include <private/qobject_p.h>
 #include <qmutex.h>
 
+#include <QtCore/QByteArray>
 #include <QtCore/QHash>
+#include <QtCore/QSet>
 
 QT_BEGIN_HEADER
 
@@ -212,6 +214,7 @@ public:
     QScreen *screen;
     QSurface *surface;
     QOpenGLFunctions *functions;
+    mutable QSet<QByteArray> extensionNames;
 
     GLuint current_fbo;
     GLint max_texture_size;

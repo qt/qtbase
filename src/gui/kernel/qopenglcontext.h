@@ -129,6 +129,9 @@ public:
 
     QOpenGLFunctions *functions() const;
 
+    QSet<QByteArray> extensions() const;
+    bool hasExtension(const QByteArray &extension) const;
+
 Q_SIGNALS:
     void aboutToBeDestroyed();
 

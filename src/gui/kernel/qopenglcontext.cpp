@@ -49,6 +49,7 @@
 #include <QtCore/QThread>
 
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qopengl_p.h>
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/QScreen>
 
@@ -399,6 +400,37 @@ QOpenGLFunctions *QOpenGLContext::functions() const
     if (!d->functions)
         const_cast<QOpenGLFunctions *&>(d->functions) = new QOpenGLExtensions(QOpenGLContext::currentContext());
     return d->functions;
+}
+
+/*!
+    Returns the set of OpenGL extensions supported by this context.
+
+    The context or a sharing context must be current.
+
+    \sa hasExtension()
+*/
+QSet<QByteArray> QOpenGLContext::extensions() const
+{
+    Q_D(const QOpenGLContext);
+    if (d->extensionNames.isEmpty()) {
+        QOpenGLExtensionMatcher matcher;
+        d->extensionNames = matcher.extensions();
+    }
+
+    return d->extensionNames;
+}
+
+/*!
+    Returns true if this OpenGL context supports the specified OpenGL
+    \a extension, false otherwise.
+
+    The context or a sharing context must be current.
+
+    \sa extensions()
+*/
+bool QOpenGLContext::hasExtension(const QByteArray &extension) const
+{
+    return extensions().contains(extension);
 }
 
 /*!
