@@ -45,11 +45,11 @@ RasterWindow::RasterWindow(QWindow *parent)
     : QWindow(parent)
     , m_update_pending(false)
 {
+    m_backingStore = new QBackingStore(this);
     create();
 
     setGeometry(100, 100, 300, 200);
 
-    m_backingStore = new QBackingStore(this);
 }
 //! [1]
 
