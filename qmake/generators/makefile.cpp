@@ -1194,7 +1194,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
 
         bool do_default = true;
         const QString root = "$(INSTALL_ROOT)";
-        QString target, dst;
+        QString dst;
         if(project->values((*it) + ".CONFIG").indexOf("no_path") == -1 &&
            project->values((*it) + ".CONFIG").indexOf("dummy_install") == -1) {
             dst = fileFixify(unescapeFilePath(project->values(pvar).first()), FileFixifyAbsolute, false);
@@ -1202,23 +1202,19 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                 dst += Option::dir_sep;
         }
 
-        QStringList tmp, uninst;
+        QStringList tmp, inst, uninst;
         //other
         tmp = project->values((*it) + ".extra");
         if(tmp.isEmpty())
             tmp = project->values((*it) + ".commands"); //to allow compatible name
         if(!tmp.isEmpty()) {
             do_default = false;
-            if(!target.isEmpty())
-                target += "\n\t";
-            target += tmp.join(" ");
+            inst << tmp.join(" ");
         }
         //masks
         tmp = findFilesInVPATH(project->values((*it) + ".files"), VPATH_NoFixify);
         tmp = fileFixify(tmp, FileFixifyAbsolute);
         if(!tmp.isEmpty()) {
-            if(!target.isEmpty())
-                target += "\n";
             do_default = false;
             for(QStringList::Iterator wild_it = tmp.begin(); wild_it != tmp.end(); ++wild_it) {
                 QString wild = Option::fixPathToTargetOS((*wild_it), false, false);
@@ -1234,8 +1230,6 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                 if(is_target || exists(wild)) { //real file or target
                     QString file = wild;
                     QFileInfo fi(fileInfo(wild));
-                    if(!target.isEmpty())
-                        target += "\t";
                     QString dst_file = filePrefixRoot(root, dst);
                     if(fi.isDir() && project->isActiveConfig("copy_dir_files")) {
                         if(!dst_file.endsWith(Option::dir_sep))
@@ -1249,12 +1243,12 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                        cmd = "-$(INSTALL_PROGRAM)";
                     else
                        cmd = "-$(INSTALL_FILE)";
-                    cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file) + "\n";
-                    target += cmd;
+                    cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file);
+                    inst << cmd;
                     if(!project->isActiveConfig("debug") && !project->isActiveConfig("nostrip") &&
                        !fi.isDir() && fi.isExecutable() && !project->isEmpty("QMAKE_STRIP"))
-                        target += QString("\t-") + var("QMAKE_STRIP") + " " +
-                                  escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false))) + "\n";
+                        inst << QString("-") + var("QMAKE_STRIP") + " " +
+                                  escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false)));
                     uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false))));
                     continue;
                 }
@@ -1262,8 +1256,6 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                 QStringList files = QDir(local_dirstr).entryList(QStringList(filestr));
                 const QStringList &installConfigValues = project->values((*it) + ".CONFIG");
                 if (installConfigValues.contains("no_check_exist") && files.isEmpty()) {
-                    if(!target.isEmpty())
-                        target += "\t";
                     QString dst_file = filePrefixRoot(root, dst);
                     QString cmd;
                     if (installConfigValues.contains("directory")) {
@@ -1278,8 +1270,8 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                     } else {
                         cmd = QLatin1String("-$(INSTALL_FILE)");
                     }
-                    cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file) + "\n";
-                    target += cmd;
+                    cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file);
+                    inst << cmd;
                     uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false))));
                 }
                 for(int x = 0; x < files.count(); x++) {
@@ -1288,8 +1280,6 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                         continue;
                     uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst + file, FileFixifyAbsolute, false))));
                     QFileInfo fi(fileInfo(dirstr + file));
-                    if(!target.isEmpty())
-                        target += "\t";
                     QString dst_file = filePrefixRoot(root, fileFixify(dst, FileFixifyAbsolute, false));
                     if(fi.isDir() && project->isActiveConfig("copy_dir_files")) {
                         if(!dst_file.endsWith(Option::dir_sep))
@@ -1297,19 +1287,21 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                         dst_file += fi.fileName();
                     }
                     QString cmd = QString(fi.isDir() ? "-$(INSTALL_DIR)" : "-$(INSTALL_FILE)") + " " +
-                                  escapeFilePath(dirstr + file) + " " + escapeFilePath(dst_file) + "\n";
-                    target += cmd;
+                                  escapeFilePath(dirstr + file) + " " + escapeFilePath(dst_file);
+                    inst << cmd;
                     if(!project->isActiveConfig("debug") && !project->isActiveConfig("nostrip") &&
                        !fi.isDir() && fi.isExecutable() && !project->isEmpty("QMAKE_STRIP"))
-                        target += QString("\t-") + var("QMAKE_STRIP") + " " +
-                                  escapeFilePath(filePrefixRoot(root, fileFixify(dst + file, FileFixifyAbsolute, false))) +
-                                  "\n";
+                        inst << QString("-") + var("QMAKE_STRIP") + " " +
+                                  escapeFilePath(filePrefixRoot(root, fileFixify(dst + file, FileFixifyAbsolute, false)));
                 }
             }
         }
+        QString target;
         //default?
         if (do_default)
             target = defaultInstall((*it));
+        else
+            target = inst.join("\n\t");
         QString puninst = project->values((*it) + ".uninstall").join(" ");
         if (!puninst.isEmpty())
             uninst << puninst;
