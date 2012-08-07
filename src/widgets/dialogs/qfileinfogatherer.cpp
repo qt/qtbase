@@ -79,9 +79,6 @@ QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
 {
 #ifdef Q_OS_WIN
     m_resolveSymlinks = true;
-#elif !defined(Q_OS_INTEGRITY)
-    userId = getuid();
-    groupId = getgid();
 #endif
 #ifndef QT_NO_FILESYSTEMWATCHER
     watcher = new QFileSystemWatcher(this);

@@ -194,10 +194,6 @@ private:
     bool m_resolveSymlinks;
     QFileIconProvider *m_iconProvider;
     QFileIconProvider defaultProvider;
-#ifndef Q_OS_WIN
-    uint userId;
-    uint groupId;
-#endif
 };
 #endif // QT_NO_FILESYSTEMMODEL
 
