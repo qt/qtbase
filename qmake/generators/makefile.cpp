@@ -1339,8 +1339,6 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
             const QStringList &dirs = project->values(pvar);
             for(QStringList::ConstIterator pit = dirs.begin(); pit != dirs.end(); ++pit) {
                 QString tmp_dst = fileFixify((*pit), FileFixifyAbsolute, false);
-                if (!isWindowsShell() && !tmp_dst.endsWith(Option::dir_sep))
-                    tmp_dst += Option::dir_sep;
                 t << mkdir_p_asstring(filePrefixRoot(root, tmp_dst)) << "\n\t";
             }
             t << target << endl << endl;
