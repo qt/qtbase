@@ -369,9 +369,11 @@ static void processQdocconfFile(const QString &fileName)
      */
     QStringList exampleQdocList = config.getExampleQdocFiles();
     for (int i=0; i<exampleQdocList.size(); ++i) {
-        sources.insert(exampleQdocList[i],exampleQdocList[i]);
-        QString t = exampleQdocList[i].mid(exampleQdocList[i].lastIndexOf('/')+1);
-        sourceFileNames.insert(t,t);
+        if (!sources.contains(exampleQdocList[i])) {
+            sources.insert(exampleQdocList[i],exampleQdocList[i]);
+            QString t = exampleQdocList[i].mid(exampleQdocList[i].lastIndexOf('/')+1);
+            sourceFileNames.insert(t,t);
+        }
     }
 
     /*
