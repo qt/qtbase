@@ -842,6 +842,10 @@ void QGuiApplicationPrivate::init()
         } else if (arg == "-reverse") {
             force_reverse = true;
             QGuiApplication::setLayoutDirection(Qt::RightToLeft);
+#ifdef Q_OS_MAC
+        } else if (arg.startsWith("-psn_")) {
+            // eat "-psn_xxxx" on Mac
+#endif
         } else {
             argv[j++] = argv[i];
         }
