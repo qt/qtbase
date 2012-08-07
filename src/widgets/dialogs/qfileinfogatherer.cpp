@@ -129,7 +129,7 @@ QFileIconProvider *QFileInfoGatherer::iconProvider() const
 void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStringList &files)
 {
     QMutexLocker locker(&mutex);
-    // See if we already have this dir/file in our que
+    // See if we already have this dir/file in our queue
     int loc = this->path.lastIndexOf(path);
     while (loc > 0)  {
         if (this->files.at(loc) == files) {
@@ -243,7 +243,7 @@ QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
     return info;
 }
 
-QString QFileInfoGatherer::translateDriveName(const QFileInfo &drive) const
+static QString translateDriveName(const QFileInfo &drive)
 {
     QString driveName = drive.absoluteFilePath();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
@@ -280,6 +280,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
         if (files.isEmpty()) {
             infoList = QDir::drives();
         } else {
+            infoList.reserve(files.count());
             for (int i = 0; i < files.count(); ++i)
                 infoList << QFileInfo(files.at(i));
         }

@@ -157,36 +157,37 @@ Q_SIGNALS:
     void directoryLoaded(const QString &path);
 
 public:
-    QFileInfoGatherer(QObject *parent = 0);
+    explicit QFileInfoGatherer(QObject *parent = 0);
     ~QFileInfoGatherer();
 
+    // only callable from this->thread():
     void clear();
     void removePath(const QString &path);
     QExtendedInformation getInfo(const QFileInfo &info) const;
+    QFileIconProvider *iconProvider() const;
+    bool resolveSymlinks() const;
 
 public Q_SLOTS:
     void list(const QString &directoryPath);
     void fetchExtendedInformation(const QString &path, const QStringList &files);
     void updateFile(const QString &path);
     void setResolveSymlinks(bool enable);
-    bool resolveSymlinks() const;
     void setIconProvider(QFileIconProvider *provider);
-    QFileIconProvider *iconProvider() const;
-
-protected:
-    void run();
-    void getFileInfos(const QString &path, const QStringList &files);
 
 private:
+    void run() Q_DECL_OVERRIDE;
+    // called by run():
+    void getFileInfos(const QString &path, const QStringList &files);
     void fetch(const QFileInfo &info, QElapsedTimer &base, bool &firstTime, QList<QPair<QString, QFileInfo> > &updatedFiles, const QString &path);
-    QString translateDriveName(const QFileInfo &drive) const;
 
+private:
     mutable QMutex mutex;
+    // begin protected by mutex
     QWaitCondition condition;
-    QAtomicInt abort;
-
     QStack<QString> path;
     QStack<QStringList> files;
+    // end protected by mutex
+    QAtomicInt abort;
 
 #ifndef QT_NO_FILESYSTEMWATCHER
     QFileSystemWatcher *watcher;
