@@ -908,6 +908,7 @@ void VcprojGenerator::initConfiguration()
         conf.PrimaryOutput = project->first("TARGET");
         if ( !conf.PrimaryOutput.isEmpty() && !project->first("TARGET_VERSION_EXT").isEmpty() && project->isActiveConfig("shared"))
             conf.PrimaryOutput.append(project->first("TARGET_VERSION_EXT"));
+        conf.PrimaryOutputExtension = project->first("TARGET_EXT");
     }
 
     conf.Name = project->values("BUILD_NAME").join(" ");
