@@ -2472,8 +2472,10 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
     }
 
     if (propagate) {
-        for (int i = 0; i < children.size(); ++i) {
-            QWidget *c = qobject_cast<QWidget*>(children.at(i));
+        // We copy the list because the order may be modified
+        const QObjectList childrenList = children;
+        for (int i = 0; i < childrenList.size(); ++i) {
+            QWidget *c = qobject_cast<QWidget*>(childrenList.at(i));
             if (c)
                 c->d_func()->inheritStyle();
         }

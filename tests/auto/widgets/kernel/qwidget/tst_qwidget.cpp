@@ -72,7 +72,7 @@
 #include <qtableview.h>
 #include <qtreewidget.h>
 #include <qabstractnativeeventfilter.h>
-
+#include <qproxystyle.h>
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsProxyWidget>
 
@@ -387,6 +387,7 @@ private slots:
 
     void touchEventSynthesizedMouseEvent();
 
+    void styleSheetPropagation();
 private:
     bool ensureScreenSize(int width, int height);
     QWidget *testWidget;
@@ -9510,6 +9511,16 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
         QCOMPARE(child.m_touchEventCount, 0);
         QCOMPARE(child.m_mouseEventCount, 1); // Attempt at mouse event before propagation
         QCOMPARE(child.m_lastMouseEventPos, QPointF(10, 10));
+    }
+}
+
+void tst_QWidget::styleSheetPropagation()
+{
+    QTableView tw;
+    tw.setStyleSheet("background-color: red;");
+    foreach (QObject *child, tw.children()) {
+        if (QWidget *w = qobject_cast<QWidget *>(child))
+            QCOMPARE(w->style(), tw.style());
     }
 }
 
