@@ -413,6 +413,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.Default.props");
 
     write(xml, tool.Configuration);
+    const QString condition = generateCondition(tool.Configuration);
 
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.props");
 
@@ -423,7 +424,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
 
     // PropertySheets
     xml << tag("ImportGroup")
-        << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.Configuration.Name))
+        << attrTag("Condition", condition)
         << attrTag("Label", "PropertySheets");
 
     xml << tag("Import")
@@ -431,7 +432,6 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
         << attrTag("Condition", "exists('$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props')")
         << closetag()
         << closetag();
-
 
     // UserMacros
     xml << tag("PropertyGroup")
@@ -442,57 +442,57 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
 
     if ( !tool.Configuration.OutputDirectory.isEmpty() ) {
         xml<< tag("OutDir")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.Configuration.Name))
+            << attrTag("Condition", condition)
             << valueTag(tool.Configuration.OutputDirectory);
     }
     if ( !tool.Configuration.IntermediateDirectory.isEmpty() ) {
         xml<< tag("IntDir")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.Configuration.Name))
+            << attrTag("Condition", condition)
             << valueTag(tool.Configuration.IntermediateDirectory);
     }
     if ( !tool.Configuration.PrimaryOutput.isEmpty() ) {
         xml<< tag("TargetName")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.Configuration.Name))
+            << attrTag("Condition", condition)
             << valueTag(tool.Configuration.PrimaryOutput);
     }
 
     if ( tool.Configuration.linker.IgnoreImportLibrary != unset) {
         xml<< tag("IgnoreImportLibrary")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.Configuration.Name))
+            << attrTag("Condition", condition)
             << valueTagT(tool.Configuration.linker.IgnoreImportLibrary);
     }
 
     if ( tool.Configuration.linker.LinkIncremental != linkIncrementalDefault) {
         const triState ts = (tool.Configuration.linker.LinkIncremental == linkIncrementalYes ? _True : _False);
         xml<< tag("LinkIncremental")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.Configuration.Name))
+            << attrTag("Condition", condition)
             << valueTagT(ts);
     }
 
     if ( tool.Configuration.preBuild.ExcludedFromBuild != unset )
     {
         xml<< tag("PreBuildEventUseInBuild")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.Configuration.Name))
+            << attrTag("Condition", condition)
             << valueTagT(!tool.Configuration.preBuild.ExcludedFromBuild);
     }
 
     if ( tool.Configuration.preLink.ExcludedFromBuild != unset )
     {
         xml<< tag("PreLinkEventUseInBuild")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.Configuration.Name))
+            << attrTag("Condition", condition)
             << valueTagT(!tool.Configuration.preLink.ExcludedFromBuild);
     }
 
     if ( tool.Configuration.postBuild.ExcludedFromBuild != unset )
     {
         xml<< tag("PostBuildEventUseInBuild")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.Configuration.Name))
+            << attrTag("Condition", condition)
             << valueTagT(!tool.Configuration.postBuild.ExcludedFromBuild);
     }
     xml << closetag();
 
     xml << tag("ItemDefinitionGroup")
-        << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.Configuration.Name));
+        << attrTag("Condition", condition);
 
     // ClCompile
     write(xml, tool.Configuration.compiler);
@@ -617,7 +617,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
     // PropertySheets
     for (int i = 0; i < tool.SingleProjects.count(); ++i) {
         xml << tag("ImportGroup")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name))
+            << attrTag("Condition", generateCondition(tool.SingleProjects.at(i).Configuration))
             << attrTag("Label", "PropertySheets");
 
         xml << tag("Import")
@@ -634,93 +634,97 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
     xml << tag("PropertyGroup");
     for (int i = 0; i < tool.SingleProjects.count(); ++i) {
+        const VCConfiguration &config = tool.SingleProjects.at(i).Configuration;
+        const QString condition = generateCondition(config);
 
-        if ( !tool.SingleProjects.at(i).Configuration.OutputDirectory.isEmpty() ) {
+        if (!config.OutputDirectory.isEmpty()) {
             xml << tag("OutDir")
-                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name))
-                << valueTag(tool.SingleProjects.at(i).Configuration.OutputDirectory);
+                << attrTag("Condition", condition)
+                << valueTag(config.OutputDirectory);
         }
-        if ( !tool.SingleProjects.at(i).Configuration.IntermediateDirectory.isEmpty() ) {
+        if (!config.IntermediateDirectory.isEmpty()) {
             xml << tag("IntDir")
-                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name))
-                << valueTag(tool.SingleProjects.at(i).Configuration.IntermediateDirectory);
+                << attrTag("Condition", condition)
+                << valueTag(config.IntermediateDirectory);
         }
-        if ( !tool.SingleProjects.at(i).Configuration.PrimaryOutput.isEmpty() ) {
+        if (!config.PrimaryOutput.isEmpty()) {
             xml << tag("TargetName")
-                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name))
-                << valueTag(tool.SingleProjects.at(i).Configuration.PrimaryOutput);
+                << attrTag("Condition", condition)
+                << valueTag(config.PrimaryOutput);
         }
 
-        if ( tool.SingleProjects.at(i).Configuration.linker.IgnoreImportLibrary != unset) {
+        if (config.linker.IgnoreImportLibrary != unset) {
             xml << tag("IgnoreImportLibrary")
-                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name))
-                << valueTagT(tool.SingleProjects.at(i).Configuration.linker.IgnoreImportLibrary);
+                << attrTag("Condition", condition)
+                << valueTagT(config.linker.IgnoreImportLibrary);
         }
 
-        if ( tool.SingleProjects.at(i).Configuration.linker.LinkIncremental != linkIncrementalDefault) {
-            const triState ts = (tool.SingleProjects.at(i).Configuration.linker.LinkIncremental == linkIncrementalYes ? _True : _False);
+        if (config.linker.LinkIncremental != linkIncrementalDefault) {
+            const triState ts = (config.linker.LinkIncremental == linkIncrementalYes ? _True : _False);
             xml << tag("LinkIncremental")
-                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name))
+                << attrTag("Condition", condition)
                 << valueTagT(ts);
         }
 
-        const triState generateManifest = tool.SingleProjects.at(i).Configuration.linker.GenerateManifest;
+        const triState generateManifest = config.linker.GenerateManifest;
         if (generateManifest != unset) {
             xml << tag("GenerateManifest")
-                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name))
+                << attrTag("Condition", condition)
                 << valueTagT(generateManifest);
         }
 
-        if ( tool.SingleProjects.at(i).Configuration.preBuild.ExcludedFromBuild != unset )
+        if (config.preBuild.ExcludedFromBuild != unset)
         {
             xml << tag("PreBuildEventUseInBuild")
-                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name))
-                << valueTagT(!tool.SingleProjects.at(i).Configuration.preBuild.ExcludedFromBuild);
+                << attrTag("Condition", condition)
+                << valueTagT(!config.preBuild.ExcludedFromBuild);
         }
 
-        if ( tool.SingleProjects.at(i).Configuration.preLink.ExcludedFromBuild != unset )
+        if (config.preLink.ExcludedFromBuild != unset)
         {
             xml << tag("PreLinkEventUseInBuild")
-                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name))
-                << valueTagT(!tool.SingleProjects.at(i).Configuration.preLink.ExcludedFromBuild);
+                << attrTag("Condition", condition)
+                << valueTagT(!config.preLink.ExcludedFromBuild);
         }
 
-        if ( tool.SingleProjects.at(i).Configuration.postBuild.ExcludedFromBuild != unset )
+        if (config.postBuild.ExcludedFromBuild != unset)
         {
             xml << tag("PostBuildEventUseInBuild")
-                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name))
-                << valueTagT(!tool.SingleProjects.at(i).Configuration.postBuild.ExcludedFromBuild);
+                << attrTag("Condition", condition)
+                << valueTagT(!config.postBuild.ExcludedFromBuild);
         }
     }
     xml << closetag();
 
     for (int i = 0; i < tool.SingleProjects.count(); ++i) {
+        const VCConfiguration &config = tool.SingleProjects.at(i).Configuration;
+
         xml << tag("ItemDefinitionGroup")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name));
+            << attrTag("Condition", generateCondition(config));
 
         // ClCompile
-        write(xml, tool.SingleProjects.at(i).Configuration.compiler);
+        write(xml, config.compiler);
 
         // Link
-        write(xml, tool.SingleProjects.at(i).Configuration.linker);
+        write(xml, config.linker);
 
         // Midl
-        write(xml, tool.SingleProjects.at(i).Configuration.idl);
+        write(xml, config.idl);
 
         // ResourceCompiler
-        write(xml, tool.SingleProjects.at(i).Configuration.resource);
+        write(xml, config.resource);
 
         // Post build event
-        if ( tool.SingleProjects.at(i).Configuration.postBuild.ExcludedFromBuild != unset )
-            write(xml, tool.SingleProjects.at(i).Configuration.postBuild);
+        if (config.postBuild.ExcludedFromBuild != unset)
+            write(xml, config.postBuild);
 
         // Pre build event
-        if ( tool.SingleProjects.at(i).Configuration.preBuild.ExcludedFromBuild != unset )
-            write(xml, tool.SingleProjects.at(i).Configuration.preBuild);
+        if (config.preBuild.ExcludedFromBuild != unset)
+            write(xml, config.preBuild);
 
         // Pre link event
-        if ( tool.SingleProjects.at(i).Configuration.preLink.ExcludedFromBuild != unset )
-            write(xml, tool.SingleProjects.at(i).Configuration.preLink);
+        if (config.preLink.ExcludedFromBuild != unset)
+            write(xml, config.preLink);
 
         xml << closetag();
     }
@@ -1524,33 +1528,33 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCMIDLTool &tool)
 
 void VCXProjectWriter::write(XmlOutput &xml, const VCCustomBuildTool &tool)
 {
-    const QString &configName = tool.config->Name;
+    const QString condition = generateCondition(*tool.config);
 
     if ( !tool.AdditionalDependencies.isEmpty() )
     {
         xml << tag("AdditionalInputs")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(configName))
+            << attrTag("Condition", condition)
             << valueTagDefX(tool.AdditionalDependencies, "AdditionalInputs", ";");
     }
 
     if( !tool.CommandLine.isEmpty() )
     {
         xml << tag("Command")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(configName))
+            << attrTag("Condition", condition)
             << valueTag(tool.CommandLine.join(vcxCommandSeparator()));
     }
 
     if ( !tool.Description.isEmpty() )
     {
         xml << tag("Message")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(configName))
+            << attrTag("Condition", condition)
             << valueTag(tool.Description);
     }
 
     if ( !tool.Outputs.isEmpty() )
     {
         xml << tag("Outputs")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(configName))
+            << attrTag("Condition", condition)
             << valueTagDefX(tool.Outputs, "Outputs", ";");
     }
 }
@@ -1618,7 +1622,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCDeploymentTool &tool)
 void VCXProjectWriter::write(XmlOutput &xml, const VCConfiguration &tool)
 {
         xml << tag("PropertyGroup")
-            << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.Name))
+            << attrTag("Condition", generateCondition(tool))
             << attrTag("Label", "Configuration")
             << attrTagS(_OutputDirectory, tool.OutputDirectory)
             << attrTagT(_ATLMinimizesCRunTimeLibraryUsage, tool.ATLMinimizesCRunTimeLibraryUsage)
@@ -1986,10 +1990,10 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
             }
         }
 
+        const QString condition = generateCondition(*filter.Config);
         if(!inBuild) {
-
             xml << tag("ExcludedFromBuild")
-                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(filter.Config->Name))
+                << attrTag("Condition", condition)
                 << valueTag("true");
         }
 
@@ -1997,23 +2001,28 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
 
             if ( !filter.CompilerTool.ForcedIncludeFiles.isEmpty() ) {
                 xml << tag("ForcedIncludeFiles")
-                    << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(filter.Config->Name))
+                    << attrTag("Condition", condition)
                     << valueTagX(filter.CompilerTool.ForcedIncludeFiles);
             }
 
             if ( !filter.CompilerTool.PrecompiledHeaderThrough.isEmpty() ) {
 
                 xml << tag("PrecompiledHeaderFile")
-                    << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(filter.Config->Name))
+                    << attrTag("Condition", condition)
                     << valueTag(filter.CompilerTool.PrecompiledHeaderThrough)
                     << tag("PrecompiledHeader")
-                    << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(filter.Config->Name))
+                    << attrTag("Condition", condition)
                     << valueTag(toString(filter.CompilerTool.UsePrecompiledHeader));
             }
         }
     }
 
     return fileAdded;
+}
+
+QString VCXProjectWriter::generateCondition(const VCConfiguration &config)
+{
+    return QStringLiteral("'$(Configuration)|$(Platform)'=='") + config.Name + QLatin1Char('\'');
 }
 
 QT_END_NAMESPACE

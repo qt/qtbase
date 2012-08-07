@@ -182,6 +182,7 @@ private:
     static void outputFilter(VCProject &project, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filtername);
     static void outputFileConfigs(VCProject &project, XmlOutput &xml, XmlOutput &xmlFilter, const VCFilterFile &info, const QString &filtername);
     static bool outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filename, const QString &filtername, bool fileAllreadyAdded);
+    static QString generateCondition(const VCConfiguration &config);
 
     friend class XTreeNode;
     friend class XFlatNode;
