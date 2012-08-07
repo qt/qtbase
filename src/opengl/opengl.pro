@@ -8,7 +8,7 @@ win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x63000000
 solaris-cc*:QMAKE_CXXFLAGS_RELEASE -= -O2
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
-load(qt_module_config)
+load(qt_module)
 
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1

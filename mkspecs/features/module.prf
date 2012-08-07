@@ -1,1 +1,1 @@
-warning("CONFIG+=module is obsolete. load(qt_module_config) is sufficient.")
+warning("CONFIG+=module is obsolete. load(qt_module) is sufficient.")

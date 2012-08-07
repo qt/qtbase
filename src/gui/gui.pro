@@ -6,7 +6,7 @@ MODULE_CONFIG = opengl
 
 DEFINES   += QT_NO_USING_NAMESPACE
 
-load(qt_module_config)
+load(qt_module)
 
 # Code coverage with TestCocoon
 # The following is required as extra compilers use $$QMAKE_CXX instead of $(CXX).

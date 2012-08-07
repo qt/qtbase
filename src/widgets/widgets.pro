@@ -11,7 +11,7 @@ irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 QMAKE_DOCS = $$PWD/doc/qtwidgets.qdocconf
 QMAKE_DOCS_INDEX = ../../doc
 
-load(qt_module_config)
+load(qt_module)
 
 #platforms
 mac:include(kernel/mac.pri)

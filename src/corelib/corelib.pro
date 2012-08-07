@@ -11,7 +11,7 @@ DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x67000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
-load(qt_module_config)
+load(qt_module)
 
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
 QMAKE_DOCS_INDEX = ../../doc

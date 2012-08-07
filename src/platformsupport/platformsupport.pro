@@ -5,7 +5,7 @@ QT         = core-private gui-private
 CONFIG += static internal_module
 mac:LIBS += -lz -framework CoreFoundation -framework Carbon
 
-load(qt_module_config)
+load(qt_module)
 
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
