@@ -556,8 +556,8 @@ Q_NORETURN Q_CORE_EXPORT void qTerminate() Q_DECL_NOTHROW;
 #  endif
 #endif
 
-Q_CORE_EXPORT const char *qVersion();
-Q_CORE_EXPORT bool qSharedBuild();
+Q_CORE_EXPORT const char *qVersion() Q_DECL_NOTHROW;
+Q_CORE_EXPORT bool qSharedBuild() Q_DECL_NOTHROW;
 
 #ifndef Q_OUTOFLINE_TEMPLATE
 #  define Q_OUTOFLINE_TEMPLATE

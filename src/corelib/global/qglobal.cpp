@@ -860,12 +860,12 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
     \sa QT_VERSION_STR
 */
 
-const char *qVersion()
+const char *qVersion() Q_DECL_NOTHROW
 {
     return QT_VERSION_STR;
 }
 
-bool qSharedBuild()
+bool qSharedBuild() Q_DECL_NOTHROW
 {
 #ifdef QT_SHARED
     return true;
