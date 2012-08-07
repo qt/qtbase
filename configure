@@ -691,6 +691,7 @@ CFG_QCONFIG=full
 CFG_DEBUG=auto
 CFG_MYSQL_CONFIG=
 CFG_DEBUG_RELEASE=no
+CFG_FORCEDEBUGINFO=no
 CFG_SHARED=yes
 CFG_SM=auto
 CFG_XSHAPE=auto
@@ -1355,6 +1356,9 @@ while [ "$#" -gt 0 ]; do
 	;;
     debug)
         CFG_DEBUG="$VAL"
+        ;;
+    force-debug-info)
+        CFG_FORCEDEBUGINFO="$VAL"
         ;;
     developer-build|commercial|opensource)
         # These switches have been dealt with already
@@ -2501,6 +2505,10 @@ if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG build_all debug_and_release"
 fi
 
+if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG force_debug_info"
+fi
+
 # pass on $CFG_SDK to the configure tests.
 if [ '!' -z "$CFG_SDK" ]; then
     MAC_CONFIG_TEST_COMMANDLINE="$MAC_CONFIG_TEST_COMMANDLINE -sdk $CFG_SDK"
@@ -2976,6 +2984,8 @@ Configure options:
     -debug ............. Compile and link Qt with debugging turned on.
     -debug-and-release . Compile and link two versions of Qt, with and without
                          debugging turned on (Mac only).
+
+    -force-debug-info .. Create symbol files for release builds.
 
     -developer-build ... Compile and link Qt with Qt developer options (including auto-tests exporting)
 
@@ -6035,6 +6045,9 @@ if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
    fi
 else
    echo "Debug .................. $CFG_DEBUG"
+fi
+if [ "$CFG_RELEASE" = "yes" ] || [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
+    echo "Force debug info ....... $CFG_FORCEDEBUGINFO"
 fi
 echo "C++11 support .......... $CFG_CXX11"
 if [ -n "$PKG_CONFIG" ]; then

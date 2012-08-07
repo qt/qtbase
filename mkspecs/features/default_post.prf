@@ -12,8 +12,11 @@ QT_BREAKPAD_ROOT_PATH = $$(QT_BREAKPAD_ROOT_PATH)
         !staticlib:!static:CONFIG(release, debug|release):have_target: \   # is it applicable?
         !contains(TARGET, .*phony_target.*): \   # monster hack, you don't really see this here, right? ;)
         system($$QT_BREAKPAD_ROOT_PATH/qtbreakpadsymbols --breakpad-exists) {    # do we really have it?
-    CONFIG += breakpad
+    CONFIG += breakpad force_debug_info
     CONFIG -= no_debug_info separate_debug_info
+}
+
+force_debug_info {
     QMAKE_CFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
     QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO
     QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
@@ -27,10 +30,13 @@ incredibuild_xge {
     CONFIG = incredibuild_xge $$CONFIG
 }
 
+force_debug_info:win32 {
+    load(resolve_target)
+    QMAKE_CLEAN += $$replace(QMAKE_RESOLVED_TARGET, ...$, pdb)  # for the debug case it is hardcoded in qmake
+}
+
 breakpad {
     load(resolve_target)
-    win32: QMAKE_CLEAN += $$replace(QMAKE_RESOLVED_TARGET, ...$, pdb)  # for the debug case it is hardcoded in qmake
-
     DEBUGFILENAME = $$shell_quote($$shell_path($$QMAKE_RESOLVED_TARGET))
     PROJECTPATH = $$shell_quote($$shell_path($$OUT_PWD))
 

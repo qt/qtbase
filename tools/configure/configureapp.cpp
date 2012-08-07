@@ -276,6 +276,7 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "BUILD" ]           = "debug";
     dictionary[ "BUILDALL" ]        = "auto"; // Means yes, but not explicitly
+    dictionary[ "FORCEDEBUGINFO" ]  = "no";
 
     dictionary[ "BUILDTYPE" ]      = "none";
 
@@ -459,6 +460,8 @@ void Configure::parseCmdLine()
                 dictionary[ "BUILDALL" ] = "no";
         } else if (configCmdLine.at(i) == "-debug-and-release")
             dictionary[ "BUILDALL" ] = "yes";
+        else if (configCmdLine.at(i) == "-force-debug-info")
+            dictionary[ "FORCEDEBUGINFO" ] = "yes";
 
         else if (configCmdLine.at(i) == "-shared")
             dictionary[ "SHARED" ] = "yes";
@@ -1596,6 +1599,8 @@ bool Configure::displayHelp()
         desc("BUILD", "debug",  "-debug",               "Compile and link Qt with debugging turned on.");
         desc("BUILDALL", "yes", "-debug-and-release",   "Compile and link two Qt libraries, with and without debugging turned on.\n");
 
+        desc("FORCEDEBUGINFO", "yes","-force-debug-info", "Create symbol files for release builds.\n");
+
         desc("OPENSOURCE", "opensource", "-opensource",   "Compile and link the Open-Source Edition of Qt.");
         desc("COMMERCIAL", "commercial", "-commercial",   "Compile and link the Commercial Edition of Qt.\n");
 
@@ -2392,6 +2397,8 @@ void Configure::generateOutputVars()
     if (dictionary[ "BUILDALL" ] == "yes") {
         qtConfig += "build_all";
     }
+    if (dictionary[ "FORCEDEBUGINFO" ] == "yes")
+        qtConfig += "force_debug_info";
     qmakeConfig += dictionary[ "BUILD" ];
     dictionary[ "QMAKE_OUTDIR" ] = dictionary[ "BUILD" ];
 
@@ -3204,7 +3211,14 @@ void Configure::displayConfig()
     sout << "Host Architecture..........." << dictionary["QT_HOST_ARCH"]
          << ", features:" << dictionary["QT_HOST_CPU_FEATURES"]  << endl;
     sout << "Maketool...................." << dictionary[ "MAKE" ] << endl;
-    sout << "Debug symbols..............." << (dictionary[ "BUILD" ] == "debug" ? "yes" : "no") << endl;
+    if (dictionary[ "BUILDALL" ] == "yes") {
+        sout << "Debug build................." << "yes (combined)" << endl;
+        sout << "Default build..............." << dictionary[ "BUILD" ] << endl;
+    } else {
+        sout << "Debug......................." << (dictionary[ "BUILD" ] == "debug" ? "yes" : "no") << endl;
+    }
+    if (dictionary[ "BUILD" ] == "release" || dictionary[ "BUILDALL" ] == "yes")
+        sout << "Force debug info............" << dictionary[ "FORCEDEBUGINFO" ] << endl;
     sout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
     sout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
     sout << "RTTI support................" << dictionary[ "RTTI" ] << endl;
