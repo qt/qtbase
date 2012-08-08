@@ -531,6 +531,10 @@ QtWidgets
   by QAbstractProxyModel and related classes. A copy of QProxyModel is available
   in the UiHelpers library.
 
+* [QTBUG-20503] QFileSystemModel no longer masks out write permissions from the permissions
+  returned from permissions() or data(FilePermissions), even if in read-only mode
+  (QFileSystemModel::isReadOnly()).
+
 QtNetwork
 ---------
 * QHostAddress::isLoopback() API added. Returns true if the address is

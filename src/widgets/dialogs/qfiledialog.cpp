@@ -2701,10 +2701,11 @@ void QFileDialogPrivate::_q_showContextMenu(const QPoint &position)
     QMenu menu(view);
     if (index.isValid()) {
         // file context menu
+        const bool ro = model && model->isReadOnly();
         QFile::Permissions p(index.parent().data(QFileSystemModel::FilePermissions).toInt());
-        renameAction->setEnabled(p & QFile::WriteUser);
+        renameAction->setEnabled(!ro && p & QFile::WriteUser);
         menu.addAction(renameAction);
-        deleteAction->setEnabled(p & QFile::WriteUser);
+        deleteAction->setEnabled(!ro && p & QFile::WriteUser);
         menu.addAction(deleteAction);
         menu.addSeparator();
     }

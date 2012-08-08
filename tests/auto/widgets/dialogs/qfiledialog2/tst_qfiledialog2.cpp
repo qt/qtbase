@@ -60,6 +60,7 @@
 #include <qsortfilterproxymodel.h>
 #include <qlineedit.h>
 #include <qlayout.h>
+#include <qmenu.h>
 #include "../../../../../src/widgets/dialogs/qsidebar_p.h"
 #include "../../../../../src/widgets/dialogs/qfilesystemmodel_p.h"
 #include "../../../../../src/widgets/dialogs/qfiledialog_p.h"
@@ -114,6 +115,9 @@ private slots:
     void unc();
     void emptyUncPath();
 
+#if !defined(QT_NO_CONTEXTMENU) && !defined(QT_NO_MENU)
+    void task143519_deleteAndRenameActionBehavior();
+#endif
     void task178897_minimumSize();
     void task180459_lastDirectory_data();
     void task180459_lastDirectory();
@@ -313,6 +317,101 @@ void tst_QFileDialog2::emptyUncPath()
     QFileSystemModel *model = qFindChild<QFileSystemModel*>(&fd, "qt_filesystem_model");
     QVERIFY(model);
 }
+
+#if !defined(QT_NO_CONTEXTMENU) && !defined(QT_NO_MENU)
+struct MenuCloser {
+    QWidget *w;
+    explicit MenuCloser(QWidget *w) : w(w) {}
+    void operator()() const
+    {
+        QMenu *menu = qFindChild<QMenu*>(w);
+        if (!menu) {
+            qDebug("%s: cannot find file dialog child of type QMenu", Q_FUNC_INFO);
+            w->close();
+        }
+        QTest::keyClick(menu, Qt::Key_Escape);
+    }
+};
+static bool openContextMenu(QFileDialog &fd)
+{
+    QListView *list = qFindChild<QListView*>(&fd, "listView");
+    if (!list) {
+        qDebug("%s: didn't find file dialog child \"listView\"", Q_FUNC_INFO);
+        return false;
+    }
+    QTimer timer;
+    timer.setInterval(300);
+    timer.setSingleShot(true);
+    QObject::connect(&timer, &QTimer::timeout, MenuCloser(&fd));
+    timer.start();
+    QContextMenuEvent cme(QContextMenuEvent::Mouse, QPoint(10, 10));
+    qApp->sendEvent(list->viewport(), &cme); // blocks until menu is closed again.
+    return true;
+}
+
+void tst_QFileDialog2::task143519_deleteAndRenameActionBehavior()
+{
+    // test based on task233037_selectingDirectory
+
+    struct TestContext {
+        TestContext()
+            : current(QDir::current()) {}
+        ~TestContext() {
+            file.remove();
+            current.rmdir(test.dirName());
+        }
+        QDir current;
+        QDir test;
+        QFile file;
+    } ctx;
+
+    // setup testbed
+    QVERIFY(ctx.current.mkdir("task143519_deleteAndRenameActionBehavior_test")); // ensure at least one item
+    ctx.test = ctx.current;
+    QVERIFY(ctx.test.cd("task143519_deleteAndRenameActionBehavior_test"));
+    ctx.file.setFileName(ctx.test.absoluteFilePath("hello"));
+    QVERIFY(ctx.file.open(QIODevice::WriteOnly));
+    QVERIFY(ctx.file.permissions() & QFile::WriteUser);
+    ctx.file.close();
+
+    QNonNativeFileDialog fd;
+    fd.setViewMode(QFileDialog::List);
+    fd.setDirectory(ctx.test.absolutePath());
+    fd.show();
+
+    QTest::qWaitForWindowActive(&fd);
+
+    // grab some internals:
+    QAction *rm = qFindChild<QAction*>(&fd, "qt_delete_action");
+    QVERIFY(rm);
+    QAction *mv = qFindChild<QAction*>(&fd, "qt_rename_action");
+    QVERIFY(mv);
+
+    // these are the real test cases:
+
+    // defaults
+    QVERIFY(openContextMenu(fd));
+    QCOMPARE(fd.selectedFiles().size(), 1);
+    QCOMPARE(rm->isEnabled(), !fd.isReadOnly());
+    QCOMPARE(mv->isEnabled(), !fd.isReadOnly());
+
+    // change to non-defaults:
+    fd.setReadOnly(!fd.isReadOnly());
+
+    QVERIFY(openContextMenu(fd));
+    QCOMPARE(fd.selectedFiles().size(), 1);
+    QCOMPARE(rm->isEnabled(), !fd.isReadOnly());
+    QCOMPARE(mv->isEnabled(), !fd.isReadOnly());
+
+    // and changed back to defaults:
+    fd.setReadOnly(!fd.isReadOnly());
+
+    QVERIFY(openContextMenu(fd));
+    QCOMPARE(fd.selectedFiles().size(), 1);
+    QCOMPARE(rm->isEnabled(), !fd.isReadOnly());
+    QCOMPARE(mv->isEnabled(), !fd.isReadOnly());
+}
+#endif // !QT_NO_CONTEXTMENU && !QT_NO_MENU
 
 void tst_QFileDialog2::task178897_minimumSize()
 {

@@ -1364,12 +1364,7 @@ QModelIndex QFileSystemModel::mkdir(const QModelIndex &parent, const QString &na
 QFile::Permissions QFileSystemModel::permissions(const QModelIndex &index) const
 {
     Q_D(const QFileSystemModel);
-    QFile::Permissions p = d->node(index)->permissions();
-    if (d->readOnly) {
-        p ^= (QFile::WriteOwner | QFile::WriteUser
-            | QFile::WriteGroup | QFile::WriteOther);
-    }
-    return p;
+    return d->node(index)->permissions();
 }
 
 /*!

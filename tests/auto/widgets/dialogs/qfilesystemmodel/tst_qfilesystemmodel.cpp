@@ -127,6 +127,9 @@ private slots:
     void roleNames_data();
     void roleNames();
 
+    void permissions_data();
+    void permissions();
+
 protected:
     bool createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount = 0, const QStringList &intial_dirs = QStringList());
 
@@ -1021,6 +1024,52 @@ void tst_QFileSystemModel::roleNames()
     QList<QByteArray> values = roles.values(role);
     QVERIFY(values.contains(roleName));
 }
+
+void tst_QFileSystemModel::permissions_data()
+{
+    QTest::addColumn<int>("permissions");
+    QTest::addColumn<bool>("readOnly");
+
+    static const int permissions[] = {
+        QFile::WriteOwner,
+        QFile::ReadOwner,
+        QFile::WriteOwner|QFile::ReadOwner,
+    };
+#define ROW_NAME(i) qPrintable(QString().sprintf("%s-0%04x", readOnly ? "ro" : "rw", permissions[i]))
+    for (int readOnly = false ; readOnly <= true; ++readOnly)
+        for (size_t i = 0; i < sizeof permissions / sizeof *permissions; ++i)
+            QTest::newRow(ROW_NAME(i)) << permissions[i] << bool(readOnly);
+#undef ROW_NAME
+}
+
+void tst_QFileSystemModel::permissions() // checks QTBUG-20503
+{
+    QFETCH(int, permissions);
+    QFETCH(bool, readOnly);
+
+    const QString tmp = flatDirTestPath;
+    const QString file  = tmp + '/' + "f";
+    QVERIFY(createFiles(tmp, QStringList() << "f"));
+
+    QVERIFY(QFile::setPermissions(file,  QFile::Permissions(permissions)));
+
+    const QModelIndex root = model->setRootPath(tmp);
+
+    model->setReadOnly(readOnly);
+
+    QCOMPARE(model->isReadOnly(), readOnly);
+
+    QTRY_COMPARE(model->rowCount(root), 1);
+
+    const QFile::Permissions modelPermissions = model->permissions(model->index(0, 0, root));
+    const QFile::Permissions modelFileInfoPermissions = model->fileInfo(model->index(0, 0, root)).permissions();
+    const QFile::Permissions fileInfoPermissions = QFileInfo(file).permissions();
+
+    QCOMPARE(modelPermissions, modelFileInfoPermissions);
+    QCOMPARE(modelFileInfoPermissions, fileInfoPermissions);
+    QCOMPARE(fileInfoPermissions, modelPermissions);
+}
+
 
 QTEST_MAIN(tst_QFileSystemModel)
 #include "tst_qfilesystemmodel.moc"
