@@ -2365,6 +2365,12 @@ void tst_QTreeView::selectAll()
     int selectedCount = view.selectedIndexes().count();
     view.selectAll();
     QCOMPARE(view.selectedIndexes().count(), selectedCount);
+
+    PublicView view3;
+    view3.setModel(&model);
+    view3.setSelectionMode(QAbstractItemView::NoSelection);
+    view3.selectAll();
+    QCOMPARE(view3.selectedIndexes().count(), 0);
 }
 
 void tst_QTreeView::extendedSelection_data()
