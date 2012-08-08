@@ -35,12 +35,32 @@ INSTALLS += target
     isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$MODULE_BASE_OUTDIR
 
     load(resolve_target)
+    cmd = $$shell_path($$QMAKE_RESOLVED_TARGET)
+    deps = $$resolve_depends(QT, "QT.")
+    !isEmpty(deps) {
+        for(dep, deps) {
+            deppath += $$shell_path($$eval(QT.$${dep}.libs))
+        }
+        deppath = $$unique(deppath)
+        equals(QMAKE_DIR_SEP, /) {
+            equals(QMAKE_HOST.os, Windows): \
+                var = PATH
+            else:contains(QMAKE_HOST.os, Linux): \
+                var = LD_LIBRARY_PATH
+            else:equals(QMAKE_HOST.os, Darwin): \
+                var = DYLD_LIBRARY_PATH
+            else: \
+                error("Operating system not supported.")
+            cmd = "$$var=$$join(deppath, :)${$$var:+:\$$$var} $$cmd"
+        } else {
+            # Escape closing parens when expanding %PATH%, otherwise cmd confuses itself.
+            cmd = "(set PATH=$$join(deppath, ;);%PATH:)=^)%) & $$cmd"
+        }
+    }
 
     TOOL_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_$${MODULE}.pri
 
-    TOOL_PRI_CONT = \
-        "QT_TOOL.$${MODULE}.binary = $$QMAKE_RESOLVED_TARGET" \
-        "QT_TOOL.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")"
+    TOOL_PRI_CONT = "QT_TOOL.$${MODULE}.command = $$val_escape(cmd)"
     write_file($$TOOL_PRI, TOOL_PRI_CONT)|error("Aborting.")
 
     # Then, inject the new tool into the current cache state

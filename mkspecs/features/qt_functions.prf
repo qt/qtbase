@@ -155,7 +155,7 @@ defineTest(qtAddModules) {
 
 # variable, default
 defineTest(qtPrepareTool) {
-    $$1 = $$eval(QT_TOOL.$${2}.binary)
+    $$1 = $$eval(QT_TOOL.$${2}.command)
     isEmpty($$1) {
         MODBASE = $$[QT_HOST_BINS/get]
         count(ARGS, 2, greaterThan) {
@@ -175,30 +175,8 @@ defineTest(qtPrepareTool) {
                 $$1 = $$BUNDLENAME
             }
         }
+        $$1 = $$shell_path($$eval($$1))
     }
-    $$1 = $$shell_path($$eval($$1))
-
-    deps = $$resolve_depends(QT_TOOL.$${2}.depends, "QT.")
-    !isEmpty(deps) {
-        for(dep, deps): \
-            deppath += $$shell_path($$eval(QT.$${dep}.libs))
-        deppath = $$unique(deppath)
-        equals(QMAKE_DIR_SEP, /) {
-            equals(QMAKE_HOST.os, Windows): \
-                var = PATH
-            else:contains(QMAKE_HOST.os, Linux): \
-                var = LD_LIBRARY_PATH
-            else:equals(QMAKE_HOST.os, Darwin): \
-                var = DYLD_LIBRARY_PATH
-            else: \
-                error("Operating system not supported.")
-            $$1 = "$$var=$$join(deppath, :)${$$var:+:\$$$var} $$eval($$1)"
-        } else {
-            # Escape closing parens when expanding %PATH%, otherwise cmd confuses itself.
-            $$1 = "(set PATH=$$join(deppath, ;);%PATH:)=^)%) & $$eval($$1)"
-        }
-    }
-
     export($$1)
 }
 
