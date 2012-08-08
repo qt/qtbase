@@ -888,31 +888,35 @@ void QWindowsWindow::setParent(const QPlatformWindow *newParent)
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << window() << newParent;
 
-    if (newParent != parent() && m_data.hwnd)
+    if (m_data.hwnd)
         setParent_sys(newParent);
 }
 
 void QWindowsWindow::setParent_sys(const QPlatformWindow *parent) const
 {
-    HWND parentHWND = 0;
+    // Use GetAncestor instead of GetParent, as GetParent can return owner window for toplevels
+    HWND oldParentHWND = GetAncestor(m_data.hwnd, GA_PARENT);
+    HWND newParentHWND = 0;
     if (parent) {
         const QWindowsWindow *parentW = static_cast<const QWindowsWindow *>(parent);
-        parentHWND = parentW->handle();
+        newParentHWND = parentW->handle();
 
     }
 
-    const bool wasTopLevel = window()->isTopLevel();
-    const bool isTopLevel = parentHWND == 0;
+    if (newParentHWND != oldParentHWND) {
+        const bool wasTopLevel = window()->isTopLevel();
+        const bool isTopLevel = newParentHWND == 0;
 
-    setFlag(WithinSetParent);
-    SetParent(m_data.hwnd, parentHWND);
-    clearFlag(WithinSetParent);
+        setFlag(WithinSetParent);
+        SetParent(m_data.hwnd, newParentHWND);
+        clearFlag(WithinSetParent);
 
-    // WS_CHILD/WS_POPUP must be manually set/cleared in addition
-    // to dialog frames, etc (see  SetParent() ) if the top level state changes.
-    if (wasTopLevel != isTopLevel) {
-        const unsigned flags = isTopLevel ? unsigned(0) : unsigned(WindowCreationData::ForceChild);
-        setWindowFlags_sys(window()->windowFlags(), flags);
+        // WS_CHILD/WS_POPUP must be manually set/cleared in addition
+        // to dialog frames, etc (see  SetParent() ) if the top level state changes.
+        if (wasTopLevel != isTopLevel) {
+            const unsigned flags = isTopLevel ? unsigned(0) : unsigned(WindowCreationData::ForceChild);
+            setWindowFlags_sys(window()->windowFlags(), flags);
+        }
     }
 }
 
