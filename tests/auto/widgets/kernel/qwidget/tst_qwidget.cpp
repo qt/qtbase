@@ -9409,6 +9409,10 @@ public:
 
 void tst_QWidget::touchEventSynthesizedMouseEvent()
 {
+    // Pass if the platform does not want mouse event synhesizing
+    if (!QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool())
+        return;
+
     {
         // Simple case, we ignore the touch events, we get mouse events instead
         QTouchDevice *device = new QTouchDevice;

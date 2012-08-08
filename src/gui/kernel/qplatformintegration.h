@@ -134,7 +134,8 @@ public:
         PasswordMaskDelay,
         FontSmoothingGamma,
         StartDragVelocity,
-        UseRtlExtensions
+        UseRtlExtensions,
+        SynthesizeMouseFromTouchEvents
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

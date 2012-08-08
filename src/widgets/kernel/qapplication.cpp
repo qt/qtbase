@@ -4105,6 +4105,10 @@ bool QApplicationPrivate::translateTouchToMouse(QWidget *widget, QTouchEvent *ev
 {
     Q_Q(QApplication);
 
+    // Check if the platform wants synthesized mouse events.
+    if (!QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool())
+        return false;
+
     Q_FOREACH (const QTouchEvent::TouchPoint &p, event->touchPoints()) {
         const QEvent::Type eventType = (p.state() & Qt::TouchPointPressed) ? QEvent::MouseButtonPress
                                      : (p.state() & Qt::TouchPointReleased) ? QEvent::MouseButtonRelease

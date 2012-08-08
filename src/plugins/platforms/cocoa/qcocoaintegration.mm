@@ -313,6 +313,9 @@ QVariant QCocoaIntegration::styleHint(StyleHint hint) const
 {
     if (hint == QPlatformIntegration::FontSmoothingGamma)
         return 2.0;
+    if (hint == QPlatformIntegration::SynthesizeMouseFromTouchEvents)
+        return false;
+
     return QPlatformIntegration::styleHint(hint);
 }
 
