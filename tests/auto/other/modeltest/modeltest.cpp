@@ -80,7 +80,7 @@ ModelTest::ModelTest ( QAbstractItemModel *_model, QObject *parent ) : QObject (
     connect ( model, SIGNAL ( rowsRemoved ( const QModelIndex &, int, int ) ),
               this, SLOT ( runAllTests() ) );
 
-    // Special checks for inserting/removing
+    // Special checks for changes
     connect ( model, SIGNAL ( layoutAboutToBeChanged() ),
               this, SLOT ( layoutAboutToBeChanged() ) );
     connect ( model, SIGNAL ( layoutChanged() ),
@@ -94,6 +94,10 @@ ModelTest::ModelTest ( QAbstractItemModel *_model, QObject *parent ) : QObject (
               this, SLOT ( rowsInserted ( const QModelIndex &, int, int ) ) );
     connect ( model, SIGNAL ( rowsRemoved ( const QModelIndex &, int, int ) ),
               this, SLOT ( rowsRemoved ( const QModelIndex &, int, int ) ) );
+    connect ( model, SIGNAL ( dataChanged ( const QModelIndex &, const QModelIndex & ) ),
+              this, SLOT ( dataChanged ( const QModelIndex &, const QModelIndex & ) ) );
+    connect ( model, SIGNAL ( headerDataChanged ( Qt::Orientation, int, int ) ),
+              this, SLOT ( headerDataChanged ( Qt::Orientation, int, int ) ) );
 
     runAllTests();
 }
@@ -561,4 +565,27 @@ void ModelTest::rowsRemoved ( const QModelIndex & parent, int start, int end )
     QVERIFY( c.next == model->data ( model->index ( start, 0, c.parent ) ) );
 }
 
+void ModelTest::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
+{
+    QVERIFY(topLeft.isValid());
+    QVERIFY(bottomRight.isValid());
+    QModelIndex commonParent = bottomRight.parent();
+    QVERIFY(topLeft.parent() == commonParent);
+    QVERIFY(topLeft.row() <= bottomRight.row());
+    QVERIFY(topLeft.column() <= bottomRight.column());
+    int rowCount = model->rowCount(commonParent);
+    int columnCount = model->columnCount(commonParent);
+    QVERIFY(bottomRight.row() < rowCount);
+    QVERIFY(bottomRight.column() < columnCount);
+}
+
+void ModelTest::headerDataChanged(Qt::Orientation orientation, int start, int end)
+{
+    QVERIFY(start >= 0);
+    QVERIFY(end >= 0);
+    QVERIFY(start <= end);
+    int itemCount = orientation == Qt::Vertical ? model->rowCount() : model->columnCount();
+    QVERIFY(start < itemCount);
+    QVERIFY(end < itemCount);
+}
 

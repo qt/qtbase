@@ -140,6 +140,7 @@ private slots:
     void testMultipleProxiesWithSelection();
     void mapSelectionFromSource();
     void filteredColumns();
+    void headerDataChanged();
 
     void testParentLayoutChanged();
     void moveSourceRows();
@@ -3153,6 +3154,40 @@ void tst_QSortFilterProxyModel::filteredColumns()
     insertCommand->setEndRow(0);
     // Parent is QModelIndex()
     insertCommand->doCommand();
+}
+
+class ChangableHeaderData : public QStringListModel
+{
+    Q_OBJECT
+public:
+    explicit ChangableHeaderData(QObject *parent = 0)
+      : QStringListModel(parent)
+    {
+
+    }
+
+    void emitHeaderDataChanged()
+    {
+        headerDataChanged(Qt::Vertical, 0, rowCount() - 1);
+    }
+};
+
+
+void tst_QSortFilterProxyModel::headerDataChanged()
+{
+    ChangableHeaderData *model = new ChangableHeaderData(this);
+
+    QStringList numbers;
+    for (int i = 0; i < 10; ++i)
+        numbers.append(QString::number(i));
+    model->setStringList(numbers);
+
+    QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
+    proxy->setSourceModel(model);
+
+    new ModelTest(proxy, this);
+
+    model->emitHeaderDataChanged();
 }
 
 void tst_QSortFilterProxyModel::resetInvalidate_data()

@@ -1226,15 +1226,43 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
 void QSortFilterProxyModelPrivate::_q_sourceHeaderDataChanged(Qt::Orientation orientation,
                                                            int start, int end)
 {
+    Q_ASSERT(start <= end);
+
     Q_Q(QSortFilterProxyModel);
     Mapping *m = create_mapping(QModelIndex()).value();
-    int proxy_start = (orientation == Qt::Vertical
-                       ? m->proxy_rows.at(start)
-                       : m->proxy_columns.at(start));
-    int proxy_end = (orientation == Qt::Vertical
-                     ? m->proxy_rows.at(end)
-                     : m->proxy_columns.at(end));
-    emit q->headerDataChanged(orientation, proxy_start, proxy_end);
+
+    const QVector<int> &source_to_proxy = (orientation == Qt::Vertical) ? m->proxy_rows : m->proxy_columns;
+
+    QVector<int> proxy_positions;
+    proxy_positions.reserve(end - start + 1);
+    {
+        Q_ASSERT(source_to_proxy.size() > end);
+        QVector<int>::const_iterator it = source_to_proxy.constBegin() + start;
+        const QVector<int>::const_iterator endIt = source_to_proxy.constBegin() + end + 1;
+        for ( ; it != endIt; ++it) {
+            if (*it != -1)
+                proxy_positions.push_back(*it);
+        }
+    }
+
+    qSort(proxy_positions);
+
+    int last_index = 0;
+    const int numItems = proxy_positions.size();
+    while (last_index < numItems) {
+        const int proxyStart = proxy_positions.at(last_index);
+        int proxyEnd = proxyStart;
+        ++last_index;
+        for (int i = last_index; i < numItems; ++i) {
+            if (proxy_positions.at(i) == proxyEnd + 1) {
+                ++last_index;
+                ++proxyEnd;
+            } else {
+                break;
+            }
+        }
+        emit q->headerDataChanged(orientation, proxyStart, proxyEnd);
+    }
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceAboutToBeReset()
