@@ -154,6 +154,12 @@ void QListData::realloc(int alloc)
         d->begin = d->end = 0;
 }
 
+void QListData::dispose(Data *d)
+{
+    Q_ASSERT(!d->ref.isShared());
+    free(d);
+}
+
 // ensures that enough space is available to append n elements
 void **QListData::append(int n)
 {
