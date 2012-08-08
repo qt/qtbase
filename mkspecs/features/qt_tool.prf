@@ -40,6 +40,8 @@ INSTALLS += target
     !isEmpty(deps) {
         for(dep, deps) {
             deppath += $$shell_path($$eval(QT.$${dep}.libs))
+            for(rpath, QT.$${dep}.rpath_link): \
+                deppath += $$shell_path($$rpath)
         }
         deppath = $$unique(deppath)
         equals(QMAKE_DIR_SEP, /) {

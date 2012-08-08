@@ -85,13 +85,7 @@ defineTest(qtAddModule) {
     }
 
     isEmpty(LINKAGE) {
-       !isEmpty(MODULE_LIBS) {
-           LINKAGE = -L$$MODULE_LIBS
-           !isEqual(MODULE_LIBS, $$[QT_INSTALL_LIBS]) {
-               # Make sure we can link to uninstalled libraries
-               unix:!mac:QMAKE_LFLAGS *= "-Wl,-rpath-link,$$MODULE_LIBS"
-           }
-       }
+       !isEmpty(MODULE_LIBS): LINKAGE = -L$$MODULE_LIBS
        lib =
        if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
            win32: lib = -l$${MODULE_NAME}$${QT_LIBINFIX}d
@@ -99,6 +93,15 @@ defineTest(qtAddModule) {
        }
        isEmpty(lib): lib = -l$${MODULE_NAME}$${QT_LIBINFIX}
        LINKAGE += $$lib
+
+       # Make sure we can link to uninstalled libraries
+       unix:!mac:!isEmpty(QT.$${1}.libs) { # Use unmodified path, so /usr/lib also works
+            for(rpl, QT.$${1}.rpath_link): \
+                QMAKE_LFLAGS *= -Wl,-rpath-link,$$rpl
+            !auto_use_privates:!isEqual(2, UsePrivate): \
+                for(rpl, QT.$${1}.rpath_link_private): \
+                    QMAKE_LFLAGS *= -Wl,-rpath-link,$$rpl
+       }
     }
     # Only link to this module if a libs directory is set, else this is just a module
     # to give access to sources or include files, and not for linking.
