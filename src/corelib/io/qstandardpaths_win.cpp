@@ -85,18 +85,6 @@ static QString convertCharArray(const wchar_t *path)
     return QDir::fromNativeSeparators(QString::fromWCharArray(path));
 }
 
-static bool qsp_testMode = false;
-
-void QStandardPaths::enableTestMode(bool testMode)
-{
-    qsp_testMode = testMode;
-}
-
-bool QStandardPaths::isTestModeEnabled()
-{
-    return qsp_testMode;
-}
-
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
     QString result;
@@ -117,7 +105,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         if (SHGetSpecialFolderPath(0, path, CSIDL_LOCAL_APPDATA, FALSE))
 #endif
             result = convertCharArray(path);
-        if (qsp_testMode)
+        if (isTestModeEnabled())
             result += QLatin1String("/qttest");
         if (type != GenericDataLocation) {
             if (!QCoreApplication::organizationName().isEmpty())

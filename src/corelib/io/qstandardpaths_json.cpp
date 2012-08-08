@@ -66,8 +66,6 @@ public:
 
 Q_GLOBAL_STATIC(QStandardPathsPrivate, configCache);
 
-static bool qsp_testMode = false;
-
 /*!
     \internal
     Substitute environment variables in the form ${name}
@@ -111,16 +109,6 @@ static QString substituteEnvVars(const QJsonValue & value)
     return str;
 }
 
-void QStandardPaths::enableTestMode(bool testMode)
-{
-    qsp_testMode = testMode;
-}
-
-bool QStandardPaths::isTestModeEnabled()
-{
-        return qsp_testMode;
-}
-
 static void appendOrganizationAndApp(QString &path)
 {
     const QString org = QCoreApplication::organizationName();
@@ -150,7 +138,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         break;
     }
 
-    if (qsp_testMode) {
+    if (isTestModeEnabled()) {
         const QString qttestDir = QDir::homePath() + QLatin1String("/.qttest");
         QString path;
         switch (type) {

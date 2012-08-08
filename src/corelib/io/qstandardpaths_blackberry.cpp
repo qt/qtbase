@@ -48,20 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool qsp_testMode = false;
-
-void QStandardPaths::enableTestMode(bool testMode)
-{
-    qsp_testMode = testMode;
-}
-
-bool QStandardPaths::isTestModeEnabled()
-{
-    return qsp_testMode;
-}
-
 static QString testModeInsert() {
-    if (qsp_testMode)
+    if (QStandardPaths::isTestModeEnabled())
         return QStringLiteral("/.qttest");
     else
         return QStringLiteral("");

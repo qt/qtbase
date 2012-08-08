@@ -90,18 +90,6 @@ OSType translateLocation(QStandardPaths::StandardLocation type)
     }
 }
 
-static bool qsp_testMode = false;
-
-void QStandardPaths::enableTestMode(bool testMode)
-{
-    qsp_testMode = testMode;
-}
-
-bool QStandardPaths::isTestModeEnabled()
-{
-    return qsp_testMode;
-}
-
 /*
     Constructs a full unicode path from a FSRef.
 */
@@ -140,7 +128,7 @@ static QString macLocation(QStandardPaths::StandardLocation type, short domain)
 
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
-    if (qsp_testMode) {
+    if (isTestModeEnabled()) {
         const QString qttestDir = QDir::homePath() + QLatin1String("/.qttest");
         QString path;
         switch (type) {
