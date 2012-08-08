@@ -28,7 +28,7 @@ defineTest(qtAddLibrary) {
     for(var, $$list($$find($$list($$enumerate_vars()), ^QT\\.[^.]+\\.name$))) {
         isEqual($$var, $$1) {
             var ~= s,^QT\\.([^.]+)\\.name$,\\1,
-            qtAddModule($$var):return(true):break()
+            qtAddModule($$var, , LIBS):return(true):break()
             return(false):break() # Yes, the break is insanity. But necessary.
         }
     }
