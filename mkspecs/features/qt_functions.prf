@@ -148,7 +148,7 @@ defineTest(qtAddModules) {
 
         qtAddModule($$QTLIB, $$eval(QT.$${QTLIB}.want_private), $$2)
     }
-    !isEmpty(BAD_QT):error("Unknown module(s) in QT: $$BAD_QT")
+    !isEmpty(BAD_QT):error("Unknown module(s) in $$1: $$BAD_QT")
 
     export(using_privates)
 }
