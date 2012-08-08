@@ -68,8 +68,8 @@ struct Q_CORE_EXPORT QContiguousCacheData
     // there will be an 8 byte gap here if T requires 16-byte alignment
     //  (such as long double on 64-bit platforms, __int128, __float128)
 
-    static QContiguousCacheData *allocate(int size, int alignment);
-    static void free(QContiguousCacheData *data);
+    static QContiguousCacheData *allocateData(int size, int alignment);
+    static void freeData(QContiguousCacheData *data);
 
 #ifdef QT_QCONTIGUOUSCACHE_DEBUG
     void dump() const;
@@ -82,7 +82,7 @@ struct QContiguousCacheTypedData: private QContiguousCacheData
     // private inheritance to avoid aliasing warningss
     T array[1];
 
-    static inline void free(QContiguousCacheTypedData *data) { QContiguousCacheData::free(data); }
+    static inline void freeData(QContiguousCacheTypedData *data) { QContiguousCacheData::freeData(data); }
 };
 
 template<typename T>
@@ -102,7 +102,7 @@ public:
     explicit QContiguousCache(int capacity = 0);
     QContiguousCache(const QContiguousCache<T> &v) : d(v.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
 
-    inline ~QContiguousCache() { if (!d) return; if (!d->ref.deref()) free(p); }
+    inline ~QContiguousCache() { if (!d) return; if (!d->ref.deref()) freeData(p); }
 
     inline void detach() { if (d->ref.load() != 1) detach_helper(); }
     inline bool isDetached() const { return d->ref.load() == 1; }
@@ -161,8 +161,8 @@ public:
 private:
     void detach_helper();
 
-    QContiguousCacheData *malloc(int aalloc);
-    void free(Data *x);
+    QContiguousCacheData *allocateData(int aalloc);
+    void freeData(Data *x);
     int sizeOfTypedData() {
         // this is more or less the same as sizeof(Data), except that it doesn't
         // count the padding at the end
@@ -179,7 +179,7 @@ void QContiguousCache<T>::detach_helper()
 {
     union { QContiguousCacheData *d; QContiguousCacheTypedData<T> *p; } x;
 
-    x.d = malloc(d->alloc);
+    x.d = allocateData(d->alloc);
     x.d->ref.store(1);
     x.d->count = d->count;
     x.d->start = d->start;
@@ -206,7 +206,7 @@ void QContiguousCache<T>::detach_helper()
     }
 
     if (!d->ref.deref())
-        free(p);
+        freeData(p);
     d = x.d;
 }
 
@@ -217,7 +217,7 @@ void QContiguousCache<T>::setCapacity(int asize)
         return;
     detach();
     union { QContiguousCacheData *d; QContiguousCacheTypedData<T> *p; } x;
-    x.d = malloc(asize);
+    x.d = allocateData(asize);
     x.d->alloc = asize;
     x.d->count = qMin(d->count, asize);
     x.d->offset = d->offset + d->count - x.d->count;
@@ -246,7 +246,7 @@ void QContiguousCache<T>::setCapacity(int asize)
         }
     }
     /* free old */
-    free(p);
+    freeData(p);
     d = x.d;
 }
 
@@ -268,26 +268,26 @@ void QContiguousCache<T>::clear()
         d->count = d->start = d->offset = 0;
     } else {
         union { QContiguousCacheData *d; QContiguousCacheTypedData<T> *p; } x;
-        x.d = malloc(d->alloc);
+        x.d = allocateData(d->alloc);
         x.d->ref.store(1);
         x.d->alloc = d->alloc;
         x.d->count = x.d->start = x.d->offset = 0;
         x.d->sharable = true;
-        if (!d->ref.deref()) free(p);
+        if (!d->ref.deref()) freeData(p);
         d = x.d;
     }
 }
 
 template <typename T>
-inline QContiguousCacheData *QContiguousCache<T>::malloc(int aalloc)
+inline QContiguousCacheData *QContiguousCache<T>::allocateData(int aalloc)
 {
-    return QContiguousCacheData::allocate(sizeOfTypedData() + (aalloc - 1) * sizeof(T), alignOfTypedData());
+    return QContiguousCacheData::allocateData(sizeOfTypedData() + (aalloc - 1) * sizeof(T), alignOfTypedData());
 }
 
 template <typename T>
 QContiguousCache<T>::QContiguousCache(int cap)
 {
-    d = malloc(cap);
+    d = allocateData(cap);
     d->ref.store(1);
     d->alloc = cap;
     d->count = d->start = d->offset = 0;
@@ -299,7 +299,7 @@ QContiguousCache<T> &QContiguousCache<T>::operator=(const QContiguousCache<T> &o
 {
     other.d->ref.ref();
     if (!d->ref.deref())
-        free(d);
+        freeData(d);
     d = other.d;
     if (!d->sharable)
         detach_helper();
@@ -323,7 +323,7 @@ bool QContiguousCache<T>::operator==(const QContiguousCache<T> &other) const
 }
 
 template <typename T>
-void QContiguousCache<T>::free(Data *x)
+void QContiguousCache<T>::freeData(Data *x)
 {
     if (QTypeInfo<T>::isComplex) {
         int oldcount = d->count;
@@ -336,7 +336,7 @@ void QContiguousCache<T>::free(Data *x)
                 i = p->array;
         }
     }
-    x->free(x);
+    x->freeData(x);
 }
 template <typename T>
 void QContiguousCache<T>::append(const T &value)
