@@ -47,15 +47,15 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_FILESYSTEMMODEL
 
 #ifdef QT_BUILD_INTERNAL
-static bool fetchedRoot = false;
+static QBasicAtomicInt fetchedRoot = Q_BASIC_ATOMIC_INITIALIZER(false);
 Q_AUTOTEST_EXPORT void qt_test_resetFetchedRoot()
 {
-    fetchedRoot = false;
+    fetchedRoot.store(false);
 }
 
 Q_AUTOTEST_EXPORT bool qt_test_isFetchedRoot()
 {
-    return fetchedRoot;
+    return fetchedRoot.load();
 }
 #endif
 
@@ -273,7 +273,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     // List drives
     if (path.isEmpty()) {
 #ifdef QT_BUILD_INTERNAL
-        fetchedRoot = true;
+        fetchedRoot.store(true);
 #endif
         QFileInfoList infoList;
         if (files.isEmpty()) {
