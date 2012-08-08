@@ -48,6 +48,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 
 #include <QtCore/QPointer>
+#include <QtCore/QPair>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,10 +64,56 @@ class QAbstractItemView;
 class QDockWidget;
 class QDockWidgetLayout;
 class QMainWindow;
+class QTextCursor;
+class QTextDocument;
+
+#ifndef QT_NO_CURSOR
+class QAccessibleTextWidget : public QAccessibleWidget,
+                              public QAccessibleTextInterface,
+                              public QAccessibleEditableTextInterface
+{
+public:
+    QAccessibleTextWidget(QWidget *o, QAccessible::Role r = QAccessible::EditableText, const QString &name = QString());
+
+    // QAccessibleTextInterface
+    void addSelection(int startOffset, int endOffset);
+    QString attributes(int offset, int *startOffset, int *endOffset) const;
+    int cursorPosition() const;
+    QRect characterRect(int offset) const;
+    int selectionCount() const;
+    int offsetAtPoint(const QPoint &point) const;
+    void selection(int selectionIndex, int *startOffset, int *endOffset) const;
+    QString text(int startOffset, int endOffset) const;
+    QString textBeforeOffset(int offset, QAccessible2::BoundaryType boundaryType,
+                             int *startOffset, int *endOffset) const;
+    QString textAfterOffset(int offset, QAccessible2::BoundaryType boundaryType,
+                            int *startOffset, int *endOffset) const;
+    QString textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
+                         int *startOffset, int *endOffset) const;
+    void removeSelection(int selectionIndex);
+    void setCursorPosition(int position);
+    void setSelection(int selectionIndex, int startOffset, int endOffset);
+    int characterCount() const;
+
+
+    // QAccessibleEditableTextInterface
+    void deleteText(int startOffset, int endOffset);
+    void insertText(int offset, const QString &text);
+    void replaceText(int startOffset, int endOffset, const QString &text);
+
+protected:
+    QTextCursor textCursorForRange(int startOffset, int endOffset) const;
+    QPair<int, int> getBoundaries(int offset, QAccessible2::BoundaryType boundaryType) const;
+    virtual QPoint scrollBarsCurrentPosition() const;
+    virtual QTextCursor textCursor() const = 0;
+    virtual void setTextCursor(const QTextCursor &) = 0;
+    virtual QTextDocument *textDocument() const = 0;
+    virtual QWidget *viewport() const = 0;
+};
+#endif  //QT_NO_CURSOR
 
 #ifndef QT_NO_TEXTEDIT
-class QAccessibleTextEdit : public QAccessibleWidget, public QAccessibleTextInterface,
-                            public QAccessibleEditableTextInterface
+class QAccessibleTextEdit : public QAccessibleTextWidget
 {
 public:
     explicit QAccessibleTextEdit(QWidget *o);
@@ -78,34 +125,16 @@ public:
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleTextInterface
-    void addSelection(int startOffset, int endOffset);
-    QString attributes(int offset, int *startOffset, int *endOffset) const;
-    int cursorPosition() const;
-    QRect characterRect(int offset) const;
-    int selectionCount() const;
-    int offsetAtPoint(const QPoint &point) const;
-    void selection(int selectionIndex, int *startOffset, int *endOffset) const;
-    QString text(int startOffset, int endOffset) const;
-    QString textBeforeOffset (int offset, QAccessible2::BoundaryType boundaryType,
-            int *startOffset, int *endOffset) const;
-    QString textAfterOffset(int offset, QAccessible2::BoundaryType boundaryType,
-            int *startOffset, int *endOffset) const;
-    QString textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
-            int *startOffset, int *endOffset) const;
-    void removeSelection(int selectionIndex);
-    void setCursorPosition(int position);
-    void setSelection(int selectionIndex, int startOffset, int endOffset);
-    int characterCount() const;
     void scrollToSubstring(int startIndex, int endIndex);
-
-    // QAccessibleEditableTextInterface
-    void deleteText(int startOffset, int endOffset);
-    void insertText(int offset, const QString &text);
-    void replaceText(int startOffset, int endOffset, const QString &text);
 
 protected:
     QTextEdit *textEdit() const;
 
+    QPoint scrollBarsCurrentPosition() const;
+    QTextCursor textCursor() const;
+    void setTextCursor(const QTextCursor &textCursor);
+    QTextDocument *textDocument() const;
+    QWidget *viewport() const;
 private:
     int childOffset;
 };
