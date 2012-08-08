@@ -4635,8 +4635,10 @@ if [ "$CFG_LIBUDEV" != "no" ]; then
         exit 1
     else
         CFG_LIBUDEV=no
-        QMakeVar add DEFINES QT_NO_LIBUDEV
     fi
+fi
+if [ "$CFG_LIBUDEV" = "no" ]; then
+    QMakeVar add DEFINES QT_NO_LIBUDEV
 fi
 
 if [ "$CFG_EVDEV" != "no" ]; then
@@ -4648,8 +4650,10 @@ if [ "$CFG_EVDEV" != "no" ]; then
         exit 1
     else
         CFG_EVDEV=no
-        QMakeVar add DEFINES QT_NO_EVDEV
     fi
+fi
+if [ "$CFG_EVDEV" = "no" ]; then
+    QMakeVar add DEFINES QT_NO_EVDEV
 fi
 
 # Check we actually have X11 :-)
@@ -4720,8 +4724,10 @@ if [ "$CFG_XCB" != "no" ]; then
             exit 1
         fi
         CFG_XCB=no
-        QMakeVar add DEFINES QT_NO_XCB
     fi
+fi
+if [ "$CFG_XCB" = "no" ]; then
+    QMakeVar add DEFINES QT_NO_XCB
 fi
 
 if [ "$CFG_DIRECTFB" != "no" ]; then
