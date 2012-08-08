@@ -231,7 +231,7 @@ struct QMapData : public QMapDataBase
         return static_cast<QMapData *>(createData());
     }
 
-    void free() {
+    void destroy() {
         if (root()) {
             root()->destroySubTree();
             freeTree(header.left, Q_ALIGNOF(Node));
@@ -331,7 +331,7 @@ public:
     inline QMap() : d(static_cast<QMapData<Key, T> *>(const_cast<QMapDataBase *>(&QMapDataBase::shared_null))) { }
     QMap(const QMap<Key, T> &other);
 
-    inline ~QMap() { if (!d->ref.deref()) d->free(); }
+    inline ~QMap() { if (!d->ref.deref()) d->destroy(); }
 
     QMap<Key, T> &operator=(const QMap<Key, T> &other);
 #ifdef Q_COMPILER_RVALUE_REFS
@@ -782,7 +782,7 @@ Q_OUTOFLINE_TEMPLATE void QMap<Key, T>::detach_helper()
         x->header.left->setParent(&x->header);
     }
     if (!d->ref.deref())
-        d->free();
+        d->destroy();
     d = x;
 }
 
