@@ -63,11 +63,14 @@ defineTest(qtAddModule) {
     unset(LINKAGE)
     mac {
         !contains(MODULE_CONFIG,staticlib):CONFIG(qt_framework, qt_framework|qt_no_framework) { #forced
-          QMAKE_FRAMEWORKPATH *= $${MODULE_LIBS}
           FRAMEWORK_INCLUDE = $${MODULE_LIBS}/$${MODULE_NAME}.framework/Headers
-          !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE): \
+          !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE) {
                INCLUDEPATH *= $$FRAMEWORK_INCLUDE
-           LINKAGE = -framework $${MODULE_NAME}$${QT_LIBINFIX}
+               LINKAGE = -F$${MODULE_LIBS}
+          } else {
+               QMAKE_FRAMEWORKPATH *= $${MODULE_LIBS}
+          }
+          LINKAGE += -framework $${MODULE_NAME}$${QT_LIBINFIX}
         }
     }
 
@@ -83,17 +86,19 @@ defineTest(qtAddModule) {
 
     isEmpty(LINKAGE) {
        !isEmpty(MODULE_LIBS) {
-           QMAKE_LIBDIR *= $$MODULE_LIBS
+           LINKAGE = -L$$MODULE_LIBS
            !isEqual(MODULE_LIBS, $$[QT_INSTALL_LIBS]) {
                # Make sure we can link to uninstalled libraries
                unix:!mac:QMAKE_LFLAGS *= "-Wl,-rpath-link,$$MODULE_LIBS"
            }
        }
+       lib =
        if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
-           win32:LINKAGE = -l$${MODULE_NAME}$${QT_LIBINFIX}d
-           mac:LINKAGE = -l$${MODULE_NAME}$${QT_LIBINFIX}_debug
+           win32: lib = -l$${MODULE_NAME}$${QT_LIBINFIX}d
+           mac: lib = -l$${MODULE_NAME}$${QT_LIBINFIX}_debug
        }
-       isEmpty(LINKAGE):LINKAGE = -l$${MODULE_NAME}$${QT_LIBINFIX}
+       isEmpty(lib): lib = -l$${MODULE_NAME}$${QT_LIBINFIX}
+       LINKAGE += $$lib
     }
     # Only link to this module if a libs directory is set, else this is just a module
     # to give access to sources or include files, and not for linking.
