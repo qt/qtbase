@@ -1,4 +1,4 @@
-!if(plugin:no_plugin_manifest):if(win32-msvc2005*|win32-msvc2008*|win32-msvc2010*):!static:equals(TEMPLATE, "lib") {
+!if(plugin:no_plugin_manifest):if(win32-msvc2005*|win32-msvc2008*|win32-msvc2010*|win32-msvc2012*):!static:equals(TEMPLATE, "lib") {
     MANIFEST_DIR = $$OBJECTS_DIR
     isEmpty(MANIFEST_DIR):MANIFEST_DIR = .
     NOPATH_TARGET = $$TARGET

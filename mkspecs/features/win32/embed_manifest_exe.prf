@@ -1,4 +1,4 @@
-if(win32-msvc2005*|win32-msvc2008*|win32-msvc2010*):equals(TEMPLATE, "app") {
+if(win32-msvc2005*|win32-msvc2008*|win32-msvc2010*|win32-msvc2012*):equals(TEMPLATE, "app") {
     MANIFEST_DIR = $$OBJECTS_DIR
     isEmpty(MANIFEST_DIR):MANIFEST_DIR = .
     NOPATH_TARGET = $$TARGET
