@@ -336,8 +336,6 @@ void QWindowsOleDropSource::createCursors()
     const QDrag *drag = m_drag->currentDrag();
     const QPixmap pixmap = drag->pixmap();
     const bool hasPixmap = !pixmap.isNull();
-    if (!hasPixmap)
-        return;
 
     QList<Qt::DropAction> actions;
     actions << Qt::MoveAction << Qt::CopyAction << Qt::LinkAction;
