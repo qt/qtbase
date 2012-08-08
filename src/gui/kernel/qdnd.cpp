@@ -68,62 +68,6 @@
 
 QT_BEGIN_NAMESPACE
 
-//#define QDND_DEBUG
-
-#ifdef QDND_DEBUG
-QString dragActionsToString(Qt::DropActions actions)
-{
-    QString str;
-    if (actions == Qt::IgnoreAction) {
-        if (!str.isEmpty())
-            str += " | ";
-        str += "IgnoreAction";
-    }
-    if (actions & Qt::LinkAction) {
-        if (!str.isEmpty())
-            str += " | ";
-        str += "LinkAction";
-    }
-    if (actions & Qt::CopyAction) {
-        if (!str.isEmpty())
-            str += " | ";
-        str += "CopyAction";
-    }
-    if (actions & Qt::MoveAction) {
-        if (!str.isEmpty())
-            str += " | ";
-        str += "MoveAction";
-    }
-    if ((actions & Qt::TargetMoveAction) == Qt::TargetMoveAction ) {
-        if (!str.isEmpty())
-            str += " | ";
-        str += "TargetMoveAction";
-    }
-    return str;
-}
-
-QString KeyboardModifiersToString(Qt::KeyboardModifiers moderfies)
-{
-    QString str;
-    if (moderfies & Qt::ControlModifier) {
-        if (!str.isEmpty())
-            str += " | ";
-        str += Qt::ControlModifier;
-    }
-    if (moderfies & Qt::AltModifier) {
-        if (!str.isEmpty())
-            str += " | ";
-        str += Qt::AltModifier;
-    }
-    if (moderfies & Qt::ShiftModifier) {
-        if (!str.isEmpty())
-            str += " | ";
-        str += Qt::ShiftModifier;
-    }
-    return str;
-}
-#endif
-
 // the universe's only drag manager
 QDragManager *QDragManager::m_instance = 0;
 

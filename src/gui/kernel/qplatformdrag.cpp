@@ -49,6 +49,59 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_DRAGANDDROP
+#ifdef QDND_DEBUG
+QString dragActionsToString(Qt::DropActions actions)
+{
+    QString str;
+    if (actions == Qt::IgnoreAction) {
+        if (!str.isEmpty())
+            str += QLatin1String(" | ");
+        str += QLatin1String("IgnoreAction");
+    }
+    if (actions & Qt::LinkAction) {
+        if (!str.isEmpty())
+            str += QLatin1String(" | ");
+        str += QLatin1String("LinkAction");
+    }
+    if (actions & Qt::CopyAction) {
+        if (!str.isEmpty())
+            str += QLatin1String(" | ");
+        str += QLatin1String("CopyAction");
+    }
+    if (actions & Qt::MoveAction) {
+        if (!str.isEmpty())
+            str += QLatin1String(" | ");
+        str += QLatin1String("MoveAction");
+    }
+    if ((actions & Qt::TargetMoveAction) == Qt::TargetMoveAction ) {
+        if (!str.isEmpty())
+            str += QLatin1String(" | ");
+        str += QLatin1String("TargetMoveAction");
+    }
+    return str;
+}
+
+QString KeyboardModifiersToString(Qt::KeyboardModifiers modifiers)
+{
+    QString str;
+    if (modifiers & Qt::ControlModifier) {
+        if (!str.isEmpty())
+            str += QLatin1String(" | ");
+        str += QLatin1String("ControlModifier");
+    }
+    if (modifiers & Qt::AltModifier) {
+        if (!str.isEmpty())
+            str += QLatin1String(" | ");
+        str += QLatin1String("AltModifier");
+    }
+    if (modifiers & Qt::ShiftModifier) {
+        if (!str.isEmpty())
+            str += QLatin1String(" | ");
+        str += QLatin1String("ShiftModifier");
+    }
+    return str;
+}
+#endif
 
 QPlatformDropQtResponse::QPlatformDropQtResponse(bool accepted, Qt::DropAction acceptedAction)
     : m_accepted(accepted)
@@ -112,7 +165,7 @@ Qt::DropAction QPlatformDrag::defaultAction(Qt::DropActions possibleActions,
 {
 #ifdef QDND_DEBUG
     qDebug("QDragManager::defaultAction(Qt::DropActions possibleActions)");
-    qDebug("keyboard modifiers : %s", KeyboardModifiersToString(modifiers).latin1());
+    qDebug("keyboard modifiers : %s", qPrintable(KeyboardModifiersToString(modifiers)));
 #endif
 
     Qt::DropAction default_action = Qt::IgnoreAction;
@@ -138,7 +191,7 @@ Qt::DropAction QPlatformDrag::defaultAction(Qt::DropActions possibleActions,
         default_action = Qt::LinkAction;
 
 #ifdef QDND_DEBUG
-    qDebug("possible actions : %s", dragActionsToString(possibleActions).latin1());
+    qDebug("possible actions : %s", qPrintable(dragActionsToString(possibleActions)));
 #endif
 
     // Check if the action determined is allowed
@@ -154,7 +207,7 @@ Qt::DropAction QPlatformDrag::defaultAction(Qt::DropActions possibleActions,
     }
 
 #ifdef QDND_DEBUG
-    qDebug("default action : %s", dragActionsToString(defaultAction).latin1());
+    qDebug("default action : %s", qPrintable(dragActionsToString(default_action)));
 #endif
 
     return default_action;
