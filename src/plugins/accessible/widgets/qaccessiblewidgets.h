@@ -76,13 +76,18 @@ public:
     QAccessibleTextWidget(QWidget *o, QAccessible::Role r = QAccessible::EditableText, const QString &name = QString());
 
     // QAccessibleTextInterface
-    void addSelection(int startOffset, int endOffset);
-    QString attributes(int offset, int *startOffset, int *endOffset) const;
-    int cursorPosition() const;
-    QRect characterRect(int offset) const;
-    int selectionCount() const;
-    int offsetAtPoint(const QPoint &point) const;
+    //  selection
     void selection(int selectionIndex, int *startOffset, int *endOffset) const;
+    int selectionCount() const;
+    void addSelection(int startOffset, int endOffset);
+    void removeSelection(int selectionIndex);
+    void setSelection(int selectionIndex, int startOffset, int endOffset);
+
+    // cursor
+    int cursorPosition() const;
+    void setCursorPosition(int position);
+
+    // text
     QString text(int startOffset, int endOffset) const;
     QString textBeforeOffset(int offset, QAccessible2::BoundaryType boundaryType,
                              int *startOffset, int *endOffset) const;
@@ -90,11 +95,13 @@ public:
                             int *startOffset, int *endOffset) const;
     QString textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
                          int *startOffset, int *endOffset) const;
-    void removeSelection(int selectionIndex);
-    void setCursorPosition(int position);
-    void setSelection(int selectionIndex, int startOffset, int endOffset);
     int characterCount() const;
 
+    // character <-> geometry
+    QRect characterRect(int offset) const;
+    int offsetAtPoint(const QPoint &point) const;
+
+    QString attributes(int offset, int *startOffset, int *endOffset) const;
 
     // QAccessibleEditableTextInterface
     void deleteText(int startOffset, int endOffset);

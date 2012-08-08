@@ -70,14 +70,18 @@ class Q_GUI_EXPORT QAccessibleTextInterface
 {
 public:
     virtual ~QAccessibleTextInterface() {}
-
-    virtual void addSelection(int startOffset, int endOffset) = 0;
-    virtual QString attributes(int offset, int *startOffset, int *endOffset) const = 0;
-    virtual int cursorPosition() const = 0;
-    virtual QRect characterRect(int offset) const = 0;
-    virtual int selectionCount() const = 0;
-    virtual int offsetAtPoint(const QPoint &point) const = 0;
+    // selection
     virtual void selection(int selectionIndex, int *startOffset, int *endOffset) const = 0;
+    virtual int selectionCount() const = 0;
+    virtual void addSelection(int startOffset, int endOffset) = 0;
+    virtual void removeSelection(int selectionIndex) = 0;
+    virtual void setSelection(int selectionIndex, int startOffset, int endOffset) = 0;
+
+    // cursor
+    virtual int cursorPosition() const = 0;
+    virtual void setCursorPosition(int position) = 0;
+
+    // text
     virtual QString text(int startOffset, int endOffset) const = 0;
     virtual QString textBeforeOffset (int offset, QAccessible2::BoundaryType boundaryType,
                               int *startOffset, int *endOffset) const = 0;
@@ -85,11 +89,14 @@ public:
                             int *startOffset, int *endOffset) const = 0;
     virtual QString textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
                          int *startOffset, int *endOffset) const = 0;
-    virtual void removeSelection(int selectionIndex) = 0;
-    virtual void setCursorPosition(int position) = 0;
-    virtual void setSelection(int selectionIndex, int startOffset, int endOffset) = 0;
     virtual int characterCount() const = 0;
+
+    // character <-> geometry
+    virtual QRect characterRect(int offset) const = 0;
+    virtual int offsetAtPoint(const QPoint &point) const = 0;
+
     virtual void scrollToSubstring(int startIndex, int endIndex) = 0;
+    virtual QString attributes(int offset, int *startOffset, int *endOffset) const = 0;
 };
 
 class Q_GUI_EXPORT QAccessibleEditableTextInterface
