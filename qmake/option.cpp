@@ -212,22 +212,24 @@ bool usage(const char *a0)
 }
 
 int
-Option::parseCommandLine(int argc, char **argv)
+Option::parseCommandLine(QStringList &args)
 {
     QStringList user_configs;
 
     bool before = true;
-    for (int x = 0; x < argc; x++) {
-        if(*argv[x] == '-' && strlen(argv[x]) > 1) { /* options */
-            QString opt = argv[x] + 1;
+    args << QString(); // Avoid bounds checking for options which take an argument
+    for (int x = 0; x < args.size() - 1; ) {
+        QString arg = args.at(x);
+        if (arg.size() > 1 && arg.startsWith('-')) { /* options */
+            QString opt = arg.mid(1);
             if(opt == "o" || opt == "output") {
-                Option::output.setFileName(argv[++x]);
+                Option::output.setFileName(args.at(++x));
             } else if(opt == "after") {
                 before = false;
             } else if(opt == "t" || opt == "template") {
-                Option::user_template = argv[++x];
+                Option::user_template = args.at(++x);
             } else if(opt == "tp" || opt == "template_prefix") {
-                Option::user_template_prefix = argv[++x];
+                Option::user_template_prefix = args.at(++x);
             } else if(opt == "unix") {
                 Option::dir_sep = "/";
             } else if(opt == "win32") {
@@ -261,7 +263,7 @@ Option::parseCommandLine(int argc, char **argv)
             } else if(opt == "nr" || opt == "norecursive") {
                 Option::recursive = false;
             } else if(opt == "config") {
-                user_configs += argv[++x];
+                user_configs += args.at(++x);
             } else {
                 if(Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
                    Option::qmake_mode == Option::QMAKE_GENERATE_PRL) {
@@ -278,13 +280,13 @@ Option::parseCommandLine(int argc, char **argv)
                     } else if(opt == "E") {
                         Option::mkfile::do_preprocess = true;
                     } else if(opt == "cache") {
-                        Option::mkfile::cachefile = argv[++x];
+                        Option::mkfile::cachefile = args.at(++x);
                     } else if(opt == "platform" || opt == "spec") {
-                        Option::mkfile::qmakespec = cleanSpec(argv[++x]);
-                        Option::mkfile::qmakespec_commandline = argv[x];
+                        Option::mkfile::qmakespec = cleanSpec(args.at(++x));
+                        Option::mkfile::qmakespec_commandline = args.at(x);
                     } else if (opt == "xplatform" || opt == "xspec") {
-                        Option::mkfile::xqmakespec = cleanSpec(argv[++x]);
-                        Option::mkfile::xqmakespec_commandline = argv[x];
+                        Option::mkfile::xqmakespec = cleanSpec(args.at(++x));
+                        Option::mkfile::xqmakespec_commandline = args.at(x);
                     } else {
                         fprintf(stderr, "***Unknown option -%s\n", opt.toLatin1().constData());
                         return Option::QMAKE_CMDLINE_SHOW_USAGE | Option::QMAKE_CMDLINE_ERROR;
@@ -299,7 +301,6 @@ Option::parseCommandLine(int argc, char **argv)
                 }
             }
         } else {
-            QString arg = argv[x];
             if(arg.indexOf('=') != -1) {
                 if(before)
                     Option::before_user_vars.append(arg);
@@ -334,6 +335,7 @@ Option::parseCommandLine(int argc, char **argv)
                 }
             }
         }
+        x++;
     }
 
     if (!user_configs.isEmpty())
@@ -342,6 +344,7 @@ Option::parseCommandLine(int argc, char **argv)
     if (Option::mkfile::xqmakespec.isEmpty())
         Option::mkfile::xqmakespec = Option::mkfile::qmakespec;
 
+    args.takeLast();
     return Option::QMAKE_CMDLINE_SUCCESS;
 }
 
@@ -410,51 +413,38 @@ Option::init(int argc, char **argv)
 
     const QByteArray envflags = qgetenv("QMAKEFLAGS");
     if (!envflags.isNull()) {
-        int env_argc = 0, env_size = 0, currlen=0;
-        char quote = 0, **env_argv = NULL;
+        QStringList args;
+        QByteArray buf = "";
+        char quote = 0;
+        bool hasWord = false;
         for (int i = 0; i < envflags.size(); ++i) {
-            if (!quote && (envflags.at(i) == '\'' || envflags.at(i) == '"')) {
-                quote = envflags.at(i);
-            } else if (envflags.at(i) == quote) {
+            char c = envflags.at(i);
+            if (!quote && (c == '\'' || c == '"')) {
+                quote = c;
+            } else if (c == quote) {
                 quote = 0;
-            } else if (!quote && envflags.at(i) == ' ') {
-                if (currlen && env_argv && env_argv[env_argc]) {
-                    env_argv[env_argc][currlen] = '\0';
-                    currlen = 0;
-                    env_argc++;
+            } else if (!quote && c == ' ') {
+                if (hasWord) {
+                    args << QString::fromLocal8Bit(buf);
+                    hasWord = false;
+                    buf = "";
                 }
             } else {
-                if(!env_argv || env_argc > env_size) {
-                    env_argv = (char **)realloc(env_argv, sizeof(char *)*(env_size+=10));
-                    for(int i2 = env_argc; i2 < env_size; i2++)
-                        env_argv[i2] = NULL;
-                }
-                if(!env_argv[env_argc]) {
-                    currlen = 0;
-                    env_argv[env_argc] = (char*)malloc(255);
-                }
-                if(currlen < 255)
-                    env_argv[env_argc][currlen++] = envflags.at(i);
+                buf += c;
+                hasWord = true;
             }
         }
-        if(env_argv) {
-            if(env_argv[env_argc]) {
-                env_argv[env_argc][currlen] = '\0';
-                currlen = 0;
-                env_argc++;
-            }
-            parseCommandLine(env_argc, env_argv);
-            for(int i2 = 0; i2 < env_size; i2++) {
-                if(env_argv[i2])
-                    free(env_argv[i2]);
-            }
-            free(env_argv);
-        }
+        if (hasWord)
+            args << QString::fromLocal8Bit(buf);
+        parseCommandLine(args);
     }
     if(argc && argv) {
-        argv++, argc--;
-        while (argc) {
-            QString opt = *argv;
+        QStringList args;
+        for (int i = 1; i < argc; i++)
+            args << QString::fromLocal8Bit(argv[i]);
+
+        while (!args.isEmpty()) {
+            QString opt = args.at(0);
             if (opt == "-project") {
                 Option::recursive = true;
                 Option::qmake_mode = Option::QMAKE_GENERATE_PROJECT;
@@ -473,11 +463,11 @@ Option::init(int argc, char **argv)
             } else {
                 break;
             }
-            argv++, argc--;
+            args.takeFirst();
             break;
         }
 
-        int ret = parseCommandLine(argc, argv);
+        int ret = parseCommandLine(args);
         if(ret != Option::QMAKE_CMDLINE_SUCCESS) {
             if ((ret & Option::QMAKE_CMDLINE_SHOW_USAGE) != 0)
                 usage(argv[0]);
