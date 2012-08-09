@@ -847,6 +847,7 @@ bool QFile::open(OpenMode mode)
     \overload
 
     Opens the existing file handle \a fh in the given \a mode.
+    \a handleFlags may be used to specify additional options.
     Returns true if successful; otherwise returns false.
 
     Example:
@@ -918,6 +919,7 @@ bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
     \overload
 
     Opens the existing file descriptor \a fd in the given \a mode.
+    \a handleFlags may be used to specify additional options.
     Returns true if successful; otherwise returns false.
 
     When a QFile is opened using this function, behaviour of close() is
