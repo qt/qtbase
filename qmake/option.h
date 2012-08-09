@@ -161,6 +161,7 @@ struct Option
 
     //all modes
     static QString qmake_abslocation;
+    static QStringList qmake_args;
     static QFile output;
     static QString output_dir;
     static int debug_level;
@@ -195,8 +196,6 @@ struct Option
         static QString cachefile;
         static int cachefile_depth;
         static QStringList project_files;
-        static QString qmakespec_commandline;
-        static QString xqmakespec_commandline;
     };
 
 private:

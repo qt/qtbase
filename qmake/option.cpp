@@ -79,6 +79,7 @@ Option::QMAKE_MODE Option::qmake_mode = Option::QMAKE_GENERATE_NOTHING;
 
 //all modes
 QString Option::qmake_abslocation;
+QStringList Option::qmake_args;
 int Option::warn_level = WarnLogic | WarnDeprecated;
 int Option::debug_level = 0;
 QFile Option::output;
@@ -110,8 +111,6 @@ QString Option::mkfile::source_root;
 QString Option::mkfile::build_root;
 QString Option::mkfile::cachefile;
 QStringList Option::mkfile::project_files;
-QString Option::mkfile::qmakespec_commandline;
-QString Option::mkfile::xqmakespec_commandline;
 
 static Option::QMAKE_MODE default_mode(QString progname)
 {
@@ -223,7 +222,9 @@ Option::parseCommandLine(QStringList &args)
         if (arg.size() > 1 && arg.startsWith('-')) { /* options */
             QString opt = arg.mid(1);
             if(opt == "o" || opt == "output") {
-                Option::output.setFileName(args.at(++x));
+                Option::output.setFileName(args.at(x + 1));
+                args.erase(args.begin() + x, args.begin() + x + 2);
+                continue;
             } else if(opt == "after") {
                 before = false;
             } else if(opt == "t" || opt == "template") {
@@ -260,8 +261,12 @@ Option::parseCommandLine(QStringList &args)
                 Option::warn_level = WarnNone;
             } else if(opt == "r" || opt == "recursive") {
                 Option::recursive = true;
+                args.removeAt(x);
+                continue;
             } else if(opt == "nr" || opt == "norecursive") {
                 Option::recursive = false;
+                args.removeAt(x);
+                continue;
             } else if(opt == "config") {
                 user_configs += args.at(++x);
             } else {
@@ -282,11 +287,9 @@ Option::parseCommandLine(QStringList &args)
                     } else if(opt == "cache") {
                         Option::mkfile::cachefile = args.at(++x);
                     } else if(opt == "platform" || opt == "spec") {
-                        Option::mkfile::qmakespec = cleanSpec(args.at(++x));
-                        Option::mkfile::qmakespec_commandline = args.at(x);
+                        Option::mkfile::qmakespec = args[x] = cleanSpec(args.at(++x));
                     } else if (opt == "xplatform" || opt == "xspec") {
-                        Option::mkfile::xqmakespec = cleanSpec(args.at(++x));
-                        Option::mkfile::xqmakespec_commandline = args.at(x);
+                        Option::mkfile::xqmakespec = args[x] = cleanSpec(args.at(x));
                     } else {
                         fprintf(stderr, "***Unknown option -%s\n", opt.toLatin1().constData());
                         return Option::QMAKE_CMDLINE_SHOW_USAGE | Option::QMAKE_CMDLINE_ERROR;
@@ -333,6 +336,8 @@ Option::parseCommandLine(QStringList &args)
                 if(!handled) {
                     return Option::QMAKE_CMDLINE_SHOW_USAGE | Option::QMAKE_CMDLINE_ERROR;
                 }
+                args.removeAt(x);
+                continue;
             }
         }
         x++;
@@ -474,6 +479,7 @@ Option::init(int argc, char **argv)
             return ret;
             //return ret == QMAKE_CMDLINE_SHOW_USAGE ? usage(argv[0]) : false;
         }
+        Option::qmake_args = args;
     }
 
     //last chance for defaults

@@ -194,7 +194,7 @@ protected:
     QString specdir();
 
     //subclasses can use these to query information about how the generator was "run"
-    QString buildArgs(const QString &outdir=QString());
+    QString buildArgs();
     QString fixifySpecdir(const QString &spec, const QString &outdir);
 
     virtual QStringList &findDependencies(const QString &file);

@@ -2147,50 +2147,12 @@ QString MakefileGenerator::fixifySpecdir(const QString &spec, const QString &out
     return spec;
 }
 
-QString MakefileGenerator::buildArgs(const QString &outdir)
+QString MakefileGenerator::buildArgs()
 {
     QString ret;
-    //special variables
-    if(!project->isEmpty("QMAKE_ABSOLUTE_SOURCE_PATH"))
-        ret += " QMAKE_ABSOLUTE_SOURCE_PATH=" + escapeFilePath(project->first("QMAKE_ABSOLUTE_SOURCE_PATH"));
 
-    //warnings
-    else if(Option::warn_level == WarnNone)
-        ret += " -Wnone";
-    else if(Option::warn_level == WarnAll)
-        ret += " -Wall";
-    else if(Option::warn_level & WarnParser)
-        ret += " -Wparser";
-    //other options
-    if(!Option::user_template.isEmpty())
-        ret += " -t " + Option::user_template;
-    if(!Option::user_template_prefix.isEmpty())
-        ret += " -tp " + Option::user_template_prefix;
-    if(!Option::mkfile::do_cache)
-        ret += " -nocache";
-    if(!Option::mkfile::do_deps)
-        ret += " -nodepend";
-    if(!Option::mkfile::do_dep_heuristics)
-        ret += " -nodependheuristics";
-    if(!Option::mkfile::qmakespec_commandline.isEmpty())
-        ret += " -spec " + fixifySpecdir(Option::mkfile::qmakespec, outdir);
-    if (!Option::mkfile::xqmakespec_commandline.isEmpty())
-        ret += " -xspec " + fixifySpecdir(Option::mkfile::xqmakespec, outdir);
-
-    //arguments
-    for(QStringList::Iterator it = Option::before_user_vars.begin();
-        it != Option::before_user_vars.end(); ++it) {
-        if((*it).left(qstrlen("QMAKE_ABSOLUTE_SOURCE_PATH")) != "QMAKE_ABSOLUTE_SOURCE_PATH")
-            ret += " " + escapeFilePath((*it));
-    }
-    if(Option::after_user_vars.count()) {
-        ret += " -after ";
-        for(QStringList::Iterator it = Option::after_user_vars.begin();
-            it != Option::after_user_vars.end(); ++it) {
-            if((*it).left(qstrlen("QMAKE_ABSOLUTE_SOURCE_PATH")) != "QMAKE_ABSOLUTE_SOURCE_PATH")
-                ret += " " + escapeFilePath((*it));
-        }
-    }
+    foreach (const QString &arg, Option::qmake_args)
+        ret += " " + escapeFilePath(arg);
     return ret;
 }
 
@@ -2201,7 +2163,7 @@ QString MakefileGenerator::build_args(const QString &outdir)
     QString ret = "$(QMAKE)";
 
     // general options and arguments
-    ret += buildArgs(outdir);
+    ret += buildArgs();
 
     //output
     QString ofile = Option::fixPathToTargetOS(fileFixify(Option::output.fileName()));
@@ -2358,7 +2320,7 @@ MakefileGenerator::writeSubTargetCall(QTextStream &t,
         if (!in_directory.isEmpty())
             t << "\n\t" << mkdir_p_asstring(out_directory);
         pfx = "( " + chkfile + " " + out + " " + chkglue
-              + "$(QMAKE) " + in + buildArgs(in_directory) + " -o " + out
+              + "$(QMAKE) " + in + buildArgs() + " -o " + out
               + " ) && ";
     }
     writeSubMakeCall(t, out_directory_cdin + pfx, makefilein);
@@ -2447,7 +2409,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 t << mkdir_p_asstring(out_directory)
                   << out_directory_cdin;
             }
-            t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out;
+            t << "$(QMAKE) " << in << buildArgs() << " -o " << out;
             if (!dont_recurse)
                 writeSubMakeCall(t, out_directory_cdin, makefilein + " qmake_all");
             else
