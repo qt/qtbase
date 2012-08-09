@@ -54,7 +54,54 @@
 #define qScreenDebug QT_NO_QDEBUG_MACRO
 #endif
 
+#if defined(QQNX_PHYSICAL_SCREEN_WIDTH) && QQNX_PHYSICAL_SCREEN_WIDTH > 0 \
+    && defined(QQNX_PHYSICAL_SCREEN_HEIGHT) && QQNX_PHYSICAL_SCREEN_HEIGHT > 0
+#define QQNX_PHYSICAL_SCREEN_SIZE_DEFINED
+#elif defined(QQNX_PHYSICAL_SCREEN_WIDTH) || defined(QQNX_PHYSICAL_SCREEN_HEIGHT)
+#error Please define QQNX_PHYSICAL_SCREEN_WIDTH and QQNX_PHYSICAL_SCREEN_HEIGHT to values greater than zero
+#endif
+
 QT_BEGIN_NAMESPACE
+
+static QSize determineScreenSize(screen_display_t display) {
+    int val[2];
+
+    errno = 0;
+    const int result = screen_get_display_property_iv(display, SCREEN_PROPERTY_PHYSICAL_SIZE, val);
+    if (result != 0) {
+        qFatal("QQnxScreen: failed to query display physical size, errno=%d", errno);
+        return QSize(150, 90);
+    }
+
+    if (val[0] > 0 && val[1] > 0)
+        return QSize(val[0], val[1]);
+
+    qWarning("QQnxScreen: screen_get_display_property_iv() reported an invalid physical screen size (%dx%d). Falling back to QQNX_PHYSICAL_SCREEN_SIZE environment variable.", val[0], val[1]);
+
+    const QString envPhySizeStr = qgetenv("QQNX_PHYSICAL_SCREEN_SIZE");
+    if (!envPhySizeStr.isEmpty()) {
+        const QStringList envPhySizeStrList = envPhySizeStr.split(QLatin1Char(','));
+        const int envWidth = envPhySizeStrList.size() == 2 ? envPhySizeStrList[0].toInt() : -1;
+        const int envHeight = envPhySizeStrList.size() == 2 ? envPhySizeStrList[1].toInt() : -1;
+
+        if (envWidth <= 0 || envHeight <= 0) {
+            qFatal("QQnxScreen: The value of QQNX_PHYSICAL_SCREEN_SIZE must be in the format \"width,height\" in mm, with width, height > 0. Example: QQNX_PHYSICAL_SCREEN_SIZE=150,90");
+            return QSize(150, 90);
+        }
+
+        return QSize(envWidth, envHeight);
+    }
+
+#if defined(QQNX_PHYSICAL_SCREEN_SIZE_DEFINED)
+    const QSize defSize(QQNX_PHYSICAL_SCREEN_WIDTH, QQNX_PHYSICAL_SCREEN_HEIGHT);
+    qWarning("QQnxScreen: QQNX_PHYSICAL_SCREEN_SIZE variable not set. Falling back to defines QQNX_PHYSICAL_SCREEN_WIDTH/QQNX_PHYSICAL_SCREEN_HEIGHT (%dx%d)", defSize.width(), defSize.height());
+    return defSize;
+
+#else
+    qFatal("QQnxScreen: QQNX_PHYSICAL_SCREEN_SIZE variable not set. Could not determine physical screen size.");
+    return QSize(150, 90);
+#endif
+}
 
 QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display, bool primaryScreen)
     : m_screenContext(screenContext),
@@ -89,19 +136,15 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
     // libscreen always reports the physical size dimensions as width and height in the
     // native orientation. Contrary to this, QPlatformScreen::physicalSize() expects the
     // returned dimensions to follow the current orientation.
-    errno = 0;
-    result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_PHYSICAL_SIZE, val);
-    if (result != 0) {
-        qFatal("QQnxScreen: failed to query display physical size, errno=%d", errno);
-    }
+    const QSize screenSize = determineScreenSize(m_display);
 
-    m_nativeOrientation = val[0] >= val[1] ? Qt::LandscapeOrientation : Qt::PortraitOrientation;
+    m_nativeOrientation = screenSize.width() >= screenSize.height() ? Qt::LandscapeOrientation : Qt::PortraitOrientation;
 
     const int angle = screen()->angleBetween(m_nativeOrientation, orientation());
     if (angle == 0 || angle == 180)
-        m_currentPhysicalSize = m_initialPhysicalSize = QSize(val[0], val[1]);
+        m_currentPhysicalSize = m_initialPhysicalSize = screenSize;
     else
-        m_currentPhysicalSize = m_initialPhysicalSize = QSize(val[1], val[0]);
+        m_currentPhysicalSize = m_initialPhysicalSize = screenSize.transposed();
 
     // We only create the root window if we are the primary display.
     if (primaryScreen)
