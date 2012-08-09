@@ -212,12 +212,12 @@ bool usage(const char *a0)
 }
 
 int
-Option::parseCommandLine(int argc, char **argv, int skip)
+Option::parseCommandLine(int argc, char **argv)
 {
     QStringList user_configs;
 
     bool before = true;
-    for(int x = skip; x < argc; x++) {
+    for (int x = 0; x < argc; x++) {
         if(*argv[x] == '-' && strlen(argv[x]) > 1) { /* options */
             QString opt = argv[x] + 1;
 
@@ -478,7 +478,8 @@ Option::init(int argc, char **argv)
         }
     }
     if(argc && argv) {
-        int ret = parseCommandLine(argc, argv, 1);
+        argv++, argc--;
+        int ret = parseCommandLine(argc, argv);
         if(ret != Option::QMAKE_CMDLINE_SUCCESS) {
             if ((ret & Option::QMAKE_CMDLINE_SHOW_USAGE) != 0)
                 usage(argv[0]);

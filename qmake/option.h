@@ -200,7 +200,7 @@ struct Option
     };
 
 private:
-    static int parseCommandLine(int, char **, int=0);
+    static int parseCommandLine(int, char **);
 };
 
 inline QString fixEnvVariables(const QString &x) { return Option::fixString(x, Option::FixEnvVars); }
