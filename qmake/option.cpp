@@ -220,32 +220,6 @@ Option::parseCommandLine(int argc, char **argv)
     for (int x = 0; x < argc; x++) {
         if(*argv[x] == '-' && strlen(argv[x]) > 1) { /* options */
             QString opt = argv[x] + 1;
-
-            //first param is a mode, or we default
-            if(x == 1) {
-                bool specified = true;
-                if(opt == "project") {
-                    Option::recursive = true;
-                    Option::qmake_mode = Option::QMAKE_GENERATE_PROJECT;
-                } else if(opt == "prl") {
-                    Option::mkfile::do_deps = false;
-                    Option::mkfile::do_mocs = false;
-                    Option::qmake_mode = Option::QMAKE_GENERATE_PRL;
-                } else if(opt == "set") {
-                    Option::qmake_mode = Option::QMAKE_SET_PROPERTY;
-                } else if(opt == "unset") {
-                    Option::qmake_mode = Option::QMAKE_UNSET_PROPERTY;
-                } else if(opt == "query") {
-                    Option::qmake_mode = Option::QMAKE_QUERY_PROPERTY;
-                } else if(opt == "makefile") {
-                    Option::qmake_mode = Option::QMAKE_GENERATE_MAKEFILE;
-                } else {
-                    specified = false;
-                }
-                if(specified)
-                    continue;
-            }
-            //all modes
             if(opt == "o" || opt == "output") {
                 Option::output.setFileName(argv[++x]);
             } else if(opt == "after") {
@@ -479,6 +453,30 @@ Option::init(int argc, char **argv)
     }
     if(argc && argv) {
         argv++, argc--;
+        while (argc) {
+            QString opt = *argv;
+            if (opt == "-project") {
+                Option::recursive = true;
+                Option::qmake_mode = Option::QMAKE_GENERATE_PROJECT;
+            } else if (opt == "-prl") {
+                Option::mkfile::do_deps = false;
+                Option::mkfile::do_mocs = false;
+                Option::qmake_mode = Option::QMAKE_GENERATE_PRL;
+            } else if (opt == "-set") {
+                Option::qmake_mode = Option::QMAKE_SET_PROPERTY;
+            } else if (opt == "-unset") {
+                Option::qmake_mode = Option::QMAKE_UNSET_PROPERTY;
+            } else if (opt == "-query") {
+                Option::qmake_mode = Option::QMAKE_QUERY_PROPERTY;
+            } else if (opt == "-makefile") {
+                Option::qmake_mode = Option::QMAKE_GENERATE_MAKEFILE;
+            } else {
+                break;
+            }
+            argv++, argc--;
+            break;
+        }
+
         int ret = parseCommandLine(argc, argv);
         if(ret != Option::QMAKE_CMDLINE_SUCCESS) {
             if ((ret & Option::QMAKE_CMDLINE_SHOW_USAGE) != 0)
