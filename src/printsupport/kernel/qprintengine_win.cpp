@@ -1174,6 +1174,16 @@ void QWin32PrintEnginePrivate::doReinit()
     if (state == QPrinter::Active) {
         reinit = true;
     } else {
+        if (!name.isEmpty()) {
+            HANDLE hCheckPrinter;
+            if (!OpenPrinter((LPWSTR)name.utf16(), (LPHANDLE)&hCheckPrinter, 0)) {
+                initialize();
+                return;
+            } else {
+                ClosePrinter(hCheckPrinter);
+                hCheckPrinter = 0;
+            }
+        }
         resetDC();
         initDevRects();
         reinit = false;
@@ -1296,9 +1306,12 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
 
     case PPK_PrinterName:
         d->name = value.toString();
-        if(d->name.isEmpty())
+        if (d->name.isEmpty()) {
             d->queryDefault();
-        d->initialize();
+            d->initialize();
+        } else {
+            d->doReinit();
+        }
         break;
 
     case PPK_Resolution:
