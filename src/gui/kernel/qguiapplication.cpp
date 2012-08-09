@@ -90,6 +90,10 @@
 #include <QtGui/QClipboard>
 #endif
 
+#ifdef Q_OS_MAC
+#  include "private/qcore_mac_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT bool qt_is_gui_used = true;
@@ -868,7 +872,15 @@ void QGuiApplicationPrivate::init()
             QGuiApplication::setLayoutDirection(Qt::RightToLeft);
 #ifdef Q_OS_MAC
         } else if (arg.startsWith("-psn_")) {
-            // eat "-psn_xxxx" on Mac
+            // eat "-psn_xxxx" on Mac, which is passed when starting an app from Finder.
+            // special hack to change working directory (for an app bundle) when running from finder
+            if (QDir::currentPath() == QLatin1String("/")) {
+                QCFType<CFURLRef> bundleURL(CFBundleCopyBundleURL(CFBundleGetMainBundle()));
+                QString qbundlePath = QCFString(CFURLCopyFileSystemPath(bundleURL,
+                                                                        kCFURLPOSIXPathStyle));
+                if (qbundlePath.endsWith(QLatin1String(".app")))
+                    QDir::setCurrent(qbundlePath.section(QLatin1Char('/'), 0, -2));
+            }
 #endif
         } else {
             argv[j++] = argv[i];

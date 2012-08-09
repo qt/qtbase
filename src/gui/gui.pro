@@ -16,6 +16,10 @@ testcocoon {
     load(testcocoon)
 }
 
+mac {
+    LIBS_PRIVATE += -framework Cocoa
+}
+
 CONFIG += simd
 
 QMAKE_DOCS = $$PWD/doc/qtgui.qdocconf
