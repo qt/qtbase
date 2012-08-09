@@ -2534,7 +2534,7 @@ void Configure::generateOutputVars()
     // Directories and settings for .qmake.cache --------------------
 
     if (dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("linux"))
-        dictionary[ "QMAKE_RPATHDIR" ] = dictionary[ "QT_INSTALL_LIBS" ];
+        qtConfig += "rpath";
 
     qmakeVars += QString("OBJECTS_DIR     = ") + formatPath("tmp/obj/" + dictionary["QMAKE_OUTDIR"]);
     qmakeVars += QString("MOC_DIR         = ") + formatPath("tmp/moc/" + dictionary["QMAKE_OUTDIR"]);

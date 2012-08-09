@@ -11,6 +11,8 @@
     # Permit modules to enforce being built outside QTDIR.
     force_independent: mod_component_base = $$MODULE_BASE_OUTDIR
 
+    isEmpty(MODULE_INSTALL_LIBS): MODULE_INSTALL_LIBS = $$[QT_INSTALL_LIBS]
+
     MODULE_FWD_PRI = $$mod_qmake_base/mkspecs/modules/qt_$${MODULE}.pri
 
     # -rpath-link is used by the linker to find depedencies of dynamic
@@ -64,6 +66,7 @@
         "QT_MODULE_PLUGIN_BASE = $$mod_component_base/plugins" \
         $$module_rpathlink \
         $$module_rpathlink_priv \
+        "QT.$${MODULE}.rpath = $$MODULE_INSTALL_LIBS" \
         "include($$MODULE_PRI)"
     write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error("Aborting.")
     touch($$MODULE_FWD_PRI, $$MODULE_PRI)

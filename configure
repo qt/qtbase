@@ -5345,8 +5345,6 @@ fi
 if [ "$PLATFORM_MAC" = "yes" ] && [ "$QT_CROSS_COMPILE" = "no" ]; then
     if [ "$CFG_RPATH" = "yes" ]; then
        QMAKE_CONFIG="$QMAKE_CONFIG absolute_library_soname"
-       # set the default rpath to the library installation directory
-       RPATH_FLAGS="\"$QT_INSTALL_LIBS\" $RPATH_FLAGS"
     fi
 elif [ -z "`getXQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
     if [ -n "$RPATH_FLAGS" ]; then
@@ -5360,14 +5358,13 @@ elif [ -z "`getXQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
         CFG_RPATH=no
     fi
 else
-    if [ "$CFG_RPATH" = "yes" ]; then
-        # set the default rpath to the library installation directory
-        RPATH_FLAGS="\"$QT_INSTALL_LIBS\" $RPATH_FLAGS"
-    fi
     if [ -n "$RPATH_FLAGS" ]; then
         # add the user defined rpaths
 	QMakeVar add QMAKE_RPATHDIR "$RPATH_FLAGS"
     fi
+fi
+if [ "$CFG_RPATH" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG rpath"
 fi
 
 if [ '!' -z "$I_FLAGS" ]; then
