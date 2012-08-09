@@ -95,13 +95,14 @@
     ARM is bi-endian, detect using __ARMEL__ or __ARMEB__, falling back to
     auto-detection implemented below.
 */
-#if defined(__arm__) || defined(__TARGET_ARCH_ARM)
+#if defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM)
 #  define Q_PROCESSOR_ARM
 #  if defined(__ARM_ARCH_7__) \
       || defined(__ARM_ARCH_7A__) \
       || defined(__ARM_ARCH_7R__) \
       || defined(__ARM_ARCH_7M__) \
-      || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 7)
+      || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 7) \
+      || (defined(_M_ARM) && _M_ARM-0 >= 7)
 #    define Q_PROCESSOR_ARM_V7
 #    define Q_PROCESSOR_ARM_V6
 #    define Q_PROCESSOR_ARM_V5
@@ -112,11 +113,13 @@
       || defined(__ARM_ARCH_6K__) \
       || defined(__ARM_ARCH_6ZK__) \
       || defined(__ARM_ARCH_6M__) \
-      || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 6)
+      || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 6) \
+      || (defined(_M_ARM) && _M_ARM-0 >= 6)
 #    define Q_PROCESSOR_ARM_V6
 #    define Q_PROCESSOR_ARM_V5
 #  elif defined(__ARM_ARCH_5TEJ__) \
-        || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 5)
+        || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 5) \
+        || (defined(_M_ARM) && _M_ARM-0 >= 5)
 #    define Q_PROCESSOR_ARM_V5
 #  endif
 #  if defined(__ARMEL__)
