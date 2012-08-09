@@ -60,6 +60,7 @@
 #ifdef XCB_USE_XINPUT2_MAEMO
 struct XInput2MaemoData;
 #elif XCB_USE_XINPUT2
+#include <X11/extensions/XI2.h>
 #ifdef XI_TouchBeginMask
 #define XCB_USE_XINPUT22    // XI 2.2 adds multi-point touch support
 #endif
