@@ -45,6 +45,7 @@
 #include <qabstractitemmodel.h>
 #include <qapplication.h>
 #include <qlistview.h>
+#include <private/qlistview_p.h>
 #include <qlistwidget.h>
 #include <qitemdelegate.h>
 #include <qstandarditemmodel.h>
@@ -133,6 +134,8 @@ private slots:
     void taskQTBUG_12308_wrongFlowLayout();
     void taskQTBUG_21115_scrollToAndHiddenItems_data();
     void taskQTBUG_21115_scrollToAndHiddenItems();
+    void draggablePaintPairs_data();
+    void draggablePaintPairs();
 };
 
 // Testing get/set functions
@@ -2113,6 +2116,44 @@ void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems()
     lv.scrollTo(index, QAbstractItemView::PositionAtTop);
     QApplication::processEvents();
     QCOMPARE(lv.visualRect(index), firstItemRect);
+}
+
+void tst_QListView::draggablePaintPairs_data()
+{
+    QTest::addColumn<int>("row");
+
+    for (int row = 0; row < 30; ++row)
+      QTest::newRow("row-" + QByteArray::number(row)) << row;
+}
+
+void tst_QListView::draggablePaintPairs()
+{
+    QFETCH(int, row);
+
+    QListView view;
+
+    QStringListModel model;
+    QStringList list;
+    for (int i = 0; i < 30; i++)
+        list << QString::number(i);
+    model.setStringList(list);
+    view.setModel(&model);
+
+    view.show();
+    QTest::qWaitForWindowExposed(&view);
+
+    QModelIndex expectedIndex = model.index(row, 0);
+    QListViewPrivate *privateClass = static_cast<QListViewPrivate *>(QListViewPrivate::get(&view));
+    QRect rect;
+    QModelIndexList indexList;
+    indexList << expectedIndex;
+    view.scrollTo(expectedIndex);
+    QItemViewPaintPairs pairs = privateClass->draggablePaintPairs(indexList, &rect);
+    QCOMPARE(indexList.size(), pairs.size());
+    foreach (const QItemViewPaintPair pair, pairs) {
+        QCOMPARE(rect, pair.first);
+        QCOMPARE(expectedIndex, pair.second);
+    }
 }
 
 
