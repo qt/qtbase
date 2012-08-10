@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
     platforms that support it (see QElapsedTimer::isMonotonic()). This has
     the added benefit that QElapsedTimer is immune to time adjustments, such
     as the user correcting the time. Also unlike QTime, QElapsedTimer is
-    immune to changes in the timezone settings, such as daylight savings
+    immune to changes in the timezone settings, such as daylight saving
     periods.
 
     On the other hand, this means QElapsedTimer values can only be compared
@@ -112,7 +112,7 @@ QT_BEGIN_NAMESPACE
 
     \section2 32-bit overflows
 
-    Some of the clocks that QElapsedTimer have a limited range and may
+    Some of the clocks used by QElapsedTimer have a limited range and may
     overflow after hitting the upper limit (usually 32-bit). QElapsedTimer
     deals with this overflow issue and presents a consistent timing. However,
     when extracting the time since reference from QElapsedTimer, two
@@ -173,7 +173,7 @@ QT_BEGIN_NAMESPACE
     counter, which allows avoiding the overflow.
 
     On Windows systems, the clock overflows after 2^32 milliseconds, which
-    corresponds to roughly 49.7 days. This means two processes's reckoning of
+    corresponds to roughly 49.7 days. This means two processes' reckoning of
     the time since the reference may be different by multiples of 2^32
     milliseconds. When comparing such values, it's recommended that the high
     32 bits of the millisecond count be masked off.
