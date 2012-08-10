@@ -12,6 +12,8 @@ endif()
 find_package(Qt5Gui REQUIRED HINTS ${Qt5Tests_PREFIX_PATH})
 find_package(Qt5Test REQUIRED HINTS ${Qt5Tests_PREFIX_PATH})
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+
 include_directories(
     ${Qt5Gui_INCLUDE_DIRS}
     ${Qt5Test_INCLUDE_DIRS}
