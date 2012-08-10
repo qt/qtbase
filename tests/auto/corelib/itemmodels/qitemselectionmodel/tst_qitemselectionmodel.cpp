@@ -79,6 +79,7 @@ private slots:
     void splitOnInsert();
     void rowIntersectsSelection1();
     void rowIntersectsSelection2();
+    void rowIntersectsSelection3();
     void unselectable();
     void selectedIndexes();
     void layoutChanged();
@@ -2035,6 +2036,30 @@ void tst_QItemSelectionModel::rowIntersectsSelection2()
     QVERIFY( selected.columnIntersectsSelection(2, QModelIndex()));
     QVERIFY( selected.columnIntersectsSelection(3, QModelIndex()));
     QVERIFY(!selected.columnIntersectsSelection(5, QModelIndex()));
+}
+
+void tst_QItemSelectionModel::rowIntersectsSelection3()
+{
+    QStandardItemModel model;
+    QStandardItem *parentItem = model.invisibleRootItem();
+    for (int i = 0; i < 4; ++i) {
+        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        parentItem->appendRow(item);
+        parentItem = item;
+    }
+
+    QItemSelectionModel selectionModel(&model);
+
+    selectionModel.select(model.index(0, 0, model.index(0, 0)), QItemSelectionModel::Select);
+
+    QModelIndex parent;
+    QVERIFY(!selectionModel.rowIntersectsSelection(0, parent));
+    parent = model.index(0, 0, parent);
+    QVERIFY(selectionModel.rowIntersectsSelection(0, parent));
+    parent = model.index(0, 0, parent);
+    QVERIFY(!selectionModel.rowIntersectsSelection(0, parent));
+    parent = model.index(0, 0, parent);
+    QVERIFY(!selectionModel.rowIntersectsSelection(0, parent));
 }
 
 void tst_QItemSelectionModel::unselectable()

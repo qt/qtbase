@@ -1379,10 +1379,13 @@ bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &par
     QItemSelection sel = d->ranges;
     sel.merge(d->currentSelection, d->currentCommand);
     for (int i = 0; i < sel.count(); ++i) {
-        int top = sel.at(i).top();
-        int bottom = sel.at(i).bottom();
-        int left = sel.at(i).left();
-        int right = sel.at(i).right();
+        QItemSelectionRange range = sel.at(i);
+        if (range.parent() != parent)
+          return false;
+        int top = range.top();
+        int bottom = range.bottom();
+        int left = range.left();
+        int right = range.right();
         if (top <= row && bottom >= row) {
             for (int j = left; j <= right; j++) {
                 const Qt::ItemFlags flags = d->model->index(row, j, parent).flags();
