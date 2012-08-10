@@ -688,6 +688,7 @@ public:
     QPalette::ColorRole bg_role : 8;
     uint dirtyOpaqueChildren : 1;
     uint isOpaque : 1;
+    uint retainSizeWhenHiddenChanged : 1;
     uint inDirtyList : 1;
     uint isScrolled : 1;
     uint isMoved : 1;

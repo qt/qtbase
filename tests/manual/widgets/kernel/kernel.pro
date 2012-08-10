@@ -1,3 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = qtooltip
-
+SUBDIRS = qtooltip sizeonhide

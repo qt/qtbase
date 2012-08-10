@@ -32,6 +32,8 @@ QtWidgets
 
 - QFileDialog::setDefaultSuffix() removes leading dot characters.
 
+- QSizePolicy got a retainSizeWhenHidden attribute.
+
 QtCore
 ------
 - [QTBUG-30250] QTime, QDateTime:

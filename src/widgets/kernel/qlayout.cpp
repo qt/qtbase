@@ -1443,7 +1443,7 @@ QDataStream &operator<<(QDataStream &stream, const QSizePolicy &policy)
                     policy.bits.hfw << 8 |          // [8]
                     policy.bits.ctype << 9 |        // [9, 13]
                     policy.bits.wfh << 14 |         // [14]
-                  //policy.bits.padding << 15 |     // [15]
+                    policy.bits.retainSizeWhenHidden << 15 |     // [15]
                     policy.bits.verStretch << 16 |  // [16, 23]
                     policy.bits.horStretch << 24);  // [24, 31]
     return stream << data;
@@ -1468,7 +1468,7 @@ QDataStream &operator>>(QDataStream &stream, QSizePolicy &policy)
     policy.bits.hfw =        VALUE_OF_BITS(data, 8, 1);
     policy.bits.ctype =      VALUE_OF_BITS(data, 9, 5);
     policy.bits.wfh =        VALUE_OF_BITS(data, 14, 1);
-    policy.bits.padding =   0;
+    policy.bits.retainSizeWhenHidden =    VALUE_OF_BITS(data, 15, 1);
     policy.bits.verStretch = VALUE_OF_BITS(data, 16, 8);
     policy.bits.horStretch = VALUE_OF_BITS(data, 24, 8);
     return stream;

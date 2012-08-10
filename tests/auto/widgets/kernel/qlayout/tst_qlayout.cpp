@@ -84,6 +84,7 @@ private slots:
     void controlTypes();
     void controlTypes2();
     void adjustSizeShouldMakeSureLayoutIsActivated();
+    void testRetainSizeWhenHidden();
 };
 
 tst_QLayout::tst_QLayout()
@@ -348,6 +349,48 @@ void tst_QLayout::adjustSizeShouldMakeSureLayoutIsActivated()
     frame2->hide();
     main.adjustSize();
     QCOMPARE(main.size(), QSize(200, 10));
+}
+
+void tst_QLayout::testRetainSizeWhenHidden()
+{
+    QWidget widget;
+    QBoxLayout layout(QBoxLayout::TopToBottom, &widget);
+
+    QLabel *label1 = new QLabel("label1 text", &widget);
+    layout.addWidget(label1);
+    QLabel *label2 = new QLabel("label2 text", &widget);
+    layout.addWidget(label2);
+
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    int normalHeight = widget.height();
+
+    // a. Verify that a removed visible will mean lesser size after adjust
+    label1->hide();
+    widget.adjustSize();
+    int heightWithoutLabel1 = widget.height();
+    QVERIFY(heightWithoutLabel1 < normalHeight);
+
+    // b restore with verify that the size is the same
+    label1->show();
+    QCOMPARE(widget.sizeHint().height(), normalHeight);
+
+    // c verify that a policy with retainSizeWhenHidden is respected
+    QSizePolicy sp_remove = label1->sizePolicy();
+    QSizePolicy sp_retain = label1->sizePolicy();
+    sp_retain.setRetainSizeWhenHidden(true);
+
+    label1->setSizePolicy(sp_retain);
+    label1->hide();
+    QCOMPARE(widget.sizeHint().height(), normalHeight);
+
+    // d check that changing the policy to not wanting size will result in lesser size
+    label1->setSizePolicy(sp_remove);
+    QCOMPARE(widget.sizeHint().height(), heightWithoutLabel1);
+
+    // e verify that changing back the hidden widget to want the hidden size will ensure that it gets more size
+    label1->setSizePolicy(sp_retain);
+    QCOMPARE(widget.sizeHint().height(), normalHeight);
 }
 
 QTEST_MAIN(tst_QLayout)

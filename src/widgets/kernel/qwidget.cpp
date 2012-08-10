@@ -264,6 +264,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , bg_role(QPalette::NoRole)
       , dirtyOpaqueChildren(1)
       , isOpaque(0)
+      , retainSizeWhenHiddenChanged(0)
       , inDirtyList(0)
       , isScrolled(0)
       , isMoved(0)
@@ -9254,6 +9255,10 @@ void QWidget::setSizePolicy(QSizePolicy policy)
     setAttribute(Qt::WA_WState_OwnSizePolicy);
     if (policy == d->size_policy)
         return;
+
+    if (d->size_policy.retainSizeWhenHidden() != policy.retainSizeWhenHidden())
+        d->retainSizeWhenHiddenChanged = 1;
+
     d->size_policy = policy;
 
 #ifndef QT_NO_GRAPHICSVIEW
@@ -9264,6 +9269,7 @@ void QWidget::setSizePolicy(QSizePolicy policy)
 #endif
 
     updateGeometry();
+    d->retainSizeWhenHiddenChanged = 0;
 
     if (isWindow() && d->maybeTopData())
         d->topData()->sizeAdjusted = false;
@@ -9392,7 +9398,9 @@ void QWidgetPrivate::updateGeometry_helper(bool forceUpdate)
         widgetItem->invalidateSizeCache();
     QWidget *parent;
     if (forceUpdate || !extra || extra->minw != extra->maxw || extra->minh != extra->maxh) {
-        if (!q->isWindow() && !q->isHidden() && (parent = q->parentWidget())) {
+        const int isHidden = q->isHidden() && !size_policy.retainSizeWhenHidden() && !retainSizeWhenHiddenChanged;
+
+        if (!q->isWindow() && !isHidden && (parent = q->parentWidget())) {
             if (parent->d_func()->layout)
                 parent->d_func()->layout->invalidate();
             else if (parent->isVisible())
