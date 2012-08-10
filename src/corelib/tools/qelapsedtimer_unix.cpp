@@ -47,6 +47,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <qatomic.h>
 #include "private/qcore_unix_p.h"
 
 #if defined(QT_NO_CLOCK_MONOTONIC) || defined(QT_BOOTSTRAPPED)
@@ -59,30 +60,87 @@
 
 QT_BEGIN_NAMESPACE
 
-#if (_POSIX_MONOTONIC_CLOCK-0 != 0)
-static const bool monotonicClockChecked = true;
-static const bool monotonicClockAvailable = _POSIX_MONOTONIC_CLOCK > 0;
+/*
+ * Design:
+ *
+ * POSIX offers a facility to select the system's monotonic clock when getting
+ * the current timestamp. Whereas the functions are mandatory in POSIX.1-2008,
+ * the presence of a monotonic clock is a POSIX Option (see the document
+ *  http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap02.html#tag_02_01_06 )
+ *
+ * The macro _POSIX_MONOTONIC_CLOCK can therefore assume the following values:
+ *  -1          monotonic clock is never supported on this sytem
+ *   0          monotonic clock might be supported, runtime check is needed
+ *  >1          (such as 200809L) monotonic clock is always supported
+ *
+ * The unixCheckClockType() function will return the clock to use: either
+ * CLOCK_MONOTONIC or CLOCK_REALTIME. In the case the POSIX option has a value
+ * of zero, then this function stores a static that contains the clock to be
+ * used.
+ *
+ * There's one extra case, which is when CLOCK_REALTIME isn't defined. When
+ * that's the case, we'll emulate the clock_gettime function with gettimeofday.
+ *
+ * Conforming to:
+ *  POSIX.1b-1993 section "Clocks and Timers"
+ *  included in UNIX98 (Single Unix Specification v2)
+ *  included in POSIX.1-2001
+ *  see http://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_getres.html
+ */
+
+#ifndef CLOCK_REALTIME
+#  define CLOCK_REALTIME 0
+static inline void qt_clock_gettime(int, struct timespec *ts)
+{
+    // support clock_gettime with gettimeofday
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    ts->tv_sec = tv.tv_sec;
+    ts->tv_nsec = tv.tv_usec * 1000;
+}
+
+#  ifdef _POSIX_MONOTONIC_CLOCK
+#    undef _POSIX_MONOTONIC_CLOCK
+#    define _POSIX_MONOTONIC_CLOCK -1
+#  endif
 #else
-static int monotonicClockChecked = false;
-static int monotonicClockAvailable = false;
+static inline void qt_clock_gettime(clockid_t clock, struct timespec *ts)
+{
+    clock_gettime(clock, ts);
+}
 #endif
 
-#define load_acquire(x) ((volatile const int&)(x))
-#define store_release(x,v) ((volatile int&)(x) = (v))
-
-static void unixCheckClockType()
+static int unixCheckClockType()
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 == 0)
-    if (Q_LIKELY(load_acquire(monotonicClockChecked)))
-        return;
+#if (_POSIX_MONOTONIC_CLOCK-0 == 0) && defined(_SC_MONOTONIC_CLOCK)
+    // we need a value we can store in a clockid_t that isn't a valid clock
+    // check if the valid ones are both non-negative or both non-positive
+#  if CLOCK_MONOTONIC >= 0 && CLOCK_REALTIME >= 0
+#    define IS_VALID_CLOCK(clock)    (clock >= 0)
+#    define INVALID_CLOCK            -1
+#  elif CLOCK_MONOTONIC <= 0 && CLOCK_REALTIME <= 0
+#    define IS_VALID_CLOCK(clock)    (clock <= 0)
+#    define INVALID_CLOCK            1
+#  else
+#    error "Sorry, your system has weird values for CLOCK_MONOTONIC and CLOCK_REALTIME"
+#  endif
 
-# if defined(_SC_MONOTONIC_CLOCK)
-    // detect if the system support monotonic timers
-    long x = sysconf(_SC_MONOTONIC_CLOCK);
-    store_release(monotonicClockAvailable, x >= 200112L);
-# endif
+    static QBasicAtomicInt clockToUse = Q_BASIC_ATOMIC_INITIALIZER(INVALID_CLOCK);
+    int clock = clockToUse.loadAcquire();
+    if (Q_LIKELY(IS_VALID_CLOCK(clock)))
+        return clock;
 
-    store_release(monotonicClockChecked, true);
+    // detect if the system supports monotonic timers
+    clock = sysconf(_SC_MONOTONIC_CLOCK) > 0 ? CLOCK_MONOTONIC : CLOCK_REALTIME;
+    clockToUse.storeRelease(clock);
+    return clock;
+
+#  undef INVALID_CLOCK
+#  undef IS_VALID_CLOCK
+#elif (_POSIX_MONOTONIC_CLOCK-0) > 0
+    return CLOCK_MONOTONIC;
+#else
+    return CLOCK_REALTIME;
 #endif
 }
 
@@ -93,42 +151,20 @@ static inline qint64 fractionAdjustment()
 
 bool QElapsedTimer::isMonotonic() Q_DECL_NOTHROW
 {
-    unixCheckClockType();
-    return monotonicClockAvailable;
+    return clockType() == MonotonicClock;
 }
 
 QElapsedTimer::ClockType QElapsedTimer::clockType() Q_DECL_NOTHROW
 {
-    unixCheckClockType();
-    return monotonicClockAvailable ? MonotonicClock : SystemTime;
+    return unixCheckClockType() == CLOCK_REALTIME ? SystemTime : MonotonicClock;
 }
 
 static inline void do_gettime(qint64 *sec, qint64 *frac)
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 >= 0)
-    unixCheckClockType();
-    if (Q_LIKELY(monotonicClockAvailable)) {
-        timespec ts;
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        *sec = ts.tv_sec;
-        *frac = ts.tv_nsec;
-        return;
-    }
-#endif
-#ifdef CLOCK_REALTIME
-    // even if we don't have a monotonic clock,
-    // we can use clock_gettime -> nanosecond resolution
     timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
+    qt_clock_gettime(unixCheckClockType(), &ts);
     *sec = ts.tv_sec;
     *frac = ts.tv_nsec;
-#else
-    // use gettimeofday
-    timeval tv;
-    ::gettimeofday(&tv, 0);
-    *sec = tv.tv_sec;
-    *frac = tv.tv_usec * 1000;
-#endif
 }
 
 // used in qcore_unix.cpp and qeventdispatcher_unix.cpp
