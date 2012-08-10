@@ -62,18 +62,13 @@ static int monotonicClockChecked = false;
 static int monotonicClockAvailable = false;
 #endif
 
-#ifdef Q_CC_GNU
-# define is_likely(x) __builtin_expect((x), 1)
-#else
-# define is_likely(x) (x)
-#endif
 #define load_acquire(x) ((volatile const int&)(x))
 #define store_release(x,v) ((volatile int&)(x) = (v))
 
 static void unixCheckClockType()
 {
 #if (_POSIX_MONOTONIC_CLOCK-0 == 0)
-    if (is_likely(load_acquire(monotonicClockChecked)))
+    if (Q_LIKELY(load_acquire(monotonicClockChecked)))
         return;
 
 # if defined(_SC_MONOTONIC_CLOCK)
@@ -118,7 +113,7 @@ static inline void do_gettime(qint64 *sec, qint64 *frac)
 {
 #if (_POSIX_MONOTONIC_CLOCK-0 >= 0)
     unixCheckClockType();
-    if (is_likely(monotonicClockAvailable)) {
+    if (Q_LIKELY(monotonicClockAvailable)) {
         timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
         *sec = ts.tv_sec;
