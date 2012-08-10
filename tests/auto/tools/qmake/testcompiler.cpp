@@ -244,6 +244,22 @@ bool TestCompiler::makeDistClean( const QString &workPath )
 
 }
 
+bool TestCompiler::qmakeProject( const QString &workDir, const QString &proName )
+{
+    QDir D;
+    if (!D.exists(workDir)) {
+        testOutput_.append( "Directory '" + workDir + "' doesn't exist" );
+        return errorOut();
+    }
+    D.setCurrent(workDir);
+
+    QString projectFile = proName;
+    if (!projectFile.endsWith(".pro"))
+        projectFile += ".pro";
+
+    return runCommand(qmakeCmd_ + " -project -o " + projectFile + " DESTDIR=./");
+}
+
 bool TestCompiler::qmake( const QString &workDir, const QString &proName, const QString &buildDir )
 {
     QDir D;
@@ -286,12 +302,24 @@ bool TestCompiler::exists( const QString &destDir, const QString &exeName, Build
 
 bool TestCompiler::removeMakefile( const QString &workPath )
 {
+    return removeFile( workPath, "Makefile" );
+}
+
+bool TestCompiler::removeProject( const QString &workPath, const QString &project )
+{
+    QString projectFile = project;
+    if (!projectFile.endsWith(".pro"))
+        projectFile += ".pro";
+
+    return removeFile( workPath, projectFile );
+}
+
+bool TestCompiler::removeFile( const QString &workPath, const QString &fileName )
+{
     QDir D;
     D.setCurrent( workPath );
-    if ( D.exists( "Makefile" ) )
-        return D.remove( "Makefile" );
-    else
-        return true;
+
+    return ( D.exists( fileName ) ) ? D.remove( fileName ) : true;
 }
 
 QString TestCompiler::commandOutput() const

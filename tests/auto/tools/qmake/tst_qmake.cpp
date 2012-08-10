@@ -89,6 +89,7 @@ private slots:
 #endif
     void includefunction();
     void substitutes();
+    void project();
 
 private:
     TestCompiler test_compiler;
@@ -514,6 +515,20 @@ void tst_qmake::substitutes()
     QCOMPARE(copySource.readAll(), copyDestination.readAll());
 
     QVERIFY( test_compiler.makeDistClean( buildDir ));
+}
+
+void tst_qmake::project()
+{
+    QString workDir = base_path + "/testdata/project";
+
+    QVERIFY( test_compiler.qmakeProject( workDir, "project" ));
+    QVERIFY( test_compiler.exists( workDir, "project.pro", Plain, "" ));
+    QVERIFY( test_compiler.qmake( workDir, "project" ));
+    QVERIFY( test_compiler.exists( workDir, "Makefile", Plain, "" ));
+    QVERIFY( test_compiler.make( workDir ));
+    QVERIFY( test_compiler.exists( workDir, "project", Exe, "" ));
+    QVERIFY( test_compiler.makeDistClean( workDir ));
+    QVERIFY( test_compiler.removeProject( workDir, "project" ));
 }
 
 QTEST_MAIN(tst_qmake)
