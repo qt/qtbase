@@ -99,6 +99,104 @@ namespace QtPrivate {
     template <typename... Args> struct ConnectionTypes<List<Args...>, true>
     { static const int *types() { static const int t[sizeof...(Args) + 1] = { (QtPrivate::QMetaTypeIdHelper<Args>::qt_metatype_id())..., 0 }; return t; } };
 #endif
+
+    // internal base class (interface) containing functions required to call a slot managed by a pointer to function.
+    struct QSlotObjectBase {
+        QAtomicInt ref;
+        // don't use virtual functions here; we don't want the
+        // compiler to create tons of per-polymorphic-class stuff that
+        // we'll never need. We just use one function pointer.
+        enum Operation {
+            Destroy,
+            Call,
+            Compare,
+
+            NumOperations
+        };
+        typedef bool (*ImplFn)(int which, QSlotObjectBase* this_, QObject *receiver, void **args);
+        const ImplFn impl;
+
+        explicit QSlotObjectBase(ImplFn fn) : ref(1), impl(fn) {} // ### make constexpr once QAtomicInt's ctor is, too
+        inline void destroy()                  { impl(Destroy, this, 0, 0); }
+        inline bool compare(void **a)   { return impl(Compare, this, 0, a); }
+        inline void call(QObject *r, void **a) { impl(Call,    this, r, a); }
+    protected:
+        ~QSlotObjectBase() {}
+    };
+    // implementation of QSlotObjectBase for which the slot is a pointer to member function of a QObject
+    // Args and R are the List of arguments and the returntype of the signal to which the slot is connected.
+    template<typename Func, typename Args, typename R> class QSlotObject : public QSlotObjectBase
+    {
+        typedef QtPrivate::FunctionPointer<Func> FuncType;
+        Func function;
+        static bool impl(int which, QSlotObjectBase *this_, QObject *r, void **a)
+        {
+            switch (which) {
+            case Destroy:
+                delete static_cast<QSlotObject*>(this_);
+                return true;
+            case Call:
+                FuncType::template call<Args, R>(static_cast<QSlotObject*>(this_)->function, static_cast<typename FuncType::Object *>(r), a);
+                return true;
+            case Compare:
+                return *reinterpret_cast<Func *>(a) == static_cast<QSlotObject*>(this_)->function;
+            case NumOperations: ;
+            }
+            return false;
+        }
+    public:
+        explicit QSlotObject(Func f) : QSlotObjectBase(&impl), function(f) {}
+    };
+    // implementation of QSlotObjectBase for which the slot is a static function
+    // Args and R are the List of arguments and the returntype of the signal to which the slot is connected.
+    template<typename Func, typename Args, typename R> class QStaticSlotObject : public QSlotObjectBase
+    {
+        typedef QtPrivate::FunctionPointer<Func> FuncType;
+        Func function;
+        static bool impl(int which, QSlotObjectBase *this_, QObject *r, void **a)
+        {
+            switch (which) {
+            case Destroy:
+                delete static_cast<QStaticSlotObject*>(this_);
+                return true;
+            case Call:
+                FuncType::template call<Args, R>(static_cast<QStaticSlotObject*>(this_)->function, r, a);
+                return true;
+            case Compare:
+                return false; // not implemented
+            case NumOperations: ;
+            }
+            return false;
+        }
+    public:
+        explicit QStaticSlotObject(Func f) : QSlotObjectBase(&impl), function(f) {}
+    };
+    // implementation of QSlotObjectBase for which the slot is a functor (or lambda)
+    // N is the number of arguments
+    // Args and R are the List of arguments and the returntype of the signal to which the slot is connected.
+    template<typename Func, int N, typename Args, typename R> class QFunctorSlotObject : public QSlotObjectBase
+    {
+        typedef QtPrivate::Functor<Func, N> FuncType;
+        Func function;
+        static bool impl(int which, QSlotObjectBase *this_, QObject *r, void **a)
+        {
+            switch (which) {
+            case Destroy:
+                delete static_cast<QFunctorSlotObject*>(this_);
+                return true;
+            case Call:
+                FuncType::template call<Args, R>(static_cast<QFunctorSlotObject*>(this_)->function, r, a);
+                return true;
+            case Compare:
+                return false; // not implemented
+            case NumOperations: ;
+            }
+            return false;
+        }
+    public:
+        explicit QFunctorSlotObject(const Func &f) : QSlotObjectBase(&impl), function(f) {}
+    };
+
 }
 
 

@@ -120,7 +120,7 @@ public:
         QObject *receiver;
         union {
             StaticMetaCallFunction callFunction;
-            QObject::QSlotObjectBase *slotObj;
+            QtPrivate::QSlotObjectBase *slotObj;
         };
         // The next pointer for the singly-linked ConnectionList
         Connection *nextConnectionList;
@@ -280,7 +280,7 @@ public:
     /*! \internal
         \a signalId is in the signal index range (see QObjectPrivate::signalIndex()).
     */
-    QMetaCallEvent(QObject::QSlotObjectBase *slotObj, const QObject *sender, int signalId,
+    QMetaCallEvent(QtPrivate::QSlotObjectBase *slotObj, const QObject *sender, int signalId,
                    int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
 
     ~QMetaCallEvent();
@@ -293,7 +293,7 @@ public:
     virtual void placeMetaCall(QObject *object);
 
 private:
-    QObject::QSlotObjectBase *slotObj_;
+    QtPrivate::QSlotObjectBase *slotObj_;
     const QObject *sender_;
     int signalId_;
     int nargs_;
