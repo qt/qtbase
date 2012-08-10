@@ -138,7 +138,6 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
 
 #ifndef QT_NO_LIBRARY
     typedef QMultiMap<int, QString> PluginKeyMap;
-    typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
     // check if any plugins can write the image
     QFactoryLoader *l = loader();

@@ -226,7 +226,6 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 
 #ifndef QT_NO_LIBRARY
     typedef QMultiMap<int, QString> PluginKeyMap;
-    typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
     // check if we have plugins that support the image format
     QFactoryLoader *l = loader();
