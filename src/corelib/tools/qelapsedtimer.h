@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTIMESTAMP_H
-#define QTIMESTAMP_H
+#ifndef QELAPSEDTIMER_H
+#define QELAPSEDTIMER_H
 
 #include <QtCore/qglobal.h>
 
@@ -91,4 +91,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QTIMESTAMP_H
+#endif // QELAPSEDTIMER_H
