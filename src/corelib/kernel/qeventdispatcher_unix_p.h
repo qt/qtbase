@@ -130,7 +130,7 @@ protected:
 
     virtual int select(int nfds,
                        fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
-                       timeval *timeout);
+                       timespec *timeout);
 };
 
 class Q_CORE_EXPORT QEventDispatcherUNIXPrivate : public QAbstractEventDispatcherPrivate
@@ -141,7 +141,7 @@ public:
     QEventDispatcherUNIXPrivate();
     ~QEventDispatcherUNIXPrivate();
 
-    int doSelect(QEventLoop::ProcessEventsFlags flags, timeval *timeout);
+    int doSelect(QEventLoop::ProcessEventsFlags flags, timespec *timeout);
     virtual int initThreadWakeUp();
     virtual int processThreadWakeUp(int nsel);
 

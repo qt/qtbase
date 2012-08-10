@@ -1001,9 +1001,9 @@ static int select_msecs(int nfds, fd_set *fdread, fd_set *fdwrite, int timeout)
     if (timeout < 0)
         return qt_safe_select(nfds, fdread, fdwrite, 0, 0);
 
-    struct timeval tv;
+    struct timespec tv;
     tv.tv_sec = timeout / 1000;
-    tv.tv_usec = (timeout % 1000) * 1000;
+    tv.tv_nsec = (timeout % 1000) * 1000 * 1000;
     return qt_safe_select(nfds, fdread, fdwrite, 0, &tv);
 }
 
