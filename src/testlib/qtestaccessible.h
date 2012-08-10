@@ -254,10 +254,9 @@ private:
 
 };
 
-#endif
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif
+#endif // QT_NO_ACCESSIBILITY
+#endif // QTESTACCESSIBLE_H
