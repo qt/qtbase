@@ -249,7 +249,7 @@ QT_BEGIN_NAMESPACE
     Constructs an identity matrix.
 
     All elements are set to zero except \c m11 and \c m22 (specifying
-    the scale) and \c m13 which are set to 1.
+    the scale) and \c m33 which are set to 1.
 
     \sa reset()
 */
