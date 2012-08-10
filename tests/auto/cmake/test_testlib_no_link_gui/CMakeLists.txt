@@ -5,8 +5,12 @@ project(no_link_gui)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Test REQUIRED)
+if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/FindPackageHints.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/FindPackageHints.cmake")
+endif()
+
+find_package(Qt5Gui REQUIRED HINTS ${Qt5Tests_PREFIX_PATH})
+find_package(Qt5Test REQUIRED HINTS ${Qt5Tests_PREFIX_PATH})
 
 include_directories(
     ${Qt5Gui_INCLUDE_DIRS}
