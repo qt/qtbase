@@ -118,6 +118,7 @@ QT_BEGIN_NAMESPACE
     \value DragLeave                        The cursor leaves a widget during a drag and drop operation (QDragLeaveEvent).
     \value DragMove                         A drag and drop operation is in progress (QDragMoveEvent).
     \value Drop                             A drag and drop operation is completed (QDropEvent).
+    \value DynamicPropertyChange            A dynamic property was added, changed, or removed from the object.
     \value EnabledChange                    Widget's enabled state has changed.
     \value Enter                            Mouse enters widget's boundaries.
     \value EnterEditFocus                   An editor widget gains focus for editing. QT_KEYPAD_NAVIGATION must be defined.
@@ -127,6 +128,8 @@ QT_BEGIN_NAMESPACE
     \value FocusIn                          Widget gains keyboard focus (QFocusEvent).
     \value FocusOut                         Widget loses keyboard focus (QFocusEvent).
     \value FontChange                       Widget's font has changed.
+    \value Gesture                          A gesture was triggered (QGestureEvent).
+    \value GestureOverride                  A gesture override was triggered (QGestureEvent).
     \value GrabKeyboard                     Item gains keyboard grab (QGraphicsItem only).
     \value GrabMouse                        Item gains mouse grab (QGraphicsItem only).
     \value GraphicsSceneContextMenu         Context popup menu over a graphics scene (QGraphicsSceneContextMenuEvent).
@@ -142,8 +145,8 @@ QT_BEGIN_NAMESPACE
     \value GraphicsSceneMouseMove           Move mouse in a graphics scene (QGraphicsSceneMouseEvent).
     \value GraphicsSceneMousePress          Mouse press in a graphics scene (QGraphicsSceneMouseEvent).
     \value GraphicsSceneMouseRelease        Mouse release in a graphics scene (QGraphicsSceneMouseEvent).
-    \value GraphicsSceneMove          Widget was moved (QGraphicsSceneMoveEvent).
-    \value GraphicsSceneResize          Widget was resized (QGraphicsSceneResizeEvent).
+    \value GraphicsSceneMove                Widget was moved (QGraphicsSceneMoveEvent).
+    \value GraphicsSceneResize              Widget was resized (QGraphicsSceneResizeEvent).
     \value GraphicsSceneWheel               Mouse wheel rolled in a graphics scene (QGraphicsSceneWheelEvent).
     \value Hide                             Widget was hidden (QHideEvent).
     \value HideToParent                     A child widget has been hidden.
@@ -153,6 +156,7 @@ QT_BEGIN_NAMESPACE
     \value IconDrag                         The main icon of a window has been dragged away (QIconDragEvent).
     \value IconTextChange                   Widget's icon text has been changed.
     \value InputMethod                      An input method is being used (QInputMethodEvent).
+    \value KeyboardLayoutChange             The keyboard layout has changed.
     \value KeyPress                         Key press (QKeyEvent).
     \value KeyRelease                       Key release (QKeyEvent).
     \value LanguageChange                   The application translation changed.
@@ -184,6 +188,8 @@ QT_BEGIN_NAMESPACE
     \value QueryWhatsThis                   The widget should accept the event if it has "What's This?" help.
     \value RequestSoftwareInputPanel        A widget wants to open a software input panel (SIP).
     \value Resize                           Widget's size changed (QResizeEvent).
+    \value ScrollPrepare                    The object needs to fill in its geometry information (QScrollPrepareEvent).
+    \value Scroll                           The object needs to scroll to the supplied position (QScrollEvent).
     \value Shortcut                         Key press in child for shortcut key handling (QShortcutEvent).
     \value ShortcutOverride                 Key press in child, for overriding shortcut key handling (QKeyEvent).
     \value Show                             Widget was shown on screen (QShowEvent).
@@ -204,6 +210,10 @@ QT_BEGIN_NAMESPACE
     \value ToolBarChange                    The toolbar button is toggled on Mac OS X.
     \value ToolTip                          A tooltip was requested (QHelpEvent).
     \value ToolTipChange                    The widget's tooltip has changed.
+    \value TouchBegin                       Beginning of a sequence of touch-screen or track-pad events (QTouchEvent).
+    \value TouchCancel                      Cancellation of touch-event sequence (QTouchEvent).
+    \value TouchEnd                         End of touch-event sequence (QTouchEvent).
+    \value TouchUpdate                      Touch-screen event (QTouchEvent).
     \value UngrabKeyboard                   Item loses keyboard grab (QGraphicsItem only).
     \value UngrabMouse                      Item loses mouse grab (QGraphicsItem only).
     \value UpdateLater                      The widget should be queued to be repainted at a later time.
@@ -219,18 +229,8 @@ QT_BEGIN_NAMESPACE
     \value WindowStateChange                The \l{QWidget::windowState()}{window's state} (minimized, maximized or full-screen) has changed (QWindowStateChangeEvent).
     \value WindowTitleChange                The window title has changed.
     \value WindowUnblocked                  The window is unblocked after a modal dialog exited.
+    \value WinIdChange                      The window system identifer for this native widget has changed.
     \value ZOrderChange                     The widget's z-order has changed. This event is never sent to top level windows.
-    \value KeyboardLayoutChange             The keyboard layout has changed.
-    \value DynamicPropertyChange            A dynamic property was added, changed or removed from the object.
-    \value TouchBegin                       Beginning of a sequence of touch-screen and/or track-pad events (QTouchEvent)
-    \value TouchUpdate                      Touch-screen event (QTouchEvent)
-    \value TouchEnd                         End of touch-event sequence (QTouchEvent)
-    \value TouchCancel                      Cancellation of touch-event sequence (QTouchEvent)
-    \value WinIdChange                      The window system identifer for this native widget has changed
-    \value Gesture                          A gesture was triggered (QGestureEvent)
-    \value GestureOverride                  A gesture override was triggered (QGestureEvent)
-    \value ScrollPrepare                    The object needs to fill in its geometry information (QScrollPrepareEvent)
-    \value Scroll                           The object needs to scroll to the supplied position (QScrollEvent)
 
     User events should have values between \c User and \c{MaxUser}:
 
