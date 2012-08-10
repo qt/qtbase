@@ -59,32 +59,40 @@
 
 QT_BEGIN_NAMESPACE
 
-static inline int futexFlags()
+static QBasicAtomicInt futexFlagSupport = Q_BASIC_ATOMIC_INITIALIZER(-1);
+
+static int checkFutexPrivateSupport()
 {
     int value = 0;
 #if defined(FUTEX_PRIVATE_FLAG)
     // check if the kernel supports extra futex flags
     // FUTEX_PRIVATE_FLAG appeared in v2.6.22
-    static QBasicAtomicInt futexFlagSupport = Q_BASIC_ATOMIC_INITIALIZER(-1);
+    Q_STATIC_ASSERT(FUTEX_PRIVATE_FLAG != 0x80000000);
 
-    value = futexFlagSupport.load();
-    if (value == -1) {
-        // try an operation that has no side-effects: wake up 42 threads
-        // futex will return -1 (errno==ENOSYS) if the flag isn't supported
-        // there should be no other error conditions
-        value = syscall(__NR_futex, &futexFlagSupport,
-                        FUTEX_WAKE | FUTEX_PRIVATE_FLAG,
-                        42, 0, 0, 0);
-        if (value != -1) {
-            value = FUTEX_PRIVATE_FLAG;
-            futexFlagSupport.store(value);
-            return value;
-        }
+    // try an operation that has no side-effects: wake up 42 threads
+    // futex will return -1 (errno==ENOSYS) if the flag isn't supported
+    // there should be no other error conditions
+    value = syscall(__NR_futex, &futexFlagSupport,
+                    FUTEX_WAKE | FUTEX_PRIVATE_FLAG,
+                    42, 0, 0, 0);
+    if (value != -1)
+        value = FUTEX_PRIVATE_FLAG;
+    else
         value = 0;
-        futexFlagSupport.store(value);
-    }
+
+#else
+    value = 0;
 #endif
+    futexFlagSupport.store(value);
     return value;
+}
+
+static inline int futexFlags()
+{
+    int value = futexFlagSupport.load();
+    if (Q_LIKELY(value != -1))
+        return value;
+    return checkFutexPrivateSupport();
 }
 
 static inline int _q_futex(void *addr, int op, int val, const struct timespec *timeout) Q_DECL_NOTHROW
