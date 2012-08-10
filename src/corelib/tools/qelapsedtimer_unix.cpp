@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+// ask for the latest POSIX, just in case
+#define _POSIX_C_SOURCE 200809L
+
 #include "qelapsedtimer.h"
 #include <sys/time.h>
 #include <time.h>
@@ -83,18 +86,7 @@ static void unixCheckClockType()
 
 static inline qint64 fractionAdjustment()
 {
-    // disabled, but otherwise indicates bad usage of QElapsedTimer
-    //Q_ASSERT(monotonicClockChecked);
-
-    if (monotonicClockAvailable) {
-        // the monotonic timer is measured in nanoseconds
-        // 1 ms = 1000000 ns
-        return 1000*1000ull;
-    } else {
-        // gettimeofday is measured in microseconds
-        // 1 ms = 1000 us
-        return 1000;
-    }
+    return 1000*1000ull;
 }
 
 bool QElapsedTimer::isMonotonic() Q_DECL_NOTHROW
@@ -121,11 +113,20 @@ static inline void do_gettime(qint64 *sec, qint64 *frac)
         return;
     }
 #endif
+#ifdef CLOCK_REALTIME
+    // even if we don't have a monotonic clock,
+    // we can use clock_gettime -> nanosecond resolution
+    timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    *sec = ts.tv_sec;
+    *frac = ts.tv_nsec;
+#else
     // use gettimeofday
     timeval tv;
     ::gettimeofday(&tv, 0);
     *sec = tv.tv_sec;
-    *frac = tv.tv_usec;
+    *frac = tv.tv_usec * 1000;
+#endif
 }
 
 // used in qcore_unix.cpp and qeventdispatcher_unix.cpp
@@ -136,9 +137,7 @@ timeval qt_gettime() Q_DECL_NOTHROW
 
     timeval tv;
     tv.tv_sec = sec;
-    tv.tv_usec = frac;
-    if (monotonicClockAvailable)
-        tv.tv_usec /= 1000;
+    tv.tv_usec = frac / 1000;
 
     return tv;
 }
@@ -168,8 +167,6 @@ qint64 QElapsedTimer::nsecsElapsed() const Q_DECL_NOTHROW
     do_gettime(&sec, &frac);
     sec = sec - t1;
     frac = frac - t2;
-    if (!monotonicClockAvailable)
-        frac *= 1000;
     return sec * Q_INT64_C(1000000000) + frac;
 }
 
