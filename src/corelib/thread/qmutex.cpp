@@ -152,7 +152,7 @@ QMutex::QMutex(RecursionMode mode)
 QMutex::~QMutex()
 {
     QMutexData *d = d_ptr.load();
-    if (quintptr(d) > 0x3 && d->recursive) {
+    if (isRecursive()) {
         delete static_cast<QRecursiveMutexPrivate *>(d);
     } else if (d) {
 #ifndef QT_LINUX_FUTEX
@@ -234,7 +234,12 @@ bool QBasicMutex::isRecursive() {
     QMutexData *d = d_ptr.load();
     if (quintptr(d) <= 0x3)
         return false;
+#ifdef QT_LINUX_FUTEX
+    Q_ASSERT(d->recursive);
+    return true;
+#else
     return d->recursive;
+#endif
 }
 
 
@@ -333,6 +338,9 @@ bool QBasicMutex::isRecursive() {
  */
 bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
+    if (isRecursive())
+        return static_cast<QRecursiveMutexPrivate *>(d_ptr.load())->lock(timeout);
+
     while (!fastTryLock()) {
         QMutexData *copy = d_ptr.loadAcquire();
         if (!copy) // if d is 0, the mutex is unlocked
@@ -349,8 +357,6 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
             }
             copy = newD;
             //the d->refCount is already 1 the deref will occurs when we unlock
-        } else if (copy->recursive) {
-             return static_cast<QRecursiveMutexPrivate *>(copy)->lock(timeout);
         }
 
         QMutexPrivate *d = static_cast<QMutexPrivate *>(copy);
