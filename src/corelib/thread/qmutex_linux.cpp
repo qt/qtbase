@@ -123,17 +123,18 @@ bool QBasicMutex::lockInternal(int timeout) Q_DECL_NOTHROW
         return static_cast<QRecursiveMutexPrivate *>(d)->lock(timeout);
     }
 
+    if (timeout == 0)
+        return false;
+
     QElapsedTimer elapsedTimer;
     if (timeout >= 1)
         elapsedTimer.start();
 
     while (!fastTryLock()) {
         d = d_ptr.load();
+
         if (!d) // if d is 0, the mutex is unlocked
             continue;
-        if (timeout == 0)
-            return false;
-
         // the mutex is locked already, set a bit indicating we're waiting
         while (d_ptr.fetchAndStoreAcquire(dummyFutexValue()) != 0) {
             struct timespec ts, *pts = 0;
