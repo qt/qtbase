@@ -5715,6 +5715,20 @@ if [ "$CFG_REDUCE_RELOCATIONS" = "yes" ]; then
     echo "#define QT_REDUCE_RELOCATIONS" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
+# Add compiler sub-architecture support
+echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
+echo "// Compiler sub-arch support" >>"$outpath/src/corelib/global/qconfig.h.new"
+for SUBARCH in SSE2 SSE3 SSSE3 SSE4_1 SSE4_2 AVX AVX2 \
+    IWMMXT NEON \
+    MIPS_DSP MIPS_DSPR2; do
+    eval "VAL=\$CFG_$SUBARCH"
+    case "$VAL" in
+        yes)
+            echo "#define QT_COMPILER_SUPPORTS_$SUBARCH" \
+                >>"$outpath/src/corelib/global/qconfig.h.new"
+            ;;
+    esac
+done
 
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
 
@@ -5743,7 +5757,6 @@ for DRIVER in $CFG_SQL_AVAILABLE; do
     ;;
     esac
 done
-
 
 QMakeVar set sql-drivers "$SQL_DRIVERS"
 QMakeVar set sql-plugins "$SQL_PLUGINS"

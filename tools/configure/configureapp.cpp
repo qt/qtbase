@@ -3053,6 +3053,27 @@ void Configure::generateConfigfiles()
             tmpStream << endl;
         }
 
+        tmpStream << endl << "// Compiler sub-arch support" << endl;
+        if (dictionary[ "SSE2" ] == "yes")
+            tmpStream << "#define QT_COMPILER_SUPPORTS_SSE2" << endl;
+        if (dictionary[ "SSE3" ] == "yes")
+            tmpStream << "#define QT_COMPILER_SUPPORTS_SSE3" << endl;
+        if (dictionary[ "SSSE3" ] == "yes")
+            tmpStream << "#define QT_COMPILER_SUPPORTS_SSSE3" << endl;
+        if (dictionary[ "SSE4_1" ] == "yes")
+            tmpStream << "#define QT_COMPILER_SUPPORTS_SSE4_1" << endl;
+        if (dictionary[ "SSE4_2" ] == "yes")
+            tmpStream << "#define QT_COMPILER_SUPPORTS_SSE4_2" << endl;
+        if (dictionary[ "AVX" ] == "yes")
+            tmpStream << "#define QT_COMPILER_SUPPORTS_AVX" << endl;
+        if (dictionary[ "AVX2" ] == "yes")
+            tmpStream << "#define QT_COMPILER_SUPPORTS_AVX2" << endl;
+        if (dictionary[ "IWMMXT" ] == "yes")
+            tmpStream << "#define QT_COMPILER_SUPPORTS_IWMMXT" << endl;
+        if (dictionary[ "NEON" ] == "yes")
+            tmpStream << "#define QT_COMPILER_SUPPORTS_NEON" << endl;
+
+
         tmpStream << endl << "// Compile time features" << endl;
 
         QStringList qconfigList;
