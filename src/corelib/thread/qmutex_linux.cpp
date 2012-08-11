@@ -116,13 +116,9 @@ static inline QMutexData *dummyFutexValue()
 
 bool QBasicMutex::lockInternal(int timeout) Q_DECL_NOTHROW
 {
-    // we're here because fastTryLock() has just failed
-    QMutexData *d = d_ptr.load();
-    if (quintptr(d) > 0x3) { //d == dummyLocked() || d == dummyFutexValue()
-        Q_ASSERT(d->recursive);
-        return static_cast<QRecursiveMutexPrivate *>(d)->lock(timeout);
-    }
+    Q_ASSERT(!isRecursive());
 
+    // we're here because fastTryLock() has just failed
     if (timeout == 0)
         return false;
 
@@ -167,15 +163,11 @@ void QBasicMutex::unlockInternal() Q_DECL_NOTHROW
     QMutexData *d = d_ptr.load();
     Q_ASSERT(d); //we must be locked
     Q_ASSERT(d != dummyLocked()); // testAndSetRelease(dummyLocked(), 0) failed
+    Q_UNUSED(d);
+    Q_ASSERT(!isRecursive());
 
-    if (d == dummyFutexValue()) {
-        d_ptr.fetchAndStoreRelease(0);
-        _q_futex(&d_ptr, FUTEX_WAKE, 1, 0);
-        return;
-    }
-
-    Q_ASSERT(d->recursive);
-    static_cast<QRecursiveMutexPrivate *>(d)->unlock();
+    d_ptr.fetchAndStoreRelease(0);
+    _q_futex(&d_ptr, FUTEX_WAKE, 1, 0);
 }
 
 

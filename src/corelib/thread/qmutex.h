@@ -71,7 +71,7 @@ public:
 
     inline void unlock() Q_DECL_NOTHROW {
         Q_ASSERT(d_ptr.load()); //mutex must be locked
-        if (!d_ptr.testAndSetRelease(dummyLocked(), 0))
+        if (!fastTryUnlock())
             unlockInternal();
     }
 
@@ -85,6 +85,10 @@ private:
     inline bool fastTryLock() Q_DECL_NOTHROW {
         return d_ptr.testAndSetAcquire(0, dummyLocked());
     }
+    inline bool fastTryUnlock() Q_DECL_NOTHROW {
+        return d_ptr.testAndSetRelease(dummyLocked(), 0);
+    }
+
     bool lockInternal(int timeout = -1) QT_MUTEX_LOCK_NOEXCEPT;
     void unlockInternal() Q_DECL_NOTHROW;
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -54,6 +55,19 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+static inline bool isRecursive(QMutexData *d)
+{
+    register quintptr u = quintptr(d);
+    if (Q_LIKELY(u <= 0x3))
+        return false;
+#ifdef QT_LINUX_FUTEX
+    Q_ASSERT(d->recursive);
+    return true;
+#else
+    return d->recursive;
+#endif
+}
 
 /*
     \class QBasicMutex
@@ -180,7 +194,13 @@ QMutex::~QMutex()
 */
 void QMutex::lock() QT_MUTEX_LOCK_NOEXCEPT
 {
-    QBasicMutex::lock();
+    if (fastTryLock())
+        return;
+    QMutexData *current = d_ptr.loadAcquire();
+    if (QT_PREPEND_NAMESPACE(isRecursive)(current))
+        static_cast<QRecursiveMutexPrivate *>(current)->lock(-1);
+    else
+        lockInternal();
 }
 
 /*! \fn bool QMutex::tryLock(int timeout)
@@ -208,7 +228,13 @@ void QMutex::lock() QT_MUTEX_LOCK_NOEXCEPT
 */
 bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
-    return QBasicMutex::tryLock(timeout);
+    if (fastTryLock())
+        return true;
+    QMutexData *current = d_ptr.loadAcquire();
+    if (QT_PREPEND_NAMESPACE(isRecursive)(current))
+        return static_cast<QRecursiveMutexPrivate *>(current)->lock(timeout);
+    else
+        return lockInternal(timeout);
 }
 
 /*! \fn void QMutex::unlock()
@@ -220,7 +246,13 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 */
 void QMutex::unlock() Q_DECL_NOTHROW
 {
-    QBasicMutex::unlock();
+    if (fastTryUnlock())
+        return;
+    QMutexData *current = d_ptr.loadAcquire();
+    if (QT_PREPEND_NAMESPACE(isRecursive)(current))
+        static_cast<QRecursiveMutexPrivate *>(current)->unlock();
+    else
+        unlockInternal();
 }
 
 /*!
@@ -230,16 +262,9 @@ void QMutex::unlock() Q_DECL_NOTHROW
     Returns true if the mutex is recursive
 
 */
-bool QBasicMutex::isRecursive() {
-    QMutexData *d = d_ptr.load();
-    if (quintptr(d) <= 0x3)
-        return false;
-#ifdef QT_LINUX_FUTEX
-    Q_ASSERT(d->recursive);
-    return true;
-#else
-    return d->recursive;
-#endif
+bool QBasicMutex::isRecursive()
+{
+    return QT_PREPEND_NAMESPACE(isRecursive)(d_ptr.loadAcquire());
 }
 
 
@@ -338,8 +363,7 @@ bool QBasicMutex::isRecursive() {
  */
 bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
-    if (isRecursive())
-        return static_cast<QRecursiveMutexPrivate *>(d_ptr.load())->lock(timeout);
+    Q_ASSERT(!isRecursive());
 
     while (!fastTryLock()) {
         QMutexData *copy = d_ptr.loadAcquire();
@@ -435,11 +459,7 @@ void QBasicMutex::unlockInternal() Q_DECL_NOTHROW
     QMutexData *copy = d_ptr.loadAcquire();
     Q_ASSERT(copy); //we must be locked
     Q_ASSERT(copy != dummyLocked()); // testAndSetRelease(dummyLocked(), 0) failed
-
-    if (copy->recursive) {
-        static_cast<QRecursiveMutexPrivate *>(copy)->unlock();
-        return;
-    }
+    Q_ASSERT(!isRecursive());
 
     QMutexPrivate *d = reinterpret_cast<QMutexPrivate *>(copy);
 
