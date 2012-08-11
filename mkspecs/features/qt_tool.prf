@@ -47,7 +47,7 @@ INSTALLS += target
         equals(QMAKE_DIR_SEP, /) {
             equals(QMAKE_HOST.os, Windows): \
                 var = PATH
-            else:contains(QMAKE_HOST.os, Linux): \
+            else:contains(QMAKE_HOST.os, Linux|FreeBSD): \
                 var = LD_LIBRARY_PATH
             else:equals(QMAKE_HOST.os, Darwin): \
                 var = DYLD_LIBRARY_PATH
