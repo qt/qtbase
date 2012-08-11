@@ -75,8 +75,8 @@ public:
             unlockInternal();
     }
 
-    bool tryLock(int timeout = 0) QT_MUTEX_LOCK_NOEXCEPT {
-        return fastTryLock() || lockInternal(timeout);
+    bool tryLock() Q_DECL_NOTHROW {
+        return fastTryLock();
     }
 
     bool isRecursive();
