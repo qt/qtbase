@@ -43,7 +43,6 @@
 #define QREADWRITELOCK_H
 
 #include <QtCore/qglobal.h>
-#include <limits.h> // ### Qt 5: remove
 
 QT_BEGIN_HEADER
 
