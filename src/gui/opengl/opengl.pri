@@ -29,7 +29,8 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qtriangulator_p.h \
                opengl/qrbtree_p.h \
                opengl/qopenglversionfunctions.h \
-               opengl/qopenglversionfunctionsfactory_p.h
+               opengl/qopenglversionfunctionsfactory_p.h \
+               opengl/qopenglvertexarrayobject.h
 
     SOURCES += opengl/qopengl.cpp \
                opengl/qopenglfunctions.cpp \
@@ -47,7 +48,8 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qopengltextureglyphcache.cpp \
                opengl/qtriangulator.cpp \
                opengl/qopenglversionfunctions.cpp \
-               opengl/qopenglversionfunctionsfactory.cpp
+               opengl/qopenglversionfunctionsfactory.cpp \
+               opengl/qopenglvertexarrayobject.cpp
 
 
     !contains(QT_CONFIG, opengles2) {
