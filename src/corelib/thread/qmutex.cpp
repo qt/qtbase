@@ -577,7 +577,16 @@ void QRecursiveMutexPrivate::unlock() Q_DECL_NOTHROW
     }
 }
 
-
 QT_END_NAMESPACE
+
+#ifdef QT_LINUX_FUTEX
+#  include "qmutex_linux.cpp"
+#elif defined(Q_OS_MAC)
+#  include "qmutex_mac.cpp"
+#elif defined(Q_OS_WIN)
+#  include "qmutex_win.cpp"
+#else
+#  include "qmutex_unix.cpp"
+#endif
 
 #endif // QT_NO_THREAD
