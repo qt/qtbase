@@ -184,15 +184,18 @@ bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -
     if (timeout == 0)
         return false;
 
+    struct timespec ts, *pts = 0;
     QElapsedTimer elapsedTimer;
     checkElapsedTimerIsTrivial();
-    if (IsTimed)
+    if (IsTimed) {
+        ts.tv_sec = timeout / Q_INT64_C(1000) / 1000 / 1000;
+        ts.tv_nsec = timeout % Q_INT64_C(1000) * 1000 * 1000;
         elapsedTimer.start();
+    }
 
     // the mutex is locked already, set a bit indicating we're waiting
     while (d_ptr.fetchAndStoreAcquire(dummyFutexValue()) != 0) {
-        struct timespec ts, *pts = 0;
-        if (IsTimed) {
+        if (IsTimed && pts == &ts) {
             // recalculate the timeout
             qint64 xtimeout = qint64(timeout) * 1000 * 1000;
             xtimeout -= elapsedTimer.nsecsElapsed();
@@ -202,8 +205,9 @@ bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -
             }
             ts.tv_sec = xtimeout / Q_INT64_C(1000) / 1000 / 1000;
             ts.tv_nsec = xtimeout % (Q_INT64_C(1000) * 1000 * 1000);
-            pts = &ts;
         }
+        if (IsTimed)
+            pts = &ts;
 
         // successfully set the waiting bit, now sleep
         int r = _q_futex(&d_ptr, FUTEX_WAIT, quintptr(dummyFutexValue()), pts);
