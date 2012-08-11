@@ -244,7 +244,7 @@ void QBasicMutex::unlockInternal() Q_DECL_NOTHROW
     Q_UNUSED(d);
     Q_ASSERT(!isRecursive());
 
-    d_ptr.fetchAndStoreRelease(0);
+    d_ptr.storeRelease(0);
     _q_futex(&d_ptr, FUTEX_WAKE, 1, 0);
 }
 
