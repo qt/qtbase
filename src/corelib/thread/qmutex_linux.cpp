@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -53,11 +54,70 @@
 #include <errno.h>
 #include <asm/unistd.h>
 
+#if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L
+// C++11 mode
+#  include <type_traits>
+
+static void checkElapsedTimerIsTrivial()
+{
+    Q_STATIC_ASSERT(std::has_trivial_default_constructor<QT_PREPEND_NAMESPACE(QElapsedTimer)>::value);
+}
+
+#else
+static void checkElapsedTimerIsTrivial()
+{
+}
+#endif
+
 #ifndef QT_LINUX_FUTEX
 # error "Qt build is broken: qmutex_linux.cpp is being built but futex support is not wanted"
 #endif
 
 QT_BEGIN_NAMESPACE
+
+/*
+ * QBasicMutex implementation on Linux with futexes
+ *
+ * QBasicMutex contains one pointer value, which can contain one of four
+ * different values:
+ *    0x0       unlocked, non-recursive mutex
+ *    0x1       locked non-recursive mutex, no waiters
+ *    0x3       locked non-recursive mutex, at least one waiter
+ *   > 0x3      recursive mutex, points to a QMutexPrivate object
+ *
+ * LOCKING (non-recursive):
+ *
+ * A non-recursive mutex starts in the 0x0 state, indicating that it's
+ * unlocked. When the first thread attempts to lock it, it will perform a
+ * testAndSetAcquire from 0x0 to 0x1. If that succeeds, the caller concludes
+ * that it successfully locked the mutex. That happens in fastTryLock().
+ *
+ * If that testAndSetAcquire fails, QBasicMutex::lockInternal is called.
+ *
+ * lockInternal will examine the value of the pointer. Otherwise, it will use
+ * futexes to sleep and wait for another thread to unlock. To do that, it needs
+ * to set a pointer value of 0x3, which indicates that thread is waiting. It
+ * does that by a simple fetchAndStoreAcquire operation.
+ *
+ * If the pointer value was 0x0, it means we succeeded in acquiring the mutex.
+ * For other values, it will then call FUTEX_WAIT and with an expected value of
+ * 0x3.
+ *
+ * If the pointer value changed before futex(2) managed to sleep, it will
+ * return -1 / EWOULDBLOCK, in which case we have to start over. And even if we
+ * are woken up directly by a FUTEX_WAKE, we need to acquire the mutex, so we
+ * start over again.
+ *
+ * UNLOCKING (non-recursive):
+ *
+ * To unlock, we need to set a value of 0x0 to indicate it's unlocked. The
+ * first attempt is a testAndSetRelease operation from 0x1 to 0x0. If that
+ * succeeds, we're done.
+ *
+ * If it fails, unlockInternal() is called. The only possibility is that the
+ * mutex value was 0x3, which indicates some other thread is waiting or was
+ * waiting in the past. We then set the mutex to 0x0 and perform a FUTEX_WAKE.
+ */
 
 static QBasicAtomicInt futexFlagSupport = Q_BASIC_ATOMIC_INITIALIZER(-1);
 
@@ -114,22 +174,25 @@ static inline QMutexData *dummyFutexValue()
     return reinterpret_cast<QMutexData *>(quintptr(3));
 }
 
-bool QBasicMutex::lockInternal(int timeout) Q_DECL_NOTHROW
+template <bool IsTimed> static inline
+bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -1) Q_DECL_NOTHROW
 {
-    Q_ASSERT(!isRecursive());
+    if (!IsTimed)
+        timeout = -1;
 
     // we're here because fastTryLock() has just failed
     if (timeout == 0)
         return false;
 
     QElapsedTimer elapsedTimer;
-    if (timeout >= 1)
+    checkElapsedTimerIsTrivial();
+    if (IsTimed)
         elapsedTimer.start();
 
     // the mutex is locked already, set a bit indicating we're waiting
     while (d_ptr.fetchAndStoreAcquire(dummyFutexValue()) != 0) {
         struct timespec ts, *pts = 0;
-        if (timeout >= 1) {
+        if (IsTimed) {
             // recalculate the timeout
             qint64 xtimeout = qint64(timeout) * 1000 * 1000;
             xtimeout -= elapsedTimer.nsecsElapsed();
@@ -144,7 +207,7 @@ bool QBasicMutex::lockInternal(int timeout) Q_DECL_NOTHROW
 
         // successfully set the waiting bit, now sleep
         int r = _q_futex(&d_ptr, FUTEX_WAIT, quintptr(dummyFutexValue()), pts);
-        if (r != 0 && errno == ETIMEDOUT)
+        if (IsTimed && r != 0 && errno == ETIMEDOUT)
             return false;
 
         // we got woken up, so try to acquire the mutex
@@ -154,6 +217,19 @@ bool QBasicMutex::lockInternal(int timeout) Q_DECL_NOTHROW
 
     Q_ASSERT(d_ptr.load());
     return true;
+}
+
+void QBasicMutex::lockInternal() Q_DECL_NOTHROW
+{
+    Q_ASSERT(!isRecursive());
+    lockInternal_helper<false>(d_ptr);
+}
+
+bool QBasicMutex::lockInternal(int timeout) Q_DECL_NOTHROW
+{
+    Q_ASSERT(!isRecursive());
+    Q_ASSERT(timeout >= 0);
+    return lockInternal_helper<true>(d_ptr, timeout);
 }
 
 void QBasicMutex::unlockInternal() Q_DECL_NOTHROW

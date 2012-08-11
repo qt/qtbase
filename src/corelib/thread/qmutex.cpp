@@ -361,6 +361,14 @@ bool QBasicMutex::isRecursive()
 /*!
     \internal helper for lock()
  */
+void QBasicMutex::lockInternal() QT_MUTEX_LOCK_NOEXCEPT
+{
+    lockInternal(-1);
+}
+
+/*!
+    \internal helper for lock(int)
+ */
 bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
     Q_ASSERT(!isRecursive());

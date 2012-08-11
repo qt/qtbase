@@ -89,7 +89,8 @@ private:
         return d_ptr.testAndSetRelease(dummyLocked(), 0);
     }
 
-    bool lockInternal(int timeout = -1) QT_MUTEX_LOCK_NOEXCEPT;
+    void lockInternal() QT_MUTEX_LOCK_NOEXCEPT;
+    bool lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT;
     void unlockInternal() Q_DECL_NOTHROW;
 
     QBasicAtomicPointer<QMutexData> d_ptr;
