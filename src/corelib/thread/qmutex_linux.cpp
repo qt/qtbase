@@ -126,34 +126,32 @@ bool QBasicMutex::lockInternal(int timeout) Q_DECL_NOTHROW
     if (timeout >= 1)
         elapsedTimer.start();
 
-    while (!fastTryLock()) {
-        d = d_ptr.load();
-
-        if (!d) // if d is 0, the mutex is unlocked
-            continue;
-        // the mutex is locked already, set a bit indicating we're waiting
-        while (d_ptr.fetchAndStoreAcquire(dummyFutexValue()) != 0) {
-            struct timespec ts, *pts = 0;
-            if (timeout >= 1) {
-                // recalculate the timeout
-                qint64 xtimeout = qint64(timeout) * 1000 * 1000;
-                xtimeout -= elapsedTimer.nsecsElapsed();
-                if (xtimeout <= 0) {
-                    // timer expired after we returned
-                    return false;
-                }
-                ts.tv_sec = xtimeout / Q_INT64_C(1000) / 1000 / 1000;
-                ts.tv_nsec = xtimeout % (Q_INT64_C(1000) * 1000 * 1000);
-                pts = &ts;
-            }
-
-            // successfully set the waiting bit, now sleep
-            int r = _q_futex(&d_ptr, FUTEX_WAIT, quintptr(dummyFutexValue()), pts);
-            if (r != 0 && errno == ETIMEDOUT)
+    // the mutex is locked already, set a bit indicating we're waiting
+    while (d_ptr.fetchAndStoreAcquire(dummyFutexValue()) != 0) {
+        struct timespec ts, *pts = 0;
+        if (timeout >= 1) {
+            // recalculate the timeout
+            qint64 xtimeout = qint64(timeout) * 1000 * 1000;
+            xtimeout -= elapsedTimer.nsecsElapsed();
+            if (xtimeout <= 0) {
+                // timer expired after we returned
                 return false;
+            }
+            ts.tv_sec = xtimeout / Q_INT64_C(1000) / 1000 / 1000;
+            ts.tv_nsec = xtimeout % (Q_INT64_C(1000) * 1000 * 1000);
+            pts = &ts;
         }
-        return true;
+
+        // successfully set the waiting bit, now sleep
+        int r = _q_futex(&d_ptr, FUTEX_WAIT, quintptr(dummyFutexValue()), pts);
+        if (r != 0 && errno == ETIMEDOUT)
+            return false;
+
+        // we got woken up, so try to acquire the mutex
+        // note we must set to dummyFutexValue because there could be other threads
+        // also waiting
     }
+
     Q_ASSERT(d_ptr.load());
     return true;
 }
