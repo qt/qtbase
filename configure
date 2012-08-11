@@ -797,7 +797,6 @@ D_FLAGS=
 I_FLAGS=
 L_FLAGS=
 RPATH_FLAGS=
-l_FLAGS=
 W_FLAGS=
 QCONFIG_FLAGS=
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
@@ -1949,7 +1948,7 @@ while [ "$#" -gt 0 ]; do
         RPATH_FLAGS="$RPATH_FLAGS \"${VAL}\""
         ;;
     add_link)
-        l_FLAGS="$l_FLAGS -l\"${VAL}\""
+        L_FLAGS="$L_FLAGS -l\"${VAL}\""
         ;;
     add_fpath)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
@@ -1961,7 +1960,7 @@ while [ "$#" -gt 0 ]; do
         ;;
     add_framework)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
-            l_FLAGS="$l_FLAGS -framework \"${VAL}\""
+            L_FLAGS="$L_FLAGS -framework \"${VAL}\""
         else
             UNKNOWN_OPT=yes
         fi
@@ -3741,7 +3740,7 @@ compileTest()
     path=config.tests/$1
     name=$2
     shift 2
-    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE "$@"
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS $MAC_CONFIG_TEST_COMMANDLINE "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -5362,8 +5361,7 @@ fi
 [ "$CFG_XINPUT2" = "yes" ] && QT_CONFIG="$QT_CONFIG xinput2"
 
 [ '!' -z "$DEFINES" ] && QMakeVar add DEFINES "$DEFINES"
-[ '!' -z "$L_FLAGS" ] && QMakeVar add QMAKE_LIBDIR_FLAGS "$L_FLAGS"
-[ '!' -z "$l_FLAGS" ] && QMakeVar add LIBS "$l_FLAGS"
+[ '!' -z "$L_FLAGS" ] && QMakeVar add LIBS "$L_FLAGS"
 
 if [ "$PLATFORM_MAC" = "yes" ] && [ "$QT_CROSS_COMPILE" = "no" ]; then
     if [ "$CFG_RPATH" = "yes" ]; then
