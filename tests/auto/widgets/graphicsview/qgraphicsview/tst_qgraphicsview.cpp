@@ -1720,7 +1720,7 @@ void tst_QGraphicsView::mapToScene()
 #ifdef Q_PROCESSOR_ARM
     const int step = 20;
 #else
-    const int step = 1;
+    const int step = 5;
 #endif
 
     for (int x = 0; x < view.width(); x += step) {
