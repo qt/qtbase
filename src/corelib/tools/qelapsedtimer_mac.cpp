@@ -39,8 +39,12 @@
 **
 ****************************************************************************/
 
+// ask for the latest POSIX, just in case
+#define _POSIX_C_SOURCE 200809L
+
 #include "qelapsedtimer.h"
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #include <mach/mach_time.h>
@@ -81,6 +85,15 @@ timeval qt_gettime() Q_DECL_NOTHROW
     tv.tv_sec = nsecs / 1000000000ull;
     tv.tv_usec = (nsecs / 1000) - (tv.tv_sec * 1000000);
     return tv;
+}
+
+void qt_nanosleep(timespec amount)
+{
+    // Mac doesn't have clock_nanosleep, but it does have nanosleep.
+    // nanosleep is POSIX.1-1993
+
+    int r;
+    EINTR_LOOP(r, nanosleep(&amount, &amount));
 }
 
 void QElapsedTimer::start() Q_DECL_NOTHROW

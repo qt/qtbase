@@ -454,59 +454,27 @@ void QThread::yieldCurrentThread()
     sched_yield();
 }
 
-/*
-    \internal
-    helper function to do thread sleeps, since usleep()/nanosleep()
-    aren't reliable enough (in terms of behavior and availability)
-*/
-static void thread_sleep(struct timespec *ti)
+static timespec makeTimespec(time_t secs, long nsecs)
 {
-    pthread_mutex_t mtx;
-    pthread_cond_t cnd;
-
-    pthread_mutex_init(&mtx, 0);
-    pthread_cond_init(&cnd, 0);
-
-    pthread_mutex_lock(&mtx);
-    (void) pthread_cond_timedwait(&cnd, &mtx, ti);
-    pthread_mutex_unlock(&mtx);
-
-    pthread_cond_destroy(&cnd);
-    pthread_mutex_destroy(&mtx);
+    struct timespec ts;
+    ts.tv_sec = secs;
+    ts.tv_nsec = nsecs;
+    return ts;
 }
 
 void QThread::sleep(unsigned long secs)
 {
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    struct timespec ti;
-    ti.tv_sec = tv.tv_sec + secs;
-    ti.tv_nsec = (tv.tv_usec * 1000);
-    thread_sleep(&ti);
+    qt_nanosleep(makeTimespec(secs, 0));
 }
 
 void QThread::msleep(unsigned long msecs)
 {
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    struct timespec ti;
-
-    ti.tv_nsec = (tv.tv_usec + (msecs % 1000) * 1000) * 1000;
-    ti.tv_sec = tv.tv_sec + (msecs / 1000) + (ti.tv_nsec / 1000000000);
-    ti.tv_nsec %= 1000000000;
-    thread_sleep(&ti);
+    qt_nanosleep(makeTimespec(msecs / 1000, msecs % 1000 * 1000 * 1000));
 }
 
 void QThread::usleep(unsigned long usecs)
 {
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    struct timespec ti;
-
-    ti.tv_nsec = (tv.tv_usec + (usecs % 1000000)) * 1000;
-    ti.tv_sec = tv.tv_sec + (usecs / 1000000) + (ti.tv_nsec / 1000000000);
-    ti.tv_nsec %= 1000000000;
-    thread_sleep(&ti);
+    qt_nanosleep(makeTimespec(usecs / 1000 / 1000, usecs % (1000*1000) * 1000));
 }
 
 #ifdef QT_HAS_THREAD_PRIORITY_SCHEDULING
