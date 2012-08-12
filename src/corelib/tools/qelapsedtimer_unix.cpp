@@ -47,6 +47,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "private/qcore_unix_p.h"
+
 #if defined(QT_NO_CLOCK_MONOTONIC) || defined(QT_BOOTSTRAPPED)
 // turn off the monotonic clock
 # ifdef _POSIX_MONOTONIC_CLOCK

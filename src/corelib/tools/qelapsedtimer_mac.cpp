@@ -44,6 +44,7 @@
 #include <unistd.h>
 
 #include <mach/mach_time.h>
+#include <private/qcore_unix_p.h>
 
 QT_BEGIN_NAMESPACE
 
