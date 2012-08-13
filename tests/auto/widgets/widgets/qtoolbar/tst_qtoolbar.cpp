@@ -537,7 +537,7 @@ void tst_QToolBar::actionGeometry()
     QRect rect02;
     QRect rect03;
     QRect rect04;
-    QMenu *popupMenu;
+    QMenu *popupMenu = 0;
 
     if (extensions.size() != 0)
     {
@@ -859,7 +859,7 @@ void tst_QToolBar::actionTriggered()
     QRect rect02;
     QRect rect03;
     QRect rect04;
-    QMenu *popupMenu;
+    QMenu *popupMenu = 0;
 
     if (extensions.size() != 0)
     {
@@ -881,10 +881,10 @@ void tst_QToolBar::actionTriggered()
     QRect rect3 = tb.actionGeometry(&action3);
     QRect rect4 = tb.actionGeometry(&action4);
 
-    QAbstractButton *button1;
-    QAbstractButton *button2;
-    QAbstractButton *button3;
-    QAbstractButton *button4;
+    QAbstractButton *button1 = 0;
+    QAbstractButton *button2 = 0;
+    QAbstractButton *button3 = 0;
+    QAbstractButton *button4 = 0;
 
     if (!rect01.isValid()) {
         button1 = qobject_cast<QAbstractButton *>(tb.childAt(rect1.center()));
