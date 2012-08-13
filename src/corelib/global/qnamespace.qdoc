@@ -1863,6 +1863,8 @@
 
 /*!
     \typedef Qt::WFlags
+    \obsolete
+    This typedef is obsolete. Use Qt::WindowFlags instead.
 
     Synonym for Qt::WindowFlags.
 */

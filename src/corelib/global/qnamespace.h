@@ -1410,7 +1410,9 @@ public:
     Q_DECLARE_FLAGS(MatchFlags, MatchFlag)
 
     typedef void * HANDLE;
+#if QT_DEPRECATED_SINCE(5, 0)
     typedef WindowFlags WFlags;
+#endif
 
     enum WindowModality {
         NonModal,
