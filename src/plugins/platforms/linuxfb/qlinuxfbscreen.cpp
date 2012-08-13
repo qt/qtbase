@@ -244,16 +244,6 @@ static QImage::Format determineFormat(const fb_var_screeninfo &info, int depth)
     return format;
 }
 
-static void debug(const fb_var_screeninfo &vinfo)
-{
-    qDebug("Greyscale %d", vinfo.grayscale);
-    qDebug("Nonstd %d", vinfo.nonstd);
-    qDebug("Red %d %d %d", vinfo.red.offset, vinfo.red.length, vinfo.red.msb_right);
-    qDebug("Green %d %d %d", vinfo.green.offset, vinfo.green.length, vinfo.green.msb_right);
-    qDebug("Blue %d %d %d", vinfo.blue.offset, vinfo.blue.length, vinfo.blue.msb_right);
-    qDebug("Transparent %d %d %d", vinfo.transp.offset, vinfo.transp.length, vinfo.transp.msb_right);
-}
-
 static int openTtyDevice(const QString &device)
 {
     const char *const devs[] = { "/dev/tty0", "/dev/tty", "/dev/console", 0 };
