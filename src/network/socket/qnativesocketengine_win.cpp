@@ -325,12 +325,12 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
 
     SOCKET socket = INVALID_SOCKET;
     // Windows 7 or later, try the new API
-    if (osver >= QSysInfo::WV_6_1)
+    if ((osver & QSysInfo::WV_NT_based) >= QSysInfo::WV_6_1)
         socket = ::WSASocket(protocol, type, 0, NULL, 0, WSA_FLAG_NO_HANDLE_INHERIT | WSA_FLAG_OVERLAPPED);
     // previous call fails if the windows 7 service pack 1 or hot fix isn't installed.
 
     // Try the old API if the new one failed on Windows 7, or always on earlier versions
-    if (socket == INVALID_SOCKET && osver <= QSysInfo::WV_6_1) {
+    if (socket == INVALID_SOCKET && ((osver & QSysInfo::WV_NT_based) <= QSysInfo::WV_6_1)) {
         socket = ::WSASocket(protocol, type, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 #ifdef HANDLE_FLAG_INHERIT
         if (socket != INVALID_SOCKET) {
