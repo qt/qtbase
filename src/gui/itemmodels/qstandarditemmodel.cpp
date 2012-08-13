@@ -139,6 +139,11 @@ void QStandardItemPrivate::setChild(int row, int column, QStandardItem *item,
     QStandardItem *oldItem = children.at(index);
     if (item == oldItem)
         return;
+
+    if (model && emitChanged) {
+        emit model->layoutAboutToBeChanged();
+    }
+
     if (item) {
         if (item->d_func()->parent == 0) {
             item->d_func()->setParentAndModel(q, model);
@@ -152,6 +157,10 @@ void QStandardItemPrivate::setChild(int row, int column, QStandardItem *item,
         oldItem->d_func()->setModel(0);
     delete oldItem;
     children.replace(index, item);
+
+    if (model && emitChanged)
+        emit model->layoutChanged();
+
     if (emitChanged && model)
         model->d_func()->itemChanged(item);
 }

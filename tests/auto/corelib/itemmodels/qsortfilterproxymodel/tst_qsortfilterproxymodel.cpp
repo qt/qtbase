@@ -2496,7 +2496,7 @@ void tst_QSortFilterProxyModel::staticSorting()
     }
 
     //update one item.
-    model.setItem(0, 0, new QStandardItem("girafe"));
+    items.first()->setData("girafe", Qt::DisplayRole);
 
     // make sure the proxy is updated but not sorted
     expected.replaceInStrings("bateau", "girafe");

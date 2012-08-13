@@ -240,6 +240,7 @@ private slots:
     void taskQTBUG_11466_keyboardNavigationRegression();
     void taskQTBUG_13567_removeLastItemRegression();
     void taskQTBUG_25333_adjustViewOptionsForIndex();
+    void taskQTBUG_18539_emitLayoutChanged();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -4054,6 +4055,44 @@ void tst_QTreeView::taskQTBUG_25333_adjustViewOptionsForIndex()
 
 }
 
+void tst_QTreeView::taskQTBUG_18539_emitLayoutChanged()
+{
+    QTreeView view;
+
+    QStandardItem* item = new QStandardItem("Orig");
+    QStandardItem* child = new QStandardItem("Child");
+    item->setChild(0, 0, child);
+
+    QStandardItemModel model;
+    model.appendRow(item);
+
+    view.setModel(&model);
+
+    QStandardItem* replacementItem = new QStandardItem("Replacement");
+    QStandardItem* replacementChild = new QStandardItem("ReplacementChild");
+
+    replacementItem->setChild(0, 0, replacementChild);
+
+    QSignalSpy beforeSpy(&model, SIGNAL(layoutAboutToBeChanged()));
+    QSignalSpy afterSpy(&model, SIGNAL(layoutChanged()));
+
+    QSignalSpy beforeRISpy(&model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
+    QSignalSpy afterRISpy(&model, SIGNAL(rowsInserted(QModelIndex,int,int)));
+
+    QSignalSpy beforeRRSpy(&model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
+    QSignalSpy afterRRSpy(&model, SIGNAL(rowsRemoved(QModelIndex,int,int)));
+
+    model.setItem(0, 0, replacementItem);
+
+    QCOMPARE(beforeSpy.size(), 1);
+    QCOMPARE(afterSpy.size(), 1);
+
+    QCOMPARE(beforeRISpy.size(), 0);
+    QCOMPARE(afterRISpy.size(), 0);
+
+    QCOMPARE(beforeRISpy.size(), 0);
+    QCOMPARE(afterRISpy.size(), 0);
+}
 
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"
