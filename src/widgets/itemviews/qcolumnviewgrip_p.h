@@ -74,7 +74,7 @@ public:
     int moveGrip(int offset);
 
 protected:
-    QColumnViewGrip(QColumnViewGripPrivate &, QWidget *parent = 0, Qt::WFlags f = 0);
+    QColumnViewGrip(QColumnViewGripPrivate &, QWidget *parent = 0, Qt::WindowFlags f = 0);
     void paintEvent(QPaintEvent *event);
     void mouseDoubleClickEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);

@@ -79,7 +79,7 @@ QColumnViewGrip::QColumnViewGrip(QWidget *parent)
 /*!
   \internal
 */
-QColumnViewGrip::QColumnViewGrip(QColumnViewGripPrivate & dd, QWidget *parent, Qt::WFlags f)
+QColumnViewGrip::QColumnViewGrip(QColumnViewGripPrivate & dd, QWidget *parent, Qt::WindowFlags f)
 :  QWidget(dd, parent, f)
 {
 }
