@@ -54,7 +54,9 @@
 QT_BEGIN_NAMESPACE
 
 typedef int (*PtrXcursorLibraryLoadCursor)(void *, const char *);
+#ifdef XCB_USE_XLIB
 static PtrXcursorLibraryLoadCursor ptrXcursorLibraryLoadCursor = 0;
+#endif
 static xcb_font_t cursorFont = 0;
 static int cursorCount = 0;
 
