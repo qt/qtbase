@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>QPrintPropertiesWidget</class>
- <widget class="QWidget" name="QPrintPropertiesWidget" >
-  <property name="geometry" >
+ <widget class="QWidget" name="QPrintPropertiesWidget">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,47 +10,25 @@
     <height>288</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4" >
-   <property name="margin" >
+  <layout class="QVBoxLayout" name="verticalLayout_4">
+   <property name="margin">
     <number>0</number>
    </property>
    <item>
-    <widget class="QTabWidget" name="tabs" >
-     <property name="currentIndex" >
+    <widget class="QTabWidget" name="tabs">
+     <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tabPage" >
-      <property name="geometry" >
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>392</width>
-        <height>261</height>
-       </rect>
-      </property>
-      <attribute name="title" >
+     <widget class="QWidget" name="tabPage">
+      <attribute name="title">
        <string>Page</string>
       </attribute>
-      <layout class="QHBoxLayout" name="horizontalLayout" >
+      <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QPageSetupWidget" native="1" name="pageSetup" />
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="cupsPropertiesPage" >
-      <attribute name="title" >
-       <string>Advanced</string>
-      </attribute>
-      <layout class="QHBoxLayout" name="horizontalLayout_2" >
-       <item>
-        <widget class="QTreeView" name="treeView" >
-         <property name="alternatingRowColors" >
-          <bool>true</bool>
-         </property>
-        </widget>
+        <widget class="QPageSetupWidget" name="pageSetup" native="true"/>
        </item>
       </layout>
      </widget>

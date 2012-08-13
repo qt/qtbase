@@ -99,11 +99,6 @@ Print dialog class declarations
                              allow editing of Page and Advanced tabs.
 
                              Layout in qprintpropertieswidget.ui
-
-    QPPDOptionsModel:        Holds the PPD Options for the printer.
-
-    QPPDOptionsEditor:       Edits the PPD Options for the printer.
-
 */
 
 QT_BEGIN_NAMESPACE
@@ -120,7 +115,6 @@ public:
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     void setCups(QCUPSSupport *cups) { m_cups = cups; }
-    void addItemToOptions(QOptionTreeItem *parent, QList<const ppd_option_t*>& options, QList<const char*>& markedOptions) const;
 #endif
 
     void selectPrinter();
@@ -138,7 +132,6 @@ private:
     QDialogButtonBox *m_buttons;
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     QCUPSSupport *m_cups;
-    QPPDOptionsModel *m_cupsOptionsModel;
 #endif
 };
 
@@ -234,77 +227,6 @@ public:
     QPushButton *collapseButton;
 };
 
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-class QOptionTreeItem
-{
-public:
-    enum ItemType { Root, Group, Option, Choice };
-
-    QOptionTreeItem(ItemType t, int i, const void* p, const char* desc, QOptionTreeItem* pi)
-        : type(t),
-          index(i),
-          ptr(p),
-          description(desc),
-          selected(-1),
-          selDescription(0),
-          parentItem(pi) {}
-
-    ~QOptionTreeItem() {
-        while (!childItems.isEmpty())
-            delete childItems.takeFirst();
-    }
-
-    ItemType type;
-    int index;
-    const void* ptr;
-    const char* description;
-    int selected;
-    const char* selDescription;
-    QOptionTreeItem* parentItem;
-    QList<QOptionTreeItem*> childItems;
-};
-
-class QPPDOptionsModel : public QAbstractItemModel
-{
-    friend class QPPDOptionsEditor;
-public:
-    QPPDOptionsModel(QCUPSSupport *cups, QObject *parent = 0);
-    ~QPPDOptionsModel();
-
-    int columnCount(const QModelIndex& parent = QModelIndex()) const;
-    int rowCount(const QModelIndex& parent = QModelIndex()) const;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
-    QModelIndex parent(const QModelIndex& index) const;
-    Qt::ItemFlags flags(const QModelIndex& index) const;
-    QVariant headerData ( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const;
-
-    QOptionTreeItem* rootItem;
-    QCUPSSupport *cups;
-    const ppd_file_t* ppd;
-    void parseItems();
-    void parseGroups(QOptionTreeItem* parent);
-    void parseOptions(QOptionTreeItem* parent);
-    void parseChoices(QOptionTreeItem* parent);
-};
-
-class QPPDOptionsEditor : public QStyledItemDelegate
-{
-    Q_OBJECT
-public:
-    QPPDOptionsEditor(QObject* parent = 0) : QStyledItemDelegate(parent) {}
-    ~QPPDOptionsEditor() {}
-
-    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-    void setEditorData(QWidget* editor, const QModelIndex& index) const;
-    void setModelData( QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const;
-
-private slots:
-    void cbChanged(int index);
-
-};
-
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -321,7 +243,7 @@ private slots:
 QPrintPropertiesDialog::QPrintPropertiesDialog(QAbstractPrintDialog *parent)
     : QDialog(parent)
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    , m_cups(0), m_cupsOptionsModel(0)
+    , m_cups(0)
 #endif
 {
     QVBoxLayout *lay = new QVBoxLayout(this);
@@ -338,11 +260,6 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QAbstractPrintDialog *parent)
 
 QPrintPropertiesDialog::~QPrintPropertiesDialog()
 {
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    delete m_cupsOptionsModel;
-#else
-    delete widget.cupsPropertiesPage;
-#endif
 }
 
 void QPrintPropertiesDialog::applyPrinterProperties(QPrinter *p)
@@ -353,85 +270,29 @@ void QPrintPropertiesDialog::applyPrinterProperties(QPrinter *p)
 void QPrintPropertiesDialog::setupPrinter() const
 {
     widget.pageSetup->setupPrinter();
-
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    QPPDOptionsModel* model = static_cast<QPPDOptionsModel*>(widget.treeView->model());
-    if (model) {
-        QOptionTreeItem* rootItem = model->rootItem;
-        QList<const ppd_option_t*> options;
-        QList<const char*> markedOptions;
-
-        addItemToOptions(rootItem, options, markedOptions);
-        model->cups->saveOptions(options, markedOptions);
-    }
-#endif
 }
 
 void QPrintPropertiesDialog::selectPrinter()
 {
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    widget.pageSetup->selectPrinter(m_cups);
-    widget.treeView->setModel(0);
     if (m_cups && QCUPSSupport::isAvailable()) {
-
-        if (m_cupsOptionsModel == 0) {
-            m_cupsOptionsModel = new QPPDOptionsModel(m_cups);
-
-            widget.treeView->setItemDelegate(new QPPDOptionsEditor(this));
-        } else {
-            // update the model
-            m_cupsOptionsModel->parseItems();
-        }
-
-        if (m_cupsOptionsModel->rowCount() > 0) {
-            widget.treeView->setModel(m_cupsOptionsModel);
-
-            for (int i = 0; i < m_cupsOptionsModel->rowCount(); ++i)
-                widget.treeView->expand(m_cupsOptionsModel->index(i,0));
-
-            widget.tabs->setTabEnabled(1, true); // enable the advanced tab
-        } else {
-            widget.tabs->setTabEnabled(1, false);
-        }
-
+        widget.pageSetup->selectPrinter(m_cups);
     } else
 #endif
     {
-        widget.cupsPropertiesPage->setEnabled(false);
         widget.pageSetup->selectPrinter(0);
     }
 }
 
 void QPrintPropertiesDialog::selectPdfPsPrinter(const QPrinter *p)
 {
-    widget.treeView->setModel(0);
     widget.pageSetup->selectPdfPsPrinter(p);
-    widget.tabs->setTabEnabled(1, false); // disable the advanced tab
 }
 
 void QPrintPropertiesDialog::showEvent(QShowEvent* event)
 {
-    widget.treeView->resizeColumnToContents(0);
     event->accept();
 }
-
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-void QPrintPropertiesDialog::addItemToOptions(QOptionTreeItem *parent, QList<const ppd_option_t*>& options, QList<const char*>& markedOptions) const
-{
-    for (int i = 0; i < parent->childItems.count(); ++i) {
-        QOptionTreeItem *itm = parent->childItems.at(i);
-        if (itm->type == QOptionTreeItem::Option) {
-            const ppd_option_t* opt = reinterpret_cast<const ppd_option_t*>(itm->ptr);
-            options << opt;
-            if (qstrcmp(opt->defchoice, opt->choices[itm->selected].choice) != 0) {
-                markedOptions << opt->keyword << opt->choices[itm->selected].choice;
-            }
-        } else {
-            addItemToOptions(itm, options, markedOptions);
-        }
-    }
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -1085,267 +946,6 @@ void QUnixPrintWidget::updatePrinter()
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-/*
-
-    QPPDOptionsModel
-
-    Holds the PPD Options for the printer.
-
-*/
-
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-
-QPPDOptionsModel::QPPDOptionsModel(QCUPSSupport *c, QObject *parent)
-    : QAbstractItemModel(parent), rootItem(0), cups(c), ppd(c->currentPPD())
-{
-    parseItems();
-}
-
-QPPDOptionsModel::~QPPDOptionsModel()
-{
-}
-
-int QPPDOptionsModel::columnCount(const QModelIndex&) const
-{
-    return 2;
-}
-
-int QPPDOptionsModel::rowCount(const QModelIndex& parent) const
-{
-    QOptionTreeItem* itm;
-    if (!parent.isValid())
-        itm = rootItem;
-    else
-        itm = reinterpret_cast<QOptionTreeItem*>(parent.internalPointer());
-
-    if (itm->type == QOptionTreeItem::Option)
-        return 0;
-
-    return itm->childItems.count();
-}
-
-QVariant QPPDOptionsModel::data(const QModelIndex& index, int role) const
-{
-    switch(role) {
-        case Qt::FontRole: {
-            QOptionTreeItem* itm = reinterpret_cast<QOptionTreeItem*>(index.internalPointer());
-            if (itm && itm->type == QOptionTreeItem::Group){
-                QFont font = QApplication::font();
-                font.setBold(true);
-                return QVariant(font);
-            }
-            return QVariant();
-        }
-        break;
-
-        case Qt::DisplayRole: {
-            QOptionTreeItem* itm;
-            if (!index.isValid())
-                itm = rootItem;
-            else
-                itm = reinterpret_cast<QOptionTreeItem*>(index.internalPointer());
-
-            if (index.column() == 0)
-                return cups->unicodeString(itm->description);
-            else if (itm->type == QOptionTreeItem::Option && itm->selected > -1)
-                return cups->unicodeString(itm->selDescription);
-            else
-                return QVariant();
-        }
-        break;
-
-        default:
-            return QVariant();
-    }
-    if (role != Qt::DisplayRole)
-        return QVariant();
-}
-
-QModelIndex QPPDOptionsModel::index(int row, int column, const QModelIndex& parent) const
-{
-    QOptionTreeItem* itm;
-    if (!parent.isValid())
-        itm = rootItem;
-    else
-        itm = reinterpret_cast<QOptionTreeItem*>(parent.internalPointer());
-
-    return createIndex(row, column, itm->childItems.at(row));
-}
-
-
-QModelIndex QPPDOptionsModel::parent(const QModelIndex& index) const
-{
-    if (!index.isValid())
-        return QModelIndex();
-
-    QOptionTreeItem* itm = reinterpret_cast<QOptionTreeItem*>(index.internalPointer());
-
-    if (itm->parentItem && itm->parentItem != rootItem)
-        return createIndex(itm->parentItem->index, 0, itm->parentItem);
-    else
-        return QModelIndex();
-}
-
-Qt::ItemFlags QPPDOptionsModel::flags(const QModelIndex& index) const
-{
-    if (!index.isValid() || reinterpret_cast<QOptionTreeItem*>(index.internalPointer())->type == QOptionTreeItem::Group)
-        return Qt::ItemIsEnabled;
-
-    if (index.column() == 1)
-        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
-
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-}
-
-void QPPDOptionsModel::parseItems()
-{
-    emit layoutAboutToBeChanged();
-    ppd = cups->currentPPD();
-    delete rootItem;
-    rootItem = new QOptionTreeItem(QOptionTreeItem::Root, 0, ppd, "Root Item", 0);
-    parseGroups(rootItem);
-    emit layoutChanged();
-}
-
-void QPPDOptionsModel::parseGroups(QOptionTreeItem* parent)
-{
-    if (parent->type == QOptionTreeItem::Root) {
-
-        const ppd_file_t* ppdFile = reinterpret_cast<const ppd_file_t*>(parent->ptr);
-
-        if (ppdFile) {
-            for (int i = 0; i < ppdFile->num_groups; ++i) {
-                QOptionTreeItem* group = new QOptionTreeItem(QOptionTreeItem::Group, i, &ppdFile->groups[i], ppdFile->groups[i].text, parent);
-                parent->childItems.append(group);
-                parseGroups(group); // parse possible subgroups
-                parseOptions(group); // parse options
-            }
-        }
-    } else if (parent->type == QOptionTreeItem::Group) {
-
-        const ppd_group_t* group = reinterpret_cast<const ppd_group_t*>(parent->ptr);
-
-        if (group) {
-            for (int i = 0; i < group->num_subgroups; ++i) {
-                QOptionTreeItem* subgroup = new QOptionTreeItem(QOptionTreeItem::Group, i, &group->subgroups[i], group->subgroups[i].text, parent);
-                parent->childItems.append(subgroup);
-                parseGroups(subgroup); // parse possible subgroups
-                parseOptions(subgroup); // parse options
-            }
-        }
-    }
-}
-
-void QPPDOptionsModel::parseOptions(QOptionTreeItem* parent)
-{
-    const ppd_group_t* group = reinterpret_cast<const ppd_group_t*>(parent->ptr);
-    for (int i = 0; i < group->num_options; ++i) {
-        QOptionTreeItem* opt = new QOptionTreeItem(QOptionTreeItem::Option, i, &group->options[i], group->options[i].text, parent);
-        parent->childItems.append(opt);
-        parseChoices(opt);
-    }
-}
-
-void QPPDOptionsModel::parseChoices(QOptionTreeItem* parent)
-{
-    const ppd_option_t* option = reinterpret_cast<const ppd_option_t*>(parent->ptr);
-    bool marked = false;
-    for (int i = 0; i < option->num_choices; ++i) {
-        QOptionTreeItem* choice = new QOptionTreeItem(QOptionTreeItem::Choice, i, &option->choices[i], option->choices[i].text, parent);
-        if (static_cast<int>(option->choices[i].marked) == 1) {
-            parent->selected = i;
-            parent->selDescription = option->choices[i].text;
-            marked = true;
-        } else if (!marked && qstrcmp(option->choices[i].choice, option->defchoice) == 0) {
-            parent->selected = i;
-            parent->selDescription = option->choices[i].text;
-        }
-        parent->childItems.append(choice);
-    }
-}
-
-QVariant QPPDOptionsModel::headerData(int section, Qt::Orientation, int role) const
-{
-    if (role != Qt::DisplayRole)
-        return QVariant();
-
-    switch(section){
-        case 0:
-            return QVariant(QApplication::translate("QPPDOptionsModel", "Name"));
-        case 1:
-            return QVariant(QApplication::translate("QPPDOptionsModel", "Value"));
-        default:
-            return QVariant();
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-/*
-
-    QPPDOptionsEditor
-
-    Edits the PPD Options for the printer.
-
-*/
-
-QWidget* QPPDOptionsEditor::createEditor(QWidget* parent, const QStyleOptionViewItem&, const QModelIndex& index) const
-{
-    if (index.column() == 1 && reinterpret_cast<QOptionTreeItem*>(index.internalPointer())->type == QOptionTreeItem::Option)
-        return new QComboBox(parent);
-    else
-        return 0;
-}
-
-void QPPDOptionsEditor::setEditorData(QWidget* editor, const QModelIndex& index) const
-{
-    if (index.column() != 1)
-        return;
-
-    QComboBox* cb = static_cast<QComboBox*>(editor);
-    QOptionTreeItem* itm = reinterpret_cast<QOptionTreeItem*>(index.internalPointer());
-
-    if (itm->selected == -1)
-        cb->addItem(QString());
-
-    for (int i = 0; i < itm->childItems.count(); ++i)
-        cb->addItem(QString::fromLocal8Bit(itm->childItems.at(i)->description));
-
-    if (itm->selected > -1)
-        cb->setCurrentIndex(itm->selected);
-
-    connect(cb, SIGNAL(currentIndexChanged(int)), this, SLOT(cbChanged(int)));
-}
-
-void QPPDOptionsEditor::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
-{
-    QComboBox* cb = static_cast<QComboBox*>(editor);
-    QOptionTreeItem* itm = reinterpret_cast<QOptionTreeItem*>(index.internalPointer());
-
-    if (itm->selected == cb->currentIndex())
-        return;
-
-    const ppd_option_t* opt = reinterpret_cast<const ppd_option_t*>(itm->ptr);
-    QPPDOptionsModel* m = static_cast<QPPDOptionsModel*>(model);
-
-    if (m->cups->markOption(opt->keyword, opt->choices[cb->currentIndex()].choice) == 0) {
-        itm->selected = cb->currentIndex();
-        itm->selDescription = reinterpret_cast<const ppd_option_t*>(itm->ptr)->choices[itm->selected].text;
-    }
-}
-
-void QPPDOptionsEditor::cbChanged(int)
-{
-/*
-    emit commitData(static_cast<QWidget*>(sender()));
-*/
-}
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-#endif // !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
 #endif // defined (Q_OS_UNIX)
 
 QT_END_NAMESPACE
