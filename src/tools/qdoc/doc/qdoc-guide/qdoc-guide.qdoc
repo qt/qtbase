@@ -58,6 +58,10 @@
     \li \l{Creating QDoc Configuration Files}
     \li \l{Writing Documentation}
     \li \l{Categories of Documentation}
+        \list
+        \li \l{C++ Documentation Style}
+        \li \l{QML Documentation Style}
+        \endlist
     \li \l{Configuration File Example}
     \li \l{QML Documentation Example}
     \endlist
@@ -438,6 +442,18 @@
 
     \note QDoc uses the header files to inform itself about the class and will
     not properly process QDoc comments in header files.
+
+    \section2 Language Styles
+
+    To produce quality API documentation, the Qt API references follow a
+    particular language guidelines. While the contents of this page demonstrates
+    how to create API documentation, the style guidelines demonstrate how
+    the reference materials follow a consistent use of language.
+
+    \list
+    \li \l{C++ Documentation Style}
+    \li \l{QML Documentation Style}
+    \endlist
 
     \keyword qml-documentation
     \section2 Documenting QML Types

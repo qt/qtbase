@@ -4,8 +4,8 @@ HTML.postheader = \
     " <div class=\"header\" id=\"qtdocheader\">\n" \
     "    <div class=\"content\"> \n" \
     "    <div id=\"nav-logo\">\n" \
-    "      <a href=\"index.html\">Home</a></div>\n" \
-    "    <a href=\"index.html\" class=\"qtref\"><span>QDoc Reference Documentation</span></a>\n" \
+    "      <a href=\"qdoc-index.html\">Home</a></div>\n" \
+    "    <a href=\"qdoc-index.html\" class=\"qtref\"><span>QDoc Reference Documentation</span></a>\n" \
     "    <div id=\"narrowsearch\"></div>\n" \
     "    <div id=\"nav-topright\">\n" \
     "      <ul>\n" \
@@ -19,7 +19,7 @@ HTML.postheader = \
     "    </div>\n" \
     "    <div id=\"shortCut\">\n" \
     "      <ul>\n" \
-    "        <li class=\"shortCut-topleft-inactive\"><span><a href=\"index.html\">Qt 4.7</a></span></li>\n" \
+    "        <li class=\"shortCut-topleft-inactive\"><span><a href=\"qdoc-index.html\">Qt 4.7</a></span></li>\n" \
     "        <li class=\"shortCut-topleft-active\"><a href=\"http://doc.qt.nokia.com\">ALL VERSIONS" \
     "        </a></li>\n" \
     "      </ul>\n" \
@@ -35,7 +35,7 @@ HTML.postheader = \
     "        <div class=\"toolbar\">\n" \
     "          <div class=\"breadcrumb toolblock\">\n" \
     "            <ul>\n" \
-    "              <li class=\"first\"><a href=\"index.html\">Home</a></li>\n" \
+    "              <li class=\"first\"><a href=\"qdoc-index.html\">Home</a></li>\n" \
     "              <!--  Breadcrumbs go here -->\n"
 
 HTML.postpostheader = \
@@ -85,7 +85,7 @@ HTML.footer = \
 
 # Files not referenced in any qdoc file.
 # See also extraimages.HTML
-qhp.QDoc.extraFiles = index.html \
+qhp.QDoc.extraFiles = qdoc-index.html \
                       images/bg_l.png \
                       images/bg_l_blank.png \
                       images/bg_ll_blank.png \

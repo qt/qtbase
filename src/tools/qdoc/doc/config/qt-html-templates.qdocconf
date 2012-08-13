@@ -3,11 +3,11 @@ include(qt-html-default-styles.qdocconf)
 HTML.postheader = \
     "<div class=\"header\" id=\"qtdocheader\">\n" \
     "  <div class=\"content\"> \n" \
-    "    <a href=\"index.html\" class=\"qtref\"><span>QDoc Reference Documentation</span></a>\n" \
+    "    <a href=\"qdoc-index.html\" class=\"qtref\"><span>QDoc Reference Documentation</span></a>\n" \
     "  </div>\n" \
     "  <div class=\"breadcrumb toolblock\">\n" \
     "    <ul>\n" \
-    "      <li class=\"first\"><a href=\"index.html\">Home</a></li>\n" \
+    "      <li class=\"first\"><a href=\"qdoc-index.html\">Home</a></li>\n" \
     "      <!--  Breadcrumbs go here -->\n"
 
 HTML.postpostheader = \
@@ -44,7 +44,7 @@ HTML.footer = \
 
 # Files not referenced in any qdoc file.
 # See also extraimages.HTML
-qhp.QDoc.extraFiles = index.html \
+qhp.QDoc.extraFiles = qdoc-index.html \
                       images/arrow_down.png \
                       images/breadcrumb.png \
                       images/bullet_gt.png \
