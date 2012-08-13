@@ -38,12 +38,19 @@ INSTALLS += target
     cmd = $$shell_path($$QMAKE_RESOLVED_TARGET)
     deps = $$resolve_depends(QT, "QT.")
     !isEmpty(deps) {
+        plugin_paths =
         for(dep, deps) {
             deppath += $$shell_path($$eval(QT.$${dep}.libs))
             for(rpath, QT.$${dep}.rpath_link): \
                 deppath += $$shell_path($$rpath)
+            plugin_paths += $$eval(QT.$${dep}.plugin_path) $$eval(QT.$${dep}.plugins)
         }
         deppath = $$unique(deppath)
+        plugin_paths = $$unique(plugin_paths)
+        pluginpath =
+        for(ppath, plugin_paths): \
+            exists($$ppath): \
+                pluginpath += $$shell_path($$ppath)
         equals(QMAKE_DIR_SEP, /) {
             equals(QMAKE_HOST.os, Windows): \
                 var = PATH
@@ -53,10 +60,12 @@ INSTALLS += target
                 var = DYLD_LIBRARY_PATH
             else: \
                 error("Operating system not supported.")
-            cmd = "$$var=$$join(deppath, :)${$$var:+:\$$$var} $$cmd"
+            !isEmpty(pluginpath): pluginpath = "QT_PLUGIN_PATH=$$join(pluginpath, :) "
+            cmd = "$$var=$$join(deppath, :)${$$var:+:\$$$var} $$pluginpath$$cmd"
         } else {
+            !isEmpty(pluginpath): pluginpath = "(set QT_PLUGIN_PATH=$$join(pluginpath, ;)) & "
             # Escape closing parens when expanding %PATH%, otherwise cmd confuses itself.
-            cmd = "(set PATH=$$join(deppath, ;);%PATH:)=^)%) & $$cmd"
+            cmd = "(set PATH=$$join(deppath, ;);%PATH:)=^)%) & $$pluginpath$$cmd"
         }
     }
 
