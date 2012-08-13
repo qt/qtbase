@@ -50,6 +50,7 @@
 #include <QTime>
 #include <QPointer>
 
+const QString PI_Project(QLS("Project"));
 const QString PI_TestCase(QLS("TestCase"));
 const QString PI_HostName(QLS("HostName"));
 const QString PI_HostAddress(QLS("HostAddress"));
@@ -357,9 +358,13 @@ BaselineProtocol::BaselineProtocol()
 
 BaselineProtocol::~BaselineProtocol()
 {
+    disconnect();
+}
+
+bool BaselineProtocol::disconnect()
+{
     socket.close();
-    if (socket.state() != QTcpSocket::UnconnectedState)
-        socket.waitForDisconnected(Timeout);
+    return (socket.state() == QTcpSocket::UnconnectedState) ? true : socket.waitForDisconnected(Timeout);
 }
 
 
@@ -372,7 +377,7 @@ bool BaselineProtocol::connect(const QString &testCase, bool *dryrun, const Plat
 
     socket.connectToHost(serverName, ServerPort);
     if (!socket.waitForConnected(Timeout)) {
-        sysSleep(Timeout);  // Wait a bit and try again, the server might just be restarting
+        sysSleep(3000);  // Wait a bit and try again, the server might just be restarting
         if (!socket.waitForConnected(Timeout)) {
             errMsg += QLS("TCP connectToHost failed. Host:") + serverName + QLS(" port:") + QString::number(ServerPort);
             return false;
@@ -456,6 +461,15 @@ bool BaselineProtocol::requestBaselineChecksums(const QString &testFunction, Ima
 }
 
 
+bool BaselineProtocol::submitMatch(const ImageItem &item, QByteArray *serverMsg)
+{
+    Command cmd;
+    ImageItem smallItem = item;
+    smallItem.image = QImage();  // No need to waste bandwith sending image (identical to baseline) to server
+    return (sendItem(AcceptMatch, smallItem) && receiveBlock(&cmd, serverMsg) && cmd == Ack);
+}
+
+
 bool BaselineProtocol::submitNewBaseline(const ImageItem &item, QByteArray *serverMsg)
 {
     Command cmd;
@@ -463,10 +477,15 @@ bool BaselineProtocol::submitNewBaseline(const ImageItem &item, QByteArray *serv
 }
 
 
-bool BaselineProtocol::submitMismatch(const ImageItem &item, QByteArray *serverMsg)
+bool BaselineProtocol::submitMismatch(const ImageItem &item, QByteArray *serverMsg, bool *fuzzyMatch)
 {
     Command cmd;
-    return (sendItem(AcceptMismatch, item) && receiveBlock(&cmd, serverMsg) && cmd == Ack);
+    if (sendItem(AcceptMismatch, item) && receiveBlock(&cmd, serverMsg) && (cmd == Ack || cmd == FuzzyMatch)) {
+        if (fuzzyMatch)
+            *fuzzyMatch = (cmd == FuzzyMatch);
+        return true;
+    }
+    return false;
 }
 
 

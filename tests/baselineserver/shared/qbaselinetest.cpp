@@ -41,44 +41,233 @@
 
 #include "qbaselinetest.h"
 #include "baselineprotocol.h"
+#include <QtCore/QProcess>
+#include <QtCore/QDir>
+
+#define MAXCMDLINEARGS 128
 
 namespace QBaselineTest {
 
-BaselineProtocol proto;
-bool connected = false;
-bool triedConnecting = false;
+static char *fargv[MAXCMDLINEARGS];
+static bool simfail = false;
+static PlatformInfo customInfo;
 
-QByteArray curFunction;
-ImageItemList itemList;
-bool gotBaselines;
+static BaselineProtocol proto;
+static bool connected = false;
+static bool triedConnecting = false;
+
+static QByteArray curFunction;
+static ImageItemList itemList;
+static bool gotBaselines;
+
+static QString definedTestProject;
+static QString definedTestCase;
+
+
+void handleCmdLineArgs(int *argcp, char ***argvp)
+{
+    if (!argcp || !argvp)
+        return;
+
+    bool showHelp = false;
+
+    int fargc = 0;
+    int numArgs = *argcp;
+
+    for (int i = 0; i < numArgs; i++) {
+        QByteArray arg = (*argvp)[i];
+        QByteArray nextArg = (i+1 < numArgs) ? (*argvp)[i+1] : 0;
+
+        if (arg == "-simfail") {
+            simfail = true;
+        } else if (arg == "-auto") {
+            customInfo.setAdHocRun(false);
+        } else if (arg == "-adhoc") {
+            customInfo.setAdHocRun(true);
+        } else if (arg == "-compareto") {
+            i++;
+            int split = qMax(0, nextArg.indexOf('='));
+            QByteArray key = nextArg.left(split).trimmed();
+            QByteArray value = nextArg.mid(split+1).trimmed();
+            if (key.isEmpty() || value.isEmpty()) {
+                qWarning() << "-compareto requires parameter of the form <key>=<value>";
+                showHelp = true;
+                break;
+            }
+            customInfo.addOverride(key, value);
+        } else {
+            if ( (arg == "-help") || (arg == "--help") )
+                showHelp = true;
+            if (fargc >= MAXCMDLINEARGS) {
+                qWarning() << "Too many command line arguments!";
+                break;
+            }
+            fargv[fargc++] = (*argvp)[i];
+        }
+    }
+    *argcp = fargc;
+    *argvp = fargv;
+
+    if (showHelp) {
+        // TBD: arrange for this to be printed *after* QTest's help
+        QTextStream out(stdout);
+        out << "\n Baseline testing (lancelot) options:\n";
+        out << " -simfail            : Force an image comparison mismatch. For testing purposes.\n";
+        out << " -auto               : Inform server that this run is done by a daemon, CI system or similar.\n";
+        out << " -adhoc (default)    : The inverse of -auto; this run is done by human, e.g. for testing.\n";
+        out << " -compareto KEY=VAL  : Force comparison to baselines from a different client,\n";
+        out << "                       for example: -compareto QtVersion=4.8.0\n";
+        out << "                       Multiple -compareto client specifications may be given.\n";
+        out << "\n";
+    }
+}
+
+
+void addClientProperty(const QString& key, const QString& value)
+{
+    customInfo.insert(key, value);
+}
+
+
+/*
+  If a client property script is present, run it and accept its output
+  in the form of one 'key: value' property per line
+*/
+void fetchCustomClientProperties()
+{
+    QString script = "hostinfo.sh";  //### TBD: better name
+
+    QProcess runScript;
+    runScript.setWorkingDirectory(QCoreApplication::applicationDirPath());
+    runScript.start("sh", QStringList() << script, QIODevice::ReadOnly);
+    if (!runScript.waitForFinished(5000) || runScript.error() != QProcess::UnknownError) {
+        qWarning() << "QBaselineTest: Error running script" << runScript.workingDirectory() + QDir::separator() + script << ":" << runScript.errorString();
+        qDebug() << "  stderr:" << runScript.readAllStandardError().trimmed();
+    }
+    while (!runScript.atEnd()) {
+        QByteArray line = runScript.readLine().trimmed();   // ###local8bit? utf8?
+        QString key, val;
+        int colonPos = line.indexOf(':');
+        if (colonPos > 0) {
+            key = line.left(colonPos).simplified().replace(' ', '_');
+            val = line.mid(colonPos+1).trimmed();
+        }
+        if (!key.isEmpty() && key.length() < 64 && val.length() < 256)  // ###TBD: maximum 256 chars in value?
+            addClientProperty(key, val);
+        else
+            qDebug() << "Unparseable script output ignored:" << line;
+    }
+}
 
 
 bool connect(QByteArray *msg, bool *error)
 {
-    if (!triedConnecting) {
-        triedConnecting = true;
-        if (!proto.connect(QTest::testObject()->metaObject()->className())) {
-            *msg += "Failed to connect to baseline server: " + proto.errorMessage().toLatin1();
-            *error = true;
-            return false;
-        }
-        connected = true;
+    if (connected) {
+        return true;
     }
-    if (!connected) {
+    else if (triedConnecting) {
+        // Avoid repeated connection attempts, to avoid the program using Timeout * #testItems seconds before giving up
         *msg = "Not connected to baseline server.";
         *error = true;
         return false;
     }
+
+    triedConnecting = true;
+    fetchCustomClientProperties();
+    // Merge the platform info set by the program with the protocols default info
+    PlatformInfo clientInfo = customInfo;
+    PlatformInfo defaultInfo = PlatformInfo::localHostInfo();
+    foreach (QString key, defaultInfo.keys()) {
+        if (!clientInfo.contains(key))
+            clientInfo.insert(key, defaultInfo.value(key));
+    }
+
+    if (!definedTestProject.isEmpty())
+        clientInfo.insert(PI_Project, definedTestProject);
+
+    QString testCase = definedTestCase;
+    if (testCase.isEmpty() && QTest::testObject() && QTest::testObject()->metaObject()) {
+        //qDebug() << "Trying to Read TestCaseName from Testlib!";
+        testCase = QTest::testObject()->metaObject()->className();
+    }
+    if (testCase.isEmpty()) {
+        qWarning("QBaselineTest::connect: No test case name specified, cannot connect.");
+        return false;
+    }
+
+    bool dummy;                                                // ### TBD: dryrun handling
+    if (!proto.connect(testCase, &dummy, clientInfo)) {
+        *msg += "Failed to connect to baseline server: " + proto.errorMessage().toLatin1();
+        *error = true;
+        return false;
+    }
+    connected = true;
     return true;
+}
+
+bool disconnectFromBaselineServer()
+{
+    if (proto.disconnect()) {
+        connected = false;
+        triedConnecting = false;
+        return true;
+    }
+
+    return false;
+}
+
+bool connectToBaselineServer(QByteArray *msg, const QString &testProject, const QString &testCase)
+{
+    bool dummy;
+    QByteArray dummyMsg;
+
+    definedTestProject = testProject;
+    definedTestCase = testCase;
+
+    return connect(msg ? msg : &dummyMsg, &dummy);
+}
+
+void setAutoMode(bool mode)
+{
+    customInfo.setAdHocRun(!mode);
+}
+
+void setSimFail(bool fail)
+{
+    simfail = fail;
+}
+
+
+void modifyImage(QImage *img)
+{
+    uint c0 = 0x0000ff00;
+    uint c1 = 0x0080ff00;
+    img->setPixel(1,1,c0);
+    img->setPixel(2,1,c1);
+    img->setPixel(3,1,c0);
+    img->setPixel(1,2,c1);
+    img->setPixel(1,3,c0);
+    img->setPixel(2,3,c1);
+    img->setPixel(3,3,c0);
+    img->setPixel(1,4,c1);
+    img->setPixel(1,5,c0);
 }
 
 
 bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, bool *error)
 {
     ImageItem item = baseline;
-    item.image = img;
+    if (simfail) {
+        // Simulate test failure by forcing image mismatch; for testing purposes
+        QImage misImg = img;
+        modifyImage(&misImg);
+        item.image = misImg;
+        simfail = false;                      // One failure is typically enough
+    } else {
+        item.image = img;
+    }
     item.imageChecksums.clear();
-    item.imageChecksums.prepend(ImageItem::computeChecksum(img));
+    item.imageChecksums.prepend(ImageItem::computeChecksum(item.image));
     QByteArray srvMsg;
     switch (baseline.status) {
     case ImageItem::Ok:
@@ -88,6 +277,7 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
         return true;
         break;
     case ImageItem::BaselineNotFound:
+        // ### TBD: don't submit if have overrides; will be rejected anyway
         if (proto.submitNewBaseline(item, &srvMsg))
             qDebug() << msg->constData() << "Baseline not found on server. New baseline uploaded.";
         else
@@ -101,27 +291,43 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
     }
     *error = false;
     // The actual comparison of the given image with the baseline:
-    if (baseline.imageChecksums.contains(item.imageChecksums.at(0)))
+    if (baseline.imageChecksums.contains(item.imageChecksums.at(0))) {
+        if (!proto.submitMatch(item, &srvMsg))
+            qWarning() << "Failed to report image match to server:" << srvMsg;
         return true;
-    proto.submitMismatch(item, &srvMsg);
+    }
+    bool fuzzyMatch = false;
+    bool res = proto.submitMismatch(item, &srvMsg, &fuzzyMatch);
+    if (res && fuzzyMatch) {
+        *error = true;          // To force a QSKIP/debug output; somewhat kludgy
+        *msg += srvMsg;
+        return true;            // The server decides: a fuzzy match means no mismatch
+    }
     *msg += "Mismatch. See report:\n   " + srvMsg;
     return false;
 }
 
-bool checkImage(const QImage &img, const char *name, quint16 checksum, QByteArray *msg, bool *error)
+bool checkImage(const QImage &img, const char *name, quint16 checksum, QByteArray *msg, bool *error, int manualdatatag)
 {
     if (!connected && !connect(msg, error))
         return true;
 
     QByteArray itemName;
     bool hasName = qstrlen(name);
+
     const char *tag = QTest::currentDataTag();
     if (qstrlen(tag)) {
         itemName = tag;
         if (hasName)
             itemName.append('_').append(name);
     } else {
-        itemName = hasName ? name : "default_name";
+            itemName = hasName ? name : "default_name";
+    }
+
+    if (manualdatatag > 0)
+    {
+        itemName.prepend("_");
+        itemName.prepend(QByteArray::number(manualdatatag));
     }
 
     *msg = "Baseline check of image '" + itemName + "': ";

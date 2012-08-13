@@ -53,9 +53,14 @@
 #include "baselineprotocol.h"
 #include "report.h"
 
-// #seconds between update checks
+// #seconds between checks for update of the executable
 #define HEARTBEAT 10
+// Timeout if no activity received from client, #seconds
+#define IDLE_CLIENT_TIMEOUT 3*60
+
 #define MetadataFileExt "metadata"
+#define ThumbnailExt "thumbnail.jpg"
+
 
 class BaselineServer : public QTcpServer
 {
@@ -66,7 +71,7 @@ public:
 
     static QString storagePath();
     static QString baseUrl();
-    static QString settingsFilePath();
+    static QStringList defaultPathKeys();
 
 protected:
     void incomingConnection(qintptr socketDescriptor);
@@ -81,7 +86,7 @@ private:
     int lastRunIdIdx;
     static QString storage;
     static QString url;
-    static QString settingsFile;
+    static QStringList pathKeys;
 };
 
 
@@ -106,28 +111,38 @@ class BaselineHandler : public QObject
 
 public:
     BaselineHandler(const QString &runId, int socketDescriptor = -1);
-    void testPathMapping();
+    QString projectPath(bool absolute = true) const;
     QString pathForItem(const ImageItem &item, bool isBaseline = true, bool absolute = true) const;
 
     // CGI callbacks:
     static QString view(const QString &baseline, const QString &rendered, const QString &compared);
+    static QString diffstats(const QString &baseline, const QString &rendered);
     static QString clearAllBaselines(const QString &context);
     static QString updateBaselines(const QString &context, const QString &mismatchContext, const QString &itemFile);
     static QString blacklistTest(const QString &context, const QString &itemId, bool removeFromBlacklist = false);
 
+    // for debugging
+    void testPathMapping();
+
 private slots:
     void receiveRequest();
     void receiveDisconnect();
+    void idleClientTimeout();
 
 private:
+    bool checkClient(QByteArray *errMsg, bool *dryRunMode = 0);
     bool establishConnection();
     void provideBaselineChecksums(const QByteArray &itemListBlock);
+    void recordMatch(const QByteArray &itemBlock);
     void storeImage(const QByteArray &itemBlock, bool isBaseline);
     void storeItemMetadata(const PlatformInfo &metadata, const QString &path);
     PlatformInfo fetchItemMetadata(const QString &path);
     PlatformInfo mapPlatformInfo(const PlatformInfo& orig) const;
     const char *logtime();
-    QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
+    void issueMismatchNotification();
+    bool fuzzyCompare(const QString& baselinePath, const QString& mismatchPath);
+
+    static QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
 
     BaselineProtocol proto;
     PlatformInfo clientInfo;
@@ -137,6 +152,13 @@ private:
     bool connectionEstablished;
     Report report;
     QSettings *settings;
+    QString ruleName;
+    int fuzzLevel;
+    QTimer *idleTimer;
 };
+
+
+// Make an identifer safer for use as filename and URL
+QString safeName(const QString& name);
 
 #endif // BASELINESERVER_H

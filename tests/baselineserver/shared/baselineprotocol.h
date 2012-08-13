@@ -55,6 +55,7 @@
 
 #define FileFormat "png"
 
+extern const QString PI_Project;
 extern const QString PI_TestCase;
 extern const QString PI_HostName;
 extern const QString PI_HostAddress;
@@ -111,7 +112,9 @@ public:
         Ok = 0,
         BaselineNotFound = 1,
         IgnoreItem = 2,
-        Mismatch = 3
+        Mismatch = 3,
+        FuzzyMatch = 4,
+        Error = 5
     };
 
     QString testFunction;
@@ -155,21 +158,25 @@ public:
         // Queries
         AcceptPlatformInfo = 1,
         RequestBaselineChecksums = 2,
+        AcceptMatch = 3,
         AcceptNewBaseline = 4,
         AcceptMismatch = 5,
         // Responses
         Ack = 128,
         Abort = 129,
-        DoDryRun = 130
+        DoDryRun = 130,
+        FuzzyMatch = 131
     };
 
     // For client:
 
     // For advanced client:
     bool connect(const QString &testCase, bool *dryrun = 0, const PlatformInfo& clientInfo = PlatformInfo());
+    bool disconnect();
     bool requestBaselineChecksums(const QString &testFunction, ImageItemList *itemList);
+    bool submitMatch(const ImageItem &item, QByteArray *serverMsg);
     bool submitNewBaseline(const ImageItem &item, QByteArray *serverMsg);
-    bool submitMismatch(const ImageItem &item, QByteArray *serverMsg);
+    bool submitMismatch(const ImageItem &item, QByteArray *serverMsg, bool *fuzzyMatch = 0);
 
     // For server:
     bool acceptConnection(PlatformInfo *pi);

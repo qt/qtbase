@@ -46,6 +46,7 @@
 #include <QTextStream>
 #include <QMap>
 #include <QStringList>
+#include <QSettings>
 
 class BaselineHandler;
 
@@ -55,14 +56,23 @@ public:
     Report();
     ~Report();
 
-    void init(const BaselineHandler *h, const QString &r, const PlatformInfo &p);
+    void init(const BaselineHandler *h, const QString &r, const PlatformInfo &p, const QSettings *s);
     void addItems(const ImageItemList& items);
-    void addMismatch(const ImageItem& item);
+    void addResult(const ImageItem& item);
     void end();
+
+    bool reportProduced();
+
+    int numberOfMismatches();
+    QString summary();
 
     QString filePath();
 
+    QString writeResultsXmlFiles();
+
     static void handleCGIQuery(const QString &query);
+
+    static QString generateThumbnail(const QString &image, const QString &rootDir = QString());
 
 private:
     void write();
@@ -72,13 +82,17 @@ private:
     void writeHeader();
     void writeFooter();
     QString generateCompared(const QString &baseline, const QString &rendered, bool fuzzy = false);
-    QString generateThumbnail(const QString &image);
 
+    void updateLatestPointer();
+
+    void computeStats();
+
+    bool initialized;
     const BaselineHandler *handler;
     QString runId;
     PlatformInfo plat;
     QString rootDir;
-    QString reportDir;
+    QString baseDir;
     QString path;
     QStringList testFunctions;
     QMap<QString, ImageItemList> itemLists;
@@ -87,6 +101,11 @@ private:
     int numMismatches;
     QTextStream out;
     bool hasOverride;
+    const QSettings *settings;
+
+    typedef QMap<ImageItem::ItemStatus, int> FuncStats;
+    QMap<QString, FuncStats> stats;
+    bool hasStats;
 };
 
 #endif // REPORT_H
