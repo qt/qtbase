@@ -335,7 +335,7 @@ static QTouchDevice *touchDevice = 0;
     int windowHeight = [window frame].size.height;
     NSPoint windowPoint = [theEvent locationInWindow];
     NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil];
-    QPoint qtWindowPoint = QPoint(windowPoint.x, windowHeight - windowPoint.y);
+    QPoint qtWindowPoint = QPoint(nsViewPoint.x, windowHeight - nsViewPoint.y);
     NSPoint screenPoint = [window convertBaseToScreen : windowPoint];
     QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
 
@@ -1079,6 +1079,7 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)draggedImage:(NSImage*) img endedAt:(NSPoint) point operation:(NSDragOperation) operation
 {
+    Q_UNUSED(img);
     QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
     nativeDrag->setAcceptedAction(qt_mac_mapNSDragOperation(operation));
 
@@ -1087,7 +1088,7 @@ static QTouchDevice *touchDevice = 0;
     m_buttons &= QFlag(~int(Qt::LeftButton));
 
     NSPoint windowPoint = [self convertPoint: point fromView: nil];
-    QPoint qtWindowPoint(point.x, point.y);
+    QPoint qtWindowPoint(windowPoint.x, windowPoint.y);
 
     NSWindow *window = [self window];
     NSPoint screenPoint = [window convertBaseToScreen :point];

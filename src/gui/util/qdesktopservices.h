@@ -65,7 +65,7 @@ public:
 
 #if QT_DEPRECATED_SINCE(5, 0)
     //Must match QStandardPaths::StandardLocation
-    QT_DEPRECATED enum StandardLocation {
+    enum QT_DEPRECATED StandardLocation {
         DesktopLocation,
         DocumentsLocation,
         FontsLocation,

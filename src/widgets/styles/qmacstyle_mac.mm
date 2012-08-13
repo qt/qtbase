@@ -2117,7 +2117,7 @@ QMacStyle::~QMacStyle()
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-        [d->nsscroller release];
+        [reinterpret_cast<NSScroller*>(d->nsscroller) release];
 
         NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
         [[NSNotificationCenter defaultCenter] removeObserver:receiver];
@@ -2148,12 +2148,12 @@ QPixmap QMacStylePrivate::generateBackgroundPattern() const
 */
 void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
+#if 0
     QPoint dummy;
     const QPaintDevice *target = painter->device();
     const QPaintDevice *redirected = QPainter::redirected(target, &dummy);
     //const bool usePainter = redirected && redirected != target;
 
-#if 0
     if (!usePainter && qt_mac_backgroundPattern
         && qt_mac_backgroundPattern->cacheKey() == brush.texture().cacheKey()) {
 
@@ -2233,7 +2233,7 @@ void QMacStyle::polish(QWidget* w)
             HIThemeMenuDrawInfo mtinfo;
             mtinfo.version = qt_mac_hitheme_version;
             mtinfo.menuType = kThemeMenuTypePopUp;
-            HIRect rect = CGRectMake(0, 0, px.width(), px.height());
+            // HIRect rect = CGRectMake(0, 0, px.width(), px.height());
             // ###
             //HIThemeDrawMenuBackground(&rect, &mtinfo, QCFType<CGContextRef>(qt_mac_cg_context(&px)),
             //                          kHIThemeOrientationNormal);
@@ -3889,7 +3889,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (const QStyleOptionTabV3 *tabOptV3 = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {
                 if (tabOptV3->documentMode) {
                     p->save();
-                    QRect tabRect = tabOptV3->rect;
+                    // QRect tabRect = tabOptV3->rect;
                     drawTabShape(p, tabOptV3);
                     p->restore();
                     return;
@@ -6652,7 +6652,6 @@ QMacCGContext::QMacCGContext(QPainter *p)
         if (devType == QInternal::Widget) {
             QRegion clip = p->paintEngine()->systemClip();
             QTransform native = p->deviceTransform();
-            QTransform logical = p->combinedTransform();
 
             if (p->hasClipping()) {
                 QRegion r = p->clipRegion();

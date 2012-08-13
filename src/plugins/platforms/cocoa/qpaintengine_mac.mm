@@ -154,7 +154,6 @@ QMacCGContext::QMacCGContext(QPainter *p)
         if (devType == QInternal::Widget) {
             QRegion clip = p->paintEngine()->systemClip();
             QTransform native = p->deviceTransform();
-            QTransform logical = p->combinedTransform();
 
             if (p->hasClipping()) {
                 QRegion r = p->clipRegion();

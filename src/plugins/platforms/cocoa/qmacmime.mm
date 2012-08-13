@@ -173,6 +173,7 @@ QMacPasteboardMime::~QMacPasteboardMime()
 */
 int QMacPasteboardMime::count(QMimeData *mimeData)
 {
+    Q_UNUSED(mimeData);
     return 1;
 }
 

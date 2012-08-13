@@ -356,7 +356,7 @@ Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions)
     Qt::DropActions actions = Qt::IgnoreAction;
 
     for (int i=0; dnd_enums[i].mac_code; i++) {
-        if ((dnd_enums[i].mac_code == NSDragOperationEvery))
+        if (dnd_enums[i].mac_code == NSDragOperationEvery)
             continue;
 
         if (nsActions & dnd_enums[i].mac_code)

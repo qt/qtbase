@@ -122,6 +122,7 @@ void QCocoaInputContext::connectSignals()
 
 void QCocoaInputContext::focusObjectChanged(QObject *focusObject)
 {
+    Q_UNUSED(focusObject);
     mWindow = QGuiApplication::focusWindow();
 }
 

@@ -79,6 +79,7 @@
 - (void)notificationHandler;//:(NSNotification *)notification;
 - (void)remove;
 - (void)setEngine:(QCoreWlanEngine *)coreEngine;
+- (QCoreWlanEngine *)engine;
 - (void)dealloc;
 
 @property (assign) QCoreWlanEngine* engine;
@@ -86,7 +87,6 @@
 @end
 
 @implementation QT_MANGLE_NAMESPACE(QNSListener)
-@synthesize engine;
 
 - (id) init
 {
@@ -111,6 +111,11 @@
     if(!engine)
         engine = coreEngine;
     [locker unlock];
+}
+
+-(QCoreWlanEngine *)engine
+{
+    return engine;
 }
 
 -(void)remove
