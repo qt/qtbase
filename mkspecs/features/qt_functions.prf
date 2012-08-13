@@ -51,13 +51,7 @@ defineTest(qtAddModule) {
 
     INCLUDEPATH *= $$MODULE_INCLUDES
     auto_use_privates|isEqual(2, UsePrivate) { # Tests function parameter 2 ($$2) being equal to 'UsePrivate'
-        # This adds both
-        #     <module privates include path>/
-        # and <module privates include path>/<module name>
-        # since we have code using both #include <QtCore/private/foo> and #include <private/foo>
-        # Both need to be supported with the new private includes structure
-        MODULE_INCLUDES_PRIVATES = $$eval(QT.$${1}.private_includes)
-        INCLUDEPATH += $$MODULE_INCLUDES_PRIVATES $$MODULE_INCLUDES_PRIVATES/$$MODULE_NAME
+        INCLUDEPATH += $$eval(QT.$${1}.private_includes)
     }
 
     unset(LINKAGE)

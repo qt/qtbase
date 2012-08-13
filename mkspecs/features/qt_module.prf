@@ -81,7 +81,8 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_$${MODULE}.pri
         "QT.$${MODULE}.name = $$TARGET" \
         "QT.$${MODULE}.bins = \$\$QT_MODULE_BIN_BASE" \
         "QT.$${MODULE}.includes = \$\$QT_MODULE_INCLUDE_BASE \$\$QT_MODULE_INCLUDE_BASE/$$TARGET" \
-        "QT.$${MODULE}.private_includes = \$\$QT_MODULE_INCLUDE_BASE/$$TARGET/\$\$QT.$${MODULE}.VERSION" \
+        "QT.$${MODULE}.private_includes = \$\$QT_MODULE_INCLUDE_BASE/$$TARGET/\$\$QT.$${MODULE}.VERSION \
+                                          \$\$QT_MODULE_INCLUDE_BASE/$$TARGET/\$\$QT.$${MODULE}.VERSION/$$TARGET" \
         "QT.$${MODULE}.sources = $$val_escape(_PRO_FILE_PWD_)" \
         "QT.$${MODULE}.libs = \$\$QT_MODULE_LIB_BASE" \
         "QT.$${MODULE}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
@@ -105,7 +106,6 @@ MODULE_INCLUDES = $$eval(QT.$${MODULE}.includes)
 MODULE_PRIVATE_INCLUDES = $$eval(QT.$${MODULE}.private_includes)
 INCLUDEPATH *= $$MODULE_INCLUDES
 INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES
-INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES/$$TARGET
 
 load(qt_module_headers)
 
