@@ -1914,8 +1914,12 @@ void QComboBox::setModel(QAbstractItemModel *model)
     connect(model, SIGNAL(modelReset()),
             this, SLOT(_q_modelReset()));
 
-    if (d->container)
+    if (d->container) {
         d->container->itemView()->setModel(model);
+        connect(d->container->itemView()->selectionModel(),
+                SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+                this, SLOT(_q_emitHighlighted(QModelIndex)), Qt::UniqueConnection);
+    }
 
     bool currentReset = false;
 
