@@ -2888,6 +2888,11 @@ void Configure::generateQConfigPri()
         configStream << "QT_HOST_ARCH = " << dictionary["QT_HOST_ARCH"] << endl;
         configStream << "QT_CPU_FEATURES = " << dictionary["QT_CPU_FEATURES"] << endl;
         configStream << "QT_HOST_CPU_FEATURES = " << dictionary["QT_HOST_CPU_FEATURES"] << endl;
+        if (!dictionary["XQMAKESPEC"].isEmpty() && !dictionary["XQMAKESPEC"].startsWith("wince")) {
+            // FIXME: add detection
+            configStream << "QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib" << endl;
+            configStream << "QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include" << endl;
+        }
         if (dictionary["QT_EDITION"].contains("OPENSOURCE"))
             configStream << "QT_EDITION = " << QLatin1String("OpenSource") << endl;
         else

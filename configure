@@ -2542,6 +2542,7 @@ if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
         exit 1
     fi
 fi
+TEST_COMPILER_CXXFLAGS=`getXQMakeConf QMAKE_CXXFLAGS`
 
 GCC_MACHINE_DUMP=
 case "$TEST_COMPILER" in *g++) GCC_MACHINE_DUMP=$($TEST_COMPILER -dumpmachine);; esac
@@ -2567,7 +2568,6 @@ fi
 
 # auto-detect support for separate debug info in objcopy
 if [ "$CFG_SEPARATE_DEBUG_INFO" != "no" ] && [ "$CFG_SHARED" = "yes" ]; then
-    TEST_COMPILER_CXXFLAGS=`getXQMakeConf QMAKE_CXXFLAGS`
     TEST_OBJCOPY=`getXQMakeConf QMAKE_OBJCOPY`
     COMPILER_WITH_FLAGS="$TEST_COMPILER $TEST_COMPILER_CXXFLAGS"
     if "$unixtests/objcopy.test" "$COMPILER_WITH_FLAGS" "$TEST_OBJCOPY" "$OPT_VERBOSE"; then
@@ -2631,6 +2631,20 @@ if [ "$BUILD_ON_MAC" = "yes" ]; then
 else
     CFG_FRAMEWORK=no
 fi
+
+# auto-detect default include and library search paths
+gccout=`$TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null`
+libdirs=`echo "$gccout" | sed -n -e 's/^LIBRARY_PATH=\(.*\)/\1/p'`
+DEFAULT_LIBDIRS=`IFS=:; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done | sort -u`
+DEFAULT_INCDIRS=`echo "$gccout" | awk '
+/^End of search/ { yup=0 }
+yup { print substr($0, 2) }
+/^\#include </ { yup=1 }
+' | sort -u`
+test -z "$DEFAULT_LIBDIRS" && DEFAULT_LIBDIRS="/lib
+/usr/lib"
+test -z "$DEFAULT_INCDIRS" && DEFAULT_INCDIRS="/usr/include
+/usr/local/include"
 
 #setup the build parts
 if [ -z "$CFG_BUILD_PARTS" ]; then
@@ -5891,6 +5905,8 @@ QT_ARCH = $CFG_ARCH
 QT_HOST_ARCH = $CFG_HOST_ARCH
 QT_CPU_FEATURES = $CFG_CPUFEATURES
 QT_HOST_CPU_FEATURES = $CFG_HOST_CPUFEATURES
+QMAKE_DEFAULT_LIBDIRS = `echo "$DEFAULT_LIBDIRS" | sed 's,^,",;s,$,",' | tr '\n' ' '`
+QMAKE_DEFAULT_INCDIRS = `echo "$DEFAULT_INCDIRS" | sed 's,^,",;s,$,",' | tr '\n' ' '`
 QT_EDITION = $Edition
 QT_CONFIG += $QT_CONFIG
 
