@@ -392,9 +392,7 @@ void QThreadPoolPrivate::stealRunnable(QRunnable *runnable)
     QThreadPool.
 
     Note that QThreadPool is a low-level class for managing threads, see
-    QtConcurrent::run() or the other
-    \l {Concurrent Programming}{Qt Concurrent} APIs for higher
-    level alternatives.
+    the Qt Concurrent module for higher level alternatives.
 
     \sa QRunnable
 */

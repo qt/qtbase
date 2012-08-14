@@ -163,7 +163,7 @@
     \endtable
 
     In general, it is recommended to only use safe and tested paths and to
-    avoid introducing ad-hoc threading concepts. QtConcurrent provides an easy
+    avoid introducing ad-hoc threading concepts. The QtConcurrent module provides an easy
     interface for distributing work to all of the processor's cores. The
     threading code is completely hidden in the QtConcurrent framework, so you
     don't have to take care of the details. However, QtConcurrent can't be used
