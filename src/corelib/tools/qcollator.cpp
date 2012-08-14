@@ -116,6 +116,8 @@ static const char * const collationStrings[collationStringsCount] = {
     \class QCollator
     \brief The QCollator class compares strings according to a localized collation algorithm.
 
+    \internal
+
     \reentrant
     \ingroup i18n
     \ingroup string-processing
