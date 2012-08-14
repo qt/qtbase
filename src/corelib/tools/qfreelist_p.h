@@ -124,7 +124,7 @@ struct Q_AUTOTEST_EXPORT QFreeListDefaultConstants
         SerialMask = ~IndexMask & ~0x80000000,
         SerialCounter = IndexMask + 1,
         MaxIndex = IndexMask,
-        BlockCount = 4,
+        BlockCount = 4
     };
 
     static const int Sizes[BlockCount];

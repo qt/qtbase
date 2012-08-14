@@ -56,7 +56,7 @@ struct QtTimerIdFreeListConstants : public QFreeListDefaultConstants
     enum
     {
         InitialNextValue = 1,
-        BlockCount = 6,
+        BlockCount = 6
     };
 
     static const int Sizes[BlockCount];

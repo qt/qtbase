@@ -164,7 +164,7 @@ static int tis620_2[128] = {
 enum ThaiFontType {
     TIS,
     WIN,
-    MAC,
+    MAC
 };
 
 static int thai_get_glyph_index (ThaiFontType font_type, unsigned char c)
