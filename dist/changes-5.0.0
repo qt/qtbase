@@ -401,6 +401,17 @@ QtCore
   attacks exploiting algorithmic complexity, by supporting two-arguments overloads
   of the qHash() hashing function.
 
+* [QTBUG-4844] QObject::disconnectNotify() is now called when a receiver is destroyed.
+
+* QStateMachine
+  - [QTBUG-15430] Added a QStateMachine constructor that takes a ChildMode parameter.
+  - [QTBUG-17975] Delayed event posting now works from secondary threads.
+  - [QTBUG-19789] Signal transitions now work correctly when the sender is in a different thread.
+  - [QTBUG-20362] Property assignments now work as expected with nested, parallel states.
+  - [QTBUG-22931] The root state can now be a parallel state group.
+  - [QTBUG-24307] The initial state is now entered before the started() signal is emitted.
+  - [QTBUG-25959] State entry and exit order is now SCXML spec-compliant.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via
@@ -496,7 +507,32 @@ QtOpenGL
 
 QtScript
 --------
-
+* [QTBUG-2124]  Added default conversion for long and unsigned long.
+* [QTBUG-6133]  Fixed QScriptContextInfo::functionMetaIndex() for overloaded
+  slots.
+* [QTBUG-15213] Doc: Added missing properties to the ECMAScript reference.
+* [QTBUG-15956] Doc: Removed wrong information about Error .stack properties.
+* [QTBUG-17915] Fixed a crash when a JS property descriptor was only partially
+  defined.
+* [QTBUG-18188] Fixed a regression that caused contexts created by
+  QScriptEngine::pushContext() to inherit the parent context's scope.
+* [QTBUG-18201] Suppressed 'LEAK' messages on stderr at application exit.
+* [QTBUG-20378] Fixed QtScriptTools compilation when some features are disabled.
+* [QTBUG-20845] Fixed a precision bug in the calculator example.
+* [QTBUG-21548] Fixed a crash in QScriptEngineDebugger when the QScriptEngine
+  being debugged was deleted.
+* [QTBUG-21760] Fixed a crash when accessing QObject properties through an
+  activation object.
+* [QTBUG-21896] Fixed a crash when converting an invalid JS value to a string.
+* [QTBUG-21993] Fixed a bug that caused QObject wrapper objects created with
+  the PreferExistingWrapperObject option to not be garbage collected, even if
+  the object was not referenced anywhere in the scripting environment.
+* [QTBUG-22152] Fixed build issue on Solaris.
+* [QTBUG-23871] Fixed a JIT crash on x86-64 caused by out-of-range branch
+  instructions.
+* [QTBUG-26261] Fixed a crash when a queued signal handler no longer existed.
+* [QTBUG-26590] Fixed a bug that caused QObjects with script connections to
+  not be garbage collected as expected.
 
 QTestLib
 --------
