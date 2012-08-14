@@ -295,6 +295,15 @@ inline DWORD GetGlyphOutline( HDC /*hdc*/, UINT /*uChar*/, INT /*fuFormat*/, GLY
     return GDI_ERROR;
 }
 
+inline HWND GetAncestor(HWND hWnd, UINT /*gaFlags*/)
+{
+    return GetParent(hWnd);
+}
+
+#ifndef GA_PARENT
+#  define GA_PARENT 1
+#endif
+
 #ifndef SPI_SETFONTSMOOTHINGTYPE
 #  define SPI_SETFONTSMOOTHINGTYPE 0x200B
 #endif
