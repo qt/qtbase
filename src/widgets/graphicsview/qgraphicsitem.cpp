@@ -2297,7 +2297,8 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     }
 
     // Update children with explicitly = false.
-    const bool updateChildren = update && !(flags & QGraphicsItem::ItemClipsChildrenToShape);
+    const bool updateChildren = update && !((flags & QGraphicsItem::ItemClipsChildrenToShape)
+                                            && !(flags & QGraphicsItem::ItemHasNoContents));
     foreach (QGraphicsItem *child, children) {
         if (!newVisible || !child->d_ptr->explicitlyHidden)
             child->d_ptr->setVisibleHelper(newVisible, false, updateChildren);

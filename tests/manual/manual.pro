@@ -9,6 +9,7 @@ network_remote_stresstest \
 network_stresstest \
 qcursor \
 qdesktopwidget \
+qgraphicsitem \
 qgraphicsitemgroup \
 qgraphicslayout/flicker \
 qhttpnetworkconnection \
