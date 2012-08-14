@@ -431,7 +431,7 @@ QMetaCallEvent::QMetaCallEvent(QObject::QSlotObjectBase *slotO, const QObject *s
                                int nargs, int *types, void **args, QSemaphore *semaphore)
     : QEvent(MetaCall), slotObj_(slotO), sender_(sender), signalId_(signalId),
       nargs_(nargs), types_(types), args_(args), semaphore_(semaphore),
-      callFunction_(0), method_offset_(0), method_relative_(-1)
+      callFunction_(0), method_offset_(0), method_relative_(ushort(-1))
 {
     if (slotObj_)
         slotObj_->ref.ref();
