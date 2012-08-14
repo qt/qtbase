@@ -379,6 +379,28 @@ QBasicAtomicInt qt_cpu_features = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 void qDetectCpuFeatures()
 {
+#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+# if (__GNUC__ * 100 + __GNUC_MINOR__) < 403
+    // GCC 4.2 (at least the one that comes with Apple's XCode, on Mac) is
+    // known to be broken beyond repair in dealing with the inline assembly
+    // above. It will generate bad code that could corrupt important registers
+    // like the PIC register. The behaviour of code after this function would
+    // be totally unpredictable.
+    //
+    // For that reason, simply forego the CPUID check at all and return the set
+    // of features that we found at compile time, through the #defines from the
+    // compiler. This should at least allow code to execute, even if none of
+    // the specialised code found in QtGui and elsewhere will ever be enabled
+    // (it's the user's fault for using a broken compiler).
+    //
+    // This also disables the runtime checking that the processor actually
+    // contains all the features that the code required. Qt 4 ran for years
+    // like that, so it shouldn't be a problem.
+
+    qt_cpu_features.store(minFeature | QSimdInitialized);
+    return;
+# endif
+#endif
     uint f = detectProcessorFeatures();
     QByteArray disable = qgetenv("QT_NO_CPU_FEATURE");
     if (!disable.isEmpty()) {
