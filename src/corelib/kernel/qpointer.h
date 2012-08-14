@@ -97,7 +97,7 @@ public:
     { return data(); }
 #ifdef qdoc
     inline bool isNull() const;
-    inline void clear() const;
+    inline void clear();
 #else
     using QPointerBase::isNull;
     using QPointerBase::clear;
