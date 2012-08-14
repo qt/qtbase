@@ -419,6 +419,8 @@ QAbstractTextDocumentLayout::~QAbstractTextDocumentLayout()
     \note registerHandler() has to be called once for each object type. This
     means that there is only one handler for multiple replacement characters
     of the same object type.
+
+    The text document layout does not take ownership of \c component.
 */
 void QAbstractTextDocumentLayout::registerHandler(int formatType, QObject *component)
 {
