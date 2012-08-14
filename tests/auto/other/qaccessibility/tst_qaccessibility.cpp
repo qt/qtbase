@@ -1907,6 +1907,22 @@ void tst_QAccessibility::lineEditTest()
     }
 
     {
+        QLineEdit le(QStringLiteral("My characters have geometries."), toplevel);
+        // characterRect()
+        le.show();
+        QTest::qWaitForWindowShown(&le);
+        QAIPtr iface(QAccessible::queryAccessibleInterface(&le));
+        QAccessibleTextInterface* textIface = iface->textInterface();
+        QVERIFY(textIface);
+        const QRect lineEditRect = iface->rect();
+        // Only first 10 characters, check if they are within the bounds of line edit
+        for (int i = 0; i < 10; ++i) {
+            QVERIFY(lineEditRect.contains(textIface->characterRect(i)));
+        }
+        QTestAccessibility::clearEvents();
+    }
+
+    {
     // Test events: cursor movement, selection, text changes
     QString text = "Hello, world";
     QLineEdit *lineEdit = new QLineEdit(text, toplevel);
