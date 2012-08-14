@@ -364,7 +364,14 @@ class Q_CORE_EXPORT QVariant
     };
     struct Private
     {
-        inline Private(): type(Invalid), is_shared(false), is_null(true) { data.ptr = 0; }
+        inline Private(): type(Invalid), is_shared(false), is_null(true)
+        { data.ptr = 0; }
+
+        // Internal constructor for initialized variants.
+        explicit inline Private(uint variantType)
+            : type(variantType), is_shared(false), is_null(false)
+        {}
+
         inline Private(const Private &other)
             : data(other.data), type(other.type),
               is_shared(other.is_shared), is_null(other.is_null)

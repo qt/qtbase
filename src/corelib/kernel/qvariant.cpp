@@ -1431,71 +1431,126 @@ QVariant::QVariant(int typeId, const void *copy, uint flags)
 }
 
 QVariant::QVariant(int val)
-{ d.is_null = false; d.type = Int; d.data.i = val; }
+    : d(Int)
+{ d.data.i = val; }
 QVariant::QVariant(uint val)
-{ d.is_null = false; d.type = UInt; d.data.u = val; }
+    : d(UInt)
+{ d.data.u = val; }
 QVariant::QVariant(qlonglong val)
-{ d.is_null = false; d.type = LongLong; d.data.ll = val; }
+    : d(LongLong)
+{ d.data.ll = val; }
 QVariant::QVariant(qulonglong val)
-{ d.is_null = false; d.type = ULongLong; d.data.ull = val; }
+    : d(ULongLong)
+{ d.data.ull = val; }
 QVariant::QVariant(bool val)
-{ d.is_null = false; d.type = Bool; d.data.b = val; }
+    : d(Bool)
+{ d.data.b = val; }
 QVariant::QVariant(double val)
-{ d.is_null = false; d.type = Double; d.data.d = val; }
+    : d(Double)
+{ d.data.d = val; }
 
 QVariant::QVariant(const QByteArray &val)
-{ d.is_null = false; d.type = ByteArray; v_construct<QByteArray>(&d, val); }
+    : d(ByteArray)
+{ v_construct<QByteArray>(&d, val); }
 QVariant::QVariant(const QBitArray &val)
-{ d.is_null = false; d.type = BitArray; v_construct<QBitArray>(&d, val);  }
+    : d(BitArray)
+{ v_construct<QBitArray>(&d, val);  }
 QVariant::QVariant(const QString &val)
-{ d.is_null = false; d.type = String; v_construct<QString>(&d, val);  }
+    : d(String)
+{ v_construct<QString>(&d, val);  }
 QVariant::QVariant(QChar val)
-{ d.is_null = false; d.type = Char; v_construct<QChar>(&d, val);  }
+    : d(Char)
+{ v_construct<QChar>(&d, val);  }
 QVariant::QVariant(QLatin1String val)
-{ QString str(val); d.is_null = false; d.type = String; v_construct<QString>(&d, str); }
+    : d(String)
+{ v_construct<QString>(&d, val); }
 QVariant::QVariant(const QStringList &val)
-{ d.is_null = false; d.type = StringList; v_construct<QStringList>(&d, val); }
+    : d(StringList)
+{ v_construct<QStringList>(&d, val); }
 
 QVariant::QVariant(const QDate &val)
-{ d.is_null = false; d.type = Date; v_construct<QDate>(&d, val); }
+    : d(Date)
+{ v_construct<QDate>(&d, val); }
 QVariant::QVariant(const QTime &val)
-{ d.is_null = false; d.type = Time; v_construct<QTime>(&d, val); }
+    : d(Time)
+{ v_construct<QTime>(&d, val); }
 QVariant::QVariant(const QDateTime &val)
-{ d.is_null = false; d.type = DateTime; v_construct<QDateTime>(&d, val); }
+    : d(DateTime)
+{ v_construct<QDateTime>(&d, val); }
 #ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QEasingCurve &val)
-{ d.is_null = false; d.type = EasingCurve; v_construct<QEasingCurve>(&d, val); }
+    : d(EasingCurve)
+{ v_construct<QEasingCurve>(&d, val); }
 #endif
 QVariant::QVariant(const QList<QVariant> &list)
-{ d.is_null = false; d.type = List; v_construct<QVariantList>(&d, list); }
+    : d(List)
+{ v_construct<QVariantList>(&d, list); }
 QVariant::QVariant(const QMap<QString, QVariant> &map)
-{ d.is_null = false; d.type = Map; v_construct<QVariantMap>(&d, map); }
+    : d(Map)
+{ v_construct<QVariantMap>(&d, map); }
 QVariant::QVariant(const QHash<QString, QVariant> &hash)
-{ d.is_null = false; d.type = Hash; v_construct<QVariantHash>(&d, hash); }
+    : d(Hash)
+{ v_construct<QVariantHash>(&d, hash); }
 #ifndef QT_NO_GEOM_VARIANT
-QVariant::QVariant(const QPoint &pt) { d.is_null = false; d.type = Point; v_construct<QPoint>(&d, pt); }
-QVariant::QVariant(const QPointF &pt) { d.is_null = false; d.type = PointF; v_construct<QPointF>(&d, pt); }
-QVariant::QVariant(const QRectF &r) { d.is_null = false; d.type = RectF; v_construct<QRectF>(&d, r); }
-QVariant::QVariant(const QLineF &l) { d.is_null = false; d.type = LineF; v_construct<QLineF>(&d, l); }
-QVariant::QVariant(const QLine &l) { d.is_null = false; d.type = Line; v_construct<QLine>(&d, l); }
-QVariant::QVariant(const QRect &r) { d.is_null = false; d.type = Rect; v_construct<QRect>(&d, r); }
-QVariant::QVariant(const QSize &s) { d.is_null = false; d.type = Size; v_construct<QSize>(&d, s); }
-QVariant::QVariant(const QSizeF &s) { d.is_null = false; d.type = SizeF; v_construct<QSizeF>(&d, s); }
+QVariant::QVariant(const QPoint &pt)
+    : d(Point)
+{ v_construct<QPoint>(&d, pt); }
+QVariant::QVariant(const QPointF &pt)
+    : d(PointF)
+{ v_construct<QPointF>(&d, pt); }
+QVariant::QVariant(const QRectF &r)
+    : d(RectF)
+{ v_construct<QRectF>(&d, r); }
+QVariant::QVariant(const QLineF &l)
+    : d(LineF)
+{ v_construct<QLineF>(&d, l); }
+QVariant::QVariant(const QLine &l)
+    : d(Line)
+{ v_construct<QLine>(&d, l); }
+QVariant::QVariant(const QRect &r)
+    : d(Rect)
+{ v_construct<QRect>(&d, r); }
+QVariant::QVariant(const QSize &s)
+    : d(Size)
+{ v_construct<QSize>(&d, s); }
+QVariant::QVariant(const QSizeF &s)
+    : d(SizeF)
+{ v_construct<QSizeF>(&d, s); }
 #endif
 #ifndef QT_BOOTSTRAPPED
-QVariant::QVariant(const QUrl &u) { d.is_null = false; d.type = Url; v_construct<QUrl>(&d, u); }
+QVariant::QVariant(const QUrl &u)
+    : d(Url)
+{ v_construct<QUrl>(&d, u); }
 #endif
-QVariant::QVariant(const QLocale &l) { d.is_null = false; d.type = Locale; v_construct<QLocale>(&d, l); }
+QVariant::QVariant(const QLocale &l)
+    : d(Locale)
+{ v_construct<QLocale>(&d, l); }
 #ifndef QT_NO_REGEXP
-QVariant::QVariant(const QRegExp &regExp) { d.is_null = false; d.type = RegExp; v_construct<QRegExp>(&d, regExp); }
+QVariant::QVariant(const QRegExp &regExp)
+    : d(RegExp)
+{ v_construct<QRegExp>(&d, regExp); }
 #ifndef QT_BOOTSTRAPPED
-QVariant::QVariant(const QRegularExpression &re) { d.is_null = false; d.type = QMetaType::QRegularExpression; v_construct<QRegularExpression>(&d, re); }
-QVariant::QVariant(const QUuid &uuid) { d.is_null = false; d.type = QMetaType::QUuid; v_construct<QUuid>(&d, uuid); }
-QVariant::QVariant(const QModelIndex &modelIndex) { d.is_null = false; d.type = QMetaType::QModelIndex; v_construct<QModelIndex>(&d, modelIndex); }
-QVariant::QVariant(const QJsonValue &jsonValue) { d.is_null = false; d.type = QMetaType::QJsonValue; v_construct<QJsonValue>(&d, jsonValue); }
-QVariant::QVariant(const QJsonObject &jsonObject) { d.is_null = false; d.type = QMetaType::QJsonObject; v_construct<QJsonObject>(&d, jsonObject); }
-QVariant::QVariant(const QJsonArray &jsonArray) { d.is_null = false; d.type = QMetaType::QJsonArray; v_construct<QJsonArray>(&d, jsonArray); }
-QVariant::QVariant(const QJsonDocument &jsonDocument) { d.is_null = false; d.type = QMetaType::QJsonDocument; v_construct<QJsonDocument>(&d, jsonDocument); }
+QVariant::QVariant(const QRegularExpression &re)
+    : d(RegularExpression)
+{ v_construct<QRegularExpression>(&d, re); }
+QVariant::QVariant(const QUuid &uuid)
+    : d(Uuid)
+{ v_construct<QUuid>(&d, uuid); }
+QVariant::QVariant(const QModelIndex &modelIndex)
+    : d(ModelIndex)
+{ v_construct<QModelIndex>(&d, modelIndex); }
+QVariant::QVariant(const QJsonValue &jsonValue)
+    : d(QMetaType::QJsonValue)
+{ v_construct<QJsonValue>(&d, jsonValue); }
+QVariant::QVariant(const QJsonObject &jsonObject)
+    : d(QMetaType::QJsonObject)
+{ v_construct<QJsonObject>(&d, jsonObject); }
+QVariant::QVariant(const QJsonArray &jsonArray)
+    : d(QMetaType::QJsonArray)
+{ v_construct<QJsonArray>(&d, jsonArray); }
+QVariant::QVariant(const QJsonDocument &jsonDocument)
+    : d(QMetaType::QJsonDocument)
+{ v_construct<QJsonDocument>(&d, jsonDocument); }
 #endif // QT_BOOTSTRAPPED
 #endif // QT_NO_REGEXP
 
