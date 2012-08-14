@@ -51,5 +51,5 @@ int main(int argc, char *argv[])
     Server server;
     server.show();
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-    return server.exec();
+    return app.exec();
 }
