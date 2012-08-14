@@ -50,7 +50,7 @@ HB_Error  HB_Load_GSUB_Table( HB_Stream stream,
 			      HB_GDEFHeader*  gdef,
                               HB_Stream       gdefStream )
 {
-  HB_Error         error;
+  HB_Error         error = HB_Err_Ok;
   HB_UInt         cur_offset, new_offset, base_offset;
 
   HB_GSUBHeader*  gsub;

@@ -82,7 +82,7 @@ HB_Error  HB_New_GDEF_Table( HB_GDEFHeader** retptr )
 HB_Error  HB_Load_GDEF_Table( HB_Stream stream, 
 			      HB_GDEFHeader** retptr )
 {
-  HB_Error         error;
+  HB_Error         error = HB_Err_Ok;
   HB_UInt         cur_offset, new_offset, base_offset;
 
   HB_GDEFHeader*  gdef;

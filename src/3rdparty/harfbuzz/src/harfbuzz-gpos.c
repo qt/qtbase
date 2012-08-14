@@ -85,7 +85,7 @@ HB_Error  HB_Load_GPOS_Table( HB_Stream stream,
 
   HB_GPOSHeader*  gpos;
 
-  HB_Error   error;
+  HB_Error   error = HB_Err_Ok;
 
 
   if ( !retptr )
