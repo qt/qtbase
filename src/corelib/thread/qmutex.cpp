@@ -520,7 +520,7 @@ bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
     }
     bool success = true;
     if (timeout == -1) {
-        mutex.lock();
+        mutex.QBasicMutex::lock();
     } else {
         success = mutex.tryLock(timeout);
     }
@@ -539,7 +539,7 @@ void QRecursiveMutexPrivate::unlock() Q_DECL_NOTHROW
         count--;
     } else {
         owner = 0;
-        mutex.unlock();
+        mutex.QBasicMutex::unlock();
     }
 }
 
