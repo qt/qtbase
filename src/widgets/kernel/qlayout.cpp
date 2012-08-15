@@ -1192,11 +1192,6 @@ int QLayout::indexOf(QWidget *widget) const
 
     \value SetNoConstraint  The widget is not constrained.
 
-    \omitvalue Auto
-    \omitvalue FreeResize
-    \omitvalue Minimum
-    \omitvalue Fixed
-
     \sa setSizeConstraint()
 */
 
