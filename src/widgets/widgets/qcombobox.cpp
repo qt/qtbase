@@ -754,12 +754,6 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     \value InsertAfterCurrent   The string is inserted after the current item in the combobox.
     \value InsertBeforeCurrent  The string is inserted before the current item in the combobox.
     \value InsertAlphabetically The string is inserted in the alphabetic order in the combobox.
-    \omitvalue NoInsertion
-    \omitvalue AtTop
-    \omitvalue AtCurrent
-    \omitvalue AtBottom
-    \omitvalue AfterCurrent
-    \omitvalue BeforeCurrent
 */
 
 /*!
@@ -883,7 +877,7 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
 
     When the user enters a new string in an editable combobox, the
     widget may or may not insert it, and it can insert it in several
-    locations. The default policy is is \l AtBottom but you can change
+    locations. The default policy is is \l InsertAtBottom but you can change
     this using setInsertPolicy().
 
     It is possible to constrain the input to an editable combobox
@@ -1488,7 +1482,7 @@ int QComboBox::findData(const QVariant &data, int role, Qt::MatchFlags flags) co
     \brief the policy used to determine where user-inserted items should
     appear in the combobox
 
-    The default value is \l AtBottom, indicating that new items will appear
+    The default value is \l InsertAtBottom, indicating that new items will appear
     at the bottom of the list of items.
 
     \sa InsertPolicy
@@ -2599,12 +2593,6 @@ void QComboBox::clear()
 }
 
 /*!
-    \fn void QComboBox::clearValidator()
-
-    Use setValidator(0) instead.
-*/
-
-/*!
     Clears the contents of the line edit used for editing in the combobox.
 */
 void QComboBox::clearEditText()
@@ -3077,47 +3065,6 @@ QVariant QComboBox::inputMethodQuery(Qt::InputMethodQuery query) const
 }
 
 /*!
-    \fn bool QComboBox::editable() const
-
-    Use isEditable() instead.
-*/
-
-/*!
-    \fn void QComboBox::insertItem(const QPixmap &pixmap, int index)
-
-    Use an insertItem() function that takes a QIcon instead, for
-    example, insertItem(index, QIcon(pixmap)).
-*/
-
-/*!
-    \fn void QComboBox::insertItem(const QPixmap &pixmap, const QString &text, int index)
-
-    Use an insertItem() function that takes a QIcon instead, for
-    example, insertItem(index, QIcon(pixmap), text).
-
-    \sa insertItems()
-*/
-
-/*!
-    \fn void QComboBox::changeItem(const QString &text, int index)
-
-    Use setItemText() instead.
-*/
-
-/*!
-    \fn void QComboBox::changeItem(const QPixmap &pixmap, int index)
-
-    Use setItemIcon() instead, for example,
-    setItemIcon(index, QIcon(pixmap)).
-*/
-
-/*!
-    \fn void QComboBox::changeItem(const QPixmap &pixmap, const QString &text, int index)
-
-    Use setItem() instead, for example, setItem(index, QIcon(pixmap),text).
-*/
-
-/*!
     \fn void QComboBox::addItem(const QString &text, const QVariant &userData)
 
     Adds an item to the combobox with the given \a text, and
@@ -3201,30 +3148,6 @@ void QComboBox::setModelColumn(int visibleColumn)
 #endif
     setCurrentIndex(currentIndex()); //update the text to the text of the new column;
 }
-
-/*!
-    \fn int QComboBox::currentItem() const
-
-    Use currentIndex() instead.
-*/
-
-/*!
-    \fn void QComboBox::setCurrentItem(int)
-
-    Use setCurrentIndex(int) instead.
-*/
-
-/*!
-    \fn void QComboBox::popup()
-
-    Use showPopup() instead.
-*/
-
-/*!
-    \fn void QComboBox::textChanged(const QString &text)
-
-    Use the editTextChanged(const QString &text) signal instead.
-*/
 
 QT_END_NAMESPACE
 
