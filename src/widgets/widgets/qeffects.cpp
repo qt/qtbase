@@ -474,8 +474,6 @@ void QRollEffect::run(int time)
     show();
     setEnabled(false);
 
-    qApp->installEventFilter(this);
-
     showWidget = true;
     done = false;
     anim.start(1);
@@ -535,7 +533,6 @@ void QRollEffect::scroll()
     }
     if (done || !widget) {
         anim.stop();
-        qApp->removeEventFilter(this);
         if (widget) {
             if (!showWidget) {
 #ifdef Q_OS_WIN
