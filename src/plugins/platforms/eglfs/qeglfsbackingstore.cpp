@@ -124,8 +124,8 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 
     GLfloat x1 = (r.left() / sr.width()) * 2 - 1;
     GLfloat x2 = (r.right() / sr.width()) * 2 - 1;
-    GLfloat y1 = (r.top() / sr.height()) * 2 - 1;
-    GLfloat y2 = (r.bottom() / sr.height()) * 2 - 1;
+    GLfloat y1 = -1 * ((r.top() / sr.height()) * 2 - 1);
+    GLfloat y2 = -1 * ((r.bottom() / sr.height()) * 2 - 1);
 
     const GLfloat vertexCoordinates[] = {
         x1, y1,
