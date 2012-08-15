@@ -70,6 +70,7 @@ public:
     inline QSet<T> &operator=(const QSet<T> &other)
         { q_hash = other.q_hash; return *this; }
 #ifdef Q_COMPILER_RVALUE_REFS
+    inline QSet(QSet &&other) : q_hash(qMove(other.q_hash)) {}
     inline QSet<T> &operator=(QSet<T> &&other)
         { qSwap(q_hash, other.q_hash); return *this; }
 #endif
