@@ -139,13 +139,6 @@ inline void QFramePrivate::init()
     the line width to 2 pixels. WinPanel is provided for compatibility.
     For GUI style independence we recommend using StyledPanel instead.
 
-    \omitvalue GroupBoxPanel
-    \omitvalue ToolBarPanel
-    \omitvalue MenuBarPanel
-    \omitvalue PopupPanel
-    \omitvalue LineEditPanel
-    \omitvalue TabWidgetPanel
-
     When it does not call QStyle, Shape interacts with QFrame::Shadow,
     the lineWidth() and the midLineWidth() to create the total result.
     See the picture of the frames in the main class documentation.
@@ -186,9 +179,6 @@ inline void QFramePrivate::init()
 
     \value Shadow_Mask The \l Shadow part of frameStyle()
     \value Shape_Mask  The \l Shape part of frameStyle()
-
-    \omitvalue MShadow
-    \omitvalue MShape
 
     Normally, you don't need to use these, since frameShadow() and
     frameShape() already extract the \l Shadow and the \l Shape parts
