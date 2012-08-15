@@ -1399,7 +1399,7 @@ static inline void addRectToWinRegion(const QRect &rect, HRGN *winRegion)
     if (const HRGN rectRegion = createRectRegion(rect)) {
         HRGN result = CreateRectRgn(0, 0, 0, 0);
         if (CombineRgn(result, *winRegion, rectRegion, RGN_OR)) {
-            DeleteObject(winRegion);
+            DeleteObject(*winRegion);
             *winRegion = result;
         }
         DeleteObject(rectRegion);
