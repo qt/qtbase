@@ -62,6 +62,10 @@ information about a particular change.
 - QMetaType:
   * QMetaType::construct() has been renamed to QMetaType::create().
   * QMetaType::unregisterType() has been removed.
+  * QMetaType now records if the type argument inherits QObject. This
+    can be used in scripting APIs, so that custom QObject subclasses
+    are treated as QObject pointers. In QtScript for example, this can
+    mean that QScriptValue.isQObject can be true where it was false before.
   * QMetaType::QWidgetStar has been removed. Use qMetaTypeId<QWidget*>()
     or QVariant::canConvert<QWidget*>() as appropriate.
 
