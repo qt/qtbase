@@ -35,7 +35,8 @@ Cpp.ignoretokens        = QT_ASCII_CAST_WARN \
                           Q_GADGET \
                           Q_INVOKABLE \
                           Q_DECL_CONSTEXPR \
-                          Q_DECL_NOEXCEPT
+                          Q_DECL_NOEXCEPT \
+                          Q_DECL_NOTHROW
 Cpp.ignoredirectives    = Q_DECLARE_INTERFACE \
                           Q_DECLARE_METATYPE \
                           Q_DECLARE_OPERATORS_FOR_FLAGS \
