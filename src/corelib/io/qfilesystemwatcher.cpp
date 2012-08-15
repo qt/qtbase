@@ -51,11 +51,14 @@
 #include <qset.h>
 #include <qtimer.h>
 
+#if defined(Q_OS_LINUX) || (defined(Q_OS_QNX) && !defined(QT_NO_INOTIFY))
+#define USE_INOTIFY
+#endif
 
 #include "qfilesystemwatcher_polling_p.h"
 #if defined(Q_OS_WIN)
 #  include "qfilesystemwatcher_win_p.h"
-#elif defined(Q_OS_LINUX)
+#elif defined(USE_INOTIFY)
 #  include "qfilesystemwatcher_inotify_p.h"
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_MAC)
 #  include "qfilesystemwatcher_kqueue_p.h"
@@ -67,7 +70,7 @@ QFileSystemWatcherEngine *QFileSystemWatcherPrivate::createNativeEngine(QObject 
 {
 #if defined(Q_OS_WIN)
     return new QWindowsFileSystemWatcherEngine(parent);
-#elif defined(Q_OS_LINUX)
+#elif defined(USE_INOTIFY)
     // there is a chance that inotify may fail on Linux pre-2.6.13 (August
     // 2005), so we can't just new inotify directly.
     return QInotifyFileSystemWatcherEngine::create(parent);

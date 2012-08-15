@@ -124,7 +124,7 @@ win32 {
             SOURCES += io/qstandardpaths_unix.cpp
         }
 
-        linux-* {
+        linux-*|if(qnx:contains(QT_CONFIG, inotify)) {
             SOURCES += io/qfilesystemwatcher_inotify.cpp
             HEADERS += io/qfilesystemwatcher_inotify_p.h
         }
