@@ -1416,7 +1416,8 @@ QVariant::QVariant(Type type)
 QVariant::QVariant(int typeId, const void *copy)
 { create(typeId, copy); d.is_null = false; }
 
-/*! \internal
+/*!
+    \internal
     flags is true if it is a pointer type
  */
 QVariant::QVariant(int typeId, const void *copy, uint flags)
@@ -2843,7 +2844,8 @@ static bool qIsFloatingPoint(uint tp)
     return tp == QVariant::Double || tp == QMetaType::Float;
 }
 
-/*! \internal
+/*!
+    \internal
  */
 bool QVariant::cmp(const QVariant &v) const
 {
@@ -2861,7 +2863,8 @@ bool QVariant::cmp(const QVariant &v) const
     return handlerManager[d.type]->compare(&d, &v2.d);
 }
 
-/*! \internal
+/*!
+    \internal
  */
 
 const void *QVariant::constData() const
@@ -2875,7 +2878,9 @@ const void *QVariant::constData() const
     \internal
 */
 
-/*! \internal */
+/*!
+    \internal
+*/
 void* QVariant::data()
 {
     detach();

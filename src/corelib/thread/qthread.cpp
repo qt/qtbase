@@ -351,7 +351,8 @@ QThread::QThread(QObject *parent)
     d->data->thread = this;
 }
 
-/*! \internal
+/*!
+    \internal
  */
 QThread::QThread(QThreadPrivate &dd, QObject *parent)
     : QObject(dd, parent)
@@ -692,7 +693,8 @@ QThreadData* QThreadData::current()
     return data;
 }
 
-/*! \internal
+/*!
+    \internal
  */
 QThread::QThread(QThreadPrivate &dd, QObject *parent)
     : QObject(dd, parent)

@@ -428,7 +428,8 @@ public:
     QTextStream *q_ptr;
 };
 
-/*! \internal
+/*!
+    \internal
 */
 QTextStreamPrivate::QTextStreamPrivate(QTextStream *q_ptr)
     :
@@ -442,7 +443,8 @@ QTextStreamPrivate::QTextStreamPrivate(QTextStream *q_ptr)
     reset();
 }
 
-/*! \internal
+/*!
+    \internal
 */
 QTextStreamPrivate::~QTextStreamPrivate()
 {
@@ -478,7 +480,8 @@ static void copyConverterStateHelper(QTextCodec::ConverterState *dest,
 }
 #endif
 
-/*! \internal
+/*!
+    \internal
 */
 void QTextStreamPrivate::reset()
 {
@@ -511,7 +514,8 @@ void QTextStreamPrivate::reset()
 #endif
 }
 
-/*! \internal
+/*!
+    \internal
 */
 bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
 {
@@ -627,7 +631,8 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     return true;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 void QTextStreamPrivate::resetReadBuffer()
 {
@@ -636,7 +641,8 @@ void QTextStreamPrivate::resetReadBuffer()
     readBufferStartDevicePos = (device ? device->pos() : 0);
 }
 
-/*! \internal
+/*!
+    \internal
 */
 void QTextStreamPrivate::flushWriteBuffer()
 {
@@ -729,7 +735,8 @@ QString QTextStreamPrivate::read(int maxlen)
     return ret;
 }
 
-/*! \internal
+/*!
+    \internal
 
     Scans no more than \a maxlen QChars in the current buffer for the
     first \a delimiter. Stores a pointer to the start offset of the
@@ -830,7 +837,8 @@ bool QTextStreamPrivate::scan(const QChar **ptr, int *length, int maxlen, TokenD
     return true;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 inline const QChar *QTextStreamPrivate::readPtr() const
 {
@@ -840,7 +848,8 @@ inline const QChar *QTextStreamPrivate::readPtr() const
     return readBuffer.constData() + readBufferOffset;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 inline void QTextStreamPrivate::consumeLastToken()
 {
@@ -849,7 +858,8 @@ inline void QTextStreamPrivate::consumeLastToken()
     lastTokenSize = 0;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 inline void QTextStreamPrivate::consume(int size)
 {
@@ -874,7 +884,8 @@ inline void QTextStreamPrivate::consume(int size)
     }
 }
 
-/*! \internal
+/*!
+    \internal
 */
 inline void QTextStreamPrivate::saveConverterState(qint64 newPos)
 {
@@ -894,7 +905,8 @@ inline void QTextStreamPrivate::saveConverterState(qint64 newPos)
     readConverterSavedStateOffset = 0;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 inline void QTextStreamPrivate::restoreToSavedConverterState()
 {
@@ -911,7 +923,8 @@ inline void QTextStreamPrivate::restoreToSavedConverterState()
 #endif
 }
 
-/*! \internal
+/*!
+    \internal
 */
 inline void QTextStreamPrivate::write(const QString &data)
 {
@@ -925,7 +938,8 @@ inline void QTextStreamPrivate::write(const QString &data)
     }
 }
 
-/*! \internal
+/*!
+    \internal
 */
 inline bool QTextStreamPrivate::getChar(QChar *ch)
 {
@@ -941,7 +955,8 @@ inline bool QTextStreamPrivate::getChar(QChar *ch)
     return true;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 inline void QTextStreamPrivate::ungetChar(QChar ch)
 {
@@ -961,7 +976,8 @@ inline void QTextStreamPrivate::ungetChar(QChar ch)
     readBuffer[--readBufferOffset] = ch;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 inline void QTextStreamPrivate::putString(const QString &s, bool number)
 {
@@ -1696,7 +1712,8 @@ QString QTextStream::read(qint64 maxlen)
     return d->read(int(maxlen));
 }
 
-/*! \internal
+/*!
+    \internal
 */
 QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong *ret)
 {
@@ -1871,7 +1888,8 @@ QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong
     return npsOk;
 }
 
-/*! \internal
+/*!
+    \internal
     (hihi)
 */
 bool QTextStreamPrivate::getReal(double *f)
@@ -2273,7 +2291,8 @@ QTextStream &QTextStream::operator>>(char *c)
     return *this;
 }
 
-/*! \internal
+/*!
+    \internal
  */
 void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
 {

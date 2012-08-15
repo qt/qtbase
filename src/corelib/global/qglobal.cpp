@@ -1904,7 +1904,8 @@ void qt_check_pointer(const char *n, int l)
     qFatal("In file %s, line %d: Out of memory", n, l);
 }
 
-/* \internal
+/*
+   \internal
    Allows you to throw an exception without including <new>
    Called internally from Q_CHECK_PTR on certain OS combinations
 */
@@ -1913,7 +1914,8 @@ void qBadAlloc()
     QT_THROW(std::bad_alloc());
 }
 
-/* \internal
+/*
+   \internal
    Allows you to call std::terminate() without including <exception>.
    Called internally from QT_TERMINATE_ON_EXCEPTION
 */

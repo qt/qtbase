@@ -150,7 +150,8 @@ static QMutex qt_adopted_thread_watcher_mutex;
 static DWORD qt_adopted_thread_watcher_id = 0;
 static HANDLE qt_adopted_thread_wakeup = 0;
 
-/*! \internal
+/*!
+    \internal
     Adds an adopted thread to the list of threads that Qt watches to make sure
     the thread data is properly cleaned up. This function starts the watcher
     thread if necessary.

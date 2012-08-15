@@ -3576,7 +3576,8 @@ QDateTime QDateTime::fromString(const QString &string, const QString &format)
     \sa toTimeSpec()
 */
 
-/*! \internal
+/*!
+    \internal
  */
 void QDateTime::detach()
 {
@@ -4355,7 +4356,9 @@ int QDateTimeParser::sectionPos(const SectionNode &sn) const
 
 
 /*!
-  \internal helper function for parseFormat. removes quotes that are
+  \internal
+
+  helper function for parseFormat. removes quotes that are
   not escaped and removes the escaping on those that are escaped
 
 */
@@ -5257,7 +5260,8 @@ end:
 
 #ifndef QT_NO_TEXTDATE
 /*!
-  \internal finds the first possible monthname that \a str1 can
+  \internal
+  finds the first possible monthname that \a str1 can
   match. Starting from \a index; str should already by lowered
 */
 
@@ -5551,7 +5555,9 @@ QDateTimeParser::FieldInfo QDateTimeParser::fieldInfo(int index) const
 }
 
 /*!
-  \internal Get a number that str can become which is between min
+  \internal
+
+  Get a number that str can become which is between min
   and max or -1 if this is not possible.
 */
 
@@ -5593,7 +5599,10 @@ QString QDateTimeParser::sectionFormat(Section s, int count) const
 }
 
 
-/*! \internal Returns true if str can be modified to represent a
+/*!
+  \internal
+
+  Returns true if str can be modified to represent a
   number that is within min and max.
 */
 

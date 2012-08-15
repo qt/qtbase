@@ -114,7 +114,8 @@ void debugBinaryString(const char *data, qint64 maxlen)
        } \
    } while (0)
 
-/*! \internal
+/*!
+    \internal
  */
 QIODevicePrivate::QIODevicePrivate()
     : openMode(QIODevice::NotOpen), buffer(QIODEVICE_BUFFERSIZE),
@@ -129,7 +130,8 @@ QIODevicePrivate::QIODevicePrivate()
 {
 }
 
-/*! \internal
+/*!
+    \internal
  */
 QIODevicePrivate::~QIODevicePrivate()
 {
@@ -335,7 +337,8 @@ QIODevice::QIODevice()
     d_ptr->q_ptr = this;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 QIODevice::QIODevice(QIODevicePrivate &dd)
     : d_ptr(&dd)
@@ -370,7 +373,8 @@ QIODevice::QIODevice(QObject *parent)
 #endif
 }
 
-/*! \internal
+/*!
+    \internal
 */
 QIODevice::QIODevice(QIODevicePrivate &dd, QObject *parent)
     : QObject(dd, parent)

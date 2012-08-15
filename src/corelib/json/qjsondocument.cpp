@@ -103,7 +103,8 @@ QJsonDocument::QJsonDocument(const QJsonArray &array)
     setArray(array);
 }
 
-/*! \internal
+/*!
+    \internal
  */
 QJsonDocument::QJsonDocument(QJsonPrivate::Data *data)
     : d(data)

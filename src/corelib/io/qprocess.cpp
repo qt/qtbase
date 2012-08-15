@@ -742,7 +742,8 @@ void QProcessPrivate::Channel::clear()
     \sa readAllStandardError(), readChannel()
 */
 
-/*! \internal
+/*!
+    \internal
 */
 QProcessPrivate::QProcessPrivate()
 {
@@ -777,7 +778,8 @@ QProcessPrivate::QProcessPrivate()
 #endif
 }
 
-/*! \internal
+/*!
+    \internal
 */
 QProcessPrivate::~QProcessPrivate()
 {
@@ -787,7 +789,8 @@ QProcessPrivate::~QProcessPrivate()
         stdoutChannel.process->stdinChannel.clear();
 }
 
-/*! \internal
+/*!
+    \internal
 */
 void QProcessPrivate::cleanup()
 {
@@ -851,7 +854,8 @@ void QProcessPrivate::cleanup()
 #endif
 }
 
-/*! \internal
+/*!
+    \internal
 */
 bool QProcessPrivate::_q_canReadStandardOutput()
 {
@@ -906,7 +910,8 @@ bool QProcessPrivate::_q_canReadStandardOutput()
     return didRead;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 bool QProcessPrivate::_q_canReadStandardError()
 {
@@ -950,7 +955,8 @@ bool QProcessPrivate::_q_canReadStandardError()
     return didRead;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 bool QProcessPrivate::_q_canWrite()
 {
@@ -994,7 +1000,8 @@ bool QProcessPrivate::_q_canWrite()
     return true;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 bool QProcessPrivate::_q_processDied()
 {
@@ -1063,7 +1070,8 @@ bool QProcessPrivate::_q_processDied()
     return true;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 bool QProcessPrivate::_q_startupNotification()
 {
@@ -1092,7 +1100,8 @@ bool QProcessPrivate::_q_startupNotification()
     return false;
 }
 
-/*! \internal
+/*!
+    \internal
 */
 void QProcessPrivate::closeWriteChannel()
 {

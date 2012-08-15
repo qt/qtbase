@@ -91,13 +91,17 @@ static const char * const Esc_SEQ[] = { Esc_Ascii,
                                         Esc_JISX0208_1983,
                                         Esc_JISX0212 };
 
-/*! \internal */
+/*!
+    \internal
+*/
 QJisCodec::QJisCodec() : conv(QJpUnicodeConv::newConverter(QJpUnicodeConv::Default))
 {
 }
 
 
-/*! \internal */
+/*!
+    \internal
+*/
 QJisCodec::~QJisCodec()
 {
     delete (QJpUnicodeConv*)conv;
@@ -340,13 +344,17 @@ QString QJisCodec::convertToUnicode(const char* chars, int len, ConverterState *
 
 
 
-/*! \internal */
+/*!
+    \internal
+*/
 int QJisCodec::_mibEnum()
 {
     return 39;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 QByteArray QJisCodec::_name()
 {
     return "ISO-2022-JP";

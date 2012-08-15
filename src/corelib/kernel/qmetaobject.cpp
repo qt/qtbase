@@ -574,7 +574,8 @@ static bool methodMatch(const QMetaObject *m, int handle,
     return true;
 }
 
-/** \internal
+/**
+* \internal
 * helper function for indexOf{Method,Slot,Signal}, returns the relative index of the method within
 * the baseObject
 * \a MethodType might be MethodSignal or MethodSlot, or 0 to match everything.
@@ -705,7 +706,8 @@ int QMetaObject::indexOfSignal(const char *signal) const
     return i;
 }
 
-/*! \internal
+/*!
+    \internal
     Same as QMetaObject::indexOfSignal, but the result is the local offset to the base object.
 
     \a baseObject will be adjusted to the enclosing QMetaObject, or 0 if the signal is not found
@@ -851,7 +853,8 @@ int QMetaObjectPrivate::signalIndex(const QMetaMethod &m)
     return ((m.handle - priv(m.mobj->d.data)->methodData) / 5) + signalOffset(m.mobj);
 }
 
-/*! \internal
+/*!
+    \internal
     \since 5.0
 
     Returns the signal for the given meta-object \a m at \a signal_index.
@@ -1861,7 +1864,9 @@ const char *QMetaMethod::tag() const
 }
 
 
-/*! \internal */
+/*!
+    \internal
+ */
 int QMetaMethod::attributes() const
 {
     if (!mobj)
@@ -1940,7 +1945,8 @@ QMetaMethod::MethodType QMetaMethod::methodType() const
     \snippet code/src_corelib_kernel_qmetaobject.cpp 9
 */
 
-/*! \internal
+/*!
+    \internal
 
     Implementation of the fromSignal() function.
 
@@ -3275,7 +3281,8 @@ const char* QMetaClassInfo::value() const
     and \a data.
 */
 
-/*! \internal
+/*!
+    \internal
     If the local_method_index is a cloned method, return the index of the original.
 
     Example: if the index of "destroyed()" is passed, the index of "destroyed(QObject*)" is returned

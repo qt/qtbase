@@ -117,7 +117,8 @@ QIdentityProxyModel::QIdentityProxyModel(QObject* parent)
 
 }
 
-/*! \internal
+/*!
+    \internal
  */
 QIdentityProxyModel::QIdentityProxyModel(QIdentityProxyModelPrivate &dd, QObject* parent)
   : QAbstractProxyModel(dd, parent)

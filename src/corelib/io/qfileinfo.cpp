@@ -1303,7 +1303,8 @@ QDateTime QFileInfo::lastRead() const
     return d->getFileTime(QAbstractFileEngine::AccessTime);
 }
 
-/*! \internal
+/*!
+    \internal
 */
 QFileInfoPrivate* QFileInfo::d_func()
 {

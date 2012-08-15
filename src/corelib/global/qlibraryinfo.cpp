@@ -183,7 +183,8 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
 
 #ifndef QT_BUILD_QMAKE
 
-/*! \internal
+/*!
+    \internal
 
    You cannot create a QLibraryInfo, instead only the static functions are available to query
    information.

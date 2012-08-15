@@ -515,7 +515,8 @@ void QCoreApplicationPrivate::initLocale()
     If no instance has been allocated, \c null is returned.
 */
 
-/*!\internal
+/*!
+    \internal
  */
 QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
     : QObject(p, 0)
@@ -821,7 +822,8 @@ bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, Q
     return false;
 }
 
-/*!\internal
+/*!
+  \internal
 
   Helper function called by notify()
  */

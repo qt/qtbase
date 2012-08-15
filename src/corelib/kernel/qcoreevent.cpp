@@ -450,7 +450,8 @@ QTimerEvent::QTimerEvent(int timerId)
     : QEvent(Timer), id(timerId)
 {}
 
-/*! \internal
+/*!
+    \internal
 */
 QTimerEvent::~QTimerEvent()
 {
@@ -495,7 +496,8 @@ QChildEvent::QChildEvent(Type type, QObject *child)
     : QEvent(type), c(child)
 {}
 
-/*! \internal
+/*!
+    \internal
 */
 QChildEvent::~QChildEvent()
 {
@@ -574,7 +576,9 @@ QDeferredDeleteEvent::QDeferredDeleteEvent()
     , level(0)
 { }
 
-/*! \internal */
+/*!
+    \internal
+*/
 QDeferredDeleteEvent::~QDeferredDeleteEvent()
 { }
 

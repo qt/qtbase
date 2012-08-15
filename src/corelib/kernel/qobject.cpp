@@ -122,7 +122,8 @@ static int *queuedConnectionTypes(const QArgumentType *argumentTypes, int argc)
 
 static QBasicMutex _q_ObjectMutexPool[131];
 
-/** \internal
+/**
+ * \internal
  * mutex to be locked when accessing the connectionlists or the senders list
  */
 static inline QMutex *signalSlotLock(const QObject *o)
@@ -232,7 +233,8 @@ QObjectPrivate::~QObjectPrivate()
     delete extraData;
 }
 
-/*!\internal
+/*!
+  \internal
   For a given metaobject, compute the signal offset, and the method offset (including signals)
 */
 static void computeOffsets(const QMetaObject *metaobject, int *signalOffset, int *methodOffset)
@@ -339,7 +341,8 @@ QObjectList QObjectPrivate::senderList() const
     return returnValue;
 }
 
-/*! \internal
+/*!
+  \internal
   Add the connection \a c to to the list of connections of the sender's object
   for the specified \a signal
 
@@ -415,7 +418,8 @@ void QObjectPrivate::cleanConnectionLists()
     }
 }
 
-/*! \internal
+/*!
+    \internal
  */
 QMetaCallEvent::QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction,
                                const QObject *sender, int signalId,
@@ -425,7 +429,8 @@ QMetaCallEvent::QMetaCallEvent(ushort method_offset, ushort method_relative, QOb
       callFunction_(callFunction), method_offset_(method_offset), method_relative_(method_relative)
 { }
 
-/*! \internal
+/*!
+    \internal
  */
 QMetaCallEvent::QMetaCallEvent(QObject::QSlotObjectBase *slotO, const QObject *sender, int signalId,
                                int nargs, int *types, void **args, QSemaphore *semaphore)
@@ -437,7 +442,8 @@ QMetaCallEvent::QMetaCallEvent(QObject::QSlotObjectBase *slotO, const QObject *s
         slotObj_->ref.ref();
 }
 
-/*! \internal
+/*!
+    \internal
  */
 QMetaCallEvent::~QMetaCallEvent()
 {
@@ -457,7 +463,8 @@ QMetaCallEvent::~QMetaCallEvent()
         delete slotObj_;
 }
 
-/*! \internal
+/*!
+    \internal
  */
 void QMetaCallEvent::placeMetaCall(QObject *object)
 {
@@ -679,7 +686,8 @@ QObject::QObject(QObject *parent)
     qt_addObject(this);
 }
 
-/*! \internal
+/*!
+    \internal
  */
 QObject::QObject(QObjectPrivate &dd, QObject *parent)
     : d_ptr(&dd)
@@ -1692,7 +1700,8 @@ void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re
 }
 #endif // QT_NO_REGEXP
 
-/*! \internal
+/*!
+    \internal
  */
 QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options)
 {
@@ -2940,7 +2949,8 @@ void QObject::disconnectNotify(const QMetaMethod &signal)
     Q_UNUSED(signal);
 }
 
-/* \internal
+/*
+    \internal
     convert a signal index from the method range to the signal range
  */
 static int methodIndexToSignalIndex(const QMetaObject **base, int signal_index)
@@ -2963,7 +2973,8 @@ static int methodIndexToSignalIndex(const QMetaObject **base, int signal_index)
     return signal_index;
 }
 
-/*!\internal
+/*!
+   \internal
    \a types is a 0-terminated vector of meta types for queued
    connections.
 
@@ -2981,7 +2992,8 @@ QMetaObject::Connection QMetaObject::connect(const QObject *sender, int signal_i
                                        type, types));
 }
 
-/*! \internal
+/*!
+    \internal
    Same as the QMetaObject::connect, but \a signal_index must be the result of QObjectPrivate::signalIndex
 
     method_index is relative to the rmeta metaobject, if rmeta is null, then it is absolute index
@@ -3043,7 +3055,8 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender,
     return c.take();
 }
 
-/*!\internal
+/*!
+    \internal
  */
 bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                              const QObject *receiver, int method_index)
@@ -3054,7 +3067,8 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                                           receiver, method_index, 0);
 }
 
-/*!\internal
+/*!
+    \internal
 
 Disconnect a single signal connection.  If QMetaObject::connect() has been called 
 multiple times for the same sender, signal_index, receiver and method_index only 
@@ -3070,7 +3084,8 @@ bool QMetaObject::disconnectOne(const QObject *sender, int signal_index,
                                           QMetaObjectPrivate::DisconnectOne);
 }
 
-/*! \internal
+/*!
+    \internal
     Helper function to remove the connection from the senders list and setting the receivers to 0
  */
 bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
@@ -3111,7 +3126,8 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
     return success;
 }
 
-/*! \internal
+/*!
+    \internal
     Same as the QMetaObject::disconnect, but \a signal_index must be the result of QObjectPrivate::signalIndex
  */
 bool QMetaObjectPrivate::disconnect(const QObject *sender,
@@ -3238,7 +3254,8 @@ void QMetaObject::connectSlotsByName(QObject *o)
     }
 }
 
-/*! \internal
+/*!
+    \internal
 
     \a signal must be in the signal index range (see QObjectPrivate::signalIndex()).
 */
@@ -3275,7 +3292,8 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     QCoreApplication::postEvent(c->receiver, ev);
 }
 
-/*!\internal
+/*!
+    \internal
  */
 void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_signal_index,
                            void **argv)
@@ -3283,7 +3301,8 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
     activate(sender, QMetaObjectPrivate::signalOffset(m), local_signal_index, argv);
 }
 
-/*!\internal
+/*!
+    \internal
  */
 void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_index, void **argv)
 {
@@ -3443,7 +3462,8 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
 
 }
 
-/*!\internal
+/*!
+    \internal
    signal_index comes from indexOfMethod()
 */
 void QMetaObject::activate(QObject *sender, int signal_index, void **argv)
@@ -3454,7 +3474,8 @@ void QMetaObject::activate(QObject *sender, int signal_index, void **argv)
     activate(sender, mo, signal_index - mo->methodOffset(), argv);
 }
 
-/*! \internal
+/*!
+    \internal
     Implementation of QObject::senderSignalIndex()
 */
 int QObjectPrivate::senderSignalIndex() const
@@ -3472,7 +3493,8 @@ int QObjectPrivate::senderSignalIndex() const
     return -1;
 }
 
-/*! \internal
+/*!
+    \internal
     Returns the signal index used in the internal connectionLists vector.
 
     It is different from QMetaObject::indexOfSignal():  indexOfSignal is the same as indexOfMethod
@@ -3741,7 +3763,8 @@ void QObject::dumpObjectInfo()
 }
 
 #ifndef QT_NO_USERDATA
-/*!\internal
+/*!
+    \internal
  */
 uint QObject::registerUserData()
 {
@@ -3749,13 +3772,15 @@ uint QObject::registerUserData()
     return user_data_registration++;
 }
 
-/*!\internal
+/*!
+    \internal
  */
 QObjectUserData::~QObjectUserData()
 {
 }
 
-/*!\internal
+/*!
+    \internal
  */
 void QObject::setUserData(uint id, QObjectUserData* data)
 {
@@ -3768,7 +3793,8 @@ void QObject::setUserData(uint id, QObjectUserData* data)
     d->extraData->userData[id] = data;
 }
 
-/*!\internal
+/*!
+    \internal
  */
 QObjectUserData* QObject::userData(uint id) const
 {
@@ -4137,7 +4163,8 @@ void qDeleteInEventHandler(QObject *o)
     The connection will automatically disconnect if the sender is destroyed.
  */
 
-/** \internal
+/**
+    \internal
 
     Implementation of the template version of connect
 

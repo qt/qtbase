@@ -2719,7 +2719,8 @@ QUrl &QUrl::operator =(const QString &url)
     fast and never fails.
 */
 
-/*! \internal
+/*!
+    \internal
 
     Forces a detach.
 */

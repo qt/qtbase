@@ -184,7 +184,8 @@ QXmlStreamEntityResolver::~QXmlStreamEntityResolver()
 {
 }
 
-/*! \internal
+/*!
+  \internal
 
 This function is a stub for later functionality.
 */

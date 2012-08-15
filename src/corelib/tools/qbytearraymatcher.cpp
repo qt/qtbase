@@ -245,7 +245,8 @@ static int findChar(const char *str, int len, char ch, int from)
     return -1;
 }
 
-/*! \internal
+/*!
+    \internal
  */
 static int qFindByteArrayBoyerMoore(
     const char *haystack, int haystackLen, int haystackOffset,
@@ -264,7 +265,8 @@ static int qFindByteArrayBoyerMoore(
         hashHaystack -= (a) << sl_minus_1; \
     hashHaystack <<= 1
 
-/*! \internal
+/*!
+    \internal
  */
 int qFindByteArray(
     const char *haystack0, int haystackLen, int from,

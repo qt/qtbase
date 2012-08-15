@@ -2147,7 +2147,8 @@ void QDir::refresh() const
     d->clearFileLists();
 }
 
-/*! \internal
+/*!
+    \internal
 */
 QDirPrivate* QDir::d_func()
 {

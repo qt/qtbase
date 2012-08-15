@@ -422,7 +422,8 @@ static QBasicMutex registeredInterpolatorsMutex;
 
 */
 
-/*! \internal
+/*!
+ * \internal
  * Registers a custom interpolator \a func for the specific \a interpolationType.
  * The interpolator has to be registered before the animation is constructed.
  * To unregister (and use the default interpolator) set \a func to 0.

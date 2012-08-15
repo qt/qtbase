@@ -68,15 +68,15 @@ public:
 */
 
 
-/*!\internal
-
+/*!
+    \internal
 */
 QThreadPoolThread::QThreadPoolThread(QThreadPoolPrivate *manager)
     :manager(manager), runnable(0)
 { }
 
-/* \internal
-
+/*
+    \internal
 */
 void QThreadPoolThread::run()
 {
@@ -150,8 +150,8 @@ void QThreadPoolThread::registerTheadInactive()
 }
 
 
-/* \internal
-
+/*
+    \internal
 */
 QThreadPoolPrivate:: QThreadPoolPrivate()
     : isExiting(false),
@@ -242,8 +242,8 @@ bool QThreadPoolPrivate::tooManyThreadsActive() const
     return activeThreadCount > maxThreadCount && (activeThreadCount - reservedThreads) > 1;
 }
 
-/*! \internal
-
+/*!
+    \internal
 */
 void QThreadPoolPrivate::startThread(QRunnable *runnable)
 {
@@ -258,7 +258,8 @@ void QThreadPoolPrivate::startThread(QRunnable *runnable)
     thread.take()->start();
 }
 
-/*! \internal
+/*!
+    \internal
     Makes all threads exit, waits for each tread to exit and deletes it.
 */
 void QThreadPoolPrivate::reset()
@@ -305,7 +306,8 @@ bool QThreadPoolPrivate::waitForDone(int msecs)
     return queue.isEmpty() && activeThreads == 0;
 }
 
-/*! \internal
+/*!
+    \internal
     Seaches for \a runnable in the queue, removes it from the queue and
     runs it if found. This functon does not return until the runnable
     has completed.

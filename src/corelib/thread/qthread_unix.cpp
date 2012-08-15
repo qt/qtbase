@@ -444,7 +444,8 @@ void QThread::yieldCurrentThread()
     sched_yield();
 }
 
-/*  \internal
+/*
+    \internal
     helper function to do thread sleeps, since usleep()/nanosleep()
     aren't reliable enough (in terms of behavior and availability)
 */

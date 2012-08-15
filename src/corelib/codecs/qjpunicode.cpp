@@ -101,7 +101,9 @@ static uint unicode11ToJisx0212(uint h, uint l);
 */
 
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::asciiToUnicode(uint h, uint l) const
 {
     if ((h == 0) && (l < 0x80)) {
@@ -110,7 +112,9 @@ uint QJpUnicodeConv::asciiToUnicode(uint h, uint l) const
     return 0x0000;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::jisx0201ToUnicode(uint h, uint l) const
 {
     if (h == 0) {
@@ -123,7 +127,9 @@ uint QJpUnicodeConv::jisx0201ToUnicode(uint h, uint l) const
     return 0x0000;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::jisx0201LatinToUnicode(uint h, uint l) const
 {
     if ((h == 0) && IsLatin(l)) {
@@ -132,7 +138,9 @@ uint QJpUnicodeConv::jisx0201LatinToUnicode(uint h, uint l) const
     return 0x0000;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::jisx0201KanaToUnicode(uint h, uint l) const
 {
     if ((h == 0) && IsKana(l)) {
@@ -141,7 +149,9 @@ uint QJpUnicodeConv::jisx0201KanaToUnicode(uint h, uint l) const
     return 0x0000;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::jisx0208ToUnicode(uint h, uint l) const
 {
     if (rule & UDC){
@@ -159,7 +169,9 @@ uint QJpUnicodeConv::jisx0208ToUnicode(uint h, uint l) const
     return jisx0208ToUnicode11(h, l);
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::jisx0212ToUnicode(uint h, uint l) const
 {
     if (rule & UDC){
@@ -178,7 +190,9 @@ uint QJpUnicodeConv::jisx0212ToUnicode(uint h, uint l) const
     return jisx0212ToUnicode11(h, l);
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::unicodeToAscii(uint h, uint l) const
 {
     if ((h == 0) && (l < 0x80)) {
@@ -187,7 +201,9 @@ uint QJpUnicodeConv::unicodeToAscii(uint h, uint l) const
     return 0x0000;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::unicodeToJisx0201(uint h, uint l) const
 {
     uint jis;
@@ -199,7 +215,9 @@ uint QJpUnicodeConv::unicodeToJisx0201(uint h, uint l) const
     return 0x0000;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::unicodeToJisx0201Latin(uint h, uint l) const
 {
     uint jis = unicode11ToJisx0201(h, l);
@@ -209,7 +227,9 @@ uint QJpUnicodeConv::unicodeToJisx0201Latin(uint h, uint l) const
     return 0x0000;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::unicodeToJisx0201Kana(uint h, uint l) const
 {
     uint jis = unicode11ToJisx0201(h, l);
@@ -219,7 +239,9 @@ uint QJpUnicodeConv::unicodeToJisx0201Kana(uint h, uint l) const
     return 0x0000;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::unicodeToJisx0208(uint h, uint l) const
 {
     if (rule & UDC){
@@ -240,7 +262,9 @@ uint QJpUnicodeConv::unicodeToJisx0208(uint h, uint l) const
     return jis;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::unicodeToJisx0212(uint h, uint l) const
 {
     if (rule & UDC){
@@ -262,7 +286,9 @@ uint QJpUnicodeConv::unicodeToJisx0212(uint h, uint l) const
     return jis;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::sjisToUnicode(uint h, uint l) const
 {
     if (h == 0) {
@@ -273,7 +299,9 @@ uint QJpUnicodeConv::sjisToUnicode(uint h, uint l) const
     return 0x0000;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv::unicodeToSjis(uint h, uint l) const
 {
     uint jis;
@@ -357,7 +385,9 @@ uint QJpUnicodeConv_Unicode_ASCII::unicodeToJisx0208(uint h, uint l) const
     return QJpUnicodeConv::unicodeToJisx0208(h, l);
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv_Unicode_ASCII::unicodeToJisx0212(uint h, uint l) const
 {
     if ((h == 0x00) && (l == 0x7e)) {
@@ -505,7 +535,9 @@ uint QJpUnicodeConv_JISX0221_ASCII::unicodeToJisx0208(uint h, uint l) const
     return QJpUnicodeConv::unicodeToJisx0208(h, l);
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv_JISX0221_ASCII::unicodeToJisx0212(uint h, uint l) const
 {
     if ((h == 0x00) && (l == 0x7e)) {
@@ -589,7 +621,9 @@ uint QJpUnicodeConv_Sun::unicodeToJisx0208(uint h, uint l) const
     return QJpUnicodeConv::unicodeToJisx0208(h, l);
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 uint QJpUnicodeConv_Sun::unicodeToJisx0212(uint h, uint l) const
 {
 #if 1
@@ -725,7 +759,9 @@ uint QJpUnicodeConv_Microsoft::unicodeToJisx0212(uint h, uint l) const
 }
 
 
-/*! \internal */
+/*!
+    \internal
+*/
 QJpUnicodeConv *QJpUnicodeConv::newConverter(int rule)
 {
     QByteArray env = qgetenv("UNICODEMAP_JP");

@@ -1311,7 +1311,8 @@ struct QRegExpLookahead
 };
 #endif
 
-/*! \internal
+/*!
+    \internal
     convert the pattern string to the RegExp syntax.
 
     This is also used by QScriptEngine::newRegExp to convert to a pattern that JavaScriptCore can understan

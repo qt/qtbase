@@ -441,7 +441,9 @@ QSystemLocale::QSystemLocale()
         system_data->m_language_id = 0;
 }
 
-/*! \internal */
+/*!
+    \internal
+*/
 QSystemLocale::QSystemLocale(bool)
 { }
 

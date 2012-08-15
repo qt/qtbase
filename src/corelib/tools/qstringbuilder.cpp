@@ -105,7 +105,8 @@ QT_BEGIN_NAMESPACE
  */
 
 
-/*! \internal
+/*!
+    \internal
  */
 void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out)
 {

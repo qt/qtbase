@@ -124,7 +124,8 @@ QMutexPool *QMutexPool::instance()
     to determine which mutex is returned from the pool.
 */
 
-/*! \internal
+/*!
+    \internal
   create the mutex for the given index
  */
 QMutex *QMutexPool::createMutex(int index)

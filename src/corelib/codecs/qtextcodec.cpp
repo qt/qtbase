@@ -902,7 +902,8 @@ QTextEncoder::~QTextEncoder()
 {
 }
 
-/*! \internal
+/*!
+    \internal
     \since 4.5
     Determines whether the eecoder encountered a failure while decoding the input. If
     an error was encountered, the produced result is undefined, and gets converted as according
@@ -1138,7 +1139,8 @@ QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba)
 }
 
 
-/*! \internal
+/*!
+    \internal
     \since 4.3
     Determines whether the decoder encountered a failure while decoding the input. If
     an error was encountered, the produced result is undefined, and gets converted as according

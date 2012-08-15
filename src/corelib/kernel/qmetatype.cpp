@@ -314,7 +314,8 @@ Q_GLOBAL_STATIC(QVector<QCustomTypeInfo>, customTypes)
 Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
 
 #ifndef QT_NO_DATASTREAM
-/*! \internal
+/*!
+    \internal
 */
 void QMetaType::registerStreamOperators(const char *typeName, SaveOperator saveOp,
                                         LoadOperator loadOp)
@@ -322,7 +323,8 @@ void QMetaType::registerStreamOperators(const char *typeName, SaveOperator saveO
     registerStreamOperators(type(typeName), saveOp, loadOp);
 }
 
-/*! \internal
+/*!
+    \internal
 */
 void QMetaType::registerStreamOperators(int idx, SaveOperator saveOp,
                                         LoadOperator loadOp)
@@ -382,7 +384,8 @@ const char *QMetaType::typeName(int typeId)
     return result;
 }
 
-/*! \internal
+/*!
+    \internal
     Similar to QMetaType::type(), but only looks in the static set of types.
 */
 static inline int qMetaTypeStaticType(const char *typeName, int length)
@@ -395,7 +398,8 @@ static inline int qMetaTypeStaticType(const char *typeName, int length)
     return types[i].type;
 }
 
-/*! \internal
+/*!
+    \internal
     Similar to QMetaType::type(), but only looks in the custom set of
     types, and doesn't lock the mutex.
 */
@@ -417,7 +421,8 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
     return QMetaType::UnknownType;
 }
 
-/*! \internal
+/*!
+    \internal
 
     This function is needed until existing code outside of qtbase
     has been changed to call the new version of registerType().
@@ -428,7 +433,8 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
     return registerType(typeName, deleter, creator, qMetaTypeDestructHelper<void>, qMetaTypeConstructHelper<void>, 0, TypeFlags(), 0);
 }
 
-/*! \internal
+/*!
+    \internal
     \since 5.0
 
     Registers a user type for marshalling, with \a typeName, a \a
@@ -452,7 +458,8 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
 }
 
 
-/*! \internal
+/*!
+    \internal
     \since 5.0
 
     Registers a user type for marshalling, with \a normalizedTypeName, a \a
@@ -528,7 +535,8 @@ int QMetaType::registerNormalizedType(const NS(QByteArray) &normalizedTypeName, 
     return idx;
 }
 
-/*! \internal
+/*!
+    \internal
     \since 4.7
 
     Registers a user type for marshalling, as an alias of another type (typedef)
@@ -544,7 +552,8 @@ int QMetaType::registerTypedef(const char* typeName, int aliasId)
     return registerNormalizedTypedef(normalizedTypeName, aliasId);
 }
 
-/*! \internal
+/*!
+    \internal
     \since 5.0
 
     Registers a user type for marshalling, as an alias of another type (typedef).
