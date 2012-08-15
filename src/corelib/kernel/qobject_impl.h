@@ -113,13 +113,13 @@ namespace QtPrivate {
 
             NumOperations
         };
-        typedef bool (*ImplFn)(int which, QSlotObjectBase* this_, QObject *receiver, void **args);
+        typedef void (*ImplFn)(int which, QSlotObjectBase* this_, QObject *receiver, void **args, bool *ret);
         const ImplFn impl;
 
         explicit QSlotObjectBase(ImplFn fn) : ref(1), impl(fn) {} // ### make constexpr once QAtomicInt's ctor is, too
-        inline void destroy()                  { impl(Destroy, this, 0, 0); }
-        inline bool compare(void **a)   { return impl(Compare, this, 0, a); }
-        inline void call(QObject *r, void **a) { impl(Call,    this, r, a); }
+        inline void destroy()                   { impl(Destroy, this, 0, 0, 0); }
+        inline bool compare(void **a) { bool ret; impl(Compare, this, 0, a, &ret); return ret; }
+        inline void call(QObject *r, void **a)  { impl(Call,    this, r, a, 0); }
     protected:
         ~QSlotObjectBase() {}
     };
@@ -129,20 +129,20 @@ namespace QtPrivate {
     {
         typedef QtPrivate::FunctionPointer<Func> FuncType;
         Func function;
-        static bool impl(int which, QSlotObjectBase *this_, QObject *r, void **a)
+        static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
         {
             switch (which) {
             case Destroy:
                 delete static_cast<QSlotObject*>(this_);
-                return true;
+                break;
             case Call:
                 FuncType::template call<Args, R>(static_cast<QSlotObject*>(this_)->function, static_cast<typename FuncType::Object *>(r), a);
-                return true;
+                break;
             case Compare:
-                return *reinterpret_cast<Func *>(a) == static_cast<QSlotObject*>(this_)->function;
+                *ret = *reinterpret_cast<Func *>(a) == static_cast<QSlotObject*>(this_)->function;
+                break;
             case NumOperations: ;
             }
-            return false;
         }
     public:
         explicit QSlotObject(Func f) : QSlotObjectBase(&impl), function(f) {}
@@ -153,20 +153,20 @@ namespace QtPrivate {
     {
         typedef QtPrivate::FunctionPointer<Func> FuncType;
         Func function;
-        static bool impl(int which, QSlotObjectBase *this_, QObject *r, void **a)
+        static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
         {
             switch (which) {
             case Destroy:
                 delete static_cast<QStaticSlotObject*>(this_);
-                return true;
+                break;
             case Call:
                 FuncType::template call<Args, R>(static_cast<QStaticSlotObject*>(this_)->function, r, a);
-                return true;
+                break;
             case Compare:
-                return false; // not implemented
+                *ret = false; // not implemented
+                break;
             case NumOperations: ;
             }
-            return false;
         }
     public:
         explicit QStaticSlotObject(Func f) : QSlotObjectBase(&impl), function(f) {}
@@ -178,20 +178,20 @@ namespace QtPrivate {
     {
         typedef QtPrivate::Functor<Func, N> FuncType;
         Func function;
-        static bool impl(int which, QSlotObjectBase *this_, QObject *r, void **a)
+        static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
         {
             switch (which) {
             case Destroy:
                 delete static_cast<QFunctorSlotObject*>(this_);
-                return true;
+                break;
             case Call:
                 FuncType::template call<Args, R>(static_cast<QFunctorSlotObject*>(this_)->function, r, a);
-                return true;
+                break;
             case Compare:
-                return false; // not implemented
+                *ret = false; // not implemented
+                break;
             case NumOperations: ;
             }
-            return false;
         }
     public:
         explicit QFunctorSlotObject(const Func &f) : QSlotObjectBase(&impl), function(f) {}
