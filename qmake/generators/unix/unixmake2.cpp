@@ -368,7 +368,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             }
         }
     }
-    if(!project->values("QMAKE_APP_FLAG").isEmpty()) {
+    if (!project->values("QMAKE_APP_FLAG").isEmpty() || project->first("TEMPLATE") == "aux") {
         QString destdir = project->first("DESTDIR");
         if(!project->isEmpty("QMAKE_BUNDLE")) {
             QString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
@@ -446,13 +446,15 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
             t << "$(TARGET): " << var("PRE_TARGETDEPS") << " $(OBJECTS) "
               << target_deps << " " << var("POST_TARGETDEPS") << "\n\t";
-            if(!destdir.isEmpty())
-                t << mkdir_p_asstring(destdir) << "\n\t";
-            if(!project->isEmpty("QMAKE_PRE_LINK"))
-                t << var("QMAKE_PRE_LINK") << "\n\t";
-            t << "$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)";
-            if(!project->isEmpty("QMAKE_POST_LINK"))
-                t << "\n\t" << var("QMAKE_POST_LINK");
+            if (project->first("TEMPLATE") != "aux") {
+                if (!destdir.isEmpty())
+                    t << mkdir_p_asstring(destdir) << "\n\t";
+                if (!project->isEmpty("QMAKE_PRE_LINK"))
+                    t << var("QMAKE_PRE_LINK") << "\n\t";
+                t << "$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)";
+                if (!project->isEmpty("QMAKE_POST_LINK"))
+                    t << "\n\t" << var("QMAKE_POST_LINK");
+            }
             t << endl << endl;
         }
     } else if(!project->isActiveConfig("staticlib")) {
