@@ -4737,7 +4737,7 @@ static void sendResizeEvents(QWidget *target)
     \since 5.0
 
     Renders the widget into a pixmap restricted by the
-    given \a rectangle. If the \a widget has any children, then
+    given \a rectangle. If the widget has any children, then
     they are also painted in the appropriate positions.
 
     If a rectangle with an invalid size is specified  (the default),
@@ -11217,6 +11217,11 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     \a m is the metric to get.
 */
 
+/*!
+    Initializes the \a painter pen, background and font to the same as
+    the given widget's. This function is called automatically when the
+    painter is opened on a QWidget.
+*/
 void QWidget::init(QPainter *painter) const
 {
     const QPalette &pal = palette();
