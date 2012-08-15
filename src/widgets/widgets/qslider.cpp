@@ -279,13 +279,6 @@ QStyle::SubControl QSliderPrivate::newHoverControl(const QPoint &pos)
     \value TicksBelow Draw tick marks below the (horizontal) slider
     \value TicksLeft Draw tick marks to the left of the (vertical) slider
     \value TicksRight Draw tick marks to the right of the (vertical) slider
-
-    \omitvalue NoMarks
-    \omitvalue Above
-    \omitvalue Left
-    \omitvalue Below
-    \omitvalue Right
-    \omitvalue Both
 */
 
 
@@ -540,11 +533,11 @@ QSlider::TickPosition QSlider::tickPosition() const
     \brief the interval between tickmarks
 
     This is a value interval, not a pixel interval. If it is 0, the
-    slider will choose between singleStep() and pageStep().
+    slider will choose between singleStep and pageStep.
 
     The default value is 0.
 
-    \sa tickPosition, lineStep(), pageStep()
+    \sa tickPosition, singleStep, pageStep
 */
 
 void QSlider::setTickInterval(int ts)
@@ -558,21 +551,6 @@ int QSlider::tickInterval() const
     return d_func()->tickInterval;
 }
 
-/*!
-    \fn void QSlider::addStep()
-
-    Use setValue() instead.
-*/
-
-/*!
-    \fn void QSlider::subtractStep()
-
-    Use setValue() instead.
-*/
-
-/*! \internal
-    Returns the style option for slider.
-*/
 Q_WIDGETS_EXPORT QStyleOptionSlider qt_qsliderStyleOption(QSlider *slider)
 {
     QStyleOptionSlider sliderOption;
