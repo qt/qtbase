@@ -675,6 +675,12 @@ bool QWidgetItem::isEmpty() const
     return wid->isHidden() || wid->isWindow();
 }
 
+/*!
+    Returns the control type associated with the widget for which
+    this size policy applies.
+
+    \sa QSizePolicy::controlType()
+ */
 QSizePolicy::ControlTypes QWidgetItem::controlTypes() const
 {
     return wid->sizePolicy().controlType();
