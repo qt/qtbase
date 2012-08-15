@@ -552,7 +552,11 @@ void QApplicationPrivate::process_cmdline()
     \sa arguments()
 */
 
+#ifdef Q_QDOC
+QApplication::QApplication(int &argc, char **argv)
+#else
 QApplication::QApplication(int &argc, char **argv, int _internal)
+#endif
     : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
 { Q_D(QApplication); d->construct(); }
 
@@ -3602,95 +3606,6 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     return consumed;
 }
 
-
-
-/*!
-    \fn Qt::MacintoshVersion QApplication::macVersion()
-
-    Use QSysInfo::MacintoshVersion instead.
-*/
-
-/*!
-    \fn QApplication::ColorMode QApplication::colorMode()
-
-    Use colorSpec() instead, and use ColorSpec as the enum type.
-*/
-
-/*!
-    \fn void QApplication::setColorMode(ColorMode mode)
-
-    Use setColorSpec() instead, and pass a ColorSpec value instead.
-*/
-
-/*!
-    \fn bool QApplication::hasGlobalMouseTracking()
-
-    This feature does not exist anymore. This function always returns true
-    in Qt 4.
-*/
-
-/*!
-    \fn void QApplication::setGlobalMouseTracking(bool dummy)
-
-    This function does nothing in Qt 4. The \a dummy parameter is ignored.
-*/
-
-/*!
-    \fn void QApplication::flushX()
-
-    Use flush() instead.
-*/
-
-/*!
-    \fn void QApplication::setWinStyleHighlightColor(const QColor &c)
-
-    Use the palette instead.
-
-    \oldcode
-    app.setWinStyleHighlightColor(color);
-    \newcode
-    QPalette palette(QApplication::palette());
-    palette.setColor(QPalette::Highlight, color);
-    QApplication::setPalette(palette);
-    \endcode
-*/
-
-/*!
-    \fn void QApplication::setPalette(const QPalette &pal, bool b, const char* className = 0)
-
-    Use the two-argument overload instead.
-*/
-
-/*!
-    \fn void QApplication::setFont(const QFont &font, bool b, const char* className = 0)
-
-    Use the two-argument overload instead.
-*/
-
-/*!
-    \fn const QColor &QApplication::winStyleHighlightColor()
-
-    Use QApplication::palette().color(QPalette::Active, QPalette::Highlight) instead.
-*/
-
-/*!
-    \fn QWidget *QApplication::widgetAt(int x, int y, bool child)
-
-    Use the two-argument widgetAt() overload to get the child widget. To get
-    the top-level widget do this:
-
-    \snippet code/src_gui_kernel_qapplication.cpp 12
-*/
-
-/*!
-    \fn QWidget *QApplication::widgetAt(const QPoint &point, bool child)
-
-    Use the single-argument widgetAt() overload to get the child widget. To get
-    the top-level widget do this:
-
-    \snippet code/src_gui_kernel_qapplication.cpp 13
-*/
-
 bool QApplicationPrivate::inPopupMode()
 {
     return QApplicationPrivate::popupWidgets != 0;
@@ -3917,38 +3832,11 @@ int QApplication::keyboardInputInterval()
 */
 
 /*!
-    \fn QWidget *QApplication::mainWidget()
-
-    Returns the main application widget, or 0 if there is no main widget.
-*/
-
-/*!
-    \fn void QApplication::setMainWidget(QWidget *mainWidget)
-
-    Sets the application's main widget to \a mainWidget.
-
-    In most respects the main widget is like any other widget, except that if
-    it is closed, the application exits. QApplication does \e not take
-    ownership of the \a mainWidget, so if you create your main widget on the
-    heap you must delete it yourself.
-
-    You need not have a main widget; connecting lastWindowClosed() to quit()
-    is an alternative.
-
-    On X11, this function also resizes and moves the main widget according
-    to the \e -geometry command-line option, so you should set the default
-    geometry (using \l QWidget::setGeometry()) before calling setMainWidget().
-
-    \sa mainWidget(), exec(), quit()
-*/
-
-/*!
     \fn void QApplication::beep()
 
     Sounds the bell, using the default volume and sound. The function is \e not
     available in Qt for Embedded Linux.
 */
-
 
 /*!
     \macro qApp
@@ -3973,7 +3861,7 @@ int QApplication::keyboardInputInterval()
 */
 
 /*!
-    \fn Qt::LayoutDirection QApplication::keyboardInputDirection()*
+    \fn Qt::LayoutDirection QApplication::keyboardInputDirection()
     \since 4.2
     \obsolete
 
@@ -4015,18 +3903,6 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
         return false;
     return true;
 }
-
-/*! \fn void QApplication::winFocus(QWidget *widget, bool gotFocus)
-    \internal
-    \since 4.1
-
-    If \a gotFocus is true, \a widget will become the active window.
-    Otherwise the active window is reset to 0.
-*/
-
-/*! \fn void QApplication::winMouseButtonUp()
-  \internal
- */
 
 void QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent)
 {
