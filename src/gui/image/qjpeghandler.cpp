@@ -277,7 +277,7 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
 
 static bool read_jpeg_image(QImage *outImage,
                             QSize scaledSize, QRect scaledClipRect,
-                            QRect clipRect, int inQuality, j_decompress_ptr info, struct my_error_mgr* err  )
+                            QRect clipRect, volatile int inQuality, j_decompress_ptr info, struct my_error_mgr* err  )
 {
     if (!setjmp(err->setjmp_buffer)) {
         // -1 means default quality.
@@ -561,7 +561,7 @@ static inline void set_text(const QImage &image, j_compress_ptr cinfo, const QSt
     }
 }
 
-static bool write_jpeg_image(const QImage &image, QIODevice *device, int sourceQuality, const QString &description)
+static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile int sourceQuality, const QString &description)
 {
     bool success = false;
     const QVector<QRgb> cmap = image.colorTable();
@@ -624,7 +624,7 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, int sourceQ
         }
 
 
-        int quality = sourceQuality >= 0 ? qMin(sourceQuality,100) : 75;
+        int quality = sourceQuality >= 0 ? qMin(int(sourceQuality),100) : 75;
 #if defined(Q_OS_UNIXWARE)
         jpeg_set_quality(&cinfo, quality, B_TRUE /* limit to baseline-JPEG values */);
         jpeg_start_compress(&cinfo, B_TRUE);
