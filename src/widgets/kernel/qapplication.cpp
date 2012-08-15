@@ -885,13 +885,6 @@ QWidget *QApplication::widgetAt(const QPoint &p)
 */
 
 /*!
-    \fn void QApplication::setArgs(int argc, char **argv)
-    \internal
-*/
-
-
-
-/*!
     \internal
 */
 bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents)
@@ -1965,12 +1958,6 @@ void QApplicationPrivate::notifyLayoutDirectionChange()
 }
 
 /*!
-    \fn Qt::WindowsVersion QApplication::winVersion()
-
-    Use \l QSysInfo::WindowsVersion instead.
-*/
-
-/*!
     \fn void QApplication::setActiveWindow(QWidget* active)
 
     Sets the active window to the \a active widget in response to a system
@@ -2886,28 +2873,6 @@ int QApplication::startDragDistance()
 {
     return qApp->styleHints()->startDragDistance();
 }
-
-/*!
-    \fn void QApplication::setReverseLayout(bool reverse)
-
-    Use setLayoutDirection() instead.
-*/
-
-/*!
-    \fn void QApplication::reverseLayout()
-
-    Use layoutDirection() instead.
-*/
-
-
-/*!
-    \obsolete
-
-    Strips out vertical alignment flags and transforms an alignment \a align
-    of Qt::AlignLeft into Qt::AlignLeft or Qt::AlignRight according to the
-    language used.
-*/
-
 
 /*!
     Enters the main event loop and waits until exit() is called, then returns
