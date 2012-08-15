@@ -161,5 +161,12 @@ int main(int argc, char *argv[])
 //! [23]    
     }
 
+    {
+//! [24]
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(formWidget);
+    setLayout(layout);
+//! [24]
+    }
     return app.exec();
 }

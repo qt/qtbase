@@ -9096,7 +9096,7 @@ QLayout *QWidget::layout() const
 
     Example:
 
-    \snippet uitools/textfinder/textfinder.cpp 3b
+    \snippet layouts/layouts.cpp 24
 
     An alternative to calling this function is to pass this widget to
     the layout's constructor.
