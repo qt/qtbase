@@ -870,22 +870,32 @@ bool QJpegHandlerPrivate::read(QImage *image)
 
 }
 
+Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_neon(quint32 *dst, const uchar *src, int len);
+Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, const uchar *src, int len);
+Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_avx(quint32 *dst, const uchar *src, int len);
+
 QJpegHandler::QJpegHandler()
     : d(new QJpegHandlerPrivate(this))
 {
 #if defined(QT_COMPILER_SUPPORTS_NEON)
     // from qimage_neon.cpp
-    Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_neon(quint32 *dst, const uchar *src, int len);
 
     if (qCpuHasFeature(NEON))
         rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_neon;
 #endif // QT_COMPILER_SUPPORTS_NEON
 #if defined(QT_COMPILER_SUPPORTS_SSSE3)
     // from qimage_ssse3.cpp
-    Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, const uchar *src, int len);
 
-    if (qCpuHasFeature(SSSE3))
+    if (false) {
+#  if defined(QT_COMPILER_SUPPORTS_AVX)
+    } else if (qCpuHasFeature(AVX)) {
+        rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_avx;
+#  endif
+#  ifndef __AVX__
+    } else if (qCpuHasFeature(SSSE3)) {
         rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_ssse3;
+#  endif
+    }
 #endif // QT_COMPILER_SUPPORTS_SSSE3
 }
 
