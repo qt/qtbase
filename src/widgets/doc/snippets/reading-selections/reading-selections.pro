@@ -1,2 +1,4 @@
-HEADERS += model.h window.h
-SOURCES += main.cpp model.cpp window.cpp
+QT += widgets
+HEADERS += ../common-table-model/model.h window.h
+SOURCES += main.cpp ../common-table-model/model.cpp window.cpp
+INCLUDEPATH += ../common-table-model
