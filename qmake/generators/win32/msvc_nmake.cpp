@@ -357,7 +357,8 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
 
 void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
-    if (project->first("TEMPLATE") == "aux") {
+    const QString templateName = project->first("TEMPLATE");
+    if (templateName == "aux") {
         t << "first:" << endl;
         t << "all:" << endl;
         return;
@@ -371,12 +372,65 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
         t << "\n\t" <<var("QMAKE_PRE_LINK");
     if(project->isActiveConfig("staticlib")) {
         t << "\n\t" << "$(LIBAPP) $(LIBFLAGS) /OUT:$(DESTDIR_TARGET) @<<" << "\n\t  "
-          << "$(OBJECTS)";
+          << "$(OBJECTS)"
+          << "\n<<";
     } else {
-        t << "\n\t" << "$(LINK) $(LFLAGS) /OUT:$(DESTDIR_TARGET) @<< " << "\n\t  "
-          << "$(OBJECTS) $(LIBS)";
+        const bool embedManifest = ((templateName == "app" && project->isActiveConfig("embed_manifest_exe"))
+                                    || (templateName == "lib" && project->isActiveConfig("embed_manifest_dll")
+                                        && !(project->isActiveConfig("plugin") && project->isActiveConfig("no_plugin_manifest"))
+                                        ));
+        if (embedManifest) {
+            bool generateManifest = false;
+            const QString target = var("DEST_TARGET");
+            QString manifest = project->first("QMAKE_MANIFEST");
+            QString extraLFlags;
+            if (manifest.isEmpty()) {
+                generateManifest = true;
+                manifest = escapeFilePath(target + ".embed.manifest");
+                extraLFlags = "/MANIFEST /MANIFESTFILE:" + manifest;
+                project->values("QMAKE_CLEAN") << manifest;
+            }
+
+            const bool incrementalLinking = project->values("QMAKE_LFLAGS").filter(QRegExp("(/|-)INCREMENTAL:NO")).isEmpty();
+            if (incrementalLinking) {
+                // Link a resource that contains the manifest without modifying the exe/dll after linking.
+
+                QString manifest_rc = escapeFilePath(target +  "_manifest.rc");
+                QString manifest_res = escapeFilePath(target +  "_manifest.res");
+                QString manifest_bak = escapeFilePath(target +  "_manifest.bak");
+                project->values("QMAKE_CLEAN") << manifest_rc << manifest_res;
+
+                t << "\n\t" << "@if not exist " << manifest_rc << " echo 1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ " << manifest
+                  << ">" << manifest_rc;
+
+                if (generateManifest) {
+                    t << "\n\tif not exist $(DESTDIR_TARGET) del " << manifest << ">NUL 2>&1";
+                    t << "\n\tif exist " << manifest << " copy /Y " << manifest << ' ' << manifest_bak;
+                    const QString extraInlineFileContent = "\n!IF EXIST(" + manifest_res + ")\n" + manifest_res + "\n!ENDIF";
+                    t << "\n\t";
+                    writeLinkCommand(t, extraLFlags, extraInlineFileContent);
+                    const QString check_manifest_bak_existence = "\n\tif exist " + manifest_bak + ' ';
+                    t << check_manifest_bak_existence << "fc " << manifest << ' ' << manifest_bak << " && del " << manifest_bak;
+                    t << check_manifest_bak_existence << "rc.exe /fo" << manifest_res << ' ' << manifest_rc;
+                    t << check_manifest_bak_existence;
+                    writeLinkCommand(t, extraLFlags, manifest_res);
+                    t << check_manifest_bak_existence << "del " << manifest_bak;
+                } else {
+                    t << "\n\t" << "rc.exe /fo" << manifest_res << " " << manifest_rc;
+                    t << "\n\t";
+                    writeLinkCommand(t, extraLFlags, manifest_res);
+                }
+            } else {
+                // directly embed the manifest in the executable after linking
+                t << "\n\t";
+                writeLinkCommand(t, extraLFlags);
+                t << "\n\t" << "mt.exe /nologo /manifest " << manifest << " /outputresource:$(DESTDIR_TARGET);1";
+            }
+        }  else {
+            t << "\n\t";
+            writeLinkCommand(t);
+        }
     }
-    t << endl << "<<";
     QString signature = !project->isEmpty("SIGNATURE_FILE") ? var("SIGNATURE_FILE") : var("DEFAULT_SIGNATURE");
     bool useSignature = !signature.isEmpty() && !project->isActiveConfig("staticlib") && 
                         !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH");
@@ -387,6 +441,18 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
         t << "\n\t" << var("QMAKE_POST_LINK");
     }
     t << endl;
+}
+
+void NmakeMakefileGenerator::writeLinkCommand(QTextStream &t, const QString &extraFlags, const QString &extraInlineFileContent)
+{
+    t << "$(LINK) $(LFLAGS)";
+    if (!extraFlags.isEmpty())
+        t << ' ' << extraFlags;
+    t << " /OUT:$(DESTDIR_TARGET) @<<\n"
+      << "$(OBJECTS) $(LIBS)";
+    if (!extraInlineFileContent.isEmpty())
+        t << ' ' << extraInlineFileContent;
+    t << "\n<<";
 }
 
 QT_END_NAMESPACE
