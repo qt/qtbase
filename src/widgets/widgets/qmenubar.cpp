@@ -1847,8 +1847,6 @@ QWidget *QMenuBar::cornerWidget(Qt::Corner corner) const
     The default is to follow whether the Qt::AA_DontUseNativeMenuBar attribute
     is set for the application. Explicitly settings this property overrides
     the presence (or abscence) of the attribute.
-
-    \sa void-qt-mac-set-native-menubar-bool-enable
 */
 
 void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
@@ -1880,6 +1878,9 @@ bool QMenuBar::isNativeMenuBar() const
     return d->nativeMenuBar;
 }
 
+/*!
+    \internal
+*/
 QPlatformMenuBar *QMenuBar::platformMenuBar()
 {
     Q_D(const QMenuBar);
@@ -1970,89 +1971,6 @@ QAction *QMenuBar::defaultAction() const
     Appends the action \a action to the menu bar's list of actions.
 
     \sa QMenu::addAction(), QWidget::addAction(), QWidget::actions()
-*/
-
-/*!
-    \fn void QMenuBar::setFrameRect(QRect)
-    \internal
-*/
-
-/*!
-    \fn QRect QMenuBar::frameRect() const
-    \internal
-*/
-/*!
-    \enum QMenuBar::DummyFrame
-    \internal
-
-    \value Box
-    \value Sunken
-    \value Plain
-    \value Raised
-    \value MShadow
-    \value NoFrame
-    \value Panel
-    \value StyledPanel
-    \value HLine
-    \value VLine
-    \value GroupBoxPanel
-    \value WinPanel
-    \value ToolBarPanel
-    \value MenuBarPanel
-    \value PopupPanel
-    \value LineEditPanel
-    \value TabWidgetPanel
-    \value MShape
-*/
-
-/*!
-    \fn void QMenuBar::setFrameShadow(DummyFrame)
-    \internal
-*/
-
-/*!
-    \fn DummyFrame QMenuBar::frameShadow() const
-    \internal
-*/
-
-/*!
-    \fn void QMenuBar::setFrameShape(DummyFrame)
-    \internal
-*/
-
-/*!
-    \fn DummyFrame QMenuBar::frameShape() const
-    \internal
-*/
-
-/*!
-    \fn void QMenuBar::setFrameStyle(int)
-    \internal
-*/
-
-/*!
-    \fn int QMenuBar::frameStyle() const
-    \internal
-*/
-
-/*!
-    \fn void QMenuBar::setLineWidth(int)
-    \internal
-*/
-
-/*!
-    \fn int QMenuBar::lineWidth() const
-    \internal
-*/
-
-/*!
-    \fn void QMenuBar::setMidLineWidth(int)
-    \internal
-*/
-
-/*!
-    \fn int QMenuBar::midLineWidth() const
-    \internal
 */
 
 // for private slots
