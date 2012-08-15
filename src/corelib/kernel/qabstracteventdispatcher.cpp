@@ -443,12 +443,14 @@ void QAbstractEventDispatcher::removeNativeEventFilter(QAbstractNativeEventFilte
     Subclasses of QAbstractEventDispatcher \e must call this function
     for \e all messages received from the system to ensure
     compatibility with any extensions that may be used in the
-    application.
+    application. The type of event \a eventType is specific to the platform
+    plugin chosen at run-time, and can be used to cast message to the right type.
+    The result pointer is only used on Windows, and corresponds to the LRESULT pointer.
 
     Note that the type of \a message is platform dependent. See
     QAbstractNativeEventFilter for details.
 
-    \sa installNativeEventFilter()
+    \sa installNativeEventFilter(), QAbstractNativeEventFilter::nativeEventFilter()
     \since 5.0
 */
 bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, void *message, long *result)
