@@ -155,6 +155,18 @@ private slots:
         }
     }
 
+    void sorted_byTime() {
+        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
+        testdir.setSorting(QDir::Time);
+        testdir.setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
+        QBENCHMARK {
+            QStringList fileList = testdir.entryList(QDir::NoFilter, QDir::Time);
+            foreach (const QString &filename, fileList) {
+
+            }
+        }
+    }
+
     void sizeSpeedWithoutFilterLowLevel() {
         QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
 #ifdef Q_OS_WIN

@@ -232,9 +232,20 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
                  | (qt_cmp_si_sort_flags & QDir::Type);
 
     switch (sortBy) {
-      case QDir::Time:
-        r = f1->item.lastModified().secsTo(f2->item.lastModified());
+      case QDir::Time: {
+        QDateTime firstModified = f1->item.lastModified();
+        QDateTime secondModified = f2->item.lastModified();
+
+        // QDateTime by default will do all sorts of conversions on these to
+        // find timezones, which is incredibly expensive. As we aren't
+        // presenting these to the user, we don't care (at all) about the
+        // local timezone, so force them to UTC to avoid that conversion.
+        firstModified.setTimeSpec(Qt::UTC);
+        secondModified.setTimeSpec(Qt::UTC);
+
+        r = firstModified.secsTo(secondModified);
         break;
+      }
       case QDir::Size:
           r = int(qBound<qint64>(-1, f2->item.size() - f1->item.size(), 1));
         break;
