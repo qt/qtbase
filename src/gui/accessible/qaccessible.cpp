@@ -611,13 +611,13 @@ bool QAccessible::isActive()
 
 
 /*!
-  Sets the root accessible object of this application to \a object.
-  All other accessible objects in the application can be reached by the
-  client using object navigation.
+  Sets the root object of the accessible objects of this application
+  to \a object.  All other accessible objects are reachable using object
+  navigation from the root object.
 
-  You should never need to call this function. Qt sets the QApplication
-  object as the root object immediately before the event loop is entered
-  in QApplication::exec().
+  Normally, it isn't necessary to call this function, because Qt sets
+  the QApplication object as the root object immediately before the
+  event loop is entered in QApplication::exec().
 
   Use QAccessible::installRootObjectHandler() to redirect the function
   call to a customized handler function.
@@ -636,18 +636,11 @@ void QAccessible::setRootObject(QObject *object)
 }
 
 /*!
-  \fn void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
-  \deprecated
-
-  Use the version with a single \l QAccessibleEvent paremeter instead.
-*/
-
-/*!
   Notifies about a change that might be relevant for accessibility clients.
 
-  \a event gives the details about the change.
-  This includes the source of the change and what the actual change is.
-  There should be sufficient details delivered with this event to give meaningful notifications.
+  \a event provides details about the change. These include the source
+  of the change and the nature of the change.  The \a event should
+  contain enough information give meaningful notifications.
 
   For example, the type \c ValueChange indicates that the position of
   a slider has been changed.
@@ -657,9 +650,9 @@ void QAccessible::setRootObject(QObject *object)
   (e.g. by calling QLabel::setText()) or by user interaction.
 
   If there are no accessibility tools listening to this event, the
-  performance penalty for calling this function is small, but if determining
-  the parameters of the call is expensive you can test isActive() to
-  avoid unnecessary computations.
+  performance penalty for calling this function is small, but if
+  determining the parameters of the call is expensive you can test
+  isActive() to avoid unnecessary computation.
 */
 void QAccessible::updateAccessibility(QAccessibleEvent *event)
 {
@@ -673,65 +666,6 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
 
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
         pfAccessibility->notifyAccessibilityUpdate(event);
-}
-
-/*!
-    \class QAccessibleEvent
-    \brief The QAccessibleEvent is use to notify about changes that are
-    relevant for accessibility in the application.
-    \internal
-
-    \ingroup accessibility
-    \inmodule QtGui
-
-    This class should be created on the stack and used as parameter for
-    \l QAccessible::updateAccessibility().
-    \sa QAccessibleStateChangedEvent
-*/
-
-/*!
-    \class QAccessibleStateChangedEvent
-    \brief This subclass of QAccessibleEvent is used to inform about state changes.
-    \internal
-
-    \ingroup accessibility
-    \inmodule QtGui
-
-    This class should be created on the stack and used as parameter for
-    \l QAccessible::updateAccessibility().
-    In addition to the regular \l QAccessibleEvent it contains details about which states
-    changed.
-    \sa QAccessibleEvent
-*/
-
-/*!
-    \fn QAccessibleStateChangeEvent::changedStates() const
-    All states that have changed are set to true. This does not reflect the state of the object,
-    but indicates which states are changed.
-    Use the \l QAccessibleInterface::state() function to get the current state.
- */
-
-/*!
-    Returns the QAccessibleInterface associated with the event.
-
-    The caller of this function takes ownership of the returned interface.
-*/
-QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
-{
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
-    if (!iface)
-        return 0;
-
-    if (m_child >= 0) {
-        QAccessibleInterface *child = iface->child(m_child);
-        if (child) {
-            delete iface;
-            iface = child;
-        } else {
-            qWarning() << "Cannot creat accessible child interface for object: " << m_object << " index: " << m_child;
-        }
-    }
-    return iface;
 }
 
 /*!
@@ -1082,26 +1016,66 @@ QColor QAccessibleInterface::backgroundColor() const
 
 /*!
     \class QAccessibleEvent
+    \internal
 
-    \brief The QAccessibleEvent class is used to give detailed updates to the
-    accessibility framework. It is used together with \l QAccessible::updateAccessibility.
+    \brief The QAccessibleEvent class provides detailed updates to the
+    accessibility framework.
 
-    The event is one of the \l QAccessible::Event which depending on the type of event needs to use
-    one of the subclasses of QAccessibleEvent.
+    This class is used with \l QAccessible::updateAccessibility().
+
+    The event type is one of the values of \l QAccessible::Event, which
+    determines the subclass of QAccessibleEvent that applies.
 
     \ingroup accessibility
     \inmodule QtGui
 */
 
-/*!
-    \fn QAccessibleEvent::QAccessibleEvent(QAccessible::Event type, QObject *object, int child = -1)
+/*! \fn QAccessibleEvent::QAccessibleEvent(QObject *obj, QAccessible::Event type)
+  Constructs a QAccessibleEvent of the specified \a type. It also
+  expects an \a object, which is the source of the event.
+ */
 
-    Constructs an accessibility event of the given \a type.
-    It also requires an \a object as source of the event and optionally a \a child index,
-    if the event comes from a child of the object.
-
-    Using a \a child index maybe more efficient than creating the accessible interface for the child.
+/*! \fn QAccessibleEvent::~QAccessibleEvent()
+  Destroys the event.
 */
+
+/*! \fn QAccessible::Event QAccessibleEvent::type() const
+  Returns the event type.
+*/
+
+/*! \fn QObject* QAccessibleEvent::object() const
+  Returns the event object.
+*/
+
+/*! \fn void QAccessibleEvent::setChild(int child)
+  Sets the child index to \a child.
+*/
+
+/*! \fn int QAccessibleEvent::child() const
+  Returns the child index.
+*/
+
+/*!
+    Returns the QAccessibleInterface associated with the event.
+    The caller of this function takes ownership of the returned interface.
+*/
+QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
+{
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
+    if (!iface)
+        return 0;
+
+    if (m_child >= 0) {
+        QAccessibleInterface *child = iface->child(m_child);
+        if (child) {
+            delete iface;
+            iface = child;
+        } else {
+            qWarning() << "Cannot creat accessible child interface for object: " << m_object << " index: " << m_child;
+        }
+    }
+    return iface;
+}
 
 /*!
     Returns the window associated with the underlying object.
@@ -1123,17 +1097,6 @@ QWindow *QAccessibleInterface::window() const
 }
 
 /*!
-    \since 4.2
-
-    Invokes a \a method on \a child with the given parameters \a params
-    and returns the result of the operation as QVariant.
-
-    Note that the type of the returned QVariant depends on the action.
-
-    Returns an invalid QVariant if the object doesn't support the action.
-*/
-
-/*!
     \internal
     Method to allow extending this class without breaking binary compatibility.
     The actual behavior and format of \a data depends on \a id argument
@@ -1148,12 +1111,17 @@ void QAccessibleInterface::virtual_hook(int /*id*/, void * /*data*/)
 /*!
     \fn void *QAccessibleInterface::interface_cast(QAccessible::InterfaceType type)
 
-    \brief Returns a specialized accessibility interface \a type from the generic QAccessibleInterface.
+    Returns a specialized accessibility interface \a type from the
+    generic QAccessibleInterface.
 
-    This function must be reimplemented when providing more information about a widget or object through the
-    specialized interfaces. For example a line edit should implement the QAccessibleTextInterface and QAccessibleEditableTextInterface.
+    This function must be reimplemented when providing more
+    information about a widget or object through the specialized
+    interfaces. For example a line edit should implement the
+    QAccessibleTextInterface and QAccessibleEditableTextInterface.
 
-    Qt's QLineEdit for example has its accessibility support implemented in QAccessibleLineEdit.
+    Qt's QLineEdit for example has its accessibility support
+    implemented in QAccessibleLineEdit.
+
     \code
 void *QAccessibleLineEdit::interface_cast(QAccessible::InterfaceType t)
 {
@@ -1165,8 +1133,11 @@ void *QAccessibleLineEdit::interface_cast(QAccessible::InterfaceType t)
 }
     \endcode
 
-    \sa QAccessible::InterfaceType, QAccessibleTextInterface, QAccessibleEditableTextInterface, QAccessibleValueInterface, QAccessibleActionInterface, QAccessibleTableInterface, QAccessibleTableCellInterface
-  */
+    \sa QAccessible::InterfaceType, QAccessibleTextInterface,
+    QAccessibleEditableTextInterface, QAccessibleValueInterface,
+    QAccessibleActionInterface, QAccessibleTableInterface,
+    QAccessibleTableCellInterface
+*/
 
 /*! \internal */
 const char *qAccessibleRoleString(QAccessible::Role role)

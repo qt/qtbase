@@ -108,7 +108,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QRect QAccessibleTextInterface::characterRect(int offset, QAccessible2::CoordinateType coordType) const
+    \fn QRect QAccessibleTextInterface::characterRect(int offset) const
 */
 
 /*!
@@ -118,7 +118,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn int QAccessibleTextInterface::offsetAtPoint(const QPoint &point, QAccessible2::CoordinateType coordType) const
+    \fn int QAccessibleTextInterface::offsetAtPoint(const QPoint &point) const
 */
 
 /*!
