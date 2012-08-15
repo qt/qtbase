@@ -140,8 +140,6 @@ QT_BEGIN_NAMESPACE
     \value South  The tabs are drawn below the pages.
     \value West  The tabs are drawn to the left of the pages.
     \value East  The tabs are drawn to the right of the pages.
-    \omitvalue Bottom
-    \omitvalue Top
 */
 
 /*!
