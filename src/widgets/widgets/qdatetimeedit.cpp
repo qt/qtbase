@@ -1563,6 +1563,12 @@ QTimeEdit::QTimeEdit(const QTime &time, QWidget *parent)
 }
 
 /*!
+  \property QTimeEdit::time
+  \internal
+  \sa QDateTimeEdit::time
+*/
+
+/*!
   \fn void QTimeEdit::userTimeChanged(const QTime &time)
 
   This signal only exists to fully implement the time Q_PROPERTY on the class.
@@ -1625,6 +1631,12 @@ QDateEdit::QDateEdit(const QDate &date, QWidget *parent)
     : QDateTimeEdit(date, QVariant::Date, parent)
 {
 }
+
+/*!
+  \property QDateEdit::date
+  \internal
+  \sa QDateTimeEdit::date
+*/
 
 /*!
   \fn void QDateEdit::userDateChanged(const QDate &date)
