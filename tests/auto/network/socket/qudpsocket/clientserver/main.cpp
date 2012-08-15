@@ -149,7 +149,7 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
     ClientServer::Type type;
     if (app.arguments().size() < 4)  {
-        qDebug("usage: ./%s [ConnectedClient <server> <port>|UnconnectedClient <server> <port>|Server]", argv[0]);
+        qDebug("usage: %s [ConnectedClient <server> <port>|UnconnectedClient <server> <port>|Server]", argv[0]);
         return 1;
     }
 
@@ -161,7 +161,7 @@ int main(int argc, char **argv)
     } else if (arg == "server") {
         type = ClientServer::Server;
     } else {
-        qDebug("usage: ./%s [ConnectedClient <server> <port>|UnconnectedClient <server> <port>|Server]", argv[0]);
+        qDebug("usage: %s [ConnectedClient <server> <port>|UnconnectedClient <server> <port>|Server]", argv[0]);
         return 1;
     }
 
