@@ -307,11 +307,11 @@ void tst_QByteArray::qUncompressCorruptedData_data()
 }
 
 // Corrupt data causes this test to lock up on HP-UX / PA-RISC with gcc,
-// SOLARIS, QNX and Windows.
+// SOLARIS, and Windows.
 // This test is expected to produce some warning messages in the test output.
 void tst_QByteArray::qUncompressCorruptedData()
 {
-#if !(defined(Q_OS_HPUX) && !defined(__ia64) && defined(Q_CC_GNU)) && !defined(Q_OS_SOLARIS) && !defined(Q_OS_QNX) && !defined(Q_OS_WIN)
+#if !(defined(Q_OS_HPUX) && !defined(__ia64) && defined(Q_CC_GNU)) && !defined(Q_OS_SOLARIS) && !defined(Q_OS_WIN)
     QFETCH(QByteArray, in);
 
     QByteArray res;
@@ -1904,5 +1904,5 @@ void tst_QByteArray::literals()
 
 const char globalChar = '1';
 
-QTEST_APPLESS_MAIN(tst_QByteArray)
+QTEST_MAIN(tst_QByteArray)
 #include "tst_qbytearray.moc"
