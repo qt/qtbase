@@ -295,10 +295,6 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
     \value TriangularWest  Triangular tabs on the left of the pages.
 
     \value TriangularEast  Triangular tabs on the right of the pages.
-    \omitvalue RoundedAbove
-    \omitvalue RoundedBelow
-    \omitvalue TriangularAbove
-    \omitvalue TriangularBelow
 */
 
 /*!
@@ -2036,19 +2032,6 @@ void QTabBar::setUsesScrollButtons(bool useButtons)
     d->useScrollButtons = useButtons;
     d->refresh();
 }
-
-/*!
-    \fn void QTabBar::setCurrentTab(int index)
-
-    Use setCurrentIndex() instead.
-*/
-
-/*!
-    \fn void QTabBar::selected(int index);
-
-    Use currentChanged() instead.
-*/
-
 
 /*!
     \property QTabBar::tabsClosable
