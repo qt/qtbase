@@ -5056,6 +5056,7 @@ bool QGraphicsItem::isObscured(const QRectF &rect) const
 
 /*!
     \fn bool QGraphicsItem::isObscured(qreal x, qreal y, qreal w, qreal h) const
+    \overload
     \since 4.3
 
     This convenience function is equivalent to calling isObscured(QRectF(\a x, \a y, \a w, \a h)).
@@ -7792,7 +7793,7 @@ void QGraphicsItemPrivate::resetHeight()
 
   Describes the items x position.
 
-  \sa QGraphicsItem::setX(), setPos(), xChanged()
+  \sa QGraphicsItem::setX(), setPos()
 */
 
 /*!
@@ -7809,7 +7810,7 @@ void QGraphicsItemPrivate::resetHeight()
 
   Describes the items y position.
 
-  \sa QGraphicsItem::setY(), setPos(), yChanged()
+  \sa QGraphicsItem::setY(), setPos()
 */
 
 /*!
@@ -7826,7 +7827,7 @@ void QGraphicsItemPrivate::resetHeight()
 
   Describes the items z value.
 
-  \sa QGraphicsItem::setZValue(), zValue(), zChanged()
+  \sa QGraphicsItem::setZValue(), zValue()
 */
 
 /*!
@@ -7882,7 +7883,6 @@ void QGraphicsItemPrivate::resetHeight()
   By default, this property is true.
 
   \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled()
-  \sa QGraphicsObject::enabledChanged()
 */
 
 /*!
@@ -7901,7 +7901,7 @@ void QGraphicsItemPrivate::resetHeight()
 
   By default, this property is true.
 
-  \sa QGraphicsItem::isVisible(), QGraphicsItem::setVisible(), visibleChanged()
+  \sa QGraphicsItem::isVisible(), QGraphicsItem::setVisible()
 */
 
 /*!
@@ -10621,7 +10621,7 @@ QGraphicsSimpleTextItem::~QGraphicsSimpleTextItem()
 
 /*!
     Sets the item's text to \a text. The text will be displayed as
-    plain text. Newline characters ('\n') as well as characters of
+    plain text. Newline characters ('\\n') as well as characters of
     type QChar::LineSeparator will cause item to break the text into
     multiple lines.
 */

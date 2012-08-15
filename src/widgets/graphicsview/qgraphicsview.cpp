@@ -1294,7 +1294,7 @@ void QGraphicsView::setTransformationAnchor(ViewportAnchor anchor)
     whole scene fits in the view, QGraphicsScene uses the view \l alignment to
     position the scene in the view.
 
-    \sa alignment, transformationAnchor, Qt::WNorthWestGravity
+    \sa alignment, transformationAnchor
 */
 QGraphicsView::ViewportAnchor QGraphicsView::resizeAnchor() const
 {

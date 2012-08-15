@@ -81,7 +81,6 @@
     convenient to use the addAnchors() function. As with the other functions for specifying
     anchors, it can also be used to anchor a widget to a layout.
 
-    \clearfloat
     \section1 Size Hints and Size Policies in an Anchor Layout
 
     QGraphicsAnchorLayout respects each item's size hints and size policies.

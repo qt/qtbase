@@ -1201,7 +1201,8 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
 
     QGraphicsWidget delivers notifications for the following properties:
 
-    \table     \li propertyName        \li Property
+    \table
+    \header    \li propertyName        \li Property
     \row       \li layoutDirection     \li QGraphicsWidget::layoutDirection
     \row       \li size                \li QGraphicsWidget::size
     \row       \li font                \li QGraphicsWidget::font
@@ -1347,7 +1348,8 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
     Handles the \a event.  QGraphicsWidget handles the following
     events:
 
-    \table   \li Event                 \li Usage
+    \table
+    \header  \li Event                 \li Usage
     \row     \li Polish
                     \li Delivered to the widget some time after it has been
                         shown.
