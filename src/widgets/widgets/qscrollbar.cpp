@@ -699,12 +699,6 @@ void QScrollBar::hideEvent(QHideEvent *)
     }
 }
 
-/*!
-    \fn bool QScrollBar::draggingSlider()
-
-    Use isSliderDown() instead.
-*/
-
 /*! \internal
     Returns the style option for scroll bar.
 */
