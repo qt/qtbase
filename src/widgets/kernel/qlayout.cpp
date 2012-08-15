@@ -1393,18 +1393,6 @@ QSize QLayout::closestAcceptableSize(const QWidget *widget, const QSize &size)
     return result;
 }
 
-/*!
-    \fn void QLayout::setResizeMode(SizeConstraint constraint)
-
-    Use setSizeConstraint(\a constraint) instead.
-*/
-
-/*!
-    \fn QLayout::SizeConstraint QLayout::resizeMode() const
-
-    Use sizeConstraint() instead.
-*/
-
 void QSizePolicy::setControlType(ControlType type)
 {
     /*

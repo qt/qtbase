@@ -1087,12 +1087,6 @@ void QBoxLayout::addStrut(int size)
 }
 
 /*!
-    \fn int QBoxLayout::findWidget(QWidget *widget)
-
-    Use indexOf(\a widget) instead.
-*/
-
-/*!
     Sets the stretch factor for \a widget to \a stretch and returns
     true if \a widget is found in this layout (not including child
     layouts); otherwise returns false.
@@ -1349,35 +1343,5 @@ QVBoxLayout::QVBoxLayout()
 QVBoxLayout::~QVBoxLayout()
 {
 }
-
-/*!
-    \fn QWidget *QLayout::mainWidget() const
-
-    Use parentWidget() instead.
-*/
-
-/*!
-    \fn void QLayout::remove(QWidget *widget)
-
-    Use removeWidget(\a widget) instead.
-*/
-
-/*!
-    \fn void QLayout::add(QWidget *widget)
-
-    Use addWidget(\a widget) instead.
-*/
-
-/*!
-    \fn QLayoutIterator QLayout::iterator()
-
-    Use a QLayoutIterator() constructor instead.
-*/
-
-/*!
-    \fn int QLayout::defaultBorder() const
-
-    Use spacing() instead.
-*/
 
 QT_END_NAMESPACE

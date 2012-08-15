@@ -1045,7 +1045,7 @@ QWidget *QGestureEvent::widget() const
     QGraphicsObject to translate a point in screen coordinates to scene-local
     coordinates.
 
-    \sa QPointF::isNull().
+    \sa QPointF::isNull()
 */
 QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
 {
