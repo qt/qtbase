@@ -45,14 +45,6 @@
 #include <QTemporaryDir>
 #include <QFileSystemWatcher>
 
-#ifdef Q_OS_LINUX
-# ifdef QT_NO_INOTIFY
-#  include <linux/version.h>
-# else
-#  include <sys/inotify.h>
-# endif
-#endif
-
 /* All tests need to run in temporary directories not used
  * by the application to avoid non-deterministic failures on Windows
  * due to locked directories and left-overs from previous tests. */
