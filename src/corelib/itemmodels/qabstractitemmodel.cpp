@@ -926,19 +926,6 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 */
 
 /*!
-    \fn QModelIndex::QModelIndex(const QModelIndex &other)
-
-    Creates a new model index that is a copy of the \a other model
-    index.
-*/
-
-/*!
-    \fn QModelIndex::~QModelIndex()
-
-    Destroys the model index.
-*/
-
-/*!
     \fn int QModelIndex::row() const
 
     Returns the row this model index refers to.

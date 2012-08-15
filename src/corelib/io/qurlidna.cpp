@@ -2574,7 +2574,7 @@ QStringList QUrl::idnWhitelist()
     Sets the whitelist of Top-Level Domains (TLDs) that are allowed to have
     non-ASCII characters in domains to the value of \a list.
 
-    Note that if you call this function, you need to do so \em before
+    Note that if you call this function, you need to do so \e before
     you start any threads that might access idnWhitelist().
 
     Qt has comes a default list that contains the Internet top-level domains

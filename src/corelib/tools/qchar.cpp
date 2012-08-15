@@ -783,7 +783,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 */
 
 /*!
-    \fn static bool isNonCharacter(uint ucs4)
+    \fn static bool QChar::isNonCharacter(uint ucs4)
     \overload
     \since 5.0
 

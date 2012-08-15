@@ -162,7 +162,7 @@
 */
 
 /*!
-    \fn bool QDebug::autoInsertSpaces()
+    \fn bool QDebug::autoInsertSpaces() const
 
     Returns true if this QDebug instance will automatically insert spaces
     between writes.

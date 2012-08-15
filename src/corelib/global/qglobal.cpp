@@ -3121,7 +3121,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     semantics) or to
     \code
     try { expr; } catch(...) { qTerminate(); }
-    \endocde
+    \endcode
     otherwise.
 
     Since this macro expands to just \c expr if the compiler supports

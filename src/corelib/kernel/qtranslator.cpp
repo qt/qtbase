@@ -731,7 +731,6 @@ bool QTranslator::load(const QLocale & locale,
 
 /*!
   \overload load()
-  \fn bool QTranslator::load(const uchar *data, int len)
 
   Loads the QM file data \a data of length \a len into the
   translator.

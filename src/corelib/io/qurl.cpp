@@ -2984,7 +2984,7 @@ QString QUrl::errorString() const
     \internal
 */
 
-/*! \fn uint qHash(const QUrl &url, uint seed = 0)
+/*!
     \relates QHash
     \since 5.0
 

@@ -139,7 +139,7 @@ static const char * const collationStrings[collationStringsCount] = {
     specified the default collation algorithm for the locale is being used. If
     \a locale is not specified QLocale::default() is being used.
 
-    \sa setLocale setCollation setOptions
+    \sa setLocale, setCollation, setOptions
  */
 QCollator::QCollator(const QLocale &locale, QCollator::Collation collation)
     : d(new QCollatorPrivate)
@@ -243,7 +243,7 @@ QLocale QCollator::locale() const
 }
 
 /*!
-    \enum QCollator::collation
+    \enum QCollator::Collation
 
     This enum can be used to specify an alternate collation algorithm to be used instead
     of the default algorithm for the locale.
@@ -252,7 +252,6 @@ QLocale QCollator::locale() const
 
     \value Default Use the default algorithm for the locale
     \value Big5Han
-    \value Dictionary
     \value Direct
     \value GB2312Han
     \value PhoneBook
