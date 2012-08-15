@@ -583,40 +583,6 @@ void QToolTip::setFont(const QFont &font)
     QApplication::setFont(font, "QTipLabel");
 }
 
-
-/*!
-    \fn void QToolTip::add(QWidget *widget, const QString &text)
-
-    Use QWidget::setToolTip() instead.
-
-    \oldcode
-    tip->add(widget, text);
-    \newcode
-    widget->setToolTip(text);
-    \endcode
-*/
-
-/*!
-    \fn void QToolTip::add(QWidget *widget, const QRect &rect, const QString &text)
-
-    Intercept the QEvent::ToolTip events in your widget's
-    QWidget::event() function and call QToolTip::showText() with the
-    text you want to display. The \l{widgets/tooltips}{Tooltips}
-    example illustrates this technique.
-*/
-
-/*!
-    \fn void QToolTip::remove(QWidget *widget)
-
-    Use QWidget::setToolTip() instead.
-
-    \oldcode
-    tip->remove(widget);
-    \newcode
-    widget->setToolTip("");
-    \endcode
-*/
-
 QT_END_NAMESPACE
 
 #include "qtooltip.moc"
