@@ -637,7 +637,7 @@ void QAbstractSlider::triggerAction(SliderAction action)
 /*!  Sets action \a action to be triggered repetitively in intervals
 of \a repeatTime, after an initial delay of \a thresholdTime.
 
-\sa triggerAction() repeatAction()
+\sa triggerAction(), repeatAction()
  */
 void QAbstractSlider::setRepeatAction(SliderAction action, int thresholdTime, int repeatTime)
 {
