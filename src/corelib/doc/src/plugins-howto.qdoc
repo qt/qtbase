@@ -68,7 +68,7 @@
     Since the higher-level API is built on top of the lower-level API,
     some issues are common to both.
 
-    If you want to provide plugins for use with \QD, see the QtDesigner
+    If you want to provide plugins for use with \l{Qt Designer}, see the QtDesigner
     module documentation.
 
     Topics:
@@ -193,10 +193,11 @@
     The \l{tools/plugandpaint}{Plug & Paint} example documentation
     explains this process in detail. See also \l{Creating Custom
     Widgets for Qt Designer} for information about issues that are
-    specific to \QD. You can also take a look at the \l{Echo Plugin
-    Example} is a more trivial example on how to implement a plugin
-    that extends Qt applications. Please note that a QCoreApplication
-    must have been initialized before plugins can be loaded.
+    specific to \l{Qt Designer}. You can also take a look at the
+    \l{Echo Plugin Example} which is a more trivial example on
+    how to implement a plugin that extends Qt applications.
+    Please note that a QCoreApplication must have been initialized
+    before plugins can be loaded.
 
     \section1 Locating Plugins
 

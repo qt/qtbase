@@ -79,10 +79,10 @@ static inline int best(int a, int b, int c)
 }
 
 /**
- *  Opens @p filename and returns content produced as per
+ *  Opens \a filename and returns content produced as per
  *  xmlconf/xmltest/canonxml.html.
  *
- *  @p docType is the DOCTYPE name that the returned output should
+ *  \a docType is the DOCTYPE name that the returned output should
  *  have, if it doesn't already have one.
  */
 static QByteArray makeCanonical(const QString &filename,
@@ -197,10 +197,10 @@ static QByteArray makeCanonical(const QString &filename,
 }
 
 /**
- * @short Returns the lexical QName of the document element in
- * @p document.
+ * \brief Returns the lexical QName of the document element in
+ * \a document.
  *
- * It is assumed that @p document is a well-formed XML document.
+ * It is assumed that \a document is a well-formed XML document.
  */
 static QString documentElement(const QByteArray &document)
 {
@@ -219,7 +219,7 @@ static QString documentElement(const QByteArray &document)
 }
 
 /**
- * @short Loads W3C's XML conformance test suite and runs it on QXmlStreamReader.
+ * \brief Loads W3C's XML conformance test suite and runs it on QXmlStreamReader.
  *
  * Since this suite is fairly large, it runs the tests sequentially in order to not
  * have them all loaded into memory at once. In this way, the maximum memory usage stays
@@ -228,8 +228,7 @@ static QString documentElement(const QByteArray &document)
  *
  * Part of this code is a manual, ad-hoc implementation of xml:base.
  *
- * @see <a href="http://www.w3.org/XML/Test/">Extensible
- * Markup Language (XML) Conformance Test Suites</a>
+ * See \l {http://www.w3.org/XML/Test/} {Extensible Markup Language (XML) Conformance Test Suites}
  */
 class TestSuiteHandler : public QXmlDefaultHandler
 {
@@ -277,7 +276,7 @@ public:
     int skipCount;
 
     /**
-     * @p baseURI is the the URI of where the catalog file resides.
+     * \a baseURI is the the URI of where the catalog file resides.
      */
     TestSuiteHandler(const QUrl &baseURI) : runCount(0),
                                             skipCount(0)
@@ -690,8 +689,8 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
     reader.setDevice(&file);
     QByteArray outarray;
     QTextStream writer(&outarray);
-	// We always want UTF-8, and not what the system picks up.
-	writer.setCodec("UTF-8");
+    // We always want UTF-8, and not what the system picks up.
+    writer.setCodec("UTF-8");
 
     while (!reader.atEnd()) {
         reader.readNext();

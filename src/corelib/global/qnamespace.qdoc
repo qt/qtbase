@@ -149,6 +149,11 @@
            Command+C on the keyboard regardless of the value set, though what is output for
            QKeySequence::toString(QKeySequence::PortableText) will be different).
 
+    \value AA_Use96Dpi Assume the screen has a resolution of 96 DPI rather
+           than using the OS-provided resolution. This will cause font rendering
+           to be consistent in pixels-per-point across devices rather than
+           defining 1 point as 1/72 inch.
+
     \value AA_X11InitThreads Calls XInitThreads() as part of the QApplication
            construction in order to make Xlib calls thread-safe. This
            attribute must be set before QApplication is constructed.
@@ -2038,6 +2043,10 @@
            even the softkeys are invisible i.e. the window is displayed with
            \c showFullscreen(). Only supported for Symbian.
 
+    \value WindowTransparentForInput Informs the window system that this window
+           is used only for output (displaying something) and does not take input.
+           Therefore input events should pass through as if it wasn't there.
+
     \value WindowOverridesSystemGestures Informs the window system that this window
            implements its own set of gestures and that system level gestures, like for
            instance three-finger desktop switching, should be disabled.
@@ -2350,6 +2359,7 @@
     \enum Qt::InputMethodQuery
 
     \value ImEnabled            The widget accepts input method input.
+    \value ImMicroFocus         \obsolete replaced by \c ImCursorRectangle
     \value ImCursorRectangle    The rectangle covering the area of the input cursor in widget coordinates.
     \value ImFont               The currently used font for text input.
     \value ImCursorPosition     The logical position of the cursor within the text surrounding the input area
