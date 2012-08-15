@@ -123,7 +123,6 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qvsnprintf.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qvariant.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qsystemerror.cpp \
-           $$QT_SOURCE_TREE/src/corelib/io/qurl.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qmetatype.cpp \
            $$QT_SOURCE_TREE/src/corelib/global/qmalloc.cpp \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlstream.cpp \
