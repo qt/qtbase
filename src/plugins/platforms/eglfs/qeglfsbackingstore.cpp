@@ -57,7 +57,7 @@ QEglFSBackingStore::QEglFSBackingStore(QWindow *window)
     , m_texture(0)
     , m_program(0)
 {
-    m_context->setFormat(window->format());
+    m_context->setFormat(window->requestedFormat());
     m_context->setScreen(window->screen());
     m_context->create();
 }

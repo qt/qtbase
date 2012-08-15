@@ -65,8 +65,6 @@ public:
 
     QPlatformCursor *cursor() const;
 
-    QPlatformOpenGLContext *platformContext() const;
-
     EGLDisplay display() const { return m_dpy; }
 
 private:

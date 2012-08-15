@@ -72,7 +72,15 @@ QEglFSWindow::~QEglFSWindow()
 
 void QEglFSWindow::create()
 {
-    Q_ASSERT(!m_window);
+    if (m_window)
+        return;
+
+    if (window()->windowType() == Qt::Desktop) {
+        QRect rect(QPoint(), hooks->screenSize());
+        QPlatformWindow::setGeometry(rect);
+        QWindowSystemInterface::handleGeometryChange(window(), rect);
+        return;
+    }
 
     EGLDisplay display = (static_cast<QEglFSScreen *>(window()->screen()->handle()))->display();
     QSurfaceFormat platformFormat = hooks->surfaceFormatFor(window()->requestedFormat());
