@@ -383,12 +383,6 @@ void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
 
 void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
-    if (project->first("TEMPLATE") == "aux") {
-        t << "first:" << endl;
-        t << "all:" << endl;
-        return;
-    }
-
     t << "first: all" << endl;
     t << "all: " << escapeDependencyPath(fileFixify(Option::output.fileName())) << " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS"))," "," "," ") << " $(DESTDIR_TARGET)" << endl << endl;
     t << "$(DESTDIR_TARGET): " << var("PRE_TARGETDEPS") << " $(OBJECTS) " << var("POST_TARGETDEPS");
@@ -400,7 +394,7 @@ void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
         } else {
             t << "\n\t" << objectsLinkLine << " " ;
         }
-    } else {
+    } else if (project->first("TEMPLATE") != "aux") {
         t << "\n\t" << "$(LINK) $(LFLAGS) -o $(DESTDIR_TARGET) " << objectsLinkLine << " " << " $(LIBS)";
     }
     if(!project->isEmpty("QMAKE_POST_LINK"))

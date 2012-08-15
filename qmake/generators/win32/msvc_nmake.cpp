@@ -358,11 +358,6 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
 void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
     const QString templateName = project->first("TEMPLATE");
-    if (templateName == "aux") {
-        t << "first:" << endl;
-        t << "all:" << endl;
-        return;
-    }
 
     t << "first: all" << endl;
     t << "all: " << fileFixify(Option::output.fileName()) << " " << varGlue("ALL_DEPS"," "," "," ") << "$(DESTDIR_TARGET)" << endl << endl;
@@ -374,7 +369,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
         t << "\n\t" << "$(LIBAPP) $(LIBFLAGS) /OUT:$(DESTDIR_TARGET) @<<" << "\n\t  "
           << "$(OBJECTS)"
           << "\n<<";
-    } else {
+    } else if (templateName != "aux") {
         const bool embedManifest = ((templateName == "app" && project->isActiveConfig("embed_manifest_exe"))
                                     || (templateName == "lib" && project->isActiveConfig("embed_manifest_dll")
                                         && !(project->isActiveConfig("plugin") && project->isActiveConfig("no_plugin_manifest"))
