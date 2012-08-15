@@ -130,10 +130,6 @@ public:
     \value Dec  Decimal
     \value Oct  Octal
     \value Bin  Binary
-    \omitvalue HEX
-    \omitvalue DEC
-    \omitvalue OCT
-    \omitvalue BIN
 
     If the display is set to hexadecimal, octal or binary, the integer
     equivalent of the value is displayed.
@@ -1227,22 +1223,6 @@ bool QLCDNumber::event(QEvent *e)
 {
     return QFrame::event(e);
 }
-
-/*!
-    \fn void QLCDNumber::setMargin(int margin)
-    Sets the width of the margin around the contents of the widget to \a margin.
-    
-    Use QWidget::setContentsMargins() instead.
-    \sa margin(), QWidget::setContentsMargins()
-*/
-
-/*!
-    \fn int QLCDNumber::margin() const
-    Returns the width of the margin around the contents of the widget.
-    
-    Use QWidget::getContentsMargins() instead.
-    \sa setMargin(), QWidget::getContentsMargins()
-*/
 
 QT_END_NAMESPACE
 

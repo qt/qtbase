@@ -58,7 +58,6 @@ class Q_WIDGETS_EXPORT QLCDNumber : public QFrame // LCD number widget
     Q_OBJECT
     Q_ENUMS(Mode SegmentStyle)
     Q_PROPERTY(bool smallDecimalPoint READ smallDecimalPoint WRITE setSmallDecimalPoint)
-    Q_PROPERTY(int numDigits READ digitCount WRITE setDigitCount)
     Q_PROPERTY(int digitCount READ digitCount WRITE setDigitCount)
     Q_PROPERTY(Mode mode READ mode WRITE setMode)
     Q_PROPERTY(SegmentStyle segmentStyle READ segmentStyle WRITE setSegmentStyle)
