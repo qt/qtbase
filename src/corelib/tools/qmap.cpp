@@ -668,13 +668,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa count(), QMultiMap::contains()
 */
 
-/*! \fn const T QMap::value(const Key &key) const
-
-*/
-
 /*! \fn const T QMap::value(const Key &key, const T &defaultValue) const
-
-    \overload
 
     Returns the value associated with the key \a key.
 
@@ -1019,6 +1013,14 @@ void QMapDataBase::freeData(QMapDataBase *d)
     returning false.
 */
 
+/*!
+  \fn QPair<iterator, iterator> QMap::equal_range(const Key &key)
+
+  Returns a pair of iterators delimiting the range of values that
+  are stored under \a key.
+*/
+
+
 /*! \class QMap::iterator
     \brief The QMap::iterator class provides an STL-style non-const iterator for QMap and QMultiMap.
 
@@ -1083,11 +1085,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa QMap::const_iterator, QMutableMapIterator
 */
 
-/*! \fn QMap::iterator::operator QMapData::Node *() const
-
-    \internal
-*/
-
 /*! \typedef QMap::iterator::difference_type
 
     \internal
@@ -1125,7 +1122,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa QMap::begin(), QMap::end()
 */
 
-/*! \fn QMap::iterator::iterator(QMapData::Node *node)
+/*! \fn QMap::iterator::iterator(Node *)
 
     \internal
 */
@@ -1305,11 +1302,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa QMap::iterator, QMapIterator
 */
 
-/*! \fn QMap::const_iterator::operator QMapData::Node *() const
-
-    \internal
-*/
-
 /*! \typedef QMap::const_iterator::difference_type
 
     \internal
@@ -1347,7 +1339,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa QMap::constBegin(), QMap::constEnd()
 */
 
-/*! \fn QMap::const_iterator::const_iterator(QMapData::Node *node)
+/*! \fn QMap::const_iterator::const_iterator(const Node *)
 
     \internal
 */
