@@ -55,12 +55,14 @@ struct StringEvent : public QEvent
 //![1]
 class StringTransition : public QAbstractTransition
 {
+    Q_OBJECT
+
 public:
     StringTransition(const QString &value)
         : m_value(value) {}
 
 protected:
-    virtual bool eventTest(QEvent *e) const
+    virtual bool eventTest(QEvent *e)
     {
         if (e->type() != QEvent::Type(QEvent::User+1)) // StringEvent
             return false;
