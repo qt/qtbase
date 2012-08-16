@@ -1760,6 +1760,13 @@ void tst_QSharedPointer::invalidConstructs_data()
            "QSharedPointer<Data> ptr1 = QSharedPointer<Data>(aData);\n"
            "QSharedPointer<Data> ptr2 = QSharedPointer<Data>(aData);\n";
 
+    // two QObjects with the same pointer
+    QTest::newRow("same-pointer-to-qobject")
+        << &QTest::QExternalTest::tryRunFail
+        << "QObject *anObj = new QObject;\n"
+           "QSharedPointer<QObject> ptr1 = QSharedPointer<QObject>(anObj);\n"
+           "QSharedPointer<QObject> ptr2 = QSharedPointer<QObject>(anObj);\n";
+
     // re-creation:
     QTest::newRow("re-creation")
         << &QTest::QExternalTest::tryRunFail

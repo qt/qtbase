@@ -387,10 +387,10 @@ public:
 
         // now initialize the data
         new (result.data()) T();
-        result.d->setQObjectShared(result.value, true);
 # ifdef QT_SHAREDPOINTER_TRACK_POINTERS
         internalSafetyCheckAdd(result.d, result.value);
 # endif
+        result.d->setQObjectShared(result.value, true);
         return result;
     }
 
@@ -425,10 +425,10 @@ private:
 # endif
         d = Private::create(ptr, deleter, actualDeleter);
 
-        d->setQObjectShared(ptr, true);
 #ifdef QT_SHAREDPOINTER_TRACK_POINTERS
         internalSafetyCheckAdd(d, ptr);
 #endif
+        d->setQObjectShared(ptr, true);
     }
 
     template <class X>
