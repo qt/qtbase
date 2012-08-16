@@ -694,8 +694,6 @@ void VcprojGenerator::init()
         project->values("QMAKE_APP_FLAG").append("1");
     else if (project->first("TEMPLATE") == "vclib")
         project->values("QMAKE_LIB_FLAG").append("1");
-    if (project->values("QMAKESPEC").isEmpty())
-        project->values("QMAKESPEC").append(qgetenv("QMAKESPEC"));
 
     project->values("QMAKE_L_FLAG") << "/LIBPATH:";
 
@@ -1121,9 +1119,6 @@ void VcprojGenerator::initDeploymentTool()
     if (!runtime.isEmpty() && (runtime != QLatin1String("no"))) {
         QString runtimeVersion = QLatin1String("msvcr");
         QString mkspec = project->first("QMAKESPEC");
-        // If no .qmake.cache has been found, we fallback to the original mkspec
-        if (mkspec.isEmpty())
-            mkspec = project->first("QMAKESPEC_ORIGINAL");
 
         if (!mkspec.isEmpty()) {
             if (mkspec.endsWith("2008"))
