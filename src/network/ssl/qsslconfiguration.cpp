@@ -520,9 +520,11 @@ void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certific
 }
 
 /*!
-  Enables or disables an SSL compatibility option.
+  Enables or disables an SSL compatibility \a option. If \a on
+  is true, the \a option is enabled. If \a on is false, the
+  \a option is disabled.
 
-  \sa testSSlOption()
+  \sa testSslOption()
 */
 void QSslConfiguration::setSslOption(QSsl::SslOption option, bool on)
 {
@@ -535,9 +537,9 @@ void QSslConfiguration::setSslOption(QSsl::SslOption option, bool on)
 /*!
   \since 4.8
 
-  Returns true if the specified SSL compatibility option is enabled.
+  Returns true if the specified SSL compatibility \a option is enabled.
 
-  \sa testSSlOption()
+  \sa setSslOption()
 */
 bool QSslConfiguration::testSslOption(QSsl::SslOption option) const
 {

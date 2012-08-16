@@ -96,18 +96,18 @@ QT_BEGIN_NAMESPACE
     \value DnsEntry A DNS host name entry; the entry contains a host name
     entry that the certificate is valid for. The entry may contain wildcards.
 
-    \sa QSslCertificate::subjectAlternativeNames()
+    \note In Qt 4, this enum was called \c {AlternateNameEntryType}. That name
+    is deprecated in Qt 5.
 
+    \sa QSslCertificate::subjectAlternativeNames()
 */
-#if QT_DEPRECATED_SINCE(5,0)
+
 /*!
-    \enum QSsl::AlternateNameEntryType
-    \obsolete
-    Use QSsl::AlternativeNameEntryType instead.
-    This is a synonym for source compatibility with Qt 4.
-    \sa QSsl::AlternativeNameEntryType
+  \typedef QSsl::AlternateNameEntryType
+  \obsolete
+
+  Use QSsl::AlternativeNameEntryType instead.
 */
-#endif
 
 /*!
     \enum QSsl::SslProtocol
