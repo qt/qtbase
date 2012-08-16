@@ -62,6 +62,7 @@
 
 #include <qabstracttextdocumentlayout.h>
 #include <qtextdocumentfragment.h>
+#include <qsyntaxhighlighter.h>
 
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
@@ -211,6 +212,8 @@ private slots:
     void inputMethodQuery();
     void inputMethodQueryImHints_data();
     void inputMethodQueryImHints();
+
+    void highlightLongLine();
 
 private:
     void createSelection();
@@ -2482,6 +2485,39 @@ void tst_QTextEdit::inputMethodQueryImHints()
     QVariant value = ed->inputMethodQuery(Qt::ImHints);
     QCOMPARE(static_cast<Qt::InputMethodHints>(value.toInt()), hints);
 }
+
+void tst_QTextEdit::highlightLongLine()
+{
+    QTextEdit edit;
+    edit.setAcceptRichText(false);
+    edit.setWordWrapMode(QTextOption::NoWrap);
+
+    QString singeLongLine;
+    for (int i = 0; i < 10000; ++i)
+        singeLongLine += "0123456789";
+    edit.setPlainText(singeLongLine);
+
+    class NumHighlighter : public QSyntaxHighlighter {
+    public:
+        explicit NumHighlighter(QTextDocument*doc) : QSyntaxHighlighter(doc) {};
+        virtual void highlightBlock(const QString& text) {
+            // odd number in bold
+            QTextCharFormat format;
+            format.setFontWeight(QFont::Bold);
+            for (int i = 0; i < text.size(); ++i) {
+                if (text.at(i).unicode() % 2)
+                    setFormat(i, 1, format);
+            }
+        }
+    };
+    NumHighlighter nh(edit.document());
+    edit.show();
+    QTest::qWaitForWindowActive(edit.windowHandle());
+    QCoreApplication::processEvents();
+    //If there is a quadratic behaviour, this would take forever.
+    QVERIFY(true);
+}
+
 
 QTEST_MAIN(tst_QTextEdit)
 #include "tst_qtextedit.moc"
