@@ -787,33 +787,35 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 }
 
                 if (hover || selected) {
-                    QString key = QString::fromLatin1("qvdelegate-%1-%2-%3-%4-%5").arg(sectionSize.width())
-                                                        .arg(sectionSize.height()).arg(selected).arg(active).arg(hover);
-                    if (!QPixmapCache::find(key, pixmap)) {
-                        pixmap = QPixmap(sectionSize);
-                        pixmap.fill(Qt::transparent);
+                    if (sectionSize.width() > 0 && sectionSize.height() > 0) {
+                        QString key = QString::fromLatin1("qvdelegate-%1-%2-%3-%4-%5").arg(sectionSize.width())
+                                                            .arg(sectionSize.height()).arg(selected).arg(active).arg(hover);
+                        if (!QPixmapCache::find(key, pixmap)) {
+                            pixmap = QPixmap(sectionSize);
+                            pixmap.fill(Qt::transparent);
 
-                        int state;
-                        if (selected && hover)
-                            state = LISS_HOTSELECTED;
-                        else if (selected && !active)
-                            state = LISS_SELECTEDNOTFOCUS;
-                        else if (selected)
-                            state = LISS_SELECTED;
-                        else
-                            state = LISS_HOT;
+                            int state;
+                            if (selected && hover)
+                                state = LISS_HOTSELECTED;
+                            else if (selected && !active)
+                                state = LISS_SELECTEDNOTFOCUS;
+                            else if (selected)
+                                state = LISS_SELECTED;
+                            else
+                                state = LISS_HOT;
 
-                        QPainter pixmapPainter(&pixmap);
-                        XPThemeData theme(0, &pixmapPainter,
-                                          QWindowsXPStylePrivate::TreeViewTheme,
-                            LVP_LISTITEM, state, QRect(0, 0, sectionSize.width(), sectionSize.height()));
-                        if (d->initTreeViewTheming() && theme.isValid()) {
-                            d->drawBackground(theme);
-                        } else {
-                            QWindowsXPStyle::drawPrimitive(PE_PanelItemViewItem, option, painter, widget);
-                            break;;
+                            QPainter pixmapPainter(&pixmap);
+                            XPThemeData theme(0, &pixmapPainter,
+                                              QWindowsXPStylePrivate::TreeViewTheme,
+                                LVP_LISTITEM, state, QRect(0, 0, sectionSize.width(), sectionSize.height()));
+                            if (d->initTreeViewTheming() && theme.isValid()) {
+                                d->drawBackground(theme);
+                            } else {
+                                QWindowsXPStyle::drawPrimitive(PE_PanelItemViewItem, option, painter, widget);
+                                break;;
+                            }
+                            QPixmapCache::insert(key, pixmap);
                         }
-                        QPixmapCache::insert(key, pixmap);
                     }
 
                     if (vopt->showDecorationSelected) {
