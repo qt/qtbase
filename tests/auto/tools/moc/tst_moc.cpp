@@ -549,6 +549,7 @@ private slots:
     void finalClasses();
     void explicitOverrideControl_data();
     void explicitOverrideControl();
+    void autoPropertyMetaTypeRegistration();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -2291,6 +2292,177 @@ void tst_Moc::explicitOverrideControl()
     QCOMPARE(mo->indexOfMethod("pureSlot8()"), mo->methodOffset() + 8);
     QCOMPARE(mo->indexOfMethod("pureSlot9()"), mo->methodOffset() + 9);
 #endif
+}
+
+class CustomQObject : public QObject
+{
+    Q_OBJECT
+    Q_ENUMS(Number)
+public:
+    enum Number {
+      Zero,
+      One,
+      Two
+    };
+    explicit CustomQObject(QObject *parent = 0)
+      : QObject(parent)
+    {
+    }
+};
+
+Q_DECLARE_METATYPE(CustomQObject::Number)
+
+typedef CustomQObject* CustomQObjectStar;
+Q_DECLARE_METATYPE(CustomQObjectStar);
+
+namespace SomeNamespace {
+
+class NamespacedQObject : public QObject
+{
+    Q_OBJECT
+public:
+    explicit NamespacedQObject(QObject *parent = 0)
+      : QObject(parent)
+    {
+
+    }
+};
+
+struct NamespacedNonQObject {};
+}
+Q_DECLARE_METATYPE(SomeNamespace::NamespacedNonQObject)
+
+class AutoRegistrationObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QObject* object READ object CONSTANT)
+    Q_PROPERTY(CustomQObject* customObject READ customObject CONSTANT)
+    Q_PROPERTY(QSharedPointer<CustomQObject> customObjectP READ customObjectP CONSTANT)
+    Q_PROPERTY(QWeakPointer<CustomQObject> customObjectWP READ customObjectWP CONSTANT)
+    Q_PROPERTY(QPointer<CustomQObject> customObjectTP READ customObjectTP CONSTANT)
+    Q_PROPERTY(QList<int> listInt READ listInt CONSTANT)
+    Q_PROPERTY(QVector<QVariant> vectorVariant READ vectorVariant CONSTANT)
+    Q_PROPERTY(QList<CustomQObject*> listObject READ listObject CONSTANT)
+    Q_PROPERTY(QVector<QList<int>> vectorListInt READ vectorListInt CONSTANT)
+    Q_PROPERTY(QVector<QList<CustomQObject*>> vectorListObject READ vectorListObject CONSTANT)
+    Q_PROPERTY(CustomQObject::Number enumValue READ enumValue CONSTANT)
+    Q_PROPERTY(CustomQObjectStar customObjectTypedef READ customObjectTypedef CONSTANT)
+    Q_PROPERTY(SomeNamespace::NamespacedQObject* customObjectNamespaced READ customObjectNamespaced CONSTANT)
+    Q_PROPERTY(SomeNamespace::NamespacedNonQObject customNonQObjectNamespaced READ customNonQObjectNamespaced CONSTANT)
+public:
+    AutoRegistrationObject(QObject *parent = 0)
+      : QObject(parent)
+    {
+    }
+
+    QObject* object() const
+    {
+        return 0;
+    }
+
+    QSharedPointer<CustomQObject> customObjectP() const
+    {
+        return QSharedPointer<CustomQObject>();
+    }
+
+    QWeakPointer<CustomQObject> customObjectWP() const
+    {
+        return QWeakPointer<CustomQObject>();
+    }
+
+    QPointer<CustomQObject> customObjectTP() const
+    {
+        return QPointer<CustomQObject>();
+    }
+
+    CustomQObject* customObject() const
+    {
+        return 0;
+    }
+
+    QList<int> listInt() const
+    {
+        return QList<int>();
+    }
+
+    QVector<QVariant> vectorVariant() const
+    {
+        return QVector<QVariant>();
+    }
+
+    QList<CustomQObject*> listObject() const
+    {
+        return QList<CustomQObject*>();
+    }
+
+    QVector<QList<int> > vectorListInt() const
+    {
+        return QVector<QList<int> >();
+    }
+
+    QVector<QList<CustomQObject*> > vectorListObject() const
+    {
+        return QVector<QList<CustomQObject*> >();
+    }
+
+    CustomQObject::Number enumValue() const
+    {
+        return CustomQObject::Zero;
+    }
+
+    CustomQObjectStar customObjectTypedef() const
+    {
+        return 0;
+    }
+
+    SomeNamespace::NamespacedQObject* customObjectNamespaced() const
+    {
+        return 0;
+    }
+
+    SomeNamespace::NamespacedNonQObject customNonQObjectNamespaced() const
+    {
+        return SomeNamespace::NamespacedNonQObject();
+    }
+};
+
+void tst_Moc::autoPropertyMetaTypeRegistration()
+{
+    AutoRegistrationObject aro;
+
+    static const int numPropertiesUnderTest = 15;
+    QVector<int> propertyMetaTypeIds;
+    propertyMetaTypeIds.reserve(numPropertiesUnderTest);
+
+    const QMetaObject *metaObject = aro.metaObject();
+    QCOMPARE(metaObject->propertyCount(), numPropertiesUnderTest);
+    for (int i = 0; i < metaObject->propertyCount(); ++i) {
+        const QMetaProperty prop = metaObject->property(i);
+        propertyMetaTypeIds.append(prop.userType());
+        QVariant var = prop.read(&aro);
+        QVERIFY(var.isValid());
+    }
+
+    // Verify that QMetaProperty::userType gave us what we expected.
+    QVector<int> expectedMetaTypeIds = QVector<int>()
+        << QMetaType::QString            // QObject::userType
+        << QMetaType::QObjectStar        // AutoRegistrationObject::object
+        << qMetaTypeId<CustomQObject*>() // etc.
+        << qMetaTypeId<QSharedPointer<CustomQObject> >()
+        << qMetaTypeId<QWeakPointer<CustomQObject> >()
+        << qMetaTypeId<QPointer<CustomQObject> >()
+        << qMetaTypeId<QList<int> >()
+        << qMetaTypeId<QVector<QVariant> >()
+        << qMetaTypeId<QList<CustomQObject*> >()
+        << qMetaTypeId<QVector<QList<int> > >()
+        << qMetaTypeId<QVector<QList<CustomQObject*> > >()
+        << qMetaTypeId<CustomQObject::Number>()
+        << qMetaTypeId<CustomQObjectStar>()
+        << qMetaTypeId<SomeNamespace::NamespacedQObject*>()
+        << qMetaTypeId<SomeNamespace::NamespacedNonQObject>()
+        ;
+
+    QCOMPARE(propertyMetaTypeIds, expectedMetaTypeIds);
 }
 
 QTEST_MAIN(tst_Moc)

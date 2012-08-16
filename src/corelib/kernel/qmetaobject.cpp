@@ -2661,7 +2661,14 @@ int QMetaProperty::userType() const
             return QVariant::Int; // Match behavior of QMetaType::type()
         return enumMetaTypeId;
     }
-    return QMetaType::type(typeName());
+    type = QMetaType::type(typeName());
+    if (type != QMetaType::UnknownType)
+        return type;
+    void *argv[] = { &type };
+    mobj->static_metacall(QMetaObject::RegisterPropertyMetaType, idx, argv);
+    if (type != -1)
+        return type;
+    return QMetaType::UnknownType;
 }
 
 /*!
@@ -2768,8 +2775,16 @@ QVariant QMetaProperty::read(const QObject *object) const
             t = QMetaType::type(typeName);
         }
         if (t == QMetaType::UnknownType) {
-            qWarning("QMetaProperty::read: Unable to handle unregistered datatype '%s' for property '%s::%s'", typeName, mobj->className(), name());
-            return QVariant();
+            // Try to register the type and try again before reporting an error.
+            int registerResult = -1;
+            void *argv[] = { &registerResult };
+            QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::RegisterPropertyMetaType,
+                                  idx + mobj->propertyOffset(), argv);
+            if (registerResult == -1) {
+                qWarning("QMetaProperty::read: Unable to handle unregistered datatype '%s' for property '%s::%s'", typeName, mobj->className(), name());
+                return QVariant();
+            }
+            t = registerResult;
         }
     }
 

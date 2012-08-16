@@ -52,9 +52,10 @@ class Generator
     ClassDef *cdef;
     QVector<uint> meta_data;
 public:
-    Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, FILE *outfile = 0);
+    Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, const QSet<QByteArray> &knownQObjectClasses, FILE *outfile = 0);
     void generateCode();
 private:
+    bool registerableMetaType(const QByteArray &propertyType);
     void registerClassInfoStrings();
     void generateClassInfos();
     void registerFunctionStrings(const QList<FunctionDef> &list);
@@ -70,12 +71,14 @@ private:
     void generateStaticMetacall();
     void generateSignal(FunctionDef *def, int index);
     void generatePluginMetaData();
+    QMultiMap<QByteArray, int> automaticPropertyMetaTypesHelper();
 
     void strreg(const QByteArray &); // registers a string
     int stridx(const QByteArray &); // returns a string's id
     QList<QByteArray> strings;
     QByteArray purestSuperClass;
     QList<QByteArray> metaTypes;
+    QSet<QByteArray> knownQObjectClasses;
 };
 
 QT_END_NAMESPACE

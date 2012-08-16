@@ -437,7 +437,8 @@ struct Q_CORE_EXPORT QMetaObject
         QueryPropertyEditable,
         QueryPropertyUser,
         CreateInstance,
-        IndexOfMethod
+        IndexOfMethod,
+        RegisterPropertyMetaType
     };
 
     int static_metacall(Call, int, void **) const;

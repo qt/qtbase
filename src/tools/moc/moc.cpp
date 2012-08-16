@@ -849,7 +849,7 @@ void Moc::generate(FILE *out)
     fprintf(out, "QT_BEGIN_MOC_NAMESPACE\n");
 
     for (i = 0; i < classList.size(); ++i) {
-        Generator generator(&classList[i], metaTypes, out);
+        Generator generator(&classList[i], metaTypes, knownQObjectClasses, out);
         generator.generateCode();
     }
 

@@ -86,8 +86,8 @@ QT_FOR_EACH_STATIC_TYPE(RETURN_METATYPENAME_STRING)
     return 0;
  }
 
-Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, FILE *outfile)
-    : out(outfile), cdef(classDef), metaTypes(metaTypes)
+Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, const QSet<QByteArray> &knownQObjectClasses, FILE *outfile)
+    : out(outfile), cdef(classDef), metaTypes(metaTypes), knownQObjectClasses(knownQObjectClasses)
 {
     if (cdef->superclassList.size())
         purestSuperClass = cdef->superclassList.first().first;
@@ -138,6 +138,49 @@ static int aggregateParameterCount(const QList<FunctionDef> &list)
     for (int i = 0; i < list.count(); ++i)
         sum += list.at(i).arguments.count() + 1; // +1 for return type
     return sum;
+}
+
+bool Generator::registerableMetaType(const QByteArray &propertyType)
+{
+    if (metaTypes.contains(propertyType))
+        return true;
+
+    if (propertyType.endsWith('*')) {
+        QByteArray objectPointerType = propertyType;
+        // The objects container stores class names, such as 'QState', 'QLabel' etc,
+        // not 'QState*', 'QLabel*'. The propertyType does contain the '*', so we need
+        // to chop it to find the class type in the known QObjects list.
+        objectPointerType.chop(1);
+        if (knownQObjectClasses.contains(objectPointerType))
+            return true;
+    }
+
+    static const QVector<QByteArray> smartPointers = QVector<QByteArray>()
+#define STREAM_SMART_POINTER(SMART_POINTER) << #SMART_POINTER
+        QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(STREAM_SMART_POINTER)
+#undef STREAM_SMART_POINTER
+        ;
+
+    foreach (const QByteArray &smartPointer, smartPointers)
+        if (propertyType.startsWith(smartPointer + "<"))
+            return knownQObjectClasses.contains(propertyType.mid(smartPointer.size() + 1, propertyType.size() - smartPointer.size() - 1 - 1));
+
+    static const QVector<QByteArray> oneArgTemplates = QVector<QByteArray>()
+#define STREAM_1ARG_TEMPLATE(TEMPLATENAME) << #TEMPLATENAME
+      QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(STREAM_1ARG_TEMPLATE)
+#undef STREAM_1ARG_TEMPLATE
+    ;
+    foreach (const QByteArray &oneArgTemplateType, oneArgTemplates)
+        if (propertyType.startsWith(oneArgTemplateType + "<")) {
+            const int argumentSize = propertyType.size() - oneArgTemplateType.size() - 1
+                                     // The closing '>'
+                                     - 1
+                                     // templates inside templates have an extra whitespace char to strip.
+                                     - (propertyType.at(propertyType.size() - 2) == '>' ? 1 : 0 );
+            const QByteArray templateArg = propertyType.mid(oneArgTemplateType.size() + 1, argumentSize);
+            return isBuiltinType(templateArg) || registerableMetaType(templateArg);
+        }
+    return false;
 }
 
 void Generator::generateCode()
@@ -1034,12 +1077,33 @@ void Generator::generateMetacall()
                 "        _id -= %d;\n"
                 "    }", cdef->propertyList.count());
 
+        fprintf(out, " else ");
+        fprintf(out, "if (_c == QMetaObject::RegisterPropertyMetaType) {\n");
+        fprintf(out, "        if (_id < %d)\n", cdef->propertyList.size());
+
+        if (automaticPropertyMetaTypesHelper().isEmpty())
+            fprintf(out, "            *reinterpret_cast<int*>(_a[0]) = -1;\n");
+        else
+            fprintf(out, "            qt_static_metacall(this, _c, _id, _a);\n");
+        fprintf(out, "        _id -= %d;\n    }", cdef->propertyList.size());
 
         fprintf(out, "\n#endif // QT_NO_PROPERTIES");
     }
     if (methodList.size() || cdef->signalList.size() || cdef->propertyList.size())
         fprintf(out, "\n    ");
     fprintf(out,"return _id;\n}\n");
+}
+
+
+QMultiMap<QByteArray, int> Generator::automaticPropertyMetaTypesHelper()
+{
+    QMultiMap<QByteArray, int> automaticPropertyMetaTypes;
+    for (int i = 0; i < cdef->propertyList.size(); ++i) {
+        const QByteArray propertyType = cdef->propertyList.at(i).type;
+        if (registerableMetaType(propertyType) && !isBuiltinType(propertyType))
+            automaticPropertyMetaTypes.insert(propertyType, i);
+    }
+    return automaticPropertyMetaTypes;
 }
 
 void Generator::generateStaticMetacall()
@@ -1175,12 +1239,33 @@ void Generator::generateStaticMetacall()
         needElse = true;
     }
 
+    QMultiMap<QByteArray, int> automaticPropertyMetaTypes = automaticPropertyMetaTypesHelper();
+
+    if (!automaticPropertyMetaTypes.isEmpty()) {
+        if (needElse)
+            fprintf(out, " else ");
+        else
+            fprintf(out, "    ");
+        fprintf(out, "if (_c == QMetaObject::RegisterPropertyMetaType) {\n");
+        fprintf(out, "        switch (_id) {\n");
+        fprintf(out, "        default: *reinterpret_cast<int*>(_a[0]) = -1; break;\n");
+        foreach (const QByteArray &key, automaticPropertyMetaTypes.uniqueKeys()) {
+            foreach (int propertyID, automaticPropertyMetaTypes.values(key))
+                fprintf(out, "        case %d:\n", propertyID);
+            fprintf(out, "            *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< %s >(); break;\n", key.constData());
+        }
+        fprintf(out, "        }\n");
+        fprintf(out, "    }\n");
+        isUsed_a = true;
+        needElse = true;
+    }
+
     if (needElse)
         fprintf(out, "\n");
 
     if (methodList.isEmpty()) {
         fprintf(out, "    Q_UNUSED(_o);\n");
-        if (cdef->constructorList.isEmpty()) {
+        if (cdef->constructorList.isEmpty() && automaticPropertyMetaTypes.isEmpty()) {
             fprintf(out, "    Q_UNUSED(_id);\n");
             fprintf(out, "    Q_UNUSED(_c);\n");
         }
