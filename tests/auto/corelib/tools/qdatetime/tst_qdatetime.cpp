@@ -106,6 +106,8 @@ private slots:
     void msecsTo();
     void operator_eqeq_data();
     void operator_eqeq();
+    void operator_insert_extract_data();
+    void operator_insert_extract();
     void currentDateTime();
     void currentDateTimeUtc();
     void currentDateTimeUtc2();
@@ -1219,6 +1221,80 @@ void tst_QDateTime::operator_eqeq()
         QVERIFY(dt1.toUTC() == dt2);
         QVERIFY(dt1 == dt2.toLocalTime());
     }
+}
+
+void tst_QDateTime::operator_insert_extract_data()
+{
+    QTest::addColumn<QDateTime>("dateTime");
+    QTest::addColumn<QString>("serialiseAs");
+    QTest::addColumn<QString>("deserialiseAs");
+
+    const QDateTime positiveYear(QDateTime(QDate(2012, 8, 14), QTime(8, 0, 0), Qt::LocalTime));
+    const QDateTime negativeYear(QDateTime(QDate(-2012, 8, 14), QTime(8, 0, 0), Qt::LocalTime));
+
+    const QString westernAustralia(QString::fromLatin1("AWST-8AWDT-9,M10.5.0,M3.5.0/03:00:00"));
+    const QString hawaii(QString::fromLatin1("HAW10"));
+
+    QTest::newRow("14/08/2012 08:00 WA => HAWAII") << positiveYear << westernAustralia << hawaii;
+    QTest::newRow("14/08/2012 08:00 WA => HAWAII") << positiveYear << westernAustralia << hawaii;
+    QTest::newRow("14/08/2012 08:00 WA => HAWAII") << positiveYear << westernAustralia << hawaii;
+    QTest::newRow("14/08/2012 08:00 WA => WA") << positiveYear << westernAustralia << westernAustralia;
+    QTest::newRow("14/08/-2012 08:00 HAWAII => WA") << negativeYear << hawaii << westernAustralia;
+    QTest::newRow("14/08/-2012 08:00 HAWAII => WA") << negativeYear << hawaii << westernAustralia;
+    QTest::newRow("14/08/-2012 08:00 HAWAII => WA") << negativeYear << hawaii << westernAustralia;
+    QTest::newRow("14/08/2012 08:00 HAWAII => HAWAII") << positiveYear << hawaii << hawaii;
+}
+
+void tst_QDateTime::operator_insert_extract()
+{
+    QFETCH(QDateTime, dateTime);
+    QFETCH(QString, serialiseAs);
+    QFETCH(QString, deserialiseAs);
+
+    QString previousTimeZone = qgetenv("TZ");
+    qputenv("TZ", serialiseAs.toLocal8Bit().constData());
+    tzset();
+    QDateTime dateTimeAsUTC(dateTime.toUTC());
+
+    QByteArray byteArray;
+    {
+        QDataStream dataStream(&byteArray, QIODevice::WriteOnly);
+        dataStream << dateTime;
+        dataStream << dateTime;
+    }
+
+    // Ensure that a change in timezone between serialisation and deserialisation
+    // still results in identical UTC-converted datetimes.
+    qputenv("TZ", deserialiseAs.toLocal8Bit().constData());
+    tzset();
+    QDateTime expectedLocalTime(dateTimeAsUTC.toLocalTime());
+    {
+        // Deserialise whole QDateTime at once.
+        QDataStream dataStream(&byteArray, QIODevice::ReadOnly);
+        QDateTime deserialised;
+        dataStream >> deserialised;
+        // Ensure local time is still correct.
+        QCOMPARE(deserialised, expectedLocalTime);
+        // Sanity check UTC times.
+        QCOMPARE(deserialised.toUTC(), expectedLocalTime.toUTC());
+
+        // Deserialise each component individually.
+        QDate deserialisedDate;
+        dataStream >> deserialisedDate;
+        QTime deserialisedTime;
+        dataStream >> deserialisedTime;
+        qint8 deserialisedSpec;
+        dataStream >> deserialisedSpec;
+        deserialised = QDateTime(deserialisedDate, deserialisedTime, Qt::UTC);
+        deserialised = deserialised.toTimeSpec(static_cast<Qt::TimeSpec>(deserialisedSpec));
+        // Ensure local time is still correct.
+        QCOMPARE(deserialised, expectedLocalTime);
+        // Sanity check UTC times.
+        QCOMPARE(deserialised.toUTC(), expectedLocalTime.toUTC());
+    }
+
+    qputenv("TZ", previousTimeZone.toLocal8Bit().constData());
+    tzset();
 }
 
 void tst_QDateTime::toString_strformat_data()

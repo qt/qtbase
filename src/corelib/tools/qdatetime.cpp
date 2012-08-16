@@ -3666,9 +3666,19 @@ QDataStream &operator>>(QDataStream &in, QTime &time)
 */
 QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
 {
-    out << dateTime.d->date << dateTime.d->time;
-    if (out.version() >= 7)
-        out << (qint8)dateTime.d->spec;
+    if (out.version() >= 13) {
+        if (dateTime.isValid()) {
+            QDateTime asUTC = dateTime.toUTC();
+            out << asUTC.d->date << asUTC.d->time;
+        } else {
+            out << dateTime.d->date << dateTime.d->time;
+        }
+        out << (qint8)dateTime.timeSpec();
+    } else {
+        out << dateTime.d->date << dateTime.d->time;
+        if (out.version() >= 7)
+            out << (qint8)dateTime.d->spec;
+    }
     return out;
 }
 
@@ -3684,11 +3694,22 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
 {
     dateTime.detach();
 
-    qint8 ts = (qint8)QDateTimePrivate::LocalUnknown;
     in >> dateTime.d->date >> dateTime.d->time;
-    if (in.version() >= 7)
+
+    if (in.version() >= 13) {
+        qint8 ts = 0;
         in >> ts;
-    dateTime.d->spec = (QDateTimePrivate::Spec)ts;
+        if (dateTime.isValid()) {
+            // We always store the datetime as UTC in 13 onwards.
+            dateTime.d->spec = QDateTimePrivate::UTC;
+            dateTime = dateTime.toTimeSpec(static_cast<Qt::TimeSpec>(ts));
+        }
+    } else {
+        qint8 ts = (qint8)QDateTimePrivate::LocalUnknown;
+        if (in.version() >= 7)
+            in >> ts;
+        dateTime.d->spec = (QDateTimePrivate::Spec)ts;
+    }
     return in;
 }
 #endif // QT_NO_DATASTREAM
