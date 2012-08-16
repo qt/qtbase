@@ -63,7 +63,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static QSize determineScreenSize(screen_display_t display) {
+static QSize determineScreenSize(screen_display_t display, bool primaryScreen) {
     int val[2];
 
     errno = 0;
@@ -96,9 +96,9 @@ static QSize determineScreenSize(screen_display_t display) {
     const QSize defSize(QQNX_PHYSICAL_SCREEN_WIDTH, QQNX_PHYSICAL_SCREEN_HEIGHT);
     qWarning("QQnxScreen: QQNX_PHYSICAL_SCREEN_SIZE variable not set. Falling back to defines QQNX_PHYSICAL_SCREEN_WIDTH/QQNX_PHYSICAL_SCREEN_HEIGHT (%dx%d)", defSize.width(), defSize.height());
     return defSize;
-
 #else
-    qFatal("QQnxScreen: QQNX_PHYSICAL_SCREEN_SIZE variable not set. Could not determine physical screen size.");
+    if (primaryScreen)
+        qFatal("QQnxScreen: QQNX_PHYSICAL_SCREEN_SIZE variable not set. Could not determine physical screen size.");
     return QSize(150, 90);
 #endif
 }
@@ -136,7 +136,7 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
     // libscreen always reports the physical size dimensions as width and height in the
     // native orientation. Contrary to this, QPlatformScreen::physicalSize() expects the
     // returned dimensions to follow the current orientation.
-    const QSize screenSize = determineScreenSize(m_display);
+    const QSize screenSize = determineScreenSize(m_display, primaryScreen);
 
     m_nativeOrientation = screenSize.width() >= screenSize.height() ? Qt::LandscapeOrientation : Qt::PortraitOrientation;
 
