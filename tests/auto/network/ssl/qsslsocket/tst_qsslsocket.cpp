@@ -808,7 +808,7 @@ void tst_QSslSocket::protocol()
 
     QCOMPARE(socket->protocol(), QSsl::SecureProtocols);
     {
-        // Fluke allows SSLv3.
+        // qt-test-server allows SSLv3.
         socket->setProtocol(QSsl::SslV3);
         QCOMPARE(socket->protocol(), QSsl::SslV3);
         socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
@@ -824,7 +824,7 @@ void tst_QSslSocket::protocol()
         socket->abort();
     }
     {
-        // Fluke allows TLSV1.
+        // qt-test-server allows TLSV1.
         socket->setProtocol(QSsl::TlsV1_0);
         QCOMPARE(socket->protocol(), QSsl::TlsV1_0);
         socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
@@ -839,9 +839,43 @@ void tst_QSslSocket::protocol()
         QCOMPARE(socket->protocol(), QSsl::TlsV1_0);
         socket->abort();
     }
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+    {
+        // qt-test-server probably doesn't allow TLSV1.1
+        socket->setProtocol(QSsl::TlsV1_1);
+        QCOMPARE(socket->protocol(), QSsl::TlsV1_1);
+        socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+        QVERIFY2(socket->waitForEncrypted(), qPrintable(socket->errorString()));
+        QCOMPARE(socket->protocol(), QSsl::TlsV1_1);
+        socket->abort();
+        QCOMPARE(socket->protocol(), QSsl::TlsV1_1);
+        socket->connectToHost(QtNetworkSettings::serverName(), 443);
+        QVERIFY2(socket->waitForConnected(), qPrintable(socket->errorString()));
+        socket->startClientEncryption();
+        QVERIFY2(socket->waitForEncrypted(), qPrintable(socket->errorString()));
+        QCOMPARE(socket->protocol(), QSsl::TlsV1_1);
+        socket->abort();
+    }
+    {
+        // qt-test-server probably doesn't allows TLSV1.2
+        socket->setProtocol(QSsl::TlsV1_2);
+        QCOMPARE(socket->protocol(), QSsl::TlsV1_2);
+        socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+        QVERIFY2(socket->waitForEncrypted(), qPrintable(socket->errorString()));
+        QCOMPARE(socket->protocol(), QSsl::TlsV1_2);
+        socket->abort();
+        QCOMPARE(socket->protocol(), QSsl::TlsV1_2);
+        socket->connectToHost(QtNetworkSettings::serverName(), 443);
+        QVERIFY2(socket->waitForConnected(), qPrintable(socket->errorString()));
+        socket->startClientEncryption();
+        QVERIFY2(socket->waitForEncrypted(), qPrintable(socket->errorString()));
+        QCOMPARE(socket->protocol(), QSsl::TlsV1_2);
+        socket->abort();
+    }
+#endif
 #ifndef OPENSSL_NO_SSL2
     {
-        // Fluke allows SSLV2.
+        // qt-test-server allows SSLV2.
         socket->setProtocol(QSsl::SslV2);
         QCOMPARE(socket->protocol(), QSsl::SslV2);
         socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
@@ -857,7 +891,7 @@ void tst_QSslSocket::protocol()
     }
 #endif
     {
-        // Fluke allows SSLV3, so it allows AnyProtocol.
+        // qt-test-server allows SSLV3, so it allows AnyProtocol.
         socket->setProtocol(QSsl::AnyProtocol);
         QCOMPARE(socket->protocol(), QSsl::AnyProtocol);
         socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
@@ -873,7 +907,7 @@ void tst_QSslSocket::protocol()
         socket->abort();
     }
     {
-        // Fluke allows SSLV3, so it allows NoSslV2
+        // qt-test-server allows SSLV3, so it allows NoSslV2
         socket->setProtocol(QSsl::TlsV1SslV3);
         QCOMPARE(socket->protocol(), QSsl::TlsV1SslV3);
         socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);

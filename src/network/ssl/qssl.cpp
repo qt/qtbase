@@ -118,6 +118,8 @@ QT_BEGIN_NAMESPACE
     \value SslV2 SSLv2
     \value TlsV1_0 TLSv1.0
     \value TlsV1 Obsolete, means the same as TlsV1_0
+    \value TlsV1_1 TLSv1.1
+    \value TlsV1_2 TLSv1.2
     \value UnknownProtocol The cipher's protocol cannot be determined.
     \value AnyProtocol The socket understands SSLv2, SSLv3, and TLSv1.0. This
     value is used by QSslSocket only.
