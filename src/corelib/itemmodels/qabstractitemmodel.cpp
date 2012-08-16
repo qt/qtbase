@@ -1276,6 +1276,31 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 */
 
 /*!
+    \fn bool QAbstractItemModel::moveRow(const QModelIndex &sourceParent, int sourceColumn, const QModelIndex &destinationParent, int destinationChild)
+
+    On models that support this, moves \a sourceColumn from \a sourceParent to \a destinationChild under
+    \a destinationParent.
+
+    Returns true if the columns were successfully moved; otherwise returns
+    false.
+
+    \sa moveRows(), moveColumn()
+*/
+
+/*!
+    \fn bool QAbstractItemModel::moveColumn(const QModelIndex &sourceParent, int sourceColumn, const QModelIndex &destinationParent, int destinationChild)
+
+    On models that support this, moves \a sourceColumn from \a sourceParent to \a destinationChild under
+    \a destinationParent.
+
+    Returns true if the columns were successfully moved; otherwise returns
+    false.
+
+    \sa moveColumns(), moveRow()
+*/
+
+
+/*!
     \fn void QAbstractItemModel::headerDataChanged(Qt::Orientation orientation, int first, int last)
 
     This signal is emitted whenever a header is changed. The \a orientation
@@ -1303,7 +1328,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     Subclasses should update any persistent model indexes after emitting
     layoutAboutToBeChanged().
 
-    The optional @p parents parameter is used to give a more specific notification
+    The optional \a parents parameter is used to give a more specific notification
     about what parts of the layout of the model are changing. An empty list indicates
     a change to the layout of the entire model.
 
@@ -1323,7 +1348,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     altering the structure of the data you expose to views, and emit
     layoutChanged() after changing the layout.
 
-    The optional @p parents parameter is used to give a more specific notification
+    The optional \a parents parameter is used to give a more specific notification
     about what parts of the layout of the model are changing. An empty list indicates
     a change to the layout of the entire model.
 
@@ -1746,7 +1771,8 @@ QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
     This can be used to indicate whether a drop of certain data is allowed, for example
     by using a 'forbidden' emblem on a mouse cursor during a drag operation.
 
-    This method returns true by default.
+    This method returns true by default. Reimplementations can return whether the
+    \a data can be dropped at \a row, \a column, \a parent with \a action.
 
     \sa dropMimeData(), {Using drag and drop with item views}
  */
@@ -3501,6 +3527,10 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 
     Returns true if this model index is smaller than the \a other
     model index; otherwise returns false.
+
+    The less than calculation is not directly useful to developers - the way that indexes
+    with different parents compare is not defined. This operator only exists so that the
+    class can be used with QMap.
 */
 
 /*!

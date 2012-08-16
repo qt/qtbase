@@ -566,6 +566,8 @@ QMimeData *QDirModel::mimeData(const QModelIndexList &indexes) const
     the given \a action over the row in the model specified by the \a row and
     \a column and by the \a parent index.
 
+    Returns true if the drop was successful, and false otherwise.
+
     \sa supportedDropActions()
 */
 

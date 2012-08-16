@@ -471,7 +471,7 @@ void QHeaderView::setOffset(int newOffset)
     \since 4.2
     Sets the offset to the start of the section at the given \a visualSectionNumber.
     \a visualSectionNumber is the actual visible section when hiddenSections are
-    not considered. That is not always the same as \a visualIndex.
+    not considered. That is not always the same as visualIndex().
 
     \sa setOffset(), sectionPosition()
 */
@@ -1081,7 +1081,7 @@ int QHeaderView::logicalIndex(int visualIndex) const
 }
 
 /*!
-    If \a sectionsMovable is true, the header may be moved by the user; otherwise it
+    If \a movable is true, the header may be moved by the user; otherwise it
     is fixed in place.
 
     \sa sectionsMovable(), sectionMoved()
@@ -1119,7 +1119,7 @@ bool QHeaderView::sectionsMovable() const
 // ### Qt 6 - remove this obsolete function
 /*!
     \obsolete
-    \fn bool QHeaderView::isMovable(bool movable)
+    \fn bool QHeaderView::isMovable(bool movable) const
 
     Use sectionsMovable instead.
 

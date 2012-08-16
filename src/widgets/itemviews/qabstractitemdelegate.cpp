@@ -245,14 +245,15 @@ QWidget *QAbstractItemDelegate::createEditor(QWidget *,
 /*!
     \since 5.0
 
-    A function called when the editor is no longer needed and should be
+    A function called when the \a editor is no longer needed for \a index and should be
     destroyed. The default behavior is a call to deleteLater on the editor.
     It possible e.g. to avoid this delete by reimplementing this function.
 
     \sa createEditor()
 */
-void QAbstractItemDelegate::destroyEditor(QWidget *editor, const QModelIndex &) const
+void QAbstractItemDelegate::destroyEditor(QWidget *editor, const QModelIndex &index) const
 {
+    Q_UNUSED(index);
     editor->deleteLater();
 }
 

@@ -82,6 +82,12 @@ QT_BEGIN_NAMESPACE
     \sa QSortFilterProxyModel, QAbstractItemModel, {Model/View Programming}
 */
 
+/*!
+    \property QAbstractProxyModel::sourceModel
+
+    \brief the source model this proxy model.
+*/
+
 //detects the deletion of the source model
 void QAbstractProxyModelPrivate::_q_sourceModelDestroyed()
 {

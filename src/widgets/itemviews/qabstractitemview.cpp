@@ -3222,9 +3222,13 @@ void QAbstractItemView::update(const QModelIndex &index)
     changed items are those from \a topLeft to \a bottomRight
     inclusive. If just one item is changed \a topLeft == \a
     bottomRight.
+
+    The \a roles which have been changed can either be an empty container (meaning everything
+    has changed), or a non-empty container with the subset of roles which have changed.
 */
-void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &)
+void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
+    Q_UNUSED(roles);
     // Single item changed
     Q_D(QAbstractItemView);
     if (topLeft == bottomRight && topLeft.isValid()) {
