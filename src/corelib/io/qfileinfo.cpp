@@ -699,7 +699,7 @@ QString QFileInfo::filePath() const
     Note that, if this QFileInfo object is given a path ending in a
     slash, the name of the file is considered empty.
 
-    \sa isRelative(), filePath(), baseName(), extension()
+    \sa isRelative(), filePath(), baseName(), suffix()
 */
 QString QFileInfo::fileName() const
 {
@@ -719,7 +719,7 @@ QString QFileInfo::fileName() const
     Example:
     \snippet code/src_corelib_io_qfileinfo.cpp 4
 
-    \sa isBundle(), filePath(), baseName(), extension()
+    \sa isBundle(), filePath(), baseName(), suffix()
 */
 QString QFileInfo::bundleName() const
 {

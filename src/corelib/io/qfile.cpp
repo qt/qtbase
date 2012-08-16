@@ -871,7 +871,7 @@ bool QFile::open(OpenMode mode)
 
     \note For Windows CE you may not be able to call resize().
 
-    \sa close(), {qmake Variable Reference#CONFIG}{qmake Variable Reference}
+    \sa close()
 
     \b{Note for the Windows Platform}
 

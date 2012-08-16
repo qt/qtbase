@@ -501,7 +501,7 @@ inline void QDirPrivate::initFileEngine()
 
     \snippet qdir-listfiles/main.cpp 0
 
-    \sa QFileInfo, QFile, QFileDialog, QApplication::applicationDirPath(), {Find Files Example}
+    \sa QFileInfo, QFile, QFileDialog, QCoreApplication::applicationDirPath(), {Find Files Example}
 */
 
 /*!
@@ -537,7 +537,7 @@ QDir::QDir(const QString &path) : d_ptr(new QDirPrivate(path))
 
     Note that \a path need not exist.
 
-    \sa exists(), setPath(), setNameFilter(), setFilter(), setSorting()
+    \sa exists(), setPath(), setNameFilters(), setFilter(), setSorting()
 */
 QDir::QDir(const QString &path, const QString &nameFilter,
            SortFlags sort, Filters filters)

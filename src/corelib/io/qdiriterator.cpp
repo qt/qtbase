@@ -67,10 +67,7 @@
     you cannot iterate directories in reverse order) and does not allow random
     access.
 
-    QDirIterator works with all supported file engines, and is implemented
-    using QAbstractFileEngineIterator.
-
-    \sa QDir, QDir::entryList(), QAbstractFileEngineIterator
+    \sa QDir, QDir::entryList()
 */
 
 /*! \enum QDirIterator::IteratorFlag

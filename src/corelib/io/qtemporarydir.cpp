@@ -286,6 +286,8 @@ void QTemporaryDir::setAutoRemove(bool b)
 
 /*!
     Removes the temporary directory, including all its contents.
+
+    Returns true if removing was successful.
 */
 bool QTemporaryDir::remove()
 {
