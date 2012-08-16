@@ -717,15 +717,6 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_FORWARD_DECLARE_STATIC_TYPES_ITER)
 
 #undef QT_FORWARD_DECLARE_STATIC_TYPES_ITER
 
-template <class T> class QList;
-template <class T> class QLinkedList;
-template <class T> class QVector;
-template <class T> class QQueue;
-template <class T> class QStack;
-template <class T> class QSet;
-template <class T1, class T2> class QMap;
-template <class T1, class T2> class QHash;
-template <class T1, class T2> struct QPair;
 typedef QList<QVariant> QVariantList;
 typedef QMap<QString, QVariant> QVariantMap;
 typedef QHash<QString, QVariant> QVariantHash;
@@ -792,18 +783,6 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
     } \
 };
 
-Q_DECLARE_METATYPE_TEMPLATE_1ARG(QList)
-Q_DECLARE_METATYPE_TEMPLATE_1ARG(QVector)
-Q_DECLARE_METATYPE_TEMPLATE_1ARG(QQueue)
-Q_DECLARE_METATYPE_TEMPLATE_1ARG(QStack)
-Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSet)
-Q_DECLARE_METATYPE_TEMPLATE_1ARG(QLinkedList)
-
-Q_DECLARE_METATYPE_TEMPLATE_2ARG(QHash)
-Q_DECLARE_METATYPE_TEMPLATE_2ARG(QMap)
-Q_DECLARE_METATYPE_TEMPLATE_2ARG(QPair)
-
-
 #define Q_DECLARE_SMART_POINTER_METATYPE(SMART_POINTER) \
 template <typename T, bool = QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value> \
 struct QMetaTypeId_ ## SMART_POINTER ## _QObjectStar \
@@ -835,9 +814,46 @@ struct QMetaTypeId< SMART_POINTER<T> > : public QMetaTypeId_ ## SMART_POINTER ##
 { \
 };
 
-Q_DECLARE_SMART_POINTER_METATYPE(QSharedPointer)
-Q_DECLARE_SMART_POINTER_METATYPE(QWeakPointer)
-Q_DECLARE_SMART_POINTER_METATYPE(QPointer)
+#define QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(F) \
+    F(QList) \
+    F(QVector) \
+    F(QQueue) \
+    F(QStack) \
+    F(QSet) \
+    F(QLinkedList)
+
+#define QT_FOR_EACH_AUTOMATIC_TEMPLATE_2ARG(F) \
+    F(QHash, class) \
+    F(QMap, class) \
+    F(QPair, struct)
+
+#define QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(F) \
+    F(QSharedPointer) \
+    F(QWeakPointer) \
+    F(QPointer)
+
+#define Q_DECLARE_METATYPE_TEMPLATE_1ARG_ITER(TEMPLATENAME) \
+    template <class T> class TEMPLATENAME; \
+    Q_DECLARE_METATYPE_TEMPLATE_1ARG(TEMPLATENAME)
+
+QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(Q_DECLARE_METATYPE_TEMPLATE_1ARG_ITER)
+
+#undef Q_DECLARE_METATYPE_TEMPLATE_1ARG_ITER
+
+#define Q_DECLARE_METATYPE_TEMPLATE_2ARG_ITER(TEMPLATENAME, CPPTYPE) \
+    template <class T1, class T2> CPPTYPE TEMPLATENAME; \
+    Q_DECLARE_METATYPE_TEMPLATE_2ARG(TEMPLATENAME)
+
+QT_FOR_EACH_AUTOMATIC_TEMPLATE_2ARG(Q_DECLARE_METATYPE_TEMPLATE_2ARG_ITER)
+
+#undef Q_DECLARE_METATYPE_TEMPLATE_2ARG_ITER
+
+#define Q_DECLARE_METATYPE_TEMPLATE_SMART_POINTER_ITER(TEMPLATENAME) \
+    Q_DECLARE_SMART_POINTER_METATYPE(TEMPLATENAME)
+
+QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(Q_DECLARE_METATYPE_TEMPLATE_SMART_POINTER_ITER)
+
+#undef Q_DECLARE_METATYPE_TEMPLATE_SMART_POINTER_ITER
 
 inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeInterface *info,
                             Creator creator,
