@@ -1462,10 +1462,7 @@ void VcprojGenerator::initOld()
     }
     project->values("MSVCPROJ_INCPATH").append("-I" + specdir());
 
-    QString dest;
-    project->values("MSVCPROJ_TARGET") = QStringList(project->first("TARGET"));
-    Option::fixPathToTargetOS(project->first("TARGET"));
-    dest = project->first("TARGET") + project->first("TARGET_EXT");
+    QString dest = Option::fixPathToTargetOS(project->first("TARGET")) + project->first("TARGET_EXT");
     project->values("MSVCPROJ_TARGET") = QStringList(dest);
 
     // DLL COPY ------------------------------------------------------
