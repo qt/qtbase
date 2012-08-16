@@ -411,7 +411,7 @@ void QAbstractEventDispatcher::installNativeEventFilter(QAbstractNativeEventFilt
 }
 
 /*!
-    Removes an event filter object \a obj from this object. The
+    Removes the event filter \a filter from this object. The
     request is ignored if such an event filter has not been installed.
 
     All event filters for this object are automatically removed when
@@ -423,11 +423,11 @@ void QAbstractEventDispatcher::installNativeEventFilter(QAbstractNativeEventFilt
     \sa installNativeEventFilter(), QAbstractNativeEventFilter
     \since 5.0
 */
-void QAbstractEventDispatcher::removeNativeEventFilter(QAbstractNativeEventFilter *filterObj)
+void QAbstractEventDispatcher::removeNativeEventFilter(QAbstractNativeEventFilter *filter)
 {
     Q_D(QAbstractEventDispatcher);
     for (int i = 0; i < d->eventFilters.count(); ++i) {
-        if (d->eventFilters.at(i) == filterObj) {
+        if (d->eventFilters.at(i) == filter) {
             d->eventFilters[i] = 0;
             break;
         }
@@ -445,7 +445,7 @@ void QAbstractEventDispatcher::removeNativeEventFilter(QAbstractNativeEventFilte
     compatibility with any extensions that may be used in the
     application. The type of event \a eventType is specific to the platform
     plugin chosen at run-time, and can be used to cast message to the right type.
-    The result pointer is only used on Windows, and corresponds to the LRESULT pointer.
+    The \a result pointer is only used on Windows, and corresponds to the LRESULT pointer.
 
     Note that the type of \a message is platform dependent. See
     QAbstractNativeEventFilter for details.
@@ -470,6 +470,34 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
     }
     return false;
 }
+
+/*! \fn bool QAbstractEventDispatcher::filterEvent(void *message)
+  \deprecated
+
+  Simply calls filterNativeEvent() with an empty eventType and \a message.
+*/
+
+/*! \fn bool QAbstractEventDispatcher::registerEventNotifier(QWinEventNotifier *notifier);
+
+  This pure virtual method exists on windows only and has to be reimplemented by a Windows specific
+  event dispatcher implementation. \a notifier is the QWinEventNotifier instance to be registered.
+
+  QWinEventNotifier calls this method in it's constructor and there should never be a need to call this
+  method directly.
+
+  \sa QWinEventNotifier, unregisterEventNotifier()
+*/
+
+/*! \fn bool QAbstractEventDispatcher::unregisterEventNotifier(QWinEventNotifier *notifier);
+
+  This pure virtual method exists on windows only and has to be reimplemented by a Windows specific
+  event dispatcher implementation. \a notifier is the QWinEventNotifier instance to be unregistered.
+
+  QWinEventNotifier calls this method in it's destructor and there should never be a need to call this
+  method directly.
+
+  \sa QWinEventNotifier, registerEventNotifier()
+*/
 
 /*! \fn void QAbstractEventDispatcher::awake()
 
