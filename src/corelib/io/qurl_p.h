@@ -182,6 +182,7 @@ extern Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from);
 extern Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QChar *uc, int len);
 extern Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString *output);
 extern Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc);
+extern Q_AUTOTEST_EXPORT QString qt_urlRecodeByteArray(const QByteArray &ba);
 
 QT_END_NAMESPACE
 

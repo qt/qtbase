@@ -132,22 +132,22 @@ inline void QUrl::removeAllQueryItems(const QString &key)
 { QUrlQuery q(*this); q.removeAllQueryItems(key); }
 
 inline void QUrl::addEncodedQueryItem(const QByteArray &key, const QByteArray &value)
-{ QUrlQuery q(*this); q.addQueryItem(QString::fromUtf8(key), QString::fromUtf8(value)); setQuery(q); }
+{ QUrlQuery q(*this); q.addQueryItem(fromEncodedComponent_helper(key), fromEncodedComponent_helper(value)); setQuery(q); }
 inline bool QUrl::hasEncodedQueryItem(const QByteArray &key) const
-{ return QUrlQuery(*this).hasQueryItem(QString::fromUtf8(key)); }
+{ return QUrlQuery(*this).hasQueryItem(fromEncodedComponent_helper(key)); }
 inline QByteArray QUrl::encodedQueryItemValue(const QByteArray &key) const
-{ return QUrlQuery(*this).queryItemValue(QString::fromUtf8(key), QUrl::FullyEncoded).toLatin1(); }
+{ return QUrlQuery(*this).queryItemValue(fromEncodedComponent_helper(key), QUrl::FullyEncoded).toLatin1(); }
 inline void QUrl::removeEncodedQueryItem(const QByteArray &key)
-{ QUrlQuery q(*this); q.removeQueryItem(QString::fromUtf8(key)); setQuery(q); }
+{ QUrlQuery q(*this); q.removeQueryItem(fromEncodedComponent_helper(key)); setQuery(q); }
 inline void QUrl::removeAllEncodedQueryItems(const QByteArray &key)
-{ QUrlQuery q(*this); q.removeAllQueryItems(QString::fromUtf8(key)); }
+{ QUrlQuery q(*this); q.removeAllQueryItems(fromEncodedComponent_helper(key)); }
 
 inline void QUrl::setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &qry)
 {
     QUrlQuery q;
     QList<QPair<QByteArray, QByteArray> >::ConstIterator it = qry.constBegin();
     for ( ; it != qry.constEnd(); ++it)
-        q.addQueryItem(QString::fromUtf8(it->first), QString::fromUtf8(it->second));
+        q.addQueryItem(fromEncodedComponent_helper(it->first), fromEncodedComponent_helper(it->second));
     setQuery(q);
 }
 inline QList<QPair<QByteArray, QByteArray> > QUrl::encodedQueryItems() const
@@ -162,7 +162,7 @@ inline QList<QPair<QByteArray, QByteArray> > QUrl::encodedQueryItems() const
 }
 inline QList<QByteArray> QUrl::allEncodedQueryItemValues(const QByteArray &key) const
 {
-    QStringList items = QUrlQuery(*this).allQueryItemValues(QString::fromUtf8(key), QUrl::FullyEncoded);
+    QStringList items = QUrlQuery(*this).allQueryItemValues(fromEncodedComponent_helper(key), QUrl::FullyEncoded);
     QList<QByteArray> result;
     result.reserve(items.size());
     Q_FOREACH (const QString &item, items)

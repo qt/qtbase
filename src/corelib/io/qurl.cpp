@@ -2979,6 +2979,17 @@ QByteArray QUrl::toPercentEncoding(const QString &input, const QByteArray &exclu
 }
 
 /*!
+    \internal
+    \since 5.0
+    Used in the setEncodedXXX compatibility functions. Converts \a ba to
+    QString form.
+*/
+QString QUrl::fromEncodedComponent_helper(const QByteArray &ba)
+{
+    return qt_urlRecodeByteArray(ba);
+}
+
+/*!
     \fn QByteArray QUrl::toPunycode(const QString &uc)
     \obsolete
     Returns a \a uc in Punycode encoding.

@@ -95,6 +95,8 @@ private Q_SLOTS:
     void encodingRecode();
     void encodingRecodeInvalidUtf8_data();
     void encodingRecodeInvalidUtf8();
+    void recodeByteArray_data();
+    void recodeByteArray();
 };
 #include "tst_qurlinternal.moc"
 
@@ -1004,6 +1006,36 @@ void tst_QUrlInternal::encodingRecodeInvalidUtf8()
     if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::FullyEncoded))
         output += input;
     QCOMPARE(output, QTest::currentDataTag() + input);
+}
+
+void tst_QUrlInternal::recodeByteArray_data()
+{
+    QTest::addColumn<QByteArray>("input");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("null") << QByteArray() << QString();
+    QTest::newRow("empty") << QByteArray("") << QString("");
+    QTest::newRow("normal") << QByteArray("Hello") << "Hello";
+    QTest::newRow("valid-utf8") << QByteArray("\xc3\xa9") << "%C3%A9";
+    QTest::newRow("percent-encoded") << QByteArray("%C3%A9%00%C0%80") << "%C3%A9%00%C0%80";
+    QTest::newRow("invalid-utf8-1") << QByteArray("\xc3\xc3") << "%C3%C3";
+    QTest::newRow("invalid-utf8-2") << QByteArray("\xc0\x80") << "%C0%80";
+
+    // note: percent-encoding the control characters ("\0" -> "%00") would also
+    // be correct, but it's unnecessary for this function
+    QTest::newRow("binary") << QByteArray("\0\x1f", 2) << QString::fromLatin1("\0\x1f", 2);;
+    QTest::newRow("binary+percent-encoded") << QByteArray("\0%25", 4) << QString::fromLatin1("\0%25", 4);
+}
+
+void tst_QUrlInternal::recodeByteArray()
+{
+    QFETCH(QByteArray, input);
+    QFETCH(QString, expected);
+    QString output = qt_urlRecodeByteArray(input);
+
+    QCOMPARE(output.isNull(), input.isNull());
+    QCOMPARE(output.isEmpty(), input.isEmpty());
+    QCOMPARE(output, expected);
 }
 
 QTEST_APPLESS_MAIN(tst_QUrlInternal)

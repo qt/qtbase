@@ -2247,6 +2247,8 @@ void tst_QUrl::setEncodedFragment_data()
     QTest::newRow("initial url has fragment") << BA("http://www.kde.org#old") << BA("new") << BA("http://www.kde.org#new");
     QTest::newRow("encoded fragment") << BA("http://www.kde.org") << BA("a%20c") << BA("http://www.kde.org#a%20c");
     QTest::newRow("with #") << BA("http://www.kde.org") << BA("a#b") << BA("http://www.kde.org#a#b");
+    QTest::newRow("unicode") << BA("http://www.kde.org") << BA("\xc3\xa9") << BA("http://www.kde.org#%C3%A9");
+    QTest::newRow("binary") << BA("http://www.kde.org") << BA("\x00\xc0\x80", 3) << BA("http://www.kde.org#%00%C0%80");
 }
 
 void tst_QUrl::setEncodedFragment()
@@ -2925,6 +2927,17 @@ void tst_QUrl::componentEncodings()
     QCOMPARE(url.fragment(formatting), fragment);
     QCOMPARE(url.toString(formatting),
              (((QString(toString ))))); // the weird () and space is to align the output
+
+    if (formatting == QUrl::FullyEncoded) {
+        QCOMPARE(url.encodedUserName(), userName.toUtf8());
+        QCOMPARE(url.encodedPassword(), password.toUtf8());
+        // no encodedUserInfo
+        QCOMPARE(url.encodedHost(), host.toUtf8());
+        // no encodedAuthority
+        QCOMPARE(url.encodedPath(), path.toUtf8());
+        QCOMPARE(url.encodedQuery(), query.toUtf8());
+        QCOMPARE(url.encodedFragment(), fragment.toUtf8());
+    }
 
     // repeat with the URL we got from toString
     QUrl url2(toString);

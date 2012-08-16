@@ -674,4 +674,54 @@ qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
                   encoding, actionTable, false);
 }
 
+/*!
+    \internal
+    \since 5.0
+
+    \a ba contains an 8-bit form of the component and it might be
+    percent-encoded already. We can't use QString::fromUtf8 because it might
+    contain non-UTF8 sequences. We can't use QByteArray::toPercentEncoding
+    because it might already contain percent-encoded sequences. We can't use
+    qt_urlRecode because it needs UTF-16 input.
+*/
+Q_AUTOTEST_EXPORT
+QString qt_urlRecodeByteArray(const QByteArray &ba)
+{
+    if (ba.isNull())
+        return QString();
+
+    // scan ba for anything above or equal to 0x80
+    // control points below 0x20 are fine in QString
+    const char *in = ba.constData();
+    const char *const end = ba.constEnd();
+    for ( ; in < end; ++in) {
+        if (*in & 0x80)
+            break;
+    }
+
+    if (in == end) {
+        // no non-ASCII found, we're safe to convert to QString
+        return QString::fromLatin1(ba, ba.size());
+    }
+
+    // we found something that we need to encode
+    QByteArray intermediate = ba;
+    intermediate.resize(ba.size() * 3 - (in - ba.constData()));
+    uchar *out = reinterpret_cast<uchar *>(intermediate.data() + (in - ba.constData()));
+    for ( ; in < end; ++in) {
+        if (*in & 0x80) {
+            // encode
+            *out++ = '%';
+            *out++ = encodeNibble(uchar(*in) >> 4);
+            *out++ = encodeNibble(uchar(*in) & 0xf);
+        } else {
+            // keep
+            *out++ = uchar(*in);
+        }
+    }
+
+    // now it's safe to call fromLatin1
+    return QString::fromLatin1(intermediate, out - reinterpret_cast<uchar *>(intermediate.data()));
+}
+
 QT_END_NAMESPACE

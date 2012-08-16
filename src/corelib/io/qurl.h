@@ -274,37 +274,37 @@ public:
     QT_DEPRECATED inline void removeAllEncodedQueryItems(const QByteArray &key);
 
     QT_DEPRECATED void setEncodedUrl(const QByteArray &u, ParsingMode mode = TolerantMode)
-    { setUrl(QString::fromUtf8(u.constData(), u.size()), mode); }
+    { setUrl(fromEncodedComponent_helper(u), mode); }
 
     QT_DEPRECATED QByteArray encodedUserName() const
     { return userName(FullyEncoded).toLatin1(); }
     QT_DEPRECATED void setEncodedUserName(const QByteArray &value)
-    { setUserName(QString::fromLatin1(value)); }
+    { setUserName(fromEncodedComponent_helper(value)); }
 
     QT_DEPRECATED QByteArray encodedPassword() const
     { return password(FullyEncoded).toLatin1(); }
     QT_DEPRECATED void setEncodedPassword(const QByteArray &value)
-    { setPassword(QString::fromLatin1(value)); }
+    { setPassword(fromEncodedComponent_helper(value)); }
 
     QT_DEPRECATED QByteArray encodedHost() const
     { return host(FullyEncoded).toLatin1(); }
     QT_DEPRECATED void setEncodedHost(const QByteArray &value)
-    { setHost(QString::fromLatin1(value)); }
+    { setHost(fromEncodedComponent_helper(value)); }
 
     QT_DEPRECATED QByteArray encodedPath() const
     { return path(FullyEncoded).toLatin1(); }
     QT_DEPRECATED void setEncodedPath(const QByteArray &value)
-    { setPath(QString::fromLatin1(value)); }
+    { setPath(fromEncodedComponent_helper(value)); }
 
     QT_DEPRECATED QByteArray encodedQuery() const
     { return toLatin1_helper(query(FullyEncoded)); }
     QT_DEPRECATED void setEncodedQuery(const QByteArray &value)
-    { setQuery(value.isNull() ? QString() : QString::fromLatin1(value)); }
+    { setQuery(fromEncodedComponent_helper(value)); }
 
     QT_DEPRECATED QByteArray encodedFragment() const
     { return toLatin1_helper(fragment(FullyEncoded)); }
     QT_DEPRECATED void setEncodedFragment(const QByteArray &value)
-    { setFragment(value.isNull() ? QString() : QString::fromLatin1(value)); }
+    { setFragment(fromEncodedComponent_helper(value)); }
 
 private:
     // helper function for the encodedQuery and encodedFragment functions
@@ -315,6 +315,8 @@ private:
         return string.toLatin1();
     }
 #endif
+private:
+    static QString fromEncodedComponent_helper(const QByteArray &ba);
 
 public:
     static QString fromAce(const QByteArray &);
