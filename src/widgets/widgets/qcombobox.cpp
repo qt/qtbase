@@ -877,7 +877,7 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
 
     When the user enters a new string in an editable combobox, the
     widget may or may not insert it, and it can insert it in several
-    locations. The default policy is is \l InsertAtBottom but you can change
+    locations. The default policy is \l InsertAtBottom but you can change
     this using setInsertPolicy().
 
     It is possible to constrain the input to an editable combobox

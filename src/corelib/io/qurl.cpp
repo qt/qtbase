@@ -1272,7 +1272,7 @@ static void removeDotsFromPath(QString *path)
             in += 2;
             break;
         }
-        
+
         // otherwise, if the input buffer begins with a prefix
         // of "/../" or "/..", where ".." is a complete path
         // segment, then replace that prefix with "/" in the
@@ -1295,7 +1295,7 @@ static void removeDotsFromPath(QString *path)
             in += 3;
             break;
         }
-        
+
         // otherwise move the first path segment in
         // the input buffer to the end of the output
         // buffer, including the initial "/" character
@@ -3439,12 +3439,11 @@ QString QUrl::errorString() const
 */
 
 /*!
-    \relates QHash
-    \since 5.0
-
     Returns the hash value for the \a url. If specified, \a seed is used to
     initialize the hash.
 
+    \relates QHash
+    \since 5.0
 */
 uint qHash(const QUrl &url, uint seed)
 {

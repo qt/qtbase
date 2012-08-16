@@ -431,7 +431,7 @@ QTranslator::~QTranslator()
 
     If \a directory is not specified, the directory of the
     application's executable is used (i.e., as
-    \l{QCoreApplication::}{applicationDirPath()}). 
+    \l{QCoreApplication::}{applicationDirPath()}).
 
     The previous contents of this translator object are discarded.
 
@@ -472,8 +472,8 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     QString prefix;
     if (QFileInfo(filename).isRelative()) {
         prefix = directory;
-	if (prefix.length() && !prefix.endsWith(QLatin1Char('/')))
-	    prefix += QLatin1Char('/');
+        if (prefix.length() && !prefix.endsWith(QLatin1Char('/')))
+            prefix += QLatin1Char('/');
     }
 
     QString fname = filename;
