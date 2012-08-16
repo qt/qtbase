@@ -630,6 +630,10 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
     \sa QJsonObject::begin(), QJsonObject::end()
 */
 
+/*! \fn QJsonObject::iterator::iterator(QJsonObject *obj, int index)
+    \internal
+*/
+
 /*! \fn QString QJsonObject::iterator::key() const
 
     Returns the current item's key.
@@ -818,6 +822,10 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
     value to it before using it.
 
     \sa QJsonObject::constBegin(), QJsonObject::constEnd()
+*/
+
+/*! \fn QJsonObject::const_iterator::const_iterator(const QJsonObject *obj, int index)
+    \internal
 */
 
 /*! \fn QJsonObject::const_iterator::const_iterator(const iterator &other)

@@ -672,6 +672,10 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \sa QJsonArray::begin(), QJsonArray::end()
 */
 
+/*! \fn QJsonArray::iterator::iterator(QJsonArray *array, int index)
+    \internal
+*/
+
 /*! \fn QJsonValueRef QJsonArray::iterator::operator*() const
 
     Returns a modifiable reference to the current item.
@@ -867,6 +871,10 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     to it before using it.
 
     \sa QJsonArray::constBegin(), QJsonArray::constEnd()
+*/
+
+/*! \fn QJsonArray::const_iterator::const_iterator(const QJsonArray *array, int index)
+    \internal
 */
 
 /*! \typedef QJsonArray::const_iterator::iterator_category
