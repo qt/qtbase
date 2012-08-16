@@ -23,6 +23,7 @@ Cpp.ignoretokens        = QT_ASCII_CAST_WARN \
                           Q_SVG_EXPORT \
                           Q_SCRIPT_EXPORT \
                           Q_SCRIPTTOOLS_EXPORT \
+                          Q_WIDGETS_EXPORT \
                           Q_XML_EXPORT \
                           Q_XMLPATTERNS_EXPORT \
                           QDBUS_EXPORT \
