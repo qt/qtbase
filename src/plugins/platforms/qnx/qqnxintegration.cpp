@@ -135,7 +135,7 @@ QQnxIntegration::QQnxIntegration()
         qFatal("QQnx: failed to connect to composition manager, errno=%d", errno);
     }
 
-    // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
+    // Not on BlackBerry, it has specialized event dispatcher which also handles navigator events
 #if !defined(Q_OS_BLACKBERRY) && defined(QQNX_PPS)
     // Create/start navigator event notifier
     m_navigatorEventNotifier = new QQnxNavigatorEventNotifier(m_navigatorEventHandler);
@@ -156,7 +156,7 @@ QQnxIntegration::QQnxIntegration()
     m_screenEventThread->start();
 #endif
 
-    // Not on BlackBerry, it has specialised event dispatcher which also handles virtual keyboard events
+    // Not on BlackBerry, it has specialized event dispatcher which also handles virtual keyboard events
 #if !defined(Q_OS_BLACKBERRY) && defined(QQNX_PPS)
     // Create/start the keyboard class.
     m_virtualKeyboard = new QQnxVirtualKeyboardPps();

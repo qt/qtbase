@@ -305,7 +305,7 @@
 
     \table
     \header \li Name
-         \li Commmand-line Argument
+         \li Command-line Argument
          \li Availability
     \row \li Walltime
          \li (default)

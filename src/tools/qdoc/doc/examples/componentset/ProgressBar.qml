@@ -56,7 +56,7 @@ Item {
     id: progressbar
 
     /*!
-        The minumum value of the ProgressBar range.
+        The minimum value of the ProgressBar range.
         The \l value must not be less than this value.
     */
     property int minimum: 0

@@ -390,7 +390,7 @@ void qDetectCpuFeatures()
     // For that reason, simply forego the CPUID check at all and return the set
     // of features that we found at compile time, through the #defines from the
     // compiler. This should at least allow code to execute, even if none of
-    // the specialised code found in QtGui and elsewhere will ever be enabled
+    // the specialized code found in QtGui and elsewhere will ever be enabled
     // (it's the user's fault for using a broken compiler).
     //
     // This also disables the runtime checking that the processor actually

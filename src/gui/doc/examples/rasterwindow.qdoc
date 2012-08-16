@@ -78,7 +78,7 @@
     create the window in the windowing system. Without calling create,
     the window will not get events and will not be visible in the
     windowing system. The call to create does not show the window. We
-    then set the geometry to be something resonable.
+    then set the geometry to be something reasonable.
 
     Then we create the backingstore and pass it the window instance it
     is supposed to manage.

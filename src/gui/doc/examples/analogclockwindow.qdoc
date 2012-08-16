@@ -51,7 +51,7 @@
 
     \snippet gui/analogclock/main.cpp 6
 
-    We set a title on the window and resize to a resonable size. Then
+    We set a title on the window and resize to a reasonable size. Then
     we start a timer which we will use to redraw the clock every
     second.
 

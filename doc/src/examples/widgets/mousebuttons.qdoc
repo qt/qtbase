@@ -37,7 +37,7 @@
     Many 'gamer' mouse devices are configured with high-numbered "buttons"
     sending text shortcuts for certain games. With such a mouse, no mouse
     button events occur: The "mouse" sends keystrokes, and the
-    'Mouse Button Tester' Window will not see the event. Receving no event,
+    'Mouse Button Tester' Window will not see the event. Receiving no event,
     it will not repaint the Window with new text describing a \button event.
 
     And so, in addition to it's use as Qt example code, the program may be

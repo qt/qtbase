@@ -60,7 +60,7 @@
     \brief AtSpiAdaptor is the main class to forward between QAccessibleInterface and AT-SPI DBus
 
     AtSpiAdaptor implements the functions specified in all at-spi interfaces.
-    It sends notifications comming from Qt via dbus and listens to incoming dbus requests.
+    It sends notifications coming from Qt via dbus and listens to incoming dbus requests.
 */
 
 QT_BEGIN_NAMESPACE

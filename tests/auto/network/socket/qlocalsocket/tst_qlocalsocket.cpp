@@ -1152,7 +1152,7 @@ void tst_QLocalSocket::verifyListenWithDescriptor_data()
     QTest::newRow("absrtact") << QString::fromLatin1("abstractsocketname") << true << true;
     QTest::newRow("abstractwithslash") << QString::fromLatin1("abstractsocketwitha/inthename") << true << true;
 #endif
-    QTest::newRow("no path") << QString::fromLatin1("/invalid/no path name speficied") << true << false;
+    QTest::newRow("no path") << QString::fromLatin1("/invalid/no path name specified") << true << false;
 
 #endif
 

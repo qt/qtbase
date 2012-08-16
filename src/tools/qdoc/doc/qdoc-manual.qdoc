@@ -3398,7 +3398,7 @@
     \target legalese-command
     \section1 \\legalese
 
-    The \\legalese and \\endlegalese commands delimit a licence agreement.
+    The \\legalese and \\endlegalese commands delimit a license agreement.
 
     In the generated HTML, the delimited text is surrounded by a \b
     {<div class="LegaleseLeft">} and \b {</div>} tags.
@@ -8709,7 +8709,7 @@
 */
 
 /*!
-    \page 27-qdoc-commmands-alphabetical.html
+    \page 27-qdoc-commands-alphabetical.html
     \previouspage Introduction to QDoc
     \contentspage Table of Contents
     \nextpage Topic Commands

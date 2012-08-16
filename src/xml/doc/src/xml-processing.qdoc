@@ -172,7 +172,7 @@
     \endlist
 
     With the Qt XML classes elements and attributes can be accessed in two
-    ways: either by refering to their qualified names consisting of the
+    ways: either by referring to their qualified names consisting of the
     namespace prefix and the "real" name (or \e local name) or by the
     combination of local name and namespace URI.
 
@@ -191,7 +191,7 @@
     \li  A \e {namespace prefix} in a qualified name
         is the part to the left of the ":". (\e book is the namespace prefix in
         \e book:title.)
-    \li  The \e {local part} of a name (also refered to as the \e {local
+    \li  The \e {local part} of a name (also referred to as the \e {local
         name}) appears to the right of the ":". (Thus \e title is the
         local part of \e book:title.)
     \li  The \e {namespace URI} ("Uniform Resource Identifier") is a unique
@@ -254,7 +254,7 @@
 
     The pendent to QXmlStreamReader is QXmlStreamWriter, which provides an XML
     writer with a simple streaming API. QXmlStreamWriter operates on a
-    QIODevice and has specialised functions for all XML tokens or events you
+    QIODevice and has specialized functions for all XML tokens or events you
     want to write, such as \l{QXmlStreamWriter::writeDTD()}{writeDTD()},
     \l{QXmlStreamWriter::writeCharacters()}{writeCharacters()},
     \l{QXmlStreamWriter::writeComment()}{writeComment()} and so on.
