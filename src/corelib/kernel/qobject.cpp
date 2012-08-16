@@ -1020,9 +1020,17 @@ void QObject::setObjectName(const QString &name)
     Returns true if the object is a widget; otherwise returns false.
 
     Calling this function is equivalent to calling
-    inherits("QWidget"), except that it is much faster.
+    \c{inherits("QWidget")}, except that it is much faster.
 */
 
+/*!
+    \fn bool QObject::isWindowType() const
+
+    Returns true if the object is a window; otherwise returns false.
+
+    Calling this function is equivalent to calling
+    \c{inherits("QWindow")}, except that it is much faster.
+*/
 
 /*!
     This virtual function receives events to an object and should
@@ -1031,8 +1039,8 @@ void QObject::setObjectName(const QString &name)
     The event() function can be reimplemented to customize the
     behavior of an object.
 
-    \sa installEventFilter(), timerEvent(), QApplication::sendEvent(),
-    QApplication::postEvent(), QWidget::event()
+    \sa installEventFilter(), timerEvent(), QCoreApplication::sendEvent(),
+    QCoreApplication::postEvent()
 */
 
 bool QObject::event(QEvent *e)
@@ -1518,22 +1526,22 @@ void QObject::killTimer(int id)
     ancestors, it is undefined which one will be returned. In that
     case, findChildren() should be used.
 
-    This example returns a child \l{QPushButton} of \c{parentWidget}
+    This example returns a child \c{QPushButton} of \c{parentWidget}
     named \c{"button1"}, even if the button isn't a direct child of
     the parent:
 
     \snippet code/src_corelib_kernel_qobject.cpp 10
 
-    This example returns a \l{QListWidget} child of \c{parentWidget}:
+    This example returns a \c{QListWidget} child of \c{parentWidget}:
 
     \snippet code/src_corelib_kernel_qobject.cpp 11
 
-    This example returns a child \l{QPushButton} of \c{parentWidget}
+    This example returns a child \c{QPushButton} of \c{parentWidget}
     (its direct parent) named \c{"button1"}:
 
     \snippet code/src_corelib_kernel_qobject.cpp 41
 
-    This example returns a \l{QListWidget} child of \c{parentWidget},
+    This example returns a \c{QListWidget} child of \c{parentWidget},
     its direct parent:
 
     \snippet code/src_corelib_kernel_qobject.cpp 42
@@ -1550,7 +1558,7 @@ void QObject::killTimer(int id)
     The search is performed recursively, unless \a options specifies the
     option FindDirectChildrenOnly.
 
-    The following example shows how to find a list of child \l{QWidget}s of
+    The following example shows how to find a list of child \c{QWidget}s of
     the specified \c{parentWidget} named \c{widgetname}:
 
     \snippet code/src_corelib_kernel_qobject.cpp 12
@@ -1733,9 +1741,8 @@ QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const 
 /*!
     Makes the object a child of \a parent.
 
-    \sa QWidget::setParent()
+    \sa parent(), children()
 */
-
 void QObject::setParent(QObject *parent)
 {
     Q_D(QObject);
@@ -1960,12 +1967,13 @@ void QObject::deleteLater()
     translators while performing translations is not supported. Doing
     so will probably result in crashes or other undesirable behavior.
 
-    \sa trUtf8(), QApplication::translate(), {Internationalization with Qt}
+    \sa trUtf8(), QCoreApplication::translate(), {Internationalization with Qt}
 */
 
 /*!
     \fn QString QObject::trUtf8(const char *sourceText, const char *disambiguation, int n)
     \reentrant
+    \obsolete
 
     Returns a translated version of \a sourceText, or
     QString::fromUtf8(\a sourceText) if there is no appropriate
@@ -1983,7 +1991,7 @@ void QObject::deleteLater()
 
     \snippet code/src_corelib_kernel_qobject.cpp 20
 
-    \sa tr(), QApplication::translate(), {Internationalization with Qt}
+    \sa tr(), QCoreApplication::translate(), {Internationalization with Qt}
 */
 
 
@@ -3199,7 +3207,7 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
 
     \snippet code/src_corelib_kernel_qobject.cpp 33
 
-    Let's assume our object has a child object of type QPushButton with
+    Let's assume our object has a child object of type \c{QPushButton} with
     the \l{QObject::objectName}{object name} \c{button1}. The slot to catch the
     button's \c{clicked()} signal would be:
 

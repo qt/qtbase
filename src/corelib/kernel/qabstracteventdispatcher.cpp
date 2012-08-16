@@ -135,10 +135,7 @@ void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
     values to control which events should be delivered.
 
     QAbstractEventDispatcher also allows the integration of an
-    external event loop with the Qt event loop. For example, the
-    \l{Motif Extension}
-    includes a reimplementation of QAbstractEventDispatcher that merges Qt and
-    Motif events together.
+    external event loop with the Qt event loop.
 
     \sa QEventLoop, QCoreApplication, QThread
 */
@@ -472,15 +469,20 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
 }
 
 /*! \fn bool QAbstractEventDispatcher::filterEvent(void *message)
-  \deprecated
+    \deprecated
 
-  Simply calls filterNativeEvent() with an empty eventType and \a message.
+    Calls filterNativeEvent() with an empty eventType and \a message.
+    This function returns true as soon as an
+    event filter returns true, and false otherwise to indicate that
+    the processing of the event should continue.
 */
 
 /*! \fn bool QAbstractEventDispatcher::registerEventNotifier(QWinEventNotifier *notifier);
 
   This pure virtual method exists on windows only and has to be reimplemented by a Windows specific
   event dispatcher implementation. \a notifier is the QWinEventNotifier instance to be registered.
+
+  The method should return true if the registration of \a notifier was sucessful, otherwise false.
 
   QWinEventNotifier calls this method in it's constructor and there should never be a need to call this
   method directly.

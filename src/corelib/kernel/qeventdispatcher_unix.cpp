@@ -662,7 +662,9 @@ void QEventDispatcherUNIX::flush()
 
 
 
-
+/*!
+  \internal
+*/
 void QCoreApplication::watchUnixSignal(int sig, bool watch)
 {
     if (sig < NSIG) {

@@ -121,7 +121,7 @@ QWinEventNotifier::QWinEventNotifier(QObject *parent)
 
 /*!
     Constructs an event notifier with the given \a parent. It enables
-    the \a notifier, and watches for the event \a hEvent.
+    the notifier, and watches for the event \a hEvent.
 
     The notifier is enabled by default, i.e. it emits the activated() signal
     whenever the corresponding event is signalled. However, it is generally

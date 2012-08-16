@@ -502,7 +502,7 @@ void QCoreApplicationPrivate::initLocale()
     right after initializing QApplication or QCoreApplication to reset
     the locale that is used for number formatting to "C"-locale.
 
-    \sa QApplication, QAbstractEventDispatcher, QEventLoop,
+    \sa QGuiApplication, QAbstractEventDispatcher, QEventLoop,
     {Semaphores Example}, {Wait Conditions Example}
 */
 
@@ -1684,7 +1684,7 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
     return result;
 }
 
-/*! \fn static QString QCoreApplication::translate(const char * context, const char * key, const char * disambiguation, Encoding, int n = -1)
+/*! \fn static QString QCoreApplication::translate(const char *context, const char *key, const char *disambiguation, Encoding encoding, int n = -1)
 
   \obsolete
 */

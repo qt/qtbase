@@ -69,9 +69,8 @@ public:
     \ingroup io
 
     The QSocketNotifier makes it possible to integrate Qt's event
-    loop with other event loops based on file descriptors. For
-    example, the \l{CORBA Framework} uses it to process CORBA
-    events.  File descriptor action is detected in Qt's main event
+    loop with other event loops based on file descriptors. File
+    descriptor action is detected in Qt's main event
     loop (QCoreApplication::exec()).
 
     \target write notifiers

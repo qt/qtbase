@@ -967,6 +967,7 @@ bool qSharedBuild()
     \value WV_2003  Windows Server 2003, Windows Server 2003 R2, Windows Home Server, Windows XP Professional x64 Edition (operating system version 5.2)
     \value WV_VISTA Windows Vista, Windows Server 2008 (operating system version 6.0)
     \value WV_WINDOWS7 Windows 7, Windows Server 2008 R2 (operating system version 6.1)
+    \value WV_WINDOWS8 Windows 8 (operating system version 6.2)
 
     Alternatively, you may use the following macros which correspond directly to the Windows operating system version number:
 
@@ -976,6 +977,7 @@ bool qSharedBuild()
     \value WV_5_2   Operating system version 5.2, corresponds to Windows Server 2003, Windows Server 2003 R2, Windows Home Server, and Windows XP Professional x64 Edition
     \value WV_6_0   Operating system version 6.0, corresponds to Windows Vista and Windows Server 2008
     \value WV_6_1   Operating system version 6.1, corresponds to Windows 7 and Windows Server 2008 R2
+    \value WV_6_2   Operating system version 6.2, corresponds to Windows 8
 
     CE-based versions:
 
@@ -1011,6 +1013,7 @@ bool qSharedBuild()
     \value MV_10_5     Mac OS X 10.5
     \value MV_10_6     Mac OS X 10.6
     \value MV_10_7     Mac OS X 10.7
+    \value MV_10_8     Mac OS X 10.8
     \value MV_Unknown  An unknown and currently unsupported platform
 
     \value MV_CHEETAH  Apple codename for MV_10_0

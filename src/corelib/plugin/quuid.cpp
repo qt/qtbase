@@ -427,8 +427,8 @@ QUuid::QUuid(const QByteArray &text)
   \since 5.0
   \fn QUuid QUuid::createUuidV3(const QUuid &ns, const QByteArray &baseData);
 
-  This functions returns a new UUID with variant QUuid::DCE and version QUuid::MD5.
-  \a ns is the namespace and \a name is the name as described by RFC 4122.
+  This functions returns a new UUID with variant QUuid::DCE and version QUuid::Md5.
+  \a ns is the namespace and \a baseData is the basic data as described by RFC 4122.
 
   \sa variant(), version(), createUuidV5()
 */
@@ -437,8 +437,8 @@ QUuid::QUuid(const QByteArray &text)
   \since 5.0
   \fn QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData);
 
-  This functions returns a new UUID with variant QUuid::DCE and version QUuid::SHA1.
-  \a ns is the namespace and \a name is the name as described by RFC 4122.
+  This functions returns a new UUID with variant QUuid::DCE and version QUuid::Sha1.
+  \a ns is the namespace and \a baseData is the basic data as described by RFC 4122.
 
   \sa variant(), version(), createUuidV3()
 */
@@ -457,7 +457,7 @@ QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData)
 /*!
   Creates a QUuid object from the binary representation of the UUID, as
   specified by RFC 4122 section 4.1.2. See toRfc4122() for a further
-  explanation of the order of bytes required.
+  explanation of the order of \a bytes required.
 
   The byte array accepted is NOT a human readable format.
 
@@ -757,7 +757,9 @@ bool QUuid::isNull() const
     MAC network card address (if available) for the node sections
     \value EmbeddedPOSIX DCE Security version, with embedded POSIX UUIDs
     \value Name Name-based, by using values from a name for all sections
+    \value Md5 Alias for Name
     \value Random Random-based, by using random numbers for all sections
+    \value Sha1
 */
 
 /*!

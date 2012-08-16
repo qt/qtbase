@@ -337,7 +337,7 @@ public:
     Translation files are created using \l{Qt Linguist}.
 
     The most common use of QTranslator is to: load a translation
-    file, install it using QApplication::installTranslator(), and use
+    file, install it using QCoreApplication::installTranslator(), and use
     it via QObject::tr(). Here's the \c main() function from the
     \l{linguist/hellotr}{Hello tr()} example:
 
@@ -353,7 +353,7 @@ public:
     \section1 Looking up Translations
 
     It is possible to look up a translation using translate() (as tr()
-    and QApplication::translate() do). The translate() function takes
+    and QCoreApplication::translate() do). The translate() function takes
     up to three parameters:
 
     \list
@@ -391,12 +391,12 @@ public:
     This mechanism makes it possible for a specific translation to be
     "selected" or given priority over the others; simply uninstall the
     translator from the application by passing it to the
-    QApplication::removeTranslator() function and reinstall it with
-    QApplication::installTranslator(). It will then be the first
+    QCoreApplication::removeTranslator() function and reinstall it with
+    QCoreApplication::installTranslator(). It will then be the first
     translation to be searched for matching strings.
 
-    \sa QApplication::installTranslator(), QApplication::removeTranslator(),
-        QObject::tr(), QApplication::translate(), {I18N Example},
+    \sa QCoreApplication::installTranslator(), QCoreApplication::removeTranslator(),
+        QObject::tr(), QCoreApplication::translate(), {I18N Example},
         {Hello tr() Example}, {Arrow Pad Example}, {Troll Print Example}
 */
 
