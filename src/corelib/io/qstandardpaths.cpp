@@ -315,7 +315,8 @@ QString QStandardPaths::displayName(StandardLocation type)
 /*!
   \fn void QStandardPaths::enableTestMode(bool testMode)
 
-  Enables "test mode" in QStandardPaths, which changes writable locations
+  If \a testMode is true, this enables a special "test mode" in
+  QStandardPaths, which changes writable locations
   to point to test directories, in order to prevent auto tests from reading from
   or writing to the current user's configuration.
 

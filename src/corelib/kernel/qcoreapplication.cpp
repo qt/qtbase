@@ -1466,8 +1466,9 @@ bool QCoreApplication::event(QEvent *e)
     used in all cases.
 
     \value UnicodeUTF8   UTF-8.
-    \value Latin1        UTF-8.
-    \value DefaultCodec  UTF-8.
+    \omitvalue Latin1
+    \omitvalue DefaultCodec  UTF-8.
+    \omitvalue CodecForTr
 
     \sa QObject::tr(), QString::fromUtf8()
 */
@@ -1682,6 +1683,11 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
     replacePercentN(&result, n);
     return result;
 }
+
+/*! \fn static QString QCoreApplication::translate(const char * context, const char * key, const char * disambiguation, Encoding, int n = -1)
+
+  \obsolete
+*/
 
 // Declared in qglobal.h
 QString qtTrId(const char *id, int n)
