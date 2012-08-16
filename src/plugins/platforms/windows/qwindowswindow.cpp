@@ -903,8 +903,15 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent) const
 
     }
 
+    // NULL handle means desktop window, which also has its proper handle -> disambiguate
+    HWND desktopHwnd = GetDesktopWindow();
+    if (oldParentHWND == desktopHwnd)
+        oldParentHWND = 0;
+    if (newParentHWND == desktopHwnd)
+        newParentHWND = 0;
+
     if (newParentHWND != oldParentHWND) {
-        const bool wasTopLevel = window()->isTopLevel();
+        const bool wasTopLevel = oldParentHWND == 0;
         const bool isTopLevel = newParentHWND == 0;
 
         setFlag(WithinSetParent);
