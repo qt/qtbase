@@ -305,11 +305,11 @@ QModelIndex QDirModel::parent(const QModelIndex &child) const
     Q_D(const QDirModel);
 
     if (!d->indexValid(child))
-	return QModelIndex();
+        return QModelIndex();
     QDirModelPrivate::QDirNode *node = d->node(child);
     QDirModelPrivate::QDirNode *par = (node ? node->parent : 0);
     if (par == 0) // parent is the root node
-	return QModelIndex();
+        return QModelIndex();
 
     // get the parent's row
     const QVector<QDirModelPrivate::QDirNode> children =
@@ -435,7 +435,7 @@ QVariant QDirModel::headerData(int section, Qt::Orientation orientation, int rol
     if (orientation == Qt::Horizontal) {
         if (role != Qt::DisplayRole)
             return QVariant();
-	switch (section) {
+        switch (section) {
         case 0: return tr("Name");
         case 1: return tr("Size");
         case 2: return
@@ -898,7 +898,7 @@ QModelIndex QDirModel::index(const QString &path, int column) const
         pathElements.pop_front();
         if (childAppended)
             emit const_cast<QDirModel*>(this)->layoutChanged();
-    } else 
+    } else
 #endif
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if (pathElements.at(0).endsWith(QLatin1Char(':'))) {
@@ -1179,7 +1179,7 @@ void QDirModelPrivate::init()
 QDirModelPrivate::QDirNode *QDirModelPrivate::node(int row, QDirNode *parent) const
 {
     if (row < 0)
-	return 0;
+        return 0;
 
     bool isDir = !parent || parent->info.isDir();
     QDirNode *p = (parent ? parent : &root);

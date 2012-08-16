@@ -1926,7 +1926,7 @@ void QHeaderViewPrivate::_q_layoutAboutToBeChanged()
 {
     //if there is no row/column we can't have mapping for columns
     //because no QModelIndex in the model would be valid
-    // ### this is far from being bullet-proof and we would need a real system to 
+    // ### this is far from being bullet-proof and we would need a real system to
     // ### map columns or rows persistently
     if ((orientation == Qt::Horizontal && model->rowCount(root) == 0)
         || model->columnCount(root) == 0)

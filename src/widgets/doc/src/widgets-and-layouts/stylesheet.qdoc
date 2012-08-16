@@ -32,7 +32,7 @@
 
     \ingroup frameworks-technologies
     \ingroup qt-basic-concepts
-	\ingroup qt-gui-concepts
+    \ingroup qt-gui-concepts
 
     \previouspage {Styles and Style Aware Widgets}{Styles}
     \contentspage Widgets and Layouts

@@ -37,7 +37,7 @@
     \ingroup qt-gui-concepts
     \brief A tour of the standard layout managers and an introduction to custom
     layouts.
-    
+
     \previouspage Widgets and Layouts
     \contentspage Widgets and Layouts
     \nextpage {Styles and Style Aware Widgets}{Styles}

@@ -160,7 +160,7 @@
     These classes provide everything you need for a typical modern main
     application window, like the main window itself, menu and tool bars,
     a status bar, etc.
-    
+
     \annotatedlist mainwindow-classes
 
     \section1 The Main Window Classes
@@ -237,7 +237,7 @@
     \snippet dockwidgets/mainwindow.cpp 0
 
     In this example, the dock widget can only be placed in the left and
-    right dock areas, and it is initially placed in the left dock area. 
+    right dock areas, and it is initially placed in the left dock area.
 
     The QMainWindow API allows the programmer to customize which dock
     widget areas occupy the four corners of the dock widget area. If

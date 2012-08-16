@@ -71,7 +71,7 @@
   widgets and encapsulate the look and feel of a GUI. Qt's built-in
   widgets use the QStyle class to perform nearly all of their drawing,
   ensuring that they look exactly like the equivalent native widgets.
-    
+
   \table
   \row
   \li \image windowsxp-tabwidget.png
