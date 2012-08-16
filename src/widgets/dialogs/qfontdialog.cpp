@@ -131,7 +131,7 @@ static const Qt::WindowFlags DefaultWindowFlags =
 
   \image plastique-fontdialog.png A font dialog in the Plastique widget style.
 
-  \sa QFont, QFontInfo, QFontMetrics, QColorDialog, QFileDialog, QPrintDialog,
+  \sa QFont, QFontInfo, QFontMetrics, QColorDialog, QFileDialog,
       {Standard Dialogs Example}
 */
 
@@ -1026,31 +1026,6 @@ bool QFontDialogPrivate::canBeNativeDialog() const
     QLatin1String dynamicName(q->metaObject()->className());
     return (staticName == dynamicName);
 }
-
-/*!
-    \fn QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget* parent, const char* name)
-    \since 4.5
-
-    Call getFont(\a ok, \a initial, \a parent) instead.
-
-    \warning Do not delete \a parent during the execution of the dialog.
-             If you want to do this, you should create the dialog
-             yourself using one of the QFontDialog constructors.
-
-    The \a name parameter is ignored.
-*/
-
-/*!
-    \fn QFont QFontDialog::getFont(bool *ok, QWidget* parent, const char* name)
-
-    Call getFont(\a ok, \a parent) instead.
-
-  \warning Do not delete \a parent during the execution of the dialog.
-           If you want to do this, you should create the dialog
-           yourself using one of the QFontDialog constructors.
-
-    The \a name parameter is ignored.
-*/
 
 QT_END_NAMESPACE
 

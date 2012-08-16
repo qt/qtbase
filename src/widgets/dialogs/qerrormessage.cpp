@@ -407,12 +407,6 @@ void QErrorMessagePrivate::retranslateStrings()
 #endif
 }
 
-/*!
-    \fn void QErrorMessage::message(const QString & message)
-
-    Use showMessage(\a message) instead.
-*/
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_ERRORMESSAGE
