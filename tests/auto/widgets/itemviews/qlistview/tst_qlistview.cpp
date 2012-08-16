@@ -138,6 +138,8 @@ private slots:
     void draggablePaintPairs();
     void taskQTBUG_21804_hiddenItemsAndScrollingWithKeys_data();
     void taskQTBUG_21804_hiddenItemsAndScrollingWithKeys();
+    void spacing_data();
+    void spacing();
 };
 
 // Testing get/set functions
@@ -2161,13 +2163,93 @@ void tst_QListView::draggablePaintPairs()
 void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys_data()
 {
     QTest::addColumn<int>("flow");
-    QTest::newRow("flow TopToBottom") << static_cast<int>(QListView::TopToBottom);
-    QTest::newRow("flow LeftToRight") << static_cast<int>(QListView::LeftToRight);
+    QTest::addColumn<int>("spacing");
+    QTest::newRow("flow TopToBottom no spacing") << static_cast<int>(QListView::TopToBottom) << 0;
+    QTest::newRow("flow TopToBottom with spacing") << static_cast<int>(QListView::TopToBottom) << 5;
+    QTest::newRow("flow LeftToRight no spacing") << static_cast<int>(QListView::LeftToRight) << 0;
+    QTest::newRow("flow LeftToRight with spacing") << static_cast<int>(QListView::LeftToRight) << 5;
 }
 
 void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
 {
     QFETCH(int, flow);
+    QFETCH(int, spacing);
+
+    // create some items to show
+    QStringListModel model;
+    QStringList list;
+    for (int i = 0; i < 60; i++)
+        list << QString::number(i);
+    model.setStringList(list);
+
+    // create listview
+    QListView lv;
+    lv.setFlow(static_cast<QListView::Flow>(flow));
+    lv.setSpacing(spacing);
+    lv.setModel(&model);
+    lv.show();
+    QTest::qWaitForWindowShown(&lv);
+
+    // hide every odd number row
+    for (int i = 1; i < model.rowCount(); i+=2)
+        lv.setRowHidden(i, true);
+
+    // scroll forward and check that selected item is visible always
+    int visibleItemCount = model.rowCount()/2;
+    for (int i = 0; i < visibleItemCount; i++) {
+        if (flow == QListView::TopToBottom)
+            QTest::keyClick(&lv, Qt::Key_Down);
+        else
+            QTest::keyClick(&lv, Qt::Key_Right);
+        QTest::qWait(100);
+        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+    }
+
+    // scroll backward
+    for (int i = 0; i < visibleItemCount; i++) {
+        if (flow == QListView::TopToBottom)
+            QTest::keyClick(&lv, Qt::Key_Up);
+        else
+            QTest::keyClick(&lv, Qt::Key_Left);
+        QTest::qWait(100);
+        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+    }
+
+    // scroll forward only half way
+    for (int i = 0; i < visibleItemCount/2; i++) {
+        if (flow == QListView::TopToBottom)
+            QTest::keyClick(&lv, Qt::Key_Down);
+        else
+            QTest::keyClick(&lv, Qt::Key_Right);
+        QTest::qWait(100);
+        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+    }
+
+    // scroll backward again
+    for (int i = 0; i < visibleItemCount/2; i++) {
+        if (flow == QListView::TopToBottom)
+            QTest::keyClick(&lv, Qt::Key_Up);
+        else
+            QTest::keyClick(&lv, Qt::Key_Left);
+        QTest::qWait(100);
+        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+    }
+}
+
+void tst_QListView::spacing_data()
+{
+    QTest::addColumn<int>("flow");
+    QTest::addColumn<int>("spacing");
+    QTest::newRow("flow=TopToBottom spacing=0") << static_cast<int>(QListView::TopToBottom) << 0;
+    QTest::newRow("flow=TopToBottom spacing=10") << static_cast<int>(QListView::TopToBottom) << 10;
+    QTest::newRow("flow=LeftToRight spacing=0") << static_cast<int>(QListView::LeftToRight) << 0;
+    QTest::newRow("flow=LeftToRight spacing=10") << static_cast<int>(QListView::LeftToRight) << 10;
+}
+
+void tst_QListView::spacing()
+{
+    QFETCH(int, flow);
+    QFETCH(int, spacing);
 
     // create some items to show
     QStringListModel model;
@@ -2180,33 +2262,24 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
     QListView lv;
     lv.setFlow(static_cast<QListView::Flow>(flow));
     lv.setModel(&model);
+    lv.setSpacing(spacing);
     lv.show();
     QTest::qWaitForWindowShown(&lv);
 
-    // hide every odd number row
-    for (int i = 1; i < model.rowCount(); i+=2)
-        lv.setRowHidden(i, true);
-
-    // scroll forward and check that selected item is visible always
-    for (int i = 0; i < model.rowCount()/2; i++) {
-        if (flow == QListView::TopToBottom)
-            QTest::keyClick(&lv, Qt::Key_Down);
-        else
-            QTest::keyClick(&lv, Qt::Key_Right);
-        QTest::qWait(100);
-        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+    // check size and position of first two items
+    QRect item1 = lv.visualRect(lv.model()->index(0, 0));
+    QRect item2 = lv.visualRect(lv.model()->index(1, 0));
+    QCOMPARE(item1.topLeft(), QPoint(flow == QListView::TopToBottom ? spacing : 0, spacing));
+    if (flow == QListView::TopToBottom) {
+        QCOMPARE(item1.width(), lv.viewport()->width() - 2 * spacing);
+        QCOMPARE(item2.topLeft(), QPoint(spacing, spacing + item1.height() + 2 * spacing));
     }
-
-    // scroll backward
-    for (int i = 0; i < model.rowCount()/2; i++) {
-        if (flow == QListView::TopToBottom)
-            QTest::keyClick(&lv, Qt::Key_Up);
-        else
-            QTest::keyClick(&lv, Qt::Key_Left);
-        QTest::qWait(100);
-        QVERIFY(lv.rect().contains(lv.visualRect(lv.currentIndex())));
+    else { // QListView::LeftToRight
+        QCOMPARE(item1.height(), lv.viewport()->height() - 2 * spacing);
+        QCOMPARE(item2.topLeft(), QPoint(spacing + item1.width() + spacing, spacing));
     }
 }
+
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"

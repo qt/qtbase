@@ -2274,7 +2274,7 @@ QListViewItem QListModeViewBase::indexToListViewItem(const QModelIndex &index) c
                      : segmentPositions.at(segment + 1));
             size.setWidth(right - pos.x());
         } else { // make the items as wide as the viewport
-            size.setWidth(qMax(size.width(), viewport()->width()));
+            size.setWidth(qMax(size.width(), viewport()->width() - 2 * spacing()));
         }
     }
 
