@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
     the particular event.
 
     \sa QObject::event(), QObject::installEventFilter(),
-        QWidget::event(), QCoreApplication::sendEvent(),
+        QCoreApplication::sendEvent(),
         QCoreApplication::postEvent(), QCoreApplication::processEvents()
 */
 
@@ -125,8 +125,9 @@ QT_BEGIN_NAMESPACE
     \value EnterWhatsThisMode               Send to toplevel widgets when the application enters "What's This?" mode.
     \value Expose                           Sent to a window when its on-screen contents are invalidated and need to be flushed from the backing store.
     \value FileOpen                         File open request (QFileOpenEvent).
-    \value FocusIn                          Widget gains keyboard focus (QFocusEvent).
-    \value FocusOut                         Widget loses keyboard focus (QFocusEvent).
+    \value FocusIn                          Widget or Window gains keyboard focus (QFocusEvent).
+    \value FocusOut                         Widget or Window loses keyboard focus (QFocusEvent).
+    \value FocusAboutToChange               Widget or Window focus is about to change (QFocusEvent)
     \value FontChange                       Widget's font has changed.
     \value Gesture                          A gesture was triggered (QGestureEvent).
     \value GestureOverride                  A gesture override was triggered (QGestureEvent).
@@ -156,6 +157,7 @@ QT_BEGIN_NAMESPACE
     \value IconDrag                         The main icon of a window has been dragged away (QIconDragEvent).
     \value IconTextChange                   Widget's icon text has been changed.
     \value InputMethod                      An input method is being used (QInputMethodEvent).
+    \value InputMethodQuery                 A input method query event (QInputMethodQueryEvent)
     \value KeyboardLayoutChange             The keyboard layout has changed.
     \value KeyPress                         Key press (QKeyEvent).
     \value KeyRelease                       Key release (QKeyEvent).
@@ -179,6 +181,7 @@ QT_BEGIN_NAMESPACE
     \value MouseMove                        Mouse move (QMouseEvent).
     \value MouseTrackingChange              The mouse tracking state has changed.
     \value Move                             Widget's position changed (QMoveEvent).
+    \value OrientationChange                The screens orientation has changes (QScreenOrientationChangeEvent)
     \value Paint                            Screen update necessary (QPaintEvent).
     \value PaletteChange                    Palette of the widget changed.
     \value ParentAboutToChange              The widget parent is about to change.
@@ -195,6 +198,7 @@ QT_BEGIN_NAMESPACE
     \value Show                             Widget was shown on screen (QShowEvent).
     \value ShowToParent                     A child widget has been shown.
     \value SockAct                          Socket activated, used to implement QSocketNotifier.
+    \omitvalue SockClose
     \value StateMachineSignal               A signal delivered to a state machine (QStateMachine::SignalEvent).
     \value StateMachineWrapped              The event is a wrapper for, i.e., contains, another event (QStateMachine::WrappedEvent).
     \value StatusTip                        A status tip is requested (QStatusTipEvent).
@@ -205,6 +209,7 @@ QT_BEGIN_NAMESPACE
     \value OkRequest                        Ok button in decoration pressed. Supported only for Windows CE.
     \value TabletEnterProximity             Wacom tablet enter proximity event (QTabletEvent), sent to QApplication.
     \value TabletLeaveProximity             Wacom tablet leave proximity event (QTabletEvent), sent to QApplication.
+    \omitvalue ThemeChange
     \value ThreadChange                     The object is moved to another thread. This is the last event sent to this object in the previous thread. See QObject::moveToThread().
     \value Timer                            Regular timer events (QTimerEvent).
     \value ToolBarChange                    The toolbar button is toggled on Mac OS X.
@@ -226,7 +231,7 @@ QT_BEGIN_NAMESPACE
     \value WindowBlocked                    The window is blocked by a modal dialog.
     \value WindowDeactivate                 Window was deactivated.
     \value WindowIconChange                 The window's icon has changed.
-    \value WindowStateChange                The \l{QWidget::windowState()}{window's state} (minimized, maximized or full-screen) has changed (QWindowStateChangeEvent).
+    \value WindowStateChange                The \l{QWindow::windowState()}{window's state} (minimized, maximized or full-screen) has changed (QWindowStateChangeEvent).
     \value WindowTitleChange                The window title has changed.
     \value WindowUnblocked                  The window is unblocked after a modal dialog exited.
     \value WinIdChange                      The window system identifer for this native widget has changed.
