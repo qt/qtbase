@@ -69,6 +69,19 @@ static inline bool isRecursive(QMutexData *d)
 #endif
 }
 
+class QRecursiveMutexPrivate : public QMutexData
+{
+public:
+    QRecursiveMutexPrivate()
+        : QMutexData(QMutex::Recursive), owner(0), count(0) {}
+    Qt::HANDLE owner;
+    uint count;
+    QMutex mutex;
+
+    bool lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT;
+    void unlock() Q_DECL_NOTHROW;
+};
+
 /*
     \class QBasicMutex
     \inmodule QtCore
@@ -544,7 +557,7 @@ void QMutexPrivate::derefWaiters(int value) Q_DECL_NOTHROW
 /*!
    \internal
  */
-bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
+inline bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
     Qt::HANDLE self = QThread::currentThreadId();
     if (owner == self) {
@@ -567,7 +580,7 @@ bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 /*!
    \internal
  */
-void QRecursiveMutexPrivate::unlock() Q_DECL_NOTHROW
+inline void QRecursiveMutexPrivate::unlock() Q_DECL_NOTHROW
 {
     if (count > 0) {
         count--;

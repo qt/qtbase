@@ -131,18 +131,6 @@ public:
 };
 #endif //QT_LINUX_FUTEX
 
-class QRecursiveMutexPrivate : public QMutexData
-{
-public:
-    QRecursiveMutexPrivate()
-        : QMutexData(QMutex::Recursive), owner(0), count(0) {}
-    Qt::HANDLE owner;
-    uint count;
-    QMutex mutex;
-
-    bool lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT;
-    void unlock() Q_DECL_NOTHROW;
-};
 
 QT_END_NAMESPACE
 
