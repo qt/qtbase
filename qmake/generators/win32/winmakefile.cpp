@@ -303,7 +303,6 @@ void Win32MakefileGenerator::processVars()
 
     fixTargetExt();
     processRcFileVar();
-    processFileTagsVar();
 
     QStringList &incDir = project->values("INCLUDEPATH");
     for(QStringList::Iterator incDir_it = incDir.begin(); incDir_it != incDir.end(); ++incDir_it) {
@@ -518,23 +517,6 @@ void Win32MakefileGenerator::processRcFileVar()
 	project->values("POST_TARGETDEPS") += project->values("RES_FILE");
         project->values("CLEAN_FILES") += project->values("RES_FILE");
     }
-}
-
-void Win32MakefileGenerator::processFileTagsVar()
-{
-    QStringList tags;
-    tags << "SOURCES" << "GENERATED_SOURCES" << "DEF_FILE" << "RC_FILE"
-         << "TARGET" << "QMAKE_LIBS" << "DESTDIR" << "DLLDESTDIR" << "INCLUDEPATH";
-    if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
-        const QStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
-        for(QStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it)
-            tags += project->values((*it)+".input");
-    }
-
-    //clean path
-    QStringList &filetags = project->values("QMAKE_FILETAGS");
-    for(int i = 0; i < tags.size(); ++i)
-        filetags += Option::fixPathToTargetOS(tags.at(i), false);
 }
 
 void Win32MakefileGenerator::writeCleanParts(QTextStream &t)

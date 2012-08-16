@@ -169,13 +169,6 @@ UnixMakefileGenerator::init()
         }
     }
 
-    project->values("QMAKE_FILETAGS") << "SOURCES" << "GENERATED_SOURCES" << "TARGET" << "DESTDIR";
-    if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
-        const QStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
-        for(int i = 0; i < quc.size(); ++i)
-            project->values("QMAKE_FILETAGS") += project->values(quc[i]+".input");
-    }
-
     if(project->isActiveConfig("GNUmake") && !project->isEmpty("QMAKE_CFLAGS_DEPS"))
         include_deps = true; //do not generate deps
     if(project->isActiveConfig("compile_libtool"))

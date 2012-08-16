@@ -71,7 +71,6 @@ protected:
     void processVars();
     void fixTargetExt();
     void processRcFileVar();
-    void processFileTagsVar();
     virtual QString getLibTarget();
 };
 
