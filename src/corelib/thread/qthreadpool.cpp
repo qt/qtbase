@@ -269,9 +269,9 @@ void QThreadPoolPrivate::reset()
     runnableReady.wakeAll();
 
     while (!allThreads.empty()) {
-        // make a copy of the set so that we can iterate without the lock
-        QSet<QThreadPoolThread *> allThreadsCopy = allThreads;
-        allThreads.clear();
+        // move the contents of the set out so that we can iterate without the lock
+        QSet<QThreadPoolThread *> allThreadsCopy;
+        allThreadsCopy.swap(allThreads);
         locker.unlock();
 
         foreach (QThreadPoolThread *thread, allThreadsCopy) {
