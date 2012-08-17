@@ -334,7 +334,7 @@ static void processQdocconfFile(const QString &fileName)
     QStringList excludedDirsList;
     QStringList excludedFilesList;
 
-    excludedDirsList = config.getCleanPathList(CONFIG_EXCLUDEDIRS);
+    excludedDirsList = config.getCanonicalRelativePathList(CONFIG_EXCLUDEDIRS);
     foreach (const QString &excludeDir, excludedDirsList) {
         QString p = QDir::fromNativeSeparators(excludeDir);
         excludedDirs.insert(p);

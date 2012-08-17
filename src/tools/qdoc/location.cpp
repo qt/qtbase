@@ -43,6 +43,7 @@
 #include "config.h"
 #include "location.h"
 
+#include <qdir.h>
 #include <qregexp.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -223,6 +224,24 @@ QString Location::fileName() const
 {
     QString fp = filePath();
     return fp.mid(fp.lastIndexOf('/') + 1);
+}
+
+
+/*!
+ * \brief  Returns \a path which is canonicalized and relative to the config file.
+ *
+ *         QDir::relativeFilePath does not canonicalize the paths, so
+ *         if the config file is located at qtbase\src\widgets\doc\qtwidgets.qdocconf
+ *         and it has a reference to any ancestor folder (e.g. ".." or even "../doc")
+ * \param path
+ * \return
+ */
+QString Location::canonicalRelativePath(const QString &path) const
+{
+    QDir configFileDir(QFileInfo(filePath()).dir());
+    QDir dir(path);
+    const QString canon = dir.canonicalPath();
+    return configFileDir.relativeFilePath(canon);
 }
 
 /*! \fn int Location::lineNo() const

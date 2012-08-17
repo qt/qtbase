@@ -76,6 +76,7 @@ public:
     QString getString(const QString& var) const;
     QSet<QString> getStringSet(const QString& var) const;
     QStringList getStringList(const QString& var) const;
+    QStringList getCanonicalRelativePathList(const QString& var) const;
     QStringList getCleanPathList(const QString& var) const;
     QRegExp getRegExp(const QString& var) const;
     QList<QRegExp> getRegExpList(const QString& var) const;
@@ -88,6 +89,7 @@ public:
     QStringList getExampleQdocFiles();
     static QStringList getFilesHere(const QString& dir,
                                     const QString& nameFilter,
+                                    const Location &location = Location(),
                                     const QSet<QString> &excludedDirs = QSet<QString>(),
                                     const QSet<QString> &excludedFiles = QSet<QString>());
     static QString findFile(const Location& location,

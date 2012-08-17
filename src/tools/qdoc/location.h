@@ -79,6 +79,7 @@ public:
     int depth() const { return stkDepth; }
     const QString& filePath() const { return stkTop->filePath; }
     QString fileName() const;
+    QString canonicalRelativePath(const QString &path) const;
     int lineNo() const { return stkTop->lineNo; }
     int columnNo() const { return stkTop->columnNo; }
     bool etc() const { return etcetera; }

@@ -5634,7 +5634,7 @@
     colons (\c{::}).
 
     \code
-        A link to the UI Component's TabWidget is \l {UIComponent::TabWidget}.
+        A link to the UI Component's TabWidget is \l {UIComponent::TabWidget}.
     \endcode
 
     QDoc will generate a page for the module with a listing of the members
@@ -7599,14 +7599,11 @@
     \l {sourcedirs-variable} {sourcedirs} or \l {headerdirs-variable} {headerdirs}
     variables.
 
-    For example in \l qt.qdocconf
+    For example,
 
     \code
-        excludedirs = $QTDIR/extensions/activeqt \
-                      $QTDIR/extensions/motif \
-                      $QTDIR/tools/designer/src/lib/extension \
-                      $QTDIR/tools/designer/src/lib/sdk \
-                      $QTDIR/tools/designer/src/lib/uilib
+        sourcedirs =  src/corelib
+        excludedirs = src/corelib/tmp
     \endcode
 
     When executed, QDoc will exclude the listed directories from

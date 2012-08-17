@@ -327,6 +327,32 @@ QStringList Config::getStringList(const QString& var) const
     return stringListValueMap[var];
 }
 
+
+/*!
+   \brief Returns the a path list where all paths are canonicalized, then
+          made relative to the config file.
+   \param var The variable containing the list of paths.
+   \see   Location::canonicalRelativePath()
+ */
+QStringList Config::getCanonicalRelativePathList(const QString& var) const
+{
+    if (!locMap[var].isEmpty())
+        (Location&) lastLoc = locMap[var];
+    QStringList t;
+    QMap<QString,QStringList>::const_iterator it = stringListValueMap.constFind(var);
+    if (it != stringListValueMap.constEnd()) {
+        const QStringList& sl = it.value();
+        if (!sl.isEmpty()) {
+            t.reserve(sl.size());
+            for (int i=0; i<sl.size(); ++i) {
+                const QString &canonicalized = location().canonicalRelativePath(sl[i]);
+                t.append(canonicalized);
+            }
+        }
+    }
+    return t;
+}
+
 /*!
   This function should only be called when the configuration
   variable \a var maps to a string list that contains file paths.
@@ -465,13 +491,13 @@ QStringList Config::getAllFiles(const QString &filesVar,
                                 const QSet<QString> &excludedFiles)
 {
     QStringList result = getStringList(filesVar);
-    QStringList dirs = getStringList(dirsVar);
+    QStringList dirs = getCanonicalRelativePathList(dirsVar);
 
     QString nameFilter = getString(filesVar + dot + QLatin1String(CONFIG_FILEEXTENSIONS));
 
     QStringList::ConstIterator d = dirs.constBegin();
     while (d != dirs.constEnd()) {
-        result += getFilesHere(*d, nameFilter, excludedDirs, excludedFiles);
+        result += getFilesHere(*d, nameFilter, location(), excludedDirs, excludedFiles);
         ++d;
     }
     return result;
@@ -487,7 +513,7 @@ QStringList Config::getExampleQdocFiles()
 
     QStringList::ConstIterator d = dirs.constBegin();
     while (d != dirs.constEnd()) {
-        result += getFilesHere(*d, nameFilter, excludedDirs, excludedFiles);
+        result += getFilesHere(*d, nameFilter, location(), excludedDirs, excludedFiles);
         ++d;
     }
     return result;
@@ -948,10 +974,12 @@ void Config::load(Location location, const QString& fileName)
 
 QStringList Config::getFilesHere(const QString& uncleanDir,
                                  const QString& nameFilter,
+                                 const Location &location,
                                  const QSet<QString> &excludedDirs,
                                  const QSet<QString> &excludedFiles)
 {
-    QString dir = QDir::cleanPath(uncleanDir);
+    //
+    QString dir = location.isEmpty() ? QDir::cleanPath(uncleanDir) : location.canonicalRelativePath(uncleanDir);
     QStringList result;
     if (excludedDirs.contains(dir))
         return result;
@@ -981,7 +1009,7 @@ QStringList Config::getFilesHere(const QString& uncleanDir,
     fileNames = dirInfo.entryList();
     fn = fileNames.constBegin();
     while (fn != fileNames.constEnd()) {
-        result += getFilesHere(dirInfo.filePath(*fn), nameFilter, excludedDirs, excludedFiles);
+        result += getFilesHere(dirInfo.filePath(*fn), nameFilter, location, excludedDirs, excludedFiles);
         ++fn;
     }
     return result;
