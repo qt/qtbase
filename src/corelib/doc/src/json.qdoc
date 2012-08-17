@@ -27,11 +27,6 @@
 
 /*!
     \group json
-    \title JSON Classes
-*/
-
-/*!
-    \page json.html
     \title JSON Support in Qt
     \ingroup qt-basic-concepts
     \brief An overview over the JSON support in Qt.
