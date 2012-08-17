@@ -314,7 +314,7 @@ bool QThreadPoolPrivate::waitForDone(int msecs)
 */
 void QThreadPoolPrivate::stealRunnable(QRunnable *runnable)
 {
-    if (runnable == 0 || queue.isEmpty())
+    if (runnable == 0)
         return;
     bool found = false;
     {
