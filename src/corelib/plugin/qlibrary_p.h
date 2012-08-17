@@ -71,6 +71,7 @@ QT_BEGIN_NAMESPACE
 
 bool qt_debug_component();
 
+class QLibraryStore;
 class QLibraryPrivate
 {
 public:
@@ -128,7 +129,7 @@ private:
     QAtomicInt libraryUnloadCount;
 
     enum { IsAPlugin, IsNotAPlugin, MightBeAPlugin } pluginState;
-    friend class QLibraryPrivateHasFriends;
+    friend class QLibraryStore;
 };
 
 QT_END_NAMESPACE
