@@ -1048,6 +1048,7 @@ void QDBusConnectionPrivate::closeConnection()
                 ;
         }
     }
+    qDBusDebug() << this << "Disconnected";
 }
 
 void QDBusConnectionPrivate::checkThread()
