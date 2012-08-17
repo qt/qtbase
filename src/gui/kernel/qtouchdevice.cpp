@@ -115,6 +115,9 @@ QTouchDevice::QTouchDevice()
 {
 }
 
+/*!
+  Destroys a touch device instance.
+  */
 QTouchDevice::~QTouchDevice()
 {
     delete d;
@@ -150,7 +153,7 @@ QString QTouchDevice::name() const
 }
 
 /*!
-  Sets the device type.
+  Sets the device type \a devType.
   */
 void QTouchDevice::setType(DeviceType devType)
 {
@@ -158,7 +161,7 @@ void QTouchDevice::setType(DeviceType devType)
 }
 
 /*!
-  Sets the capabilities supported by the device and its driver.
+  Sets the capabilities \a caps supported by the device and its driver.
   */
 void QTouchDevice::setCapabilities(Capabilities caps)
 {
@@ -166,7 +169,7 @@ void QTouchDevice::setCapabilities(Capabilities caps)
 }
 
 /*!
-  Sets the name (a unique identifier) for the device. In most systems it is
+  Sets the \a name (a unique identifier) for the device. In most systems it is
   enough to leave this unset and keep the default empty name. This identifier
   becomes important when having multiple touch devices and a need to
   differentiate between them.
