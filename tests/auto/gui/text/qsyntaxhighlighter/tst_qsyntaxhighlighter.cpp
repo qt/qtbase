@@ -47,6 +47,10 @@
 #include <QAbstractTextDocumentLayout>
 #include <QSyntaxHighlighter>
 
+#ifndef QT_NO_WIDGETS
+#include <QTextEdit>
+#endif
+
 class QTestDocumentLayout : public QAbstractTextDocumentLayout
 {
     Q_OBJECT
@@ -97,7 +101,10 @@ private slots:
     void noContentsChangedDuringHighlight();
     void rehighlight();
     void rehighlightBlock();
-    
+#ifndef QT_NO_WIDGETS
+    void textEditParent();
+#endif
+
 private:
     QTextDocument *doc;
     QTestDocumentLayout *lout;
@@ -123,6 +130,8 @@ class TestHighlighter : public QSyntaxHighlighter
 public:
     inline TestHighlighter(const QList<QTextLayout::FormatRange> &fmts, QTextDocument *parent)
         : QSyntaxHighlighter(parent), formats(fmts), highlighted(false), callCount(0) {}
+    inline TestHighlighter(QObject *parent)
+        : QSyntaxHighlighter(parent) {}
         inline TestHighlighter(QTextDocument *parent)
             : QSyntaxHighlighter(parent), highlighted(false), callCount(0) {}
 
@@ -541,6 +550,15 @@ void tst_QSyntaxHighlighter::rehighlightBlock()
     QCOMPARE(hl->highlightedText, QString("World"));
     QCOMPARE(hl->callCount, 1);
 }
+
+#ifndef QT_NO_WIDGETS
+void tst_QSyntaxHighlighter::textEditParent()
+{
+    QTextEdit textEdit;
+    TestHighlighter *hl = new TestHighlighter(&textEdit);
+    QCOMPARE(hl->document(), textEdit.document());
+}
+#endif
 
 QTEST_MAIN(tst_QSyntaxHighlighter)
 #include "tst_qsyntaxhighlighter.moc"
