@@ -62,7 +62,7 @@ QByteArray normType = QMetaObject::normalizedType(" int    const  *");
 
 
 //! [2]
-QMetaObject::invokeMethod(pushButton, "animateClick",
+QMetaObject::invokeMethod(thread, "quit",
                           Qt::QueuedConnection);
 //! [2]
 

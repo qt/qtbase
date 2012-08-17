@@ -1375,8 +1375,8 @@ enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
 
     You only need to pass the name of the signal or slot to this function,
     not the entire signature. For example, to asynchronously invoke
-    the \l{QPushButton::animateClick()}{animateClick()} slot on a
-    QPushButton, use the following code:
+    the \l{QThread::quit()}{quit()} slot on a
+    QThread, use the following code:
 
     \snippet code/src_corelib_kernel_qmetaobject.cpp 2
 
