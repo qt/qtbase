@@ -86,7 +86,7 @@
     \internal
 */
 
-/*! \fn QSignalSpy::wait(int timeout) const
+/*! \fn QSignalSpy::wait(int timeout)
 
     \since 5.0
 

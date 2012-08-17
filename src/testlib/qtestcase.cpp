@@ -411,7 +411,7 @@ QT_BEGIN_NAMESPACE
    absolute paths to the source files are passed to the compiler. Otherwise, the
    absolute path of the source directory cannot be determined.
 
-   \bold {Note:} For tests that use the \l QTEST_APPLESS_MAIN() macro to generate a
+   \b {Note:} For tests that use the \l QTEST_APPLESS_MAIN() macro to generate a
    \c{main()} function, \c{QFINDTESTDATA} will not attempt to find test data
    relative to QCoreApplication::applicationDirPath().  In practice, this means that
    tests using \c{QTEST_APPLESS_MAIN()} will fail to find their test data
@@ -996,7 +996,7 @@ QT_BEGIN_NAMESPACE
     Adds a move event for touchpoint \a touchId at position \a pt to this sequence and returns
     a reference to this QTouchEventSequence.
 
-    The position \a pt is interpreted as relative to \a window. If \a widnow is the null pointer, then
+    The position \a pt is interpreted as relative to \a window. If \a window is the null pointer, then
     \a pt is interpreted as relative to the window provided when instantiating this QTouchEventSequence.
 
     Simulates that the user moved the finger identified by \a touchId.
@@ -1049,10 +1049,10 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QTouchEventSequence QTest::touchEvent(QWindow *window, QTouchEvent::DeviceType deviceType, bool autoCommit)
+    \fn QTouchEventSequence QTest::touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit = true)
     \since 5.0
 
-    Creates and returns a QTouchEventSequence for the device \a deviceType to
+    Creates and returns a QTouchEventSequence for the \a device to
     simulate events for \a window.
 
     When adding touch events to the sequence, \a window will also be used to translate
@@ -1066,9 +1066,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QTouchEventSequence QTest::touchEvent(QWidget *widget, QTouchEvent::DeviceType deviceType, bool autoCommit)
+    \fn QTouchEventSequence QTest::touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit = true)
 
-    Creates and returns a QTouchEventSequence for the device \a deviceType to
+    Creates and returns a QTouchEventSequence for the \a device to
     simulate events for \a widget.
 
     When adding touch events to the sequence, \a widget will also be used to translate
