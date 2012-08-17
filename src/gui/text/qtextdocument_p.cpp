@@ -231,6 +231,8 @@ void QTextDocumentPrivate::init()
     undoEnabled = undoState;
     modified = false;
     modifiedState = 0;
+
+    qRegisterMetaType<QTextDocument *>();
 }
 
 void QTextDocumentPrivate::clear()

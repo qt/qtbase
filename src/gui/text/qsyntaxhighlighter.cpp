@@ -320,7 +320,7 @@ QSyntaxHighlighter::QSyntaxHighlighter(QObject *parent)
     : QObject(*new QSyntaxHighlighterPrivate, parent)
 {
     if (parent->inherits("QTextEdit")) {
-        QTextDocument *doc = qobject_cast<QTextDocument *>(parent->property("document").value<QObject *>());
+        QTextDocument *doc = parent->property("document").value<QTextDocument *>();
         if (doc)
             setDocument(doc);
     }
