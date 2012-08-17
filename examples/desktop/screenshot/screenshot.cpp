@@ -115,7 +115,9 @@ void Screenshot::shootScreen()
     originalPixmap = QPixmap(); // clear image for low memory situations
                                 // on embedded devices.
 //! [5]
-    originalPixmap = QPixmap::grabWindow(QApplication::desktop()->winId());
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (screen)
+        originalPixmap = screen->grabWindow(0);
     updateScreenshotLabel();
 
     newScreenshotButton->setDisabled(false);

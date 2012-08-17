@@ -277,6 +277,13 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
     if (width == 0 || height == 0)
         return QPixmap();
 
+    // TODO: handle multiple screens
+    QXcbScreen *screen = const_cast<QXcbScreen *>(this);
+    xcb_window_t root = screen->root();
+
+    if (window == 0)
+        window = root;
+
     xcb_get_geometry_cookie_t geometry_cookie = xcb_get_geometry_unchecked(xcb_connection(), window);
 
     xcb_get_geometry_reply_t *reply =
@@ -291,9 +298,6 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
     if (height < 0)
         height = reply->height - y;
 
-    // TODO: handle multiple screens
-    QXcbScreen *screen = const_cast<QXcbScreen *>(this);
-    xcb_window_t root = screen->root();
     geometry_cookie = xcb_get_geometry_unchecked(xcb_connection(), root);
     xcb_get_geometry_reply_t *root_reply =
         xcb_get_geometry_reply(xcb_connection(), geometry_cookie, NULL);

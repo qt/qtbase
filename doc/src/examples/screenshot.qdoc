@@ -172,16 +172,15 @@
 
     \snippet examples/desktop/screenshot/screenshot.cpp 5
 
-    We take the screenshot using the static QPixmap::grabWindow()
+    Using the static function QApplication::primaryScreen(), we
+    obtain the QScreen object for the application's main screen.
+
+    We take the screenshot using the QScreen::grabWindow()
     function. The function grabs the contents of the window passed as
     an argument, makes a pixmap out of it and returns that pixmap.
-
-    We identify the argument window using the QWidget::winID()
-    function which returns the window system identifier. Here it
-    returns the identifier of the current QDesktopWidget retrieved by
-    the QApplication::desktop() function. The QDesktopWidget class
-    provides access to screen information, and inherits
-    QWidget::winID().
+    The window id can be obtained with QWidget::winId() or QWindow::winId().
+    Here, however, we just pass 0 as the window id, indicating that we
+    want to grab the entire screen.
 
     We update the screenshot preview label using the private \c
     updateScreenshotLabel() function. Then we enable the \uicontrol {New
