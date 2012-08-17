@@ -12,7 +12,7 @@ MODULE_CONFIG = dbusadaptors dbusinterfaces
 
 DEFINES += DBUS_API_SUBJECT_TO_CHANGE
 QMAKE_CXXFLAGS += $$QT_CFLAGS_DBUS
-contains(QT_CONFIG, dbus-linked) { 
+contains(QT_CONFIG, dbus-linked) {
     LIBS_PRIVATE += $$QT_LIBS_DBUS
     DEFINES += QT_LINKED_LIBDBUS
 }

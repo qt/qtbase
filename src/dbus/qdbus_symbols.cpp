@@ -48,6 +48,8 @@
 
 #ifndef QT_NO_DBUS
 
+extern "C" void dbus_shutdown();
+
 QT_BEGIN_NAMESPACE
 
 void (*qdbus_resolve_me(const char *name))();
@@ -59,6 +61,11 @@ static QLibrary *qdbus_libdbus = 0;
 
 void qdbus_unloadLibDBus()
 {
+    if (qdbus_libdbus) {
+        if (qEnvironmentVariableIsSet("QDBUS_FORCE_SHUTDOWN"))
+            qdbus_libdbus->resolve("dbus_shutdown")();
+        qdbus_libdbus->unload();
+    }
     delete qdbus_libdbus;
     qdbus_libdbus = 0;
 }
@@ -129,11 +136,18 @@ void (*qdbus_resolve_me(const char *name))()
 #endif
 }
 
+#else  // QT_LINKED_LIBDBUS
+static void qdbus_unloadLibDBus()
+{
+    if (qEnvironmentVariableIsSet("QDBUS_FORCE_SHUTDOWN"))
+        dbus_shutdown();
+}
+
+#endif // !QT_LINKED_LIBDBUS
+
 #ifndef QT_BOOTSTRAPPED
 Q_DESTRUCTOR_FUNCTION(qdbus_unloadLibDBus)
 #endif
-
-#endif // QT_LINKED_LIBDBUS
 
 QT_END_NAMESPACE
 
