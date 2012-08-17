@@ -239,7 +239,7 @@ QPrinterInfo QPrinterInfo::defaultPrinter()
 }
 
 /*!
-    Returns the named printer.
+    Returns the printer \a printerName.
 
     The return value should be checked using isNull() before being
     used, in case the named printer does not exist.
@@ -247,7 +247,6 @@ QPrinterInfo QPrinterInfo::defaultPrinter()
     \since 5.0
     \sa isNull()
 */
-
 QPrinterInfo QPrinterInfo::printerInfo(const QString &printerName)
 {
     QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
