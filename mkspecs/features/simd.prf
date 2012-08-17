@@ -105,13 +105,14 @@ load(qt_build_config)
     }
     neon {
         HEADERS += $$NEON_HEADERS
+        SOURCES += $$NEON_ASM
 
         neon_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
         !contains(QT_CPU_FEATURES, neon):neon_compiler.commands += $$QMAKE_CFLAGS_NEON
         neon_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
         neon_compiler.dependency_type = TYPE_C
         neon_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-        neon_compiler.input = NEON_ASM NEON_SOURCES
+        neon_compiler.input = NEON_SOURCES
         neon_compiler.variable_out = OBJECTS
         neon_compiler.name = compiling[neon] ${QMAKE_FILE_IN}
         silent:neon_compiler.commands = @echo compiling[neon] ${QMAKE_FILE_IN} && $$neon_compiler.commands
