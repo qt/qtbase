@@ -162,7 +162,7 @@ void QAlphaWidget::run(int time)
     move(widget->geometry().x(),widget->geometry().y());
     resize(widget->size().width(), widget->size().height());
 
-    frontImage = widget->grab(QRect()).toImage();
+    frontImage = widget->grab().toImage();
     backImage = QGuiApplication::primaryScreen()->grabWindow(QApplication::desktop()->winId(),
                                 widget->geometry().x(), widget->geometry().y(),
                                 widget->geometry().width(), widget->geometry().height()).toImage();

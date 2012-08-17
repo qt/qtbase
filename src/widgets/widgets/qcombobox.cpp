@@ -2470,7 +2470,7 @@ void QComboBox::showPopup()
     const bool updatesEnabled = container->updatesEnabled();
 #endif
 
-#if defined(Q_WS_WIN) && !defined(QT_NO_EFFECTS)
+#if !defined(QT_NO_EFFECTS)
     bool scrollDown = (listRect.topLeft() == below);
     if (QApplication::isEffectEnabled(Qt::UI_AnimateCombo)
         && !style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this) && !window()->testAttribute(Qt::WA_DontShowOnScreen))

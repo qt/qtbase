@@ -4757,6 +4757,7 @@ QPixmap QWidget::grab(const QRect &rectangle)
 
     const QWidget::RenderFlags renderFlags = QWidget::DrawWindowBackground | QWidget::DrawChildren | QWidget::IgnoreMask;
 
+    const bool oldDirtyOpaqueChildren =  d->dirtyOpaqueChildren;
     QRect r(rectangle);
     if (r.width() < 0 || r.height() < 0) {
         // For grabbing widgets that haven't been shown yet,
@@ -4772,6 +4773,8 @@ QPixmap QWidget::grab(const QRect &rectangle)
     if (!d->isOpaque)
         res.fill(Qt::transparent);
     render(&res, QPoint(), QRegion(r), renderFlags);
+
+    d->dirtyOpaqueChildren = oldDirtyOpaqueChildren;
     return res;
 }
 
