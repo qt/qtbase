@@ -1,35 +1,25 @@
 TEMPLATE      = subdirs
-SUBDIRS       = analogclock \
-                applicationicon \
-                calculator \
-                calendarwidget \
-                charactermap \
-                codeeditor \
-                digitalclock \
-                elidedlabel \
-                groupbox \
-                icons \
-                imageviewer \
-                lineedits \
-                movie \
-                mousebuttons \
-                orientation \
-                scribble \
-                shapedclock \
-                sliders \
-                spinboxes \
-                stylesheet \
-                tablet \
-                tetrix \
-                tooltips \
-                validators \
-                wiggly \
-                windowflags
+CONFIG += no_docs_target
 
-contains(styles, motif): SUBDIRS += styles
+SUBDIRS       = \
+                animation \
+                desktop \
+                dialogs \
+                draganddrop \
+                effects \
+                graphicsview \
+                itemviews \
+                layouts \
+                mainwindows \
+                painting \
+                richtext \
+                scroller \
+                statemachine \
+                widgets
+
+contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS widgets.pro README
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets
-INSTALLS += target sources
+sources.files = README *.pro
+sources.path = $$[QT_INSTALL_EXAMPLES]
+INSTALLS += sources
