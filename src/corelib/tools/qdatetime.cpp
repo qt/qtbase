@@ -2803,7 +2803,7 @@ qint64 QDateTime::daysTo(const QDateTime &other) const
     to Qt::UTC to ensure that the result is correct if one of the two
     datetimes has daylight saving time (DST) and the other doesn't.
 
-    Returns 0 if either time is invalid.
+    Returns 0 if either datetime is invalid.
 
     Example:
     \snippet code/src_corelib_tools_qdatetime.cpp 11
@@ -2834,7 +2834,7 @@ int QDateTime::secsTo(const QDateTime &other) const
     to Qt::UTC to ensure that the result is correct if one of the two
     datetimes has daylight saving time (DST) and the other doesn't.
 
-    Returns 0 if either time is null.
+    Returns 0 if either datetime is invalid.
 
     \sa addMSecs(), daysTo(), QTime::msecsTo()
 */
