@@ -730,15 +730,13 @@ Qt::Alignment QTextEdit::alignment() const
 }
 
 /*!
-    Makes \a document the new document of the text editor.
+    \property QTextEdit::document
+    \brief the underlying document of the text editor.
 
     \note The editor \e{does not take ownership of the document} unless it
     is the document's parent object. The parent object of the provided document
-    remains the owner of the object.
-
-    The editor does not delete the current document, even if it is a child of the editor.
-
-    \sa document()
+    remains the owner of the object. The editor does not delete any previously
+    assigned document, even if it is a child of the editor.
 */
 void QTextEdit::setDocument(QTextDocument *document)
 {
@@ -748,11 +746,6 @@ void QTextEdit::setDocument(QTextDocument *document)
     d->relayoutDocument();
 }
 
-/*!
-    Returns a pointer to the underlying document.
-
-    \sa setDocument()
-*/
 QTextDocument *QTextEdit::document() const
 {
     Q_D(const QTextEdit);
