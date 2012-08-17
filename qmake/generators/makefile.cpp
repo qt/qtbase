@@ -2798,29 +2798,6 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
     return ret;
 }
 
-void
-MakefileGenerator::checkMultipleDefinition(const QString &f, const QString &w)
-{
-    if(!(Option::warn_level & WarnLogic))
-        return;
-    QString file = f;
-    int slsh = f.lastIndexOf(Option::dir_sep);
-    if(slsh != -1)
-        file.remove(0, slsh + 1);
-    const QStringList &l = project->values(w);
-    for (QStringList::ConstIterator val_it = l.begin(); val_it != l.end(); ++val_it) {
-        QString file2((*val_it));
-        slsh = file2.lastIndexOf(Option::dir_sep);
-        if(slsh != -1)
-            file2.remove(0, slsh + 1);
-        if(file2 == file) {
-            warn_msg(WarnLogic, "Found potential symbol conflict of %s (%s) in %s",
-                     file.toLatin1().constData(), (*val_it).toLatin1().constData(), w.toLatin1().constData());
-            break;
-        }
-    }
-}
-
 QMakeLocalFileName
 MakefileGenerator::fixPathForFile(const QMakeLocalFileName &file, bool forOpen)
 {

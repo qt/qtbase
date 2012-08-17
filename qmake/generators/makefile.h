@@ -83,7 +83,6 @@ class MakefileGenerator : protected QMakeSourceFileInfo
     QHash<QString, bool> init_compiler_already;
     QString chkdir, chkfile, chkglue;
     QString build_args(const QString &outdir=QString());
-    void checkMultipleDefinition(const QString &, const QString &);
 
     //internal caches
     mutable QHash<QString, QMakeLocalFileName> depHeuristicsCache;
