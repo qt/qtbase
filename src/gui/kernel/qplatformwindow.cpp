@@ -175,6 +175,19 @@ bool QPlatformWindow::isActive() const
 }
 
 /*!
+    Returns true if the window is a descendant of an embedded non-Qt window.
+    Example of an embedded non-Qt window is the parent window of an in-process QAxServer.
+
+    If \a parentWindow is nonzero, only check if the window is embedded in the
+    specified \a parentWindow.
+*/
+bool QPlatformWindow::isEmbedded(const QPlatformWindow *parentWindow) const
+{
+    Q_UNUSED(parentWindow);
+    return false;
+}
+
+/*!
     Requests setting the window state of this surface
     to \a type. Returns the actual state set.
 

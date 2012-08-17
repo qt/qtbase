@@ -424,6 +424,7 @@ QWindowsWindow::WindowData
     if (desktop) {                        // desktop widget. No frame, hopefully?
         result.hwnd = GetDesktopWindow();
         result.geometry = frameGeometry(result.hwnd, true);
+        result.embedded = false;
         if (QWindowsContext::verboseWindows)
             qDebug().nospace() << "Created desktop window " << w << result.hwnd;
         return result;
@@ -828,6 +829,21 @@ bool QWindowsWindow::isActive() const
         if (m_data.hwnd == activeHwnd || IsChild(activeHwnd, m_data.hwnd))
             return true;
     return false;
+}
+
+bool QWindowsWindow::isEmbedded(const QPlatformWindow *parentWindow) const
+{
+    if (parentWindow) {
+        const QWindowsWindow *ww = static_cast<const QWindowsWindow *>(parentWindow);
+        const HWND hwnd = ww->handle();
+        if (!IsChild(hwnd, m_data.hwnd))
+            return false;
+    }
+
+    if (!m_data.embedded && parent())
+        return parent()->isEmbedded(0);
+
+    return m_data.embedded;
 }
 
 // partially from QWidgetPrivate::show_sys()

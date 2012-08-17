@@ -103,6 +103,7 @@ public:
 
     virtual bool isExposed() const;
     virtual bool isActive() const;
+    virtual bool isEmbedded(const QPlatformWindow *parentWindow) const;
 
     virtual void propagateSizeHints();
 

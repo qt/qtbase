@@ -154,6 +154,7 @@ public:
     virtual void setVisible(bool visible);
     bool isVisible() const;
     virtual bool isActive() const;
+    virtual bool isEmbedded(const QPlatformWindow *parentWindow) const;
     virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
     virtual Qt::WindowState setWindowState(Qt::WindowState state);
 

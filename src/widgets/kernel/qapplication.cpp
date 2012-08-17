@@ -106,6 +106,7 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 #endif
 
 #include "qdatetime.h"
+#include <qpa/qplatformwindow.h>
 
 //#define ALIEN_DEBUG
 
@@ -2317,6 +2318,13 @@ bool QApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWin
                     p = w->transientParent();
                 w = p;
             }
+
+            // Embedded in-process windows are not visible in normal parent-child chain,
+            // so check the native parent chain, too.
+            const QPlatformWindow *platWin = window->handle();
+            const QPlatformWindow *modalPlatWin = modalWindow->handle();
+            if (platWin && modalPlatWin && platWin->isEmbedded(modalPlatWin))
+                return false;
         }
 
         Qt::WindowModality windowModality = modalWindow->windowModality();
