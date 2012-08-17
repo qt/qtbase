@@ -6,6 +6,9 @@ examples/*/*/*
 !examples/*/*/README
 examples/*/*/*[.]app
 !examples/declarative/*
+examples/tutorials/*/*/*
+!examples/tutorials/*/*/*[.]*
+!examples/tutorials/*/*/README
 !examples/tutorials/*
 !examples/tutorials/*/*
 !examples/ja_JP/*/*
@@ -60,6 +63,7 @@ bin/assistant*
 bin/designer*
 bin/dumpcpp*
 bin/idc*
+bin/jsondb*
 bin/linguist*
 bin/lrelease*
 bin/lupdate*
@@ -81,6 +85,7 @@ bin/qcollectiongenerator*
 bin/qdbus*
 bin/qhelpconverter*
 bin/qhelpgenerator*
+bin/qglinfo*
 bin/qtconfig*
 bin/xmlpatterns*
 bin/cetest*
@@ -94,6 +99,8 @@ bin/qmldebugger*
 bin/qml*
 bin/qttracereplay*
 bin/qt.conf
+bin/servicefw*
+bin/sfwlisten*
 configure.cache
 config.status
 config.summary
@@ -227,12 +234,16 @@ release
 tmp
 doc-build
 doc/html/*
+doc/qt*/*
 doc/qch
 doc-build
 .rcc
 .pch
 .metadata
 tmp-debug
+tmp-debug-shared
+tmp-release
+tmp-release-shared
 
 # Symbian build system generated files
 # ---------------------
