@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QSurface::SurfaceType
 
-    The SurfaceType enum describes what type of surface the.
+    The SurfaceType enum describes what type of surface this is.
 
     \value RasterSurface The surface is is composed of pixels and can be rendered to using
     a software rasterizer like Qt's raster paint engine.
@@ -77,22 +77,47 @@ QT_BEGIN_NAMESPACE
 
 
 /*!
-    QSize QSurface::size() const
+    \fn QSize QSurface::format() const
+
+    Returns the format of the surface.
+ */
+
+/*!
+    \fn QPlatformSurface *QSurface::surfaceHandle() const
+
+    Returns a handle to the platform-specific implementation of the surface.
+ */
+
+/*!
+    \fn SurfaceType QSurface::surfaceType() const
+
+    Returns the type of the surface.
+ */
+
+/*!
+    \fn QSize QSurface::size() const
 
     Returns the size of the surface in pixels.
  */
 
-
-
+/*!
+    Creates a surface with the given \a type.
+*/
 QSurface::QSurface(SurfaceClass type)
     : m_type(type), m_reserved(0)
 {
 }
 
+/*!
+    Destroys the surface.
+*/
 QSurface::~QSurface()
 {
 }
 
+/*!
+   Returns the surface class of this surface.
+ */
 QSurface::SurfaceClass QSurface::surfaceClass() const
 {
     return m_type;

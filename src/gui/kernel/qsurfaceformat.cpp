@@ -160,6 +160,17 @@ public:
 */
 
 /*!
+    \enum QSurfaceFormat::RenderableType
+
+    This enum specifies the rendering backend for the surface.
+
+    \value DefaultRenderableType The default, unspecified rendering method
+    \value OpenGL Desktop OpenGL rendering
+    \value OpenGLES OpenGL ES 2.0 rendering
+    \value OpenVG Open Vector Graphics rendering
+*/
+
+/*!
     \enum QSurfaceFormat::OpenGLContextProfile
 
     This enum is used to specify the OpenGL context profile, in
@@ -340,7 +351,7 @@ void QSurfaceFormat::setDepthBufferSize(int size)
 /*!
     Returns the depth buffer size.
 
-    \sa depth(), setDepth(), setDepthBufferSize()
+    \sa setDepthBufferSize(), setDepth(), depth()
 */
 int QSurfaceFormat::depthBufferSize() const
 {
@@ -348,9 +359,9 @@ int QSurfaceFormat::depthBufferSize() const
 }
 
 /*!
-    Set the swap behaviour of the surface.
+    Set the swap \a behavior of the surface.
 
-    The swap behaviour specifies whether single, double, or triple
+    The swap behavior specifies whether single, double, or triple
     buffering is desired. The default, SwapBehavior::DefaultSwapBehavior,
     gives the default swap behavior of the platform.
 */
@@ -439,7 +450,7 @@ int QSurfaceFormat::alphaBufferSize() const
 }
 
 /*!
-    Set the desired size in bits of the red channel of the color buffer.
+    Set the desired \a size in bits of the red channel of the color buffer.
 */
 void QSurfaceFormat::setRedBufferSize(int size)
 {
@@ -450,7 +461,7 @@ void QSurfaceFormat::setRedBufferSize(int size)
 }
 
 /*!
-    Set the desired size in bits of the green channel of the color buffer.
+    Set the desired \a size in bits of the green channel of the color buffer.
 */
 void QSurfaceFormat::setGreenBufferSize(int size)
 {
@@ -461,7 +472,7 @@ void QSurfaceFormat::setGreenBufferSize(int size)
 }
 
 /*!
-    Set the desired size in bits of the blue channel of the color buffer.
+    Set the desired \a size in bits of the blue channel of the color buffer.
 */
 void QSurfaceFormat::setBlueBufferSize(int size)
 {
@@ -472,7 +483,7 @@ void QSurfaceFormat::setBlueBufferSize(int size)
 }
 
 /*!
-    Set the desired size in bits of the alpha channel of the color buffer.
+    Set the desired \a size in bits of the alpha channel of the color buffer.
 */
 void QSurfaceFormat::setAlphaBufferSize(int size)
 {
@@ -483,7 +494,7 @@ void QSurfaceFormat::setAlphaBufferSize(int size)
 }
 
 /*!
-    Sets the desired renderable type.
+    Sets the desired renderable \a type.
 
     Chooses between desktop OpenGL, OpenGL ES, and OpenVG.
 */
@@ -506,7 +517,7 @@ QSurfaceFormat::RenderableType QSurfaceFormat::renderableType() const
 }
 
 /*!
-    Sets the desired OpenGL context profile.
+    Sets the desired OpenGL context \a profile.
 
     This setting is ignored if the requested OpenGL version is
     less than 3.2.
@@ -531,7 +542,7 @@ QSurfaceFormat::OpenGLContextProfile QSurfaceFormat::profile() const
 }
 
 /*!
-    Sets the desired major OpenGL version.
+    Sets the desired \a major OpenGL version.
 */
 void QSurfaceFormat::setMajorVersion(int major)
 {
@@ -552,7 +563,7 @@ int QSurfaceFormat::majorVersion() const
 }
 
 /*!
-    Sets the desired minor OpenGL version.
+    Sets the desired \a minor OpenGL version.
 
     The default version is 2.0.
 */
@@ -574,7 +585,7 @@ int QSurfaceFormat::minorVersion() const
 
 /*!
     Returns true if all the options of the two QSurfaceFormat objects
-    are equal.
+    \a a and \a b are equal.
 
     \relates QSurfaceFormat
 */
