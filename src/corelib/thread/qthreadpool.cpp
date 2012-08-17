@@ -268,7 +268,7 @@ void QThreadPoolPrivate::reset()
     isExiting = true;
     runnableReady.wakeAll();
 
-    do {
+    while (!allThreads.empty()) {
         // make a copy of the set so that we can iterate without the lock
         QSet<QThreadPoolThread *> allThreadsCopy = allThreads;
         allThreads.clear();
@@ -281,7 +281,7 @@ void QThreadPoolPrivate::reset()
 
         locker.relock();
         // repeat until all newly arrived threads have also completed
-    } while (!allThreads.isEmpty());
+    }
 
     waitingThreads = 0;
     expiredThreads.clear();
