@@ -46,46 +46,55 @@ QT_BEGIN_NAMESPACE
 
 /*!
     Returns true if the double \a {d} is equivalent to infinity.
+    \relates <QtGlobal>
 */
 Q_CORE_EXPORT bool qIsInf(double d) { return qt_is_inf(d); }
 
 /*!
     Returns true if the double \a {d} is not a number (NaN).
+    \relates <QtGlobal>
 */
 Q_CORE_EXPORT bool qIsNaN(double d) { return qt_is_nan(d); }
 
 /*!
     Returns true if the double \a {d} is a finite number.
+    \relates <QtGlobal>
 */
 Q_CORE_EXPORT bool qIsFinite(double d) { return qt_is_finite(d); }
 
 /*!
     Returns true if the float \a {f} is equivalent to infinity.
+    \relates <QtGlobal>
 */
 Q_CORE_EXPORT bool qIsInf(float f) { return qt_is_inf(f); }
 
 /*!
     Returns true if the float \a {f} is not a number (NaN).
+    \relates <QtGlobal>
 */
 Q_CORE_EXPORT bool qIsNaN(float f) { return qt_is_nan(f); }
 
 /*!
     Returns true if the float \a {f} is a finite number.
+    \relates <QtGlobal>
 */
 Q_CORE_EXPORT bool qIsFinite(float f) { return qt_is_finite(f); }
 
 /*!
     Returns the bit pattern of a signalling NaN as a double.
+    \relates <QtGlobal>
 */
 Q_CORE_EXPORT double qSNaN() { return qt_snan(); }
 
 /*!
     Returns the bit pattern of a quiet NaN as a double.
+    \relates <QtGlobal>
 */
 Q_CORE_EXPORT double qQNaN() { return qt_qnan(); }
 
 /*!
     Returns the bit pattern for an infinite number as a double.
+    \relates <QtGlobal>
 */
 Q_CORE_EXPORT double qInf() { return qt_inf(); }
 

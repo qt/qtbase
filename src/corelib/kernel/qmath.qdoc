@@ -58,6 +58,8 @@
 /*!
     \fn qreal qFabs(qreal v)
     Returns the absolute value of \a v as a qreal.
+
+    \relates <QtCore/qmath.h>
 */
 
 /*!

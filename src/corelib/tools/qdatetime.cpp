@@ -275,7 +275,7 @@ QDate::QDate(int y, int m, int d)
 
 
 /*!
-    \fn bool isValid() const
+    \fn bool QDate::isValid() const
 
     Returns true if this date is valid; otherwise returns false.
 

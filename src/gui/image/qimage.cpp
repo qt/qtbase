@@ -594,6 +594,7 @@ bool QImageData::checkForAlphaPixels() const
 
 /*!
     \typedef QImageCleanupFunction
+    \relates QImage
     \since 5.0
 
     A function with the following signature that can be used to
