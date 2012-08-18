@@ -72,6 +72,7 @@ private:
     void generateSignal(FunctionDef *def, int index);
     void generatePluginMetaData();
     QMultiMap<QByteArray, int> automaticPropertyMetaTypesHelper();
+    QMap<int, QMultiMap<QByteArray, int> > methodsWithAutomaticTypesHelper(const QList<FunctionDef> &methodList);
 
     void strreg(const QByteArray &); // registers a string
     int stridx(const QByteArray &); // returns a string's id

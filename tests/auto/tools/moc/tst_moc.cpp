@@ -550,6 +550,7 @@ private slots:
     void explicitOverrideControl_data();
     void explicitOverrideControl();
     void autoPropertyMetaTypeRegistration();
+    void autoMethodArgumentMetaTypeRegistration();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -2332,6 +2333,68 @@ struct NamespacedNonQObject {};
 }
 Q_DECLARE_METATYPE(SomeNamespace::NamespacedNonQObject)
 
+// Need different types for the invokable method tests because otherwise the registration
+// done in the property test would interfere.
+
+class CustomQObject2 : public QObject
+{
+    Q_OBJECT
+    Q_ENUMS(Number)
+public:
+    enum Number {
+      Zero,
+      One,
+      Two
+    };
+    explicit CustomQObject2(QObject *parent = 0)
+      : QObject(parent)
+    {
+    }
+};
+
+Q_DECLARE_METATYPE(CustomQObject2::Number)
+
+typedef CustomQObject2* CustomQObject2Star;
+Q_DECLARE_METATYPE(CustomQObject2Star);
+
+namespace SomeNamespace2 {
+
+class NamespacedQObject2 : public QObject
+{
+    Q_OBJECT
+public:
+    explicit NamespacedQObject2(QObject *parent = 0)
+      : QObject(parent)
+    {
+
+    }
+};
+
+struct NamespacedNonQObject2 {};
+}
+Q_DECLARE_METATYPE(SomeNamespace2::NamespacedNonQObject2)
+
+
+struct CustomObject3 {};
+struct CustomObject4 {};
+struct CustomObject5 {};
+struct CustomObject6 {};
+struct CustomObject7 {};
+struct CustomObject8 {};
+struct CustomObject9 {};
+struct CustomObject10 {};
+struct CustomObject11 {};
+
+Q_DECLARE_METATYPE(CustomObject3)
+Q_DECLARE_METATYPE(CustomObject4)
+Q_DECLARE_METATYPE(CustomObject5)
+Q_DECLARE_METATYPE(CustomObject6)
+Q_DECLARE_METATYPE(CustomObject7)
+Q_DECLARE_METATYPE(CustomObject8)
+Q_DECLARE_METATYPE(CustomObject9)
+Q_DECLARE_METATYPE(CustomObject10)
+Q_DECLARE_METATYPE(CustomObject11)
+
 class AutoRegistrationObject : public QObject
 {
     Q_OBJECT
@@ -2424,6 +2487,29 @@ public:
     {
         return SomeNamespace::NamespacedNonQObject();
     }
+
+public slots:
+    void objectSlot(QObject*) {}
+    void customObjectSlot(CustomQObject2*) {}
+    void sharedPointerSlot(QSharedPointer<CustomQObject2>) {}
+    void weakPointerSlot(QWeakPointer<CustomQObject2>) {}
+    void trackingPointerSlot(QPointer<CustomQObject2>) {}
+    void listIntSlot(QList<int>) {}
+    void vectorVariantSlot(QVector<QVariant>) {}
+    void listCustomObjectSlot(QList<CustomQObject2*>) {}
+    void vectorListIntSlot(QVector<QList<int> >) {}
+    void vectorListCustomObjectSlot(QVector<QList<CustomQObject2*> >) {}
+    void enumSlot(CustomQObject2::Number) {}
+    void typedefSlot(CustomQObject2Star) {}
+    void namespacedQObjectSlot(SomeNamespace2::NamespacedQObject2*) {}
+    void namespacedNonQObjectSlot(SomeNamespace2::NamespacedNonQObject2) {}
+
+    void bu1(int, CustomObject3) {}
+    void bu2(CustomObject4, int) {}
+    void bu3(CustomObject5, CustomObject6) {}
+    void bu4(CustomObject7, int, CustomObject8) {}
+    void bu5(int, CustomObject9, CustomObject10) {}
+    void bu6(int, CustomObject11, int) {}
 };
 
 void tst_Moc::autoPropertyMetaTypeRegistration()
@@ -2463,6 +2549,154 @@ void tst_Moc::autoPropertyMetaTypeRegistration()
         ;
 
     QCOMPARE(propertyMetaTypeIds, expectedMetaTypeIds);
+}
+
+template<typename T>
+struct DefaultConstructor
+{
+  static inline T construct() { return T(); }
+};
+
+template<typename T>
+struct DefaultConstructor<T*>
+{
+  static inline T* construct() { return 0; }
+};
+
+void tst_Moc::autoMethodArgumentMetaTypeRegistration()
+{
+    AutoRegistrationObject aro;
+
+    QVector<int> methodArgMetaTypeIds;
+
+    const QMetaObject *metaObject = aro.metaObject();
+
+    int i = metaObject->methodOffset(); // Start after QObject built-in slots;
+
+#define TYPE_LOOP(TYPE) \
+    { \
+        const QMetaMethod method = metaObject->method(i); \
+        for (int j = 0; j < method.parameterCount(); ++j) \
+            methodArgMetaTypeIds.append(method.parameterType(j)); \
+        QVERIFY(method.invoke(&aro, Q_ARG(TYPE, DefaultConstructor<TYPE>::construct()))); \
+        ++i; \
+    }
+
+#define FOR_EACH_SLOT_ARG_TYPE(F) \
+    F(QObject*) \
+    F(CustomQObject2*) \
+    F(QSharedPointer<CustomQObject2>) \
+    F(QWeakPointer<CustomQObject2>) \
+    F(QPointer<CustomQObject2>) \
+    F(QList<int>) \
+    F(QVector<QVariant>) \
+    F(QList<CustomQObject2*>) \
+    F(QVector<QList<int> >) \
+    F(QVector<QList<CustomQObject2*> >) \
+    F(CustomQObject2::Number) \
+    F(CustomQObject2Star) \
+    F(SomeNamespace2::NamespacedQObject2*) \
+    F(SomeNamespace2::NamespacedNonQObject2)
+
+    // Note: mulit-arg slots are tested below.
+
+    FOR_EACH_SLOT_ARG_TYPE(TYPE_LOOP)
+
+#undef TYPE_LOOP
+#undef FOR_EACH_SLOT_ARG_TYPE
+
+    QVector<int> expectedMetaTypeIds = QVector<int>()
+        << QMetaType::QObjectStar
+        << qMetaTypeId<CustomQObject2*>()
+        << qMetaTypeId<QSharedPointer<CustomQObject2> >()
+        << qMetaTypeId<QWeakPointer<CustomQObject2> >()
+        << qMetaTypeId<QPointer<CustomQObject2> >()
+        << qMetaTypeId<QList<int> >()
+        << qMetaTypeId<QVector<QVariant> >()
+        << qMetaTypeId<QList<CustomQObject2*> >()
+        << qMetaTypeId<QVector<QList<int> > >()
+        << qMetaTypeId<QVector<QList<CustomQObject2*> > >()
+        << qMetaTypeId<CustomQObject2::Number>()
+        << qMetaTypeId<CustomQObject2Star>()
+        << qMetaTypeId<SomeNamespace2::NamespacedQObject2*>()
+        << qMetaTypeId<SomeNamespace2::NamespacedNonQObject2>()
+        ;
+
+    QCOMPARE(methodArgMetaTypeIds, expectedMetaTypeIds);
+
+
+    QVector<int> methodMultiArgMetaTypeIds;
+
+    {
+        const QMetaMethod method = metaObject->method(i);
+        QCOMPARE(method.name(), QByteArray("bu1"));
+        for (int j = 0; j < method.parameterCount(); ++j)
+            methodMultiArgMetaTypeIds.append(method.parameterType(j));
+        QVERIFY(method.invoke(&aro, Q_ARG(int, 42), Q_ARG(CustomObject3, CustomObject3())));
+        ++i;
+    }
+    {
+        const QMetaMethod method = metaObject->method(i);
+        QCOMPARE(method.name(), QByteArray("bu2"));
+        for (int j = 0; j < method.parameterCount(); ++j)
+            methodMultiArgMetaTypeIds.append(method.parameterType(j));
+        QVERIFY(method.invoke(&aro, Q_ARG(CustomObject4, CustomObject4()), Q_ARG(int, 42)));
+        ++i;
+    }
+    {
+        const QMetaMethod method = metaObject->method(i);
+        QCOMPARE(method.name(), QByteArray("bu3"));
+        for (int j = 0; j < method.parameterCount(); ++j)
+            methodMultiArgMetaTypeIds.append(method.parameterType(j));
+        QVERIFY(method.invoke(&aro, Q_ARG(CustomObject5, CustomObject5()), Q_ARG(CustomObject6, CustomObject6())));
+        ++i;
+    }
+    {
+        const QMetaMethod method = metaObject->method(i);
+        QCOMPARE(method.name(), QByteArray("bu4"));
+        for (int j = 0; j < method.parameterCount(); ++j)
+            methodMultiArgMetaTypeIds.append(method.parameterType(j));
+        QVERIFY(method.invoke(&aro, Q_ARG(CustomObject7, CustomObject7()), Q_ARG(int, 42), Q_ARG(CustomObject8, CustomObject8())));
+        ++i;
+    }
+    {
+        const QMetaMethod method = metaObject->method(i);
+        QCOMPARE(method.name(), QByteArray("bu5"));
+        for (int j = 0; j < method.parameterCount(); ++j)
+            methodMultiArgMetaTypeIds.append(method.parameterType(j));
+        QVERIFY(method.invoke(&aro, Q_ARG(int, 42), Q_ARG(CustomObject9, CustomObject9()), Q_ARG(CustomObject10, CustomObject10())));
+        ++i;
+    }
+    {
+        const QMetaMethod method = metaObject->method(i);
+        QCOMPARE(method.name(), QByteArray("bu6"));
+        for (int j = 0; j < method.parameterCount(); ++j)
+            methodMultiArgMetaTypeIds.append(method.parameterType(j));
+        QVERIFY(method.invoke(&aro, Q_ARG(int, 42), Q_ARG(CustomObject11, CustomObject11()), Q_ARG(int, 42)));
+        ++i;
+    }
+
+    QVector<int> expectedMultiMetaTypeIds = QVector<int>()
+        << QMetaType::Int
+        << qMetaTypeId<CustomObject3>()
+        << qMetaTypeId<CustomObject4>()
+        << QMetaType::Int
+        << qMetaTypeId<CustomObject5>()
+        << qMetaTypeId<CustomObject6>()
+        << qMetaTypeId<CustomObject7>()
+        << QMetaType::Int
+        << qMetaTypeId<CustomObject8>()
+        << QMetaType::Int
+        << qMetaTypeId<CustomObject9>()
+        << qMetaTypeId<CustomObject10>()
+        << QMetaType::Int
+        << qMetaTypeId<CustomObject11>()
+        << QMetaType::Int
+        ;
+
+    QCOMPARE(methodMultiArgMetaTypeIds, expectedMultiMetaTypeIds);
+
+
 }
 
 QTEST_MAIN(tst_Moc)

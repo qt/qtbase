@@ -1778,7 +1778,16 @@ int QMetaMethod::parameterType(int index) const
         return QMetaType::UnknownType;
     if (index >= QMetaMethodPrivate::get(this)->parameterCount())
         return QMetaType::UnknownType;
-    return QMetaMethodPrivate::get(this)->parameterType(index);
+
+    int type = QMetaMethodPrivate::get(this)->parameterType(index);
+    if (type != QMetaType::UnknownType)
+        return type;
+
+    void *argv[] = { &type, &index };
+    mobj->static_metacall(QMetaObject::RegisterMethodArgumentMetaType, QMetaMethodPrivate::get(this)->ownMethodIndex(), argv);
+    if (type != -1)
+        return type;
+    return QMetaType::UnknownType;
 }
 
 /*!
@@ -2160,15 +2169,21 @@ bool QMetaMethod::invoke(QObject *object,
                 args[i] = QMetaType::create(types[i], param[i]);
                 ++nargs;
             } else if (param[i]) {
-                qWarning("QMetaMethod::invoke: Unable to handle unregistered datatype '%s'",
-                         typeNames[i]);
-                for (int x = 1; x < i; ++x) {
-                    if (types[x] && args[x])
-                        QMetaType::destroy(types[x], args[x]);
+                // Try to register the type and try again before reporting an error.
+                void *argv[] = { &types[i], &i };
+                QMetaObject::metacall(object, QMetaObject::RegisterMethodArgumentMetaType,
+                                      idx_relative + idx_offset, argv);
+                if (types[i] == -1) {
+                    qWarning("QMetaMethod::invoke: Unable to handle unregistered datatype '%s'",
+                            typeNames[i]);
+                    for (int x = 1; x < i; ++x) {
+                        if (types[x] && args[x])
+                            QMetaType::destroy(types[x], args[x]);
+                    }
+                    free(types);
+                    free(args);
+                    return false;
                 }
-                free(types);
-                free(args);
-                return false;
             }
         }
 

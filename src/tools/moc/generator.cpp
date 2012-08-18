@@ -869,6 +869,16 @@ void Generator::generateMetacall()
         fprintf(out, "        if (_id < %d)\n", methodList.size());
         fprintf(out, "            qt_static_metacall(this, _c, _id, _a);\n");
         fprintf(out, "        _id -= %d;\n    }", methodList.size());
+
+        fprintf(out, " else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {\n");
+        fprintf(out, "        if (_id < %d)\n", methodList.size());
+
+        if (methodsWithAutomaticTypesHelper(methodList).isEmpty())
+            fprintf(out, "            *reinterpret_cast<int*>(_a[0]) = -1;\n");
+        else
+            fprintf(out, "            qt_static_metacall(this, _c, _id, _a);\n");
+        fprintf(out, "        _id -= %d;\n    }", methodList.size());
+
     }
 
     if (cdef->propertyList.size()) {
@@ -1106,6 +1116,20 @@ QMultiMap<QByteArray, int> Generator::automaticPropertyMetaTypesHelper()
     return automaticPropertyMetaTypes;
 }
 
+QMap<int, QMultiMap<QByteArray, int> > Generator::methodsWithAutomaticTypesHelper(const QList<FunctionDef> &methodList)
+{
+    QMap<int, QMultiMap<QByteArray, int> > methodsWithAutomaticTypes;
+    for (int i = 0; i < methodList.size(); ++i) {
+        const FunctionDef &f = methodList.at(i);
+        for (int j = 0; j < f.arguments.count(); ++j) {
+            const QByteArray argType = f.arguments.at(j).normalizedType;
+            if (registerableMetaType(argType) && !isBuiltinType(argType))
+                methodsWithAutomaticTypes[i].insert(argType, j);
+        }
+    }
+    return methodsWithAutomaticTypes;
+}
+
 void Generator::generateStaticMetacall()
 {
     fprintf(out, "void %s::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)\n{\n",
@@ -1197,6 +1221,32 @@ void Generator::generateStaticMetacall()
         fprintf(out, "        }\n");
         fprintf(out, "    }");
         needElse = true;
+
+        QMap<int, QMultiMap<QByteArray, int> > methodsWithAutomaticTypes = methodsWithAutomaticTypesHelper(methodList);
+
+        if (!methodsWithAutomaticTypes.isEmpty()) {
+            fprintf(out, " else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {\n");
+            fprintf(out, "        switch (_id) {\n");
+            fprintf(out, "        default: *reinterpret_cast<int*>(_a[0]) = -1; break;\n");
+            QMap<int, QMultiMap<QByteArray, int> >::const_iterator it = methodsWithAutomaticTypes.constBegin();
+            const QMap<int, QMultiMap<QByteArray, int> >::const_iterator end = methodsWithAutomaticTypes.constEnd();
+            for ( ; it != end; ++it) {
+                fprintf(out, "        case %d:\n", it.key());
+                fprintf(out, "            switch (*reinterpret_cast<int*>(_a[1])) {\n");
+                fprintf(out, "            default: *reinterpret_cast<int*>(_a[0]) = -1; break;\n");
+                foreach (const QByteArray &key, it->uniqueKeys()) {
+                    foreach (int argumentID, it->values(key))
+                        fprintf(out, "            case %d:\n", argumentID);
+                    fprintf(out, "                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< %s >(); break;\n", key.constData());
+                }
+                fprintf(out, "            }\n");
+                fprintf(out, "            break;\n");
+            }
+            fprintf(out, "        }\n");
+            fprintf(out, "    }");
+            isUsed_a = true;
+        }
+
     }
     if (!cdef->signalList.isEmpty()) {
         Q_ASSERT(needElse); // if there is signal, there was method.
@@ -1265,7 +1315,7 @@ void Generator::generateStaticMetacall()
 
     if (methodList.isEmpty()) {
         fprintf(out, "    Q_UNUSED(_o);\n");
-        if (cdef->constructorList.isEmpty() && automaticPropertyMetaTypes.isEmpty()) {
+        if (cdef->constructorList.isEmpty() && automaticPropertyMetaTypes.isEmpty() && methodsWithAutomaticTypesHelper(methodList).isEmpty()) {
             fprintf(out, "    Q_UNUSED(_id);\n");
             fprintf(out, "    Q_UNUSED(_c);\n");
         }
