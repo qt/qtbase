@@ -414,7 +414,7 @@ QFontComboBox::FontFilters QFontComboBox::fontFilters() const
     \property QFontComboBox::currentFont
     \brief the currently selected font
 
-    \sa currentFontChanged(), currentIndex, currentText
+    \sa currentIndex, currentText
 */
 QFont QFontComboBox::currentFont() const
 {
