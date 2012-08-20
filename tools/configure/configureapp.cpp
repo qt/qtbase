@@ -1482,7 +1482,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "STYLE_WINDOWSMOBILE" ] = "yes";
         dictionary[ "STYLE_MOTIF" ]         = "no";
         dictionary[ "STYLE_CDE" ]           = "no";
-        dictionary[ "FREETYPE" ]            = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "RTTI" ]                = "no";

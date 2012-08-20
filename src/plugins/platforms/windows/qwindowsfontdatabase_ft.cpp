@@ -47,6 +47,7 @@
 #include FT_TRUETYPE_TABLES_H
 
 #include <QtCore/QDir>
+#include <QtCore/QDirIterator>
 #include <QtCore/QSettings>
 #include <QtGui/private/qfontengine_ft_p.h>
 #include <QtGui/QGuiApplication>
@@ -189,6 +190,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
             writingSystems.setSupported(ws);
     }
 
+#ifndef Q_OS_WINCE
     const QSettings fontRegistry(QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts"),
                                 QSettings::NativeFormat);
 
@@ -225,6 +227,51 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
         if (!value.isEmpty())
             break;
     }
+#else
+    QString value;
+    int index = 0;
+
+    static QHash<QString, QString> fontCache;
+
+    if (fontCache.isEmpty()) {
+        QSettings settings(QSettings::SystemScope, QStringLiteral("Qt-Project"), QStringLiteral("Qtbase"));
+        settings.beginGroup(QStringLiteral("CEFontCache"));
+
+        foreach (const QString &fontName, settings.allKeys()) {
+            const QString fontFileName = settings.value(fontName).toString();
+            fontCache.insert(fontName, fontFileName);
+        }
+
+        settings.endGroup(); // CEFontCache
+    }
+
+    value = fontCache.value(faceName);
+
+    //Fallback if we havent cached the font yet or the font got removed/renamed iterate again over all fonts
+    if (value.isEmpty() || !QFile::exists(value)) {
+        QSettings settings(QSettings::SystemScope, QStringLiteral("Qt-Project"), QStringLiteral("Qtbase"));
+        settings.beginGroup(QStringLiteral("CEFontCache"));
+
+        //empty the cache first, as it seems that it is dirty
+        foreach (const QString &fontName, settings.allKeys())
+            settings.remove(fontName);
+
+        QDirIterator it(QStringLiteral("/Windows"), QStringList(QStringLiteral("*.ttf")), QDir::Files | QDir::Hidden | QDir::System);
+
+        while (it.hasNext()) {
+            const QString fontFile = it.next();
+            const QString fontName = QBasicFontDatabase::fontNameFromTTFile(fontFile);
+            if (fontName.isEmpty())
+                continue;
+            fontCache.insert(fontName, fontFile);
+            settings.setValue(fontName, fontFile);
+        }
+
+        value = fontCache.value(faceName);
+
+        settings.endGroup(); // CEFontCache
+    }
+#endif
 
     if (value.isEmpty())
         return false;
