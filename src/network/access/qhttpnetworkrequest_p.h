@@ -55,6 +55,7 @@
 #ifndef QT_NO_HTTP
 
 #include <private/qhttpnetworkheader_p.h>
+#include <qmetatype.h>
 
 QT_BEGIN_NAMESPACE
 
