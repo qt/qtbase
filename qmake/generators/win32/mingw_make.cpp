@@ -259,7 +259,6 @@ void MingwMakefileGenerator::init()
         project->values("QMAKE_LIBS") += escapeFilePaths(project->values("RES_FILE"));
     }
 
-    QString targetfilename = project->values("TARGET").first();
     QStringList &configs = project->values("CONFIG");
 
     if(project->isActiveConfig("qt_dll"))

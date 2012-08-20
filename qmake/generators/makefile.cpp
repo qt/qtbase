@@ -1262,7 +1262,6 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                 }
                 bool is_target = (wild == fileFixify(var("TARGET"), FileFixifyAbsolute));
                 if(is_target || exists(wild)) { //real file or target
-                    QString file = wild;
                     QFileInfo fi(fileInfo(wild));
                     QString dst_file = filePrefixRoot(root, dst_dir);
                     if(fi.isDir() && project->isActiveConfig("copy_dir_files")) {
@@ -1822,7 +1821,6 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             t << " " << escapeDependencyPath(replaceExtraCompilerVariables(tmp_out, input, QString()));
         } else {
             for(QStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
-                QString in = Option::fixPathToTargetOS((*input), false);
                 t << " " << escapeDependencyPath(replaceExtraCompilerVariables(tmp_out, (*input), QString()));
             }
         }

@@ -536,7 +536,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
         const QStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
         for(QStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
-            QString tmp_out = project->first((*it) + ".output");
             if(project->isEmpty((*it) + ".output"))
                 continue;
             QString name = (*it);

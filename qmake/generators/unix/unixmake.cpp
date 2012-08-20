@@ -210,7 +210,6 @@ UnixMakefileGenerator::init()
                                             pchBaseName + project->first("QMAKE_PCH_OUTPUT_EXT"));
             } else {
                 // gcc style (including clang_pch_style)
-                QString headerPrefix = project->first("QMAKE_PRECOMP_PREFIX");
                 QString headerSuffix;
                 if (project->isActiveConfig("clang_pch_style"))
                     headerSuffix = project->first("QMAKE_PCH_OUTPUT_EXT");
