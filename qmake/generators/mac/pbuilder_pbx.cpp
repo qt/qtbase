@@ -792,8 +792,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             for(int x = 0; x < tmp.count();) {
                 bool remove = false;
                 QString library, name, opt = tmp[x].trimmed();
-                if(opt.length() >= 2 && (opt[0] == '"' || opt[0] == '\'') &&
-                   opt[(int) opt.length()-1] == opt[0])
+                if (opt.length() >= 2 && (opt.at(0) == '"' || opt.at(0) == '\'') && opt.endsWith(opt.at(0)))
                     opt = opt.mid(1, opt.length()-2);
                 if(opt.startsWith("-L")) {
                     QString r = opt.right(opt.length() - 2);
@@ -867,7 +866,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                             break;
                         }
                     }
-                } else if(opt.left(1) != "-") {
+                } else if (!opt.startsWith('-')) {
                     if(exists(opt)) {
                         remove = true;
                         library = opt;
@@ -981,7 +980,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << "files = (" << "\n";
         if(!project->isEmpty("ICON")) {
             QString icon = project->first("ICON");
-            if(icon.length() >= 2 && (icon[0] == '"' || icon[0] == '\'') && icon[(int)icon.length()-1] == icon[0])
+            if (icon.length() >= 2 && (icon.at(0) == '"' || icon.at(0) == '\'') && icon.endsWith(icon.at(0)))
                 icon = icon.mid(1, icon.length()-2);
             t << "\t\t\t\t" << keyFor(icon + ".BUILDABLE") << ",\n";
         }

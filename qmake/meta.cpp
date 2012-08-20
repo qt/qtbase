@@ -176,7 +176,7 @@ QMakeMetaInfo::readLibtoolFile(const QString &f)
         } else if(it.key() == "dependency_libs") {
             if(lst.count() == 1) {
                 QString dep = lst.first();
-                if((dep.startsWith("'") || dep.startsWith("\"")) && dep.endsWith(QString(dep[0])))
+                if ((dep.startsWith('\'') || dep.startsWith('"')) && dep.endsWith(dep.at(0)))
                     dep = dep.mid(1, dep.length() - 2);
                 lst = dep.trimmed().split(" ");
             }
