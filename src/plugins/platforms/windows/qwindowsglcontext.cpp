@@ -807,8 +807,8 @@ QOpenGLStaticContext::QOpenGLStaticContext() :
     wglSwapInternalExt((WglSwapInternalExt)wglGetProcAddress("wglSwapIntervalEXT")),
     wglGetSwapInternalExt((WglGetSwapInternalExt)wglGetProcAddress("wglGetSwapIntervalEXT"))
 {
-    if (extensionNames.startsWith(SAMPLE_BUFFER_EXTENSION" ")
-            || extensionNames.indexOf(" "SAMPLE_BUFFER_EXTENSION" ") != -1)
+    if (extensionNames.startsWith(SAMPLE_BUFFER_EXTENSION " ")
+            || extensionNames.indexOf(" " SAMPLE_BUFFER_EXTENSION " ") != -1)
         extensions |= SampleBuffers;
 }
 
