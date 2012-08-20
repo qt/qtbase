@@ -46,9 +46,6 @@
     \li Les entrées/sorties
     \endlist
 
-    Si c'est votre premier contact avec Qt, lisez \l{How to Learn Qt}{Comment apprendre Qt}
-    si ce n'est déjà fait.
-
     Le code source du tutoriel est distribué avec Qt dans le dossier \c examples/tutorials/addressbook
 
     Les chapitres du tutoriel:
@@ -985,7 +982,7 @@
     du groupe de boutons sur la droite.
 
     Dans la méthode \c exportAsVCard(), nous commençons par extraire le
-    nom du contact dans \n name. Nous déclarons \c firstname, \c lastName et
+    nom du contact dans \c name. Nous déclarons \c firstname, \c lastName et
     \c nameList.
     Ensuite, nous cherchons la position du premier espace blanc de \c name.
     Si il y a un espace, nous séparons le nom du contact en \c firstName et
