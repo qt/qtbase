@@ -545,7 +545,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
         if (!excludeUserEvents) {
             while (!d->queuedUserInputEvents.isEmpty()) {
                 event = static_cast<NSEvent *>(d->queuedUserInputEvents.takeFirst());
-                if (!filterEvent(event)) {
+                if (!filterNativeEvent("NSEvent", event, 0)) {
                     [NSApp sendEvent:event];
                     retVal = true;
                 }
@@ -622,7 +622,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                             d->queuedUserInputEvents.append(event);
                             continue;
                         }
-                        if (!filterEvent(event)) {
+                        if (!filterNativeEvent("NSEvent", event, 0)) {
                             [NSApp sendEvent:event];
                             retVal = true;
                         }
@@ -643,7 +643,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                             continue;
                         }
                     }
-                    if (!filterEvent(event)) {
+                    if (!filterNativeEvent("NSEvent", event, 0)) {
                         [NSApp sendEvent:event];
                         retVal = true;
                     }
