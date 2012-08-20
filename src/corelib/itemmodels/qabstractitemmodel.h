@@ -58,7 +58,6 @@ class QPersistentModelIndex;
 class Q_CORE_EXPORT QModelIndex
 {
     friend class QAbstractItemModel;
-    friend class QProxyModel;
 public:
     inline QModelIndex() : r(-1), c(-1), p(0), m(0) {}
     // compiler-generated copy/move ctors/assignment operators are fine!

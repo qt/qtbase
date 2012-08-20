@@ -483,6 +483,10 @@ QtWidgets
 * QAbstractItemView and derived classes only emit the clicked() signal on left click now,
   instead of on all mouse clicks.
 
+* QProxyModel has been removed. It is deprecated since early Qt 4 versions and replaced
+  by QAbstractProxyModel and related classes. A copy of QProxyModel is available
+  in the UiHelpers library.
+
 QtNetwork
 ---------
 * QHostAddress::isLoopback() API added. Returns true if the address is

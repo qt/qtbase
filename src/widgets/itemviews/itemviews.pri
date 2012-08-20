@@ -21,8 +21,6 @@ HEADERS += \
 	itemviews/qtreewidget.h \
 	itemviews/qtreewidget_p.h \
 	itemviews/qwidgetitemdata_p.h \
-	itemviews/qproxymodel.h \
-	itemviews/qproxymodel_p.h \
 	itemviews/qitemeditorfactory.h \
 	itemviews/qitemeditorfactory_p.h \
 	itemviews/qtreewidgetitemiterator.h \
@@ -46,7 +44,6 @@ SOURCES += \
 	itemviews/qlistwidget.cpp \
 	itemviews/qtablewidget.cpp \
 	itemviews/qtreewidget.cpp \
-	itemviews/qproxymodel.cpp \
 	itemviews/qitemeditorfactory.cpp \
 	itemviews/qtreewidgetitemiterator.cpp \
     itemviews/qdatawidgetmapper.cpp \

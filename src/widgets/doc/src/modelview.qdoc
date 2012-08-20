@@ -692,7 +692,7 @@
         \row
             \li  Address Book with sorting
             \li
-            \li  QProxyModel
+            \li  QSortfilterProxyModel
             \li  Introducing sort and filter capabilities
             \li  Book2, Chapter 8.5
         \row
