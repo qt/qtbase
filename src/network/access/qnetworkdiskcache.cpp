@@ -197,7 +197,7 @@ QIODevice *QNetworkDiskCache::prepare(const QNetworkCacheMetaData &metaData)
 
     foreach (const QNetworkCacheMetaData::RawHeader &header, metaData.rawHeaders()) {
         if (header.first.toLower() == "content-length") {
-            qint64 size = header.second.toInt();
+            const qint64 size = header.second.toLongLong();
             if (size > (maximumCacheSize() * 3)/4)
                 return 0;
             break;
