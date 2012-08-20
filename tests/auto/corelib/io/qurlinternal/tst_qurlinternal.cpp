@@ -44,15 +44,7 @@
 #include <QtTest/QtTest>
 
 #include "private/qtldurl_p.h"
-
-QT_BEGIN_NAMESPACE
-Q_CORE_EXPORT extern void qt_nameprep(QString *source, int from);
-Q_CORE_EXPORT extern bool qt_check_std3rules(const QChar *, int);
-Q_CORE_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString *output);
-Q_CORE_EXPORT QString qt_punycodeDecoder(const QString &pc);
-Q_CORE_EXPORT int qt_urlRecode(QString &appendTo, const QChar *input, const QChar *end,
-                               QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications = 0);
-QT_END_NAMESPACE
+#include "private/qurl_p.h"
 
 // For testsuites
 #define IDNA_ACE_PREFIX "xn--"

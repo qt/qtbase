@@ -173,7 +173,7 @@ public:
 
 // in qurlrecode.cpp
 extern Q_AUTOTEST_EXPORT int qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
-                                          QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications);
+                                          QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications = 0);
 
 // in qurlidna.cpp
 enum AceOperation { ToAceOnly, NormalizeAce };
