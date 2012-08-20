@@ -655,20 +655,10 @@ static void loadMatrix(const QMatrix4x4& m)
 {
     // static to prevent glLoadMatrixf to fail on certain drivers
     static GLfloat mat[16];
-    const qreal *data = m.constData();
+    const float *data = m.constData();
     for (int index = 0; index < 16; ++index)
         mat[index] = data[index];
     glLoadMatrixf(mat);
-}
-
-static void multMatrix(const QMatrix4x4& m)
-{
-    // static to prevent glMultMatrixf to fail on certain drivers
-    static GLfloat mat[16];
-    const qreal *data = m.constData();
-    for (int index = 0; index < 16; ++index)
-        mat[index] = data[index];
-    glMultMatrixf(mat);
 }
 
 // If one of the boxes should not be rendered, set excludeBox to its index.
@@ -722,7 +712,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         glPushMatrix();
         QMatrix4x4 m;
         m.rotate(m_trackBalls[1].rotation());
-        multMatrix(m);
+        glMultMatrixf(m.constData());
 
         glRotatef(360.0f * i / m_programs.size(), 0.0f, 0.0f, 1.0f);
         glTranslatef(2.0f, 0.0f, 0.0f);
@@ -755,7 +745,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
     if (-1 != excludeBox) {
         QMatrix4x4 m;
         m.rotate(m_trackBalls[0].rotation());
-        multMatrix(m);
+        glMultMatrixf(m.constData());
 
         if (glActiveTexture) {
             if (m_dynamicCubemap)

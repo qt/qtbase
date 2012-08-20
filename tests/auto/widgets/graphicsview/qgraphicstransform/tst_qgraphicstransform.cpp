@@ -156,31 +156,39 @@ void tst_QGraphicsTransform::scale()
     QCOMPARE(t3.map(QPointF(4, 5)), QPointF(31 / t3.m33(), 8 / t3.m33()));
 }
 
-// QMatrix4x4 uses float internally, whereas QTransform uses qreal.
-// This can lead to issues with qFuzzyCompare() where it uses double
-// precision to compare values that have no more than float precision
-// after conversion from QMatrix4x4 to QTransform.  The following
-// definitions correct for the difference.
-static inline bool fuzzyCompare(qreal p1, qreal p2)
+// fuzzyCompareNonZero is a very slightly looser version of qFuzzyCompare
+// for use with values that are not very close to zero
+Q_DECL_CONSTEXPR static inline bool fuzzyCompareNonZero(float p1, float p2)
 {
-    // increase delta on small machines using float instead of double
-    if (sizeof(qreal) == sizeof(float))
-        return (qAbs(p1 - p2) <= 0.00003f * qMin(qAbs(p1), qAbs(p2)));
-    else
-        return (qAbs(p1 - p2) <= 0.00001f * qMin(qAbs(p1), qAbs(p2)));
+    return (qAbs(p1 - p2) <= 0.00003f * qMin(qAbs(p1), qAbs(p2)));
 }
 
-static bool fuzzyCompare(const QTransform& t1, const QTransform& t2)
+// This is a more tolerant version of qFuzzyCompare that also handles the case
+// where one or more of the values being compare are close to zero
+static inline bool fuzzyCompare(float p1, float p2)
 {
-    return fuzzyCompare(t1.m11(), t2.m11()) &&
-           fuzzyCompare(t1.m12(), t2.m12()) &&
-           fuzzyCompare(t1.m13(), t2.m13()) &&
-           fuzzyCompare(t1.m21(), t2.m21()) &&
-           fuzzyCompare(t1.m22(), t2.m22()) &&
-           fuzzyCompare(t1.m23(), t2.m23()) &&
-           fuzzyCompare(t1.m31(), t2.m31()) &&
-           fuzzyCompare(t1.m32(), t2.m32()) &&
-           fuzzyCompare(t1.m33(), t2.m33());
+    if (qFuzzyIsNull(p1))
+        return qFuzzyIsNull(p2);
+    else if (qFuzzyIsNull(p2))
+        return false;
+    else
+        return fuzzyCompareNonZero(p1, p2);
+}
+
+// This compares two QTransforms by casting the elements to float. This is
+// necessary here because in this test one of the transforms is created from
+// a QMatrix4x4 which uses float storage.
+static bool fuzzyCompareAsFloat(const QTransform& t1, const QTransform& t2)
+{
+    return fuzzyCompare(float(t1.m11()), float(t2.m11())) &&
+           fuzzyCompare(float(t1.m12()), float(t2.m12())) &&
+           fuzzyCompare(float(t1.m13()), float(t2.m13())) &&
+           fuzzyCompare(float(t1.m21()), float(t2.m21())) &&
+           fuzzyCompare(float(t1.m22()), float(t2.m22())) &&
+           fuzzyCompare(float(t1.m23()), float(t2.m23())) &&
+           fuzzyCompare(float(t1.m31()), float(t2.m31())) &&
+           fuzzyCompare(float(t1.m32()), float(t2.m32())) &&
+           fuzzyCompare(float(t1.m33()), float(t2.m33()));
 }
 
 static inline bool fuzzyCompare(const QMatrix4x4& m1, const QMatrix4x4& m2)
@@ -221,7 +229,7 @@ void tst_QGraphicsTransform::rotation()
     QTransform res;
     res.rotate(40);
 
-    QVERIFY(fuzzyCompare(transform2D(rotation), res));
+    QVERIFY(fuzzyCompareAsFloat(transform2D(rotation), res));
 
     rotation.setOrigin(QVector3D(10, 10, 0));
     rotation.setAngle(90);
@@ -271,20 +279,14 @@ void tst_QGraphicsTransform::rotation3d()
     else
         expected.rotate(angle, axis);
 
-    QVERIFY(fuzzyCompare(transform2D(rotation), expected));
+    QVERIFY(fuzzyCompareAsFloat(transform2D(rotation), expected));
 
     // Check that "rotation" produces the 4x4 form of the 3x3 matrix.
     // i.e. third row and column are 0 0 1 0.
     t.setToIdentity();
     rotation.applyTo(&t);
     QMatrix4x4 r(expected);
-    if (sizeof(qreal) == sizeof(float) && angle == 268) {
-        // This test fails, on only this angle, when qreal == float
-        // because the deg2rad value in QTransform is not accurate
-        // enough to match what QMatrix4x4 is doing.
-    } else {
-        QVERIFY(fuzzyCompare(t, r));
-    }
+    QVERIFY(fuzzyCompare(t, r));
 
     //now let's check that a null vector will not change the transform
     rotation.setAxis(QVector3D(0, 0, 0));
@@ -358,21 +360,8 @@ void tst_QGraphicsTransform::rotation3dArbitraryAxis()
     exp.rotate(angle, axis);
     QTransform expected = exp.toTransform(1024.0f);
 
-#if defined(MAY_HIT_QTBUG_20661)
-    // These failures possibly relate to the float vs qreal issue mentioned
-    // in the comment above fuzzyCompare().
-    if (sizeof(qreal) == sizeof(double)) {
-        QEXPECT_FAIL("rotation of 120 on (1, 1, 1)",                "QTBUG-20661", Abort);
-        QEXPECT_FAIL("rotation of 240 on (1, 1, 1)",                "QTBUG-20661", Abort);
-        QEXPECT_FAIL("rotation of 120 on (0.01, 0.01, 0.01)",       "QTBUG-20661", Abort);
-        QEXPECT_FAIL("rotation of 240 on (0.01, 0.01, 0.01)",       "QTBUG-20661", Abort);
-        QEXPECT_FAIL("rotation of 120 on (0.0001, 0.0001, 0.0001)", "QTBUG-20661", Abort);
-        QEXPECT_FAIL("rotation of 240 on (0.0001, 0.0001, 0.0001)", "QTBUG-20661", Abort);
-    }
-#endif
-
     QTransform actual = transform2D(rotation);
-    QVERIFY2(fuzzyCompare(actual, expected), qPrintable(
+    QVERIFY2(fuzzyCompareAsFloat(actual, expected), qPrintable(
         QString("\nactual:   %1\n"
                   "expected: %2")
         .arg(toString(actual))
@@ -384,7 +373,13 @@ void tst_QGraphicsTransform::rotation3dArbitraryAxis()
     t.setToIdentity();
     rotation.applyTo(&t);
     QMatrix4x4 r(expected);
-    QVERIFY(qFuzzyCompare(t, r));
+    for (int row = 0; row < 4; ++row) {
+        for (int col = 0; col < 4; ++col) {
+            float a = t(row, col);
+            float b = r(row, col);
+            QVERIFY2(fuzzyCompare(a, b), QString("%1 is not equal to %2").arg(a).arg(b).toLatin1());
+        }
+    }
 }
 
 QString tst_QGraphicsTransform::toString(QTransform const& t)

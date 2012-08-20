@@ -63,21 +63,24 @@ class Q_GUI_EXPORT QMatrix4x4
 {
 public:
     inline QMatrix4x4() { setToIdentity(); }
-    explicit QMatrix4x4(const qreal *values);
-    inline QMatrix4x4(qreal m11, qreal m12, qreal m13, qreal m14,
-                      qreal m21, qreal m22, qreal m23, qreal m24,
-                      qreal m31, qreal m32, qreal m33, qreal m34,
-                      qreal m41, qreal m42, qreal m43, qreal m44);
+    explicit QMatrix4x4(const float *values);
+
+    // ###TODO This is temporary to get through the CI's revdep qtdeclarative tests. Remove it!
+    explicit QMatrix4x4(const double *values);
+    inline QMatrix4x4(float m11, float m12, float m13, float m14,
+                      float m21, float m22, float m23, float m24,
+                      float m31, float m32, float m33, float m34,
+                      float m41, float m42, float m43, float m44);
 
     template <int N, int M>
-    explicit QMatrix4x4(const QGenericMatrix<N, M, qreal>& matrix);
+    explicit QMatrix4x4(const QGenericMatrix<N, M, float>& matrix);
 
-    QMatrix4x4(const qreal *values, int cols, int rows);
+    QMatrix4x4(const float *values, int cols, int rows);
     QMatrix4x4(const QTransform& transform);
     QMatrix4x4(const QMatrix& matrix);
 
-    inline const qreal& operator()(int row, int column) const;
-    inline qreal& operator()(int row, int column);
+    inline const float& operator()(int row, int column) const;
+    inline float& operator()(int row, int column);
 
 #ifndef QT_NO_VECTOR4D
     inline QVector4D column(int index) const;
@@ -90,9 +93,9 @@ public:
     inline bool isIdentity() const;
     inline void setToIdentity();
 
-    inline void fill(qreal value);
+    inline void fill(float value);
 
-    qreal determinant() const;
+    double determinant() const;
     QMatrix4x4 inverted(bool *invertible = 0) const;
     QMatrix4x4 transposed() const;
     QMatrix3x3 normalMatrix() const;
@@ -100,8 +103,8 @@ public:
     inline QMatrix4x4& operator+=(const QMatrix4x4& other);
     inline QMatrix4x4& operator-=(const QMatrix4x4& other);
     inline QMatrix4x4& operator*=(const QMatrix4x4& other);
-    inline QMatrix4x4& operator*=(qreal factor);
-    QMatrix4x4& operator/=(qreal divisor);
+    inline QMatrix4x4& operator*=(float factor);
+    QMatrix4x4& operator/=(float divisor);
     inline bool operator==(const QMatrix4x4& other) const;
     inline bool operator!=(const QMatrix4x4& other) const;
 
@@ -121,42 +124,42 @@ public:
     friend QMatrix4x4 operator-(const QMatrix4x4& matrix);
     friend QPoint operator*(const QMatrix4x4& matrix, const QPoint& point);
     friend QPointF operator*(const QMatrix4x4& matrix, const QPointF& point);
-    friend QMatrix4x4 operator*(qreal factor, const QMatrix4x4& matrix);
-    friend QMatrix4x4 operator*(const QMatrix4x4& matrix, qreal factor);
-    friend Q_GUI_EXPORT QMatrix4x4 operator/(const QMatrix4x4& matrix, qreal divisor);
+    friend QMatrix4x4 operator*(float factor, const QMatrix4x4& matrix);
+    friend QMatrix4x4 operator*(const QMatrix4x4& matrix, float factor);
+    friend Q_GUI_EXPORT QMatrix4x4 operator/(const QMatrix4x4& matrix, float divisor);
 
     friend inline bool qFuzzyCompare(const QMatrix4x4& m1, const QMatrix4x4& m2);
 
 #ifndef QT_NO_VECTOR3D
     void scale(const QVector3D& vector);
     void translate(const QVector3D& vector);
-    void rotate(qreal angle, const QVector3D& vector);
+    void rotate(float angle, const QVector3D& vector);
 #endif
-    void scale(qreal x, qreal y);
-    void scale(qreal x, qreal y, qreal z);
-    void scale(qreal factor);
-    void translate(qreal x, qreal y);
-    void translate(qreal x, qreal y, qreal z);
-    void rotate(qreal angle, qreal x, qreal y, qreal z = 0.0f);
+    void scale(float x, float y);
+    void scale(float x, float y, float z);
+    void scale(float factor);
+    void translate(float x, float y);
+    void translate(float x, float y, float z);
+    void rotate(float angle, float x, float y, float z = 0.0f);
 #ifndef QT_NO_QUATERNION
     void rotate(const QQuaternion& quaternion);
 #endif
 
     void ortho(const QRect& rect);
     void ortho(const QRectF& rect);
-    void ortho(qreal left, qreal right, qreal bottom, qreal top, qreal nearPlane, qreal farPlane);
-    void frustum(qreal left, qreal right, qreal bottom, qreal top, qreal nearPlane, qreal farPlane);
-    void perspective(qreal angle, qreal aspect, qreal nearPlane, qreal farPlane);
+    void ortho(float left, float right, float bottom, float top, float nearPlane, float farPlane);
+    void frustum(float left, float right, float bottom, float top, float nearPlane, float farPlane);
+    void perspective(float angle, float aspect, float nearPlane, float farPlane);
 #ifndef QT_NO_VECTOR3D
     void lookAt(const QVector3D& eye, const QVector3D& center, const QVector3D& up);
 #endif
     void flipCoordinates();
 
-    void copyDataTo(qreal *values) const;
+    void copyDataTo(float *values) const;
 
     QMatrix toAffine() const;
     QTransform toTransform() const;
-    QTransform toTransform(qreal distanceToPlane) const;
+    QTransform toTransform(float distanceToPlane) const;
 
     QPoint map(const QPoint& point) const;
     QPointF map(const QPointF& point) const;
@@ -171,11 +174,11 @@ public:
     QRectF mapRect(const QRectF& rect) const;
 
     template <int N, int M>
-    QGenericMatrix<N, M, qreal> toGenericMatrix() const;
+    QGenericMatrix<N, M, float> toGenericMatrix() const;
 
-    inline qreal *data();
-    inline const qreal *data() const { return *m; }
-    inline const qreal *constData() const { return *m; }
+    inline float *data();
+    inline const float *data() const { return *m; }
+    inline const float *constData() const { return *m; }
 
     void optimize();
 
@@ -186,7 +189,7 @@ public:
 #endif
 
 private:
-    qreal m[4][4];          // Column-major order to match OpenGL.
+    float m[4][4];          // Column-major order to match OpenGL.
     int flagBits;           // Flag bits from the enum below.
 
     // When matrices are multiplied, the flag bits are or-ed together.
@@ -205,7 +208,7 @@ private:
 
     QMatrix4x4 orthonormalInverse() const;
 
-    void projectedRotate(qreal angle, qreal x, qreal y, qreal z);
+    void projectedRotate(float angle, float x, float y, float z);
 
     friend class QGraphicsRotation;
 };
@@ -213,10 +216,10 @@ private:
 Q_DECLARE_TYPEINFO(QMatrix4x4, Q_MOVABLE_TYPE);
 
 inline QMatrix4x4::QMatrix4x4
-        (qreal m11, qreal m12, qreal m13, qreal m14,
-         qreal m21, qreal m22, qreal m23, qreal m24,
-         qreal m31, qreal m32, qreal m33, qreal m34,
-         qreal m41, qreal m42, qreal m43, qreal m44)
+        (float m11, float m12, float m13, float m14,
+         float m21, float m22, float m23, float m24,
+         float m31, float m32, float m33, float m34,
+         float m41, float m42, float m43, float m44)
 {
     m[0][0] = m11; m[0][1] = m21; m[0][2] = m31; m[0][3] = m41;
     m[1][0] = m12; m[1][1] = m22; m[1][2] = m32; m[1][3] = m42;
@@ -227,9 +230,9 @@ inline QMatrix4x4::QMatrix4x4
 
 template <int N, int M>
 Q_INLINE_TEMPLATE QMatrix4x4::QMatrix4x4
-    (const QGenericMatrix<N, M, qreal>& matrix)
+    (const QGenericMatrix<N, M, float>& matrix)
 {
-    const qreal *values = matrix.constData();
+    const float *values = matrix.constData();
     for (int matrixCol = 0; matrixCol < 4; ++matrixCol) {
         for (int matrixRow = 0; matrixRow < 4; ++matrixRow) {
             if (matrixCol < N && matrixRow < M)
@@ -244,10 +247,10 @@ Q_INLINE_TEMPLATE QMatrix4x4::QMatrix4x4
 }
 
 template <int N, int M>
-QGenericMatrix<N, M, qreal> QMatrix4x4::toGenericMatrix() const
+QGenericMatrix<N, M, float> QMatrix4x4::toGenericMatrix() const
 {
-    QGenericMatrix<N, M, qreal> result;
-    qreal *values = result.data();
+    QGenericMatrix<N, M, float> result;
+    float *values = result.data();
     for (int matrixCol = 0; matrixCol < N; ++matrixCol) {
         for (int matrixRow = 0; matrixRow < M; ++matrixRow) {
             if (matrixCol < 4 && matrixRow < 4)
@@ -261,13 +264,13 @@ QGenericMatrix<N, M, qreal> QMatrix4x4::toGenericMatrix() const
     return result;
 }
 
-inline const qreal& QMatrix4x4::operator()(int aRow, int aColumn) const
+inline const float& QMatrix4x4::operator()(int aRow, int aColumn) const
 {
     Q_ASSERT(aRow >= 0 && aRow < 4 && aColumn >= 0 && aColumn < 4);
     return m[aColumn][aRow];
 }
 
-inline qreal& QMatrix4x4::operator()(int aRow, int aColumn)
+inline float& QMatrix4x4::operator()(int aRow, int aColumn)
 {
     Q_ASSERT(aRow >= 0 && aRow < 4 && aColumn >= 0 && aColumn < 4);
     flagBits = General;
@@ -308,7 +311,7 @@ inline void QMatrix4x4::setRow(int index, const QVector4D& value)
 }
 #endif
 
-Q_GUI_EXPORT QMatrix4x4 operator/(const QMatrix4x4& matrix, qreal divisor);
+Q_GUI_EXPORT QMatrix4x4 operator/(const QMatrix4x4& matrix, float divisor);
 
 inline bool QMatrix4x4::isIdentity() const
 {
@@ -348,7 +351,7 @@ inline void QMatrix4x4::setToIdentity()
     flagBits = Identity;
 }
 
-inline void QMatrix4x4::fill(qreal value)
+inline void QMatrix4x4::fill(float value)
 {
     m[0][0] = value;
     m[0][1] = value;
@@ -428,7 +431,7 @@ inline QMatrix4x4& QMatrix4x4::operator*=(const QMatrix4x4& other)
         return *this;
     }
 
-    qreal m0, m1, m2;
+    float m0, m1, m2;
     m0 = m[0][0] * other.m[0][0]
             + m[1][0] * other.m[0][1]
             + m[2][0] * other.m[0][2]
@@ -511,7 +514,7 @@ inline QMatrix4x4& QMatrix4x4::operator*=(const QMatrix4x4& other)
     return *this;
 }
 
-inline QMatrix4x4& QMatrix4x4::operator*=(qreal factor)
+inline QMatrix4x4& QMatrix4x4::operator*=(float factor)
 {
     m[0][0] *= factor;
     m[0][1] *= factor;
@@ -711,7 +714,7 @@ inline QMatrix4x4 operator*(const QMatrix4x4& m1, const QMatrix4x4& m2)
 
 inline QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix)
 {
-    qreal x, y, z, w;
+    float x, y, z, w;
     x = vector.x() * matrix.m[0][0] +
         vector.y() * matrix.m[0][1] +
         vector.z() * matrix.m[0][2] +
@@ -736,7 +739,7 @@ inline QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix)
 
 inline QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector)
 {
-    qreal x, y, z, w;
+    float x, y, z, w;
     if (matrix.flagBits == QMatrix4x4::Identity) {
         return vector;
     } else if (matrix.flagBits < QMatrix4x4::Rotation2D) {
@@ -779,7 +782,7 @@ inline QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector)
 
 inline QVector4D operator*(const QVector4D& vector, const QMatrix4x4& matrix)
 {
-    qreal x, y, z, w;
+    float x, y, z, w;
     x = vector.x() * matrix.m[0][0] +
         vector.y() * matrix.m[0][1] +
         vector.z() * matrix.m[0][2] +
@@ -801,7 +804,7 @@ inline QVector4D operator*(const QVector4D& vector, const QMatrix4x4& matrix)
 
 inline QVector4D operator*(const QMatrix4x4& matrix, const QVector4D& vector)
 {
-    qreal x, y, z, w;
+    float x, y, z, w;
     x = vector.x() * matrix.m[0][0] +
         vector.y() * matrix.m[1][0] +
         vector.z() * matrix.m[2][0] +
@@ -825,8 +828,8 @@ inline QVector4D operator*(const QMatrix4x4& matrix, const QVector4D& vector)
 
 inline QPoint operator*(const QPoint& point, const QMatrix4x4& matrix)
 {
-    qreal xin, yin;
-    qreal x, y, w;
+    float xin, yin;
+    float x, y, w;
     xin = point.x();
     yin = point.y();
     x = xin * matrix.m[0][0] +
@@ -846,8 +849,8 @@ inline QPoint operator*(const QPoint& point, const QMatrix4x4& matrix)
 
 inline QPointF operator*(const QPointF& point, const QMatrix4x4& matrix)
 {
-    qreal xin, yin;
-    qreal x, y, w;
+    float xin, yin;
+    float x, y, w;
     xin = point.x();
     yin = point.y();
     x = xin * matrix.m[0][0] +
@@ -860,16 +863,16 @@ inline QPointF operator*(const QPointF& point, const QMatrix4x4& matrix)
         yin * matrix.m[3][1] +
         matrix.m[3][3];
     if (w == 1.0f) {
-        return QPointF(qreal(x), qreal(y));
+        return QPointF(float(x), float(y));
     } else {
-        return QPointF(qreal(x / w), qreal(y / w));
+        return QPointF(float(x / w), float(y / w));
     }
 }
 
 inline QPoint operator*(const QMatrix4x4& matrix, const QPoint& point)
 {
-    qreal xin, yin;
-    qreal x, y, w;
+    float xin, yin;
+    float x, y, w;
     xin = point.x();
     yin = point.y();
     if (matrix.flagBits == QMatrix4x4::Identity) {
@@ -900,8 +903,8 @@ inline QPoint operator*(const QMatrix4x4& matrix, const QPoint& point)
 
 inline QPointF operator*(const QMatrix4x4& matrix, const QPointF& point)
 {
-    qreal xin, yin;
-    qreal x, y, w;
+    float xin, yin;
+    float x, y, w;
     xin = point.x();
     yin = point.y();
     if (matrix.flagBits == QMatrix4x4::Identity) {
@@ -924,9 +927,9 @@ inline QPointF operator*(const QMatrix4x4& matrix, const QPointF& point)
             yin * matrix.m[1][3] +
             matrix.m[3][3];
         if (w == 1.0f) {
-            return QPointF(qreal(x), qreal(y));
+            return QPointF(float(x), float(y));
         } else {
-            return QPointF(qreal(x / w), qreal(y / w));
+            return QPointF(float(x / w), float(y / w));
         }
     }
 }
@@ -954,7 +957,7 @@ inline QMatrix4x4 operator-(const QMatrix4x4& matrix)
     return m;
 }
 
-inline QMatrix4x4 operator*(qreal factor, const QMatrix4x4& matrix)
+inline QMatrix4x4 operator*(float factor, const QMatrix4x4& matrix)
 {
     QMatrix4x4 m(1);
     m.m[0][0] = matrix.m[0][0] * factor;
@@ -977,7 +980,7 @@ inline QMatrix4x4 operator*(qreal factor, const QMatrix4x4& matrix)
     return m;
 }
 
-inline QMatrix4x4 operator*(const QMatrix4x4& matrix, qreal factor)
+inline QMatrix4x4 operator*(const QMatrix4x4& matrix, float factor)
 {
     QMatrix4x4 m(1);
     m.m[0][0] = matrix.m[0][0] * factor;
@@ -1071,7 +1074,7 @@ inline QVector4D QMatrix4x4::map(const QVector4D& point) const
 
 #endif
 
-inline qreal *QMatrix4x4::data()
+inline float *QMatrix4x4::data()
 {
     // We have to assume that the caller will modify the matrix elements,
     // so we flip it over to "General" mode.
@@ -1090,17 +1093,17 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QMatrix4x4 &);
 
 #if QT_DEPRECATED_SINCE(5, 0)
 template <int N, int M>
-QT_DEPRECATED QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, qreal>& matrix)
+QT_DEPRECATED QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, float>& matrix)
 {
     return QMatrix4x4(matrix.constData(), N, M);
 }
 
 template <int N, int M>
-QT_DEPRECATED QGenericMatrix<N, M, qreal> qGenericMatrixFromMatrix4x4(const QMatrix4x4& matrix)
+QT_DEPRECATED QGenericMatrix<N, M, float> qGenericMatrixFromMatrix4x4(const QMatrix4x4& matrix)
 {
-    QGenericMatrix<N, M, qreal> result;
-    const qreal *m = matrix.constData();
-    qreal *values = result.data();
+    QGenericMatrix<N, M, float> result;
+    const float *m = matrix.constData();
+    float *values = result.data();
     for (int col = 0; col < N; ++col) {
         for (int row = 0; row < M; ++row) {
             if (col < 4 && row < 4)

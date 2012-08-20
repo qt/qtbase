@@ -60,7 +60,7 @@ class Q_GUI_EXPORT QVector2D
 {
 public:
     QVector2D();
-    QVector2D(qreal xpos, qreal ypos);
+    QVector2D(float xpos, float ypos);
     explicit QVector2D(const QPoint& point);
     explicit QVector2D(const QPointF& point);
 #ifndef QT_NO_VECTOR3D
@@ -72,35 +72,35 @@ public:
 
     bool isNull() const;
 
-    qreal x() const;
-    qreal y() const;
+    float x() const;
+    float y() const;
 
-    void setX(qreal x);
-    void setY(qreal y);
+    void setX(float x);
+    void setY(float y);
 
-    qreal length() const;
-    qreal lengthSquared() const;
+    float length() const;
+    float lengthSquared() const;
 
     QVector2D normalized() const;
     void normalize();
 
     QVector2D &operator+=(const QVector2D &vector);
     QVector2D &operator-=(const QVector2D &vector);
-    QVector2D &operator*=(qreal factor);
+    QVector2D &operator*=(float factor);
     QVector2D &operator*=(const QVector2D &vector);
-    QVector2D &operator/=(qreal divisor);
+    QVector2D &operator/=(float divisor);
 
-    static qreal dotProduct(const QVector2D& v1, const QVector2D& v2);
+    static float dotProduct(const QVector2D& v1, const QVector2D& v2);
 
     friend inline bool operator==(const QVector2D &v1, const QVector2D &v2);
     friend inline bool operator!=(const QVector2D &v1, const QVector2D &v2);
     friend inline const QVector2D operator+(const QVector2D &v1, const QVector2D &v2);
     friend inline const QVector2D operator-(const QVector2D &v1, const QVector2D &v2);
-    friend inline const QVector2D operator*(qreal factor, const QVector2D &vector);
-    friend inline const QVector2D operator*(const QVector2D &vector, qreal factor);
+    friend inline const QVector2D operator*(float factor, const QVector2D &vector);
+    friend inline const QVector2D operator*(const QVector2D &vector, float factor);
     friend inline const QVector2D operator*(const QVector2D &v1, const QVector2D &v2);
     friend inline const QVector2D operator-(const QVector2D &vector);
-    friend inline const QVector2D operator/(const QVector2D &vector, qreal divisor);
+    friend inline const QVector2D operator/(const QVector2D &vector, float divisor);
 
     friend inline bool qFuzzyCompare(const QVector2D& v1, const QVector2D& v2);
 
@@ -119,8 +119,6 @@ public:
 private:
     float xp, yp;
 
-    QVector2D(float xpos, float ypos, int dummy);
-
     friend class QVector3D;
     friend class QVector4D;
 };
@@ -129,9 +127,7 @@ Q_DECLARE_TYPEINFO(QVector2D, Q_MOVABLE_TYPE);
 
 inline QVector2D::QVector2D() : xp(0.0f), yp(0.0f) {}
 
-inline QVector2D::QVector2D(float xpos, float ypos, int) : xp(xpos), yp(ypos) {}
-
-inline QVector2D::QVector2D(qreal xpos, qreal ypos) : xp(xpos), yp(ypos) {}
+inline QVector2D::QVector2D(float xpos, float ypos) : xp(xpos), yp(ypos) {}
 
 inline QVector2D::QVector2D(const QPoint& point) : xp(point.x()), yp(point.y()) {}
 
@@ -142,11 +138,11 @@ inline bool QVector2D::isNull() const
     return qIsNull(xp) && qIsNull(yp);
 }
 
-inline qreal QVector2D::x() const { return qreal(xp); }
-inline qreal QVector2D::y() const { return qreal(yp); }
+inline float QVector2D::x() const { return xp; }
+inline float QVector2D::y() const { return yp; }
 
-inline void QVector2D::setX(qreal aX) { xp = aX; }
-inline void QVector2D::setY(qreal aY) { yp = aY; }
+inline void QVector2D::setX(float aX) { xp = aX; }
+inline void QVector2D::setY(float aY) { yp = aY; }
 
 inline QVector2D &QVector2D::operator+=(const QVector2D &vector)
 {
@@ -162,7 +158,7 @@ inline QVector2D &QVector2D::operator-=(const QVector2D &vector)
     return *this;
 }
 
-inline QVector2D &QVector2D::operator*=(qreal factor)
+inline QVector2D &QVector2D::operator*=(float factor)
 {
     xp *= factor;
     yp *= factor;
@@ -176,7 +172,7 @@ inline QVector2D &QVector2D::operator*=(const QVector2D &vector)
     return *this;
 }
 
-inline QVector2D &QVector2D::operator/=(qreal divisor)
+inline QVector2D &QVector2D::operator/=(float divisor)
 {
     xp /= divisor;
     yp /= divisor;
@@ -195,37 +191,37 @@ inline bool operator!=(const QVector2D &v1, const QVector2D &v2)
 
 inline const QVector2D operator+(const QVector2D &v1, const QVector2D &v2)
 {
-    return QVector2D(v1.xp + v2.xp, v1.yp + v2.yp, 1);
+    return QVector2D(v1.xp + v2.xp, v1.yp + v2.yp);
 }
 
 inline const QVector2D operator-(const QVector2D &v1, const QVector2D &v2)
 {
-    return QVector2D(v1.xp - v2.xp, v1.yp - v2.yp, 1);
+    return QVector2D(v1.xp - v2.xp, v1.yp - v2.yp);
 }
 
-inline const QVector2D operator*(qreal factor, const QVector2D &vector)
+inline const QVector2D operator*(float factor, const QVector2D &vector)
 {
-    return QVector2D(vector.xp * factor, vector.yp * factor, 1);
+    return QVector2D(vector.xp * factor, vector.yp * factor);
 }
 
-inline const QVector2D operator*(const QVector2D &vector, qreal factor)
+inline const QVector2D operator*(const QVector2D &vector, float factor)
 {
-    return QVector2D(vector.xp * factor, vector.yp * factor, 1);
+    return QVector2D(vector.xp * factor, vector.yp * factor);
 }
 
 inline const QVector2D operator*(const QVector2D &v1, const QVector2D &v2)
 {
-    return QVector2D(v1.xp * v2.xp, v1.yp * v2.yp, 1);
+    return QVector2D(v1.xp * v2.xp, v1.yp * v2.yp);
 }
 
 inline const QVector2D operator-(const QVector2D &vector)
 {
-    return QVector2D(-vector.xp, -vector.yp, 1);
+    return QVector2D(-vector.xp, -vector.yp);
 }
 
-inline const QVector2D operator/(const QVector2D &vector, qreal divisor)
+inline const QVector2D operator/(const QVector2D &vector, float divisor)
 {
-    return QVector2D(vector.xp / divisor, vector.yp / divisor, 1);
+    return QVector2D(vector.xp / divisor, vector.yp / divisor);
 }
 
 inline bool qFuzzyCompare(const QVector2D& v1, const QVector2D& v2)

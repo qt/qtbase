@@ -173,29 +173,11 @@ void Patch::translate(const QVector3D &t)
     mat.translate(t);
 }
 
-static inline void qMultMatrix(const QMatrix4x4 &mat)
-{
-    if (sizeof(qreal) == sizeof(GLfloat))
-        glMultMatrixf((GLfloat*)mat.constData());
-#ifndef QT_OPENGL_ES
-    else if (sizeof(qreal) == sizeof(GLdouble))
-        glMultMatrixd((GLdouble*)mat.constData());
-#endif
-    else
-    {
-        GLfloat fmat[16];
-        qreal const *r = mat.constData();
-        for (int i = 0; i < 16; ++i)
-            fmat[i] = r[i];
-        glMultMatrixf(fmat);
-    }
-}
-
 //! [2]
 void Patch::draw() const
 {
     glPushMatrix();
-    qMultMatrix(mat);
+    glMultMatrixf(mat.constData());
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, faceColor);
 
     const GLushort *indices = geom->faces.constData();

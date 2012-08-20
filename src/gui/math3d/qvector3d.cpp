@@ -65,11 +65,6 @@ QT_BEGIN_NAMESPACE
     The QVector3D class can also be used to represent vertices in 3D space.
     We therefore do not need to provide a separate vertex class.
 
-    \b{Note:} By design values in the QVector3D instance are stored as \c float.
-    This means that on platforms where the \c qreal arguments to QVector3D
-    functions are represented by \c double values, it is possible to
-    lose precision.
-
     \sa QVector2D, QVector4D, QQuaternion
 */
 
@@ -80,7 +75,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QVector3D::QVector3D(qreal xpos, qreal ypos, qreal zpos)
+    \fn QVector3D::QVector3D(float xpos, float ypos, float zpos)
 
     Constructs a vector with coordinates (\a xpos, \a ypos, \a zpos).
 */
@@ -120,7 +115,7 @@ QVector3D::QVector3D(const QVector2D& vector)
 
     \sa toVector2D()
 */
-QVector3D::QVector3D(const QVector2D& vector, qreal zpos)
+QVector3D::QVector3D(const QVector2D& vector, float zpos)
 {
     xp = vector.xp;
     yp = vector.yp;
@@ -154,7 +149,7 @@ QVector3D::QVector3D(const QVector4D& vector)
 */
 
 /*!
-    \fn qreal QVector3D::x() const
+    \fn float QVector3D::x() const
 
     Returns the x coordinate of this point.
 
@@ -162,7 +157,7 @@ QVector3D::QVector3D(const QVector4D& vector)
 */
 
 /*!
-    \fn qreal QVector3D::y() const
+    \fn float QVector3D::y() const
 
     Returns the y coordinate of this point.
 
@@ -170,7 +165,7 @@ QVector3D::QVector3D(const QVector4D& vector)
 */
 
 /*!
-    \fn qreal QVector3D::z() const
+    \fn float QVector3D::z() const
 
     Returns the z coordinate of this point.
 
@@ -178,7 +173,7 @@ QVector3D::QVector3D(const QVector4D& vector)
 */
 
 /*!
-    \fn void QVector3D::setX(qreal x)
+    \fn void QVector3D::setX(float x)
 
     Sets the x coordinate of this point to the given \a x coordinate.
 
@@ -186,7 +181,7 @@ QVector3D::QVector3D(const QVector4D& vector)
 */
 
 /*!
-    \fn void QVector3D::setY(qreal y)
+    \fn void QVector3D::setY(float y)
 
     Sets the y coordinate of this point to the given \a y coordinate.
 
@@ -194,7 +189,7 @@ QVector3D::QVector3D(const QVector4D& vector)
 */
 
 /*!
-    \fn void QVector3D::setZ(qreal z)
+    \fn void QVector3D::setZ(float z)
 
     Sets the z coordinate of this point to the given \a z coordinate.
 
@@ -216,12 +211,16 @@ QVector3D QVector3D::normalized() const
     double len = double(xp) * double(xp) +
                  double(yp) * double(yp) +
                  double(zp) * double(zp);
-    if (qFuzzyIsNull(len - 1.0f))
+    if (qFuzzyIsNull(len - 1.0f)) {
         return *this;
-    else if (!qFuzzyIsNull(len))
-        return *this / qSqrt(len);
-    else
+    } else if (!qFuzzyIsNull(len)) {
+        double sqrtLen = sqrt(len);
+        return QVector3D(float(double(xp) / sqrtLen),
+                         float(double(yp) / sqrtLen),
+                         float(double(zp) / sqrtLen));
+    } else {
         return QVector3D();
+    }
 }
 
 /*!
@@ -239,11 +238,11 @@ void QVector3D::normalize()
     if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 
-    len = qSqrt(len);
+    len = sqrt(len);
 
-    xp /= len;
-    yp /= len;
-    zp /= len;
+    xp = float(double(xp) / len);
+    yp = float(double(yp) / len);
+    zp = float(double(zp) / len);
 }
 
 /*!
@@ -265,7 +264,7 @@ void QVector3D::normalize()
 */
 
 /*!
-    \fn QVector3D &QVector3D::operator*=(qreal factor)
+    \fn QVector3D &QVector3D::operator*=(float factor)
 
     Multiplies this vector's coordinates by the given \a factor, and
     returns a reference to this vector.
@@ -287,7 +286,7 @@ void QVector3D::normalize()
 */
 
 /*!
-    \fn QVector3D &QVector3D::operator/=(qreal divisor)
+    \fn QVector3D &QVector3D::operator/=(float divisor)
 
     Divides this vector's coordinates by the given \a divisor, and
     returns a reference to this vector.
@@ -298,7 +297,7 @@ void QVector3D::normalize()
 /*!
     Returns the dot product of \a v1 and \a v2.
 */
-qreal QVector3D::dotProduct(const QVector3D& v1, const QVector3D& v2)
+float QVector3D::dotProduct(const QVector3D& v1, const QVector3D& v2)
 {
     return v1.xp * v2.xp + v1.yp * v2.yp + v1.zp * v2.zp;
 }
@@ -312,8 +311,8 @@ qreal QVector3D::dotProduct(const QVector3D& v1, const QVector3D& v2)
 QVector3D QVector3D::crossProduct(const QVector3D& v1, const QVector3D& v2)
 {
     return QVector3D(v1.yp * v2.zp - v1.zp * v2.yp,
-                    v1.zp * v2.xp - v1.xp * v2.zp,
-                    v1.xp * v2.yp - v1.yp * v2.xp, 1);
+                     v1.zp * v2.xp - v1.xp * v2.zp,
+                     v1.xp * v2.yp - v1.yp * v2.xp);
 }
 
 /*!
@@ -358,7 +357,7 @@ QVector3D QVector3D::normal
 
     \sa normal(), distanceToLine()
 */
-qreal QVector3D::distanceToPlane
+float QVector3D::distanceToPlane
         (const QVector3D& plane, const QVector3D& normal) const
 {
     return dotProduct(*this - plane, normal);
@@ -378,7 +377,7 @@ qreal QVector3D::distanceToPlane
 
     \sa normal(), distanceToLine()
 */
-qreal QVector3D::distanceToPlane
+float QVector3D::distanceToPlane
     (const QVector3D& plane1, const QVector3D& plane2, const QVector3D& plane3) const
 {
     QVector3D n = normal(plane2 - plane1, plane3 - plane1);
@@ -394,7 +393,7 @@ qreal QVector3D::distanceToPlane
 
     \sa distanceToPlane()
 */
-qreal QVector3D::distanceToLine
+float QVector3D::distanceToLine
         (const QVector3D& point, const QVector3D& direction) const
 {
     if (direction.isNull())
@@ -440,7 +439,7 @@ qreal QVector3D::distanceToLine
 */
 
 /*!
-    \fn const QVector3D operator*(qreal factor, const QVector3D &vector)
+    \fn const QVector3D operator*(float factor, const QVector3D &vector)
     \relates QVector3D
 
     Returns a copy of the given \a vector,  multiplied by the given \a factor.
@@ -449,7 +448,7 @@ qreal QVector3D::distanceToLine
 */
 
 /*!
-    \fn const QVector3D operator*(const QVector3D &vector, qreal factor)
+    \fn const QVector3D operator*(const QVector3D &vector, float factor)
     \relates QVector3D
 
     Returns a copy of the given \a vector,  multiplied by the given \a factor.
@@ -480,7 +479,7 @@ qreal QVector3D::distanceToLine
 */
 
 /*!
-    \fn const QVector3D operator/(const QVector3D &vector, qreal divisor)
+    \fn const QVector3D operator/(const QVector3D &vector, float divisor)
     \relates QVector3D
 
     Returns the QVector3D object formed by dividing all three components of
@@ -506,7 +505,7 @@ qreal QVector3D::distanceToLine
 */
 QVector2D QVector3D::toVector2D() const
 {
-    return QVector2D(xp, yp, 1);
+    return QVector2D(xp, yp);
 }
 
 #endif
@@ -520,7 +519,7 @@ QVector2D QVector3D::toVector2D() const
 */
 QVector4D QVector3D::toVector4D() const
 {
-    return QVector4D(xp, yp, zp, 0.0f, 1);
+    return QVector4D(xp, yp, zp, 0.0f);
 }
 
 #endif
@@ -556,9 +555,13 @@ QVector3D::operator QVariant() const
 
     \sa lengthSquared(), normalized()
 */
-qreal QVector3D::length() const
+float QVector3D::length() const
 {
-    return qSqrt(xp * xp + yp * yp + zp * zp);
+    // Need some extra precision if the length is very small.
+    double len = double(xp) * double(xp) +
+                 double(yp) * double(yp) +
+                 double(zp) * double(zp);
+    return float(sqrt(len));
 }
 
 /*!
@@ -567,7 +570,7 @@ qreal QVector3D::length() const
 
     \sa length(), dotProduct()
 */
-qreal QVector3D::lengthSquared() const
+float QVector3D::lengthSquared() const
 {
     return xp * xp + yp * yp + zp * zp;
 }
@@ -597,8 +600,7 @@ QDebug operator<<(QDebug dbg, const QVector3D &vector)
 
 QDataStream &operator<<(QDataStream &stream, const QVector3D &vector)
 {
-    stream << double(vector.x()) << double(vector.y())
-           << double(vector.z());
+    stream << vector.x() << vector.y() << vector.z();
     return stream;
 }
 
@@ -614,13 +616,13 @@ QDataStream &operator<<(QDataStream &stream, const QVector3D &vector)
 
 QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 {
-    double x, y, z;
+    float x, y, z;
     stream >> x;
     stream >> y;
     stream >> z;
-    vector.setX(qreal(x));
-    vector.setY(qreal(y));
-    vector.setZ(qreal(z));
+    vector.setX(x);
+    vector.setY(y);
+    vector.setZ(z);
     return stream;
 }
 

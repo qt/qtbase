@@ -60,12 +60,12 @@ class Q_GUI_EXPORT QVector3D
 {
 public:
     QVector3D();
-    QVector3D(qreal xpos, qreal ypos, qreal zpos);
+    QVector3D(float xpos, float ypos, float zpos);
     explicit QVector3D(const QPoint& point);
     explicit QVector3D(const QPointF& point);
 #ifndef QT_NO_VECTOR2D
     QVector3D(const QVector2D& vector);
-    QVector3D(const QVector2D& vector, qreal zpos);
+    QVector3D(const QVector2D& vector, float zpos);
 #endif
 #ifndef QT_NO_VECTOR4D
     explicit QVector3D(const QVector4D& vector);
@@ -73,45 +73,45 @@ public:
 
     bool isNull() const;
 
-    qreal x() const;
-    qreal y() const;
-    qreal z() const;
+    float x() const;
+    float y() const;
+    float z() const;
 
-    void setX(qreal x);
-    void setY(qreal y);
-    void setZ(qreal z);
+    void setX(float x);
+    void setY(float y);
+    void setZ(float z);
 
-    qreal length() const;
-    qreal lengthSquared() const;
+    float length() const;
+    float lengthSquared() const;
 
     QVector3D normalized() const;
     void normalize();
 
     QVector3D &operator+=(const QVector3D &vector);
     QVector3D &operator-=(const QVector3D &vector);
-    QVector3D &operator*=(qreal factor);
+    QVector3D &operator*=(float factor);
     QVector3D &operator*=(const QVector3D& vector);
-    QVector3D &operator/=(qreal divisor);
+    QVector3D &operator/=(float divisor);
 
-    static qreal dotProduct(const QVector3D& v1, const QVector3D& v2);
+    static float dotProduct(const QVector3D& v1, const QVector3D& v2);
     static QVector3D crossProduct(const QVector3D& v1, const QVector3D& v2);
     static QVector3D normal(const QVector3D& v1, const QVector3D& v2);
     static QVector3D normal
         (const QVector3D& v1, const QVector3D& v2, const QVector3D& v3);
 
-    qreal distanceToPlane(const QVector3D& plane, const QVector3D& normal) const;
-    qreal distanceToPlane(const QVector3D& plane1, const QVector3D& plane2, const QVector3D& plane3) const;
-    qreal distanceToLine(const QVector3D& point, const QVector3D& direction) const;
+    float distanceToPlane(const QVector3D& plane, const QVector3D& normal) const;
+    float distanceToPlane(const QVector3D& plane1, const QVector3D& plane2, const QVector3D& plane3) const;
+    float distanceToLine(const QVector3D& point, const QVector3D& direction) const;
 
     friend inline bool operator==(const QVector3D &v1, const QVector3D &v2);
     friend inline bool operator!=(const QVector3D &v1, const QVector3D &v2);
     friend inline const QVector3D operator+(const QVector3D &v1, const QVector3D &v2);
     friend inline const QVector3D operator-(const QVector3D &v1, const QVector3D &v2);
-    friend inline const QVector3D operator*(qreal factor, const QVector3D &vector);
-    friend inline const QVector3D operator*(const QVector3D &vector, qreal factor);
+    friend inline const QVector3D operator*(float factor, const QVector3D &vector);
+    friend inline const QVector3D operator*(const QVector3D &vector, float factor);
     friend const QVector3D operator*(const QVector3D &v1, const QVector3D& v2);
     friend inline const QVector3D operator-(const QVector3D &vector);
-    friend inline const QVector3D operator/(const QVector3D &vector, qreal divisor);
+    friend inline const QVector3D operator/(const QVector3D &vector, float divisor);
 
     friend inline bool qFuzzyCompare(const QVector3D& v1, const QVector3D& v2);
 
@@ -130,8 +130,6 @@ public:
 private:
     float xp, yp, zp;
 
-    QVector3D(float xpos, float ypos, float zpos, int dummy);
-
     friend class QVector2D;
     friend class QVector4D;
 #ifndef QT_NO_MATRIX4X4
@@ -144,9 +142,7 @@ Q_DECLARE_TYPEINFO(QVector3D, Q_MOVABLE_TYPE);
 
 inline QVector3D::QVector3D() : xp(0.0f), yp(0.0f), zp(0.0f) {}
 
-inline QVector3D::QVector3D(qreal xpos, qreal ypos, qreal zpos) : xp(xpos), yp(ypos), zp(zpos) {}
-
-inline QVector3D::QVector3D(float xpos, float ypos, float zpos, int) : xp(xpos), yp(ypos), zp(zpos) {}
+inline QVector3D::QVector3D(float xpos, float ypos, float zpos) : xp(xpos), yp(ypos), zp(zpos) {}
 
 inline QVector3D::QVector3D(const QPoint& point) : xp(point.x()), yp(point.y()), zp(0.0f) {}
 
@@ -157,13 +153,13 @@ inline bool QVector3D::isNull() const
     return qIsNull(xp) && qIsNull(yp) && qIsNull(zp);
 }
 
-inline qreal QVector3D::x() const { return qreal(xp); }
-inline qreal QVector3D::y() const { return qreal(yp); }
-inline qreal QVector3D::z() const { return qreal(zp); }
+inline float QVector3D::x() const { return xp; }
+inline float QVector3D::y() const { return yp; }
+inline float QVector3D::z() const { return zp; }
 
-inline void QVector3D::setX(qreal aX) { xp = aX; }
-inline void QVector3D::setY(qreal aY) { yp = aY; }
-inline void QVector3D::setZ(qreal aZ) { zp = aZ; }
+inline void QVector3D::setX(float aX) { xp = aX; }
+inline void QVector3D::setY(float aY) { yp = aY; }
+inline void QVector3D::setZ(float aZ) { zp = aZ; }
 
 inline QVector3D &QVector3D::operator+=(const QVector3D &vector)
 {
@@ -181,7 +177,7 @@ inline QVector3D &QVector3D::operator-=(const QVector3D &vector)
     return *this;
 }
 
-inline QVector3D &QVector3D::operator*=(qreal factor)
+inline QVector3D &QVector3D::operator*=(float factor)
 {
     xp *= factor;
     yp *= factor;
@@ -197,7 +193,7 @@ inline QVector3D &QVector3D::operator*=(const QVector3D& vector)
     return *this;
 }
 
-inline QVector3D &QVector3D::operator/=(qreal divisor)
+inline QVector3D &QVector3D::operator/=(float divisor)
 {
     xp /= divisor;
     yp /= divisor;
@@ -217,37 +213,37 @@ inline bool operator!=(const QVector3D &v1, const QVector3D &v2)
 
 inline const QVector3D operator+(const QVector3D &v1, const QVector3D &v2)
 {
-    return QVector3D(v1.xp + v2.xp, v1.yp + v2.yp, v1.zp + v2.zp, 1);
+    return QVector3D(v1.xp + v2.xp, v1.yp + v2.yp, v1.zp + v2.zp);
 }
 
 inline const QVector3D operator-(const QVector3D &v1, const QVector3D &v2)
 {
-    return QVector3D(v1.xp - v2.xp, v1.yp - v2.yp, v1.zp - v2.zp, 1);
+    return QVector3D(v1.xp - v2.xp, v1.yp - v2.yp, v1.zp - v2.zp);
 }
 
-inline const QVector3D operator*(qreal factor, const QVector3D &vector)
+inline const QVector3D operator*(float factor, const QVector3D &vector)
 {
-    return QVector3D(vector.xp * factor, vector.yp * factor, vector.zp * factor, 1);
+    return QVector3D(vector.xp * factor, vector.yp * factor, vector.zp * factor);
 }
 
-inline const QVector3D operator*(const QVector3D &vector, qreal factor)
+inline const QVector3D operator*(const QVector3D &vector, float factor)
 {
-    return QVector3D(vector.xp * factor, vector.yp * factor, vector.zp * factor, 1);
+    return QVector3D(vector.xp * factor, vector.yp * factor, vector.zp * factor);
 }
 
 inline const QVector3D operator*(const QVector3D &v1, const QVector3D& v2)
 {
-    return QVector3D(v1.xp * v2.xp, v1.yp * v2.yp, v1.zp * v2.zp, 1);
+    return QVector3D(v1.xp * v2.xp, v1.yp * v2.yp, v1.zp * v2.zp);
 }
 
 inline const QVector3D operator-(const QVector3D &vector)
 {
-    return QVector3D(-vector.xp, -vector.yp, -vector.zp, 1);
+    return QVector3D(-vector.xp, -vector.yp, -vector.zp);
 }
 
-inline const QVector3D operator/(const QVector3D &vector, qreal divisor)
+inline const QVector3D operator/(const QVector3D &vector, float divisor)
 {
-    return QVector3D(vector.xp / divisor, vector.yp / divisor, vector.zp / divisor, 1);
+    return QVector3D(vector.xp / divisor, vector.yp / divisor, vector.zp / divisor);
 }
 
 inline bool qFuzzyCompare(const QVector3D& v1, const QVector3D& v2)

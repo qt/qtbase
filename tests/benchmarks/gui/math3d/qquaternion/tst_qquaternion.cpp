@@ -77,38 +77,38 @@ void tst_QQuaternion::cleanup()
 
 void tst_QQuaternion::multiply_data()
 {
-    QTest::addColumn<qreal>("x1");
-    QTest::addColumn<qreal>("y1");
-    QTest::addColumn<qreal>("z1");
-    QTest::addColumn<qreal>("w1");
-    QTest::addColumn<qreal>("x2");
-    QTest::addColumn<qreal>("y2");
-    QTest::addColumn<qreal>("z2");
-    QTest::addColumn<qreal>("w2");
+    QTest::addColumn<float>("x1");
+    QTest::addColumn<float>("y1");
+    QTest::addColumn<float>("z1");
+    QTest::addColumn<float>("w1");
+    QTest::addColumn<float>("x2");
+    QTest::addColumn<float>("y2");
+    QTest::addColumn<float>("z2");
+    QTest::addColumn<float>("w2");
 
     QTest::newRow("null")
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f;
+        << 0.0f << 0.0f << 0.0f << 0.0f
+        << 0.0f << 0.0f << 0.0f << 0.0f;
 
     QTest::newRow("unitvec")
-        << (qreal)1.0f << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f
-        << (qreal)0.0f << (qreal)1.0f << (qreal)0.0f << (qreal)1.0f;
+        << 1.0f << 0.0f << 0.0f << 1.0f
+        << 0.0f << 1.0f << 0.0f << 1.0f;
 
     QTest::newRow("complex")
-        << (qreal)1.0f << (qreal)2.0f << (qreal)3.0f << (qreal)7.0f
-        << (qreal)4.0f << (qreal)5.0f << (qreal)6.0f << (qreal)8.0f;
+        << 1.0f << 2.0f << 3.0f << 7.0f
+        << 4.0f << 5.0f << 6.0f << 8.0f;
 }
 
 void tst_QQuaternion::multiply()
 {
-    QFETCH(qreal, x1);
-    QFETCH(qreal, y1);
-    QFETCH(qreal, z1);
-    QFETCH(qreal, w1);
-    QFETCH(qreal, x2);
-    QFETCH(qreal, y2);
-    QFETCH(qreal, z2);
-    QFETCH(qreal, w2);
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, w1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, w2);
 
     QQuaternion q1(w1, x1, y1, z1);
     QQuaternion q2(w2, x2, y2, z2);

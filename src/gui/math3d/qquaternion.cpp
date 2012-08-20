@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QQuaternion::QQuaternion(qreal scalar, qreal xpos, qreal ypos, qreal zpos)
+    \fn QQuaternion::QQuaternion(float scalar, float xpos, float ypos, float zpos)
 
     Constructs a quaternion with the vector (\a xpos, \a ypos, \a zpos)
     and \a scalar.
@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_VECTOR3D
 
 /*!
-    \fn QQuaternion::QQuaternion(qreal scalar, const QVector3D& vector)
+    \fn QQuaternion::QQuaternion(float scalar, const QVector3D& vector)
 
     Constructs a quaternion vector from the specified \a vector and
     \a scalar.
@@ -104,7 +104,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 /*!
-    \fn void QQuaternion::setVector(qreal x, qreal y, qreal z)
+    \fn void QQuaternion::setVector(float x, float y, float z)
 
     Sets the vector component of this quaternion to (\a x, \a y, \a z).
 
@@ -143,7 +143,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn qreal QQuaternion::x() const
+    \fn float QQuaternion::x() const
 
     Returns the x coordinate of this quaternion's vector.
 
@@ -151,7 +151,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn qreal QQuaternion::y() const
+    \fn float QQuaternion::y() const
 
     Returns the y coordinate of this quaternion's vector.
 
@@ -159,7 +159,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn qreal QQuaternion::z() const
+    \fn float QQuaternion::z() const
 
     Returns the z coordinate of this quaternion's vector.
 
@@ -167,7 +167,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn qreal QQuaternion::scalar() const
+    \fn float QQuaternion::scalar() const
 
     Returns the scalar component of this quaternion.
 
@@ -175,7 +175,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QQuaternion::setX(qreal x)
+    \fn void QQuaternion::setX(float x)
 
     Sets the x coordinate of this quaternion's vector to the given
     \a x coordinate.
@@ -184,7 +184,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QQuaternion::setY(qreal y)
+    \fn void QQuaternion::setY(float y)
 
     Sets the y coordinate of this quaternion's vector to the given
     \a y coordinate.
@@ -193,7 +193,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QQuaternion::setZ(qreal z)
+    \fn void QQuaternion::setZ(float z)
 
     Sets the z coordinate of this quaternion's vector to the given
     \a z coordinate.
@@ -202,7 +202,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QQuaternion::setScalar(qreal scalar)
+    \fn void QQuaternion::setScalar(float scalar)
 
     Sets the scalar component of this quaternion to \a scalar.
 
@@ -214,7 +214,7 @@ QT_BEGIN_NAMESPACE
 
     \sa lengthSquared(), normalized()
 */
-qreal QQuaternion::length() const
+float QQuaternion::length() const
 {
     return qSqrt(xp * xp + yp * yp + zp * zp + wp * wp);
 }
@@ -224,7 +224,7 @@ qreal QQuaternion::length() const
 
     \sa length()
 */
-qreal QQuaternion::lengthSquared() const
+float QQuaternion::lengthSquared() const
 {
     return xp * xp + yp * yp + zp * zp + wp * wp;
 }
@@ -323,7 +323,7 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 */
 
 /*!
-    \fn QQuaternion &QQuaternion::operator*=(qreal factor)
+    \fn QQuaternion &QQuaternion::operator*=(float factor)
 
     Multiplies this quaternion's components by the given \a factor, and
     returns a reference to this quaternion.
@@ -339,7 +339,7 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 */
 
 /*!
-    \fn QQuaternion &QQuaternion::operator/=(qreal divisor)
+    \fn QQuaternion &QQuaternion::operator/=(float divisor)
 
     Divides this quaternion's components by the given \a divisor, and
     returns a reference to this quaternion.
@@ -353,15 +353,15 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
     Creates a normalized quaternion that corresponds to rotating through
     \a angle degrees about the specified 3D \a axis.
 */
-QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, qreal angle)
+QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, float angle)
 {
     // Algorithm from:
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q56
     // We normalize the result just in case the values are close
     // to zero, as suggested in the above FAQ.
-    qreal a = (angle / 2.0f) * M_PI / 180.0f;
-    qreal s = qSin(a);
-    qreal c = qCos(a);
+    float a = (angle / 2.0f) * M_PI / 180.0f;
+    float s = sinf(a);
+    float c = cosf(a);
     QVector3D ax = axis.normalized();
     return QQuaternion(c, ax.x() * s, ax.y() * s, ax.z() * s).normalized();
 }
@@ -373,17 +373,17 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, qreal angle)
     \a angle degrees about the 3D axis (\a x, \a y, \a z).
 */
 QQuaternion QQuaternion::fromAxisAndAngle
-        (qreal x, qreal y, qreal z, qreal angle)
+        (float x, float y, float z, float angle)
 {
-    qreal length = qSqrt(x * x + y * y + z * z);
+    float length = qSqrt(x * x + y * y + z * z);
     if (!qFuzzyIsNull(length - 1.0f) && !qFuzzyIsNull(length)) {
         x /= length;
         y /= length;
         z /= length;
     }
-    qreal a = (angle / 2.0f) * M_PI / 180.0f;
-    qreal s = qSin(a);
-    qreal c = qCos(a);
+    float a = (angle / 2.0f) * M_PI / 180.0f;
+    float s = qSin(a);
+    float c = qCos(a);
     return QQuaternion(c, x * s, y * s, z * s).normalized();
 }
 
@@ -424,7 +424,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
 */
 
 /*!
-    \fn const QQuaternion operator*(qreal factor, const QQuaternion &quaternion)
+    \fn const QQuaternion operator*(float factor, const QQuaternion &quaternion)
     \relates QQuaternion
 
     Returns a copy of the given \a quaternion,  multiplied by the
@@ -434,7 +434,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
 */
 
 /*!
-    \fn const QQuaternion operator*(const QQuaternion &quaternion, qreal factor)
+    \fn const QQuaternion operator*(const QQuaternion &quaternion, float factor)
     \relates QQuaternion
 
     Returns a copy of the given \a quaternion,  multiplied by the
@@ -466,7 +466,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
 */
 
 /*!
-    \fn const QQuaternion operator/(const QQuaternion &quaternion, qreal divisor)
+    \fn const QQuaternion operator/(const QQuaternion &quaternion, float divisor)
     \relates QQuaternion
 
     Returns the QQuaternion object formed by dividing all components of
@@ -495,7 +495,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
     \sa nlerp()
 */
 QQuaternion QQuaternion::slerp
-    (const QQuaternion& q1, const QQuaternion& q2, qreal t)
+    (const QQuaternion& q1, const QQuaternion& q2, float t)
 {
     // Handle the easy cases first.
     if (t <= 0.0f)
@@ -505,7 +505,7 @@ QQuaternion QQuaternion::slerp
 
     // Determine the angle between the two quaternions.
     QQuaternion q2b;
-    qreal dot;
+    float dot;
     dot = q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp + q1.wp * q2.wp;
     if (dot >= 0.0f) {
         q2b = q2;
@@ -516,14 +516,14 @@ QQuaternion QQuaternion::slerp
 
     // Get the scale factors.  If they are too small,
     // then revert to simple linear interpolation.
-    qreal factor1 = 1.0f - t;
-    qreal factor2 = t;
+    float factor1 = 1.0f - t;
+    float factor2 = t;
     if ((1.0f - dot) > 0.0000001) {
-        qreal angle = qreal(qAcos(dot));
-        qreal sinOfAngle = qreal(qSin(angle));
+        float angle = float(qAcos(dot));
+        float sinOfAngle = float(qSin(angle));
         if (sinOfAngle > 0.0000001) {
-            factor1 = qreal(qSin((1.0f - t) * angle)) / sinOfAngle;
-            factor2 = qreal(qSin(t * angle)) / sinOfAngle;
+            factor1 = float(qSin((1.0f - t) * angle)) / sinOfAngle;
+            factor2 = float(qSin(t * angle)) / sinOfAngle;
         }
     }
 
@@ -547,7 +547,7 @@ QQuaternion QQuaternion::slerp
     \sa slerp()
 */
 QQuaternion QQuaternion::nlerp
-    (const QQuaternion& q1, const QQuaternion& q2, qreal t)
+    (const QQuaternion& q1, const QQuaternion& q2, float t)
 {
     // Handle the easy cases first.
     if (t <= 0.0f)
@@ -557,7 +557,7 @@ QQuaternion QQuaternion::nlerp
 
     // Determine the angle between the two quaternions.
     QQuaternion q2b;
-    qreal dot;
+    float dot;
     dot = q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp + q1.wp * q2.wp;
     if (dot >= 0.0f)
         q2b = q2;
@@ -602,8 +602,8 @@ QDebug operator<<(QDebug dbg, const QQuaternion &q)
 
 QDataStream &operator<<(QDataStream &stream, const QQuaternion &quaternion)
 {
-    stream << double(quaternion.scalar()) << double(quaternion.x())
-           << double(quaternion.y()) << double(quaternion.z());
+    stream << quaternion.scalar() << quaternion.x()
+           << quaternion.y() << quaternion.z();
     return stream;
 }
 
@@ -619,15 +619,15 @@ QDataStream &operator<<(QDataStream &stream, const QQuaternion &quaternion)
 
 QDataStream &operator>>(QDataStream &stream, QQuaternion &quaternion)
 {
-    double scalar, x, y, z;
+    float scalar, x, y, z;
     stream >> scalar;
     stream >> x;
     stream >> y;
     stream >> z;
-    quaternion.setScalar(qreal(scalar));
-    quaternion.setX(qreal(x));
-    quaternion.setY(qreal(y));
-    quaternion.setZ(qreal(z));
+    quaternion.setScalar(scalar);
+    quaternion.setX(x);
+    quaternion.setY(y);
+    quaternion.setZ(z);
     return stream;
 }
 

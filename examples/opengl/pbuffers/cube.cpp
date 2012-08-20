@@ -121,24 +121,6 @@ void Tile::setColors(GLfloat colorArray[4][4])
     geom->setColors(start, colorArray);
 }
 
-static inline void qMultMatrix(const QMatrix4x4 &mat)
-{
-    if (sizeof(qreal) == sizeof(GLfloat))
-        glMultMatrixf((GLfloat*)mat.constData());
-#ifndef QT_OPENGL_ES
-    else if (sizeof(qreal) == sizeof(GLdouble))
-        glMultMatrixd((GLdouble*)mat.constData());
-#endif
-    else
-    {
-        GLfloat fmat[16];
-        qreal const *r = mat.constData();
-        for (int i = 0; i < 16; ++i)
-            fmat[i] = r[i];
-        glMultMatrixf(fmat);
-    }
-}
-
 void Tile::draw() const
 {
     QMatrix4x4 mat;
@@ -146,7 +128,7 @@ void Tile::draw() const
     mat.rotate(orientation);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-    qMultMatrix(mat);
+    glMultMatrixf(mat.constData());
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, faceColor);
     glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, geom->indices() + start);
     glPopMatrix();

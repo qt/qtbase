@@ -2131,35 +2131,6 @@ void QOpenGLShaderProgram::setUniformValue(const char *name, const QSizeF& size)
     setUniformValue(uniformLocation(name), size);
 }
 
-// We have to repack matrices from qreal to GLfloat.
-#define setUniformMatrix(func,location,value,cols,rows) \
-    if (location == -1) \
-        return; \
-    if (sizeof(qreal) == sizeof(GLfloat)) { \
-        func(location, 1, GL_FALSE, \
-             reinterpret_cast<const GLfloat *>(value.constData())); \
-    } else { \
-        GLfloat mat[cols * rows]; \
-        const qreal *data = value.constData(); \
-        for (int i = 0; i < cols * rows; ++i) \
-            mat[i] = data[i]; \
-        func(location, 1, GL_FALSE, mat); \
-    }
-#define setUniformGenericMatrix(colfunc,location,value,cols,rows) \
-    if (location == -1) \
-        return; \
-    if (sizeof(qreal) == sizeof(GLfloat)) { \
-        const GLfloat *data = reinterpret_cast<const GLfloat *> \
-            (value.constData());  \
-        colfunc(location, cols, data); \
-    } else { \
-        GLfloat mat[cols * rows]; \
-        const qreal *data = value.constData(); \
-        for (int i = 0; i < cols * rows; ++i) \
-            mat[i] = data[i]; \
-        colfunc(location, cols, mat); \
-    }
-
 /*!
     Sets the uniform variable at \a location in the current context
     to a 2x2 matrix \a value.
@@ -2170,7 +2141,7 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix2x2& value
 {
     Q_D(QOpenGLShaderProgram);
     Q_UNUSED(d);
-    setUniformMatrix(d->glfuncs->glUniformMatrix2fv, location, value, 2, 2);
+    d->glfuncs->glUniformMatrix2fv(location, 1, GL_FALSE, value.constData());
 }
 
 /*!
@@ -2196,8 +2167,7 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix2x3& value
 {
     Q_D(QOpenGLShaderProgram);
     Q_UNUSED(d);
-    setUniformGenericMatrix
-        (d->glfuncs->glUniform3fv, location, value, 2, 3);
+    d->glfuncs->glUniform3fv(location, 2, value.constData());
 }
 
 /*!
@@ -2223,8 +2193,7 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix2x4& value
 {
     Q_D(QOpenGLShaderProgram);
     Q_UNUSED(d);
-    setUniformGenericMatrix
-        (d->glfuncs->glUniform4fv, location, value, 2, 4);
+    d->glfuncs->glUniform4fv(location, 2, value.constData());
 }
 
 /*!
@@ -2250,8 +2219,7 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix3x2& value
 {
     Q_D(QOpenGLShaderProgram);
     Q_UNUSED(d);
-    setUniformGenericMatrix
-        (d->glfuncs->glUniform2fv, location, value, 3, 2);
+    d->glfuncs->glUniform2fv(location, 3, value.constData());
 }
 
 /*!
@@ -2277,7 +2245,7 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix3x3& value
 {
     Q_D(QOpenGLShaderProgram);
     Q_UNUSED(d);
-    setUniformMatrix(d->glfuncs->glUniformMatrix3fv, location, value, 3, 3);
+    d->glfuncs->glUniformMatrix3fv(location, 1, GL_FALSE, value.constData());
 }
 
 /*!
@@ -2303,8 +2271,7 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix3x4& value
 {
     Q_D(QOpenGLShaderProgram);
     Q_UNUSED(d);
-    setUniformGenericMatrix
-        (d->glfuncs->glUniform4fv, location, value, 3, 4);
+    d->glfuncs->glUniform4fv(location, 3, value.constData());
 }
 
 /*!
@@ -2330,8 +2297,7 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix4x2& value
 {
     Q_D(QOpenGLShaderProgram);
     Q_UNUSED(d);
-    setUniformGenericMatrix
-        (d->glfuncs->glUniform2fv, location, value, 4, 2);
+    d->glfuncs->glUniform2fv(location, 4, value.constData());
 }
 
 /*!
@@ -2357,8 +2323,7 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix4x3& value
 {
     Q_D(QOpenGLShaderProgram);
     Q_UNUSED(d);
-    setUniformGenericMatrix
-        (d->glfuncs->glUniform3fv, location, value, 4, 3);
+    d->glfuncs->glUniform3fv(location, 4, value.constData());
 }
 
 /*!
@@ -2384,7 +2349,7 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix4x4& value
 {
     Q_D(QOpenGLShaderProgram);
     Q_UNUSED(d);
-    setUniformMatrix(d->glfuncs->glUniformMatrix4fv, location, value, 4, 4);
+    d->glfuncs->glUniformMatrix4fv(location, 1, GL_FALSE, value.constData());
 }
 
 /*!

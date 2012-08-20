@@ -61,11 +61,6 @@ QT_BEGIN_NAMESPACE
     The QVector4D class can also be used to represent vertices in 4D space.
     We therefore do not need to provide a separate vertex class.
 
-    \b{Note:} By design values in the QVector4D instance are stored as \c float.
-    This means that on platforms where the \c qreal arguments to QVector4D
-    functions are represented by \c double values, it is possible to
-    lose precision.
-
     \sa QQuaternion, QVector2D, QVector3D
 */
 
@@ -76,7 +71,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QVector4D::QVector4D(qreal xpos, qreal ypos, qreal zpos, qreal wpos)
+    \fn QVector4D::QVector4D(float xpos, float ypos, float zpos, float wpos)
 
     Constructs a vector with coordinates (\a xpos, \a ypos, \a zpos, \a wpos).
 */
@@ -117,7 +112,7 @@ QVector4D::QVector4D(const QVector2D& vector)
 
     \sa toVector2D()
 */
-QVector4D::QVector4D(const QVector2D& vector, qreal zpos, qreal wpos)
+QVector4D::QVector4D(const QVector2D& vector, float zpos, float wpos)
 {
     xp = vector.xp;
     yp = vector.yp;
@@ -149,7 +144,7 @@ QVector4D::QVector4D(const QVector3D& vector)
 
     \sa toVector3D()
 */
-QVector4D::QVector4D(const QVector3D& vector, qreal wpos)
+QVector4D::QVector4D(const QVector3D& vector, float wpos)
 {
     xp = vector.xp;
     yp = vector.yp;
@@ -167,7 +162,7 @@ QVector4D::QVector4D(const QVector3D& vector, qreal wpos)
 */
 
 /*!
-    \fn qreal QVector4D::x() const
+    \fn float QVector4D::x() const
 
     Returns the x coordinate of this point.
 
@@ -175,7 +170,7 @@ QVector4D::QVector4D(const QVector3D& vector, qreal wpos)
 */
 
 /*!
-    \fn qreal QVector4D::y() const
+    \fn float QVector4D::y() const
 
     Returns the y coordinate of this point.
 
@@ -183,7 +178,7 @@ QVector4D::QVector4D(const QVector3D& vector, qreal wpos)
 */
 
 /*!
-    \fn qreal QVector4D::z() const
+    \fn float QVector4D::z() const
 
     Returns the z coordinate of this point.
 
@@ -191,7 +186,7 @@ QVector4D::QVector4D(const QVector3D& vector, qreal wpos)
 */
 
 /*!
-    \fn qreal QVector4D::w() const
+    \fn float QVector4D::w() const
 
     Returns the w coordinate of this point.
 
@@ -199,7 +194,7 @@ QVector4D::QVector4D(const QVector3D& vector, qreal wpos)
 */
 
 /*!
-    \fn void QVector4D::setX(qreal x)
+    \fn void QVector4D::setX(float x)
 
     Sets the x coordinate of this point to the given \a x coordinate.
 
@@ -207,7 +202,7 @@ QVector4D::QVector4D(const QVector3D& vector, qreal wpos)
 */
 
 /*!
-    \fn void QVector4D::setY(qreal y)
+    \fn void QVector4D::setY(float y)
 
     Sets the y coordinate of this point to the given \a y coordinate.
 
@@ -215,7 +210,7 @@ QVector4D::QVector4D(const QVector3D& vector, qreal wpos)
 */
 
 /*!
-    \fn void QVector4D::setZ(qreal z)
+    \fn void QVector4D::setZ(float z)
 
     Sets the z coordinate of this point to the given \a z coordinate.
 
@@ -223,7 +218,7 @@ QVector4D::QVector4D(const QVector3D& vector, qreal wpos)
 */
 
 /*!
-    \fn void QVector4D::setW(qreal w)
+    \fn void QVector4D::setW(float w)
 
     Sets the w coordinate of this point to the given \a w coordinate.
 
@@ -235,9 +230,14 @@ QVector4D::QVector4D(const QVector3D& vector, qreal wpos)
 
     \sa lengthSquared(), normalized()
 */
-qreal QVector4D::length() const
+float QVector4D::length() const
 {
-    return qSqrt(xp * xp + yp * yp + zp * zp + wp * wp);
+    // Need some extra precision if the length is very small.
+    double len = double(xp) * double(xp) +
+                 double(yp) * double(yp) +
+                 double(zp) * double(zp) +
+                 double(wp) * double(wp);
+    return float(sqrt(len));
 }
 
 /*!
@@ -246,7 +246,7 @@ qreal QVector4D::length() const
 
     \sa length(), dotProduct()
 */
-qreal QVector4D::lengthSquared() const
+float QVector4D::lengthSquared() const
 {
     return xp * xp + yp * yp + zp * zp + wp * wp;
 }
@@ -267,12 +267,17 @@ QVector4D QVector4D::normalized() const
                  double(yp) * double(yp) +
                  double(zp) * double(zp) +
                  double(wp) * double(wp);
-    if (qFuzzyIsNull(len - 1.0f))
+    if (qFuzzyIsNull(len - 1.0f)) {
         return *this;
-    else if (!qFuzzyIsNull(len))
-        return *this / qSqrt(len);
-    else
+    } else if (!qFuzzyIsNull(len)) {
+        double sqrtLen = sqrt(len);
+        return QVector4D(float(double(xp) / sqrtLen),
+                         float(double(yp) / sqrtLen),
+                         float(double(zp) / sqrtLen),
+                         float(double(wp) / sqrtLen));
+    } else {
         return QVector4D();
+    }
 }
 
 /*!
@@ -291,12 +296,12 @@ void QVector4D::normalize()
     if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 
-    len = qSqrt(len);
+    len = sqrt(len);
 
-    xp /= len;
-    yp /= len;
-    zp /= len;
-    wp /= len;
+    xp = float(double(xp) / len);
+    yp = float(double(yp) / len);
+    zp = float(double(zp) / len);
+    wp = float(double(wp) / len);
 }
 
 /*!
@@ -318,7 +323,7 @@ void QVector4D::normalize()
 */
 
 /*!
-    \fn QVector4D &QVector4D::operator*=(qreal factor)
+    \fn QVector4D &QVector4D::operator*=(float factor)
 
     Multiplies this vector's coordinates by the given \a factor, and
     returns a reference to this vector.
@@ -334,7 +339,7 @@ void QVector4D::normalize()
 */
 
 /*!
-    \fn QVector4D &QVector4D::operator/=(qreal divisor)
+    \fn QVector4D &QVector4D::operator/=(float divisor)
 
     Divides this vector's coordinates by the given \a divisor, and
     returns a reference to this vector.
@@ -345,7 +350,7 @@ void QVector4D::normalize()
 /*!
     Returns the dot product of \a v1 and \a v2.
 */
-qreal QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
+float QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
 {
     return v1.xp * v2.xp + v1.yp * v2.yp + v1.zp * v2.zp + v1.wp * v2.wp;
 }
@@ -387,7 +392,7 @@ qreal QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
 */
 
 /*!
-    \fn const QVector4D operator*(qreal factor, const QVector4D &vector)
+    \fn const QVector4D operator*(float factor, const QVector4D &vector)
     \relates QVector4D
 
     Returns a copy of the given \a vector,  multiplied by the given \a factor.
@@ -396,7 +401,7 @@ qreal QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
 */
 
 /*!
-    \fn const QVector4D operator*(const QVector4D &vector, qreal factor)
+    \fn const QVector4D operator*(const QVector4D &vector, float factor)
     \relates QVector4D
 
     Returns a copy of the given \a vector,  multiplied by the given \a factor.
@@ -426,7 +431,7 @@ qreal QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
 */
 
 /*!
-    \fn const QVector4D operator/(const QVector4D &vector, qreal divisor)
+    \fn const QVector4D operator/(const QVector4D &vector, float divisor)
     \relates QVector4D
 
     Returns the QVector4D object formed by dividing all four components of
@@ -452,7 +457,7 @@ qreal QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
 */
 QVector2D QVector4D::toVector2D() const
 {
-    return QVector2D(xp, yp, 1);
+    return QVector2D(xp, yp);
 }
 
 /*!
@@ -466,7 +471,7 @@ QVector2D QVector4D::toVector2DAffine() const
 {
     if (qIsNull(wp))
         return QVector2D();
-    return QVector2D(xp / wp, yp / wp, 1);
+    return QVector2D(xp / wp, yp / wp);
 }
 
 #endif
@@ -480,7 +485,7 @@ QVector2D QVector4D::toVector2DAffine() const
 */
 QVector3D QVector4D::toVector3D() const
 {
-    return QVector3D(xp, yp, zp, 1);
+    return QVector3D(xp, yp, zp);
 }
 
 /*!
@@ -493,7 +498,7 @@ QVector3D QVector4D::toVector3DAffine() const
 {
     if (qIsNull(wp))
         return QVector3D();
-    return QVector3D(xp / wp, yp / wp, zp / wp, 1);
+    return QVector3D(xp / wp, yp / wp, zp / wp);
 }
 
 #endif
@@ -550,8 +555,8 @@ QDebug operator<<(QDebug dbg, const QVector4D &vector)
 
 QDataStream &operator<<(QDataStream &stream, const QVector4D &vector)
 {
-    stream << double(vector.x()) << double(vector.y())
-           << double(vector.z()) << double(vector.w());
+    stream << vector.x() << vector.y()
+           << vector.z() << vector.w();
     return stream;
 }
 
@@ -567,15 +572,15 @@ QDataStream &operator<<(QDataStream &stream, const QVector4D &vector)
 
 QDataStream &operator>>(QDataStream &stream, QVector4D &vector)
 {
-    double x, y, z, w;
+    float x, y, z, w;
     stream >> x;
     stream >> y;
     stream >> z;
     stream >> w;
-    vector.setX(qreal(x));
-    vector.setY(qreal(y));
-    vector.setZ(qreal(z));
-    vector.setW(qreal(w));
+    vector.setX(x);
+    vector.setY(y);
+    vector.setZ(z);
+    vector.setW(w);
     return stream;
 }
 

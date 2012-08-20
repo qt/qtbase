@@ -98,113 +98,106 @@ private slots:
     void metaTypes();
 };
 
-// QVector3D uses float internally, which can lead to some precision
-// issues when using it with the qreal-based QQuaternion.
-static bool fuzzyCompare(qreal x, qreal y)
-{
-    return qFuzzyIsNull(float(x - y));
-}
-
 // Test the creation of QQuaternion objects in various ways:
 // construct, copy, and modify.
 void tst_QQuaternion::create()
 {
     QQuaternion identity;
-    QCOMPARE(identity.x(), (qreal)0.0f);
-    QCOMPARE(identity.y(), (qreal)0.0f);
-    QCOMPARE(identity.z(), (qreal)0.0f);
-    QCOMPARE(identity.scalar(), (qreal)1.0f);
+    QCOMPARE(identity.x(), 0.0f);
+    QCOMPARE(identity.y(), 0.0f);
+    QCOMPARE(identity.z(), 0.0f);
+    QCOMPARE(identity.scalar(), 1.0f);
     QVERIFY(identity.isIdentity());
 
-    QQuaternion negativeZeroIdentity(qreal(1.0), qreal(-0.0), qreal(-0.0), qreal(-0.0));
-    QCOMPARE(negativeZeroIdentity.x(), qreal(-0.0));
-    QCOMPARE(negativeZeroIdentity.y(), qreal(-0.0));
-    QCOMPARE(negativeZeroIdentity.z(), qreal(-0.0));
-    QCOMPARE(negativeZeroIdentity.scalar(), qreal(1.0));
+    QQuaternion negativeZeroIdentity(1.0f, -0.0f, -0.0f, -0.0f);
+    QCOMPARE(negativeZeroIdentity.x(), -0.0f);
+    QCOMPARE(negativeZeroIdentity.y(), -0.0f);
+    QCOMPARE(negativeZeroIdentity.z(), -0.0f);
+    QCOMPARE(negativeZeroIdentity.scalar(), 1.0f);
     QVERIFY(negativeZeroIdentity.isIdentity());
 
     QQuaternion v1(34.0f, 1.0f, 2.5f, -89.25f);
-    QCOMPARE(v1.x(), (qreal)1.0f);
-    QCOMPARE(v1.y(), (qreal)2.5f);
-    QCOMPARE(v1.z(), (qreal)-89.25f);
-    QCOMPARE(v1.scalar(), (qreal)34.0f);
+    QCOMPARE(v1.x(), 1.0f);
+    QCOMPARE(v1.y(), 2.5f);
+    QCOMPARE(v1.z(), -89.25f);
+    QCOMPARE(v1.scalar(), 34.0f);
     QVERIFY(!v1.isNull());
 
     QQuaternion v1i(34, 1, 2, -89);
-    QCOMPARE(v1i.x(), (qreal)1.0f);
-    QCOMPARE(v1i.y(), (qreal)2.0f);
-    QCOMPARE(v1i.z(), (qreal)-89.0f);
-    QCOMPARE(v1i.scalar(), (qreal)34.0f);
+    QCOMPARE(v1i.x(), 1.0f);
+    QCOMPARE(v1i.y(), 2.0f);
+    QCOMPARE(v1i.z(), -89.0f);
+    QCOMPARE(v1i.scalar(), 34.0f);
     QVERIFY(!v1i.isNull());
 
     QQuaternion v2(v1);
-    QCOMPARE(v2.x(), (qreal)1.0f);
-    QCOMPARE(v2.y(), (qreal)2.5f);
-    QCOMPARE(v2.z(), (qreal)-89.25f);
-    QCOMPARE(v2.scalar(), (qreal)34.0f);
+    QCOMPARE(v2.x(), 1.0f);
+    QCOMPARE(v2.y(), 2.5f);
+    QCOMPARE(v2.z(), -89.25f);
+    QCOMPARE(v2.scalar(), 34.0f);
     QVERIFY(!v2.isNull());
 
     QQuaternion v4;
-    QCOMPARE(v4.x(), (qreal)0.0f);
-    QCOMPARE(v4.y(), (qreal)0.0f);
-    QCOMPARE(v4.z(), (qreal)0.0f);
-    QCOMPARE(v4.scalar(), (qreal)1.0f);
+    QCOMPARE(v4.x(), 0.0f);
+    QCOMPARE(v4.y(), 0.0f);
+    QCOMPARE(v4.z(), 0.0f);
+    QCOMPARE(v4.scalar(), 1.0f);
     QVERIFY(v4.isIdentity());
     v4 = v1;
-    QCOMPARE(v4.x(), (qreal)1.0f);
-    QCOMPARE(v4.y(), (qreal)2.5f);
-    QCOMPARE(v4.z(), (qreal)-89.25f);
-    QCOMPARE(v4.scalar(), (qreal)34.0f);
+    QCOMPARE(v4.x(), 1.0f);
+    QCOMPARE(v4.y(), 2.5f);
+    QCOMPARE(v4.z(), -89.25f);
+    QCOMPARE(v4.scalar(), 34.0f);
     QVERIFY(!v4.isNull());
 
     QQuaternion v9(34, QVector3D(1.0f, 2.5f, -89.25f));
-    QCOMPARE(v9.x(), (qreal)1.0f);
-    QCOMPARE(v9.y(), (qreal)2.5f);
-    QCOMPARE(v9.z(), (qreal)-89.25f);
-    QCOMPARE(v9.scalar(), (qreal)34.0f);
+    QCOMPARE(v9.x(), 1.0f);
+    QCOMPARE(v9.y(), 2.5f);
+    QCOMPARE(v9.z(), -89.25f);
+    QCOMPARE(v9.scalar(), 34.0f);
     QVERIFY(!v9.isNull());
 
     v1.setX(3.0f);
-    QCOMPARE(v1.x(), (qreal)3.0f);
-    QCOMPARE(v1.y(), (qreal)2.5f);
-    QCOMPARE(v1.z(), (qreal)-89.25f);
-    QCOMPARE(v1.scalar(), (qreal)34.0f);
+    QCOMPARE(v1.x(), 3.0f);
+    QCOMPARE(v1.y(), 2.5f);
+    QCOMPARE(v1.z(), -89.25f);
+    QCOMPARE(v1.scalar(), 34.0f);
     QVERIFY(!v1.isNull());
 
     v1.setY(10.5f);
-    QCOMPARE(v1.x(), (qreal)3.0f);
-    QCOMPARE(v1.y(), (qreal)10.5f);
-    QCOMPARE(v1.z(), (qreal)-89.25f);
-    QCOMPARE(v1.scalar(), (qreal)34.0f);
+    QCOMPARE(v1.x(), 3.0f);
+    QCOMPARE(v1.y(), 10.5f);
+    QCOMPARE(v1.z(), -89.25f);
+    QCOMPARE(v1.scalar(), 34.0f);
     QVERIFY(!v1.isNull());
 
     v1.setZ(15.5f);
-    QCOMPARE(v1.x(), (qreal)3.0f);
-    QCOMPARE(v1.y(), (qreal)10.5f);
-    QCOMPARE(v1.z(), (qreal)15.5f);
-    QCOMPARE(v1.scalar(), (qreal)34.0f);
+    QCOMPARE(v1.x(), 3.0f);
+    QCOMPARE(v1.y(), 10.5f);
+    QCOMPARE(v1.z(), 15.5f);
+    QCOMPARE(v1.scalar(), 34.0f);
     QVERIFY(!v1.isNull());
 
     v1.setScalar(6.0f);
-    QCOMPARE(v1.x(), (qreal)3.0f);
-    QCOMPARE(v1.y(), (qreal)10.5f);
-    QCOMPARE(v1.z(), (qreal)15.5f);
-    QCOMPARE(v1.scalar(), (qreal)6.0f);
+    QCOMPARE(v1.x(), 3.0f);
+    QCOMPARE(v1.y(), 10.5f);
+    QCOMPARE(v1.z(), 15.5f);
+    QCOMPARE(v1.scalar(), 6.0f);
     QVERIFY(!v1.isNull());
 
     v1.setVector(2.0f, 6.5f, -1.25f);
-    QCOMPARE(v1.x(), (qreal)2.0f);
-    QCOMPARE(v1.y(), (qreal)6.5f);
-    QCOMPARE(v1.z(), (qreal)-1.25f);
-    QCOMPARE(v1.scalar(), (qreal)6.0f);
+    QCOMPARE(v1.x(), 2.0f);
+    QCOMPARE(v1.y(), 6.5f);
+    QCOMPARE(v1.z(), -1.25f);
+    QCOMPARE(v1.scalar(), 6.0f);
     QVERIFY(!v1.isNull());
     QVERIFY(v1.vector() == QVector3D(2.0f, 6.5f, -1.25f));
 
     v1.setVector(QVector3D(-2.0f, -6.5f, 1.25f));
-    QCOMPARE(v1.x(), (qreal)-2.0f);
-    QCOMPARE(v1.y(), (qreal)-6.5f);
-    QCOMPARE(v1.z(), (qreal)1.25f);
-    QCOMPARE(v1.scalar(), (qreal)6.0f);
+    QCOMPARE(v1.x(), -2.0f);
+    QCOMPARE(v1.y(), -6.5f);
+    QCOMPARE(v1.z(), 1.25f);
+    QCOMPARE(v1.scalar(), 6.0f);
     QVERIFY(!v1.isNull());
     QVERIFY(v1.vector() == QVector3D(-2.0f, -6.5f, 1.25f));
 
@@ -212,46 +205,46 @@ void tst_QQuaternion::create()
     v1.setY(0.0f);
     v1.setZ(0.0f);
     v1.setScalar(0.0f);
-    QCOMPARE(v1.x(), (qreal)0.0f);
-    QCOMPARE(v1.y(), (qreal)0.0f);
-    QCOMPARE(v1.z(), (qreal)0.0f);
-    QCOMPARE(v1.scalar(), (qreal)0.0f);
+    QCOMPARE(v1.x(), 0.0f);
+    QCOMPARE(v1.y(), 0.0f);
+    QCOMPARE(v1.z(), 0.0f);
+    QCOMPARE(v1.scalar(), 0.0f);
     QVERIFY(v1.isNull());
 
     QVector4D v10 = v9.toVector4D();
-    QCOMPARE(v10.x(), (qreal)1.0f);
-    QCOMPARE(v10.y(), (qreal)2.5f);
-    QCOMPARE(v10.z(), (qreal)-89.25f);
-    QCOMPARE(v10.w(), (qreal)34.0f);
+    QCOMPARE(v10.x(), 1.0f);
+    QCOMPARE(v10.y(), 2.5f);
+    QCOMPARE(v10.z(), -89.25f);
+    QCOMPARE(v10.w(), 34.0f);
 }
 
 // Test length computation for quaternions.
 void tst_QQuaternion::length_data()
 {
-    QTest::addColumn<qreal>("x");
-    QTest::addColumn<qreal>("y");
-    QTest::addColumn<qreal>("z");
-    QTest::addColumn<qreal>("w");
-    QTest::addColumn<qreal>("len");
+    QTest::addColumn<float>("x");
+    QTest::addColumn<float>("y");
+    QTest::addColumn<float>("z");
+    QTest::addColumn<float>("w");
+    QTest::addColumn<float>("len");
 
-    QTest::newRow("null") << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f;
-    QTest::newRow("1x") << (qreal)1.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f;
-    QTest::newRow("1y") << (qreal)0.0f << (qreal)1.0f << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f;
-    QTest::newRow("1z") << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f << (qreal)0.0f << (qreal)1.0f;
-    QTest::newRow("1w") << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f << (qreal)1.0f;
-    QTest::newRow("-1x") << (qreal)-1.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f;
-    QTest::newRow("-1y") << (qreal)0.0f << (qreal)-1.0f << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f;
-    QTest::newRow("-1z") << (qreal)0.0f << (qreal)0.0f << (qreal)-1.0f << (qreal)0.0f << (qreal)1.0f;
-    QTest::newRow("-1w") << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)-1.0f << (qreal)1.0f;
-    QTest::newRow("two") << (qreal)2.0f << (qreal)-2.0f << (qreal)2.0f << (qreal)2.0f << (qreal)qSqrt(16.0f);
+    QTest::newRow("null") << 0.0f << 0.0f << 0.0f << 0.0f << 0.0f;
+    QTest::newRow("1x") << 1.0f << 0.0f << 0.0f << 0.0f << 1.0f;
+    QTest::newRow("1y") << 0.0f << 1.0f << 0.0f << 0.0f << 1.0f;
+    QTest::newRow("1z") << 0.0f << 0.0f << 1.0f << 0.0f << 1.0f;
+    QTest::newRow("1w") << 0.0f << 0.0f << 0.0f << 1.0f << 1.0f;
+    QTest::newRow("-1x") << -1.0f << 0.0f << 0.0f << 0.0f << 1.0f;
+    QTest::newRow("-1y") << 0.0f << -1.0f << 0.0f << 0.0f << 1.0f;
+    QTest::newRow("-1z") << 0.0f << 0.0f << -1.0f << 0.0f << 1.0f;
+    QTest::newRow("-1w") << 0.0f << 0.0f << 0.0f << -1.0f << 1.0f;
+    QTest::newRow("two") << 2.0f << -2.0f << 2.0f << 2.0f << sqrtf(16.0f);
 }
 void tst_QQuaternion::length()
 {
-    QFETCH(qreal, x);
-    QFETCH(qreal, y);
-    QFETCH(qreal, z);
-    QFETCH(qreal, w);
-    QFETCH(qreal, len);
+    QFETCH(float, x);
+    QFETCH(float, y);
+    QFETCH(float, z);
+    QFETCH(float, w);
+    QFETCH(float, len);
 
     QQuaternion v(w, x, y, z);
     QCOMPARE(v.length(), len);
@@ -266,18 +259,18 @@ void tst_QQuaternion::normalized_data()
 }
 void tst_QQuaternion::normalized()
 {
-    QFETCH(qreal, x);
-    QFETCH(qreal, y);
-    QFETCH(qreal, z);
-    QFETCH(qreal, w);
-    QFETCH(qreal, len);
+    QFETCH(float, x);
+    QFETCH(float, y);
+    QFETCH(float, z);
+    QFETCH(float, w);
+    QFETCH(float, len);
 
     QQuaternion v(w, x, y, z);
     QQuaternion u = v.normalized();
     if (v.isNull())
         QVERIFY(u.isNull());
     else
-        QCOMPARE(u.length(), qreal(1.0f));
+        QCOMPARE(u.length(), 1.0f);
     QCOMPARE(u.x() * len, v.x());
     QCOMPARE(u.y() * len, v.y());
     QCOMPARE(u.z() * len, v.z());
@@ -292,10 +285,10 @@ void tst_QQuaternion::normalize_data()
 }
 void tst_QQuaternion::normalize()
 {
-    QFETCH(qreal, x);
-    QFETCH(qreal, y);
-    QFETCH(qreal, z);
-    QFETCH(qreal, w);
+    QFETCH(float, x);
+    QFETCH(float, y);
+    QFETCH(float, z);
+    QFETCH(float, w);
 
     QQuaternion v(w, x, y, z);
     bool isNull = v.isNull();
@@ -303,7 +296,7 @@ void tst_QQuaternion::normalize()
     if (isNull)
         QVERIFY(v.isNull());
     else
-        QCOMPARE(v.length(), qreal(1.0f));
+        QCOMPARE(v.length(), 1.0f);
 }
 
 // Test the comparison operators for quaternions.
@@ -326,63 +319,63 @@ void tst_QQuaternion::compare()
 // Test addition for quaternions.
 void tst_QQuaternion::add_data()
 {
-    QTest::addColumn<qreal>("x1");
-    QTest::addColumn<qreal>("y1");
-    QTest::addColumn<qreal>("z1");
-    QTest::addColumn<qreal>("w1");
-    QTest::addColumn<qreal>("x2");
-    QTest::addColumn<qreal>("y2");
-    QTest::addColumn<qreal>("z2");
-    QTest::addColumn<qreal>("w2");
-    QTest::addColumn<qreal>("x3");
-    QTest::addColumn<qreal>("y3");
-    QTest::addColumn<qreal>("z3");
-    QTest::addColumn<qreal>("w3");
+    QTest::addColumn<float>("x1");
+    QTest::addColumn<float>("y1");
+    QTest::addColumn<float>("z1");
+    QTest::addColumn<float>("w1");
+    QTest::addColumn<float>("x2");
+    QTest::addColumn<float>("y2");
+    QTest::addColumn<float>("z2");
+    QTest::addColumn<float>("w2");
+    QTest::addColumn<float>("x3");
+    QTest::addColumn<float>("y3");
+    QTest::addColumn<float>("z3");
+    QTest::addColumn<float>("w3");
 
     QTest::newRow("null")
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f;
+        << 0.0f << 0.0f << 0.0f << 0.0f
+        << 0.0f << 0.0f << 0.0f << 0.0f
+        << 0.0f << 0.0f << 0.0f << 0.0f;
 
     QTest::newRow("xonly")
-        << (qreal)1.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f
-        << (qreal)2.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f
-        << (qreal)3.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f;
+        << 1.0f << 0.0f << 0.0f << 0.0f
+        << 2.0f << 0.0f << 0.0f << 0.0f
+        << 3.0f << 0.0f << 0.0f << 0.0f;
 
     QTest::newRow("yonly")
-        << (qreal)0.0f << (qreal)1.0f << (qreal)0.0f << (qreal)0.0f
-        << (qreal)0.0f << (qreal)2.0f << (qreal)0.0f << (qreal)0.0f
-        << (qreal)0.0f << (qreal)3.0f << (qreal)0.0f << (qreal)0.0f;
+        << 0.0f << 1.0f << 0.0f << 0.0f
+        << 0.0f << 2.0f << 0.0f << 0.0f
+        << 0.0f << 3.0f << 0.0f << 0.0f;
 
     QTest::newRow("zonly")
-        << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f << (qreal)0.0f
-        << (qreal)0.0f << (qreal)0.0f << (qreal)2.0f << (qreal)0.0f
-        << (qreal)0.0f << (qreal)0.0f << (qreal)3.0f << (qreal)0.0f;
+        << 0.0f << 0.0f << 1.0f << 0.0f
+        << 0.0f << 0.0f << 2.0f << 0.0f
+        << 0.0f << 0.0f << 3.0f << 0.0f;
 
     QTest::newRow("wonly")
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)2.0f
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)3.0f;
+        << 0.0f << 0.0f << 0.0f << 1.0f
+        << 0.0f << 0.0f << 0.0f << 2.0f
+        << 0.0f << 0.0f << 0.0f << 3.0f;
 
     QTest::newRow("all")
-        << (qreal)1.0f << (qreal)2.0f << (qreal)3.0f << (qreal)8.0f
-        << (qreal)4.0f << (qreal)5.0f << (qreal)-6.0f << (qreal)9.0f
-        << (qreal)5.0f << (qreal)7.0f << (qreal)-3.0f << (qreal)17.0f;
+        << 1.0f << 2.0f << 3.0f << 8.0f
+        << 4.0f << 5.0f << -6.0f << 9.0f
+        << 5.0f << 7.0f << -3.0f << 17.0f;
 }
 void tst_QQuaternion::add()
 {
-    QFETCH(qreal, x1);
-    QFETCH(qreal, y1);
-    QFETCH(qreal, z1);
-    QFETCH(qreal, w1);
-    QFETCH(qreal, x2);
-    QFETCH(qreal, y2);
-    QFETCH(qreal, z2);
-    QFETCH(qreal, w2);
-    QFETCH(qreal, x3);
-    QFETCH(qreal, y3);
-    QFETCH(qreal, z3);
-    QFETCH(qreal, w3);
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, w1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, w2);
+    QFETCH(float, x3);
+    QFETCH(float, y3);
+    QFETCH(float, z3);
+    QFETCH(float, w3);
 
     QQuaternion v1(w1, x1, y1, z1);
     QQuaternion v2(w2, x2, y2, z2);
@@ -408,18 +401,18 @@ void tst_QQuaternion::subtract_data()
 }
 void tst_QQuaternion::subtract()
 {
-    QFETCH(qreal, x1);
-    QFETCH(qreal, y1);
-    QFETCH(qreal, z1);
-    QFETCH(qreal, w1);
-    QFETCH(qreal, x2);
-    QFETCH(qreal, y2);
-    QFETCH(qreal, z2);
-    QFETCH(qreal, w2);
-    QFETCH(qreal, x3);
-    QFETCH(qreal, y3);
-    QFETCH(qreal, z3);
-    QFETCH(qreal, w3);
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, w1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, w2);
+    QFETCH(float, x3);
+    QFETCH(float, y3);
+    QFETCH(float, z3);
+    QFETCH(float, w3);
 
     QQuaternion v1(w1, x1, y1, z1);
     QQuaternion v2(w2, x2, y2, z2);
@@ -450,31 +443,31 @@ void tst_QQuaternion::subtract()
 // Test quaternion multiplication.
 void tst_QQuaternion::multiply_data()
 {
-    QTest::addColumn<qreal>("x1");
-    QTest::addColumn<qreal>("y1");
-    QTest::addColumn<qreal>("z1");
-    QTest::addColumn<qreal>("w1");
-    QTest::addColumn<qreal>("x2");
-    QTest::addColumn<qreal>("y2");
-    QTest::addColumn<qreal>("z2");
-    QTest::addColumn<qreal>("w2");
+    QTest::addColumn<float>("x1");
+    QTest::addColumn<float>("y1");
+    QTest::addColumn<float>("z1");
+    QTest::addColumn<float>("w1");
+    QTest::addColumn<float>("x2");
+    QTest::addColumn<float>("y2");
+    QTest::addColumn<float>("z2");
+    QTest::addColumn<float>("w2");
 
     QTest::newRow("null")
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f;
+        << 0.0f << 0.0f << 0.0f << 0.0f
+        << 0.0f << 0.0f << 0.0f << 0.0f;
 
     QTest::newRow("unitvec")
-        << (qreal)1.0f << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f
-        << (qreal)0.0f << (qreal)1.0f << (qreal)0.0f << (qreal)1.0f;
+        << 1.0f << 0.0f << 0.0f << 1.0f
+        << 0.0f << 1.0f << 0.0f << 1.0f;
 
     QTest::newRow("complex")
-        << (qreal)1.0f << (qreal)2.0f << (qreal)3.0f << (qreal)7.0f
-        << (qreal)4.0f << (qreal)5.0f << (qreal)6.0f << (qreal)8.0f;
+        << 1.0f << 2.0f << 3.0f << 7.0f
+        << 4.0f << 5.0f << 6.0f << 8.0f;
 
-    for (qreal w = -1.0f; w <= 1.0f; w += 0.5f)
-        for (qreal x = -1.0f; x <= 1.0f; x += 0.5f)
-            for (qreal y = -1.0f; y <= 1.0f; y += 0.5f)
-                for (qreal z = -1.0f; z <= 1.0f; z += 0.5f) {
+    for (float w = -1.0f; w <= 1.0f; w += 0.5f)
+        for (float x = -1.0f; x <= 1.0f; x += 0.5f)
+            for (float y = -1.0f; y <= 1.0f; y += 0.5f)
+                for (float z = -1.0f; z <= 1.0f; z += 0.5f) {
                     QTest::newRow("exhaustive")
                         << x << y << z << w
                         << z << w << y << x;
@@ -482,14 +475,14 @@ void tst_QQuaternion::multiply_data()
 }
 void tst_QQuaternion::multiply()
 {
-    QFETCH(qreal, x1);
-    QFETCH(qreal, y1);
-    QFETCH(qreal, z1);
-    QFETCH(qreal, w1);
-    QFETCH(qreal, x2);
-    QFETCH(qreal, y2);
-    QFETCH(qreal, z2);
-    QFETCH(qreal, w2);
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, w1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, w2);
 
     QQuaternion q1(w1, x1, y1, z1);
     QQuaternion q2(w2, x2, y2, z2);
@@ -499,7 +492,7 @@ void tst_QQuaternion::multiply()
     // to calculate the answer we expect to get.
     QVector3D v1(x1, y1, z1);
     QVector3D v2(x2, y2, z2);
-    qreal scalar = w1 * w2 - QVector3D::dotProduct(v1, v2);
+    float scalar = w1 * w2 - QVector3D::dotProduct(v1, v2);
     QVector3D vector = w1 * v2 + w2 * v1 + QVector3D::crossProduct(v1, v2);
     QQuaternion result(scalar, vector);
 
@@ -509,62 +502,62 @@ void tst_QQuaternion::multiply()
 // Test multiplication by a factor for quaternions.
 void tst_QQuaternion::multiplyFactor_data()
 {
-    QTest::addColumn<qreal>("x1");
-    QTest::addColumn<qreal>("y1");
-    QTest::addColumn<qreal>("z1");
-    QTest::addColumn<qreal>("w1");
-    QTest::addColumn<qreal>("factor");
-    QTest::addColumn<qreal>("x2");
-    QTest::addColumn<qreal>("y2");
-    QTest::addColumn<qreal>("z2");
-    QTest::addColumn<qreal>("w2");
+    QTest::addColumn<float>("x1");
+    QTest::addColumn<float>("y1");
+    QTest::addColumn<float>("z1");
+    QTest::addColumn<float>("w1");
+    QTest::addColumn<float>("factor");
+    QTest::addColumn<float>("x2");
+    QTest::addColumn<float>("y2");
+    QTest::addColumn<float>("z2");
+    QTest::addColumn<float>("w2");
 
     QTest::newRow("null")
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f
-        << (qreal)100.0f
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f;
+        << 0.0f << 0.0f << 0.0f << 0.0f
+        << 100.0f
+        << 0.0f << 0.0f << 0.0f << 0.0f;
 
     QTest::newRow("xonly")
-        << (qreal)1.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f
-        << (qreal)2.0f
-        << (qreal)2.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f;
+        << 1.0f << 0.0f << 0.0f << 0.0f
+        << 2.0f
+        << 2.0f << 0.0f << 0.0f << 0.0f;
 
     QTest::newRow("yonly")
-        << (qreal)0.0f << (qreal)1.0f << (qreal)0.0f << (qreal)0.0f
-        << (qreal)2.0f
-        << (qreal)0.0f << (qreal)2.0f << (qreal)0.0f << (qreal)0.0f;
+        << 0.0f << 1.0f << 0.0f << 0.0f
+        << 2.0f
+        << 0.0f << 2.0f << 0.0f << 0.0f;
 
     QTest::newRow("zonly")
-        << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f << (qreal)0.0f
-        << (qreal)2.0f
-        << (qreal)0.0f << (qreal)0.0f << (qreal)2.0f << (qreal)0.0f;
+        << 0.0f << 0.0f << 1.0f << 0.0f
+        << 2.0f
+        << 0.0f << 0.0f << 2.0f << 0.0f;
 
     QTest::newRow("wonly")
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f
-        << (qreal)2.0f
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)2.0f;
+        << 0.0f << 0.0f << 0.0f << 1.0f
+        << 2.0f
+        << 0.0f << 0.0f << 0.0f << 2.0f;
 
     QTest::newRow("all")
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)4.0f
-        << (qreal)2.0f
-        << (qreal)2.0f << (qreal)4.0f << (qreal)-6.0f << (qreal)8.0f;
+        << 1.0f << 2.0f << -3.0f << 4.0f
+        << 2.0f
+        << 2.0f << 4.0f << -6.0f << 8.0f;
 
     QTest::newRow("allzero")
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)4.0f
-        << (qreal)0.0f
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f;
+        << 1.0f << 2.0f << -3.0f << 4.0f
+        << 0.0f
+        << 0.0f << 0.0f << 0.0f << 0.0f;
 }
 void tst_QQuaternion::multiplyFactor()
 {
-    QFETCH(qreal, x1);
-    QFETCH(qreal, y1);
-    QFETCH(qreal, z1);
-    QFETCH(qreal, w1);
-    QFETCH(qreal, factor);
-    QFETCH(qreal, x2);
-    QFETCH(qreal, y2);
-    QFETCH(qreal, z2);
-    QFETCH(qreal, w2);
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, w1);
+    QFETCH(float, factor);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, w2);
 
     QQuaternion v1(w1, x1, y1, z1);
     QQuaternion v2(w2, x2, y2, z2);
@@ -590,20 +583,20 @@ void tst_QQuaternion::divide_data()
 }
 void tst_QQuaternion::divide()
 {
-    QFETCH(qreal, x1);
-    QFETCH(qreal, y1);
-    QFETCH(qreal, z1);
-    QFETCH(qreal, w1);
-    QFETCH(qreal, factor);
-    QFETCH(qreal, x2);
-    QFETCH(qreal, y2);
-    QFETCH(qreal, z2);
-    QFETCH(qreal, w2);
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, w1);
+    QFETCH(float, factor);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, w2);
 
     QQuaternion v1(w1, x1, y1, z1);
     QQuaternion v2(w2, x2, y2, z2);
 
-    if (factor == (qreal)0.0f)
+    if (factor == 0.0f)
         return;
 
     QVERIFY((v2 / factor) == v1);
@@ -626,10 +619,10 @@ void tst_QQuaternion::negate_data()
 }
 void tst_QQuaternion::negate()
 {
-    QFETCH(qreal, x1);
-    QFETCH(qreal, y1);
-    QFETCH(qreal, z1);
-    QFETCH(qreal, w1);
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, w1);
 
     QQuaternion v1(w1, x1, y1, z1);
     QQuaternion v2(-w1, -x1, -y1, -z1);
@@ -645,10 +638,10 @@ void tst_QQuaternion::conjugate_data()
 }
 void tst_QQuaternion::conjugate()
 {
-    QFETCH(qreal, x1);
-    QFETCH(qreal, y1);
-    QFETCH(qreal, z1);
-    QFETCH(qreal, w1);
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, w1);
 
     QQuaternion v1(w1, x1, y1, z1);
     QQuaternion v2(w1, -x1, -y1, -z1);
@@ -659,121 +652,121 @@ void tst_QQuaternion::conjugate()
 // Test quaternion creation from an axis and an angle.
 void tst_QQuaternion::fromAxisAndAngle_data()
 {
-    QTest::addColumn<qreal>("x1");
-    QTest::addColumn<qreal>("y1");
-    QTest::addColumn<qreal>("z1");
-    QTest::addColumn<qreal>("angle");
+    QTest::addColumn<float>("x1");
+    QTest::addColumn<float>("y1");
+    QTest::addColumn<float>("z1");
+    QTest::addColumn<float>("angle");
 
     QTest::newRow("null")
-        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f;
+        << 0.0f << 0.0f << 0.0f << 0.0f;
 
     QTest::newRow("xonly")
-        << (qreal)1.0f << (qreal)0.0f << (qreal)0.0f << (qreal)90.0f;
+        << 1.0f << 0.0f << 0.0f << 90.0f;
 
     QTest::newRow("yonly")
-        << (qreal)0.0f << (qreal)1.0f << (qreal)0.0f << (qreal)180.0f;
+        << 0.0f << 1.0f << 0.0f << 180.0f;
 
     QTest::newRow("zonly")
-        << (qreal)0.0f << (qreal)0.0f << (qreal)1.0f << (qreal)270.0f;
+        << 0.0f << 0.0f << 1.0f << 270.0f;
 
     QTest::newRow("complex")
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)45.0f;
+        << 1.0f << 2.0f << -3.0f << 45.0f;
 }
 void tst_QQuaternion::fromAxisAndAngle()
 {
-    QFETCH(qreal, x1);
-    QFETCH(qreal, y1);
-    QFETCH(qreal, z1);
-    QFETCH(qreal, angle);
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, angle);
 
     // Use a straight-forward implementation of the algorithm at:
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q56
     // to calculate the answer we expect to get.
     QVector3D vector = QVector3D(x1, y1, z1).normalized();
-    qreal sin_a = qSin((angle * M_PI / 180.0) / 2.0);
-    qreal cos_a = qCos((angle * M_PI / 180.0) / 2.0);
-    QQuaternion result((qreal)cos_a,
-                       (qreal)(vector.x() * sin_a),
-                       (qreal)(vector.y() * sin_a),
-                       (qreal)(vector.z() * sin_a));
+    float sin_a = sinf((angle * M_PI / 180.0) / 2.0);
+    float cos_a = cosf((angle * M_PI / 180.0) / 2.0);
+    QQuaternion result(cos_a,
+                       (vector.x() * sin_a),
+                       (vector.y() * sin_a),
+                       (vector.z() * sin_a));
     result = result.normalized();
 
     QQuaternion answer = QQuaternion::fromAxisAndAngle(QVector3D(x1, y1, z1), angle);
-    QVERIFY(fuzzyCompare(answer.x(), result.x()));
-    QVERIFY(fuzzyCompare(answer.y(), result.y()));
-    QVERIFY(fuzzyCompare(answer.z(), result.z()));
-    QVERIFY(fuzzyCompare(answer.scalar(), result.scalar()));
+    QVERIFY(qFuzzyCompare(answer.x(), result.x()));
+    QVERIFY(qFuzzyCompare(answer.y(), result.y()));
+    QVERIFY(qFuzzyCompare(answer.z(), result.z()));
+    QVERIFY(qFuzzyCompare(answer.scalar(), result.scalar()));
 
     answer = QQuaternion::fromAxisAndAngle(x1, y1, z1, angle);
-    QVERIFY(fuzzyCompare(answer.x(), result.x()));
-    QVERIFY(fuzzyCompare(answer.y(), result.y()));
-    QVERIFY(fuzzyCompare(answer.z(), result.z()));
-    QVERIFY(fuzzyCompare(answer.scalar(), result.scalar()));
+    QVERIFY(qFuzzyCompare(answer.x(), result.x()));
+    QVERIFY(qFuzzyCompare(answer.y(), result.y()));
+    QVERIFY(qFuzzyCompare(answer.z(), result.z()));
+    QVERIFY(qFuzzyCompare(answer.scalar(), result.scalar()));
 }
 
 // Test spherical interpolation of quaternions.
 void tst_QQuaternion::slerp_data()
 {
-    QTest::addColumn<qreal>("x1");
-    QTest::addColumn<qreal>("y1");
-    QTest::addColumn<qreal>("z1");
-    QTest::addColumn<qreal>("angle1");
-    QTest::addColumn<qreal>("x2");
-    QTest::addColumn<qreal>("y2");
-    QTest::addColumn<qreal>("z2");
-    QTest::addColumn<qreal>("angle2");
-    QTest::addColumn<qreal>("t");
-    QTest::addColumn<qreal>("x3");
-    QTest::addColumn<qreal>("y3");
-    QTest::addColumn<qreal>("z3");
-    QTest::addColumn<qreal>("angle3");
+    QTest::addColumn<float>("x1");
+    QTest::addColumn<float>("y1");
+    QTest::addColumn<float>("z1");
+    QTest::addColumn<float>("angle1");
+    QTest::addColumn<float>("x2");
+    QTest::addColumn<float>("y2");
+    QTest::addColumn<float>("z2");
+    QTest::addColumn<float>("angle2");
+    QTest::addColumn<float>("t");
+    QTest::addColumn<float>("x3");
+    QTest::addColumn<float>("y3");
+    QTest::addColumn<float>("z3");
+    QTest::addColumn<float>("angle3");
 
     QTest::newRow("first")
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)90.0f
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)180.0f
-        << (qreal)0.0f
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)90.0f;
+        << 1.0f << 2.0f << -3.0f << 90.0f
+        << 1.0f << 2.0f << -3.0f << 180.0f
+        << 0.0f
+        << 1.0f << 2.0f << -3.0f << 90.0f;
     QTest::newRow("first2")
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)90.0f
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)180.0f
-        << (qreal)-0.5f
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)90.0f;
+        << 1.0f << 2.0f << -3.0f << 90.0f
+        << 1.0f << 2.0f << -3.0f << 180.0f
+        << -0.5f
+        << 1.0f << 2.0f << -3.0f << 90.0f;
     QTest::newRow("second")
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)90.0f
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)180.0f
-        << (qreal)1.0f
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)180.0f;
+        << 1.0f << 2.0f << -3.0f << 90.0f
+        << 1.0f << 2.0f << -3.0f << 180.0f
+        << 1.0f
+        << 1.0f << 2.0f << -3.0f << 180.0f;
     QTest::newRow("second2")
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)90.0f
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)180.0f
-        << (qreal)1.5f
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)180.0f;
+        << 1.0f << 2.0f << -3.0f << 90.0f
+        << 1.0f << 2.0f << -3.0f << 180.0f
+        << 1.5f
+        << 1.0f << 2.0f << -3.0f << 180.0f;
     QTest::newRow("middle")
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)90.0f
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)180.0f
-        << (qreal)0.5f
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)135.0f;
+        << 1.0f << 2.0f << -3.0f << 90.0f
+        << 1.0f << 2.0f << -3.0f << 180.0f
+        << 0.5f
+        << 1.0f << 2.0f << -3.0f << 135.0f;
     QTest::newRow("wide angle")
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)0.0f
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)270.0f
-        << (qreal)0.5f
-        << (qreal)1.0f << (qreal)2.0f << (qreal)-3.0f << (qreal)-45.0f;
+        << 1.0f << 2.0f << -3.0f << 0.0f
+        << 1.0f << 2.0f << -3.0f << 270.0f
+        << 0.5f
+        << 1.0f << 2.0f << -3.0f << -45.0f;
 }
 void tst_QQuaternion::slerp()
 {
-    QFETCH(qreal, x1);
-    QFETCH(qreal, y1);
-    QFETCH(qreal, z1);
-    QFETCH(qreal, angle1);
-    QFETCH(qreal, x2);
-    QFETCH(qreal, y2);
-    QFETCH(qreal, z2);
-    QFETCH(qreal, angle2);
-    QFETCH(qreal, t);
-    QFETCH(qreal, x3);
-    QFETCH(qreal, y3);
-    QFETCH(qreal, z3);
-    QFETCH(qreal, angle3);
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, angle1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, angle2);
+    QFETCH(float, t);
+    QFETCH(float, x3);
+    QFETCH(float, y3);
+    QFETCH(float, z3);
+    QFETCH(float, angle3);
 
     QQuaternion q1 = QQuaternion::fromAxisAndAngle(x1, y1, z1, angle1);
     QQuaternion q2 = QQuaternion::fromAxisAndAngle(x2, y2, z2, angle2);
@@ -781,10 +774,10 @@ void tst_QQuaternion::slerp()
 
     QQuaternion result = QQuaternion::slerp(q1, q2, t);
 
-    QVERIFY(fuzzyCompare(result.x(), q3.x()));
-    QVERIFY(fuzzyCompare(result.y(), q3.y()));
-    QVERIFY(fuzzyCompare(result.z(), q3.z()));
-    QVERIFY(fuzzyCompare(result.scalar(), q3.scalar()));
+    QVERIFY(qFuzzyCompare(result.x(), q3.x()));
+    QVERIFY(qFuzzyCompare(result.y(), q3.y()));
+    QVERIFY(qFuzzyCompare(result.z(), q3.z()));
+    QVERIFY(qFuzzyCompare(result.scalar(), q3.scalar()));
 }
 
 // Test normalized linear interpolation of quaternions.
@@ -794,22 +787,22 @@ void tst_QQuaternion::nlerp_data()
 }
 void tst_QQuaternion::nlerp()
 {
-    QFETCH(qreal, x1);
-    QFETCH(qreal, y1);
-    QFETCH(qreal, z1);
-    QFETCH(qreal, angle1);
-    QFETCH(qreal, x2);
-    QFETCH(qreal, y2);
-    QFETCH(qreal, z2);
-    QFETCH(qreal, angle2);
-    QFETCH(qreal, t);
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, angle1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, angle2);
+    QFETCH(float, t);
 
     QQuaternion q1 = QQuaternion::fromAxisAndAngle(x1, y1, z1, angle1);
     QQuaternion q2 = QQuaternion::fromAxisAndAngle(x2, y2, z2, angle2);
 
     QQuaternion result = QQuaternion::nlerp(q1, q2, t);
 
-    qreal resultx, resulty, resultz, resultscalar;
+    float resultx, resulty, resultz, resultscalar;
     if (t <= 0.0f) {
         resultx = q1.x();
         resulty = q1.y();
@@ -835,10 +828,10 @@ void tst_QQuaternion::nlerp()
 
     QQuaternion q3 = QQuaternion(resultscalar, resultx, resulty, resultz).normalized();
 
-    QVERIFY(fuzzyCompare(result.x(), q3.x()));
-    QVERIFY(fuzzyCompare(result.y(), q3.y()));
-    QVERIFY(fuzzyCompare(result.z(), q3.z()));
-    QVERIFY(fuzzyCompare(result.scalar(), q3.scalar()));
+    QVERIFY(qFuzzyCompare(result.x(), q3.x()));
+    QVERIFY(qFuzzyCompare(result.y(), q3.y()));
+    QVERIFY(qFuzzyCompare(result.z(), q3.z()));
+    QVERIFY(qFuzzyCompare(result.scalar(), q3.scalar()));
 }
 
 class tst_QQuaternionProperties : public QObject
@@ -863,19 +856,19 @@ void tst_QQuaternion::properties()
     obj.setQuaternion(QQuaternion(6.0f, 7.0f, 8.0f, 9.0f));
 
     QQuaternion q = qvariant_cast<QQuaternion>(obj.property("quaternion"));
-    QCOMPARE(q.scalar(), (qreal)6.0f);
-    QCOMPARE(q.x(), (qreal)7.0f);
-    QCOMPARE(q.y(), (qreal)8.0f);
-    QCOMPARE(q.z(), (qreal)9.0f);
+    QCOMPARE(q.scalar(), 6.0f);
+    QCOMPARE(q.x(), 7.0f);
+    QCOMPARE(q.y(), 8.0f);
+    QCOMPARE(q.z(), 9.0f);
 
     obj.setProperty("quaternion",
                     QVariant::fromValue(QQuaternion(-6.0f, -7.0f, -8.0f, -9.0f)));
 
     q = qvariant_cast<QQuaternion>(obj.property("quaternion"));
-    QCOMPARE(q.scalar(), (qreal)-6.0f);
-    QCOMPARE(q.x(), (qreal)-7.0f);
-    QCOMPARE(q.y(), (qreal)-8.0f);
-    QCOMPARE(q.z(), (qreal)-9.0f);
+    QCOMPARE(q.scalar(), -6.0f);
+    QCOMPARE(q.x(), -7.0f);
+    QCOMPARE(q.y(), -8.0f);
+    QCOMPARE(q.z(), -9.0f);
 }
 
 void tst_QQuaternion::metaTypes()
