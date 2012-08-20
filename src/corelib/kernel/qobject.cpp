@@ -74,7 +74,7 @@ static int DIRECT_CONNECTION_ONLY = 0;
 
 struct QSlotObjectBaseDeleter { // for use with QScopedPointer<QSlotObjectBase,...>
     static void cleanup(QtPrivate::QSlotObjectBase *slot) {
-        if (slot && !slot->ref.deref() ) slot->destroy();
+        if (slot) slot->destroyIfLastRef();
     }
 };
 static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)
@@ -444,7 +444,7 @@ QMetaCallEvent::QMetaCallEvent(QtPrivate::QSlotObjectBase *slotO, const QObject 
       callFunction_(0), method_offset_(0), method_relative_(ushort(-1))
 {
     if (slotObj_)
-        slotObj_->ref.ref();
+        slotObj_->ref();
 }
 
 /*!
@@ -464,8 +464,8 @@ QMetaCallEvent::~QMetaCallEvent()
     if (semaphore_)
         semaphore_->release();
 #endif
-    if (slotObj_ && !slotObj_->ref.deref())
-        slotObj_->destroy();
+    if (slotObj_)
+        slotObj_->destroyIfLastRef();
 }
 
 /*!
@@ -869,8 +869,8 @@ QObjectPrivate::Connection::~Connection()
         if (v != &DIRECT_CONNECTION_ONLY)
             delete [] v;
     }
-    if (isSlotObject && !slotObj->ref.deref())
-        slotObj->destroy();
+    if (isSlotObject)
+        slotObj->destroyIfLastRef();
 }
 
 
@@ -3426,7 +3426,7 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
             const QObjectPrivate::StaticMetaCallFunction callFunction = c->callFunction;
             const int method_relative = c->method_relative;
             if (c->isSlotObject) {
-                c->slotObj->ref.ref();
+                c->slotObj->ref();
                 const QScopedPointer<QtPrivate::QSlotObjectBase, QSlotObjectBaseDeleter> obj(c->slotObj);
                 locker.unlock();
                 obj->call(receiver, argv ? argv : empty_argv);
@@ -4205,8 +4205,8 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
 {
     if (!sender || !signal || !slotObj || !senderMetaObject) {
         qWarning("QObject::connect: invalid null parametter");
-        if (slotObj && !slotObj->ref.deref())
-            slotObj->destroy();
+        if (slotObj)
+            slotObj->destroyIfLastRef();
         return QMetaObject::Connection();
     }
     int signal_index = -1;
@@ -4214,8 +4214,7 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
     senderMetaObject->static_metacall(QMetaObject::IndexOfMethod, 0, args);
     if (signal_index < 0 || signal_index >= QMetaObjectPrivate::get(senderMetaObject)->signalCount) {
         qWarning("QObject::connect: signal not found in %s", senderMetaObject->className());
-        if (!slotObj->ref.deref())
-            slotObj->destroy();
+        slotObj->destroyIfLastRef();
         return QMetaObject::Connection(0);
     }
     signal_index += QMetaObjectPrivate::signalOffset(senderMetaObject);
@@ -4234,8 +4233,7 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
 
             while (c2) {
                 if (c2->receiver == receiver && c2->isSlotObject && c2->slotObj->compare(slot)) {
-                    if (!slotObj->ref.deref())
-                        slotObj->destroy();
+                    slotObj->destroyIfLastRef();
                     return QMetaObject::Connection();
                 }
                 c2 = c2->nextConnectionList;

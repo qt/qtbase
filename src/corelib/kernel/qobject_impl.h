@@ -101,13 +101,13 @@ namespace QtPrivate {
 #endif
 
     // internal base class (interface) containing functions required to call a slot managed by a pointer to function.
-    struct QSlotObjectBase {
-        QAtomicInt ref;
+    class QSlotObjectBase {
+        QAtomicInt m_ref;
         // don't use virtual functions here; we don't want the
         // compiler to create tons of per-polymorphic-class stuff that
         // we'll never need. We just use one function pointer.
         typedef void (*ImplFn)(int which, QSlotObjectBase* this_, QObject *receiver, void **args, bool *ret);
-        const ImplFn impl;
+        const ImplFn m_impl;
     protected:
         enum Operation {
             Destroy,
@@ -117,11 +117,14 @@ namespace QtPrivate {
             NumOperations
         };
     public:
-        explicit QSlotObjectBase(ImplFn fn) : ref(1), impl(fn) {}
+        explicit QSlotObjectBase(ImplFn fn) : m_ref(1), m_impl(fn) {}
 
-        inline void destroy()                   { impl(Destroy, this, 0, 0, 0); }
-        inline bool compare(void **a) { bool ret; impl(Compare, this, 0, a, &ret); return ret; }
-        inline void call(QObject *r, void **a)  { impl(Call,    this, r, a, 0); }
+        inline int ref() Q_DECL_NOTHROW { return m_ref.ref(); }
+        inline void destroyIfLastRef() Q_DECL_NOTHROW
+        { if (!m_ref.deref()) m_impl(Destroy, this, 0, 0, 0); }
+
+        inline bool compare(void **a) { bool ret; m_impl(Compare, this, 0, a, &ret); return ret; }
+        inline void call(QObject *r, void **a)  { m_impl(Call,    this, r, a, 0); }
     protected:
         ~QSlotObjectBase() {}
     };
