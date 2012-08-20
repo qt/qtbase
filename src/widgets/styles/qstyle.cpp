@@ -714,15 +714,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \sa drawPrimitive()
 */
 
-/*!
-    \typedef QStyle::SFlags
-    \internal
-*/
-
-/*!
-    \typedef QStyle::SCFlags
-    \internal
-*/
 
 /*!
     \enum QStyle::StateFlag
@@ -760,7 +751,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value State_Small Used to indicate a small style Mac widget or button.
     \omitvalue State_Window
     \omitvalue State_Bottom
-    \omitvalue State_Default
     \omitvalue State_FocusAtBorder
     \omitvalue State_Top
 
@@ -1630,8 +1620,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SH_DitherDisabledText Disabled text is dithered as it is on Motif.
 
-    \value SH_GUIStyle The GUI style to use.
-
     \value SH_ScrollBar_ContextMenu Whether or not a scroll bar has a context menu.
 
     \value SH_ScrollBar_MiddleClickAbsolutePosition  A boolean value.
@@ -1837,8 +1825,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SH_Dial_BackgroundRole Defines the style's preferred
     background role (as QPalette::ColorRole) for a dial widget.
 
-    \value SH_ScrollBar_BackgroundMode The background mode for a scroll bar.
-
     \value SH_ComboBox_LayoutDirection The layout direction for the
     combo box.  By default it should be the same as indicated by the
     QStyleOption::direction variable.
@@ -1905,8 +1891,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SH_RequestSoftwareInputPanel Determines when a software input panel should
            be requested by input widgets. Returns an enum of type QStyle::RequestSoftwareInputPanel.
-
-    \omitvalue SH_UnderlineAccelerator
 
     \sa styleHint()
 */

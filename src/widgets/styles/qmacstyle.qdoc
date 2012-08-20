@@ -92,7 +92,6 @@
     \value SizeLarge
     \value SizeMini
     \value SizeDefault
-    \omitvalue SizeNone
 */
 
 /*! \fn QMacStyle::QMacStyle()
