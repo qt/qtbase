@@ -132,14 +132,18 @@
     In the case shown in the diagram, the piece of information represented
     by \b{a} can be obtained using the standard model/view API:
 
-    \snippet doc/src/snippets/code/doc_src_examples_editabletreemodel.cpp 0
+    \code
+    QVariant a = model->index(0, 0, QModelIndex()).data();
+    \endcode
 
     Since each items holds pieces of data for each column in a given row,
     there can be many model indexes that map to the same \c TreeItem object.
     For example, the information represented by \b{b} can be obtained
     using the following code:
 
-    \snippet doc/src/snippets/code/doc_src_examples_editabletreemodel.cpp 1
+    \code
+    QVariant b = model->index(1, 0, QModelIndex()).data();
+    \endcode
 
     The same underlying \c TreeItem would be accessed to obtain information
     for the other model indexes in the same row as \b{b}.

@@ -236,7 +236,11 @@
     side of the menu bar. Try running the application with various
     styles and see the results:
 
-    \snippet doc/src/snippets/code/doc_src_examples_application.qdoc 0
+    \code
+    application -style=windows
+    application -style=motif
+    application -style=cde
+    \endcode
 
     Let's now review the toolbars:
 

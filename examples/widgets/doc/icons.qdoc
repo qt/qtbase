@@ -278,17 +278,24 @@
     If the application is built in debug mode, the \c Q_ASSERT()
     macro will expand to
 
-    \snippet doc/src/snippets/code/doc_src_examples_icons.cpp 0
+    \code
+    if (!condition)
+       qFatal("ASSERT: "condition" in file ...");
+    \endcode
 
     In release mode, the macro simply disappear. The mode can be set
     in the application's \c .pro file. One way to do so is to add an
     option to \c qmake when building the application:
 
-    \snippet doc/src/snippets/code/doc_src_examples_icons.qdoc 1
+    \code
+    qmake "CONFIG += debug" icons.pro
+    \endcode
 
     or
 
-    \snippet doc/src/snippets/code/doc_src_examples_icons.qdoc 2
+    \code
+    qmake "CONFIG += release" icons.pro
+    \endcode
 
     Another approach is to add this line directly to the \c .pro
     file.

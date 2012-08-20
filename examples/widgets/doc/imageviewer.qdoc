@@ -149,7 +149,9 @@
     \{QWidget::adjustSize()}{adjustSize()} to achieve this, which is
     essentially the same as
 
-    \snippet doc/src/snippets/code/doc_src_examples_imageviewer.cpp 0
+    \code
+    imageLabel->resize(imageLabel->pixmap()->size());
+    \endcode
 
     In the \c print() slot, we first make sure that an image has been
     loaded into the application:
@@ -160,17 +162,24 @@
     If the application is built in debug mode, the \c Q_ASSERT() macro
     will expand to
 
-    \snippet doc/src/snippets/code/doc_src_examples_imageviewer.cpp 1
+    \code
+    if (!imageLabel->pixmap())
+        qFatal("ASSERT: "imageLabel->pixmap()" in file ...");
+    \endcode
 
     In release mode, the macro simply disappear. The mode can be set
     in the application's \c .pro file. One way to do so is to add an
     option to \uicontrol qmake when building the application:
 
-    \snippet doc/src/snippets/code/doc_src_examples_imageviewer.qdoc 2
+    \code
+    qmake "CONFIG += debug" foo.pro
+    \endcode
 
     or
 
-    \snippet doc/src/snippets/code/doc_src_examples_imageviewer.qdoc 3
+    \code
+    qmake "CONFIG += release" foo.pro
+    \endcode
 
     Another approach is to add this line directly to the \c .pro
     file.
@@ -318,7 +327,9 @@
     Whenever we zoom in or out, we need to adjust the scroll bars in
     consequence. It would have been tempting to simply call
 
-    \snippet doc/src/snippets/code/doc_src_examples_imageviewer.cpp 4
+    \code
+    scrollBar->setValue(int(factor * scrollBar->value()));
+    \endcode
 
     but this would make the top-left corner the focal point, not the
     center. Therefore we need to take into account the scroll bar
