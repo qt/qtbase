@@ -46,6 +46,8 @@
 #include <qlist.h>
 
 #include <qlistwidget.h>
+#include <qpushbutton.h>
+#include <qboxlayout.h>
 
 
 class tst_QWidget_window : public QWidget
@@ -60,6 +62,8 @@ public slots:
     void cleanupTestCase();
 
 private slots:
+    void tst_min_max_size();
+    void tst_min_max_size_data();
     void tst_move_show();
     void tst_show_move();
     void tst_show_move_hide_show();
@@ -83,6 +87,39 @@ void tst_QWidget_window::initTestCase()
 
 void tst_QWidget_window::cleanupTestCase()
 {
+}
+
+/* Test if the maximum/minimum size constraints
+ * are propagated from the widget to the QWidgetWindow
+ * independently of whether they were set before or after
+ * window creation (QTBUG-26745). */
+
+void tst_QWidget_window::tst_min_max_size_data()
+{
+    QTest::addColumn<bool>("setMinMaxSizeBeforeShow");
+    QTest::newRow("Set min/max size after show") << false;
+    QTest::newRow("Set min/max size before show") << true;
+}
+
+void tst_QWidget_window::tst_min_max_size()
+{
+    QFETCH(bool, setMinMaxSizeBeforeShow);
+    const QSize minSize(300, 400);
+    const QSize maxSize(1000, 500);
+    QWidget w1;
+    (new QVBoxLayout(&w1))->addWidget(new QPushButton("Test"));
+    if (setMinMaxSizeBeforeShow) {
+        w1.setMinimumSize(minSize);
+        w1.setMaximumSize(maxSize);
+    }
+    w1.show();
+    if (!setMinMaxSizeBeforeShow) {
+        w1.setMinimumSize(minSize);
+        w1.setMaximumSize(maxSize);
+    }
+    QVERIFY(QTest::qWaitForWindowExposed(&w1));
+    QCOMPARE(w1.windowHandle()->minimumSize(),minSize);
+    QCOMPARE(w1.windowHandle()->maximumSize(), maxSize);
 }
 
 void tst_QWidget_window::tst_move_show()
