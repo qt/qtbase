@@ -116,7 +116,7 @@ namespace QtPrivate {
         typedef void (*ImplFn)(int which, QSlotObjectBase* this_, QObject *receiver, void **args, bool *ret);
         const ImplFn impl;
 
-        explicit QSlotObjectBase(ImplFn fn) : ref(1), impl(fn) {} // ### make constexpr once QAtomicInt's ctor is, too
+        explicit QSlotObjectBase(ImplFn fn) : ref(1), impl(fn) {}
         inline void destroy()                   { impl(Destroy, this, 0, 0, 0); }
         inline bool compare(void **a) { bool ret; impl(Compare, this, 0, a, &ret); return ret; }
         inline void call(QObject *r, void **a)  { impl(Call,    this, r, a, 0); }
