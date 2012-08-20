@@ -147,6 +147,7 @@ private:
     QString dbusPath;
     QString mysqlPath;
     QString psqlLibs;
+    QString zlibLibs;
     QString sybase;
     QString sybaseLibs;
 

@@ -968,6 +968,8 @@ void Configure::parseCmdLine()
             dbusPath = QDir::fromNativeSeparators(configCmdLine.at(i));
         } else if (configCmdLine.at(i).startsWith("MYSQL_PATH=")) {
             mysqlPath = QDir::fromNativeSeparators(configCmdLine.at(i));
+        } else if (configCmdLine.at(i).startsWith("ZLIB_LIBS=")) {
+            zlibLibs = QDir::fromNativeSeparators(configCmdLine.at(i));
         }
 
         else if ((configCmdLine.at(i) == "-override-version") || (configCmdLine.at(i) == "-version-override")){
@@ -2563,9 +2565,10 @@ void Configure::generateOutputVars()
         qmakeVars += dbusPath;
     if (dictionary[ "SQL_MYSQL" ] != "no" && !mysqlPath.isEmpty())
         qmakeVars += mysqlPath;
-
     if (!psqlLibs.isEmpty())
         qmakeVars += QString("QT_LFLAGS_PSQL=") + psqlLibs.section("=", 1);
+    if (!zlibLibs.isEmpty())
+        qmakeVars += zlibLibs;
 
     {
         QStringList lflagsTDS;
