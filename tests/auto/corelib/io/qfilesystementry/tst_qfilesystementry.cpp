@@ -64,6 +64,7 @@ private slots:
 #endif
     void isClean_data();
     void isClean();
+    void defaultCtor();
 };
 
 #if defined(Q_OS_WIN)
@@ -169,10 +170,16 @@ void tst_QFileSystemEntry::getSetCheck_data()
     QTest::addColumn<QString>("completeSuffix");
     QTest::addColumn<bool>("absolute");
 
+    QTest::newRow("empty")
+        << QByteArray()
+        << QString()
+        << QString() << QString() << QString() << QString() << QString() << false;
+
     QTest::newRow("simple")
         << QByteArray("/home/qt/in/a/dir.tar.gz")
         << "/home/qt/in/a/dir.tar.gz"
         << "dir.tar.gz" << "dir" << "dir.tar" << "gz" << "tar.gz" << true;
+
     QTest::newRow("relative")
         << QByteArray("in/a/dir.tar.gz")
         << "in/a/dir.tar.gz"
@@ -235,6 +242,7 @@ void tst_QFileSystemEntry::suffix_data()
     QTest::addColumn<QString>("file");
     QTest::addColumn<QString>("expected");
 
+    QTest::newRow("empty") << QString() << QString();
     QTest::newRow("noextension0") << "file" << "";
     QTest::newRow("noextension1") << "/path/to/file" << "";
     QTest::newRow("data0") << "file.tar" << "tar";
@@ -273,6 +281,7 @@ void tst_QFileSystemEntry::completeSuffix_data()
     QTest::addColumn<QString>("file");
     QTest::addColumn<QString>("expected");
 
+    QTest::newRow("empty") << QString() << QString();
     QTest::newRow("noextension0") << "file" << "";
     QTest::newRow("noextension1") << "/path/to/file" << "";
     QTest::newRow("data0") << "file.tar" << "tar";
@@ -302,6 +311,7 @@ void tst_QFileSystemEntry::baseName_data()
     QTest::addColumn<QString>("file");
     QTest::addColumn<QString>("expected");
 
+    QTest::newRow("empty") << QString() << QString();
     QTest::newRow("data0") << "file.tar" << "file";
     QTest::newRow("data1") << "file.tar.gz" << "file";
     QTest::newRow("data2") << "/path/file/file.tar.gz" << "file";
@@ -330,6 +340,7 @@ void tst_QFileSystemEntry::completeBaseName_data()
     QTest::addColumn<QString>("file");
     QTest::addColumn<QString>("expected");
 
+    QTest::newRow("empty") << QString() << QString();
     QTest::newRow("data0") << "file.tar" << "file";
     QTest::newRow("data1") << "file.tar.gz" << "file.tar";
     QTest::newRow("data2") << "/path/file/file.tar.gz" << "file.tar";
@@ -360,6 +371,7 @@ void tst_QFileSystemEntry::absoluteOrRelative_data()
     QTest::addColumn<bool>("isAbsolute");
     QTest::addColumn<bool>("isRelative");
 
+    QTest::newRow("empty") << QString() << false << true;
     QTest::newRow("data0") << "file.tar" << false << true;
     QTest::newRow("data1") << "/path/file/file.tar.gz" << false << false;
     QTest::newRow("data1") << "C:path/file/file.tar.gz" << false << false;
@@ -384,6 +396,7 @@ void tst_QFileSystemEntry::isClean_data()
     QTest::addColumn<QString>("path");
     QTest::addColumn<bool>("isClean");
 
+    QTest::newRow("empty") << QString() << true;
     QTest::newRow("simple") << "foo" << true;
     QTest::newRow("complex") << "/foo/bar/bz" << true;
     QTest::newRow(".file") << "/foo/.file" << true;
@@ -407,6 +420,34 @@ void tst_QFileSystemEntry::isClean()
 
     QFileSystemEntry fi(path);
     QCOMPARE(fi.isClean(), isClean);
+}
+
+void tst_QFileSystemEntry::defaultCtor()
+{
+    QFileSystemEntry entry;
+
+    QVERIFY(entry.filePath().isNull());
+    QVERIFY(entry.nativeFilePath().isNull());
+
+    QVERIFY(entry.fileName().isNull());
+    QCOMPARE(entry.path(), QString("."));
+
+    QVERIFY(entry.baseName().isNull());
+    QVERIFY(entry.completeBaseName().isNull());
+    QVERIFY(entry.suffix().isNull());
+    QVERIFY(entry.completeSuffix().isNull());
+
+    QVERIFY(!entry.isAbsolute());
+    QVERIFY(entry.isRelative());
+
+    QVERIFY(entry.isClean());
+
+#if defined(Q_OS_WIN)
+    QVERIFY(!entry.isDriveRoot());
+#endif
+    QVERIFY(!entry.isRoot());
+
+    QVERIFY(entry.isEmpty());
 }
 
 QTEST_MAIN(tst_QFileSystemEntry)

@@ -75,9 +75,9 @@ static inline QString fixIfRelativeUncPath(const QString &path)
 #endif
 
 QFileSystemEntry::QFileSystemEntry()
-    : m_lastSeparator(0),
-    m_firstDotInFileName(0),
-    m_lastDotInFileName(0)
+    : m_lastSeparator(-1),
+    m_firstDotInFileName(-1),
+    m_lastDotInFileName(-1)
 {
 }
 
