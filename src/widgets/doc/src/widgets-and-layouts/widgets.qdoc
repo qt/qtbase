@@ -62,7 +62,7 @@
   \li \image qformlayout-with-6-children.png
   \endtable
 
-  \l{Qt Designer Manual}{\QD} is a powerful tool for interactively creating and
+  Qt Designer is a powerful tool for interactively creating and
   arranging widgets in layouts.
 
   \section1 Widget Styles

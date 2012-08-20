@@ -561,7 +561,7 @@
 
     \image designer-validator-highlighter.png
 
-    When you click \uicontrol{OK} or \uicontrol{Apply}, \QD will automatically display
+    When you click \uicontrol{OK} or \uicontrol{Apply}, Qt Designer will automatically display
     the widget with its new stylesheet.
 
     \image designer-stylesheet-usage.png

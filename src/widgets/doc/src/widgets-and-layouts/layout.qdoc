@@ -79,8 +79,8 @@
     
     Qt's layout classes were designed for hand-written C++ code, allowing
     measurements to be specified in pixels for simplicity, so they are easy to
-    understand and use. The code generated for forms created using \QD also
-    uses the layout classes. \QD is useful to use when experimenting with the
+    understand and use. The code generated for forms created using Qt Designer also
+    uses the layout classes. Qt Designer is useful to use when experimenting with the
     design of a form since it avoids the compile, link and run cycle usually
     involved in user interface development.
 
