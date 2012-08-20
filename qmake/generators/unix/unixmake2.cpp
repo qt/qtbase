@@ -299,8 +299,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             t << mkdir_p_asstring("$(@D)") << "\n\t"
               << "@$(CC) " << cmd << " $< | sed \"s,^\\($(*F).o\\):," << odir << "\\1:,g\" >$@" << endl << endl;
 
-            QString src[] = { "SOURCES", "GENERATED_SOURCES", QString() };
-            for(int x = 0; !src[x].isNull(); x++) {
+            static const char * const src[] = { "SOURCES", "GENERATED_SOURCES", 0 };
+            for (int x = 0; src[x]; x++) {
                 const QStringList &l = project->values(src[x]);
                 for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
                     if(!(*it).isEmpty()) {

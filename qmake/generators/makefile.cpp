@@ -222,10 +222,10 @@ MakefileGenerator::initOutPaths()
     //some builtin directories
     if(project->isEmpty("PRECOMPILED_DIR") && !project->isEmpty("OBJECTS_DIR"))
         v["PRECOMPILED_DIR"] = v["OBJECTS_DIR"];
-    QString dirs[] = { QString("OBJECTS_DIR"), QString("DESTDIR"), QString("QMAKE_PKGCONFIG_DESTDIR"),
-                       QString("SUBLIBS_DIR"), QString("DLLDESTDIR"), QString("QMAKE_LIBTOOL_DESTDIR"),
-                       QString("PRECOMPILED_DIR"), QString() };
-    for(int x = 0; !dirs[x].isEmpty(); x++) {
+    static const char * const dirs[] = { "OBJECTS_DIR", "DESTDIR", "QMAKE_PKGCONFIG_DESTDIR",
+                                         "SUBLIBS_DIR", "DLLDESTDIR", "QMAKE_LIBTOOL_DESTDIR",
+                                         "PRECOMPILED_DIR", 0 };
+    for (int x = 0; dirs[x]; x++) {
         if(v[dirs[x]].isEmpty())
             continue;
         const QString orig_path = v[dirs[x]].first();
@@ -247,10 +247,10 @@ MakefileGenerator::initOutPaths()
 
         QString path = project->first(dirs[x]); //not to be changed any further
         path = fileFixify(path, currentDir, Option::output_dir);
-        debug_msg(3, "Fixed output_dir %s (%s) into %s", dirs[x].toLatin1().constData(),
+        debug_msg(3, "Fixed output_dir %s (%s) into %s", dirs[x],
                   orig_path.toLatin1().constData(), path.toLatin1().constData());
         if(!mkdir(path))
-            warn_msg(WarnLogic, "%s: Cannot access directory '%s'", dirs[x].toLatin1().constData(),
+            warn_msg(WarnLogic, "%s: Cannot access directory '%s'", dirs[x],
                      path.toLatin1().constData());
     }
 
@@ -822,8 +822,8 @@ MakefileGenerator::init()
     }
 
     //fix up the target deps
-    QString fixpaths[] = { QString("PRE_TARGETDEPS"), QString("POST_TARGETDEPS"), QString() };
-    for(int path = 0; !fixpaths[path].isNull(); path++) {
+    static const char * const fixpaths[] = { "PRE_TARGETDEPS", "POST_TARGETDEPS", 0 };
+    for (int path = 0; fixpaths[path]; path++) {
         QStringList &l = v[fixpaths[path]];
         for(QStringList::Iterator val_it = l.begin(); val_it != l.end(); ++val_it) {
             if(!(*val_it).isEmpty())
@@ -932,7 +932,7 @@ MakefileGenerator::processPrlFile(QString &file)
 }
 
 void
-MakefileGenerator::filterIncludedFiles(const QString &var)
+MakefileGenerator::filterIncludedFiles(const char *var)
 {
     QStringList &inputs = project->values(var);
     for(QStringList::Iterator input = inputs.begin(); input != inputs.end(); ) {
@@ -1115,7 +1115,7 @@ MakefileGenerator::writePrlFile()
 }
 
 void
-MakefileGenerator::writeObj(QTextStream &t, const QString &src)
+MakefileGenerator::writeObj(QTextStream &t, const char *src)
 {
     const QStringList &srcl = project->values(src);
     const QStringList objl = createObjectList(srcl);

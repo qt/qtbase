@@ -107,8 +107,8 @@ bool
 Win32MakefileGenerator::findLibraries()
 {
     QList<QMakeLocalFileName> dirs;
-  const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
-  for (int i = 0; !lflags[i].isNull(); i++) {
+  static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+  for (int i = 0; lflags[i]; i++) {
     QStringList &l = project->values(lflags[i]);
     for(QStringList::Iterator it = l.begin(); it != l.end();) {
         QChar quote;
@@ -218,8 +218,8 @@ Win32MakefileGenerator::processPrlFiles()
 {
     const QString libArg = project->first("QMAKE_L_FLAG");
     QList<QMakeLocalFileName> libdirs;
-    const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
-    for (int i = 0; !lflags[i].isNull(); i++) {
+    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+    for (int i = 0; lflags[i]; i++) {
         QStringList &l = project->values(lflags[i]);
         for (int lit = 0; lit < l.size(); ++lit) {
             QString opt = l.at(lit).trimmed();

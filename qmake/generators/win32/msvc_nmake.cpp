@@ -312,16 +312,16 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
 
         QHash<QString, void*> source_directories;
         source_directories.insert(".", (void*)1);
-        QString directories[] = { QString("UI_SOURCES_DIR"), QString("UI_DIR"), QString() };
-        for(int y = 0; !directories[y].isNull(); y++) {
+        static const char * const directories[] = { "UI_SOURCES_DIR", "UI_DIR", 0 };
+        for (int y = 0; directories[y]; y++) {
             QString dirTemp = project->first(directories[y]);
             if (dirTemp.endsWith("\\"))
                 dirTemp.truncate(dirTemp.length()-1);
             if(!dirTemp.isEmpty())
                 source_directories.insert(dirTemp, (void*)1);
         }
-        QString srcs[] = { QString("SOURCES"), QString("GENERATED_SOURCES"), QString() };
-        for(int x = 0; !srcs[x].isNull(); x++) {
+        static const char * const srcs[] = { "SOURCES", "GENERATED_SOURCES", 0 };
+        for (int x = 0; srcs[x]; x++) {
             const QStringList &l = project->values(srcs[x]);
             for (QStringList::ConstIterator sit = l.begin(); sit != l.end(); ++sit) {
                 QString sep = "\\";

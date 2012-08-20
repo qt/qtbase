@@ -246,8 +246,8 @@ ProjectGenerator::init()
 
     QStringList &h = v["HEADERS"];
     bool no_qt_files = true;
-    QString srcs[] = { "SOURCES", "YACCSOURCES", "LEXSOURCES", "FORMS", QString() };
-    for(int i = 0; !srcs[i].isNull(); i++) {
+    static const char *srcs[] = { "SOURCES", "YACCSOURCES", "LEXSOURCES", "FORMS", 0 };
+    for (int i = 0; srcs[i]; i++) {
         const QStringList &l = v[srcs[i]];
         QMakeSourceFileInfo::SourceFileType type = QMakeSourceFileInfo::TYPE_C;
         QMakeSourceFileInfo::addSourceFiles(l, QMakeSourceFileInfo::SEEK_DEPS, type);

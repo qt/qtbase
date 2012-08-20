@@ -74,8 +74,8 @@ QString MingwMakefileGenerator::getLibTarget()
 bool MingwMakefileGenerator::findLibraries()
 {
     QList<QMakeLocalFileName> dirs;
-  const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
-  for (int i = 0; !lflags[i].isNull(); i++) {
+  static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+  for (int i = 0; lflags[i]; i++) {
     QStringList &l = project->values(lflags[i]);
     QStringList::Iterator it = l.begin();
     while (it != l.end()) {

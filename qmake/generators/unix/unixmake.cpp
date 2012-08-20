@@ -344,15 +344,15 @@ UnixMakefileGenerator::init()
     }
 
     if(project->isActiveConfig("compile_libtool")) {
-        const QString libtoolify[] = { "QMAKE_RUN_CC", "QMAKE_RUN_CC_IMP",
-                                       "QMAKE_RUN_CXX", "QMAKE_RUN_CXX_IMP",
-                                       "QMAKE_LINK_THREAD", "QMAKE_LINK", "QMAKE_AR_CMD", "QMAKE_LINK_SHLIB_CMD",
-                                       QString() };
-        for(int i = 0; !libtoolify[i].isNull(); i++) {
+        static const char * const libtoolify[] = {
+            "QMAKE_RUN_CC", "QMAKE_RUN_CC_IMP", "QMAKE_RUN_CXX", "QMAKE_RUN_CXX_IMP",
+            "QMAKE_LINK_THREAD", "QMAKE_LINK", "QMAKE_AR_CMD", "QMAKE_LINK_SHLIB_CMD", 0
+        };
+        for (int i = 0; libtoolify[i]; i++) {
             QStringList &l = project->values(libtoolify[i]);
             if(!l.isEmpty()) {
                 QString libtool_flags, comp_flags;
-                if(libtoolify[i].startsWith("QMAKE_LINK") || libtoolify[i] == "QMAKE_AR_CMD") {
+                if (!strncmp(libtoolify[i], "QMAKE_LINK", 10) || !strcmp(libtoolify[i], "QMAKE_AR_CMD")) {
                     libtool_flags += " --mode=link";
                     if(project->isActiveConfig("staticlib")) {
                         libtool_flags += " -static";
@@ -468,8 +468,8 @@ UnixMakefileGenerator::findLibraries()
     int libidx = 0;
     foreach (const QString &dlib, project->values("QMAKE_DEFAULT_LIBDIRS"))
         libdirs.append(QMakeLocalFileName(dlib));
-    const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
-    for(int i = 0; !lflags[i].isNull(); i++) {
+    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+    for (int i = 0; lflags[i]; i++) {
         QStringList &l = project->values(lflags[i]);
         for (QStringList::Iterator it = l.begin(); it != l.end(); ) {
             QString stub, dir, extn, opt = (*it).trimmed();
@@ -574,8 +574,8 @@ UnixMakefileGenerator::processPrlFiles()
         libdirs.append(QMakeLocalFileName(dlib));
     frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
     frameworkdirs.append(QMakeLocalFileName("/Library/Frameworks"));
-    const QString lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
-    for(int i = 0; !lflags[i].isNull(); i++) {
+    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+    for (int i = 0; lflags[i]; i++) {
         QStringList &l = project->values(lflags[i]);
         for(int lit = 0; lit < l.size(); ++lit) {
             QString opt = l.at(lit).trimmed();

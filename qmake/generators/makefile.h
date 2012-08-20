@@ -95,7 +95,7 @@ protected:
     QStringList createObjectList(const QStringList &sources);
 
     //makefile style generator functions
-    void writeObj(QTextStream &, const QString &src);
+    void writeObj(QTextStream &, const char *src);
     void writeInstalls(QTextStream &t, const QString &installs, bool noBuild=false);
     void writeHeader(QTextStream &t);
     void writeSubDirs(QTextStream &t);
@@ -199,7 +199,7 @@ protected:
     virtual QStringList &findDependencies(const QString &file);
     virtual bool doDepends() const { return Option::mkfile::do_deps; }
 
-    void filterIncludedFiles(const QString &);
+    void filterIncludedFiles(const char *);
     virtual void processSources() {
         filterIncludedFiles("SOURCES");
         filterIncludedFiles("GENERATED_SOURCES");

@@ -278,8 +278,8 @@ GBuildMakefileGenerator::write()
 
     if (project->first("TEMPLATE") == "app") {
         /* include linker flags if it's an application */
-        QString src[] = { "QMAKE_LFLAGS", "QMAKE_LIBS", "LIBS", QString() };
-        for (int i = 0; !src[i].isNull(); i++) {
+        static const char * const src[] = { "QMAKE_LFLAGS", "QMAKE_LIBS", "LIBS", 0 };
+        for (int i = 0; src[i]; i++) {
             /* skip target libraries for native tools */
             if (isnativebin && (i == 0))
                 continue;
@@ -346,8 +346,8 @@ GBuildMakefileGenerator::write()
     }
 
     /* source files for this project */
-    QString src[] = { "HEADERS", "SOURCES", QString() };
-    for (int i = 0; !src[i].isNull(); i++) {
+    static const char * const src[] = { "HEADERS", "SOURCES", 0 };
+    for (int i = 0; src[i]; i++) {
         const QStringList &l = project->values(src[i]);
         for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
             if ((*it).isEmpty())
