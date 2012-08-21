@@ -1100,7 +1100,7 @@ QStyle *QApplication::style()
     initial colors or the system defaults. This is necessary since certain
     styles have to adapt the color palette to be fully style-guide compliant.
 
-    Setting the style before a palette has been se, i.e., before creating
+    Setting the style before a palette has been set, i.e., before creating
     QApplication, will cause the application to use QStyle::standardPalette()
     for the palette.
 
