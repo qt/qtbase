@@ -2271,7 +2271,17 @@ void tst_QFile::writeLargeDataBlock()
 
         QVERIFY2( openFile(file, QIODevice::WriteOnly, (FileType)type),
             qPrintable(QString("Couldn't open file for writing: [%1]").arg(fileName)) );
-        QCOMPARE( file.write(originalData), (qint64)originalData.size() );
+        qint64 fileWriteOriginalData = file.write(originalData);
+        qint64 originalDataSize      = (qint64)originalData.size();
+#if defined(Q_OS_WIN)
+        if (fileWriteOriginalData == -1) {
+            qWarning() << qPrintable(QString("Error writing a large data block to [%1]: %2")
+                .arg(fileName)
+                .arg(file.errorString()));
+            QEXPECT_FAIL("unc file", "QTBUG-26906", Abort);
+        }
+#endif
+        QCOMPARE( fileWriteOriginalData, originalDataSize );
         QVERIFY( file.flush() );
 
         closeFile(file);
