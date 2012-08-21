@@ -1368,6 +1368,8 @@ QMenu::~QMenu()
     The function adds the newly created action to the menu's
     list of actions, and returns it.
 
+    QMenu takes ownership of the returned QAction.
+
     \sa QWidget::addAction()
 */
 QAction *QMenu::addAction(const QString &text)
@@ -1383,6 +1385,8 @@ QAction *QMenu::addAction(const QString &text)
     This convenience function creates a new action with an \a icon
     and some \a text. The function adds the newly created action to
     the menu's list of actions, and returns it.
+
+    QMenu takes ownership of the returned QAction.
 
     \sa QWidget::addAction()
 */
@@ -1401,6 +1405,8 @@ QAction *QMenu::addAction(const QIcon &icon, const QString &text)
     \l{QAction::triggered()}{triggered()} signal is connected to the
     \a receiver's \a member slot. The function adds the newly created
     action to the menu's list of actions and returns it.
+
+    QMenu takes ownership of the returned QAction.
 
     \sa QWidget::addAction()
 */
@@ -1425,6 +1431,8 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     \l{QAction::triggered()}{triggered()} signal is connected to the
     \a member slot of the \a receiver object. The function adds the
     newly created action to the menu's list of actions, and returns it.
+
+    QMenu takes ownership of the returned QAction.
 
     \sa QWidget::addAction()
 */
@@ -1489,6 +1497,8 @@ QMenu *QMenu::addMenu(const QIcon &icon, const QString &title)
     action to this menu's list of actions. It returns the newly
     created action.
 
+    QMenu takes ownership of the returned QAction.
+
     \sa QWidget::addAction()
 */
 QAction *QMenu::addSeparator()
@@ -1517,6 +1527,8 @@ QAction *QMenu::insertMenu(QAction *before, QMenu *menu)
     action with QAction::isSeparator() returning true. The function inserts
     the newly created action into this menu's list of actions before
     action \a before and returns it.
+
+    QMenu takes ownership of the returned QAction.
 
     \sa QWidget::insertAction(), addSeparator()
 */
