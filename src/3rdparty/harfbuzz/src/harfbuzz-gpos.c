@@ -1120,16 +1120,16 @@ static HB_Error  Load_PairSet ( HB_PairSet*  ps,
   HB_Error  error;
 
   HB_UShort             n, m, count;
-  HB_UInt              base_offset;
 
 #ifdef HB_USE_FLEXIBLE_VALUE_RECORD
   HB_UInt record_size = 0;
   HB_Short *vr;
 #else
+  HB_UInt              base_offset;
   HB_PairValueRecord*  pvr;
-#endif
 
   base_offset = FILE_Pos();
+#endif
 
   if ( ACCESS_Frame( 2L ) )
     return error;
@@ -1245,6 +1245,9 @@ static void  Free_PairSet( HB_PairSet*  ps,
     FREE( pvr );
   }
 #else
+  (void)format1; // unused
+  (void)format2; // unused
+
   if ( ps->ValueRecords )
   {
       FREE( ps->ValueRecords );
