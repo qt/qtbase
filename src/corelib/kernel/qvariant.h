@@ -454,6 +454,13 @@ public:
 private:
     // force compile error, prevent QVariant(bool) to be called
     inline QVariant(void *) Q_DECL_EQ_DELETE;
+    // QVariant::Type is marked as \obsolete, but we don't want to
+    // provide a constructor from its intended replacement,
+    // QMetaType::Type, instead, because the idea behind these
+    // constructors is flawed in the first place. But we also don't
+    // want QVariant(QMetaType::String) to compile and falsely be an
+    // int variant, so delete this constructor:
+    QVariant(QMetaType::Type) Q_DECL_EQ_DELETE;
 #ifdef QT_NO_CAST_FROM_ASCII
     // force compile error when implicit conversion is not wanted
     inline QVariant(const char *) Q_DECL_EQ_DELETE;
