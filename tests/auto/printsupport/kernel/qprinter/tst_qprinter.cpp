@@ -491,8 +491,8 @@ void tst_QPrinter::testMulitpleSets()
         return;
     }
 
-    QCOMPARE(printer.widthMM(), widthMMAfter);
-    QCOMPARE(printer.heightMM(), heightMMAfter);
+    QVERIFY(qAbs(printer.widthMM() - widthMMAfter) <= 2);
+    QVERIFY(qAbs(printer.heightMM() - heightMMAfter) <= 2);
 
     computePageValue(printer, paperWidth, paperHeight);
 
@@ -501,8 +501,8 @@ void tst_QPrinter::testMulitpleSets()
 
     // Set it again and see if it still works.
     printer.setPageSize(printerPageSize);
-    QCOMPARE(printer.widthMM(), widthMMAfter);
-    QCOMPARE(printer.heightMM(), heightMMAfter);
+    QVERIFY(qAbs(printer.widthMM() - widthMMAfter) <= 2);
+    QVERIFY(qAbs(printer.heightMM() - heightMMAfter) <= 2);
 
     printer.setOrientation(QPrinter::Landscape);
     computePageValue(printer, paperWidth, paperHeight);
