@@ -85,6 +85,10 @@ QMakeProperty::QMakeProperty() : settings(0)
         }
         m_values[name] = val;
     }
+    m_values["QMAKE_VERSION"] = qmake_version();
+#ifdef QT_VERSION_STR
+    m_values["QT_VERSION"] = QT_VERSION_STR;
+#endif
 }
 
 QMakeProperty::~QMakeProperty()
@@ -107,12 +111,6 @@ QMakeProperty::value(const QString &v)
     QString val = m_values.value(v);
     if (!val.isNull())
         return val;
-    else if(v == "QMAKE_VERSION")
-        return qmake_version();
-#ifdef QT_VERSION_STR
-    else if(v == "QT_VERSION")
-        return QT_VERSION_STR;
-#endif
 
     initSettings();
     if (!settings->contains(v))
