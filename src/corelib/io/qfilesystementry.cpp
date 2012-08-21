@@ -308,8 +308,7 @@ bool QFileSystemEntry::isRoot() const
 
 bool QFileSystemEntry::isEmpty() const
 {
-    resolveNativeFilePath();
-    return m_nativeFilePath.isEmpty();
+    return m_filePath.isEmpty() && m_nativeFilePath.isEmpty();
 }
 
 // private methods
