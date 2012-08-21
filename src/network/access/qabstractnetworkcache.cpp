@@ -411,7 +411,7 @@ void QNetworkCacheMetaDataPrivate::load(QDataStream &in, QNetworkCacheMetaData &
 
     \brief The QAbstractNetworkCache class provides the interface for cache implementations.
 
-    QAbstractNetworkCache is the base class for every standard cache that is used be
+    QAbstractNetworkCache is the base class for every standard cache that is used by
     QNetworkAccessManager.  QAbstractNetworkCache is an abstract class and cannot be
     instantiated.
 
