@@ -63,6 +63,7 @@ int main(int argv, char **args)
     QFinalState *s2 = new QFinalState();
     s1->addTransition(quitButton, SIGNAL(clicked()), s2);
     machine.addState(s2);
+    machine.setInitialState(s1);
 
     QObject::connect(&machine, SIGNAL(finished()), QApplication::instance(), SLOT(quit()));
 //![1]
