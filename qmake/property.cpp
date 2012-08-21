@@ -49,8 +49,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QStringList qmake_mkspec_paths(); //project.cpp
-
 static const struct {
     const char *name;
     QLibraryInfo::LibraryLocation loc;
@@ -109,8 +107,6 @@ QMakeProperty::value(const QString &v)
     QString val = m_values.value(v);
     if (!val.isNull())
         return val;
-    else if(v == "QMAKE_MKSPECS")
-        return qmake_mkspec_paths().join(Option::dirlist_sep);
     else if(v == "QMAKE_VERSION")
         return qmake_version();
 #ifdef QT_VERSION_STR
@@ -165,7 +161,6 @@ QMakeProperty::exec()
             QStringList specialProps;
             for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++)
                 specialProps.append(QString::fromLatin1(propList[i].name));
-            specialProps.append("QMAKE_MKSPECS");
             specialProps.append("QMAKE_VERSION");
 #ifdef QT_VERSION_STR
             specialProps.append("QT_VERSION");

@@ -3683,7 +3683,9 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QHash<QString, QString
                 if(var_type == ENVIRON) {
                     replacement = split_value_list(QString::fromLocal8Bit(qgetenv(var.toLatin1().constData())));
                 } else if(var_type == PROPERTY) {
-                    if(prop)
+                    if (var == "QMAKE_MKSPECS")
+                        replacement = split_value_list(qmake_mkspec_paths().join(Option::dirlist_sep));
+                    else if (prop)
                         replacement = split_value_list(prop->value(var));
                 } else if(var_type == FUNCTION) {
                     replacement = doProjectExpand(var, args, place);
