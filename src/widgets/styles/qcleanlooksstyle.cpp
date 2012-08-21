@@ -1494,6 +1494,10 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
 #endif // QT_NO_SIZEGRIP
 #ifndef QT_NO_TOOLBAR
     case CE_ToolBar:
+        // Reserve the beveled appearance only for mainwindow toolbars
+        if (!(widget && qobject_cast<const QMainWindow*> (widget->parentWidget())))
+            break;
+
         painter->save();
         if (const QStyleOptionToolBar *toolbar = qstyleoption_cast<const QStyleOptionToolBar *>(option)) {
             QRect rect = option->rect;
@@ -1599,32 +1603,17 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 = qstyleoption_cast<const QStyleOptionDockWidgetV2*>(dwOpt);
             bool verticalTitleBar = v2 == 0 ? false : v2->verticalTitleBar;
 
-            QRect rect = dwOpt->rect;
             QRect titleRect = subElementRect(SE_DockWidgetTitleBarText, option, widget);
-            QRect r = rect.adjusted(0, 0, -1, 0);
-            if (verticalTitleBar)
-                r.adjust(0, 0, 0, -1);
-            painter->setPen(option->palette.light().color());
-            painter->drawRect(r.adjusted(1, 1, 1, 1));
-            painter->setPen(shadow);
-            painter->drawRect(r);
-
             if (verticalTitleBar) {
+                QRect rect = dwOpt->rect;
                 QRect r = rect;
                 QSize s = r.size();
                 s.transpose();
                 r.setSize(s);
-
                 titleRect = QRect(r.left() + rect.bottom()
                                     - titleRect.bottom(),
                                 r.top() + titleRect.left() - rect.left(),
                                 titleRect.height(), titleRect.width());
-
-                painter->translate(r.left(), r.top() + r.width());
-                painter->rotate(-90);
-                painter->translate(-r.left(), -r.top());
-
-                rect = r;
             }
 
             if (!dwOpt->title.isEmpty()) {
