@@ -3790,12 +3790,6 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
                 newSize -= QSize(0, 2);
             newSize += QSize(0, 1);
         }
-        if (const QPushButton *button = qobject_cast<const QPushButton *>(widget)) {
-            if (qobject_cast<const QDialogButtonBox *>(button->parentWidget())) {
-                if (newSize.height() < 32)
-                    newSize.setHeight(32);
-            }
-        }
         break;
 #ifndef QT_NO_GROUPBOX
     case CT_GroupBox:
@@ -4337,7 +4331,7 @@ int QCleanlooksStyle::styleHint(StyleHint hint, const QStyleOption *option, cons
         ret = Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse;
         break;
     case SH_DialogButtonBox_ButtonsHaveIcons:
-        ret = true;
+        ret = false;
         break;
     case SH_MessageBox_CenterButtons:
         ret = false;
