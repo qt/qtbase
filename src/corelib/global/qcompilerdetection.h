@@ -628,17 +628,14 @@
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 406
        /* C++11 features supported in GCC 4.6: */
 #      define Q_COMPILER_CONSTEXPR
-#      define Q_COMPILER_NOEXCEPT
 #      define Q_COMPILER_NULLPTR
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #      define Q_COMPILER_RANGE_FOR
-#      if __GNUC__ == 4 && __GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ < 2
-         /* GCC 4.6.0 and 4.6.1 have a problem dealing with noexcept expressions,
-          * so turn the feature off for those versions */
-#         undef Q_COMPILER_NOEXCEPT
-#      endif
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 407
+       /* GCC 4.6.x has problems dealing with noexcept expressions,
+        * so turn the feature on for 4.7 and above, only */
+#      define Q_COMPILER_NOEXCEPT
        /* C++11 features supported in GCC 4.7: */
 #      define Q_COMPILER_NONSTATIC_MEMBER_INIT
 #      define Q_COMPILER_DELEGATING_CONSTRUCTORS
