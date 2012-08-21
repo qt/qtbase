@@ -1353,13 +1353,12 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                     }
                     ++c;
                 }
-                const FakeNode* fn = current->qmlBase();
-                if (fn) {
-                    if (fn->subType() == Node::QmlClass)
-                        current = static_cast<const QmlClassNode*>(fn);
+                const DocNode* dn = current->qmlBase();
+                if (dn) {
+                    if (dn->subType() == Node::QmlClass)
+                        current = static_cast<const QmlClassNode*>(dn);
                     else {
-                        fn->doc().location().warning(tr("Base class of QML class '%1' is ambgiguous")
-                                                     .arg(current->name()));
+                        dn->doc().location().warning(tr("Base class of QML class '%1' is ambgiguous").arg(current->name()));
                         current = 0;
                     }
                 }

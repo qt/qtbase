@@ -69,7 +69,7 @@ typedef QMap<Node*, NodeMultiMap> ParentMaps;
 class ClassNode;
 class Config;
 class CodeMarker;
-class FakeNode;
+class DocNode;
 class FunctionNode;
 class InnerNode;
 class Location;
@@ -114,7 +114,7 @@ protected:
                              CodeMarker *marker);
     virtual void generateBody(const Node *node, CodeMarker *marker);
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
-    virtual void generateFakeNode(FakeNode* fake, CodeMarker* marker);
+    virtual void generateDocNode(DocNode* dn, CodeMarker* marker);
     virtual void generateInheritedBy(const ClassNode *classe,
                                      CodeMarker *marker);
     virtual void generateInherits(const ClassNode *classe,
@@ -151,8 +151,8 @@ protected:
                                  CodeMarker *marker,
                                  bool generate,
                                  int& numGeneratedAtoms);
-    void generateExampleFiles(const FakeNode *fake, CodeMarker *marker);
-    void generateFileList(const FakeNode* fake,
+    void generateExampleFiles(const DocNode *dn, CodeMarker *marker);
+    void generateFileList(const DocNode* dn,
                           CodeMarker* marker,
                           Node::SubType subtype,
                           const QString& tag);

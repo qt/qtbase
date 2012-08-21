@@ -238,8 +238,8 @@ QString Node::nodeTypeString(unsigned t)
         return "namespace";
     case Class:
         return "class";
-    case Fake:
-        return "fake";
+    case Document:
+        return "document";
     case Enum:
         return "enum";
     case Typedef:
@@ -267,7 +267,7 @@ QString Node::nodeTypeString(unsigned t)
 /*!
   Returns this node's subtype as a string for use as an
   attribute value in XML or HTML. This is only useful
-  in the case where the node type is Fake.
+  in the case where the node type is Document.
  */
 QString Node::nodeSubtypeString() const
 {
@@ -277,7 +277,7 @@ QString Node::nodeSubtypeString() const
 /*!
   Returns the node subtype \a t as a string for use as an
   attribute value in XML or HTML. This is only useful
-  in the case where the node type is Fake.
+  in the case where the node type is Document.
  */
 QString Node::nodeSubtypeString(unsigned t)
 {
@@ -605,7 +605,7 @@ Node *InnerNode::findChildNodeByName(const QString& name)
     Node *node = childMap.value(name);
     if (node && node->subType() != QmlPropertyGroup)
         return node;
-    if ((type() == Fake) && (subType() == QmlClass)) {
+    if ((type() == Document) && (subType() == QmlClass)) {
         for (int i=0; i<children.size(); ++i) {
             Node* n = children.at(i);
             if (n->subType() == QmlPropertyGroup) {
@@ -629,7 +629,7 @@ void InnerNode::findNodes(const QString& name, QList<Node*>& n)
       found, append it to the output list and return immediately.
      */
     if (nodes.isEmpty()) {
-        if ((type() == Fake) && (subType() == QmlClass)) {
+        if ((type() == Document) && (subType() == QmlClass)) {
             for (int i=0; i<children.size(); ++i) {
                 node = children.at(i);
                 if (node->subType() == QmlPropertyGroup) {
@@ -694,7 +694,7 @@ Node* InnerNode::findChildNodeByName(const QString& name, bool qml)
                 return node;
         }
     }
-    if (qml && (type() == Fake) && (subType() == QmlClass)) {
+    if (qml && (type() == Document) && (subType() == QmlClass)) {
         for (int i=0; i<children.size(); ++i) {
             Node* node = children.at(i);
             if (node->subType() == QmlPropertyGroup) {
@@ -1423,19 +1423,19 @@ QmlClassNode* ClassNode::findQmlBaseNode()
     return result;
 }
 
-QMap<QString, FakeNode*> FakeNode::qmlModuleMap_;
+QMap<QString, DocNode*> DocNode::qmlModuleMap_;
 
 /*!
-  \class FakeNode
+  \class DocNode
  */
 
 /*!
-  The type of a FakeNode is Fake, and it has a \a subtype,
-  which specifies the type of FakeNode. The page type for
+  The type of a DocNode is Document, and it has a \a subtype,
+  which specifies the type of DocNode. The page type for
   the page index is set here.
  */
-FakeNode::FakeNode(InnerNode* parent, const QString& name, SubType subtype, Node::PageType ptype)
-    : InnerNode(Fake, parent, name), nodeSubtype_(subtype)
+DocNode::DocNode(InnerNode* parent, const QString& name, SubType subtype, Node::PageType ptype)
+    : InnerNode(Document, parent, name), nodeSubtype_(subtype)
 {
     switch (subtype) {
     case Page:
@@ -1467,19 +1467,19 @@ FakeNode::FakeNode(InnerNode* parent, const QString& name, SubType subtype, Node
 }
 
 /*!
-  Returns the fake node's title. This is used for the page title.
+  Returns the document node's title. This is used for the page title.
 */
-QString FakeNode::title() const
+QString DocNode::title() const
 {
     return title_;
 }
 
 /*!
-  Returns the fake node's full title, which is usually
+  Returns the document node's full title, which is usually
   just title(), but for some SubType values is different
   from title()
  */
-QString FakeNode::fullTitle() const
+QString DocNode::fullTitle() const
 {
     if (nodeSubtype_ == File) {
         if (title().isEmpty())
@@ -1510,7 +1510,7 @@ QString FakeNode::fullTitle() const
 /*!
   Returns the subtitle.
  */
-QString FakeNode::subTitle() const
+QString DocNode::subTitle() const
 {
     if (!subtitle_.isEmpty())
         return subtitle_;
@@ -1531,20 +1531,20 @@ QString FakeNode::subTitle() const
   If the QML module map does not contain the module identifier
   \a qmid, insert the QML module node \a fn mapped to \a qmid.
  */
-void FakeNode::insertQmlModuleNode(const QString& qmid, FakeNode* fn)
+void DocNode::insertQmlModuleNode(const QString& qmid, DocNode* fn)
 {
     if (!qmlModuleMap_.contains(qmid))
         qmlModuleMap_.insert(qmid,fn);
 }
 
 /*!
-  Returns a pointer to the QML module node (FakeNode) that is
+  Returns a pointer to the QML module node (DocNode) that is
   mapped to the QML module identifier constructed from \a arg.
   If that QML module node does not yet exist, it is constructed
   and inserted into the QML module map mapped to the QML module
   identifier constructed from \a arg.
  */
-FakeNode* FakeNode::lookupQmlModuleNode(Tree* tree, const ArgLocPair& arg)
+DocNode* DocNode::lookupQmlModuleNode(Tree* tree, const ArgLocPair& arg)
 {
     QStringList dotSplit;
     QStringList blankSplit = arg.first.split(QLatin1Char(' '));
@@ -1553,11 +1553,11 @@ FakeNode* FakeNode::lookupQmlModuleNode(Tree* tree, const ArgLocPair& arg)
         dotSplit = blankSplit[1].split(QLatin1Char('.'));
         qmid += dotSplit[0];
     }
-    FakeNode* fn = 0;
+    DocNode* fn = 0;
     if (qmlModuleMap_.contains(qmid))
         fn = qmlModuleMap_.value(qmid);
     if (!fn) {
-        fn = new FakeNode(tree->root(), arg.first, Node::QmlModule, Node::OverviewPage);
+        fn = new DocNode(tree->root(), arg.first, Node::QmlModule, Node::OverviewPage);
         fn->setQmlModule(arg);
         insertQmlModuleNode(qmid,fn);
     }
@@ -1568,10 +1568,10 @@ FakeNode* FakeNode::lookupQmlModuleNode(Tree* tree, const ArgLocPair& arg)
   Returns true if this QML type or property group contains a
   property named \a name.
  */
-bool FakeNode::hasProperty(const QString& name) const
+bool DocNode::hasProperty(const QString& name) const
 {
     foreach (Node* child, childNodes()) {
-        if (child->type() == Node::Fake && child->subType() == Node::QmlPropertyGroup) {
+        if (child->type() == Node::Document && child->subType() == Node::QmlPropertyGroup) {
             if (child->hasProperty(name))
                 return true;
         }
@@ -1584,11 +1584,11 @@ bool FakeNode::hasProperty(const QString& name) const
 }
 
 /*!
-  The constructor calls the FakeNode constructor with
+  The constructor calls the DocNode constructor with
   \a parent, \a name, and Node::Example.
  */
 ExampleNode::ExampleNode(InnerNode* parent, const QString& name)
-    : FakeNode(parent, name, Node::Example, Node::ExamplePage)
+    : DocNode(parent, name, Node::Example, Node::ExamplePage)
 {
     // nothing
 }
@@ -2004,12 +2004,12 @@ QMultiMap<QString,Node*> QmlClassNode::inheritedBy;
 QMap<QString, QmlClassNode*> QmlClassNode::qmlModuleMemberMap_;
 
 /*!
-  Constructs a Qml class node (i.e. a Fake node with the
+  Constructs a Qml class node (i.e. a Document node with the
   subtype QmlClass. The new node has the given \a parent
   and \a name.
  */
 QmlClassNode::QmlClassNode(InnerNode *parent, const QString& name)
-    : FakeNode(parent, name, QmlClass, Node::ApiPage),
+    : DocNode(parent, name, QmlClass, Node::ApiPage),
       abstract_(false),
       cnodeRequired_(false),
       cnode_(0),
@@ -2178,7 +2178,7 @@ void QmlClassNode::resolveInheritance(Tree* tree)
         QStringList strList = linkPair.first.split("::");
         Node* n = tree->findQmlClassNode(strList);
         if (n) {
-            base_ = static_cast<FakeNode*>(n);
+            base_ = static_cast<DocNode*>(n);
             if (base_ && base_->subType() == Node::QmlClass) {
                 return;
             }
@@ -2190,7 +2190,7 @@ void QmlClassNode::resolveInheritance(Tree* tree)
                 QString qmid = importList_.at(i).first + importList_.at(i).second;
                 for (int j=0; j<children.size(); ++j) {
                     if (qmid == children.at(j)->qmlModuleIdentifier()) {
-                        base_ = static_cast<FakeNode*>(children.at(j));
+                        base_ = static_cast<DocNode*>(children.at(j));
                         return;
                     }
                 }
@@ -2215,13 +2215,13 @@ void QmlClassNode::resolveInheritance(Tree* tree)
 }
 
 /*!
-  Constructs a Qml basic type node (i.e. a Fake node with
+  Constructs a Qml basic type node (i.e. a Document node with
   the subtype QmlBasicType. The new node has the given
   \a parent and \a name.
  */
 QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
                                    const QString& name)
-    : FakeNode(parent, name, QmlBasicType, Node::ApiPage)
+    : DocNode(parent, name, QmlBasicType, Node::ApiPage)
 {
     setTitle(name);
 }
@@ -2231,7 +2231,7 @@ QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
   always a QmlClassNode.
  */
 QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent, const QString& name)
-    : FakeNode(parent, name, QmlPropertyGroup, Node::ApiPage)
+    : DocNode(parent, name, QmlPropertyGroup, Node::ApiPage)
 {
     idNumber_ = -1;
 }
@@ -2437,7 +2437,7 @@ bool QmlPropertyNode::hasProperty(const QString& n) const
   this node's parent.
  */
 NameCollisionNode::NameCollisionNode(InnerNode* child)
-    : FakeNode(child->parent(), child->name(), Collision, Node::NoPageType)
+    : DocNode(child->parent(), child->name(), Collision, Node::NoPageType)
 {
     setTitle("Name Collision: " + child->name());
     addCollision(child);
@@ -2524,7 +2524,7 @@ const Node* NameCollisionNode::applyModuleIdentifier(const Node* origin) const
         const NodeList& cn = childNodes();
         NodeList::ConstIterator i = cn.constBegin();
         while (i != cn.constEnd()) {
-            if ((*i)->type() == Node::Fake && (*i)->subType() == Node::QmlClass) {
+            if ((*i)->type() == Node::Document && (*i)->subType() == Node::QmlClass) {
                 if (origin->qmlModuleIdentifier() == (*i)->qmlModuleIdentifier())
                     return (*i);
             }
@@ -2544,10 +2544,10 @@ QString Node::fullDocumentName() const
 
     do {
         if (!n->name().isEmpty() &&
-                ((n->type() != Node::Fake) || (n->subType() != Node::QmlPropertyGroup)))
+                ((n->type() != Node::Document) || (n->subType() != Node::QmlPropertyGroup)))
             pieces.insert(0, n->name());
 
-        if ((n->type() == Node::Fake) && (n->subType() != Node::QmlPropertyGroup)) {
+        if ((n->type() == Node::Document) && (n->subType() != Node::QmlPropertyGroup)) {
             if ((n->subType() == Node::QmlClass) && !n->qmlModuleName().isEmpty())
                 pieces.insert(0, n->qmlModuleIdentifier());
             break;
@@ -2562,7 +2562,7 @@ QString Node::fullDocumentName() const
 
     // Create a name based on the type of the ancestor node.
     QString concatenator = "::";
-    if ((n->type() == Node::Fake) && (n->subType() != Node::QmlClass))
+    if ((n->type() == Node::Document) && (n->subType() != Node::QmlClass))
         concatenator = QLatin1Char('#');
 
     return pieces.join(concatenator);
@@ -2741,7 +2741,7 @@ QString Node::idForNode() const
                     str = "class-member-" + func->name();
                 else if (parent_->type() == Namespace)
                     str = "namespace-member-" + func->name();
-                else if (parent_->type() == Fake) {
+                else if (parent_->type() == Document) {
                     if (parent_->subType() == QmlClass)
                         str = "qml-method-" + parent_->name().toLower() + "-" + func->name();
                     else
@@ -2757,7 +2757,7 @@ QString Node::idForNode() const
                 str += QLatin1Char('-') + QString::number(func->overloadNumber());
         }
         break;
-    case Node::Fake:
+    case Node::Document:
         {
             switch (subType()) {
             case Node::QmlClass:

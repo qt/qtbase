@@ -70,8 +70,8 @@ public:
     ClassNode* findClassNode(const QStringList& path, Node* start = 0);
     QmlClassNode* findQmlClassNode(const QStringList& path, Node* start = 0);
     NamespaceNode* findNamespaceNode(const QStringList& path, Node* start = 0);
-    FakeNode* findGroupNode(const QStringList& path, Node* start = 0);
-    FakeNode* findQmlModuleNode(const QStringList& path, Node* start = 0);
+    DocNode* findGroupNode(const QStringList& path, Node* start = 0);
+    DocNode* findQmlModuleNode(const QStringList& path, Node* start = 0);
 
     Node* findNodeByNameAndType(const QStringList& path,
                                 Node::Type type,
@@ -139,7 +139,7 @@ public:
                                          const FunctionNode *clone,
                                          const Node *relative = 0,
                                          int findFlags = 0) const;
-    const FakeNode *findFakeNodeByTitle(const QString &title, const Node* relative = 0) const;
+    const DocNode *findDocNodeByTitle(const QString &title, const Node* relative = 0) const;
     const Node *findUnambiguousTarget(const QString &target, Atom *&atom, const Node* relative) const;
     Atom *findTarget(const QString &target, const Node *node) const;
     const NamespaceNode *root() const { return &roo; }

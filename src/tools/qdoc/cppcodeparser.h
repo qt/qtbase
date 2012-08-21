@@ -159,7 +159,7 @@ protected:
                                   const QString &includeFile,
                                   const QString &macroDef,
                                   Tree *tree);
-    void createExampleFileNodes(FakeNode *fake);
+    void createExampleFileNodes(DocNode *dn);
 
  protected:
     QMap<QString, Node::Type> nodeTypeMap;

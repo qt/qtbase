@@ -518,9 +518,10 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                 if (parentPath.isEmpty() && !lastPath.isEmpty())
                     func = tree_->findFunctionNode(lastPath, clone);
                 if (func == 0) {
-                    doc.location().warning(tr("Cannot find '%1' in '\\%2'")
+                    doc.location().warning(tr("Cannot find '%1' in '\\%2' %3")
                                            .arg(clone->name() + "(...)")
-                                           .arg(COMMAND_FN),
+                                           .arg(COMMAND_FN)
+                                           .arg(arg.first),
                                            tr("I cannot find any function of that name with the "
                                               "specified signature. Make sure that the signature "
                                               "is identical to the declaration, including 'const' "
@@ -590,7 +591,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
          */
         Node::Type type =  nodeTypeMap[command];
         Node::SubType subtype = Node::NoSubType;
-        if (type == Node::Fake)
+        if (type == Node::Document)
             subtype = Node::QmlClass;
 
         QStringList paths = arg.first.split(QLatin1Char(' '));
@@ -648,34 +649,34 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         }
     }
     else if (command == COMMAND_EXTERNALPAGE) {
-        FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::ExternalPage, Node::ArticlePage);
-        fn->setLocation(doc.startLocation());
-        return fn;
+        DocNode* dn = new DocNode(tree_->root(), arg.first, Node::ExternalPage, Node::ArticlePage);
+        dn->setLocation(doc.startLocation());
+        return dn;
     }
     else if (command == COMMAND_FILE) {
-        FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::File, Node::NoPageType);
-        fn->setLocation(doc.startLocation());
-        return fn;
+        DocNode* dn = new DocNode(tree_->root(), arg.first, Node::File, Node::NoPageType);
+        dn->setLocation(doc.startLocation());
+        return dn;
     }
     else if (command == COMMAND_GROUP) {
-        FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::Group, Node::OverviewPage);
-        fn->setLocation(doc.startLocation());
-        return fn;
+        DocNode* dn = new DocNode(tree_->root(), arg.first, Node::Group, Node::OverviewPage);
+        dn->setLocation(doc.startLocation());
+        return dn;
     }
     else if (command == COMMAND_HEADERFILE) {
-        FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::HeaderFile, Node::ApiPage);
-        fn->setLocation(doc.startLocation());
-        return fn;
+        DocNode* dn = new DocNode(tree_->root(), arg.first, Node::HeaderFile, Node::ApiPage);
+        dn->setLocation(doc.startLocation());
+        return dn;
     }
     else if (command == COMMAND_MODULE) {
-        FakeNode* fn = new FakeNode(tree_->root(), arg.first, Node::Module, Node::OverviewPage);
-        fn->setLocation(doc.startLocation());
-        return fn;
+        DocNode* dn = new DocNode(tree_->root(), arg.first, Node::Module, Node::OverviewPage);
+        dn->setLocation(doc.startLocation());
+        return dn;
     }
     else if (command == COMMAND_QMLMODULE) {
-        FakeNode* fn = FakeNode::lookupQmlModuleNode(tree_, arg);
-        fn->setLocation(doc.startLocation());
-        return fn;
+        DocNode* dn = DocNode::lookupQmlModuleNode(tree_, arg);
+        dn->setLocation(doc.startLocation());
+        return dn;
     }
     else if (command == COMMAND_PAGE) {
         Node::PageType ptype = Node::ArticlePage;
@@ -710,21 +711,21 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
           node and return that one.
         */
         NameCollisionNode* ncn = tree_->checkForCollision(args[0]);
-        FakeNode* fn = 0;
+        DocNode* dn = 0;
         if (ptype == Node::DitaMapPage)
-            fn = new DitaMapNode(tree_->root(), args[0]);
+            dn = new DitaMapNode(tree_->root(), args[0]);
         else
-            fn = new FakeNode(tree_->root(), args[0], Node::Page, ptype);
-        fn->setLocation(doc.startLocation());
+            dn = new DocNode(tree_->root(), args[0], Node::Page, ptype);
+        dn->setLocation(doc.startLocation());
         if (ncn) {
-            ncn->addCollision(fn);
+            ncn->addCollision(dn);
         }
-        return fn;
+        return dn;
     }
     else if (command == COMMAND_DITAMAP) {
-        FakeNode* fn = new DitaMapNode(tree_->root(), arg.first);
-        fn->setLocation(doc.startLocation());
-        return fn;
+        DocNode* dn = new DitaMapNode(tree_->root(), arg.first);
+        dn->setLocation(doc.startLocation());
+        return dn;
     }
     else if ((command == COMMAND_QMLCLASS) || (command == COMMAND_QMLTYPE)) {
         if (command == COMMAND_QMLCLASS)
@@ -1084,7 +1085,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
             /*
               It should be a header file, I think.
             */
-            n = tree_->findNodeByNameAndType(QStringList(arg), Node::Fake, Node::NoSubType, 0);
+            n = tree_->findNodeByNameAndType(QStringList(arg), Node::Document, Node::NoSubType, 0);
         }
         else {
             /*
@@ -1135,7 +1136,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         }
     }
     else if (command == COMMAND_QMLINSTANTIATES) {
-        if ((node->type() == Node::Fake) && (node->subType() == Node::QmlClass)) {
+        if ((node->type() == Node::Document) && (node->subType() == Node::QmlClass)) {
             ClassNode* classNode = tree_->findClassNode(arg.split("::"));
             if (classNode)
                 node->setClassNode(classNode);
@@ -1150,7 +1151,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
             QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
             qpn->setDefault();
         }
-        else if (node->type() == Node::Fake && node->subType() == Node::QmlPropertyGroup) {
+        else if (node->type() == Node::Document && node->subType() == Node::QmlPropertyGroup) {
             QmlPropGroupNode* qpgn = static_cast<QmlPropGroupNode*>(node);
             NodeList::ConstIterator p = qpgn->childNodes().constBegin();
             while (p != qpgn->childNodes().constEnd()) {
@@ -1167,7 +1168,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
             QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
             qpn->setReadOnly(1);
         }
-        else if (node->type() == Node::Fake && node->subType() == Node::QmlPropertyGroup) {
+        else if (node->type() == Node::Document && node->subType() == Node::QmlPropertyGroup) {
             QmlPropGroupNode* qpgn = static_cast<QmlPropGroupNode*>(node);
             NodeList::ConstIterator p = qpgn->childNodes().constBegin();
             while (p != qpgn->childNodes().constEnd()) {
@@ -1180,7 +1181,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         }
     }
     else if (command == COMMAND_QMLABSTRACT) {
-        if ((node->type() == Node::Fake) && (node->subType() == Node::QmlClass)) {
+        if ((node->type() == Node::Document) && (node->subType() == Node::QmlClass)) {
             node->setAbstract(true);
         }
     }
@@ -1834,7 +1835,6 @@ bool CppCodeParser::matchNamespaceDecl(InnerNode *parent)
 
     readToken(); // skip '{'
     bool matched = matchDeclList(ns);
-
     return matched && match(Tok_RightBrace);
 }
 
@@ -2268,8 +2268,9 @@ bool CppCodeParser::matchDocsAndStuff()
                     foreach (const QString& usedNamespace_, activeNamespaces_) {
                         QStringList newPath = usedNamespace_.split("::") + parentPath;
                         func = tree_->findFunctionNode(newPath, clone);
-                        if (func)
+                        if (func) {
                             break;
+                        }
                     }
                     if (func == 0)
                         func = tree_->findFunctionNode(parentPath, clone);
@@ -2483,13 +2484,13 @@ void CppCodeParser::instantiateIteratorMacro(const QString &container,
     matchDeclList(tree_->root());
 }
 
-void CppCodeParser::createExampleFileNodes(FakeNode *fake)
+void CppCodeParser::createExampleFileNodes(DocNode *dn)
 {
-    QString examplePath = fake->name();
+    QString examplePath = dn->name();
     QString proFileName = examplePath + QLatin1Char('/') + examplePath.split(QLatin1Char('/')).last() + ".pro";
     QString userFriendlyFilePath;
 
-    QString fullPath = Config::findFile(fake->doc().location(),
+    QString fullPath = Config::findFile(dn->doc().location(),
                                         exampleFiles,
                                         exampleDirs,
                                         proFileName,
@@ -2499,7 +2500,7 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
         QString tmp = proFileName;
         proFileName = examplePath + QLatin1Char('/') + "qbuild.pro";
         userFriendlyFilePath.clear();
-        fullPath = Config::findFile(fake->doc().location(),
+        fullPath = Config::findFile(dn->doc().location(),
                                     exampleFiles,
                                     exampleDirs,
                                     proFileName,
@@ -2507,14 +2508,14 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
         if (fullPath.isEmpty()) {
             proFileName = examplePath + QLatin1Char('/') + examplePath.split(QLatin1Char('/')).last() + ".qmlproject";
             userFriendlyFilePath.clear();
-            fullPath = Config::findFile(fake->doc().location(),
+            fullPath = Config::findFile(dn->doc().location(),
                                         exampleFiles,
                                         exampleDirs,
                                         proFileName,
                                         userFriendlyFilePath);
             if (fullPath.isEmpty()) {
-                fake->location().warning(tr("Cannot find file '%1' or '%2'").arg(tmp).arg(proFileName));
-                fake->location().warning(tr("  EXAMPLE PATH DOES NOT EXIST: %1").arg(examplePath));
+                dn->location().warning(tr("Cannot find file '%1' or '%2'").arg(tmp).arg(proFileName));
+                dn->location().warning(tr("  EXAMPLE PATH DOES NOT EXIST: %1").arg(examplePath));
                 return;
             }
         }
@@ -2551,16 +2552,16 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
     }
 
     foreach (const QString &exampleFile, exampleFiles) {
-        new FakeNode(fake,
-                     exampleFile.mid(sizeOfBoringPartOfName),
-                     Node::File,
-                     Node::NoPageType);
+        new DocNode(dn,
+                    exampleFile.mid(sizeOfBoringPartOfName),
+                    Node::File,
+                    Node::NoPageType);
     }
     foreach (const QString &imageFile, imageFiles) {
-        new FakeNode(fake,
-                     imageFile.mid(sizeOfBoringPartOfName),
-                     Node::Image,
-                     Node::NoPageType);
+        new DocNode(dn,
+                    imageFile.mid(sizeOfBoringPartOfName),
+                    Node::Image,
+                    Node::NoPageType);
     }
 }
 

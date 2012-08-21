@@ -60,7 +60,6 @@ class Config;
 class DocPrivate;
 class Quoter;
 class Text;
-class FakeNode;
 class DitaRef;
 
 typedef QPair<QString, Location> ArgLocPair;

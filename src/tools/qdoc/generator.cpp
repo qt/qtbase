@@ -300,12 +300,12 @@ QString Generator::fileBase(const Node *node) const
                 (p->subType() == Node::QmlBasicType)) {
             base.prepend(outputPrefix(QLatin1String("QML")));
         }
-        if (!pp || pp->name().isEmpty() || pp->type() == Node::Fake)
+        if (!pp || pp->name().isEmpty() || pp->type() == Node::Document)
             break;
         base.prepend(QLatin1Char('-'));
         p = pp;
     }
-    if (node->type() == Node::Fake) {
+    if (node->type() == Node::Document) {
         if (node->subType() == Node::Collision) {
             const NameCollisionNode* ncn = static_cast<const NameCollisionNode*>(node);
             if (ncn->currentChild())
@@ -502,7 +502,7 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
         else
             return QString();
     }
-    else if (node->type() == Node::Fake) {
+    else if (node->type() == Node::Document) {
         if ((node->subType() == Node::QmlClass) ||
                 (node->subType() == Node::QmlBasicType)) {
             QString fb = fileBase(node);
@@ -598,12 +598,8 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
     case Node::Variable:
         anchorRef = QLatin1Char('#') + node->name() + "-var";
         break;
-    case Node::Fake:
+    case Node::Document:
     {
-        /*
-              Use fileBase(node) for fake nodes because they are represented
-              by pages whose file names are lower-case.
-            */
         parentName = fileBase(node);
         parentName.replace(QLatin1Char('/'), QLatin1Char('-')).replace(QLatin1Char('.'), QLatin1Char('-'));
         parentName += QLatin1Char('.') + currentGenerator()->fileExtension();
@@ -636,8 +632,8 @@ QString Generator::fullName(const Node *node,
                             const Node *relative,
                             CodeMarker *marker) const
 {
-    if (node->type() == Node::Fake) {
-        const FakeNode* fn = static_cast<const FakeNode *>(node);
+    if (node->type() == Node::Document) {
+        const DocNode* fn = static_cast<const DocNode *>(node);
 
         // Only print modulename::type on collision pages.
         if (!fn->qmlModuleIdentifier().isEmpty() && relative != 0 && relative->isCollisionNode())
@@ -743,9 +739,9 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
 {
     bool quiet = false;
 
-    if (node->type() == Node::Fake) {
-        const FakeNode *fake = static_cast<const FakeNode *>(node);
-        if ((fake->subType() == Node::File) || (fake->subType() == Node::Image)) {
+    if (node->type() == Node::Document) {
+        const DocNode *dn = static_cast<const DocNode *>(node);
+        if ((dn->subType() == Node::File) || (dn->subType() == Node::Image)) {
             quiet = true;
         }
     }
@@ -871,19 +867,19 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         }
     }
 
-    if (node->type() == Node::Fake) {
-        const FakeNode *fake = static_cast<const FakeNode *>(node);
-        if (fake->subType() == Node::Example) {
-            generateExampleFiles(fake, marker);
+    if (node->type() == Node::Document) {
+        const DocNode *dn = static_cast<const DocNode *>(node);
+        if (dn->subType() == Node::Example) {
+            generateExampleFiles(dn, marker);
         }
-        else if (fake->subType() == Node::File) {
+        else if (dn->subType() == Node::File) {
             Text text;
             Quoter quoter;
-            Doc::quoteFromFile(fake->doc().location(), quoter, fake->name());
-            QString code = quoter.quoteTo(fake->location(), QString(), QString());
-            CodeMarker *codeMarker = CodeMarker::markerForFileName(fake->name());
+            Doc::quoteFromFile(dn->doc().location(), quoter, dn->name());
+            QString code = quoter.quoteTo(dn->location(), QString(), QString());
+            CodeMarker *codeMarker = CodeMarker::markerForFileName(dn->name());
             text << Atom(codeMarker->atomType(), code);
-            generateText(text, fake, codeMarker);
+            generateText(text, dn, codeMarker);
         }
     }
 }
@@ -892,15 +888,15 @@ void Generator::generateClassLikeNode(InnerNode* /* classe */, CodeMarker* /* ma
 {
 }
 
-void Generator::generateExampleFiles(const FakeNode *fake, CodeMarker *marker)
+void Generator::generateExampleFiles(const DocNode *dn, CodeMarker *marker)
 {
-    if (fake->childNodes().isEmpty())
+    if (dn->childNodes().isEmpty())
         return;
-    generateFileList(fake, marker, Node::File, QString("Files:"));
-    generateFileList(fake, marker, Node::Image, QString("Images:"));
+    generateFileList(dn, marker, Node::File, QString("Files:"));
+    generateFileList(dn, marker, Node::Image, QString("Images:"));
 }
 
-void Generator::generateFakeNode(FakeNode* /* fake */, CodeMarker* /* marker */)
+void Generator::generateDocNode(DocNode* /* dn */, CodeMarker* /* marker */)
 {
 }
 
@@ -911,7 +907,7 @@ void Generator::generateFakeNode(FakeNode* /* fake */, CodeMarker* /* marker */)
   by the example. The images are copied into a subtree of
   \c{...doc/html/images/used-in-examples/...}
  */
-void Generator::generateFileList(const FakeNode* fake,
+void Generator::generateFileList(const DocNode* dn,
                                  CodeMarker* marker,
                                  Node::SubType subtype,
                                  const QString& tag)
@@ -923,7 +919,7 @@ void Generator::generateFileList(const FakeNode* fake,
     text << Atom::ParaLeft << tag << Atom::ParaRight
          << Atom(Atom::ListLeft, openedList.styleString());
 
-    foreach (const Node* child, fake->childNodes()) {
+    foreach (const Node* child, dn->childNodes()) {
         if (child->subType() == subtype) {
             ++count;
             QString file = child->name();
@@ -931,7 +927,7 @@ void Generator::generateFileList(const FakeNode* fake,
                 if (!file.isEmpty()) {
                     QDir dirInfo;
                     QString userFriendlyFilePath;
-                    QString srcPath = Config::findFile(fake->location(),
+                    QString srcPath = Config::findFile(dn->location(),
                                                        QStringList(),
                                                        exampleDirs,
                                                        file,
@@ -941,10 +937,10 @@ void Generator::generateFileList(const FakeNode* fake,
 
                     QString imgOutDir = outDir_ + "/images/used-in-examples/" + userFriendlyFilePath;
                     if (!dirInfo.mkpath(imgOutDir))
-                        fake->location().fatal(tr("Cannot create output directory '%1'")
+                        dn->location().fatal(tr("Cannot create output directory '%1'")
                                                .arg(imgOutDir));
 
-                    QString imgOutName = Config::copyFile(fake->location(),
+                    QString imgOutName = Config::copyFile(dn->location(),
                                                           srcPath,
                                                           file,
                                                           imgOutDir);
@@ -966,7 +962,7 @@ void Generator::generateFileList(const FakeNode* fake,
     }
     text << Atom(Atom::ListRight, openedList.styleString());
     if (count > 0)
-        generateText(text, fake, marker);
+        generateText(text, dn, marker);
 }
 
 void Generator::generateInheritedBy(const ClassNode *classe, CodeMarker *marker)
@@ -1030,17 +1026,17 @@ void Generator::generateInnerNode(InnerNode* node)
     if (!node->url().isNull())
         return;
 
-    if (node->type() == Node::Fake) {
-        FakeNode* fakeNode = static_cast<FakeNode*>(node);
-        if (fakeNode->subType() == Node::ExternalPage)
+    if (node->type() == Node::Document) {
+        DocNode* docNode = static_cast<DocNode*>(node);
+        if (docNode->subType() == Node::ExternalPage)
             return;
-        if (fakeNode->subType() == Node::Image)
+        if (docNode->subType() == Node::Image)
             return;
-        if (fakeNode->subType() == Node::QmlPropertyGroup)
+        if (docNode->subType() == Node::QmlPropertyGroup)
             return;
-        if (fakeNode->subType() == Node::Page) {
+        if (docNode->subType() == Node::Page) {
             if (node->count() > 0)
-                qDebug("PAGE %s HAS CHILDREN", qPrintable(fakeNode->title()));
+                qDebug("PAGE %s HAS CHILDREN", qPrintable(docNode->title()));
         }
     }
 
@@ -1055,7 +1051,7 @@ void Generator::generateInnerNode(InnerNode* node)
           later in generateCollisionPages(). Each one is
           appended to a list for later.
          */
-        if ((node->type() == Node::Fake) && (node->subType() == Node::Collision)) {
+        if ((node->type() == Node::Document) && (node->subType() == Node::Collision)) {
             NameCollisionNode* ncn = static_cast<NameCollisionNode*>(node);
             collisionNodes.append(const_cast<NameCollisionNode*>(ncn));
         }
@@ -1064,8 +1060,8 @@ void Generator::generateInnerNode(InnerNode* node)
             if (node->type() == Node::Namespace || node->type() == Node::Class) {
                 generateClassLikeNode(node, marker);
             }
-            else if (node->type() == Node::Fake) {
-                generateFakeNode(static_cast<FakeNode*>(node), marker);
+            else if (node->type() == Node::Document) {
+                generateDocNode(static_cast<DocNode*>(node), marker);
             }
             endSubPage();
         }
@@ -2013,7 +2009,7 @@ QString Generator::typeString(const Node *node)
         return "namespace";
     case Node::Class:
         return "class";
-    case Node::Fake:
+    case Node::Document:
     {
         switch (node->subType()) {
         case Node::QmlClass:

@@ -251,7 +251,7 @@ void CodeParser::processCommonMetaCommand(const Location& location,
     }
     else if (command == COMMAND_INQMLMODULE) {
         node->setQmlModule(arg);
-        FakeNode* fn = FakeNode::lookupQmlModuleNode(tree, arg);
+        DocNode* fn = DocNode::lookupQmlModuleNode(tree, arg);
         fn->addQmlModuleMember(node);
         QString qmid = node->qmlModuleIdentifier();
         QmlClassNode* qcn = static_cast<QmlClassNode*>(node);
@@ -297,9 +297,9 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         node->addPageKeywords(arg.first);
     }
     else if (command == COMMAND_SUBTITLE) {
-        if (node->type() == Node::Fake) {
-            FakeNode *fake = static_cast<FakeNode *>(node);
-            fake->setSubTitle(arg.first);
+        if (node->type() == Node::Document) {
+            DocNode *dn = static_cast<DocNode *>(node);
+            dn->setSubTitle(arg.first);
         }
         else
             location.warning(tr("Ignored '\\%1'").arg(COMMAND_SUBTITLE));
@@ -308,13 +308,13 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         node->setThreadSafeness(Node::ThreadSafe);
     }
     else if (command == COMMAND_TITLE) {
-        if (node->type() == Node::Fake) {
-            FakeNode *fake = static_cast<FakeNode *>(node);
-            fake->setTitle(arg.first);
-            if (fake->subType() == Node::Example) {
-                ExampleNode::exampleNodeMap.insert(fake->title(),static_cast<ExampleNode*>(fake));
+        if (node->type() == Node::Document) {
+            DocNode *dn = static_cast<DocNode *>(node);
+            dn->setTitle(arg.first);
+            if (dn->subType() == Node::Example) {
+                ExampleNode::exampleNodeMap.insert(dn->title(),static_cast<ExampleNode*>(dn));
             }
-            nameToTitle.insert(fake->name(),arg.first);
+            nameToTitle.insert(dn->name(),arg.first);
         }
         else
             location.warning(tr("Ignored '\\%1'").arg(COMMAND_TITLE));

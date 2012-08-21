@@ -83,7 +83,7 @@ struct Target
 
 typedef QMap<PropertyNode::FunctionRole, QString> RoleMap;
 typedef QMap<PropertyNode*, RoleMap> PropertyMap;
-typedef QMultiHash<QString, FakeNode*> FakeNodeHash;
+typedef QMultiHash<QString, DocNode*> DocNodeHash;
 typedef QMultiHash<QString, Target> TargetHash;
 
 class TreePrivate
@@ -93,7 +93,7 @@ public:
     PropertyMap unresolvedPropertyMap;
     NodeMultiMap groupMap;
     QMultiMap<QString, QString> publicGroupMap;
-    FakeNodeHash fakeNodesByTitle;
+    DocNodeHash docNodesByTitle;
     TargetHash targetHash;
     QList<QPair<ClassNode*,QString> > basesList;
     QList<QPair<FunctionNode*,QString> > relatedList;
@@ -195,7 +195,6 @@ const Node* Tree::findNode(const QStringList& path,
                 break;
 
             const Node* next = static_cast<const InnerNode*>(node)->findChildNodeByName(path.at(i), qml);
-
             if (!next && (findFlags & SearchEnumValues) && i == path.size()-1)
                 next = static_cast<const InnerNode*>(node)->findEnumNodeForValue(path.at(i));
 
@@ -230,8 +229,8 @@ const Node* Tree::findNode(const QStringList& path,
 /*!
   Find the QML class node for the specified \a module and \a name
   identifiers. The \a module identifier may be empty. If the module
-  identifier is empty, then begin by finding the FakeNode that has
-  the specified \a name. If that FakeNode is a QML class, return it.
+  identifier is empty, then begin by finding the DocNode that has
+  the specified \a name. If that DocNode is a QML class, return it.
   If it is a collision node, return its current child, if the current
   child is a QML class. If the collision node does not have a child
   that is a QML class node, return 0.
@@ -246,7 +245,7 @@ QmlClassNode* Tree::findQmlClassNode(const QString& module, const QString& name)
             else if (n->subType() == Node::Collision) {
                 NameCollisionNode* ncn;
                 ncn = static_cast<NameCollisionNode*>(n);
-                return static_cast<QmlClassNode*>(ncn->findAny(Node::Fake,Node::QmlClass));
+                return static_cast<QmlClassNode*>(ncn->findAny(Node::Document,Node::QmlClass));
             }
         }
         return 0;
@@ -433,15 +432,15 @@ static const char*  const suffixes[NumSuffixes] = { "", "s", "es" };
   If \a relative node is provided, it is used to disambiguate if
   it has a QML module identifier.
  */
-const FakeNode* Tree::findFakeNodeByTitle(const QString& title, const Node* relative ) const
+const DocNode* Tree::findDocNodeByTitle(const QString& title, const Node* relative ) const
 {
     for (int pass = 0; pass < NumSuffixes; ++pass) {
-        FakeNodeHash::const_iterator i = priv->fakeNodesByTitle.constFind(Doc::canonicalTitle(title + suffixes[pass]));
-        if (i != priv->fakeNodesByTitle.constEnd()) {
+        DocNodeHash::const_iterator i = priv->docNodesByTitle.constFind(Doc::canonicalTitle(title + suffixes[pass]));
+        if (i != priv->docNodesByTitle.constEnd()) {
             if (relative && !relative->qmlModuleIdentifier().isEmpty()) {
-                const FakeNode* fn = i.value();
-                InnerNode* parent = fn->parent();
-                if (parent && parent->type() == Node::Fake && parent->subType() == Node::Collision) {
+                const DocNode* dn = i.value();
+                InnerNode* parent = dn->parent();
+                if (parent && parent->type() == Node::Document && parent->subType() == Node::Collision) {
                     const NodeList& nl = parent->childNodes();
                     NodeList::ConstIterator it = nl.constBegin();
                     while (it != nl.constEnd()) {
@@ -452,8 +451,8 @@ const FakeNode* Tree::findFakeNodeByTitle(const QString& title, const Node* rela
                               because of the QML module identifier being used as a
                               namespace qualifier.
                              */
-                            fn = static_cast<const FakeNode*>(*it);
-                            return fn;
+                            dn = static_cast<const DocNode*>(*it);
+                            return dn;
                         }
                         ++it;
                     }
@@ -464,11 +463,11 @@ const FakeNode* Tree::findFakeNodeByTitle(const QString& title, const Node* rela
               overkill. We should report the duplicate file and let
               that suffice.
              */
-            FakeNodeHash::const_iterator j = i;
+            DocNodeHash::const_iterator j = i;
             ++j;
-            if (j != priv->fakeNodesByTitle.constEnd() && j.key() == i.key()) {
+            if (j != priv->docNodesByTitle.constEnd() && j.key() == i.key()) {
                 QList<Location> internalLocations;
-                while (j != priv->fakeNodesByTitle.constEnd()) {
+                while (j != priv->docNodesByTitle.constEnd()) {
                     if (j.key() == i.key() && j.value()->url().isEmpty())
                         internalLocations.append(j.value()->location());
                     ++j;
@@ -759,10 +758,10 @@ void Tree::resolveTargets(InnerNode* root)
     // need recursion
 
     foreach (Node* child, root->childNodes()) {
-        if (child->type() == Node::Fake) {
-            FakeNode* node = static_cast<FakeNode*>(child);
+        if (child->type() == Node::Document) {
+            DocNode* node = static_cast<DocNode*>(child);
             if (!node->title().isEmpty())
-                priv->fakeNodesByTitle.insert(Doc::canonicalTitle(node->title()), node);
+                priv->docNodesByTitle.insert(Doc::canonicalTitle(node->title()), node);
             if (node->subType() == Node::Collision) {
                 resolveTargets(node);
             }
@@ -815,7 +814,7 @@ void Tree::resolveCppToQmlLinks()
 {
 
     foreach (Node* child, roo.childNodes()) {
-        if (child->type() == Node::Fake && child->subType() == Node::QmlClass) {
+        if (child->type() == Node::Document && child->subType() == Node::QmlClass) {
             QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
             ClassNode* cn = const_cast<ClassNode*>(qcn->classNode());
             if (cn)
@@ -833,7 +832,7 @@ void Tree::resolveQmlInheritance()
 {
 
     foreach (Node* child, roo.childNodes()) {
-        if (child->type() == Node::Fake) {
+        if (child->type() == Node::Document) {
             if (child->subType() == Node::QmlClass) {
                 QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
                 qcn->resolveInheritance(this);
@@ -841,7 +840,7 @@ void Tree::resolveQmlInheritance()
             else if (child->subType() == Node::Collision) {
                 NameCollisionNode* ncn = static_cast<NameCollisionNode*>(child);
                 foreach (Node* child, ncn->childNodes()) {
-                    if (child->type() == Node::Fake) {
+                    if (child->type() == Node::Document) {
                         if (child->subType() == Node::QmlClass) {
                             QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
                             qcn->resolveInheritance(this);
@@ -1076,8 +1075,8 @@ void Tree::readIndexSection(const QDomElement& element,
         else
             return;
 
-        FakeNode* fakeNode = new FakeNode(parent, name, subtype, ptype);
-        fakeNode->setTitle(element.attribute("title"));
+        DocNode* docNode = new DocNode(parent, name, subtype, ptype);
+        docNode->setTitle(element.attribute("title"));
 
         if (element.hasAttribute("location"))
             name = element.attribute("location", "");
@@ -1087,7 +1086,7 @@ void Tree::readIndexSection(const QDomElement& element,
         else if (!indexUrl.isNull())
             location = Location(name);
 
-        section = fakeNode;
+        section = docNode;
 
     }
     else if (element.nodeName() == "enum") {
@@ -1371,7 +1370,7 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
     case Node::Class:
         nodeName = "class";
         break;
-    case Node::Fake:
+    case Node::Document:
         nodeName = "page";
         if (node->subType() == Node::QmlClass)
             nodeName = "qmlclass";
@@ -1442,7 +1441,7 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
     QXmlStreamAttributes attributes;
     writer.writeAttribute("access", access);
 
-    if (node->type() != Node::Fake) {
+    if (node->type() != Node::Document) {
         QString threadSafety;
         switch (node->threadSafeness()) {
         case Node::NonReentrant:
@@ -1498,7 +1497,7 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
         href.append(QLatin1Char('/'));
     href.append(gen_->fullDocumentLocation(node));
     writer.writeAttribute("href", href);
-    if ((node->type() != Node::Fake) && (!node->isQmlNode()))
+    if ((node->type() != Node::Document) && (!node->isQmlNode()))
         writer.writeAttribute("location", node->location().fileName());
 
     switch (node->type()) {
@@ -1523,15 +1522,15 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
         writer.writeAttribute("module", node->moduleName());
         break;
 
-    case Node::Fake:
+    case Node::Document:
     {
         /*
-              Fake nodes (such as manual pages) contain subtypes,
+              Document nodes (such as manual pages) contain subtypes,
               titles and other attributes.
             */
 
-        const FakeNode* fakeNode = static_cast<const FakeNode*>(node);
-        switch (fakeNode->subType()) {
+        const DocNode* docNode = static_cast<const DocNode*>(node);
+        switch (docNode->subType()) {
         case Node::Example:
             writer.writeAttribute("subtype", "example");
             break;
@@ -1562,10 +1561,10 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
         default:
             break;
         }
-        writer.writeAttribute("title", fakeNode->title());
-        writer.writeAttribute("fulltitle", fakeNode->fullTitle());
-        writer.writeAttribute("subtitle", fakeNode->subTitle());
-        writer.writeAttribute("location", fakeNode->doc().location().fileName());
+        writer.writeAttribute("title", docNode->title());
+        writer.writeAttribute("fulltitle", docNode->fullTitle());
+        writer.writeAttribute("subtitle", docNode->subTitle());
+        writer.writeAttribute("location", docNode->doc().location().fileName());
     }
         break;
 
@@ -1709,9 +1708,9 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
 
         if (inner->doc().hasTargets()) {
             bool external = false;
-            if (inner->type() == Node::Fake) {
-                const FakeNode* fakeNode = static_cast<const FakeNode*>(inner);
-                if (fakeNode->subType() == Node::ExternalPage)
+            if (inner->type() == Node::Document) {
+                const DocNode* docNode = static_cast<const DocNode*>(inner);
+                if (docNode->subType() == Node::ExternalPage)
                     external = true;
             }
 
@@ -1867,9 +1866,9 @@ bool compareNodes(const Node* n1, const Node* n2)
             return false;
     }
 
-    if (n1->type() == Node::Fake && n2->type() == Node::Fake) {
-        const FakeNode* f1 = static_cast<const FakeNode*>(n1);
-        const FakeNode* f2 = static_cast<const FakeNode*>(n2);
+    if (n1->type() == Node::Document && n2->type() == Node::Document) {
+        const DocNode* f1 = static_cast<const DocNode*>(n1);
+        const DocNode* f2 = static_cast<const DocNode*>(n2);
         if (f1->fullTitle() < f2->fullTitle())
             return true;
         else if (f1->fullTitle() > f2->fullTitle())
@@ -2264,14 +2263,14 @@ void Tree::generateTagFile(const QString& fileName)
  */
 void Tree::addExternalLink(const QString& url, const Node* relative)
 {
-    FakeNode* fakeNode = new FakeNode(root(), url, Node::ExternalPage, Node::ArticlePage);
-    fakeNode->setAccess(Node::Public);
+    DocNode* docNode = new DocNode(root(), url, Node::ExternalPage, Node::ArticlePage);
+    docNode->setAccess(Node::Public);
 
     // Create some content for the node.
     QSet<QString> emptySet;
     Location location(relative->doc().location());
     Doc doc(location, location, " ", emptySet); // placeholder
-    fakeNode->setDoc(doc);
+    docNode->setDoc(doc);
 }
 
 /*!
@@ -2279,7 +2278,7 @@ void Tree::addExternalLink(const QString& url, const Node* relative)
   the specified \a type and \a subtype. Begin the search at
   the \a start node. If the \a start node is 0, begin the
   search at the tree root. \a subtype is not used unless
-  \a type is \c{Fake}.
+  \a type is \c{Document}.
  */
 Node* Tree::findNodeByNameAndType(const QStringList& path,
                                   Node::Type type,
@@ -2304,7 +2303,7 @@ Node* Tree::findNodeByNameAndType(const QStringList& path,
   If the end of the path is reached (i.e. if a matching
   node is found for each name in the \a path), the \a type
   must match the type of the last matching node, and if the
-  type is \e{Fake}, the \a subtype must match as well.
+  type is \e{Document}, the \a subtype must match as well.
 
   If the algorithm is successful, the pointer to the final
   node is returned. Otherwise 0 is returned.
@@ -2343,7 +2342,7 @@ Node* Tree::findNodeRecursive(const QStringList& path,
         else if (n->name() == name) {
             if (pathIndex+1 >= path.size()) {
                 if (n->type() == type) {
-                    if (type == Node::Fake) {
+                    if (type == Node::Document) {
                         if (n->subType() == subtype)
                             return n;
                         else if (n->subType() == Node::Collision && acceptCollision)
@@ -2423,7 +2422,7 @@ QmlClassNode* Tree::findQmlClassNode(const QStringList& path, Node* start)
 
     if (!start)
         start = const_cast<NamespaceNode*>(root());
-    return static_cast<QmlClassNode*>(findNodeRecursive(path, 0, start, Node::Fake, Node::QmlClass));
+    return static_cast<QmlClassNode*>(findNodeRecursive(path, 0, start, Node::Document, Node::QmlClass));
 }
 
 /*!
@@ -2445,11 +2444,11 @@ NamespaceNode* Tree::findNamespaceNode(const QStringList& path, Node* start)
   at the root of the tree. Only a Group node named \a path is
   acceptible. If one is not found, 0 is returned.
  */
-FakeNode* Tree::findGroupNode(const QStringList& path, Node* start)
+DocNode* Tree::findGroupNode(const QStringList& path, Node* start)
 {
     if (!start)
         start = const_cast<NamespaceNode*>(root());
-    return static_cast<FakeNode*>(findNodeRecursive(path, 0, start, Node::Fake, Node::Group));
+    return static_cast<DocNode*>(findNodeRecursive(path, 0, start, Node::Document, Node::Group));
 }
 
 /*!
@@ -2458,11 +2457,11 @@ FakeNode* Tree::findGroupNode(const QStringList& path, Node* start)
   at the root of the tree. Only a Qml module node named \a path is
   acceptible. If one is not found, 0 is returned.
  */
-FakeNode* Tree::findQmlModuleNode(const QStringList& path, Node* start)
+DocNode* Tree::findQmlModuleNode(const QStringList& path, Node* start)
 {
     if (!start)
         start = const_cast<NamespaceNode*>(root());
-    return static_cast<FakeNode*>(findNodeRecursive(path, 0, start, Node::Fake, Node::QmlModule));
+    return static_cast<DocNode*>(findNodeRecursive(path, 0, start, Node::Document, Node::QmlModule));
 }
 
 QT_END_NAMESPACE

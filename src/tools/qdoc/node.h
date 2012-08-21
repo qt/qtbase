@@ -77,7 +77,7 @@ public:
     enum Type {
         Namespace,
         Class,
-        Fake,
+        Document,
         Enum,
         Typedef,
         Function,
@@ -441,15 +441,15 @@ private:
     QmlClassNode* qmlelement;
 };
 
-class FakeNode : public InnerNode
+class DocNode : public InnerNode
 {
 public:
 
-    FakeNode(InnerNode* parent,
+    DocNode(InnerNode* parent,
              const QString& name,
              SubType subType,
              PageType ptype);
-    virtual ~FakeNode() { }
+    virtual ~DocNode() { }
 
     void setTitle(const QString &title) { title_ = title; }
     void setSubTitle(const QString &subTitle) { subtitle_ = subTitle; }
@@ -468,8 +468,8 @@ public:
     virtual bool isQmlPropertyGroup() const { return (nodeSubtype_ == QmlPropertyGroup); }
     virtual bool hasProperty(const QString& ) const;
 
-    static void insertQmlModuleNode(const QString& qmid, FakeNode* fn);
-    static FakeNode* lookupQmlModuleNode(Tree* tree, const ArgLocPair& arg);
+    static void insertQmlModuleNode(const QString& qmid, DocNode* fn);
+    static DocNode* lookupQmlModuleNode(Tree* tree, const ArgLocPair& arg);
 
 protected:
     SubType nodeSubtype_;
@@ -477,10 +477,10 @@ protected:
     QString subtitle_;
     NodeList nodeList; // used for groups and QML modules.
 
-    static QMap<QString, FakeNode*> qmlModuleMap_;
+    static QMap<QString, DocNode*> qmlModuleMap_;
 };
 
-class NameCollisionNode : public FakeNode
+class NameCollisionNode : public DocNode
 {
 public:
     NameCollisionNode(InnerNode* child);
@@ -501,7 +501,7 @@ private:
     QMap<QString,QString> targets;
 };
 
-class ExampleNode : public FakeNode
+class ExampleNode : public DocNode
 {
 public:
     ExampleNode(InnerNode* parent, const QString& name);
@@ -518,7 +518,7 @@ private:
     QString imageFileName_;
 };
 
-class QmlClassNode : public FakeNode
+class QmlClassNode : public DocNode
 {
 public:
     QmlClassNode(InnerNode* parent, const QString& name);
@@ -533,7 +533,7 @@ public:
     virtual void setImportList(const ImportList& il) { importList_ = il; }
     virtual bool isAbstract() const { return abstract_; }
     virtual void setAbstract(bool b) { abstract_ = b; }
-    const FakeNode* qmlBase() const { return base_; }
+    const DocNode* qmlBase() const { return base_; }
     void resolveInheritance(Tree* tree);
     void requireCppClass() { cnodeRequired_ = true; }
     bool cppClassRequired() const { return cnodeRequired_; }
@@ -553,11 +553,11 @@ private:
     bool abstract_;
     bool cnodeRequired_;
     ClassNode*    cnode_;
-    FakeNode*     base_;
+    DocNode*     base_;
     ImportList          importList_;
 };
 
-class QmlBasicTypeNode : public FakeNode
+class QmlBasicTypeNode : public DocNode
 {
 public:
     QmlBasicTypeNode(InnerNode* parent,
@@ -566,7 +566,7 @@ public:
     virtual bool isQmlNode() const { return true; }
 };
 
-class QmlPropGroupNode : public FakeNode
+class QmlPropGroupNode : public DocNode
 {
 public:
     QmlPropGroupNode(QmlClassNode* parent, const QString& name);
@@ -950,11 +950,11 @@ inline VariableNode::VariableNode(InnerNode* parent, const QString &name)
     // nothing.
 }
 
-class DitaMapNode : public FakeNode
+class DitaMapNode : public DocNode
 {
 public:
     DitaMapNode(InnerNode* parent, const QString& name)
-        : FakeNode(parent, name, Node::Page, Node::DitaMapPage) { }
+        : DocNode(parent, name, Node::Page, Node::DitaMapPage) { }
     virtual ~DitaMapNode() { }
 
     const DitaRefList& map() const { return doc().ditamap(); }

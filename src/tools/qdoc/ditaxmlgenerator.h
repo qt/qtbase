@@ -315,7 +315,7 @@ protected:
                              const Node* relative,
                              CodeMarker* marker);
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
-    virtual void generateFakeNode(FakeNode* fake, CodeMarker* marker);
+    virtual void generateDocNode(DocNode* dn, CodeMarker* marker);
     virtual QString fileExtension() const;
     virtual QString guidForNode(const Node* node);
     virtual QString linkForNode(const Node* node, const Node* relative);
@@ -353,7 +353,7 @@ protected:
                      CodeMarker* marker,
                      const QString& attribute = QString());
     void writePropertyParameter(const QString& tag, const NodeList& nlist);
-    void writeRelatedLinks(const FakeNode* fake, CodeMarker* marker);
+    void writeRelatedLinks(const DocNode* dn, CodeMarker* marker);
     void writeLink(const Node* node, const QString& tex, const QString& role);
     void writeProlog(const InnerNode* inner);
     bool writeMetadataElement(const InnerNode* inner,

@@ -273,7 +273,7 @@ QString CodeMarker::taggedNode(const Node* node)
     case Node::Property:
         tag = QLatin1String("@property");
         break;
-    case Node::Fake:
+    case Node::Document:
         /*
           Remove the "QML:" prefix, if present.
           There shouldn't be any of these "QML:"
@@ -464,7 +464,7 @@ void CodeMarker::insert(FastSection& fastSection,
 
     bool inheritedMember = false;
     InnerNode* parent = node->parent();
-    if (parent && (parent->type() == Node::Fake) &&
+    if (parent && (parent->type() == Node::Document) &&
             (parent->subType() == Node::QmlPropertyGroup)) {
         parent = parent->parent();
     }
@@ -476,7 +476,7 @@ void CodeMarker::insert(FastSection& fastSection,
             fastSection.memberMap.insert(key, node);
     }
     else {
-        if ((parent->type() == Node::Fake) && (parent->subType() == Node::QmlClass)) {
+        if ((parent->type() == Node::Document) && (parent->subType() == Node::QmlClass)) {
             if (fastSection.inherited.isEmpty()
                     || fastSection.inherited.last().first != parent) {
                 QPair<InnerNode*, int> p(parent, 0);
@@ -605,7 +605,7 @@ QStringList CodeMarker::macRefsForNode(Node *node)
         return stringList;
     }
     case Node::Namespace:
-    case Node::Fake:
+    case Node::Document:
     default:
         return QStringList();
     }

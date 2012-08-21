@@ -101,7 +101,7 @@ protected:
                              const Node *relative,
                              CodeMarker *marker);
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
-    virtual void generateFakeNode(FakeNode* fake, CodeMarker* marker);
+    virtual void generateDocNode(DocNode* dn, CodeMarker* marker);
     virtual QString fileExtension() const;
     virtual QString refForNode(const Node *node);
     virtual QString linkForNode(const Node *node, const Node *relative);
