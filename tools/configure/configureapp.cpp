@@ -3139,25 +3139,15 @@ void Configure::generateConfigfiles()
         else
             qconfigList += "QT_NO_NIS";
 
-        if (dictionary["LARGE_FILE"] == "yes")
-            tmpStream << "#define QT_LARGEFILE_SUPPORT 64" << endl;
-
+        if (dictionary["LARGE_FILE"] == "yes")       qconfigList += "QT_LARGEFILE_SUPPORT=64";
+        if (dictionary["QT_CUPS"] == "no")           qconfigList += "QT_NO_CUPS";
+        if (dictionary["QT_ICONV"] == "no")          qconfigList += "QT_NO_ICONV";
+        if (dictionary["QT_GLIB"] == "no")           qconfigList += "QT_NO_GLIB";
+        if (dictionary["QT_INOTIFY"] == "no")        qconfigList += "QT_NO_INOTIFY";
 
         qconfigList.sort();
         for (int i = 0; i < qconfigList.count(); ++i)
             tmpStream << addDefine(qconfigList.at(i));
-
-        if (dictionary[ "QT_CUPS" ] == "no")
-          tmpStream<<"#define QT_NO_CUPS"<<endl;
-
-        if (dictionary[ "QT_ICONV" ]  == "no")
-          tmpStream<<"#define QT_NO_ICONV"<<endl;
-
-        if (dictionary[ "QT_GLIB" ] == "no")
-          tmpStream<<"#define QT_NO_GLIB"<<endl;
-
-        if (dictionary[ "QT_INOTIFY" ] == "no")
-          tmpStream<<"#define QT_NO_INOTIFY"<<endl;
 
         tmpStream<<"#define QT_QPA_DEFAULT_PLATFORM_NAME \"" << qpaPlatformName() << "\""<<endl;
 
