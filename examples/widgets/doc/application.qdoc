@@ -39,7 +39,7 @@
     MainWindow class, which inherits QMainWindow. QMainWindow
     provides the framework for windows that have menus, toolbars,
     dock windows, and a status bar. The application provides
-    \menu{File}, \menu{Edit}, and \menu{Help} entries in the menu
+    \uicontrol{File}, \uicontrol{Edit}, and \uicontrol{Help} entries in the menu
     bar, with the following popup menus:
 
     \image application-menus.png The Application example's menu system
@@ -48,7 +48,7 @@
     description of the menu item or toolbar button under the cursor.
 
     To keep the example simple, recently opened files aren't shown in
-    the \menu{File} menu, even though this feature is desired in 90%
+    the \uicontrol{File} menu, even though this feature is desired in 90%
     of applications. The \l{mainwindows/recentfiles}{Recent Files}
     example shows how to implement this. Furthermore, this example
     can only load one file at a time. The \l{mainwindows/sdi}{SDI}
@@ -125,7 +125,7 @@
     \snippet mainwindows/application/mainwindow.cpp 6
 
     The \c newFile() slot is invoked when the user selects
-    \menu{File|New} from the menu. We call \c maybeSave() to save any
+    \uicontrol{File|New} from the menu. We call \c maybeSave() to save any
     pending changes and if the user accepts to go on, we clear the
     QPlainTextEdit and call the private function \c setCurrentFile() to
     update the window title and clear the
@@ -135,7 +135,7 @@
     \snippet mainwindows/application/mainwindow.cpp 8
 
     The \c open() slot is invoked when the user clicks
-    \menu{File|Open}. We pop up a QFileDialog asking the user to
+    \uicontrol{File|Open}. We pop up a QFileDialog asking the user to
     choose a file. If the user chooses a file (i.e., \c fileName is
     not an empty string), we call the private function \c loadFile()
     to actually load the file.
@@ -144,7 +144,7 @@
     \snippet mainwindows/application/mainwindow.cpp 10
 
     The \c save() slot is invoked when the user clicks
-    \menu{File|Save}. If the user hasn't provided a name for the file
+    \uicontrol{File|Save}. If the user hasn't provided a name for the file
     yet, we call \c saveAs(); otherwise, we call the private function
     \c saveFile() to actually save the file.
 
@@ -185,7 +185,7 @@
     The \c createActions() private function, which is called from the
     \c MainWindow constructor, creates \l{QAction}s. The code is very
     repetitive, so we show only the actions corresponding to
-    \menu{File|New}, \menu{File|Open}, and \menu{Help|About Qt}.
+    \uicontrol{File|New}, \uicontrol{File|Open}, and \uicontrol{Help|About Qt}.
 
     A QAction is an object that represents one user action, such as
     saving a file or invoking a dialog. An action can be put in a
@@ -223,16 +223,16 @@
 
     Creating actions isn't sufficient to make them available to the
     user; we must also add them to the menu system. This is what \c
-    createMenus() does. We create a \menu{File}, an \menu{Edit}, and
-    a \menu{Help} menu. QMainWindow::menuBar() lets us access the
+    createMenus() does. We create a \uicontrol{File}, an \uicontrol{Edit}, and
+    a \uicontrol{Help} menu. QMainWindow::menuBar() lets us access the
     window's menu bar widget. We don't have to worry about creating
     the menu bar ourselves; the first time we call this function, the
     QMenuBar is created.
 
-    Just before we create the \menu{Help} menu, we call
+    Just before we create the \uicontrol{Help} menu, we call
     QMenuBar::addSeparator(). This has no effect for most widget
     styles (e.g., Windows and Mac OS X styles), but for Motif-based
-    styles this makes sure that \menu{Help} is pushed to the right
+    styles this makes sure that \uicontrol{Help} is pushed to the right
     side of the menu bar. Try running the application with various
     styles and see the results:
 
