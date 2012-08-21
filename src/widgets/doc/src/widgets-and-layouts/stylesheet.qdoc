@@ -554,7 +554,7 @@
 
     \image designer-stylesheet-options.png
 
-    In Qt 4.2 and later, \l{Qt Designer}{Qt Designer} also includes a
+    In Qt 4.2 and later, \l{Qt Designer} also includes a
     style sheet syntax highlighter and validator. The validator indicates
     if the syntax is valid or invalid, at the bottom left of the \uicontrol{Edit
     Style Sheet} dialog.

@@ -3218,10 +3218,9 @@ void QAbstractItemView::update(const QModelIndex &index)
 }
 
 /*!
-    This slot is called when items are changed in the model. The
-    changed items are those from \a topLeft to \a bottomRight
-    inclusive. If just one item is changed \a topLeft == \a
-    bottomRight.
+    This slot is called when items with the given \a roles are changed in the
+    model. The changed items are those from \a topLeft to \a bottomRight
+    inclusive. If just one item is changed \a topLeft == \a bottomRight.
 
     The \a roles which have been changed can either be an empty container (meaning everything
     has changed), or a non-empty container with the subset of roles which have changed.
