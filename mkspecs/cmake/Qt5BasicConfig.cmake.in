@@ -67,54 +67,40 @@ endif()
 set(_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES \"$${CMAKE_QT5_MODULE_DEPS}\")
 
 !!IF !isEmpty(CMAKE_STATIC_TYPE)
-# For static builds, we also list the dependencies of
-# Qt so that consumers can build.
 
-!!IF isEqual(CMAKE_MODULE_NAME, Core)
+if (NOT Qt5_EXCLUDE_STATIC_DEPENDENCIES)
+    # For static builds, we also list the dependencies of
+    # Qt so that consumers can build easily.
 
-set(_Qt5Core_LIB_DEPENDENCIES)
-!!IF contains(QT_CONFIG, system-zlib)
-find_package(ZLIB REQUIRED)
-list(APPEND _Qt5Core_LIB_DEPENDENCIES ${ZLIB_LIBRARIES})
+    macro(macro_process_prl_file prl_file_location Configuration)
+        if (EXISTS \"${prl_file_location}\")
+            file(STRINGS \"${prl_file_location}\" prl_strings REGEX \"QMAKE_PRL_LIBS\")
+            string(REGEX REPLACE \"QMAKE_PRL_LIBS *= *([^\\n]*)\" \"\\\\1\" static_depends ${prl_strings} )
+            string(STRIP ${static_depends} static_depends)
+            if (_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES)
+                set(_list_sep \";\")
+            endif()
+            set(_Qt5$${CMAKE_MODULE_NAME}_STATIC_${Configuration}_LIB_DEPENDENCIES \"${_list_sep}${static_depends}\")
+        endif()
+    endmacro()
+
+!!IF !isEmpty(CMAKE_DEBUG_TYPE)
+!!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
+    macro_process_prl_file(\"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}$${CMAKE_PRL_FILE_LOCATION_DEBUG}\" DEBUG)
+!!ELSE
+    macro_process_prl_file(\"$${CMAKE_LIB_DIR}$${CMAKE_PRL_FILE_LOCATION_DEBUG}\" DEBUG)
+!!ENDIF
 !!ENDIF
 
-!!IF contains(QT_CONFIG, glib)
-find_library(QT_GLIB_LIBRARY NAMES glib-2.0 )
-find_library(QT_GTHREAD_LIBRARY NAMES gthread-2.0 )
-mark_as_advanced(QT_GLIB_LIBRARY)
-mark_as_advanced(QT_GTHREAD_LIBRARY)
-list(APPEND _Qt5Core_LIB_DEPENDENCIES ${QT_GTHREAD_LIBRARY} ${QT_GLIB_LIBRARY})
+!!IF !isEmpty(CMAKE_RELEASE_TYPE)
+!!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
+    macro_process_prl_file(\"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}$${CMAKE_PRL_FILE_LOCATION_RELEASE}\" RELEASE)
+!!ELSE
+    macro_process_prl_file(\"$${CMAKE_LIB_DIR}$${CMAKE_PRL_FILE_LOCATION_RELEASE}\" RELEASE)
+!!ENDIF
 !!ENDIF
 
-!!IF contains(QT_CONFIG, clock-monotonic)
-find_library(QT_RT_LIBRARY NAMES rt)
-mark_as_advanced(QT_RT_LIBRARY)
-list(APPEND _Qt5Core_LIB_DEPENDENCIES ${QT_RT_LIBRARY})
-!!ENDIF
-
-set(CMAKE_THREAD_PREFER_PTHREADS 1)
-find_package(Threads)
-if(CMAKE_USE_PTHREADS_INIT)
-  list(APPEND _Qt5Core_LIB_DEPENDENCIES ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 endif()
-
-!!ENDIF # Core
-
-!!IF isEqual(CMAKE_MODULE_NAME, Gui)
-
-set(_Qt5Gui_LIB_DEPENDENCIES)
-
-!!IF contains(QT_CONFIG, system-png)
-find_package(PNG REQUIRED)
-list(APPEND _Qt5Gui_LIB_DEPENDENCIES ${PNG_LIBRARIES})
-!!ENDIF
-
-!!IF contains(QT_CONFIG, system-jpeg)
-find_package(JPEG REQUIRED)
-list(APPEND _Qt5Gui_LIB_DEPENDENCIES ${JPEG_LIBRARIES})
-!!ENDIF
-
-!!ENDIF # Gui
 
 !!ENDIF # Static
 
@@ -122,7 +108,7 @@ macro(_populate_imported_target_properties Configuration LIB_LOCATION IMPLIB_LOC
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} APPEND PROPERTY IMPORTED_CONFIGURATIONS ${Configuration})
 
     set_target_properties(Qt5::$${CMAKE_MODULE_NAME} PROPERTIES
-        \"IMPORTED_LINK_INTERFACE_LIBRARIES_${Configuration}\" \"${_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES}\"
+        \"IMPORTED_LINK_INTERFACE_LIBRARIES_${Configuration}\" \"${_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES}${_Qt5$${CMAKE_MODULE_NAME}_STATIC_${Configuration}_LIB_DEPENDENCIES}\"
 !!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
         \"IMPORTED_LOCATION_${Configuration}\" \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}${LIB_LOCATION}\"
 !!ELSE
