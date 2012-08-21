@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example effects/fademessage
+    \example widgets/effects/fademessage
     \title Fade Message Effect Example
 
     \div { style="text-align: center"}

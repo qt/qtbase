@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example layouts/borderlayout
+    \example widgets/layouts/borderlayout
     \title Border Layout Example
 
     The Border Layout example shows how to create a custom layout that arranges

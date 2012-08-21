@@ -401,7 +401,7 @@ QString QItemDelegatePrivate::valueToText(const QVariant &value, const QStyleOpt
     For example, a selected item may need to be displayed differently to
     unselected items, as shown in the following code:
 
-    \snippet itemviews/pixelator/pixeldelegate.cpp 2
+    \snippet widgets/itemviews/pixelator/pixeldelegate.cpp 2
     \dots
 
     After painting, you should ensure that the painter is returned to its

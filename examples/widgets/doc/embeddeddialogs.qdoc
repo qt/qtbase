@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example graphicsview/embeddeddialogs
+    \example widgets/graphicsview/embeddeddialogs
     \title Embedded Dialogs
 
     This example shows how to embed standard dialogs into

@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/scribble
+    \example widgets/widgets/scribble
     \title Scribble Example
 
     The Scribble example shows how to reimplement some of QWidget's
@@ -65,7 +65,7 @@
 
     \section1 ScribbleArea Class Definition
 
-    \snippet widgets/scribble/scribblearea.h 0
+    \snippet widgets/widgets/scribble/scribblearea.h 0
 
     The \c ScribbleArea class inherits from QWidget. We reimplement
     the \c mousePressEvent(), \c mouseMoveEvent() and \c
@@ -98,7 +98,7 @@
 
     \section1 ScribbleArea Class Implementation
 
-    \snippet widgets/scribble/scribblearea.cpp 0
+    \snippet widgets/widgets/scribble/scribblearea.cpp 0
 
     In the constructor, we set the Qt::WA_StaticContents
     attribute for the widget, indicating that the widget contents are
@@ -108,8 +108,8 @@
     for widgets whose contents are static and rooted to the top-left
     corner.
 
-    \snippet widgets/scribble/scribblearea.cpp 1
-    \snippet widgets/scribble/scribblearea.cpp 2
+    \snippet widgets/widgets/scribble/scribblearea.cpp 1
+    \snippet widgets/widgets/scribble/scribblearea.cpp 2
 
     In the \c openImage() function, we load the given image. Then we
     resize the loaded QImage to be at least as large as the widget in
@@ -117,8 +117,8 @@
     we set the \c image member variable to be the loaded image. At
     the end, we call QWidget::update() to schedule a repaint.
 
-    \snippet widgets/scribble/scribblearea.cpp 3
-    \snippet widgets/scribble/scribblearea.cpp 4
+    \snippet widgets/widgets/scribble/scribblearea.cpp 3
+    \snippet widgets/widgets/scribble/scribblearea.cpp 4
 
     The \c saveImage() function creates a QImage object that covers
     only the visible section of the actual \c image and saves it using
@@ -126,26 +126,26 @@
     scribble area's \c modified variable to \c false, because there is
     no unsaved data.
 
-    \snippet widgets/scribble/scribblearea.cpp 5
-    \snippet widgets/scribble/scribblearea.cpp 6
+    \snippet widgets/widgets/scribble/scribblearea.cpp 5
+    \snippet widgets/widgets/scribble/scribblearea.cpp 6
     \codeline
-    \snippet widgets/scribble/scribblearea.cpp 7
-    \snippet widgets/scribble/scribblearea.cpp 8
+    \snippet widgets/widgets/scribble/scribblearea.cpp 7
+    \snippet widgets/widgets/scribble/scribblearea.cpp 8
 
     The \c setPenColor() and \c setPenWidth() functions set the
     current pen color and width. These values will be used for future
     drawing operations.
 
-    \snippet widgets/scribble/scribblearea.cpp 9
-    \snippet widgets/scribble/scribblearea.cpp 10
+    \snippet widgets/widgets/scribble/scribblearea.cpp 9
+    \snippet widgets/widgets/scribble/scribblearea.cpp 10
 
     The public \c clearImage() slot clears the image displayed in the
     scribble area. We simply fill the entire image with white, which
     corresponds to RGB value (255, 255, 255). As usual when we modify
     the image, we set \c modified to \c true and schedule a repaint.
 
-    \snippet widgets/scribble/scribblearea.cpp 11
-    \snippet widgets/scribble/scribblearea.cpp 12
+    \snippet widgets/widgets/scribble/scribblearea.cpp 11
+    \snippet widgets/widgets/scribble/scribblearea.cpp 12
 
     For mouse press and mouse release events, we use the
     QMouseEvent::button() function to find out which button caused
@@ -163,8 +163,8 @@
     releases the button, we call the private \c drawLineTo() function
     to draw.
 
-    \snippet widgets/scribble/scribblearea.cpp 13
-    \snippet widgets/scribble/scribblearea.cpp 14
+    \snippet widgets/widgets/scribble/scribblearea.cpp 13
+    \snippet widgets/widgets/scribble/scribblearea.cpp 14
 
     In the reimplementation of the \l
     {QWidget::paintEvent()}{paintEvent()} function, we simply create
@@ -195,8 +195,8 @@
        QWidget into a QImage again, we might lose some information.
     \endlist
 
-    \snippet widgets/scribble/scribblearea.cpp 15
-    \snippet widgets/scribble/scribblearea.cpp 16
+    \snippet widgets/widgets/scribble/scribblearea.cpp 15
+    \snippet widgets/widgets/scribble/scribblearea.cpp 16
 
     When the user starts the Scribble application, a resize event is
     generated and an image is created and displayed in the scribble
@@ -206,8 +206,8 @@
     would be very inefficient). But when the main window becomes
     larger than this initial size, the image needs to be resized.
 
-    \snippet widgets/scribble/scribblearea.cpp 17
-    \snippet widgets/scribble/scribblearea.cpp 18
+    \snippet widgets/widgets/scribble/scribblearea.cpp 17
+    \snippet widgets/widgets/scribble/scribblearea.cpp 18
 
     In \c drawLineTo(), we draw a line from the point where the mouse
     was located when the last mouse press or mouse move occurred, we
@@ -220,8 +220,8 @@
     inside the scribble are needs updating, to avoid a complete
     repaint of the widget.
 
-    \snippet widgets/scribble/scribblearea.cpp 19
-    \snippet widgets/scribble/scribblearea.cpp 20
+    \snippet widgets/widgets/scribble/scribblearea.cpp 19
+    \snippet widgets/widgets/scribble/scribblearea.cpp 20
 
     QImage has no nice API for resizing an image. There's a
     QImage::copy() function that could do the trick, but when used to
@@ -237,7 +237,7 @@
 
     Printing is handled by the \c print() slot:
 
-    \snippet widgets/scribble/scribblearea.cpp 21
+    \snippet widgets/widgets/scribble/scribblearea.cpp 21
 
     We construct a high resolution QPrinter object for the required
     output format, using a QPrintDialog to ask the user to specify a
@@ -246,7 +246,7 @@
     If the dialog is accepted, we perform the task of printing to the paint
     device:
 
-    \snippet widgets/scribble/scribblearea.cpp 22
+    \snippet widgets/widgets/scribble/scribblearea.cpp 22
 
     Printing an image to a file in this way is simply a matter of
     painting onto the QPrinter. We scale the image to fit within the
@@ -255,7 +255,7 @@
 
     \section1 MainWindow Class Definition
 
-    \snippet widgets/scribble/mainwindow.h 0
+    \snippet widgets/widgets/scribble/mainwindow.h 0
 
     The \c MainWindow class inherits from QMainWindow. We reimplement
     the \l{QWidget::closeEvent()}{closeEvent()} handler from QWidget.
@@ -272,14 +272,14 @@
 
     \section1 MainWindow Class Implementation
 
-    \snippet widgets/scribble/mainwindow.cpp 0
+    \snippet widgets/widgets/scribble/mainwindow.cpp 0
 
     In the constructor, we create a scribble area which we make the
     central widget of the \c MainWindow widget. Then we create the
     associated actions and menus.
 
-    \snippet widgets/scribble/mainwindow.cpp 1
-    \snippet widgets/scribble/mainwindow.cpp 2
+    \snippet widgets/widgets/scribble/mainwindow.cpp 1
+    \snippet widgets/widgets/scribble/mainwindow.cpp 2
 
     Close events are sent to widgets that the users want to close,
     usually by clicking \uicontrol{File|Exit} or by clicking the \uicontrol X
@@ -294,16 +294,16 @@
     \c maybeSave() returns false, the user clicked \uicontrol Cancel, so we
     "ignore" the event, leaving the application unaffected by it.
 
-    \snippet widgets/scribble/mainwindow.cpp 3
-    \snippet widgets/scribble/mainwindow.cpp 4
+    \snippet widgets/widgets/scribble/mainwindow.cpp 3
+    \snippet widgets/widgets/scribble/mainwindow.cpp 4
 
     In the \c open() slot we first give the user the opportunity to
     save any modifications to the currently displayed image, before a
     new image is loaded into the scribble area. Then we ask the user
     to choose a file and we load the file in the \c ScribbleArea.
 
-    \snippet widgets/scribble/mainwindow.cpp 5
-    \snippet widgets/scribble/mainwindow.cpp 6
+    \snippet widgets/widgets/scribble/mainwindow.cpp 5
+    \snippet widgets/widgets/scribble/mainwindow.cpp 6
 
     The \c save() slot is called when the users choose the \uicontrol {Save
     As} menu entry, and then choose an entry from the format menu. The
@@ -326,15 +326,15 @@
     Now that we know the format, we call the private \c saveFile()
     function to save the currently displayed image.
 
-    \snippet widgets/scribble/mainwindow.cpp 7
-    \snippet widgets/scribble/mainwindow.cpp 8
+    \snippet widgets/widgets/scribble/mainwindow.cpp 7
+    \snippet widgets/widgets/scribble/mainwindow.cpp 8
 
     We use the \c penColor() slot to retrieve a new color from the
     user with a QColorDialog. If the user chooses a new color, we
     make it the scribble area's color.
 
-    \snippet widgets/scribble/mainwindow.cpp 9
-    \snippet widgets/scribble/mainwindow.cpp 10
+    \snippet widgets/widgets/scribble/mainwindow.cpp 9
+    \snippet widgets/widgets/scribble/mainwindow.cpp 10
 
     To retrieve a new pen width in the \c penWidth() slot, we use
     QInputDialog. The QInputDialog class provides a simple
@@ -348,14 +348,14 @@
     The boolean \c ok variable will be set to \c true if the user
     clicked \uicontrol OK and to \c false if the user pressed \uicontrol Cancel.
 
-    \snippet widgets/scribble/mainwindow.cpp 11
-    \snippet widgets/scribble/mainwindow.cpp 12
+    \snippet widgets/widgets/scribble/mainwindow.cpp 11
+    \snippet widgets/widgets/scribble/mainwindow.cpp 12
 
     We implement the \c about() slot to create a message box
     describing what the example is designed to show.
 
-    \snippet widgets/scribble/mainwindow.cpp 13
-    \snippet widgets/scribble/mainwindow.cpp 14
+    \snippet widgets/widgets/scribble/mainwindow.cpp 13
+    \snippet widgets/widgets/scribble/mainwindow.cpp 14
 
     In the \c createAction() function we create the actions
     representing the menu entries and connect them to the appropriate
@@ -369,8 +369,8 @@
     deduced the file format from the action's text, by truncating the
     "...", but that would have been inelegant.
 
-    \snippet widgets/scribble/mainwindow.cpp 15
-    \snippet widgets/scribble/mainwindow.cpp 16
+    \snippet widgets/widgets/scribble/mainwindow.cpp 15
+    \snippet widgets/widgets/scribble/mainwindow.cpp 16
 
     In the \c createMenu() function, we add the previously created
     format actions to the \c saveAsMenu. Then we add the rest of the
@@ -384,8 +384,8 @@
     {MainWindow}'s menu bar, which we retrieve using the
     QMainWindow::menuBar() function.
 
-    \snippet widgets/scribble/mainwindow.cpp 17
-    \snippet widgets/scribble/mainwindow.cpp 18
+    \snippet widgets/widgets/scribble/mainwindow.cpp 17
+    \snippet widgets/widgets/scribble/mainwindow.cpp 18
 
     In \c mayBeSave(), we check if there are any unsaved changes. If
     there are any, we use QMessageBox to give the user a warning that
@@ -407,8 +407,8 @@
     The \c maybeSave() function returns \c false if the user clicks
     \uicontrol Cancel; otherwise it returns \c true.
 
-    \snippet widgets/scribble/mainwindow.cpp 19
-    \snippet widgets/scribble/mainwindow.cpp 20
+    \snippet widgets/widgets/scribble/mainwindow.cpp 19
+    \snippet widgets/widgets/scribble/mainwindow.cpp 20
 
     In \c saveFile(), we pop up a file dialog with a file name
     suggestion. The static QFileDialog::getSaveFileName() function

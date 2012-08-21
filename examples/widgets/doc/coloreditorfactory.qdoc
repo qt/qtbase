@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example itemviews/coloreditorfactory
+    \example widgets/itemviews/coloreditorfactory
     \title Color Editor Factory Example
 
     This example shows how to create an editor that can be used by
@@ -66,7 +66,7 @@
 
     We take a closer look at the constructor:
 
-    \snippet itemviews/coloreditorfactory/window.cpp 0
+    \snippet widgets/itemviews/coloreditorfactory/window.cpp 0
 
     The QStandardItemEditorCreator is a convenience class that
     inherits QItemEditorCreatorBase. Its constructor takes a template
@@ -88,7 +88,7 @@
     The ColorListEditor inherits QComboBox and lets the user
     select a QColor from its popup list.
 
-    \snippet itemviews/coloreditorfactory/colorlisteditor.h 0
+    \snippet widgets/itemviews/coloreditorfactory/colorlisteditor.h 0
 
     QItemDelegate manages the interaction between the editor and
     the model, i.e., it retrieves data to edit from the model and
@@ -105,19 +105,19 @@
     populateList(), which we will look at later. We move on to the
     \c color() function:
 
-    \snippet itemviews/coloreditorfactory/colorlisteditor.cpp 0
+    \snippet widgets/itemviews/coloreditorfactory/colorlisteditor.cpp 0
 
     We return the data that is selected in the combobox. The data
     is stored in the Qt::DecorationRole as the color is then also
     displayed in the popup list (as shown in the image above).
 
-    \snippet itemviews/coloreditorfactory/colorlisteditor.cpp 1
+    \snippet widgets/itemviews/coloreditorfactory/colorlisteditor.cpp 1
 
     The \c findData() function searches the items in the combobox
     and returns the index of the item that has \c color in the
     Qt::Decoration role.
 
-    \snippet itemviews/coloreditorfactory/colorlisteditor.cpp 2
+    \snippet widgets/itemviews/coloreditorfactory/colorlisteditor.cpp 2
 
     Qt knows some predefined colors by name. We simply loop
     through these to fill our editor with items.

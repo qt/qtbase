@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example painting/basicdrawing
+    \example widgets/painting/basicdrawing
     \title Basic Drawing Example
 
     The Basic Drawing example shows how to display basic graphics
@@ -68,7 +68,7 @@
     window displaying a \c RenderArea widget in addition to several
     parameter widgets.
 
-    \snippet painting/basicdrawing/window.h 0
+    \snippet widgets/painting/basicdrawing/window.h 0
 
     We declare the various widgets, and three private slots updating
     the \c RenderArea widget: The \c shapeChanged() slot updates the
@@ -83,14 +83,14 @@
     In the constructor we create and initialize the various widgets
     appearing in the main application window.
 
-    \snippet painting/basicdrawing/window.cpp 1
+    \snippet widgets/painting/basicdrawing/window.cpp 1
 
     First we create the \c RenderArea widget that will render the
     currently active shape. Then we create the \uicontrol Shape combobox,
     and add the associated items (i.e. the different shapes a QPainter
     can draw).
 
-    \snippet painting/basicdrawing/window.cpp 2
+    \snippet widgets/painting/basicdrawing/window.cpp 2
 
     QPainter's pen is a QPen object; the QPen class defines how a
     painter should draw lines and outlines of shapes. A pen has
@@ -103,7 +103,7 @@
 
     We create a QSpinBox for the \uicontrol {Pen Width} parameter.
 
-    \snippet painting/basicdrawing/window.cpp 3
+    \snippet widgets/painting/basicdrawing/window.cpp 3
 
     The pen style defines the line type. The default style is solid
     (Qt::SolidLine). Setting the style to none (Qt::NoPen) tells the
@@ -117,7 +117,7 @@
     items (i.e the values of the Qt::PenStyle, Qt::PenCapStyle and
     Qt::PenJoinStyle enums respectively).
 
-    \snippet painting/basicdrawing/window.cpp 4
+    \snippet widgets/painting/basicdrawing/window.cpp 4
 
     The QBrush class defines the fill pattern of shapes drawn by a
     QPainter. The default brush style is Qt::NoBrush. This style tells
@@ -127,8 +127,8 @@
     We create a QComboBox for the \uicontrol {Brush Style} parameter, and add
     the associated items (i.e. the values of the Qt::BrushStyle enum).
 
-    \snippet painting/basicdrawing/window.cpp 5
-    \snippet painting/basicdrawing/window.cpp 6
+    \snippet widgets/painting/basicdrawing/window.cpp 5
+    \snippet widgets/painting/basicdrawing/window.cpp 6
 
     Antialiasing is a feature that "smoothes" the pixels to create
     more even and less jagged lines, and can be applied using
@@ -138,7 +138,7 @@
 
     We simply create a QCheckBox for the \uicontrol Antialiasing option.
 
-    \snippet painting/basicdrawing/window.cpp 7
+    \snippet widgets/painting/basicdrawing/window.cpp 7
 
     The \uicontrol Transformations option implies a manipulation of the
     coordinate system that will appear as if the rendered shape is
@@ -148,21 +148,21 @@
     QPainter::scale() functions to implement this feature represented
     in the main application window by a simple QCheckBox.
 
-    \snippet painting/basicdrawing/window.cpp 8
+    \snippet widgets/painting/basicdrawing/window.cpp 8
 
     Then we connect the parameter widgets with their associated slots
     using the static QObject::connect() function, ensuring that the \c
     RenderArea widget is updated whenever the user changes the shape,
     or any of the other parameters.
 
-    \snippet painting/basicdrawing/window.cpp 9
-    \snippet painting/basicdrawing/window.cpp 10
+    \snippet widgets/painting/basicdrawing/window.cpp 9
+    \snippet widgets/painting/basicdrawing/window.cpp 10
 
     Finally, we add the various widgets to a layout, and call the \c
     shapeChanged(), \c penChanged(), and \c brushChanged() slots to
     initialize the application. We also turn on antialiasing.
 
-    \snippet painting/basicdrawing/window.cpp 11
+    \snippet widgets/painting/basicdrawing/window.cpp 11
 
     The \c shapeChanged() slot is called whenever the user changes the
     currently active shape.
@@ -185,7 +185,7 @@
     add the following line of code to the beginning of the \c
     window.cpp file.
 
-    \snippet painting/basicdrawing/window.cpp 0
+    \snippet widgets/painting/basicdrawing/window.cpp 0
 
     The QComboBox::itemData() function returns the data as a QVariant,
     so we need to cast the data to \c RenderArea::Shape. If there is
@@ -195,20 +195,20 @@
     In the end we call the \c RenderArea::setShape() slot to update
     the \c RenderArea widget.
 
-    \snippet painting/basicdrawing/window.cpp 12
+    \snippet widgets/painting/basicdrawing/window.cpp 12
 
     We call the \c penChanged() slot whenever the user changes any of
     the pen parameters. Again we use the QComboBox::itemData()
     function to retrieve the parameters, and then we call the \c
     RenderArea::setPen() slot to update the \c RenderArea widget.
 
-    \snippet painting/basicdrawing/window.cpp 13
+    \snippet widgets/painting/basicdrawing/window.cpp 13
 
     The brushChanged() slot is called whenever the user changes the
     brush parameter which we retrieve using the QComboBox::itemData()
     function as before.
 
-    \snippet painting/basicdrawing/window.cpp 14
+    \snippet widgets/painting/basicdrawing/window.cpp 14
 
     If the brush parameter is a gradient fill, special actions are
     required.
@@ -232,7 +232,7 @@
     In the end we call \c RenderArea::setBrush() slot to update the \c
     RenderArea widget's brush with the QLinearGradient object.
 
-    \snippet painting/basicdrawing/window.cpp 15
+    \snippet widgets/painting/basicdrawing/window.cpp 15
 
     A similar pattern of actions, as the one used for QLinearGradient,
     is used in the cases of Qt::RadialGradientPattern and
@@ -247,13 +247,13 @@
     first argument specifies the center of the conical, and the second
     specifies the start angle of the interpolation.
 
-    \snippet painting/basicdrawing/window.cpp 16
+    \snippet widgets/painting/basicdrawing/window.cpp 16
 
     If the brush style is Qt::TexturePattern we create a QBrush from a
     QPixmap. Then we call \c RenderArea::setBrush() slot to update the
     \c RenderArea widget with the newly created brush.
 
-    \snippet painting/basicdrawing/window.cpp 17
+    \snippet widgets/painting/basicdrawing/window.cpp 17
 
     Otherwise we simply create a brush with the given style and a
     green color, and then call \c RenderArea::setBrush() slot to
@@ -264,7 +264,7 @@
     The \c RenderArea class inherits QWidget, and renders multiple
     copies of the currently active shape using a QPainter.
 
-    \snippet painting/basicdrawing/renderarea.h 0
+    \snippet widgets/painting/basicdrawing/renderarea.h 0
 
     First we define a public \c Shape enum to hold the different
     shapes that can be rendered by the widget (i.e the shapes that can
@@ -287,7 +287,7 @@
 
     In the constructor we initialize some of the widget's variables.
 
-    \snippet painting/basicdrawing/renderarea.cpp 0
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 0
 
     We set its shape to be a \uicontrol Polygon, its antialiased property to
     be false and we load an image into the widget's pixmap
@@ -296,7 +296,7 @@
     will be used to render the background. QPalette::Base is typically
     white.
 
-    \snippet painting/basicdrawing/renderarea.cpp 2
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 2
 
     The \c RenderArea inherits QWidget's \l
     {QWidget::sizeHint()}{sizeHint} property holding the recommended
@@ -310,7 +310,7 @@
     Our reimplementation of the function returns a QSize with a 400
     pixels width and a 200 pixels height.
 
-    \snippet painting/basicdrawing/renderarea.cpp 1
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 1
 
     \c RenderArea also inherits QWidget's
     \l{QWidget::minimumSizeHint()}{minimumSizeHint} property holding
@@ -324,11 +324,11 @@
     Our reimplementation of the function returns a QSize with a 100
     pixels width and a 100 pixels height.
 
-    \snippet painting/basicdrawing/renderarea.cpp 3
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 3
     \codeline
-    \snippet painting/basicdrawing/renderarea.cpp 4
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 4
     \codeline
-    \snippet painting/basicdrawing/renderarea.cpp 5
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 5
 
     The public \c setShape(), \c setPen() and \c setBrush() slots are
     called whenever we want to modify a \c RenderArea widget's shape,
@@ -340,16 +340,16 @@
     repaint; instead it schedules a paint event for processing when Qt
     returns to the main event loop.
 
-    \snippet painting/basicdrawing/renderarea.cpp 6
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 6
     \codeline
-    \snippet painting/basicdrawing/renderarea.cpp 7
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 7
 
     With the \c setAntialiased() and \c setTransformed() slots we
     change the state of the properties according to the slot
     parameter, and call the QWidget::update() slot to make the changes
     visible in the \c RenderArea widget.
 
-    \snippet painting/basicdrawing/renderarea.cpp 8
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 8
 
     Then we reimplement the QWidget::paintEvent() function. The first
     thing we do is to create the graphical objects we will need to
@@ -373,7 +373,7 @@
     In addition we define a start angle and an arc length that we will
     use when drawing the \uicontrol Arc, \uicontrol Chord and \uicontrol Pie shapes.
 
-    \snippet painting/basicdrawing/renderarea.cpp 9
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 9
 
     We create a QPainter for the \c RenderArea widget, and set the
     painters pen and brush according to the \c RenderArea's pen and
@@ -382,7 +382,7 @@
     indicates that the engine should antialias edges of primitives if
     possible.
 
-    \snippet painting/basicdrawing/renderarea.cpp 10
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 10
 
     Finally, we render the multiple copies of the \c RenderArea's
     shape. The number of copies is depending on the size of the \c
@@ -397,7 +397,7 @@
     will be rendered on top of each other in the top left cormer of
     the \c RenderArea widget.
 
-    \snippet painting/basicdrawing/renderarea.cpp 11
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 11
 
     If the \uicontrol Transformations parameter option is checked, we do an
     additional translation of the coordinate system before we rotate
@@ -409,7 +409,7 @@
     Now, when rendering the shape, it will appear as if it was rotated
     in three dimensions.
 
-    \snippet painting/basicdrawing/renderarea.cpp 12
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 12
 
     Next, we identify the \c RenderArea's shape, and render it using
     the associated QPainter drawing function:
@@ -437,7 +437,7 @@
     lose the knowledge of this point unless we save the current
     painter state \e before we start the translating process.
 
-    \snippet painting/basicdrawing/renderarea.cpp 13
+    \snippet widgets/painting/basicdrawing/renderarea.cpp 13
 
     Then, when we are finished rendering a copy of the shape we can
     restore the original painter state, with its associated coordinate

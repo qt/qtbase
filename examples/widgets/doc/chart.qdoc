@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example itemviews/chart
+    \example widgets/itemviews/chart
     \title Chart Example
 
     The Chart example shows how to create a custom view for the model/view framework.
@@ -51,7 +51,7 @@
     indexAt(). However, the view needs to maintain strict control over its look and
     feel, so we also provide implementations for a number of other functions:
 
-    \snippet itemviews/chart/pieview.h 0
+    \snippet widgets/widgets/itemviews/chart/pieview.h 0
 
 
 

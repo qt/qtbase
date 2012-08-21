@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example mainwindows/menus
+    \example widgets/mainwindows/menus
     \title Menus Example
 
     The Menus example demonstrates how menus can be used in a main
@@ -57,7 +57,7 @@
     tool bars, dock widgets and a status bar around a large central
     widget.
 
-    \snippet mainwindows/menus/mainwindow.h 0
+    \snippet widgets/mainwindows/menus/mainwindow.h 0
 
     In this example, we will see how to implement pull-down menus as
     well as a context menu. In order to implement a custom context
@@ -65,7 +65,7 @@
     {QWidget::}{contextMenuEvent()} function to receive the context
     menu events for our main window.
 
-    \snippet mainwindows/menus/mainwindow.h 1
+    \snippet widgets/mainwindows/menus/mainwindow.h 1
 
     We must also implement a collection of private slots to respond to
     the user activating any of our menu entries.  Note that these
@@ -73,14 +73,14 @@
     i.e., most of them are only displaying the action's path in the
     main window's central widget.
 
-    \snippet mainwindows/menus/mainwindow.h 2
+    \snippet widgets/mainwindows/menus/mainwindow.h 2
 
     We have chosen to simplify the constructor by implementing two
     private convenience functions to create the various actions, to
     add them to menus and to insert the menus into our main window's
     menu bar.
 
-    \snippet mainwindows/menus/mainwindow.h 3
+    \snippet widgets/mainwindows/menus/mainwindow.h 3
 
     Finally, we declare the various menus and actions as well as a
     simple information label in the application wide scope.
@@ -104,9 +104,9 @@
     window takes ownership of the widget pointer and deletes it at the
     appropriate time.
 
-    \snippet mainwindows/menus/mainwindow.cpp 0
+    \snippet widgets/mainwindows/menus/mainwindow.cpp 0
     \codeline
-    \snippet mainwindows/menus/mainwindow.cpp 1
+    \snippet widgets/mainwindows/menus/mainwindow.cpp 1
 
     Then we create the information label as well as a top and bottom
     filler that we add to a layout which we install on the central
@@ -115,7 +115,7 @@
     layout with a main window as a parent, is considered an error. You
     should always set your own layout on the central widget instead.
 
-    \snippet mainwindows/menus/mainwindow.cpp 2
+    \snippet widgets/mainwindows/menus/mainwindow.cpp 2
 
     To create the actions and menus we call our two convenience
     functions: \c createActions() and \c createMenus(). We will get
@@ -132,7 +132,7 @@
     Now, let's take a closer look at the \c createActions() convenience
     function that creates the various actions:
 
-    \snippet mainwindows/menus/mainwindow.cpp 4
+    \snippet widgets/mainwindows/menus/mainwindow.cpp 4
     \dots
 
     A QAction object may contain an icon, a text, a shortcut, a status
@@ -151,7 +151,7 @@
     The rest of the actions are created in a similar manner. Please
     see the source code for details.
 
-    \snippet mainwindows/menus/mainwindow.cpp 7
+    \snippet widgets/mainwindows/menus/mainwindow.cpp 7
 
 
     Once we have created the \uicontrol {Left Align}, \uicontrol {Right Align},
@@ -169,7 +169,7 @@
     function to add the actions to the menus and to insert the menus
     into the menu bar:
 
-    \snippet mainwindows/menus/mainwindow.cpp 8
+    \snippet widgets/mainwindows/menus/mainwindow.cpp 8
 
     QMenuBar's \l {QMenuBar::addMenu()}{addMenu()} function appends a
     new QMenu with the given title, to the menu bar (note that the
@@ -189,7 +189,7 @@
     returns true, and adds the new action to the menu's list of
     actions.
 
-    \snippet mainwindows/menus/mainwindow.cpp 12
+    \snippet widgets/mainwindows/menus/mainwindow.cpp 12
 
     Note the \uicontrol Format menu. First of all, it is added as a submenu
     to the \uicontrol Edit Menu using QMenu's \l
@@ -200,7 +200,7 @@
     to the menu separately while the action group does its magic
     behind the scene.
 
-    \snippet mainwindows/menus/mainwindow.cpp 3
+    \snippet widgets/mainwindows/menus/mainwindow.cpp 3
 
     To provide a custom context menu, we must reimplement QWidget's \l
     {QWidget::}{contextMenuEvent()} function to receive the widget's

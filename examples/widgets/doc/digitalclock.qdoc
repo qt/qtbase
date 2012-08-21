@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/digitalclock
+    \example widgets/widgets/digitalclock
     \title Digital Clock Example
 
     The Digital Clock example shows how to use QLCDNumber to display a 
@@ -44,11 +44,11 @@
     and implement a private slot called \c showTime() to update the clock
     display:
 
-    \snippet widgets/digitalclock/digitalclock.h 0
+    \snippet widgets/widgets/digitalclock/digitalclock.h 0
 
     \section1 DigitalClock Class Implementation
 
-    \snippet widgets/digitalclock/digitalclock.cpp 0
+    \snippet widgets/widgets/digitalclock/digitalclock.cpp 0
 
     In the constructor, we first change the look of the LCD numbers. The
     QLCDNumber::Filled style produces raised segments filled with the
@@ -59,8 +59,8 @@
     call the \c showTime() slot; without this call, there would be a one-second
     delay at startup before the time is shown.
 
-    \snippet widgets/digitalclock/digitalclock.cpp 1
-    \snippet widgets/digitalclock/digitalclock.cpp 2
+    \snippet widgets/widgets/digitalclock/digitalclock.cpp 1
+    \snippet widgets/widgets/digitalclock/digitalclock.cpp 2
 
     The \c showTime() slot is called whenever the clock display needs
     to be updated.

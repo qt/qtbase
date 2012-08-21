@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example painting/pathstroke
+    \example widgets/painting/pathstroke
     \title Path Stroking
 
     In this example we show some of the various types of pens that can be

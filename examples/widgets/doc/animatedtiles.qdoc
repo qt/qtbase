@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example animation/animatedtiles
+    \example widgets/animation/animatedtiles
     \title Animated Tiles Example
 
     The Animated Tiles example animates items in a graphics scene.

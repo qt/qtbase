@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/imageviewer
+    \example widgets/widgets/imageviewer
     \title Image Viewer Example
 
     The example shows how to combine QLabel and QScrollArea to
@@ -69,7 +69,7 @@
 
     \section1 ImageViewer Class Definition
 
-    \snippet widgets/imageviewer/imageviewer.h 0
+    \snippet widgets/widgets/imageviewer/imageviewer.h 0
 
     The \c ImageViewer class inherits from QMainWindow. We reimplement
     the constructor, and create several private slots to facilitate
@@ -85,7 +85,7 @@
 
     \section1 ImageViewer Class Implementation
 
-    \snippet widgets/imageviewer/imageviewer.cpp 0
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 0
 
     In the constructor we first create the label and the scroll area.
 
@@ -109,8 +109,8 @@
     we create the associated actions and menus, and customize the \c
     {ImageViewer}'s appearance.
 
-    \snippet widgets/imageviewer/imageviewer.cpp 1
-    \snippet widgets/imageviewer/imageviewer.cpp 2
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 1
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 2
 
     In the \c open() slot, we show a file dialog to the user. The
     easiest way to create a QFileDialog is to use the static
@@ -133,8 +133,8 @@
     information message with an \uicontrol OK button (the default) is
     sufficient, since the message is part of a normal operation.
 
-    \snippet widgets/imageviewer/imageviewer.cpp 3
-    \snippet widgets/imageviewer/imageviewer.cpp 4
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 3
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 4
 
     If the format is supported, we display the image in \c imageLabel
     by setting the label's \l {QLabel::pixmap}{pixmap}. Then we enable
@@ -156,8 +156,8 @@
     In the \c print() slot, we first make sure that an image has been
     loaded into the application:
 
-    \snippet widgets/imageviewer/imageviewer.cpp 5
-    \snippet widgets/imageviewer/imageviewer.cpp 6
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 5
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 6
 
     If the application is built in debug mode, the \c Q_ASSERT() macro
     will expand to
@@ -184,8 +184,8 @@
     Another approach is to add this line directly to the \c .pro
     file.
 
-    \snippet widgets/imageviewer/imageviewer.cpp 7
-    \snippet widgets/imageviewer/imageviewer.cpp 8
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 7
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 8
 
     Then we present a print dialog allowing the user to choose a
     printer and to set a few options. We construct a painter with a
@@ -196,8 +196,8 @@
 
     In the end we draw the pixmap at position (0, 0).
 
-    \snippet widgets/imageviewer/imageviewer.cpp 9
-    \snippet widgets/imageviewer/imageviewer.cpp 10
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 9
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 10
 
     We implement the zooming slots using the private \c scaleImage()
     function. We set the scaling factors to 1.25 and 0.8,
@@ -216,8 +216,8 @@
     \li \inlineimage imageviewer-zoom_in_2.png
     \endtable
 
-    \snippet widgets/imageviewer/imageviewer.cpp 11
-    \snippet widgets/imageviewer/imageviewer.cpp 12
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 11
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 12
 
     When zooming, we use the QLabel's ability to scale its contents.
     Such scaling doesn't change the actual size hint of the contents.
@@ -226,8 +226,8 @@
     normal size of the currently displayed image is to call \c
     adjustSize() and reset the scale factor to 1.0.
 
-    \snippet widgets/imageviewer/imageviewer.cpp 13
-    \snippet widgets/imageviewer/imageviewer.cpp 14
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 13
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 14
 
     The \c fitToWindow() slot is called each time the user toggled
     the \uicontrol {Fit to Window} option. If the slot is called to turn on
@@ -266,14 +266,14 @@
     label's size to its content. And in the end we update the view
     menu entries.
 
-    \snippet widgets/imageviewer/imageviewer.cpp 15
-    \snippet widgets/imageviewer/imageviewer.cpp 16
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 15
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 16
 
     We implement the \c about() slot to create a message box
     describing what the example is designed to show.
 
-    \snippet widgets/imageviewer/imageviewer.cpp 17
-    \snippet widgets/imageviewer/imageviewer.cpp 18
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 17
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 18
 
     In the private \c createAction() function, we create the
     actions providing the application features.
@@ -284,8 +284,8 @@
     been loaded into the application. In addition we make the \c
     fitToWindowAct \l {QAction::checkable}{checkable}.
 
-    \snippet widgets/imageviewer/imageviewer.cpp 19
-    \snippet widgets/imageviewer/imageviewer.cpp 20
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 19
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 20
 
     In the private \c createMenu() function, we add the previously
     created actions to the \uicontrol File, \uicontrol View and \uicontrol Help menus.
@@ -297,16 +297,16 @@
     menu bar which we retrieve with the QMainWindow::menuBar()
     function.
 
-    \snippet widgets/imageviewer/imageviewer.cpp 21
-    \snippet widgets/imageviewer/imageviewer.cpp 22
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 21
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 22
 
     The private \c updateActions() function enables or disables the
     \uicontrol {Zoom In}, \uicontrol {Zoom Out} and \uicontrol {Normal Size} menu
     entries depending on whether the \uicontrol {Fit to Window} option is
     turned on or off.
 
-    \snippet widgets/imageviewer/imageviewer.cpp 23
-    \snippet widgets/imageviewer/imageviewer.cpp 24
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 23
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 24
 
     In \c scaleImage(), we use the \c factor parameter to calculate
     the new scaling factor for the displayed image, and resize \c
@@ -321,8 +321,8 @@
     image pixmap from becoming too large, consuming too much
     resources in the window system.
 
-    \snippet widgets/imageviewer/imageviewer.cpp 25
-    \snippet widgets/imageviewer/imageviewer.cpp 26
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 25
+    \snippet widgets/widgets/imageviewer/imageviewer.cpp 26
 
     Whenever we zoom in or out, we need to adjust the scroll bars in
     consequence. It would have been tempting to simply call

@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example itemviews/editabletreemodel
+    \example widgets/itemviews/editabletreemodel
     \title Editable Tree Model Example
 
     This example shows how to implement a simple item-based tree model that can
@@ -234,7 +234,7 @@
     pieces of data, and which can provide information about their parent
     and child items:
 
-    \snippet itemviews/editabletreemodel/treeitem.h 0
+    \snippet widgets/itemviews/editabletreemodel/treeitem.h 0
 
     We have designed the API to be similar to that provided by
     QAbstractItemModel by giving each item functions to return the number
@@ -251,7 +251,7 @@
     Each \c TreeItem is constructed with a list of data and an optional
     parent item:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 0
+    \snippet widgets/itemviews/editabletreemodel/treeitem.cpp 0
 
     Initially, each item has no children. These are added to the item's
     internal \c childItems member using the \c insertChildren() function
@@ -260,29 +260,29 @@
     The destructor ensures that each child added to the item is deleted
     when the item itself is deleted:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 1
+    \snippet widgets/itemviews/editabletreemodel/treeitem.cpp 1
 
     \target TreeItem::parent
     Since each item stores a pointer to its parent, the \c parent() function
     is trivial:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 9
+    \snippet widgets/itemviews/editabletreemodel/treeitem.cpp 9
 
     \target TreeItem::child
     Three functions provide information about the children of an item.
     \c child() returns a specific child from the internal list of children:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 2
+    \snippet widgets/itemviews/editabletreemodel/treeitem.cpp 2
 
     The \c childCount() function returns the total number of children:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 3
+    \snippet widgets/itemviews/editabletreemodel/treeitem.cpp 3
 
     The \c childNumber() function is used to determine the index of the child
     in its parent's list of children. It accesses the parent's \c childItems
     member directly to obtain this information:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 4
+    \snippet widgets/itemviews/editabletreemodel/treeitem.cpp 4
 
     The root item has no parent item; for this item, we return zero to be
     consistent with the other items.
@@ -290,20 +290,20 @@
     The \c columnCount() function simply returns the number of elements in
     the internal \c itemData list of QVariant objects:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 5
+    \snippet widgets/itemviews/editabletreemodel/treeitem.cpp 5
 
     \target TreeItem::data
     Data is retrieved using the \c data() function, which accesses the
     appropriate element in the \c itemData list:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 6
+    \snippet widgets/itemviews/editabletreemodel/treeitem.cpp 6
 
     \target TreeItem::setData
     Data is set using the \c setData() function, which only stores values
     in the \c itemData list for valid list indexes, corresponding to column
     values in the model:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 11
+    \snippet widgets/itemviews/editabletreemodel/treeitem.cpp 11
 
     To make implementation of the model easier, we return true to indicate
     whether the data was set successfully, or false if an invalid column
@@ -313,20 +313,20 @@
     in the model leads to the insertion of new child items in the corresponding
     item, handled by the \c insertChildren() function:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 7
+    \snippet widgets/itemviews/editabletreemodel/treeitem.cpp 7
 
     This ensures that new items are created with the required number of columns
     and inserted at a valid position in the internal \c childItems list.
     Items are removed with the \c removeChildren() function:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 10
+    \snippet widgets/itemviews/editabletreemodel/treeitem.cpp 10
 
     As discussed above, the functions for inserting and removing columns are
     used differently to those for inserting and removing child items because
     they are expected to be called on every item in the tree. We do this by
     recursively calling this function on each child of the item:
 
-    \snippet itemviews/editabletreemodel/treeitem.cpp 8
+    \snippet widgets/itemviews/editabletreemodel/treeitem.cpp 8
 
     \section1 TreeModel Class Definition
 
@@ -334,16 +334,16 @@
     class, exposing the necessary interface for a model that can be edited and
     resized.
 
-    \snippet itemviews/editabletreemodel/treemodel.h 0
+    \snippet widgets/itemviews/editabletreemodel/treemodel.h 0
 
     The constructor and destructor are specific to this model.
 
-    \snippet itemviews/editabletreemodel/treemodel.h 1
+    \snippet widgets/itemviews/editabletreemodel/treemodel.h 1
 
     Read-only tree models only need to provide the above functions. The
     following public functions provide support for editing and resizing:
 
-    \snippet itemviews/editabletreemodel/treemodel.h 2
+    \snippet widgets/itemviews/editabletreemodel/treemodel.h 2
 
     To simplify this example, the data exposed by the model is organized into
     a data structure by the model's \l{TreeModel::setupModelData}{setupModelData()}
@@ -355,7 +355,7 @@
     The constructor creates a root item and initializes it with the header
     data supplied:
 
-    \snippet itemviews/editabletreemodel/treemodel.cpp 0
+    \snippet widgets/itemviews/editabletreemodel/treemodel.cpp 0
 
     We call the internal \l{TreeModel::setupModelData}{setupModelData()}
     function to convert the textual data supplied to a data structure we can
@@ -365,7 +365,7 @@
     The destructor only has to delete the root item; all child items will
     be recursively deleted by the \c TreeItem destructor.
 
-    \snippet itemviews/editabletreemodel/treemodel.cpp 1
+    \snippet widgets/itemviews/editabletreemodel/treemodel.cpp 1
 
     \target TreeModel::getItem
     Since the model's interface to the other model/view components is based
@@ -375,7 +375,7 @@
     consistency, we have defined a \c getItem() function to perform this
     repetitive task:
 
-    \snippet itemviews/editabletreemodel/treemodel.cpp 4
+    \snippet widgets/itemviews/editabletreemodel/treemodel.cpp 4
 
     This function assumes that each model index it is passed corresponds to
     a valid item in memory. If the index is invalid, or its internal pointer
@@ -385,13 +385,13 @@
     \c getItem() function to obtain the relevant item, then returns the
     number of children it contains:
 
-    \snippet itemviews/editabletreemodel/treemodel.cpp 8
+    \snippet widgets/itemviews/editabletreemodel/treemodel.cpp 8
 
     By contrast, the \c columnCount() implementation does not need to look
     for a particular item because all items are defined to have the same
     number of columns associated with them.
 
-    \snippet itemviews/editabletreemodel/treemodel.cpp 2
+    \snippet widgets/itemviews/editabletreemodel/treemodel.cpp 2
 
     As a result, the number of columns can be obtained directly from the root
     item.
@@ -401,7 +401,7 @@
     the Qt::ItemIsEditable and Qt::ItemIsSelectable flags as well as
     Qt::ItemIsEnabled:
 
-    \snippet itemviews/editabletreemodel/treemodel.cpp 3
+    \snippet widgets/itemviews/editabletreemodel/treemodel.cpp 3
 
     \target TreeModel::index
     The model needs to be able to generate model indexes to allow other
@@ -409,7 +409,7 @@
     is performed by the \c index() function, which is used to obtain model
     indexes corresponding to children of a given parent item:
 
-    \snippet itemviews/editabletreemodel/treemodel.cpp 5
+    \snippet widgets/itemviews/editabletreemodel/treemodel.cpp 5
 
     In this model, we only return model indexes for child items if the parent
     index is invalid (corresponding to the root item) or if it has a zero
@@ -419,7 +419,7 @@
     a \c TreeItem instance that corresponds to the model index supplied, and
     request its child item that corresponds to the specified row.
 
-    \snippet itemviews/editabletreemodel/treemodel.cpp 6
+    \snippet widgets/itemviews/editabletreemodel/treemodel.cpp 6
 
     Since each item contains information for an entire row of data, we create
     a model index to uniquely identify it by calling
@@ -436,7 +436,7 @@
     then creating a model index to represent the parent. (See
     \l{Relating-items-using-model-indexes}{the above diagram}).
 
-    \snippet itemviews/editabletreemodel/treemodel.cpp 7
+    \snippet widgets/itemviews/editabletreemodel/treemodel.cpp 7
 
     Items without parents, including the root item, are handled by returning
     a null model index. Otherwise, a model index is created and returned as

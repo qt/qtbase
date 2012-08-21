@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/sliders
+    \example widgets/widgets/sliders
     \title Sliders Example
 
     Qt provides three types of slider-like widgets: QSlider,
@@ -62,7 +62,7 @@
 
     \section1 Window Class Definition
 
-    \snippet widgets/sliders/window.h 0
+    \snippet widgets/widgets/sliders/window.h 0
 
     The \c Window class inherits from QWidget. It displays the slider
     widgets and allows the user to set their minimum, maximum and
@@ -73,7 +73,7 @@
 
     \section1 Window Class Implementation
 
-    \snippet widgets/sliders/window.cpp 0
+    \snippet widgets/widgets/sliders/window.cpp 0
 
     In the constructor we first create the two \c SlidersGroup
     widgets that display the slider widgets horizontally and
@@ -85,8 +85,8 @@
     widgets. The rest of the controlling mechanisms is implemented by
     the same function call.
 
-    \snippet widgets/sliders/window.cpp 1
-    \snippet widgets/sliders/window.cpp 2
+    \snippet widgets/widgets/sliders/window.cpp 1
+    \snippet widgets/widgets/sliders/window.cpp 2
 
     Then we connect the \c horizontalSliders, \c verticalSliders and
     \c valueSpinBox to each other, so that the slider widgets and the
@@ -104,8 +104,8 @@
     minimum and maximum values propagate through the connections we
     created with \c createControls().
 
-    \snippet widgets/sliders/window.cpp 3
-    \snippet widgets/sliders/window.cpp 4
+    \snippet widgets/widgets/sliders/window.cpp 3
+    \snippet widgets/widgets/sliders/window.cpp 4
 
     In the private \c createControls() function, we let a QGroupBox
     (\c controlsGroup) display the control widgets. A group box can
@@ -150,8 +150,8 @@
     bindings are inverted by default: \uicontrol PageDown increases the
     current value, and \uicontrol PageUp decreases it.
 
-    \snippet widgets/sliders/window.cpp 5
-    \snippet widgets/sliders/window.cpp 6
+    \snippet widgets/widgets/sliders/window.cpp 5
+    \snippet widgets/widgets/sliders/window.cpp 6
 
     Then we create the spin boxes. QSpinBox allows the user to choose
     a value by clicking the up and down buttons or pressing the \key
@@ -166,8 +166,8 @@
     a list of options to the user in a way that takes up the minimum
     amount of screen space.
 
-    \snippet widgets/sliders/window.cpp 7
-    \snippet widgets/sliders/window.cpp 8
+    \snippet widgets/widgets/sliders/window.cpp 7
+    \snippet widgets/widgets/sliders/window.cpp 8
 
     We synchronize the behavior of the control widgets and the slider
     widgets through their signals and slots. We connect each control
@@ -179,7 +179,7 @@
 
     \section1 SlidersGroup Class Definition
 
-    \snippet widgets/sliders/slidersgroup.h 0
+    \snippet widgets/widgets/sliders/slidersgroup.h 0
 
     The \c SlidersGroup class inherits from QGroupBox. It provides a
     frame and a title, and contains a QSlider, a QScrollBar and a
@@ -193,7 +193,7 @@
 
     \section1 SlidersGroup Class Implementation
 
-    \snippet widgets/sliders/slidersgroup.cpp 0
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 0
 
     First we create the slider-like widgets with the appropriate
     properties. In particular we set the focus policy for each
@@ -205,24 +205,24 @@
     Then we connect the widgets with each other, so that they will
     stay synchronized when the current value of one of them changes.
 
-    \snippet widgets/sliders/slidersgroup.cpp 1
-    \snippet widgets/sliders/slidersgroup.cpp 2
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 1
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 2
 
     We connect \c {dial}'s \c valueChanged() signal to the
     \c{SlidersGroup}'s \c valueChanged() signal, to notify the other
     widgets in the application (i.e., the control widgets) of the
     changed value.
 
-    \snippet widgets/sliders/slidersgroup.cpp 3
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 3
     \codeline
-    \snippet widgets/sliders/slidersgroup.cpp 4
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 4
 
     Finally, depending on the \l {Qt::Orientation}{orientation} given
     at the time of construction, we choose and create the layout for
     the slider widgets within the group box.
 
-    \snippet widgets/sliders/slidersgroup.cpp 5
-    \snippet widgets/sliders/slidersgroup.cpp 6
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 5
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 6
 
     The \c setValue() slot sets the value of the QSlider. We don't
     need to explicitly call
@@ -231,21 +231,21 @@
     \l{QAbstractSlider::valueChanged()}{valueChanged()} signal when
     its value changes, triggering a domino effect.
 
-    \snippet widgets/sliders/slidersgroup.cpp 7
-    \snippet widgets/sliders/slidersgroup.cpp 8
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 7
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 8
     \codeline
-    \snippet widgets/sliders/slidersgroup.cpp 9
-    \snippet widgets/sliders/slidersgroup.cpp 10
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 9
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 10
 
     The \c setMinimum() and \c setMaximum() slots are used by the \c
     Window class to set the range of the QSlider, QScrollBar, and
     QDial widgets.
 
-    \snippet widgets/sliders/slidersgroup.cpp 11
-    \snippet widgets/sliders/slidersgroup.cpp 12
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 11
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 12
     \codeline
-    \snippet widgets/sliders/slidersgroup.cpp 13
-    \snippet widgets/sliders/slidersgroup.cpp 14
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 13
+    \snippet widgets/widgets/sliders/slidersgroup.cpp 14
 
     The \c invertAppearance() and \c invertKeyBindings() slots
     control the child widgets'

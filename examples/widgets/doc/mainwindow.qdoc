@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example mainwindows/mainwindow
+    \example widgets/mainwindows/mainwindow
     \title Main Window
 
     The Main Window example shows Qt's extensive support for tool bars,

@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/groupbox
+    \example widgets/widgets/groupbox
     \title Group Box Example
 
     The Group Box example shows how to use the different kinds of group
@@ -54,7 +54,7 @@
     functions to construct each group box and populate it with different
     selections of button widgets:
 
-    \snippet widgets/groupbox/window.h 0
+    \snippet widgets/widgets/groupbox/window.h 0
 
     In the example, the widget will be used as a top-level window, so
     the constructor is defined so that we do not have to specify a parent
@@ -65,12 +65,12 @@
     The constructor creates a grid layout and fills it with each of the
     group boxes that are to be displayed:
 
-    \snippet widgets/groupbox/window.cpp 0
+    \snippet widgets/widgets/groupbox/window.cpp 0
 
     The functions used to create each group box each return a
     QGroupBox to be inserted into the grid layout.
 
-    \snippet widgets/groupbox/window.cpp 1
+    \snippet widgets/widgets/groupbox/window.cpp 1
 
     The first group box contains and manages three radio buttons. Since
     the group box contains only radio buttons, it is exclusive by
@@ -78,7 +78,7 @@
     We check the first radio button to ensure that the button group
     contains one checked button.
 
-    \snippet widgets/groupbox/window.cpp 3
+    \snippet widgets/widgets/groupbox/window.cpp 3
 
     We use a vertical layout within the group box to present the
     buttons in the form of a vertical list, and return the group
@@ -89,52 +89,52 @@
     unchecked, so the group box itself must be checked before any of
     the radio buttons inside can be checked.
 
-    \snippet widgets/groupbox/window.cpp 4
+    \snippet widgets/widgets/groupbox/window.cpp 4
 
     The group box contains three exclusive radio buttons, and an
     independent checkbox. For consistency, one radio button must be
     checked at all times, so we ensure that the first one is initially
     checked.
 
-    \snippet widgets/groupbox/window.cpp 5
+    \snippet widgets/widgets/groupbox/window.cpp 5
 
     The buttons are arranged in the same way as those in the first
     group box.
 
-    \snippet widgets/groupbox/window.cpp 6
+    \snippet widgets/widgets/groupbox/window.cpp 6
 
     The third group box is constructed with a "flat" style that is
     better suited to certain types of dialog.
 
-    \snippet widgets/groupbox/window.cpp 7
+    \snippet widgets/widgets/groupbox/window.cpp 7
 
     This group box contains only checkboxes, so it is non-exclusive by
     default. This means that each checkbox can be checked independently
     of the others.
 
-    \snippet widgets/groupbox/window.cpp 8
+    \snippet widgets/widgets/groupbox/window.cpp 8
 
     Again, we use a vertical layout within the group box to present
     the buttons in the form of a vertical list.
 
-    \snippet widgets/groupbox/window.cpp 9
+    \snippet widgets/widgets/groupbox/window.cpp 9
 
     The final group box contains only push buttons and, like the
     second group box, it is checkable.
 
-    \snippet widgets/groupbox/window.cpp 10
+    \snippet widgets/widgets/groupbox/window.cpp 10
 
     We create a normal button, a toggle button, and a flat push button:
 
-    \snippet widgets/groupbox/window.cpp 11
+    \snippet widgets/widgets/groupbox/window.cpp 11
 
     Push buttons can be used to display popup menus. We create one, and
     attach a simple menu to it:
 
-    \snippet widgets/groupbox/window.cpp 12
+    \snippet widgets/widgets/groupbox/window.cpp 12
 
     Finally, we lay out the widgets vertically, and return the group box
     that we created:
 
-    \snippet widgets/groupbox/window.cpp 13
+    \snippet widgets/widgets/groupbox/window.cpp 13
 */

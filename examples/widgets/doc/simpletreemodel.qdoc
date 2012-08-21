@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example itemviews/simpletreemodel
+    \example widgets/itemviews/simpletreemodel
     \title Simple Tree Model Example
 
     The Simple Tree Model example shows how to create a basic, read-only
@@ -93,7 +93,7 @@
 
     The \c TreeItem class is defined as follows:
 
-    \snippet itemviews/simpletreemodel/treeitem.h 0
+    \snippet widgets/itemviews/simpletreemodel/treeitem.h 0
 
     The class is a basic C++ class. It does not inherit from QObject or
     provide signals and slots. It is used to hold a list of QVariants,
@@ -121,19 +121,19 @@
     The constructor is only used to record the item's parent and the data
     associated with each column.
 
-    \snippet itemviews/simpletreemodel/treeitem.cpp 0
+    \snippet widgets/itemviews/simpletreemodel/treeitem.cpp 0
 
     A pointer to each of the child items belonging to this item will be
     stored in the \c childItems private member variable. When the class's
     destructor is called, it must delete each of these to ensure that
     their memory is reused:
 
-    \snippet itemviews/simpletreemodel/treeitem.cpp 1
+    \snippet widgets/itemviews/simpletreemodel/treeitem.cpp 1
 
     Since each of the child items are constructed when the model is initially
     populated with data, the function to add child items is straightforward:
 
-    \snippet itemviews/simpletreemodel/treeitem.cpp 2
+    \snippet widgets/itemviews/simpletreemodel/treeitem.cpp 2
 
     Each item is able to return any of its child items when given a suitable
     row number. For example, in the \l{#SimpleTreeModelStructure}{above diagram},
@@ -144,11 +144,11 @@
     The \c child() function returns the child that corresponds to
     the specified row number in the item's list of child items:
 
-    \snippet itemviews/simpletreemodel/treeitem.cpp 3
+    \snippet widgets/itemviews/simpletreemodel/treeitem.cpp 3
 
     The number of child items held can be found with \c childCount():
 
-    \snippet itemviews/simpletreemodel/treeitem.cpp 4
+    \snippet widgets/itemviews/simpletreemodel/treeitem.cpp 4
 
     The \c TreeModel uses this function to determine the number of rows that
     exist for a given parent item.
@@ -156,7 +156,7 @@
     The \c row() function reports the item's location within its parent's
     list of items:
 
-    \snippet itemviews/simpletreemodel/treeitem.cpp 8
+    \snippet widgets/itemviews/simpletreemodel/treeitem.cpp 8
 
     Note that, although the root item (with no parent item) is automatically
     assigned a row number of 0, this information is never used by the model.
@@ -164,17 +164,17 @@
     The number of columns of data in the item is trivially returned by the
     \c columnCount() function.
 
-    \snippet itemviews/simpletreemodel/treeitem.cpp 5
+    \snippet widgets/itemviews/simpletreemodel/treeitem.cpp 5
 
     Column data is returned by the \c data() function, taking advantage of
     QList's ability to provide sensible default values if the column number
     is out of range:
 
-    \snippet itemviews/simpletreemodel/treeitem.cpp 6
+    \snippet widgets/itemviews/simpletreemodel/treeitem.cpp 6
 
     The item's parent is found with \c parent():
 
-    \snippet itemviews/simpletreemodel/treeitem.cpp 7
+    \snippet widgets/itemviews/simpletreemodel/treeitem.cpp 7
 
     Note that, since the root item in the model will not have a parent, this
     function will return zero in that case. We need to ensure that the model
@@ -185,7 +185,7 @@
 
     The \c TreeModel class is defined as follows:
 
-    \snippet itemviews/simpletreemodel/treemodel.h 0
+    \snippet widgets/itemviews/simpletreemodel/treemodel.h 0
 
     This class is similar to most other subclasses of QAbstractItemModel that
     provide read-only models. Only the form of the constructor and the
@@ -198,7 +198,7 @@
     result, the constructor takes an argument containing the data that the
     model will share with views and delegates:
 
-    \snippet itemviews/simpletreemodel/treemodel.cpp 0
+    \snippet widgets/itemviews/simpletreemodel/treemodel.cpp 0
 
     It is up to the constructor to create a root item for the model. This
     item only contains vertical header data for convenience. We also use it
@@ -213,7 +213,7 @@
     The destructor ensures that the root item and all of its descendants
     are deleted when the model is destroyed:
 
-    \snippet itemviews/simpletreemodel/treemodel.cpp 1
+    \snippet widgets/itemviews/simpletreemodel/treemodel.cpp 1
 
     Since we cannot add data to the model after it is constructed and set
     up, this simplifies the way that the internal tree of items is managed.
@@ -234,7 +234,7 @@
     so we can guarantee that any valid model indexes that we receive will
     contain a valid data pointer.
 
-    \snippet itemviews/simpletreemodel/treemodel.cpp 6
+    \snippet widgets/itemviews/simpletreemodel/treemodel.cpp 6
 
     Since the row and column arguments to this function refer to a
     child item of the corresponding parent item, we obtain the item using
@@ -247,7 +247,7 @@
     The way that the \c TreeItem objects are defined makes writing the
     \c parent() function easy:
 
-    \snippet itemviews/simpletreemodel/treemodel.cpp 7
+    \snippet widgets/itemviews/simpletreemodel/treemodel.cpp 7
 
     We only need to ensure that we never return a model index corresponding
     to the root item. To be consistent with the way that the \c index()
@@ -266,7 +266,7 @@
     for the \c TreeItem that corresponds to a given model index, or the
     number of top-level items if an invalid index is specified:
 
-    \snippet itemviews/simpletreemodel/treemodel.cpp 8
+    \snippet widgets/itemviews/simpletreemodel/treemodel.cpp 8
 
     Since each item manages its own column data, the \c columnCount()
     function has to call the item's own \c columnCount() function to
@@ -275,13 +275,13 @@
     specified, the number of columns returned is determined from the
     root item:
 
-    \snippet itemviews/simpletreemodel/treemodel.cpp 2
+    \snippet widgets/itemviews/simpletreemodel/treemodel.cpp 2
 
     Data is obtained from the model via \c data(). Since the item manages
     its own columns, we need to use the column number to retrieve the data
     with the \c TreeItem::data() function:
 
-    \snippet itemviews/simpletreemodel/treemodel.cpp 3
+    \snippet widgets/itemviews/simpletreemodel/treemodel.cpp 3
 
     Note that we only support the \l{Qt::ItemDataRole}{DisplayRole}
     in this implementation, and we also return invalid QVariant objects for
@@ -290,12 +290,12 @@
     We use the \c flags() function to ensure that views know that the
     model is read-only:
 
-    \snippet itemviews/simpletreemodel/treemodel.cpp 4
+    \snippet widgets/itemviews/simpletreemodel/treemodel.cpp 4
 
     The \c headerData() function returns data that we conveniently stored
     in the root item:
 
-    \snippet itemviews/simpletreemodel/treemodel.cpp 5
+    \snippet widgets/itemviews/simpletreemodel/treemodel.cpp 5
 
     This information could have been supplied in a different way: either
     specified in the constructor, or hard coded into the \c headerData()

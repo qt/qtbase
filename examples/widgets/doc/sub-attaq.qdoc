@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example animation/sub-attaq
+    \example widgets/animation/sub-attaq
     \title Sub-Attaq
 
     This example shows Qt's ability to combine \l{The Animation Framework}{the animation framework}

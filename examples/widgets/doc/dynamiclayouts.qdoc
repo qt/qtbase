@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example layouts/dynamiclayouts
+    \example widgets/layouts/dynamiclayouts
     \title Dynamic Layouts Example
 
     The Dynamic Layouts example shows how to move widgets around in

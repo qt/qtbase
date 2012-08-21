@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example animation/moveblocks
+    \example widgets/animation/moveblocks
     \title Move Blocks Example
 
     The Move Blocks example shows how to animate items in a
@@ -62,7 +62,7 @@
     After QApplication has been initialized, we set up the
     QGraphicsScene with its \c{QGraphicsRectWidget}s.
 
-    \snippet animation/moveblocks/main.cpp 1
+    \snippet widgets/animation/moveblocks/main.cpp 1
 
     After adding the scene to a QGraphicsView, it is time to build the
     state graph. Let's first look at a statechart of what we are
@@ -75,7 +75,7 @@
     graph will be examined line-by-line, and will show how the graph
     works. First off, we construct the \c group state:
 
-    \snippet animation/moveblocks/main.cpp 2
+    \snippet widgets/animation/moveblocks/main.cpp 2
 
     The timer is used to add a delay between each time the blocks are
     moved. The timer is started when \c group is entered. As we will
@@ -84,9 +84,9 @@
     machine, so an animation will be scheduled when the example is
     started.
 
-    \snippet animation/moveblocks/main.cpp 3
+    \snippet widgets/animation/moveblocks/main.cpp 3
     \dots
-    \snippet animation/moveblocks/main.cpp 4
+    \snippet widgets/animation/moveblocks/main.cpp 4
 
     \c createGeometryState() returns a QState that will set the
     geometry of our items upon entry. It also assigns \c group as the
@@ -98,20 +98,20 @@
     properties and the values in the target state. We add animated
     transitions to the state graph later.
 
-    \snippet animation/moveblocks/main.cpp 5
+    \snippet widgets/animation/moveblocks/main.cpp 5
 
     We move the items in parallel. Each item is added to \c
     animationGroup, which is the animation that is inserted into the
     transitions.
 
-    \snippet animation/moveblocks/main.cpp 6
+    \snippet widgets/animation/moveblocks/main.cpp 6
 
     The sequential animation group, \c subGroup, helps us insert a
     delay between the animation of each item.
 
-    \snippet animation/moveblocks/main.cpp 7
+    \snippet widgets/animation/moveblocks/main.cpp 7
     \dots
-    \snippet animation/moveblocks/main.cpp 8
+    \snippet widgets/animation/moveblocks/main.cpp 8
 
     A StateSwitchTransition is added to the state switcher
     in \c StateSwitcher::addState(). We also add the animation in this
@@ -122,7 +122,7 @@
     As mentioned previously, we add a transition to the state switcher
     that triggers when the timer times out.
 
-    \snippet animation/moveblocks/main.cpp 9
+    \snippet widgets/animation/moveblocks/main.cpp 9
 
     Finally, we can create the state machine, add our initial state,
     and start execution of the state graph.
@@ -132,7 +132,7 @@
     In \c createGeometryState(), we set up the geometry for each
     graphics item.
 
-    \snippet animation/moveblocks/main.cpp 13
+    \snippet widgets/animation/moveblocks/main.cpp 13
 
     As mentioned before, QAbstractTransition will set up an animation
     added with \l{QAbstractTransition::}{addAnimation()} using
@@ -147,20 +147,20 @@
     All functions in \c StateSwitcher are inlined. We'll step through
     its definition.
 
-    \snippet animation/moveblocks/main.cpp 10
+    \snippet widgets/animation/moveblocks/main.cpp 10
 
     \c StateSwitcher is a state designed for a particular purpose and
     will always be a top-level state. We use \c m_stateCount to keep
     track of how many states we are managing, and \c m_lastIndex to
     remember which state was the last state to which we transitioned. 
 
-    \snippet animation/moveblocks/main.cpp 11
+    \snippet widgets/animation/moveblocks/main.cpp 11
 
     We select the next state we are going to transition to, and post a
     \c StateSwitchEvent, which we know will trigger the \c
     StateSwitchTransition to the selected state.
 
-    \snippet animation/moveblocks/main.cpp 12
+    \snippet widgets/animation/moveblocks/main.cpp 12
 
     This is where the magic happens. We assign a number to each state
     added. This number is given to both a StateSwitchTransition and to
@@ -174,7 +174,7 @@
     let's take a look at its \l{QAbstractTransition::}{eventTest()}
     function, which is the only function that we define..
 
-    \snippet animation/moveblocks/main.cpp 14
+    \snippet widgets/animation/moveblocks/main.cpp 14
 
     \c eventTest is called by QStateMachine when it checks whether a
     transition should be triggered--a return value of true means that
@@ -188,7 +188,7 @@
     \c StateSwitcher. We have already seen how it is used to trigger
     \c{StateSwitchTransition}s in \c StateSwitcher.
 
-    \snippet animation/moveblocks/main.cpp 15
+    \snippet widgets/animation/moveblocks/main.cpp 15
 
     We only have inlined functions in this class, so a look at its
     definition will do.
@@ -200,7 +200,7 @@
     which is the only function we define. Here is the
     QGraphicsRectWidget class definition:
 
-    \snippet animation/moveblocks/main.cpp 16
+    \snippet widgets/animation/moveblocks/main.cpp 16
 
     \section1 Moving On
 

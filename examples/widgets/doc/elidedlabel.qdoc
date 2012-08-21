@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/elidedlabel
+    \example widgets/widgets/elidedlabel
     \group all-examples
     \title Elided Label Example
 
@@ -51,7 +51,7 @@
     the \c ElidedLabel class:
 
 
-    \snippet widgets/elidedlabel/elidedlabel.h 0
+    \snippet widgets/widgets/elidedlabel/elidedlabel.h 0
 
     The \c isElided property depends the font, text content and geometry of the
     widget. Whenever any of these change, the \c elisionChanged() signal might
@@ -65,11 +65,11 @@
     policy to be horizontally expanding, since it's meant to fill the width of
     its container and grow vertically.
 
-    \snippet widgets/elidedlabel/elidedlabel.cpp 0
+    \snippet widgets/widgets/elidedlabel/elidedlabel.cpp 0
 
     Changing the \c content require a repaint of the widget.
 
-    \snippet widgets/elidedlabel/elidedlabel.cpp 1
+    \snippet widgets/widgets/elidedlabel/elidedlabel.cpp 1
 
     QTextLayout is used in the \c paintEvent() to divide the \c content into
     lines, that wrap on word boundaries. Each line, except the last visible
@@ -77,7 +77,7 @@
     method of QTextLine will draw the line using the coordinate point as the
     top left corner.
 
-    \snippet widgets/elidedlabel/elidedlabel.cpp 2
+    \snippet widgets/widgets/elidedlabel/elidedlabel.cpp 2
 
     Unfortunately, QTextLayout does not elide text, so the last visible line
     has to be treated differently. This last line is elided if it is too wide.
@@ -86,12 +86,12 @@
 
     Finally, one more line is created to see if everything fit on this line.
 
-    \snippet widgets/elidedlabel/elidedlabel.cpp 3
+    \snippet widgets/widgets/elidedlabel/elidedlabel.cpp 3
 
     If the text was elided and wasn't before or vice versa, cache it in
     \c elided and emit the change.
 
-    \snippet widgets/elidedlabel/elidedlabel.cpp 4
+    \snippet widgets/widgets/elidedlabel/elidedlabel.cpp 4
 
 
     \section1 TestWidget Class Definition
@@ -99,55 +99,55 @@
     \c TestWidget is a QWidget and is the main window of the example. It
     contains an \c ElidedLabel which can be resized with two QSlider widgets.
 
-    \snippet widgets/elidedlabel/testwidget.h 0
+    \snippet widgets/widgets/elidedlabel/testwidget.h 0
 
     \section1 TestWidget Class Implementation
 
     The constructor initializes the whole widget. Strings of different length
     are stored in \c textSamples. The user is able to switch between these.
 
-    \snippet widgets/elidedlabel/testwidget.cpp 0
+    \snippet widgets/widgets/elidedlabel/testwidget.cpp 0
 
     An \c ElidedLabel is created to contain the first of the sample strings.
     The frame is made visible to make it easier to see the actual size of the
     widget.
 
-    \snippet widgets/elidedlabel/testwidget.cpp 1
+    \snippet widgets/widgets/elidedlabel/testwidget.cpp 1
 
     The buttons and the elision label are created. By connecting the
     \c elisionChanged() signal to the \c setVisible() slot of the \c label,
     it will act as an indicator to when the text is elided or not. This signal
     could, for instance, be used to make a "More" button visible, or similar.
 
-    \snippet widgets/elidedlabel/testwidget.cpp 2
+    \snippet widgets/widgets/elidedlabel/testwidget.cpp 2
 
     The \c widthSlider and \c heightSlider specify the size of the
     \c elidedText. Since the y-axis is inverted, the \c heightSlider has to be
     inverted to act appropriately.
 
-    \snippet widgets/elidedlabel/testwidget.cpp 3
+    \snippet widgets/widgets/elidedlabel/testwidget.cpp 3
 
     The components are all stored in a QGridLayout, which is made the layout of
     the \c TestWidget.
 
-    \snippet widgets/elidedlabel/testwidget.cpp 4
+    \snippet widgets/widgets/elidedlabel/testwidget.cpp 4
 
     On the Maemo platform, windows are stuck in landscape mode by default. With
     this attribute set, the window manager is aware that this window can be
     rotated.
 
-    \snippet widgets/elidedlabel/testwidget.cpp 5
+    \snippet widgets/widgets/elidedlabel/testwidget.cpp 5
 
     The \c widthSlider and \c heightSlider have the exact same length as the
     dimensions of the \c elidedText. The maximum value for both of them is
     thus their lengths, and each tick indicates one pixel.
 
-    \snippet widgets/elidedlabel/testwidget.cpp 6
+    \snippet widgets/widgets/elidedlabel/testwidget.cpp 6
 
     The \c switchText() slot simply cycles through all the available sample
     texts.
 
-    \snippet widgets/elidedlabel/testwidget.cpp 7
+    \snippet widgets/widgets/elidedlabel/testwidget.cpp 7
 
     These slots set the width and height of the \c elided text, in response to
     changes in the sliders.
@@ -157,6 +157,6 @@
     The \c main() function creates an instance of \c TestWidget fullscreen and
     enters the message loop.
 
-    \snippet widgets/elidedlabel/main.cpp 0
+    \snippet widgets/widgets/elidedlabel/main.cpp 0
 */
 

@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example richtext/calendar
+    \example widgets/richtext/calendar
     \title Calendar Example
 
     The Calendar example shows how to create rich text content and display it using
@@ -52,7 +52,7 @@
     allow the user to change the month and year shown. The font size used for the
     text can also be adjusted.
 
-    \snippet richtext/calendar/mainwindow.h 0
+    \snippet widgets/richtext/calendar/mainwindow.h 0
 
     The private \c insertCalendar() function performs most of the work, relying on
     the \c fontSize and \c selectedDate variables to write useful information to
@@ -63,7 +63,7 @@
     The \c MainWindow constructor sets up the user interface and initializes
     variables used to generate a calendar for each month.
 
-    \snippet richtext/calendar/mainwindow.cpp 0
+    \snippet widgets/richtext/calendar/mainwindow.cpp 0
 
     We begin by setting default values for the selected date that will be highlighted
     in the calendar and the font size to be used. Since we are using a QMainWindow
@@ -74,7 +74,7 @@
     spin box for the year. These widgets are configured to provide a reasonable range
     of values for the user to try:
 
-    \snippet richtext/calendar/mainwindow.cpp 1
+    \snippet widgets/richtext/calendar/mainwindow.cpp 1
 
     We use the \c selectedDate object to obtain the current month and year, and we
     set these in the combobox and spin box:
@@ -82,7 +82,7 @@
     The font size is displayed in a spin box which we restrict to a sensible range
     of values:
 
-    \snippet richtext/calendar/mainwindow.cpp 2
+    \snippet widgets/richtext/calendar/mainwindow.cpp 2
 
     We construct an editor and use the \c insertCalendar() function to create
     a calendar for it. Each calendar is displayed in the same text editor; in
@@ -93,14 +93,14 @@
     effect on the appearance of the calendar unless we make some signal-slot
     connections:
 
-    \snippet richtext/calendar/mainwindow.cpp 3
+    \snippet widgets/richtext/calendar/mainwindow.cpp 3
 
     The signals are connected to some simple slots in the \c MainWindow class
     which we will describe later.
 
     We create layouts to manage the widgets we constructed:
 
-    \snippet richtext/calendar/mainwindow.cpp 4
+    \snippet widgets/richtext/calendar/mainwindow.cpp 4
 
     Finally, the central widget is set for the window.
 
@@ -109,7 +109,7 @@
     and \c fontSize variables, to produce a suitable plan for the specified
     month and year.
 
-    \snippet richtext/calendar/mainwindow.cpp 5
+    \snippet widgets/richtext/calendar/mainwindow.cpp 5
 
     We begin by clearing the editor's rich text document, and obtain a text
     cursor from the editor that we will use to add content. We also create a
@@ -120,7 +120,7 @@
     page with equal space to the left and right of it. All of these properties are
     set in a QTextTableFormat object:
 
-    \snippet richtext/calendar/mainwindow.cpp 6
+    \snippet widgets/richtext/calendar/mainwindow.cpp 6
 
     Each cell in the table will be padded and spaced to make the text easier to
     read.
@@ -129,14 +129,14 @@
     percentage widths for each of them and set the constraints in the
     QTextTableFormat:
 
-    \snippet richtext/calendar/mainwindow.cpp 7
+    \snippet widgets/richtext/calendar/mainwindow.cpp 7
 
     The constraints used for the column widths are only useful if the table has
     an appropriate number of columns. With the format for the table defined, we
     construct a new table with one row and seven columns at the current cursor
     position:
 
-    \snippet richtext/calendar/mainwindow.cpp 8
+    \snippet widgets/richtext/calendar/mainwindow.cpp 8
 
     We only need one row to start with; more can be added as we need them. Using
     this approach means that we do not need to perform any date calculations
@@ -146,14 +146,14 @@
     the cursor is automatically moved inside the newly inserted object. This means
     that we can immediately start modifying the table from within:
 
-    \snippet richtext/calendar/mainwindow.cpp 9
+    \snippet widgets/richtext/calendar/mainwindow.cpp 9
 
     Since the table has an outer frame, we obtain the frame and its format so that
     we can customize it. After making the changes we want, we set the frame's format
     using the modified format object. We have given the table an outer border one
     pixel wide.
 
-    \snippet richtext/calendar/mainwindow.cpp 10
+    \snippet widgets/richtext/calendar/mainwindow.cpp 10
 
     In a similar way, we obtain the cursor's current character format and
     create customized formats based on it.
@@ -163,7 +163,7 @@
     insert text. The following loop inserts the days of the week into the table
     as bold text:
 
-    \snippet richtext/calendar/mainwindow.cpp 11
+    \snippet widgets/richtext/calendar/mainwindow.cpp 11
 
     For each day of the week, we obtain an existing table cell in the first row
     (row 0) using the table's \l{QTextTable::cellAt()}{cellAt()} function. Since
@@ -176,7 +176,7 @@
     purpose, and we use this cursor to insert text using the \c boldFormat
     character format that we created earlier:
 
-    \snippet richtext/calendar/mainwindow.cpp 12
+    \snippet widgets/richtext/calendar/mainwindow.cpp 12
 
     Inserting text into document objects usually follows the same pattern.
     Each object can provide a new cursor that corresponds to the first valid
@@ -189,7 +189,7 @@
     encountered, it is inserted with a special format (created earlier) that
     makes it stand out:
 
-    \snippet richtext/calendar/mainwindow.cpp 13
+    \snippet widgets/richtext/calendar/mainwindow.cpp 13
 
     We add a new row to the table at the end of each week only if the next week
     falls within the currently selected month.
@@ -197,24 +197,24 @@
     For each calendar that we create, we change the window title to reflect the
     currently selected month and year:
 
-    \snippet richtext/calendar/mainwindow.cpp 14
+    \snippet widgets/richtext/calendar/mainwindow.cpp 14
 
     The \c insertCalendar() function relies on up-to-date values for the month,
     year, and font size. These are set in the following slots:
 
-    \snippet richtext/calendar/mainwindow.cpp 15
+    \snippet widgets/richtext/calendar/mainwindow.cpp 15
 
     The \c setFontSize() function simply changes the private \c fontSize variable
     before updating the calendar.
 
-    \snippet richtext/calendar/mainwindow.cpp 16
+    \snippet widgets/richtext/calendar/mainwindow.cpp 16
 
     The \c setMonth slot is called when the QComboBox used to select the month is
     updated. The value supplied is the currently selected row in the combobox.
     We add 1 to this value to obtain a valid month number, and create a new QDate
     based on the existing one. The calendar is then updated to use this new date.
 
-    \snippet richtext/calendar/mainwindow.cpp 17
+    \snippet widgets/richtext/calendar/mainwindow.cpp 17
 
     The \c setYear() slot is called when the QDateTimeEdit used to select the
     year is updated. The value supplied is a QDate object; this makes

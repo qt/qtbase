@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example effects/blurpicker
+    \example widgets/effects/blurpicker
     \title Blur Picker Effect Example
 
     \image blurpickereffect-example.png

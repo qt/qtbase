@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example graphicsview/dragdroprobot
+    \example widgets/graphicsview/dragdroprobot
     \title Drag and Drop Robot Example
 
     The Drag and Drop Robot example shows how to implement Drag and Drop in a
@@ -63,7 +63,7 @@
 
     Let's start with the \c RobotPart class declaration.
 
-    \snippet graphicsview/dragdroprobot/robot.h 0
+    \snippet widgets/graphicsview/dragdroprobot/robot.h 0
 
     This base class inherits QGraphicsObject. QGraphicsObject provides signals
     and slots through inheriting QObject, and it also declares QGraphicsItem's
@@ -80,7 +80,7 @@
     variable, which we will use later to indicate visually that the limb can
     accept colors that are is dragged onto it.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 0
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 0
 
     \c RobotPart's constructor initializes the dragOver member and sets the
     color to Qt::lightGray. In the constructor body we enable support for
@@ -89,7 +89,7 @@
 
     The rest of this class's implementation is to support Drag and Drop.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 1
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 1
 
     The \l{QGraphicsItem::dragEnterEvent()}{dragEnterEvent()} handler is called
     when a Drag and Drop element is dragged into the robot part's area.
@@ -102,7 +102,7 @@
     visual feedback to the user; otherwise the event is ignored, which in turn
     allows the event to propagate to parent elements.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 2
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 2
 
     The \l{QGraphicsItem::dragLeaveEvent()}{dragLeaveEvent()} handler is called
     when a Drag and Drop element is dragged away from the robot part's area.
@@ -110,7 +110,7 @@
     \l{QGraphicsItem::update()}{update()} to help provide visual feedback that
     the drag has left this item.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 3
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 3
 
     The \l{QGraphicsItem::dropEvent()}{dropEvent()} handler is called when a
     Drag and Drop element is dropped onto an item (i.e., when the mouse button
@@ -124,7 +124,7 @@
     as this class has one minor difference, and leave the other classes as an
     exercise for the reader.
 
-    \snippet graphicsview/dragdroprobot/robot.h 1
+    \snippet widgets/graphicsview/dragdroprobot/robot.h 1
 
     The \c RobotHead class inherits \c RobotPart and provides the necessary
     implementations of \l{QGraphicsItem::boundingRect()}{boundingRect()} and
@@ -135,12 +135,12 @@
     The class contains a private pixmap member that we can use to implement
     support for accepting image drops.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 4
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 4
 
     \c RobotHead has a rather plain constructor that simply forwards to
     \c RobotPart's constructor.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 5
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 5
 
     The \l{QGraphicsItem::boundingRect()}{boundingRect()} reimplementation
     returns the extents for the head. Because we want the center of rotation to
@@ -149,7 +149,7 @@
     rotating the head, the "neck" will stay still while the top of the head
     tilts from side to side.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 6
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 6
 
     In \l{QGraphicsItem::paint()}{paint()} we draw the actual head. The
     implementation is split into two sections; if an image has been dropped
@@ -160,7 +160,7 @@
     can often be faster to draw the head as an image rather than using a
     sequence of vector operations.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 7
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 7
 
     The robot head can accept image drops. In order to support this, its
     reimplementation of \l{QGraphicsItem::dragEnterEvent()}{dragEnterEvent()}
@@ -168,7 +168,7 @@
     event is accepted. Otherwise we fall back to the base \c RobotPart
     implementation.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 8
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 8
 
     To follow up on image support, we must also implement
     \l{QGraphicsItem::dropEvent()}{dropEvent()}. We check if the drag object
@@ -180,21 +180,21 @@
     \c RobotTorso and \c RobotLimb are similar to \c RobotHead, so let's
     skip directly to the \c Robot class.
 
-    \snippet graphicsview/dragdroprobot/robot.h 4
+    \snippet widgets/graphicsview/dragdroprobot/robot.h 4
 
     The \c Robot class also inherits \c RobotPart, and like the other parts it
     also implements \l{QGraphicsItem::boundingRect()}{boundingRect()} and
     \l{QGraphicsItem::paint()}{paint()}. It provides a rather special
     implementation, though:
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 9
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 9
 
     Because the \c Robot class is only used as a base node for the rest of the
     robot, it has no visual representation. Its
     \l{QGraphicsItem::boundingRect()}{boundingRect()} implementation can
     therefore return a null QRectF, and its paint() function does nothing.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 10
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 10
 
     The constructor starts by setting the flag
     \l{QGraphicsItem::ItemHasNoContents}{ItemHasNoContents}, which is a minor
@@ -208,13 +208,13 @@
     the head a child of the torso; if you rotate the torso, the head will
     follow. The same pattern is applied to the rest of the limbs.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 11
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 11
 
     Each robot part is carefully positioned. For example, the upper left arm is
     moved precisely to the top-left area of the torso, and the upper right arm
     is moved to the top-right area.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 12
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 12
 
     The next section creates all animation objects. This snippet shows the two
     animations that operate on the head's scale and rotation. The two
@@ -226,7 +226,7 @@
 
     The rest of the animations are defined in a similar way.
 
-    \snippet graphicsview/dragdroprobot/robot.cpp 13
+    \snippet widgets/graphicsview/dragdroprobot/robot.cpp 13
 
     Finally we set an easing curve and duration on each animation, ensure the
     toplevel animation group loops forever, and start the toplevel animation.
@@ -236,7 +236,7 @@
     The \c ColorItem class represents a circular item that can be pressed to
     drag colors onto robot parts.
 
-    \snippet graphicsview/dragdroprobot/coloritem.h 0
+    \snippet widgets/graphicsview/dragdroprobot/coloritem.h 0
 
     This class is very simple. It does not use animations, and has no need for
     properties nor signals and slots, so to save resources, it's most natural
@@ -252,7 +252,7 @@
 
     Let's take a look at its implementation.
 
-    \snippet graphicsview/dragdroprobot/coloritem.cpp 0
+    \snippet widgets/graphicsview/dragdroprobot/coloritem.cpp 0
 
     \c ColorItem's constructor assigns an opaque random color to its color
     member by making use of qrand(). For improved usability, it assigns a
@@ -266,7 +266,7 @@
     mouse event handlers greatly, as we can always assume that only the left
     mouse button is pressed and released.
 
-    \snippet graphicsview/dragdroprobot/coloritem.cpp 1
+    \snippet widgets/graphicsview/dragdroprobot/coloritem.cpp 1
 
     The item's bounding rect is a fixed 30x30 units centered around the item's
     origin (0, 0), and adjusted by 0.5 units in all directions to allow a
@@ -274,19 +274,19 @@
     also compensate with a few units down and to the right to make room
     for a simple dropshadow.
 
-    \snippet graphicsview/dragdroprobot/coloritem.cpp 2
+    \snippet widgets/graphicsview/dragdroprobot/coloritem.cpp 2
 
     The \l{QGraphicsItem::paint()}{paint()} implementation draws an ellipse
     with a 1-unit black outline, a plain color fill, and a dark gray
     dropshadow.
 
-    \snippet graphicsview/dragdroprobot/coloritem.cpp 3
+    \snippet widgets/graphicsview/dragdroprobot/coloritem.cpp 3
 
     The \l{QGraphicsItem::mousePressEvent()}{mousePressEvent()} handler is
     called when you press the mouse button inside the item's area. Our
     implementation simply sets the cursor to Qt::ClosedHandCursor.
 
-    \snippet graphicsview/dragdroprobot/coloritem.cpp 4
+    \snippet widgets/graphicsview/dragdroprobot/coloritem.cpp 4
 
     The \l{QGraphicsItem::mouseReleaseEvent()}{mouseReleaseEvent()} handler is
     called when you release the mouse button after having pressed it inside an
@@ -296,7 +296,7 @@
     the cursor changes to an open hand. Pressing the item will show a closed
     hand cursor. Releasing will restore to an open hand cursor again.
 
-    \snippet graphicsview/dragdroprobot/coloritem.cpp 5
+    \snippet widgets/graphicsview/dragdroprobot/coloritem.cpp 5
 
     The \l{QGraphicsItem::mouseMoveEvent()}{mouseMoveEvent()} handler is called
     when you move the mouse around after pressing the mouse button inside the
@@ -313,20 +313,20 @@
     the right time. We also create a QMimeData instance that can contain our
     color or image data, and assign this to the drag object.
 
-    \snippet graphicsview/dragdroprobot/coloritem.cpp 6
+    \snippet widgets/graphicsview/dragdroprobot/coloritem.cpp 6
 
     This snippet has a somewhat random outcome: once in a while, a special
     image is assigned to the drag object's mime data. The pixmap is also
     assiged as the drag object's pixmap. This will ensure that you can see the
     image that is being dragged as a pixmap under the mouse cursor.
 
-    \snippet graphicsview/dragdroprobot/coloritem.cpp 7
+    \snippet widgets/graphicsview/dragdroprobot/coloritem.cpp 7
 
     Otherwise, and this is the most common outcome, a simple color is assigned
     to the drag object's mime data. We render this \c ColorItem into a new
     pixmap to give the user visual feedback that the color is being "dragged".
 
-    \snippet graphicsview/dragdroprobot/coloritem.cpp 8
+    \snippet widgets/graphicsview/dragdroprobot/coloritem.cpp 8
 
     Finally we execute the drag. QDrag::exec() will reenter the event loop, and
     only exit if the drag has either been dropped, or canceled. In any case we
@@ -337,13 +337,13 @@
     Now that the \c Robot and \c ColorItem classes are complete, we can put all
     the pieces together inside the main() function.
 
-    \snippet graphicsview/dragdroprobot/main.cpp 0
+    \snippet widgets/graphicsview/dragdroprobot/main.cpp 0
 
     We start off by constructing QApplication, and initializing the random
     number generator. This ensures that the color items have different colors
     every time the application starts.
 
-    \snippet graphicsview/dragdroprobot/main.cpp 1
+    \snippet widgets/graphicsview/dragdroprobot/main.cpp 1
 
     We construct a fixed size scene, and create 10 \c ColorItem instances
     arranged in a circle. Each item is added to the scene.
@@ -351,7 +351,7 @@
     In the center of this circle we create one \c Robot instance. The
     robot is scaled and moved up a few units. It is then added to the scene.
 
-    \snippet graphicsview/dragdroprobot/main.cpp 2
+    \snippet widgets/graphicsview/dragdroprobot/main.cpp 2
 
     Finally we create a QGraphicsView window, and assign the scene to it.
 

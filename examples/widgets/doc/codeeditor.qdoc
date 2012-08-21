@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/codeeditor
+    \example widgets/widgets/codeeditor
     \title Code Editor Example
 
     The Code Editor example shows how to create a simple editor that
@@ -80,13 +80,13 @@
     extend the editor with breakpoints or other code editor features.
     The widget would then help in the handling of mouse events.
 
-    \snippet widgets/codeeditor/codeeditor.h extraarea
+    \snippet widgets/widgets/codeeditor/codeeditor.h extraarea
 
     \section1 CodeEditor Class Definition
 
     Here is the code editor's class definition:
 
-    \snippet widgets/codeeditor/codeeditor.h codeeditordefinition
+    \snippet widgets/widgets/codeeditor/codeeditor.h codeeditordefinition
 
     In the editor we resize and draw the line numbers on the \c
     LineNumberArea. We need to do this when the number of lines in the
@@ -102,37 +102,37 @@
     We will now go through the code editors implementation, starting
     off with the constructor.
 
-    \snippet widgets/codeeditor/codeeditor.cpp constructor
+    \snippet widgets/widgets/codeeditor/codeeditor.cpp constructor
 
     In the constructor we connect our slots to signals in
     QPlainTextEdit. It is necessary to calculate the line number area
     width and highlight the first line when the editor is created.
 
-    \snippet widgets/codeeditor/codeeditor.cpp extraAreaWidth
+    \snippet widgets/widgets/codeeditor/codeeditor.cpp extraAreaWidth
 
     The \c lineNumberAreaWidth() function calculates the width of the
     \c LineNumberArea widget. We take the number of digits in the last
     line of the editor and multiply that with the maximum width of a
     digit.
 
-    \snippet widgets/codeeditor/codeeditor.cpp slotUpdateExtraAreaWidth
+    \snippet widgets/widgets/codeeditor/codeeditor.cpp slotUpdateExtraAreaWidth
 
     When we update the width of the line number area, we simply call
     QAbstractScrollArea::setViewportMargins().
 
-    \snippet widgets/codeeditor/codeeditor.cpp slotUpdateRequest
+    \snippet widgets/widgets/codeeditor/codeeditor.cpp slotUpdateRequest
 
     This slot is invoked when the editors viewport has been scrolled.
     The QRect given as argument is the part of the editing area that
     is do be updated (redrawn). \c dy holds the number of pixels the
     view has been scrolled vertically.
 
-    \snippet widgets/codeeditor/codeeditor.cpp resizeEvent
+    \snippet widgets/widgets/codeeditor/codeeditor.cpp resizeEvent
 
     When the size of the editor changes, we also need to resize the
     line number area. 
 
-    \snippet widgets/codeeditor/codeeditor.cpp cursorPositionChanged
+    \snippet widgets/widgets/codeeditor/codeeditor.cpp cursorPositionChanged
 
     When the cursor position changes, we highlight the current line,
     i.e., the line containing the cursor.
@@ -151,13 +151,13 @@
     block, the cursor should be moved with QTextCursor::movePosition()
     from a position set with \l{QTextCursor::}{setPosition()}.
 
-    \snippet widgets/codeeditor/codeeditor.cpp extraAreaPaintEvent_0
+    \snippet widgets/widgets/codeeditor/codeeditor.cpp extraAreaPaintEvent_0
 
     The \c lineNumberAreaPaintEvent() is called from \c LineNumberArea
     whenever it receives a paint event. We start off by painting the
     widget's background. 
 
-    \snippet widgets/codeeditor/codeeditor.cpp extraAreaPaintEvent_1
+    \snippet widgets/widgets/codeeditor/codeeditor.cpp extraAreaPaintEvent_1
 
     We will now loop through all visible lines and paint the line
     numbers in the extra area for each line. Notice that in a plain
@@ -169,7 +169,7 @@
     and adjust these values by the height of the current text block in
     each iteration in the loop. 
 
-    \snippet widgets/codeeditor/codeeditor.cpp extraAreaPaintEvent_2
+    \snippet widgets/widgets/codeeditor/codeeditor.cpp extraAreaPaintEvent_2
 
     Notice that we check if the block is visible in addition to check
     if it is in the areas viewport - a block can, for example, be

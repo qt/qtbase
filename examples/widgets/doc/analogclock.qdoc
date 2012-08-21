@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/analogclock
+    \example widgets/widgets/analogclock
     \title Analog Clock Example
 
     The Analog Clock example shows how to draw the contents of a custom
@@ -45,11 +45,11 @@
     We subclass \l QWidget and reimplement the standard
     \l{QWidget::paintEvent()}{paintEvent()} function to draw the clock face:
 
-    \snippet widgets/analogclock/analogclock.h 0
+    \snippet widgets/widgets/analogclock/analogclock.h 0
 
     \section1 AnalogClock Class Implementation
 
-    \snippet widgets/analogclock/analogclock.cpp 1
+    \snippet widgets/widgets/analogclock/analogclock.cpp 1
 
     When the widget is constructed, we set up a one-second timer to
     keep track of the current time, and we connect it to the standard
@@ -60,8 +60,8 @@
     Finally, we resize the widget so that it is displayed at a
     reasonable size.
 
-    \snippet widgets/analogclock/analogclock.cpp 8
-    \snippet widgets/analogclock/analogclock.cpp 10
+    \snippet widgets/widgets/analogclock/analogclock.cpp 8
+    \snippet widgets/widgets/analogclock/analogclock.cpp 10
 
     The \c paintEvent() function is called whenever the widget's
     contents need to be updated. This happens when the widget is
@@ -80,10 +80,10 @@
     can fit the clock face inside the widget. It is also useful to determine
     the current time before we start drawing.
 
-    \snippet widgets/analogclock/analogclock.cpp 11
-    \snippet widgets/analogclock/analogclock.cpp 12
-    \snippet widgets/analogclock/analogclock.cpp 13
-    \snippet widgets/analogclock/analogclock.cpp 14
+    \snippet widgets/widgets/analogclock/analogclock.cpp 11
+    \snippet widgets/widgets/analogclock/analogclock.cpp 12
+    \snippet widgets/widgets/analogclock/analogclock.cpp 13
+    \snippet widgets/widgets/analogclock/analogclock.cpp 14
 
     The contents of custom widgets are drawn with a QPainter.
     Painters can be used to draw on any QPaintDevice, but they are
@@ -116,37 +116,37 @@
     hour and minute. This means that the hand will be shown rotated clockwise
     by the required amount.
 
-    \snippet widgets/analogclock/analogclock.cpp 15
-    \snippet widgets/analogclock/analogclock.cpp 16
+    \snippet widgets/widgets/analogclock/analogclock.cpp 15
+    \snippet widgets/widgets/analogclock/analogclock.cpp 16
 
     We set the pen to be Qt::NoPen because we don't want any outline,
     and we use a solid brush with the color appropriate for
     displaying hours. Brushes are used when filling in polygons and
     other geometric shapes.
 
-    \snippet widgets/analogclock/analogclock.cpp 17
-    \snippet widgets/analogclock/analogclock.cpp 19
+    \snippet widgets/widgets/analogclock/analogclock.cpp 17
+    \snippet widgets/widgets/analogclock/analogclock.cpp 19
 
     We save and restore the transformation matrix before and after the
     rotation because we want to place the minute hand without having to
     take into account any previous rotations.
 
-    \snippet widgets/analogclock/analogclock.cpp 20
+    \snippet widgets/widgets/analogclock/analogclock.cpp 20
     \codeline
-    \snippet widgets/analogclock/analogclock.cpp 21
+    \snippet widgets/widgets/analogclock/analogclock.cpp 21
 
     We draw markers around the edge of the clock for each hour. We
     draw each marker then rotate the coordinate system so that the
     painter is ready for the next one.
 
-    \snippet widgets/analogclock/analogclock.cpp 22
-    \snippet widgets/analogclock/analogclock.cpp 23
+    \snippet widgets/widgets/analogclock/analogclock.cpp 22
+    \snippet widgets/widgets/analogclock/analogclock.cpp 23
 
     The minute hand is rotated in a similar way to the hour hand.
 
-    \snippet widgets/analogclock/analogclock.cpp 25
+    \snippet widgets/widgets/analogclock/analogclock.cpp 25
     \codeline
-    \snippet widgets/analogclock/analogclock.cpp 26
+    \snippet widgets/widgets/analogclock/analogclock.cpp 26
 
     Again, we draw markers around the edge of the clock, but this
     time to indicate minutes. We skip multiples of 5 to avoid drawing

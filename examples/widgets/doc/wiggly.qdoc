@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/wiggly
+    \example widgets/widgets/wiggly
     \title Wiggly Example
 
     The Wiggly example shows how to animate a widget using
@@ -60,14 +60,14 @@
 
     \section1 Dialog Class Definition
 
-    \snippet widgets/wiggly/dialog.h 0
+    \snippet widgets/widgets/wiggly/dialog.h 0
 
     The \c Dialog class provides a dialog widget that allows the user
     to enter a text. The text is then rendered by \c WigglyWidget.
 
     \section1 Dialog Class Implementation
 
-    \snippet widgets/wiggly/dialog.cpp 0
+    \snippet widgets/widgets/wiggly/dialog.cpp 0
 
     In the constructor we create a wiggly widget along with a
     \l{QLineEdit}{line edit}, and we put the two widgets in a
@@ -79,7 +79,7 @@
 
     \section1 WigglyWidget Class Definition
 
-    \snippet widgets/wiggly/wigglywidget.h 0
+    \snippet widgets/widgets/wiggly/wigglywidget.h 0
 
     The \c WigglyWidget class provides the wiggly line displaying the
     text. We subclass QWidget and reimplement the standard \l
@@ -96,7 +96,7 @@
 
     \section1 WigglyWidget Class Implementation
 
-    \snippet widgets/wiggly/wigglywidget.cpp 0
+    \snippet widgets/widgets/wiggly/wigglywidget.cpp 0
 
     In the constructor, we make the widget's background slightly
     lighter than the usual background using the QPalette::Midlight
@@ -109,8 +109,8 @@
     timer events generated when the timer times out (every 60
     milliseconds).
 
-    \snippet widgets/wiggly/wigglywidget.cpp 1
-    \snippet widgets/wiggly/wigglywidget.cpp 2
+    \snippet widgets/widgets/wiggly/wigglywidget.cpp 1
+    \snippet widgets/widgets/wiggly/wigglywidget.cpp 2
 
     The \c paintEvent() function is called whenever a QPaintEvent is
     sent to the widget. Paint events are sent to widgets that need to
@@ -133,8 +133,8 @@
     font below the base line). If the descent equals the ascent, they
     cancel out each other and the base line is at \c height() / 2.
 
-    \snippet widgets/wiggly/wigglywidget.cpp 3
-    \snippet widgets/wiggly/wigglywidget.cpp 4
+    \snippet widgets/widgets/wiggly/wigglywidget.cpp 3
+    \snippet widgets/widgets/wiggly/wigglywidget.cpp 4
 
     Each time the \c paintEvent() function is called, we create a
     QPainter object \c painter to draw the contents of the widget.
@@ -150,8 +150,8 @@
     'V'). The result is that the text isn't perfectly centered. You
     can verify this by typing "AVAVAVAVAVAV" in the line edit.
 
-    \snippet widgets/wiggly/wigglywidget.cpp 5
-    \snippet widgets/wiggly/wigglywidget.cpp 6
+    \snippet widgets/widgets/wiggly/wigglywidget.cpp 5
+    \snippet widgets/widgets/wiggly/wigglywidget.cpp 6
 
     The \c timerEvent() function receives all the timer events that
     are generated for this widget. If a timer event is sent from the

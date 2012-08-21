@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example itemviews/frozencolumn
+    \example widgets/itemviews/frozencolumn
     \title Frozen Column Example
 
     This example demonstrates how to freeze a column within a QTableView.
@@ -56,7 +56,7 @@
     column's geometry. In addition, we reimplement two functions:
     \l{QAbstractItemView::}{resizeEvent()} and \l{QTableView::}{moveCursor()}.
 
-    \snippet itemviews/frozencolumn/freezetablewidget.h Widget definition
+    \snippet widgets/itemviews/frozencolumn/freezetablewidget.h Widget definition
 
     \note QAbstractItemView is \l{QTableView}'s ancestor.
 
@@ -72,7 +72,7 @@
     vertical scrollbars together so that the frozen column scrolls vertically
     with the rest of our table.
 
-    \snippet itemviews/frozencolumn/freezetablewidget.cpp constructor
+    \snippet widgets/itemviews/frozencolumn/freezetablewidget.cpp constructor
 
 
     In the \c init() function, we ensure that the overlay table view
@@ -82,7 +82,7 @@
     only visible column is its first column; we hide the others using
     \l{QTableView::}{setColumnHidden()}
 
-    \snippet itemviews/frozencolumn/freezetablewidget.cpp init part1
+    \snippet widgets/itemviews/frozencolumn/freezetablewidget.cpp init part1
 
 
     In terms of the frozen column's z-order, we stack it on top of the
@@ -94,7 +94,7 @@
     with the main tableview. Note that we called \c updateFrozenTableGeometry()
     to make the column occupy the correct spot.
 
-    \snippet itemviews/frozencolumn/freezetablewidget.cpp init part2
+    \snippet widgets/itemviews/frozencolumn/freezetablewidget.cpp init part2
 
     When you resize the frozen column, the same column on the main table view
     must resize accordingly, to provide seamless integration. This is
@@ -102,7 +102,7 @@
     value from the \l{QHeaderView::}{sectionResized()} signal, emitted by both
     the horizontal and vertical header.
 
-    \snippet itemviews/frozencolumn/freezetablewidget.cpp sections
+    \snippet widgets/itemviews/frozencolumn/freezetablewidget.cpp sections
 
     Since the width of the frozen column is modified, we adjust the geometry of
     the widget accordingly by invoking \c updateFrozenTableGeometry(). This
@@ -112,14 +112,14 @@
     \c updateFrozenTableGeometry() after invoking the base class
     implementation.
 
-    \snippet itemviews/frozencolumn/freezetablewidget.cpp resize
+    \snippet widgets/itemviews/frozencolumn/freezetablewidget.cpp resize
 
     When navigating around the table with the keyboard, we need to ensure that
     the current selection does not disappear behind the frozen column. To
     synchronize this, we reimplement QTableView::moveCursor() and adjust the
     scrollbar positions if needed, after calling the base class implementation.
 
-    \snippet itemviews/frozencolumn/freezetablewidget.cpp navigate
+    \snippet widgets/itemviews/frozencolumn/freezetablewidget.cpp navigate
 
     The frozen column's geometry calculation is based on the geometry of the
     table underneath, so it always appears in the right place. Using the
@@ -127,7 +127,7 @@
     no matter which style is used. We rely on the geometry of the viewport and
     headers to set the boundaries for the frozen column.
 
-    \snippet itemviews/frozencolumn/freezetablewidget.cpp geometry
+    \snippet widgets/itemviews/frozencolumn/freezetablewidget.cpp geometry
 
 */
 

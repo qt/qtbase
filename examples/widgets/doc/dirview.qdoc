@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example itemviews/dirview
+    \example widgets/itemviews/dirview
     \title Dir View Example
 
     The Dir View example shows a tree view onto the local filing system. It uses the

@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*! 
-    \example mainwindows/sdi
+    \example widgets/mainwindows/sdi
     \title SDI Example
 
     The SDI example shows how to create a Single Document Interface. It uses a number of

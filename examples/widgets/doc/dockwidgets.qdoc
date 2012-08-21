@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example mainwindows/dockwidgets
+    \example widgets/mainwindows/dockwidgets
     \title Dock Widgets Example
 
     The Dock Widgets example shows how to add dock windows to an
@@ -46,13 +46,13 @@
 
     Here's the class definition:
 
-    \snippet mainwindows/dockwidgets/mainwindow.h 0
+    \snippet widgets/mainwindows/dockwidgets/mainwindow.h 0
 
     We will now review each function in turn.
 
     \section1 MainWindow Class Implementation
 
-    \snippet mainwindows/dockwidgets/mainwindow.cpp 0
+    \snippet widgets/mainwindows/dockwidgets/mainwindow.cpp 0
 
     We start by including \c <QtGui>, a header file that contains the
     definition of all classes in the \l QtCore and \l QtGui
@@ -60,7 +60,7 @@
     every class individually and is especially convenient if we add new
     widgets. We also include \c mainwindow.h.
 
-    \snippet mainwindows/dockwidgets/mainwindow.cpp 1
+    \snippet widgets/mainwindows/dockwidgets/mainwindow.cpp 1
 
     In the constructor, we start by creating a QTextEdit widget. Then we call
     QMainWindow::setCentralWidget(). This function passes ownership of
@@ -77,7 +77,7 @@
     createToolBars(), and \c createStatusBar() functions since they
     follow the same pattern as all the other Qt examples.
 
-    \snippet mainwindows/dockwidgets/mainwindow.cpp 9
+    \snippet widgets/mainwindows/dockwidgets/mainwindow.cpp 9
 
     We create the customers dock window first, and in addition to a
     window title, we also pass it a \c this pointer so that it becomes a
@@ -109,7 +109,7 @@
     We briefly discuss the rest of the implementation, but have now
     covered everything relating to dock windows.
 
-    \snippet mainwindows/dockwidgets/mainwindow.cpp 2
+    \snippet widgets/mainwindows/dockwidgets/mainwindow.cpp 2
 
     In this function we clear the QTextEdit so that it is empty. Next we
     create a QTextCursor on the QTextEdit. We move the cursor to the
@@ -120,7 +120,7 @@
     insert the skeleton of the letter including two markers \c NAME and
     \c ADDRESS. We will also use the \c{Yours sincerely,} text as a marker.
 
-    \snippet mainwindows/dockwidgets/mainwindow.cpp 6
+    \snippet widgets/mainwindows/dockwidgets/mainwindow.cpp 6
 
     If the user clicks a customer we split the customer details into
     pieces. We then look for the \c NAME marker using the \c find()
@@ -133,7 +133,7 @@
     operation by the QTextEdit, so a single undo will revert all the
     insertions.
     
-    \snippet mainwindows/dockwidgets/mainwindow.cpp 7
+    \snippet widgets/mainwindows/dockwidgets/mainwindow.cpp 7
 
     This function works in a similar way to \c insertCustomer(). First
     we look for the marker, in this case, \c {Yours sincerely,}, and then
@@ -141,19 +141,19 @@
     we use a \c beginEditBlock() ... \c endEditBlock() pair so that the
     insertion can be undone as a single operation.
     
-    \snippet mainwindows/dockwidgets/mainwindow.cpp 3
+    \snippet widgets/mainwindows/dockwidgets/mainwindow.cpp 3
 
     Qt's QTextDocument class makes printing documents easy. We simply
     take the QTextEdit's QTextDocument, set up the printer and print the
     document.
 
-    \snippet mainwindows/dockwidgets/mainwindow.cpp 4
+    \snippet widgets/mainwindows/dockwidgets/mainwindow.cpp 4
 
     QTextEdit can output its contents in HTML format, so we prompt the
     user for the name of an HTML file and if they provide one we simply
     write the QTextEdit's contents in HTML format to the file.
 
-    \snippet mainwindows/dockwidgets/mainwindow.cpp 5
+    \snippet widgets/mainwindows/dockwidgets/mainwindow.cpp 5
 
     If the focus is in the QTextEdit, pressing \uicontrol Ctrl+Z undoes as
     expected. But for the user's convenience we provide an

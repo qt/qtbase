@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example statemachine/factorial
+    \example widgets/statemachine/factorial
     \title Factorial States Example
 
     The Factorial States example shows how to use \l{The State Machine
@@ -42,42 +42,42 @@
     In other words, the state machine calculates the factorial of 6 and prints
     the result.
 
-    \snippet statemachine/factorial/main.cpp 0
+    \snippet widgets/statemachine/factorial/main.cpp 0
 
     The Factorial class is used to hold the data of the computation, \c x and
     \c fac. It also provides a signal that's emitted whenever the value of \c
     x changes.
 
-    \snippet statemachine/factorial/main.cpp 1
+    \snippet widgets/statemachine/factorial/main.cpp 1
 
     The FactorialLoopTransition class implements the guard (\c x > 1) and
     calculations (\c fac = \c x * \c fac; \c x = \c x - 1) of the factorial
     loop.
 
-    \snippet statemachine/factorial/main.cpp 2
+    \snippet widgets/statemachine/factorial/main.cpp 2
 
     The FactorialDoneTransition class implements the guard (\c x <= 1) that
     terminates the factorial computation. It also prints the final result to
     standard output.
 
-    \snippet statemachine/factorial/main.cpp 3
+    \snippet widgets/statemachine/factorial/main.cpp 3
 
     The application's main() function first creates the application object, a
     Factorial object and a state machine.
 
-    \snippet statemachine/factorial/main.cpp 4
+    \snippet widgets/statemachine/factorial/main.cpp 4
 
     The \c compute state is created, and the initial values of \c x and \c fac
     are defined. A FactorialLoopTransition object is created and added to the
     state.
 
-    \snippet statemachine/factorial/main.cpp 5
+    \snippet widgets/statemachine/factorial/main.cpp 5
 
     A final state, \c done, is created, and a FactorialDoneTransition object
     is created with \c done as its target state. The transition is then added
     to the \c compute state.
 
-    \snippet statemachine/factorial/main.cpp 6
+    \snippet widgets/statemachine/factorial/main.cpp 6
 
     The machine's initial state is set to be the \c compute state. We connect
     the QStateMachine::finished() signal to the QCoreApplication::quit() slot,

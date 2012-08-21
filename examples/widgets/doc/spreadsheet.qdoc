@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example itemviews/spreadsheet
+    \example widgets/itemviews/spreadsheet
     \title Spreadsheet
 
     The Spreadsheet example shows how a table view can be used to create a

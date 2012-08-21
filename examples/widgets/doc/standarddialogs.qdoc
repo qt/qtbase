@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*! 
-    \example dialogs/standarddialogs
+    \example widgets/dialogs/standarddialogs
     \title Standard Dialogs Example
 
     The Standard Dialogs example shows the standard dialogs that are provided by Qt.

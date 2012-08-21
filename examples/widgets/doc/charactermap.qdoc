@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-\example widgets/charactermap
+\example widgets/widgets/charactermap
 \title Character Map Example
 
 The Character Map example shows how to create a custom widget that can
@@ -59,7 +59,7 @@ and interaction features.
 
 The class definition looks like this:
 
-\snippet widgets/charactermap/characterwidget.h 0
+\snippet widgets/widgets/charactermap/characterwidget.h 0
 
 The widget does not contain any other widgets, so it must provide its own
 size hint to allow its contents to be displayed correctly.
@@ -87,7 +87,7 @@ Since the widget is to be used as a simple canvas, the constructor just
 calls the base class constructor and defines some default values for
 private data members.
 
-\snippet widgets/charactermap/characterwidget.cpp 0
+\snippet widgets/widgets/charactermap/characterwidget.cpp 0
 
 We initialize \c currentKey with a value of -1 to indicate
 that no character is initially selected. We enable mouse tracking to
@@ -96,21 +96,21 @@ allow us to follow the movement of the cursor across the widget.
 The class provides two functions to allow the font and style to be set up.
 Each of these modify the widget's display font and call update():
 
-\snippet widgets/charactermap/characterwidget.cpp 1
+\snippet widgets/widgets/charactermap/characterwidget.cpp 1
 \codeline
-\snippet widgets/charactermap/characterwidget.cpp 2
+\snippet widgets/widgets/charactermap/characterwidget.cpp 2
 
 We use a fixed size font for the display. Similarly, a fixed size hint is
 provided by the sizeHint() function:
 
-\snippet widgets/charactermap/characterwidget.cpp 3
+\snippet widgets/widgets/charactermap/characterwidget.cpp 3
 
 Three standard event functions are implemented so that the widget
 can respond to clicks, provide tooltips, and render the available
 characters. The paintEvent() shows how the contents of the widget are
 arranged and displayed:
 
-\snippet widgets/charactermap/characterwidget.cpp 6
+\snippet widgets/widgets/charactermap/characterwidget.cpp 6
 
 A QPainter is created for the widget and, in all cases, we ensure that the
 widget's background is painted. The painter's font is set to the
@@ -119,19 +119,19 @@ user-specified display font.
 The area of the widget that needs to be redrawn is used to determine which
 characters need to be displayed:
 
-\snippet widgets/charactermap/characterwidget.cpp 7
+\snippet widgets/widgets/charactermap/characterwidget.cpp 7
 
 Using integer division, we obtain the row and column numbers of each
 characters that should be displayed, and we draw a square on the widget
 for each character displayed.
 
-\snippet widgets/charactermap/characterwidget.cpp 8
-\snippet widgets/charactermap/characterwidget.cpp 9
+\snippet widgets/widgets/charactermap/characterwidget.cpp 8
+\snippet widgets/widgets/charactermap/characterwidget.cpp 9
 
 The symbols for each character in the array are drawn within each square,
 with the symbol for the most recently selected character displayed in red:
 
-\snippet widgets/charactermap/characterwidget.cpp 10
+\snippet widgets/widgets/charactermap/characterwidget.cpp 10
 
 We do not need to take into account the difference between the area
 displayed in the viewport and the area we are drawing on because
@@ -139,7 +139,7 @@ everything outside the visible area will be clipped.
 
 The mousePressEvent() defines how the widget responds to mouse clicks.
 
-\snippet widgets/charactermap/characterwidget.cpp 5
+\snippet widgets/widgets/charactermap/characterwidget.cpp 5
 
 We are only interested when the user clicks with the left mouse button
 over the widget. When this happens, we calculate which character was
@@ -158,7 +158,7 @@ The mouseMoveEvent() maps the mouse cursor's position in global
 coordinates to widget coordinates, and determines the character that
 was clicked by performing the calculation
 
-\snippet widgets/charactermap/characterwidget.cpp 4
+\snippet widgets/widgets/charactermap/characterwidget.cpp 4
 
 The tooltip is given a position defined in global coordinates.
 
@@ -171,7 +171,7 @@ interface.
 
 The class definition looks like this:
 
-\snippet widgets/charactermap/mainwindow.h 0
+\snippet widgets/widgets/charactermap/mainwindow.h 0
 
 The main window contains various widgets that are used to control how
 the characters will be displayed, and defines the findFonts() function
@@ -188,7 +188,7 @@ some standard widgets (two comboboxes, a line edit, and a push button).
 We also construct a CharacterWidget custom widget, and add a QScrollArea
 so that we can view its contents:
 
-\snippet widgets/charactermap/mainwindow.cpp 0
+\snippet widgets/widgets/charactermap/mainwindow.cpp 0
 
 QScrollArea provides a viewport onto the \c CharacterWidget when we set
 its widget and handles much of the work needed to provide a scrolling
@@ -198,11 +198,11 @@ The font combo box is automatically popuplated with a list of available
 fonts. We list the available styles for the current font in the style
 combobox using the following function:
 
-\snippet widgets/charactermap/mainwindow.cpp 1
+\snippet widgets/widgets/charactermap/mainwindow.cpp 1
 
 The line edit and push button are used to supply text to the clipboard:
 
-\snippet widgets/charactermap/mainwindow.cpp 2
+\snippet widgets/widgets/charactermap/mainwindow.cpp 2
 
 We also obtain a clipboard object so that we can send text entered by the
 user to other applications.
@@ -211,7 +211,7 @@ Most of the signals emitted in the example come from standard widgets.
 We connect these signals to slots in this class, and to the slots provided
 by other widgets.
 
-\snippet widgets/charactermap/mainwindow.cpp 4
+\snippet widgets/widgets/charactermap/mainwindow.cpp 4
 
 The font combobox's
 \l{QFontComboBox::currentFontChanged()}{currentFontChanged()} signal is
@@ -225,7 +225,7 @@ directly to the character widget.
 The final two connections allow characters to be selected in the character
 widget, and text to be inserted into the clipboard:
 
-\snippet widgets/charactermap/mainwindow.cpp 5
+\snippet widgets/widgets/charactermap/mainwindow.cpp 5
 
 The character widget emits the characterSelected() custom signal when
 the user clicks on a character, and this is handled by the insertCharacter()
@@ -235,20 +235,20 @@ the clicked() signal, and we handle this with the updateClipboard() function.
 The remaining code in the constructor sets up the layout of the central widget,
 and provides a window title:
 
-\snippet widgets/charactermap/mainwindow.cpp 6
+\snippet widgets/widgets/charactermap/mainwindow.cpp 6
 
 The font combobox is automatically populated with a list of available font
 families. The styles that can be used with each font are found by the
 findStyles() function. This function is called whenever the user selects a
 different font in the font combobox.
 
-\snippet widgets/charactermap/mainwindow.cpp 7
+\snippet widgets/widgets/charactermap/mainwindow.cpp 7
 
 We begin by recording the currently selected style, and we clear the
 style combobox so that we can insert the styles associated with the
 current font family.
 
-\snippet widgets/charactermap/mainwindow.cpp 8
+\snippet widgets/widgets/charactermap/mainwindow.cpp 8
 
 We use the font database to collect the styles that are available for the
 current font, and insert them into the style combobox. The current item is
@@ -259,7 +259,7 @@ widget and the main window's push button. The insertCharacter() function is
 used to insert characters from the character widget when the user clicks a
 character:
 
-\snippet widgets/charactermap/mainwindow.cpp 9
+\snippet widgets/widgets/charactermap/mainwindow.cpp 9
 
 The character is inserted into the line edit at the current cursor position.
 
@@ -267,7 +267,7 @@ The main window's "To clipboard" push button is connected to the
 updateClipboard() function so that, when it is clicked, the clipboard is
 updated to contain the contents of the line edit:
 
-\snippet widgets/charactermap/mainwindow.cpp 10
+\snippet widgets/widgets/charactermap/mainwindow.cpp 10
 
 We copy all the text from the line edit to the clipboard, but we do not clear
 the line edit.

@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example layouts/flowlayout
+    \example widgets/layouts/flowlayout
     \title Flow Layout Example
 
     The Flow Layout example demonstrates a custom layout that arranges child 
@@ -46,7 +46,7 @@
     The \c FlowLayout class inherits QLayout. It is a custom layout class 
     that arranges its child widgets horizontally and vertically. 
 
-    \snippet layouts/flowlayout/flowlayout.h 0
+    \snippet widgets/layouts/flowlayout/flowlayout.h 0
 
     We reimplement functions inherited from QLayout. These functions add items to
     the layout and handle their orientation and geometry. 
@@ -59,31 +59,31 @@
 
     We start off by looking at the constructor:
 
-    \snippet layouts/flowlayout/flowlayout.cpp 1
+    \snippet widgets/layouts/flowlayout/flowlayout.cpp 1
 
     In the constructor we call \c setContentsMargins() to set the left, top,
     right and bottom margin. By default, QLayout uses values provided by
     the current style (see QStyle::PixelMetric). 
 
-    \snippet layouts/flowlayout/flowlayout.cpp 2
+    \snippet widgets/layouts/flowlayout/flowlayout.cpp 2
 
     In this example we reimplement \c addItem(), which is a pure virtual 
     function. When using \c addItem() the ownership of the layout items is 
     transferred to the layout, and it is therefore the layout's 
     responsibility to delete them. 
     
-    \snippet layouts/flowlayout/flowlayout.cpp 3
+    \snippet widgets/layouts/flowlayout/flowlayout.cpp 3
     
     \c addItem() is implemented to add items to the layout. 
 
-    \snippet layouts/flowlayout/flowlayout.cpp 4
+    \snippet widgets/layouts/flowlayout/flowlayout.cpp 4
 
     We implement \c horizontalSpacing() and \c verticalSpacing() to get
     hold of the spacing between the widgets inside the layout. If the value 
     is less than or equal to 0, this value will be used. If not, 
     \c smartSpacing() will be called to calculate the spacing.
 
-    \snippet layouts/flowlayout/flowlayout.cpp 5
+    \snippet widgets/layouts/flowlayout/flowlayout.cpp 5
     
     We then implement \c count() to return the number of items in the 
     layout. To navigate the list of items we use \c itemAt() and 
@@ -91,12 +91,12 @@
     removed, the remaining items will be renumbered. All three 
     functions are pure virtual functions from QLayout.
 
-    \snippet layouts/flowlayout/flowlayout.cpp 6
+    \snippet widgets/layouts/flowlayout/flowlayout.cpp 6
 
     \c expandingDirections() returns the \l{Qt::Orientation}s in which the
     layout can make use of more space than its \c sizeHint().
 
-    \snippet layouts/flowlayout/flowlayout.cpp 7
+    \snippet widgets/layouts/flowlayout/flowlayout.cpp 7
 
     To adjust to widgets of which height is dependent on width, we implement \c
     heightForWidth(). The function \c hasHeightForWidth() is used to test for this
@@ -104,7 +104,7 @@
     in turn uses the width as an argument for the layout rect, i.e., the bounds in
     which the items are laid out. This rect does not include the layout margin().
     
-    \snippet layouts/flowlayout/flowlayout.cpp 8
+    \snippet widgets/layouts/flowlayout/flowlayout.cpp 8
 
     \c setGeometry() is normally used to do the actual layout, i.e., calculate
     the geometry of the layout's items. In this example, it calls \c doLayout()
@@ -113,19 +113,19 @@
     \c sizeHint() returns the preferred size of the layout and \c minimumSize()
     returns the minimum size of the layout.
 
-    \snippet layouts/flowlayout/flowlayout.cpp 9
+    \snippet widgets/layouts/flowlayout/flowlayout.cpp 9
 
     \c doLayout() handles the layout if \c horizontalSpacing() or \c
     verticalSpacing() don't return the default value. It uses 
     \c getContentsMargins() to calculate the area available to the 
     layout items. 
  
-    \snippet layouts/flowlayout/flowlayout.cpp 10
+    \snippet widgets/layouts/flowlayout/flowlayout.cpp 10
 
 	It then sets the proper amount of spacing for each widget in the 
 	layout, based on the current style. 
 	
-    \snippet layouts/flowlayout/flowlayout.cpp 11
+    \snippet widgets/layouts/flowlayout/flowlayout.cpp 11
 
 	The position of each item in the layout is then calculated by 
 	adding the items width and the line height to the initial x and y 
@@ -133,7 +133,7 @@
 	will fit on the current line or if it must be moved down to the next. 
 	We also find the height of the current line based on the widgets height. 
 	
-    \snippet layouts/flowlayout/flowlayout.cpp 12
+    \snippet widgets/layouts/flowlayout/flowlayout.cpp 12
 
 	\c smartSpacing() is designed to get the default spacing for either 
 	the top-level layouts or the sublayouts. The default spacing for 

@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example itemviews/basicsortfiltermodel
+    \example widgets/itemviews/basicsortfiltermodel
     \title Basic Sort/Filter Model Example
 
     The Basic Sort/Filter Model example illustrates how to use

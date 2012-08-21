@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example dialogs/configdialog
+    \example widgets/dialogs/configdialog
     \title Config Dialog Example
 
     The Config Dialog examples shows how a configuration dialog can be created by

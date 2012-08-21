@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/calculator
+    \example widgets/widgets/calculator
     \title Calculator Example
 
     The example shows how to use signals and slots to implement the
@@ -49,7 +49,7 @@
 
     \section1 Calculator Class Definition
 
-    \snippet widgets/calculator/calculator.h 0
+    \snippet widgets/widgets/calculator/calculator.h 0
 
     The \c Calculator class provides a simple calculator widget. It
     inherits from QDialog and has several private slots associated
@@ -65,8 +65,8 @@
     multiplicative operators (\uicontrol{\unicode{215}}, \uicontrol{\unicode{247}}). The other buttons
     have their own slots.
 
-    \snippet widgets/calculator/calculator.h 1
-    \snippet widgets/calculator/calculator.h 2
+    \snippet widgets/widgets/calculator/calculator.h 1
+    \snippet widgets/widgets/calculator/calculator.h 2
 
     The private \c createButton() function is used as part of the
     widget construction. \c abortOperation() is called whenever a
@@ -74,12 +74,12 @@
     applied to a negative number. \c calculate() applies a binary
     operator (\uicontrol{+}, \uicontrol{-}, \uicontrol{\unicode{215}}, or \uicontrol{\unicode{247}}).
 
-    \snippet widgets/calculator/calculator.h 3
-    \snippet widgets/calculator/calculator.h 4
-    \snippet widgets/calculator/calculator.h 5
-    \snippet widgets/calculator/calculator.h 6
-    \snippet widgets/calculator/calculator.h 7
-    \snippet widgets/calculator/calculator.h 8
+    \snippet widgets/widgets/calculator/calculator.h 3
+    \snippet widgets/widgets/calculator/calculator.h 4
+    \snippet widgets/widgets/calculator/calculator.h 5
+    \snippet widgets/widgets/calculator/calculator.h 6
+    \snippet widgets/widgets/calculator/calculator.h 7
+    \snippet widgets/widgets/calculator/calculator.h 8
 
     These variables, together with the contents of the calculator
     display (a QLineEdit), encode the state of the calculator:
@@ -125,24 +125,24 @@
     they can be applied immediately since the operand is already
     known when the operator button is clicked.
 
-    \snippet widgets/calculator/calculator.h 9
+    \snippet widgets/widgets/calculator/calculator.h 9
     \codeline
-    \snippet widgets/calculator/calculator.h 10
+    \snippet widgets/widgets/calculator/calculator.h 10
 
     Finally, we declare the variables associated with the display and the
     buttons used to display numerals.
 
     \section1 Calculator Class Implementation
 
-    \snippet widgets/calculator/calculator.cpp 0
+    \snippet widgets/widgets/calculator/calculator.cpp 0
 
     In the constructor, we initialize the calculator's state. The \c
     pendingAdditiveOperator and \c pendingMultiplicativeOperator
     variables don't need to be initialized explicitly, because the
     QString constructor initializes them to empty strings.
 
-    \snippet widgets/calculator/calculator.cpp 1
-    \snippet widgets/calculator/calculator.cpp 2
+    \snippet widgets/widgets/calculator/calculator.cpp 1
+    \snippet widgets/widgets/calculator/calculator.cpp 2
 
     We create the QLineEdit representing the calculator's display and
     set up some of its properties. In particular, we set it to be
@@ -150,13 +150,13 @@
 
     We also enlarge \c{display}'s font by 8 points.
 
-    \snippet widgets/calculator/calculator.cpp 4
+    \snippet widgets/widgets/calculator/calculator.cpp 4
 
     For each button, we call the private \c createButton() function with
     the proper text label and a slot to connect to the button.
 
-    \snippet widgets/calculator/calculator.cpp 5
-    \snippet widgets/calculator/calculator.cpp 6
+    \snippet widgets/widgets/calculator/calculator.cpp 5
+    \snippet widgets/widgets/calculator/calculator.cpp 6
 
     The layout is handled by a single QGridLayout. The
     QLayout::setSizeConstraint() call ensures that the \c Calculator
@@ -172,7 +172,7 @@
     column; for these we must also pass a row span and a column
     span.
 
-    \snippet widgets/calculator/calculator.cpp 7
+    \snippet widgets/widgets/calculator/calculator.cpp 7
 
     Pressing one of the calculator's digit buttons will emit the
     button's \l{QToolButton::clicked()}{clicked()} signal, which will
@@ -198,8 +198,8 @@
 
     At the end, we append the new digit to the value in the display.
 
-    \snippet widgets/calculator/calculator.cpp 8
-    \snippet widgets/calculator/calculator.cpp 9
+    \snippet widgets/widgets/calculator/calculator.cpp 8
+    \snippet widgets/widgets/calculator/calculator.cpp 9
 
     The \c unaryOperatorClicked() slot is called whenever one of the
     unary operator buttons is clicked. Again a pointer to the clicked
@@ -215,8 +215,8 @@
     digit will be considered as a new operand, instead of being
     appended to the current value.
 
-    \snippet widgets/calculator/calculator.cpp 10
-    \snippet widgets/calculator/calculator.cpp 11
+    \snippet widgets/widgets/calculator/calculator.cpp 10
+    \snippet widgets/widgets/calculator/calculator.cpp 11
 
     The \c additiveOperatorClicked() slot is called when the user
     clicks the \uicontrol{+} or \uicontrol{-} button.
@@ -226,16 +226,16 @@
     multiplicative operators, since these have higher precedence than
     additive operators:
 
-    \snippet widgets/calculator/calculator.cpp 12
-    \snippet widgets/calculator/calculator.cpp 13
+    \snippet widgets/widgets/calculator/calculator.cpp 12
+    \snippet widgets/widgets/calculator/calculator.cpp 13
 
     If \uicontrol{\unicode{215}} or \uicontrol{\unicode{247}} has been clicked earlier, without clicking
     \uicontrol{=} afterward, the current value in the display is the right
     operand of the \uicontrol{\unicode{215}} or \uicontrol{\unicode{247}} operator and we can finally
     perform the operation and update the display.
 
-    \snippet widgets/calculator/calculator.cpp 14
-    \snippet widgets/calculator/calculator.cpp 15
+    \snippet widgets/widgets/calculator/calculator.cpp 14
+    \snippet widgets/widgets/calculator/calculator.cpp 15
 
     If \uicontrol{+} or \uicontrol{-} has been clicked earlier, \c sumSoFar is
     the left operand and the current value in the display is the
@@ -243,8 +243,8 @@
     operator, \c sumSoFar is simply set to be the text in the
     display.
 
-    \snippet widgets/calculator/calculator.cpp 16
-    \snippet widgets/calculator/calculator.cpp 17
+    \snippet widgets/widgets/calculator/calculator.cpp 16
+    \snippet widgets/widgets/calculator/calculator.cpp 17
 
     Finally, we can take care of the operator that was just clicked.
     Since we don't have the right-hand operand yet, we store the clicked
@@ -252,49 +252,49 @@
     apply the operation later, when we have a right operand, with \c
     sumSoFar as the left operand.
 
-    \snippet widgets/calculator/calculator.cpp 18
+    \snippet widgets/widgets/calculator/calculator.cpp 18
 
     The \c multiplicativeOperatorClicked() slot is similar to \c
     additiveOperatorClicked(). We don't need to worry about pending
     additive operators here, because multiplicative operators have
     precedence over additive operators.
 
-    \snippet widgets/calculator/calculator.cpp 20
+    \snippet widgets/widgets/calculator/calculator.cpp 20
 
     Like in \c additiveOperatorClicked(), we start by handing any
     pending multiplicative and additive operators. Then we display \c
     sumSoFar and reset the variable to zero. Resetting the variable
     to zero is necessary to avoid counting the value twice.
 
-    \snippet widgets/calculator/calculator.cpp 22
+    \snippet widgets/widgets/calculator/calculator.cpp 22
 
     The \c pointClicked() slot adds a decimal point to the content in
     \c display.
 
-    \snippet widgets/calculator/calculator.cpp 24
+    \snippet widgets/widgets/calculator/calculator.cpp 24
 
     The \c changeSignClicked() slot changes the sign of the value in
     \c display. If the current value is positive, we prepend a minus
     sign; if the current value is negative, we remove the first
     character from the value (the minus sign).
 
-    \snippet widgets/calculator/calculator.cpp 26
+    \snippet widgets/widgets/calculator/calculator.cpp 26
 
     The \c backspaceClicked() removes the rightmost character in the
     display. If we get an empty string, we show "0" and set \c
     waitingForOperand to \c true.
 
-    \snippet widgets/calculator/calculator.cpp 28
+    \snippet widgets/widgets/calculator/calculator.cpp 28
 
     The \c clear() slot resets the current operand to zero. It is
     equivalent to clicking \uicontrol Backspace enough times to erase the
     entire operand.
 
-    \snippet widgets/calculator/calculator.cpp 30
+    \snippet widgets/widgets/calculator/calculator.cpp 30
 
     The \c clearAll() slot resets the calculator to its initial state.
 
-    \snippet widgets/calculator/calculator.cpp 32
+    \snippet widgets/widgets/calculator/calculator.cpp 32
 
     The \c clearMemory() slot erases the sum kept in memory, \c
     readMemory() displays the sum as an operand, \c setMemory()
@@ -304,18 +304,18 @@
     equalClicked() to update \c sumSoFar and the value in the
     display.
 
-    \snippet widgets/calculator/calculator.cpp 34
+    \snippet widgets/widgets/calculator/calculator.cpp 34
 
     The private \c createButton() function is called from the
     constructor to create calculator buttons.
 
-    \snippet widgets/calculator/calculator.cpp 36
+    \snippet widgets/widgets/calculator/calculator.cpp 36
 
     The private \c abortOperation() function is called whenever a
     calculation fails. It resets the calculator state and displays
     "####".
 
-    \snippet widgets/calculator/calculator.cpp 38
+    \snippet widgets/widgets/calculator/calculator.cpp 38
 
     The private \c calculate() function performs a binary operation.
     The right operand is given by \c rightOperand. For additive
@@ -327,7 +327,7 @@
 
     Let's now take a look at the \c Button class:
 
-    \snippet widgets/calculator/button.h 0
+    \snippet widgets/widgets/calculator/button.h 0
 
     The \c Button class has a convenience constructor that takes a
     text label and a parent widget, and it reimplements QWidget::sizeHint()
@@ -336,7 +336,7 @@
 
     \section1 Button Class Implementation
 
-    \snippet widgets/calculator/button.cpp 0
+    \snippet widgets/widgets/calculator/button.cpp 0
 
     The buttons' appearance is determined by the layout of the
     calculator widget through the size and
@@ -348,8 +348,8 @@
     expand to fill available space. Without this call, the different
     buttons in a same column would have different widths.
 
-    \snippet widgets/calculator/button.cpp 1
-    \snippet widgets/calculator/button.cpp 2
+    \snippet widgets/widgets/calculator/button.cpp 1
+    \snippet widgets/widgets/calculator/button.cpp 2
 
     In \l{QWidget::sizeHint()}{sizeHint()}, we try to return a size
     that looks good for most buttons. We reuse the size hint of the

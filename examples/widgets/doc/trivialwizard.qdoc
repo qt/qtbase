@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example dialogs/trivialwizard
+    \example widgets/dialogs/trivialwizard
     \title Trivial Wizard Example
 
     The Trivial Wizard example illustrates how to create a linear three-page
@@ -45,7 +45,7 @@
     A QVBoxLayout is used to hold the \c label. This \c page is returned
     when the \c createIntroPage() function is called.
 
-    \snippet dialogs/trivialwizard/trivialwizard.cpp 0
+    \snippet widgets/dialogs/trivialwizard/trivialwizard.cpp 0
 
     \section1 Registration Page
 
@@ -56,7 +56,7 @@
     and an e-mail address. A QGridLayout is used to hold the QLabel and
     QLineEdit objects.
 
-    \snippet dialogs/trivialwizard/trivialwizard.cpp 2
+    \snippet widgets/dialogs/trivialwizard/trivialwizard.cpp 2
 
     \section1 Conclusion Page
 
@@ -67,7 +67,7 @@
     QLabel is used to inform the user that the registration process has
     completed successfully.
 
-    \snippet dialogs/trivialwizard/trivialwizard.cpp 6
+    \snippet widgets/dialogs/trivialwizard/trivialwizard.cpp 6
 
     \section1 \c main() Function
 
@@ -76,7 +76,7 @@
     set to "Trivial Wizard" and its \c show() function is invoked to display
     it.
 
-    \snippet dialogs/trivialwizard/trivialwizard.cpp 10
+    \snippet widgets/dialogs/trivialwizard/trivialwizard.cpp 10
 
     \sa QWizard, {Class Wizard Example}, {License Wizard Example}
 */

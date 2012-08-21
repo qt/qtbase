@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example statemachine/trafficlight
+    \example widgets/statemachine/trafficlight
     \title Traffic Light Example
 
     The Traffic Light example shows how to use \l{The State Machine Framework}
@@ -39,20 +39,20 @@
     one light to another (red to yellow to green to yellow to red again) at
     certain intervals.
 
-    \snippet statemachine/trafficlight/main.cpp 0
+    \snippet widgets/statemachine/trafficlight/main.cpp 0
 
     The LightWidget class represents a single light of the traffic light. It
     provides an \c on property and two slots, turnOn() and turnOff(), to turn
     the light on and off, respectively. The widget paints itself in the color
     that's passed to the constructor.
 
-    \snippet statemachine/trafficlight/main.cpp 1
+    \snippet widgets/statemachine/trafficlight/main.cpp 1
 
     The TrafficLightWidget class represents the visual part of the traffic
     light; it's a widget that contains three lights arranged vertically, and
     provides accessor functions for these.
 
-    \snippet statemachine/trafficlight/main.cpp 2
+    \snippet widgets/statemachine/trafficlight/main.cpp 2
 
     The createLightState() function creates a state that turns a light on when
     the state is entered, and off when the state is exited. The state uses a
@@ -64,7 +64,7 @@
     \caption This is a caption
     \endomit
 
-    \snippet statemachine/trafficlight/main.cpp 3
+    \snippet widgets/statemachine/trafficlight/main.cpp 3
 
     The TrafficLight class combines the TrafficLightWidget with a state
     machine.  The state graph has four states: red-to-yellow, yellow-to-green,
@@ -78,7 +78,7 @@
     \caption This is a caption
     \endomit
 
-    \snippet statemachine/trafficlight/main.cpp 4
+    \snippet widgets/statemachine/trafficlight/main.cpp 4
 
     The main() function constructs a TrafficLight and shows it.
 

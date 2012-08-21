@@ -749,7 +749,7 @@
     to write custom display functions. However, we must still provide
     functions to manage the editor widget:
 
-    \snippet itemviews/spinboxdelegate/delegate.h 0
+    \snippet widgets/itemviews/spinboxdelegate/delegate.h 0
 
     Note that no editor widgets are set up when the delegate is
     constructed. We only construct an editor widget when it is needed.
@@ -763,7 +763,7 @@
     supplied with everything that the delegate needs to be able to set up
     a suitable widget:
 
-    \snippet itemviews/spinboxdelegate/delegate.cpp 1
+    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 1
 
     Note that we do not need to keep a pointer to the editor widget because
     the view takes responsibility for destroying it when it is no longer
@@ -787,7 +787,7 @@
     \l{Qt::ItemDataRole}{display role}, and set the value in the
     spin box accordingly.
 
-    \snippet itemviews/spinboxdelegate/delegate.cpp 2
+    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 2
 
     In this example, we know that the editor widget is a spin box, but we
     could have provided different editors for different types of data in
@@ -800,7 +800,7 @@
     asks the delegate to store the edited value in the model by calling the
     \l{QAbstractItemDelegate::setModelData()}{setModelData()} function.
 
-    \snippet itemviews/spinboxdelegate/delegate.cpp 3
+    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 3
 
     Since the view manages the editor widgets for the delegate, we only
     need to update the model with the contents of the editor supplied.
@@ -831,7 +831,7 @@
     the view provides all the necessary geometry information inside a
     \l{QStyleOptionViewItem}{view option} object.
 
-    \snippet itemviews/spinboxdelegate/delegate.cpp 4
+    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 4
 
     In this case, we just use the geometry information provided by the
     view option in the item rectangle. A delegate that renders items with
