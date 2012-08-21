@@ -4492,7 +4492,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
             case 'h':
                 if (parserType != QVariant::Date) {
                     const Section hour = (sect == 'h') ? Hour12Section : Hour24Section;
-                    const SectionNode sn = { hour, i - add, countRepeat(newFormat, i, 2) };
+                    const SectionNode sn = { hour, i - add, countRepeat(newFormat, i, 2), 0 };
                     newSectionNodes.append(sn);
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;
@@ -4502,7 +4502,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
                 break;
             case 'm':
                 if (parserType != QVariant::Date) {
-                    const SectionNode sn = { MinuteSection, i - add, countRepeat(newFormat, i, 2) };
+                    const SectionNode sn = { MinuteSection, i - add, countRepeat(newFormat, i, 2), 0 };
                     newSectionNodes.append(sn);
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;
@@ -4512,7 +4512,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
                 break;
             case 's':
                 if (parserType != QVariant::Date) {
-                    const SectionNode sn = { SecondSection, i - add, countRepeat(newFormat, i, 2) };
+                    const SectionNode sn = { SecondSection, i - add, countRepeat(newFormat, i, 2), 0 };
                     newSectionNodes.append(sn);
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;
@@ -4523,7 +4523,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
 
             case 'z':
                 if (parserType != QVariant::Date) {
-                    const SectionNode sn = { MSecSection, i - add, countRepeat(newFormat, i, 3) < 3 ? 1 : 3 };
+                    const SectionNode sn = { MSecSection, i - add, countRepeat(newFormat, i, 3) < 3 ? 1 : 3, 0 };
                     newSectionNodes.append(sn);
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;
@@ -4535,7 +4535,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
             case 'a':
                 if (parserType != QVariant::Date) {
                     const bool cap = (sect == 'A');
-                    const SectionNode sn = { AmPmSection, i - add, (cap ? 1 : 0) };
+                    const SectionNode sn = { AmPmSection, i - add, (cap ? 1 : 0), 0 };
                     newSectionNodes.append(sn);
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     newDisplay |= AmPmSection;
@@ -4551,7 +4551,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
                     const int repeat = countRepeat(newFormat, i, 4);
                     if (repeat >= 2) {
                         const SectionNode sn = { repeat == 4 ? YearSection : YearSection2Digits,
-                                                 i - add, repeat == 4 ? 4 : 2 };
+                                                 i - add, repeat == 4 ? 4 : 2, 0 };
                         newSectionNodes.append(sn);
                         appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                         i += sn.count - 1;
@@ -4562,7 +4562,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
                 break;
             case 'M':
                 if (parserType != QVariant::Time) {
-                    const SectionNode sn = { MonthSection, i - add, countRepeat(newFormat, i, 4) };
+                    const SectionNode sn = { MonthSection, i - add, countRepeat(newFormat, i, 4), 0 };
                     newSectionNodes.append(sn);
                     newSeparators.append(unquote(newFormat.mid(index, i - index)));
                     i += sn.count - 1;
@@ -4573,7 +4573,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
             case 'd':
                 if (parserType != QVariant::Time) {
                     const int repeat = countRepeat(newFormat, i, 4);
-                    const SectionNode sn = { repeat >= 3 ? DayOfWeekSection : DaySection, i - add, repeat };
+                    const SectionNode sn = { repeat >= 3 ? DayOfWeekSection : DaySection, i - add, repeat, 0 };
                     newSectionNodes.append(sn);
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;
@@ -4637,8 +4637,26 @@ int QDateTimeParser::sectionSize(int sectionIndex) const
         qWarning("QDateTimeParser::sectionSize Internal error (%d)", sectionIndex);
         return -1;
     }
+
     if (sectionIndex == sectionNodes.size() - 1) {
-        return displayText().size() - sectionPos(sectionIndex) - separators.last().size();
+        // In some cases there is a difference between displayText() and text.
+        // e.g. when text is 2000/01/31 and displayText() is "2000/2/31" - text
+        // is the previous value and displayText() is the new value.
+        // The size difference is always due to leading zeroes.
+        int sizeAdjustment = 0;
+        if (displayText().size() != text.size()) {
+            // Any zeroes added before this section will affect our size.
+            int preceedingZeroesAdded = 0;
+            if (sectionNodes.size() > 1 && context == DateTimeEdit) {
+                for (QVector<SectionNode>::ConstIterator sectionIt = sectionNodes.constBegin();
+                    sectionIt != sectionNodes.constBegin() + sectionIndex; ++sectionIt) {
+                    preceedingZeroesAdded += sectionIt->zeroesAdded;
+                }
+            }
+            sizeAdjustment = preceedingZeroesAdded;
+        }
+
+        return displayText().size() + sizeAdjustment - sectionPos(sectionIndex) - separators.last().size();
     } else {
         return sectionPos(sectionIndex + 1) - sectionPos(sectionIndex)
             - separators.at(sectionIndex + 1).size();
@@ -4926,6 +4944,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
                         text.insert(index, QString().fill(QLatin1Char('0'), missingZeroes));
                         used = sectionmaxsize;
                         cursorPosition += missingZeroes;
+                        ++(const_cast<QDateTimeParser*>(this)->sectionNodes[sectionIndex].zeroesAdded);
                     } else {
                         state = Intermediate;;
                     }

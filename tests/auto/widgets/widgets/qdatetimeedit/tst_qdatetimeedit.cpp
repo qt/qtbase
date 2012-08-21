@@ -85,6 +85,8 @@
 #include <QTestEventList>
 #include <QDateEdit>
 
+#include <private/qdatetimeedit_p.h>
+
 #ifdef Q_OS_WIN
 # include <windows.h>
 # undef min
@@ -278,6 +280,10 @@ private slots:
     
     void deleteCalendarWidget();
 
+#ifdef QT_BUILD_INTERNAL
+    void dateEditCorrectSectionSize_data();
+    void dateEditCorrectSectionSize();
+#endif
 private:
     EditorDateEdit* testWidget;
     QWidget *testFocusWidget;
@@ -3486,6 +3492,261 @@ void tst_QDateTimeEdit::deleteCalendarWidget()
         QVERIFY(edit.calendarWidget()->objectName() != "cw1");
     }
 }
+
+#ifdef QT_BUILD_INTERNAL
+
+typedef QPair<Qt::Key, Qt::KeyboardModifier> KeyPair;
+typedef QList<KeyPair> KeyPairList;
+
+Q_DECLARE_METATYPE(KeyPair)
+Q_DECLARE_METATYPE(KeyPairList)
+
+static inline KeyPair key(Qt::Key key, Qt::KeyboardModifier modifier = Qt::NoModifier) {
+    return KeyPair(key, modifier);
+}
+
+/*
+When a QDateEdit has its display format set to 'yyyy/MM/dd', its day
+set to 31 and its month set to 2, it will display 291 as the day until
+the cursor is moved or the focus changed. This is because
+QDateTimeParser::parse calls sectionSize() for the day section, which
+returns 1 when it should return 2.
+
+This test verifies that QDateTimeEditPrivate has the correct text,
+which is the text that is displayed until the cursor is moved or the
+focus changed.
+*/
+
+void tst_QDateTimeEdit::dateEditCorrectSectionSize_data()
+{
+    QTest::addColumn<QDate>("defaultDate");
+    QTest::addColumn<QString>("displayFormat");
+    QTest::addColumn<KeyPairList>("keyPresses");
+    QTest::addColumn<QString>("expectedDisplayString");
+
+    const QDate defaultDate(2000, 1, 1);
+
+    KeyPairList thirtyUpKeypresses;
+    thirtyUpKeypresses.reserve(30);
+    for (int i = 0; i < 30; ++i) {
+        thirtyUpKeypresses << key(Qt::Key_Up);
+    }
+
+    // Make day the current section, set day to 31st (invalid for february),
+    // move to month field, set month to february (2).
+    KeyPairList threeDigitDayIssueKeypresses;
+    threeDigitDayIssueKeypresses << key(Qt::Key_Tab) << key(Qt::Key_Tab)
+        << key(Qt::Key_3) << key(Qt::Key_1) << key(Qt::Key_Tab, Qt::ShiftModifier) << key(Qt::Key_2);
+
+    // Same as above, except day-year-month format.
+    KeyPairList threeDigitDayIssueKeypresses_DayYearMonth;
+    threeDigitDayIssueKeypresses_DayYearMonth << key(Qt::Key_3) << key(Qt::Key_1) << key(Qt::Key_Tab)
+        << key(Qt::Key_2);
+
+    // Same as threeDigitDayIssueKeypresses, except doesn't require the day to be corrected.
+    KeyPairList threeDigitDayIssueKeypresses_Nofixday;
+    threeDigitDayIssueKeypresses_Nofixday << key(Qt::Key_Tab) << key(Qt::Key_Tab)
+        << key(Qt::Key_2) << key(Qt::Key_8) << key(Qt::Key_Tab, Qt::ShiftModifier) << key(Qt::Key_2);
+
+    // Set day to 31st (invalid for february), set month to february (2).
+    KeyPairList reverseThreeDigitDayIssueKeypresses;
+    reverseThreeDigitDayIssueKeypresses
+        << key(Qt::Key_3) << key(Qt::Key_1) << key(Qt::Key_2);
+
+    // Make day the current section, set day to 31st, move to month field, set month to november (11).
+    KeyPairList threeDigitDayIssueKeypresses_TwoDigitMonth;
+    threeDigitDayIssueKeypresses_TwoDigitMonth << key(Qt::Key_Tab) << key(Qt::Key_Tab) << key(Qt::Key_3)
+        << key(Qt::Key_1) << key(Qt::Key_Tab, Qt::ShiftModifier) << key(Qt::Key_1) << key(Qt::Key_1);
+
+    // Make day the current section, set day to 3rd, move to month field, set month to february (2).
+    KeyPairList threeDigitDayIssueKeypresses_OneDigitDay;
+    threeDigitDayIssueKeypresses_OneDigitDay << key(Qt::Key_Tab) << key(Qt::Key_Tab)
+        << key(Qt::Key_3) << key(Qt::Key_Tab, Qt::ShiftModifier) << key(Qt::Key_2);
+
+    // Make day the current section, set day to 31st (invalid for february), move to month field,
+    // set month to february (2).
+    KeyPairList threeDigitDayIssueKeypresses_ShortMonthName;
+    threeDigitDayIssueKeypresses_ShortMonthName << key(Qt::Key_Tab) << key(Qt::Key_Tab)
+        << key(Qt::Key_3) << key(Qt::Key_1) << key(Qt::Key_Tab, Qt::ShiftModifier) << key(Qt::Key_Up);
+
+    // Make day the current section, set day to 31st (Monday), move to month field, set month to february (2).
+    // Will probably never see this display format in a QDateTimeEdit, but it's good to test it anyway.
+    KeyPairList threeDigitDayIssueKeypresses_DayName;
+    threeDigitDayIssueKeypresses_DayName << key(Qt::Key_Tab) << key(Qt::Key_Tab) << thirtyUpKeypresses
+        << key(Qt::Key_Tab, Qt::ShiftModifier) << key(Qt::Key_2);
+
+    KeyPairList threeDigitDayIssueKeypresses_DayName_DayYearMonth;
+    threeDigitDayIssueKeypresses_DayName_DayYearMonth << thirtyUpKeypresses << key(Qt::Key_Tab)
+        << key(Qt::Key_Tab) << key(Qt::Key_2);
+
+    KeyPairList threeDigitDayIssueKeypresses_DayName_YearDayMonth;
+    threeDigitDayIssueKeypresses_DayName_YearDayMonth << key(Qt::Key_Tab) << thirtyUpKeypresses
+        << key(Qt::Key_Tab) << key(Qt::Key_2);
+
+    KeyPairList threeDigitDayIssueKeypresses_DayName_DayMonthYear;
+    threeDigitDayIssueKeypresses_DayName_DayMonthYear << thirtyUpKeypresses << key(Qt::Key_Tab)
+        << key(Qt::Key_2);
+
+    KeyPairList threeDigitDayIssueKeypresses_DayName_MonthDayYear;
+    threeDigitDayIssueKeypresses_DayName_MonthDayYear << key(Qt::Key_Tab) << thirtyUpKeypresses
+        << key(Qt::Key_Tab, Qt::ShiftModifier) << key(Qt::Key_2);
+
+    // Make day the current section, set day to 31st (invalid for february), move to month field,
+    // set month to february (2).
+    KeyPairList threeDigitDayIssueKeypresses_YearDayMonth;
+    threeDigitDayIssueKeypresses_YearDayMonth << key(Qt::Key_Tab) << key(Qt::Key_3) << key(Qt::Key_1)
+        << key(Qt::Key_Tab) << key(Qt::Key_2);
+
+    // Make day the current section, set day to 31st, move to month field, set month to february (2).
+    KeyPairList threeDigitDayIssueKeypresses_MonthDayYear;
+    threeDigitDayIssueKeypresses_MonthDayYear << key(Qt::Key_Tab) << key(Qt::Key_3) << key(Qt::Key_1)
+        << key(Qt::Key_Tab, Qt::ShiftModifier) << key(Qt::Key_Tab, Qt::ShiftModifier) << key(Qt::Key_2);
+
+    // Same as above, except month-year-day format.
+    KeyPairList threeDigitDayIssueKeypresses_MonthYearDay;
+    threeDigitDayIssueKeypresses_MonthYearDay << key(Qt::Key_Tab) << key(Qt::Key_Tab) << key(Qt::Key_3)
+        << key(Qt::Key_1) << key(Qt::Key_Tab, Qt::ShiftModifier) << key(Qt::Key_Tab, Qt::ShiftModifier)
+        << key(Qt::Key_2);
+
+    // Same as above, except short month name.
+    KeyPairList threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay;
+    threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << key(Qt::Key_Tab) << key(Qt::Key_Tab)
+        << key(Qt::Key_3) << key(Qt::Key_1) << key(Qt::Key_Tab, Qt::ShiftModifier)
+        << key(Qt::Key_Tab, Qt::ShiftModifier) << key(Qt::Key_Up);
+
+    QTest::newRow("fixday, leap, yy/MM/dd") << defaultDate << QString::fromLatin1("yy/MM/dd")
+        << threeDigitDayIssueKeypresses << QString::fromLatin1("00/02/29");
+
+    QTest::newRow("fixday, leap, yy/MM/d") << defaultDate << QString::fromLatin1("yy/MM/d")
+        << threeDigitDayIssueKeypresses << QString::fromLatin1("00/02/29");
+
+    QTest::newRow("fixday, leap, yyyy/M/d") << defaultDate << QString::fromLatin1("yyyy/M/d")
+        << threeDigitDayIssueKeypresses << QString::fromLatin1("2000/2/29");
+
+    QTest::newRow("no fixday, yyyy/M/d") << defaultDate.addYears(1) << QString::fromLatin1("yyyy/M/d")
+        << threeDigitDayIssueKeypresses_Nofixday << QString::fromLatin1("2001/2/28");
+
+    QTest::newRow("fixday, leap, 2-digit month, yyyy/M/dd") << defaultDate << QString::fromLatin1("yyyy/M/dd")
+        << threeDigitDayIssueKeypresses_TwoDigitMonth << QString::fromLatin1("2000/11/30");
+
+    QTest::newRow("no fixday, leap, 1-digit day, yyyy/M/dd") << defaultDate << QString::fromLatin1("yyyy/M/dd")
+        << threeDigitDayIssueKeypresses_OneDigitDay << QString::fromLatin1("2000/2/03");
+
+    QTest::newRow("fixday, leap, yyyy/MM/dd") << defaultDate << QString::fromLatin1("yyyy/MM/dd")
+        << threeDigitDayIssueKeypresses << QString::fromLatin1("2000/02/29");
+
+    QTest::newRow("no fixday, yyyy/MM/dd") << defaultDate.addYears(1) << QString::fromLatin1("yyyy/MM/dd")
+        << threeDigitDayIssueKeypresses_Nofixday << QString::fromLatin1("2001/02/28");
+
+    QTest::newRow("fixday, leap, 2-digit month, yyyy/MM/dd") << defaultDate << QString::fromLatin1("yyyy/MM/dd")
+        << threeDigitDayIssueKeypresses_TwoDigitMonth << QString::fromLatin1("2000/11/30");
+
+    QTest::newRow("fixday, leap, yyyy/dd/MM") << defaultDate << QString::fromLatin1("yyyy/dd/MM")
+        << threeDigitDayIssueKeypresses_YearDayMonth << QString::fromLatin1("2000/29/02");
+
+    QTest::newRow("fixday, leap, yyyy/dd/M") << defaultDate << QString::fromLatin1("yyyy/dd/M")
+        << threeDigitDayIssueKeypresses_YearDayMonth << QString::fromLatin1("2000/29/2");
+
+    QTest::newRow("fixday, leap, yyyy/d/M") << defaultDate << QString::fromLatin1("yyyy/d/M")
+        << threeDigitDayIssueKeypresses_YearDayMonth << QString::fromLatin1("2000/29/2");
+
+    QTest::newRow("fixday, leap, yyyy/MMM/dd") << defaultDate << QString::fromLatin1("yyyy/MMM/dd")
+        << threeDigitDayIssueKeypresses_ShortMonthName << QString::fromLatin1("2000/Feb/29");
+
+    QTest::newRow("fixday, leap, yyyy/MMM/d") << defaultDate << QString::fromLatin1("yyyy/MMM/d")
+        << threeDigitDayIssueKeypresses_ShortMonthName << QString::fromLatin1("2000/Feb/29");
+
+    QTest::newRow("fixday, leap, yy/MMM/dd") << defaultDate << QString::fromLatin1("yy/MMM/dd")
+        << threeDigitDayIssueKeypresses_ShortMonthName << QString::fromLatin1("00/Feb/29");
+
+    QTest::newRow("fixday, leap, d/M/yyyy") << defaultDate << QString::fromLatin1("d/M/yyyy")
+        << reverseThreeDigitDayIssueKeypresses << QString::fromLatin1("29/2/2000");
+
+    QTest::newRow("fixday, leap, dd/MM/yyyy") << defaultDate << QString::fromLatin1("dd/MM/yyyy")
+        << reverseThreeDigitDayIssueKeypresses << QString::fromLatin1("29/02/2000");
+
+    QTest::newRow("fixday, dd/MM/yyyy") << defaultDate.addYears(1) << QString::fromLatin1("dd/MM/yyyy")
+        << reverseThreeDigitDayIssueKeypresses << QString::fromLatin1("28/02/2001");
+
+    QTest::newRow("fixday, leap, d/yy/M") << defaultDate << QString::fromLatin1("d/yy/M")
+        << threeDigitDayIssueKeypresses_DayYearMonth << QString::fromLatin1("29/00/2");
+
+    QTest::newRow("fixday, leap, d/yyyy/M") << defaultDate << QString::fromLatin1("d/yyyy/M")
+        << threeDigitDayIssueKeypresses_DayYearMonth << QString::fromLatin1("29/2000/2");
+
+    QTest::newRow("fixday, leap, d/yyyy/MM") << defaultDate << QString::fromLatin1("d/yyyy/MM")
+        << threeDigitDayIssueKeypresses_DayYearMonth << QString::fromLatin1("29/2000/02");
+
+    QTest::newRow("fixday, leap, dd/yy/MM") << defaultDate << QString::fromLatin1("dd/yy/MM")
+        << threeDigitDayIssueKeypresses_DayYearMonth << QString::fromLatin1("29/00/02");
+
+    QTest::newRow("fixday, leap, dd/yyyy/M") << defaultDate << QString::fromLatin1("dd/yyyy/M")
+        << threeDigitDayIssueKeypresses_DayYearMonth << QString::fromLatin1("29/2000/2");
+
+    QTest::newRow("fixday, leap, dd/yyyy/MM") << defaultDate << QString::fromLatin1("dd/yyyy/MM")
+        << threeDigitDayIssueKeypresses_DayYearMonth << QString::fromLatin1("29/2000/02");
+
+    QTest::newRow("fixday, leap, M/d/yy") << defaultDate << QString::fromLatin1("M/d/yy")
+        << threeDigitDayIssueKeypresses_MonthDayYear << QString::fromLatin1("2/29/00");
+
+    QTest::newRow("fixday, leap, M/d/yyyy") << defaultDate << QString::fromLatin1("M/d/yyyy")
+        << threeDigitDayIssueKeypresses_MonthDayYear << QString::fromLatin1("2/29/2000");
+
+    QTest::newRow("fixday, leap, M/dd/yyyy") << defaultDate << QString::fromLatin1("M/dd/yyyy")
+        << threeDigitDayIssueKeypresses_MonthDayYear << QString::fromLatin1("2/29/2000");
+
+    QTest::newRow("fixday, leap, MM/dd/yyyy") << defaultDate << QString::fromLatin1("MM/dd/yyyy")
+        << threeDigitDayIssueKeypresses_MonthDayYear << QString::fromLatin1("02/29/2000");
+
+    QTest::newRow("fixday, leap, M/yyyy/dd") << defaultDate << QString::fromLatin1("M/yyyy/dd")
+        << threeDigitDayIssueKeypresses_MonthYearDay << QString::fromLatin1("2/2000/29");
+
+    QTest::newRow("fixday, leap, M/yy/dd") << defaultDate << QString::fromLatin1("M/yy/dd")
+        << threeDigitDayIssueKeypresses_MonthYearDay << QString::fromLatin1("2/00/29");
+
+    QTest::newRow("fixday, leap, M/yy/d") << defaultDate << QString::fromLatin1("M/yy/d")
+        << threeDigitDayIssueKeypresses_MonthYearDay << QString::fromLatin1("2/00/29");
+
+    QTest::newRow("fixday, leap, MM/yyyy/dd") << defaultDate << QString::fromLatin1("MM/yyyy/dd")
+        << threeDigitDayIssueKeypresses_MonthYearDay << QString::fromLatin1("02/2000/29");
+
+    QTest::newRow("fixday, leap, MMM/yy/d") << defaultDate << QString::fromLatin1("MMM/yy/d")
+        << threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << QString::fromLatin1("Feb/00/29");
+
+    QTest::newRow("fixday, leap, MMM/yyyy/d") << defaultDate << QString::fromLatin1("MMM/yyyy/d")
+        << threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << QString::fromLatin1("Feb/2000/29");
+
+    QTest::newRow("fixday, MMM/yyyy/d") << defaultDate.addYears(1) << QString::fromLatin1("MMM/yyyy/d")
+        << threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << QString::fromLatin1("Feb/2001/28");
+
+    QTest::newRow("fixday, leap, MMM/yyyy/dd") << defaultDate << QString::fromLatin1("MMM/yyyy/dd")
+        << threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << QString::fromLatin1("Feb/2000/29");
+}
+
+void tst_QDateTimeEdit::dateEditCorrectSectionSize()
+{
+    QFETCH(QDate, defaultDate);
+    QFETCH(QString, displayFormat);
+    QFETCH(KeyPairList, keyPresses);
+    QFETCH(QString, expectedDisplayString);
+
+    QDateEdit edit;
+    edit.setDate(defaultDate);
+    edit.setDisplayFormat(displayFormat);
+    edit.show();
+    edit.setFocus();
+    // For some reason, we need to set the selected section for the dd/MM/yyyy tests,
+    // otherwise the 3 is inserted at the front of 01/01/2000 (301/01/2000), instead of the
+    // selected text being replaced. This is not an issue for the yyyy/MM/dd format though...
+    edit.setSelectedSection(edit.sectionAt(0));
+
+    foreach (const KeyPair &keyPair, keyPresses)
+        QTest::keyClick(&edit, keyPair.first, keyPair.second);
+
+    QDateTimeEditPrivate* edit_d_ptr(static_cast<QDateTimeEditPrivate*>(qt_widget_private(&edit)));
+    QCOMPARE(edit_d_ptr->text, expectedDisplayString);
+}
+#endif
 
 QTEST_MAIN(tst_QDateTimeEdit)
 #include "tst_qdatetimeedit.moc"
