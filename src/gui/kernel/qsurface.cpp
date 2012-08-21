@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
 
 
 /*!
-    \fn QSize QSurface::format() const
+    \fn QSurfaceFormat QSurface::format() const
 
     Returns the format of the surface.
  */
