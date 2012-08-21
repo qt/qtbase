@@ -132,6 +132,7 @@ macro(_populate_imported_target_properties Configuration LIB_LOCATION IMPLIB_LOC
         \"IMPORTED_SONAME_${Configuration}\" \"$${CMAKE_LIB_SONAME}\"
 !!ENDIF
     )
+!!IF !isEmpty(CMAKE_WINDOWS_BUILD)
     if(NOT \"${IMPLIB_LOCATION}\" STREQUAL \"\")
         set_target_properties(Qt5::$${CMAKE_MODULE_NAME} PROPERTIES
 !!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
@@ -141,6 +142,7 @@ macro(_populate_imported_target_properties Configuration LIB_LOCATION IMPLIB_LOC
 !!ENDIF
         )
     endif()
+!!ENDIF
 endmacro()
 
 if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
