@@ -111,7 +111,7 @@
     \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 6
 
     The C++ language has two variations of comments: The single line
-    comment (\c //) and the multiline comment (\c{/*...}\starslash). The single
+    comment (\c //) and the multiline comment (\c{/*...*}\c{/}). The single
     line comment can easily be defined through a highlighting rule
     similar to the previous ones. But the multiline comment needs
     special care due to the design of the QSyntaxHighlighter class.
