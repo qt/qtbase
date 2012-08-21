@@ -132,7 +132,7 @@ QT_BEGIN_NAMESPACE
     QGraphicsEffectSource also provides a pixmap() function which creates a
     pixmap with the source painted into it.
 
-    \sa QGraphicsItem::setGraphicsEffect(), QWidget::setGraphicsEffect().
+    \sa QGraphicsItem::setGraphicsEffect(), QWidget::setGraphicsEffect()
 */
 
 /*!
@@ -977,7 +977,7 @@ void QGraphicsDropShadowEffect::setOffset(const QPointF &offset)
 
     By default, the blur radius is 1 pixel.
 
-    \sa color(), offset().
+    \sa color(), offset()
 */
 qreal QGraphicsDropShadowEffect::blurRadius() const
 {
