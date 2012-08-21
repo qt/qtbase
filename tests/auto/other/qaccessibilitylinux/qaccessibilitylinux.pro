@@ -7,6 +7,6 @@ SOURCES += tst_qaccessibilitylinux.cpp \
 CONFIG += gui
 CONFIG += link_pkgconfig
 
-QT += gui widgets dbus testlib
+QT += gui gui-private widgets dbus testlib
 
 PKGCONFIG += atspi-2

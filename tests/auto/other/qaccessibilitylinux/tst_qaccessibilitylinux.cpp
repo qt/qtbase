@@ -56,8 +56,8 @@
 
 #include <atspi/atspi-constants.h>
 
-#include "../../../../src/plugins/platforms/linuxaccessibility/dbusconnection.h"
-#include "../../../../src/plugins/platforms/linuxaccessibility/struct_marshallers.h"
+#include "../../../../src/platformsupport/linuxaccessibility/dbusconnection_p.h"
+#include "../../../../src/platformsupport/linuxaccessibility/struct_marshallers_p.h"
 
 #define COMPARE3(v1, v2, v3) QCOMPARE(v1, v3); QCOMPARE(v2, v3);
 
