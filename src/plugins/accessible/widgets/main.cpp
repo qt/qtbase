@@ -156,7 +156,7 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
         iface = new QAccessibleGroupBox(widget);
 #endif
     } else if (classname == QLatin1String("QStatusBar")) {
-        iface = new QAccessibleWidget(widget, QAccessible::StatusBar);
+        iface = new QAccessibleDisplay(widget);
 #ifndef QT_NO_PROGRESSBAR
     } else if (classname == QLatin1String("QProgressBar")) {
         iface = new QAccessibleProgressBar(widget);
