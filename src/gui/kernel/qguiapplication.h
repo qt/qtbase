@@ -44,7 +44,7 @@
 
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qwindowdefs.h>
-#include <QtGui/qinputpanel.h>
+#include <QtGui/qinputmethod.h>
 #include <QtCore/qlocale.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
@@ -131,9 +131,6 @@ public:
     static void setDesktopSettingsAware(bool on);
     static bool desktopSettingsAware();
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED QInputPanel *inputPanel() const { return inputMethod(); }
-#endif
     static QInputMethod *inputMethod();
 
     static QPlatformNativeInterface *platformNativeInterface();

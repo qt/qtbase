@@ -9010,13 +9010,13 @@ void tst_QWidget::focusProxyAndInputMethods()
     // and that the input method gets the focus proxy passed
     // as the focus widget instead of the child widget.
     // otherwise input method queries go to the wrong widget
-    QCOMPARE(qApp->inputPanel()->inputItem(), toplevel.data());
+    QCOMPARE(qApp->inputMethod()->inputItem(), toplevel.data());
 
     toplevel->setAttribute(Qt::WA_InputMethodEnabled, false);
-    QVERIFY(!qApp->inputPanel()->inputItem());
+    QVERIFY(!qApp->inputMethod()->inputItem());
 
     toplevel->setAttribute(Qt::WA_InputMethodEnabled, true);
-    QCOMPARE(qApp->inputPanel()->inputItem(), toplevel.data());
+    QCOMPARE(qApp->inputMethod()->inputItem(), toplevel.data());
 }
 
 #ifdef QT_BUILD_INTERNAL

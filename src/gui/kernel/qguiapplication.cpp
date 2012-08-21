@@ -68,7 +68,7 @@
 #include <QtGui/qgenericpluginfactory.h>
 #include <qpa/qplatformintegration.h>
 #include <QtGui/qstylehints.h>
-#include <QtGui/qinputpanel.h>
+#include <QtGui/qinputmethod.h>
 #include <QtGui/qpixmapcache.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatforminputcontext.h>
@@ -2372,7 +2372,7 @@ bool QGuiApplication::desktopSettingsAware()
   the virtual keyboard. It also provides information about the position of the
   current focused input element.
 
-  \sa QInputPanel
+  \sa QInputMethod
   */
 QInputMethod *QGuiApplication::inputMethod()
 {
@@ -2380,19 +2380,6 @@ QInputMethod *QGuiApplication::inputMethod()
         qGuiApp->d_func()->inputMethod = new QInputMethod();
     return qGuiApp->d_func()->inputMethod;
 }
-
-/*!
-  \fn QInputPanel *QGuiApplication::inputPanel() const
-  returns the input panel.
-
-  The input panel returns properties about the state and position of
-  the virtual keyboard. It also provides information about the position of the
-  current focused input element.
-
-  \obsolete
-
-  \sa inputMethod()
-  */
 
 /*!
     \fn void QGuiApplication::fontDatabaseChanged()

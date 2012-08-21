@@ -45,8 +45,6 @@ HEADERS += \
         kernel/qevent_p.h \
         kernel/qinputmethod.h \
         kernel/qinputmethod_p.h \
-        kernel/qinputpanel.h \
-        kernel/qinputpanel_p.h \
         kernel/qkeysequence.h \
         kernel/qkeysequence_p.h \
         kernel/qkeymapper_p.h \

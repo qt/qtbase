@@ -51,7 +51,7 @@
 // source and binary incompatible with future versions of Qt.
 //
 
-#include <QtGui/qinputpanel.h>
+#include <QtGui/qinputmethod.h>
 
 QT_BEGIN_HEADER
 
