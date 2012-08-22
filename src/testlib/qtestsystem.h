@@ -129,12 +129,6 @@ namespace QTest
     }
 #endif
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline static bool qWaitForWindowShown(QWindow *window, int timeout = 1000)
-    {
-        return qWaitForWindowExposed(window, timeout);
-    }
-#endif // QT_DEPRECATED_SINCE(5, 0)
 #if QT_DEPRECATED_SINCE(6, 0)
 #  ifdef QT_WIDGETS_LIB
     QT_DEPRECATED inline static bool qWaitForWindowShown(QWidget *widget, int timeout = 1000)

@@ -881,18 +881,6 @@ QT_BEGIN_NAMESPACE
     \sa QTest::qWaitForWindowExposed(), QWindow::isActive()
 */
 
-/*! \fn bool QTest::qWaitForWindowShown(QWindow *window, int timeout)
-    \since 5.0
-    \deprecated
-
-    Waits for \a timeout milliseconds or until the \a window is exposed.
-    Returns true if \c window is exposed within \a timeout milliseconds, otherwise returns false.
-
-    This function does the same as qWaitForWindowExposed().
-
-    \sa QTest::qWaitForWindowActive(), QTest::qWaitForWindowExposed()
-*/
-
 /*! \fn bool QTest::qWaitForWindowExposed(QWidget *widget, int timeout)
     \since 5.0
 
