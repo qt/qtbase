@@ -404,12 +404,11 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                     const QString extraInlineFileContent = "\n!IF EXIST(" + manifest_res + ")\n" + manifest_res + "\n!ENDIF";
                     t << "\n\t";
                     writeLinkCommand(t, extraLFlags, extraInlineFileContent);
-                    const QString check_manifest_bak_existence = "\n\tif exist " + manifest_bak + ' ';
-                    t << check_manifest_bak_existence << "fc " << manifest << ' ' << manifest_bak << " && del " << manifest_bak;
-                    t << check_manifest_bak_existence << "rc.exe /fo" << manifest_res << ' ' << manifest_rc;
-                    t << check_manifest_bak_existence;
+                    t << "\n\tif exist " << manifest_bak << " fc /b " << manifest << ' ' << manifest_bak << " >NUL || del " << manifest_bak;
+                    t << "\n\tif not exist " << manifest_bak << " rc.exe /fo" << manifest_res << ' ' << manifest_rc;
+                    t << "\n\tif not exist " << manifest_bak << ' ';
                     writeLinkCommand(t, extraLFlags, manifest_res);
-                    t << check_manifest_bak_existence << "del " << manifest_bak;
+                    t << "\n\tif exist " << manifest_bak << " del " << manifest_bak;
                 } else {
                     t << "\n\t" << "rc.exe /fo" << manifest_res << " " << manifest_rc;
                     t << "\n\t";
