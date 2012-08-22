@@ -330,6 +330,9 @@ QtCore
   should now also connect to (and disconnect from) the rowsAboutToBeMoved and
   rowsMoved signals.
 
+* The QAbstractItemModel::sibling method was made virtual, allowing implementations
+  to optimize based on internal data.
+
 * The default value of the property QSortFilterProxyModel::dynamicSortFilter was
   changed from false to true.
 

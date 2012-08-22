@@ -1394,19 +1394,6 @@ QAbstractItemModel::~QAbstractItemModel()
     d_func()->invalidatePersistentIndexes();
 }
 
-/*!
-    \fn QModelIndex QAbstractItemModel::sibling(int row, int column, const QModelIndex &index) const
-
-    Returns the sibling at \a row and \a column for the item at \a index, or an
-    invalid QModelIndex if there is no sibling at that location.
-
-    sibling() is just a convenience function that finds the item's parent, and
-    uses it to retrieve the index of the child item in the specified \a row and
-    \a column.
-
-    \sa index(), QModelIndex::row(), QModelIndex::column()
-*/
-
 
 /*!
     \fn int QAbstractItemModel::rowCount(const QModelIndex &parent) const
@@ -1655,6 +1642,25 @@ bool QAbstractItemModel::hasIndex(int row, int column, const QModelIndex &parent
 bool QAbstractItemModel::hasChildren(const QModelIndex &parent) const
 {
     return (rowCount(parent) > 0) && (columnCount(parent) > 0);
+}
+
+/*!
+    \fn QModelIndex QAbstractItemModel::sibling(int row, int column, const QModelIndex &index) const
+
+    Returns the sibling at \a row and \a column for the item at \a index, or an
+    invalid QModelIndex if there is no sibling at that location.
+
+    sibling() is just a convenience function that finds the item's parent, and
+    uses it to retrieve the index of the child item in the specified \a row and
+    \a column.
+
+    This method can optionally be overridden for implementation-specific optimization.
+
+    \sa index(), QModelIndex::row(), QModelIndex::column()
+*/
+QModelIndex QAbstractItemModel::sibling(int row, int column, const QModelIndex &idx) const
+{
+    return (row == idx.row() && column == idx.column()) ? idx : index(row, column, parent(idx));
 }
 
 

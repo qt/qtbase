@@ -171,9 +171,7 @@ public:
                               const QModelIndex &parent = QModelIndex()) const = 0;
     virtual QModelIndex parent(const QModelIndex &child) const = 0;
 
-    inline QModelIndex sibling(int row, int column, const QModelIndex &idx) const
-        { return (row == idx.row() && column == idx.column()) ? idx : index(row, column, parent(idx)); }
-
+    virtual QModelIndex sibling(int row, int column, const QModelIndex &idx) const;
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const = 0;
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const = 0;
     virtual bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
@@ -473,7 +471,7 @@ inline QModelIndex QModelIndex::parent() const
 { return m ? m->parent(*this) : QModelIndex(); }
 
 inline QModelIndex QModelIndex::sibling(int arow, int acolumn) const
-{ return m ? (r == arow && c == acolumn) ? *this : m->index(arow, acolumn, m->parent(*this)) : QModelIndex(); }
+{ return m ? (r == arow && c == acolumn) ? *this : m->sibling(arow, acolumn, *this) : QModelIndex(); }
 
 inline QModelIndex QModelIndex::child(int arow, int acolumn) const
 { return m ? m->index(arow, acolumn, *this) : QModelIndex(); }
