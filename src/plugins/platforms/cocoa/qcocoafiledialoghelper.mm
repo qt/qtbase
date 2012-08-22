@@ -135,7 +135,8 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
         mOpenPanel = 0;
     }
 
-    [mSavePanel setLevel:NSModalPanelWindowLevel];
+    if ([mSavePanel respondsToSelector:@selector(setLevel:)])
+        [mSavePanel setLevel:NSModalPanelWindowLevel];
     [mSavePanel setDelegate:self];
     mReturnCode = -1;
     mHelper = helper;
@@ -179,7 +180,8 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     delete mSelectedNameFilter;
     delete mCurrentSelection;
 
-    [mSavePanel orderOut:mSavePanel];
+    if ([mSavePanel respondsToSelector:@selector(orderOut:)])
+        [mSavePanel orderOut:mSavePanel];
     [mSavePanel setAccessoryView:nil];
     [mPopUpButton release];
     [mTextField release];
@@ -212,38 +214,40 @@ static QString strippedText(QString s)
 
 - (void)closePanel
 {
-    *mCurrentSelection = QT_PREPEND_NAMESPACE(QCFString::toQString)([mSavePanel filename]);
-    [mSavePanel close];
+    *mCurrentSelection = QT_PREPEND_NAMESPACE(QCFString::toQString)([[mSavePanel URL] path]);
+    if ([mSavePanel respondsToSelector:@selector(closePanel:)])
+        [mSavePanel close];
 }
 
 - (void)showModelessPanel
 {
     if (mOpenPanel){
         QFileInfo info(*mCurrentSelection);
-        NSString *filename = QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.fileName());
         NSString *filepath = QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath());
         bool selectable = (mOptions->acceptMode() == QFileDialogOptions::AcceptSave)
             || [self panel:nil shouldShowFilename:filepath];
-        [mOpenPanel
-            beginForDirectory:mCurrentDir
-            file:selectable ? filename : nil
-            types:nil
-            modelessDelegate:self
-            didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
-            contextInfo:nil];
+
+        [mOpenPanel setAllowedFileTypes:nil];
+        [mOpenPanel setDirectoryURL:selectable ? [NSURL fileURLWithPath:QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath())]
+                                               : [NSURL fileURLWithPath:QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.path())]];
+        [mOpenPanel beginWithCompletionHandler:^(NSInteger result){
+            mReturnCode = result;
+            if (mHelper)
+                mHelper->QNSOpenSavePanelDelegate_panelClosed(result == NSOKButton);
+        }];
     }
 }
 
 - (BOOL)runApplicationModalPanel
 {
     QFileInfo info(*mCurrentSelection);
-    NSString *filename = QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.fileName());
     NSString *filepath = QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath());
     bool selectable = (mOptions->acceptMode() == QFileDialogOptions::AcceptSave)
         || [self panel:nil shouldShowFilename:filepath];
-    mReturnCode = [mSavePanel
-        runModalForDirectory:mCurrentDir
-        file:selectable ? filename : @"untitled"];
+
+    [mOpenPanel setDirectoryURL:selectable ? [NSURL fileURLWithPath:QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath())]
+                                           : [NSURL fileURLWithPath:QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.path())]];
+    mReturnCode = [mOpenPanel runModal];
 
     QAbstractEventDispatcher::instance()->interrupt();
     return (mReturnCode == NSOKButton);
@@ -257,18 +261,19 @@ static QString strippedText(QString s)
 - (void)showWindowModalSheet:(QWindow *)parent
 {
     QFileInfo info(*mCurrentSelection);
-    NSString *filename = QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.fileName());
     NSString *filepath = QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath());
     bool selectable = (mOptions->acceptMode() == QFileDialogOptions::AcceptSave)
         || [self panel:nil shouldShowFilename:filepath];
+
+    [mOpenPanel setDirectoryURL:selectable ? [NSURL fileURLWithPath:QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath())]
+                                           : [NSURL fileURLWithPath:QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.path())]];
     NSWindow *nsparent = static_cast<NSWindow *>(qGuiApp->platformNativeInterface()->nativeResourceForWindow("nswindow", parent));
-    [mSavePanel
-        beginSheetForDirectory:mCurrentDir
-        file:selectable ? filename : nil
-        modalForWindow:nsparent
-        modalDelegate:self
-        didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
-        contextInfo:nil];
+
+    [mSavePanel beginSheetModalForWindow:nsparent completionHandler:^(NSInteger result){
+        mReturnCode = result;
+        if (mHelper)
+            mHelper->QNSOpenSavePanelDelegate_panelClosed(result == NSOKButton);
+    }];
 }
 
 - (BOOL)panel:(id)sender shouldShowFilename:(NSString *)filename
@@ -345,7 +350,8 @@ static QString strippedText(QString s)
     Q_UNUSED(sender);
     QString selection = mNameFilterDropDownList->value([mPopUpButton indexOfSelectedItem]);
     *mSelectedNameFilter = [self findStrippedFilterWithVisualFilterName:selection];
-    [mSavePanel validateVisibleColumns];
+    if ([mSavePanel respondsToSelector:@selector(validateVisibleColumns:)])
+        [mSavePanel validateVisibleColumns];
     [self updateProperties];
     if (mHelper)
         mHelper->QNSOpenSavePanelDelegate_filterSelected([mPopUpButton indexOfSelectedItem]);
@@ -358,11 +364,15 @@ static QString strippedText(QString s)
 
 - (QStringList)selectedFiles
 {
-    if (mOpenPanel)
-        return QT_PREPEND_NAMESPACE(qt_mac_NSArrayToQStringList)([mOpenPanel filenames]);
-    else{
+    if (mOpenPanel) {
         QStringList result;
-        QString filename = QT_PREPEND_NAMESPACE(QCFString::toQString)([mSavePanel filename]);
+        NSArray* array = [mOpenPanel URLs];
+        for (NSUInteger i=0; i<[array count]; ++i)
+            result << QCFString::toQString([[array objectAtIndex:i] path]);
+        return result;
+    } else {
+        QStringList result;
+        QString filename = QT_PREPEND_NAMESPACE(QCFString::toQString)([[mSavePanel URL] path]);
         result << filename.remove(QLatin1String("___qt_very_unlikely_prefix_"));
         return result;
     }
@@ -392,29 +402,22 @@ static QString strippedText(QString s)
         ext.prepend(defaultSuffix);
     [mSavePanel setAllowedFileTypes:ext.isEmpty() ? nil : QT_PREPEND_NAMESPACE(qt_mac_QStringListToNSMutableArray(ext))];
 
-    if ([mSavePanel isVisible])
-        [mOpenPanel validateVisibleColumns];
+    if ([mOpenPanel respondsToSelector:@selector(isVisible)] && [mSavePanel isVisible]) {
+        if ([mOpenPanel respondsToSelector:@selector(validateVisibleColumns)])
+            [mOpenPanel validateVisibleColumns];
+    }
 }
 
 - (void)panelSelectionDidChange:(id)sender
 {
     Q_UNUSED(sender);
     if (mHelper) {
-        QString selection = QT_PREPEND_NAMESPACE(QCFString::toQString([mSavePanel filename]));
+        QString selection = QT_PREPEND_NAMESPACE(QCFString::toQString([[mSavePanel URL] path]));
         if (selection != mCurrentSelection) {
             *mCurrentSelection = selection;
             mHelper->QNSOpenSavePanelDelegate_selectionChanged(selection);
         }
     }
-}
-
-- (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void *)contextInfo
-{
-    Q_UNUSED(panel);
-    Q_UNUSED(contextInfo);
-    mReturnCode = returnCode;
-    if (mHelper)
-        mHelper->QNSOpenSavePanelDelegate_panelClosed(returnCode == NSOKButton);
 }
 
 - (void)panel:(id)sender directoryDidChange:(NSString *)path
@@ -559,7 +562,7 @@ extern void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding encoding
 void QCocoaFileDialogHelper::setDirectory(const QString &directory)
 {
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
-    [delegate->mSavePanel setDirectory:QCFString::toNSString(directory)];
+    [delegate->mSavePanel setDirectoryURL:[NSURL fileURLWithPath:QCFString::toNSString(directory)]];
 }
 
 QString QCocoaFileDialogHelper::directory() const
