@@ -1448,6 +1448,9 @@ QVariant::QVariant(bool val)
 QVariant::QVariant(double val)
     : d(Double)
 { d.data.d = val; }
+QVariant::QVariant(float val)
+    : d(QMetaType::Float)
+{ d.data.f = val; }
 
 QVariant::QVariant(const QByteArray &val)
     : d(ByteArray)
