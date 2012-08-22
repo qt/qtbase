@@ -779,7 +779,7 @@ public:
     };
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    enum QT_DEPRECATED DeviceType {
+    enum DeviceType {
         TouchScreen,
         TouchPad
     };
