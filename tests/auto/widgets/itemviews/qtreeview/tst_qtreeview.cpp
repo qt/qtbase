@@ -1994,7 +1994,7 @@ void tst_QTreeView::mouseDoubleClick()
         model.insertRows(0, 20, index);
         model.insertColumns(0,2,index);
         for (int i1 = 0; i1 <  model.rowCount(index); i1++) {
-            QModelIndex index2 = model.index(i1, 0, index);
+            (void)model.index(i1, 0, index);
         }
     }
 
