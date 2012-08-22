@@ -86,7 +86,7 @@ private:
 
     // Platform-specific data
 #if defined(Q_OS_WIN)
-    QFileSystemEntry::NativePath dirPath;
+    QString dirPath;
     HANDLE findFileHandle;
     QStringList uncShares;
     bool uncFallback;
