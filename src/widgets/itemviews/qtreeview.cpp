@@ -1991,7 +1991,8 @@ QModelIndex QTreeView::indexAbove(const QModelIndex &index) const
     int i = d->viewIndex(index);
     if (--i < 0)
         return QModelIndex();
-    return d->viewItems.at(i).index;
+    const QModelIndex firstColumnIndex = d->viewItems.at(i).index;
+    return firstColumnIndex.sibling(firstColumnIndex.row(), index.column());
 }
 
 /*!
@@ -2006,7 +2007,8 @@ QModelIndex QTreeView::indexBelow(const QModelIndex &index) const
     int i = d->viewIndex(index);
     if (++i >= d->viewItems.count())
         return QModelIndex();
-    return d->viewItems.at(i).index;
+    const QModelIndex firstColumnIndex = d->viewItems.at(i).index;
+    return firstColumnIndex.sibling(firstColumnIndex.row(), index.column());
 }
 
 /*!

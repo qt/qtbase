@@ -1870,17 +1870,21 @@ void tst_QTreeView::indexAbove()
             model.fetchMore(p);
         int rows = model.rowCount(p);
         for (int r = rows - 1; r > 0; --r) {
-            QModelIndex idx = model.index(r, 0, p);
-            QModelIndex expected = model.index(r - 1, 0, p);
-            QCOMPARE(view.indexAbove(idx), expected);
+            for (int column = 0; column < 3; ++column) {
+                QModelIndex idx = model.index(r, column, p);
+                QModelIndex expected = model.index(r - 1, column, p);
+                QCOMPARE(view.indexAbove(idx), expected);
+            }
         }
         // hide even rows
         for (int r = 0; r < rows; r+=2)
             view.setRowHidden(r, p, true);
         for (int r = rows - 1; r > 0; r-=2) {
-            QModelIndex idx = model.index(r, 0, p);
-            QModelIndex expected = model.index(r - 2, 0, p);
-            QCOMPARE(view.indexAbove(idx), expected);
+            for (int column = 0; column < 3; ++column) {
+                QModelIndex idx = model.index(r, column, p);
+                QModelIndex expected = model.index(r - 2, column, p);
+                QCOMPARE(view.indexAbove(idx), expected);
+            }
         }
 //        for (int r = 0; r < rows; ++r)
 //            parents.push(model.index(r, 0, p));
@@ -1889,21 +1893,39 @@ void tst_QTreeView::indexAbove()
 
 void tst_QTreeView::indexBelow()
 {
-    QtTestModel model(2, 1);
+    QtTestModel model(2, 2);
 
     QTreeView view;
     view.setModel(&model);
     view.show();
 
-    QModelIndex i = model.index(0, 0, view.rootIndex());
-    QVERIFY(i.isValid());
-    QCOMPARE(i.row(), 0);
+    {
+        QModelIndex i = model.index(0, 0, view.rootIndex());
+        QVERIFY(i.isValid());
+        QCOMPARE(i.row(), 0);
+        QCOMPARE(i.column(), 0);
 
-    i = view.indexBelow(i);
-    QVERIFY(i.isValid());
-    QCOMPARE(i.row(), 1);
-    i = view.indexBelow(i);
-    QVERIFY(!i.isValid());
+        i = view.indexBelow(i);
+        QVERIFY(i.isValid());
+        QCOMPARE(i.row(), 1);
+        QCOMPARE(i.column(), 0);
+        i = view.indexBelow(i);
+        QVERIFY(!i.isValid());
+    }
+
+    {
+        QModelIndex i = model.index(0, 1, view.rootIndex());
+        QVERIFY(i.isValid());
+        QCOMPARE(i.row(), 0);
+        QCOMPARE(i.column(), 1);
+
+        i = view.indexBelow(i);
+        QVERIFY(i.isValid());
+        QCOMPARE(i.row(), 1);
+        QCOMPARE(i.column(), 1);
+        i = view.indexBelow(i);
+        QVERIFY(!i.isValid());
+    }
 }
 
 void tst_QTreeView::clicked()
