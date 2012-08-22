@@ -152,6 +152,7 @@ private slots:
     void itemDelegate();
     void itemDelegateForColumnOrRow();
     void keyboardSearch();
+    void keyboardSearchMultiColumn();
     void setModel();
     void openPersistentEditor();
     void rootIndex();
@@ -1136,6 +1137,35 @@ void tst_QTreeView::keyboardSearch()
     // The item that starts with B is selected.
     view.keyboardSearch(QLatin1String("B"));
     QVERIFY(view.selectionModel()->isSelected(model.index(1, 0)));
+}
+
+void tst_QTreeView::keyboardSearchMultiColumn()
+{
+    QTreeView view;
+
+    QStandardItemModel model(4, 2);
+
+    model.setItem(0, 0, new QStandardItem("1"));    model.setItem(0, 1, new QStandardItem("green"));
+    model.setItem(1, 0, new QStandardItem("bad"));    model.setItem(1, 1, new QStandardItem("eggs"));
+    model.setItem(2, 0, new QStandardItem("moof"));    model.setItem(2, 1, new QStandardItem("and"));
+    model.setItem(3, 0, new QStandardItem("elf"));    model.setItem(3, 1, new QStandardItem("ham"));
+
+    view.setModel(&model);
+    view.show();
+    qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+
+    view.setCurrentIndex(model.index(0, 1));
+
+    // First item is selected
+    view.keyboardSearch(QLatin1String("eggs"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(1, 1)));
+
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+
+    // 'ham' is selected
+    view.keyboardSearch(QLatin1String("h"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(3, 1)));
 }
 
 void tst_QTreeView::setModel()

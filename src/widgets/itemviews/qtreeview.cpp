@@ -1003,6 +1003,8 @@ void QTreeView::keyboardSearch(const QString &search)
     for (int i = 0; i < d->viewItems.count(); ++i) {
         if ((int)d->viewItems.at(i).level > previousLevel) {
             QModelIndex searchFrom = d->viewItems.at(i).index;
+            if (start.column() > 0)
+                searchFrom = searchFrom.sibling(searchFrom.row(), start.column());
             if (searchFrom.parent() == start.parent())
                 searchFrom = start;
             QModelIndexList match = d->model->match(searchFrom, Qt::DisplayRole, searchString);
@@ -1022,6 +1024,9 @@ void QTreeView::keyboardSearch(const QString &search)
         index = d->viewItems.at(bestBelow).index;
     else if (bestAbove > -1)
         index = d->viewItems.at(bestAbove).index;
+
+    if (start.column() > 0)
+        index = index.sibling(index.row(), start.column());
 
     if (index.isValid()) {
         QItemSelectionModel::SelectionFlags flags = (d->selectionMode == SingleSelection
