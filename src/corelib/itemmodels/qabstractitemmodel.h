@@ -172,7 +172,7 @@ public:
     virtual QModelIndex parent(const QModelIndex &child) const = 0;
 
     inline QModelIndex sibling(int row, int column, const QModelIndex &idx) const
-        { return index(row, column, parent(idx)); }
+        { return (row == idx.row() && column == idx.column()) ? idx : index(row, column, parent(idx)); }
 
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const = 0;
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const = 0;
