@@ -96,6 +96,8 @@ public:
     void closePrintDevice();
 
     void updatePaperSize();
+    void setPaperSize();
+    void setCupsDefaults();
 
 private:
     Q_DISABLE_COPY(QCupsPrintEnginePrivate)

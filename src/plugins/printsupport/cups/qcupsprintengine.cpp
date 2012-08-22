@@ -70,6 +70,7 @@ QCupsPrintEngine::QCupsPrintEngine(QPrinter::PrinterMode m)
         for (int i = 0; i <  prnCount; ++i) {
             if (printers[i].is_default) {
                 d->printerName = QString::fromLocal8Bit(printers[i].name);
+                d->setCupsDefaults();
                 break;
             }
         }
@@ -88,6 +89,10 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
     Q_D(QCupsPrintEngine);
 
     switch (int(key)) {
+    case PPK_PaperSize:
+        d->printerPaperSize = QPrinter::PaperSize(value.toInt());
+        d->setPaperSize();
+        break;
     case PPK_CupsPageRect:
         d->cupsPageRect = value.toRect();
         break;
@@ -99,6 +104,13 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
         break;
     case PPK_CupsStringPageSize:
         d->cupsStringPageSize = value.toString();
+        break;
+    case PPK_PrinterName:
+        // prevent setting the defaults again for the same printer
+        if (d->printerName != value.toString()) {
+            d->printerName = value.toString();
+            d->setCupsDefaults();
+        }
         break;
     default:
         QPdfPrintEngine::setProperty(key, value);
@@ -263,6 +275,104 @@ void QCupsPrintEnginePrivate::updatePaperSize()
         paperSize = QSize(s.width, s.height);
     }
 }
+
+void QCupsPrintEnginePrivate::setPaperSize()
+{
+    if (QCUPSSupport::isAvailable()) {
+        QCUPSSupport cups;
+        QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(printerPaperSize));
+
+        if (cups.currentPPD()) {
+            const ppd_option_t* pageSizes = cups.pageSizes();
+            for (int i = 0; i < pageSizes->num_choices; ++i) {
+                QByteArray cupsPageSize = pageSizes->choices[i].choice;
+                QRect tmpCupsPaperRect = cups.paperRect(cupsPageSize);
+                QRect tmpCupsPageRect = cups.pageRect(cupsPageSize);
+
+                if (qAbs(size.width - tmpCupsPaperRect.width()) < 5  && qAbs(size.height - tmpCupsPaperRect.height()) < 5) {
+                    cupsPaperRect = tmpCupsPaperRect;
+                    cupsPageRect = tmpCupsPageRect;
+
+                    leftMargin = cupsPageRect.x() - cupsPaperRect.x();
+                    topMargin = cupsPageRect.y() - cupsPaperRect.y();
+                    rightMargin = cupsPaperRect.right() - cupsPageRect.right();
+                    bottomMargin = cupsPaperRect.bottom() - cupsPageRect.bottom();
+
+                    updatePaperSize();
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void QCupsPrintEnginePrivate::setCupsDefaults()
+{
+    if (QCUPSSupport::isAvailable()) {
+        int cupsPrinterIndex = -1;
+        QCUPSSupport cups;
+
+        const cups_dest_t* printers = cups.availablePrinters();
+        int prnCount = cups.availablePrintersCount();
+        for (int i = 0; i <  prnCount; ++i) {
+            QString name = QString::fromLocal8Bit(printers[i].name);
+            if (name == printerName) {
+                cupsPrinterIndex = i;
+                break;
+            }
+        }
+
+        if (cupsPrinterIndex < 0)
+            return;
+
+        cups.setCurrentPrinter(cupsPrinterIndex);
+
+        if (cups.currentPPD()) {
+            const ppd_option_t *ppdDuplex = cups.ppdOption("Duplex");
+            if (ppdDuplex) {
+                if (qstrcmp(ppdDuplex->defchoice, "DuplexTumble") == 0)
+                    duplex = QPrinter::DuplexShortSide;
+                else if (qstrcmp(ppdDuplex->defchoice, "DuplexNoTumble") == 0)
+                    duplex = QPrinter::DuplexLongSide;
+                else
+                    duplex = QPrinter::DuplexNone;
+            }
+
+            grayscale = !cups.currentPPD()->color_device;
+
+            const ppd_option_t *ppdCollate = cups.ppdOption("Collate");
+            if (ppdCollate)
+                collate = qstrcmp(ppdCollate->defchoice, "True") == 0;
+
+            const ppd_option_t* pageSizes = cups.pageSizes();
+            QByteArray cupsPageSize;
+            for (int i = 0; i < pageSizes->num_choices; ++i) {
+                if (static_cast<int>(pageSizes->choices[i].marked) == 1)
+                    cupsPageSize = pageSizes->choices[i].choice;
+            }
+
+            cupsOptions = cups.options();
+            cupsPaperRect = cups.paperRect(cupsPageSize);
+            cupsPageRect = cups.pageRect(cupsPageSize);
+
+            for (int ps = 0; ps < QPrinter::NPageSize; ++ps) {
+                QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(ps));
+                if (qAbs(size.width - cupsPaperRect.width()) < 5 && qAbs(size.height - cupsPaperRect.height()) < 5) {
+                    printerPaperSize = static_cast<QPrinter::PaperSize>(ps);
+
+                    leftMargin = cupsPageRect.x() - cupsPaperRect.x();
+                    topMargin = cupsPageRect.y() - cupsPaperRect.y();
+                    rightMargin = cupsPaperRect.right() - cupsPageRect.right();
+                    bottomMargin = cupsPaperRect.bottom() - cupsPageRect.bottom();
+
+                    updatePaperSize();
+                    break;
+                }
+            }
+        }
+    }
+}
+
 
 QT_END_NAMESPACE
 
