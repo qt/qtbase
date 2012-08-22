@@ -48,9 +48,9 @@ HttpWindow::HttpWindow(QWidget *parent)
     : QDialog(parent)
 {
 #ifndef QT_NO_SSL
-    urlLineEdit = new QLineEdit("https://qt.nokia.com/");
+    urlLineEdit = new QLineEdit("https://qt-project.org/");
 #else
-    urlLineEdit = new QLineEdit("http://qt.nokia.com/");
+    urlLineEdit = new QLineEdit("http://qt-project.org/");
 #endif
 
     urlLabel = new QLabel(tr("&URL:"));
