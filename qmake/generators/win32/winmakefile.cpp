@@ -64,7 +64,7 @@ Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem
     if(!exists(bd))
         return -1;
 
-    QMakeMetaInfo libinfo;
+    QMakeMetaInfo libinfo(project);
     bool libInfoRead = libinfo.readLib(bd + Option::dir_sep + stem);
 
     // If the library, for which we're trying to find the highest version

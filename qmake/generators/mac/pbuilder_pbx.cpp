@@ -815,7 +815,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                             */
                             QString lib_file = (*lit) + Option::dir_sep + lib;
                             if(QMakeMetaInfo::libExists(lib_file)) {
-                                QMakeMetaInfo libinfo;
+                                QMakeMetaInfo libinfo(project);
                                 if(libinfo.readLib(lib_file)) {
                                     if(!libinfo.isEmpty("QMAKE_PRL_TARGET")) {
                                         library = (*lit) + Option::dir_sep + libinfo.first("QMAKE_PRL_TARGET");

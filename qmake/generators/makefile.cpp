@@ -888,7 +888,7 @@ MakefileGenerator::processPrlFile(QString &file)
     if(!meta_file.isEmpty()) {
         QString f = fileFixify(real_meta_file, qmake_getpwd(), Option::output_dir);
         if(QMakeMetaInfo::libExists(f)) {
-            QMakeMetaInfo libinfo;
+            QMakeMetaInfo libinfo(project);
             debug_msg(1, "Processing PRL file: %s", real_meta_file.toLatin1().constData());
             if(!libinfo.readLib(f)) {
                 fprintf(stderr, "Error processing meta file: %s\n", real_meta_file.toLatin1().constData());

@@ -48,7 +48,8 @@ QT_BEGIN_NAMESPACE
 
 QHash<QString, QHash<QString, QStringList> > QMakeMetaInfo::cache_vars;
 
-QMakeMetaInfo::QMakeMetaInfo()
+QMakeMetaInfo::QMakeMetaInfo(QMakeProject *_conf)
+    : conf(_conf)
 {
 
 }
@@ -180,19 +181,12 @@ QMakeMetaInfo::readLibtoolFile(const QString &f)
                     dep = dep.mid(1, dep.length() - 2);
                 lst = dep.trimmed().split(" ");
             }
-            QMakeProject *conf = NULL;
             for(QStringList::Iterator lit = lst.begin(); lit != lst.end(); ++lit) {
                 if((*lit).startsWith("-R")) {
-                    if(!conf) {
-                        conf = new QMakeProject;
-                        conf->read(QMakeProject::ReadAll ^ QMakeProject::ReadProFile);
-                    }
                     if(!conf->isEmpty("QMAKE_LFLAGS_RPATH"))
                         (*lit) = conf->first("QMAKE_LFLAGS_RPATH") + (*lit).mid(2);
                 }
             }
-            if(conf)
-                delete conf;
             vars["QMAKE_PRL_LIBS"] += lst;
         }
     }

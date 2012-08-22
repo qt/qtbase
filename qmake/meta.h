@@ -48,16 +48,19 @@
 
 QT_BEGIN_NAMESPACE
 
+class QMakeProject;
+
 class QMakeMetaInfo
 {
     bool readLibtoolFile(const QString &f);
     bool readPkgCfgFile(const QString &f);
+    QMakeProject *conf;
     QHash<QString, QStringList> vars;
     QString meta_type;
     static QHash<QString, QHash<QString, QStringList> > cache_vars;
     void clear();
 public:
-    QMakeMetaInfo();
+    QMakeMetaInfo(QMakeProject *_conf);
 
     bool readLib(QString lib);
     static QString findLib(QString lib);
