@@ -408,7 +408,6 @@ void tst_QColumnView::scrollTo()
     home = model.index(0, 0, home);
     home = model.index(0, 0, home);
     view.scrollTo(home, QAbstractItemView::EnsureVisible);
-    QModelIndex homeFile = model.index(0, 0, home);
     view.setRootIndex(home);
 
     QModelIndex index = model.index(0, 0, home);
