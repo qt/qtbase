@@ -73,7 +73,7 @@ public:
     void setPrinter(QPrinter *printer);
     /// copy information from the widget and apply that to the printer.
     void setupPrinter() const;
-    void selectPrinter(QCUPSSupport *m_cups);
+    void selectPrinter();
     void selectPdfPsPrinter(const QPrinter *p);
 
 private slots:
@@ -96,7 +96,7 @@ private:
     QSizeF m_paperSize;
     qreal m_currentMultiplier;
     bool m_blockSignals;
-    QCUPSSupport *m_cups;
+    bool m_cups;
 };
 
 QT_END_NAMESPACE

@@ -58,7 +58,6 @@
 #  include <private/qcups_p.h>
 #endif
 
-
 QT_BEGIN_NAMESPACE
 
 QSizeF qt_printerPaperSize(QPrinter::Orientation, QPrinter::PaperSize, QPrinter::Unit, int);
@@ -224,26 +223,14 @@ public:
     void init();
 
     QPageSetupWidget *widget;
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    QCUPSSupport *cups;
-#endif
 };
 
 QUnixPageSetupDialogPrivate::QUnixPageSetupDialogPrivate(QPrinter *printer) : QPageSetupDialogPrivate(printer)
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    , cups(0)
-#endif
 {
 }
 
 QUnixPageSetupDialogPrivate::~QUnixPageSetupDialogPrivate()
 {
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    if (cups) {
-        delete cups;
-        cups = 0;
-    }
-#endif
 }
 
 void QUnixPageSetupDialogPrivate::init()
@@ -252,14 +239,6 @@ void QUnixPageSetupDialogPrivate::init()
 
     widget = new QPageSetupWidget(q);
     widget->setPrinter(printer);
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    if (printer->outputFormat() == QPrinter::NativeFormat && QCUPSSupport::isAvailable()) {
-        cups = new QCUPSSupport;
-        widget->selectPrinter(cups);
-    } else {
-        cups = 0;
-    }
-#endif
 
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok
                                                      | QDialogButtonBox::Cancel,
@@ -276,7 +255,7 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
     : QWidget(parent),
     m_printer(0),
     m_blockSignals(false),
-    m_cups(0)
+    m_cups(false)
 {
     widget.setupUi(this);
 
@@ -365,29 +344,22 @@ void QPageSetupWidget::setupPrinter() const
         ps = val.toInt();
     }
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    else if (m_cups && QCUPSSupport::isAvailable() && m_cups->currentPPD()) {
-        QByteArray cupsPageSize = val.toByteArray();
-        QPrintEngine *engine = m_printer->printEngine();
-        engine->setProperty(PPK_CupsStringPageSize, QString::fromLatin1(cupsPageSize));
-        engine->setProperty(PPK_CupsOptions, m_cups->options());
-
-        QRect pageRect = m_cups->pageRect(cupsPageSize);
-        engine->setProperty(PPK_CupsPageRect, pageRect);
-
-        QRect paperRect = m_cups->paperRect(cupsPageSize);
-        engine->setProperty(PPK_CupsPaperRect, paperRect);
-
-        for(ps = 0; ps < QPrinter::NPageSize; ++ps) {
-            QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(ps));
-            if (size.width == paperRect.width() && size.height == paperRect.height())
+    else if (val.type() == QVariant::ByteArray) {
+        for (int papersize = 0; papersize < QPrinter::NPageSize; ++papersize) {
+            QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(papersize));
+            if (size.width == m_paperSize.width() && size.height == m_paperSize.height()) {
+                ps = static_cast<QPrinter::PaperSize>(papersize);
                 break;
+            }
         }
     }
 #endif
-    if (ps == QPrinter::Custom)
+    if (ps == QPrinter::Custom) {
         m_printer->setPaperSize(sizeForOrientation(orientation, m_paperSize), QPrinter::Point);
-    else
+    }
+    else {
         m_printer->setPaperSize(static_cast<QPrinter::PaperSize>(ps));
+    }
 
 #ifdef PSD_ENABLE_PAPERSOURCE
     m_printer->setPaperSource((QPrinter::PaperSource)widget.paperSource->currentIndex());
@@ -396,13 +368,14 @@ void QPageSetupWidget::setupPrinter() const
 
 }
 
-void QPageSetupWidget::selectPrinter(QCUPSSupport *cups)
+void QPageSetupWidget::selectPrinter()
 {
-    m_cups = cups;
     widget.paperSize->clear();
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    if (m_cups && QCUPSSupport::isAvailable()) {
-        const ppd_option_t* pageSizes = m_cups->pageSizes();
+    if (QCUPSSupport::isAvailable()) {
+        m_cups = true;
+        QCUPSSupport cups;
+        const ppd_option_t* pageSizes = cups.pageSizes();
         const int numChoices = pageSizes ? pageSizes->num_choices : 0;
 
         int cupsDefaultSize = 0;
@@ -412,13 +385,11 @@ void QPageSetupWidget::selectPrinter(QCUPSSupport *cups)
             widget.paperSize->addItem(QString::fromLocal8Bit(pageSizes->choices[i].text), QByteArray(pageSizes->choices[i].choice));
             if (static_cast<int>(pageSizes->choices[i].marked) == 1)
                 cupsDefaultSize = i;
-            if (m_printer->d_func()->hasUserSetPageSize) {
-                QRect cupsPaperSize = m_cups->paperRect(pageSizes->choices[i].choice);
-                QSize diff = cupsPaperSize.size() - qtPreferredSize;
-                if (qAbs(diff.width()) < 5 && qAbs(diff.height()) < 5) {
-                    widget.paperSize->setCurrentIndex(i);
-                    preferredSizeMatched = true;
-                }
+            QRect cupsPaperSize = cups.paperRect(pageSizes->choices[i].choice);
+            QSize diff = cupsPaperSize.size() - qtPreferredSize;
+            if (qAbs(diff.width()) < 5 && qAbs(diff.height()) < 5) {
+                widget.paperSize->setCurrentIndex(i);
+                preferredSizeMatched = true;
             }
         }
         if (!preferredSizeMatched)
@@ -427,15 +398,16 @@ void QPageSetupWidget::selectPrinter(QCUPSSupport *cups)
             m_printer->getPageMargins(&m_leftMargin, &m_topMargin, &m_rightMargin, &m_bottomMargin, QPrinter::Point);
         } else {
             QByteArray cupsPaperSizeChoice = widget.paperSize->itemData(widget.paperSize->currentIndex()).toByteArray();
-            QRect paper = m_cups->paperRect(cupsPaperSizeChoice);
-            QRect content = m_cups->pageRect(cupsPaperSizeChoice);
+            QRect paper = cups.paperRect(cupsPaperSizeChoice);
+            QRect content = cups.pageRect(cupsPaperSizeChoice);
 
             m_leftMargin = content.x() - paper.x();
             m_topMargin = content.y() - paper.y();
             m_rightMargin = paper.right() - content.right();
             m_bottomMargin = paper.bottom() - content.bottom();
         }
-    }
+    } else
+        m_cups = false;
 #endif
     if (widget.paperSize->count() == 0) {
         populatePaperSizes(widget.paperSize);
@@ -445,19 +417,17 @@ void QPageSetupWidget::selectPrinter(QCUPSSupport *cups)
 
     unitChanged(widget.unit->currentIndex());
     m_pagePreview->setMargins(m_leftMargin, m_topMargin, m_rightMargin, m_bottomMargin);
+
+    // setup printer here the first time
+    setupPrinter();
 }
 
 void QPageSetupWidget::selectPdfPsPrinter(const QPrinter *p)
 {
-    m_cups = 0;
+    m_cups = false;
     widget.paperSize->clear();
     populatePaperSizes(widget.paperSize);
     widget.paperSize->setCurrentIndex(widget.paperSize->findData(p->paperSize()));
-
-    m_leftMargin = 90;
-    m_topMargin = 72;
-    m_bottomMargin = 72;
-    m_rightMargin = 90;
     unitChanged(widget.unit->currentIndex());
     m_pagePreview->setMargins(m_leftMargin, m_topMargin, m_rightMargin, m_bottomMargin);
 }
@@ -482,7 +452,7 @@ void QPageSetupWidget::_q_paperSizeChanged()
     bool custom = size == QPrinter::Custom;
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    custom = custom ? !m_cups : custom;
+    custom = custom ? m_cups : custom;
 #endif
 
     widget.paperWidth->setEnabled(custom);
@@ -496,9 +466,10 @@ void QPageSetupWidget::_q_paperSizeChanged()
     } else {
         Q_ASSERT(m_printer);
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-        if (m_cups) { // combobox is filled with cups based data
+        if (m_cups && QCUPSSupport::isAvailable()) { // combobox is filled with cups based data
+            QCUPSSupport cups;
             QByteArray cupsPageSize = widget.paperSize->itemData(widget.paperSize->currentIndex()).toByteArray();
-            m_paperSize = m_cups->paperRect(cupsPageSize).size();
+            m_paperSize = cups.paperRect(cupsPageSize).size();
             if (orientation == QPrinter::Landscape)
                 m_paperSize = QSizeF(m_paperSize.height(), m_paperSize.width()); // swap
         }
