@@ -73,6 +73,7 @@ private slots:
     void decode0D() const;
     void aliasForUTF16() const;
     void mibForTSCII() const;
+    void codecForTSCII() const;
 
     void utf8Codec_data();
     void utf8Codec();
@@ -509,6 +510,13 @@ void tst_QTextCodec::aliasForUTF16() const
 void tst_QTextCodec::mibForTSCII() const
 {
     QTextCodec *codec = QTextCodec::codecForName("TSCII");
+    QVERIFY(codec);
+    QCOMPARE(codec->mibEnum(), 2107);
+}
+
+void tst_QTextCodec::codecForTSCII() const
+{
+    QTextCodec *codec = QTextCodec::codecForMib(2107);
     QVERIFY(codec);
     QCOMPARE(codec->mibEnum(), 2107);
 }

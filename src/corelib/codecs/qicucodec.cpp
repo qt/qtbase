@@ -530,6 +530,10 @@ QTextCodec *QIcuCodec::codecForMibUnlocked(int mib)
         if (mibToName[i].mib == mib)
             return codecForNameUnlocked(mibToNameTable + mibToName[i].index);
     }
+
+    if (mib == 2107)
+        return codecForNameUnlocked("TSCII");
+
     return 0;
 }
 
