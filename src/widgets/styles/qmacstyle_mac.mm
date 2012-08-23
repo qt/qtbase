@@ -5206,7 +5206,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     [scroller setFrame:NSMakeRect(0, 0, slider->rect.width(), height)];
                     CGContextTranslateCTM(cg, 0, value * totalHeight);
                 }
-                if (value > 0.0) {
+                if (length > 0.0) {
                     [scroller layout];
                     [scroller displayRectIgnoringOpacity:[scroller bounds]
                                                inContext:[NSGraphicsContext currentContext]];
