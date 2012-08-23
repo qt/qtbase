@@ -980,7 +980,7 @@ void QMessageLogContext::copy(const QMessageLogContext &logContext)
 */
 
 /*!
-    \fn void QMessageLogger::noDebug(const char *, ...)
+    \fn void QMessageLogger::noDebug(const char *, ...) const
     \internal
 
     Ignores logging output

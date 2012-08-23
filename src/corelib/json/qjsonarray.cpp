@@ -307,7 +307,7 @@ QJsonValue QJsonArray::last() const
 /*!
     Inserts \a value at the beginning of the array.
 
-    This is the same as \c{insert(0, \a value)}.
+    This is the same as \c{insert(0, value)} and will prepend \a value to the array.
 
     \sa append(), insert()
  */
@@ -328,7 +328,7 @@ void QJsonArray::append(const QJsonValue &value)
 
 /*!
     Removes the value at index position \a i. \a i must be a valid
-    index position in the array (i.e., \c{0 <= \a i < size()}).
+    index position in the array (i.e., \c{0 <= i < size()}).
 
     \sa insert(), replace()
  */
@@ -366,7 +366,7 @@ void QJsonArray::removeAt(int i)
 
 /*!
     Removes the item at index position \a i and returns it. \a i must
-    be a valid index position in the array (i.e., \c{0 <= \a i < size()}).
+    be a valid index position in the array (i.e., \c{0 <= i < size()}).
 
     If you don't use the return value, removeAt() is more efficient.
 
@@ -436,7 +436,7 @@ void QJsonArray::insert(int i, const QJsonValue &value)
 
 /*!
     Replaces the item at index position \a i with \a value. \a i must
-    be a valid index position in the array (i.e., \c{0 <= \a i < size()}).
+    be a valid index position in the array (i.e., \c{0 <= i < size()}).
 
     \sa operator[](), removeAt()
  */
@@ -482,7 +482,7 @@ bool QJsonArray::contains(const QJsonValue &value) const
 
 /*!
     Returns the value at index position \a i as a modifiable reference.
-    \a i must be a valid index position in the array (i.e., \c{0 <= \a i <
+    \a i must be a valid index position in the array (i.e., \c{0 <= i <
     size()}).
 
     The return value is of type QJsonValueRef, a helper class for QJsonArray
@@ -584,13 +584,13 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 /*! \fn void QJsonArray::push_back(const QJsonValue &value)
 
     This function is provided for STL compatibility. It is equivalent
-    to \l{QJsonArray::append()}{append(\a value)}.
+    to \l{QJsonArray::append()}{append(value)} and will append \a value to the array.
 */
 
 /*! \fn void QJsonArray::push_front(const QJsonValue &value)
 
     This function is provided for STL compatibility. It is equivalent
-    to \l{QJsonArray::prepend()}{prepend(\a value)}.
+    to \l{QJsonArray::prepend()}{prepend(value)} and will prepend \a value to the array.
 */
 
 /*! \fn void QJsonArray::pop_front()
@@ -694,7 +694,8 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 
 /*! \fn QJsonValueRef QJsonArray::iterator::operator[](int j) const
 
-    Returns a modifiable reference to the item at position \c{*this + j}.
+    Returns a modifiable reference to the item at offset \a j from the
+    item pointed to by this iterator (the item at position \c{*this + j}).
 
     This function is provided to make QJsonArray iterators behave like C++
     pointers.
@@ -918,7 +919,8 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 
 /*! \fn QJsonValue QJsonArray::const_iterator::operator[](int j) const
 
-    Returns the item at position \c{*this + j}.
+    Returns the item at offset \a j from the item pointed to by this iterator (the item at
+    position \c{*this + j}).
 
     This function is provided to make QJsonArray iterators behave like C++
     pointers.
