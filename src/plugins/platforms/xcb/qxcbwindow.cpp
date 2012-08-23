@@ -785,9 +785,7 @@ void QXcbWindow::setMotifWindowFlags(Qt::WindowFlags flags)
         if (!(flags & Qt::FramelessWindowHint) && !(customize && !(flags & Qt::WindowTitleHint))) {
             mwmhints.decorations |= MWM_DECOR_BORDER;
             mwmhints.decorations |= MWM_DECOR_RESIZEH;
-
-            if (flags & Qt::WindowTitleHint)
-                mwmhints.decorations |= MWM_DECOR_TITLE;
+            mwmhints.decorations |= MWM_DECOR_TITLE;
 
             if (flags & Qt::WindowSystemMenuHint)
                 mwmhints.decorations |= MWM_DECOR_MENU;
