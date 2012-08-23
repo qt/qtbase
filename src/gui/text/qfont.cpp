@@ -534,18 +534,6 @@ QFontEngineData::~QFontEngineData()
 */
 
 /*!
-    \fn FT_Face QFont::freetypeFace() const
-
-    Returns the handle to the primary FreeType face of the font. If font merging is not disabled a
-    QFont can contain several physical fonts.
-
-    Returns 0 if the font does not contain a FreeType face.
-
-    \note This function is only available on platforms that provide the FreeType library;
-    i.e., X11 and some Embedded Linux platforms.
-*/
-
-/*!
     \fn QString QFont::rawName() const
 
     Returns the name of the font within the underlying window system.
