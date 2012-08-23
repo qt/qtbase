@@ -1047,12 +1047,19 @@ static QTouchDevice *touchDevice = 0;
     NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
     QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
     Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
-    QCocoaDropData mimeData([sender draggingPasteboard]);
 
     // update these so selecting move/copy/link works
     QGuiApplicationPrivate::modifier_buttons = [self convertKeyModifiers: [[NSApp currentEvent] modifierFlags]];
 
-    QPlatformDragQtResponse response = QWindowSystemInterface::handleDrag(m_window, &mimeData, qt_windowPoint, qtAllowed);
+    QPlatformDragQtResponse response(false, Qt::IgnoreAction, QRect());
+    if ([sender draggingSource] != nil) {
+        QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+        response = QWindowSystemInterface::handleDrag(m_window, nativeDrag->platformDropData(), qt_windowPoint, qtAllowed);
+    } else {
+        QCocoaDropData mimeData([sender draggingPasteboard]);
+        response = QWindowSystemInterface::handleDrag(m_window, &mimeData, qt_windowPoint, qtAllowed);
+    }
+
     return qt_mac_mapDropAction(response.acceptedAction());
 }
 
@@ -1071,9 +1078,15 @@ static QTouchDevice *touchDevice = 0;
     NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
     QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
     Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
-    QCocoaDropData mimeData([sender draggingPasteboard]);
 
-    QPlatformDropQtResponse response = QWindowSystemInterface::handleDrop(m_window, &mimeData, qt_windowPoint, qtAllowed);
+    QPlatformDropQtResponse response(false, Qt::IgnoreAction);
+    if ([sender draggingSource] != nil) {
+        QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+        response = QWindowSystemInterface::handleDrop(m_window, nativeDrag->platformDropData(), qt_windowPoint, qtAllowed);
+    } else {
+        QCocoaDropData mimeData([sender draggingPasteboard]);
+        response = QWindowSystemInterface::handleDrop(m_window, &mimeData, qt_windowPoint, qtAllowed);
+    }
     return response.isAccepted();
 }
 
