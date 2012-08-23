@@ -396,7 +396,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 project->values("QMAKE_CLEAN") << manifest_rc << manifest_res;
 
                 t << "\n\t" << "@if not exist " << manifest_rc << " echo 1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ "
-                  << QFileInfo(unescapeFilePath(manifest)).fileName() << ">" << manifest_rc;
+                  << '"' << QFileInfo(unescapeFilePath(manifest)).fileName() << "\">" << manifest_rc;
 
                 if (generateManifest) {
                     t << "\n\tif not exist $(DESTDIR_TARGET) del " << manifest << ">NUL 2>&1";
