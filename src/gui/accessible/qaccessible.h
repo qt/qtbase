@@ -452,6 +452,7 @@ public:
         Q_ASSERT(m_type != QAccessible::TextInserted);
         Q_ASSERT(m_type != QAccessible::TextRemoved);
         Q_ASSERT(m_type != QAccessible::TextUpdated);
+        Q_ASSERT(m_type != QAccessible::TableModelChanged);
     }
 
     virtual ~QAccessibleEvent()
@@ -614,6 +615,45 @@ public:
 
 protected:
     QVariant m_value;
+};
+
+class Q_GUI_EXPORT QAccessibleTableModelChangeEvent : public QAccessibleEvent
+{
+public:
+    enum ModelChangeType {
+        ModelReset,
+        DataChanged,
+        RowsInserted,
+        ColumnsInserted,
+        RowsRemoved,
+        ColumnsRemoved
+    };
+
+    inline QAccessibleTableModelChangeEvent(QObject *obj, ModelChangeType changeType)
+        : QAccessibleEvent(obj, QAccessible::InvalidEvent)
+        , m_modelChangeType(changeType)
+        , m_firstRow(-1), m_firstColumn(-1), m_lastRow(-1), m_lastColumn(-1)
+    {
+        m_type = QAccessible::TableModelChanged;
+    }
+    void setModelChangeType(ModelChangeType changeType) { m_modelChangeType = changeType; }
+    ModelChangeType modelChangeType() const { return m_modelChangeType; }
+
+    void setFirstRow(int row) { m_firstRow = row; }
+    void setFirstColumn(int col) { m_firstColumn = col; }
+    void setLastRow(int row) { m_lastRow = row; }
+    void setLastColumn(int col) { m_lastColumn = col; }
+    int firstRow() const { return m_firstRow; }
+    int firstColumn() const { return m_firstColumn; }
+    int lastRow() const { return m_lastRow; }
+    int lastColumn() const { return m_lastColumn; }
+
+protected:
+    ModelChangeType m_modelChangeType;
+    int m_firstRow;
+    int m_firstColumn;
+    int m_lastRow;
+    int m_lastColumn;
 };
 
 #define QAccessibleInterface_iid "org.qt-project.Qt.QAccessibleInterface"
