@@ -736,7 +736,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                     return false;
                 }
 
-                if (!filterEvent(&msg)) {
+                if (!filterNativeEvent(QByteArrayLiteral("windows_generic_MSG"), &msg, 0)) {
                     TranslateMessage(&msg);
                     DispatchMessage(&msg);
                 }
