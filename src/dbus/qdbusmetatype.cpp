@@ -159,6 +159,7 @@ Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
 
 /*!
     \class QDBusMetaType
+    \inmodule QtDBus
     \brief Meta-type registration system for the QtDBus module.
     \internal
 
