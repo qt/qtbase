@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QAbstractNativeEventFilter
+    \inmodule QtCore
     \since 5.0
 
     \brief The QAbstractNativeEventFilter class provides an interface for receiving native

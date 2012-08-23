@@ -163,6 +163,7 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 
 /*!
     \class QUuid
+    \inmodule QtCore
     \brief The QUuid class stores a Universally Unique Identifier (UUID).
 
     \reentrant

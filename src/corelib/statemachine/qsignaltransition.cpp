@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QSignalTransition
+  \inmodule QtCore
 
   \brief The QSignalTransition class provides a transition based on a Qt signal.
 

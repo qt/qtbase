@@ -342,6 +342,7 @@ inline void QDirPrivate::initFileEngine()
 
 /*!
     \class QDir
+    \inmodule QtCore
     \brief The QDir class provides access to directory structures and their contents.
 
     \ingroup io

@@ -53,6 +53,7 @@
 QT_BEGIN_NAMESPACE
 
 /*! \class QJsonDocument
+    \inmodule QtCore
     \ingroup json
     \reentrant
     \since 5.0

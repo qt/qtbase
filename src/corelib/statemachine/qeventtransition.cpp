@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QEventTransition
+  \inmodule QtCore
 
   \brief The QEventTransition class provides a QObject-specific transition for Qt events.
 

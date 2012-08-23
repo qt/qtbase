@@ -155,6 +155,7 @@ void QTemporaryDirPrivate::create(const QString &templateName)
 
 /*!
     \class QTemporaryDir
+    \inmodule QtCore
     \reentrant
     \brief The QTemporaryDir class creates a unique directory for temporary use.
 

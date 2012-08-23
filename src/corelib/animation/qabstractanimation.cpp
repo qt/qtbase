@@ -41,6 +41,7 @@
 
 /*!
     \class QAbstractAnimation
+    \inmodule QtCore
     \ingroup animation
     \brief The QAbstractAnimation class is the base of all animations.
     \since 4.6
@@ -163,6 +164,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QAbstractAnimationTimer
+  \inmodule QtCore
   \brief QAbstractAnimationTimer is the base class for animation timers.
   \internal
 
@@ -202,6 +204,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QUnifiedTimer
+    \inmodule QtCore
     \brief QUnifiedTimer provides a unified timing mechanism for animations in Qt C++ and QML.
     \internal
 
@@ -708,6 +711,7 @@ int QAnimationTimer::closestPauseAnimationTimeToFinish()
 
 /*!
    \class QAnimationDriver
+   \inmodule QtCore
 
    \brief The QAnimationDriver class is used to exchange the mechanism that drives animations.
 

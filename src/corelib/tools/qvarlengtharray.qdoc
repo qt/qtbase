@@ -27,6 +27,7 @@
 
 /*!
     \class QVarLengthArray
+    \inmodule QtCore
     \brief The QVarLengthArray class provides a low-level variable-length array.
 
     \ingroup tools

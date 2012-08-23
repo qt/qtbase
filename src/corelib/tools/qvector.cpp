@@ -41,6 +41,7 @@
 
 /*!
     \class QVector
+    \inmodule QtCore
     \brief The QVector class is a template class that provides a dynamic array.
 
     \ingroup tools

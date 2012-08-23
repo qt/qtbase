@@ -329,6 +329,7 @@ void **QListData::erase(void **xi)
 }
 
 /*! \class QList
+    \inmodule QtCore
     \brief The QList class is a template class that provides lists.
 
     \ingroup tools
@@ -1221,6 +1222,7 @@ void **QListData::erase(void **xi)
 */
 
 /*! \class QList::iterator
+    \inmodule QtCore
     \brief The QList::iterator class provides an STL-style non-const iterator for QList and QQueue.
 
     QList features both \l{STL-style iterators} and \l{Java-style
@@ -1477,6 +1479,7 @@ void **QListData::erase(void **xi)
 */
 
 /*! \class QList::const_iterator
+    \inmodule QtCore
     \brief The QList::const_iterator class provides an STL-style const iterator for QList and QQueue.
 
     QList provides both \l{STL-style iterators} and \l{Java-style

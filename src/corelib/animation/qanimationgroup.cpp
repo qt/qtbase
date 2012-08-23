@@ -41,6 +41,7 @@
 
 /*!
     \class QAnimationGroup
+    \inmodule QtCore
     \brief The QAnimationGroup class is an abstract base class for groups of animations.
     \since 4.6
     \ingroup animation

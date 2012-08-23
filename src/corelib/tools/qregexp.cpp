@@ -78,6 +78,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 
 /*!
     \class QRegExp
+    \inmodule QtCore
     \reentrant
     \brief The QRegExp class provides pattern matching using regular expressions.
 

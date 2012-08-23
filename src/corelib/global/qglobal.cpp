@@ -86,6 +86,7 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 
 /*!
     \class QFlag
+    \inmodule QtCore
     \brief The QFlag class is a helper data type for QFlags.
 
     It is equivalent to a plain \c int, except with respect to
@@ -109,6 +110,7 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 
 /*!
     \class QFlags
+    \inmodule QtCore
     \brief The QFlags class provides a type-safe way of storing
     OR-combinations of enum values.
 
@@ -878,6 +880,7 @@ bool qSharedBuild()
 
 /*!
     \class QSysInfo
+    \inmodule QtCore
     \brief The QSysInfo class provides information about the system.
 
     \list

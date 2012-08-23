@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QMargins
+    \inmodule QtCore
     \ingroup painting
     \since 4.6
 

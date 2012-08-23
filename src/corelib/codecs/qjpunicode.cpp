@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 /*! \class QJpUnicodeConv
+    \inmodule QtCore
     \reentrant
     \internal
 */

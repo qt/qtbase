@@ -52,6 +52,7 @@
 QT_BEGIN_NAMESPACE
 
 /*! \class QReadWriteLock
+    \inmodule QtCore
     \brief The QReadWriteLock class provides read-write locking.
 
     \threadsafe
@@ -427,6 +428,7 @@ void QReadWriteLock::unlock()
 
 /*!
     \class QReadLocker
+    \inmodule QtCore
     \brief The QReadLocker class is a convenience class that
     simplifies locking and unlocking read-write locks for read access.
 
@@ -499,6 +501,7 @@ void QReadWriteLock::unlock()
 
 /*!
     \class QWriteLocker
+    \inmodule QtCore
     \brief The QWriteLocker class is a convenience class that
     simplifies locking and unlocking read-write locks for write access.
 

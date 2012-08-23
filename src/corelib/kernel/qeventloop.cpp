@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QEventLoop
+    \inmodule QtCore
     \brief The QEventLoop class provides a means of entering and leaving an event loop.
 
     At any time, you can create a QEventLoop object and call exec()
@@ -374,6 +375,7 @@ private:
 
 /*!
     \class QEventLoopLocker
+    \inmodule QtCore
     \brief The QEventLoopLocker class provides a means to quit an event loop when it is no longer needed.
 
     The QEventLoopLocker operates on particular objects - either a QCoreApplication

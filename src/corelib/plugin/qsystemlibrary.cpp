@@ -48,6 +48,7 @@
 
     \internal
     \class QSystemLibrary
+    \inmodule QtCore
 
     The purpose of this class is to load only libraries that are located in
     well-known and trusted locations on the filesystem. It does not suffer from

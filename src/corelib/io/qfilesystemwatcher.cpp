@@ -144,6 +144,7 @@ void QFileSystemWatcherPrivate::_q_directoryChanged(const QString &path, bool re
 
 /*!
     \class QFileSystemWatcher
+    \inmodule QtCore
     \brief The QFileSystemWatcher class provides an interface for monitoring files and directories for modifications.
     \ingroup io
     \since 4.2

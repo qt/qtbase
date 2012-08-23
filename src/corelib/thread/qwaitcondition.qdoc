@@ -27,6 +27,7 @@
 
 /*!
     \class QWaitCondition
+    \inmodule QtCore
     \brief The QWaitCondition class provides a condition variable for
     synchronizing threads.
 

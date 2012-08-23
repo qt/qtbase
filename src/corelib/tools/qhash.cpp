@@ -708,6 +708,7 @@ void QHashData::checkSanity()
 
 /*!
     \class QHash
+    \inmodule QtCore
     \brief The QHash class is a template class that provides a hash-table-based dictionary.
 
     \ingroup tools
@@ -1482,6 +1483,7 @@ void QHashData::checkSanity()
 */
 
 /*! \class QHash::iterator
+    \inmodule QtCore
     \brief The QHash::iterator class provides an STL-style non-const iterator for QHash and QMultiHash.
 
     QHash features both \l{STL-style iterators} and \l{Java-style
@@ -1707,6 +1709,7 @@ void QHashData::checkSanity()
 */
 
 /*! \class QHash::const_iterator
+    \inmodule QtCore
     \brief The QHash::const_iterator class provides an STL-style const iterator for QHash and QMultiHash.
 
     QHash features both \l{STL-style iterators} and \l{Java-style
@@ -1918,6 +1921,7 @@ void QHashData::checkSanity()
 */
 
 /*! \class QMultiHash
+    \inmodule QtCore
     \brief The QMultiHash class is a convenience QHash subclass that provides multi-valued hashes.
 
     \ingroup tools

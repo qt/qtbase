@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QPoint
+    \inmodule QtCore
     \ingroup painting
 
     \brief The QPoint class defines a point in the plane using integer
@@ -455,6 +456,7 @@ QDebug operator<<(QDebug d, const QPointF &p)
 
 /*!
     \class QPointF
+    \inmodule QtCore
     \ingroup painting
 
     \brief The QPointF class defines a point in the plane using

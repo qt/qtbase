@@ -456,6 +456,7 @@ static QString defaultTemplateName()
 
 /*!
     \class QTemporaryFile
+    \inmodule QtCore
     \reentrant
     \brief The QTemporaryFile class is an I/O device that operates on temporary files.
 

@@ -77,6 +77,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QStateMachine
+    \inmodule QtCore
     \reentrant
 
     \brief The QStateMachine class provides a hierarchical finite state machine.
@@ -2597,6 +2598,7 @@ QSignalEventGenerator::QSignalEventGenerator(QStateMachine *parent)
 
 /*!
   \class QStateMachine::SignalEvent
+  \inmodule QtCore
 
   \brief The SignalEvent class represents a Qt signal event.
 
@@ -2659,6 +2661,7 @@ QStateMachine::SignalEvent::~SignalEvent()
 
 /*!
   \class QStateMachine::WrappedEvent
+  \inmodule QtCore
 
   \brief The WrappedEvent class inherits QEvent and holds a clone of an event associated with a QObject.
 

@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
     \class QMimeMagicRuleMatcher
+    \inmodule QtCore
 
     \brief The QMimeMagicRuleMatcher class checks a number of rules based on operator "or".
 

@@ -53,6 +53,7 @@
 
 /*!
     \class QEasingCurve
+    \inmodule QtCore
     \since 4.6
     \ingroup animation
     \caption The QEasingCurve class provides easing curves for controlling animation.

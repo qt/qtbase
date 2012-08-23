@@ -41,6 +41,7 @@
 
 /*!
     \class QPropertyAnimation
+    \inmodule QtCore
     \brief The QPropertyAnimation class animates Qt properties
     \since 4.6
 

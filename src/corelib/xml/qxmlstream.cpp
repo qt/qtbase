@@ -168,6 +168,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QXmlStreamEntityResolver
+  \inmodule QtCore
   \reentrant
   \since 4.4
 
@@ -254,6 +255,7 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
 
 /*!
   \class QXmlStreamReader
+  \inmodule QtCore
   \reentrant
   \since 4.3
 
@@ -2257,6 +2259,7 @@ QXmlStreamAttributes QXmlStreamReader::attributes() const
 
 /*!
     \class QXmlStreamAttribute
+    \inmodule QtCore
     \since 4.3
     \reentrant
     \brief The QXmlStreamAttribute class represents a single XML attribute
@@ -2382,6 +2385,7 @@ QXmlStreamAttribute& QXmlStreamAttribute::operator=(const QXmlStreamAttribute &o
 
 /*!
     \class QXmlStreamAttributes
+    \inmodule QtCore
     \since 4.3
     \reentrant
     \brief The QXmlStreamAttributes class represents a vector of QXmlStreamAttribute.
@@ -2420,6 +2424,7 @@ QXmlStreamAttribute& QXmlStreamAttribute::operator=(const QXmlStreamAttribute &o
 
 /*!
     \class QXmlStreamNotationDeclaration
+    \inmodule QtCore
     \since 4.3
     \reentrant
     \brief The QXmlStreamNotationDeclaration class represents a DTD notation declaration.
@@ -2494,6 +2499,7 @@ Returns the public identifier.
 
 /*!
     \class QXmlStreamNamespaceDeclaration
+    \inmodule QtCore
     \since 4.3
     \reentrant
     \brief The QXmlStreamNamespaceDeclaration class represents a namespace declaration.
@@ -2576,12 +2582,14 @@ Returns the namespaceUri.
 
 /*!
     \class QXmlStreamStringRef
+    \inmodule QtCore
     \since 4.3
     \internal
 */
 
 /*!
     \class QXmlStreamEntityDeclaration
+    \inmodule QtCore
     \since 4.3
     \reentrant
     \brief The QXmlStreamEntityDeclaration class represents a DTD entity declaration.
@@ -2868,6 +2876,7 @@ QStringRef QXmlStreamReader::documentEncoding() const
 
 /*!
   \class QXmlStreamWriter
+  \inmodule QtCore
   \since 4.3
   \reentrant
 

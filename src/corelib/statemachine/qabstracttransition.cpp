@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QAbstractTransition
+  \inmodule QtCore
 
   \brief The QAbstractTransition class is the base class of transitions between QAbstractState objects.
 

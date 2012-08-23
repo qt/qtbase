@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRect
+    \inmodule QtCore
     \ingroup painting
 
     \brief The QRect class defines a rectangle in the plane using
@@ -1219,6 +1220,7 @@ QDebug operator<<(QDebug dbg, const QRect &r) {
 
 /*!
     \class QRectF
+    \inmodule QtCore
     \ingroup painting
 
     \brief The QRectF class defines a rectangle in the plane using floating

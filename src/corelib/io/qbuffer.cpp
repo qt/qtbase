@@ -104,6 +104,7 @@ QByteArray QBufferPrivate::peek(qint64 maxSize)
 
 /*!
     \class QBuffer
+    \inmodule QtCore
     \reentrant
     \brief The QBuffer class provides a QIODevice interface for a QByteArray.
 

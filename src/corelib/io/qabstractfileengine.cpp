@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QAbstractFileEngineHandler
+    \inmodule QtCore
     \reentrant
     \internal
 
@@ -219,6 +220,7 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
 
 /*!
     \class QAbstractFileEngine
+    \inmodule QtCore
     \reentrant
     \internal
 
@@ -803,6 +805,7 @@ bool QAbstractFileEngine::unmap(uchar *address)
 /*!
     \since 4.3
     \class QAbstractFileEngineIterator
+    \inmodule QtCore
     \brief The QAbstractFileEngineIterator class provides an iterator
     interface for custom file engines.
     \internal
@@ -1135,6 +1138,7 @@ qint64 QAbstractFileEngine::readLine(char *data, qint64 maxlen)
 
 /*!
    \class QAbstractFileEngine::ExtensionOption
+   \inmodule QtCore
    \since 4.3
    \brief provides an extended input argument to QAbstractFileEngine's
    extension support.
@@ -1144,6 +1148,7 @@ qint64 QAbstractFileEngine::readLine(char *data, qint64 maxlen)
 
 /*!
    \class QAbstractFileEngine::ExtensionReturn
+   \inmodule QtCore
    \since 4.3
    \brief provides an extended output argument to QAbstractFileEngine's
    extension support.

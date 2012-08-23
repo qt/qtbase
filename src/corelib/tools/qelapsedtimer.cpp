@@ -45,12 +45,12 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QElapsedTimer
+    \inmodule QtCore
     \brief The QElapsedTimer class provides a fast way to calculate elapsed times.
     \since 4.7
 
     \reentrant
     \ingroup tools
-    \inmodule QtCore
 
     The QElapsedTimer class is usually used to quickly calculate how much
     time has elapsed between two events. Its API is similar to that of QTime,

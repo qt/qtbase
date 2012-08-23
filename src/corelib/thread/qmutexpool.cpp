@@ -50,6 +50,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutexPool, globalMutexPool, (QMutex::Recursive))
 
 /*!
     \class QMutexPool
+    \inmodule QtCore
     \brief The QMutexPool class provides a pool of QMutex objects.
 
     \internal

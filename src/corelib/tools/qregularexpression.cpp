@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRegularExpression
+    \inmodule QtCore
     \reentrant
 
     \brief The QRegularExpression class provides pattern matching using regular
@@ -540,6 +541,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRegularExpressionMatch
+    \inmodule QtCore
     \reentrant
 
     \brief The QRegularExpressionMatch class provides the results of a matching
@@ -591,6 +593,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRegularExpressionMatchIterator
+    \inmodule QtCore
     \reentrant
 
     \brief The QRegularExpressionMatchIterator class provides an iterator on
@@ -1006,6 +1009,7 @@ void QRegularExpressionPrivate::getPatternInfo()
 
 /*!
     \class QPcreJitStackPointer
+    \inmodule QtCore
     \internal
 
     Simple "smartpointer" wrapper around a pcre_jit_stack, to be used with

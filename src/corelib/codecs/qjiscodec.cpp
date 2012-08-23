@@ -44,6 +44,7 @@
 // and the grateful thanks of the Qt team.
 
 /*! \class QJisCodec
+    \inmodule QtCore
     \reentrant
     \internal
 */

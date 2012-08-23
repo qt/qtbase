@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QBasicTimer
+    \inmodule QtCore
     \brief The QBasicTimer class provides timer events for objects.
 
     \ingroup events

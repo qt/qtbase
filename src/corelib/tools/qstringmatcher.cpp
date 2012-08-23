@@ -124,6 +124,7 @@ static inline int bm_find(const ushort *uc, uint l, int index, const ushort *puc
 
 /*!
     \class QStringMatcher
+    \inmodule QtCore
     \brief The QStringMatcher class holds a sequence of characters that
     can be quickly matched in a Unicode string.
 

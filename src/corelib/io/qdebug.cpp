@@ -52,6 +52,7 @@
 
 /*!
     \class QDebug
+    \inmodule QtCore
 
     \brief The QDebug class provides an output stream for debugging information.
 

@@ -43,12 +43,14 @@
 // in Qt with the author's permission and the grateful thanks of the Qt team.
 
 /*! \class QEucKrCodec
+    \inmodule QtCore
     \reentrant
     \internal
 */
 
 /*!
     \class QCP949Codec
+    \inmodule QtCore
     \internal
     \brief The QCP949Codec class handles encoding and decoding of text in CP949 encoding.
 

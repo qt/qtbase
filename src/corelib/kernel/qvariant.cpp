@@ -904,6 +904,7 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
 
 /*!
     \class QVariant
+    \inmodule QtCore
     \brief The QVariant class acts like a union for the most common Qt data types.
 
     \ingroup objectmodel

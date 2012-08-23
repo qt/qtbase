@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QScopedPointer
+    \inmodule QtCore
     \brief The QScopedPointer class stores a pointer to a dynamically allocated object, and deletes it upon destruction.
     \since 4.6
     \reentrant
@@ -227,6 +228,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QScopedArrayPointer
+  \inmodule QtCore
 
   \brief The QScopedArrayPointer class stores a pointer to a
   dynamically allocated array of objects, and deletes it upon

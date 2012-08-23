@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QSize
+    \inmodule QtCore
     \ingroup painting
 
     \brief The QSize class defines the size of a two-dimensional
@@ -451,6 +452,7 @@ QDebug operator<<(QDebug dbg, const QSize &s) {
 
 /*!
     \class QSizeF
+    \inmodule QtCore
     \brief The QSizeF class defines the size of a two-dimensional object
     using floating point precision.
 

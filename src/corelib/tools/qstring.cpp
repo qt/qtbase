@@ -402,6 +402,7 @@ const QString::Null QString::null = { };
 
 /*!
     \class QCharRef
+    \inmodule QtCore
     \reentrant
     \brief The QCharRef class is a helper class for QString.
 
@@ -423,6 +424,7 @@ const QString::Null QString::null = { };
 
 /*!
     \class QString
+    \inmodule QtCore
     \reentrant
 
     \brief The QString class provides a Unicode character string.
@@ -7451,6 +7453,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
 }
 
 /*! \class QLatin1String
+    \inmodule QtCore
     \brief The QLatin1String class provides a thin wrapper around an US-ASCII/Latin-1 encoded string literal.
 
     \ingroup string-processing
@@ -7841,6 +7844,7 @@ QDataStream &operator>>(QDataStream &in, QString &str)
 
 /*!
     \class QStringRef
+    \inmodule QtCore
     \since 4.3
     \brief The QStringRef class provides a thin wrapper around QString substrings.
     \reentrant

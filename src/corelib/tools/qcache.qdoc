@@ -27,6 +27,7 @@
 
 /*!
     \class QCache
+    \inmodule QtCore
     \brief The QCache class is a template class that provides a cache.
 
     \ingroup tools

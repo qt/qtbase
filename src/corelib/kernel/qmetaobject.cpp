@@ -65,6 +65,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QMetaObject
+    \inmodule QtCore
 
     \brief The QMetaObject class contains meta-information about Qt
     objects.
@@ -1517,6 +1518,7 @@ bool QMetaObject::invokeMethod(QObject *obj,
 
 /*!
     \class QMetaMethod
+    \inmodule QtCore
 
     \brief The QMetaMethod class provides meta-data about a member
     function.
@@ -2239,6 +2241,7 @@ bool QMetaMethod::invoke(QObject *object,
 
 /*!
     \class QMetaEnum
+    \inmodule QtCore
     \brief The QMetaEnum class provides meta-data about an enumerator.
 
     \ingroup objectmodel
@@ -2513,6 +2516,7 @@ static QByteArray qualifiedName(const QMetaEnum &e)
 
 /*!
     \class QMetaProperty
+    \inmodule QtCore
     \brief The QMetaProperty class provides meta-data about a property.
 
     \ingroup objectmodel
@@ -3157,6 +3161,7 @@ bool QMetaProperty::isEditable(const QObject *object) const
 
 /*!
     \class QMetaClassInfo
+    \inmodule QtCore
 
     \brief The QMetaClassInfo class provides additional information
     about a class.
@@ -3234,6 +3239,7 @@ const char* QMetaClassInfo::value() const
 
 /*!
     \class QGenericArgument
+    \inmodule QtCore
 
     \brief The QGenericArgument class is an internal helper class for
     marshalling arguments.
@@ -3264,6 +3270,7 @@ const char* QMetaClassInfo::value() const
 
 /*!
     \class QGenericReturnArgument
+    \inmodule QtCore
 
     \brief The QGenericReturnArgument class is an internal helper class for
     marshalling arguments.

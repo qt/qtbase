@@ -41,6 +41,7 @@
 
 /*!
     \class QPauseAnimation
+    \inmodule QtCore
     \brief The QPauseAnimation class provides a pause for QSequentialAnimationGroup.
     \since 4.6
     \ingroup animation

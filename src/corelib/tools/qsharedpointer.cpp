@@ -46,6 +46,7 @@
 
 /*!
     \class QSharedPointer
+    \inmodule QtCore
     \brief The QSharedPointer class holds a strong reference to a shared pointer
     \since 4.5
 
@@ -314,6 +315,7 @@
 
 /*!
     \class QWeakPointer
+    \inmodule QtCore
     \brief The QWeakPointer class holds a weak reference to a shared pointer
     \since 4.5
     \reentrant

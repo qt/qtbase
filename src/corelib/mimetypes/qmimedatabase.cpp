@@ -238,6 +238,7 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
 
 /*!
     \class QMimeDatabase
+    \inmodule QtCore
     \brief The QMimeDatabase class maintains a database of MIME types.
 
     \since 5.0

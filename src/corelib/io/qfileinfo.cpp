@@ -207,6 +207,7 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 
 /*!
     \class QFileInfo
+    \inmodule QtCore
     \reentrant
     \brief The QFileInfo class provides system-independent file information.
 

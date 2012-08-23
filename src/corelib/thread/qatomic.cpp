@@ -41,6 +41,7 @@
 
 /*!
     \class QAtomicInt
+    \inmodule QtCore
     \brief The QAtomicInt class provides platform-independent atomic operations on integers.
     \since 4.4
 
@@ -598,6 +599,7 @@
 
 /*!
     \class QAtomicPointer
+    \inmodule QtCore
     \brief The QAtomicPointer class is a template class that provides platform-independent atomic operations on pointers.
     \since 4.4
 

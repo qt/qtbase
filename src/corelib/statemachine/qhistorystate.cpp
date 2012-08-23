@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QHistoryState
+  \inmodule QtCore
 
   \brief The QHistoryState class provides a means of returning to a previously active substate.
 

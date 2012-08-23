@@ -83,6 +83,7 @@ static QBasicMutex qt_library_mutex;
 
 /*!
     \class QLibrary
+    \inmodule QtCore
     \reentrant
     \brief The QLibrary class loads shared libraries at runtime.
 

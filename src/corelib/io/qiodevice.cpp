@@ -139,6 +139,7 @@ QIODevicePrivate::~QIODevicePrivate()
 
 /*!
     \class QIODevice
+    \inmodule QtCore
     \reentrant
 
     \brief The QIODevice class is the base interface class of all I/O

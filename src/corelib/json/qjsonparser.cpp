@@ -79,6 +79,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QJsonParseError
+    \inmodule QtCore
     \ingroup json
     \reentrant
     \since 5.0

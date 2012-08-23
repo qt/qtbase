@@ -171,6 +171,7 @@ QThreadPrivate::~QThreadPrivate()
 
 /*!
     \class QThread
+    \inmodule QtCore
     \brief The QThread class provides platform-independent threads.
 
     \ingroup thread

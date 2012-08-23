@@ -620,6 +620,7 @@ static inline char qToLower(char c)
 
 /*!
     \class QByteArray
+    \inmodule QtCore
     \brief The QByteArray class provides an array of bytes.
 
     \ingroup tools

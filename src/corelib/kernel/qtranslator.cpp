@@ -325,6 +325,7 @@ public:
 
 /*!
     \class QTranslator
+    \inmodule QtCore
 
     \brief The QTranslator class provides internationalization support for text
     output.

@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QScopedValueRollback
+    \inmodule QtCore
     \brief The QScopedValueRollback class resets a variable to its previous value on destruction.
     \since 4.8
     \ingroup misc

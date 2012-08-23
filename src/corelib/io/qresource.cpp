@@ -166,6 +166,7 @@ Q_GLOBAL_STATIC(QStringList, resourceSearchPaths)
 
 /*!
     \class QResource
+    \inmodule QtCore
     \brief The QResource class provides an interface for reading directly from resources.
 
     \ingroup io

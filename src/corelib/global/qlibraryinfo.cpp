@@ -166,6 +166,7 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
 
 /*!
     \class QLibraryInfo
+    \inmodule QtCore
     \brief The QLibraryInfo class provides information about the Qt library.
 
     Many pieces of information are established when Qt is configured and built.

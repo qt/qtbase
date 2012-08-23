@@ -62,6 +62,7 @@ public:
 
 /*!
     \class QSocketNotifier
+    \inmodule QtCore
     \brief The QSocketNotifier class provides support for monitoring
     activity on a file descriptor.
 

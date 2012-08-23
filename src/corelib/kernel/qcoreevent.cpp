@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QEvent
+    \inmodule QtCore
     \brief The QEvent class is the base class of all
     event classes. Event objects contain event parameters.
 
@@ -429,6 +430,7 @@ int QEvent::registerEventType(int hint)
 
 /*!
     \class QTimerEvent
+    \inmodule QtCore
     \brief The QTimerEvent class contains parameters that describe a
     timer event.
 
@@ -471,6 +473,7 @@ QTimerEvent::~QTimerEvent()
 
 /*!
     \class QChildEvent
+    \inmodule QtCore
     \brief The QChildEvent class contains event parameters for child object
     events.
 
@@ -538,6 +541,7 @@ QChildEvent::~QChildEvent()
 
 /*!
     \class QDynamicPropertyChangeEvent
+    \inmodule QtCore
     \since 4.2
     \brief The QDynamicPropertyChangeEvent class contains event parameters for dynamic
     property change events.

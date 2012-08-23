@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QFinalState
+  \inmodule QtCore
 
   \brief The QFinalState class provides a final state.
 

@@ -114,6 +114,7 @@ static const char * const collationStrings[collationStringsCount] = {
 
 /*!
     \class QCollator
+    \inmodule QtCore
     \brief The QCollator class compares strings according to a localized collation algorithm.
 
     \internal

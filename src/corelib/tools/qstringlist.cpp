@@ -73,6 +73,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QStringList
+    \inmodule QtCore
     \brief The QStringList class provides a list of strings.
 
     \ingroup tools

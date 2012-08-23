@@ -87,6 +87,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 
 /*!
   \class QPersistentModelIndex
+  \inmodule QtCore
 
   \brief The QPersistentModelIndex class is used to locate data in a data model.
 
@@ -865,6 +866,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 
 /*!
     \class QModelIndex
+    \inmodule QtCore
 
     \brief The QModelIndex class is used to locate data in a data model.
 
@@ -1044,6 +1046,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 
 /*!
     \class QAbstractItemModel
+    \inmodule QtCore
 
     \brief The QAbstractItemModel class provides the abstract interface for
     item model classes.
@@ -3124,6 +3127,7 @@ QModelIndexList QAbstractItemModel::persistentIndexList() const
 
 /*!
     \class QAbstractTableModel
+    \inmodule QtCore
     \brief The QAbstractTableModel class provides an abstract model that can be
     subclassed to create table models.
 
@@ -3250,6 +3254,7 @@ bool QAbstractTableModel::hasChildren(const QModelIndex &parent) const
 
 /*!
     \class QAbstractListModel
+    \inmodule QtCore
     \brief The QAbstractListModel class provides an abstract model that can be
     subclassed to create one-dimensional list models.
 

@@ -168,6 +168,7 @@ static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* d
 
 /*!
     \class QDate
+    \inmodule QtCore
     \reentrant
     \brief The QDate class provides date functions.
 
@@ -1322,6 +1323,7 @@ bool QDate::isLeapYear(int y)
 
 /*!
     \class QTime
+    \inmodule QtCore
     \reentrant
 
     \brief The QTime class provides clock time functions.
@@ -2045,6 +2047,7 @@ int QTime::elapsed() const
 
 /*!
     \class QDateTime
+    \inmodule QtCore
     \reentrant
     \brief The QDateTime class provides date and time functions.
 

@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QAbstractState
+  \inmodule QtCore
 
   \brief The QAbstractState class is the base class of states of a QStateMachine.
 

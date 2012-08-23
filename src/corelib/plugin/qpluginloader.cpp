@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QPluginLoader
+    \inmodule QtCore
     \reentrant
     \brief The QPluginLoader class loads a plugin at run-time.
 

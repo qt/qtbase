@@ -103,6 +103,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QProcessEnvironment
+    \inmodule QtCore
 
     \brief The QProcessEnvironment class holds the environment variables that
     can be passed to a program.
@@ -440,6 +441,7 @@ void QProcessPrivate::Channel::clear()
 
 /*!
     \class QProcess
+    \inmodule QtCore
 
     \brief The QProcess class is used to start external programs and
     to communicate with them.

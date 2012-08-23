@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
 
 /*
     \class QBasicMutex
+    \inmodule QtCore
     \brief QMutex POD
     \internal
 
@@ -70,6 +71,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QMutex
+    \inmodule QtCore
     \brief The QMutex class provides access serialization between threads.
 
     \threadsafe
@@ -239,6 +241,7 @@ bool QBasicMutex::isRecursive() {
 
 /*!
     \class QMutexLocker
+    \inmodule QtCore
     \brief The QMutexLocker class is a convenience class that simplifies
     locking and unlocking mutexes.
 

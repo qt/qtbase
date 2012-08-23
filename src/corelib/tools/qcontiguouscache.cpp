@@ -67,6 +67,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
 }
 
 /*! \class QContiguousCache
+    \inmodule QtCore
     \brief The QContiguousCache class is a template class that provides a contiguous cache.
     \ingroup tools
     \ingroup shared

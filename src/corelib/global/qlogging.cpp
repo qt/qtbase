@@ -60,6 +60,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QMessageLogContext
+    \inmodule QtCore
     \relates <QtGlobal>
     \brief The QMessageLogContext class provides additional information about a log message.
     \since 5.0
@@ -72,6 +73,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QMessageLogger
+    \inmodule QtCore
     \relates <QtGlobal>
     \brief The QMessageLogger class generates log messages.
     \since 5.0

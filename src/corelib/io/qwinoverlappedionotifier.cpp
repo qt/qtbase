@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QWinOverlappedIoNotifier
+    \inmodule QtCore
     \brief The QWinOverlappedIoNotifier class provides support for overlapped I/O notifications on Windows.
     \since 5.0
     \internal

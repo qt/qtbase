@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QMetaObjectBuilder
+    \inmodule QtCore
     \internal
     \brief The QMetaObjectBuilder class supports building QMetaObject objects at runtime.
 
@@ -1067,6 +1068,7 @@ int QMetaObjectBuilder::indexOfClassInfo(const QByteArray& name)
 
 /*!
     \class QMetaStringTable
+    \inmodule QtCore
     \internal
     \brief The QMetaStringTable class can generate a meta-object string table at runtime.
 */
@@ -1845,6 +1847,7 @@ void QMetaObjectBuilder::deserialize
 
 /*!
     \class QMetaMethodBuilder
+    \inmodule QtCore
     \internal
     \brief The QMetaMethodBuilder class enables modifications to a method definition on a meta object builder.
 */
@@ -2087,6 +2090,7 @@ void QMetaMethodBuilder::setRevision(int revision)
 
 /*!
     \class QMetaPropertyBuilder
+    \inmodule QtCore
     \internal
     \brief The QMetaPropertyBuilder class enables modifications to a property definition on a meta object builder.
 */
@@ -2558,6 +2562,7 @@ void QMetaPropertyBuilder::setRevision(int revision)
 
 /*!
     \class QMetaEnumBuilder
+    \inmodule QtCore
     \internal
     \brief The QMetaEnumBuilder class enables modifications to an enumerator definition on a meta object builder.
 */

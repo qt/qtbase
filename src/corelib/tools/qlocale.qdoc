@@ -27,6 +27,7 @@
 
 /*!
     \class QLocale
+    \inmodule QtCore
     \brief The QLocale class converts between numbers and their
     string representations in various languages.
 
@@ -714,6 +715,7 @@
 /*!
     \internal
     \class QSystemLocale
+    \inmodule QtCore
     \brief The QSystemLocale class can be used to finetune the system locale
     of the user.
     \since 4.2
@@ -794,6 +796,7 @@
 
 /*!
     \class QSystemLocale::CurrencyToStringArgument
+    \inmodule QtCore
 
     A helper class that provides arguments for the QSystemLocale::query()
     function with query type QSystemLocale::CurrencyToString.

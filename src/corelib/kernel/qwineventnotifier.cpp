@@ -63,6 +63,7 @@ public:
 
 /*!
     \class QWinEventNotifier
+    \inmodule QtCore
     \since 5.0
     \brief The QWinEventNotifier class provides support for the Windows Wait functions.
 

@@ -41,6 +41,7 @@
 
 /*!
     \class QRunnable
+    \inmodule QtCore
     \since 4.4
     \brief The QRunnable class is the base class for all runnable objects.
 

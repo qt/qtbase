@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QStringBuilder
+    \inmodule QtCore
     \internal
     \reentrant
     \since 4.6

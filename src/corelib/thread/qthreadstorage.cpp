@@ -212,6 +212,7 @@ void QThreadStorageData::finish(void **p)
 
 /*!
     \class QThreadStorage
+    \inmodule QtCore
     \brief The QThreadStorage class provides per-thread data storage.
 
     \threadsafe

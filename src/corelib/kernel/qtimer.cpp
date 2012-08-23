@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QTimer
+    \inmodule QtCore
     \brief The QTimer class provides repetitive and single-shot timers.
 
     \ingroup events

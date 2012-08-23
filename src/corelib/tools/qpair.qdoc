@@ -27,6 +27,7 @@
 
 /*!
     \class QPair
+    \inmodule QtCore
     \brief The QPair class is a template class that stores a pair of items.
 
     \ingroup tools

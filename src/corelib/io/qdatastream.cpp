@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QDataStream
+    \inmodule QtCore
     \reentrant
     \brief The QDataStream class provides serialization of binary data
     to a QIODevice.

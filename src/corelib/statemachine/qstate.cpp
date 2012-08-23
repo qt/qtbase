@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QState
+  \inmodule QtCore
 
   \brief The QState class provides a general-purpose state for QStateMachine.
 

@@ -49,12 +49,12 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QItemSelectionRange
+    \inmodule QtCore
 
     \brief The QItemSelectionRange class manages information about a
     range of selected items in a model.
 
     \ingroup model-view
-    \inmodule QtCore
 
     A QItemSelectionRange contains information about a range of
     selected items in a model. A range of items is a contiguous array
@@ -339,11 +339,11 @@ QModelIndexList QItemSelectionRange::indexes() const
 
 /*!
     \class QItemSelection
+    \inmodule QtCore
 
     \brief The QItemSelection class manages information about selected items in a model.
 
     \ingroup model-view
-    \inmodule QtCore
 
     A QItemSelection describes the items in a model that have been
     selected by the user. A QItemSelection is basically a list of
@@ -929,11 +929,11 @@ void QItemSelectionModelPrivate::_q_layoutChanged()
 
 /*!
     \class QItemSelectionModel
+    \inmodule QtCore
 
     \brief The QItemSelectionModel class keeps track of a view's selected items.
 
     \ingroup model-view
-    \inmodule QtCore
 
     A QItemSelectionModel keeps track of the selected items in a view, or
     in several views onto the same model. It also keeps track of the

@@ -99,6 +99,7 @@ public:
 
 /*!
     \class QTypeInfoMerger
+    \inmodule QtCore
     \internal
 
     \brief QTypeInfoMerger merges the QTypeInfo flags of T1, T2... and presents them

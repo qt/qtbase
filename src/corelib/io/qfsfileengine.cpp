@@ -82,6 +82,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 /*! \class QFSFileEngine
+    \inmodule QtCore
     \brief The QFSFileEngine class implements Qt's default file engine.
     \since 4.1
     \internal

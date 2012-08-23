@@ -106,6 +106,7 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
 
 /*! 
     \class QTextBoundaryFinder
+    \inmodule QtCore
 
     \brief The QTextBoundaryFinder class provides a way of finding Unicode text boundaries in a string.
 

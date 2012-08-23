@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QSemaphore
+    \inmodule QtCore
     \brief The QSemaphore class provides a general counting semaphore.
 
     \threadsafe

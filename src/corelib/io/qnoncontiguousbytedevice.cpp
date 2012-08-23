@@ -48,11 +48,10 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QNonContiguousByteDevice
+    \inmodule QtCore
     \brief A QNonContiguousByteDevice is a representation of a
     file, array or buffer that allows access with a read pointer.
     \since 4.6
-
-    \inmodule QtCore
 
     The goal of this class is to have a data representation that
     allows us to avoid doing a memcpy as we have to do with QIODevice.
@@ -466,9 +465,8 @@ qint64 QByteDeviceWrappingIoDevice::writeData( const char* data, qint64 maxSize)
 
 /*!
     \class QNonContiguousByteDeviceFactory
-    \since 4.6
-
     \inmodule QtCore
+    \since 4.6
 
     Creates a QNonContiguousByteDevice out of a QIODevice,
     QByteArray etc.

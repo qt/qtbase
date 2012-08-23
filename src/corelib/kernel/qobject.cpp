@@ -484,6 +484,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
 
 /*!
     \class QObject
+    \inmodule QtCore
     \brief The QObject class is the base class of all Qt objects.
 
     \ingroup objectmodel
@@ -4380,6 +4381,7 @@ bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject
 }
 
 /*! \class QMetaObject::Connection
+    \inmodule QtCore
      Represents a handle to a signal-slot connection.
      It can be used to disconnect that connection, or check if
      the connection was successful

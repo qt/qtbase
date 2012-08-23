@@ -41,6 +41,7 @@
 
 /*!
     \class QStack
+    \inmodule QtCore
     \brief The QStack class is a template class that provides a stack.
 
     \ingroup tools

@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QLine
+    \inmodule QtCore
     \ingroup painting
 
     \brief The QLine class provides a two-dimensional vector using
@@ -309,6 +310,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
 /*!
     \class QLineF
+    \inmodule QtCore
     \ingroup painting
 
     \brief The QLineF class provides a two-dimensional vector using

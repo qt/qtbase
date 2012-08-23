@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QStandardPaths
+    \inmodule QtCore
     \brief The QStandardPaths class provides methods for accessing standard paths.
     \since 5.0
 

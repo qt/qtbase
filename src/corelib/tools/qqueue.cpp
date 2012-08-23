@@ -41,6 +41,7 @@
 
 /*!
     \class QQueue
+    \inmodule QtCore
     \brief The QQueue class is a generic container that provides a queue.
 
     \ingroup tools

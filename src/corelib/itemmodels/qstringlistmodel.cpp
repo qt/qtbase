@@ -53,10 +53,10 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QStringListModel
+    \inmodule QtCore
     \brief The QStringListModel class provides a model that supplies strings to views.
 
     \ingroup model-view
-    \inmodule QtCore
 
     QStringListModel is an editable model that can be used for simple
     cases where you need to display a number of strings in a view

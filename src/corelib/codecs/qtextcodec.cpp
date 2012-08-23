@@ -336,6 +336,7 @@ QTextCodec::ConverterState::~ConverterState()
 
 /*!
     \class QTextCodec
+    \inmodule QtCore
     \brief The QTextCodec class provides conversions between text encodings.
     \reentrant
     \ingroup i18n
@@ -865,6 +866,7 @@ QString QTextCodec::toUnicode(const char *chars) const
 
 /*!
     \class QTextEncoder
+    \inmodule QtCore
     \brief The QTextEncoder class provides a state-based encoder.
     \reentrant
     \ingroup i18n
@@ -937,6 +939,7 @@ QByteArray QTextEncoder::fromUnicode(const QChar *uc, int len)
 
 /*!
     \class QTextDecoder
+    \inmodule QtCore
     \brief The QTextDecoder class provides a state-based decoder.
     \reentrant
     \ingroup i18n

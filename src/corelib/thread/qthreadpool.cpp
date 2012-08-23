@@ -347,6 +347,7 @@ void QThreadPoolPrivate::stealRunnable(QRunnable *runnable)
 
 /*!
     \class QThreadPool
+    \inmodule QtCore
     \brief The QThreadPool class manages a collection of QThreads.
     \since 4.4
     \threadsafe

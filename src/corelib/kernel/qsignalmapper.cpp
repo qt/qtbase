@@ -63,6 +63,7 @@ public:
 
 /*!
     \class QSignalMapper
+    \inmodule QtCore
     \brief The QSignalMapper class bundles signals from identifiable senders.
 
     \ingroup objectmodel

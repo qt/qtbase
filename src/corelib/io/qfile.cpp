@@ -111,6 +111,7 @@ QAbstractFileEngine *QFilePrivate::engine() const
 
 /*!
     \class QFile
+    \inmodule QtCore
     \brief The QFile class provides an interface for reading from and writing to files.
 
     \ingroup io

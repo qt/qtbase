@@ -41,6 +41,7 @@
 
 /*!
   \class QtPrivate::RefCount
+  \inmodule QtCore
   \internal
 
   QRefCount implements atomic ref counting for Qt's shared classes. It behaves very similar

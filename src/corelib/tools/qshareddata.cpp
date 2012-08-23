@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*! 
     \class QSharedData
+    \inmodule QtCore
     \brief The QSharedData class is a base class for shared data objects.
     \reentrant
 
@@ -67,6 +68,7 @@ QT_BEGIN_NAMESPACE
 
 /*! 
     \class QSharedDataPointer
+    \inmodule QtCore
     \brief The QSharedDataPointer class represents a pointer to an implicitly shared object.
     \since 4.0
     \reentrant
@@ -387,6 +389,7 @@ QT_BEGIN_NAMESPACE
 
 /*! 
     \class QExplicitlySharedDataPointer
+    \inmodule QtCore
     \brief The QExplicitlySharedDataPointer class represents a pointer to an explicitly shared object.
     \since 4.4
     \reentrant

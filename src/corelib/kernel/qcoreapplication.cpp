@@ -433,6 +433,7 @@ void QCoreApplicationPrivate::initLocale()
 
 /*!
     \class QCoreApplication
+    \inmodule QtCore
     \brief The QCoreApplication class provides an event loop for console Qt
     applications.
 

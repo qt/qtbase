@@ -84,6 +84,7 @@ void QMimeTypePrivate::addGlobPattern(const QString &pattern)
 
 /*!
     \class QMimeType
+    \inmodule QtCore
     \brief The QMimeType class describes types of file or data, represented by a MIME type string.
 
     \since 5.0

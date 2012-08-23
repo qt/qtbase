@@ -363,6 +363,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*!
     \class QMap
+    \inmodule QtCore
     \brief The QMap class is a template class that provides a skip-list-based dictionary.
 
     \ingroup tools
@@ -1022,6 +1023,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 
 /*! \class QMap::iterator
+    \inmodule QtCore
     \brief The QMap::iterator class provides an STL-style non-const iterator for QMap and QMultiMap.
 
     QMap features both \l{STL-style iterators} and \l{Java-style
@@ -1264,6 +1266,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*! \class QMap::const_iterator
+    \inmodule QtCore
     \brief The QMap::const_iterator class provides an STL-style const iterator for QMap and QMultiMap.
 
     QMap features both \l{STL-style iterators} and \l{Java-style
@@ -1498,6 +1501,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*! \class QMultiMap
+    \inmodule QtCore
     \brief The QMultiMap class is a convenience QMap subclass that provides multi-valued maps.
 
     \ingroup tools

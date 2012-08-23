@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QJsonArray
+    \inmodule QtCore
     \ingroup json
     \reentrant
     \since 5.0
@@ -613,6 +614,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 */
 
 /*! \class QJsonArray::iterator
+    \inmodule QtCore
     \brief The QJsonArray::iterator class provides an STL-style non-const iterator for QJsonArray.
 
     QJsonArray::iterator allows you to iterate over a QJsonArray
@@ -835,6 +837,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 */
 
 /*! \class QJsonArray::const_iterator
+    \inmodule QtCore
     \brief The QJsonArray::const_iterator class provides an STL-style const iterator for QJsonArray.
 
     QJsonArray::const_iterator allows you to iterate over a

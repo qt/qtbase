@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QVariantAnimation
+    \inmodule QtCore
     \ingroup animation
     \brief The QVariantAnimation class provides an abstract base class for animations.
     \since 4.6

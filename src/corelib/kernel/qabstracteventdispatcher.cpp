@@ -105,6 +105,7 @@ void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
 
 /*!
     \class QAbstractEventDispatcher
+    \inmodule QtCore
     \brief The QAbstractEventDispatcher class provides an interface to manage Qt's event queue.
 
     \ingroup events
@@ -340,6 +341,7 @@ void QAbstractEventDispatcher::closingDown()
 
 /*!
     \class QAbstractEventDispatcher::TimerInfo
+    \inmodule QtCore
 
     This struct represents information about a timer:
     \l{QAbstractEventDispatcher::TimerInfo::timerId}{timerId},

@@ -163,6 +163,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
 
 /*!
     \class QTimeLine
+    \inmodule QtCore
     \brief The QTimeLine class provides a timeline for controlling animations.
     \since 4.2
     \ingroup animation

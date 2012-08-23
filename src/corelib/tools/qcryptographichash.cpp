@@ -121,6 +121,7 @@ public:
 
 /*!
   \class QCryptographicHash
+  \inmodule QtCore
 
   \brief The QCryptographicHash class provides a way to generate cryptographic hashes.
 

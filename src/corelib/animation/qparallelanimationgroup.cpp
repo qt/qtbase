@@ -41,6 +41,7 @@
 
 /*!
     \class QParallelAnimationGroup
+    \inmodule QtCore
     \brief The QParallelAnimationGroup class provides a parallel group of animations.
     \since 4.6
     \ingroup animation

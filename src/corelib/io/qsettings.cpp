@@ -1993,6 +1993,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
 /*!
     \class QSettings
+    \inmodule QtCore
     \brief The QSettings class provides persistent platform-independent application settings.
 
     \ingroup io

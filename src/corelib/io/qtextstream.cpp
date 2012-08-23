@@ -44,6 +44,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 
 /*!
     \class QTextStream
+    \inmodule QtCore
 
     \brief The QTextStream class provides a convenient interface for
     reading and writing text.

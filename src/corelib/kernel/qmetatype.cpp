@@ -237,6 +237,7 @@ struct DefinedTypesFilter {
 
 /*!
     \class QMetaType
+    \inmodule QtCore
     \brief The QMetaType class manages named types in the meta-object system.
 
     \ingroup objectmodel

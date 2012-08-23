@@ -90,6 +90,7 @@ static inline int bm_find(const uchar *cc, int l, int index, const uchar *puc, u
 }
 
 /*! \class QByteArrayMatcher
+    \inmodule QtCore
     \brief The QByteArrayMatcher class holds a sequence of bytes that
     can be quickly matched in a byte array.
 

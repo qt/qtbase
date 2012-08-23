@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QJsonValue
+    \inmodule QtCore
     \ingroup json
     \reentrant
     \since 5.0
@@ -571,6 +572,7 @@ void QJsonValue::detach()
 
 /*!
     \class QJsonValueRef
+    \inmodule QtCore
     \reentrant
     \brief The QJsonValueRef class is a helper class for QJsonValue.
 

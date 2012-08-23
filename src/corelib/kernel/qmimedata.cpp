@@ -222,6 +222,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
 
 /*!
     \class QMimeData
+    \inmodule QtCore
     \brief The QMimeData class provides a container for data that records information
     about its MIME type.
 

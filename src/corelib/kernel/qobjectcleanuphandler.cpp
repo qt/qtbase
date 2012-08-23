@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QObjectCleanupHandler
+    \inmodule QtCore
     \brief The QObjectCleanupHandler class watches the lifetime of multiple QObjects.
 
     \ingroup objectmodel

@@ -50,6 +50,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 };
 
 /*! \class QLinkedList
+    \inmodule QtCore
     \brief The QLinkedList class is a template class that provides linked lists.
 
     \ingroup tools
@@ -612,6 +613,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 */
 
 /*! \class QLinkedList::iterator
+    \inmodule QtCore
     \brief The QLinkedList::iterator class provides an STL-style non-const iterator for QLinkedList.
 
     QLinkedList features both \l{STL-style iterators} and
@@ -846,6 +848,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 */
 
 /*! \class QLinkedList::const_iterator
+    \inmodule QtCore
     \brief The QLinkedList::const_iterator class provides an STL-style const iterator for QLinkedList.
 
     QLinkedList features both \l{STL-style iterators} and

@@ -27,6 +27,7 @@
 
 /*!
     \class QSet
+    \inmodule QtCore
     \brief The QSet class is a template class that provides a hash-table-based set.
 
     \ingroup tools
@@ -590,6 +591,7 @@
 
 /*!
     \class QSet::iterator
+    \inmodule QtCore
     \since 4.2
     \brief The QSet::iterator class provides an STL-style non-const iterator for QSet.
 
@@ -639,6 +641,7 @@
 
 /*!
     \class QSet::const_iterator
+    \inmodule QtCore
     \brief The QSet::const_iterator class provides an STL-style const iterator for QSet.
     \since 4.2
 

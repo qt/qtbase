@@ -156,6 +156,7 @@ void QFileDevicePrivate::setError(QFileDevice::FileError err, int errNum)
 
 /*!
     \class QFileDevice
+    \inmodule QtCore
     \since 5.0
 
     \brief The QFileDevice class provides an interface for reading from and writing to open files.

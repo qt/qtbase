@@ -41,6 +41,7 @@
 
 /*!
     \class QSequentialAnimationGroup
+    \inmodule QtCore
     \brief The QSequentialAnimationGroup class provides a sequential group of animations.
     \since 4.6
     \ingroup animation
