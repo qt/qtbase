@@ -209,6 +209,7 @@ public:
     inline QList<QByteArray> parameterTypes() const;
     inline QList<QByteArray> parameterNames() const;
     inline QByteArray tag() const;
+    inline int ownMethodIndex() const;
 
 private:
     QMetaMethodPrivate();
@@ -851,7 +852,7 @@ int QMetaObjectPrivate::signalIndex(const QMetaMethod &m)
 {
     if (!m.mobj)
         return -1;
-    return ((m.handle - priv(m.mobj->d.data)->methodData) / 5) + signalOffset(m.mobj);
+    return QMetaMethodPrivate::get(&m)->ownMethodIndex() + signalOffset(m.mobj);
 }
 
 /*!
@@ -1695,6 +1696,12 @@ QByteArray QMetaMethodPrivate::tag() const
     return stringData(mobj, mobj->d.data[handle + 3]);
 }
 
+int QMetaMethodPrivate::ownMethodIndex() const
+{
+    // recompute the methodIndex by reversing the arithmetic in QMetaObject::property()
+    return (handle - priv(mobj->d.data)->methodData) / 5;
+}
+
 /*!
     \since 5.0
 
@@ -1885,7 +1892,7 @@ int QMetaMethod::methodIndex() const
 {
     if (!mobj)
         return -1;
-    return ((handle - priv(mobj->d.data)->methodData) / 5) + mobj->methodOffset();
+    return QMetaMethodPrivate::get(this)->ownMethodIndex() + mobj->methodOffset();
 }
 
 /*!
@@ -1901,7 +1908,7 @@ int QMetaMethod::revision() const
     if ((QMetaMethod::Access)(mobj->d.data[handle + 4] & MethodRevisioned)) {
         int offset = priv(mobj->d.data)->methodData
                      + priv(mobj->d.data)->methodCount * 5
-                     + (handle - priv(mobj->d.data)->methodData) / 5;
+                     + QMetaMethodPrivate::get(this)->ownMethodIndex();
         return mobj->d.data[offset];
     }
     return 0;
@@ -2120,8 +2127,7 @@ bool QMetaMethod::invoke(QObject *object,
         val8.data(),
         val9.data()
     };
-    // recompute the methodIndex by reversing the arithmetic in QMetaObject::property()
-    int idx_relative = ((handle - priv(mobj->d.data)->methodData) / 5);
+    int idx_relative = QMetaMethodPrivate::get(this)->ownMethodIndex();
     int idx_offset =  mobj->methodOffset();
     Q_ASSERT(QMetaObjectPrivate::get(mobj)->revision >= 6);
     QObjectPrivate::StaticMetaCallFunction callFunction = mobj->d.static_metacall;
