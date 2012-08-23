@@ -19,6 +19,7 @@ HEADERS +=  \
         tools/qeasingcurve.h \
         tools/qfreelist_p.h \
         tools/qhash.h \
+        tools/qiterator.h \
         tools/qline.h \
         tools/qlinkedlist.h \
         tools/qlist.h \
