@@ -54,7 +54,7 @@ contains(QT_CONFIG,icu) {
                     SOURCES += codecs/qiconvcodec.cpp
                     DEFINES += GNU_LIBICONV
             }
-    } else {
+    } else:!win32 {
         DEFINES += QT_NO_ICONV
     }
     win32 {
