@@ -594,9 +594,6 @@ Option::fixString(QString string, uchar flags)
         string = QDir::cleanPath(string);
     }
 
-    if(string.length() > 2 && string[0].isLetter() && string[1] == QLatin1Char(':'))
-        string[0] = string[0].toLower();
-
     bool localSep = (flags & Option::FixPathToLocalSeparators) != 0;
     bool targetSep = (flags & Option::FixPathToTargetSeparators) != 0;
     bool normalSep = (flags & Option::FixPathToNormalSeparators) != 0;
