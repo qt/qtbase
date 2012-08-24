@@ -59,8 +59,7 @@
     scenes in real-time, even with millions of items.
 
     Graphics View was introduced in Qt 4.2, replacing its predecessor,
-    QCanvas. If you are porting from QCanvas, see \l{Porting to Graphics
-    View}.
+    QCanvas.
 
     Topics:
 
@@ -95,7 +94,7 @@
         descending stacking order (i.e., the first returned item is topmost,
         and the last item is bottom-most).
 
-        \snippet doc/src/snippets/graphicsview.cpp 0
+        \snippet graphicsview.cpp 0
 
         QGraphicsScene's event propagation architecture schedules scene events
         for delivery to items, and also manages propagation between items. If
@@ -126,7 +125,7 @@
         enable OpenGL support, you can set a QGLWidget as the viewport by
         calling QGraphicsView::setViewport().
 
-        \snippet doc/src/snippets/graphicsview.cpp 1
+        \snippet graphicsview.cpp 1
 
         The view receives input events from the keyboard and mouse, and
         translates these to scene events (converting the coordinates used
@@ -140,7 +139,7 @@
         scene coordinates: QGraphicsView::mapToScene() and
         QGraphicsView::mapFromScene().
 
-        \img graphicsview-view.png
+        \image graphicsview-view.png
 
       \section2 The Item
 
@@ -183,7 +182,7 @@
         to provide your own collision detection, however, you can reimplement
         QGraphicsItem::collidesWith().
 
-        \img graphicsview-items.png
+        \image graphicsview-items.png
 
     \section1 Classes in the Graphics View Framework
 
@@ -213,7 +212,7 @@
       documentation, you can read about the relationship between
       logical coordinates and device coordinates.
 
-      \img graphicsview-parentchild.png
+      \image graphicsview-parentchild.png
 
       \section2 Item Coordinates
 
@@ -333,7 +332,7 @@
         Here is an example of how to implement zoom and rotate slots in a
         subclass of QGraphicsView:
 
-        \snippet doc/src/snippets/graphicsview.cpp 2
+        \snippet graphicsview.cpp 2
 
         The slots could be connected to \l{QToolButton}{QToolButtons} with
         \l{QAbstractButton::autoRepeat}{autoRepeat} enabled.
@@ -353,7 +352,7 @@
         a QPainter to either of the rendering functions. This example shows
         how to print the whole scene into a full page, using QPrinter.
 
-        \snippet doc/src/snippets/graphicsview.cpp 3
+        \snippet graphicsview.cpp 3
 
         The difference between the scene and view rendering functions is that
         one operates in scene coordinates, and the other in view coordinates.
@@ -364,7 +363,7 @@
         is to render the exact contents of the viewport using the provided
         painter.
 
-        \snippet doc/src/snippets/graphicsview.cpp 4
+        \snippet graphicsview.cpp 4
 
         When the source and target areas' sizes do not match, the source
         contents are stretched to fit into the target area. By passing a
@@ -390,7 +389,7 @@
         so in mousePressEvent() or mouseMoveEvent(), you can get the
         originating widget pointer from the event. For example:
 
-        \snippet doc/src/snippets/graphicsview.cpp 5
+        \snippet graphicsview.cpp 5
 
         To intercept drag and drop events for the scene, you reimplement
         QGraphicsScene::dragEnterEvent() and whichever event handlers your
@@ -449,7 +448,7 @@
 
         Example:
 
-        \snippet doc/src/snippets/graphicsview.cpp 6
+        \snippet graphicsview.cpp 6
 
       \section2 Item Groups
 
