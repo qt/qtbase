@@ -14,7 +14,6 @@ SUBDIRS       = \
                linguist \
                sql \
                tools \
-               tutorials \
                touch \
                gestures
 }

@@ -15,6 +15,7 @@ SUBDIRS       = \
                 richtext \
                 scroller \
                 statemachine \
+                tutorials \
                 widgets
 
 contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
