@@ -145,7 +145,7 @@ void QDBusMetaTypeId::init()
         qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >();
 #endif
 
-#if QT_BOOTSTRAPPED
+#ifdef QT_BOOTSTRAPPED
         const int lastId = qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >();
         message = lastId + 1;
         error = lastId + 2;
