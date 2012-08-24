@@ -122,7 +122,7 @@ QT_BEGIN_NAMESPACE
     and QTextObjectInterface. QObject must be the first class
     inherited. For instance:
 
-    \snippet richtext/textobject/svgtextobject.h 1
+    \snippet qtextobject/textobjectinterface.h 0
 
     The data of a text object is usually stored in the QTextCharFormat
     using QTextCharFormat::setProperty(), and then retrieved with

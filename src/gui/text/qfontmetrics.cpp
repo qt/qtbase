@@ -125,7 +125,7 @@ extern void qt_format_text(const QFont& font, const QRectF &_r,
     Example:
     \snippet code/src_gui_text_qfontmetrics.cpp 0
 
-    \sa QFont, QFontInfo, QFontDatabase, QFontComboBox, {Character Map Example}
+    \sa QFont, QFontInfo, QFontDatabase, {Character Map Example}
 */
 
 /*!
@@ -412,7 +412,7 @@ bool QFontMetrics::inFont(QChar ch) const
 }
 
 /*!
-   Returns true if the character encoded in UCS-4/UTF-32 is a valid
+   Returns true if the character \a ucs4 encoded in UCS-4/UTF-32 is a valid
    character in the font; otherwise returns false.
 */
 bool QFontMetrics::inFontUcs4(uint ucs4) const

@@ -219,8 +219,7 @@ QTextCodec *Qt::codecForHtml(const QByteArray &ba)
     \reentrant
     \inmodule QtGui
 
-    \brief The QTextDocument class holds formatted text that can be
-    viewed and edited using a QTextEdit.
+    \brief The QTextDocument class holds formatted text.
 
     \ingroup richtext-processing
 
@@ -962,9 +961,9 @@ QString QTextDocument::defaultStyleSheet() const
 
     This signal is emitted whenever the position of a cursor changed
     due to an editing operation. The cursor that changed is passed in
-    \a cursor.  If you need a signal when the cursor is moved with the
-    arrow keys you can use the \l{QTextEdit::}{cursorPositionChanged()} signal in
-    QTextEdit.
+    \a cursor.  If the document is used with the QTextEdit class and you need a signal when the
+    cursor is moved with the arrow keys you can use the \l{QTextEdit::}{cursorPositionChanged()}
+    signal in QTextEdit.
 */
 
 /*!
@@ -1662,7 +1661,7 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
 }
 
 /*!
-    Prints the document to the given \a device. The QPageablePaintDevice must be
+    Prints the document to the given \a printer. The QPageablePaintDevice must be
     set up before being used with this function.
 
     This is only a convenience method to print the whole document to the printer.

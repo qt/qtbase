@@ -241,17 +241,16 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
     \ingroup richtext-processing
 
     The QSyntaxHighlighter class is a base class for implementing
-    QTextEdit syntax highlighters.  A syntax highligher automatically
-    highlights parts of the text in a QTextEdit, or more generally in
-    a QTextDocument. Syntax highlighters are often used when the user
-    is entering text in a specific format (for example source code)
+    QTextDocument syntax highlighters.  A syntax highligher automatically
+    highlights parts of the text in a QTextDocument. Syntax highlighters are
+    often used when the user is entering text in a specific format (for example source code)
     and help the user to read the text and identify syntax errors.
 
     To provide your own syntax highlighting, you must subclass
     QSyntaxHighlighter and reimplement highlightBlock().
 
     When you create an instance of your QSyntaxHighlighter subclass,
-    pass it the QTextEdit or QTextDocument that you want the syntax
+    pass it the QTextDocument that you want the syntax
     highlighting to be applied to. For example:
 
     \snippet code/src_gui_text_qsyntaxhighlighter.cpp 0
@@ -306,7 +305,7 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
     parsing the paragraph's text. For an example, see the
     setCurrentBlockUserData() documentation.
 
-    \sa QTextEdit, {Syntax Highlighter Example}
+    \sa QTextDocument, {Syntax Highlighter Example}
 */
 
 /*!

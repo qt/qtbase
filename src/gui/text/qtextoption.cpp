@@ -418,7 +418,7 @@ QList<QTextOption::Tab> QTextOption::tabs() const
 */
 
 /*!
-  \fn void setTabs(QList<Tab> tabStops)
+  \fn void setTabs(const QList<Tab> &tabStops)
   Set the Tab properties to \a tabStops.
 
   \sa tabStop(), tabs()

@@ -1669,8 +1669,12 @@ QTextBlock::iterator &QTextBlock::iterator::operator--()
 */
 
 /*!
-    Returns the glyphs of this text fragment. The positions of the glyphs are
-    relative to the position of the QTextBlock's layout.
+    Returns the glyphs corresponding to \a len characters of this text fragment starting at
+    position \a pos. The positions of the glyphs are relative to the position of the QTextBlock's
+    layout.
+
+    If \a pos is less than zero, it will default to the start of the QTextFragment. If \a len
+    is less than zero, it will default to the length of the fragment.
 
     \sa QGlyphRun, QTextBlock::layout(), QTextLayout::position(), QPainter::drawGlyphRun()
 */

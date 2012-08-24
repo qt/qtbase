@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum BufferType
+    \enum QPlatformSharedGraphicsCache::BufferType
 
     Defines how the type of buffer required to contain a cache.
 
@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum PixelFormat
+    \enum QPlatformSharedGraphicsCache::PixelFormat
 
     Defines the pixel format of a cache.
 
@@ -93,7 +93,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-   \fn void ensureCacheInitialized(const QByteArray &cacheId, BufferType bufferType, PixelFormat pixelFormat)
+   \fn void QPlatformSharedGraphicsCache::ensureCacheInitialized(const QByteArray &cacheId, BufferType bufferType, PixelFormat pixelFormat)
 
    Initializes a cache named \a cacheId if it has not yet been initialized. The \a bufferType and
    \a pixelFormat gives the format of the buffers that will be used to contain the items in the
@@ -142,7 +142,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void itemsMissing(const QByteArray &cacheId, const QVector<quint32> *itemIds)
+    \fn void QPlatformSharedGraphicsCache::itemsMissing(const QByteArray &cacheId, const QVector<quint32> &itemIds)
 
     This signal is emitted when requestItems() has been called for one or more items in the
     cache named \a cacheId which are not yet available in the cache. The user is then expected to
@@ -155,7 +155,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void itemsAvailable(const QByteArray &cacheId, void *bufferId, const QSize &bufferSize, const QVector<quint32> &itemIds, const QVector<QPoint> &positionsInBuffer)
+    \fn void QPlatformSharedGraphicsCache::itemsAvailable(const QByteArray &cacheId, void *bufferId, const QVector<quint32> &itemIds, const QVector<QPoint> &positionsInBuffer)
 
     This signal can be emitted at any time when either requestItems() or insertItems() has been
     called by the application for one or more items in the cache named \a cacheId, as long as
@@ -181,7 +181,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void itemsUpdated(const QByteArray &cacheId, void *bufferId, const QSize &bufferSize, const QVector<quint32> &itemIds, const QVector<QPoint> &positionsInBuffer)
+    \fn void QPlatformSharedGraphicsCache::itemsUpdated(const QByteArray &cacheId, void *bufferId, const QVector<quint32> &itemIds, const QVector<QPoint> &positionsInBuffer)
 
     This signal is similar in usage to the itemsAvailable() signal, but will be emitted when
     the location of a previously requested or inserted item has been updated. The application
@@ -196,7 +196,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void itemsInvalidated(const QByteArray &cacheId, const QVector<quint32> &itemIds)
+    \fn void QPlatformSharedGraphicsCache::itemsInvalidated(const QByteArray &cacheId, const QVector<quint32> &itemIds)
 
     This signal is emitted when the items given by \a itemIds in the cache named \a cacheId have
     been removed from the cache and the previously reported information about them is considered
@@ -214,7 +214,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void beginRequestBatch()
+    \fn void QPlatformSharedGraphicsCache::beginRequestBatch()
 
     This is a hint to the cache that a burst of requests is pending. In some implementations, this
     will improve performance, as the cache can focus on handling the requests and wait with the
@@ -232,7 +232,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void endRequestBatch()
+    \fn void QPlatformSharedGraphicsCache::endRequestBatch()
 
     Signals to the cache that the request sequence which has previously been commenced using
     beginRequestBatch() has now finished.
@@ -241,7 +241,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-   \fn bool requestBatchStarted() const
+   \fn bool QPlatformSharedGraphicsCache::requestBatchStarted() const
 
    Returns true if a request batch has previously been started using beginRequestBatch()
    and not yet stopped using endRequestBatch().
@@ -250,7 +250,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn uint textureIdForBuffer(void *bufferId)
+    \fn uint QPlatformSharedGraphicsCache::textureIdForBuffer(void *bufferId)
 
     Returns an OpenGL texture ID corresponding to the buffer \a bufferId, which has previously
     been passed through signals itemsAvailable() or itemsUpdated(). The relevant OpenGL context
@@ -260,7 +260,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void *eglImageForBuffer(void *bufferId)
+    \fn void *QPlatformSharedGraphicsCache::eglImageForBuffer(void *bufferId)
 
     Returns an EGLImageKHR image corresponding to the buffer \a bufferId.
 
@@ -268,7 +268,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void referenceBuffer(void *bufferId)
+    \fn void QPlatformSharedGraphicsCache::referenceBuffer(void *bufferId)
 
     Registers a reference to the buffer \a bufferId.
 
@@ -276,7 +276,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool dereferenceBuffer(void *bufferId)
+    \fn bool QPlatformSharedGraphicsCache::dereferenceBuffer(void *bufferId)
 
     Removed a previously registered reference to the buffer \a bufferId. Returns true if there
     are still more references to the buffer in question, or false if this was the last reference
@@ -286,7 +286,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QSize sizeOfBuffer(void *bufferId)
+    \fn QSize QPlatformSharedGraphicsCache::sizeOfBuffer(void *bufferId)
 
     Returns the size of the buffer \a bufferId.
 

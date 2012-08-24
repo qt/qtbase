@@ -489,7 +489,7 @@ QFontEngineData::~QFontEngineData()
     Information on encodings can be found from
     \l{Roman Czyborra's} page.
 
-    \sa QFontComboBox, QFontMetrics, QFontInfo, QFontDatabase, {Character Map Example}
+    \sa QFontMetrics, QFontInfo, QFontDatabase, {Character Map Example}
 */
 
 /*!
@@ -786,8 +786,8 @@ QString QFont::styleName() const
 /*!
     \since 4.8
 
-    Sets the style name of the font. When set, other style properties
-    like \a style() and \a weight() will be ignored for font matching.
+    Sets the style name of the font to \a styleName. When set, other style properties
+    like \l style() and \l weight() will be ignored for font matching.
 
     \sa styleName()
 */

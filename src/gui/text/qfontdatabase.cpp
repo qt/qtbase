@@ -1203,7 +1203,7 @@ QString QFontDatabase::styleString(const QFontInfo &fontInfo)
     each combination of family and style, displaying this information
     in a tree view.
 
-    \sa QFont, QFontInfo, QFontMetrics, QFontComboBox, {Character Map Example}
+    \sa QFont, QFontInfo, QFontMetrics, {Character Map Example}
 */
 
 /*!
@@ -1526,7 +1526,7 @@ bool  QFontDatabase::isScalable(const QString &family,
 
 /*!
     Returns a list of the point sizes available for the font that has
-    family \a family and style \a style. The list may be empty.
+    family \a family and style \a styleName. The list may be empty.
 
     \sa smoothSizes(), standardSizes()
 */
@@ -1627,7 +1627,7 @@ QFont QFontDatabase::font(const QString &family, const QString &style,
 
 /*!
     Returns the point sizes of a font that has family \a family and
-    style \a style that will look attractive. The list may be empty.
+    style \a styleName that will look attractive. The list may be empty.
     For non-scalable fonts and bitmap scalable fonts, this function
     is equivalent to pointSizes().
 
