@@ -177,7 +177,7 @@
     la chaîne elle même. On peut voir cette méthode comme un marqueur \tt{<insérer
     la traduction ici>}, permettant de repérer les objets QString à considérer
     pour traduire une application. Vous remarquerez, dans les chapitres à venir
-    comme dans les \l{Qt Examples}{exemples Qt}, qu'elle est utilisée chaque fois
+    comme dans les exemples Qt, qu'elle est utilisée chaque fois
     que l'on utilise une chaîne susceptible d'être traduite.
 
     Lorsque l'on programme avec Qt, il est utile de savoir comment fonctionnent les
