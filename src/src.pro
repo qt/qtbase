@@ -57,7 +57,7 @@ src_printsupport.depends = src_corelib src_gui src_widgets
 
 src_plugins.subdir = $$PWD/plugins
 src_plugins.target = sub-plugins
-src_plugins.depends = src_sql src_xml src_network src_platformsupport
+src_plugins.depends = src_sql src_xml src_network
 
 # this order is important
 SUBDIRS += src_tools src_corelib
