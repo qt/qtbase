@@ -95,4 +95,5 @@ exampledirs += ../../../examples/widgets \
 excludedirs += snippets
 
 imagedirs   += images \
-               ../../../doc/src/images
+               ../../../doc/src/images \
+               ../../../examples/widgets/doc/images
