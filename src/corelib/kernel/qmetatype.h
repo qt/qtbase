@@ -648,16 +648,17 @@ struct QMetaTypeIdQObject<T*, /* isPointerToTypeDerivedFromQObject */ true>
     static int qt_metatype_id()
     {
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
-        if (!metatype_id.load()) {
-            const int len = int(strlen(T::staticMetaObject.className()));
-            QVarLengthArray<char, 16> classNameStar;
-            classNameStar.append(T::staticMetaObject.className(), len);
-            classNameStar.append('*');
-            metatype_id.storeRelease(qRegisterNormalizedMetaType<T*>( \
+        if (const int id = metatype_id.loadAcquire())
+            return id;
+        const int len = int(strlen(T::staticMetaObject.className()));
+        QVarLengthArray<char, 16> classNameStar;
+        classNameStar.append(T::staticMetaObject.className(), len);
+        classNameStar.append('*');
+        const int newId = qRegisterNormalizedMetaType<T*>(       \
                         QByteArray(classNameStar.constData(), classNameStar.size()),
-                        reinterpret_cast<T**>(quintptr(-1))));
-        }
-        return metatype_id.loadAcquire();
+                        reinterpret_cast<T**>(quintptr(-1)));
+        metatype_id.storeRelease(newId);
+        return newId;
     }
 };
 
@@ -733,22 +734,22 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
     static int qt_metatype_id() \
     { \
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
-        if (!metatype_id.load()) { \
-            QVarLengthArray<char, 24> name; \
-            name.append(#SINGLE_ARG_TEMPLATE, int(sizeof(#SINGLE_ARG_TEMPLATE)) - 1); \
-            name.append('<'); \
-            const char *tName = QMetaType::typeName(qMetaTypeId<T>()); \
-            Q_ASSERT(tName); \
-            name.append(tName, int(strlen(tName))); \
-            if (name.last() == '>') \
-                name.append(' '); \
-            name.append('>'); \
-            metatype_id.storeRelease( \
-                    qRegisterNormalizedMetaType< SINGLE_ARG_TEMPLATE<T> >( \
+        if (const int id = metatype_id.load()) \
+            return id; \
+        QVarLengthArray<char, 24> name; \
+        name.append(#SINGLE_ARG_TEMPLATE, int(sizeof(#SINGLE_ARG_TEMPLATE)) - 1); \
+        name.append('<'); \
+        const char *tName = QMetaType::typeName(qMetaTypeId<T>()); \
+        Q_ASSERT(tName); \
+        name.append(tName, int(strlen(tName))); \
+        if (name.last() == '>') \
+            name.append(' '); \
+        name.append('>'); \
+        const int newId = qRegisterNormalizedMetaType< SINGLE_ARG_TEMPLATE<T> >(     \
                         QByteArray(name.constData(), name.size()), \
-                        reinterpret_cast< SINGLE_ARG_TEMPLATE<T> *>(quintptr(-1)))); \
-        } \
-        return metatype_id.loadAcquire(); \
+                        reinterpret_cast< SINGLE_ARG_TEMPLATE<T> *>(quintptr(-1))); \
+        metatype_id.storeRelease(newId); \
+        return newId; \
     } \
 };
 
@@ -762,26 +763,26 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
     static int qt_metatype_id() \
     { \
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
-        if (!metatype_id.load()) {\
-            QVarLengthArray<char, 24> name; \
-            name.append(#DOUBLE_ARG_TEMPLATE, sizeof(#DOUBLE_ARG_TEMPLATE) - 1); \
-            name.append('<'); \
-            const char *tName = QMetaType::typeName(qMetaTypeId<T>()); \
-            Q_ASSERT(tName); \
-            name.append(tName, int(strlen(tName))); \
-            name.append(','); \
-            const char *uName = QMetaType::typeName(qMetaTypeId<U>()); \
-            Q_ASSERT(uName); \
-            name.append(uName, int(strlen(uName))); \
-            if (name.last() == '>') \
-                name.append(' '); \
-            name.append('>'); \
-            metatype_id.storeRelease(\
-                    qRegisterNormalizedMetaType< DOUBLE_ARG_TEMPLATE<T, U> >(\
+        if (const int id = metatype_id.loadAcquire()) \
+            return id; \
+        QVarLengthArray<char, 24> name; \
+        name.append(#DOUBLE_ARG_TEMPLATE, sizeof(#DOUBLE_ARG_TEMPLATE) - 1); \
+        name.append('<'); \
+        const char *tName = QMetaType::typeName(qMetaTypeId<T>()); \
+        Q_ASSERT(tName); \
+        name.append(tName, int(strlen(tName))); \
+        name.append(','); \
+        const char *uName = QMetaType::typeName(qMetaTypeId<U>()); \
+        Q_ASSERT(uName); \
+        name.append(uName, int(strlen(uName))); \
+        if (name.last() == '>') \
+            name.append(' '); \
+        name.append('>'); \
+        const int newId = qRegisterNormalizedMetaType< DOUBLE_ARG_TEMPLATE<T, U> >(\
                         QByteArray(name.constData(), name.size()), \
-                        reinterpret_cast< DOUBLE_ARG_TEMPLATE<T, U> *>(quintptr(-1)))); \
-        }\
-        return metatype_id.loadAcquire(); \
+                        reinterpret_cast< DOUBLE_ARG_TEMPLATE<T, U> *>(quintptr(-1))); \
+        metatype_id.storeRelease(newId); \
+        return newId; \
     } \
 };
 
@@ -803,11 +804,12 @@ struct QMetaTypeId_ ## SMART_POINTER ## _QObjectStar<T, true> \
     static int qt_metatype_id() \
     { \
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
-        if (!metatype_id.load()) { \
-            metatype_id.storeRelease(qRegisterNormalizedMetaType< SMART_POINTER<T> >( #SMART_POINTER "<" + QByteArray(T::staticMetaObject.className()) + ">", \
-                        reinterpret_cast< SMART_POINTER<T> *>(quintptr(-1)))); \
-        } \
-        return metatype_id.loadAcquire(); \
+        if (const int id = metatype_id.loadAcquire()) \
+            return id; \
+        const int newId = qRegisterNormalizedMetaType< SMART_POINTER<T> >( #SMART_POINTER "<" + QByteArray(T::staticMetaObject.className()) + ">", \
+                        reinterpret_cast< SMART_POINTER<T> *>(quintptr(-1))); \
+        metatype_id.storeRelease(newId); \
+        return newId; \
     } \
 }; \
 \
