@@ -455,6 +455,11 @@ QtWidgets
 
 * QInputDialog::getInteger() has been obsoleted. Use QInputDialog::getInt() instead.
 
+* In Qt 4, QStyle::standardIconImplementation() and layoutSpacingImplementation()
+  were introduced instead of making the corresponding methods virtual due to binary
+  compatibility reasons. QStyle::standardIcon() and layoutSpacing() have been made
+  (pure) virtual in Qt 5.
+
 * In Qt 4, many QStyleOption subclasses were introduced in order to keep
   binary compatibility -- QStyleOption was designed to be extended this way,
   in fact it embeds a version number. In Qt 5 the various QStyleOption*V{2,3,4}

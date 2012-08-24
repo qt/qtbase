@@ -784,8 +784,8 @@ public:
     virtual QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt = 0,
                                    const QWidget *widget = 0) const = 0;
 
-    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
-                       const QWidget *widget = 0) const;
+    virtual QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
+                               const QWidget *widget = 0) const = 0;
 
     virtual QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
                                         const QStyleOption *opt) const = 0;
@@ -802,23 +802,14 @@ public:
     static QRect alignedRect(Qt::LayoutDirection direction, Qt::Alignment alignment,
                              const QSize &size, const QRect &rectangle);
 
-    int layoutSpacing(QSizePolicy::ControlType control1,
-                      QSizePolicy::ControlType control2, Qt::Orientation orientation,
-                      const QStyleOption *option = 0, const QWidget *widget = 0) const;
+    virtual int layoutSpacing(QSizePolicy::ControlType control1,
+                              QSizePolicy::ControlType control2, Qt::Orientation orientation,
+                              const QStyleOption *option = 0, const QWidget *widget = 0) const = 0;
     int combinedLayoutSpacing(QSizePolicy::ControlTypes controls1,
                               QSizePolicy::ControlTypes controls2, Qt::Orientation orientation,
                               QStyleOption *option = 0, QWidget *widget = 0) const;
 
     const QStyle * proxy() const;
-
-protected Q_SLOTS:
-    QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt = 0,
-                                     const QWidget *widget = 0) const;
-    int layoutSpacingImplementation(QSizePolicy::ControlType control1,
-                                    QSizePolicy::ControlType control2,
-                                    Qt::Orientation orientation,
-                                    const QStyleOption *option = 0,
-                                    const QWidget *widget = 0) const;
 
 private:
     Q_DISABLE_COPY(QStyle)

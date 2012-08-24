@@ -2021,7 +2021,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     Developers calling standardPixmap() should instead call standardIcon()
     Developers who re-implemented standardPixmap() should instead re-implement
-    the slot standardIconImplementation().
+    standardIcon().
 
     \sa standardIcon()
 */
@@ -2213,6 +2213,9 @@ QPalette QStyle::standardPalette() const
 /*!
     \since 4.1
 
+    \fn QIcon QStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
+                                   const QWidget *widget = 0) const = 0;
+
     Returns an icon for the given \a standardIcon.
 
     The \a standardIcon is a standard pixmap which can follow some
@@ -2220,56 +2223,14 @@ QPalette QStyle::standardPalette() const
     used to pass extra information required when defining the
     appropriate icon. The \a widget argument is optional and can also
     be used to aid the determination of the icon.
-
-    \warning Because of binary compatibility constraints, this
-    function is not virtual.  If you want to provide your own icons in
-    a QStyle subclass, reimplement the standardIconImplementation()
-    slot in your subclass instead. The standardIcon() function will
-    dynamically detect the slot and call it.
-
-    \sa standardIconImplementation()
 */
-QIcon QStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option,
-                           const QWidget *widget) const
-{
-    QIcon result;
-    // ### Qt 4.1: invokeMethod should accept const functions, to avoid this dirty cast
-    QMetaObject::invokeMethod(const_cast<QStyle*>(this),
-                              "standardIconImplementation", Qt::DirectConnection,
-                              Q_RETURN_ARG(QIcon, result),
-                              Q_ARG(StandardPixmap, standardIcon),
-                              Q_ARG(const QStyleOption*, option),
-                              Q_ARG(const QWidget*, widget));
-    return result;
-}
-
-/*!
-    \since 4.1
-
-    Returns an icon for the given \a standardIcon.
-
-    Reimplement this slot to provide your own icons in a QStyle
-    subclass; because of binary compatibility constraints, the
-    standardIcon() function (introduced in Qt 4.1) is not
-    virtual. Instead, standardIcon() will dynamically detect and call
-    \e this slot.
-
-    The \a standardIcon is a standard pixmap which can follow some
-    existing GUI style or guideline. The \a option argument can be
-    used to pass extra information required when defining the
-    appropriate icon. The \a widget argument is optional and can also
-    be used to aid the determination of the icon.
-
-    \sa standardIcon()
-*/
-QIcon QStyle::standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option,
-                                         const QWidget *widget) const
-{
-    return QIcon(standardPixmap(standardIcon, option, widget));
-}
 
 /*!
     \since 4.3
+
+    \fn int QStyle::layoutSpacing(QSizePolicy::ControlType control1,
+                                  QSizePolicy::ControlType control2, Qt::Orientation orientation,
+                                  const QStyleOption *option = 0, const QWidget *widget = 0) const
 
     Returns the spacing that should be used between \a control1 and
     \a control2 in a layout. \a orientation specifies whether the
@@ -2282,35 +2243,8 @@ QIcon QStyle::standardIconImplementation(StandardPixmap standardIcon, const QSty
     PM_LayoutHorizontalSpacing or PM_LayoutVerticalSpacing returns a
     negative value.
 
-    For binary compatibility reasons, this function is not virtual.
-    If you want to specify custom layout spacings in a QStyle
-    subclass, implement a slot called layoutSpacingImplementation().
-    QStyle will discover the slot at run-time (using Qt's
-    \l{meta-object system}) and direct all calls to layoutSpacing()
-    to layoutSpacingImplementation().
-
-    \sa combinedLayoutSpacing(), layoutSpacingImplementation()
+    \sa combinedLayoutSpacing()
 */
-int QStyle::layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
-                          Qt::Orientation orientation, const QStyleOption *option,
-                          const QWidget *widget) const
-{
-    Q_D(const QStyle);
-    if (d->layoutSpacingIndex == -1) {
-        d->layoutSpacingIndex = metaObject()->indexOfMethod(
-            "layoutSpacingImplementation(QSizePolicy::ControlType,QSizePolicy::ControlType,"
-            "Qt::Orientation,const QStyleOption*,const QWidget*)"
-            );
-    }
-    if (d->layoutSpacingIndex < 0)
-        return -1;
-    int result = -1;
-    void *param[] = {&result, &control1, &control2, &orientation, &option, &widget};
-
-    const_cast<QStyle *>(this)->qt_metacall(QMetaObject::InvokeMetaMethod,
-                                            d->layoutSpacingIndex, param);
-    return result;
-}
 
 /*!
     \since 4.3
@@ -2329,7 +2263,7 @@ int QStyle::layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::Contro
     PM_LayoutHorizontalSpacing or PM_LayoutVerticalSpacing returns a
     negative value.
 
-    \sa layoutSpacing(), layoutSpacingImplementation()
+    \sa layoutSpacing()
 */
 int QStyle::combinedLayoutSpacing(QSizePolicy::ControlTypes controls1,
                                   QSizePolicy::ControlTypes controls2, Qt::Orientation orientation,
@@ -2348,36 +2282,6 @@ int QStyle::combinedLayoutSpacing(QSizePolicy::ControlTypes controls1,
         }
     }
     return result;
-}
-
-/*!
-    \since 4.3
-
-    This slot is called by layoutSpacing() to determine the spacing
-    that should be used between \a control1 and \a control2 in a
-    layout. \a orientation specifies whether the controls are laid
-    out side by side or stacked vertically. The \a option parameter
-    can be used to pass extra information about the parent widget.
-    The \a widget parameter is optional and can also be used if \a
-    option is 0.
-
-    If you want to provide custom layout spacings in a QStyle
-    subclass, implement a slot called layoutSpacingImplementation()
-    in your subclass. Be aware that this slot will only be called if
-    PM_LayoutHorizontalSpacing or PM_LayoutVerticalSpacing returns a
-    negative value.
-
-    The default implementation returns -1.
-
-    \sa layoutSpacing(), combinedLayoutSpacing()
-*/
-int QStyle::layoutSpacingImplementation(QSizePolicy::ControlType /* control1 */,
-                                        QSizePolicy::ControlType /* control2 */,
-                                        Qt::Orientation /*orientation*/,
-                                        const QStyleOption * /* option */,
-                                        const QWidget * /* widget */) const
-{
-    return -1;
 }
 
 QT_BEGIN_INCLUDE_NAMESPACE
