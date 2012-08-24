@@ -154,7 +154,7 @@
     \snippet widgets/widgets/sliders/window.cpp 6
 
     Then we create the spin boxes. QSpinBox allows the user to choose
-    a value by clicking the up and down buttons or pressing the \key
+    a value by clicking the up and down buttons or pressing the \uicontrol
     Up and \uicontrol Down keys on the keyboard to modify the value
     currently displayed. The user can also type in the value
     manually. The spin boxes control the minimum, maximum and current
