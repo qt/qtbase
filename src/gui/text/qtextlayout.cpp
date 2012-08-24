@@ -781,7 +781,7 @@ int QTextLayout::leftCursorPosition(int oldPos) const
 
     A grapheme cluster is a sequence of two or more Unicode characters
     that form one indivisible entity on the screen. For example the
-    latin character `\Auml' can be represented in Unicode by two
+    latin character `\unicode{0xC4}' can be represented in Unicode by two
     characters, `A' (0x41), and the combining diaresis (0x308). A text
     cursor can only validly be positioned before or after these two
     characters, never between them since that wouldn't make sense. In
@@ -1009,8 +1009,12 @@ static inline QRectF clipIfValid(const QRectF &rect, const QRectF &clip)
 
 
 /*!
-    Returns the glyph indexes and positions for all glyphs in this QTextLayout. This is an
-    expensive function, and should not be called in a time sensitive context.
+    Returns the glyph indexes and positions for all glyphs corresponding to the \a length characters
+    starting at the position \a from in this QTextLayout. This is an expensive function, and should
+    not be called in a time sensitive context.
+
+    If \a from is less than zero, then the glyph run will begin at the first character in the
+    layout. If \a length is less than zero, it will span the entire string from the start position.
 
     \since 4.8
 
