@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
 
     \image qcolumnview.png
 
-    \sa \l{model-view-programming.html}{Model/View Programming}
+    \sa {Model/View Programming}
 */
 
 /*!
