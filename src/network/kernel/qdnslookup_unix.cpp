@@ -107,12 +107,12 @@ static void resolveLibrary()
 void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, QDnsLookupReply *reply)
 {
     // Load dn_expand, res_ninit and res_nquery on demand.
-    static volatile bool triedResolve = false;
-    if (!triedResolve) {
+    static QBasicAtomicInt triedResolve = Q_BASIC_ATOMIC_INITIALIZER(false);
+    if (!triedResolve.loadAcquire()) {
         QMutexLocker locker(QMutexPool::globalInstanceGet(&local_res_ninit));
-        if (!triedResolve) {
+        if (!triedResolve.load()) {
             resolveLibrary();
-            triedResolve = true;
+            triedResolve.storeRelease(true);
         }
     }
 
