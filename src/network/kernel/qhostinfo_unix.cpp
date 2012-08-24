@@ -48,6 +48,7 @@
 #include "qiodevice.h"
 #include <qbytearray.h>
 #include <qlibrary.h>
+#include <qbasicatomic.h>
 #include <qurl.h>
 #include <qfile.h>
 #include <private/qmutexpool_p.h>
@@ -127,12 +128,12 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 #endif
 
     // Load res_init on demand.
-    static volatile bool triedResolve = false;
-    if (!triedResolve) {
+    static QBasicAtomicInt triedResolve = Q_BASIC_ATOMIC_INITIALIZER(false);
+    if (!triedResolve.loadAcquire()) {
         QMutexLocker locker(QMutexPool::globalInstanceGet(&local_res_init));
-        if (!triedResolve) {
+        if (!triedResolve.load()) {
             resolveLibrary();
-            triedResolve = true;
+            triedResolve.storeRelease(true);
         }
     }
 
