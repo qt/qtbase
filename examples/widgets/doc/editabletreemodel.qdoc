@@ -67,7 +67,7 @@
 
     \section1 Design
 
-    As with the \l{itemviews/simpletreemodel}{Simple Tree Model} example,
+    As with the \l{widgets/itemviews/simpletreemodel}{Simple Tree Model} example,
     the model simply acts as a wrapper around a collection
     of instances of a \c TreeItem class. Each \c TreeItem is designed to
     hold data for a row of items in a tree view, so it contains a list of
@@ -209,7 +209,7 @@
     \li \inlineimage itemviews-editabletreemodel-indexes.png
     \li \b{Relating items using model indexes}
 
-    As with the \l{itemviews/simpletreemodel}{Simple Tree Model} example,
+    As with the \l{widgets/itemviews/simpletreemodel}{Simple Tree Model} example,
     the \c TreeModel needs to be able to take a model index, find the
     corresponding \c TreeItem, and return model indexes that correspond to
     its parents and children. 

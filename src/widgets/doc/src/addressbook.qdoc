@@ -56,7 +56,7 @@
     Tutorial contents:
 
     \list 1
-    \li \l{tutorials/addressbook/part1}{Designing the User Interface}
+    \li \l{widgets/tutorials/addressbook/part1}{Designing the User Interface}
     \li \l{tutorials/addressbook/part2}{Adding Addresses}
     \li \l{tutorials/addressbook/part3}{Navigating between Entries}
     \li \l{tutorials/addressbook/part4}{Editing and Removing Addresses}
