@@ -91,11 +91,11 @@ inline static void registerHelper(T * = 0)
 
 void QDBusMetaTypeId::init()
 {
-    static volatile bool initialized = false;
+    static QBasicAtomicInt initialized = Q_BASIC_ATOMIC_INITIALIZER(false);
 
     // reentrancy is not a problem since everything else is locked on their own
     // set the guard variable at the end
-    if (!initialized) {
+    if (!initialized.load()) {
         // register our types with QtCore (calling qMetaTypeId<T>() does this implicitly)
         (void)message();
         (void)argument();
@@ -135,7 +135,7 @@ void QDBusMetaTypeId::init()
         qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >();
 #endif
 
-        initialized = true;
+        initialized.store(true);
     }
 }
 
