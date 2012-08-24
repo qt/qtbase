@@ -103,6 +103,7 @@ public:
     QString errorString;
     QLibrary::LoadHints loadHints;
 
+    void updatePluginState();
     bool isPlugin();
 
     static inline QJsonDocument fromRawMetaData(const char *raw) {

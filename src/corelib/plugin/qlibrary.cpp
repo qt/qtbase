@@ -580,12 +580,19 @@ bool qt_get_metadata(QtPluginQueryVerificationDataFunction pfn, QLibraryPrivate 
     return true;
 }
 
-
 bool QLibraryPrivate::isPlugin()
+{
+    if (pluginState == MightBeAPlugin)
+        updatePluginState();
+
+    return pluginState == IsAPlugin;
+}
+
+void QLibraryPrivate::updatePluginState()
 {
     errorString.clear();
     if (pluginState != MightBeAPlugin)
-        return pluginState == IsAPlugin;
+        return;
 
     bool success = false;
 
@@ -599,7 +606,7 @@ bool QLibraryPrivate::isPlugin()
         // pretend we didn't see the file
         errorString = QLibrary::tr("The shared library was not found.");
         pluginState = IsNotAPlugin;
-        return false;
+        return;
     }
 #endif
 
@@ -687,7 +694,8 @@ bool QLibraryPrivate::isPlugin()
             else
                 errorString = QLibrary::tr("The file '%1' is not a valid Qt plugin.").arg(fileName);
         }
-        return false;
+        pluginState = IsNotAPlugin;
+        return;
     }
 
     pluginState = IsNotAPlugin; // be pessimistic
@@ -717,8 +725,6 @@ bool QLibraryPrivate::isPlugin()
     } else {
         pluginState = IsAPlugin;
     }
-
-    return pluginState == IsAPlugin;
 }
 
 /*!

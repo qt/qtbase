@@ -283,6 +283,9 @@ void QPluginLoader::setFileName(const QString &fileName)
     d->loadHints = lh;
     if (fn.isEmpty())
         d->errorString = QLibrary::tr("The shared library was not found.");
+    else
+        d->updatePluginState();
+
 #else
     if (qt_debug_component()) {
         qWarning("Cannot load %s into a statically linked Qt library.",
