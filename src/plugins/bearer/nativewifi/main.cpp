@@ -56,14 +56,14 @@ QT_BEGIN_NAMESPACE
 
 static void resolveLibrary()
 {
-    static volatile bool triedResolve = false;
+    static QBasicAtomicInt triedResolve = Q_BASIC_ATOMIC_INITIALIZER(false);
 
-    if (!triedResolve) {
+    if (!triedResolve.loadAcquire()) {
 #ifndef QT_NO_THREAD
         QMutexLocker locker(QMutexPool::globalInstanceGet(&local_WlanOpenHandle));
 #endif
 
-        if (!triedResolve) {
+        if (!triedResolve.load()) {
             local_WlanOpenHandle = (WlanOpenHandleProto)
                 QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanOpenHandle");
             local_WlanRegisterNotification = (WlanRegisterNotificationProto)
@@ -85,7 +85,7 @@ static void resolveLibrary()
             local_WlanCloseHandle = (WlanCloseHandleProto)
                 QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanCloseHandle");
 
-            triedResolve = true;
+            triedResolve.storeRelease(true);
         }
     }
 }
