@@ -44,7 +44,7 @@
     \brief The QGLColormap class is used for installing custom colormaps into
     a QGLWidget.
 
-    \module OpenGL
+    \inmodule OpenGL
     \ingroup painting-3D
     \ingroup shared
 
