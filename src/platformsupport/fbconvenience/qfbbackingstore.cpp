@@ -79,9 +79,8 @@ void QFbBackingStore::beginPaint(const QRegion &region)
     Q_UNUSED(region);
 }
 
-void QFbBackingStore::endPaint(const QRegion &region)
+void QFbBackingStore::endPaint()
 {
-    Q_UNUSED(region);
 }
 
 QT_END_NAMESPACE
