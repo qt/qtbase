@@ -96,7 +96,7 @@ public:
     QDBusPendingCallWatcherHelper *watcherHelper;
     QDBusMessage replyMessage;
     DBusPendingCall *pending;
-    volatile bool waitingForFinished;
+    bool waitingForFinished;
 
     QString expectedReplySignature;
     int expectedReplyCount;
