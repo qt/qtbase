@@ -95,7 +95,7 @@
     consideration. Unlike palette fiddling, style sheets offer
     guarantees: If you set the background color of a QPushButton to be
     red, you can be assured that the button will have a red background
-    in all styles, on all platforms. In addition, \l{Qt Designer}
+    in all styles, on all platforms. In addition, Qt Designer
     provides style sheet integration, making it easy to view the effects
     of a style sheet in different \l{QStyle}{widget styles}.
 
@@ -548,13 +548,13 @@
     \nextpage Customizing Qt Widgets Using Style Sheets
     \title Qt Designer Integration
 
-    \l{Qt Designer}{Qt Designer} is an excellent tool
+    Qt Designer{Qt Designer} is an excellent tool
     to preview style sheets. You can right-click on any widget in Designer
     and select \uicontrol{Change styleSheet...} to set the style sheet.
 
     \image designer-stylesheet-options.png
 
-    In Qt 4.2 and later, \l{Qt Designer} also includes a
+    In Qt 4.2 and later, Qt Designer also includes a
     style sheet syntax highlighter and validator. The validator indicates
     if the syntax is valid or invalid, at the bottom left of the \uicontrol{Edit
     Style Sheet} dialog.

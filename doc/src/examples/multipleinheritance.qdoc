@@ -29,9 +29,9 @@
     \example uitools/multipleinheritance
     \title Multiple Inheritance Example
 
-    The Multiple Inheritance Example shows how to use a form created with \QD
-    in an application by subclassing both QWidget and the user interface
-    class, which is \c{Ui::CalculatorForm}.
+    The Multiple Inheritance Example shows how to use a form created with
+    Qt Designer in an application by subclassing both QWidget and the user
+    interface class, which is \c{Ui::CalculatorForm}.
 
     \image multipleinheritance-example.png
 

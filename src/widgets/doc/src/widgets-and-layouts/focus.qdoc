@@ -78,7 +78,7 @@
 
     You can customize the tab order using QWidget::setTabOrder(). (If
     you don't, \uicontrol Tab generally moves focus in the order of widget
-    construction.) \l{Qt Designer} provides a means of visually
+    construction.) Qt Designer provides a means of visually
     changing the tab order.
 
     Since pressing \uicontrol Tab is so common, most widgets that can have focus

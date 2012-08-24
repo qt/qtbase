@@ -529,7 +529,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     is known as a composite widget. These can be created by constructing a
     widget with the required visual properties - a QFrame, for example - and
     adding child widgets to it, usually managed by a layout. The above diagram
-    shows such a composite widget that was created using \l{Qt Designer}.
+    shows such a composite widget that was created using Qt Designer.
 
     Composite widgets can also be created by subclassing a standard widget,
     such as QWidget or QFrame, and adding the necessary layout and child

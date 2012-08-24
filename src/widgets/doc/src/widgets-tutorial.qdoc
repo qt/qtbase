@@ -233,7 +233,7 @@
 
     As well as QHBoxLayout and QVBoxLayout, Qt also provides QGridLayout
     and QFormLayout classes to help with more complex user interfaces.
-    These can be seen if you run \l{Qt Designer}.
+    These can be seen if you run Qt Designer.
 
     \section1 Setting up the Model
 
