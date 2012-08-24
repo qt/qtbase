@@ -115,7 +115,8 @@ public:
     ~QArrayDataPointer()
     {
         if (!d->ref.deref()) {
-            (*this)->destroyAll();
+            if (d->isMutable())
+                (*this)->destroyAll();
             Data::deallocate(d);
         }
     }

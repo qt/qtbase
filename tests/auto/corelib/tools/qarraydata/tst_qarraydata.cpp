@@ -84,6 +84,7 @@ private slots:
     void arrayOps2();
     void setSharable_data();
     void setSharable();
+    void fromRawData_data();
     void fromRawData();
     void literals();
     void variadicLiterals();
@@ -1421,53 +1422,106 @@ void tst_QArrayData::setSharable()
     QVERIFY(array->ref.isSharable());
 }
 
-void tst_QArrayData::fromRawData()
+struct ResetOnDtor
 {
-    static const int array[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+    ResetOnDtor()
+        : value_()
+    {
+    }
+
+    ResetOnDtor(int value)
+        : value_(value)
+    {
+    }
+
+    ~ResetOnDtor()
+    {
+        value_ = 0;
+    }
+
+    int value_;
+};
+
+bool operator==(const ResetOnDtor &lhs, const ResetOnDtor &rhs)
+{
+    return lhs.value_ == rhs.value_;
+}
+
+template <class T>
+void fromRawData_impl()
+{
+    static const T array[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
     {
         // Default: Immutable, sharable
-        SimpleVector<int> raw = SimpleVector<int>::fromRawData(array,
+        SimpleVector<T> raw = SimpleVector<T>::fromRawData(array,
                 sizeof(array)/sizeof(array[0]), QArrayData::Default);
 
         QCOMPARE(raw.size(), size_t(11));
-        QCOMPARE((const int *)raw.constBegin(), array);
-        QCOMPARE((const int *)raw.constEnd(), (const int *)(array + sizeof(array)/sizeof(array[0])));
+        QCOMPARE((const T *)raw.constBegin(), array);
+        QCOMPARE((const T *)raw.constEnd(), (const T *)(array + sizeof(array)/sizeof(array[0])));
 
         QVERIFY(!raw.isShared());
-        QVERIFY(SimpleVector<int>(raw).isSharedWith(raw));
+        QVERIFY(SimpleVector<T>(raw).isSharedWith(raw));
         QVERIFY(!raw.isShared());
 
         // Detach
-        QCOMPARE(raw.back(), 11);
-        QVERIFY((const int *)raw.constBegin() != array);
+        QCOMPARE(raw.back(), T(11));
+        QVERIFY((const T *)raw.constBegin() != array);
     }
 
     {
         // Immutable, unsharable
-        SimpleVector<int> raw = SimpleVector<int>::fromRawData(array,
+        SimpleVector<T> raw = SimpleVector<T>::fromRawData(array,
                 sizeof(array)/sizeof(array[0]), QArrayData::Unsharable);
 
         QCOMPARE(raw.size(), size_t(11));
-        QCOMPARE((const int *)raw.constBegin(), array);
-        QCOMPARE((const int *)raw.constEnd(), (const int *)(array + sizeof(array)/sizeof(array[0])));
+        QCOMPARE((const T *)raw.constBegin(), array);
+        QCOMPARE((const T *)raw.constEnd(), (const T *)(array + sizeof(array)/sizeof(array[0])));
 
-        SimpleVector<int> copy(raw);
+        SimpleVector<T> copy(raw);
         QVERIFY(!copy.isSharedWith(raw));
         QVERIFY(!raw.isShared());
 
         QCOMPARE(copy.size(), size_t(11));
 
-        for (size_t i = 0; i < 11; ++i)
+        for (size_t i = 0; i < 11; ++i) {
             QCOMPARE(const_(copy)[i], const_(raw)[i]);
+            QCOMPARE(const_(copy)[i], T(i + 1));
+        }
 
         QCOMPARE(raw.size(), size_t(11));
-        QCOMPARE((const int *)raw.constBegin(), array);
-        QCOMPARE((const int *)raw.constEnd(), (const int *)(array + sizeof(array)/sizeof(array[0])));
+        QCOMPARE((const T *)raw.constBegin(), array);
+        QCOMPARE((const T *)raw.constEnd(), (const T *)(array + sizeof(array)/sizeof(array[0])));
 
         // Detach
-        QCOMPARE(raw.back(), 11);
-        QVERIFY((const int *)raw.constBegin() != array);
+        QCOMPARE(raw.back(), T(11));
+        QVERIFY((const T *)raw.constBegin() != array);
+    }
+}
+
+void tst_QArrayData::fromRawData_data()
+{
+    QTest::addColumn<int>("type");
+
+    QTest::newRow("int") << 0;
+    QTest::newRow("ResetOnDtor") << 1;
+}
+void tst_QArrayData::fromRawData()
+{
+    QFETCH(int, type);
+
+    switch (type)
+    {
+        case 0:
+            fromRawData_impl<int>();
+            break;
+        case 1:
+            fromRawData_impl<ResetOnDtor>();
+            break;
+
+        default:
+            QFAIL("Unexpected type data");
     }
 }
 
