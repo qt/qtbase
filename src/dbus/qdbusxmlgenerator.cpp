@@ -172,7 +172,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
             continue;           // invalid form
         if (isSignal && inputCount + 1 != types.count())
             continue;           // signal with output arguments?
-        if (isSignal && types.at(inputCount) == QDBusMetaTypeId::message)
+        if (isSignal && types.at(inputCount) == QDBusMetaTypeId::message())
             continue;           // signal with QDBusMessage argument?
         if (isSignal && mm.attributes() & QMetaMethod::Cloned)
             continue;           // cloned signal?
@@ -181,7 +181,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
         bool isScriptable = mm.attributes() & QMetaMethod::Scriptable;
         for (j = 1; j < types.count(); ++j) {
             // input parameter for a slot or output for a signal
-            if (types.at(j) == QDBusMetaTypeId::message) {
+            if (types.at(j) == QDBusMetaTypeId::message()) {
                 isScriptable = true;
                 continue;
             }

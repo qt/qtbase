@@ -145,13 +145,13 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
         return QString();           // invalid form
     if (isSignal && inputCount + 1 != types.count())
         return QString();           // signal with output arguments?
-    if (isSignal && types.at(inputCount) == QDBusMetaTypeId::message)
+    if (isSignal && types.at(inputCount) == QDBusMetaTypeId::message())
         return QString();           // signal with QDBusMessage argument?
 
     bool isScriptable = mm.isScriptable;
     for (int j = 1; j < types.count(); ++j) {
         // input parameter for a slot or output for a signal
-        if (types.at(j) == QDBusMetaTypeId::message) {
+        if (types.at(j) == QDBusMetaTypeId::message()) {
             isScriptable = true;
             continue;
         }

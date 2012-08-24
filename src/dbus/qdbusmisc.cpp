@@ -186,7 +186,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<in
             return -1;
         }
 
-        if (id == QDBusMetaTypeId::message)
+        if (id == QDBusMetaTypeId::message())
             seenMessage = true;
         else if (QDBusMetaType::typeToSignature(id) == 0)
             return -1;

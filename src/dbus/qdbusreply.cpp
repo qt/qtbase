@@ -203,7 +203,7 @@ void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data
     QByteArray receivedSignature;
 
     if (reply.arguments().count() >= 1) {
-        if (reply.arguments().at(0).userType() == QDBusMetaTypeId::argument) {
+        if (reply.arguments().at(0).userType() == QDBusMetaTypeId::argument()) {
             // compare signatures instead
             QDBusArgument arg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));
             receivedSignature = arg.currentSignature().toLatin1();

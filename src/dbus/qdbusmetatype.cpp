@@ -89,14 +89,6 @@ inline static void registerHelper(T * = 0)
         reinterpret_cast<QDBusMetaType::DemarshallFunction>(df));
 }
 
-int QDBusMetaTypeId::message;
-int QDBusMetaTypeId::argument;
-int QDBusMetaTypeId::variant;
-int QDBusMetaTypeId::objectpath;
-int QDBusMetaTypeId::signature;
-int QDBusMetaTypeId::error;
-int QDBusMetaTypeId::unixfd;
-
 void QDBusMetaTypeId::init()
 {
     static volatile bool initialized = false;
@@ -104,16 +96,14 @@ void QDBusMetaTypeId::init()
     // reentrancy is not a problem since everything else is locked on their own
     // set the guard variable at the end
     if (!initialized) {
-#ifndef QT_BOOTSTRAPPED
         // register our types with QtCore (calling qMetaTypeId<T>() does this implicitly)
-        message = qMetaTypeId<QDBusMessage>();
-        error = qMetaTypeId<QDBusError>();
-#endif
-        argument = qMetaTypeId<QDBusArgument>();
-        variant = qMetaTypeId<QDBusVariant>();
-        objectpath = qMetaTypeId<QDBusObjectPath>();
-        signature = qMetaTypeId<QDBusSignature>();
-        unixfd = qMetaTypeId<QDBusUnixFileDescriptor>();
+        (void)message();
+        (void)argument();
+        (void)variant();
+        (void)objectpath();
+        (void)signature();
+        (void)error();
+        (void)unixfd();
 
 #ifndef QDBUS_NO_SPECIALTYPES
         // and register QtCore's with us
@@ -145,11 +135,6 @@ void QDBusMetaTypeId::init()
         qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >();
 #endif
 
-#ifdef QT_BOOTSTRAPPED
-        const int lastId = qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >();
-        message = lastId + 1;
-        error = lastId + 2;
-#endif
         initialized = true;
     }
 }
@@ -353,16 +338,16 @@ int QDBusMetaType::signatureToType(const char *signature)
         return QVariant::String;
 
     case DBUS_TYPE_OBJECT_PATH:
-        return QDBusMetaTypeId::objectpath;
+        return QDBusMetaTypeId::objectpath();
 
     case DBUS_TYPE_SIGNATURE:
-        return QDBusMetaTypeId::signature;
+        return QDBusMetaTypeId::signature();
 
     case DBUS_TYPE_UNIX_FD:
-        return QDBusMetaTypeId::unixfd;
+        return QDBusMetaTypeId::unixfd();
 
     case DBUS_TYPE_VARIANT:
-        return QDBusMetaTypeId::variant;
+        return QDBusMetaTypeId::variant();
 
     case DBUS_TYPE_ARRAY:       // special case
         switch (signature[1]) {
@@ -444,13 +429,13 @@ const char *QDBusMetaType::typeToSignature(int type)
     }
 
     QDBusMetaTypeId::init();
-    if (type == QDBusMetaTypeId::variant)
+    if (type == QDBusMetaTypeId::variant())
         return DBUS_TYPE_VARIANT_AS_STRING;
-    else if (type == QDBusMetaTypeId::objectpath)
+    else if (type == QDBusMetaTypeId::objectpath())
         return DBUS_TYPE_OBJECT_PATH_AS_STRING;
-    else if (type == QDBusMetaTypeId::signature)
+    else if (type == QDBusMetaTypeId::signature())
         return DBUS_TYPE_SIGNATURE_AS_STRING;
-    else if (type == QDBusMetaTypeId::unixfd)
+    else if (type == QDBusMetaTypeId::unixfd())
         return DBUS_TYPE_UNIX_FD_AS_STRING;
 
     // try the database

@@ -55,20 +55,55 @@
 
 #include <qdbusmetatype.h>
 
+#include <qdbusmessage.h>
+#include <qdbusargument.h>
+#include <qdbusextratypes.h>
+#include <qdbuserror.h>
+#include <qdbusunixfiledescriptor.h>
+
 QT_BEGIN_NAMESPACE
 
 struct QDBusMetaTypeId
 {
-    static int message;         // QDBusMessage
-    static int argument;        // QDBusArgument
-    static int variant;         // QDBusVariant
-    static int objectpath;      // QDBusObjectPath
-    static int signature;       // QDBusSignature
-    static int error;           // QDBusError
-    static int unixfd;          // QDBusUnixFileDescriptor
+    static int message();         // QDBusMessage
+    static int argument();        // QDBusArgument
+    static int variant();         // QDBusVariant
+    static int objectpath();      // QDBusObjectPath
+    static int signature();       // QDBusSignature
+    static int error();           // QDBusError
+    static int unixfd();          // QDBusUnixFileDescriptor
 
     static void init();
 };
+
+inline int QDBusMetaTypeId::message()
+#ifdef QT_BOOTSTRAPPED
+{ return qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >() + 1; }
+#else
+{ return qMetaTypeId<QDBusMessage>(); }
+#endif
+
+inline int QDBusMetaTypeId::argument()
+{ return qMetaTypeId<QDBusArgument>(); }
+
+inline int QDBusMetaTypeId::variant()
+{ return qMetaTypeId<QDBusVariant>(); }
+
+inline int QDBusMetaTypeId::objectpath()
+{ return qMetaTypeId<QDBusObjectPath>(); }
+
+inline int QDBusMetaTypeId::signature()
+{ return qMetaTypeId<QDBusSignature>(); }
+
+inline int QDBusMetaTypeId::error()
+#ifdef QT_BOOTSTRAPPED
+{ return qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >() + 2; }
+#else
+{ return qMetaTypeId<QDBusError>(); }
+#endif
+
+inline int QDBusMetaTypeId::unixfd()
+{ return qMetaTypeId<QDBusUnixFileDescriptor>(); }
 
 QT_END_NAMESPACE
 

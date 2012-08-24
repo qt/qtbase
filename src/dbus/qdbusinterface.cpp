@@ -106,13 +106,13 @@ static void copyArgument(void *to, int id, const QVariant &arg)
             return;
         }
 
-        if (id == QDBusMetaTypeId::variant) {
+        if (id == QDBusMetaTypeId::variant()) {
             *reinterpret_cast<QDBusVariant *>(to) = arg.value<QDBusVariant>();
             return;
-        } else if (id == QDBusMetaTypeId::objectpath) {
+        } else if (id == QDBusMetaTypeId::objectpath()) {
             *reinterpret_cast<QDBusObjectPath *>(to) = arg.value<QDBusObjectPath>();
             return;
-        } else if (id == QDBusMetaTypeId::signature) {
+        } else if (id == QDBusMetaTypeId::signature()) {
             *reinterpret_cast<QDBusSignature *>(to) = arg.value<QDBusSignature>();
             return;
         }
@@ -123,7 +123,7 @@ static void copyArgument(void *to, int id, const QVariant &arg)
     }
 
     // if we got here, it's either an un-dermarshalled type or a mismatch
-    if (arg.userType() != QDBusMetaTypeId::argument) {
+    if (arg.userType() != QDBusMetaTypeId::argument()) {
         // it's a mismatch
         //qWarning?
         return;

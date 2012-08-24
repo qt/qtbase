@@ -304,7 +304,7 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
         // qDBusParametersForMethod has already complained
         return;
     if (inputCount + 1 != types.count() ||
-        types.at(inputCount) == QDBusMetaTypeId::message) {
+        types.at(inputCount) == QDBusMetaTypeId::message()) {
         // invalid signal signature
         // qDBusParametersForMethod has not yet complained about this one
         qWarning("QDBusAbstractAdaptor: Cannot relay signal %s::%s",

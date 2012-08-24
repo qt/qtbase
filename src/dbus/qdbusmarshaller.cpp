@@ -185,7 +185,7 @@ inline bool QDBusMarshaller::append(const QDBusVariant &arg)
 
     QByteArray tmpSignature;
     const char *signature = 0;
-    if (id == QDBusMetaTypeId::argument) {
+    if (id == QDBusMetaTypeId::argument()) {
         // take the signature from the QDBusArgument object we're marshalling
         tmpSignature =
             qvariant_cast<QDBusArgument>(value).currentSignature().toLatin1();
@@ -372,7 +372,7 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     }
 
     // intercept QDBusArgument parameters here
-    if (id == QDBusMetaTypeId::argument) {
+    if (id == QDBusMetaTypeId::argument()) {
         QDBusArgument dbusargument = qvariant_cast<QDBusArgument>(arg);
         QDBusArgumentPrivate *d = QDBusArgumentPrivate::d(dbusargument);
         if (!d->message)
