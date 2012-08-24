@@ -179,7 +179,7 @@ public:
         // character properties
         FirstFontProperty = 0x1FE0,
         FontCapitalization = FirstFontProperty,
-        FontAbsoluteLetterSpacing = 0x2033, // if true FontLetterSpacing is absolute
+        FontLetterSpacingType = 0x2033,
         FontLetterSpacing = 0x1FE1,
         FontWordSpacing = 0x1FE2,
         FontStretch = 0x2034,
@@ -434,14 +434,12 @@ public:
     { setProperty(FontCapitalization, capitalization); }
     inline QFont::Capitalization fontCapitalization() const
     { return static_cast<QFont::Capitalization>(intProperty(FontCapitalization)); }
-    inline void setFontAbsoluteLetterSpacing(qreal absoluteSpacing)
-    { setProperty(FontAbsoluteLetterSpacing, absoluteSpacing);
-      clearProperty(FontLetterSpacing); }
-    inline qreal fontAbsoluteLetterSpacing() const
-    { return doubleProperty(FontAbsoluteLetterSpacing); }
+    inline void setFontLetterSpacingType(QFont::SpacingType letterSpacingType)
+    { setProperty(FontLetterSpacingType, letterSpacingType); }
+    inline QFont::SpacingType fontLetterSpacingType() const
+    { return static_cast<QFont::SpacingType>(intProperty(FontLetterSpacingType)); }
     inline void setFontLetterSpacing(qreal spacing)
-    { setProperty(FontLetterSpacing, spacing);
-      clearProperty(FontAbsoluteLetterSpacing); }
+    { setProperty(FontLetterSpacing, spacing); }
     inline qreal fontLetterSpacing() const
     { return doubleProperty(FontLetterSpacing); }
     inline void setFontWordSpacing(qreal spacing)
@@ -473,7 +471,7 @@ public:
     inline bool fontFixedPitch() const
     { return boolProperty(FontFixedPitch); }
 
-    inline void setFontStretch(qreal factor)
+    inline void setFontStretch(int factor)
     { setProperty(FontStretch, factor); }
     inline int fontStretch() const
     { return intProperty(FontStretch); }

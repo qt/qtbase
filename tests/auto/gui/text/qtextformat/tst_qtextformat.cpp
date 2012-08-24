@@ -285,22 +285,26 @@ void tst_QTextFormat::testLetterSpacing()
     QTextCharFormat format;
 
     QCOMPARE(format.hasProperty(QTextFormat::FontLetterSpacing), false);
-    QCOMPARE(format.hasProperty(QTextFormat::FontAbsoluteLetterSpacing), false);
+    QCOMPARE(format.hasProperty(QTextFormat::FontLetterSpacingType), false);
 
-    format.setFontAbsoluteLetterSpacing(10.0);
+    format.setFontLetterSpacingType(QFont::AbsoluteSpacing);
+    format.setFontLetterSpacing(10.0);
 
-    QCOMPARE(format.hasProperty(QTextFormat::FontLetterSpacing), false);
-    QCOMPARE(format.property(QTextFormat::FontAbsoluteLetterSpacing).toDouble(), 10.0);
+    QCOMPARE(format.hasProperty(QTextFormat::FontLetterSpacing), true);
+    QCOMPARE(format.property(QTextFormat::FontLetterSpacing).toDouble(), 10.0);
+    QCOMPARE(format.property(QTextFormat::FontLetterSpacingType).toInt(), int(QFont::AbsoluteSpacing));
 
+    format.setFontLetterSpacingType(QFont::PercentageSpacing);
     format.setFontLetterSpacing(110.0);
 
     QCOMPARE(format.property(QTextFormat::FontLetterSpacing).toDouble(), 110.0);
-    QCOMPARE(format.hasProperty(QTextFormat::FontAbsoluteLetterSpacing), false);
+    QCOMPARE(format.property(QTextFormat::FontLetterSpacingType).toInt(), int(QFont::PercentageSpacing));
 
-    format.setFontAbsoluteLetterSpacing(10.0);
+    format.setFontLetterSpacingType(QFont::AbsoluteSpacing);
+    format.setFontLetterSpacing(10.0);
 
-    QCOMPARE(format.hasProperty(QTextFormat::FontLetterSpacing), false);
-    QCOMPARE(format.property(QTextFormat::FontAbsoluteLetterSpacing).toDouble(), 10.0);
+    QCOMPARE(format.property(QTextFormat::FontLetterSpacingType).toInt(), int(QFont::AbsoluteSpacing));
+    QCOMPARE(format.property(QTextFormat::FontLetterSpacing).toDouble(), 10.0);
 }
 
 void tst_QTextFormat::testFontStretch()
