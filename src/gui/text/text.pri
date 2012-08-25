@@ -86,5 +86,4 @@ SOURCES += \
 HEADERS += \
       text/qplatformfontdatabase.h
 
-DEFINES += QT_NO_OPENTYPE
 INCLUDEPATH += ../3rdparty/harfbuzz/src

@@ -771,6 +771,7 @@ void HB_FreeFace(HB_Face face)
     free(face);
 }
 
+#ifndef NO_OPENTYPE
 HB_Bool HB_SelectScript(HB_ShaperItem *shaper_item, const HB_OpenTypeFeature *features)
 {
     HB_Script script = shaper_item->item.script;
@@ -1085,6 +1086,7 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
 #endif
     return true;
 }
+#endif // NO_OPENTYPE
 
 HB_Bool HB_ShapeItem(HB_ShaperItem *shaper_item)
 {

@@ -123,6 +123,7 @@ extern void HB_IndicAttributes(HB_Script script, const HB_UChar16 *string, hb_ui
 
 extern void HB_ThaiAttributes(HB_Script script, const HB_UChar16 *string, hb_uint32 from, hb_uint32 len, HB_CharAttributes *attributes);
 
+#ifndef NO_OPENTYPE
 typedef struct {
     hb_uint32 tag;
     hb_uint32 property;
@@ -134,6 +135,7 @@ HB_Bool HB_SelectScript(HB_ShaperItem *item, const HB_OpenTypeFeature *features)
 
 HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties);
 HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool doLogClusters);
+#endif // NO_OPENTYPE
 
 void HB_HeuristicPosition(HB_ShaperItem *item);
 void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item);
