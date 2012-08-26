@@ -65,9 +65,6 @@ Q_CORE_EXPORT HB_Face qHBNewFace(void *font, HB_GetFontTableFunc tableFunc);
 Q_CORE_EXPORT void qHBFreeFace(HB_Face);
 Q_CORE_EXPORT HB_Face qHBLoadFace(HB_Face face);
 
-Q_DECLARE_TYPEINFO(HB_CharAttributes, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(HB_ScriptItem, Q_PRIMITIVE_TYPE);
-
 Q_DECLARE_TYPEINFO(HB_GlyphAttributes, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(HB_FixedPoint, Q_PRIMITIVE_TYPE);
 

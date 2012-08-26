@@ -683,7 +683,7 @@ void QTextLayout::clearLayout()
 */
 int QTextLayout::nextCursorPosition(int oldPos, CursorMode mode) const
 {
-    const HB_CharAttributes *attributes = d->attributes();
+    const QCharAttributes *attributes = d->attributes();
     int len = d->block.isValid() ? d->block.length() - 1
                                  : d->layoutData->string.length();
     Q_ASSERT(len <= d->layoutData->string.length());
@@ -692,7 +692,7 @@ int QTextLayout::nextCursorPosition(int oldPos, CursorMode mode) const
 
     if (mode == SkipCharacters) {
         oldPos++;
-        while (oldPos < len && !attributes[oldPos].charStop)
+        while (oldPos < len && !attributes[oldPos].graphemeBoundary)
             oldPos++;
     } else {
         if (oldPos < len && d->atWordSeparator(oldPos)) {
@@ -719,13 +719,13 @@ int QTextLayout::nextCursorPosition(int oldPos, CursorMode mode) const
 */
 int QTextLayout::previousCursorPosition(int oldPos, CursorMode mode) const
 {
-    const HB_CharAttributes *attributes = d->attributes();
+    const QCharAttributes *attributes = d->attributes();
     if (!attributes || oldPos <= 0 || oldPos > d->layoutData->string.length())
         return oldPos;
 
     if (mode == SkipCharacters) {
         oldPos--;
-        while (oldPos && !attributes[oldPos].charStop)
+        while (oldPos && !attributes[oldPos].graphemeBoundary)
             oldPos--;
     } else {
         while (oldPos && d->atSpace(oldPos-1))
@@ -789,10 +789,10 @@ int QTextLayout::leftCursorPosition(int oldPos) const
 */
 bool QTextLayout::isValidCursorPosition(int pos) const
 {
-    const HB_CharAttributes *attributes = d->attributes();
+    const QCharAttributes *attributes = d->attributes();
     if (!attributes || pos < 0 || pos > (int)d->layoutData->string.length())
         return false;
-    return attributes[pos].charStop;
+    return attributes[pos].graphemeBoundary;
 }
 
 /*!
@@ -1770,7 +1770,7 @@ void QTextLine::layout_helper(int maxGlyphs)
 
     Qt::Alignment alignment = eng->option.alignment();
 
-    const HB_CharAttributes *attributes = eng->attributes();
+    const QCharAttributes *attributes = eng->attributes();
     if (!attributes)
         return;
     lbh.currentPosition = line.from;
@@ -1875,17 +1875,18 @@ void QTextLine::layout_helper(int maxGlyphs)
 
                 if (lbh.currentPosition >= eng->layoutData->string.length()
                     || attributes[lbh.currentPosition].whiteSpace
-                    || attributes[lbh.currentPosition].lineBreakType != HB_NoBreak) {
+                    || attributes[lbh.currentPosition].lineBreak) {
                     sb_or_ws = true;
                     break;
-                } else if (breakany && attributes[lbh.currentPosition].charStop) {
+                } else if (breakany && attributes[lbh.currentPosition].graphemeBoundary) {
                     break;
                 }
             } while (lbh.currentPosition < end);
             lbh.minw = qMax(lbh.tmpData.textWidth, lbh.minw);
 
             if (lbh.currentPosition > 0 && lbh.currentPosition < end
-                && attributes[lbh.currentPosition].lineBreakType == HB_SoftHyphen) {
+                && attributes[lbh.currentPosition].lineBreak
+                && eng->layoutData->string.at(lbh.currentPosition - 1).unicode() == QChar::SoftHyphen) {
                 // if we are splitting up a word because of
                 // a soft hyphen then we ...
                 //
@@ -2605,12 +2606,12 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     int lineEnd = line.from + line.length + line.trailingSpaces;
     int pos = *cursorPos;
     int itm;
-    const HB_CharAttributes *attributes = eng->attributes();
+    const QCharAttributes *attributes = eng->attributes();
     if (!attributes) {
         *cursorPos = 0;
         return x.toReal();
     }
-    while (pos < lineEnd && !attributes[pos].charStop)
+    while (pos < lineEnd && !attributes[pos].graphemeBoundary)
         pos++;
     if (pos == lineEnd) {
         // end of line ensure we have the last item on the line

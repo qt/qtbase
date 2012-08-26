@@ -53,11 +53,29 @@
 // We mean it.
 //
 
-#include <private/qharfbuzz_p.h>
+#include <QtCore/qchar.h>
 
 QT_BEGIN_NAMESPACE
 
+struct Q_PACKED QCharAttributes
+{
+    uchar graphemeBoundary : 1;
+    uchar wordBreak        : 1;
+    uchar sentenceBoundary : 1;
+    uchar lineBreak        : 1;
+    uchar whiteSpace       : 1;
+    uchar unused           : 3;
+};
+Q_DECLARE_TYPEINFO(QCharAttributes, Q_PRIMITIVE_TYPE);
+
 namespace QUnicodeTools {
+
+// ### temporary
+struct ScriptItem
+{
+    int position;
+    int script;
+};
 
 enum CharAttributeOption {
     GraphemeBreaks = 0x01,
@@ -72,8 +90,8 @@ enum CharAttributeOption {
 Q_DECLARE_FLAGS(CharAttributeOptions, CharAttributeOption)
 
 Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
-                                      const HB_ScriptItem *items, int numItems,
-                                      HB_CharAttributes *attributes, CharAttributeOptions options = DefaultOptionsCompat);
+                                      const ScriptItem *items, int numItems,
+                                      QCharAttributes *attributes, CharAttributeOptions options = DefaultOptionsCompat);
 
 } // namespace QUnicodeTools
 

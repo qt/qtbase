@@ -395,8 +395,8 @@ static void HB_ThaiAssignAttributes(const HB_UChar16 *string, hb_uint32 len, HB_
     to_tis620(string, len, cstr);
 
     for (i = 0; i < len; ++i) {
-        attributes[i].lineBreakType = HB_NoBreak;
-        attributes[i].wordBoundary = FALSE;
+        attributes[i].lineBreak = FALSE;
+        attributes[i].wordBreak = FALSE;
     }
 
     if (len > 128) {
@@ -410,29 +410,29 @@ static void HB_ThaiAssignAttributes(const HB_UChar16 *string, hb_uint32 len, HB_
     }
 
     if (break_positions) {
-        attributes[0].wordBoundary = TRUE;
+        attributes[0].wordBreak = TRUE;
         numbreaks = th_brk((const unsigned char *)cstr, break_positions, brp_size);
         for (i = 0; i < numbreaks; ++i) {
-            attributes[break_positions[i]].wordBoundary = TRUE;
-            attributes[break_positions[i]].lineBreakType = HB_Break;
+            attributes[break_positions[i]].wordBreak = TRUE;
+            attributes[break_positions[i]].lineBreak = TRUE;
         }
 
         if (break_positions != brp)
             free(break_positions);
     }
 
-    /* manage charStop */
+    /* manage grapheme boundaries */
     i = 0;
     while (i < len) {
         cell_length = th_next_cell((const unsigned char *)cstr + i, len - i, &tis_cell, true);
 
-        attributes[i].charStop = true;
+        attributes[i].graphemeBoundary = true;
         for (j = 1; j < cell_length; j++)
-            attributes[i + j].charStop = false;
+            attributes[i + j].graphemeBoundary = false;
 
-        /* Set charStop for SARA AM */
+        /* Set graphemeBoundary for SARA AM */
         if (cstr[i + cell_length - 1] == (char)0xd3)
-            attributes[i + cell_length - 1].charStop = true;
+            attributes[i + cell_length - 1].graphemeBoundary = true;
 
         i += cell_length;
     }

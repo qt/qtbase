@@ -66,13 +66,6 @@ typedef enum {
   HB_Err_Out_Of_Memory                = 0xDEAD
 } HB_Error;
 
-typedef enum {
-    HB_NoBreak,
-    HB_SoftHyphen,
-    HB_Break,
-    HB_ForcedBreak
-} HB_LineBreakType;
-
 typedef QT_PREPEND_NAMESPACE(quint32) HB_Glyph;
 typedef void * HB_Font;
 typedef void * HB_Face;
@@ -94,17 +87,6 @@ typedef struct {
     hb_bitfield dontPrint       :1;
     hb_bitfield combiningClass  :8;
 } HB_GlyphAttributes;
-
-// This struct is strictly not needed, but we replicate it completely in
-// case the compiler tries to get clever with padding.
-typedef struct {
-    /*HB_LineBreakType*/ hb_bitfield lineBreakType  :2;
-    /*HB_Bool*/ hb_bitfield whiteSpace              :1;     /* A unicode whitespace character, except NBSP, ZWNBSP */
-    /*HB_Bool*/ hb_bitfield charStop                :1;     /* Valid cursor position (for left/right arrow) */
-    /*HB_Bool*/ hb_bitfield wordBoundary            :1;
-    /*HB_Bool*/ hb_bitfield sentenceBoundary        :1;
-    hb_bitfield unused                  :2;
-} HB_CharAttributes;
 
 }
 

@@ -260,12 +260,12 @@ void HB_TibetanAttributes(HB_Script script, const HB_UChar16 *text, hb_uint32 fr
         HB_Bool invalid;
         hb_uint32 boundary = tibetan_nextSyllableBoundary(text, from+i, end, &invalid) - from;
 
-        attributes[i].charStop = TRUE;
+        attributes[i].graphemeBoundary = TRUE;
 
         if (boundary > len-1) boundary = len;
         i++;
         while (i < boundary) {
-            attributes[i].charStop = FALSE;
+            attributes[i].graphemeBoundary = FALSE;
             ++uc;
             ++i;
         }

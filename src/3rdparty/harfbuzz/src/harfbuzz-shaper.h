@@ -126,21 +126,14 @@ typedef struct
     hb_uint8 bidiLevel;
 } HB_ScriptItem;
 
-typedef enum {
-    HB_NoBreak,
-    HB_SoftHyphen,
-    HB_Break,
-    HB_ForcedBreak
-} HB_LineBreakType;
-
 
 typedef struct {
-    /*HB_LineBreakType*/ hb_bitfield lineBreakType  :2;
-    /*HB_Bool*/ hb_bitfield whiteSpace              :1;     /* A unicode whitespace character, except NBSP, ZWNBSP */
-    /*HB_Bool*/ hb_bitfield charStop                :1;     /* Valid cursor position (for left/right arrow) */
-    /*HB_Bool*/ hb_bitfield wordBoundary            :1;
-    /*HB_Bool*/ hb_bitfield sentenceBoundary        :1;
-    hb_bitfield unused                  :2;
+    hb_bitfield graphemeBoundary : 1;     /* Valid cursor position (for left/right arrow) */
+    hb_bitfield wordBreak        : 1;
+    hb_bitfield sentenceBoundary : 1;
+    hb_bitfield lineBreak        : 1;
+    hb_bitfield whiteSpace       : 1;     /* A unicode whitespace character */
+    hb_bitfield unused           : 3;
 } HB_CharAttributes;
 
 void HB_GetTailoredCharAttributes(const HB_UChar16 *string, hb_uint32 stringLength,

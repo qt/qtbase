@@ -42,6 +42,9 @@
 #include "qunicodetools_p.h"
 
 #include "qunicodetables_p.h"
+#include "qvarlengtharray.h"
+
+#include <harfbuzz-shaper.h>
 
 #define FLAG(x) (1 << (x))
 
@@ -77,7 +80,7 @@ static const uchar breakTable[QUnicodeTables::GraphemeBreak_LVT + 1][QUnicodeTab
 
 } // namespace GB
 
-static void getGraphemeBreaks(const ushort *string, quint32 len, HB_CharAttributes *attributes)
+static void getGraphemeBreaks(const ushort *string, quint32 len, QCharAttributes *attributes)
 {
     QUnicodeTables::GraphemeBreakClass lcls = QUnicodeTables::GraphemeBreak_LF; // to meet GB1
     for (quint32 i = 0; i != len; ++i) {
@@ -94,7 +97,8 @@ static void getGraphemeBreaks(const ushort *string, quint32 len, HB_CharAttribut
         const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
         QUnicodeTables::GraphemeBreakClass cls = (QUnicodeTables::GraphemeBreakClass) prop->graphemeBreakClass;
 
-        attributes[pos].charStop = GB::breakTable[lcls][cls];
+        if (Q_LIKELY(GB::breakTable[lcls][cls]))
+            attributes[pos].graphemeBoundary = true;
 
         lcls = cls;
     }
@@ -127,7 +131,7 @@ static const uchar breakTable[QUnicodeTables::WordBreak_ExtendNumLet + 1][QUnico
 
 } // namespace WB
 
-static void getWordBreaks(const ushort *string, quint32 len, HB_CharAttributes *attributes)
+static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *attributes)
 {
     QUnicodeTables::WordBreakClass cls = QUnicodeTables::WordBreak_LF; // to meet WB1
     for (quint32 i = 0; i != len; ++i) {
@@ -175,7 +179,7 @@ static void getWordBreaks(const ushort *string, quint32 len, HB_CharAttributes *
         }
         cls = ncls;
         if (action == WB::Break)
-            attributes[pos].wordBoundary = true;
+            attributes[pos].wordBreak = true;
     }
 }
 
@@ -217,7 +221,7 @@ static const uchar breakTable[BAfter + 1][QUnicodeTables::SentenceBreak_Close + 
 
 } // namespace SB
 
-static void getSentenceBreaks(const ushort *string, quint32 len, HB_CharAttributes *attributes)
+static void getSentenceBreaks(const ushort *string, quint32 len, QCharAttributes *attributes)
 {
     uchar state = SB::BAfter; // to meet SB1
     for (quint32 i = 0; i != len; ++i) {
@@ -402,12 +406,11 @@ static const uchar breakTable[QUnicodeTables::LineBreak_CB + 1][QUnicodeTables::
 
 } // namespace LB
 
-static void getLineBreaks(const ushort *string, quint32 len, HB_CharAttributes *attributes)
+static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *attributes)
 {
     quint32 nestart = 0;
     LB::NS::Class nelast = LB::NS::XX;
 
-    uint lucs4 = 0;
     QUnicodeTables::LineBreakClass lcls = QUnicodeTables::LineBreak_LF; // to meet LB10
     QUnicodeTables::LineBreakClass cls = lcls;
     for (quint32 i = 0; i != len; ++i) {
@@ -443,7 +446,7 @@ static void getLineBreaks(const ushort *string, quint32 len, HB_CharAttributes *
             case LB::NS::Break:
                 // do not change breaks before and after the expression
                 for (quint32 j = nestart + 1; j < pos; ++j)
-                    attributes[j].lineBreakType = HB_NoBreak;
+                    attributes[j].lineBreak = false;
                 // fall through
             case LB::NS::None:
                 nelast = LB::NS::XX; // reset state
@@ -457,12 +460,10 @@ static void getLineBreaks(const ushort *string, quint32 len, HB_CharAttributes *
             }
         }
 
-        HB_LineBreakType lineBreakType = HB_NoBreak;
-
         if (Q_UNLIKELY(lcls >= QUnicodeTables::LineBreak_CR)) {
             // LB4: BK!, LB5: (CRxLF|CR|LF|NL)!
             if (lcls > QUnicodeTables::LineBreak_CR || ncls != QUnicodeTables::LineBreak_LF)
-                lineBreakType = HB_ForcedBreak;
+                attributes[pos].lineBreak = true;
             goto next;
         }
 
@@ -479,18 +480,16 @@ static void getLineBreaks(const ushort *string, quint32 len, HB_CharAttributes *
 
         switch (LB::breakTable[cls][ncls < QUnicodeTables::LineBreak_SA ? ncls : QUnicodeTables::LineBreak_AL]) {
         case LB::DirectBreak:
-            lineBreakType = HB_Break;
-            if (lucs4 == QChar::SoftHyphen)
-                lineBreakType = HB_SoftHyphen;
+            attributes[pos].lineBreak = true;
             break;
         case LB::IndirectBreak:
             if (lcls == QUnicodeTables::LineBreak_SP)
-                lineBreakType = HB_Break;
+                attributes[pos].lineBreak = true;
             break;
         case LB::CombiningIndirectBreak:
             if (lcls != QUnicodeTables::LineBreak_SP)
                 goto next_no_cls_update;
-            lineBreakType = HB_Break;
+            attributes[pos].lineBreak = true;
             break;
         case LB::CombiningProhibitedBreak:
             if (lcls != QUnicodeTables::LineBreak_SP)
@@ -504,24 +503,21 @@ static void getLineBreaks(const ushort *string, quint32 len, HB_CharAttributes *
 
     next:
         cls = ncls;
-        lucs4 = ucs4;
     next_no_cls_update:
         lcls = ncls;
-        if (Q_LIKELY(lineBreakType != HB_NoBreak))
-            attributes[pos].lineBreakType = lineBreakType;
     }
 
     if (Q_UNLIKELY(LB::NS::actionTable[nelast][LB::NS::XX] == LB::NS::Break)) {
         // LB25: do not break lines inside numbers
         for (quint32 j = nestart + 1; j < len; ++j)
-            attributes[j].lineBreakType = HB_NoBreak;
+            attributes[j].lineBreak = false;
     }
 
-    attributes[0].lineBreakType = HB_NoBreak; // LB2
+    attributes[0].lineBreak = false; // LB2
 }
 
 
-static void getWhiteSpaces(const ushort *string, quint32 len, HB_CharAttributes *attributes)
+static void getWhiteSpaces(const ushort *string, quint32 len, QCharAttributes *attributes)
 {
     for (quint32 i = 0; i != len; ++i) {
         uint ucs4 = string[i];
@@ -540,14 +536,14 @@ static void getWhiteSpaces(const ushort *string, quint32 len, HB_CharAttributes 
 
 
 Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
-                                      const HB_ScriptItem *items, int numItems,
-                                      HB_CharAttributes *attributes, CharAttributeOptions options)
+                                      const ScriptItem *items, int numItems,
+                                      QCharAttributes *attributes, CharAttributeOptions options)
 {
     if (length <= 0)
         return;
 
     if (!(options & DontClearAttributes))
-        ::memset(attributes, 0, length * sizeof(HB_CharAttributes));
+        ::memset(attributes, 0, length * sizeof(QCharAttributes));
 
     if (options & GraphemeBreaks)
         getGraphemeBreaks(string, length, attributes);
@@ -562,8 +558,34 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
 
     if (!items || numItems <= 0)
         return;
-    if (!qt_initcharattributes_default_algorithm_only)
-        HB_GetTailoredCharAttributes(string, length, items, numItems, attributes);
+    if (!qt_initcharattributes_default_algorithm_only) {
+        QVarLengthArray<HB_ScriptItem, 64> scriptItems;
+        scriptItems.reserve(numItems);
+        int start = 0;
+        for (int i = start + 1; i < numItems; ++i) {
+            if (items[i].script == items[start].script)
+                continue;
+            HB_ScriptItem item;
+            item.pos = items[start].position;
+            item.length = items[i].position - items[start].position;
+            item.script = (HB_Script)items[start].script;
+            item.bidiLevel = 0; // unused
+            scriptItems.append(item);
+            start = i;
+        }
+        if (items[start].position + 1 < length) {
+            HB_ScriptItem item;
+            item.pos = items[start].position;
+            item.length = length - items[start].position;
+            item.script = (HB_Script)items[start].script;
+            item.bidiLevel = 0; // unused
+            scriptItems.append(item);
+        }
+        Q_STATIC_ASSERT(sizeof(QCharAttributes) == sizeof(HB_CharAttributes));
+        HB_GetTailoredCharAttributes(string, length,
+                                     scriptItems.constData(), scriptItems.size(),
+                                     reinterpret_cast<HB_CharAttributes *>(attributes));
+    }
 }
 
 } // namespace QUnicodeTools

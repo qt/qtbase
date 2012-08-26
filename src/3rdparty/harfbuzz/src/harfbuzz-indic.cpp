@@ -1880,12 +1880,12 @@ void HB_IndicAttributes(HB_Script script, const HB_UChar16 *text, hb_uint32 from
     while (i < len) {
         bool invalid;
         hb_uint32 boundary = indic_nextSyllableBoundary(script, text, from+i, end, &invalid) - from;
-         attributes[i].charStop = true;
+         attributes[i].graphemeBoundary = true;
 
         if (boundary > len-1) boundary = len;
         i++;
         while (i < boundary) {
-            attributes[i].charStop = false;
+            attributes[i].graphemeBoundary = false;
             ++uc;
             ++i;
         }
