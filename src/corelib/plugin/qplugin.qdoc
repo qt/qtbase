@@ -77,7 +77,12 @@
 
     See the \l{tools/plugandpaint}{Plug & Paint} example for details.
 
-    Note that the class this macro appears on must be default-constructible
+    Note that the class this macro appears on must be default-constructible.
+
+    FILE is optional and points to a json file.
+
+    The json file must reside in the same directory as the header file.
+    moc exits with an error when it could not find the specified file.
 
     \sa Q_DECLARE_INTERFACE(), {How to Create Qt Plugins}
 */
