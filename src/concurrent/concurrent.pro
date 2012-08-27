@@ -12,8 +12,6 @@ load(qt_module)
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 
 SOURCES += \
-        qfuture.cpp \
-        qfutureinterface.cpp \
         qfuturesynchronizer.cpp \
         qfuturewatcher.cpp \
         qtconcurrentfilter.cpp \
@@ -23,8 +21,6 @@ SOURCES += \
 
 HEADERS += \
         qtconcurrent_global.h \
-        qfuture.h \
-        qfutureinterface.h \
         qfuturesynchronizer.h \
         qfuturewatcher.h \
         qtconcurrentcompilertest.h \
@@ -44,7 +40,6 @@ HEADERS += \
 
 # private headers
 HEADERS += \
-        qfutureinterface_p.h \
         qfuturewatcher_p.h
 
 QMAKE_DOCS = $$PWD/doc/qtconcurrent.qdocconf

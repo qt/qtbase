@@ -46,7 +46,7 @@
 
 #ifndef QT_NO_CONCURRENT
 
-#include <QtConcurrent/qfuture.h>
+#include <QtCore/qfuture.h>
 #include <QtCore/qrunnable.h>
 #include <QtCore/qthreadpool.h>
 

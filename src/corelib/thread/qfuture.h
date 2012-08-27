@@ -42,11 +42,11 @@
 #ifndef QFUTURE_H
 #define QFUTURE_H
 
-#include <QtConcurrent/qtconcurrent_global.h>
+#include <QtCore/qglobal.h>
 
 #ifndef QT_NO_QFUTURE
 
-#include <QtConcurrent/qfutureinterface.h>
+#include <QtCore/qfutureinterface.h>
 #include <QtCore/qstring.h>
 
 QT_BEGIN_HEADER

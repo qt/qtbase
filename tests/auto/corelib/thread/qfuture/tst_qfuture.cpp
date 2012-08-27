@@ -1297,8 +1297,8 @@ QFuture<int> createExceptionResultFuture()
 class DerivedException : public QException
 {
 public:
-    void raise() const { throw *this; }
-    DerivedException *clone() const { return new DerivedException(*this); }
+    void raise() const Q_DECL_OVERRIDE { throw *this; }
+    DerivedException *clone() const Q_DECL_OVERRIDE { return new DerivedException(*this); }
 };
 
 QFuture<void> createDerivedExceptionFuture()

@@ -42,8 +42,6 @@
 #ifndef QFUTUREINTERFACE_H
 #define QFUTUREINTERFACE_H
 
-#include <QtConcurrent/qtconcurrent_global.h>
-
 #include <QtCore/qrunnable.h>
 
 #ifndef QT_NO_QFUTURE
@@ -61,7 +59,7 @@ class QFutureInterfaceBasePrivate;
 class QFutureWatcherBase;
 class QFutureWatcherBasePrivate;
 
-class Q_CONCURRENT_EXPORT QFutureInterfaceBase
+class Q_CORE_EXPORT QFutureInterfaceBase
 {
 public:
     enum State {
@@ -308,6 +306,6 @@ public:
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#endif // QT_NO_CONCURRENT
+#endif // QT_NO_QFUTURE
 
 #endif // QFUTUREINTERFACE_H

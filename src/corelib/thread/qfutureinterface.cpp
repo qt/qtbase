@@ -562,4 +562,4 @@ void QFutureInterfaceBasePrivate::setState(QFutureInterfaceBase::State newState)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_CONCURRENT
+#endif // QT_NO_QFUTURE

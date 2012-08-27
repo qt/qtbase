@@ -53,8 +53,6 @@
 // We mean it.
 //
 
-#include <QtConcurrent/qtconcurrent_global.h>
-
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qlist.h>
@@ -126,7 +124,7 @@ public:
     virtual void callOutInterfaceDisconnected() = 0;
 };
 
-class QFutureInterfaceBasePrivate
+class Q_CORE_EXPORT QFutureInterfaceBasePrivate // ### temporary
 {
 public:
     QFutureInterfaceBasePrivate(QFutureInterfaceBase::State initialState);

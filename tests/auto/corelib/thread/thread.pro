@@ -3,6 +3,7 @@ SUBDIRS=\
     qatomicint \
     qatomicpointer \
     qresultstore \
+    qfuture \
     qmutex \
     qmutexlocker \
     qreadlocker \

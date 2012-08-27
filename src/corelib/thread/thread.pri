@@ -12,6 +12,8 @@ HEADERS += thread/qmutex.h \
            thread/qatomic.h \
            thread/qexception.h \
            thread/qresultstore.h \
+           thread/qfuture.h \
+           thread/qfutureinterface.h \
            thread/qbasicatomic.h \
            thread/qgenericatomic.h \
            thread/qoldbasicatomic.h
@@ -19,6 +21,7 @@ HEADERS += thread/qmutex.h \
 # private headers
 HEADERS += thread/qmutex_p.h \
            thread/qmutexpool_p.h \
+           thread/qfutureinterface_p.h \
            thread/qorderedmutexlocker_p.h \
            thread/qreadwritelock_p.h \
            thread/qthread_p.h \
@@ -27,6 +30,7 @@ HEADERS += thread/qmutex_p.h \
 SOURCES += thread/qatomic.cpp \
            thread/qexception.cpp \
            thread/qresultstore.cpp \
+           thread/qfutureinterface.cpp \
            thread/qmutex.cpp \
            thread/qreadwritelock.cpp \
            thread/qrunnable.cpp \

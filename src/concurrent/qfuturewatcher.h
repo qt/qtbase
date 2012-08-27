@@ -44,7 +44,7 @@
 
 #include <QtConcurrent/qtconcurrent_global.h>
 
-#include <QtConcurrent/qfuture.h>
+#include <QtCore/qfuture.h>
 
 #ifndef QT_NO_QFUTURE
 

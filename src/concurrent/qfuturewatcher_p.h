@@ -55,7 +55,7 @@
 
 #include <QtConcurrent/qtconcurrent_global.h>
 
-#include "qfutureinterface_p.h"
+#include <private/qfutureinterface_p.h>
 #include <qlist.h>
 
 #ifndef QT_NO_QFUTURE

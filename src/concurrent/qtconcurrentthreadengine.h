@@ -47,7 +47,7 @@
 #ifndef QT_NO_CONCURRENT
 
 #include <QtCore/qthreadpool.h>
-#include <QtConcurrent/qfuture.h>
+#include <QtCore/qfuture.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qexception.h>
 #include <QtCore/qwaitcondition.h>
