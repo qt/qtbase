@@ -82,6 +82,8 @@ public:
     int styleHint(StyleHint hint, const QStyleOption *option = 0, const QWidget *widget = 0,
                   QStyleHintReturn *returnData = 0) const;
     QRect itemPixmapRect(const QRect &r, int flags, const QPixmap &pixmap) const;
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
+                       const QWidget *widget = 0) const;
     QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
                            const QWidget *widget = 0) const;
     void drawItemPixmap(QPainter *painter, const QRect &rect,
@@ -94,10 +96,6 @@ public:
     void polish(QPalette &pal);
     void unpolish(QWidget *widget);
     void unpolish(QApplication *app);
-
-protected Q_SLOTS:
-    QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option,
-                                     const QWidget *widget = 0) const;
 
 protected:
     QCleanlooksStyle(QCleanlooksStylePrivate &dd);

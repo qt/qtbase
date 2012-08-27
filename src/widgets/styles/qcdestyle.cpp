@@ -293,12 +293,12 @@ QPalette QCDEStyle::standardPalette() const
 }
 
 /*!
-    \internal
+    \reimp
 */
-QIcon QCDEStyle::standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt,
+QIcon QCDEStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *opt,
                                             const QWidget *widget) const
 {
-    return QMotifStyle::standardIconImplementation(standardIcon, opt, widget);
+    return QMotifStyle::standardIcon(standardIcon, opt, widget);
 }
 
 QT_END_NAMESPACE

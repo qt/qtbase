@@ -97,6 +97,8 @@ public:
 
     QSize sizeFromContents(ContentsType type, const QStyleOption *option,
                            const QSize &size, const QWidget *widget) const;
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
+                       const QWidget *widget = 0) const;
     QPixmap standardPixmap(StandardPixmap sp, const QStyleOption *option,
                            const QWidget *widget) const;
     QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
@@ -111,11 +113,6 @@ public:
 
     static bool getGConfBool(const QString &key, bool fallback = 0);
     static QString getGConfString(const QString &key, const QString &fallback = QString());
-
-
-protected Q_SLOTS:
-    QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option,
-                                     const QWidget *widget = 0) const;
 };
 
 #endif //!defined(QT_NO_STYLE_QGTK)

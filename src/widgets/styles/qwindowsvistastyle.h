@@ -74,6 +74,8 @@ public:
     SubControl hitTestComplexControl(ComplexControl control, const QStyleOptionComplex *option,
                                      const QPoint &pos, const QWidget *widget = 0) const;
 
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
+                       const QWidget *widget = 0) const;
     QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
                            const QWidget *widget = 0) const;
     int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const;
@@ -88,10 +90,6 @@ public:
     void unpolish(QApplication *app);
     bool event(QEvent *event);
     QPalette standardPalette() const;
-
-protected Q_SLOTS:
-    QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option,
-                                     const QWidget *widget = 0) const;
 
 private:
     Q_DISABLE_COPY(QWindowsVistaStyle)

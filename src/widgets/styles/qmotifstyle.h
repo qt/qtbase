@@ -100,10 +100,8 @@ public:
 
     bool event(QEvent *);
     QPalette standardPalette() const;
-
-protected Q_SLOTS:
-    QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt = 0,
-                                     const QWidget *widget = 0) const;
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *opt = 0,
+                       const QWidget *widget = 0) const;
 
 protected:
     QPointer<QFocusFrame> focus;

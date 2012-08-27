@@ -3441,16 +3441,16 @@ QPixmap QGtkStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
 }
 
 /*!
-    \internal
+    \reimp
 */
-QIcon QGtkStyle::standardIconImplementation(StandardPixmap standardIcon,
-                                                  const QStyleOption *option,
-                                                  const QWidget *widget) const
+QIcon QGtkStyle::standardIcon(StandardPixmap standardIcon,
+                              const QStyleOption *option,
+                              const QWidget *widget) const
 {
     Q_D(const QGtkStyle);
 
     if (!d->isThemeAvailable())
-        return QCleanlooksStyle::standardIconImplementation(standardIcon, option, widget);
+        return QCleanlooksStyle::standardIcon(standardIcon, option, widget);
     switch (standardIcon) {
     case SP_DialogDiscardButton:
         return QGtkPainter::getIcon(GTK_STOCK_DELETE);
@@ -3479,7 +3479,7 @@ QIcon QGtkStyle::standardIconImplementation(StandardPixmap standardIcon,
     case SP_MessageBoxCritical:
         return QGtkPainter::getIcon(GTK_STOCK_DIALOG_ERROR, GTK_ICON_SIZE_DIALOG);
     default:
-        return QCleanlooksStyle::standardIconImplementation(standardIcon, option, widget);
+        return QCleanlooksStyle::standardIcon(standardIcon, option, widget);
     }
 }
 

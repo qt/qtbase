@@ -4376,13 +4376,12 @@ QRect QCleanlooksStyle::subElementRect(SubElement sr, const QStyleOption *opt, c
 }
 
 /*!
-    \internal
+    \reimp
 */
-QIcon QCleanlooksStyle::standardIconImplementation(StandardPixmap standardIcon,
-                                                  const QStyleOption *option,
-                                                  const QWidget *widget) const
+QIcon QCleanlooksStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option,
+                                     const QWidget *widget) const
 {
-    return QWindowsStyle::standardIconImplementation(standardIcon, option, widget);
+    return QWindowsStyle::standardIcon(standardIcon, option, widget);
 }
 
 /*!

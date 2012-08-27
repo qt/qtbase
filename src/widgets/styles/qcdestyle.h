@@ -66,10 +66,8 @@ public:
     void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
                        const QWidget *w = 0) const;
     QPalette standardPalette() const;
-
-protected Q_SLOTS:
-    QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt = 0,
-                                     const QWidget *widget = 0) const;
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *opt = 0,
+                       const QWidget *widget = 0) const;
 };
 
 #endif // QT_NO_STYLE_CDE

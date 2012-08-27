@@ -77,21 +77,22 @@ public:
     int styleHint(StyleHint sh, const QStyleOption *opt = 0, const QWidget *w = 0,
                   QStyleHintReturn *shret = 0) const;
 
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *opt = 0,
+                       const QWidget *widget = 0) const;
     QPixmap standardPixmap(StandardPixmap sp, const QStyleOption *opt = 0,
                            const QWidget *widget = 0) const;
 
     QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
                                 const QStyleOption *opt) const;
+    int layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
+                      Qt::Orientation orientation, const QStyleOption *option = 0,
+                      const QWidget *widget = 0) const;
 
     void polish(QPalette &);
     void polish(QApplication *app);
     void polish(QWidget *widget);
     void unpolish(QWidget *widget);
     void unpolish(QApplication *application);
-
-protected Q_SLOTS:
-    QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt = 0,
-                                     const QWidget *widget = 0) const;
 
 protected:
     QCommonStyle(QCommonStylePrivate &dd);

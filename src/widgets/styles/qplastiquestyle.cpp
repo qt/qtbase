@@ -5747,12 +5747,12 @@ void QPlastiqueStyle::unpolish(QApplication *app)
 }
 
 /*!
-    \internal
+    \reimp
 */
-QIcon QPlastiqueStyle::standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option,
-                                                  const QWidget *widget) const
+QIcon QPlastiqueStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option,
+                                    const QWidget *widget) const
 {
-    return QWindowsStyle::standardIconImplementation(standardIcon, option, widget);
+    return QWindowsStyle::standardIcon(standardIcon, option, widget);
 }
 
 /*!
@@ -5769,13 +5769,13 @@ QPixmap QPlastiqueStyle::standardPixmap(StandardPixmap standardPixmap, const QSt
 #define CT2(c1, c2) (((uint)c1 << 16) | (uint)c2)
 
 /*!
-    \internal
+    \reimp
 */
-int QPlastiqueStyle::layoutSpacingImplementation(QSizePolicy::ControlType control1,
-                                                 QSizePolicy::ControlType control2,
-                                                 Qt::Orientation orientation,
-                                                 const QStyleOption * /* option */,
-                                                 const QWidget * /* widget */) const
+int QPlastiqueStyle::layoutSpacing(QSizePolicy::ControlType control1,
+                                   QSizePolicy::ControlType control2,
+                                   Qt::Orientation orientation,
+                                   const QStyleOption * /* option */,
+                                   const QWidget * /* widget */) const
 {
     const int ButtonMask = QSizePolicy::ButtonBox | QSizePolicy::PushButton;
 

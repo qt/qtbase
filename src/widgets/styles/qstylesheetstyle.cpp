@@ -5075,8 +5075,8 @@ static QLatin1String propertyNameForStandardPixmap(QStyle::StandardPixmap sp)
     }
 }
 
-QIcon QStyleSheetStyle::standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt,
-                                                   const QWidget *w) const
+QIcon QStyleSheetStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *opt,
+                                     const QWidget *w) const
 {
     RECURSION_GUARD(return baseStyle()->standardIcon(standardIcon, opt, w))
     QString s = propertyNameForStandardPixmap(standardIcon);
@@ -5111,15 +5111,6 @@ QPixmap QStyleSheetStyle::standardPixmap(StandardPixmap standardPixmap, const QS
 int QStyleSheetStyle::layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
                           Qt::Orientation orientation, const QStyleOption *option,
                           const QWidget *widget) const
-{
-    return baseStyle()->layoutSpacing(control1, control2, orientation, option, widget);
-}
-
-int QStyleSheetStyle::layoutSpacingImplementation(QSizePolicy::ControlType  control1 ,
-                                        QSizePolicy::ControlType  control2,
-                                        Qt::Orientation orientation,
-                                        const QStyleOption *  option ,
-                                        const QWidget *  widget) const
 {
     return baseStyle()->layoutSpacing(control1, control2, orientation, option, widget);
 }

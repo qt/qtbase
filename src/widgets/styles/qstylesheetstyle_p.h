@@ -104,6 +104,8 @@ public:
     QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
                            const QSize &contentsSize, const QWidget *widget = 0) const;
     QPalette standardPalette() const;
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *opt = 0,
+                       const QWidget *widget = 0) const;
     QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *option = 0,
                            const QWidget *w = 0 ) const;
     int layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
@@ -132,15 +134,6 @@ public:
     void clearWidgetFont(QWidget* w) const;
 
     bool styleSheetPalette(const QWidget* w, const QStyleOption* opt, QPalette* pal);
-
-protected Q_SLOTS:
-    QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt = 0,
-                                     const QWidget *widget = 0) const;
-    int layoutSpacingImplementation(QSizePolicy::ControlType control1,
-                                    QSizePolicy::ControlType control2,
-                                    Qt::Orientation orientation,
-                                    const QStyleOption *option = 0,
-                                    const QWidget *widget = 0) const;
 
 protected:
     bool event(QEvent *e);

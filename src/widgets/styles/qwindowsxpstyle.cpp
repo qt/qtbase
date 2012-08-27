@@ -3881,14 +3881,14 @@ QPixmap QWindowsXPStyle::standardPixmap(StandardPixmap standardPixmap, const QSt
 }
 
 /*!
-    \internal
+    \reimp
 */
-QIcon QWindowsXPStyle::standardIconImplementation(StandardPixmap standardIcon,
-                                                  const QStyleOption *option,
-                                                  const QWidget *widget) const
+QIcon QWindowsXPStyle::standardIcon(StandardPixmap standardIcon,
+                                    const QStyleOption *option,
+                                    const QWidget *widget) const
 {
     if (!QWindowsXPStylePrivate::useXP()) {
-        return QWindowsStyle::standardIconImplementation(standardIcon, option, widget);
+        return QWindowsStyle::standardIcon(standardIcon, option, widget);
     }
 
     QWindowsXPStylePrivate *d = const_cast<QWindowsXPStylePrivate*>(d_func());
@@ -4006,7 +4006,7 @@ QIcon QWindowsXPStyle::standardIconImplementation(StandardPixmap standardIcon,
         break;
     }
 
-    return QWindowsStyle::standardIconImplementation(standardIcon, option, widget);
+    return QWindowsStyle::standardIcon(standardIcon, option, widget);
 }
 
 /*!

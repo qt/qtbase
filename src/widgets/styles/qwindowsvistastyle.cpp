@@ -2709,14 +2709,14 @@ void QWindowsVistaStylePrivate::cleanupTreeViewTheming()
 }
 
 /*!
-\internal
+\reimp
 */
-QIcon QWindowsVistaStyle::standardIconImplementation(StandardPixmap standardIcon,
-                                                  const QStyleOption *option,
-                                                  const QWidget *widget) const
+QIcon QWindowsVistaStyle::standardIcon(StandardPixmap standardIcon,
+                                       const QStyleOption *option,
+                                       const QWidget *widget) const
 {
     if (!QWindowsVistaStylePrivate::useVista()) {
-        return QWindowsStyle::standardIconImplementation(standardIcon, option, widget);
+        return QWindowsStyle::standardIcon(standardIcon, option, widget);
     }
 
     QWindowsVistaStylePrivate *d = const_cast<QWindowsVistaStylePrivate *>(d_func());
@@ -2759,7 +2759,7 @@ QIcon QWindowsVistaStyle::standardIconImplementation(StandardPixmap standardIcon
     default:
         break;
     }
-    return QWindowsXPStyle::standardIconImplementation(standardIcon, option, widget);
+    return QWindowsXPStyle::standardIcon(standardIcon, option, widget);
 }
 
 QT_END_NAMESPACE

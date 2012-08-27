@@ -235,12 +235,11 @@
     \reimp 
 */
 
-/*! \fn QIcon QMacStyle::standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt, const QWidget *widget) const
-    \internal
+/*! \fn QIcon QMacStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *opt, const QWidget *widget) const
+    \reimp
 */
 
-/*! \fn int QMacStyle::layoutSpacingImplementation(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2, Qt::Orientation orientation, const QStyleOption *option, const QWidget *widget) const
-
-  \internal
+/*! \fn int QMacStyle::layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2, Qt::Orientation orientation, const QStyleOption *option, const QWidget *widget) const
+    \reimp
 */
 

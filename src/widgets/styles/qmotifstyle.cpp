@@ -181,12 +181,12 @@ bool QMotifStyle::eventFilter(QObject *o, QEvent *e)
 }
 
 /*!
-    \internal
+    \reimp
 */
-QIcon QMotifStyle::standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt,
-                                              const QWidget *widget) const
+QIcon QMotifStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *opt,
+                                const QWidget *widget) const
 {
-    return QCommonStyle::standardIconImplementation(standardIcon, opt, widget);
+    return QCommonStyle::standardIcon(standardIcon, opt, widget);
 }
 
 /*!

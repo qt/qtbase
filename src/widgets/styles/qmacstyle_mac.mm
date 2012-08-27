@@ -3028,7 +3028,7 @@ QPixmap QMacStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOpt
         return QWindowsStyle::standardPixmap(standardPixmap, opt, widget);
 
     recursionGuard = true;
-    QIcon icon = standardIconImplementation(standardPixmap, opt, widget);
+    QIcon icon = standardIcon(standardPixmap, opt, widget);
     recursionGuard = false;
     int size;
     switch (standardPixmap) {
@@ -6474,12 +6474,12 @@ bool QMacStyle::event(QEvent *e)
     return false;
 }
 
-QIcon QMacStyle::standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt,
-                                            const QWidget *widget) const
+QIcon QMacStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *opt,
+                              const QWidget *widget) const
 {
     switch (standardIcon) {
     default:
-        return QWindowsStyle::standardIconImplementation(standardIcon, opt, widget);
+        return QWindowsStyle::standardIcon(standardIcon, opt, widget);
     case SP_ToolBarHorizontalExtensionButton:
     case SP_ToolBarVerticalExtensionButton: {
         QPixmap pixmap(qt_mac_toolbar_ext);
@@ -6497,11 +6497,11 @@ QIcon QMacStyle::standardIconImplementation(StandardPixmap standardIcon, const Q
     }
 }
 
-int QMacStyle::layoutSpacingImplementation(QSizePolicy::ControlType control1,
-                                           QSizePolicy::ControlType control2,
-                                           Qt::Orientation orientation,
-                                           const QStyleOption *option,
-                                           const QWidget *widget) const
+int QMacStyle::layoutSpacing(QSizePolicy::ControlType control1,
+                             QSizePolicy::ControlType control2,
+                             Qt::Orientation orientation,
+                             const QStyleOption *option,
+                             const QWidget *widget) const
 {
     const int ButtonMask = QSizePolicy::ButtonBox | QSizePolicy::PushButton;
     bool isMetal = (widget && widget->testAttribute(Qt::WA_MacBrushedMetal));

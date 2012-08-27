@@ -85,10 +85,8 @@ public:
     QPalette standardPalette() const;
     QPixmap standardPixmap(StandardPixmap standardIcon, const QStyleOption *option,
                            const QWidget *widget = 0) const;
-
-protected Q_SLOTS:
-    QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option,
-                                     const QWidget *widget = 0) const;
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
+                       const QWidget *widget = 0) const;
 
 private:
     Q_DISABLE_COPY(QWindowsXPStyle)

@@ -3079,10 +3079,10 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 }
 
 /*!
-    \internal
+    \reimp
 */
-QIcon QWindowsStyle::standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option,
-                                                const QWidget *widget) const
+QIcon QWindowsStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option,
+                                  const QWidget *widget) const
 {
     QIcon icon;
     QPixmap pixmap;
@@ -3209,7 +3209,7 @@ QIcon QWindowsStyle::standardIconImplementation(StandardPixmap standardIcon, con
 #endif
 
     if (icon.isNull())
-        icon = QCommonStyle::standardIconImplementation(standardIcon, option, widget);
+        icon = QCommonStyle::standardIcon(standardIcon, option, widget);
     return icon;
 }
 

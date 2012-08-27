@@ -80,7 +80,10 @@ public:
     SubControl hitTestComplexControl(ComplexControl control, const QStyleOptionComplex *option, const QPoint &pos, const QWidget *widget = 0) const;
     int styleHint(StyleHint hint, const QStyleOption *option = 0, const QWidget *widget = 0, QStyleHintReturn *returnData = 0) const;
     int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const;
+    int layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
+                      Qt::Orientation orientation, const QStyleOption *option = 0, const QWidget *widget = 0) const;
 
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0, const QWidget *widget = 0) const;
     QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt, const QWidget *widget = 0) const;
     QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap, const QStyleOption *opt) const;
     QPalette standardPalette() const;
@@ -95,10 +98,6 @@ public:
 protected:
     bool event(QEvent *e);
 
-protected Q_SLOTS:
-    QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option, const QWidget *widget) const;
-    int layoutSpacingImplementation(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
-                                    Qt::Orientation orientation, const QStyleOption *option = 0, const QWidget *widget = 0) const;
 private:
     Q_DISABLE_COPY(QProxyStyle)
     Q_DECLARE_PRIVATE(QProxyStyle)
