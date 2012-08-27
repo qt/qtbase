@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
     \reentrant
     \since 4.4
 
+    \inmodule QtCore
     \ingroup thread
 
     \brief The QFutureWatcher class allows monitoring a QFuture using signals

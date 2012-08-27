@@ -41,6 +41,7 @@
 
 /*! \class QFutureSynchronizer
     \since 4.4
+    \inmodule QtCore
 
     \brief The QFutureSynchronizer class is a convenience class that simplifies
     QFuture synchronization.

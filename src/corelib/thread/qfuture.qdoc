@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 /*! \class QFuture
+    \inmodule QtCore
     \threadsafe
     \brief The QFuture class represents the result of an asynchronous computation.
     \since 4.4

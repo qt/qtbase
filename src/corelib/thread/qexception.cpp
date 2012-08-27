@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 /*! 
     \class QException
+    \inmodule QtCore
     \brief The QException class provides a base class for exceptions that can transferred across threads.
     \since 5.0
 
@@ -92,6 +93,7 @@ QT_BEGIN_NAMESPACE
 
 /*! 
     \class QUnhandledException
+    \inmodule QtCore
 
     \brief The UnhandledException class represents an unhandled exception in a worker thread.
     \since 5.0
