@@ -517,6 +517,14 @@ QtDBus
 * QtDBus error codes have been updated to be on the org.qtproject.QtDBus.Error
   namespace.
 
+QtConcurrent
+------------
+
+* QtConcurrent is no longer in QtCore, but forms its own library now.
+  QMake-based projects can use
+    QT += concurrent
+  to include the new library.
+
 QtOpenGL
 --------
 
