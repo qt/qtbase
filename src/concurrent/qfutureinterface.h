@@ -50,7 +50,7 @@
 
 #include <QtCore/qmutex.h>
 #include <QtCore/qexception.h>
-#include <QtConcurrent/qtconcurrentresultstore.h>
+#include <QtCore/qresultstore.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
@@ -123,8 +123,8 @@ public:
 
     QMutex *mutex() const;
     QtPrivate::ExceptionStore &exceptionStore();
-    QtConcurrent::ResultStoreBase &resultStoreBase();
-    const QtConcurrent::ResultStoreBase &resultStoreBase() const;
+    QtPrivate::ResultStoreBase &resultStoreBase();
+    const QtPrivate::ResultStoreBase &resultStoreBase() const;
 
     inline bool operator==(const QFutureInterfaceBase &other) const { return d == other.d; }
     inline bool operator!=(const QFutureInterfaceBase &other) const { return d != other.d; }
@@ -182,10 +182,10 @@ public:
     inline const T *resultPointer(int index) const;
     inline QList<T> results();
 private:
-    QtConcurrent::ResultStore<T> &resultStore()
-    { return static_cast<QtConcurrent::ResultStore<T> &>(resultStoreBase()); }
-    const QtConcurrent::ResultStore<T> &resultStore() const
-    { return static_cast<const QtConcurrent::ResultStore<T> &>(resultStoreBase()); }
+    QtPrivate::ResultStore<T> &resultStore()
+    { return static_cast<QtPrivate::ResultStore<T> &>(resultStoreBase()); }
+    const QtPrivate::ResultStore<T> &resultStore() const
+    { return static_cast<const QtPrivate::ResultStore<T> &>(resultStoreBase()); }
 };
 
 template <typename T>
@@ -196,7 +196,7 @@ inline void QFutureInterface<T>::reportResult(const T *result, int index)
         return;
     }
 
-    QtConcurrent::ResultStore<T> &store = resultStore();
+    QtPrivate::ResultStore<T> &store = resultStore();
 
 
     if (store.filterMode()) {
@@ -223,7 +223,7 @@ inline void QFutureInterface<T>::reportResults(const QVector<T> &_results, int b
         return;
     }
 
-    QtConcurrent::ResultStore<T> &store = resultStore();
+    QtPrivate::ResultStore<T> &store = resultStore();
 
     if (store.filterMode()) {
         const int resultCountBefore = store.count();
@@ -269,7 +269,7 @@ inline QList<T> QFutureInterface<T>::results()
     QList<T> res;
     QMutexLocker lock(mutex());
 
-    QtConcurrent::ResultIterator<T> it = resultStore().begin();
+    QtPrivate::ResultIterator<T> it = resultStore().begin();
     while (it != resultStore().end()) {
         res.append(it.value());
         ++it;

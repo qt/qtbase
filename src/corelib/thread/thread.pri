@@ -11,6 +11,7 @@ HEADERS += thread/qmutex.h \
            thread/qwaitcondition.h \
            thread/qatomic.h \
            thread/qexception.h \
+           thread/qresultstore.h \
            thread/qbasicatomic.h \
            thread/qgenericatomic.h \
            thread/qoldbasicatomic.h
@@ -25,6 +26,7 @@ HEADERS += thread/qmutex_p.h \
 
 SOURCES += thread/qatomic.cpp \
            thread/qexception.cpp \
+           thread/qresultstore.cpp \
            thread/qmutex.cpp \
            thread/qreadwritelock.cpp \
            thread/qrunnable.cpp \

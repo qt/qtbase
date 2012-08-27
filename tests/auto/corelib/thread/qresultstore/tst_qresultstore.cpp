@@ -41,9 +41,9 @@
 
 #include <QtTest/QtTest>
 
-#include <qtconcurrentresultstore.h>
+#include <qresultstore.h>
 
-using namespace QtConcurrent;
+using namespace QtPrivate;
 
 class tst_QtConcurrentResultStore : public QObject
 {
@@ -487,4 +487,4 @@ void tst_QtConcurrentResultStore::count()
 }
 
 QTEST_MAIN(tst_QtConcurrentResultStore)
-#include "tst_qtconcurrentresultstore.moc"
+#include "tst_qresultstore.moc"

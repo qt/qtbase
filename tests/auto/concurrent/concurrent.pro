@@ -6,7 +6,6 @@ SUBDIRS=\
    qtconcurrentfilter \
    qtconcurrentiteratekernel \
    qtconcurrentmap \
-   qtconcurrentresultstore \
    qtconcurrentrun \
    qtconcurrentthreadengine
 

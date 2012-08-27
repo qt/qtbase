@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qtconcurrentresultstore.h"
+#include "qresultstore.h"
 
 #ifndef QT_NO_QFUTURE
 
 QT_BEGIN_NAMESPACE
 
-namespace QtConcurrent {
+namespace QtPrivate {
 
 ResultIteratorBase::ResultIteratorBase()
  : mapIterator(QMap<int, ResultItem>::const_iterator()), m_vectorIndex(0) { }
@@ -249,8 +249,8 @@ int ResultStoreBase::updateInsertIndex(int index, int _count)
     return index;
 }
 
-} // namespace QtConcurrent
+} // namespace QtPrivate
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_CONCURRENT
+#endif // QT_NO_QFUTURE

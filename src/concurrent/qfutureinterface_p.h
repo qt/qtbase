@@ -142,7 +142,7 @@ public:
     QElapsedTimer progressTime;
     QWaitCondition pausedWaitCondition;
     int pendingResults;
-    QtConcurrent::ResultStoreBase m_results;
+    QtPrivate::ResultStoreBase m_results;
     bool manualProgress;
     int m_expectedResultCount;
     QtPrivate::ExceptionStore m_exceptionStore;

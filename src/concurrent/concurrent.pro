@@ -18,7 +18,6 @@ SOURCES += \
         qfuturewatcher.cpp \
         qtconcurrentfilter.cpp \
         qtconcurrentmap.cpp \
-        qtconcurrentresultstore.cpp \
         qtconcurrentthreadengine.cpp \
         qtconcurrentiteratekernel.cpp \
 
@@ -38,7 +37,6 @@ HEADERS += \
         qtconcurrentmapkernel.h \
         qtconcurrentmedian.h \
         qtconcurrentreducekernel.h \
-        qtconcurrentresultstore.h \
         qtconcurrentrun.h \
         qtconcurrentrunbase.h \
         qtconcurrentstoredfunctioncall.h \

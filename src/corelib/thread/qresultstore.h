@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QTCONCURRENT_RESULTSTORE_H
-#define QTCONCURRENT_RESULTSTORE_H
+#ifndef QTCORE_RESULTSTORE_H
+#define QTCORE_RESULTSTORE_H
 
-#include <QtConcurrent/qtconcurrent_global.h>
+#include <QtCore/qglobal.h>
 
 #ifndef QT_NO_QFUTURE
 
@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef qdoc
 
-namespace QtConcurrent {
+namespace QtPrivate {
 
 class ResultItem
 {
@@ -78,7 +78,7 @@ public:
     const void *result; // if count is 0 it's a result, otherwise it's a vector.
 };
 
-class Q_CONCURRENT_EXPORT ResultIteratorBase
+class Q_CORE_EXPORT ResultIteratorBase
 {
 public:
     ResultIteratorBase();
@@ -119,7 +119,7 @@ public:
     }
 };
 
-class Q_CONCURRENT_EXPORT ResultStoreBase
+class Q_CORE_EXPORT ResultStoreBase
 {
 public:
     ResultStoreBase();
@@ -226,13 +226,13 @@ public:
 
 };
 
-} // namespace QtConcurrent
+} // namespace QtPrivate
 
 #endif //qdoc
 
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#endif // QT_NO_CONCURRENT
+#endif // QT_NO_QFUTURE
 
 #endif

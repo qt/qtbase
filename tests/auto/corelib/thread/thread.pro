@@ -2,6 +2,7 @@ TEMPLATE=subdirs
 SUBDIRS=\
     qatomicint \
     qatomicpointer \
+    qresultstore \
     qmutex \
     qmutexlocker \
     qreadlocker \

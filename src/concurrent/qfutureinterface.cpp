@@ -395,12 +395,12 @@ QtPrivate::ExceptionStore &QFutureInterfaceBase::exceptionStore()
     return d->m_exceptionStore;
 }
 
-QtConcurrent::ResultStoreBase &QFutureInterfaceBase::resultStoreBase()
+QtPrivate::ResultStoreBase &QFutureInterfaceBase::resultStoreBase()
 {
     return d->m_results;
 }
 
-const QtConcurrent::ResultStoreBase &QFutureInterfaceBase::resultStoreBase() const
+const QtPrivate::ResultStoreBase &QFutureInterfaceBase::resultStoreBase() const
 {
     return d->m_results;
 }
@@ -522,7 +522,7 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
                                                         m_progressText));
     }
 
-    QtConcurrent::ResultIteratorBase it = m_results.begin();
+    QtPrivate::ResultIteratorBase it = m_results.begin();
     while (it != m_results.end()) {
         const int begin = it.resultIndex();
         const int end = begin + it.batchSize();
