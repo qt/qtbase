@@ -1276,7 +1276,7 @@ QFuture<void> createExceptionFuture()
     i.reportStarted();
     QFuture<void> f = i.future();
 
-    Exception e;
+    QException e;
     i.reportException(e);
     i.reportFinished();
     return f;
@@ -1290,17 +1290,17 @@ QFuture<int> createExceptionResultFuture()
     int r = 0;
     i.reportResult(r);
 
-    Exception e;
+    QException e;
     i.reportException(e);
     i.reportFinished();
     return f;
 }
 
-class DerivedException : public Exception
+class DerivedException : public QException
 {
 public:
     void raise() const { throw *this; }
-    Exception *clone() const { return new DerivedException(*this); }
+    DerivedException *clone() const { return new DerivedException(*this); }
 };
 
 QFuture<void> createDerivedExceptionFuture()
@@ -1323,7 +1323,7 @@ void tst_QFuture::exceptions()
         bool caught = false;
         try {
             f.waitForFinished();
-        } catch (Exception &) {
+        } catch (QException &) {
             caught = true;
         }
         QVERIFY(caught);
@@ -1335,7 +1335,7 @@ void tst_QFuture::exceptions()
         bool caught = false;
         try {
             f.result();
-        } catch (Exception &) {
+        } catch (QException &) {
             caught = true;
         }
         QVERIFY(caught);
@@ -1346,7 +1346,7 @@ void tst_QFuture::exceptions()
         bool caught = false;
         try {
             createExceptionResultFuture().result();
-        } catch (Exception &) {
+        } catch (QException &) {
             caught = true;
         }
         QVERIFY(caught);
@@ -1358,7 +1358,7 @@ void tst_QFuture::exceptions()
         bool caught = false;
         try {
             f.results();
-        } catch (Exception &) {
+        } catch (QException &) {
             caught = true;
         }
         QVERIFY(caught);
@@ -1373,7 +1373,7 @@ void tst_QFuture::exceptions()
                 Q_UNUSED(e);
                 QFAIL("did not get exception");
             }
-        } catch (Exception &) {
+        } catch (QException &) {
             caught = true;
         }
         QVERIFY(caught);
@@ -1384,7 +1384,7 @@ void tst_QFuture::exceptions()
         bool caught = false;
         try {
             createDerivedExceptionFuture().waitForFinished();
-        } catch (Exception &) {
+        } catch (QException &) {
             caught = true;
         }
         QVERIFY(caught);
@@ -1409,7 +1409,7 @@ public:
         QFuture<void> f = createExceptionFuture();
         try {
             f.waitForFinished();
-        } catch (Exception &) {
+        } catch (QException &) {
             caught = true;
         }
     }

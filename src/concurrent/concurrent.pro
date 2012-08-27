@@ -21,7 +21,6 @@ SOURCES += \
         qtconcurrentresultstore.cpp \
         qtconcurrentthreadengine.cpp \
         qtconcurrentiteratekernel.cpp \
-        qtconcurrentexception.cpp
 
 HEADERS += \
         qtconcurrent_global.h \

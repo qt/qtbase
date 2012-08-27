@@ -49,7 +49,7 @@
 #include <QtCore/qthreadpool.h>
 #include <QtConcurrent/qfuture.h>
 #include <QtCore/qdebug.h>
-#include <QtConcurrent/qtconcurrentexception.h>
+#include <QtCore/qexception.h>
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qatomic.h>
 #include <QtCore/qsemaphore.h>
@@ -119,13 +119,13 @@ private:
     void run();
     virtual void asynchronousFinish() = 0;
 #ifndef QT_NO_EXCEPTIONS
-    void handleException(const QtConcurrent::Exception &exception);
+    void handleException(const QException &exception);
 #endif
 protected:
     QFutureInterfaceBase *futureInterface;
     QThreadPool *threadPool;
     ThreadEngineBarrier barrier;
-    QtConcurrent::internal::ExceptionStore exceptionStore;
+    QtPrivate::ExceptionStore exceptionStore;
 };
 
 

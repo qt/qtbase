@@ -39,30 +39,81 @@
 **
 ****************************************************************************/
 
-#ifndef QTCONCURRENT_EXCEPTION_H
-#define QTCONCURRENT_EXCEPTION_H
+#ifndef QTCORE_QEXCEPTION_H
+#define QTCORE_QEXCEPTION_H
 
-#include <QtConcurrent/qtconcurrent_global.h>
+#include <QtCore/qglobal.h>
 
 #ifndef QT_NO_QFUTURE
 
-#include <QtCore/qexception.h>
+#include <QtCore/qatomic.h>
+#include <QtCore/qshareddata.h>
+
+#ifndef QT_NO_EXCEPTIONS
+#  include <exception>
+#endif
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
-namespace QtConcurrent
-{
-
 #ifndef QT_NO_EXCEPTIONS
 
-typedef Q_DECL_DEPRECATED QException Exception;
-typedef Q_DECL_DEPRECATED QUnhandledException UnhandledException;
+class Q_CORE_EXPORT QException : public std::exception
+{
+public:
+    virtual void raise() const;
+    virtual QException *clone() const;
+};
 
-#endif
+class Q_CORE_EXPORT QUnhandledException : public QException
+{
+public:
+    void raise() const;
+    QUnhandledException *clone() const;
+};
 
-} // namespace QtConcurrent
+namespace QtPrivate {
+
+class Base;
+class Q_CORE_EXPORT ExceptionHolder
+{
+public:
+    ExceptionHolder(QException *exception = 0);
+    ExceptionHolder(const ExceptionHolder &other);
+    void operator=(const ExceptionHolder &other);
+    ~ExceptionHolder();
+    QException *exception() const;
+    QExplicitlySharedDataPointer<Base> base;
+};
+
+class Q_CORE_EXPORT ExceptionStore
+{
+public:
+    void setException(const QException &e);
+    bool hasException() const;
+    ExceptionHolder exception();
+    void throwPossibleException();
+    bool hasThrown() const;
+    ExceptionHolder exceptionHolder;
+};
+
+} // namespace QtPrivate
+
+#else // QT_NO_EXCEPTIONS
+
+namespace QtPrivate {
+
+class Q_CORE_EXPORT ExceptionStore
+{
+public:
+    ExceptionStore() { }
+    inline void throwPossibleException() const {}
+};
+
+} // namespace QtPrivate
+
+#endif // QT_NO_EXCEPTIONS
 
 QT_END_NAMESPACE
 QT_END_HEADER

@@ -563,6 +563,9 @@ QtConcurrent
     QT += concurrent
   to include the new library.
 
+* QtConcurrent::Exception has been renamed to QException, and is still in QtCore.
+  Ditto QtConcurrent::UnhandledException.
+
 QtOpenGL
 --------
 

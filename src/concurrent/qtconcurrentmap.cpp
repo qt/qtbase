@@ -55,14 +55,6 @@
 */
 
 /*!
-    \namespace QtConcurrent::internal
-    \internal
-
-    \brief The QtConcurrent::internal namespace contains QtConcurrent
-    implementation details.
-*/
-
-/*!
     \enum QtConcurrent::ReduceOption
     This enum specifies the order of which results from the map or filter 
     function are passed to the reduce function.

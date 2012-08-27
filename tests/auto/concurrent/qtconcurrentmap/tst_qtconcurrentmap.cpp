@@ -2205,7 +2205,7 @@ void tst_QtConcurrentMap::throttling()
 void throwMapper(int &e)
 {
     Q_UNUSED(e);
-    throw QtConcurrent::Exception();
+    throw QException();
 }
 
 void tst_QtConcurrentMap::exceptions()
@@ -2214,7 +2214,7 @@ void tst_QtConcurrentMap::exceptions()
     try  {
         QList<int> list = QList<int>() << 1 << 2 << 3;
         QtConcurrent::map(list, throwMapper).waitForFinished();
-    } catch (const Exception &) {
+    } catch (const QException &) {
         caught = true;
     }
     if (!caught)

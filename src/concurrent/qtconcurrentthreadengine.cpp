@@ -155,10 +155,10 @@ void ThreadEngineBase::startBlocking()
             }
         }
 #ifndef QT_NO_EXCEPTIONS
-    } catch (QtConcurrent::Exception &e) {
+    } catch (QException &e) {
         handleException(e);
     } catch (...) {
-        handleException(QtConcurrent::UnhandledException());
+        handleException(QUnhandledException());
     }
 #endif
 
@@ -271,10 +271,10 @@ void ThreadEngineBase::run() // implements QRunnable.
         }
 
 #ifndef QT_NO_EXCEPTIONS
-    } catch (QtConcurrent::Exception &e) {
+    } catch (QException &e) {
         handleException(e);
     } catch (...) {
-        handleException(QtConcurrent::UnhandledException());
+        handleException(QUnhandledException());
     }
 #endif
     threadExit();
@@ -282,7 +282,7 @@ void ThreadEngineBase::run() // implements QRunnable.
 
 #ifndef QT_NO_EXCEPTIONS
 
-void ThreadEngineBase::handleException(const QtConcurrent::Exception &exception)
+void ThreadEngineBase::handleException(const QException &exception)
 {
     if (futureInterface)
         futureInterface->reportException(exception);

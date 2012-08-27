@@ -145,7 +145,7 @@ public:
     QtConcurrent::ResultStoreBase m_results;
     bool manualProgress;
     int m_expectedResultCount;
-    QtConcurrent::internal::ExceptionStore m_exceptionStore;
+    QtPrivate::ExceptionStore m_exceptionStore;
     QString m_progressText;
     QRunnable *runnable;
 

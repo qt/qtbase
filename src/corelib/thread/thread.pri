@@ -10,6 +10,7 @@ HEADERS += thread/qmutex.h \
            thread/qthreadstorage.h \
            thread/qwaitcondition.h \
            thread/qatomic.h \
+           thread/qexception.h \
            thread/qbasicatomic.h \
            thread/qgenericatomic.h \
            thread/qoldbasicatomic.h
@@ -23,6 +24,7 @@ HEADERS += thread/qmutex_p.h \
            thread/qthreadpool_p.h
 
 SOURCES += thread/qatomic.cpp \
+           thread/qexception.cpp \
            thread/qmutex.cpp \
            thread/qreadwritelock.cpp \
            thread/qrunnable.cpp \

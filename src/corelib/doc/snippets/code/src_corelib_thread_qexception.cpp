@@ -40,11 +40,11 @@
 
 //! [0]
 
-class MyException : public QtConcurrent::Exception
+class MyException : public QException
 {
 public:
     void raise() const { throw *this; }
-    Exception *clone() const { return new MyException(*this); }
+    MyException *clone() const { return new MyException(*this); }
 };
 
 //! [0]

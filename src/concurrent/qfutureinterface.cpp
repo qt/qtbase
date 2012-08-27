@@ -238,7 +238,7 @@ void QFutureInterfaceBase::reportCanceled()
 }
 
 #ifndef QT_NO_EXCEPTIONS
-void QFutureInterfaceBase::reportException(const QtConcurrent::Exception &exception)
+void QFutureInterfaceBase::reportException(const QException &exception)
 {
     QMutexLocker locker(&d->m_mutex);
     if ((d->state & Canceled) || (d->state & Finished))
@@ -390,7 +390,7 @@ QMutex *QFutureInterfaceBase::mutex() const
     return &d->m_mutex;
 }
 
-QtConcurrent::internal::ExceptionStore &QFutureInterfaceBase::exceptionStore()
+QtPrivate::ExceptionStore &QFutureInterfaceBase::exceptionStore()
 {
     return d->m_exceptionStore;
 }

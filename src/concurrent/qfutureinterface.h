@@ -49,7 +49,7 @@
 #ifndef QT_NO_QFUTURE
 
 #include <QtCore/qmutex.h>
-#include <QtConcurrent/qtconcurrentexception.h>
+#include <QtCore/qexception.h>
 #include <QtConcurrent/qtconcurrentresultstore.h>
 
 QT_BEGIN_HEADER
@@ -83,7 +83,7 @@ public:
     void reportFinished();
     void reportCanceled();
 #ifndef QT_NO_EXCEPTIONS
-    void reportException(const QtConcurrent::Exception &e);
+    void reportException(const QException &e);
 #endif
     void reportResultsReady(int beginIndex, int endIndex);
 
@@ -122,7 +122,7 @@ public:
     void waitForResume();
 
     QMutex *mutex() const;
-    QtConcurrent::internal::ExceptionStore &exceptionStore();
+    QtPrivate::ExceptionStore &exceptionStore();
     QtConcurrent::ResultStoreBase &resultStoreBase();
     const QtConcurrent::ResultStoreBase &resultStoreBase() const;
 

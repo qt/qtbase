@@ -367,12 +367,12 @@ int fn2(double, int *)
 #ifndef QT_NO_EXCEPTIONS
 void throwFunction()
 {
-    throw QtConcurrent::Exception();
+    throw QException();
 }
 
 int throwFunctionReturn()
 {
-    throw QtConcurrent::Exception();
+    throw QException();
     return 0;
 }
 
@@ -381,7 +381,7 @@ void tst_QtConcurrentRun::exceptions()
     bool caught = false;
     try  {
         QtConcurrent::run(throwFunction).waitForFinished();
-    } catch (Exception &) {
+    } catch (QException &) {
         caught = true;
     }
     if (!caught)
@@ -390,7 +390,7 @@ void tst_QtConcurrentRun::exceptions()
     caught = false;
     try  {
         QtConcurrent::run(throwFunctionReturn).waitForFinished();
-    } catch (Exception &) {
+    } catch (QException &) {
         caught = true;
     }
     if (!caught)

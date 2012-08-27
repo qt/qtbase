@@ -104,10 +104,10 @@ public:
 #endif
             this->runFunctor();
 #ifndef QT_NO_EXCEPTIONS
-        } catch (QtConcurrent::Exception &e) {
+        } catch (QException &e) {
             QFutureInterface<T>::reportException(e);
         } catch (...) {
-            QFutureInterface<T>::reportException(QtConcurrent::UnhandledException());
+            QFutureInterface<T>::reportException(QUnhandledException());
         }
 #endif
 
@@ -132,10 +132,10 @@ public:
 #endif
             this->runFunctor();
 #ifndef QT_NO_EXCEPTIONS
-        } catch (QtConcurrent::Exception &e) {
+        } catch (QException &e) {
             QFutureInterface<void>::reportException(e);
         } catch (...) {
-            QFutureInterface<void>::reportException(QtConcurrent::UnhandledException());
+            QFutureInterface<void>::reportException(QUnhandledException());
         }
 #endif
         this->reportFinished();

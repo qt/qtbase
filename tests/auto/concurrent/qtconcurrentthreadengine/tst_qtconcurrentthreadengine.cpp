@@ -425,7 +425,7 @@ public:
     ThreadFunctionResult threadFunction()
     {
         QTest::qSleep(50);
-        throw QtConcurrent::Exception();
+        throw QException();
         return ThreadFinished;
     }
     QThread *blockThread;
@@ -457,7 +457,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
             QtConcurrentExceptionThrower *e = new QtConcurrentExceptionThrower();
             QFuture<void> f = e->startAsynchronously();
             f.waitForFinished();
-        } catch (const Exception &) {
+        } catch (const QException &) {
             caught = true;
         }
         QVERIFY2(caught, "did not get exception");
@@ -470,7 +470,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         try  {
             QtConcurrentExceptionThrower e(QThread::currentThread());
             e.startBlocking();
-        } catch (const Exception &) {
+        } catch (const QException &) {
             caught = true;
         }
         QVERIFY2(caught, "did not get exception");
@@ -482,7 +482,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         try  {
             QtConcurrentExceptionThrower e(0);
             e.startBlocking();
-        } catch (const Exception &) {
+        } catch (const QException &) {
             caught = true;
         }
         QVERIFY2(caught, "did not get exception");
@@ -495,7 +495,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
             UnrelatedExceptionThrower *e = new UnrelatedExceptionThrower();
             QFuture<void> f = e->startAsynchronously();
             f.waitForFinished();
-        } catch (const QtConcurrent::UnhandledException &) {
+        } catch (const QUnhandledException &) {
             caught = true;
         }
         QVERIFY2(caught, "did not get exception");
@@ -508,7 +508,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         try  {
             UnrelatedExceptionThrower e(QThread::currentThread());
             e.startBlocking();
-        } catch (const QtConcurrent::UnhandledException &) {
+        } catch (const QUnhandledException &) {
             caught = true;
         }
         QVERIFY2(caught, "did not get exception");
@@ -520,7 +520,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         try  {
             UnrelatedExceptionThrower e(0);
             e.startBlocking();
-        } catch (const QtConcurrent::UnhandledException &) {
+        } catch (const QUnhandledException &) {
             caught = true;
         }
         QVERIFY2(caught, "did not get exception");
