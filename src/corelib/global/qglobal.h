@@ -414,9 +414,9 @@ template <typename T>
 Q_DECL_CONSTEXPR inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
 
 Q_DECL_CONSTEXPR inline int qRound(double d)
-{ return d >= 0.0 ? int(d + 0.5) : int(d - int(d-1) + 0.5) + int(d-1); }
+{ return d >= 0.0 ? int(d + 0.5) : int(d - double(int(d-1)) + 0.5) + int(d-1); }
 Q_DECL_CONSTEXPR inline int qRound(float d)
-{ return d >= 0.0f ? int(d + 0.5f) : int(d - int(d-1) + 0.5f) + int(d-1); }
+{ return d >= 0.0f ? int(d + 0.5f) : int(d - float(int(d-1)) + 0.5f) + int(d-1); }
 #ifdef Q_QDOC
 /*
     Just for documentation generation
