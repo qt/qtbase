@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 #include <qtconcurrentmap.h>
-#include <qtconcurrentexception.h>
+#include <qexception.h>
 
 #include <qdebug.h>
 #include <QThread>

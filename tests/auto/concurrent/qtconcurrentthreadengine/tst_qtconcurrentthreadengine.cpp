@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 #include <qtconcurrentthreadengine.h>
-#include <qtconcurrentexception.h>
+#include <qexception.h>
 #include <QThread>
 #include <QtTest/QtTest>
 
