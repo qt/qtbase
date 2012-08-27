@@ -59,6 +59,12 @@
 
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 
+static void initResources()
+{
+    Q_INIT_RESOURCE_EXTERN(qcocoaresources)
+    Q_INIT_RESOURCE(qcocoaresources);
+}
+
 QT_BEGIN_NAMESPACE
 
 QCocoaScreen::QCocoaScreen(int screenIndex)
@@ -159,6 +165,7 @@ QCocoaIntegration::QCocoaIntegration()
     , mNativeInterface(new QCocoaNativeInterface)
     , mServices(new QCocoaServices)
 {
+    initResources();
     QCocoaAutoReleasePool pool;
 
     qApp->setAttribute(Qt::AA_DontUseNativeMenuBar, false);
