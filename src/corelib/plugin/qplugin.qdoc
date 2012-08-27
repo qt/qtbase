@@ -81,7 +81,8 @@
 
     FILE is optional and points to a json file.
 
-    The json file must reside in the same directory as the header file.
+    The json file must reside in one of the include directories specified
+    by the build-system.
     moc exits with an error when it could not find the specified file.
 
     \sa Q_DECLARE_INTERFACE(), {How to Create Qt Plugins}
