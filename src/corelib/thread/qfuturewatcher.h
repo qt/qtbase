@@ -42,8 +42,6 @@
 #ifndef QFUTUREWATCHER_H
 #define QFUTUREWATCHER_H
 
-#include <QtConcurrent/qtconcurrent_global.h>
-
 #include <QtCore/qfuture.h>
 
 #ifndef QT_NO_QFUTURE
@@ -57,13 +55,14 @@ QT_BEGIN_NAMESPACE
 class QEvent;
 
 class QFutureWatcherBasePrivate;
-class Q_CONCURRENT_EXPORT QFutureWatcherBase : public QObject
+class Q_CORE_EXPORT QFutureWatcherBase : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFutureWatcherBase)
 
 public:
     explicit QFutureWatcherBase(QObject *parent = 0);
+    // de-inline dtor
 
     int progressValue() const;
     int progressMinimum() const;
@@ -218,6 +217,6 @@ Q_INLINE_TEMPLATE void QFutureWatcher<void>::setFuture(const QFuture<void> &_fut
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#endif // QT_NO_CONCURRENT
+#endif // QT_NO_QFUTURE
 
 #endif // QFUTUREWATCHER_H

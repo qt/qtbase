@@ -124,7 +124,7 @@ public:
     virtual void callOutInterfaceDisconnected() = 0;
 };
 
-class Q_CORE_EXPORT QFutureInterfaceBasePrivate // ### temporary
+class QFutureInterfaceBasePrivate
 {
 public:
     QFutureInterfaceBasePrivate(QFutureInterfaceBase::State initialState);

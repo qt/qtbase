@@ -1,7 +1,6 @@
 TEMPLATE=subdirs
 SUBDIRS=\
    qfuturesynchronizer \
-   qfuturewatcher \
    qtconcurrentfilter \
    qtconcurrentiteratekernel \
    qtconcurrentmap \

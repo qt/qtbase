@@ -4,6 +4,7 @@ SUBDIRS=\
     qatomicpointer \
     qresultstore \
     qfuture \
+    qfuturewatcher \
     qmutex \
     qmutexlocker \
     qreadlocker \
