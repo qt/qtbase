@@ -14,6 +14,7 @@ HEADERS += thread/qmutex.h \
            thread/qresultstore.h \
            thread/qfuture.h \
            thread/qfutureinterface.h \
+           thread/qfuturesynchronizer.h \
            thread/qfuturewatcher.h \
            thread/qbasicatomic.h \
            thread/qgenericatomic.h \

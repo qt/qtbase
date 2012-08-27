@@ -12,7 +12,6 @@ load(qt_module)
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 
 SOURCES += \
-        qfuturesynchronizer.cpp \
         qtconcurrentfilter.cpp \
         qtconcurrentmap.cpp \
         qtconcurrentthreadengine.cpp \
@@ -20,7 +19,6 @@ SOURCES += \
 
 HEADERS += \
         qtconcurrent_global.h \
-        qfuturesynchronizer.h \
         qtconcurrentcompilertest.h \
         qtconcurrentexception.h \
         qtconcurrentfilter.h \

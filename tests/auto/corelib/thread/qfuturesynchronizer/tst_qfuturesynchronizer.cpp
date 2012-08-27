@@ -41,7 +41,7 @@
 
 #include <QtTest>
 
-#include <QtConcurrent/qfuturesynchronizer.h>
+#include <QtCore/qfuturesynchronizer.h>
 #include <QtCore/qfuture.h>
 
 class tst_QFutureSynchronizer : public QObject

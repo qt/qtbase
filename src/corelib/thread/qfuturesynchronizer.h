@@ -42,11 +42,9 @@
 #ifndef QFUTURESYNCHRONIZER_H
 #define QFUTURESYNCHRONIZER_H
 
-#include <QtConcurrent/qtconcurrent_global.h>
-
 #include <QtCore/qfuture.h>
 
-#ifndef QT_NO_CONCURRENT
+#ifndef QT_NO_QFUTURE
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
@@ -117,6 +115,6 @@ protected:
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#endif // QT_NO_CONCURRENT
+#endif // QT_NO_QFUTURE
 
 #endif // QFUTURESYNCHRONIZER_H
