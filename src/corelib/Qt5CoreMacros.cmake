@@ -238,6 +238,7 @@ if (NOT CMAKE_VERSION VERSION_LESS 2.8.9)
             target_link_libraries(${_target} ${link_type} ${Qt5${_module}_LIBRARIES})
             set_property(TARGET ${_target} APPEND PROPERTY INCLUDE_DIRECTORIES ${Qt5${_module}_INCLUDE_DIRS})
             set_property(TARGET ${_target} APPEND PROPERTY COMPILE_DEFINITIONS ${Qt5${_module}_COMPILE_DEFINITIONS})
+            set_property(TARGET ${_target} APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE QT_NO_DEBUG)
 
             if (Qt5_POSITION_INDEPENDENT_CODE)
                 set_property(TARGET ${_target} PROPERTY POSITION_INDEPENDENT_CODE ${Qt5_POSITION_INDEPENDENT_CODE})
