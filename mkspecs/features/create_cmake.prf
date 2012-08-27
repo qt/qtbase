@@ -80,7 +80,6 @@ macx {
 } else:win32 {
     CMAKE_WINDOWS_BUILD = "true"
     CMAKE_FIND_OTHER_LIBRARY_BUILD = "true"
-    CMAKE_BIN_SUFFIX = ".exe"
 
     CMAKE_LIB_FILE_LOCATION_DEBUG = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}d$$eval(QT.$${MODULE}.MAJOR_VERSION).dll
     CMAKE_LIB_FILE_LOCATION_RELEASE = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}$$eval(QT.$${MODULE}.MAJOR_VERSION).dll
@@ -141,6 +140,7 @@ CMAKE_RELEASE_TYPE =
 #   true, and 'make release' is subsequently invoked, CMake is only aware of
 #   the debug libraries at build time.
 
+equals(QMAKE_HOST.os, Windows): CMAKE_BIN_SUFFIX = ".exe"
 if (build_all|CONFIG(debug, debug|release)):CMAKE_DEBUG_TYPE = debug
 if (build_all|CONFIG(release, debug|release)):CMAKE_RELEASE_TYPE = release
 
