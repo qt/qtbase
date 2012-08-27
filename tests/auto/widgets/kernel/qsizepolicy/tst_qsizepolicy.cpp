@@ -96,7 +96,7 @@ void tst_QSizePolicy::getSetCheck()
             QSizePolicy::ToolButton
         };
 
-#define ITEMCOUNT(arr) sizeof(arr)/sizeof(arr[0])
+#define ITEMCOUNT(arr) int(sizeof(arr)/sizeof(arr[0]))
         QSizePolicy sp, oldsp;
 #ifdef GENERATE_BASELINE
         QFile out(QString::fromAscii("qsizepolicy-Qt%1%2.txt").arg((QT_VERSION >> 16) & 0xff).arg((QT_VERSION) >> 8 & 0xff));

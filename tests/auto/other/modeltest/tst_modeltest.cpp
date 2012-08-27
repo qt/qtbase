@@ -258,8 +258,8 @@ public slots:
     void checkPersistent()
     {
         for (int row = 0; row < m_persistentProxyIndexes.size(); ++row) {
-            QModelIndex updatedProxy = m_persistentProxyIndexes.at(row);
-            QModelIndex updatedSource = m_persistentSourceIndexes.at(row);
+            m_persistentProxyIndexes.at(row);
+            m_persistentSourceIndexes.at(row);
         }
         for (int row = 0; row < m_persistentProxyIndexes.size(); ++row) {
             QModelIndex updatedProxy = m_persistentProxyIndexes.at(row);
