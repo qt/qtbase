@@ -102,14 +102,6 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLShader::ShaderType)
 
 class QOpenGLShaderProgramPrivate;
 
-#ifndef GL_EXT_geometry_shader4
-#  define GL_LINES_ADJACENCY_EXT 0xA
-#  define GL_LINE_STRIP_ADJACENCY_EXT 0xB
-#  define GL_TRIANGLES_ADJACENCY_EXT 0xC
-#  define GL_TRIANGLE_STRIP_ADJACENCY_EXT 0xD
-#endif
-
-
 class Q_GUI_EXPORT QOpenGLShaderProgram : public QObject
 {
     Q_OBJECT
