@@ -237,8 +237,6 @@ QString QSqlResultPrivate::namedToPositionalBinding()
 
     \value PositionalBinding Use the ODBC-style positional syntax, with "?" as placeholders.
     \value NamedBinding Use the Oracle-style syntax with named placeholders (e.g., ":id")
-    \omitvalue BindByPosition
-    \omitvalue BindByName
 
     \sa bindingSyntax()
 */

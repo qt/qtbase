@@ -675,8 +675,8 @@ void QSqlRelationalTableModel::clear()
 */
 
 /*!
-    Sets the SQL join mode to show or hide rows with NULL foreign keys.
-    In InnerJoin mode (the default) these rows will not be showed: use the
+    Sets the SQL \a joinMode to show or hide rows with NULL foreign keys.
+    In InnerJoin mode (the default) these rows will not be shown: use the
     LeftJoin mode if you want to show them.
 
     \sa QSqlRelationalTableModel::JoinMode

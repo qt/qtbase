@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
     key. The driver key is usually the class name of the required
     driver. Keys are case sensitive.
 
-    \sa keys()
+    \sa {How to Create Qt Plugins}
 */
 
 /*!

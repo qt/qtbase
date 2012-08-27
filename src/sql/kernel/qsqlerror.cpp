@@ -80,12 +80,6 @@ QDebug operator<<(QDebug dbg, const QSqlError &s)
     \value StatementError  SQL statement syntax error.
     \value TransactionError  Transaction failed error.
     \value UnknownError  Unknown error.
-
-    \omitvalue None
-    \omitvalue Connection
-    \omitvalue Statement
-    \omitvalue Transaction
-    \omitvalue Unknown
 */
 
 /*!
