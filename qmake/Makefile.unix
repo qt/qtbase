@@ -7,6 +7,7 @@ QMAKESPEC = @QMAKESPEC@
 LFLAGS = @QMAKE_LFLAGS@
 
 QMKSRC = $(SOURCE_PATH)/qmake
+QMKGENSRC = $(QMKSRC)/generators
 
 #qmake code
 OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
@@ -31,12 +32,18 @@ QOBJS=qtextcodec.o qutfcodec.o qstring.o qstringbuilder.o qtextstream.o qiodevic
 
 
 #all sources, used for the depend target
-DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp generators/unix/unixmake2.cpp \
-	   generators/unix/unixmake.cpp generators/win32/winmakefile.cpp generators/projectgenerator.cpp \
-	   generators/mac/pbuilder_pbx.cpp generators/mac/xmloutput.cpp generators/metamakefile.cpp \
-	   generators/makefiledeps.cpp option.cpp generators/win32/mingw_make.cpp generators/makefile.cpp \
-	   generators/win32/msvc_vcproj.cpp generators/win32/msvc_vcxproj.cpp generators/win32/msvc_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp generators/win32/msvc_nmake.cpp \
-	   generators/integrity/gbuild.cpp generators/win32/cesdkhandler.cpp \
+DEPEND_SRC = \
+	   $(QMKSRC)/main.cpp $(QMKSRC)/project.cpp $(QMKSRC)/option.cpp $(QMKSRC)/property.cpp \
+	   $(QMKSRC)/meta.cpp \
+	   $(QMKGENSRC)/makefiledeps.cpp $(QMKGENSRC)/metamakefile.cpp \
+	   $(QMKGENSRC)/projectgenerator.cpp $(QMKGENSRC)/makefile.cpp \
+	   $(QMKGENSRC)/unix/unixmake.cpp $(QMKGENSRC)/unix/unixmake2.cpp \
+	   $(QMKGENSRC)/mac/pbuilder_pbx.cpp $(QMKGENSRC)/integrity/gbuild.cpp \
+	   $(QMKGENSRC)/win32/winmakefile.cpp \
+	   $(QMKGENSRC)/win32/mingw_make.cpp $(QMKGENSRC)/win32/msvc_nmake.cpp \
+	   $(QMKGENSRC)/win32/cesdkhandler.cpp $(QMKGENSRC)/mac/xmloutput.cpp  \
+	   $(QMKGENSRC)/win32/msvc_vcproj.cpp $(QMKGENSRC)/win32/msvc_vcxproj.cpp \
+	   $(QMKGENSRC)/win32/msvc_objectmodel.cpp $(QMKGENSRC)/win32/msbuild_objectmodel.cpp \
 	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstring.cpp $(SOURCE_PATH)/src/corelib/io/qfile.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfiledevice.cpp \
