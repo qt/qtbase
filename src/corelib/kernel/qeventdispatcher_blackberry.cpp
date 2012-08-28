@@ -241,10 +241,27 @@ void QEventDispatcherBlackberry::unregisterSocketNotifier(QSocketNotifier *notif
     }
 }
 
+static inline bool updateTimeout(int *timeout, const struct timeval &start)
+{
+    if (Q_UNLIKELY(!QElapsedTimer::isMonotonic())) {
+        // we cannot recalculate the timeout without a monotonic clock as the time may have changed
+        return false;
+    }
+
+    // clock source is monotonic, so we can recalculate how much timeout is left
+    timeval t2 = qt_gettime();
+    int elapsed = (t2.tv_sec * 1000 + t2.tv_usec / 1000) - (start.tv_sec * 1000 + start.tv_usec / 1000);
+    *timeout -= elapsed;
+    return *timeout >= 0;
+}
+
 int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                                        timeval *timeout)
 {
     Q_UNUSED(nfds);
+
+    // Make a note of the start time
+    timeval startTime = qt_gettime();
 
     // prepare file sets for bps callback
     Q_D(QEventDispatcherBlackberry);
@@ -279,36 +296,39 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
     if (exceptfds)
         FD_ZERO(exceptfds);
 
-    // convert timeout to milliseconds
-    int timeout_ms = -1;
+    // Convert timeout to milliseconds
+    int timeout_bps = -1;
     if (timeout)
-        timeout_ms = (timeout->tv_sec * 1000) + (timeout->tv_usec / 1000);
+        timeout_bps = (timeout->tv_sec * 1000) + (timeout->tv_usec / 1000);
 
-    QElapsedTimer timer;
-    timer.start();
-
-    do {
-        // wait for event or file to be ready
+    // This loop exists such that we can drain the bps event queue of all native events
+    // more efficiently than if we were to return control to Qt after each event. This
+    // is important for handling touch events which can come in rapidly.
+    forever {
+        // Wait for event or file to be ready
         bps_event_t *event = NULL;
-
-        // \TODO Remove this when bps is fixed
-        // BPS has problems respecting timeouts.
-        // Replace the bps_get_event statement
-        // with the following commented version
-        // once bps is fixed.
-        // result = bps_get_event(&event, timeout_ms);
-        result = bps_get_event(&event, 0);
+        result = bps_get_event(&event, timeout_bps);
 
         if (result != BPS_SUCCESS)
             qWarning("QEventDispatcherBlackberry::select: bps_get_event() failed");
 
-        if (!event)
+        // In the case of !event, we break out of the loop to let Qt process the timers
+        // that are now ready (since timeout has expired).
+        // In the case of bpsIOReadyDomain, we break out to let Qt process the FDs that
+        // are ready. If we do not do this activation of QSocketNotifiers etc would be
+        // delayed.
+        if (!event || bps_event_get_domain(event) == bpsIOReadyDomain)
             break;
 
-        // pass all received events through filter - except IO ready events
-        if (event && bps_event_get_domain(event) != bpsIOReadyDomain)
-            filterNativeEvent(QByteArrayLiteral("bps_event_t"), static_cast<void*>(event), 0);
-    } while (timer.elapsed() < timeout_ms);
+        // Any other events must be bps native events so we pass all such received
+        // events through the native event filter chain
+        filterNativeEvent(QByteArrayLiteral("bps_event_t"), static_cast<void*>(event), 0);
+
+        // Update the timeout. If this fails we have exceeded our alloted time or the system
+        // clock has changed time and we cannot calculate a new timeout so we bail out.
+        if (!updateTimeout(&timeout_bps, startTime))
+            break;
+    }
 
     // \TODO Remove this when bps is fixed (see comment above)
     result = bps_remove_fd(d->thread_pipe[0]);
