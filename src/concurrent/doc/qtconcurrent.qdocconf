@@ -38,7 +38,7 @@ headerdirs  += ..
 
 sourcedirs  += ..
 
-exampledirs += ../../../examples \
+exampledirs += ../../../examples/qtconcurrent \
                ../ \
                snippets
 
