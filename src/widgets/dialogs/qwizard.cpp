@@ -1475,7 +1475,7 @@ void QWizardPrivate::updateButtonTexts()
 void QWizardPrivate::updateButtonLayout()
 {
     if (buttonsHaveCustomLayout) {
-        QVarLengthArray<QWizard::WizardButton> array(buttonsCustomLayout.count());
+        QVarLengthArray<QWizard::WizardButton, QWizard::NButtons> array(buttonsCustomLayout.count());
         for (int i = 0; i < buttonsCustomLayout.count(); ++i)
             array[i] = buttonsCustomLayout.at(i);
         setButtonLayout(array.constData(), array.count());
