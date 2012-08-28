@@ -44,7 +44,10 @@
 
 #include <math.h>
 
+//#define USE_SEM_T
+
 #if defined(Q_OS_UNIX)
+#if !defined(USE_SEM_T)
 #  include <pthread.h>
 #  include <errno.h>
 typedef pthread_mutex_t NativeMutexType;
@@ -64,6 +67,26 @@ void NativeMutexUnlock(NativeMutexType *mutex)
 {
     pthread_mutex_unlock(mutex);
 }
+#else
+#  include <semaphore.h>
+typedef sem_t NativeMutexType;
+void NativeMutexInitialize(NativeMutexType *mutex)
+{
+    sem_init(mutex, false, 1);
+}
+void NativeMutexDestroy(NativeMutexType *mutex)
+{
+    sem_destroy(mutex);
+}
+void NativeMutexLock(NativeMutexType *mutex)
+{
+    sem_wait(mutex);
+}
+void NativeMutexUnlock(NativeMutexType *mutex)
+{
+    sem_post(mutex);
+}
+#endif
 #elif defined(Q_OS_WIN)
 #  define _WIN32_WINNT 0x0400
 #  include <windows.h>
