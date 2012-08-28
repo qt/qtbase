@@ -60,7 +60,9 @@
 #define _WIN32_WINNT  0x500
 #include <qt_windows.h>
 #include <qlibrary.h>
+#if !defined(Q_OS_WINCE)
 #include <lm.h>
+#endif
 #endif
 #include <qplatformdefs.h>
 #include <qdebug.h>

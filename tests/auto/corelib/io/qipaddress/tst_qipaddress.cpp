@@ -115,7 +115,7 @@ namespace QTest {
                 ip6.u8[10] << 8 | ip6.u8[11],
                 ip6.u8[12] << 8 | ip6.u8[13],
                 ip6.u8[14] << 8 | ip6.u8[15]);
-        return strdup(buf);
+        return qstrdup(buf);
     }
 }
 QT_END_NAMESPACE

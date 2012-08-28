@@ -106,8 +106,10 @@ private slots:
     void msecsTo();
     void operator_eqeq_data();
     void operator_eqeq();
+#ifndef Q_OS_WINCE
     void operator_insert_extract_data();
     void operator_insert_extract();
+#endif
     void currentDateTime();
     void currentDateTimeUtc();
     void currentDateTimeUtc2();
@@ -1231,6 +1233,7 @@ void tst_QDateTime::operator_eqeq()
     }
 }
 
+#ifndef Q_OS_WINCE
 void tst_QDateTime::operator_insert_extract_data()
 {
     QTest::addColumn<QDateTime>("dateTime");
@@ -1304,6 +1307,7 @@ void tst_QDateTime::operator_insert_extract()
     qputenv("TZ", previousTimeZone.toLocal8Bit().constData());
     tzset();
 }
+#endif
 
 void tst_QDateTime::toString_strformat_data()
 {
