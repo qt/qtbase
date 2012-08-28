@@ -51,7 +51,7 @@
 // source and binary incompatible with future versions of Qt.
 //
 
-#include <qplatformdefs.h>
+#include <QtCore/qglobal.h>
 
 #ifndef QT_NO_CLIPBOARD
 
