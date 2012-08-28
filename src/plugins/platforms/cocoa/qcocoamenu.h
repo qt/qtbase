@@ -59,6 +59,7 @@ class QCocoaMenu : public QPlatformMenu
 {
 public:
     QCocoaMenu();
+    ~QCocoaMenu();
 
     inline virtual void setTag(quintptr tag)
         { m_tag = tag; }

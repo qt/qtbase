@@ -107,6 +107,14 @@ QCocoaMenu::QCocoaMenu() :
     [m_nativeItem setSubmenu:m_nativeMenu];
 }
 
+QCocoaMenu::~QCocoaMenu()
+{
+    [m_nativeItem setSubmenu:nil];
+    [m_nativeMenu release];
+    [m_delegate release];
+    [m_nativeItem release];
+}
+
 void QCocoaMenu::setText(const QString &text)
 {
     QCocoaAutoReleasePool pool;
@@ -142,6 +150,7 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
     if (item->isMerged())
         return;
 
+    Q_ASSERT([item->nsItem() menu] == NULL);
     // if the item we're inserting before is merged, skip along until
     // we find a non-merged real item to insert ahead of.
     while (beforeItem && beforeItem->isMerged()) {
@@ -163,6 +172,7 @@ void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
     Q_ASSERT(m_menuItems.contains(cocoaItem));
     m_menuItems.removeOne(cocoaItem);
     if (!cocoaItem->isMerged()) {
+        Q_ASSERT(m_nativeMenu == [cocoaItem->nsItem() menu]);
         [m_nativeMenu removeItem: cocoaItem->nsItem()];
     }
 }
