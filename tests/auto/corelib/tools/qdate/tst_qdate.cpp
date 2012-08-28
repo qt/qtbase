@@ -79,6 +79,8 @@ private slots:
     void operator_gt();
     void operator_lt_eq();
     void operator_gt_eq();
+    void operator_insert_extract_data();
+    void operator_insert_extract();
     void fromStringDateFormat_data();
     void fromStringDateFormat();
     void fromStringFormat_data();
@@ -838,6 +840,65 @@ void tst_QDate::operator_gt_eq()
     d1 = QDate(2001,12,6);
     d2 = QDate(2001,12,5);
     QVERIFY( d1 >= d2 );
+}
+
+Q_DECLARE_METATYPE(QDataStream::Version)
+
+void tst_QDate::operator_insert_extract_data()
+{
+    QTest::addColumn<QDate>("date");
+    QTest::addColumn<QDataStream::Version>("dataStreamVersion");
+
+    QMap<QDataStream::Version, QString> versionsToTest;
+    versionsToTest.insert(QDataStream::Qt_1_0, QString::fromLatin1("Qt_1_0"));
+    versionsToTest.insert(QDataStream::Qt_2_0, QString::fromLatin1("Qt_2_0"));
+    versionsToTest.insert(QDataStream::Qt_2_1, QString::fromLatin1("Qt_2_1"));
+    versionsToTest.insert(QDataStream::Qt_3_0, QString::fromLatin1("Qt_3_0"));
+    versionsToTest.insert(QDataStream::Qt_3_1, QString::fromLatin1("Qt_3_1"));
+    versionsToTest.insert(QDataStream::Qt_3_3, QString::fromLatin1("Qt_3_3"));
+    versionsToTest.insert(QDataStream::Qt_4_0, QString::fromLatin1("Qt_4_0"));
+    versionsToTest.insert(QDataStream::Qt_4_1, QString::fromLatin1("Qt_4_1"));
+    versionsToTest.insert(QDataStream::Qt_4_2, QString::fromLatin1("Qt_4_2"));
+    versionsToTest.insert(QDataStream::Qt_4_3, QString::fromLatin1("Qt_4_3"));
+    versionsToTest.insert(QDataStream::Qt_4_4, QString::fromLatin1("Qt_4_4"));
+    versionsToTest.insert(QDataStream::Qt_4_5, QString::fromLatin1("Qt_4_5"));
+    versionsToTest.insert(QDataStream::Qt_4_6, QString::fromLatin1("Qt_4_6"));
+    versionsToTest.insert(QDataStream::Qt_4_7, QString::fromLatin1("Qt_4_7"));
+    versionsToTest.insert(QDataStream::Qt_4_8, QString::fromLatin1("Qt_4_8"));
+    versionsToTest.insert(QDataStream::Qt_4_9, QString::fromLatin1("Qt_4_9"));
+    versionsToTest.insert(QDataStream::Qt_5_0, QString::fromLatin1("Qt_5_0"));
+
+    for (QMap<QDataStream::Version, QString>::ConstIterator it = versionsToTest.constBegin();
+            it != versionsToTest.constEnd(); ++it) {
+        const QString &version(it.value());
+        QTest::newRow(("(invalid) " + version).toLocal8Bit().constData()) << invalidDate() << it.key();
+        QTest::newRow(("(1, 1, 1) " + version).toLocal8Bit().constData()) << QDate(1, 1, 1) << it.key();
+        QTest::newRow(("(-1, 1, 1) " + version).toLocal8Bit().constData()) << QDate(-1, 1, 1) << it.key();
+        QTest::newRow(("(1995, 5, 20) " + version).toLocal8Bit().constData()) << QDate(1995, 5, 20) << it.key();
+
+        // Test minimums for quint32/qint64.
+        if (it.key() >= QDataStream::Qt_5_0)
+            QTest::newRow(("(-4714, 11, 24) " + version).toLocal8Bit().constData()) << QDate(-4714, 11, 24) << it.key();
+        else
+            QTest::newRow(("(-4713, 1, 2) " + version).toLocal8Bit().constData()) << QDate(-4713, 1, 2) << it.key();
+    }
+}
+
+void tst_QDate::operator_insert_extract()
+{
+    QFETCH(QDate, date);
+    QFETCH(QDataStream::Version, dataStreamVersion);
+
+    QByteArray byteArray;
+    QDataStream dataStream(&byteArray, QIODevice::ReadWrite);
+    dataStream.setVersion(dataStreamVersion);
+    dataStream << date;
+    dataStream.device()->reset();
+    QDate deserialised;
+    dataStream >> deserialised;
+    QCOMPARE(dataStream.status(), QDataStream::Ok);
+
+    QCOMPARE(deserialised, date);
 }
 
 void tst_QDate::fromStringDateFormat_data()

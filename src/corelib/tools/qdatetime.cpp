@@ -3624,7 +3624,8 @@ QDataStream &operator>>(QDataStream &in, QDate &date)
     if (in.version() < QDataStream::Qt_5_0) {
         quint32 jd;
         in >> jd;
-        date.jd = jd;
+        // Older versions consider 0 an invalid jd.
+        date.jd = (jd != 0 ? jd : QDate::nullJd());
     } else {
         qint64 jd;
         in >> jd;
