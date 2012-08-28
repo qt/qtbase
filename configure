@@ -394,13 +394,6 @@ if [ -z "$QT_MAJOR_VERSION" ]; then
    exit 1
 fi
 
-QT_PACKAGEDATE=`grep '^# *define *QT_PACKAGEDATE_STR' "$relpath"/src/corelib/global/qglobal.h | sed -e 's,^# *define *QT_PACKAGEDATE_STR *"\([^ ]*\)"$,\1,' -e s,-,,g`
-if [ -z "$QT_PACKAGEDATE" ]; then
-   echo "Unable to determine package date from qglobal.h: '$QT_PACKAGEDATE'"
-   echo "Cannot proceed"
-   exit 1
-fi
-
 #-------------------------------------------------------------------------------
 # check the license
 #-------------------------------------------------------------------------------
@@ -3392,38 +3385,23 @@ elif [ "$Edition" != "OpenSource" ]; then
         if [ "$Today" -gt "$ExpiryDate" ]; then
             case "$LicenseType" in
             Commercial|Academic|Educational)
-                if [ "$QT_PACKAGEDATE" -gt "$ExpiryDate" ]; then
-                    echo
-                    echo "NOTICE  NOTICE  NOTICE  NOTICE"
-                    echo
-                    echo "  Your support and upgrade period has expired."
-                    echo
-                    echo "  You are no longer licensed to use this version of Qt."
-                    echo "  Please contact qt-info@nokia.com to renew your support"
-                    echo "  and upgrades for this license."
-                    echo
-                    echo "NOTICE  NOTICE  NOTICE  NOTICE"
-                    echo
-                    exit 1
-                else
-                    echo
-                    echo "WARNING  WARNING  WARNING  WARNING"
-                    echo
-                    echo "  Your support and upgrade period has expired."
-                    echo
-                    echo "  You may continue to use your last licensed release"
-                    echo "  of Qt under the terms of your existing license"
-                    echo "  agreement. But you are not entitled to technical"
-                    echo "  support, nor are you entitled to use any more recent"
-                    echo "  Qt releases."
-                    echo
-                    echo "  Please contact qt-info@nokia.com to renew your"
-                    echo "  support and upgrades for this license."
-                    echo
-                    echo "WARNING  WARNING  WARNING  WARNING"
-                    echo
-                    sleep 3
-                fi
+                echo
+                echo "WARNING  WARNING  WARNING  WARNING"
+                echo
+                echo "  Your support and upgrade period has expired."
+                echo
+                echo "  You may continue to use your last licensed release"
+                echo "  of Qt under the terms of your existing license"
+                echo "  agreement. But you are not entitled to technical"
+                echo "  support, nor are you entitled to use any more recent"
+                echo "  Qt releases."
+                echo
+                echo "  Please contact qt-info@nokia.com to renew your"
+                echo "  support and upgrades for this license."
+                echo
+                echo "WARNING  WARNING  WARNING  WARNING"
+                echo
+                sleep 3
                 ;;
             Evaluation|*)
                 echo

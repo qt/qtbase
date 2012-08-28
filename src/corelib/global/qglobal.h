@@ -55,10 +55,6 @@
 */
 #define QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
 
-#define QT_PACKAGEDATE_STR "YYYY-MM-DD"
-
-#define QT_PACKAGE_TAG ""
-
 #if !defined(QT_BUILD_MOC)
 #include <QtCore/qconfig.h>
 #endif
