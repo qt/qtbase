@@ -961,8 +961,7 @@ MakefileGenerator::writePrlFile(QTextStream &t)
         bdir = qmake_getpwd();
     t << "QMAKE_PRL_BUILD_DIR = " << bdir << endl;
 
-    if(!project->projectFile().isEmpty() && project->projectFile() != "-")
-        t << "QMAKE_PRO_INPUT = " << project->projectFile().section('/', -1) << endl;
+    t << "QMAKE_PRO_INPUT = " << project->projectFile().section('/', -1) << endl;
 
     if(!project->isEmpty("QMAKE_ABSOLUTE_SOURCE_PATH"))
         t << "QMAKE_PRL_SOURCE_DIR = " << project->first("QMAKE_ABSOLUTE_SOURCE_PATH") << endl;
@@ -2595,11 +2594,10 @@ MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
           << "@$(QMAKE) -prl " << buildArgs() << " " << files.join(" ") << endl;
     }
 
-    QString pfile = project->projectFile();
-    if(pfile != "(stdin)") {
         QString qmake = build_args();
         if(!ofile.isEmpty() && !project->isActiveConfig("no_autoqmake")) {
-            t << escapeFilePath(ofile) << ": " << escapeDependencyPath(fileFixify(pfile)) << " ";
+            t << escapeFilePath(ofile) << ": "
+              << escapeDependencyPath(fileFixify(project->projectFile())) << " ";
             if (Option::mkfile::do_cache) {
                 if (!project->confFile().isEmpty())
                     t <<  escapeDependencyPath(fileFixify(project->confFile())) << " ";
@@ -2624,7 +2622,6 @@ MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
             if (!noDummyQmakeAll)
                 t << "qmake_all: FORCE" << endl << endl;
         }
-    }
 }
 
 QFileInfo

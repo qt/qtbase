@@ -1279,13 +1279,9 @@ QMakeProject::read(const QString &file, QHash<QString, QStringList> &place)
 
     const QString oldpwd = qmake_getpwd();
     QString filename = Option::normalizePath(file, false);
-    bool ret = false, using_stdin = false;
+    bool ret = false;
     QFile qfile;
-    if(filename == QLatin1String("-")) {
-        qfile.setFileName("");
-        ret = qfile.open(stdin, QIODevice::ReadOnly);
-        using_stdin = true;
-    } else if(QFileInfo(file).isDir()) {
+    if (QFileInfo(file).isDir()) {
         return false;
     } else {
         qfile.setFileName(filename);
@@ -1306,8 +1302,7 @@ QMakeProject::read(const QString &file, QHash<QString, QStringList> &place)
             QTextStream t(&qfile);
             ret = read(t, place);
         }
-        if(!using_stdin)
-            qfile.close();
+        qfile.close();
     }
     if (!need_restart && scope_blocks.count() != 1) {
         qmake_error_msg("Unterminated conditional block at end of file");
@@ -1561,7 +1556,7 @@ QMakeProject::read(uchar cmd)
 
     if(cmd & ReadProFile) { // parse project file
         debug_msg(1, "Project file: reading %s", pfile.toLatin1().constData());
-        if(pfile != "-" && !QFile::exists(pfile) && !pfile.endsWith(Option::pro_ext))
+        if (!QFile::exists(pfile) && !pfile.endsWith(Option::pro_ext))
             pfile += Option::pro_ext;
         if(!read(pfile, vars))
             return false;
@@ -1627,8 +1622,7 @@ void
 QMakeProject::setupProject()
 {
     setTemplate(vars["TEMPLATE"]);
-    if (pfile != "-")
-        vars["TARGET"] << QFileInfo(pfile).baseName();
+    vars["TARGET"] << QFileInfo(pfile).baseName();
     vars["_PRO_FILE_"] << pfile;
     vars["_PRO_FILE_PWD_"] << (pfile.isEmpty() ? qmake_getpwd() : QFileInfo(pfile).absolutePath());
     vars["OUT_PWD"] << Option::output_dir;
@@ -2640,7 +2634,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         if(args.count() != 1) {
             fprintf(stderr, "%s:%d prompt(question) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
-        } else if(pfile == "-") {
+        } else if (Option::output.fileName() == "-") {
             fprintf(stderr, "%s:%d prompt(question) cannot be used when '-o -' is used.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         } else {

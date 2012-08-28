@@ -512,8 +512,7 @@ Option::init(int argc, char **argv)
 
 void Option::prepareProject(const QString &pfile)
 {
-    QString srcpath = (pfile != "-")
-            ? QDir::cleanPath(QFileInfo(pfile).absolutePath()) : qmake_getpwd();
+    QString srcpath = QDir::cleanPath(QFileInfo(pfile).absolutePath());
     if (srcpath != output_dir) {
         if (!srcpath.endsWith(QLatin1Char('/')))
             srcpath += QLatin1Char('/');

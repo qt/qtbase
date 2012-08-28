@@ -188,8 +188,6 @@ Q_DECLARE_METATYPE(QMakeProject*)
 
 inline QString QMakeProject::projectFile()
 {
-    if (pfile == "-")
-        return QString("(stdin)");
     return pfile;
 }
 

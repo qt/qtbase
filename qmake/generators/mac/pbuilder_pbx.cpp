@@ -461,9 +461,7 @@ ProjectBuilderSources::files(QMakeProject *project) const
 {
     QStringList ret = project->values(key);
     if(key == "QMAKE_INTERNAL_INCLUDED_FILES") {
-        QString pfile = project->projectFile();
-        if(pfile != "(stdin)")
-            ret.prepend(pfile);
+        ret.prepend(project->projectFile());
         for(int i = 0; i < ret.size(); ++i) {
             QStringList newret;
             if(!ret.at(i).endsWith(Option::prf_ext))
@@ -496,7 +494,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
       << "\t" << "objects = {" << endl;
 
     //MAKE QMAKE equivelant
-    if(!project->isActiveConfig("no_autoqmake") && project->projectFile() != "(stdin)") {
+    if (!project->isActiveConfig("no_autoqmake")) {
         QString mkfile = pbx_dir + Option::dir_sep + "qt_makeqmake.mak";
         QFile mkf(mkfile);
         if(mkf.open(QIODevice::WriteOnly | QIODevice::Text)) {

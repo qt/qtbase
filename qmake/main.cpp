@@ -163,8 +163,7 @@ int runQMake(int argc, char **argv)
             // read project..
             if(!project.read(fn)) {
                 fprintf(stderr, "Error processing project file: %s\n",
-                        fn == QLatin1String("-") ?
-                            "(stdin)" : QDir::toNativeSeparators(*pfile).toLatin1().constData());
+                        QDir::toNativeSeparators(*pfile).toLatin1().constData());
                 exit_val = 3;
                 continue;
             }
