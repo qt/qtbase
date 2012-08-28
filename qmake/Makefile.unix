@@ -111,19 +111,19 @@ depend:
 	makedepend -D__MAKEDEPEND__ $(CPPFLAGS) $(DEPEND_SRC)
 
 
-project.o: $(QMKSRC)/project.cpp $(QMKSRC)/project.h $(QMKSRC)/option.h
+project.o: $(QMKSRC)/project.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-property.o: $(QMKSRC)/property.cpp $(QMKSRC)/project.h $(QMKSRC)/option.h
+property.o: $(QMKSRC)/property.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-meta.o: $(QMKSRC)/meta.cpp $(QMKSRC)/project.h $(QMKSRC)/option.h
+meta.o: $(QMKSRC)/meta.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-main.o: $(QMKSRC)/main.cpp $(QMKSRC)/project.h
+main.o: $(QMKSRC)/main.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-option.o: $(QMKSRC)/option.cpp $(QMKSRC)/option.h
+option.o: $(QMKSRC)/option.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 metamakefile.o: $(QMKSRC)/generators/metamakefile.cpp
