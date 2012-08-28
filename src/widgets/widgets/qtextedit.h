@@ -296,7 +296,7 @@ protected:
     QTextEdit(QTextEditPrivate &dd, QWidget *parent);
 
     virtual void scrollContentsBy(int dx, int dy);
-
+    virtual void doSetTextCursor(const QTextCursor &cursor);
 
 private:
     Q_DISABLE_COPY(QTextEdit)

@@ -757,6 +757,17 @@ QTextDocument *QTextEdit::document() const
 */
 void QTextEdit::setTextCursor(const QTextCursor &cursor)
 {
+    doSetTextCursor(cursor);
+}
+
+/*!
+    \internal
+
+     This provides a hook for subclasses to intercept cursor changes.
+*/
+
+void QTextEdit::doSetTextCursor(const QTextCursor &cursor)
+{
     Q_D(QTextEdit);
     d->control->setTextCursor(cursor);
 }

@@ -254,6 +254,7 @@ protected:
     QPlainTextEdit(QPlainTextEditPrivate &dd, QWidget *parent);
 
     virtual void scrollContentsBy(int dx, int dy);
+    virtual void doSetTextCursor(const QTextCursor &cursor);
 
     QTextBlock firstVisibleBlock() const;
     QPointF contentOffset() const;
