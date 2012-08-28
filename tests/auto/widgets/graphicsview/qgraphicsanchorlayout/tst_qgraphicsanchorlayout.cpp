@@ -1135,19 +1135,18 @@ public:
     int hspacing;
     int vspacing;
 
-protected slots:
-    int layoutSpacingImplementation(QSizePolicy::ControlType control1,
-                                    QSizePolicy::ControlType control2,
-                                    Qt::Orientation orientation,
-                                    const QStyleOption *option = 0,
-                                    const QWidget *widget = 0) const;
+    int layoutSpacing(QSizePolicy::ControlType control1,
+                      QSizePolicy::ControlType control2,
+                      Qt::Orientation orientation,
+                      const QStyleOption *option = 0,
+                      const QWidget *widget = 0) const;
 
 };
 
 #define CT1(c) CT2(c, c)
 #define CT2(c1, c2) ((uint)c1 << 16) | (uint)c2
 
-int CustomLayoutStyle::layoutSpacingImplementation(QSizePolicy::ControlType control1,
+int CustomLayoutStyle::layoutSpacing(QSizePolicy::ControlType control1,
                                 QSizePolicy::ControlType control2,
                                 Qt::Orientation orientation,
                                 const QStyleOption * /*option = 0*/,
@@ -1233,7 +1232,7 @@ void tst_QGraphicsAnchorLayout::styleDefaults()
 
     QGraphicsWidget *window = new QGraphicsWidget(0, Qt::Window);
 
-    // Test layoutSpacingImplementation
+    // Test layoutSpacing
     CustomLayoutStyle *style = new CustomLayoutStyle;
     style->hspacing = -1;
     style->vspacing = -1;

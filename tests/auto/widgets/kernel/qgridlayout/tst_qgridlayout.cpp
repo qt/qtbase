@@ -85,8 +85,8 @@ private slots:
 
     void styleDependentSpacingsAndMargins_data();
     void styleDependentSpacingsAndMargins();
-    void layoutSpacingImplementation_data();
-    void layoutSpacingImplementation();
+    void layoutSpacing_data();
+    void layoutSpacing();
     void spacing();
     void spacerWithSpacing();
     void contentsRect();
@@ -944,12 +944,11 @@ public:
     int vspacing;
     bool reimplementSubelementRect;
 
-protected slots:
-    int layoutSpacingImplementation(QSizePolicy::ControlType control1,
-                                    QSizePolicy::ControlType control2,
-                                    Qt::Orientation orientation,
-                                    const QStyleOption *option = 0,
-                                    const QWidget *widget = 0) const;
+    int layoutSpacing(QSizePolicy::ControlType control1,
+                      QSizePolicy::ControlType control2,
+                      Qt::Orientation orientation,
+                      const QStyleOption *option = 0,
+                      const QWidget *widget = 0) const;
 
 };
 
@@ -978,7 +977,7 @@ QRect CustomLayoutStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 #define CT1(c) CT2(c, c)
 #define CT2(c1, c2) ((uint)c1 << 16) | (uint)c2
 
-int CustomLayoutStyle::layoutSpacingImplementation(QSizePolicy::ControlType control1,
+int CustomLayoutStyle::layoutSpacing(QSizePolicy::ControlType control1,
                                 QSizePolicy::ControlType control2,
                                 Qt::Orientation orientation,
                                 const QStyleOption * /*option = 0*/,
@@ -1091,7 +1090,7 @@ void tst_QGridLayout::styleDependentSpacingsAndMargins()
     }
 }
 
-void tst_QGridLayout::layoutSpacingImplementation_data()
+void tst_QGridLayout::layoutSpacing_data()
 {
     QTest::addColumn<QWidget*>("widget");
     // expected
@@ -1103,7 +1102,7 @@ void tst_QGridLayout::layoutSpacingImplementation_data()
     CustomLayoutStyle *style = new CustomLayoutStyle();
     {
         // If the layoutSpacing is negative, the layouting code will call
-        // layoutSpacingImplementation()
+        // layoutSpacing()
         style->hspacing = -1;
         style->vspacing = -1;
         style->reimplementSubelementRect = false;
@@ -1441,7 +1440,7 @@ void tst_QGridLayout::layoutSpacingImplementation_data()
 
 }
 
-void tst_QGridLayout::layoutSpacingImplementation()
+void tst_QGridLayout::layoutSpacing()
 {
     QFETCH(QWidget *, widget);
     QFETCH(PointList, expectedpositions);

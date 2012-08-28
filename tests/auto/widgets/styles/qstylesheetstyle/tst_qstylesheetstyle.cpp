@@ -1168,6 +1168,22 @@ class ProxyStyle : public QStyle
             return style->generatedIconPixmap(mode, pix, opt);
         }
 
+        int layoutSpacing(QSizePolicy::ControlType c1,
+                          QSizePolicy::ControlType c2,
+                          Qt::Orientation ori,
+                          const QStyleOption *opt,
+                          const QWidget *w) const
+        {
+            return style->layoutSpacing(c1, c2, ori, opt, w);
+        }
+
+        QIcon standardIcon(StandardPixmap si,
+                           const QStyleOption *opt,
+                           const QWidget *w) const
+        {
+            return style->standardIcon(si, opt, w);
+        }
+
     private:
         QStyle *style;
 };
