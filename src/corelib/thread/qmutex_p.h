@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Copyright (C) 2012 Intel Corporation
+** Copyright (C) 2012 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -113,8 +114,12 @@ public:
     void release();
     static QMutexPrivate *allocate();
 
-    QAtomicInt waiters; //number of thread waiting
-    QAtomicInt possiblyUnlocked; //bool saying that a timed wait timed out
+    QAtomicInt waiters; // Number of threads waiting on this mutex. (may be offset by -BigNumber)
+    QAtomicInt possiblyUnlocked; /* Boolean indicating that a timed wait timed out.
+                                    When it is true, a reference is held.
+                                    It is there to avoid a race that happens if unlock happens right
+                                    when the mutex is unlocked.
+                                  */
     enum { BigNumber = 0x100000 }; //Must be bigger than the possible number of waiters (number of threads)
     void derefWaiters(int value) Q_DECL_NOTHROW;
 
