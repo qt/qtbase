@@ -1452,7 +1452,7 @@ void Generator::generatePluginMetaData()
     int pos = cdef->qualified.indexOf("::");
     for ( ; pos != -1 ; pos = cdef->qualified.indexOf("::", pos + 2) )
         fprintf(out, "using namespace %s;\n", cdef->qualified.left(pos).constData());
-    fprintf(out, "QT_MOC_EXPORT_PLUGIN(%s)\n\n", cdef->classname.constData());
+    fprintf(out, "QT_MOC_EXPORT_PLUGIN(%s)\n\n", cdef->qualified.constData());
 }
 
 QT_END_NAMESPACE
