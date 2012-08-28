@@ -15,7 +15,7 @@ set(qtbase_modules
     Xml
 )
 
-if (UNIX AND NOT APPLE)
+if (UNIX AND NOT APPLE AND NOT QNXNTO)
     add_definitions(-DEXPECT_DBUS_AVAILABLE)
     list(APPEND qtbase_modules DBus)
 endif()
