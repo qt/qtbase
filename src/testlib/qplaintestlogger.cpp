@@ -66,10 +66,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QTest {
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    static CRITICAL_SECTION outputCriticalSection;
-#endif
-
     static const char *incidentType2String(QAbstractTestLogger::IncidentTypes type)
     {
         switch (type) {
@@ -209,10 +205,7 @@ void QPlainTestLogger::outputMessage(const char *str)
     } while (!strUtf16.isEmpty());
     if (stream != stdout)
 #elif defined(Q_OS_WIN)
-    EnterCriticalSection(&QTest::outputCriticalSection);
-    // OutputDebugString is not threadsafe
     OutputDebugStringA(str);
-    LeaveCriticalSection(&QTest::outputCriticalSection);
 #endif
     outputString(str);
 }
@@ -310,16 +303,10 @@ void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
 QPlainTestLogger::QPlainTestLogger(const char *filename)
     : QAbstractTestLogger(filename)
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    InitializeCriticalSection(&QTest::outputCriticalSection);
-#endif
 }
 
 QPlainTestLogger::~QPlainTestLogger()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-	DeleteCriticalSection(&QTest::outputCriticalSection);
-#endif
 }
 
 void QPlainTestLogger::startLogging()

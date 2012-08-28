@@ -710,9 +710,6 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     if (usingWinMain)
 #endif
     {
-        // OutputDebugString is not threadsafe.
-        static QBasicMutex outputDebugStringMutex;
-        QMutexLocker locker(&outputDebugStringMutex);
         OutputDebugString(reinterpret_cast<const wchar_t *>(logMessage.utf16()));
         return;
     }
