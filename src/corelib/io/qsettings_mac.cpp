@@ -40,6 +40,8 @@
 ****************************************************************************/
 
 #include "qsettings.h"
+#ifndef QT_NO_SETTINGS
+
 #include "qsettings_p.h"
 #include "qdatetime.h"
 #include "qdir.h"
@@ -696,3 +698,4 @@ bool QConfFileSettingsPrivate::writePlistFile(const QString &fileName,
 }
 
 QT_END_NAMESPACE
+#endif //QT_NO_SETTINGS
