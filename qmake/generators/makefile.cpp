@@ -538,7 +538,7 @@ MakefileGenerator::init()
                         if (line.startsWith("!!IF ")) {
                             if (state.isEmpty() || state.top() == IN_CONDITION) {
                                 QString test = line.mid(5, line.length()-(5+1));
-                                if (project->test(test))
+                                if (project->test(test, inn, count))
                                     state.push(IN_CONDITION);
                                 else
                                     state.push(PENDING_CONDITION);
@@ -551,7 +551,7 @@ MakefileGenerator::init()
                                         in.fileName().toLatin1().constData(), count);
                             } else if (state.top() == PENDING_CONDITION) {
                                 QString test = line.mid(7, line.length()-(7+1));
-                                if (project->test(test))  {
+                                if (project->test(test, inn, count))  {
                                     state.pop();
                                     state.push(IN_CONDITION);
                                 }
