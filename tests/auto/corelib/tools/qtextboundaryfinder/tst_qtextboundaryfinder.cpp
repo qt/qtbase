@@ -113,6 +113,7 @@ inline char *toString(const QList<int> &list)
 } // namespace QTest
 QT_END_NAMESPACE
 
+#ifdef QT_BUILD_INTERNAL
 static void generateDataFromFile(const QString &fname)
 {
     QTest::addColumn<QString>("testString");
@@ -185,7 +186,6 @@ static void generateDataFromFile(const QString &fname)
     }
 }
 
-#ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
 extern Q_AUTOTEST_EXPORT int qt_initcharattributes_default_algorithm_only;
 QT_END_NAMESPACE
