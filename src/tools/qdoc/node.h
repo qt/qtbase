@@ -391,7 +391,7 @@ struct RelatedClass
     RelatedClass() { }
     RelatedClass(Node::Access access0,
                  ClassNode* node0,
-                 const QString& dataTypeWithTemplateArgs0 = "")
+                 const QString& dataTypeWithTemplateArgs0 = QString())
         : access(access0),
           node(node0),
           dataTypeWithTemplateArgs(dataTypeWithTemplateArgs0) { }
@@ -412,7 +412,7 @@ public:
 
     void addBaseClass(Access access,
                       ClassNode* node,
-                      const QString &dataTypeWithTemplateArgs = "");
+                      const QString &dataTypeWithTemplateArgs = QString());
     void fixBaseClasses();
 
     const QList<RelatedClass> &baseClasses() const { return bases; }
@@ -713,9 +713,9 @@ class Parameter
 public:
     Parameter() {}
     Parameter(const QString& leftType,
-              const QString& rightType = "",
-              const QString& name = "",
-              const QString& defaultValue = "");
+              const QString& rightType = QString(),
+              const QString& name = QString(),
+              const QString& defaultValue = QString());
     Parameter(const Parameter& p);
 
     Parameter& operator=(const Parameter& p);

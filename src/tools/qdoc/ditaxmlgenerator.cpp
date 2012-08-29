@@ -2339,7 +2339,7 @@ void DitaXmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
             generateText(text, dn, marker);
             writeEndTag(); // </p>
             Doc::quoteFromFile(dn->doc().location(), quoter, dn->name());
-            QString code = quoter.quoteTo(dn->location(), "", "");
+            QString code = quoter.quoteTo(dn->location(), QString(), QString());
             text.clear();
             text << Atom(Atom::Code, code);
             generateText(text, dn, marker);
@@ -2602,7 +2602,7 @@ void DitaXmlGenerator::generateTableOfContents(const Node* node,
     if (toc.isEmpty())
         return;
 
-    QString nodeName = "";
+    QString nodeName;
     if (node != relative)
         nodeName = node->name();
 

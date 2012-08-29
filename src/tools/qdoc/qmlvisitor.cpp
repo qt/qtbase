@@ -472,7 +472,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiPublicMember *member)
                 QList<Parameter> parameters;
                 for (QQmlJS::AST::UiParameterList *it = member->parameters; it; it = it->next) {
                     if (!it->type.isEmpty() && !it->name.isEmpty())
-                        parameters.append(Parameter(it->type.toString(), "", it->name.toString()));
+                        parameters.append(Parameter(it->type.toString(), QString(), it->name.toString()));
                 }
 
                 qmlSignal->setParameters(parameters);
@@ -545,7 +545,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::FunctionDeclaration* fd)
             if (formals) {
                 QQmlJS::AST::FormalParameterList* fpl = formals;
                 do {
-                    parameters.append(Parameter(QString(""), QString(""), fpl->name.toString()));
+                    parameters.append(Parameter(QString(), QString(), fpl->name.toString()));
                     fpl = fpl->next;
                 } while (fpl && fpl != formals);
                 qmlMethod->setParameters(parameters);

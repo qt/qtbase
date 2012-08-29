@@ -781,7 +781,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                   << protectEnc(atom->string()) << "]</font>";
         }
         else {
-            QString prefix = "";
+            QString prefix;
             if (!baseDir().isEmpty())
                 prefix = "../";
             out() << "<img src=\"" << protectEnc(prefix + fileName) << '"';

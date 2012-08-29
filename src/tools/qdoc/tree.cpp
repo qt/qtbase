@@ -110,7 +110,7 @@ public:
   The default constructor is the only constructor.
  */
 Tree::Tree()
-    : roo(0, "")
+    : roo(0, QString())
 {
     priv = new TreePrivate;
 }
@@ -945,7 +945,7 @@ void Tree::readIndexFile(const QString& path)
         // when the -installdir command line option is set.
         QString indexUrl;
         if (Config::installDir.isEmpty()) {
-            indexUrl = indexElement.attribute("url", "");
+            indexUrl = indexElement.attribute("url", QString());
         }
         else {
             // Use a fake directory, since we will copy the output to a sub directory of
@@ -1011,7 +1011,7 @@ void Tree::readIndexSection(const QDomElement& element,
         QmlClassNode* qcn = new QmlClassNode(parent, name);
         qcn->setTitle(element.attribute("title"));
         if (element.hasAttribute("location"))
-            name = element.attribute("location", "");
+            name = element.attribute("location", QString());
         if (!indexUrl.isEmpty())
             location = Location(indexUrl + QLatin1Char('/') + name);
         else if (!indexUrl.isNull())
@@ -1022,7 +1022,7 @@ void Tree::readIndexSection(const QDomElement& element,
         QmlBasicTypeNode* qbtn = new QmlBasicTypeNode(parent, name);
         qbtn->setTitle(element.attribute("title"));
         if (element.hasAttribute("location"))
-            name = element.attribute("location", "");
+            name = element.attribute("location", QString());
         if (!indexUrl.isEmpty())
             location = Location(indexUrl + QLatin1Char('/') + name);
         else if (!indexUrl.isNull())
@@ -1079,7 +1079,7 @@ void Tree::readIndexSection(const QDomElement& element,
         docNode->setTitle(element.attribute("title"));
 
         if (element.hasAttribute("location"))
-            name = element.attribute("location", "");
+            name = element.attribute("location", QString());
 
         if (!indexUrl.isEmpty())
             location = Location(indexUrl + QLatin1Char('/') + name);
@@ -1179,7 +1179,7 @@ void Tree::readIndexSection(const QDomElement& element,
             Parameter parameter(child.attribute("left"),
                                 child.attribute("right"),
                                 child.attribute("name"),
-                                ""); // child.attribute("default")
+                                QString()); // child.attribute("default")
             functionNode->addParameter(parameter);
             child = child.nextSiblingElement("parameter");
         }
@@ -2189,7 +2189,7 @@ void Tree::generateTagFileMembers(QXmlStreamWriter& writer, const InnerNode* inn
             QStringList pieces = gen_->fullDocumentLocation(node,true).split(QLatin1Char('#'));
             writer.writeTextElement("anchorfile", pieces[0]);
             writer.writeTextElement("anchor", pieces[1]);
-            writer.writeTextElement("arglist", "");
+            writer.writeTextElement("arglist", QString());
         }
             writer.writeEndElement(); // member
             break;
@@ -2200,7 +2200,7 @@ void Tree::generateTagFileMembers(QXmlStreamWriter& writer, const InnerNode* inn
             writer.writeTextElement("name", objName);
             QStringList pieces = gen_->fullDocumentLocation(node).split(QLatin1Char('#'));
             writer.writeTextElement("anchor", pieces[1]);
-            writer.writeTextElement("arglist", "");
+            writer.writeTextElement("arglist", QString());
             writer.writeEndElement(); // member
 
             for (int i = 0; i < enumNode->items().size(); ++i) {
@@ -2208,7 +2208,7 @@ void Tree::generateTagFileMembers(QXmlStreamWriter& writer, const InnerNode* inn
                 writer.writeStartElement("member");
                 writer.writeAttribute("name", item.name());
                 writer.writeTextElement("anchor", pieces[1]);
-                writer.writeTextElement("arglist", "");
+                writer.writeTextElement("arglist", QString());
                 writer.writeEndElement(); // member
             }
         }
@@ -2220,12 +2220,12 @@ void Tree::generateTagFileMembers(QXmlStreamWriter& writer, const InnerNode* inn
             if (typedefNode->associatedEnum())
                 writer.writeAttribute("type", typedefNode->associatedEnum()->fullDocumentName());
             else
-                writer.writeAttribute("type", "");
+                writer.writeAttribute("type", QString());
             writer.writeTextElement("name", objName);
             QStringList pieces = gen_->fullDocumentLocation(node,true).split(QLatin1Char('#'));
             writer.writeTextElement("anchorfile", pieces[0]);
             writer.writeTextElement("anchor", pieces[1]);
-            writer.writeTextElement("arglist", "");
+            writer.writeTextElement("arglist", QString());
         }
             writer.writeEndElement(); // member
             break;

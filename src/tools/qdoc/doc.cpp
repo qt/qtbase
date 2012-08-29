@@ -355,7 +355,7 @@ class DocPrivate : public Shared
 public:
     DocPrivate(const Location& start = Location::null,
                const Location& end = Location::null,
-               const QString& source = "");
+               const QString& source = QString());
     ~DocPrivate();
 
     void addAlso(const Text& also);
@@ -473,7 +473,7 @@ private:
     void startSection(Doc::Sections unit, int cmd);
     void endSection(int unit, int endCmd);
     void parseAlso();
-    void append(Atom::Type type, const QString& string = "");
+    void append(Atom::Type type, const QString& string = QString());
     void append(Atom::Type type, const QString& p1, const QString& p2);
     void appendChar(QChar ch);
     void appendWord(const QString &word);
@@ -482,7 +482,7 @@ private:
     void startNewPara();
     void enterPara(Atom::Type leftType = Atom::ParaLeft,
                    Atom::Type rightType = Atom::ParaRight,
-                   const QString& string = "");
+                   const QString& string = QString());
     void leavePara();
     void leaveValue();
     void leaveValueList();
@@ -1149,7 +1149,7 @@ void DocParser::parse(const QString& source,
                     Doc::quoteFromFile(location(), quoter, fileName);
                     if (!quoting) {
                         append(Atom::Code,
-                               quoter.quoteTo(location(), cmdStr, ""));
+                               quoter.quoteTo(location(), cmdStr, QString()));
                         quoter.reset();
                     }
                     else {
