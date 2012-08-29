@@ -2046,7 +2046,7 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
             // doesn't mean that we hit the floor in the other
             if (steps > 0) {
                 setDigit(v, sectionIndex, min);
-                if (!(sn.type & (DaySection|DayOfWeekSection)) && sections & DateSectionMask) {
+                if (!(sn.type & (DaySection|DayOfWeekSectionShort|DayOfWeekSectionLong)) && sections & DateSectionMask) {
                     const int daysInMonth = v.date().daysInMonth();
                     if (v.date().day() < oldDay && v.date().day() < daysInMonth) {
                         const int adds = qMin(oldDay, daysInMonth);
@@ -2061,7 +2061,7 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
                 }
             } else {
                 setDigit(v, sectionIndex, max);
-                if (!(sn.type & (DaySection|DayOfWeekSection)) && sections & DateSectionMask) {
+                if (!(sn.type & (DaySection|DayOfWeekSectionShort|DayOfWeekSectionLong)) && sections & DateSectionMask) {
                     const int daysInMonth = v.date().daysInMonth();
                     if (v.date().day() < oldDay && v.date().day() < daysInMonth) {
                         const int adds = qMin(oldDay, daysInMonth);
@@ -2079,7 +2079,7 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
             setDigit(v, sectionIndex, (steps > 0 ? localmax : localmin));
         }
     }
-    if (!test && oldDay != v.date().day() && !(sn.type & (DaySection|DayOfWeekSection))) {
+    if (!test && oldDay != v.date().day() && !(sn.type & (DaySection|DayOfWeekSectionShort|DayOfWeekSectionLong))) {
         // this should not happen when called from stepEnabled
         cachedDay = qMax<int>(oldDay, cachedDay);
     }
@@ -2247,7 +2247,8 @@ QDateTimeEdit::Section QDateTimeEditPrivate::convertToPublic(QDateTimeParser::Se
     case MSecSection: return QDateTimeEdit::MSecSection;
     case SecondSection: return QDateTimeEdit::SecondSection;
     case MinuteSection: return QDateTimeEdit::MinuteSection;
-    case DayOfWeekSection:
+    case DayOfWeekSectionShort:
+    case DayOfWeekSectionLong:
     case DaySection: return QDateTimeEdit::DaySection;
     case MonthSection: return QDateTimeEdit::MonthSection;
     case YearSection2Digits:
@@ -2274,7 +2275,7 @@ QDateTimeEdit::Sections QDateTimeEditPrivate::convertSections(QDateTimeParser::S
         ret |= QDateTimeEdit::HourSection;
     if (s & QDateTimeParser::AmPmSection)
         ret |= QDateTimeEdit::AmPmSection;
-    if (s & (QDateTimeParser::DaySection|QDateTimeParser::DayOfWeekSection))
+    if (s & (QDateTimeParser::DaySection|QDateTimeParser::DayOfWeekSectionShort|QDateTimeParser::DayOfWeekSectionLong))
         ret |= QDateTimeEdit::DaySection;
     if (s & QDateTimeParser::MonthSection)
         ret |= QDateTimeEdit::MonthSection;

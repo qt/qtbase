@@ -4188,7 +4188,8 @@ int QDateTimeParser::getDigit(const QDateTime &t, int index) const
     case YearSection: return t.date().year();
     case MonthSection: return t.date().month();
     case DaySection: return t.date().day();
-    case DayOfWeekSection: return t.date().day();
+    case DayOfWeekSectionShort:
+    case DayOfWeekSectionLong: return t.date().day();
     case AmPmSection: return t.time().hour() > 11 ? 1 : 0;
 
     default: break;
@@ -4246,7 +4247,8 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
     case YearSection: year = newVal; break;
     case MonthSection: month = newVal; break;
     case DaySection:
-    case DayOfWeekSection:
+    case DayOfWeekSectionShort:
+    case DayOfWeekSectionLong:
         if (newVal > 31) {
             // have to keep legacy behavior. setting the
             // date to 32 should return false. Setting it
@@ -4262,7 +4264,7 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
         break;
     }
 
-    if (!(node.type & (DaySection|DayOfWeekSection))) {
+    if (!(node.type & (DaySection|DayOfWeekSectionShort|DayOfWeekSectionLong))) {
         if (day < cachedDay)
             day = cachedDay;
         const int max = QDate(year, month, 1).daysInMonth();
@@ -4303,7 +4305,8 @@ int QDateTimeParser::absoluteMax(int s, const QDateTime &cur) const
                                    // stepBy() will work on real years anyway
     case MonthSection: return 12;
     case DaySection:
-    case DayOfWeekSection: return cur.isValid() ? cur.date().daysInMonth() : 31;
+    case DayOfWeekSectionShort:
+    case DayOfWeekSectionLong: return cur.isValid() ? cur.date().daysInMonth() : 31;
     case AmPmSection: return 1;
     default: break;
     }
@@ -4331,7 +4334,8 @@ int QDateTimeParser::absoluteMin(int s) const
     case YearSection: return 0;
     case MonthSection:
     case DaySection:
-    case DayOfWeekSection: return 1;
+    case DayOfWeekSectionShort:
+    case DayOfWeekSectionLong: return 1;
     case AmPmSection: return 0;
     default: break;
     }
@@ -4573,7 +4577,9 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
             case 'd':
                 if (parserType != QVariant::Time) {
                     const int repeat = countRepeat(newFormat, i, 4);
-                    const SectionNode sn = { repeat >= 3 ? DayOfWeekSection : DaySection, i - add, repeat, 0 };
+                    const Section sectionType = (repeat == 4 ? DayOfWeekSectionLong
+                        : (repeat == 3 ? DayOfWeekSectionShort : DaySection));
+                    const SectionNode sn = { sectionType, i - add, repeat, 0 };
                     newSectionNodes.append(sn);
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;
@@ -4688,7 +4694,8 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
     case MinuteSection:
     case SecondSection:
     case DaySection: return 2;
-    case DayOfWeekSection:
+    case DayOfWeekSectionShort:
+    case DayOfWeekSectionLong:
 #ifdef QT_NO_TEXTDATE
         return 2;
 #else
@@ -4843,7 +4850,8 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
         }
         break; }
     case MonthSection:
-    case DayOfWeekSection:
+    case DayOfWeekSectionShort:
+    case DayOfWeekSectionLong:
         if (sn.count >= 3) {
             if (sn.type == MonthSection) {
                 int min = 1;
@@ -5049,7 +5057,8 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
                 case YearSection: current = &year; break;
                 case YearSection2Digits: current = &year2digits; break;
                 case MonthSection: current = &month; break;
-                case DayOfWeekSection: current = &dayofweek; break;
+                case DayOfWeekSectionShort:
+                case DayOfWeekSectionLong: current = &dayofweek; break;
                 case DaySection: current = &day; num = qMax<int>(1, num); break;
                 case AmPmSection: current = &ampm; break;
                 default:
@@ -5103,10 +5112,10 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
 
                 const QDate date(year, month, day);
                 const int diff = dayofweek - date.dayOfWeek();
-                if (diff != 0 && state == Acceptable && isSet & DayOfWeekSection) {
+                if (diff != 0 && state == Acceptable && isSet & (DayOfWeekSectionShort|DayOfWeekSectionLong)) {
                     conflicts = isSet & DaySection;
                     const SectionNode &sn = sectionNode(currentSectionIndex);
-                    if (sn.type == DayOfWeekSection || currentSectionIndex == -1) {
+                    if (sn.type & (DayOfWeekSectionShort|DayOfWeekSectionLong) || currentSectionIndex == -1) {
                         // dayofweek should be preferred
                         day += diff;
                         if (day <= 0) {
@@ -5119,7 +5128,7 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
                     }
                 }
                 bool needfixday = false;
-                if (sectionType(currentSectionIndex) & (DaySection|DayOfWeekSection)) {
+                if (sectionType(currentSectionIndex) & (DaySection|DayOfWeekSectionShort|DayOfWeekSectionLong)) {
                     cachedDay = day;
                 } else if (cachedDay > day) {
                     day = cachedDay;
@@ -5144,8 +5153,15 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
 
                         const QLocale loc = locale();
                         for (int i=0; i<sectionNodesCount; ++i) {
-                            if (sectionType(i) & (DaySection|DayOfWeekSection)) {
+                            const Section thisSectionType = sectionType(i);
+                            if (thisSectionType & (DaySection)) {
                                 input.replace(sectionPos(i), sectionSize(i), loc.toString(day));
+                            } else if (thisSectionType & (DayOfWeekSectionShort|DayOfWeekSectionLong)) {
+                                const int dayOfWeek = QDate(year, month, day).dayOfWeek();
+                                const QLocale::FormatType dayFormat = (thisSectionType == DayOfWeekSectionShort
+                                    ? QLocale::ShortFormat : QLocale::LongFormat);
+                                const QString dayName(loc.dayName(dayOfWeek, dayFormat));
+                                input.replace(sectionPos(i), sectionSize(i), dayName);
                             }
                         }
                     } else {
@@ -5396,7 +5412,7 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
     int bestCount = 0;
     if (!str1.isEmpty()) {
         const SectionNode &sn = sectionNode(sectionIndex);
-        if (!(sn.type & (DaySection|DayOfWeekSection))) {
+        if (!(sn.type & (DaySection|DayOfWeekSectionShort|DayOfWeekSectionLong))) {
             qWarning("QDateTimeParser::findDay Internal error");
             return -1;
         }
@@ -5554,7 +5570,8 @@ int QDateTimeParser::maxChange(int index) const
     case Hour24Section: case Hour12Section: return 59 * 60 * 60 * 1000;
 
         // Date. unit is day
-    case DayOfWeekSection: return 7;
+    case DayOfWeekSectionShort:
+    case DayOfWeekSectionLong: return 7;
     case DaySection: return 30;
     case MonthSection: return 365 - 31;
     case YearSection: return 9999 * 365;
@@ -5601,7 +5618,8 @@ QDateTimeParser::FieldInfo QDateTimeParser::fieldInfo(int index) const
             break;
         }
         break;
-    case DayOfWeekSection:
+    case DayOfWeekSectionShort:
+    case DayOfWeekSectionLong:
         if (sn.count == 3)
             ret |= FixedWidth;
         break;
@@ -5640,7 +5658,8 @@ QString QDateTimeParser::sectionFormat(Section s, int count) const
     case MinuteSection: fillChar = QLatin1Char('m'); break;
     case Hour24Section: fillChar = QLatin1Char('H'); break;
     case Hour12Section: fillChar = QLatin1Char('h'); break;
-    case DayOfWeekSection:
+    case DayOfWeekSectionShort:
+    case DayOfWeekSectionLong:
     case DaySection: fillChar = QLatin1Char('d'); break;
     case MonthSection: fillChar = QLatin1Char('M'); break;
     case YearSection2Digits:
@@ -5750,7 +5769,8 @@ QString QDateTimeParser::sectionName(int s) const
     switch (s) {
     case QDateTimeParser::AmPmSection: return QLatin1String("AmPmSection");
     case QDateTimeParser::DaySection: return QLatin1String("DaySection");
-    case QDateTimeParser::DayOfWeekSection: return QLatin1String("DayOfWeekSection");
+    case QDateTimeParser::DayOfWeekSectionShort: return QLatin1String("DayOfWeekSectionShort");
+    case QDateTimeParser::DayOfWeekSectionLong: return QLatin1String("DayOfWeekSectionLong");
     case QDateTimeParser::Hour24Section: return QLatin1String("Hour24Section");
     case QDateTimeParser::Hour12Section: return QLatin1String("Hour12Section");
     case QDateTimeParser::MSecSection: return QLatin1String("MSecSection");
