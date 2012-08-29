@@ -70,7 +70,7 @@
 
 // #define USE_NATIVE_COLOR_DIALOG /* Testing purposes only */
 
-#if defined(Q_CC_MINGW) && __MINGW64_VERSION_MAJOR < 3  /* Add missing declarations for MinGW */
+#ifdef Q_CC_MINGW  /* Add missing declarations for MinGW */
 
 /* Constants obtained by running the below stream operator for
  * CLSID, IID on the constants in the Windows SDK libraries. */
@@ -86,6 +86,8 @@ static const IID   IID_IShellItem        = {0x43826d1e, 0xe718, 0x42ee, {0xbc, 0
 static const IID   IID_IFileDialogEvents = {0x973510db, 0x7d7f, 0x452b,{0x89, 0x75, 0x74, 0xa8, 0x58, 0x28, 0xd3, 0x54}};
 static const CLSID CLSID_FileOpenDialog  = {0xdc1c5a9c, 0xe88a, 0x4dde, {0xa5, 0xa1, 0x60, 0xf8, 0x2a, 0x20, 0xae, 0xf7}};
 static const CLSID CLSID_FileSaveDialog  = {0xc0b4e2f3, 0xba21, 0x4773,{0x8d, 0xba, 0x33, 0x5e, 0xc9, 0x46, 0xeb, 0x8b}};
+
+#ifndef __IShellLibrary_FWD_DEFINED__
 
 typedef struct _COMDLG_FILTERSPEC
 {
@@ -201,9 +203,13 @@ typedef struct {
     int           iImage;
 } qt_BROWSEINFO;
 
-DECLARE_INTERFACE(IFileDialogEvents);
+#endif // __IShellLibrary_FWD_DEFINED__
 
-#ifndef __MINGW64_VERSION_MAJOR
+#ifndef __IFileDialogEvents_FWD_DEFINED__
+DECLARE_INTERFACE(IFileDialogEvents);
+#endif
+
+#ifndef __IShellItem_INTERFACE_DEFINED__
 DECLARE_INTERFACE_(IShellItem, IUnknown)
 {
     STDMETHOD(BindToHandler)(THIS_ IBindCtx *pbc, REFGUID bhid, REFIID riid, void **ppv) PURE;
@@ -214,12 +220,15 @@ DECLARE_INTERFACE_(IShellItem, IUnknown)
 };
 #endif
 
+#ifndef __IShellItemFilter_INTERFACE_DEFINED__
 DECLARE_INTERFACE_(IShellItemFilter, IUnknown)
 {
     STDMETHOD(IncludeItem)(THIS_ IShellItem *psi) PURE;
     STDMETHOD(GetEnumFlagsForItem)(THIS_ IShellItem *psi, DWORD *pgrfFlags) PURE;
 };
+#endif
 
+#ifndef __IShellEnumItems_INTERFACE_DEFINED__
 DECLARE_INTERFACE_(IEnumShellItems, IUnknown)
 {
     STDMETHOD(Next)(THIS_ ULONG celt, IShellItem **rgelt, ULONG *pceltFetched) PURE;
@@ -227,7 +236,9 @@ DECLARE_INTERFACE_(IEnumShellItems, IUnknown)
     STDMETHOD(Reset)(THIS_) PURE;
     STDMETHOD(Clone)(THIS_ IEnumShellItems **ppenum) PURE;
 };
+#endif
 
+#ifndef __IShellItemArray_INTERFACE_DEFINED__
 DECLARE_INTERFACE_(IShellItemArray, IUnknown)
 {
     STDMETHOD(BindToHandler)(THIS_ IBindCtx *pbc, REFGUID rbhid, REFIID riid, void **ppvOut) PURE;
@@ -238,14 +249,16 @@ DECLARE_INTERFACE_(IShellItemArray, IUnknown)
     STDMETHOD(GetItemAt)(THIS_ DWORD dwIndex, IShellItem **ppsi) PURE;
     STDMETHOD(EnumItems)(THIS_ IEnumShellItems **ppenumShellItems) PURE;
 };
+#endif
 
-#ifndef __MINGW64_VERSION_MAJOR
+#ifndef __IModalWindow_INTERFACE_DEFINED__
 DECLARE_INTERFACE_(IModalWindow, IUnknown)
 {
     STDMETHOD(Show)(THIS_ HWND hwndParent) PURE;
 };
 #endif
 
+#ifndef __IFileDialog_INTERFACE_DEFINED__
 DECLARE_INTERFACE_(IFileDialog, IModalWindow)
 {
     STDMETHOD(SetFileTypes)(THIS_ UINT cFileTypes, const COMDLG_FILTERSPEC *rgFilterSpec) PURE;
@@ -272,7 +285,9 @@ DECLARE_INTERFACE_(IFileDialog, IModalWindow)
     STDMETHOD(ClearClientData)(THIS_) PURE;
     STDMETHOD(SetFilter)(THIS_ IShellItemFilter *pFilter) PURE;
 };
+#endif
 
+#ifndef __IFileDialogEvents_INTERFACE_DEFINED__
 DECLARE_INTERFACE_(IFileDialogEvents, IUnknown)
 {
     STDMETHOD(OnFileOk)(THIS_ IFileDialog *pfd) PURE;
@@ -283,18 +298,25 @@ DECLARE_INTERFACE_(IFileDialogEvents, IUnknown)
     STDMETHOD(OnTypeChange)(THIS_ IFileDialog *pfd) PURE;
     STDMETHOD(OnOverwrite)(THIS_ IFileDialog *pfd, IShellItem *psi, FDE_OVERWRITE_RESPONSE *pResponse) PURE;
 };
+#endif
 
+#ifndef __IFileOpenDialog_INTERFACE_DEFINED__
 DECLARE_INTERFACE_(IFileOpenDialog, IFileDialog)
 {
     STDMETHOD(GetResults)(THIS_ IShellItemArray **ppenum) PURE;
     STDMETHOD(GetSelectedItems)(THIS_ IShellItemArray **ppsai) PURE;
 };
+#endif
 
-#if !defined(__MINGW64_VERSION_MAJOR) || (__MINGW64_VERSION_MAJOR < 2)
+#ifndef __IPropertyStore_FWD_DEFINED__
 typedef IUnknown IPropertyStore;
 #endif
-typedef IUnknown IFileOperationProgressSink;
 
+#ifndef __IFileOperationProgressSink_FWD_DEFINED__
+typedef IUnknown IFileOperationProgressSink;
+#endif
+
+#ifndef __IFileSaveDialog_INTERFACE_DEFINED__
 DECLARE_INTERFACE_(IFileSaveDialog, IFileDialog)
 {
 public:
@@ -304,8 +326,9 @@ public:
     STDMETHOD(GetProperties)(THIS_ IPropertyStore **ppStore) PURE;
     STDMETHOD(ApplyProperties)(THIS_ IShellItem *psi, IPropertyStore *pStore, HWND hwnd, IFileOperationProgressSink *pSink) PURE;
 };
+#endif
 
-#endif // defined(Q_CC_MINGW) && __MINGW64_VERSION_MAJOR < 3
+#endif // Q_CC_MINGW
 
 QT_BEGIN_NAMESPACE
 
