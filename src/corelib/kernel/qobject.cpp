@@ -1945,7 +1945,7 @@ void QObject::deleteLater()
     is available.
 
     Example:
-    \snippet widgets/mainwindows/sdi/mainwindow.cpp implicit tr context
+    \snippet mainwindows/sdi/mainwindow.cpp implicit tr context
     \dots
 
     If the same \a sourceText is used in different roles within the
