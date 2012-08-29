@@ -529,6 +529,10 @@ QList<QMimeType> QMimeBinaryProvider::allMimeTypes()
 
 void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
 {
+#ifdef QT_NO_XMLSTREAMREADER
+    qWarning() << "Cannot load mime type since QXmlStreamReader is not available.";
+    return;
+#else
     if (data.loaded)
         return;
     data.loaded = true;
@@ -618,6 +622,7 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
         // But is this really worth the effort?
     }
 #endif
+#endif //QT_NO_XMLSTREAMREADER
 }
 
 // Binary search in the icons or generic-icons list

@@ -174,6 +174,7 @@ static bool parseNumber(const QString &n, int *target, QString *errorMessage)
 // Evaluate a magic match rule like
 //  <match value="must be converted with BinHex" type="string" offset="11"/>
 //  <match value="0x9501" type="big16" offset="0:64"/>
+#ifndef QT_NO_XMLSTREAMREADER
 static bool createMagicMatchRule(const QXmlStreamAttributes &atts,
                                  QString *errorMessage, QMimeMagicRule *&rule)
 {
@@ -202,9 +203,15 @@ static bool createMagicMatchRule(const QXmlStreamAttributes &atts,
 
     return true;
 }
+#endif
 
 bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString *errorMessage)
 {
+#ifdef QT_NO_XMLSTREAMREADER
+    if (errorMessage)
+        *errorMessage = QString::fromLatin1("QXmlStreamReader is not available, cannot parse.");
+    return false;
+#else
     QMimeTypePrivate data;
     int priority = 50;
     QStack<QMimeMagicRule *> currentRules; // stack for the nesting of rules
@@ -338,6 +345,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
     }
 
     return true;
+#endif //QT_NO_XMLSTREAMREADER
 }
 
 QT_END_NAMESPACE
