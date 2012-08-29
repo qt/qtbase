@@ -59,6 +59,9 @@
 #include <QtCore/qconfig.h>
 #endif
 
+#include <QtCore/qfeatures.h>
+#define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
+
 /* These two macros makes it possible to turn the builtin line expander into a
  * string literal. */
 #define QT_STRINGIFY2(x) #x
@@ -67,6 +70,10 @@
 #include <QtCore/qsystemdetection.h>
 #include <QtCore/qcompilerdetection.h>
 #include <QtCore/qprocessordetection.h>
+
+#if defined (__ELF__)
+#  define Q_OF_ELF
+#endif
 
 #ifdef __cplusplus
 
@@ -189,6 +196,133 @@ typedef quint64 qulonglong;
 #  endif
 #endif
 
+/*
+   Useful type definitions for Qt
+*/
+
+QT_BEGIN_INCLUDE_NAMESPACE
+typedef unsigned char uchar;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+typedef unsigned long ulong;
+QT_END_INCLUDE_NAMESPACE
+
+// This logic must match the one in qmetatype.h
+#if defined(QT_COORD_TYPE)
+typedef QT_COORD_TYPE qreal;
+#elif defined(QT_NO_FPU) || defined(Q_PROCESSOR_ARM) || defined(Q_OS_WINCE)
+typedef float qreal;
+#else
+typedef double qreal;
+#endif
+
+#if defined(QT_NO_DEPRECATED)
+#  undef QT_DEPRECATED
+#  undef QT_DEPRECATED_VARIABLE
+#  undef QT_DEPRECATED_CONSTRUCTOR
+#elif defined(QT_DEPRECATED_WARNINGS)
+#  undef QT_DEPRECATED
+#  define QT_DEPRECATED Q_DECL_DEPRECATED
+#  undef QT_DEPRECATED_VARIABLE
+#  define QT_DEPRECATED_VARIABLE Q_DECL_VARIABLE_DEPRECATED
+#  undef QT_DEPRECATED_CONSTRUCTOR
+#  define QT_DEPRECATED_CONSTRUCTOR explicit Q_DECL_CONSTRUCTOR_DEPRECATED
+#else
+#  undef QT_DEPRECATED
+#  define QT_DEPRECATED
+#  undef QT_DEPRECATED_VARIABLE
+#  define QT_DEPRECATED_VARIABLE
+#  undef QT_DEPRECATED_CONSTRUCTOR
+#  define QT_DEPRECATED_CONSTRUCTOR
+#endif
+
+#ifndef QT_DISABLE_DEPRECATED_BEFORE
+#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(5, 0, 0)
+#endif
+
+/*
+    QT_DEPRECATED_SINCE(major, minor) evaluates as true if the Qt version is greater than
+    the deprecation point specified.
+
+    Use it to specify from which version of Qt a function or class has been deprecated
+
+    Example:
+        #if QT_DEPRECATED_SINCE(5,1)
+            QT_DEPRECATED void deprecatedFunction(); //function deprecated since Qt 5.1
+        #endif
+
+*/
+#ifdef QT_DEPRECATED
+#define QT_DEPRECATED_SINCE(major, minor) (QT_VERSION_CHECK(major, minor, 0) > QT_DISABLE_DEPRECATED_BEFORE)
+#else
+#define QT_DEPRECATED_SINCE(major, minor) 0
+#endif
+
+/*
+   The Qt modules' export macros.
+   The options are:
+    - defined(QT_STATIC): Qt was built or is being built in static mode
+    - defined(QT_SHARED): Qt was built or is being built in shared/dynamic mode
+   If neither was defined, then QT_SHARED is implied. If Qt was compiled in static
+   mode, QT_STATIC is defined in qconfig.h. In shared mode, QT_STATIC is implied
+   for the bootstrapped tools.
+*/
+
+#ifdef QT_BOOTSTRAPPED
+#  ifdef QT_SHARED
+#    error "QT_SHARED and QT_BOOTSTRAPPED together don't make sense. Please fix the build"
+#  elif !defined(QT_STATIC)
+#    define QT_STATIC
+#  endif
+#endif
+
+#if defined(QT_SHARED) || !defined(QT_STATIC)
+#  ifdef QT_STATIC
+#    error "Both QT_SHARED and QT_STATIC defined, please make up your mind"
+#  endif
+#  ifndef QT_SHARED
+#    define QT_SHARED
+#  endif
+#  if defined(QT_BUILD_CORE_LIB)
+#    define Q_CORE_EXPORT Q_DECL_EXPORT
+#  else
+#    define Q_CORE_EXPORT Q_DECL_IMPORT
+#  endif
+#  if defined(QT_BUILD_GUI_LIB)
+#    define Q_GUI_EXPORT Q_DECL_EXPORT
+#  else
+#    define Q_GUI_EXPORT Q_DECL_IMPORT
+#  endif
+#  if defined(QT_BUILD_WIDGETS_LIB)
+#    define Q_WIDGETS_EXPORT Q_DECL_EXPORT
+#  else
+#    define Q_WIDGETS_EXPORT Q_DECL_IMPORT
+#  endif
+#  if defined(QT_BUILD_NETWORK_LIB)
+#    define Q_NETWORK_EXPORT Q_DECL_EXPORT
+#  else
+#    define Q_NETWORK_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define Q_CORE_EXPORT
+#  define Q_GUI_EXPORT
+#  define Q_WIDGETS_EXPORT
+#  define Q_NETWORK_EXPORT
+#endif
+
+/*
+   No, this is not an evil backdoor. QT_BUILD_INTERNAL just exports more symbols
+   for Qt's internal unit tests. If you want slower loading times and more
+   symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
+*/
+#if defined(QT_BUILD_INTERNAL) && defined(QT_BUILDING_QT) && defined(QT_SHARED)
+#    define Q_AUTOTEST_EXPORT Q_DECL_EXPORT
+#elif defined(QT_BUILD_INTERNAL) && defined(QT_SHARED)
+#    define Q_AUTOTEST_EXPORT Q_DECL_IMPORT
+#else
+#    define Q_AUTOTEST_EXPORT
+#endif
+
 #define Q_INIT_RESOURCE_EXTERN(name) \
     extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();
 
@@ -290,17 +424,6 @@ typedef QIntegerForSizeof<void*>::Signed qptrdiff;
 typedef qptrdiff qintptr;
 
 /*
-   Useful type definitions for Qt
-*/
-
-QT_BEGIN_INCLUDE_NAMESPACE
-typedef unsigned char uchar;
-typedef unsigned short ushort;
-typedef unsigned int uint;
-typedef unsigned long ulong;
-QT_END_INCLUDE_NAMESPACE
-
-/*
    Constant bool values
 */
 
@@ -309,48 +432,6 @@ QT_END_INCLUDE_NAMESPACE
 #   define TRUE true
 #   define FALSE false
 #  endif
-#endif
-
-#if defined(QT_NO_DEPRECATED)
-#  undef QT_DEPRECATED
-#  undef QT_DEPRECATED_VARIABLE
-#  undef QT_DEPRECATED_CONSTRUCTOR
-#elif defined(QT_DEPRECATED_WARNINGS)
-#  undef QT_DEPRECATED
-#  define QT_DEPRECATED Q_DECL_DEPRECATED
-#  undef QT_DEPRECATED_VARIABLE
-#  define QT_DEPRECATED_VARIABLE Q_DECL_VARIABLE_DEPRECATED
-#  undef QT_DEPRECATED_CONSTRUCTOR
-#  define QT_DEPRECATED_CONSTRUCTOR explicit Q_DECL_CONSTRUCTOR_DEPRECATED
-#else
-#  undef QT_DEPRECATED
-#  define QT_DEPRECATED
-#  undef QT_DEPRECATED_VARIABLE
-#  define QT_DEPRECATED_VARIABLE
-#  undef QT_DEPRECATED_CONSTRUCTOR
-#  define QT_DEPRECATED_CONSTRUCTOR
-#endif
-
-#ifndef QT_DISABLE_DEPRECATED_BEFORE
-#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(5, 0, 0)
-#endif
-
-/*
-    QT_DEPRECATED_SINCE(major, minor) evaluates as true if the Qt version is greater than
-    the deprecation point specified.
-
-    Use it to specify from which version of Qt a function or class has been deprecated
-
-    Example:
-        #if QT_DEPRECATED_SINCE(5,1)
-            QT_DEPRECATED void deprecatedFunction(); //function deprecated since Qt 5.1
-        #endif
-
-*/
-#ifdef QT_DEPRECATED
-#define QT_DEPRECATED_SINCE(major, minor) (QT_VERSION_CHECK(major, minor, 0) > QT_DISABLE_DEPRECATED_BEFORE)
-#else
-#define QT_DEPRECATED_SINCE(major, minor) 0
 #endif
 
 /* moc compats (signals/slots) */
@@ -391,15 +472,6 @@ QT_END_INCLUDE_NAMESPACE
 #endif
 
 typedef int QNoImplicitBoolCast;
-
-// This logic must match the one in qmetatype.h
-#if defined(QT_COORD_TYPE)
-typedef QT_COORD_TYPE qreal;
-#elif defined(QT_NO_FPU) || defined(Q_PROCESSOR_ARM) || defined(Q_OS_WINCE)
-typedef float qreal;
-#else
-typedef double qreal;
-#endif
 
 /*
    Utility macros and inline functions
@@ -449,75 +521,6 @@ class QDataStream;
 #  define QT_NO_PROCESS          // no exec*, no fork
 #  define QT_NO_SHAREDMEMORY     // only POSIX, no SysV and in the end...
 #  define QT_NO_SYSTEMSEMAPHORE  // not needed at all in a flat address space
-#endif
-
-# include <QtCore/qfeatures.h>
-
-#define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
-
-/*
-   The Qt modules' export macros.
-   The options are:
-    - defined(QT_STATIC): Qt was built or is being built in static mode
-    - defined(QT_SHARED): Qt was built or is being built in shared/dynamic mode
-   If neither was defined, then QT_SHARED is implied. If Qt was compiled in static
-   mode, QT_STATIC is defined in qconfig.h. In shared mode, QT_STATIC is implied
-   for the bootstrapped tools.
-*/
-
-#ifdef QT_BOOTSTRAPPED
-#  ifdef QT_SHARED
-#    error "QT_SHARED and QT_BOOTSTRAPPED together don't make sense. Please fix the build"
-#  elif !defined(QT_STATIC)
-#    define QT_STATIC
-#  endif
-#endif
-
-#if defined(QT_SHARED) || !defined(QT_STATIC)
-#  ifdef QT_STATIC
-#    error "Both QT_SHARED and QT_STATIC defined, please make up your mind"
-#  endif
-#  ifndef QT_SHARED
-#    define QT_SHARED
-#  endif
-#  if defined(QT_BUILD_CORE_LIB)
-#    define Q_CORE_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_CORE_EXPORT Q_DECL_IMPORT
-#  endif
-#  if defined(QT_BUILD_GUI_LIB)
-#    define Q_GUI_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_GUI_EXPORT Q_DECL_IMPORT
-#  endif
-#  if defined(QT_BUILD_WIDGETS_LIB)
-#    define Q_WIDGETS_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_WIDGETS_EXPORT Q_DECL_IMPORT
-#  endif
-#  if defined(QT_BUILD_NETWORK_LIB)
-#    define Q_NETWORK_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_NETWORK_EXPORT Q_DECL_IMPORT
-#  endif
-#else
-#  define Q_CORE_EXPORT
-#  define Q_GUI_EXPORT
-#  define Q_WIDGETS_EXPORT
-#  define Q_NETWORK_EXPORT
-#endif
-
-/*
-   No, this is not an evil backdoor. QT_BUILD_INTERNAL just exports more symbols
-   for Qt's internal unit tests. If you want slower loading times and more
-   symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
-*/
-#if defined(QT_BUILD_INTERNAL) && defined(QT_BUILDING_QT) && defined(QT_SHARED)
-#    define Q_AUTOTEST_EXPORT Q_DECL_EXPORT
-#elif defined(QT_BUILD_INTERNAL) && defined(QT_SHARED)
-#    define Q_AUTOTEST_EXPORT Q_DECL_IMPORT
-#else
-#    define Q_AUTOTEST_EXPORT
 #endif
 
 inline void qt_noop(void) {}
@@ -1069,10 +1072,6 @@ Q_CORE_EXPORT int qrand();
 // shared fonts and QSystemSemaphore + QSharedMemory are not available
 #  define QT_NO_SYSTEMSEMAPHORE
 #  define QT_NO_SHAREDMEMORY
-#endif
-
-#if defined (__ELF__)
-#  define Q_OF_ELF
 #endif
 
 #if !defined(QT_BOOTSTRAPPED) && defined(QT_REDUCE_RELOCATIONS) && defined(__ELF__) && !defined(__PIC__) && !defined(__PIE__)
