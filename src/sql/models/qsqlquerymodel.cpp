@@ -78,10 +78,10 @@ void QSqlQueryModelPrivate::prefetch(int limit)
         atEnd = true; // this is the end.
     }
     if (newBottom.row() >= 0 && newBottom.row() > bottom.row()) {
-        if (!resetting)
+        if (!nestedResetLevel)
             q->beginInsertRows(QModelIndex(), bottom.row() + 1, newBottom.row());
         bottom = newBottom;
-        if (!resetting)
+        if (!nestedResetLevel)
             q->endInsertRows();
     } else {
         bottom = newBottom;
@@ -215,10 +215,9 @@ bool QSqlQueryModel::canFetchMore(const QModelIndex &parent) const
 void QSqlQueryModel::beginResetModel()
 {
     Q_D(QSqlQueryModel);
-    if (!d->resetting) {
+    if (!d->nestedResetLevel)
         QAbstractTableModel::beginResetModel();
-        d->resetting = true;
-    }
+    ++d->nestedResetLevel;
 }
 
 /*! \internal
@@ -226,10 +225,9 @@ void QSqlQueryModel::beginResetModel()
 void QSqlQueryModel::endResetModel()
 {
     Q_D(QSqlQueryModel);
-    if (d->resetting) {
-        d->resetting = false;
+    --d->nestedResetLevel;
+    if (!d->nestedResetLevel)
         QAbstractTableModel::endResetModel();
-    }
 }
 
 /*! \fn int QSqlQueryModel::rowCount(const QModelIndex &parent) const

@@ -91,6 +91,8 @@ private slots:
     void setQuerySignalEmission();
     void setQueryWithNoRowsInResultSet_data() { generic_data(); }
     void setQueryWithNoRowsInResultSet();
+    void nestedResets_data() { generic_data(); }
+    void nestedResets();
 
     void task_180617();
     void task_180617_data() { generic_data(); }
@@ -583,6 +585,61 @@ void tst_QSqlQueryModel::setQueryWithNoRowsInResultSet()
     model.setQuery(query);
     QCOMPARE(modelRowsAboutToBeInsertedSpy.count(), 0);
     QCOMPARE(modelRowsInsertedSpy.count(), 0);
+}
+
+class NestedResetsTest: public QSqlQueryModel
+{
+    Q_OBJECT
+
+public:
+    NestedResetsTest(QObject* parent = 0) : QSqlQueryModel(parent), gotAboutToBeReset(false), gotReset(false)
+    {
+        connect(this, SIGNAL(modelAboutToBeReset()), this, SLOT(modelAboutToBeResetSlot()));
+        connect(this, SIGNAL(modelReset()), this, SLOT(modelResetSlot()));
+    }
+
+    void testme()
+    {
+        // Only the outermost beginResetModel/endResetModel should
+        // emit signals.
+        gotAboutToBeReset = gotReset = false;
+        beginResetModel();
+        QCOMPARE(gotAboutToBeReset, true);
+        QCOMPARE(gotReset, false);
+
+        gotAboutToBeReset = gotReset = false;
+        beginResetModel();
+        QCOMPARE(gotAboutToBeReset, false);
+        QCOMPARE(gotReset, false);
+
+        gotAboutToBeReset = gotReset = false;
+        endResetModel();
+        QCOMPARE(gotAboutToBeReset, false);
+        QCOMPARE(gotReset, false);
+
+        gotAboutToBeReset = gotReset = false;
+        endResetModel();
+        QCOMPARE(gotAboutToBeReset, false);
+        QCOMPARE(gotReset, true);
+    }
+
+private slots:
+    void modelAboutToBeResetSlot() { gotAboutToBeReset = true; }
+    void modelResetSlot() { gotReset = true; }
+
+private:
+    bool gotAboutToBeReset;
+    bool gotReset;
+};
+
+void tst_QSqlQueryModel::nestedResets()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    NestedResetsTest t;
+    t.testme();
 }
 
 // For task 180617
