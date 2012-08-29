@@ -27,7 +27,7 @@
 
 /*!
     \title Calendar Widget Example
-    \example widgets/widgets/calendarwidget
+    \example widgets/calendarwidget
 
     The Calendar Widget example shows use of \c QCalendarWidget.
 
@@ -84,9 +84,9 @@
 
     Here is the definition of the \c Window class:
 
-    \snippet widgets/widgets/calendarwidget/window.h 0
+    \snippet widgets/calendarwidget/window.h 0
     \dots
-    \snippet widgets/widgets/calendarwidget/window.h 1
+    \snippet widgets/calendarwidget/window.h 1
 
     As is often the case with classes that represent self-contained
     windows, most of the API is private. We will review the private
@@ -96,7 +96,7 @@
 
     Let's now review the class implementation, starting with the constructor:
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 0
+    \snippet widgets/calendarwidget/window.cpp 0
 
     We start by creating the four \l{QGroupBox}es and their child
     widgets (including the QCalendarWidget) using four private \c
@@ -116,7 +116,7 @@
 
     Let's move on to the \c createPreviewGroupBox() function:
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 9
+    \snippet widgets/calendarwidget/window.cpp 9
 
     The \uicontrol Preview group box contains only one widget: the
     QCalendarWidget. We set it up, connect its
@@ -128,7 +128,7 @@
     and several widgets are set up the same way; we look at parts of
     its implementation here and skip the rest:
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 10
+    \snippet widgets/calendarwidget/window.cpp 10
     \dots
 
     We start with the setup of the \uicontrol{Week starts on} combobox.
@@ -142,7 +142,7 @@
     C++ will happily convert any enum value to \c int.
 
     \dots
-    \snippet widgets/widgets/calendarwidget/window.cpp 11
+    \snippet widgets/calendarwidget/window.cpp 11
     \dots
 
     After creating the widgets, we connect the signals and slots. We
@@ -150,14 +150,14 @@
     public slots provided by QComboBox.
 
     \dots
-    \snippet widgets/widgets/calendarwidget/window.cpp 12
+    \snippet widgets/calendarwidget/window.cpp 12
 
     At the end of the function, we call the slots that update the calendar to ensure
     that the QCalendarWidget is synchronized with the other widgets on startup.
 
     Let's now take a look at the \c createDatesGroupBox() private function:
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 13
+    \snippet widgets/calendarwidget/window.cpp 13
 
     In this function, we create the \uicontrol {Minimum Date}, \uicontrol {Maximum Date},
     and \uicontrol {Current Date} editor widgets,
@@ -166,9 +166,9 @@
     set in \c createPrivewGroupBox(); we can then set the widgets
     default values to the calendars values.
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 14
+    \snippet widgets/calendarwidget/window.cpp 14
     \dots
-    \snippet widgets/widgets/calendarwidget/window.cpp 15
+    \snippet widgets/calendarwidget/window.cpp 15
 
     We connect the \c currentDateEdit's
     \l{QDateEdit::}{dateChanged()} signal directly to the calendar's
@@ -180,20 +180,20 @@
 
     Here is the \c createTextFormatsGroup() function:
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 16
+    \snippet widgets/calendarwidget/window.cpp 16
 
     We set up the \uicontrol {Weekday Color} and \uicontrol {Weekend Color} comboboxes
     using \c createColorCombo(), which instantiates a QComboBox and
     populates it with colors ("Red", "Blue", etc.).
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 17
+    \snippet widgets/calendarwidget/window.cpp 17
 
     The \uicontrol {Header Text Format} combobox lets the user change the
     text format (bold, italic, or plain) used for horizontal and
     vertical headers. The \uicontrol {First Friday in blue} and \uicontrol {May 1
     in red} check box affect the rendering of specific dates.
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 18
+    \snippet widgets/calendarwidget/window.cpp 18
 
     We connect the check boxes and comboboxes to various private
     slots. The \uicontrol {First Friday in blue} and \uicontrol {May 1 in red}
@@ -201,7 +201,7 @@
     which is also called when the calendar switches month.
 
     \dots
-    \snippet widgets/widgets/calendarwidget/window.cpp 19
+    \snippet widgets/calendarwidget/window.cpp 19
 
     At the end of \c createTextFormatsGroupBox(), we call private
     slots to synchronize the QCalendarWidget with the other widgets.
@@ -210,7 +210,7 @@
     functions. Let's now take a look at the other private functions
     and slots.
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 20
+    \snippet widgets/calendarwidget/window.cpp 20
 
     In \c createColorCombo(), we create a combobox and populate it with
     standard colors. The second argument to QComboBox::addItem()
@@ -219,7 +219,7 @@
     This function was used to set up the \uicontrol {Weekday Color}
     and \uicontrol {Weekend Color} comboboxes.
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 1
+    \snippet widgets/calendarwidget/window.cpp 1
 
     When the user changes the \uicontrol {Week starts on} combobox's
     value, \c firstDayChanged() is invoked with the index of the
@@ -231,12 +231,12 @@
     verticalHeaderChanged() are very similar to \c firstDayChanged(),
     so they are omitted.
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 2
+    \snippet widgets/calendarwidget/window.cpp 2
 
     The \c selectedDateChanged() updates the \uicontrol{Current Date}
     editor to reflect the current state of the QCalendarWidget.
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 3
+    \snippet widgets/calendarwidget/window.cpp 3
 
     When the user changes the minimum date, we tell the
     QCalenderWidget. We also update the \uicontrol {Maximum Date} editor,
@@ -244,12 +244,12 @@
     date, QCalendarWidget will automatically adapt its maximum date
     to avoid a contradicting state.
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 4
+    \snippet widgets/calendarwidget/window.cpp 4
 
     \c maximumDateChanged() is implemented similarly to \c
     minimumDateChanged().
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 5
+    \snippet widgets/calendarwidget/window.cpp 5
 
     Each combobox item has a QColor object as user data corresponding to the
     item's text. After fetching the colors from the comboboxes, we
@@ -260,13 +260,13 @@
     specify various character formatting information. In this
     example, we only show a subset of the possibilities.
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 6
+    \snippet widgets/calendarwidget/window.cpp 6
 
     \c weekendFormatChanged() is the same as \c
     weekdayFormatChanged(), except that it affects Saturday and
     Sunday instead of Monday to Friday.
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 7
+    \snippet widgets/calendarwidget/window.cpp 7
 
     The \c reformatHeaders() slot is called when the user
     changes the text format of
@@ -275,7 +275,7 @@
     have been to store \l{QTextCharFormat} values alongside the combobox
     items.)
 
-    \snippet widgets/widgets/calendarwidget/window.cpp 8
+    \snippet widgets/calendarwidget/window.cpp 8
 
     In \c reformatCalendarPage(), we set the text format of the first
     Friday in the month and May 1 in the current year. The text

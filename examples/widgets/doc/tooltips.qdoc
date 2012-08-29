@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/widgets/tooltips
+    \example widgets/tooltips
     \title Tool Tips Example
 
     The Tool Tips example shows how to provide static and dynamic tool
@@ -63,7 +63,7 @@
 
     \section1  SortingBox Class Definition
 
-    \snippet widgets/widgets/tooltips/sortingbox.h 0
+    \snippet widgets/tooltips/sortingbox.h 0
 
     The \c SortingBox class inherits QWidget, and it is the Tooltips
     application's main widget. We reimplement several of the event
@@ -79,7 +79,7 @@
     In addition we need three private slots to make the user able to
     create new shape items.
 
-    \snippet widgets/widgets/tooltips/sortingbox.h 1
+    \snippet widgets/tooltips/sortingbox.h 1
 
     We also create several private functions: We use the \c
     initialItemPosition(), \c initialItemColor() and \c
@@ -93,7 +93,7 @@
     randomItemPosition() and \c randomItemColor() functions to create
     new shape items.
 
-    \snippet widgets/widgets/tooltips/sortingbox.h 2
+    \snippet widgets/tooltips/sortingbox.h 2
 
     We keep all the shape items in a QList, and we keep three
     QPainterPath objects holding the shapes of a circle, a square and
@@ -102,7 +102,7 @@
 
     \section1 SortingBox Class Implementation
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 0
+    \snippet widgets/tooltips/sortingbox.cpp 0
 
     In the constructor, we first set the Qt::WA_StaticContents
     attribute on the widget. This attribute indicates that the widget
@@ -110,7 +110,7 @@
     widget will receive paint events only for the newly visible part
     of itself.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 1
+    \snippet widgets/tooltips/sortingbox.cpp 1
 
     To be able to show the appropriate tooltips while the user is
     moving the cursor around, we need to enable mouse tracking for the
@@ -122,13 +122,13 @@
     enabled, the widget receives mouse move events even if no buttons
     are pressed.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 2
+    \snippet widgets/tooltips/sortingbox.cpp 2
 
     A widget's background role defines the brush from the widget's
     palette that is used to render the background, and QPalette::Base
     is typically white.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 3
+    \snippet widgets/tooltips/sortingbox.cpp 3
 
     After creating the application's tool buttons using the private \c
     createToolButton() function, we construct the shapes of a circle,
@@ -141,14 +141,14 @@
     but they can be drawn many times using only calls to
     QPainter::drawPath().
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 4
+    \snippet widgets/tooltips/sortingbox.cpp 4
 
     Then we set the window title, resize the widget to a suitable
     size, and finally create three initial shape items using the
     private \c createShapeItem(), \c initialItemPosition() and \c
     initialItemColor() functions.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 5
+    \snippet widgets/tooltips/sortingbox.cpp 5
 
     QWidget::event() is the main event handler and receives all the
     widget's events. Normally, we recommend reimplementing one of the
@@ -158,7 +158,7 @@
     reason we reimplement the main event handler, and the first thing
     we need to do is to determine the event's type:
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 6
+    \snippet widgets/tooltips/sortingbox.cpp 6
 
     If the type is QEvent::ToolTip, we cast the event to a QHelpEvent,
     otherwise we propagate the event using the QWidget::event()
@@ -178,7 +178,7 @@
     QToolTip::showText() function needs the event's position in global
     coordinates provided by QHelpEvent::globalPos().
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 7
+    \snippet widgets/tooltips/sortingbox.cpp 7
 
     The \c resizeEvent() function is reimplemented to receive the
     resize events dispatched to the widget. It makes sure that the
@@ -187,14 +187,14 @@
     aligned in the application's bottom right corner, so each time the
     main widget is resized we update the buttons geometry.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 8
+    \snippet widgets/tooltips/sortingbox.cpp 8
 
     The \c paintEvent() function is reimplemented to receive paint
     events for the widget. We create a QPainter for the \c SortingBox
     widget, and run through the list of created shape items, drawing
     each item at its defined position.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 9
+    \snippet widgets/tooltips/sortingbox.cpp 9
 
     The painter will by default draw all the shape items at position
     (0,0) in the \c SortingBox widget. The QPainter::translate()
@@ -204,7 +204,7 @@
     drawn, otherwise the next shape item will appear at a position
     relative to the item we drawed last.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 10
+    \snippet widgets/tooltips/sortingbox.cpp 10
 
     The QPainter::setBrush() function sets the current brush used by
     the painter. When the provided argument is a QColor, the function
@@ -213,7 +213,7 @@
     QPainter::drawPath() function draws the given path using the
     current pen for outline and the current brush for filling.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 11
+    \snippet widgets/tooltips/sortingbox.cpp 11
 
     The \c mousePressEvent() function is reimplemented to receive the
     mouse press events dispatched to the widget. It determines if an
@@ -230,7 +230,7 @@
     repaint; instead it schedules a paint event for processing when Qt
     returns to the main event loop.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 12
+    \snippet widgets/tooltips/sortingbox.cpp 12
 
     The \c mouseMoveEvent() function is reimplemented to receive mouse
     move events for the widget. If the left mouse button is pressed
@@ -239,7 +239,7 @@
     corresponding to the offset between the positions of the current
     mouse event and the previous one.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 13
+    \snippet widgets/tooltips/sortingbox.cpp 13
 
     The \c mouseReleaseEvent() function is reimplemented to receive
     the mouse release events dispatched to the widget. If the left
@@ -250,18 +250,18 @@
     now. To move the item further, the user will need to press the
     left mouse button again.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 14
+    \snippet widgets/tooltips/sortingbox.cpp 14
     \codeline
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 15
+    \snippet widgets/tooltips/sortingbox.cpp 15
     \codeline
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 16
+    \snippet widgets/tooltips/sortingbox.cpp 16
 
     The \c createNewCircle(), \c createNewSquare() and \c
     createNewTriangle() slots simply create new shape items, using the
     private \c createShapeItem(), \c randomItemPosition() and \c
     randomItemColor() functions.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 17
+    \snippet widgets/tooltips/sortingbox.cpp 17
 
     In the \c itemAt() function, we run through the list of created
     shape items to check if the given position is contained within the
@@ -273,7 +273,7 @@
     -1. We run through the list backwards to get the index of the
     uppermost shape item in case several items cover the position.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 18
+    \snippet widgets/tooltips/sortingbox.cpp 18
 
     The \c moveItemTo() function moves the shape item in motion, and
     the parameter \c pos is the position of a mouse event. First we
@@ -289,13 +289,13 @@
     rectangle's top left corner, regardless of the item's previous
     position.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 19
+    \snippet widgets/tooltips/sortingbox.cpp 19
 
     Finally, we update the previous mouse event position, and make a
     call to the QWidget::update() function to make the item appear at
     its new position.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 20
+    \snippet widgets/tooltips/sortingbox.cpp 20
 
     In the \c updateButtonGeometry() function we set the geometry for
     the given button. The parameter coordinates define the bottom
@@ -310,7 +310,7 @@
     QStyle::pixelMetric() to determine the widget's preferred default
     spacing between its child widgets.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 21
+    \snippet widgets/tooltips/sortingbox.cpp 21
 
     The \c createShapeItem() function creates a single shape item. It
     sets the path, tooltip, position and color, using the item's own
@@ -319,7 +319,7 @@
     make it appear with the other items within the \c SortingBox
     widget.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 22
+    \snippet widgets/tooltips/sortingbox.cpp 22
 
     The \c createToolButton() function is called from the \c
     SortingBox constructor. We create a tool button with the given
@@ -327,14 +327,14 @@
     and its size is 32 x 32 pixels. Before we return the button, we
     connect it to the given slot.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 23
+    \snippet widgets/tooltips/sortingbox.cpp 23
 
     The \c initialItemPosition() function is also called from the
     constructor. We want the three first items to initially be
     centered in the middle of the \c SortingBox widget, and we use
     this function to calculate their positions.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 24
+    \snippet widgets/tooltips/sortingbox.cpp 24
 
     Whenever the user creates a new shape item, we want the new item
     to appear at a random position, and we use the \c
@@ -343,21 +343,21 @@
     \c SortingBox widget, using the widget's current width and height
     when calculating the random coordinates.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 25
+    \snippet widgets/tooltips/sortingbox.cpp 25
 
     As with \c initialItemPosition(), the \c initialItemColor()
     function is called from the constructor. The purposes of both
     functions are purely cosmetic: We want to control the initial
     position and color of the three first items.
 
-    \snippet widgets/widgets/tooltips/sortingbox.cpp 26
+    \snippet widgets/tooltips/sortingbox.cpp 26
 
     Finally the \c randomItemColor() function is implemented to give
     the shape items the user creates, a random color.
 
     \section1 ShapeItem Class Definition
 
-    \snippet widgets/widgets/tooltips/shapeitem.h 0
+    \snippet widgets/tooltips/shapeitem.h 0
 
     The \c ShapeItem class is a custom widget representing one single
     shape item. The widget has a path, a position, a color and a
@@ -369,25 +369,25 @@
 
     \section1 ShapeItem Class Implementation
 
-    \snippet widgets/widgets/tooltips/shapeitem.cpp 0
+    \snippet widgets/tooltips/shapeitem.cpp 0
     \codeline
-    \snippet widgets/widgets/tooltips/shapeitem.cpp 1
+    \snippet widgets/tooltips/shapeitem.cpp 1
     \codeline
-    \snippet widgets/widgets/tooltips/shapeitem.cpp 2
+    \snippet widgets/tooltips/shapeitem.cpp 2
     \codeline
-    \snippet widgets/widgets/tooltips/shapeitem.cpp 3
+    \snippet widgets/tooltips/shapeitem.cpp 3
 
     This first group of functions simply return the objects that are
     requested. The objects are returned as constants, i.e. they cannot
     be modified.
 
-    \snippet widgets/widgets/tooltips/shapeitem.cpp 4
+    \snippet widgets/tooltips/shapeitem.cpp 4
     \codeline
-    \snippet widgets/widgets/tooltips/shapeitem.cpp 5
+    \snippet widgets/tooltips/shapeitem.cpp 5
     \codeline
-    \snippet widgets/widgets/tooltips/shapeitem.cpp 6
+    \snippet widgets/tooltips/shapeitem.cpp 6
     \codeline
-    \snippet widgets/widgets/tooltips/shapeitem.cpp 7
+    \snippet widgets/tooltips/shapeitem.cpp 7
 
     The last group of functions set or modify the shape item's path,
     position, color and tooltip, respectively.

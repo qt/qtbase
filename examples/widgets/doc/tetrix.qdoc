@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*! 
-    \example widgets/widgets/tetrix
+    \example widgets/tetrix
     \title Tetrix Example
 
     The Tetrix example is a Qt version of the classic Tetrix game.
@@ -70,7 +70,7 @@
     The \c TetrixWindow class is used to display the game information and contains
     the playing area:
 
-    \snippet widgets/widgets/tetrix/tetrixwindow.h 0
+    \snippet widgets/tetrix/tetrixwindow.h 0
 
     We use private member variables for the board, various display widgets, and
     buttons to allow the user to start a new game, pause the current game, and quit.
@@ -83,7 +83,7 @@
 
     The constructor sets up the user interface elements for the game:
 
-    \snippet widgets/widgets/tetrix/tetrixwindow.cpp 0
+    \snippet widgets/tetrix/tetrixwindow.cpp 0
 
     We begin by constructing a \c TetrixBoard instance for the playing area and a
     label that shows the next piece to be dropped into the playing area; the label
@@ -93,13 +93,13 @@
     lines removed. These initially show default values, and will be filled in
     when a game begins:
 
-    \snippet widgets/widgets/tetrix/tetrixwindow.cpp 1
+    \snippet widgets/tetrix/tetrixwindow.cpp 1
 
     Three buttons with shortcuts are constructed so that the user can start a
     new game, pause the current game, and quit the application:
 
-    \snippet widgets/widgets/tetrix/tetrixwindow.cpp 2
-    \snippet widgets/widgets/tetrix/tetrixwindow.cpp 3
+    \snippet widgets/tetrix/tetrixwindow.cpp 2
+    \snippet widgets/tetrix/tetrixwindow.cpp 3
 
     These buttons are configured so that they never receive the keyboard focus;
     we want the keyboard focus to remain with the \c TetrixBoard instance so that
@@ -110,8 +110,8 @@
     and \uicontrol{Pause} buttons to the board, and from the \uicontrol{Quit} button to the
     application's \l{QApplication::}{quit()} slot.
 
-    \snippet widgets/widgets/tetrix/tetrixwindow.cpp 4
-    \snippet widgets/widgets/tetrix/tetrixwindow.cpp 5
+    \snippet widgets/tetrix/tetrixwindow.cpp 4
+    \snippet widgets/tetrix/tetrixwindow.cpp 5
 
     Signals from the board are also connected to the LCD widgets for the purpose of
     updating the score, number of lives, and lines removed from the playing area.
@@ -120,7 +120,7 @@
     along with some labels that we create with the \c createLabel() convenience
     function:
 
-    \snippet widgets/widgets/tetrix/tetrixwindow.cpp 6
+    \snippet widgets/tetrix/tetrixwindow.cpp 6
 
     Finally, we set the grid layout on the widget, give the window a title, and
     resize it to an appropriate size.
@@ -128,7 +128,7 @@
     The \c createLabel() convenience function simply creates a new label on the
     heap, gives it an appropriate alignment, and returns it to the caller:
 
-    \snippet widgets/widgets/tetrix/tetrixwindow.cpp 7
+    \snippet widgets/tetrix/tetrixwindow.cpp 7
 
     Since each label will be used in the widget's layout, it will become a child
     of the \c TetrixWindow widget and, as a result, it will be deleted when the
@@ -140,7 +140,7 @@
     playing area, including its shape, position, and the range of positions it can
     occupy on the board:
 
-    \snippet widgets/widgets/tetrix/tetrixpiece.h 0
+    \snippet widgets/tetrix/tetrixpiece.h 0
 
     Each shape contains four blocks, and these are defined by the \c coords private
     member variable. Additionally, each piece has a high-level description that is
@@ -155,7 +155,7 @@
 
     The \c setRandomShape() function is used to select a random shape for a piece:
 
-    \snippet widgets/widgets/tetrix/tetrixpiece.cpp 0
+    \snippet widgets/tetrix/tetrixpiece.cpp 0
 
     For convenience, it simply chooses a random shape from the \c TetrixShape enum
     and calls the \c setShape() function to perform the task of positioning the
@@ -164,8 +164,8 @@
     The \c setShape() function uses a look-up table of pieces to associate each
     shape with an array of block positions:
 
-    \snippet widgets/widgets/tetrix/tetrixpiece.cpp 1
-    \snippet widgets/widgets/tetrix/tetrixpiece.cpp 2
+    \snippet widgets/tetrix/tetrixpiece.cpp 1
+    \snippet widgets/tetrix/tetrixpiece.cpp 2
 
     These positions are read from the table into the piece's own array of positions,
     and the piece's internal shape information is updated to use the new shape.
@@ -179,24 +179,24 @@
     The \c minX() and \c maxX() functions return the minimum and maximum horizontal
     coordinates occupied by the blocks that make up the piece:
 
-    \snippet widgets/widgets/tetrix/tetrixpiece.cpp 3
-    \snippet widgets/widgets/tetrix/tetrixpiece.cpp 4
+    \snippet widgets/tetrix/tetrixpiece.cpp 3
+    \snippet widgets/tetrix/tetrixpiece.cpp 4
 
     Similarly, the \c minY() and \c maxY() functions return the minimum and maximum
     vertical coordinates occupied by the blocks:
 
-    \snippet widgets/widgets/tetrix/tetrixpiece.cpp 5
-    \snippet widgets/widgets/tetrix/tetrixpiece.cpp 6
+    \snippet widgets/tetrix/tetrixpiece.cpp 5
+    \snippet widgets/tetrix/tetrixpiece.cpp 6
 
     The \c rotatedLeft() function returns a new piece with the same shape as an
     existing piece, but rotated counter-clockwise by 90 degrees:
 
-    \snippet widgets/widgets/tetrix/tetrixpiece.cpp 7
+    \snippet widgets/tetrix/tetrixpiece.cpp 7
 
     Similarly, the \c rotatedRight() function returns a new piece with the same
     shape as an existing piece, but rotated clockwise by 90 degrees:
 
-    \snippet widgets/widgets/tetrix/tetrixpiece.cpp 9
+    \snippet widgets/tetrix/tetrixpiece.cpp 9
 
     These last two functions enable each piece to create rotated copies of itself.
 
@@ -204,7 +204,7 @@
 
     The \c TetrixBoard class inherits from QFrame and contains the game logic and display features:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.h 0
+    \snippet widgets/tetrix/tetrixboard.h 0
 
     Apart from the \c setNextPieceLabel() function and the \c start() and \c pause()
     public slots, we only provide public functions to reimplement QWidget::sizeHint()
@@ -214,7 +214,7 @@
     The rest of the functionality is provided by reimplementations of protected event
     handlers and private functions:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.h 1
+    \snippet widgets/tetrix/tetrixboard.h 1
 
     The board is composed of a fixed-size array whose elements correspond to
     spaces for individual blocks. Each element in the array contains a \c TetrixShape
@@ -233,20 +233,20 @@
     keyboard input will be received by the widget by using Qt::StrongFocus for the
     focus policy, and initialize the game state:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 0
+    \snippet widgets/tetrix/tetrixboard.cpp 0
 
     The first (next) piece is also set up with a random shape.
 
     The \c setNextPieceLabel() function is used to pass in an externally-constructed
     label to the board, so that it can be shown alongside the playing area:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 1
+    \snippet widgets/tetrix/tetrixboard.cpp 1
 
     We provide a reasonable size hint and minimum size hint for the board, based on
     the size of the space for each block in the playing area:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 2
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 3
+    \snippet widgets/tetrix/tetrixboard.cpp 2
+    \snippet widgets/tetrix/tetrixboard.cpp 3
 
     By using a minimum size hint, we indicate to the layout in the parent widget
     that the board should not shrink below a minimum size.
@@ -254,7 +254,7 @@
     A new game is started when the \c start() slot is called. This resets the
     game's state, the player's score and level, and the contents of the board:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 4
+    \snippet widgets/tetrix/tetrixboard.cpp 4
 
     We also emit signals to inform other components of these changes before creating
     a new piece that is ready to be dropped into the playing area. We start the
@@ -263,8 +263,8 @@
     The \c pause() slot is used to temporarily stop the current game by stopping the
     internal timer:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 5
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 6
+    \snippet widgets/tetrix/tetrixboard.cpp 5
+    \snippet widgets/tetrix/tetrixboard.cpp 6
 
     We perform checks to ensure that the game can only be paused if it is already
     running and not already paused.
@@ -273,7 +273,7 @@
     calling the base class's implementation of \l{QWidget::}{paintEvent()} before
     constructing a QPainter for use on the board:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 7
+    \snippet widgets/tetrix/tetrixboard.cpp 7
 
     Since the board is a subclass of QFrame, we obtain a QRect that covers the area
     \e inside the frame decoration before drawing our own content.
@@ -287,22 +287,22 @@
     For each space on the board that is occupied by a piece, we call the
     \c drawSquare() function to draw a block at that position.
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 8
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 9
+    \snippet widgets/tetrix/tetrixboard.cpp 8
+    \snippet widgets/tetrix/tetrixboard.cpp 9
 
     Spaces that are not occupied by blocks are left blank.
 
     Unlike the existing pieces on the board, the current piece is drawn
     block-by-block at its current position:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 10
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 11
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 12
+    \snippet widgets/tetrix/tetrixboard.cpp 10
+    \snippet widgets/tetrix/tetrixboard.cpp 11
+    \snippet widgets/tetrix/tetrixboard.cpp 12
 
     The \c keyPressEvent() handler is called whenever the player presses a key while
     the \c TetrixBoard widget has the keyboard focus.
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 13
+    \snippet widgets/tetrix/tetrixboard.cpp 13
 
     If there is no current game, the game is running but paused, or if there is no
     current shape to control, we simply pass on the event to the base class.
@@ -311,7 +311,7 @@
     control the current piece and, if so, we call the relevant function to handle
     the input:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 14
+    \snippet widgets/tetrix/tetrixboard.cpp 14
 
     In the case where the player presses a key that we are not interested in, we
     again pass on the event to the base class's implementation of
@@ -321,9 +321,9 @@
     instance times out. We need to check that the event we receive corresponds to
     our timer. If it does, we can update the board:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 15
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 16
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 17
+    \snippet widgets/tetrix/tetrixboard.cpp 15
+    \snippet widgets/tetrix/tetrixboard.cpp 16
+    \snippet widgets/tetrix/tetrixboard.cpp 17
 
     If a row (or line) has just been filled, we create a new piece and reset the
     timer; otherwise we move the current piece down by one row. We let the base
@@ -332,14 +332,14 @@
     The \c clearBoard() function simply fills the board with the
     \c TetrixShape::NoShape value:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 18
+    \snippet widgets/tetrix/tetrixboard.cpp 18
 
     The \c dropDown() function moves the current piece down as far as possible on
     the board, either until it is touching the bottom of the playing area or it is
     stacked on top of another piece:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 19
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 20
+    \snippet widgets/tetrix/tetrixboard.cpp 19
+    \snippet widgets/tetrix/tetrixboard.cpp 20
 
     The number of rows the piece has dropped is recorded and passed to the
     \c pieceDropped() function so that the player's score can be updated.
@@ -348,7 +348,7 @@
     (line), either when the user presses the \uicontrol{D} key or when the piece is
     scheduled to move:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 21
+    \snippet widgets/tetrix/tetrixboard.cpp 21
 
     If the piece cannot drop down by one line, we call the \c pieceDropped() function
     with zero as the argument to indicate that it cannot fall any further, and that
@@ -359,23 +359,23 @@
     and, if no lines have been removed, creating a new piece to replace the current
     one:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 22
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 23
+    \snippet widgets/tetrix/tetrixboard.cpp 22
+    \snippet widgets/tetrix/tetrixboard.cpp 23
 
     We call \c removeFullLines() each time a piece has been dropped. This scans
     the board from bottom to top, looking for blank spaces on each row.
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 24
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 25
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 26
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 27
+    \snippet widgets/tetrix/tetrixboard.cpp 24
+    \snippet widgets/tetrix/tetrixboard.cpp 25
+    \snippet widgets/tetrix/tetrixboard.cpp 26
+    \snippet widgets/tetrix/tetrixboard.cpp 27
 
     If a row contains no blank spaces, the rows above it are copied down by one row
     to compress the stack of pieces, the top row on the board is cleared, and the
     number of full lines found is incremented.
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 28
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 29
+    \snippet widgets/tetrix/tetrixboard.cpp 28
+    \snippet widgets/tetrix/tetrixboard.cpp 29
 
     If some lines have been removed, the player's score and the total number of lines
     removed are updated. The \c linesRemoved() and \c scoreChanged() signals are
@@ -390,8 +390,8 @@
     The \c newPiece() function places the next available piece at the top of the
     board, and creates a new piece with a random shape:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 30
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 31
+    \snippet widgets/tetrix/tetrixboard.cpp 30
+    \snippet widgets/tetrix/tetrixboard.cpp 31
 
     We place a new piece in the middle of the board at the top. The game is over if
     the piece can't move, so we unset its shape to prevent it from being drawn, stop
@@ -400,21 +400,21 @@
     The \c showNextPiece() function updates the label that shows the next piece to
     be dropped:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 32
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 33
+    \snippet widgets/tetrix/tetrixboard.cpp 32
+    \snippet widgets/tetrix/tetrixboard.cpp 33
 
     We draw the piece's component blocks onto a pixmap that is then set on the label.
 
     The \c tryMove() function is used to determine whether a piece can be positioned
     at the specified coordinates:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 34
+    \snippet widgets/tetrix/tetrixboard.cpp 34
 
     We examine the spaces on the board that the piece needs to occupy and, if they
     are already occupied by other pieces, we return \c false to indicate that the
     move has failed.
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 35
+    \snippet widgets/tetrix/tetrixboard.cpp 35
 
     If the piece could be placed on the board at the desired location, we update the
     current piece and its position, update the widget, and return \c true to indicate
@@ -423,7 +423,7 @@
     The \c drawSquare() function draws the blocks (normally squares) that make up
     each piece using different colors for pieces with different shapes:
 
-    \snippet widgets/widgets/tetrix/tetrixboard.cpp 36
+    \snippet widgets/tetrix/tetrixboard.cpp 36
 
     We obtain the color to use from a look-up table that relates each shape to an
     RGB value, and use the painter provided to draw the block at the specified

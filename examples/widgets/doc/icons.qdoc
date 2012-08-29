@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/widgets/icons
+    \example widgets/icons
     \title Icons Example
 
     The Icons example shows how QIcon can generate pixmaps reflecting
@@ -246,7 +246,7 @@
 
     \image icons_preview_area.png Screenshot of IconPreviewArea.
 
-    \snippet widgets/widgets/icons/iconpreviewarea.h 0
+    \snippet widgets/icons/iconpreviewarea.h 0
 
     The \c IconPreviewArea class inherits QWidget. It displays the
     generated pixmaps corresponding to an icon's possible states and
@@ -264,7 +264,7 @@
 
     \section2 IconPreviewArea Class Implementation
 
-    \snippet widgets/widgets/icons/iconpreviewarea.cpp 0
+    \snippet widgets/icons/iconpreviewarea.cpp 0
 
     In the constructor we create the labels displaying the headers and
     the icon's generated pixmaps, and add them to a grid layout.
@@ -300,24 +300,24 @@
     Another approach is to add this line directly to the \c .pro
     file.
 
-    \snippet widgets/widgets/icons/iconpreviewarea.cpp 1
+    \snippet widgets/icons/iconpreviewarea.cpp 1
     \codeline
-    \snippet widgets/widgets/icons/iconpreviewarea.cpp 2
+    \snippet widgets/icons/iconpreviewarea.cpp 2
 
     The public \c setIcon() and \c setSize() functions change the icon
     or the icon size, and make sure that the generated pixmaps are
     updated.
 
-    \snippet widgets/widgets/icons/iconpreviewarea.cpp 3
+    \snippet widgets/icons/iconpreviewarea.cpp 3
     \codeline
-    \snippet widgets/widgets/icons/iconpreviewarea.cpp 4
+    \snippet widgets/icons/iconpreviewarea.cpp 4
 
     We use the \c createHeaderLabel() and \c createPixmapLabel()
     functions to create the preview area's labels displaying the
     headers and the icon's generated pixmaps. Both functions return
     the QLabel that is created.
 
-    \snippet widgets/widgets/icons/iconpreviewarea.cpp 5
+    \snippet widgets/icons/iconpreviewarea.cpp 5
 
     We use the private \c updatePixmapLabel() function to update the
     generated pixmaps displayed in the preview area.
@@ -333,7 +333,7 @@
 
     \image icons-example.png Screenshot of the Icons example
 
-    \snippet widgets/widgets/icons/mainwindow.h 0
+    \snippet widgets/icons/mainwindow.h 0
 
     The MainWindow class inherits from QMainWindow. We reimplement the
     constructor, and declare several private slots:
@@ -354,7 +354,7 @@
 
     \section2 MainWindow Class Implementation
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 0
+    \snippet widgets/icons/mainwindow.cpp 0
 
     In the constructor we first create the main window's central
     widget and its child widgets, and put them in a grid layout. Then
@@ -366,7 +366,7 @@
     associated radio button, making the current value of the spin box
     the icon's initial size.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 1
+    \snippet widgets/icons/mainwindow.cpp 1
 
     The \c about() slot displays a message box using the static
     QMessageBox::about() function. In this example it displays a
@@ -378,7 +378,7 @@
     parent, and if that fails, it tries the active window. As a last
     resort it uses the QMessageBox's Information icon.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 2
+    \snippet widgets/icons/mainwindow.cpp 2
 
     In the \c changeStyle() slot we first check the slot's
     parameter. If it is false we immediately return, otherwise we find
@@ -394,8 +394,8 @@
     pointers are much easier to diagnose than crashes due to unsafe
     casts.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 3
-    \snippet widgets/widgets/icons/mainwindow.cpp 4
+    \snippet widgets/icons/mainwindow.cpp 3
+    \snippet widgets/icons/mainwindow.cpp 4
 
     Once we have the action, we extract the style name using
     QAction::data(). Then we create a QStyle object using the static
@@ -414,7 +414,7 @@
     group box and in the end call the \c changeSize() slot to update
     the icon's size.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 5
+    \snippet widgets/icons/mainwindow.cpp 5
 
     The \c changeSize() slot sets the size for the preview area's
     icon.
@@ -427,7 +427,7 @@
     based on the extent, and use that object to set the size of the
     preview area's icon.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 12
+    \snippet widgets/icons/mainwindow.cpp 12
 
     The first thing we do when the \c addImage() slot is called, is to
     show a file dialog to the user. The easiest way to create a file
@@ -439,8 +439,8 @@
     table widget. The table widget is listing the images the user has
     loaded into the application.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 13
-    \snippet widgets/widgets/icons/mainwindow.cpp 14
+    \snippet widgets/icons/mainwindow.cpp 13
+    \snippet widgets/icons/mainwindow.cpp 14
 
     We retrieve the image name using the QFileInfo::baseName()
     function that returns the base name of the file without the path,
@@ -453,9 +453,9 @@
     We also make sure that the item is not editable by removing the
     Qt::ItemIsEditable flag. Table items are editable by default.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 15
-    \snippet widgets/widgets/icons/mainwindow.cpp 16
-    \snippet widgets/widgets/icons/mainwindow.cpp 17
+    \snippet widgets/icons/mainwindow.cpp 15
+    \snippet widgets/icons/mainwindow.cpp 16
+    \snippet widgets/icons/mainwindow.cpp 17
 
     Then we create the second and third items in the row making the
     default mode Normal and the default state Off. But if the \uicontrol
@@ -465,8 +465,8 @@
     "_on", the state is changed to On. The sample files in the
     example's \c images subdirectory respect this naming convension.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 18
-    \snippet widgets/widgets/icons/mainwindow.cpp 19
+    \snippet widgets/icons/mainwindow.cpp 18
+    \snippet widgets/icons/mainwindow.cpp 19
 
     In the end we add the items to the associated row, and use the
     QTableWidget::openPersistentEditor() function to create
@@ -479,8 +479,8 @@
     in the preview area. So, corresponding to this fact, we need to
     make sure that the new image's check box is enabled.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 6
-    \snippet widgets/widgets/icons/mainwindow.cpp 7
+    \snippet widgets/icons/mainwindow.cpp 6
+    \snippet widgets/icons/mainwindow.cpp 7
 
     The \c changeIcon() slot is called when the user alters the set
     of images listed in the QTableWidget, to update the QIcon object
@@ -490,9 +490,9 @@
     QTableWidget, which lists the images the user has loaded into the
     application.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 8
-    \snippet widgets/widgets/icons/mainwindow.cpp 9
-    \snippet widgets/widgets/icons/mainwindow.cpp 10
+    \snippet widgets/icons/mainwindow.cpp 8
+    \snippet widgets/icons/mainwindow.cpp 9
+    \snippet widgets/icons/mainwindow.cpp 10
 
     We also extract the image file's name using the
     QTableWidgetItem::data() function. This function takes a
@@ -507,12 +507,12 @@
     with its associated mode and state, to the QIcon's set of
     available pixmaps.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 11
+    \snippet widgets/icons/mainwindow.cpp 11
 
     After running through the entire list of images, we change the
     icon of the preview area to the one we just created.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 20
+    \snippet widgets/icons/mainwindow.cpp 20
 
     In the \c removeAllImages() slot, we simply set the table widget's
     row count to zero, automatically removing all the images the user
@@ -527,7 +527,7 @@
     QTableWidget that will keep track of the images the user has
     loaded into the application.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 21
+    \snippet widgets/icons/mainwindow.cpp 21
 
     First we create a group box that will contain the table widget.
     Then we create a QTableWidget and customize it to suit our
@@ -550,14 +550,14 @@
     \c ImageDelegate, provides comboboxes for the mode and state
     fields.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 22
-    \snippet widgets/widgets/icons/mainwindow.cpp 23
+    \snippet widgets/icons/mainwindow.cpp 22
+    \snippet widgets/icons/mainwindow.cpp 23
 
     Then we customize the QTableWidget's horizontal header, and hide
     the vertical header.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 24
-    \snippet widgets/widgets/icons/mainwindow.cpp 25
+    \snippet widgets/icons/mainwindow.cpp 24
+    \snippet widgets/icons/mainwindow.cpp 25
 
     At the end, we connect the QTableWidget::itemChanged() signal to
     the \c changeIcon() slot to ensuret that the preview area is in
@@ -569,7 +569,7 @@
     constructor. It creates the widgets controlling the size of the
     preview area's icon.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 26
+    \snippet widgets/icons/mainwindow.cpp 26
 
     First we create a group box that will contain all the widgets;
     then we create the radio buttons and the spin box.
@@ -581,7 +581,7 @@
     handle icon sizes, e.g., "32 x 32", instead of plain integer
     values.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 27
+    \snippet widgets/icons/mainwindow.cpp 27
 
     Then we connect all of the radio buttons
     \l{QRadioButton::toggled()}{toggled()} signals and the spin box's
@@ -591,7 +591,7 @@
     In the end we put the widgets in a layout that we install on the
     group box.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 28
+    \snippet widgets/icons/mainwindow.cpp 28
 
     In the \c createActions() function we create and customize all the
     actions needed to implement the functionality associated with the
@@ -609,7 +609,7 @@
     with the style name. We will retrieve it later using
     QAction::data().
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 29
+    \snippet widgets/icons/mainwindow.cpp 29
 
     In the \c createMenu() function, we add the previously created
     actions to the \uicontrol File, \uicontrol View and \uicontrol Help menus.
@@ -619,7 +619,7 @@
     application's menu bar, which we retrieve using
     QMainWindow::menuBar().
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 30
+    \snippet widgets/icons/mainwindow.cpp 30
 
     QWidgets have a \l{QWidget::contextMenuPolicy}{contextMenuPolicy}
     property that controls how the widget should behave when the user
@@ -632,7 +632,7 @@
     actions to the table widget. They will then appear in the table
     widget's context menu.
 
-    \snippet widgets/widgets/icons/mainwindow.cpp 31
+    \snippet widgets/icons/mainwindow.cpp 31
 
     In the \c checkCurrentStyle() function we go through the group of
     style actions, looking for the current GUI style.
@@ -656,7 +656,7 @@
 
     \section2 IconSizeSpinBox Class Definition
 
-    \snippet widgets/widgets/icons/iconsizespinbox.h 0
+    \snippet widgets/icons/iconsizespinbox.h 0
 
     The \c IconSizeSpinBox class is a subclass of QSpinBox. A plain
     QSpinBox can only handle integers. But since we want to display
@@ -668,11 +668,11 @@
 
     \section2 IconSizeSpinBox Class Implementation
 
-    \snippet widgets/widgets/icons/iconsizespinbox.cpp 0
+    \snippet widgets/icons/iconsizespinbox.cpp 0
 
     The constructor is trivial.
 
-    \snippet widgets/widgets/icons/iconsizespinbox.cpp 2
+    \snippet widgets/icons/iconsizespinbox.cpp 2
 
     QSpinBox::textFromValue() is used by the spin box whenever it
     needs to display a value. The default implementation returns a
@@ -680,7 +680,7 @@
 
     Our reimplementation returns a QString of the form "32 x 32".
 
-    \snippet widgets/widgets/icons/iconsizespinbox.cpp 1
+    \snippet widgets/icons/iconsizespinbox.cpp 1
 
     The QSpinBox::valueFromText() function is used by the spin box
     whenever it needs to interpret text typed in by the user. Since
@@ -706,7 +706,7 @@
 
     \section2 ImageDelegate Class Definition
 
-    \snippet widgets/widgets/icons/imagedelegate.h 0
+    \snippet widgets/icons/imagedelegate.h 0
 
     The \c ImageDelegate class is a subclass of QItemDelegate. The
     QItemDelegate class provides display and editing facilities for
@@ -719,7 +719,7 @@
     for this purpose allows the editing mechanism to be customized and
     developed independently from the model and view.
 
-    \snippet widgets/widgets/icons/imagedelegate.h 1
+    \snippet widgets/icons/imagedelegate.h 1
 
     The default implementation of QItemDelegate creates a QLineEdit.
     Since we want the editor to be a QComboBox, we need to subclass
@@ -727,7 +727,7 @@
     QItemDelegate::setEditorData() and QItemDelegate::setModelData()
     functions.
 
-    \snippet widgets/widgets/icons/imagedelegate.h 2
+    \snippet widgets/icons/imagedelegate.h 2
 
     The \c emitCommitData() slot is used to emit the
     QImageDelegate::commitData() signal with the appropriate
@@ -735,11 +735,11 @@
 
     \section2 ImageDelegate Class Implementation
 
-    \snippet widgets/widgets/icons/imagedelegate.cpp 0
+    \snippet widgets/icons/imagedelegate.cpp 0
 
     The constructor is trivial.
 
-    \snippet widgets/widgets/icons/imagedelegate.cpp 1
+    \snippet widgets/icons/imagedelegate.cpp 1
 
     The default QItemDelegate::createEditor() implementation returns
     the widget used to edit the item specified by the model and item
@@ -759,7 +759,7 @@
     chooses an item using the combobox. This ensures that the rest of
     the application notices the change and updates itself.
 
-    \snippet widgets/widgets/icons/imagedelegate.cpp 2
+    \snippet widgets/icons/imagedelegate.cpp 2
 
     The QItemDelegate::setEditorData() function is used by
     QTableWidget to transfer data from a QTableWidgetItem to the
@@ -772,12 +772,12 @@
     items is done implicitly by QTableWidget; we don't need to worry
     about it.
 
-    \snippet widgets/widgets/icons/imagedelegate.cpp 3
+    \snippet widgets/icons/imagedelegate.cpp 3
 
     The QItemDelegate::setEditorData() function is used by QTableWidget
     to transfer data back from the editor to the \l{QTableWidgetItem}.
 
-    \snippet widgets/widgets/icons/imagedelegate.cpp 4
+    \snippet widgets/icons/imagedelegate.cpp 4
 
     The \c emitCommitData() slot simply emit the
     QAbstractItemDelegate::commitData() signal for the editor that

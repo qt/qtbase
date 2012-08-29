@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/widgets/windowflags
+    \example widgets/windowflags
     \title Window Flags Example
 
     The Window Flags example shows how to use the window flags
@@ -58,7 +58,7 @@
 
     \section1 ControllerWindow Class Definition
 
-    \snippet widgets/widgets/windowflags/controllerwindow.h 0
+    \snippet widgets/windowflags/controllerwindow.h 0
 
     The \c ControllerWindow class inherits QWidget. The widget allows
     the user to choose among the available window flags, and displays
@@ -83,7 +83,7 @@
 
     \section1 ControllerWindow Class Implementation
 
-    \snippet widgets/widgets/windowflags/controllerwindow.cpp 0
+    \snippet widgets/windowflags/controllerwindow.cpp 0
 
     In the constructor we first create the preview window. Then we
     create the group boxes containing the available window flags using
@@ -96,21 +96,21 @@
     QVBoxLayout, set the window title and refresh the preview window
     using the \c updatePreview() slot.
 
-    \snippet widgets/widgets/windowflags/controllerwindow.cpp 1
-    \snippet widgets/widgets/windowflags/controllerwindow.cpp 2
+    \snippet widgets/windowflags/controllerwindow.cpp 1
+    \snippet widgets/windowflags/controllerwindow.cpp 2
 
     The \c updatePreview() slot is called whenever the user changes
     any of the window flags. First we create an empty Qt::WindowFlags
     \c flags, then we determine which one of the types that is checked
     and add it to \c flags.
 
-    \snippet widgets/widgets/windowflags/controllerwindow.cpp 3
+    \snippet widgets/windowflags/controllerwindow.cpp 3
 
     We also determine which of the hints that are checked, and add
     them to \c flags using an OR operator. We use \c flags to set the
     window flags for the preview window.
 
-    \snippet widgets/widgets/windowflags/controllerwindow.cpp 4
+    \snippet widgets/windowflags/controllerwindow.cpp 4
 
     We adjust the position of the preview window. The reason we do
     that, is that playing around with the window's frame may on some
@@ -126,7 +126,7 @@
     \printuntil /^\}/
     \endomit
 
-    \snippet widgets/widgets/windowflags/controllerwindow.cpp 5
+    \snippet widgets/windowflags/controllerwindow.cpp 5
 
     The private \c createTypeGroupBox() function is called from the
     constructor.
@@ -145,7 +145,7 @@
     hints only affect top-level windows, we abandon the Qt::Widget
     type.
 
-    \snippet widgets/widgets/windowflags/controllerwindow.cpp 6
+    \snippet widgets/windowflags/controllerwindow.cpp 6
 
     The private \c createHintsGroupBox() function is also called from
     the constructor.
@@ -156,7 +156,7 @@
     checkboxes into a QGridLayout and install the layout on the group
     box.
 
-    \snippet widgets/widgets/windowflags/controllerwindow.cpp 7
+    \snippet widgets/windowflags/controllerwindow.cpp 7
 
     The private \c createCheckBox() function is called from \c
     createHintsGroupBox().
@@ -165,7 +165,7 @@
     the private \c updatePreview() slot, and return a pointer to the
     checkbox.
 
-    \snippet widgets/widgets/windowflags/controllerwindow.cpp 8
+    \snippet widgets/windowflags/controllerwindow.cpp 8
 
     In the private \c createRadioButton() function it is a
     QRadioButton we create with the provided text, and connect to the
@@ -174,7 +174,7 @@
 
     \section1 PreviewWindow Class Definition
 
-    \snippet widgets/widgets/windowflags/previewwindow.h 0
+    \snippet widgets/windowflags/previewwindow.h 0
 
     The \c PreviewWindow class inherits QWidget. It is a custom widget
     that displays the names of its currently set window flags in a
@@ -189,7 +189,7 @@
 
     \section1 PreviewWindow Class Implementation
 
-    \snippet widgets/widgets/windowflags/previewwindow.cpp 0
+    \snippet widgets/windowflags/previewwindow.cpp 0
 
     In the constructor, we first create a QTextEdit and make sure that
     it is read-only.
@@ -205,7 +205,7 @@
     Then we create the \uicontrol Close button, and put both the widgets
     into a QVBoxLayout before we set the window title.
 
-    \snippet widgets/widgets/windowflags/previewwindow.cpp 1
+    \snippet widgets/windowflags/previewwindow.cpp 1
 
     In our reimplementation of the \c setWindowFlags() function, we
     first set the widgets flags using the QWidget::setWindowFlags()

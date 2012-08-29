@@ -51,7 +51,7 @@
     indexAt(). However, the view needs to maintain strict control over its look and
     feel, so we also provide implementations for a number of other functions:
 
-    \snippet widgets/widgets/itemviews/chart/pieview.h 0
+    \snippet widgets/itemviews/chart/pieview.h 0
 
 
 

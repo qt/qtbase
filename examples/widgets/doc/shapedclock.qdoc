@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/widgets/shapedclock
+    \example widgets/shapedclock
     \title Shaped Clock Example
 
     The Shaped Clock example shows how to apply a widget mask to a top-level
@@ -50,7 +50,7 @@
     \l{Analog Clock Example}{Analog Clock} example. The whole class definition is
     presented below:
 
-    \snippet widgets/widgets/shapedclock/shapedclock.h 0
+    \snippet widgets/shapedclock/shapedclock.h 0
 
     The \l{QWidget::paintEvent()}{paintEvent()} implementation is the same as that found
     in the \c AnalogClock class. We implement \l{QWidget::sizeHint()}{sizeHint()}
@@ -68,7 +68,7 @@
     The \c ShapedClock constructor performs many of the same tasks as the \c AnalogClock
     constructor. We set up a timer and connect it to the widget's update() slot:
 
-    \snippet widgets/widgets/shapedclock/shapedclock.cpp 0
+    \snippet widgets/shapedclock/shapedclock.cpp 0
 
     We inform the window manager that the widget is not to be decorated with a window
     frame by setting the Qt::FramelessWindowHint flag on the widget. As a result, we need
@@ -76,7 +76,7 @@
 
     Mouse button events are delivered to the \c mousePressEvent() handler:
 
-    \snippet widgets/widgets/shapedclock/shapedclock.cpp 1
+    \snippet widgets/shapedclock/shapedclock.cpp 1
 
     If the left mouse button is pressed over the widget, we record the displacement in
     global (screen) coordinates between the top-left position of the widget's frame (even
@@ -88,7 +88,7 @@
 
     The \c mouseMoveEvent() handler is called if the mouse is moved over the widget.
 
-    \snippet widgets/widgets/shapedclock/shapedclock.cpp 2
+    \snippet widgets/shapedclock/shapedclock.cpp 2
 
     If the left button is held down while the mouse is moved, the top-left corner of the
     widget is moved to the point given by subtracting the \c dragPosition from the current
@@ -98,12 +98,12 @@
     \l{Analog Clock Example}{Analog Clock} example for a description of the process used
     to render the clock.
 
-    \snippet widgets/widgets/shapedclock/shapedclock.cpp 3
+    \snippet widgets/shapedclock/shapedclock.cpp 3
 
     In the \c resizeEvent() handler, we re-use some of the code from the \c paintEvent()
     to determine the region of the widget that is visible to the user:
 
-    \snippet widgets/widgets/shapedclock/shapedclock.cpp 4
+    \snippet widgets/shapedclock/shapedclock.cpp 4
 
     Since the clock face is a circle drawn in the center of the widget, this is the region
     we use as the mask.
@@ -117,7 +117,7 @@
     Finally, we implement the \c sizeHint() for the widget so that it is given a reasonable
     default size when it is first shown:
 
-    \snippet widgets/widgets/shapedclock/shapedclock.cpp 5
+    \snippet widgets/shapedclock/shapedclock.cpp 5
 
     \section1 Notes on Widget Masks
 

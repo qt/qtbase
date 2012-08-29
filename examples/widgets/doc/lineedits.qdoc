@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/widgets/lineedits
+    \example widgets/lineedits
     \title Line Edits Example
 
     The Line Edits example demonstrates the many ways that QLineEdit can be used, and
@@ -46,7 +46,7 @@
     The \c Window class inherits QWidget and contains a constructor and several
     slots:
 
-    \snippet widgets/widgets/lineedits/window.h 0
+    \snippet widgets/lineedits/window.h 0
 
     The slots are used to update the type of validator used for a given line edit when
     a new validator has been selected in the associated combobox. The line edits
@@ -61,7 +61,7 @@
     We begin by constructing a \l{QGroupBox}{group box} to hold a label, combobox,
     and line edit so that we can demonstrate the QLineEdit::echoMode property:
 
-    \snippet widgets/widgets/lineedits/window.cpp 0
+    \snippet widgets/lineedits/window.cpp 0
 
     At this point, none of these widgets have been arranged in layouts. Eventually,
     the \c echoLabel, \c echoComboBox, and \c echoLineEdit will be placed in a
@@ -70,29 +70,29 @@
     Similarly, we construct group boxes and collections of widgets to show the
     effects of QIntValidator and QDoubleValidator on a line edit's contents:
 
-    \snippet widgets/widgets/lineedits/window.cpp 1
+    \snippet widgets/lineedits/window.cpp 1
 
     Text alignment is demonstrated by another group of widgets:
 
-    \snippet widgets/widgets/lineedits/window.cpp 2
+    \snippet widgets/lineedits/window.cpp 2
 
     QLineEdit supports the use of \l{QLineEdit::inputMask}{input masks}.
     These only allow the user to type characters into the line edit that
     follow a simple specification. We construct a group of widgets to
     demonstrate a selection of predefined masks:
 
-    \snippet widgets/widgets/lineedits/window.cpp 3
+    \snippet widgets/lineedits/window.cpp 3
 
     Another useful feature of QLineEdit is its ability to make its contents
     read-only. This property is used to control access to a line edit in the
     following group of widgets:
 
-    \snippet widgets/widgets/lineedits/window.cpp 4
+    \snippet widgets/lineedits/window.cpp 4
 
     Now that all the child widgets have been constructed, we connect signals
     from the comboboxes to slots in the \c Window object:
 
-    \snippet widgets/widgets/lineedits/window.cpp 5
+    \snippet widgets/lineedits/window.cpp 5
 
     Each of these connections use the QComboBox::activated() signal that
     supplies an integer to the slot. This will be used to efficiently
@@ -101,16 +101,16 @@
     We place each combobox, line edit, and label in a layout for each group
     box, beginning with the layout for the \c echoGroup group box:
 
-    \snippet widgets/widgets/lineedits/window.cpp 6
+    \snippet widgets/lineedits/window.cpp 6
 
     The other layouts are constructed in the same way:
 
-    \snippet widgets/widgets/lineedits/window.cpp 7
+    \snippet widgets/lineedits/window.cpp 7
 
     Finally, we place each group box in a grid layout for the \c Window object
     and set the window title:
 
-    \snippet widgets/widgets/lineedits/window.cpp 8
+    \snippet widgets/lineedits/window.cpp 8
 
     The slots respond to signals emitted when the comboboxes are changed by the
     user.
@@ -118,7 +118,7 @@
     When the combobox for the \uicontrol{Echo} group box is changed, the \c echoChanged()
     slot is called:
 
-    \snippet widgets/widgets/lineedits/window.cpp 9
+    \snippet widgets/lineedits/window.cpp 9
 
     The slot updates the line edit in the same group box to use an echo mode that
     corresponds to the entry described in the combobox.
@@ -126,7 +126,7 @@
     When the combobox for the \uicontrol{Validator} group box is changed, the
     \c validatorChanged() slot is called:
 
-    \snippet widgets/widgets/lineedits/window.cpp 10
+    \snippet widgets/lineedits/window.cpp 10
 
     The slot either creates a new validator for the line edit to use, or it removes
     the validator in use by calling QLineEdit::setValidator() with a zero pointer.
@@ -136,7 +136,7 @@
     When the combobox for the \uicontrol{Alignment} group box is changed, the
     \c alignmentChanged() slot is called:
 
-    \snippet widgets/widgets/lineedits/window.cpp 11
+    \snippet widgets/lineedits/window.cpp 11
 
     This changes the way that text is displayed in the line edit to correspond with
     the description selected in the combobox.
@@ -144,7 +144,7 @@
     The \c inputMaskChanged() slot handles changes to the combobox in the
     \uicontrol{Input Mask} group box:
 
-    \snippet widgets/widgets/lineedits/window.cpp 12
+    \snippet widgets/lineedits/window.cpp 12
 
     Each entry in the relevant combobox is associated with an input mask. We set
     a new mask by calling the QLineEdit::setMask() function with a suitable string;
@@ -153,7 +153,7 @@
     The \c accessChanged() slot handles changes to the combobox in the
     \uicontrol{Access} group box:
 
-    \snippet widgets/widgets/lineedits/window.cpp 13
+    \snippet widgets/lineedits/window.cpp 13
 
     Here, we simply associate the \uicontrol{False} and \uicontrol{True} entries in the combobox
     with \c false and \c true values to be passed to QLineEdit::setReadOnly(). This
