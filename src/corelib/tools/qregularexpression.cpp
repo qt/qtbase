@@ -1007,11 +1007,7 @@ void QRegularExpressionPrivate::getPatternInfo()
 }
 
 
-/*!
-    \class QPcreJitStackPointer
-    \inmodule QtCore
-    \internal
-
+/*
     Simple "smartpointer" wrapper around a pcre_jit_stack, to be used with
     QThreadStorage.
 */

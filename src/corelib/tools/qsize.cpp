@@ -219,8 +219,11 @@ void QSize::transpose()
 */
 
 /*!
-  \overload
-  \since 5.0
+    \overload
+    \since 5.0
+
+    Return a size scaled to a rectangle with the given size \a s,
+    according to the specified \a mode.
 */
 QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const
 {
@@ -648,8 +651,11 @@ void QSizeF::transpose()
 */
 
 /*!
-  \overload
-  \since 5.0
+    \overload
+    \since 5.0
+
+    Returns a size scaled to a rectangle with the given size \a s,
+    according to the specified \a mode.
 */
 QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const
 {
