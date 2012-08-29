@@ -90,4 +90,6 @@ exampledirs += ../../../examples \
                ../ \
                snippets
 
+excludedirs += ../../../examples/widgets/doc
+
 imagedirs   += images
