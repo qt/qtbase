@@ -84,7 +84,7 @@ public:
 
     virtual bool displayBuffer(QPlatformScreenBuffer *) = 0;
 
-signals:
+Q_SIGNALS:
     void bufferDisplayed(QPlatformScreenBuffer *);
     void bufferReleased(QPlatformScreenBuffer *);
 };
