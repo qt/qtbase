@@ -80,7 +80,9 @@ protected:
     void handleResizeEvent(QResizeEvent *);
     void handleWheelEvent(QWheelEvent *);
 #ifndef QT_NO_DRAGANDDROP
-    void handleDragEvent(QEvent *);
+    void handleDragEnterMoveEvent(QDragMoveEvent *);
+    void handleDragLeaveEvent(QDragLeaveEvent *);
+    void handleDropEvent(QDropEvent *);
 #endif
     void handleExposeEvent(QExposeEvent *);
     void handleWindowStateChangedEvent(QWindowStateChangeEvent *event);
