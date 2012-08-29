@@ -90,6 +90,18 @@ public:
     bool canFetchMore(const QModelIndex &parent = QModelIndex()) const;
 
 protected:
+    void beginInsertRows(const QModelIndex &parent, int first, int last);
+    void endInsertRows();
+
+    void beginRemoveRows(const QModelIndex &parent, int first, int last);
+    void endRemoveRows();
+
+    void beginInsertColumns(const QModelIndex &parent, int first, int last);
+    void endInsertColumns();
+
+    void beginRemoveColumns(const QModelIndex &parent, int first, int last);
+    void endRemoveColumns();
+
     void beginResetModel();
     void endResetModel();
     virtual void queryChange();

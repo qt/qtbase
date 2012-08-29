@@ -78,11 +78,9 @@ void QSqlQueryModelPrivate::prefetch(int limit)
         atEnd = true; // this is the end.
     }
     if (newBottom.row() >= 0 && newBottom.row() > bottom.row()) {
-        if (!nestedResetLevel)
-            q->beginInsertRows(QModelIndex(), bottom.row() + 1, newBottom.row());
+        q->beginInsertRows(QModelIndex(), bottom.row() + 1, newBottom.row());
         bottom = newBottom;
-        if (!nestedResetLevel)
-            q->endInsertRows();
+        q->endInsertRows();
     } else {
         bottom = newBottom;
     }
@@ -208,6 +206,78 @@ bool QSqlQueryModel::canFetchMore(const QModelIndex &parent) const
 {
     Q_D(const QSqlQueryModel);
     return (!parent.isValid() && !d->atEnd);
+}
+
+/*! \internal
+ */
+void QSqlQueryModel::beginInsertRows(const QModelIndex &parent, int first, int last)
+{
+    Q_D(QSqlQueryModel);
+    if (!d->nestedResetLevel)
+        QAbstractTableModel::beginInsertRows(parent, first, last);
+}
+
+/*! \internal
+ */
+void QSqlQueryModel::endInsertRows()
+{
+    Q_D(QSqlQueryModel);
+    if (!d->nestedResetLevel)
+        QAbstractTableModel::endInsertRows();
+}
+
+/*! \internal
+ */
+void QSqlQueryModel::beginRemoveRows(const QModelIndex &parent, int first, int last)
+{
+    Q_D(QSqlQueryModel);
+    if (!d->nestedResetLevel)
+        QAbstractTableModel::beginRemoveRows(parent, first, last);
+}
+
+/*! \internal
+ */
+void QSqlQueryModel::endRemoveRows()
+{
+    Q_D(QSqlQueryModel);
+    if (!d->nestedResetLevel)
+        QAbstractTableModel::endRemoveRows();
+}
+
+/*! \internal
+ */
+void QSqlQueryModel::beginInsertColumns(const QModelIndex &parent, int first, int last)
+{
+    Q_D(QSqlQueryModel);
+    if (!d->nestedResetLevel)
+        QAbstractTableModel::beginInsertColumns(parent, first, last);
+}
+
+/*! \internal
+ */
+void QSqlQueryModel::endInsertColumns()
+{
+    Q_D(QSqlQueryModel);
+    if (!d->nestedResetLevel)
+        QAbstractTableModel::endInsertColumns();
+}
+
+/*! \internal
+ */
+void QSqlQueryModel::beginRemoveColumns(const QModelIndex &parent, int first, int last)
+{
+    Q_D(QSqlQueryModel);
+    if (!d->nestedResetLevel)
+        QAbstractTableModel::beginRemoveColumns(parent, first, last);
+}
+
+/*! \internal
+ */
+void QSqlQueryModel::endRemoveColumns()
+{
+    Q_D(QSqlQueryModel);
+    if (!d->nestedResetLevel)
+        QAbstractTableModel::endRemoveColumns();
 }
 
 /*! \internal
