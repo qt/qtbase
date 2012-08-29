@@ -1779,6 +1779,12 @@ void QDBusConnectionPrivate::waitForFinished(QDBusPendingCallPrivate *pcall)
     }
 }
 
+static inline bool waitingForFinishedIsSet(QDBusPendingCallPrivate *call)
+{
+    const QMutexLocker locker(&call->mutex);
+    return call->waitingForFinished;
+}
+
 void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
 {
     QDBusConnectionPrivate *connection = const_cast<QDBusConnectionPrivate *>(call->connection);
@@ -1828,7 +1834,7 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
         emit connection->callWithCallbackFailed(QDBusError(msg), call->sentMessage);
 
     if (call->autoDelete) {
-        Q_ASSERT(!call->waitingForFinished); // can't wait on a call with autoDelete!
+        Q_ASSERT(!waitingForFinishedIsSet(call)); // can't wait on a call with autoDelete!
         delete call;
     }
 }
