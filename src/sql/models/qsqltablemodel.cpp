@@ -1257,7 +1257,6 @@ QSqlRecord QSqlTableModel::record() const
 }
 
 /*!
-\reimp
 \since 5.0
     Returns the record at \a row in the model.
 

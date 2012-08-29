@@ -210,7 +210,7 @@ bool QSqlQueryModel::canFetchMore(const QModelIndex &parent) const
     return (!parent.isValid() && !d->atEnd);
 }
 
-/*! \reimp
+/*! \internal
  */
 void QSqlQueryModel::beginResetModel()
 {
@@ -221,7 +221,7 @@ void QSqlQueryModel::beginResetModel()
     }
 }
 
-/*! \reimp
+/*! \internal
  */
 void QSqlQueryModel::endResetModel()
 {
