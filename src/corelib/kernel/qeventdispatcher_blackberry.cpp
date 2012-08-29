@@ -47,6 +47,14 @@
 #include <bps/bps.h>
 #include <bps/event.h>
 
+//#define QEVENTDISPATCHERBLACKBERRY_DEBUG
+
+#ifdef QEVENTDISPATCHERBLACKBERRY_DEBUG
+#define qEventDispatcherDebug qDebug() << QThread::currentThread()
+#else
+#define qEventDispatcherDebug QT_NO_QDEBUG_MACRO()
+#endif
+
 struct bpsIOHandlerData {
     bpsIOHandlerData()
         : count(0), readfds(0), writefds(0), exceptfds(0)
@@ -63,6 +71,7 @@ static int bpsIOReadyDomain = -1;
 
 static int bpsIOHandler(int fd, int io_events, void *data)
 {
+    qEventDispatcherDebug << Q_FUNC_INFO;
     // decode callback payload
     bpsIOHandlerData *ioData = static_cast<bpsIOHandlerData*>(data);
 
@@ -71,16 +80,19 @@ static int bpsIOHandler(int fd, int io_events, void *data)
 
     // update ready state of file
     if (io_events & BPS_IO_INPUT) {
+        qEventDispatcherDebug << fd << "ready for Read";
         FD_SET(fd, ioData->readfds);
         ioData->count++;
     }
 
     if (io_events & BPS_IO_OUTPUT) {
+        qEventDispatcherDebug << fd << "ready for Write";
         FD_SET(fd, ioData->writefds);
         ioData->count++;
     }
 
     if (io_events & BPS_IO_EXCEPT) {
+        qEventDispatcherDebug << fd << "ready for Exception";
         FD_SET(fd, ioData->exceptfds);
         ioData->count++;
     }
@@ -88,6 +100,7 @@ static int bpsIOHandler(int fd, int io_events, void *data)
     // force bps_get_event() to return immediately by posting an event to ourselves;
     // but this only needs to happen once if multiple files become ready at the same time
     if (firstReady) {
+        qEventDispatcherDebug << "Sending bpsIOReadyDomain event";
         // create IO ready event
         bps_event_t *event;
         int result = bps_event_create(&event, bpsIOReadyDomain, 0, NULL, NULL);
@@ -162,6 +175,7 @@ void QEventDispatcherBlackberry::registerSocketNotifier(QSocketNotifier *notifie
     // Register the fd with bps
     int sockfd = notifier->socket();
     int type = notifier->type();
+    qEventDispatcherDebug << Q_FUNC_INFO << "fd =" << sockfd;
 
     int io_events = ioEvents(sockfd);
 
@@ -173,13 +187,16 @@ void QEventDispatcherBlackberry::registerSocketNotifier(QSocketNotifier *notifie
 
     switch (type) {
     case QSocketNotifier::Read:
+        qEventDispatcherDebug << "Registering" << sockfd << "for Reads";
         io_events |= BPS_IO_INPUT;
         break;
     case QSocketNotifier::Write:
+        qEventDispatcherDebug << "Registering" << sockfd << "for Writes";
         io_events |= BPS_IO_OUTPUT;
         break;
     case QSocketNotifier::Exception:
     default:
+        qEventDispatcherDebug << "Registering" << sockfd << "for Exceptions";
         io_events |= BPS_IO_EXCEPT;
         break;
     }
@@ -200,6 +217,7 @@ void QEventDispatcherBlackberry::unregisterSocketNotifier(QSocketNotifier *notif
 
     // Unregister the fd with bps
     int sockfd = notifier->socket();
+    qEventDispatcherDebug << Q_FUNC_INFO << "fd =" << sockfd;
 
     const int io_events = ioEvents(sockfd);
 
