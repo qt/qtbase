@@ -333,6 +333,19 @@ typedef double qreal;
     do { extern int QT_MANGLE_NAMESPACE(qCleanupResources_ ## name) ();    \
         QT_MANGLE_NAMESPACE(qCleanupResources_ ## name) (); } while (0)
 
+/*
+ * If we're compiling C++ code:
+ *  - and this is a non-namespace build, declare qVersion as extern "C"
+ *  - and this is a namespace build, declare it as a regular function
+ *    (we're already inside QT_BEGIN_NAMESPACE / QT_END_NAMESPACE)
+ * If we're compiling C code, simply declare the function. If Qt was compiled
+ * in a namespace, qVersion isn't callable anyway.
+ */
+#if !defined(QT_NAMESPACE) && defined(__cplusplus) && !defined(Q_QDOC)
+extern "C"
+#endif
+Q_CORE_EXPORT const char *qVersion() Q_DECL_NOTHROW;
+
 #if defined(__cplusplus)
 
 #ifndef Q_CONSTRUCTOR_FUNCTION
@@ -558,7 +571,6 @@ Q_NORETURN Q_CORE_EXPORT void qTerminate() Q_DECL_NOTHROW;
 #  endif
 #endif
 
-Q_CORE_EXPORT const char *qVersion() Q_DECL_NOTHROW;
 Q_CORE_EXPORT bool qSharedBuild() Q_DECL_NOTHROW;
 
 #ifndef Q_OUTOFLINE_TEMPLATE
