@@ -503,11 +503,10 @@ QStringList Config::getAllFiles(const QString &filesVar,
     return result;
 }
 
-QStringList Config::getExampleQdocFiles()
+QStringList Config::getExampleQdocFiles(const QSet<QString> &excludedDirs,
+                                        const QSet<QString> &excludedFiles)
 {
     QStringList result;
-    QSet<QString> excludedDirs;
-    QSet<QString> excludedFiles;
     QStringList dirs = getStringList("exampledirs");
     QString nameFilter = " *.qdoc";
 

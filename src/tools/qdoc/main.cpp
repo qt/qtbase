@@ -367,7 +367,7 @@ static void processQdocconfFile(const QString &fileName)
       Find all the qdoc files in the example dirs, and add
       them to the source files to be parsed.
      */
-    QStringList exampleQdocList = config.getExampleQdocFiles();
+    QStringList exampleQdocList = config.getExampleQdocFiles(excludedDirs, excludedFiles);
     for (int i=0; i<exampleQdocList.size(); ++i) {
         if (!sources.contains(exampleQdocList[i])) {
             sources.insert(exampleQdocList[i],exampleQdocList[i]);
