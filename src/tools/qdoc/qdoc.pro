@@ -73,6 +73,7 @@ SOURCES += atom.cpp \
            tokenizer.cpp \
            tree.cpp \
            yyindent.cpp \
+           ../../corelib/tools/qcryptographichash.cpp \
            ../../xml/dom/qdom.cpp \
            ../../xml/sax/qxml.cpp
 

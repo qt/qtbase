@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include <QCryptographicHash>
+#include <QDebug>
 #include <QHash>
 #include <QMap>
 
@@ -48,7 +50,6 @@
 #include "config.h"
 #include "node.h"
 #include "tree.h"
-#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -461,6 +462,19 @@ void HelpProjectWriter::generate(const Tree *t)
         generateProject(projects[i]);
 }
 
+void HelpProjectWriter::writeHashFile(QFile &file)
+{
+    QCryptographicHash hash(QCryptographicHash::Sha1);
+    hash.addData(&file);
+
+    QFile hashFile(file.fileName() + ".sha1");
+    if (!hashFile.open(QFile::WriteOnly | QFile::Text))
+        return;
+
+    hashFile.write(hash.result().toHex());
+    hashFile.close();
+}
+
 void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer,
                                   const Node *node)
 {
@@ -751,6 +765,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
     writer.writeEndElement(); // filterSection
     writer.writeEndElement(); // QtHelpProject
     writer.writeEndDocument();
+    writeHashFile(file);
     file.close();
 }
 

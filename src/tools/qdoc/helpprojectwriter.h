@@ -101,6 +101,7 @@ private:
     bool generateSection(HelpProject &project, QXmlStreamWriter &writer,
                          const Node *node);
     QStringList keywordDetails(const Node *node) const;
+    void writeHashFile(QFile &file);
     void writeNode(HelpProject &project, QXmlStreamWriter &writer, const Node *node);
     void readSelectors(SubProject &subproject, const QStringList &selectors);
 
