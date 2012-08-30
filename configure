@@ -4772,8 +4772,8 @@ fi
 
 if [ "$CFG_XCB" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
-        QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
-        QMAKE_LIBS_XCB="`$PKG_CONFIG --libs xcb 2>/dev/null`"
+        QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb xcb-image xcb-keysyms xcb-icccm xcb-sync xcb-xfixes xcb-randr 2>/dev/null`"
+        QMAKE_LIBS_XCB="`$PKG_CONFIG --libs xcb xcb-image xcb-keysyms xcb-icccm xcb-sync xcb-xfixes xcb-randr 2>/dev/null`"
     fi
     if compileTest qpa/xcb "xcb" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
         CFG_XCB=yes
