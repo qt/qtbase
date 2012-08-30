@@ -149,13 +149,15 @@ UnixMakefileGenerator::init()
         for(int i = 0; i < libdirs.size(); ++i) {
             if(!project->isEmpty("QMAKE_LFLAGS_RPATH") && project->isActiveConfig("rpath_libdirs"))
                 project->values("QMAKE_LFLAGS") += var("QMAKE_LFLAGS_RPATH") + libdirs[i];
-            ldadd << "-L" + escapeFilePath(libdirs[i]);
+            project->values("QMAKE_LIBDIR_FLAGS") += "-L" + escapeFilePath(libdirs[i]);
         }
     }
-    if(project->isActiveConfig("macx") && !project->isEmpty("QMAKE_FRAMEWORKPATH")) {
-        const QStringList &fwdirs = project->values("QMAKE_FRAMEWORKPATH");
-        for(int i = 0; i < fwdirs.size(); ++i) {
-            project->values("QMAKE_FRAMEWORKPATH_FLAGS") += "-F" + escapeFilePath(fwdirs[i]);
+    ldadd += project->values("QMAKE_LIBDIR_FLAGS");
+    if (project->isActiveConfig("macx")) {
+        if (!project->isEmpty("QMAKE_FRAMEWORKPATH")) {
+            const QStringList &fwdirs = project->values("QMAKE_FRAMEWORKPATH");
+            for (int i = 0; i < fwdirs.size(); ++i)
+                project->values("QMAKE_FRAMEWORKPATH_FLAGS") += "-F" + escapeFilePath(fwdirs[i]);
         }
         ldadd += project->values("QMAKE_FRAMEWORKPATH_FLAGS");
     }
