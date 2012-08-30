@@ -280,12 +280,12 @@
     In \c reformatCalendarPage(), we set the text format of the first
     Friday in the month and May 1 in the current year. The text
     formats that are actually used depend on which check boxes are
-    checked.
+    checked and what the weekday/weekend formats are.
 
     QCalendarWidget lets us set the text format of individual dates
     with the \l{QCalendarWidget::}{setDateTextFormat()}. We chose to
-    set the dates when the calendar page changes, i.e., a new month is
-    displayed. We check which of the \c mayFirstCheckBox and \c
-    firstDayCheckBox, if any, are checked
-    and set the text formats accordingly.
+    set the date formats when the calendar page changes - i.e. a new month is
+    displayed - and when the weekday/weekend format is changed.
+    We check which of the \c mayFirstCheckBox and \c firstDayCheckBox, if any,
+    are checked and set the text formats accordingly.
 */

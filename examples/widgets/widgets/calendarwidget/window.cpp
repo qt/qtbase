@@ -169,22 +169,34 @@ void Window::reformatHeaders()
 //! [8]
 void Window::reformatCalendarPage()
 {
+    QTextCharFormat mayFirstFormat;
+    const QDate mayFirst(calendar->yearShown(), 5, 1);
+
+    QTextCharFormat firstFridayFormat;
+    QDate firstFriday(calendar->yearShown(), calendar->monthShown(), 1);
+    while (firstFriday.dayOfWeek() != Qt::Friday)
+        firstFriday = firstFriday.addDays(1);
+
     if (firstFridayCheckBox->isChecked()) {
-        QDate firstFriday(calendar->yearShown(), calendar->monthShown(), 1);
-        while (firstFriday.dayOfWeek() != Qt::Friday)
-            firstFriday = firstFriday.addDays(1);
-        QTextCharFormat firstFridayFormat;
         firstFridayFormat.setForeground(Qt::blue);
-        calendar->setDateTextFormat(firstFriday, firstFridayFormat);
+    } else { // Revert to regular colour for this day of the week.
+        Qt::DayOfWeek dayOfWeek(static_cast<Qt::DayOfWeek>(firstFriday.dayOfWeek()));
+        firstFridayFormat.setForeground(calendar->weekdayTextFormat(dayOfWeek).foreground());
     }
 
-    //May First in Red takes precedence
+    calendar->setDateTextFormat(firstFriday, firstFridayFormat);
+
+    // When it is checked, "May First in Red" always takes precedence over "First Friday in Blue".
     if (mayFirstCheckBox->isChecked()) {
-        const QDate mayFirst(calendar->yearShown(), 5, 1);
-        QTextCharFormat mayFirstFormat;
         mayFirstFormat.setForeground(Qt::red);
-        calendar->setDateTextFormat(mayFirst, mayFirstFormat);
+    } else if (!firstFridayCheckBox->isChecked() || firstFriday != mayFirst) {
+        // We can now be certain we won't be resetting "May First in Red" when we restore
+        // may 1st's regular colour for this day of the week.
+        Qt::DayOfWeek dayOfWeek(static_cast<Qt::DayOfWeek>(mayFirst.dayOfWeek()));
+        calendar->setDateTextFormat(mayFirst, calendar->weekdayTextFormat(dayOfWeek));
     }
+
+    calendar->setDateTextFormat(mayFirst, mayFirstFormat);
 }
 //! [8]
 
@@ -418,8 +430,12 @@ void Window::createTextFormatsGroupBox()
 //! [17] //! [18]
     connect(weekdayColorCombo, SIGNAL(currentIndexChanged(int)),
             this, SLOT(weekdayFormatChanged()));
+    connect(weekdayColorCombo, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(reformatCalendarPage()));
     connect(weekendColorCombo, SIGNAL(currentIndexChanged(int)),
             this, SLOT(weekendFormatChanged()));
+    connect(weekendColorCombo, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(reformatCalendarPage()));
     connect(headerTextFormatCombo, SIGNAL(currentIndexChanged(QString)),
             this, SLOT(reformatHeaders()));
     connect(firstFridayCheckBox, SIGNAL(toggled(bool)),
