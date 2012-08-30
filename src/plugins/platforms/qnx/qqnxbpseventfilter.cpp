@@ -100,6 +100,17 @@ void QQnxBpsEventFilter::registerForScreenEvents(QQnxScreen *screen)
         return;
     }
 
+    int attached;
+    if (screen_get_display_property_iv(screen->nativeDisplay(), SCREEN_PROPERTY_ATTACHED, &attached) != BPS_SUCCESS) {
+        qWarning() << "QQNX: unable to query display attachment";
+        return;
+    }
+
+    if (!attached) {
+        qBpsEventFilterDebug() << "skipping event registration for non-attached screen";
+        return;
+    }
+
     if (screen_request_events(screen->nativeContext()) != BPS_SUCCESS)
         qWarning("QQNX: failed to register for screen events on screen %p", screen->nativeContext());
 }
