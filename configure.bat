@@ -42,6 +42,7 @@
 @echo off
 set QTSRC=%~dp0
 set QTDIR=%CD%
+if not exist %QTSRC%\.gitignore goto sconf
 if exist configure.exe goto conf
 echo Please wait while bootstrapping configure ...
 
@@ -116,4 +117,8 @@ cd ..\..
 
 :conf
 configure.exe -srcdir %QTSRC% %* %nosyncqt%
+goto exit
+
+:sconf
+%QTSRC%\configure.exe %*
 :exit
