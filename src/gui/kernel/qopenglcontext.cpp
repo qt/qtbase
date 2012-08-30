@@ -80,7 +80,7 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
     \class QOpenGLContext
     \inmodule QtGui
     \since 5.0
-    \brief The QOpenGLContext represents a native OpenGL context, enabling
+    \brief The QOpenGLContext class represents a native OpenGL context, enabling
            OpenGL rendering on a QSurface.
 
     QOpenGLContext represents the OpenGL state of an underlying OpenGL context.
@@ -694,7 +694,7 @@ void QOpenGLContext::deleteQGLContext()
 /*!
     \class QOpenGLContextGroup
     \since 5.0
-    \brief The QOpenGLContextGroup represents a group of contexts sharing
+    \brief The QOpenGLContextGroup class represents a group of contexts sharing
     OpenGL resources.
     \inmodule QtGui
 
