@@ -72,6 +72,14 @@ QT_BEGIN_NAMESPACE
     A window that is supplied a parent becomes a native child window of
     their parent window.
 
+    An application will typically use QWidget or QQuickView for its UI, and not
+    QWindow directly. Still, it is possible to render directly to a QWindow
+    with QBackingStore or QOpenGLContext, when wanting to keep dependencies to
+    a minimum or when wanting to use OpenGL directly. The
+    \l{gui/rasterwindow}{Raster Window} and \l{gui/openglwindow}{OpenGL Window}
+    examples are useful reference examples for how to render to a QWindow using
+    either approach.
+
     \section1 Resource management
 
     Windows can potentially use a lot of memory. A usual measurement is
