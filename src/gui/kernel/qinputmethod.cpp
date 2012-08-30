@@ -204,6 +204,13 @@ void QInputMethod::hide()
 }
 
 /*!
+    \fn bool QInputMethod::visible() const
+    \obsolete
+
+    Use isVisible() instead.
+*/
+
+/*!
     \property QInputMethod::visible
     \brief Virtual keyboard's visibility on the screen
 
