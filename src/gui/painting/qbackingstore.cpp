@@ -70,7 +70,20 @@ public:
     \since 5.0
     \inmodule QtGui
 
-    \brief The QBackingStore class provides the drawing area for top-level windows.
+    \brief The QBackingStore class provides a drawing area for QWindow.
+
+    QBackingStore enables the use of QPainter to paint on a QWindow with type
+    RasterSurface. The other way of rendering to a QWindow is through the use
+    of OpenGL with QOpenGLContext.
+
+    A QBackingStore contains a buffered representation of the window contents,
+    and thus supports partial updates by using QPainter to only update a sub
+    region of the window contents.
+
+    QBackingStore might be used by an application that wants to use QPainter
+    without OpenGL acceleration and without the extra overhead of using the
+    QWidget or QGraphicsView UI stacks. For an example of how to use
+    QBackingStore see the \l{gui/rasterwindow}{Raster Window} example.
 */
 
 /*!
