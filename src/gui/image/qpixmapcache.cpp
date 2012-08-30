@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
     or with a QPixmapCache::Key that the cache generates.
     Using QPixmapCache::Key for keys is faster than using strings. The string API is
     very convenient for complex keys but the QPixmapCache::Key API will be very
-    efficient and convenient for a one-to-one object-to-pixmap mapping \mdash in
+    efficient and convenient for a one-to-one object-to-pixmap mapping - in
     this case, you can store the keys as members of an object.
 
     If two pixmaps are inserted into the cache using equal keys then the

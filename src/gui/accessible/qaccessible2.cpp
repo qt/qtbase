@@ -220,13 +220,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QAccessibleEditableTextInterface::setAttributes(int startOffset, int endOffset, const QString &attributes)
-
-    \sa QAccessibleTextInterface::attributes()
-*/
-
-/*!
-    \class QAccessibleValueInterface
     \class QAccessibleValueInterface
     \inmodule QtGui
     \ingroup accessibility

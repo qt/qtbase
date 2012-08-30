@@ -82,17 +82,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QAccessibleBridge::notifyAccessibilityUpdate(int reason, QAccessibleInterface *interface, int child)
+    \fn void QAccessibleBridge::notifyAccessibilityUpdate(QAccessibleEvent *event)
 
     This function is called by Qt to notify the bridge about a change
-    in the accessibility information for object wrapped by the given
-    \a interface.
-
-    \a reason specifies the cause of the change. It can take values
-    of type QAccessible::Event.
-
-    \a child is the (1-based) index of the child element that has
-    changed. When \a child is 0, the object itself has changed.
+    in the accessibility information. The \a event specifies the interface,
+    object, reason and child element that has changed.
 
     \sa QAccessible::updateAccessibility()
 */

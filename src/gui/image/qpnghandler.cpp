@@ -486,9 +486,6 @@ static void CALLBACK_CALL_TYPE qt_png_warning(png_structp /*png_ptr*/, png_const
 #endif
 
 
-/*!
-    \internal
-*/
 void Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngTexts(png_info *info)
 {
     png_textp text_ptr;
@@ -516,9 +513,6 @@ void Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngTexts(png_info *info)
 }
 
 
-/*!
-    \internal
-*/
 bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngHeader()
 {
     state = Error;
@@ -557,9 +551,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngHeader()
     return true;
 }
 
-/*!
-    \internal
-*/
+
 bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
 {
     if (state == Error)
