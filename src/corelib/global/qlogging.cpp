@@ -95,8 +95,7 @@ QT_BEGIN_NAMESPACE
 extern bool usingWinMain;
 #endif
 
-#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB) || defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
-static void convert_to_wchar_t_elided(wchar_t *d, size_t space, const char *s) Q_DECL_NOEXCEPT
+static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const char *s) Q_DECL_NOEXCEPT
 {
     size_t len = qstrlen(s);
     if (len + 1 > space) {
@@ -109,7 +108,6 @@ static void convert_to_wchar_t_elided(wchar_t *d, size_t space, const char *s) Q
         *d++ = *s++;
     *d++ = 0;
 }
-#endif
 
 #if !defined(QT_NO_EXCEPTIONS)
 /*!
@@ -122,7 +120,8 @@ static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap) Q_DECL
 {
     char emergency_buf[256] = { '\0' };
     emergency_buf[sizeof emergency_buf - 1] = '\0';
-#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB) || defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
+#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB) && defined(Q_OS_WINCE) \
+    || defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
     wchar_t emergency_bufL[sizeof emergency_buf];
 #endif
 
