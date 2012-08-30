@@ -258,36 +258,6 @@ QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *window
     Reimplement in subclass to return the image format which corresponds to the screen format
 */
 
-
-/*!
-    \class QPlatformScreenPageFlipper
-    \since 5.0
-    \internal
-    \preliminary
-    \ingroup qpa
-
-    \brief The QPlatformScreenPageFlipper class provides an abstract interface for display buffer swapping
-
-    Implement the displayBuffer() function to initiate a buffer swap. The
-    bufferDisplayed() signal should be emitted once the buffer is actually displayed on
-    the screen. The bufferReleased() signal should be emitted when the buffer data is no
-    longer owned by the display hardware.
-*/
-
-/*!  \fn bool QPlatformScreenPageFlipper::displayBuffer(void *bufferHandle)
-
-Implemented in subclasses to display the buffer referenced by \a bufferHandle directly on
-the screen. Returns \c true if it is possible to display the buffer, and \c false if the
-buffer cannot be displayed.
-
-If this function returns true, the buffer must not be modified or destroyed before the
-bufferReleased() signal is emitted.  The signal bufferDisplayed() is emitted when the buffer
-is displayed on the screen. The two signals may be emitted in either order.
-
-This function is allowed to block.
-*/
-
-
 /*!
   Implemented in subclasses to return a page flipper object for the screen, or 0 if the
   hardware does not support page flipping. The default implementation returns 0.

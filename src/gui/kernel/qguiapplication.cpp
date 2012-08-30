@@ -963,7 +963,7 @@ Qt::KeyboardModifiers QGuiApplication::keyboardModifiers()
 }
 
 /*!
-    \fn Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+    \fn Qt::KeyboardModifiers QGuiApplication::queryKeyboardModifiers()
 
     Queries and returns the state of the modifier keys on the keyboard.
     Unlike keyboardModifiers, this method returns the actual keys held

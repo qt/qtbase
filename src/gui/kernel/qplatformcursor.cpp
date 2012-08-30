@@ -102,9 +102,9 @@ QList<QPlatformCursor *> QPlatformCursorPrivate::getInstances()
 */
 
 /*!
-    \fn QPlatformCursor::QPlatformCursor(QPlatformScreen *screen)
+    \fn QPlatformCursor::QPlatformCursor()
 
-    Constructs a QPlatformCursor for the given \a screen.
+    Constructs a QPlatformCursor.
 */
 QPlatformCursor::QPlatformCursor()
 {
@@ -656,7 +656,7 @@ void QPlatformCursorImage::set(const uchar *data, const uchar *mask,
 */
 
 /*!
-    \fn QPoint QPlatformCursorImage::hotspot()
+    \fn QPoint QPlatformCursorImage::hotspot() const
 
     \brief Return the cursor's hotspot
 */
