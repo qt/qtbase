@@ -1,5 +1,6 @@
 QT = core network
 CONFIG += console
+CONFIG -= app_bundle
 
 HEADERS += downloadmanager.h textprogressbar.h
 SOURCES += downloadmanager.cpp main.cpp textprogressbar.cpp

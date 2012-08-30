@@ -1,5 +1,6 @@
 SOURCES += main.cpp
 QT -= gui
+CONFIG -= app_bundle
 
 RESOURCES   = resources.qrc
 

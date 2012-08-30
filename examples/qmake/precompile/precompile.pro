@@ -7,6 +7,7 @@
 TEMPLATE  = app
 LANGUAGE  = C++
 CONFIG	 += console precompile_header
+CONFIG   -= app_bundle
 
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER  = stable.h
