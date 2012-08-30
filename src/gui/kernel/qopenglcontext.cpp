@@ -116,6 +116,9 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
     For more information about the OpenGL API, refer to the official
     \l{OpenGL documentation}.
 
+    For an example of how to use QOpenGLContext see the
+    \l{gui/openglwindow}{OpenGL Window} example.
+
     \section1 Thread affinity
 
     QOpenGLContext can be moved to a different thread with moveToThread(). Do
