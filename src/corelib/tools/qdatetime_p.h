@@ -254,6 +254,19 @@ public:
 
     mutable int currentSectionIndex;
     Sections display;
+    /*
+        This stores the stores the most recently selected day.
+        It is useful when considering the following scenario:
+
+        1. Date is: 31/01/2000
+        2. User increments month: 29/02/2000
+        3. User increments month: 31/03/2000
+
+        At step 1, cachedDay stores 31. At step 2, the 31 is invalid for February, so the cachedDay is not updated.
+        At step 3, the the month is changed to March, for which 31 is a valid day. Since 29 < 31, the day is set to cachedDay.
+        This is good for when users have selected their desired day and are scrolling up or down in the month or year section
+        and do not want smaller months (or non-leap years) to alter the day that they chose.
+    */
     mutable int cachedDay;
     mutable QString text;
     QVector<SectionNode> sectionNodes;
