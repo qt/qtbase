@@ -96,7 +96,7 @@ QT_BEGIN_NAMESPACE
     void MyGLWindow::initializeGL()
     {
         m_context->makeCurrent(this);
-        initializeGLFunctions();
+        initializeOpenGLFunctions();
     }
     \endcode
 
@@ -157,6 +157,7 @@ QT_BEGIN_NAMESPACE
     \value Multisample glSampleCoverage() function is available.
     \value StencilSeparate Separate stencil functions are available.
     \value NPOTTextures Non power of two textures are available.
+    \value NPOTTextureRepeat Non power of two textures can use GL_REPEAT as wrap parameter.
 */
 
 // Hidden private fields for additional extension data.
@@ -198,10 +199,10 @@ static QOpenGLFunctionsPrivateEx *qt_gl_functions(QOpenGLContext *context = 0)
 
 /*!
     Constructs a default function resolver. The resolver cannot
-    be used until initializeGLFunctions() is called to specify
+    be used until initializeOpenGLFunctions() is called to specify
     the context.
 
-    \sa initializeGLFunctions()
+    \sa initializeOpenGLFunctions()
 */
 QOpenGLFunctions::QOpenGLFunctions()
     : d_ptr(0)
@@ -215,10 +216,10 @@ QOpenGLFunctions::QOpenGLFunctions()
     The context or another context in the group must be current.
 
     An object constructed in this way can only be used with \a context
-    and other contexts that share with it.  Use initializeGLFunctions()
+    and other contexts that share with it.  Use initializeOpenGLFunctions()
     to change the object's context association.
 
-    \sa initializeGLFunctions()
+    \sa initializeOpenGLFunctions()
 */
 QOpenGLFunctions::QOpenGLFunctions(QOpenGLContext *context)
     : d_ptr(0)
@@ -438,6 +439,13 @@ bool QOpenGLExtensions::hasOpenGLExtension(QOpenGLExtensions::OpenGLExtension ex
         d->m_extensions = qt_gl_resolve_extensions();
     return (d->m_extensions & int(extension)) != 0;
 }
+
+/*!
+    \fn void QOpenGLFunctions::initializeGLFunctions()
+    \obsolete
+
+    Use initializeOpenGLFunctions() instead.
+*/
 
 /*!
     Initializes OpenGL function resolution for the current context.
@@ -1454,6 +1462,11 @@ void QOpenGLFunctions::initializeOpenGLFunctions()
     \l{http://www.khronos.org/opengles/sdk/docs/man/glVertexAttribPointer.xml}{glVertexAttribPointer()}.
 
     This convenience function will do nothing on OpenGL/ES 1.x systems.
+*/
+
+/*!
+    \fn bool QOpenGLFunctions::isInitialized(const QOpenGLFunctionsPrivate *d)
+    \internal
 */
 
 namespace {

@@ -210,7 +210,7 @@ QOpenGLContext* QOpenGLContext::currentContext()
 }
 
 /*!
-    Returns true if the two contexts are sharing OpenGL resources.
+    Returns true if the \a first and \a second contexts are sharing OpenGL resources.
 */
 bool QOpenGLContext::areSharing(QOpenGLContext *first, QOpenGLContext *second)
 {
@@ -243,7 +243,7 @@ QPlatformOpenGLContext *QOpenGLContext::shareHandle() const
 }
 
 /*!
-    Creates a new OpenGL context instance.
+    Creates a new OpenGL context instance with parent object \a parent.
 
     Before it can be used you need to set the proper format and call create().
 
@@ -267,8 +267,8 @@ void QOpenGLContext::setFormat(const QSurfaceFormat &format)
 }
 
 /*!
-    Sets the context to share textures, shaders, and other OpenGL resources
-    with. You need to call create() before it takes effect.
+    Makes this context share textures, shaders, and other OpenGL resources
+    with \a shareContext. You need to call create() before it takes effect.
 */
 void QOpenGLContext::setShareContext(QOpenGLContext *shareContext)
 {
@@ -460,7 +460,7 @@ GLuint QOpenGLContext::defaultFramebufferObject() const
 
 /*!
     Makes the context current in the current thread, against the given
-    \a surface.
+    \a surface. Returns true if successful.
 
     If \a surface is 0 this is equivalent to calling doneCurrent().
 
@@ -546,7 +546,7 @@ QSurface *QOpenGLContext::surface() const
 
 
 /*!
-    Swap the back and front buffers of the given surface.
+    Swap the back and front buffers of \a surface.
 
     Call this to finish a frame of OpenGL rendering, and make sure to
     call makeCurrent() again before you begin a new frame.

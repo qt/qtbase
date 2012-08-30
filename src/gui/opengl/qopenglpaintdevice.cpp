@@ -111,7 +111,7 @@ QOpenGLPaintDevice::QOpenGLPaintDevice(const QSize &size)
 }
 
 /*!
-    Constructs a QOpenGLPaintDevice with the given \a size and \a ctx.
+    Constructs a QOpenGLPaintDevice with the given \a width and \a height.
 
     The QOpenGLPaintDevice is only valid for the current context.
 
@@ -122,10 +122,20 @@ QOpenGLPaintDevice::QOpenGLPaintDevice(int width, int height)
 {
 }
 
+/*!
+    Destroys the QOpenGLPaintDevice.
+*/
+
 QOpenGLPaintDevice::~QOpenGLPaintDevice()
 {
     delete d_ptr->engine;
 }
+
+/*!
+    \fn int QOpenGLPaintDevice::devType() const
+    \internal
+    \reimp
+*/
 
 QOpenGLPaintDevicePrivate::QOpenGLPaintDevicePrivate(const QSize &sz)
     : size(sz)
@@ -153,6 +163,10 @@ private:
 
 Q_GLOBAL_STATIC(QOpenGLEngineThreadStorage, qt_opengl_engine)
 
+/*!
+    \reimp
+*/
+
 QPaintEngine *QOpenGLPaintDevice::paintEngine() const
 {
     if (d_ptr->engine)
@@ -167,20 +181,40 @@ QPaintEngine *QOpenGLPaintDevice::paintEngine() const
     return engine;
 }
 
+/*!
+    Returns the OpenGL context associated with the paint device.
+*/
+
 QOpenGLContext *QOpenGLPaintDevice::context() const
 {
     return d_ptr->ctx;
 }
+
+/*!
+    Returns the pixel size of the paint device.
+
+    \sa setSize()
+*/
 
 QSize QOpenGLPaintDevice::size() const
 {
     return d_ptr->size;
 }
 
+/*!
+    Sets the pixel size of the paint device to \a size.
+
+    \sa size()
+*/
+
 void QOpenGLPaintDevice::setSize(const QSize &size)
 {
     d_ptr->size = size;
 }
+
+/*!
+    \reimp
+*/
 
 int QOpenGLPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
@@ -211,20 +245,44 @@ int QOpenGLPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     }
 }
 
+/*!
+    Returns the number of pixels per meter horizontally.
+
+    \sa setDotsPerMeterX()
+*/
+
 qreal QOpenGLPaintDevice::dotsPerMeterX() const
 {
     return d_ptr->dpmx;
 }
+
+/*!
+    Returns the number of pixels per meter vertically.
+
+    \sa setDotsPerMeterY()
+*/
 
 qreal QOpenGLPaintDevice::dotsPerMeterY() const
 {
     return d_ptr->dpmy;
 }
 
+/*!
+    Sets the number of pixels per meter horizontally to \a dpmx.
+
+    \sa dotsPerMeterX()
+*/
+
 void QOpenGLPaintDevice::setDotsPerMeterX(qreal dpmx)
 {
     d_ptr->dpmx = dpmx;
 }
+
+/*!
+    Sets the number of pixels per meter vertically to \a dpmy.
+
+    \sa dotsPerMeterY()
+*/
 
 void QOpenGLPaintDevice::setDotsPerMeterY(qreal dpmy)
 {
@@ -232,12 +290,20 @@ void QOpenGLPaintDevice::setDotsPerMeterY(qreal dpmy)
 }
 
 /*!
-    Specifies whether painting should be flipped around the Y-axis or not.
+    Sets whether painting should be flipped around the Y-axis or not to \a flipped.
+
+    \sa paintFlipped()
 */
 void QOpenGLPaintDevice::setPaintFlipped(bool flipped)
 {
     d_ptr->flipped = flipped;
 }
+
+/*!
+    Returns true if painting is flipped around the Y-axis.
+
+    \sa setPaintFlipped()
+*/
 
 bool QOpenGLPaintDevice::paintFlipped() const
 {
