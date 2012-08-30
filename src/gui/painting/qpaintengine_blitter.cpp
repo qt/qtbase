@@ -333,11 +333,23 @@ void QBlitterPaintEnginePrivate::clipAndDrawPixmap(const QRectF &clip,
         return;
     QRectF source = sr;
     if (intersectedRect.size() != target.size()) {
-        qreal deltaTop = target.top() - intersectedRect.top();
-        qreal deltaLeft = target.left() - intersectedRect.left();
-        qreal deltaBottom = target.bottom() - intersectedRect.bottom();
-        qreal deltaRight = target.right() - intersectedRect.right();
-        source.adjust(-deltaLeft, -deltaTop, -deltaRight, -deltaBottom);
+        if (sr.size() == target.size()) {
+            // no resize
+            qreal deltaTop = target.top() - intersectedRect.top();
+            qreal deltaLeft = target.left() - intersectedRect.left();
+            qreal deltaBottom = target.bottom() - intersectedRect.bottom();
+            qreal deltaRight = target.right() - intersectedRect.right();
+            source.adjust(-deltaLeft, -deltaTop, -deltaRight, -deltaBottom);
+        } else {
+            // resize case
+            qreal hFactor = sr.size().width() / target.size().width();
+            qreal vFactor = sr.size().height() / target.size().height();
+            qreal deltaTop = (target.top() - intersectedRect.top()) * vFactor;
+            qreal deltaLeft = (target.left() - intersectedRect.left()) * hFactor;
+            qreal deltaBottom = (target.bottom() - intersectedRect.bottom()) * vFactor;
+            qreal deltaRight = (target.right() - intersectedRect.right()) * hFactor;
+            source.adjust(-deltaLeft, -deltaTop, -deltaRight, -deltaBottom);
+        }
     }
     pmData->unmarkRasterOverlay(intersectedRect);
     pmData->blittable()->drawPixmap(intersectedRect, pm, source);
