@@ -25,6 +25,12 @@ ucmodule = $$upper($$MODULE)
 
 MODULE_DEPENDS = $$replace(QT, -private$, )
 
+contains(TARGET, QtAddOn.*): \
+    MODULE_DEFINE = QT_ADDON_$${ucmodule}_LIB
+else: \
+    MODULE_DEFINE = QT_$${ucmodule}_LIB
+MODULE_DEFINES = $$MODULE_DEFINE $$MODULE_DEFINES
+
 # Find the module's source root dir.
 MODULE_PROFILE_DIR = $$_PRO_FILE_PWD_
 for(ever) {
@@ -67,11 +73,6 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_$${MODULE}.pri
         module_config = "QT.$${MODULE}.CONFIG = $$MODULE_CONFIG"
     else: \
         module_config =
-    contains(TARGET, QtAddOn.*): \
-        MODULE_DEFINE = QT_ADDON_$${ucmodule}_LIB
-    else: \
-        MODULE_DEFINE = QT_$${ucmodule}_LIB
-    MODULE_DEFINES = $$MODULE_DEFINE $$MODULE_DEFINES
     MODULE_PRI_CONT = \
         "QT.$${MODULE}.VERSION = $${VERSION}" \
         "QT.$${MODULE}.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
