@@ -1648,9 +1648,16 @@ void Generator::initialize(const Config &config)
             QString templateDir = config.getString(
                         (*g)->format() + Config::dot + CONFIG_TEMPLATEDIR);
 
+            QStringList searchDirs;
             if (!templateDir.isEmpty()) {
+                searchDirs.append(templateDir);
+            }
+            if (!Config::installDir.isEmpty()) {
+                searchDirs.append(Config::installDir);
+            }
+
+            if (!searchDirs.isEmpty()) {
                 QStringList noExts;
-                QStringList searchDirs = QStringList() << templateDir;
                 QStringList scripts =
                         config.getCleanPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS);
                 e = scripts.constBegin();
@@ -1669,10 +1676,6 @@ void Generator::initialize(const Config &config)
                                          (*g)->outputDir() +
                                          "/scripts");
                     ++e;
-                }
-
-                if (!Config::installDir.isEmpty()) {
-                    searchDirs.append(Config::installDir);
                 }
 
                 QStringList styles =

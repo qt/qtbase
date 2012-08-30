@@ -1,5 +1,5 @@
-include(../../../doc/global/qt-html-templates-offline.qdocconf)
-include(../../../doc/global/qt-cpp-ignore.qdocconf)
+include(global/qt-html-templates-offline.qdocconf)
+include(global/qt-cpp-ignore.qdocconf)
 
 project                 = QtXml
 description             = Qt XML Reference Documentation
@@ -47,19 +47,6 @@ examples.imageextensions = "*.png"
 
 outputdir               = ../../../doc/qtxml
 tagfile                 = ../../../doc/qtxml/qtxml.tags
-
-HTML.generatemacrefs    = "true"
-HTML.nobreadcrumbs      = "true"
-
-HTML.templatedir = .
-
-HTML.stylesheets = ../../../doc/global/style/offline.css
-
-HTML.headerstyles = \
-    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline.css\" />\n"
-
-HTML.endheader = \
-    "</head>\n" \
 
 defines                 = Q_QDOC \
                           QT_.*_SUPPORT \

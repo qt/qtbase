@@ -1,3 +1,14 @@
+HTML.generatemacrefs    = "true"
+HTML.nobreadcrumbs      = "true"
+
+HTML.stylesheets = global/style/offline.css
+
+HTML.headerstyles = \
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline.css\" />\n"
+
+HTML.endheader = \
+    "</head>\n" \
+
 HTML.footer = \
     "<div class=\"footer\">\n" \
     "    <p>\n" \
