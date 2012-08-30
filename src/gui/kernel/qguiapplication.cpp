@@ -342,6 +342,9 @@ QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
     QCoreApplicationPrivate::eventDispatcher->startingUp();
 }
 
+/*!
+    \internal
+*/
 QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
     : QCoreApplication(p)
 {
@@ -557,6 +560,8 @@ QWindow *QGuiApplication::focusWindow()
     \fn QGuiApplication::focusObjectChanged(QObject *focusObject)
 
     This signal is emitted when final receiver of events tied to focus is changed.
+    \a focusObject is the new receiver.
+
     \sa focusObject()
 */
 
@@ -564,6 +569,8 @@ QWindow *QGuiApplication::focusWindow()
     \fn QGuiApplication::focusWindowChanged(QWindow *focusWindow)
 
     This signal is emitted when the focused window changes.
+    \a focusWindow is the new focused window.
+
     \sa focusWindow()
 */
 
@@ -637,7 +644,7 @@ QList<QScreen *> QGuiApplication::screens()
 }
 
 /*!
-    Returns the top level window at the given position, if any.
+    Returns the top level window at the given position \a pos, if any.
 */
 QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 {
@@ -2076,7 +2083,7 @@ QPalette QGuiApplication::palette()
 }
 
 /*!
-    Changes the default application palette to \a palette.
+    Changes the default application palette to \a pal.
 
     \sa palette()
 */

@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
     \fn bool QPictureFormatPlugin::installIOHandler(const QString &format)
 
     Installs a QPictureIO picture I/O handler for the picture format \a
-    format.
+    format. Returns \c true on success.
 
     \sa keys()
 */

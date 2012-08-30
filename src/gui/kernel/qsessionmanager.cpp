@@ -117,11 +117,6 @@ QT_BEGIN_NAMESPACE
     The default hint is \c RestartIfRunning.
 */
 
-/*!
-    \fn void* QSessionManager::handle() const
-
-    \internal
-*/
 
 class QSessionManagerPrivate : public QObjectPrivate
 {

@@ -5654,7 +5654,7 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positio
     Draws the given \a text with the currently defined text direction,
     beginning at the given \a position.
 
-    This function does not handle the newline character (\n), as it cannot
+    This function does not handle the newline character (\\n), as it cannot
     break text into multiple lines, and it cannot display the newline character.
     Use the QPainter::drawText() overload that takes a rectangle instead
     if you want to draw multiple lines of text with the newline character, or

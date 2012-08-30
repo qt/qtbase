@@ -298,8 +298,7 @@ QSize QScreen::virtualSize() const
 }
 
 /*!
-  \property QScreen::virtualGeometry
-  \brief the pixel geometry of the virtual desktop corresponding to this screen
+  Returns the pixel geometry of the virtual desktop corresponding to this screen.
 
   This is the union of the virtual siblings' individual geometries.
 

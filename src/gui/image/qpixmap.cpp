@@ -1631,4 +1631,16 @@ QDebug operator<<(QDebug dbg, const QPixmap &r)
 }
 #endif
 
+/*!
+    \fn QPixmap QPixmap::alphaChannel() const
+
+    Use QImage::alphaChannel() instead.
+*/
+
+/*!
+    \fn void QPixmap::setAlphaChannel(const QPixmap &p)
+
+    Use QImage::setAlphaChannel() for \a p instead.
+*/
+
 QT_END_NAMESPACE

@@ -3222,9 +3222,6 @@ void QRasterPaintEngine::drawEllipse(const QRectF &rect)
     QPaintEngineEx::drawEllipse(rect);
 }
 
-/*!
-    \internal
-*/
 
 #ifdef Q_OS_WIN
 /*!
@@ -4721,13 +4718,6 @@ static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
     to QPointFs and calls the floating point version of drawPoints.
 */
 
-/*!
-    \fn void QRasterPaintEngine::drawEllipse(const QRect &rect)
-    \overload
-
-    Reimplement this function to draw the largest ellipse that can be
-    contained within rectangle \a rect.
-*/
 
 #ifdef QT_DEBUG_DRAW
 void dumpClip(int width, int height, const QClipData *clip)
