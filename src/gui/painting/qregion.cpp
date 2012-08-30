@@ -695,14 +695,6 @@ QRegion QRegion::intersect(const QRect &r) const
 #endif
 
 /*!
-    \obsolete
-    \fn int QRegion::numRects() const
-    \since 4.4
-
-    Returns the number of rectangles that will be returned in rects().
-*/
-
-/*!
     \fn int QRegion::rectCount() const
     \since 4.6
 
