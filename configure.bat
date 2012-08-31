@@ -48,7 +48,6 @@ echo Please wait while bootstrapping configure ...
 
 for %%C in (cl.exe icl.exe g++.exe perl.exe) do set %%C=%%~$PATH:C
 
-set nosyncqt=
 if not exist include (
     if "%perl.exe%" == "" (
         echo Perl not found in PATH. Aborting. >&2
@@ -58,9 +57,8 @@ if not exist include (
         md mkspecs
         if errorlevel 1 goto exit
     )
-    perl %QTSRC%bin\syncqt -outdir %QTDIR% %QTSRC%
+    perl %QTSRC%bin\syncqt -minimal -outdir %QTDIR% %QTSRC%
     if errorlevel 1 goto exit
-    set nosyncqt=-no-syncqt
 )
 
 if not exist src\corelib\global\qconfig.h (
@@ -116,7 +114,7 @@ if errorlevel 1 (cd ..\.. & exit /b 1)
 cd ..\..
 
 :conf
-configure.exe -srcdir %QTSRC% %* %nosyncqt%
+configure.exe -srcdir %QTSRC% %*
 goto exit
 
 :sconf

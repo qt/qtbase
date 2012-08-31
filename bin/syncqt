@@ -102,6 +102,7 @@ my $check_includes = 0;
 my $copy_headers = 0;
 my $create_uic_class_map = 0;
 my $create_private_headers = 1;
+my $minimal = 0;
 my @modules_to_sync ;
 $force_relative = 1 if ( -d "/System/Library/Frameworks" );
 
@@ -125,6 +126,7 @@ sub showUsage
     print "  -relative             Force relative symlinks            (default: " . ($force_relative ? "yes" : "no") . ")\n";
     print "  -windows              Force platform to Windows          (default: " . ($force_win ? "yes" : "no") . ")\n";
     print "  -showonly             Show action but not perform        (default: " . ($showonly ? "yes" : "no") . ")\n";
+    print "  -minimal              Do not create CamelCase headers    (default: " . ($minimal ? "yes" : "no") . ")\n";
     print "  -outdir <PATH>        Specify output directory for sync  (default: $out_basedir)\n";
     print "  -qtdir <PATH>         Set the path to QtBase             (detected: " . (defined $qtbasedir ? $qtbasedir : "-none-") . ")\n";
     print "  -quiet                Only report problems, not activity (same as -verbose 0)\n";
@@ -661,6 +663,9 @@ while ( @ARGV ) {
     } elsif($arg eq "-verbose") {
         $var = "verbose";
         $val = shift @ARGV;
+    } elsif($arg eq "-minimal") {
+        $var = "minimal";
+        $val = "yes";
     } elsif($arg eq "-private") {
         $var = "create_private_headers";
         $val = "yes";
@@ -726,6 +731,12 @@ while ( @ARGV ) {
             $force_relative++;
         } elsif($force_relative) {
             $force_relative--;
+        }
+    } elsif ($var eq "minimal") {
+        if($val eq "yes") {
+            $minimal++;
+        } elsif($minimal) {
+            $minimal--;
         }
     } elsif ($var eq "module") {
         print "module :$val:\n" if($verbose_level);
@@ -918,7 +929,7 @@ foreach my $lib (@modules_to_sync) {
 
                         my $iheader = $subdir . "/" . $header;
                         $iheader =~ s/^\Q$basedir\E/$out_basedir/ if ($shadow);
-                        my @classes = $public_header ? classNames($iheader) : ();
+                        my @classes = $public_header && !$minimal ? classNames($iheader) : ();
                         if($showonly) {
                             print "$header [$lib]\n";
                             foreach(@classes) {
@@ -1024,7 +1035,7 @@ foreach my $lib (@modules_to_sync) {
         }
     }
 
-    unless($showonly) {
+    unless ($showonly || $minimal) {
         # create deprecated headers
         my $first = 1;
         while (my ($header, $include) = each %{$deprecatedheaders{$lib}}) {
