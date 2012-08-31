@@ -103,7 +103,7 @@ void QCocoaGLContext::setActiveWindow(QWindow *window)
     if (window == m_currentWindow.data())
         return;
 
-    if (m_currentWindow)
+    if (m_currentWindow && m_currentWindow.data()->handle())
         static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(0);
 
     Q_ASSERT(window->handle());
@@ -119,7 +119,7 @@ void QCocoaGLContext::setActiveWindow(QWindow *window)
 
 void QCocoaGLContext::doneCurrent()
 {
-    if (m_currentWindow)
+    if (m_currentWindow && m_currentWindow.data()->handle())
         static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(0);
 
     m_currentWindow.clear();
