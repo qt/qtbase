@@ -358,7 +358,7 @@ UnixMakefileGenerator::init()
                             int pat = project->first("VER_PAT").toInt();
                             comp_flags += " -version-info " + QString::number(10*maj + min) +
                                           ":" + QString::number(pat) + ":0";
-                            if(libtoolify[i] != "QMAKE_AR_CMD") {
+                            if (strcmp(libtoolify[i], "QMAKE_AR_CMD")) {
                                 QString rpath = Option::output_dir;
                                 if(!project->isEmpty("DESTDIR")) {
                                     rpath = project->first("DESTDIR").toQString();
