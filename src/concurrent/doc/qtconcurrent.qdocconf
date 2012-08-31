@@ -1,5 +1,5 @@
-include(global/qt-html-templates-offline.qdocconf)
-include(global/qt-cpp-ignore.qdocconf)
+include(../../../doc/global/qt-html-templates-offline.qdocconf)
+include(../../../doc/global/qt-cpp-ignore.qdocconf)
 
 project                 = QtConcurrent
 description             = Qt Concurrent Reference Documentation
