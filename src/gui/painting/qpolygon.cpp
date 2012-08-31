@@ -990,6 +990,10 @@ QPolygonF QPolygonF::subtracted(const QPolygonF &r) const
     return subject.subtracted(clip).toFillPolygon();
 }
 
+/*!
+   Returns the polygon as a QVariant.
+*/
+
 QPolygonF::operator QVariant() const
 {
     return QVariant(QMetaType::QPolygonF, this);

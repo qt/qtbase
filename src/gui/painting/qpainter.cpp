@@ -1526,7 +1526,7 @@ bool QPainter::isActive() const
 
 /*!
     Initializes the painters pen, background and font to the same as
-    the given \a paint device.
+    the given \a device.
 
     \obsolete
 

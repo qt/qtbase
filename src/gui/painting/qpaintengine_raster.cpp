@@ -4711,11 +4711,7 @@ static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
 /*!
     \fn void QRasterPaintEngine::drawPoints(const QPoint *points, int pointCount)
     \overload
-
-    Draws the first \a pointCount points in the buffer \a points
-
-    The default implementation converts the first \a pointCount QPoints in \a points
-    to QPointFs and calls the floating point version of drawPoints.
+    \reimp
 */
 
 

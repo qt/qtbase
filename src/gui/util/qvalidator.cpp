@@ -128,8 +128,6 @@ QT_BEGIN_NAMESPACE
     \value Intermediate  The string is a plausible intermediate value.
     \value Acceptable    The string is acceptable as a final result;
                          i.e. it is valid.
-
-    \omitvalue Valid
 */
 
 /*!

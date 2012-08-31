@@ -65,7 +65,7 @@ static inline QVariant themeableHint(QPlatformTheme::ThemeHint th,
 /*!
     \class QStyleHints
     \since 5.0
-    \brief The QStyleHints contains platform specific hints and settings.
+    \brief The QStyleHints class contains platform specific hints and settings.
     \inmodule QtGui
  */
 QStyleHints::QStyleHints()

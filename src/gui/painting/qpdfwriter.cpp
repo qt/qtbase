@@ -118,7 +118,7 @@ QString QPdfWriter::title() const
 }
 
 /*!
-  Sets the title of the document being created.
+  Sets the title of the document being created to \a title.
   */
 void QPdfWriter::setTitle(const QString &title)
 {
@@ -136,7 +136,7 @@ QString QPdfWriter::creator() const
 }
 
 /*!
-  Sets the creator of the document.
+  Sets the creator of the document to \a creator.
   */
 void QPdfWriter::setCreator(const QString &creator)
 {
