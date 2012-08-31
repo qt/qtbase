@@ -81,7 +81,7 @@ class Q_GUI_EXPORT QScreen : public QObject
     Q_PROPERTY(qreal logicalDotsPerInch READ logicalDotsPerInch NOTIFY logicalDotsPerInchChanged)
     Q_PROPERTY(QSize availableSize READ availableSize NOTIFY availableSizeChanged)
     Q_PROPERTY(QRect availableGeometry READ availableGeometry NOTIFY availableGeometryChanged)
-    Q_PROPERTY(Qt::ScreenOrientation primaryOrientation READ orientation NOTIFY primaryOrientationChanged)
+    Q_PROPERTY(Qt::ScreenOrientation primaryOrientation READ primaryOrientation NOTIFY primaryOrientationChanged)
     Q_PROPERTY(Qt::ScreenOrientation orientation READ orientation NOTIFY orientationChanged)
     Q_PROPERTY(qreal refreshRate READ refreshRate NOTIFY refreshRateChanged)
 
