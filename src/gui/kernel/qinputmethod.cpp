@@ -54,7 +54,7 @@ QInputMethod::QInputMethod()
     : QObject(*new QInputMethodPrivate)
 {
     // might be instantiated before QGuiApplication is fully done, need to connect later
-    QTimer::singleShot(0, this, SLOT(q_connectFocusObject()));
+    QTimer::singleShot(0, this, SLOT(_q_connectFocusObject()));
 }
 
 /*!
@@ -358,15 +358,15 @@ void QInputMethod::invokeAction(Action a, int cursorPosition)
 }
 
 // temporary handlers for updating focus item based on application focus
-void QInputMethodPrivate::q_connectFocusObject()
+void QInputMethodPrivate::_q_connectFocusObject()
 {
     Q_Q(QInputMethod);
     QObject::connect(qApp, SIGNAL(focusObjectChanged(QObject*)),
-                     q, SLOT(q_checkFocusObject(QObject*)));
-    q_checkFocusObject(qApp->focusObject());
+                     q, SLOT(_q_checkFocusObject(QObject*)));
+    _q_checkFocusObject(qApp->focusObject());
 }
 
-void QInputMethodPrivate::q_checkFocusObject(QObject *object)
+void QInputMethodPrivate::_q_checkFocusObject(QObject *object)
 {
     bool enabled = objectAcceptsInputMethod(object);
     setInputItem(enabled ? object : 0);

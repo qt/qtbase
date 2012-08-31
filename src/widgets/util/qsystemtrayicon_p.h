@@ -90,7 +90,7 @@ public:
     static bool isSystemTrayAvailable_sys();
     static bool supportsMessages_sys();
 
-    void emitActivated(QPlatformSystemTrayIcon::ActivationReason reason);
+    void _q_emitActivated(QPlatformSystemTrayIcon::ActivationReason reason);
 
     QPointer<QMenu> menu;
     QIcon icon;

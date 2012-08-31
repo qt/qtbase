@@ -129,8 +129,9 @@ private:
     QInputMethod();
     ~QInputMethod();
 
-    Q_PRIVATE_SLOT(d_func(), void q_connectFocusObject())
-    Q_PRIVATE_SLOT(d_func(), void q_checkFocusObject(QObject* object))
+    Q_PRIVATE_SLOT(d_func(), void _q_connectFocusObject())
+    Q_PRIVATE_SLOT(d_func(), void _q_checkFocusObject(QObject* object))
+
 };
 
 QT_END_NAMESPACE

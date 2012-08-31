@@ -158,7 +158,7 @@ private:
     Q_DISABLE_COPY(QGuiApplication)
     Q_DECLARE_PRIVATE(QGuiApplication)
 
-    Q_PRIVATE_SLOT(d_func(), void q_updateFocusObject(QObject *object))
+    Q_PRIVATE_SLOT(d_func(), void _q_updateFocusObject(QObject *object))
 
 #ifndef QT_NO_GESTURES
     friend class QGestureManager;

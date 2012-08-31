@@ -80,8 +80,8 @@ public:
         emit q->inputItemChanged();
     }
 
-    void q_connectFocusObject();
-    void q_checkFocusObject(QObject *object);
+    void _q_connectFocusObject();
+    void _q_checkFocusObject(QObject *object);
     bool objectAcceptsInputMethod(QObject *object);
 
     QTransform inputItemTransform;

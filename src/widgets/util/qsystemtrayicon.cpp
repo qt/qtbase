@@ -391,7 +391,7 @@ void QSystemTrayIcon::showMessage(const QString& title, const QString& msg,
         d->showMessage_sys(title, msg, icon, msecs);
 }
 
-void QSystemTrayIconPrivate::emitActivated(QPlatformSystemTrayIcon::ActivationReason reason)
+void QSystemTrayIconPrivate::_q_emitActivated(QPlatformSystemTrayIcon::ActivationReason reason)
 {
     Q_Q(QSystemTrayIcon);
     emit q->activated(static_cast<QSystemTrayIcon::ActivationReason>(reason));

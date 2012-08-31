@@ -118,7 +118,7 @@ private:
     Q_DISABLE_COPY(QSystemTrayIcon)
     Q_DECLARE_PRIVATE(QSystemTrayIcon)
 
-    Q_PRIVATE_SLOT(d_func(), void emitActivated(QPlatformSystemTrayIcon::ActivationReason))
+    Q_PRIVATE_SLOT(d_func(), void _q_emitActivated(QPlatformSystemTrayIcon::ActivationReason))
 
     friend class QSystemTrayIconSys;
     friend class QBalloonTip;

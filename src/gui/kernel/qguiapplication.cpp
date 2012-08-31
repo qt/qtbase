@@ -1410,7 +1410,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         QFocusEvent focusOut(QEvent::FocusOut);
         QCoreApplication::sendSpontaneousEvent(previous, &focusOut);
         QObject::disconnect(previous, SIGNAL(focusObjectChanged(QObject*)),
-                            qApp, SLOT(q_updateFocusObject(QObject*)));
+                            qApp, SLOT(_q_updateFocusObject(QObject*)));
     } else {
         QEvent appActivate(QEvent::ApplicationActivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
@@ -1420,7 +1420,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         QFocusEvent focusIn(QEvent::FocusIn);
         QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
         QObject::connect(QGuiApplicationPrivate::focus_window, SIGNAL(focusObjectChanged(QObject*)),
-                         qApp, SLOT(q_updateFocusObject(QObject*)));
+                         qApp, SLOT(_q_updateFocusObject(QObject*)));
     } else {
         QEvent appActivate(QEvent::ApplicationDeactivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
@@ -1430,7 +1430,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         self->notifyActiveWindowChange(previous);
 
         if (previousFocusObject != qApp->focusObject())
-            self->q_updateFocusObject(qApp->focusObject());
+            self->_q_updateFocusObject(qApp->focusObject());
     }
 
     emit qApp->focusWindowChanged(newFocus);
@@ -2543,7 +2543,7 @@ const QDrawHelperGammaTables *QGuiApplicationPrivate::gammaTables()
     return result;
 }
 
-void QGuiApplicationPrivate::q_updateFocusObject(QObject *object)
+void QGuiApplicationPrivate::_q_updateFocusObject(QObject *object)
 {
     Q_Q(QGuiApplication);
 
