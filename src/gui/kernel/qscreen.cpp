@@ -345,8 +345,8 @@ QRect QScreen::availableVirtualGeometry() const
 
     For example, to receive orientation() updates and thus have
     orientationChanged() signals being emitted for LandscapeOrientation and
-    InvertedLandscapeOrientation, call setOrientationUpdateMask() with the
-    argument Qt::LandscapeOrientation | Qt::InvertedLandscapeOrientation.
+    InvertedLandscapeOrientation, call setOrientationUpdateMask() with
+    \a{mask} set to Qt::LandscapeOrientation | Qt::InvertedLandscapeOrientation.
 
     The default, 0, means no orientationChanged() signals are fired.
 */
@@ -384,7 +384,7 @@ Qt::ScreenOrientations QScreen::orientationUpdateMask() const
 
     Qt::PrimaryOrientation is never returned.
 
-    \sa primaryOrientation(), orientationChanged()
+    \sa primaryOrientation()
 */
 Qt::ScreenOrientation QScreen::orientation() const
 {
@@ -409,8 +409,6 @@ qreal QScreen::refreshRate() const
     The primary screen orientation is Qt::LandscapeOrientation
     if the screen geometry's width is greater than or equal to its
     height, or Qt::PortraitOrientation otherwise.
-
-    \sa primaryOrientationChanged()
 */
 Qt::ScreenOrientation QScreen::primaryOrientation() const
 {
@@ -510,8 +508,8 @@ QTransform QScreen::transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientat
 /*!
     Maps the rect between two screen orientations.
 
-    This will flip the x and y dimensions of the rectangle if orientation \a is
-    Qt::PortraitOrientation or Qt::InvertedPortraitOrientation and orientation \b is
+    This will flip the x and y dimensions of the rectangle \a{rect} if the orientation \a{a} is
+    Qt::PortraitOrientation or Qt::InvertedPortraitOrientation and orientation \a{b} is
     Qt::LandscapeOrientation or Qt::InvertedLandscapeOrientation, or vice versa.
 
     Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
@@ -537,8 +535,8 @@ QRect QScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, cons
 }
 
 /*!
-    Convenience function to check if a screen orientation is either portrait
-    or inverted portrait.
+    Convenience function that returns true if \a o is either portrait or inverted portrait;
+    otherwise returns false.
 
     Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */
@@ -549,8 +547,8 @@ bool QScreen::isPortrait(Qt::ScreenOrientation o) const
 }
 
 /*!
-    Convenience function to check if a screen orientation is either landscape
-    or inverted landscape.
+    Convenience function that returns true if \a o is either landscape or inverted landscape;
+    otherwise returns false.
 
     Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */
@@ -561,7 +559,7 @@ bool QScreen::isLandscape(Qt::ScreenOrientation o) const
 }
 
 /*!
-    \fn QScreen::orientationChanged(Qt::ScreenOrientation orientation)
+    \fn void QScreen::orientationChanged(Qt::ScreenOrientation orientation)
 
     This signal is emitted when the orientation of the screen
     changes.
@@ -570,7 +568,7 @@ bool QScreen::isLandscape(Qt::ScreenOrientation o) const
 */
 
 /*!
-    \fn QScreen::primaryOrientationChanged(Qt::ScreenOrientation orientation)
+    \fn void QScreen::primaryOrientationChanged(Qt::ScreenOrientation orientation)
 
     This signal is emitted when the primary orientation of the screen
     changes.
@@ -619,14 +617,14 @@ void QScreenPrivate::updatePrimaryOrientation()
     safe. This depends on the underlying window system.
 */
 
-QPixmap QScreen::grabWindow(WId window, int x, int y, int w, int h)
+QPixmap QScreen::grabWindow(WId window, int x, int y, int width, int height)
 {
     const QPlatformScreen *platformScreen = handle();
     if (!platformScreen) {
         qWarning("%s invoked with handle==0", Q_FUNC_INFO);
         return QPixmap();
     }
-    return platformScreen->grabWindow(window, x, y, w, h);
+    return platformScreen->grabWindow(window, x, y, width, height);
 }
 
 QT_END_NAMESPACE
