@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
     F(UShort, 36, ushort) \
     F(UChar, 37, uchar) \
     F(Float, 38, float) \
-    F(SChar, 49, signed char) \
+    F(SChar, 40, signed char) \
 
 #define QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(F)\
     F(VoidStar, 31, void*) \
@@ -205,7 +205,7 @@ public:
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
         FirstCoreType = Bool,
-        LastCoreType = SChar,
+        LastCoreType = QJsonDocument,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,
         FirstWidgetsType = QSizePolicy,
@@ -231,8 +231,7 @@ public:
         QEasingCurve = 29, QUuid = 30, QVariant = 41, QModelIndex = 42,
         QRegularExpression = 44,
         QJsonValue = 45, QJsonObject = 46, QJsonArray = 47, QJsonDocument = 48,
-        SChar = 49,
-        QObjectStar = 39,
+        QObjectStar = 39, SChar = 40,
         Void = 43,
         QVariantMap = 8, QVariantList = 9, QVariantHash = 28,
         QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,

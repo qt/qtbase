@@ -604,7 +604,7 @@ int QMetaType::registerNormalizedTypedef(const NS(QByteArray) &normalizedTypeNam
 bool QMetaType::isRegistered(int type)
 {
     // predefined type
-    if ((type >= FirstCoreType && type <= LastCoreType && type != 40) // 40 is the type that QWidgetStar used to be
+    if ((type >= FirstCoreType && type <= LastCoreType)
         || (type >= FirstGuiType && type <= LastGuiType)
         || (type >= FirstWidgetsType && type <= LastWidgetsType)) {
         return true;
