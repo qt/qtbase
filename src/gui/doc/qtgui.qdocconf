@@ -71,12 +71,16 @@ depends                 += qtcore
 
 headerdirs  += ..
 
-sourcedirs  += ..
+sourcedirs  += .. \
+               ../../../examples/gui/doc
 
-exampledirs += ../../../examples \
+exampledirs += ../../../examples/gui \
+               ../../../doc/src/snippets \
                ../ \
                snippets
 
-excludedirs += ../../../examples/widgets/doc
+excludedirs += snippets
 
-imagedirs   += images
+imagedirs   += images \
+               ../../../doc/src/images \
+               ../../../examples/gui/doc/images

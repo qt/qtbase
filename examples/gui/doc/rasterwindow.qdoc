@@ -35,7 +35,7 @@
 
     \section1 Application Entry Point
 
-    \snippet gui/rasterwindow/main.cpp 1
+    \snippet rasterwindow/main.cpp 1
 
     The entry point for a QWindow based application is the \l
     QGuiApplication class. It manages the GUI application's control
@@ -52,7 +52,7 @@
 
     \section1 RasterWindow Declaration
 
-    \snippet gui/rasterwindow/rasterwindow.h 1
+    \snippet rasterwindow/rasterwindow.h 1
 
     We first start by including the the QtGui headers. This means we
     can use all classes in the Qt GUI module. Classes can also be
@@ -72,7 +72,7 @@
 
     \section1 RasterWindow Implementation
 
-    \snippet gui/rasterwindow/rasterwindow.cpp 1
+    \snippet rasterwindow/rasterwindow.cpp 1
 
     The constructor first of all calls \l QWindow::create(). This will
     create the window in the windowing system. Without calling create,
@@ -83,7 +83,7 @@
     Then we create the backingstore and pass it the window instance it
     is supposed to manage.
 
-    \snippet gui/rasterwindow/rasterwindow.cpp 2
+    \snippet rasterwindow/rasterwindow.cpp 2
 
     Shortly after calling \l QWindow::show() on a created window, the
     virtual function \l QWindow::exposeEvent() will be called to
@@ -100,7 +100,7 @@
     system with some visual content.
 
 
-    \snippet gui/rasterwindow/rasterwindow.cpp 5
+    \snippet rasterwindow/rasterwindow.cpp 5
 
     The resize event is guaranteed to be called prior to the window
     being shown on screen and will also be called whenever the window
@@ -108,7 +108,7 @@
     and call renderNow() if we are visible to immediately update the
     visual representation of the window on screen.
 
-    \snippet gui/rasterwindow/rasterwindow.cpp 3
+    \snippet rasterwindow/rasterwindow.cpp 3
 
     The renderNow function sets up what is needed for a \l QWindow to
     render its content using QPainter. As obscured windows have will
@@ -130,7 +130,7 @@
     using \l QBackingStore::flush().
 
 
-    \snippet gui/rasterwindow/rasterwindow.cpp 4
+    \snippet rasterwindow/rasterwindow.cpp 4
 
     The render function contains the drawing code for the window. In
     this minial example, we only draw the string "QWindow" in the
@@ -140,7 +140,7 @@
     \section1 Rendering Asynchronously
 
 
-    \snippet gui/rasterwindow/rasterwindow.cpp 6
+    \snippet rasterwindow/rasterwindow.cpp 6
 
     We went through a few places where the window needed to repainted
     immediately. There are some cases where this is not desierable,
@@ -151,7 +151,7 @@
     is already pending, we store this state in the \c m_update_pending
     variable.
 
-    \snippet gui/rasterwindow/rasterwindow.cpp 7
+    \snippet rasterwindow/rasterwindow.cpp 7
 
     We reimplement the virtual \l QObject::event() function to handle
     the update event we posted to ourselves. When the event comes in

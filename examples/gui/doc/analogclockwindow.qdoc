@@ -45,17 +45,17 @@
     make use of the RasterWindow from the \l {Raster Window Example}
     and reimplement the \c render function to draw the clock face:
 
-    \snippet gui/analogclock/main.cpp 5
+    \snippet analogclock/main.cpp 5
 
     \section1 AnalogClock Class Implementation
 
-    \snippet gui/analogclock/main.cpp 6
+    \snippet analogclock/main.cpp 6
 
     We set a title on the window and resize to a reasonable size. Then
     we start a timer which we will use to redraw the clock every
     second.
 
-    \snippet gui/analogclock/main.cpp 7
+    \snippet analogclock/main.cpp 7
 
     The timerEvent function is called every second as a result of
     our startTimer call. Making use of the convenience in the base
@@ -65,21 +65,21 @@
     one active timer in this instance, but it is good practice to do
     so.
 
-    \snippet gui/analogclock/main.cpp 14
-    \snippet gui/analogclock/main.cpp 8
+    \snippet analogclock/main.cpp 14
+    \snippet analogclock/main.cpp 8
 
     Before we set up the painter and draw the clock, we first define
     two lists of \l {QPoint}s and two \l{QColor}s that will be used
     for the hour and minute hands. The minute hand's color has an
     alpha component of 191, meaning that it's 75% opaque.
 
-    \snippet gui/analogclock/main.cpp 9
+    \snippet analogclock/main.cpp 9
 
     We call QPainter::setRenderHint() with QPainter::Antialiasing to
     turn on antialiasing. This makes drawing of diagonal lines much
     smoother.
 
-    \snippet gui/analogclock/main.cpp 10
+    \snippet analogclock/main.cpp 10
 
     The translation moves the origin to the center of the window, and
     the scale operation ensures that the following drawing operations
@@ -106,31 +106,31 @@
     hour and minute. This means that the hand will be shown rotated clockwise
     by the required amount.
 
-    \snippet gui/analogclock/main.cpp 11
+    \snippet analogclock/main.cpp 11
 
     We set the pen to be Qt::NoPen because we don't want any outline,
     and we use a solid brush with the color appropriate for
     displaying hours. Brushes are used when filling in polygons and
     other geometric shapes.
 
-    \snippet gui/analogclock/main.cpp 2
+    \snippet analogclock/main.cpp 2
 
     We save and restore the transformation matrix before and after the
     rotation because we want to place the minute hand without having to
     take into account any previous rotations.
 
-    \snippet gui/analogclock/main.cpp 12
+    \snippet analogclock/main.cpp 12
 
     We draw markers around the edge of the clock for each hour. We
     draw each marker then rotate the coordinate system so that the
     painter is ready for the next one.
 
-    \snippet gui/analogclock/main.cpp 13
-    \snippet gui/analogclock/main.cpp 3
+    \snippet analogclock/main.cpp 13
+    \snippet analogclock/main.cpp 3
 
     The minute hand is rotated in a similar way to the hour hand.
 
-    \snippet gui/analogclock/main.cpp 4
+    \snippet analogclock/main.cpp 4
 
     Again, we draw markers around the edge of the clock, but this
     time to indicate minutes. We skip multiples of 5 to avoid drawing
