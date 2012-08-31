@@ -44,7 +44,7 @@ isEmpty(CMAKE_VERSION) {
     }
 }
 
-# tests not yet verified as working correctly on Windows
+# tests fail on Windows - QTBUG-27087
 win32:CONFIG += insignificant_test
 
 insignificant_test:!isEmpty(check.commands) {
