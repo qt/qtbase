@@ -787,8 +787,7 @@ Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(Vector)
 
 #ifdef Q_CC_MSVC
 QT_BEGIN_INCLUDE_NAMESPACE
-#include <QtCore/QPointF>
-#include <QtCore/QPoint>
+#include <QtCore/qpoint.h>
 QT_END_INCLUDE_NAMESPACE
 
 #if defined(QT_BUILD_CORE_LIB)

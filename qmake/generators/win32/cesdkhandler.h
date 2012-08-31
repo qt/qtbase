@@ -42,8 +42,8 @@
 #ifndef CE_SDK_HANDLER_INCL
 #define CE_SDK_HANDLER_INCL
 
-#include <QStringList>
-#include <QDir>
+#include <qstringlist.h>
+#include <qdir.h>
 
 QT_BEGIN_NAMESPACE
 

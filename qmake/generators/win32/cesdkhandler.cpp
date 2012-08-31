@@ -41,9 +41,9 @@
 
 #include "cesdkhandler.h"
 
-#include <QtCore/QFile>
-#include <QtCore/QDebug>
-#include <QtCore/QXmlStreamReader>
+#include <qfile.h>
+#include <qdebug.h>
+#include <qxmlstream.h>
 
 QT_BEGIN_NAMESPACE
 

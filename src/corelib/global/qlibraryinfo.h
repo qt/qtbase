@@ -43,7 +43,7 @@
 #define QLIBRARYINFO_H
 
 #include <QtCore/qstring.h>
-#include <QtCore/QDate>
+#include <QtCore/qdatetime.h>
 
 QT_BEGIN_HEADER
 

@@ -42,9 +42,9 @@
 #ifndef _TOOLS_H_
 #define _TOOLS_H_
 
-#include <QString>
-#include <QStringList>
-#include <QMap>
+#include <qstring.h>
+#include <qstringlist.h>
+#include <qmap.h>
 
 
 class Tools

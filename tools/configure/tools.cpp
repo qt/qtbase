@@ -41,9 +41,9 @@
 
 #include "tools.h"
 
-#include <QDir>
-#include <QFile>
-#include <QByteArray>
+#include <qdir.h>
+#include <qfile.h>
+#include <qbytearray.h>
 
 
 // std stuff ------------------------------------

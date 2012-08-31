@@ -45,7 +45,7 @@
 #  include "tools.h"
 #endif
 
-#include <QDate>
+#include <qdatetime.h>
 #include <qdir.h>
 #include <qdiriterator.h>
 #include <qtemporaryfile.h>

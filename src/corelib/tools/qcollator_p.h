@@ -42,8 +42,8 @@
 #ifndef QCOLLATOR_P_H
 #define QCOLLATOR_P_H
 
-#include <QString>
-#include <QLocale>
+#include <QtCore/qstring.h>
+#include <QtCore/qlocale.h>
 
 QT_BEGIN_HEADER
 

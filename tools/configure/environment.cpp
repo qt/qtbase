@@ -41,15 +41,16 @@
 
 #include "environment.h"
 
+#include <qdebug.h>
+#include <qstringlist.h>
+#include <qmap.h>
+#include <qdir.h>
+#include <qfile.h>
+#include <qfileinfo.h>
+
 #include <process.h>
 #include <errno.h>
 #include <iostream>
-#include <qdebug.h>
-#include <QDir>
-#include <QStringList>
-#include <QMap>
-#include <QFile>
-#include <QFileInfo>
 
 //#define CONFIGURE_DEBUG_EXECUTE
 //#define CONFIGURE_DEBUG_CP_DIR
