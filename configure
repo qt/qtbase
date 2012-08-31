@@ -3544,7 +3544,7 @@ if [ -n "$PERL" ] && [ -x "$relpath/bin/syncqt" ]; then
     if [ "$OPT_SHADOW" = "yes" ]; then
         "$outpath/bin/syncqt" $SYNCQT_OPTS "$relpath" || exit 1
     elif [ "$CFG_DEV" = "yes" ] || [ ! -d $relpath/include ] || [ -d $relpath/.git ]; then
-        QTDIR="$relpath" perl "$outpath/bin/syncqt" $SYNCQT_OPTS || exit 1
+        "$outpath/bin/syncqt" $SYNCQT_OPTS || exit 1
     fi
 fi
 
