@@ -29,7 +29,7 @@
     \group json
     \title JSON Support in Qt
     \ingroup qt-basic-concepts
-    \brief An overview over the JSON support in Qt.
+    \brief An overview of JSON support in Qt.
 
     \ingroup frameworks-technologies
 
@@ -41,7 +41,7 @@
 
     The JSON support in Qt provides an easy to use C++ API to parse,
     modify and save JSON data. It also contains support for saving this
-    data in a binary format that is directly mmap'able and very fast to
+    data in a binary format that is directly "mmap"-able and very fast to
     access.
 
     More details about the JSON data format can be found at \l{http://json.org}{json.org}
@@ -62,19 +62,18 @@
     \li null
     \endlist
 
-    Any value can be any of the above type. A boolean value is represented by the
+    A value can have any of the above types. A boolean value is represented by the
     strings true or false in JSON. JSON doesn't explicitly specify the valid range
-    for numbers, but the support in Qt is limited to the valid range and precision of
+    for numbers, but the support in Qt is limited to the validity range and precision of
     doubles. A string can be any valid unicode string. An array is a list of values, and an
-    object is a dictionary of key/value pairs. All keys in an object are strings, and
-    an object cannot contain any duplicated keys.
+    object is a collection of key/value pairs. All keys in an object are strings, and
+    an object cannot contain any duplicate keys.
 
-    The text representation, of JSON encloses arrays in square brackets ([ ... ]) and
-    objects in curly brackets ({ ... }). The different entries in arrays and objects
-    are separated by commas. The separator between keys and values in an object is a
-    colon (:).
+    The text representation of JSON encloses arrays in square brackets ([ ... ]) and
+    objects in curly brackets ({ ... }). Entries in arrays and objects are separated by
+    commas. The separator between keys and values in an object is a colon (:).
 
-    A simple JSON document encoding a person, its age, address and phone numbers could
+    A simple JSON document encoding a person, his/her age, address and phone numbers could
     look like:
 
     \code
@@ -100,12 +99,12 @@
     A valid JSON document is either an array or an object, so a document always starts
     with a square or curly bracket.
 
-    The JSON support in Qt consists of a set of 4 classes.
+    JSON support in Qt consists of a set of 4 classes.
 
 
     \section1 The JSON Classes
 
-    The JSON support in Qt consists of these classes:
+    JSON support in Qt consists of these classes:
 
     \annotatedlist json
 
