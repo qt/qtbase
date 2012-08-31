@@ -114,9 +114,9 @@
 */
 
 /*!
-    \fn qreal qAtan2(qreal x, qreal y)
-    Returns the arctangent of a point specified by the coordinates \a x and \a y.
-    This function will return the angle and its direction.
+    \fn qreal qAtan2(qreal y, qreal x)
+    Returns the arctangent of a point specified by the coordinates \a y and \a x.
+    This function will return the angle (argument) of that point.
 
     \relates <QtCore/qmath.h>
     \sa qAtan()

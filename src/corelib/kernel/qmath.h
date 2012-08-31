@@ -145,14 +145,14 @@ inline qreal qAtan(qreal v)
         return atan(v);
 }
 
-inline qreal qAtan2(qreal x, qreal y)
+inline qreal qAtan2(qreal y, qreal x)
 {
 #ifdef QT_USE_MATH_H_FLOATS
     if (sizeof(qreal) == sizeof(float))
-        return atan2f(float(x), float(y));
+        return atan2f(float(y), float(x));
     else
 #endif
-        return atan2(x, y);
+        return atan2(y, x);
 }
 
 inline qreal qSqrt(qreal v)
