@@ -72,6 +72,8 @@
 
 #ifdef Q_CC_MINGW  /* Add missing declarations for MinGW */
 
+#ifndef __IShellLibrary_FWD_DEFINED__
+
 /* Constants obtained by running the below stream operator for
  * CLSID, IID on the constants in the Windows SDK libraries. */
 
@@ -86,8 +88,6 @@ static const IID   IID_IShellItem        = {0x43826d1e, 0xe718, 0x42ee, {0xbc, 0
 static const IID   IID_IFileDialogEvents = {0x973510db, 0x7d7f, 0x452b,{0x89, 0x75, 0x74, 0xa8, 0x58, 0x28, 0xd3, 0x54}};
 static const CLSID CLSID_FileOpenDialog  = {0xdc1c5a9c, 0xe88a, 0x4dde, {0xa5, 0xa1, 0x60, 0xf8, 0x2a, 0x20, 0xae, 0xf7}};
 static const CLSID CLSID_FileSaveDialog  = {0xc0b4e2f3, 0xba21, 0x4773,{0x8d, 0xba, 0x33, 0x5e, 0xc9, 0x46, 0xeb, 0x8b}};
-
-#ifndef __IShellLibrary_FWD_DEFINED__
 
 typedef struct _COMDLG_FILTERSPEC
 {
