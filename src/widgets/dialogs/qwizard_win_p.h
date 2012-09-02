@@ -133,6 +133,7 @@ private:
     void mouseReleaseEvent(QMouseEvent *event);
     bool eventFilter(QObject *obj, QEvent *event);
 
+    static int instanceCount;
     static bool is_vista;
     static VistaState cachedVistaState;
     static bool isCompositionEnabled();
