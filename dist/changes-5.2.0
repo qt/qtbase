@@ -46,3 +46,32 @@ QtCore
   When calling QTime::toString(Qt::TextDate) and QTime::toString(Qt::ISODate),
   milliseconds are now included in the returned string. This also applies to
   QDateTime::toString(Qt::TextDate) and QDateTime::toString(ISODate).
+
+- QtAlgorithms
+  With STL no longer being optional for building and using Qt, a number of parts
+  of QtAlgorithms no longer make sense, and have therefore been deprecated.
+
+  Replacements are available in the STL, and generally have much better
+  performance, but are not instantly source-compatible in all cases. For
+  instance, specialization of qLess or qSwap means that a direct port to
+  std::sort from qSort may not be possible, as std::sort does not use any of
+  them; a possible workaround is explicitly passing a qLess functor to
+  std::sort:
+
+      std::sort(container.begin(), container.end(), qLess<T>());
+
+  The functions in QtAlgorithms that have been deprecated, along with their
+  STL counterparts, are:
+    - qBinaryFind (std::binary_search / std::lower_bound)
+    - qCopy (std::copy)
+    - qCopyBackward (std::copy_backward)
+    - qEqual (std::equal)
+    - qFill (std::fill)
+    - qFind (std::find)
+    - qCount (std::count)
+    - qSort (std::sort)
+    - qStableSort (std::stable_sort)
+    - qLowerBound (std::lower_bound)
+    - qUpperBound (std::upper_bound)
+    - qLess (std::less)
+    - qGreater (std::greater)

@@ -33,41 +33,17 @@
     \brief The <QtAlgorithms> header includes the generic, template-based algorithms.
 
     Qt provides a number of global template functions in \c
-    <QtAlgorithms> that work on containers and perform well-known
-    algorithms. You can use these algorithms with any \l {container
+    <QtAlgorithms> that work on containers and perform small tasks to
+    make life easier, such as qDeleteAll(), which invokes \c{operator delete}
+    on all items in a given container or in a given range.
+    You can use these algorithms with any \l {container
     class} that provides STL-style iterators, including Qt's QList,
     QLinkedList, QVector, QMap, and QHash classes.
-
-    These functions have taken their inspiration from similar
-    functions available in the STL \c <algorithm> header. Most of them
-    have a direct STL equivalent; for example, qCopyBackward() is the
-    same as STL's copy_backward() algorithm.
-
-    If STL is available on all your target platforms, you can use the
-    STL algorithms instead of their Qt counterparts. One reason why
-    you might want to use the STL algorithms is that STL provides
-    dozens and dozens of algorithms, whereas Qt only provides the most
-    important ones, making no attempt to duplicate functionality that
-    is already provided by the C++ standard.
 
     Most algorithms take \l {STL-style iterators} as parameters. The
     algorithms are generic in the sense that they aren't bound to a
     specific iterator class; you can use them with any iterators that
     meet a certain set of requirements.
-
-    Let's take the qFill() algorithm as an example. Unlike QVector,
-    QList has no fill() function that can be used to fill a list with
-    a particular value. If you need that functionality, you can use
-    qFill():
-
-    \snippet code/doc_src_qalgorithms.cpp 0
-
-    qFill() takes a begin iterator, an end iterator, and a value.
-    In the example above, we pass \c list.begin() and \c list.end()
-    as the begin and end iterators, but this doesn't have to be
-    the case:
-
-    \snippet code/doc_src_qalgorithms.cpp 1
 
     Different algorithms can have different requirements for the
     iterators they accept. For example, qFill() accepts two
@@ -78,14 +54,11 @@
     necessarily a very informative one.
 
     Some algorithms have special requirements on the value type
-    stored in the containers. For example, qEqual() requires that the
-    value type supports operator==(), which it uses to compare items.
-    Similarly, qDeleteAll() requires that the value type is a
+    stored in the containers. For example,
+    qDeleteAll() requires that the value type is a
     non-const pointer type (for example, QWidget *). The value type
     requirements are specified for each algorithm, and the compiler
     will produce an error if a requirement isn't met.
-
-    \target binaryFind example
 
     The generic algorithms can be used on other container classes
     than those provided by Qt and STL. The syntax of STL-style
@@ -171,11 +144,95 @@
 
     QList and QVector's non-const iterator types are random access iterators.
 
+    \section1 Qt and the STL algorithms
+
+    Historically, Qt used to provide functions which were direct equivalents of
+    many STL algorithmic functions. Starting with Qt 5.0, you are instead
+    encouraged to use directly the implementations available in the STL; most
+    of the Qt ones have been deprecated (although they are still available to
+    keep the old code compiling).
+
+    \section2 Porting guidelines
+
+    Most of the times, an application using the deprecated Qt algorithmic functions
+    can be easily ported to use the equivalent STL functions. You need to
+
+    \list 1
+        \li add the \c{#include <algorithm>} preprocessor directive;
+        \li replace the Qt functions with the STL counterparts, according to the table below.
+    \endlist
+
+    \table
+    \header
+        \li Qt function
+        \li STL function
+    \row
+        \li qBinaryFind
+        \li std::binary_search or std::lower_bound
+    \row
+        \li qCopy
+        \li std::copy
+    \row
+        \li qCopyBackward
+        \li std::copy_backward
+    \row
+        \li qEqual
+        \li std::equal
+    \row
+        \li qFill
+        \li std::fill
+    \row
+        \li qFind
+        \li std::find
+    \row
+        \li qCount
+        \li std::count
+    \row
+        \li qSort
+        \li std::sort
+    \row
+        \li qStableSort
+        \li std::stable_sort
+    \row
+        \li qLowerBound
+        \li std::lower_bound
+    \row
+        \li qUpperBound
+        \li std::upper_bound
+    \row
+        \li qLess
+        \li std::less
+    \row
+        \li qGreater
+        \li std::greater
+
+    \endtable
+
+    The only cases in which the port may not be straightforward is if the old
+    code relied on template specializations of the qLess() and/or the qSwap()
+    functions, which were used internally by the implementations of the Qt
+    algorithmic functions, but are instead ignored by the STL ones.
+
+    In case the old code relied on the specialization of the qLess() functor,
+    then a workaround is explicitly passing an instance of the qLess() class
+    to the STL function, for instance like this:
+
+    \code
+        std::sort(container.begin(), container.end(), qLess<T>());
+    \endcode
+
+    Instead, since it's not possible to pass a custom swapper functor to STL
+    functions, the only workaround for a template specialization for qSwap() is
+    providing the same specialization for std::swap().
+
     \sa {container classes}, <QtGlobal>
 */
 
 /*! \fn OutputIterator qCopy(InputIterator begin1, InputIterator end1, OutputIterator begin2)
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::copy instead.
 
     Copies the items from range [\a begin1, \a end1) to range [\a
     begin2, ...), in the order in which they appear.
@@ -192,6 +249,9 @@
 
 /*! \fn BiIterator2 qCopyBackward(BiIterator1 begin1, BiIterator1 end1, BiIterator2 end2)
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::copy_backward instead.
 
     Copies the items from range [\a begin1, \a end1) to range [...,
     \a end2).
@@ -208,6 +268,9 @@
 
 /*! \fn bool qEqual(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2)
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::equal instead.
 
     Compares the items in the range [\a begin1, \a end1) with the
     items in the range [\a begin2, ...). Returns true if all the
@@ -224,6 +287,9 @@
 
 /*! \fn void qFill(ForwardIterator begin, ForwardIterator end, const T &value)
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::fill instead.
 
     Fills the range [\a begin, \a end) with \a value.
 
@@ -235,14 +301,19 @@
 
 /*! \fn void qFill(Container &container, const T &value)
     \relates <QtAlgorithms>
-
+    \obsolete
     \overload
+
+    Use std::fill instead.
 
     This is the same as qFill(\a{container}.begin(), \a{container}.end(), \a value);
 */
 
 /*! \fn InputIterator qFind(InputIterator begin, InputIterator end, const T &value)
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::find instead.
 
     Returns an iterator to the first occurrence of \a value in a
     container in the range [\a begin, \a end). Returns \a end if \a
@@ -263,14 +334,19 @@
 
 /*! \fn void qFind(const Container &container, const T &value)
     \relates <QtAlgorithms>
-
+    \obsolete
     \overload
+
+    Use std::find instead.
 
     This is the same as qFind(\a{container}.constBegin(), \a{container}.constEnd(), value);
 */
 
 /*! \fn void qCount(InputIterator begin, InputIterator end, const T &value, Size &n)
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::count instead.
 
     Returns the number of occurrences of \a value in the range [\a begin, \a end),
     which is returned in \a n. \a n is never initialized, the count is added to \a n.
@@ -287,17 +363,22 @@
 */
 
 /*! \fn void qCount(const Container &container, const T &value, Size &n)
-\relates <QtAlgorithms>
+    \relates <QtAlgorithms>
+    \obsolete
+    \overload
 
-\overload
+    Use std::count instead.
 
-Instead of operating on iterators, as in the other overload, this function
-operates on the specified \a container to obtain the number of instances
-of \a value in the variable passed as a reference in argument \a n.
+    Instead of operating on iterators, as in the other overload, this function
+    operates on the specified \a container to obtain the number of instances
+    of \a value in the variable passed as a reference in argument \a n.
 */
 
 /*! \fn void qSwap(T &var1, T &var2)
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::swap instead.
 
     Exchanges the values of variables \a var1 and \a var2.
 
@@ -307,6 +388,9 @@ of \a value in the variable passed as a reference in argument \a n.
 
 /*! \fn void qSort(RandomAccessIterator begin, RandomAccessIterator end)
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::sort instead.
 
     Sorts the items in range [\a begin, \a end) in ascending order
     using the quicksort algorithm.
@@ -329,8 +413,10 @@ of \a value in the variable passed as a reference in argument \a n.
 
 /*! \fn void qSort(RandomAccessIterator begin, RandomAccessIterator end, LessThan lessThan)
     \relates <QtAlgorithms>
-
+    \obsolete
     \overload
+
+    Use std::sort instead.
 
     Uses the \a lessThan function instead of \c operator<() to
     compare the items.
@@ -363,8 +449,10 @@ of \a value in the variable passed as a reference in argument \a n.
 
 /*! \fn void qSort(Container &container)
     \relates <QtAlgorithms>
-
+    \obsolete
     \overload
+
+    Use std::sort instead.
 
     This is the same as qSort(\a{container}.begin(), \a{container}.end());
 */
@@ -372,6 +460,9 @@ of \a value in the variable passed as a reference in argument \a n.
 /*!
     \fn void qStableSort(RandomAccessIterator begin, RandomAccessIterator end)
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::stable_sort instead.
 
     Sorts the items in range [\a begin, \a end) in ascending order
     using a stable sorting algorithm.
@@ -396,8 +487,10 @@ of \a value in the variable passed as a reference in argument \a n.
 /*!
     \fn void qStableSort(RandomAccessIterator begin, RandomAccessIterator end, LessThan lessThan)
     \relates <QtAlgorithms>
-
+    \obsolete
     \overload
+
+    Use std::stable_sort instead.
 
     Uses the \a lessThan function instead of \c operator<() to
     compare the items.
@@ -426,14 +519,19 @@ of \a value in the variable passed as a reference in argument \a n.
 /*!
     \fn void qStableSort(Container &container)
     \relates <QtAlgorithms>
-
+    \obsolete
     \overload
+
+    Use std::stable_sort instead.
 
     This is the same as qStableSort(\a{container}.begin(), \a{container}.end());
 */
 
 /*! \fn RandomAccessIterator qLowerBound(RandomAccessIterator begin, RandomAccessIterator end, const T &value)
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::lower_bound instead.
 
     Performs a binary search of the range [\a begin, \a end) and
     returns the position of the first ocurrence of \a value. If no
@@ -460,8 +558,10 @@ of \a value in the variable passed as a reference in argument \a n.
 /*!
     \fn RandomAccessIterator qLowerBound(RandomAccessIterator begin, RandomAccessIterator end, const T &value, LessThan lessThan)
     \relates <QtAlgorithms>
-
+    \obsolete
     \overload
+
+    Use std::lower_bound instead.
 
     Uses the \a lessThan function instead of \c operator<() to
     compare the items.
@@ -473,8 +573,10 @@ of \a value in the variable passed as a reference in argument \a n.
 /*!
     \fn void qLowerBound(const Container &container, const T &value)
     \relates <QtAlgorithms>
-
+    \obsolete
     \overload
+
+    Use std::lower_bound instead.
 
     For read-only iteration over containers, this function is broadly equivalent to
     qLowerBound(\a{container}.begin(), \a{container}.end(), value). However, since it
@@ -484,6 +586,9 @@ of \a value in the variable passed as a reference in argument \a n.
 
 /*! \fn RandomAccessIterator qUpperBound(RandomAccessIterator begin, RandomAccessIterator end, const T &value)
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::upper_bound instead.
 
     Performs a binary search of the range [\a begin, \a end) and
     returns the position of the one-past-the-last occurrence of \a
@@ -510,8 +615,10 @@ of \a value in the variable passed as a reference in argument \a n.
 /*!
     \fn RandomAccessIterator qUpperBound(RandomAccessIterator begin, RandomAccessIterator end, const T &value, LessThan lessThan)
     \relates <QtAlgorithms>
-
+    \obsolete
     \overload
+
+    Use std::upper_bound instead.
 
     Uses the \a lessThan function instead of \c operator<() to
     compare the items.
@@ -523,8 +630,10 @@ of \a value in the variable passed as a reference in argument \a n.
 /*!
     \fn void qUpperBound(const Container &container, const T &value)
     \relates <QtAlgorithms>
-
+    \obsolete
     \overload
+
+    Use std::upper_bound instead.
 
     This is the same as qUpperBound(\a{container}.begin(), \a{container}.end(), value);
 */
@@ -532,6 +641,9 @@ of \a value in the variable passed as a reference in argument \a n.
 
 /*! \fn RandomAccessIterator qBinaryFind(RandomAccessIterator begin, RandomAccessIterator end, const T &value)
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::binary_search or std::lower_bound instead.
 
     Performs a binary search of the range [\a begin, \a end) and
     returns the position of an occurrence of \a value. If there are
@@ -558,8 +670,10 @@ of \a value in the variable passed as a reference in argument \a n.
 
 /*! \fn RandomAccessIterator qBinaryFind(RandomAccessIterator begin, RandomAccessIterator end, const T &value, LessThan lessThan)
     \relates <QtAlgorithms>
-
+    \obsolete
     \overload
+
+    Use std::binary_search or std::lower_bound instead.
 
     Uses the \a lessThan function instead of \c operator<() to
     compare the items.
@@ -571,8 +685,10 @@ of \a value in the variable passed as a reference in argument \a n.
 /*!
     \fn void qBinaryFind(const Container &container, const T &value)
     \relates <QtAlgorithms>
-
+    \obsolete
     \overload
+
+    Use std::binary_search or std::lower_bound instead.
 
     This is the same as qBinaryFind(\a{container}.begin(), \a{container}.end(), value);
 */
@@ -612,6 +728,9 @@ of \a value in the variable passed as a reference in argument \a n.
 
 /*! \fn LessThan qLess()
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::less instead.
 
     Returns a functional object, or functor, that can be passed to qSort()
     or qStableSort().
@@ -625,6 +744,9 @@ of \a value in the variable passed as a reference in argument \a n.
 
 /*! \fn LessThan qGreater()
     \relates <QtAlgorithms>
+    \obsolete
+
+    Use std::greater instead.
 
     Returns a functional object, or functor, that can be passed to qSort()
     or qStableSort().
