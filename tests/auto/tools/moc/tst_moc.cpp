@@ -2510,6 +2510,12 @@ public slots:
     void bu4(CustomObject7, int, CustomObject8) {}
     void bu5(int, CustomObject9, CustomObject10) {}
     void bu6(int, CustomObject11, int) {}
+
+    // these can't be registered, but they should at least compile
+    void ref1(int&) {}
+    void ref2(QList<int>&) {}
+    void ref3(CustomQObject2&) {}
+    void ref4(QSharedPointer<CustomQObject2>&) {}
 };
 
 void tst_Moc::autoPropertyMetaTypeRegistration()

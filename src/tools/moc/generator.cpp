@@ -162,7 +162,7 @@ bool Generator::registerableMetaType(const QByteArray &propertyType)
         ;
 
     foreach (const QByteArray &smartPointer, smartPointers)
-        if (propertyType.startsWith(smartPointer + "<"))
+        if (propertyType.startsWith(smartPointer + "<") && !propertyType.endsWith("&"))
             return knownQObjectClasses.contains(propertyType.mid(smartPointer.size() + 1, propertyType.size() - smartPointer.size() - 1 - 1));
 
     static const QVector<QByteArray> oneArgTemplates = QVector<QByteArray>()
@@ -171,7 +171,7 @@ bool Generator::registerableMetaType(const QByteArray &propertyType)
 #undef STREAM_1ARG_TEMPLATE
     ;
     foreach (const QByteArray &oneArgTemplateType, oneArgTemplates)
-        if (propertyType.startsWith(oneArgTemplateType + "<")) {
+        if (propertyType.startsWith(oneArgTemplateType + "<") && !propertyType.endsWith("&")) {
             const int argumentSize = propertyType.size() - oneArgTemplateType.size() - 1
                                      // The closing '>'
                                      - 1
