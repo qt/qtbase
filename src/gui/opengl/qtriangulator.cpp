@@ -65,128 +65,6 @@ QT_BEGIN_NAMESPACE
 
 #define Q_FIXED_POINT_SCALE 32
 
-// Quick sort.
-template <class T, class LessThan>
-#ifdef Q_CC_RVCT // RVCT 2.2 doesn't see recursive _static_ template function
-void sort(T *array, int count, LessThan lessThan)
-#else
-static void sort(T *array, int count, LessThan lessThan)
-#endif
-{
-    // If the number of elements fall below some threshold, use insertion sort.
-    const int INSERTION_SORT_LIMIT = 7; // About 7 is fastest on my computer...
-    if (count <= INSERTION_SORT_LIMIT) {
-        for (int i = 1; i < count; ++i) {
-            T temp = array[i];
-            int j = i;
-            while (j > 0 && lessThan(temp, array[j - 1])) {
-                array[j] = array[j - 1];
-                --j;
-            }
-            array[j] = temp;
-        }
-        return;
-    }
-
-    int high = count - 1;
-    int low = 0;
-    int mid = high / 2;
-    if (lessThan(array[mid], array[low]))
-        qSwap(array[mid], array[low]);
-    if (lessThan(array[high], array[mid]))
-        qSwap(array[high], array[mid]);
-    if (lessThan(array[mid], array[low]))
-        qSwap(array[mid], array[low]);
-
-    --high;
-    ++low;
-    qSwap(array[mid], array[high]);
-    int pivot = high;
-    --high;
-
-    while (low <= high) {
-        while (!lessThan(array[pivot], array[low])) {
-            ++low;
-            if (low > high)
-                goto sort_loop_end;
-        }
-        while (!lessThan(array[high], array[pivot])) {
-            --high;
-            if (low > high)
-                goto sort_loop_end;
-        }
-        qSwap(array[low], array[high]);
-        ++low;
-        --high;
-    }
-sort_loop_end:
-    if (low != pivot)
-        qSwap(array[pivot], array[low]);
-    sort(array, low, lessThan);
-    sort(array + low + 1, count - low - 1, lessThan);
-}
-
-// Quick sort.
-template <class T>
-#ifdef Q_CC_RVCT
-void sort(T *array, int count) // RVCT 2.2 doesn't see recursive _static_ template function
-#else
-static void sort(T *array, int count)
-#endif
-{
-    // If the number of elements fall below some threshold, use insertion sort.
-    const int INSERTION_SORT_LIMIT = 25; // About 25 is fastest on my computer...
-    if (count <= INSERTION_SORT_LIMIT) {
-        for (int i = 1; i < count; ++i) {
-            T temp = array[i];
-            int j = i;
-            while (j > 0 && (temp < array[j - 1])) {
-                array[j] = array[j - 1];
-                --j;
-            }
-            array[j] = temp;
-        }
-        return;
-    }
-
-    int high = count - 1;
-    int low = 0;
-    int mid = high / 2;
-    if ((array[mid] < array[low]))
-        qSwap(array[mid], array[low]);
-    if ((array[high] < array[mid]))
-        qSwap(array[high], array[mid]);
-    if ((array[mid] < array[low]))
-        qSwap(array[mid], array[low]);
-
-    --high;
-    ++low;
-    qSwap(array[mid], array[high]);
-    int pivot = high;
-    --high;
-
-    while (low <= high) {
-        while (!(array[pivot] < array[low])) {
-            ++low;
-            if (low > high)
-                goto sort_loop_end;
-        }
-        while (!(array[high] < array[pivot])) {
-            --high;
-            if (low > high)
-                goto sort_loop_end;
-        }
-        qSwap(array[low], array[high]);
-        ++low;
-        --high;
-    }
-sort_loop_end:
-    if (low != pivot)
-        qSwap(array[pivot], array[low]);
-    sort(array, low);
-    sort(array + low + 1, count - low - 1);
-}
-
 template<typename T>
 struct QVertexSet
 {
@@ -1461,8 +1339,8 @@ void QTriangulator<T>::ComplexToSimple::fillPriorityQueue()
             m_events.add(lowerEvent);
         }
     }
-    //qSort(m_events.data(), m_events.data() + m_events.size());
-    sort(m_events.data(), m_events.size());
+
+    std::sort(m_events.data(), m_events.data() + m_events.size());
 }
 
 template <typename T>
@@ -2024,8 +1902,7 @@ void QTriangulator<T>::SimpleToMonotone::fillPriorityQueue()
     for (int i = 0; i < m_edges.size(); ++i)
         m_upperVertex.add(i);
     CompareVertices cmp(this);
-    //qSort(m_upperVertex.data(), m_upperVertex.data() + m_upperVertex.size(), cmp);
-    sort(m_upperVertex.data(), m_upperVertex.size(), cmp);
+    std::sort(m_upperVertex.data(), m_upperVertex.data() + m_upperVertex.size(), cmp);
     //for (int i = 1; i < m_upperVertex.size(); ++i) {
     //    Q_ASSERT(!cmp(m_upperVertex.at(i), m_upperVertex.at(i - 1)));
     //}
