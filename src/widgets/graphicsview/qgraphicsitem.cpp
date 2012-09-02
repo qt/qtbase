@@ -4578,7 +4578,7 @@ void QGraphicsItem::setZValue(qreal z)
 void QGraphicsItemPrivate::ensureSequentialSiblingIndex()
 {
     if (!sequentialOrdering) {
-        qSort(children.begin(), children.end(), insertionOrder);
+        std::sort(children.begin(), children.end(), insertionOrder);
         sequentialOrdering = 1;
         needSortChildren = 1;
     }

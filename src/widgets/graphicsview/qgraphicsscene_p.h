@@ -271,7 +271,7 @@ public:
     inline void ensureSortedTopLevelItems()
     {
         if (needSortTopLevelItems) {
-            qSort(topLevelItems.begin(), topLevelItems.end(), qt_notclosestLeaf);
+            std::sort(topLevelItems.begin(), topLevelItems.end(), qt_notclosestLeaf);
             topLevelSequentialOrdering = false;
             needSortTopLevelItems = false;
         }
