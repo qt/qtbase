@@ -797,6 +797,38 @@ void Moc::parse()
     }
 }
 
+static void findRequiredContainers(ClassDef *cdef, QSet<QByteArray> *requiredQtContainers)
+{
+    static const QVector<QByteArray> candidates = QVector<QByteArray>()
+#define STREAM_SMART_POINTER(SMART_POINTER) << #SMART_POINTER
+        QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(STREAM_SMART_POINTER)
+#undef STREAM_SMART_POINTER
+#define STREAM_1ARG_TEMPLATE(TEMPLATENAME) << #TEMPLATENAME
+        QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(STREAM_1ARG_TEMPLATE)
+#undef STREAM_1ARG_TEMPLATE
+        ;
+
+    for (int i = 0; i < cdef->propertyList.count(); ++i) {
+        const PropertyDef &p = cdef->propertyList.at(i);
+        foreach (const QByteArray candidate, candidates) {
+            if (p.type.contains(candidate + "<"))
+                requiredQtContainers->insert(candidate);
+        }
+    }
+
+    QList<FunctionDef> allFunctions = cdef->slotList + cdef->signalList + cdef->methodList;
+
+    for (int i = 0; i < allFunctions.count(); ++i) {
+        const FunctionDef &f = allFunctions.at(i);
+        foreach (const ArgumentDef &arg, f.arguments) {
+            foreach (const QByteArray candidate, candidates) {
+                if (arg.normalizedType.contains(candidate + "<"))
+                    requiredQtContainers->insert(candidate);
+            }
+        }
+    }
+}
+
 void Moc::generate(FILE *out)
 {
 
@@ -836,6 +868,16 @@ void Moc::generate(FILE *out)
     fprintf(out, "#include <QtCore/qmetatype.h>\n");  // For QMetaType::Type
     if (mustIncludeQPluginH)
         fprintf(out, "#include <QtCore/qplugin.h>\n");
+
+    QSet<QByteArray> requiredQtContainers;
+    for (i = 0; i < classList.size(); ++i) {
+        findRequiredContainers(&classList[i], &requiredQtContainers);
+    }
+
+    foreach (const QByteArray &qtContainer, requiredQtContainers) {
+        fprintf(out, "#include <QtCore/%s>\n", qtContainer.constData());
+    }
+
 
     fprintf(out, "#if !defined(Q_MOC_OUTPUT_REVISION)\n"
             "#error \"The header file '%s' doesn't include <QObject>.\"\n", fn.constData());
