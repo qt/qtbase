@@ -93,8 +93,10 @@ enum {
 #if defined(Q_OS_WINCE)
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <winsock.h>
+QT_END_INCLUDE_NAMESPACE
 // Asynchronous Winsocks ------------------------------------------
 #ifndef QT_NO_THREAD
+QT_BEGIN_INCLUDE_NAMESPACE
 #include <qthread.h>
 #include <qmap.h>
 #include <qmutex.h>
