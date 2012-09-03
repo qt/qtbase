@@ -740,7 +740,7 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
     \sa quint64, qlonglong
 */
 
-/*! \fn const T &qAbs(const T &value)
+/*! \fn T qAbs(const T &value)
     \relates <QtGlobal>
 
     Compares \a value to the 0 of type T and returns the absolute
