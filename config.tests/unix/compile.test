@@ -72,11 +72,12 @@ test -r Makefile && $MAKE distclean >/dev/null 2>&1
 # Make sure output from possible previous tests is gone
 rm -f "$EXE" "${EXE}.exe"
 
-OUTDIR=$OUTDIR "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "CONFIG+=$QMAKE_CONFIG" "CONFIG-=debug_and_release" "LIBS*=$LFLAGS" "LIBS+=$MAC_ARCH_LFLAGS" "INCLUDEPATH*=$INCLUDEPATH" "QMAKE_CXXFLAGS*=$CXXFLAGS" "QMAKE_CXXFLAGS+=$MAC_ARCH_CXXFLAGS" "QT_BUILD_TREE=$OUTDIR" "$SRCDIR/$TEST/$EXE.pro" -o "$OUTDIR/$TEST/Makefile"
-
+set -- "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "CONFIG+=$QMAKE_CONFIG" "CONFIG-=debug_and_release" "LIBS*=$LFLAGS" "LIBS+=$MAC_ARCH_LFLAGS" "INCLUDEPATH*=$INCLUDEPATH" "QMAKE_CXXFLAGS*=$CXXFLAGS" "QMAKE_CXXFLAGS+=$MAC_ARCH_CXXFLAGS" "QT_BUILD_TREE=$OUTDIR" "$SRCDIR/$TEST/$EXE.pro" -o "$OUTDIR/$TEST/Makefile"
 if [ "$VERBOSE" = "yes" ]; then
+    OUTDIR=$OUTDIR "$@"
     $MAKE
 else
+    OUTDIR=$OUTDIR "$@" >/dev/null 2>&1
     $MAKE >/dev/null 2>&1
 fi
 
