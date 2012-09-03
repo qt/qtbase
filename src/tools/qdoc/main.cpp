@@ -264,7 +264,9 @@ static void processQdocconfFile(const QString &fileName)
         if (indexDirs.size() > 0) {
             for (int i = 0; i < indexDirs.size(); i++) {
                 if (indexDirs[i].startsWith("..")) {
-                    indexDirs[i].prepend(QDir(dir).relativeFilePath(prevCurrentDir) + QLatin1Char('/'));
+                    const QString prefix(QDir(dir).relativeFilePath(prevCurrentDir));
+                    if (!prefix.isEmpty())
+                        indexDirs[i].prepend(prefix + QLatin1Char('/'));
                 }
             }
             /*
