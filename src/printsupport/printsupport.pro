@@ -1,5 +1,3 @@
-load(qt_build_config)
-
 TARGET     = QtPrintSupport
 QT = core-private gui-private widgets-private
 

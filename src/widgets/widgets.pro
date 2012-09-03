@@ -1,5 +1,3 @@
-load(qt_build_config)
-
 TARGET     = QtWidgets
 QT = core-private gui-private
 MODULE_CONFIG = uic

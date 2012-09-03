@@ -1,5 +1,3 @@
-load(qt_build_config)
-
 # Additional Qt project file for qtmain lib on Windows
 !win32:error("$$_FILE_ is intended only for Windows!")
 

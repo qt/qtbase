@@ -1,5 +1,3 @@
-load(qt_build_config)
-
 TARGET   = QtNetwork
 QT = core-private
 
