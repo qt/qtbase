@@ -292,10 +292,6 @@ void QSingleShotTimer::timerEvent(QTimerEvent *)
     qDeleteInEventHandler(this);
 }
 
-QT_BEGIN_INCLUDE_NAMESPACE
-#include "qtimer.moc"
-QT_END_INCLUDE_NAMESPACE
-
 /*!
     \reentrant
     This static function calls a slot after a given time interval.
@@ -416,3 +412,5 @@ int QTimer::remainingTime() const
 */
 
 QT_END_NAMESPACE
+
+#include "qtimer.moc"

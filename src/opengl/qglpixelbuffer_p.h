@@ -53,13 +53,11 @@
 // We mean it.
 //
 
-QT_BEGIN_NAMESPACE
-
-QT_BEGIN_INCLUDE_NAMESPACE
 #include "QtOpenGL/qglpixelbuffer.h"
 #include <private/qgl_p.h>
 #include <private/qglpaintdevice_p.h>
-QT_END_INCLUDE_NAMESPACE
+
+QT_BEGIN_NAMESPACE
 
 class QEglContext;
 

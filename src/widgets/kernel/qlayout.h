@@ -165,14 +165,11 @@ private:
 
 };
 
+QT_END_NAMESPACE
 
 //### support old includes
-QT_BEGIN_INCLUDE_NAMESPACE
 #include <QtWidgets/qboxlayout.h>
 #include <QtWidgets/qgridlayout.h>
-QT_END_INCLUDE_NAMESPACE
-
-QT_END_NAMESPACE
 
 QT_END_HEADER
 

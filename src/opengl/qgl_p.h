@@ -66,16 +66,13 @@
 #include "qglpaintdevice_p.h"
 
 #include <QtGui/QOpenGLContext>
+#include <QtOpenGL/private/qglextensions_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QGLContext;
 class QGLOverlayWidget;
 class QPixmap;
-
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <QtOpenGL/private/qglextensions_p.h>
-QT_END_INCLUDE_NAMESPACE
 
 class QGLFormatPrivate
 {

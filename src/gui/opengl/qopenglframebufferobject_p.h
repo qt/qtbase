@@ -53,15 +53,11 @@
 // We mean it.
 //
 
-QT_BEGIN_NAMESPACE
-
-QT_BEGIN_INCLUDE_NAMESPACE
-
 #include <qopenglframebufferobject.h>
 #include <private/qopenglcontext_p.h>
 #include <private/qopenglextensions_p.h>
 
-QT_END_INCLUDE_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 #ifndef QT_OPENGL_ES
 #define DEFAULT_FORMAT GL_RGBA8

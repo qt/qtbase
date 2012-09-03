@@ -158,10 +158,6 @@ private:
     }
 };
 
-QT_BEGIN_INCLUDE_NAMESPACE
-#include "qinputdialog.moc"
-QT_END_INCLUDE_NAMESPACE
-
 class QInputDialogPrivate : public QDialogPrivate
 {
     Q_DECLARE_PUBLIC(QInputDialog)
@@ -1395,6 +1391,7 @@ QString QInputDialog::getItem(QWidget *parent, const QString &title, const QStri
 
 QT_END_NAMESPACE
 
+#include "qinputdialog.moc"
 #include "moc_qinputdialog.cpp"
 
 #endif // QT_NO_INPUTDIALOG
