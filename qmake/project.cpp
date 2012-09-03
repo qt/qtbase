@@ -42,10 +42,13 @@
 #include "project.h"
 
 #include "option.h"
+#include <qmakeevaluator_p.h>
 
 #include <qdir.h>
 
 #include <stdio.h>
+
+using namespace QMakeInternal;
 
 QT_BEGIN_NAMESPACE
 
@@ -83,24 +86,34 @@ bool QMakeProject::test(const ProKey &func, const QList<ProStringList> &args)
 {
     m_current.clear();
 
+    if (int func_t = statics.functions.value(func))
+        return evaluateBuiltinConditional(func_t, func, prepareBuiltinArgs(args)) == ReturnTrue;
+
     QHash<ProKey, ProFunctionDef>::ConstIterator it =
             m_functionDefs.testFunctions.constFind(func);
     if (it != m_functionDefs.testFunctions.constEnd())
         return evaluateBoolFunction(*it, args, func) == ReturnTrue;
 
-    return evaluateBuiltinConditional(func, prepareBuiltinArgs(args)) == ReturnTrue;
+    evalError(QStringLiteral("'%1' is not a recognized test function.")
+              .arg(func.toQString(m_tmp1)));
+    return false;
 }
 
 QStringList QMakeProject::expand(const ProKey &func, const QList<ProStringList> &args)
 {
     m_current.clear();
 
+    if (int func_t = statics.expands.value(func))
+        return evaluateBuiltinExpand(func_t, func, prepareBuiltinArgs(args)).toQStringList();
+
     QHash<ProKey, ProFunctionDef>::ConstIterator it =
             m_functionDefs.replaceFunctions.constFind(func);
     if (it != m_functionDefs.replaceFunctions.constEnd())
         return evaluateFunction(*it, args, 0).toQStringList();
 
-    return evaluateBuiltinExpand(func, prepareBuiltinArgs(args)).toQStringList();
+    evalError(QStringLiteral("'%1' is not a recognized replace function.")
+              .arg(func.toQString(m_tmp1)));
+    return QStringList();
 }
 
 ProString QMakeProject::expand(const QString &expr, const QString &where, int line)
