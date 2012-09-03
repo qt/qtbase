@@ -39,4 +39,5 @@ equals(QMAKE_HOST.os, Windows) {
     QMAKE_SH            = sh
 }
 
+CONFIG = qt warn_on release link_prl
 QT = core gui
