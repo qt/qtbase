@@ -38,3 +38,5 @@ equals(QMAKE_HOST.os, Windows) {
     QMAKE_EXT_OBJ       = .o
     QMAKE_SH            = sh
 }
+
+QT = core gui
