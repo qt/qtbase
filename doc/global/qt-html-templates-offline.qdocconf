@@ -1,4 +1,3 @@
-HTML.generatemacrefs    = "true"
 HTML.nobreadcrumbs      = "true"
 
 HTML.stylesheets = global/style/offline.css

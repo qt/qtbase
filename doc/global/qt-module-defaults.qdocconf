@@ -1,3 +1,5 @@
+codeindent              = 1
+
 Cpp.ignoretokens        = \
                           QDBUS_EXPORT \
                           QT_ASCII_CAST_WARN \
@@ -58,3 +60,37 @@ Cpp.ignoredirectives    = \
                           Q_FLAGS \
                           Q_INTERFACES \
                           Q_PRIVATE_PROPERTY
+
+defines                 = Q_QDOC \
+                          QT_.*_SUPPORT \
+                          QT_.*_LIB \
+                          QT_COMPAT \
+                          QT_KEYPAD_NAVIGATION \
+                          QT_NO_EGL \
+                          Q_OS_.* \
+                          Q_BYTE_ORDER \
+                          QT_DEPRECATED \
+                          QT_DEPRECATED_* \
+                          Q_NO_USING_KEYWORD \
+                          __cplusplus \
+                          Q_COMPILER_INITIALIZER_LISTS
+
+dita.metadata.default.author      = Qt Project
+dita.metadata.default.permissions = all
+dita.metadata.default.publisher   = Qt Project
+dita.metadata.default.copyryear = 2012
+dita.metadata.default.copyrholder = Nokia
+dita.metadata.default.audience = programmer
+
+naturallanguage         = en_US
+outputencoding          = UTF-8
+sourceencoding          = UTF-8
+
+examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml *.css"
+examples.imageextensions = "*.png *.jpg *.gif"
+
+headers.fileextensions  = "*.ch *.h *.h++ *.hh *.hpp *.hxx"
+sources.fileextensions  = "*.c++ *.cc *.cpp *.cxx *.mm *.qml *.qdoc"
+
+versionsym              = QT_VERSION_STR
+
