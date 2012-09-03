@@ -633,6 +633,7 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
 
     resetDefaultCiphers();
 
+#ifndef QT_NO_LIBRARY
     //load symbols needed to receive certificates from system store
 #if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
     QLibrary securityLib("/System/Library/Frameworks/Security.framework/Versions/Current/Security");
@@ -680,6 +681,7 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
         }
     }
 #endif
+#endif //QT_NO_LIBRARY
     // if on-demand loading was not enabled, load the certs now
     if (!s_loadRootCertsOnDemand)
         setDefaultCaCertificates(systemCaCertificates());
