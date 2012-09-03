@@ -155,7 +155,7 @@ QPagedPaintDevice::~QPagedPaintDevice()
 /*!
   \fn bool QPagedPaintDevice::newPage()
 
-  Starts a new page.
+  Starts a new page. Returns \c true on success.
 */
 
 

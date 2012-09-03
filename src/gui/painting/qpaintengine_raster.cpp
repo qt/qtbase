@@ -166,6 +166,9 @@ static inline bool winClearTypeFontsEnabled()
     return result == FE_FONTSMOOTHINGCLEARTYPE;
 }
 
+/*!
+    \internal
+ */
 bool QRasterPaintEngine::clearTypeFontsEnabled()
 {
     static const bool result = winClearTypeFontsEnabled();
@@ -1367,6 +1370,13 @@ void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
         qrasterpaintengine_dirty_clip(d, s);
     }
 }
+
+/*!
+ \fn const QClipData *QRasterPaintEngine::clipData() const
+
+ \internal
+*/
+
 
 /*!
     \internal
@@ -2737,6 +2747,9 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
         blend(current, spans, &s->penData);
 }
 
+/*!
+    \internal
+*/
 bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
                                           const QFixedPoint *positions, QFontEngine *fontEngine)
 {
@@ -3250,12 +3263,18 @@ void QRasterPaintEngine::releaseDC(HDC) const
 
 #endif
 
+/*!
+    \internal
+*/
 bool QRasterPaintEngine::supportsTransformations(QFontEngine *fontEngine) const
 {
     const QTransform &m = state()->matrix;
     return supportsTransformations(fontEngine, m);
 }
 
+/*!
+    \internal
+*/
 bool QRasterPaintEngine::supportsTransformations(QFontEngine *fontEngine, const QTransform &m) const
 {
     if (m.type() >= QTransform::TxProject)

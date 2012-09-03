@@ -832,22 +832,25 @@ bool QPixmap::doImageIO(QImageWriter *writer, int quality) const
     return writer->write(toImage());
 }
 
-/*!
-    \fn void QPixmap::fill(const QPaintDevice *device, int x, int y)
-    \overload
 
+/*!
     \obsolete
 
-    Fills the pixmap with the \a device's background color or pixmap.
-    The given point, (\a x, \a y), defines an offset in widget
-    coordinates to which the pixmap's top-left pixel will be mapped
-    to.
+    Use QPainter or the fill(QColor) overload instead.
 */
 
-void QPixmap::fill(const QPaintDevice *, const QPoint &)
+void QPixmap::fill(const QPaintDevice *device, const QPoint &p)
 {
     qWarning() << "QPixmap::fill(const QPaintDevice *device, const QPoint &offset) is deprecated, ignored";
 }
+
+
+/*!
+    \fn void QPixmap::fill(const QPaintDevice *device, int x, int y)
+    \obsolete
+
+    Use QPainter or the fill(QColor) overload instead.
+*/
 
 
 /*!
@@ -931,6 +934,11 @@ static void sendResizeEvents(QWidget *target)
 }
 #endif
 
+/*!
+    \obsolete
+
+    Use QWidget::grab() instead.
+*/
 QPixmap QPixmap::grabWidget(QObject *widget, const QRect &rectangle)
 {
     QPixmap pixmap;
@@ -942,6 +950,13 @@ QPixmap QPixmap::grabWidget(QObject *widget, const QRect &rectangle)
                               Q_ARG(QRect, rectangle));
     return pixmap;
 }
+
+/*!
+    \fn QPixmap QPixmap::grabWidget(QObject *widget, int x, int y, int w, int h)
+    \obsolete
+
+    Use QWidget::grab() instead.
+*/
 
 /*****************************************************************************
   QPixmap stream functions
@@ -1214,11 +1229,6 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     one of QAbstractButton's subclasses (such as QPushButton and
     QToolButton). QLabel has a pixmap property, whereas
     QAbstractButton has an icon property.
-
-    In addition to the ordinary constructors, a QPixmap can be
-    constructed using the static grabWidget() and grabWindow()
-    functions which creates a QPixmap and paints the given widget, or
-    window, into it.
 
     QPixmap objects can be passed around by value since the QPixmap
     class uses implicit data sharing. For more information, see the \l
@@ -1634,13 +1644,13 @@ QDebug operator<<(QDebug dbg, const QPixmap &r)
 /*!
     \fn QPixmap QPixmap::alphaChannel() const
 
-    Use QImage::alphaChannel() instead.
+    Most use cases for this can be achieved using a QPainter and QPainter::CompositionMode instead.
 */
 
 /*!
     \fn void QPixmap::setAlphaChannel(const QPixmap &p)
 
-    Use QImage::setAlphaChannel() for \a p instead.
+    Most use cases for this can be achieved using \a p with QPainter and QPainter::CompositionMode instead.
 */
 
 QT_END_NAMESPACE

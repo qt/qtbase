@@ -57,16 +57,24 @@ QPaintDevice::~QPaintDevice()
 }
 
 
-
+/*!
+    \internal
+*/
 void QPaintDevice::init(QPainter *) const
 {
 }
 
+/*!
+    \internal
+*/
 QPaintDevice *QPaintDevice::redirected(QPoint *) const
 {
     return 0;
 }
 
+/*!
+    \internal
+*/
 QPainter *QPaintDevice::sharedPainter() const
 {
     return 0;
