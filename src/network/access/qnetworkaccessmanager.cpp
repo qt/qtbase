@@ -1202,6 +1202,8 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authen
             return;
         }
     }
+
+#ifndef QT_NO_NETWORKPROXY
 #if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
     //now we try to get the username and password from keychain
     //if not successful signal will be emitted
@@ -1214,6 +1216,7 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authen
         return;
     }
 #endif
+#endif //QT_NO_NETWORKPROXY
 
     // if we emit a signal here in synchronous mode, the user might spin
     // an event loop, which might recurse and lead to problems
