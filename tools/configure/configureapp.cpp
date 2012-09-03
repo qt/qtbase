@@ -3382,7 +3382,7 @@ void Configure::displayConfig()
 
     // display config.summary
     sout.seekg(0, ios::beg);
-    while (sout) {
+    while (sout.good()) {
         string str;
         getline(sout, str);
         cout << str << endl;
