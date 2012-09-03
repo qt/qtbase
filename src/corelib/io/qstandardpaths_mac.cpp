@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_DESKTOPSERVICES
-
 #include "qstandardpaths.h"
 #include <qdir.h>
 #include <private/qcore_mac_p.h>
@@ -201,5 +199,3 @@ QString QStandardPaths::displayName(StandardLocation type)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_DESKTOPSERVICES
