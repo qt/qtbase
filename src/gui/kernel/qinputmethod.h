@@ -59,7 +59,6 @@ class Q_GUI_EXPORT QInputMethod : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QInputMethod)
-    Q_PROPERTY(QObject *inputItem READ inputItem WRITE setInputItem NOTIFY inputItemChanged)
     Q_PROPERTY(QRectF cursorRectangle READ cursorRectangle NOTIFY cursorRectangleChanged)
     Q_PROPERTY(QRectF keyboardRectangle READ keyboardRectangle NOTIFY keyboardRectangleChanged)
     Q_PROPERTY(bool visible READ isVisible NOTIFY visibleChanged)
@@ -69,14 +68,6 @@ class Q_GUI_EXPORT QInputMethod : public QObject
 
     Q_ENUMS(Action)
 public:
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED QObject *inputItem() const;
-    QT_DEPRECATED void setInputItem(QObject *inputItemChanged);
-
-    // the window containing the editor
-    QT_DEPRECATED QWindow *inputWindow() const;
-#endif
-
     QTransform inputItemTransform() const;
     void setInputItemTransform(const QTransform &transform);
 
@@ -114,7 +105,6 @@ public Q_SLOTS:
     void invokeAction(Action a, int cursorPosition);
 
 Q_SIGNALS:
-    void inputItemChanged();
     void cursorRectangleChanged();
     void keyboardRectangleChanged();
     void visibleChanged();
@@ -128,10 +118,6 @@ private:
     friend class QPlatformInputContext;
     QInputMethod();
     ~QInputMethod();
-
-    Q_PRIVATE_SLOT(d_func(), void _q_connectFocusObject())
-    Q_PRIVATE_SLOT(d_func(), void _q_checkFocusObject(QObject* object))
-
 };
 
 QT_END_NAMESPACE

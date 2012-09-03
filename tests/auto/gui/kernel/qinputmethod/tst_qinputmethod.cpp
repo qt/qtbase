@@ -113,7 +113,6 @@ private slots:
     void isVisible();
     void animating();
     void keyboarRectangle();
-    void inputItem();
     void inputItemTransform();
     void cursorRectangle();
     void invokeAction();
@@ -178,20 +177,6 @@ void tst_qinputmethod::keyboarRectangle()
     QCOMPARE(spy.count(), 1);
 }
 
-void tst_qinputmethod::inputItem()
-{
-    QVERIFY(!qApp->inputMethod()->inputItem());
-    QSignalSpy spy(qApp->inputMethod(), SIGNAL(inputItemChanged()));
-
-    qApp->inputMethod()->setInputItem(&m_inputItem);
-
-    QCOMPARE(qApp->inputMethod()->inputItem(), &m_inputItem);
-    QCOMPARE(spy.count(), 1);
-
-    // reset
-    qApp->inputMethod()->setInputItem(0);
-}
-
 void tst_qinputmethod::inputItemTransform()
 {
     QCOMPARE(qApp->inputMethod()->inputItemTransform(), QTransform());
@@ -214,13 +199,18 @@ void tst_qinputmethod::cursorRectangle()
 {
     QCOMPARE(qApp->inputMethod()->cursorRectangle(), QRectF());
 
+    DummyWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    window.requestActivateWindow();
+    QTRY_COMPARE(qApp->focusWindow(), &window);
+    window.setFocusObject(&m_inputItem);
+
     QTransform transform;
     transform.translate(10, 10);
     transform.scale(2, 2);
     transform.shear(2, 2);
     qApp->inputMethod()->setInputItemTransform(transform);
-    qApp->inputMethod()->setInputItem(&m_inputItem);
-
     QCOMPARE(qApp->inputMethod()->cursorRectangle(), transform.mapRect(QRectF(1, 2, 3, 4)));
 
     m_inputItem.cursorRectangle = QRectF(1.5, 2, 1, 8);
@@ -228,7 +218,6 @@ void tst_qinputmethod::cursorRectangle()
 
     // reset
     m_inputItem.cursorRectangle = QRectF(1, 2, 3, 4);
-    qApp->inputMethod()->setInputItem(0);
     qApp->inputMethod()->setInputItemTransform(QTransform());
 }
 
@@ -278,9 +267,6 @@ void tst_qinputmethod::update()
     QCOMPARE(int(m_platformInputContext.m_lastQueries), int(Qt::ImQueryAll));
 
     QCOMPARE(qApp->inputMethod()->keyboardRectangle(), QRectF(10, 20, 30, 40));
-
-    // reset
-    qApp->inputMethod()->setInputItem(0);
 }
 
 void tst_qinputmethod::query()

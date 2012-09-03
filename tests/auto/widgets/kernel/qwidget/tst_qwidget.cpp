@@ -352,7 +352,6 @@ private slots:
     void initialPosForDontShowOnScreenWidgets();
     void updateOnDestroyedSignal();
     void toplevelLineEditFocus();
-    void inputFocus_task257832();
 
     void focusWidget_task254563();
 #ifndef Q_OS_WINCE_WM
@@ -8869,18 +8868,6 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 }
 #endif
 
-void tst_QWidget::inputFocus_task257832()
-{
-      QScopedPointer<QLineEdit> widget(new QLineEdit);
-      widget->setFocus();
-      widget->winId();    // make sure, widget has been created
-      widget->show();
-      QTRY_VERIFY(widget->hasFocus());
-      QCOMPARE(qApp->inputMethod()->inputItem(), widget.data());
-      widget->setReadOnly(true);
-      QVERIFY(!qApp->inputMethod()->inputItem());
-}
-
 void tst_QWidget::setGraphicsEffect()
 {
     // Check that we don't have any effect by default.
@@ -9004,19 +8991,7 @@ void tst_QWidget::focusProxyAndInputMethods()
     QVERIFY(QTest::qWaitForWindowActive(toplevel.data()));
     QVERIFY(toplevel->hasFocus());
     QVERIFY(child->hasFocus());
-
-    // verify that toggling input methods on the child widget
-    // correctly propagate to the focus proxy's input method
-    // and that the input method gets the focus proxy passed
-    // as the focus widget instead of the child widget.
-    // otherwise input method queries go to the wrong widget
-    QCOMPARE(qApp->inputMethod()->inputItem(), toplevel.data());
-
-    toplevel->setAttribute(Qt::WA_InputMethodEnabled, false);
-    QVERIFY(!qApp->inputMethod()->inputItem());
-
-    toplevel->setAttribute(Qt::WA_InputMethodEnabled, true);
-    QCOMPARE(qApp->inputMethod()->inputItem(), toplevel.data());
+    QCOMPARE(qApp->focusObject(), toplevel.data());
 }
 
 #ifdef QT_BUILD_INTERNAL

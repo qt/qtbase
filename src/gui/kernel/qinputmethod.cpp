@@ -53,8 +53,6 @@ QT_BEGIN_NAMESPACE
 QInputMethod::QInputMethod()
     : QObject(*new QInputMethodPrivate)
 {
-    // might be instantiated before QGuiApplication is fully done, need to connect later
-    QTimer::singleShot(0, this, SLOT(_q_connectFocusObject()));
 }
 
 /*!
@@ -76,40 +74,6 @@ QInputMethod::~QInputMethod()
     Qt Quick also provides access to QInputMethod in QML through \l{QmlGlobalQtObject}{Qt global object}
     as \c Qt.inputMethod property.
 */
-
-/*!
-    \property QInputMethod::inputItem
-    \brief Focused item that accepts text input
-    \obsolete
-
-    Input item is set and unset by the focused window. In QML Scene Graph this is done by
-    QQuickCanvas and the input item is either TextInput or TextEdit element. Any QObject can
-    behave as an input item as long as it responds to QInputMethodQueryEvent and QInputMethodEvent
-    events sent by the input methods.
-
-    \sa inputItemTransform, inputWindow, QInputMethodQueryEvent, QInputMethodEvent
-*/
-QObject *QInputMethod::inputItem() const
-{
-    Q_D(const QInputMethod);
-    return d->inputItem.data();
-}
-
-void QInputMethod::setInputItem(QObject *inputItem)
-{
-    Q_D(QInputMethod);
-    d->setInputItem(inputItem);
-}
-
-/*!
-    Returns the currently focused window containing the input item.
-
-    \obsolete
-*/
-QWindow *QInputMethod::inputWindow() const
-{
-    return qApp->focusWindow();
-}
 
 /*!
     Returns the transformation from input item coordinates to the window coordinates.
@@ -146,11 +110,12 @@ QRectF QInputMethod::cursorRectangle() const
 {
     Q_D(const QInputMethod);
 
-    if (!d->inputItem)
+    QObject *focusObject = qGuiApp->focusObject();
+    if (!focusObject)
         return QRectF();
 
     QInputMethodQueryEvent query(Qt::ImCursorRectangle);
-    QGuiApplication::sendEvent(d->inputItem.data(), &query);
+    QGuiApplication::sendEvent(focusObject, &query);
     QRectF r = query.value(Qt::ImCursorRectangle).toRectF();
     if (!r.isValid())
         return QRectF();
@@ -303,7 +268,6 @@ void QInputMethod::update(Qt::InputMethodQueries queries)
     if (queries & Qt::ImEnabled) {
         QObject *focus = qApp->focusObject();
         bool enabled = d->objectAcceptsInputMethod(focus);
-        d->setInputItem(enabled ? focus : 0);
         QPlatformInputContextPrivate::setInputMethodAccepted(enabled);
     }
 
@@ -367,21 +331,6 @@ void QInputMethod::invokeAction(Action a, int cursorPosition)
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         ic->invokeAction(a, cursorPosition);
-}
-
-// temporary handlers for updating focus item based on application focus
-void QInputMethodPrivate::_q_connectFocusObject()
-{
-    Q_Q(QInputMethod);
-    QObject::connect(qApp, SIGNAL(focusObjectChanged(QObject*)),
-                     q, SLOT(_q_checkFocusObject(QObject*)));
-    _q_checkFocusObject(qApp->focusObject());
-}
-
-void QInputMethodPrivate::_q_checkFocusObject(QObject *object)
-{
-    bool enabled = objectAcceptsInputMethod(object);
-    setInputItem(enabled ? object : 0);
 }
 
 bool QInputMethodPrivate::objectAcceptsInputMethod(QObject *object)
