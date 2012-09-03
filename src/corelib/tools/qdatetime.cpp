@@ -2322,6 +2322,10 @@ void QDateTime::setTime(const QTime &time)
 
 /*!
     Sets the time specification used in this datetime to \a spec.
+    The datetime will refer to a different point in time.
+
+    Example:
+    \snippet code/src_corelib_tools_qdatetime.cpp 19
 
     \sa timeSpec(), setDate(), setTime(), Qt::TimeSpec
 */
@@ -2856,8 +2860,11 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
 /*!
     \fn QDateTime QDateTime::toTimeSpec(Qt::TimeSpec specification) const
 
-    Returns a copy of this datetime configured to use the given time
+    Returns a copy of this datetime converted to the given time
     \a specification.
+
+    Example:
+    \snippet code/src_corelib_tools_qdatetime.cpp 16
 
     \sa timeSpec(), toUTC(), toLocalTime()
 */
@@ -3570,6 +3577,10 @@ QDateTime QDateTime::fromString(const QString &string, const QString &format)
     Returns a datetime containing the date and time information in
     this datetime, but specified using the Qt::LocalTime definition.
 
+    Example:
+
+    \snippet code/src_corelib_tools_qdatetime.cpp 17
+
     \sa toTimeSpec()
 */
 
@@ -3578,6 +3589,10 @@ QDateTime QDateTime::fromString(const QString &string, const QString &format)
 
     Returns a datetime containing the date and time information in
     this datetime, but specified using the Qt::UTC definition.
+
+    Example:
+
+    \snippet code/src_corelib_tools_qdatetime.cpp 18
 
     \sa toTimeSpec()
 */

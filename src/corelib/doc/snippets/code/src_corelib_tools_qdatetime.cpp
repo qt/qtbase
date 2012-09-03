@@ -157,3 +157,38 @@ qDebug() << "Days from startDate to endDate: " << startDate.daysTo(endDate);
 qSwap(startDate, endDate); // Make endDate before startDate.
 qDebug() << "Days from startDate to endDate: " << startDate.daysTo(endDate);
 //! [15]
+
+//! [16]
+QDateTime local(QDateTime::currentDateTime());
+QDateTime UTC(local.toTimeSpec(Qt::UTC));
+qDebug() << "Local time is:" << local;
+qDebug() << "UTC time is:" << UTC;
+qDebug() << "No difference between times:" << local.secsTo(UTC);
+//! [16]
+
+//! [17]
+QDateTime UTC(QDateTime::currentDateTimeUtc());
+QDateTime local(UTC.toLocalTime());
+qDebug() << "UTC time is:" << UTC;
+qDebug() << "Local time is:" << local;
+qDebug() << "No difference between times:" << UTC.secsTo(local);
+//! [17]
+
+//! [18]
+QDateTime local(QDateTime::currentDateTime());
+QDateTime UTC(local.toUTC());
+qDebug() << "Local time is:" << local;
+qDebug() << "UTC time is:" << UTC;
+qDebug() << "No difference between times:" << local.secsTo(UTC);
+//! [18]
+
+//! [19]
+QDateTime local(QDateTime::currentDateTime());
+qDebug() << "Local time is:" << local;
+
+QDateTime UTC(local);
+UTC.setTimeSpec(Qt::UTC);
+qDebug() << "UTC time is:" << UTC;
+
+qDebug() << "There are" << local.secsTo(UTC) << "seconds difference between the datetimes.";
+//! [19]
