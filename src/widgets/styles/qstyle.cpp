@@ -1791,11 +1791,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SH_CustomBase  Base value for custom style hints.
     Custom values must be greater than this value.
 
-    \value SH_MenuBar_DismissOnSecondClick A boolean indicating if a menu in
-    the menu bar should be dismissed when it is clicked on a second time. (Example:
-    Clicking and releasing on the File Menu in a menu bar and then
-    immediately clicking on the File Menu again.)
-
     \value SH_MessageBox_UseBorderForButtonSpacing A boolean indicating what the to
     use the border of the buttons (computed as half the button height) for the spacing
     of the button in a message box.

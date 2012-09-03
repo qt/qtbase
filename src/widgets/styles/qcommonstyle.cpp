@@ -4726,10 +4726,6 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = Qt::StrongFocus;
         break;
 
-    case SH_MenuBar_DismissOnSecondClick:
-        ret = 1;
-        break;
-
     case SH_MessageBox_UseBorderForButtonSpacing:
         ret = 0;
         break;

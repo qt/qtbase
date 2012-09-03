@@ -651,7 +651,6 @@ public:
         SH_DrawMenuBarSeparator,
         SH_TitleBar_ModifyNotification,
         SH_Button_FocusPolicy,
-        SH_MenuBar_DismissOnSecondClick,
         SH_MessageBox_UseBorderForButtonSpacing,
         SH_TitleBar_AutoRaise,
         SH_ToolButton_PopupDelay,
