@@ -2632,7 +2632,7 @@ void Configure::generateCachefile()
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
             cacheStream << (*var) << endl;
         }
-        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << "depend_includepath no_private_qt_headers_warning QTDIR_build" << endl;
+        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << "no_private_qt_headers_warning QTDIR_build" << endl;
 
         cacheStream.flush();
         cacheFile.close();

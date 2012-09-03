@@ -1,5 +1,5 @@
 load(exclusive_builds)
-CONFIG = lex yacc warn_on debug exceptions $$CONFIG
+CONFIG = lex yacc warn_on debug exceptions depend_includepath $$CONFIG
 
 !build_pass:exists($$_PRO_FILE_PWD_/sync.profile) {
     !exists($$[QT_HOST_DATA]/.qmake.cache) {
