@@ -70,6 +70,7 @@ private slots:
     void removeWidget();
     void keepFocusAfterSetCurrent();
     void heigthForWidth();
+    void replaceWidget();
 
 private:
     QWidget *testWidget;
@@ -391,6 +392,27 @@ void tst_QStackedLayout::heigthForWidth()
     stackLayout->setCurrentIndex(1);
     QCOMPARE(stackLayout->heightForWidth(200), hfw_index0);
 
+}
+
+void tst_QStackedLayout::replaceWidget()
+{
+    QWidget w;
+    QStackedLayout *stackLayout = new QStackedLayout(&w);
+
+    QLineEdit *replaceFrom = new QLineEdit;
+    QLineEdit *replaceTo = new QLineEdit;
+    stackLayout->addWidget(new QLineEdit());
+    stackLayout->addWidget(replaceFrom);
+    stackLayout->addWidget(new QLineEdit());
+    stackLayout->setCurrentWidget(replaceFrom);
+
+    QCOMPARE(stackLayout->indexOf(replaceFrom), 1);
+    QCOMPARE(stackLayout->indexOf(replaceTo), -1);
+    stackLayout->replaceWidget(replaceFrom, replaceTo);
+
+    QCOMPARE(stackLayout->indexOf(replaceFrom), -1);
+    QCOMPARE(stackLayout->indexOf(replaceTo), 1);
+    QCOMPARE(stackLayout->currentWidget(), replaceTo);
 }
 
 QTEST_MAIN(tst_QStackedLayout)

@@ -79,6 +79,7 @@ private slots:
 
     void taskQTBUG_7103_minMaxWidthNotRespected();
     void taskQTBUG_27420_takeAtShouldUnparentLayout();
+    void replaceWidget();
 };
 
 class CustomLayoutStyle : public QProxyStyle
@@ -328,7 +329,6 @@ void tst_QBoxLayout::taskQTBUG_27420_takeAtShouldUnparentLayout()
         QVERIFY(!inner.isNull());
 }
 
-
 struct Descr
 {
     Descr(int min, int sh, int max = -1, bool exp= false, int _stretch = 0, bool _empty = false)
@@ -505,6 +505,25 @@ void tst_QBoxLayout::testLayoutEngine()
         QCOMPARE(item->geometry().width(), xSize);
         QCOMPARE(item->geometry().x(), xPos);
     }
+}
+
+void tst_QBoxLayout::replaceWidget()
+{
+    QWidget w;
+    QBoxLayout *boxLayout = new QVBoxLayout(&w);
+
+    QLineEdit *replaceFrom = new QLineEdit;
+    QLineEdit *replaceTo = new QLineEdit;
+    boxLayout->addWidget(new QLineEdit());
+    boxLayout->addWidget(replaceFrom);
+    boxLayout->addWidget(new QLineEdit());
+
+    QCOMPARE(boxLayout->indexOf(replaceFrom), 1);
+    QCOMPARE(boxLayout->indexOf(replaceTo), -1);
+    boxLayout->replaceWidget(replaceFrom, replaceTo);
+
+    QCOMPARE(boxLayout->indexOf(replaceFrom), -1);
+    QCOMPARE(boxLayout->indexOf(replaceTo), 1);
 }
 
 QTEST_MAIN(tst_QBoxLayout)

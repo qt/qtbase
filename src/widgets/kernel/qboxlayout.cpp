@@ -140,6 +140,7 @@ public:
     void calcHfw(int);
 
     void effectiveMargins(int *left, int *top, int *right, int *bottom) const;
+    QLayoutItem* replaceAt(int index, QLayoutItem*) Q_DECL_OVERRIDE;
 };
 
 QBoxLayoutPrivate::~QBoxLayoutPrivate()
@@ -442,6 +443,21 @@ void QBoxLayoutPrivate::calcHfw(int w)
     hfwWidth = w;
     hfwHeight = h;
     hfwMinHeight = mh;
+}
+
+QLayoutItem* QBoxLayoutPrivate::replaceAt(int index, QLayoutItem *item)
+{
+    Q_Q(QBoxLayout);
+    if (!item)
+        return 0;
+    QBoxLayoutItem *b = list.value(index);
+    if (!b)
+        return 0;
+    QLayoutItem *r = b->item;
+
+    b->item = item;
+    q->invalidate();
+    return r;
 }
 
 

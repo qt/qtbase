@@ -130,6 +130,7 @@ public:
     virtual int count() const = 0;
     bool isEmpty() const;
     QSizePolicy::ControlTypes controlTypes() const;
+    QLayoutItem* replaceWidget(QWidget *from, QWidget *to, bool recursive = true);
 
     int totalHeightForWidth(int w) const;
     QSize totalMinimumSize() const;

@@ -246,6 +246,7 @@ public:
 
     int hSpacing;
     int vSpacing;
+    QLayoutItem* replaceAt(int index, QLayoutItem*) Q_DECL_OVERRIDE;
 };
 
 QFormLayoutPrivate::QFormLayoutPrivate()
@@ -999,6 +1000,32 @@ QStyle* QFormLayoutPrivate::getStyle() const
         return parentWidget->style();
     else
         return QApplication::style();
+}
+
+QLayoutItem* QFormLayoutPrivate::replaceAt(int index, QLayoutItem *newitem)
+{
+    Q_Q(QFormLayout);
+    if (!newitem)
+        return 0;
+    const int storageIndex = storageIndexFromLayoutItem(m_matrix, m_things.value(index));
+    if (storageIndex == -1) {
+        // ### Qt6 - fix warning too when this class becomes public
+        qWarning("QFormLayoutPrivate::replaceAt: Invalid index %d", index);
+        return 0;
+    }
+
+    int row, col;
+    QFormLayoutPrivate::ItemMatrix::storageIndexToPosition(storageIndex, &row, &col);
+    Q_ASSERT(m_matrix(row, col));
+
+    QFormLayoutItem *item = m_matrix(row, col);
+    Q_ASSERT(item);
+
+    QLayoutItem *olditem = item->item;
+    item->item = newitem;
+
+    q->invalidate();
+    return olditem;
 }
 
 /*!

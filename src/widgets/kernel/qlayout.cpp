@@ -1109,6 +1109,54 @@ bool QLayout::activate()
 }
 
 /*!
+    \since 5.2
+
+    Searches for widget \a from and replaces it with widget \a to if found.
+    Returns the layout item that contains the widget \a from on success. Otherwise \c 0 is returned.
+    If \a recursive is \c true, sub-layouts are searched for doing the replacement. Notice that the returned item therefore might not belong to this layout, but to a sub-layout.
+
+    The returned layout item is no longer owned by the layout and should be either deleted or inserted to another layout. The widget \a from is no longer managed by the layout and may need to be deleted or hidden. The parent of widget \a from is left unchanged.
+
+    This function works for the built-in Qt layouts, but might not work for custom layouts.
+
+    \sa indexOf()
+*/
+
+//### Qt 6 make this function virtual
+QLayoutItem* QLayout::replaceWidget(QWidget *from, QWidget *to, bool recursive)
+{
+    Q_D(QLayout);
+    if (!from || !to)
+        return 0;
+
+    int index = -1;
+    QLayoutItem *item = 0;
+    for (int u = 0; u < count(); ++u) {
+        item = itemAt(u);
+        if (item->widget() == from) {
+            index = u;
+            break;
+        }
+        if (item && item->layout() && recursive) {
+            QLayoutItem *r = item->layout()->replaceWidget(from, to, true);
+            if (r)
+                return r;
+        }
+    }
+    if (index == -1)
+        return 0;
+
+    QLayoutItem *newitem = new QWidgetItem(to);
+    newitem->setAlignment(item->alignment());
+    QLayoutItem *r = d->replaceAt(index, newitem);
+    if (!r)
+        delete newitem;
+    else
+        addChildWidget(to);
+    return r;
+}
+
+/*!
     \fn QLayoutItem *QLayout::itemAt(int index) const
 
     Must be implemented in subclasses to return the layout item at \a

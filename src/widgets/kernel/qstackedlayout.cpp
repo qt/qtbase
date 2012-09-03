@@ -53,10 +53,28 @@ class QStackedLayoutPrivate : public QLayoutPrivate
     Q_DECLARE_PUBLIC(QStackedLayout)
 public:
     QStackedLayoutPrivate() : index(-1), stackingMode(QStackedLayout::StackOne) {}
+    QLayoutItem* replaceAt(int index, QLayoutItem *newitem) Q_DECL_OVERRIDE;
     QList<QLayoutItem *> list;
     int index;
     QStackedLayout::StackingMode stackingMode;
 };
+
+QLayoutItem* QStackedLayoutPrivate::replaceAt(int idx, QLayoutItem *newitem)
+{
+    Q_Q(QStackedLayout);
+    if (idx < 0 || idx >= list.size() || !newitem)
+        return 0;
+    QWidget *wdg = newitem->widget();
+    if (!wdg) {
+        qWarning("QStackedLayout::replaceAt: Only widgets can be added");
+        return 0;
+    }
+    QLayoutItem *orgitem = list.at(idx);
+    list.replace(idx, newitem);
+    if (idx == index)
+        q->setCurrentIndex(index);
+    return orgitem;
+}
 
 /*!
     \class QStackedLayout

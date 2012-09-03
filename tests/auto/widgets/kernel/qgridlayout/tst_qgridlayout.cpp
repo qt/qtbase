@@ -101,6 +101,7 @@ private slots:
     void distributeMultiCell();
 
     void taskQTBUG_27420_takeAtShouldUnparentLayout();
+    void replaceWidget();
 
 private:
     QWidget *testWidget;
@@ -1654,6 +1655,50 @@ void tst_QGridLayout::taskQTBUG_27420_takeAtShouldUnparentLayout()
         delete item; // success: a taken item/layout should not be deleted when the old parent is deleted
     else
         QVERIFY(!inner.isNull());
+}
+
+void tst_QGridLayout::replaceWidget()
+{
+    QWidget wdg;
+    QGridLayout *l = new QGridLayout();
+    const int itemCount = 9;
+    QLabel *labels[itemCount];
+
+    // setup layout
+    for (int n = 0; n < itemCount; ++n) {
+        int x = n % 3;
+        int y = n / 3;
+        labels[n] = new QLabel(QString("label %1").arg(n));
+        Qt::Alignment align = (n % 3 ? Qt::AlignLeft : Qt::AlignRight);
+        l->addWidget(labels[n], x * 3, y * 3, (n % 2) + 1, (n + 1) % 2 + 1, align);
+    }
+    wdg.setLayout(l);
+
+    // iterate and replace
+    for (int n = 0; n < itemCount; n += 2) {
+        int i = l->indexOf(labels[n]);
+        int fromRow, fromCol, fromRowSpan, fromColSpan;
+        l->getItemPosition(i, &fromRow, &fromCol, &fromRowSpan, &fromColSpan);
+        Qt::Alignment fromAlign = l->itemAt(i)->alignment();
+        // do replace
+        QPushButton *pb = new QPushButton("replaced");
+        QLayoutItem *olditem = l->replaceWidget(labels[n], pb);
+        // verify
+        QCOMPARE(i, l->indexOf(pb));
+        QVERIFY(olditem != 0);
+        QCOMPARE(l->indexOf(labels[n]), -1);
+        int toRow, toCol, toRowSpan, toColSpan;
+        l->getItemPosition(i, &toRow, &toCol, &toRowSpan, &toColSpan);
+        QCOMPARE(fromRow, toRow);
+        QCOMPARE(fromCol, toCol);
+        QCOMPARE(fromRowSpan, toRowSpan);
+        QCOMPARE(fromColSpan, toColSpan);
+        Qt::Alignment toAlign = l->itemAt(i)->alignment();
+        QCOMPARE(fromAlign, toAlign);
+        // clean up
+        olditem->widget()->deleteLater();
+        delete olditem;
+    }
 }
 
 QTEST_MAIN(tst_QGridLayout)

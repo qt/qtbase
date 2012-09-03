@@ -85,6 +85,7 @@ public:
     void setGeometry(const QRect &r) { item_->setGeometry(r); }
     Qt::Alignment alignment() const { return item_->alignment(); }
     QLayoutItem *item() { return item_; }
+    void setItem(QLayoutItem *newitem) { item_ = newitem; }
     QLayoutItem *takeItem() { QLayoutItem *i = item_; item_ = 0; return i; }
 
     int hStretch() { return item_->widget() ?
@@ -170,6 +171,18 @@ public:
             }
         }
         return 0;
+    }
+    QLayoutItem* replaceAt(int index, QLayoutItem *newitem) Q_DECL_OVERRIDE
+    {
+        if (!newitem)
+            return 0;
+        QLayoutItem *item = 0;
+        QGridBox *b = things.value(index);
+        if (b) {
+            item = b->takeItem();
+            b->setItem(newitem);
+        }
+        return item;
     }
 
     void getItemPosition(int index, int *row, int *column, int *rowSpan, int *columnSpan) const {
