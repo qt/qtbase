@@ -541,7 +541,12 @@ public:
 #ifdef QT_BUILD_COMPAT_LIB
         return 0; // Compat should never reference this symbol
 #else
-        return block.docHandle()->formatCollection();
+        if (block.docHandle())
+            return block.docHandle()->formatCollection();
+        else if (specialData)
+            return specialData->formats.data();
+
+        return 0;
 #endif
     }
     QTextCharFormat format(const QScriptItem *si) const;
@@ -619,6 +624,8 @@ public:
         QList<QTextLayout::FormatRange> addFormats;
         QVector<int> addFormatIndices;
         QVector<int> resolvedFormatIndices;
+        // only used when no docHandle is available
+        QScopedPointer<QTextFormatCollection> formats;
     };
     SpecialData *specialData;
 

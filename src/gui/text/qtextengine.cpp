@@ -2198,11 +2198,11 @@ int QTextEngine::formatIndex(const QScriptItem *si) const
 QTextCharFormat QTextEngine::format(const QScriptItem *si) const
 {
     QTextCharFormat format;
-    const QTextFormatCollection *formats = 0;
-    if (block.docHandle()) {
-        formats = this->formats();
+    const QTextFormatCollection *formats = this->formats();
+
+    if (formats)
         format = formats->charFormat(formatIndex(si));
-    }
+
     if (specialData && specialData->resolvedFormatIndices.isEmpty()) {
         int end = si->position + length(si);
         for (int i = 0; i < specialData->addFormats.size(); ++i) {
@@ -2289,11 +2289,15 @@ bool QTextEngine::atSpace(int position) const
 
 void QTextEngine::indexAdditionalFormats()
 {
-    if (!block.docHandle())
-        return;
-
     specialData->addFormatIndices.resize(specialData->addFormats.count());
-    QTextFormatCollection * const formats = this->formats();
+
+    QTextFormatCollection *formats = this->formats();
+
+    if (!formats) {
+        Q_ASSERT(!block.docHandle());
+        specialData->formats.reset(new QTextFormatCollection);
+        formats = specialData->formats.data();
+    }
 
     for (int i = 0; i < specialData->addFormats.count(); ++i) {
         specialData->addFormatIndices[i] = formats->indexForFormat(specialData->addFormats.at(i).format);
@@ -2708,11 +2712,10 @@ public:
 void QTextEngine::resolveAdditionalFormats() const
 {
     if (!specialData || specialData->addFormats.isEmpty()
-        || !block.docHandle()
         || !specialData->resolvedFormatIndices.isEmpty())
         return;
 
-    QTextFormatCollection *collection = this->formats();
+    QTextFormatCollection *collection = formats();
 
     specialData->resolvedFormatIndices.clear();
     QVector<int> indices(layoutData->items.count());
@@ -2748,16 +2751,17 @@ void QTextEngine::resolveAdditionalFormats() const
             ++endIt;
         }
         QTextCharFormat format;
-        const QTextFormatCollection *formats = 0;
         if (block.docHandle()) {
-            formats = this->formats();
-            format = formats->charFormat(formatIndex(si));
+            // when we have a docHandle, formatIndex might still return a valid index based
+            // on the preeditPosition. for all other cases, we cleared the resolved format indices
+            format = collection->charFormat(formatIndex(si));
         }
+
         foreach (int cur, currentFormats) {
             const QTextLayout::FormatRange &r = specialData->addFormats.at(cur);
             Q_ASSERT (r.start <= si->position && r.start + r.length >= end);
             if (!specialData->addFormatIndices.isEmpty()) {
-                format.merge(formats->format(specialData->addFormatIndices.at(cur)));
+                format.merge(collection->format(specialData->addFormatIndices.at(cur)));
             } else {
                 format.merge(r.format);
             }

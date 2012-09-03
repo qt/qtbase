@@ -51,6 +51,7 @@
 #include <qtest.h>
 
 Q_DECLARE_METATYPE(QTextDocument*)
+Q_DECLARE_METATYPE(QList<QTextLayout::FormatRange>)
 
 class tst_QText: public QObject
 {
@@ -80,6 +81,7 @@ private slots:
 
     void layout_data();
     void layout();
+    void formattedLayout_data();
     void formattedLayout();
     void paintLayoutToPixmap();
     void paintLayoutToPixmap_painterFill();
@@ -328,28 +330,53 @@ void tst_QText::layout()
     }
 }*/
 
-void tst_QText::formattedLayout()
+void tst_QText::formattedLayout_data()
 {
-    //set up formatting
-    QList<QTextLayout::FormatRange> ranges;
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QList<QTextLayout::FormatRange> >("ranges");
+
+    QTextCharFormat format;
+    format.setForeground(QColor("steelblue"));
+
     {
-        QTextCharFormat format;
-        format.setForeground(QColor("steelblue"));
+        QList<QTextLayout::FormatRange> ranges;
 
         QTextLayout::FormatRange formatRange;
         formatRange.format = format;
         formatRange.start = 0;
         formatRange.length = 50;
-
         ranges.append(formatRange);
-    }
 
-    QTextLayout layout(m_shortLorem);
+        QTest::newRow("short-single") << m_shortLorem << ranges;
+    }
+    {
+        QList<QTextLayout::FormatRange> ranges;
+
+        QString text = m_lorem.repeated(100);
+        const int width = 1;
+        for (int i = 0; i < text.size(); i += width) {
+            QTextLayout::FormatRange formatRange;
+            formatRange.format.setForeground(QBrush(QColor(i % 255, 255, 255)));
+            formatRange.start = i;
+            formatRange.length = width;
+            ranges.append(formatRange);
+        }
+
+        QTest::newRow("long-many") << m_shortLorem << ranges;
+    }
+}
+
+void tst_QText::formattedLayout()
+{
+    QFETCH(QString, text);
+    QFETCH(QList<QTextLayout::FormatRange>, ranges);
+
+    QTextLayout layout(text);
     layout.setAdditionalFormats(ranges);
     setupTextLayout(&layout);
 
     QBENCHMARK {
-        QTextLayout layout(m_shortLorem);
+        QTextLayout layout(text);
         layout.setAdditionalFormats(ranges);
         setupTextLayout(&layout);
     }
