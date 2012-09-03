@@ -80,6 +80,7 @@ private slots:
     void systemProxyForQueryCalledFromThread();
     void systemProxyForQuery_data();
     void systemProxyForQuery() const;
+    void systemProxyForQuery_local();
 #ifndef QT_NO_BEARERMANAGEMENT
     void fromConfigurations();
     void inNetworkAccessManager_data();
@@ -194,6 +195,66 @@ void tst_QNetworkProxyFactory::systemProxyForQuery() const
     foreach (const QNetworkProxy &proxy, systemProxyList) {
         QVERIFY((requiredCapabilities == 0) || (proxy.capabilities() & requiredCapabilities));
     }
+}
+
+void tst_QNetworkProxyFactory::systemProxyForQuery_local()
+{
+    QList<QNetworkProxy> list;
+    const QString proxyHost("myproxy.test.com");
+
+    // set an arbitrary proxy
+    QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::HttpProxy, proxyHost, 80));
+
+    // localhost
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QUrl("http://localhost/")));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QString("localhost"), 80));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+
+    // 127.0.0.1
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QUrl("http://127.0.0.1/")));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QString("127.0.0.1"), 80));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+
+    // [::1]
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QUrl("http://[::1]/")));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QString("[::1]"), 80));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+
+    // an arbitrary host
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QUrl("http://another.host.com/")));
+    QVERIFY((!list.isEmpty()) && (list[0].hostName() == proxyHost));
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QString("another.host.com"), 80));
+    QVERIFY((!list.isEmpty()) && (list[0].hostName() == proxyHost));
+
+    // disable proxy
+    QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::NoProxy));
+
+    // localhost
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QUrl("http://localhost/")));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QString("localhost"), 80));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+
+    // 127.0.0.1
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QUrl("http://127.0.0.1/")));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QString("127.0.0.1"), 80));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+
+    // [::1]
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QUrl("http://[::1]/")));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QString("[::1]"), 80));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+
+    // an arbitrary host
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QUrl("http://another.host.com/")));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
+    list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QString("another.host.com"), 80));
+    QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
 }
 
 #ifndef QT_NO_BEARERMANAGEMENT

@@ -906,15 +906,6 @@ bool QAbstractSocketPrivate::flush()
 */
 void QAbstractSocketPrivate::resolveProxy(const QString &hostname, quint16 port)
 {
-    QHostAddress parsed;
-    if (hostname == QLatin1String("localhost")
-        || hostname.startsWith(QLatin1String("localhost."))
-        || (parsed.setAddress(hostname)
-            && (parsed.isLoopback()))) {
-        proxyInUse = QNetworkProxy::NoProxy;
-        return;
-    }
-
     QList<QNetworkProxy> proxies;
 
     if (proxy.type() != QNetworkProxy::DefaultProxy) {
