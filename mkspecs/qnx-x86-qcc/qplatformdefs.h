@@ -84,7 +84,7 @@
 
 #define QT_USE_XOPEN_LFS_EXTENSIONS
 #define QT_NO_READDIR64
-#include "../../common/posix/qplatformdefs.h"
+#include "../common/posix/qplatformdefs.h"
 
 #define QT_SNPRINTF ::snprintf
 #define QT_VSNPRINTF ::vsnprintf
