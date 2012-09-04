@@ -2114,7 +2114,8 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     QTEST_ASSERT(metaObject);
 
     QTestResult::setCurrentTestObject(metaObject->className());
-    QTestResult::setCurrentAppname(argv[0]);
+    if (argc > 0)
+        QTestResult::setCurrentAppname(argv[0]);
 
     qtest_qParseArgs(argc, argv, false);
 
