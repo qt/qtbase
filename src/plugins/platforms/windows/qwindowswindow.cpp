@@ -223,7 +223,7 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, qreal level)
         if ((wl & WS_EX_LAYERED) == 0)
             SetWindowLong(hwnd, GWL_EXSTYLE, wl | WS_EX_LAYERED);
         if (flags & Qt::FramelessWindowHint) {
-            BLENDFUNCTION blend = {AC_SRC_OVER, 0, (int)(255.0 * level), AC_SRC_ALPHA};
+            BLENDFUNCTION blend = {AC_SRC_OVER, 0, (BYTE)(255.0 * level), AC_SRC_ALPHA};
             QWindowsContext::user32dll.updateLayeredWindow(hwnd, NULL, NULL, NULL, NULL, NULL, 0, &blend, ULW_ALPHA);
         } else {
             QWindowsContext::user32dll.setLayeredWindowAttributes(hwnd, 0, (int)(level * 255), LWA_ALPHA);
