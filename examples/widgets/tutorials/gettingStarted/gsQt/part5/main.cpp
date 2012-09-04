@@ -89,7 +89,7 @@ void Notepad::open()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
         tr("Text Files (*.txt);;C++ Files (*.cpp *.h)"));
 
-    if (fileName != "") {
+    if (!fileName.isEmpty()) {
         QFile file(fileName);
         if (!file.open(QIODevice::ReadOnly)) {
             QMessageBox::critical(this, tr("Error"), tr("Could not open file"));
@@ -107,7 +107,7 @@ void Notepad::save()
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
         tr("Text Files (*.txt);;C++ Files (*.cpp *.h)"));
 
-    if (fileName != "") {
+    if (!fileName.isEmpty()) {
         QFile file(fileName);
         if (!file.open(QIODevice::WriteOnly)) {
             // error message
