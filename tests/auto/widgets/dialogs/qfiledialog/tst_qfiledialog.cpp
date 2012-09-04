@@ -101,7 +101,9 @@ public slots:
 
 private slots:
     void currentChangedSignal();
+#ifdef QT_BUILD_INTERNAL
     void directoryEnteredSignal();
+#endif
     void filesSelectedSignal_data();
     void filesSelectedSignal();
     void filterSelectedSignal();
@@ -141,8 +143,10 @@ private slots:
     void enableChooseButton();
     void hooks();
 #ifdef Q_OS_UNIX
+#ifdef QT_BUILD_INTERNAL
     void tildeExpansion_data();
     void tildeExpansion();
+#endif // QT_BUILD_INTERNAL
 #endif
 
 private:
@@ -213,9 +217,9 @@ void tst_QFiledialog::currentChangedSignal()
 }
 
 // only emitted from the views, sidebar, or lookin combo
+#if defined QT_BUILD_INTERNAL
 void tst_QFiledialog::directoryEnteredSignal()
 {
-#if defined QT_BUILD_INTERNAL
     QNonNativeFileDialog fd(0, "", QDir::root().path());
     fd.setOptions(QFileDialog::DontUseNativeDialog);
     fd.show();
@@ -259,8 +263,8 @@ void tst_QFiledialog::directoryEnteredSignal()
     QTest::mouseDClick(listView->viewport(), Qt::LeftButton, 0, listView->visualRect(folder).center());
     QTRY_COMPARE(spyDirectoryEntered.count(), 1);
     */
-#endif
 }
+#endif
 
 Q_DECLARE_METATYPE(QFileDialog::FileMode)
 void tst_QFiledialog::filesSelectedSignal_data()
@@ -1313,6 +1317,7 @@ void tst_QFiledialog::hooks()
 }
 
 #ifdef Q_OS_UNIX
+#ifdef QT_BUILD_INTERNAL
 void tst_QFiledialog::tildeExpansion_data()
 {
     QTest::addColumn<QString>("tildePath");
@@ -1328,18 +1333,17 @@ void tst_QFiledialog::tildeExpansion_data()
     QString invalid = QString::fromLatin1("~thisIsNotAValidUserName");
     QTest::newRow("invalid user name") << invalid << invalid;
 }
+#endif // QT_BUILD_INTERNAL
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QFiledialog::tildeExpansion()
 {
-#ifndef QT_BUILD_INTERNAL
-    QSKIP("Test case relies on developer build (AUTOTEST_EXPORT)");
-#else
     QFETCH(QString, tildePath);
     QFETCH(QString, expandedPath);
 
     QCOMPARE(qt_tildeExpansion(tildePath), expandedPath);
-#endif
 }
+#endif // QT_BUILD_INTERNAL
 #endif
 
 QTEST_MAIN(tst_QFiledialog)

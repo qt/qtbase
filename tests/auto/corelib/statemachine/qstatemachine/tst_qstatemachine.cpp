@@ -98,7 +98,9 @@ class tst_QStateMachine : public QObject
 private slots:
     void rootState();
     void machineWithParent();
+#ifdef QT_BUILD_INTERNAL
     void addAndRemoveState();
+#endif
     void stateEntryAndExit();
     void assignProperty();
     void assignPropertyWithAnimation();
@@ -1107,9 +1109,9 @@ void tst_QStateMachine::machineWithParent()
     QCOMPARE(machine->parentState(), static_cast<QState*>(0));
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QStateMachine::addAndRemoveState()
 {
-#ifdef QT_BUILD_INTERNAL
     QStateMachine machine;
     QStatePrivate *root_d = QStatePrivate::get(&machine);
     QCOMPARE(root_d->childStates().size(), 0);
@@ -1170,8 +1172,8 @@ void tst_QStateMachine::addAndRemoveState()
     delete s2;
     // ### how to deal with this?
     // machine.removeState(machine.errorState());
-#endif
 }
+#endif
 
 void tst_QStateMachine::stateEntryAndExit()
 {

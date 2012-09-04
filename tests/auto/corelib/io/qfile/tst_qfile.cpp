@@ -178,7 +178,9 @@ private slots:
     void longFileName_data();
     void longFileName();
     void fileEngineHandler();
+#ifdef QT_BUILD_INTERNAL
     void useQFileInAFileHandler();
+#endif
     void getCharFF();
     void remove_and_exists();
     void removeOpenFile();
@@ -2091,17 +2093,15 @@ public:
 };
 #endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QFile::useQFileInAFileHandler()
 {
-#ifdef QT_BUILD_INTERNAL
     // This test should not dead-lock
     MyRecursiveHandler handler;
     QFile file(":!tst_qfile.cpp");
     QVERIFY(file.exists());
-#else
-    QSKIP("This test requires -developer-build.");
-#endif
 }
+#endif
 
 void tst_QFile::getCharFF()
 {

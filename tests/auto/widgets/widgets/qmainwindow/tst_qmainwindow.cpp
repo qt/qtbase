@@ -115,7 +115,6 @@ private slots:
     void iconSize();
     void toolButtonStyle();
     void menuBar();
-    void statusBar();
     void centralWidget();
     void corner();
     void addToolBarBreak();
@@ -132,8 +131,11 @@ private slots:
     void restoreStateFromPreviousVersion();
     void createPopupMenu();
     void hideBeforeLayout();
+#ifdef QT_BUILD_INTERNAL
     void saveRestore();
     void saveRestore_data();
+    void statusBar();
+#endif
     void isSeparator();
 #ifndef QT_NO_CURSOR
     void setCursor();
@@ -653,6 +655,7 @@ void tst_QMainWindow::menuBar()
     }
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QMainWindow::statusBar()
 {
     {
@@ -734,6 +737,7 @@ void tst_QMainWindow::statusBar()
         QVERIFY(indexOfSb == -1);
     }
 }
+#endif
 
 void tst_QMainWindow::centralWidget()
 {
@@ -1510,9 +1514,9 @@ QMap<QString, QRect> dockWidgetGeometries(QMainWindow *mw)
     QCOMPARE(__newGeos, __oldGeos); \
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QMainWindow::saveRestore_data()
 {
-#ifdef QT_BUILD_INTERNAL
     QTest::addColumn<AddList >("addList");
     QTest::addColumn<MoveList >("moveList");
 
@@ -1547,12 +1551,12 @@ void tst_QMainWindow::saveRestore_data()
                           << MoveSeparator(-30, "right1")
                           << MoveSeparator(30, "right2a")
                           );
-#endif
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QMainWindow::saveRestore()
 {
-#ifdef QT_BUILD_INTERNAL
     QFETCH(AddList, addList);
     QFETCH(MoveList, moveList);
 
@@ -1613,8 +1617,8 @@ void tst_QMainWindow::saveRestore()
         mainWindow.show();
         COMPARE_DOCK_WIDGET_GEOS(dockWidgetGeos, dockWidgetGeometries(&mainWindow));
     }
-#endif
 }
+#endif
 
 void tst_QMainWindow::isSeparator()
 {

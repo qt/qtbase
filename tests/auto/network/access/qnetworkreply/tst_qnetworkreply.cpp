@@ -297,13 +297,17 @@ private Q_SLOTS:
 
     void httpCanReadLine();
 
+#ifdef QT_BUILD_INTERNAL
     void rateControl_data();
     void rateControl();
+#endif
 
     void downloadProgress_data();
     void downloadProgress();
+#ifdef QT_BUILD_INTERNAL
     void uploadProgress_data();
     void uploadProgress();
+#endif
 
     void chaining_data();
     void chaining();
@@ -399,12 +403,14 @@ private Q_SLOTS:
     void ftpAuthentication_data();
     void ftpAuthentication();
 
+#ifdef QT_BUILD_INTERNAL
     void backgroundRequest_data();
     void backgroundRequest();
     void backgroundRequestInterruption_data();
     void backgroundRequestInterruption();
     void backgroundRequestConnectInBackground_data();
     void backgroundRequestConnectInBackground();
+#endif
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -4670,6 +4676,7 @@ void tst_QNetworkReply::httpCanReadLine()
     QVERIFY(!reply->canReadLine());
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QNetworkReply::rateControl_data()
 {
     QTest::addColumn<int>("rate");
@@ -4682,17 +4689,15 @@ void tst_QNetworkReply::rateControl_data()
     QTest::newRow("250") << 250;
     QTest::newRow("1024") << 1024;
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QNetworkReply::rateControl()
 {
     QSKIP("Test disabled -- only for manual purposes");
     // this function tests that we aren't reading from the network
     // faster than the data is being consumed.
     QFETCH(int, rate);
-
-#if !defined(QT_BUILD_INTERNAL)
-    QSKIP("backend for testing not available!");
-#endif
 
     // ask for 20 seconds worth of data
     FastSender sender(20 * rate * 1024);
@@ -4731,6 +4736,7 @@ void tst_QNetworkReply::rateControl()
     QVERIFY(sender.transferRate >= minRate);
     QVERIFY(sender.transferRate <= maxRate);
 }
+#endif
 
 void tst_QNetworkReply::downloadProgress_data()
 {
@@ -4803,17 +4809,17 @@ void tst_QNetworkReply::downloadProgress()
     }
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QNetworkReply::uploadProgress_data()
 {
     putToFile_data();
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QNetworkReply::uploadProgress()
 {
     QFETCH(QByteArray, data);
-#if !defined(QT_BUILD_INTERNAL)
-    QSKIP("backend for testing not available!");
-#endif
     QTcpServer server;
     QVERIFY(server.listen());
 
@@ -4843,6 +4849,7 @@ void tst_QNetworkReply::uploadProgress()
     QCOMPARE(args.at(0).toInt(), data.size());
     QCOMPARE(args.at(1).toInt(), data.size());
 }
+#endif
 
 void tst_QNetworkReply::chaining_data()
 {
@@ -6822,6 +6829,7 @@ void tst_QNetworkReply::ftpAuthentication()
     QCOMPARE(reply->error(), QNetworkReply::NetworkError(error));
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QNetworkReply::backgroundRequest_data()
 {
     QTest::addColumn<QUrl>("url");
@@ -6851,11 +6859,12 @@ void tst_QNetworkReply::backgroundRequest_data()
     QTest::newRow("ftp, bg, nobg") << ftpurl << true << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::BackgroundRequestNotAllowedError;
 
 }
+#endif
 
 //test purpose: background requests can't be started when not allowed
+#ifdef QT_BUILD_INTERNAL
 void tst_QNetworkReply::backgroundRequest()
 {
-#ifdef QT_BUILD_INTERNAL
 #ifndef QT_NO_BEARERMANAGEMENT
     QFETCH(QUrl, url);
     QFETCH(bool, background);
@@ -6889,9 +6898,10 @@ void tst_QNetworkReply::backgroundRequest()
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), error);
 #endif
-#endif
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QNetworkReply::backgroundRequestInterruption_data()
 {
     QTest::addColumn<QUrl>("url");
@@ -6914,11 +6924,12 @@ void tst_QNetworkReply::backgroundRequestInterruption_data()
     QTest::newRow("ftp, bg, nobg") << ftpurl << true << QNetworkReply::BackgroundRequestNotAllowedError;
 
 }
+#endif
 
 //test purpose: background requests in progress are aborted when policy changes to disallow them
+#ifdef QT_BUILD_INTERNAL
 void tst_QNetworkReply::backgroundRequestInterruption()
 {
-#ifdef QT_BUILD_INTERNAL
 #ifndef QT_NO_BEARERMANAGEMENT
     QFETCH(QUrl, url);
     QFETCH(bool, background);
@@ -6961,9 +6972,10 @@ void tst_QNetworkReply::backgroundRequestInterruption()
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), error);
 #endif
-#endif
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QNetworkReply::backgroundRequestConnectInBackground_data()
 {
     QTest::addColumn<QUrl>("url");
@@ -6978,11 +6990,12 @@ void tst_QNetworkReply::backgroundRequestConnectInBackground_data()
     QTest::newRow("ftp, fg") << ftpurl << false;
     QTest::newRow("ftp, bg") << ftpurl << true;
 }
+#endif
 
 //test purpose: check that backgroundness is propagated to the network session
+#ifdef QT_BUILD_INTERNAL
 void tst_QNetworkReply::backgroundRequestConnectInBackground()
 {
-#ifdef QT_BUILD_INTERNAL
 #ifndef QT_NO_BEARERMANAGEMENT
     QFETCH(QUrl, url);
     QFETCH(bool, background);
@@ -7023,8 +7036,8 @@ void tst_QNetworkReply::backgroundRequestConnectInBackground()
 
     QVERIFY(reply->isFinished());
 #endif
-#endif
 }
+#endif
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()

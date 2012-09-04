@@ -131,7 +131,9 @@ private slots:
     void useCase3();
 
     void rootItemFlags();
+#ifdef QT_BUILD_INTERNAL
     void treeDragAndDrop();
+#endif
     void removeRowsAndColumns();
 
     void itemRoleNames();
@@ -1471,9 +1473,9 @@ struct FriendlyTreeView : public QTreeView
 };
 #endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QStandardItemModel::treeDragAndDrop()
 {
-#ifdef QT_BUILD_INTERNAL
     const int nRow = 5;
     const int nCol = 3;
 
@@ -1611,8 +1613,8 @@ void tst_QStandardItemModel::treeDragAndDrop()
 
         QVERIFY(compareModels(&model, &checkModel));
     }
-#endif
 }
+#endif
 
 void tst_QStandardItemModel::removeRowsAndColumns()
 {

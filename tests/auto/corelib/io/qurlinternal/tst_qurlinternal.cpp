@@ -75,12 +75,14 @@ class tst_QUrlInternal : public QObject
 
 private Q_SLOTS:
     // IDNA internals
+#ifdef QT_BUILD_INTERNAL
     void idna_testsuite_data();
     void idna_testsuite();
     void nameprep_testsuite_data();
     void nameprep_testsuite();
     void nameprep_highcodes_data();
     void nameprep_highcodes();
+#endif
     void ace_testsuite_data();
     void ace_testsuite();
     void std3violations_data();
@@ -100,6 +102,7 @@ private Q_SLOTS:
 };
 #include "tst_qurlinternal.moc"
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QUrlInternal::idna_testsuite_data()
 {
     QTest::addColumn<int>("numchars");
@@ -244,10 +247,11 @@ void tst_QUrlInternal::idna_testsuite_data()
                                      << QByteArray(IDNA_ACE_PREFIX "b1abfaaepdrnnbgefbadotcwatmq2g4l")
                                      << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QUrlInternal::idna_testsuite()
 {
-#ifdef QT_BUILD_INTERNAL
     QFETCH(int, numchars);
     QFETCH(ushortarray, unicode);
     QFETCH(QByteArray, punycode);
@@ -256,9 +260,10 @@ void tst_QUrlInternal::idna_testsuite()
     qt_punycodeEncoder((QChar*)unicode.points, numchars, &result);
     QCOMPARE(result.toLatin1(), punycode);
     QCOMPARE(qt_punycodeDecoder(result), QString::fromUtf16(unicode.points, numchars));
-#endif
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QUrlInternal::nameprep_testsuite_data()
 {
     QTest::addColumn<QString>("in");
@@ -498,10 +503,11 @@ void tst_QUrlInternal::nameprep_testsuite_data()
                              "\xe3\x83\xbc\xe3\x83\x88")
         << QString() << 0 << 0;
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QUrlInternal::nameprep_testsuite()
 {
-#ifdef QT_BUILD_INTERNAL
     QFETCH(QString, in);
     QFETCH(QString, out);
     QFETCH(QString, profile);
@@ -514,9 +520,10 @@ void tst_QUrlInternal::nameprep_testsuite()
                  "Investigate further", Continue);
     qt_nameprep(&in, 0);
     QCOMPARE(in, out);
-#endif
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QUrlInternal::nameprep_highcodes_data()
 {
     QTest::addColumn<QString>("in");
@@ -550,18 +557,19 @@ void tst_QUrlInternal::nameprep_highcodes_data()
             << QString() << 0 << 0;
     }
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QUrlInternal::nameprep_highcodes()
 {
-#ifdef QT_BUILD_INTERNAL
     QFETCH(QString, in);
     QFETCH(QString, out);
     QFETCH(QString, profile);
 
     qt_nameprep(&in, 0);
     QCOMPARE(in, out);
-#endif
 }
+#endif
 
 void tst_QUrlInternal::ace_testsuite_data()
 {

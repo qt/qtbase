@@ -83,8 +83,10 @@ private slots:
     void indexPath();
 
     void rootPath();
+#ifdef QT_BUILD_INTERNAL
     void naturalCompare_data();
     void naturalCompare();
+#endif
     void readOnly();
     void iconProvider();
 
@@ -231,6 +233,7 @@ void tst_QFileSystemModel::rootPath()
     }
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QFileSystemModel::naturalCompare_data()
 {
     QTest::addColumn<QString>("s1");
@@ -277,10 +280,11 @@ void tst_QFileSystemModel::naturalCompare_data()
     }
 #undef ROWNAME
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QFileSystemModel::naturalCompare()
 {
-#ifdef QT_BUILD_INTERNAL
     QFETCH(QString, s1);
     QFETCH(QString, s2);
     QFETCH(int, caseSensitive);
@@ -298,8 +302,8 @@ void tst_QFileSystemModel::naturalCompare()
     // created. The scheduler takes its time to recognize ended threads.
     QTest::qWait(300);
 #endif
-#endif
 }
+#endif
 
 void tst_QFileSystemModel::readOnly()
 {

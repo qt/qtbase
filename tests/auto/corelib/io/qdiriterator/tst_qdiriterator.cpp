@@ -108,7 +108,9 @@ private slots:
     void iterateResource_data();
     void iterateResource();
     void stopLinkLoop();
+#ifdef QT_BUILD_INTERNAL
     void engineWithNoIterator();
+#endif
     void absoluteFilePathsFromRelativeIteratorPath();
     void recurseWithFilters() const;
     void longPath();
@@ -478,17 +480,15 @@ public:
 };
 #endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QDirIterator::engineWithNoIterator()
 {
-#ifdef QT_BUILD_INTERNAL
     EngineWithNoIteratorHandler handler;
 
     QDir("entrylist").entryList();
     QVERIFY(true); // test that the above line doesn't crash
-#else
-    QSKIP("This test requires -developer-build.");
-#endif
 }
+#endif
 
 void tst_QDirIterator::absoluteFilePathsFromRelativeIteratorPath()
 {

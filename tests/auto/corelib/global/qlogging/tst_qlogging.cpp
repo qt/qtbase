@@ -58,8 +58,10 @@ private slots:
     void installMsgHandler();
     void installBothHandler();
 
+#ifdef QT_BUILD_INTERNAL
     void cleanupFuncinfo_data();
     void cleanupFuncinfo();
+#endif
 
     void qMessagePattern();
 
@@ -326,11 +328,9 @@ public:
 };
 
 
+#ifdef QT_BUILD_INTERNAL
 void tst_qmessagehandler::cleanupFuncinfo_data()
 {
-#ifndef QT_BUILD_INTERNAL
-    QSKIP("Requires -developer-build");
-#endif
     QTest::addColumn<QString>("funcinfo");
     QTest::addColumn<QString>("expected");
 
@@ -608,7 +608,9 @@ void tst_qmessagehandler::cleanupFuncinfo_data()
 
     QTest::newRow("gcc_39")
         << "int TestClass1::operator>(int)"
-        << "TestClass1::operator>";}
+        << "TestClass1::operator>";
+}
+#endif
 
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
@@ -616,16 +618,16 @@ extern QByteArray qCleanupFuncinfo(QByteArray);
 QT_END_NAMESPACE
 #endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_qmessagehandler::cleanupFuncinfo()
 {
-#ifdef QT_BUILD_INTERNAL
     QFETCH(QString, funcinfo);
 
 //    qDebug() << funcinfo.toLatin1();
     QByteArray result = qCleanupFuncinfo(funcinfo.toLatin1());
     QTEST(QString::fromLatin1(result), "expected");
-#endif
 }
+#endif
 
 void tst_qmessagehandler::qMessagePattern()
 {

@@ -94,33 +94,21 @@ private slots:
     void setFallbacksEnabled_data();
     void fromFile_data();
     void fromFile();
-    void setIniCodec();
     void testArrays_data();
     void testArrays();
-    void testEscapes();
     void testCaseSensitivity_data();
     void testCaseSensitivity();
     void testErrorHandling_data();
     void testErrorHandling();
-    void testIniParsing_data();
-    void testIniParsing();
     void testChildKeysAndGroups_data();
     void testChildKeysAndGroups();
     void testUpdateRequestEvent();
     void testThreadSafety();
-    void testNormalizedKey_data();
-    void testNormalizedKey();
     void testEmptyData();
     void testResourceFiles();
     void fileName();
     void isWritable_data();
     void isWritable();
-    void childGroups_data();
-    void childGroups();
-    void childKeys_data();
-    void childKeys();
-    void allKeys_data();
-    void allKeys();
     void registerFormat();
     void setPath();
     void setDefaultFormat();
@@ -132,8 +120,22 @@ private slots:
     void consistentRegistryStorage();
 #endif
 
+#ifdef QT_BUILD_INTERNAL
+    void allKeys_data();
+    void allKeys();
+    void childGroups_data();
+    void childGroups();
+    void childKeys_data();
+    void childKeys();
+    void setIniCodec();
+    void testIniParsing_data();
+    void testIniParsing();
+    void testEscapes();
+    void testNormalizedKey_data();
+    void testNormalizedKey();
     void testVariantTypes_data();
     void testVariantTypes();
+#endif
     void rainersSyncBugOnMac_data();
     void rainersSyncBugOnMac();
     void recursionBug();
@@ -664,7 +666,6 @@ void tst_QSettings::testErrorHandling_data()
 
 void tst_QSettings::testErrorHandling()
 {
-#ifdef QT_BUILD_INTERNAL
 #ifdef Q_OS_WIN
     QSKIP("Windows doesn't support most file modes, including read-only directories, so this test is moot.");
 #elif defined(Q_OS_UNIX)
@@ -730,12 +731,12 @@ void tst_QSettings::testErrorHandling()
         QCOMPARE((int)settings.status(), statusAfterSetAndSync);
     }
 #endif // !Q_OS_WIN
-#endif
 }
 
 Q_DECLARE_METATYPE(QVariant)
 Q_DECLARE_METATYPE(QSettings::Status)
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::testIniParsing_data()
 {
     QTest::addColumn<QByteArray>("inicontent");
@@ -773,10 +774,11 @@ void tst_QSettings::testIniParsing_data()
     QTest::newRow("nonterm20") << QByteArray("v=x ") << "v" << QVariant("x") << QSettings::NoError;
     QTest::newRow("nonterm21") << QByteArray("v=x ;") << "v" << QVariant("x") << QSettings::NoError;
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::testIniParsing()
 {
-#ifdef QT_BUILD_INTERNAL
     qRegisterMetaType<QVariant>("QVariant");
     qRegisterMetaType<QSettings::Status>("QSettings::Status");
 
@@ -810,8 +812,8 @@ void tst_QSettings::testIniParsing()
     }
 
     QCOMPARE(settings.status(), status);
-#endif
 }
+#endif
 
 /*
     Tests beginGroup(), endGroup(), and group().
@@ -1012,14 +1014,16 @@ void tst_QSettings::setValue()
     QCOMPARE(settings.value("key 4").toMap(), map);
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::testVariantTypes_data()
 {
     populateWithFormats();
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::testVariantTypes()
 {
-#ifdef QT_BUILD_INTERNAL
 #define testVal(key, val, tp, rtype) \
     { \
         QSettings settings1(format, QSettings::UserScope, "software.org", "KillerAPP"); \
@@ -1103,8 +1107,8 @@ void tst_QSettings::testVariantTypes()
     }
 
 #undef testVal
-#endif
 }
+#endif
 
 void tst_QSettings::remove()
 {
@@ -1733,6 +1737,7 @@ void tst_QSettings::testThreadSafety()
     QCOMPARE(numThreadSafetyFailures, 0);
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::testNormalizedKey_data()
 {
     QTest::addColumn<QString>("inKey");
@@ -1762,10 +1767,11 @@ void tst_QSettings::testNormalizedKey_data()
     QTest::newRow("ab7") << "/aaa///bbb/" << "aaa/bbb";
     QTest::newRow("ab8") << "////aaa///bbb////" << "aaa/bbb";
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::testNormalizedKey()
 {
-#ifdef QT_BUILD_INTERNAL
     QFETCH(QString, inKey);
     QFETCH(QString, outKey);
 
@@ -1786,8 +1792,8 @@ void tst_QSettings::testNormalizedKey()
             QVERIFY(result.isDetached());
         }
     }
-#endif
 }
+#endif
 
 void tst_QSettings::testEmptyData()
 {
@@ -1941,9 +1947,9 @@ void tst_QSettings::fromFile()
     }
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::setIniCodec()
 {
-#ifdef QT_BUILD_INTERNAL
     QByteArray expeContents4, expeContents5;
     QByteArray actualContents4, actualContents5;
 
@@ -2006,8 +2012,8 @@ void tst_QSettings::setIniCodec()
     QCOMPARE(settings4.allKeys().first(), settings5.allKeys().first());
     QCOMPARE(settings4.value(settings4.allKeys().first()).toString(),
              settings5.value(settings5.allKeys().first()).toString());
-#endif
 }
+#endif
 
 static bool containsSubList(QStringList mom, QStringList son)
 {
@@ -2359,9 +2365,9 @@ QString escapeWeirdChars(const QString &s)
     return result;
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::testEscapes()
 {
-#ifdef QT_BUILD_INTERNAL
     QSettings settings(QSettings::UserScope, "software.org", "KillerAPP");
 
 #define testEscapedKey(plainKey, escKey) \
@@ -2483,8 +2489,8 @@ void tst_QSettings::testEscapes()
     testBadEscape("@Rect)", "@Rect)");
     testBadEscape("@Rect(1 2 3)", "@Rect(1 2 3)");
     testBadEscape("@@Rect(1 2 3)", "@Rect(1 2 3)");
-#endif
 }
+#endif
 
 void tst_QSettings::testCaseSensitivity_data()
 {
@@ -2685,14 +2691,16 @@ void tst_QSettings::isWritable()
     }
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::childGroups_data()
 {
     populateWithFormats();
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::childGroups()
 {
-#ifdef QT_BUILD_INTERNAL
     QFETCH(QSettings::Format, format);
 
     {
@@ -2746,17 +2754,19 @@ void tst_QSettings::childGroups()
 
         QCOMPARE(settings.childGroups(), QStringList() << "alpha" << "gamma" << "omicron" << "zeta");
     }
-#endif
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::childKeys_data()
 {
     populateWithFormats();
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::childKeys()
 {
-#ifdef QT_BUILD_INTERNAL
     QFETCH(QSettings::Format, format);
 
     {
@@ -2810,17 +2820,19 @@ void tst_QSettings::childKeys()
 
         QCOMPARE(settings.childKeys(), QStringList() << "alpha" << "beta" << "gamma");
     }
-#endif
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::allKeys_data()
 {
     populateWithFormats();
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::allKeys()
 {
-#ifdef QT_BUILD_INTERNAL
     QFETCH(QSettings::Format, format);
 
     QStringList allKeys;
@@ -2869,8 +2881,8 @@ void tst_QSettings::allKeys()
 
         QCOMPARE(settings.allKeys(), allKeys);
     }
-#endif
 }
+#endif
 
 void tst_QSettings::registerFormat()
 {

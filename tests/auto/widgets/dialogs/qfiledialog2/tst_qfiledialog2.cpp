@@ -99,9 +99,16 @@ public slots:
     void cleanup();
 
 private slots:
-    void listRoot();
-    void heapCorruption();
+#ifdef QT_BUILD_INTERNAL
     void deleteDirAndFiles();
+    void listRoot();
+    void task227304_proxyOnFileDialog();
+    void task236402_dontWatchDeletedDir();
+    void task251321_sideBarHiddenEntries();
+    void task251341_sideBarRemoveEntries();
+    void task257579_sideBarWithNonCleanUrls();
+#endif
+    void heapCorruption();
     void filter();
     void showNameFilterDetails();
     void unc();
@@ -110,7 +117,6 @@ private slots:
     void task178897_minimumSize();
     void task180459_lastDirectory_data();
     void task180459_lastDirectory();
-    void task227304_proxyOnFileDialog();
     void task227930_correctNavigationKeyboardBehavior();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     void task226366_lowerCaseHardDriveWindows();
@@ -118,15 +124,11 @@ private slots:
     void completionOnLevelAfterRoot();
     void task233037_selectingDirectory();
     void task235069_hideOnEscape();
-    void task236402_dontWatchDeletedDir();
     void task203703_returnProperSeparator();
     void task228844_ensurePreviousSorting();
     void task239706_editableFilterCombo();
     void task218353_relativePaths();
-    void task251321_sideBarHiddenEntries();
-    void task251341_sideBarRemoveEntries();
     void task254490_selectFileMultipleTimes();
-    void task257579_sideBarWithNonCleanUrls();
     void task259105_filtersCornerCases();
 
     void QTBUG4419_lineEditSelectAll();
@@ -176,9 +178,9 @@ void tst_QFileDialog2::cleanup()
     settings.setValue(QLatin1String("filedialog"), userSettings);
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QFileDialog2::listRoot()
 {
-#if defined QT_BUILD_INTERNAL
     QFileInfoGatherer fileInfoGatherer;
     fileInfoGatherer.start();
     QTest::qWait(1500);
@@ -194,8 +196,8 @@ void tst_QFileDialog2::listRoot()
     QTest::qWait(500);
 #endif
     QCOMPARE(qt_test_isFetchedRoot(),true);
-#endif
 }
+#endif
 
 void tst_QFileDialog2::heapCorruption()
 {
@@ -214,9 +216,9 @@ struct FriendlyQFileDialog : public QNonNativeFileDialog
 };
 
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QFileDialog2::deleteDirAndFiles()
 {
-#if defined QT_BUILD_INTERNAL
     QString tempPath = tempDir.path() + "/QFileDialogTestDir4FullDelete";
     QDir dir;
     QVERIFY(dir.mkpath(tempPath + "/foo"));
@@ -243,8 +245,8 @@ void tst_QFileDialog2::deleteDirAndFiles()
     QFileInfo info(tempPath);
     QTest::qWait(2000);
     QVERIFY(!info.exists());
-#endif
 }
+#endif
 
 void tst_QFileDialog2::filter()
 {
@@ -453,9 +455,9 @@ QString &dir, const QString &filter)
         }
 };
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QFileDialog2::task227304_proxyOnFileDialog()
 {
-#if defined QT_BUILD_INTERNAL
     QNonNativeFileDialog fd(0, "", QDir::currentPath(), 0);
     fd.setProxyModel(new FilterDirModel(QDir::currentPath()));
     fd.show();
@@ -489,8 +491,8 @@ void tst_QFileDialog2::task227304_proxyOnFileDialog()
     QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, 0, sidebar->visualRect(sidebar->model()->index(1, 0)).center());
     QTest::qWait(250);
     //We shouldn't crash
-#endif
 }
+#endif
 
 void tst_QFileDialog2::task227930_correctNavigationKeyboardBehavior()
 {
@@ -670,9 +672,9 @@ void tst_QFileDialog2::task235069_hideOnEscape()
     QCOMPARE(fd2.isVisible(), false);
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QFileDialog2::task236402_dontWatchDeletedDir()
 {
-#if defined QT_BUILD_INTERNAL
     //THIS TEST SHOULD NOT DISPLAY WARNINGS
     QDir current = QDir::currentPath();
     //make sure it is the first on the list
@@ -692,8 +694,8 @@ void tst_QFileDialog2::task236402_dontWatchDeletedDir()
     QTest::qWait(200);
     fd.d_func()->removeDirectory(current.absolutePath() + "/aaaaaaaaaa/");
     QTest::qWait(1000);
-#endif
 }
+#endif
 
 void tst_QFileDialog2::task203703_returnProperSeparator()
 {
@@ -862,9 +864,9 @@ void tst_QFileDialog2::task218353_relativePaths()
     appDir.rmdir("test");
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QFileDialog2::task251321_sideBarHiddenEntries()
 {
-#if defined QT_BUILD_INTERNAL
     QNonNativeFileDialog fd;
 
     QDir current = QDir::currentPath();
@@ -899,8 +901,8 @@ void tst_QFileDialog2::task251321_sideBarHiddenEntries()
     hiddenSubDir.rmdir("happy");
     hiddenDir.rmdir("subdir");
     current.rmdir(".hidden");
-#endif
 }
+#endif
 
 #if defined QT_BUILD_INTERNAL
 class MyQSideBar : public QSidebar
@@ -922,9 +924,9 @@ public :
 };
 #endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QFileDialog2::task251341_sideBarRemoveEntries()
 {
-#if defined QT_BUILD_INTERNAL
     QNonNativeFileDialog fd;
 
     QDir current = QDir::currentPath();
@@ -984,8 +986,8 @@ void tst_QFileDialog2::task251341_sideBarRemoveEntries()
     QCOMPARE(mySideBar.urls(), expected);
 
     current.rmdir("testDir");
-#endif
 }
+#endif
 
 void tst_QFileDialog2::task254490_selectFileMultipleTimes()
 {
@@ -1019,9 +1021,9 @@ void tst_QFileDialog2::task254490_selectFileMultipleTimes()
     t->deleteLater();
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QFileDialog2::task257579_sideBarWithNonCleanUrls()
 {
-#if defined QT_BUILD_INTERNAL
     QDir dir(tempDir.path());
     QLatin1String dirname("autotest_task257579");
     dir.rmdir(dirname); //makes sure it doesn't exist any more
@@ -1042,8 +1044,8 @@ void tst_QFileDialog2::task257579_sideBarWithNonCleanUrls()
 
     //all tests are finished, we can remove the temporary dir
     QVERIFY(dir.rmdir(dirname));
-#endif
 }
+#endif
 
 void tst_QFileDialog2::task259105_filtersCornerCases()
 {

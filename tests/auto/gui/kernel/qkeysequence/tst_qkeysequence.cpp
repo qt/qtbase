@@ -131,7 +131,9 @@ private slots:
     void parseString();
     void fromString_data();
     void fromString();
+#ifdef QT_BUILD_INTERNAL
     void ensureSorted();
+#endif
     void standardKeys_data();
     void standardKeys();
     void keyBindings();
@@ -299,9 +301,9 @@ void tst_QKeySequence::checkMultipleCodes()
 * We must ensure that the keyBindings data is always sorted
 * so that we can safely perform binary searches.
 */
+#ifdef QT_BUILD_INTERNAL
 void tst_QKeySequence::ensureSorted()
 {
-#if defined(QT_BUILD_INTERNAL)
     uint N = QKeySequencePrivate::numberOfKeyBindings;
     uint val = QKeySequencePrivate::keyBindings[0].shortcut;
     for ( uint i = 1 ; i < N ; ++i) {
@@ -311,8 +313,8 @@ void tst_QKeySequence::ensureSorted()
         QVERIFY(nextval >= val);
         val = nextval;
     }
-#endif
 }
+#endif
 
 void tst_QKeySequence::standardKeys_data()
 {

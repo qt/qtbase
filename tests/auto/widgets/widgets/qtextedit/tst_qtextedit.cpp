@@ -189,11 +189,13 @@ private slots:
     void selectionChanged();
     void copyPasteBackgroundImage();
     void setText();
+    void cursorRect();
+#ifdef QT_BUILD_INTERNAL
     void fullWidthSelection_data();
     void fullWidthSelection();
     void fullWidthSelection2();
-    void cursorRect();
     void setDocumentPreservesPalette();
+#endif
     void pasteFromQt3RichText();
     void noWrapBackgrounds();
     void preserveCharFormatAfterUnchangingSetPosition();
@@ -1939,6 +1941,7 @@ QT_BEGIN_NAMESPACE
 extern void qt_setQtEnableTestFont(bool value);
 QT_END_NAMESPACE
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QTextEdit::fullWidthSelection_data()
 {
     QTest::addColumn<int>("cursorFrom");
@@ -1958,7 +1961,9 @@ void tst_QTextEdit::fullWidthSelection_data()
     QTest::newRow("single full width line")
        << 20 << 30 << (m_fullWidthSelectionImagesFolder + QStringLiteral("/single-full-width-line.png"));
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QTextEdit::fullWidthSelection()
 {
     QFETCH(int, cursorFrom);
@@ -2024,7 +2029,9 @@ void tst_QTextEdit::fullWidthSelection()
 
     compareWidgetAndImage(widget, imageFileName);
 }
+#endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QTextEdit::fullWidthSelection2()
 {
     QPalette myPalette;
@@ -2060,6 +2067,7 @@ void tst_QTextEdit::fullWidthSelection2()
 
     compareWidgetAndImage(widget, "fullWidthSelection/nowrap_long.png");
 }
+#endif
 
 void tst_QTextEdit::compareWidgetAndImage(QTextEdit &widget, const QString &imageFileName)
 {
@@ -2120,9 +2128,9 @@ void tst_QTextEdit::cursorRect()
     QCOMPARE(ed->cursorRect().width(), 10);
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QTextEdit::setDocumentPreservesPalette()
 {
-#ifdef QT_BUILD_INTERNAL
     QWidgetTextControl *control = qFindChild<QWidgetTextControl *>(ed);
     QVERIFY(control);
 
@@ -2143,8 +2151,8 @@ void tst_QTextEdit::setDocumentPreservesPalette()
     QVERIFY(control->document() == newDoc);
     QVERIFY(whitePal.color(QPalette::Active, QPalette::Text)
             == control->palette().color(QPalette::Active, QPalette::Text));
-#endif
 }
+#endif
 
 class PublicTextEdit : public QTextEdit
 {

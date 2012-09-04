@@ -96,8 +96,10 @@ private slots:
 
     void regionFromPath();
 
+#ifdef QT_BUILD_INTERNAL
     void regionToPath_data();
     void regionToPath();
+#endif
 };
 
 Q_DECLARE_METATYPE(QPolygon)
@@ -910,6 +912,7 @@ void tst_QRegion::regionFromPath()
 
 Q_DECLARE_METATYPE(QPainterPath)
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QRegion::regionToPath_data()
 {
     QTest::addColumn<QPainterPath>("path");
@@ -957,6 +960,7 @@ void tst_QRegion::regionToPath_data()
         QTest::newRow("Grid") << path;
     }
 }
+#endif
 
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
@@ -964,9 +968,9 @@ extern QPainterPath qt_regionToPath(const QRegion &region);
 QT_END_NAMESPACE
 #endif
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QRegion::regionToPath()
 {
-#ifdef QT_BUILD_INTERNAL
 
     QFETCH(QPainterPath, path);
 
@@ -1001,8 +1005,8 @@ void tst_QRegion::regionToPath()
         QCOMPARE(ia, ib);
         QCOMPARE(a.boundingRect(), b.boundingRect());
     }
-#endif
 }
+#endif
 
 QTEST_MAIN(tst_QRegion)
 #include "tst_qregion.moc"
