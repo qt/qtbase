@@ -82,10 +82,6 @@ public:
         ContextMenu
     };
 
-#if QT_DEPRECATED_SINCE(5,0)
-    QT_DEPRECATED bool visible() const { return isVisible(); }
-#endif
-
     bool isVisible() const;
     void setVisible(bool visible);
 
