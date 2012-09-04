@@ -1527,7 +1527,6 @@ void QWidgetTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton butto
 {
     Q_Q(QWidgetTextControl);
 
-    mousePressed = (interactionFlags & Qt::TextSelectableByMouse);
     mousePressPos = pos.toPoint();
 
 #ifndef QT_NO_DRAGANDDROP
@@ -1557,6 +1556,8 @@ void QWidgetTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton butto
     cursorIsFocusIndicator = false;
     const QTextCursor oldSelection = cursor;
     const int oldCursorPos = cursor.position();
+
+    mousePressed = (interactionFlags & Qt::TextSelectableByMouse);
 
     commitPreedit();
 
