@@ -248,8 +248,9 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
     , wizard(wizard)
     , backButton_(0)
 {
-    ++instanceCount;
     is_vista = resolveSymbols();
+    if (instanceCount++ == 0)
+        cachedVistaState = Dirty;
     if (is_vista)
         backButton_ = new QVistaBackButton(wizard);
 
