@@ -121,7 +121,7 @@ QSqlError& QSqlError::operator=(const QSqlError& other)
     Compare the \a other error's values to this error and returns true, if it equal.
 */
 
-bool QSqlError::operator==(const QSqlError& other)
+bool QSqlError::operator==(const QSqlError& other) const
 {
     return (errorType == other.errorType);
 }
@@ -131,7 +131,7 @@ bool QSqlError::operator==(const QSqlError& other)
     Compare the \a other error's values to this error and returns true if it is not equal.
 */
 
-bool QSqlError::operator!=(const QSqlError& other)
+bool QSqlError::operator!=(const QSqlError& other) const
 {
     return (errorType != other.errorType);
 }

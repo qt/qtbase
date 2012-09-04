@@ -66,8 +66,8 @@ public:
                 int number = -1);
     QSqlError(const QSqlError& other);
     QSqlError& operator=(const QSqlError& other);
-    bool operator==(const QSqlError& other);
-    bool operator!=(const QSqlError& other);
+    bool operator==(const QSqlError& other) const;
+    bool operator!=(const QSqlError& other) const;
     ~QSqlError();
 
     QString driverText() const;

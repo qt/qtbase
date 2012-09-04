@@ -55,7 +55,7 @@ class QMimeMagicRuleMatcher
 public:
     explicit QMimeMagicRuleMatcher(const QString &mime, unsigned priority = 65535);
 
-    bool operator==(const QMimeMagicRuleMatcher &other);
+    bool operator==(const QMimeMagicRuleMatcher &other) const;
 
     void addRule(const QMimeMagicRule &rule);
     void addRules(const QList<QMimeMagicRule> &rules);

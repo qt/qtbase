@@ -67,7 +67,7 @@ QMimeMagicRuleMatcher::QMimeMagicRuleMatcher(const QString &mime, unsigned thePr
 {
 }
 
-bool QMimeMagicRuleMatcher::operator==(const QMimeMagicRuleMatcher &other)
+bool QMimeMagicRuleMatcher::operator==(const QMimeMagicRuleMatcher &other) const
 {
     return m_list == other.m_list &&
            m_priority == other.m_priority;

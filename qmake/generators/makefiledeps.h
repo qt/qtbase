@@ -63,10 +63,10 @@ public:
     inline const QString &real() const { return real_name; }
     const QString &local() const;
 
-    bool operator==(const QMakeLocalFileName &other) {
+    bool operator==(const QMakeLocalFileName &other) const {
         return (this->real_name == other.real_name);
     }
-    bool operator!=(const QMakeLocalFileName &other) {
+    bool operator!=(const QMakeLocalFileName &other) const {
         return !(*this == other);
     }
 };
