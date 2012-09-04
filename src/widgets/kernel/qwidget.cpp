@@ -8147,23 +8147,21 @@ bool QWidget::event(QEvent *event)
 
     case QEvent::WindowBlocked:
     case QEvent::WindowUnblocked:
-        {
-            QList<QObject*> childList = d->children;
-            for (int i = 0; i < childList.size(); ++i) {
-                QObject *o = childList.at(i);
-                if (o && o != QApplication::activeModalWidget()) {
-                    if (qobject_cast<QWidget *>(o) && static_cast<QWidget *>(o)->isWindow()) {
-                        // do not forward the event to child windows,
-                        // QApplication does this for us
-                        continue;
-                    }
-                    QApplication::sendEvent(o, event);
+        if (!d->children.isEmpty()) {
+            QWidget *modalWidget = QApplication::activeModalWidget();
+            for (int i = 0; i < d->children.size(); ++i) {
+                QObject *o = d->children.at(i);
+                if (o && o != modalWidget && o->isWidgetType()) {
+                    QWidget *w  = static_cast<QWidget *>(o);
+                    // do not forward the event to child windows; QApplication does this for us
+                    if (!w->isWindow())
+                        QApplication::sendEvent(w, event);
                 }
             }
+        }
 #if defined(Q_WS_WIN)
             setDisabledStyle(this, (event->type() == QEvent::WindowBlocked));
 #endif
-        }
         break;
 #ifndef QT_NO_TOOLTIP
     case QEvent::ToolTip:
