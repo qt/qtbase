@@ -2188,7 +2188,7 @@ void QCoreApplication::installNativeEventFilter(QAbstractNativeEventFilter *filt
     It is always safe to remove an event filter, even during event
     filter activation (i.e. from the nativeEventFilter() function).
 
-    \sa installNativeEventFilter(), QAbstractNativeEventFilter
+    \sa installNativeEventFilter()
     \since 5.0
 */
 void QCoreApplication::removeNativeEventFilter(QAbstractNativeEventFilter *filterObj)
