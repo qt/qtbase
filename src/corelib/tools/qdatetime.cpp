@@ -179,7 +179,7 @@ static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* d
     and for manipulating dates. For example, it is possible to add
     and subtract days, months, and years to dates.
 
-    A QDate object is typically created either by giving the year,
+    A QDate object is typically created by giving the year,
     month, and day numbers explicitly. Note that QDate interprets two
     digit years as is, i.e., years 0 - 99. A QDate can also be
     constructed with the static function currentDate(), which creates
@@ -907,7 +907,7 @@ void QDate::getDate(int *year, int *month, int *day)
     date of this object (or earlier if \a ndays is negative).
 
     Returns a null date if the current date is invalid or the new date is
-    out-of-range.
+    out of range.
 
     \sa addMonths(), addYears(), daysTo()
 */
@@ -1352,12 +1352,12 @@ bool QDate::isLeapYear(int y)
     the toString() function.
 
     QTime provides a full set of operators to compare two QTime
-    objects. One time is considered smaller than another if it is
-    earlier than the other.
+    objects. QTime A is considered smaller than QTime B if A is
+    earlier than B.
 
-    The time a given number of seconds or milliseconds later than a
-    given time can be found using the addSecs() or addMSecs()
-    functions. Correspondingly, the number of seconds or milliseconds
+    The addSecs() and addMSecs() functions provide the time a given
+    number of seconds or milliseconds later than a given time.
+    Correspondingly, the number of seconds or milliseconds
     between two times can be found using secsTo() or msecsTo().
 
     QTime can be used to measure a span of elapsed time using the
@@ -1583,7 +1583,7 @@ QString QTime::toString(Qt::DateFormat format) const
     \row \li H:m:s a      \li 14:13:9 pm
     \endtable
 
-    If the datetime is invalid, an empty string will be returned.
+    If the time is invalid, an empty string will be returned.
     If \a format is empty, the default format "hh:mm:ss" is used.
 
     \sa QDate::toString(), QDateTime::toString()
@@ -1915,7 +1915,7 @@ QTime QTime::fromString(const QString& s, Qt::DateFormat f)
 
     \snippet code/src_corelib_tools_qdatetime.cpp 6
 
-    If the format is not satisfied an invalid QTime is returned.
+    If the format is not satisfied, an invalid QTime is returned.
     Expressions that do not expect leading zeroes to be given (h, m, s
     and z) are greedy. This means that they will use two digits even if
     this puts them outside the range of accepted values and leaves too
@@ -2073,12 +2073,12 @@ int QTime::elapsed() const
     textual format by the toString() function.
 
     QDateTime provides a full set of operators to compare two
-    QDateTime objects where smaller means earlier and larger means
+    QDateTime objects, where smaller means earlier and larger means
     later.
 
     You can increment (or decrement) a datetime by a given number of
     milliseconds using addMSecs(), seconds using addSecs(), or days
-    using addDays(). Similarly you can use addMonths() and addYears().
+    using addDays(). Similarly, you can use addMonths() and addYears().
     The daysTo() function returns the number of days between two datetimes,
     secsTo() returns the number of seconds between two datetimes, and
     msecsTo() returns the number of milliseconds between two datetimes.
@@ -2102,7 +2102,7 @@ int QTime::elapsed() const
 
     \section2 Range of Valid Dates
 
-    Dates are stored internally as a Julian Day number, an interger count of
+    Dates are stored internally as a Julian Day number, an integer count of
     every day in a contiguous range, with 24 November 4714 BCE in the Gregorian
     calendar being Julian Day 0 (1 January 4713 BCE in the Julian calendar).
     As well as being an efficient and accurate way of storing an absolute date,
@@ -2218,7 +2218,7 @@ QDateTime &QDateTime::operator=(const QDateTime &other)
     \fn void QDateTime::swap(QDateTime &other)
     \since 5.0
 
-    Swaps this date-time with \a other. This operation is very fast
+    Swaps this datetime with \a other. This operation is very fast
     and never fails.
 */
 
@@ -2412,7 +2412,7 @@ uint QDateTime::toTime_t() const
 /*!
     \since 4.7
 
-    Sets the date and time given the number of milliseconds,\a msecs, that have
+    Sets the date and time given the number of milliseconds \a msecs that have
     passed since 1970-01-01T00:00:00.000, Coordinated Universal Time
     (Qt::UTC). On systems that do not support time zones this function
     will behave as if local time were Qt::UTC.
@@ -2489,7 +2489,7 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
     dates and times, taking the form YYYY-MM-DDTHH:MM:SS[Z|[+|-]HH:MM],
     depending on the timeSpec() of the QDateTime. If the timeSpec()
     is Qt::UTC, Z will be appended to the string; if the timeSpec() is
-    Qt::OffsetFromUTC the offset in hours and minutes from UTC will
+    Qt::OffsetFromUTC, the offset in hours and minutes from UTC will
     be appended to the string.
 
     If the \a format is Qt::SystemLocaleShortDate or
@@ -3224,7 +3224,7 @@ void QDateTime::setUtcOffset(int seconds)
     detach();
 
     /* The motivation to also setting d->spec is to ensure that the QDateTime
-     * instance stay in well-defined states all the time, instead of that
+     * instance stays in well-defined states all the time; instead of that,
      * we instruct the user to ensure it. */
     if(seconds == 0)
         d->spec = QDateTimePrivate::UTC;
@@ -3241,8 +3241,8 @@ void QDateTime::setUtcOffset(int seconds)
 
  Returns the UTC offset in seconds. If the timeSpec() isn't
  Qt::OffsetFromUTC, 0 is returned. However, since 0 is a valid UTC
- offset the return value of this function cannot be used to determine
- whether a utcOffset() is used or is valid, timeSpec() must be
+ offset, the return value of this function cannot be used to determine
+ whether a utcOffset() is used or is valid; in that case, timeSpec() must be
  checked.
 
  Likewise, if this QDateTime() is invalid or if timeSpec() isn't
@@ -3522,7 +3522,7 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
 
     \snippet code/src_corelib_tools_qdatetime.cpp 12
 
-    If the format is not satisfied an invalid QDateTime is returned.
+    If the format is not satisfied, an invalid QDateTime is returned.
     The expressions that don't have leading zeroes (d, M, h, m, s, z) will be
     greedy. This means that they will use two digits even if this will
     put them outside the range and/or leave too few digits for other
@@ -3533,7 +3533,7 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
     This could have meant 1 January 00:30.00 but the M will grab
     two digits.
 
-    For any field that is not represented in the format the following
+    For any field that is not represented in the format, the following
     defaults are used:
 
     \table
@@ -3738,7 +3738,7 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
 
 
 
-// checks if there is an unqoted 'AP' or 'ap' in the string
+// checks if there is an unquoted 'AP' or 'ap' in the string
 static bool hasUnquotedAP(const QString &f)
 {
     const QLatin1Char quote('\'');
