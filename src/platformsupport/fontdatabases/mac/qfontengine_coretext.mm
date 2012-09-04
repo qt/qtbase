@@ -440,12 +440,12 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     glyph_metrics_t br = boundingBox(glyph);
 
     if (m.isScaling()) {
-        QFixed hscale = QFixed::fromReal(m.m11());
-        QFixed vscale = QFixed::fromReal(m.m22());
-        br.width  *= hscale;
-        br.height *= vscale;
-        br.x      *= hscale;
-        br.y      *= vscale;
+        qreal hscale = m.m11();
+        qreal vscale = m.m22();
+        br.width  = QFixed::fromReal(br.width.toReal() * hscale);
+        br.height = QFixed::fromReal(br.height.toReal() * vscale);
+        br.x      = QFixed::fromReal(br.x.toReal() * hscale);
+        br.y      = QFixed::fromReal(br.y.toReal() * vscale);
     }
 
     QImage im(qRound(br.width)+2, qRound(br.height)+2, QImage::Format_RGB32);
