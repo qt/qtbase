@@ -1403,7 +1403,7 @@ int QFileDialogPrivate::maxNameLength(const QString &path)
 #elif defined(Q_OS_WIN)
     DWORD maxLength;
     const QString drive = path.left(3);
-    if (::GetVolumeInformation(reinterpret_cast<const wchar_t *>(drive.utf16()), NULL, 0, NULL, &maxLength, NULL, NULL, 0) == FALSE)
+    if (::GetVolumeInformation(reinterpret_cast<const wchar_t *>(drive.utf16()), NULL, 0, NULL, &maxLength, NULL, NULL, 0) == false)
         return -1;
     return maxLength;
 #else

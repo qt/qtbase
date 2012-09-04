@@ -77,7 +77,7 @@ HMENU qt_getWindowsSystemMenu(const QWidget *w)
 {
     if (QWindow *window = QApplicationPrivate::windowForWidget(w))
         if (void *handle = QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", window))
-            return GetSystemMenu(reinterpret_cast<HWND>(handle), FALSE);
+            return GetSystemMenu(reinterpret_cast<HWND>(handle), false);
     return 0;
 }
 #endif

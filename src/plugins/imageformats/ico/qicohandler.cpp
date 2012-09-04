@@ -364,11 +364,11 @@ bool ICOReader::readBMPHeader(quint32 imageOffset, BMP_INFOHDR * header)
     if (iod) {
         if (iod->seek(startpos + imageOffset)) {
             if (readBMPInfoHeader(iod, header)) {
-                return TRUE;
+                return true;
             }
         }
     }
-    return FALSE;
+    return false;
 }
 
 void ICOReader::findColorInfo(QImage & image)

@@ -799,7 +799,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
                 type = GTK_ARROW_DOWN;
 
             gtkPainter.paintArrow(gtkTreeHeader, "button", option->rect.adjusted(1, 1, -1, -1), type, state,
-                                  GTK_SHADOW_NONE, FALSE, style);
+                                  GTK_SHADOW_NONE, false, style);
         }
         break;
 
@@ -965,7 +965,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         GdkColor color = fromQColor(arrowColor);
         d->gtk_widget_modify_fg (gtkArrow, state, &color);
         gtkPainter.paintArrow(gtkArrow, "button", arrowRect,
-                              type, state, shadow, FALSE, gtkArrow->style,
+                              type, state, shadow, false, gtkArrow->style,
                               QString::number(arrowColor.rgba(), 16));
         // Passing NULL will revert the color change
         d->gtk_widget_modify_fg (gtkArrow, state, NULL);
@@ -1009,7 +1009,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
                                "focus-line-width", &focus_line_width, NULL);
 
         // See https://bugzilla.mozilla.org/show_bug.cgi?id=405421 for info about this hack
-        g_object_set_data(G_OBJECT(gtkEntry), "transparent-bg-hint", GINT_TO_POINTER(TRUE));
+        g_object_set_data(G_OBJECT(gtkEntry), "transparent-bg-hint", GINT_TO_POINTER(true));
 
         if (!interior_focus && option->state & State_HasFocus)
             rect.adjust(focus_line_width, focus_line_width, -focus_line_width, -focus_line_width);
@@ -1571,7 +1571,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 if (gtkArrow) {
                     gtkCachedPainter.setClipRect(option->rect);
                     gtkCachedPainter.paintArrow( gtkArrow, "arrow", arrowRect,
-                                           GTK_ARROW_DOWN, state, GTK_SHADOW_NONE, TRUE,
+                                           GTK_ARROW_DOWN, state, GTK_SHADOW_NONE, true,
                                            style, arrowPath.toString() + QString::number(option->direction));
                 }
             }
@@ -1787,7 +1787,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
                 gtkPainter.paintArrow( scrollbarWidget, horizontal ? "hscrollbar" : "vscrollbar", scrollBarAddLine.adjusted(4, 4, -4, -4),
                                        horizontal ? (reverse ? GTK_ARROW_LEFT : GTK_ARROW_RIGHT) :
-                                       GTK_ARROW_DOWN, state, GTK_SHADOW_NONE, FALSE, style);
+                                       GTK_ARROW_DOWN, state, GTK_SHADOW_NONE, false, style);
             }
 
             if (scrollBar->subControls & SC_ScrollBarSubLine) {
@@ -1813,7 +1813,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
                 gtkPainter.paintArrow(scrollbarWidget, horizontal ? "hscrollbar" : "vscrollbar", scrollBarSubLine.adjusted(4, 4, -4, -4),
                                       horizontal ? (reverse ? GTK_ARROW_RIGHT : GTK_ARROW_LEFT) :
-                                      GTK_ARROW_UP, state, GTK_SHADOW_NONE, FALSE, style);
+                                      GTK_ARROW_UP, state, GTK_SHADOW_NONE, false, style);
             }
         }
         break;
@@ -1957,7 +1957,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     state = GTK_STATE_INSENSITIVE;
 
                 gtkPainter.paintArrow( gtkSpinButton, "spinbutton", arrowRect, GTK_ARROW_UP, state,
-                                       GTK_SHADOW_NONE, FALSE, style);
+                                       GTK_SHADOW_NONE, false, style);
 
                 arrowRect.moveCenter(downRect.center());
 
@@ -1965,7 +1965,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     state = GTK_STATE_INSENSITIVE;
 
                 gtkPainter.paintArrow( gtkSpinButton, "spinbutton", arrowRect, GTK_ARROW_DOWN, state,
-                                       GTK_SHADOW_NONE, FALSE, style);
+                                       GTK_SHADOW_NONE, false, style);
             }
         }
         break;
@@ -2863,7 +2863,7 @@ void QGtkStyle::drawControl(ControlElement element,
                 GtkStateType state = enabled ? (act ? GTK_STATE_PRELIGHT: GTK_STATE_NORMAL) : GTK_STATE_INSENSITIVE;
                 GtkShadowType shadowType = (state == GTK_STATE_PRELIGHT) ? GTK_SHADOW_OUT : GTK_SHADOW_IN;
                 gtkPainter.paintArrow(gtkMenuItem, "menuitem", vSubMenuRect, QApplication::isRightToLeft() ? GTK_ARROW_LEFT : GTK_ARROW_RIGHT, state,
-                                      shadowType, FALSE, style);
+                                      shadowType, false, style);
             }
         }
         painter->restore();

@@ -377,9 +377,9 @@ static int choosePixelFormat(HDC hdc,
     iAttributes[i++] = testFlag(additional.formatFlags, QWindowsGLDirectRendering) ?
                        WGL_FULL_ACCELERATION_ARB : WGL_NO_ACCELERATION_ARB;
     iAttributes[i++] = WGL_SUPPORT_OPENGL_ARB;
-    iAttributes[i++] = TRUE;
+    iAttributes[i++] = true;
     iAttributes[i++] = WGL_DRAW_TO_WINDOW_ARB;
-    iAttributes[i++] = TRUE;
+    iAttributes[i++] = true;
     iAttributes[i++] = WGL_COLOR_BITS_ARB;
     iAttributes[i++] = 24;
     switch (format.swapBehavior()) {
@@ -387,17 +387,17 @@ static int choosePixelFormat(HDC hdc,
         break;
     case QSurfaceFormat::SingleBuffer:
         iAttributes[i++] = WGL_DOUBLE_BUFFER_ARB;
-        iAttributes[i++] = FALSE;
+        iAttributes[i++] = false;
         break;
     case QSurfaceFormat::DoubleBuffer:
     case QSurfaceFormat::TripleBuffer:
         iAttributes[i++] = WGL_DOUBLE_BUFFER_ARB;
-        iAttributes[i++] = TRUE;
+        iAttributes[i++] = true;
         break;
     }
     if (format.stereo()) {
         iAttributes[i++] = WGL_STEREO_ARB;
-        iAttributes[i++] = TRUE;
+        iAttributes[i++] = true;
     }
     if (format.depthBufferSize() >= 0) {
         iAttributes[i++] = WGL_DEPTH_BITS_ARB;
@@ -435,13 +435,13 @@ static int choosePixelFormat(HDC hdc,
     int samplesValuePosition = 0;
     if (sampleBuffersRequested) {
         iAttributes[i++] = WGL_SAMPLE_BUFFERS_ARB;
-        iAttributes[i++] = TRUE;
+        iAttributes[i++] = true;
         iAttributes[i++] = WGL_SAMPLES_ARB;
         samplesValuePosition = i;
         iAttributes[i++] = format.samples();
     } else if (samples == 0 || samples == 1 ) {
         iAttributes[i++] = WGL_SAMPLE_BUFFERS_ARB;
-        iAttributes[i++] = FALSE;
+        iAttributes[i++] = false;
     }
     // If sample buffer request cannot be satisfied, reduce request.
     int pixelFormat = 0;

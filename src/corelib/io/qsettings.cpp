@@ -1032,7 +1032,7 @@ static QString windowsConfigPath(int type)
     GetSpecialFolderPath SHGetSpecialFolderPath = (GetSpecialFolderPath)library.resolve("SHGetSpecialFolderPathW");
     if (SHGetSpecialFolderPath) {
         wchar_t path[MAX_PATH];
-        SHGetSpecialFolderPath(0, path, type, FALSE);
+        SHGetSpecialFolderPath(0, path, type, false);
         result = QString::fromWCharArray(path);
     }
 

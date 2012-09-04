@@ -120,10 +120,10 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
 
         // Could not create a context using glXCreateContextAttribsARB, falling back to glXCreateNewContext.
         if (!m_context) {
-            m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, m_shareContext, TRUE);
+            m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, m_shareContext, true);
             if (!m_context && m_shareContext) {
                 // re-try without a shared glx context
-                m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, 0, TRUE);
+                m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, 0, true);
                 if (m_context)
                     m_shareContext = 0;
             }

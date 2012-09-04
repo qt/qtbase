@@ -363,7 +363,7 @@ static bool read_jpeg_image(QImage *outImage,
         // If high quality not required, use fast decompression
         if( quality < HIGH_QUALITY_THRESHOLD ) {
             info->dct_method = JDCT_IFAST;
-            info->do_fancy_upsampling = FALSE;
+            info->do_fancy_upsampling = false;
         }
 
         (void) jpeg_calc_output_dimensions(info);

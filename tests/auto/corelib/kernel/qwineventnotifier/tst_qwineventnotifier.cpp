@@ -72,7 +72,7 @@ void tst_QWinEventNotifier::simple_timerSet()
 
 void tst_QWinEventNotifier::simple()
 {
-    simpleHEvent = CreateEvent(0, TRUE, FALSE, 0);
+    simpleHEvent = CreateEvent(0, true, false, 0);
     QVERIFY(simpleHEvent);
 
     QWinEventNotifier n(simpleHEvent);

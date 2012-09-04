@@ -697,7 +697,7 @@ static void showSystemMenu(QWindow* w)
 {
     QWindow *topLevel = QWindowsWindow::topLevelOf(w);
     HWND topLevelHwnd = QWindowsWindow::handleOf(topLevel);
-    HMENU menu = GetSystemMenu(topLevelHwnd, FALSE);
+    HMENU menu = GetSystemMenu(topLevelHwnd, false);
     if (!menu)
         return; // no menu for this window
 
@@ -722,7 +722,7 @@ static void showSystemMenu(QWindow* w)
     closeItem.cbSize = sizeof(MENUITEMINFO);
     closeItem.fMask = MIIM_STATE;
     closeItem.fState = MFS_DEFAULT;
-    SetMenuItemInfo(menu, SC_CLOSE, FALSE, &closeItem);
+    SetMenuItemInfo(menu, SC_CLOSE, false, &closeItem);
 
 #undef enabled
 #undef disabled

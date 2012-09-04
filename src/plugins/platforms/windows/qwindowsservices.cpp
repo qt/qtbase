@@ -138,7 +138,7 @@ static inline bool launchMail(const QUrl &url)
     STARTUPINFO si;
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
-    if (!CreateProcess(NULL, (wchar_t*)command.utf16(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+    if (!CreateProcess(NULL, (wchar_t*)command.utf16(), NULL, NULL, false, 0, NULL, NULL, &si, &pi)) {
         qErrnoWarning("Unable to launch '%s'", qPrintable(command));
         return false;
     }

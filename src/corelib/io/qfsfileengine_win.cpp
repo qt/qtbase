@@ -121,7 +121,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     if (openMode & QIODevice::WriteOnly)
         accessRights |= GENERIC_WRITE;
 
-    SECURITY_ATTRIBUTES securityAtts = { sizeof(SECURITY_ATTRIBUTES), NULL, FALSE };
+    SECURITY_ATTRIBUTES securityAtts = { sizeof(SECURITY_ATTRIBUTES), NULL, false };
 
     // WriteOnly can create files, ReadOnly cannot.
     DWORD creationDisp = (openMode & QIODevice::WriteOnly) ? OPEN_ALWAYS : OPEN_EXISTING;
@@ -639,7 +639,7 @@ bool QFSFileEngine::link(const QString &newName)
                 IPersistFile *ppf;
                 hres = psl->QueryInterface(IID_IPersistFile, (void **)&ppf);
                 if (SUCCEEDED(hres)) {
-                    hres = ppf->Save((wchar_t*)linkName.utf16(), TRUE);
+                    hres = ppf->Save((wchar_t*)linkName.utf16(), true);
                     if (SUCCEEDED(hres))
                          ret = true;
                     ppf->Release();
