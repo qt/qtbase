@@ -62,7 +62,9 @@ class Q_GUI_EXPORT QCursor
 {
 public:
     static QPoint pos();
+    static QPoint pos(const QScreen *screen);
     static void setPos(int x, int y);
+    static void setPos(QScreen *screen, int x, int y);
     inline static void setPos(const QPoint &p) { setPos(p.x(), p.y()); }
 private:
     QCursor();
