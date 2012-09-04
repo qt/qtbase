@@ -47,6 +47,7 @@
 #include "qcoretextfontdatabase_p.h"
 #include "qfontengine_coretext_p.h"
 #include <QtCore/QSettings>
+#include <QtGui/QGuiApplication>
 
 QT_BEGIN_NAMESPACE
 
@@ -305,8 +306,19 @@ QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, QUnicodeTables
 {
     Q_UNUSED(script);
 
+    qreal scaledPointSize = f.pixelSize;
+
+    // When 96 DPI is forced, the Mac plugin will use DPI 72 for some
+    // fonts (hardcoded in qcocoaintegration.mm) and 96 for others. This
+    // discrepancy makes it impossible to find the correct point size
+    // here without having the DPI used for the font. Until a proper
+    // solution (requiring API change) can be made, we simply fall back
+    // to passing in the point size to retain old behavior.
+    if (QGuiApplication::testAttribute(Qt::AA_Use96Dpi))
+        scaledPointSize = f.pointSize;
+
     CTFontDescriptorRef descriptor = (CTFontDescriptorRef) usrPtr;
-    CTFontRef font = CTFontCreateWithFontDescriptor(descriptor, f.pointSize, NULL);
+    CTFontRef font = CTFontCreateWithFontDescriptor(descriptor, scaledPointSize, NULL);
     if (font) {
         QFontEngine *engine = new QCoreTextFontEngine(font, f);
         engine->fontDef = f;
