@@ -209,6 +209,7 @@ QCocoaIntegration::QCocoaIntegration()
 
 QCocoaIntegration::~QCocoaIntegration()
 {
+    QCocoaAutoReleasePool pool;
     if (!QCoreApplication::testAttribute(Qt::AA_MacPluginApplication)) {
         // remove the apple event handlers installed by QCocoaApplicationDelegate
         QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *delegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];

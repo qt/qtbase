@@ -211,6 +211,7 @@ QCocoaWindow::~QCocoaWindow()
     qDebug() << "QCocoaWindow::~QCocoaWindow" << this;
 #endif
 
+    QCocoaAutoReleasePool pool;
     clearNSWindow(m_nsWindow);
     [m_contentView release];
     [m_nsWindow release];
@@ -229,6 +230,7 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 
 void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 {
+    QCocoaAutoReleasePool pool;
     if (m_nsWindow) {
         NSRect bounds = qt_mac_flipRect(rect, window());
         [m_nsWindow setContentSize : bounds.size];
