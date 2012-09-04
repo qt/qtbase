@@ -23,6 +23,7 @@ CONFIG(blackberry) {
 # Uncomment these to enable debugging output for various aspects of the plugin
 #DEFINES += QQNXBPSEVENTFILTER_DEBUG
 #DEFINES += QQNXBUFFER_DEBUG
+#DEFINES += QQNXBUTTON_DEBUG
 #DEFINES += QQNXCLIPBOARD_DEBUG
 #DEFINES += QQNXFILEDIALOGHELPER_DEBUG
 #DEFINES += QQNXGLBACKINGSTORE_DEBUG
@@ -109,12 +110,14 @@ CONFIG(qqnx_pps) {
     SOURCES += qqnxnavigatorpps.cpp \
                qqnxnavigatoreventnotifier.cpp \
                qqnxvirtualkeyboardpps.cpp \
-               qqnxclipboard.cpp
+               qqnxclipboard.cpp \
+               qqnxbuttoneventnotifier.cpp
 
     HEADERS += qqnxnavigatorpps.h \
                qqnxnavigatoreventnotifier.h \
                qqnxvirtualkeyboardpps.h \
-               qqnxclipboard.h
+               qqnxclipboard.h \
+               qqnxbuttoneventnotifier.h
 
     LIBS += -lpps -lclipboard
 

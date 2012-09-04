@@ -62,6 +62,7 @@
 #endif
 
 #if defined(QQNX_PPS)
+#  include "qqnxbuttoneventnotifier.h"
 #  include "qqnxnavigatoreventnotifier.h"
 #  include "qqnxclipboard.h"
 
@@ -112,6 +113,7 @@ QQnxIntegration::QQnxIntegration()
 #if defined(QQNX_PPS)
     , m_navigatorEventNotifier(0)
     , m_inputContext(0)
+    , m_buttonsNotifier(new QQnxButtonEventNotifier())
 #endif
     , m_services(0)
     , m_fontDatabase(new QGenericUnixFontDatabase())
@@ -210,6 +212,11 @@ QQnxIntegration::QQnxIntegration()
 #endif
     }
 
+#if defined(QQNX_PPS)
+    // delay invocation of start() to the time the event loop is up and running
+    // needed to have the QThread internals of the main thread properly initialized
+    QMetaObject::invokeMethod(m_buttonsNotifier, "start", Qt::QueuedConnection);
+#endif
 }
 
 QQnxIntegration::~QQnxIntegration()
@@ -218,6 +225,9 @@ QQnxIntegration::~QQnxIntegration()
     delete m_nativeInterface;
 
 #if defined(QQNX_PPS)
+    // Destroy the hardware button notifier
+    delete m_buttonsNotifier;
+
     // Destroy input context
     delete m_inputContext;
 #endif

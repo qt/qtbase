@@ -65,6 +65,7 @@ class QQnxServices;
 #if defined(QQNX_PPS)
 class QQnxInputContext;
 class QQnxNavigatorEventNotifier;
+class QQnxButtonEventNotifier;
 #endif
 
 #if !defined(QT_NO_CLIPBOARD)
@@ -132,6 +133,7 @@ private:
 #if defined(QQNX_PPS)
     QQnxNavigatorEventNotifier *m_navigatorEventNotifier;
     QQnxInputContext *m_inputContext;
+    QQnxButtonEventNotifier *m_buttonsNotifier;
 #endif
     QQnxServices *m_services;
     QPlatformFontDatabase *m_fontDatabase;
