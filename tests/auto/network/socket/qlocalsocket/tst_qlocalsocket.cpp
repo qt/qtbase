@@ -259,7 +259,7 @@ void tst_QLocalSocket::socket_basic()
     socket.close();
     socket.disconnectFromServer();
     QCOMPARE(QLocalSocket::UnknownSocketError, socket.error());
-    QVERIFY(socket.errorString() != QString());
+    QVERIFY(!socket.errorString().isEmpty());
     QCOMPARE(socket.flush(), false);
     QCOMPARE(socket.isValid(), false);
     QVERIFY(socket.readBufferSize() == 0);
@@ -307,12 +307,12 @@ void tst_QLocalSocket::listen()
     QCOMPARE(server.hits.count(), 0);
     QCOMPARE(spyNewConnection.count(), 0);
     if (canListen) {
-        QVERIFY(server.errorString() == QString());
+        QVERIFY(server.errorString().isEmpty());
         QCOMPARE(server.serverError(), QAbstractSocket::UnknownSocketError);
         // already isListening
         QVERIFY(!server.listen(name));
     } else {
-        QVERIFY(server.errorString() != QString());
+        QVERIFY(!server.errorString().isEmpty());
         QCOMPARE(server.serverError(), QAbstractSocket::HostNotFoundError);
     }
     QCOMPARE(server.maxPendingConnections(), 30);
@@ -379,7 +379,7 @@ void tst_QLocalSocket::listenAndConnect()
             //QVERIFY(socket->socketDescriptor() != -1);
             QCOMPARE(spyError.count(), 0);
         } else {
-            QVERIFY(socket->errorString() != QString());
+            QVERIFY(!socket->errorString().isEmpty());
             QVERIFY(socket->error() != QLocalSocket::UnknownSocketError);
             QCOMPARE(socket->state(), QLocalSocket::UnconnectedState);
             //QVERIFY(socket->socketDescriptor() == -1);
@@ -434,7 +434,7 @@ void tst_QLocalSocket::listenAndConnect()
             QVERIFY(server.nextPendingConnection() != (QLocalSocket*)0);
             QTRY_COMPARE(server.hits.count(), i + 1);
             QCOMPARE(spyNewConnection.count(), i + 1);
-            QVERIFY(server.errorString() == QString());
+            QVERIFY(server.errorString().isEmpty());
             QCOMPARE(server.serverError(), QAbstractSocket::UnknownSocketError);
         } else {
             QVERIFY(server.serverName().isEmpty());
@@ -442,7 +442,7 @@ void tst_QLocalSocket::listenAndConnect()
             QVERIFY(server.nextPendingConnection() == (QLocalSocket*)0);
             QCOMPARE(spyNewConnection.count(), 0);
             QCOMPARE(server.hits.count(), 0);
-            QVERIFY(server.errorString() != QString());
+            QVERIFY(!server.errorString().isEmpty());
             QCOMPARE(server.serverError(), QAbstractSocket::HostNotFoundError);
         }
     }
