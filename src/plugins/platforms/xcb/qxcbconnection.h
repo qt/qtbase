@@ -398,6 +398,7 @@ private:
     void handleGenericEventMaemo(xcb_ge_event_t *event);
 #endif
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
+    QXcbScreen* createScreenWithFabricatedName(int screenNumber, xcb_screen_t* xcbScreen);
 
     bool m_xi2Enabled;
     int m_xi2Minor;
@@ -442,6 +443,7 @@ private:
 
     QList<QXcbScreen *> m_screens;
     int m_primaryScreen;
+    int m_primaryOutput;
 
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 

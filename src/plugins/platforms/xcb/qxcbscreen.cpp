@@ -43,38 +43,59 @@
 #include "qxcbwindow.h"
 #include "qxcbcursor.h"
 #include "qxcbimage.h"
+#include "qnamespace.h"
 
 #include <stdio.h>
 
 #include <QDebug>
 
-#include <xcb/randr.h>
-
 #include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 
-QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int number)
+QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
+                       xcb_randr_get_output_info_reply_t *output, QString outputName, int number)
     : QXcbObject(connection)
-    , m_screen(screen)
+    , m_screen(scr)
+    , m_crtc(output ? output->crtc : 0)
+    , m_outputName(outputName)
+    , m_sizeMillimeters(output ? QSize(output->mm_width, output->mm_height) : QSize())
+    , m_virtualSize(scr->width_in_pixels, scr->height_in_pixels)
+    , m_virtualSizeMillimeters(scr->width_in_millimeters, scr->height_in_millimeters)
+    , m_orientation(Qt::PrimaryOrientation)
     , m_number(number)
     , m_refreshRate(60)
 {
     if (connection->hasXRandr())
-        xcb_randr_select_input(xcb_connection(), screen->root, true);
+        xcb_randr_select_input(xcb_connection(), screen()->root, true);
 
+    updateGeometry(output ? output->timestamp : 0);
     updateRefreshRate();
+
+    // On VNC, it can be that physical size is unknown while
+    // virtual size is known (probably back-calculated from DPI and resolution)
+    if (m_sizeMillimeters.isEmpty())
+        m_sizeMillimeters = m_virtualSizeMillimeters;
+    if (m_geometry.isEmpty())
+        m_geometry = QRect(QPoint(), m_virtualSize);
+    if (m_availableGeometry.isEmpty())
+        m_availableGeometry = QRect(QPoint(), m_virtualSize);
 
 #ifdef Q_XCB_DEBUG
     qDebug();
-    qDebug("Information of screen %d:", screen->root);
-    qDebug("  width.........: %d", screen->width_in_pixels);
-    qDebug("  height........: %d", screen->height_in_pixels);
-    qDebug("  depth.........: %d", screen->root_depth);
-    qDebug("  white pixel...: %x", screen->white_pixel);
-    qDebug("  black pixel...: %x", screen->black_pixel);
+    qDebug("Screen %s:", m_outputName.toUtf8().constData());
+    qDebug("  width..........: %lf", m_sizeMillimeters.width());
+    qDebug("  height.........: %lf", m_sizeMillimeters.height());
+    qDebug("  geometry.......: %d x %d +%d +%d", m_geometry.width(), m_geometry.height(), m_geometry.x(), m_geometry.y());
+    qDebug("  virtual width..: %lf", m_virtualSizeMillimeters.width());
+    qDebug("  virtual height.: %lf", m_virtualSizeMillimeters.height());
+    qDebug("  virtual geom...: %d x %d", m_virtualSize.width(), m_virtualSize.height());
+    qDebug("  avail virt geom: %d x %d +%d +%d", m_availableGeometry.width(), m_availableGeometry.height(), m_availableGeometry.x(), m_availableGeometry.y());
+    qDebug("  depth..........: %d", screen()->root_depth);
+    qDebug("  white pixel....: %x", screen()->white_pixel);
+    qDebug("  black pixel....: %x", screen()->black_pixel);
     qDebug("  refresh rate...: %d", m_refreshRate);
-    qDebug();
+    qDebug("  root ID........: %x", screen()->root);
 #endif
 
     const quint32 mask = XCB_CW_EVENT_MASK;
@@ -85,11 +106,11 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
         | XCB_EVENT_MASK_PROPERTY_CHANGE
     };
 
-    xcb_change_window_attributes(xcb_connection(), screen->root, mask, values);
+    xcb_change_window_attributes(xcb_connection(), screen()->root, mask, values);
 
     xcb_get_property_reply_t *reply =
         xcb_get_property_reply(xcb_connection(),
-            xcb_get_property_unchecked(xcb_connection(), false, screen->root,
+            xcb_get_property_unchecked(xcb_connection(), false, screen()->root,
                              atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK),
                              XCB_ATOM_WINDOW, 0, 1024), NULL);
 
@@ -105,14 +126,14 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
             if (windowManagerReply && windowManagerReply->format == 8 && windowManagerReply->type == atom(QXcbAtom::UTF8_STRING)) {
                 m_windowManagerName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply), xcb_get_property_value_length(windowManagerReply));
 #ifdef Q_XCB_DEBUG
-                qDebug("Running window manager: %s", qPrintable(m_windowManagerName));
+                qDebug("  window manager.: %s", qPrintable(m_windowManagerName));
+                qDebug();
 #endif
             }
 
             free(windowManagerReply);
         }
     }
-
     free(reply);
 
     const xcb_query_extension_reply_t *sync_reply = xcb_get_extension_data(xcb_connection(), &xcb_sync_id);
@@ -125,11 +146,11 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
     Q_XCB_CALL2(xcb_create_window(xcb_connection(),
                                   XCB_COPY_FROM_PARENT,
                                   m_clientLeader,
-                                  m_screen->root,
+                                  screen()->root,
                                   0, 0, 1, 1,
                                   0,
                                   XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                                  m_screen->root_visual,
+                                  screen()->root_visual,
                                   0, 0), connection);
 
     Q_XCB_CALL2(xcb_change_property(xcb_connection(),
@@ -142,7 +163,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
                                     &m_clientLeader), connection);
 
     xcb_depth_iterator_t depth_iterator =
-        xcb_screen_allowed_depths_iterator(screen);
+        xcb_screen_allowed_depths_iterator(screen());
 
     while (depth_iterator.rem) {
         xcb_depth_t *depth = depth_iterator.data;
@@ -214,24 +235,9 @@ const xcb_visualtype_t *QXcbScreen::visualForId(xcb_visualid_t visualid) const
     return &*it;
 }
 
-QRect QXcbScreen::geometry() const
-{
-    return QRect(0, 0, m_screen->width_in_pixels, m_screen->height_in_pixels);
-}
-
-int QXcbScreen::depth() const
-{
-    return m_screen->root_depth;
-}
-
 QImage::Format QXcbScreen::format() const
 {
     return QImage::Format_RGB32;
-}
-
-QSizeF QXcbScreen::physicalSize() const
-{
-    return QSizeF(m_screen->width_in_millimeters, m_screen->height_in_millimeters);
 }
 
 QPlatformCursor *QXcbScreen::cursor() const
@@ -239,9 +245,103 @@ QPlatformCursor *QXcbScreen::cursor() const
     return m_cursor;
 }
 
-qreal QXcbScreen::refreshRate() const
+/*!
+    \brief handle the XCB screen change event and update properties
+
+    On a mobile device, the ideal use case is that the accelerometer would
+    drive the orientation. This could be achieved by using QSensors to read the
+    accelerometer and adjusting the rotation in QML, or by reading the
+    orientation from the QScreen object and doing the same, or in many other
+    ways. However, on X we have the XRandR extension, which makes it possible
+    to have the whole screen rotated, so that individual apps DO NOT have to
+    rotate themselves. Apps could optionally use the
+    QScreen::primaryOrientation property to optimize layout though.
+    Furthermore, there is no support in X for accelerometer events anyway. So
+    it makes more sense on a Linux system running X to just run a daemon which
+    monitors the accelerometer and runs xrandr automatically to do the rotation,
+    then apps do not have to be aware of it (but probably the window manager
+    would resize them accordingly). updateGeometry() is written with this
+    design in mind. Therefore the physical geometry, available geometry,
+    virtual geometry, orientation and primaryOrientation should all change at
+    the same time.  On a system which cannot rotate the whole screen, it would
+    be correct for only the orientation (not the primary orientation) to
+    change.
+*/
+void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *change_event)
 {
-    return m_refreshRate;
+    updateGeometry(change_event->config_timestamp);
+
+    switch (change_event->rotation) {
+    case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
+        m_orientation = Qt::LandscapeOrientation;
+        m_virtualSize.setWidth(change_event->width);
+        m_virtualSize.setHeight(change_event->height);
+        m_virtualSizeMillimeters.setWidth(change_event->mwidth);
+        m_virtualSizeMillimeters.setHeight(change_event->mheight);
+        break;
+    case XCB_RANDR_ROTATION_ROTATE_90: // xrandr --rotate left
+        m_orientation = Qt::PortraitOrientation;
+        m_virtualSize.setWidth(change_event->height);
+        m_virtualSize.setHeight(change_event->width);
+        m_virtualSizeMillimeters.setWidth(change_event->mheight);
+        m_virtualSizeMillimeters.setHeight(change_event->mwidth);
+        break;
+    case XCB_RANDR_ROTATION_ROTATE_180: // xrandr --rotate inverted
+        m_orientation = Qt::InvertedLandscapeOrientation;
+        m_virtualSize.setWidth(change_event->width);
+        m_virtualSize.setHeight(change_event->height);
+        m_virtualSizeMillimeters.setWidth(change_event->mwidth);
+        m_virtualSizeMillimeters.setHeight(change_event->mheight);
+        break;
+    case XCB_RANDR_ROTATION_ROTATE_270: // xrandr --rotate right
+        m_orientation = Qt::InvertedPortraitOrientation;
+        m_virtualSize.setWidth(change_event->height);
+        m_virtualSize.setHeight(change_event->width);
+        m_virtualSizeMillimeters.setWidth(change_event->mheight);
+        m_virtualSizeMillimeters.setHeight(change_event->mwidth);
+        break;
+    // We don't need to do anything with these, since QScreen doesn't store reflection state,
+    // and Qt-based applications probably don't need to care about it anyway.
+    case XCB_RANDR_ROTATION_REFLECT_X: break;
+    case XCB_RANDR_ROTATION_REFLECT_Y: break;
+    }
+
+    QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry());
+    QWindowSystemInterface::handleScreenAvailableGeometryChange(QPlatformScreen::screen(), availableGeometry());
+    QWindowSystemInterface::handleScreenOrientationChange(QPlatformScreen::screen(), m_orientation);
+}
+
+void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
+{
+    if (connection()->hasXRandr()) {
+        xcb_randr_get_crtc_info_reply_t *crtc = xcb_randr_get_crtc_info_reply(xcb_connection(),
+            xcb_randr_get_crtc_info_unchecked(xcb_connection(), m_crtc, timestamp), NULL);
+        if (crtc) {
+            m_geometry = QRect(crtc->x, crtc->y, crtc->width, crtc->height);
+            m_availableGeometry = m_geometry;
+            free(crtc);
+        }
+    }
+
+    xcb_get_property_reply_t * workArea =
+        xcb_get_property_reply(xcb_connection(),
+            xcb_get_property_unchecked(xcb_connection(), false, screen()->root,
+                             atom(QXcbAtom::_NET_WORKAREA),
+                             XCB_ATOM_CARDINAL, 0, 1024), NULL);
+
+    if (workArea && workArea->type == XCB_ATOM_CARDINAL && workArea->format == 32 && workArea->value_len >= 4) {
+        // If workArea->value_len > 4, the remaining ones seem to be for virtual desktops.
+        // But QScreen doesn't know about that concept.  In reality there could be a
+        // "docked" panel (with _NET_WM_STRUT_PARTIAL atom set) on just one desktop.
+        // But for now just assume the first 4 values give us the geometry of the
+        // "work area", AKA "available geometry"
+        uint32_t *geom = (uint32_t*)xcb_get_property_value(workArea);
+        QRect virtualAvailableGeometry(geom[0], geom[1], geom[2], geom[3]);
+        // Take the intersection of the desktop's available geometry with this screen's geometry
+        // to get the part of the available geometry which belongs to this screen.
+        m_availableGeometry = m_geometry & virtualAvailableGeometry;
+    }
+    free(workArea);
 }
 
 void QXcbScreen::updateRefreshRate()
@@ -265,11 +365,6 @@ void QXcbScreen::updateRefreshRate()
     m_refreshRate = rate;
 
     QWindowSystemInterface::handleScreenRefreshRateChange(QPlatformScreen::screen(), rate);
-}
-
-int QXcbScreen::screenNumber() const
-{
-    return m_number;
 }
 
 QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) const
@@ -367,15 +462,6 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
     xcb_free_pixmap(xcb_connection(), pixmap);
 
     return result;
-}
-
-QString QXcbScreen::name() const
-{
-    QByteArray displayName = connection()->displayName();
-    int dotPos = displayName.lastIndexOf('.');
-    if (dotPos != -1)
-        displayName.truncate(dotPos);
-    return displayName + QLatin1Char('.') + QString::number(screenNumber());
 }
 
 QT_END_NAMESPACE

@@ -286,6 +286,9 @@ QList<QScreen *> QScreen::virtualSiblings() const
 }
 
 /*!
+    \property QScreen::virtualSize
+    \brief the pixel size of the virtual desktop to which this screen belongs
+
   Returns the pixel size of the virtual desktop corresponding to this screen.
 
   This is the combined size of the virtual siblings' individual geometries.
@@ -298,6 +301,9 @@ QSize QScreen::virtualSize() const
 }
 
 /*!
+    \property QScreen::virtualGeometry
+    \brief the pixel geometry of the virtual desktop to which this screen belongs
+
   Returns the pixel geometry of the virtual desktop corresponding to this screen.
 
   This is the union of the virtual siblings' individual geometries.
@@ -313,6 +319,9 @@ QRect QScreen::virtualGeometry() const
 }
 
 /*!
+    \property QScreen::availableVirtualSize
+    \brief the available size of the virtual desktop to which this screen belongs
+
   Returns the available pixel size of the virtual desktop corresponding to this screen.
 
   This is the combined size of the virtual siblings' individual available geometries.
@@ -325,7 +334,10 @@ QSize QScreen::availableVirtualSize() const
 }
 
 /*!
-  Returns the available size of the virtual desktop corresponding to this screen.
+    \property QScreen::availableVirtualGeometry
+    \brief the available geometry of the virtual desktop to which this screen belongs
+
+  Returns the available geometry of the virtual desktop corresponding to this screen.
 
   This is the union of the virtual siblings' individual available geometries.
 

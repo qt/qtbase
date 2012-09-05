@@ -60,7 +60,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <xcb/xfixes.h>
-#include <xcb/randr.h>
 
 #ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>
@@ -101,9 +100,27 @@ static int nullErrorHandler(Display *, XErrorEvent *)
 }
 #endif
 
+QXcbScreen* QXcbConnection::createScreenWithFabricatedName(int screenNumber, xcb_screen_t* xcbScreen)
+{
+    QByteArray displayName = m_displayName;
+    int dotPos = displayName.lastIndexOf('.');
+    if (dotPos != -1)
+        displayName.truncate(dotPos);
+    QString name = displayName + QLatin1Char('.') + QString::number(screenNumber);
+    QXcbScreen *screen = new QXcbScreen(this, xcbScreen, NULL, name, screenNumber);
+    // make sure the primary screen appears first since it is used by QGuiApplication::primaryScreen()
+    if (m_primaryScreen == screenNumber) {
+        m_screens.prepend(screen);
+    } else {
+        m_screens.append(screen);
+    }
+    return screen;
+}
+
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char *displayName)
     : m_connection(0)
     , m_primaryScreen(0)
+    , m_primaryOutput(-1)
     , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
     , m_nativeInterface(nativeInterface)
 #ifdef XCB_USE_XINPUT2_MAEMO
@@ -171,14 +188,72 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
 
     int screenNumber = 0;
     while (it.rem) {
-        QXcbScreen *screen = new QXcbScreen(this, it.data, screenNumber);
-        // make sure the primary screen appears first since it is used by QGuiApplication::primaryScreen()
-        if (m_primaryScreen == screenNumber) {
-            m_screens.prepend(screen);
+        // Each "screen" in xcb terminology is a virtual desktop,
+        // potentially a collection of separate juxtaposed monitors.
+        // Now iterate the individual outputs (e.g. DVI-I-1, VGA-1, etc.)
+        // and make a QScreen instance for each.
+        xcb_screen_t *xcbScreen = it.data;
+        QList<QPlatformScreen *> siblings;
+        if (has_randr_extension) {
+            xcb_randr_get_output_primary_cookie_t primaryCookie =
+                xcb_randr_get_output_primary_unchecked(xcb_connection(), xcbScreen->root);
+            xcb_randr_get_screen_resources_current_cookie_t resourcesCookie =
+                xcb_randr_get_screen_resources_current_unchecked(xcb_connection(), xcbScreen->root);
+            xcb_randr_get_output_primary_reply_t *primary =
+                    xcb_randr_get_output_primary_reply(xcb_connection(), primaryCookie, NULL);
+            xcb_randr_get_screen_resources_current_reply_t *resources =
+                    xcb_randr_get_screen_resources_current_reply(xcb_connection(), resourcesCookie, NULL);
+            xcb_timestamp_t timestamp = resources->config_timestamp;
+            int outputCount = xcb_randr_get_screen_resources_current_outputs_length(resources);
+            xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_current_outputs(resources);
+
+            if (outputCount == 0) {
+                // This happens on VNC for example.  But there is actually a screen anyway.
+#ifdef Q_XCB_DEBUG
+                qDebug("Found a screen with zero outputs");
+#endif
+                QXcbScreen *screen = createScreenWithFabricatedName(screenNumber, it.data);
+                siblings << screen;
+                ++screenNumber;
+            }
+            for (int i = 0; i < outputCount; i++) {
+                xcb_randr_get_output_info_reply_t *output =
+                        xcb_randr_get_output_info_reply(xcb_connection(),
+                            xcb_randr_get_output_info_unchecked(xcb_connection(), outputs[i], timestamp), NULL);
+                if (output == NULL)
+                    continue;
+                QString outputName = QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output),
+                                                       xcb_randr_get_output_info_name_length(output));
+
+                if (output->crtc == XCB_NONE) {
+#ifdef Q_XCB_DEBUG
+                    qDebug("Screen output %s is not connected", qPrintable(outputName));
+#endif
+                    continue;
+                }
+
+                QXcbScreen *screen = new QXcbScreen(this, xcbScreen, output, outputName, screenNumber);
+                siblings << screen;
+                // make sure the primary screen appears first since it is used by QGuiApplication::primaryScreen()
+                if (outputs[i] == primary->output && m_primaryOutput < 0) {
+                    m_primaryOutput = screenNumber;
+                    m_screens.prepend(screen);
+                } else {
+                    m_screens.append(screen);
+                }
+                ++screenNumber;
+                free(output);
+            }
+
+            free(primary);
+            free(resources);
         } else {
-            m_screens.append(screen);
+            QXcbScreen *screen = createScreenWithFabricatedName(screenNumber, it.data);
+            siblings << screen;
+            ++screenNumber;
         }
-        ++screenNumber;
+        foreach (QPlatformScreen* s, siblings)
+            ((QXcbScreen*)s)->setVirtualSiblings(siblings);
         xcb_screen_next(&it);
     }
 
@@ -637,8 +712,8 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             xcb_randr_screen_change_notify_event_t *change_event = (xcb_randr_screen_change_notify_event_t *)event;
             foreach (QXcbScreen *s, m_screens) {
                 if (s->root() == change_event->root ) {
+                    s->handleScreenChange(change_event);
                     s->updateRefreshRate();
-                    break;
                 }
             }
             handled = true;
