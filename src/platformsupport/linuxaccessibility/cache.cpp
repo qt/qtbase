@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QSpiDBusCache
-
+    \internal
     \brief This class is responsible for the AT-SPI cache interface.
 
     The idea behind the cache is that starting an application would

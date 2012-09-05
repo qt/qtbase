@@ -58,10 +58,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QSpiAccessibleBridge
-
-    \brief QSpiAccessibleBridge
-
-    QSpiAccessibleBridge
+    \internal
 */
 
 QSpiAccessibleBridge::QSpiAccessibleBridge()

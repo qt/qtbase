@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QSpiApplicationAdaptor
+    \internal
 
     \brief QSpiApplicationAdaptor
 

@@ -46,20 +46,14 @@
 #include <QtDBus/QDBusMessage>
 #include <qdebug.h>
 
-/*!
-    \class DBusConnection
-
-    \brief DBusConnection
-
-    DBusConnection
-*/
-
 QT_BEGIN_NAMESPACE
 
 /*!
-  Connects to the accessibility dbus.
+    \class DBusConnection
+    \internal
+    \brief Connects to the accessibility dbus.
 
-  This is usually a different bus from the session bus.
+    This is usually a different bus from the session bus.
 */
 DBusConnection::DBusConnection()
     : dbusConnection(connectDBus())

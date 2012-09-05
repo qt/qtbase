@@ -56,6 +56,7 @@
 #include "application_p.h"
 /*!
     \class AtSpiAdaptor
+    \internal
 
     \brief AtSpiAdaptor is the main class to forward between QAccessibleInterface and AT-SPI DBus
 
