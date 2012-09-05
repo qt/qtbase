@@ -41,7 +41,6 @@
 
 #include "qplatformdefs.h"
 #include "qfilesystemengine_p.h"
-#include "qplatformdefs.h"
 #include "qfile.h"
 
 #include <QtCore/qvarlengtharray.h>

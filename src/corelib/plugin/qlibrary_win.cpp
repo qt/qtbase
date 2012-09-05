@@ -44,7 +44,6 @@
 #include "qfile.h"
 #include "qdir.h"
 #include "qfileinfo.h"
-#include "qdir.h"
 #include <private/qfilesystementry_p.h>
 
 #if defined(QT_NO_LIBRARY) && defined(Q_OS_WIN)

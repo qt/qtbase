@@ -51,7 +51,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdlib.h>
 
 #include "qdbusconnection.h"    // for the Export* flags
 #include "qdbusconnection_p.h"    // for the qDBusCheckAsyncTag

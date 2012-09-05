@@ -57,7 +57,6 @@
 #include "qdesktopwidget.h"
 #include "qbitmap.h"
 #include "private/qlabel_p.h"
-#include "qapplication.h"
 
 QT_BEGIN_NAMESPACE
 

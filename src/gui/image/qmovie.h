@@ -48,7 +48,6 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qobject.h>
 #include <QtGui/qimagereader.h>
 
 QT_BEGIN_HEADER

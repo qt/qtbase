@@ -63,8 +63,6 @@
 #include <qpair.h>
 #include <qdir.h>
 #include <qicon.h>
-#include <qdir.h>
-#include <qicon.h>
 #include <qfileinfo.h>
 #include <qtimer.h>
 #include <qhash.h>

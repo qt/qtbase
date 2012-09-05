@@ -64,7 +64,6 @@
 
 #include <qhash.h>
 
-#include <private/qguiapplication_p.h>
 #include <private/qpaintengine_raster_p.h>
 
 #include <private/qimage_p.h>

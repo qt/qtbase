@@ -88,24 +88,21 @@
 #include "private/qevent_p.h"
 #include "qwidget_p.h"
 
-#include "qapplication.h"
-
 #include "qgesture.h"
 #include "private/qgesturemanager_p.h"
-#include "private/qguiapplication_p.h"
 #include <qpa/qplatformfontdatabase.h>
 #ifndef QT_NO_LIBRARY
 #include "qlibrary.h"
 #endif
 
-#ifdef Q_OS_WINCE
 #include "qdatetime.h"
+
+#ifdef Q_OS_WINCE
 extern bool qt_wince_is_smartphone(); //qguifunctions_wince.cpp
 extern bool qt_wince_is_mobile();     //qguifunctions_wince.cpp
 extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 #endif
 
-#include "qdatetime.h"
 #include <qpa/qplatformwindow.h>
 
 //#define ALIEN_DEBUG

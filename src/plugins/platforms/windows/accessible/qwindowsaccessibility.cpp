@@ -78,7 +78,6 @@
 #  include <winable.h>
 #endif
 
-#include <oleacc.h>
 #include <servprov.h>
 #if !defined(Q_CC_BOR) && !defined (Q_CC_GNU)
 #include <comdef.h>

@@ -44,7 +44,6 @@
 #include <QPixmap>
 #include <QDebug>
 
-#include <private/qapplication_p.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <qpa/qplatformwindow.h>
 #include <QtGui/QSurfaceFormat>

@@ -71,7 +71,6 @@
 #include <private/qaction_p.h>
 #include <private/qsoftkeymanager_p.h>
 #include <private/qguiapplication_p.h>
-#include <qpa/qplatformtheme.h>
 
 QT_BEGIN_NAMESPACE
 

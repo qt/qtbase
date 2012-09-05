@@ -64,7 +64,6 @@
 #include "QtWidgets/qcompleter.h"
 #include "QtCore/qpointer.h"
 #include "QtCore/qmimedata.h"
-#include "QtWidgets/qlineedit.h"
 
 #include "private/qwidgetlinecontrol_p.h"
 

@@ -39,15 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qvariant.h"
-
 // Gui types
 #include "qbitmap.h"
 #include "qbrush.h"
 #include "qcolor.h"
 #include "qcursor.h"
-#include "qdatastream.h"
-#include "qdebug.h"
 #include "qfont.h"
 #include "qimage.h"
 #include "qkeysequence.h"

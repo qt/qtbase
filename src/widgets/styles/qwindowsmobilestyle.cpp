@@ -61,8 +61,6 @@
 #include "qabstractscrollarea.h"
 #include "qabstractbutton.h"
 #include "qcombobox.h"
-#include "qabstractscrollarea.h"
-#include "qframe.h"
 #include "qscrollbar.h"
 #include "qabstractitemview.h"
 #include "qmenubar.h"

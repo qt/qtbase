@@ -47,9 +47,6 @@
 
 #include "private/qpaintengine_raster_p.h"
 
-#include "private/qguiapplication_p.h"
-
-
 
 QT_BEGIN_NAMESPACE
 

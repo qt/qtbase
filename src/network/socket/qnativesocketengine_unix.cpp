@@ -53,9 +53,6 @@
 #ifndef QT_NO_IPV6IFNAME
 #include <net/if.h>
 #endif
-#ifndef QT_NO_IPV6IFNAME
-#include <net/if.h>
-#endif
 #ifdef QT_LINUXBASE
 #include <arpa/inet.h>
 #endif

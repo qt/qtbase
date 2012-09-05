@@ -47,12 +47,10 @@
 #include "qdockwidget_p.h"
 #include "qtoolbar_p.h"
 #include "qmainwindow.h"
-#include "qmainwindowlayout_p.h"
 #include "qtoolbar.h"
 #include "qtoolbarlayout_p.h"
 #include "qwidgetanimator_p.h"
 #include "qrubberband.h"
-#include "qdockwidget_p.h"
 #include "qtabbar_p.h"
 
 #include <qapplication.h>

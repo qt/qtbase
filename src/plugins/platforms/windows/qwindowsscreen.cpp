@@ -44,7 +44,6 @@
 #include "qwindowswindow.h"
 #include "qwindowsintegration.h"
 #include "qwindowscursor.h"
-#include "qwindowscontext.h"
 
 #include "qtwindows_additional.h"
 

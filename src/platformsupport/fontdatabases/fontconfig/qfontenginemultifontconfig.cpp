@@ -42,7 +42,6 @@
 #include "qfontenginemultifontconfig_p.h"
 
 #include <QtGui/private/qfontengine_ft_p.h>
-#include <QtGui/private/qfontengine_ft_p.h>
 
 QT_BEGIN_NAMESPACE
 

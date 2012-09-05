@@ -62,7 +62,6 @@
 #include "QtCore/qpair.h"
 #include "QtGui/qregion.h"
 #include "QtCore/qdebug.h"
-#include "QtGui/qpainter.h"
 #include "QtCore/qbasictimer.h"
 #include "QtCore/qelapsedtimer.h"
 

@@ -48,7 +48,6 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <qpa/qplatformscreen_p.h>
-#include <qpa/qplatformtheme.h>
 #include <private/qdnd_p.h>
 
 QT_BEGIN_NAMESPACE

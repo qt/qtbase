@@ -50,11 +50,6 @@
 
 #include "qdialogbuttonbox.h"
 
-#ifdef QT_SOFTKEYS_ENABLED
-#include <QtWidgets/qaction.h>
-#endif
-
-
 QT_BEGIN_NAMESPACE
 
 /*!

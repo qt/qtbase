@@ -48,7 +48,6 @@
 #include <QDir>
 #include <QStringList>
 #include <QMap>
-#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 

@@ -69,8 +69,6 @@
 
 #include "qplatformdefs.h"
 
-#include "qplatformdefs.h"
-
 QT_BEGIN_HEADER
 
 #ifdef DrawText

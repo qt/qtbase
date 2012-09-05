@@ -62,7 +62,6 @@
 #include "QtCore/qpointer.h"
 #include "QtCore/qthread.h"
 #include "QtCore/qthreadpool.h"
-#include "QtCore/qmutex.h"
 #include "QtCore/qrunnable.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qqueue.h"

@@ -52,8 +52,6 @@
 #include <byteswap.h>
 #endif
 
-#include <string.h>
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE

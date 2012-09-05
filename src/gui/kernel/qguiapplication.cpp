@@ -66,11 +66,9 @@
 #include <private/qdrawhelper_p.h>
 
 #include <QtGui/qgenericpluginfactory.h>
-#include <qpa/qplatformintegration.h>
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputmethod.h>
 #include <QtGui/qpixmapcache.h>
-#include <qpa/qplatformtheme.h>
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatforminputcontext_p.h>
 
@@ -81,7 +79,6 @@
 
 #include "private/qdnd_p.h"
 #include <qpa/qplatformthemefactory_p.h>
-#include <qpa/qplatformdrag.h>
 
 #ifndef QT_NO_CURSOR
 #include <qpa/qplatformcursor.h>

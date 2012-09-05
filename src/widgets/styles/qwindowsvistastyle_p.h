@@ -82,8 +82,6 @@
 #include <qmessagebox.h>
 #include <qdialogbuttonbox.h>
 #include <qinputdialog.h>
-#include <qtreeview.h>
-#include <qlistview.h>
 #include <qtableview.h>
 #include <qbasictimer.h>
 #include <qdatetime.h>
