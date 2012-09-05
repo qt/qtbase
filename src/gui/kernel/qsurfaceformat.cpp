@@ -290,7 +290,7 @@ void QSurfaceFormat::setStereo(bool enable)
     Returns the number of samples per pixel when multisampling is
     enabled. By default, multisampling is disabled.
 
-    \sa setSampleBuffers(), sampleBuffers(), setSamples()
+    \sa setSamples()
 */
 int QSurfaceFormat::samples() const
 {
@@ -301,7 +301,7 @@ int QSurfaceFormat::samples() const
     Set the preferred number of samples per pixel when multisampling
     is enabled to \a numSamples. By default, multisampling is disabled.
 
-    \sa setSampleBuffers(), sampleBuffers(), samples()
+    \sa samples()
 */
 void QSurfaceFormat::setSamples(int numSamples)
 {
