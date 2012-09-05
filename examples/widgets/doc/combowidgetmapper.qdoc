@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/itemviews/combowidgetmapper
+    \example itemviews/combowidgetmapper
     \title Combo Widget Mapper Example
 
     The Combo Widget Mapper example shows how to use a custom delegate to
@@ -51,7 +51,7 @@
     The class provides a constructor, a slot to keep the buttons up to date,
     and a private function to set up the model:
 
-    \snippet widgets/itemviews/combowidgetmapper/window.h Window definition
+    \snippet itemviews/combowidgetmapper/window.h Window definition
 
     In addition to the QDataWidgetMapper object and the controls used to make
     up the user interface, we use a QStandardItemModel to hold our data and
@@ -63,7 +63,7 @@
     The constructor of the \c Window class can be explained in three parts.
     In the first part, we set up the widgets used for the user interface:
 
-    \snippet widgets/itemviews/combowidgetmapper/window.cpp Set up widgets
+    \snippet itemviews/combowidgetmapper/window.cpp Set up widgets
 
     Note that we set up the mapping the combo box in the same way as for other
     widgets, but that we apply its own model to it so that it will display
@@ -73,7 +73,7 @@
     Next, we set up the widget mapper, relating each input widget to a column
     in the model specified by the call to \l{QDataWidgetMapper::}{setModel()}:
 
-    \snippet widgets/itemviews/combowidgetmapper/window.cpp Set up the mapper
+    \snippet itemviews/combowidgetmapper/window.cpp Set up the mapper
 
     For the combo box, we pass an extra argument to tell the widget mapper
     which property to relate to values from the model. As a result, the user
@@ -92,14 +92,14 @@
     The rest of the constructor is very similar to that of the
     \l{Simple Widget Mapper Example}:
 
-    \snippet widgets/itemviews/combowidgetmapper/window.cpp Set up connections and layouts
+    \snippet itemviews/combowidgetmapper/window.cpp Set up connections and layouts
 
     The model is initialized in the window's \c{setupModel()} function. Here,
     we create a standard model with 5 rows and 3 columns. In each row, we
     insert a name, address, and a value that indicates the type of address.
     The address types are stored in a string list model.
 
-    \snippet widgets/itemviews/combowidgetmapper/window.cpp Set up the model
+    \snippet itemviews/combowidgetmapper/window.cpp Set up the model
 
     As we insert each row into the model, like a record in a database, we
     store values that correspond to items in \c typeModel for each person's
@@ -113,7 +113,7 @@
     We show the implementation of the \c{updateButtons()} slot for
     completeness:
 
-    \snippet widgets/itemviews/combowidgetmapper/window.cpp Slot for updating the buttons
+    \snippet itemviews/combowidgetmapper/window.cpp Slot for updating the buttons
 
     \omit
     \section1 Delegate Class Definition and Implementation
@@ -121,7 +121,7 @@
     The delegate we use to mediate interaction between the widget mapper and
     the input widgets is a small QItemDelegate subclass:
 
-    \snippet widgets/itemviews/combowidgetmapper/delegate.h Delegate class definition
+    \snippet itemviews/combowidgetmapper/delegate.h Delegate class definition
 
     This provides implementations of the two standard functions used to pass
     data between editor widgets and the model (see the \l{Delegate Classes}
@@ -134,7 +134,7 @@
     referred to by the model index supplied and processes it according to
     the presence of a \c currentIndex property in the editor widget:
 
-    \snippet widgets/itemviews/combowidgetmapper/delegate.cpp setEditorData implementation
+    \snippet itemviews/combowidgetmapper/delegate.cpp setEditorData implementation
 
     If, like QComboBox, the editor widget has this property, it is set using
     the value from the model. Since we are passing around QVariant values,
@@ -149,7 +149,7 @@
     process, taking the value stored in the widget's \c currentIndex property
     and storing it back in the model:
 
-    \snippet widgets/itemviews/combowidgetmapper/delegate.cpp setModelData implementation
+    \snippet itemviews/combowidgetmapper/delegate.cpp setModelData implementation
     \endomit
 
     \section1 Summary and Further Reading

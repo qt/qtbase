@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/painting/transformations
+    \example painting/transformations
     \title Transformations Example
 
     The Transformations example shows how transformations influence
@@ -76,7 +76,7 @@
     transformation matrix, see the \l {Coordinate System} and
     QTransform documentation.
 
-    \snippet widgets/painting/transformations/renderarea.h 0
+    \snippet painting/transformations/renderarea.h 0
 
     The global \c Operation enum is declared in the \c renderarea.h
     file and describes the various transformation operations available
@@ -87,7 +87,7 @@
     The \c RenderArea class inherits QWidget, and controls the
     rendering of a given shape.
 
-    \snippet widgets/painting/transformations/renderarea.h 1
+    \snippet painting/transformations/renderarea.h 1
 
     We declare two public functions, \c setOperations() and
     \c setShape(), to be able to specify the \c RenderArea widget's shape
@@ -101,7 +101,7 @@
     reimplement the QWidget::paintEvent() event handler to draw the
     render area's shape applying the user's transformation choices.
 
-    \snippet widgets/painting/transformations/renderarea.h 2
+    \snippet painting/transformations/renderarea.h 2
 
     We also declare several convenience functions to draw the shape,
     the coordinate system's outline and the coordinates, and to
@@ -120,7 +120,7 @@
     we will take a quick look at the constructor and at the functions
     that provides access to the \c RenderArea widget:
 
-    \snippet widgets/painting/transformations/renderarea.cpp 0
+    \snippet painting/transformations/renderarea.cpp 0
 
     In the constructor we pass the parent parameter on to the base
     class, and customize the font that we will use to render the
@@ -140,18 +140,18 @@
     bounding rectangle of the given character relative to the
     left-most point on the base line.
 
-    \snippet widgets/painting/transformations/renderarea.cpp 1
+    \snippet painting/transformations/renderarea.cpp 1
     \codeline
-    \snippet widgets/painting/transformations/renderarea.cpp 2
+    \snippet painting/transformations/renderarea.cpp 2
 
     In the \c setShape() and \c setOperations() functions we update
     the \c RenderArea widget by storing the new value or values
     followed by a call to the QWidget::update() slot which schedules a
     paint event for processing when Qt returns to the main event loop.
 
-    \snippet widgets/painting/transformations/renderarea.cpp 3
+    \snippet painting/transformations/renderarea.cpp 3
     \codeline
-    \snippet widgets/painting/transformations/renderarea.cpp 4
+    \snippet painting/transformations/renderarea.cpp 4
 
     We reimplement the QWidget's \l
     {QWidget::minimumSizeHint()}{minimumSizeHint()} and \l
@@ -161,7 +161,7 @@
     if there is no layout for this widget, and returns the layout's
     minimum size or preferred size, respectively, otherwise.
 
-    \snippet widgets/painting/transformations/renderarea.cpp 5
+    \snippet painting/transformations/renderarea.cpp 5
 
     The \c paintEvent() event handler receives the \c RenderArea
     widget's paint events. A paint event is a request to repaint all
@@ -179,7 +179,7 @@
     ensure that the original shape is renderend with a suitable
     margin.
 
-    \snippet widgets/painting/transformations/renderarea.cpp 6
+    \snippet painting/transformations/renderarea.cpp 6
 
     Before we start to render the shape, we call the QPainter::save()
     function.
@@ -197,11 +197,11 @@
     the QPainter::restore() function (i.e. popping the saved state off
     the stack).
 
-    \snippet widgets/painting/transformations/renderarea.cpp 7
+    \snippet painting/transformations/renderarea.cpp 7
 
     Then we draw the square outline.
 
-    \snippet widgets/painting/transformations/renderarea.cpp 8
+    \snippet painting/transformations/renderarea.cpp 8
 
     Since we want the coordinates to correspond with the coordinate
     system the shape is rendered within, we must make another call to
@@ -217,11 +217,11 @@
     There is no need to save the QPainter state this time since
     drawing the coordinates is the last painting operation.
 
-    \snippet widgets/painting/transformations/renderarea.cpp 9
+    \snippet painting/transformations/renderarea.cpp 9
     \codeline
-    \snippet widgets/painting/transformations/renderarea.cpp 10
+    \snippet painting/transformations/renderarea.cpp 10
     \codeline
-    \snippet widgets/painting/transformations/renderarea.cpp 11
+    \snippet painting/transformations/renderarea.cpp 11
 
     The \c drawCoordinates(), \c drawOutline() and \c drawShape() are
     convenience functions called from the \c paintEvent() event
@@ -229,7 +229,7 @@
     operations and how to display basic graphics primitives, see the
     \l {painting/basicdrawing}{Basic Drawing} example.
 
-    \snippet widgets/painting/transformations/renderarea.cpp 12
+    \snippet painting/transformations/renderarea.cpp 12
 
     The \c transformPainter() convenience function is also called from
     the \c paintEvent() event handler, and transforms the given
@@ -247,7 +247,7 @@
     addition to all the transformations applied to the \c RenderArea
     widgets to their left.
 
-    \snippet widgets/painting/transformations/window.h 0
+    \snippet painting/transformations/window.h 0
 
     We declare two public slots to make the application able to
     respond to user interaction, updating the displayed \c RenderArea
@@ -259,7 +259,7 @@
     \c shapeSelected() slot updates the \c RenderArea widgets' shapes
     whenever the user changes the preferred shape.
 
-    \snippet widgets/painting/transformations/window.h 1
+    \snippet painting/transformations/window.h 1
 
     We also declare a private convenience function, \c setupShapes(),
     that is used when constructing the \c Window widget, and we
@@ -274,7 +274,7 @@
     In the constructor we create and initialize the application's
     components:
 
-    \snippet widgets/painting/transformations/window.cpp 0
+    \snippet painting/transformations/window.cpp 0
 
     First we create the \c RenderArea widget that will render the
     shape in the default coordinate system. We also create the
@@ -283,7 +283,7 @@
     themselves are created at the end of the constructor, using the
     \c setupShapes() convenience function.
 
-    \snippet widgets/painting/transformations/window.cpp 1
+    \snippet painting/transformations/window.cpp 1
 
     Then we create the \c RenderArea widgets that will render their
     shapes with coordinate tranformations. By default the applied
@@ -298,7 +298,7 @@
     operationChanged() slot to update the application whenever the
     user changes the selected transformation operations.
 
-    \snippet widgets/painting/transformations/window.cpp 2
+    \snippet painting/transformations/window.cpp 2
 
     Finally, we set the layout for the application window using the
     QWidget::setLayout() function, construct the available shapes
@@ -307,13 +307,13 @@
     \c shapeSelected() slot before we set the window title.
 
 
-    \snippet widgets/painting/transformations/window.cpp 3
-    \snippet widgets/painting/transformations/window.cpp 4
-    \snippet widgets/painting/transformations/window.cpp 5
-    \snippet widgets/painting/transformations/window.cpp 6
+    \snippet painting/transformations/window.cpp 3
+    \snippet painting/transformations/window.cpp 4
+    \snippet painting/transformations/window.cpp 5
+    \snippet painting/transformations/window.cpp 6
     \dots
 
-    \snippet widgets/painting/transformations/window.cpp 7
+    \snippet painting/transformations/window.cpp 7
 
     The \c setupShapes() function is called from the constructor and
     create the QPainterPath objects representing the shapes that are
@@ -327,7 +327,7 @@
     shapeSelected() slot to update the application when the user
     changes the preferred shape.
 
-    \snippet widgets/painting/transformations/window.cpp 8
+    \snippet painting/transformations/window.cpp 8
 
     The public \c operationChanged() slot is called whenever the user
     changes the selected operations.
@@ -342,7 +342,7 @@
     associated operation to a QList of transformations which we apply
     to the widget before proceeding to the next.
 
-    \snippet widgets/painting/transformations/window.cpp 9
+    \snippet painting/transformations/window.cpp 9
 
     The \c shapeSelected() slot is called whenever the user changes
     the preferred shape, updating the \c RenderArea widgets using

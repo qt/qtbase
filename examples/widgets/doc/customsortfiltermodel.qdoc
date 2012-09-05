@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/itemviews/customsortfiltermodel
+    \example itemviews/customsortfiltermodel
     \title Custom Sort/Filter Model Example
 
     The Custom Sort/Filter Model example illustrates how to subclass
@@ -80,7 +80,7 @@
     that our filter can recognize a valid range of dates, and to
     control the sorting behavior.
 
-    \snippet widgets/itemviews/customsortfiltermodel/mysortfilterproxymodel.h 0
+    \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.h 0
 
     We want to be able to filter our data by specifying a given period
     of time. For that reason, we implement the custom \c
@@ -100,7 +100,7 @@
     The \c MySortFilterProxyModel constructor is trivial, passing the
     parent parameter on to the base class constructor:
 
-    \snippet widgets/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 0
+    \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 0
 
     The most interesting parts of the \c MySortFilterProxyModel
     implementation are the reimplementations of
@@ -110,7 +110,7 @@
     functions. Let's first take a look at our customized \c lessThan()
     function.
 
-    \snippet widgets/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 4
+    \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 4
 
     We want to sort the senders by their email addresses. The \l
     {QSortFilterProxyModel::}{lessThan()} function is used as the <
@@ -119,7 +119,7 @@
     to be able to sort the senders by their email addresses we must
     first identify the address within the given string:
 
-    \snippet widgets/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 6
+    \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 6
 
     We use QRegExp to define a pattern for the addresses we are looking
     for. The QRegExp::indexIn() function attempts to find a match in
@@ -132,7 +132,7 @@
     subexpressions have indexes starting from 1 (excluding
     non-capturing parentheses).
 
-    \snippet widgets/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 3
+    \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 3
 
     The \l
     {QSortFilterProxyModel::filterAcceptsRow()}{filterAcceptsRow()}
@@ -141,7 +141,7 @@
     is accepted if either the subject or the sender contains the given
     regular expression, and the date is valid.
 
-    \snippet widgets/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 7
+    \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 7
 
     We use our custom \c dateInRange() function to determine if a date
     is valid.
@@ -150,9 +150,9 @@
     time, we also implement functions for getting and setting the
     minimum and maximum dates:
 
-    \snippet widgets/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 1
+    \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 1
     \codeline
-    \snippet widgets/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 2
+    \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 2
 
     The get functions, \c filterMinimumDate() and \c
     filterMaximumDate(), are trivial and implemented as inline
@@ -166,7 +166,7 @@
     The \c CustomFilter class inherits QWidget, and provides this
     example's main application window:
 
-    \snippet widgets/itemviews/customsortfiltermodel/window.h 0
+    \snippet itemviews/customsortfiltermodel/window.h 0
 
     We implement two private slots, \c textFilterChanged() and \c
     dateFilterChanged(), to respond to the user changing the filter
@@ -182,7 +182,7 @@
     source model already exists and start by creating an instance of
     our custom proxy model:
 
-    \snippet widgets/itemviews/customsortfiltermodel/window.cpp 0
+    \snippet itemviews/customsortfiltermodel/window.cpp 0
 
     We set the \l
     {QSortFilterProxyModel::dynamicSortFilter}{dynamicSortFilter}
@@ -194,13 +194,13 @@
     The main application window shows views of both the source model
     and the proxy model. The source view is quite simple:
 
-    \snippet widgets/itemviews/customsortfiltermodel/window.cpp 1
+    \snippet itemviews/customsortfiltermodel/window.cpp 1
 
     The QTreeView class provides a default model/view implementation
     of a tree view; our view implements a tree representation of items
     in the application's source model.
 
-    \snippet widgets/itemviews/customsortfiltermodel/window.cpp 2
+    \snippet itemviews/customsortfiltermodel/window.cpp 2
 
     The QTreeView class provides a default model/view implementation
     of a tree view; our view implements a tree representation of items
@@ -211,14 +211,14 @@
     controlling the various aspects of transforming the source model's
     data structure:
 
-    \snippet widgets/itemviews/customsortfiltermodel/window.cpp 3
-    \snippet widgets/itemviews/customsortfiltermodel/window.cpp 4
+    \snippet itemviews/customsortfiltermodel/window.cpp 3
+    \snippet itemviews/customsortfiltermodel/window.cpp 4
 
     Note that whenever the user changes one of the filtering options,
     we must explicitly reapply the filter. This is done by connecting
     the various editors to functions that update the proxy model.
 
-    \snippet widgets/itemviews/customsortfiltermodel/window.cpp 5
+    \snippet itemviews/customsortfiltermodel/window.cpp 5
 
     The sorting will be handled by the view. All we have to do is to
     enable sorting for our proxy view by setting the
@@ -226,7 +226,7 @@
     default). Then we add all the filtering widgets and the proxy view
     to a layout that we install on a corresponding group box.
 
-    \snippet widgets/itemviews/customsortfiltermodel/window.cpp 6
+    \snippet itemviews/customsortfiltermodel/window.cpp 6
 
     Finally, after putting our two group boxes into another layout
     that we install on our main application widget, we customize the
@@ -236,7 +236,7 @@
     function, calling the \c Window::setSourceModel() function to make
     the application use it:
 
-    \snippet widgets/itemviews/customsortfiltermodel/window.cpp 7
+    \snippet itemviews/customsortfiltermodel/window.cpp 7
 
     The QSortFilterProxyModel::setSourceModel() function makes the
     proxy model process the data in the given model, in this case out
@@ -245,7 +245,7 @@
     model for the view to present. Note that the latter function will
     also create and set a new selection model.
 
-    \snippet widgets/itemviews/customsortfiltermodel/window.cpp 8
+    \snippet itemviews/customsortfiltermodel/window.cpp 8
 
     The \c textFilterChanged() function is called whenever the user
     changes the filter pattern or the case sensitivity.
@@ -261,7 +261,7 @@
     {QSortFilterProxyModel::}{setFilterRegExp()} function also updates
     the model.
 
-    \snippet widgets/itemviews/customsortfiltermodel/window.cpp 9
+    \snippet itemviews/customsortfiltermodel/window.cpp 9
 
     The \c dateFilterChanged() function is called whenever the user
     modifies the range of valid dates. We retrieve the new dates from
@@ -276,7 +276,7 @@
     model by creating the model in the \c main () function. First we
     create the application, then we create the source model:
 
-    \snippet widgets/itemviews/customsortfiltermodel/main.cpp 0
+    \snippet itemviews/customsortfiltermodel/main.cpp 0
 
     The \c createMailModel() function is a convenience function
     provided to simplify the constructor. All it does is to create and

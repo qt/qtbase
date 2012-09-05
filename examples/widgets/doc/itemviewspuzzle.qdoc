@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/itemviews/puzzle
+    \example itemviews/puzzle
     \title Item Views Puzzle Example
 
     The Puzzle example shows how to enable drag and drop with a custom model

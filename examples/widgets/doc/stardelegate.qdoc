@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/itemviews/stardelegate
+    \example itemviews/stardelegate
     \title Star Delegate Example
 
     The Star Delegate example shows how to create a delegate that
@@ -77,7 +77,7 @@
 
     Here's the definition of the \c StarDelegate class:
 
-    \snippet widgets/itemviews/stardelegate/stardelegate.h 0
+    \snippet itemviews/stardelegate/stardelegate.h 0
 
     All public functions are reimplemented virtual functions from
     QItemDelegate to provide custom rendering and editing.
@@ -88,7 +88,7 @@
     reimplemented from QItemDelegate and is called whenever the view
     needs to repaint an item:
 
-    \snippet widgets/itemviews/stardelegate/stardelegate.cpp 0
+    \snippet itemviews/stardelegate/stardelegate.cpp 0
 
     The function is invoked once for each item, represented by a
     QModelIndex object from the model. If the data stored in the item
@@ -107,7 +107,7 @@
     The \l{QAbstractItemDelegate::}{createEditor()} function is
     called when the user starts editing an item:
 
-    \snippet widgets/itemviews/stardelegate/stardelegate.cpp 2
+    \snippet itemviews/stardelegate/stardelegate.cpp 2
 
     If the item is a \c StarRating, we create a \c StarEditor and
     connect its \c editingFinished() signal to our \c
@@ -116,7 +116,7 @@
 
     Here's the implementation of \c commitAndCloseEditor():
 
-    \snippet widgets/itemviews/stardelegate/stardelegate.cpp 5
+    \snippet itemviews/stardelegate/stardelegate.cpp 5
 
     When the user is done editing, we emit
     \l{QAbstractItemDelegate::}{commitData()} and
@@ -128,7 +128,7 @@
     called when an editor is created to initialize it with data
     from the model:
 
-    \snippet widgets/itemviews/stardelegate/stardelegate.cpp 3
+    \snippet itemviews/stardelegate/stardelegate.cpp 3
 
     We simply call \c setStarRating() on the editor.
 
@@ -136,11 +136,11 @@
     called when editing is finished, to commit data from the editor
     to the model:
 
-    \snippet widgets/itemviews/stardelegate/stardelegate.cpp 4
+    \snippet itemviews/stardelegate/stardelegate.cpp 4
 
     The \c sizeHint() function returns an item's preferred size:
 
-    \snippet widgets/itemviews/stardelegate/stardelegate.cpp 1
+    \snippet itemviews/stardelegate/stardelegate.cpp 1
 
     We simply forward the call to \c StarRating.
 
@@ -149,7 +149,7 @@
     The \c StarEditor class was used when implementing \c
     StarDelegate. Here's the class definition:
 
-    \snippet widgets/itemviews/stardelegate/stareditor.h 0
+    \snippet itemviews/stardelegate/stareditor.h 0
 
     The class lets the user edit a \c StarRating by moving the mouse
     over the editor. It emits the \c editingFinished() signal when
@@ -164,7 +164,7 @@
 
     Let's start with the constructor:
 
-    \snippet widgets/itemviews/stardelegate/stareditor.cpp 0
+    \snippet itemviews/stardelegate/stareditor.cpp 0
 
     We enable \l{QWidget::setMouseTracking()}{mouse tracking} on the
     widget so we can follow the cursor even when the user doesn't
@@ -176,32 +176,32 @@
     The \l{QWidget::}{paintEvent()} function is reimplemented from
     QWidget:
 
-    \snippet widgets/itemviews/stardelegate/stareditor.cpp 1
+    \snippet itemviews/stardelegate/stareditor.cpp 1
 
     We simply call \c StarRating::paint() to draw the stars, just
     like we did when implementing \c StarDelegate.
 
-    \snippet widgets/itemviews/stardelegate/stareditor.cpp 2
+    \snippet itemviews/stardelegate/stareditor.cpp 2
 
     In the mouse event handler, we call \c setStarCount() on the
     private data member \c myStarRating to reflect the current cursor
     position, and we call QWidget::update() to force a repaint.
 
-    \snippet widgets/itemviews/stardelegate/stareditor.cpp 3
+    \snippet itemviews/stardelegate/stareditor.cpp 3
 
     When the user releases a mouse button, we simply emit the \c
     editingFinished() signal.
 
-    \snippet widgets/itemviews/stardelegate/stareditor.cpp 4
+    \snippet itemviews/stardelegate/stareditor.cpp 4
 
     The \c starAtPosition() function uses basic linear algebra to
     find out which star is under the cursor.
 
     \section1 StarRating Class Definition
 
-    \snippet widgets/itemviews/stardelegate/starrating.h 0
+    \snippet itemviews/stardelegate/starrating.h 0
     \codeline
-    \snippet widgets/itemviews/stardelegate/starrating.h 1
+    \snippet itemviews/stardelegate/starrating.h 1
 
     The \c StarRating class represents a rating as a number of stars.
     In addition to holding the data, it is also capable of painting
@@ -219,12 +219,12 @@
     The constructor initializes \c myStarCount and \c myMaxStarCount,
     and sets up the polygons used to draw stars and diamonds:
 
-    \snippet widgets/itemviews/stardelegate/starrating.cpp 0
+    \snippet itemviews/stardelegate/starrating.cpp 0
 
     The \c paint() function paints the stars in this \c StarRating
     object on a paint device:
 
-    \snippet widgets/itemviews/stardelegate/starrating.cpp 2
+    \snippet itemviews/stardelegate/starrating.cpp 2
 
     We first set the pen and brush we will use for painting. The \c
     mode parameter can be either \c Editable or \c ReadOnly. If \c
@@ -239,7 +239,7 @@
     The \c sizeHint() function returns the preferred size for an area
     to paint the stars on:
 
-    \snippet widgets/itemviews/stardelegate/starrating.cpp 1
+    \snippet itemviews/stardelegate/starrating.cpp 1
 
     The preferred size is just enough to paint the maximum number of
     stars. The function is called by both \c StarDelegate::sizeHint()
@@ -249,7 +249,7 @@
 
     Here's the program's \c main() function:
 
-    \snippet widgets/itemviews/stardelegate/main.cpp 5
+    \snippet itemviews/stardelegate/main.cpp 5
 
     The \c main() function creates a QTableWidget and sets a \c
     StarDelegate on it. \l{QAbstractItemView::}{DoubleClicked} and
@@ -261,13 +261,13 @@
     The \c populateTableWidget() function fills the QTableWidget with
     data:
 
-    \snippet widgets/itemviews/stardelegate/main.cpp 0
-    \snippet widgets/itemviews/stardelegate/main.cpp 1
+    \snippet itemviews/stardelegate/main.cpp 0
+    \snippet itemviews/stardelegate/main.cpp 1
     \dots
-    \snippet widgets/itemviews/stardelegate/main.cpp 2
-    \snippet widgets/itemviews/stardelegate/main.cpp 3
+    \snippet itemviews/stardelegate/main.cpp 2
+    \snippet itemviews/stardelegate/main.cpp 3
     \codeline
-    \snippet widgets/itemviews/stardelegate/main.cpp 4
+    \snippet itemviews/stardelegate/main.cpp 4
 
     Notice the call to qVariantFromValue to convert a \c
     StarRating to a QVariant.

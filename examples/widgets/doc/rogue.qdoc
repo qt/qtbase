@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/statemachine/rogue
+    \example statemachine/rogue
     \title Rogue Example
 
     The Rogue example shows how to use the Qt state machine for event
@@ -95,7 +95,7 @@
     connects the states in the machine. It is the key events from this
     widget that are used by the machine.
 
-    \snippet widgets/statemachine/rogue/window.h 0
+    \snippet statemachine/rogue/window.h 0
 
     \c Direction specifies the direction in which the rogue is to
     move. We use this in \c movePlayer(), which moves the rogue and
@@ -105,7 +105,7 @@
     setting any Qt \l{Qt's Property System}{property} when entered.
     More on this later.
 
-    \snippet widgets/statemachine/rogue/window.h 1
+    \snippet statemachine/rogue/window.h 1
 
     The \c map is an array with the characters that are currently
     displayed. We set up the array in \c setupMap(), and update it
@@ -124,15 +124,15 @@
 
     Here is the constructor of \c Window:
 
-    \snippet widgets/statemachine/rogue/window.cpp 0
+    \snippet statemachine/rogue/window.cpp 0
     \dots
-    \snippet widgets/statemachine/rogue/window.cpp 1
+    \snippet statemachine/rogue/window.cpp 1
 
     The player starts off at position (5, 5). We then set up the map
     and statemachine. Let's proceed with the \c buildMachine()
     function:
 
-    \snippet widgets/statemachine/rogue/window.cpp 2
+    \snippet statemachine/rogue/window.cpp 2
 
     We enter \c inputState when the machine is started and from the \c
     quitState if the user wants to continue playing. We then set the
@@ -147,7 +147,7 @@
     inputState as the target state, we would first have left and then
     entered the \c inputState again.
 
-    \snippet widgets/statemachine/rogue/window.cpp 3
+    \snippet statemachine/rogue/window.cpp 3
 
     When we enter \c quitState, we update the status bar of the
     window.
@@ -157,12 +157,12 @@
     specify the key on which the transition should trigger and the
     target state of the transition.
 
-    \snippet widgets/statemachine/rogue/window.cpp 4
+    \snippet statemachine/rogue/window.cpp 4
 
     The transition from \c inputState allows triggering the quit state
     when the player types \c {q}.
     
-    \snippet widgets/statemachine/rogue/window.cpp 5
+    \snippet statemachine/rogue/window.cpp 5
 
     The machine is set up, so it's time to start it.
 
@@ -172,13 +172,13 @@
     rogue to be moved (by typing 2, 4, 6, or 8) when the machine is in
     the \c inputState.
 
-    \snippet widgets/statemachine/rogue/movementtransition.h 0
+    \snippet statemachine/rogue/movementtransition.h 0
 
     In the constructor, we tell QEventTransition to only send
     \l{QEvent::}{KeyPress} events to the
     \l{QAbstractTransition::}{eventTest()} function:
 
-    \snippet widgets/statemachine/rogue/movementtransition.h 1
+    \snippet statemachine/rogue/movementtransition.h 1
 
     The KeyPress events come wrapped in \l{QStateMachine::WrappedEvent}s. \c event
     must be confirmed to be a wrapped event because Qt uses other
@@ -187,7 +187,7 @@
 
     Let's move on to the \c onTransition() function:
 
-    \snippet widgets/statemachine/rogue/movementtransition.h 2
+    \snippet statemachine/rogue/movementtransition.h 2
 
     When \c onTransition() is invoked, we know that we have a
     \l{QEvent::}{KeyPress} event with 2, 4, 6, or 8, and can ask \c

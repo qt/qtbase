@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/graphicsview/elasticnodes
+    \example graphicsview/elasticnodes
     \title Elastic Nodes Example
 
     The Elastic Nodes example shows how to implement edges between nodes in a
@@ -61,7 +61,7 @@
 
     Let's start by looking at the \c Node class declaration.
 
-    \snippet widgets/graphicsview/elasticnodes/node.h 0
+    \snippet graphicsview/elasticnodes/node.h 0
 
     The \c Node class inherits QGraphicsItem, and reimplements the two
     mandatory functions \l{QGraphicsItem::boundingRect()}{boundingRect()} and
@@ -87,7 +87,7 @@
     We will start reviewing the \c Node implementation by looking at its
     constructor:
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 0
+    \snippet graphicsview/elasticnodes/node.cpp 0
 
     In the constructor, we set the
     \l{QGraphicsItem::ItemIsMovable}{ItemIsMovable} flag to allow the item to
@@ -102,7 +102,7 @@
     \c Node's constructor takes a \c GraphWidget pointer and stores this as a
     member variable. We will revisit this pointer later on.
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 1
+    \snippet graphicsview/elasticnodes/node.cpp 1
 
     The addEdge() function adds the input edge to a list of attached edges. The
     edge is then adjusted so that the end points for the edge match the
@@ -110,7 +110,7 @@
 
     The edges() function simply returns the list of attached edges.
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 2
+    \snippet graphicsview/elasticnodes/node.cpp 2
 
     There are two ways to move a node. The \c calculateForces() function
     implements the elastic effect that pulls and pushes on nodes in the grid.
@@ -121,7 +121,7 @@
     Because we need to find all neighboring (but not necessarily connected)
     nodes, we also make sure the item is part of a scene in the first place.
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 3
+    \snippet graphicsview/elasticnodes/node.cpp 3
 
     The "elastic" effect comes from an algorithm that applies pushing and
     pulling forces. The effect is impressive, and surprisingly simple to
@@ -142,41 +142,41 @@
     rapid degradation when distance increases. The sum of all forces is stored
     in \c xvel (X-velocity) and \c yvel (Y-velocity).
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 4
+    \snippet graphicsview/elasticnodes/node.cpp 4
 
     The edges between the nodes represent forces that pull the nodes together.
     By visiting each edge that is connected to this node, we can use a similar
     approach as above to find the direction and strength of all pulling forces.
     These forces are subtracted from \c xvel and \c yvel.
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 5
+    \snippet graphicsview/elasticnodes/node.cpp 5
 
     In theory, the sum of pushing and pulling forces should stabilize to
     precisely 0. In practice, however, they never do. To circumvent errors in
     numerical precision, we simply force the sum of forces to be 0 when they
     are less than 0.1.
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 6
+    \snippet graphicsview/elasticnodes/node.cpp 6
 
     The final step of \c calculateForces() determines the node's new position.
     We add the force to the node's current position. We also make sure the new
     position stays inside of our defined boundaries. We don't actually move the
     item in this function; that's done in a separate step, from \c advance().
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 7
+    \snippet graphicsview/elasticnodes/node.cpp 7
 
     The \c advance() function updates the item's current position. It is called
     from \c GraphWidget::timerEvent(). If the node's position changed, the
     function returns true; otherwise false is returned.
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 8
+    \snippet graphicsview/elasticnodes/node.cpp 8
 
     The \c Node's bounding rectangle is a 20x20 sized rectangle centered around
     its origin (0, 0), adjusted by 2 units in all directions to compensate for
     the node's outline stroke, and by 3 units down and to the right to make
     room for a simple drop shadow.
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 9
+    \snippet graphicsview/elasticnodes/node.cpp 9
 
     The shape is a simple ellipse. This ensures that you must click inside the
     node's elliptic shape in order to drag it around. You can test this effect
@@ -185,7 +185,7 @@
     item's hit area would be identical to its bounding rectangle (i.e.,
     rectangular).
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 10
+    \snippet graphicsview/elasticnodes/node.cpp 10
 
     This function implements the node's painting. We start by drawing a simple
     dark gray elliptic drop shadow at (-7, -7), that is, (3, 3) units down and
@@ -201,7 +201,7 @@
     uses \l{QGraphicsItem::DeviceCoordinateCache}{DeviceCoordinateCache}, a
     simple yet effective measure that prevents unnecessary redrawing.
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 11
+    \snippet graphicsview/elasticnodes/node.cpp 11
 
     We reimplement \l{QGraphicsItem::itemChange()}{itemChange()} to adjust the
     position of all connected edges, and to notify the scene that an item has
@@ -213,7 +213,7 @@
     notification using a signal; in such case, \c Node would need to inherit
     from QGraphicsObject.
 
-    \snippet widgets/graphicsview/elasticnodes/node.cpp 12
+    \snippet graphicsview/elasticnodes/node.cpp 12
 
     Because we have set the \l{QGraphicsItem::ItemIsMovable}{ItemIsMovable}
     flag, we don't need to implement the logic that moves the node according to
@@ -232,7 +232,7 @@
 
     Let's take a look at the class declaration:
 
-    \snippet widgets/graphicsview/elasticnodes/edge.h 0
+    \snippet graphicsview/elasticnodes/edge.h 0
 
     \c Edge inherits from QGraphicsItem, as it's a simple class that has no use
     for signals, slots, and properties (compare to QGraphicsObject).
@@ -246,7 +246,7 @@
 
     We will now review its implementation.
 
-    \snippet widgets/graphicsview/elasticnodes/edge.cpp 0
+    \snippet graphicsview/elasticnodes/edge.cpp 0
 
     The \c Edge constructor initializes its \c arrowSize data member to 10 units;
     this determines the size of the arrow which is drawn in
@@ -259,12 +259,12 @@
     pointers are updated, this edge is registered with each node, and we call
     \c adjust() to update this edge's start end end position.
 
-    \snippet widgets/graphicsview/elasticnodes/edge.cpp 1
+    \snippet graphicsview/elasticnodes/edge.cpp 1
 
     The source and destination get-functions simply return the respective
     pointers.
 
-    \snippet widgets/graphicsview/elasticnodes/edge.cpp 2
+    \snippet graphicsview/elasticnodes/edge.cpp 2
 
     In \c adjust(), we define two points: \c sourcePoint, and \c destPoint,
     pointing at the source and destination nodes' origins respectively. Each
@@ -298,7 +298,7 @@
     bookkeeping clean. It's safest to call this function once, immediately
     before any such variable is modified.
 
-    \snippet widgets/graphicsview/elasticnodes/edge.cpp 3
+    \snippet graphicsview/elasticnodes/edge.cpp 3
 
     The edge's bounding rectangle is defined as the smallest rectangle that
     includes both the start and the end point of the edge. Because we draw an
@@ -307,7 +307,7 @@
     draw the outline of the arrow, and we can assume that half of the outline
     can be drawn outside of the arrow's area, and half will be drawn inside.
 
-    \snippet widgets/graphicsview/elasticnodes/edge.cpp 4
+    \snippet graphicsview/elasticnodes/edge.cpp 4
 
     We start the reimplementation of \l{QGraphicsItem::paint()}{paint()} by
     checking a few preconditions. Firstly, if either the source or destination
@@ -316,13 +316,13 @@
     At the same time, we check if the length of the edge is approximately 0,
     and if it is, then we also return.
 
-    \snippet widgets/graphicsview/elasticnodes/edge.cpp 5
+    \snippet graphicsview/elasticnodes/edge.cpp 5
 
     We draw the line using a pen that has round joins and caps. If you run the
     example, zoom in and study the edge in detail, you will see that there are
     no sharp/square edges.
 
-    \snippet widgets/graphicsview/elasticnodes/edge.cpp 6
+    \snippet graphicsview/elasticnodes/edge.cpp 6
 
     We proceed to drawing one arrow at each end of the edge. Each arrow is
     drawn as a polygon with a black fill. The coordinates for the arrow are
@@ -333,7 +333,7 @@
     \c GraphWidget is a subclass of QGraphicsView, which provides the main
     window with scrollbars.
 
-    \snippet widgets/graphicsview/elasticnodes/graphwidget.h 0
+    \snippet graphicsview/elasticnodes/graphwidget.h 0
 
     The class provides a basic constructor that initializes the scene, an \c
     itemMoved() function to notify changes in the scene's node graph, a few
@@ -341,7 +341,7 @@
     \l{QGraphicsView::drawBackground()}{drawBackground()}, and a helper
     function for scaling the view by using the mouse wheel or keyboard.
 
-    \snippet widgets/graphicsview/elasticnodes/graphwidget.cpp 0
+    \snippet graphicsview/elasticnodes/graphwidget.cpp 0
 
     \c GraphicsWidget's constructor creates the scene, and because most items
     move around most of the time, it sets QGraphicsScene::NoIndex. The scene
@@ -366,19 +366,19 @@
     Finally we give the window a minimum size that matches the scene's default
     size, and set a suitable window title.
 
-    \snippet widgets/graphicsview/elasticnodes/graphwidget.cpp 1
+    \snippet graphicsview/elasticnodes/graphwidget.cpp 1
 
     The last part of the constructor creates the grid of nodes and edges, and
     gives each node an initial position.
 
-    \snippet widgets/graphicsview/elasticnodes/graphwidget.cpp 2
+    \snippet graphicsview/elasticnodes/graphwidget.cpp 2
 
     \c GraphWidget is notified of node movement through this \c itemMoved()
     function. Its job is simply to restart the main timer in case it's not
     running already. The timer is designed to stop when the graph stabilizes,
     and start once it's unstable again.
 
-    \snippet widgets/graphicsview/elasticnodes/graphwidget.cpp 3
+    \snippet graphicsview/elasticnodes/graphwidget.cpp 3
 
     This is \c GraphWidget's key event handler. The arrow keys move the center
     node around, the '+' and '-' keys zoom in and out by calling \c
@@ -386,7 +386,7 @@
     nodes. All other key events (e.g., page up and page down) are handled by
     QGraphicsView's default implementation.
 
-    \snippet widgets/graphicsview/elasticnodes/graphwidget.cpp 4
+    \snippet graphicsview/elasticnodes/graphwidget.cpp 4
 
     The timer event handler's job is to run the whole force calculation
     machinery as a smooth animation. Each time the timer is triggered, the
@@ -396,14 +396,14 @@
     By checking the return value of \c advance(), we can decide if the grid
     stabilized (i.e., no nodes moved). If so, we can stop the timer.
 
-    \snippet widgets/graphicsview/elasticnodes/graphwidget.cpp 5
+    \snippet graphicsview/elasticnodes/graphwidget.cpp 5
 
     In the wheel event handler, we convert the mouse wheel delta to a scale
     factor, and pass this factor to \c scaleView(). This approach takes into
     account the speed that the wheel is rolled. The faster you roll the mouse
     wheel, the faster the view will zoom.
 
-    \snippet widgets/graphicsview/elasticnodes/graphwidget.cpp 6
+    \snippet graphicsview/elasticnodes/graphwidget.cpp 6
 
     The view's background is rendered in a reimplementation of
     QGraphicsView::drawBackground(). We draw a large rectangle filled with a
@@ -413,7 +413,7 @@
     This background rendering is quite expensive; this is why the view enables
     QGraphicsView::CacheBackground.
 
-    \snippet widgets/graphicsview/elasticnodes/graphwidget.cpp 7
+    \snippet graphicsview/elasticnodes/graphwidget.cpp 7
 
     The \c scaleView() helper function checks that the scale factor stays
     within certain limits (i.e., you cannot zoom too far in nor too far out),

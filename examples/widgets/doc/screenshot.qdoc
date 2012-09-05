@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/desktop/screenshot
+    \example desktop/screenshot
     \title Screenshot Example
 
     The Screenshot example shows how to take a screenshot of the
@@ -51,7 +51,7 @@
 
     \section1 Screenshot Class Definition
 
-    \snippet widgets/desktop/screenshot/screenshot.h 0
+    \snippet desktop/screenshot/screenshot.h 0
 
     The \c Screenshot class inherits QWidget and is the application's
     main widget. It displays the application options and a preview of
@@ -84,7 +84,7 @@
 
     \section1 Screenshot Class Implementation
 
-    \snippet widgets/desktop/screenshot/screenshot.cpp 0
+    \snippet desktop/screenshot/screenshot.cpp 0
 
     In the constructor we first create the QLabel displaying the
     screenshot preview.
@@ -103,7 +103,7 @@
     delay and the window title, before we resize the widget to a
     suitable size.
 
-    \snippet widgets/desktop/screenshot/screenshot.cpp 1
+    \snippet desktop/screenshot/screenshot.cpp 1
 
     The \c resizeEvent() function is reimplemented to receive the
     resize events dispatched to the widget. The purpose is to scale
@@ -121,7 +121,7 @@
     only is repainted (using the private \c updateScreenshotLabel()
     function) when it actually changes its size.
 
-    \snippet widgets/desktop/screenshot/screenshot.cpp 2
+    \snippet desktop/screenshot/screenshot.cpp 2
 
     The private \c newScreenshot() slot is called when the user
     requests a new screenshot; but the slot only prepares a new
@@ -139,7 +139,7 @@
     specified by the \uicontrol {Screenshot Delay} option. It is \c
     shootScreen() that actually performs the screenshot.
 
-    \snippet widgets/desktop/screenshot/screenshot.cpp 3
+    \snippet desktop/screenshot/screenshot.cpp 3
 
     The \c saveScreenshot() slot is called when the user push the \uicontrol
     Save button, and it presents a file dialog using the QFileDialog
@@ -158,7 +158,7 @@
     name is valid, we use the QPixmap::save() function to save the
     screenshot's original pixmap in that file.
 
-    \snippet widgets/desktop/screenshot/screenshot.cpp 4
+    \snippet desktop/screenshot/screenshot.cpp 4
 
     The \c shootScreen() slot is called to take the screenshot. If the
     user has chosen to delay the screenshot, we make the application
@@ -170,7 +170,7 @@
     events from the window system and other sources are processed and
     dispatched.
 
-    \snippet widgets/desktop/screenshot/screenshot.cpp 5
+    \snippet desktop/screenshot/screenshot.cpp 5
 
     Using the static function QApplication::primaryScreen(), we
     obtain the QScreen object for the application's main screen.
@@ -187,7 +187,7 @@
     Screenshot} button, and finally we make the \c Screenshot widget
     visible if it was hidden during the screenshot.
 
-    \snippet widgets/desktop/screenshot/screenshot.cpp 6
+    \snippet desktop/screenshot/screenshot.cpp 6
 
     The \uicontrol {Hide This Window} option is enabled or disabled
     depending on the delay of the screenshot. If there is no delay,
@@ -197,7 +197,7 @@
     The \c updateCheckBox() slot is called whenever the user changes
     the delay using the \uicontrol {Screenshot Delay} option.
 
-    \snippet widgets/desktop/screenshot/screenshot.cpp 7
+    \snippet desktop/screenshot/screenshot.cpp 7
 
     The private \c createOptionsGroupBox() function is called from the
     constructor.
@@ -215,20 +215,20 @@
     widgets are automatically reparented to the widget the layout is
     installed on.
 
-    \snippet widgets/desktop/screenshot/screenshot.cpp 8
+    \snippet desktop/screenshot/screenshot.cpp 8
 
     The private \c createButtonsLayout() function is called from the
     constructor. We create the application's buttons using the private
     \c createButton() function, and add them to a QHBoxLayout.
 
-    \snippet widgets/desktop/screenshot/screenshot.cpp 9
+    \snippet desktop/screenshot/screenshot.cpp 9
 
     The private \c createButton() function is called from the \c
     createButtonsLayout() function. It simply creates a QPushButton
     with the provided text, connects it to the provided receiver and
     slot, and returns a pointer to the button.
 
-    \snippet widgets/desktop/screenshot/screenshot.cpp 10
+    \snippet desktop/screenshot/screenshot.cpp 10
 
     The private \c updateScreenshotLabel() function is called whenever
     the screenshot changes, or when a resize event changes the size of

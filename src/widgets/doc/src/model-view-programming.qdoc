@@ -749,7 +749,7 @@
     to write custom display functions. However, we must still provide
     functions to manage the editor widget:
 
-    \snippet widgets/itemviews/spinboxdelegate/delegate.h 0
+    \snippet itemviews/spinboxdelegate/delegate.h 0
 
     Note that no editor widgets are set up when the delegate is
     constructed. We only construct an editor widget when it is needed.
@@ -763,7 +763,7 @@
     supplied with everything that the delegate needs to be able to set up
     a suitable widget:
 
-    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 1
+    \snippet itemviews/spinboxdelegate/delegate.cpp 1
 
     Note that we do not need to keep a pointer to the editor widget because
     the view takes responsibility for destroying it when it is no longer
@@ -787,7 +787,7 @@
     \l{Qt::ItemDataRole}{display role}, and set the value in the
     spin box accordingly.
 
-    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 2
+    \snippet itemviews/spinboxdelegate/delegate.cpp 2
 
     In this example, we know that the editor widget is a spin box, but we
     could have provided different editors for different types of data in
@@ -800,7 +800,7 @@
     asks the delegate to store the edited value in the model by calling the
     \l{QAbstractItemDelegate::setModelData()}{setModelData()} function.
 
-    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 3
+    \snippet itemviews/spinboxdelegate/delegate.cpp 3
 
     Since the view manages the editor widgets for the delegate, we only
     need to update the model with the contents of the editor supplied.
@@ -831,7 +831,7 @@
     the view provides all the necessary geometry information inside a
     \l{QStyleOptionViewItem}{view option} object.
 
-    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 4
+    \snippet itemviews/spinboxdelegate/delegate.cpp 4
 
     In this case, we just use the geometry information provided by the
     view option in the item rectangle. A delegate that renders items with
@@ -1172,7 +1172,7 @@
     by the user.
 
     For an example of a more complex model, see the
-    \l{widgets/itemviews/simpletreemodel}{Simple Tree Model} example.
+    \l{itemviews/simpletreemodel}{Simple Tree Model} example.
 
     The requirements of QAbstractItemModel subclasses is described in more
     detail in the \l{Model Subclassing Reference} document.
@@ -1189,7 +1189,7 @@
     However, if the underlying data structure can only be represented
     by a hierarchical tree structure, it is necessary to subclass
     QAbstractItemModel. This approach is taken in the
-    \l{widgets/itemviews/simpletreemodel}{Simple Tree Model} example.
+    \l{itemviews/simpletreemodel}{Simple Tree Model} example.
 
     In this section, we implement a simple model based on a list of
     strings, so the QAbstractListModel provides an ideal base class on
@@ -1845,7 +1845,7 @@
     Note that the model will typically need to provide implementations of the
     QAbstractItemModel::insertRows() and QAbstractItemModel::setData() functions.
 
-    \sa {widgets/itemviews/puzzle}{Item Views Puzzle Example}
+    \sa {itemviews/puzzle}{Item Views Puzzle Example}
 
     \section1 Proxy models
 
@@ -2328,10 +2328,10 @@
     \section1 Related examples
 
     \list
-    \li \l{widgets/itemviews/dirview}{Dir View}
-    \li \l{widgets/itemviews/spinboxdelegate}{Spin Box Delegate}
-    \li \l{widgets/itemviews/pixelator}{Pixelator}
-    \li \l{widgets/itemviews/simpletreemodel}{Simple Tree Model}
-    \li \l{widgets/itemviews/chart}{Chart}
+    \li \l{itemviews/dirview}{Dir View}
+    \li \l{itemviews/spinboxdelegate}{Spin Box Delegate}
+    \li \l{itemviews/pixelator}{Pixelator}
+    \li \l{itemviews/simpletreemodel}{Simple Tree Model}
+    \li \l{itemviews/chart}{Chart}
     \endlist
 */

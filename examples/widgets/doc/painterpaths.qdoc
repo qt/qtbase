@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/painting/painterpaths
+    \example painting/painterpaths
     \title Painter Paths Example
 
     The Painter Paths example shows how painter paths can be used to
@@ -66,7 +66,7 @@
     user to manipulate the painter paths' filling, pen, color and
     rotation angle.
 
-    \snippet widgets/painting/painterpaths/window.h 0
+    \snippet painting/painterpaths/window.h 0
 
     We declare three private slots to respond to user input regarding
     filling and color: \c fillRuleChanged(), \c fillGradientChanged()
@@ -80,14 +80,14 @@
     argument; so we need to retrieve the new value, or values, before
     we can update the \c RenderArea widgets.
 
-    \snippet widgets/painting/painterpaths/window.h 1
+    \snippet painting/painterpaths/window.h 1
 
     We also declare a couple of private convenience functions: \c
     populateWithColors() populates a given QComboBox with items
     corresponding to the color names Qt knows about, and \c
     currentItemData() returns the current item for a given QComboBox.
 
-    \snippet widgets/painting/painterpaths/window.h 2
+    \snippet painting/painterpaths/window.h 2
 
     Then we declare the various components of the main window
     widget. We also declare a convenience constant specifying the
@@ -98,13 +98,13 @@
     In the implementation of the \c Window class we first declare the
     constant \c Pi with six significant figures:
 
-    \snippet widgets/painting/painterpaths/window.cpp 0
+    \snippet painting/painterpaths/window.cpp 0
 
     In the constructor, we then define the various painter paths and
     create corresponding \c RenderArea widgets which will render the
     graphical shapes:
 
-    \snippet widgets/painting/painterpaths/window.cpp 1
+    \snippet painting/painterpaths/window.cpp 1
 
     We construct a rectangle with sharp corners using the
     QPainterPath::moveTo() and QPainterPath::lineTo()
@@ -135,7 +135,7 @@
     painter path's current position after the rect has been added is
     at the top-left corner of the rectangle.
 
-    \snippet widgets/painting/painterpaths/window.cpp 2
+    \snippet painting/painterpaths/window.cpp 2
 
     Then we construct a rectangle with rounded corners. As before, we
     use the QPainterPath::moveTo() and QPainterPath::lineTo()
@@ -150,7 +150,7 @@
     current point to the starting point of the arc if they are not
     already connected.
 
-    \snippet widgets/painting/painterpaths/window.cpp 3
+    \snippet painting/painterpaths/window.cpp 3
 
     We also use the QPainterPath::arcTo() function to construct the
     ellipse path. First we move the current point starting a new
@@ -164,7 +164,7 @@
     is composed of a clockwise curve, starting and finishing at zero
     degrees (the 3 o'clock position).
 
-    \snippet widgets/painting/painterpaths/window.cpp 4
+    \snippet painting/painterpaths/window.cpp 4
 
     When constructing the pie chart path we continue to use a
     combination of the mentioned functions: First we move the current
@@ -173,7 +173,7 @@
     the subpath, we implicitly construct the last line back to the
     center of the chart.
 
-    \snippet widgets/painting/painterpaths/window.cpp 5
+    \snippet painting/painterpaths/window.cpp 5
 
     Constructing a polygon is equivalent to constructing a rectangle.
 
@@ -182,7 +182,7 @@
     new subpath. Current position after the polygon has been added is
     the last point in polygon.
 
-    \snippet widgets/painting/painterpaths/window.cpp 6
+    \snippet painting/painterpaths/window.cpp 6
 
     Then we create a path consisting of a group of subpaths: First we
     move the current point, and create a circle using the
@@ -201,7 +201,7 @@
     QPainterPath::addPath() which adds a given path to the path that
     calls the function.
 
-    \snippet widgets/painting/painterpaths/window.cpp 7
+    \snippet painting/painterpaths/window.cpp 7
 
     When creating the text path, we first create the font. Then we set
     the font's style strategy which tells the font matching algorithm
@@ -214,7 +214,7 @@
     that the left end of the text's baseline lies at the specified
     point.
 
-    \snippet widgets/painting/painterpaths/window.cpp 8
+    \snippet painting/painterpaths/window.cpp 8
 
     To create the Bezier path, we use the QPainterPath::cubicTo()
     function which adds a Bezier curve between the current point and
@@ -228,21 +228,21 @@
     when filling the path as can be seen in the applications main
     window.
 
-    \snippet widgets/painting/painterpaths/window.cpp 9
+    \snippet painting/painterpaths/window.cpp 9
 
     The final path that we construct shows that you can use
     QPainterPath to construct rather complex shapes using only the
     previous mentioned QPainterPath::moveTo(), QPainterPath::lineTo()
     and QPainterPath::closeSubpath() functions.
 
-    \snippet widgets/painting/painterpaths/window.cpp 10
+    \snippet painting/painterpaths/window.cpp 10
 
     Now that we have created all the painter paths that we need, we
     create a corresponding \c RenderArea widget for each. In the end,
     we make sure that the number of render areas is correct using the
     Q_ASSERT() macro.
 
-    \snippet widgets/painting/painterpaths/window.cpp 11
+    \snippet painting/painterpaths/window.cpp 11
 
     Then we create the widgets associated with the painter paths' fill
     rule.
@@ -264,12 +264,12 @@
     The Qt::WindingFill rule can in most cases be considered as the
     intersection of closed shapes.
 
-    \snippet widgets/painting/painterpaths/window.cpp 12
+    \snippet painting/painterpaths/window.cpp 12
 
     We also create the other widgets associated with the filling, the
     pen and the rotation angle.
 
-    \snippet widgets/painting/painterpaths/window.cpp 16
+    \snippet painting/painterpaths/window.cpp 16
 
     We connect the comboboxes \l {QComboBox::activated()}{activated()}
     signals to the associated slots in the \c Window class, while we
@@ -277,23 +277,23 @@
     {QSpinBox::valueChanged()}{valueChanged()} signal directly to the
     \c RenderArea widget's respective slots.
 
-    \snippet widgets/painting/painterpaths/window.cpp 17
+    \snippet painting/painterpaths/window.cpp 17
 
     We add the \c RenderArea widgets to a separate layout which we
     then add to the main layout along with the rest of the widgets.
 
-    \snippet widgets/painting/painterpaths/window.cpp 18
+    \snippet painting/painterpaths/window.cpp 18
 
     Finally, we initialize the \c RenderArea widgets by calling the \c
     fillRuleChanged(), \c fillGradientChanged() and \c
     penColorChanged() slots, and we set the initial pen width and
     window title.
 
-    \snippet widgets/painting/painterpaths/window.cpp 19
+    \snippet painting/painterpaths/window.cpp 19
     \codeline
-    \snippet widgets/painting/painterpaths/window.cpp 20
+    \snippet painting/painterpaths/window.cpp 20
     \codeline
-    \snippet widgets/painting/painterpaths/window.cpp 21
+    \snippet painting/painterpaths/window.cpp 21
 
     The private slots are implemented to retrieve the new value, or
     values, from the associated comboboxes and update the RenderArea
@@ -304,13 +304,13 @@
     function. Then we call the associated slot for each of the \c
     RenderArea widgets to update the painter paths.
 
-    \snippet widgets/painting/painterpaths/window.cpp 22
+    \snippet painting/painterpaths/window.cpp 22
 
     The \c populateWithColors() function populates the given combobox
     with items corresponding to the color names Qt knows about
     provided by the static QColor::colorNames() function.
 
-    \snippet widgets/painting/painterpaths/window.cpp 23
+    \snippet painting/painterpaths/window.cpp 23
 
     The \c currentItemData() function simply return the current item
     of the given combobox.
@@ -320,7 +320,7 @@
     The \c RenderArea class inherits QWidget, and is a custom widget
     displaying a single painter path.
 
-    \snippet widgets/painting/painterpaths/renderarea.h 0
+    \snippet painting/painterpaths/renderarea.h 0
 
     We declare several public slots updating the \c RenderArea
     widget's associated painter path. In addition we reimplement the
@@ -329,7 +329,7 @@
     application, and we reimplement the QWidget::paintEvent() event
     handler to draw its painter path.
 
-    \snippet widgets/painting/painterpaths/renderarea.h 1
+    \snippet painting/painterpaths/renderarea.h 1
 
     Each instance of the \c RenderArea class has a QPainterPath, a
     couple of fill colors, a pen width, a pen color and a rotation
@@ -340,7 +340,7 @@
     The constructor takes a QPainterPath as argument (in addition to
     the optional QWidget parent):
 
-    \snippet widgets/painting/painterpaths/renderarea.cpp 0
+    \snippet painting/painterpaths/renderarea.cpp 0
 
     In the constructor we initialize the \c RenderArea widget with the
     QPainterPath parameter as well as initializing the pen width and
@@ -348,23 +348,23 @@
     {QWidget::backgroundRole()}{background role}; QPalette::Base is
     typically white.
 
-    \snippet widgets/painting/painterpaths/renderarea.cpp 1
+    \snippet painting/painterpaths/renderarea.cpp 1
     \codeline
-    \snippet widgets/painting/painterpaths/renderarea.cpp 2
+    \snippet painting/painterpaths/renderarea.cpp 2
 
     Then we reimplement the QWidget::minimumSizeHint() and
     QWidget::sizeHint() functions to give the \c RenderArea widget a
     reasonable size within our application.
 
-    \snippet widgets/painting/painterpaths/renderarea.cpp 3
+    \snippet painting/painterpaths/renderarea.cpp 3
     \codeline
-    \snippet widgets/painting/painterpaths/renderarea.cpp 4
+    \snippet painting/painterpaths/renderarea.cpp 4
     \codeline
-    \snippet widgets/painting/painterpaths/renderarea.cpp 5
+    \snippet painting/painterpaths/renderarea.cpp 5
     \codeline
-    \snippet widgets/painting/painterpaths/renderarea.cpp 6
+    \snippet painting/painterpaths/renderarea.cpp 6
     \codeline
-    \snippet widgets/painting/painterpaths/renderarea.cpp 7
+    \snippet painting/painterpaths/renderarea.cpp 7
 
     The various public slots updates the \c RenderArea widget's
     painter path by setting the associated property and make a call to
@@ -375,7 +375,7 @@
     instead it schedules a paint event for processing when Qt returns
     to the main event loop.
 
-    \snippet widgets/painting/painterpaths/renderarea.cpp 8
+    \snippet painting/painterpaths/renderarea.cpp 8
 
     A paint event is a request to repaint all or parts of the
     widget. The paintEvent() function is an event handler that can be
@@ -390,7 +390,7 @@
     should anti-alias the edges of primitives if possible, i.e. put
     additional pixels around the original ones to smooth the edges.
 
-    \snippet widgets/painting/painterpaths/renderarea.cpp 9
+    \snippet painting/painterpaths/renderarea.cpp 9
 
     Then we scale the QPainter's coordinate system to ensure that the
     painter path is rendered in the right size, i.e that it grows with
@@ -407,7 +407,7 @@
     performed the rotation, we must remember to translate the
     coordinate system back again.
 
-    \snippet widgets/painting/painterpaths/renderarea.cpp 10
+    \snippet painting/painterpaths/renderarea.cpp 10
 
     Then we set the QPainter's pen with the instance's rendering
     preferences. We create a QLinearGradient and set its colors

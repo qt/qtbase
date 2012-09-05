@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/dialogs/findfiles
+    \example dialogs/findfiles
     \title Find Files Example
 
     The Find Files example shows how to use QProgressDialog to provide
@@ -54,7 +54,7 @@
     widget. It shows the search options, and displays the search
     results.
 
-    \snippet widgets/dialogs/findfiles/window.h 0
+    \snippet dialogs/findfiles/window.h 0
 
     We need two private slots: The \c browse() slot is called whenever
     the user wants to browse for a directory to search in, and the \c
@@ -71,7 +71,7 @@
 
     In the constructor we first create the application's widgets.
 
-    \snippet widgets/dialogs/findfiles/window.cpp 0
+    \snippet dialogs/findfiles/window.cpp 0
 
     We create the application's buttons using the private \c
     createButton() function. Then we create the comboboxes associated
@@ -80,14 +80,14 @@
     before we use the private \c createFilesTable() function to create
     the table displaying the search results.
 
-    \snippet widgets/dialogs/findfiles/window.cpp 1
+    \snippet dialogs/findfiles/window.cpp 1
 
     Then we add all the widgets to a main layout using QGridLayout. We
     have, however, put the \c Find and \c Quit buttons and a
     stretchable space in a separate QHBoxLayout first, to make the
     buttons appear in the \c Window widget's bottom right corner.
 
-    \snippet widgets/dialogs/findfiles/window.cpp 2
+    \snippet dialogs/findfiles/window.cpp 2
 
     The \c browse() slot presents a file dialog to the user, using the
     QFileDialog class. QFileDialog enables a user to traverse the file
@@ -106,7 +106,7 @@
     the specified userData. The item is appended to the list of
     existing items.
 
-    \snippet widgets/dialogs/findfiles/window.cpp 3
+    \snippet dialogs/findfiles/window.cpp 3
 
     The \c find() slot is called whenever the user requests a new
     search by pressing the \uicontrol Find button.
@@ -116,7 +116,7 @@
     specified file name, text and directory path from the respective
     comboboxes.
 
-    \snippet widgets/dialogs/findfiles/window.cpp 4
+    \snippet dialogs/findfiles/window.cpp 4
 
     We use the directory's path to create a QDir; the QDir class
     provides access to directory structures and their contents. We
@@ -134,7 +134,7 @@
 
     \image findfiles_progress_dialog.png Screenshot of the Progress Dialog
 
-    \snippet widgets/dialogs/findfiles/window.cpp 5
+    \snippet dialogs/findfiles/window.cpp 5
 
     In the private \c findFiles() function we search through a list of
     files, looking for the ones that contain a specified text. This
@@ -149,7 +149,7 @@
     application has not frozen. It can also give the user an
     opportunity to abort the operation.
 
-    \snippet widgets/dialogs/findfiles/window.cpp 6
+    \snippet dialogs/findfiles/window.cpp 6
 
     We run through the files, one at a time, and for each file we
     update the QProgressDialog value. This property holds the current
@@ -170,7 +170,7 @@
     until there are no more events to process. The default flags are
     QEventLoop::AllEvents.
 
-    \snippet widgets/dialogs/findfiles/window.cpp 7
+    \snippet dialogs/findfiles/window.cpp 7
 
     After updating the QProgressDialog, we create a QFile using the
     QDir::absoluteFilePath() function which returns the absolute path
@@ -189,7 +189,7 @@
 
     Finally, we return the list of the files found.
 
-    \snippet widgets/dialogs/findfiles/window.cpp 8
+    \snippet dialogs/findfiles/window.cpp 8
 
     Both the \c findFiles() and \c showFiles() functions are called from
     the \c find() slot. In the \c showFiles() function we run through
@@ -199,14 +199,14 @@
 
     We also update the total number of files found.
 
-    \snippet widgets/dialogs/findfiles/window.cpp 9
+    \snippet dialogs/findfiles/window.cpp 9
 
     The private \c createButton() function is called from the
     constructor. We create a QPushButton with the provided text,
     connect it to the provided slot, and return a pointer to the
     button.
 
-    \snippet widgets/dialogs/findfiles/window.cpp 10
+    \snippet dialogs/findfiles/window.cpp 10
 
     The private \c createComboBox() function is also called from the
     contructor. We create a QComboBox with the given text, and make it
@@ -221,7 +221,7 @@
     widget's size policies, before we return a pointer to the
     combobox.
 
-    \snippet widgets/dialogs/findfiles/window.cpp 11
+    \snippet dialogs/findfiles/window.cpp 11
 
     The private \c createFilesTable() function is called from the
     constructor. In this function we create the QTableWidget that
@@ -240,7 +240,7 @@
     QWidget::hide() function, and remove the default grid drawn for
     the table using the QTableView::setShowGrid() function.
 
-    \snippet widgets/dialogs/findfiles/window.cpp 12
+    \snippet dialogs/findfiles/window.cpp 12
 
     The \c openFileOfItem() slot is invoked when the user double
     clicks on a cell in the table. The QDesktopServices::openUrl()

@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/itemviews/fetchmore
+    \example itemviews/fetchmore
     \title Fetch More Example
 
     The Fetch More example shows how two add items to an item view
@@ -56,7 +56,7 @@
     contents of a directory. It will add items to itself only when
     requested to do so by the view.
 
-    \snippet widgets/itemviews/fetchmore/filelistmodel.h 0
+    \snippet itemviews/fetchmore/filelistmodel.h 0
 
     The secret lies in the reimplementation of
     \l{QAbstractItemModel::}{fetchMore()} and
@@ -75,13 +75,13 @@
 
     We start by checking out the \c setDirPath().
 
-    \snippet widgets/itemviews/fetchmore/filelistmodel.cpp 0
+    \snippet itemviews/fetchmore/filelistmodel.cpp 0
 
     We use a QDir to get the contents of the directory. We need to
     inform QAbstractItemModel that we want to remove all items - if
     any - from the model.
 
-    \snippet widgets/itemviews/fetchmore/filelistmodel.cpp 1
+    \snippet itemviews/fetchmore/filelistmodel.cpp 1
 
     The \c canFetchMore() function is called by the view when it needs
     more items. We return true if there still are entries that we have
@@ -89,7 +89,7 @@
 
     And now, the \c fetchMore() function itself:
 
-    \snippet widgets/itemviews/fetchmore/filelistmodel.cpp 2
+    \snippet itemviews/fetchmore/filelistmodel.cpp 2
 
     We first calculate the number of items to fetch.
     \l{QAbstractItemModel::}{beginInsertRows()} and
@@ -99,7 +99,7 @@
 
     To complete the tour, we also look at \c rowCount() and \c data().
 
-    \snippet widgets/itemviews/fetchmore/filelistmodel.cpp 4
+    \snippet itemviews/fetchmore/filelistmodel.cpp 4
 
     Notice that the row count is only the items we have added so far,
     i.e., not the number of entries in the directory.

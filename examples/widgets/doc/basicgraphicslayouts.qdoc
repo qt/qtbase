@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/graphicsview/basicgraphicslayouts
+    \example graphicsview/basicgraphicslayouts
     \title Basic Graphics Layouts Example
 
     The Basic Graphics Layouts example shows how to use the layout classes
@@ -40,7 +40,7 @@
     The \c Window class is a subclass of QGraphicsWidget. It has a
     constructor with a QGraphicsWidget \a parent as its parameter.
 
-    \snippet widgets/graphicsview/basicgraphicslayouts/window.h 0
+    \snippet graphicsview/basicgraphicslayouts/window.h 0
 
     \section1 Window Class Implementation
 
@@ -52,7 +52,7 @@
     \c item with a \l{QGraphicsLinearLayout::setStretchFactor()}
     {stretchFactor}.
 
-    \snippet widgets/graphicsview/basicgraphicslayouts/window.cpp 0
+    \snippet graphicsview/basicgraphicslayouts/window.cpp 0
 
     We repeat the process:
 
@@ -62,7 +62,7 @@
         \li provide a stretch factor.
     \endlist
 
-    \snippet widgets/graphicsview/basicgraphicslayouts/window.cpp 1
+    \snippet graphicsview/basicgraphicslayouts/window.cpp 1
 
     We then add \c linear to \c windowLayout, nesting two
     QGraphicsLinearLayout objects. Apart from the QGraphicsLinearLayout, we
@@ -73,7 +73,7 @@
     the \l{QGraphicsGridLayout::}{addItem()} function as shown in the code
     snippet below:
 
-    \snippet widgets/graphicsview/basicgraphicslayouts/window.cpp 2
+    \snippet graphicsview/basicgraphicslayouts/window.cpp 2
 
     The first item we add to \c grid is placed in the top left cell,
     spanning four rows. The next two items are placed in the second column,
@@ -94,7 +94,7 @@
     add an item to a layout, it will be automatically reparented to the widget
     on which the layout is installed.
 
-    \snippet widgets/graphicsview/basicgraphicslayouts/window.cpp 3
+    \snippet graphicsview/basicgraphicslayouts/window.cpp 3
 
     Now that we have set up \c grid and added it to \c windowLayout, we
     install \c windowLayout onto the window object using
@@ -112,7 +112,7 @@
     {QGraphicsItem::boundingRect()}{boundingRect()} and
     {QGraphicsItem::paint()}{paint()}.
 
-    \snippet widgets/graphicsview/basicgraphicslayouts/layoutitem.h 0
+    \snippet graphicsview/basicgraphicslayouts/layoutitem.h 0
 
     The \c LayoutItem class also has a private instance of QPixmap, \c m_pix.
 
@@ -121,17 +121,17 @@
     In \c{LayoutItem}'s constructor, \c m_pix is instantiated and the
     \c{block.png} image is loaded into it.
 
-    \snippet widgets/graphicsview/basicgraphicslayouts/layoutitem.cpp 0
+    \snippet graphicsview/basicgraphicslayouts/layoutitem.cpp 0
 
     We use the Q_UNUSED() macro to prevent the compiler from generating
     warnings regarding unused parameters.
 
-    \snippet widgets/graphicsview/basicgraphicslayouts/layoutitem.cpp 1
+    \snippet graphicsview/basicgraphicslayouts/layoutitem.cpp 1
 
     The idea behind the \c paint() function is to paint the
     background rect then paint a rect around the pixmap.
 
-    \snippet widgets/graphicsview/basicgraphicslayouts/layoutitem.cpp 2
+    \snippet graphicsview/basicgraphicslayouts/layoutitem.cpp 2
 
     The reimplementation of \l{QGraphicsItem::}{boundingRect()}
     will set the top left corner at (0,0), and the size of it will be
@@ -139,7 +139,7 @@
     \l{QGraphicsLayoutItem::}{geometry()}. This is the area that
     we paint within.
 
-    \snippet widgets/graphicsview/basicgraphicslayouts/layoutitem.cpp 3
+    \snippet graphicsview/basicgraphicslayouts/layoutitem.cpp 3
 
 
     The reimplementation of \l{QGraphicsLayoutItem::setGeometry()}{setGeometry()}
@@ -148,7 +148,7 @@
     \l{QGraphicsItem::prepareGeometryChange()}{prepareGeometryChange()}.
     Finally, we move the item according to \c geom.topLeft().
 
-    \snippet widgets/graphicsview/basicgraphicslayouts/layoutitem.cpp 4
+    \snippet graphicsview/basicgraphicslayouts/layoutitem.cpp 4
 
 
     Since we don't want the size of the item to be smaller than the pixmap, we
@@ -159,6 +159,6 @@
     The preferred size is the same as the minimum size hint, while we set
     maximum to be a large value
 
-    \snippet widgets/graphicsview/basicgraphicslayouts/layoutitem.cpp 5
+    \snippet graphicsview/basicgraphicslayouts/layoutitem.cpp 5
 
 */

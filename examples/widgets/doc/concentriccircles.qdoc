@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/painting/concentriccircles
+    \example painting/concentriccircles
     \title Concentric Circles Example
 
     The Concentric Circles example shows the improved rendering
@@ -74,7 +74,7 @@
     The CircleWidget class inherits QWidget, and is a custom widget
     which renders several animated concentric circles.
 
-    \snippet widgets/painting/concentriccircles/circlewidget.h 0
+    \snippet painting/concentriccircles/circlewidget.h 0
 
     We declare the \c floatBased and \c antialiased variables to hold
     whether an instance of the class should be rendered with integer
@@ -97,7 +97,7 @@
     In the constructor we make the widget's rendering integer based
     and aliased by default:
 
-    \snippet widgets/painting/concentriccircles/circlewidget.cpp 0
+    \snippet painting/concentriccircles/circlewidget.cpp 0
 
     We initialize the widget's \c frameNo variable, and set the
     widget's background color using the QWidget::setBackgroundColor()
@@ -111,9 +111,9 @@
     useful. The widget can also make use of extra space, so it should
     get as much space as possible.
 
-    \snippet widgets/painting/concentriccircles/circlewidget.cpp 1
+    \snippet painting/concentriccircles/circlewidget.cpp 1
     \codeline
-    \snippet widgets/painting/concentriccircles/circlewidget.cpp 2
+    \snippet painting/concentriccircles/circlewidget.cpp 2
 
     The public \c setFloatBased() and \c setAntialiased() functions
     update the widget's rendering preferences, i.e. whether the widget
@@ -124,9 +124,9 @@
     QWidget::update() function, forcing a repaint of the widget with
     the new rendering preferences.
 
-    \snippet widgets/painting/concentriccircles/circlewidget.cpp 3
+    \snippet painting/concentriccircles/circlewidget.cpp 3
     \codeline
-    \snippet widgets/painting/concentriccircles/circlewidget.cpp 4
+    \snippet painting/concentriccircles/circlewidget.cpp 4
 
     The default implementations of the QWidget::minimumSizeHint() and
     QWidget::sizeHint() functions return invalid sizes if there is no
@@ -136,14 +136,14 @@
     We reimplement the functions to give the widget minimum and
     preferred sizes which are reasonable within our application.
 
-    \snippet widgets/painting/concentriccircles/circlewidget.cpp 5
+    \snippet painting/concentriccircles/circlewidget.cpp 5
 
     The nextAnimationFrame() slot simply increments the \c frameNo
     variable's value, and calls the QWidget::update() function which
     schedules a paint event for processing when Qt returns to the main
     event loop.
 
-    \snippet widgets/painting/concentriccircles/circlewidget.cpp 6
+    \snippet painting/concentriccircles/circlewidget.cpp 6
 
     A paint event is a request to repaint all or part of the
     widget. The \c paintEvent() function is an event handler that can
@@ -158,7 +158,7 @@
     widget's cocentric circles. The translation ensures that the
     center of the circles will be equivalent to the widget's center.
 
-    \snippet widgets/painting/concentriccircles/circlewidget.cpp 7
+    \snippet painting/concentriccircles/circlewidget.cpp 7
 
     When painting a circle, we use the number of "animation frames" to
     determine the alpha channel of the circle's color. The alpha
@@ -166,7 +166,7 @@
     fully transparent color, while 255 represents a fully opaque
     color.
 
-    \snippet widgets/painting/concentriccircles/circlewidget.cpp 8
+    \snippet painting/concentriccircles/circlewidget.cpp 8
 
     If the calculated alpha channel is fully transparent, we don't
     draw anything since that would be equivalent to drawing a white
@@ -190,7 +190,7 @@
     window rendering four \c {CircleWidget}s using different
     combinations of precision and aliasing.
 
-    \snippet widgets/painting/concentriccircles/window.h 0
+    \snippet painting/concentriccircles/window.h 0
 
     We declare the various components of the main window, i.e., the text
     labels and a double array that will hold reference to the four \c
@@ -199,12 +199,12 @@
 
     \section1 Window Class Implementation
 
-    \snippet widgets/painting/concentriccircles/window.cpp 0
+    \snippet painting/concentriccircles/window.cpp 0
 
     In the constructor, we first create the various labels and put
     them in a QGridLayout.
 
-    \snippet widgets/painting/concentriccircles/window.cpp 1
+    \snippet painting/concentriccircles/window.cpp 1
 
     Then we create a QTimer. The QTimer class is a high-level
     programming interface for timers, and provides repetitive and
@@ -215,7 +215,7 @@
     them to the layout), we connect the QTimer::timeout() signal to
     each of the widgets' \c nextAnimationFrame() slots.
 
-    \snippet widgets/painting/concentriccircles/window.cpp 2
+    \snippet painting/concentriccircles/window.cpp 2
 
     Before we set the layout and window title for our main window, we
     make the timer start with a timeout interval of 100 milliseconds,
@@ -224,7 +224,7 @@
     four \c {CircleWidget}s, every 100 millisecond which is the reason
     the circles appear as animated.
 
-    \snippet widgets/painting/concentriccircles/window.cpp 3
+    \snippet painting/concentriccircles/window.cpp 3
 
     The private \c createLabel() function is implemented to simlify
     the constructor.

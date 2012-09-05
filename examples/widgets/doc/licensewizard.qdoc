@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/dialogs/licensewizard
+    \example dialogs/licensewizard
     \title License Wizard Example
 
     The License Wizard example shows how to implement complex wizards in
@@ -65,7 +65,7 @@
     registering their copy of a fictitious software product. Here's
     the class definition:
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.h 1
+    \snippet dialogs/licensewizard/licensewizard.h 1
 
     The class's public API is limited to a constructor and an enum.
     The enum defines the IDs associated with the various pages:
@@ -83,30 +83,30 @@
     that they must be unique and different from -1. IDs allow us to
     refer to pages.
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 2
+    \snippet dialogs/licensewizard/licensewizard.cpp 2
 
     In the constructor, we create the five pages, insert them into
     the wizard using QWizard::setPage(), and set \c Page_Intro to be
     the first page.
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 3
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 4
+    \snippet dialogs/licensewizard/licensewizard.cpp 3
+    \snippet dialogs/licensewizard/licensewizard.cpp 4
 
     We set the style to \l{QWizard::}{ModernStyle} on all platforms
     except Mac OS X,
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 5
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 6
+    \snippet dialogs/licensewizard/licensewizard.cpp 5
+    \snippet dialogs/licensewizard/licensewizard.cpp 6
 
     We configure the QWizard to show a \uicontrol Help button, which is
     connected to our \c showHelp() slot. We also set the
     \l{QWizard::}{LogoPixmap} for all pages that have a header (i.e.,
     \c EvaluatePage, \c RegisterPage, and \c DetailsPage).
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 9
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 11
+    \snippet dialogs/licensewizard/licensewizard.cpp 9
+    \snippet dialogs/licensewizard/licensewizard.cpp 11
     \dots
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 13
+    \snippet dialogs/licensewizard/licensewizard.cpp 13
 
     In \c showHelp(), we display help texts that are appropriate for
     the current page. If the user clicks \uicontrol Help twice for the same
@@ -120,9 +120,9 @@
 
     Here's the definition and implementation of \c{IntroPage}:
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.h 4
+    \snippet dialogs/licensewizard/licensewizard.h 4
     \codeline
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 16
+    \snippet dialogs/licensewizard/licensewizard.cpp 16
 
     A page inherits from QWizardPage. We set a
     \l{QWizardPage::}{title} and a
@@ -132,8 +132,8 @@
     to display a watermark pixmap on the first and last pages, and to
     have a header on the other pages.)
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 17
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 19
+    \snippet dialogs/licensewizard/licensewizard.cpp 17
+    \snippet dialogs/licensewizard/licensewizard.cpp 19
 
     The \c nextId() function returns the ID for \c EvaluatePage if
     the \uicontrol{Evaluate the product for 30 days} option is checked;
@@ -143,13 +143,13 @@
 
     The \c EvaluatePage is slightly more involved:
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.h 5
+    \snippet dialogs/licensewizard/licensewizard.h 5
     \codeline
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 20
+    \snippet dialogs/licensewizard/licensewizard.cpp 20
     \dots
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 21
+    \snippet dialogs/licensewizard/licensewizard.cpp 21
     \dots
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 22
+    \snippet dialogs/licensewizard/licensewizard.cpp 22
 
     First, we set the page's \l{QWizardPage::}{title}
     and \l{QWizardPage::}{subTitle}.
@@ -164,7 +164,7 @@
 
     Resetting the page amounts to clearing the two text fields.
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 23
+    \snippet dialogs/licensewizard/licensewizard.cpp 23
 
     The next page is always the \c ConclusionPage.
 
@@ -173,14 +173,14 @@
     The \c RegisterPage and \c DetailsPage are very similar to \c
     EvaluatePage. Let's go directly to the \c ConclusionPage:
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.h 6
+    \snippet dialogs/licensewizard/licensewizard.h 6
 
     This time, we reimplement QWizardPage::initializePage() and
     QWidget::setVisible(), in addition to
     \l{QWizardPage::}{nextId()}. We also declare a private slot:
     \c printButtonClicked().
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 18
+    \snippet dialogs/licensewizard/licensewizard.cpp 18
 
     The default implementation of QWizardPage::nextId() returns
     the page with the next ID, or -1 if the current page has the
@@ -189,7 +189,7 @@
     but to avoid relying on such subtle behavior, we reimplement
     \l{QWizardPage::}{nextId()} to return -1.
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 27
+    \snippet dialogs/licensewizard/licensewizard.cpp 27
 
     We use QWizard::hasVisitedPage() to determine the type of
     license agreement the user has chosen. If the user filled the \c
@@ -199,7 +199,7 @@
     upgrade key and skipped the \c DetailsPage, the license text is
     an Update License Agreement.
 
-    \snippet widgets/dialogs/licensewizard/licensewizard.cpp 28
+    \snippet dialogs/licensewizard/licensewizard.cpp 28
 
     We want to display a \uicontrol Print button in the wizard when the \c
     ConclusionPage is up. One way to accomplish this is to reimplement

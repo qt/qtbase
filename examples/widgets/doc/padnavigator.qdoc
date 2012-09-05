@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/graphicsview/padnavigator
+    \example graphicsview/padnavigator
     \title Pad Navigator Example
 
     The Pad Navigator Example shows how you can use Graphics View together with
@@ -60,7 +60,7 @@
 
     Let's start by reviewing the \c RoundRectItem class declaration.
 
-    \snippet widgets/graphicsview/padnavigator/roundrectitem.h 0
+    \snippet graphicsview/padnavigator/roundrectitem.h 0
 
     \c RoundRectItem inherits QGraphicsObject, which makes it easy to control
     its properties using QPropertyAnimation. Its constructor takes a rectangle
@@ -76,7 +76,7 @@
     Otherwise the contents are filled using a gradient based on the color
     passed to \c RoundRectItem's constructor.
 
-    \snippet widgets/graphicsview/padnavigator/roundrectitem.h 1
+    \snippet graphicsview/padnavigator/roundrectitem.h 1
 
     The private data members are:
 
@@ -91,7 +91,7 @@
     We will now review the \c RoundRectItem implementation. Let's start by
     looking at its constructor:
 
-    \snippet widgets/graphicsview/padnavigator/roundrectitem.cpp 0
+    \snippet graphicsview/padnavigator/roundrectitem.cpp 0
 
     The constructor initializes its member variables and forwards the \c parent
     argument to QGraphicsObject's constructor. It then constructs the linear
@@ -110,24 +110,24 @@
     remains persistent as we move and transform the item. This mode is ideal
     for this example, and works particularly well with OpenGL and OpenGL ES.
 
-    \snippet widgets/graphicsview/padnavigator/roundrectitem.cpp 1
+    \snippet graphicsview/padnavigator/roundrectitem.cpp 1
 
     The \c pixmap property implementation simple returns the member pixmap, or
     sets it and then calls \l{QGraphicsItem::update()}{update()}.
 
-    \snippet widgets/graphicsview/padnavigator/roundrectitem.cpp 2
+    \snippet graphicsview/padnavigator/roundrectitem.cpp 2
 
     As the \l{QGraphicsItem::paint()}{paint()} implementation below draws a
     simple drop shadow down and to the right of the item, we return a slightly
     adjusted rectangle from \l{QGraphicsItem::boundingRect()}{boundingRect()}.
 
-    \snippet widgets/graphicsview/padnavigator/roundrectitem.cpp 3
+    \snippet graphicsview/padnavigator/roundrectitem.cpp 3
 
     The \l{QGraphicsItem::paint()}{paint()} implementation starts by rendering
     a semi transparent black round rectangle drop shadow, two units down and to
     the right of the main item.
 
-    \snippet widgets/graphicsview/padnavigator/roundrectitem.cpp 4
+    \snippet graphicsview/padnavigator/roundrectitem.cpp 4
 
     We then draw the "foreground" round rectangle itself. The fill depends on
     the \c fill property; if true, we will with a plain QPalette::Window color.
@@ -135,14 +135,14 @@
     unit wide pen for the stroke, assign the brush, and then draw the
     rectangle.
 
-    \snippet widgets/graphicsview/padnavigator/roundrectitem.cpp 5
+    \snippet graphicsview/padnavigator/roundrectitem.cpp 5
 
     If a pixmap has been assigned to the \e pixmap property, we draw this
     pixmap in the center of the rectangle item. The pixmaps are scaled to match
     the size of the icons; in arguably a better approach would have been to
     store the icons with the right size in the first places.
 
-    \snippet widgets/graphicsview/padnavigator/roundrectitem.cpp 6
+    \snippet graphicsview/padnavigator/roundrectitem.cpp 6
 
     Finally, for completeness we include the \c fill property implementation.
     It returns the \c fill member variable's value, and when assigned to, it
@@ -157,7 +157,7 @@
     \c FlippablePad is, in addition to its inherited \c RoundRectItem
     responsibilities, responsible for creating and managing a grid of icons.
 
-    \snippet widgets/graphicsview/padnavigator/flippablepad.h 0
+    \snippet graphicsview/padnavigator/flippablepad.h 0
 
     Its declaration is very simple: It inherits \c RoundRectItem and does not
     need any special polymorphic behavior. It's suitable to declare its own
@@ -175,26 +175,26 @@
     starts with two helper functions: \c boundsFromSize() and \c
     posForLocation():
 
-    \snippet widgets/graphicsview/padnavigator/flippablepad.cpp 0
+    \snippet graphicsview/padnavigator/flippablepad.cpp 0
 
     \c boundsForSize() takes a QSize argument, and returns the bounding
     rectangle of the flippable pad item. The QSize determines how many rows and
     columns the icon grid should have. Each icon is given 150x150 units of
     space, and this determines the bounds.
 
-    \snippet widgets/graphicsview/padnavigator/flippablepad.cpp 1
+    \snippet graphicsview/padnavigator/flippablepad.cpp 1
 
     \c posForLocation() returns the position of an icon given its row and
     column position. Like \c boundsForSize(), the function assumes each icon is
     given 150x150 units of space, and that all icons are centered around the
     flippable pad item's origin (0, 0).
 
-    \snippet widgets/graphicsview/padnavigator/flippablepad.cpp 2
+    \snippet graphicsview/padnavigator/flippablepad.cpp 2
 
     The \c FlippablePad constructor passes suitable bounds (using \c
     boundsForSize()) and specific color to \c RoundRectItem's constructor.
 
-    \snippet widgets/graphicsview/padnavigator/flippablepad.cpp 3
+    \snippet graphicsview/padnavigator/flippablepad.cpp 3
 
     It then loads pixmaps from compiled-in resources to use for its icons.
     QDirIterator is very useful in this context, as it allows us to fetch all
@@ -203,7 +203,7 @@
 
     We also make sure not to load more pixmaps than we need.
 
-    \snippet widgets/graphicsview/padnavigator/flippablepad.cpp 4
+    \snippet graphicsview/padnavigator/flippablepad.cpp 4
 
     Now that we have the pixmaps, we can create icons, position then and assign
     pixmaps. We start by finding a suitable size and color for the icons, and
@@ -222,7 +222,7 @@
     natural to assign the pixmaps directly, or that the icons themselves
     provide suitable pixmaps.
 
-    \snippet widgets/graphicsview/padnavigator/flippablepad.cpp 5
+    \snippet graphicsview/padnavigator/flippablepad.cpp 5
 
     Finally, the \c iconAt() function returns a pointer to the icon at a
     specific row and column. It makes a somewhat bold assumption that the input
@@ -238,7 +238,7 @@
     started, and disappears after pressing any key. The animation is controlled
     by \c PadNavigator; this class is very simple by itself.
 
-    \snippet widgets/graphicsview/padnavigator/splashitem.h 0
+    \snippet graphicsview/padnavigator/splashitem.h 0
 
     The class declaration shows that \c SplashItem inherits QGraphicsObject to
     allow it to be controlled by QPropertyAnimation. It reimplements the
@@ -249,7 +249,7 @@
 
     Let's look at its implementation.
 
-    \snippet widgets/graphicsview/padnavigator/splashitem.cpp 0
+    \snippet graphicsview/padnavigator/splashitem.cpp 0
 
     The constructor forwards to QGraphicsObject as expected, assigns a text
     message to the \c text member variable, and enables
@@ -263,11 +263,11 @@
     We use caching to avoid having to relayout and rerender the text for each
     frame. An alterative approach would be to use the new QStaticText class.
 
-    \snippet widgets/graphicsview/padnavigator/splashitem.cpp 1
+    \snippet graphicsview/padnavigator/splashitem.cpp 1
 
     \c SplashItem's bounding rectangle is fixed at (400x175).
 
-    \snippet widgets/graphicsview/padnavigator/splashitem.cpp 2
+    \snippet graphicsview/padnavigator/splashitem.cpp 2
 
     The \l{QGraphicsItem::paint()}{paint()} implementation draws a clipped
     round rectangle with a thick 2-unit border and a semi-transparent white
@@ -284,7 +284,7 @@
     application. It creates and controls a somewhat complex state machine, and
     several animations. Its class declaration is very simple:
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.h 0
+    \snippet graphicsview/padnavigator/padnavigator.h 0
 
     It inherits QGraphicsView and reimplements only one function:
     \l{QGraphicsView::resizeEvent()}{resizeEvent()}, to ensure the scene is
@@ -296,7 +296,7 @@
     It also keeps a private member instance, \c form, which is the generated
     code for the pad's back side item's QGraphicsProxyWidget-embedded form.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 0
+    \snippet graphicsview/padnavigator/padnavigator.cpp 0
 
     \c PadNavigator's constructor is a bit long. In short, its job is to create
     all items, including the \c FlippablePad, the \c SplashItem and the
@@ -305,13 +305,13 @@
 
     It starts out simple, by forwarding to QGraphicsView's constructor.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 1
+    \snippet graphicsview/padnavigator/padnavigator.cpp 1
 
     The first item to be created is \c SplashItem. This is going to be a top-level
     item in the scene, next to \c FlippablePad, and stacked on top of it, so we
     assign it a \l{QGraphicsItem::zValue()}{Z-value} of 1.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 2
+    \snippet graphicsview/padnavigator/padnavigator.cpp 2
 
     Now we construct the \c FlippablePad item, passing its column-row count to
     its constructor.
@@ -334,7 +334,7 @@
     The combination of all three rotations is assigned via
     QGraphicsItem::setTransformations().
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 3
+    \snippet graphicsview/padnavigator/padnavigator.cpp 3
 
     Now we construct the QGraphicsProxyWidget-embedded \c backItem. The proxy
     widget is created as a child of the pad. We create a new QWidget and
@@ -353,7 +353,7 @@
     We enable \l{QGraphicsItem::ItemCoordinateCache}{ItemCoordinateCache} to
     ensure the flip animation can run smoothly.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 4
+    \snippet graphicsview/padnavigator/padnavigator.cpp 4
 
     We now create the selection item. This is simply another instance of \c
     RoundRectItem that is slightly larger than the icons on the pad. We create
@@ -364,7 +364,7 @@
 
     What follows now is a series of animation initializations.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 5
+    \snippet graphicsview/padnavigator/padnavigator.cpp 5
 
     We begin with the animations that apply to the splash item. The first
     animation, \c smoothSplashMove, ensures that the "y" property of \c splash
@@ -375,14 +375,14 @@
     The values are assigned by \c PadNavigator's state machine, which is
     created later.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 6
+    \snippet graphicsview/padnavigator/padnavigator.cpp 6
 
     These are the animations that control the selection item's movement and the
     \c xRotation and \c yRotation QGraphicsRotation objects that tilt the pad.
     All animations have a duration of 125 milliseconds, and they all use the
     \l{QEasingCurve::InOutQuad}{InOutQuad} easing function.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 7
+    \snippet graphicsview/padnavigator/padnavigator.cpp 7
 
     We now create the animations that control the flip-effect when you press
     the enter key. The main goal is to rotate the pad by 180 degrees or back,
@@ -407,7 +407,7 @@
     duration, or 250 milliseconds, the pad will be scaled down to 0.7x of its
     original size, which gives a great visual effect while flipping.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 8
+    \snippet graphicsview/padnavigator/padnavigator.cpp 8
 
     This section uses a trick to ensure that certain properties are assigned
     precisely when the flip animation passes 50%, or 90 degrees, rotation. In
@@ -424,7 +424,7 @@
     This approach can also be used to call functions or set any other
     properties at a specific time while an animation is running.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 9
+    \snippet graphicsview/padnavigator/padnavigator.cpp 9
 
     We will now create the state machine. The whole \c PadNavigator state
     machinery is controlled by one single state machine that has a
@@ -440,7 +440,7 @@
     can interact with the QGraphicsProxyWidget-embedded form.
     \endlist
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 10
+    \snippet graphicsview/padnavigator/padnavigator.cpp 10
 
     Each state assigns specific properties to objects on entry. Most
     interesting perhaps is the assignment of the value 0.0 to the pad's \c
@@ -454,7 +454,7 @@
     before we start the state engine. We proceed with creating some
     transitions.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 11
+    \snippet graphicsview/padnavigator/padnavigator.cpp 11
 
     QEventTransition defines a very flexible transition type. You can use this
     class to trigger a transition based on an object receiving an event of a
@@ -465,7 +465,7 @@
     We register the \c splashItem's animations to this transition to ensure they
     are used to animate the item's movement and opacity.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 12
+    \snippet graphicsview/padnavigator/padnavigator.cpp 12
 
     We use QKeyEventTransition to capture specific key events. In this case, we
     detect that the user presses Qt::Key_Return or Qt::Key_Enter, and use this
@@ -475,7 +475,7 @@
 
     We continue by defining the states for each of the icons in the grid.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 13
+    \snippet graphicsview/padnavigator/padnavigator.cpp 13
 
     We will use state groups to control transitions between icons. Each icon
     represents a \e substate of \c frontState. We will then define transitions
@@ -491,7 +491,7 @@
     substate. We initialze the selection item's position to be exactly where
     the top-left icon is.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 14
+    \snippet graphicsview/padnavigator/padnavigator.cpp 14
 
     We can now create four transitions for each icon. Each transition ensures
     that we move to the state corresponding to which arrow key has been
@@ -499,7 +499,7 @@
     specific transitions to and from each of the sub states depending on these
     and other keys.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 15
+    \snippet graphicsview/padnavigator/padnavigator.cpp 15
 
     Also, for each of the icons, we assign suitable values to the \c xRotation
     and \c yRotation objects' "angle"-properties. If you recall, these
@@ -509,7 +509,7 @@
     assigned at the right time, we add property-controlling animations to the
     \c setVariableSequence animation defined earlier.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 16
+    \snippet graphicsview/padnavigator/padnavigator.cpp 16
 
     We are now finished with all states, transitions, and animations. We now
     create the scene that will contain all our items. The scene gets a defined
@@ -521,12 +521,12 @@
     Then the scene is assigned to the view, or in our case, \c PadNavigator
     itself.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 17
+    \snippet graphicsview/padnavigator/padnavigator.cpp 17
 
     Now that the scene has received its final size, we can position the splash
     item at the very top, find its fade-out position, and add it to the scene.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 18
+    \snippet graphicsview/padnavigator/padnavigator.cpp 18
 
     The view toggles a few necessary properties:
 
@@ -547,7 +547,7 @@
 
     Finally, we start the state engine.
 
-    \snippet widgets/graphicsview/padnavigator/padnavigator.cpp 19
+    \snippet graphicsview/padnavigator/padnavigator.cpp 19
 
     The \l{QGraphicsView::resizeEvent()}{resizeEvent()} implementation calls
     the base implementation, and then calls QGraphicsView::fitInView() to scale
@@ -559,7 +559,7 @@
 
     \section1 The main() Function
 
-    \snippet widgets/graphicsview/padnavigator/main.cpp 0
+    \snippet graphicsview/padnavigator/main.cpp 0
 
     The \c main function creates the QApplication instance, uses
     Q_INIT_RESOURCE to ensure our compiled-in resources aren't removed by the

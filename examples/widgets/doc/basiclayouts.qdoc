@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/layouts/basiclayouts
+    \example layouts/basiclayouts
     \title Basic Layouts Example
 
     The Basic Layouts example shows how to use the standard layout
@@ -44,7 +44,7 @@
 
     \section1 Dialog Class Definition
 
-    \snippet widgets/layouts/basiclayouts/dialog.h 0
+    \snippet layouts/basiclayouts/dialog.h 0
 
     The \c Dialog class inherits QDialog. It is a custom widget that
     displays its child widgets using the geometry managers:
@@ -58,7 +58,7 @@
 
     \section1 Dialog Class Implementation
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 0
+    \snippet layouts/basiclayouts/dialog.cpp 0
 
     In the constructor, we first use the \c createMenu() function to
     create and populate a menu bar and the \c createHorizontalGroupBox()
@@ -70,7 +70,7 @@
     three labels and three input fields: a line edit, a combo box and
     a spin box.
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 1
+    \snippet layouts/basiclayouts/dialog.cpp 1
 
     We also create a big text editor and a dialog button box. The
     QDialogButtonBox class is a widget that presents buttons in a
@@ -84,7 +84,7 @@
     it is automatically reparented to the widget the layout is
     installed on.
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 2
+    \snippet layouts/basiclayouts/dialog.cpp 2
 
     The main layout is a QVBoxLayout object. QVBoxLayout is a
     convenience class for a box layout with vertical orientation.
@@ -97,14 +97,14 @@
     placed in a column.  The corresponding convenience classes are
     QHBoxLayout and QVBoxLayout, respectively.
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 3
+    \snippet layouts/basiclayouts/dialog.cpp 3
 
     When we call the QLayout::setMenuBar() function, the layout places
     the provided menu bar at the top of the parent widget, and outside
     the widget's \l {QWidget::contentsRect()}{content margins}. All
     child widgets are placed below the bottom edge of the menu bar.
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 4
+    \snippet layouts/basiclayouts/dialog.cpp 4
 
     We use the QBoxLayout::addWidget() function to add the widgets to
     the end of layout. Each widget will get at least its minimum size
@@ -113,25 +113,25 @@
     and any excess space is shared according to these stretch
     factors. If not specified, a widget's stretch factor is 0.
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 5
+    \snippet layouts/basiclayouts/dialog.cpp 5
 
     We install the main layout on the \c Dialog widget using the
     QWidget::setLayout() function, and all of the layout's widgets are
     automatically reparented to be children of the \c Dialog widget.
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 6
+    \snippet layouts/basiclayouts/dialog.cpp 6
 
     In the private \c createMenu() function we create a menu bar, and
     add a pull-down \uicontrol File menu containing an \uicontrol Exit option.
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 7
+    \snippet layouts/basiclayouts/dialog.cpp 7
 
     When we create the horizontal group box, we use a QHBoxLayout as
     the internal layout. We create the buttons we want to put in the
     group box, add them to the layout and install the layout on the
     group box.
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 8
+    \snippet layouts/basiclayouts/dialog.cpp 8
 
     In the \c createGridGroupBox() function we use a QGridLayout which
     lays out widgets in a grid. It takes the space made available to
@@ -139,7 +139,7 @@
     into rows and columns, and puts each widget it manages into the
     correct cell.
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 9
+    \snippet layouts/basiclayouts/dialog.cpp 9
 
     For each row in the grid we create a label and an associated line
     edit, and add them to the layout. The QGridLayout::addWidget()
@@ -147,7 +147,7 @@
     needs the row and column specifying the grid cell to put the
     widget in.
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 10
+    \snippet layouts/basiclayouts/dialog.cpp 10
 
     QGridLayout::addWidget() can in addition take arguments
     specifying the number of rows and columns the cell will be
@@ -160,7 +160,7 @@
     could, for example, align a widget with the right edge by
     specifying the alignment to be Qt::AlignRight.
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 11
+    \snippet layouts/basiclayouts/dialog.cpp 11
 
     Each column in a grid layout has a stretch factor. The stretch
     factor is set using QGridLayout::setColumnStretch() and determines
@@ -178,7 +178,7 @@
     stretch factor for rows, as well as a QGridLayout::setRowStretch()
     function.
 
-    \snippet widgets/layouts/basiclayouts/dialog.cpp 12
+    \snippet layouts/basiclayouts/dialog.cpp 12
 
     In the \c createFormGroupBox() function, we use a QFormLayout
     to neatly arrange objects into two columns - name and field.

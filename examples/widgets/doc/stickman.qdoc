@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/animation/stickman
+    \example animation/stickman
     \title Stickman Example
 
     The Stickman example shows how to animate transitions in a state machine to implement key frame 
@@ -51,12 +51,12 @@
     creating states that assign values to the the "position" properties of each of the nodes in the 
     skeleton graph. 
     
-    \snippet widgets/animation/stickman/lifecycle.cpp 1
+    \snippet animation/stickman/lifecycle.cpp 1
     
     The states are then bound together with signal transitions that listen to the
     propertiesAssigned() signal.
     
-    \snippet widgets/animation/stickman/lifecycle.cpp 2
+    \snippet animation/stickman/lifecycle.cpp 2
     
     The last frame state is given a transition to the first one, so that the animation will loop
     until it is interrupted when a transition out from the animation state is taken. To get smooth 
@@ -65,7 +65,7 @@
     and will be selected by default when taking any transition that leads into a state that assigns 
     values to these properties.
     
-    \snippet widgets/animation/stickman/lifecycle.cpp 3
+    \snippet animation/stickman/lifecycle.cpp 3
     
     Several such animation states are constructed, and are placed together as children of a top 
     level "alive" state which represents the stickman life cycle. Transitions go from the parent
@@ -81,18 +81,18 @@
     a custom transition type called LightningSrikesTransition which samples every second and 
     triggers at random (one out of fifty times on average.) 
     
-    \snippet widgets/animation/stickman/lifecycle.cpp 4
+    \snippet animation/stickman/lifecycle.cpp 4
     
     When it triggers, the machine will first enter a "lightningBlink" state which uses a timer to 
     pause for a brief period of time while the background color of the scene is white. This gives us 
     a flash effect when the lightning strikes.
     
-    \snippet widgets/animation/stickman/lifecycle.cpp 5
+    \snippet animation/stickman/lifecycle.cpp 5
     
     We start and stop a QTimer object when entering and exiting the state. Then we transition into
     the "dead" state when the timer times out.
     
-    \snippet widgets/animation/stickman/lifecycle.cpp 0
+    \snippet animation/stickman/lifecycle.cpp 0
     
     When the machine is in the "dead" state, it will be unresponsive. This is because the "dead" 
     state has no transitions leading out.

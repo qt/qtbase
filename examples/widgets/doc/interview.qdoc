@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/itemviews/interview
+    \example itemviews/interview
     \title Interview
 
     The Interview example explores the flexibility and scalability of the

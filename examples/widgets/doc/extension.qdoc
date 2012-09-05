@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/dialogs/extension
+    \example dialogs/extension
     \title Extension Example
 
     The Extension example shows how to add an extension to a QDialog
@@ -55,7 +55,7 @@
     window mostly used for short-term tasks and brief communications
     with the user.
 
-    \snippet widgets/dialogs/extension/finddialog.h 0
+    \snippet dialogs/extension/finddialog.h 0
 
     The \c FindDialog widget is the main application widget, and
     displays the application's search options and controlling
@@ -77,7 +77,7 @@
     of the \l {QCheckBox}{QCheckBox}es and all the \l
     {QPushButton}{QPushButton}s.
 
-    \snippet widgets/dialogs/extension/finddialog.cpp 0
+    \snippet dialogs/extension/finddialog.cpp 0
 
     We give the options and buttons a shortcut key using the &
     character. In the \uicontrol {Find what} option's case, we also need to
@@ -91,13 +91,13 @@
     pressed if the user presses the Enter (or Return) key. Note that a
     QDialog can only have one default button.
 
-    \snippet widgets/dialogs/extension/finddialog.cpp 2
+    \snippet dialogs/extension/finddialog.cpp 2
 
     Then we create the extension widget, and the \l
     {QCheckBox}{QCheckBox}es associated with the advanced search
     options.
 
-    \snippet widgets/dialogs/extension/finddialog.cpp 3
+    \snippet dialogs/extension/finddialog.cpp 3
 
     Now that the extension widget is created, we can connect the \uicontrol
     More button's \l{QAbstractButton::toggled()}{toggled()} signal to
@@ -117,7 +117,7 @@
     We also put the check boxes associated with the advanced
     search options into a layout we install on the extension widget.
 
-    \snippet widgets/dialogs/extension/finddialog.cpp 4
+    \snippet dialogs/extension/finddialog.cpp 4
 
     Before we create the main layout, we create several child layouts
     for the widgets: First we align the QLabel and its buddy, the
@@ -127,7 +127,7 @@
     for the buttons. In the end we lay out the two latter layouts and
     the extension widget using a QGridLayout.
 
-    \snippet widgets/dialogs/extension/finddialog.cpp 5
+    \snippet dialogs/extension/finddialog.cpp 5
 
     Finally, we hide the extension widget using the QWidget::hide()
     function, making the application only show the simple search

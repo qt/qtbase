@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/mainwindows/application
+    \example mainwindows/application
     \title Application Example
 
     The Application example shows how to implement a standard GUI
@@ -59,7 +59,7 @@
 
     Here's the class definition:
 
-    \snippet widgets/mainwindows/application/mainwindow.h 0
+    \snippet mainwindows/application/mainwindow.h 0
 
     The public API is restricted to the constructor. In the \c
     protected section, we reimplement QWidget::closeEvent() to detect
@@ -72,7 +72,7 @@
 
     \section1 MainWindow Class Implementation
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 0
+    \snippet mainwindows/application/mainwindow.cpp 0
 
     We start by including \c <QtGui>, a header file that contains the
     definition of all classes in the \l QtCore and \l QtGui
@@ -86,8 +86,8 @@
     generally a good idea to include only the header files that are
     strictly necessary from another header file.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 1
-    \snippet widgets/mainwindows/application/mainwindow.cpp 2
+    \snippet mainwindows/application/mainwindow.cpp 1
+    \snippet mainwindows/application/mainwindow.cpp 2
 
     In the constructor, we start by creating a QPlainTextEdit widget as a
     child of the main window (the \c this object). Then we call
@@ -109,8 +109,8 @@
     \c setCurrentFile() function. We'll come back to this later.
 
     \target close event handler
-    \snippet widgets/mainwindows/application/mainwindow.cpp 3
-    \snippet widgets/mainwindows/application/mainwindow.cpp 4
+    \snippet mainwindows/application/mainwindow.cpp 3
+    \snippet mainwindows/application/mainwindow.cpp 4
 
     When the user attempts to close the window, we call the private
     function \c maybeSave() to give the user the possibility to save
@@ -121,8 +121,8 @@
     that the application will stay up and running as if nothing
     happened.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 5
-    \snippet widgets/mainwindows/application/mainwindow.cpp 6
+    \snippet mainwindows/application/mainwindow.cpp 5
+    \snippet mainwindows/application/mainwindow.cpp 6
 
     The \c newFile() slot is invoked when the user selects
     \uicontrol{File|New} from the menu. We call \c maybeSave() to save any
@@ -131,8 +131,8 @@
     update the window title and clear the
     \l{QWidget::windowModified}{windowModified} flag.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 7
-    \snippet widgets/mainwindows/application/mainwindow.cpp 8
+    \snippet mainwindows/application/mainwindow.cpp 7
+    \snippet mainwindows/application/mainwindow.cpp 8
 
     The \c open() slot is invoked when the user clicks
     \uicontrol{File|Open}. We pop up a QFileDialog asking the user to
@@ -140,23 +140,23 @@
     not an empty string), we call the private function \c loadFile()
     to actually load the file.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 9
-    \snippet widgets/mainwindows/application/mainwindow.cpp 10
+    \snippet mainwindows/application/mainwindow.cpp 9
+    \snippet mainwindows/application/mainwindow.cpp 10
 
     The \c save() slot is invoked when the user clicks
     \uicontrol{File|Save}. If the user hasn't provided a name for the file
     yet, we call \c saveAs(); otherwise, we call the private function
     \c saveFile() to actually save the file.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 11
-    \snippet widgets/mainwindows/application/mainwindow.cpp 12
+    \snippet mainwindows/application/mainwindow.cpp 11
+    \snippet mainwindows/application/mainwindow.cpp 12
 
     In \c saveAs(), we start by popping up a QFileDialog asking the
     user to provide a name. If the user clicks \uicontrol{Cancel}, the
     returned file name is empty, and we do nothing.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 13
-    \snippet widgets/mainwindows/application/mainwindow.cpp 14
+    \snippet mainwindows/application/mainwindow.cpp 13
+    \snippet mainwindows/application/mainwindow.cpp 14
 
     The application's About box is done using one statement, using
     the QMessageBox::about() static function and relying on its
@@ -169,18 +169,18 @@
     The \l{Internationalization with Qt} overview covers
     \l{QObject::tr()}{tr()} in more detail.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 15
-    \snippet widgets/mainwindows/application/mainwindow.cpp 16
+    \snippet mainwindows/application/mainwindow.cpp 15
+    \snippet mainwindows/application/mainwindow.cpp 16
 
     The \c documentWasModified() slot is invoked each time the text
     in the QPlainTextEdit changes because of user edits. We call
     QWidget::setWindowModified() to make the title bar show that the
     file was modified. How this is done varies on each platform.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 17
-    \snippet widgets/mainwindows/application/mainwindow.cpp 18
+    \snippet mainwindows/application/mainwindow.cpp 17
+    \snippet mainwindows/application/mainwindow.cpp 18
     \dots
-    \snippet widgets/mainwindows/application/mainwindow.cpp 22
+    \snippet mainwindows/application/mainwindow.cpp 22
 
     The \c createActions() private function, which is called from the
     \c MainWindow constructor, creates \l{QAction}s. The code is very
@@ -209,8 +209,8 @@
     to this when we review the \c application.qrc file that's part of
     the project.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 23
-    \snippet widgets/mainwindows/application/mainwindow.cpp 24
+    \snippet mainwindows/application/mainwindow.cpp 23
+    \snippet mainwindows/application/mainwindow.cpp 24
 
     The \uicontrol{Edit|Cut} and \uicontrol{Edit|Copy} actions must be available
     only when the QPlainTextEdit contains selected text. We disable them
@@ -218,8 +218,8 @@
     the QAction::setEnabled() slot, ensuring that the actions are
     disabled when the text editor has no selection.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 25
-    \snippet widgets/mainwindows/application/mainwindow.cpp 27
+    \snippet mainwindows/application/mainwindow.cpp 25
+    \snippet mainwindows/application/mainwindow.cpp 27
 
     Creating actions isn't sufficient to make them available to the
     user; we must also add them to the menu system. This is what \c
@@ -244,21 +244,21 @@
 
     Let's now review the toolbars:
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 30
+    \snippet mainwindows/application/mainwindow.cpp 30
 
     Creating toolbars is very similar to creating menus. The same
     actions that we put in the menus can be reused in the toolbars.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 32
-    \snippet widgets/mainwindows/application/mainwindow.cpp 33
+    \snippet mainwindows/application/mainwindow.cpp 32
+    \snippet mainwindows/application/mainwindow.cpp 33
 
     QMainWindow::statusBar() returns a pointer to the main window's
     QStatusBar widget. Like with \l{QMainWindow::menuBar()}, the
     widget is automatically created the first time the function is
     called.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 34
-    \snippet widgets/mainwindows/application/mainwindow.cpp 36
+    \snippet mainwindows/application/mainwindow.cpp 34
+    \snippet mainwindows/application/mainwindow.cpp 36
 
     The \c readSettings() function is called from the constructor to
     load the user's preferences and other application settings. The
@@ -281,16 +281,16 @@
     to call QWidget::resize() before QWidget::move(). The reason why
     is given in the \l{Window Geometry} overview.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 37
-    \snippet widgets/mainwindows/application/mainwindow.cpp 39
+    \snippet mainwindows/application/mainwindow.cpp 37
+    \snippet mainwindows/application/mainwindow.cpp 39
 
     The \c writeSettings() function is called from \c closeEvent().
     Writing settings is similar to reading them, except simpler. The
     arguments to the QSettings constructor must be the same as in \c
     readSettings().
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 40
-    \snippet widgets/mainwindows/application/mainwindow.cpp 41
+    \snippet mainwindows/application/mainwindow.cpp 40
+    \snippet mainwindows/application/mainwindow.cpp 41
 
     The \c maybeSave() function is called to save pending changes. If
     there are pending changes, it pops up a QMessageBox giving the
@@ -307,8 +307,8 @@
     return value and stop whatever it was doing if the return value
     is \c false.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 42
-    \snippet widgets/mainwindows/application/mainwindow.cpp 43
+    \snippet mainwindows/application/mainwindow.cpp 42
+    \snippet mainwindows/application/mainwindow.cpp 43
 
     In \c loadFile(), we use QFile and QTextStream to read in the
     data. The QFile object provides access to the bytes stored in a
@@ -335,15 +335,15 @@
     which we'll cover in a moment, and we display the string "File
     loaded" in the status bar for 2 seconds (2000 milliseconds).
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 44
-    \snippet widgets/mainwindows/application/mainwindow.cpp 45
+    \snippet mainwindows/application/mainwindow.cpp 44
+    \snippet mainwindows/application/mainwindow.cpp 45
 
     Saving a file is very similar to loading one. Here, the
     QFile::Text flag ensures that on Windows, "\\n" is converted into
     "\\r\\n" to conform to the Windows convension.
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 46
-    \snippet widgets/mainwindows/application/mainwindow.cpp 47
+    \snippet mainwindows/application/mainwindow.cpp 46
+    \snippet mainwindows/application/mainwindow.cpp 47
 
     The \c setCurrentFile() function is called to reset the state of
     a few variables when a file is loaded or saved, or when the user
@@ -357,15 +357,15 @@
     QWidget::setWindowTitle() call shortens the file name to exclude
     the path. Here's the function:
 
-    \snippet widgets/mainwindows/application/mainwindow.cpp 48
-    \snippet widgets/mainwindows/application/mainwindow.cpp 49
+    \snippet mainwindows/application/mainwindow.cpp 48
+    \snippet mainwindows/application/mainwindow.cpp 49
 
     \section1 The main() Function
 
     The \c main() function for this application is typical of
     applications that contain one main window:
 
-    \snippet widgets/mainwindows/application/main.cpp 0
+    \snippet mainwindows/application/main.cpp 0
 
     \section1 The Resource File
 
@@ -379,7 +379,7 @@
     disk. Here's the \c application.qrc file that's used by the
     Application example:
 
-    \quotefile widgets/mainwindows/application/application.qrc
+    \quotefile mainwindows/application/application.qrc
 
     The \c .png files listed in the \c application.qrc file are files
     that are part of the Application example's source tree. Paths are
@@ -389,7 +389,7 @@
     The resource file must be mentioned in the \c application.pro
     file  so that \c qmake knows about it:
 
-    \snippet widgets/mainwindows/application/application.pro 0
+    \snippet mainwindows/application/application.pro 0
 
     \c qmake will produce make rules to generate a file called \c
     qrc_application.cpp that is linked into the application. This

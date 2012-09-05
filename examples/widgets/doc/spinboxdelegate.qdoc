@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/itemviews/spinboxdelegate
+    \example itemviews/spinboxdelegate
     \title Spin Box Delegate Example
 
     The Spin Box Delegate example shows how to create an editor for a custom delegate in
@@ -49,7 +49,7 @@
 
     The definition of the delegate is as follows:
 
-    \snippet widgets/itemviews/spinboxdelegate/delegate.h 0
+    \snippet itemviews/spinboxdelegate/delegate.h 0
 
     The delegate class declares only those functions that are needed to
     create an editor widget, display it at the correct location in a view,
@@ -66,7 +66,7 @@
     call the base class's constructor with the parent QObject as its
     argument:
 
-    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 0
+    \snippet itemviews/spinboxdelegate/delegate.cpp 0
 
     Since the delegate is a subclass of QItemDelegate, the data it retrieves
     from the model is displayed in a default style, and we do not need to
@@ -76,7 +76,7 @@
     spin box that restricts values from the model to integers from 0 to 100
     inclusive.
 
-    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 1
+    \snippet itemviews/spinboxdelegate/delegate.cpp 1
 
     We install an event filter on the spin box to ensure that it behaves in
     a way that is consistent with other delegates. The implementation for
@@ -85,7 +85,7 @@
     The \c setEditorData() function reads data from the model, converts it
     to an integer value, and writes it to the editor widget.
 
-    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 2
+    \snippet itemviews/spinboxdelegate/delegate.cpp 2
 
     Since the view treats delegates as ordinary QWidget instances, we have
     to use a static cast before we can set the value in the spin box.
@@ -93,7 +93,7 @@
     The \c setModelData() function reads the contents of the spin box, and
     writes it to the model.
 
-    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 3
+    \snippet itemviews/spinboxdelegate/delegate.cpp 3
 
     We call \l{QSpinBox::interpretText()}{interpretText()} to make sure that
     we obtain the most up-to-date value in the spin box.
@@ -102,7 +102,7 @@
     geometry using the information supplied in the style option. This is the
     minimum that the delegate must do in this case.
 
-    \snippet widgets/itemviews/spinboxdelegate/delegate.cpp 4
+    \snippet itemviews/spinboxdelegate/delegate.cpp 4
 
     More complex editor widgets may divide the rectangle available in
     \c{option.rect} between different child widgets if required.
@@ -118,7 +118,7 @@
     model to hold some data, set up a table view to use the data in the
     model, and construct a custom delegate to use for editing:
 
-    \snippet widgets/itemviews/spinboxdelegate/main.cpp 0
+    \snippet itemviews/spinboxdelegate/main.cpp 0
 
     The table view is informed about the delegate, and will use it to
     display each of the items. Since the delegate is a subclass of
@@ -127,13 +127,13 @@
 
     We insert some arbitrary data into the model for demonstration purposes:
 
-    \snippet widgets/itemviews/spinboxdelegate/main.cpp 1
-    \snippet widgets/itemviews/spinboxdelegate/main.cpp 2
+    \snippet itemviews/spinboxdelegate/main.cpp 1
+    \snippet itemviews/spinboxdelegate/main.cpp 2
 
     Finally, the table view is displayed with a window title, and we start
     the application's event loop:
 
-    \snippet widgets/itemviews/spinboxdelegate/main.cpp 3
+    \snippet itemviews/spinboxdelegate/main.cpp 3
 
     Each of the cells in the table can now be edited in the usual way, but
     the spin box ensures that the data returned to the model is always

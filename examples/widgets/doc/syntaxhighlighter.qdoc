@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/richtext/syntaxhighlighter
+    \example richtext/syntaxhighlighter
     \title Syntax Highlighter Example
 
     The Syntax Highlighter example shows how to perform simple syntax
@@ -53,7 +53,7 @@
 
     \section1 Highlighter Class Definition
 
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.h 0
+    \snippet richtext/syntaxhighlighter/highlighter.h 0
 
     To provide your own syntax highlighting, you must subclass
     QSyntaxHighlighter, reimplement the \l
@@ -79,8 +79,8 @@
     applied. In this example, we have also chosen to define our
     highlighting rules in the constructor:
 
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 0
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 1
+    \snippet richtext/syntaxhighlighter/highlighter.cpp 0
+    \snippet richtext/syntaxhighlighter/highlighter.cpp 1
 
     First we define a keyword rule which recognizes the most common
     C++ keywords. We give the \c keywordFormat a bold, dark blue
@@ -88,11 +88,11 @@
     format to a HighlightingRule object and append the object to our
     list of rules.
 
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 2
+    \snippet richtext/syntaxhighlighter/highlighter.cpp 2
     \codeline
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 4
+    \snippet richtext/syntaxhighlighter/highlighter.cpp 4
     \codeline
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 5
+    \snippet richtext/syntaxhighlighter/highlighter.cpp 5
 
     Then we create a format that we will apply to Qt class names. The
     class names will be rendered with a dark magenta color and a bold
@@ -106,9 +106,9 @@
     expressions and are stored in HighlightingRule objects with the
     associated format.
 
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 3
+    \snippet richtext/syntaxhighlighter/highlighter.cpp 3
     \codeline
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 6
+    \snippet richtext/syntaxhighlighter/highlighter.cpp 6
 
     The C++ language has two variations of comments: The single line
     comment (\c //) and the multiline comment (\c{/*...*}\c{/}). The single
@@ -126,7 +126,7 @@
     function. At this point we only specify the multiline comment's
     color.
 
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 7
+    \snippet richtext/syntaxhighlighter/highlighter.cpp 7
 
     The highlightBlock() function is called automatically whenever it
     is necessary by the rich text engine, i.e. when there are text
@@ -154,7 +154,7 @@
     This process is repeated until the last occurrence of the pattern
     in the current text block is found.
 
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 8
+    \snippet richtext/syntaxhighlighter/highlighter.cpp 8
 
     To deal with constructs that can span several text blocks (like
     the C++ multiline comment), it is necessary to know the end state
@@ -180,7 +180,7 @@
     syntax highlighting rules are applied we initialize the current
     block state to 0.
 
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 9
+    \snippet richtext/syntaxhighlighter/highlighter.cpp 9
 
     If the previous block state was "in comment" (\c
     {previousBlockState() == 1}), we start the search for an end
@@ -188,8 +188,8 @@
     previousBlockState() returns 0, we start the search at the
     location of the first occurrence of a start expression.
 
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 10
-    \snippet widgets/richtext/syntaxhighlighter/highlighter.cpp 11
+    \snippet richtext/syntaxhighlighter/highlighter.cpp 10
+    \snippet richtext/syntaxhighlighter/highlighter.cpp 11
 
     When an end expression is found, we calculate the length of the
     comment and apply the multiline comment format. Then we search for
@@ -206,7 +206,7 @@
     application with an instance of the class and pass it the document
     upon which you want the highlighting to be applied.
 
-    \snippet widgets/richtext/syntaxhighlighter/mainwindow.h 0
+    \snippet richtext/syntaxhighlighter/mainwindow.h 0
 
     In this example we declare a pointer to a \c Highlighter instance
     which we later will initialize in the private \c setupEditor()
@@ -219,12 +219,12 @@
     central widget of the application. Finally we set the main
     window's title.
 
-    \snippet widgets/richtext/syntaxhighlighter/mainwindow.cpp 0
+    \snippet richtext/syntaxhighlighter/mainwindow.cpp 0
 
     We initialize and install the \c Highlighter object in the private
     setupEditor() convenience function:
 
-    \snippet widgets/richtext/syntaxhighlighter/mainwindow.cpp 1
+    \snippet richtext/syntaxhighlighter/mainwindow.cpp 1
 
     First we create the font we want to use in the editor, then we
     create the editor itself which is an instance of the QTextEdit

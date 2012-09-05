@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/itemviews/addressbook
+    \example itemviews/addressbook
     \title Address Book Example
 
     The address book example shows how to use proxy models to display
@@ -87,7 +87,7 @@
     \c insertRows(), \c removeRows(), \c setData() and \c flags()
     functions.
 
-    \snippet widgets/itemviews/addressbook/tablemodel.h 0
+    \snippet itemviews/addressbook/tablemodel.h 0
 
     Two constructors are used, a default constructor which uses
     \c TableModel's own \c {QList<QPair<QString, QString>>} and one
@@ -101,7 +101,7 @@
     The second constructor initializes the list of pairs in the
     model, with the parameter value.
 
-    \snippet widgets/itemviews/addressbook/tablemodel.cpp 0
+    \snippet itemviews/addressbook/tablemodel.cpp 0
 
     The \c rowCount() and \c columnCount() functions return the
     dimensions of the model. Whereas, \c rowCount()'s value will vary
@@ -112,7 +112,7 @@
     \note The \c Q_UNUSED() macro prevents the compiler from
     generating warnings regarding unused parameters.
 
-    \snippet widgets/itemviews/addressbook/tablemodel.cpp 1
+    \snippet itemviews/addressbook/tablemodel.cpp 1
 
     The \c data() function returns either a \b Name or
     \b {Address}, based on the contents of the model index
@@ -121,7 +121,7 @@
     by the QItemSelectionModel, which will be explained with
     \c AddressWidget.
 
-    \snippet widgets/itemviews/addressbook/tablemodel.cpp 2
+    \snippet itemviews/addressbook/tablemodel.cpp 2
 
     The \c headerData() function displays the table's header,
     \b Name and \b Address. If you require numbered entries
@@ -129,21 +129,21 @@
     have hidden in this example (see the \c AddressWidget
     implementation).
 
-    \snippet widgets/itemviews/addressbook/tablemodel.cpp 3
+    \snippet itemviews/addressbook/tablemodel.cpp 3
 
     The \c insertRows() function is called before new data is added,
     otherwise the data will not be displayed. The
     \c beginInsertRows() and \c endInsertRows() functions are called
     to ensure all connected views are aware of the changes.
 
-    \snippet widgets/itemviews/addressbook/tablemodel.cpp 4
+    \snippet itemviews/addressbook/tablemodel.cpp 4
 
     The \c removeRows() function is called to remove data. Again,
     \l{QAbstractItemModel::}{beginRemoveRows()} and
     \l{QAbstractItemModel::}{endRemoveRows()} are called to ensure
     all connected views are aware of the changes.
 
-    \snippet widgets/itemviews/addressbook/tablemodel.cpp 5
+    \snippet itemviews/addressbook/tablemodel.cpp 5
 
     The \c setData() function is the function that inserts data into
     the table, item by item and not row by row. This means that to
@@ -152,12 +152,12 @@
     \l{QAbstractItemModel::}{dataChanged()} signal as it tells all
     connected views to update their displays.
 
-    \snippet widgets/itemviews/addressbook/tablemodel.cpp 6
+    \snippet itemviews/addressbook/tablemodel.cpp 6
 
     The \c flags() function returns the item flags for the given
     index.
 
-    \snippet widgets/itemviews/addressbook/tablemodel.cpp 7
+    \snippet itemviews/addressbook/tablemodel.cpp 7
 
     We set the Qt::ItemIsEditable flag because we want to allow the
     \c TableModel to be edited. Although for this example we don't
@@ -171,7 +171,7 @@
     the contacts to a file and read them back. Further explanation is
     given with \c AddressWidget.
 
-    \snippet widgets/itemviews/addressbook/tablemodel.cpp 8
+    \snippet itemviews/addressbook/tablemodel.cpp 8
 
 
     \section1 AddressWidget Class Definition
@@ -181,7 +181,7 @@
     and remove contacts, to save the contacts to a file and to load
     them from a file.
 
-    \snippet widgets/itemviews/addressbook/addresswidget.h 0
+    \snippet itemviews/addressbook/addresswidget.h 0
 
     \c AddressWidget extends QTabWidget in order to hold 10 tabs
     (\c NewAddressTab and the 9 alphabet group tabs) and also
@@ -198,7 +198,7 @@
     used to indicate that the address book is empty, is added
     and the rest of the 9 tabs are set up with \c setupTabs().
 
-    \snippet widgets/itemviews/addressbook/addresswidget.cpp 0
+    \snippet itemviews/addressbook/addresswidget.cpp 0
 
     The \c setupTabs() function is used to set up the 9 alphabet
     group tabs, table views and proxy models in
@@ -217,7 +217,7 @@
     is automatically given a QItemSelectionModel that keeps track
     of the selected indexes.
 
-    \snippet widgets/itemviews/addressbook/addresswidget.cpp 1
+    \snippet itemviews/addressbook/addresswidget.cpp 1
 
     The QItemSelectionModel class provides a
     \l{QItemSelectionModel::selectionChanged()}{selectionChanged}
@@ -245,14 +245,14 @@
     \c AddDialog object and then calls the second \c addEntry()
     function to actually add the contact to \c table.
 
-    \snippet widgets/itemviews/addressbook/addresswidget.cpp 2
+    \snippet itemviews/addressbook/addresswidget.cpp 2
 
     Basic validation is done in the second \c addEntry() function to
     prevent duplicate entries in the address book. As mentioned with
     \c TableModel, this is part of the reason why we require the
     getter method \c getList().
 
-    \snippet widgets/itemviews/addressbook/addresswidget.cpp 3
+    \snippet itemviews/addressbook/addresswidget.cpp 3
 
     If the model does not already contain an entry with the same name,
     we call \c setData() to insert the name and address into the
@@ -271,14 +271,14 @@
     \c selectionModel from the \c tableView to obtain the selected
     indexes.
 
-    \snippet widgets/itemviews/addressbook/addresswidget.cpp 4a
+    \snippet itemviews/addressbook/addresswidget.cpp 4a
 
     Next we extract data from the row the user intends to 
     edit. This data is displayed in an instance of \c AddDialog
     with a different window title. The \c table is only
     updated if changes have been made to data in \c aDialog.
 
-    \snippet widgets/itemviews/addressbook/addresswidget.cpp 4b
+    \snippet itemviews/addressbook/addresswidget.cpp 4b
 
     \image addressbook-editdialog.png Screenshot of Dialog to Edit a Contact
 
@@ -288,7 +288,7 @@
     \c newAddressTab is re-added to the \c AddressWidget only if
     the user removes all the contacts in the address book.
 
-    \snippet widgets/itemviews/addressbook/addresswidget.cpp 5
+    \snippet itemviews/addressbook/addresswidget.cpp 5
 
     The \c writeToFile() function is used to save a file containing
     all the contacts in the address book. The file is saved in a
@@ -296,7 +296,7 @@
     are written to \c file using QDataStream. If the file cannot be
     opened, a QMessageBox is displayed with the related error message.
 
-    \snippet widgets/itemviews/addressbook/addresswidget.cpp 6
+    \snippet itemviews/addressbook/addresswidget.cpp 6
 
     The \c readFromFile() function loads a file containing all the
     contacts in the address book, previously saved using
@@ -304,7 +304,7 @@
     \c{.dat} file into a list of pairs and each of these is added
     using \c addEntry().
 
-    \snippet widgets/itemviews/addressbook/addresswidget.cpp 7
+    \snippet itemviews/addressbook/addresswidget.cpp 7
 
 
     \section1 NewAddressTab Class Definition
@@ -319,7 +319,7 @@
     The \c NewAddressTab class extends QWidget and contains a QLabel
     and QPushButton.
 
-    \snippet widgets/itemviews/addressbook/newaddresstab.h 0
+    \snippet itemviews/addressbook/newaddresstab.h 0
 
 
     \section1 NewAddressTab Class Implementation
@@ -328,7 +328,7 @@
     \c descriptionLabel and connects the \c{addButton}'s signal to
     the \c{addEntry()} slot.
 
-    \snippet widgets/itemviews/addressbook/newaddresstab.cpp 0
+    \snippet itemviews/addressbook/newaddresstab.cpp 0
 
     The \c addEntry() function is similar to \c AddressWidget's
     \c addEntry() in the sense that both functions instantiate an
@@ -336,7 +336,7 @@
     to \c AddressWidget's \c addEntry() slot by emitting the
     \c sendDetails() signal.
 
-    \snippet widgets/itemviews/addressbook/newaddresstab.cpp 1
+    \snippet itemviews/addressbook/newaddresstab.cpp 1
 
     \image signals-n-slots-aw-nat.png
 
@@ -347,7 +347,7 @@
     with a QLineEdit and a QTextEdit to input data into the
     address book.
 
-    \snippet widgets/itemviews/addressbook/adddialog.h 0
+    \snippet itemviews/addressbook/adddialog.h 0
 
     \image addressbook-adddialog.png
 
@@ -357,7 +357,7 @@
     The \c AddDialog's constructor sets up the user interface,
     creating the necessary widgets and placing them into layouts.
 
-    \snippet widgets/itemviews/addressbook/adddialog.cpp 0
+    \snippet itemviews/addressbook/adddialog.cpp 0
 
     To give the dialog the desired behavior, we connect the \uicontrol OK
     and \uicontrol Cancel buttons to the dialog's \l{QDialog::}{accept()} and
@@ -376,7 +376,7 @@
          \li \inlineimage addressbook-toolsmenu.png
     \endtable
 
-    \snippet widgets/itemviews/addressbook/mainwindow.h 0
+    \snippet itemviews/addressbook/mainwindow.h 0
 
     The \c MainWindow class uses an \c AddressWidget as its central
     widget and provides the File menu with \uicontrol Open, \uicontrol Close and
@@ -391,7 +391,7 @@
     sets it as its central widget and calls the \c createMenus()
     function.
 
-    \snippet widgets/itemviews/addressbook/mainwindow.cpp 0
+    \snippet itemviews/addressbook/mainwindow.cpp 0
 
     The \c createMenus() function sets up the \uicontrol File and
     \uicontrol Tools menus, connecting the actions to their respective slots.
@@ -400,10 +400,10 @@
     address book. They are only enabled when one or more contacts
     are added.
 
-    \snippet widgets/itemviews/addressbook/mainwindow.cpp 1a
+    \snippet itemviews/addressbook/mainwindow.cpp 1a
     \dots
     \codeline
-    \snippet widgets/itemviews/addressbook/mainwindow.cpp 1b
+    \snippet itemviews/addressbook/mainwindow.cpp 1b
 
     Apart from connecting all the actions' signals to their
     respective slots, we also connect \c AddressWidget's
@@ -415,13 +415,13 @@
     contacts. This function is a slot connected to \c openAct in the
     \uicontrol File menu.
 
-    \snippet widgets/itemviews/addressbook/mainwindow.cpp 2
+    \snippet itemviews/addressbook/mainwindow.cpp 2
 
     The \c saveFile() function allows the user to save a file with
     the \l{QFileDialog::getSaveFileName()}{save file dialog}. This function
     is a slot connected to \c saveAct in the \uicontrol File menu.
 
-    \snippet widgets/itemviews/addressbook/mainwindow.cpp 3
+    \snippet itemviews/addressbook/mainwindow.cpp 3
 
     The \c updateActions() function enables and disables
     \uicontrol{Edit Entry...} and \uicontrol{Remove Entry} depending on the contents of
@@ -430,7 +430,7 @@
     is connected to the \c AddressWidget's \c selectionChanged()
     signal.
 
-    \snippet widgets/itemviews/addressbook/mainwindow.cpp 4
+    \snippet itemviews/addressbook/mainwindow.cpp 4
 
 
     \section1 main() Function
@@ -438,5 +438,5 @@
     The main function for the address book instantiates QApplication
     and opens a \c MainWindow before running the event loop.
 
-    \snippet widgets/itemviews/addressbook/main.cpp 0
+    \snippet itemviews/addressbook/main.cpp 0
 */
