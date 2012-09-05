@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLVISITOR_H
-#define QMLVISITOR_H
+#ifndef QMLMARKUPVISITOR_H
+#define QMLMARKUPVISITOR_H
 
 #include <QString>
 #include "qqmljsastvisitor_p.h"
