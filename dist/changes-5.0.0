@@ -424,6 +424,12 @@ QtCore
   - [QTBUG-24307] The initial state is now entered before the started() signal is emitted.
   - [QTBUG-25959] State entry and exit order is now SCXML spec-compliant.
 
+* qDebug(), qWarning(), qCritical(), and qFatal() were changed to macros that track the origin
+  of the message in source code. Whether this and other meta-information is printed can be
+  configured  (for the default message handler) by setting the new QT_MESSAGE_PATTERN environment
+  variable. qInstallMsgHandler() has been deprecated, and should be replaced with
+  qInstallMessageHandler().
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via
