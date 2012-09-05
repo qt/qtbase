@@ -18,6 +18,7 @@ qlocale \
 qnetworkaccessmanager/qget \
 qnetworkconfigurationmanager \
 qnetworkreply \
+qscreen \
 qssloptions \
 qtabletevent \
 qtbug-8933 \

@@ -1,0 +1,41 @@
+To test whether QScreen properties are updated properly when the screen
+actually changes, you will need to run some kind of control panel to make
+changes, and this test program at the same time. E.g. on Linux, you can use
+xrandr with various parameters on the command line, but there is also a nice
+GUI called arandr which will probably work on any distro. Real-world users
+would probably use the Gnome or KDE control panels, so that's also a good way
+to test. On OSX you can make changes in System Preferences | Displays, and you
+can also configure it to put a "monitors" icon on the menubar with a drop-down
+menu for convenience. On Windows you can right-click on the desktop to get
+display settings.
+
+Note that on Linux, if you have one graphics card with two outputs, typically
+the two monitors connected to the outputs are combined into a single virtual
+"screen", but each screen has multiple outputs. In that case there will be a
+unique QScreen for each output, and they will be virtual siblings. The virtual
+geometry depends on how you arrange the monitors (second one is to the right,
+or above the first one, for example). It should be about the same if you are
+using two graphics cards but using Xinerama to combine them. This test app will
+create two windows, and will center one each screen, by setting the geometry.
+
+Alternatively you can configure xorg.conf to create separate screens for each
+graphics card; then the mouse cursor can move between the screens, but
+application windows cannot: each app needs to be started up on the screen that
+you want to run it on. In either case, ideally this test app ought to create
+two windows, one on each screen; but in fact, it can do that only if the
+screens are virtual siblings. If they are on different Displays, the second
+Display is not accessible to the QXcbConnection instance which was createad on
+the first Display. It can be considered a known bug that the API appears to
+make this possible (you would think QWindow::setScreen might work) but it
+isn't possible.
+
+The physical size of the screen is considered to be a constant. This can create
+discrepancies in DPI when orientation is changed, or when the screen is
+actually a VNC server and you change the resolution. So maybe
+QScreen::physicalSize should also have a notifier, but that doesn't physically
+make sense except when the screen is virtual.
+
+Another case is running two separate X servers on two graphics cards. In that
+case they really do not know about each other, even at the xlib/xcb level, so
+this test is irrelevant. You can run the test independently on each X server,
+but you will just get one QScreen instance on each.
