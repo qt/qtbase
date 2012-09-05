@@ -327,7 +327,7 @@ QStringList QSessionManager::restartCommand() const
 }
 
 /*!
-    Sets the discard command to the given \a list.
+    Sets the discard command to the given \a command.
 
     \sa discardCommand(), setRestartCommand()
 */

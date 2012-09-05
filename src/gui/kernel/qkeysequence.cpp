@@ -372,7 +372,6 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \value PartialMatch The key sequences match partially, but are not
     the same.
     \value ExactMatch The key sequences are the same.
-    \omitvalue Identical
 */
 
 /*!
@@ -923,8 +922,9 @@ QKeySequence::QKeySequence()
 }
 
 /*!
-    Creates a key sequence from the \a key string. For example
-    "Ctrl+O" gives CTRL+'O'. The strings "Ctrl",
+    Creates a key sequence from the \a key string, based on \a format.
+
+    For example "Ctrl+O" gives CTRL+'O'. The strings "Ctrl",
     "Shift", "Alt" and "Meta" are recognized, as well as their
     translated equivalents in the "QShortcut" context (using
     QObject::tr()).
@@ -932,10 +932,8 @@ QKeySequence::QKeySequence()
     Up to four key codes may be entered by separating them with
     commas, e.g. "Alt+X,Ctrl+S,Q".
 
-    \a key should be in NativeText format.
-
-    This constructor is typically used with \l{QObject::tr()}{tr}(), so that shortcut keys can be replaced in
-    translations:
+    This constructor is typically used with \l{QObject::tr()}{tr}(), so
+    that shortcut keys can be replaced in translations:
 
     \snippet code/src_gui_kernel_qkeysequence.cpp 2
 

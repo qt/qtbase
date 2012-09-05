@@ -121,7 +121,7 @@ QTransform QInputMethod::inputItemTransform() const
 }
 
 /*!
-    Sets the transformation from input item coordinates to the window coordinates.
+    Sets the transformation from input item coordinates to window coordinates to be \a transform.
     Item transform needs to be updated by the focused window like QQuickCanvas whenever
     item is moved inside the scene.
 */
@@ -230,7 +230,8 @@ bool QInputMethod::isVisible() const
 
 /*!
     Controls the keyboard visibility. Equivalent
-    to calling show() and hide() functions.
+    to calling show() (if \a visible is \c true)
+    or hide() (if \a visible is \c false).
 
     \sa show(), hide()
 */
@@ -345,9 +346,20 @@ void QInputMethod::commit()
 }
 
 /*!
+    \enum QInputMethod::Action
+
+    Indicates the kind of action performed by the user.
+
+    \value Click        A normal click/tap
+    \value ContextMenu  A context menu click/tap (e.g. right-button or tap-and-hold)
+
+    \sa invokeAction()
+*/
+
+/*!
     Called by the input item when the word currently being composed is tapped by
-    the user. Input methods often use this information to offer more word
-    suggestions to the user.
+    the user, as indicated by the action \a a and the given \a cursorPosition.
+    Input methods often use this information to offer more word suggestions to the user.
 */
 void QInputMethod::invokeAction(Action a, int cursorPosition)
 {

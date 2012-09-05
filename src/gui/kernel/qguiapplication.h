@@ -80,7 +80,11 @@ class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
     Q_PROPERTY(bool quitOnLastWindowClosed  READ quitOnLastWindowClosed WRITE setQuitOnLastWindowClosed)
 
 public:
+#ifdef Q_QDOC
+    QGuiApplication(int &argc, char **argv);
+#else
     QGuiApplication(int &argc, char **argv, int = ApplicationFlags);
+#endif
     virtual ~QGuiApplication();
 
     static void setApplicationDisplayName(const QString &name);

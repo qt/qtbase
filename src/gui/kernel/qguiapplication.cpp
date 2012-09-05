@@ -334,7 +334,11 @@ static inline void clearFontUnlocked()
 
     \sa arguments()
 */
+#ifdef Q_QDOC
+QGuiApplication::QGuiApplication(int &argc, char **argv)
+#else
 QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
+#endif
     : QCoreApplication(*new QGuiApplicationPrivate(argc, argv, flags))
 {
     d_func()->init();
@@ -642,6 +646,15 @@ QList<QScreen *> QGuiApplication::screens()
 {
     return QGuiApplicationPrivate::screen_list;
 }
+
+/*!
+    \fn void QGuiApplication::screenAdded(QScreen *screen)
+
+    This signal is emitted whenever a new screen \a screen has been added to the system.
+
+    \sa screens(), primaryScreen()
+*/
+
 
 /*!
     Returns the top level window at the given position \a pos, if any.
@@ -2179,6 +2192,17 @@ bool QGuiApplication::quitOnLastWindowClosed()
 }
 
 
+/*!
+    \fn void QGuiApplication::lastWindowClosed()
+
+    This signal is emitted from exec() when the last visible
+    primary window (i.e. window with no parent) is closed.
+
+    By default, QGuiApplication quits after this signal is emitted. This feature
+    can be turned off by setting \l quitOnLastWindowClosed to false.
+
+    \sa QWindow::close(), QWindow::isTopLevel()
+*/
 
 void QGuiApplicationPrivate::emitLastWindowClosed()
 {

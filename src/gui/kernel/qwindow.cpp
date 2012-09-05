@@ -1489,6 +1489,7 @@ void QWindow::hideEvent(QHideEvent *ev)
 
 /*!
     Override this to handle any event (\a ev) sent to the window.
+    Return \c true if the event was recognized and processed.
 
     Remember to call the base class version if you wish for mouse events,
     key events, resize events, etc to be dispatched as usual.
