@@ -11,6 +11,9 @@ DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x67000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
+# otherwise mingw headers do not declare common functions like putenv
+win32-g++*:QMAKE_CXXFLAGS_CXX11 = -std=gnu++0x
+
 load(qt_module)
 
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
