@@ -183,7 +183,7 @@ public:
 { \
     /*creator*/ 0, \
     /*deleter*/ 0, \
-    QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL() \
+    QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(void) \
     /*constructor*/ 0, \
     /*destructor*/ 0, \
     /*size*/ 0, \
