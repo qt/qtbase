@@ -2723,8 +2723,10 @@ void QTextEngine::resolveAdditionalFormats() const
 
     QVarLengthArray<int, 64> addFormatSortedByStart;
     addFormatSortedByStart.reserve(specialData->addFormats.count());
-    for (int i = 0; i < specialData->addFormats.count(); ++i)
-        addFormatSortedByStart.append(i);
+    for (int i = 0; i < specialData->addFormats.count(); ++i) {
+        if (specialData->addFormats.at(i).length >= 0)
+            addFormatSortedByStart.append(i);
+    }
     QVarLengthArray<int, 64> addFormatSortedByEnd = addFormatSortedByStart;
     qSort(addFormatSortedByStart.begin(), addFormatSortedByStart.end(),
           FormatRangeComparatorByStart(specialData->addFormats));
