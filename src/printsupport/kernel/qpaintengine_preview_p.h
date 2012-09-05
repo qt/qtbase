@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPREVIEWPAINTENGINE_P_H
-#define QPREVIEWPAINTENGINE_P_H
+#ifndef QPAINTENGINE_PREVIEW_P_H
+#define QPAINTENGINE_PREVIEW_P_H
 
 //
 //  W A R N I N G

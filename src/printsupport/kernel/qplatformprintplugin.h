@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMPRINTERSUPPORTPLUGIN_H
-#define QPLATFORMPRINTERSUPPORTPLUGIN_H
+#ifndef QPLATFORMPRINTPLUGIN_H
+#define QPLATFORMPRINTPLUGIN_H
 
 //
 //  W A R N I N G
@@ -80,4 +80,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QPLATFORMPRINTERSUPPORTPLUGIN_H
+#endif // QPLATFORMPRINTPLUGIN_H

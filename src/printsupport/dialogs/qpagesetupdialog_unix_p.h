@@ -38,8 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QPAGESETUPWIDGET_H
-#define QPAGESETUPWIDGET_H
+#ifndef QPAGESETUPDIALOG_UNIX_P_H
+#define QPAGESETUPDIALOG_UNIX_P_H
 
 //
 //  W A R N I N G
