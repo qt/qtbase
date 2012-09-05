@@ -3819,7 +3819,7 @@ fi
 
 # Detect C++11 support
 if [ "$CFG_CXX11" != "no" ]; then
-    if compileTest unix/c++11 "C++11"; then
+    if compileTest common/c++11 "C++11"; then
         CFG_CXX11="yes"
     elif [ "$CFG_CXX11" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
         echo "C++11 support cannot be enabled due to functionality tests!"

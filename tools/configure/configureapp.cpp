@@ -272,6 +272,8 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "BUILDDEV" ]        = "no";
 
+    dictionary[ "C++11" ]           = "auto";
+
     dictionary[ "SHARED" ]          = "yes";
 
     dictionary[ "ZLIB" ]            = "auto";
@@ -452,7 +454,10 @@ void Configure::parseCmdLine()
             dictionary[ "BUILDALL" ] = "yes";
         else if (configCmdLine.at(i) == "-force-debug-info")
             dictionary[ "FORCEDEBUGINFO" ] = "yes";
-
+        else if (configCmdLine.at(i) == "-c++11")
+            dictionary[ "C++11" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-c++11")
+            dictionary[ "C++11" ] = "no";
         else if (configCmdLine.at(i) == "-shared")
             dictionary[ "SHARED" ] = "yes";
         else if (configCmdLine.at(i) == "-static")
@@ -1597,6 +1602,9 @@ bool Configure::displayHelp()
         desc("OPENSOURCE", "opensource", "-opensource",   "Compile and link the Open-Source Edition of Qt.");
         desc("COMMERCIAL", "commercial", "-commercial",   "Compile and link the Commercial Edition of Qt.\n");
 
+        desc("C++11", "yes", "-c++11",                  "Compile Qt with C++11 support enabled.");
+        desc("C++11", "no", "-no-c++11",                "Do not compile Qt with C++11 support enabled.\n");
+
         desc("SHARED", "yes",   "-shared",              "Create and use shared Qt libraries.");
         desc("SHARED", "no",    "-static",              "Create and use static Qt libraries.\n");
 
@@ -2044,6 +2052,11 @@ bool Configure::checkAvailability(const QString &part)
 */
 void Configure::autoDetection()
 {
+    if (dictionary["C++11"] == "auto") {
+        if (!dictionary["QMAKESPEC"].contains("msvc"))
+            dictionary["C++11"] = tryCompileProject("common/c++11") ? "yes" : "no";
+    }
+
     // Style detection
     if (dictionary["STYLE_WINDOWSXP"] == "auto")
         dictionary["STYLE_WINDOWSXP"] = checkAvailability("STYLE_WINDOWSXP") ? defaultTo("STYLE_WINDOWSXP") : "no";
@@ -2150,6 +2163,18 @@ void Configure::autoDetection()
 
 bool Configure::verifyConfiguration()
 {
+    if (dictionary["C++11"] != "auto"
+            && dictionary["QMAKESPEC"].contains("msvc")) {
+        cout << "WARNING: Qt does not support disabling or enabling any existing C++11 support "
+                "with MSVC compilers.";
+        if (dictionary["C++11"] == "yes")
+            cout << "Therefore -c++11 is ignored." << endl << endl;
+        else
+            cout << "Therefore -no-c++11 is ignored." << endl << endl;
+
+        dictionary["C++11"] = "auto";
+    }
+
     if (dictionary["SQL_SQLITE_LIB"] == "no" && dictionary["SQL_SQLITE"] != "no") {
         cout << "WARNING: Configure could not detect the presence of a system SQLite3 lib." << endl
              << "Configure will therefore continue with the SQLite3 lib bundled with Qt." << endl
@@ -2255,6 +2280,9 @@ void Configure::generateOutputVars()
             qtConfig += "debug_and_release build_all debug";
         qtConfig += "release";
     }
+
+    if (dictionary[ "C++11" ] == "yes")
+        qtConfig += "c++11";
 
     if (dictionary[ "SHARED" ] == "no")
         qtConfig += "static";
@@ -3227,6 +3255,7 @@ void Configure::displayConfig()
     }
     if (dictionary[ "BUILD" ] == "release" || dictionary[ "BUILDALL" ] == "yes")
         sout << "Force debug info............" << dictionary[ "FORCEDEBUGINFO" ] << endl;
+    sout << "C++11 support..............." << dictionary[ "C++11" ] << endl;
     sout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
     sout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
     sout << "RTTI support................" << dictionary[ "RTTI" ] << endl;
