@@ -141,7 +141,8 @@ public:
 void tst_QGLThreads::swapInThread()
 {
 #ifdef Q_OS_MAC
-    QSKIP("OpenGL threading tests are currently disabled on mac as they were causing reboots");
+    // The test is crashing but there are risks of reboot so keeping QSKIP here.
+    QSKIP("QTBUG-22361");
 #endif
 
     QGLFormat format;
@@ -250,7 +251,8 @@ private:
 void tst_QGLThreads::textureUploadInThread()
 {
 #ifdef Q_OS_MAC
-    QSKIP("OpenGL threading tests are currently disabled on mac as they were causing reboots");
+    // The test is crashing but there are risks of reboot so keeping QSKIP here.
+    QSKIP("QTBUG-22361");
 #endif
 
     TextureDisplay display;
@@ -425,7 +427,8 @@ void tst_QGLThreads::renderInThread_data()
 void tst_QGLThreads::renderInThread()
 {
 #ifdef Q_OS_MAC
-    QSKIP("OpenGL threading tests are currently disabled on Mac as they were causing reboots");
+    // The test is crashing but there are risks of reboot so keeping QSKIP here.
+    QSKIP("QTBUG-22361");
 #endif
 
     QFETCH(bool, resize);
@@ -633,7 +636,8 @@ private:
 void tst_QGLThreads::painterOnGLWidgetInThread()
 {
 #ifdef Q_OS_MAC
-    QSKIP("OpenGL threading tests are currently disabled on Mac as they were causing reboots");
+    // The test is crashing but there are risks of reboot so keeping QSKIP here.
+    QSKIP("QTBUG-22361");
 #endif
     if (!((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) ||
           (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0))) {
@@ -656,6 +660,10 @@ void tst_QGLThreads::painterOnGLWidgetInThread()
 */
 void tst_QGLThreads::painterOnPixmapInThread()
 {
+#ifdef Q_OS_MAC
+    // The test is crashing but there are risks of reboot so keeping QSKIP here.
+    QSKIP("QTBUG-22361");
+#endif
 #ifdef Q_WS_X11
     QSKIP("Drawing text in threads onto X11 drawables currently crashes on some X11 servers.");
 #endif
@@ -675,7 +683,8 @@ void tst_QGLThreads::painterOnPixmapInThread()
 void tst_QGLThreads::painterOnPboInThread()
 {
 #ifdef Q_OS_MAC
-    QSKIP("OpenGL threading tests are currently disabled on Mac as they were causing reboots");
+    // The test is crashing but there are risks of reboot so keeping QSKIP here.
+    QSKIP("QTBUG-22361");
 #endif
     if (!((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) ||
           (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0))) {
@@ -703,7 +712,8 @@ void tst_QGLThreads::painterOnPboInThread()
 void tst_QGLThreads::painterOnFboInThread()
 {
 #ifdef Q_OS_MAC
-    QSKIP("OpenGL threading tests are currently disabled on Mac as they were causing reboots");
+    // The test is crashing but there are risks of reboot so keeping QSKIP here.
+    QSKIP("QTBUG-22361");
 #endif
     if (!((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) ||
           (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0))) {
