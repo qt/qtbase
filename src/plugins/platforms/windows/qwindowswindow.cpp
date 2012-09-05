@@ -696,7 +696,6 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     m_hdc(0),
     m_windowState(Qt::WindowNoState),
     m_opacity(1.0),
-    m_mouseGrab(false),
     m_cursor(QWindowsScreen::screenOf(aWindow)->windowsCursor()->standardWindowCursor()),
     m_dropTarget(0),
     m_savedStyle(0),
@@ -738,6 +737,8 @@ void QWindowsWindow::destroyWindow()
     if (QWindowsContext::verboseIntegration || QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window() << m_data.hwnd;
     if (m_data.hwnd) { // Stop event dispatching before Window is destroyed.
+        if (hasMouseCapture())
+            setMouseGrabEnabled(false);
         unregisterDropSite();
         QWindowsContext::instance()->removeWindow(m_data.hwnd);
 #ifdef QT_OPENGL_ES_2
@@ -811,6 +812,8 @@ void QWindowsWindow::setVisible(bool visible)
             QWindowSystemInterface::handleExposeEvent(window(),
                                                       QRect(QPoint(), geometry().size()));
         } else {
+            if (hasMouseCapture())
+                setMouseGrabEnabled(false);
             hide_sys();
             QWindowSystemInterface::handleExposeEvent(window(), QRegion());
         }
@@ -1495,29 +1498,27 @@ bool QWindowsWindow::setKeyboardGrabEnabled(bool grab)
 
 bool QWindowsWindow::setMouseGrabEnabled(bool grab)
 {
-    bool result = false;
-    if (!m_data.hwnd) {
-        qWarning("%s: No handle", __FUNCTION__);
-        return result;
-    }
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << window() << grab;
-
-    if (m_mouseGrab != grab) {
-        m_mouseGrab = grab;
-        if (isVisible())
-            setMouseGrabEnabled_sys(grab);
+    if (!m_data.hwnd) {
+        qWarning("%s: No handle", __FUNCTION__);
+        return false;
+    }
+    if (!isVisible() && grab) {
+        qWarning("%s: Not setting mouse grab for invisible window %s",
+                 __FUNCTION__, qPrintable(window()->objectName()));
+        return false;
+    }
+    // release grab or an explicit grab overriding autocapture: Clear flag.
+    clearFlag(QWindowsWindow::AutoMouseCapture);
+    if (hasMouseCapture() != grab) {
+        if (grab) {
+            SetCapture(m_data.hwnd);
+        } else {
+            ReleaseCapture();
+        }
     }
     return grab;
-}
-
-void QWindowsWindow::setMouseGrabEnabled_sys(bool grab)
-{
-    if (grab) {
-        SetCapture(m_data.hwnd);
-    } else {
-        ReleaseCapture();
-    }
 }
 
 static inline DWORD cornerToWinOrientation(Qt::Corner corner)

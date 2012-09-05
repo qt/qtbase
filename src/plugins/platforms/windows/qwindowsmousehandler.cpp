@@ -175,9 +175,26 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         return true;
     }
     compressMouseMove(&msg);
+    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+    // Qt expects the platform plugin to capture the mouse on
+    // any button press until release.
+    if (!platformWindow->hasMouseCapture()
+        && (msg.message == WM_LBUTTONDOWN || msg.message == WM_MBUTTONDOWN
+            || msg.message == WM_RBUTTONDOWN)) {
+        platformWindow->setMouseGrabEnabled(true);
+        platformWindow->setFlag(QWindowsWindow::AutoMouseCapture);
+        if (QWindowsContext::verboseEvents)
+            qDebug() << "Automatic mouse capture " << window;
+    } else if (platformWindow->hasMouseCapture()
+               && platformWindow->testFlag(QWindowsWindow::AutoMouseCapture)
+               && (msg.message == WM_LBUTTONUP || msg.message == WM_MBUTTONUP
+                   || msg.message == WM_RBUTTONUP)) {
+        platformWindow->setMouseGrabEnabled(false);
+        if (QWindowsContext::verboseEvents)
+            qDebug() << "Releasing automatic mouse capture " << window;
+    }
     // Eat mouse move after size grip drag.
     if (msg.message == WM_MOUSEMOVE) {
-        QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
         if (platformWindow->testFlag(QWindowsWindow::SizeGripOperation)) {
             MSG mouseMsg;
             while (PeekMessage(&mouseMsg, platformWindow->handle(), WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) ;

@@ -126,7 +126,8 @@ public:
         SizeGripOperation = 0x100,
         FrameStrutEventsEnabled = 0x200,
         SynchronousGeometryChangeEvent = 0x400,
-        WithinSetStyle = 0x800
+        WithinSetStyle = 0x800,
+        AutoMouseCapture = 0x1000 //! Automatic mouse capture on button press.
     };
 
     struct WindowData
@@ -179,6 +180,7 @@ public:
 
     virtual bool setKeyboardGrabEnabled(bool grab);
     virtual bool setMouseGrabEnabled(bool grab);
+    inline bool hasMouseCapture() const { return GetCapture() == m_data.hwnd; }
 
     virtual bool startSystemResize(const QPoint &pos, Qt::Corner corner);
 
@@ -249,7 +251,6 @@ private:
     inline bool isFullScreen_sys() const;
     inline void setWindowState_sys(Qt::WindowState newState);
     inline void setParent_sys(const QPlatformWindow *parent) const;
-    inline void setMouseGrabEnabled_sys(bool grab);
     void destroyWindow();
     void registerDropSite();
     void unregisterDropSite();
@@ -261,7 +262,6 @@ private:
     HDC m_hdc;
     Qt::WindowState m_windowState;
     qreal m_opacity;
-    bool m_mouseGrab;
     QWindowsWindowCursor m_cursor;
     QWindowsOleDropTarget *m_dropTarget;
     unsigned m_savedStyle;
