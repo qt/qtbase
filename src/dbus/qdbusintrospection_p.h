@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDBUSINTROSPECTION_H
-#define QDBUSINTROSPECTION_H
+#ifndef QDBUSINTROSPECTION_P_H
+#define QDBUSINTROSPECTION_P_H
 
 //
 //  W A R N I N G

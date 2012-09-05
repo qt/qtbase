@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPAUSEANIMATION_P_H
-#define QPAUSEANIMATION_P_H
+#ifndef QPAUSEANIMATION_H
+#define QPAUSEANIMATION_H
 
 #include <QtCore/qanimationgroup.h>
 
@@ -80,4 +80,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QPAUSEANIMATION_P_H
+#endif // QPAUSEANIMATION_H

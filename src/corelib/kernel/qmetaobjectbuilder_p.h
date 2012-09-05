@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMETAOBJECTBUILDER_H
-#define QMETAOBJECTBUILDER_H
+#ifndef QMETAOBJECTBUILDER_P_H
+#define QMETAOBJECTBUILDER_P_H
 
 //
 //  W A R N I N G

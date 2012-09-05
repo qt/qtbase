@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDBUSTREENODE_H
-#define QDBUSTREENODE_H
+#ifndef QDBUSVIRTUALOBJECT_H
+#define QDBUSVIRTUALOBJECT_H
 
 #include <QtDBus/qdbusmacros.h>
 #include <QtCore/qstring.h>

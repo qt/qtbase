@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFILESYSTEMMETADATA_P_H_INCLUDED
-#define QFILESYSTEMMETADATA_P_H_INCLUDED
+#ifndef QFILESYSTEMMETADATA_P_H
+#define QFILESYSTEMMETADATA_P_H
 
 //
 //  W A R N I N G

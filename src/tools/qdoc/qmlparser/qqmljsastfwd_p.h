@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQMLJSAST_FWD_P_H
-#define QQMLJSAST_FWD_P_H
+#ifndef QQMLJSASTFWD_P_H
+#define QQMLJSASTFWD_P_H
 
 #include "qqmljsglobal_p.h"
 

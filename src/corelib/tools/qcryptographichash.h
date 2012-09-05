@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QCRYPTOGRAPHICSHASH_H
-#define QCRYPTOGRAPHICSHASH_H
+#ifndef QCRYPTOGRAPHICHASH_H
+#define QCRYPTOGRAPHICHASH_H
 
 #include <QtCore/qbytearray.h>
 

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QCOLLATOR_H
-#define QCOLLATOR_H
+#ifndef QCOLLATOR_P_H
+#define QCOLLATOR_P_H
 
 #include <QString>
 #include <QLocale>
@@ -121,4 +121,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QCOLLATOR_H
+#endif // QCOLLATOR_P_H

@@ -51,8 +51,8 @@
 //
 //
 
-#ifndef QDBUSINTERFACEPRIVATE_H
-#define QDBUSINTERFACEPRIVATE_H
+#ifndef QDBUSINTERFACE_P_H
+#define QDBUSINTERFACE_P_H
 
 #include "qdbusabstractinterface_p.h"
 #include "qdbusmetaobject_p.h"

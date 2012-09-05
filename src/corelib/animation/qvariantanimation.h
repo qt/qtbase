@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QANIMATION_H
-#define QANIMATION_H
+#ifndef QVARIANTANIMATION_H
+#define QVARIANTANIMATION_H
 
 #include <QtCore/qeasingcurve.h>
 #include <QtCore/qabstractanimation.h>
@@ -126,4 +126,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif //QANIMATION_H
+#endif //QVARIANTANIMATION_H

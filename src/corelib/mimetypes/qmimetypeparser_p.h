@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 
-#ifndef MIMETYPEPARSER_P_H
-#define MIMETYPEPARSER_P_H
+#ifndef QMIMETYPEPARSER_P_H
+#define QMIMETYPEPARSER_P_H
 
 #include "qmimedatabase_p.h"
 #include "qmimeprovider_p.h"

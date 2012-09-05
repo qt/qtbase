@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDIR_PRIVATE_H
-#define QDIR_PRIVATE_H
+#ifndef QDIR_P_H
+#define QDIR_P_H
 
 #include "qfilesystementry_p.h"
 #include "qfilesystemmetadata_p.h"

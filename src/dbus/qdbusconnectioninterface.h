@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDBUSBUS_H
-#define QDBUSBUS_H
+#ifndef QDBUSCONNECTIONINTERFACE_H
+#define QDBUSCONNECTIONINTERFACE_H
 
 #include <QtCore/qstringlist.h>
 

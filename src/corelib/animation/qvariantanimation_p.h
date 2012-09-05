@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QANIMATION_P_H
-#define QANIMATION_P_H
+#ifndef QVARIANTANIMATION_P_H
+#define QVARIANTANIMATION_P_H
 
 //
 //  W A R N I N G
@@ -121,4 +121,4 @@ QT_END_NAMESPACE
 
 #endif //QT_NO_ANIMATION
 
-#endif //QANIMATION_P_H
+#endif //QVARIANTANIMATION_P_H

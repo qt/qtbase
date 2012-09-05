@@ -51,8 +51,8 @@
 //
 //
 
-#ifndef QDBUSMETAOBJECTPRIVATE_H
-#define QDBUSMETAOBJECTPRIVATE_H
+#ifndef QDBUSMETAOBJECT_P_H
+#define QDBUSMETAOBJECT_P_H
 
 #include <QtCore/qmetaobject.h>
 #include <qdbusmacros.h>

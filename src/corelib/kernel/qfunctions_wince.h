@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFUNCTIONS_WCE_H
-#define QFUNCTIONS_WCE_H
+#ifndef QFUNCTIONS_WINCE_H
+#define QFUNCTIONS_WINCE_H
 #ifdef Q_OS_WINCE
 #include <stdio.h>
 #include <stdlib.h>
@@ -457,4 +457,4 @@ generate_inline_return_func5(bsearch, void *, const void *, const void *, size_t
 #endif //__cplusplus
 
 #endif // Q_OS_WINCE
-#endif // QFUNCTIONS_WCE_H
+#endif // QFUNCTIONS_WINCE_H

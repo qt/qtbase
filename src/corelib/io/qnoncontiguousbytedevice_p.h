@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QNONCONTIGUOUSBYTEDEVICE_H
-#define QNONCONTIGUOUSBYTEDEVICE_H
+#ifndef QNONCONTIGUOUSBYTEDEVICE_P_H
+#define QNONCONTIGUOUSBYTEDEVICE_P_H
 
 //
 //  W A R N I N G

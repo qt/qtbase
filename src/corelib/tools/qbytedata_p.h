@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QBYTEDATA_H
-#define QBYTEDATA_H
+#ifndef QBYTEDATA_P_H
+#define QBYTEDATA_P_H
 
 //
 //  W A R N I N G
@@ -217,4 +217,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QBYTEDATA_H
+#endif // QBYTEDATA_P_H

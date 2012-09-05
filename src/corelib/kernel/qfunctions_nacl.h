@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QNACLUNIMPLEMENTED_H
-#define QNACLUNIMPLEMENTED_H
+#ifndef QFUNCTIONS_NACL_H
+#define QFUNCTIONS_NACL_H
 
 #ifdef Q_OS_NACL
 
@@ -93,4 +93,4 @@ QT_END_HEADER
 
 #endif //Q_OS_NACL
 
-#endif //QNACLUNIMPLEMENTED_H 
+#endif //QFUNCTIONS_NACL_H

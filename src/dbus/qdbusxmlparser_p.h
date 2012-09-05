@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDBUSXMLPARSER_H
-#define QDBUSXMLPARSER_H
+#ifndef QDBUSXMLPARSER_P_H
+#define QDBUSXMLPARSER_P_H
 
 //
 //  W A R N I N G

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef FILEWATCHER_KQUEUE_P_H
-#define FILEWATCHER_KQUEUE_P_H
+#ifndef QFILESYSTEMWATCHER_KQUEUE_P_H
+#define QFILESYSTEMWATCHER_KQUEUE_P_H
 
 //
 //  W A R N I N G
@@ -93,4 +93,4 @@ private:
 QT_END_NAMESPACE
 
 #endif //QT_NO_FILESYSTEMWATCHER
-#endif // FILEWATCHER_KQUEUE_P_H
+#endif // QFILESYSTEMWATCHER_KQUEUE_P_H

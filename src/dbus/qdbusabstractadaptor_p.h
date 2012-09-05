@@ -51,8 +51,8 @@
 //
 //
 
-#ifndef QDBUSABSTRACTADAPTORPRIVATE_H
-#define QDBUSABSTRACTADAPTORPRIVATE_H
+#ifndef QDBUSABSTRACTADAPTOR_P_H
+#define QDBUSABSTRACTADAPTOR_P_H
 
 #include <qdbusabstractadaptor.h>
 
@@ -138,4 +138,4 @@ extern QDBusAdaptorConnector *qDBusCreateAdaptorConnector(QObject *object);
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
-#endif // QDBUSABSTRACTADAPTORPRIVATE_H
+#endif // QDBUSABSTRACTADAPTOR_P_H

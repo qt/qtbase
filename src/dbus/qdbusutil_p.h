@@ -50,8 +50,8 @@
 // We mean it.
 //
 
-#ifndef QDBUSUTIL_H
-#define QDBUSUTIL_H
+#ifndef QDBUSUTIL_P_H
+#define QDBUSUTIL_P_H
 
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>

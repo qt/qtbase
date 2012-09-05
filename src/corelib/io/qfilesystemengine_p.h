@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFILESYSTEMENGINE_P_H_INCLUDED
-#define QFILESYSTEMENGINE_P_H_INCLUDED
+#ifndef QFILESYSTEMENGINE_P_H
+#define QFILESYSTEMENGINE_P_H
 
 //
 //  W A R N I N G

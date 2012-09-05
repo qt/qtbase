@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFILESYSTEMITERATOR_P_H_INCLUDED
-#define QFILESYSTEMITERATOR_P_H_INCLUDED
+#ifndef QFILESYSTEMITERATOR_P_H
+#define QFILESYSTEMITERATOR_P_H
 
 //
 //  W A R N I N G
