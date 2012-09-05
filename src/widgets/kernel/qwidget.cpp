@@ -11227,7 +11227,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     the given widget's. This function is called automatically when the
     painter is opened on a QWidget.
 */
-void QWidget::init(QPainter *painter) const
+void QWidget::initPainter(QPainter *painter) const
 {
     const QPalette &pal = palette();
     painter->d_func()->state->pen = QPen(pal.brush(foregroundRole()), 0);

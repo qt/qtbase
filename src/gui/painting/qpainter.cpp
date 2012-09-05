@@ -1541,7 +1541,7 @@ void QPainter::initFrom(const QPaintDevice *device)
         return;
     }
 
-    device->init(this);
+    device->initPainter(this);
 
     if (d->extended) {
         d->extended->penChanged();

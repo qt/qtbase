@@ -60,7 +60,7 @@ QPaintDevice::~QPaintDevice()
 /*!
     \internal
 */
-void QPaintDevice::init(QPainter *) const
+void QPaintDevice::initPainter(QPainter *) const
 {
 }
 

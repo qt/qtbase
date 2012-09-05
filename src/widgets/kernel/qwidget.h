@@ -643,7 +643,7 @@ protected:
     virtual void changeEvent(QEvent *);
 
     int metric(PaintDeviceMetric) const;
-    void init(QPainter *painter) const;
+    void initPainter(QPainter *painter) const;
     QPaintDevice *redirected(QPoint *offset) const;
     QPainter *sharedPainter() const;
 

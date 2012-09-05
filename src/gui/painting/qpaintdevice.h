@@ -90,7 +90,7 @@ public:
 protected:
     QPaintDevice();
     virtual int metric(PaintDeviceMetric metric) const;
-    virtual void init(QPainter *painter) const;
+    virtual void initPainter(QPainter *painter) const;
     virtual QPaintDevice *redirected(QPoint *offset) const;
     virtual QPainter *sharedPainter() const;
 
