@@ -730,7 +730,7 @@ void QWidgetLineControl::internalSetText(const QString &txt, int pos, bool edite
     m_modifiedState =  m_undoState = 0;
     m_cursor = (pos < 0 || pos > m_text.length()) ? m_text.length() : pos;
     m_textDirty = (oldText != m_text);
-    bool changed = finishChange(-1, true, edited);
+    const bool changed = finishChange(-1, true, edited);
 
 #ifndef QT_NO_ACCESSIBILITY
     if (changed) {
@@ -748,6 +748,8 @@ void QWidgetLineControl::internalSetText(const QString &txt, int pos, bool edite
             QAccessible::updateAccessibility(&event);
         }
     }
+#else
+    Q_UNUSED(changed)
 #endif
 }
 

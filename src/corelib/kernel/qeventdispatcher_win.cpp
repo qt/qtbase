@@ -1040,7 +1040,7 @@ int QEventDispatcherWin32::remainingTime(int timerId)
     }
 
 #ifndef QT_NO_DEBUG
-    qWarning("QEventDispatcherWin32::remainingTime: timer id %s not found", timerId);
+    qWarning("QEventDispatcherWin32::remainingTime: timer id %d not found", timerId);
 #endif
 
     return -1;

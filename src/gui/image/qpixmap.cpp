@@ -841,7 +841,9 @@ bool QPixmap::doImageIO(QImageWriter *writer, int quality) const
 
 void QPixmap::fill(const QPaintDevice *device, const QPoint &p)
 {
-    qWarning() << "QPixmap::fill(const QPaintDevice *device, const QPoint &offset) is deprecated, ignored";
+    Q_UNUSED(device)
+    Q_UNUSED(p)
+    qWarning("%s is deprecated, ignored", Q_FUNC_INFO);
 }
 
 
