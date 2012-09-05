@@ -484,7 +484,7 @@ void tst_qmake::bundle_spaces()
 void tst_qmake::includefunction()
 {
     QString workDir = base_path + "/testdata/include_function";
-    QString warningMsg("Unable to find file for inclusion");
+    QRegExp warningMsg("Include file .* not found");
     QVERIFY(test_compiler.qmake( workDir, "include_existing_file"));
     QVERIFY(!test_compiler.commandOutput().contains(warningMsg));
 

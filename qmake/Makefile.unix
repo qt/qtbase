@@ -11,8 +11,10 @@ QMKLIBSRC = $(QMKSRC)/library
 QMKGENSRC = $(QMKSRC)/generators
 
 #qmake code
-OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
-     mingw_make.o option.o winmakefile.o projectgenerator.o \
+OBJS=project.o option.o property.o main.o ioutils.o proitems.o \
+     qmakeglobals.o qmakeparser.o qmakeevaluator.o qmakebuiltins.o \
+     makefile.o unixmake2.o unixmake.o  \
+     mingw_make.o winmakefile.o projectgenerator.o \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
      msvc_vcproj.o msvc_vcxproj.o msvc_nmake.o msvc_objectmodel.o msbuild_objectmodel.o \
      gbuild.o cesdkhandler.o
@@ -36,6 +38,8 @@ QOBJS=qtextcodec.o qutfcodec.o qstring.o qstringbuilder.o qtextstream.o qiodevic
 DEPEND_SRC = \
 	   $(QMKSRC)/main.cpp $(QMKSRC)/project.cpp $(QMKSRC)/option.cpp $(QMKSRC)/property.cpp \
 	   $(QMKSRC)/meta.cpp \
+	   $(QMKLIBSRC)/ioutils.cpp $(QMKLIBSRC)/proitems.cpp $(QMKLIBSRC)/qmakeglobals.cpp \
+	   $(QMKLIBSRC)/qmakeparser.cpp $(QMKLIBSRC)/qmakeevaluator.cpp $(QMKLIBSRC)/qmakebuiltins.cpp \
 	   $(QMKGENSRC)/makefiledeps.cpp $(QMKGENSRC)/metamakefile.cpp \
 	   $(QMKGENSRC)/projectgenerator.cpp $(QMKGENSRC)/makefile.cpp \
 	   $(QMKGENSRC)/unix/unixmake.cpp $(QMKGENSRC)/unix/unixmake2.cpp \
@@ -90,7 +94,7 @@ CPPFLAGS = -g $(OPENSOURCE_CXXFLAGS) \
 	   -I$(BUILD_PATH)/src/corelib/global -DHAVE_QCONFIG_CPP \
 	   -I$(QMAKESPEC) \
 	   -I$(SOURCE_PATH)/tools/shared \
-	   -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED \
+	   -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL -DPROEVALUATOR_DEBUG \
 	   -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_COMPRESS \
 	   -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM
 
@@ -111,6 +115,24 @@ distclean:: clean
 depend:
 	makedepend -D__MAKEDEPEND__ $(CPPFLAGS) $(DEPEND_SRC)
 
+
+ioutils.o: $(QMKLIBSRC)/ioutils.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+proitems.o: $(QMKLIBSRC)/proitems.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qmakeglobals.o: $(QMKLIBSRC)/qmakeglobals.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qmakeparser.o: $(QMKLIBSRC)/qmakeparser.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qmakeevaluator.o: $(QMKLIBSRC)/qmakeevaluator.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qmakebuiltins.o: $(QMKLIBSRC)/qmakebuiltins.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 project.o: $(QMKSRC)/project.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<

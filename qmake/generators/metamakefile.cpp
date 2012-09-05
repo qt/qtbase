@@ -235,7 +235,7 @@ MakefileGenerator
         basevars["BUILD_NAME"] = (buildname.isEmpty() ? ProStringList(build) : buildname);
 
         //create project
-        QMakeProject *build_proj = new QMakeProject(project->properties());
+        QMakeProject *build_proj = new QMakeProject;
         build_proj->setExtraVars(basevars);
         build_proj->setExtraConfigs(basecfgs);
 
@@ -317,7 +317,7 @@ SubdirsMetaMakefileGenerator::init()
             }
 
             //handle sub project
-            QMakeProject *sub_proj = new QMakeProject(project->properties());
+            QMakeProject *sub_proj = new QMakeProject;
             for (int ind = 0; ind < sub->indent; ++ind)
                 printf(" ");
             sub->input_dir = subdir.absolutePath();

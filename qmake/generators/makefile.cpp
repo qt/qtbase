@@ -194,7 +194,7 @@ MakefileGenerator::initOutPaths()
     ProValueMap &v = project->variables();
     //for shadow builds
     if(!v.contains("QMAKE_ABSOLUTE_SOURCE_PATH")) {
-        if (Option::mkfile::do_cache && !project->cacheFile().isEmpty() &&
+        if (Option::globals->do_cache && !project->cacheFile().isEmpty() &&
            v.contains("QMAKE_ABSOLUTE_SOURCE_ROOT")) {
             QString root = v["QMAKE_ABSOLUTE_SOURCE_ROOT"].first().toQString();
             root = QDir::fromNativeSeparators(root);
@@ -884,7 +884,7 @@ MakefileGenerator::init()
 
     // escape qmake command
     project->values("QMAKE_QMAKE") =
-            ProStringList(escapeFilePath(Option::fixPathToTargetOS(Option::qmake_abslocation, false)));
+            ProStringList(escapeFilePath(Option::fixPathToTargetOS(Option::globals->qmake_abslocation, false)));
 }
 
 bool
@@ -2682,7 +2682,7 @@ MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
         if(!ofile.isEmpty() && !project->isActiveConfig("no_autoqmake")) {
             t << escapeFilePath(ofile) << ": "
               << escapeDependencyPath(fileFixify(project->projectFile())) << " ";
-            if (Option::mkfile::do_cache) {
+            if (Option::globals->do_cache) {
                 if (!project->confFile().isEmpty())
                     t <<  escapeDependencyPath(fileFixify(project->confFile())) << " ";
                 if (!project->cacheFile().isEmpty())

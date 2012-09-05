@@ -85,6 +85,9 @@ int runQMake(int argc, char **argv)
     // This is particularly important for things like QtCreator and scripted builds.
     setvbuf(stdout, (char *)NULL, _IONBF, 0);
 
+    QMakeGlobals globals;
+    Option::globals = &globals;
+
     // parse command line
     int ret = Option::init(argc, argv);
     if(ret != Option::QMAKE_CMDLINE_SUCCESS) {
@@ -125,8 +128,14 @@ int runQMake(int argc, char **argv)
        Option::qmake_mode == Option::QMAKE_SET_PROPERTY ||
        Option::qmake_mode == Option::QMAKE_UNSET_PROPERTY)
         return prop.exec() ? 0 : 101;
+    globals.setQMakeProperty(&prop);
 
-    QMakeProject project(&prop);
+    ProFileCache proFileCache;
+    Option::proFileCache = &proFileCache;
+    QMakeParser parser(&proFileCache, &Option::evalHandler);
+    Option::parser = &parser;
+
+    QMakeProject project;
     int exit_val = 0;
     QStringList files;
     if(Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT)

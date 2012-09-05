@@ -6,7 +6,8 @@
 option(host_build)
 CONFIG += console bootstrap
 CONFIG -= qt shared app_bundle uic
-DEFINES += QT_BUILD_QMAKE QT_BOOTSTRAPPED
+DEFINES += QT_BUILD_QMAKE QT_BOOTSTRAPPED \
+    PROEVALUATOR_FULL PROEVALUATOR_DEBUG
 DESTDIR = ../bin/
 
 OBJECTS_DIR = .

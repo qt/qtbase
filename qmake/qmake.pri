@@ -5,7 +5,10 @@ DEFINES += QT_NO_TEXTCODEC QT_NO_LIBRARY QT_NO_COMPRESS QT_NO_UNICODETABLES \
            QT_NO_GEOM_VARIANT QT_NO_DATASTREAM
 
 #qmake code
-SOURCES += project.cpp property.cpp main.cpp generators/makefile.cpp \
+SOURCES += project.cpp property.cpp main.cpp \
+           library/ioutils.cpp library/proitems.cpp library/qmakeglobals.cpp \
+           library/qmakeparser.cpp library/qmakeevaluator.cpp library/qmakebuiltins.cpp \
+           generators/makefile.cpp \
            generators/unix/unixmake2.cpp generators/unix/unixmake.cpp meta.cpp \
            option.cpp generators/win32/winmakefile.cpp generators/win32/mingw_make.cpp \
            generators/makefiledeps.cpp generators/metamakefile.cpp generators/mac/pbuilder_pbx.cpp \
@@ -18,7 +21,8 @@ SOURCES += project.cpp property.cpp main.cpp generators/makefile.cpp \
            generators/win32/cesdkhandler.cpp
 
 HEADERS += project.h property.h \
-           library/qmake_global.h library/proitems.h \
+           library/qmake_global.h library/ioutils.h library/proitems.h library/qmakeglobals.h \
+           library/qmakeparser.h library/qmakeevaluator.h library/qmakeevaluator_p.h \
            generators/makefile.h \
            generators/unix/unixmake.h meta.h option.h cachekeys.h \
            generators/win32/winmakefile.h generators/win32/mingw_make.h generators/projectgenerator.h \

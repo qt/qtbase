@@ -42,165 +42,54 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
-#include <proitems.h>
-
-#include <qstringlist.h>
-#include <qtextstream.h>
-#include <qstring.h>
-#include <qstack.h>
-#include <qhash.h>
-#include <qmetatype.h>
+#include <qmakeevaluator.h>
 
 QT_BEGIN_NAMESPACE
 
-class QMakeProperty;
-
-struct ParsableBlock;
-struct IteratorBlock;
-struct FunctionBlock;
-
-class QMakeProject
+class QMakeProject : private QMakeEvaluator
 {
-    struct ScopeBlock
-    {
-        enum TestStatus { TestNone, TestFound, TestSeek };
-        ScopeBlock() : iterate(0), ignore(false), else_status(TestNone) { }
-        ScopeBlock(bool i) : iterate(0), ignore(i), else_status(TestNone) { }
-        ~ScopeBlock();
-        IteratorBlock *iterate;
-        uint ignore : 1, else_status : 2;
-    };
-    friend struct ParsableBlock;
-    friend struct IteratorBlock;
-    friend struct FunctionBlock;
-
-    QStack<ScopeBlock> scope_blocks;
-    QStack<FunctionBlock *> function_blocks;
-    IteratorBlock *iterator;
-    FunctionBlock *function;
-    QHash<QString, FunctionBlock*> testFunctions, replaceFunctions;
-
-    bool host_build;
-    bool need_restart;
-    bool own_prop;
-    bool backslashWarned;
-    QString project_build_root;
-    QString conffile;
-    QString superfile;
-    QString cachefile;
-    QString real_spec, short_spec;
-    QString pfile;
-    QMakeProperty *prop;
-    void reset();
-    ProStringList extra_configs;
-    ProValueMap extra_vars;
-    QHash<QString, QStringList> vars, init_vars, base_vars;
-    bool parse(const QString &text, QHash<QString, QStringList> &place, int line_count=1);
-
-    enum IncludeStatus {
-        IncludeSuccess,
-        IncludeFeatureAlreadyLoaded,
-        IncludeFailure,
-        IncludeNoExist,
-        IncludeParseFailure
-    };
-    enum IncludeFlags {
-        IncludeFlagNone = 0x00,
-        IncludeFlagFeature = 0x01,
-        IncludeFlagNewParser = 0x02,
-        IncludeFlagNewProject = 0x04
-    };
-    IncludeStatus doProjectInclude(QString file, uchar flags, QHash<QString, QStringList> &place);
-
-    bool doProjectCheckReqs(const QStringList &deps, QHash<QString, QStringList> &place);
-    bool doVariableReplace(QString &str, QHash<QString, QStringList> &place);
-    QStringList doVariableReplaceExpand(const QString &str, QHash<QString, QStringList> &place, bool *ok=0);
-    void init(QMakeProperty *);
-    void cleanup();
-    void loadDefaults();
-    void setupProject();
-    QStringList &values(const QString &v, QHash<QString, QStringList> &place);
-    QStringList magicValues(const QString &v, const QHash<QString, QStringList> &place) const;
-    QStringList qmakeFeaturePaths();
+    QString m_projectFile;
 
 public:
-    QMakeProject(QMakeProperty *p = 0) { init(p); }
-    QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *nvars=0);
-    ~QMakeProject();
+    QMakeProject();
+    QMakeProject(QMakeProject *p);
 
-    void setExtraVars(const ProValueMap &_vars) { extra_vars = _vars; }
-    void setExtraConfigs(const ProStringList &_cfgs) { extra_configs = _cfgs; }
+    bool read(const QString &project, LoadFlags what = LoadAll);
 
-    enum { ReadProFile=0x01, ReadSetup=0x02, ReadFeatures=0x04, ReadAll=0xFF };
-    inline bool parse(const QString &text) { return parse(text, vars); }
-    bool read(const QString &project, uchar cmd=ReadAll);
-    bool read(uchar cmd=ReadAll);
+    QString projectFile() const { return m_projectFile; }
+    QString buildRoot() const { return m_buildRoot; }
+    QString confFile() const { return m_conffile; }
+    QString cacheFile() const { return m_cachefile; }
+    QString specDir() const { return m_qmakespecFull; }
 
-    QStringList userExpandFunctions() { return replaceFunctions.keys(); }
-    QStringList userTestFunctions() { return testFunctions.keys(); }
-
-    QString projectFile();
-    QString buildRoot() const { return project_build_root; }
-    QString confFile() const { return conffile; }
-    QString cacheFile() const { return cachefile; }
-    QString specDir() const { return real_spec; }
-    inline QMakeProperty *properties() { return prop; }
-
-    bool doProjectTest(QString str, QHash<QString, QStringList> &place);
-    bool doProjectTest(QString func, const QString &params,
-                       QHash<QString, QStringList> &place);
-    bool doProjectTest(QString func, QStringList args,
-                       QHash<QString, QStringList> &place);
-    bool doProjectTest(QString func, QList<QStringList> args,
-                       QHash<QString, QStringList> &place);
-    QStringList doProjectExpand(QString func, const QString &params,
-                                QHash<QString, QStringList> &place);
-    QStringList doProjectExpand(QString func, QStringList args,
-                                QHash<QString, QStringList> &place);
-    QStringList doProjectExpand(QString func, QList<QStringList> args,
-                                QHash<QString, QStringList> &place);
-
-    QStringList expand(const QString &v);
-    QString expand(const QString &v, const QString &file, int line);
+    ProString expand(const QString &v, const QString &file, int line);
     QStringList expand(const ProKey &func, const QList<ProStringList> &args);
-    bool test(const QString &v);
+    bool test(const QString &v)
+        { m_current.clear(); return evaluateConditional(v, QStringLiteral("(generator)")); }
     bool test(const ProKey &func, const QList<ProStringList> &args);
-    bool isActiveConfig(const QString &x, bool regex=false,
-                        QHash<QString, QStringList> *place=NULL);
 
-    bool isSet(const ProKey &v) const { return (*(const ProValueMap *)&vars).contains(v); }
+    bool isSet(const ProKey &v) const { return m_valuemapStack.first().contains(v); }
     bool isEmpty(const ProKey &v) const;
-    ProStringList values(const ProKey &v) const { return (*(const ProValueMap *)&vars)[v]; }
-    ProStringList &values(const ProKey &v) { return (*(ProValueMap *)&vars)[v]; }
-    ProString first(const ProKey &v) const;
+    ProStringList &values(const ProKey &v) { return valuesRef(v); }
     int intValue(const ProKey &v, int defaultValue = 0) const;
-    const ProValueMap &variables() const { return *(const ProValueMap *)&vars; }
-    ProValueMap &variables() { return *(ProValueMap *)&vars; }
+    const ProValueMap &variables() const { return m_valuemapStack.first(); }
+    ProValueMap &variables() { return m_valuemapStack.first(); }
 
     void dump() const;
 
-    bool isHostBuild() const { return host_build; }
-
-protected:
-    friend class MakefileGenerator;
-    bool read(const QString &file, QHash<QString, QStringList> &place);
-    bool read(QTextStream &file, QHash<QString, QStringList> &place);
-
+    using QMakeEvaluator::LoadFlags;
+    using QMakeEvaluator::setExtraVars;
+    using QMakeEvaluator::setExtraConfigs;
+    using QMakeEvaluator::loadSpec;
+    using QMakeEvaluator::evaluateFeatureFile;
+    using QMakeEvaluator::evaluateConfigFeatures;
+    using QMakeEvaluator::evaluateExpression;
+    using QMakeEvaluator::values;
+    using QMakeEvaluator::first;
+    using QMakeEvaluator::isActiveConfig;
+    using QMakeEvaluator::isHostBuild;
+    using QMakeEvaluator::dirSep;
 };
-Q_DECLARE_METATYPE(QMakeProject*)
-
-inline QString QMakeProject::projectFile()
-{
-    return pfile;
-}
-
-inline ProString QMakeProject::first(const ProKey &v) const
-{
-    const ProStringList &vals = values(v);
-    if(vals.isEmpty())
-        return ProString("");
-    return vals.first();
-}
 
 inline int QMakeProject::intValue(const ProKey &v, int defaultValue) const
 {

@@ -42,7 +42,10 @@
 #ifndef OPTION_H
 #define OPTION_H
 
-#include "project.h"
+#include <qmakeglobals.h>
+#include <qmakeparser.h>
+#include <qmakeevaluator.h>
+
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qfile.h>
@@ -69,8 +72,26 @@ enum QMakeWarn {
 };
 void warn_msg(QMakeWarn t, const char *fmt, ...);
 
+class QMakeProject;
+
+class EvalHandler : public QMakeHandler {
+public:
+    void message(int type, const QString &msg, const QString &fileName, int lineNo);
+
+    void fileMessage(const QString &msg);
+
+    void aboutToEval(ProFile *, ProFile *, EvalFileType);
+    void doneWithEval(ProFile *);
+};
+
 struct Option
 {
+    static EvalHandler evalHandler;
+
+    static QMakeGlobals *globals;
+    static ProFileCache *proFileCache;
+    static QMakeParser *parser;
+
     //simply global convenience
     static QString libtool_ext;
     static QString pkgcfg_ext;
@@ -88,7 +109,6 @@ struct Option
     static QString lex_mod;
     static QString yacc_mod;
     static QString dir_sep;
-    static QString dirlist_sep;
     static QString pro_ext;
     static QString res_ext;
     static char field_sep;
@@ -160,15 +180,12 @@ struct Option
     static QMAKE_MODE qmake_mode;
 
     //all modes
-    static QString qmake_abslocation;
     static QStringList qmake_args;
     static QFile output;
     static QString output_dir;
     static int debug_level;
     static int warn_level;
     static bool recursive;
-    static QStringList before_user_vars, after_user_vars;
-    static QString user_template, user_template_prefix;
 
     //QMAKE_*_PROPERTY options
     struct prop {
@@ -183,17 +200,11 @@ struct Option
 
     //QMAKE_GENERATE_MAKEFILE options
     struct mkfile {
-        static QString qmakespec;
-        static QString xqmakespec;
-        static bool do_cache;
         static bool do_deps;
         static bool do_mocs;
         static bool do_dep_heuristics;
         static bool do_preprocess;
         static bool do_stub_makefile;
-        static QString source_root;
-        static QString build_root;
-        static QString cachefile;
         static int cachefile_depth;
         static QStringList project_files;
     };
@@ -203,7 +214,7 @@ private:
 };
 
 inline QString fixEnvVariables(const QString &x) { return Option::fixString(x, Option::FixEnvVars); }
-inline QStringList splitPathList(const QString &paths) { return paths.isEmpty() ? QStringList() : paths.split(Option::dirlist_sep); }
+inline QStringList splitPathList(const QString &paths) { return paths.isEmpty() ? QStringList() : paths.split(Option::globals->dirlist_sep); }
 
 QT_END_NAMESPACE
 
