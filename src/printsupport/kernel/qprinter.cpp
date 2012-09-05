@@ -1578,7 +1578,7 @@ void QPrinter::setPageMargins(qreal left, qreal top, qreal right, qreal bottom, 
 }
 
 /*!
-  reimp
+  \reimp
   */
 void QPrinter::setMargins(const Margins &m)
 {
