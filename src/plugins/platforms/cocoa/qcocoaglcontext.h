@@ -42,7 +42,7 @@
 #ifndef QCOCOAGLCONTEXT_H
 #define QCOCOAGLCONTEXT_H
 
-#include <QtCore/QWeakPointer>
+#include <QtCore/QPointer>
 #include <qpa/qplatformopenglcontext.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QWindow>
@@ -80,7 +80,7 @@ private:
     NSOpenGLContext *m_context;
     NSOpenGLContext *m_shareContext;
     QSurfaceFormat m_format;
-    QWeakPointer<QWindow> m_currentWindow;
+    QPointer<QWindow> m_currentWindow;
 };
 
 QT_END_NAMESPACE
