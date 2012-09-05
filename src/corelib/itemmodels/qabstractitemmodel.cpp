@@ -1060,11 +1060,13 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     Instead, you should subclass it to create new models.
 
     The QAbstractItemModel class is one of the \l{Model/View Classes}
-    and is part of Qt's \l{Model/View Programming}{model/view framework}.
+    and is part of Qt's \l{Model/View Programming}{model/view framework}. It
+    can be used as the underlying data model for the item view elements in
+    QML or the item view classes in the QtWidgets module.
 
-    If you need a model to use with a QListView or a QTableView, you should
-    consider subclassing QAbstractListModel or QAbstractTableModel instead of
-    this class.
+    If you need a model to use with an item view such as QML's List View
+    element or the C++ widgets QListView or QTableView, you should consider
+    subclassing QAbstractListModel or QAbstractTableModel instead of this class.
 
     The underlying data model is exposed to views and delegates as a hierarchy
     of tables. If you do not make use of the hierarchy, then the model is a
@@ -2901,7 +2903,7 @@ void QAbstractItemModel::endRemoveColumns()
     columns up to \a sourceLast.
 
     However, when moving columns down in the same parent (\a sourceParent
-    and \a destinationParent are equal), the columnss will be placed before the
+    and \a destinationParent are equal), the columns will be placed before the
     \a destinationChild index. That is, if you wish to move columns 0 and 1 so
     they will become columns 1 and 2, \a destinationChild should be 3. In this
     case, the new index for the source column \c i (which is between
