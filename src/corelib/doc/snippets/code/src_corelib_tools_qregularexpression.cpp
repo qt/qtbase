@@ -267,7 +267,7 @@ for (int i = 0; i <= match.lastCapturedIndex(); ++i) {
 //! [28]
 
 //! [29]
-QRegularExpression("(\d\d) (?<name>\w+)");
+QRegularExpression("(\\d\\d) (?<name>\\w+)");
 QRegularExpressionMatch match = re.match("23 Jordan");
 if (match.hasMatch()) {
     QString number = match.captured(1); // first == "23"
@@ -277,7 +277,7 @@ if (match.hasMatch()) {
 
 //! [30]
 // extracts the words
-QRegularExpression re("(\w+)");
+QRegularExpression re("(\\w+)");
 QString subject("the quick fox");
 QRegularExpressionMatchIterator i = re.globalMatch(subject);
 while (i.hasNext()) {
