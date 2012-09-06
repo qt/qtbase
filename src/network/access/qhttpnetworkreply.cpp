@@ -411,7 +411,7 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
             return -1; // unexpected EOF
         else if (haveRead == 0)
             break; // read more later
-        else if (haveRead == 1 && bytes == 0 && (c == 11 || c == '\n' || c == '\r' || c == ' ' || c == 31))
+        else if (haveRead == 1 && fragment.size() == 0 && (c == 11 || c == '\n' || c == '\r' || c == ' ' || c == 31))
             continue; // Ignore all whitespace that was trailing froma previous request on that socket
 
         bytes++;
