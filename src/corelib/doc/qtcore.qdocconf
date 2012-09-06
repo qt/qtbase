@@ -67,8 +67,7 @@ versionsym              = QT_VERSION_STR
 
 codeindent              = 1
 
-headerdirs  += .. \
-               ../../gui
+headerdirs  += ..
 
 sourcedirs  += ..
 
