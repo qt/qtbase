@@ -278,26 +278,40 @@ public:
 
 void tst_QtConcurrentThreadEngine::threadCount()
 {
-    QSKIP("QTBUG-23333: This test is unstable");
+   //QTBUG-23333: This test is unstable
 
     const int repeats = 10;
     for (int i = 0; i < repeats; ++i) {
         ThreadCountUser t;
         t.startBlocking();
-        QCOMPARE(threads.count(), QThreadPool::globalInstance()->maxThreadCount() + 1); // +1 for the main thread.
+        int count = threads.count();
+        int count_expected = QThreadPool::globalInstance()->maxThreadCount() + 1; // +1 for the main thread.
+        if (count != count_expected)
+            QEXPECT_FAIL("", "QTBUG-23333", Abort);
+        QCOMPARE(count, count_expected);
 
         (new ThreadCountUser())->startAsynchronously().waitForFinished();
-        QCOMPARE(threads.count(), QThreadPool::globalInstance()->maxThreadCount());
+        count = threads.count();
+        count_expected = QThreadPool::globalInstance()->maxThreadCount();
+        if (count != count_expected)
+            QEXPECT_FAIL("", "QTBUG-23333", Abort);
+        QCOMPARE(count, count_expected);
     }
 
     // Set the finish flag immediately, this should give us one thread only.
     for (int i = 0; i < repeats; ++i) {
         ThreadCountUser t(true /*finishImmediately*/);
         t.startBlocking();
-        QCOMPARE(threads.count(), 1);
+        int count = threads.count();
+        if (count != 1)
+            QEXPECT_FAIL("", "QTBUG-23333", Abort);
+        QCOMPARE(count, 1);
 
         (new ThreadCountUser(true /*finishImmediately*/))->startAsynchronously().waitForFinished();
-        QCOMPARE(threads.count(), 1);
+        count = threads.count();
+        if (count != 1)
+            QEXPECT_FAIL("", "QTBUG-23333", Abort);
+        QCOMPARE(count, 1);
     }
 }
 
