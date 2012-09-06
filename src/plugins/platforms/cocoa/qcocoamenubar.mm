@@ -83,6 +83,7 @@ QCocoaMenuBar::~QCocoaMenuBar()
 
 void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *before)
 {
+    QCocoaAutoReleasePool pool;
     QCocoaMenu *menu = static_cast<QCocoaMenu *>(platformMenu);
     QCocoaMenu *beforeMenu = static_cast<QCocoaMenu *>(before);
 #ifdef QT_COCOA_ENABLE_MENU_DEBUG

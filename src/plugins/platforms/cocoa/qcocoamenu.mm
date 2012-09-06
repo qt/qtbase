@@ -109,6 +109,7 @@ QCocoaMenu::QCocoaMenu() :
 
 QCocoaMenu::~QCocoaMenu()
 {
+    QCocoaAutoReleasePool pool;
     [m_nativeItem setSubmenu:nil];
     [m_nativeMenu release];
     [m_delegate release];
@@ -125,6 +126,7 @@ void QCocoaMenu::setText(const QString &text)
 
 void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before)
 {
+    QCocoaAutoReleasePool pool;
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
     QCocoaMenuItem *beforeItem = static_cast<QCocoaMenuItem *>(before);
 
@@ -168,6 +170,7 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
 
 void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
 {
+    QCocoaAutoReleasePool pool;
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
     Q_ASSERT(m_menuItems.contains(cocoaItem));
     m_menuItems.removeOne(cocoaItem);
@@ -187,6 +190,7 @@ QCocoaMenuItem *QCocoaMenu::itemOrNull(int index) const
 
 void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
 {
+    QCocoaAutoReleasePool pool;
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
     Q_ASSERT(m_menuItems.contains(cocoaItem));
 
