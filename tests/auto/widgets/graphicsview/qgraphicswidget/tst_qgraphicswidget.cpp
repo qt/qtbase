@@ -1792,6 +1792,9 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     QVERIFY(w);
     QTest::mouseMove(view.viewport());
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23699", Continue);
+#endif
     QTRY_COMPARE(qApp->activeWindow(), static_cast<QWidget *>(&view));
     QTRY_COMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(w));
 }

@@ -3135,8 +3135,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     d->toolTipGlobalPos = mouse->globalPos();
                     d->toolTipWakeUp.start(d->toolTipFallAsleep.isActive()?20:700, this);
                 }
-
-                d->handleAutomaticMouseGrab(w, mouse);
             }
 
             bool eventAccepted = mouse->isAccepted();

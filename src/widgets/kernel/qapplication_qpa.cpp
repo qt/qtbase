@@ -72,8 +72,7 @@
 QT_BEGIN_NAMESPACE
 
 static QString appFont;
-static bool popupGrabOk = false;
-static QPointer<QWidget> autoGrabber;
+static bool popupGrabOk;
 extern QWidget *qt_button_down;
 extern QWidget *qt_popup_down;
 extern bool qt_replay_popup_mouse_event;
@@ -142,28 +141,6 @@ void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
     QApplication::setActiveWindow(tlw);
 }
 
-void QApplicationPrivate::handleAutomaticMouseGrab(QWidget *widget, QMouseEvent *e)
-{
-    // Grab the mouse automatically for current window when any button is pressed,
-    // unless there is an active mousegrabber or mouse is being grabbed for a popup.
-    if (e->type() == QEvent::MouseButtonPress || e->type() == QEvent::MouseButtonRelease) {
-        if (e->buttons() == Qt::NoButton) {
-            // No buttons remain pressed, so release the grab unless grab has been acquired
-            // for some other reason in the meantime.
-            if (autoGrabber && !QWidget::mouseGrabber() && !popupGrabOk)
-                qt_widget_private(autoGrabber)->stealMouseGrab(false);
-            autoGrabber = 0;
-        } else {
-            // Some buttons are pressed, grab mouse input for current window,
-            // unless there is already an active grab.
-            if (!autoGrabber && !QWidget::mouseGrabber() && !popupGrabOk) {
-                autoGrabber = widget->window();
-                qt_widget_private(autoGrabber)->stealMouseGrab(true);
-            }
-        }
-    }
-}
-
 static void ungrabKeyboardForPopup(QWidget *popup)
 {
     if (QWidget::keyboardGrabber())
@@ -185,9 +162,6 @@ static void grabForPopup(QWidget *popup)
     Q_ASSERT(popup->testAttribute(Qt::WA_WState_Created));
     popupGrabOk = qt_widget_private(popup)->stealKeyboardGrab(true);
     if (popupGrabOk) {
-        if (autoGrabber)
-            qt_widget_private(autoGrabber)->stealMouseGrab(false);
-        autoGrabber = 0;
         popupGrabOk = qt_widget_private(popup)->stealMouseGrab(true);
         if (!popupGrabOk) {
             // transfer grab back to the keyboard grabber if any

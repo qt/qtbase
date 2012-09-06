@@ -166,7 +166,6 @@ public:
     void openPopup(QWidget *popup);
     static void setFocusWidget(QWidget *focus, Qt::FocusReason reason);
     static QWidget *focusNextPrevChild_helper(QWidget *toplevel, bool next);
-    void handleAutomaticMouseGrab(QWidget *widget, QMouseEvent *e);
 
 #ifndef QT_NO_SESSIONMANAGER
     QSessionManager *session_manager;
