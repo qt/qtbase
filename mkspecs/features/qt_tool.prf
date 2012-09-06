@@ -81,7 +81,6 @@ INSTALLS += target
         unset(added)
     }
     include($$TOOL_PRI)
-    for(var, $$list(binary depends)): \
-        cache(QT_TOOL.$${MODULE}.$$var, transient)
+    cache(QT_TOOL.$${MODULE}.command, transient)
 
 }
