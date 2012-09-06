@@ -168,7 +168,7 @@ QWinOverlappedIoNotifier::QWinOverlappedIoNotifier(QObject *parent)
       lastNumberOfBytes(0),
       lastErrorCode(ERROR_SUCCESS)
 {
-    hEvent = CreateEvent(NULL, true, false, NULL);
+    hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
     connect(this, &QWinOverlappedIoNotifier::_q_notify,
             this, &QWinOverlappedIoNotifier::_q_notified, Qt::QueuedConnection);
 }

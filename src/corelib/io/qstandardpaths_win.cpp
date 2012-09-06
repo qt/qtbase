@@ -100,9 +100,9 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case DataLocation:
     case GenericDataLocation:
 #if defined Q_OS_WINCE
-        if (SHGetSpecialFolderPath(0, path, CSIDL_APPDATA, false))
+        if (SHGetSpecialFolderPath(0, path, CSIDL_APPDATA, FALSE))
 #else
-        if (SHGetSpecialFolderPath(0, path, CSIDL_LOCAL_APPDATA, false))
+        if (SHGetSpecialFolderPath(0, path, CSIDL_LOCAL_APPDATA, FALSE))
 #endif
             result = convertCharArray(path);
         if (isTestModeEnabled())
@@ -116,38 +116,38 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         break;
 
     case DesktopLocation:
-        if (SHGetSpecialFolderPath(0, path, CSIDL_DESKTOPDIRECTORY, false))
+        if (SHGetSpecialFolderPath(0, path, CSIDL_DESKTOPDIRECTORY, FALSE))
             result = convertCharArray(path);
         break;
 
     case DownloadLocation: // TODO implement with SHGetKnownFolderPath(FOLDERID_Downloads) (starting from Vista)
     case DocumentsLocation:
-        if (SHGetSpecialFolderPath(0, path, CSIDL_PERSONAL, false))
+        if (SHGetSpecialFolderPath(0, path, CSIDL_PERSONAL, FALSE))
             result = convertCharArray(path);
         break;
 
     case FontsLocation:
-        if (SHGetSpecialFolderPath(0, path, CSIDL_FONTS, false))
+        if (SHGetSpecialFolderPath(0, path, CSIDL_FONTS, FALSE))
             result = convertCharArray(path);
         break;
 
     case ApplicationsLocation:
-        if (SHGetSpecialFolderPath(0, path, CSIDL_PROGRAMS, false))
+        if (SHGetSpecialFolderPath(0, path, CSIDL_PROGRAMS, FALSE))
             result = convertCharArray(path);
         break;
 
     case MusicLocation:
-        if (SHGetSpecialFolderPath(0, path, CSIDL_MYMUSIC, false))
+        if (SHGetSpecialFolderPath(0, path, CSIDL_MYMUSIC, FALSE))
             result = convertCharArray(path);
         break;
 
     case MoviesLocation:
-        if (SHGetSpecialFolderPath(0, path, CSIDL_MYVIDEO, false))
+        if (SHGetSpecialFolderPath(0, path, CSIDL_MYVIDEO, FALSE))
             result = convertCharArray(path);
         break;
 
     case PicturesLocation:
-        if (SHGetSpecialFolderPath(0, path, CSIDL_MYPICTURES, false))
+        if (SHGetSpecialFolderPath(0, path, CSIDL_MYPICTURES, FALSE))
             result = convertCharArray(path);
         break;
 
@@ -186,7 +186,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         case ConfigLocation: // same as DataLocation, on Windows
         case DataLocation:
         case GenericDataLocation:
-            if (SHGetSpecialFolderPath(0, path, CSIDL_COMMON_APPDATA, false)) {
+            if (SHGetSpecialFolderPath(0, path, CSIDL_COMMON_APPDATA, FALSE)) {
                 QString result = convertCharArray(path);
                 if (type != GenericDataLocation) {
                     if (!QCoreApplication::organizationName().isEmpty())

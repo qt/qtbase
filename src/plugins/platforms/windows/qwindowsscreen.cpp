@@ -93,8 +93,8 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
     MONITORINFOEX info;
     memset(&info, 0, sizeof(MONITORINFOEX));
     info.cbSize = sizeof(MONITORINFOEX);
-    if (GetMonitorInfo(hMonitor, &info) == false)
-        return true;
+    if (GetMonitorInfo(hMonitor, &info) == FALSE)
+        return TRUE;
 
     WindowsScreenDataList *result = reinterpret_cast<WindowsScreenDataList *>(p);
     QWindowsScreenData data;
@@ -131,7 +131,7 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
         data.flags |= QWindowsScreenData::PrimaryScreen;
     data.name = QString::fromWCharArray(info.szDevice);
     result->append(data);
-    return true;
+    return TRUE;
 }
 
 static inline WindowsScreenDataList monitorData()

@@ -511,7 +511,7 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange, qreal opacityLe
             SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, swpFlags);
         }
         if (flags & (Qt::CustomizeWindowHint|Qt::WindowTitleHint)) {
-            HMENU systemMenu = GetSystemMenu(hwnd, false);
+            HMENU systemMenu = GetSystemMenu(hwnd, FALSE);
             if (flags & Qt::WindowCloseButtonHint)
                 EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_ENABLED);
             else
@@ -557,7 +557,7 @@ QMargins QWindowsGeometryHint::frame(DWORD style, DWORD exStyle)
 #ifndef Q_OS_WINCE
     style &= ~(WS_OVERLAPPED); // Not permitted, see docs.
 #endif
-    if (!AdjustWindowRectEx(&rect, style, false, exStyle))
+    if (!AdjustWindowRectEx(&rect, style, FALSE, exStyle))
         qErrnoWarning("%s: AdjustWindowRectEx failed", __FUNCTION__);
     const QMargins result(qAbs(rect.left), qAbs(rect.top),
                           qAbs(rect.right), qAbs(rect.bottom));
@@ -869,7 +869,7 @@ void QWindowsWindow::show_sys() const
             // maximizing the widget, and then remove the maximize button afterwards.
             if (flags & Qt::WindowTitleHint &&
                 !(flags & (Qt::WindowMinMaxButtonsHint | Qt::FramelessWindowHint))) {
-                fakedMaximize = true;
+                fakedMaximize = TRUE;
                 setStyle(style() | WS_MAXIMIZEBOX);
             }
         }
@@ -1107,7 +1107,7 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
                                          WPARAM, LPARAM)
 {
     // Ignore invalid update bounding rectangles
-    if (!GetUpdateRect(m_data.hwnd, 0, false))
+    if (!GetUpdateRect(m_data.hwnd, 0, FALSE))
         return false;
     if (message == WM_ERASEBKGND) // Backing store - ignored.
         return true;
@@ -1537,7 +1537,7 @@ static inline DWORD cornerToWinOrientation(Qt::Corner corner)
 
 bool QWindowsWindow::startSystemResize(const QPoint &, Qt::Corner corner)
 {
-    if (!GetSystemMenu(m_data.hwnd, false))
+    if (!GetSystemMenu(m_data.hwnd, FALSE))
         return false;
 
     ReleaseCapture();

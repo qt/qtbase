@@ -1001,7 +1001,7 @@ void QEventDispatcherWin32::activateEventNotifiers()
     //### this could break if events are removed/added in the activation
     for (int i=0; i<d->winEventNotifierList.count(); i++) {
 #if !defined(Q_OS_WINCE)
-        if (WaitForSingleObjectEx(d->winEventNotifierList.at(i)->handle(), 0, true) == WAIT_OBJECT_0)
+        if (WaitForSingleObjectEx(d->winEventNotifierList.at(i)->handle(), 0, TRUE) == WAIT_OBJECT_0)
             d->activateEventNotifier(d->winEventNotifierList.at(i));
 #else
         if (WaitForSingleObject(d->winEventNotifierList.at(i)->handle(), 0) == WAIT_OBJECT_0)

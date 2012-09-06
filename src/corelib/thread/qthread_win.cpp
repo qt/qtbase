@@ -127,7 +127,7 @@ QThreadData *QThreadData::current()
                     GetCurrentProcess(),
                     &realHandle,
                     0,
-                    false,
+                    FALSE,
                     DUPLICATE_SAME_ACCESS);
 #else
                         realHandle = (HANDLE)GetCurrentThreadId();

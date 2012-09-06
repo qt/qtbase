@@ -109,7 +109,7 @@ int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR /*cmdPara
 
     // If there exists an other instance of this application
     // it will be the owner of a mutex with the unique ID.
-    HANDLE mutex = CreateMutex(NULL, true, (LPCWSTR)uid.utf16());
+    HANDLE mutex = CreateMutex(NULL, TRUE, (LPCWSTR)uid.utf16());
     if (mutex && ERROR_ALREADY_EXISTS == GetLastError()) {
         CloseHandle(mutex);
 

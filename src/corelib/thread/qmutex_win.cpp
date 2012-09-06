@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 
 QMutexPrivate::QMutexPrivate()
 {
-    event = CreateEvent(0, false, false, 0);
+    event = CreateEvent(0, FALSE, FALSE, 0);
     if (!event)
         qWarning("QMutexData::QMutexData: Cannot create event");
 }

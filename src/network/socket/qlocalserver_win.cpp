@@ -69,7 +69,7 @@ bool QLocalServerPrivate::addListener()
 
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-    sa.bInheritHandle = false;      //non inheritable handle, same as default
+    sa.bInheritHandle = FALSE;      //non inheritable handle, same as default
     sa.lpSecurityDescriptor = 0;    //default security descriptor
 
     QScopedPointer<SECURITY_DESCRIPTOR> pSD;
@@ -166,9 +166,9 @@ bool QLocalServerPrivate::addListener()
                 return false;
             }
         }
-        SetSecurityDescriptorOwner(pSD.data(), pTokenUser->User.Sid, false);
-        SetSecurityDescriptorGroup(pSD.data(), pTokenGroup->PrimaryGroup, false);
-        if (!SetSecurityDescriptorDacl(pSD.data(), false, acl, false)) {
+        SetSecurityDescriptorOwner(pSD.data(), pTokenUser->User.Sid, FALSE);
+        SetSecurityDescriptorGroup(pSD.data(), pTokenGroup->PrimaryGroup, FALSE);
+        if (!SetSecurityDescriptorDacl(pSD.data(), TRUE, acl, FALSE)) {
             setError(QLatin1String("QLocalServerPrivate::addListener"));
             FreeSid(worldSID);
             return false;
@@ -252,7 +252,7 @@ bool QLocalServerPrivate::listen(const QString &name)
     // Use only one event for all listeners of one socket.
     // The idea is that listener events are rare, so polling all listeners once in a while is
     // cheap compared to waiting for N additional events in each iteration of the main loop.
-    eventHandle = CreateEvent(NULL, true, false, NULL);
+    eventHandle = CreateEvent(NULL, TRUE, FALSE, NULL);
     connectionEventNotifier = new QWinEventNotifier(eventHandle , q);
     q->connect(connectionEventNotifier, SIGNAL(activated(HANDLE)), q, SLOT(_q_onNewConnection()));
 
@@ -282,7 +282,7 @@ void QLocalServerPrivate::_q_onNewConnection()
     for (int i = 0; i < listeners.size(); ) {
         HANDLE handle = listeners[i].handle;
         if (listeners[i].connected
-            || GetOverlappedResult(handle, &listeners[i].overlapped, &dummy, false))
+            || GetOverlappedResult(handle, &listeners[i].overlapped, &dummy, FALSE))
         {
             listeners.removeAt(i);
 

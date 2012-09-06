@@ -54,7 +54,7 @@ QWindowsPipeWriter::QWindowsPipeWriter(HANDLE pipe, QObject * parent)
 {
 #if !defined(Q_OS_WINCE) || (_WIN32_WCE >= 0x600)
     DuplicateHandle(GetCurrentProcess(), pipe, GetCurrentProcess(),
-                         &writePipe, 0, false, DUPLICATE_SAME_ACCESS);
+                         &writePipe, 0, FALSE, DUPLICATE_SAME_ACCESS);
 #else
     Q_UNUSED(pipe);
     writePipe = GetCurrentProcess();
@@ -103,7 +103,7 @@ void QWindowsPipeWriter::run()
 {
     OVERLAPPED overl;
     memset(&overl, 0, sizeof overl);
-    overl.hEvent = CreateEvent(NULL, true, false, NULL);
+    overl.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
     forever {
         lock.lock();
         while(data.isEmpty() && (!quitNow)) {
@@ -138,7 +138,7 @@ void QWindowsPipeWriter::run()
                 }
 #ifndef Q_OS_WINCE
                 if (GetLastError() == ERROR_IO_PENDING) {
-                  if (!GetOverlappedResult(writePipe, &overl, &written, true)) {
+                  if (!GetOverlappedResult(writePipe, &overl, &written, TRUE)) {
                       CloseHandle(overl.hEvent);
                       return;
                   }
