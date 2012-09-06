@@ -123,9 +123,10 @@ public:
     manually. The spin box supports integer values but can be extended to
     use different strings with validate(), textFromValue() and valueFromText().
 
-    Every time the value changes QSpinBox emits the valueChanged()
-    signals. The current value can be fetched with value() and set
-    with setValue().
+    Every time the value changes QSpinBox emits two valueChanged() signals,
+    one providing an int and the other a QString. The QString overload
+    provides the value with both prefix() and suffix().
+    The current value can be fetched with value() and set with setValue().
 
     Clicking the up/down buttons or using the keyboard accelerator's
     up and down arrows will increase or decrease the current value in
@@ -190,8 +191,7 @@ public:
 
     \overload
 
-    The new value is passed literally in \a text with no prefix() or
-    suffix().
+    The new value is passed in \a text with prefix() and suffix().
 */
 
 /*!
@@ -215,7 +215,8 @@ QSpinBox::QSpinBox(QWidget *parent)
     \brief the value of the spin box
 
     setValue() will emit valueChanged() if the new value is different
-    from the old one.
+    from the old one. The value property has a second notifier
+    signal which includes the spin box's prefix and suffix.
 */
 
 int QSpinBox::value() const
@@ -378,7 +379,7 @@ void QSpinBox::setMinimum(int minimum)
 
     \brief the maximum value of the spin box
 
-    When setting this property the \l minimum is adjusted
+    When setting this property the minimum is adjusted
     if necessary, to ensure that the range remains valid.
 
     The default maximum value is 99.
@@ -510,8 +511,10 @@ void QSpinBox::fixup(QString &input) const
     values but can be extended to use different strings with
     validate(), textFromValue() and valueFromText().
 
-    Every time the value changes QDoubleSpinBox emits the
-    valueChanged() signal. The current value can be fetched with
+    Every time the value changes QDoubleSpinBox emits two
+    valueChanged() signals, one taking providing a double and the other
+    a QString. The QString overload provides the value with both
+    prefix() and suffix(). The current value can be fetched with
     value() and set with setValue().
 
     Note: QDoubleSpinBox will round numbers so they can be displayed
@@ -559,8 +562,7 @@ void QSpinBox::fixup(QString &input) const
 
     \overload
 
-    The new value is passed literally in \a text with no prefix() or
-    suffix().
+    The new value is passed in \a text with prefix() and suffix().
 */
 
 /*!
@@ -582,7 +584,8 @@ QDoubleSpinBox::QDoubleSpinBox(QWidget *parent)
     \brief the value of the spin box
 
     setValue() will emit valueChanged() if the new value is different
-    from the old one.
+    from the old one. The value property has a second notifier
+    signal which includes the spin box's prefix and suffix.
 
     Note: The value will be rounded so it can be displayed with the
     current setting of decimals.
