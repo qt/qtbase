@@ -42,6 +42,9 @@
 #include "mingw_make.h"
 #include "option.h"
 #include "meta.h"
+
+#include <proitems.h>
+
 #include <qregexp.h>
 #include <qdir.h>
 #include <stdlib.h>
@@ -76,14 +79,13 @@ bool MingwMakefileGenerator::findLibraries()
     QList<QMakeLocalFileName> dirs;
   static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
   for (int i = 0; lflags[i]; i++) {
-    QStringList &l = project->values(lflags[i]);
-    QStringList::Iterator it = l.begin();
+    ProStringList &l = project->values(lflags[i]);
+    ProStringList::Iterator it = l.begin();
     while (it != l.end()) {
         if ((*it).startsWith("-l")) {
-            QString steam = (*it).mid(2), out;
-            QString suffix;
-            if (!project->isEmpty("QMAKE_" + steam.toUpper() + "_SUFFIX"))
-                suffix = project->first("QMAKE_" + steam.toUpper() + "_SUFFIX");
+            QString steam = (*it).mid(2).toQString();
+            ProString out;
+            QString suffix = project->first(ProKey("QMAKE_" + steam.toUpper() + "_SUFFIX")).toQString();
             for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
                 QString extension;
                 int ver = findHighestVersion((*dir_it).local(), steam, "dll.a|a");
@@ -93,14 +95,14 @@ bool MingwMakefileGenerator::findLibraries()
                 if(QMakeMetaInfo::libExists((*dir_it).local() + Option::dir_sep + steam) ||
                     exists((*dir_it).local() + Option::dir_sep + steam + extension + ".a") ||
                     exists((*dir_it).local() + Option::dir_sep + steam + extension + ".dll.a")) {
-                        out = (*it) + extension;
+                        out = *it + extension;
                         break;
                 }
             }
             if (!out.isEmpty()) // We assume if it never finds it that its correct
                 (*it) = out;
 	    } else if((*it).startsWith("-L")) {
-            dirs.append(QMakeLocalFileName((*it).mid(2)));
+            dirs.append(QMakeLocalFileName((*it).mid(2).toQString()));
         }
 
         ++it;
@@ -129,8 +131,8 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
 
         if(Option::mkfile::do_stub_makefile) {
             t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
-            const QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
-            for(QStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
+            const ProStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
+            for (ProStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
                 t << *it << " ";
             t << "first all clean install distclean uninstall: qmake" << endl
               << "qmake_all:" << endl;
@@ -148,18 +150,19 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
     return false;
  }
 
-void createLdObjectScriptFile(const QString &fileName, const QStringList &objList)
+void createLdObjectScriptFile(const QString &fileName, const ProStringList &objList)
 {
     QString filePath = Option::output_dir + QDir::separator() + fileName;
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream t(&file);
         t << "INPUT(" << endl;
-        for (QStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
-            if (QDir::isRelativePath(*it))
-		t << "./" << *it << endl;
-	    else
-		t << *it << endl;
+        for (ProStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
+            QString path = (*it).toQString();
+            if (QDir::isRelativePath(path))
+                t << "./" << path << endl;
+            else
+                t << path << endl;
         }
         t << ");" << endl;
 	t.flush();
@@ -167,14 +170,14 @@ void createLdObjectScriptFile(const QString &fileName, const QStringList &objLis
     }
 }
 
-void createArObjectScriptFile(const QString &fileName, const QString &target, const QStringList &objList)
+void createArObjectScriptFile(const QString &fileName, const QString &target, const ProStringList &objList)
 {
     QString filePath = Option::output_dir + QDir::separator() + fileName;
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream t(&file);
         t << "CREATE " << target << endl;
-        for (QStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
+        for (ProStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
             t << "ADDMOD " << *it << endl;
         }
         t << "SAVE" << endl;
@@ -183,17 +186,18 @@ void createArObjectScriptFile(const QString &fileName, const QString &target, co
     }
 }
 
-void createRvctObjectScriptFile(const QString &fileName, const QStringList &objList)
+void createRvctObjectScriptFile(const QString &fileName, const ProStringList &objList)
 {
     QString filePath = Option::output_dir + QDir::separator() + fileName;
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream t(&file);
-        for (QStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
-            if (QDir::isRelativePath(*it))
-                t << "./" << *it << endl;
+        for (ProStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
+            QString path = (*it).toQString();
+            if (QDir::isRelativePath(path))
+                t << "./" << path << endl;
             else
-                t << *it << endl;
+                t << path << endl;
         }
         t.flush();
         file.close();
@@ -205,7 +209,7 @@ void MingwMakefileGenerator::writeMingwParts(QTextStream &t)
     writeStandardParts(t);
 
     if (!preCompHeaderOut.isEmpty()) {
-	QString header = project->first("PRECOMPILED_HEADER");
+        QString header = project->first("PRECOMPILED_HEADER").toQString();
 	QString cHeader = preCompHeaderOut + Option::dir_sep + "c";
 	t << escapeDependencyPath(cHeader) << ": " << escapeDependencyPath(header) << " "
           << escapeDependencyPaths(findDependencies(header)).join(" \\\n\t\t")
@@ -259,7 +263,7 @@ void MingwMakefileGenerator::init()
         project->values("QMAKE_LIBS") += escapeFilePaths(project->values("RES_FILE"));
     }
 
-    QStringList &configs = project->values("CONFIG");
+    ProStringList &configs = project->values("CONFIG");
 
     if(project->isActiveConfig("qt_dll"))
         if(configs.indexOf("qt") == -1)
@@ -275,7 +279,7 @@ void MingwMakefileGenerator::init()
     }
 
     if (!project->values("DEF_FILE").isEmpty()) {
-        QString defFileName = fileFixify(project->values("DEF_FILE")).first();
+        QString defFileName = fileFixify(project->first("DEF_FILE").toQString());
         project->values("QMAKE_LFLAGS").append(QString("-Wl,") + escapeFilePath(defFileName));
     }
 
@@ -288,7 +292,7 @@ void MingwMakefileGenerator::init()
     if (!project->first("PRECOMPILED_HEADER").isEmpty()
         && project->isActiveConfig("precompile_header")) {
         QString preCompHeader = var("PRECOMPILED_DIR")
-		         + QFileInfo(project->first("PRECOMPILED_HEADER")).fileName();
+                    + QFileInfo(project->first("PRECOMPILED_HEADER").toQString()).fileName();
 	preCompHeaderOut = preCompHeader + ".gch";
 	project->values("QMAKE_CLEAN").append(preCompHeaderOut + Option::dir_sep + "c");
 	project->values("QMAKE_CLEAN").append(preCompHeaderOut + Option::dir_sep + "c++");
@@ -316,9 +320,9 @@ void MingwMakefileGenerator::writeIncPart(QTextStream &t)
 {
     t << "INCPATH       = ";
 
-    const QStringList &incs = project->values("INCLUDEPATH");
-    for (QStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
-        QString inc = (*incit);
+    const ProStringList &incs = project->values("INCLUDEPATH");
+    for (ProStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
+        QString inc = (*incit).toQString();
         inc.replace(QRegExp("\\\\$"), "");
         inc.replace(QRegExp("\""), "");
         t << "-I" << quote << inc << quote << " ";
@@ -403,7 +407,7 @@ void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 
 void MingwMakefileGenerator::writeRcFilePart(QTextStream &t)
 {
-    const QString rc_file = fileFixify(project->first("RC_FILE"));
+    const QString rc_file = fileFixify(project->first("RC_FILE").toQString());
 
     QString incPathStr = fileInfo(rc_file).path();
     if (incPathStr != "." && QDir::isRelativePath(incPathStr))

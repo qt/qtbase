@@ -23,6 +23,7 @@ VPATH += $$QT_SOURCE_TREE/src/corelib/global \
          $$QT_SOURCE_TREE/tools/shared/windows
 
 INCLUDEPATH += . \
+           library \
            generators \
            generators/unix \
            generators/win32 \

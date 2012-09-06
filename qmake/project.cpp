@@ -574,14 +574,14 @@ QStringList QMakeProject::qmakeFeaturePaths()
     const QString mkspecs_concat = QLatin1String("/mkspecs");
     const QString base_concat = QLatin1String("/features");
     QStringList concat;
-    foreach (const QString &sfx, values("QMAKE_PLATFORM"))
+    foreach (const QString &sfx, values("QMAKE_PLATFORM", vars))
         concat << base_concat + QLatin1Char('/') + sfx;
     concat << base_concat;
 
     QStringList feature_roots = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEFEATURES")));
     feature_roots += cached_qmakefeatures;
     if(prop)
-        feature_roots += splitPathList(prop->value("QMAKEFEATURES"));
+        feature_roots += splitPathList(prop->value("QMAKEFEATURES").toQString());
     QStringList feature_bases;
     if (!cached_build_root.isEmpty())
         feature_bases << cached_build_root;
@@ -697,7 +697,7 @@ QMakeProject::cleanup()
 QMakeProject::QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *_vars)
 {
     init(p->properties());
-    vars = _vars ? *_vars : p->variables();
+    vars = _vars ? *_vars : p->vars;
     host_build = p->host_build;
     for(QHash<QString, FunctionBlock*>::iterator it = p->replaceFunctions.begin(); it != p->replaceFunctions.end(); ++it) {
         it.value()->ref();
@@ -1487,7 +1487,7 @@ QMakeProject::read(uchar cmd)
 #else
             // We can't resolve symlinks as they do on Unix, so configure.exe puts the source of the
             // qmake.conf at the end of the default/qmake.conf in the QMAKESPEC_ORG variable.
-            QString orig_spec = first(QLatin1String("QMAKESPEC_ORIGINAL"));
+            QString orig_spec = first(ProKey("QMAKESPEC_ORIGINAL")).toQString();
             real_spec = orig_spec.isEmpty() ? qmakespec : orig_spec;
 #endif
             vars["QMAKESPEC"] << real_spec;
@@ -1496,7 +1496,7 @@ QMakeProject::read(uchar cmd)
             // The spec extends the feature search path, so invalidate the cache.
             invalidateFeatureRoots();
             // The MinGW and x-build specs may change the separator; $$shell_{path,quote}() need it
-            Option::dir_sep = first(QLatin1String("QMAKE_DIR_SEP"));
+            Option::dir_sep = first("QMAKE_DIR_SEP").toQString();
 
             if (!conffile.isEmpty()) {
                 debug_msg(1, "Project config file: reading %s", conffile.toLatin1().constData());
@@ -1521,9 +1521,9 @@ QMakeProject::read(uchar cmd)
         doProjectInclude("spec_pre", IncludeFlagFeature, vars);
     }
 
-    for (QHash<QString, QStringList>::ConstIterator it = extra_vars.constBegin();
+    for (ProValueMap::ConstIterator it = extra_vars.constBegin();
          it != extra_vars.constEnd(); ++it)
-        vars.insert(it.key(), it.value());
+        vars.insert(it.key().toQString(), it.value().toQStringList());
 
     if(cmd & ReadFeatures) {
         debug_msg(1, "Processing default_pre: %s", vars["CONFIG"].join("::").toLatin1().constData());
@@ -1861,11 +1861,11 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
             // possible to use "place" everywhere. Instead just set variables and grab them later
             QMakeProject proj(prop);
             if(flags & IncludeFlagNewParser) {
-                parsed = proj.read(file, proj.variables()); // parse just that file (fromfile, infile)
+                parsed = proj.read(file, proj.vars); // parse just that file (fromfile, infile)
             } else {
                 parsed = proj.read(file); // parse all aux files (load/include into)
             }
-            place = proj.variables();
+            place = proj.vars;
         } else {
             QStack<ScopeBlock> sc = scope_blocks;
             IteratorBlock *it = iterator;
@@ -3520,10 +3520,10 @@ QMakeProject::test(const QString &v)
 }
 
 bool
-QMakeProject::test(const QString &func, const QList<QStringList> &args)
+QMakeProject::test(const ProKey &func, const QList<ProStringList> &args)
 {
     QHash<QString, QStringList> tmp = vars;
-    return doProjectTest(func, args, tmp);
+    return doProjectTest(func.toQString(), *(const QList<QStringList> *)&args, tmp);
 }
 
 QStringList
@@ -3552,10 +3552,10 @@ QMakeProject::expand(const QString &str, const QString &file, int line)
 }
 
 QStringList
-QMakeProject::expand(const QString &func, const QList<QStringList> &args)
+QMakeProject::expand(const ProKey &func, const QList<ProStringList> &args)
 {
     QHash<QString, QStringList> tmp = vars;
-    return doProjectExpand(func, args, tmp);
+    return doProjectExpand(func.toString().toQString(), *(const QList<QStringList> *)&args, tmp);
 }
 
 bool
@@ -3680,7 +3680,7 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QHash<QString, QString
                     if (var == "QMAKE_MKSPECS")
                         replacement = split_value_list(qmake_mkspec_paths().join(Option::dirlist_sep));
                     else if (prop)
-                        replacement = split_value_list(prop->value(var));
+                        replacement = split_value_list(prop->value(ProKey(var)).toQString());
                 } else if(var_type == FUNCTION) {
                     replacement = doProjectExpand(var, args, place);
                 } else if(var_type == VAR) {
@@ -3776,9 +3776,9 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
     return place[var];
 }
 
-bool QMakeProject::isEmpty(const QString &v) const
+bool QMakeProject::isEmpty(const ProKey &v) const
 {
-    QHash<QString, QStringList>::ConstIterator it = vars.constFind(v);
+    QHash<QString, QStringList>::ConstIterator it = vars.constFind(v.toQString());
     return it == vars.constEnd() || it->isEmpty();
 }
 

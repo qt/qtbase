@@ -92,11 +92,11 @@ class MakefileGenerator : protected QMakeSourceFileInfo
 protected:
     enum TARG_MODE { TARG_UNIX_MODE, TARG_MACX_MODE, TARG_WIN_MODE } target_mode;
 
-    QStringList createObjectList(const QStringList &sources);
+    ProStringList createObjectList(const ProStringList &sources);
 
     //makefile style generator functions
     void writeObj(QTextStream &, const char *src);
-    void writeInstalls(QTextStream &t, const QString &installs, bool noBuild=false);
+    void writeInstalls(QTextStream &t, bool noBuild=false);
     void writeHeader(QTextStream &t);
     void writeSubDirs(QTextStream &t);
     void writeMakeQmake(QTextStream &t, bool noDummyQmakeAll = false);
@@ -118,7 +118,7 @@ protected:
         QString name;
         QString in_directory, out_directory;
         QString profile, target, makefile;
-        QStringList depends;
+        ProStringList depends;
     };
     enum SubTargetFlags {
         SubTargetInstalls=0x01,
@@ -137,7 +137,7 @@ protected:
     void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags);
 
     //extra compiler interface
-    bool verifyExtraCompiler(const QString &c, const QString &f);
+    bool verifyExtraCompiler(const ProString &c, const QString &f);
     virtual QString replaceExtraCompilerVariables(const QString &, const QStringList &, const QStringList &);
     inline QString replaceExtraCompilerVariables(const QString &val, const QString &in, const QString &out)
     { return replaceExtraCompilerVariables(val, QStringList(in), QStringList(out)); }
@@ -150,11 +150,16 @@ protected:
 
     //escape
     virtual QString unescapeFilePath(const QString &path) const;
+    ProString unescapeFilePath(const ProString &path) const;
     virtual QStringList unescapeFilePaths(const QStringList &path) const;
+    ProStringList unescapeFilePaths(const ProStringList &path) const;
     virtual QString escapeFilePath(const QString &path) const { return path; }
-    virtual QString escapeDependencyPath(const QString &path) const { return escapeFilePath(path); }
+    ProString escapeFilePath(const ProString &path) const;
     QStringList escapeFilePaths(const QStringList &paths) const;
+    ProStringList escapeFilePaths(const ProStringList &paths) const;
+    virtual QString escapeDependencyPath(const QString &path) const { return escapeFilePath(path); }
     QStringList escapeDependencyPaths(const QStringList &paths) const;
+    ProStringList escapeDependencyPaths(const ProStringList &paths) const;
 
     //initialization
     void verifyCompilers();
@@ -179,7 +184,7 @@ protected:
         VPATH_RemoveMissingFiles = 0x02,
         VPATH_NoFixify           = 0x04
     };
-    QStringList findFilesInVPATH(QStringList l, uchar flags, const QString &var="");
+    ProStringList findFilesInVPATH(ProStringList l, uchar flags, const QString &var="");
 
     inline int findExecutable(const QStringList &cmdline)
     { int ret; canExecute(cmdline, &ret); return ret; }
@@ -219,13 +224,16 @@ protected:
     virtual bool findLibraries();
 
     //for retrieving values and lists of values
-    virtual QString var(const QString &var);
-    QString varGlue(const QString &var, const QString &before, const QString &glue, const QString &after);
-    QString fileVarGlue(const QString &var, const QString &before, const QString &glue, const QString &after);
-    QString varList(const QString &var);
+    virtual QString var(const ProKey &var);
+    QString varGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after);
+    QString fileVarGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after);
+    QString varList(const ProKey &var);
+    QString val(const ProStringList &varList);
     QString val(const QStringList &varList);
     QString valGlue(const QStringList &varList, const QString &before, const QString &glue, const QString &after);
+    QString valGlue(const ProStringList &varList, const QString &before, const QString &glue, const QString &after);
     QString valList(const QStringList &varList);
+    QString valList(const ProStringList &varList);
 
     QString filePrefixRoot(const QString &, const QString &);
 

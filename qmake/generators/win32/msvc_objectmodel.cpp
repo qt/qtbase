@@ -2093,6 +2093,12 @@ void VCFilter::addFiles(const QStringList& fileList)
         addFile(fileList.at(i));
 }
 
+void VCFilter::addFiles(const ProStringList& fileList)
+{
+    for (int i = 0; i < fileList.count(); ++i)
+        addFile(fileList.at(i).toQString());
+}
+
 void VCFilter::modifyPCHstage(QString str)
 {
     bool autogenSourceFile = Project->autogenPrecompCPP;
@@ -2180,12 +2186,12 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
             continue;
 
         // All information about the extra compiler
-        QString tmp_out = Project->project->first(extraCompilerName + ".output");
-        QString tmp_cmd = Project->project->values(extraCompilerName + ".commands").join(" ");
-        QString tmp_cmd_name = Project->project->values(extraCompilerName + ".name").join(" ");
-        QStringList tmp_dep = Project->project->values(extraCompilerName + ".depends");
-        QString tmp_dep_cmd = Project->project->values(extraCompilerName + ".depend_command").join(" ");
-        QStringList configs = Project->project->values(extraCompilerName + ".CONFIG");
+        QString tmp_out = Project->project->first(ProKey(extraCompilerName + ".output")).toQString();
+        QString tmp_cmd = Project->project->values(ProKey(extraCompilerName + ".commands")).join(" ");
+        QString tmp_cmd_name = Project->project->values(ProKey(extraCompilerName + ".name")).join(" ");
+        QStringList tmp_dep = Project->project->values(ProKey(extraCompilerName + ".depends")).toQStringList();
+        QString tmp_dep_cmd = Project->project->values(ProKey(extraCompilerName + ".depend_command")).join(" ");
+        const ProStringList &configs = Project->project->values(ProKey(extraCompilerName + ".CONFIG"));
         bool combined = configs.indexOf("combine") != -1;
 
         QString cmd, cmd_name, out;
@@ -2248,12 +2254,13 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         // Command for file
         if (combined) {
             // Add dependencies for each file
-            QStringList tmp_in = Project->project->values(extraCompilerName + ".input");
+            const ProStringList &tmp_in = Project->project->values(ProKey(extraCompilerName + ".input"));
             for (int a = 0; a < tmp_in.count(); ++a) {
-                const QStringList &files = Project->project->values(tmp_in.at(a));
+                const ProStringList &files = Project->project->values(tmp_in.at(a).toKey());
                 for (int b = 0; b < files.count(); ++b) {
-                    deps += Project->findDependencies(files.at(b));
-                    inputs += Option::fixPathToTargetOS(files.at(b), false);
+                    QString file = files.at(b).toQString();
+                    deps += Project->findDependencies(file);
+                    inputs += Option::fixPathToTargetOS(file, false);
                 }
             }
             deps += inputs; // input files themselves too..

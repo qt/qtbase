@@ -39,70 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef META_H
-#define META_H
+#ifndef QMAKE_GLOBAL_H
+#define QMAKE_GLOBAL_H
 
-#include "project.h"
+#include <qglobal.h>
 
-#include <qhash.h>
-#include <qstringlist.h>
-#include <qstring.h>
-
-QT_BEGIN_NAMESPACE
-
-class QMakeProject;
-
-class QMakeMetaInfo
-{
-    bool readLibtoolFile(const QString &f);
-    bool readPkgCfgFile(const QString &f);
-    QMakeProject *conf;
-    ProValueMap vars;
-    QString meta_type;
-    static QHash<QString, ProValueMap> cache_vars;
-    void clear();
-public:
-    QMakeMetaInfo(QMakeProject *_conf);
-
-    bool readLib(QString lib);
-    static QString findLib(QString lib);
-    static bool libExists(QString lib);
-    QString type() const;
-
-    bool isEmpty(const ProKey &v);
-    ProStringList &values(const ProKey &v);
-    ProString first(const ProKey &v);
-    ProValueMap &variables();
-};
-
-inline bool QMakeMetaInfo::isEmpty(const ProKey &v)
-{ return !vars.contains(v) || vars[v].isEmpty(); }
-
-inline QString QMakeMetaInfo::type() const
-{ return meta_type; }
-
-inline ProStringList &QMakeMetaInfo::values(const ProKey &v)
-{ return vars[v]; }
-
-inline ProString QMakeMetaInfo::first(const ProKey &v)
-{
-#if defined(Q_CC_SUN) && (__SUNPRO_CC == 0x500) || defined(Q_CC_HP)
-    // workaround for Sun WorkShop 5.0 bug fixed in Forte 6
-    if (isEmpty(v))
-        return ProString("");
-    else
-        return vars[v].first();
+#if defined(QMAKE_AS_LIBRARY)
+#  if defined(QMAKE_LIBRARY)
+#    define QMAKE_EXPORT Q_DECL_EXPORT
+#  else
+#    define QMAKE_EXPORT Q_DECL_IMPORT
+#  endif
 #else
-    return isEmpty(v) ? ProString("") : vars[v].first();
+#  define QMAKE_EXPORT
 #endif
-}
 
-inline ProValueMap &QMakeMetaInfo::variables()
-{ return vars; }
+// Be fast even for debug builds
+// MinGW GCC 4.5+ has a problem with always_inline putTok and putBlockLen
+#if defined(__GNUC__) && !(defined(__MINGW32__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 5)
+# define ALWAYS_INLINE inline __attribute__((always_inline))
+#elif defined(_MSC_VER)
+# define ALWAYS_INLINE __forceinline
+#else
+# define ALWAYS_INLINE inline
+#endif
 
-inline bool QMakeMetaInfo::libExists(QString lib)
-{ return !findLib(lib).isNull(); }
-
-QT_END_NAMESPACE
-
-#endif // META_H
+#endif

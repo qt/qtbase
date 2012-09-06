@@ -80,7 +80,7 @@ ProjectGenerator::init()
     project->values("CONFIG").clear();
     Option::postProcessProject(project);
 
-    QHash<QString, QStringList> &v = project->variables();
+    ProValueMap &v = project->variables();
     QString templ = Option::user_template.isEmpty() ? QString("app") : Option::user_template;
     if(!Option::user_template_prefix.isEmpty())
         templ.prepend(Option::user_template_prefix);
@@ -169,7 +169,7 @@ ProjectGenerator::init()
                 QFileInfo fi(fileInfo(newdir));
                 if(fi.isDir()) {
                     newdir = fileFixify(newdir);
-                    QStringList &subdirs = v["SUBDIRS"];
+                    ProStringList &subdirs = v["SUBDIRS"];
                     if(exists(fi.filePath() + QDir::separator() + fi.fileName() + Option::pro_ext) &&
                        !subdirs.contains(newdir, Qt::CaseInsensitive)) {
                         subdirs.append(newdir);
@@ -205,7 +205,7 @@ ProjectGenerator::init()
                     regx = regx.right(regx.length() - (s+1));
                 }
                 QStringList files = QDir(dir).entryList(QDir::nameFiltersFromString(regx), QDir::Dirs);
-                QStringList &subdirs = v["SUBDIRS"];
+                ProStringList &subdirs = v["SUBDIRS"];
                 for(int i = 0; i < (int)files.count(); i++) {
                     QString newdir(dir + files[i]);
                     QFileInfo fi(fileInfo(newdir));
@@ -231,28 +231,28 @@ ProjectGenerator::init()
                 }
             }
         }
-        v["TEMPLATE_ASSIGN"] = QStringList("subdirs");
+        v["TEMPLATE_ASSIGN"] = ProStringList("subdirs");
         return;
     }
 
     //setup deplist
     QList<QMakeLocalFileName> deplist;
     {
-        const QStringList &d = v["DEPENDPATH"];
+        const ProStringList &d = v["DEPENDPATH"];
         for(int i = 0; i < d.size(); ++i)
-            deplist.append(QMakeLocalFileName(d[i]));
+            deplist.append(QMakeLocalFileName(d[i].toQString()));
     }
     setDependencyPaths(deplist);
 
-    QStringList &h = v["HEADERS"];
+    ProStringList &h = v["HEADERS"];
     bool no_qt_files = true;
     static const char *srcs[] = { "SOURCES", "YACCSOURCES", "LEXSOURCES", "FORMS", 0 };
     for (int i = 0; srcs[i]; i++) {
-        const QStringList &l = v[srcs[i]];
+        const ProStringList &l = v[srcs[i]];
         QMakeSourceFileInfo::SourceFileType type = QMakeSourceFileInfo::TYPE_C;
         QMakeSourceFileInfo::addSourceFiles(l, QMakeSourceFileInfo::SEEK_DEPS, type);
         for(int i = 0; i < l.size(); ++i) {
-            QStringList tmp = QMakeSourceFileInfo::dependencies(l[i]);
+            QStringList tmp = QMakeSourceFileInfo::dependencies(l.at(i).toQString());
             if(!tmp.isEmpty()) {
                 for(int dep_it = 0; dep_it < tmp.size(); ++dep_it) {
                     QString dep = tmp[dep_it];
@@ -280,7 +280,7 @@ ProjectGenerator::init()
                             QString src(dep.left(dep.length() - h_ext.length()) +
                                         Option::cpp_ext.at(cppit));
                             if(exists(src)) {
-                                QStringList &srcl = v["SOURCES"];
+                                ProStringList &srcl = v["SOURCES"];
                                 if(!srcl.contains(src, Qt::CaseInsensitive))
                                     srcl.append(src);
                             }
@@ -297,16 +297,16 @@ ProjectGenerator::init()
     }
 
     //strip out files that are actually output from internal compilers (ie temporary files)
-    const QStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
-    for(QStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
-        QString tmp_out = project->first((*it) + ".output");
+    const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
+    for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
+        QString tmp_out = project->first(ProKey(*it + ".output")).toQString();
         if(tmp_out.isEmpty())
             continue;
 
-        QStringList var_out = project->values((*it) + ".variable_out");
+        ProStringList var_out = project->values(ProKey(*it + ".variable_out"));
         bool defaults = var_out.isEmpty();
         for(int i = 0; i < var_out.size(); ++i) {
-            QString v = var_out.at(i);
+            ProString v = var_out.at(i);
             if(v.startsWith("GENERATED_")) {
                 defaults = true;
                 break;
@@ -317,15 +317,15 @@ ProjectGenerator::init()
             var_out << "HEADERS";
             var_out << "FORMS";
         }
-        const QStringList &tmp = project->values((*it) + ".input");
-        for(QStringList::ConstIterator it2 = tmp.begin(); it2 != tmp.end(); ++it2) {
-            QStringList &inputs = project->values(*it2);
-            for(QStringList::Iterator input = inputs.begin(); input != inputs.end(); ++input) {
-                QString path = replaceExtraCompilerVariables(tmp_out, (*input), QString());
+        const ProStringList &tmp = project->values(ProKey(*it + ".input"));
+        for (ProStringList::ConstIterator it2 = tmp.begin(); it2 != tmp.end(); ++it2) {
+            ProStringList &inputs = project->values((*it2).toKey());
+            for (ProStringList::Iterator input = inputs.begin(); input != inputs.end(); ++input) {
+                QString path = replaceExtraCompilerVariables(tmp_out, (*input).toQString(), QString());
                 path = fixPathToQmake(path).section('/', -1);
                 for(int i = 0; i < var_out.size(); ++i) {
-                    QString v = var_out.at(i);
-                    QStringList &list = project->values(v);
+                    ProString v = var_out.at(i);
+                    ProStringList &list = project->values(v.toKey());
                     for(int src = 0; src < list.size(); ) {
                         if(list[src] == path || list[src].endsWith("/" + path))
                             list.removeAt(src);
@@ -356,7 +356,7 @@ ProjectGenerator::writeMakefile(QTextStream &t)
         QString ofn = QFileInfo(static_cast<QFile *>(t.device())->fileName()).completeBaseName();
         if (ofn.isEmpty() || ofn == "-")
             ofn = "unknown";
-        project->values("TARGET_ASSIGN") = QStringList(ofn);
+        project->values("TARGET_ASSIGN") = ProStringList(ofn);
 
         t << getWritableVar("TARGET_ASSIGN")
           << getWritableVar("CONFIG", false)
@@ -381,7 +381,7 @@ ProjectGenerator::writeMakefile(QTextStream &t)
 bool
 ProjectGenerator::addConfig(const QString &cfg, bool add)
 {
-    QString where = "CONFIG";
+    ProKey where = "CONFIG";
     if(!add)
         where = "CONFIG_REMOVE";
     if (!project->values(where).contains(cfg)) {
@@ -402,7 +402,7 @@ ProjectGenerator::addFile(QString file)
     if(file.mid(dir.length(), Option::h_moc_mod.length()) == Option::h_moc_mod)
         return false;
 
-    QString where;
+    ProKey where;
     for(int cppit = 0; cppit < Option::cpp_ext.size(); ++cppit) {
         if(file.endsWith(Option::cpp_ext[cppit])) {
             where = "SOURCES";
@@ -439,7 +439,7 @@ ProjectGenerator::addFile(QString file)
 
     QString newfile = fixPathToQmake(fileFixify(file));
 
-    QStringList &endList = project->values(where);
+    ProStringList &endList = project->values(where);
     if(!endList.contains(newfile, Qt::CaseInsensitive)) {
         endList += newfile;
         return true;
@@ -448,16 +448,17 @@ ProjectGenerator::addFile(QString file)
 }
 
 QString
-ProjectGenerator::getWritableVar(const QString &v, bool)
+ProjectGenerator::getWritableVar(const char *vk, bool)
 {
-    QStringList &vals = project->values(v);
+    const ProKey v(vk);
+    ProStringList &vals = project->values(v);
     if(vals.isEmpty())
         return "";
 
     // If values contain spaces, ensure that they are quoted
-    for(QStringList::iterator it = vals.begin(); it != vals.end(); ++it) {
+    for (ProStringList::iterator it = vals.begin(); it != vals.end(); ++it) {
         if ((*it).contains(' ') && !(*it).startsWith(' '))
-            *it = '\"' + *it + '\"';
+            *it = "\"" + *it + "\"";
     }
 
     QString ret;

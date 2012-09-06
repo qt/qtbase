@@ -62,7 +62,7 @@ public:
 protected:
     bool doPrecompiledHeaders() const { return false; }
     virtual bool doDepends() const { return true; }
-    QStringList nativebins;
+    ProStringList nativebins;
 
 };
 

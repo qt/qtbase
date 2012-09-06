@@ -72,8 +72,9 @@ Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem
     if (libInfoRead && libinfo.values("QMAKE_PRL_CONFIG").contains("staticlib"))
         return -1;
 
-    if(!project->values("QMAKE_" + stem.toUpper() + "_VERSION_OVERRIDE").isEmpty())
-        return project->values("QMAKE_" + stem.toUpper() + "_VERSION_OVERRIDE").first().toInt();
+    const ProStringList &vover = project->values(ProKey("QMAKE_" + stem.toUpper() + "_VERSION_OVERRIDE"));
+    if (!vover.isEmpty())
+        return vover.first().toInt();
 
     int biggest=-1;
     if(!project->isActiveConfig("no_versionlink")) {
@@ -99,7 +100,7 @@ Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem
     if(libInfoRead
        && !libinfo.values("QMAKE_PRL_CONFIG").contains("staticlib")
        && !libinfo.isEmpty("QMAKE_PRL_VERSION"))
-       biggest = qMax(biggest, libinfo.first("QMAKE_PRL_VERSION").replace(".", "").toInt());
+       biggest = qMax(biggest, libinfo.first("QMAKE_PRL_VERSION").toQString().replace(".", "").toInt());
     return biggest;
 }
 
@@ -109,11 +110,11 @@ Win32MakefileGenerator::findLibraries()
     QList<QMakeLocalFileName> dirs;
   static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
   for (int i = 0; lflags[i]; i++) {
-    QStringList &l = project->values(lflags[i]);
-    for(QStringList::Iterator it = l.begin(); it != l.end();) {
+    ProStringList &l = project->values(lflags[i]);
+    for (ProStringList::Iterator it = l.begin(); it != l.end();) {
         QChar quote;
         bool modified_opt = false, remove = false;
-        QString opt = (*it).trimmed();
+        QString opt = (*it).trimmed().toQString();
         if((opt[0] == '\'' || opt[0] == '"') && opt[(int)opt.length()-1] == opt[0]) {
             quote = opt[0];
             opt = opt.mid(1, opt.length()-2);
@@ -137,9 +138,7 @@ Win32MakefileGenerator::findLibraries()
         } else if(opt.startsWith("-l") || opt.startsWith("/l")) {
             QString lib = opt.right(opt.length() - 2), out;
             if(!lib.isEmpty()) {
-                QString suffix;
-                if(!project->isEmpty("QMAKE_" + lib.toUpper() + "_SUFFIX"))
-                    suffix = project->first("QMAKE_" + lib.toUpper() + "_SUFFIX");
+                ProString suffix = project->first(ProKey("QMAKE_" + lib.toUpper() + "_SUFFIX"));
                 for(QList<QMakeLocalFileName>::Iterator it = dirs.begin();
                     it != dirs.end(); ++it) {
                     QString extension;
@@ -176,9 +175,7 @@ Win32MakefileGenerator::findLibraries()
             if(file.endsWith(".lib")) {
                 file = file.left(file.length() - 4);
                 if(!file.at(file.length()-1).isNumber()) {
-                    QString suffix;
-                    if(!project->isEmpty("QMAKE_" + file.section(Option::dir_sep, -1).toUpper() + "_SUFFIX"))
-                        suffix = project->first("QMAKE_" + file.section(Option::dir_sep, -1).toUpper() + "_SUFFIX");
+                    ProString suffix = project->first(ProKey("QMAKE_" + file.section(Option::dir_sep, -1).toUpper() + "_SUFFIX"));
                     for(QList<QMakeLocalFileName>::Iterator dep_it = lib_dirs.begin(); dep_it != lib_dirs.end(); ++dep_it) {
                         QString lib_tmpl(file + "%1" + suffix + ".lib");
                         int ver = findHighestVersion((*dep_it).local(), file);
@@ -216,13 +213,13 @@ Win32MakefileGenerator::findLibraries()
 void
 Win32MakefileGenerator::processPrlFiles()
 {
-    const QString libArg = project->first("QMAKE_L_FLAG");
+    const QString libArg = project->first("QMAKE_L_FLAG").toQString();
     QList<QMakeLocalFileName> libdirs;
     static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
     for (int i = 0; lflags[i]; i++) {
-        QStringList &l = project->values(lflags[i]);
+        ProStringList &l = project->values(lflags[i]);
         for (int lit = 0; lit < l.size(); ++lit) {
-            QString opt = l.at(lit).trimmed();
+            QString opt = l.at(lit).trimmed().toQString();
             if((opt[0] == '\'' || opt[0] == '"') && opt[(int)opt.length()-1] == opt[0])
                 opt = opt.mid(1, opt.length()-2);
             if (opt.startsWith(libArg)) {
@@ -243,7 +240,7 @@ Win32MakefileGenerator::processPrlFiles()
                     }
                 }
             }
-            QStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
+            ProStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
             for (int prl = 0; prl < prl_libs.size(); ++prl)
                 l.insert(lit + prl + 1, prl_libs.at(prl));
             prl_libs.clear();
@@ -256,15 +253,15 @@ void Win32MakefileGenerator::processVars()
 {
     //If the TARGET looks like a path split it into DESTDIR and the resulting TARGET
     if(!project->isEmpty("TARGET")) {
-        QString targ = project->first("TARGET");
+        ProString targ = project->first("TARGET");
         int slsh = qMax(targ.lastIndexOf('/'), targ.lastIndexOf(Option::dir_sep));
         if(slsh != -1) {
             if(project->isEmpty("DESTDIR"))
                 project->values("DESTDIR").append("");
             else if(project->first("DESTDIR").right(1) != Option::dir_sep)
-                project->values("DESTDIR") = QStringList(project->first("DESTDIR") + Option::dir_sep);
-            project->values("DESTDIR") = QStringList(project->first("DESTDIR") + targ.left(slsh+1));
-            project->values("TARGET") = QStringList(targ.mid(slsh+1));
+                project->values("DESTDIR") = ProStringList(project->first("DESTDIR") + Option::dir_sep);
+            project->values("DESTDIR") = ProStringList(project->first("DESTDIR") + targ.left(slsh+1));
+            project->values("TARGET") = ProStringList(targ.mid(slsh+1));
         }
     }
 
@@ -278,7 +275,7 @@ void Win32MakefileGenerator::processVars()
         project->values("INCLUDEPATH") += project->values("QMAKE_INCDIR");
 
     if (!project->values("VERSION").isEmpty()) {
-        QStringList l = project->first("VERSION").split('.');
+        QStringList l = project->first("VERSION").toQString().split('.');
         if (l.size() > 0)
             project->values("VER_MAJ").append(l[0]);
         if (l.size() > 1)
@@ -304,21 +301,21 @@ void Win32MakefileGenerator::processVars()
     fixTargetExt();
     processRcFileVar();
 
-    QStringList &incDir = project->values("INCLUDEPATH");
-    for(QStringList::Iterator incDir_it = incDir.begin(); incDir_it != incDir.end(); ++incDir_it) {
-    if(!(*incDir_it).isEmpty())
-        (*incDir_it) = Option::fixPathToTargetOS((*incDir_it), false, false);
-    }
+    ProStringList &incDir = project->values("INCLUDEPATH");
+    for (ProStringList::Iterator incDir_it = incDir.begin(); incDir_it != incDir.end(); ++incDir_it)
+        if (!(*incDir_it).isEmpty())
+            (*incDir_it) = Option::fixPathToTargetOS((*incDir_it).toQString(), false, false);
 
-    QString libArg = project->first("QMAKE_L_FLAG");
-    QStringList libs;
-    QStringList &libDir = project->values("QMAKE_LIBDIR");
-    for(QStringList::Iterator libDir_it = libDir.begin(); libDir_it != libDir.end(); ++libDir_it) {
-        if (!(*libDir_it).isEmpty()) {
-            (*libDir_it).remove("\"");
-            if ((*libDir_it).endsWith("\\"))
-                (*libDir_it).chop(1);
-            libs << libArg + escapeFilePath(Option::fixPathToTargetOS((*libDir_it), false, false));
+    ProString libArg = project->first("QMAKE_L_FLAG");
+    ProStringList libs;
+    ProStringList &libDir = project->values("QMAKE_LIBDIR");
+    for (ProStringList::Iterator libDir_it = libDir.begin(); libDir_it != libDir.end(); ++libDir_it) {
+        QString lib = (*libDir_it).toQString();
+        if (!lib.isEmpty()) {
+            lib.remove('"');
+            if (lib.endsWith('\\'))
+                lib.chop(1);
+            libs << libArg + escapeFilePath(Option::fixPathToTargetOS(lib, false, false));
         }
     }
     project->values("QMAKE_LIBS") += libs + escapeFilePaths(project->values("LIBS"));
@@ -377,7 +374,7 @@ void Win32MakefileGenerator::processRcFileVar()
         QByteArray rcString;
         QTextStream ts(&rcString, QFile::WriteOnly);
 
-        QStringList vers = project->values("VERSION").first().split(".");
+        QStringList vers = project->first("VERSION").toQString().split(".");
         for (int i = vers.size(); i < 4; i++)
             vers += "0";
         QString versionString = vers.join(".");
@@ -398,7 +395,7 @@ void Win32MakefileGenerator::processRcFileVar()
         if (!project->values("QMAKE_TARGET_PRODUCT").isEmpty())
             productName = project->values("QMAKE_TARGET_PRODUCT").join(" ");
         else
-            productName = project->values("TARGET").first();
+            productName = project->first("TARGET").toQString();
 
         QString originalName = project->values("TARGET").first() + project->values("TARGET_EXT").first();
         int rcLang = project->intValue("RC_LANG", 1033);            // default: English(USA)
@@ -494,7 +491,7 @@ void Win32MakefileGenerator::processRcFileVar()
             fprintf(stderr, "Please specify one of them, not both.");
             exit(1);
         }
-        QString resFile = project->values("RC_FILE").first();
+        QString resFile = project->first("RC_FILE").toQString();
 
         // if this is a shadow build then use the absolute path of the rc file
         if (Option::output_dir != qmake_getpwd()) {
@@ -507,13 +504,14 @@ void Win32MakefileGenerator::processRcFileVar()
         if (!project->values("OBJECTS_DIR").isEmpty()) {
             QString resDestDir;
             if (project->isActiveConfig("staticlib"))
-                resDestDir = fileInfo(project->first("DESTDIR")).absoluteFilePath();
+                resDestDir = fileInfo(project->first("DESTDIR").toQString()).absoluteFilePath();
             else
-                resDestDir = project->first("OBJECTS_DIR");
+                resDestDir = project->first("OBJECTS_DIR").toQString();
             resDestDir.append(Option::dir_sep);
             project->values("RES_FILE").first().prepend(resDestDir);
         }
-        project->values("RES_FILE").first() = Option::fixPathToTargetOS(project->values("RES_FILE").first(), false, false);
+        project->values("RES_FILE").first() = Option::fixPathToTargetOS(
+                    project->values("RES_FILE").first().toQString(), false, false);
 	project->values("POST_TARGETDEPS") += project->values("RES_FILE");
         project->values("CLEAN_FILES") += project->values("RES_FILE");
     }
@@ -525,15 +523,15 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
     {
         const char *clean_targets[] = { "OBJECTS", "QMAKE_CLEAN", "CLEAN_FILES", 0 };
         for(int i = 0; clean_targets[i]; ++i) {
-            const QStringList &list = project->values(clean_targets[i]);
+            const ProStringList &list = project->values(clean_targets[i]);
             const QString del_statement("-$(DEL_FILE)");
             if(project->isActiveConfig("no_delete_multiple_files")) {
-                for(QStringList::ConstIterator it = list.begin(); it != list.end(); ++it)
+                for (ProStringList::ConstIterator it = list.begin(); it != list.end(); ++it)
                     t << "\n\t" << del_statement << " " << escapeFilePath((*it));
             } else {
                 QString files, file;
                 const int commandlineLimit = 2047; // NT limit, expanded
-                for(QStringList::ConstIterator it = list.begin(); it != list.end(); ++it) {
+                for (ProStringList::ConstIterator it = list.begin(); it != list.end(); ++it) {
                     file = " " + escapeFilePath((*it));
                     if(del_statement.length() + files.length() +
                        qMax(fixEnvVariables(file).length(), file.length()) > commandlineLimit) {
@@ -553,17 +551,17 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
     {
         const char *clean_targets[] = { "QMAKE_DISTCLEAN", 0 };
         for(int i = 0; clean_targets[i]; ++i) {
-            const QStringList &list = project->values(clean_targets[i]);
+            const ProStringList &list = project->values(clean_targets[i]);
             const QString del_statement("-$(DEL_FILE)");
             if(project->isActiveConfig("no_delete_multiple_files")) {
-                for(QStringList::ConstIterator it = list.begin(); it != list.end(); ++it)
+                for (ProStringList::ConstIterator it = list.begin(); it != list.end(); ++it)
                     t << "\n\t" << del_statement << " "
-                      << escapeFilePath(Option::fixPathToTargetOS(*it));
+                      << escapeFilePath(Option::fixPathToTargetOS((*it).toQString()));
             } else {
                 QString files, file;
                 const int commandlineLimit = 2047; // NT limit, expanded
-                for(QStringList::ConstIterator it = list.begin(); it != list.end(); ++it) {
-                    file = " " + escapeFilePath(Option::fixPathToTargetOS(*it));
+                for (ProStringList::ConstIterator it = list.begin(); it != list.end(); ++it) {
+                    file = " " + escapeFilePath(Option::fixPathToTargetOS((*it).toQString()));
                     if(del_statement.length() + files.length() +
                        qMax(fixEnvVariables(file).length(), file.length()) > commandlineLimit) {
                         t << "\n\t" << del_statement << files;
@@ -589,9 +587,9 @@ void Win32MakefileGenerator::writeIncPart(QTextStream &t)
 {
     t << "INCPATH       = ";
 
-    const QStringList &incs = project->values("INCLUDEPATH");
+    const ProStringList &incs = project->values("INCLUDEPATH");
     for(int i = 0; i < incs.size(); ++i) {
-        QString inc = incs.at(i);
+        QString inc = incs.at(i).toQString();
         inc.replace(QRegExp("\\\\$"), "");
         inc.replace(QRegExp("\""), "");
         if(!inc.isEmpty())
@@ -678,9 +676,10 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     writeBuildRulesPart(t);
 
     if(project->isActiveConfig("shared") && !project->values("DLLDESTDIR").isEmpty()) {
-        QStringList dlldirs = project->values("DLLDESTDIR");
-        for (QStringList::Iterator dlldir = dlldirs.begin(); dlldir != dlldirs.end(); ++dlldir) {
-            t << "\t" << "-$(COPY_FILE) \"$(DESTDIR_TARGET)\" " << Option::fixPathToTargetOS(*dlldir, false) << endl;
+        const ProStringList &dlldirs = project->values("DLLDESTDIR");
+        for (ProStringList::ConstIterator dlldir = dlldirs.begin(); dlldir != dlldirs.end(); ++dlldir) {
+            t << "\t" << "-$(COPY_FILE) \"$(DESTDIR_TARGET)\" "
+              << Option::fixPathToTargetOS((*dlldir).toQString(), false) << endl;
         }
     }
     t << endl;
@@ -691,12 +690,12 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
 
     QStringList dist_files = fileFixify(Option::mkfile::project_files);
     if(!project->isEmpty("QMAKE_INTERNAL_INCLUDED_FILES"))
-        dist_files += project->values("QMAKE_INTERNAL_INCLUDED_FILES");
+        dist_files += project->values("QMAKE_INTERNAL_INCLUDED_FILES").toQStringList();
     if(!project->isEmpty("TRANSLATIONS"))
         dist_files << var("TRANSLATIONS");
     if(!project->isEmpty("FORMS")) {
-        const QStringList &forms = project->values("FORMS");
-        for (QStringList::ConstIterator formit = forms.begin(); formit != forms.end(); ++formit) {
+        const ProStringList &forms = project->values("FORMS");
+        for (ProStringList::ConstIterator formit = forms.begin(); formit != forms.end(); ++formit) {
             QString ui_h = fileFixify((*formit) + Option::h_ext.first());
             if(exists(ui_h))
                 dist_files << ui_h;
@@ -706,12 +705,11 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
       << "$(ZIP) " << var("QMAKE_ORIG_TARGET") << ".zip " << "$(SOURCES) $(DIST) "
       << dist_files.join(" ") << " " << var("TRANSLATIONS") << " ";
     if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
-        const QStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
-        for(QStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
-            const QStringList &inputs = project->values((*it)+".input");
-            for(QStringList::ConstIterator input = inputs.begin(); input != inputs.end(); ++input) {
+        const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
+        for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
+            const ProStringList &inputs = project->values(ProKey(*it + ".input"));
+            for (ProStringList::ConstIterator input = inputs.begin(); input != inputs.end(); ++input)
                 t << (*input) << " ";
-            }
         }
     }
     t << endl << endl;
@@ -760,8 +758,8 @@ void Win32MakefileGenerator::writeBuildRulesPart(QTextStream &)
 void Win32MakefileGenerator::writeRcFilePart(QTextStream &t)
 {
     if(!project->values("RC_FILE").isEmpty()) {
-        const QString res_file = project->first("RES_FILE"),
-                       rc_file = fileFixify(project->first("RC_FILE"));
+        const ProString res_file = project->first("RES_FILE");
+        const QString rc_file = fileFixify(project->first("RC_FILE").toQString());
         // The resource tool needs to have the same defines passed in as the compiler, since you may
         // use these defines in the .rc file itself. Also, we need to add the _DEBUG define manually
         // since the compiler defines this symbol by itself, and we use it in the automatically
@@ -785,9 +783,9 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
        return QString();
 
     const QString root = "$(INSTALL_ROOT)";
-    QStringList &uninst = project->values(t + ".uninstall");
+    ProStringList &uninst = project->values(ProKey(t + ".uninstall"));
     QString ret;
-    QString targetdir = Option::fixPathToTargetOS(project->first(t + ".path"), false);
+    QString targetdir = Option::fixPathToTargetOS(project->first(ProKey(t + ".path")).toQString(), false);
     targetdir = fileFixify(targetdir, FileFixifyAbsolute);
     if(targetdir.right(1) != Option::dir_sep)
         targetdir += Option::dir_sep;
@@ -795,7 +793,7 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
     if(t == "target" && project->first("TEMPLATE") == "lib") {
         if(project->isActiveConfig("create_prl") && !project->isActiveConfig("no_install_prl") &&
            !project->isEmpty("QMAKE_INTERNAL_PRL_FILE")) {
-            QString dst_prl = Option::fixPathToTargetOS(project->first("QMAKE_INTERNAL_PRL_FILE"));
+            QString dst_prl = Option::fixPathToTargetOS(project->first("QMAKE_INTERNAL_PRL_FILE").toQString());
             int slsh = dst_prl.lastIndexOf(Option::dir_sep);
             if(slsh != -1)
                 dst_prl = dst_prl.right(dst_prl.length() - slsh - 1);
@@ -817,17 +815,17 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
                 }
                 if(!ret.isEmpty())
                     ret += "\n\t";
-                const QString replace_rule("QMAKE_PKGCONFIG_INSTALL_REPLACE");
+                const ProKey replace_rule("QMAKE_PKGCONFIG_INSTALL_REPLACE");
                 if (project->isEmpty(replace_rule)
                     || project->isActiveConfig("no_sed_meta_install")
                     || project->isEmpty("QMAKE_STREAM_EDITOR")) {
                     ret += "-$(INSTALL_FILE) \"" + pkgConfigFileName(true) + "\" \"" + dst_pc + "\"";
                 } else {
                     ret += "-$(SED)";
-                    QStringList replace_rules = project->values(replace_rule);
+                    const ProStringList &replace_rules = project->values(replace_rule);
                     for (int r = 0; r < replace_rules.size(); ++r) {
-                        const QString match = project->first(replace_rules.at(r) + ".match"),
-                                    replace = project->first(replace_rules.at(r) + ".replace");
+                        const ProString match = project->first(ProKey(replace_rules.at(r) + ".match")),
+                                    replace = project->first(ProKey(replace_rules.at(r) + ".replace"));
                         if (!match.isEmpty() /*&& match != replace*/)
                             ret += " -e \"s," + match + "," + replace + ",g\"";
                     }
@@ -852,7 +850,7 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
         }
     }
 
-    if(t == "dlltarget" || project->values(t + ".CONFIG").indexOf("no_dll") == -1) {
+    if (t == "dlltarget" || project->values(ProKey(t + ".CONFIG")).indexOf("no_dll") == -1) {
         QString src_targ = "$(DESTDIR_TARGET)";
         QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + "$(TARGET)", FileFixifyAbsolute));
         if(!ret.isEmpty())

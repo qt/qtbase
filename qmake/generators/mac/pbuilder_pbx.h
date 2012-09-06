@@ -58,15 +58,19 @@ class ProjectBuilderMakefileGenerator : public UnixMakefileGenerator
     QString pbxbuild();
     QHash<QString, QString> keys;
     QString keyFor(const QString &file);
-    QString findProgram(const QString &prog);
+    QString findProgram(const ProString &prog);
     QString fixForOutput(const QString &file);
-    QStringList fixListForOutput(const QString &where);
+    ProStringList fixListForOutput(const char *where);
     int     reftypeForFile(const QString &where);
     QString projectSuffix() const;
     enum { SettingsAsList=0x01, SettingsNoQuote=0x02 };
-    inline QString writeSettings(QString var, QString val, int flags=0, int indent_level=0)
-    { Q_UNUSED(indent_level); return writeSettings(var, QStringList(val), flags); }
-    QString writeSettings(QString var, QStringList vals, int flags=0, int indent_level=0);
+    inline QString writeSettings(const QString &var, const char *val, int flags=0, int indent_level=0)
+        { return writeSettings(var, ProString(val), flags, indent_level); }
+    inline QString writeSettings(const QString &var, const QString &val, int flags=0, int indent_level=0)
+        { return writeSettings(var, ProString(val), flags, indent_level); }
+    inline QString writeSettings(const QString &var, const ProString &val, int flags=0, int indent_level=0)
+        { return writeSettings(var, ProStringList(val), flags, indent_level); }
+    QString writeSettings(const QString &var, const ProStringList &vals, int flags=0, int indent_level=0);
 
 public:
     ProjectBuilderMakefileGenerator();
@@ -76,6 +80,7 @@ public:
     virtual bool openOutput(QFile &, const QString &) const;
 protected:
     virtual QString escapeFilePath(const QString &path) const;
+    ProString escapeFilePath(const ProString &path) const { return MakefileGenerator::escapeFilePath(path); }
     bool doPrecompiledHeaders() const { return false; }
     virtual bool doDepends() const { return false; } //never necesary
 };

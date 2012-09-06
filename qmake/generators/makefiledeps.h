@@ -42,6 +42,8 @@
 #ifndef MAKEFILEDEPS_H
 #define MAKEFILEDEPS_H
 
+#include <proitems.h>
+
 #include <qstringlist.h>
 #include <qfileinfo.h>
 
@@ -108,7 +110,7 @@ public:
 
     enum SourceFileType { TYPE_UNKNOWN, TYPE_C, TYPE_UI, TYPE_QRC };
     enum SourceFileSeek { SEEK_DEPS=0x01, SEEK_MOCS=0x02 };
-    void addSourceFiles(const QStringList &, uchar seek, SourceFileType type=TYPE_C);
+    void addSourceFiles(const ProStringList &, uchar seek, SourceFileType type=TYPE_C);
     void addSourceFile(const QString &, uchar seek, SourceFileType type=TYPE_C);
     bool containsSourceFile(const QString &, SourceFileType type=TYPE_C);
 

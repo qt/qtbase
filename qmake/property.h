@@ -42,6 +42,8 @@
 #ifndef PROPERTY_H
 #define PROPERTY_H
 
+#include "library/proitems.h"
+
 #include <qglobal.h>
 #include <qstring.h>
 #include <qhash.h>
@@ -55,14 +57,15 @@ class QMakeProperty
     QSettings *settings;
     void initSettings();
 
-    QHash<QString, QString> m_values;
+    QHash<ProKey, ProString> m_values;
 
 public:
     QMakeProperty();
     ~QMakeProperty();
 
-    bool hasValue(QString);
-    QString value(const QString &);
+    bool hasValue(const ProKey &);
+    ProString value(const ProKey &);
+
     void setValue(QString, const QString &);
     void remove(const QString &);
 

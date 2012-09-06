@@ -534,21 +534,21 @@ void Option::prepareProject(const QString &pfile)
 
 bool Option::postProcessProject(QMakeProject *project)
 {
-    Option::cpp_ext = project->values("QMAKE_EXT_CPP");
-    Option::h_ext = project->values("QMAKE_EXT_H");
-    Option::c_ext = project->values("QMAKE_EXT_C");
-    Option::res_ext = project->first("QMAKE_EXT_RES");
-    Option::pkgcfg_ext = project->first("QMAKE_EXT_PKGCONFIG");
-    Option::libtool_ext = project->first("QMAKE_EXT_LIBTOOL");
-    Option::prl_ext = project->first("QMAKE_EXT_PRL");
-    Option::ui_ext = project->first("QMAKE_EXT_UI");
-    Option::cpp_moc_ext = project->first("QMAKE_EXT_CPP_MOC");
-    Option::lex_ext = project->first("QMAKE_EXT_LEX");
-    Option::yacc_ext = project->first("QMAKE_EXT_YACC");
-    Option::obj_ext = project->first("QMAKE_EXT_OBJ");
-    Option::h_moc_mod = project->first("QMAKE_H_MOD_MOC");
-    Option::lex_mod = project->first("QMAKE_MOD_LEX");
-    Option::yacc_mod = project->first("QMAKE_MOD_YACC");
+    Option::cpp_ext = project->values("QMAKE_EXT_CPP").toQStringList();
+    Option::h_ext = project->values("QMAKE_EXT_H").toQStringList();
+    Option::c_ext = project->values("QMAKE_EXT_C").toQStringList();
+    Option::res_ext = project->first("QMAKE_EXT_RES").toQString();
+    Option::pkgcfg_ext = project->first("QMAKE_EXT_PKGCONFIG").toQString();
+    Option::libtool_ext = project->first("QMAKE_EXT_LIBTOOL").toQString();
+    Option::prl_ext = project->first("QMAKE_EXT_PRL").toQString();
+    Option::ui_ext = project->first("QMAKE_EXT_UI").toQString();
+    Option::cpp_moc_ext = project->first("QMAKE_EXT_CPP_MOC").toQString();
+    Option::lex_ext = project->first("QMAKE_EXT_LEX").toQString();
+    Option::yacc_ext = project->first("QMAKE_EXT_YACC").toQString();
+    Option::obj_ext = project->first("QMAKE_EXT_OBJ").toQString();
+    Option::h_moc_mod = project->first("QMAKE_H_MOD_MOC").toQString();
+    Option::lex_mod = project->first("QMAKE_MOD_LEX").toQString();
+    Option::yacc_mod = project->first("QMAKE_MOD_YACC").toQString();
 
     if (Option::output_dir.startsWith(project->buildRoot()))
         Option::mkfile::cachefile_depth =

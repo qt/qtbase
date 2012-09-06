@@ -17,7 +17,9 @@ SOURCES += project.cpp property.cpp main.cpp generators/makefile.cpp \
            generators/integrity/gbuild.cpp \
            generators/win32/cesdkhandler.cpp
 
-HEADERS += project.h property.h generators/makefile.h \
+HEADERS += project.h property.h \
+           library/qmake_global.h library/proitems.h \
+           generators/makefile.h \
            generators/unix/unixmake.h meta.h option.h cachekeys.h \
            generators/win32/winmakefile.h generators/win32/mingw_make.h generators/projectgenerator.h \
            generators/makefiledeps.h generators/metamakefile.h generators/mac/pbuilder_pbx.h \

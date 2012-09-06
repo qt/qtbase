@@ -42,6 +42,8 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
+#include <proitems.h>
+
 #include <qstringlist.h>
 #include <qtextstream.h>
 #include <qstring.h>
@@ -90,8 +92,9 @@ class QMakeProject
     QString pfile;
     QMakeProperty *prop;
     void reset();
-    QStringList extra_configs;
-    QHash<QString, QStringList> vars, init_vars, base_vars, extra_vars;
+    ProStringList extra_configs;
+    ProValueMap extra_vars;
+    QHash<QString, QStringList> vars, init_vars, base_vars;
     bool parse(const QString &text, QHash<QString, QStringList> &place, int line_count=1);
 
     enum IncludeStatus {
@@ -125,8 +128,8 @@ public:
     QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *nvars=0);
     ~QMakeProject();
 
-    void setExtraVars(const QHash<QString, QStringList> &_vars) { extra_vars = _vars; }
-    void setExtraConfigs(const QStringList &_cfgs) { extra_configs = _cfgs; }
+    void setExtraVars(const ProValueMap &_vars) { extra_vars = _vars; }
+    void setExtraConfigs(const ProStringList &_cfgs) { extra_configs = _cfgs; }
 
     enum { ReadProFile=0x01, ReadSetup=0x02, ReadFeatures=0x04, ReadAll=0xFF };
     inline bool parse(const QString &text) { return parse(text, vars); }
@@ -159,20 +162,20 @@ public:
 
     QStringList expand(const QString &v);
     QString expand(const QString &v, const QString &file, int line);
-    QStringList expand(const QString &func, const QList<QStringList> &args);
+    QStringList expand(const ProKey &func, const QList<ProStringList> &args);
     bool test(const QString &v);
-    bool test(const QString &func, const QList<QStringList> &args);
+    bool test(const ProKey &func, const QList<ProStringList> &args);
     bool isActiveConfig(const QString &x, bool regex=false,
                         QHash<QString, QStringList> *place=NULL);
 
-    bool isSet(const QString &v) const { return vars.contains(v); }
-    bool isEmpty(const QString &v) const;
-    QStringList values(const QString &v) const { return vars[v]; }
-    QStringList &values(const QString &v) { return vars[v]; }
-    QString first(const QString &v) const;
-    int intValue(const QString &v, int defaultValue = 0) const;
-    const QHash<QString, QStringList> &variables() const { return vars; }
-    QHash<QString, QStringList> &variables() { return vars; }
+    bool isSet(const ProKey &v) const { return (*(const ProValueMap *)&vars).contains(v); }
+    bool isEmpty(const ProKey &v) const;
+    ProStringList values(const ProKey &v) const { return (*(const ProValueMap *)&vars)[v]; }
+    ProStringList &values(const ProKey &v) { return (*(ProValueMap *)&vars)[v]; }
+    ProString first(const ProKey &v) const;
+    int intValue(const ProKey &v, int defaultValue = 0) const;
+    const ProValueMap &variables() const { return *(const ProValueMap *)&vars; }
+    ProValueMap &variables() { return *(ProValueMap *)&vars; }
 
     void dump() const;
 
@@ -191,17 +194,17 @@ inline QString QMakeProject::projectFile()
     return pfile;
 }
 
-inline QString QMakeProject::first(const QString &v) const
+inline ProString QMakeProject::first(const ProKey &v) const
 {
-    const QStringList vals = values(v);
+    const ProStringList &vals = values(v);
     if(vals.isEmpty())
-        return QString("");
+        return ProString("");
     return vals.first();
 }
 
-inline int QMakeProject::intValue(const QString &v, int defaultValue) const
+inline int QMakeProject::intValue(const ProKey &v, int defaultValue) const
 {
-    const QString str = first(v);
+    const ProString &str = first(v);
     if (!str.isEmpty()) {
         bool ok;
         int i = str.toInt(&ok);

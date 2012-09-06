@@ -306,11 +306,11 @@ void QMakeSourceFileInfo::setCacheFile(const QString &cf)
     loadCache(cachefile);
 }
 
-void QMakeSourceFileInfo::addSourceFiles(const QStringList &l, uchar seek,
+void QMakeSourceFileInfo::addSourceFiles(const ProStringList &l, uchar seek,
                                          QMakeSourceFileInfo::SourceFileType type)
 {
     for(int i=0; i<l.size(); ++i)
-        addSourceFile(l.at(i), seek, type);
+        addSourceFile(l.at(i).toQString(), seek, type);
 }
 void QMakeSourceFileInfo::addSourceFile(const QString &f, uchar seek,
                                         QMakeSourceFileInfo::SourceFileType type)

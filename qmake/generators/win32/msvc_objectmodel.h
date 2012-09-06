@@ -44,6 +44,9 @@
 
 #include "project.h"
 #include "xmloutput.h"
+
+#include <proitems.h>
+
 #include <qatomic.h>
 #include <qlist.h>
 #include <qstring.h>
@@ -475,8 +478,8 @@ protected:
     virtual ~VCToolBase(){}
     virtual bool parseOption(const char* option) = 0;
 public:
-    void parseOptions(const QStringList& options) {
-        for (QStringList::ConstIterator it=options.begin(); (it!=options.end()); it++)
+    void parseOptions(const ProStringList& options) {
+        for (ProStringList::ConstIterator it=options.begin(); (it!=options.end()); it++)
             parseOption((*it).toLatin1().constData());
     }
     static QStringList fixCommandLine(const QString &input);
@@ -916,6 +919,7 @@ public:
     void addFile(const QString& filename);
     void addFile(const VCFilterFile& fileInfo);
     void addFiles(const QStringList& fileList);
+    void addFiles(const ProStringList& fileList);
     bool addExtraCompiler(const VCFilterFile &info);
     void modifyPCHstage(QString str);
 

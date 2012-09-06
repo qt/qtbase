@@ -282,10 +282,10 @@ bool VcprojGenerator::writeProjectMakefile()
            mergedProjects.at(0)->vcProject.Name ==
            mergedProjects.at(1)->vcProject.Name)
             mergedProjects.at(0)->writePrlFile();
-        mergedProject.Name = project->first("QMAKE_PROJECT_NAME");
+        mergedProject.Name = project->first("QMAKE_PROJECT_NAME").toQString();
         mergedProject.Version = mergedProjects.at(0)->vcProject.Version;
-        mergedProject.ProjectGUID = project->isEmpty("QMAKE_UUID") ? getProjectUUID().toString().toUpper() : project->first("QMAKE_UUID");
-        mergedProject.Keyword = project->first("VCPROJ_KEYWORD");
+        mergedProject.ProjectGUID = project->isEmpty("QMAKE_UUID") ? getProjectUUID().toString().toUpper() : project->first("QMAKE_UUID").toQString();
+        mergedProject.Keyword = project->first("VCPROJ_KEYWORD").toQString();
         mergedProject.SccProjectName = mergedProjects.at(0)->vcProject.SccProjectName;
         mergedProject.SccLocalPath = mergedProjects.at(0)->vcProject.SccLocalPath;
         mergedProject.PlatformName = mergedProjects.at(0)->vcProject.PlatformName;
@@ -321,11 +321,11 @@ QUuid VcprojGenerator::getProjectUUID(const QString &filename)
     bool validUUID = true;
 
     // Read GUID from variable-space
-    QUuid uuid = project->first("GUID");
+    QUuid uuid = project->first("GUID").toQString();
 
     // If none, create one based on the MD5 of absolute project path
     if(uuid.isNull() || !filename.isEmpty()) {
-        QString abspath = Option::fixPathToLocalOS(filename.isEmpty()?project->first("QMAKE_MAKEFILE"):filename);
+        QString abspath = Option::fixPathToLocalOS(filename.isEmpty()?project->first("QMAKE_MAKEFILE").toQString():filename);
         QByteArray digest = QCryptographicHash::hash(abspath.toUtf8(), QCryptographicHash::Md5);
         memcpy((unsigned char*)(&uuid), digest.constData(), sizeof(QUuid));
         validUUID = !uuid.isNull();
@@ -342,7 +342,7 @@ QUuid VcprojGenerator::getProjectUUID(const QString &filename)
     }
 
     // Store GUID in variable-space
-    project->values("GUID") = QStringList(uuid.toString().toUpper());
+    project->values("GUID") = ProStringList(uuid.toString().toUpper());
     return uuid;
 }
 
@@ -379,24 +379,26 @@ QUuid VcprojGenerator::increaseUUID(const QUuid &id)
 QStringList VcprojGenerator::collectSubDirs(QMakeProject *proj)
 {
     QStringList subdirs;
-    QStringList tmp_proj_subdirs = proj->values("SUBDIRS");
+    const ProStringList &tmp_proj_subdirs = proj->values("SUBDIRS");
     for(int x = 0; x < tmp_proj_subdirs.size(); ++x) {
-        QString tmpdir = tmp_proj_subdirs.at(x);
-        const QString tmpdirConfig = tmpdir + QStringLiteral(".CONFIG");
+        ProString tmpdir = tmp_proj_subdirs.at(x);
+        const ProKey tmpdirConfig(tmpdir + ".CONFIG");
         if (!proj->isEmpty(tmpdirConfig)) {
-            const QStringList config = proj->values(tmpdirConfig);
+            const ProStringList config = proj->values(tmpdirConfig);
             if (config.contains(QStringLiteral("no_default_target")))
                 continue; // Ignore this sub-dir
         }
-        if(!proj->isEmpty(tmpdir + ".file")) {
-            if(!proj->isEmpty(tmpdir + ".subdir"))
+        const ProKey fkey(tmpdir + ".file");
+        const ProKey skey(tmpdir + ".subdir");
+        if (!proj->isEmpty(fkey)) {
+            if (!proj->isEmpty(skey))
                 warn_msg(WarnLogic, "Cannot assign both file and subdir for subdir %s",
                          tmpdir.toLatin1().constData());
-            tmpdir = proj->first(tmpdir + ".file");
-        } else if(!proj->isEmpty(tmpdir + ".subdir")) {
-            tmpdir = proj->first(tmpdir + ".subdir");
+            tmpdir = proj->first(fkey);
+        } else if (!proj->isEmpty(skey)) {
+            tmpdir = proj->first(skey);
         }
-        subdirs += tmpdir;
+        subdirs += tmpdir.toQString();
     }
     return subdirs;
 }
@@ -516,10 +518,10 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
 
                         VcsolutionDepend *newDep = new VcsolutionDepend;
                         newDep->vcprojFile = vcprojDir + Option::dir_sep + vcproj;
-                        newDep->orig_target = unescapeFilePath(tmp_proj.first("QMAKE_ORIG_TARGET"));
-                        newDep->target = tmp_proj.first("MSVCPROJ_TARGET").section(Option::dir_sep, -1);
+                        newDep->orig_target = unescapeFilePath(tmp_proj.first("QMAKE_ORIG_TARGET").toQString());
+                        newDep->target = tmp_proj.first("MSVCPROJ_TARGET").toQString().section(Option::dir_sep, -1);
                         newDep->targetType = tmp_vcproj.projectTarget;
-                        newDep->uuid = tmp_proj.isEmpty("QMAKE_UUID") ? getProjectUUID(Option::fixPathToLocalOS(vcprojDir + QDir::separator() + vcproj)).toString().toUpper(): tmp_proj.first("QMAKE_UUID");
+                        newDep->uuid = tmp_proj.isEmpty("QMAKE_UUID") ? getProjectUUID(Option::fixPathToLocalOS(vcprojDir + QDir::separator() + vcproj)).toString().toUpper(): tmp_proj.first("QMAKE_UUID").toQString();
 
                         // We want to store it as the .lib name.
                         if(newDep->target.endsWith(".dll"))
@@ -530,13 +532,13 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                             newDep->dependencies << "idc.exe";
 
                         // All extra compilers which has valid input are considered dependencies
-                        const QStringList &quc = tmp_proj.values("QMAKE_EXTRA_COMPILERS");
-                        for(QStringList::ConstIterator it = quc.constBegin(); it != quc.constEnd(); ++it) {
-                            const QStringList &invar = tmp_proj.values(*it + ".input");
-                            for(QStringList::ConstIterator iit = invar.constBegin(); iit != invar.constEnd(); ++iit) {
-                                const QStringList fileList = tmp_proj.values(*iit);
+                        const ProStringList &quc = tmp_proj.values("QMAKE_EXTRA_COMPILERS");
+                        for (ProStringList::ConstIterator it = quc.constBegin(); it != quc.constEnd(); ++it) {
+                            const ProStringList &invar = tmp_proj.values(ProKey(*it + ".input"));
+                            for (ProStringList::ConstIterator iit = invar.constBegin(); iit != invar.constEnd(); ++iit) {
+                                const ProStringList &fileList = tmp_proj.values((*iit).toKey());
                                 if (!fileList.isEmpty()) {
-                                    const QStringList &cmdsParts = tmp_proj.values(*it + ".commands");
+                                    const QStringList &cmdsParts = tmp_proj.values(ProKey(*it + ".commands")).toQStringList();
                                     bool startOfLine = true;
                                     foreach(QString cmd, cmdsParts) {
                                         if (!startOfLine) {
@@ -563,14 +565,14 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         }
 
                         // Add all unknown libs to the deps
-                        QStringList where = QStringList() << "QMAKE_LIBS" << "QMAKE_LIBS_PRIVATE";
+                        ProStringList where = ProStringList() << "QMAKE_LIBS" << "QMAKE_LIBS_PRIVATE";
                         if(!tmp_proj.isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
                             where = tmp_proj.values("QMAKE_INTERNAL_PRL_LIBS");
-                        for (QStringList::ConstIterator wit = where.begin();
+                        for (ProStringList::ConstIterator wit = where.begin();
                             wit != where.end(); ++wit) {
-                            const QStringList &l = tmp_proj.values(*wit);
-                            for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-                                QString opt = (*it);
+                            const ProStringList &l = tmp_proj.values((*wit).toKey());
+                            for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
+                                QString opt = (*it).toQString();
                                 if(!opt.startsWith("/") &&   // Not a switch
                                     opt != newDep->target && // Not self
                                     opt != "opengl32.lib" && // We don't care about these libs
@@ -700,7 +702,7 @@ void VcprojGenerator::init()
     processVars();
 
     if(!project->values("VERSION").isEmpty()) {
-        QString version = project->values("VERSION")[0];
+        QString version = project->values("VERSION")[0].toQString();
         int firstDot = version.indexOf(".");
         QString major = version.left(firstDot);
         QString minor = version.right(version.length() - firstDot - 1);
@@ -724,21 +726,21 @@ void VcprojGenerator::init()
     }
 
     // Setup PCH variables
-    precompH = project->first("PRECOMPILED_HEADER");
-    precompCPP = project->first("PRECOMPILED_SOURCE");
+    precompH = project->first("PRECOMPILED_HEADER").toQString();
+    precompCPP = project->first("PRECOMPILED_SOURCE").toQString();
     usePCH = !precompH.isEmpty() && project->isActiveConfig("precompile_header");
     if (usePCH) {
         precompHFilename = fileInfo(precompH).fileName();
         // Created files
-        QString origTarget = unescapeFilePath(project->first("QMAKE_ORIG_TARGET"));
+        QString origTarget = unescapeFilePath(project->first("QMAKE_ORIG_TARGET").toQString());
         precompObj = origTarget + Option::obj_ext;
         precompPch = origTarget + ".pch";
         // Add PRECOMPILED_HEADER to HEADERS
         if (!project->values("HEADERS").contains(precompH))
             project->values("HEADERS") += precompH;
         // Return to variable pool
-        project->values("PRECOMPILED_OBJECT") = QStringList(precompObj);
-        project->values("PRECOMPILED_PCH")    = QStringList(precompPch);
+        project->values("PRECOMPILED_OBJECT") = ProStringList(precompObj);
+        project->values("PRECOMPILED_PCH")    = ProStringList(precompPch);
 
         autogenPrecompCPP = precompCPP.isEmpty() && project->isActiveConfig("autogen_precompile_source");
         if (autogenPrecompCPP) {
@@ -752,24 +754,23 @@ void VcprojGenerator::init()
 
     // Add all input files for a custom compiler into a map for uniqueness,
     // unless the compiler is configure as a combined stage, then use the first one
-    const QStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
-    for(QStringList::ConstIterator it = quc.constBegin(); it != quc.constEnd(); ++it) {
-        const QStringList &invar = project->values(*it + ".input");
-        const QString compiler_out = project->first((*it) + ".output");
-        for(QStringList::ConstIterator iit = invar.constBegin(); iit != invar.constEnd(); ++iit) {
-            QStringList fileList = project->values(*iit);
+    foreach (const ProString &quc, project->values("QMAKE_EXTRA_COMPILERS")) {
+        const ProStringList &invar = project->values(ProKey(quc + ".input"));
+        const QString compiler_out = project->first(ProKey(quc + ".output")).toQString();
+        for (ProStringList::ConstIterator iit = invar.constBegin(); iit != invar.constEnd(); ++iit) {
+            ProStringList fileList = project->values((*iit).toKey());
             if (!fileList.isEmpty()) {
-                if (project->values((*it) + ".CONFIG").indexOf("combine") != -1)
-                    fileList = QStringList(fileList.first());
-                for(QStringList::ConstIterator fit = fileList.constBegin(); fit != fileList.constEnd(); ++fit) {
-                    QString file = (*fit);
-                    if (verifyExtraCompiler((*it), file)) {
+                if (project->values(ProKey(quc + ".CONFIG")).indexOf("combine") != -1)
+                    fileList.erase(fileList.begin() + 1, fileList.end());
+                for (ProStringList::ConstIterator fit = fileList.constBegin(); fit != fileList.constEnd(); ++fit) {
+                    QString file = (*fit).toQString();
+                    if (verifyExtraCompiler(quc, file)) {
                         if (!hasBuiltinCompiler(file)) {
-                            extraCompilerSources[file] += *it;
+                            extraCompilerSources[file] += quc.toQString();
                         } else {
                             QString out = Option::fixPathToTargetOS(replaceExtraCompilerVariables(
                                             compiler_out, file, QString()), false);
-                            extraCompilerSources[out] += *it;
+                            extraCompilerSources[out] += quc.toQString();
                             extraCompilerOutputs[out] = QStringList(file); // Can only have one
                         }
                     }
@@ -822,7 +823,7 @@ void VcprojGenerator::initProject()
     initExtraCompilerOutputs();
 
     // Own elements -----------------------------
-    vcProject.Name = unescapeFilePath(project->first("QMAKE_ORIG_TARGET"));
+    vcProject.Name = unescapeFilePath(project->first("QMAKE_ORIG_TARGET").toQString());
     switch(which_dotnet_version()) {
     case NET2010:
         vcProject.Version = "10.00";
@@ -847,15 +848,15 @@ void VcprojGenerator::initProject()
         break;
     }
 
-    vcProject.Keyword = project->first("VCPROJ_KEYWORD");
+    vcProject.Keyword = project->first("VCPROJ_KEYWORD").toQString();
     if (project->isHostBuild() || project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
         vcProject.PlatformName = (is64Bit ? "x64" : "Win32");
     } else {
         vcProject.PlatformName = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
     }
     // These are not used by Qt, but may be used by customers
-    vcProject.SccProjectName = project->first("SCCPROJECTNAME");
-    vcProject.SccLocalPath = project->first("SCCLOCALPATH");
+    vcProject.SccProjectName = project->first("SCCPROJECTNAME").toQString();
+    vcProject.SccLocalPath = project->first("SCCLOCALPATH").toQString();
     vcProject.flat_files = project->isActiveConfig("flat");
 }
 
@@ -882,7 +883,7 @@ void VcprojGenerator::initConfiguration()
     initIDLTool();
 
     // Own elements -----------------------------
-    QString temp = project->first("BuildBrowserInformation");
+    ProString temp = project->first("BuildBrowserInformation");
     switch (projectTarget) {
     case SharedLib:
         conf.ConfigurationType = typeDynamicLibrary;
@@ -896,17 +897,17 @@ void VcprojGenerator::initConfiguration()
         break;
     }
 
-    conf.OutputDirectory = project->first("DESTDIR");
+    conf.OutputDirectory = project->first("DESTDIR").toQString();
     if (conf.OutputDirectory.isEmpty())
         conf.OutputDirectory = ".\\";
     if (!conf.OutputDirectory.endsWith("\\"))
         conf.OutputDirectory += '\\';
     if (conf.CompilerVersion >= NET2010) {
         // The target name could have been changed.
-        conf.PrimaryOutput = project->first("TARGET");
+        conf.PrimaryOutput = project->first("TARGET").toQString();
         if ( !conf.PrimaryOutput.isEmpty() && !project->first("TARGET_VERSION_EXT").isEmpty() && project->isActiveConfig("shared"))
-            conf.PrimaryOutput.append(project->first("TARGET_VERSION_EXT"));
-        conf.PrimaryOutputExtension = project->first("TARGET_EXT");
+            conf.PrimaryOutput.append(project->first("TARGET_VERSION_EXT").toQString());
+        conf.PrimaryOutputExtension = project->first("TARGET_EXT").toQString();
     }
 
     conf.Name = project->values("BUILD_NAME").join(" ");
@@ -922,9 +923,9 @@ void VcprojGenerator::initConfiguration()
     conf.BuildBrowserInformation = triState(temp.isEmpty() ? (short)unset : temp.toShort());
     temp = project->first("CharacterSet");
     conf.CharacterSet = charSet(temp.isEmpty() ? (short)charSetNotSet : temp.toShort());
-    conf.DeleteExtensionsOnClean = project->first("DeleteExtensionsOnClean");
+    conf.DeleteExtensionsOnClean = project->first("DeleteExtensionsOnClean").toQString();
     conf.ImportLibrary = conf.linker.ImportLibrary;
-    conf.IntermediateDirectory = project->first("OBJECTS_DIR");
+    conf.IntermediateDirectory = project->first("OBJECTS_DIR").toQString();
     conf.WholeProgramOptimization = conf.compiler.WholeProgramOptimization;
     temp = project->first("UseOfATL");
     if(!temp.isEmpty())
@@ -953,7 +954,7 @@ void VcprojGenerator::initConfiguration()
 
 void VcprojGenerator::initCompilerTool()
 {
-    QString placement = project->first("OBJECTS_DIR");
+    QString placement = project->first("OBJECTS_DIR").toQString();
     if(placement.isEmpty())
         placement = ".\\";
 
@@ -970,8 +971,8 @@ void VcprojGenerator::initCompilerTool()
     if (usePCH) {
         conf.compiler.UsePrecompiledHeader     = pchUseUsingSpecific;
         conf.compiler.PrecompiledHeaderFile    = "$(IntDir)\\" + precompPch;
-        conf.compiler.PrecompiledHeaderThrough = project->first("PRECOMPILED_HEADER");
-        conf.compiler.ForcedIncludeFiles       = project->values("PRECOMPILED_HEADER");
+        conf.compiler.PrecompiledHeaderThrough = project->first("PRECOMPILED_HEADER").toQString();
+        conf.compiler.ForcedIncludeFiles       = project->values("PRECOMPILED_HEADER").toQStringList();
 
         if (conf.CompilerVersion <= NET2003) {
             // Minimal build option triggers an Internal Compiler Error
@@ -991,8 +992,8 @@ void VcprojGenerator::initCompilerTool()
     else if (project->isActiveConfig("console"))
         conf.compiler.PreprocessorDefinitions += "_CONSOLE";
 
-    conf.compiler.PreprocessorDefinitions += project->values("DEFINES");
-    conf.compiler.PreprocessorDefinitions += project->values("PRL_EXPORT_DEFINES");
+    conf.compiler.PreprocessorDefinitions += project->values("DEFINES").toQStringList();
+    conf.compiler.PreprocessorDefinitions += project->values("PRL_EXPORT_DEFINES").toQStringList();
     conf.compiler.parseOptions(project->values("MSVCPROJ_INCPATH"));
 }
 
@@ -1000,8 +1001,8 @@ void VcprojGenerator::initLibrarianTool()
 {
     VCConfiguration &conf = vcProject.Configuration;
     conf.librarian.OutputFile = "$(OutDir)\\";
-    conf.librarian.OutputFile += project->first("MSVCPROJ_TARGET");
-    conf.librarian.AdditionalOptions += project->values("QMAKE_LIBFLAGS");
+    conf.librarian.OutputFile += project->first("MSVCPROJ_TARGET").toQString();
+    conf.librarian.AdditionalOptions += project->values("QMAKE_LIBFLAGS").toQStringList();
 }
 
 void VcprojGenerator::initLinkerTool()
@@ -1010,19 +1011,19 @@ void VcprojGenerator::initLinkerTool()
     conf.linker.parseOptions(project->values("QMAKE_LFLAGS"));
 
     if (!project->values("DEF_FILE").isEmpty())
-        conf.linker.ModuleDefinitionFile = project->first("DEF_FILE");
+        conf.linker.ModuleDefinitionFile = project->first("DEF_FILE").toQString();
 
-    foreach (QString libs, project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE")) {
-        if (libs.left(9).toUpper() == "/LIBPATH:") {
-            QStringList l = QStringList(libs);
+    foreach (const ProString &libs, project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE")) {
+        if (libs.left(9).toQString().toUpper() == "/LIBPATH:") {
+            ProStringList l = ProStringList(libs);
             conf.linker.parseOptions(l);
         } else {
-            conf.linker.AdditionalDependencies += libs;
+            conf.linker.AdditionalDependencies += libs.toQString();
         }
     }
 
     conf.linker.OutputFile = "$(OutDir)\\";
-    conf.linker.OutputFile += project->first("MSVCPROJ_TARGET");
+    conf.linker.OutputFile += project->first("MSVCPROJ_TARGET").toQString();
 
     if(project->isActiveConfig("dll")){
         conf.linker.parseOptions(project->values("QMAKE_LFLAGS_QT_DLL"));
@@ -1095,10 +1096,10 @@ void VcprojGenerator::initDeploymentTool()
         // FIXME: This code should actually resolve the libraries from all Qt modules.
         const QString &qtdir = QLibraryInfo::rawLocation(QLibraryInfo::LibrariesPath,
                                                          QLibraryInfo::EffectivePaths);
-        QStringList arg = project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE");
-        for (QStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {
+        ProStringList arg = project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE");
+        for (ProStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {
             if (it->contains(qtdir)) {
-                QString dllName = *it;
+                QString dllName = (*it).toQString();
 
                 if (dllName.contains(QLatin1String("QAxContainer"))
                     || dllName.contains(QLatin1String("qtmain"))
@@ -1118,7 +1119,7 @@ void VcprojGenerator::initDeploymentTool()
     QString runtime = project->values("QT_CE_C_RUNTIME").join(QLatin1String(" "));
     if (!runtime.isEmpty() && (runtime != QLatin1String("no"))) {
         QString runtimeVersion = QLatin1String("msvcr");
-        QString mkspec = project->first("QMAKESPEC");
+        ProString mkspec = project->first("QMAKESPEC");
 
         if (!mkspec.isEmpty()) {
             if (mkspec.endsWith("2008"))
@@ -1152,9 +1153,9 @@ void VcprojGenerator::initDeploymentTool()
     }
 
     // foreach item in DEPLOYMENT
-    foreach(QString item, project->values("DEPLOYMENT")) {
+    foreach (const ProString &item, project->values("DEPLOYMENT")) {
         // get item.path
-        QString devicePath = project->first(item + ".path");
+        QString devicePath = project->first(ProKey(item + ".path")).toQString();
         if (devicePath.isEmpty())
             devicePath = targetPath;
         // check if item.path is relative (! either /,\ or %)
@@ -1165,9 +1166,9 @@ void VcprojGenerator::initDeploymentTool()
             devicePath = Option::fixPathToLocalOS(QDir::cleanPath(targetPath + QLatin1Char('\\') + devicePath));
         }
         // foreach d in item.files
-        foreach (QString source, project->values(item + ".files")) {
+        foreach (const ProString &src, project->values(ProKey(item + ".files"))) {
             QString itemDevicePath = devicePath;
-            source = Option::fixPathToLocalOS(source);
+            QString source = Option::fixPathToLocalOS(src.toQString());
             QString nameFilter;
             QFileInfo info(source);
             QString searchPath;
@@ -1324,12 +1325,12 @@ void VcprojGenerator::initResourceFiles()
     // Bad hack, please look away -------------------------------------
     QString rcc_dep_cmd = project->values("rcc.depend_command").join(" ");
     if(!rcc_dep_cmd.isEmpty()) {
-        QStringList qrc_files = project->values("RESOURCES");
+        ProStringList qrc_files = project->values("RESOURCES");
         QStringList deps;
         if(!qrc_files.isEmpty()) {
             for (int i = 0; i < qrc_files.count(); ++i) {
                 char buff[256];
-                QString dep_cmd = replaceExtraCompilerVariables(rcc_dep_cmd, qrc_files.at(i),"");
+                QString dep_cmd = replaceExtraCompilerVariables(rcc_dep_cmd, qrc_files.at(i).toQString(), "");
 
                 dep_cmd = Option::fixPathToLocalOS(dep_cmd, true, false);
                 if(canExecute(dep_cmd)) {
@@ -1366,7 +1367,7 @@ void VcprojGenerator::initResourceFiles()
 
 void VcprojGenerator::initExtraCompilerOutputs()
 {
-    QStringList otherFilters;
+    ProStringList otherFilters;
     otherFilters << "FORMS"
                  << "FORMS3"
                  << "GENERATED_FILES"
@@ -1382,15 +1383,15 @@ void VcprojGenerator::initExtraCompilerOutputs()
                  << "SOURCES"
                  << "TRANSLATIONS"
                  << "YACCSOURCES";
-    const QStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
-    for(QStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
-        QString extracompilerName = project->first((*it) + ".name");
+    const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
+    for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
+        ProString extracompilerName = project->first(ProKey(*it + ".name"));
         if (extracompilerName.isEmpty())
             extracompilerName = (*it);
 
         // Create an extra compiler filter and add the files
         VCFilter extraCompile;
-        extraCompile.Name = extracompilerName;
+        extraCompile.Name = extracompilerName.toQString();
         extraCompile.ParseFiles = _False;
         extraCompile.Filter = "";
         extraCompile.Guid = QString(_GUIDExtraCompilerFiles) + "-" + (*it);
@@ -1398,22 +1399,22 @@ void VcprojGenerator::initExtraCompilerOutputs()
 
         // If the extra compiler has a variable_out set the output file
         // is added to an other file list, and does not need its own..
-        bool addOnInput = hasBuiltinCompiler(project->first((*it) + ".output"));
-        QString tmp_other_out = project->first((*it) + ".variable_out");
+        bool addOnInput = hasBuiltinCompiler(project->first(ProKey(*it + ".output")).toQString());
+        const ProString &tmp_other_out = project->first(ProKey(*it + ".variable_out"));
         if (!tmp_other_out.isEmpty() && !addOnInput)
             continue;
 
         if (!addOnInput) {
-            QString tmp_out = project->first((*it) + ".output");
-            if (project->values((*it) + ".CONFIG").indexOf("combine") != -1) {
+            QString tmp_out = project->first(ProKey(*it + ".output")).toQString();
+            if (project->values(ProKey(*it + ".CONFIG")).indexOf("combine") != -1) {
                 // Combined output, only one file result
                 extraCompile.addFile(
                     Option::fixPathToTargetOS(replaceExtraCompilerVariables(tmp_out, QString(), QString()), false));
             } else {
                 // One output file per input
-                QStringList tmp_in = project->values(project->first((*it) + ".input"));
+                const ProStringList &tmp_in = project->values(project->first(ProKey(*it + ".input")).toKey());
                 for (int i = 0; i < tmp_in.count(); ++i) {
-                    const QString &filename = tmp_in.at(i);
+                    const QString &filename = tmp_in.at(i).toQString();
                     if (extraCompilerSources.contains(filename))
                         extraCompile.addFile(
                             Option::fixPathToTargetOS(replaceExtraCompilerVariables(filename, tmp_out, QString()), false));
@@ -1424,12 +1425,12 @@ void VcprojGenerator::initExtraCompilerOutputs()
             // build steps there. So, we turn it around and add it to the input files instead,
             // provided that the input file variable is not handled already (those in otherFilters
             // are handled, so we avoid them).
-            QStringList inputVars = project->values((*it) + ".input");
-            foreach(QString inputVar, inputVars) {
+            const ProStringList &inputVars = project->values(ProKey(*it + ".input"));
+            foreach (const ProString &inputVar, inputVars) {
                 if (!otherFilters.contains(inputVar)) {
-                    QStringList tmp_in = project->values(inputVar);
+                    const ProStringList &tmp_in = project->values(inputVar.toKey());
                     for (int i = 0; i < tmp_in.count(); ++i) {
-                        const QString &filename = tmp_in.at(i);
+                        const QString &filename = tmp_in.at(i).toQString();
                         if (extraCompilerSources.contains(filename))
                             extraCompile.addFile(
                                 Option::fixPathToTargetOS(replaceExtraCompilerVariables(filename, QString(), QString()), false));
@@ -1448,23 +1449,23 @@ void VcprojGenerator::initExtraCompilerOutputs()
 void VcprojGenerator::initOld()
 {
     // $$QMAKE.. -> $$MSVCPROJ.. -------------------------------------
-    const QStringList &incs = project->values("INCLUDEPATH");
-    for (QStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
-        QString inc = (*incit);
+    const ProStringList &incs = project->values("INCLUDEPATH");
+    for (ProStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
+        QString inc = (*incit).toQString();
         if (!inc.startsWith('"') && !inc.endsWith('"'))
             inc = QString("\"%1\"").arg(inc); // Quote all paths if not quoted already
         project->values("MSVCPROJ_INCPATH").append("-I" + inc);
     }
     project->values("MSVCPROJ_INCPATH").append("-I" + specdir());
 
-    QString dest = Option::fixPathToTargetOS(project->first("TARGET")) + project->first("TARGET_EXT");
-    project->values("MSVCPROJ_TARGET") = QStringList(dest);
+    QString dest = Option::fixPathToTargetOS(project->first("TARGET").toQString()) + project->first("TARGET_EXT");
+    project->values("MSVCPROJ_TARGET") = ProStringList(dest);
 
     // DLL COPY ------------------------------------------------------
     if(project->isActiveConfig("dll") && !project->values("DLLDESTDIR").isEmpty()) {
-        QStringList dlldirs = project->values("DLLDESTDIR");
+        const ProStringList &dlldirs = project->values("DLLDESTDIR");
         QString copydll("");
-        QStringList::Iterator dlldir;
+        ProStringList::ConstIterator dlldir;
         for(dlldir = dlldirs.begin(); dlldir != dlldirs.end(); ++dlldir) {
             if(!copydll.isEmpty())
                 copydll += " && ";
@@ -1499,13 +1500,13 @@ QString VcprojGenerator::replaceExtraCompilerVariables(const QString &var, const
 {
     QString ret = MakefileGenerator::replaceExtraCompilerVariables(var, in, out);
 
-    QStringList &defines = project->values("VCPROJ_MAKEFILE_DEFINES");
+    ProStringList &defines = project->values("VCPROJ_MAKEFILE_DEFINES");
     if(defines.isEmpty())
         defines.append(varGlue("PRL_EXPORT_DEFINES"," -D"," -D","") +
                        varGlue("DEFINES"," -D"," -D",""));
-    ret.replace("$(DEFINES)", defines.first());
+    ret.replace("$(DEFINES)", defines.first().toQString());
 
-    QStringList &incpath = project->values("VCPROJ_MAKEFILE_INCPATH");
+    ProStringList &incpath = project->values("VCPROJ_MAKEFILE_INCPATH");
     if(incpath.isEmpty() && !this->var("MSVCPROJ_INCPATH").isEmpty())
         incpath.append(this->var("MSVCPROJ_INCPATH"));
     ret.replace("$(INCPATH)", incpath.join(" "));
@@ -1522,10 +1523,10 @@ bool VcprojGenerator::openOutput(QFile &file, const QString &/*build*/) const
             outdir = file.fileName() + QDir::separator();
     }
     if(!outdir.isEmpty() || file.fileName().isEmpty()) {
-        QString ext = project->first("VCPROJ_EXTENSION");
+        ProString ext = project->first("VCPROJ_EXTENSION");
         if(project->first("TEMPLATE") == "vcsubdirs")
             ext = project->first("VCSOLUTION_EXTENSION");
-        QString outputName = unescapeFilePath(project->first("TARGET"));
+        ProString outputName = unescapeFilePath(project->first("TARGET"));
         if (!project->first("MAKEFILE").isEmpty())
             outputName = project->first("MAKEFILE");
         file.setFileName(outdir + outputName + ext);
@@ -1553,8 +1554,8 @@ void VcprojGenerator::outputVariables()
 {
 #if 0
     qDebug("Generator: MSVC.NET: List of current variables:");
-    for(QHash<QString, QStringList>::ConstIterator it = project->variables().begin(); it != project->variables().end(); ++it)
-        qDebug("Generator: MSVC.NET: %s => %s", qPrintable(it.key()), qPrintable(it.value().join(" | ")));
+    for (ProValueMap::ConstIterator it = project->variables().begin(); it != project->variables().end(); ++it)
+        qDebug("Generator: MSVC.NET: %s => %s", qPrintable(it.key().toQString()), qPrintable(it.value().join(" | ")));
 #endif
 }
 

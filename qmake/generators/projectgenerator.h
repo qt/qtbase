@@ -51,7 +51,7 @@ class ProjectGenerator : public MakefileGenerator
     bool init_flag;
     bool addFile(QString);
     bool addConfig(const QString &, bool add=true);
-    QString getWritableVar(const QString &, bool fixPath=true);
+    QString getWritableVar(const char *, bool fixPath=true);
     QString fixPathToQmake(const QString &file);
 protected:
     virtual void init();

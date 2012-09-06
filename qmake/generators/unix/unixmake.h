@@ -65,6 +65,7 @@ protected:
 
     virtual bool findLibraries();
     virtual QString escapeFilePath(const QString &path) const;
+    ProString escapeFilePath(const ProString &path) const { return MakefileGenerator::escapeFilePath(path); }
     virtual QStringList &findDependencies(const QString &);
     virtual void init();
 

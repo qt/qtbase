@@ -82,8 +82,8 @@ UnixMakefileGenerator::writeMakefile(QTextStream &t)
     writeHeader(t);
     if(!project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty()) {
         t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
-        const QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
-        for(QStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
+        const ProStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
+        for (ProStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
             t << *it << " ";
         t << "first all clean install distclean uninstall qmake_all:" << "\n\t"
           << "@echo \"Some of the required modules ("
@@ -134,9 +134,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << " -I" << pwd;
     }
     {
-        const QStringList &incs = project->values("INCLUDEPATH");
+        const ProStringList &incs = project->values("INCLUDEPATH");
         for(int i = 0; i < incs.size(); ++i) {
-            QString inc = escapeFilePath(incs.at(i));
+            ProString inc = escapeFilePath(incs.at(i));
             if(!inc.isEmpty())
                 t << " " << "-I" << inc;
         }
@@ -188,15 +188,15 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "SOURCES       = " << valList(escapeFilePaths(project->values("SOURCES"))) << " "
       << valList(escapeFilePaths(project->values("GENERATED_SOURCES"))) << endl;
     if(do_incremental) {
-        const QStringList &objs = project->values("OBJECTS");
-        const QStringList &incrs = project->values("QMAKE_INCREMENTAL");
-        QStringList incrs_out;
+        const ProStringList &objs = project->values("OBJECTS");
+        const ProStringList &incrs = project->values("QMAKE_INCREMENTAL");
+        ProStringList incrs_out;
         t << "OBJECTS       = ";
-        for (QStringList::ConstIterator objit = objs.begin(); objit != objs.end(); ++objit) {
+        for (ProStringList::ConstIterator objit = objs.begin(); objit != objs.end(); ++objit) {
             bool increment = false;
-            for (QStringList::ConstIterator incrit = incrs.begin(); incrit != incrs.end(); ++incrit) {
-                if((*objit).indexOf(QRegExp((*incrit), Qt::CaseSensitive,
-                                    QRegExp::Wildcard)) != -1) {
+            for (ProStringList::ConstIterator incrit = incrs.begin(); incrit != incrs.end(); ++incrit) {
+                if ((*objit).toQString().indexOf(QRegExp((*incrit).toQString(), Qt::CaseSensitive,
+                                                 QRegExp::Wildcard)) != -1) {
                     increment = true;
                     incrs_out.append((*objit));
                     break;
@@ -219,7 +219,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     }
     if(do_incremental && !src_incremental)
         do_incremental = false;
-    t << "DIST          = " << valList(fileFixify(project->values("DISTFILES"))) << endl;
+    t << "DIST          = " << valList(fileFixify(project->values("DISTFILES").toQStringList())) << endl;
     t << "QMAKE_TARGET  = " << var("QMAKE_ORIG_TARGET") << endl;
     t << "DESTDIR       = " << var("DESTDIR") << endl;
     if(project->isActiveConfig("compile_libtool"))
@@ -247,8 +247,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << endl;
 
     // blasted includes
-    const QStringList &qeui = project->values("QMAKE_EXTRA_INCLUDES");
-    QStringList::ConstIterator it;
+    const ProStringList &qeui = project->values("QMAKE_EXTRA_INCLUDES");
+    ProStringList::ConstIterator it;
     for(it = qeui.begin(); it != qeui.end(); ++it)
         t << "include " << (*it) << endl;
 
@@ -268,11 +268,11 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
     if(include_deps) {
         if (project->isActiveConfig("gcc_MD_depends")) {
-            QStringList objects = project->values("OBJECTS");
-            for(QStringList::Iterator it = objects.begin(); it != objects.end(); ++it) {
-                QString d_file = (*it).replace(QRegExp(Option::obj_ext + "$"), ".d");
+            ProStringList objects = project->values("OBJECTS");
+            for (ProStringList::Iterator it = objects.begin(); it != objects.end(); ++it) {
+                QString d_file = (*it).toQString().replace(QRegExp(Option::obj_ext + "$"), ".d");
                 t << "-include " << d_file << endl;
-                project->values("QMAKE_DISTCLEAN") += d_file;
+                project->values("QMAKE_DISTCLEAN") << d_file;
             }
         } else {
             QString cmd=var("QMAKE_CFLAGS_DEPS") + " ";
@@ -280,7 +280,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             if(!project->isEmpty("QMAKE_ABSOLUTE_SOURCE_PATH"))
                 cmd += " -I" + project->first("QMAKE_ABSOLUTE_SOURCE_PATH") + " ";
             cmd += " $(INCPATH) " + varGlue("DEPENDPATH", "-I", " -I", "");
-            QString odir;
+            ProString odir;
             if(!project->values("OBJECTS_DIR").isEmpty())
                 odir = project->first("OBJECTS_DIR");
 
@@ -301,14 +301,14 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
             static const char * const src[] = { "SOURCES", "GENERATED_SOURCES", 0 };
             for (int x = 0; src[x]; x++) {
-                const QStringList &l = project->values(src[x]);
-                for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
+                const ProStringList &l = project->values(src[x]);
+                for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
                     if(!(*it).isEmpty()) {
                         QString d_file;
                         for(QStringList::Iterator cit = Option::c_ext.begin();
                             cit != Option::c_ext.end(); ++cit) {
                             if((*it).endsWith((*cit))) {
-                                d_file = (*it).left((*it).length() - (*cit).length());
+                                d_file = (*it).left((*it).length() - (*cit).length()).toQString();
                                 break;
                             }
                         }
@@ -316,7 +316,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                             for(QStringList::Iterator cppit = Option::cpp_ext.begin();
                                 cppit != Option::cpp_ext.end(); ++cppit) {
                                 if((*it).endsWith((*cppit))) {
-                                    d_file = (*it).left((*it).length() - (*cppit).length());
+                                    d_file = (*it).left((*it).length() - (*cppit).length()).toQString();
                                     break;
                                 }
                             }
@@ -324,7 +324,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
                         if(!d_file.isEmpty()) {
                             d_file = odir + ".deps/" + fileFixify(d_file, pwd, Option::output_dir) + ".d";
-                            QStringList deps = findDependencies((*it)).filter(QRegExp(
+                            QStringList deps = findDependencies((*it).toQString()).filter(QRegExp(
                                         "((^|/)" + Option::h_moc_mod + "|" + Option::cpp_moc_ext + "$)"));
                             if(!deps.isEmpty())
                                 t << d_file << ": " << deps.join(" ") << endl;
@@ -339,23 +339,23 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
     t << "####### Build rules" << endl << endl;
     if(!project->values("SUBLIBS").isEmpty()) {
-        QString libdir = "tmp/";
+        ProString libdir = "tmp/";
         if(!project->isEmpty("SUBLIBS_DIR"))
             libdir = project->first("SUBLIBS_DIR");
         t << "SUBLIBS       = ";
-        const QStringList &l = project->values("SUBLIBS");
-        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it)
+        const ProStringList &l = project->values("SUBLIBS");
+        for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it)
             t << libdir << project->first("QMAKE_PREFIX_STATICLIB") << (*it) << "."
               << project->first("QMAKE_EXTENSION_STATICLIB") << " ";
         t << endl << endl;
     }
     if(project->isActiveConfig("depend_prl") && !project->isEmpty("QMAKE_PRL_INTERNAL_FILES")) {
-        const QStringList &l = project->values("QMAKE_PRL_INTERNAL_FILES");
-        QStringList::ConstIterator it;
+        const ProStringList &l = project->values("QMAKE_PRL_INTERNAL_FILES");
+        ProStringList::ConstIterator it;
         for(it = l.begin(); it != l.end(); ++it) {
             QMakeMetaInfo libinfo(project);
-            if(libinfo.readLib((*it)) && !libinfo.isEmpty("QMAKE_PRL_BUILD_DIR")) {
-                QString dir;
+            if (libinfo.readLib((*it).toQString()) && !libinfo.isEmpty("QMAKE_PRL_BUILD_DIR")) {
+                ProString dir;
                 int slsh = (*it).lastIndexOf(Option::dir_sep);
                 if(slsh != -1)
                     dir = (*it).left(slsh + 1);
@@ -369,9 +369,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         }
     }
     if (!project->values("QMAKE_APP_FLAG").isEmpty() || project->first("TEMPLATE") == "aux") {
-        QString destdir = project->first("DESTDIR");
+        QString destdir = project->first("DESTDIR").toQString();
         if(!project->isEmpty("QMAKE_BUNDLE")) {
-            QString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
+            QString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION").toQString();
             if(!bundle_loc.isEmpty() && !bundle_loc.startsWith("/"))
                 bundle_loc.prepend("/");
             if(!bundle_loc.endsWith("/"))
@@ -458,9 +458,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             t << endl << endl;
         }
     } else if(!project->isActiveConfig("staticlib")) {
-        QString destdir = unescapeFilePath(project->first("DESTDIR")), incr_deps;
+        QString destdir = unescapeFilePath(project->first("DESTDIR").toQString()), incr_deps;
         if(!project->isEmpty("QMAKE_BUNDLE")) {
-            QString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
+            QString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION").toQString();
             if(!bundle_loc.isEmpty() && !bundle_loc.startsWith("/"))
                 bundle_loc.prepend("/");
             if(!bundle_loc.endsWith("/"))
@@ -470,7 +470,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         destdir = escapeFilePath(destdir);
 
         if(do_incremental) {
-            QString s_ext = project->values("QMAKE_EXTENSION_SHLIB").first();
+            ProString s_ext = project->first("QMAKE_EXTENSION_SHLIB");
             QString incr_target = var("QMAKE_ORIG_TARGET").replace(
                 QRegExp("\\." + s_ext), "").replace(QRegExp("^lib"), "") + "_incremental";
             if(incr_target.indexOf(Option::dir_sep) != -1)
@@ -485,8 +485,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << incr_target_dir << ": " << link_deps << "\n\t"
                   << "ld -r  -o " << incr_target_dir << " " << link_deps << endl;
                 //communicated below
-                QStringList &cmd = project->values("QMAKE_LINK_SHLIB_CMD");
-                cmd.first().replace("$(OBJECTS) ", "$(INCREMENTAL_OBJECTS)"); //ick
+                ProStringList &cmd = project->values("QMAKE_LINK_SHLIB_CMD");
+                cmd[0] = cmd.at(0).toQString().replace("$(OBJECTS) ", "$(INCREMENTAL_OBJECTS)"); //ick
                 cmd.append(incr_target_dir);
                 deps.prepend(incr_target_dir + " ");
                 incr_deps = "$(INCREMENTAL_OBJECTS)";
@@ -506,7 +506,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << "$(LINK) " << incr_lflags << " -o "<< incr_target_dir <<
                     " $(INCREMENTAL_OBJECTS)" << endl;
                 //communicated below
-                QStringList &cmd = project->values("QMAKE_LINK_SHLIB_CMD");
+                ProStringList &cmd = project->values("QMAKE_LINK_SHLIB_CMD");
                 if(!destdir.isEmpty())
                     cmd.append(" -L" + destdir);
                 cmd.append(" -l" + incr_target);
@@ -609,7 +609,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             t << endl << endl;
         }
     } else {
-        QString destdir = project->first("DESTDIR");
+        QString destdir = project->first("DESTDIR").toQString();
         t << "all: " << escapeDependencyPath(deps) << " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS")),""," "," ") << destdir << "$(TARGET) "
           << varGlue("QMAKE_AR_SUBLIBS", destdir, " " + destdir, "") << "\n\n"
           << "staticlib: " << destdir << "$(TARGET)" << "\n\n";
@@ -629,19 +629,19 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "\t" << "-$(MOVE) $(TARGET) " << destdir << "\n";
         } else {
             int max_files = project->first("QMAKE_MAX_FILES_PER_AR").toInt();
-            QStringList objs = project->values("OBJECTS") + project->values("OBJCOMP"),
+            ProStringList objs = project->values("OBJECTS") + project->values("OBJCOMP"),
                         libs = project->values("QMAKE_AR_SUBLIBS");
             libs.prepend("$(TARGET)");
-            for(QStringList::Iterator libit = libs.begin(), objit = objs.begin();
-                libit != libs.end(); ++libit) {
-                QStringList build;
+            for (ProStringList::Iterator libit = libs.begin(), objit = objs.begin();
+                 libit != libs.end(); ++libit) {
+                ProStringList build;
                 for(int cnt = 0; cnt < max_files && objit != objs.end(); ++objit, cnt++)
                     build << (*objit);
                 QString ar;
                 if((*libit) == "$(TARGET)") {
                     t << destdir << "$(TARGET): " << var("PRE_TARGETDEPS")
                       << " " << var("POST_TARGETDEPS") << valList(build) << "\n\t";
-                    ar = project->values("QMAKE_AR_CMD").first();
+                    ar = project->first("QMAKE_AR_CMD").toQString();
                     ar = ar.replace("$(OBJECTS)", build.join(" "));
                 } else {
                     t << (*libit) << ": " << valList(build) << "\n\t";
@@ -683,7 +683,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     }
 
     if(!project->first("QMAKE_PKGINFO").isEmpty()) {
-        QString pkginfo = escapeFilePath(project->first("QMAKE_PKGINFO"));
+        ProString pkginfo = escapeFilePath(project->first("QMAKE_PKGINFO"));
         QString destdir = escapeFilePath(project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents");
         t << pkginfo << ": " << "\n\t";
         if(!destdir.isEmpty())
@@ -694,7 +694,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\" >" << pkginfo << endl;
     }
     if(!project->first("QMAKE_BUNDLE_RESOURCE_FILE").isEmpty()) {
-        QString resources = escapeFilePath(project->first("QMAKE_BUNDLE_RESOURCE_FILE"));
+        ProString resources = escapeFilePath(project->first("QMAKE_BUNDLE_RESOURCE_FILE"));
         QString destdir = escapeFilePath(project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents/Resources");
         t << resources << ": " << "\n\t";
         t << mkdir_p_asstring(destdir) << "\n\t";
@@ -702,13 +702,13 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     }
     if(!project->isEmpty("QMAKE_BUNDLE")) {
         //copy the plist
-        QString info_plist = escapeFilePath(fileFixify(project->first("QMAKE_INFO_PLIST"))),
-            info_plist_out = escapeFilePath(project->first("QMAKE_INFO_PLIST_OUT"));
+        QString info_plist = escapeFilePath(fileFixify(project->first("QMAKE_INFO_PLIST").toQString())),
+            info_plist_out = escapeFilePath(project->first("QMAKE_INFO_PLIST_OUT").toQString());
         QString destdir = info_plist_out.section(Option::dir_sep, 0, -2);
         t << info_plist_out << ": " << "\n\t";
         if(!destdir.isEmpty())
             t << mkdir_p_asstring(destdir) << "\n\t";
-        QStringList commonSedArgs;
+        ProStringList commonSedArgs;
         if (!project->values("VERSION").isEmpty())
             commonSedArgs << "-e \"s,@SHORT_VERSION@," << project->first("VER_MAJ") << "." << project->first("VER_MIN") << ",g\" ";
         commonSedArgs << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
@@ -717,7 +717,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             QString icon = fileFixify(var("ICON"));
             t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
               << "@sed ";
-            foreach (const QString &arg, commonSedArgs)
+            foreach (const ProString &arg, commonSedArgs)
                 t << arg;
             t << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
               << "-e \"s,@EXECUTABLE@," << var("QMAKE_ORIG_TARGET") << ",g\" "
@@ -736,7 +736,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         } else {
             t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
               << "@sed ";
-            foreach (const QString &arg, commonSedArgs)
+            foreach (const ProString &arg, commonSedArgs)
                 t << arg;
             t << "-e \"s,@LIBRARY@," << var("QMAKE_ORIG_TARGET") << ",g\" "
               << "-e \"s,@TYPEINFO@,"
@@ -747,29 +747,32 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         //copy other data
         if(!project->isEmpty("QMAKE_BUNDLE_DATA")) {
             QString bundle_dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/";
-            const QStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
+            const ProStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
             for(int i = 0; i < bundle_data.count(); i++) {
-                const QStringList &files = project->values(bundle_data[i] + ".files");
+                const ProStringList &files = project->values(ProKey(bundle_data[i] + ".files"));
                 QString path = bundle_dir;
-                if(!project->isEmpty(bundle_data[i] + ".version")) {
-                    QString version = project->first(bundle_data[i] + ".version") + "/" +
+                const ProKey vkey(bundle_data[i] + ".version");
+                const ProKey pkey(bundle_data[i] + ".path");
+                if (!project->isEmpty(vkey)) {
+                    QString version = project->first(vkey) + "/" +
                                       project->first("QMAKE_FRAMEWORK_VERSION") + "/";
-                    t << Option::fixPathToLocalOS(path + project->first(bundle_data[i] + ".path")) << ": " << "\n\t"
+                    t << Option::fixPathToLocalOS(path + project->first(pkey)) << ": " << "\n\t"
                       << mkdir_p_asstring(path) << "\n\t"
-                      << "@$(SYMLINK) " << version << project->first(bundle_data[i] + ".path") << " " << path << endl;
+                      << "@$(SYMLINK) " << version << project->first(pkey) << " " << path << endl;
                     path += version;
                 }
-                path += project->first(bundle_data[i] + ".path");
+                path += project->first(pkey).toQString();
                 path = Option::fixPathToLocalOS(path);
                 for(int file = 0; file < files.count(); file++) {
-                    QString src = fileFixify(files[file], FileFixifyAbsolute);
+                    QString fn = files.at(file).toQString();
+                    QString src = fileFixify(fn, FileFixifyAbsolute);
                     if (!QFile::exists(src))
-                        src = files[file];
+                        src = fn;
                     src = escapeFilePath(src);
-                    const QString dst = escapeFilePath(path + Option::dir_sep + fileInfo(files[file]).fileName());
+                    const QString dst = escapeFilePath(path + Option::dir_sep + fileInfo(fn).fileName());
                     t << dst << ": " << src << "\n\t"
                       << mkdir_p_asstring(path) << "\n\t";
-                    QFileInfo fi(fileInfo(files[file]));
+                    QFileInfo fi(fileInfo(fn));
                     if(fi.isDir())
                         t << "@$(DEL_FILE) -r " << dst << "\n\t"
                           << "@$(COPY_DIR) " << src << " " << dst << endl;
@@ -781,8 +784,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         }
     }
 
-    QString ddir;
-    QString packageName(project->first("QMAKE_ORIG_TARGET"));
+    ProString ddir;
+    ProString packageName(project->first("QMAKE_ORIG_TARGET"));
     if(!project->isActiveConfig("no_dist_version"))
         packageName += var("VERSION");
     if (project->isEmpty("QMAKE_DISTDIR"))
@@ -790,18 +793,18 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     else
         ddir = project->first("QMAKE_DISTDIR");
 
-    QString ddir_c = escapeFilePath(fileFixify((project->isEmpty("OBJECTS_DIR") ? QString(".tmp/") :
+    QString ddir_c = escapeFilePath(fileFixify((project->isEmpty("OBJECTS_DIR") ? ProString(".tmp/") :
                                                 project->first("OBJECTS_DIR")) + ddir,
                                                Option::output_dir, Option::output_dir));
     t << "dist: " << "\n\t"
       << mkdir_p_asstring(ddir_c) << "\n\t"
       << "$(COPY_FILE) --parents $(SOURCES) $(DIST) " << ddir_c << Option::dir_sep << " && ";
     if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
-        const QStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
-        for(QStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
-            const QStringList &var = project->values((*it)+".input");
-            for(QStringList::ConstIterator var_it = var.begin(); var_it != var.end(); ++var_it) {
-                const QStringList &val = project->values((*var_it));
+        const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
+        for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
+            const ProStringList &var = project->values(ProKey(*it + ".input"));
+            for (ProStringList::ConstIterator var_it = var.begin(); var_it != var.end(); ++var_it) {
+                const ProStringList &val = project->values((*var_it).toKey());
                 if(val.isEmpty())
                     continue;
                 t << "$(COPY_FILE) --parents " << val.join(" ") << " " << ddir_c << Option::dir_sep << " && ";
@@ -835,8 +838,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             t << "-$(DEL_FILE) $(OBJECTS)" << "\n\t";
     }
     if(doPrecompiledHeaders() && !project->isEmpty("PRECOMPILED_HEADER")) {
-        QStringList precomp_files;
-        QString precomph_out_dir;
+        ProStringList precomp_files;
+        ProString precomph_out_dir;
 
         if(!project->isEmpty("PRECOMPILED_DIR"))
             precomph_out_dir = project->first("PRECOMPILED_DIR");
@@ -846,21 +849,21 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
         if (project->isActiveConfig("icc_pch_style")) {
             // icc style
-            QString pchBaseName = project->first("QMAKE_ORIG_TARGET");
-            QString pchOutput;
+            ProString pchBaseName = project->first("QMAKE_ORIG_TARGET");
+            ProString pchOutput;
             if(!project->isEmpty("PRECOMPILED_DIR"))
                 pchOutput = project->first("PRECOMPILED_DIR");
             pchOutput += pchBaseName + project->first("QMAKE_PCH_OUTPUT_EXT");
-            QString sourceFile = pchOutput + Option::cpp_ext.first();
-            QString objectFile = createObjectList(QStringList(sourceFile)).first();
+            ProString sourceFile = pchOutput + Option::cpp_ext.first();
+            ProString objectFile = createObjectList(ProStringList(sourceFile)).first();
 
             precomp_files << precomph_out_dir << sourceFile << objectFile;
         } else {
             // gcc style (including clang_pch_style)
             precomph_out_dir += Option::dir_sep;
 
-            QString header_prefix = project->first("QMAKE_PRECOMP_PREFIX");
-            QString header_suffix = project->isActiveConfig("clang_pch_style")
+            ProString header_prefix = project->first("QMAKE_PRECOMP_PREFIX");
+            ProString header_suffix = project->isActiveConfig("clang_pch_style")
                                ? project->first("QMAKE_PCH_OUTPUT_EXT") : "";
 
             if(!project->isEmpty("QMAKE_CFLAGS_PRECOMPILE"))
@@ -885,18 +888,18 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
       << varGlue("CLEAN_FILES","\t-$(DEL_FILE) "," ","") << endl << endl;
     t << "####### Sub-libraries" << endl << endl;
     if (!project->values("SUBLIBS").isEmpty()) {
-        QString libdir = "tmp/";
+        ProString libdir = "tmp/";
         if(!project->isEmpty("SUBLIBS_DIR"))
             libdir = project->first("SUBLIBS_DIR");
-        const QStringList &l = project->values("SUBLIBS");
+        const ProStringList &l = project->values("SUBLIBS");
         for(it = l.begin(); it != l.end(); ++it)
             t << libdir << project->first("QMAKE_PREFIX_STATICLIB") << (*it) << "."
               << project->first("QMAKE_EXTENSION_STATICLIB") << ":\n\t"
-              << var(QString("MAKELIB") + (*it)) << endl << endl;
+              << var(ProKey("MAKELIB" + *it)) << endl << endl;
     }
 
-    QString destdir = project->first("DESTDIR");
-    if(!destdir.isEmpty() && destdir.right(1) != Option::dir_sep)
+    ProString destdir = project->first("DESTDIR");
+    if (!destdir.isEmpty() && !destdir.endsWith(Option::dir_sep))
         destdir += Option::dir_sep;
     t << "distclean: " << "clean\n";
     if(!project->isEmpty("QMAKE_BUNDLE")) {
@@ -921,11 +924,11 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << endl << endl;
 
     if(doPrecompiledHeaders() && !project->isEmpty("PRECOMPILED_HEADER")) {
-        QString pchInput = project->first("PRECOMPILED_HEADER");
+        QString pchInput = project->first("PRECOMPILED_HEADER").toQString();
         t << "###### Prefix headers" << endl;
         QString comps[] = { "C", "CXX", "OBJC", "OBJCXX", QString() };
         for(int i = 0; !comps[i].isNull(); i++) {
-            QString pchFlags = var("QMAKE_" + comps[i] + "FLAGS_PRECOMPILE");
+            QString pchFlags = var(ProKey("QMAKE_" + comps[i] + "FLAGS_PRECOMPILE"));
             if(pchFlags.isEmpty())
                 continue;
 
@@ -935,8 +938,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             else
                 cflags += " $(" + comps[i] + "FLAGS)";
 
-            QString pchBaseName = project->first("QMAKE_ORIG_TARGET");
-            QString pchOutput;
+            ProString pchBaseName = project->first("QMAKE_ORIG_TARGET");
+            ProString pchOutput;
             if(!project->isEmpty("PRECOMPILED_DIR"))
                 pchOutput = project->first("PRECOMPILED_DIR");
             pchOutput += pchBaseName;
@@ -946,7 +949,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             if (project->isActiveConfig("icc_pch_style")) {
                 // icc style
                 QString sourceFile = pchOutput + Option::cpp_ext.first();
-                QString objectFile = createObjectList(QStringList(sourceFile)).first();
+                QString objectFile = createObjectList(ProStringList(sourceFile)).first().toQString();
                 t << pchOutput << ": " << pchInput << " " << findDependencies(pchInput).join(" \\\n\t\t")
                   << "\n\techo \"// Automatically generated, do not modify\" > " << sourceFile
                   << "\n\trm -f " << pchOutput;
@@ -955,11 +958,11 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                            .replace("${QMAKE_PCH_TEMP_OBJECT}", objectFile);
             } else {
                 // gcc style (including clang_pch_style)
-                QString header_prefix = project->first("QMAKE_PRECOMP_PREFIX");
-                QString header_suffix = project->isActiveConfig("clang_pch_style")
+                ProString header_prefix = project->first("QMAKE_PRECOMP_PREFIX");
+                ProString header_suffix = project->isActiveConfig("clang_pch_style")
                                   ? project->first("QMAKE_PCH_OUTPUT_EXT") : "";
                 pchOutput += Option::dir_sep;
-                QString pchOutputDir = pchOutput, pchOutputFile;
+                QString pchOutputDir = pchOutput.toQString(), pchOutputFile;
 
                 if(comps[i] == "C") {
                     pchOutputFile = "c";
@@ -979,8 +982,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "\n\t" << mkdir_p_asstring(pchOutputDir);
             }
             pchFlags = pchFlags.replace("${QMAKE_PCH_INPUT}", pchInput)
-                       .replace("${QMAKE_PCH_OUTPUT_BASE}", pchBaseName)
-                       .replace("${QMAKE_PCH_OUTPUT}", pchOutput);
+                       .replace("${QMAKE_PCH_OUTPUT_BASE}", pchBaseName.toQString())
+                       .replace("${QMAKE_PCH_OUTPUT}", pchOutput.toQString());
 
             QString compiler;
             if(comps[i] == "C" || comps[i] == "OBJC" || comps[i] == "OBJCXX")
@@ -1004,7 +1007,7 @@ void UnixMakefileGenerator::init2()
         project->values("VERSION").append("1.0." +
                                                (project->isEmpty("VER_PAT") ? QString("0") :
                                                 project->first("VER_PAT")));
-    QStringList l = project->first("VERSION").split('.');
+    QStringList l = project->first("VERSION").toQString().split('.');
     l << "0" << "0"; //make sure there are three
     project->values("VER_MAJ").append(l[0]);
     project->values("VER_MIN").append(l[1]);
@@ -1017,7 +1020,7 @@ void UnixMakefileGenerator::init2()
 
     if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         if(!project->isEmpty("QMAKE_BUNDLE")) {
-            QString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
+            ProString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
             if(!bundle_loc.isEmpty() && !bundle_loc.startsWith("/"))
                 bundle_loc.prepend("/");
             if(!bundle_loc.endsWith("/"))
@@ -1037,16 +1040,17 @@ void UnixMakefileGenerator::init2()
         project->values("TARGETA").append(project->first("DESTDIR") + project->first("QMAKE_PREFIX_STATICLIB")
                 + project->first("TARGET") + "." + project->first("QMAKE_EXTENSION_STATICLIB"));
         if(project->isActiveConfig("compile_libtool"))
-            project->values("TARGET_la") = QStringList(project->first("DESTDIR") + "lib" + project->first("TARGET") + Option::libtool_ext);
+            project->values("TARGET_la") = ProStringList(project->first("DESTDIR") + "lib" + project->first("TARGET") + Option::libtool_ext);
 
-        if (!project->values("QMAKE_AR_CMD").isEmpty())
-            project->values("QMAKE_AR_CMD").first().replace("(TARGET)","(TARGETA)");
+        ProStringList &ar_cmd = project->values("QMAKE_AR_CMD");
+        if (!ar_cmd.isEmpty())
+            ar_cmd[0] = ar_cmd.at(0).toQString().replace("(TARGET)","(TARGETA)");
         else
-            project->values("QMAKE_AR_CMD").append("$(AR) $(TARGETA) $(OBJECTS)");
+            ar_cmd.append("$(AR) $(TARGETA) $(OBJECTS)");
         if(project->isActiveConfig("compile_libtool")) {
             project->values("TARGET") = project->values("TARGET_la");
         } else if(!project->isEmpty("QMAKE_BUNDLE")) {
-            QString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
+            ProString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
             if(!bundle_loc.isEmpty() && !bundle_loc.startsWith("/"))
                 bundle_loc.prepend("/");
             if(!bundle_loc.endsWith("/"))
@@ -1150,7 +1154,7 @@ void UnixMakefileGenerator::init2()
         if(project->isEmpty("QMAKE_LN_SHLIB"))
             project->values("QMAKE_LN_SHLIB").append("ln -s");
         if (!project->values("QMAKE_LFLAGS_SONAME").isEmpty()) {
-            QString soname;
+            ProString soname;
             if(project->isActiveConfig("plugin")) {
                 if(!project->values("TARGET").isEmpty())
                     soname += project->first("TARGET");
@@ -1163,7 +1167,7 @@ void UnixMakefileGenerator::init2()
                 if(project->isActiveConfig("absolute_library_soname") &&
                    project->values("INSTALLS").indexOf("target") != -1 &&
                    !project->isEmpty("target.path")) {
-                    QString instpath = Option::fixPathToTargetOS(project->first("target.path"));
+                    QString instpath = Option::fixPathToTargetOS(project->first("target.path").toQString());
                     if(!instpath.endsWith(Option::dir_sep))
                         instpath += Option::dir_sep;
                     soname.prepend(instpath);
@@ -1218,7 +1222,7 @@ void UnixMakefileGenerator::init2()
     }
 
     if(!project->isEmpty("QMAKE_BUNDLE")) {
-        QString plist = fileFixify(project->first("QMAKE_INFO_PLIST"));
+        QString plist = fileFixify(project->first("QMAKE_INFO_PLIST").toQString());
         if(plist.isEmpty())
             plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
         if(exists(Option::fixPathToLocalOS(plist))) {
@@ -1231,24 +1235,25 @@ void UnixMakefileGenerator::init2()
             if(!project->isEmpty("ICON") && project->first("TEMPLATE") == "app")
                 project->values("ALL_DEPS") += project->first("DESTDIR") +
                                                     project->first("QMAKE_BUNDLE") +
-                                                    "/Contents/Resources/" + project->first("ICON").section('/', -1);
+                                                    "/Contents/Resources/" + project->first("ICON").toQString().section('/', -1);
             if(!project->isEmpty("QMAKE_BUNDLE_DATA")) {
                 QString bundle_dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/";
-                QStringList &alldeps = project->values("ALL_DEPS");
-                const QStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
+                ProStringList &alldeps = project->values("ALL_DEPS");
+                const ProStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
                 for(int i = 0; i < bundle_data.count(); i++) {
-                    const QStringList &files = project->values(bundle_data[i] + ".files");
+                    const ProStringList &files = project->values(ProKey(bundle_data[i] + ".files"));
                     QString path = bundle_dir;
-                    if(!project->isEmpty(bundle_data[i] + ".version")) {
-                        alldeps += Option::fixPathToLocalOS(path + Option::dir_sep +
-                                                            project->first(bundle_data[i] + ".path"));
-                        path += project->first(bundle_data[i] + ".version") + "/" +
+                    const ProKey vkey(bundle_data[i] + ".version");
+                    const ProKey pkey(bundle_data[i] + ".path");
+                    if (!project->isEmpty(vkey)) {
+                        alldeps += Option::fixPathToLocalOS(path + Option::dir_sep + project->first(pkey));
+                        path += project->first(vkey) + "/" +
                                 project->first("QMAKE_FRAMEWORK_VERSION") + "/";
                     }
-                    path += project->first(bundle_data[i] + ".path");
+                    path += project->first(pkey);
                     path = Option::fixPathToLocalOS(path);
                     for(int file = 0; file < files.count(); file++)
-                        alldeps += path + Option::dir_sep + fileInfo(files[file]).fileName();
+                        alldeps += path + Option::dir_sep + fileInfo(files[file].toQString()).fileName();
                 }
             }
         }
@@ -1270,7 +1275,7 @@ UnixMakefileGenerator::libtoolFileName(bool fixify)
         ret.prepend(project->first("QMAKE_LIBTOOL_DESTDIR") + Option::dir_sep);
     if(fixify) {
         if(QDir::isRelativePath(ret) && !project->isEmpty("DESTDIR"))
-            ret.prepend(project->first("DESTDIR"));
+            ret.prepend(project->first("DESTDIR").toQString());
         ret = Option::fixPathToLocalOS(fileFixify(ret, qmake_getpwd(), Option::output_dir));
     }
     return ret;
@@ -1314,14 +1319,14 @@ UnixMakefileGenerator::writeLibtoolFile()
       << "old_library='" << lname.left(lname.length()-Option::libtool_ext.length()) << ".a'\n\n";
 
     t << "# Libraries that this one depends upon.\n";
-    QStringList libs;
+    ProStringList libs;
     if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
         libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
     else
         libs << "QMAKE_LIBS"; //obvious one
     t << "dependency_libs='";
-    for(QStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
-        t << project->values((*it)).join(" ") << " ";
+    for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
+        t << project->values((*it).toKey()).join(" ") << " ";
     t << "'\n\n";
 
     t << "# Version information for " << lname << "\n";
@@ -1339,13 +1344,13 @@ UnixMakefileGenerator::writeLibtoolFile()
         "dlopen=''\n"
         "dlpreopen=''\n\n";
 
-    QString install_dir = project->first("QMAKE_LIBTOOL_LIBDIR");
+    ProString install_dir = project->first("QMAKE_LIBTOOL_LIBDIR");
     if(install_dir.isEmpty())
         install_dir = project->first("target.path");
     if(install_dir.isEmpty())
         install_dir = project->first("DESTDIR");
     t << "# Directory that this library needs to be installed in:\n"
-        "libdir='" << Option::fixPathToTargetOS(install_dir, false) << "'\n";
+        "libdir='" << Option::fixPathToTargetOS(install_dir.toQString(), false) << "'\n";
 }
 
 QT_END_NAMESPACE

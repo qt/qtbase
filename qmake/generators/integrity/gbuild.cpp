@@ -70,7 +70,7 @@ GBuildMakefileGenerator::write()
     QString filename(Option::output.fileName());
     QString pathtoremove(qmake_getpwd());
     QString relpath(pathtoremove);
-    QString strtarget(project->first("TARGET"));
+    QString strtarget(project->first("TARGET").toQString());
     bool isnativebin = nativebins.contains(strtarget);
     relpath.replace(Option::output_dir, "");
 
@@ -214,7 +214,7 @@ GBuildMakefileGenerator::write()
     }
 
     QTextStream t(&Option::output);
-    QString primaryTarget(project->values("QMAKE_CXX").at(0));
+    QString primaryTarget(project->values("QMAKE_CXX").at(0).toQString());
 
     pathtoremove += QDir::separator();
     filename.remove(qmake_getpwd());
@@ -258,8 +258,8 @@ GBuildMakefileGenerator::write()
         t << "\t-Iwork\n";
         t << "\t-Llib\n";
         t << "\t";
-        const QStringList &l = project->values("QMAKE_CXXFLAGS");
-        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
+        const ProStringList &l = project->values("QMAKE_CXXFLAGS");
+        for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
             if ((*it).startsWith("-"))
                 t << "\n" << "\t" << (*it);
             else
@@ -284,8 +284,8 @@ GBuildMakefileGenerator::write()
             if (isnativebin && (i == 0))
                 continue;
             t << "\t";
-            const QStringList &l = project->values(src[i]);
-            for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
+            const ProStringList &l = project->values(src[i]);
+            for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
                 if ((*it).startsWith("-"))
                     t << "\n" << "\t" << (*it);
                 else
@@ -297,14 +297,15 @@ GBuildMakefileGenerator::write()
 
     /* first subdirectories/subprojects */
     {
-        const QStringList &l = project->values("SUBDIRS");
-        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-            QString gpjname((*it));
+        const ProStringList &l = project->values("SUBDIRS");
+        for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
+            QString gpjname((*it).toQString());
             /* avoid native tools */
             if (nativebins.contains(gpjname.section("_", -1)))
                 continue;
-            if (!project->first((*it) + ".subdir").isEmpty())
-                gpjname = project->first((*it) + ".subdir");
+            const ProKey skey(*it + ".subdir");
+            if (!project->first(skey).isEmpty())
+                gpjname = project->first(skey).toQString();
             else
                 gpjname.replace("_", QDir::separator());
             gpjname += QDir::separator() + gpjname.section(QDir::separator(), -1);
@@ -318,9 +319,9 @@ GBuildMakefileGenerator::write()
     }
 
     {
-        const QStringList &l = project->values("RESOURCES");
-        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-            QString tmpstr(*it);
+        const ProStringList &l = project->values("RESOURCES");
+        for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
+            QString tmpstr((*it).toQString());
             tmpstr.remove(pathtoremove);
             t << tmpstr << "\t[Qt Resource]\n";
             tmpstr = tmpstr.section(".", -2, -1).section(QDir::separator(), -1);
@@ -332,9 +333,9 @@ GBuildMakefileGenerator::write()
         }
     }
     {
-        const QStringList &l = project->values("FORMS");
-        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-            QString tmpstr(*it);
+        const ProStringList &l = project->values("FORMS");
+        for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
+            QString tmpstr((*it).toQString());
             tmpstr.remove(pathtoremove);
             t << tmpstr << "\t[Qt Dialog]\n";
             tmpstr = tmpstr.section(".", 0, 0).section(QDir::separator(), -1);
@@ -348,23 +349,23 @@ GBuildMakefileGenerator::write()
     /* source files for this project */
     static const char * const src[] = { "HEADERS", "SOURCES", 0 };
     for (int i = 0; src[i]; i++) {
-        const QStringList &l = project->values(src[i]);
-        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
+        const ProStringList &l = project->values(src[i]);
+        for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
             if ((*it).isEmpty())
                 continue;
             /* native tools aren't preprocessed */
             if (!isnativebin)
-                t << writeOne((*it), pathtoremove);
+                t << writeOne((*it).toQString(), pathtoremove);
             else
-                t << QString(*it).remove(pathtoremove) << "\n";
+                t << (*it).toQString().remove(pathtoremove) << "\n";
         }
     }
     t << "\n";
 
     {
-        const QStringList &l = project->values("GENERATED_SOURCES");
-        for (QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-            t << "work/" << (*it).section(QDir::separator(), -1) << "\n";
+        const ProStringList &l = project->values("GENERATED_SOURCES");
+        for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
+            t << "work/" << (*it).toQString().section(QDir::separator(), -1) << "\n";
         }
     }
 
@@ -395,7 +396,7 @@ QString GBuildMakefileGenerator::writeOne(QString filename, QString pathtoremove
         QString tmpstr(filename.section("/", -1));
         QString filepath(pathtoremove);
         if (!project->values("QT_SOURCE_TREE").isEmpty()) {
-            filepath.remove(project->values("QT_SOURCE_TREE").first());
+            filepath.remove(project->first("QT_SOURCE_TREE").toQString());
             filepath.remove(0, 1);
         }
         s += "\n\t:preexecShellSafe='${QT_BUILD_DIR}/bin/moc ";

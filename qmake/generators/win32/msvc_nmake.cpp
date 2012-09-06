@@ -59,8 +59,8 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
 {
     writeHeader(t);
     if(!project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty()) {
-        const QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
-        for (QStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
+        const ProStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
+        for (ProStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
             t << *it << " ";
         t << "all first clean:" << "\n\t"
           << "@echo \"Some of the required modules ("
@@ -78,7 +78,7 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
             return MakefileGenerator::writeStubMakefile(t);
 #endif
         if (!project->isHostBuild()) {
-            const QHash<QString, QStringList> &variables = project->variables();
+            const ProValueMap &variables = project->variables();
             if (variables["QMAKESPEC"].first().contains("wince", Qt::CaseInsensitive)) {
                 CeSdkHandler sdkhandler;
                 sdkhandler.parse();
@@ -133,8 +133,8 @@ QString NmakeMakefileGenerator::defaultInstall(const QString &t)
     QString ret = Win32MakefileGenerator::defaultInstall(t);
 
     const QString root = "$(INSTALL_ROOT)";
-    QStringList &uninst = project->values(t + ".uninstall");
-    QString targetdir = Option::fixPathToTargetOS(project->first(t + ".path"), false);
+    ProStringList &uninst = project->values(ProKey(t + ".uninstall"));
+    QString targetdir = Option::fixPathToTargetOS(project->first(ProKey(t + ".path")).toQString(), false);
     targetdir = fileFixify(targetdir, FileFixifyAbsolute);
     if(targetdir.right(1) != Option::dir_sep)
         targetdir += Option::dir_sep;
@@ -186,7 +186,7 @@ void NmakeMakefileGenerator::writeNmakeParts(QTextStream &t)
     }
 }
 
-QString NmakeMakefileGenerator::var(const QString &value)
+QString NmakeMakefileGenerator::var(const ProKey &value)
 {
     if (usePCH) {
         if ((value == "QMAKE_RUN_CXX_IMP_BATCH"
@@ -252,15 +252,15 @@ void NmakeMakefileGenerator::init()
     }
 
     if (!project->values("DEF_FILE").isEmpty()) {
-        QString defFileName = fileFixify(project->values("DEF_FILE")).first();
+        QString defFileName = fileFixify(project->first("DEF_FILE").toQString());
         project->values("QMAKE_LFLAGS").append(QString("/DEF:") + escapeFilePath(defFileName));
     }
 
     if(!project->values("VERSION").isEmpty()) {
-        QString version = project->values("VERSION")[0];
+        ProString version = project->values("VERSION")[0];
         int firstDot = version.indexOf(".");
-        QString major = version.left(firstDot);
-        QString minor = version.right(version.length() - firstDot - 1);
+        QString major = version.left(firstDot).toQString();
+        QString minor = version.right(version.length() - firstDot - 1).toQString();
         minor.replace(".", "");
         project->values("QMAKE_LFLAGS").append("/VERSION:" + major + "." + minor);
     }
@@ -269,7 +269,7 @@ void NmakeMakefileGenerator::init()
     MakefileGenerator::init();
 
     // Setup PCH variables
-    precompH = project->first("PRECOMPILED_HEADER");
+    precompH = project->first("PRECOMPILED_HEADER").toQString();
     usePCH = !precompH.isEmpty() && project->isActiveConfig("precompile_header");
     if (usePCH) {
         // Created files
@@ -280,11 +280,11 @@ void NmakeMakefileGenerator::init()
         // Add pch file to cleanup
         project->values("QMAKE_CLEAN")          += precompPch;
         // Return to variable pool
-        project->values("PRECOMPILED_OBJECT") = QStringList(precompObj);
-        project->values("PRECOMPILED_PCH")    = QStringList(precompPch);
+        project->values("PRECOMPILED_OBJECT") = ProStringList(precompObj);
+        project->values("PRECOMPILED_PCH")    = ProStringList(precompPch);
     }
 
-    QString version = project->first("TARGET_VERSION_EXT");
+    ProString version = project->first("TARGET_VERSION_EXT");
     if(project->isActiveConfig("shared")) {
         project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".exp");
     }
@@ -314,7 +314,7 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         source_directories.insert(".", (void*)1);
         static const char * const directories[] = { "UI_SOURCES_DIR", "UI_DIR", 0 };
         for (int y = 0; directories[y]; y++) {
-            QString dirTemp = project->first(directories[y]);
+            QString dirTemp = project->first(directories[y]).toQString();
             if (dirTemp.endsWith("\\"))
                 dirTemp.truncate(dirTemp.length()-1);
             if(!dirTemp.isEmpty())
@@ -322,12 +322,12 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         }
         static const char * const srcs[] = { "SOURCES", "GENERATED_SOURCES", 0 };
         for (int x = 0; srcs[x]; x++) {
-            const QStringList &l = project->values(srcs[x]);
-            for (QStringList::ConstIterator sit = l.begin(); sit != l.end(); ++sit) {
+            const ProStringList &l = project->values(srcs[x]);
+            for (ProStringList::ConstIterator sit = l.begin(); sit != l.end(); ++sit) {
                 QString sep = "\\";
                 if((*sit).indexOf(sep) == -1)
                     sep = "/";
-                QString dir = (*sit).section(sep, 0, -2);
+                QString dir = (*sit).toQString().section(sep, 0, -2);
                 if(!dir.isEmpty() && !source_directories[dir])
                     source_directories.insert(dir, (void*)1);
             }
@@ -357,7 +357,7 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
 
 void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
-    const QString templateName = project->first("TEMPLATE");
+    const ProString templateName = project->first("TEMPLATE");
 
     t << "first: all" << endl;
     t << "all: " << fileFixify(Option::output.fileName()) << " " << varGlue("ALL_DEPS"," "," "," ") << "$(DESTDIR_TARGET)" << endl << endl;
@@ -377,7 +377,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
         if (embedManifest) {
             bool generateManifest = false;
             const QString target = var("DEST_TARGET");
-            QString manifest = project->first("QMAKE_MANIFEST");
+            QString manifest = project->first("QMAKE_MANIFEST").toQString();
             QString extraLFlags;
             if (manifest.isEmpty()) {
                 generateManifest = true;
@@ -386,7 +386,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 project->values("QMAKE_CLEAN") << manifest;
             }
 
-            const bool incrementalLinking = project->values("QMAKE_LFLAGS").filter(QRegExp("(/|-)INCREMENTAL:NO")).isEmpty();
+            const bool incrementalLinking = project->values("QMAKE_LFLAGS").toQStringList().filter(QRegExp("(/|-)INCREMENTAL:NO")).isEmpty();
             if (incrementalLinking) {
                 // Link a resource that contains the manifest without modifying the exe/dll after linking.
 

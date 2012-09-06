@@ -77,17 +77,17 @@ QMakeProperty::QMakeProperty() : settings(0)
 {
     for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++) {
         QString name = QString::fromLatin1(propList[i].name);
-        m_values[name + "/get"] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::EffectivePaths);
+        m_values[ProKey(name + "/get")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::EffectivePaths);
         QString val = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::FinalPaths);
         if (!propList[i].raw) {
-            m_values[name] = QLibraryInfo::location(propList[i].loc);
+            m_values[ProKey(name)] = QLibraryInfo::location(propList[i].loc);
             name += "/raw";
         }
-        m_values[name] = val;
+        m_values[ProKey(name)] = val;
     }
-    m_values["QMAKE_VERSION"] = qmake_version();
+    m_values["QMAKE_VERSION"] = ProString(qmake_version());
 #ifdef QT_VERSION_STR
-    m_values["QT_VERSION"] = QT_VERSION_STR;
+    m_values["QT_VERSION"] = ProString(QT_VERSION_STR);
 #endif
 }
 
@@ -105,21 +105,22 @@ void QMakeProperty::initSettings()
     }
 }
 
-QString
-QMakeProperty::value(const QString &v)
+ProString
+QMakeProperty::value(const ProKey &vk)
 {
-    QString val = m_values.value(v);
+    ProString val = m_values.value(vk);
     if (!val.isNull())
         return val;
 
     initSettings();
+    QString v = vk.toQString();
     if (!settings->contains(v))
         return settings->value("2.01a/" + v).toString(); // Backwards compat
     return settings->value(v).toString();
 }
 
 bool
-QMakeProperty::hasValue(QString v)
+QMakeProperty::hasValue(const ProKey &v)
 {
     return !value(v).isNull();
 }
@@ -164,9 +165,9 @@ QMakeProperty::exec()
             specialProps.append("QT_VERSION");
 #endif
             foreach (QString prop, specialProps) {
-                QString val = value(prop);
-                QString pval = value(prop + "/raw");
-                QString gval = value(prop + "/get");
+                ProString val = value(ProKey(prop));
+                ProString pval = value(ProKey(prop + "/raw"));
+                ProString gval = value(ProKey(prop + "/get"));
                 fprintf(stdout, "%s:%s\n", prop.toLatin1().constData(), val.toLatin1().constData());
                 if (!pval.isEmpty() && pval != val)
                     fprintf(stdout, "%s/raw:%s\n", prop.toLatin1().constData(), pval.toLatin1().constData());
@@ -179,11 +180,12 @@ QMakeProperty::exec()
             it != Option::prop::properties.end(); it++) {
             if(Option::prop::properties.count() > 1)
                 fprintf(stdout, "%s:", (*it).toLatin1().constData());
-            if(!hasValue((*it))) {
+            const ProKey pkey(*it);
+            if (!hasValue(pkey)) {
                 ret = false;
                 fprintf(stdout, "**Unknown**\n");
             } else {
-                fprintf(stdout, "%s\n", value((*it)).toLatin1().constData());
+                fprintf(stdout, "%s\n", value(pkey).toLatin1().constData());
             }
         }
     } else if(Option::qmake_mode == Option::QMAKE_SET_PROPERTY) {

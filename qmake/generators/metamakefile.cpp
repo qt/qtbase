@@ -70,7 +70,7 @@ private:
     };
     QList<Build *> makefiles;
     void clearBuilds();
-    MakefileGenerator *processBuild(const QString &);
+    MakefileGenerator *processBuild(const ProString &);
 
 public:
 
@@ -104,7 +104,7 @@ BuildsMetaMakefileGenerator::init()
         return false;
     init_flag = true;
 
-    const QStringList &builds = project->values("BUILDS");
+    const ProStringList &builds = project->values("BUILDS");
     bool use_single_build = builds.isEmpty();
     if(builds.count() > 1 && Option::output.fileName() == "-") {
         use_single_build = true;
@@ -115,7 +115,7 @@ BuildsMetaMakefileGenerator::init()
     }
     if(!use_single_build) {
         for(int i = 0; i < builds.count(); i++) {
-            QString build = builds[i];
+            ProString build = builds[i];
             MakefileGenerator *makefile = processBuild(build);
             if(!makefile)
                 return false;
@@ -128,7 +128,7 @@ BuildsMetaMakefileGenerator::init()
                 Build *b = new Build;
                 b->name = name;
                 if(builds.count() != 1)
-                    b->build += build;
+                    b->build = build.toQString();
                 b->makefile = makefile;
                 makefiles += b;
             }
@@ -180,7 +180,7 @@ BuildsMetaMakefileGenerator::write(const QString &oldpwd)
                 } else {
                     if(Option::output.fileName().isEmpty() &&
                        Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE)
-                        Option::output.setFileName(project->first("QMAKE_MAKEFILE"));
+                        Option::output.setFileName(project->first("QMAKE_MAKEFILE").toQString());
                     Option::output_dir = oldpwd;
                     QString build_name = build->name;
                     if(!build->build.isEmpty()) {
@@ -219,22 +219,20 @@ BuildsMetaMakefileGenerator::write(const QString &oldpwd)
 }
 
 MakefileGenerator
-*BuildsMetaMakefileGenerator::processBuild(const QString &build)
+*BuildsMetaMakefileGenerator::processBuild(const ProString &build)
 {
     if(project) {
         debug_msg(1, "Meta Generator: Parsing '%s' for build [%s].",
                   project->projectFile().toLatin1().constData(),build.toLatin1().constData());
 
         //initialize the base
-        QHash<QString, QStringList> basevars;
-        QStringList basecfgs;
-        if(!project->isEmpty(build + ".CONFIG"))
-            basecfgs = project->values(build + ".CONFIG");
+        ProValueMap basevars;
+        ProStringList basecfgs = project->values(ProKey(build + ".CONFIG"));
         basecfgs += build;
         basecfgs += "build_pass";
-        basevars["BUILD_PASS"] = QStringList(build);
-        QStringList buildname = project->values(build + ".name");
-        basevars["BUILD_NAME"] = (buildname.isEmpty() ? QStringList(build) : buildname);
+        basevars["BUILD_PASS"] = ProStringList(build);
+        ProStringList buildname = project->values(ProKey(build + ".name"));
+        basevars["BUILD_NAME"] = (buildname.isEmpty() ? ProStringList(build) : buildname);
 
         //create project
         QMakeProject *build_proj = new QMakeProject(project->properties());
@@ -291,18 +289,22 @@ SubdirsMetaMakefileGenerator::init()
         QString thispwd = oldpwd;
         if(!thispwd.endsWith('/'))
            thispwd += '/';
-        const QStringList &subdirs = project->values("SUBDIRS");
+        const ProStringList &subdirs = project->values("SUBDIRS");
         static int recurseDepth = -1;
         ++recurseDepth;
         for(int i = 0; i < subdirs.size(); ++i) {
             Subdir *sub = new Subdir;
             sub->indent = recurseDepth;
 
-            QFileInfo subdir(subdirs.at(i));
-            if(!project->isEmpty(subdirs.at(i) + ".file"))
-                subdir = project->first(subdirs.at(i) + ".file");
-            else if(!project->isEmpty(subdirs.at(i) + ".subdir"))
-                subdir = project->first(subdirs.at(i) + ".subdir");
+            QFileInfo subdir(subdirs.at(i).toQString());
+            const ProKey fkey(subdirs.at(i) + ".file");
+            if (!project->isEmpty(fkey)) {
+                subdir = project->first(fkey).toQString();
+            } else {
+                const ProKey skey(subdirs.at(i) + ".subdir");
+                if (!project->isEmpty(skey))
+                    subdir = project->first(skey).toQString();
+            }
             QString sub_name;
             if(subdir.isDir())
                 subdir = QFileInfo(subdir.filePath() + "/" + subdir.fileName() + Option::pro_ext);
@@ -439,7 +441,7 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
         return mkfile;
     }
 
-    QString gen = proj->first("MAKEFILE_GENERATOR");
+    ProString gen = proj->first("MAKEFILE_GENERATOR");
     if(gen.isEmpty()) {
         fprintf(stderr, "MAKEFILE_GENERATOR variable not set as a result of parsing : %s. Possibly qmake was not able to find files included using \"include(..)\" - enable qmake debugging to investigate more.\n",
                 proj->projectFile().toLatin1().constData());

@@ -7,6 +7,7 @@ QMAKESPEC = @QMAKESPEC@
 LFLAGS = @QMAKE_LFLAGS@
 
 QMKSRC = $(SOURCE_PATH)/qmake
+QMKLIBSRC = $(QMKSRC)/library
 QMKGENSRC = $(QMKSRC)/generators
 
 #qmake code
@@ -82,7 +83,7 @@ DEPEND_SRC = \
 	   $(QTSRCS)
 
 CPPFLAGS = -g $(OPENSOURCE_CXXFLAGS) \
-	   -I$(QMKSRC) -I$(QMKSRC)/generators -I$(QMKSRC)/generators/unix -I$(QMKSRC)/generators/win32 \
+	   -I$(QMKSRC) -I$(QMKLIBSRC) -I$(QMKSRC)/generators -I$(QMKSRC)/generators/unix -I$(QMKSRC)/generators/win32 \
 	   -I$(QMKSRC)/generators/mac -I$(QMKSRC)/generators/integrity \
 	   -I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
 	   -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION) -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION)/QtCore \

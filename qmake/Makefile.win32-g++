@@ -9,6 +9,7 @@ endif
 CORESRC = $(SOURCE_PATH)/src/corelib
 TOOLSRC = $(SOURCE_PATH)/tools
 QMKSRC = $(SOURCE_PATH)/qmake
+QMKLIBSRC = $(QMKSRC)/library
 
 # SHELL is the full path of sh.exe, unless
 # 1) it is found in the current directory
@@ -43,7 +44,7 @@ endif
 #
 CXX	    =	g++
 CFLAGS	    =	-c -o$@ -O \
-		-I$(QMKSRC) -I$(QMKSRC)/generators -I$(QMKSRC)/generators/unix -I$(QMKSRC)/generators/win32 -I$(QMKSRC)/generators/mac -I$(QMKSRC)/generators/integrity \
+		-I$(QMKSRC) -I$(QMKLIBSRC) -I$(QMKSRC)/generators -I$(QMKSRC)/generators/unix -I$(QMKSRC)/generators/win32 -I$(QMKSRC)/generators/mac -I$(QMKSRC)/generators/integrity \
 		-I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION) -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION)/QtCore \
 		-I$(BUILD_PATH)/src/corelib/global -DHAVE_QCONFIG_CPP \
 		-I$(SOURCE_PATH)/mkspecs/win32-g++  \
