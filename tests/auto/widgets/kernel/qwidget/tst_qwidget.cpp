@@ -383,6 +383,7 @@ private slots:
 
     void nativeChildFocus();
     void grab();
+    void grabMouse();
 
     void touchEventSynthesizedMouseEvent();
 
@@ -9331,6 +9332,75 @@ void tst_QWidget::grab()
 
         QVERIFY(lenientCompare(actual, expected));
     }
+}
+
+/* grabMouse() tests whether mouse grab for a widget without window handle works.
+ * It creates a top level widget with another nested widget inside. The inner widget grabs
+ * the mouse and a series of mouse presses moving over the top level's window is simulated.
+ * Only the inner widget should receive events. */
+
+static inline QString mouseEventLogEntry(const QString &objectName, QEvent::Type t, const QPoint &p, Qt::MouseButtons b)
+{
+    QString result;
+    QDebug(&result).nospace() << objectName << " Mouse event " << t << " at " << p << " buttons " << b;
+    return result;
+}
+
+class GrabLoggerWidget : public QWidget {
+public:
+    explicit GrabLoggerWidget(QStringList *log, QWidget *parent = 0)  : QWidget(parent), m_log(log) {}
+
+protected:
+    bool event(QEvent *e)
+    {
+        switch (e->type()) {
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseMove:
+        case QEvent::MouseButtonRelease: {
+            QMouseEvent *me = static_cast<QMouseEvent *>(e);
+            m_log->push_back(mouseEventLogEntry(objectName(), me->type(), me->pos(), me->buttons()));
+            me->accept();
+            return true;
+        }
+        default:
+            break;
+        }
+        return QWidget::event(e);
+    }
+private:
+    QStringList *m_log;
+};
+
+void tst_QWidget::grabMouse()
+{
+    QStringList log;
+    GrabLoggerWidget w(&log);
+    w.setObjectName(QLatin1String("tst_qwidget_grabMouse"));
+    w.setWindowTitle(w.objectName());
+    QLayout *layout = new QVBoxLayout(&w);
+    layout->setMargin(50);
+    GrabLoggerWidget *grabber = new GrabLoggerWidget(&log, &w);
+    const QString grabberObjectName = QLatin1String("tst_qwidget_grabMouse_grabber");
+    grabber->setObjectName(grabberObjectName);
+    grabber->setMinimumSize(100, 100);
+    layout->addWidget(grabber);
+    w.show();
+    qApp->setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+
+    QStringList expectedLog;
+    grabber->grabMouse();
+    QPoint mousePos = QPoint(w.width() / 2, 10);
+    const int step = w.height() / 5;
+    for ( ; mousePos.y() < w.height() ; mousePos.ry() += step) {
+        QTest::mouseClick(w.windowHandle(), Qt::LeftButton, 0, mousePos);
+        // Events should go to the grabber child using its coordinates.
+        const QPoint expectedPos = grabber->mapFromParent(mousePos);
+        expectedLog.push_back(mouseEventLogEntry(grabberObjectName, QEvent::MouseButtonPress, expectedPos, Qt::LeftButton));
+        expectedLog.push_back(mouseEventLogEntry(grabberObjectName, QEvent::MouseButtonRelease, expectedPos, Qt::NoButton));
+    }
+    grabber->releaseMouse();
+    QCOMPARE(log, expectedLog);
 }
 
 class TouchMouseWidget : public QWidget {

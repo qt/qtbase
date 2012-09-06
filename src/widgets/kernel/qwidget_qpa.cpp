@@ -362,13 +362,22 @@ QWidget *qt_pressGrab = 0;
 QWidget *qt_mouseGrb = 0;
 static QWidget *keyboardGrb = 0;
 
+static inline QWindow *grabberWindow(const QWidget *w)
+{
+    QWindow *window = w->windowHandle();
+    if (!window)
+        if (const QWidget *nativeParent = w->nativeParentWidget())
+            window = nativeParent->windowHandle();
+    return window;
+}
+
 void QWidget::grabMouse()
 {
     if (qt_mouseGrb)
         qt_mouseGrb->releaseMouse();
 
-    if (windowHandle())
-        windowHandle()->setMouseGrabEnabled(true);
+    if (QWindow *window = grabberWindow(this))
+        window->setMouseGrabEnabled(true);
 
     qt_mouseGrb = this;
     qt_pressGrab = 0;
@@ -378,15 +387,7 @@ void QWidget::grabMouse()
 void QWidget::grabMouse(const QCursor &cursor)
 {
     Q_UNUSED(cursor);
-
-    if (qt_mouseGrb)
-        qt_mouseGrb->releaseMouse();
-
-    if (windowHandle())
-        windowHandle()->setMouseGrabEnabled(true);
-
-    qt_mouseGrb = this;
-    qt_pressGrab = 0;
+    grabMouse();
 }
 #endif
 
@@ -395,14 +396,15 @@ bool QWidgetPrivate::stealMouseGrab(bool grab)
     // This is like a combination of grab/releaseMouse() but with error checking
     // and it has no effect on the result of mouseGrabber().
     Q_Q(QWidget);
-    return q->windowHandle() ? q->windowHandle()->setMouseGrabEnabled(grab) : false;
+    QWindow *window = grabberWindow(q);
+    return window ? window->setMouseGrabEnabled(grab) : false;
 }
 
 void QWidget::releaseMouse()
 {
     if (qt_mouseGrb == this) {
-        if (windowHandle())
-            windowHandle()->setMouseGrabEnabled(false);
+        if (QWindow *window = grabberWindow(this))
+            window->setMouseGrabEnabled(false);
         qt_mouseGrb = 0;
     }
 }
@@ -411,8 +413,8 @@ void QWidget::grabKeyboard()
 {
     if (keyboardGrb)
         keyboardGrb->releaseKeyboard();
-    if (windowHandle())
-        windowHandle()->setKeyboardGrabEnabled(true);
+    if (QWindow *window = grabberWindow(this))
+        window->setKeyboardGrabEnabled(true);
     keyboardGrb = this;
 }
 
@@ -421,14 +423,15 @@ bool QWidgetPrivate::stealKeyboardGrab(bool grab)
     // This is like a combination of grab/releaseKeyboard() but with error
     // checking and it has no effect on the result of keyboardGrabber().
     Q_Q(QWidget);
-    return q->windowHandle() ? q->windowHandle()->setKeyboardGrabEnabled(grab) : false;
+    QWindow *window = grabberWindow(q);
+    return window ? window->setKeyboardGrabEnabled(grab) : false;
 }
 
 void QWidget::releaseKeyboard()
 {
     if (keyboardGrb == this) {
-        if (windowHandle())
-            windowHandle()->setKeyboardGrabEnabled(false);
+        if (QWindow *window = grabberWindow(this))
+            window->setKeyboardGrabEnabled(false);
         keyboardGrb = 0;
     }
 }
