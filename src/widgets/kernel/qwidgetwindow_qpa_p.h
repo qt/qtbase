@@ -78,7 +78,9 @@ protected:
     void handleTouchEvent(QTouchEvent *);
     void handleMoveEvent(QMoveEvent *);
     void handleResizeEvent(QResizeEvent *);
+#ifndef QT_NO_WHEELEVENT
     void handleWheelEvent(QWheelEvent *);
+#endif
 #ifndef QT_NO_DRAGANDDROP
     void handleDragEnterMoveEvent(QDragMoveEvent *);
     void handleDragLeaveEvent(QDragLeaveEvent *);

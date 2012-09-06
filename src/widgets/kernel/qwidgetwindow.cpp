@@ -159,9 +159,11 @@ bool QWidgetWindow::event(QEvent *event)
         handleResizeEvent(static_cast<QResizeEvent *>(event));
         return true;
 
+#ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel:
         handleWheelEvent(static_cast<QWheelEvent *>(event));
         return true;
+#endif
 
 #ifndef QT_NO_DRAGANDDROP
     case QEvent::DragEnter:
@@ -411,6 +413,8 @@ void QWidgetWindow::handleCloseEvent(QCloseEvent *)
     m_widget->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
 }
 
+#ifndef QT_NO_WHEELEVENT
+
 void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
 {
     if (QApplicationPrivate::instance()->modalState() && !qt_try_modal(m_widget, event->type()))
@@ -427,6 +431,8 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
     QWheelEvent translated(mapped, event->globalPos(), event->pixelDelta(), event->angleDelta(), event->delta(), event->orientation(), event->buttons(), event->modifiers());
     QGuiApplication::sendSpontaneousEvent(widget, &translated);
 }
+
+#endif // QT_NO_WHEELEVENT
 
 #ifndef QT_NO_DRAGANDDROP
 
