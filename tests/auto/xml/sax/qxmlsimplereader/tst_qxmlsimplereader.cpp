@@ -582,9 +582,6 @@ void tst_QXmlSimpleReader::inputFromSocket()
 {
     QFETCH(QString, file_name);
 
-#if defined(Q_OS_WIN32) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC_NET))
-    QSKIP("Regression caused by QHOstInfo change 294548, see task 202231.");
-#endif
     QTcpSocket sock;
     sock.connectToHost(QHostAddress::LocalHost, TEST_PORT);
 
