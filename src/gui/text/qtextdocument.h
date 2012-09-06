@@ -75,14 +75,6 @@ template<typename T> class QVector;
 
 namespace Qt
 {
-    enum HitTestAccuracy { ExactHit, FuzzyHit };
-    enum WhiteSpaceMode {
-        WhiteSpaceNormal,
-        WhiteSpacePre,
-        WhiteSpaceNoWrap,
-        WhiteSpaceModeUndefined = -1
-    };
-
     Q_GUI_EXPORT bool mightBeRichText(const QString&);
     Q_GUI_EXPORT QString convertFromPlainText(const QString &plain, WhiteSpaceMode mode = WhiteSpacePre);
 

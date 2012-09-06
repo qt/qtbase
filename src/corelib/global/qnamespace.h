@@ -265,6 +265,15 @@ public:
         ElideNone
     };
 
+    enum WhiteSpaceMode {
+        WhiteSpaceNormal,
+        WhiteSpacePre,
+        WhiteSpaceNoWrap,
+        WhiteSpaceModeUndefined = -1
+    };
+
+    enum HitTestAccuracy { ExactHit, FuzzyHit };
+
     enum WindowType {
         Widget = 0x00000000,
         Window = 0x00000001,

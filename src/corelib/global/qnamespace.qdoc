@@ -1665,8 +1665,6 @@
                     exactly with input-sensitive parts of the document.
     \value FuzzyHit The point at which input occurred can lie close to
                     input-sensitive parts of the document.
-
-    This enum is defined in the \c <QTextDocument> header file.
 */
 
 /*!
@@ -1683,8 +1681,6 @@
     \value WhiteSpaceNoWrap
 
     \omitvalue WhiteSpaceModeUndefined
-
-    This enum is defined in the \c <QTextDocument> header file.
 */
 
 /*!
