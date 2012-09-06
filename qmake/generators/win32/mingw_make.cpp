@@ -320,6 +320,13 @@ void MingwMakefileGenerator::writeIncPart(QTextStream &t)
 {
     t << "INCPATH       = ";
 
+    if (!project->isActiveConfig("no_include_pwd")) {
+        QString pwd = escapeFilePath(fileFixify(qmake_getpwd()));
+        if (pwd.isEmpty())
+            pwd = ".";
+        t << "-I" << pwd << " ";
+    }
+
     const ProStringList &incs = project->values("INCLUDEPATH");
     for (ProStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
         QString inc = (*incit).toQString();

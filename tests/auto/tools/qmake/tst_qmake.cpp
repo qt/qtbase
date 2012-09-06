@@ -76,6 +76,7 @@ private slots:
     void duplicateLibraryEntries();
     void export_across_file_boundaries();
     void include_dir();
+    void include_pwd();
     void install_files();
     void install_depends();
     void quotedfilenames();
@@ -318,6 +319,14 @@ void tst_qmake::include_dir()
     QVERIFY( test_compiler.make( buildDir ));
     QVERIFY( test_compiler.exists( buildDir, "foo", Exe, "1.0.0" ));
     QVERIFY( test_compiler.makeDistClean( buildDir ));
+}
+
+void tst_qmake::include_pwd()
+{
+    QString workDir = base_path + "/testdata/include_pwd";
+    QVERIFY( test_compiler.qmake( workDir, "include_pwd" ));
+    QVERIFY( test_compiler.make( workDir ));
+    QVERIFY( test_compiler.makeDistClean( workDir ));
 }
 
 void tst_qmake::install_files()
