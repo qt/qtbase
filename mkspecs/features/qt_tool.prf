@@ -45,27 +45,39 @@ INSTALLS += target
                 deppath += $$shell_path($$rpath)
             plugin_paths += $$eval(QT.$${dep}.plugin_path) $$eval(QT.$${dep}.plugins)
         }
-        deppath = $$unique(deppath)
+        equals(QMAKE_HOST.os, Windows): \
+            deppath.name = PATH
+        else:contains(QMAKE_HOST.os, Linux|FreeBSD): \
+            deppath.name = LD_LIBRARY_PATH
+        else:equals(QMAKE_HOST.os, Darwin): \
+            deppath.name = DYLD_LIBRARY_PATH
+        else: \
+            error("Operating system not supported.")
+        deppath.value = $$unique(deppath)
+        deppath.CONFIG = prepend
+        pluginpath.name = QT_PLUGIN_PATH
+        pluginpath.value =
         plugin_paths = $$unique(plugin_paths)
-        pluginpath =
         for(ppath, plugin_paths): \
             exists($$ppath): \
-                pluginpath += $$shell_path($$ppath)
-        equals(QMAKE_DIR_SEP, /) {
-            equals(QMAKE_HOST.os, Windows): \
-                var = PATH
-            else:contains(QMAKE_HOST.os, Linux|FreeBSD): \
-                var = LD_LIBRARY_PATH
-            else:equals(QMAKE_HOST.os, Darwin): \
-                var = DYLD_LIBRARY_PATH
-            else: \
-                error("Operating system not supported.")
-            !isEmpty(pluginpath): pluginpath = "QT_PLUGIN_PATH=$$join(pluginpath, :) "
-            cmd = "$$var=$$join(deppath, :)${$$var:+:\$$$var} $$pluginpath$$cmd"
-        } else {
-            !isEmpty(pluginpath): pluginpath = "(set QT_PLUGIN_PATH=$$join(pluginpath, ;)) & "
-            # Escape closing parens when expanding %PATH%, otherwise cmd confuses itself.
-            cmd = "(set PATH=$$join(deppath, ;);%PATH:)=^)%) & $$pluginpath$$cmd"
+                pluginpath.value += $$shell_path($$ppath)
+        QT_TOOL_ENV += deppath pluginpath
+    }
+
+    for(env, QT_TOOL_ENV) {
+        value = $$eval($${env}.value)
+        !isEmpty(value) {
+            name = $$eval($${env}.name)
+            equals(QMAKE_DIR_SEP, /) {
+                contains($${env}.CONFIG, prepend): infix = \${$$name:+:\$$$name}
+                else: infix =
+                cmd = "$$name=$$join(value, :)$$infix $$cmd"
+            } else {
+                # Escape closing parens when expanding the variable, otherwise cmd confuses itself.
+                contains($${env}.CONFIG, prepend): infix = ;%$$name:)=^)%
+                else: infix =
+                cmd = "(set $$name=$$join(value, ;)$$infix) & $$cmd"
+            }
         }
     }
 
