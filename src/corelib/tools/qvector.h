@@ -650,8 +650,12 @@ QVector<T> &QVector<T>::fill(const T &from, int asize)
 template <typename T>
 QVector<T> &QVector<T>::operator+=(const QVector &l)
 {
-    int newSize = d->size + l.d->size;
-    reallocData(d->size, newSize);
+    uint newSize = d->size + l.d->size;
+    const bool isTooSmall = newSize > d->alloc;
+    if (!isDetached() || isTooSmall) {
+        QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
+        reallocData(d->size, isTooSmall ? newSize : d->alloc, opt);
+    }
 
     if (d->alloc) {
         T *w = d->begin() + newSize;
