@@ -68,7 +68,7 @@
 
     \snippet itemviews/spinboxdelegate/delegate.cpp 0
 
-    Since the delegate is a subclass of QItemDelegate, the data it retrieves
+    Since the delegate is a subclass of QStyledItemDelegate, the data it retrieves
     from the model is displayed in a default style, and we do not need to
     provide a custom \c paintEvent().
 
@@ -122,7 +122,7 @@
 
     The table view is informed about the delegate, and will use it to
     display each of the items. Since the delegate is a subclass of
-    QItemDelegate, each cell in the table will be rendered using standard
+    QStyledItemDelegate, each cell in the table will be rendered using standard
     painting operations.
 
     We insert some arbitrary data into the model for demonstration purposes:

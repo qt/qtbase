@@ -52,7 +52,7 @@
 
 //! [0]
 SpinBoxDelegate::SpinBoxDelegate(QObject *parent)
-    : QItemDelegate(parent)
+    : QStyledItemDelegate(parent)
 {
 }
 //! [0]
@@ -63,6 +63,7 @@ QWidget *SpinBoxDelegate::createEditor(QWidget *parent,
     const QModelIndex &/* index */) const
 {
     QSpinBox *editor = new QSpinBox(parent);
+    editor->setFrame(false);
     editor->setMinimum(0);
     editor->setMaximum(100);
 

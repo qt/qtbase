@@ -41,14 +41,14 @@
 #ifndef DELEGATE_H
 #define DELEGATE_H
 
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 #include <QModelIndex>
 #include <QObject>
 #include <QSize>
 #include <QSpinBox>
 
 //! [0]
-class SpinBoxDelegate : public QItemDelegate
+class SpinBoxDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 
