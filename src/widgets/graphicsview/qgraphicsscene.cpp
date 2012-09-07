@@ -98,7 +98,7 @@
 
     One of QGraphicsScene's greatest strengths is its ability to efficiently
     determine the location of items. Even with millions of items on the scene,
-    the items() functions can determine the location of an item within few
+    the items() functions can determine the location of an item within a few
     milliseconds. There are several overloads to items(): one that finds items
     at a certain position, one that finds items inside or intersecting with a
     polygon or a rectangle, and more. The list of returned items is sorted by
@@ -1915,7 +1915,7 @@ void QGraphicsScene::setSortCacheEnabled(bool enabled)
 
 /*!
     Calculates and returns the bounding rect of all items on the scene. This
-    function works by iterating over all items, and because if this, it can
+    function works by iterating over all items, and because of this, it can
     be slow for large scenes.
 
     \sa sceneRect()
@@ -1960,7 +1960,9 @@ QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
 
     \brief Returns all visible items that, depending on \a mode, are
     either inside or intersect with the rectangle defined by \a x, \a y,
-    \a w and \a h, in a list sorted using \a order.
+    \a w and \a h, in a list sorted using \a order. In this case, "visible" defines items for which:
+    isVisible() returns true, effectiveOpacity() returns a value greater than 0.0
+    (which is fully transparent) and the parent item does not clip it.
 
     \a deviceTransform is the transformation that applies to the view, and needs to
     be provided if the scene contains items that ignore transformations.
@@ -1971,7 +1973,9 @@ QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
     \since 4.6
 
     \brief Returns all visible items that, depending on \a mode, are at
-    the specified \a pos in a list sorted using \a order.
+    the specified \a pos in a list sorted using \a order. In this case, "visible" defines items for which:
+    isVisible() returns true, effectiveOpacity() returns a value greater than 0.0
+    (which is fully transparent) and the parent item does not clip it.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with \a pos are returned.
@@ -1994,8 +1998,10 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelecti
     \since 4.6
 
     \brief Returns all visible items that, depending on \a mode, are
-    either inside or intersect with the specified \a rect and return a
-    list sorted using \a order.
+    either inside or intersect with the specified \a rect, in a
+    list sorted using \a order. In this case, "visible" defines items for which:
+    isVisible() returns true, effectiveOpacity() returns a value greater than 0.0
+    (which is fully transparent) and the parent item does not clip it.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a rect are returned.
@@ -2018,8 +2024,10 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelecti
     \since 4.6
 
     \brief Returns all visible items that, depending on \a mode, are
-    either inside or intersect with the specified \a polygon and return
-    a list sorted using \a order.
+    either inside or intersect with the specified \a polygon, in
+    a list sorted using \a order. In this case, "visible" defines items for which:
+    isVisible() returns true, effectiveOpacity() returns a value greater than 0.0
+    (which is fully transparent) and the parent item does not clip it.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a polygon are returned.
@@ -2042,8 +2050,10 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
     \since 4.6
 
     \brief Returns all visible items that, depending on \a mode, are
-    either inside or intersect with the specified \a path and return a
-    list sorted using \a order.
+    either inside or intersect with the specified \a path, in a
+    list sorted using \a order. In this case, "visible" defines items for which:
+    isVisible() returns true, effectiveOpacity() returns a value greater than 0.0
+    (which is fully transparent) and the parent item does not clip it.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a path are returned.
@@ -2102,6 +2112,8 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
     contains items that ignore transformations. Use the overload that takes
     a QTransform instead.
 
+    Note: See items() for a definition of which items are considered visible by this function.
+
     \sa items(), collidingItems(), {QGraphicsItem#Sorting}{Sorting}
 */
 
@@ -2113,6 +2125,8 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 
     \a deviceTransform is the transformation that applies to the view, and needs to
     be provided if the scene contains items that ignore transformations.
+
+    Note: See items() for a definition of which items are considered visible by this function.
 
     \sa items(), collidingItems(), {QGraphicsItem#Sorting}{Sorting}
 */
@@ -2128,7 +2142,7 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform 
     \overload
     \since 4.6
 
-    Returns the topmost item at the position specified by (\a x, \a
+    Returns the topmost visible item at the position specified by (\a x, \a
     y), or 0 if there are no items at this position.
 
     \a deviceTransform is the transformation that applies to the view, and needs to
@@ -2136,6 +2150,8 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform 
 
     This convenience function is equivalent to calling \c
     {itemAt(QPointF(x, y), deviceTransform)}.
+
+    Note: See items() for a definition of which items are considered visible by this function.
 */
 
 /*!
@@ -2143,7 +2159,7 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform 
     \overload
     \obsolete
 
-    Returns the topmost item at the position specified by (\a x, \a
+    Returns the topmost visible item at the position specified by (\a x, \a
     y), or 0 if there are no items at this position.
 
     This convenience function is equivalent to calling \c
@@ -2152,6 +2168,8 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform 
     This function is deprecated and returns incorrect results if the scene
     contains items that ignore transformations. Use the overload that takes
     a QTransform instead.
+
+    Note: See items() for a definition of which items are considered visible by this function.
 */
 
 /*!
@@ -3455,9 +3473,11 @@ bool QGraphicsScene::eventFilter(QObject *watched, QEvent *event)
 /*!
     This event handler, for event \a contextMenuEvent, can be reimplemented in
     a subclass to receive context menu events. The default implementation
-    forwards the event to the topmost item that accepts context menu events at
+    forwards the event to the topmost visible item that accepts context menu events at
     the position of the event. If no items accept context menu events at this
     position, the event is ignored.
+
+    Note: See items() for a definition of which items are considered visible by this function.
 
     \sa QGraphicsItem::contextMenuEvent()
 */
@@ -3504,6 +3524,8 @@ void QGraphicsScene::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 /*!
     This event handler, for event \a event, can be reimplemented in a subclass
     to receive drag move events for the scene.
+
+    Note: See items() for a definition of which items are considered visible by this function.
 
     \sa QGraphicsItem::dragMoveEvent(), dragEnterEvent(), dragLeaveEvent(),
     dropEvent()
@@ -3679,11 +3701,13 @@ void QGraphicsScene::focusOutEvent(QFocusEvent *focusEvent)
     requested.
 
     The default implementation shows the tooltip of the topmost
-    item, i.e., the item with the highest z-value, at the mouse
+    visible item, i.e., the item with the highest z-value, at the mouse
     cursor position. If no item has a tooltip set, this function
     does nothing.
 
-   \sa QGraphicsItem::toolTip(), QGraphicsSceneHelpEvent
+    Note: See items() for a definition of which items are considered visible by this function.
+
+    \sa QGraphicsItem::toolTip(), QGraphicsSceneHelpEvent
 */
 void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
 {
@@ -3733,8 +3757,10 @@ bool QGraphicsScenePrivate::itemAcceptsHoverEvents_helper(const QGraphicsItem *i
 /*!
     This event handler, for event \a hoverEvent, can be reimplemented in a
     subclass to receive hover enter events. The default implementation
-    forwards the event to the topmost item that accepts hover events at the
+    forwards the event to the topmost visible item that accepts hover events at the
     scene position from the event.
+
+    Note: See items() for a definition of which items are considered visible by this function.
 
     \sa QGraphicsItem::hoverEvent(), QGraphicsItem::setAcceptHoverEvents()
 */
@@ -3911,13 +3937,15 @@ void QGraphicsScene::keyReleaseEvent(QKeyEvent *keyEvent)
 
     The default implementation depends on the state of the scene. If
     there is a mouse grabber item, then the event is sent to the mouse
-    grabber. Otherwise, it is forwarded to the topmost item that
+    grabber. Otherwise, it is forwarded to the topmost visible item that
     accepts mouse events at the scene position from the event, and
     that item promptly becomes the mouse grabber item.
 
     If there is no item at the given position on the scene, the
     selection area is reset, any focus item loses its input focus, and
     the event is then ignored.
+
+    Note: See items() for a definition of which items are considered visible by this function.
 
     \sa QGraphicsItem::mousePressEvent(),
     QGraphicsItem::setAcceptedMouseButtons()
@@ -4020,6 +4048,8 @@ void QGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
     The default implementation is similar to mousePressEvent().
 
+    Note: See items() for a definition of which items are considered visible by this function.
+
     \sa QGraphicsItem::mousePressEvent(), QGraphicsItem::mouseMoveEvent(),
     QGraphicsItem::mouseReleaseEvent(), QGraphicsItem::setAcceptedMouseButtons()
 */
@@ -4037,6 +4067,8 @@ void QGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
     cursor. If ignored, the event propagates to the item beneath, and again
     until the event is accepted, or it reaches the scene. If no items accept
     the event, it is ignored.
+
+    Note: See items() for a definition of which items are considered visible by this function.
 
     \sa QGraphicsItem::wheelEvent()
 */

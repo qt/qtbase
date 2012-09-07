@@ -2606,7 +2606,8 @@ void QGraphicsItem::setSelected(bool selected)
     Returns this item's local opacity, which is between 0.0 (transparent) and
     1.0 (opaque). This value is combined with parent and ancestor values into
     the effectiveOpacity(). The effective opacity decides how the item is
-    rendered.
+    rendered and also affects its visibility when queried by functions such as
+    QGraphicsView::items().
 
     The opacity property decides the state of the painter passed to the
     paint() function. If the item is cached, i.e., ItemCoordinateCache or
