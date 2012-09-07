@@ -1108,13 +1108,10 @@ void QAbstractItemView::reset()
     if (d->selectionModel)
         d->selectionModel->reset();
 #ifndef QT_NO_ACCESSIBILITY
-#ifdef Q_WS_X11
     if (QAccessible::isActive()) {
-        QAccessible::queryAccessibleInterface(this)->table2Interface()->modelReset();
-        QAccessibleEvent event(this, QAccessible::TableModelChanged);
-        QAccessible::updateAccessibility(&event);
+        QAccessibleTableModelChangeEvent accessibleEvent(this, QAccessibleTableModelChangeEvent::ModelReset);
+        QAccessible::updateAccessibility(&accessibleEvent);
     }
-#endif
 #endif
 }
 
@@ -3243,12 +3240,22 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
             // otherwise the items will be update later anyway
             update(topLeft);
         }
-        return;
+    } else {
+        d->updateEditorData(topLeft, bottomRight);
+        if (isVisible() && !d->delayedPendingLayout)
+            d->viewport->update();
     }
-    d->updateEditorData(topLeft, bottomRight);
-    if (!isVisible() || d->delayedPendingLayout)
-        return; // no need to update
-    d->viewport->update();
+
+#ifndef QT_NO_ACCESSIBILITY
+    if (QAccessible::isActive()) {
+        QAccessibleTableModelChangeEvent accessibleEvent(this, QAccessibleTableModelChangeEvent::DataChanged);
+        accessibleEvent.setFirstRow(topLeft.row());
+        accessibleEvent.setFirstColumn(topLeft.column());
+        accessibleEvent.setLastRow(bottomRight.row());
+        accessibleEvent.setLastColumn(bottomRight.column());
+        QAccessible::updateAccessibility(&accessibleEvent);
+    }
+#endif
 }
 
 /*!
@@ -3343,13 +3350,12 @@ void QAbstractItemViewPrivate::_q_rowsRemoved(const QModelIndex &index, int star
         q->updateEditorGeometries();
     q->setState(QAbstractItemView::NoState);
 #ifndef QT_NO_ACCESSIBILITY
-#ifdef Q_WS_X11
     if (QAccessible::isActive()) {
-        QAccessible::queryAccessibleInterface(q)->table2Interface()->rowsRemoved(index, start, end);
-        QAccessibleEvent event(QAccessible::TableModelChanged, q, 0);
-        QAccessible::updateAccessibility(&event);
+        QAccessibleTableModelChangeEvent accessibleEvent(q, QAccessibleTableModelChangeEvent::RowsRemoved);
+        accessibleEvent.setFirstRow(start);
+        accessibleEvent.setLastRow(end);
+        QAccessible::updateAccessibility(&accessibleEvent);
     }
-#endif
 #endif
 }
 
@@ -3424,13 +3430,12 @@ void QAbstractItemViewPrivate::_q_columnsRemoved(const QModelIndex &index, int s
         q->updateEditorGeometries();
     q->setState(QAbstractItemView::NoState);
 #ifndef QT_NO_ACCESSIBILITY
-#ifdef Q_WS_X11
     if (QAccessible::isActive()) {
-        QAccessible::queryAccessibleInterface(q)->table2Interface()->columnsRemoved(index, start, end);
-        QAccessibleEvent event(QAccessible::TableModelChanged, q, 0);
-        QAccessible::updateAccessibility(&event);
+        QAccessibleTableModelChangeEvent accessibleEvent(q, QAccessibleTableModelChangeEvent::ColumnsRemoved);
+        accessibleEvent.setFirstColumn(start);
+        accessibleEvent.setLastColumn(end);
+        QAccessible::updateAccessibility(&accessibleEvent);
     }
-#endif
 #endif
 }
 
@@ -3447,14 +3452,13 @@ void QAbstractItemViewPrivate::_q_rowsInserted(const QModelIndex &index, int sta
     Q_UNUSED(end)
 
 #ifndef QT_NO_ACCESSIBILITY
-#ifdef Q_WS_X11
     Q_Q(QAbstractItemView);
     if (QAccessible::isActive()) {
-        QAccessible::queryAccessibleInterface(q)->table2Interface()->rowsInserted(index, start, end);
-        QAccessibleEvent event(QAccessible::TableModelChanged, q, 0);
-        QAccessible::updateAccessibility(&event);
+        QAccessibleTableModelChangeEvent accessibleEvent(q, QAccessibleTableModelChangeEvent::RowsInserted);
+        accessibleEvent.setFirstRow(start);
+        accessibleEvent.setLastRow(end);
+        QAccessible::updateAccessibility(&accessibleEvent);
     }
-#endif
 #endif
 }
 
@@ -3473,13 +3477,12 @@ void QAbstractItemViewPrivate::_q_columnsInserted(const QModelIndex &index, int 
     if (q->isVisible())
         q->updateEditorGeometries();
 #ifndef QT_NO_ACCESSIBILITY
-#ifdef Q_WS_X11
     if (QAccessible::isActive()) {
-        QAccessible::queryAccessibleInterface(q)->table2Interface()->columnsInserted(index, start, end);
-        QAccessibleEvent event(QAccessible::TableModelChanged, q, 0);
-        QAccessible::updateAccessibility(&event);
+        QAccessibleTableModelChangeEvent accessibleEvent(q, QAccessibleTableModelChangeEvent::ColumnsInserted);
+        accessibleEvent.setFirstColumn(start);
+        accessibleEvent.setLastColumn(end);
+        QAccessible::updateAccessibility(&accessibleEvent);
     }
-#endif
 #endif
 }
 
@@ -3501,14 +3504,11 @@ void QAbstractItemViewPrivate::_q_layoutChanged()
 {
     doDelayedItemsLayout();
 #ifndef QT_NO_ACCESSIBILITY
-#ifdef Q_WS_X11
     Q_Q(QAbstractItemView);
     if (QAccessible::isActive()) {
-        QAccessible::queryAccessibleInterface(q)->table2Interface()->modelReset();
-        QAccessibleEvent event(QAccessible::TableModelChanged, q, 0);
-        QAccessible::updateAccessibility(&event);
+        QAccessibleTableModelChangeEvent accessibleEvent(q, QAccessibleTableModelChangeEvent::ModelReset);
+        QAccessible::updateAccessibility(&accessibleEvent);
     }
-#endif
 #endif
 }
 
