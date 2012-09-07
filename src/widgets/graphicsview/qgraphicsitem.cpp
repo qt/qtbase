@@ -4498,12 +4498,11 @@ void QGraphicsItem::resetTransform()
 
     The default implementation does nothing.
 
-    For individual item animation, an alternative to this function is to
-    either use QGraphicsItemAnimation, or to multiple-inherit from QObject and
-    QGraphicsItem, and animate your item using QObject::startTimer() and
-    QObject::timerEvent().
+    This function is intended for animations. An alternative is to
+    multiple-inherit from QObject and QGraphicsItem and use the \l{The Animation
+    Framework}{Animation Framework}.
 
-    \sa QGraphicsItemAnimation, QTimeLine
+    \sa QGraphicsScene::advance(), QTimeLine
 */
 void QGraphicsItem::advance(int phase)
 {

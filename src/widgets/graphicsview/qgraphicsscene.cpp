@@ -3221,7 +3221,10 @@ QList <QGraphicsView *> QGraphicsScene::views() const
     move. In the first phase, QGraphicsItem::advance() is called passing a
     value of 0 as an argument, and 1 is passed in the second phase.
 
-    \sa QGraphicsItem::advance(), QGraphicsItemAnimation, QTimeLine
+    Note that you can also use the \l{The Animation Framework}{Animation
+    Framework} for animations.
+
+    \sa QGraphicsItem::advance(), QTimeLine
 */
 void QGraphicsScene::advance()
 {
