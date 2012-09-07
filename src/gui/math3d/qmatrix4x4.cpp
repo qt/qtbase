@@ -101,15 +101,6 @@ QMatrix4x4::QMatrix4x4(const float *values)
     flagBits = General;
 }
 
-// ###TODO This is temporary to get through the CI's revdep qtdeclarative tests. Remove it!
-QMatrix4x4::QMatrix4x4(const double *values)
-{
-    for (int row = 0; row < 4; ++row)
-        for (int col = 0; col < 4; ++col)
-            m[col][row] = float(values[row * 4 + col]);
-    flagBits = General;
-}
-
 /*!
     \fn QMatrix4x4::QMatrix4x4(float m11, float m12, float m13, float m14, float m21, float m22, float m23, float m24, float m31, float m32, float m33, float m34, float m41, float m42, float m43, float m44)
 

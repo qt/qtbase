@@ -64,9 +64,6 @@ class Q_GUI_EXPORT QMatrix4x4
 public:
     inline QMatrix4x4() { setToIdentity(); }
     explicit QMatrix4x4(const float *values);
-
-    // ###TODO This is temporary to get through the CI's revdep qtdeclarative tests. Remove it!
-    explicit QMatrix4x4(const double *values);
     inline QMatrix4x4(float m11, float m12, float m13, float m14,
                       float m21, float m22, float m23, float m24,
                       float m31, float m32, float m33, float m34,
