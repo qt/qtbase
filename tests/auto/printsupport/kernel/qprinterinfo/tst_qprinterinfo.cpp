@@ -56,6 +56,11 @@ class tst_QPrinterInfo : public QObject
 {
     Q_OBJECT
 
+public slots:
+#ifdef QT_NO_PRINTER
+    void initTestCase();
+    void cleanupTestCase();
+#else
 private slots:
 #ifndef Q_OS_WIN32
     void testForDefaultPrinter();
@@ -73,8 +78,22 @@ private:
 #ifdef Q_OS_UNIX
     QString getOutputFromCommand(const QStringList& command);
 #endif // Q_OS_UNIX
+#endif
 };
 
+
+#ifdef QT_NO_PRINTER
+void tst_QPrinterInfo::initTestCase()
+{
+    QSKIP("This test requires printing support");
+}
+
+void tst_QPrinterInfo::cleanupTestCase()
+{
+    QSKIP("This test requires printing support");
+}
+
+#else
 QString tst_QPrinterInfo::getDefaultPrinterFromSystem()
 {
     QString printer;
@@ -312,6 +331,7 @@ void tst_QPrinterInfo::namedPrinter()
         QCOMPARE(pi2.isDefault(),           pi.isDefault());
     }
 }
+#endif // QT_NO_PRINTER
 
 QTEST_MAIN(tst_QPrinterInfo)
 #include "tst_qprinterinfo.moc"

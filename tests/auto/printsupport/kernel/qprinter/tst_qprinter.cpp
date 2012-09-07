@@ -81,6 +81,11 @@ class tst_QPrinter : public QObject
 {
     Q_OBJECT
 
+public slots:
+#ifdef QT_NO_PRINTER
+    void initTestCase();
+    void cleanupTestCase();
+#else
 private slots:
     void getSetCheck();
 // Add your testfunctions and testdata create functions here
@@ -113,8 +118,20 @@ private slots:
 
     void taskQTBUG4497_reusePrinterOnDifferentFiles();
     void testPdfTitle();
+#endif
 };
 
+#ifdef QT_NO_PRINTER
+void tst_QPrinter::initTestCase()
+{
+    QSKIP("This test requires printing support");
+}
+
+void tst_QPrinter::cleanupTestCase()
+{
+    QSKIP("This test requires printing support");
+}
+#else
 // Testing get/set functions
 void tst_QPrinter::getSetCheck()
 {
@@ -1033,6 +1050,7 @@ void tst_QPrinter::testPdfTitle()
     const char *expected = reinterpret_cast<const char*>(expectedBuf);
     QVERIFY(file.readAll().contains(QByteArray(expected, 26)));
 }
+#endif // QT_NO_PRINTER
 
 QTEST_MAIN(tst_QPrinter)
 #include "tst_qprinter.moc"
