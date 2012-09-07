@@ -809,7 +809,7 @@ QString QDate::toString(Qt::DateFormat f) const
     All other input characters will be ignored. Any sequence of characters that
     are enclosed in single quotes will be treated as text and not be used as an
     expression. Two consecutive single quotes ("''") are replaced by a singlequote
-    in the output.
+    in the output. Formats without separators (e.g. "ddMM") are currently not supported.
 
     Example format strings (assuming that the QDate is the 20 July
     1969):
@@ -1572,7 +1572,7 @@ QString QTime::toString(Qt::DateFormat format) const
     All other input characters will be ignored. Any sequence of characters that
     are enclosed in single quotes will be treated as text and not be used as an
     expression. Two consecutive single quotes ("''") are replaced by a singlequote
-    in the output.
+    in the output. Formats without separators (e.g. "HHmm") are currently not supported.
 
     Example format strings (assuming that the QTime is 14:13:09.042)
 
@@ -2639,7 +2639,7 @@ QString QDateTime::toString(Qt::DateFormat f) const
     All other input characters will be ignored. Any sequence of characters that
     are enclosed in single quotes will be treated as text and not be used as an
     expression. Two consecutive single quotes ("''") are replaced by a singlequote
-    in the output.
+    in the output. Formats without separators (e.g. "HHmm") are currently not supported.
 
     Example format strings (assumed that the QDateTime is 21 May 2001
     14:13:09):
