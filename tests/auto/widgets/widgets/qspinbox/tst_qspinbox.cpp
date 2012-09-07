@@ -91,11 +91,8 @@ class tst_QSpinBox : public QObject
     Q_OBJECT
 public:
     tst_QSpinBox();
-    virtual ~tst_QSpinBox();
 public slots:
-    void initTestCase();
     void init();
-    void cleanupTestCase();
 private slots:
     void getSetCheck();
     void setValue_data();
@@ -146,7 +143,6 @@ public slots:
 private:
     QStringList actualTexts;
     QList<int> actualValues;
-    QWidget *testFocusWidget;
 };
 
 typedef QList<int> IntList;
@@ -249,30 +245,11 @@ void tst_QSpinBox::getSetCheck()
 
 tst_QSpinBox::tst_QSpinBox()
 {
-
-}
-
-tst_QSpinBox::~tst_QSpinBox()
-{
-
-}
-
-void tst_QSpinBox::initTestCase()
-{
-    testFocusWidget = new QWidget(0);
-    testFocusWidget->resize(200, 100);
-    testFocusWidget->show();
 }
 
 void tst_QSpinBox::init()
 {
     QLocale::setDefault(QLocale(QLocale::C));
-}
-
-void tst_QSpinBox::cleanupTestCase()
-{
-    delete testFocusWidget;
-    testFocusWidget = 0;
 }
 
 void tst_QSpinBox::setValue_data()
@@ -738,15 +715,20 @@ void tst_QSpinBox::locale()
 
 void tst_QSpinBox::editingFinished()
 {
-    QVBoxLayout *layout = new QVBoxLayout(testFocusWidget);
-    QSpinBox *box = new QSpinBox(testFocusWidget);
+    QWidget testFocusWidget;
+    testFocusWidget.setObjectName(QLatin1String("tst_qspinbox"));
+    testFocusWidget.setWindowTitle(objectName());
+    testFocusWidget.resize(200, 100);
+
+    QVBoxLayout *layout = new QVBoxLayout(&testFocusWidget);
+    QSpinBox *box = new QSpinBox(&testFocusWidget);
     layout->addWidget(box);
-    QSpinBox *box2 = new QSpinBox(testFocusWidget);
+    QSpinBox *box2 = new QSpinBox(&testFocusWidget);
     layout->addWidget(box2);
 
-    testFocusWidget->show();
-    QApplication::setActiveWindow(testFocusWidget);
-    QVERIFY(QTest::qWaitForWindowActive(testFocusWidget));
+    testFocusWidget.show();
+    QApplication::setActiveWindow(&testFocusWidget);
+    QVERIFY(QTest::qWaitForWindowActive(&testFocusWidget));
     box->activateWindow();
     box->setFocus();
 
@@ -788,18 +770,18 @@ void tst_QSpinBox::editingFinished()
     QCOMPARE(editingFinishedSpy1.count(), 4);
     QCOMPARE(editingFinishedSpy2.count(), 3);
 
-    testFocusWidget->hide();
+    testFocusWidget.hide();
     QCOMPARE(editingFinishedSpy1.count(), 4);
     QCOMPARE(editingFinishedSpy2.count(), 4);
     QTest::qWait(100);
 
     //task203285
     editingFinishedSpy1.clear();
-    testFocusWidget->show();
+    testFocusWidget.show();
     QTest::qWait(100);
     box->setKeyboardTracking(false);
-    qApp->setActiveWindow(testFocusWidget);
-    testFocusWidget->activateWindow();
+    qApp->setActiveWindow(&testFocusWidget);
+    testFocusWidget.activateWindow();
     box->setFocus();
     QTRY_VERIFY(box->hasFocus());
     box->setValue(0);
@@ -809,8 +791,6 @@ void tst_QSpinBox::editingFinished()
     QTRY_VERIFY(qApp->focusWidget() != box);
     QCOMPARE(box->text(), QLatin1String("20"));
     QCOMPARE(editingFinishedSpy1.count(), 1);
-
-    testFocusWidget->hide();
 }
 
 void tst_QSpinBox::removeAll()
