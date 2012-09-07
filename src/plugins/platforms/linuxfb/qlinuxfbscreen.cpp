@@ -53,7 +53,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
-#include <sys/kd.h>
+#include <linux/kd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
