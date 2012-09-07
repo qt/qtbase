@@ -692,7 +692,7 @@ void tst_QTcpSocket::hostNotFound()
 {
     QTcpSocket *socket = newSocket();
 
-    socket->connectToHost("nosuchserver.troll.no", 80);
+    socket->connectToHost("nosuchserver.qt-project.org", 80);
     QVERIFY(!socket->waitForConnected());
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
     QCOMPARE(int(socket->error()), int(QTcpSocket::HostNotFoundError));
@@ -1572,25 +1572,25 @@ void tst_QTcpSocket::dontCloseOnTimeout()
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::recursiveReadyRead()
 {
-    QTcpSocket *smtp = newSocket();
-    connect(smtp, SIGNAL(connected()), SLOT(exitLoopSlot()));
-    connect(smtp, SIGNAL(readyRead()), SLOT(recursiveReadyReadSlot()));
-    tmpSocket = smtp;
+    QTcpSocket *testSocket = newSocket();
+    connect(testSocket, SIGNAL(connected()), SLOT(exitLoopSlot()));
+    connect(testSocket, SIGNAL(readyRead()), SLOT(recursiveReadyReadSlot()));
+    tmpSocket = testSocket;
 
-    QSignalSpy spy(smtp, SIGNAL(readyRead()));
+    QSignalSpy spy(testSocket, SIGNAL(readyRead()));
 
-    smtp->connectToHost("smtp.trolltech.com", 25);
+    testSocket->connectToHost(QtNetworkSettings::serverName(), 25);
     enterLoop(30);
     QVERIFY2(!timeout(),
-            "Timed out when connecting to smtp.trolltech.com:25");
+            "Timed out when connecting to QtNetworkSettings::serverName().");
 
     enterLoop(30);
     QVERIFY2(!timeout(),
-            "Timed out when waiting for the readyRead() signal");
+            "Timed out when waiting for the readyRead() signal.");
 
     QCOMPARE(spy.count(), 1);
 
-    delete smtp;
+    delete testSocket;
 }
 
 void tst_QTcpSocket::recursiveReadyReadSlot()
@@ -1855,7 +1855,7 @@ void tst_QTcpSocket::nestedEventLoopInErrorSlot()
     QPointer<QTcpSocket> p(socket);
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(enterLoopSlot()));
 
-    socket->connectToHost("hostnotfoundhostnotfound.troll.no", 9999); // Host not found, fyi
+    socket->connectToHost("hostnotfoundhostnotfound.qt-project.org", 9999);
     enterLoop(30);
     QVERIFY(!p);
 }
@@ -2306,13 +2306,13 @@ void tst_QTcpSocket::connectToMultiIP()
     // 30s*2 = 60s.
     QTime stopWatch;
     stopWatch.start();
-    socket->connectToHost("multi.dev.troll.no", 80);
+    socket->connectToHost("multi.dev.qt-project.org", 80);
     QVERIFY(socket->waitForConnected(60500));
     QVERIFY(stopWatch.elapsed() < 70000);
     socket->abort();
 
     stopWatch.restart();
-    socket->connectToHost("multi.dev.troll.no", 81);
+    socket->connectToHost("multi.dev.qt-project.org", 81);
     QVERIFY(!socket->waitForConnected(2000));
     QVERIFY(stopWatch.elapsed() < 2000);
     QCOMPARE(socket->error(), QAbstractSocket::SocketTimeoutError);
@@ -2511,10 +2511,10 @@ void tst_QTcpSocket::invalidProxy_data()
     QTest::newRow("http-caching-proxy") << int(QNetworkProxy::HttpCachingProxy) << fluke << 3128 << true
                                         << int(QAbstractSocket::UnsupportedSocketOperationError);
     QTest::newRow("no-such-host-socks5") << int(QNetworkProxy::Socks5Proxy)
-                                         << "this-host-will-never-exist.troll.no" << 1080 << false
+                                         << "this-host-will-never-exist.qt-project.org" << 1080 << false
                                          << int(QAbstractSocket::ProxyNotFoundError);
     QTest::newRow("no-such-host-http") << int(QNetworkProxy::HttpProxy)
-                                       << "this-host-will-never-exist.troll.no" << 3128 << false
+                                       << "this-host-will-never-exist.qt-project.org" << 3128 << false
                                        << int(QAbstractSocket::ProxyNotFoundError);
     QTest::newRow("http-on-socks5") << int(QNetworkProxy::HttpProxy) << fluke << 1080 << false
                                     << int(QAbstractSocket::ProxyConnectionClosedError);
