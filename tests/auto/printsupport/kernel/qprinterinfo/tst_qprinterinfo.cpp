@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <QtGlobal>
 #include <QtAlgorithms>
@@ -57,12 +56,11 @@ class tst_QPrinterInfo : public QObject
 {
     Q_OBJECT
 
-public slots:
-    void initTestCase();
-#ifndef QT_NO_PRINTER
 private slots:
+#ifndef Q_OS_WIN32
     void testForDefaultPrinter();
     void testForPrinters();
+#endif
     void testForPaperSizes();
     void testConstructors();
     void testAssignment();
@@ -75,17 +73,8 @@ private:
 #ifdef Q_OS_UNIX
     QString getOutputFromCommand(const QStringList& command);
 #endif // Q_OS_UNIX
-#endif // QT_NO_PRINTER
 };
 
-void tst_QPrinterInfo::initTestCase()
-{
-#ifdef QT_NO_PRINTER
-    QSKIP("This test requires printing support");
-#endif // QT_NO_PRINTER
-}
-
-#ifndef QT_NO_PRINTER
 QString tst_QPrinterInfo::getDefaultPrinterFromSystem()
 {
     QString printer;
@@ -200,11 +189,10 @@ QString tst_QPrinterInfo::getOutputFromCommand(const QStringList& command)
 }
 #endif
 
+// Windows test support not yet implemented
+#ifndef Q_OS_WIN32
 void tst_QPrinterInfo::testForDefaultPrinter()
 {
-#ifdef Q_OS_WIN32
-    QSKIP("Windows test support not yet implemented");
-#endif // Q_OS_WIN32
     QString testPrinter = getDefaultPrinterFromSystem();
     QString defaultPrinter = QPrinterInfo::defaultPrinter().printerName();
     QString availablePrinter;
@@ -227,12 +215,12 @@ void tst_QPrinterInfo::testForDefaultPrinter()
     if (!availablePrinter.isEmpty())
         QCOMPARE(availablePrinterDefaults, 1);
 }
+#endif
 
+// Windows test support not yet implemented
+#ifndef Q_OS_WIN32
 void tst_QPrinterInfo::testForPrinters()
 {
-#ifdef Q_OS_WIN32
-    QSKIP("Windows test support not yet implemented");
-#endif // Q_OS_WIN32
     QStringList testPrinters = getPrintersFromSystem();
 
     QList<QPrinterInfo> printers = QPrinterInfo::availablePrinters();
@@ -251,6 +239,7 @@ void tst_QPrinterInfo::testForPrinters()
     for (int i = 0; i < testPrinters.size(); ++i)
         QCOMPARE(qtPrinters.at(i), testPrinters.at(i));
 }
+#endif
 
 void tst_QPrinterInfo::testForPaperSizes()
 {
@@ -323,8 +312,6 @@ void tst_QPrinterInfo::namedPrinter()
         QCOMPARE(pi2.isDefault(),           pi.isDefault());
     }
 }
-
-#endif // QT_NO_PRINTER
 
 QTEST_MAIN(tst_QPrinterInfo)
 #include "tst_qprinterinfo.moc"

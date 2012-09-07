@@ -16,7 +16,7 @@ SUBDIRS += \
     printsupport \
     cmake
 
-wince*:                                     SUBDIRS -= printsupport
+wince*|contains(DEFINES, QT_NO_PRINTER):    SUBDIRS -= printsupport
 cross_compile:                              SUBDIRS -= tools
 isEmpty(QT.opengl.name):                    SUBDIRS -= opengl
 !unix|embedded|!contains(QT_CONFIG, dbus):  SUBDIRS -= dbus

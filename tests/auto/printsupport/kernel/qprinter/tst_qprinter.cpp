@@ -81,20 +81,18 @@ class tst_QPrinter : public QObject
 {
     Q_OBJECT
 
-#ifdef QT_NO_PRINTER
-public slots:
-    void initTestCase();
-#else
 private slots:
     void getSetCheck();
 // Add your testfunctions and testdata create functions here
+#ifdef Q_OS_WIN
     void testPageSize();
+    void testNonExistentPrinter();
+#endif
     void testPageRectAndPaperRect();
     void testPageRectAndPaperRect_data();
     void testSetOptions();
     void testMargins_data();
     void testMargins();
-    void testNonExistentPrinter();
     void testPageSetupDialog();
     void testMulitpleSets_data();
     void testMulitpleSets();
@@ -115,16 +113,7 @@ private slots:
 
     void taskQTBUG4497_reusePrinterOnDifferentFiles();
     void testPdfTitle();
-#endif
 };
-
-#ifdef QT_NO_PRINTER
-void tst_QPrinter::initTestCase()
-{
-    QSKIP("This test requires printing support");
-}
-
-#else
 
 // Testing get/set functions
 void tst_QPrinter::getSetCheck()
@@ -233,11 +222,10 @@ void tst_QPrinter::testPageSetupDialog()
     }
 }
 
+#ifdef Q_OS_WIN
+// QPrinter::winPageSize(): Windows only.
 void tst_QPrinter::testPageSize()
 {
-#ifndef Q_OS_WIN
-    QSKIP("QPrinter::winPageSize(): Windows only.");
-#else
     QPrinter prn;
 
     prn.setPageSize(QPrinter::Letter);
@@ -255,8 +243,8 @@ void tst_QPrinter::testPageSize()
     prn.setWinPageSize(DMPAPER_A4);
     MYCOMPARE(prn.winPageSize(), DMPAPER_A4);
     MYCOMPARE(prn.pageSize(), QPrinter::A4);
-#endif // Q_OS_WIN
 }
+#endif // Q_OS_WIN
 
 void tst_QPrinter::testPageRectAndPaperRect_data()
 {
@@ -397,11 +385,10 @@ void tst_QPrinter::testMargins()
     QFile::remove("silly");
 }
 
+#ifdef Q_OS_WIN
+// QPrinter::testNonExistentPrinter() is not relevant for this platform
 void tst_QPrinter::testNonExistentPrinter()
 {
-#ifndef Q_OS_WIN
-    QSKIP("QPrinter::testNonExistentPrinter() is not relevant for this platform");
-#else
     QPrinter printer;
     QPainter painter;
 
@@ -429,8 +416,8 @@ void tst_QPrinter::testNonExistentPrinter()
     QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmPhysicalDpiY), 0);
 
     QVERIFY(!painter.begin(&printer));
-#endif
 }
+#endif
 
 void tst_QPrinter::testMulitpleSets_data()
 {
@@ -1046,8 +1033,6 @@ void tst_QPrinter::testPdfTitle()
     const char *expected = reinterpret_cast<const char*>(expectedBuf);
     QVERIFY(file.readAll().contains(QByteArray(expected, 26)));
 }
-
-#endif
 
 QTEST_MAIN(tst_QPrinter)
 #include "tst_qprinter.moc"
