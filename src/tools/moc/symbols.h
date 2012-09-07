@@ -72,18 +72,7 @@ struct SubArray
 
 inline uint qHash(const SubArray &key)
 {
-    const uchar *p = reinterpret_cast<const uchar *>(key.array.data() + key.from);
-    int n = key.len;
-    uint h = 0;
-    uint g;
-
-    while (n--) {
-        h = (h << 4) + *p++;
-        if ((g = (h & 0xf0000000)) != 0)
-            h ^= g >> 23;
-        h &= ~g;
-    }
-    return h;
+    return qHash(QLatin1String(key.array.constData() + key.from, key.len));
 }
 
 
