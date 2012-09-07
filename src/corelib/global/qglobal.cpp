@@ -2165,6 +2165,9 @@ bool qputenv(const char *varName, const QByteArray& value)
 {
 #if defined(_MSC_VER) && _MSC_VER >= 1400
     return _putenv_s(varName, value.constData()) == 0;
+#elif defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L
+    // POSIX.1-2001 has setenv
+    return setenv(varName, value.constData(), true) == 0;
 #else
     QByteArray buffer(varName);
     buffer += '=';
