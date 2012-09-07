@@ -4867,7 +4867,7 @@ else
 fi
 
 # EGL Support
-if [ "$CFG_EGL" != "no" ] && [ "$CFG_OPENGL" != "desktop" ]; then
+if [ "$CFG_EGL" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists egl 2>/dev/null; then
         QMAKE_INCDIR_EGL=`$PKG_CONFIG --cflags-only-I egl 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
         QMAKE_LIBS_EGL=`$PKG_CONFIG --libs egl 2>/dev/null`

@@ -1,12 +1,10 @@
-contains(QT_CONFIG,opengles2) {
-    contains(QT_CONFIG,egl) {
-        HEADERS += \
-            $$PWD/qeglconvenience_p.h \
-            $$PWD/qeglplatformcontext_p.h
-        SOURCES += \
-            $$PWD/qeglconvenience.cpp \
-            $$PWD/qeglplatformcontext.cpp
-    }
+contains(QT_CONFIG,egl) {
+    HEADERS += \
+        $$PWD/qeglconvenience_p.h \
+        $$PWD/qeglplatformcontext_p.h
+    SOURCES += \
+        $$PWD/qeglconvenience.cpp \
+        $$PWD/qeglplatformcontext.cpp
 
     contains(QT_CONFIG,xlib) {
         HEADERS += \
@@ -15,3 +13,4 @@ contains(QT_CONFIG,opengles2) {
             $$PWD/qxlibeglintegration.cpp
     }
 }
+
