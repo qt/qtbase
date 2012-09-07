@@ -81,6 +81,7 @@ public:
 
     void substituteMacro(const MacroName &macro, Symbols &substituted, MacroSafeSet safeset = MacroSafeSet());
     void substituteUntilNewline(Symbols &substituted, MacroSafeSet safeset = MacroSafeSet());
+    void macroExpandIdentifier(const Symbol &s, Symbols &preprocessed, MacroSafeSet safeset = MacroSafeSet());
 
     int evaluateCondition();
 

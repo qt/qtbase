@@ -157,14 +157,14 @@ bool Preprocessor::skipBranch()
 }
 
 
-enum TokenizeMode { TokenizeCpp, TokenizePreprocessor, PreparePreprocessorStatement, TokenizePreprocessorStatement, TokenizeInclude };
+enum TokenizeMode { TokenizeCpp, TokenizePreprocessor, PreparePreprocessorStatement, TokenizePreprocessorStatement, TokenizeInclude, PrepareDefine, TokenizeDefine };
 static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode mode = TokenizeCpp)
 {
     Symbols symbols;
     const char *begin = input.constData();
     const char *data = begin;
     while (*data) {
-        if (mode == TokenizeCpp) {
+        if (mode == TokenizeCpp || mode == TokenizeDefine) {
             int column = 0;
 
             const char *lexem = data;
@@ -278,6 +278,11 @@ static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode m
                     break;
                 case NEWLINE:
                     ++lineNum;
+                    if (mode == TokenizeDefine) {
+                        mode = TokenizeCpp;
+                        // emit the newline token
+                        break;
+                    }
                     continue;
                 case BACKSLASH:
                 {
@@ -375,6 +380,9 @@ static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode m
             case NOTOKEN:
                 ++data;
                 break;
+            case PP_DEFINE:
+                mode = PrepareDefine;
+                break;
             case PP_IFDEF:
                 symbols += Symbol(lineNum, PP_IF);
                 symbols += Symbol(lineNum, PP_DEFINED);
@@ -441,6 +449,16 @@ static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode m
                 while (is_ident_char(*data))
                     ++data;
                 token = PP_IDENTIFIER;
+
+                if (mode == PrepareDefine) {
+                    symbols += Symbol(lineNum, token, input, lexem-begin, data-lexem);
+                    // make sure we explicitly add the whitespace here, so we can distinguish
+                    // correctly between regular and function macros
+                    if (is_space(*data))
+                        symbols += Symbol(lineNum, WHITESPACE);
+                    mode = TokenizeDefine;
+                    continue;
+                }
                 break;
             case PP_C_COMMENT:
                 if (*data) {
@@ -509,6 +527,32 @@ static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode m
     symbols += Symbol(); // eof symbol
     return symbols;
 }
+
+void Preprocessor::macroExpandIdentifier(const Symbol &s, Symbols &preprocessed, MacroSafeSet safeset)
+{
+    // not a macro
+    if (!macros.contains(s)) {
+        preprocessed += s;
+        return;
+    }
+
+    Symbols expanded = macros.value(s).symbols;
+
+    // don't expand macros with arguments for now
+    if (expanded.size() && expanded.at(0).token == PP_LPAREN) {
+        preprocessed += s;
+        return;
+    }
+
+    for (int i = 0; i < expanded.size(); ++i) {
+        expanded[i].lineNum = s.lineNum;
+        if (expanded.at(i).token == PP_IDENTIFIER)
+            macroExpandIdentifier(expanded.at(i), preprocessed, safeset);
+        else
+            preprocessed += expanded.at(i);
+    }
+}
+
 
 void Preprocessor::substituteMacro(const MacroName &macro, Symbols &substituted, MacroSafeSet safeset)
 {
@@ -878,20 +922,11 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
             macros.remove(name);
             continue;
         }
-        case PP_IDENTIFIER:
-        {
-//             if (macros.contains(symbol()))
-//                 ;
+        case PP_IDENTIFIER: {
+            // substitute macros
+            macroExpandIdentifier(symbol(), preprocessed);
+            continue;
         }
-            // we _could_ easily substitute macros by the following
-            // four lines, but we choose not to.
-            /*
-            if (macros.contains(sym.lexem())) {
-                preprocessed += substitute(macros, symbols, i);
-                continue;
-            }
-            */
-            break;
         case PP_HASH:
             until(PP_NEWLINE);
             continue; // skip unknown preprocessor statement
