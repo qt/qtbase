@@ -5305,6 +5305,7 @@ void tst_QWidget::setCursor()
         QWidget child(&window);
 
         window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
         window.setCursor(Qt::WaitCursor);
         QVERIFY(window.testAttribute(Qt::WA_SetCursor));
         QVERIFY(!child.testAttribute(Qt::WA_SetCursor));
@@ -5375,6 +5376,15 @@ void tst_QWidget::setCursor()
 void tst_QWidget::setToolTip()
 {
     QWidget widget;
+    widget.resize(200, 200);
+    // Showing the widget is not required for the tooltip event count test
+    // to work. It should just prevent the application from becoming inactive
+    // which would cause it to close all popups, interfering with the test
+    // in the loop below.
+    widget.setObjectName(QLatin1String("tst_qwidget setToolTip"));
+    widget.setWindowTitle(widget.objectName());
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     EventSpy spy(&widget, QEvent::ToolTipChange);
     QCOMPARE(spy.count(), 0);
 
@@ -5390,6 +5400,8 @@ void tst_QWidget::setToolTip()
 #ifndef Q_OS_WINCE_WM
     for (int pass = 0; pass < 2; ++pass) {
         QScopedPointer<QWidget> popup(new QWidget(0, Qt::Popup));
+        popup->setObjectName(QString::fromLatin1("tst_qwidget setToolTip #%1").arg(pass));
+        popup->setWindowTitle(popup->objectName());
         popup->resize(150, 50);
         QFrame *frame = new QFrame(popup.data());
         frame->setGeometry(0, 0, 50, 50);

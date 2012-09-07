@@ -2934,6 +2934,16 @@ bool QApplicationPrivate::shouldQuit()
     return QGuiApplicationPrivate::shouldQuit();
 }
 
+static inline void closeAllPopups()
+{
+    // Close all popups: In case some popup refuses to close,
+    // we give up after 1024 attempts (to avoid an infinite loop).
+    int maxiter = 1024;
+    QWidget *popup;
+    while ((popup = QApplication::activePopupWidget()) && maxiter--)
+        popup->close();
+}
+
 /*! \reimp
  */
 bool QApplication::notify(QObject *receiver, QEvent *e)
@@ -3006,9 +3016,13 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     }
 #endif // QT_NO_GESTURES
 
-    // User input and window activation makes tooltips sleep
     switch (e->type()) {
-    case QEvent::Wheel:
+    case QEvent::ApplicationDeactivate:
+        // Close all popups (triggers when switching applications
+        // by pressing ALT-TAB on Windows, which is not receive as key event.
+        closeAllPopups();
+        break;
+    case QEvent::Wheel: // User input and window activation makes tooltips sleep
     case QEvent::ActivationChange:
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
