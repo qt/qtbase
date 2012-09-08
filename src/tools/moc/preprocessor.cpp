@@ -452,9 +452,10 @@ static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode m
 
                 if (mode == PrepareDefine) {
                     symbols += Symbol(lineNum, token, input, lexem-begin, data-lexem);
-                    // make sure we explicitly add the whitespace here, so we can distinguish
-                    // correctly between regular and function macros
-                    if (is_space(*data))
+                    // make sure we explicitly add the whitespace here if the next char
+                    // is not an opening brace, so we can distinguish correctly between
+                    // regular and function macros
+                    if (*data != '(')
                         symbols += Symbol(lineNum, WHITESPACE);
                     mode = TokenizeDefine;
                     continue;
@@ -536,14 +537,13 @@ void Preprocessor::macroExpandIdentifier(const Symbol &s, Symbols &preprocessed,
         return;
     }
 
-    Symbols expanded = macros.value(s).symbols;
+    const Macro &macro = macros.value(s);
 
     // don't expand macros with arguments for now
-    if (expanded.size() && expanded.at(0).token == PP_LPAREN) {
-        preprocessed += s;
+    if (macro.isFunction)
         return;
-    }
 
+    Symbols expanded = macro.symbols;
     for (int i = 0; i < expanded.size(); ++i) {
         expanded[i].lineNum = s.lineNum;
         if (expanded.at(i).token == PP_IDENTIFIER)
@@ -906,9 +906,20 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
         {
             next(IDENTIFIER);
             QByteArray name = lexem();
+            Macro macro;
+            macro.isVariadic = false;
+            Token t = next();
+            if (t == LPAREN) {
+                // we have a function macro
+                macro.isFunction = true;
+                parseDefineArguments(&macro);
+            } else if (t == PP_WHITESPACE){
+                macro.isFunction = false;
+            } else {
+                error("Moc: internal error");
+            }
             int start = index;
             until(PP_NEWLINE);
-            Macro macro;
             macro.symbols.reserve(index - start - 1);
             for (int i = start; i < index - 1; ++i)
                 macro.symbols += symbols.at(i);
@@ -1010,6 +1021,46 @@ Symbols Preprocessor::preprocessed(const QByteArray &filename, QIODevice *file)
 #endif
 
     return result;
+}
+
+void Preprocessor::parseDefineArguments(Macro *m)
+{
+    Symbols arguments;
+    while (hasNext()) {
+        Token t = next();
+        if (t == PP_WHITESPACE)
+            t = next();
+        if (t == PP_RPAREN)
+            break;
+        if (t != PP_IDENTIFIER) {
+            QByteArray l = lexem();
+            if (l == "...") {
+                m->isVariadic = true;
+                arguments += symbol();
+                while (test(PP_WHITESPACE));
+                if (!test(PP_RPAREN))
+                    error("missing ')' in macro argument list");
+                break;
+            } else if (!is_identifier(l.constData(), l.length())) {
+                qDebug() << l;
+                error("Unexpected character in macro argument list.");
+            }
+        }
+
+        Symbol arg = symbol();
+        if (arguments.contains(arg))
+            error("Duplicate macro parameter.");
+        arguments += symbol();
+
+        t = next();
+        while (t == PP_WHITESPACE)
+            t = next();
+        if (t == PP_RPAREN)
+            break;
+        if (t != PP_COMMA)
+            error("Unexpected character in macro argument list.");
+    }
+    m->arguments = arguments;
 }
 
 void Preprocessor::until(Token t)

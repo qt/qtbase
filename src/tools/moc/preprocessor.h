@@ -51,6 +51,9 @@ QT_BEGIN_NAMESPACE
 
 struct Macro
 {
+    bool isFunction;
+    bool isVariadic;
+    Symbols arguments;
     Symbols symbols;
 };
 
@@ -75,6 +78,7 @@ public:
     Symbols preprocessed(const QByteArray &filename, FILE *file);
     Symbols preprocessed(const QByteArray &filename, QIODevice *device);
 
+    void parseDefineArguments(Macro *m);
 
     void skipUntilEndif();
     bool skipBranch();

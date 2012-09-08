@@ -73,6 +73,18 @@ inline bool is_ident_char(char s)
        );
 }
 
+inline bool is_identifier(const char *s, int len)
+{
+    if (len < 1)
+        return false;
+    if (!is_ident_start(*s))
+        return false;
+    for (int i = 1; i < len; ++i)
+        if (!is_ident_char(s[i]))
+            return false;
+    return true;
+}
+
 inline bool is_digit_char(char s)
 {
     return (s >= '0' && s <= '9');
