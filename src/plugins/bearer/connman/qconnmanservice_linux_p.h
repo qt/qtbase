@@ -156,7 +156,7 @@ class QConnmanProfileInterface : public QDBusAbstractInterface
 
 public:
 
-    QConnmanProfileInterface(const QString &dbusPathName,QObject *parent = 0);
+    explicit QConnmanProfileInterface(const QString &dbusPathName,QObject *parent = 0);
     ~QConnmanProfileInterface();
 
     QVariantMap getProperties();
@@ -182,7 +182,7 @@ class QConnmanServiceInterface : public QDBusAbstractInterface
 
 public:
 
-    QConnmanServiceInterface(const QString &dbusPathName,QObject *parent = 0);
+    explicit QConnmanServiceInterface(const QString &dbusPathName,QObject *parent = 0);
     ~QConnmanServiceInterface();
 
     QVariantMap getProperties();
@@ -244,7 +244,7 @@ class QConnmanTechnologyInterface : public QDBusAbstractInterface
 
 public:
 
-    QConnmanTechnologyInterface(const QString &dbusPathName,QObject *parent = 0);
+    explicit QConnmanTechnologyInterface(const QString &dbusPathName,QObject *parent = 0);
     ~QConnmanTechnologyInterface();
 
     QVariantMap getProperties();
@@ -269,7 +269,7 @@ class QConnmanAgentInterface : public QDBusAbstractInterface
 
 public:
 
-    QConnmanAgentInterface(const QString &dbusPathName,QObject *parent = 0);
+    explicit QConnmanAgentInterface(const QString &dbusPathName,QObject *parent = 0);
     ~QConnmanAgentInterface();
 
     void release();
@@ -288,7 +288,7 @@ class QConnmanCounterInterface : public QDBusAbstractInterface
 
 public:
 
-    QConnmanCounterInterface(const QString &dbusPathName, QObject *parent = 0);
+    explicit QConnmanCounterInterface(const QString &dbusPathName, QObject *parent = 0);
     ~QConnmanCounterInterface();
 
 //    void release();

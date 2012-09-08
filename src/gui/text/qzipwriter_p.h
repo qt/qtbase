@@ -64,7 +64,7 @@ class QZipWriterPrivate;
 class Q_GUI_EXPORT QZipWriter
 {
 public:
-    QZipWriter(const QString &fileName, QIODevice::OpenMode mode = (QIODevice::WriteOnly | QIODevice::Truncate) );
+    explicit QZipWriter(const QString &fileName, QIODevice::OpenMode mode = (QIODevice::WriteOnly | QIODevice::Truncate) );
 
     explicit QZipWriter(QIODevice *device);
     ~QZipWriter();

@@ -83,7 +83,7 @@ public:
         LowPriority
     };
 
-    QHttpNetworkRequest(const QUrl &url = QUrl(), Operation operation = Get, Priority priority = NormalPriority);
+    explicit QHttpNetworkRequest(const QUrl &url = QUrl(), Operation operation = Get, Priority priority = NormalPriority);
     QHttpNetworkRequest(const QHttpNetworkRequest &other);
     virtual ~QHttpNetworkRequest();
     QHttpNetworkRequest &operator=(const QHttpNetworkRequest &other);

@@ -209,8 +209,8 @@ QT_BEGIN_NAMESPACE
 class XPThemeData
 {
 public:
-    XPThemeData(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
-                int part = 0, int state = 0, const QRect &r = QRect())
+    explicit XPThemeData(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
+                         int part = 0, int state = 0, const QRect &r = QRect())
         : widget(w), painter(p), theme(themeIn), htheme(0), partId(part), stateId(state),
           mirrorHorizontally(false), mirrorVertically(false), noBorder(false),
           noContent(false), rotate(0), rect(r)

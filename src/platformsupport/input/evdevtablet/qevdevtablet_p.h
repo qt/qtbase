@@ -57,7 +57,7 @@ class QEvdevTabletHandler : public QObject
     Q_OBJECT
 
 public:
-    QEvdevTabletHandler(const QString &spec = QString(), QObject *parent = 0);
+    explicit QEvdevTabletHandler(const QString &spec = QString(), QObject *parent = 0);
     ~QEvdevTabletHandler();
 
 private slots:
@@ -70,7 +70,7 @@ private:
 class QEvdevTabletHandlerThread : public QThread
 {
 public:
-    QEvdevTabletHandlerThread(const QString &spec, QObject *parent = 0);
+    explicit QEvdevTabletHandlerThread(const QString &spec, QObject *parent = 0);
     ~QEvdevTabletHandlerThread();
     void run();
     QEvdevTabletHandler *handler() { return m_handler; }

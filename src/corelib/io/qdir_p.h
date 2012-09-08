@@ -50,11 +50,11 @@ QT_BEGIN_NAMESPACE
 class QDirPrivate : public QSharedData
 {
 public:
-    QDirPrivate(const QString &path, const QStringList &nameFilters_ = QStringList(),
-            QDir::SortFlags sort_ = QDir::SortFlags(QDir::Name | QDir::IgnoreCase),
-            QDir::Filters filters_ = QDir::AllEntries);
+    explicit QDirPrivate(const QString &path, const QStringList &nameFilters_ = QStringList(),
+                         QDir::SortFlags sort_ = QDir::SortFlags(QDir::Name | QDir::IgnoreCase),
+                         QDir::Filters filters_ = QDir::AllEntries);
 
-    QDirPrivate(const QDirPrivate &copy);
+    explicit QDirPrivate(const QDirPrivate &copy);
 
     bool exists() const;
 

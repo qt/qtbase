@@ -92,10 +92,10 @@ class Q_AUTOTEST_EXPORT QHttpNetworkConnection : public QObject
 public:
 
 #ifndef QT_NO_BEARERMANAGEMENT
-    QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0, QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>());
+    explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0, QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>());
     QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0, QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>());
 #else
-    QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
+    explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
     QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
 #endif
     ~QHttpNetworkConnection();

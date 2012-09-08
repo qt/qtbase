@@ -123,7 +123,7 @@ Q_SIGNALS:
     void bytesWritten(qint64 bytes);
 
 public:
-    QWindowsPipeWriter(HANDLE writePipe, QObject * parent = 0);
+    explicit QWindowsPipeWriter(HANDLE writePipe, QObject * parent = 0);
     ~QWindowsPipeWriter();
 
     bool waitForWrite(int msecs);

@@ -81,7 +81,7 @@ public:
     class QFileSystemNode
     {
     public:
-        QFileSystemNode(const QString &filename = QString(), QFileSystemNode *p = 0)
+        explicit QFileSystemNode(const QString &filename = QString(), QFileSystemNode *p = 0)
             : fileName(filename), populatedChildren(false), isVisible(false), dirtyChildrenIndex(-1), parent(p), info(0) {}
         ~QFileSystemNode() {
             QHash<QString, QFileSystemNode*>::const_iterator i = children.constBegin();

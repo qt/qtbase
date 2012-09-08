@@ -137,7 +137,7 @@ public:
         Curve
     };
 
-    QPathEdge(int a = -1, int b = -1);
+    explicit QPathEdge(int a = -1, int b = -1);
 
     mutable int flag;
 

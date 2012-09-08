@@ -1642,7 +1642,7 @@ class QML_PARSER_EXPORT CaseBlock: public Node
 public:
     QQMLJS_DECLARE_AST_NODE(CaseBlock)
 
-    CaseBlock(CaseClauses *c, DefaultClause *d = 0, CaseClauses *r = 0):
+    explicit CaseBlock(CaseClauses *c, DefaultClause *d = 0, CaseClauses *r = 0):
         clauses (c), defaultClause (d), moreClauses (r)
         { kind = K; }
 

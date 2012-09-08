@@ -186,7 +186,7 @@ public:
 class Q_CORE_EXPORT QLocalePrivate : public QSharedData
 {
 public:
-    QLocalePrivate(int index, int numberOptions = 0)
+    explicit QLocalePrivate(int index, int numberOptions = 0)
         : m_index(index), m_numberOptions(numberOptions)
     {
         m_data = dataPointerForIndex(index);

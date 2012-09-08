@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
   */
 class Q_WIDGETS_EXPORT QFSCompleter :  public QCompleter {
 public:
-    QFSCompleter(QFileSystemModel *model, QObject *parent = 0)
+    explicit QFSCompleter(QFileSystemModel *model, QObject *parent = 0)
         : QCompleter(model, parent), proxyModel(0), sourceModel(model)
     {
 #if defined(Q_OS_WIN)

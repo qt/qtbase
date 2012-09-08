@@ -238,7 +238,7 @@ public:
 class QGLTemporaryContextPrivate;
 class QGLTemporaryContext {
 public:
-    QGLTemporaryContext(bool directRendering = true, QWidget *parent = 0);
+    explicit QGLTemporaryContext(bool directRendering = true, QWidget *parent = 0);
     ~QGLTemporaryContext();
 
 private:
@@ -416,7 +416,7 @@ Q_SIGNALS:
 
 class QGLTexture {
 public:
-    QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
+    explicit QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
                QGLContext::BindOptions opt = QGLContext::DefaultBindOption)
         : context(ctx),
           id(tx_id),

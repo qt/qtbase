@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 class QFontSubset
 {
 public:
-    QFontSubset(QFontEngine *fe, int obj_id = 0)
+    explicit QFontSubset(QFontEngine *fe, int obj_id = 0)
         : object_id(obj_id), noEmbed(false), fontEngine(fe), downloaded_glyphs(0), standard_font(false)
         { fontEngine->ref.ref(); addGlyph(0); }
     ~QFontSubset() {

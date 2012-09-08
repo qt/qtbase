@@ -70,7 +70,7 @@ class Q_CORE_EXPORT QFactoryLoader : public QObject
     Q_DECLARE_PRIVATE(QFactoryLoader)
 
 public:
-    QFactoryLoader(const char *iid,
+    explicit QFactoryLoader(const char *iid,
                    const QString &suffix = QString(),
                    Qt::CaseSensitivity = Qt::CaseSensitive);
     ~QFactoryLoader();
