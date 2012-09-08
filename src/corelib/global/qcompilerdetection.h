@@ -483,6 +483,12 @@
 #      define Q_COMPILER_UNICODE_STRINGS
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #    endif
+#    if __INTEL_COMPILER >= 1300
+//       constexpr support is only partial
+//#      define Q_COMPILER_CONSTEXPR
+#      define Q_COMPILER_INITIALIZER_LISTS
+#      define Q_COMPILER_NOEXCEPT
+#    endif
 #  endif
 #endif
 
