@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 
     The QTimer class provides a high-level programming interface for
     timers. To use it, create a QTimer, connect its timeout() signal
-    to the appropriate slots, and call start(). From then on it will
+    to the appropriate slots, and call start(). From then on, it will
     emit the timeout() signal at constant intervals.
 
     Example for a one second (1000 millisecond) timer (from the
@@ -92,13 +92,13 @@ QT_BEGIN_NAMESPACE
     \snippet timers/timers.cpp 5
     \snippet timers/timers.cpp 6
 
-    \c processOneThing() will from then on be called repeatedly. It
+    From then on, \c processOneThing() will be called repeatedly. It
     should be written in such a way that it always returns quickly
     (typically after processing one data item) so that Qt can deliver
-    events to widgets and stop the timer as soon as it has done all
+    events to the user interface and stop the timer as soon as it has done all
     its work. This is the traditional way of implementing heavy work
-    in GUI applications; multithreading is now becoming available on
-    more and more platforms, and we expect that zero-millisecond
+    in GUI applications, but as multithreading is nowadays becoming available on
+    more and more platforms, we expect that zero-millisecond
     QTimers will gradually be replaced by \l{QThread}s.
 
     \section1 Accuracy and Timer Resolution
@@ -124,8 +124,8 @@ QT_BEGIN_NAMESPACE
     disadvantage is that timerEvent() does not support such
     high-level features as single-shot timers or signals.
 
-    Another alternative to using QTimer is to use QBasicTimer. It is
-    typically less cumbersome than using QObject::startTimer()
+    Another alternative is QBasicTimer. It is typically less
+    cumbersome than using QObject::startTimer()
     directly. See \l{Timers} for an overview of all three approaches.
 
     Some operating systems limit the number of timers that may be

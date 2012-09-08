@@ -89,9 +89,11 @@ QT_BEGIN_NAMESPACE
   today's date, and restricted the valid date range to today plus or
   minus 365 days. We've set the order to month, day, year.
 
-  The minimum value for QDateTimeEdit is 14 September 1752,
-  and 2 January 4713BC for QDate. You can change this by calling
-  setMinimumDate(), setMaximumDate(),  setMinimumTime(),
+  The minimum value for QDateTimeEdit is 14 September 1752. You can
+  change this by calling setMinimumDate(), taking into account that
+  the minimum value for QDate is 2 January 4713BC.
+
+  Other useful functions are setMaximumDate(), setMinimumTime()
   and setMaximumTime().
 
   \section1 Using a Pop-up Calendar Widget
@@ -705,9 +707,9 @@ int QDateTimeEdit::sectionCount() const
 
   \brief the current section index of the spinbox
 
-  If the format is 'yyyy/MM/dd', the displayText is '2001/05/21' and
-  the cursorPosition is 5 currentSectionIndex returns 1. If the
-  cursorPosition is 3 currentSectionIndex is 0 etc.
+  If the format is 'yyyy/MM/dd', the displayText is '2001/05/21', and
+  the cursorPosition is 5, currentSectionIndex returns 1. If the
+  cursorPosition is 3, currentSectionIndex is 0, and so on.
 
   \a setCurrentSection()
   \sa currentSection()
@@ -782,9 +784,9 @@ void QDateTimeEdit::setCalendarWidget(QCalendarWidget *calendarWidget)
   \since 4.2
 
   Selects \a section. If \a section doesn't exist in the currently
-  displayed sections this function does nothing. If \a section is
-  NoSection this function will unselect all text in the editor.
-  Otherwise this function will move the cursor and the current section
+  displayed sections, this function does nothing. If \a section is
+  NoSection, this function will unselect all text in the editor.
+  Otherwise, this function will move the cursor and the current section
   to the selected section.
 
   \sa currentSection()
@@ -829,8 +831,7 @@ QString QDateTimeEdit::sectionText(Section section) const
 
   \brief the format used to display the time/date of the date time edit
 
-  This format is the same as the one used described in QDateTime::toString()
-  and QDateTime::fromString()
+  This format is described in QDateTime::toString() and QDateTime::fromString()
 
   Example format strings (assuming that the date is 2nd of July 1969):
 
@@ -908,7 +909,7 @@ void QDateTimeEdit::setDisplayFormat(const QString &format)
 
 /*!
     \property QDateTimeEdit::calendarPopup
-    \brief the current calendar pop-up showing mode.
+    \brief the current calendar pop-up show mode.
     \since 4.2
 
     The calendar pop-up will be shown upon clicking the arrow button.
@@ -1516,11 +1517,10 @@ void QDateTimeEdit::mousePressEvent(QMouseEvent *event)
   \inmodule QtWidgets
 
   Many of the properties and functions provided by QTimeEdit are implemented in
-  QDateTimeEdit. The following properties are most relevant to users of this
-  class:
+  QDateTimeEdit. These are the relevant properties of this class:
 
   \list
-  \li \l{QDateTimeEdit::time}{time} holds the date displayed by the widget.
+  \li \l{QDateTimeEdit::time}{time} holds the time displayed by the widget.
   \li \l{QDateTimeEdit::minimumTime}{minimumTime} defines the minimum (earliest) time
      that can be set by the user.
   \li \l{QDateTimeEdit::maximumTime}{maximumTime} defines the maximum (latest) time
@@ -1587,8 +1587,7 @@ QTimeEdit::QTimeEdit(const QTime &time, QWidget *parent)
   \inmodule QtWidgets
 
   Many of the properties and functions provided by QDateEdit are implemented in
-  QDateTimeEdit. The following properties are most relevant to users of this
-  class:
+  QDateTimeEdit. These are the relevant properties of this class:
 
   \list
   \li \l{QDateTimeEdit::date}{date} holds the date displayed by the widget.
