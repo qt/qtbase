@@ -52,7 +52,7 @@
 #endif
 
 #include <stdlib.h> // mkdtemp
-#if defined(Q_OS_QNX) || defined(Q_OS_WIN) || defined(Q_OS_LINUX_ANDROID)
+#if defined(Q_OS_QNX) || defined(Q_OS_WIN)
 #include <private/qfilesystemengine_p.h>
 #endif
 
@@ -94,7 +94,7 @@ static QString defaultTemplateName()
     return QDir::tempPath() + QLatin1Char('/') + baseName + QLatin1String("-XXXXXX");
 }
 
-#if defined(Q_OS_QNX ) || defined(Q_OS_WIN) || defined(Q_OS_LINUX_ANDROID)
+#if defined(Q_OS_QNX ) || defined(Q_OS_WIN)
 static char *mkdtemp(char *templateName)
 {
     static const char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -138,6 +138,8 @@ static char *mkdtemp(char *templateName)
     }
     return 0;
 }
+#elif defined(Q_OS_LINUX_ANDROID)
+extern char *mkdtemp(char *);
 #endif
 
 void QTemporaryDirPrivate::create(const QString &templateName)
