@@ -168,20 +168,12 @@ mac {
    }
 }
 
-win32-borland {
-    # Keep the size of the .tds file for the Qt library smaller than
-    # 34 Mbytes to avoid linking problems
-    QMAKE_CFLAGS_DEBUG += -vi -y-
-    QMAKE_CXXFLAGS_DEBUG += -vi -y-
-}
-
 DEFINES += QT_BUILDING_QT
 win32 {
     INCLUDEPATH += tmp
     # ### QT_MAKEDLL is compatibility, remove before the Qt 5.0 release
     !static: DEFINES+=QT_MAKEDLL
 }
-win32-borland:INCLUDEPATH += kernel
 
 aix-g++* {
      QMAKE_CFLAGS   += -mminimal-toc
