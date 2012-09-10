@@ -352,6 +352,8 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
 
     QDialog* d = new QDialog( testFocusWidget );
     d->show();
+    QVERIFY(QTest::qWaitForWindowExposed(d));
+
     d->activateWindow(); // ### CDE
     QApplication::setActiveWindow(d);
     QVERIFY(QTest::qWaitForWindowActive(d));
@@ -373,8 +375,6 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("", "QTBUG-22815", Abort);
 #endif
-    if (QGuiApplication::platformName() == QStringLiteral("xcb"))
-        QSKIP("QTBUG-22815 - This test is unstable on this platform");
     QTRY_VERIFY(childFocusWidgetOne->focusInEventRecieved);
     QVERIFY(childFocusWidgetOne->focusInEventGotFocus);
 
