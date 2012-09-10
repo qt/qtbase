@@ -171,8 +171,6 @@ mac {
 DEFINES += QT_BUILDING_QT
 win32 {
     INCLUDEPATH += tmp
-    # ### QT_MAKEDLL is compatibility, remove before the Qt 5.0 release
-    !static: DEFINES+=QT_MAKEDLL
 }
 
 aix-g++* {

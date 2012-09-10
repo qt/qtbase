@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(Q_OS_WIN32) || defined(QT_MAKEDLL)
+#if !defined(Q_OS_WIN32) || defined(QT_SHARED)
 #ifndef QT_NO_LIBRARY
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
@@ -56,7 +56,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
      QLatin1String("/generic"), Qt::CaseInsensitive))
 
 #endif //QT_NO_LIBRARY
-#endif //QT_MAKEDLL
+#endif //QT_SHARED
 
 /*!
     \class QGenericPluginFactory
@@ -78,7 +78,7 @@ QObject *QGenericPluginFactory::create(const QString& key, const QString &specif
 {
     const QString driver = key.toLower();
 
-#if !defined(Q_OS_WIN32) || defined(QT_MAKEDLL)
+#if !defined(Q_OS_WIN32) || defined(QT_SHARED)
 #ifndef QT_NO_LIBRARY
     if (QObject *object = qLoadPlugin1<QObject, QGenericPlugin>(loader(), driver, specification))
         return object;
@@ -96,7 +96,7 @@ QStringList QGenericPluginFactory::keys()
 {
     QStringList list;
 
-#if !defined(Q_OS_WIN32) || defined(QT_MAKEDLL)
+#if !defined(Q_OS_WIN32) || defined(QT_SHARED)
 #ifndef QT_NO_LIBRARY
     typedef QMultiMap<int, QString> PluginKeyMap;
     typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
@@ -107,7 +107,7 @@ QStringList QGenericPluginFactory::keys()
         if (!list.contains(it.value()))
             list += it.value();
 #endif //QT_NO_LIBRARY
-#endif //QT_MAKEDLL
+#endif
     return list;
 }
 
