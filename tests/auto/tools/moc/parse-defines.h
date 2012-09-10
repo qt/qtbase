@@ -1,0 +1,105 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the tools applications of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Digia gives you certain additional
+** rights.  These rights are described in the Digia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#ifndef PARSE_DEFINES_H
+#define PARSE_DEFINES_H
+
+#include <qobject.h>
+
+// this is intentionally ugly to test moc's preprocessing capabilities
+#define PD_NAMESPACE PD
+#define PD_BEGIN_NAMESPACE namespace PD_NAMESPACE {
+#define PD_END_NAMESPACE }
+#define PD_VOIDFUNCTION() voidFunction()
+#define PD_CLASSNAME ParseDefine
+
+#define PD_STRINGIFY(a) #a
+#define PD_SCOPED_STRING(a, b) PD_STRINGIFY(a) "::" PD_STRINGIFY(b)
+#define PD_DEFINE1(a,b) a##b
+#define PD_DEFINE2(a,b) a comb##b
+#define PD_DEFINE3(a,b) a b##ined3()
+#define PD_COMBINE(a,b) a b
+#define PD_TEST_IDENTIFIER_ARG(if, while) if while
+
+#define QString() error_type
+
+#define PD_CLASSINFO Q_CLASSINFO
+
+#if defined(Q_COMPILER_VARIADIC_MACROS)
+#define PD_VARARG(x, ...) x(__VA_ARGS__)
+#endif
+
+PD_BEGIN_NAMESPACE
+
+class PD_CLASSNAME : public QObject
+{
+    Q_OBJECT
+    Q_CLASSINFO("TestString", PD_STRINGIFY(PD_CLASSNAME))
+    PD_CLASSINFO("TestString2", "TestValue")
+public:
+    PD_CLASSNAME() {}
+
+public slots:
+    void PD_VOIDFUNCTION() {}
+
+    QString stringMethod() { return QString::fromLatin1(""); }
+
+    void PD_DEFINE1(comb, ined1()) {}
+    PD_DEFINE2(void, ined2()) {}
+    PD_DEFINE3(void, comb) {}
+    PD_COMBINE(void combined4(int, int), {})
+
+    PD_COMBINE(void combined5() {, })
+
+    PD_TEST_IDENTIFIER_ARG(void, combined6()) {}
+
+#if defined(Q_COMPILER_VARIADIC_MACROS)
+    PD_VARARG(void vararg1) {}
+    PD_VARARG(void vararg2, int) {}
+    PD_VARARG(void vararg3, int, int) {}
+#endif
+};
+
+#undef QString
+
+PD_END_NAMESPACE
+
+#endif

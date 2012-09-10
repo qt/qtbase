@@ -74,6 +74,8 @@
 #include "cxx11-final-classes.h"
 #include "cxx11-explicit-override-control.h"
 
+#include "parse-defines.h"
+
 QT_USE_NAMESPACE
 
 struct MyStruct {};
@@ -551,6 +553,7 @@ private slots:
     void explicitOverrideControl();
     void autoPropertyMetaTypeRegistration();
     void autoMethodArgumentMetaTypeRegistration();
+    void parseDefines();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -2703,6 +2706,58 @@ void tst_Moc::autoMethodArgumentMetaTypeRegistration()
     QCOMPARE(methodMultiArgMetaTypeIds, expectedMultiMetaTypeIds);
 
 
+}
+
+void tst_Moc::parseDefines()
+{
+    const QMetaObject *mo = &PD_NAMESPACE::PD_CLASSNAME::staticMetaObject;
+    QCOMPARE(mo->className(), PD_SCOPED_STRING(PD_NAMESPACE, PD_CLASSNAME));
+    QVERIFY(mo->indexOfSlot("voidFunction()") != -1);
+
+    int index = mo->indexOfSlot("stringMethod()");
+    QVERIFY(index != -1);
+    QVERIFY(mo->method(index).returnType() == QMetaType::QString);
+
+    index = mo->indexOfSlot("combined1()");
+    QVERIFY(index != -1);
+
+    index = mo->indexOfSlot("combined2()");
+    QVERIFY(index != -1);
+
+    index = mo->indexOfSlot("combined3()");
+    QVERIFY(index != -1);
+
+    index = mo->indexOfSlot("combined4(int,int)");
+    QVERIFY(index != -1);
+
+    index = mo->indexOfSlot("combined5()");
+    QVERIFY(index != -1);
+
+    index = mo->indexOfSlot("combined6()");
+    QVERIFY(index != -1);
+
+#if defined(Q_COMPILER_VARIADIC_MACROS)
+    index = mo->indexOfSlot("vararg1()");
+    QVERIFY(index != -1);
+    index = mo->indexOfSlot("vararg2(int)");
+    QVERIFY(index != -1);
+    index = mo->indexOfSlot("vararg3(int,int)");
+    QVERIFY(index != -1);
+#endif
+
+    int count = 0;
+    for (int i = 0; i < mo->classInfoCount(); ++i) {
+        QMetaClassInfo mci = mo->classInfo(i);
+        if (!qstrcmp(mci.name(), "TestString")) {
+            ++count;
+            QVERIFY(!qstrcmp(mci.value(), "ParseDefine"));
+        }
+        if (!qstrcmp(mci.name(), "TestString2")) {
+            ++count;
+            QVERIFY(!qstrcmp(mci.value(), "TestValue"));
+        }
+    }
+    QVERIFY(count == 2);
 }
 
 QTEST_MAIN(tst_Moc)

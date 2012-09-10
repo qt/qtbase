@@ -22,6 +22,7 @@ HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-n
            cxx11-final-classes.h \
            cxx11-explicit-override-control.h \
            forward-declared-param.h \
+           parse-defines.h
 
 
 if(*-g++*|*-icc*|*-clang*|*-llvm):!irix-*:!win32-*: HEADERS += os9-newlines.h win-newlines.h
