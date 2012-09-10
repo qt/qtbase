@@ -1250,8 +1250,6 @@ public:
 void tst_QLocale::windowsDefaultLocale()
 {
 #ifdef Q_OS_WIN
-    QSKIP("This test currently fails - QTBUG-24543");
-
     RestoreLocaleHelper systemLocale;
     // set weird system defaults and make sure we're using them
     setWinLocaleInfo(LOCALE_SDECIMAL, QLatin1String("@"));
