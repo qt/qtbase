@@ -42,6 +42,8 @@
 
 #include "qplatformsystemtrayicon.h"
 
+#ifndef QT_NO_SYSTEMTRAYICON
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -159,3 +161,5 @@ QPlatformSystemTrayIcon::~QPlatformSystemTrayIcon()
 QT_END_NAMESPACE
 
 #include "moc_qplatformsystemtrayicon.cpp"
+
+#endif // QT_NO_SYSTEMTRAYICON
