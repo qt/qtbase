@@ -95,10 +95,9 @@
     convenience functions readLine() and readAll(). QAbstractSocket
     also inherits getChar(), putChar(), and ungetChar() from
     QIODevice, which work on single bytes. The bytesWritten() signal
-    is emitted when data has been written to the socket (i.e., when
-    the client has read the data). Note that Qt does not limit the
-    write buffer size. You can monitor its size by listening to this
-    signal.
+    is emitted when data has been written to the socket. Note that Qt does
+    not limit the write buffer size. You can monitor its size by listening
+    to this signal.
 
     The readyRead() signal is emitted every time a new chunk of data
     has arrived. bytesAvailable() then returns the number of bytes
